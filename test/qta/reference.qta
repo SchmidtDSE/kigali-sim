@@ -31,7 +31,7 @@ start default
       recharge 10 % / year with 0.12 kg / unit
 
       # Historic units already deployed
-      set priorEquipment to (7 * get equipment as kg) kg during year 1
+      set priorEquipment to (get equipment as units * 7) units during year 1
     end substance
 
     uses substance "R-600a"
@@ -52,7 +52,7 @@ start default
       recharge 10 % / year with 0.05 kg / unit
 
       # Historic units already deployed
-      set priorEquipment to (7 * get equipment as kg) kg during year 1
+      set priorEquipment to (get equipment as units * 7) units during year 1
     end substance
 
     uses substance "low gwp"
@@ -83,7 +83,7 @@ start default
       recharge 10 % / year with 0.30 kg / unit
 
       # Historic units already deployed
-      set priorEquipment to (7 * get equipment as kg) kg during year 1
+      set priorEquipment to (get equipment as units * 7) units during year 1
     end substance
 
     uses substance "R-600a"
@@ -104,7 +104,7 @@ start default
       recharge 10 % / year with 0.12 kg / unit
 
       # Historic units already deployed
-      set priorEquipment to (7 * get equipment as kg) kg during year 1
+      set priorEquipment to (get equipment as units * 7) units during year 1
     end substance
 
     uses substance "R-404A"
@@ -125,7 +125,7 @@ start default
       recharge 10 % / year with 0.12 kg / unit
 
       # Historic units already deployed
-      set priorEquipment to (7 * get equipment as kg) kg during year 1
+      set priorEquipment to (get equipment as units * 7) units during year 1
     end substance
 
     uses substance "low gwp"
@@ -156,7 +156,7 @@ start default
       recharge 10 % / year with 0.90 kg / unit
 
       # Historic units already deployed
-      set priorEquipment to (7 * get equipment as kg) kg during year 1
+      set priorEquipment to (get equipment as units * 7) units during year 1
     end substance
 
     uses substance "HFC-32"
@@ -177,7 +177,7 @@ start default
       recharge 10 % / year with 0.68 kg / unit
 
       # Historic units already deployed
-      set priorEquipment to (7 * get equipment as kg) kg during year 1
+      set priorEquipment to (get equipment as units * 7) units during year 1
     end substance
 
     uses substance "R-290"
@@ -198,7 +198,7 @@ start default
       recharge 10 % / year with 0.35 kg / unit
 
       # Historic units already deployed
-      set priorEquipment to (7 * get equipment as kg) kg during year 1
+      set priorEquipment to (get equipment as units * 7) units during year 1
     end substance
 
     uses substance "low gwp"
@@ -229,7 +229,7 @@ start default
       recharge 10 % / year with 0.90 kg / unit
 
       # Historic units already deployed
-      set priorEquipment to (7 * get equipment as kg) kg during year 1
+      set priorEquipment to (get equipment as units * 7) units during year 1
     end substance
 
     uses substance "R-1234yf"
@@ -250,7 +250,7 @@ start default
       recharge 10 % / year with 0.90 kg / unit
 
       # Historic units already deployed
-      set priorEquipment to (7 * get equipment as kg) kg during year 1
+      set priorEquipment to (get equipment as units * 7) units during year 1
     end substance
 
     uses substance "low gwp"
