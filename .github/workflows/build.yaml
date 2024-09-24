@@ -23,6 +23,7 @@ jobs:
     environment: build
     runs-on: ubuntu-latest
     name: Run Unit Tests
+    needs: [lint]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
