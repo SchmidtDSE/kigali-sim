@@ -8,7 +8,7 @@ import {
 
 import {
   EngineNumber,
-} from "engine_number"; 
+} from "engine_number";
 
 
 /**
@@ -403,7 +403,7 @@ class StreamParameterization {
     self._ghgIntensity = createZero("tCO2e / kg");
     self._initialCharge = {
       "manufacture": createZero("kg / unit"),
-      "import": createZero("kg / unit")
+      "import": createZero("kg / unit"),
     };
     self._rechargePopulation = createZero("%");
     self._rechargeIntensity = createZero("kg / unit");
@@ -474,12 +474,12 @@ class StreamParameterization {
     const self = this;
     return self._yieldRate;
   }
-  
+
   setDisplacementRate(newValue) {
     const self = this;
     self._displacementRate = newValue;
   }
-  
+
   getDisplacementRate() {
     const self = this;
     return self._displacementRate;
@@ -506,7 +506,6 @@ class StreamParameterization {
 
 
 class SubstanceInApplicationId {
-
   constructor(application, substance) {
     const self = this;
     self._application = application;
@@ -522,7 +521,6 @@ class SubstanceInApplicationId {
     const self = this;
     return self._substance;
   }
-
 }
 
 
@@ -746,7 +744,7 @@ class StreamKeeper {
     const parameterization = self._getParameterization(application, substance);
     return parameterization.getRecoveryRate();
   }
-  
+
   setDisplacementRate(application, substance, newValue) {
     const self = this;
     const parameterization = self._getParameterization(application, substance);

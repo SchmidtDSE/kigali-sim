@@ -1,5 +1,4 @@
 class ResultsPresenter {
-
   constructor(targetId) {
     const self = this;
     self._root = document.getElementById(targetId);
@@ -15,8 +14,7 @@ class ResultsPresenter {
     const self = this;
     self._root.style.display = "block";
   }
-
 }
 
 
-export { ResultsPresenter };
+export {ResultsPresenter};

@@ -1,22 +1,23 @@
-import { CodeEditorPresenter } from "code_editor";
-import { Compiler } from "compiler";
-import { ResultsPresenter } from "results";
+import {CodeEditorPresenter} from "code_editor";
+import {Compiler} from "compiler";
+import {ResultsPresenter} from "results";
 
 const WHITESPACE_REGEX = new RegExp("^\\s*$");
 
 
 class ButtonPanelPresenter {
-  
   constructor(targetId, onRun) {
     const self = this;
     self._root = document.getElementById(targetId);
-    
+
     self._availableDisplay = self._root.querySelector("#available-panel");
     self._loadingDisplay = self._root.querySelector("#loading");
     self._runButton = self._root.querySelector("#run-button");
 
     self._onRun = onRun;
-    self._runButton.addEventListener("click", () => { self._onRun(); });
+    self._runButton.addEventListener("click", () => {
+      self._onRun();
+    });
 
     self.enable();
   }
@@ -42,12 +43,10 @@ class ButtonPanelPresenter {
     const self = this;
     self._runButton.style.display = "inline-block";
   }
-
 }
 
 
 class MainPresenter {
-
   constructor() {
     const self = this;
     self._codeEditorPresenter = new CodeEditorPresenter(
@@ -113,7 +112,6 @@ class MainPresenter {
     const self = this;
     self._resultsPresenter.showResults(results);
   }
-
 }
 
 

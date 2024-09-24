@@ -12,7 +12,6 @@ import {
 
 
 class EngineResult {
-
   constructor(application, substance, year, manufactureValue, importValue, emissionsValue,
     populationValue) {
     const self = this;
@@ -34,32 +33,31 @@ class EngineResult {
     const self = this;
     return self._substance;
   }
-  
+
   getYear() {
     const self = this;
-    return self._year
-  }
-  
-  getManufacture() {
-    const self = this;
-    return self._manufactureValue
-  }
-  
-  getImport() {
-    const self = this;
-    return self._importValue
-  }
-  
-  getEmissions() {
-    const self = this;
-    return self._emissionsValue
-  }
-  
-  getPopulation() {
-    const self = this;
-    return self._populationValue
+    return self._year;
   }
 
+  getManufacture() {
+    const self = this;
+    return self._manufactureValue;
+  }
+
+  getImport() {
+    const self = this;
+    return self._importValue;
+  }
+
+  getEmissions() {
+    const self = this;
+    return self._emissionsValue;
+  }
+
+  getPopulation() {
+    const self = this;
+    return self._populationValue;
+  }
 }
 
 
@@ -67,7 +65,6 @@ class EngineResult {
  * Facade which runs engine mechanics.
  */
 class Engine {
-
   /**
    * Create a new engine running from
    */
@@ -253,7 +250,7 @@ class Engine {
     }
     self._scope.setVariable(name, value);
   }
-  
+
   getInitialCharge(stream) {
     const self = this;
 
@@ -294,14 +291,14 @@ class Engine {
       return self._streamKeeper.getInitialCharge(application, substance, stream);
     }
   }
-  
+
   setInitialCharge(value, stream, yearMatcher) {
     const self = this;
-    
+
     if (!self._getIsInRange(yearMatcher)) {
       return;
     }
-    
+
     if (stream === "sales") {
       self.setInitialCharge(value, "manufacture");
       self.setInitialCharge(value, "import");
@@ -313,28 +310,28 @@ class Engine {
 
     self._recalcPopulationChange();
   }
-  
+
   getRechargeVolume() {
     const self = this;
     const application = self._scope.getApplication();
     const substance = self._scope.getSubstance();
     return self._streamKeeper.getRechargeVolume(application, substance);
   }
-  
+
   getRechargeIntensity() {
     const self = this;
     const application = self._scope.getApplication();
     const substance = self._scope.getSubstance();
     return self._streamKeeper.getRechargeIntensity(application, substance);
   }
-  
+
   recharge(volume, intensity, yearMatcher) {
     const self = this;
-    
+
     if (!self._getIsInRange(yearMatcher)) {
       return;
     }
-    
+
     const application = self._scope.getApplication();
     const substance = self._scope.getSubstance();
     self._streamKeeper.setRechargePopulation(application, substance, volume);
@@ -347,11 +344,11 @@ class Engine {
 
   retire(amount, yearMatcher) {
     const self = this;
-    
+
     if (!self._getIsInRange(yearMatcher)) {
       return;
     }
-    
+
     const unitConverter = self._createUnitConverterWithTotal("priorEquipment");
     const equipmentToRetire = unitConverter.convert(amount, "units");
     const retireAsDelta = new EngineNumber(
@@ -364,7 +361,7 @@ class Engine {
 
   recycle(recoveryWithUnits, yieldWithUnits, displaceLevel, yearMatcher) {
     const self = this;
-    
+
     if (!self._getIsInRange(yearMatcher)) {
       return;
     }
@@ -385,7 +382,7 @@ class Engine {
 
   emit(amount, yearMatcher) {
     const self = this;
-    
+
     if (!self._getIsInRange(yearMatcher)) {
       return;
     }
@@ -399,7 +396,7 @@ class Engine {
 
   changeStream(stream, amount, yearMatcher, scope) {
     const self = this;
-    
+
     if (!self._getIsInRange(yearMatcher)) {
       return;
     }
@@ -415,7 +412,7 @@ class Engine {
 
   cap(stream, amount, yearMatcher) {
     const self = this;
-    
+
     if (!self._getIsInRange(yearMatcher)) {
       return;
     }
@@ -431,7 +428,7 @@ class Engine {
 
   replace(amountRaw, stream, destinationSubstance, yearMatcher) {
     const self = this;
-    
+
     if (!self._getIsInRange(yearMatcher)) {
       return;
     }
@@ -448,9 +445,9 @@ class Engine {
 
   getResults() {
     const self = this;
-    
+
     const substances = self._streamKeeper.getRegisteredSubstances();
-    
+
     return substances.map((substanceId) => {
       const application = substanceId.getApplication();
       const substance = substanceId.getSubstance();
@@ -459,7 +456,7 @@ class Engine {
       const importValue = self._streamKeeper.getStream(application, substance, "import");
       const emissionsValue = self._streamKeeper.getStream(application, substance, "emissions");
       const populationValue = self._streamKeeper.getStream(application, substance, "equipment");
-      
+
       return new EngineResult(
         application,
         substance,
@@ -474,18 +471,18 @@ class Engine {
 
   _createUnitConverterWithTotal(stream) {
     const self = this;
-    
+
     const stateGetter = new OverridingConverterStateGetter(self._stateGetter);
     const unitConverter = new UnitConverter(stateGetter);
-    
+
     const currentValue = self.getStream(stream);
     stateGetter.setTotal(stream, currentValue);
-    
+
     const isSalesSubstream = stream === "manufacture" || stream === "import";
     if (isSalesSubstream) {
       stateGetter.setAmortizedUnitVolume(self.getInitialCharge(stream));
     }
-    
+
     return unitConverter;
   }
 
@@ -570,7 +567,7 @@ class Engine {
     const salesKg = substanceSales.getValue();
     const recycledKg = recycledVolume.getValue();
     const rechargeKg = rechargeVolume.getValue();
-    
+
     const displacementRateRaw = self._streamKeeper.getDisplacementRate(
       application,
       substance,
@@ -578,7 +575,7 @@ class Engine {
     const displacementRate = unitConverter.convert(displacementRateRaw, "%");
     const displacementRateRatio = 1 - displacementRate.getValue() / 100;
     const recycledNonDisplaced = recycledKg * displacementRateRatio;
-    
+
     const availableForNewUnitsKg = salesKg + recycledNonDisplaced - rechargeKg;
 
     // Convert to unit delta
@@ -601,7 +598,7 @@ class Engine {
     const self = this;
 
     const scopeEffective = scope === null || scope === undefined ? self._scope : scope;
-    
+
     const stateGetter = new OverridingConverterStateGetter(self._stateGetter);
     const unitConverter = new UnitConverter(stateGetter);
     const application = scopeEffective.getApplication();
@@ -610,11 +607,11 @@ class Engine {
     if (application === null || substance === null) {
       throw "Tried recalculating emissions without application and substance.";
     }
-    
+
     // Determine percent domestic manufacturing
     const manufacturingRaw = self.getStream("manufacture", scopeEffective);
     const manufacturing = unitConverter.convert(manufacturingRaw, "kg");
-    
+
     // Determine emissions
     stateGetter.setVolume(manufacturing);
     const emissionsRaw = self._streamKeeper.getGhgIntensity(
@@ -623,11 +620,11 @@ class Engine {
     );
     const emissions = unitConverter.convert(emissionsRaw, "tCO2e");
     stateGetter.setVolume(null);
-    
+
     // Ensure in range
     const isNegative = emissions.getValue() < 0;
     const emissionsAllowed = isNegative ? new EngineNumber(0, "tCO2e") : emissions;
-    
+
     // Save
     self.setStream("emissions", emissionsAllowed, null, scopeEffective, false);
   }
@@ -636,7 +633,7 @@ class Engine {
     const self = this;
 
     const scopeEffective = scope === null || scope === undefined ? self._scope : scope;
-    
+
     const stateGetter = new OverridingConverterStateGetter(self._stateGetter);
     const unitConverter = new UnitConverter(stateGetter);
     const application = scopeEffective.getApplication();
@@ -645,7 +642,7 @@ class Engine {
     if (application === null || substance === null) {
       throw "Tried recalculating sales without application and substance.";
     }
-    
+
     // Get recharge population
     stateGetter.setPopulation(self.getStream("priorEquipment", scopeEffective));
     const rechargePopRaw = self._streamKeeper.getRechargePopulation(
@@ -664,7 +661,7 @@ class Engine {
       substance,
     );
     const rechargeVolume = unitConverter.convert(rechargeIntensityRaw, "kg");
-    
+
     // Determine initial charge
     const initialChargeRaw = self.getInitialCharge("sales");
     const initialCharge = unitConverter.convert(initialChargeRaw, "kg / unit");
@@ -686,10 +683,10 @@ class Engine {
     );
     const recycledVolume = unitConverter.convert(recycledVolumeRaw, "kg");
     stateGetter.setVolume(null);
-    
+
     // Get recycling displaced
     const recycledKg = recycledVolume.getValue();
-    
+
     const displacementRateRaw = self._streamKeeper.getDisplacementRate(
       application,
       substance,
@@ -706,28 +703,28 @@ class Engine {
     const populationChangeRaw = stateGetter.getPopulationChange();
     const volumeForNew = unitConverter.convert(populationChangeRaw, "kg");
     stateGetter.setAmortizedUnitVolume(null);
-    
+
     // Determine sales prior to recycling
     const kgForRecharge = rechargeVolume.getValue();
     const kgForNew = volumeForNew.getValue();
     const kgNoRecycling = kgForRecharge + kgForNew;
     const volumeNoRecycling = new EngineNumber(kgNoRecycling, "kg");
-    
+
     // Assume this volume for unit conversion
     stateGetter.setVolume(volumeNoRecycling);
-    
+
     // Return original
     stateGetter.setVolume(null);
-    
+
     // Determine sales after recycling
     const kgWithRecycling = kgNoRecycling - recycledDisplacedKg;
     const isNegative = kgWithRecycling < 0;
     const kgWithRecyclingAllowed = isNegative ? 0 : kgWithRecycling;
     const totalSales = new EngineNumber(kgWithRecyclingAllowed, "kg");
-    
+
     // Update import and domestic sales proportionally.
     self.setStream("sales", totalSales, null, scopeEffective, false);
   }
 }
 
-export { Engine };
+export {Engine};

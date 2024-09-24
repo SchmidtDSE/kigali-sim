@@ -1,5 +1,4 @@
 class CodeEditorPresenter {
-
   constructor(targetId, onChange) {
     const self = this;
     self._root = document.getElementById(targetId);
@@ -17,7 +16,7 @@ class CodeEditorPresenter {
   showError(error) {
     const self = this;
     self._errorDisplay.innerHTML = "";
-    
+
     const newTextNode = document.createTextNode(error);
     self._errorDisplay.appendChild(newTextNode);
 
@@ -37,8 +36,8 @@ class CodeEditorPresenter {
     self._editor.getSession().setUseWorker(false);
 
     self._editor.session.setOptions({
-        tabSize: 2,
-        useSoftTabs: true,
+      tabSize: 2,
+      useSoftTabs: true,
     });
 
     self._editor.setOption("printMarginColumn", 100);
@@ -46,7 +45,7 @@ class CodeEditorPresenter {
 
     self._editor.setTheme("ace/theme/textmate");
 
-    self._editor.getSession().on('change', () => {
+    self._editor.getSession().on("change", () => {
       self._onChange();
     });
   }

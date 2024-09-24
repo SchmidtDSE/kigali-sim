@@ -66,22 +66,22 @@ class UnitConverter {
     const destinationNumeratorUnits = destinationUnitPieces[0];
 
     const numeratorStrategy = {
-      kg: (x) => self._toKg(x),
-      mt: (x) => self._toMt(x),
-      unit: (x) => self._toUnits(x),
-      units: (x) => self._toUnits(x),
-      tCO2e: (x) => self._toEmissions(x),
-      year: (x) => self._toYears(x),
-      years: (x) => self._toYears(x),
+      "kg": (x) => self._toKg(x),
+      "mt": (x) => self._toMt(x),
+      "unit": (x) => self._toUnits(x),
+      "units": (x) => self._toUnits(x),
+      "tCO2e": (x) => self._toEmissions(x),
+      "year": (x) => self._toYears(x),
+      "years": (x) => self._toYears(x),
       "%": (x) => self._toPercent(x),
     }[destinationNumeratorUnits];
 
     const destinationNumerator = numeratorStrategy(source);
 
     const hasDenominator = destinationUnitPieces.length > 1;
-    const destinationDenominatorUnits = hasDenominator
-      ? destinationUnitPieces[1]
-      : "";
+    const destinationDenominatorUnits = hasDenominator ?
+      destinationUnitPieces[1] :
+      "";
     if (hasDenominator) {
       const denominatorStrategy = {
         kg: () => self.convert(self._stateGetter.getVolume(), "kg"),
@@ -95,7 +95,7 @@ class UnitConverter {
       const destinationDenominator = denominatorStrategy();
       return new EngineNumber(
         destinationNumerator.getValue() / destinationDenominator.getValue(),
-        destinationUnits
+        destinationUnits,
       );
     } else {
       return destinationNumerator;
@@ -304,14 +304,14 @@ class UnitConverter {
       throw "Unable to convert to years: " + currentUnits;
     }
   }
-  
+
   _toPercent(target) {
     const self = this;
 
     target = self._normalize(target);
     const currentUnits = target.getUnits();
 
-    const getTotal = () => { 
+    const getTotal = () => {
       if (currentUnits === "years" || currentUnits === "year") {
         return self._stateGetter.getYearsElapsed();
       } else if (currentUnits === "tCO2e") {
@@ -325,7 +325,7 @@ class UnitConverter {
         throw "Unable to convert to %: " + currentUnits;
       }
     };
-    
+
     const total = getTotal();
     const percentValue = target.getValue() / total.getValue() * 100;
     return new EngineNumber(percentValue, "%");
@@ -464,7 +464,7 @@ class ConverterStateGetter {
     const emissions = self.getEmissions();
     const volume = self.getVolume();
     const ratioValue = emissions.getValue() / volume.getValue();
-    
+
     const emissionsUnits = emissions.getUnits();
     const volumeUnits = volume.getUnits();
     const emissionsUnitsExpected = emissionsUnits === "tCO2e";
@@ -473,7 +473,7 @@ class ConverterStateGetter {
     if (!unitsExpected) {
       throw "Unexpected units for getSubstanceEmissions.";
     }
-    
+
     const ratioUnits = emissionsUnits + " / " + volumeUnits;
     return new EngineNumber(ratioValue, ratioUnits);
   }
@@ -500,7 +500,7 @@ class ConverterStateGetter {
 
   getVolume() {
     const self = this;
-    const sales = self._engine.getStream("sales");;
+    const sales = self._engine.getStream("sales"); ;
     return sales;
   }
 
@@ -509,7 +509,7 @@ class ConverterStateGetter {
     const emissions = self.getEmissions();
     const population = self.getPopulation();
     const ratioValue = emissions.getValue() / population.getValue();
-    
+
     const populationUnits = population.getUnits();
     const volumeUnits = volume.getUnits();
     const populationUnitsExpected = populationUnits === "unit" || populationUnits === "units";
@@ -518,7 +518,7 @@ class ConverterStateGetter {
     if (!unitsExpected) {
       throw "Unexpected units for getAmortizedUnitEmissions.";
     }
-    
+
     const ratioUnits = emissionsUnits + " / " + populationUnits;
     return new EngineNumber(ratioValue, ratioUnits);
   }
