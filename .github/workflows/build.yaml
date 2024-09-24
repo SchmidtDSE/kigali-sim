@@ -6,10 +6,24 @@ permissions:
   contents: read
 
 jobs:
+  lint:
+    environment: build
+    runs-on: ubuntu-latest
+    name: Run Linter
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Install Node
+        uses: actions/setup-node@v4
+      - name: Install node deps
+        run: npm install --dev
+      - name: Run lint
+        run: npx eslint ./js/*.js
   unitTests:
     environment: build
     runs-on: ubuntu-latest
     name: Run Unit Tests
+    needs: [lint]
     steps:
       - name: Checkout
         uses: actions/checkout@v4

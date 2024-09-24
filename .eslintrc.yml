@@ -1,0 +1,15 @@
+env:
+  browser: true
+  es2021: true
+extends: google
+parserOptions:
+  ecmaVersion: latest
+  sourceType: module
+rules:
+  indent: [error, 2]
+  quotes: [error, double]
+  max-len: [error, {code: 100}]
+  require-jsdoc: off
+  no-unused-vars: off
+  valid-jsdoc: off
+  no-throw-literal: off

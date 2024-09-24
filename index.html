@@ -4,13 +4,61 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width">
-  <title>replit</title>
-  <link href="style.css" rel="stylesheet" type="text/css" />
+  <title>Montreal Policy Simulation</title>
+  <link href="/style/style.css" rel="stylesheet" type="text/css" />
 </head>
 
 <body>
-  Hello world!
-  <script src="script.js"></script>
+  <header>
+    <h1>Montreal Policy Simulation</h1>
+    Online open source / open science engine for business as usual and policy simulation on HFCs. This webpage enables exploration and analysis of potential outcomes for multiple substances and applications under different scenarios.
+  </header>
+
+  <main>
+    <section id="editor">
+      <h2>Editor</h2>
+      <div id="code-editor">
+        <div id="code-editor-inner" class="inner"></div>
+        <div class="error-display"></div>
+      </div>
+      <div id="buttons-panel">
+        <div id="available-panel">
+          <a class="primary" id="run-button" href="#loading">Run</a>
+        </div>
+        <div id="loading">
+          Loading please wait...
+        </div>
+      </div>
+    </section>
+    <section id="results">
+      <h2>Results</h2>
+    </section>
+  </main>
+
+  <script type="text/javascript" src="/third_party/ace.min.js"></script>
+  <script type="text/javascript" src="/third_party/d3.min.js"></script>
+
+  <script type="text/javascript" src="/intermediate/static/qubectalk.js"></script>
+
+  <script type="importmap">
+    {
+      "imports": {
+        "code_editor": "./js/code_editor.js?v=EPOCH",
+        "compiler": "./js/compiler.js?v=EPOCH",
+        "engine_const": "./js/engine_const.js?v=EPOCH",
+        "engine_number": "./js/engine_number.js?v=EPOCH",
+        "engine_state": "./js/engine_state.js?v=EPOCH",
+        "engine": "./js/engine.js?v=EPOCH",
+        "main": "./js/main.js?v=EPOCH",
+        "results": "./js/results.js?v=EPOCH"
+      }
+    }
+  </script>
+
+  <script type="module">
+    import { main } from "main";
+    main();
+  </script>
 </body>
 
 </html>
