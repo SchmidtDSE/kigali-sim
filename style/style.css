@@ -60,6 +60,26 @@ main {
   display: none;
 }
 
+#results .scorecards {
+  display: grid;
+  grid-template-columns: 30% 2.5% 30% 2.5% 30%;
+}
+
+#results .scorecards .scorecard {
+  border: 1px solid #C0C0C0;
+  border-radius: 2px;
+  padding: 3px;
+  text-align: center;
+}
+
+#results .scorecards .scorecard .label {
+  border-bottom: 1px dotted #C0C0C0;
+}
+
+#results .scorecards .scorecard .value {
+  font-size: 20px;
+}
+
 @media (max-width: 999px) {
   #results {
     margin-top: 30px;
