@@ -73,23 +73,24 @@ class ReportDataWrapper {
     self._innerData = innerData;
   }
 
-  getMinYear() {
-    const self = this;
-    const flatRecords = self._getFlatResults();
-    const years = flatRecords.map((x) => x.getYear());
-    return Math.min(...years);
-  }
-
-  getMaxYear() {
-    const self = this;
-    const flatRecords = self._getFlatResults();
-    const years = flatRecords.map((x) => x.getYear());
-    return Math.max(...years);
-  }
-
   getScenarios() {
     const self = this;
     return self._innerData.map((x) => x.getName());
+  }
+
+  getApplications(filterSet) {
+    const self = this;
+    return self._getSetAfterFilter(filterSet, (x) => x.getApplication());
+  }
+
+  getSubstances(filterSet) {
+    const self = this;
+    return self._getSetAfterFilter(filterSet, (x) => x.getSubstance());
+  }
+
+  getYears(filterSet) {
+    const self = this;
+    return self._getSetAfterFilter(filterSet, (x) => x.getYear());
   }
 
   getEmissions(filterSet) {
@@ -115,7 +116,14 @@ class ReportDataWrapper {
     return self._innerData.map((x) => x.getTrialResults()).flat();
   }
 
-  _getAggregatedAfterFilter(filterSet, getter) {
+  _getSetAfterFilter(filterSet, getter) {
+    const self = this;
+    const afterFilter = self._applyFilterSet(filterSet);
+    const values = afterFilter.map(getter);
+    return new Set(values);
+  }
+
+  _getAggregatedAfterFilter(filterSet) {
     const self = this;
     const afterFilter = self._applyFilterSet(filterSet);
     const preAggregated = afterFilter.map((x) => new AggregatedResult(

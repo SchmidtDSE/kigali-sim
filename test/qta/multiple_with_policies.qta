@@ -1,0 +1,53 @@
+start default
+
+  define application "test"
+
+    uses substance "subA"
+      initial charge with 1 kg / unit for manufacture
+      set manufacture to 100 mt during year 1
+      emit 5 tCO2e / mt
+    end substance
+
+    uses substance "subB"
+      initial charge with 1 kg / unit for manufacture
+      set manufacture to 100 mt during year 1
+      emit 10 tCO2e / mt
+    end substance
+
+  end application
+
+end default
+
+
+start policy "policyA"
+
+  modify application "test"
+    
+    modify substance "subA"
+      cap manufacture to 50%
+    end substance
+
+  end application
+
+end policy
+
+
+start policy "policyB"
+
+  modify application "test"
+    
+    modify substance "subB"
+      cap manufacture to 50%
+    end substance
+
+  end application
+
+end policy
+
+
+start simulations
+
+  simulate "bau" from years 1 to 2
+  simulate "sim" using "policyA" then "policyB" from years 1 to 2
+
+end simulations
