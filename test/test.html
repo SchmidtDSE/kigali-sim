@@ -26,7 +26,8 @@
                 "test_compiler": "./test_compiler.js?v=EPOCH",
                 "test_engine_number": "./test_engine_number.js?v=EPOCH",
                 "test_engine_state": "./test_engine_state.js?v=EPOCH",
-                "test_engine": "./test_engine.js?v=EPOCH"
+                "test_engine": "./test_engine.js?v=EPOCH",
+                "test_report_data": "./test_report_data.js?v=EPOCH"
             }
         }
     </script>
@@ -40,10 +41,12 @@
         import { buildEngineNumberTests } from "test_engine_number";
         import { buildEngineStateTests } from "test_engine_state";
         import { buildEngineTests } from "test_engine";
+        import { buildReportDataTests } from "test_report_data";
 
         buildCompilerTests();
         buildEngineNumberTests();
         buildEngineStateTests();
         buildEngineTests();
+        buildReportDataTests();
     </script>
 </body>
