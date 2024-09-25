@@ -141,7 +141,9 @@ function buildReportDataTests() {
       "/test/qta/multiple_with_policies.qta", [
         (result, assert) => {
           const filterSet = new FilterSet(1, "bau", null, null);
-          
+          const totalEmissions = result.getEmissions(filterSet);
+          assert.ok(Math.abs(totalEmissions.getValue() - 1500) < 0.0001);
+          assert.ok(totalEmissions.getUnits() === "tCO2e");
         },
       ],
     );
@@ -151,7 +153,9 @@ function buildReportDataTests() {
       "/test/qta/multiple_with_policies.qta", [
         (result, assert) => {
           const filterSet = new FilterSet(1, "bau", null, null);
-          
+          const totalSales = result.getSales(filterSet);
+          assert.ok(Math.abs(totalSales.getValue() - 200000) < 0.0001);
+          assert.ok(totalSales.getUnits() === "kg");
         },
       ],
     );
@@ -161,14 +165,12 @@ function buildReportDataTests() {
       "/test/qta/multiple_with_policies.qta", [
         (result, assert) => {
           const filterSet = new FilterSet(1, "bau", null, null);
-          
+          const totalPopulation = result.getPopulation(filterSet);
+          assert.ok(Math.abs(totalPopulation.getValue() - 200000) < 0.0001);
+          assert.ok(totalPopulation.getUnits() === "units");
         },
       ],
     );
-
-    
-    getSales
-    getPopulation
 
   });
 
