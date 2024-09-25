@@ -47,6 +47,129 @@ function buildReportDataTests() {
       ],
     );
 
+    buildTest(
+      "gets the scenarios",
+      "/test/qta/multiple_with_policies.qta", [
+        (result, assert) => {
+          const years = result.getScenarios();
+          assert.ok(years.size == 2);
+          assert.ok(years.has("bau"));
+          assert.ok(years.has("sim"));
+        },
+      ],
+    );
+
+    buildTest(
+      "gets all the years",
+      "/test/qta/multiple_with_policies.qta", [
+        (result, assert) => {
+          const filterSet = new FilterSet(null, null, null, null);
+          const years = result.getYears(filterSet);
+          assert.ok(years.size == 3);
+          assert.ok(years.has(1));
+          assert.ok(years.has(2));
+          assert.ok(years.has(3));
+        },
+      ],
+    );
+
+    buildTest(
+      "gets years matching filter",
+      "/test/qta/multiple_with_policies.qta", [
+        (result, assert) => {
+          const filterSet = new FilterSet(null, "sim", null, null);
+          const years = result.getYears(filterSet);
+          assert.ok(years.size == 2);
+          assert.ok(years.has(1));
+          assert.ok(years.has(2));
+        },
+      ],
+    );
+
+    buildTest(
+      "gets all applications",
+      "/test/qta/multiple_with_policies.qta", [
+        (result, assert) => {
+          const filterSet = new FilterSet(null, null, null, null);
+          const years = result.getApplications(filterSet);
+          assert.ok(years.size == 2);
+          assert.ok(years.has("appA"));
+          assert.ok(years.has("appB"));
+        },
+      ],
+    );
+
+    buildTest(
+      "gets applications with filter",
+      "/test/qta/multiple_with_policies.qta", [
+        (result, assert) => {
+          const filterSet = new FilterSet(null, null, null, "subA");
+          const years = result.getApplications(filterSet);
+          assert.ok(years.size == 1);
+          assert.ok(years.has("appA"));
+        },
+      ],
+    );
+
+    buildTest(
+      "gets all substances",
+      "/test/qta/multiple_with_policies.qta", [
+        (result, assert) => {
+          const filterSet = new FilterSet(null, null, null, null);
+          const years = result.getSubstances(filterSet);
+          assert.ok(years.size == 2);
+          assert.ok(years.has("subA"));
+          assert.ok(years.has("subB"));
+        },
+      ],
+    );
+
+    buildTest(
+      "gets substances matching filter",
+      "/test/qta/multiple_with_policies.qta", [
+        (result, assert) => {
+          const filterSet = new FilterSet(null, null, "appA", null);
+          const years = result.getSubstances(filterSet);
+          assert.ok(years.size == 1);
+          assert.ok(years.has("subA"));
+        },
+      ],
+    );
+
+    buildTest(
+      "gets emissions",
+      "/test/qta/multiple_with_policies.qta", [
+        (result, assert) => {
+          const filterSet = new FilterSet(1, "bau", null, null);
+          
+        },
+      ],
+    );
+
+    buildTest(
+      "gets sales",
+      "/test/qta/multiple_with_policies.qta", [
+        (result, assert) => {
+          const filterSet = new FilterSet(1, "bau", null, null);
+          
+        },
+      ],
+    );
+
+    buildTest(
+      "gets population",
+      "/test/qta/multiple_with_policies.qta", [
+        (result, assert) => {
+          const filterSet = new FilterSet(1, "bau", null, null);
+          
+        },
+      ],
+    );
+
+    
+    getSales
+    getPopulation
+
   });
 
 }

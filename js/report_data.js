@@ -72,7 +72,7 @@ class ReportDataWrapper {
 
   getScenarios() {
     const self = this;
-    return self._innerData.map((x) => x.getName());
+    return new Set(self._innerData.map((x) => x.getName()));
   }
 
   getApplications(filterSet) {
@@ -159,7 +159,7 @@ class ReportDataWrapper {
     const scenarios = step(allRecords, scenario, (x) => x.getName());
 
     const trials = scenarios.map((x) => x.getTrialResults());
-    const trialsFlat = trials.flat();
+    const trialsFlat = trials.flat(3);
 
     const year = filterSet.getYear();
     const withYear = step(trialsFlat, year, (x) => x.getYear());
