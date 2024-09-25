@@ -1,8 +1,7 @@
-import { EngineNumber } from "engine_number";
+import {EngineNumber} from "engine_number";
 
 
 class AggregatedResult {
-
   constructor(manufactureValue, importValue, emissionsValue, populationValue) {
     const self = this;
     self._manufactureValue = manufactureValue;
@@ -62,12 +61,10 @@ class AggregatedResult {
     }
     return new EngineNumber(a.getValue() + b.getValue(), a.getUnits());
   }
-
 }
 
 
 class ReportDataWrapper {
-
   constructor(innerData) {
     const self = this;
     self._innerData = innerData;
@@ -130,13 +127,13 @@ class ReportDataWrapper {
       x.getManufacture(),
       x.getImport(),
       x.getEmissions(),
-      x.getPopulation()
+      x.getPopulation(),
     ));
-    
+
     if (preAggregated.length == 0) {
       return null;
     }
-    
+
     const aggregated = preAggregated.reduce((a, b) => a.combine(b));
 
     return aggregated;
@@ -155,32 +152,30 @@ class ReportDataWrapper {
         return candidateVal === filterVal;
       });
     };
-    
+
     const allRecords = self._innerData;
-    
+
     const scenario = filterSet.getScenario();
     const scenarios = step(allRecords, scenario, (x) => x.getName());
-    
+
     const trials = scenarios.map((x) => x.getTrialResults());
     const trialsFlat = trials.flat();
 
     const year = filterSet.getYear();
     const withYear = step(trialsFlat, year, (x) => x.getYear());
-    
+
     const app = filterSet.getApplication();
     const withApp = step(withYear, app, (x) => x.getApplication());
 
     const sub = filterSet.getSubstance();
     const withSub = step(withApp, sub, (x) => x.getSubstance());
-    
+
     return withSub;
   }
-
 }
 
 
 class FilterSet {
-
   constructor(year, scenario, application, substance) {
     const self = this;
     self._year = year;
@@ -208,8 +203,7 @@ class FilterSet {
     const self = this;
     return self._substance;
   }
-
 }
 
 
-export { ReportDataWrapper, FilterSet };
+export {ReportDataWrapper, FilterSet};
