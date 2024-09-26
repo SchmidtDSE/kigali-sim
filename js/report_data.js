@@ -191,9 +191,33 @@ class FilterSet {
     return self._year;
   }
 
+  getWithYear(newYear) {
+    const self = this;
+    return new FilterSet(
+      newYear,
+      self._scenario,
+      self._application,
+      self._substance,
+      self._metric,
+      self._dimension,
+    );
+  }
+
   getScenario() {
     const self = this;
     return self._scenario;
+  }
+
+  getWithScenario(newScenario) {
+    const self = this;
+    return new FilterSet(
+      self._year,
+      newScenario,
+      self._application,
+      self._substance,
+      self._metric,
+      self._dimension,
+    );
   }
 
   getApplication() {
@@ -201,9 +225,50 @@ class FilterSet {
     return self._application;
   }
 
+  getWithApplication(newApplication) {
+    const self = this;
+    return new FilterSet(
+      self._year,
+      self._scenario,
+      newApplication,
+      self._substance,
+      self._metric,
+      self._dimension,
+    );
+  }
+
   getSubstance() {
     const self = this;
     return self._substance;
+  }
+
+  getWithSubstance(newSubstance) {
+    const self = this;
+    return new FilterSet(
+      self._year,
+      self._scenario,
+      self._application,
+      newSubstance,
+      self._metric,
+      self._dimension,
+    );
+  }
+
+  getMetric() {
+    const self = this;
+    return self._metric;
+  }
+
+  getWithMetric(newMetric) {
+    const self = this;
+    return new FilterSet(
+      self._year,
+      self._scenario,
+      self._application,
+      self._substance,
+      newMetric,
+      self._dimension,
+    );
   }
 
   getDimension() {
@@ -211,10 +276,18 @@ class FilterSet {
     return self._dimension;
   }
 
-  getMetric() {
+  getWithDimension(newDimension) {
     const self = this;
-    return self._metric;
+    return new FilterSet(
+      self._year,
+      self._scenario,
+      self._application,
+      self._substance,
+      self._metric,
+      newDimension,
+    );
   }
+  
 }
 
 
