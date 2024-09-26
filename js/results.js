@@ -22,15 +22,26 @@ class ScorecardPresenter {
     const salesMt = Math.round(salesValue.getValue() / 1000);
     const kiloEquipment = Math.round(equipmentValue.getValue() / 1000) + 'k';
 
-    self._updateCard(emissionsScorecard, emissionRounded, currentYear);
-    self._updateCard(salesScorecard, salesMt, currentYear);
-    self._updateCard(equipmentScorecard, kiloEquipment, currentYear);
+    const metricSelected = filterSet.getMetric();
+    const emissionsSelected = metricSelected === "emissions";
+    const salesSelected = metricSelected === "sales";
+    const equipmentSelected = metricSelected === "population";
+
+    self._updateCard(emissionsScorecard, emissionRounded, currentYear, emissionsSelected);
+    self._updateCard(salesScorecard, salesMt, currentYear, salesSelected);
+    self._updateCard(equipmentScorecard, kiloEquipment, currentYear, equipmentSelected);
   }
 
-  _updateCard(scorecard, value, currentYear) {
+  _updateCard(scorecard, value, currentYear, selected) {
     const self = this;
     self._setText(scorecard.querySelector(".value"), value);
     self._setText(scorecard.querySelector(".current-year"), currentYear);
+    
+    if (selected) {
+      scorecard.classList.remove("inactive");
+    } else {
+      scorecard.classList.add("inactive");
+    }
   }
 
   _setText(selection, value) {
@@ -43,12 +54,35 @@ class ScorecardPresenter {
 }
 
 
+class DimensionCardPresenter {
+
+  constructor(targetId) {
+    const self = this;
+    self._root = document.getElementById(targetId);
+  }
+
+  showResults(results, currentYear, filterSet) {
+    const self = this;
+    
+    const metricSelected = filterSet.getMetric();
+    const metricUnits = {
+      "emissions": "tCO2e / yr",
+      "sales": "mt / yr",
+      "population": "units"
+    }[metricSelected];
+    self._root.querySelector(".units-tick").innerHTML = metricUnits;
+  }
+
+}
+
+
 class ResultsPresenter {
   constructor(targetId) {
     const self = this;
     self._root = document.getElementById(targetId);
     self._year = null;
     self._scorecardPresenter = new ScorecardPresenter("scorecards");
+    self._dimensionPresenter = new DimensionCardPresenter("dimensions");
     self.hide();
   }
 
@@ -63,11 +97,12 @@ class ResultsPresenter {
     const filterSet = self._buildFilterSet();
     self._year = Math.max(...results.getYears(filterSet));
     self._scorecardPresenter.showResults(results, self._year, filterSet);
+    self._dimensionPresenter.showResults(results, self._year, filterSet);
   }
 
   _buildFilterSet() {
     const self = this;
-    return new FilterSet(null, null, null, null);
+    return new FilterSet(null, null, null, null, "emissions", "simulations");
   }
 }
 

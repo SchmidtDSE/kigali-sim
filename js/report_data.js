@@ -176,12 +176,14 @@ class ReportDataWrapper {
 
 
 class FilterSet {
-  constructor(year, scenario, application, substance) {
+  constructor(year, scenario, application, substance, metric, dimension) {
     const self = this;
     self._year = year;
     self._scenario = scenario;
     self._application = application;
     self._substance = substance;
+    self._metric = metric;
+    self._dimension = dimension;
   }
 
   getYear() {
@@ -202,6 +204,16 @@ class FilterSet {
   getSubstance() {
     const self = this;
     return self._substance;
+  }
+
+  getDimension() {
+    const self = this;
+    return self._dimension;
+  }
+
+  getMetric() {
+    const self = this;
+    return self._metric;
   }
 }
 

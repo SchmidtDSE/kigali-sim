@@ -73,24 +73,27 @@ main {
 }
 
 #results .dimensions .dimension.inactive {
-  background-color: #F0F0F0;
+  background-color: #F5F5F5;
   color: #333;
 }
 
 #results .dimensions .dimension .axis {
   border-top: 1px dotted #C0C0C0;
+  font-size: 12px;
+  display: grid;
+  grid-template-columns: 30% 40% 30%;
 }
 
 #results .dimensions .dimension .axis .left-tick {
-  float: left;
+  text-align: left;
 }
 
 #results .dimensions .dimension .axis .units-tick {
-  float: center;
+  text-align: center;
 }
 
 #results .dimensions .dimension .axis .right-tick {
-  float: right;
+  text-align: right;
 }
 
 #results .dimensions .dimension .list {
@@ -118,12 +121,16 @@ main {
 }
 
 #results .scorecards .scorecard.inactive {
-  background-color: #F0F0F0;
+  background-color: #F5F5F5;
   color: #333;
 }
 
 #results .scorecards .scorecard .label {
   border-bottom: 1px dotted #C0C0C0;
+}
+
+#results .scorecards .scorecard .units {
+  font-size: 12px;
 }
 
 #results .scorecards .scorecard .value {
