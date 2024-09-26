@@ -70,7 +70,8 @@ class DimensionCardPresenter {
       "sales": "mt / yr",
       "population": "units"
     }[metricSelected];
-    self._root.querySelector(".units-tick").innerHTML = metricUnits;
+    const allTickUnits = Array.of(...self._root.querySelectorAll(".units-tick"));
+    allTickUnits.forEach((x) => x.innerHTML = metricUnits);
   }
 
 }
