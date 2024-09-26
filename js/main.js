@@ -1,5 +1,6 @@
 import {CodeEditorPresenter} from "code_editor";
 import {Compiler} from "compiler";
+import {ReportDataWrapper} from "report_data";
 import {ResultsPresenter} from "results";
 
 const WHITESPACE_REGEX = new RegExp("^\\s*$");
@@ -110,7 +111,8 @@ class MainPresenter {
 
   _onResult(results) {
     const self = this;
-    self._resultsPresenter.showResults(results);
+    const resultsWrapped = new ReportDataWrapper(results);
+    self._resultsPresenter.showResults(resultsWrapped);
   }
 }
 

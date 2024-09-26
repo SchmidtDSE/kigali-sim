@@ -33,30 +33,75 @@
     <section id="results">
       <h2>Results</h2>
 
-      <div class="scorecards">
+      <div class="scorecards" id="scorecards">
         <div class="scorecard" id="emissions-scorecard">
           <div class="label">
             <label for="emissions-radio"><input id="emissions-radio" type="radio" name="metric" value="emissions" checked="checked"> Emissions</label>
           </div>
+          <div class="value"></div>
           <div class="units">tCO2e / yr in year <span class="current-year"></span></div>
         </div>
 
         <div></div>
         
-        <div class="scorecard" id="sales-scorecard">
+        <div class="scorecard inactive" id="sales-scorecard">
           <div class="label">
             <label for="sales-radio"><input id="sales-radio" type="radio" name="metric" value="sales"> Sales</label>
           </div>
-          <div class="units">kg / yr in year <span class="current-year"></span></div>
+          <div class="value"></div>
+          <div class="units">mt / yr in year <span class="current-year"></span></div>
         </div>
 
         <div></div>
 
-        <div class="scorecard" id="equipment-scorecard">
+        <div class="scorecard inactive" id="equipment-scorecard">
           <div class="label">
             <label for="population-radio"><input id="population-radio" type="radio" name="metric" value="population"> Equipment</label>
           </div>
+          <div class="value"></div>
           <div class="units">units in year <span class="current-year"></span></div>
+        </div>
+      </div>
+
+      <div class="dimensions">
+        <div class="dimension" id="simulations-dimension">
+          <div class="title">
+            <label for="simulations-radio"><input id="simulations-radio" type="radio" name="dimension" value="simulations" checked="checked"> Simulations</label>
+          </div>
+          <div class="list"></div>
+          <div class="axis">
+            <div class="left-tick">0</div>
+            <div class="units-tick"></div>
+            <div class="right-tick"></div>
+          </div>
+        </div>
+
+        <div></div>
+
+        <div class="dimension inactive" id="applications-dimension">
+          <div class="title">
+            <label for="applications-radio"><input id="applications-radio" type="radio" name="dimension" value="applications"> Applications</label>
+          </div>
+          <div class="list"></div>
+          <div class="axis">
+            <div class="left-tick">0</div>
+            <div class="units-tick"></div>
+            <div class="right-tick"></div>
+          </div>
+        </div>
+
+        <div></div>
+
+        <div class="dimension inactive" id="substances-dimension">
+          <div class="title">
+            <label for="substances-radio"><input id="substances-radio" type="radio" name="dimension" value="substances"> Substances</label>
+          </div>
+          <div class="list"></div>
+          <div class="axis">
+            <div class="left-tick">0</div>
+            <div class="units-tick"></div>
+            <div class="right-tick"></div>
+          </div>
         </div>
       </div>
     </section>
@@ -77,6 +122,7 @@
         "engine_state": "./js/engine_state.js?v=EPOCH",
         "engine": "./js/engine.js?v=EPOCH",
         "main": "./js/main.js?v=EPOCH",
+        "report_data": "./js/report_data.js?v=EPOCH",
         "results": "./js/results.js?v=EPOCH"
       }
     }

@@ -51,7 +51,7 @@ main {
 }
 
 #code-editor .inner {
-  min-height: 500px;
+  min-height: 600px;
   border: 1px solid #C0C0C0;
   border-radius: 2px;
 }
@@ -60,9 +60,54 @@ main {
   display: none;
 }
 
+#results .dimensions {
+  display: grid;
+  grid-template-columns: 30% 2.5% 30% 2.5% 30%;
+  margin-top: 10px;
+}
+
+#results .dimensions .dimension {
+  border: 1px solid #C0C0C0;
+  border-radius: 2px;
+  padding: 3px;
+}
+
+#results .dimensions .dimension.inactive {
+  background-color: #F0F0F0;
+  color: #333;
+}
+
+#results .dimensions .dimension .axis {
+  border-top: 1px dotted #C0C0C0;
+}
+
+#results .dimensions .dimension .axis .left-tick {
+  float: left;
+}
+
+#results .dimensions .dimension .axis .units-tick {
+  float: center;
+}
+
+#results .dimensions .dimension .axis .right-tick {
+  float: right;
+}
+
+#results .dimensions .dimension .list {
+  min-height: 20px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+#results .dimensions .dimension .title {
+  text-align: center;
+  border-bottom: 1px dotted #C0C0C0;
+}
+
 #results .scorecards {
   display: grid;
   grid-template-columns: 30% 2.5% 30% 2.5% 30%;
+  margin-bottom: 10px;
 }
 
 #results .scorecards .scorecard {
@@ -72,12 +117,19 @@ main {
   text-align: center;
 }
 
+#results .scorecards .scorecard.inactive {
+  background-color: #F0F0F0;
+  color: #333;
+}
+
 #results .scorecards .scorecard .label {
   border-bottom: 1px dotted #C0C0C0;
 }
 
 #results .scorecards .scorecard .value {
   font-size: 20px;
+  padding-top: 5px;
+  padding-bottom: 5px;
 }
 
 @media (max-width: 999px) {
