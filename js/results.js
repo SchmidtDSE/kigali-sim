@@ -43,7 +43,7 @@ class ScorecardPresenter {
     const salesValue = results.getSales(filterSet);
     const equipmentValue = results.getPopulation(filterSet);
 
-    const emissionRounded = Math.round(emissionsValue.getValue());
+    const emissionRounded = Math.round(emissionsValue.getValue()) / 1000000;
     const salesMt = Math.round(salesValue.getValue() / 1000);
     const millionEqipment = Math.round(equipmentValue.getValue() / 1000000) + "M";
 

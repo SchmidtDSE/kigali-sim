@@ -94,9 +94,13 @@ class ReportDataWrapper {
     return value;
   }
 
-  getScenarios() {
+  getScenarios(filterSet) {
     const self = this;
-    return new Set(self._innerData.map((x) => x.getName()));
+    if (filterSet === undefined || filterSet.getScenario() === null) {
+      return new Set(self._innerData.map((x) => x.getName()));
+    } else {
+      return new Set([filterSet.getScenario()]);
+    }
   }
 
   getApplications(filterSet) {
