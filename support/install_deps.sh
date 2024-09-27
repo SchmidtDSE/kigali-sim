@@ -17,3 +17,5 @@ fi
 
 [ ! -e third_party/ace.min.js ] && wget https://cdnjs.cloudflare.com/ajax/libs/ace/1.32.3/ace.min.js -O third_party/ace.min.js
 [ ! -e third_party/theme-textmate.js ] && wget https://cdnjs.cloudflare.com/ajax/libs/ace/1.32.3/theme-textmate.min.js -O third_party/theme-textmate.js
+
+[ ! -e third_party/chart.min.js ] && wget https://cdn.jsdelivr.net/npm/chart.js -O third_party/chart.min.js

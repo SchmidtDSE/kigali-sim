@@ -51,13 +51,18 @@ main {
 }
 
 #code-editor .inner {
-  min-height: 600px;
+  min-height: 650px;
   border: 1px solid #C0C0C0;
   border-radius: 2px;
 }
 
 #results {
   display: none;
+}
+
+#results .center-chart {
+  width: 100%;
+  min-height: 100px;
 }
 
 #results .dimensions {
@@ -112,7 +117,7 @@ main {
 
 #results .scorecards {
   display: grid;
-  grid-template-columns: 30% 2.5% 30% 2.5% 30%;
+  grid-template-columns: 32% 2% 32% 2% 32%;
   margin-bottom: 10px;
 }
 
@@ -161,7 +166,7 @@ main {
 
   #results .dimensions {
     display: grid;
-    grid-template-columns: 30% 2.5% 30% 2.5% 30%;
+    grid-template-columns: 32% 2% 32% 2% 32%;
     margin-top: 10px;
   }
 

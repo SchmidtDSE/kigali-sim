@@ -304,6 +304,68 @@ class DimensionCardPresenter {
 }
 
 
+class CenterChartPresenter {
+  constructor(targetId) {
+    const self = this;
+    self._targetId = targetId;
+    self._chart = null;
+  }
+
+  showResults(results, filterSet) {
+    const self = this;
+
+    if (self._chart !== null) {
+      self._chart.destroy();
+    }
+
+    const years = Array.of(...results.getYears(filterSet.getWithYear(null)));
+    years.sort();
+    
+    const divider = {
+      "emissions": 1,
+      "sales": 1000,
+      "population": 1000,
+    }[filterSet.getMetric()];
+    
+    const dimensionValues = Array.of(...results.getDimensionValues(filterSet));
+    dimensionValues.sort();
+    
+    const getForDimValue = (dimValue) => {
+      const valsWithUnits = years.map((year) => {
+        const subFilterSet = filterSet.getWithYear(year).getWithDimensionValue(dimValue);
+        return results.getMetric(subFilterSet);
+      });
+      const vals = valsWithUnits.map((x) => x.getValue());
+      const valsScaled = vals.map((x) => x / divider);
+      return {"name": dimValue, "vals": valsScaled};
+    };
+    const dimensionSeries = dimensionValues.map(getForDimValue);
+
+    const chartJsDatasets = dimensionSeries.map((x, i) => {
+      return {
+        "label": x["name"],
+        "data": x["vals"],
+        "fill": false,
+        "borderColor": getColor(i)
+      };
+    });
+    
+    const chartJsData = {
+      "labels": years,
+      "datasets": chartJsDatasets
+    };
+
+    const chartJsConfig = {
+      "type": "line",
+      "data": chartJsData
+    };
+
+    const container = document.getElementById(self._targetId);
+    self._chart = new Chart(container, chartJsConfig);
+  }
+}
+
+
 class ResultsPresenter {
   constructor(targetId) {
     const self = this;
@@ -314,6 +376,7 @@ class ResultsPresenter {
     const onUpdateFilterSet = (x) => self._onUpdateFilterSet(x);
     self._scorecardPresenter = new ScorecardPresenter("scorecards", onUpdateFilterSet);
     self._dimensionPresenter = new DimensionCardPresenter("dimensions", onUpdateFilterSet);
+    self._centerChartPresenter = new CenterChartPresenter("center-chart");
 
     self.hide();
   }
@@ -344,6 +407,7 @@ class ResultsPresenter {
 
     self._scorecardPresenter.showResults(self._results, self._filterSet);
     self._dimensionPresenter.showResults(self._results, self._filterSet);
+    self._centerChartPresenter.showResults(self._results, self._filterSet);
   }
 }
 

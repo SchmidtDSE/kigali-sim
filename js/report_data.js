@@ -82,6 +82,18 @@ class ReportDataWrapper {
     return value;
   }
 
+  getDimensionValues(filterSet) {
+    const self = this;
+    const dimension = filterSet.getDimension();
+    const strategy = {
+      "simulations": () => self.getScenarios(filterSet),
+      "applications": () => self.getApplications(filterSet),
+      "substances": () => self.getSubstances(filterSet),
+    }[dimension];
+    const value = strategy();
+    return value;
+  }
+
   getScenarios() {
     const self = this;
     return new Set(self._innerData.map((x) => x.getName()));
@@ -196,6 +208,16 @@ class FilterSet {
     self._substance = substance;
     self._metric = metric;
     self._dimension = dimension;
+  }
+
+  getWithDimensionValue(value) {
+    const self = this;
+    const strategy = {
+      "simulations": (x) => self.getWithScenario(x),
+      "applications": (x) => self.getWithApplication(x),
+      "substances": (x) => self.getWithSubstance(x),
+    }[self.getDimension()];
+    return strategy(value);
   }
 
   getYear() {
