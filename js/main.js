@@ -92,15 +92,21 @@ class MainPresenter {
       const program = result.getProgram();
       if (result.getErrors().length > 0) {
         alert(result.getErrors()[0]);
+        self._buttonPanelPresenter.enable();
         return;
       }
 
       if (result.getErrors().length > 0) {
         alert(result.getErrors()[0]);
+        self._buttonPanelPresenter.enable();
         return;
       } else if (program !== null) {
-        const programResult = program();
-        self._onResult(programResult);
+        try {
+          const programResult = program();
+          self._onResult(programResult);
+        } catch (e) {
+          alert("" + e);
+        }
       }
 
       self._buttonPanelPresenter.enable();

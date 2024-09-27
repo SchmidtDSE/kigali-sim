@@ -393,7 +393,7 @@ end policy
 
 start policy "res AC reuse"
 
-  modify application "com refrig"
+  modify application "res AC"
 
     modify substance "R-410A"
       recover 5 % with 100 % reuse during year 3
@@ -414,7 +414,7 @@ end policy
 
 start policy "res AC low-GWP"
 
-  modify application "com refrig"
+  modify application "res AC"
 
     modify substance "R-410A"
       define level as limit (yearAbsolute - 2) * 20 to [0, 100]
@@ -449,7 +449,7 @@ end policy
 
 start policy "mobile AC reuse"
 
-  modify application "com refrig"
+  modify application "mobile AC"
 
     modify substance "HFC-134a"
       recover 5 % with 100 % reuse during year 3
@@ -470,7 +470,7 @@ end policy
 
 start policy "mobile AC low-GWP"
 
-  modify application "com refrig"
+  modify application "mobile AC"
 
     modify substance "HFC-134a"
       define level as limit (yearAbsolute - 2) * 20 to [0, 100]

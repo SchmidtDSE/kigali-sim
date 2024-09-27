@@ -380,7 +380,7 @@ class CompileVisitor extends toolkit.QubecTalkVisitor {
 
   visitSubstanceDef(ctx) {
     const self = this;
-    return self.buildDef(ctx, (engine, name) => engine.setSubstance(name));
+    return self.buildDef(ctx, (engine, name) => engine.setSubstance(name, false));
   }
 
   visitApplicationMod(ctx) {
@@ -390,7 +390,7 @@ class CompileVisitor extends toolkit.QubecTalkVisitor {
 
   visitSubstanceMod(ctx) {
     const self = this;
-    return self.buildDef(ctx, (engine, name) => engine.setSubstance(name));
+    return self.buildDef(ctx, (engine, name) => engine.setSubstance(name, true));
   }
 
   buildStreamMod(callback, ctx, durationFuture) {
