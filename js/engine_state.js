@@ -585,6 +585,10 @@ class StreamKeeper {
       self._getKey(application, substance, "priorEquipment"),
       makeZero("units"),
     );
+    self._streams.set(
+      self._getKey(application, substance, "retirement"),
+      makeZero("units"),
+    );
   }
 
   setStream(application, substance, name, value) {
@@ -678,7 +682,10 @@ class StreamKeeper {
       const keyPieces = key.split("\t");
       const application = keyPieces[0];
       const substance = keyPieces[1];
+
       const equipment = self.getStream(application, substance, "equipment");
+
+      self.setStream(application, substance, "retirement", new EngineNumber(0, "units"));
       self.setStream(application, substance, "priorEquipment", equipment);
 
       self._substances.get(key).resetInternals();

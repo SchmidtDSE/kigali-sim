@@ -1,0 +1,34 @@
+start default
+
+  define application "dometic refrigeration"
+
+    uses substance "HFC-134a"
+      emit 1430 tCO2e / mt
+
+      # Domestic production
+      initial charge with 0.12 kg / unit for manufacture
+      set manufacture to 350000 mt during year 1
+      change manufacture by +5 % / year during years 1 to 5
+      change manufacture by +3 % / year during years 6 to 9
+
+      # Trade
+      initial charge with 0.30 kg / unit for import
+      set import to 90000 mt during year 1
+      change import by +5 % / year during years 1 to 5
+      change import by +3 % / year during years 6 to 9
+
+      # Service
+      retire 6.7 % / year
+      recharge 10 % / year with 0.12 kg / unit
+    end substance
+
+  end application
+
+end default
+
+
+start simulations
+
+  simulate "business as usual" from years 1 to 29
+
+end simulations

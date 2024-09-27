@@ -370,10 +370,10 @@ class CenterChartPresenter {
         "scales": {
           "y": {
             "min": 0,
-            "title": {"text": metricUnits, "display": true}
+            "title": {"text": metricUnits, "display": true},
           },
           "x": {
-            "title": {"text": "Year", "display": true}
+            "title": {"text": "Year", "display": true},
           },
         },
         "plugins": {

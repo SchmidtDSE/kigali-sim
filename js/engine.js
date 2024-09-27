@@ -356,6 +356,7 @@ class Engine {
       equipmentToRetire.getUnits(),
     );
 
+    self.changeStream("retirement", equipmentToRetire);
     self.changeStream("equipment", retireAsDelta);
   }
 
@@ -701,7 +702,15 @@ class Engine {
     // Determine needs for new equipment deployment.
     stateGetter.setAmortizedUnitVolume(initialCharge);
     const populationChangeRaw = stateGetter.getPopulationChange();
-    const volumeForNew = unitConverter.convert(populationChangeRaw, "kg");
+    const retirementRaw = self._streamKeeper.getStream(application, substance, "retirement");
+    const populationChange = unitConverter.convert(populationChangeRaw, "units");
+    const retirement = unitConverter.convert(retirementRaw, "units");
+    console.log(populationChange.getValue(), retirement.getValue());
+    const populationChangeOffset = new EngineNumber(
+      populationChange.getValue() + retirement.getValue(),
+      "units",
+    );
+    const volumeForNew = unitConverter.convert(populationChangeOffset, "kg");
     stateGetter.setAmortizedUnitVolume(null);
 
     // Determine sales prior to recycling
