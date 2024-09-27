@@ -341,13 +341,20 @@ class CenterChartPresenter {
     };
     const dimensionSeries = dimensionValues.map(getForDimValue);
 
-    const chartJsDatasets = dimensionSeries.map((x, i) => {
+    const unconstrainedDimValues = Array.of(...results.getDimensionValues(
+      filterSet.getWithDimensionValue(null)
+    ));
+    unconstrainedDimValues.sort();
+
+    const chartJsDatasets = dimensionSeries.map((x) => {
+      const index = unconstrainedDimValues.indexOf(x["name"]);
+      const color = getColor(index);
       return {
         "label": x["name"],
         "data": x["vals"],
         "fill": false,
-        "borderColor": getColor(i),
-        "backgroundColor": getColor(i),
+        "borderColor": color,
+        "backgroundColor": color,
       };
     });
 
