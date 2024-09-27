@@ -102,6 +102,11 @@ main {
   font-size: 12px;
 }
 
+#results .dimensions .dimension .list .list-line {
+  height: 1px;
+  margin-bottom: 5px;
+}
+
 #results .dimensions .dimension .title {
   text-align: center;
   border-bottom: 1px dotted #C0C0C0;

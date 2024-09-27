@@ -1,5 +1,26 @@
 import { FilterSet } from "report_data";
 
+const COLORS = [
+  "#a6cee3",
+  "#1f78b4",
+  "#b2df8a",
+  "#33a02c",
+  "#fb9a99",
+  "#e31a1c",
+  "#505050",
+  "#A0A0A0",
+];
+
+
+function getColor(i) {
+  if (i >= COLORS.length) {
+    return "#333";
+  } else {
+    return COLORS[i];
+  }
+}
+
+
 class ScorecardPresenter {
 
   constructor(targetId, onUpdateFilterSet) {
@@ -118,6 +139,15 @@ class DimensionCardPresenter {
     const applicationsSelected = dimensionSelected === "applications";
     const substancesSelected = dimensionSelected === "substances";
 
+    const conversionInfo = {
+      "emissions": {"divider": 1, "suffix": ""},
+      "sales": {"divider": 1000, "suffix": ""},
+      "population": {"divider": 1000, "suffix": "k"},
+    }[self._filterSet.getMetric()];
+    const divider = conversionInfo["divider"];
+    const suffix = conversionInfo["suffix"];
+    const interpret = (x) => x.getValue() / divider;
+
     self._updateCard(
       "sim",
       simulationsCard,
@@ -126,6 +156,8 @@ class DimensionCardPresenter {
       self._filterSet.getScenario(),
       (x) => self._filterSet.getWithScenario(x),
       true,
+      (value) => interpret(results.getMetric(self._filterSet.getWithScenario(value))),
+      suffix,
     );
     
     self._updateCard(
@@ -136,6 +168,8 @@ class DimensionCardPresenter {
       self._filterSet.getApplication(),
       (x) => self._filterSet.getWithApplication(x),
       true,
+      (value) => interpret(results.getMetric(self._filterSet.getWithApplication(value))),
+      suffix,
     );
     
     self._updateCard(
@@ -146,10 +180,13 @@ class DimensionCardPresenter {
       self._filterSet.getSubstance(),
       (x) => self._filterSet.getWithSubstance(x),
       true,
+      (value) => interpret(results.getMetric(self._filterSet.getWithSubstance(value))),
+      suffix,
     );
   }
 
-  _updateCard(label, card, identifiers, selected, subSelection, subFilterSetBuilder, addAll) {
+  _updateCard(label, card, identifiers, selected, subSelection, subFilterSetBuilder, addAll,
+    valueGetter, suffix) {
     const self = this;
     
     if (selected) {
@@ -161,11 +198,18 @@ class DimensionCardPresenter {
     const identifiersArray = Array.of(...identifiers);
     identifiersArray.sort();
 
+    const values = identifiersArray.map(valueGetter);
+    const maxValue = Math.max(...values);
+    d3.select(card.querySelector(".right-tick")).text(Math.round(maxValue) + suffix);
+
     if (addAll) {
       identifiersArray.unshift("All");
     }
 
-    const itemDivs = d3.select(card).select(".list").selectAll(".item")
+    const listSelection = d3.select(card).select(".list");
+    listSelection.html("");
+
+    const itemDivs = listSelection.selectAll(".item")
       .data(identifiersArray)
       .enter()
       .append("div")
@@ -187,6 +231,27 @@ class DimensionCardPresenter {
       const newFilterSet = subFilterSetBuilder(x === "All" ? null : x);
       self._onUpdateFilterSet(newFilterSet);
     });
+
+    const offset = addAll ? 1 : 0;
+    const lines = itemDivs.append("div")
+      .classed("list-line", true)
+      .style("width", "100%")
+      .style("height", (x, i) => x === "All" ? "0px" : "1px")
+      .style("background-color", (x, i) => selected ? getColor(i - offset) : "#C0C0C0");
+    
+    lines.append("div")
+      .classed("list-bar", true)
+      .style("height", (x, i) => x === "All" ? "0px" : "5px")
+      .style("background-color", (x, i) => selected ? getColor(i - offset) : "#C0C0C0")
+      .style("width", (x) => {
+        if (x === "All") {
+          return "0%";
+        } else {
+          const value = valueGetter(x);
+          const percent = value / maxValue;
+          return Math.round(percent * 100) + "%";
+        }
+      });
   }
 
   _registerEventListeners() {

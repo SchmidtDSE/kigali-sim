@@ -70,6 +70,18 @@ class ReportDataWrapper {
     self._innerData = innerData;
   }
 
+  getMetric(filterSet) {
+    const self = this;
+    const metric = filterSet.getMetric();
+    const strategy = {
+      "emissions": () => self.getEmissions(filterSet),
+      "sales": () => self.getSales(filterSet),
+      "population": () => self.getPopulation(filterSet),
+    }[metric];
+    const value = strategy();
+    return value;
+  }
+
   getScenarios() {
     const self = this;
     return new Set(self._innerData.map((x) => x.getName()));
