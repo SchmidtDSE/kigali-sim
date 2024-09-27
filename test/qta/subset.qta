@@ -16,6 +16,9 @@ start default
       set import to 90000 mt during year 1
       change import by +5 % / year during years 1 to 5
       change import by +3 % / year during years 6 to 9
+      
+      # Set prior population
+      set priorEquipment to (get equipment as units * 7) units
 
       # Service
       retire 6.7 % / year
@@ -29,6 +32,6 @@ end default
 
 start simulations
 
-  simulate "business as usual" from years 1 to 29
+  simulate "business as usual" from years 1 to 1
 
 end simulations
