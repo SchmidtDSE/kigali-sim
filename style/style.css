@@ -51,7 +51,8 @@ main {
 }
 
 #code-editor .inner {
-  min-height: 650px;
+  height: 650px;
+  overflow: auto;
   border: 1px solid #C0C0C0;
   border-radius: 2px;
 }

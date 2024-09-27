@@ -45,7 +45,7 @@ class ScorecardPresenter {
 
     const emissionRounded = Math.round(emissionsValue.getValue());
     const salesMt = Math.round(salesValue.getValue() / 1000);
-    const kiloEquipment = Math.round(equipmentValue.getValue() / 1000) + "k";
+    const millionEqipment = Math.round(equipmentValue.getValue() / 1000000) + "M";
 
     const metricSelected = filterSet.getMetric();
     const emissionsSelected = metricSelected === "emissions";
@@ -57,7 +57,7 @@ class ScorecardPresenter {
 
     self._updateCard(emissionsScorecard, emissionRounded, currentYear, emissionsSelected, hideVal);
     self._updateCard(salesScorecard, salesMt, currentYear, salesSelected, hideVal);
-    self._updateCard(equipmentScorecard, kiloEquipment, currentYear, equipmentSelected, hideVal);
+    self._updateCard(equipmentScorecard, millionEqipment, currentYear, equipmentSelected, hideVal);
   }
 
   _updateCard(scorecard, value, currentYear, selected, hideVal) {
@@ -127,7 +127,7 @@ class DimensionCardPresenter {
 
     const metricSelected = self._filterSet.getMetric();
     const metricUnits = {
-      "emissions": "tCO2e / yr",
+      "emissions": "MtCO2e / yr",
       "sales": "mt / yr",
       "population": "units",
     }[metricSelected];
@@ -155,9 +155,9 @@ class DimensionCardPresenter {
     const substancesSelected = dimensionSelected === "substances";
 
     const conversionInfo = {
-      "emissions": {"divider": 1, "suffix": ""},
+      "emissions": {"divider": 1000000, "suffix": "M"},
       "sales": {"divider": 1000, "suffix": ""},
-      "population": {"divider": 1000, "suffix": "k"},
+      "population": {"divider": 1000000, "suffix": "M"},
     }[self._filterSet.getMetric()];
     const divider = conversionInfo["divider"];
     const suffix = conversionInfo["suffix"];
@@ -319,17 +319,17 @@ class CenterChartPresenter {
     }
 
     const years = Array.of(...results.getYears(filterSet.getWithYear(null)));
-    years.sort();
-    
+    years.sort((a, b) => a - b);
+
     const divider = {
-      "emissions": 1,
+      "emissions": 1000000,
       "sales": 1000,
-      "population": 1000,
+      "population": 1000000,
     }[filterSet.getMetric()];
-    
+
     const dimensionValues = Array.of(...results.getDimensionValues(filterSet));
     dimensionValues.sort();
-    
+
     const getForDimValue = (dimValue) => {
       const valsWithUnits = years.map((year) => {
         const subFilterSet = filterSet.getWithYear(year).getWithDimensionValue(dimValue);
@@ -346,18 +346,47 @@ class CenterChartPresenter {
         "label": x["name"],
         "data": x["vals"],
         "fill": false,
-        "borderColor": getColor(i)
+        "borderColor": getColor(i),
+        "backgroundColor": getColor(i),
       };
     });
-    
+
     const chartJsData = {
       "labels": years,
-      "datasets": chartJsDatasets
+      "datasets": chartJsDatasets,
     };
+
+    const metricSelected = filterSet.getMetric();
+    const metricUnits = {
+      "emissions": "MtCO2e / yr",
+      "sales": "mt / yr",
+      "population": "units",
+    }[metricSelected];
 
     const chartJsConfig = {
       "type": "line",
-      "data": chartJsData
+      "data": chartJsData,
+      "options": {
+        "scales": {
+          "y": {
+            "min": 0,
+            "title": {"text": metricUnits, "display": true}
+          },
+          "x": {
+            "title": {"text": "Year", "display": true}
+          },
+        },
+        "plugins": {
+          "tooltip": {
+            "callbacks": {
+              "title": (x) => "Year " + x[0]["label"],
+            },
+          },
+          "legend": {
+            "display": false,
+          },
+        },
+      },
     };
 
     const container = document.getElementById(self._targetId);
