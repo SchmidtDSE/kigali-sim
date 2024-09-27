@@ -66,25 +66,29 @@
       <div id="center-chart-holder">
         <div id="top-chart-title">
           Showing
-          <select class="metric-select" aria-label="Metric selection dropdown menu">
-            <option value="emissions">Emissions</option>
-            <option value="sales">Sales</option>
-            <option value="population">Equipment (Population)</option>
-          </select>
+          <span class="sel">
+            <select class="metric-select" aria-label="Metric selection dropdown menu">
+              <option value="emissions">Emissions</option>
+              <option value="sales">Sales</option>
+              <option value="population">Equipment (Population)</option>
+            </select>
+          </span>
           summed by
-          <select class="dimension-select" aria-label="Dimension selection dropdown menu">
-            <option value="simulations">Simulation Scenario</option>
-            <option value="applications">Applications</option>
-            <option value="substances">Substances</option>
-          </select>
+          <span class="sel">
+            <select class="dimension-select" aria-label="Dimension selection dropdown menu">
+              <option value="simulations">Simulation Scenario</option>
+              <option value="applications">Applications</option>
+              <option value="substances">Substances</option>
+            </select>
+          </span>
           .
         </div>
         <canvas class="center-chart" id="center-chart" aria-describedby="top-chart-title"></canvas>
         <div id="bottom-chart-title">
-          Filtering for
-          <select class="scenario-select"></select>,
-          <select class="application-select"></select>,
-          and <select class="substance-select"></select>
+          Filter for
+          <span class="sel"><select class="scenario-select"></select></span>
+          <span class="sel"><select class="application-select"></select></span>
+          <span class="sel"><select class="substance-select"></select></span>
           .
         </div>
       </div>

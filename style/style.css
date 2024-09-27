@@ -158,6 +158,49 @@ main {
   padding-bottom: 5px;
 }
 
+/* Thanks https://codepen.io/code-boxx/pen/RwxbpOz */
+
+/* (A) BASICS - HIDE DEFAULT + SHOW CUSTOM ARROW */
+.sel { width: 130px; }
+.sel select { appearance: none; }
+.sel::after { content: ">"; }
+
+/* (B) DIMENSIONS */
+/* (B1) WRAPPER - OPTIONAL */
+
+/* (B2) "EXPAND" SELECT BOX */
+.sel select {
+  padding: 5px;
+  color: #333;
+  border: 1px solid #cfcfcf;
+  padding-right: 25px;
+  background-color: white;
+  width: 130px;
+}
+
+/* (C) POSITION CUSTOM ARROW */
+/* (C1) REQUIRED FOR ABSOLUTE POSITION BELOW */
+.sel { position: relative; }
+
+/* (C2) DEFAULT - ARROW ON RIGHT SIDE */
+.sel::after {
+  position: absolute;
+  top: 48%; right: 10px;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+/* (D) COSMETICS */
+/* (D1) CUSTOM ARROW IS ESSENTIALLY TEXT! */
+.sel::after { font-size: 13px; color: #aaa; }
+
+/* (D2) ROTATE ARROW ON HOVER */
+.sel::after { transition: all 0.3s; }
+.sel:hover::after {
+  transform: translateY(-50%) rotate(90deg);
+  color: #ff1212;
+}
+
 @media (max-width: 999px) {
   #results .dimensions .dimension {
     margin-bottom: 10px;
