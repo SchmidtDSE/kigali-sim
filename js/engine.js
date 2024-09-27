@@ -583,7 +583,6 @@ class Engine {
     const recycledNonDisplaced = recycledKg * displacementRateRatio;
 
     const availableForNewUnitsKg = salesKg + recycledNonDisplaced - rechargeKg;
-    console.log(salesKg, recycledNonDisplaced, rechargeKg);
 
     // Convert to unit delta
     const initialChargeRaw = self.getInitialCharge("sales");
@@ -651,7 +650,8 @@ class Engine {
     }
 
     // Get recharge population
-    stateGetter.setPopulation(self.getStream("priorEquipment", scopeEffective));
+    const basePopulation = self.getStream("priorEquipment", scopeEffective);
+    stateGetter.setPopulation(basePopulation);
     const rechargePopRaw = self._streamKeeper.getRechargePopulation(
       application,
       substance,

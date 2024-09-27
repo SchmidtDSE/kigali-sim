@@ -61,7 +61,7 @@ start default
 
   end application
 
-  define application "comm refrig"
+  define application "com refrig"
 
     uses substance "HFC-134a"
       emit 1430 tCO2e / mt
@@ -134,7 +134,7 @@ start default
 
   end application
 
-  define application "residential AC"
+  define application "res AC"
 
     uses substance "R-410A"
       emit 2082 tCO2e / mt
@@ -311,9 +311,9 @@ start policy "dom refrig low-GWP"
 end policy
 
 
-start policy "comm refrig prohibition"
+start policy "com refrig prohibition"
 
-  modify application "comm refrig"
+  modify application "com refrig"
 
     modify substance "HFC-134a"
       cap manufacture to 0 % during years 3 to onwards
@@ -330,9 +330,9 @@ start policy "comm refrig prohibition"
 end policy
 
 
-start policy "comm refrig reuse"
+start policy "com refrig reuse"
 
-  modify application "comm refrig"
+  modify application "com refrig"
 
     modify substance "HFC-134a"
       recover 5 % with 100 % reuse during year 3
@@ -351,9 +351,9 @@ start policy "comm refrig reuse"
 end policy
 
 
-start policy "comm refrig low-GWP"
+start policy "com refrig low-GWP"
 
-  modify application "comm refrig"
+  modify application "com refrig"
 
     modify substance "HFC-134a"
       define level as limit (yearAbsolute - 2) * 20 to [0, 100]
@@ -372,9 +372,9 @@ start policy "comm refrig low-GWP"
 end policy
 
 
-start policy "residential AC prohibition"
+start policy "res AC prohibition"
 
-  modify application "residential AC"
+  modify application "res AC"
 
     modify substance "R-410A"
       cap manufacture to 0 % during years 3 to onwards
@@ -391,9 +391,9 @@ start policy "residential AC prohibition"
 end policy
 
 
-start policy "residential AC reuse"
+start policy "res AC reuse"
 
-  modify application "comm refrig"
+  modify application "com refrig"
 
     modify substance "R-410A"
       recover 5 % with 100 % reuse during year 3
@@ -412,9 +412,9 @@ start policy "residential AC reuse"
 end policy
 
 
-start policy "residential AC low-GWP"
+start policy "res AC low-GWP"
 
-  modify application "comm refrig"
+  modify application "com refrig"
 
     modify substance "R-410A"
       define level as limit (yearAbsolute - 2) * 20 to [0, 100]
@@ -449,7 +449,7 @@ end policy
 
 start policy "mobile AC reuse"
 
-  modify application "comm refrig"
+  modify application "com refrig"
 
     modify substance "HFC-134a"
       recover 5 % with 100 % reuse during year 3
@@ -470,7 +470,7 @@ end policy
 
 start policy "mobile AC low-GWP"
 
-  modify application "comm refrig"
+  modify application "com refrig"
 
     modify substance "HFC-134a"
       define level as limit (yearAbsolute - 2) * 20 to [0, 100]
@@ -493,16 +493,16 @@ start simulations
     then "dom refrig low-GWP"
   from years 1 to 29
 
-  simulate "comm refrig high ambition"
-    using "comm refrig prohibition"
-    then "comm refrig reuse"
-    then "comm refrig low-GWP"
+  simulate "com refrig high ambition"
+    using "com refrig prohibition"
+    then "com refrig reuse"
+    then "com refrig low-GWP"
   from years 1 to 29
 
-  simulate "residential AC high ambition"
-    using "residential AC prohibition"
-    then "residential AC reuse"
-    then "residential AC low-GWP"
+  simulate "res AC high ambition"
+    using "res AC prohibition"
+    then "res AC reuse"
+    then "res AC low-GWP"
   from years 1 to 29
 
   simulate "mobile AC high ambition"
