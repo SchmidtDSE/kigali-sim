@@ -573,6 +573,7 @@ class Engine {
     const recycledNonDisplaced = recycledKg * displacementRateRatio;
 
     const availableForNewUnitsKg = salesKg + recycledNonDisplaced - rechargeKg;
+    console.log(salesKg, recycledNonDisplaced, rechargeKg);
 
     // Convert to unit delta
     const initialChargeRaw = self.getInitialCharge("sales");

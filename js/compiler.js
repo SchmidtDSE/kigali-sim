@@ -136,7 +136,7 @@ class CompileVisitor extends toolkit.QubecTalkVisitor {
 
     return (engine) => {
       const rescope = rescopeFuture === null ? null : rescopeFuture(engine);
-      return engine.getStream(target, rescope, conversionMaybe);
+      return engine.getStream(target, rescope, conversionMaybe).getValue();
     };
   }
 
