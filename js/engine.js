@@ -349,15 +349,10 @@ class Engine {
       return;
     }
 
-    const unitConverter = self._createUnitConverterWithTotal("priorEquipment");
-    const equipmentToRetire = unitConverter.convert(amount, "units");
-    const retireAsDelta = new EngineNumber(
-      equipmentToRetire.getValue() * -1,
-      equipmentToRetire.getUnits(),
-    );
-
-    self.changeStream("retirement", equipmentToRetire);
-    self.changeStream("equipment", retireAsDelta);
+    const application = self._scope.getApplication();
+    const substance = self._scope.getSubstance();
+    self._streamKeeper.setRetirementRate(application, substance, amount);
+    self._recalcPopulationChange();
   }
 
   recycle(recoveryWithUnits, yieldWithUnits, displaceLevel, yearMatcher) {
@@ -702,14 +697,8 @@ class Engine {
     // Determine needs for new equipment deployment.
     stateGetter.setAmortizedUnitVolume(initialCharge);
     const populationChangeRaw = stateGetter.getPopulationChange();
-    const retirementRaw = self._streamKeeper.getStream(application, substance, "retirement");
     const populationChange = unitConverter.convert(populationChangeRaw, "units");
-    const retirement = unitConverter.convert(retirementRaw, "units");
-    const populationChangeOffset = new EngineNumber(
-      populationChange.getValue() + retirement.getValue(),
-      "units",
-    );
-    const volumeForNew = unitConverter.convert(populationChangeOffset, "kg");
+    const volumeForNew = unitConverter.convert(populationChange, "kg");
     stateGetter.setAmortizedUnitVolume(null);
 
     // Determine sales prior to recycling

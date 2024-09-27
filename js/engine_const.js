@@ -10,7 +10,6 @@ STREAM_BASE_UNITS.set("sales", "kg");
 STREAM_BASE_UNITS.set("emissions", "tCO2e");
 STREAM_BASE_UNITS.set("equipment", "units");
 STREAM_BASE_UNITS.set("priorEquipment", "units");
-STREAM_BASE_UNITS.set("retirement", "units");
 
 export {
   GLOBAL_CONTEXT,

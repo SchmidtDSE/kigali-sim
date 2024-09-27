@@ -453,13 +453,13 @@ function buildEngineTests() {
       );
 
       const manufactureVal1 = engine.getStream("equipment");
-      assert.ok(manufactureVal1.getValue() == 10);
+      assert.ok(Math.abs(manufactureVal1.getValue() - 10) < 0.0001);
       assert.ok(manufactureVal1.getUnits() === "units");
 
       engine.incrementYear();
 
       const manufactureVal2 = engine.getStream("equipment");
-      assert.ok(manufactureVal2.getValue() == 10);
+      assert.ok(Math.abs(manufactureVal2.getValue() - 10) < 0.0001);
       assert.ok(manufactureVal2.getUnits() === "units");
     });
 
@@ -470,36 +470,36 @@ function buildEngineTests() {
       engine.setApplication("test app");
       engine.setSubstance("test substance");
 
-      engine.setStream(
-        "manufacture",
-        new EngineNumber(10, "kg"),
-        new YearMatcher(null, null),
-      );
+      const executeLogic = () => {
+        engine.setStream(
+          "manufacture",
+          new EngineNumber(10, "kg"),
+          new YearMatcher(null, null),
+        );
 
-      engine.setInitialCharge(
-        new EngineNumber(1, "kg / unit"),
-        "sales",
-        new YearMatcher(null, null),
-      );
+        engine.setInitialCharge(
+          new EngineNumber(1, "kg / unit"),
+          "sales",
+          new YearMatcher(null, null),
+        );
 
-      engine.retire(
-        new EngineNumber(10, "% / year"),
-        new YearMatcher(null, null),
-      );
+        engine.retire(
+          new EngineNumber(10, "% / year"),
+          new YearMatcher(null, null),
+        );
+      };
+
+      executeLogic();
 
       const manufactureVal1 = engine.getStream("equipment");
       assert.ok(manufactureVal1.getValue() == 10);
       assert.ok(manufactureVal1.getUnits() === "units");
 
       engine.incrementYear();
-
-      engine.retire(
-        new EngineNumber(10, "% / year"),
-        new YearMatcher(null, null),
-      );
+      executeLogic();
 
       const manufactureVal2 = engine.getStream("equipment");
-      assert.ok(manufactureVal2.getValue() == 9);
+      assert.ok(manufactureVal2.getValue() == 19);
       assert.ok(manufactureVal2.getUnits() === "units");
     });
 

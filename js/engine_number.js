@@ -554,7 +554,6 @@ class OverridingConverterStateGetter {
       "import": (x) => self.setVolume(x),
       "equipment": (x) => self.setPopulation(x),
       "priorEquipment": (x) => self.setPopulation(x),
-      "retirement": (x) => self.setPopulation(x),
       "emissions": (x) => self.setEmissions(x),
     }[streamName];
     strategy(value);
