@@ -97,9 +97,9 @@ main {
 }
 
 #results .dimensions .dimension .list {
-  min-height: 20px;
-  max-height: 200px;
+  height: 200px;
   overflow-y: auto;
+  font-size: 12px;
 }
 
 #results .dimensions .dimension .title {

@@ -287,6 +287,11 @@ class FilterSet {
       newDimension,
     );
   }
+
+  hasSingleScenario() {
+    const self = this;
+    return self._scenario !== null;
+  }
   
 }
 

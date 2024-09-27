@@ -36,7 +36,7 @@
       <div class="scorecards" id="scorecards">
         <div class="scorecard" id="emissions-scorecard">
           <div class="label">
-            <label for="emissions-radio"><input id="emissions-radio" type="radio" name="metric" value="emissions" checked="checked"> Emissions</label>
+            <label for="emissions-radio"><input id="emissions-radio" class="metric-radio" type="radio" name="metric" value="emissions" checked="checked"> Emissions</label>
           </div>
           <div class="value"></div>
           <div class="units">tCO2e / yr in year <span class="current-year"></span></div>
@@ -46,7 +46,7 @@
         
         <div class="scorecard inactive" id="sales-scorecard">
           <div class="label">
-            <label for="sales-radio"><input id="sales-radio" type="radio" name="metric" value="sales"> Sales</label>
+            <label for="sales-radio"><input id="sales-radio" class="metric-radio" type="radio" name="metric" value="sales"> Sales</label>
           </div>
           <div class="value"></div>
           <div class="units">mt / yr in year <span class="current-year"></span></div>
@@ -56,7 +56,7 @@
 
         <div class="scorecard inactive" id="equipment-scorecard">
           <div class="label">
-            <label for="population-radio"><input id="population-radio" type="radio" name="metric" value="population"> Equipment</label>
+            <label for="population-radio"><input id="population-radio" class="metric-radio" type="radio" name="metric" value="population"> Equipment</label>
           </div>
           <div class="value"></div>
           <div class="units">units in year <span class="current-year"></span></div>
@@ -66,7 +66,7 @@
       <div class="dimensions" id="dimensions">
         <div class="dimension" id="simulations-dimension">
           <div class="title">
-            <label for="simulations-radio"><input id="simulations-radio" type="radio" name="dimension" value="simulations" checked="checked"> Simulations</label>
+            <label for="simulations-radio"><input id="simulations-radio" class="dimension-radio" type="radio" name="dimension" value="simulations" checked="checked"> Simulations</label>
           </div>
           <div class="list"></div>
           <div class="axis">
@@ -80,7 +80,7 @@
 
         <div class="dimension inactive" id="applications-dimension">
           <div class="title">
-            <label for="applications-radio"><input id="applications-radio" type="radio" name="dimension" value="applications"> Applications</label>
+            <label for="applications-radio"><input id="applications-radio" class="dimension-radio" type="radio" name="dimension" value="applications"> Applications</label>
           </div>
           <div class="list"></div>
           <div class="axis">
@@ -94,7 +94,7 @@
 
         <div class="dimension inactive" id="substances-dimension">
           <div class="title">
-            <label for="substances-radio"><input id="substances-radio" type="radio" name="dimension" value="substances"> Substances</label>
+            <label for="substances-radio"><input id="substances-radio" class="dimension-radio" type="radio" name="dimension" value="substances"> Substances</label>
           </div>
           <div class="list"></div>
           <div class="axis">
