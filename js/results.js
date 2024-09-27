@@ -344,7 +344,7 @@ class CenterChartPresenter {
     const dimensionSeries = dimensionValues.map(getForDimValue);
 
     const unconstrainedDimValues = Array.of(...results.getDimensionValues(
-      filterSet.getWithDimensionValue(null)
+      filterSet.getWithDimensionValue(null),
     ));
     unconstrainedDimValues.sort();
 
