@@ -16,13 +16,13 @@ start default
 
       # Domestic production
       initial charge with 0.12 kg / unit for manufacture
-      set manufacture to 350000 mt during year 1
+      set manufacture to 350000 kg during year 1
       change manufacture by +5 % / year during years 1 to 5
       change manufacture by +3 % / year during years 6 to 9
 
       # Trade
       initial charge with 0.30 kg / unit for import
-      set import to 90000 mt during year 1
+      set import to 90000 kg during year 1
       change import by +5 % / year during years 1 to 5
       change import by +3 % / year during years 6 to 9
 
@@ -39,12 +39,12 @@ start default
 
       # Domestic production
       initial charge with 0.05 kg / unit for manufacture
-      set manufacture to 200000 mt during year 1
+      set manufacture to 200000 kg during year 1
       change manufacture by +8 % / year
 
       # Trade
       initial charge with 0.05 kg / unit for import
-      set import to 10000 mt during year 1
+      set import to 10000 kg during year 1
       change import by +8 % / year
 
       # Service
@@ -68,13 +68,13 @@ start default
 
       # Domestic production
       initial charge with 0.30 kg / unit for manufacture
-      set manufacture to 90000 mt during year 1
+      set manufacture to 90000 kg during year 1
       change manufacture by +5 % / year during years 1 to 5
       change manufacture by +3 % / year during years 6 to 9
 
       # Trade
       initial charge with 0.30 kg / unit for import
-      set import to 90000 mt during year 1
+      set import to 90000 kg during year 1
       change import by +5 % / year during years 1 to 5
       change import by +3 % / year during years 6 to 9
 
@@ -91,12 +91,12 @@ start default
 
       # Domestic production
       initial charge with 0.12 kg / unit for manufacture
-      set manufacture to 10000 mt during year 1
+      set manufacture to 10000 kg during year 1
       change manufacture by +8 % / year
 
       # Trade
       initial charge with 0.12 kg / unit for import
-      set import to 10000 mt during year 1
+      set import to 10000 kg during year 1
       change import by +8 % / year
 
       # Service
@@ -112,12 +112,12 @@ start default
 
       # Domestic production
       initial charge with 0.30 kg / unit for manufacture
-      set manufacture to 30000 mt during year 1
+      set manufacture to 30000 kg during year 1
       change manufacture by +5 % / year
 
       # Trade
       initial charge with 0.30 kg / unit for import
-      set import to 10000 mt during year 1
+      set import to 10000 kg during year 1
       change import by +5 % / year
 
       # Service
@@ -141,13 +141,13 @@ start default
 
       # Domestic production
       initial charge with 0.90 kg / unit for manufacture
-      set manufacture to 175000 mt during year 1
+      set manufacture to 175000 kg during year 1
       change manufacture by +5 % / year during years 1 to 5
       change manufacture by +3 % / year during years 6 to 9
 
       # Trade
       initial charge with 0.90 kg / unit for import
-      set import to 20000 mt during year 1
+      set import to 20000 kg during year 1
       change import by +5 % / year during years 1 to 5
       change import by +3 % / year during years 6 to 9
 
@@ -164,12 +164,12 @@ start default
 
       # Domestic production
       initial charge with 0.68 kg / unit for manufacture
-      set manufacture to 85000 mt during year 1
+      set manufacture to 85000 kg during year 1
       change manufacture by +8 % / year
 
       # Trade
       initial charge with 0.68 kg / unit for import
-      set import to 9000 mt during year 1
+      set import to 9000 kg during year 1
       change sales by +8 % / year
 
       # Service
@@ -185,12 +185,12 @@ start default
 
       # Domestic production
       initial charge with 0.68 kg / unit for manufacture
-      set manufacture to 10000 mt during year 1
+      set manufacture to 10000 kg during year 1
       change manufacture by +5 % / year
 
       # Trade
       initial charge with 0.68 kg / unit for import
-      set import to 10000 mt during year 1
+      set import to 10000 kg during year 1
       change sales by +5 % / year
 
       # Service
@@ -214,13 +214,13 @@ start default
 
       # Domestic production
       initial charge with 0.90 kg / unit for manufacture
-      set manufacture to 175000 mt during year 1
+      set manufacture to 175000 kg during year 1
       change manufacture by +5 % / year during years 1 to 5
       change manufacture by +3 % / year during years 6 to 9
 
       # Trade
       initial charge with 0.90 kg / unit for import
-      set import to 20000 mt during year 1
+      set import to 20000 kg during year 1
       change import by +5 % / year during years 1 to 5
       change import by +3 % / year during years 6 to 9
 
@@ -237,12 +237,12 @@ start default
 
       # Domestic production
       initial charge with 0.90 kg / unit for manufacture
-      set manufacture to 85000 mt during year 1
+      set manufacture to 85000 kg during year 1
       change manufacture by +8 % / year
 
       # Trade
       initial charge with 0.90 kg / unit for import
-      set import to 9000 mt during year 1
+      set import to 9000 kg during year 1
       change import by +8 % / year
 
       # Service

@@ -30,8 +30,46 @@ start default
 end default
 
 
+start policy "prohibition"
+
+  modify application "dometic refrigeration"
+
+    modify substance "HFC-134a"
+      cap manufacture to 75 % during year 3
+      cap manufacture to 40 % during year 4
+      cap manufacture to 0 % during years 5 to onwards
+
+      cap import to 75 % during year 3
+      cap import to 40 % during year 4
+      cap import to 0 % during years 5 to onwards
+    end substance
+
+  end application
+
+end policy
+
+
+start policy "reuse"
+
+  modify application "dometic refrigeration"
+
+    modify substance "HFC-134a"
+      recover 5 % with 100 % reuse during year 3
+      define level as limit (yearAbsolute - 3) * 10 to [0, 30]
+      recover level % with 100 % reuse during years 4 to onwards
+    end substance
+
+  end application
+
+end policy
+
+
+
 start simulations
 
   simulate "business as usual" from years 1 to 26
+  simulate "production policy" using "prohibition" from years 1 to 26
+  simulate "reuse policy" using "reuse" from years 1 to 26
+  simulate "combined" using "prohibition" then "reuse" from years 1 to 26
 
 end simulations
