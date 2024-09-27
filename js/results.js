@@ -31,9 +31,10 @@ class ScorecardPresenter {
     self._registerEventListeners();
   }
 
-  showResults(results, currentYear, filterSet) {
+  showResults(results, filterSet) {
     const self = this;
     self._filterSet = filterSet;
+    const currentYear = self._filterSet.getYear();
     
     const emissionsScorecard = self._root.querySelector("#emissions-scorecard");
     const salesScorecard = self._root.querySelector("#sales-scorecard");
@@ -52,7 +53,8 @@ class ScorecardPresenter {
     const salesSelected = metricSelected === "sales";
     const equipmentSelected = metricSelected === "population";
 
-    const hideVal = !self._filterSet.hasSingleScenario();
+    const scenarios = results.getScenarios(self._filterSet.getWithScenario(null));
+    const hideVal = !self._filterSet.hasSingleScenario(scenarios);
 
     self._updateCard(emissionsScorecard, emissionRounded, currentYear, emissionsSelected, hideVal);
     self._updateCard(salesScorecard, salesMt, currentYear, salesSelected, hideVal);
@@ -62,7 +64,12 @@ class ScorecardPresenter {
   _updateCard(scorecard, value, currentYear, selected, hideVal) {
     const self = this;
     self._setText(scorecard.querySelector(".value"), value);
-    self._setText(scorecard.querySelector(".current-year"), currentYear);
+
+    if (hideVal) {
+      self._setText(scorecard.querySelector(".current-year"), "");
+    } else {
+      self._setText(scorecard.querySelector(".current-year"), "in year " + currentYear);
+    }
 
     if (hideVal) {
       scorecard.querySelector(".value").style.display = "none";
@@ -117,7 +124,7 @@ class DimensionCardPresenter {
     self._registerEventListeners();
   }
 
-  showResults(results, currentYear, filterSet) {
+  showResults(results, filterSet) {
     const self = this;
     self._filterSet = filterSet;
     
@@ -148,6 +155,8 @@ class DimensionCardPresenter {
     const suffix = conversionInfo["suffix"];
     const interpret = (x) => x.getValue() / divider;
 
+    const scenarios = results.getScenarios(self._filterSet.getWithScenario(null));
+
     self._updateCard(
       "sim",
       simulationsCard,
@@ -158,6 +167,7 @@ class DimensionCardPresenter {
       true,
       (value) => interpret(results.getMetric(self._filterSet.getWithScenario(value))),
       suffix,
+      scenarios,
     );
     
     self._updateCard(
@@ -170,6 +180,7 @@ class DimensionCardPresenter {
       true,
       (value) => interpret(results.getMetric(self._filterSet.getWithApplication(value))),
       suffix,
+      scenarios,
     );
     
     self._updateCard(
@@ -182,11 +193,12 @@ class DimensionCardPresenter {
       true,
       (value) => interpret(results.getMetric(self._filterSet.getWithSubstance(value))),
       suffix,
+      scenarios,
     );
   }
 
   _updateCard(label, card, identifiers, selected, subSelection, subFilterSetBuilder, addAll,
-    valueGetter, suffix) {
+    valueGetter, suffix, scenarios) {
     const self = this;
     
     if (selected) {
@@ -202,7 +214,11 @@ class DimensionCardPresenter {
     const maxValue = Math.max(...values);
     d3.select(card.querySelector(".right-tick")).text(Math.round(maxValue) + suffix);
 
-    if (addAll) {
+    const hasSingleScenario = self._filterSet.hasSingleScenario(scenarios);
+    const isOnlyValue = identifiersArray.length == 1;
+
+    const allNeeded = addAll && !isOnlyValue;
+    if (allNeeded) {
       identifiersArray.unshift("All");
     }
 
@@ -223,7 +239,11 @@ class DimensionCardPresenter {
       .attr("name", label + "-viz")
       .style("height", "13px")
       .style("width", "13px")
-      .property("checked", (x) => x === subSelection || (subSelection === null && x === "All"));
+      .property("checked", (x) => {
+        const valuesMatch = x === subSelection;
+        const isAllAndSelected = subSelection === null && x === "All";
+        return valuesMatch || isAllAndSelected || isOnlyValue;
+      });
     
     itemLabels.append("span").text((x) => x);
 
@@ -232,26 +252,28 @@ class DimensionCardPresenter {
       self._onUpdateFilterSet(newFilterSet);
     });
 
-    const offset = addAll ? 1 : 0;
-    const lines = itemDivs.append("div")
-      .classed("list-line", true)
-      .style("width", "100%")
-      .style("height", (x, i) => x === "All" ? "0px" : "1px")
-      .style("background-color", (x, i) => selected ? getColor(i - offset) : "#C0C0C0");
-    
-    lines.append("div")
-      .classed("list-bar", true)
-      .style("height", (x, i) => x === "All" ? "0px" : "5px")
-      .style("background-color", (x, i) => selected ? getColor(i - offset) : "#C0C0C0")
-      .style("width", (x) => {
-        if (x === "All") {
-          return "0%";
-        } else {
-          const value = valueGetter(x);
-          const percent = value / maxValue;
-          return Math.round(percent * 100) + "%";
-        }
-      });
+    if (hasSingleScenario || label === "sim") {
+      const offset = allNeeded ? 1 : 0;
+      const lines = itemDivs.append("div")
+        .classed("list-line", true)
+        .style("width", "100%")
+        .style("height", (x, i) => x === "All" ? "0px" : "1px")
+        .style("background-color", (x, i) => selected ? getColor(i - offset) : "#C0C0C0");
+      
+      lines.append("div")
+        .classed("list-bar", true)
+        .style("height", (x, i) => x === "All" ? "0px" : "5px")
+        .style("background-color", (x, i) => selected ? getColor(i - offset) : "#C0C0C0")
+        .style("width", (x) => {
+          if (x === "All") {
+            return "0%";
+          } else {
+            const value = valueGetter(x);
+            const percent = value / maxValue;
+            return Math.round(percent * 100) + "%";
+          }
+        });
+    }
   }
 
   _registerEventListeners() {
@@ -281,7 +303,6 @@ class ResultsPresenter {
   constructor(targetId) {
     const self = this;
     self._root = document.getElementById(targetId);
-    self._year = null;
     self._results = null;
     self._filterSet = new FilterSet(null, null, null, null, "emissions", "simulations");
     
@@ -313,13 +334,11 @@ class ResultsPresenter {
   _updateInternally() {
     const self = this;
 
-    const years = self._results.getYears(self._filterSet);
-    if (!years.has(self._year)) {
-      self._year = Math.max(...years);
-    }
+    const years = self._results.getYears(self._filterSet.getWithYear(null));
+    self._filterSet = self._filterSet.getWithYear(Math.max(...years));
 
-    self._scorecardPresenter.showResults(self._results, self._year, self._filterSet);
-    self._dimensionPresenter.showResults(self._results, self._year, self._filterSet);
+    self._scorecardPresenter.showResults(self._results, self._filterSet);
+    self._dimensionPresenter.showResults(self._results, self._filterSet);
   }
 }
 

@@ -300,9 +300,11 @@ class FilterSet {
     );
   }
 
-  hasSingleScenario() {
+  hasSingleScenario(scenarios) {
     const self = this;
-    return self._scenario !== null;
+    const scenarioSelected = self._scenario !== null;
+    const onlyOneScenario = scenarios.size == 1;
+    return scenarioSelected || onlyOneScenario;
   }
   
 }
