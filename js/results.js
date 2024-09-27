@@ -1,4 +1,4 @@
-import { FilterSet } from "report_data";
+import {FilterSet} from "report_data";
 
 const COLORS = [
   "#a6cee3",
@@ -22,7 +22,6 @@ function getColor(i) {
 
 
 class ScorecardPresenter {
-
   constructor(targetId, onUpdateFilterSet) {
     const self = this;
     self._root = document.getElementById(targetId);
@@ -35,7 +34,7 @@ class ScorecardPresenter {
     const self = this;
     self._filterSet = filterSet;
     const currentYear = self._filterSet.getYear();
-    
+
     const emissionsScorecard = self._root.querySelector("#emissions-scorecard");
     const salesScorecard = self._root.querySelector("#sales-scorecard");
     const equipmentScorecard = self._root.querySelector("#equipment-scorecard");
@@ -46,7 +45,7 @@ class ScorecardPresenter {
 
     const emissionRounded = Math.round(emissionsValue.getValue());
     const salesMt = Math.round(salesValue.getValue() / 1000);
-    const kiloEquipment = Math.round(equipmentValue.getValue() / 1000) + 'k';
+    const kiloEquipment = Math.round(equipmentValue.getValue() / 1000) + "k";
 
     const metricSelected = filterSet.getMetric();
     const emissionsSelected = metricSelected === "emissions";
@@ -76,7 +75,7 @@ class ScorecardPresenter {
     } else {
       scorecard.querySelector(".value").style.display = "block";
     }
-    
+
     if (selected) {
       scorecard.classList.remove("inactive");
     } else {
@@ -93,7 +92,7 @@ class ScorecardPresenter {
 
   _registerEventListeners() {
     const self = this;
-    
+
     const emissionsScorecard = self._root.querySelector("#emissions-scorecard");
     const salesScorecard = self._root.querySelector("#sales-scorecard");
     const equipmentScorecard = self._root.querySelector("#equipment-scorecard");
@@ -110,12 +109,10 @@ class ScorecardPresenter {
     registerListener(salesScorecard, "sales");
     registerListener(equipmentScorecard, "population");
   }
-
 }
 
 
 class DimensionCardPresenter {
-
   constructor(targetId, onUpdateFilterSet) {
     const self = this;
     self._root = document.getElementById(targetId);
@@ -127,20 +124,20 @@ class DimensionCardPresenter {
   showResults(results, filterSet) {
     const self = this;
     self._filterSet = filterSet;
-    
+
     const metricSelected = self._filterSet.getMetric();
     const metricUnits = {
       "emissions": "tCO2e / yr",
       "sales": "mt / yr",
-      "population": "units"
+      "population": "units",
     }[metricSelected];
 
     const currentYear = self._filterSet.getYear();
     const scenarios = results.getScenarios(self._filterSet.getWithScenario(null));
-    
+
     const allTickUnits = Array.of(...self._root.querySelectorAll(".units-tick"));
     allTickUnits.forEach((x) => x.innerHTML = metricUnits);
-    
+
     const allTickYears = Array.of(...self._root.querySelectorAll(".years-tick"));
     if (self._filterSet.hasSingleScenario(scenarios)) {
       allTickYears.forEach((x) => x.innerHTML = "in year " + currentYear);
@@ -178,7 +175,7 @@ class DimensionCardPresenter {
       suffix,
       scenarios,
     );
-    
+
     self._updateCard(
       "app",
       applicationsCard,
@@ -191,7 +188,7 @@ class DimensionCardPresenter {
       suffix,
       scenarios,
     );
-    
+
     self._updateCard(
       "sub",
       substancesCard,
@@ -209,7 +206,7 @@ class DimensionCardPresenter {
   _updateCard(label, card, identifiers, selected, subSelection, subFilterSetBuilder, addAll,
     valueGetter, suffix, scenarios, selectedYear) {
     const self = this;
-    
+
     if (selected) {
       card.classList.remove("inactive");
     } else {
@@ -239,7 +236,7 @@ class DimensionCardPresenter {
       .enter()
       .append("div")
       .classed("item", true);
-    
+
     const itemLabels = itemDivs.append("label");
 
     itemLabels.append("input")
@@ -253,7 +250,7 @@ class DimensionCardPresenter {
         const isAllAndSelected = subSelection === null && x === "All";
         return valuesMatch || isAllAndSelected || isOnlyValue;
       });
-    
+
     itemLabels.append("span").text((x) => x);
 
     itemLabels.on("click", (event, x) => {
@@ -268,7 +265,7 @@ class DimensionCardPresenter {
         .style("width", "100%")
         .style("height", (x, i) => x === "All" ? "0px" : "1px")
         .style("background-color", (x, i) => selected ? getColor(i - offset) : "#C0C0C0");
-      
+
       lines.append("div")
         .classed("list-bar", true)
         .style("height", (x, i) => x === "All" ? "0px" : "5px")
@@ -287,7 +284,7 @@ class DimensionCardPresenter {
 
   _registerEventListeners() {
     const self = this;
-    
+
     const simulationsCard = self._root.querySelector("#simulations-dimension");
     const applicationsCard = self._root.querySelector("#applications-dimension");
     const substancesCard = self._root.querySelector("#substances-dimension");
@@ -304,7 +301,6 @@ class DimensionCardPresenter {
     registerListener(applicationsCard, "applications");
     registerListener(substancesCard, "substances");
   }
-
 }
 
 
@@ -314,11 +310,11 @@ class ResultsPresenter {
     self._root = document.getElementById(targetId);
     self._results = null;
     self._filterSet = new FilterSet(null, null, null, null, "emissions", "simulations");
-    
+
     const onUpdateFilterSet = (x) => self._onUpdateFilterSet(x);
     self._scorecardPresenter = new ScorecardPresenter("scorecards", onUpdateFilterSet);
     self._dimensionPresenter = new DimensionCardPresenter("dimensions", onUpdateFilterSet);
-    
+
     self.hide();
   }
 

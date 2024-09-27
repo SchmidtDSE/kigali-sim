@@ -306,7 +306,6 @@ class FilterSet {
     const onlyOneScenario = scenarios.size == 1;
     return scenarioSelected || onlyOneScenario;
   }
-  
 }
 
 
