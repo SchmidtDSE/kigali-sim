@@ -85,6 +85,8 @@ class MainPresenter {
       const hasErrors = compileErrors.length > 0;
       if (hasErrors) {
         self._codeEditorPresenter.showError(compileErrors[0]);
+        self._buttonPanelPresenter.enable();
+        return;
       } else {
         self._codeEditorPresenter.hideError();
       }

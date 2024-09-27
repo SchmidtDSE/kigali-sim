@@ -55,10 +55,6 @@ start default
       set priorEquipment to (get equipment as units * 7) units during year 1
     end substance
 
-    uses substance "low gwp"
-      emit 0 tCO2e / mt
-    end substance
-
   end application
 
   define application "com refrig"
@@ -126,10 +122,6 @@ start default
 
       # Historic units already deployed
       set priorEquipment to (get equipment as units * 7) units during year 1
-    end substance
-
-    uses substance "low gwp"
-      emit 0 tCO2e / mt
     end substance
 
   end application
@@ -201,10 +193,6 @@ start default
       set priorEquipment to (get equipment as units * 7) units during year 1
     end substance
 
-    uses substance "low gwp"
-      emit 0 tCO2e / mt
-    end substance
-
   end application
 
   define application "mobile AC"
@@ -253,32 +241,9 @@ start default
       set priorEquipment to (get equipment as units * 7) units during year 1
     end substance
 
-    uses substance "low gwp"
-      emit 0 tCO2e / mt
-    end substance
-
   end application
 
 end default
-
-
-start policy "dom refrig prohibition"
-
-  modify application "dometic refrigeration"
-
-    modify substance "HFC-134a"
-      cap manufacture to 75 % during year 3
-      cap manufacture to 40 % during year 4
-      cap manufacture to 0 % during years 5 to onwards
-
-      cap import to 75 % during year 3
-      cap import to 40 % during year 4
-      cap import to 0 % during years 5 to onwards
-    end substance
-
-  end application
-
-end policy
 
 
 start policy "dom refrig reuse"
@@ -302,27 +267,8 @@ start policy "dom refrig low-GWP"
 
     modify substance "HFC-134a"
       define level as limit (yearAbsolute - 2) * 20 to [0, 100]
-      replace level % of manufacture with "low gwp" during years 3 to onwards
-      replace level % of import with "low gwp" during years 3 to onwards
-    end substance
-
-  end application
-
-end policy
-
-
-start policy "com refrig prohibition"
-
-  modify application "com refrig"
-
-    modify substance "HFC-134a"
-      cap manufacture to 0 % during years 3 to onwards
-      cap import to 0 % during years 3 to onwards
-    end substance
-
-    modify substance "R-404A"
-      cap manufacture to 0 % during years 3 to onwards
-      cap import to 0 % during years 3 to onwards
+      replace level % of manufacture with "R-600a" during years 3 to onwards
+      replace level % of import with "R-600a" during years 3 to onwards
     end substance
 
   end application
@@ -357,33 +303,14 @@ start policy "com refrig low-GWP"
 
     modify substance "HFC-134a"
       define level as limit (yearAbsolute - 2) * 20 to [0, 100]
-      replace level % of manufacture with "low gwp" during years 3 to onwards
-      replace level % of import with "low gwp" during years 3 to onwards
+      replace level % of manufacture with "R-600a" during years 3 to onwards
+      replace level % of import with "R-600a" during years 3 to onwards
     end substance
 
     modify substance "R-404A"
       define level as limit (yearAbsolute - 2) * 20 to [0, 100]
-      replace level % of manufacture with "low gwp" during years 3 to onwards
-      replace level % of import with "low gwp" during years 3 to onwards
-    end substance
-
-  end application
-
-end policy
-
-
-start policy "res AC prohibition"
-
-  modify application "res AC"
-
-    modify substance "R-410A"
-      cap manufacture to 0 % during years 3 to onwards
-      cap import to 0 % during years 3 to onwards
-    end substance
-
-    modify substance "HFC-32"
-      cap manufacture to 0 % during years 18 to onwards
-      cap import to 0 % during years 18 to onwards
+      replace level % of manufacture with "R-600a" during years 3 to onwards
+      replace level % of import with "R-600a" during years 3 to onwards
     end substance
 
   end application
@@ -418,28 +345,14 @@ start policy "res AC low-GWP"
 
     modify substance "R-410A"
       define level as limit (yearAbsolute - 2) * 20 to [0, 100]
-      replace level % of manufacture with "low gwp" during years 3 to onwards
-      replace level % of import with "low gwp" during years 3 to onwards
+      replace level % of manufacture with "R-290" during years 3 to onwards
+      replace level % of import with "R-290" during years 3 to onwards
     end substance
 
     modify substance "HFC-32"
       define level as limit (yearAbsolute - 2) * 20 to [0, 100]
-      replace level % of manufacture with "low gwp" during years 3 to onwards
-      replace level % of import with "low gwp" during years 3 to onwards
-    end substance
-
-  end application
-
-end policy
-
-
-start policy "mobile AC prohibition"
-
-  modify application "mobile AC"
-
-    modify substance "HFC-134a"
-      cap manufacture to 0 % during years 3 to onwards
-      cap import to 0 % during years 3 to onwards
+      replace level % of manufacture with "R-290" during years 3 to onwards
+      replace level % of import with "R-290" during years 3 to onwards
     end substance
 
   end application
@@ -474,8 +387,8 @@ start policy "mobile AC low-GWP"
 
     modify substance "HFC-134a"
       define level as limit (yearAbsolute - 2) * 20 to [0, 100]
-      replace level % of manufacture with "low gwp" during years 3 to onwards
-      replace level % of import with "low gwp" during years 3 to onwards
+      replace level % of manufacture with "R-1234yf" during years 3 to onwards
+      replace level % of import with "R-1234yf" during years 3 to onwards
     end substance
 
   end application
@@ -488,26 +401,22 @@ start simulations
   simulate "business as usual" from years 1 to 29
 
   simulate "dom refrig high ambition"
-    using "dom refrig prohibition"
-    then "dom refrig reuse"
+    using "dom refrig reuse"
     then "dom refrig low-GWP"
   from years 1 to 29
 
   simulate "com refrig high ambition"
-    using "com refrig prohibition"
-    then "com refrig reuse"
+    using "com refrig reuse"
     then "com refrig low-GWP"
   from years 1 to 29
 
   simulate "res AC high ambition"
-    using "res AC prohibition"
-    then "res AC reuse"
+    using "res AC reuse"
     then "res AC low-GWP"
   from years 1 to 29
 
   simulate "mobile AC high ambition"
-    using "mobile AC prohibition"
-    then "mobile AC reuse"
+    using "mobile AC reuse"
     then "mobile AC low-GWP"
   from years 1 to 29
 

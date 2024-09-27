@@ -11,6 +11,8 @@ const COLORS = [
   "#A0A0A0",
 ];
 
+const ALLOW_REDUNDANT_ALL = true;
+
 
 function getColor(i) {
   if (i >= COLORS.length) {
@@ -223,7 +225,7 @@ class DimensionCardPresenter {
     const hasSingleScenario = self._filterSet.hasSingleScenario(scenarios);
     const isOnlyValue = identifiersArray.length == 1;
 
-    const allNeeded = addAll && !isOnlyValue;
+    const allNeeded = ALLOW_REDUNDANT_ALL ? addAll : addAll && !isOnlyValue;
     if (allNeeded) {
       identifiersArray.unshift("All");
     }
