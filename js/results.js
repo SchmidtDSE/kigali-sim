@@ -134,8 +134,19 @@ class DimensionCardPresenter {
       "sales": "mt / yr",
       "population": "units"
     }[metricSelected];
+
+    const currentYear = self._filterSet.getYear();
+    const scenarios = results.getScenarios(self._filterSet.getWithScenario(null));
+    
     const allTickUnits = Array.of(...self._root.querySelectorAll(".units-tick"));
     allTickUnits.forEach((x) => x.innerHTML = metricUnits);
+    
+    const allTickYears = Array.of(...self._root.querySelectorAll(".years-tick"));
+    if (self._filterSet.hasSingleScenario(scenarios)) {
+      allTickYears.forEach((x) => x.innerHTML = "in year " + currentYear);
+    } else {
+      allTickYears.forEach((x) => x.innerHTML = "");
+    }
 
     const simulationsCard = self._root.querySelector("#simulations-dimension");
     const applicationsCard = self._root.querySelector("#applications-dimension");
@@ -154,8 +165,6 @@ class DimensionCardPresenter {
     const divider = conversionInfo["divider"];
     const suffix = conversionInfo["suffix"];
     const interpret = (x) => x.getValue() / divider;
-
-    const scenarios = results.getScenarios(self._filterSet.getWithScenario(null));
 
     self._updateCard(
       "sim",
@@ -198,7 +207,7 @@ class DimensionCardPresenter {
   }
 
   _updateCard(label, card, identifiers, selected, subSelection, subFilterSetBuilder, addAll,
-    valueGetter, suffix, scenarios) {
+    valueGetter, suffix, scenarios, selectedYear) {
     const self = this;
     
     if (selected) {
