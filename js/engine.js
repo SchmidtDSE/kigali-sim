@@ -705,7 +705,6 @@ class Engine {
     const retirementRaw = self._streamKeeper.getStream(application, substance, "retirement");
     const populationChange = unitConverter.convert(populationChangeRaw, "units");
     const retirement = unitConverter.convert(retirementRaw, "units");
-    console.log(populationChange.getValue(), retirement.getValue());
     const populationChangeOffset = new EngineNumber(
       populationChange.getValue() + retirement.getValue(),
       "units",
