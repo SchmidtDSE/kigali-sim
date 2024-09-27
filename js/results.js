@@ -45,9 +45,10 @@ class ScorecardPresenter {
     const salesValue = results.getSales(filterSet);
     const equipmentValue = results.getPopulation(filterSet);
 
-    const emissionRounded = Math.round(emissionsValue.getValue()) / 1000000;
-    const salesMt = Math.round(salesValue.getValue() / 1000);
-    const millionEqipment = Math.round(equipmentValue.getValue() / 1000000) + "M";
+    const roundToTenths = (x) => Math.round(x * 10) / 10;
+    const emissionRounded = roundToTenths(emissionsValue.getValue() / 1000000);
+    const salesMt = roundToTenths(salesValue.getValue() / 1000000) + " k";
+    const millionEqipment = roundToTenths(equipmentValue.getValue() / 1000000) + " M";
 
     const metricSelected = filterSet.getMetric();
     const emissionsSelected = metricSelected === "emissions";
