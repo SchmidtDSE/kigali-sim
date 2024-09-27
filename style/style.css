@@ -61,8 +61,6 @@ main {
 }
 
 #results .dimensions {
-  display: grid;
-  grid-template-columns: 30% 2.5% 30% 2.5% 30%;
   margin-top: 10px;
 }
 
@@ -145,6 +143,10 @@ main {
 }
 
 @media (max-width: 999px) {
+  #results .dimensions .dimension {
+    margin-bottom: 10px;
+  }
+
   #results {
     margin-top: 30px;
     border-top: 1px solid #C0C0C0;
@@ -155,6 +157,12 @@ main {
   main {
     display: grid;
     grid-template-columns: 50% 50%;
+  }
+
+  #results .dimensions {
+    display: grid;
+    grid-template-columns: 30% 2.5% 30% 2.5% 30%;
+    margin-top: 10px;
   }
 
   #editor {
