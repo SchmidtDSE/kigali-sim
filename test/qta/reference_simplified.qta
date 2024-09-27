@@ -9,7 +9,7 @@ end about
 
 start default
 
-  define application "dometic refrigeration"
+  define application "dom refrig"
 
     uses substance "HFC-134a"
       emit 1430 tCO2e / mt
@@ -248,7 +248,7 @@ end default
 
 start policy "dom refrig reuse"
 
-  modify application "dometic refrigeration"
+  modify application "dom refrig"
 
     modify substance "HFC-134a"
       recover 5 % with 100 % reuse during year 3
@@ -263,7 +263,7 @@ end policy
 
 start policy "dom refrig low-GWP"
 
-  modify application "dometic refrigeration"
+  modify application "dom refrig"
 
     modify substance "HFC-134a"
       define level as limit (yearAbsolute - 2) * 20 to [0, 100]

@@ -84,6 +84,8 @@ class ScorecardPresenter {
     } else {
       scorecard.classList.add("inactive");
     }
+
+    d3.select(scorecard).select(".metric-radio").property("checked", selected);
   }
 
   _setText(selection, value) {
@@ -215,6 +217,8 @@ class DimensionCardPresenter {
     } else {
       card.classList.add("inactive");
     }
+
+    d3.select(card).select(".dimension-radio").property("checked", selected);
 
     const identifiersArray = Array.of(...identifiers);
     identifiersArray.sort();
@@ -405,6 +409,117 @@ class CenterChartPresenter {
 }
 
 
+class SelectorTitlePresenter {
+
+  constructor(targetId, changeCallback) {
+    const self = this;
+    self._selection = document.getElementById(targetId);
+    self._changeCallback = changeCallback;
+    self._filterSet = null;
+    self._setupEventListeners();
+  }
+
+  showResults(results, filterSet) {
+    const self = this;
+    self._filterSet = filterSet;
+
+    const metricDropdown = self._selection.querySelector(".metric-select");
+    const metricSelected = self._filterSet.getMetric();
+    self._updateSimpleDropdown(metricDropdown, metricSelected);
+
+    const dimensionDropdown = self._selection.querySelector(".dimension-select");
+    const dimensionSelected = self._filterSet.getDimension();
+    self._updateSimpleDropdown(dimensionDropdown, dimensionSelected);
+
+    const scenarioDropdown = self._selection.querySelector(".scenario-select");
+    const scenarioSelected = self._filterSet.getScenario();
+    const scenarios = results.getScenarios();
+    self._updateDynamicDropdown(
+      scenarioDropdown,
+      scenarios,
+      scenarioSelected,
+      "All Simulations",
+    );
+
+    const applicationDropdown = self._selection.querySelector(".application-select");
+    const applicationSelected = self._filterSet.getApplication();
+    const applications = results.getApplications(self._filterSet.getWithApplication(null));
+    self._updateDynamicDropdown(
+      applicationDropdown,
+      applications,
+      applicationSelected,
+      "All Applications",
+    );
+
+    const substanceDropdown = self._selection.querySelector(".substance-select");
+    const substanceSelected = self._filterSet.getSubstance();
+    const substances = results.getSubstances(self._filterSet.getWithSubstance(null));
+    self._updateDynamicDropdown(
+      substanceDropdown,
+      substances,
+      substanceSelected,
+      "All Substances",
+    );
+  }
+
+  _updateSimpleDropdown(selection, value) {
+    const self = this;
+    selection.value = value;
+  }
+
+  _updateDynamicDropdown(selection, allValues, selectedValue, allText) {
+    const self = this;
+
+    const allValuesArray = Array.of(...allValues);
+    allValuesArray.unshift(allText);
+    allValuesArray.sort();
+
+    const d3Selection = d3.select(selection);
+    d3Selection.html("");
+    d3Selection.selectAll("option")
+      .data(allValuesArray)
+      .enter()
+      .append("option")
+      .attr("value", (x) => allText === x ? "" : x)
+      .text((x) => x)
+      .property("selected", (x) => {
+        const nativelySelected = x === selectedValue;
+        console.log(nativelySelected, x, selectedValue);
+        const allSelected = x === allText && selectedValue === null;
+        return nativelySelected || allSelected;
+      });
+  }
+
+  _setupEventListeners() {
+    const self = this;
+
+    const addListener = (selection, newFilterSetGen) => {
+      selection.addEventListener("change", () => {
+        const value = selection.value === "" ? null : selection.value;
+        const newFilterSet = newFilterSetGen(self._filterSet, value);
+        self._changeCallback(newFilterSet);
+      });
+    };
+
+    const metricDropdown = self._selection.querySelector(".metric-select");
+    addListener(metricDropdown, (filterSet, val) => filterSet.getWithMetric(val));
+    
+    const dimensionDropdown = self._selection.querySelector(".dimension-select");
+    addListener(dimensionDropdown, (filterSet, val) => filterSet.getWithDimension(val));
+    
+    const scenarioDropdown = self._selection.querySelector(".scenario-select");
+    addListener(scenarioDropdown, (filterSet, val) => filterSet.getWithScenario(val));
+    
+    const applicationDropdown = self._selection.querySelector(".application-select");
+    addListener(applicationDropdown, (filterSet, val) => filterSet.getWithApplication(val));
+    
+    const substanceDropdown = self._selection.querySelector(".substance-select");
+    addListener(substanceDropdown, (filterSet, val) => filterSet.getWithSubstance(val));
+  }
+
+}
+
+
 class ResultsPresenter {
   constructor(targetId) {
     const self = this;
@@ -416,6 +531,7 @@ class ResultsPresenter {
     self._scorecardPresenter = new ScorecardPresenter("scorecards", onUpdateFilterSet);
     self._dimensionPresenter = new DimensionCardPresenter("dimensions", onUpdateFilterSet);
     self._centerChartPresenter = new CenterChartPresenter("center-chart");
+    self._titlePreseter = new SelectorTitlePresenter("center-chart-holder", onUpdateFilterSet);
 
     self.hide();
   }
@@ -447,6 +563,7 @@ class ResultsPresenter {
     self._scorecardPresenter.showResults(self._results, self._filterSet);
     self._dimensionPresenter.showResults(self._results, self._filterSet);
     self._centerChartPresenter.showResults(self._results, self._filterSet);
+    self._titlePreseter.showResults(self._results, self._filterSet);
   }
 }
 

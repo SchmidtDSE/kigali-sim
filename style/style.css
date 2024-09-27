@@ -66,6 +66,16 @@ main {
   min-height: 100px;
 }
 
+#results .center-chart-holder bottom-chart-title {
+  margin-top: 5px;
+  margin-bottom: 20px;
+}
+
+#results .center-chart-holder top-chart-title {
+  margin-top: 20px;
+  margin-bottom: 10px;
+}
+
 #results .dimensions {
   margin-top: 10px;
 }
