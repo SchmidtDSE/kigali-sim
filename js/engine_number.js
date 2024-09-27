@@ -525,7 +525,7 @@ class ConverterStateGetter {
 
   getPopulationChange(unitConverter) {
     const self = this;
-    
+
     const priorEquipmentRaw = self._engine.getStream("priorEquipment");
     const newEquipmentRaw = self._engine.getStream("equipment");
     const retiredEquipmentRaw = self._engine.getRetirementRate();
@@ -533,7 +533,7 @@ class ConverterStateGetter {
     const priorEquipment = unitConverter.convert(priorEquipmentRaw, "units").getValue();
     const newEquipment = unitConverter.convert(newEquipmentRaw, "units").getValue();
     const retiredEquipment = unitConverter.convert(retiredEquipmentRaw, "units").getValue();
-    
+
     const deltaValue = newEquipment - priorEquipment + retiredEquipment;
     return new EngineNumber(deltaValue, "units");
   }
