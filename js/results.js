@@ -410,7 +410,6 @@ class CenterChartPresenter {
 
 
 class SelectorTitlePresenter {
-
   constructor(targetId, changeCallback) {
     const self = this;
     self._selection = document.getElementById(targetId);
@@ -503,20 +502,19 @@ class SelectorTitlePresenter {
 
     const metricDropdown = self._selection.querySelector(".metric-select");
     addListener(metricDropdown, (filterSet, val) => filterSet.getWithMetric(val));
-    
+
     const dimensionDropdown = self._selection.querySelector(".dimension-select");
     addListener(dimensionDropdown, (filterSet, val) => filterSet.getWithDimension(val));
-    
+
     const scenarioDropdown = self._selection.querySelector(".scenario-select");
     addListener(scenarioDropdown, (filterSet, val) => filterSet.getWithScenario(val));
-    
+
     const applicationDropdown = self._selection.querySelector(".application-select");
     addListener(applicationDropdown, (filterSet, val) => filterSet.getWithApplication(val));
-    
+
     const substanceDropdown = self._selection.querySelector(".substance-select");
     addListener(substanceDropdown, (filterSet, val) => filterSet.getWithSubstance(val));
   }
-
 }
 
 
