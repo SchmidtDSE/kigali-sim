@@ -48,10 +48,14 @@ class CodeEditorPresenter {
     self._editor.getSession().on("change", () => {
       self._onChange();
     });
+
+    ace.config.set("basePath", "/third_party");
+    ace.config.loadModule("ace/ext/searchbox");
   }
 
   _getAce() {
     const self = this;
+
     // eslint-disable-next-line no-undef
     return ace;
   }

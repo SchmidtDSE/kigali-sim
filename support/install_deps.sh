@@ -15,7 +15,12 @@ if [ ! -e third_party/publicsans/fonts/otf/PublicSans-Regular.otf ]; then
   cd ../..
 fi
 
-[ ! -e third_party/ace.min.js ] && wget https://cdnjs.cloudflare.com/ajax/libs/ace/1.32.3/ace.min.js -O third_party/ace.min.js
-[ ! -e third_party/theme-textmate.js ] && wget https://cdnjs.cloudflare.com/ajax/libs/ace/1.32.3/theme-textmate.min.js -O third_party/theme-textmate.js
+[ ! -e third_party/ace.min.js ] && wget https://cdnjs.cloudflare.com/ajax/libs/ace/1.36.2/ace.min.js -O third_party/ace.min.js
+[ ! -e third_party/theme-textmate.js ] && wget https://cdnjs.cloudflare.com/ajax/libs/ace/1.36.2/theme-textmate.min.js -O third_party/theme-textmate.js
+[ ! -e third_party/theme-textmate-css.js ] && wget https://cdnjs.cloudflare.com/ajax/libs/ace/1.36.2/theme-textmate-css.min.js -O third_party/theme-textmate-css.js
+[ ! -e third_party/ext-searchbox.js ] && wget https://cdnjs.cloudflare.com/ajax/libs/ace/1.36.2/ext-searchbox.js -O third_party/ext-searchbox.js
+[ ! -e third_party/ext-options.js ] && wget https://cdnjs.cloudflare.com/ajax/libs/ace/1.36.2/ext-options.js -O third_party/ext-options.js
+[ ! -e third_party/ext-prompt.js ] && wget https://cdnjs.cloudflare.com/ajax/libs/ace/1.36.2/ext-prompt.js -O third_party/ext-prompt.js
+[ ! -e third_party/ext-lanaguge_tools.js ] && wget https://cdnjs.cloudflare.com/ajax/libs/ace/1.36.2/ext-language_tools.js -O third_party/ext-language_tools.js
 
 [ ! -e third_party/chart.min.js ] && wget https://cdn.jsdelivr.net/npm/chart.js -O third_party/chart.min.js
