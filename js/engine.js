@@ -205,7 +205,7 @@ class Engine {
     } else if (name === "equipment") {
       self._recalcSales(scopeEffective);
       self._recalcEmissions(scopeEffective);
-    } else if (name === "priorEqipment") {
+    } else if (name === "priorEquipment") {
       self._recalcPopulationChange(scopeEffective);
     }
   }

@@ -134,6 +134,18 @@ function buildCompilerTests() {
     );
 
     buildTest(
+      "interprets a retire command with prior population",
+      "/test/qta/retire_prior.qta", [
+        (result, assert) => {
+          const record = getResult(result, BAU_NAME, 1, 0, "test", "test");
+          const population = record.getPopulation();
+          assert.ok(Math.abs(population.getValue() - 190000) < 0.0001);
+          assert.ok(population.getUnits() === "units");
+        },
+      ],
+    );
+
+    buildTest(
       "interprets a recharge command",
       "/test/qta/recharge.qta", [
         (result, assert) => {

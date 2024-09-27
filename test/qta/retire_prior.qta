@@ -1,0 +1,22 @@
+start default
+
+  define application "test"
+
+    uses substance "test"
+      initial charge with 1 kg / unit for manufacture
+      set manufacture to 100 mt
+      retire 10 %
+      emit 5 tCO2e / mt
+      set priorEquipment to 100000 units
+    end substance
+
+  end application
+
+end default
+
+
+start simulations
+
+  simulate "business as usual" from years 1 to 2
+
+end simulations
