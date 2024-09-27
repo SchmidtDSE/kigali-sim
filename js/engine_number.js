@@ -290,7 +290,7 @@ class UnitConverter {
       return new EngineNumber(newYears, "years");
     } else if (currentUnits === "unit" || currentUnits === "units") {
       const perYearPopulation = self._stateGetter
-        .getPopulationChange()
+        .getPopulationChange(self)
         .getValue();
       const newYears = target.getValue() / perYearPopulation;
       return new EngineNumber(newYears, "years");
@@ -523,11 +523,18 @@ class ConverterStateGetter {
     return new EngineNumber(ratioValue, ratioUnits);
   }
 
-  getPopulationChange() {
+  getPopulationChange(unitConverter) {
     const self = this;
-    const priorEquipment = self._engine.getStream("priorEquipment");
-    const newEquipment = self._engine.getStream("equipment");
-    const deltaValue = newEquipment.getValue() - priorEquipment.getValue();
+    
+    const priorEquipmentRaw = self._engine.getStream("priorEquipment");
+    const newEquipmentRaw = self._engine.getStream("equipment");
+    const retiredEquipmentRaw = self._engine.getRetirementRate();
+
+    const priorEquipment = unitConverter.convert(priorEquipmentRaw, "units").getValue();
+    const newEquipment = unitConverter.convert(newEquipmentRaw, "units").getValue();
+    const retiredEquipment = unitConverter.convert(retiredEquipmentRaw, "units").getValue();
+    
+    const deltaValue = newEquipment - priorEquipment + retiredEquipment;
     return new EngineNumber(deltaValue, "units");
   }
 }
@@ -662,10 +669,10 @@ class OverridingConverterStateGetter {
     self._populationChange = newValue;
   }
 
-  getPopulationChange() {
+  getPopulationChange(unitConverter) {
     const self = this;
     if (self._populationChange === null) {
-      return self._innerGetter.getPopulationChange();
+      return self._innerGetter.getPopulationChange(unitConverter);
     } else {
       return self._populationChange;
     }

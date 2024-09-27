@@ -355,6 +355,16 @@ class Engine {
     self._recalcPopulationChange();
   }
 
+  getRetirementRate() {
+    const self = this;
+    const application = self._scope.getApplication();
+    const substance = self._scope.getSubstance();
+    return self._streamKeeper.getRetirementRate(
+      application,
+      substance,
+    );
+  }
+
   recycle(recoveryWithUnits, yieldWithUnits, displaceLevel, yearMatcher) {
     const self = this;
 
@@ -697,7 +707,7 @@ class Engine {
 
     // Determine needs for new equipment deployment.
     stateGetter.setAmortizedUnitVolume(initialCharge);
-    const populationChangeRaw = stateGetter.getPopulationChange();
+    const populationChangeRaw = stateGetter.getPopulationChange(self._unitConverter);
     const populationChange = unitConverter.convert(populationChangeRaw, "units");
     const volumeForNew = unitConverter.convert(populationChange, "kg");
     stateGetter.setAmortizedUnitVolume(null);
