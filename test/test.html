@@ -23,11 +23,13 @@
                 "engine_state": "../js/engine_state.js?v=EPOCH",
                 "engine": "../js/engine.js?v=EPOCH",
                 "report_data": "../js/report_data.js?v=EPOCH",
+                "ui_translater": "../js/ui_translater.js?v=EPOCH",
                 "test_compiler": "./test_compiler.js?v=EPOCH",
                 "test_engine_number": "./test_engine_number.js?v=EPOCH",
                 "test_engine_state": "./test_engine_state.js?v=EPOCH",
                 "test_engine": "./test_engine.js?v=EPOCH",
-                "test_report_data": "./test_report_data.js?v=EPOCH"
+                "test_report_data": "./test_report_data.js?v=EPOCH",
+                "test_ui_translater": "./test_ui_translater.js?v=EPOCH",
             }
         }
     </script>
@@ -42,11 +44,13 @@
         import { buildEngineStateTests } from "test_engine_state";
         import { buildEngineTests } from "test_engine";
         import { buildReportDataTests } from "test_report_data";
+        import { buildUiTranslaterTests } from "test_ui_translater";
 
         buildCompilerTests();
         buildEngineNumberTests();
         buildEngineStateTests();
         buildEngineTests();
         buildReportDataTests();
+        buildUiTranslaterTests();
     </script>
 </body>
