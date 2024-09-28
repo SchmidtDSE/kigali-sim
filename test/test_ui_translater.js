@@ -62,8 +62,8 @@ function buildUiTranslaterTests() {
           const substance = substances[0];
 
           const emissions = substance.getEmissions();
-          assert.deepEqual(emissions.getValue(), 1);
-          assert.deepEqual(emissions.getUnits(), "tCO2e / kg");
+          assert.deepEqual(emissions.getValue(), 5);
+          assert.deepEqual(emissions.getUnits(), "tCO2e / mt");
         },
       ],
     );
@@ -147,7 +147,7 @@ function buildUiTranslaterTests() {
           assert.equal(substances.length, 1);
 
           const substance = substances[0];
-          assert.equal(substance.getName(), "sub1");
+          assert.equal(substance.getName(), "sub1a");
         },
       ],
     );
@@ -189,7 +189,7 @@ function buildUiTranslaterTests() {
 
     buildTest(
       "converts policy incompatible feature",
-      "/test/qta/ui/bau_multiple.qta", [
+      "/test/qta/ui/incompatible_feature.qta", [
         (result, assert) => {
           assert.ok(!result.getIsCompatible());
         },
@@ -198,7 +198,7 @@ function buildUiTranslaterTests() {
 
     buildTest(
       "converts policy incompatible structure",
-      "/test/qta/ui/bau_multiple.qta", [
+      "/test/qta/ui/incompatible_structure.qta", [
         (result, assert) => {
           assert.ok(!result.getIsCompatible());
         },
