@@ -5,7 +5,6 @@
  */
 
 import {EngineNumber} from "engine_number";
-import {Engine} from "engine";
 import {YearMatcher} from "engine_state";
 
 const toolkit = QubecTalk.getToolkit();
@@ -350,7 +349,7 @@ class IncompatibleCommand {
  * Visitor which attempts to compile a QubecTalk program to JS objects describing the anlaysis or
  * indication that the anlaysis cannot use the simplified JS object format.
  */
-class TranslaterVisitor extends toolkit.QubecTalkVisitor {
+class TranslatorVisitor extends toolkit.QubecTalkVisitor {
   visitNumber(ctx) {
     const self = this;
 
@@ -636,20 +635,20 @@ class TranslaterVisitor extends toolkit.QubecTalkVisitor {
 
   visitInitialChargeAllYears(ctx) {
     const self = this;
-    return new self._buildOperation(ctx, "initial charge", null);
+    return self._buildOperation(ctx, "initial charge", null);
   }
 
   visitInitialChargeDuration(ctx) {
     const self = this;
     const duration = ctx.duration.accept(self);
-    return new self._buildOperation(ctx, "initial charge", duration);
+    return self._buildOperation(ctx, "initial charge", duration);
   }
 
   visitRechargeAllYears(ctx) {
     const self = this;
     const populationFuture = (ctx) => ctx.population.accept(self);
     const volumeFuture = (ctx) => ctx.volume.accept(self);
-    return new self._buildOperation(ctx, "recharge", null, populationFuture, volumeFuture);
+    return self._buildOperation(ctx, "recharge", null, populationFuture, volumeFuture);
   }
 
   visitRechargeDuration(ctx) {
@@ -657,14 +656,14 @@ class TranslaterVisitor extends toolkit.QubecTalkVisitor {
     const populationFuture = (ctx) => ctx.population.accept(self);
     const volumeFuture = (ctx) => ctx.volume.accept(self);
     const duration = ctx.duration.accept(self);
-    return new self._buildOperation(ctx, "recharge", duration, populationFuture, volumeFuture);
+    return self._buildOperation(ctx, "recharge", duration, populationFuture, volumeFuture);
   }
 
   visitRecoverAllYears(ctx) {
     const self = this;
     const volumeFuture = (ctx) => ctx.volume.accept(self);
     const yieldFuture = (ctx) => ctx.yieldVal.accept(self);
-    return new self._buildOperation(ctx, "recycle", null, volumeFuture, yieldFuture);
+    return self._buildOperation(ctx, "recycle", null, volumeFuture, yieldFuture);
   }
 
   visitRecoverDuration(ctx) {
@@ -672,7 +671,7 @@ class TranslaterVisitor extends toolkit.QubecTalkVisitor {
     const volumeFuture = (ctx) => ctx.volume.accept(self);
     const yieldFuture = (ctx) => ctx.yieldVal.accept(self);
     const duration = ctx.duration.accept(self);
-    return new self._buildOperation(ctx, "recycle", duration, volumeFuture, yieldFuture);
+    return self._buildOperation(ctx, "recycle", duration, volumeFuture, yieldFuture);
   }
 
   visitRecoverDisplacementAllYears(ctx) {
@@ -706,7 +705,7 @@ class TranslaterVisitor extends toolkit.QubecTalkVisitor {
     const self = this;
     const targetFuture = (ctx) => null;
     const volumeFuture = (ctx) => ctx.volume.accept(self);
-    return new self._buildOperation(ctx, "retire", null, targetFuture, volumeFuture);
+    return self._buildOperation(ctx, "retire", null, targetFuture, volumeFuture);
   }
 
   visitRetireDuration(ctx) {
@@ -714,31 +713,31 @@ class TranslaterVisitor extends toolkit.QubecTalkVisitor {
     const targetFuture = (ctx) => null;
     const volumeFuture = (ctx) => ctx.volume.accept(self);
     const duration = ctx.duration.accept(self);
-    return new self._buildOperation(ctx, "retire", duration, targetFuture, volumeFuture);
+    return self._buildOperation(ctx, "retire", duration, targetFuture, volumeFuture);
   }
 
   visitSetAllYears(ctx) {
     const self = this;
-    return new self._buildOperation(ctx, "set", null);
+    return self._buildOperation(ctx, "set", null);
   }
 
   visitSetDuration(ctx) {
     const self = this;
     const duration = ctx.duration.accept(self);
-    return new self._buildOperation(ctx, "set", duration);
+    return self._buildOperation(ctx, "set", duration);
   }
 
   visitEmitAllYears(ctx) {
     const self = this;
     const targetFuture = (ctx) => null;
-    return new self._buildOperation(ctx, "emit", null, targetFuture);
+    return self._buildOperation(ctx, "emit", null, targetFuture);
   }
 
   visitEmitDuration(ctx) {
     const self = this;
     const targetFuture = (ctx) => null;
     const duration = ctx.duration.accept(self);
-    return new self._buildOperation(ctx, "emit", duration, targetFuture);
+    return self._buildOperation(ctx, "emit", duration, targetFuture);
   }
 
   visitBaseSimulation(ctx) {
@@ -843,13 +842,14 @@ class TranslaterVisitor extends toolkit.QubecTalkVisitor {
       children.push(ctx.getChild(i + 3));
     }
 
-    const childrenParsed = appChildren.map((x) => x.accept(self));
+    const childrenParsed = children.map((x) => x.accept(self));
     const isCompatible = self._getChildrenCompatible(childrenParsed);
 
     return new Application(name, childrenParsed, isCompatible);
   }
 
   _parseSubstance(ctx, isModification) {
+    const self = this;
     const name = self._getStringWithoutQuotes(ctx.name.getText());
     const numChildren = ctx.getChildCount() - 5;
 
@@ -858,7 +858,9 @@ class TranslaterVisitor extends toolkit.QubecTalkVisitor {
       children.push(ctx.getChild(i + 3));
     }
 
-    const commands = children.map((x) => x.accept(self));
+    const commands = children.map((x) => {
+      return x.accept(self);
+    });
     
     const commandsByType = new Map();
     commands.forEach((command) => {
@@ -993,7 +995,7 @@ class TranslationResult {
 }
 
 
-class UiTranslaterCompiler {
+class UiTranslatorCompiler {
   compile(input) {
     const self = this;
 
@@ -1031,7 +1033,7 @@ class UiTranslaterCompiler {
       return new TranslationResult(null, errors);
     }
 
-    const program = programUncompiled.accept(new TranslaterVisitor());
+    const program = programUncompiled.accept(new TranslatorVisitor());
     if (errors.length > 0) {
       return new TranslationResult(null, errors);
     }
@@ -1041,4 +1043,4 @@ class UiTranslaterCompiler {
 }
 
 
-export {UiTranslaterCompiler};
+export {UiTranslatorCompiler};

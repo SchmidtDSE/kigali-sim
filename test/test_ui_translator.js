@@ -1,12 +1,16 @@
-import {UiTranslaterCompiler} from "ui_translater";
+import {UiTranslatorCompiler} from "ui_translator";
 
 
-function buildUiTranslaterTests() {
-  /*QUnit.module("UiTranslaterCompiler", function() {
+function buildUiTranslatorTests() {
+  QUnit.module("UiTranslatorCompiler", function() {
     QUnit.test("initializes", function(assert) {
-      const compiler = new UiTranslaterCompiler();
+      const compiler = new UiTranslatorCompiler();
       assert.ok(compiler !== undefined);
     });
+
+    const loadRemote = (path) => {
+      return fetch(path).then((response) => response.text());
+    };
 
     const buildTest = (name, filepath, checks) => {
       QUnit.test(name, (assert) => {
@@ -14,8 +18,14 @@ function buildUiTranslaterTests() {
         loadRemote(filepath).then((content) => {
           assert.ok(content.length > 0);
 
-          const compiler = new Compiler();
-          const compilerResult = compiler.compile(content);
+          try {
+            const compiler = new UiTranslatorCompiler();
+            const compilerResult = compiler.compile(content);
+          } catch (e) {
+            console.log(e);
+            assert.ok(false);
+          }
+
           assert.ok(compilerResult.getErrors().length == 0);
 
           const program = compilerResult.getProgram();
@@ -24,6 +34,7 @@ function buildUiTranslaterTests() {
           if (compilerResult.getErrors().length > 0) {
             console.log(compilerResult.getErrors());
           } else {
+            console.log("here3");
             const programResult = program();
             checks.forEach((check) => {
               check(programResult, assert);
@@ -69,7 +80,7 @@ function buildUiTranslaterTests() {
       ],
     );
 
-    buildTest(
+    /*buildTest(
       "converts BAU multiple app substance",
       "/test/qta/ui/bau_multiple.qta", [
         (result, assert) => {
@@ -204,9 +215,9 @@ function buildUiTranslaterTests() {
           assert.ok(!result.getIsCompatible());
         },
       ],
-    );
-  });*/
+    );*/
+  });
 }
 
 
-export {buildUiTranslaterTests};
+export {buildUiTranslatorTests};
