@@ -62,8 +62,9 @@ function buildUiTranslaterTests() {
           const substance = substances[0];
 
           const emissions = substance.getEmissions();
-          assert.deepEqual(emissions.getValue(), 5);
-          assert.deepEqual(emissions.getUnits(), "tCO2e / mt");
+          const emissionsVolume = emissions.getValue();
+          assert.deepEqual(emissionsVolume.getValue(), 5);
+          assert.deepEqual(emissionsVolume.getUnits(), "tCO2e / mt");
         },
       ],
     );
