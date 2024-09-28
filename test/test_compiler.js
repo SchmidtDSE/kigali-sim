@@ -1,4 +1,4 @@
-import { Compiler } from "compiler";
+import {Compiler} from "compiler";
 
 
 function loadRemote(path) {
@@ -6,20 +6,20 @@ function loadRemote(path) {
 }
 
 function buildCompilerTests() {
-  QUnit.module("Compiler", function () {
-    QUnit.test("gets toolkit", function (assert) {
+  QUnit.module("Compiler", function() {
+    QUnit.test("gets toolkit", function(assert) {
       const toolkit = QubecTalk.getToolkit();
-      assert.ok(toolkit !== undefined);
-      assert.ok(toolkit["antlr4"] !== undefined);
-      assert.ok(toolkit["QubecTalkLexer"] !== undefined);
-      assert.ok(toolkit["QubecTalkParser"] !== undefined);
-      assert.ok(toolkit["QubecTalkListener"] !== undefined);
-      assert.ok(toolkit["QubecTalkVisitor"] !== undefined);
+      assert.notDeepEqual(toolkit, undefined);
+      assert.notDeepEqual(toolkit["antlr4"], undefined);
+      assert.notDeepEqual(toolkit["QubecTalkLexer"], undefined);
+      assert.notDeepEqual(toolkit["QubecTalkParser"], undefined);
+      assert.notDeepEqual(toolkit["QubecTalkListener"], undefined);
+      assert.notDeepEqual(toolkit["QubecTalkVisitor"], undefined);
     });
 
     QUnit.test("initializes a compiler", (assert) => {
       const compiler = new Compiler();
-      assert.ok(compiler !== undefined);
+      assert.notDeepEqual(compiler, undefined);
     });
 
     const buildTest = (name, filepath, checks) => {
@@ -27,13 +27,13 @@ function buildCompilerTests() {
         const done = assert.async();
         loadRemote(filepath).then((content) => {
           assert.ok(content.length > 0);
-          
+
           const compiler = new Compiler();
           const compilerResult = compiler.compile(content);
-          assert.ok(compilerResult.getErrors().length == 0);
+          assert.equal(compilerResult.getErrors().length, 0);
 
           const program = compilerResult.getProgram();
-          assert.ok(compilerResult.getErrors().length == 0);
+          assert.equal(compilerResult.getErrors().length, 0);
 
           if (compilerResult.getErrors().length > 0) {
             console.log(compilerResult.getErrors());
@@ -43,7 +43,7 @@ function buildCompilerTests() {
               check(programResult, assert);
             });
           }
-          
+
           done();
         });
       });
@@ -67,20 +67,20 @@ function buildCompilerTests() {
         (result, assert) => {
           const record = getResult(result, BAU_NAME, 1, 0, "test", "test");
           const equipment = record.getPopulation();
-          assert.ok(Math.abs(equipment.getValue() - 20000) < 0.0001);
-          assert.ok(equipment.getUnits() === "units");
+          assert.closeTo(equipment.getValue(), 20000, 0.0001);
+          assert.deepEqual(equipment.getUnits(), "units");
         },
         (result, assert) => {
           const record = getResult(result, BAU_NAME, 1, 0, "test", "test");
           const emissions = record.getEmissions();
-          assert.ok(Math.abs(emissions.getValue() - 500) < 0.0001);
-          assert.ok(emissions.getUnits() === "tCO2e");
+          assert.closeTo(emissions.getValue(), 500, 0.0001);
+          assert.deepEqual(emissions.getUnits(), "tCO2e");
         },
         (result, assert) => {
           const record = getResult(result, BAU_NAME, 1, 0, "test", "test");
           const manufacture = record.getManufacture();
-          assert.ok(Math.abs(manufacture.getValue() - 100000) < 0.0001);
-          assert.ok(manufacture.getUnits() === "kg");
+          assert.closeTo(manufacture.getValue(), 100000, 0.0001);
+          assert.deepEqual(manufacture.getUnits(), "kg");
         },
       ],
     );
@@ -91,14 +91,14 @@ function buildCompilerTests() {
         (result, assert) => {
           const record = getResult(result, BAU_NAME, 2, 0, "test", "test");
           const manufacture = record.getManufacture();
-          assert.ok(Math.abs(manufacture.getValue() - 110000) < 0.0001);
-          assert.ok(manufacture.getUnits() === "kg");
+          assert.closeTo(manufacture.getValue(), 110000, 0.0001);
+          assert.deepEqual(manufacture.getUnits(), "kg");
         },
         (result, assert) => {
           const record = getResult(result, BAU_NAME, 2, 0, "test", "test");
           const emissions = record.getEmissions();
-          assert.ok(Math.abs(emissions.getValue() - 550) < 0.0001);
-          assert.ok(emissions.getUnits() === "tCO2e");
+          assert.closeTo(emissions.getValue(), 550, 0.0001);
+          assert.deepEqual(emissions.getUnits(), "tCO2e");
         },
       ],
     );
@@ -109,26 +109,26 @@ function buildCompilerTests() {
         (result, assert) => {
           const record = getResult(result, BAU_NAME, 2, 0, "test", "test");
           const manufacture = record.getManufacture();
-          assert.ok(Math.abs(manufacture.getValue() - 100000) < 0.0001);
-          assert.ok(manufacture.getUnits() === "kg");
+          assert.closeTo(manufacture.getValue(), 100000, 0.0001);
+          assert.deepEqual(manufacture.getUnits(), "kg");
         },
         (result, assert) => {
           const record = getResult(result, BAU_NAME, 2, 0, "test", "test");
           const emissions = record.getEmissions();
-          assert.ok(Math.abs(emissions.getValue() - 500) < 0.0001);
-          assert.ok(emissions.getUnits() === "tCO2e");
+          assert.closeTo(emissions.getValue(), 500, 0.0001);
+          assert.deepEqual(emissions.getUnits(), "tCO2e");
         },
         (result, assert) => {
           const record = getResult(result, BAU_NAME, 1, 0, "test", "test");
           const population = record.getPopulation();
-          assert.ok(Math.abs(population.getValue() - 100000) < 0.0001);
-          assert.ok(population.getUnits() === "units");
+          assert.closeTo(population.getValue(), 100000, 0.0001);
+          assert.deepEqual(population.getUnits(), "units");
         },
         (result, assert) => {
           const record = getResult(result, BAU_NAME, 2, 0, "test", "test");
           const population = record.getPopulation();
-          assert.ok(Math.abs(population.getValue() - 190000) < 0.0001);
-          assert.ok(population.getUnits() === "units");
+          assert.closeTo(population.getValue(), 190000, 0.0001);
+          assert.deepEqual(population.getUnits(), "units");
         },
       ],
     );
@@ -139,8 +139,8 @@ function buildCompilerTests() {
         (result, assert) => {
           const record = getResult(result, BAU_NAME, 1, 0, "test", "test");
           const population = record.getPopulation();
-          assert.ok(Math.abs(population.getValue() - 190000) < 0.0001);
-          assert.ok(population.getUnits() === "units");
+          assert.closeTo(population.getValue(), 190000, 0.0001);
+          assert.deepEqual(population.getUnits(), "units");
         },
       ],
     );
@@ -151,14 +151,14 @@ function buildCompilerTests() {
         (result, assert) => {
           const record = getResult(result, BAU_NAME, 1, 0, "test", "test");
           const equipment = record.getPopulation();
-          assert.ok(Math.abs(equipment.getValue() - 100000) < 0.0001);
-          assert.ok(equipment.getUnits() === "units");
+          assert.closeTo(equipment.getValue(), 100000, 0.0001);
+          assert.deepEqual(equipment.getUnits(), "units");
         },
         (result, assert) => {
           const record = getResult(result, BAU_NAME, 2, 0, "test", "test");
           const equipment = record.getPopulation();
-          assert.ok(Math.abs(equipment.getValue() - 190000) < 0.0001);
-          assert.ok(equipment.getUnits() === "units");
+          assert.closeTo(equipment.getValue(), 190000, 0.0001);
+          assert.deepEqual(equipment.getUnits(), "units");
         },
       ],
     );
@@ -169,14 +169,14 @@ function buildCompilerTests() {
         (result, assert) => {
           const record = getResult(result, BAU_NAME, 1, 0, "test", "a");
           const emissions = record.getEmissions();
-          assert.ok(Math.abs(emissions.getValue() - 500) < 0.0001);
-          assert.ok(emissions.getUnits() === "tCO2e");
+          assert.closeTo(emissions.getValue(), 500, 0.0001);
+          assert.deepEqual(emissions.getUnits(), "tCO2e");
         },
         (result, assert) => {
           const record = getResult(result, BAU_NAME, 1, 0, "test", "b");
           const emissions = record.getEmissions();
-          assert.ok(Math.abs(emissions.getValue() - 1000) < 0.0001);
-          assert.ok(emissions.getUnits() === "tCO2e");
+          assert.closeTo(emissions.getValue(), 1000, 0.0001);
+          assert.deepEqual(emissions.getUnits(), "tCO2e");
         },
       ],
     );
@@ -187,8 +187,8 @@ function buildCompilerTests() {
         (result, assert) => {
           const record = getResult(result, "result", 1, 0, "test", "test");
           const emissions = record.getEmissions();
-          assert.ok(Math.abs(emissions.getValue() - 250) < 0.0001);
-          assert.ok(emissions.getUnits() === "tCO2e");
+          assert.closeTo(emissions.getValue(), 250, 0.0001);
+          assert.deepEqual(emissions.getUnits(), "tCO2e");
         },
       ],
     );
@@ -199,14 +199,14 @@ function buildCompilerTests() {
         (result, assert) => {
           const record = getResult(result, "result", 1, 0, "test", "test");
           const emissions = record.getEmissions();
-          assert.ok(Math.abs(emissions.getValue() - 500) < 0.0001);
-          assert.ok(emissions.getUnits() === "tCO2e");
+          assert.closeTo(emissions.getValue(), 500, 0.0001);
+          assert.deepEqual(emissions.getUnits(), "tCO2e");
         },
         (result, assert) => {
           const record = getResult(result, "result", 2, 0, "test", "test");
           const emissions = record.getEmissions();
-          assert.ok(Math.abs(emissions.getValue() - 437.5) < 0.0001);
-          assert.ok(emissions.getUnits() === "tCO2e");
+          assert.closeTo(emissions.getValue(), 437.5, 0.0001);
+          assert.deepEqual(emissions.getUnits(), "tCO2e");
         },
       ],
     );
@@ -217,14 +217,14 @@ function buildCompilerTests() {
         (result, assert) => {
           const record = getResult(result, "result", 1, 0, "test", "a");
           const emissions = record.getEmissions();
-          assert.ok(Math.abs(emissions.getValue() - 250) < 0.0001);
-          assert.ok(emissions.getUnits() === "tCO2e");
+          assert.closeTo(emissions.getValue(), 250, 0.0001);
+          assert.deepEqual(emissions.getUnits(), "tCO2e");
         },
         (result, assert) => {
           const record = getResult(result, "result", 1, 0, "test", "b");
           const emissions = record.getEmissions();
-          assert.ok(Math.abs(emissions.getValue() - 375) < 0.0001);
-          assert.ok(emissions.getUnits() === "tCO2e");
+          assert.closeTo(emissions.getValue(), 375, 0.0001);
+          assert.deepEqual(emissions.getUnits(), "tCO2e");
         },
       ],
     );
@@ -235,8 +235,8 @@ function buildCompilerTests() {
         (result, assert) => {
           const record = getResult(result, "result", 1, 0, "test", "test");
           const emissions = record.getEmissions();
-          assert.ok(Math.abs(emissions.getValue() - 125) < 0.0001);
-          assert.ok(emissions.getUnits() === "tCO2e");
+          assert.closeTo(emissions.getValue(), 125, 0.0001);
+          assert.deepEqual(emissions.getUnits(), "tCO2e");
         },
       ],
     );
@@ -247,8 +247,8 @@ function buildCompilerTests() {
         (result, assert) => {
           const record = getResult(result, "business as usual", 1, 0, "test", "test");
           const emissions = record.getEmissions();
-          assert.ok(Math.abs(emissions.getValue() - 250) < 0.0001);
-          assert.ok(emissions.getUnits() === "tCO2e");
+          assert.closeTo(emissions.getValue(), 250, 0.0001);
+          assert.deepEqual(emissions.getUnits(), "tCO2e");
         },
       ],
     );
@@ -261,14 +261,14 @@ function buildCompilerTests() {
           const emissions = record.getEmissions();
           assert.ok(emissions.getValue() >= 300);
           assert.ok(emissions.getValue() <= 700);
-          assert.ok(emissions.getUnits() === "tCO2e");
+          assert.deepEqual(emissions.getUnits(), "tCO2e");
         },
         (result, assert) => {
           const record = getResult(result, "business as usual", 1, 1, "test", "test");
           const emissions = record.getEmissions();
           assert.ok(emissions.getValue() >= 300);
           assert.ok(emissions.getValue() <= 700);
-          assert.ok(emissions.getUnits() === "tCO2e");
+          assert.deepEqual(emissions.getUnits(), "tCO2e");
         },
       ],
     );
@@ -281,4 +281,4 @@ function buildCompilerTests() {
   });
 }
 
-export { buildCompilerTests };
+export {buildCompilerTests};
