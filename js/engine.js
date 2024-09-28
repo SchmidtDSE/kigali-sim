@@ -114,14 +114,27 @@ class Engine {
    * Set the substance for the engine current scope.
    *
    * @param newSubstance The new application name.
+   * @param checkValid True if an error should be thrown if the app / substance is not previously
+   *    registered or false if it should be registered if not found. Defaults to false.
    */
-  setSubstance(newSubstance) {
+  setSubstance(newSubstance, checkValid) {
     const self = this;
     self._scope = self._scope.getWithSubstance(newSubstance);
-    self._streamKeeper.ensureSubstance(
-      self._scope.getApplication(),
-      newSubstance,
-    );
+
+    if (checkValid === undefined) {
+      checkValid = false;
+    }
+
+    const application = self._scope.getApplication();
+
+    if (checkValid) {
+      const knownSubstance = self._streamKeeper.hasSubstance(application, newSubstance);
+      if (!knownSubstance) {
+        throw "Tried accessing unknown app / substance pair: " + application + ", " + newSubstance;
+      }
+    } else {
+      self._streamKeeper.ensureSubstance(application, newSubstance);
+    }
   }
 
   /**
