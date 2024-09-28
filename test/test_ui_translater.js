@@ -1,11 +1,9 @@
-import { UiTranslaterCompiler } from "ui_translater";
+import {UiTranslaterCompiler} from "ui_translater";
 
 
 function buildUiTranslaterTests() {
-
-  QUnit.module("UiTranslaterCompiler", function () {
-    
-    QUnit.test("initializes", function (assert) {
+  QUnit.module("UiTranslaterCompiler", function() {
+    QUnit.test("initializes", function(assert) {
       const compiler = new UiTranslaterCompiler();
       assert.ok(compiler !== undefined);
     });
@@ -15,7 +13,7 @@ function buildUiTranslaterTests() {
         const done = assert.async();
         loadRemote(filepath).then((content) => {
           assert.ok(content.length > 0);
-          
+
           const compiler = new Compiler();
           const compilerResult = compiler.compile(content);
           assert.ok(compilerResult.getErrors().length == 0);
@@ -31,7 +29,7 @@ function buildUiTranslaterTests() {
               check(programResult, assert);
             });
           }
-          
+
           done();
         });
       });
@@ -90,7 +88,5 @@ function buildUiTranslaterTests() {
         },
       ],
     );
-  
   });
-
 }
