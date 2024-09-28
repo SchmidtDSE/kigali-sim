@@ -1,29 +1,29 @@
-import { EngineNumber, UnitConverter } from "engine_number";
+import {EngineNumber, UnitConverter} from "engine_number";
 
 
 function buildEngineNumberTests() {
-  QUnit.module("EngineNumber", function () {
+  QUnit.module("EngineNumber", function() {
     const makeExample = () => {
       return new EngineNumber(1.23, "kg");
     };
 
-    QUnit.test("initializes", function (assert) {
+    QUnit.test("initializes", function(assert) {
       const number = makeExample();
-      assert.ok(number !== undefined);
+      assert.notDeepEqual(number, undefined);
     });
 
-    QUnit.test("getValue", function (assert) {
+    QUnit.test("getValue", function(assert) {
       const number = makeExample();
-      assert.ok(Math.abs(number.getValue() - 1.23) < 0.0001);
+      assert.closeTo(number.getValue(), 1.23, 0.0001);
     });
 
-    QUnit.test("getUnits", function (assert) {
+    QUnit.test("getUnits", function(assert) {
       const number = makeExample();
-      assert.ok(number.getUnits() === "kg");
+      assert.deepEqual(number.getUnits(), "kg");
     });
   });
 
-  QUnit.module("convertUnits", function () {
+  QUnit.module("convertUnits", function() {
     class MockConverterStateGetter {
       constructor() {
         const self = this;
@@ -123,18 +123,18 @@ function buildEngineNumberTests() {
       return converter.convert(source, destination);
     }
 
-    QUnit.test("volume to volume", function (assert) {
+    QUnit.test("volume to volume", function(assert) {
       const result = convertUnits(
         new EngineNumber(1, "mt"),
         "kg",
         new MockConverterStateGetter(),
       );
 
-      assert.ok(Math.abs(result.getValue() - 1000) < 0.001);
-      assert.ok(result.getUnits() === "kg");
+      assert.closeTo(result.getValue(), 1000, 0.001);
+      assert.deepEqual(result.getUnits(), "kg");
     });
 
-    QUnit.test("emissions to volume", function (assert) {
+    QUnit.test("emissions to volume", function(assert) {
       const mockConverterStateGetter = new MockConverterStateGetter();
       mockConverterStateGetter.setSubstanceEmissions(
         new EngineNumber(5, "tCO2e / mt"),
@@ -146,11 +146,11 @@ function buildEngineNumberTests() {
         mockConverterStateGetter,
       );
 
-      assert.ok(Math.abs(result.getValue() - 4) < 0.001);
-      assert.ok(result.getUnits() === "mt");
+      assert.closeTo(result.getValue(), 4, 0.001);
+      assert.deepEqual(result.getUnits(), "mt");
     });
 
-    QUnit.test("units to volume", function (assert) {
+    QUnit.test("units to volume", function(assert) {
       const mockConverterStateGetter = new MockConverterStateGetter();
       mockConverterStateGetter.setAmortizedUnitVolume(
         new EngineNumber(10, "kg / unit"),
@@ -162,11 +162,11 @@ function buildEngineNumberTests() {
         mockConverterStateGetter,
       );
 
-      assert.ok(Math.abs(result.getValue() - 200) < 0.001);
-      assert.ok(result.getUnits() === "kg");
+      assert.closeTo(result.getValue(), 200, 0.001);
+      assert.deepEqual(result.getUnits(), "kg");
     });
 
-    QUnit.test("volume per pop to volume", function (assert) {
+    QUnit.test("volume per pop to volume", function(assert) {
       const mockConverterStateGetter = new MockConverterStateGetter();
       mockConverterStateGetter.setPopulation(new EngineNumber(10, "units"));
 
@@ -176,11 +176,11 @@ function buildEngineNumberTests() {
         mockConverterStateGetter,
       );
 
-      assert.ok(Math.abs(result.getValue() - 200) < 0.001);
-      assert.ok(result.getUnits() === "kg");
+      assert.closeTo(result.getValue(), 200, 0.001);
+      assert.deepEqual(result.getUnits(), "kg");
     });
 
-    QUnit.test("volume per time to volume", function (assert) {
+    QUnit.test("volume per time to volume", function(assert) {
       const mockConverterStateGetter = new MockConverterStateGetter();
       mockConverterStateGetter.setYearsElapsed(new EngineNumber(2, "years"));
 
@@ -190,11 +190,11 @@ function buildEngineNumberTests() {
         mockConverterStateGetter,
       );
 
-      assert.ok(Math.abs(result.getValue() - 40) < 0.001);
-      assert.ok(result.getUnits() === "kg");
+      assert.closeTo(result.getValue(), 40, 0.001);
+      assert.deepEqual(result.getUnits(), "kg");
     });
 
-    QUnit.test("volume per emissions to volume", function (assert) {
+    QUnit.test("volume per emissions to volume", function(assert) {
       const mockConverterStateGetter = new MockConverterStateGetter();
       mockConverterStateGetter.setEmissions(new EngineNumber(10, "tCO2e"));
 
@@ -204,11 +204,11 @@ function buildEngineNumberTests() {
         mockConverterStateGetter,
       );
 
-      assert.ok(Math.abs(result.getValue() - 200) < 0.001);
-      assert.ok(result.getUnits() === "kg");
+      assert.closeTo(result.getValue(), 200, 0.001);
+      assert.deepEqual(result.getUnits(), "kg");
     });
 
-    QUnit.test("percent to volume", function (assert) {
+    QUnit.test("percent to volume", function(assert) {
       const mockConverterStateGetter = new MockConverterStateGetter();
       mockConverterStateGetter.setVolume(new EngineNumber(20, "kg"));
 
@@ -218,22 +218,22 @@ function buildEngineNumberTests() {
         mockConverterStateGetter,
       );
 
-      assert.ok(Math.abs(result.getValue() - 2) < 0.001);
-      assert.ok(result.getUnits() === "kg");
+      assert.closeTo(result.getValue(), 2, 0.001);
+      assert.deepEqual(result.getUnits(), "kg");
     });
 
-    QUnit.test("pop to pop", function (assert) {
+    QUnit.test("pop to pop", function(assert) {
       const result = convertUnits(
         new EngineNumber(5, "unit"),
         "units",
         new MockConverterStateGetter(),
       );
 
-      assert.ok(Math.abs(result.getValue() - 5) < 0.001);
-      assert.ok(result.getUnits() === "units");
+      assert.closeTo(result.getValue(), 5, 0.001);
+      assert.deepEqual(result.getUnits(), "units");
     });
 
-    QUnit.test("volume to pop", function (assert) {
+    QUnit.test("volume to pop", function(assert) {
       const mockConverterStateGetter = new MockConverterStateGetter();
       mockConverterStateGetter.setAmortizedUnitVolume(
         new EngineNumber(10, "kg / unit"),
@@ -245,11 +245,11 @@ function buildEngineNumberTests() {
         mockConverterStateGetter,
       );
 
-      assert.ok(Math.abs(result.getValue() - 2) < 0.001);
-      assert.ok(result.getUnits() === "units");
+      assert.closeTo(result.getValue(), 2, 0.001);
+      assert.deepEqual(result.getUnits(), "units");
     });
 
-    QUnit.test("emissions to pop", function (assert) {
+    QUnit.test("emissions to pop", function(assert) {
       const mockConverterStateGetter = new MockConverterStateGetter();
       mockConverterStateGetter.setAmortizedUnitEmissions(
         new EngineNumber(50, "tCO2e / unit"),
@@ -261,11 +261,11 @@ function buildEngineNumberTests() {
         mockConverterStateGetter,
       );
 
-      assert.ok(Math.abs(result.getValue() - 4) < 0.001);
-      assert.ok(result.getUnits() === "units");
+      assert.closeTo(result.getValue(), 4, 0.001);
+      assert.deepEqual(result.getUnits(), "units");
     });
 
-    QUnit.test("pop per time to pop", function (assert) {
+    QUnit.test("pop per time to pop", function(assert) {
       const mockConverterStateGetter = new MockConverterStateGetter();
       mockConverterStateGetter.setYearsElapsed(new EngineNumber(2, "years"));
 
@@ -275,11 +275,11 @@ function buildEngineNumberTests() {
         mockConverterStateGetter,
       );
 
-      assert.ok(Math.abs(result.getValue() - 40) < 0.001);
-      assert.ok(result.getUnits() === "units");
+      assert.closeTo(result.getValue(), 40, 0.001);
+      assert.deepEqual(result.getUnits(), "units");
     });
 
-    QUnit.test("pop per volume to pop", function (assert) {
+    QUnit.test("pop per volume to pop", function(assert) {
       const mockConverterStateGetter = new MockConverterStateGetter();
       mockConverterStateGetter.setVolume(new EngineNumber(10, "kg"));
 
@@ -289,11 +289,11 @@ function buildEngineNumberTests() {
         mockConverterStateGetter,
       );
 
-      assert.ok(Math.abs(result.getValue() - 20) < 0.001);
-      assert.ok(result.getUnits() === "units");
+      assert.closeTo(result.getValue(), 20, 0.001);
+      assert.deepEqual(result.getUnits(), "units");
     });
 
-    QUnit.test("pop per emissions to pop", function (assert) {
+    QUnit.test("pop per emissions to pop", function(assert) {
       const mockConverterStateGetter = new MockConverterStateGetter();
       mockConverterStateGetter.setEmissions(new EngineNumber(5, "tCO2e"));
 
@@ -303,11 +303,11 @@ function buildEngineNumberTests() {
         mockConverterStateGetter,
       );
 
-      assert.ok(Math.abs(result.getValue() - 10) < 0.001);
-      assert.ok(result.getUnits() === "units");
+      assert.closeTo(result.getValue(), 10, 0.001);
+      assert.deepEqual(result.getUnits(), "units");
     });
 
-    QUnit.test("percent to pop", function (assert) {
+    QUnit.test("percent to pop", function(assert) {
       const mockConverterStateGetter = new MockConverterStateGetter();
       mockConverterStateGetter.setPopulation(new EngineNumber(20, "units"));
 
@@ -317,22 +317,22 @@ function buildEngineNumberTests() {
         mockConverterStateGetter,
       );
 
-      assert.ok(Math.abs(result.getValue() - 2) < 0.001);
-      assert.ok(result.getUnits() === "units");
+      assert.closeTo(result.getValue(), 2, 0.001);
+      assert.deepEqual(result.getUnits(), "units");
     });
 
-    QUnit.test("emissions to emissions", function (assert) {
+    QUnit.test("emissions to emissions", function(assert) {
       const result = convertUnits(
         new EngineNumber(5, "tCO2e"),
         "tCO2e",
         new MockConverterStateGetter(),
       );
 
-      assert.ok(Math.abs(result.getValue() - 5) < 0.001);
-      assert.ok(result.getUnits() === "tCO2e");
+      assert.closeTo(result.getValue(), 5, 0.001);
+      assert.deepEqual(result.getUnits(), "tCO2e");
     });
 
-    QUnit.test("volume to emissions", function (assert) {
+    QUnit.test("volume to emissions", function(assert) {
       const mockConverterStateGetter = new MockConverterStateGetter();
       mockConverterStateGetter.setSubstanceEmissions(
         new EngineNumber(5, "tCO2e / kg"),
@@ -344,11 +344,11 @@ function buildEngineNumberTests() {
         mockConverterStateGetter,
       );
 
-      assert.ok(Math.abs(result.getValue() - 50) < 0.001);
-      assert.ok(result.getUnits() === "tCO2e");
+      assert.closeTo(result.getValue(), 50, 0.001);
+      assert.deepEqual(result.getUnits(), "tCO2e");
     });
 
-    QUnit.test("pop to emissions", function (assert) {
+    QUnit.test("pop to emissions", function(assert) {
       const mockConverterStateGetter = new MockConverterStateGetter();
       mockConverterStateGetter.setAmortizedUnitVolume(
         new EngineNumber(0.1, "tCO2e / unit"),
@@ -360,11 +360,11 @@ function buildEngineNumberTests() {
         mockConverterStateGetter,
       );
 
-      assert.ok(Math.abs(result.getValue() - 2) < 0.001);
-      assert.ok(result.getUnits() === "tCO2e");
+      assert.closeTo(result.getValue(), 2, 0.001);
+      assert.deepEqual(result.getUnits(), "tCO2e");
     });
 
-    QUnit.test("emissions per time to emissions", function (assert) {
+    QUnit.test("emissions per time to emissions", function(assert) {
       const mockConverterStateGetter = new MockConverterStateGetter();
       mockConverterStateGetter.setYearsElapsed(new EngineNumber(2, "years"));
 
@@ -374,11 +374,11 @@ function buildEngineNumberTests() {
         mockConverterStateGetter,
       );
 
-      assert.ok(Math.abs(result.getValue() - 40) < 0.001);
-      assert.ok(result.getUnits() === "tCO2e");
+      assert.closeTo(result.getValue(), 40, 0.001);
+      assert.deepEqual(result.getUnits(), "tCO2e");
     });
 
-    QUnit.test("emissions per volume to emissions", function (assert) {
+    QUnit.test("emissions per volume to emissions", function(assert) {
       const mockConverterStateGetter = new MockConverterStateGetter();
       mockConverterStateGetter.setVolume(new EngineNumber(5, "kg"));
 
@@ -388,11 +388,11 @@ function buildEngineNumberTests() {
         mockConverterStateGetter,
       );
 
-      assert.ok(Math.abs(result.getValue() - 10) < 0.001);
-      assert.ok(result.getUnits() === "tCO2e");
+      assert.closeTo(result.getValue(), 10, 0.001);
+      assert.deepEqual(result.getUnits(), "tCO2e");
     });
 
-    QUnit.test("emissions per pop to emissions", function (assert) {
+    QUnit.test("emissions per pop to emissions", function(assert) {
       const mockConverterStateGetter = new MockConverterStateGetter();
       mockConverterStateGetter.setPopulation(new EngineNumber(20, "units"));
 
@@ -402,11 +402,11 @@ function buildEngineNumberTests() {
         mockConverterStateGetter,
       );
 
-      assert.ok(Math.abs(result.getValue() - 200) < 0.001);
-      assert.ok(result.getUnits() === "tCO2e");
+      assert.closeTo(result.getValue(), 200, 0.001);
+      assert.deepEqual(result.getUnits(), "tCO2e");
     });
 
-    QUnit.test("percent to emissions", function (assert) {
+    QUnit.test("percent to emissions", function(assert) {
       const mockConverterStateGetter = new MockConverterStateGetter();
       mockConverterStateGetter.setEmissions(new EngineNumber(10, "tCO2e"));
 
@@ -416,22 +416,22 @@ function buildEngineNumberTests() {
         mockConverterStateGetter,
       );
 
-      assert.ok(Math.abs(result.getValue() - 1) < 0.001);
-      assert.ok(result.getUnits() === "tCO2e");
+      assert.closeTo(result.getValue(), 1, 0.001);
+      assert.deepEqual(result.getUnits(), "tCO2e");
     });
 
-    QUnit.test("years to years", function (assert) {
+    QUnit.test("years to years", function(assert) {
       const result = convertUnits(
         new EngineNumber(5, "year"),
         "years",
         new MockConverterStateGetter(),
       );
 
-      assert.ok(Math.abs(result.getValue() - 5) < 0.001);
-      assert.ok(result.getUnits() === "years");
+      assert.closeTo(result.getValue(), 5, 0.001);
+      assert.deepEqual(result.getUnits(), "years");
     });
 
-    QUnit.test("emissions to years", function (assert) {
+    QUnit.test("emissions to years", function(assert) {
       const mockConverterStateGetter = new MockConverterStateGetter();
       mockConverterStateGetter.setEmissions(new EngineNumber(5, "tCO2e"));
 
@@ -441,11 +441,11 @@ function buildEngineNumberTests() {
         mockConverterStateGetter,
       );
 
-      assert.ok(Math.abs(result.getValue() - 2) < 0.001);
-      assert.ok(result.getUnits() === "years");
+      assert.closeTo(result.getValue(), 2, 0.001);
+      assert.deepEqual(result.getUnits(), "years");
     });
 
-    QUnit.test("volume to years", function (assert) {
+    QUnit.test("volume to years", function(assert) {
       const mockConverterStateGetter = new MockConverterStateGetter();
       mockConverterStateGetter.setVolume(new EngineNumber(5, "kg"));
 
@@ -455,11 +455,11 @@ function buildEngineNumberTests() {
         mockConverterStateGetter,
       );
 
-      assert.ok(Math.abs(result.getValue() - 2) < 0.001);
-      assert.ok(result.getUnits() === "years");
+      assert.closeTo(result.getValue(), 2, 0.001);
+      assert.deepEqual(result.getUnits(), "years");
     });
 
-    QUnit.test("pop to years", function (assert) {
+    QUnit.test("pop to years", function(assert) {
       const mockConverterStateGetter = new MockConverterStateGetter();
       mockConverterStateGetter.setPopulationChange(
         new EngineNumber(2, "units"),
@@ -471,11 +471,11 @@ function buildEngineNumberTests() {
         mockConverterStateGetter,
       );
 
-      assert.ok(Math.abs(result.getValue() - 10) < 0.001);
-      assert.ok(result.getUnits() === "years");
+      assert.closeTo(result.getValue(), 10, 0.001);
+      assert.deepEqual(result.getUnits(), "years");
     });
 
-    QUnit.test("percent to years", function (assert) {
+    QUnit.test("percent to years", function(assert) {
       const mockConverterStateGetter = new MockConverterStateGetter();
       mockConverterStateGetter.setYearsElapsed(new EngineNumber(2, "years"));
 
@@ -485,11 +485,11 @@ function buildEngineNumberTests() {
         mockConverterStateGetter,
       );
 
-      assert.ok(Math.abs(result.getValue() - 0.2) < 0.001);
-      assert.ok(result.getUnits() === "years");
+      assert.closeTo(result.getValue(), 0.2, 0.001);
+      assert.deepEqual(result.getUnits(), "years");
     });
-    
-    QUnit.test("normalize by population", function (assert) {
+
+    QUnit.test("normalize by population", function(assert) {
       const mockConverterStateGetter = new MockConverterStateGetter();
       mockConverterStateGetter.setPopulation(
         new EngineNumber(2, "units"),
@@ -501,11 +501,11 @@ function buildEngineNumberTests() {
         mockConverterStateGetter,
       );
 
-      assert.ok(Math.abs(result.getValue() - 10) < 0.001);
-      assert.ok(result.getUnits() === "kg / unit");
+      assert.closeTo(result.getValue(), 10, 0.001);
+      assert.deepEqual(result.getUnits(), "kg / unit");
     });
-    
-    QUnit.test("normalize by volume", function (assert) {
+
+    QUnit.test("normalize by volume", function(assert) {
       const mockConverterStateGetter = new MockConverterStateGetter();
       mockConverterStateGetter.setVolume(
         new EngineNumber(2, "kg"),
@@ -517,11 +517,11 @@ function buildEngineNumberTests() {
         mockConverterStateGetter,
       );
 
-      assert.ok(Math.abs(result.getValue() - 5) < 0.001);
-      assert.ok(result.getUnits() === "unit / kg");
+      assert.closeTo(result.getValue(), 5, 0.001);
+      assert.deepEqual(result.getUnits(), "unit / kg");
     });
-    
-    QUnit.test("normalize by emissions", function (assert) {
+
+    QUnit.test("normalize by emissions", function(assert) {
       const mockConverterStateGetter = new MockConverterStateGetter();
       mockConverterStateGetter.setEmissions(
         new EngineNumber(2, "tCO2e"),
@@ -533,11 +533,11 @@ function buildEngineNumberTests() {
         mockConverterStateGetter,
       );
 
-      assert.ok(Math.abs(result.getValue() - 5) < 0.001);
-      assert.ok(result.getUnits() === "unit / tCO2e");
+      assert.closeTo(result.getValue(), 5, 0.001);
+      assert.deepEqual(result.getUnits(), "unit / tCO2e");
     });
-    
-    QUnit.test("normalize by time", function (assert) {
+
+    QUnit.test("normalize by time", function(assert) {
       const mockConverterStateGetter = new MockConverterStateGetter();
       mockConverterStateGetter.setYearsElapsed(
         new EngineNumber(2, "years"),
@@ -549,8 +549,8 @@ function buildEngineNumberTests() {
         mockConverterStateGetter,
       );
 
-      assert.ok(Math.abs(result.getValue() - 5) < 0.001);
-      assert.ok(result.getUnits() === "unit / year");
+      assert.closeTo(result.getValue(), 5, 0.001);
+      assert.deepEqual(result.getUnits(), "unit / year");
     });
   });
 }

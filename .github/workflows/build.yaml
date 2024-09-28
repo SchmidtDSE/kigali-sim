@@ -17,8 +17,10 @@ jobs:
         uses: actions/setup-node@v4
       - name: Install node deps
         run: npm install --dev
-      - name: Run lint
+      - name: Lint production code
         run: npx eslint ./js/*.js
+      - name: Lint test code
+        run: npx eslint ./test/*.js
   unitTests:
     environment: build
     runs-on: ubuntu-latest

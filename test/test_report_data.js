@@ -1,5 +1,5 @@
-import { Compiler } from "compiler";
-import { ReportDataWrapper, FilterSet } from "report_data";
+import {Compiler} from "compiler";
+import {ReportDataWrapper, FilterSet} from "report_data";
 
 
 function loadRemote(path) {
@@ -7,21 +7,19 @@ function loadRemote(path) {
 }
 
 function buildReportDataTests() {
-
-  QUnit.module("ReportData", function () {
-    
+  QUnit.module("ReportData", function() {
     const buildTest = (name, filepath, checks) => {
       QUnit.test(name, (assert) => {
         const done = assert.async();
         loadRemote(filepath).then((content) => {
           assert.ok(content.length > 0);
-          
+
           const compiler = new Compiler();
           const compilerResult = compiler.compile(content);
-          assert.ok(compilerResult.getErrors().length == 0);
+          assert.equal(compilerResult.getErrors().length, 0);
 
           const program = compilerResult.getProgram();
-          assert.ok(compilerResult.getErrors().length == 0);
+          assert.equal(compilerResult.getErrors().length, 0);
 
           if (compilerResult.getErrors().length > 0) {
             console.log(compilerResult.getErrors());
@@ -32,7 +30,7 @@ function buildReportDataTests() {
               check(programResultWrapped, assert);
             });
           }
-          
+
           done();
         });
       });
@@ -42,7 +40,7 @@ function buildReportDataTests() {
       "runs the base script",
       "/test/qta/multiple_with_policies.qta", [
         (result, assert) => {
-          assert.ok(result !== null);
+          assert.notDeepEqual(result, null);
         },
       ],
     );
@@ -52,7 +50,7 @@ function buildReportDataTests() {
       "/test/qta/multiple_with_policies.qta", [
         (result, assert) => {
           const years = result.getScenarios();
-          assert.ok(years.size == 2);
+          assert.equal(years.size, 2);
           assert.ok(years.has("bau"));
           assert.ok(years.has("sim"));
         },
@@ -65,7 +63,7 @@ function buildReportDataTests() {
         (result, assert) => {
           const filterSet = new FilterSet(null, null, null, null);
           const years = result.getYears(filterSet);
-          assert.ok(years.size == 3);
+          assert.equal(years.size, 3);
           assert.ok(years.has(1));
           assert.ok(years.has(2));
           assert.ok(years.has(3));
@@ -79,7 +77,7 @@ function buildReportDataTests() {
         (result, assert) => {
           const filterSet = new FilterSet(null, "sim", null, null);
           const years = result.getYears(filterSet);
-          assert.ok(years.size == 2);
+          assert.equal(years.size, 2);
           assert.ok(years.has(1));
           assert.ok(years.has(2));
         },
@@ -92,7 +90,7 @@ function buildReportDataTests() {
         (result, assert) => {
           const filterSet = new FilterSet(null, null, null, null);
           const years = result.getApplications(filterSet);
-          assert.ok(years.size == 2);
+          assert.equal(years.size, 2);
           assert.ok(years.has("appA"));
           assert.ok(years.has("appB"));
         },
@@ -105,7 +103,7 @@ function buildReportDataTests() {
         (result, assert) => {
           const filterSet = new FilterSet(null, null, null, "subA");
           const years = result.getApplications(filterSet);
-          assert.ok(years.size == 1);
+          assert.equal(years.size, 1);
           assert.ok(years.has("appA"));
         },
       ],
@@ -117,7 +115,7 @@ function buildReportDataTests() {
         (result, assert) => {
           const filterSet = new FilterSet(null, null, null, null);
           const years = result.getSubstances(filterSet);
-          assert.ok(years.size == 2);
+          assert.equal(years.size, 2);
           assert.ok(years.has("subA"));
           assert.ok(years.has("subB"));
         },
@@ -130,7 +128,7 @@ function buildReportDataTests() {
         (result, assert) => {
           const filterSet = new FilterSet(null, null, "appA", null);
           const years = result.getSubstances(filterSet);
-          assert.ok(years.size == 1);
+          assert.equal(years.size, 1);
           assert.ok(years.has("subA"));
         },
       ],
@@ -142,8 +140,8 @@ function buildReportDataTests() {
         (result, assert) => {
           const filterSet = new FilterSet(1, "bau", null, null);
           const totalEmissions = result.getEmissions(filterSet);
-          assert.ok(Math.abs(totalEmissions.getValue() - 1500) < 0.0001);
-          assert.ok(totalEmissions.getUnits() === "tCO2e");
+          assert.closeTo(totalEmissions.getValue(), 1500, 0.0001);
+          assert.deepEqual(totalEmissions.getUnits(), "tCO2e");
         },
       ],
     );
@@ -154,8 +152,8 @@ function buildReportDataTests() {
         (result, assert) => {
           const filterSet = new FilterSet(1, "bau", null, null);
           const totalSales = result.getSales(filterSet);
-          assert.ok(Math.abs(totalSales.getValue() - 200000) < 0.0001);
-          assert.ok(totalSales.getUnits() === "kg");
+          assert.closeTo(totalSales.getValue(), 200000, 0.0001);
+          assert.deepEqual(totalSales.getUnits(), "kg");
         },
       ],
     );
@@ -166,15 +164,13 @@ function buildReportDataTests() {
         (result, assert) => {
           const filterSet = new FilterSet(1, "bau", null, null);
           const totalPopulation = result.getPopulation(filterSet);
-          assert.ok(Math.abs(totalPopulation.getValue() - 200000) < 0.0001);
-          assert.ok(totalPopulation.getUnits() === "units");
+          assert.closeTo(totalPopulation.getValue(), 200000, 0.0001);
+          assert.deepEqual(totalPopulation.getUnits(), "units");
         },
       ],
     );
-
   });
-
 }
 
 
-export { buildReportDataTests };
+export {buildReportDataTests};
