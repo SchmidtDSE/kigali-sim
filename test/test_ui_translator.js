@@ -35,9 +35,14 @@ function buildUiTranslatorTests() {
           if (compilerResult.getErrors().length > 0) {
             console.log(compilerResult.getErrors());
           } else {
-            checks.forEach((check) => {
-              check(programResult, assert);
-            });
+            try {
+              checks.forEach((check) => {
+                check(programResult, assert);
+              });
+            } catch (e) {
+              console.log(e);
+              assert.ok(false);
+            }
           }
 
           done();
@@ -79,7 +84,7 @@ function buildUiTranslatorTests() {
       ],
     );
 
-    /*buildTest(
+    buildTest(
       "converts BAU multiple app substance",
       "/test/qta/ui/bau_multiple.qta", [
         (result, assert) => {
@@ -92,7 +97,7 @@ function buildUiTranslatorTests() {
           const application = applications[0];
           assert.deepEqual(application.getName(), "app1");
 
-          const applicationOther = applications[2];
+          const applicationOther = applications[1];
           assert.deepEqual(applicationOther.getName(), "app2");
 
           const substances = application.getSubstances();
@@ -145,7 +150,7 @@ function buildUiTranslatorTests() {
           const policy = policies[0];
           assert.deepEqual(policy.getName(), "policy1");
 
-          const policyOther = policies[0];
+          const policyOther = policies[1];
           assert.deepEqual(policyOther.getName(), "policy2");
 
           const applications = policy.getApplications();
@@ -158,7 +163,7 @@ function buildUiTranslatorTests() {
           assert.equal(substances.length, 1);
 
           const substance = substances[0];
-          assert.equal(substance.getName(), "sub1a");
+          assert.equal(substance.getName(), "sub1");
         },
       ],
     );
@@ -192,7 +197,7 @@ function buildUiTranslatorTests() {
           const scenario = scenarios[0];
           assert.deepEqual(scenario.getName(), "business as usual");
 
-          const scenarioOther = scenarios[0];
+          const scenarioOther = scenarios[1];
           assert.deepEqual(scenarioOther.getName(), "policy scenario");
         },
       ],
@@ -214,7 +219,7 @@ function buildUiTranslatorTests() {
           assert.ok(!result.getIsCompatible());
         },
       ],
-    );*/
+    );
   });
 }
 

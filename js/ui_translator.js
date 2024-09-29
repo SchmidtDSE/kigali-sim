@@ -745,7 +745,7 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
     const name = self._getStringWithoutQuotes(ctx.name.getText());
     const yearStart = ctx.start.getText();
     const yearEnd = ctx.end.getText();
-    return new SimulationScenario(name, [], yearStart, yearEnd, false);
+    return new SimulationScenario(name, [], yearStart, yearEnd, true);
   }
 
   visitPolicySim(ctx) {
@@ -762,7 +762,7 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
       policies.push(nameNoQuotes);
     }
 
-    return new SimulationScenario(name, policies, yearStart, yearEnd, false);
+    return new SimulationScenario(name, policies, yearStart, yearEnd, true);
   }
 
   visitBaseSimulationTrials(ctx) {
@@ -829,7 +829,7 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
 
   _getChildrenCompatible(children) {
     const self = this;
-    return children.map((x) => x.getIsCompatible()).reduce((a, b) => a || b);
+    return children.map((x) => x.getIsCompatible()).reduce((a, b) => a && b);
   }
 
   _parseApplication(ctx, isModification) {
@@ -906,7 +906,7 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
     const commandsConsolidatedRaw = Array.of(...commandsByType.values());
     const isCompatibleRaw = commandsConsolidatedRaw
       .map((x) => x.getIsCompatible())
-      .reduce((a, b) => a || b);
+      .reduce((a, b) => a && b);
     
     const commandsConsolidatedInterpreted = [
       charge,
@@ -922,9 +922,9 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
     const isCompatibleInterpreted = commandsConsolidatedInterpreted
       .filter((x) => x !== null)
       .map((x) => x.getIsCompatible())
-      .reduce((a, b) => a || b);
+      .reduce((a, b) => a && b);
     
-    const isCompatible = isCompatibleRaw || isCompatibleInterpreted;
+    const isCompatible = isCompatibleRaw && isCompatibleInterpreted;
 
     return new Substance(
       name,
