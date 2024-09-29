@@ -864,7 +864,7 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
         const needsToMoveToMod = requiresMod && !isModification;
         const needsToMoveToDefinition = requiresDefinition && isModification;
         if (needsToMoveToMod || needsToMoveToDefinition) {
-          return IncompatibleCommand(typeName);
+          return new IncompatibleCommand(typeName);
         }
       }
 
