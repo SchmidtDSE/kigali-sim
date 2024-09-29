@@ -18,24 +18,23 @@ function buildUiTranslatorTests() {
         loadRemote(filepath).then((content) => {
           assert.ok(content.length > 0);
 
+          let compilerResult = null;
           try {
             const compiler = new UiTranslatorCompiler();
-            const compilerResult = compiler.compile(content);
+            compilerResult = compiler.compile(content);
           } catch (e) {
             console.log(e);
             assert.ok(false);
           }
 
-          assert.ok(compilerResult.getErrors().length == 0);
+          assert.equal(compilerResult.getErrors().length, 0);
 
-          const program = compilerResult.getProgram();
-          assert.ok(compilerResult.getErrors().length == 0);
+          const programResult = compilerResult.getProgram();
+          assert.equal(compilerResult.getErrors().length, 0);
 
           if (compilerResult.getErrors().length > 0) {
             console.log(compilerResult.getErrors());
           } else {
-            console.log("here3");
-            const programResult = program();
             checks.forEach((check) => {
               check(programResult, assert);
             });
@@ -72,7 +71,7 @@ function buildUiTranslatorTests() {
           const substances = application.getSubstances();
           const substance = substances[0];
 
-          const emissions = substance.getEmissions();
+          const emissions = substance.getEmit();
           const emissionsVolume = emissions.getValue();
           assert.deepEqual(emissionsVolume.getValue(), 5);
           assert.deepEqual(emissionsVolume.getUnits(), "tCO2e / mt");

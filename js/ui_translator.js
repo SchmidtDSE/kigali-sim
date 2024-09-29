@@ -743,8 +743,8 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
   visitBaseSimulation(ctx) {
     const self = this;
     const name = self._getStringWithoutQuotes(ctx.name.getText());
-    const yearStart = ctx.startYear.getText();
-    const yearEnd = ctx.endYear.getText();
+    const yearStart = ctx.start.getText();
+    const yearEnd = ctx.end.getText();
     return new SimulationScenario(name, [], yearStart, yearEnd, false);
   }
 
@@ -752,8 +752,8 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
     const self = this;
     const name = self._getStringWithoutQuotes(ctx.name.getText());
     const numPolicies = Math.ceil((ctx.getChildCount() - 8) / 2);
-    const yearStart = ctx.startYear.getText();
-    const yearEnd = ctx.endYear.getText();
+    const yearStart = ctx.start.getText();
+    const yearEnd = ctx.end.getText();
 
     const policies = [];
     for (let i = 0; i < numPolicies; i++) {
@@ -829,7 +829,7 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
 
   _getChildrenCompatible(children) {
     const self = this;
-    children.map((x) => x.getIsCompatible()).reduce((a, b) => a || b);
+    return children.map((x) => x.getIsCompatible()).reduce((a, b) => a || b);
   }
 
   _parseApplication(ctx, isModification) {
@@ -942,6 +942,7 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
   }
 
   _buildOperation(ctx, typeName, duration, targetGetter, valueGetter) {
+    const self = this;
     if (targetGetter === undefined || targetGetter === null) {
       targetGetter = (ctx) => ctx.target.getText();
     }
@@ -952,7 +953,7 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
     }
     const value = valueGetter(ctx);
     
-    return new Command(typeName, target, value, duration, additionalParameter);
+    return new Command(typeName, target, value, duration);
   }
 }
 
