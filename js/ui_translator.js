@@ -11,7 +11,6 @@ const toolkit = QubecTalk.getToolkit();
 
 
 class Program {
-
   constructor(applications, policies, scenarios, isCompatible) {
     const self = this;
     self._applications = applications;
@@ -36,25 +35,21 @@ class Program {
   }
 
   getIsCompatible() {
-    const self = this
+    const self = this;
     return self._isCompatible;
   }
-
 }
 
 
 class AboutStanza {
-
   getName() {
     const self = this;
     return "about";
   }
-
 }
 
 
 class DefinitionalStanza {
-
   constructor(name, applications, isCompatible) {
     const self = this;
     self._name = name;
@@ -76,12 +71,10 @@ class DefinitionalStanza {
     const self = this;
     return self._isCompatible;
   }
-
 }
 
 
 class SimulationScenario {
-
   constructor(name, policyNames, yearStart, yearEnd, isCompatible) {
     const self = this;
     self._name = name;
@@ -90,37 +83,35 @@ class SimulationScenario {
     self._yearEnd = yearEnd;
     self._isCompatible = isCompatible;
   }
-  
+
   getName() {
     const self = this;
     return self._name;
   }
-  
+
   getPolicyNames() {
     const self = this;
     return self._policyNames;
   }
-  
+
   getYearStart() {
     const self = this;
     return self._yearStart;
   }
-  
+
   getYearEnd() {
     const self = this;
     return self._yearEnd;
   }
-  
+
   getIsCompatible() {
     const self = this;
     return self._isCompatible;
   }
-
 }
 
 
 class SimulationStanza {
-
   constructor(scenarios, isCompatible) {
     const self = this;
     self._scenarios = scenarios;
@@ -141,12 +132,10 @@ class SimulationStanza {
     const self = this;
     return "simulations";
   }
-
 }
 
 
 class Application {
-
   constructor(name, substances, isCompatible) {
     const self = this;
     self._name = name;
@@ -168,12 +157,10 @@ class Application {
     const self = this;
     return self._isCompatible;
   }
-
 }
 
 
 class Substance {
-
   constructor(name, charge, cap, change, emit, recharge, recycle, replace, retire, setVal, compat) {
     const self = this;
     self._name = name;
@@ -243,12 +230,10 @@ class Substance {
     const self = this;
     return self._isCompatible;
   }
-
 }
 
 
 class Command {
-
   constructor(typeName, target, value, duration) {
     const self = this;
     self._typeName = typeName;
@@ -281,12 +266,10 @@ class Command {
     const self = this;
     return true;
   }
-
 }
 
 
 class ReplaceCommand {
-
   constructor(volume, source, destination, duration) {
     const self = this;
     self._volume = volume;
@@ -319,12 +302,10 @@ class ReplaceCommand {
     const self = this;
     return self._duration;
   }
-
 }
 
 
 class IncompatibleCommand {
-
   constructor(typeName) {
     const self = this;
     self._typeName = typeName;
@@ -339,7 +320,6 @@ class IncompatibleCommand {
     const self = this;
     return false;
   }
-
 }
 
 
@@ -808,7 +788,7 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
     const stanzas = Array.of(...stanzasByName.values());
 
     const isCompatible = self._getChildrenCompatible(stanzas);
-    
+
     return new Program(applications, policies, scenarios, isCompatible);
   }
 
@@ -861,7 +841,7 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
     const commands = children.map((x) => {
       return x.accept(self);
     });
-    
+
     const commandsByType = new Map();
     commands.forEach((command) => {
       const typeName = command.getTypeName();
@@ -890,24 +870,24 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
 
       return commandsByType.get(typeName);
     };
-    
+
     const charge = getIfAvailable("initial charge", "any");
     const change = getIfAvailable("change", "any");
     const recycle = getIfAvailable("recycle", "any");
     const retire = getIfAvailable("retire", "any");
     const setVal = getIfAvailable("set", "any");
-    
+
     const emit = getIfAvailable("emit", "definition");
     const recharge = getIfAvailable("emit", "definition");
 
     const cap = getIfAvailable("cap", "policy");
     const replace = getIfAvailable("replace", "policy");
-    
+
     const commandsConsolidatedRaw = Array.of(...commandsByType.values());
     const isCompatibleRaw = commandsConsolidatedRaw
       .map((x) => x.getIsCompatible())
       .reduce((a, b) => a && b);
-    
+
     const commandsConsolidatedInterpreted = [
       charge,
       cap,
@@ -923,7 +903,7 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
       .filter((x) => x !== null)
       .map((x) => x.getIsCompatible())
       .reduce((a, b) => a && b);
-    
+
     const isCompatible = isCompatibleRaw && isCompatibleInterpreted;
 
     return new Substance(
@@ -937,7 +917,7 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
       replace,
       retire,
       setVal,
-      isCompatible
+      isCompatible,
     );
   }
 
@@ -947,12 +927,12 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
       targetGetter = (ctx) => ctx.target.getText();
     }
     const target = targetGetter(ctx);
-    
+
     if (valueGetter === undefined || valueGetter === null) {
       valueGetter = (ctx) => ctx.value.accept(self);
     }
     const value = valueGetter(ctx);
-    
+
     return new Command(typeName, target, value, duration);
   }
 }
