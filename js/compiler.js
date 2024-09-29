@@ -358,17 +358,17 @@ class CompileVisitor extends toolkit.QubecTalkVisitor {
   buildDef(ctx, scopeSetter) {
     const self = this;
     const name = self._getStringWithoutQuotes(ctx.name.getText());
-    const numApplications = ctx.getChildCount() - 5;
+    const numChildren = ctx.getChildCount() - 5;
 
-    const appChildren = [];
-    for (let i = 0; i < numApplications; i++) {
-      appChildren.push(ctx.getChild(i + 3));
+    const children = [];
+    for (let i = 0; i < numChildren; i++) {
+      children.push(ctx.getChild(i + 3));
     }
 
-    const appCommands = appChildren.map((x) => x.accept(self));
+    const commands = children.map((x) => x.accept(self));
     const execute = (engine) => {
       scopeSetter(engine, name);
-      appCommands.forEach((command) => command(engine));
+      commands.forEach((command) => command(engine));
     };
     return execute;
   }

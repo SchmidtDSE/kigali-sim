@@ -1,0 +1,20 @@
+start default
+
+  define application "app1"
+
+    uses substance "sub1"
+      initial charge with 5 kg / unit for manufacture
+      set manufacture to 100 mt
+      emit 5 tCO2e / mt
+    end substance
+
+  end application
+
+end default
+
+
+start simulations
+
+  simulate "business as usual" from years 1 to 5
+
+end simulations

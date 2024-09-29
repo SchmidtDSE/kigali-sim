@@ -363,7 +363,7 @@ emitStatement: EMIT_ value=unitValue  # emitAllYears
   | EMIT_ value=unitValue duration=during  # emitDuration
   ;
 
-initialChageStatement: INITIAL_ CHARGE_ WITH_ value=unitValue FOR_ target=stream # initialChargeAllYears
+initialChargeStatement: INITIAL_ CHARGE_ WITH_ value=unitValue FOR_ target=stream # initialChargeAllYears
   | INITIAL_ CHARGE_ WITH_ value=unitValue FOR_ target=stream duration=during  # initialChargeDuration
   ;
 
@@ -403,7 +403,7 @@ simulate: SIMULATE_ name=string FROM_ YEARS_ start=expression TO_ end=expression
 
 globalStatement: (defineVarStatement | setStatement);
 
-substanceStatement: (capStatement | changeStatement | emitStatement | initialChageStatement | rechargeStatement | recycleStatement | replaceStatement | retireStatement);
+substanceStatement: (capStatement | changeStatement | emitStatement | initialChargeStatement | rechargeStatement | recycleStatement | replaceStatement | retireStatement);
 
 /**
  * -------------
