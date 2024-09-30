@@ -57,6 +57,10 @@ main {
   border-radius: 2px;
 }
 
+#editor-tabs {
+  margin-bottom: 10px;
+}
+
 #results {
   display: none;
 }
@@ -158,6 +162,17 @@ main {
   padding-bottom: 5px;
 }
 
+.advanced-link-pane {
+  margin-top: 10px;
+  border-top: 1px dotted #C0C0C0;
+  padding-top: 10px;
+  text-align: center;
+}
+
+.not-available-contents {
+  display: none;
+}
+
 /* Thanks https://codepen.io/code-boxx/pen/RwxbpOz */
 
 /* (A) BASICS - HIDE DEFAULT + SHOW CUSTOM ARROW */
@@ -199,6 +214,47 @@ main {
 .sel:hover::after {
   transform: translateY(-50%) rotate(90deg);
   color: #ff1212;
+}
+
+.ui-editor-sections {
+  display: grid;
+  grid-template-columns: 48% 4% 48%;
+}
+
+.ui-editor-sections .ui-editor-section {
+  margin-bottom: 10px;
+  margin-top: 10px;
+  padding: 5px;
+  border: 1px solid #C0C0C0;
+  border-radius: 3px;
+}
+
+.ui-editor-sections .ui-editor-section h3 {
+  margin-top: 0px;
+  padding-top: 5px;
+  margin-bottom: 0px;
+  padding-bottom: 5px;
+  text-align: center;
+}
+
+.ui-editor-sections .ui-editor-section ul {
+  height: 250px;
+  overflow: auto;
+  border-top: 1px dotted #C0C0C0;
+  border-bottom: 1px dotted #C0C0C0;
+  margin-bottom: 5px;
+}
+
+.ui-editor-sections .ui-editor-section .add-link-pane {
+  text-align: center;
+}
+
+.ui-editor-sections .ui-editor-section.inactive {
+  background-color: #F5F5F5;
+}
+
+.ui-editor-sections .ui-editor-section.inactive .add-link-pane {
+  display: none;
 }
 
 @media (max-width: 999px) {

@@ -2,6 +2,7 @@ import {CodeEditorPresenter} from "code_editor";
 import {Compiler} from "compiler";
 import {ReportDataWrapper} from "report_data";
 import {ResultsPresenter} from "results";
+import {UiEditorPresenter} from "ui_editor";
 
 const WHITESPACE_REGEX = new RegExp("^\\s*$");
 
@@ -59,6 +60,7 @@ class MainPresenter {
       () => self._onRun(),
     );
     self._resultsPresenter = new ResultsPresenter("results");
+    self._uiEditorPresenter = new UiEditorPresenter("editor-tabs", "ui-editor-pane");
     self._onCodeChange();
   }
 

@@ -5,6 +5,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width">
   <title>Montreal Policy Simulation</title>
+  <link href="/third_party/tabby-ui.min.css" rel="stylesheet" type="text/css" />
   <link href="/style/style.css" rel="stylesheet" type="text/css" />
 </head>
 
@@ -17,16 +18,56 @@
   <main>
     <section id="editor">
       <h2>Editor</h2>
-      <div id="code-editor">
-        <div id="code-editor-inner" class="inner"></div>
-        <div class="error-display"></div>
-      </div>
-      <div id="buttons-panel">
-        <div id="available-panel">
-          <a class="primary" id="run-button" href="#loading">Run</a>
+      <ul id="editor-tabs" data-tabs>
+        <li><a data-tabby-default href="#ui-editor-pane">Basic</a></li>
+        <li><a href="#code-editor-pane">Advanced</a></li>
+      </ul>
+      <div id="ui-editor-pane">
+        <div class="available-contents">
+          <div class="ui-editor-sections">
+            <div class="ui-editor-section applications">
+              <h3>Applications</h3>
+              <ul></ul>
+              <div class="add-link-pane"><a href="add-application" class="add-link">Add Application</a></div>
+            </div>
+            <div></div>
+            <div class="ui-editor-section substances inactive">
+              <h3>Substances</h3>
+              <ul></ul>
+              <div class="add-link-pane"><a href="add-substance" class="add-link">Add Substance</a></div>
+            </div>
+            <div class="ui-editor-section policies inactive">
+              <h3>Policies</h3>
+              <ul></ul>
+              <div class="add-link-pane"><a href="add-policy" class="add-link">Add Policy</a></div>
+            </div>
+            <div></div>
+            <div class="ui-editor-section simulations inactive">
+              <h3>Simulations</h3>
+              <ul></ul>
+              <div class="add-link-pane"><a href="add-simulation" class="add-link">Add Simulation</a></div>
+            </div>
+          </div>
+          <div class="advanced-link-pane">
+            Need more control? Switch to the <a class="advanced-editor-link" href="#code-editor-pane">code-based advanced editor</a>.
+          </div>
         </div>
-        <div id="loading">
-          Loading please wait...
+        <div class="not-available-contents">
+          The analysis you are currently working on uses features not available in the basic editor. Instead, switch to the <a class="advanced-editor-link" href="#code-editor-pane">code-based advanced editor</a>.
+        </div>
+      </div>
+      <div id="code-editor-pane">
+        <div id="code-editor">
+          <div id="code-editor-inner" class="inner"></div>
+          <div class="error-display"></div>
+        </div>
+        <div id="buttons-panel">
+          <div id="available-panel">
+            <a class="primary" id="run-button" href="#loading">Run</a>
+          </div>
+          <div id="loading">
+            Loading please wait...
+          </div>
         </div>
       </div>
     </section>
@@ -151,8 +192,10 @@
   <script type="text/javascript" src="/third_party/ext-options.js"></script>
   <script type="text/javascript" src="/third_party/ext-prompt.js"></script>
   <script type="text/javascript" src="/third_party/ext-searchbox.js"></script>
-  <script type="text/javascript" src="/third_party/d3.min.js"></script>
+  
   <script type="text/javascript" src="/third_party/chart.min.js"></script>
+  <script type="text/javascript" src="/third_party/d3.min.js"></script>
+  <script type="text/javascript" src="/third_party/tabby.min.js"></script>
 
   <script type="text/javascript" src="/intermediate/static/qubectalk.js"></script>
 
@@ -167,7 +210,9 @@
         "engine": "./js/engine.js?v=EPOCH",
         "main": "./js/main.js?v=EPOCH",
         "report_data": "./js/report_data.js?v=EPOCH",
-        "results": "./js/results.js?v=EPOCH"
+        "results": "./js/results.js?v=EPOCH",
+        "ui_editor": "./js/ui_editor.js?v=EPOCH",
+        "ui_translator": "../js/ui_translator.js?v=EPOCH"
       }
     }
   </script>
