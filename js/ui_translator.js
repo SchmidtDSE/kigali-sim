@@ -10,9 +10,10 @@ import {YearMatcher} from "engine_state";
 const COMMAND_COMPATIBILITIES = {
   "change": "any",
   "retire": "any",
-  "set": "any",
+  "setVal": "any",
   "initial charge": "definition",
   "emit": "definition",
+  "recharge": "definition",
   "recycle": "policy",
   "cap": "policy",
   "replace": "policy",
@@ -418,8 +419,9 @@ class SubstanceBuilder {
     const strategy = {
       "change": (x) => self.setChange(x),
       "retire": (x) => self.setRetire(x),
-      "set": (x) => self.setSetVal(x),
+      "setVal": (x) => self.setSetVal(x),
       "initial charge": (x) => self.setInitialCharge(x),
+      "recharge": (x) => self.setRecharge(x),
       "emit": (x) => self.setEmit(x),
       "recycle": (x) => self.setRecycle(x),
       "cap": (x) => self.setCap(x),
@@ -872,6 +874,11 @@ class ReplaceCommand {
     const self = this;
     return self._duration;
   }
+
+  getIsCompatible() {
+    const self = this;
+    return true;
+  }
 }
 
 
@@ -1268,13 +1275,13 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
 
   visitSetAllYears(ctx) {
     const self = this;
-    return self._buildOperation(ctx, "set", null);
+    return self._buildOperation(ctx, "setVal", null);
   }
 
   visitSetDuration(ctx) {
     const self = this;
     const duration = ctx.duration.accept(self);
-    return self._buildOperation(ctx, "set", duration);
+    return self._buildOperation(ctx, "setVal", duration);
   }
 
   visitEmitAllYears(ctx) {

@@ -9,34 +9,35 @@ import {
   ReplaceCommand,
   SimulationScenario,
   SimulationStanza,
-  Substance,
+  SubstanceBuilder,
   buildAddCode,
   finalizeCodePieces,
   indent,
 } from "ui_translator";
 
 
+function createWithCommands(name, isModification, commands) {
+  const substanceBuilder = new SubstanceBuilder(name, isModification);
+  commands.forEach((command) => {
+    substanceBuilder.addCommand(command);
+  });
+  return substanceBuilder.build(true);
+}
+
+
+function createWithCommand(name, isModification, command) {
+  return createWithCommands(name, isModification, [command]);
+}
+
+
 function buildTestApplication(isMod) {
   const command = new Command(
-    "initial charge",
+    "setVal",
     "manufacture",
     new EngineNumber(5, "kg / unit"),
     null,
   );
-  const substance = new Substance(
-    "sub",
-    command,
-    null,
-    null,
-    null,
-    null,
-    null,
-    null,
-    null,
-    null,
-    isMod,
-    true,
-  );
+  const substance = createWithCommand("sub", isMod, command);
   const application = new Application("app", [substance], isMod, true);
   return application;
 }
@@ -72,22 +73,10 @@ function buildUiTranslatorReverseTests() {
         new EngineNumber(5, "kg / unit"),
         null,
       );
-      const substance = new Substance(
-        "test",
-        command,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        true,
-        true,
-      );
+      const substance = createWithCommand("test", false, command);
       const code = substance.toCode(0);
-      assert.notEqual(code.indexOf("modify substance \"test\""), -1);
+      console.log(code);
+      assert.notEqual(code.indexOf("define substance \"test\""), -1);
       assert.notEqual(code.indexOf("initial charge with 5 kg / unit for manufacture"), -1);
     });
 
@@ -98,20 +87,7 @@ function buildUiTranslatorReverseTests() {
         new EngineNumber(5, "mt"),
         null,
       );
-      const substance = new Substance(
-        "test",
-        null,
-        command,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        true,
-        true,
-      );
+      const substance = createWithCommand("test", true, command);
       const code = substance.toCode(0);
       assert.notEqual(code.indexOf("cap manufacture to 5 mt"), -1);
     });
@@ -123,45 +99,19 @@ function buildUiTranslatorReverseTests() {
         new EngineNumber("+5", "% / year"),
         null,
       );
-      const substance = new Substance(
-        "test",
-        null,
-        null,
-        command,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        true,
-        true,
-      );
+      const substance = createWithCommand("test", true, command);
       const code = substance.toCode(0);
       assert.notEqual(code.indexOf("change manufacture by +5 % / year"), -1);
     });
 
     QUnit.test("emits from substances", function(assert) {
       const command = new Command(
-        "change",
+        "emit",
         null,
         new EngineNumber("5", "tCO2e / unit"),
         null,
       );
-      const substance = new Substance(
-        "test",
-        null,
-        null,
-        null,
-        command,
-        null,
-        null,
-        null,
-        null,
-        null,
-        true,
-        true,
-      );
+      const substance = createWithCommand("test", false, command);
       const code = substance.toCode(0);
       assert.notEqual(code.indexOf("emit 5 tCO2e / unit"), -1);
     });
@@ -173,21 +123,9 @@ function buildUiTranslatorReverseTests() {
         new EngineNumber("5", "kg / unit"),
         null,
       );
-      const substance = new Substance(
-        "test",
-        null,
-        null,
-        null,
-        null,
-        command,
-        null,
-        null,
-        null,
-        null,
-        true,
-        true,
-      );
+      const substance = createWithCommand("test", false, command);
       const code = substance.toCode(0);
+      console.log(code);
       assert.notEqual(code.indexOf("recharge 10 % / year with 5 kg / unit"), -1);
     });
 
@@ -198,20 +136,7 @@ function buildUiTranslatorReverseTests() {
         new EngineNumber("100", "%"),
         null,
       );
-      const substance = new Substance(
-        "test",
-        null,
-        null,
-        null,
-        null,
-        null,
-        command,
-        null,
-        null,
-        null,
-        true,
-        true,
-      );
+      const substance = createWithCommand("test", true, command);
       const code = substance.toCode(0);
       assert.notEqual(code.indexOf("recover 10 % with 100 % reuse"), -1);
     });
@@ -223,20 +148,7 @@ function buildUiTranslatorReverseTests() {
         "other",
         null,
       );
-      const substance = new Substance(
-        "test",
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        command,
-        null,
-        null,
-        true,
-        true,
-      );
+      const substance = createWithCommand("test", true, command);
       const code = substance.toCode(0);
       assert.notEqual(code.indexOf("replace 10 % of manufacture with \"other\""), -1);
     });
@@ -248,20 +160,7 @@ function buildUiTranslatorReverseTests() {
         new EngineNumber("10", "%"),
         null,
       );
-      const substance = new Substance(
-        "test",
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        command,
-        null,
-        true,
-        true,
-      );
+      const substance = createWithCommand("test", false, command);
       const code = substance.toCode(0);
       assert.notEqual(code.indexOf("retire 10 %"), -1);
     });
@@ -273,20 +172,7 @@ function buildUiTranslatorReverseTests() {
         new EngineNumber("10", "mt"),
         null,
       );
-      const substance = new Substance(
-        "test",
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        command,
-        true,
-        true,
-      );
+      const substance = createWithCommand("test", true, command);
       const code = substance.toCode(0);
       assert.notEqual(code.indexOf("set manufacture to 10 mt"), -1);
     });
@@ -298,20 +184,7 @@ function buildUiTranslatorReverseTests() {
         new EngineNumber("10", "mt"),
         new YearMatcher(1, 1),
       );
-      const substance = new Substance(
-        "test",
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        command,
-        true,
-        true,
-      );
+      const substance = createWithCommand("test", true, command);
       const code = substance.toCode(0);
       assert.notEqual(code.indexOf("set manufacture to 10 mt during year 1"), -1);
     });
@@ -323,20 +196,7 @@ function buildUiTranslatorReverseTests() {
         new EngineNumber("10", "%"),
         new YearMatcher(2, 5),
       );
-      const substance = new Substance(
-        "test",
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        command,
-        null,
-        true,
-        true,
-      );
+      const substance = createWithCommand("test", false, command);
       const code = substance.toCode(0);
       assert.notEqual(code.indexOf("retire 10 % during years 2 to 5"), -1);
     });
@@ -348,20 +208,7 @@ function buildUiTranslatorReverseTests() {
         "other",
         new YearMatcher(2, null),
       );
-      const substance = new Substance(
-        "test",
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        command,
-        null,
-        null,
-        true,
-        true,
-      );
+      const substance = createWithCommand("test", true, command);
       const code = substance.toCode(0);
       assert.notEqual(code.indexOf(
         "replace 10 % of manufacture with \"other\" during years 2 to onwards",
@@ -375,20 +222,7 @@ function buildUiTranslatorReverseTests() {
         new EngineNumber("100", "%"),
         new YearMatcher(null, 5),
       );
-      const substance = new Substance(
-        "test",
-        null,
-        null,
-        null,
-        null,
-        null,
-        command,
-        null,
-        null,
-        null,
-        true,
-        true,
-      );
+      const substance = createWithCommand("test", true, command);
       const code = substance.toCode(0);
       assert.notEqual(code.indexOf(
         "recover 10 % with 100 % reuse during years beginning to 5",
@@ -396,8 +230,8 @@ function buildUiTranslatorReverseTests() {
     });
 
     QUnit.test("supports complex substances", function(assert) {
-      const initialCharge = new Command(
-        "initial charge",
+      const setVal = new Command(
+        "setVal",
         "manufacture",
         new EngineNumber(5, "kg / unit"),
         new YearMatcher(1, 1),
@@ -408,25 +242,10 @@ function buildUiTranslatorReverseTests() {
         new EngineNumber(5, "mt"),
         new YearMatcher(3, 4),
       );
-      const substance = new Substance(
-        "test",
-        initialCharge,
-        cap,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        false,
-        true,
-      );
+      const substance = createWithCommands("test", true, [setVal, cap]);
       const code = substance.toCode(0);
-      assert.notEqual(code.indexOf("define substance \"test\""), -1);
-      assert.notEqual(code.indexOf(
-        "initial charge with 5 kg / unit for manufacture during year 1",
-      ), -1);
+      assert.notEqual(code.indexOf("modify substance \"test\""), -1);
+      assert.notEqual(code.indexOf("set manufacture to 5 kg / unit during year 1"), -1);
       assert.notEqual(code.indexOf("cap manufacture to 5 mt during years 3 to 4"), -1);
     });
 
