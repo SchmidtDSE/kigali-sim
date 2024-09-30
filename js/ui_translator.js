@@ -360,23 +360,25 @@ class SubstanceBuilder {
     self._recycle = null;
     self._replace = null;
     self._retire = null;
-    self._setVal = null;
+    self._setVals = [];
   }
 
   build(isCompatibleRaw) {
     const self = this;
 
     const commandsConsolidatedInterpreted = [
-      self._initialCharge,
+      [
+        self._initialCharge,
       self._cap,
-      self._change,
-      self._emit,
-      self._recharge,
-      self._recycle,
-      self._replace,
-      self._retire,
-      self._setVal,
-    ];
+        self._change,
+        self._emit,
+        self._recharge,
+        self._recycle,
+        self._replace,
+        self._retire,
+      ],
+      self._setVals,
+    ].flat();
     const isCompatibleInterpreted = commandsConsolidatedInterpreted
       .filter((x) => x !== null)
       .map((x) => x.getIsCompatible())
@@ -394,7 +396,7 @@ class SubstanceBuilder {
       self._recycle,
       self._replace,
       self._retire,
-      self._setVal,
+      self._setVals,
       self._isModification,
       isCompatible,
     );
@@ -418,7 +420,7 @@ class SubstanceBuilder {
     const strategy = {
       "change": (x) => self.setChange(x),
       "retire": (x) => self.setRetire(x),
-      "setVal": (x) => self.setSetVal(x),
+      "setVal": (x) => self.addSetVal(x),
       "initial charge": (x) => self.setInitialCharge(x),
       "recharge": (x) => self.setRecharge(x),
       "emit": (x) => self.setEmit(x),
@@ -476,9 +478,9 @@ class SubstanceBuilder {
     self._retire = self._checkDuplicate(self._retire, newVal);
   }
 
-  setSetVal(newVal) {
+  addSetVal(newVal) {
     const self = this;
-    self._setVal = self._checkDuplicate(self._setVal, newVal);
+    self._setVals.push(newVal);
   }
 
   _checkDuplicate(originalVal, newVal) {
@@ -497,7 +499,7 @@ class SubstanceBuilder {
 
 
 class Substance {
-  constructor(name, charge, cap, change, emit, recharge, recycle, replace, retire, setVal, isMod,
+  constructor(name, charge, cap, change, emit, recharge, recycle, replace, retire, setVals, isMod,
     compat) {
     const self = this;
     self._name = name;
@@ -509,7 +511,7 @@ class Substance {
     self._recycle = recycle;
     self._replace = replace;
     self._retire = retire;
-    self._setVal = setVal;
+    self._setVals = setVals;
     self._isModification = isMod;
     self._isCompatible = compat;
   }
@@ -559,9 +561,9 @@ class Substance {
     return self._retire;
   }
 
-  getSetVal() {
+  getSetVals() {
     const self = this;
-    return self._setVal;
+    return self._setVals;
   }
 
   getIsModification() {
@@ -590,9 +592,16 @@ class Substance {
       addCode(code, spaces + 2);
     };
 
+    const addAllIfGiven = (codeLines) => {
+      if (codeLines === null) {
+        return;
+      }
+      codeLines.forEach(addIfGiven);
+    };
+
     addIfGiven(self._getInitialChargeCode());
     addIfGiven(self._getEmitCode());
-    addIfGiven(self._getSetValCode());
+    addAllIfGiven(self._getSetValsCode());
     addIfGiven(self._getChangeCode());
     addIfGiven(self._getRetireCode());
     addIfGiven(self._getCapCode());
@@ -638,22 +647,25 @@ class Substance {
     return self._finalizeStatement(pieces);
   }
 
-  _getSetValCode() {
+  _getSetValsCode() {
     const self = this;
-    if (self._setVal === null) {
+    if (self._setVals.length == 0) {
       return null;
     }
 
-    const pieces = [
-      "set",
-      self._setVal.getTarget(),
-      "to",
-      self._setVal.getValue().getValue(),
-      self._setVal.getValue().getUnits(),
-    ];
-    self._addDuration(pieces, self._setVal);
+    const buildSetVal = (setVal) => {
+      const pieces = [
+        "set",
+        setVal.getTarget(),
+        "to",
+        setVal.getValue().getValue(),
+        setVal.getValue().getUnits(),
+      ];
+      self._addDuration(pieces, setVal);
+      return self._finalizeStatement(pieces);
+    };
 
-    return self._finalizeStatement(pieces);
+    return self._setVals.map(buildSetVal);
   }
 
   _getChangeCode() {
