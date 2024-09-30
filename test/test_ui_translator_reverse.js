@@ -327,11 +327,11 @@ function buildUiTranslatorReverseTests() {
           "sales",
           new EngineNumber("3", "mt"),
           null,
-        )
+        ),
       ];
       const substance = createWithCommands("test", false, commands);
       assert.ok(substance.getIsCompatible());
-      
+
       if (substance.getIsCompatible()) {
         const code = substance.toCode(0);
         assert.notEqual(code.indexOf("set manufacture to 1 mt"), -1);
@@ -359,11 +359,11 @@ function buildUiTranslatorReverseTests() {
           "sales",
           new EngineNumber("+3", "mt / year"),
           null,
-        )
+        ),
       ];
       const substance = createWithCommands("test", false, commands);
       assert.ok(substance.getIsCompatible());
-      
+
       if (substance.getIsCompatible()) {
         const code = substance.toCode(0);
         assert.notEqual(code.indexOf("change manufacture by +1 mt / year"), -1);
@@ -391,11 +391,11 @@ function buildUiTranslatorReverseTests() {
           "sales",
           new EngineNumber(3, "kg / unit"),
           null,
-        )
+        ),
       ];
       const substance = createWithCommands("test", false, commands);
       assert.ok(substance.getIsCompatible());
-      
+
       if (substance.getIsCompatible()) {
         const code = substance.toCode(0);
         assert.notEqual(code.indexOf("initial charge with 1 kg / unit for manufacture"), -1);
@@ -417,7 +417,7 @@ function buildUiTranslatorReverseTests() {
           "manufacture",
           new EngineNumber(2, "kg / unit"),
           null,
-        )
+        ),
       ];
       const substance = createWithCommands("test", false, commands);
       assert.ok(!substance.getIsCompatible());

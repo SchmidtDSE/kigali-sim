@@ -383,7 +383,7 @@ class SubstanceBuilder {
       .filter((x) => x !== null)
       .map((x) => x.getIsCompatible())
       .reduce((a, b) => a && b);
-    
+
     const initialChargeTargets = self._initialCharges.map((x) => x.getTarget());
     const initialChargeTargetsUnique = new Set(initialChargeTargets);
     const initialChargesNonOverlap = initialChargeTargets.length == initialChargeTargetsUnique.size;
