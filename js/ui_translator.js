@@ -354,7 +354,7 @@ class SubstanceBuilder {
     self._isModification = isModification;
     self._initialCharge = null;
     self._cap = null;
-    self._change = null;
+    self._changes = [];
     self._emit = null;
     self._recharge = null;
     self._recycle = null;
@@ -369,14 +369,14 @@ class SubstanceBuilder {
     const commandsConsolidatedInterpreted = [
       [
         self._initialCharge,
-      self._cap,
-        self._change,
+        self._cap,
         self._emit,
         self._recharge,
         self._recycle,
         self._replace,
         self._retire,
       ],
+      self._changes,
       self._setVals,
     ].flat();
     const isCompatibleInterpreted = commandsConsolidatedInterpreted
@@ -390,7 +390,7 @@ class SubstanceBuilder {
       self._name,
       self._initialCharge,
       self._cap,
-      self._change,
+      self._changes,
       self._emit,
       self._recharge,
       self._recycle,
@@ -418,7 +418,7 @@ class SubstanceBuilder {
     const incompatiblePlace = needsToMoveToMod || needsToMoveToDefinition;
 
     const strategy = {
-      "change": (x) => self.setChange(x),
+      "change": (x) => self.addChange(x),
       "retire": (x) => self.setRetire(x),
       "setVal": (x) => self.addSetVal(x),
       "initial charge": (x) => self.setInitialCharge(x),
@@ -448,9 +448,9 @@ class SubstanceBuilder {
     self._cap = self._checkDuplicate(self._cap, newVal);
   }
 
-  setChange(newVal) {
+  addChange(newVal) {
     const self = this;
-    self._change = self._checkDuplicate(self._change, newVal);
+    self._changes.push(newVal);
   }
 
   setEmit(newVal) {
@@ -499,13 +499,13 @@ class SubstanceBuilder {
 
 
 class Substance {
-  constructor(name, charge, cap, change, emit, recharge, recycle, replace, retire, setVals, isMod,
+  constructor(name, charge, cap, changes, emit, recharge, recycle, replace, retire, setVals, isMod,
     compat) {
     const self = this;
     self._name = name;
     self._initialCharge = charge;
     self._cap = cap;
-    self._change = change;
+    self._changes = changes;
     self._emit = emit;
     self._recharge = recharge;
     self._recycle = recycle;
@@ -531,9 +531,9 @@ class Substance {
     return self._cap;
   }
 
-  getChange() {
+  getChanges() {
     const self = this;
-    return self._change;
+    return self._changes;
   }
 
   getEmit() {
@@ -602,7 +602,7 @@ class Substance {
     addIfGiven(self._getInitialChargeCode());
     addIfGiven(self._getEmitCode());
     addAllIfGiven(self._getSetValsCode());
-    addIfGiven(self._getChangeCode());
+    addAllIfGiven(self._getChangesCode());
     addIfGiven(self._getRetireCode());
     addIfGiven(self._getCapCode());
     addIfGiven(self._getRechargeCode());
@@ -668,22 +668,25 @@ class Substance {
     return self._setVals.map(buildSetVal);
   }
 
-  _getChangeCode() {
+  _getChangesCode() {
     const self = this;
     if (self._change === null) {
       return null;
     }
 
-    const pieces = [
-      "change",
-      self._change.getTarget(),
-      "by",
-      self._change.getValue().getValue(),
-      self._change.getValue().getUnits(),
-    ];
-    self._addDuration(pieces, self._change);
+    const buildChange = (change) => {
+      const pieces = [
+        "change",
+        change.getTarget(),
+        "by",
+        change.getValue().getValue(),
+        change.getValue().getUnits(),
+      ];
+      self._addDuration(pieces, change);
+      return self._finalizeStatement(pieces);
+    };
 
-    return self._finalizeStatement(pieces);
+    return self._changes.map(buildChange);
   }
 
   _getRetireCode() {

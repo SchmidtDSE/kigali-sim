@@ -366,9 +366,9 @@ function buildUiTranslatorReverseTests() {
       
       if (substance.getIsCompatible()) {
         const code = substance.toCode(0);
-        assert.notEqual(code.indexOf("change manufacture by 1 mt / year"), -1);
-        assert.notEqual(code.indexOf("change import by 2 mt / year"), -1);
-        assert.notEqual(code.indexOf("change sales by 3 mt / year"), -1);
+        assert.notEqual(code.indexOf("change manufacture by +1 mt / year"), -1);
+        assert.notEqual(code.indexOf("change import by +2 mt / year"), -1);
+        assert.notEqual(code.indexOf("change sales by +3 mt / year"), -1);
       }
     });
   });
