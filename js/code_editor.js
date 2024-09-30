@@ -1,7 +1,7 @@
 class CodeEditorPresenter {
-  constructor(targetId, onChange) {
+  constructor(root, onChange) {
     const self = this;
-    self._root = document.getElementById(targetId);
+    self._root = root;
     self._errorDisplay = self._root.querySelector(".error-display");
     self._editor = null;
     self._onChange = onChange;

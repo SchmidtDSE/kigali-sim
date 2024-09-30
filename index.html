@@ -29,6 +29,21 @@
               <h3>Applications</h3>
               <ul></ul>
               <div class="add-link-pane"><a href="#add-application" class="add-link">Add Application</a></div>
+
+              <dialog id="application-dialog" class="dialog">
+                <h1><span class="action-title"></span> Application</h1>
+                <div class="instructions">
+                  An application is a type of use which may use many different subtances. For example, an application may be "commerical ACs" for commerical air conditioners.
+                </div>
+                <div>
+                  <div><label for="edit-application-name">Name:</label></div>
+                  <div><input type="text" name="edit-application-name" class="edit-application-name-input" autofocus></div>
+                </div>
+                <div class="dialog-buttons">
+                  <a href="#ui-editor-sections" class="save-button">Save</a>
+                  <a href="#ui-editor-sections" class="cancel-button">Cancel</a>
+                </div>
+              </dialog>
             </div>
             <div></div>
             <div class="ui-editor-section substances inactive">
@@ -185,21 +200,6 @@
         </div>
       </div>
     </section>
-
-    <dialog id="application-dialog">
-      <h1><span class="action-title"></span> Application</h1>
-      <div class="instructions">
-        An application is a type of use which may use many different subtances. For example, an application may be "commerical ACs" for commerical air conditioners.
-      </div>
-      <div>
-        <div><label for="edit-application-name">Name:</label></div>
-        <div><input type="text" name="edit-application-name" class="edit-application-name-input" autofocus></div>
-      </div>
-      <div class="dialog-buttons">
-        <a href="#ui-editor-sections" class="save-button">Save</a>
-        <a href="#ui-editor-sections" class="cancel-button">Cancel</a>
-      </div>
-    </dialog>
   </main>
 
   <script type="text/javascript" src="/third_party/ace.min.js"></script>

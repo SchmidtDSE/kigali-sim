@@ -1,9 +1,9 @@
 class ApplicationsListPresenter {
 
-  constructor(targetId, dialogId) {
+  constructor(root) {
     const self = this;
-    self._root = document.getElementById(targetId);
-    self._dialog = document.getElementById(dialogId);
+    self._root = root;
+    self._dialog = self._root.querySelector(".dialog");
     self._setupAddLink();
   }
 
@@ -21,11 +21,12 @@ class ApplicationsListPresenter {
 
 class UiEditorPresenter {
 
-  constructor(tabsId, contentsId) {
+  constructor(tabRoot, contentsRoot) {
     const self = this;
-    self._tabs = new Tabby("#" + tabsId);
-    self._contentsSelection = document.getElementById(contentsId);
-    self._applicationsList = new ApplicationsListPresenter("ui-application-editor", "application-dialog");
+    self._tabs = new Tabby("#" + tabRoot.id);
+    self._contentsSelection = contentsRoot;
+    const appEditor = self._contentsSelection.querySelector(".applications");
+    self._applicationsList = new ApplicationsListPresenter(appEditor);
     self._setupAdvancedLinks();
   }
 

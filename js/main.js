@@ -8,9 +8,9 @@ const WHITESPACE_REGEX = new RegExp("^\\s*$");
 
 
 class ButtonPanelPresenter {
-  constructor(targetId, onRun) {
+  constructor(root, onRun) {
     const self = this;
-    self._root = document.getElementById(targetId);
+    self._root = root;
 
     self._availableDisplay = self._root.querySelector("#available-panel");
     self._loadingDisplay = self._root.querySelector("#loading");
@@ -52,15 +52,18 @@ class MainPresenter {
   constructor() {
     const self = this;
     self._codeEditorPresenter = new CodeEditorPresenter(
-      "code-editor",
+      document.getElementById("code-editor"),
       () => self._onCodeChange(),
     );
     self._buttonPanelPresenter = new ButtonPanelPresenter(
-      "buttons-panel",
+      document.getElementById("buttons-panel"),
       () => self._onRun(),
     );
-    self._resultsPresenter = new ResultsPresenter("results");
-    self._uiEditorPresenter = new UiEditorPresenter("editor-tabs", "ui-editor-pane");
+    self._resultsPresenter = new ResultsPresenter(document.getElementById("results"));
+    self._uiEditorPresenter = new UiEditorPresenter(
+      document.getElementById("editor-tabs"),
+      document.getElementById("ui-editor-pane"),
+    );
     self._onCodeChange();
   }
 
