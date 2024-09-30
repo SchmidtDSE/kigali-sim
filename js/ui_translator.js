@@ -348,7 +348,6 @@ class Application {
 
 
 class SubstanceBuilder {
-
   constructor(name, isModification) {
     const self = this;
     self._name = name;
@@ -431,52 +430,52 @@ class SubstanceBuilder {
     const effectiveCommand = incompatiblePlace ? self._makeInvalidPlacement() : command;
     strategy(effectiveCommand);
   }
-  
+
   setName(newVal) {
     const self = this;
     self._name = newVal;
   }
-  
+
   setInitialCharge(newVal) {
     const self = this;
     self._initialCharge = self._checkDuplicate(self._initialCharge, newVal);
   }
-  
+
   setCap(newVal) {
     const self = this;
     self._cap = self._checkDuplicate(self._cap, newVal);
   }
-  
+
   setChange(newVal) {
     const self = this;
     self._change = self._checkDuplicate(self._change, newVal);
   }
-  
+
   setEmit(newVal) {
     const self = this;
     self._emit = self._checkDuplicate(self._emit, newVal);
   }
-  
+
   setRecharge(newVal) {
     const self = this;
     self._recharge = self._checkDuplicate(self._recharge, newVal);
   }
-  
+
   setRecycle(newVal) {
     const self = this;
     self._recycle = self._checkDuplicate(self._recycle, newVal);
   }
-  
+
   setReplace(newVal) {
     const self = this;
     self._replace = self._checkDuplicate(self._replace, newVal);
   }
-  
+
   setRetire(newVal) {
     const self = this;
     self._retire = self._checkDuplicate(self._retire, newVal);
   }
-  
+
   setSetVal(newVal) {
     const self = this;
     self._setVal = self._checkDuplicate(self._setVal, newVal);
@@ -486,7 +485,7 @@ class SubstanceBuilder {
     if (originalVal === null) {
       return newVal;
     } else {
-      return new IncompatibleCommand('duplicate');
+      return new IncompatibleCommand("duplicate");
     }
   }
 
