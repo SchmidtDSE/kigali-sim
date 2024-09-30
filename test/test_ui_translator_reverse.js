@@ -480,7 +480,6 @@ function buildUiTranslatorReverseTests() {
       const scenario = new SimulationScenario("scenario", ["intervention"], 1, 5, true);
       const program = new Program([application], [policy], [scenario], true);
       const code = program.toCode(0);
-      console.log(code);
       assert.notEqual(code.indexOf("start default"), -1);
       assert.notEqual(code.indexOf("start policy \"intervention\""), -1);
       assert.notEqual(code.indexOf("define application \"app\""), -1);
