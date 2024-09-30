@@ -307,6 +307,38 @@ function buildUiTranslatorReverseTests() {
       assert.notEqual(code.indexOf("modify substance \"sub\""), -1);
       assert.notEqual(code.indexOf("simulate \"scenario\""), -1);
     });
+
+    QUnit.test("allows multiple set statements", function(assert) {
+      const commands = [
+        new Command(
+          "setVal",
+          "manufacture",
+          new EngineNumber("1", "mt"),
+          null,
+        ),
+        new Command(
+          "setVal",
+          "import",
+          new EngineNumber("2", "mt"),
+          null,
+        ),
+        new Command(
+          "setVal",
+          "sales",
+          new EngineNumber("3", "mt"),
+          null,
+        )
+      ];
+      const substance = createWithCommands("test", false, commands);
+      assert.ok(substance.getIsCompatible());
+      
+      if (substance.getIsCompatible()) {
+        const code = substance.toCode(0);
+        assert.notEqual(code.indexOf("set manufacture to 1 mt"), -1);
+        assert.notEqual(code.indexOf("set import to 2 mt"), -1);
+        assert.notEqual(code.indexOf("set sales to 3 mt"), -1);
+      }
+    });
   });
 }
 
