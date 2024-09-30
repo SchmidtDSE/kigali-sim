@@ -14,7 +14,7 @@ function indentSingle(piece, spaces) {
   if (spaces === undefined) {
     spaces = 0;
   }
-  
+
   let prefix = "";
   for (let i = 0; i < spaces; i++) {
     prefix += " ";
@@ -72,7 +72,7 @@ class Program {
 
   toCode(spaces) {
     const self = this;
-    
+
     const baselinePieces = [];
     const addCode = buildAddCode(baselinePieces);
 
@@ -80,7 +80,7 @@ class Program {
       const applicationsCode = self.getApplications()
         .map((x) => x.toCode(spaces + 2))
         .join("\n\n\n");
-      
+
       addCode("start default", spaces);
       addCode("", spaces);
       addCode(applicationsCode, 0);
@@ -218,7 +218,7 @@ class SimulationScenario {
 
   toCode(spaces) {
     const self = this;
-    
+
     const baselinePieces = [];
     const addCode = buildAddCode(baselinePieces);
 
@@ -261,7 +261,7 @@ class SimulationStanza {
 
   toCode(spaces) {
     const self = this;
-    
+
     const baselinePieces = [];
     const addCode = buildAddCode(baselinePieces);
 
@@ -313,7 +313,7 @@ class Application {
 
   toCode(spaces) {
     const self = this;
-    
+
     const baselinePieces = [];
     const addCode = buildAddCode(baselinePieces);
 
@@ -460,7 +460,7 @@ class Substance {
 
     return self._finalizeStatement(pieces);
   }
-  
+
   _getEmitCode() {
     const self = this;
     if (self._emit === null) {
@@ -476,7 +476,7 @@ class Substance {
 
     return self._finalizeStatement(pieces);
   }
-  
+
   _getSetValCode() {
     const self = this;
     if (self._setVal === null) {
@@ -494,7 +494,7 @@ class Substance {
 
     return self._finalizeStatement(pieces);
   }
-  
+
   _getChangeCode() {
     const self = this;
     if (self._change === null) {
@@ -512,7 +512,7 @@ class Substance {
 
     return self._finalizeStatement(pieces);
   }
-  
+
   _getRetireCode() {
     const self = this;
     if (self._retire === null) {
@@ -528,7 +528,7 @@ class Substance {
 
     return self._finalizeStatement(pieces);
   }
-  
+
   _getCapCode() {
     const self = this;
     if (self._cap === null) {
@@ -546,7 +546,7 @@ class Substance {
 
     return self._finalizeStatement(pieces);
   }
-  
+
   _getRechargeCode() {
     const self = this;
     if (self._recharge === null) {
@@ -565,7 +565,7 @@ class Substance {
 
     return self._finalizeStatement(pieces);
   }
-  
+
   _getRecycleCode() {
     const self = this;
     if (self._recycle === null) {
@@ -585,7 +585,7 @@ class Substance {
 
     return self._finalizeStatement(pieces);
   }
-  
+
   _getReplaceCode() {
     const self = this;
     if (self._replace === null) {
@@ -608,7 +608,7 @@ class Substance {
 
   _addDuration(pieces, command) {
     const self = this;
-    
+
     const duration = command.getDuration();
     if (duration === null) {
       return;
@@ -640,7 +640,6 @@ class Substance {
     const self = this;
     return pieces.map((x) => x + "").join(" ");
   }
-
 }
 
 

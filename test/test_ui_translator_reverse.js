@@ -1,5 +1,5 @@
-import { EngineNumber } from "engine_number";
-import { YearMatcher } from "engine_state";
+import {EngineNumber} from "engine_number";
+import {YearMatcher} from "engine_state";
 import {
   AboutStanza,
   Application,
@@ -221,7 +221,7 @@ function buildUiTranslatorReverseTests() {
         new EngineNumber("10", "%"),
         "manufacture",
         "other",
-        null
+        null,
       );
       const substance = new Substance(
         "test",
@@ -340,13 +340,13 @@ function buildUiTranslatorReverseTests() {
       const code = substance.toCode(0);
       assert.notEqual(code.indexOf("retire 10 % during years 2 to 5"), -1);
     });
-    
+
     QUnit.test("supports duration with min year", function(assert) {
       const command = new ReplaceCommand(
         new EngineNumber("10", "%"),
         "manufacture",
         "other",
-        new YearMatcher(2, null)
+        new YearMatcher(2, null),
       );
       const substance = new Substance(
         "test",
@@ -364,7 +364,7 @@ function buildUiTranslatorReverseTests() {
       );
       const code = substance.toCode(0);
       assert.notEqual(code.indexOf(
-        "replace 10 % of manufacture with \"other\" during years 2 to onwards"
+        "replace 10 % of manufacture with \"other\" during years 2 to onwards",
       ), -1);
     });
 
@@ -391,10 +391,10 @@ function buildUiTranslatorReverseTests() {
       );
       const code = substance.toCode(0);
       assert.notEqual(code.indexOf(
-        "recover 10 % with 100 % reuse during years beginning to 5"
+        "recover 10 % with 100 % reuse during years beginning to 5",
       ), -1);
     });
-    
+
     QUnit.test("supports complex substances", function(assert) {
       const initialCharge = new Command(
         "initial charge",
@@ -406,7 +406,7 @@ function buildUiTranslatorReverseTests() {
         "cap",
         "manufacture",
         new EngineNumber(5, "mt"),
-        new YearMatcher(3, 4)
+        new YearMatcher(3, 4),
       );
       const substance = new Substance(
         "test",
@@ -425,7 +425,7 @@ function buildUiTranslatorReverseTests() {
       const code = substance.toCode(0);
       assert.notEqual(code.indexOf("define substance \"test\""), -1);
       assert.notEqual(code.indexOf(
-        "initial charge with 5 kg / unit for manufacture during year 1"
+        "initial charge with 5 kg / unit for manufacture during year 1",
       ), -1);
       assert.notEqual(code.indexOf("cap manufacture to 5 mt during years 3 to 4"), -1);
     });
