@@ -7,6 +7,18 @@
 import {EngineNumber} from "engine_number";
 import {YearMatcher} from "engine_state";
 
+const COMMAND_COMPATIBILITIES = {
+  "change": "any",
+  "retire": "any",
+  "setVal": "any",
+  "initial charge": "definition",
+  "emit": "definition",
+  "recharge": "definition",
+  "recycle": "policy",
+  "cap": "policy",
+  "replace": "policy",
+};
+
 const toolkit = QubecTalk.getToolkit();
 
 
@@ -331,6 +343,155 @@ class Application {
 
     addCode("end application", spaces);
     return finalizeCodePieces(baselinePieces);
+  }
+}
+
+
+class SubstanceBuilder {
+  constructor(name, isModification) {
+    const self = this;
+    self._name = name;
+    self._isModification = isModification;
+    self._initialCharge = null;
+    self._cap = null;
+    self._change = null;
+    self._emit = null;
+    self._recharge = null;
+    self._recycle = null;
+    self._replace = null;
+    self._retire = null;
+    self._setVal = null;
+  }
+
+  build(isCompatibleRaw) {
+    const self = this;
+
+    const commandsConsolidatedInterpreted = [
+      self._initialCharge,
+      self._cap,
+      self._change,
+      self._emit,
+      self._recharge,
+      self._recycle,
+      self._replace,
+      self._retire,
+      self._setVal,
+    ];
+    const isCompatibleInterpreted = commandsConsolidatedInterpreted
+      .filter((x) => x !== null)
+      .map((x) => x.getIsCompatible())
+      .reduce((a, b) => a && b);
+
+    const isCompatible = isCompatibleRaw && isCompatibleInterpreted;
+
+    return new Substance(
+      self._name,
+      self._initialCharge,
+      self._cap,
+      self._change,
+      self._emit,
+      self._recharge,
+      self._recycle,
+      self._replace,
+      self._retire,
+      self._setVal,
+      self._isModification,
+      isCompatible,
+    );
+  }
+
+  addCommand(command) {
+    const self = this;
+
+    const commandType = command.getTypeName();
+    const compatibilityType = COMMAND_COMPATIBILITIES[commandType];
+    if (compatibilityType === undefined) {
+      throw "Unknown compatibility type for " + commandType;
+    }
+
+    const requiresMod = compatibilityType === "policy";
+    const requiresDefinition = compatibilityType === "definition";
+    const needsToMoveToMod = requiresMod && !self._isModification;
+    const needsToMoveToDefinition = requiresDefinition && self._isModification;
+    const incompatiblePlace = needsToMoveToMod || needsToMoveToDefinition;
+
+    const strategy = {
+      "change": (x) => self.setChange(x),
+      "retire": (x) => self.setRetire(x),
+      "setVal": (x) => self.setSetVal(x),
+      "initial charge": (x) => self.setInitialCharge(x),
+      "recharge": (x) => self.setRecharge(x),
+      "emit": (x) => self.setEmit(x),
+      "recycle": (x) => self.setRecycle(x),
+      "cap": (x) => self.setCap(x),
+      "replace": (x) => self.setReplace(x),
+    }[commandType];
+
+    const effectiveCommand = incompatiblePlace ? self._makeInvalidPlacement() : command;
+    strategy(effectiveCommand);
+  }
+
+  setName(newVal) {
+    const self = this;
+    self._name = newVal;
+  }
+
+  setInitialCharge(newVal) {
+    const self = this;
+    self._initialCharge = self._checkDuplicate(self._initialCharge, newVal);
+  }
+
+  setCap(newVal) {
+    const self = this;
+    self._cap = self._checkDuplicate(self._cap, newVal);
+  }
+
+  setChange(newVal) {
+    const self = this;
+    self._change = self._checkDuplicate(self._change, newVal);
+  }
+
+  setEmit(newVal) {
+    const self = this;
+    self._emit = self._checkDuplicate(self._emit, newVal);
+  }
+
+  setRecharge(newVal) {
+    const self = this;
+    self._recharge = self._checkDuplicate(self._recharge, newVal);
+  }
+
+  setRecycle(newVal) {
+    const self = this;
+    self._recycle = self._checkDuplicate(self._recycle, newVal);
+  }
+
+  setReplace(newVal) {
+    const self = this;
+    self._replace = self._checkDuplicate(self._replace, newVal);
+  }
+
+  setRetire(newVal) {
+    const self = this;
+    self._retire = self._checkDuplicate(self._retire, newVal);
+  }
+
+  setSetVal(newVal) {
+    const self = this;
+    self._setVal = self._checkDuplicate(self._setVal, newVal);
+  }
+
+  _checkDuplicate(originalVal, newVal) {
+    if (originalVal === null) {
+      return newVal;
+    } else {
+      return new IncompatibleCommand("duplicate");
+    }
+  }
+
+  _makeInvalidPlacement() {
+    const self = this;
+    return new IncompatibleCommand("invalid placement");
   }
 }
 
@@ -711,6 +872,11 @@ class ReplaceCommand {
   getDuration() {
     const self = this;
     return self._duration;
+  }
+
+  getIsCompatible() {
+    const self = this;
+    return true;
   }
 }
 
@@ -1108,13 +1274,13 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
 
   visitSetAllYears(ctx) {
     const self = this;
-    return self._buildOperation(ctx, "set", null);
+    return self._buildOperation(ctx, "setVal", null);
   }
 
   visitSetDuration(ctx) {
     const self = this;
     const duration = ctx.duration.accept(self);
-    return self._buildOperation(ctx, "set", duration);
+    return self._buildOperation(ctx, "setVal", duration);
   }
 
   visitEmitAllYears(ctx) {
@@ -1252,84 +1418,15 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
       return x.accept(self);
     });
 
-    const commandsByType = new Map();
-    commands.forEach((command) => {
-      const typeName = command.getTypeName();
-      if (commandsByType.has(typeName)) {
-        commandsByType.set(typeName, new IncompatibleCommand("repeated type " + typeName));
-      } else {
-        commandsByType.set(typeName, command);
-      }
+    const builder = new SubstanceBuilder(name, isModification);
+
+    commands.forEach((x) => {
+      builder.addCommand(x);
     });
 
-    const getIfAvailable = (typeName, limitation) => {
-      const isAvailable = commandsByType.has(typeName);
-      if (!isAvailable) {
-        return null;
-      }
+    const isCompatibleRaw = commands.map((x) => x.getIsCompatible()).reduce((a, b) => a && b);
 
-      if (isAvailable) {
-        const requiresMod = limitation === "policy";
-        const requiresDefinition = limitation === "definition";
-        const needsToMoveToMod = requiresMod && !isModification;
-        const needsToMoveToDefinition = requiresDefinition && isModification;
-        if (needsToMoveToMod || needsToMoveToDefinition) {
-          return new IncompatibleCommand(typeName);
-        }
-      }
-
-      return commandsByType.get(typeName);
-    };
-
-    const charge = getIfAvailable("initial charge", "any");
-    const change = getIfAvailable("change", "any");
-    const recycle = getIfAvailable("recycle", "any");
-    const retire = getIfAvailable("retire", "any");
-    const setVal = getIfAvailable("set", "any");
-
-    const emit = getIfAvailable("emit", "definition");
-    const recharge = getIfAvailable("emit", "definition");
-
-    const cap = getIfAvailable("cap", "policy");
-    const replace = getIfAvailable("replace", "policy");
-
-    const commandsConsolidatedRaw = Array.of(...commandsByType.values());
-    const isCompatibleRaw = commandsConsolidatedRaw
-      .map((x) => x.getIsCompatible())
-      .reduce((a, b) => a && b);
-
-    const commandsConsolidatedInterpreted = [
-      charge,
-      cap,
-      change,
-      emit,
-      recharge,
-      recycle,
-      replace,
-      retire,
-      setVal,
-    ];
-    const isCompatibleInterpreted = commandsConsolidatedInterpreted
-      .filter((x) => x !== null)
-      .map((x) => x.getIsCompatible())
-      .reduce((a, b) => a && b);
-
-    const isCompatible = isCompatibleRaw && isCompatibleInterpreted;
-
-    return new Substance(
-      name,
-      charge,
-      cap,
-      change,
-      emit,
-      recharge,
-      recycle,
-      replace,
-      retire,
-      setVal,
-      isModification,
-      isCompatible,
-    );
+    return builder.build(isCompatibleRaw);
   }
 
   _buildOperation(ctx, typeName, duration, targetGetter, valueGetter) {
@@ -1445,6 +1542,7 @@ export {
   SimulationScenario,
   SimulationStanza,
   Substance,
+  SubstanceBuilder,
   UiTranslatorCompiler,
   buildAddCode,
   finalizeCodePieces,
