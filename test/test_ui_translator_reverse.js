@@ -1,13 +1,45 @@
 import { EngineNumber } from "engine_number";
 import { YearMatcher } from "engine_state";
 import {
+  AboutStanza,
+  Application,
   Command,
+  DefinitionalStanza,
+  Program,
   ReplaceCommand,
+  SimulationScenario,
+  SimulationStanza,
   Substance,
   buildAddCode,
   finalizeCodePieces,
   indent,
 } from "ui_translator";
+
+
+function buildTestApplication(isMod) {
+  const command = new Command(
+    "initial charge",
+    "manufacture",
+    new EngineNumber(5, "kg / unit"),
+    null,
+  );
+  const substance = new Substance(
+    "sub",
+    command,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    isMod,
+    true,
+  );
+  const application = new Application("app", [substance], isMod, true);
+  return application;
+}
 
 
 function buildUiTranslatorReverseTests() {
@@ -54,7 +86,7 @@ function buildUiTranslatorReverseTests() {
         true,
         true,
       );
-      const code = substance.toCode();
+      const code = substance.toCode(0);
       assert.notEqual(code.indexOf("modify substance \"test\""), -1);
       assert.notEqual(code.indexOf("initial charge with 5 kg / unit for manufacture"), -1);
     });
@@ -80,7 +112,7 @@ function buildUiTranslatorReverseTests() {
         true,
         true,
       );
-      const code = substance.toCode();
+      const code = substance.toCode(0);
       assert.notEqual(code.indexOf("cap manufacture to 5 mt"), -1);
     });
 
@@ -105,7 +137,7 @@ function buildUiTranslatorReverseTests() {
         true,
         true,
       );
-      const code = substance.toCode();
+      const code = substance.toCode(0);
       assert.notEqual(code.indexOf("change manufacture by +5 % / year"), -1);
     });
 
@@ -130,7 +162,7 @@ function buildUiTranslatorReverseTests() {
         true,
         true,
       );
-      const code = substance.toCode();
+      const code = substance.toCode(0);
       assert.notEqual(code.indexOf("emit 5 tCO2e / unit"), -1);
     });
 
@@ -155,7 +187,7 @@ function buildUiTranslatorReverseTests() {
         true,
         true,
       );
-      const code = substance.toCode();
+      const code = substance.toCode(0);
       assert.notEqual(code.indexOf("recharge 10 % / year with 5 kg / unit"), -1);
     });
 
@@ -180,7 +212,7 @@ function buildUiTranslatorReverseTests() {
         true,
         true,
       );
-      const code = substance.toCode();
+      const code = substance.toCode(0);
       assert.notEqual(code.indexOf("recover 10 % with 100 % reuse"), -1);
     });
 
@@ -205,7 +237,7 @@ function buildUiTranslatorReverseTests() {
         true,
         true,
       );
-      const code = substance.toCode();
+      const code = substance.toCode(0);
       assert.notEqual(code.indexOf("replace 10 % of manufacture with \"other\""), -1);
     });
 
@@ -230,7 +262,7 @@ function buildUiTranslatorReverseTests() {
         true,
         true,
       );
-      const code = substance.toCode();
+      const code = substance.toCode(0);
       assert.notEqual(code.indexOf("retire 10 %"), -1);
     });
 
@@ -255,7 +287,7 @@ function buildUiTranslatorReverseTests() {
         true,
         true,
       );
-      const code = substance.toCode();
+      const code = substance.toCode(0);
       assert.notEqual(code.indexOf("set manufacture to 10 mt"), -1);
     });
 
@@ -280,7 +312,7 @@ function buildUiTranslatorReverseTests() {
         true,
         true,
       );
-      const code = substance.toCode();
+      const code = substance.toCode(0);
       assert.notEqual(code.indexOf("set manufacture to 10 mt during year 1"), -1);
     });
 
@@ -305,7 +337,7 @@ function buildUiTranslatorReverseTests() {
         true,
         true,
       );
-      const code = substance.toCode();
+      const code = substance.toCode(0);
       assert.notEqual(code.indexOf("retire 10 % during years 2 to 5"), -1);
     });
     
@@ -330,7 +362,7 @@ function buildUiTranslatorReverseTests() {
         true,
         true,
       );
-      const code = substance.toCode();
+      const code = substance.toCode(0);
       assert.notEqual(code.indexOf(
         "replace 10 % of manufacture with \"other\" during years 2 to onwards"
       ), -1);
@@ -357,7 +389,7 @@ function buildUiTranslatorReverseTests() {
         true,
         true,
       );
-      const code = substance.toCode();
+      const code = substance.toCode(0);
       assert.notEqual(code.indexOf(
         "recover 10 % with 100 % reuse during years beginning to 5"
       ), -1);
@@ -390,12 +422,72 @@ function buildUiTranslatorReverseTests() {
         false,
         true,
       );
-      const code = substance.toCode();
+      const code = substance.toCode(0);
       assert.notEqual(code.indexOf("define substance \"test\""), -1);
       assert.notEqual(code.indexOf(
         "initial charge with 5 kg / unit for manufacture during year 1"
       ), -1);
       assert.notEqual(code.indexOf("cap manufacture to 5 mt during years 3 to 4"), -1);
+    });
+
+    QUnit.test("converts applications to code", function(assert) {
+      const application = buildTestApplication(false);
+      const code = application.toCode(0);
+      assert.notEqual(code.indexOf("define application \"app\""), -1);
+      assert.notEqual(code.indexOf("define substance \"sub\""), -1);
+    });
+
+    QUnit.test("converts simulation stanzas to code", function(assert) {
+      const scenario = new SimulationScenario("scenario", ["policy1", "policy2"], 1, 5, true);
+      const stanza = new SimulationStanza([scenario], true);
+      const code = stanza.toCode(0);
+      assert.notEqual(code.indexOf("start simulations"), -1);
+      assert.notEqual(code.indexOf("simulate \"scenario\""), -1);
+      assert.notEqual(code.indexOf("using \"policy1\""), -1);
+      assert.notEqual(code.indexOf("then \"policy2\""), -1);
+      assert.notEqual(code.indexOf("from years 1 to 5"), -1);
+    });
+
+    QUnit.test("converts default to code", function(assert) {
+      const application = buildTestApplication(false);
+      const stanza = new DefinitionalStanza("default", [application], true);
+      const code = stanza.toCode(0);
+      assert.notEqual(code.indexOf("start default"), -1);
+      assert.notEqual(code.indexOf("define application \"app\""), -1);
+      assert.notEqual(code.indexOf("end default"), -1);
+    });
+
+    QUnit.test("converts policy to code", function(assert) {
+      const application = buildTestApplication(false);
+      const stanza = new DefinitionalStanza("inervention", [application], true);
+      const code = stanza.toCode(0);
+      assert.notEqual(code.indexOf("start policy \"inervention\""), -1);
+      assert.notEqual(code.indexOf("define application \"app\""), -1);
+      assert.notEqual(code.indexOf("end policy"), -1);
+    });
+
+    QUnit.test("converts about stanza to code", function(assert) {
+      const stanza = new AboutStanza();
+      const code = stanza.toCode(0);
+      assert.notEqual(code.indexOf("start about"), -1);
+      assert.notEqual(code.indexOf("end about"), -1);
+    });
+
+    QUnit.test("converts program to code", function(assert) {
+      const application = buildTestApplication();
+      const applicationMod = buildTestApplication(true);
+      const policy = new DefinitionalStanza("intervention", [applicationMod], true);
+      const scenario = new SimulationScenario("scenario", ["intervention"], 1, 5, true);
+      const program = new Program([application], [policy], [scenario], true);
+      const code = program.toCode(0);
+      console.log(code);
+      assert.notEqual(code.indexOf("start default"), -1);
+      assert.notEqual(code.indexOf("start policy \"intervention\""), -1);
+      assert.notEqual(code.indexOf("define application \"app\""), -1);
+      assert.notEqual(code.indexOf("define substance \"sub\""), -1);
+      assert.notEqual(code.indexOf("modify application \"app\""), -1);
+      assert.notEqual(code.indexOf("modify substance \"sub\""), -1);
+      assert.notEqual(code.indexOf("simulate \"scenario\""), -1);
     });
   });
 }

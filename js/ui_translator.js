@@ -83,7 +83,8 @@ class Program {
       
       addCode("start default", spaces);
       addCode("", spaces);
-      addCode(applicationsCode, spaces);
+      addCode(applicationsCode, 0);
+      addCode("", spaces);
       addCode("end default", spaces);
       addCode("", spaces);
       addCode("", spaces);
@@ -98,9 +99,12 @@ class Program {
 
     if (self.getScenarios().length > 0) {
       addCode("start simulations", spaces);
+      addCode("", spaces);
       const scenariosCode = self.getScenarios()
         .map((x) => x.toCode(2))
         .join("\n\n\n");
+      addCode(scenariosCode, spaces);
+      addCode("", spaces);
       addCode("end simulations", spaces);
     }
 
@@ -164,9 +168,9 @@ class DefinitionalStanza {
 
     if (self.getApplications().length > 0) {
       const applicationsCode = self.getApplications()
-        .map((x) => x.toCode(2))
+        .map((x) => x.toCode(spaces + 2))
         .join("\n\n\n");
-      addCode(applicationsCode, spaces);
+      addCode(applicationsCode, 0);
     }
 
     addCode("", spaces);
@@ -227,7 +231,7 @@ class SimulationScenario {
       });
     }
 
-    addCode("from years " + self.getYearStart() + " to " + self.getYearEnd());
+    addCode("from years " + self.getYearStart() + " to " + self.getYearEnd(), spaces);
     return finalizeCodePieces(baselinePieces);
   }
 }
@@ -319,9 +323,9 @@ class Application {
     if (self.getSubstances().length > 0) {
       addCode("", spaces);
       const substancesCode = self.getSubstances()
-        .map((x) => x.toCode(2))
+        .map((x) => x.toCode(spaces + 2))
         .join("\n\n\n");
-      addCode(substancesCode, spaces);
+      addCode(substancesCode, 0);
       addCode("", spaces);
     }
 
@@ -422,7 +426,7 @@ class Substance {
       if (code === null) {
         return;
       }
-      addCode(code, spaces);
+      addCode(code, spaces + 2);
     };
 
     addIfGiven(self._getInitialChargeCode());
@@ -1433,8 +1437,14 @@ class UiTranslatorCompiler {
 
 
 export {
+  AboutStanza,
+  Application,
   Command,
+  DefinitionalStanza,
+  Program,
   ReplaceCommand,
+  SimulationScenario,
+  SimulationStanza,
   Substance,
   UiTranslatorCompiler,
   buildAddCode,
