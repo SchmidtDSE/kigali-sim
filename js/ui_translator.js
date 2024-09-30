@@ -10,7 +10,7 @@ import {YearMatcher} from "engine_state";
 const toolkit = QubecTalk.getToolkit();
 
 
-function indent(pieces, spaces) {
+function indentSingle(piece, spaces) {
   if (spaces === undefined) {
     spaces = 0;
   }
@@ -19,13 +19,20 @@ function indent(pieces, spaces) {
   for (let i = 0; i < spaces; i++) {
     prefix += " ";
   }
-  
-  return pieces.map((x) => prefix + x);
+
+  return prefix + piece;
+}
+
+
+function indent(pieces, spaces) {
+  return pieces.map((piece) => indentSingle(piece, spaces));
 }
 
 
 function buildAddCode(target) {
-  return (x, spaces) => target.push(indent(x, spaces));
+  return (x, spaces) => {
+    target.push(indentSingle(x, spaces));
+  };
 }
 
 
@@ -411,24 +418,31 @@ class Substance {
     const prefix = self.getIsModification() ? "modify" : "define";
     addCode(prefix + " substance \"" + self.getName() + "\"", spaces);
 
-    self._addInitialCharge(addCode, spaces);
-    self._addEmit(addCode, spaces);
-    self._addSetVal(addCode, spaces);
-    self._addChange(addCode, spaces);
-    self._addRetire(addCode, spaces);
-    self._addCap(addCode, spaces);
-    self._addRecharge(addCode, spaces);
-    self._addRecycle(addCode, spaces);
-    self._addReplace(addCode, spaces);
+    const addIfGiven = (code) => {
+      if (code === null) {
+        return;
+      }
+      addCode(code, spaces);
+    };
+
+    addIfGiven(self._getInitialChargeCode());
+    addIfGiven(self._getEmitCode());
+    addIfGiven(self._getSetValCode());
+    addIfGiven(self._getChangeCode());
+    addIfGiven(self._getRetireCode());
+    addIfGiven(self._getCapCode());
+    addIfGiven(self._getRechargeCode());
+    addIfGiven(self._getRecycleCode());
+    addIfGiven(self._getReplaceCode());
 
     addCode("end substance", spaces);
     return finalizeCodePieces(baselinePieces);
   }
 
-  _addInitialCharge(addCode, spaces) {
+  _getInitialChargeCode() {
     const self = this;
     if (self._initialCharge === null) {
-      return;
+      return null;
     }
 
     const pieces = [
@@ -443,10 +457,10 @@ class Substance {
     return self._finalizeStatement(pieces);
   }
   
-  _addEmit(addCode, spaces) {
+  _getEmitCode() {
     const self = this;
     if (self._emit === null) {
-      return;
+      return null;
     }
 
     const pieces = [
@@ -459,10 +473,10 @@ class Substance {
     return self._finalizeStatement(pieces);
   }
   
-  _addSetVal(addCode, spaces) {
+  _getSetValCode() {
     const self = this;
     if (self._setVal === null) {
-      return;
+      return null;
     }
 
     const pieces = [
@@ -477,10 +491,10 @@ class Substance {
     return self._finalizeStatement(pieces);
   }
   
-  _addChange(addCode, spaces) {
+  _getChangeCode() {
     const self = this;
     if (self._change === null) {
-      return;
+      return null;
     }
 
     const pieces = [
@@ -495,10 +509,10 @@ class Substance {
     return self._finalizeStatement(pieces);
   }
   
-  _addRetire(addCode, spaces) {
+  _getRetireCode() {
     const self = this;
     if (self._retire === null) {
-      return;
+      return null;
     }
 
     const pieces = [
@@ -511,16 +525,16 @@ class Substance {
     return self._finalizeStatement(pieces);
   }
   
-  _addCap(addCode, spaces) {
+  _getCapCode() {
     const self = this;
     if (self._cap === null) {
-      return;
+      return null;
     }
 
     const pieces = [
       "cap",
       self._cap.getTarget(),
-      "to"
+      "to",
       self._cap.getValue().getValue(),
       self._cap.getValue().getUnits(),
     ];
@@ -529,10 +543,10 @@ class Substance {
     return self._finalizeStatement(pieces);
   }
   
-  _addRecharge(addCode, spaces) {
+  _getRechargeCode() {
     const self = this;
     if (self._recharge === null) {
-      return;
+      return null;
     }
 
     const pieces = [
@@ -548,42 +562,42 @@ class Substance {
     return self._finalizeStatement(pieces);
   }
   
-  _addRecycle(addCode, spaces) {
+  _getRecycleCode() {
     const self = this;
     if (self._recycle === null) {
-      return;
+      return null;
     }
 
     const pieces = [
       "recover",
-      self._recharge.getTarget().getValue(),
-      self._recharge.getTarget().getUnits(),
+      self._recycle.getTarget().getValue(),
+      self._recycle.getTarget().getUnits(),
       "with",
-      self._recharge.getValue().getValue(),
-      self._recharge.getValue().getUnits(),
+      self._recycle.getValue().getValue(),
+      self._recycle.getValue().getUnits(),
       "reuse",
     ];
-    self._addDuration(pieces, self._recharge);
+    self._addDuration(pieces, self._recycle);
 
     return self._finalizeStatement(pieces);
   }
   
-  _addReplace(addCode, spaces) {
+  _getReplaceCode() {
     const self = this;
     if (self._replace === null) {
-      return;
+      return null;
     }
 
     const pieces = [
       "replace",
-      self.getVolume().getValue(),
-      self.getVolume().getUnits(),
+      self._replace.getVolume().getValue(),
+      self._replace.getVolume().getUnits(),
       "of",
-      self.getSource(),
+      self._replace.getSource(),
       "with",
-      "\"" + self.getDestination() + "\"",
+      "\"" + self._replace.getDestination() + "\"",
     ];
-    self._addDuration(pieces, self._recharge);
+    self._addDuration(pieces, self._replace);
 
     return self._finalizeStatement(pieces);
   }
@@ -596,8 +610,8 @@ class Substance {
       return;
     }
 
-    const startYear = duration.getStartYear();
-    const endYear = duration.getEndYear();
+    let startYear = duration.getStart();
+    let endYear = duration.getEnd();
     if (startYear === null && endYear === null) {
       return;
     }
@@ -1418,4 +1432,12 @@ class UiTranslatorCompiler {
 }
 
 
-export {UiTranslatorCompiler};
+export {
+  Command,
+  ReplaceCommand,
+  Substance,
+  UiTranslatorCompiler,
+  buildAddCode,
+  finalizeCodePieces,
+  indent,
+};
