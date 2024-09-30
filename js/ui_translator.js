@@ -352,7 +352,7 @@ class SubstanceBuilder {
     const self = this;
     self._name = name;
     self._isModification = isModification;
-    self._initialCharge = null;
+    self._initialCharges = [];
     self._cap = null;
     self._changes = [];
     self._emit = null;
@@ -367,8 +367,8 @@ class SubstanceBuilder {
     const self = this;
 
     const commandsConsolidatedInterpreted = [
+      self._initialCharges,
       [
-        self._initialCharge,
         self._cap,
         self._emit,
         self._recharge,
@@ -383,12 +383,16 @@ class SubstanceBuilder {
       .filter((x) => x !== null)
       .map((x) => x.getIsCompatible())
       .reduce((a, b) => a && b);
+    
+    const initialChargeTargets = self._initialCharges.map((x) => x.getTarget());
+    const initialChargeTargetsUnique = new Set(initialChargeTargets);
+    const initialChargesNonOverlap = initialChargeTargets.length == initialChargeTargetsUnique.size;
 
-    const isCompatible = isCompatibleRaw && isCompatibleInterpreted;
+    const isCompatible = isCompatibleRaw && isCompatibleInterpreted && initialChargesNonOverlap;
 
     return new Substance(
       self._name,
-      self._initialCharge,
+      self._initialCharges,
       self._cap,
       self._changes,
       self._emit,
@@ -421,7 +425,7 @@ class SubstanceBuilder {
       "change": (x) => self.addChange(x),
       "retire": (x) => self.setRetire(x),
       "setVal": (x) => self.addSetVal(x),
-      "initial charge": (x) => self.setInitialCharge(x),
+      "initial charge": (x) => self.addInitialCharge(x),
       "recharge": (x) => self.setRecharge(x),
       "emit": (x) => self.setEmit(x),
       "recycle": (x) => self.setRecycle(x),
@@ -438,9 +442,9 @@ class SubstanceBuilder {
     self._name = newVal;
   }
 
-  setInitialCharge(newVal) {
+  addInitialCharge(newVal) {
     const self = this;
-    self._initialCharge = self._checkDuplicate(self._initialCharge, newVal);
+    self._initialCharges.push(newVal);
   }
 
   setCap(newVal) {
@@ -499,11 +503,11 @@ class SubstanceBuilder {
 
 
 class Substance {
-  constructor(name, charge, cap, changes, emit, recharge, recycle, replace, retire, setVals, isMod,
+  constructor(name, charges, cap, changes, emit, recharge, recycle, replace, retire, setVals, isMod,
     compat) {
     const self = this;
     self._name = name;
-    self._initialCharge = charge;
+    self._initialCharges = charges;
     self._cap = cap;
     self._changes = changes;
     self._emit = emit;
@@ -521,9 +525,9 @@ class Substance {
     return self._name;
   }
 
-  getInitialCharge() {
+  getInitialCharges() {
     const self = this;
-    return self._initialCharge;
+    return self._initialCharges;
   }
 
   getCap() {
@@ -599,7 +603,7 @@ class Substance {
       codeLines.forEach(addIfGiven);
     };
 
-    addIfGiven(self._getInitialChargeCode());
+    addAllIfGiven(self._getInitialChargesCode());
     addIfGiven(self._getEmitCode());
     addAllIfGiven(self._getSetValsCode());
     addAllIfGiven(self._getChangesCode());
@@ -613,22 +617,25 @@ class Substance {
     return finalizeCodePieces(baselinePieces);
   }
 
-  _getInitialChargeCode() {
+  _getInitialChargesCode() {
     const self = this;
-    if (self._initialCharge === null) {
+    if (self._initialCharges === null) {
       return null;
     }
 
-    const pieces = [
-      "initial charge with",
-      self._initialCharge.getValue().getValue(),
-      self._initialCharge.getValue().getUnits(),
-      "for",
-      self._initialCharge.getTarget(),
-    ];
-    self._addDuration(pieces, self._initialCharge);
+    const buildInitialCharge = (initialCharge) => {
+      const pieces = [
+        "initial charge with",
+        initialCharge.getValue().getValue(),
+        initialCharge.getValue().getUnits(),
+        "for",
+        initialCharge.getTarget(),
+      ];
+      self._addDuration(pieces, initialCharge);
+      return self._finalizeStatement(pieces);
+    };
 
-    return self._finalizeStatement(pieces);
+    return self._initialCharges.map(buildInitialCharge);
   }
 
   _getEmitCode() {

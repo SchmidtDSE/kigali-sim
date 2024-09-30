@@ -371,6 +371,57 @@ function buildUiTranslatorReverseTests() {
         assert.notEqual(code.indexOf("change sales by +3 mt / year"), -1);
       }
     });
+
+    QUnit.test("allows multiple initial charge statements", function(assert) {
+      const commands = [
+        new Command(
+          "initial charge",
+          "manufacture",
+          new EngineNumber(1, "kg / unit"),
+          null,
+        ),
+        new Command(
+          "initial charge",
+          "import",
+          new EngineNumber(2, "kg / unit"),
+          null,
+        ),
+        new Command(
+          "initial charge",
+          "sales",
+          new EngineNumber(3, "kg / unit"),
+          null,
+        )
+      ];
+      const substance = createWithCommands("test", false, commands);
+      assert.ok(substance.getIsCompatible());
+      
+      if (substance.getIsCompatible()) {
+        const code = substance.toCode(0);
+        assert.notEqual(code.indexOf("initial charge with 1 kg / unit for manufacture"), -1);
+        assert.notEqual(code.indexOf("initial charge with 2 kg / unit for import"), -1);
+        assert.notEqual(code.indexOf("initial charge with 3 kg / unit for sales"), -1);
+      }
+    });
+
+    QUnit.test("prohibits overlapping initial charge statements", function(assert) {
+      const commands = [
+        new Command(
+          "initial charge",
+          "manufacture",
+          new EngineNumber(1, "kg / unit"),
+          null,
+        ),
+        new Command(
+          "initial charge",
+          "manufacture",
+          new EngineNumber(2, "kg / unit"),
+          null,
+        )
+      ];
+      const substance = createWithCommands("test", false, commands);
+      assert.ok(!substance.getIsCompatible());
+    });
   });
 }
 
