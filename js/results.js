@@ -483,7 +483,6 @@ class SelectorTitlePresenter {
       .text((x) => x)
       .property("selected", (x) => {
         const nativelySelected = x === selectedValue;
-        console.log(nativelySelected, x, selectedValue);
         const allSelected = x === allText && selectedValue === null;
         return nativelySelected || allSelected;
       });

@@ -10,6 +10,37 @@ import {YearMatcher} from "engine_state";
 const toolkit = QubecTalk.getToolkit();
 
 
+function indentSingle(piece, spaces) {
+  if (spaces === undefined) {
+    spaces = 0;
+  }
+
+  let prefix = "";
+  for (let i = 0; i < spaces; i++) {
+    prefix += " ";
+  }
+
+  return prefix + piece;
+}
+
+
+function indent(pieces, spaces) {
+  return pieces.map((piece) => indentSingle(piece, spaces));
+}
+
+
+function buildAddCode(target) {
+  return (x, spaces) => {
+    target.push(indentSingle(x, spaces));
+  };
+}
+
+
+function finalizeCodePieces(target) {
+  return target.join("\n");
+}
+
+
 class Program {
   constructor(applications, policies, scenarios, isCompatible) {
     const self = this;
@@ -38,6 +69,47 @@ class Program {
     const self = this;
     return self._isCompatible;
   }
+
+  toCode(spaces) {
+    const self = this;
+
+    const baselinePieces = [];
+    const addCode = buildAddCode(baselinePieces);
+
+    if (self.getApplications().length > 0) {
+      const applicationsCode = self.getApplications()
+        .map((x) => x.toCode(spaces + 2))
+        .join("\n\n\n");
+
+      addCode("start default", spaces);
+      addCode("", spaces);
+      addCode(applicationsCode, 0);
+      addCode("", spaces);
+      addCode("end default", spaces);
+      addCode("", spaces);
+      addCode("", spaces);
+    }
+
+    if (self.getPolicies().length > 0) {
+      const policiesCode = self.getPolicies().map((x) => x.toCode(spaces)).join("\n\n\n\n");
+      addCode(policiesCode, spaces);
+      addCode("", spaces);
+      addCode("", spaces);
+    }
+
+    if (self.getScenarios().length > 0) {
+      addCode("start simulations", spaces);
+      addCode("", spaces);
+      const scenariosCode = self.getScenarios()
+        .map((x) => x.toCode(2))
+        .join("\n\n\n");
+      addCode(scenariosCode, spaces);
+      addCode("", spaces);
+      addCode("end simulations", spaces);
+    }
+
+    return finalizeCodePieces(baselinePieces);
+  }
 }
 
 
@@ -45,6 +117,18 @@ class AboutStanza {
   getName() {
     const self = this;
     return "about";
+  }
+
+  toCode(spaces) {
+    const self = this;
+
+    const baselinePieces = [];
+    const addCode = buildAddCode(baselinePieces);
+
+    addCode("start about", spaces);
+    addCode("end about", spaces);
+
+    return finalizeCodePieces(baselinePieces);
   }
 }
 
@@ -70,6 +154,29 @@ class DefinitionalStanza {
   getIsCompatible() {
     const self = this;
     return self._isCompatible;
+  }
+
+  toCode(spaces) {
+    const self = this;
+
+    const baselinePieces = [];
+    const addCode = buildAddCode(baselinePieces);
+    const isDefault = self.getName() === "default";
+
+    addCode("start " + (isDefault ? "default" : ("policy \"" + self.getName() + "\"")), spaces);
+    addCode("", spaces);
+
+    if (self.getApplications().length > 0) {
+      const applicationsCode = self.getApplications()
+        .map((x) => x.toCode(spaces + 2))
+        .join("\n\n\n");
+      addCode(applicationsCode, 0);
+    }
+
+    addCode("", spaces);
+    addCode("end " + (isDefault ? "default" : "policy"), spaces);
+
+    return finalizeCodePieces(baselinePieces);
   }
 }
 
@@ -108,6 +215,25 @@ class SimulationScenario {
     const self = this;
     return self._isCompatible;
   }
+
+  toCode(spaces) {
+    const self = this;
+
+    const baselinePieces = [];
+    const addCode = buildAddCode(baselinePieces);
+
+    addCode("simulate \"" + self.getName() + "\"", spaces);
+
+    if (self.getPolicyNames().length > 0) {
+      self.getPolicyNames().forEach((x, i) => {
+        const prefix = i == 0 ? "using" : "then";
+        addCode(prefix + " \"" + x + "\"", spaces + 2);
+      });
+    }
+
+    addCode("from years " + self.getYearStart() + " to " + self.getYearEnd(), spaces);
+    return finalizeCodePieces(baselinePieces);
+  }
 }
 
 
@@ -132,14 +258,36 @@ class SimulationStanza {
     const self = this;
     return "simulations";
   }
+
+  toCode(spaces) {
+    const self = this;
+
+    const baselinePieces = [];
+    const addCode = buildAddCode(baselinePieces);
+
+    addCode("start simulations", spaces);
+
+    if (self.getScenarios().length > 0) {
+      addCode("", spaces);
+      const scenariosCode = self.getScenarios()
+        .map((x) => x.toCode(2))
+        .join("\n\n\n");
+      addCode(scenariosCode, spaces);
+      addCode("", spaces);
+    }
+
+    addCode("end simulations", spaces);
+    return finalizeCodePieces(baselinePieces);
+  }
 }
 
 
 class Application {
-  constructor(name, substances, isCompatible) {
+  constructor(name, substances, isModification, isCompatible) {
     const self = this;
     self._name = name;
     self._substances = substances;
+    self._isModification = isModification;
     self._isCompatible = isCompatible;
   }
 
@@ -153,15 +301,43 @@ class Application {
     return self._substances;
   }
 
+  getIsModification() {
+    const self = this;
+    return self._isModification;
+  }
+
   getIsCompatible() {
     const self = this;
     return self._isCompatible;
+  }
+
+  toCode(spaces) {
+    const self = this;
+
+    const baselinePieces = [];
+    const addCode = buildAddCode(baselinePieces);
+
+    const prefix = self.getIsModification() ? "modify" : "define";
+    addCode(prefix + " application \"" + self.getName() + "\"", spaces);
+
+    if (self.getSubstances().length > 0) {
+      addCode("", spaces);
+      const substancesCode = self.getSubstances()
+        .map((x) => x.toCode(spaces + 2))
+        .join("\n\n\n");
+      addCode(substancesCode, 0);
+      addCode("", spaces);
+    }
+
+    addCode("end application", spaces);
+    return finalizeCodePieces(baselinePieces);
   }
 }
 
 
 class Substance {
-  constructor(name, charge, cap, change, emit, recharge, recycle, replace, retire, setVal, compat) {
+  constructor(name, charge, cap, change, emit, recharge, recycle, replace, retire, setVal, isMod,
+    compat) {
     const self = this;
     self._name = name;
     self._initialCharge = charge;
@@ -173,6 +349,7 @@ class Substance {
     self._replace = replace;
     self._retire = retire;
     self._setVal = setVal;
+    self._isModification = isMod;
     self._isCompatible = compat;
   }
 
@@ -226,9 +403,242 @@ class Substance {
     return self._setVal;
   }
 
+  getIsModification() {
+    const self = this;
+    return self._isModification;
+  }
+
   getIsCompatible() {
     const self = this;
     return self._isCompatible;
+  }
+
+  toCode(spaces) {
+    const self = this;
+
+    const baselinePieces = [];
+    const addCode = buildAddCode(baselinePieces);
+
+    const prefix = self.getIsModification() ? "modify" : "define";
+    addCode(prefix + " substance \"" + self.getName() + "\"", spaces);
+
+    const addIfGiven = (code) => {
+      if (code === null) {
+        return;
+      }
+      addCode(code, spaces + 2);
+    };
+
+    addIfGiven(self._getInitialChargeCode());
+    addIfGiven(self._getEmitCode());
+    addIfGiven(self._getSetValCode());
+    addIfGiven(self._getChangeCode());
+    addIfGiven(self._getRetireCode());
+    addIfGiven(self._getCapCode());
+    addIfGiven(self._getRechargeCode());
+    addIfGiven(self._getRecycleCode());
+    addIfGiven(self._getReplaceCode());
+
+    addCode("end substance", spaces);
+    return finalizeCodePieces(baselinePieces);
+  }
+
+  _getInitialChargeCode() {
+    const self = this;
+    if (self._initialCharge === null) {
+      return null;
+    }
+
+    const pieces = [
+      "initial charge with",
+      self._initialCharge.getValue().getValue(),
+      self._initialCharge.getValue().getUnits(),
+      "for",
+      self._initialCharge.getTarget(),
+    ];
+    self._addDuration(pieces, self._initialCharge);
+
+    return self._finalizeStatement(pieces);
+  }
+
+  _getEmitCode() {
+    const self = this;
+    if (self._emit === null) {
+      return null;
+    }
+
+    const pieces = [
+      "emit",
+      self._emit.getValue().getValue(),
+      self._emit.getValue().getUnits(),
+    ];
+    self._addDuration(pieces, self._emit);
+
+    return self._finalizeStatement(pieces);
+  }
+
+  _getSetValCode() {
+    const self = this;
+    if (self._setVal === null) {
+      return null;
+    }
+
+    const pieces = [
+      "set",
+      self._setVal.getTarget(),
+      "to",
+      self._setVal.getValue().getValue(),
+      self._setVal.getValue().getUnits(),
+    ];
+    self._addDuration(pieces, self._setVal);
+
+    return self._finalizeStatement(pieces);
+  }
+
+  _getChangeCode() {
+    const self = this;
+    if (self._change === null) {
+      return null;
+    }
+
+    const pieces = [
+      "change",
+      self._change.getTarget(),
+      "by",
+      self._change.getValue().getValue(),
+      self._change.getValue().getUnits(),
+    ];
+    self._addDuration(pieces, self._change);
+
+    return self._finalizeStatement(pieces);
+  }
+
+  _getRetireCode() {
+    const self = this;
+    if (self._retire === null) {
+      return null;
+    }
+
+    const pieces = [
+      "retire",
+      self._retire.getValue().getValue(),
+      self._retire.getValue().getUnits(),
+    ];
+    self._addDuration(pieces, self._retire);
+
+    return self._finalizeStatement(pieces);
+  }
+
+  _getCapCode() {
+    const self = this;
+    if (self._cap === null) {
+      return null;
+    }
+
+    const pieces = [
+      "cap",
+      self._cap.getTarget(),
+      "to",
+      self._cap.getValue().getValue(),
+      self._cap.getValue().getUnits(),
+    ];
+    self._addDuration(pieces, self._cap);
+
+    return self._finalizeStatement(pieces);
+  }
+
+  _getRechargeCode() {
+    const self = this;
+    if (self._recharge === null) {
+      return null;
+    }
+
+    const pieces = [
+      "recharge",
+      self._recharge.getTarget().getValue(),
+      self._recharge.getTarget().getUnits(),
+      "with",
+      self._recharge.getValue().getValue(),
+      self._recharge.getValue().getUnits(),
+    ];
+    self._addDuration(pieces, self._recharge);
+
+    return self._finalizeStatement(pieces);
+  }
+
+  _getRecycleCode() {
+    const self = this;
+    if (self._recycle === null) {
+      return null;
+    }
+
+    const pieces = [
+      "recover",
+      self._recycle.getTarget().getValue(),
+      self._recycle.getTarget().getUnits(),
+      "with",
+      self._recycle.getValue().getValue(),
+      self._recycle.getValue().getUnits(),
+      "reuse",
+    ];
+    self._addDuration(pieces, self._recycle);
+
+    return self._finalizeStatement(pieces);
+  }
+
+  _getReplaceCode() {
+    const self = this;
+    if (self._replace === null) {
+      return null;
+    }
+
+    const pieces = [
+      "replace",
+      self._replace.getVolume().getValue(),
+      self._replace.getVolume().getUnits(),
+      "of",
+      self._replace.getSource(),
+      "with",
+      "\"" + self._replace.getDestination() + "\"",
+    ];
+    self._addDuration(pieces, self._replace);
+
+    return self._finalizeStatement(pieces);
+  }
+
+  _addDuration(pieces, command) {
+    const self = this;
+
+    const duration = command.getDuration();
+    if (duration === null) {
+      return;
+    }
+
+    let startYear = duration.getStart();
+    let endYear = duration.getEnd();
+    if (startYear === null && endYear === null) {
+      return;
+    }
+
+    if (startYear == endYear) {
+      pieces.push("during year " + startYear);
+      return;
+    }
+
+    if (startYear === null) {
+      startYear = "beginning";
+    }
+
+    if (endYear === null) {
+      endYear = "onwards";
+    }
+
+    pieces.push("during years " + startYear + " to " + endYear);
+  }
+
+  _finalizeStatement(pieces) {
+    const self = this;
+    return pieces.map((x) => x + "").join(" ");
   }
 }
 
@@ -825,7 +1235,7 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
     const childrenParsed = children.map((x) => x.accept(self));
     const isCompatible = self._getChildrenCompatible(childrenParsed);
 
-    return new Application(name, childrenParsed, isCompatible);
+    return new Application(name, childrenParsed, isModification, isCompatible);
   }
 
   _parseSubstance(ctx, isModification) {
@@ -917,6 +1327,7 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
       replace,
       retire,
       setVal,
+      isModification,
       isCompatible,
     );
   }
@@ -1024,4 +1435,18 @@ class UiTranslatorCompiler {
 }
 
 
-export {UiTranslatorCompiler};
+export {
+  AboutStanza,
+  Application,
+  Command,
+  DefinitionalStanza,
+  Program,
+  ReplaceCommand,
+  SimulationScenario,
+  SimulationStanza,
+  Substance,
+  UiTranslatorCompiler,
+  buildAddCode,
+  finalizeCodePieces,
+  indent,
+};
