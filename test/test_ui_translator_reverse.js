@@ -339,6 +339,38 @@ function buildUiTranslatorReverseTests() {
         assert.notEqual(code.indexOf("set sales to 3 mt"), -1);
       }
     });
+
+    QUnit.test("allows multiple change statements", function(assert) {
+      const commands = [
+        new Command(
+          "change",
+          "manufacture",
+          new EngineNumber("+1", "mt / year"),
+          null,
+        ),
+        new Command(
+          "change",
+          "import",
+          new EngineNumber("+2", "mt / year"),
+          null,
+        ),
+        new Command(
+          "change",
+          "sales",
+          new EngineNumber("+3", "mt / year"),
+          null,
+        )
+      ];
+      const substance = createWithCommands("test", false, commands);
+      assert.ok(substance.getIsCompatible());
+      
+      if (substance.getIsCompatible()) {
+        const code = substance.toCode(0);
+        assert.notEqual(code.indexOf("change manufacture by 1 mt / year"), -1);
+        assert.notEqual(code.indexOf("change import by 2 mt / year"), -1);
+        assert.notEqual(code.indexOf("change sales by 3 mt / year"), -1);
+      }
+    });
   });
 }
 
