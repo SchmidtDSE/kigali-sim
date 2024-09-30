@@ -363,9 +363,40 @@ function buildUiTranslatorReverseTests() {
       ), -1);
     });
     
-    /*QUnit.test("supports complex substances", function(assert) {
-      
-    });*/
+    QUnit.test("supports complex substances", function(assert) {
+      const initialCharge = new Command(
+        "initial charge",
+        "manufacture",
+        new EngineNumber(5, "kg / unit"),
+        new YearMatcher(1, 1),
+      );
+      const cap = new Command(
+        "cap",
+        "manufacture",
+        new EngineNumber(5, "mt"),
+        new YearMatcher(3, 4)
+      );
+      const substance = new Substance(
+        "test",
+        initialCharge,
+        cap,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        false,
+        true,
+      );
+      const code = substance.toCode();
+      assert.notEqual(code.indexOf("define substance \"test\""), -1);
+      assert.notEqual(code.indexOf(
+        "initial charge with 5 kg / unit for manufacture during year 1"
+      ), -1);
+      assert.notEqual(code.indexOf("cap manufacture to 5 mt during years 3 to 4"), -1);
+    });
   });
 }
 
