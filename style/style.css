@@ -3,9 +3,27 @@
   src: url("/third_party/publicsans/fonts/otf/PublicSans-Regular.otf") format("opentype");
 }
 
+dialog {
+  max-width: 500px;
+  z-index: 1;
+}
+
+dialog h2 {
+  margin-top: 0;
+  padding-top: 5px;
+  margin-bottom: 0;
+  padding-bottom: 5px;
+  font-size: 18px;
+}
+
+dialog label {
+  font-weight: bold;
+}
+
 html {
   background-color: #F9F9F9;
   font-family: PublicSans;
+  font-size: 15px;
 }
 
 header {
@@ -176,7 +194,9 @@ main {
 /* Thanks https://codepen.io/code-boxx/pen/RwxbpOz */
 
 /* (A) BASICS - HIDE DEFAULT + SHOW CUSTOM ARROW */
-.sel { width: 130px; }
+.sel {
+  width: 130px;
+}
 .sel select { appearance: none; }
 .sel::after { content: ">"; }
 
@@ -240,8 +260,9 @@ main {
 .ui-editor-sections .ui-editor-section ul {
   height: 250px;
   overflow: auto;
-  border-top: 1px dotted #C0C0C0;
-  border-bottom: 1px dotted #C0C0C0;
+  border-top: 1px solid #C0C0C0;
+  border-bottom: 1px solid #C0C0C0;
+  margin-top: 5px;
   margin-bottom: 5px;
 }
 
