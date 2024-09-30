@@ -307,6 +307,121 @@ function buildUiTranslatorReverseTests() {
       assert.notEqual(code.indexOf("modify substance \"sub\""), -1);
       assert.notEqual(code.indexOf("simulate \"scenario\""), -1);
     });
+
+    QUnit.test("allows multiple set statements", function(assert) {
+      const commands = [
+        new Command(
+          "setVal",
+          "manufacture",
+          new EngineNumber("1", "mt"),
+          null,
+        ),
+        new Command(
+          "setVal",
+          "import",
+          new EngineNumber("2", "mt"),
+          null,
+        ),
+        new Command(
+          "setVal",
+          "sales",
+          new EngineNumber("3", "mt"),
+          null,
+        ),
+      ];
+      const substance = createWithCommands("test", false, commands);
+      assert.ok(substance.getIsCompatible());
+
+      if (substance.getIsCompatible()) {
+        const code = substance.toCode(0);
+        assert.notEqual(code.indexOf("set manufacture to 1 mt"), -1);
+        assert.notEqual(code.indexOf("set import to 2 mt"), -1);
+        assert.notEqual(code.indexOf("set sales to 3 mt"), -1);
+      }
+    });
+
+    QUnit.test("allows multiple change statements", function(assert) {
+      const commands = [
+        new Command(
+          "change",
+          "manufacture",
+          new EngineNumber("+1", "mt / year"),
+          null,
+        ),
+        new Command(
+          "change",
+          "import",
+          new EngineNumber("+2", "mt / year"),
+          null,
+        ),
+        new Command(
+          "change",
+          "sales",
+          new EngineNumber("+3", "mt / year"),
+          null,
+        ),
+      ];
+      const substance = createWithCommands("test", false, commands);
+      assert.ok(substance.getIsCompatible());
+
+      if (substance.getIsCompatible()) {
+        const code = substance.toCode(0);
+        assert.notEqual(code.indexOf("change manufacture by +1 mt / year"), -1);
+        assert.notEqual(code.indexOf("change import by +2 mt / year"), -1);
+        assert.notEqual(code.indexOf("change sales by +3 mt / year"), -1);
+      }
+    });
+
+    QUnit.test("allows multiple initial charge statements", function(assert) {
+      const commands = [
+        new Command(
+          "initial charge",
+          "manufacture",
+          new EngineNumber(1, "kg / unit"),
+          null,
+        ),
+        new Command(
+          "initial charge",
+          "import",
+          new EngineNumber(2, "kg / unit"),
+          null,
+        ),
+        new Command(
+          "initial charge",
+          "sales",
+          new EngineNumber(3, "kg / unit"),
+          null,
+        ),
+      ];
+      const substance = createWithCommands("test", false, commands);
+      assert.ok(substance.getIsCompatible());
+
+      if (substance.getIsCompatible()) {
+        const code = substance.toCode(0);
+        assert.notEqual(code.indexOf("initial charge with 1 kg / unit for manufacture"), -1);
+        assert.notEqual(code.indexOf("initial charge with 2 kg / unit for import"), -1);
+        assert.notEqual(code.indexOf("initial charge with 3 kg / unit for sales"), -1);
+      }
+    });
+
+    QUnit.test("prohibits overlapping initial charge statements", function(assert) {
+      const commands = [
+        new Command(
+          "initial charge",
+          "manufacture",
+          new EngineNumber(1, "kg / unit"),
+          null,
+        ),
+        new Command(
+          "initial charge",
+          "manufacture",
+          new EngineNumber(2, "kg / unit"),
+          null,
+        ),
+      ];
+      const substance = createWithCommands("test", false, commands);
+      assert.ok(!substance.getIsCompatible());
+    });
   });
 }
 
