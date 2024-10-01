@@ -30,16 +30,16 @@ class ApplicationsListPresenter {
       .data(appNames)
       .enter()
       .append("li");
-    
+
     newItems.attr("aria-label", (x) => x);
-    
+
     const buttonsPane = newItems.append("div")
       .classed("list-buttons", true);
 
     newItems.append("div")
       .classed("list-label", true)
       .text((x) => x);
-    
+
     buttonsPane.append("a")
       .attr("href", "#")
       .on("click", (event, x) => {
