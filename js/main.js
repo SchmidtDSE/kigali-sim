@@ -118,11 +118,24 @@ class MainPresenter {
           alert("" + e);
         }
       }
-
-      self._buttonPanelPresenter.enable();
     };
 
-    setTimeout(execute, 250);
+    const executeSafe = () => {
+      try {
+        execute();
+      } catch (e) {
+        alert("" + e);
+      }
+      self._buttonPanelPresenter.enable();
+    }
+
+    setTimeout(executeSafe, 250);
+
+    const codeObjResults = self._getCodeAsObj();
+    if (codeObjResults.getErrors() == 0) {
+      const codeObj = codeObjResults.getProgram();
+      self._uiEditorPresenter.refresh(codeObj);
+    }
   }
 
   _onResult(results) {
@@ -135,7 +148,8 @@ class MainPresenter {
     const self = this;
     const code = self._codeEditorPresenter.getCode();
     const compiler = new UiTranslatorCompiler();
-    return compiler.compile(code);
+    const result = compiler.compile(code);
+    return result;
   }
 
   _onCodeObjUpdate(codeObj) {
