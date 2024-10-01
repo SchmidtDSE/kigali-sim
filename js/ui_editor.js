@@ -11,7 +11,7 @@ class ApplicationsListPresenter {
     const self = this;
     const addLink = self._root.querySelector(".add-link");
     addLink.addEventListener("click", (event) => {
-      self._dialog.show();
+      self._dialog.showModal();
       event.preventDefault();
     });
   }

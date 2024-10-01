@@ -187,6 +187,36 @@ main {
   text-align: center;
 }
 
+.bold-buttons a.primary, .bold-buttons a.primary:link, .bold-buttons a.primary:visited {
+  background-color: #7070C0;
+  color: white;
+  border-radius: 10px;
+  padding: 7px;
+  text-decoration: none;
+}
+
+.bold-buttons {
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+
+.bold-buttons a.primary:focus, .bold-buttons a.primary:hover, .bold-buttons a.primary:active {
+  background-color: #5050C0;
+}
+
+.bold-buttons a.secondary, .bold-buttons a.secondary:link, .bold-buttons a.secondary:visited {
+  border: 1px solid #7070C0;
+  color: #7070C0;
+  border-radius: 10px;
+  padding: 7px;
+  text-decoration: none;
+}
+
+.bold-buttons a.secondary:focus, .bold-buttons a.secondary:hover, .bold-buttons a.secondary:active {
+  color: white;
+  background-color: #5050C0;
+}
+
 .not-available-contents {
   display: none;
 }
