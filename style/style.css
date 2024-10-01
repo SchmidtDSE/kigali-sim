@@ -239,6 +239,15 @@ main {
   background-color: #5050C0;
 }
 
+.item-list {
+  list-style: none;
+  padding-left: 0;
+}
+
+.item-list li {
+  border-bottom: 1px dotted #C0C0C0;
+}
+
 .not-available-contents {
   display: none;
 }
