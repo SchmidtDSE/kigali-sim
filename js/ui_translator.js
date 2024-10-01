@@ -67,6 +67,11 @@ class Program {
     return self._applications;
   }
 
+  addApplication(newApplication) {
+    const self = this;
+    self._applications.push(newApplication);
+  }
+
   getPolicies() {
     const self = this;
     return self._policies;

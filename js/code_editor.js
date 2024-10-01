@@ -13,6 +13,12 @@ class CodeEditorPresenter {
     return self._editor.getValue();
   }
 
+  setCode(code) {
+    const self = this;
+    self._editor.setValue(code, 1);
+    self._onChange();
+  }
+
   showError(error) {
     const self = this;
     self._errorDisplay.innerHTML = "";
