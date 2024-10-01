@@ -2,14 +2,16 @@ import {CodeEditorPresenter} from "code_editor";
 import {Compiler} from "compiler";
 import {ReportDataWrapper} from "report_data";
 import {ResultsPresenter} from "results";
+import {UiEditorPresenter} from "ui_editor";
+import {UiTranslatorCompiler} from "ui_translator";
 
 const WHITESPACE_REGEX = new RegExp("^\\s*$");
 
 
 class ButtonPanelPresenter {
-  constructor(targetId, onRun) {
+  constructor(root, onRun) {
     const self = this;
-    self._root = document.getElementById(targetId);
+    self._root = root;
 
     self._availableDisplay = self._root.querySelector("#available-panel");
     self._loadingDisplay = self._root.querySelector("#loading");
@@ -51,14 +53,20 @@ class MainPresenter {
   constructor() {
     const self = this;
     self._codeEditorPresenter = new CodeEditorPresenter(
-      "code-editor",
+      document.getElementById("code-editor"),
       () => self._onCodeChange(),
     );
     self._buttonPanelPresenter = new ButtonPanelPresenter(
-      "buttons-panel",
+      document.getElementById("buttons-panel"),
       () => self._onRun(),
     );
-    self._resultsPresenter = new ResultsPresenter("results");
+    self._resultsPresenter = new ResultsPresenter(document.getElementById("results"));
+    self._uiEditorPresenter = new UiEditorPresenter(
+      document.getElementById("editor-tabs"),
+      document.getElementById("ui-editor-pane"),
+      () => self._getCodeAsObj(),
+      (codeObj) => self._onCodeObjUpdate(codeObj),
+    );
     self._onCodeChange();
   }
 
@@ -110,17 +118,45 @@ class MainPresenter {
           alert("" + e);
         }
       }
+    };
 
+    const executeSafe = () => {
+      try {
+        execute();
+      } catch (e) {
+        alert("" + e);
+      }
       self._buttonPanelPresenter.enable();
     };
 
-    setTimeout(execute, 250);
+    setTimeout(executeSafe, 250);
+
+    const codeObjResults = self._getCodeAsObj();
+    if (codeObjResults.getErrors() == 0) {
+      const codeObj = codeObjResults.getProgram();
+      self._uiEditorPresenter.refresh(codeObj);
+    }
   }
 
   _onResult(results) {
     const self = this;
     const resultsWrapped = new ReportDataWrapper(results);
     self._resultsPresenter.showResults(resultsWrapped);
+  }
+
+  _getCodeAsObj() {
+    const self = this;
+    const code = self._codeEditorPresenter.getCode();
+    const compiler = new UiTranslatorCompiler();
+    const result = compiler.compile(code);
+    return result;
+  }
+
+  _onCodeObjUpdate(codeObj) {
+    const self = this;
+    const newCode = codeObj.toCode(0);
+    self._codeEditorPresenter.setCode(newCode);
+    self._uiEditorPresenter.refresh(codeObj);
   }
 }
 

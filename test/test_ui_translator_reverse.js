@@ -75,7 +75,6 @@ function buildUiTranslatorReverseTests() {
       );
       const substance = createWithCommand("test", false, command);
       const code = substance.toCode(0);
-      console.log(code);
       assert.notEqual(code.indexOf("define substance \"test\""), -1);
       assert.notEqual(code.indexOf("initial charge with 5 kg / unit for manufacture"), -1);
     });
@@ -125,7 +124,6 @@ function buildUiTranslatorReverseTests() {
       );
       const substance = createWithCommand("test", false, command);
       const code = substance.toCode(0);
-      console.log(code);
       assert.notEqual(code.indexOf("recharge 10 % / year with 5 kg / unit"), -1);
     });
 

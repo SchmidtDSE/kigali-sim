@@ -24,9 +24,9 @@ function getColor(i) {
 
 
 class ScorecardPresenter {
-  constructor(targetId, onUpdateFilterSet) {
+  constructor(root, onUpdateFilterSet) {
     const self = this;
-    self._root = document.getElementById(targetId);
+    self._root = root;
     self._filterSet = null;
     self._onUpdateFilterSet = onUpdateFilterSet;
     self._registerEventListeners();
@@ -118,9 +118,9 @@ class ScorecardPresenter {
 
 
 class DimensionCardPresenter {
-  constructor(targetId, onUpdateFilterSet) {
+  constructor(root, onUpdateFilterSet) {
     const self = this;
-    self._root = document.getElementById(targetId);
+    self._root = root;
     self._onUpdateFilterSet = onUpdateFilterSet;
     self._filterSet = null;
     self._registerEventListeners();
@@ -312,9 +312,9 @@ class DimensionCardPresenter {
 
 
 class CenterChartPresenter {
-  constructor(targetId) {
+  constructor(root) {
     const self = this;
-    self._targetId = targetId;
+    self._root = root;
     self._chart = null;
   }
 
@@ -403,16 +403,15 @@ class CenterChartPresenter {
       },
     };
 
-    const container = document.getElementById(self._targetId);
-    self._chart = new Chart(container, chartJsConfig);
+    self._chart = new Chart(self._root, chartJsConfig);
   }
 }
 
 
 class SelectorTitlePresenter {
-  constructor(targetId, changeCallback) {
+  constructor(root, changeCallback) {
     const self = this;
-    self._selection = document.getElementById(targetId);
+    self._selection = root;
     self._changeCallback = changeCallback;
     self._filterSet = null;
     self._setupEventListeners();
@@ -518,17 +517,22 @@ class SelectorTitlePresenter {
 
 
 class ResultsPresenter {
-  constructor(targetId) {
+  constructor(root) {
     const self = this;
-    self._root = document.getElementById(targetId);
+    self._root = root;
     self._results = null;
     self._filterSet = new FilterSet(null, null, null, null, "emissions", "simulations");
 
+    const scorecardContainer = self._root.querySelector("#scorecards");
+    const dimensionsContainer = self._root.querySelector("#dimensions");
+    const centerChartContainer = self._root.querySelector("#center-chart");
+    const centerChartHolderContainer = self._root.querySelector("#center-chart-holder");
+
     const onUpdateFilterSet = (x) => self._onUpdateFilterSet(x);
-    self._scorecardPresenter = new ScorecardPresenter("scorecards", onUpdateFilterSet);
-    self._dimensionPresenter = new DimensionCardPresenter("dimensions", onUpdateFilterSet);
-    self._centerChartPresenter = new CenterChartPresenter("center-chart");
-    self._titlePreseter = new SelectorTitlePresenter("center-chart-holder", onUpdateFilterSet);
+    self._scorecardPresenter = new ScorecardPresenter(scorecardContainer, onUpdateFilterSet);
+    self._dimensionPresenter = new DimensionCardPresenter(dimensionsContainer, onUpdateFilterSet);
+    self._centerChartPresenter = new CenterChartPresenter(centerChartContainer);
+    self._titlePreseter = new SelectorTitlePresenter(centerChartHolderContainer, onUpdateFilterSet);
 
     self.hide();
   }

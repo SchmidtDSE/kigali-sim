@@ -3,9 +3,49 @@
   src: url("/third_party/publicsans/fonts/otf/PublicSans-Regular.otf") format("opentype");
 }
 
+dialog {
+  max-width: 500px;
+  z-index: 1;
+}
+
+dialog h2 {
+  margin-top: 0;
+  padding-top: 5px;
+  margin-bottom: 0;
+  padding-bottom: 5px;
+  font-size: 18px;
+}
+
+dialog label {
+  font-weight: bold;
+}
+
+dialog .dialog-buttons {
+  padding-top: 15px;
+  margin-top: 10px;
+  border-top: 1px dotted #C0C0C0;
+}
+
+dialog .form-group {
+  margin-bottom: 15px;
+}
+
+dialog .form-group input {
+  width: 90%;
+  font-size: 13px;
+}
+
+dialog .instructions {
+  padding-bottom: 5px;
+  margin-bottom: 10px;
+  border-bottom: 1px dotted #C0C0C0;
+  font-size: 12px;
+}
+
 html {
   background-color: #F9F9F9;
   font-family: PublicSans;
+  font-size: 15px;
 }
 
 header {
@@ -55,6 +95,10 @@ main {
   overflow: auto;
   border: 1px solid #C0C0C0;
   border-radius: 2px;
+}
+
+#editor-tabs {
+  margin-bottom: 10px;
 }
 
 #results {
@@ -158,10 +202,69 @@ main {
   padding-bottom: 5px;
 }
 
+.advanced-link-pane {
+  margin-top: 10px;
+  border-top: 1px dotted #C0C0C0;
+  padding-top: 10px;
+  text-align: center;
+}
+
+.bold-buttons a.primary, .bold-buttons a.primary:link, .bold-buttons a.primary:visited {
+  background-color: #7070C0;
+  color: white;
+  border-radius: 10px;
+  padding: 7px;
+  text-decoration: none;
+}
+
+.bold-buttons {
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+
+.bold-buttons a.primary:focus, .bold-buttons a.primary:hover, .bold-buttons a.primary:active {
+  background-color: #5050C0;
+}
+
+.bold-buttons a.secondary, .bold-buttons a.secondary:link, .bold-buttons a.secondary:visited {
+  border: 1px solid #7070C0;
+  color: #7070C0;
+  border-radius: 10px;
+  padding: 7px;
+  text-decoration: none;
+}
+
+.bold-buttons a.secondary:focus, .bold-buttons a.secondary:hover, .bold-buttons a.secondary:active {
+  color: white;
+  background-color: #5050C0;
+}
+
+.item-list {
+  list-style: none;
+  padding-left: 0;
+}
+
+.item-list li {
+  border-bottom: 1px dotted #C0C0C0;
+}
+
+.item-list .list-buttons {
+  float: right;
+  background-color: rgba(255, 255, 255, 0.5);
+  font-size: 11px;
+  padding-top: 2px;
+}
+
+.not-available-contents {
+  display: none;
+}
+
 /* Thanks https://codepen.io/code-boxx/pen/RwxbpOz */
 
 /* (A) BASICS - HIDE DEFAULT + SHOW CUSTOM ARROW */
-.sel { width: 130px; }
+.sel {
+  width: 130px;
+}
 .sel select { appearance: none; }
 .sel::after { content: ">"; }
 
@@ -199,6 +302,48 @@ main {
 .sel:hover::after {
   transform: translateY(-50%) rotate(90deg);
   color: #ff1212;
+}
+
+.ui-editor-sections {
+  display: grid;
+  grid-template-columns: 48% 4% 48%;
+}
+
+.ui-editor-sections .ui-editor-section {
+  margin-bottom: 10px;
+  margin-top: 10px;
+  padding: 5px;
+  border: 1px solid #C0C0C0;
+  border-radius: 3px;
+}
+
+.ui-editor-sections .ui-editor-section h3 {
+  margin-top: 0px;
+  padding-top: 5px;
+  margin-bottom: 0px;
+  padding-bottom: 5px;
+  text-align: center;
+}
+
+.ui-editor-sections .ui-editor-section ul {
+  height: 250px;
+  overflow: auto;
+  border-top: 1px solid #C0C0C0;
+  border-bottom: 1px solid #C0C0C0;
+  margin-top: 5px;
+  margin-bottom: 5px;
+}
+
+.ui-editor-sections .ui-editor-section .add-link-pane {
+  text-align: center;
+}
+
+.ui-editor-sections .ui-editor-section.inactive {
+  background-color: #F5F5F5;
+}
+
+.ui-editor-sections .ui-editor-section.inactive .add-link-pane {
+  display: none;
 }
 
 @media (max-width: 999px) {
