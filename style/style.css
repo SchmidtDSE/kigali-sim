@@ -248,6 +248,13 @@ main {
   border-bottom: 1px dotted #C0C0C0;
 }
 
+.item-list .list-buttons {
+  float: right;
+  background-color: rgba(255, 255, 255, 0.5);
+  font-size: 11px;
+  padding-top: 2px;
+}
+
 .not-available-contents {
   display: none;
 }

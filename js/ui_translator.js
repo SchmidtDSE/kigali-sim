@@ -72,6 +72,11 @@ class Program {
     self._applications.push(newApplication);
   }
 
+  deleteApplication(name) {
+    const self = this;
+    self._applications = self._applications.filter((x) => x.getName() !== name);
+  }
+
   getPolicies() {
     const self = this;
     return self._policies;

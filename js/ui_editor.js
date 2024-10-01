@@ -26,11 +26,33 @@ class ApplicationsListPresenter {
     const itemList = d3.select(self._root).select(".item-list");
 
     itemList.html("");
-    itemList.selectAll("li")
+    const newItems = itemList.selectAll("li")
       .data(appNames)
       .enter()
-      .append("li")
+      .append("li");
+    
+    newItems.attr("aria-label", (x) => x);
+    
+    const buttonsPane = newItems.append("div")
+      .classed("list-buttons", true);
+
+    newItems.append("div")
+      .classed("list-label", true)
       .text((x) => x);
+    
+    buttonsPane.append("a")
+      .attr("href", "#")
+      .on("click", (event, x) => {
+        event.preventDefault();
+        const message = "Are you sure you want to delete " + x + "?";
+        const isConfirmed = confirm(message);
+        if (isConfirmed) {
+          const codeObj = self._getCodeObj();
+          codeObj.deleteApplication(x);
+          self._onCodeObjUpdate(codeObj);
+        }
+      })
+      .text("delete");
   }
 
   _setupDialog() {
