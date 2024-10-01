@@ -5,7 +5,6 @@ import {
 
 
 class ApplicationsListPresenter {
-
   constructor(root, getCodeObj, onCodeObjUpdate) {
     const self = this;
     self._root = root;
@@ -25,7 +24,7 @@ class ApplicationsListPresenter {
     const self = this;
     const appNames = self._getAppNames();
     const itemList = d3.select(self._root).select(".item-list");
-    
+
     itemList.html("");
     itemList.selectAll("li")
       .data(appNames)
@@ -52,10 +51,10 @@ class ApplicationsListPresenter {
     saveButton.addEventListener("click", (event) => {
       self._dialog.close();
       event.preventDefault();
-      
+
       const nameInput = self._dialog.querySelector(".edit-application-name-input");
       const newName = nameInput.value;
-      
+
       const priorNames = new Set(self._getAppNames());
       const nameIsDuplicate = priorNames.has(newName);
       if (nameIsDuplicate) {
@@ -79,15 +78,13 @@ class ApplicationsListPresenter {
     const appNames = applications.map((x) => x.getName());
     return appNames;
   }
-
 }
 
 
 class UiEditorPresenter {
-
   constructor(tabRoot, contentsRoot, getCodeAsObj, onCodeObjUpdate) {
     const self = this;
-    
+
     self._contentsSelection = contentsRoot;
     self._getCodeAsObjInner = getCodeAsObj;
     self._onCodeObjUpdateInner = onCodeObjUpdate;
@@ -131,7 +128,7 @@ class UiEditorPresenter {
     if (hasErrors) {
       self._disableBasicPanel();
       self._codeObj = new Program([], [], [], true);
-    } else if (result.getProgram() === null){
+    } else if (result.getProgram() === null) {
       self._enableBasicPanel();
       const codeObj = result.getProgram();
       if (codeObj === null) {
@@ -159,8 +156,7 @@ class UiEditorPresenter {
     self._codeObj = codeObj;
     self._onCodeObjUpdateInner(codeObj);
   }
-
 }
 
 
-export { UiEditorPresenter };
+export {UiEditorPresenter};

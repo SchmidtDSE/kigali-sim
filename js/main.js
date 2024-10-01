@@ -127,7 +127,7 @@ class MainPresenter {
         alert("" + e);
       }
       self._buttonPanelPresenter.enable();
-    }
+    };
 
     setTimeout(executeSafe, 250);
 
