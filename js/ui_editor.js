@@ -40,7 +40,7 @@ class ApplicationsListPresenter {
     newItems.append("div")
       .classed("list-label", true)
       .text((x) => x);
-    
+
     buttonsPane.append("a")
       .attr("href", "#")
       .on("click", (event, x) => {
@@ -49,7 +49,7 @@ class ApplicationsListPresenter {
       })
       .text("edit")
       .attr("aria-label", (x) => "edit " + x);
-    
+
     buttonsPane.append("span").text(" | ");
 
     buttonsPane.append("a")
@@ -121,7 +121,7 @@ class ApplicationsListPresenter {
       self._dialog.querySelector(".edit-application-name-input").value = name;
       self._dialog.querySelector(".action-title").innerHTML = "Edit";
     }
-    
+
     self._dialog.showModal();
   }
 
