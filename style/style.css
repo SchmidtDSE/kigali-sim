@@ -20,6 +20,28 @@ dialog label {
   font-weight: bold;
 }
 
+dialog .dialog-buttons {
+  padding-top: 15px;
+  margin-top: 10px;
+  border-top: 1px dotted #C0C0C0;
+}
+
+dialog .form-group {
+  margin-bottom: 15px;
+}
+
+dialog .form-group input {
+  width: 90%;
+  font-size: 13px;
+}
+
+dialog .instructions {
+  padding-bottom: 5px;
+  margin-bottom: 10px;
+  border-bottom: 1px dotted #C0C0C0;
+  font-size: 12px;
+}
+
 html {
   background-color: #F9F9F9;
   font-family: PublicSans;

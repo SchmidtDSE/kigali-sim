@@ -4,14 +4,20 @@ class ApplicationsListPresenter {
     const self = this;
     self._root = root;
     self._dialog = self._root.querySelector(".dialog");
-    self._setupAddLink();
+    self._setupDialog();
   }
 
-  _setupAddLink() {
+  _setupDialog() {
     const self = this;
     const addLink = self._root.querySelector(".add-link");
     addLink.addEventListener("click", (event) => {
       self._dialog.showModal();
+      event.preventDefault();
+    });
+
+    const closeButton = self._root.querySelector(".cancel-button");
+    closeButton.addEventListener("click", (event) => {
+      self._dialog.close();
       event.preventDefault();
     });
   }
