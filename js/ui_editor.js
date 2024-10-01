@@ -11,6 +11,7 @@ class ApplicationsListPresenter {
     self._dialog = self._root.querySelector(".dialog");
     self._getCodeObj = getCodeObj;
     self._onCodeObjUpdate = onCodeObjUpdate;
+    self._editingName = null;
     self._setupDialog();
     self.refresh();
   }
@@ -39,6 +40,17 @@ class ApplicationsListPresenter {
     newItems.append("div")
       .classed("list-label", true)
       .text((x) => x);
+    
+    buttonsPane.append("a")
+      .attr("href", "#")
+      .on("click", (event, x) => {
+        event.preventDefault();
+        self._showDialogFor(x);
+      })
+      .text("edit")
+      .attr("aria-label", (x) => "edit " + x);
+    
+    buttonsPane.append("span").text(" | ");
 
     buttonsPane.append("a")
       .attr("href", "#")
@@ -52,14 +64,15 @@ class ApplicationsListPresenter {
           self._onCodeObjUpdate(codeObj);
         }
       })
-      .text("delete");
+      .text("delete")
+      .attr("aria-label", (x) => "delete " + x);
   }
 
   _setupDialog() {
     const self = this;
     const addLink = self._root.querySelector(".add-link");
     addLink.addEventListener("click", (event) => {
-      self._dialog.showModal();
+      self._showDialogFor(null);
       event.preventDefault();
     });
 
@@ -84,13 +97,32 @@ class ApplicationsListPresenter {
         return;
       }
 
-      nameInput.value = "";
-
-      const application = new Application(newName, [], false, true);
-      const codeObj = self._getCodeObj();
-      codeObj.addApplication(application);
-      self._onCodeObjUpdate(codeObj);
+      if (self._editingName === null) {
+        const application = new Application(newName, [], false, true);
+        const codeObj = self._getCodeObj();
+        codeObj.addApplication(application);
+        self._onCodeObjUpdate(codeObj);
+      } else {
+        const codeObj = self._getCodeObj();
+        codeObj.renameApplication(self._editingName, newName);
+        self._onCodeObjUpdate(codeObj);
+      }
     });
+  }
+
+  _showDialogFor(name) {
+    const self = this;
+    self._editingName = name;
+
+    if (name === null) {
+      self._dialog.querySelector(".edit-application-name-input").value = "";
+      self._dialog.querySelector(".action-title").innerHTML = "Add";
+    } else {
+      self._dialog.querySelector(".edit-application-name-input").value = name;
+      self._dialog.querySelector(".action-title").innerHTML = "Edit";
+    }
+    
+    self._dialog.showModal();
   }
 
   _getAppNames() {

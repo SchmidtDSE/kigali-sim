@@ -77,6 +77,12 @@ class Program {
     self._applications = self._applications.filter((x) => x.getName() !== name);
   }
 
+  renameApplication(oldName, newName) {
+    const self = this;
+    const priorApplications = self._applications.filter((x) => x.getName() === oldName);
+    priorApplications.forEach((x) => x.rename(newName));
+  }
+
   getPolicies() {
     const self = this;
     return self._policies;
@@ -316,6 +322,11 @@ class Application {
   getName() {
     const self = this;
     return self._name;
+  }
+
+  rename(newName) {
+    const self = this;
+    self._name = newName;
   }
 
   getSubstances() {
