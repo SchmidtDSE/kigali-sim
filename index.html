@@ -223,6 +223,84 @@
               <h3>Policies</h3>
               <ul class="item-list"></ul>
               <div class="add-link-pane bold-buttons"><a href="#add-policy" class="add-link secondary">Add Policy</a></div>
+              <dialog class="dialog"></dialog>
+                <h2><span class="action-title"></span> Policy</h2>
+                <div class="instructions">
+                  Policies can modify substances within applications. They can also be combined into a package tested in a simulation.
+                </div>
+                <div class="contents">
+                  <ul id="policy-tabs" class="tabs" data-tabs>
+                    <li><a data-tabby-default href="#policy-general">General</a></li>
+                    <li><a href="#policy-recycle">Recycle</a></li>
+                    <li><a href="#policy-replace">Replace</a></li>
+                    <li><a href="#policy-set">Set</a></li>
+                    <li><a href="#policy-change">Change</a></li>
+                    <li><a href="#policy-limit">Limit</a></li>
+                  </ul>
+                  <div id="policy-general">
+                    <div class="instructions">This tab collects information about the name of the policy and the target substance and application. This is the substance being limited, recycled, or replaced with something else.</div>
+                    <div class="form-group">
+                      <div><label for="edit-policy-name">Name:</label></div>
+                      <div><input type="text" name="edit-policy-name" class="edit-policy-name-input long" autofocus></div>
+                    </div>
+                    <div class="form-group">
+                      <div><label for="edit-policy-application">Application:</label></div>
+                      <div>
+                        <span class="sel long">
+                          <select id="edit-policy-application" name="edit-policy-application" class="edit-policy-application-input"></select>
+                        </span>
+                      </div>
+                    </div>
+                    <div class="form-group">
+                      <div><label for="edit-policy-substance">Substance:</label></div>
+                      <div>
+                        <span class="sel long">
+                          <select id="edit-policy-substance" name="edit-policy-substance" class="edit-policy-substance-input"></select>
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  <div id="policy-recycle">
+                    <div class="instructions">This tab specifies a recycling program in which substance is recovered during servicing. There may be yield loss in processing substances prior to reuse.</div>
+                    <div class="dialog-list recycling-list"></div>
+                    <div class="dialog-sub-buttons bold-buttons">
+                      <a href="#" class="add-recycling-button secondary">Add Recycling</a>
+                    </div>
+                  </div>
+                  <div id="policy-replace">
+                    <div class="instructions">This tab specifies replacement of the policy's target substance with another compatible substance.</div>
+                    <div class="dialog-list replace-list"></div>
+                    <div class="dialog-sub-buttons bold-buttons">
+                      <a href="#" class="add-replace-button secondary">Add Replacement</a>
+                    </div>
+                  </div>
+                  <div id="policy-set">
+                    <div class="instructions">This tab sets streams such as imports or equipment to specific levels.</div>
+                    <div class="dialog-list level-list"></div>
+                    <div class="dialog-sub-buttons bold-buttons">
+                      <a href="#" class="add-level-button secondary">Add Level</a>
+                    </div>
+                  </div>
+                  <div id="policy-change">
+                    <div class="instructions">This tab changes streams such as imports or equipment continually over a period of time.</div>
+                    <div class="dialog-list change-list"></div>
+                    <div class="dialog-sub-buttons bold-buttons">
+                      <a href="#" class="add-change-button secondary">Add Change</a>
+                    </div>
+                  </div>
+                  <div id="policy-limit">
+                    <div class="instructions">This tab imposes caps like limits to overall sales.</div>
+                    <div class="dialog-list limit-list"></div>
+                    <div class="dialog-sub-buttons bold-buttons">
+                      <a href="#" class="add-limit-button secondary">Add Limit</a>
+                    </div>
+                  </div>
+                </div>
+                <div class="dialog-buttons bold-buttons">
+                  <a href="#ui-editor-sections" class="save-button primary">Save</a>
+                  <a href="#ui-editor-sections" class="cancel-button destructive">Cancel</a>
+                </div>
+              </dialog>
             </div>
             
             <div></div>
@@ -380,6 +458,7 @@
         <select class="set-target-input" aria-label="Target for set command">
           <option value="manufacture">domenstic manufacture</option>
           <option value="import">import</option>
+          <option value="sales">all sales</option>
           <option value="equipment">equipment</option>
         </select>
       </span>
@@ -426,6 +505,7 @@
             <select class="change-target-input" aria-label="Target for change command">
               <option value="manufacture">domenstic manufacture</option>
               <option value="import">import</option>
+              <option value="sales">all sales</option>
               <option value="equipment">equipment</option>
             </select>
           </span>
@@ -481,10 +561,10 @@
           </select>
         </span>
         <span class="sel long">
-          <select class="
-          -target-input" aria-label="Target for limit command">
+          <select class="limit-target-input" aria-label="Target for limit command">
             <option value="manufacture">domenstic manufacture</option>
             <option value="import">import</option>
+            <option value="sales">all sales</option>
             <option value="equipment">equipment</option>
           </select>
         </span>
@@ -504,6 +584,110 @@
           <option value="tCO2e / unit">tCO2e / unit</option>
           <option value="%">%</option>
           <option value="% / year">% / year</option>
+        </select>
+      </span>
+      <span class="duration-subcomponent">
+        <span class="sel mid">
+          <select class="duration-type-input" aria-label="Duration type for command">
+            <option value="in year">in year</option>
+            <option value="during all years">during all years</option>
+            <option value="starting in year">starting in year</option>
+            <option value="ending in year">ending in year</option>
+            <option value="during years">during years</option>
+          </select>
+        </span>
+        <input type="text" class="duration-start short" aria-label="Start year of substance import">
+        to
+        <input type="text" class="duration-end short" aria-label="End year of substance import"> .
+      </span>
+      - <a href="#" class="delete-command-link">delete</a>
+    </div>
+  </script>
+
+  <script type="text/template" id="recycle-command-template">
+    Recover
+    <input type="text" class="recycle-amount-input short" aria-label="Amount for recycle command">
+    <span class="sel mid">
+      <select class="recycle-units-input" aria-label="Units for recycle command">
+        <option value="kg">kg</option>
+        <option value="mt">mt</option>
+        <option value="tCO2e">tCO2e</option>
+        <option value="kg / year">kg / year</option>
+        <option value="mt / year">mt / year</option>
+        <option value="tCO2e / year">tCO2e / year</option>
+        <option value="kg / unit">kg / unit</option>
+        <option value="mt / unit">mt / unit</option>
+        <option value="tCO2e / unit">tCO2e / unit</option>
+        <option value="%">%</option>
+        <option value="% / year">% / year</option>
+      </select>
+    </span>
+    with
+    <input type="text" class="recycle-reuse-amount-input short" aria-label="Reuse level after yield loss for recycle command">
+    <span class="sel mid">
+      <select class="recycle-reuse-units-input" aria-label="Units for reuse level after yield loss">
+        <option value="kg">kg</option>
+        <option value="mt">mt</option>
+        <option value="tCO2e">tCO2e</option>
+        <option value="kg / year">kg / year</option>
+        <option value="mt / year">mt / year</option>
+        <option value="tCO2e / year">tCO2e / year</option>
+        <option value="kg / unit">kg / unit</option>
+        <option value="mt / unit">mt / unit</option>
+        <option value="tCO2e / unit">tCO2e / unit</option>
+        <option value="%">%</option>
+        <option value="% / year">% / year</option>
+      </select>
+    </span>
+    reuse
+    <span class="duration-subcomponent">
+      <span class="sel mid">
+        <select class="duration-type-input" aria-label="Duration type for command">
+          <option value="in year">in year</option>
+          <option value="during all years">during all years</option>
+          <option value="starting in year">starting in year</option>
+          <option value="ending in year">ending in year</option>
+          <option value="during years">during years</option>
+        </select>
+      </span>
+      <input type="text" class="duration-start short" aria-label="Start year of substance import">
+      to
+      <input type="text" class="duration-end short" aria-label="End year of substance import"> .
+    </span>
+    - <a href="#" class="delete-command-link">delete</a>
+  </script>
+
+  <script type="text/template" id="replace-command-template">
+    <div class="replace-command form-group">
+      Replace
+      <input type="text" class="replace-amount-input short" aria-label="Amount for replace command">
+      <span class="sel mid">
+        <select class="replace-units-input" aria-label="Units for replace command">
+          <option value="kg">kg</option>
+          <option value="mt">mt</option>
+          <option value="tCO2e">tCO2e</option>
+          <option value="kg / year">kg / year</option>
+          <option value="mt / year">mt / year</option>
+          <option value="tCO2e / year">tCO2e / year</option>
+          <option value="kg / unit">kg / unit</option>
+          <option value="mt / unit">mt / unit</option>
+          <option value="tCO2e / unit">tCO2e / unit</option>
+          <option value="%">%</option>
+          <option value="% / year">% / year</option>
+        </select>
+      </span>
+      of
+      <span class="sel long">
+        <select class="replace-target-input" aria-label="Target for replace command">
+          <option value="manufacture">domenstic manufacture</option>
+          <option value="import">import</option>
+          <option value="sales">all sales</option>
+          <option value="equipment">equipment</option>
+        </select>
+      </span>
+      with
+      <span class="sel long">
+        <select class="replace-replacement-input" aria-label="Replacement substance for replace command">
         </select>
       </span>
       <span class="duration-subcomponent">
