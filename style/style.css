@@ -221,6 +221,11 @@ main {
   text-align: center;
 }
 
+.bold-buttons {
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+
 .bold-buttons a.primary, .bold-buttons a.primary:link, .bold-buttons a.primary:visited {
   background-color: #7070C0;
   color: white;
@@ -229,13 +234,20 @@ main {
   text-decoration: none;
 }
 
-.bold-buttons {
-  padding-top: 10px;
-  padding-bottom: 10px;
-}
-
 .bold-buttons a.primary:focus, .bold-buttons a.primary:hover, .bold-buttons a.primary:active {
   background-color: #5050C0;
+}
+
+.bold-buttons a.destructive, .bold-buttons a.destructive:link, .bold-buttons a.destructive:visited {
+  background-color: #C07070;
+  color: white;
+  border-radius: 10px;
+  padding: 7px;
+  text-decoration: none;
+}
+
+.bold-buttons a.destructive:focus, .bold-buttons a.destructive:hover, .bold-buttons a.destructive:active {
+  background-color: #C05050;
 }
 
 .bold-buttons a.secondary, .bold-buttons a.secondary:link, .bold-buttons a.secondary:visited {

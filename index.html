@@ -43,7 +43,7 @@
                 </div>
                 <div class="dialog-buttons bold-buttons">
                   <a href="#ui-editor-sections" class="save-button primary">Save</a>
-                  <a href="#ui-editor-sections" class="cancel-button secondary">Cancel</a>
+                  <a href="#ui-editor-sections" class="cancel-button destructive">Cancel</a>
                 </div>
               </dialog>
             </div>
@@ -82,178 +82,136 @@
                       </div>
                     </div>
                   </div>
-                  <div id="consumption-start">
-                    <div class="instructions">This tab sets the starting values for different sales streams. Domestic refers to substance both produced and consumed within the country.</div>
+                  <div id="consumption-equipment">
+                    <div class="instructions">This tab models the equipment that uses this substance for this application.</div>
                     <div class="form-group">
-                      <div><label for="edit-consumption-import">Import:</label></div>
+                      <div><label for="edit-consumption-initial-charge-domestic">Domestically manufactured equipment initial charge:</label></div>
                       <div>
-                        <div>
-                          <div>Set imported substance for application to</div>
-                          <input type="text" id="consumption-import-amount" name="consumption-import-amount" class="consumption-import-amount-input statement-amount-input short" aria-label="Amount of substance import">
-                          <span class="sel mid">
-                            <select id="consumption-import-units" name="consumption-import-units" class="consumption-import-units-input statement-units-input" aria-label="Units of substance import">
-                              <option value="kg">kg</option>
-                              <option value="mt">mt</option>
-                              <option value="tCO2e">tCO2e</option>
-                              <option value="kg / year">kg / year</option>
-                              <option value="mt / year">mt / year</option>
-                              <option value="tCO2e / year">tCO2e / year</option>
-                              <option value="kg / unit">kg / unit</option>
-                              <option value="mt / unit">mt / unit</option>
-                              <option value="tCO2e / unit">tCO2e / unit</option>
-                            </select>
-                          </span>
-                        </div>
-                        <div>
-                          <span class="sel mid">
-                            <select id="consumption-import-duration" name="consumption-import-duration" class="consumption-import-duration-input statement-duration-input" aria-label="Duration of substance import.">
-                              <option value="in year">in year</option>
-                              <option value="during all years">during all years</option>
-                              <option value="starting in year">starting in year</option>
-                              <option value="ending in year">ending in year</option>
-                              <option value="during years">during years</option>
-                            </select>
-                          </span>
-                          <input type="text" id="consumption-import-start" name="consumption-import-start" class="consumption-import-start-input statement-duration-start short" aria-label="Start year of substance import">
-                          to
-                          <input type="text" id="consumption-import-end" name="consumption-import-end" class="consumption-import-end-input statement-duration-end short" aria-label="End year of substance import">.
-                        </div>
+                        <input type="text" name="edit-consumption-initial-charge-domestic" class="edit-consumption-initial-charge-domestic-input mid">
+                        <span class="sel mid">
+                          <select name="initial-charge-domestic-units" class="initial-charge-domestic-units-input" aria-label="Units of initial charge">
+                            <option value="kg">kg</option>
+                            <option value="mt">mt</option>
+                            <option value="tCO2e">tCO2e</option>
+                            <option value="kg / year">kg / year</option>
+                            <option value="mt / year">mt / year</option>
+                            <option value="tCO2e / year">tCO2e / year</option>
+                            <option value="kg / unit">kg / unit</option>
+                            <option value="mt / unit">mt / unit</option>
+                            <option value="tCO2e / unit">tCO2e / unit</option>
+                            <option value="%">%</option>
+                            <option value="% / year">% / year</option>
+                          </select>
+                        </span>
                       </div>
                     </div>
                     <div class="form-group">
-                      <div><label for="edit-consumption-domestic">Domestic:</label></div>
+                      <div><label for="edit-consumption-initial-charge-import">Imported equipment initial charge:</label></div>
                       <div>
-                        <div>
-                          <div>Set domestically manufactured and consumed to</div>
-                          <input type="text" id="consumption-domestic-amount" name="consumption-domestic-amount" class="consumption-domestic-amount-input statement-amount-input short" aria-label="Amount of substance domestic">
-                          <span class="sel mid">
-                            <select id="consumption-domestic-units" name="consumption-domestic-units" class="consumption-domestic-units-input statement-units-input" aria-label="Units of substance domestic">
-                              <option value="kg">kg</option>
-                              <option value="mt">mt</option>
-                              <option value="tCO2e">tCO2e</option>
-                              <option value="kg / year">kg / year</option>
-                              <option value="mt / year">mt / year</option>
-                              <option value="tCO2e / year">tCO2e / year</option>
-                              <option value="kg / unit">kg / unit</option>
-                              <option value="mt / unit">mt / unit</option>
-                              <option value="tCO2e / unit">tCO2e / unit</option>
-                            </select>
-                          </span>
-                        </div>
-                        <div>
-                          <span class="sel mid">
-                            <select id="consumption-domestic-duration" name="consumption-domestic-duration" class="consumption-domestic-duration-input statement-duration-input" aria-label="Duration of substance domestic.">
-                              <option value="in year">in year</option>
-                              <option value="during all years">during all years</option>
-                              <option value="starting in year">starting in year</option>
-                              <option value="ending in year">ending in year</option>
-                              <option value="during years">during years</option>
-                            </select>
-                          </span>
-                          <input type="text" id="consumption-domestic-start" name="consumption-domestic-start" class="consumption-domestic-start-input statement-duration-start short" aria-label="Start year of substance domestic">
-                          to
-                          <input type="text" id="consumption-domestic-end" name="consumption-domestic-end" class="consumption-domestic-end-input statement-duration-end short" aria-label="End year of substance domestic">.
-                        </div>
+                        <input type="text" name="edit-consumption-initial-charge-import" class="edit-consumption-initial-charge-import-input mid">
+                        <span class="sel mid">
+                          <select name="initial-charge-import-units" class="initial-charge-import-units-input" aria-label="Units of initial charge">
+                            <option value="kg">kg</option>
+                            <option value="mt">mt</option>
+                            <option value="tCO2e">tCO2e</option>
+                            <option value="kg / year">kg / year</option>
+                            <option value="mt / year">mt / year</option>
+                            <option value="tCO2e / year">tCO2e / year</option>
+                            <option value="kg / unit">kg / unit</option>
+                            <option value="mt / unit">mt / unit</option>
+                            <option value="tCO2e / unit">tCO2e / unit</option>
+                            <option value="%">%</option>
+                            <option value="% / year">% / year</option>
+                          </select>
+                        </span>
+                      </div>
+                    </div>
+                    <div class="form-group">
+                      <div><label for="edit-consumption-retirement">Amount of equipment retired annually:</label></div>
+                      <div>
+                        <input type="text" name="edit-consumption-retirement" class="edit-consumption-retirement-input mid">
+                        <span class="sel mid">
+                          <select name="retirement-units" class="retirement-units-input" aria-label="Units of equipment annual retirement">
+                            <option value="kg">kg</option>
+                            <option value="mt">mt</option>
+                            <option value="tCO2e">tCO2e</option>
+                            <option value="kg / year">kg / year</option>
+                            <option value="mt / year">mt / year</option>
+                            <option value="tCO2e / year">tCO2e / year</option>
+                            <option value="kg / unit">kg / unit</option>
+                            <option value="mt / unit">mt / unit</option>
+                            <option value="tCO2e / unit">tCO2e / unit</option>
+                            <option value="%">%</option>
+                            <option value="% / year">% / year</option>
+                          </select>
+                        </span>
+                      </div>
+                    </div>
+                    <div class="form-group">
+                      <div><label for="edit-consumption-recharge-population">Amount of equipment recharged annually:</label></div>
+                      <div>
+                        <input type="text" name="edit-consumption-recharge-population" class="edit-consumption-recharge-population-input mid">
+                        <span class="sel mid">
+                          <select name="recharge-population-units" class="recharge-population-units-input" aria-label="Units of equipment recharge frequency">
+                            <option value="kg">kg</option>
+                            <option value="mt">mt</option>
+                            <option value="tCO2e">tCO2e</option>
+                            <option value="kg / year">kg / year</option>
+                            <option value="mt / year">mt / year</option>
+                            <option value="tCO2e / year">tCO2e / year</option>
+                            <option value="kg / unit">kg / unit</option>
+                            <option value="mt / unit">mt / unit</option>
+                            <option value="tCO2e / unit">tCO2e / unit</option>
+                            <option value="%">%</option>
+                            <option value="% / year">% / year</option>
+                          </select>
+                        </span>
+                      </div>
+                    </div>
+                    <div class="form-group">
+                      <div><label for="edit-consumption-recharge-volume">Recharge volume:</label></div>
+                      <div>
+                        <input type="text" name="edit-consumption-recharge-volume" class="edit-consumption-recharge-volume-input mid">
+                        <span class="sel mid">
+                          <select name="recharge-volume-units" class="recharge-volume-units-input" aria-label="Units of equipment recharge frequency">
+                            <option value="kg">kg</option>
+                            <option value="mt">mt</option>
+                            <option value="tCO2e">tCO2e</option>
+                            <option value="kg / year">kg / year</option>
+                            <option value="mt / year">mt / year</option>
+                            <option value="tCO2e / year">tCO2e / year</option>
+                            <option value="kg / unit">kg / unit</option>
+                            <option value="mt / unit">mt / unit</option>
+                            <option value="tCO2e / unit">tCO2e / unit</option>
+                            <option value="%">%</option>
+                            <option value="% / year">% / year</option>
+                          </select>
+                        </span>
                       </div>
                     </div>
                   </div>
-                  <div id="consumption-equipment">
-                    <div class="instructions">This tab models the equipment that uses this substance for this application.</div>
+                  <div id="consumption-start">
+                    <div class="instructions">This tab sets the starting values for different sales streams. Domestic refers to substance both produced and consumed within the country.</div>
+                    <div class="dialog-sub-buttons bold-buttons">
+                      <a href="#" class="add-start-button secondary">Add Level</a>
+                    </div>
                   </div>
                   <div id="consumption-change">
                     <div class="instructions">This tab indicates how sales change over time.</div>
-                    <div class="form-group">
-                      <div><label for="edit-consumption-import-change">Import:</label></div>
-                      <div>
-                        <div>
-                          <div>Change imported substance for application by</div>
-                          <span class="sel short">
-                            <select id="consumption-change-import-sign" name="consumption-change-import-sign" class="consumption-change-import-units-sign statement-units-sign" aria-label="Sign of substance import change">
-                              <option value="+">+</option>
-                              <option value="-">-</option>
-                            </select>
-                          </span>
-                          <input type="text" id="consumption-change-import-amount" name="consumption-change-import-amount" class="consumption-change-import-amount-input statement-amount-input short" aria-label="Change of substance import">
-                          <span class="sel mid">
-                            <select id="consumption-change-import-units" name="consumption-change-import-units" class="consumption-change-import-units-input statement-units-input" aria-label="Units of substance import change">
-                              <option value="kg">kg</option>
-                              <option value="mt">mt</option>
-                              <option value="tCO2e">tCO2e</option>
-                              <option value="kg / year">kg / year</option>
-                              <option value="mt / year">mt / year</option>
-                              <option value="tCO2e / year">tCO2e / year</option>
-                              <option value="kg / unit">kg / unit</option>
-                              <option value="mt / unit">mt / unit</option>
-                              <option value="tCO2e / unit">tCO2e / unit</option>
-                            </select>
-                          </span>
-                        </div>
-                        <div>
-                          <span class="sel mid">
-                            <select id="consumption-change-import-duration" name="consumption-change-import-duration" class="consumption-change-import-duration-input statement-duration-input" aria-label="Duration of substance change.">
-                              <option value="in year">in year</option>
-                              <option value="during all years">during all years</option>
-                              <option value="starting in year">starting in year</option>
-                              <option value="ending in year">ending in year</option>
-                              <option value="during years">during years</option>
-                            </select>
-                          </span>
-                          <input type="text" id="consumption-change-import-start" name="consumption-change-import-start" class="consumption-change-import-start-input statement-duration-start short" aria-label="Start year of substance import change">
-                          to
-                          <input type="text" id="consumption-change-import-end" name="consumption-change-import-end" class="consumption-change-import-end-input statement-duration-end short" aria-label="End year of substance import change">.
-                        </div>
-                      </div>
-                    </div>
-                    <div class="form-group">
-                      <div><label for="edit-consumption-domestic-change">Domestic:</label></div>
-                      <div>
-                        <div>
-                          <div>Set domestically manufactured and consumed to</div>
-                          <span class="sel short">
-                            <select id="consumption-change-domestic-sign" name="consumption-change-domestic-sign" class="consumption-change-domestic-units-sign statement-units-sign" aria-label="Sign of substance domestic change">
-                              <option value="+">+</option>
-                              <option value="-">-</option>
-                            </select>
-                          </span>
-                          <input type="text" id="consumption-change-domestic-amount" name="consumption-change-domestic-amount" class="consumption-change-domestic-amount-input statement-amount-input short" aria-label="Change of substance domestic">
-                          <span class="sel mid">
-                            <select id="consumption-change-domestic-units" name="consumption-change-domestic-units" class="consumption-change-domestic-units-input statement-units-input" aria-label="Units of substance domestic change">
-                              <option value="kg">kg</option>
-                              <option value="mt">mt</option>
-                              <option value="tCO2e">tCO2e</option>
-                              <option value="kg / year">kg / year</option>
-                              <option value="mt / year">mt / year</option>
-                              <option value="tCO2e / year">tCO2e / year</option>
-                              <option value="kg / unit">kg / unit</option>
-                              <option value="mt / unit">mt / unit</option>
-                              <option value="tCO2e / unit">tCO2e / unit</option>
-                            </select>
-                          </span>
-                        </div>
-                        <div>
-                          <span class="sel mid">
-                            <select id="consumption-change-domestic-duration" name="consumption-change-domestic-duration" class="consumption-change-domestic-duration-input statement-duration-input" aria-label="Duration of substance domestic change.">
-                              <option value="in year">in year</option>
-                              <option value="during all years">during all years</option>
-                              <option value="starting in year">starting in year</option>
-                              <option value="ending in year">ending in year</option>
-                              <option value="during years">during years</option>
-                            </select>
-                          </span>
-                          <input type="text" id="consumption-change-domestic-start" name="consumption-change-domestic-start" class="consumption-change-domestic-start-input statement-duration-start short" aria-label="Start year of substance domestic change">
-                          to
-                          <input type="text" id="consumption-change-domestic-end" name="consumption-change-domestic-end" class="consumption-change-domestic-end-input statement-duration-end short" aria-label="End year of substance domestic change">.
-                        </div>
-                      </div>
+                    <div class="dialog-sub-buttons bold-buttons">
+                      <a href="#" class="add-change-button secondary">Add Change</a>
                     </div>
                   </div>
                   <div id="consumption-limit">
-                    <div class="instructions">This specifies sales limits (minimum and maximum).</div>
+                    <div class="instructions">This tab specifies sales limits (minimum and maximum).</div>
+                    <div class="dialog-sub-buttons bold-buttons">
+                      <a href="#" class="add-limit-button secondary">Add Limit</a>
+                    </div>
                   </div>
                 </div>
                 <div class="dialog-buttons bold-buttons">
                   <a href="#ui-editor-sections" class="save-button primary">Save</a>
-                  <a href="#ui-editor-sections" class="cancel-button secondary">Cancel</a>
+                  <a href="#ui-editor-sections" class="cancel-button destructive">Cancel</a>
                 </div>
               </dialog>
             </div>
@@ -411,6 +369,96 @@
       </div>
     </section>
   </main>
+
+  <script type="text/template" id="set-command-template">
+    <div class="set-command form-group">
+      <div>
+        <div>
+          Set
+          <span class="sel mid">
+            <select class="set-target-input" aria-label="Target for set command">
+              <option value="manufacture">domenstic manufacture</option>
+              <option value="import">import</option>
+              <option value="equipment">equipment</option>
+            </select>
+          </span>
+          to
+        </div>
+        <div>
+          <input type="text" class="set-amount-input short" aria-label="Amount for set command">
+          <span class="sel mid">
+            <select class="set-units-input" aria-label="Units for set command">
+              <option value="kg">kg</option>
+              <option value="mt">mt</option>
+              <option value="tCO2e">tCO2e</option>
+              <option value="kg / year">kg / year</option>
+              <option value="mt / year">mt / year</option>
+              <option value="tCO2e / year">tCO2e / year</option>
+              <option value="kg / unit">kg / unit</option>
+              <option value="mt / unit">mt / unit</option>
+              <option value="tCO2e / unit">tCO2e / unit</option>
+              <option value="%">%</option>
+              <option value="% / year">% / year</option>
+            </select>
+          </span>
+        </div>
+      </div>
+      <div class="duration-subcomponent">
+        <span class="sel mid">
+          <select class="duration-type-input" aria-label="Duration type for command">
+            <option value="in year">in year</option>
+            <option value="during all years">during all years</option>
+            <option value="starting in year">starting in year</option>
+            <option value="ending in year">ending in year</option>
+            <option value="during years">during years</option>
+          </select>
+        </span>
+        <input type="text" class="duration-start short" aria-label="Start year of substance import">
+        to
+        <input type="text" class="duration-end short" aria-label="End year of substance import">.
+        - <a href="#" class="delete-command-link">delete</a>
+      </div>
+    </div>
+  </script>
+
+  <script type="text/template" id="change-command-template">
+    <div class="change-command form-group">
+      <div>
+        Change
+          <span class="sel mid">
+            <select class="change-target-input" aria-label="Target for change command">
+              <option value="manufacture">domenstic manufacture</option>
+              <option value="import">import</option>
+              <option value="equipment">equipment</option>
+            </select>
+          </span>
+        by
+      </div>
+      <span class="sel short">
+        <select class="change-sign-input" aria-label="Sign of substance change">
+          <option value="+">+</option>
+          <option value="-">-</option>
+        </select>
+      </span>
+      <input type="text" class="change-amount-input short" aria-label="Change of substance import">
+      <span class="sel mid">
+        <select class="change-units-input" aria-label="Units of change">
+          <option value="kg">kg</option>
+          <option value="mt">mt</option>
+          <option value="tCO2e">tCO2e</option>
+          <option value="kg / year">kg / year</option>
+          <option value="mt / year">mt / year</option>
+          <option value="tCO2e / year">tCO2e / year</option>
+          <option value="kg / unit">kg / unit</option>
+          <option value="mt / unit">mt / unit</option>
+          <option value="tCO2e / unit">tCO2e / unit</option>
+          <option value="%">%</option>
+          <option value="% / year">% / year</option>
+        </select>
+      </span>
+      - <a href="#" class="delete-command-link">delete</a>
+    </div>
+  </script>
 
   <script type="text/javascript" src="/third_party/ace.min.js"></script>
   <script type="text/javascript" src="/third_party/ext-language_tools.js"></script>
