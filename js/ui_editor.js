@@ -232,11 +232,46 @@ class ConsumptionListPresenter {
       self._dialog.close();
       event.preventDefault();
     });
+
+    const setupListButton = (button, targetList, templateId) => {
+      button.addEventListener("click", (event) => {
+        event.preventDefault();
+        
+        const newDiv = document.createElement("div");
+        newDiv.innerHTML = document.getElementById(templateId).innerHTML;
+        newDiv.classList.add("dialog-list-item");
+        targetList.appendChild(newDiv);
+
+        const deleteLink = newDiv.querySelector(".delete-command-link");
+        deleteLink.addEventListener("click", (event) => {
+          event.preventDefault();
+          newDiv.remove();
+        });
+      });
+    }
+
+    const addLevelButton = self._root.querySelector(".add-start-button");
+    const levelList = self._root.querySelector(".level-list");
+    setupListButton(addLevelButton, levelList, "set-command-template");
+
+    const addChangeButton = self._root.querySelector(".add-change-button");
+    const changeList = self._root.querySelector(".change-list");
+    setupListButton(addChangeButton, changeList, "change-command-template");
+
+    const addLimitButton = self._root.querySelector(".add-limit-button");
+    const limitList = self._root.querySelector(".limit-list");
+    setupListButton(addLimitButton, limitList, "limit-command-template");
   }
 
   _showDialogFor(name) {
     const self = this;
     self._editingName = name;
+
+    if (name === null) {
+      self._dialog.querySelector(".action-title").innerHTML = "Add";
+    } else {
+      self._dialog.querySelector(".action-title").innerHTML = "Edit";
+    }
 
     self._dialog.showModal();
   }

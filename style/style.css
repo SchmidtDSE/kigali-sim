@@ -263,6 +263,15 @@ main {
   background-color: #5050C0;
 }
 
+.dialog-list {
+  height: 300px;
+  overflow-y: auto;
+}
+
+.dialog-sub-buttons {
+  text-align: center;
+}
+
 .item-list {
   list-style: none;
   padding-left: 0;

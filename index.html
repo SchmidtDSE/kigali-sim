@@ -50,7 +50,7 @@
             
             <div></div>
             
-            <div class="ui-editor-section consumption inactive">
+            <div class="ui-editor-section consumption">
               <h3>Consumption</h3>
               <ul class="item-list"></ul>
               <div class="add-link-pane bold-buttons"><a href="#add-consumption" class="add-link secondary">Add consumption</a></div>
@@ -192,18 +192,21 @@
                   </div>
                   <div id="consumption-start">
                     <div class="instructions">This tab sets the starting values for different sales streams. Domestic refers to substance both produced and consumed within the country.</div>
+                    <div class="dialog-list level-list"></div>
                     <div class="dialog-sub-buttons bold-buttons">
                       <a href="#" class="add-start-button secondary">Add Level</a>
                     </div>
                   </div>
                   <div id="consumption-change">
                     <div class="instructions">This tab indicates how sales change over time.</div>
+                    <div class="dialog-list change-list"></div>
                     <div class="dialog-sub-buttons bold-buttons">
                       <a href="#" class="add-change-button secondary">Add Change</a>
                     </div>
                   </div>
                   <div id="consumption-limit">
                     <div class="instructions">This tab specifies sales limits (minimum and maximum).</div>
+                    <div class="dialog-list limit-list"></div>
                     <div class="dialog-sub-buttons bold-buttons">
                       <a href="#" class="add-limit-button secondary">Add Limit</a>
                     </div>
@@ -216,17 +219,17 @@
               </dialog>
             </div>
             
-            <div class="ui-editor-section policies inactive">
+            <div class="ui-editor-section policies">
               <h3>Policies</h3>
-              <ul></ul>
+              <ul class="item-list"></ul>
               <div class="add-link-pane bold-buttons"><a href="#add-policy" class="add-link secondary">Add Policy</a></div>
             </div>
             
             <div></div>
             
-            <div class="ui-editor-section simulations inactive">
+            <div class="ui-editor-section simulations">
               <h3>Simulations</h3>
-              <ul></ul>
+              <ul class="item-list"></ul>
               <div class="add-link-pane bold-buttons"><a href="#add-simulation" class="add-link secondary">Add Simulation</a></div>
             </div>
           
@@ -372,38 +375,32 @@
 
   <script type="text/template" id="set-command-template">
     <div class="set-command form-group">
-      <div>
-        <div>
-          Set
-          <span class="sel mid">
-            <select class="set-target-input" aria-label="Target for set command">
-              <option value="manufacture">domenstic manufacture</option>
-              <option value="import">import</option>
-              <option value="equipment">equipment</option>
-            </select>
-          </span>
-          to
-        </div>
-        <div>
-          <input type="text" class="set-amount-input short" aria-label="Amount for set command">
-          <span class="sel mid">
-            <select class="set-units-input" aria-label="Units for set command">
-              <option value="kg">kg</option>
-              <option value="mt">mt</option>
-              <option value="tCO2e">tCO2e</option>
-              <option value="kg / year">kg / year</option>
-              <option value="mt / year">mt / year</option>
-              <option value="tCO2e / year">tCO2e / year</option>
-              <option value="kg / unit">kg / unit</option>
-              <option value="mt / unit">mt / unit</option>
-              <option value="tCO2e / unit">tCO2e / unit</option>
-              <option value="%">%</option>
-              <option value="% / year">% / year</option>
-            </select>
-          </span>
-        </div>
-      </div>
-      <div class="duration-subcomponent">
+      Set
+      <span class="sel long">
+        <select class="set-target-input" aria-label="Target for set command">
+          <option value="manufacture">domenstic manufacture</option>
+          <option value="import">import</option>
+          <option value="equipment">equipment</option>
+        </select>
+      </span>
+      to
+      <input type="text" class="set-amount-input short" aria-label="Amount for set command">
+      <span class="sel mid">
+        <select class="set-units-input" aria-label="Units for set command">
+          <option value="kg">kg</option>
+          <option value="mt">mt</option>
+          <option value="tCO2e">tCO2e</option>
+          <option value="kg / year">kg / year</option>
+          <option value="mt / year">mt / year</option>
+          <option value="tCO2e / year">tCO2e / year</option>
+          <option value="kg / unit">kg / unit</option>
+          <option value="mt / unit">mt / unit</option>
+          <option value="tCO2e / unit">tCO2e / unit</option>
+          <option value="%">%</option>
+          <option value="% / year">% / year</option>
+        </select>
+      </span>
+      <span class="duration-subcomponent">
         <span class="sel mid">
           <select class="duration-type-input" aria-label="Duration type for command">
             <option value="in year">in year</option>
@@ -415,9 +412,9 @@
         </span>
         <input type="text" class="duration-start short" aria-label="Start year of substance import">
         to
-        <input type="text" class="duration-end short" aria-label="End year of substance import">.
-        - <a href="#" class="delete-command-link">delete</a>
-      </div>
+        <input type="text" class="duration-end short" aria-label="End year of substance import"> .
+      </span>
+      - <a href="#" class="delete-command-link">delete</a>
     </div>
   </script>
 
@@ -425,7 +422,7 @@
     <div class="change-command form-group">
       <div>
         Change
-          <span class="sel mid">
+          <span class="sel long">
             <select class="change-target-input" aria-label="Target for change command">
               <option value="manufacture">domenstic manufacture</option>
               <option value="import">import</option>
@@ -440,7 +437,7 @@
           <option value="-">-</option>
         </select>
       </span>
-      <input type="text" class="change-amount-input short" aria-label="Change of substance import">
+      <input type="text" class="change-amount-input short" aria-label="Change amount">
       <span class="sel mid">
         <select class="change-units-input" aria-label="Units of change">
           <option value="kg">kg</option>
@@ -455,6 +452,73 @@
           <option value="%">%</option>
           <option value="% / year">% / year</option>
         </select>
+      </span>
+      <span class="duration-subcomponent">
+        <span class="sel mid">
+          <select class="duration-type-input" aria-label="Duration type for command">
+            <option value="in year">in year</option>
+            <option value="during all years">during all years</option>
+            <option value="starting in year">starting in year</option>
+            <option value="ending in year">ending in year</option>
+            <option value="during years">during years</option>
+          </select>
+        </span>
+        <input type="text" class="duration-start short" aria-label="Start year of substance import">
+        to
+        <input type="text" class="duration-end short" aria-label="End year of substance import"> .
+      </span>
+      - <a href="#" class="delete-command-link">delete</a>
+    </div>
+  </script>
+
+  <script type="text/template" id="limit-command-template">
+    <div class="limit-command form-group">
+      <div>
+        <span class="sel mid">
+          <select class="limit-type-input" aria-label="Type of limit command">
+            <option value="cap">cap</option>
+            <option value="floor">floor</option>
+          </select>
+        </span>
+        <span class="sel long">
+          <select class="
+          -target-input" aria-label="Target for limit command">
+            <option value="manufacture">domenstic manufacture</option>
+            <option value="import">import</option>
+            <option value="equipment">equipment</option>
+          </select>
+        </span>
+        at
+      </div>
+      <input type="text" class="limit-amount-input short" aria-label="Amount of limit">
+      <span class="sel mid">
+        <select class="limit-units-input" aria-label="Units of limit">
+          <option value="kg">kg</option>
+          <option value="mt">mt</option>
+          <option value="tCO2e">tCO2e</option>
+          <option value="kg / year">kg / year</option>
+          <option value="mt / year">mt / year</option>
+          <option value="tCO2e / year">tCO2e / year</option>
+          <option value="kg / unit">kg / unit</option>
+          <option value="mt / unit">mt / unit</option>
+          <option value="tCO2e / unit">tCO2e / unit</option>
+          <option value="%">%</option>
+          <option value="% / year">% / year</option>
+        </select>
+      </span>
+      <span class="duration-subcomponent">
+        <span class="sel mid">
+          <select class="duration-type-input" aria-label="Duration type for command">
+            <option value="in year">in year</option>
+            <option value="during all years">during all years</option>
+            <option value="starting in year">starting in year</option>
+            <option value="ending in year">ending in year</option>
+            <option value="during years">during years</option>
+          </select>
+        </span>
+        <input type="text" class="duration-start short" aria-label="Start year of substance import">
+        to
+        <input type="text" class="duration-end short" aria-label="End year of substance import"> .
       </span>
       - <a href="#" class="delete-command-link">delete</a>
     </div>
