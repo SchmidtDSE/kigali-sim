@@ -4,6 +4,24 @@ import {
 } from "ui_translator";
 
 
+function setupListButton(button, targetList, templateId) {
+  button.addEventListener("click", (event) => {
+    event.preventDefault();
+    
+    const newDiv = document.createElement("div");
+    newDiv.innerHTML = document.getElementById(templateId).innerHTML;
+    newDiv.classList.add("dialog-list-item");
+    targetList.appendChild(newDiv);
+
+    const deleteLink = newDiv.querySelector(".delete-command-link");
+    deleteLink.addEventListener("click", (event) => {
+      event.preventDefault();
+      newDiv.remove();
+    });
+  });
+}
+
+
 class ApplicationsListPresenter {
   constructor(root, getCodeObj, onCodeObjUpdate) {
     const self = this;
@@ -233,23 +251,6 @@ class ConsumptionListPresenter {
       event.preventDefault();
     });
 
-    const setupListButton = (button, targetList, templateId) => {
-      button.addEventListener("click", (event) => {
-        event.preventDefault();
-        
-        const newDiv = document.createElement("div");
-        newDiv.innerHTML = document.getElementById(templateId).innerHTML;
-        newDiv.classList.add("dialog-list-item");
-        targetList.appendChild(newDiv);
-
-        const deleteLink = newDiv.querySelector(".delete-command-link");
-        deleteLink.addEventListener("click", (event) => {
-          event.preventDefault();
-          newDiv.remove();
-        });
-      });
-    }
-
     const addLevelButton = self._root.querySelector(".add-start-button");
     const levelList = self._root.querySelector(".level-list");
     setupListButton(addLevelButton, levelList, "set-command-template");
@@ -295,6 +296,148 @@ class ConsumptionListPresenter {
 }
 
 
+class PolicyListPresenter {
+
+  constructor(root, getCodeObj, onCodeObjUpdate) {
+    const self = this;
+    self._root = root;
+    self._dialog = self._root.querySelector(".dialog");
+    self._getCodeObj = getCodeObj;
+    self._onCodeObjUpdate = onCodeObjUpdate;
+    self._editingName = null;
+    self._setupDialog();
+    self.refresh();
+  }
+
+  enable() {
+    const self = this;
+    self._root.classList.remove("inactive");
+  }
+
+  disable() {
+    const self = this;
+    self._root.classList.add("inactive");
+  }
+
+  refresh(codeObj) {
+    const self = this;
+    self._refreshList(codeObj);
+  }
+
+  _refreshList(codeObj) {
+    const self = this;
+    const consumptionNames = self._getConsumptionNames();
+    const itemList = d3.select(self._root).select(".item-list");
+
+    itemList.html("");
+    const newItems = itemList.selectAll("li")
+      .data(consumptionNames)
+      .enter()
+      .append("li");
+
+    newItems.attr("aria-label", (x) => x);
+
+    const buttonsPane = newItems.append("div")
+      .classed("list-buttons", true);
+
+    newItems.append("div")
+      .classed("list-label", true)
+      .text((x) => x);
+
+    buttonsPane.append("a")
+      .attr("href", "#")
+      .on("click", (event, x) => {
+        event.preventDefault();
+        self._showDialogFor(x);
+      })
+      .text("edit")
+      .attr("aria-label", (x) => "edit " + x);
+
+    buttonsPane.append("span").text(" | ");
+
+    buttonsPane.append("a")
+      .attr("href", "#")
+      .on("click", (event, x) => {
+        event.preventDefault();
+        const message = "Are you sure you want to delete " + x + "?";
+        const isConfirmed = confirm(message);
+        if (isConfirmed) {
+          const codeObj = self._getCodeObj();
+          codeObj.consumption(x);
+          self._onCodeObjUpdate(codeObj);
+        }
+      })
+      .text("delete")
+      .attr("aria-label", (x) => "delete " + x);
+  }
+
+  _setupDialog() {
+    const self = this;
+
+    self._tabs = new Tabby("#" + self._dialog.querySelector(".tabs").id);
+
+    const addLink = self._root.querySelector(".add-link");
+    addLink.addEventListener("click", (event) => {
+      self._showDialogFor(null);
+      event.preventDefault();
+    });
+
+    const closeButton = self._root.querySelector(".cancel-button");
+    closeButton.addEventListener("click", (event) => {
+      self._dialog.close();
+      event.preventDefault();
+    });
+
+    const saveButton = self._root.querySelector(".save-button");
+    saveButton.addEventListener("click", (event) => {
+      self._dialog.close();
+      event.preventDefault();
+    });
+
+    const addRecyclingButton = self._root.querySelector(".add-recycling-button");
+    const recyclingList = self._root.querySelector(".recycling-list");
+    setupListButton(addRecyclingButton, recyclingList, "recycle-command-template");
+
+    const addReplaceButton = self._root.querySelector(".add-replace-button");
+    const replaceList = self._root.querySelector(".replace-list");
+    setupListButton(addReplaceButton, replaceList, "replace-command-template");
+
+    const addLevelButton = self._root.querySelector(".add-level-button");
+    const levelList = self._root.querySelector(".level-list");
+    setupListButton(addLevelButton, levelList, "set-command-template");
+
+    const addChangeButton = self._root.querySelector(".add-change-button");
+    const changeList = self._root.querySelector(".change-list");
+    setupListButton(addChangeButton, changeList, "change-command-template");
+
+    const addLimitButton = self._root.querySelector(".add-limit-button");
+    const limitList = self._root.querySelector(".limit-list");
+    setupListButton(addLimitButton, limitList, "limit-command-template");
+  }
+
+  _showDialogFor(name) {
+    const self = this;
+    self._editingName = name;
+
+    if (name === null) {
+      self._dialog.querySelector(".action-title").innerHTML = "Add";
+    } else {
+      self._dialog.querySelector(".action-title").innerHTML = "Edit";
+    }
+
+    self._dialog.showModal();
+  }
+
+  _getPolicyNames() {
+    const self = this;
+    const codeObj = self._getCodeObj();
+    const policies = codeObj.getPolicies();
+    return policies.map((x) => x.getName());
+  }
+
+}
+
+
 class UiEditorPresenter {
   constructor(tabRoot, contentsRoot, getCodeAsObj, onCodeObjUpdate) {
     const self = this;
@@ -306,18 +449,28 @@ class UiEditorPresenter {
     self._initCodeObj();
 
     self._tabs = new Tabby("#" + tabRoot.id);
+    
     const appEditor = self._contentsSelection.querySelector(".applications");
     self._applicationsList = new ApplicationsListPresenter(
       appEditor,
       () => self._getCodeAsObj(),
       (codeObj) => self._onCodeObjUpdate(codeObj),
     );
+    
     const consumptionEditor = self._contentsSelection.querySelector(".consumption");
     self._consumptionList = new ConsumptionListPresenter(
       consumptionEditor,
       () => self._getCodeAsObj(),
       (codeObj) => self._onCodeObjUpdate(codeObj),
     );
+    
+    const policyEditor = self._contentsSelection.querySelector(".policies");
+    self._policyList = new PolicyListPresenter(
+      policyEditor,
+      () => self._getCodeAsObj(),
+      (codeObj) => self._onCodeObjUpdate(codeObj),
+    );
+    
     self._setupAdvancedLinks();
   }
 
