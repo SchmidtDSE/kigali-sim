@@ -25,20 +25,20 @@
       <div id="ui-editor-pane">
         <div class="available-contents">
           <div class="ui-editor-sections">
+            
             <div class="ui-editor-section applications">
               <h3>Applications</h3>
               <ul class="item-list"></ul>
               <div class="add-link-pane bold-buttons"><a href="#add-application" class="add-link secondary">Add Application</a></div>
-
               <dialog class="dialog">
                 <h2><span class="action-title"></span> Application</h2>
                 <div class="instructions">
                   An application is a type of use which may use many different subtances. For example, an application may be "commerical ACs" for commerical air conditioners.
                 </div>
-                <div>
+                <div class="contents">
                   <div class="form-group">
                     <div><label for="edit-application-name">Name:</label></div>
-                    <div><input type="text" name="edit-application-name" class="edit-application-name-input" autofocus></div>
+                    <div><input type="text" name="edit-application-name" class="edit-application-name-input long" autofocus></div>
                   </div>
                 </div>
                 <div class="dialog-buttons bold-buttons">
@@ -47,23 +47,231 @@
                 </div>
               </dialog>
             </div>
+            
             <div></div>
-            <div class="ui-editor-section substances inactive">
-              <h3>Substances</h3>
-              <ul></ul>
-              <div class="add-link-pane bold-buttons"><a href="#add-substance" class="add-link secondary">Add Substance</a></div>
+            
+            <div class="ui-editor-section consumption inactive">
+              <h3>Consumption</h3>
+              <ul class="item-list"></ul>
+              <div class="add-link-pane bold-buttons"><a href="#add-consumption" class="add-link secondary">Add consumption</a></div>
+              <dialog class="dialog">
+                <h2><span class="action-title"></span> Consumption</h2>
+                <div class="instructions">
+                  A consumption records describes use of a single substance like HFC-134a in a single application like domestic refrigeration.
+                </div>
+                <div class="contents">
+                  <ul id="consumption-tabs" class="tabs" data-tabs>
+                    <li><a data-tabby-default href="#consumption-general">General</a></li>
+                    <li><a href="#consumption-equipment">Equipment</a></li>
+                    <li><a href="#consumption-start">Start</a></li>
+                    <li><a href="#consumption-change">Change</a></li>
+                    <li><a href="#consumption-limit">Limit</a></li>
+                  </ul>
+                  <div id="consumption-general">
+                    <div class="instructions">This tab collects information about the substance and application for this consumption record.</div>
+                    <div class="form-group">
+                      <div><label for="edit-consumption-substance">Substance:</label></div>
+                      <div><input type="text" name="edit-consumption-substance" class="edit-consumption-substance-input long" autofocus></div>
+                    </div>
+                    <div class="form-group">
+                      <div><label for="edit-consumption-application">Application:</label></div>
+                      <div>
+                        <span class="sel long">
+                          <select id="edit-consumption-application" name="edit-consumption-application" class="edit-consumption-application-input"></select>
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  <div id="consumption-start">
+                    <div class="instructions">This tab sets the starting values for different sales streams. Domestic refers to substance both produced and consumed within the country.</div>
+                    <div class="form-group">
+                      <div><label for="edit-consumption-import">Import:</label></div>
+                      <div>
+                        <div>
+                          <div>Set imported substance for application to</div>
+                          <input type="text" id="consumption-import-amount" name="consumption-import-amount" class="consumption-import-amount-input statement-amount-input short" aria-label="Amount of substance import">
+                          <span class="sel mid">
+                            <select id="consumption-import-units" name="consumption-import-units" class="consumption-import-units-input statement-units-input" aria-label="Units of substance import">
+                              <option value="kg">kg</option>
+                              <option value="mt">mt</option>
+                              <option value="tCO2e">tCO2e</option>
+                              <option value="kg / year">kg / year</option>
+                              <option value="mt / year">mt / year</option>
+                              <option value="tCO2e / year">tCO2e / year</option>
+                              <option value="kg / unit">kg / unit</option>
+                              <option value="mt / unit">mt / unit</option>
+                              <option value="tCO2e / unit">tCO2e / unit</option>
+                            </select>
+                          </span>
+                        </div>
+                        <div>
+                          <span class="sel mid">
+                            <select id="consumption-import-duration" name="consumption-import-duration" class="consumption-import-duration-input statement-duration-input" aria-label="Duration of substance import.">
+                              <option value="in year">in year</option>
+                              <option value="during all years">during all years</option>
+                              <option value="starting in year">starting in year</option>
+                              <option value="ending in year">ending in year</option>
+                              <option value="during years">during years</option>
+                            </select>
+                          </span>
+                          <input type="text" id="consumption-import-start" name="consumption-import-start" class="consumption-import-start-input statement-duration-start short" aria-label="Start year of substance import">
+                          to
+                          <input type="text" id="consumption-import-end" name="consumption-import-end" class="consumption-import-end-input statement-duration-end short" aria-label="End year of substance import">.
+                        </div>
+                      </div>
+                    </div>
+                    <div class="form-group">
+                      <div><label for="edit-consumption-domestic">Domestic:</label></div>
+                      <div>
+                        <div>
+                          <div>Set domestically manufactured and consumed to</div>
+                          <input type="text" id="consumption-domestic-amount" name="consumption-domestic-amount" class="consumption-domestic-amount-input statement-amount-input short" aria-label="Amount of substance domestic">
+                          <span class="sel mid">
+                            <select id="consumption-domestic-units" name="consumption-domestic-units" class="consumption-domestic-units-input statement-units-input" aria-label="Units of substance domestic">
+                              <option value="kg">kg</option>
+                              <option value="mt">mt</option>
+                              <option value="tCO2e">tCO2e</option>
+                              <option value="kg / year">kg / year</option>
+                              <option value="mt / year">mt / year</option>
+                              <option value="tCO2e / year">tCO2e / year</option>
+                              <option value="kg / unit">kg / unit</option>
+                              <option value="mt / unit">mt / unit</option>
+                              <option value="tCO2e / unit">tCO2e / unit</option>
+                            </select>
+                          </span>
+                        </div>
+                        <div>
+                          <span class="sel mid">
+                            <select id="consumption-domestic-duration" name="consumption-domestic-duration" class="consumption-domestic-duration-input statement-duration-input" aria-label="Duration of substance domestic.">
+                              <option value="in year">in year</option>
+                              <option value="during all years">during all years</option>
+                              <option value="starting in year">starting in year</option>
+                              <option value="ending in year">ending in year</option>
+                              <option value="during years">during years</option>
+                            </select>
+                          </span>
+                          <input type="text" id="consumption-domestic-start" name="consumption-domestic-start" class="consumption-domestic-start-input statement-duration-start short" aria-label="Start year of substance domestic">
+                          to
+                          <input type="text" id="consumption-domestic-end" name="consumption-domestic-end" class="consumption-domestic-end-input statement-duration-end short" aria-label="End year of substance domestic">.
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div id="consumption-equipment">
+                    <div class="instructions">This tab models the equipment that uses this substance for this application.</div>
+                  </div>
+                  <div id="consumption-change">
+                    <div class="instructions">This tab indicates how sales change over time.</div>
+                    <div class="form-group">
+                      <div><label for="edit-consumption-import-change">Import:</label></div>
+                      <div>
+                        <div>
+                          <div>Change imported substance for application by</div>
+                          <span class="sel short">
+                            <select id="consumption-change-import-sign" name="consumption-change-import-sign" class="consumption-change-import-units-sign statement-units-sign" aria-label="Sign of substance import change">
+                              <option value="+">+</option>
+                              <option value="-">-</option>
+                            </select>
+                          </span>
+                          <input type="text" id="consumption-change-import-amount" name="consumption-change-import-amount" class="consumption-change-import-amount-input statement-amount-input short" aria-label="Change of substance import">
+                          <span class="sel mid">
+                            <select id="consumption-change-import-units" name="consumption-change-import-units" class="consumption-change-import-units-input statement-units-input" aria-label="Units of substance import change">
+                              <option value="kg">kg</option>
+                              <option value="mt">mt</option>
+                              <option value="tCO2e">tCO2e</option>
+                              <option value="kg / year">kg / year</option>
+                              <option value="mt / year">mt / year</option>
+                              <option value="tCO2e / year">tCO2e / year</option>
+                              <option value="kg / unit">kg / unit</option>
+                              <option value="mt / unit">mt / unit</option>
+                              <option value="tCO2e / unit">tCO2e / unit</option>
+                            </select>
+                          </span>
+                        </div>
+                        <div>
+                          <span class="sel mid">
+                            <select id="consumption-change-import-duration" name="consumption-change-import-duration" class="consumption-change-import-duration-input statement-duration-input" aria-label="Duration of substance change.">
+                              <option value="in year">in year</option>
+                              <option value="during all years">during all years</option>
+                              <option value="starting in year">starting in year</option>
+                              <option value="ending in year">ending in year</option>
+                              <option value="during years">during years</option>
+                            </select>
+                          </span>
+                          <input type="text" id="consumption-change-import-start" name="consumption-change-import-start" class="consumption-change-import-start-input statement-duration-start short" aria-label="Start year of substance import change">
+                          to
+                          <input type="text" id="consumption-change-import-end" name="consumption-change-import-end" class="consumption-change-import-end-input statement-duration-end short" aria-label="End year of substance import change">.
+                        </div>
+                      </div>
+                    </div>
+                    <div class="form-group">
+                      <div><label for="edit-consumption-domestic-change">Domestic:</label></div>
+                      <div>
+                        <div>
+                          <div>Set domestically manufactured and consumed to</div>
+                          <span class="sel short">
+                            <select id="consumption-change-domestic-sign" name="consumption-change-domestic-sign" class="consumption-change-domestic-units-sign statement-units-sign" aria-label="Sign of substance domestic change">
+                              <option value="+">+</option>
+                              <option value="-">-</option>
+                            </select>
+                          </span>
+                          <input type="text" id="consumption-change-domestic-amount" name="consumption-change-domestic-amount" class="consumption-change-domestic-amount-input statement-amount-input short" aria-label="Change of substance domestic">
+                          <span class="sel mid">
+                            <select id="consumption-change-domestic-units" name="consumption-change-domestic-units" class="consumption-change-domestic-units-input statement-units-input" aria-label="Units of substance domestic change">
+                              <option value="kg">kg</option>
+                              <option value="mt">mt</option>
+                              <option value="tCO2e">tCO2e</option>
+                              <option value="kg / year">kg / year</option>
+                              <option value="mt / year">mt / year</option>
+                              <option value="tCO2e / year">tCO2e / year</option>
+                              <option value="kg / unit">kg / unit</option>
+                              <option value="mt / unit">mt / unit</option>
+                              <option value="tCO2e / unit">tCO2e / unit</option>
+                            </select>
+                          </span>
+                        </div>
+                        <div>
+                          <span class="sel mid">
+                            <select id="consumption-change-domestic-duration" name="consumption-change-domestic-duration" class="consumption-change-domestic-duration-input statement-duration-input" aria-label="Duration of substance domestic change.">
+                              <option value="in year">in year</option>
+                              <option value="during all years">during all years</option>
+                              <option value="starting in year">starting in year</option>
+                              <option value="ending in year">ending in year</option>
+                              <option value="during years">during years</option>
+                            </select>
+                          </span>
+                          <input type="text" id="consumption-change-domestic-start" name="consumption-change-domestic-start" class="consumption-change-domestic-start-input statement-duration-start short" aria-label="Start year of substance domestic change">
+                          to
+                          <input type="text" id="consumption-change-domestic-end" name="consumption-change-domestic-end" class="consumption-change-domestic-end-input statement-duration-end short" aria-label="End year of substance domestic change">.
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div id="consumption-limit">
+                    <div class="instructions">This specifies sales limits (minimum and maximum).</div>
+                  </div>
+                </div>
+                <div class="dialog-buttons bold-buttons">
+                  <a href="#ui-editor-sections" class="save-button primary">Save</a>
+                  <a href="#ui-editor-sections" class="cancel-button secondary">Cancel</a>
+                </div>
+              </dialog>
             </div>
+            
             <div class="ui-editor-section policies inactive">
               <h3>Policies</h3>
               <ul></ul>
               <div class="add-link-pane bold-buttons"><a href="#add-policy" class="add-link secondary">Add Policy</a></div>
             </div>
+            
             <div></div>
+            
             <div class="ui-editor-section simulations inactive">
               <h3>Simulations</h3>
               <ul></ul>
               <div class="add-link-pane bold-buttons"><a href="#add-simulation" class="add-link secondary">Add Simulation</a></div>
             </div>
+          
           </div>
           <div class="advanced-link-pane">
             Need more control? Switch to the <a class="advanced-editor-link" href="#code-editor-pane">code-based advanced editor</a>.
@@ -124,7 +332,7 @@
       <div id="center-chart-holder">
         <div id="top-chart-title">
           Showing
-          <span class="sel">
+          <span class="sel mid">
             <select class="metric-select" aria-label="Metric selection dropdown menu">
               <option value="emissions">Emissions</option>
               <option value="sales">Sales</option>
@@ -132,7 +340,7 @@
             </select>
           </span>
           summed by
-          <span class="sel">
+          <span class="sel mid">
             <select class="dimension-select" aria-label="Dimension selection dropdown menu">
               <option value="simulations">Simulation Scenario</option>
               <option value="applications">Applications</option>
@@ -144,9 +352,9 @@
         <canvas class="center-chart" id="center-chart" aria-describedby="top-chart-title"></canvas>
         <div id="bottom-chart-title">
           Filter for
-          <span class="sel"><select class="scenario-select"></select></span>
-          <span class="sel"><select class="application-select"></select></span>
-          <span class="sel"><select class="substance-select"></select></span>
+          <span class="sel mid"><select class="scenario-select"></select></span>
+          <span class="sel mid"><select class="application-select"></select></span>
+          <span class="sel mid"><select class="substance-select"></select></span>
           .
         </div>
       </div>

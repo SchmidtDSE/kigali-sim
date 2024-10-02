@@ -135,6 +135,131 @@ class ApplicationsListPresenter {
 }
 
 
+class ConsumptionListPresenter {
+
+  constructor(root, getCodeObj, onCodeObjUpdate) {
+    const self = this;
+    self._root = root;
+    self._dialog = self._root.querySelector(".dialog");
+    self._getCodeObj = getCodeObj;
+    self._onCodeObjUpdate = onCodeObjUpdate;
+    self._editingName = null;
+    self._setupDialog();
+    self.refresh();
+  }
+
+  enable() {
+    const self = this;
+    self._root.classList.remove("inactive");
+  }
+
+  disable() {
+    const self = this;
+    self._root.classList.add("inactive");
+  }
+
+  refresh(codeObj) {
+    const self = this;
+    self._refreshList(codeObj);
+  }
+
+  _refreshList(codeObj) {
+    const self = this;
+    const consumptionNames = self._getConsumptionNames();
+    const itemList = d3.select(self._root).select(".item-list");
+
+    itemList.html("");
+    const newItems = itemList.selectAll("li")
+      .data(consumptionNames)
+      .enter()
+      .append("li");
+
+    newItems.attr("aria-label", (x) => x);
+
+    const buttonsPane = newItems.append("div")
+      .classed("list-buttons", true);
+
+    newItems.append("div")
+      .classed("list-label", true)
+      .text((x) => x);
+
+    buttonsPane.append("a")
+      .attr("href", "#")
+      .on("click", (event, x) => {
+        event.preventDefault();
+        self._showDialogFor(x);
+      })
+      .text("edit")
+      .attr("aria-label", (x) => "edit " + x);
+
+    buttonsPane.append("span").text(" | ");
+
+    buttonsPane.append("a")
+      .attr("href", "#")
+      .on("click", (event, x) => {
+        event.preventDefault();
+        const message = "Are you sure you want to delete " + x + "?";
+        const isConfirmed = confirm(message);
+        if (isConfirmed) {
+          const codeObj = self._getCodeObj();
+          codeObj.consumption(x);
+          self._onCodeObjUpdate(codeObj);
+        }
+      })
+      .text("delete")
+      .attr("aria-label", (x) => "delete " + x);
+  }
+
+  _setupDialog() {
+    const self = this;
+
+    self._tabs = new Tabby("#" + self._dialog.querySelector(".tabs").id);
+
+    const addLink = self._root.querySelector(".add-link");
+    addLink.addEventListener("click", (event) => {
+      self._showDialogFor(null);
+      event.preventDefault();
+    });
+
+    const closeButton = self._root.querySelector(".cancel-button");
+    closeButton.addEventListener("click", (event) => {
+      self._dialog.close();
+      event.preventDefault();
+    });
+
+    const saveButton = self._root.querySelector(".save-button");
+    saveButton.addEventListener("click", (event) => {
+      self._dialog.close();
+      event.preventDefault();
+    });
+  }
+
+  _showDialogFor(name) {
+    const self = this;
+    self._editingName = name;
+
+    self._dialog.showModal();
+  }
+
+  _getConsumptionNames() {
+    const self = this;
+    const codeObj = self._getCodeObj();
+    const applications = codeObj.getApplications();
+    const consumptionsNested = applications.map((x) => {
+      const appName = x.getName();
+      const substances = x.getSubstances();
+      return substances.map((substance) => {
+        const substanceName = substance.getName();
+        return "\"" + substanceName + "\" for \"" + appName + "\"";
+      });
+    });
+    const consumptions = consumptionsNested.flat();
+    return consumptions;
+  }
+
+}
+
+
 class UiEditorPresenter {
   constructor(tabRoot, contentsRoot, getCodeAsObj, onCodeObjUpdate) {
     const self = this;
@@ -149,6 +274,12 @@ class UiEditorPresenter {
     const appEditor = self._contentsSelection.querySelector(".applications");
     self._applicationsList = new ApplicationsListPresenter(
       appEditor,
+      () => self._getCodeAsObj(),
+      (codeObj) => self._onCodeObjUpdate(codeObj),
+    );
+    const consumptionEditor = self._contentsSelection.querySelector(".consumption");
+    self._consumptionList = new ConsumptionListPresenter(
+      consumptionEditor,
       () => self._getCodeAsObj(),
       (codeObj) => self._onCodeObjUpdate(codeObj),
     );
@@ -208,6 +339,13 @@ class UiEditorPresenter {
   _onCodeObjUpdate(codeObj) {
     const self = this;
     self._codeObj = codeObj;
+
+    if (self._codeObj.getApplications().length > 0) {
+      self._consumptionList.enable();
+    } else {
+      self._consumptionList.disable();
+    }
+
     self._onCodeObjUpdateInner(codeObj);
   }
 }

@@ -23,7 +23,7 @@ dialog label {
 dialog .dialog-buttons {
   padding-top: 15px;
   margin-top: 10px;
-  border-top: 1px dotted #C0C0C0;
+  border-top: 1px solid #C0C0C0;
 }
 
 dialog .form-group {
@@ -31,15 +31,27 @@ dialog .form-group {
 }
 
 dialog .form-group input {
-  width: 90%;
   font-size: 13px;
+}
+
+dialog .form-group input.long {
+  width: 90%;
+}
+
+dialog .form-group input.short {
+  width: 100px;
 }
 
 dialog .instructions {
   padding-bottom: 5px;
   margin-bottom: 10px;
-  border-bottom: 1px dotted #C0C0C0;
+  border-bottom: 1px solid #C0C0C0;
   font-size: 12px;
+}
+
+dialog .contents .instructions {
+  border-bottom: 1px dotted #C0C0C0;
+  margin-top: 10px;
 }
 
 html {
@@ -262,9 +274,18 @@ main {
 /* Thanks https://codepen.io/code-boxx/pen/RwxbpOz */
 
 /* (A) BASICS - HIDE DEFAULT + SHOW CUSTOM ARROW */
-.sel {
+.sel.long {
+  width: 250px;
+}
+
+.sel.mid {
   width: 130px;
 }
+
+.sel.short {
+  width: 50px;
+}
+
 .sel select { appearance: none; }
 .sel::after { content: ">"; }
 
@@ -278,7 +299,18 @@ main {
   border: 1px solid #cfcfcf;
   padding-right: 25px;
   background-color: white;
+}
+
+.sel.long select {
+  width: 250px;
+}
+
+.sel.mid select {
   width: 130px;
+}
+
+.sel.short select {
+  width: 50px;
 }
 
 /* (C) POSITION CUSTOM ARROW */
@@ -325,7 +357,7 @@ main {
   text-align: center;
 }
 
-.ui-editor-sections .ui-editor-section ul {
+.ui-editor-sections .ui-editor-section ul.item-list {
   height: 250px;
   overflow: auto;
   border-top: 1px solid #C0C0C0;
