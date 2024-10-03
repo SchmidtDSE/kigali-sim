@@ -405,25 +405,38 @@ class CompileVisitor extends toolkit.QubecTalkVisitor {
     };
   }
 
-  buildCap(ctx, durationFuture) {
+  buildCap(ctx, durationFuture, displace) {
     const self = this;
     const capType = ctx.getChild(0).getText();
     const strategy = {
-      "cap": (engine, stream, value, duration) => engine.cap(stream, value, duration),
-      "floor": (engine, stream, value, duration) => engine.floor(stream, value, duration),
+      "cap": (engine, stream, value, duration) => engine.cap(stream, value, duration, displace),
+      "floor": (engine, stream, value, duration) => engine.floor(stream, value, duration, displace),
     }[capType];
     return self.buildStreamMod(strategy, ctx, durationFuture);
   }
 
   visitCapAllYears(ctx) {
     const self = this;
-    return self.buildCap(ctx, (engine) => null);
+    return self.buildCap(ctx, (engine) => null, null);
+  }
+
+  visitCapDisplacingAllYears(ctx) {
+    const self = this;
+    const displaceTarget = self._getStringWithoutQuotes(ctx.displace.getText());
+    return self.buildCap(ctx, (engine) => null, displaceTarget);
   }
 
   visitCapDuration(ctx) {
     const self = this;
     const durationFuture = ctx.duration.accept(self);
     return self.buildCap(ctx, durationFuture);
+  }
+
+  vistCapDisplacingDuration(ctx) {
+    const self = this;
+    const durationFuture = ctx.duration.accept(self);
+    const displaceTarget = self._getStringWithoutQuotes(ctx.displace.getText());
+    return self.buildCap(ctx, durationFuture, displaceTarget);
   }
 
   buildChange(ctx, durationFuture) {
@@ -769,7 +782,11 @@ class CompileVisitor extends toolkit.QubecTalkVisitor {
 
   _getStringWithoutQuotes(target) {
     const self = this;
-    return target.substring(1, target.length - 1);
+    if (target.startsWith("\"") && target.endsWith("\"")) {
+      return target.substring(1, target.length - 1);
+    } else {
+      return target;
+    }
   }
 }
 

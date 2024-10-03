@@ -352,7 +352,9 @@ substanceMod: MODIFY_ SUBSTANCE_ name=string (substanceStatement | globalStateme
  **/
 
 capStatement: (CAP_ | FLOOR_) target=stream TO_ value=unitValue  # capAllYears
+  | (CAP_ | FLOOR_) target=stream TO_ value=unitValue DISPLACING_ displace=(string | stream)  # capDisplacingAllYears
   | (CAP_ | FLOOR_) target=stream TO_ value=unitValue duration=during  # capDuration
+  | (CAP_ | FLOOR_) target=stream TO_ value=unitValue DISPLACING_ displace=(string | stream) duration=during  # capDisplacingDuration
   ;
 
 changeStatement: CHANGE_ target=stream BY_ value=unitValue  # changeAllYears
