@@ -326,7 +326,7 @@ class PolicyListPresenter {
 
   _refreshList(codeObj) {
     const self = this;
-    const consumptionNames = self._getConsumptionNames();
+    const consumptionNames = self._getPolicyNames();
     const itemList = d3.select(self._root).select(".item-list");
 
     itemList.html("");
@@ -438,6 +438,128 @@ class PolicyListPresenter {
 }
 
 
+class SimulationListPresenter {
+
+  constructor(root, getCodeObj, onCodeObjUpdate) {
+    const self = this;
+    self._root = root;
+    self._dialog = self._root.querySelector(".dialog");
+    self._getCodeObj = getCodeObj;
+    self._onCodeObjUpdate = onCodeObjUpdate;
+    self._editingName = null;
+    self._setupDialog();
+    self.refresh();
+  }
+
+  enable() {
+    const self = this;
+    self._root.classList.remove("inactive");
+  }
+
+  disable() {
+    const self = this;
+    self._root.classList.add("inactive");
+  }
+
+  refresh(codeObj) {
+    const self = this;
+    self._refreshList(codeObj);
+  }
+
+  _refreshList(codeObj) {
+    const self = this;
+    const simulationNames = self._getSimulationNames();
+    const itemList = d3.select(self._root).select(".item-list");
+
+    itemList.html("");
+    const newItems = itemList.selectAll("li")
+      .data(simulationNames)
+      .enter()
+      .append("li");
+
+    newItems.attr("aria-label", (x) => x);
+
+    const buttonsPane = newItems.append("div")
+      .classed("list-buttons", true);
+
+    newItems.append("div")
+      .classed("list-label", true)
+      .text((x) => x);
+
+    buttonsPane.append("a")
+      .attr("href", "#")
+      .on("click", (event, x) => {
+        event.preventDefault();
+        self._showDialogFor(x);
+      })
+      .text("edit")
+      .attr("aria-label", (x) => "edit " + x);
+
+    buttonsPane.append("span").text(" | ");
+
+    buttonsPane.append("a")
+      .attr("href", "#")
+      .on("click", (event, x) => {
+        event.preventDefault();
+        const message = "Are you sure you want to delete " + x + "?";
+        const isConfirmed = confirm(message);
+        if (isConfirmed) {
+          const codeObj = self._getCodeObj();
+          codeObj.consumption(x);
+          self._onCodeObjUpdate(codeObj);
+        }
+      })
+      .text("delete")
+      .attr("aria-label", (x) => "delete " + x);
+  }
+
+  _setupDialog() {
+    const self = this;
+
+    console.log("here");
+
+    const addLink = self._root.querySelector(".add-link");
+    addLink.addEventListener("click", (event) => {
+      self._showDialogFor(null);
+      event.preventDefault();
+    });
+
+    const closeButton = self._root.querySelector(".cancel-button");
+    closeButton.addEventListener("click", (event) => {
+      self._dialog.close();
+      event.preventDefault();
+    });
+
+    const saveButton = self._root.querySelector(".save-button");
+    saveButton.addEventListener("click", (event) => {
+      self._dialog.close();
+      event.preventDefault();
+    });
+  }
+
+  _showDialogFor(name) {
+    const self = this;
+    self._editingName = name;
+
+    if (name === null) {
+      self._dialog.querySelector(".action-title").innerHTML = "Add";
+    } else {
+      self._dialog.querySelector(".action-title").innerHTML = "Edit";
+    }
+
+    self._dialog.showModal();
+  }
+
+  _getSimulationNames() {
+    const self = this;
+    const codeObj = self._getCodeObj();
+    const scenarios = codeObj.getScenarios();
+    return scenarios.map((x) => x.getName());
+  }
+
+}
+
+
 class UiEditorPresenter {
   constructor(tabRoot, contentsRoot, getCodeAsObj, onCodeObjUpdate) {
     const self = this;
@@ -467,6 +589,13 @@ class UiEditorPresenter {
     const policyEditor = self._contentsSelection.querySelector(".policies");
     self._policyList = new PolicyListPresenter(
       policyEditor,
+      () => self._getCodeAsObj(),
+      (codeObj) => self._onCodeObjUpdate(codeObj),
+    );
+
+    const simulationEditor = self._contentsSelection.querySelector(".simulations");
+    self._simulationList = new SimulationListPresenter(
+      simulationEditor,
       () => self._getCodeAsObj(),
       (codeObj) => self._onCodeObjUpdate(codeObj),
     );

@@ -309,6 +309,34 @@
               <h3>Simulations</h3>
               <ul class="item-list"></ul>
               <div class="add-link-pane bold-buttons"><a href="#add-simulation" class="add-link secondary">Add Simulation</a></div>
+              <dialog class="dialog">
+                <h2><span class="action-title"></span> Simulation</h2>
+                <div class="instructions">
+                  Simulations are collections of policies. If no policies are selected, this will simulate business as usual (no policy interventions).
+                </div>
+                <div class="contents">
+                  <div class="form-group">
+                    <div><label for="edit-simulation-name">Name:</label></div>
+                    <div><input type="text" name="edit-simulation-name" class="edit-simulation-name-input long" autofocus></div>
+                  </div>
+                  <div class="form-group">
+                    <div><label for="edit-simulation-start">Start year:</label></div>
+                    <div><input type="text" name="edit-simulation-start" class="edit-simulation-start-input long"></div>
+                  </div>
+                  <div class="form-group">
+                    <div><label for="edit-simulation-end">End year:</label></div>
+                    <div><input type="text" name="edit-simulation-end" class="edit-simulation-end-input long"></div>
+                  </div>
+                  <div class="form-group">
+                    <div><label for="edit-simulation-policies">Policies:</label></div>
+                    <div class="dialog-list policy-sim-list"></div>
+                  </div>
+                  <div class="dialog-buttons bold-buttons">
+                    <a href="#ui-editor-sections" class="save-button primary">Save</a>
+                    <a href="#ui-editor-sections" class="cancel-button destructive">Cancel</a>
+                  </div>
+                </div>
+              </dialog>
             </div>
           
           </div>
