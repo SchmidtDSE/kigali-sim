@@ -7,7 +7,7 @@ import {
 function setupListButton(button, targetList, templateId) {
   button.addEventListener("click", (event) => {
     event.preventDefault();
-    
+
     const newDiv = document.createElement("div");
     newDiv.innerHTML = document.getElementById(templateId).innerHTML;
     newDiv.classList.add("dialog-list-item");
@@ -154,7 +154,6 @@ class ApplicationsListPresenter {
 
 
 class ConsumptionListPresenter {
-
   constructor(root, getCodeObj, onCodeObjUpdate) {
     const self = this;
     self._root = root;
@@ -292,12 +291,10 @@ class ConsumptionListPresenter {
     const consumptions = consumptionsNested.flat();
     return consumptions;
   }
-
 }
 
 
 class PolicyListPresenter {
-
   constructor(root, getCodeObj, onCodeObjUpdate) {
     const self = this;
     self._root = root;
@@ -434,12 +431,10 @@ class PolicyListPresenter {
     const policies = codeObj.getPolicies();
     return policies.map((x) => x.getName());
   }
-
 }
 
 
 class SimulationListPresenter {
-
   constructor(root, getCodeObj, onCodeObjUpdate) {
     const self = this;
     self._root = root;
@@ -556,7 +551,6 @@ class SimulationListPresenter {
     const scenarios = codeObj.getScenarios();
     return scenarios.map((x) => x.getName());
   }
-
 }
 
 
@@ -571,21 +565,21 @@ class UiEditorPresenter {
     self._initCodeObj();
 
     self._tabs = new Tabby("#" + tabRoot.id);
-    
+
     const appEditor = self._contentsSelection.querySelector(".applications");
     self._applicationsList = new ApplicationsListPresenter(
       appEditor,
       () => self._getCodeAsObj(),
       (codeObj) => self._onCodeObjUpdate(codeObj),
     );
-    
+
     const consumptionEditor = self._contentsSelection.querySelector(".consumption");
     self._consumptionList = new ConsumptionListPresenter(
       consumptionEditor,
       () => self._getCodeAsObj(),
       (codeObj) => self._onCodeObjUpdate(codeObj),
     );
-    
+
     const policyEditor = self._contentsSelection.querySelector(".policies");
     self._policyList = new PolicyListPresenter(
       policyEditor,
@@ -599,7 +593,7 @@ class UiEditorPresenter {
       () => self._getCodeAsObj(),
       (codeObj) => self._onCodeObjUpdate(codeObj),
     );
-    
+
     self._setupAdvancedLinks();
   }
 
