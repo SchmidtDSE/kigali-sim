@@ -511,8 +511,6 @@ class SimulationListPresenter {
   _setupDialog() {
     const self = this;
 
-    console.log("here");
-
     const addLink = self._root.querySelector(".add-link");
     addLink.addEventListener("click", (event) => {
       self._showDialogFor(null);
