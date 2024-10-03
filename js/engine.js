@@ -445,6 +445,22 @@ class Engine {
     self.setStream(stream, outputWithUnits);
   }
 
+  floor(stream, amount, yearMatcher) {
+    const self = this;
+
+    if (!self._getIsInRange(yearMatcher)) {
+      return;
+    }
+
+    const currentValue = self.getStream(stream);
+    const unitConverter = self._createUnitConverterWithTotal(stream);
+
+    const convertedMin = unitConverter.convert(amount, currentValue.getUnits());
+    const newAmount = Math.max(currentValue.getValue(), convertedMin.getValue());
+    const outputWithUnits = new EngineNumber(newAmount, currentValue.getUnits());
+    self.setStream(stream, outputWithUnits);
+  }
+
   replace(amountRaw, stream, destinationSubstance, yearMatcher) {
     const self = this;
 

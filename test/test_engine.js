@@ -309,6 +309,30 @@ function buildEngineTests() {
       assert.deepEqual(secondCapVal.getUnits(), "kg");
     });
 
+    QUnit.test("applies floor", function(assert) {
+      const engine = new Engine(1, 3);
+
+      engine.setStanza("default");
+      engine.setApplication("test app");
+      engine.setSubstance("test sub");
+
+      engine.setStream(
+        "manufacture",
+        new EngineNumber(15, "kg"),
+        new YearMatcher(null, null),
+      );
+
+      engine.floor(
+        "manufacture",
+        new EngineNumber(20, "kg"),
+        new YearMatcher(null, null),
+      );
+
+      const firstCapVal = engine.getStream("manufacture");
+      assert.closeTo(firstCapVal.getValue(), 20, 0.0001);
+      assert.deepEqual(firstCapVal.getUnits(), "kg");
+    });
+
     QUnit.test("replaces substances", function(assert) {
       const engine = new Engine(1, 3);
 

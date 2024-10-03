@@ -407,11 +407,12 @@ class CompileVisitor extends toolkit.QubecTalkVisitor {
 
   buildCap(ctx, durationFuture) {
     const self = this;
-    return self.buildStreamMod(
-      (engine, stream, value, duration) => engine.cap(stream, value, duration),
-      ctx,
-      durationFuture,
-    );
+    const capType = ctx.getChild(0).getText();
+    const strategy = {
+      "cap": (engine, stream, value, duration) => engine.cap(stream, value, duration),
+      "floor": (engine, stream, value, duration) => engine.floor(stream, value, duration),
+    }[capType];
+    return self.buildStreamMod(strategy, ctx, durationFuture);
   }
 
   visitCapAllYears(ctx) {
