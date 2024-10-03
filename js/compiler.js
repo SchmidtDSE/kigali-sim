@@ -422,7 +422,7 @@ class CompileVisitor extends toolkit.QubecTalkVisitor {
 
   visitCapDisplacingAllYears(ctx) {
     const self = this;
-    const displaceTarget = self._getStringWithoutQuotes(ctx.displace.getText());
+    const displaceTarget = self._getStringWithoutQuotes(ctx.getChild(5).getText());
     return self.buildCap(ctx, (engine) => null, displaceTarget);
   }
 
@@ -435,7 +435,7 @@ class CompileVisitor extends toolkit.QubecTalkVisitor {
   vistCapDisplacingDuration(ctx) {
     const self = this;
     const durationFuture = ctx.duration.accept(self);
-    const displaceTarget = self._getStringWithoutQuotes(ctx.displace.getText());
+    const displaceTarget = self._getStringWithoutQuotes(ctx.getChild(5).getText());
     return self.buildCap(ctx, durationFuture, displaceTarget);
   }
 
