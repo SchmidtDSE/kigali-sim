@@ -4,6 +4,44 @@ import {
 } from "ui_translator";
 
 
+function setupDurationSelector(newDiv) {
+  const makeVisibilityCallback = (showStart, showEnd) => {
+    return () => {
+      const startElement = newDiv.querySelector(".duration-start");
+      startElement.style.display = showStart ? "inline-block" : "none";
+
+      const endElement = newDiv.querySelector(".duration-end");
+      endElement.style.display = showEnd ? "inline-block" : "none";
+
+      const toElement = newDiv.querySelector(".duration-to");
+      const showTo = showStart && showEnd;
+      toElement.style.display = showTo ? "inline-block" : "none";
+    };
+  };
+
+  const strategies = {
+    "in year": makeVisibilityCallback(true, false),
+    "during all years": makeVisibilityCallback(false, false),
+    "starting in year": makeVisibilityCallback(true, false),
+    "ending in year": makeVisibilityCallback(false, true),
+    "during years": makeVisibilityCallback(true, true),
+  };
+
+  const dateSelectors = Array.of(...newDiv.querySelectorAll(".duration-subcomponent"));
+  const refreshVisibility = (dateSelector) => {
+    const currentValue = dateSelector.querySelector(".duration-type-input").value;
+    const strategy = strategies[currentValue];
+    strategy();
+  };
+  dateSelectors.forEach((dateSelector) => {
+    dateSelector.addEventListener("change", (event) => {
+      refreshVisibility(dateSelector);
+    });
+    refreshVisibility(dateSelector);
+  });
+}
+
+
 function setupListButton(button, targetList, templateId) {
   button.addEventListener("click", (event) => {
     event.preventDefault();
@@ -18,6 +56,8 @@ function setupListButton(button, targetList, templateId) {
       event.preventDefault();
       newDiv.remove();
     });
+
+    setupDurationSelector(newDiv);
   });
 }
 
