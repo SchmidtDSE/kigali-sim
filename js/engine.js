@@ -10,6 +10,15 @@ import {
   StreamKeeper,
 } from "engine_state";
 
+const STREAM_NAMES = new Set([
+  "priorEquipment",
+  "equipment",
+  "export",
+  "import",
+  "manufacture",
+  "sales",
+]);
+
 
 class EngineResult {
   constructor(application, substance, year, manufactureValue, importValue, emissionsValue,
@@ -429,20 +438,68 @@ class Engine {
     self.setStream(stream, outputWithUnits, null, scope);
   }
 
-  cap(stream, amount, yearMatcher) {
+  cap(stream, amount, yearMatcher, displaceTarget) {
     const self = this;
 
     if (!self._getIsInRange(yearMatcher)) {
       return;
     }
 
-    const currentValue = self.getStream(stream);
     const unitConverter = self._createUnitConverterWithTotal(stream);
 
-    const convertedMax = unitConverter.convert(amount, currentValue.getUnits());
-    const newAmount = Math.min(currentValue.getValue(), convertedMax.getValue());
-    const outputWithUnits = new EngineNumber(newAmount, currentValue.getUnits());
-    self.setStream(stream, outputWithUnits);
+    const currentValueRaw = self.getStream(stream);
+    const currentValue = unitConverter.convert(currentValueRaw, "kg");
+
+    const convertedMax = unitConverter.convert(amount, "kg");
+    const changeAmountRaw = convertedMax.getValue() - currentValue.getValue();
+    const changeAmount = Math.min(changeAmountRaw, 0);
+
+    const changeWithUnits = new EngineNumber(changeAmount, "kg");
+    self.changeStream(stream, changeWithUnits);
+
+    if (displaceTarget !== null && displaceTarget !== undefined) {
+      const displaceChange = new EngineNumber(changeAmount * -1, "kg");
+      const isStream = STREAM_NAMES.has(displaceTarget);
+
+      if (isStream) {
+        self.changeStream(displaceTarget, displaceChange);
+      } else {
+        const destinationScope = self._scope.getWithSubstance(displaceTarget);
+        self.changeStream(stream, displaceChange, null, destinationScope);
+      }
+    }
+  }
+
+  floor(stream, amount, yearMatcher, displaceTarget) {
+    const self = this;
+
+    if (!self._getIsInRange(yearMatcher)) {
+      return;
+    }
+
+    const unitConverter = self._createUnitConverterWithTotal(stream);
+
+    const currentValueRaw = self.getStream(stream);
+    const currentValue = unitConverter.convert(currentValueRaw, "kg");
+
+    const convertedMin = unitConverter.convert(amount, "kg");
+    const changeAmountRaw = convertedMin.getValue() - currentValue.getValue();
+    const changeAmount = Math.max(changeAmountRaw, 0);
+
+    const changeWithUnits = new EngineNumber(changeAmount, "kg");
+    self.changeStream(stream, changeWithUnits);
+
+    if (displaceTarget !== null && displaceTarget !== undefined) {
+      const displaceChange = new EngineNumber(changeAmount * -1, "kg");
+      const isStream = STREAM_NAMES.has(displaceTarget);
+
+      if (isStream) {
+        self.changeStream(displaceTarget, displaceChange);
+      } else {
+        const destinationScope = self._scope.getWithSubstance(displaceTarget);
+        self.changeStream(stream, displaceChange, null, destinationScope);
+      }
+    }
   }
 
   replace(amountRaw, stream, destinationSubstance, yearMatcher) {

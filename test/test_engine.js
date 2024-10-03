@@ -309,6 +309,180 @@ function buildEngineTests() {
       assert.deepEqual(secondCapVal.getUnits(), "kg");
     });
 
+    QUnit.test("applies cap displace stream", function(assert) {
+      const engine = new Engine(1, 3);
+
+      engine.setStanza("default");
+      engine.setApplication("test app");
+      engine.setSubstance("test sub");
+
+      engine.setStream(
+        "manufacture",
+        new EngineNumber(20, "kg"),
+        new YearMatcher(null, null),
+      );
+
+      engine.setStream(
+        "import",
+        new EngineNumber(5, "kg"),
+        new YearMatcher(null, null),
+      );
+
+      engine.cap(
+        "manufacture",
+        new EngineNumber(15, "kg"),
+        new YearMatcher(null, null),
+        "import",
+      );
+
+      const capVal = engine.getStream("manufacture");
+      assert.closeTo(capVal.getValue(), 15, 0.0001);
+      assert.deepEqual(capVal.getUnits(), "kg");
+
+      const displaceVal = engine.getStream("import");
+      assert.closeTo(displaceVal.getValue(), 10, 0.0001);
+      assert.deepEqual(displaceVal.getUnits(), "kg");
+    });
+
+    QUnit.test("applies cap displace substance", function(assert) {
+      const engine = new Engine(1, 3);
+
+      engine.setStanza("default");
+      engine.setApplication("test app");
+
+      engine.setSubstance("sub1");
+
+      engine.setStream(
+        "manufacture",
+        new EngineNumber(5, "kg"),
+        new YearMatcher(null, null),
+      );
+
+      engine.setSubstance("sub2");
+
+      engine.setStream(
+        "manufacture",
+        new EngineNumber(20, "kg"),
+        new YearMatcher(null, null),
+      );
+
+      engine.cap(
+        "manufacture",
+        new EngineNumber(15, "kg"),
+        new YearMatcher(null, null),
+        "sub1",
+      );
+
+      const floorVal = engine.getStream("manufacture");
+      assert.closeTo(floorVal.getValue(), 15, 0.0001);
+      assert.deepEqual(floorVal.getUnits(), "kg");
+
+      engine.setSubstance("sub1");
+
+      const displaceVal = engine.getStream("manufacture");
+      assert.closeTo(displaceVal.getValue(), 10, 0.0001);
+      assert.deepEqual(displaceVal.getUnits(), "kg");
+    });
+
+    QUnit.test("applies floor", function(assert) {
+      const engine = new Engine(1, 3);
+
+      engine.setStanza("default");
+      engine.setApplication("test app");
+      engine.setSubstance("test sub");
+
+      engine.setStream(
+        "manufacture",
+        new EngineNumber(15, "kg"),
+        new YearMatcher(null, null),
+      );
+
+      engine.floor(
+        "manufacture",
+        new EngineNumber(20, "kg"),
+        new YearMatcher(null, null),
+      );
+
+      const floorVal = engine.getStream("manufacture");
+      assert.closeTo(floorVal.getValue(), 20, 0.0001);
+      assert.deepEqual(floorVal.getUnits(), "kg");
+    });
+
+    QUnit.test("applies floor displace stream", function(assert) {
+      const engine = new Engine(1, 3);
+
+      engine.setStanza("default");
+      engine.setApplication("test app");
+      engine.setSubstance("test sub");
+
+      engine.setStream(
+        "manufacture",
+        new EngineNumber(15, "kg"),
+        new YearMatcher(null, null),
+      );
+
+      engine.setStream(
+        "import",
+        new EngineNumber(10, "kg"),
+        new YearMatcher(null, null),
+      );
+
+      engine.floor(
+        "manufacture",
+        new EngineNumber(20, "kg"),
+        new YearMatcher(null, null),
+        "import",
+      );
+
+      const floorVal = engine.getStream("manufacture");
+      assert.closeTo(floorVal.getValue(), 20, 0.0001);
+      assert.deepEqual(floorVal.getUnits(), "kg");
+
+      const displaceVal = engine.getStream("import");
+      assert.closeTo(displaceVal.getValue(), 5, 0.0001);
+      assert.deepEqual(displaceVal.getUnits(), "kg");
+    });
+
+    QUnit.test("applies floor displace substance", function(assert) {
+      const engine = new Engine(1, 3);
+
+      engine.setStanza("default");
+      engine.setApplication("test app");
+
+      engine.setSubstance("sub1");
+
+      engine.setStream(
+        "manufacture",
+        new EngineNumber(10, "kg"),
+        new YearMatcher(null, null),
+      );
+
+      engine.setSubstance("sub2");
+
+      engine.setStream(
+        "manufacture",
+        new EngineNumber(15, "kg"),
+        new YearMatcher(null, null),
+      );
+
+      engine.floor(
+        "manufacture",
+        new EngineNumber(20, "kg"),
+        new YearMatcher(null, null),
+        "sub1",
+      );
+
+      const floorVal = engine.getStream("manufacture");
+      assert.closeTo(floorVal.getValue(), 20, 0.0001);
+      assert.deepEqual(floorVal.getUnits(), "kg");
+
+      engine.setSubstance("sub1");
+
+      const displaceVal = engine.getStream("manufacture");
+      assert.closeTo(displaceVal.getValue(), 5, 0.0001);
+      assert.deepEqual(displaceVal.getUnits(), "kg");
+    });
+
     QUnit.test("replaces substances", function(assert) {
       const engine = new Engine(1, 3);
 

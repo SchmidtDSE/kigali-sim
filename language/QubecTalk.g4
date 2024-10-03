@@ -152,6 +152,8 @@ DURING_: 'during';
 
 EMIT_: 'emit';
 
+FLOOR_: 'floor';
+
 FOR_: 'for';
 
 FROM_: 'from';
@@ -349,8 +351,10 @@ substanceMod: MODIFY_ SUBSTANCE_ name=string (substanceStatement | globalStateme
  * ----------------
  **/
 
-capStatement: CAP_ target=stream TO_ value=unitValue  # capAllYears
-  | CAP_ target=stream TO_ value=unitValue duration=during  # capDuration
+capStatement: (CAP_ | FLOOR_) target=stream TO_ value=unitValue  # capAllYears
+  | (CAP_ | FLOOR_) target=stream TO_ value=unitValue DISPLACING_ (string | stream)  # capDisplacingAllYears
+  | (CAP_ | FLOOR_) target=stream TO_ value=unitValue duration=during  # capDuration
+  | (CAP_ | FLOOR_) target=stream TO_ value=unitValue DISPLACING_ (string | stream) duration=during  # capDisplacingDuration
   ;
 
 changeStatement: CHANGE_ target=stream BY_ value=unitValue  # changeAllYears
