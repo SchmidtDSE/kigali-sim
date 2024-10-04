@@ -389,6 +389,7 @@ class SubstanceBuilder {
     self._isModification = isModification;
     self._initialCharges = [];
     self._cap = null;
+    self._floor = null;
     self._changes = [];
     self._emit = null;
     self._recharge = null;
