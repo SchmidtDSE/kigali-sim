@@ -79,6 +79,19 @@ function setFieldValue(selection, source, strategy, defaultValue) {
 }
 
 
+function setListInput(listSelection, itemTemplate, items, uiInit) {
+  listSelection.innerHTML = "";
+  const addItem = (item) => {
+    const newDiv = document.createElement("div");
+    newDiv.innerHTML = itemTemplate;
+    newDiv.classList.add("dialog-list-item");
+    listSelection.appendChild(newDiv);
+    uiInit(item, newDiv);
+  };
+  items.forEach(addItem);
+}
+
+
 function setEngineNumberValue(valSelection, unitsSelection, source, strategy, defaultValue) {
   const newValue = source === null ? null : strategy(source);
   const valueOrDefault = newValue === null ? defaultValue : newValue;
