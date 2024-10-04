@@ -69,6 +69,11 @@ class Program {
     return self._applications;
   }
 
+  getSubstances() {
+    const self = this;
+    return self.getApplication().map((x) => x.getSubstances()).flat();
+  }
+
   getApplication(name) {
     const self = this;
     const matching = self._applications.filter((x) => x.getName() === name);
@@ -388,8 +393,7 @@ class SubstanceBuilder {
     self._name = name;
     self._isModification = isModification;
     self._initialCharges = [];
-    self._cap = null;
-    self._floor = null;
+    self._limits = [];
     self._changes = [];
     self._emit = null;
     self._recharge = null;
@@ -404,8 +408,8 @@ class SubstanceBuilder {
 
     const commandsConsolidatedInterpreted = [
       self._initialCharges,
+      self._limits,
       [
-        self._cap,
         self._emit,
         self._recharge,
         self._recycle,
@@ -429,7 +433,7 @@ class SubstanceBuilder {
     return new Substance(
       self._name,
       self._initialCharges,
-      self._cap,
+      self._limits,
       self._changes,
       self._emit,
       self._recharge,
@@ -465,8 +469,8 @@ class SubstanceBuilder {
       "recharge": (x) => self.setRecharge(x),
       "emit": (x) => self.setEmit(x),
       "recycle": (x) => self.setRecycle(x),
-      "cap": (x) => self.setCap(x),
-      "floor": (x) => self.setFloor(x),
+      "cap": (x) => self.addLimit(x),
+      "floor": (x) => self.addLimit(x),
       "replace": (x) => self.setReplace(x),
     }[commandType];
 
@@ -484,14 +488,9 @@ class SubstanceBuilder {
     self._initialCharges.push(newVal);
   }
 
-  setCap(newVal) {
+  addLimit(newVal) {
     const self = this;
-    self._cap = self._checkDuplicate(self._cap, newVal);
-  }
-
-  setFloor(newVal) {
-    const self = this;
-    self._cap = self._checkDuplicate(self._floor, newVal);
+    self._limits.push(newVal);
   }
 
   addChange(newVal) {
@@ -545,12 +544,12 @@ class SubstanceBuilder {
 
 
 class Substance {
-  constructor(name, charges, cap, changes, emit, recharge, recycle, replace, retire, setVals, isMod,
-    compat) {
+  constructor(name, charges, limits, changes, emit, recharge, recycle, replace, retire, setVals,
+    isMod, compat) {
     const self = this;
     self._name = name;
     self._initialCharges = charges;
-    self._cap = cap;
+    self._limits = limits;
     self._changes = changes;
     self._emit = emit;
     self._recharge = recharge;
@@ -578,9 +577,9 @@ class Substance {
     return matching.length == 0 ? null : matching[0];
   }
 
-  getCap() {
+  getLimits() {
     const self = this;
-    return self._cap;
+    return self._limits;
   }
 
   getChanges() {
@@ -656,7 +655,7 @@ class Substance {
     addAllIfGiven(self._getSetValsCode());
     addAllIfGiven(self._getChangesCode());
     addIfGiven(self._getRetireCode());
-    addIfGiven(self._getCapCode());
+    addAllIfGiven(self._getLimitCode());
     addIfGiven(self._getFloorCode());
     addIfGiven(self._getRechargeCode());
     addIfGiven(self._getRecycleCode());
@@ -763,38 +762,30 @@ class Substance {
 
   _getCapCode() {
     const self = this;
-    if (self._cap === null) {
+    if (self._limits === null || self._limits.length == 0) {
       return null;
     }
 
-    const pieces = [
-      "cap",
-      self._cap.getTarget(),
-      "to",
-      self._cap.getValue().getValue(),
-      self._cap.getValue().getUnits(),
-    ];
-    self._addDuration(pieces, self._cap);
+    const buildLimit = (limit) => {
+      const pieces = [
+        limit.getLimitType(),
+        limit.getTarget(),
+        "to",
+        limit.getValue().getValue(),
+        limit.getValue().getUnits(),
+      ];
 
-    return self._finalizeStatement(pieces);
-  }
+      const displacing = limit.getDisplacing();
+      if (displacing === null || displacing === undefined) {
+        pieces.push("displacing");
+        pieces.push("\"" + displacing + "\"");
+      }
+      
+      self._addDuration(pieces, limit);
+      return self._finalizeStatement(pieces);
+    };
 
-  _getFloorCode() {
-    const self = this;
-    if (self._floor === null) {
-      return null;
-    }
-
-    const pieces = [
-      "floor",
-      self._floor.getTarget(),
-      "to",
-      self._floor.getValue().getValue(),
-      self._floor.getValue().getUnits(),
-    ];
-    self._addDuration(pieces, self._floor);
-
-    return self._finalizeStatement(pieces);
+    return self._limits.map(buildLimit);
   }
 
   _getRechargeCode() {
@@ -920,6 +911,48 @@ class Command {
   getDuration() {
     const self = this;
     return self._duration;
+  }
+
+  getIsCompatible() {
+    const self = this;
+    return true;
+  }
+}
+
+
+class LimitCommand {
+  constructor(typeName, target, value, duration, displacing) {
+    const self = this;
+    self._typeName = typeName;
+    self._target = target;
+    self._value = value;
+    self._duration = duration;
+    self._displacing = displacing;
+  }
+
+  getTypeName() {
+    const self = this;
+    return self._typeName;
+  }
+
+  getTarget() {
+    const self = this;
+    return self._target;
+  }
+
+  getValue() {
+    const self = this;
+    return self._value;
+  }
+
+  getDuration() {
+    const self = this;
+    return self._duration;
+  }
+
+  getDisplacing() {
+    const self = this;
+    return self._displacing;
   }
 
   getIsCompatible() {
@@ -1251,26 +1284,28 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
     return self._parseSubstance(ctx, true);
   }
 
-  visitCapAllYears(ctx) {
+  visitLimitCommandAllYears(ctx) {
     const self = this;
-    return self._buildOperation(ctx, "cap", null);
+    return self._buildLimit(ctx, null, null);
   }
 
-  visitCapDuration(ctx) {
+  visitLimitCommandDisplacingAllYears(ctx) {
+    const self = this;
+    const displaceTarget = self._getStringWithoutQuotes(ctx.getChild(5).getText());
+    return self._buildLimit(ctx, null, displaceTarget);
+  }
+
+  visitLimitCommandDuration(ctx) {
     const self = this;
     const duration = ctx.duration.accept(self);
-    return self._buildOperation(ctx, "cap", duration);
+    return self._buildLimit(ctx, duration, null);
   }
 
-  visitFloorAllYears(ctx) {
-    const self = this;
-    return self._buildOperation(ctx, "floor", null);
-  }
-
-  visitFloorDuration(ctx) {
+  visitLimitCommandDisplacingDuration(ctx) {
     const self = this;
     const duration = ctx.duration.accept(self);
-    return self._buildOperation(ctx, "floor", duration);
+    const displaceTarget = self._getStringWithoutQuotes(ctx.getChild(5).getText());
+    return self._buildLimit(ctx, duration, displaceTarget);
   }
 
   visitChangeAllYears(ctx) {
@@ -1542,6 +1577,23 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
     const value = valueGetter(ctx);
 
     return new Command(typeName, target, value, duration);
+  }
+
+  _buildLimit(ctx, duration, displaceTarget, targetGetter, valueGetter) {
+    const self = this;
+    const capType = ctx.getChild(0).getText();
+
+    if (targetGetter === undefined || targetGetter === null) {
+      targetGetter = (ctx) => ctx.target.getText();
+    }
+    const target = targetGetter(ctx);
+
+    if (valueGetter === undefined || valueGetter === null) {
+      valueGetter = (ctx) => ctx.value.accept(self);
+    }
+    const value = valueGetter(ctx);
+
+    return new LimitCommand(capType, target, value, duration, displaceTarget);
   }
 }
 

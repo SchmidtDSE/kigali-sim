@@ -392,6 +392,17 @@ class ConsumptionListPresenter {
     const objToShow = objToShowInfo["obj"];
     const applicationName = objToShowInfo["application"];
 
+    const substances = codeObj.getSubstances();
+    const substanceNames = substances.map((x) => x.getName());
+    const substanceSelect = d3.select(self._dialog.querySelector(".substances-select"));
+    substanceSelect.html("");
+    substanceSelect.selectAll("option")
+      .data(substanceNames)
+      .enter()
+      .append("option")
+      .attr("value", (x) => x)
+      .text((x) => x);
+
     setFieldValue(
       self._dialog.querySelector(".edit-consumption-substance-input"),
       objToShow,
@@ -527,40 +538,29 @@ class ConsumptionListPresenter {
       objToShow.getSetVals(),
       (itemObj, root) => {
         setFieldValue(
-          root.querySelector(".change-target-input"),
+          root.querySelector(".limit-type-input"),
+          itemObj,
+          (x) => x.getType(),
+          "cap"
+        );
+        setFieldValue(
+          root.querySelector(".limit-target-input"),
           itemObj,
           (x) => x.getTarget(),
-          "import"
+          "sales"
+        );
+        setEngineNumberValue(
+          root.querySelector(".limit-amount-input"),
+          root.querySelector(".limit-units-input"),
+          itemObj,
+          new EngineNumber(1, "mt"),
+          (x) => x.getValue(),
         );
         setFieldValue(
-          root.querySelector(".change-sign-input"),
+          root.querySelector(".displacing-input"),
           itemObj,
-          (x) => x.getValue() < 0 ? "-" : "+",
-          "+",
-        );
-        setFieldValue(
-          root.querySelector(".change-amount-input"),
-          itemObj,
-          (x) => {
-            if (x.getValue() === null || x.getValue().getValue() === null) {
-              return 5;  // Default
-            }
-            const valueSigned = x.getValue().getValue();
-            const valueUnsigned = Math.abs(valueSigned);
-            return valueUnsigned;
-          },
-          5,
-        );
-        setFieldValue(
-          root.querySelector(".change-units-input"),
-          itemObj,
-          (x) => {
-            if (x.getValue() === null) {
-              return "% / year";  // Default
-            }
-            return x.getValue().getUnits();
-          },
-          "% / year"
+          (x) => x.getDisplacing() === null ? "" : x.getDisplacing(),
+          ""
         );
         setDuring(
           root.querySelector(".duration-subcomponent"),
