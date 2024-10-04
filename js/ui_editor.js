@@ -11,13 +11,13 @@ import {
 function updateDurationSelector(dateSelector) {
   const makeVisibilityCallback = (showStart, showEnd) => {
     return () => {
-      const startElement = newDiv.querySelector(".duration-start");
+      const startElement = dateSelector.querySelector(".duration-start");
       startElement.style.display = showStart ? "inline-block" : "none";
 
-      const endElement = newDiv.querySelector(".duration-end");
+      const endElement = dateSelector.querySelector(".duration-end");
       endElement.style.display = showEnd ? "inline-block" : "none";
 
-      const toElement = newDiv.querySelector(".duration-to");
+      const toElement = dateSelector.querySelector(".duration-to");
       const showTo = showStart && showEnd;
       toElement.style.display = showTo ? "inline-block" : "none";
     };
@@ -37,7 +37,7 @@ function updateDurationSelector(dateSelector) {
     strategy();
   };
 
-  updateDurationSelector(dateSelector);
+  refreshVisibility(dateSelector);
 }
 
 
@@ -45,9 +45,9 @@ function setupDurationSelector(newDiv) {
   const dateSelectors = Array.of(...newDiv.querySelectorAll(".duration-subcomponent"));
   dateSelectors.forEach((dateSelector) => {
     dateSelector.addEventListener("change", (event) => {
-      refreshVisibility(dateSelector);
+      updateDurationSelector(dateSelector);
     });
-    refreshVisibility(dateSelector);
+    updateDurationSelector(dateSelector);
   });
 }
 
@@ -67,14 +67,14 @@ function setupListButton(button, targetList, templateId, initUiCallback) {
       newDiv.remove();
     });
 
-    setupDurationSelector(newDiv);
-
     initUiCallback(null, newDiv);
+
+    setupDurationSelector(newDiv);
   });
 }
 
 
-function setFieldValue(selection, source, strategy, defaultValue) {
+function setFieldValue(selection, source, defaultValue, strategy) {
   const newValue = source === null ? null : strategy(source);
   const valueOrDefault = newValue === null ? defaultValue : newValue;
   selection.value = valueOrDefault;
@@ -103,7 +103,7 @@ function setEngineNumberValue(valSelection, unitsSelection, source, defaultValue
 
 
 function setDuring(selection, command, defaultVal) {
-  const effectiveVal = obj === null ? defaultVal : command.getDuration();
+  const effectiveVal = command === null ? defaultVal : command.getDuration();
   const durationTypeInput = selection.querySelector(".duration-type-input");
 
   if (effectiveVal === null) {
@@ -377,7 +377,12 @@ class ConsumptionListPresenter {
 
     const addLimitButton = self._root.querySelector(".add-limit-button");
     const limitList = self._root.querySelector(".limit-list");
-    setupListButton(addLimitButton, limitList, "limit-command-template", initLimitCommandUi);
+    setupListButton(
+      addLimitButton,
+      limitList,
+      "limit-command-template",
+      (item, root) => initLimitCommandUi(item, root, self._getCodeObj()),
+    );
   }
 
   _showDialogFor(name) {
@@ -408,12 +413,12 @@ class ConsumptionListPresenter {
     const objToShow = objToShowInfo["obj"];
     const applicationName = objToShowInfo["application"];
 
-    const substances = codeObj.getSubstances();
-    const substanceNames = substances.map((x) => x.getName());
-    const substanceSelect = d3.select(self._dialog.querySelector(".substances-select"));
-    substanceSelect.html("");
-    substanceSelect.selectAll("option")
-      .data(substanceNames)
+    const applicationNames = self._getCodeObj().getApplications().map((x) => x.getName());
+    const applicationSelect = self._dialog.querySelector(".application-select");
+    d3.select(applicationSelect)
+      .html("")
+      .selectAll("option")
+      .data(applicationNames)
       .enter()
       .append("option")
       .attr("value", (x) => x)
@@ -429,7 +434,7 @@ class ConsumptionListPresenter {
     setFieldValue(
       self._dialog.querySelector(".edit-consumption-application-input"),
       objToShow,
-      "",
+      applicationNames[0],
       (x) => applicationName,
     );
 
@@ -491,7 +496,7 @@ class ConsumptionListPresenter {
       self._dialog.querySelector(".limit-list"),
       document.getElementById("limit-command-template").innerHTML,
       objToShow === null ? [] : objToShow.getLimits(),
-      initLimitCommandUi,
+      (item, root) => initLimitCommandUi(item, root, self._getCodeObj()),
     );
 
     self._dialog.showModal();
@@ -627,7 +632,7 @@ class PolicyListPresenter {
       addReplaceButton,
       replaceList,
       "replace-command-template",
-      initReplaceCommandUi,
+      (item, root) => initReplaceCommandUi(item, root, self._getCodeObj()),
     );
 
     const addLevelButton = self._root.querySelector(".add-level-button");
@@ -654,7 +659,7 @@ class PolicyListPresenter {
       addLimitButton,
       limitList,
       "limit-command-template",
-      initLimitCommandUi,
+      (item, root) => initLimitCommandUi(item, root, self._getCodeObj()),
     );
   }
 
@@ -676,8 +681,7 @@ class PolicyListPresenter {
     );
 
     const applicationNames = self._getCodeObj().getApplications().map((x) => x.getName());
-
-    const applicationSelect = self._dialog(".edit-policy-application-input");
+    const applicationSelect = self._dialog.querySelector(".application-select");
     d3.select(applicationSelect)
       .html("")
       .selectAll("option")
@@ -709,7 +713,7 @@ class PolicyListPresenter {
       self._dialog.querySelector(".replace-list"),
       document.getElementById("replace-command-template").innerHTML,
       objToShow === null ? [] : objToShow.getReplaces(),
-      initReplaceCommandUi,
+      (item, root) => initReplaceCommandUi(item, root, self._getCodeObj()),
     );
 
     setListInput(
@@ -730,7 +734,7 @@ class PolicyListPresenter {
       self._dialog.querySelector(".limit-list"),
       document.getElementById("limit-command-template").innerHTML,
       objToShow === null ? [] : objToShow.getLimits(),
-      initLimitCommandUi,
+      (item, root) => initLimitCommandUi(item, root, self._getCodeObj()),
     );
 
     self._dialog.showModal();
@@ -975,8 +979,8 @@ function initSetCommandUi(itemObj, root) {
   setFieldValue(
     root.querySelector(".set-target-input"),
     itemObj,
-    (x) => x.getTarget(),
     "import",
+    (x) => x.getTarget(),
   );
   setEngineNumberValue(
     root.querySelector(".set-amount-input"),
@@ -987,7 +991,7 @@ function initSetCommandUi(itemObj, root) {
   );
   setDuring(
     root.querySelector(".duration-subcomponent"),
-    rootObj,
+    itemObj,
     new YearMatcher(1, 1),
   );
 }
@@ -997,18 +1001,19 @@ function initChangeCommandUi(itemObj, root) {
   setFieldValue(
     root.querySelector(".change-target-input"),
     itemObj,
-    (x) => x.getTarget(),
     "import",
+    (x) => x.getTarget(),
   );
   setFieldValue(
     root.querySelector(".change-sign-input"),
     itemObj,
-    (x) => x.getValue() < 0 ? "-" : "+",
     "+",
+    (x) => x.getValue() < 0 ? "-" : "+",
   );
   setFieldValue(
     root.querySelector(".change-amount-input"),
     itemObj,
+    5,
     (x) => {
       if (x.getValue() === null || x.getValue().getValue() === null) {
         return 5; // Default
@@ -1017,39 +1022,49 @@ function initChangeCommandUi(itemObj, root) {
       const valueUnsigned = Math.abs(valueSigned);
       return valueUnsigned;
     },
-    5,
   );
   setFieldValue(
     root.querySelector(".change-units-input"),
     itemObj,
+    "% / year",
     (x) => {
       if (x.getValue() === null) {
         return "% / year"; // Default
       }
       return x.getValue().getUnits();
     },
-    "% / year",
   );
   setDuring(
     root.querySelector(".duration-subcomponent"),
-    rootObj,
+    itemObj,
     new YearMatcher(2, 10),
   );
 }
 
 
-function initLimitCommandUi(itemObj, root) {
+function initLimitCommandUi(itemObj, root, codeObj) {
+  const substances = codeObj.getSubstances();
+  const substanceNames = substances.map((x) => x.getName());
+  const substanceSelect = d3.select(root.querySelector(".substances-select"));
+  substanceSelect.html("");
+  substanceSelect.selectAll("option")
+    .data(substanceNames)
+    .enter()
+    .append("option")
+    .attr("value", (x) => x)
+    .text((x) => x);
+
   setFieldValue(
     root.querySelector(".limit-type-input"),
     itemObj,
-    (x) => x.getType(),
     "cap",
+    (x) => x.getType(),
   );
   setFieldValue(
     root.querySelector(".limit-target-input"),
     itemObj,
-    (x) => x.getTarget(),
     "sales",
+    (x) => x.getTarget(),
   );
   setEngineNumberValue(
     root.querySelector(".limit-amount-input"),
@@ -1061,12 +1076,12 @@ function initLimitCommandUi(itemObj, root) {
   setFieldValue(
     root.querySelector(".displacing-input"),
     itemObj,
-    (x) => x.getDisplacing() === null ? "" : x.getDisplacing(),
     "",
+    (x) => x.getDisplacing() === null ? "" : x.getDisplacing(),
   );
   setDuring(
     root.querySelector(".duration-subcomponent"),
-    rootObj,
+    itemObj,
     new YearMatcher(2, 10),
   );
 }
@@ -1089,28 +1104,13 @@ function initRecycleCommandUi(itemObj, root) {
   );
   setDuring(
     root.querySelector(".duration-subcomponent"),
-    rootObj,
+    itemObj,
     new YearMatcher(2, 10),
   );
 }
 
 
-function initReplaceCommandUi(itemObj, root) {
-  setEngineNumberValue(
-    root.querySelector(".replace-amount-input"),
-    root.querySelector(".replace-units-input"),
-    itemObj,
-    new EngineNumber(10, "%"),
-    (x) => x.getVolume(),
-  );
-
-  setFieldValue(
-    root.querySelector(".replace-target-input"),
-    itemObj,
-    (x) => x.getSource(),
-    "sales",
-  );
-
+function initReplaceCommandUi(itemObj, root, codeObj) {
   const substances = codeObj.getSubstances();
   const substanceNames = substances.map((x) => x.getName());
   const substanceSelect = d3.select(self._dialog.querySelector(".substances-select"));
@@ -1122,16 +1122,31 @@ function initReplaceCommandUi(itemObj, root) {
     .attr("value", (x) => x)
     .text((x) => x);
 
+  setEngineNumberValue(
+    root.querySelector(".replace-amount-input"),
+    root.querySelector(".replace-units-input"),
+    itemObj,
+    new EngineNumber(10, "%"),
+    (x) => x.getVolume(),
+  );
+
+  setFieldValue(
+    root.querySelector(".replace-target-input"),
+    itemObj,
+    "sales",
+    (x) => x.getSource(),
+  );
+
   setFieldValue(
     root.querySelector(".replace-replacement-input"),
     itemObj,
-    (x) => x.getDestination(),
     substanceNames[0],
+    (x) => x.getDestination(),
   );
 
   setDuring(
     root.querySelector(".duration-subcomponent"),
-    rootObj,
+    itemObj,
     new YearMatcher(2, 10),
   );
 }

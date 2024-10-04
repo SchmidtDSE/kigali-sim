@@ -77,7 +77,7 @@
                       <div><label for="edit-consumption-application">Application:</label></div>
                       <div>
                         <span class="sel long">
-                          <select id="edit-consumption-application" name="edit-consumption-application" class="edit-consumption-application-input"></select>
+                          <select id="edit-consumption-application" name="edit-consumption-application" class="edit-consumption-application-input application-select"></select>
                         </span>
                       </div>
                     </div>
@@ -205,7 +205,7 @@
                     </div>
                   </div>
                   <div id="consumption-limit">
-                    <div class="instructions">This tab specifies sales limits (minimum and maximum).</div>
+                    <div class="instructions">This tab specifies limits (minimum and maximum). Optionally, these limits can displace other substances or streams. For example, in a 100 kg cap on A offsetting B, a cap would cause 150 kg of A and 0 kg of B to become 100 and 50 kg respectively.</div>
                     <div class="dialog-list limit-list"></div>
                     <div class="dialog-sub-buttons bold-buttons">
                       <a href="#" class="add-limit-button secondary">Add Limit</a>
@@ -247,7 +247,7 @@
                       <div><label for="edit-policy-application">Application:</label></div>
                       <div>
                         <span class="sel long">
-                          <select id="edit-policy-application" name="edit-policy-application" class="edit-policy-application-input"></select>
+                          <select id="edit-policy-application" name="edit-policy-application" class="edit-policy-application-input application-select"></select>
                         </span>
                       </div>
                     </div>
@@ -614,20 +614,22 @@
           <option value="% / year">% / year</option>
         </select>
       </span>
-      and offset with
-      <select class="displacing-input" aria-label="The source of displacement to meet limit">
-        <optgroup label="None">
-          <option value="">nothing</option>
-        </optgroup>
-        <optgroup label="Streams">
-          <option value="manufacture">domenstic manufacture</option>
-          <option value="import">import</option>
-          <option value="sales">all sales</option>
-          <option value="equipment">equipment</option>
-        </optgroup>
-        <optgroup class="substances-select" label="Substances">
-        </optgroup>
-      </select>
+      displacing
+      <span class="sel mid">
+        <select class="displacing-input" aria-label="The source of displacement to meet limit">
+          <optgroup label="None">
+            <option value="">nothing</option>
+          </optgroup>
+          <optgroup label="Streams">
+            <option value="manufacture">domenstic manufacture</option>
+            <option value="import">import</option>
+            <option value="sales">all sales</option>
+            <option value="equipment">equipment</option>
+          </optgroup>
+          <optgroup class="substances-select" label="Substances">
+          </optgroup>
+        </select>
+      </span>
       <span class="duration-subcomponent">
         <span class="sel mid">
           <select class="duration-type-input" aria-label="Duration type for command">
