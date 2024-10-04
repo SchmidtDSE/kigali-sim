@@ -11,11 +11,13 @@ const COMMAND_COMPATIBILITIES = {
   "change": "any",
   "retire": "any",
   "setVal": "any",
+  "cap": "any",
+  "floor": "any",
+  "limit": "any",
   "initial charge": "definition",
   "emit": "definition",
   "recharge": "definition",
   "recycle": "policy",
-  "cap": "policy",
   "replace": "policy",
 };
 
@@ -65,6 +67,12 @@ class Program {
   getApplications() {
     const self = this;
     return self._applications;
+  }
+
+  getApplication(name) {
+    const self = this;
+    const matching = self._applications.filter((x) => x.getName() === name);
+    return matching.length == 0 ? null : matching[0];
   }
 
   addApplication(newApplication) {
@@ -334,6 +342,12 @@ class Application {
     return self._substances;
   }
 
+  getSubstance(name) {
+    const self = this;
+    const matching = self._substances.filter((x) => x.getName() === name);
+    return matching.length == 0 ? null : matching[0];
+  }
+
   getIsModification() {
     const self = this;
     return self._isModification;
@@ -451,6 +465,7 @@ class SubstanceBuilder {
       "emit": (x) => self.setEmit(x),
       "recycle": (x) => self.setRecycle(x),
       "cap": (x) => self.setCap(x),
+      "floor": (x) => self.setFloor(x),
       "replace": (x) => self.setReplace(x),
     }[commandType];
 
@@ -471,6 +486,11 @@ class SubstanceBuilder {
   setCap(newVal) {
     const self = this;
     self._cap = self._checkDuplicate(self._cap, newVal);
+  }
+
+  setFloor(newVal) {
+    const self = this;
+    self._cap = self._checkDuplicate(self._floor, newVal);
   }
 
   addChange(newVal) {
@@ -549,6 +569,12 @@ class Substance {
   getInitialCharges() {
     const self = this;
     return self._initialCharges;
+  }
+
+  getInitialCharge(stream) {
+    const self = this;
+    const matching = self._initialCharges.filter((x) => x.getTarget() === stream);
+    return matching.length == 0 ? null : matching[0];
   }
 
   getCap() {
@@ -630,6 +656,7 @@ class Substance {
     addAllIfGiven(self._getChangesCode());
     addIfGiven(self._getRetireCode());
     addIfGiven(self._getCapCode());
+    addIfGiven(self._getFloorCode());
     addIfGiven(self._getRechargeCode());
     addIfGiven(self._getRecycleCode());
     addIfGiven(self._getReplaceCode());
@@ -747,6 +774,24 @@ class Substance {
       self._cap.getValue().getUnits(),
     ];
     self._addDuration(pieces, self._cap);
+
+    return self._finalizeStatement(pieces);
+  }
+
+  _getFloorCode() {
+    const self = this;
+    if (self._floor === null) {
+      return null;
+    }
+
+    const pieces = [
+      "floor",
+      self._floor.getTarget(),
+      "to",
+      self._floor.getValue().getValue(),
+      self._floor.getValue().getUnits(),
+    ];
+    self._addDuration(pieces, self._floor);
 
     return self._finalizeStatement(pieces);
   }
@@ -1214,6 +1259,17 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
     const self = this;
     const duration = ctx.duration.accept(self);
     return self._buildOperation(ctx, "cap", duration);
+  }
+
+  visitFloorAllYears(ctx) {
+    const self = this;
+    return self._buildOperation(ctx, "floor", null);
+  }
+
+  visitFloorDuration(ctx) {
+    const self = this;
+    const duration = ctx.duration.accept(self);
+    return self._buildOperation(ctx, "floor", duration);
   }
 
   visitChangeAllYears(ctx) {

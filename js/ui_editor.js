@@ -1,10 +1,14 @@
+import { EngineNumber } from "engine_number";
+
+import { YearMatcher } from "engine_state";
+
 import {
   Application,
   Program,
 } from "ui_translator";
 
 
-function setupDurationSelector(newDiv) {
+function updateDurationSelector(dateSelector) {
   const makeVisibilityCallback = (showStart, showEnd) => {
     return () => {
       const startElement = newDiv.querySelector(".duration-start");
@@ -27,12 +31,18 @@ function setupDurationSelector(newDiv) {
     "during years": makeVisibilityCallback(true, true),
   };
 
-  const dateSelectors = Array.of(...newDiv.querySelectorAll(".duration-subcomponent"));
   const refreshVisibility = (dateSelector) => {
     const currentValue = dateSelector.querySelector(".duration-type-input").value;
     const strategy = strategies[currentValue];
     strategy();
   };
+
+  updateDurationSelector(dateSelector);
+}
+
+
+function setupDurationSelector(newDiv) {
+  const dateSelectors = Array.of(...newDiv.querySelectorAll(".duration-subcomponent"));
   dateSelectors.forEach((dateSelector) => {
     dateSelector.addEventListener("change", (event) => {
       refreshVisibility(dateSelector);
@@ -59,6 +69,58 @@ function setupListButton(button, targetList, templateId) {
 
     setupDurationSelector(newDiv);
   });
+}
+
+
+function setFieldValue(selection, source, strategy, defaultValue) {
+  const newValue = source === null ? null : strategy(source);
+  const valueOrDefault = newValue === null ? defaultValue : newValue;
+  selection.value = valueOrDefault;
+}
+
+
+function setEngineNumberValue(valSelection, unitsSelection, source, strategy, defaultValue) {
+  const newValue = source === null ? null : strategy(source);
+  const valueOrDefault = newValue === null ? defaultValue : newValue;
+  valSelection.value = valueOrDefault.getValue();
+  unitsSelection.value = valueOrDefault.getUnits();
+}
+
+
+function setDuring(selection, command, defaultVal) {
+  const effectiveVal = obj === null ? defaultVal : command.getDuration();
+  const durationTypeInput = selection.querySelector(".duration-type-input");
+  
+  if (effectiveVal === null) {
+    durationTypeInput.value = "during all years";
+    return;
+  }
+
+  const durationStartInput = selection.querySelector(".duration-start");
+  const durationEndInput = selection.querySelector(".duration-end");
+  const durationStart = effectiveVal.getStart();
+  const noStart = durationStart === null;
+  const durationEnd = effectiveVal.getEnd();
+  const noEnd = durationEnd === null;
+
+  if (noStart && noEnd) {
+    durationTypeInput.value = "during all years";
+  } else if (noStart) {
+    durationTypeInput.value = "ending in year";
+    durationEndInput.value = durationEnd;
+  } else if (noEnd) {
+    durationTypeInput.value = "starting in year";
+    durationStartInput.value = durationStart;
+  } else if (durationStart == durationEnd) {
+    durationTypeInput.value = "in year";
+    durationStartInput.value = durationStart;
+  } else {
+    durationTypeInput.value = "during years";
+    durationStartInput.value = durationStart;
+    durationEndInput.value = durationEnd;
+  }
+
+  updateDurationSelector(selection);
 }
 
 
@@ -312,6 +374,201 @@ class ConsumptionListPresenter {
     } else {
       self._dialog.querySelector(".action-title").innerHTML = "Edit";
     }
+
+    const getObjToShow = () => {
+      if (name === null) {
+        return {"obj": null, "application": ""};
+      }
+      const objIdentifierRegex = /\"([^\"]+)\" for \"([^\"]+)\"/g;
+      const match = name.match(objIdentifierRegex);
+      const substance = match[0];
+      const application = match[1];
+      const codeObj = self._getCodeObj.get();
+      const substanceObj = codeObj.getApplication(application).getSubstance(substance);
+      return {"obj": substanceObj, "application": application};
+    };
+
+    const objToShowInfo = getObjToShow();
+    const objToShow = objToShowInfo["obj"];
+    const applicationName = objToShowInfo["application"];
+
+    setFieldValue(
+      self._dialog.querySelector(".edit-consumption-substance-input"),
+      objToShow,
+      "",
+      (x) => x.getName(),
+    );
+
+    setFieldValue(
+      self._dialog.querySelector(".edit-consumption-application-input"),
+      objToShow,
+      "",
+      (x) => applicationName,
+    );
+
+    setEngineNumberValue(
+      self._dialog.querySelector(".edit-consumption-initial-charge-domestic-input"),
+      self._dialog.querySelector(".initial-charge-domestic-units-input"),
+      objToShow,
+      new EngineNumber(1, "kg / unit"),
+      (x) => x.getInitialCharge("domestic").getValue(),
+    );
+
+    setEngineNumberValue(
+      self._dialog.querySelector(".edit-consumption-initial-charge-import-input"),
+      self._dialog.querySelector(".initial-charge-import-units-input"),
+      objToShow,
+      new EngineNumber(2, "kg / unit"),
+      (x) => x.getInitialCharge("import").getValue(),
+    );
+
+    setEngineNumberValue(
+      self._dialog.querySelector(".edit-consumption-retirement-input"),
+      self._dialog.querySelector(".retirement-units-input"),
+      objToShow,
+      new EngineNumber(5, "% / year"),
+      (x) => x.getRetire().getValue(),
+    );
+
+    setEngineNumberValue(
+      self._dialog.querySelector(".edit-consumption-recharge-population"),
+      self._dialog.querySelector(".recharge-population-units-input"),
+      objToShow,
+      new EngineNumber(5, "% / year"),
+      (x) => x.getRecharge().getTarget(),
+    );
+    
+    setEngineNumberValue(
+      self._dialog.querySelector(".edit-consumption-recharge-volume"),
+      self._dialog.querySelector(".recharge-volume-units-input"),
+      objToShow,
+      new EngineNumber(1, "kg / unit"),
+      (x) => x.getRecharge().getValue(),
+    );
+
+    setListInput(
+      self._dialog.querySelector(".level-list"),
+      self._dialog.querySelector(".set-command-template").innerHTML,
+      objToShow.getSetVals(),
+      (itemObj, root) => {
+        setFieldValue(
+          root.querySelector(".set-target-input"),
+          itemObj,
+          (x) => x.getTarget(),
+          "import"
+        );
+        setEngineNumberValue(
+          root.querySelector(".set-amount-input"),
+          root.querySelector(".set-units-input"),
+          itemObj,
+          new EngineNumber(1, "mt"),
+          (x) => x.getValue(),
+        );
+        setDuring(
+          root.querySelector(".duration-subcomponent"),
+          rootObj,
+          new YearMatcher(1, 1),
+        );
+      },
+    );
+
+    setListInput(
+      self._dialog.querySelector(".change-list"),
+      self._dialog.querySelector(".change-command-template").innerHTML,
+      objToShow.getSetVals(),
+      (itemObj, root) => {
+        setFieldValue(
+          root.querySelector(".change-target-input"),
+          itemObj,
+          (x) => x.getTarget(),
+          "import"
+        );
+        setFieldValue(
+          root.querySelector(".change-sign-input"),
+          itemObj,
+          (x) => x.getValue() < 0 ? "-" : "+",
+          "+",
+        );
+        setFieldValue(
+          root.querySelector(".change-amount-input"),
+          itemObj,
+          (x) => {
+            if (x.getValue() === null || x.getValue().getValue() === null) {
+              return 5;  // Default
+            }
+            const valueSigned = x.getValue().getValue();
+            const valueUnsigned = Math.abs(valueSigned);
+            return valueUnsigned;
+          },
+          5,
+        );
+        setFieldValue(
+          root.querySelector(".change-units-input"),
+          itemObj,
+          (x) => {
+            if (x.getValue() === null) {
+              return "% / year";  // Default
+            }
+            return x.getValue().getUnits();
+          },
+          "% / year"
+        );
+        setDuring(
+          root.querySelector(".duration-subcomponent"),
+          rootObj,
+          new YearMatcher(1, 1),
+        );
+      },
+    );
+
+    setListInput(
+      self._dialog.querySelector(".limit-list"),
+      self._dialog.querySelector(".limit-command-template").innerHTML,
+      objToShow.getSetVals(),
+      (itemObj, root) => {
+        setFieldValue(
+          root.querySelector(".change-target-input"),
+          itemObj,
+          (x) => x.getTarget(),
+          "import"
+        );
+        setFieldValue(
+          root.querySelector(".change-sign-input"),
+          itemObj,
+          (x) => x.getValue() < 0 ? "-" : "+",
+          "+",
+        );
+        setFieldValue(
+          root.querySelector(".change-amount-input"),
+          itemObj,
+          (x) => {
+            if (x.getValue() === null || x.getValue().getValue() === null) {
+              return 5;  // Default
+            }
+            const valueSigned = x.getValue().getValue();
+            const valueUnsigned = Math.abs(valueSigned);
+            return valueUnsigned;
+          },
+          5,
+        );
+        setFieldValue(
+          root.querySelector(".change-units-input"),
+          itemObj,
+          (x) => {
+            if (x.getValue() === null) {
+              return "% / year";  // Default
+            }
+            return x.getValue().getUnits();
+          },
+          "% / year"
+        );
+        setDuring(
+          root.querySelector(".duration-subcomponent"),
+          rootObj,
+          new YearMatcher(1, 1),
+        );
+      },
+    );
 
     self._dialog.showModal();
   }
