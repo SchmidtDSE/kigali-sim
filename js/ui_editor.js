@@ -461,113 +461,21 @@ class ConsumptionListPresenter {
       self._dialog.querySelector(".level-list"),
       self._dialog.querySelector(".set-command-template").innerHTML,
       objToShow.getSetVals(),
-      (itemObj, root) => {
-        setFieldValue(
-          root.querySelector(".set-target-input"),
-          itemObj,
-          (x) => x.getTarget(),
-          "import"
-        );
-        setEngineNumberValue(
-          root.querySelector(".set-amount-input"),
-          root.querySelector(".set-units-input"),
-          itemObj,
-          new EngineNumber(1, "mt"),
-          (x) => x.getValue(),
-        );
-        setDuring(
-          root.querySelector(".duration-subcomponent"),
-          rootObj,
-          new YearMatcher(1, 1),
-        );
-      },
+      initSetCommandUi,
     );
 
     setListInput(
       self._dialog.querySelector(".change-list"),
       self._dialog.querySelector(".change-command-template").innerHTML,
       objToShow.getSetVals(),
-      (itemObj, root) => {
-        setFieldValue(
-          root.querySelector(".change-target-input"),
-          itemObj,
-          (x) => x.getTarget(),
-          "import"
-        );
-        setFieldValue(
-          root.querySelector(".change-sign-input"),
-          itemObj,
-          (x) => x.getValue() < 0 ? "-" : "+",
-          "+",
-        );
-        setFieldValue(
-          root.querySelector(".change-amount-input"),
-          itemObj,
-          (x) => {
-            if (x.getValue() === null || x.getValue().getValue() === null) {
-              return 5;  // Default
-            }
-            const valueSigned = x.getValue().getValue();
-            const valueUnsigned = Math.abs(valueSigned);
-            return valueUnsigned;
-          },
-          5,
-        );
-        setFieldValue(
-          root.querySelector(".change-units-input"),
-          itemObj,
-          (x) => {
-            if (x.getValue() === null) {
-              return "% / year";  // Default
-            }
-            return x.getValue().getUnits();
-          },
-          "% / year"
-        );
-        setDuring(
-          root.querySelector(".duration-subcomponent"),
-          rootObj,
-          new YearMatcher(1, 1),
-        );
-      },
+      initChangeCommandUi,
     );
 
     setListInput(
       self._dialog.querySelector(".limit-list"),
       self._dialog.querySelector(".limit-command-template").innerHTML,
       objToShow.getSetVals(),
-      (itemObj, root) => {
-        setFieldValue(
-          root.querySelector(".limit-type-input"),
-          itemObj,
-          (x) => x.getType(),
-          "cap"
-        );
-        setFieldValue(
-          root.querySelector(".limit-target-input"),
-          itemObj,
-          (x) => x.getTarget(),
-          "sales"
-        );
-        setEngineNumberValue(
-          root.querySelector(".limit-amount-input"),
-          root.querySelector(".limit-units-input"),
-          itemObj,
-          new EngineNumber(1, "mt"),
-          (x) => x.getValue(),
-        );
-        setFieldValue(
-          root.querySelector(".displacing-input"),
-          itemObj,
-          (x) => x.getDisplacing() === null ? "" : x.getDisplacing(),
-          ""
-        );
-        setDuring(
-          root.querySelector(".duration-subcomponent"),
-          rootObj,
-          new YearMatcher(1, 1),
-        );
-      },
+      initLimitCommandUi,
     );
 
     self._dialog.showModal();
@@ -718,6 +626,71 @@ class PolicyListPresenter {
     } else {
       self._dialog.querySelector(".action-title").innerHTML = "Edit";
     }
+
+    setFieldValue(
+      self._dialog.querySelector(".edit-policy-name-input"),
+      objToShow,
+      "",
+      (x) => x.getName(),
+    );
+
+    const applicationNames = self._getCodeObj().getApplications().map((x) => x.getName());
+
+    const applicationSelect = self._dialog(".edit-policy-application-input");
+    d3.select(applicationSelect)
+      .html("")
+      .selectAll("option")
+      .data(applicationNames)
+      .enter()
+      .append("option")
+      .attr("value", (x) => x)
+      .text((x) => x);
+
+    const substances = codeObj.getSubstances();
+    const substanceNames = substances.map((x) => x.getName());
+    const substanceSelect = d3.select(self._dialog.querySelector(".substances-select"));
+    substanceSelect.html("");
+    substanceSelect.selectAll("option")
+      .data(substanceNames)
+      .enter()
+      .append("option")
+      .attr("value", (x) => x)
+      .text((x) => x);
+    
+    setListInput(
+      self._dialog.querySelector(".recycling-list"),
+      self._dialog.querySelector(".recycle-command-template").innerHTML,
+      objToShow.getRecycles(),
+      initRecycleCommandUi,
+    );
+
+    setListInput(
+      self._dialog.querySelector(".replace-list"),
+      self._dialog.querySelector(".replace-command-template").innerHTML,
+      objToShow.getReplaces(),
+      initReplaceCommandUi,
+    );
+
+    setListInput(
+      self._dialog.querySelector(".level-list"),
+      self._dialog.querySelector(".set-command-template").innerHTML,
+      objToShow.getSetVals(),
+      initSetCommandUi,
+    );
+
+    setListInput(
+      self._dialog.querySelector(".change-list"),
+      self._dialog.querySelector(".change-command-template").innerHTML,
+      objToShow.getSetVals(),
+      initChangeCommandUi,
+    );
+    
+    setListInput(
+      self._dialog.querySelector(".limit-list"),
+      self._dialog.querySelector(".limit-command-template").innerHTML,
+      objToShow.getSetVals(),
+      initLimitCommandUi,
+    );
 
     self._dialog.showModal();
   }
@@ -954,6 +927,172 @@ class UiEditorPresenter {
 
     self._onCodeObjUpdateInner(codeObj);
   }
+}
+
+
+function initSetCommandUi(itemObj, root) {
+  setFieldValue(
+    root.querySelector(".set-target-input"),
+    itemObj,
+    (x) => x.getTarget(),
+    "import"
+  );
+  setEngineNumberValue(
+    root.querySelector(".set-amount-input"),
+    root.querySelector(".set-units-input"),
+    itemObj,
+    new EngineNumber(1, "mt"),
+    (x) => x.getValue(),
+  );
+  setDuring(
+    root.querySelector(".duration-subcomponent"),
+    rootObj,
+    new YearMatcher(1, 1),
+  );
+}
+
+
+function initChangeCommandUi(itemObj, root) {
+  setFieldValue(
+    root.querySelector(".change-target-input"),
+    itemObj,
+    (x) => x.getTarget(),
+    "import"
+  );
+  setFieldValue(
+    root.querySelector(".change-sign-input"),
+    itemObj,
+    (x) => x.getValue() < 0 ? "-" : "+",
+    "+",
+  );
+  setFieldValue(
+    root.querySelector(".change-amount-input"),
+    itemObj,
+    (x) => {
+      if (x.getValue() === null || x.getValue().getValue() === null) {
+        return 5;  // Default
+      }
+      const valueSigned = x.getValue().getValue();
+      const valueUnsigned = Math.abs(valueSigned);
+      return valueUnsigned;
+    },
+    5,
+  );
+  setFieldValue(
+    root.querySelector(".change-units-input"),
+    itemObj,
+    (x) => {
+      if (x.getValue() === null) {
+        return "% / year";  // Default
+      }
+      return x.getValue().getUnits();
+    },
+    "% / year"
+  );
+  setDuring(
+    root.querySelector(".duration-subcomponent"),
+    rootObj,
+    new YearMatcher(2, 10),
+  );
+}
+
+
+function initLimitCommandUi(itemObj, root) {
+  setFieldValue(
+    root.querySelector(".limit-type-input"),
+    itemObj,
+    (x) => x.getType(),
+    "cap"
+  );
+  setFieldValue(
+    root.querySelector(".limit-target-input"),
+    itemObj,
+    (x) => x.getTarget(),
+    "sales"
+  );
+  setEngineNumberValue(
+    root.querySelector(".limit-amount-input"),
+    root.querySelector(".limit-units-input"),
+    itemObj,
+    new EngineNumber(1, "mt"),
+    (x) => x.getValue(),
+  );
+  setFieldValue(
+    root.querySelector(".displacing-input"),
+    itemObj,
+    (x) => x.getDisplacing() === null ? "" : x.getDisplacing(),
+    ""
+  );
+  setDuring(
+    root.querySelector(".duration-subcomponent"),
+    rootObj,
+    new YearMatcher(2, 10),
+  );
+}
+
+
+function initRecycleCommandUi(itemObj, root) {
+  setEngineNumberValue(
+    root.querySelector(".recycle-amount-input"),
+    root.querySelector(".recycle-units-input"),
+    itemObj,
+    new EngineNumber(10, "%"),
+    (x) => x.getTarget(),
+  );
+  setEngineNumberValue(
+    root.querySelector(".recycle-reuse-amount-input"),
+    root.querySelector(".recycle-reuse-units-input"),
+    itemObj,
+    new EngineNumber(10, "%"),
+    (x) => x.getValue(),
+  );
+  setDuring(
+    root.querySelector(".duration-subcomponent"),
+    rootObj,
+    new YearMatcher(2, 10),
+  );
+}
+
+
+function initReplaceCommandUi(itemObj, root) {
+  setEngineNumberValue(
+    root.querySelector(".replace-amount-input"),
+    root.querySelector(".replace-units-input"),
+    itemObj,
+    new EngineNumber(10, "%"),
+    (x) => x.getVolume(),
+  );
+
+  setFieldValue(
+    root.querySelector(".replace-target-input"),
+    itemObj,
+    (x) => x.getSource(),
+    "sales",
+  );
+
+  const substances = codeObj.getSubstances();
+  const substanceNames = substances.map((x) => x.getName());
+  const substanceSelect = d3.select(self._dialog.querySelector(".substances-select"));
+  substanceSelect.html("");
+  substanceSelect.selectAll("option")
+    .data(substanceNames)
+    .enter()
+    .append("option")
+    .attr("value", (x) => x)
+    .text((x) => x);
+  
+  setFieldValue(
+    root.querySelector(".replace-replacement-input"),
+    itemObj,
+    (x) => x.getDestination(),
+    substanceNames[0],
+  );
+
+  setDuring(
+    root.querySelector(".duration-subcomponent"),
+    rootObj,
+    new YearMatcher(2, 10),
+  );
 }
 
 

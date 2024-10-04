@@ -397,8 +397,8 @@ class SubstanceBuilder {
     self._changes = [];
     self._emit = null;
     self._recharge = null;
-    self._recycle = null;
-    self._replace = null;
+    self._recycles = [];
+    self._replaces = [];
     self._retire = null;
     self._setVals = [];
   }
@@ -409,11 +409,11 @@ class SubstanceBuilder {
     const commandsConsolidatedInterpreted = [
       self._initialCharges,
       self._limits,
+      self._recycles,
+      self._replaces,
       [
         self._emit,
         self._recharge,
-        self._recycle,
-        self._replace,
         self._retire,
       ],
       self._changes,
@@ -437,8 +437,8 @@ class SubstanceBuilder {
       self._changes,
       self._emit,
       self._recharge,
-      self._recycle,
-      self._replace,
+      self._recycles,
+      self._replaces,
       self._retire,
       self._setVals,
       self._isModification,
@@ -468,10 +468,10 @@ class SubstanceBuilder {
       "initial charge": (x) => self.addInitialCharge(x),
       "recharge": (x) => self.setRecharge(x),
       "emit": (x) => self.setEmit(x),
-      "recycle": (x) => self.setRecycle(x),
+      "recycle": (x) => self.addRecycle(x),
       "cap": (x) => self.addLimit(x),
       "floor": (x) => self.addLimit(x),
-      "replace": (x) => self.setReplace(x),
+      "replace": (x) => self.addReplace(x),
     }[commandType];
 
     const effectiveCommand = incompatiblePlace ? self._makeInvalidPlacement() : command;
@@ -508,14 +508,14 @@ class SubstanceBuilder {
     self._recharge = self._checkDuplicate(self._recharge, newVal);
   }
 
-  setRecycle(newVal) {
+  addRecycle(newVal) {
     const self = this;
-    self._recycle = self._checkDuplicate(self._recycle, newVal);
+    self._recycles.push(newVal);
   }
 
-  setReplace(newVal) {
+  addReplace(newVal) {
     const self = this;
-    self._replace = self._checkDuplicate(self._replace, newVal);
+    self._replaces.push(newVal);
   }
 
   setRetire(newVal) {
@@ -544,7 +544,7 @@ class SubstanceBuilder {
 
 
 class Substance {
-  constructor(name, charges, limits, changes, emit, recharge, recycle, replace, retire, setVals,
+  constructor(name, charges, limits, changes, emit, recharge, recycles, replaces, retire, setVals,
     isMod, compat) {
     const self = this;
     self._name = name;
@@ -553,8 +553,8 @@ class Substance {
     self._changes = changes;
     self._emit = emit;
     self._recharge = recharge;
-    self._recycle = recycle;
-    self._replace = replace;
+    self._recycles = recycles;
+    self._replaces = replaces;
     self._retire = retire;
     self._setVals = setVals;
     self._isModification = isMod;
@@ -597,14 +597,14 @@ class Substance {
     return self._recharge;
   }
 
-  getRecycle() {
+  getRecycles() {
     const self = this;
-    return self._recycle;
+    return self._recycles;
   }
 
-  getReplace() {
+  getReplaces() {
     const self = this;
-    return self._replace;
+    return self._replaces;
   }
 
   getRetire() {
@@ -658,8 +658,8 @@ class Substance {
     addAllIfGiven(self._getLimitCode());
     addIfGiven(self._getFloorCode());
     addIfGiven(self._getRechargeCode());
-    addIfGiven(self._getRecycleCode());
-    addIfGiven(self._getReplaceCode());
+    addAllIfGiven(self._getRecycleCode());
+    addAllIfGiven(self._getReplaceCode());
 
     addCode("end substance", spaces);
     return finalizeCodePieces(baselinePieces);
@@ -809,42 +809,50 @@ class Substance {
 
   _getRecycleCode() {
     const self = this;
-    if (self._recycle === null) {
+    if (self._recycles === null) {
       return null;
     }
 
-    const pieces = [
-      "recover",
-      self._recycle.getTarget().getValue(),
-      self._recycle.getTarget().getUnits(),
-      "with",
-      self._recycle.getValue().getValue(),
-      self._recycle.getValue().getUnits(),
-      "reuse",
-    ];
-    self._addDuration(pieces, self._recycle);
+    const buildRecycle = (recycle) => {
+      const pieces = [
+        "recover",
+        recycle.getTarget().getValue(),
+        recycle.getTarget().getUnits(),
+        "with",
+        recycle.getValue().getValue(),
+        recycle.getValue().getUnits(),
+        "reuse",
+      ];
+      self._addDuration(pieces, recycle);
+  
+      return self._finalizeStatement(pieces);
+    };
 
-    return self._finalizeStatement(pieces);
+    return self._recycles.map(buildRecycle);
   }
 
   _getReplaceCode() {
     const self = this;
-    if (self._replace === null) {
+    if (self._replaces === null) {
       return null;
     }
 
-    const pieces = [
-      "replace",
-      self._replace.getVolume().getValue(),
-      self._replace.getVolume().getUnits(),
-      "of",
-      self._replace.getSource(),
-      "with",
-      "\"" + self._replace.getDestination() + "\"",
-    ];
-    self._addDuration(pieces, self._replace);
+    const buildReplace = (replace) => {
+      const pieces = [
+        "replace",
+        self._replace.getVolume().getValue(),
+        self._replace.getVolume().getUnits(),
+        "of",
+        self._replace.getSource(),
+        "with",
+        "\"" + self._replace.getDestination() + "\"",
+      ];
+      self._addDuration(pieces, self._replace);
 
-    return self._finalizeStatement(pieces);
+      return self._finalizeStatement(pieces);
+    };
+
+    return self._replaces.map(buildRecycle);
   }
 
   _addDuration(pieces, command) {
