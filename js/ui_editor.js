@@ -94,7 +94,7 @@ function setListInput(listSelection, itemTemplate, items, uiInit) {
 }
 
 
-function setEngineNumberValue(valSelection, unitsSelection, source, strategy, defaultValue) {
+function setEngineNumberValue(valSelection, unitsSelection, source, defaultValue, strategy) {
   const newValue = source === null ? null : strategy(source);
   const valueOrDefault = newValue === null ? defaultValue : newValue;
   valSelection.value = valueOrDefault.getValue();
@@ -390,6 +390,8 @@ class ConsumptionListPresenter {
       self._dialog.querySelector(".action-title").innerHTML = "Edit";
     }
 
+    const codeObj = self._getCodeObj();
+
     const getObjToShow = () => {
       if (name === null) {
         return {"obj": null, "application": ""};
@@ -398,7 +400,6 @@ class ConsumptionListPresenter {
       const match = name.match(objIdentifierRegex);
       const substance = match[0];
       const application = match[1];
-      const codeObj = self._getCodeObj.get();
       const substanceObj = codeObj.getApplication(application).getSubstance(substance);
       return {"obj": substanceObj, "application": application};
     };
@@ -457,7 +458,7 @@ class ConsumptionListPresenter {
     );
 
     setEngineNumberValue(
-      self._dialog.querySelector(".edit-consumption-recharge-population"),
+      self._dialog.querySelector(".edit-consumption-recharge-population-input"),
       self._dialog.querySelector(".recharge-population-units-input"),
       objToShow,
       new EngineNumber(5, "% / year"),
@@ -465,7 +466,7 @@ class ConsumptionListPresenter {
     );
 
     setEngineNumberValue(
-      self._dialog.querySelector(".edit-consumption-recharge-volume"),
+      self._dialog.querySelector(".edit-consumption-recharge-volume-input"),
       self._dialog.querySelector(".recharge-volume-units-input"),
       objToShow,
       new EngineNumber(1, "kg / unit"),
@@ -474,22 +475,22 @@ class ConsumptionListPresenter {
 
     setListInput(
       self._dialog.querySelector(".level-list"),
-      self._dialog.querySelector(".set-command-template").innerHTML,
-      objToShow.getSetVals(),
+      document.getElementById("set-command-template").innerHTML,
+      objToShow === null ? [] : objToShow.getSetVals(),
       initSetCommandUi,
     );
 
     setListInput(
       self._dialog.querySelector(".change-list"),
-      self._dialog.querySelector(".change-command-template").innerHTML,
-      objToShow.getSetVals(),
+      document.getElementById("change-command-template").innerHTML,
+      objToShow === null ? [] : objToShow.getChanges(),
       initChangeCommandUi,
     );
 
     setListInput(
       self._dialog.querySelector(".limit-list"),
-      self._dialog.querySelector(".limit-command-template").innerHTML,
-      objToShow.getSetVals(),
+      document.getElementById("limit-command-template").innerHTML,
+      objToShow === null ? [] : objToShow.getLimits(),
       initLimitCommandUi,
     );
 
@@ -699,36 +700,36 @@ class PolicyListPresenter {
 
     setListInput(
       self._dialog.querySelector(".recycling-list"),
-      self._dialog.querySelector(".recycle-command-template").innerHTML,
-      objToShow.getRecycles(),
+      document.getElementById("recycle-command-template").innerHTML,
+      objToShow === null ? [] : objToShow.getRecycles(),
       initRecycleCommandUi,
     );
 
     setListInput(
       self._dialog.querySelector(".replace-list"),
-      self._dialog.querySelector(".replace-command-template").innerHTML,
-      objToShow.getReplaces(),
+      document.getElementById("replace-command-template").innerHTML,
+      objToShow === null ? [] : objToShow.getReplaces(),
       initReplaceCommandUi,
     );
 
     setListInput(
       self._dialog.querySelector(".level-list"),
-      self._dialog.querySelector(".set-command-template").innerHTML,
-      objToShow.getSetVals(),
+      document.getElementById("set-command-template").innerHTML,
+      objToShow === null ? [] : objToShow.getSetVals(),
       initSetCommandUi,
     );
 
     setListInput(
       self._dialog.querySelector(".change-list"),
-      self._dialog.querySelector(".change-command-template").innerHTML,
-      objToShow.getSetVals(),
+      document.getElementById("change-command-template").innerHTML,
+      objToShow === null ? [] : objToShow.getChanges(),
       initChangeCommandUi,
     );
 
     setListInput(
       self._dialog.querySelector(".limit-list"),
-      self._dialog.querySelector(".limit-command-template").innerHTML,
-      objToShow.getSetVals(),
+      document.getElementById("limit-command-template").innerHTML,
+      objToShow === null ? [] : objToShow.getLimits(),
       initLimitCommandUi,
     );
 

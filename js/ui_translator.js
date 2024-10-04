@@ -71,7 +71,7 @@ class Program {
 
   getSubstances() {
     const self = this;
-    return self.getApplication().map((x) => x.getSubstances()).flat();
+    return self.getApplications().map((x) => x.getSubstances()).flat();
   }
 
   getApplication(name) {
