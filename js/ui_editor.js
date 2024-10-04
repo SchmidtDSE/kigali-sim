@@ -52,7 +52,7 @@ function setupDurationSelector(newDiv) {
 }
 
 
-function setupListButton(button, targetList, templateId) {
+function setupListButton(button, targetList, templateId, initUiCallback) {
   button.addEventListener("click", (event) => {
     event.preventDefault();
 
@@ -68,6 +68,8 @@ function setupListButton(button, targetList, templateId) {
     });
 
     setupDurationSelector(newDiv);
+
+    initUiCallback(null, newDiv);
   });
 }
 
@@ -367,15 +369,15 @@ class ConsumptionListPresenter {
 
     const addLevelButton = self._root.querySelector(".add-start-button");
     const levelList = self._root.querySelector(".level-list");
-    setupListButton(addLevelButton, levelList, "set-command-template");
+    setupListButton(addLevelButton, levelList, "set-command-template", initSetCommandUi);
 
     const addChangeButton = self._root.querySelector(".add-change-button");
     const changeList = self._root.querySelector(".change-list");
-    setupListButton(addChangeButton, changeList, "change-command-template");
+    setupListButton(addChangeButton, changeList, "change-command-template", initChangeCommandUi);
 
     const addLimitButton = self._root.querySelector(".add-limit-button");
     const limitList = self._root.querySelector(".limit-list");
-    setupListButton(addLimitButton, limitList, "limit-command-template");
+    setupListButton(addLimitButton, limitList, "limit-command-template", initLimitCommandUi);
   }
 
   _showDialogFor(name) {
@@ -611,23 +613,48 @@ class PolicyListPresenter {
 
     const addRecyclingButton = self._root.querySelector(".add-recycling-button");
     const recyclingList = self._root.querySelector(".recycling-list");
-    setupListButton(addRecyclingButton, recyclingList, "recycle-command-template");
+    setupListButton(
+      addRecyclingButton,
+      recyclingList,
+      "recycle-command-template",
+      initRecycleCommandUi,
+    );
 
     const addReplaceButton = self._root.querySelector(".add-replace-button");
     const replaceList = self._root.querySelector(".replace-list");
-    setupListButton(addReplaceButton, replaceList, "replace-command-template");
+    setupListButton(
+      addReplaceButton,
+      replaceList,
+      "replace-command-template",
+      initReplaceCommandUi,
+    );
 
     const addLevelButton = self._root.querySelector(".add-level-button");
     const levelList = self._root.querySelector(".level-list");
-    setupListButton(addLevelButton, levelList, "set-command-template");
+    setupListButton(
+      addLevelButton,
+      levelList,
+      "set-command-template",
+      initSetCommandUi,
+    );
 
     const addChangeButton = self._root.querySelector(".add-change-button");
     const changeList = self._root.querySelector(".change-list");
-    setupListButton(addChangeButton, changeList, "change-command-template");
+    setupListButton(
+      addChangeButton,
+      changeList,
+      "change-command-template",
+      initChangeCommandUi,
+    );
 
     const addLimitButton = self._root.querySelector(".add-limit-button");
     const limitList = self._root.querySelector(".limit-list");
-    setupListButton(addLimitButton, limitList, "limit-command-template");
+    setupListButton(
+      addLimitButton,
+      limitList,
+      "limit-command-template",
+      initLimitCommandUi,
+    );
   }
 
   _showDialogFor(name) {
