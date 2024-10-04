@@ -5,6 +5,7 @@ import {
   Application,
   Command,
   DefinitionalStanza,
+  LimitCommand,
   Program,
   ReplaceCommand,
   SimulationScenario,
@@ -80,10 +81,11 @@ function buildUiTranslatorReverseTests() {
     });
 
     QUnit.test("caps substances", function(assert) {
-      const command = new Command(
+      const command = new LimitCommand(
         "cap",
         "manufacture",
         new EngineNumber(5, "mt"),
+        null,
         null,
       );
       const substance = createWithCommand("test", true, command);
@@ -234,11 +236,12 @@ function buildUiTranslatorReverseTests() {
         new EngineNumber(5, "kg / unit"),
         new YearMatcher(1, 1),
       );
-      const cap = new Command(
+      const cap = new LimitCommand(
         "cap",
         "manufacture",
         new EngineNumber(5, "mt"),
         new YearMatcher(3, 4),
+        "import"
       );
       const substance = createWithCommands("test", true, [setVal, cap]);
       const code = substance.toCode(0);

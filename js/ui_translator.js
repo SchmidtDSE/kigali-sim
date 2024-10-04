@@ -656,7 +656,6 @@ class Substance {
     addAllIfGiven(self._getChangesCode());
     addIfGiven(self._getRetireCode());
     addAllIfGiven(self._getLimitCode());
-    addIfGiven(self._getFloorCode());
     addIfGiven(self._getRechargeCode());
     addAllIfGiven(self._getRecycleCode());
     addAllIfGiven(self._getReplaceCode());
@@ -760,7 +759,7 @@ class Substance {
     return self._finalizeStatement(pieces);
   }
 
-  _getCapCode() {
+  _getLimitCode() {
     const self = this;
     if (self._limits === null || self._limits.length == 0) {
       return null;
@@ -768,7 +767,7 @@ class Substance {
 
     const buildLimit = (limit) => {
       const pieces = [
-        limit.getLimitType(),
+        limit.getTypeName(),
         limit.getTarget(),
         "to",
         limit.getValue().getValue(),
@@ -840,19 +839,19 @@ class Substance {
     const buildReplace = (replace) => {
       const pieces = [
         "replace",
-        self._replace.getVolume().getValue(),
-        self._replace.getVolume().getUnits(),
+        replace.getVolume().getValue(),
+        replace.getVolume().getUnits(),
         "of",
-        self._replace.getSource(),
+        replace.getSource(),
         "with",
-        "\"" + self._replace.getDestination() + "\"",
+        "\"" + replace.getDestination() + "\"",
       ];
-      self._addDuration(pieces, self._replace);
+      self._addDuration(pieces, replace);
 
       return self._finalizeStatement(pieces);
     };
 
-    return self._replaces.map(buildRecycle);
+    return self._replaces.map(buildReplace);
   }
 
   _addDuration(pieces, command) {
@@ -1697,6 +1696,7 @@ export {
   Application,
   Command,
   DefinitionalStanza,
+  LimitCommand,
   Program,
   ReplaceCommand,
   SimulationScenario,
