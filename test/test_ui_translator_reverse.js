@@ -241,7 +241,7 @@ function buildUiTranslatorReverseTests() {
         "manufacture",
         new EngineNumber(5, "mt"),
         new YearMatcher(3, 4),
-        "import"
+        "import",
       );
       const substance = createWithCommands("test", true, [setVal, cap]);
       const code = substance.toCode(0);

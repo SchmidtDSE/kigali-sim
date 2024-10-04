@@ -1,6 +1,6 @@
-import { EngineNumber } from "engine_number";
+import {EngineNumber} from "engine_number";
 
-import { YearMatcher } from "engine_state";
+import {YearMatcher} from "engine_state";
 
 import {
   Application,
@@ -103,7 +103,7 @@ function setEngineNumberValue(valSelection, unitsSelection, source, strategy, de
 function setDuring(selection, command, defaultVal) {
   const effectiveVal = obj === null ? defaultVal : command.getDuration();
   const durationTypeInput = selection.querySelector(".duration-type-input");
-  
+
   if (effectiveVal === null) {
     durationTypeInput.value = "during all years";
     return;
@@ -461,7 +461,7 @@ class ConsumptionListPresenter {
       new EngineNumber(5, "% / year"),
       (x) => x.getRecharge().getTarget(),
     );
-    
+
     setEngineNumberValue(
       self._dialog.querySelector(".edit-consumption-recharge-volume"),
       self._dialog.querySelector(".recharge-volume-units-input"),
@@ -669,7 +669,7 @@ class PolicyListPresenter {
       .append("option")
       .attr("value", (x) => x)
       .text((x) => x);
-    
+
     setListInput(
       self._dialog.querySelector(".recycling-list"),
       self._dialog.querySelector(".recycle-command-template").innerHTML,
@@ -697,7 +697,7 @@ class PolicyListPresenter {
       objToShow.getSetVals(),
       initChangeCommandUi,
     );
-    
+
     setListInput(
       self._dialog.querySelector(".limit-list"),
       self._dialog.querySelector(".limit-command-template").innerHTML,
@@ -948,7 +948,7 @@ function initSetCommandUi(itemObj, root) {
     root.querySelector(".set-target-input"),
     itemObj,
     (x) => x.getTarget(),
-    "import"
+    "import",
   );
   setEngineNumberValue(
     root.querySelector(".set-amount-input"),
@@ -970,7 +970,7 @@ function initChangeCommandUi(itemObj, root) {
     root.querySelector(".change-target-input"),
     itemObj,
     (x) => x.getTarget(),
-    "import"
+    "import",
   );
   setFieldValue(
     root.querySelector(".change-sign-input"),
@@ -983,7 +983,7 @@ function initChangeCommandUi(itemObj, root) {
     itemObj,
     (x) => {
       if (x.getValue() === null || x.getValue().getValue() === null) {
-        return 5;  // Default
+        return 5; // Default
       }
       const valueSigned = x.getValue().getValue();
       const valueUnsigned = Math.abs(valueSigned);
@@ -996,11 +996,11 @@ function initChangeCommandUi(itemObj, root) {
     itemObj,
     (x) => {
       if (x.getValue() === null) {
-        return "% / year";  // Default
+        return "% / year"; // Default
       }
       return x.getValue().getUnits();
     },
-    "% / year"
+    "% / year",
   );
   setDuring(
     root.querySelector(".duration-subcomponent"),
@@ -1015,13 +1015,13 @@ function initLimitCommandUi(itemObj, root) {
     root.querySelector(".limit-type-input"),
     itemObj,
     (x) => x.getType(),
-    "cap"
+    "cap",
   );
   setFieldValue(
     root.querySelector(".limit-target-input"),
     itemObj,
     (x) => x.getTarget(),
-    "sales"
+    "sales",
   );
   setEngineNumberValue(
     root.querySelector(".limit-amount-input"),
@@ -1034,7 +1034,7 @@ function initLimitCommandUi(itemObj, root) {
     root.querySelector(".displacing-input"),
     itemObj,
     (x) => x.getDisplacing() === null ? "" : x.getDisplacing(),
-    ""
+    "",
   );
   setDuring(
     root.querySelector(".duration-subcomponent"),
@@ -1093,7 +1093,7 @@ function initReplaceCommandUi(itemObj, root) {
     .append("option")
     .attr("value", (x) => x)
     .text((x) => x);
-  
+
   setFieldValue(
     root.querySelector(".replace-replacement-input"),
     itemObj,

@@ -779,7 +779,7 @@ class Substance {
         pieces.push("displacing");
         pieces.push("\"" + displacing + "\"");
       }
-      
+
       self._addDuration(pieces, limit);
       return self._finalizeStatement(pieces);
     };
@@ -823,7 +823,7 @@ class Substance {
         "reuse",
       ];
       self._addDuration(pieces, recycle);
-  
+
       return self._finalizeStatement(pieces);
     };
 
