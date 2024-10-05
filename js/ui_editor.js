@@ -901,7 +901,7 @@ class PolicyListPresenter {
 
   _parseObj() {
     const self = this;
-    
+
     const policyName = getFieldValue(self._dialog.querySelector(".edit-policy-name-input"));
     const applicationName = getFieldValue(
       self._dialog.querySelector(".edit-policy-application-input"),
@@ -909,19 +909,19 @@ class PolicyListPresenter {
 
     const substanceName = getFieldValue(self._dialog.querySelector(".edit-policy-substance-input"));
     const builder = new SubstanceBuilder(substanceName, true);
-    
+
     const recycles = getListInput(
       self._dialog.querySelector(".recycling-list"),
       readRecycleCommandUi,
     );
     recycles.forEach((command) => builder.addCommand(command));
-    
+
     const replaces = getListInput(
       self._dialog.querySelector(".replace-list"),
       readReplaceCommandUi,
     );
     replaces.forEach((command) => builder.addCommand(command));
-    
+
     const levels = getListInput(
       self._dialog.querySelector(".level-list"),
       readSetCommandUi,
@@ -933,7 +933,7 @@ class PolicyListPresenter {
       readChangeCommandUi,
     );
     changes.forEach((command) => builder.addCommand(command));
-    
+
     const limits = getListInput(
       self._dialog.querySelector(".limit-list"),
       readLimitCommandUi,

@@ -88,7 +88,7 @@ class Program {
       const application = x.getApplications()[0];
       const substance = application.getSubstances()[0];
       const candidateName = substance.getName();
-      return candidateName !== substanceName
+      return candidateName !== substanceName;
     });
   }
 
