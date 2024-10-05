@@ -9,6 +9,7 @@ import {
   LimitCommand,
   Program,
   ReplaceCommand,
+  SimulationScenario,
   SubstanceBuilder,
 } from "ui_translator";
 
@@ -1023,7 +1024,7 @@ class SimulationListPresenter {
         const isConfirmed = confirm(message);
         if (isConfirmed) {
           const codeObj = self._getCodeObj();
-          codeObj.consumption(x);
+          codeObj.deleteScenario(x);
           self._onCodeObjUpdate(codeObj);
         }
       })
@@ -1049,6 +1050,7 @@ class SimulationListPresenter {
     const saveButton = self._root.querySelector(".save-button");
     saveButton.addEventListener("click", (event) => {
       self._dialog.close();
+      self._save();
       event.preventDefault();
     });
   }
@@ -1063,6 +1065,50 @@ class SimulationListPresenter {
       self._dialog.querySelector(".action-title").innerHTML = "Edit";
     }
 
+    const scenario = name === null ? null : self._getCodeObj().getScenario(name);
+
+    const policiesSelectedRaw = scenario === null ? [] : scenario.getPolicyNames();
+    const policiesSelected = new Set(policiesSelectedRaw);
+    
+    setFieldValue(
+      self._dialog.querySelector(".edit-simulation-name-input"),
+      scenario,
+      "",
+      (x) => x.getName(),
+    );
+    
+    setFieldValue(
+      self._dialog.querySelector(".edit-simulation-start-input"),
+      scenario,
+      1,
+      (x) => x.getYearStart(),
+    );
+
+    setFieldValue(
+      self._dialog.querySelector(".edit-simulation-end-input"),
+      scenario,
+      10,
+      (x) => x.getYearEnd(),
+    );
+
+    const policyNames = self._getCodeObj().getPolicies().map((x) => x.getName());
+    const newLabels = d3.select(self._dialog.querySelector(".policy-sim-list"))
+      .html("")
+      .selectAll(".policy-check-label")
+      .data(policyNames)
+      .enter()
+      .append("label")
+      .classed("policy-check-label", true);
+    
+    newLabels.append("input")
+      .attr("type", "checkbox")
+      .classed("policy-check", true)
+      .attr("value", (x) => x)
+      .property("checked", (x) => policiesSelected.has(x));
+    
+    newLabels.append("span")
+      .text((x) => x);
+
     self._dialog.showModal();
   }
 
@@ -1071,6 +1117,34 @@ class SimulationListPresenter {
     const codeObj = self._getCodeObj();
     const scenarios = codeObj.getScenarios();
     return scenarios.map((x) => x.getName());
+  }
+
+  _save() {
+    const self = this;
+    const scenario = self._parseObj();
+    const codeObj = self._getCodeObj();
+    codeObj.insertScenario(self._editingName, scenario);
+    self._onCodeObjUpdate(codeObj);
+  }
+
+  _parseObj() {
+    const self = this;
+
+    const scenarioName = getFieldValue(self._dialog.querySelector(".edit-simulation-name-input"));
+    const start = getFieldValue(self._dialog.querySelector(".edit-simulation-start-input"));
+    const end = getFieldValue(self._dialog.querySelector(".edit-simulation-end-input"));
+
+    const policyChecks = Array.of(...self._dialog.querySelectorAll(".policy-check"));
+    const policiesChecked = policyChecks.filter((x) => x.checked);
+    const policyNamesSelected = policiesChecked.map((x) => x.value);
+
+    return new SimulationScenario(
+      scenarioName,
+      policyNamesSelected,
+      start,
+      end,
+      true,
+    );
   }
 }
 
@@ -1124,6 +1198,7 @@ class UiEditorPresenter {
     self._applicationsList.refresh(codeObj);
     self._consumptionList.refresh(codeObj);
     self._policyList.refresh(codeObj);
+    self._simulationList.refresh(codeObj);
   }
 
   _setupAdvancedLinks() {

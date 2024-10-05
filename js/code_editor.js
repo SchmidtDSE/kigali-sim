@@ -15,7 +15,8 @@ class CodeEditorPresenter {
 
   setCode(code) {
     const self = this;
-    self._editor.setValue(code, 1);
+    self._editor.getSession().setValue(code, 1);
+    self._editor.resize();
     self._onChange();
   }
 

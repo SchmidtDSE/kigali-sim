@@ -64,11 +64,6 @@ class Program {
     self._isCompatible = isCompatible;
   }
 
-  getApplications() {
-    const self = this;
-    return self._applications;
-  }
-
   getSubstances() {
     const self = this;
     return self.getApplications().map((x) => x.getSubstances()).flat();
@@ -90,6 +85,12 @@ class Program {
       const candidateName = substance.getName();
       return candidateName !== substanceName;
     });
+    self._removeUnknownPoliciesFromScenarios();
+  }
+
+  getApplications() {
+    const self = this;
+    return self._applications;
   }
 
   getApplication(name) {
@@ -107,6 +108,7 @@ class Program {
     const self = this;
     self._applications = self._applications.filter((x) => x.getName() !== name);
     self._policies = self._policies.filter((x) => x.getApplications()[0].getName() !== name);
+    self._removeUnknownPoliciesFromScenarios();
   }
 
   renameApplication(oldName, newName) {
@@ -129,6 +131,7 @@ class Program {
   deletePolicy(name) {
     const self = this;
     self._policies = self._policies.filter((x) => x.getName() !== name);
+    self._removeUnknownPoliciesFromScenarios();
   }
 
   insertPolicy(oldName, newPolicy) {
@@ -140,6 +143,23 @@ class Program {
   getScenarios() {
     const self = this;
     return self._scenarios;
+  }
+
+  getScenario(name) {
+    const self = this;
+    const matching = self._scenarios.filter((x) => x.getName() === name);
+    return matching.length == 0 ? null : matching[0];
+  }
+
+  deleteScenario(name) {
+    const self = this;
+    self._scenarios = self._scenarios.filter((x) => x.getName() !== name);
+  }
+
+  insertScenario(oldName, scenario) {
+    const self = this;
+    self.deleteScenario(oldName);
+    self._scenarios.push(scenario);
   }
 
   getIsCompatible() {
@@ -186,6 +206,25 @@ class Program {
     }
 
     return finalizeCodePieces(baselinePieces);
+  }
+
+  _removeUnknownPoliciesFromScenarios() {
+    const self = this;
+    const knownPolicies = new Set(self._policies.map((x) => x.getName()));
+    self._scenarios = self._scenarios.map((scenario) => {
+      if (!scenario.getIsCompatible()) {
+        return scenario;
+      }
+
+      const name = scenario.getName();
+      const start = scenario.getYearStart();
+      const end = scenario.getYearEnd();
+
+      const selectedPolicies = scenario.getPolicyNames();
+      const allowedPolicies = selectedPolicies.filter((x) => knownPolicies.has(x));
+
+      return new SimulationScenario(name, allowedPolicies, start, end, true);
+    });
   }
 }
 
