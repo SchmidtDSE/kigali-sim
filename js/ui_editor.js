@@ -415,6 +415,8 @@ class ConsumptionListPresenter {
     const self = this;
     self._editingName = name;
 
+    self._tabs.toggle("#consumption-general");
+
     if (name === null) {
       self._dialog.querySelector(".action-title").innerHTML = "Add";
     } else {
@@ -799,6 +801,8 @@ class PolicyListPresenter {
     const self = this;
     self._editingName = name;
 
+    self._tabs.toggle("#policy-general");
+
     if (name === null) {
       self._dialog.querySelector(".action-title").innerHTML = "Add";
     } else {
@@ -1101,6 +1105,14 @@ class UiEditorPresenter {
       self._consumptionList.enable();
     } else {
       self._consumptionList.disable();
+    }
+
+    if (self._codeObj.getSubstances().length > 0) {
+      self._policyList.enable();
+      self._simulationList.enable();
+    } else {
+      self._policyList.disable();
+      self._simulationList.disable();
     }
 
     self._onCodeObjUpdateInner(codeObj);
