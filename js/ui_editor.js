@@ -4,7 +4,10 @@ import {YearMatcher} from "engine_state";
 
 import {
   Application,
+  Command,
+  LimitCommand,
   Program,
+  SubstanceBuilder,
 } from "ui_translator";
 
 
@@ -81,6 +84,11 @@ function setFieldValue(selection, source, defaultValue, strategy) {
 }
 
 
+function getFieldValue(selection) {
+  return selection.value;
+}
+
+
 function setListInput(listSelection, itemTemplate, items, uiInit) {
   listSelection.innerHTML = "";
   const addItem = (item) => {
@@ -94,11 +102,24 @@ function setListInput(listSelection, itemTemplate, items, uiInit) {
 }
 
 
+function getListInput(selection, itemReadStrategy) {
+  const dialogListItems = Array.of(...selection.querySelectorAll(".dialog-list-item"));
+  return dialogListItems.map(itemReadStrategy);
+}
+
+
 function setEngineNumberValue(valSelection, unitsSelection, source, defaultValue, strategy) {
   const newValue = source === null ? null : strategy(source);
   const valueOrDefault = newValue === null ? defaultValue : newValue;
   valSelection.value = valueOrDefault.getValue();
   unitsSelection.value = valueOrDefault.getUnits();
+}
+
+
+function getEngineNumberValue(valSelection, unitsSelection) {
+  const value = valSelection.value;
+  const units = unitsSelection.value;
+  return new EngineNumber(value, units);
 }
 
 
@@ -336,7 +357,11 @@ class ConsumptionListPresenter {
         const isConfirmed = confirm(message);
         if (isConfirmed) {
           const codeObj = self._getCodeObj();
-          codeObj.consumption(x);
+          const objIdentifierRegex = /\"([^\"]+)\" for \"([^\"]+)\"/;
+          const match = x.match(objIdentifierRegex);
+          const substance = match[1];
+          const application = match[2];
+          codeObj.deleteSubstance(application, substance);
           self._onCodeObjUpdate(codeObj);
         }
       })
@@ -363,6 +388,7 @@ class ConsumptionListPresenter {
 
     const saveButton = self._root.querySelector(".save-button");
     saveButton.addEventListener("click", (event) => {
+      self._save();
       self._dialog.close();
       event.preventDefault();
     });
@@ -401,10 +427,10 @@ class ConsumptionListPresenter {
       if (name === null) {
         return {"obj": null, "application": ""};
       }
-      const objIdentifierRegex = /\"([^\"]+)\" for \"([^\"]+)\"/g;
+      const objIdentifierRegex = /\"([^\"]+)\" for \"([^\"]+)\"/;
       const match = name.match(objIdentifierRegex);
-      const substance = match[0];
-      const application = match[1];
+      const substance = match[1];
+      const application = match[2];
       const substanceObj = codeObj.getApplication(application).getSubstance(substance);
       return {"obj": substanceObj, "application": application};
     };
@@ -516,6 +542,112 @@ class ConsumptionListPresenter {
     });
     const consumptions = consumptionsNested.flat();
     return consumptions;
+  }
+
+  _save() {
+    const self = this;
+    const substance = self._parseObj();
+
+    const codeObj = self._getCodeObj();
+
+    if (self._editingName === null) {
+      const applicationName = getFieldValue(
+        self._dialog.querySelector(".edit-consumption-application-input")
+      );
+      codeObj.insertSubstance(applicationName, null, substance);
+    } else {
+      const objIdentifierRegex = /\"([^\"]+)\" for \"([^\"]+)\"/;
+      const match = self._editingName.match(objIdentifierRegex);
+      const substanceName = match[1];
+      const applicationName = match[2];
+      codeObj.insertSubstance(applicationName, substanceName, substance);
+    }
+
+    self._onCodeObjUpdate(codeObj);
+  }
+
+  _parseObj() {
+    const self = this;
+
+    const substanceName = getFieldValue(
+      self._dialog.querySelector(".edit-consumption-substance-input")
+    );
+
+    const substanceBuilder = new SubstanceBuilder(substanceName, false);
+
+    const initialChargeDomestic = getEngineNumberValue(
+      self._dialog.querySelector(".edit-consumption-initial-charge-domestic-input"),
+      self._dialog.querySelector(".initial-charge-domestic-units-input"),
+    );
+    const initialChargeDomesticCommand = new Command(
+      "initial charge",
+      "domestic",
+      initialChargeDomestic,
+      null,
+    );
+    substanceBuilder.addCommand(initialChargeDomesticCommand);
+
+    const initialChargeImport = getEngineNumberValue(
+      self._dialog.querySelector(".edit-consumption-initial-charge-import-input"),
+      self._dialog.querySelector(".initial-charge-import-units-input"),
+    );
+    const initialChargeImportCommand = new Command(
+      "initial charge",
+      "import",
+      initialChargeImport,
+      null,
+    );
+    substanceBuilder.addCommand(initialChargeImportCommand);
+
+    const retirement = getEngineNumberValue(
+      self._dialog.querySelector(".edit-consumption-retirement-input"),
+      self._dialog.querySelector(".retirement-units-input"),
+    );
+    const retireCommand = new Command(
+      "retire",
+      null,
+      retirement,
+      null,
+    );
+    substanceBuilder.addCommand(retireCommand);
+
+    const rechargePopulation = getEngineNumberValue(
+      self._dialog.querySelector(".edit-consumption-recharge-population-input"),
+      self._dialog.querySelector(".recharge-population-units-input"),
+    );
+
+    const rechargeVolume = getEngineNumberValue(
+      self._dialog.querySelector(".edit-consumption-recharge-volume-input"),
+      self._dialog.querySelector(".recharge-volume-units-input"),
+    );
+
+    const rechargeCommand = new Command(
+      "recharge",
+      rechargePopulation,
+      rechargeVolume,
+      null,
+    );
+    substanceBuilder.addCommand(rechargeCommand);
+
+    const levels = getListInput(
+      self._dialog.querySelector(".level-list"),
+      readSetCommandUi,
+    );
+    levels.forEach((x) => substanceBuilder.addCommand(x));
+
+    const changes = getListInput(
+      self._dialog.querySelector(".change-list"),
+      readChangeCommandUi,
+    );
+    changes.forEach((x) => substanceBuilder.addCommand(x));
+
+    const limits = getListInput(
+      self._dialog.querySelector(".limit-list"),
+      readLimitCommandUi,
+    );
+    limits.forEach((x) => substanceBuilder.addCommand(x));
+
+    return substanceBuilder.build(true);
   }
 }
 
@@ -914,6 +1046,7 @@ class UiEditorPresenter {
     const self = this;
     self._codeObj = codeObj;
     self._applicationsList.refresh(codeObj);
+    self._consumptionList.refresh(codeObj);
   }
 
   _setupAdvancedLinks() {
@@ -997,6 +1130,17 @@ function initSetCommandUi(itemObj, root) {
 }
 
 
+function readSetCommandUi(root) {
+  const target = getFieldValue(root.querySelector(".set-target-input"));
+  const amount = getEngineNumberValue(
+    root.querySelector(".set-amount-input"),
+    root.querySelector(".set-units-input"),
+  );
+  const duration = readDurationUi(root.querySelector(".duration-subcomponent"));
+  return new Command("setVal", target, amount, duration);
+}
+
+
 function initChangeCommandUi(itemObj, root) {
   setFieldValue(
     root.querySelector(".change-target-input"),
@@ -1042,6 +1186,18 @@ function initChangeCommandUi(itemObj, root) {
 }
 
 
+function readChangeCommandUi(root) {
+  const target = getFieldValue(root.querySelector(".change-target-input"));
+  const invert = getFieldValue(root.querySelector(".change-sign-input")) === "-";
+  const amountRaw = parseFloat(getFieldValue(root.querySelector(".change-amount-input")));
+  const amount = amountRaw * (invert ? -1 : 1);
+  const units = getFieldValue(root.querySelector(".change-units-input"));
+  const amountWithUnits = new EngineNumber(amount, units);
+  const duration = readDurationUi(root.querySelector(".duration-subcomponent"));
+  return new Command("change", target, amountWithUnits, duration);
+}
+
+
 function initLimitCommandUi(itemObj, root, codeObj) {
   const substances = codeObj.getSubstances();
   const substanceNames = substances.map((x) => x.getName());
@@ -1084,6 +1240,20 @@ function initLimitCommandUi(itemObj, root, codeObj) {
     itemObj,
     new YearMatcher(2, 10),
   );
+}
+
+
+function readLimitCommandUi(root) {
+  const limitType = getFieldValue(root.querySelector(".limit-type-input"));
+  const target = getFieldValue(root.querySelector(".limit-target-input"));
+  const amount = getEngineNumberValue(
+    root.querySelector(".limit-amount-input"),
+    root.querySelector(".limit-units-input"),
+  );
+  const displacingRaw = getFieldValue(root.querySelector(".displacing-input"));
+  const displacing = displacingRaw === "" ? null : displacingRaw;
+  const duration = readDurationUi(root.querySelector(".duration-subcomponent"));
+  return new LimitCommand(limitType, target, amount, duration, displacing);
 }
 
 
@@ -1149,6 +1319,22 @@ function initReplaceCommandUi(itemObj, root, codeObj) {
     itemObj,
     new YearMatcher(2, 10),
   );
+}
+
+
+function readDurationUi(root) {
+  const durationType = getFieldValue(root.querySelector(".duration-type-input"));
+  const targets = {
+    "in year": {"min": "duration-start", "max": "duration-start"},
+    "during all years": {"min": null, "max": null},
+    "starting in year": {"min": "duration-start", "max": null},
+    "ending in year": {"min": null, "max": "duration-end"},
+    "during years": {"min": "duration-start", "max": "duration-end"},
+  }[durationType];
+  const getYearValue = (x) => x === null ? null : root.querySelector("." + x).value;
+  const minYear = getYearValue(targets["min"]);
+  const maxYear = getYearValue(targets["max"]);
+  return new YearMatcher(minYear, maxYear);
 }
 
 

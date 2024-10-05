@@ -74,6 +74,18 @@ class Program {
     return self.getApplications().map((x) => x.getSubstances()).flat();
   }
 
+  insertSubstance(priorApplication, priorSubstanceName, substance) {
+    const self = this;
+    const application = self.getApplication(priorApplication);
+    application.insertSubstance(priorSubstanceName, substance);
+  }
+
+  deleteSubstance(applicationName, substanceName) {
+    const self = this;
+    const application = self.getApplication(applicationName);
+    application.deleteSubstance(substanceName);
+  }
+
   getApplication(name) {
     const self = this;
     const matching = self._applications.filter((x) => x.getName() === name);
@@ -345,6 +357,17 @@ class Application {
   getSubstances() {
     const self = this;
     return self._substances;
+  }
+
+  insertSubstance(substanceName, newVersion) {
+    const self = this;
+    self.deleteSubstance(substanceName);
+    self._substances.push(newVersion);
+  }
+
+  deleteSubstance(substanceName) {
+    const self = this;
+    self._substances = self._substances.filter((x) => x.getName() !== substanceName);
   }
 
   getSubstance(name) {
@@ -775,7 +798,7 @@ class Substance {
       ];
 
       const displacing = limit.getDisplacing();
-      if (displacing === null || displacing === undefined) {
+      if (displacing !== null && displacing !== undefined) {
         pieces.push("displacing");
         pieces.push("\"" + displacing + "\"");
       }
