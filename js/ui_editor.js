@@ -5,8 +5,10 @@ import {YearMatcher} from "engine_state";
 import {
   Application,
   Command,
+  DefinitionalStanza,
   LimitCommand,
   Program,
+  ReplaceCommand,
   SubstanceBuilder,
 } from "ui_translator";
 
@@ -471,7 +473,7 @@ class ConsumptionListPresenter {
       self._dialog.querySelector(".initial-charge-domestic-units-input"),
       objToShow,
       new EngineNumber(1, "kg / unit"),
-      (x) => x.getInitialCharge("domestic").getValue(),
+      (x) => x.getInitialCharge("manufacture").getValue(),
     );
 
     setEngineNumberValue(
@@ -583,7 +585,7 @@ class ConsumptionListPresenter {
     );
     const initialChargeDomesticCommand = new Command(
       "initial charge",
-      "domestic",
+      "manufacture",
       initialChargeDomestic,
       null,
     );
@@ -683,12 +685,12 @@ class PolicyListPresenter {
 
   _refreshList(codeObj) {
     const self = this;
-    const consumptionNames = self._getPolicyNames();
+    const policyNames = self._getPolicyNames();
     const itemList = d3.select(self._root).select(".item-list");
 
     itemList.html("");
     const newItems = itemList.selectAll("li")
-      .data(consumptionNames)
+      .data(policyNames)
       .enter()
       .append("li");
 
@@ -720,7 +722,7 @@ class PolicyListPresenter {
         const isConfirmed = confirm(message);
         if (isConfirmed) {
           const codeObj = self._getCodeObj();
-          codeObj.consumption(x);
+          codeObj.deletePolicy(x);
           self._onCodeObjUpdate(codeObj);
         }
       })
@@ -747,6 +749,7 @@ class PolicyListPresenter {
 
     const saveButton = self._root.querySelector(".save-button");
     saveButton.addEventListener("click", (event) => {
+      self._save();
       self._dialog.close();
       event.preventDefault();
     });
@@ -800,8 +803,17 @@ class PolicyListPresenter {
   _showDialogFor(name) {
     const self = this;
     self._editingName = name;
+    const codeObj = self._getCodeObj();
 
     self._tabs.toggle("#policy-general");
+
+    const isArrayEmpty = (x) => x === null || x.length == 0;
+
+    const targetPolicy = name === null ? null : codeObj.getPolicy(name);
+    const targetApplications = targetPolicy === null ? null : targetPolicy.getApplications();
+    const targetApplication = isArrayEmpty(targetApplications) ? null : targetApplications[0];
+    const targetSubstances = targetApplication === null ? null : targetApplication.getSubstances();
+    const targetSubstance = isArrayEmpty(targetSubstances) ? null : targetSubstances[0];
 
     if (name === null) {
       self._dialog.querySelector(".action-title").innerHTML = "Add";
@@ -811,13 +823,14 @@ class PolicyListPresenter {
 
     setFieldValue(
       self._dialog.querySelector(".edit-policy-name-input"),
-      objToShow,
+      targetPolicy,
       "",
       (x) => x.getName(),
     );
 
-    const applicationNames = self._getCodeObj().getApplications().map((x) => x.getName());
+    const applicationNames = codeObj.getApplications().map((x) => x.getName());
     const applicationSelect = self._dialog.querySelector(".application-select");
+    const targetAppName = targetApplication === null ? "" : targetApplication.getName();
     d3.select(applicationSelect)
       .html("")
       .selectAll("option")
@@ -825,51 +838,54 @@ class PolicyListPresenter {
       .enter()
       .append("option")
       .attr("value", (x) => x)
-      .text((x) => x);
+      .text((x) => x)
+      .property("selected", (x) => x === targetAppName);
 
     const substances = codeObj.getSubstances();
     const substanceNames = substances.map((x) => x.getName());
     const substanceSelect = d3.select(self._dialog.querySelector(".substances-select"));
+    const substanceName = targetSubstance === null ? "" : targetSubstance.getName();
     substanceSelect.html("");
     substanceSelect.selectAll("option")
       .data(substanceNames)
       .enter()
       .append("option")
       .attr("value", (x) => x)
-      .text((x) => x);
+      .text((x) => x)
+      .property("selected", (x) => x === substanceName);
 
     setListInput(
       self._dialog.querySelector(".recycling-list"),
       document.getElementById("recycle-command-template").innerHTML,
-      objToShow === null ? [] : objToShow.getRecycles(),
+      targetSubstance === null ? [] : targetSubstance.getRecycles(),
       initRecycleCommandUi,
     );
 
     setListInput(
       self._dialog.querySelector(".replace-list"),
       document.getElementById("replace-command-template").innerHTML,
-      objToShow === null ? [] : objToShow.getReplaces(),
+      targetSubstance === null ? [] : targetSubstance.getReplaces(),
       (item, root) => initReplaceCommandUi(item, root, self._getCodeObj()),
     );
 
     setListInput(
       self._dialog.querySelector(".level-list"),
       document.getElementById("set-command-template").innerHTML,
-      objToShow === null ? [] : objToShow.getSetVals(),
+      targetSubstance === null ? [] : targetSubstance.getSetVals(),
       initSetCommandUi,
     );
 
     setListInput(
       self._dialog.querySelector(".change-list"),
       document.getElementById("change-command-template").innerHTML,
-      objToShow === null ? [] : objToShow.getChanges(),
+      targetSubstance === null ? [] : targetSubstance.getChanges(),
       initChangeCommandUi,
     );
 
     setListInput(
       self._dialog.querySelector(".limit-list"),
       document.getElementById("limit-command-template").innerHTML,
-      objToShow === null ? [] : objToShow.getLimits(),
+      targetSubstance === null ? [] : targetSubstance.getLimits(),
       (item, root) => initLimitCommandUi(item, root, self._getCodeObj()),
     );
 
@@ -881,6 +897,62 @@ class PolicyListPresenter {
     const codeObj = self._getCodeObj();
     const policies = codeObj.getPolicies();
     return policies.map((x) => x.getName());
+  }
+
+  _parseObj() {
+    const self = this;
+    
+    const policyName = getFieldValue(self._dialog.querySelector(".edit-policy-name-input"));
+    const applicationName = getFieldValue(
+      self._dialog.querySelector(".edit-policy-application-input"),
+    );
+
+    const substanceName = getFieldValue(self._dialog.querySelector(".edit-policy-substance-input"));
+    const builder = new SubstanceBuilder(substanceName, true);
+    
+    const recycles = getListInput(
+      self._dialog.querySelector(".recycling-list"),
+      readRecycleCommandUi,
+    );
+    recycles.forEach((command) => builder.addCommand(command));
+    
+    const replaces = getListInput(
+      self._dialog.querySelector(".replace-list"),
+      readReplaceCommandUi,
+    );
+    replaces.forEach((command) => builder.addCommand(command));
+    
+    const levels = getListInput(
+      self._dialog.querySelector(".level-list"),
+      readSetCommandUi,
+    );
+    levels.forEach((command) => builder.addCommand(command));
+
+    const changes = getListInput(
+      self._dialog.querySelector(".change-list"),
+      readChangeCommandUi,
+    );
+    changes.forEach((command) => builder.addCommand(command));
+    
+    const limits = getListInput(
+      self._dialog.querySelector(".limit-list"),
+      readLimitCommandUi,
+    );
+    limits.forEach((command) => builder.addCommand(command));
+
+    const substance = builder.build(true);
+    const application = new Application(applicationName, [substance], true, true);
+    const policy = new DefinitionalStanza(policyName, [application], true, true);
+
+    return policy;
+  }
+
+  _save() {
+    const self = this;
+    const policy = self._parseObj();
+    const codeObj = self._getCodeObj();
+    codeObj.insertPolicy(self._editingName, policy);
+    self._onCodeObjUpdate(codeObj);
   }
 }
 
@@ -1051,6 +1123,7 @@ class UiEditorPresenter {
     self._codeObj = codeObj;
     self._applicationsList.refresh(codeObj);
     self._consumptionList.refresh(codeObj);
+    self._policyList.refresh(codeObj);
   }
 
   _setupAdvancedLinks() {
@@ -1292,10 +1365,24 @@ function initRecycleCommandUi(itemObj, root) {
 }
 
 
+function readRecycleCommandUi(root) {
+  const collection = getEngineNumberValue(
+    root.querySelector(".recycle-amount-input"),
+    root.querySelector(".recycle-units-input"),
+  );
+  const reuse = getEngineNumberValue(
+    root.querySelector(".recycle-reuse-amount-input"),
+    root.querySelector(".recycle-reuse-units-input"),
+  );
+  const duration = readDurationUi(root.querySelector(".duration-subcomponent"));
+  return new Command("recycle", collection, reuse, duration);
+}
+
+
 function initReplaceCommandUi(itemObj, root, codeObj) {
   const substances = codeObj.getSubstances();
   const substanceNames = substances.map((x) => x.getName());
-  const substanceSelect = d3.select(self._dialog.querySelector(".substances-select"));
+  const substanceSelect = d3.select(root.querySelector(".substances-select"));
   substanceSelect.html("");
   substanceSelect.selectAll("option")
     .data(substanceNames)
@@ -1331,6 +1418,19 @@ function initReplaceCommandUi(itemObj, root, codeObj) {
     itemObj,
     new YearMatcher(2, 10),
   );
+}
+
+
+function readReplaceCommandUi(root) {
+  const target = getFieldValue(root.querySelector(".replace-target-input"));
+  const amount = getEngineNumberValue(
+    root.querySelector(".replace-amount-input"),
+    root.querySelector(".replace-units-input"),
+  );
+  const replacement = getFieldValue(".replace-replacement-input");
+  const duration = readDurationUi(root.querySelector(".duration-subcomponent"));
+
+  return new ReplaceCommand(amount, target, replacement, duration);
 }
 
 

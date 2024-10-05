@@ -84,6 +84,12 @@ class Program {
     const self = this;
     const application = self.getApplication(applicationName);
     application.deleteSubstance(substanceName);
+    self._policies = self._policies.filter((x) => {
+      const application = x.getApplications()[0];
+      const substance = application.getSubstances()[0];
+      const candidateName = substance.getName();
+      return candidateName !== substanceName
+    });
   }
 
   getApplication(name) {
@@ -100,6 +106,7 @@ class Program {
   deleteApplication(name) {
     const self = this;
     self._applications = self._applications.filter((x) => x.getName() !== name);
+    self._policies = self._policies.filter((x) => x.getApplications()[0].getName() !== name);
   }
 
   renameApplication(oldName, newName) {
@@ -111,6 +118,23 @@ class Program {
   getPolicies() {
     const self = this;
     return self._policies;
+  }
+
+  getPolicy(name) {
+    const self = this;
+    const matching = self._policies.filter((x) => x.getName() === name);
+    return matching.length == 0 ? null : matching[0];
+  }
+
+  deletePolicy(name) {
+    const self = this;
+    self._policies = self._policies.filter((x) => x.getName() !== name);
+  }
+
+  insertPolicy(oldName, newPolicy) {
+    const self = this;
+    self.deletePolicy(oldName);
+    self._policies.push(newPolicy);
   }
 
   getScenarios() {
@@ -445,7 +469,7 @@ class SubstanceBuilder {
     const isCompatibleInterpreted = commandsConsolidatedInterpreted
       .filter((x) => x !== null)
       .map((x) => x.getIsCompatible())
-      .reduce((a, b) => a && b);
+      .reduce((a, b) => a && b, true);
 
     const initialChargeTargets = self._initialCharges.map((x) => x.getTarget());
     const initialChargeTargetsUnique = new Set(initialChargeTargets);
@@ -656,7 +680,7 @@ class Substance {
     const baselinePieces = [];
     const addCode = buildAddCode(baselinePieces);
 
-    const prefix = self.getIsModification() ? "modify" : "define";
+    const prefix = self.getIsModification() ? "modify" : "uses";
     addCode(prefix + " substance \"" + self.getName() + "\"", spaces);
 
     const addIfGiven = (code) => {
@@ -1550,7 +1574,7 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
 
   _getChildrenCompatible(children) {
     const self = this;
-    return children.map((x) => x.getIsCompatible()).reduce((a, b) => a && b);
+    return children.map((x) => x.getIsCompatible()).reduce((a, b) => a && b, true);
   }
 
   _parseApplication(ctx, isModification) {
@@ -1589,7 +1613,7 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
       builder.addCommand(x);
     });
 
-    const isCompatibleRaw = commands.map((x) => x.getIsCompatible()).reduce((a, b) => a && b);
+    const isCompatibleRaw = commands.map((x) => x.getIsCompatible()).reduce((a, b) => a && b, true);
 
     return builder.build(isCompatibleRaw);
   }
