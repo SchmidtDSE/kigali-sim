@@ -247,7 +247,10 @@ function buildUiTranslatorReverseTests() {
       const code = substance.toCode(0);
       assert.notEqual(code.indexOf("modify substance \"test\""), -1);
       assert.notEqual(code.indexOf("set manufacture to 5 kg / unit during year 1"), -1);
-      assert.notEqual(code.indexOf("cap manufacture to 5 mt during years 3 to 4"), -1);
+      assert.notEqual(
+        code.indexOf("cap manufacture to 5 mt displacing \"import\" during years 3 to 4"),
+        -1,
+      );
     });
 
     QUnit.test("converts applications to code", function(assert) {
