@@ -554,7 +554,7 @@ class ConsumptionListPresenter {
 
     if (self._editingName === null) {
       const applicationName = getFieldValue(
-        self._dialog.querySelector(".edit-consumption-application-input")
+        self._dialog.querySelector(".edit-consumption-application-input"),
       );
       codeObj.insertSubstance(applicationName, null, substance);
     } else {
@@ -572,7 +572,7 @@ class ConsumptionListPresenter {
     const self = this;
 
     const substanceName = getFieldValue(
-      self._dialog.querySelector(".edit-consumption-substance-input")
+      self._dialog.querySelector(".edit-consumption-substance-input"),
     );
 
     const substanceBuilder = new SubstanceBuilder(substanceName, false);
