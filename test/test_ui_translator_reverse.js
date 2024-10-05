@@ -76,7 +76,7 @@ function buildUiTranslatorReverseTests() {
       );
       const substance = createWithCommand("test", false, command);
       const code = substance.toCode(0);
-      assert.notEqual(code.indexOf("define substance \"test\""), -1);
+      assert.notEqual(code.indexOf("uses substance \"test\""), -1);
       assert.notEqual(code.indexOf("initial charge with 5 kg / unit for manufacture"), -1);
     });
 
@@ -257,7 +257,7 @@ function buildUiTranslatorReverseTests() {
       const application = buildTestApplication(false);
       const code = application.toCode(0);
       assert.notEqual(code.indexOf("define application \"app\""), -1);
-      assert.notEqual(code.indexOf("define substance \"sub\""), -1);
+      assert.notEqual(code.indexOf("uses substance \"sub\""), -1);
     });
 
     QUnit.test("converts simulation stanzas to code", function(assert) {
@@ -306,7 +306,7 @@ function buildUiTranslatorReverseTests() {
       assert.notEqual(code.indexOf("start default"), -1);
       assert.notEqual(code.indexOf("start policy \"intervention\""), -1);
       assert.notEqual(code.indexOf("define application \"app\""), -1);
-      assert.notEqual(code.indexOf("define substance \"sub\""), -1);
+      assert.notEqual(code.indexOf("uses substance \"sub\""), -1);
       assert.notEqual(code.indexOf("modify application \"app\""), -1);
       assert.notEqual(code.indexOf("modify substance \"sub\""), -1);
       assert.notEqual(code.indexOf("simulate \"scenario\""), -1);
