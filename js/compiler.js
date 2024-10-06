@@ -717,15 +717,15 @@ class CompileVisitor extends toolkit.QubecTalkVisitor {
       stanzasByName.set(newStanza.name, newStanza);
     }
 
-    if (!stanzasByName.has("simulations")) {
-      throw "Need at least one simulation scenario.";
-    }
-
-    const simulationsStanza = stanzasByName.get("simulations");
-    const simulationExecutables = simulationsStanza["executable"];
-    const simulationFutures = simulationsStanza["simulations"];
-
     const execute = () => {
+      if (!stanzasByName.has("simulations")) {
+        throw "Need at least one simulation scenario.";
+      }
+
+      const simulationsStanza = stanzasByName.get("simulations");
+      const simulationExecutables = simulationsStanza["executable"];
+      const simulationFutures = simulationsStanza["simulations"];
+
       const bootstrapEngine = new Engine(1, 1);
       simulationExecutables.forEach((x) => x(bootstrapEngine));
       const simulations = simulationFutures.map((simulationFuture) => {

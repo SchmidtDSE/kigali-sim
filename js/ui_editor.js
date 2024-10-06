@@ -1150,7 +1150,7 @@ class SimulationListPresenter {
 
 
 class UiEditorPresenter {
-  constructor(tabRoot, contentsRoot, getCodeAsObj, onCodeObjUpdate) {
+  constructor(tabRoot, contentsRoot, getCodeAsObj, onCodeObjUpdate, onTabChange) {
     const self = this;
 
     self._contentsSelection = contentsRoot;
@@ -1160,6 +1160,7 @@ class UiEditorPresenter {
     self._initCodeObj();
 
     self._tabs = new Tabby("#" + tabRoot.id);
+    tabRoot.addEventListener("tabby", () => onTabChange());
 
     const appEditor = self._contentsSelection.querySelector(".applications");
     self._applicationsList = new ApplicationsListPresenter(

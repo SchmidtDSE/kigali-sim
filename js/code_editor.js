@@ -4,8 +4,16 @@ class CodeEditorPresenter {
     self._root = root;
     self._errorDisplay = self._root.querySelector(".error-display");
     self._editor = null;
+    self._timeout = null;
     self._onChange = onChange;
     self._initEditor();
+  }
+
+  forceUpdate() {
+    const self = this;
+    setTimeout(() => {
+      self._editor.resize(true);
+    }, 10);
   }
 
   getCode() {
@@ -16,7 +24,6 @@ class CodeEditorPresenter {
   setCode(code) {
     const self = this;
     self._editor.getSession().setValue(code, 1);
-    self._editor.resize();
     self._onChange();
   }
 
@@ -53,7 +60,10 @@ class CodeEditorPresenter {
     self._editor.setTheme("ace/theme/textmate");
 
     self._editor.getSession().on("change", () => {
-      self._onChange();
+      if (self._timeout !== null) {
+        clearTimeout(self._timeout);
+      }
+      self._timeout = setTimeout(() => self._onChange(), 500);
     });
 
     ace.config.set("basePath", "/third_party");

@@ -9,7 +9,7 @@ const WHITESPACE_REGEX = new RegExp("^\\s*$");
 
 
 class ButtonPanelPresenter {
-  constructor(root, onRun) {
+  constructor(root, onBuild) {
     const self = this;
     self._root = root;
 
@@ -17,9 +17,9 @@ class ButtonPanelPresenter {
     self._loadingDisplay = self._root.querySelector("#loading");
     self._runButton = self._root.querySelector("#run-button");
 
-    self._onRun = onRun;
-    self._runButton.addEventListener("click", () => {
-      self._onRun();
+    self._onBuild = onBuild;
+    self._runButton.addEventListener("click", (run) => {
+      self._onBuild(run);
     });
 
     self.enable();
@@ -58,7 +58,7 @@ class MainPresenter {
     );
     self._buttonPanelPresenter = new ButtonPanelPresenter(
       document.getElementById("buttons-panel"),
-      () => self._onRun(),
+      () => self._onBuild(true),
     );
     self._resultsPresenter = new ResultsPresenter(document.getElementById("results"));
     self._uiEditorPresenter = new UiEditorPresenter(
@@ -66,6 +66,7 @@ class MainPresenter {
       document.getElementById("ui-editor-pane"),
       () => self._getCodeAsObj(),
       (codeObj) => self._onCodeObjUpdate(codeObj),
+      () => self._codeEditorPresenter.forceUpdate(),
     );
     self._onCodeChange();
   }
@@ -77,10 +78,11 @@ class MainPresenter {
       self._buttonPanelPresenter.hideScriptButtons();
     } else {
       self._buttonPanelPresenter.showScriptButtons();
+      self._onBuild(false);
     }
   }
 
-  _onRun() {
+  _onBuild(run) {
     const self = this;
     self._buttonPanelPresenter.disable();
 
@@ -112,8 +114,10 @@ class MainPresenter {
         return;
       } else if (program !== null) {
         try {
-          const programResult = program();
-          self._onResult(programResult);
+          if (run) {
+            const programResult = program();
+            self._onResult(programResult);
+          }
         } catch (e) {
           alert("" + e);
         }
@@ -129,7 +133,7 @@ class MainPresenter {
       self._buttonPanelPresenter.enable();
     };
 
-    setTimeout(executeSafe, 250);
+    setTimeout(executeSafe, 50);
 
     const codeObjResults = self._getCodeAsObj();
     if (codeObjResults.getErrors() == 0) {

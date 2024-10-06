@@ -1571,11 +1571,7 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
     }
 
     if (!stanzasByName.has("default")) {
-      return;
-    }
-
-    if (!stanzasByName.has("simulations")) {
-      return;
+      return new Program([], [], [], true);
     }
 
     const applications = stanzasByName.get("default").getApplications();
@@ -1586,6 +1582,10 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
       .filter((x) => x !== "about")
       .filter((x) => x !== "simulations")
       .map((x) => stanzasByName.get(x));
+
+    if (!stanzasByName.has("simulations")) {
+      return new Program(applications, policies, [], true);
+    }
 
     const scenarios = stanzasByName.get("simulations").getScenarios();
 
