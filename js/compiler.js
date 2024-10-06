@@ -415,24 +415,24 @@ class CompileVisitor extends toolkit.QubecTalkVisitor {
     return self.buildStreamMod(strategy, ctx, durationFuture);
   }
 
-  visitCapAllYears(ctx) {
+  visitLimitCommandAllYears(ctx) {
     const self = this;
     return self.buildCap(ctx, (engine) => null, null);
   }
 
-  visitCapDisplacingAllYears(ctx) {
+  visitLimitCommandDisplacingAllYears(ctx) {
     const self = this;
     const displaceTarget = self._getStringWithoutQuotes(ctx.getChild(5).getText());
     return self.buildCap(ctx, (engine) => null, displaceTarget);
   }
 
-  visitCapDuration(ctx) {
+  visitLimitCommandDuration(ctx) {
     const self = this;
     const durationFuture = ctx.duration.accept(self);
     return self.buildCap(ctx, durationFuture);
   }
 
-  vistCapDisplacingDuration(ctx) {
+  visitLimitCommandDisplacingDuration(ctx) {
     const self = this;
     const durationFuture = ctx.duration.accept(self);
     const displaceTarget = self._getStringWithoutQuotes(ctx.getChild(5).getText());

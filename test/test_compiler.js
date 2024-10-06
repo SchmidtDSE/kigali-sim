@@ -38,10 +38,15 @@ function buildCompilerTests() {
           if (compilerResult.getErrors().length > 0) {
             console.log(compilerResult.getErrors());
           } else {
-            const programResult = program();
-            checks.forEach((check) => {
-              check(programResult, assert);
-            });
+            try {
+              const programResult = program();
+              checks.forEach((check) => {
+                check(programResult, assert);
+              });
+            } catch (e) {
+              console.log(e);
+              assert.ok(false);
+            }
           }
 
           done();

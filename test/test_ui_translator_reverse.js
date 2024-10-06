@@ -5,6 +5,7 @@ import {
   Application,
   Command,
   DefinitionalStanza,
+  LimitCommand,
   Program,
   ReplaceCommand,
   SimulationScenario,
@@ -75,15 +76,16 @@ function buildUiTranslatorReverseTests() {
       );
       const substance = createWithCommand("test", false, command);
       const code = substance.toCode(0);
-      assert.notEqual(code.indexOf("define substance \"test\""), -1);
+      assert.notEqual(code.indexOf("uses substance \"test\""), -1);
       assert.notEqual(code.indexOf("initial charge with 5 kg / unit for manufacture"), -1);
     });
 
     QUnit.test("caps substances", function(assert) {
-      const command = new Command(
+      const command = new LimitCommand(
         "cap",
         "manufacture",
         new EngineNumber(5, "mt"),
+        null,
         null,
       );
       const substance = createWithCommand("test", true, command);
@@ -234,24 +236,28 @@ function buildUiTranslatorReverseTests() {
         new EngineNumber(5, "kg / unit"),
         new YearMatcher(1, 1),
       );
-      const cap = new Command(
+      const cap = new LimitCommand(
         "cap",
         "manufacture",
         new EngineNumber(5, "mt"),
         new YearMatcher(3, 4),
+        "import",
       );
       const substance = createWithCommands("test", true, [setVal, cap]);
       const code = substance.toCode(0);
       assert.notEqual(code.indexOf("modify substance \"test\""), -1);
       assert.notEqual(code.indexOf("set manufacture to 5 kg / unit during year 1"), -1);
-      assert.notEqual(code.indexOf("cap manufacture to 5 mt during years 3 to 4"), -1);
+      assert.notEqual(
+        code.indexOf("cap manufacture to 5 mt displacing \"import\" during years 3 to 4"),
+        -1,
+      );
     });
 
     QUnit.test("converts applications to code", function(assert) {
       const application = buildTestApplication(false);
       const code = application.toCode(0);
       assert.notEqual(code.indexOf("define application \"app\""), -1);
-      assert.notEqual(code.indexOf("define substance \"sub\""), -1);
+      assert.notEqual(code.indexOf("uses substance \"sub\""), -1);
     });
 
     QUnit.test("converts simulation stanzas to code", function(assert) {
@@ -300,7 +306,7 @@ function buildUiTranslatorReverseTests() {
       assert.notEqual(code.indexOf("start default"), -1);
       assert.notEqual(code.indexOf("start policy \"intervention\""), -1);
       assert.notEqual(code.indexOf("define application \"app\""), -1);
-      assert.notEqual(code.indexOf("define substance \"sub\""), -1);
+      assert.notEqual(code.indexOf("uses substance \"sub\""), -1);
       assert.notEqual(code.indexOf("modify application \"app\""), -1);
       assert.notEqual(code.indexOf("modify substance \"sub\""), -1);
       assert.notEqual(code.indexOf("simulate \"scenario\""), -1);

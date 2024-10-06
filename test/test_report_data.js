@@ -24,11 +24,16 @@ function buildReportDataTests() {
           if (compilerResult.getErrors().length > 0) {
             console.log(compilerResult.getErrors());
           } else {
-            const programResult = program();
-            const programResultWrapped = new ReportDataWrapper(programResult);
-            checks.forEach((check) => {
-              check(programResultWrapped, assert);
-            });
+            try {
+              const programResult = program();
+              const programResultWrapped = new ReportDataWrapper(programResult);
+              checks.forEach((check) => {
+                check(programResultWrapped, assert);
+              });
+            } catch (e) {
+              assert.ok(false);
+              console.log(e);
+            }
           }
 
           done();

@@ -11,11 +11,13 @@ const COMMAND_COMPATIBILITIES = {
   "change": "any",
   "retire": "any",
   "setVal": "any",
+  "cap": "any",
+  "floor": "any",
+  "limit": "any",
   "initial charge": "definition",
   "emit": "definition",
   "recharge": "definition",
   "recycle": "policy",
-  "cap": "policy",
   "replace": "policy",
 };
 
@@ -62,9 +64,39 @@ class Program {
     self._isCompatible = isCompatible;
   }
 
+  getSubstances() {
+    const self = this;
+    return self.getApplications().map((x) => x.getSubstances()).flat();
+  }
+
+  insertSubstance(priorApplication, priorSubstanceName, substance) {
+    const self = this;
+    const application = self.getApplication(priorApplication);
+    application.insertSubstance(priorSubstanceName, substance);
+  }
+
+  deleteSubstance(applicationName, substanceName) {
+    const self = this;
+    const application = self.getApplication(applicationName);
+    application.deleteSubstance(substanceName);
+    self._policies = self._policies.filter((x) => {
+      const application = x.getApplications()[0];
+      const substance = application.getSubstances()[0];
+      const candidateName = substance.getName();
+      return candidateName !== substanceName;
+    });
+    self._removeUnknownPoliciesFromScenarios();
+  }
+
   getApplications() {
     const self = this;
     return self._applications;
+  }
+
+  getApplication(name) {
+    const self = this;
+    const matching = self._applications.filter((x) => x.getName() === name);
+    return matching.length == 0 ? null : matching[0];
   }
 
   addApplication(newApplication) {
@@ -75,6 +107,8 @@ class Program {
   deleteApplication(name) {
     const self = this;
     self._applications = self._applications.filter((x) => x.getName() !== name);
+    self._policies = self._policies.filter((x) => x.getApplications()[0].getName() !== name);
+    self._removeUnknownPoliciesFromScenarios();
   }
 
   renameApplication(oldName, newName) {
@@ -88,9 +122,44 @@ class Program {
     return self._policies;
   }
 
+  getPolicy(name) {
+    const self = this;
+    const matching = self._policies.filter((x) => x.getName() === name);
+    return matching.length == 0 ? null : matching[0];
+  }
+
+  deletePolicy(name) {
+    const self = this;
+    self._policies = self._policies.filter((x) => x.getName() !== name);
+    self._removeUnknownPoliciesFromScenarios();
+  }
+
+  insertPolicy(oldName, newPolicy) {
+    const self = this;
+    self.deletePolicy(oldName);
+    self._policies.push(newPolicy);
+  }
+
   getScenarios() {
     const self = this;
     return self._scenarios;
+  }
+
+  getScenario(name) {
+    const self = this;
+    const matching = self._scenarios.filter((x) => x.getName() === name);
+    return matching.length == 0 ? null : matching[0];
+  }
+
+  deleteScenario(name) {
+    const self = this;
+    self._scenarios = self._scenarios.filter((x) => x.getName() !== name);
+  }
+
+  insertScenario(oldName, scenario) {
+    const self = this;
+    self.deleteScenario(oldName);
+    self._scenarios.push(scenario);
   }
 
   getIsCompatible() {
@@ -137,6 +206,25 @@ class Program {
     }
 
     return finalizeCodePieces(baselinePieces);
+  }
+
+  _removeUnknownPoliciesFromScenarios() {
+    const self = this;
+    const knownPolicies = new Set(self._policies.map((x) => x.getName()));
+    self._scenarios = self._scenarios.map((scenario) => {
+      if (!scenario.getIsCompatible()) {
+        return scenario;
+      }
+
+      const name = scenario.getName();
+      const start = scenario.getYearStart();
+      const end = scenario.getYearEnd();
+
+      const selectedPolicies = scenario.getPolicyNames();
+      const allowedPolicies = selectedPolicies.filter((x) => knownPolicies.has(x));
+
+      return new SimulationScenario(name, allowedPolicies, start, end, true);
+    });
   }
 }
 
@@ -334,6 +422,23 @@ class Application {
     return self._substances;
   }
 
+  insertSubstance(substanceName, newVersion) {
+    const self = this;
+    self.deleteSubstance(substanceName);
+    self._substances.push(newVersion);
+  }
+
+  deleteSubstance(substanceName) {
+    const self = this;
+    self._substances = self._substances.filter((x) => x.getName() !== substanceName);
+  }
+
+  getSubstance(name) {
+    const self = this;
+    const matching = self._substances.filter((x) => x.getName() === name);
+    return matching.length == 0 ? null : matching[0];
+  }
+
   getIsModification() {
     const self = this;
     return self._isModification;
@@ -374,12 +479,12 @@ class SubstanceBuilder {
     self._name = name;
     self._isModification = isModification;
     self._initialCharges = [];
-    self._cap = null;
+    self._limits = [];
     self._changes = [];
     self._emit = null;
     self._recharge = null;
-    self._recycle = null;
-    self._replace = null;
+    self._recycles = [];
+    self._replaces = [];
     self._retire = null;
     self._setVals = [];
   }
@@ -389,12 +494,12 @@ class SubstanceBuilder {
 
     const commandsConsolidatedInterpreted = [
       self._initialCharges,
+      self._limits,
+      self._recycles,
+      self._replaces,
       [
-        self._cap,
         self._emit,
         self._recharge,
-        self._recycle,
-        self._replace,
         self._retire,
       ],
       self._changes,
@@ -403,7 +508,7 @@ class SubstanceBuilder {
     const isCompatibleInterpreted = commandsConsolidatedInterpreted
       .filter((x) => x !== null)
       .map((x) => x.getIsCompatible())
-      .reduce((a, b) => a && b);
+      .reduce((a, b) => a && b, true);
 
     const initialChargeTargets = self._initialCharges.map((x) => x.getTarget());
     const initialChargeTargetsUnique = new Set(initialChargeTargets);
@@ -414,12 +519,12 @@ class SubstanceBuilder {
     return new Substance(
       self._name,
       self._initialCharges,
-      self._cap,
+      self._limits,
       self._changes,
       self._emit,
       self._recharge,
-      self._recycle,
-      self._replace,
+      self._recycles,
+      self._replaces,
       self._retire,
       self._setVals,
       self._isModification,
@@ -449,9 +554,10 @@ class SubstanceBuilder {
       "initial charge": (x) => self.addInitialCharge(x),
       "recharge": (x) => self.setRecharge(x),
       "emit": (x) => self.setEmit(x),
-      "recycle": (x) => self.setRecycle(x),
-      "cap": (x) => self.setCap(x),
-      "replace": (x) => self.setReplace(x),
+      "recycle": (x) => self.addRecycle(x),
+      "cap": (x) => self.addLimit(x),
+      "floor": (x) => self.addLimit(x),
+      "replace": (x) => self.addReplace(x),
     }[commandType];
 
     const effectiveCommand = incompatiblePlace ? self._makeInvalidPlacement() : command;
@@ -468,9 +574,9 @@ class SubstanceBuilder {
     self._initialCharges.push(newVal);
   }
 
-  setCap(newVal) {
+  addLimit(newVal) {
     const self = this;
-    self._cap = self._checkDuplicate(self._cap, newVal);
+    self._limits.push(newVal);
   }
 
   addChange(newVal) {
@@ -488,14 +594,14 @@ class SubstanceBuilder {
     self._recharge = self._checkDuplicate(self._recharge, newVal);
   }
 
-  setRecycle(newVal) {
+  addRecycle(newVal) {
     const self = this;
-    self._recycle = self._checkDuplicate(self._recycle, newVal);
+    self._recycles.push(newVal);
   }
 
-  setReplace(newVal) {
+  addReplace(newVal) {
     const self = this;
-    self._replace = self._checkDuplicate(self._replace, newVal);
+    self._replaces.push(newVal);
   }
 
   setRetire(newVal) {
@@ -524,17 +630,17 @@ class SubstanceBuilder {
 
 
 class Substance {
-  constructor(name, charges, cap, changes, emit, recharge, recycle, replace, retire, setVals, isMod,
-    compat) {
+  constructor(name, charges, limits, changes, emit, recharge, recycles, replaces, retire, setVals,
+    isMod, compat) {
     const self = this;
     self._name = name;
     self._initialCharges = charges;
-    self._cap = cap;
+    self._limits = limits;
     self._changes = changes;
     self._emit = emit;
     self._recharge = recharge;
-    self._recycle = recycle;
-    self._replace = replace;
+    self._recycles = recycles;
+    self._replaces = replaces;
     self._retire = retire;
     self._setVals = setVals;
     self._isModification = isMod;
@@ -551,9 +657,15 @@ class Substance {
     return self._initialCharges;
   }
 
-  getCap() {
+  getInitialCharge(stream) {
     const self = this;
-    return self._cap;
+    const matching = self._initialCharges.filter((x) => x.getTarget() === stream);
+    return matching.length == 0 ? null : matching[0];
+  }
+
+  getLimits() {
+    const self = this;
+    return self._limits;
   }
 
   getChanges() {
@@ -571,14 +683,14 @@ class Substance {
     return self._recharge;
   }
 
-  getRecycle() {
+  getRecycles() {
     const self = this;
-    return self._recycle;
+    return self._recycles;
   }
 
-  getReplace() {
+  getReplaces() {
     const self = this;
-    return self._replace;
+    return self._replaces;
   }
 
   getRetire() {
@@ -607,7 +719,7 @@ class Substance {
     const baselinePieces = [];
     const addCode = buildAddCode(baselinePieces);
 
-    const prefix = self.getIsModification() ? "modify" : "define";
+    const prefix = self.getIsModification() ? "modify" : "uses";
     addCode(prefix + " substance \"" + self.getName() + "\"", spaces);
 
     const addIfGiven = (code) => {
@@ -629,10 +741,10 @@ class Substance {
     addAllIfGiven(self._getSetValsCode());
     addAllIfGiven(self._getChangesCode());
     addIfGiven(self._getRetireCode());
-    addIfGiven(self._getCapCode());
+    addAllIfGiven(self._getLimitCode());
     addIfGiven(self._getRechargeCode());
-    addIfGiven(self._getRecycleCode());
-    addIfGiven(self._getReplaceCode());
+    addAllIfGiven(self._getRecycleCode());
+    addAllIfGiven(self._getReplaceCode());
 
     addCode("end substance", spaces);
     return finalizeCodePieces(baselinePieces);
@@ -733,22 +845,32 @@ class Substance {
     return self._finalizeStatement(pieces);
   }
 
-  _getCapCode() {
+  _getLimitCode() {
     const self = this;
-    if (self._cap === null) {
+    if (self._limits === null || self._limits.length == 0) {
       return null;
     }
 
-    const pieces = [
-      "cap",
-      self._cap.getTarget(),
-      "to",
-      self._cap.getValue().getValue(),
-      self._cap.getValue().getUnits(),
-    ];
-    self._addDuration(pieces, self._cap);
+    const buildLimit = (limit) => {
+      const pieces = [
+        limit.getTypeName(),
+        limit.getTarget(),
+        "to",
+        limit.getValue().getValue(),
+        limit.getValue().getUnits(),
+      ];
 
-    return self._finalizeStatement(pieces);
+      const displacing = limit.getDisplacing();
+      if (displacing !== null && displacing !== undefined) {
+        pieces.push("displacing");
+        pieces.push("\"" + displacing + "\"");
+      }
+
+      self._addDuration(pieces, limit);
+      return self._finalizeStatement(pieces);
+    };
+
+    return self._limits.map(buildLimit);
   }
 
   _getRechargeCode() {
@@ -772,42 +894,50 @@ class Substance {
 
   _getRecycleCode() {
     const self = this;
-    if (self._recycle === null) {
+    if (self._recycles === null) {
       return null;
     }
 
-    const pieces = [
-      "recover",
-      self._recycle.getTarget().getValue(),
-      self._recycle.getTarget().getUnits(),
-      "with",
-      self._recycle.getValue().getValue(),
-      self._recycle.getValue().getUnits(),
-      "reuse",
-    ];
-    self._addDuration(pieces, self._recycle);
+    const buildRecycle = (recycle) => {
+      const pieces = [
+        "recover",
+        recycle.getTarget().getValue(),
+        recycle.getTarget().getUnits(),
+        "with",
+        recycle.getValue().getValue(),
+        recycle.getValue().getUnits(),
+        "reuse",
+      ];
+      self._addDuration(pieces, recycle);
 
-    return self._finalizeStatement(pieces);
+      return self._finalizeStatement(pieces);
+    };
+
+    return self._recycles.map(buildRecycle);
   }
 
   _getReplaceCode() {
     const self = this;
-    if (self._replace === null) {
+    if (self._replaces === null) {
       return null;
     }
 
-    const pieces = [
-      "replace",
-      self._replace.getVolume().getValue(),
-      self._replace.getVolume().getUnits(),
-      "of",
-      self._replace.getSource(),
-      "with",
-      "\"" + self._replace.getDestination() + "\"",
-    ];
-    self._addDuration(pieces, self._replace);
+    const buildReplace = (replace) => {
+      const pieces = [
+        "replace",
+        replace.getVolume().getValue(),
+        replace.getVolume().getUnits(),
+        "of",
+        replace.getSource(),
+        "with",
+        "\"" + replace.getDestination() + "\"",
+      ];
+      self._addDuration(pieces, replace);
 
-    return self._finalizeStatement(pieces);
+      return self._finalizeStatement(pieces);
+    };
+
+    return self._replaces.map(buildReplace);
   }
 
   _addDuration(pieces, command) {
@@ -874,6 +1004,48 @@ class Command {
   getDuration() {
     const self = this;
     return self._duration;
+  }
+
+  getIsCompatible() {
+    const self = this;
+    return true;
+  }
+}
+
+
+class LimitCommand {
+  constructor(typeName, target, value, duration, displacing) {
+    const self = this;
+    self._typeName = typeName;
+    self._target = target;
+    self._value = value;
+    self._duration = duration;
+    self._displacing = displacing;
+  }
+
+  getTypeName() {
+    const self = this;
+    return self._typeName;
+  }
+
+  getTarget() {
+    const self = this;
+    return self._target;
+  }
+
+  getValue() {
+    const self = this;
+    return self._value;
+  }
+
+  getDuration() {
+    const self = this;
+    return self._duration;
+  }
+
+  getDisplacing() {
+    const self = this;
+    return self._displacing;
   }
 
   getIsCompatible() {
@@ -1205,15 +1377,28 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
     return self._parseSubstance(ctx, true);
   }
 
-  visitCapAllYears(ctx) {
+  visitLimitCommandAllYears(ctx) {
     const self = this;
-    return self._buildOperation(ctx, "cap", null);
+    return self._buildLimit(ctx, null, null);
   }
 
-  visitCapDuration(ctx) {
+  visitLimitCommandDisplacingAllYears(ctx) {
+    const self = this;
+    const displaceTarget = self._getStringWithoutQuotes(ctx.getChild(5).getText());
+    return self._buildLimit(ctx, null, displaceTarget);
+  }
+
+  visitLimitCommandDuration(ctx) {
     const self = this;
     const duration = ctx.duration.accept(self);
-    return self._buildOperation(ctx, "cap", duration);
+    return self._buildLimit(ctx, duration, null);
+  }
+
+  visitLimitCommandDisplacingDuration(ctx) {
+    const self = this;
+    const duration = ctx.duration.accept(self);
+    const displaceTarget = self._getStringWithoutQuotes(ctx.getChild(5).getText());
+    return self._buildLimit(ctx, duration, displaceTarget);
   }
 
   visitChangeAllYears(ctx) {
@@ -1428,7 +1613,7 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
 
   _getChildrenCompatible(children) {
     const self = this;
-    return children.map((x) => x.getIsCompatible()).reduce((a, b) => a && b);
+    return children.map((x) => x.getIsCompatible()).reduce((a, b) => a && b, true);
   }
 
   _parseApplication(ctx, isModification) {
@@ -1467,7 +1652,7 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
       builder.addCommand(x);
     });
 
-    const isCompatibleRaw = commands.map((x) => x.getIsCompatible()).reduce((a, b) => a && b);
+    const isCompatibleRaw = commands.map((x) => x.getIsCompatible()).reduce((a, b) => a && b, true);
 
     return builder.build(isCompatibleRaw);
   }
@@ -1485,6 +1670,23 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
     const value = valueGetter(ctx);
 
     return new Command(typeName, target, value, duration);
+  }
+
+  _buildLimit(ctx, duration, displaceTarget, targetGetter, valueGetter) {
+    const self = this;
+    const capType = ctx.getChild(0).getText();
+
+    if (targetGetter === undefined || targetGetter === null) {
+      targetGetter = (ctx) => ctx.target.getText();
+    }
+    const target = targetGetter(ctx);
+
+    if (valueGetter === undefined || valueGetter === null) {
+      valueGetter = (ctx) => ctx.value.accept(self);
+    }
+    const value = valueGetter(ctx);
+
+    return new LimitCommand(capType, target, value, duration, displaceTarget);
   }
 }
 
@@ -1580,6 +1782,7 @@ export {
   Application,
   Command,
   DefinitionalStanza,
+  LimitCommand,
   Program,
   ReplaceCommand,
   SimulationScenario,
