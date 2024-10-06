@@ -948,6 +948,8 @@ class Substance {
       return;
     }
 
+    console.log(duration);
+
     let startYear = duration.getStart();
     let endYear = duration.getEnd();
     if (startYear === null && endYear === null) {
@@ -1262,46 +1264,42 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
     return identifier;
   }
 
-  buildDuring(minYearMaybe, maxYearMaybe) {
+  buildDuring(minYear, maxYear) {
     const self = this;
-    return (engine) => {
-      const minYear = minYearMaybe === null ? null : minYearMaybe(engine);
-      const maxYear = maxYearMaybe === null ? null : maxYearMaybe(engine);
-      return new YearMatcher(minYear, maxYear);
-    };
+    return new YearMatcher(minYear, maxYear);
   }
 
   visitDuringSingleYear(ctx) {
     const self = this;
-    const yearFuture = ctx.target.accept(self);
-    return self.buildDuring(yearFuture, yearFuture);
+    const year = ctx.target.accept(self);
+    return self.buildDuring(year, year);
   }
 
   visitDuringStart(ctx) {
     const self = this;
-    const getStartYear = (engine) => engine.getStartYear();
-    return self.buildDuring(getStartYear, getStartYear);
+    const startYear = engine.getStartYear();
+    return self.buildDuring(startYear, startYear);
   }
 
   visitDuringRange(ctx) {
     const self = this;
-    const lowerFuture = ctx.lower.accept(self);
-    const upperFuture = ctx.upper.accept(self);
-    return self.buildDuring(lowerFuture, upperFuture);
+    const lower = ctx.lower.accept(self);
+    const upper = ctx.upper.accept(self);
+    return self.buildDuring(lower, upper);
   }
 
   visitDuringWithMin(ctx) {
     const self = this;
-    const lowerFuture = ctx.lower.accept(self);
-    const upperFuture = (engine) => engine.getEndYear();
-    return self.buildDuring(lowerFuture, upperFuture);
+    const lower = ctx.lower.accept(self);
+    const upper = (engine) => engine.getEndYear();
+    return self.buildDuring(lower, upper);
   }
 
   visitDuringWithMax(ctx) {
     const self = this;
-    const lowerFuture = (engine) => engine.getStartYear();
-    const upperFuture = ctx.upper.accept(self);
-    return self.buildDuring(lowerFuture, upperFuture);
+    const lower = (engine) => engine.getStartYear();
+    const upper = ctx.upper.accept(self);
+    return self.buildDuring(lower, upper);
   }
 
   visitDuringAll(ctx) {

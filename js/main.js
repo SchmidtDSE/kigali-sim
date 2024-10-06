@@ -161,6 +161,12 @@ class MainPresenter {
     const newCode = codeObj.toCode(0);
     self._codeEditorPresenter.setCode(newCode);
     self._uiEditorPresenter.refresh(codeObj);
+
+    if (codeObj.getScenarios() == 0) {
+      return;
+    }
+
+    self._onBuild(true);
   }
 }
 
