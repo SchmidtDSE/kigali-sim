@@ -79,7 +79,6 @@ class ResultsPresenter {
 
 
 class ExportPresenter {
-
   constructor(root) {
     const self = this;
     self._root = root;
@@ -158,7 +157,6 @@ class ExportPresenter {
     const exportLink = document.getElementById("export-button");
     exportLink.href = encodedValue;
   }
-
 }
 
 
