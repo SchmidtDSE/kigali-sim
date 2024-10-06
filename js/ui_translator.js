@@ -511,7 +511,6 @@ class SubstanceBuilder {
       self._changes,
       self._setVals,
     ].flat();
-    console.log(commandsConsolidatedInterpreted);
     const isCompatibleInterpreted = commandsConsolidatedInterpreted
       .filter((x) => x !== null)
       .map((x) => x.getIsCompatible())
@@ -959,8 +958,6 @@ class Substance {
     if (duration === null) {
       return;
     }
-
-    console.log(duration);
 
     let startYear = duration.getStart();
     let endYear = duration.getEnd();
@@ -1623,7 +1620,6 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
 
   _getChildrenCompatible(children) {
     const self = this;
-    console.log(children);
     return children.map((x) => x.getIsCompatible()).reduce((a, b) => a && b, true);
   }
 
@@ -1663,7 +1659,6 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
       builder.addCommand(x);
     });
 
-    console.log(commands);
     const isCompatibleRaw = commands.map((x) => x.getIsCompatible()).reduce((a, b) => a && b, true);
 
     return builder.build(isCompatibleRaw);

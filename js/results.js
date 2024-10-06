@@ -23,11 +23,140 @@ function getColor(i) {
 }
 
 
+class ResultsPresenter {
+  constructor(root) {
+    const self = this;
+    self._root = root;
+    self._results = null;
+    self._filterSet = new FilterSet(null, null, null, null, "emissions", "simulations");
+
+    const scorecardContainer = self._root.querySelector("#scorecards");
+    const dimensionsContainer = self._root.querySelector("#dimensions");
+    const centerChartContainer = self._root.querySelector("#center-chart");
+    const centerChartHolderContainer = self._root.querySelector("#center-chart-holder");
+
+    const onUpdateFilterSet = (x) => self._onUpdateFilterSet(x);
+    self._scorecardPresenter = new ScorecardPresenter(scorecardContainer, onUpdateFilterSet);
+    self._dimensionPresenter = new DimensionCardPresenter(dimensionsContainer, onUpdateFilterSet);
+    self._centerChartPresenter = new CenterChartPresenter(centerChartContainer);
+    self._titlePreseter = new SelectorTitlePresenter(centerChartHolderContainer, onUpdateFilterSet);
+    self._exportPresenter = new ExportPresenter(self._root);
+
+    self.hide();
+  }
+
+  hide() {
+    const self = this;
+    self._root.style.display = "none";
+  }
+
+  showResults(results) {
+    const self = this;
+    self._root.style.display = "block";
+    self._results = results;
+    self._updateInternally();
+  }
+
+  _onUpdateFilterSet(newFilterSet) {
+    const self = this;
+    self._filterSet = newFilterSet;
+    self._updateInternally();
+  }
+
+  _updateInternally() {
+    const self = this;
+
+    const years = self._results.getYears(self._filterSet.getWithYear(null));
+    self._filterSet = self._filterSet.getWithYear(Math.max(...years));
+
+    self._scorecardPresenter.showResults(self._results, self._filterSet);
+    self._dimensionPresenter.showResults(self._results, self._filterSet);
+    self._centerChartPresenter.showResults(self._results, self._filterSet);
+    self._titlePreseter.showResults(self._results, self._filterSet);
+    self._exportPresenter.showResults(self._results);
+  }
+}
+
+
 class ExportPresenter {
 
   constructor(root) {
     const self = this;
     self._root = root;
+  }
+
+  showResults(results, filterSet) {
+    const self = this;
+    const rawData = results.getRawData();
+    const nested = rawData.map((trial) => {
+      const scenarioName = trial.getName();
+      const results = trial.getTrialResults();
+      return results.flat().flat().map((result) => {
+        const application = result.getApplication();
+        const substance = result.getSubstance();
+        const year = result.getYear();
+        const manufactureValue = result.getManufacture();
+        const importValue = result.getImport();
+        const emissionsValue = result.getEmissions();
+        const populationValue = result.getPopulation();
+        return {
+          "scenario": scenarioName,
+          "application": application,
+          "substance": substance,
+          "year": year,
+          "manufactureValue": manufactureValue.getValue(),
+          "manufactureUnits": manufactureValue.getUnits(),
+          "importValue": importValue.getValue(),
+          "importUnits": importValue.getUnits(),
+          "emissionsValue": emissionsValue.getValue(),
+          "emissionsUnits": emissionsValue.getUnits(),
+          "equipmentPopulation": populationValue.getValue(),
+          "equipmentUnits": populationValue.getUnits(),
+        };
+      });
+    });
+    const flat = nested.flat();
+    const contentRows = flat.map((record) => {
+      const vals = [
+        record["scenario"],
+        record["application"],
+        record["substance"],
+        record["year"],
+        record["manufactureValue"],
+        record["manufactureUnits"],
+        record["importValue"],
+        record["importUnits"],
+        record["emissionsValue"],
+        record["emissionsUnits"],
+        record["equipmentPopulation"],
+        record["equipmentUnits"],
+      ];
+      const valsStrs = vals.map((x) => x + "");
+      const valsStr = valsStrs.join(",");
+      return valsStr;
+    });
+    const contentStr = contentRows.join("\n");
+
+    const headerElements = [
+      "scenario",
+      "application",
+      "substance",
+      "year",
+      "manufactureValue",
+      "manufactureUnits",
+      "importValue",
+      "importUnits",
+      "emissionsValue",
+      "emissionsUnits",
+      "equipmentPopulation",
+      "equipmentUnits",
+    ];
+    const headerStr = headerElements.join(",");
+
+    const csvStr = headerStr + "\n" + contentStr;
+    const encodedValue = encodeURI("data:text/csv;charset=utf-8," + csvStr);
+    const exportLink = document.getElementById("export-button");
+    exportLink.href = encodedValue;
   }
 
 }
@@ -522,59 +651,6 @@ class SelectorTitlePresenter {
 
     const substanceDropdown = self._selection.querySelector(".substance-select");
     addListener(substanceDropdown, (filterSet, val) => filterSet.getWithSubstance(val));
-  }
-}
-
-
-class ResultsPresenter {
-  constructor(root) {
-    const self = this;
-    self._root = root;
-    self._results = null;
-    self._filterSet = new FilterSet(null, null, null, null, "emissions", "simulations");
-
-    const scorecardContainer = self._root.querySelector("#scorecards");
-    const dimensionsContainer = self._root.querySelector("#dimensions");
-    const centerChartContainer = self._root.querySelector("#center-chart");
-    const centerChartHolderContainer = self._root.querySelector("#center-chart-holder");
-
-    const onUpdateFilterSet = (x) => self._onUpdateFilterSet(x);
-    self._scorecardPresenter = new ScorecardPresenter(scorecardContainer, onUpdateFilterSet);
-    self._dimensionPresenter = new DimensionCardPresenter(dimensionsContainer, onUpdateFilterSet);
-    self._centerChartPresenter = new CenterChartPresenter(centerChartContainer);
-    self._titlePreseter = new SelectorTitlePresenter(centerChartHolderContainer, onUpdateFilterSet);
-
-    self.hide();
-  }
-
-  hide() {
-    const self = this;
-    self._root.style.display = "none";
-  }
-
-  showResults(results) {
-    const self = this;
-    self._root.style.display = "block";
-    self._results = results;
-    self._updateInternally();
-  }
-
-  _onUpdateFilterSet(newFilterSet) {
-    const self = this;
-    self._filterSet = newFilterSet;
-    self._updateInternally();
-  }
-
-  _updateInternally() {
-    const self = this;
-
-    const years = self._results.getYears(self._filterSet.getWithYear(null));
-    self._filterSet = self._filterSet.getWithYear(Math.max(...years));
-
-    self._scorecardPresenter.showResults(self._results, self._filterSet);
-    self._dimensionPresenter.showResults(self._results, self._filterSet);
-    self._centerChartPresenter.showResults(self._results, self._filterSet);
-    self._titlePreseter.showResults(self._results, self._filterSet);
   }
 }
 
