@@ -1069,14 +1069,14 @@ class SimulationListPresenter {
 
     const policiesSelectedRaw = scenario === null ? [] : scenario.getPolicyNames();
     const policiesSelected = new Set(policiesSelectedRaw);
-    
+
     setFieldValue(
       self._dialog.querySelector(".edit-simulation-name-input"),
       scenario,
       "",
       (x) => x.getName(),
     );
-    
+
     setFieldValue(
       self._dialog.querySelector(".edit-simulation-start-input"),
       scenario,
@@ -1099,13 +1099,13 @@ class SimulationListPresenter {
       .enter()
       .append("label")
       .classed("policy-check-label", true);
-    
+
     newLabels.append("input")
       .attr("type", "checkbox")
       .classed("policy-check", true)
       .attr("value", (x) => x)
       .property("checked", (x) => policiesSelected.has(x));
-    
+
     newLabels.append("span")
       .text((x) => x);
 
