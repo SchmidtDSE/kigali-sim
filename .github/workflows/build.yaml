@@ -25,7 +25,6 @@ jobs:
     environment: build
     runs-on: ubuntu-latest
     name: Run Unit Tests
-    needs: [lint]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -51,7 +50,7 @@ jobs:
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     name: Deploy
-    needs: [unitTests]
+    needs: [lint, unitTests]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
