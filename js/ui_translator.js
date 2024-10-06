@@ -551,7 +551,7 @@ class SubstanceBuilder {
     const requiresMod = compatibilityType === "policy";
     const requiresDefinition = compatibilityType === "definition";
     const noCompat = compatibilityType === "none";
-    
+
     const needsToMoveToMod = requiresMod && !self._isModification;
     const needsToMoveToDefinition = requiresDefinition && self._isModification;
     const incompatiblePlace = needsToMoveToMod || needsToMoveToDefinition || noCompat;
