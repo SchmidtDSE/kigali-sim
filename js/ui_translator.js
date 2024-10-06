@@ -9,6 +9,7 @@ import {YearMatcher} from "engine_state";
 
 const COMMAND_COMPATIBILITIES = {
   "change": "any",
+  "define var": "none",
   "retire": "any",
   "setVal": "any",
   "cap": "any",
@@ -245,6 +246,11 @@ class AboutStanza {
     addCode("end about", spaces);
 
     return finalizeCodePieces(baselinePieces);
+  }
+
+  getIsCompatible() {
+    const self = this;
+    return false;
   }
 }
 
@@ -543,9 +549,11 @@ class SubstanceBuilder {
 
     const requiresMod = compatibilityType === "policy";
     const requiresDefinition = compatibilityType === "definition";
+    const noCompat = compatibilityType === "none";
+
     const needsToMoveToMod = requiresMod && !self._isModification;
     const needsToMoveToDefinition = requiresDefinition && self._isModification;
-    const incompatiblePlace = needsToMoveToMod || needsToMoveToDefinition;
+    const incompatiblePlace = needsToMoveToMod || needsToMoveToDefinition || noCompat;
 
     const strategy = {
       "change": (x) => self.addChange(x),
@@ -560,8 +568,11 @@ class SubstanceBuilder {
       "replace": (x) => self.addReplace(x),
     }[commandType];
 
-    const effectiveCommand = incompatiblePlace ? self._makeInvalidPlacement() : command;
-    strategy(effectiveCommand);
+    if (incompatiblePlace) {
+      return self._makeInvalidPlacement();
+    } else {
+      return strategy(command);
+    }
   }
 
   setName(newVal) {
@@ -947,8 +958,6 @@ class Substance {
     if (duration === null) {
       return;
     }
-
-    console.log(duration);
 
     let startYear = duration.getStart();
     let endYear = duration.getEnd();

@@ -70,6 +70,11 @@ class ReportDataWrapper {
     self._innerData = innerData;
   }
 
+  getRawData() {
+    const self = this;
+    return self._innerData;
+  }
+
   getMetric(filterSet) {
     const self = this;
     const metric = filterSet.getMetric();

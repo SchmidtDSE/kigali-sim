@@ -73,26 +73,6 @@ main {
   padding-bottom: 30px;
 }
 
-#buttons-panel {
-  margin-top: 20px;
-}
-
-#buttons-panel #loading {
-  display: none;
-}
-
-#buttons-panel a.primary, #buttons-panel a.primary:link, #buttons-panel a.primary:visited {
-  background-color: #7070C0;
-  color: white;
-  border-radius: 10px;
-  padding: 7px;
-  text-decoration: none;
-}
-
-#buttons-panel a.primary:focus, #buttons-panel a.primary:hover, #buttons-panel a.primary:active {
-  background-color: #5050C0;
-}
-
 #code-editor .error-display {
   padding: 10px;
   border-radius: 5px;
@@ -115,6 +95,13 @@ main {
 
 #results {
   display: none;
+}
+
+#results .buttons-panel {
+  text-align: center;
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px dotted #C0C0C0;
 }
 
 #results .center-chart {
@@ -260,6 +247,26 @@ main {
 
 .bold-buttons a.secondary:focus, .bold-buttons a.secondary:hover, .bold-buttons a.secondary:active {
   color: white;
+  background-color: #5050C0;
+}
+
+.buttons-panel {
+  margin-top: 20px;
+}
+
+.buttons-panel #loading {
+  display: none;
+}
+
+.buttons-panel a.primary, .buttons-panel a.primary:link, .buttons-panel a.primary:visited {
+  background-color: #7070C0;
+  color: white;
+  border-radius: 10px;
+  padding: 7px;
+  text-decoration: none;
+}
+
+.buttons-panel a.primary:focus, .buttons-panel a.primary:hover, .buttons-panel a.primary:active {
   background-color: #5050C0;
 }
 

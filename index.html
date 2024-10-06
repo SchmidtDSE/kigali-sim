@@ -81,6 +81,29 @@
                         </span>
                       </div>
                     </div>
+                    <div class="form-group">
+                      <div><label for="edit-consumption-emissions">Emissions:</label></div>
+                      <div>
+                        <input type="text" name="edit-consumption-emissions" class="edit-consumption-emissions-input mid">
+                        <span class="sel mid">
+                          <select name="edit-consumption-emissions-units" class="edit-consumption-emissions-units-input" aria-label="Units of initial charge">
+                            <option value="kg">kg</option>
+                            <option value="mt">mt</option>
+                            <option value="tCO2e">tCO2e</option>
+                            <option value="kg / year">kg / year</option>
+                            <option value="mt / year">mt / year</option>
+                            <option value="tCO2e / year">tCO2e / year</option>
+                            <option value="kg / unit">kg / unit</option>
+                            <option value="mt / unit">mt / unit</option>
+                            <option value="tCO2e / unit">tCO2e / unit</option>
+                            <option value="tCO2e / kg">tCO2e / kg</option>
+                            <option value="tCO2e / mt">tCO2e / mt</option>
+                            <option value="%">%</option>
+                            <option value="% / year">% / year</option>
+                          </select>
+                        </span>
+                      </div>
+                    </div>
                   </div>
                   <div id="consumption-equipment">
                     <div class="instructions">This tab models the equipment that uses this substance for this application.</div>
@@ -99,6 +122,8 @@
                             <option value="kg / unit">kg / unit</option>
                             <option value="mt / unit">mt / unit</option>
                             <option value="tCO2e / unit">tCO2e / unit</option>
+                            <option value="tCO2e / kg">tCO2e / kg</option>
+                            <option value="tCO2e / mt">tCO2e / mt</option>
                             <option value="%">%</option>
                             <option value="% / year">% / year</option>
                           </select>
@@ -120,6 +145,8 @@
                             <option value="kg / unit">kg / unit</option>
                             <option value="mt / unit">mt / unit</option>
                             <option value="tCO2e / unit">tCO2e / unit</option>
+                            <option value="tCO2e / kg">tCO2e / kg</option>
+                            <option value="tCO2e / mt">tCO2e / mt</option>
                             <option value="%">%</option>
                             <option value="% / year">% / year</option>
                           </select>
@@ -141,6 +168,8 @@
                             <option value="kg / unit">kg / unit</option>
                             <option value="mt / unit">mt / unit</option>
                             <option value="tCO2e / unit">tCO2e / unit</option>
+                            <option value="tCO2e / kg">tCO2e / kg</option>
+                            <option value="tCO2e / mt">tCO2e / mt</option>
                             <option value="%">%</option>
                             <option value="% / year">% / year</option>
                           </select>
@@ -162,6 +191,8 @@
                             <option value="kg / unit">kg / unit</option>
                             <option value="mt / unit">mt / unit</option>
                             <option value="tCO2e / unit">tCO2e / unit</option>
+                            <option value="tCO2e / kg">tCO2e / kg</option>
+                            <option value="tCO2e / mt">tCO2e / mt</option>
                             <option value="%">%</option>
                             <option value="% / year">% / year</option>
                           </select>
@@ -183,6 +214,8 @@
                             <option value="kg / unit">kg / unit</option>
                             <option value="mt / unit">mt / unit</option>
                             <option value="tCO2e / unit">tCO2e / unit</option>
+                            <option value="tCO2e / kg">tCO2e / kg</option>
+                            <option value="tCO2e / mt">tCO2e / mt</option>
                             <option value="%">%</option>
                             <option value="% / year">% / year</option>
                           </select>
@@ -353,7 +386,7 @@
           <div id="code-editor-inner" class="inner"></div>
           <div class="error-display"></div>
         </div>
-        <div id="buttons-panel">
+        <div id="code-buttons-panel" class="buttons-panel">
           <div id="available-panel">
             <a class="primary" id="run-button" href="#loading">Run</a>
           </div>
@@ -476,6 +509,10 @@
           </div>
         </div>
       </div>
+
+      <div class="buttons-panel" ="export-panel">
+        <a class="primary" download="export.csv" id="export-button" href="#export">Export Spreadsheet</a>
+      </div>
     </section>
   </main>
 
@@ -503,6 +540,8 @@
           <option value="kg / unit">kg / unit</option>
           <option value="mt / unit">mt / unit</option>
           <option value="tCO2e / unit">tCO2e / unit</option>
+          <option value="tCO2e / kg">tCO2e / kg</option>
+          <option value="tCO2e / mt">tCO2e / mt</option>
           <option value="%">%</option>
           <option value="% / year">% / year</option>
         </select>
@@ -557,6 +596,8 @@
           <option value="kg / unit">kg / unit</option>
           <option value="mt / unit">mt / unit</option>
           <option value="tCO2e / unit">tCO2e / unit</option>
+          <option value="tCO2e / kg">tCO2e / kg</option>
+          <option value="tCO2e / mt">tCO2e / mt</option>
           <option value="%">%</option>
           <option value="% / year">% / year</option>
         </select>
@@ -610,6 +651,8 @@
           <option value="kg / unit">kg / unit</option>
           <option value="mt / unit">mt / unit</option>
           <option value="tCO2e / unit">tCO2e / unit</option>
+          <option value="tCO2e / kg">tCO2e / kg</option>
+          <option value="tCO2e / mt">tCO2e / mt</option>
           <option value="%">%</option>
           <option value="% / year">% / year</option>
         </select>
@@ -662,6 +705,8 @@
         <option value="kg / unit">kg / unit</option>
         <option value="mt / unit">mt / unit</option>
         <option value="tCO2e / unit">tCO2e / unit</option>
+        <option value="tCO2e / kg">tCO2e / kg</option>
+        <option value="tCO2e / mt">tCO2e / mt</option>
         <option value="%">%</option>
         <option value="% / year">% / year</option>
       </select>
@@ -678,6 +723,8 @@
         <option value="kg / unit">kg / unit</option>
         <option value="mt / unit">mt / unit</option>
         <option value="tCO2e / unit">tCO2e / unit</option>
+        <option value="tCO2e / kg">tCO2e / kg</option>
+        <option value="tCO2e / mt">tCO2e / mt</option>
         <option value="%">%</option>
         <option value="% / year">% / year</option>
       </select>
@@ -715,6 +762,8 @@
           <option value="kg / unit">kg / unit</option>
           <option value="mt / unit">mt / unit</option>
           <option value="tCO2e / unit">tCO2e / unit</option>
+          <option value="tCO2e / kg">tCO2e / kg</option>
+          <option value="tCO2e / mt">tCO2e / mt</option>
           <option value="%">%</option>
           <option value="% / year">% / year</option>
         </select>

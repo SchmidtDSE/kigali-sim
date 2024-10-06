@@ -57,7 +57,7 @@ class MainPresenter {
       () => self._onCodeChange(),
     );
     self._buttonPanelPresenter = new ButtonPanelPresenter(
-      document.getElementById("buttons-panel"),
+      document.getElementById("code-buttons-panel"),
       () => self._onBuild(true),
     );
     self._resultsPresenter = new ResultsPresenter(document.getElementById("results"));
