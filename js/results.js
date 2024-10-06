@@ -23,6 +23,16 @@ function getColor(i) {
 }
 
 
+class ExportPresenter {
+
+  constructor(root) {
+    const self = this;
+    self._root = root;
+  }
+
+}
+
+
 class ScorecardPresenter {
   constructor(root, onUpdateFilterSet) {
     const self = this;

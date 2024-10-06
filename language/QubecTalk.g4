@@ -12,7 +12,7 @@ grammar QubecTalk;
  * ------------
  **/
 
-STR_: '"' ~'"'* '"';
+STR_: '"' ~[",]* '"';
 
 WHITE_SPACE: [ \u000B\t\r\n] -> channel(HIDDEN);
 
