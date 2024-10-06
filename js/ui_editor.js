@@ -470,6 +470,14 @@ class ConsumptionListPresenter {
     );
 
     setEngineNumberValue(
+      self._dialog.querySelector(".edit-consumption-emissions-input"),
+      self._dialog.querySelector(".edit-consumption-emissions-units-input"),
+      objToShow,
+      new EngineNumber(1, "tCO2e / mt"),
+      (x) => x.getEmit().getValue(),
+    );
+
+    setEngineNumberValue(
       self._dialog.querySelector(".edit-consumption-initial-charge-domestic-input"),
       self._dialog.querySelector(".initial-charge-domestic-units-input"),
       objToShow,
@@ -579,6 +587,12 @@ class ConsumptionListPresenter {
     );
 
     const substanceBuilder = new SubstanceBuilder(substanceName, false);
+
+    const emissionsValue = getEngineNumberValue(
+      self._dialog.querySelector(".edit-consumption-emissions-input"),
+      self._dialog.querySelector(".edit-consumption-emissions-units-input"),
+    );
+    substanceBuilder.addCommand(new Command("emit", null, emissionsValue, null));
 
     const initialChargeDomestic = getEngineNumberValue(
       self._dialog.querySelector(".edit-consumption-initial-charge-domestic-input"),
@@ -1196,10 +1210,16 @@ class UiEditorPresenter {
   refresh(codeObj) {
     const self = this;
     self._codeObj = codeObj;
-    self._applicationsList.refresh(codeObj);
-    self._consumptionList.refresh(codeObj);
-    self._policyList.refresh(codeObj);
-    self._simulationList.refresh(codeObj);
+
+    if (self._codeObj.getIsCompatible()) {
+      self._applicationsList.refresh(codeObj);
+      self._consumptionList.refresh(codeObj);
+      self._policyList.refresh(codeObj);
+      self._simulationList.refresh(codeObj);
+      self._enableBasicPanel();
+    } else {
+      self._disableBasicPanel();
+    }
   }
 
   _setupAdvancedLinks() {
