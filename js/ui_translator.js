@@ -234,22 +234,40 @@ class Program {
     const problematicApplications = self._applications.filter((application) => {
       const substances = application.getSubstances();
       const problematicSubstances = substances.filter((substance) => {
-        const initialCharges = substance.getInitialCharges();
-        const uniqueTargets = new Set(initialCharges.map((x) => x.getTarget()));
-        if (uniqueTargets.size != initialCharges.length) {
-          return true;
-        }
-        const initialChargesWithDuration = initialCharges.filter((initialCharge) => {
-          const duration = initialCharge.getDuration();
+        const durationIsFullSpan = (duration) => {
           if (duration === null) {
-            return false;
+            return true;
           }
           const durationFullSpan = duration.getStart() === null && duration.getEnd() === null;
-          return !durationFullSpan;
-        });
-        if (initialChargesWithDuration.length > 0) {
-          return true;
+          return durationFullSpan;
         }
+
+        const getInitialChargeProblematic = () => {
+          const initialCharges = substance.getInitialCharges();
+          const uniqueTargets = new Set(initialCharges.map((x) => x.getTarget()));
+          if (uniqueTargets.size != initialCharges.length) {
+            return true;
+          }
+          const initialChargesWithDuration = initialCharges.filter((initialCharge) => {
+            const duration = initialCharge.getDuration();
+            return !durationIsFullSpan(duration);
+          });
+          if (initialChargesWithDuration.length > 0) {
+            return true;
+          }
+        };
+
+        const getEmitProblematic = () => {
+          const emit = substance.getEmit();
+          if (emit === null) {
+            return false;
+          } else {
+            const duration = emit.getDuration();
+            return !durationIsFullSpan(duration);
+          }
+        };
+
+        return getInitialChargeProblematic() || getEmitProblematic();
       });
       return problematicSubstances.length > 0;
     });
