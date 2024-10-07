@@ -100,7 +100,7 @@ function setListInput(listSelection, itemTemplate, items, uiInit) {
     newDiv.classList.add("dialog-list-item");
     listSelection.appendChild(newDiv);
     uiInit(item, newDiv);
-    
+
     const deleteLink = newDiv.querySelector(".delete-command-link");
     deleteLink.addEventListener("click", (event) => {
       event.preventDefault();
