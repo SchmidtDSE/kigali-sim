@@ -410,6 +410,8 @@ class Engine {
     const substance = self._scope.getSubstance();
     self._streamKeeper.setRetirementRate(application, substance, amount);
     self._recalcPopulationChange();
+    self._recalcSales();
+    self._recalcEmissions();
   }
 
   getRetirementRate() {
@@ -815,13 +817,20 @@ class Engine {
     const populationChangeRaw = stateGetter.getPopulationChange(self._unitConverter);
     const populationChange = unitConverter.convert(populationChangeRaw, "units");
     const volumeForNew = unitConverter.convert(populationChange, "kg");
-    stateGetter.setAmortizedUnitVolume(null);
+    
+    // Get prior popoulation
+    const priorPopulationRaw = self.getStream("priorEquipment", scopeEffective);
+    const priorPopulation = unitConverter.convert(priorPopulationRaw, "units");
+    stateGetter.setPopulation(priorPopulation);
 
     // Determine sales prior to recycling
     const kgForRecharge = rechargeVolume.getValue();
     const kgForNew = volumeForNew.getValue();
     const kgNoRecycling = kgForRecharge + kgForNew;
     const volumeNoRecycling = new EngineNumber(kgNoRecycling, "kg");
+    
+    // Return to original initial charge
+    stateGetter.setAmortizedUnitVolume(null);
 
     // Assume this volume for unit conversion
     stateGetter.setVolume(volumeNoRecycling);

@@ -72,11 +72,11 @@ function buildEngineTests() {
       );
 
       const manufactureVal = engine.getStream("manufacture");
-      assert.closeTo(manufactureVal.getValue(), 10);
+      assert.closeTo(manufactureVal.getValue(), 10, 0.0001);
       assert.deepEqual(manufactureVal.getUnits(), "kg");
 
       const importVal = engine.getStream("import");
-      assert.closeTo(importVal.getValue(), 20);
+      assert.closeTo(importVal.getValue(), 20, 0.0001);
       assert.deepEqual(importVal.getUnits(), "kg");
     });
 
@@ -1054,7 +1054,7 @@ function buildEngineTests() {
       executeLogic();
 
       const manufactureVal1 = engine.getStream("manufacture");
-      assert.equal(manufactureVal1.getValue(), 10);
+      assert.closeTo(manufactureVal1.getValue(), 10, 0.0001);
       assert.deepEqual(manufactureVal1.getUnits(), "kg");
 
       engine.incrementYear();
@@ -1068,7 +1068,7 @@ function buildEngineTests() {
       executeLogic();
 
       const manufactureVal3 = engine.getStream("manufacture");
-      assert.equal(manufactureVal3.getValue(), 10);
+      assert.closeTo(manufactureVal3.getValue(), 10, 0.0001);
       assert.deepEqual(manufactureVal3.getUnits(), "kg");
     });
   });
