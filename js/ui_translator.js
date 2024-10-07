@@ -240,7 +240,7 @@ class Program {
           }
           const durationFullSpan = duration.getStart() === null && duration.getEnd() === null;
           return durationFullSpan;
-        }
+        };
 
         const getInitialChargeProblematic = () => {
           const initialCharges = substance.getInitialCharges();
