@@ -92,6 +92,12 @@ function getFieldValue(selection) {
 }
 
 
+function getSanitizedFieldValue(selection) {
+  const valueRaw = getFieldValue(selection);
+  return valueRaw.replaceAll("\"", "").replaceAll(",", "");
+}
+
+
 function setListInput(listSelection, itemTemplate, items, uiInit) {
   listSelection.innerHTML = "";
   const addItem = (item) => {
@@ -253,7 +259,7 @@ class ApplicationsListPresenter {
       event.preventDefault();
 
       const nameInput = self._dialog.querySelector(".edit-application-name-input");
-      const newName = nameInput.value;
+      const newName = nameInput.value.replaceAll("\"", "").replaceAll(",", "");
 
       const priorNames = new Set(self._getAppNames());
       const nameIsDuplicate = priorNames.has(newName);
@@ -588,7 +594,7 @@ class ConsumptionListPresenter {
   _parseObj() {
     const self = this;
 
-    const substanceName = getFieldValue(
+    const substanceName = getSanitizedFieldValue(
       self._dialog.querySelector(".edit-consumption-substance-input"),
     );
 
@@ -923,7 +929,9 @@ class PolicyListPresenter {
   _parseObj() {
     const self = this;
 
-    const policyName = getFieldValue(self._dialog.querySelector(".edit-policy-name-input"));
+    const policyName = getSanitizedFieldValue(
+      self._dialog.querySelector(".edit-policy-name-input"),
+    );
     const applicationName = getFieldValue(
       self._dialog.querySelector(".edit-policy-application-input"),
     );
@@ -1150,7 +1158,9 @@ class SimulationListPresenter {
   _parseObj() {
     const self = this;
 
-    const scenarioName = getFieldValue(self._dialog.querySelector(".edit-simulation-name-input"));
+    const scenarioName = getSanitizedFieldValue(
+      self._dialog.querySelector(".edit-simulation-name-input"),
+    );
     const start = getFieldValue(self._dialog.querySelector(".edit-simulation-start-input"));
     const end = getFieldValue(self._dialog.querySelector(".edit-simulation-end-input"));
 
