@@ -100,6 +100,12 @@ function setListInput(listSelection, itemTemplate, items, uiInit) {
     newDiv.classList.add("dialog-list-item");
     listSelection.appendChild(newDiv);
     uiInit(item, newDiv);
+    
+    const deleteLink = newDiv.querySelector(".delete-command-link");
+    deleteLink.addEventListener("click", (event) => {
+      event.preventDefault();
+      newDiv.remove();
+    });
   };
   items.forEach(addItem);
 }
@@ -1293,7 +1299,7 @@ function initSetCommandUi(itemObj, root) {
   setFieldValue(
     root.querySelector(".set-target-input"),
     itemObj,
-    "import",
+    "manufacture",
     (x) => x.getTarget(),
   );
   setEngineNumberValue(
@@ -1326,7 +1332,7 @@ function initChangeCommandUi(itemObj, root) {
   setFieldValue(
     root.querySelector(".change-target-input"),
     itemObj,
-    "import",
+    "manufacture",
     (x) => x.getTarget(),
   );
   setFieldValue(
@@ -1395,7 +1401,7 @@ function initLimitCommandUi(itemObj, root, codeObj) {
     root.querySelector(".limit-type-input"),
     itemObj,
     "cap",
-    (x) => x.getType(),
+    (x) => x.getTypeName(),
   );
   setFieldValue(
     root.querySelector(".limit-target-input"),
