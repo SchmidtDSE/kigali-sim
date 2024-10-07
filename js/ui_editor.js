@@ -1247,6 +1247,11 @@ class UiEditorPresenter {
     }
   }
 
+  forceCodeObj(codeObj) {
+    const self = this;
+    self._onCodeObjUpdate(codeObj);
+  }
+
   _setupAdvancedLinks() {
     const self = this;
     const links = Array.of(...self._contentsSelection.querySelectorAll(".advanced-editor-link"));

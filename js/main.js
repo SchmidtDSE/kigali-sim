@@ -78,6 +78,8 @@ class MainPresenter {
       const results = self._getCodeAsObj();
       if (results.getErrors().length > 0 || !results.getProgram().getIsCompatible()) {
         self._uiEditorPresenter.showCode();
+      } else {
+        self._uiEditorPresenter.forceCodeObj(results.getProgram());
       }
     }
 

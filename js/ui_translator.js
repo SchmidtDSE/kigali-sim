@@ -62,7 +62,7 @@ class Program {
     self._applications = applications;
     self._policies = policies;
     self._scenarios = scenarios;
-    self._isCompatible = isCompatible;
+    self._isCompatible = isCompatible && self._passesTempCompatiblityTests();
   }
 
   getSubstances() {
@@ -226,6 +226,35 @@ class Program {
 
       return new SimulationScenario(name, allowedPolicies, start, end, true);
     });
+  }
+
+  _passesTempCompatiblityTests() {
+    const self = this;
+
+    const problematicApplications = self._applications.filter((application) => {
+      const substances = application.getSubstances();
+      const problematicSubstances = substances.filter((substance) => {
+        const initialCharges = substance.getInitialCharges();
+        const uniqueTargets = new Set(initialCharges.map((x) => x.getTarget()));
+        if (uniqueTargets.size != initialCharges.length) {
+          return true;
+        }
+        const initialChargesWithDuration = initialCharges.filter((initialCharge) => {
+          const duration = initialCharge.getDuration();
+          if (duration === null) {
+            return false;
+          }
+          const durationFullSpan = duration.getStart() === null && duration.getEnd() === null;
+          return !durationFullSpan;
+        });
+        if (initialChargesWithDuration.length > 0) {
+          return true;
+        }
+      });
+      return problematicSubstances.length > 0;
+    });
+
+    return problematicApplications.length == 0;
   }
 }
 
