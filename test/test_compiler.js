@@ -149,7 +149,7 @@ function buildCompilerTests() {
         },
       ],
     );
-    
+
     buildTest(
       "interprets multiple retire commands",
       "/test/qta/retire_multiple.qta", [

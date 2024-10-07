@@ -362,7 +362,7 @@ class Engine {
     if (application === null || substance === null) {
       throw "Tried recalculating population change without application and substance.";
     }
-    
+
     // Set values
     self._streamKeeper.setRechargePopulation(application, substance, volume);
     self._streamKeeper.setRechargeIntensity(application, substance, intensity);
@@ -379,7 +379,7 @@ class Engine {
     if (!self._getIsInRange(yearMatcher)) {
       return;
     }
-    
+
     const application = self._scope.getApplication();
     const substance = self._scope.getSubstance();
     self._streamKeeper.setRetirementRate(application, substance, amount);
@@ -780,7 +780,7 @@ class Engine {
     const populationChangeRaw = stateGetter.getPopulationChange(self._unitConverter);
     const populationChange = unitConverter.convert(populationChangeRaw, "units");
     const volumeForNew = unitConverter.convert(populationChange, "kg");
-    
+
     // Get prior popoulation
     const priorPopulationRaw = self.getStream("priorEquipment", scopeEffective);
     const priorPopulation = unitConverter.convert(priorPopulationRaw, "units");
@@ -791,7 +791,7 @@ class Engine {
     const kgForNew = volumeForNew.getValue();
     const kgNoRecycling = kgForRecharge + kgForNew;
     const volumeNoRecycling = new EngineNumber(kgNoRecycling, "kg");
-    
+
     // Return to original initial charge
     stateGetter.setAmortizedUnitVolume(null);
 
@@ -810,7 +810,7 @@ class Engine {
     // Update import and domestic sales proportionally.
     self.setStream("sales", totalSales, null, scopeEffective, false);
   }
-  
+
   _recalcRetire(scope) {
     const self = this;
 
@@ -820,27 +820,27 @@ class Engine {
     const scopeEffective = scope === null || scope === undefined ? self._scope : scope;
     const application = scopeEffective.getApplication();
     const substance = scopeEffective.getSubstance();
-    
+
     // Check allowed
     if (application === null || substance === null) {
       throw "Tried recalculating population change without application and substance.";
     }
-    
+
     // Calcuate change
     const currentPriorRaw = self._streamKeeper.getStream(application, substance, "priorEquipment");
     const currentPrior = unitConverter.convert(currentPriorRaw, "units");
-    
+
     const currentEquipmentRaw = self._streamKeeper.getStream(application, substance, "equipment");
     const currentEquipment = unitConverter.convert(currentEquipmentRaw, "units");
-    
+
     stateGetter.setPopulation(currentPrior);
     const amountRaw = self._streamKeeper.getRetirementRate(application, substance);
     const amount = unitConverter.convert(amountRaw, "units");
     stateGetter.setPopulation(null);
-    
+
     const newPrior = new EngineNumber(currentPrior.getValue() - amount.getValue(), "units");
     const newEquipment = new EngineNumber(currentEquipment.getValue() - amount.getValue(), "units");
-    
+
     // Update streams
     self._streamKeeper.setStream(application, substance, "priorEquipment", newPrior);
     self._streamKeeper.setStream(application, substance, "equipment", newEquipment);
