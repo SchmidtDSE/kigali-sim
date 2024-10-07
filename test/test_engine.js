@@ -72,11 +72,11 @@ function buildEngineTests() {
       );
 
       const manufactureVal = engine.getStream("manufacture");
-      assert.equal(manufactureVal.getValue(), 10);
+      assert.closeTo(manufactureVal.getValue(), 10, 0.0001);
       assert.deepEqual(manufactureVal.getUnits(), "kg");
 
       const importVal = engine.getStream("import");
-      assert.equal(importVal.getValue(), 20);
+      assert.closeTo(importVal.getValue(), 20, 0.0001);
       assert.deepEqual(importVal.getUnits(), "kg");
     });
 
@@ -1017,6 +1017,59 @@ function buildEngineTests() {
       const equipmentVal2 = engine.getStream("equipment");
       assert.closeTo(equipmentVal2.getValue(), 15, 0.0001);
       assert.deepEqual(equipmentVal2.getUnits(), "units");
+    });
+
+    QUnit.test("combine retire and recharge", function(assert) {
+      const engine = new Engine(1, 3);
+
+      engine.setStanza("default");
+      engine.setApplication("test app");
+      engine.setSubstance("test substance");
+
+      const executeLogic = () => {
+        engine.setStream(
+          "manufacture",
+          new EngineNumber(10, "kg"),
+          new YearMatcher(null, null),
+        );
+
+        engine.setInitialCharge(
+          new EngineNumber(1, "kg / unit"),
+          "sales",
+          new YearMatcher(null, null),
+        );
+
+        engine.retire(
+          new EngineNumber(10, "% / year"),
+          new YearMatcher(null, null),
+        );
+
+        engine.recharge(
+          new EngineNumber(10, "% / year"),
+          new EngineNumber(1, "kg / unit"),
+          new YearMatcher(null, null),
+        );
+      };
+
+      executeLogic();
+
+      const manufactureVal1 = engine.getStream("manufacture");
+      assert.closeTo(manufactureVal1.getValue(), 10, 0.0001);
+      assert.deepEqual(manufactureVal1.getUnits(), "kg");
+
+      engine.incrementYear();
+      executeLogic();
+
+      const manufactureVal2 = engine.getStream("manufacture");
+      assert.closeTo(manufactureVal2.getValue(), 10, 0.0001);
+      assert.deepEqual(manufactureVal2.getUnits(), "kg");
+
+      engine.incrementYear();
+      executeLogic();
+
+      const manufactureVal3 = engine.getStream("manufacture");
+      assert.closeTo(manufactureVal3.getValue(), 10, 0.0001);
+      assert.deepEqual(manufactureVal3.getUnits(), "kg");
     });
   });
 }
