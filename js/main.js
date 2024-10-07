@@ -63,8 +63,6 @@ class MainPresenter {
     );
     self._resultsPresenter = new ResultsPresenter(document.getElementById("results"));
 
-    self._uiEditorPresenter = null;
-
     self._uiEditorPresenter = new UiEditorPresenter(
       false,
       document.getElementById("editor-tabs"),
@@ -77,6 +75,10 @@ class MainPresenter {
     const source = localStorage.getItem("source");
     if (source) {
       self._codeEditorPresenter.setCode(source);
+      const results = self._getCodeAsObj();
+      if (results.getErrors().length > 0 || !results.getProgram().getIsCompatible()) {
+        self._uiEditorPresenter.showCode();
+      }
     }
 
     self._onCodeChange();
