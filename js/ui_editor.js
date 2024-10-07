@@ -1180,7 +1180,7 @@ class SimulationListPresenter {
 
 
 class UiEditorPresenter {
-  constructor(tabRoot, contentsRoot, getCodeAsObj, onCodeObjUpdate, onTabChange) {
+  constructor(startOnCode, tabRoot, contentsRoot, getCodeAsObj, onCodeObjUpdate, onTabChange) {
     const self = this;
 
     self._contentsSelection = contentsRoot;
@@ -1221,6 +1221,15 @@ class UiEditorPresenter {
     );
 
     self._setupAdvancedLinks();
+
+    if (startOnCode) {
+      self._tabs.toggle("#code-editor-pane");
+    }
+  }
+
+  showCode() {
+    const self = this;
+    self._tabs.toggle("#code-editor-pane");
   }
 
   refresh(codeObj) {
