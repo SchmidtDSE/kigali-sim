@@ -355,42 +355,16 @@ class Engine {
     }
 
     // Setup
-    const stateGetter = new OverridingConverterStateGetter(self._stateGetter);
-    const unitConverter = new UnitConverter(stateGetter);
-    const scopeEffective = self._scope;
-    const application = scopeEffective.getApplication();
-    const substance = scopeEffective.getSubstance();
+    const application = self._scope.getApplication();
+    const substance = self._scope.getSubstance();
 
     // Check allowed
     if (application === null || substance === null) {
       throw "Tried recalculating population change without application and substance.";
     }
-
-    // Get prior popoulation
-    const priorPopulationRaw = self.getStream("priorEquipment", scopeEffective);
-    const priorPopulation = unitConverter.convert(priorPopulationRaw, "units");
-    const priorPopulationUnits = priorPopulation.getValue();
-    stateGetter.setPopulation(priorPopulation);
-
-    // Get retirement from prior population.
-    const retirementRaw = self._streamKeeper.getRetirementRate(
-      application,
-      substance,
-    );
-    const retiredPopulation = unitConverter.convert(retirementRaw, "units");
-    const retireUnits = retiredPopulation.getValue();
-    
-    // Determine effective addressable population
-    const addressiblePopulationUnits = priorPopulationUnits - retireUnits;
-    const addressiblePopulation = new EngineNumber(addressiblePopulationUnits, "units");
-    
-    // Determine recharge population in units
-    stateGetter.setPopulation(addressiblePopulation);
-    const volumeConverted = unitConverter.convert(volume, "units");
-    stateGetter.setPopulation(null);
     
     // Set values
-    self._streamKeeper.setRechargePopulation(application, substance, volumeConverted);
+    self._streamKeeper.setRechargePopulation(application, substance, volume);
     self._streamKeeper.setRechargeIntensity(application, substance, intensity);
 
     // Recalculate
@@ -399,16 +373,45 @@ class Engine {
     self._recalcEmissions();
   }
 
-  retire(amount, yearMatcher) {
+  retire(amountRaw, yearMatcher) {
     const self = this;
 
     if (!self._getIsInRange(yearMatcher)) {
       return;
     }
 
-    const application = self._scope.getApplication();
-    const substance = self._scope.getSubstance();
-    self._streamKeeper.setRetirementRate(application, substance, amount);
+    // Setup
+    const stateGetter = new OverridingConverterStateGetter(self._stateGetter);
+    const unitConverter = new UnitConverter(stateGetter);
+    const scopeEffective = self._scope;
+    const application = scopeEffective.getApplication();
+    const substance = scopeEffective.getSubstance();
+    
+    // Check allowed
+    if (application === null || substance === null) {
+      throw "Tried recalculating population change without application and substance.";
+    }
+    
+    // Calcuate change
+    const currentPriorRaw = self._streamKeeper.getStream(application, substance, "priorEquipment");
+    const currentPrior = unitConverter.convert(currentPriorRaw, "units");
+    
+    const currentEquipmentRaw = self._streamKeeper.getStream(application, substance, "equipment");
+    const currentEquipment = unitConverter.convert(currentEquipmentRaw, "units");
+    
+    stateGetter.setPopulation(currentPrior);
+    const amount = unitConverter.convert(amountRaw, "units");
+    stateGetter.setPopulation(null);
+    
+    const newPrior = new EngineNumber(currentPrior.getValue() - amount.getValue(), "units");
+    const newEquipment = new EngineNumber(currentEquipment.getValue() - amount.getValue(), "units");
+    
+    // Update streams
+    self._streamKeeper.setStream(application, substance, "priorEquipment", newPrior);
+    self._streamKeeper.setStream(application, substance, "equipment", newEquipment);
+
+    // Propogate
+    self._streamKeeper.setRetirementRate(application, substance, amountRaw);
     self._recalcPopulationChange();
     self._recalcSales();
     self._recalcEmissions();
@@ -624,14 +627,6 @@ class Engine {
     const priorPopulation = unitConverter.convert(priorPopulationRaw, "units");
     stateGetter.setPopulation(priorPopulation);
 
-    // Get retirement from prior population.
-    const retirementRaw = self._streamKeeper.getRetirementRate(
-      application,
-      substance,
-    );
-    const retiredPopulation = unitConverter.convert(retirementRaw, "units");
-    const retireUnits = retiredPopulation.getValue();
-
     // Get substance sales
     const substanceSalesRaw = self.getStream("sales", scopeEffective);
     const substanceSales = unitConverter.convert(substanceSalesRaw, "kg");
@@ -704,7 +699,6 @@ class Engine {
 
     // Save
     self.setStream("equipment", newVolume, null, scopeEffective, false);
-    
   }
 
   _recalcEmissions(scope) {

@@ -1061,7 +1061,7 @@ function buildEngineTests() {
       executeLogic();
 
       const manufactureVal2 = engine.getStream("manufacture");
-      assert.equal(manufactureVal2.getValue(), 10);
+      assert.closeTo(manufactureVal2.getValue(), 10, 0.0001);
       assert.deepEqual(manufactureVal2.getUnits(), "kg");
       
       engine.incrementYear();
