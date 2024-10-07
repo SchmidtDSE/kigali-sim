@@ -228,7 +228,7 @@ class Engine {
       self._recalcSales(scopeEffective);
       self._recalcEmissions(scopeEffective);
     } else if (name === "priorEquipment") {
-      self._recalcPopulationChange(scopeEffective);
+      self._recalcRetire(scopeEffective);
     }
   }
 
@@ -373,48 +373,17 @@ class Engine {
     self._recalcEmissions();
   }
 
-  retire(amountRaw, yearMatcher) {
+  retire(amount, yearMatcher) {
     const self = this;
 
     if (!self._getIsInRange(yearMatcher)) {
       return;
     }
-
-    // Setup
-    const stateGetter = new OverridingConverterStateGetter(self._stateGetter);
-    const unitConverter = new UnitConverter(stateGetter);
-    const scopeEffective = self._scope;
-    const application = scopeEffective.getApplication();
-    const substance = scopeEffective.getSubstance();
     
-    // Check allowed
-    if (application === null || substance === null) {
-      throw "Tried recalculating population change without application and substance.";
-    }
-    
-    // Calcuate change
-    const currentPriorRaw = self._streamKeeper.getStream(application, substance, "priorEquipment");
-    const currentPrior = unitConverter.convert(currentPriorRaw, "units");
-    
-    const currentEquipmentRaw = self._streamKeeper.getStream(application, substance, "equipment");
-    const currentEquipment = unitConverter.convert(currentEquipmentRaw, "units");
-    
-    stateGetter.setPopulation(currentPrior);
-    const amount = unitConverter.convert(amountRaw, "units");
-    stateGetter.setPopulation(null);
-    
-    const newPrior = new EngineNumber(currentPrior.getValue() - amount.getValue(), "units");
-    const newEquipment = new EngineNumber(currentEquipment.getValue() - amount.getValue(), "units");
-    
-    // Update streams
-    self._streamKeeper.setStream(application, substance, "priorEquipment", newPrior);
-    self._streamKeeper.setStream(application, substance, "equipment", newEquipment);
-
-    // Propogate
-    self._streamKeeper.setRetirementRate(application, substance, amountRaw);
-    self._recalcPopulationChange();
-    self._recalcSales();
-    self._recalcEmissions();
+    const application = self._scope.getApplication();
+    const substance = self._scope.getSubstance();
+    self._streamKeeper.setRetirementRate(application, substance, amount);
+    self._recalcRetire();
   }
 
   getRetirementRate() {
@@ -840,6 +809,46 @@ class Engine {
 
     // Update import and domestic sales proportionally.
     self.setStream("sales", totalSales, null, scopeEffective, false);
+  }
+  
+  _recalcRetire(scope) {
+    const self = this;
+
+    // Setup
+    const stateGetter = new OverridingConverterStateGetter(self._stateGetter);
+    const unitConverter = new UnitConverter(stateGetter);
+    const scopeEffective = scope === null || scope === undefined ? self._scope : scope;
+    const application = scopeEffective.getApplication();
+    const substance = scopeEffective.getSubstance();
+    
+    // Check allowed
+    if (application === null || substance === null) {
+      throw "Tried recalculating population change without application and substance.";
+    }
+    
+    // Calcuate change
+    const currentPriorRaw = self._streamKeeper.getStream(application, substance, "priorEquipment");
+    const currentPrior = unitConverter.convert(currentPriorRaw, "units");
+    
+    const currentEquipmentRaw = self._streamKeeper.getStream(application, substance, "equipment");
+    const currentEquipment = unitConverter.convert(currentEquipmentRaw, "units");
+    
+    stateGetter.setPopulation(currentPrior);
+    const amountRaw = self._streamKeeper.getRetirementRate(application, substance);
+    const amount = unitConverter.convert(amountRaw, "units");
+    stateGetter.setPopulation(null);
+    
+    const newPrior = new EngineNumber(currentPrior.getValue() - amount.getValue(), "units");
+    const newEquipment = new EngineNumber(currentEquipment.getValue() - amount.getValue(), "units");
+    
+    // Update streams
+    self._streamKeeper.setStream(application, substance, "priorEquipment", newPrior);
+    self._streamKeeper.setStream(application, substance, "equipment", newEquipment);
+
+    // Propogate
+    self._recalcPopulationChange();
+    self._recalcSales();
+    self._recalcEmissions();
   }
 }
 
