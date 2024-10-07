@@ -149,6 +149,18 @@ function buildCompilerTests() {
         },
       ],
     );
+    
+    buildTest(
+      "interprets multiple retire commands",
+      "/test/qta/retire_multiple.qta", [
+        (result, assert) => {
+          const record = getResult(result, BAU_NAME, 1, 0, "test", "test");
+          const population = record.getPopulation();
+          assert.ok(population.getValue() < 190000);
+          assert.deepEqual(population.getUnits(), "units");
+        },
+      ],
+    );
 
     buildTest(
       "interprets a recharge command",
