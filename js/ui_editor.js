@@ -479,7 +479,7 @@ class ConsumptionListPresenter {
       self._dialog.querySelector(".edit-consumption-emissions-input"),
       self._dialog.querySelector(".edit-consumption-emissions-units-input"),
       objToShow,
-      new EngineNumber(1, "tCO2e / mt"),
+      new EngineNumber(1, "tCO2e / kg"),
       (x) => x.getEmit().getValue(),
     );
 
