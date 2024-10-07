@@ -272,7 +272,26 @@ class Program {
       return problematicSubstances.length > 0;
     });
 
-    return problematicApplications.length == 0;
+    const applicationsOk = problematicApplications.length == 0;
+
+    const problematicPolicies = self._policies.filter((policy) => {
+      const applications = policy.getApplications();
+      if (applications.length != 1) {
+        return true;
+      }
+
+      const application = applications[0];
+      const substances = application.getSubstances();
+      if (substances.length != 1) {
+        return true;
+      }
+
+      return false;
+    });
+
+    const policiesOk = problematicPolicies.length == 0;
+
+    return applicationsOk && policiesOk;
   }
 }
 
