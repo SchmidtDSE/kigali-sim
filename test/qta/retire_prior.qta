@@ -8,6 +8,7 @@ start default
       retire 10 %
       emit 5 tCO2e / mt
       set priorEquipment to 100000 units
+      set priorEquipment to 100000 units
     end substance
 
   end application
