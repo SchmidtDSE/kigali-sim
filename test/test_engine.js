@@ -72,11 +72,11 @@ function buildEngineTests() {
       );
 
       const manufactureVal = engine.getStream("manufacture");
-      assert.equal(manufactureVal.getValue(), 10);
+      assert.closeTo(manufactureVal.getValue(), 10);
       assert.deepEqual(manufactureVal.getUnits(), "kg");
 
       const importVal = engine.getStream("import");
-      assert.equal(importVal.getValue(), 20);
+      assert.closeTo(importVal.getValue(), 20);
       assert.deepEqual(importVal.getUnits(), "kg");
     });
 

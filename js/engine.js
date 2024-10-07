@@ -354,11 +354,46 @@ class Engine {
       return;
     }
 
-    const application = self._scope.getApplication();
-    const substance = self._scope.getSubstance();
-    self._streamKeeper.setRechargePopulation(application, substance, volume);
+    // Setup
+    const stateGetter = new OverridingConverterStateGetter(self._stateGetter);
+    const unitConverter = new UnitConverter(stateGetter);
+    const scopeEffective = self._scope;
+    const application = scopeEffective.getApplication();
+    const substance = scopeEffective.getSubstance();
+
+    // Check allowed
+    if (application === null || substance === null) {
+      throw "Tried recalculating population change without application and substance.";
+    }
+
+    // Get prior popoulation
+    const priorPopulationRaw = self.getStream("priorEquipment", scopeEffective);
+    const priorPopulation = unitConverter.convert(priorPopulationRaw, "units");
+    const priorPopulationUnits = priorPopulation.getValue();
+    stateGetter.setPopulation(priorPopulation);
+
+    // Get retirement from prior population.
+    const retirementRaw = self._streamKeeper.getRetirementRate(
+      application,
+      substance,
+    );
+    const retiredPopulation = unitConverter.convert(retirementRaw, "units");
+    const retireUnits = retiredPopulation.getValue();
+    
+    // Determine effective addressable population
+    const addressiblePopulationUnits = priorPopulationUnits - retireUnits;
+    const addressiblePopulation = new EngineNumber(addressiblePopulationUnits, "units");
+    
+    // Determine recharge population in units
+    stateGetter.setPopulation(addressiblePopulation);
+    const volumeConverted = unitConverter.convert(volume, "units");
+    stateGetter.setPopulation(null);
+    
+    // Set values
+    self._streamKeeper.setRechargePopulation(application, substance, volumeConverted);
     self._streamKeeper.setRechargeIntensity(application, substance, intensity);
 
+    // Recalculate
     self._recalcPopulationChange();
     self._recalcSales();
     self._recalcEmissions();
@@ -661,12 +696,13 @@ class Engine {
 
     // Find new total
     const priorPopulationUnits = priorPopulation.getValue();
-    const newUnits = priorPopulationUnits + deltaUnits - retireUnits;
+    const newUnits = priorPopulationUnits + deltaUnits;
     const newUnitsAllowed = newUnits < 0 ? 0 : newUnits;
     const newVolume = new EngineNumber(newUnitsAllowed, "units");
 
     // Save
     self.setStream("equipment", newVolume, null, scopeEffective, false);
+    
   }
 
   _recalcEmissions(scope) {

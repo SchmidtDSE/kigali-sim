@@ -529,13 +529,11 @@ class ConverterStateGetter {
 
     const priorEquipmentRaw = self._engine.getStream("priorEquipment");
     const newEquipmentRaw = self._engine.getStream("equipment");
-    const retiredEquipmentRaw = self._engine.getRetirementRate();
 
     const priorEquipment = unitConverter.convert(priorEquipmentRaw, "units").getValue();
     const newEquipment = unitConverter.convert(newEquipmentRaw, "units").getValue();
-    const retiredEquipment = unitConverter.convert(retiredEquipmentRaw, "units").getValue();
 
-    const deltaValue = newEquipment - priorEquipment + retiredEquipment;
+    const deltaValue = newEquipment - priorEquipment;
     return new EngineNumber(deltaValue, "units");
   }
 }
