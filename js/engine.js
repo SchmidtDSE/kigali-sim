@@ -651,7 +651,6 @@ class Engine {
     const displacementRate = unitConverter.convert(displacementRateRaw, "%");
     const displacementRateRatio = 1 - displacementRate.getValue() / 100;
     const recycledNonDisplaced = recycledKg * displacementRateRatio;
-
     const availableForNewUnitsKg = salesKg + recycledNonDisplaced - rechargeKg;
 
     // Convert to unit delta

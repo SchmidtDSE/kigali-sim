@@ -1018,6 +1018,59 @@ function buildEngineTests() {
       assert.closeTo(equipmentVal2.getValue(), 15, 0.0001);
       assert.deepEqual(equipmentVal2.getUnits(), "units");
     });
+    
+    QUnit.test("combine retire and recharge", function(assert) {
+      const engine = new Engine(1, 3);
+
+      engine.setStanza("default");
+      engine.setApplication("test app");
+      engine.setSubstance("test substance");
+
+      const executeLogic = () => {
+        engine.setStream(
+          "manufacture",
+          new EngineNumber(10, "kg"),
+          new YearMatcher(null, null),
+        );
+
+        engine.setInitialCharge(
+          new EngineNumber(1, "kg / unit"),
+          "sales",
+          new YearMatcher(null, null),
+        );
+        
+        engine.retire(
+          new EngineNumber(10, "% / year"),
+          new YearMatcher(null, null),
+        );
+        
+        engine.recharge(
+          new EngineNumber(10, "% / year"),
+          new EngineNumber(1, "kg / unit"),
+          new YearMatcher(null, null),
+        );
+      };
+
+      executeLogic();
+
+      const manufactureVal1 = engine.getStream("manufacture");
+      assert.equal(manufactureVal1.getValue(), 10);
+      assert.deepEqual(manufactureVal1.getUnits(), "kg");
+
+      engine.incrementYear();
+      executeLogic();
+
+      const manufactureVal2 = engine.getStream("manufacture");
+      assert.equal(manufactureVal2.getValue(), 10);
+      assert.deepEqual(manufactureVal2.getUnits(), "kg");
+      
+      engine.incrementYear();
+      executeLogic();
+
+      const manufactureVal3 = engine.getStream("manufacture");
+      assert.equal(manufactureVal3.getValue(), 10);
+      assert.deepEqual(manufactureVal3.getUnits(), "kg");
+    });
   });
 }
 
