@@ -92,6 +92,12 @@ function getFieldValue(selection) {
 }
 
 
+function getSanitizedFieldValue(selection) {
+  const valueRaw = getFieldValue(selection);
+  return valueRaw.replaceAll("\"", "").replaceAll(",", "");
+}
+
+
 function setListInput(listSelection, itemTemplate, items, uiInit) {
   listSelection.innerHTML = "";
   const addItem = (item) => {
@@ -100,6 +106,12 @@ function setListInput(listSelection, itemTemplate, items, uiInit) {
     newDiv.classList.add("dialog-list-item");
     listSelection.appendChild(newDiv);
     uiInit(item, newDiv);
+
+    const deleteLink = newDiv.querySelector(".delete-command-link");
+    deleteLink.addEventListener("click", (event) => {
+      event.preventDefault();
+      newDiv.remove();
+    });
   };
   items.forEach(addItem);
 }
@@ -247,7 +259,7 @@ class ApplicationsListPresenter {
       event.preventDefault();
 
       const nameInput = self._dialog.querySelector(".edit-application-name-input");
-      const newName = nameInput.value;
+      const newName = nameInput.value.replaceAll("\"", "").replaceAll(",", "");
 
       const priorNames = new Set(self._getAppNames());
       const nameIsDuplicate = priorNames.has(newName);
@@ -473,7 +485,7 @@ class ConsumptionListPresenter {
       self._dialog.querySelector(".edit-consumption-emissions-input"),
       self._dialog.querySelector(".edit-consumption-emissions-units-input"),
       objToShow,
-      new EngineNumber(1, "tCO2e / mt"),
+      new EngineNumber(1, "tCO2e / kg"),
       (x) => x.getEmit().getValue(),
     );
 
@@ -582,7 +594,7 @@ class ConsumptionListPresenter {
   _parseObj() {
     const self = this;
 
-    const substanceName = getFieldValue(
+    const substanceName = getSanitizedFieldValue(
       self._dialog.querySelector(".edit-consumption-substance-input"),
     );
 
@@ -917,7 +929,9 @@ class PolicyListPresenter {
   _parseObj() {
     const self = this;
 
-    const policyName = getFieldValue(self._dialog.querySelector(".edit-policy-name-input"));
+    const policyName = getSanitizedFieldValue(
+      self._dialog.querySelector(".edit-policy-name-input"),
+    );
     const applicationName = getFieldValue(
       self._dialog.querySelector(".edit-policy-application-input"),
     );
@@ -1144,7 +1158,9 @@ class SimulationListPresenter {
   _parseObj() {
     const self = this;
 
-    const scenarioName = getFieldValue(self._dialog.querySelector(".edit-simulation-name-input"));
+    const scenarioName = getSanitizedFieldValue(
+      self._dialog.querySelector(".edit-simulation-name-input"),
+    );
     const start = getFieldValue(self._dialog.querySelector(".edit-simulation-start-input"));
     const end = getFieldValue(self._dialog.querySelector(".edit-simulation-end-input"));
 
@@ -1164,7 +1180,7 @@ class SimulationListPresenter {
 
 
 class UiEditorPresenter {
-  constructor(tabRoot, contentsRoot, getCodeAsObj, onCodeObjUpdate, onTabChange) {
+  constructor(startOnCode, tabRoot, contentsRoot, getCodeAsObj, onCodeObjUpdate, onTabChange) {
     const self = this;
 
     self._contentsSelection = contentsRoot;
@@ -1205,6 +1221,15 @@ class UiEditorPresenter {
     );
 
     self._setupAdvancedLinks();
+
+    if (startOnCode) {
+      self._tabs.toggle("#code-editor-pane");
+    }
+  }
+
+  showCode() {
+    const self = this;
+    self._tabs.toggle("#code-editor-pane");
   }
 
   refresh(codeObj) {
@@ -1293,7 +1318,7 @@ function initSetCommandUi(itemObj, root) {
   setFieldValue(
     root.querySelector(".set-target-input"),
     itemObj,
-    "import",
+    "manufacture",
     (x) => x.getTarget(),
   );
   setEngineNumberValue(
@@ -1326,7 +1351,7 @@ function initChangeCommandUi(itemObj, root) {
   setFieldValue(
     root.querySelector(".change-target-input"),
     itemObj,
-    "import",
+    "manufacture",
     (x) => x.getTarget(),
   );
   setFieldValue(
@@ -1395,7 +1420,7 @@ function initLimitCommandUi(itemObj, root, codeObj) {
     root.querySelector(".limit-type-input"),
     itemObj,
     "cap",
-    (x) => x.getType(),
+    (x) => x.getTypeName(),
   );
   setFieldValue(
     root.querySelector(".limit-target-input"),
