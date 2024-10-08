@@ -226,6 +226,7 @@ class MainPresenter {
           self._codeEditorPresenter.setCode(event.target.result);
           self._onCodeChange();
           loadFileDialog.close();
+          self._onBuild(true);
         };
       }
     });
@@ -235,10 +236,12 @@ class MainPresenter {
     const self = this;
     const button = document.getElementById("workshop-sample-button");
     button.addEventListener("click", () => {
-      const code = document.getElementById("workshop-sample").innerHTML;
-      self._codeEditorPresenter.setCode(code);
-      self._onCodeChange();
-      self._uiEditorPresenter.showCode();
+      if (confirm("This will clear you current analysis. Do you want to continue?")) {
+        const code = document.getElementById("workshop-sample").innerHTML;
+        self._codeEditorPresenter.setCode(code);
+        self._onCodeChange();
+        self._uiEditorPresenter.showCode();
+      }
     });
   }
 }
