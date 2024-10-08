@@ -716,8 +716,8 @@ class SubstanceBuilder {
 
 
 class Substance {
-  constructor(name, charges, limits, changes, consume, recharge, recycles, replaces, retire, setVals,
-    isMod, compat) {
+  constructor(name, charges, limits, changes, consume, recharge, recycles, replaces, retire,
+    setVals, isMod, compat) {
     const self = this;
     self._name = name;
     self._initialCharges = charges;
