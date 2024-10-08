@@ -14,9 +14,20 @@
     <h1>Montreal Policy Simulation</h1>
     Online open source / open science engine for business as usual and policy simulation on HFCs. This webpage enables exploration and analysis of potential outcomes for multiple substances and applications under different scenarios.
     <div class="file-buttons buttons-panel">
-      <a href="#" id="load-file-button" class="secondary">Load Code</a>
-      <a href="#" download="simulation.qta" id="save-file-button" class="secondary">Save Code</a>
+      <a href="#" id="load-file-button" class="secondary">Load Analysis</a>
+      <a href="#" download="simulation.qta" id="save-file-button" class="secondary">Save Analysis</a>
       <a href="#" id="workshop-sample-button" class="secondary">Open Workshop Sample</a>
+
+      <dialog id="load-file-dialog">
+        <h2>Open Analysis</h2>
+        <p>Note that this will override code currently entered into the application.</p>
+        <div><label for="upload-file">File (.qta recommended):</label></div>
+        <div><input type="file" class="upload-file" id="upload-file" name="upload-file"></div>
+        <div class="dialog-buttons bold-buttons">
+          <a href="#" class="load-button primary">Open</a>
+          <a href="#" class="cancel-button destructive">Cancel</a>
+        </div>
+      </dialog>
     </div>
   </header>
 
