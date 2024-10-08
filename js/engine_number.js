@@ -70,7 +70,7 @@ class UnitConverter {
       "mt": (x) => self._toMt(x),
       "unit": (x) => self._toUnits(x),
       "units": (x) => self._toUnits(x),
-      "tCO2e": (x) => self._toEmissions(x),
+      "tCO2e": (x) => self._toConsumption(x),
       "year": (x) => self._toYears(x),
       "years": (x) => self._toYears(x),
       "%": (x) => self._toPercent(x),
@@ -88,7 +88,7 @@ class UnitConverter {
         mt: () => self.convert(self._stateGetter.getVolume(), "mt"),
         unit: () => self.convert(self._stateGetter.getPopulation(), "unit"),
         units: () => self.convert(self._stateGetter.getPopulation(), "units"),
-        tCO2e: () => self.convert(self._stateGetter.getEmissions(), "tCO2e"),
+        tCO2e: () => self.convert(self._stateGetter.getConsumption(), "tCO2e"),
         year: () => self.convert(self._stateGetter.getYearsElapsed(), "year"),
         years: () => self.convert(self._stateGetter.getYearsElapsed(), "years"),
       }[destinationDenominatorUnits];
@@ -152,7 +152,7 @@ class UnitConverter {
       return target;
     } else if (currentUnits === "tCO2e") {
       const originalValue = target.getValue();
-      const conversion = self._stateGetter.getSubstanceEmissions();
+      const conversion = self._stateGetter.getSubstanceConsumption();
       const conversionValue = conversion.getValue();
       const newUnits = conversion.getUnits().split(" / ")[1];
       const newValue = originalValue / conversionValue;
@@ -204,7 +204,7 @@ class UnitConverter {
       return new EngineNumber(newValue, "units");
     } else if (currentUnits === "tCO2e") {
       const originalValue = target.getValue();
-      const conversion = self._stateGetter.getAmortizedUnitEmissions();
+      const conversion = self._stateGetter.getAmortizedUnitConsumption();
       const conversionValue = conversion.getValue();
       const newValue = originalValue / conversionValue;
       return new EngineNumber(newValue, "units");
@@ -220,12 +220,12 @@ class UnitConverter {
   }
 
   /**
-   * Convert a number to emissions as tCO2e.
+   * Convert a number to consumption as tCO2e.
    *
    * @param target The EngineNumber to convert.
-   * @returns Target converted to emissions as tCO2e.
+   * @returns Target converted to consumption as tCO2e.
    */
-  _toEmissions(target) {
+  _toConsumption(target) {
     const self = this;
 
     target = self._normalize(target);
@@ -234,7 +234,7 @@ class UnitConverter {
     if (currentUnits === "tCO2e") {
       return target;
     } else if (currentUnits === "kg" || currentUnits === "mt") {
-      const conversion = self._stateGetter.getSubstanceEmissions();
+      const conversion = self._stateGetter.getSubstanceConsumption();
       const conversionValue = conversion.getValue();
       const conversionUnitPieces = conversion.getUnits().split(" / ");
       const newUnits = conversionUnitPieces[0];
@@ -252,11 +252,11 @@ class UnitConverter {
     } else if (currentUnits === "%") {
       const originalValue = target.getValue();
       const asRatio = originalValue / 100;
-      const total = self._stateGetter.getEmissions();
+      const total = self._stateGetter.getConsumption();
       const newValue = total.getValue() * asRatio;
       return new EngineNumber(newValue, "tCO2e");
     } else {
-      throw "Unable to convert to emissions: " + currentUnits;
+      throw "Unable to convert to consumption: " + currentUnits;
     }
   }
 
@@ -277,8 +277,8 @@ class UnitConverter {
     } else if (currentUnits === "year") {
       return new EngineNumber(target.getValue(), "years");
     } else if (currentUnits === "tCO2e") {
-      const perYearEmissionsValue = self._stateGetter.getEmissions().getValue();
-      const newYears = target.getValue() / perYearEmissionsValue;
+      const perYearConsumptionValue = self._stateGetter.getConsumption().getValue();
+      const newYears = target.getValue() / perYearConsumptionValue;
       return new EngineNumber(newYears, "years");
     } else if (currentUnits === "kg" || currentUnits === "mt") {
       const perYearVolume = self._stateGetter.getVolume();
@@ -315,7 +315,7 @@ class UnitConverter {
       if (currentUnits === "years" || currentUnits === "year") {
         return self._stateGetter.getYearsElapsed();
       } else if (currentUnits === "tCO2e") {
-        return self._stateGetter.getEmissions();
+        return self._stateGetter.getConsumption();
       } else if (currentUnits === "kg" || currentUnits === "mt") {
         const volume = self._stateGetter.getVolume();
         return self.convert(volume, currentUnits);
@@ -342,7 +342,7 @@ class UnitConverter {
     const self = this;
     target = self._normUnits(target);
     target = self._normTime(target);
-    target = self._normEmissions(target);
+    target = self._normConsumption(target);
     target = self._normVolume(target);
     return target;
   }
@@ -398,12 +398,12 @@ class UnitConverter {
   }
 
   /**
-   * Convert a number where a units ratio has emissions in the denominator to a non-ratio units.
+   * Convert a number where a units ratio has consumption in the denominator to a non-ratio units.
    *
-   * @param target The value to normalize by emissions.
-   * @returns Target without emissions in its units denominator.
+   * @param target The value to normalize by consumption.
+   * @returns Target without consumption in its units denominator.
    */
-  _normEmissions(target) {
+  _normConsumption(target) {
     const self = this;
     const currentUnits = target.getUnits();
 
@@ -413,9 +413,9 @@ class UnitConverter {
 
     const originalValue = target.getValue();
     const newUnits = currentUnits.split(" / ")[0];
-    const totalEmissions = self._stateGetter.getEmissions();
-    const totalEmissionsValue = totalEmissions.getValue();
-    const newValue = originalValue * totalEmissionsValue;
+    const totalConsumption = self._stateGetter.getConsumption();
+    const totalConsumptionValue = totalConsumption.getValue();
+    const newValue = originalValue * totalConsumptionValue;
 
     return new EngineNumber(newValue, newUnits);
   }
@@ -459,22 +459,22 @@ class ConverterStateGetter {
     self._engine = engine;
   }
 
-  getSubstanceEmissions() {
+  getSubstanceConsumption() {
     const self = this;
-    const emissions = self.getEmissions();
+    const consumption = self.getConsumption();
     const volume = self.getVolume();
-    const ratioValue = emissions.getValue() / volume.getValue();
+    const ratioValue = consumption.getValue() / volume.getValue();
 
-    const emissionsUnits = emissions.getUnits();
+    const consumptionUnits = consumption.getUnits();
     const volumeUnits = volume.getUnits();
-    const emissionsUnitsExpected = emissionsUnits === "tCO2e";
+    const consumptionUnitsExpected = consumptionUnits === "tCO2e";
     const volumeUnitsExpected = volumeUnits === "mt" || volumeUnits === "kg";
-    const unitsExpected = emissionsUnitsExpected && volumeUnitsExpected;
+    const unitsExpected = consumptionUnitsExpected && volumeUnitsExpected;
     if (!unitsExpected) {
-      throw "Unexpected units for getSubstanceEmissions.";
+      throw "Unexpected units for getSubstanceConsumption.";
     }
 
-    const ratioUnits = emissionsUnits + " / " + volumeUnits;
+    const ratioUnits = consumptionUnits + " / " + volumeUnits;
     return new EngineNumber(ratioValue, ratioUnits);
   }
 
@@ -494,9 +494,9 @@ class ConverterStateGetter {
     return new EngineNumber(firstYear ? 0 : 1, "year");
   }
 
-  getEmissions() {
+  getConsumption() {
     const self = this;
-    return self._engine.getStream("emissions");
+    return self._engine.getStream("consumption");
   }
 
   getVolume() {
@@ -505,11 +505,11 @@ class ConverterStateGetter {
     return sales;
   }
 
-  getAmortizedUnitEmissions() {
+  getAmortizedUnitConsumption() {
     const self = this;
-    const emissions = self.getEmissions();
+    const consumption = self.getConsumption();
     const population = self.getPopulation();
-    const ratioValue = emissions.getValue() / population.getValue();
+    const ratioValue = consumption.getValue() / population.getValue();
 
     const populationUnits = population.getUnits();
     const volumeUnits = volume.getUnits();
@@ -517,10 +517,10 @@ class ConverterStateGetter {
     const volumeUnitsExpected = volumeUnits === "mt" || volumeUnits === "kg";
     const unitsExpected = populationUnitsExpected && volumeUnitsExpected;
     if (!unitsExpected) {
-      throw "Unexpected units for getAmortizedUnitEmissions.";
+      throw "Unexpected units for getAmortizedUnitConsumption.";
     }
 
-    const ratioUnits = emissionsUnits + " / " + populationUnits;
+    const ratioUnits = consumptionUnits + " / " + populationUnits;
     return new EngineNumber(ratioValue, ratioUnits);
   }
 
@@ -542,13 +542,13 @@ class OverridingConverterStateGetter {
   constructor(innerGetter) {
     const self = this;
     self._innerGetter = innerGetter;
-    self._substanceEmissions = null;
+    self._substanceConsumption = null;
     self._amortizedUnitVolume = null;
     self._population = null;
     self._yearsElapsed = null;
-    self._totalEmissions = null;
+    self._totalConsumption = null;
     self._volume = null;
-    self._amortizedUnitEmissions = null;
+    self._amortizedUnitConsumption = null;
     self._populationChange = null;
   }
 
@@ -560,22 +560,22 @@ class OverridingConverterStateGetter {
       "import": (x) => self.setVolume(x),
       "equipment": (x) => self.setPopulation(x),
       "priorEquipment": (x) => self.setPopulation(x),
-      "emissions": (x) => self.setEmissions(x),
+      "consumption": (x) => self.setConsumption(x),
     }[streamName];
     strategy(value);
   }
 
-  setSubstanceEmissions(newValue) {
+  setSubstanceConsumption(newValue) {
     const self = this;
-    self._substanceEmissions = newValue;
+    self._substanceConsumption = newValue;
   }
 
-  getSubstanceEmissions() {
+  getSubstanceConsumption() {
     const self = this;
-    if (self._substanceEmissions === null) {
-      return self._innerGetter.getSubstanceEmissions();
+    if (self._substanceConsumption === null) {
+      return self._innerGetter.getSubstanceConsumption();
     } else {
-      return self._substanceEmissions;
+      return self._substanceConsumption;
     }
   }
 
@@ -621,17 +621,17 @@ class OverridingConverterStateGetter {
     }
   }
 
-  setEmissions(newValue) {
+  setConsumption(newValue) {
     const self = this;
-    self._totalEmissions = newValue;
+    self._totalConsumption = newValue;
   }
 
-  getEmissions() {
+  getConsumption() {
     const self = this;
-    if (self._totalEmissions === null) {
-      return self._innerGetter.getEmissions();
+    if (self._totalConsumption === null) {
+      return self._innerGetter.getConsumption();
     } else {
-      return self._totalEmissions;
+      return self._totalConsumption;
     }
   }
 
@@ -649,17 +649,17 @@ class OverridingConverterStateGetter {
     }
   }
 
-  setAmortizedUnitEmissions(newValue) {
+  setAmortizedUnitConsumption(newValue) {
     const self = this;
-    self._amortizedUnitEmissions = newValue;
+    self._amortizedUnitConsumption = newValue;
   }
 
-  getAmortizedUnitEmissions() {
+  getAmortizedUnitConsumption() {
     const self = this;
-    if (self._amortizedUnitEmissions === null) {
-      return self._innerGetter.getAmortizedUnitEmissions();
+    if (self._amortizedUnitConsumption === null) {
+      return self._innerGetter.getAmortizedUnitConsumption();
     } else {
-      return self._amortizedUnitEmissions;
+      return self._amortizedUnitConsumption;
     }
   }
 

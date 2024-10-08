@@ -482,8 +482,8 @@ class ConsumptionListPresenter {
     );
 
     setEngineNumberValue(
-      self._dialog.querySelector(".edit-consumption-emissions-input"),
-      self._dialog.querySelector(".edit-consumption-emissions-units-input"),
+      self._dialog.querySelector(".edit-consumption-consumption-input"),
+      self._dialog.querySelector(".edit-consumption-consumption-units-input"),
       objToShow,
       new EngineNumber(1, "tCO2e / kg"),
       (x) => x.getEquals().getValue(),
@@ -600,11 +600,11 @@ class ConsumptionListPresenter {
 
     const substanceBuilder = new SubstanceBuilder(substanceName, false);
 
-    const emissionsValue = getEngineNumberValue(
-      self._dialog.querySelector(".edit-consumption-emissions-input"),
-      self._dialog.querySelector(".edit-consumption-emissions-units-input"),
+    const consumptionValue = getEngineNumberValue(
+      self._dialog.querySelector(".edit-consumption-consumption-input"),
+      self._dialog.querySelector(".edit-consumption-consumption-units-input"),
     );
-    substanceBuilder.addCommand(new Command("equals", null, emissionsValue, null));
+    substanceBuilder.addCommand(new Command("equals", null, consumptionValue, null));
 
     const initialChargeDomestic = getEngineNumberValue(
       self._dialog.querySelector(".edit-consumption-initial-charge-domestic-input"),

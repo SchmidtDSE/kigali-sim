@@ -2,11 +2,11 @@ import {EngineNumber} from "engine_number";
 
 
 class AggregatedResult {
-  constructor(manufactureValue, importValue, emissionsValue, populationValue) {
+  constructor(manufactureValue, importValue, consumptionValue, populationValue) {
     const self = this;
     self._manufactureValue = manufactureValue;
     self._importValue = importValue;
-    self._emissionsValue = emissionsValue;
+    self._consumptionValue = consumptionValue;
     self._populationValue = populationValue;
   }
 
@@ -28,9 +28,9 @@ class AggregatedResult {
     return sales;
   }
 
-  getEmissions() {
+  getConsumption() {
     const self = this;
-    return self._emissionsValue;
+    return self._consumptionValue;
   }
 
   getPopulation() {
@@ -43,13 +43,13 @@ class AggregatedResult {
 
     const manufactureValue = self._combineUnitValue(self.getManufacture(), other.getManufacture());
     const importValue = self._combineUnitValue(self.getImport(), other.getImport());
-    const emissionsValue = self._combineUnitValue(self.getEmissions(), other.getEmissions());
+    const consumptionValue = self._combineUnitValue(self.getConsumption(), other.getConsumption());
     const populationValue = self._combineUnitValue(self.getPopulation(), other.getPopulation());
 
     return new AggregatedResult(
       manufactureValue,
       importValue,
-      emissionsValue,
+      consumptionValue,
       populationValue,
     );
   }
@@ -79,7 +79,7 @@ class ReportDataWrapper {
     const self = this;
     const metric = filterSet.getMetric();
     const strategy = {
-      "emissions": () => self.getEmissions(filterSet),
+      "consumption": () => self.getConsumption(filterSet),
       "sales": () => self.getSales(filterSet),
       "population": () => self.getPopulation(filterSet),
     }[metric];
@@ -123,10 +123,10 @@ class ReportDataWrapper {
     return self._getSetAfterFilter(filterSet, (x) => x.getYear());
   }
 
-  getEmissions(filterSet) {
+  getConsumption(filterSet) {
     const self = this;
     const aggregated = self._getAggregatedAfterFilter(filterSet);
-    return aggregated.getEmissions();
+    return aggregated.getConsumption();
   }
 
   getSales(filterSet) {
@@ -159,7 +159,7 @@ class ReportDataWrapper {
     const preAggregated = afterFilter.map((x) => new AggregatedResult(
       x.getManufacture(),
       x.getImport(),
-      x.getEmissions(),
+      x.getConsumption(),
       x.getPopulation(),
     ));
 

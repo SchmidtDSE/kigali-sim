@@ -174,7 +174,7 @@ recharge 5 % with 0.12 kg / unit during years 1 to 5
 
 One may also recharge a number of units by changing `%` to `units`.
 
-### Emissions
+### Consumption
 GHG equivalencies can be made through the `equals` command like so:
 
 ```
@@ -323,7 +323,7 @@ Various statements can specify units. These are not assignable to variables so a
 Available units include the following:
 
  - `kg` or `mt`: Volumes as kilograms or megatons
- - `tCO2e`: Emissions as tons of CO2e
+ - `tCO2e`: Consumption as tons of CO2e
  - `unit` or `units`: Population size as equipment units
  - `year` or `years`: Time as year or years elapsed from start of simulation.
  - `%`: Percentage
@@ -340,37 +340,37 @@ Interpretation and unit conversion depends on the command:
 
 | **Op**     | **Type** | **Units**                                                                                      | **Percent**          | **Ratios**                                                                                                   |
 | ----------------------------------------------- | ------------------------------------------- | --------------------------------------------------------------------------------------------- | ------------------------------------------------ | ----------------------------------------------------------------------------------------------------------- |
-| Initial Charge    | Volume        | Volume distributed across population. Emissions converted to volume.                                    | Not supported.          | Div by units will multiply by pop size.                                                                               |
-| Set Sales         | Volume        | Volume. Emissions converted to volume, units converted to volume. Proportional if not sub-stream.       | $x = x * \%$            | Div by time multiplies `yearsElapsed`, div by units multiplies population, div by emissions multiplies emissions.     |
-| Set Equipment     | Population    | Units. Emissions converted to volume, volume converted to units.                                        | $x = x * \%$            | Div by time multiplies `yearsElapsed`, div by volume multiplies volume, div by emissions multiplies emissions.        |
-| Set Emissions     | Emissions     | Emissions distributed across volume streams.                                                            | $x = x * \%$            | Div by time multiplies `yearsElapsed`, div by units multiplies population, div by volume converts to div by units.    |
-| Change Sales      | Volume        | Volume delta. Emissions converted to volume, units converted to volume. Proportional if not sub-stream. | $x = x * (1 + \%)$      | Div by time multiplies `yearsElapsed`, div by units multiplies population, div by emissions multiplies emissions.     |
-| Change Equipment  | Population    | Units delta. Emissions converted to volume, volume converted to units. Proportional.                    | $x = x * (1 + \%)$      | Div by time multiplies `yearsElapsed`, div by volume multiplies volume, div by emissions multiplies emissions.        |
-| Change Emissions  | Emissions     | Emissions delta distributed across volume.                                                              | $x = x * (1 + \%)$      | Div by time multiplies `yearsElapsed`, div by units multiplies population, div by volume converts to div by units.    |
-| Retire            | Population    | Emissions converted to volume, volume converted to units.                                               | $r = x * \%$            | Div by time multiplies `yearsElapsed`, div by volume multiplies volume, div by emissions multiplies emissions.        |
-| Cap Sales         | Volume        | Volume. Emissions converted to volume, units converted to volume. Proportional if not sub-stream.       | $c = x * \%$            | Div by time multiplies `yearsElapsed`, div by units multiplies population, div by emissions multiplies emissions.     |
-| Cap Equipment     | Population    | Units. Emissions converted to volume, volume converted to units.                                        | $c = x * \%$            | Div by time multiplies `yearsElapsed`, div by volume multiplies volume, div by emissions multiplies emissions.        |
-| Cap Emissions     | Emissions     | Emissions total distributed across volume streams.                                                      | $c = x * \%$            | Div by time multiplies `yearsElapsed`, div by units multiplies population, div by volume converts to div by units.    |
-| Recycle           | Volume        | Volume. Emissions converted to volume, units converted to volume. Proportional.                         | Uniform across streams. | Div by time multiplies `yearsElapsed`, div by units multiplies population, div by emissions converts to div by units. |
-| Replace Sales     | Volume        | Volume. Emissions converted to volume, units converted to volume. Proportional if not sub-stream.       | Uniform across streams. | Div by time multiplies `yearsElapsed`, div by units multiplies population, div by emissions converts to div by units. |
-| Replace Equipment | Volume        | Converted to volume.                                                                                    | Uniform across streams. | Div by time multiplies `yearsElapsed`, div by volume converts to units, div by emissions converts to div by volume.   |
-| Replace Emissions | Volume        | Converted to volume.                                                                                    | Uniform across streams. | Div by time multiplies `yearsElapsed`, div by volume converts to units, div by units converts to volume.              |
+| Initial Charge    | Volume        | Volume distributed across population. Consumption converted to volume.                                    | Not supported.          | Div by units will multiply by pop size.                                                                               |
+| Set Sales         | Volume        | Volume. Consumption converted to volume, units converted to volume. Proportional if not sub-stream.       | $x = x * \%$            | Div by time multiplies `yearsElapsed`, div by units multiplies population, div by consumption multiplies consumption.     |
+| Set Equipment     | Population    | Units. Consumption converted to volume, volume converted to units.                                        | $x = x * \%$            | Div by time multiplies `yearsElapsed`, div by volume multiplies volume, div by consumption multiplies consumption.        |
+| Set Consumption     | Consumption     | Consumption distributed across volume streams.                                                            | $x = x * \%$            | Div by time multiplies `yearsElapsed`, div by units multiplies population, div by volume converts to div by units.    |
+| Change Sales      | Volume        | Volume delta. Consumption converted to volume, units converted to volume. Proportional if not sub-stream. | $x = x * (1 + \%)$      | Div by time multiplies `yearsElapsed`, div by units multiplies population, div by consumption multiplies consumption.     |
+| Change Equipment  | Population    | Units delta. Consumption converted to volume, volume converted to units. Proportional.                    | $x = x * (1 + \%)$      | Div by time multiplies `yearsElapsed`, div by volume multiplies volume, div by consumption multiplies consumption.        |
+| Change Consumption  | Consumption     | Consumption delta distributed across volume.                                                              | $x = x * (1 + \%)$      | Div by time multiplies `yearsElapsed`, div by units multiplies population, div by volume converts to div by units.    |
+| Retire            | Population    | Consumption converted to volume, volume converted to units.                                               | $r = x * \%$            | Div by time multiplies `yearsElapsed`, div by volume multiplies volume, div by consumption multiplies consumption.        |
+| Cap Sales         | Volume        | Volume. Consumption converted to volume, units converted to volume. Proportional if not sub-stream.       | $c = x * \%$            | Div by time multiplies `yearsElapsed`, div by units multiplies population, div by consumption multiplies consumption.     |
+| Cap Equipment     | Population    | Units. Consumption converted to volume, volume converted to units.                                        | $c = x * \%$            | Div by time multiplies `yearsElapsed`, div by volume multiplies volume, div by consumption multiplies consumption.        |
+| Cap Consumption     | Consumption     | Consumption total distributed across volume streams.                                                      | $c = x * \%$            | Div by time multiplies `yearsElapsed`, div by units multiplies population, div by volume converts to div by units.    |
+| Recycle           | Volume        | Volume. Consumption converted to volume, units converted to volume. Proportional.                         | Uniform across streams. | Div by time multiplies `yearsElapsed`, div by units multiplies population, div by consumption converts to div by units. |
+| Replace Sales     | Volume        | Volume. Consumption converted to volume, units converted to volume. Proportional if not sub-stream.       | Uniform across streams. | Div by time multiplies `yearsElapsed`, div by units multiplies population, div by consumption converts to div by units. |
+| Replace Equipment | Volume        | Converted to volume.                                                                                    | Uniform across streams. | Div by time multiplies `yearsElapsed`, div by volume converts to units, div by consumption converts to div by volume.   |
+| Replace Consumption | Volume        | Converted to volume.                                                                                    | Uniform across streams. | Div by time multiplies `yearsElapsed`, div by volume converts to units, div by units converts to volume.              |
 | Get Sales         | Volume        | Volume (`kg`)                                                                                           | N/A                     | N/A                                                                                                                   |
 | Get Equipment     | Population    | Population (`units`)                                                                                    | N/A                     | N/A                                                                                                                   |
-| Get Emissions     | Emissions     | Emissions (`tCO2e`)                                                                                     | N/A                     | N/A                                                                                                                   |
+| Get Consumption     | Consumption     | Consumption (`tCO2e`)                                                                                     | N/A                     | N/A                                                                                                                   |
 
-In addition to the strategies described above, conversion may invert ratio units to achieve a valid configuration. Otherwise, if behavior is not specified above, the correct behavior is undefined. In these cases, units are “unsupported” for a command and will result in an error at runtime. Note that units are converted to emissions and volumes with amortized values.
+In addition to the strategies described above, conversion may invert ratio units to achieve a valid configuration. Otherwise, if behavior is not specified above, the correct behavior is undefined. In these cases, units are “unsupported” for a command and will result in an error at runtime. Note that units are converted to consumption and volumes with amortized values.
 
 ## Proportionality with units
 Finally, “proportional” operations on percentages will apply the same to all sub-streams if using a percentage or unit which includes division (ex: `kg / mt`) otherwise the effect size will be proportional to the size of the sub-stream prior to the operation.
 
 # Engine
-While the system can operate with constraints through `cap`, updates are applied in the order specified within code. Within the context of streams, one stream can cause another to update with these changes propagating when a stream is changed. The following dependencies see changes made at the start of the chain cause changes downstream. Note that these are not transitive beyond this table so changes to sales does not cause an emissions trigger.
+While the system can operate with constraints through `cap`, updates are applied in the order specified within code. Within the context of streams, one stream can cause another to update with these changes propagating when a stream is changed. The following dependencies see changes made at the start of the chain cause changes downstream. Note that these are not transitive beyond this table so changes to sales does not cause an consumption trigger.
 
-| **Trigger**                 | **Sales**                                       | **Emissions**                        | **Population**                                                                                  |
+| **Trigger**                 | **Sales**                                       | **Consumption**                        | **Population**                                                                                  |
 | ------------------------------------------------------ | ----------------------------------------------- | ------------------------------------ | ----------------------------------------------------------------------------------------------- |
 | Sales (manufacture, import) | Changed directly                                | Recalc using equals value              | Recalc new and total equip after subtract recharge and recycle, retiring at recharge if needed. |
-| Emissions                   | Recalc after add recharge and subtract recycle. | Changed directly                     | Recalc new and total equip after subtract recharge and recycle, retiring at recharge if needed. |
+| Consumption                   | Recalc after add recharge and subtract recycle. | Changed directly                     | Recalc new and total equip after subtract recharge and recycle, retiring at recharge if needed. |
 | Population (equipment)      | Recalc after add recharge and subtract recycle. | Recalc after sales update using equals | New equip and total current equip changes but prior equip untouched.                            |
 | Population (priorEquipment) | No change                                       | No change                            | Change prior equip. New and total equipment recalculated.                                       |
 These updates happen automatically within the interpreter and all use the following which are recorded internally with original units.
@@ -402,15 +402,15 @@ Propagating effects to the equipment population can happen either by changing th
 
 Note that retirement applies to prior population size. While the new population delta may be negative, set negative total populations as zero (interpret as net exports).
 
-### Emissions response
-Recalculating emissions largely relies on manufacturing numbers and applies to the substance regardless of where the substance gets used.
+### Consumption response
+Recalculating consumption largely relies on manufacturing numbers and applies to the substance regardless of where the substance gets used.
 
  - Remove imports from sales.
  - Offset manufacturing with recycling (assumed proportional to import / domestic share) using offset rate.
- - Convert to emissions.
- - Set negative total emissions to zero (treat net negative emissions as credit taken elsewhere).
+ - Convert to consumption.
+ - Set negative total consumption to zero (treat net negative consumption as credit taken elsewhere).
 
-Note that emissions are applied to point of manufacture (exporter not importer).
+Note that consumption are applied to point of manufacture (exporter not importer).
 
 ## Sales response
 Sales updating to changes in other variables scales imports and manufacturing proportionally as to meet the requirements of recharge and sales.

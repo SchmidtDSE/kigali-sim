@@ -28,7 +28,7 @@ class ResultsPresenter {
     const self = this;
     self._root = root;
     self._results = null;
-    self._filterSet = new FilterSet(null, null, null, null, "emissions", "simulations");
+    self._filterSet = new FilterSet(null, null, null, null, "consumption", "simulations");
 
     const scorecardContainer = self._root.querySelector("#scorecards");
     const dimensionsContainer = self._root.querySelector("#dimensions");
@@ -96,7 +96,7 @@ class ExportPresenter {
         const year = result.getYear();
         const manufactureValue = result.getManufacture();
         const importValue = result.getImport();
-        const emissionsValue = result.getEmissions();
+        const consumptionValue = result.getConsumption();
         const populationValue = result.getPopulation();
         return {
           "scenario": scenarioName,
@@ -107,8 +107,8 @@ class ExportPresenter {
           "manufactureUnits": manufactureValue.getUnits(),
           "importValue": importValue.getValue(),
           "importUnits": importValue.getUnits(),
-          "emissionsValue": emissionsValue.getValue(),
-          "emissionsUnits": emissionsValue.getUnits(),
+          "consumptionValue": consumptionValue.getValue(),
+          "consumptionUnits": consumptionValue.getUnits(),
           "equipmentPopulation": populationValue.getValue(),
           "equipmentUnits": populationValue.getUnits(),
         };
@@ -125,8 +125,8 @@ class ExportPresenter {
         record["manufactureUnits"],
         record["importValue"],
         record["importUnits"],
-        record["emissionsValue"],
-        record["emissionsUnits"],
+        record["consumptionValue"],
+        record["consumptionUnits"],
         record["equipmentPopulation"],
         record["equipmentUnits"],
       ];
@@ -145,8 +145,8 @@ class ExportPresenter {
       "manufactureUnits",
       "importValue",
       "importUnits",
-      "emissionsValue",
-      "emissionsUnits",
+      "consumptionValue",
+      "consumptionUnits",
       "equipmentPopulation",
       "equipmentUnits",
     ];
@@ -174,28 +174,28 @@ class ScorecardPresenter {
     self._filterSet = filterSet;
     const currentYear = self._filterSet.getYear();
 
-    const emissionsScorecard = self._root.querySelector("#emissions-scorecard");
+    const consumptionScorecard = self._root.querySelector("#consumption-scorecard");
     const salesScorecard = self._root.querySelector("#sales-scorecard");
     const equipmentScorecard = self._root.querySelector("#equipment-scorecard");
 
-    const emissionsValue = results.getEmissions(filterSet);
+    const consumptionValue = results.getConsumption(filterSet);
     const salesValue = results.getSales(filterSet);
     const equipmentValue = results.getPopulation(filterSet);
 
     const roundToTenths = (x) => Math.round(x * 10) / 10;
-    const emissionRounded = roundToTenths(emissionsValue.getValue() / 1000000);
+    const emissionRounded = roundToTenths(consumptionValue.getValue() / 1000000);
     const salesMt = roundToTenths(salesValue.getValue() / 1000000) + " k";
     const millionEqipment = roundToTenths(equipmentValue.getValue() / 1000000) + " M";
 
     const metricSelected = filterSet.getMetric();
-    const emissionsSelected = metricSelected === "emissions";
+    const consumptionSelected = metricSelected === "consumption";
     const salesSelected = metricSelected === "sales";
     const equipmentSelected = metricSelected === "population";
 
     const scenarios = results.getScenarios(self._filterSet.getWithScenario(null));
     const hideVal = !self._filterSet.hasSingleScenario(scenarios);
 
-    self._updateCard(emissionsScorecard, emissionRounded, currentYear, emissionsSelected, hideVal);
+    self._updateCard(consumptionScorecard, emissionRounded, currentYear, consumptionSelected, hideVal);
     self._updateCard(salesScorecard, salesMt, currentYear, salesSelected, hideVal);
     self._updateCard(equipmentScorecard, millionEqipment, currentYear, equipmentSelected, hideVal);
   }
@@ -235,7 +235,7 @@ class ScorecardPresenter {
   _registerEventListeners() {
     const self = this;
 
-    const emissionsScorecard = self._root.querySelector("#emissions-scorecard");
+    const consumptionScorecard = self._root.querySelector("#consumption-scorecard");
     const salesScorecard = self._root.querySelector("#sales-scorecard");
     const equipmentScorecard = self._root.querySelector("#equipment-scorecard");
 
@@ -247,7 +247,7 @@ class ScorecardPresenter {
       });
     };
 
-    registerListener(emissionsScorecard, "emissions");
+    registerListener(consumptionScorecard, "consumption");
     registerListener(salesScorecard, "sales");
     registerListener(equipmentScorecard, "population");
   }
@@ -269,7 +269,7 @@ class DimensionCardPresenter {
 
     const metricSelected = self._filterSet.getMetric();
     const metricUnits = {
-      "emissions": "MtCO2e / yr",
+      "consumption": "MtCO2e / yr",
       "sales": "mt / yr",
       "population": "units",
     }[metricSelected];
@@ -297,7 +297,7 @@ class DimensionCardPresenter {
     const substancesSelected = dimensionSelected === "substances";
 
     const conversionInfo = {
-      "emissions": {"divider": 1000000, "suffix": "M"},
+      "consumption": {"divider": 1000000, "suffix": "M"},
       "sales": {"divider": 1000, "suffix": ""},
       "population": {"divider": 1000000, "suffix": "M"},
     }[self._filterSet.getMetric()];
@@ -466,7 +466,7 @@ class CenterChartPresenter {
     years.sort((a, b) => a - b);
 
     const divider = {
-      "emissions": 1000000,
+      "consumption": 1000000,
       "sales": 1000,
       "population": 1000000,
     }[filterSet.getMetric()];
@@ -509,7 +509,7 @@ class CenterChartPresenter {
 
     const metricSelected = filterSet.getMetric();
     const metricUnits = {
-      "emissions": "MtCO2e / yr",
+      "consumption": "MtCO2e / yr",
       "sales": "mt / yr",
       "population": "units",
     }[metricSelected];

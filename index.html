@@ -98,11 +98,11 @@
                       </div>
                     </div>
                     <div class="form-group">
-                      <div><label for="edit-consumption-emissions">Emissions:</label></div>
+                      <div><label for="edit-consumption-consumption">Consumption:</label></div>
                       <div>
-                        <input type="text" name="edit-consumption-emissions" class="edit-consumption-emissions-input mid">
+                        <input type="text" name="edit-consumption-consumption" class="edit-consumption-consumption-input mid">
                         <span class="sel mid">
-                          <select name="edit-consumption-emissions-units" class="edit-consumption-emissions-units-input" aria-label="Units of initial charge">
+                          <select name="edit-consumption-consumption-units" class="edit-consumption-consumption-units-input" aria-label="Units of initial charge">
                             <option value="kg">kg</option>
                             <option value="mt">mt</option>
                             <option value="tCO2e">tCO2e</option>
@@ -416,9 +416,9 @@
       <h2>Results</h2>
 
       <div class="scorecards" id="scorecards">
-        <div class="scorecard" id="emissions-scorecard">
+        <div class="scorecard" id="consumption-scorecard">
           <div class="label">
-            <label for="emissions-radio"><input id="emissions-radio" class="metric-radio" type="radio" name="metric" value="emissions" checked="checked"> Emissions</label>
+            <label for="consumption-radio"><input id="consumption-radio" class="metric-radio" type="radio" name="metric" value="consumption" checked="checked"> Consumption</label>
           </div>
           <div class="value"></div>
           <div class="units">MtCO2e / yr <span class="current-year"></span></div>
@@ -450,7 +450,7 @@
           Showing
           <span class="sel mid">
             <select class="metric-select" aria-label="Metric selection dropdown menu">
-              <option value="emissions">Emissions</option>
+              <option value="consumption">Consumption</option>
               <option value="sales">Sales</option>
               <option value="population">Equipment (Population)</option>
             </select>
