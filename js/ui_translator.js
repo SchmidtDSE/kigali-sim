@@ -129,15 +129,23 @@ class Program {
     return matching.length == 0 ? null : matching[0];
   }
 
-  deletePolicy(name) {
+  deletePolicy(name, filterUnknown) {
     const self = this;
+
+    if (filterUnknown === undefined) {
+      filterUnknown = true;
+    }
+
     self._policies = self._policies.filter((x) => x.getName() !== name);
-    self._removeUnknownPoliciesFromScenarios();
+
+    if (filterUnknown) {
+      self._removeUnknownPoliciesFromScenarios();
+    }
   }
 
   insertPolicy(oldName, newPolicy) {
     const self = this;
-    self.deletePolicy(oldName);
+    self.deletePolicy(oldName, false);
     self._policies.push(newPolicy);
   }
 
