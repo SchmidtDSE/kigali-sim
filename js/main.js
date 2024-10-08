@@ -99,7 +99,7 @@ class MainPresenter {
       self._onBuild(false);
     }
     localStorage.setItem("source", code);
-    
+
     const encodedValue = encodeURI("data:text/qubectalk;charset=utf-8," + code);
     const saveButton = document.getElementById("save-file-button");
     saveButton.href = encodedValue;
@@ -201,7 +201,7 @@ class MainPresenter {
   _setupLoadDialog() {
     const self = this;
     const loadFileDialog = document.getElementById("load-file-dialog");
-    
+
     const loadFileButton = document.getElementById("load-file-button");
     loadFileButton.addEventListener("click", (event) => {
       event.preventDefault();
@@ -217,16 +217,16 @@ class MainPresenter {
     const loadButton = loadFileDialog.querySelector(".load-button");
     loadButton.addEventListener("click", (event) => {
       event.preventDefault();
-      
+
       const file = loadFileDialog.querySelector(".upload-file").files[0];
       if (file) {
         const reader = new FileReader();
         reader.readAsText(file, "UTF-8");
-        reader.onload = function (event) {
+        reader.onload = function(event) {
           self._codeEditorPresenter.setCode(event.target.result);
           self._onCodeChange();
           loadFileDialog.close();
-        }
+        };
       }
     });
   }
