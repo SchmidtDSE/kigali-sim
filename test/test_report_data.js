@@ -140,13 +140,13 @@ function buildReportDataTests() {
     );
 
     buildTest(
-      "gets emissions",
+      "gets consumption",
       "/test/qta/multiple_with_policies.qta", [
         (result, assert) => {
           const filterSet = new FilterSet(1, "bau", null, null);
-          const totalEmissions = result.getEmissions(filterSet);
-          assert.closeTo(totalEmissions.getValue(), 1500, 0.0001);
-          assert.deepEqual(totalEmissions.getUnits(), "tCO2e");
+          const totalConsumption = result.getConsumption(filterSet);
+          assert.closeTo(totalConsumption.getValue(), 1500, 0.0001);
+          assert.deepEqual(totalConsumption.getUnits(), "tCO2e");
         },
       ],
     );

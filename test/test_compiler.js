@@ -77,9 +77,9 @@ function buildCompilerTests() {
         },
         (result, assert) => {
           const record = getResult(result, BAU_NAME, 1, 0, "test", "test");
-          const emissions = record.getEmissions();
-          assert.closeTo(emissions.getValue(), 500, 0.0001);
-          assert.deepEqual(emissions.getUnits(), "tCO2e");
+          const consumption = record.getConsumption();
+          assert.closeTo(consumption.getValue(), 500, 0.0001);
+          assert.deepEqual(consumption.getUnits(), "tCO2e");
         },
         (result, assert) => {
           const record = getResult(result, BAU_NAME, 1, 0, "test", "test");
@@ -101,9 +101,9 @@ function buildCompilerTests() {
         },
         (result, assert) => {
           const record = getResult(result, BAU_NAME, 2, 0, "test", "test");
-          const emissions = record.getEmissions();
-          assert.closeTo(emissions.getValue(), 550, 0.0001);
-          assert.deepEqual(emissions.getUnits(), "tCO2e");
+          const consumption = record.getConsumption();
+          assert.closeTo(consumption.getValue(), 550, 0.0001);
+          assert.deepEqual(consumption.getUnits(), "tCO2e");
         },
       ],
     );
@@ -119,9 +119,9 @@ function buildCompilerTests() {
         },
         (result, assert) => {
           const record = getResult(result, BAU_NAME, 2, 0, "test", "test");
-          const emissions = record.getEmissions();
-          assert.closeTo(emissions.getValue(), 500, 0.0001);
-          assert.deepEqual(emissions.getUnits(), "tCO2e");
+          const consumption = record.getConsumption();
+          assert.closeTo(consumption.getValue(), 500, 0.0001);
+          assert.deepEqual(consumption.getUnits(), "tCO2e");
         },
         (result, assert) => {
           const record = getResult(result, BAU_NAME, 1, 0, "test", "test");
@@ -181,19 +181,19 @@ function buildCompilerTests() {
     );
 
     buildTest(
-      "handles multiple emissions",
+      "handles multiple consumption",
       "/test/qta/multiple.qta", [
         (result, assert) => {
           const record = getResult(result, BAU_NAME, 1, 0, "test", "a");
-          const emissions = record.getEmissions();
-          assert.closeTo(emissions.getValue(), 500, 0.0001);
-          assert.deepEqual(emissions.getUnits(), "tCO2e");
+          const consumption = record.getConsumption();
+          assert.closeTo(consumption.getValue(), 500, 0.0001);
+          assert.deepEqual(consumption.getUnits(), "tCO2e");
         },
         (result, assert) => {
           const record = getResult(result, BAU_NAME, 1, 0, "test", "b");
-          const emissions = record.getEmissions();
-          assert.closeTo(emissions.getValue(), 1000, 0.0001);
-          assert.deepEqual(emissions.getUnits(), "tCO2e");
+          const consumption = record.getConsumption();
+          assert.closeTo(consumption.getValue(), 1000, 0.0001);
+          assert.deepEqual(consumption.getUnits(), "tCO2e");
         },
       ],
     );
@@ -203,9 +203,9 @@ function buildCompilerTests() {
       "/test/qta/policies.qta", [
         (result, assert) => {
           const record = getResult(result, "result", 1, 0, "test", "test");
-          const emissions = record.getEmissions();
-          assert.closeTo(emissions.getValue(), 250, 0.0001);
-          assert.deepEqual(emissions.getUnits(), "tCO2e");
+          const consumption = record.getConsumption();
+          assert.closeTo(consumption.getValue(), 250, 0.0001);
+          assert.deepEqual(consumption.getUnits(), "tCO2e");
         },
       ],
     );
@@ -215,15 +215,15 @@ function buildCompilerTests() {
       "/test/qta/recycling.qta", [
         (result, assert) => {
           const record = getResult(result, "result", 1, 0, "test", "test");
-          const emissions = record.getEmissions();
-          assert.closeTo(emissions.getValue(), 500, 0.0001);
-          assert.deepEqual(emissions.getUnits(), "tCO2e");
+          const consumption = record.getConsumption();
+          assert.closeTo(consumption.getValue(), 500, 0.0001);
+          assert.deepEqual(consumption.getUnits(), "tCO2e");
         },
         (result, assert) => {
           const record = getResult(result, "result", 2, 0, "test", "test");
-          const emissions = record.getEmissions();
-          assert.closeTo(emissions.getValue(), 437.5, 0.0001);
-          assert.deepEqual(emissions.getUnits(), "tCO2e");
+          const consumption = record.getConsumption();
+          assert.closeTo(consumption.getValue(), 437.5, 0.0001);
+          assert.deepEqual(consumption.getUnits(), "tCO2e");
         },
       ],
     );
@@ -233,15 +233,15 @@ function buildCompilerTests() {
       "/test/qta/replace.qta", [
         (result, assert) => {
           const record = getResult(result, "result", 1, 0, "test", "a");
-          const emissions = record.getEmissions();
-          assert.closeTo(emissions.getValue(), 250, 0.0001);
-          assert.deepEqual(emissions.getUnits(), "tCO2e");
+          const consumption = record.getConsumption();
+          assert.closeTo(consumption.getValue(), 250, 0.0001);
+          assert.deepEqual(consumption.getUnits(), "tCO2e");
         },
         (result, assert) => {
           const record = getResult(result, "result", 1, 0, "test", "b");
-          const emissions = record.getEmissions();
-          assert.closeTo(emissions.getValue(), 375, 0.0001);
-          assert.deepEqual(emissions.getUnits(), "tCO2e");
+          const consumption = record.getConsumption();
+          assert.closeTo(consumption.getValue(), 375, 0.0001);
+          assert.deepEqual(consumption.getUnits(), "tCO2e");
         },
       ],
     );
@@ -251,9 +251,9 @@ function buildCompilerTests() {
       "/test/qta/combination.qta", [
         (result, assert) => {
           const record = getResult(result, "result", 1, 0, "test", "test");
-          const emissions = record.getEmissions();
-          assert.closeTo(emissions.getValue(), 125, 0.0001);
-          assert.deepEqual(emissions.getUnits(), "tCO2e");
+          const consumption = record.getConsumption();
+          assert.closeTo(consumption.getValue(), 125, 0.0001);
+          assert.deepEqual(consumption.getUnits(), "tCO2e");
         },
       ],
     );
@@ -263,9 +263,9 @@ function buildCompilerTests() {
       "/test/qta/conditional.qta", [
         (result, assert) => {
           const record = getResult(result, "business as usual", 1, 0, "test", "test");
-          const emissions = record.getEmissions();
-          assert.closeTo(emissions.getValue(), 250, 0.0001);
-          assert.deepEqual(emissions.getUnits(), "tCO2e");
+          const consumption = record.getConsumption();
+          assert.closeTo(consumption.getValue(), 250, 0.0001);
+          assert.deepEqual(consumption.getUnits(), "tCO2e");
         },
       ],
     );
@@ -275,17 +275,17 @@ function buildCompilerTests() {
       "/test/qta/trials.qta", [
         (result, assert) => {
           const record = getResult(result, "business as usual", 1, 0, "test", "test");
-          const emissions = record.getEmissions();
-          assert.ok(emissions.getValue() >= 300);
-          assert.ok(emissions.getValue() <= 700);
-          assert.deepEqual(emissions.getUnits(), "tCO2e");
+          const consumption = record.getConsumption();
+          assert.ok(consumption.getValue() >= 300);
+          assert.ok(consumption.getValue() <= 700);
+          assert.deepEqual(consumption.getUnits(), "tCO2e");
         },
         (result, assert) => {
           const record = getResult(result, "business as usual", 1, 1, "test", "test");
-          const emissions = record.getEmissions();
-          assert.ok(emissions.getValue() >= 300);
-          assert.ok(emissions.getValue() <= 700);
-          assert.deepEqual(emissions.getUnits(), "tCO2e");
+          const consumption = record.getConsumption();
+          assert.ok(consumption.getValue() >= 300);
+          assert.ok(consumption.getValue() <= 700);
+          assert.deepEqual(consumption.getUnits(), "tCO2e");
         },
       ],
     );

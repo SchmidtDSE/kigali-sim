@@ -134,7 +134,7 @@ function buildEngineTests() {
       assert.deepEqual(manufactureVal1.getUnits(), "units");
     });
 
-    QUnit.test("determines basic emissions", function(assert) {
+    QUnit.test("determines basic consumption", function(assert) {
       const engine = new Engine(1, 3);
 
       engine.setStanza("default");
@@ -147,7 +147,7 @@ function buildEngineTests() {
         new YearMatcher(null, null),
       );
 
-      engine.emit(new EngineNumber(1, "tCO2e / kg"), new YearMatcher(null, null));
+      engine.equals(new EngineNumber(1, "tCO2e / kg"), new YearMatcher(null, null));
 
       engine.setStream(
         "manufacture",
@@ -155,9 +155,9 @@ function buildEngineTests() {
         new YearMatcher(null, null),
       );
 
-      const emissions = engine.getStream("emissions");
-      assert.closeTo(emissions.getValue(), 246, 0.0001);
-      assert.deepEqual(emissions.getUnits(), "tCO2e");
+      const consumption = engine.getStream("consumption");
+      assert.closeTo(consumption.getValue(), 246, 0.0001);
+      assert.deepEqual(consumption.getUnits(), "tCO2e");
     });
 
     QUnit.test("change stream", function(assert) {

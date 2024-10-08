@@ -7,7 +7,7 @@ const STREAM_BASE_UNITS = new Map();
 STREAM_BASE_UNITS.set("manufacture", "kg");
 STREAM_BASE_UNITS.set("import", "kg");
 STREAM_BASE_UNITS.set("sales", "kg");
-STREAM_BASE_UNITS.set("emissions", "tCO2e");
+STREAM_BASE_UNITS.set("consumption", "tCO2e");
 STREAM_BASE_UNITS.set("equipment", "units");
 STREAM_BASE_UNITS.set("priorEquipment", "units");
 

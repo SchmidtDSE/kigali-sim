@@ -6,7 +6,7 @@ start default
       set manufacture to 100 mt
       initial charge with 1 kg / unit for manufacture
       recharge 10% with 1 kg / unit
-      emit 5 tCO2e / mt
+      equals 5 tCO2e / mt
     end substance
 
   end application

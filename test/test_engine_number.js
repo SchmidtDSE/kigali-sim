@@ -27,24 +27,24 @@ function buildEngineNumberTests() {
     class MockConverterStateGetter {
       constructor() {
         const self = this;
-        self._substanceEmissions = null;
+        self._substanceConsumption = null;
         self._amortizedUnitVolume = null;
         self._population = null;
         self._yearsElapsed = null;
-        self._totalEmissions = null;
+        self._totalConsumption = null;
         self._volume = null;
-        self._amortizedUnitEmissions = null;
+        self._amortizedUnitConsumption = null;
         self._populationChange = null;
       }
 
-      setSubstanceEmissions(newValue) {
+      setSubstanceConsumption(newValue) {
         const self = this;
-        self._substanceEmissions = newValue;
+        self._substanceConsumption = newValue;
       }
 
-      getSubstanceEmissions() {
+      getSubstanceConsumption() {
         const self = this;
-        return self._substanceEmissions;
+        return self._substanceConsumption;
       }
 
       setAmortizedUnitVolume(newValue) {
@@ -77,14 +77,14 @@ function buildEngineNumberTests() {
         return self._yearsElapsed;
       }
 
-      setEmissions(newValue) {
+      setConsumption(newValue) {
         const self = this;
-        self._totalEmissions = newValue;
+        self._totalConsumption = newValue;
       }
 
-      getEmissions() {
+      getConsumption() {
         const self = this;
-        return self._totalEmissions;
+        return self._totalConsumption;
       }
 
       setVolume(newValue) {
@@ -97,14 +97,14 @@ function buildEngineNumberTests() {
         return self._volume;
       }
 
-      setAmortizedUnitEmissions(newValue) {
+      setAmortizedUnitConsumption(newValue) {
         const self = this;
-        self._amortizedUnitEmissions = newValue;
+        self._amortizedUnitConsumption = newValue;
       }
 
-      getAmortizedUnitEmissions() {
+      getAmortizedUnitConsumption() {
         const self = this;
-        return self._amortizedUnitEmissions;
+        return self._amortizedUnitConsumption;
       }
 
       setPopulationChange(newValue) {
@@ -134,9 +134,9 @@ function buildEngineNumberTests() {
       assert.deepEqual(result.getUnits(), "kg");
     });
 
-    QUnit.test("emissions to volume", function(assert) {
+    QUnit.test("consumption to volume", function(assert) {
       const mockConverterStateGetter = new MockConverterStateGetter();
-      mockConverterStateGetter.setSubstanceEmissions(
+      mockConverterStateGetter.setSubstanceConsumption(
         new EngineNumber(5, "tCO2e / mt"),
       );
 
@@ -194,9 +194,9 @@ function buildEngineNumberTests() {
       assert.deepEqual(result.getUnits(), "kg");
     });
 
-    QUnit.test("volume per emissions to volume", function(assert) {
+    QUnit.test("volume per consumption to volume", function(assert) {
       const mockConverterStateGetter = new MockConverterStateGetter();
-      mockConverterStateGetter.setEmissions(new EngineNumber(10, "tCO2e"));
+      mockConverterStateGetter.setConsumption(new EngineNumber(10, "tCO2e"));
 
       const result = convertUnits(
         new EngineNumber(20, "kg / tCO2e"),
@@ -249,9 +249,9 @@ function buildEngineNumberTests() {
       assert.deepEqual(result.getUnits(), "units");
     });
 
-    QUnit.test("emissions to pop", function(assert) {
+    QUnit.test("consumption to pop", function(assert) {
       const mockConverterStateGetter = new MockConverterStateGetter();
-      mockConverterStateGetter.setAmortizedUnitEmissions(
+      mockConverterStateGetter.setAmortizedUnitConsumption(
         new EngineNumber(50, "tCO2e / unit"),
       );
 
@@ -293,9 +293,9 @@ function buildEngineNumberTests() {
       assert.deepEqual(result.getUnits(), "units");
     });
 
-    QUnit.test("pop per emissions to pop", function(assert) {
+    QUnit.test("pop per consumption to pop", function(assert) {
       const mockConverterStateGetter = new MockConverterStateGetter();
-      mockConverterStateGetter.setEmissions(new EngineNumber(5, "tCO2e"));
+      mockConverterStateGetter.setConsumption(new EngineNumber(5, "tCO2e"));
 
       const result = convertUnits(
         new EngineNumber(2, "units / tCO2e"),
@@ -321,7 +321,7 @@ function buildEngineNumberTests() {
       assert.deepEqual(result.getUnits(), "units");
     });
 
-    QUnit.test("emissions to emissions", function(assert) {
+    QUnit.test("consumption to consumption", function(assert) {
       const result = convertUnits(
         new EngineNumber(5, "tCO2e"),
         "tCO2e",
@@ -332,9 +332,9 @@ function buildEngineNumberTests() {
       assert.deepEqual(result.getUnits(), "tCO2e");
     });
 
-    QUnit.test("volume to emissions", function(assert) {
+    QUnit.test("volume to consumption", function(assert) {
       const mockConverterStateGetter = new MockConverterStateGetter();
-      mockConverterStateGetter.setSubstanceEmissions(
+      mockConverterStateGetter.setSubstanceConsumption(
         new EngineNumber(5, "tCO2e / kg"),
       );
 
@@ -348,7 +348,7 @@ function buildEngineNumberTests() {
       assert.deepEqual(result.getUnits(), "tCO2e");
     });
 
-    QUnit.test("pop to emissions", function(assert) {
+    QUnit.test("pop to consumption", function(assert) {
       const mockConverterStateGetter = new MockConverterStateGetter();
       mockConverterStateGetter.setAmortizedUnitVolume(
         new EngineNumber(0.1, "tCO2e / unit"),
@@ -364,7 +364,7 @@ function buildEngineNumberTests() {
       assert.deepEqual(result.getUnits(), "tCO2e");
     });
 
-    QUnit.test("emissions per time to emissions", function(assert) {
+    QUnit.test("consumption per time to consumption", function(assert) {
       const mockConverterStateGetter = new MockConverterStateGetter();
       mockConverterStateGetter.setYearsElapsed(new EngineNumber(2, "years"));
 
@@ -378,7 +378,7 @@ function buildEngineNumberTests() {
       assert.deepEqual(result.getUnits(), "tCO2e");
     });
 
-    QUnit.test("emissions per volume to emissions", function(assert) {
+    QUnit.test("consumption per volume to consumption", function(assert) {
       const mockConverterStateGetter = new MockConverterStateGetter();
       mockConverterStateGetter.setVolume(new EngineNumber(5, "kg"));
 
@@ -392,7 +392,7 @@ function buildEngineNumberTests() {
       assert.deepEqual(result.getUnits(), "tCO2e");
     });
 
-    QUnit.test("emissions per pop to emissions", function(assert) {
+    QUnit.test("consumption per pop to consumption", function(assert) {
       const mockConverterStateGetter = new MockConverterStateGetter();
       mockConverterStateGetter.setPopulation(new EngineNumber(20, "units"));
 
@@ -406,9 +406,9 @@ function buildEngineNumberTests() {
       assert.deepEqual(result.getUnits(), "tCO2e");
     });
 
-    QUnit.test("percent to emissions", function(assert) {
+    QUnit.test("percent to consumption", function(assert) {
       const mockConverterStateGetter = new MockConverterStateGetter();
-      mockConverterStateGetter.setEmissions(new EngineNumber(10, "tCO2e"));
+      mockConverterStateGetter.setConsumption(new EngineNumber(10, "tCO2e"));
 
       const result = convertUnits(
         new EngineNumber(10, "%"),
@@ -431,9 +431,9 @@ function buildEngineNumberTests() {
       assert.deepEqual(result.getUnits(), "years");
     });
 
-    QUnit.test("emissions to years", function(assert) {
+    QUnit.test("consumption to years", function(assert) {
       const mockConverterStateGetter = new MockConverterStateGetter();
-      mockConverterStateGetter.setEmissions(new EngineNumber(5, "tCO2e"));
+      mockConverterStateGetter.setConsumption(new EngineNumber(5, "tCO2e"));
 
       const result = convertUnits(
         new EngineNumber(10, "tCO2e"),
@@ -521,9 +521,9 @@ function buildEngineNumberTests() {
       assert.deepEqual(result.getUnits(), "unit / kg");
     });
 
-    QUnit.test("normalize by emissions", function(assert) {
+    QUnit.test("normalize by consumption", function(assert) {
       const mockConverterStateGetter = new MockConverterStateGetter();
-      mockConverterStateGetter.setEmissions(
+      mockConverterStateGetter.setConsumption(
         new EngineNumber(2, "tCO2e"),
       );
 

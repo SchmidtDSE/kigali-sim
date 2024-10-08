@@ -570,9 +570,9 @@ class StreamKeeper {
       makeZero("kg"),
     );
 
-    // Emissions: count, conversion
+    // Consumption: count, conversion
     self._streams.set(
-      self._getKey(application, substance, "emissions"),
+      self._getKey(application, substance, "consumption"),
       makeZero("tCO2e"),
     );
 

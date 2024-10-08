@@ -21,7 +21,7 @@ const STREAM_NAMES = new Set([
 
 
 class EngineResult {
-  constructor(application, substance, year, manufactureValue, importValue, emissionsValue,
+  constructor(application, substance, year, manufactureValue, importValue, consumptionValue,
     populationValue) {
     const self = this;
     self._application = application;
@@ -29,7 +29,7 @@ class EngineResult {
     self._year = year;
     self._manufactureValue = manufactureValue;
     self._importValue = importValue;
-    self._emissionsValue = emissionsValue;
+    self._consumptionValue = consumptionValue;
     self._populationValue = populationValue;
   }
 
@@ -58,9 +58,9 @@ class EngineResult {
     return self._importValue;
   }
 
-  getEmissions() {
+  getConsumption() {
     const self = this;
-    return self._emissionsValue;
+    return self._consumptionValue;
   }
 
   getPopulation() {
@@ -220,13 +220,13 @@ class Engine {
 
     if (name === "sales" || name === "manufacture" || name === "import") {
       self._recalcPopulationChange(scopeEffective);
-      self._recalcEmissions(scopeEffective);
-    } else if (name === "emissions") {
+      self._recalcConsumption(scopeEffective);
+    } else if (name === "consumption") {
       self._recalcSales(scopeEffective);
       self._recalcPopulationChange(scopeEffective);
     } else if (name === "equipment") {
       self._recalcSales(scopeEffective);
-      self._recalcEmissions(scopeEffective);
+      self._recalcConsumption(scopeEffective);
     } else if (name === "priorEquipment") {
       self._recalcRetire(scopeEffective);
     }
@@ -370,7 +370,7 @@ class Engine {
     // Recalculate
     self._recalcPopulationChange();
     self._recalcSales();
-    self._recalcEmissions();
+    self._recalcConsumption();
   }
 
   retire(amount, yearMatcher) {
@@ -414,10 +414,10 @@ class Engine {
 
     self._recalcSales();
     self._recalcPopulationChange();
-    self._recalcEmissions();
+    self._recalcConsumption();
   }
 
-  emit(amount, yearMatcher) {
+  equals(amount, yearMatcher) {
     const self = this;
 
     if (!self._getIsInRange(yearMatcher)) {
@@ -428,7 +428,7 @@ class Engine {
     const substance = self._scope.getSubstance();
     self._streamKeeper.setGhgIntensity(application, substance, amount);
 
-    self._recalcEmissions();
+    self._recalcConsumption();
   }
 
   changeStream(stream, amount, yearMatcher, scope) {
@@ -539,7 +539,7 @@ class Engine {
       const year = self._currentYear;
       const manufactureValue = self._streamKeeper.getStream(application, substance, "manufacture");
       const importValue = self._streamKeeper.getStream(application, substance, "import");
-      const emissionsValue = self._streamKeeper.getStream(application, substance, "emissions");
+      const consumptionValue = self._streamKeeper.getStream(application, substance, "consumption");
       const populationValue = self._streamKeeper.getStream(application, substance, "equipment");
 
       return new EngineResult(
@@ -548,7 +548,7 @@ class Engine {
         year,
         manufactureValue,
         importValue,
-        emissionsValue,
+        consumptionValue,
         populationValue,
       );
     });
@@ -670,7 +670,7 @@ class Engine {
     self.setStream("equipment", newVolume, null, scopeEffective, false);
   }
 
-  _recalcEmissions(scope) {
+  _recalcConsumption(scope) {
     const self = this;
 
     const scopeEffective = scope === null || scope === undefined ? self._scope : scope;
@@ -681,28 +681,28 @@ class Engine {
     const substance = scopeEffective.getSubstance();
 
     if (application === null || substance === null) {
-      throw "Tried recalculating emissions without application and substance.";
+      throw "Tried recalculating consumption without application and substance.";
     }
 
     // Determine percent domestic manufacturing
     const manufacturingRaw = self.getStream("manufacture", scopeEffective);
     const manufacturing = unitConverter.convert(manufacturingRaw, "kg");
 
-    // Determine emissions
+    // Determine consumption
     stateGetter.setVolume(manufacturing);
-    const emissionsRaw = self._streamKeeper.getGhgIntensity(
+    const consumptionRaw = self._streamKeeper.getGhgIntensity(
       application,
       substance,
     );
-    const emissions = unitConverter.convert(emissionsRaw, "tCO2e");
+    const consumption = unitConverter.convert(consumptionRaw, "tCO2e");
     stateGetter.setVolume(null);
 
     // Ensure in range
-    const isNegative = emissions.getValue() < 0;
-    const emissionsAllowed = isNegative ? new EngineNumber(0, "tCO2e") : emissions;
+    const isNegative = consumption.getValue() < 0;
+    const consumptionAllowed = isNegative ? new EngineNumber(0, "tCO2e") : consumption;
 
     // Save
-    self.setStream("emissions", emissionsAllowed, null, scopeEffective, false);
+    self.setStream("consumption", consumptionAllowed, null, scopeEffective, false);
   }
 
   _recalcSales(scope) {
@@ -848,7 +848,7 @@ class Engine {
     // Propogate
     self._recalcPopulationChange();
     self._recalcSales();
-    self._recalcEmissions();
+    self._recalcConsumption();
   }
 }
 
