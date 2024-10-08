@@ -195,7 +195,13 @@ class ScorecardPresenter {
     const scenarios = results.getScenarios(self._filterSet.getWithScenario(null));
     const hideVal = !self._filterSet.hasSingleScenario(scenarios);
 
-    self._updateCard(consumptionScorecard, emissionRounded, currentYear, consumptionSelected, hideVal);
+    self._updateCard(
+      consumptionScorecard,
+      emissionRounded,
+      currentYear,
+      consumptionSelected,
+      hideVal,
+    );
     self._updateCard(salesScorecard, salesMt, currentYear, salesSelected, hideVal);
     self._updateCard(equipmentScorecard, millionEqipment, currentYear, equipmentSelected, hideVal);
   }
