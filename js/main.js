@@ -96,6 +96,10 @@ class MainPresenter {
       self._onBuild(false);
     }
     localStorage.setItem("source", code);
+    
+    const encodedValue = encodeURI("data:text/qubectalk;charset=utf-8," + code);
+    const saveButton = document.getElementById("save-file-button");
+    saveButton.href = encodedValue;
   }
 
   _onBuild(run) {
