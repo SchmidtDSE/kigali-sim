@@ -145,7 +145,8 @@ class Program {
 
   insertPolicy(oldName, newPolicy) {
     const self = this;
-    self.deletePolicy(oldName, false);
+    const nameChange = oldName !== newPolicy.getName();
+    self.deletePolicy(oldName, nameChange);
     self._policies.push(newPolicy);
   }
 
