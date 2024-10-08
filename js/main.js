@@ -84,6 +84,8 @@ class MainPresenter {
     }
 
     self._onCodeChange();
+    self._setupLoadDialog();
+    self._setupWorkshopSample();
   }
 
   _onCodeChange() {
@@ -91,11 +93,16 @@ class MainPresenter {
     const code = self._codeEditorPresenter.getCode();
     if (WHITESPACE_REGEX.test(code)) {
       self._buttonPanelPresenter.hideScriptButtons();
+      self._uiEditorPresenter.refresh(null);
     } else {
       self._buttonPanelPresenter.showScriptButtons();
       self._onBuild(false);
     }
     localStorage.setItem("source", code);
+
+    const encodedValue = encodeURI("data:text/qubectalk;charset=utf-8," + code);
+    const saveButton = document.getElementById("save-file-button");
+    saveButton.href = encodedValue;
   }
 
   _onBuild(run) {
@@ -189,6 +196,50 @@ class MainPresenter {
     }
 
     self._onBuild(true);
+  }
+
+  _setupLoadDialog() {
+    const self = this;
+    const loadFileDialog = document.getElementById("load-file-dialog");
+
+    const loadFileButton = document.getElementById("load-file-button");
+    loadFileButton.addEventListener("click", (event) => {
+      event.preventDefault();
+      loadFileDialog.showModal();
+    });
+
+    const cancelButton = loadFileDialog.querySelector(".cancel-button");
+    cancelButton.addEventListener("click", (event) => {
+      event.preventDefault();
+      loadFileDialog.close();
+    });
+
+    const loadButton = loadFileDialog.querySelector(".load-button");
+    loadButton.addEventListener("click", (event) => {
+      event.preventDefault();
+
+      const file = loadFileDialog.querySelector(".upload-file").files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.readAsText(file, "UTF-8");
+        reader.onload = function(event) {
+          self._codeEditorPresenter.setCode(event.target.result);
+          self._onCodeChange();
+          loadFileDialog.close();
+        };
+      }
+    });
+  }
+
+  _setupWorkshopSample() {
+    const self = this;
+    const button = document.getElementById("workshop-sample-button");
+    button.addEventListener("click", () => {
+      const code = document.getElementById("workshop-sample").innerHTML;
+      self._codeEditorPresenter.setCode(code);
+      self._onCodeChange();
+      self._uiEditorPresenter.showCode();
+    });
   }
 }
 

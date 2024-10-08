@@ -270,6 +270,19 @@ main {
   background-color: #5050C0;
 }
 
+.buttons-panel a.secondary, .buttons-panel a.secondary:link, .buttons-panel a.secondary:visited {
+  background-color: #E0E0E0;
+  color: black;
+  border-radius: 10px;
+  padding: 7px;
+  text-decoration: none;
+}
+
+.buttons-panel a.secondary:focus, .buttons-panel a.secondary:hover, .buttons-panel a.secondary:active {
+  background-color: #909090;
+  color: white;
+}
+
 .dialog-list {
   height: 250px;
   overflow-y: auto;

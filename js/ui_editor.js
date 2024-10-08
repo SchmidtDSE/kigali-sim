@@ -1234,7 +1234,12 @@ class UiEditorPresenter {
 
   refresh(codeObj) {
     const self = this;
-    self._codeObj = codeObj;
+
+    if (codeObj === null) {
+      self._initCodeObj();
+    } else {
+      self._codeObj = codeObj;
+    }
 
     if (self._codeObj.getIsCompatible()) {
       self._applicationsList.refresh(codeObj);
