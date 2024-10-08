@@ -1125,8 +1125,9 @@ class SimulationListPresenter {
       .selectAll(".policy-check-label")
       .data(policyNames)
       .enter()
-      .append("label")
-      .classed("policy-check-label", true);
+      .append("div")
+      .classed("policy-check-label", true)
+      .append("label");
 
     newLabels.append("input")
       .attr("type", "checkbox")
@@ -1558,7 +1559,7 @@ function readReplaceCommandUi(root) {
     root.querySelector(".replace-amount-input"),
     root.querySelector(".replace-units-input"),
   );
-  const replacement = getFieldValue(".replace-replacement-input");
+  const replacement = getFieldValue(root.querySelector(".replace-replacement-input"));
   const duration = readDurationUi(root.querySelector(".duration-subcomponent"));
 
   return new ReplaceCommand(amount, target, replacement, duration);
