@@ -631,17 +631,17 @@ class CompileVisitor extends toolkit.QubecTalkVisitor {
     };
   }
 
-  visitEmitAllYears(ctx) {
+  visitConsumeAllYears(ctx) {
     const self = this;
     const valueFuture = ctx.value.accept(self);
 
     return (engine) => {
       const value = valueFuture(engine);
-      engine.emit(value);
+      engine.consume(value);
     };
   }
 
-  visitEmitDuration(ctx) {
+  visitConsumeDuration(ctx) {
     const self = this;
     const valueFuture = ctx.value.accept(self);
     const durationFuture = ctx.duration.accept(self);
@@ -649,7 +649,7 @@ class CompileVisitor extends toolkit.QubecTalkVisitor {
     return (engine) => {
       const value = valueFuture(engine);
       const duration = durationFuture(engine);
-      engine.emit(value, duration);
+      engine.consume(value, duration);
     };
   }
 

@@ -5,13 +5,13 @@ start default
     uses substance "a"
       initial charge with 1 kg / unit for manufacture
       set manufacture to 50 mt during year 1
-      emit 10 tCO2e / mt
+      consume 10 tCO2e / mt
     end substance
 
     uses substance "b"
       initial charge with 1 kg / unit for manufacture
       set manufacture to 50 mt during year 1
-      emit 5 tCO2e / mt
+      consume 5 tCO2e / mt
     end substance
 
   end application

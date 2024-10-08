@@ -5,7 +5,7 @@ start default
     uses substance "test"
       initial charge with 5 kg / unit for manufacture
       set manufacture to 100 mt
-      emit 5 tCO2e / mt
+      consume 5 tCO2e / mt
     end substance
 
   end application

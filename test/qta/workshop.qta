@@ -3,7 +3,7 @@ start default
   define application "dom refrig"
 
     uses substance "HFC-134a"
-      emit 1000 tCO2e / mt
+      consume 1000 tCO2e / mt
 
       # Domestic production
       initial charge with 0.5 kg / unit for manufacture
@@ -26,7 +26,7 @@ start default
     end substance
 
     uses substance "R-600a"
-      emit 10 tCO2e / mt
+      consume 10 tCO2e / mt
 
       # Domestic production
       initial charge with 0.1 kg / unit for manufacture
@@ -51,7 +51,7 @@ start default
   define application "com refrig"
 
     uses substance "HFC-134a"
-      emit 1000 tCO2e / mt
+      consume 1000 tCO2e / mt
 
       # Domestic production
       initial charge with 0.5 kg / unit for manufacture
@@ -78,7 +78,7 @@ start default
     end substance
 
     uses substance "R-600a"
-      emit 10 tCO2e / mt
+      consume 10 tCO2e / mt
 
       # Domestic production
       initial charge with 0.1 kg / unit for manufacture
@@ -99,7 +99,7 @@ start default
     end substance
 
     uses substance "R-404A"
-      emit 5000 tCO2e / mt
+      consume 5000 tCO2e / mt
 
       # Domestic production
       initial charge with 0.5 kg / unit for manufacture

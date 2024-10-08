@@ -105,16 +105,16 @@ function buildUiTranslatorReverseTests() {
       assert.notEqual(code.indexOf("change manufacture by +5 % / year"), -1);
     });
 
-    QUnit.test("emits from substances", function(assert) {
+    QUnit.test("consumes from substances", function(assert) {
       const command = new Command(
-        "emit",
+        "consume",
         null,
         new EngineNumber("5", "tCO2e / unit"),
         null,
       );
       const substance = createWithCommand("test", false, command);
       const code = substance.toCode(0);
-      assert.notEqual(code.indexOf("emit 5 tCO2e / unit"), -1);
+      assert.notEqual(code.indexOf("consume 5 tCO2e / unit"), -1);
     });
 
     QUnit.test("recharges substances", function(assert) {

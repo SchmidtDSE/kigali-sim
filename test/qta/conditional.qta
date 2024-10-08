@@ -6,7 +6,7 @@ start default
       initial charge with 1 kg / unit for manufacture
       define testVar as 5
       set manufacture to 100 if testVar > 10 else 50 endif mt
-      emit 5 tCO2e / mt
+      consume 5 tCO2e / mt
     end substance
 
   end application

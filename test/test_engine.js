@@ -147,7 +147,7 @@ function buildEngineTests() {
         new YearMatcher(null, null),
       );
 
-      engine.emit(new EngineNumber(1, "tCO2e / kg"), new YearMatcher(null, null));
+      engine.consume(new EngineNumber(1, "tCO2e / kg"), new YearMatcher(null, null));
 
       engine.setStream(
         "manufacture",

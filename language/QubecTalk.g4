@@ -150,7 +150,7 @@ DISPLACING_ : 'displacing';
 
 DURING_: 'during';
 
-EMIT_: 'emit';
+CONSUME_: 'consume';
 
 FLOOR_: 'floor';
 
@@ -363,8 +363,8 @@ changeStatement: CHANGE_ target=stream BY_ value=unitValue  # changeAllYears
 
 defineVarStatement: DEFINE_ target=identifier AS_ value=expression;
 
-emitStatement: EMIT_ value=unitValue  # emitAllYears
-  | EMIT_ value=unitValue duration=during  # emitDuration
+consumeStatement: CONSUME_ value=unitValue  # consumeAllYears
+  | CONSUME_ value=unitValue duration=during  # consumeDuration
   ;
 
 initialChargeStatement: INITIAL_ CHARGE_ WITH_ value=unitValue FOR_ target=stream # initialChargeAllYears
@@ -407,7 +407,7 @@ simulate: SIMULATE_ name=string FROM_ YEARS_ start=expression TO_ end=expression
 
 globalStatement: (defineVarStatement | setStatement);
 
-substanceStatement: (capStatement | changeStatement | emitStatement | initialChargeStatement | rechargeStatement | recycleStatement | replaceStatement | retireStatement);
+substanceStatement: (capStatement | changeStatement | consumeStatement | initialChargeStatement | rechargeStatement | recycleStatement | replaceStatement | retireStatement);
 
 /**
  * -------------

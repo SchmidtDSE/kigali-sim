@@ -12,7 +12,7 @@ start default
   define application "dometic refrigeration"
 
     uses substance "HFC-134a"
-      emit 1430 tCO2e / mt
+      consume 1430 tCO2e / mt
 
       # Domestic production
       initial charge with 0.12 kg / unit for manufacture
@@ -35,7 +35,7 @@ start default
     end substance
 
     uses substance "R-600a"
-      emit 6 tCO2e / mt
+      consume 6 tCO2e / mt
 
       # Domestic production
       initial charge with 0.05 kg / unit for manufacture
@@ -56,7 +56,7 @@ start default
     end substance
 
     uses substance "low gwp"
-      emit 0 tCO2e / mt
+      consume 0 tCO2e / mt
     end substance
 
   end application
@@ -64,7 +64,7 @@ start default
   define application "com refrig"
 
     uses substance "HFC-134a"
-      emit 1430 tCO2e / mt
+      consume 1430 tCO2e / mt
 
       # Domestic production
       initial charge with 0.30 kg / unit for manufacture
@@ -87,7 +87,7 @@ start default
     end substance
 
     uses substance "R-600a"
-      emit 6 tCO2e / mt
+      consume 6 tCO2e / mt
 
       # Domestic production
       initial charge with 0.12 kg / unit for manufacture
@@ -108,7 +108,7 @@ start default
     end substance
 
     uses substance "R-404A"
-      emit 3922 tCO2e / mt
+      consume 3922 tCO2e / mt
 
       # Domestic production
       initial charge with 0.30 kg / unit for manufacture
@@ -129,7 +129,7 @@ start default
     end substance
 
     uses substance "low gwp"
-      emit 0 tCO2e / mt
+      consume 0 tCO2e / mt
     end substance
 
   end application
@@ -137,7 +137,7 @@ start default
   define application "res AC"
 
     uses substance "R-410A"
-      emit 2082 tCO2e / mt
+      consume 2082 tCO2e / mt
 
       # Domestic production
       initial charge with 0.90 kg / unit for manufacture
@@ -160,7 +160,7 @@ start default
     end substance
 
     uses substance "HFC-32"
-      emit 632 tCO2e / mt
+      consume 632 tCO2e / mt
 
       # Domestic production
       initial charge with 0.68 kg / unit for manufacture
@@ -181,7 +181,7 @@ start default
     end substance
 
     uses substance "R-290"
-      emit 6 tCO2e / mt
+      consume 6 tCO2e / mt
 
       # Domestic production
       initial charge with 0.68 kg / unit for manufacture
@@ -202,7 +202,7 @@ start default
     end substance
 
     uses substance "low gwp"
-      emit 0 tCO2e / mt
+      consume 0 tCO2e / mt
     end substance
 
   end application
@@ -210,7 +210,7 @@ start default
   define application "mobile AC"
 
     uses substance "HFC-134a"
-      emit 1430 tCO2e / mt
+      consume 1430 tCO2e / mt
 
       # Domestic production
       initial charge with 0.90 kg / unit for manufacture
@@ -233,7 +233,7 @@ start default
     end substance
 
     uses substance "R-1234yf"
-      emit 6 tCO2e / mt
+      consume 6 tCO2e / mt
 
       # Domestic production
       initial charge with 0.90 kg / unit for manufacture
@@ -254,7 +254,7 @@ start default
     end substance
 
     uses substance "low gwp"
-      emit 0 tCO2e / mt
+      consume 0 tCO2e / mt
     end substance
 
   end application

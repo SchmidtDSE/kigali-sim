@@ -417,7 +417,7 @@ class Engine {
     self._recalcEmissions();
   }
 
-  emit(amount, yearMatcher) {
+  consume(amount, yearMatcher) {
     const self = this;
 
     if (!self._getIsInRange(yearMatcher)) {

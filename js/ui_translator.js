@@ -16,7 +16,7 @@ const COMMAND_COMPATIBILITIES = {
   "floor": "any",
   "limit": "any",
   "initial charge": "definition",
-  "emit": "definition",
+  "consume": "definition",
   "recharge": "definition",
   "recycle": "policy",
   "replace": "policy",
@@ -266,17 +266,17 @@ class Program {
           }
         };
 
-        const getEmitProblematic = () => {
-          const emit = substance.getEmit();
-          if (emit === null) {
+        const getConsumeProblematic = () => {
+          const consume = substance.getConsume();
+          if (consume === null) {
             return false;
           } else {
-            const duration = emit.getDuration();
+            const duration = consume.getDuration();
             return !durationIsFullSpan(duration);
           }
         };
 
-        return getInitialChargeProblematic() || getEmitProblematic();
+        return getInitialChargeProblematic() || getConsumeProblematic();
       });
       return problematicSubstances.length > 0;
     });
@@ -562,7 +562,7 @@ class SubstanceBuilder {
     self._initialCharges = [];
     self._limits = [];
     self._changes = [];
-    self._emit = null;
+    self._consume = null;
     self._recharge = null;
     self._recycles = [];
     self._replaces = [];
@@ -579,7 +579,7 @@ class SubstanceBuilder {
       self._recycles,
       self._replaces,
       [
-        self._emit,
+        self._consume,
         self._recharge,
         self._retire,
       ],
@@ -602,7 +602,7 @@ class SubstanceBuilder {
       self._initialCharges,
       self._limits,
       self._changes,
-      self._emit,
+      self._consume,
       self._recharge,
       self._recycles,
       self._replaces,
@@ -636,7 +636,7 @@ class SubstanceBuilder {
       "setVal": (x) => self.addSetVal(x),
       "initial charge": (x) => self.addInitialCharge(x),
       "recharge": (x) => self.setRecharge(x),
-      "emit": (x) => self.setEmit(x),
+      "consume": (x) => self.setConsume(x),
       "recycle": (x) => self.addRecycle(x),
       "cap": (x) => self.addLimit(x),
       "floor": (x) => self.addLimit(x),
@@ -670,9 +670,9 @@ class SubstanceBuilder {
     self._changes.push(newVal);
   }
 
-  setEmit(newVal) {
+  setConsume(newVal) {
     const self = this;
-    self._emit = self._checkDuplicate(self._emit, newVal);
+    self._consume = self._checkDuplicate(self._consume, newVal);
   }
 
   setRecharge(newVal) {
@@ -716,14 +716,14 @@ class SubstanceBuilder {
 
 
 class Substance {
-  constructor(name, charges, limits, changes, emit, recharge, recycles, replaces, retire, setVals,
+  constructor(name, charges, limits, changes, consume, recharge, recycles, replaces, retire, setVals,
     isMod, compat) {
     const self = this;
     self._name = name;
     self._initialCharges = charges;
     self._limits = limits;
     self._changes = changes;
-    self._emit = emit;
+    self._consume = consume;
     self._recharge = recharge;
     self._recycles = recycles;
     self._replaces = replaces;
@@ -759,9 +759,9 @@ class Substance {
     return self._changes;
   }
 
-  getEmit() {
+  getConsume() {
     const self = this;
-    return self._emit;
+    return self._consume;
   }
 
   getRecharge() {
@@ -823,7 +823,7 @@ class Substance {
     };
 
     addAllIfGiven(self._getInitialChargesCode());
-    addIfGiven(self._getEmitCode());
+    addIfGiven(self._getConsumeCode());
     addAllIfGiven(self._getSetValsCode());
     addAllIfGiven(self._getChangesCode());
     addIfGiven(self._getRetireCode());
@@ -857,18 +857,18 @@ class Substance {
     return self._initialCharges.map(buildInitialCharge);
   }
 
-  _getEmitCode() {
+  _getConsumeCode() {
     const self = this;
-    if (self._emit === null) {
+    if (self._consume === null) {
       return null;
     }
 
     const pieces = [
-      "emit",
-      self._emit.getValue().getValue(),
-      self._emit.getValue().getUnits(),
+      "consume",
+      self._consume.getValue().getValue(),
+      self._consume.getValue().getUnits(),
     ];
-    self._addDuration(pieces, self._emit);
+    self._addDuration(pieces, self._consume);
 
     return self._finalizeStatement(pieces);
   }
@@ -1593,17 +1593,17 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
     return self._buildOperation(ctx, "setVal", duration);
   }
 
-  visitEmitAllYears(ctx) {
+  visitConsumeAllYears(ctx) {
     const self = this;
     const targetFuture = (ctx) => null;
-    return self._buildOperation(ctx, "emit", null, targetFuture);
+    return self._buildOperation(ctx, "consume", null, targetFuture);
   }
 
-  visitEmitDuration(ctx) {
+  visitConsumeDuration(ctx) {
     const self = this;
     const targetFuture = (ctx) => null;
     const duration = ctx.duration.accept(self);
-    return self._buildOperation(ctx, "emit", duration, targetFuture);
+    return self._buildOperation(ctx, "consume", duration, targetFuture);
   }
 
   visitBaseSimulation(ctx) {
