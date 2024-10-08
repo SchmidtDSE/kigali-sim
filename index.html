@@ -712,59 +712,61 @@
   </script>
 
   <script type="text/template" id="recycle-command-template">
-    Recover
-    <input type="text" class="recycle-amount-input short" aria-label="Amount for recycle command">
-    <span class="sel mid">
-      <select class="recycle-units-input" aria-label="Units for recycle command">
-        <option value="kg">kg</option>
-        <option value="mt">mt</option>
-        <option value="tCO2e">tCO2e</option>
-        <option value="kg / year">kg / year</option>
-        <option value="mt / year">mt / year</option>
-        <option value="tCO2e / year">tCO2e / year</option>
-        <option value="kg / unit">kg / unit</option>
-        <option value="mt / unit">mt / unit</option>
-        <option value="tCO2e / unit">tCO2e / unit</option>
-        <option value="tCO2e / kg">tCO2e / kg</option>
-        <option value="tCO2e / mt">tCO2e / mt</option>
-        <option value="%">%</option>
-        <option value="% / year">% / year</option>
-      </select>
-    </span>
-    <input type="text" class="recycle-reuse-amount-input short" aria-label="Reuse level after yield loss for recycle command">
-    <span class="sel mid">
-      <select class="recycle-reuse-units-input" aria-label="Units for reuse level after yield loss">
-        <option value="kg">kg</option>
-        <option value="mt">mt</option>
-        <option value="tCO2e">tCO2e</option>
-        <option value="kg / year">kg / year</option>
-        <option value="mt / year">mt / year</option>
-        <option value="tCO2e / year">tCO2e / year</option>
-        <option value="kg / unit">kg / unit</option>
-        <option value="mt / unit">mt / unit</option>
-        <option value="tCO2e / unit">tCO2e / unit</option>
-        <option value="tCO2e / kg">tCO2e / kg</option>
-        <option value="tCO2e / mt">tCO2e / mt</option>
-        <option value="%">%</option>
-        <option value="% / year">% / year</option>
-      </select>
-    </span>
-    reuse
-    <span class="duration-subcomponent">
+    <div class="recycle-command form-group">
+      Recover
+      <input type="text" class="recycle-amount-input short" aria-label="Amount for recycle command">
       <span class="sel mid">
-        <select class="duration-type-input" aria-label="Duration type for command">
-          <option value="in year">in year</option>
-          <option value="during all years">during all years</option>
-          <option value="starting in year">starting in year</option>
-          <option value="ending in year">ending in year</option>
-          <option value="during years">during years</option>
+        <select class="recycle-units-input" aria-label="Units for recycle command">
+          <option value="kg">kg</option>
+          <option value="mt">mt</option>
+          <option value="tCO2e">tCO2e</option>
+          <option value="kg / year">kg / year</option>
+          <option value="mt / year">mt / year</option>
+          <option value="tCO2e / year">tCO2e / year</option>
+          <option value="kg / unit">kg / unit</option>
+          <option value="mt / unit">mt / unit</option>
+          <option value="tCO2e / unit">tCO2e / unit</option>
+          <option value="tCO2e / kg">tCO2e / kg</option>
+          <option value="tCO2e / mt">tCO2e / mt</option>
+          <option value="%">%</option>
+          <option value="% / year">% / year</option>
         </select>
       </span>
-      <input type="text" class="duration-start short" aria-label="Start year of substance import">
-      <span class="duration-to">to</span>
-      <input type="text" class="duration-end short" aria-label="End year of substance import"> .
-    </span>
-    - <a href="#" class="delete-command-link">delete</a>
+      <input type="text" class="recycle-reuse-amount-input short" aria-label="Reuse level after yield loss for recycle command">
+      <span class="sel mid">
+        <select class="recycle-reuse-units-input" aria-label="Units for reuse level after yield loss">
+          <option value="kg">kg</option>
+          <option value="mt">mt</option>
+          <option value="tCO2e">tCO2e</option>
+          <option value="kg / year">kg / year</option>
+          <option value="mt / year">mt / year</option>
+          <option value="tCO2e / year">tCO2e / year</option>
+          <option value="kg / unit">kg / unit</option>
+          <option value="mt / unit">mt / unit</option>
+          <option value="tCO2e / unit">tCO2e / unit</option>
+          <option value="tCO2e / kg">tCO2e / kg</option>
+          <option value="tCO2e / mt">tCO2e / mt</option>
+          <option value="%">%</option>
+          <option value="% / year">% / year</option>
+        </select>
+      </span>
+      reuse
+      <span class="duration-subcomponent">
+        <span class="sel mid">
+          <select class="duration-type-input" aria-label="Duration type for command">
+            <option value="in year">in year</option>
+            <option value="during all years">during all years</option>
+            <option value="starting in year">starting in year</option>
+            <option value="ending in year">ending in year</option>
+            <option value="during years">during years</option>
+          </select>
+        </span>
+        <input type="text" class="duration-start short" aria-label="Start year of substance import">
+        <span class="duration-to">to</span>
+        <input type="text" class="duration-end short" aria-label="End year of substance import"> .
+      </span>
+      - <a href="#" class="delete-command-link">delete</a>
+    </div>
   </script>
 
   <script type="text/template" id="replace-command-template">
