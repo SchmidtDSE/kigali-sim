@@ -5,7 +5,7 @@ start default
     uses substance "test"
       initial charge with 1 kg / unit for manufacture
       set manufacture to 100 mt during year 1
-      consume 5 tCO2e / mt
+      equals 5 tCO2e / mt
     end substance
 
   end application

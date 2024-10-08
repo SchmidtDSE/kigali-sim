@@ -76,7 +76,7 @@ function buildUiTranslatorTests() {
           const substances = application.getSubstances();
           const substance = substances[0];
 
-          const emissions = substance.getConsume();
+          const emissions = substance.getEquals();
           const emissionsVolume = emissions.getValue();
           assert.deepEqual(emissionsVolume.getValue(), 5);
           assert.deepEqual(emissionsVolume.getUnits(), "tCO2e / mt");

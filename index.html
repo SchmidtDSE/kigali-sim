@@ -240,7 +240,7 @@
                     </div>
                   </div>
                   <div id="consumption-start">
-                    <div class="instructions">This tab sets the starting values for different sales streams. Domestic refers to substance both produced and consumed within the country.</div>
+                    <div class="instructions">This tab sets the starting values for different sales streams. Domestic refers to substance both produced and equalsd within the country.</div>
                     <div class="dialog-list level-list"></div>
                     <div class="dialog-sub-buttons bold-buttons">
                       <a href="#" class="add-start-button secondary">Add Level</a>
@@ -829,7 +829,7 @@ start default
   define application "dom refrig"
 
     uses substance "HFC-134a"
-      consume 1000 tCO2e / mt
+      equals 1000 tCO2e / mt
 
       # Domestic production
       initial charge with 0.5 kg / unit for manufacture
@@ -883,7 +883,7 @@ start default
   define application "com refrig"
 
     uses substance "HFC-134a"
-      consume 1000 tCO2e / mt
+      equals 1000 tCO2e / mt
 
       # Domestic production
       initial charge with 0.5 kg / unit for manufacture
@@ -933,7 +933,7 @@ start default
     end substance
 
     uses substance "R-404A"
-      consume 200 tCO2e / mt
+      equals 200 tCO2e / mt
 
       # Domestic production
       initial charge with 0.5 kg / unit for manufacture

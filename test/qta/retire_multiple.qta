@@ -7,7 +7,7 @@ start default
       set manufacture to 100 mt
       retire 10 %
       retire 10 %
-      consume 5 tCO2e / mt
+      equals 5 tCO2e / mt
     end substance
 
   end application

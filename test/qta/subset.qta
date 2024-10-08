@@ -3,7 +3,7 @@ start default
   define application "dometic refrigeration"
 
     uses substance "HFC-134a"
-      consume 1430 tCO2e / mt
+      equals 1430 tCO2e / mt
 
       # Domestic production
       initial charge with 0.12 kg / unit for manufacture

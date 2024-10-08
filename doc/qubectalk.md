@@ -105,7 +105,7 @@ If this is omitted and the substance has sales, an error message may be shown. N
 ### Sales
 The sale of substances typically defines the equipment population. QubecTalk considers sales to fit into two groups: `manufacture` and `import`. Though not currently used, `export` is reserved for future use.
 
-**Domestic**: Starting with an example of specifying substances both produced and consumed domestically. There are typically three important parameters to specify:
+**Domestic**: Starting with an example of specifying substances both produced and equalsd domestically. There are typically three important parameters to specify:
 
  - Manufacturing (volume)
  - Sales growth (YoY %)
@@ -175,10 +175,10 @@ recharge 5 % with 0.12 kg / unit during years 1 to 5
 One may also recharge a number of units by changing `%` to `units`.
 
 ### Emissions
-GHG equivalencies can be made through the `consume` command like so:
+GHG equivalencies can be made through the `equals` command like so:
 
 ```
-consume 1430 tCO2e / mt
+equals 1430 tCO2e / mt
 ```
 
 Note that `tCO2e` refers to $CO_{2}$ equivalent in metric tonnes.
@@ -369,9 +369,9 @@ While the system can operate with constraints through `cap`, updates are applied
 
 | **Trigger**                 | **Sales**                                       | **Emissions**                        | **Population**                                                                                  |
 | ------------------------------------------------------ | ----------------------------------------------- | ------------------------------------ | ----------------------------------------------------------------------------------------------- |
-| Sales (manufacture, import) | Changed directly                                | Recalc using consume value              | Recalc new and total equip after subtract recharge and recycle, retiring at recharge if needed. |
+| Sales (manufacture, import) | Changed directly                                | Recalc using equals value              | Recalc new and total equip after subtract recharge and recycle, retiring at recharge if needed. |
 | Emissions                   | Recalc after add recharge and subtract recycle. | Changed directly                     | Recalc new and total equip after subtract recharge and recycle, retiring at recharge if needed. |
-| Population (equipment)      | Recalc after add recharge and subtract recycle. | Recalc after sales update using consume | New equip and total current equip changes but prior equip untouched.                            |
+| Population (equipment)      | Recalc after add recharge and subtract recycle. | Recalc after sales update using equals | New equip and total current equip changes but prior equip untouched.                            |
 | Population (priorEquipment) | No change                                       | No change                            | Change prior equip. New and total equipment recalculated.                                       |
 These updates happen automatically within the interpreter and all use the following which are recorded internally with original units.
 
@@ -380,7 +380,7 @@ For engine internal updates, some parameters are saved for each substance. Any c
 
 | **Parameter**           | **Example units** | **Set by** |
 | ----------------------- | ----------------- | ---------- |
-| GHG intensity           | tCO2e / kg        | `consume`     |
+| GHG intensity           | tCO2e / kg        | `equals`     |
 | Recharge population     | %                 | `recharge` |
 | Recharge intensity      | kg / unit         | `recharge` |
 | Recovery rate           | %                 | `recover`  |
@@ -432,7 +432,7 @@ start default
   define application "dom refrig"
 
     uses substance "HFC-134a"
-      consume 1430 tCO2e / mt
+      equals 1430 tCO2e / mt
 
       # Domestic production
       initial charge with 0.12 kg / unit for manufacture
@@ -455,7 +455,7 @@ start default
     end substance
 
     uses substance "R-600a"
-      consume 6 tCO2e / mt
+      equals 6 tCO2e / mt
 
       # Domestic production
       initial charge with 0.05 kg / unit for manufacture
@@ -480,7 +480,7 @@ start default
   define application "com refrig"
 
     uses substance "HFC-134a"
-      consume 1430 tCO2e / mt
+      equals 1430 tCO2e / mt
 
       # Domestic production
       initial charge with 0.30 kg / unit for manufacture
@@ -503,7 +503,7 @@ start default
     end substance
 
     uses substance "R-600a"
-      consume 6 tCO2e / mt
+      equals 6 tCO2e / mt
 
       # Domestic production
       initial charge with 0.12 kg / unit for manufacture
@@ -524,7 +524,7 @@ start default
     end substance
 
     uses substance "R-404A"
-      consume 3922 tCO2e / mt
+      equals 3922 tCO2e / mt
 
       # Domestic production
       initial charge with 0.30 kg / unit for manufacture
@@ -549,7 +549,7 @@ start default
   define application "res AC"
 
     uses substance "R-410A"
-      consume 2082 tCO2e / mt
+      equals 2082 tCO2e / mt
 
       # Domestic production
       initial charge with 0.90 kg / unit for manufacture
@@ -572,7 +572,7 @@ start default
     end substance
 
     uses substance "HFC-32"
-      consume 632 tCO2e / mt
+      equals 632 tCO2e / mt
 
       # Domestic production
       initial charge with 0.68 kg / unit for manufacture
@@ -593,7 +593,7 @@ start default
     end substance
 
     uses substance "R-290"
-      consume 6 tCO2e / mt
+      equals 6 tCO2e / mt
 
       # Domestic production
       initial charge with 0.68 kg / unit for manufacture
@@ -618,7 +618,7 @@ start default
   define application "mobile AC"
 
     uses substance "HFC-134a"
-      consume 1430 tCO2e / mt
+      equals 1430 tCO2e / mt
 
       # Domestic production
       initial charge with 0.90 kg / unit for manufacture
@@ -641,7 +641,7 @@ start default
     end substance
 
     uses substance "R-1234yf"
-      consume 6 tCO2e / mt
+      equals 6 tCO2e / mt
 
       # Domestic production
       initial charge with 0.90 kg / unit for manufacture

@@ -5,8 +5,8 @@ start default
     uses substance "sub1"
       initial charge with 5 kg / unit for manufacture
       set manufacture to 100 mt
-      consume 5 tCO2e / mt
-      consume 5 tCO2e / mt
+      equals 5 tCO2e / mt
+      equals 5 tCO2e / mt
     end substance
 
   end application
