@@ -85,6 +85,7 @@ class MainPresenter {
 
     self._onCodeChange();
     self._setupLoadDialog();
+    self._setupWorkshopSample();
   }
 
   _onCodeChange() {
@@ -227,6 +228,17 @@ class MainPresenter {
           loadFileDialog.close();
         }
       }
+    });
+  }
+
+  _setupWorkshopSample() {
+    const self = this;
+    const button = document.getElementById("workshop-sample-button");
+    button.addEventListener("click", () => {
+      const code = document.getElementById("workshop-sample").innerHTML;
+      self._codeEditorPresenter.setCode(code);
+      self._onCodeChange();
+      self._uiEditorPresenter.showCode();
     });
   }
 }

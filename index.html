@@ -821,6 +821,209 @@
     </div>
   </script>
 
+  <script type="text/template" id="workshop-sample">
+start default
+
+  define application "dom refrig"
+
+    uses substance "HFC-134a"
+      emit 1000 tCO2e / mt
+
+      # Domestic production
+      initial charge with 0.5 kg / unit for manufacture
+      set manufacture to 400 mt during year 1
+      change manufacture by +5 % / year during years 2 to 4
+      change manufacture by +4 % / year during years 5 to 7
+      change manufacture by +3 % / year during years 8 to 10
+      change manufacture by +2 % / year during years 11 to 13
+      change manufacture by +1 % / year during years 14 to onwards
+
+      # Trade
+      initial charge with 0.25 kg / unit for import
+      set import to 100 mt during year 1
+      change import by +5 % / year during years 2 to 4
+      change import by +4 % / year during years 5 to 7
+      change import by +3 % / year during years 8 to 10
+      change import by +2 % / year during years 11 to 13
+      change import by +1 % / year during years 14 to onwards
+
+      # Service
+      retire 5 % / year
+      recharge 10 % / year with 0.1 kg / unit
+
+      # Historic units already deployed
+      set priorEquipment to (get equipment as units * 5) units during year 1
+    end substance
+
+    uses substance "R-600a"
+      emit 50 tCO2e / mt
+
+      # Domestic production
+      initial charge with 0.1 kg / unit for manufacture
+      set manufacture to 100 mt during year 1
+      change manufacture by +2 % / year
+
+      # Trade
+      initial charge with 0.05 kg / unit for import
+      set import to 1 mt during year 1
+      change import by +2 % / year
+
+      # Service
+      retire 5 % / year
+      recharge 10 % / year with 0.05 kg / unit
+
+      # Historic units already deployed
+      set priorEquipment to (get equipment as units * 5) units during year 1
+    end substance
+
+  end application
+
+  define application "com refrig"
+
+    uses substance "HFC-134a"
+      emit 1000 tCO2e / mt
+
+      # Domestic production
+      initial charge with 0.5 kg / unit for manufacture
+      set manufacture to 900 mt during year 1
+      change manufacture by +5 % / year during years 2 to 4
+      change manufacture by +3 % / year during years 5 to 7
+      change manufacture by +1 % / year during years 8 to 10
+      change manufacture by -1 % / year during years 11 to 13
+      change manufacture by -3 % / year during years 14 to onwards
+
+      # Trade
+      initial charge with 0.25 kg / unit for import
+      set import to 100 mt during year 1
+      change import by +5 % / year during years 2 to 4
+      change import by +3 % / year during years 5 to 7
+      change import by +1 % / year during years 8 to 10
+      change import by -1 % / year during years 11 to 13
+      change import by -3 % / year during years 14 to onwards
+
+      # Service
+      retire 5 % / year
+      recharge 10 % / year with 0.1 kg / unit
+
+      # Historic units already deployed
+      set priorEquipment to (get equipment as units * 5) units during year 1
+    end substance
+
+    uses substance "R-600a"
+      emit 50 tCO2e / mt
+
+      # Domestic production
+      initial charge with 0.1 kg / unit for manufacture
+      set manufacture to 10 mt during year 1
+      change manufacture by +8 % / year
+
+      # Trade
+      initial charge with 0.05 kg / unit for import
+      set import to 10 mt during year 1
+      change import by +8 % / year
+
+      # Service
+      retire 1 % / year
+      recharge 10 % / year with 0.1 kg / unit
+
+      # Historic units already deployed
+      set priorEquipment to (get equipment as units * 5) units during year 1
+    end substance
+
+    uses substance "R-404A"
+      emit 200 tCO2e / mt
+
+      # Domestic production
+      initial charge with 0.5 kg / unit for manufacture
+      set manufacture to 100 mt during year 1
+      change manufacture by -1 % / year
+
+      # Trade
+      initial charge with 0.5 kg / unit for import
+      set import to 50 mt during year 1
+      change import by -1 % / year
+
+      # Service
+      retire 5 % / year
+      recharge 10 % / year with 0.1 kg / unit
+
+      # Historic units already deployed
+      set priorEquipment to (get equipment as units * 7) units during year 1
+    end substance
+
+  end application
+  
+end default
+
+
+start policy "com recycling"
+
+  modify application "com refrig"
+  
+    modify substance "HFC-134a"
+      recover 10 % with 80 % reuse during years 2 to onwards
+    end substance
+  
+  end application
+
+end policy
+
+
+start policy "dom retrofit"
+
+  modify application "dom refrig"
+  
+    modify substance "HFC-134a"
+      replace 20 % of sales with "R-600a"
+    end substance
+
+  end application
+
+end policy
+
+
+start policy "permit HFC-134a"
+
+  modify application "com refrig"
+  
+    modify substance "HFC-134a"
+      cap sales to 1400 mt displacing "R-404A" during years 1 to 5
+      cap sales to 1200 mt displacing "R-404A" during years 6 to 10
+      cap sales to 1000 mt displacing "R-404A" during years 11 to 15
+      cap sales to 800 mt displacing "R-404A" during years 16 to 20
+    end substance
+    
+    modify substance "HFC-134a"
+      cap sales to 1400 mt displacing "R-404A" during years 1 to 5
+      cap sales to 1200 mt displacing "R-404A" during years 6 to 10
+      cap sales to 1000 mt displacing "R-404A" during years 11 to 15
+      cap sales to 800 mt displacing "R-404A" during years 16 to 20
+    end substance
+  
+  end application
+
+end policy
+
+
+start simulations
+
+  simulate "business as usual" from years 1 to 20
+  
+  simulate "com recycling" using "com recycling" from years 1 to 20
+  
+  simulate "dom retrofit" using "dom retrofit" from years 1 to 20
+  
+  simulate "permit HFC-134a" using "permit HFC-134a" from years 1 to 20
+  
+  simulate "combined"
+    using "dom retrofit"
+    then "com recycling"
+    then "permit HFC-134a"
+  from years 1 to 20
+
+end simulations
+  </script>
+
   <script type="text/javascript" src="/third_party/ace.min.js"></script>
   <script type="text/javascript" src="/third_party/ext-language_tools.js"></script>
   <script type="text/javascript" src="/third_party/ext-options.js"></script>
