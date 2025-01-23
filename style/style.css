@@ -321,6 +321,7 @@ main {
 }
 
 /* Thanks https://codepen.io/code-boxx/pen/RwxbpOz */
+/* MIT License */
 
 /* (A) BASICS - HIDE DEFAULT + SHOW CUSTOM ARROW */
 .sel.long {
@@ -343,7 +344,7 @@ main {
 
 /* (B2) "EXPAND" SELECT BOX */
 .sel {
-  display: inline-block
+  display: inline-block;
 }
 
 .sel select {
