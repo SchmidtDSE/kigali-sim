@@ -342,6 +342,10 @@ main {
 /* (B1) WRAPPER - OPTIONAL */
 
 /* (B2) "EXPAND" SELECT BOX */
+.sel {
+  display: inline-block
+}
+
 .sel select {
   padding: 5px;
   color: #333;
