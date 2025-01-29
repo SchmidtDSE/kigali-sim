@@ -1375,13 +1375,13 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
   visitDuringWithMin(ctx) {
     const self = this;
     const lower = ctx.lower.accept(self);
-    const upper = (engine) => engine.getEndYear();
+    const upper = null;
     return self.buildDuring(lower, upper);
   }
 
   visitDuringWithMax(ctx) {
     const self = this;
-    const lower = (engine) => engine.getStartYear();
+    const lower = null;
     const upper = ctx.upper.accept(self);
     return self.buildDuring(lower, upper);
   }
