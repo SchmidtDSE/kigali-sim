@@ -87,6 +87,15 @@ function buildCompilerTests() {
       },
     ]);
 
+    buildTest("runs a basic script with special float", "/test/qta/basic_special_float.qta", [
+      (result, assert) => {
+        const record = getResult(result, BAU_NAME, 1, 0, "test", "test");
+        const equipment = record.getPopulation();
+        assert.closeTo(equipment.getValue(), 200000, 0.0001);
+        assert.deepEqual(equipment.getUnits(), "units");
+      },
+    ]);
+
     buildTest("interprets a change command", "/test/qta/change.qta", [
       (result, assert) => {
         const record = getResult(result, BAU_NAME, 2, 0, "test", "test");

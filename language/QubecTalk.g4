@@ -18,7 +18,7 @@ WHITE_SPACE: [ \u000B\t\r\n] -> channel(HIDDEN);
 
 COMMENT: '#' ~[\r\n]* -> channel(HIDDEN);
 
-FLOAT_: [0-9]+ '.' [0-9]+;
+FLOAT_: [0-9]* '.' [0-9]+;
 
 INTEGER_: [0-9]+;
 
