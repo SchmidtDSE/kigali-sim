@@ -1,13 +1,12 @@
 import {Compiler} from "compiler";
 
-
 function loadRemote(path) {
   return fetch(path).then((response) => response.text());
 }
 
 function buildCompilerTests() {
-  QUnit.module("Compiler", function() {
-    QUnit.test("gets toolkit", function(assert) {
+  QUnit.module("Compiler", function () {
+    QUnit.test("gets toolkit", function (assert) {
       const toolkit = QubecTalk.getToolkit();
       assert.notDeepEqual(toolkit, undefined);
       assert.notDeepEqual(toolkit["antlr4"], undefined);
@@ -59,242 +58,200 @@ function buildCompilerTests() {
       const trials = result.getTrialResults();
       const trial = trials[trialIndex];
       const trialFlat = trial.flat();
-      return trialFlat.filter((x) => x.getYear() == year)
+      return trialFlat
+        .filter((x) => x.getYear() == year)
         .filter((x) => x.getApplication() === application)
         .filter((x) => x.getSubstance() === substance)[0];
     };
 
     const BAU_NAME = "business as usual";
 
-    buildTest(
-      "runs a basic script",
-      "/test/qta/basic.qta", [
-        (result, assert) => {
-          const record = getResult(result, BAU_NAME, 1, 0, "test", "test");
-          const equipment = record.getPopulation();
-          assert.closeTo(equipment.getValue(), 20000, 0.0001);
-          assert.deepEqual(equipment.getUnits(), "units");
-        },
-        (result, assert) => {
-          const record = getResult(result, BAU_NAME, 1, 0, "test", "test");
-          const consumption = record.getConsumption();
-          assert.closeTo(consumption.getValue(), 500, 0.0001);
-          assert.deepEqual(consumption.getUnits(), "tCO2e");
-        },
-        (result, assert) => {
-          const record = getResult(result, BAU_NAME, 1, 0, "test", "test");
-          const manufacture = record.getManufacture();
-          assert.closeTo(manufacture.getValue(), 100000, 0.0001);
-          assert.deepEqual(manufacture.getUnits(), "kg");
-        },
-      ],
-    );
+    buildTest("runs a basic script", "/test/qta/basic.qta", [
+      (result, assert) => {
+        const record = getResult(result, BAU_NAME, 1, 0, "test", "test");
+        const equipment = record.getPopulation();
+        assert.closeTo(equipment.getValue(), 20000, 0.0001);
+        assert.deepEqual(equipment.getUnits(), "units");
+      },
+      (result, assert) => {
+        const record = getResult(result, BAU_NAME, 1, 0, "test", "test");
+        const consumption = record.getConsumption();
+        assert.closeTo(consumption.getValue(), 500, 0.0001);
+        assert.deepEqual(consumption.getUnits(), "tCO2e");
+      },
+      (result, assert) => {
+        const record = getResult(result, BAU_NAME, 1, 0, "test", "test");
+        const manufacture = record.getManufacture();
+        assert.closeTo(manufacture.getValue(), 100000, 0.0001);
+        assert.deepEqual(manufacture.getUnits(), "kg");
+      },
+    ]);
 
-    buildTest(
-      "interprets a change command",
-      "/test/qta/change.qta", [
-        (result, assert) => {
-          const record = getResult(result, BAU_NAME, 2, 0, "test", "test");
-          const manufacture = record.getManufacture();
-          assert.closeTo(manufacture.getValue(), 110000, 0.0001);
-          assert.deepEqual(manufacture.getUnits(), "kg");
-        },
-        (result, assert) => {
-          const record = getResult(result, BAU_NAME, 2, 0, "test", "test");
-          const consumption = record.getConsumption();
-          assert.closeTo(consumption.getValue(), 550, 0.0001);
-          assert.deepEqual(consumption.getUnits(), "tCO2e");
-        },
-      ],
-    );
+    buildTest("interprets a change command", "/test/qta/change.qta", [
+      (result, assert) => {
+        const record = getResult(result, BAU_NAME, 2, 0, "test", "test");
+        const manufacture = record.getManufacture();
+        assert.closeTo(manufacture.getValue(), 110000, 0.0001);
+        assert.deepEqual(manufacture.getUnits(), "kg");
+      },
+      (result, assert) => {
+        const record = getResult(result, BAU_NAME, 2, 0, "test", "test");
+        const consumption = record.getConsumption();
+        assert.closeTo(consumption.getValue(), 550, 0.0001);
+        assert.deepEqual(consumption.getUnits(), "tCO2e");
+      },
+    ]);
 
-    buildTest(
-      "interprets a retire command",
-      "/test/qta/retire.qta", [
-        (result, assert) => {
-          const record = getResult(result, BAU_NAME, 2, 0, "test", "test");
-          const manufacture = record.getManufacture();
-          assert.closeTo(manufacture.getValue(), 100000, 0.0001);
-          assert.deepEqual(manufacture.getUnits(), "kg");
-        },
-        (result, assert) => {
-          const record = getResult(result, BAU_NAME, 2, 0, "test", "test");
-          const consumption = record.getConsumption();
-          assert.closeTo(consumption.getValue(), 500, 0.0001);
-          assert.deepEqual(consumption.getUnits(), "tCO2e");
-        },
-        (result, assert) => {
-          const record = getResult(result, BAU_NAME, 1, 0, "test", "test");
-          const population = record.getPopulation();
-          assert.closeTo(population.getValue(), 100000, 0.0001);
-          assert.deepEqual(population.getUnits(), "units");
-        },
-        (result, assert) => {
-          const record = getResult(result, BAU_NAME, 2, 0, "test", "test");
-          const population = record.getPopulation();
-          assert.closeTo(population.getValue(), 190000, 0.0001);
-          assert.deepEqual(population.getUnits(), "units");
-        },
-      ],
-    );
+    buildTest("interprets a retire command", "/test/qta/retire.qta", [
+      (result, assert) => {
+        const record = getResult(result, BAU_NAME, 2, 0, "test", "test");
+        const manufacture = record.getManufacture();
+        assert.closeTo(manufacture.getValue(), 100000, 0.0001);
+        assert.deepEqual(manufacture.getUnits(), "kg");
+      },
+      (result, assert) => {
+        const record = getResult(result, BAU_NAME, 2, 0, "test", "test");
+        const consumption = record.getConsumption();
+        assert.closeTo(consumption.getValue(), 500, 0.0001);
+        assert.deepEqual(consumption.getUnits(), "tCO2e");
+      },
+      (result, assert) => {
+        const record = getResult(result, BAU_NAME, 1, 0, "test", "test");
+        const population = record.getPopulation();
+        assert.closeTo(population.getValue(), 100000, 0.0001);
+        assert.deepEqual(population.getUnits(), "units");
+      },
+      (result, assert) => {
+        const record = getResult(result, BAU_NAME, 2, 0, "test", "test");
+        const population = record.getPopulation();
+        assert.closeTo(population.getValue(), 190000, 0.0001);
+        assert.deepEqual(population.getUnits(), "units");
+      },
+    ]);
 
-    buildTest(
-      "interprets a retire command with prior population",
-      "/test/qta/retire_prior.qta", [
-        (result, assert) => {
-          const record = getResult(result, BAU_NAME, 1, 0, "test", "test");
-          const population = record.getPopulation();
-          assert.closeTo(population.getValue(), 190000, 0.0001);
-          assert.deepEqual(population.getUnits(), "units");
-        },
-      ],
-    );
+    buildTest("interprets a retire command with prior population", "/test/qta/retire_prior.qta", [
+      (result, assert) => {
+        const record = getResult(result, BAU_NAME, 1, 0, "test", "test");
+        const population = record.getPopulation();
+        assert.closeTo(population.getValue(), 190000, 0.0001);
+        assert.deepEqual(population.getUnits(), "units");
+      },
+    ]);
 
-    buildTest(
-      "interprets multiple retire commands",
-      "/test/qta/retire_multiple.qta", [
-        (result, assert) => {
-          const record = getResult(result, BAU_NAME, 1, 0, "test", "test");
-          const population = record.getPopulation();
-          assert.ok(population.getValue() < 190000);
-          assert.deepEqual(population.getUnits(), "units");
-        },
-      ],
-    );
+    buildTest("interprets multiple retire commands", "/test/qta/retire_multiple.qta", [
+      (result, assert) => {
+        const record = getResult(result, BAU_NAME, 1, 0, "test", "test");
+        const population = record.getPopulation();
+        assert.ok(population.getValue() < 190000);
+        assert.deepEqual(population.getUnits(), "units");
+      },
+    ]);
 
-    buildTest(
-      "interprets a recharge command",
-      "/test/qta/recharge.qta", [
-        (result, assert) => {
-          const record = getResult(result, BAU_NAME, 1, 0, "test", "test");
-          const equipment = record.getPopulation();
-          assert.closeTo(equipment.getValue(), 100000, 0.0001);
-          assert.deepEqual(equipment.getUnits(), "units");
-        },
-        (result, assert) => {
-          const record = getResult(result, BAU_NAME, 2, 0, "test", "test");
-          const equipment = record.getPopulation();
-          assert.closeTo(equipment.getValue(), 190000, 0.0001);
-          assert.deepEqual(equipment.getUnits(), "units");
-        },
-      ],
-    );
+    buildTest("interprets a recharge command", "/test/qta/recharge.qta", [
+      (result, assert) => {
+        const record = getResult(result, BAU_NAME, 1, 0, "test", "test");
+        const equipment = record.getPopulation();
+        assert.closeTo(equipment.getValue(), 100000, 0.0001);
+        assert.deepEqual(equipment.getUnits(), "units");
+      },
+      (result, assert) => {
+        const record = getResult(result, BAU_NAME, 2, 0, "test", "test");
+        const equipment = record.getPopulation();
+        assert.closeTo(equipment.getValue(), 190000, 0.0001);
+        assert.deepEqual(equipment.getUnits(), "units");
+      },
+    ]);
 
-    buildTest(
-      "handles multiple consumption",
-      "/test/qta/multiple.qta", [
-        (result, assert) => {
-          const record = getResult(result, BAU_NAME, 1, 0, "test", "a");
-          const consumption = record.getConsumption();
-          assert.closeTo(consumption.getValue(), 500, 0.0001);
-          assert.deepEqual(consumption.getUnits(), "tCO2e");
-        },
-        (result, assert) => {
-          const record = getResult(result, BAU_NAME, 1, 0, "test", "b");
-          const consumption = record.getConsumption();
-          assert.closeTo(consumption.getValue(), 1000, 0.0001);
-          assert.deepEqual(consumption.getUnits(), "tCO2e");
-        },
-      ],
-    );
+    buildTest("handles multiple consumption", "/test/qta/multiple.qta", [
+      (result, assert) => {
+        const record = getResult(result, BAU_NAME, 1, 0, "test", "a");
+        const consumption = record.getConsumption();
+        assert.closeTo(consumption.getValue(), 500, 0.0001);
+        assert.deepEqual(consumption.getUnits(), "tCO2e");
+      },
+      (result, assert) => {
+        const record = getResult(result, BAU_NAME, 1, 0, "test", "b");
+        const consumption = record.getConsumption();
+        assert.closeTo(consumption.getValue(), 1000, 0.0001);
+        assert.deepEqual(consumption.getUnits(), "tCO2e");
+      },
+    ]);
 
-    buildTest(
-      "handles policies",
-      "/test/qta/policies.qta", [
-        (result, assert) => {
-          const record = getResult(result, "result", 1, 0, "test", "test");
-          const consumption = record.getConsumption();
-          assert.closeTo(consumption.getValue(), 250, 0.0001);
-          assert.deepEqual(consumption.getUnits(), "tCO2e");
-        },
-      ],
-    );
+    buildTest("handles policies", "/test/qta/policies.qta", [
+      (result, assert) => {
+        const record = getResult(result, "result", 1, 0, "test", "test");
+        const consumption = record.getConsumption();
+        assert.closeTo(consumption.getValue(), 250, 0.0001);
+        assert.deepEqual(consumption.getUnits(), "tCO2e");
+      },
+    ]);
 
-    buildTest(
-      "handles recycling",
-      "/test/qta/recycling.qta", [
-        (result, assert) => {
-          const record = getResult(result, "result", 1, 0, "test", "test");
-          const consumption = record.getConsumption();
-          assert.closeTo(consumption.getValue(), 500, 0.0001);
-          assert.deepEqual(consumption.getUnits(), "tCO2e");
-        },
-        (result, assert) => {
-          const record = getResult(result, "result", 2, 0, "test", "test");
-          const consumption = record.getConsumption();
-          assert.closeTo(consumption.getValue(), 437.5, 0.0001);
-          assert.deepEqual(consumption.getUnits(), "tCO2e");
-        },
-      ],
-    );
+    buildTest("handles recycling", "/test/qta/recycling.qta", [
+      (result, assert) => {
+        const record = getResult(result, "result", 1, 0, "test", "test");
+        const consumption = record.getConsumption();
+        assert.closeTo(consumption.getValue(), 500, 0.0001);
+        assert.deepEqual(consumption.getUnits(), "tCO2e");
+      },
+      (result, assert) => {
+        const record = getResult(result, "result", 2, 0, "test", "test");
+        const consumption = record.getConsumption();
+        assert.closeTo(consumption.getValue(), 437.5, 0.0001);
+        assert.deepEqual(consumption.getUnits(), "tCO2e");
+      },
+    ]);
 
-    buildTest(
-      "handles replace",
-      "/test/qta/replace.qta", [
-        (result, assert) => {
-          const record = getResult(result, "result", 1, 0, "test", "a");
-          const consumption = record.getConsumption();
-          assert.closeTo(consumption.getValue(), 250, 0.0001);
-          assert.deepEqual(consumption.getUnits(), "tCO2e");
-        },
-        (result, assert) => {
-          const record = getResult(result, "result", 1, 0, "test", "b");
-          const consumption = record.getConsumption();
-          assert.closeTo(consumption.getValue(), 375, 0.0001);
-          assert.deepEqual(consumption.getUnits(), "tCO2e");
-        },
-      ],
-    );
+    buildTest("handles replace", "/test/qta/replace.qta", [
+      (result, assert) => {
+        const record = getResult(result, "result", 1, 0, "test", "a");
+        const consumption = record.getConsumption();
+        assert.closeTo(consumption.getValue(), 250, 0.0001);
+        assert.deepEqual(consumption.getUnits(), "tCO2e");
+      },
+      (result, assert) => {
+        const record = getResult(result, "result", 1, 0, "test", "b");
+        const consumption = record.getConsumption();
+        assert.closeTo(consumption.getValue(), 375, 0.0001);
+        assert.deepEqual(consumption.getUnits(), "tCO2e");
+      },
+    ]);
 
-    buildTest(
-      "combines policies",
-      "/test/qta/combination.qta", [
-        (result, assert) => {
-          const record = getResult(result, "result", 1, 0, "test", "test");
-          const consumption = record.getConsumption();
-          assert.closeTo(consumption.getValue(), 125, 0.0001);
-          assert.deepEqual(consumption.getUnits(), "tCO2e");
-        },
-      ],
-    );
+    buildTest("combines policies", "/test/qta/combination.qta", [
+      (result, assert) => {
+        const record = getResult(result, "result", 1, 0, "test", "test");
+        const consumption = record.getConsumption();
+        assert.closeTo(consumption.getValue(), 125, 0.0001);
+        assert.deepEqual(consumption.getUnits(), "tCO2e");
+      },
+    ]);
 
-    buildTest(
-      "evaluates conditionals",
-      "/test/qta/conditional.qta", [
-        (result, assert) => {
-          const record = getResult(result, "business as usual", 1, 0, "test", "test");
-          const consumption = record.getConsumption();
-          assert.closeTo(consumption.getValue(), 250, 0.0001);
-          assert.deepEqual(consumption.getUnits(), "tCO2e");
-        },
-      ],
-    );
+    buildTest("evaluates conditionals", "/test/qta/conditional.qta", [
+      (result, assert) => {
+        const record = getResult(result, "business as usual", 1, 0, "test", "test");
+        const consumption = record.getConsumption();
+        assert.closeTo(consumption.getValue(), 250, 0.0001);
+        assert.deepEqual(consumption.getUnits(), "tCO2e");
+      },
+    ]);
 
-    buildTest(
-      "runs trials",
-      "/test/qta/trials.qta", [
-        (result, assert) => {
-          const record = getResult(result, "business as usual", 1, 0, "test", "test");
-          const consumption = record.getConsumption();
-          assert.ok(consumption.getValue() >= 300);
-          assert.ok(consumption.getValue() <= 700);
-          assert.deepEqual(consumption.getUnits(), "tCO2e");
-        },
-        (result, assert) => {
-          const record = getResult(result, "business as usual", 1, 1, "test", "test");
-          const consumption = record.getConsumption();
-          assert.ok(consumption.getValue() >= 300);
-          assert.ok(consumption.getValue() <= 700);
-          assert.deepEqual(consumption.getUnits(), "tCO2e");
-        },
-      ],
-    );
+    buildTest("runs trials", "/test/qta/trials.qta", [
+      (result, assert) => {
+        const record = getResult(result, "business as usual", 1, 0, "test", "test");
+        const consumption = record.getConsumption();
+        assert.ok(consumption.getValue() >= 300);
+        assert.ok(consumption.getValue() <= 700);
+        assert.deepEqual(consumption.getUnits(), "tCO2e");
+      },
+      (result, assert) => {
+        const record = getResult(result, "business as usual", 1, 1, "test", "test");
+        const consumption = record.getConsumption();
+        assert.ok(consumption.getValue() >= 300);
+        assert.ok(consumption.getValue() <= 700);
+        assert.deepEqual(consumption.getUnits(), "tCO2e");
+      },
+    ]);
 
-    buildTest(
-      "runs reference",
-      "/test/qta/reference.qta",
-      [],
-    );
+    buildTest("runs reference", "/test/qta/reference.qta", []);
   });
 }
 

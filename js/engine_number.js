@@ -66,22 +66,20 @@ class UnitConverter {
     const destinationNumeratorUnits = destinationUnitPieces[0];
 
     const numeratorStrategy = {
-      "kg": (x) => self._toKg(x),
-      "mt": (x) => self._toMt(x),
-      "unit": (x) => self._toUnits(x),
-      "units": (x) => self._toUnits(x),
-      "tCO2e": (x) => self._toConsumption(x),
-      "year": (x) => self._toYears(x),
-      "years": (x) => self._toYears(x),
+      kg: (x) => self._toKg(x),
+      mt: (x) => self._toMt(x),
+      unit: (x) => self._toUnits(x),
+      units: (x) => self._toUnits(x),
+      tCO2e: (x) => self._toConsumption(x),
+      year: (x) => self._toYears(x),
+      years: (x) => self._toYears(x),
       "%": (x) => self._toPercent(x),
     }[destinationNumeratorUnits];
 
     const destinationNumerator = numeratorStrategy(source);
 
     const hasDenominator = destinationUnitPieces.length > 1;
-    const destinationDenominatorUnits = hasDenominator ?
-      destinationUnitPieces[1] :
-      "";
+    const destinationDenominatorUnits = hasDenominator ? destinationUnitPieces[1] : "";
     if (hasDenominator) {
       const denominatorStrategy = {
         kg: () => self.convert(self._stateGetter.getVolume(), "kg"),
@@ -289,9 +287,7 @@ class UnitConverter {
       const newYears = volumeConvertedValue / perYearVolumeValue;
       return new EngineNumber(newYears, "years");
     } else if (currentUnits === "unit" || currentUnits === "units") {
-      const perYearPopulation = self._stateGetter
-        .getPopulationChange(self)
-        .getValue();
+      const perYearPopulation = self._stateGetter.getPopulationChange(self).getValue();
       const newYears = target.getValue() / perYearPopulation;
       return new EngineNumber(newYears, "years");
     } else if (currentUnits === "%") {
@@ -327,7 +323,7 @@ class UnitConverter {
     };
 
     const total = getTotal();
-    const percentValue = target.getValue() / total.getValue() * 100;
+    const percentValue = (target.getValue() / total.getValue()) * 100;
     return new EngineNumber(percentValue, "%");
   }
 
@@ -501,7 +497,7 @@ class ConverterStateGetter {
 
   getVolume() {
     const self = this;
-    const sales = self._engine.getStream("sales"); ;
+    const sales = self._engine.getStream("sales");
     return sales;
   }
 
@@ -555,12 +551,12 @@ class OverridingConverterStateGetter {
   setTotal(streamName, value) {
     const self = this;
     const strategy = {
-      "sales": (x) => self.setVolume(x),
-      "manufacture": (x) => self.setVolume(x),
-      "import": (x) => self.setVolume(x),
-      "equipment": (x) => self.setPopulation(x),
-      "priorEquipment": (x) => self.setPopulation(x),
-      "consumption": (x) => self.setConsumption(x),
+      sales: (x) => self.setVolume(x),
+      manufacture: (x) => self.setVolume(x),
+      import: (x) => self.setVolume(x),
+      equipment: (x) => self.setPopulation(x),
+      priorEquipment: (x) => self.setPopulation(x),
+      consumption: (x) => self.setConsumption(x),
     }[streamName];
     strategy(value);
   }
@@ -678,9 +674,4 @@ class OverridingConverterStateGetter {
   }
 }
 
-export {
-  EngineNumber,
-  UnitConverter,
-  ConverterStateGetter,
-  OverridingConverterStateGetter,
-};
+export {EngineNumber, UnitConverter, ConverterStateGetter, OverridingConverterStateGetter};

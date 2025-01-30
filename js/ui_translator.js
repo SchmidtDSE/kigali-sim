@@ -8,22 +8,21 @@ import {EngineNumber} from "engine_number";
 import {YearMatcher} from "engine_state";
 
 const COMMAND_COMPATIBILITIES = {
-  "change": "any",
+  change: "any",
   "define var": "none",
-  "retire": "any",
-  "setVal": "any",
-  "cap": "any",
-  "floor": "any",
-  "limit": "any",
+  retire: "any",
+  setVal: "any",
+  cap: "any",
+  floor: "any",
+  limit: "any",
   "initial charge": "definition",
-  "equals": "definition",
-  "recharge": "definition",
-  "recycle": "policy",
-  "replace": "policy",
+  equals: "definition",
+  recharge: "definition",
+  recycle: "policy",
+  replace: "policy",
 };
 
 const toolkit = QubecTalk.getToolkit();
-
 
 function indentSingle(piece, spaces) {
   if (spaces === undefined) {
@@ -38,11 +37,9 @@ function indentSingle(piece, spaces) {
   return prefix + piece;
 }
 
-
 function indent(pieces, spaces) {
   return pieces.map((piece) => indentSingle(piece, spaces));
 }
-
 
 function buildAddCode(target) {
   return (x, spaces) => {
@@ -50,11 +47,9 @@ function buildAddCode(target) {
   };
 }
 
-
 function finalizeCodePieces(target) {
   return target.join("\n");
 }
-
 
 class Program {
   constructor(applications, policies, scenarios, isCompatible) {
@@ -67,7 +62,10 @@ class Program {
 
   getSubstances() {
     const self = this;
-    return self.getApplications().map((x) => x.getSubstances()).flat();
+    return self
+      .getApplications()
+      .map((x) => x.getSubstances())
+      .flat();
   }
 
   insertSubstance(priorApplication, priorSubstanceName, substance) {
@@ -184,7 +182,8 @@ class Program {
     const addCode = buildAddCode(baselinePieces);
 
     if (self.getApplications().length > 0) {
-      const applicationsCode = self.getApplications()
+      const applicationsCode = self
+        .getApplications()
         .map((x) => x.toCode(spaces + 2))
         .join("\n\n\n");
 
@@ -198,7 +197,10 @@ class Program {
     }
 
     if (self.getPolicies().length > 0) {
-      const policiesCode = self.getPolicies().map((x) => x.toCode(spaces)).join("\n\n\n\n");
+      const policiesCode = self
+        .getPolicies()
+        .map((x) => x.toCode(spaces))
+        .join("\n\n\n\n");
       addCode(policiesCode, spaces);
       addCode("", spaces);
       addCode("", spaces);
@@ -207,7 +209,8 @@ class Program {
     if (self.getScenarios().length > 0) {
       addCode("start simulations", spaces);
       addCode("", spaces);
-      const scenariosCode = self.getScenarios()
+      const scenariosCode = self
+        .getScenarios()
         .map((x) => x.toCode(2))
         .join("\n\n\n");
       addCode(scenariosCode, spaces);
@@ -304,7 +307,6 @@ class Program {
   }
 }
 
-
 class AboutStanza {
   getName() {
     const self = this;
@@ -328,7 +330,6 @@ class AboutStanza {
     return false;
   }
 }
-
 
 class DefinitionalStanza {
   constructor(name, applications, isCompatible) {
@@ -360,11 +361,12 @@ class DefinitionalStanza {
     const addCode = buildAddCode(baselinePieces);
     const isDefault = self.getName() === "default";
 
-    addCode("start " + (isDefault ? "default" : ("policy \"" + self.getName() + "\"")), spaces);
+    addCode("start " + (isDefault ? "default" : 'policy "' + self.getName() + '"'), spaces);
     addCode("", spaces);
 
     if (self.getApplications().length > 0) {
-      const applicationsCode = self.getApplications()
+      const applicationsCode = self
+        .getApplications()
         .map((x) => x.toCode(spaces + 2))
         .join("\n\n\n");
       addCode(applicationsCode, 0);
@@ -376,7 +378,6 @@ class DefinitionalStanza {
     return finalizeCodePieces(baselinePieces);
   }
 }
-
 
 class SimulationScenario {
   constructor(name, policyNames, yearStart, yearEnd, isCompatible) {
@@ -419,12 +420,12 @@ class SimulationScenario {
     const baselinePieces = [];
     const addCode = buildAddCode(baselinePieces);
 
-    addCode("simulate \"" + self.getName() + "\"", spaces);
+    addCode('simulate "' + self.getName() + '"', spaces);
 
     if (self.getPolicyNames().length > 0) {
       self.getPolicyNames().forEach((x, i) => {
         const prefix = i == 0 ? "using" : "then";
-        addCode(prefix + " \"" + x + "\"", spaces + 2);
+        addCode(prefix + ' "' + x + '"', spaces + 2);
       });
     }
 
@@ -432,7 +433,6 @@ class SimulationScenario {
     return finalizeCodePieces(baselinePieces);
   }
 }
-
 
 class SimulationStanza {
   constructor(scenarios, isCompatible) {
@@ -466,7 +466,8 @@ class SimulationStanza {
 
     if (self.getScenarios().length > 0) {
       addCode("", spaces);
-      const scenariosCode = self.getScenarios()
+      const scenariosCode = self
+        .getScenarios()
         .map((x) => x.toCode(2))
         .join("\n\n\n");
       addCode(scenariosCode, spaces);
@@ -477,7 +478,6 @@ class SimulationStanza {
     return finalizeCodePieces(baselinePieces);
   }
 }
-
 
 class Application {
   constructor(name, substances, isModification, isCompatible) {
@@ -537,11 +537,12 @@ class Application {
     const addCode = buildAddCode(baselinePieces);
 
     const prefix = self.getIsModification() ? "modify" : "define";
-    addCode(prefix + " application \"" + self.getName() + "\"", spaces);
+    addCode(prefix + ' application "' + self.getName() + '"', spaces);
 
     if (self.getSubstances().length > 0) {
       addCode("", spaces);
-      const substancesCode = self.getSubstances()
+      const substancesCode = self
+        .getSubstances()
         .map((x) => x.toCode(spaces + 2))
         .join("\n\n\n");
       addCode(substancesCode, 0);
@@ -552,7 +553,6 @@ class Application {
     return finalizeCodePieces(baselinePieces);
   }
 }
-
 
 class SubstanceBuilder {
   constructor(name, isModification) {
@@ -578,11 +578,7 @@ class SubstanceBuilder {
       self._limits,
       self._recycles,
       self._replaces,
-      [
-        self._equals,
-        self._recharge,
-        self._retire,
-      ],
+      [self._equals, self._recharge, self._retire],
       self._changes,
       self._setVals,
     ].flat();
@@ -631,16 +627,16 @@ class SubstanceBuilder {
     const incompatiblePlace = needsToMoveToMod || needsToMoveToDefinition || noCompat;
 
     const strategy = {
-      "change": (x) => self.addChange(x),
-      "retire": (x) => self.setRetire(x),
-      "setVal": (x) => self.addSetVal(x),
+      change: (x) => self.addChange(x),
+      retire: (x) => self.setRetire(x),
+      setVal: (x) => self.addSetVal(x),
       "initial charge": (x) => self.addInitialCharge(x),
-      "recharge": (x) => self.setRecharge(x),
-      "equals": (x) => self.setEquals(x),
-      "recycle": (x) => self.addRecycle(x),
-      "cap": (x) => self.addLimit(x),
-      "floor": (x) => self.addLimit(x),
-      "replace": (x) => self.addReplace(x),
+      recharge: (x) => self.setRecharge(x),
+      equals: (x) => self.setEquals(x),
+      recycle: (x) => self.addRecycle(x),
+      cap: (x) => self.addLimit(x),
+      floor: (x) => self.addLimit(x),
+      replace: (x) => self.addReplace(x),
     }[commandType];
 
     if (incompatiblePlace) {
@@ -714,10 +710,21 @@ class SubstanceBuilder {
   }
 }
 
-
 class Substance {
-  constructor(name, charges, limits, changes, equals, recharge, recycles, replaces, retire,
-    setVals, isMod, compat) {
+  constructor(
+    name,
+    charges,
+    limits,
+    changes,
+    equals,
+    recharge,
+    recycles,
+    replaces,
+    retire,
+    setVals,
+    isMod,
+    compat,
+  ) {
     const self = this;
     self._name = name;
     self._initialCharges = charges;
@@ -806,7 +813,7 @@ class Substance {
     const addCode = buildAddCode(baselinePieces);
 
     const prefix = self.getIsModification() ? "modify" : "uses";
-    addCode(prefix + " substance \"" + self.getName() + "\"", spaces);
+    addCode(prefix + ' substance "' + self.getName() + '"', spaces);
 
     const addIfGiven = (code) => {
       if (code === null) {
@@ -949,7 +956,7 @@ class Substance {
       const displacing = limit.getDisplacing();
       if (displacing !== null && displacing !== undefined) {
         pieces.push("displacing");
-        pieces.push("\"" + displacing + "\"");
+        pieces.push('"' + displacing + '"');
       }
 
       self._addDuration(pieces, limit);
@@ -1016,7 +1023,7 @@ class Substance {
         "of",
         replace.getSource(),
         "with",
-        "\"" + replace.getDestination() + "\"",
+        '"' + replace.getDestination() + '"',
       ];
       self._addDuration(pieces, replace);
 
@@ -1062,7 +1069,6 @@ class Substance {
   }
 }
 
-
 class Command {
   constructor(typeName, target, value, duration) {
     const self = this;
@@ -1097,7 +1103,6 @@ class Command {
     return true;
   }
 }
-
 
 class LimitCommand {
   constructor(typeName, target, value, duration, displacing) {
@@ -1140,7 +1145,6 @@ class LimitCommand {
   }
 }
 
-
 class ReplaceCommand {
   constructor(volume, source, destination, duration) {
     const self = this;
@@ -1181,7 +1185,6 @@ class ReplaceCommand {
   }
 }
 
-
 class IncompatibleCommand {
   constructor(typeName) {
     const self = this;
@@ -1198,7 +1201,6 @@ class IncompatibleCommand {
     return false;
   }
 }
-
 
 /**
  * Visitor which compiles a QubecTalk program to JS objects describing the analysis.
@@ -1772,7 +1774,6 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
   }
 }
 
-
 /**
  * Structure contianing the result of attempting to translate from QubecTalk script.
  */
@@ -1809,7 +1810,6 @@ class TranslationResult {
     return self._errors;
   }
 }
-
 
 class UiTranslatorCompiler {
   compile(input) {
@@ -1857,7 +1857,6 @@ class UiTranslatorCompiler {
     return new TranslationResult(program, errors);
   }
 }
-
 
 export {
   AboutStanza,
