@@ -162,6 +162,7 @@ main {
 #results .dimensions .dimension .list .list-line {
   height: 1px;
   margin-bottom: 5px;
+  margin-left: 17px;
 }
 
 #results .dimensions .dimension .title {
