@@ -1,6 +1,5 @@
 import {EngineNumber} from "engine_number";
 
-
 class AggregatedResult {
   constructor(manufactureValue, importValue, consumptionValue, populationValue) {
     const self = this;
@@ -46,12 +45,7 @@ class AggregatedResult {
     const consumptionValue = self._combineUnitValue(self.getConsumption(), other.getConsumption());
     const populationValue = self._combineUnitValue(self.getPopulation(), other.getPopulation());
 
-    return new AggregatedResult(
-      manufactureValue,
-      importValue,
-      consumptionValue,
-      populationValue,
-    );
+    return new AggregatedResult(manufactureValue, importValue, consumptionValue, populationValue);
   }
 
   _combineUnitValue(a, b) {
@@ -62,7 +56,6 @@ class AggregatedResult {
     return new EngineNumber(a.getValue() + b.getValue(), a.getUnits());
   }
 }
-
 
 class ReportDataWrapper {
   constructor(innerData) {
@@ -79,9 +72,9 @@ class ReportDataWrapper {
     const self = this;
     const metric = filterSet.getMetric();
     const strategy = {
-      "consumption": () => self.getConsumption(filterSet),
-      "sales": () => self.getSales(filterSet),
-      "population": () => self.getPopulation(filterSet),
+      consumption: () => self.getConsumption(filterSet),
+      sales: () => self.getSales(filterSet),
+      population: () => self.getPopulation(filterSet),
     }[metric];
     const value = strategy();
     return value;
@@ -91,9 +84,9 @@ class ReportDataWrapper {
     const self = this;
     const dimension = filterSet.getDimension();
     const strategy = {
-      "simulations": () => self.getScenarios(filterSet),
-      "applications": () => self.getApplications(filterSet),
-      "substances": () => self.getSubstances(filterSet),
+      simulations: () => self.getScenarios(filterSet),
+      applications: () => self.getApplications(filterSet),
+      substances: () => self.getSubstances(filterSet),
     }[dimension];
     const value = strategy();
     return value;
@@ -156,12 +149,15 @@ class ReportDataWrapper {
   _getAggregatedAfterFilter(filterSet) {
     const self = this;
     const afterFilter = self._applyFilterSet(filterSet);
-    const preAggregated = afterFilter.map((x) => new AggregatedResult(
-      x.getManufacture(),
-      x.getImport(),
-      x.getConsumption(),
-      x.getPopulation(),
-    ));
+    const preAggregated = afterFilter.map(
+      (x) =>
+        new AggregatedResult(
+          x.getManufacture(),
+          x.getImport(),
+          x.getConsumption(),
+          x.getPopulation(),
+        ),
+    );
 
     if (preAggregated.length == 0) {
       return null;
@@ -207,7 +203,6 @@ class ReportDataWrapper {
   }
 }
 
-
 class FilterSet {
   constructor(year, scenario, application, substance, metric, dimension) {
     const self = this;
@@ -222,9 +217,9 @@ class FilterSet {
   getWithDimensionValue(value) {
     const self = this;
     const strategy = {
-      "simulations": (x) => self.getWithScenario(x),
-      "applications": (x) => self.getWithApplication(x),
-      "substances": (x) => self.getWithSubstance(x),
+      simulations: (x) => self.getWithScenario(x),
+      applications: (x) => self.getWithApplication(x),
+      substances: (x) => self.getWithSubstance(x),
     }[self.getDimension()];
     return strategy(value);
   }
@@ -338,6 +333,5 @@ class FilterSet {
     return scenarioSelected || onlyOneScenario;
   }
 }
-
 
 export {ReportDataWrapper, FilterSet};

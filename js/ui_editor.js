@@ -13,7 +13,6 @@ import {
   SubstanceBuilder,
 } from "ui_translator";
 
-
 function updateDurationSelector(dateSelector) {
   const makeVisibilityCallback = (showStart, showEnd) => {
     return () => {
@@ -46,7 +45,6 @@ function updateDurationSelector(dateSelector) {
   refreshVisibility(dateSelector);
 }
 
-
 function setupDurationSelector(newDiv) {
   const dateSelectors = Array.of(...newDiv.querySelectorAll(".duration-subcomponent"));
   dateSelectors.forEach((dateSelector) => {
@@ -56,7 +54,6 @@ function setupDurationSelector(newDiv) {
     updateDurationSelector(dateSelector);
   });
 }
-
 
 function setupListButton(button, targetList, templateId, initUiCallback) {
   button.addEventListener("click", (event) => {
@@ -79,24 +76,20 @@ function setupListButton(button, targetList, templateId, initUiCallback) {
   });
 }
 
-
 function setFieldValue(selection, source, defaultValue, strategy) {
   const newValue = source === null ? null : strategy(source);
   const valueOrDefault = newValue === null ? defaultValue : newValue;
   selection.value = valueOrDefault;
 }
 
-
 function getFieldValue(selection) {
   return selection.value;
 }
 
-
 function getSanitizedFieldValue(selection) {
   const valueRaw = getFieldValue(selection);
-  return valueRaw.replaceAll("\"", "").replaceAll(",", "");
+  return valueRaw.replaceAll('"', "").replaceAll(",", "");
 }
-
 
 function setListInput(listSelection, itemTemplate, items, uiInit) {
   listSelection.innerHTML = "";
@@ -116,12 +109,10 @@ function setListInput(listSelection, itemTemplate, items, uiInit) {
   items.forEach(addItem);
 }
 
-
 function getListInput(selection, itemReadStrategy) {
   const dialogListItems = Array.of(...selection.querySelectorAll(".dialog-list-item"));
   return dialogListItems.map(itemReadStrategy);
 }
-
 
 function setEngineNumberValue(valSelection, unitsSelection, source, defaultValue, strategy) {
   const newValue = source === null ? null : strategy(source);
@@ -130,13 +121,11 @@ function setEngineNumberValue(valSelection, unitsSelection, source, defaultValue
   unitsSelection.value = valueOrDefault.getUnits();
 }
 
-
 function getEngineNumberValue(valSelection, unitsSelection) {
   const value = valSelection.value;
   const units = unitsSelection.value;
   return new EngineNumber(value, units);
 }
-
 
 function setDuring(selection, command, defaultVal) {
   const effectiveVal = command === null ? defaultVal : command.getDuration();
@@ -174,7 +163,6 @@ function setDuring(selection, command, defaultVal) {
   updateDurationSelector(selection);
 }
 
-
 class ApplicationsListPresenter {
   constructor(root, getCodeObj, onCodeObjUpdate) {
     const self = this;
@@ -198,21 +186,19 @@ class ApplicationsListPresenter {
     const itemList = d3.select(self._root).select(".item-list");
 
     itemList.html("");
-    const newItems = itemList.selectAll("li")
-      .data(appNames)
-      .enter()
-      .append("li");
+    const newItems = itemList.selectAll("li").data(appNames).enter().append("li");
 
     newItems.attr("aria-label", (x) => x);
 
-    const buttonsPane = newItems.append("div")
-      .classed("list-buttons", true);
+    const buttonsPane = newItems.append("div").classed("list-buttons", true);
 
-    newItems.append("div")
+    newItems
+      .append("div")
       .classed("list-label", true)
       .text((x) => x);
 
-    buttonsPane.append("a")
+    buttonsPane
+      .append("a")
       .attr("href", "#")
       .on("click", (event, x) => {
         event.preventDefault();
@@ -223,7 +209,8 @@ class ApplicationsListPresenter {
 
     buttonsPane.append("span").text(" | ");
 
-    buttonsPane.append("a")
+    buttonsPane
+      .append("a")
       .attr("href", "#")
       .on("click", (event, x) => {
         event.preventDefault();
@@ -259,7 +246,7 @@ class ApplicationsListPresenter {
       event.preventDefault();
 
       const nameInput = self._dialog.querySelector(".edit-application-name-input");
-      const newName = nameInput.value.replaceAll("\"", "").replaceAll(",", "");
+      const newName = nameInput.value.replaceAll('"', "").replaceAll(",", "");
 
       const priorNames = new Set(self._getAppNames());
       const nameIsDuplicate = priorNames.has(newName);
@@ -305,7 +292,6 @@ class ApplicationsListPresenter {
   }
 }
 
-
 class ConsumptionListPresenter {
   constructor(root, getCodeObj, onCodeObjUpdate) {
     const self = this;
@@ -339,21 +325,19 @@ class ConsumptionListPresenter {
     const itemList = d3.select(self._root).select(".item-list");
 
     itemList.html("");
-    const newItems = itemList.selectAll("li")
-      .data(consumptionNames)
-      .enter()
-      .append("li");
+    const newItems = itemList.selectAll("li").data(consumptionNames).enter().append("li");
 
     newItems.attr("aria-label", (x) => x);
 
-    const buttonsPane = newItems.append("div")
-      .classed("list-buttons", true);
+    const buttonsPane = newItems.append("div").classed("list-buttons", true);
 
-    newItems.append("div")
+    newItems
+      .append("div")
       .classed("list-label", true)
       .text((x) => x);
 
-    buttonsPane.append("a")
+    buttonsPane
+      .append("a")
       .attr("href", "#")
       .on("click", (event, x) => {
         event.preventDefault();
@@ -364,7 +348,8 @@ class ConsumptionListPresenter {
 
     buttonsPane.append("span").text(" | ");
 
-    buttonsPane.append("a")
+    buttonsPane
+      .append("a")
       .attr("href", "#")
       .on("click", (event, x) => {
         event.preventDefault();
@@ -418,11 +403,8 @@ class ConsumptionListPresenter {
 
     const addLimitButton = self._root.querySelector(".add-limit-button");
     const limitList = self._root.querySelector(".limit-list");
-    setupListButton(
-      addLimitButton,
-      limitList,
-      "limit-command-template",
-      (item, root) => initLimitCommandUi(item, root, self._getCodeObj()),
+    setupListButton(addLimitButton, limitList, "limit-command-template", (item, root) =>
+      initLimitCommandUi(item, root, self._getCodeObj()),
     );
   }
 
@@ -442,21 +424,24 @@ class ConsumptionListPresenter {
 
     const getObjToShow = () => {
       if (name === null) {
-        return {"obj": null, "application": ""};
+        return {obj: null, application: ""};
       }
       const objIdentifierRegex = /\"([^\"]+)\" for \"([^\"]+)\"/;
       const match = name.match(objIdentifierRegex);
       const substance = match[1];
       const application = match[2];
       const substanceObj = codeObj.getApplication(application).getSubstance(substance);
-      return {"obj": substanceObj, "application": application};
+      return {obj: substanceObj, application: application};
     };
 
     const objToShowInfo = getObjToShow();
     const objToShow = objToShowInfo["obj"];
     const applicationName = objToShowInfo["application"];
 
-    const applicationNames = self._getCodeObj().getApplications().map((x) => x.getName());
+    const applicationNames = self
+      ._getCodeObj()
+      .getApplications()
+      .map((x) => x.getName());
     const applicationSelect = self._dialog.querySelector(".application-select");
     d3.select(applicationSelect)
       .html("")
@@ -562,7 +547,7 @@ class ConsumptionListPresenter {
       const substances = x.getSubstances();
       return substances.map((substance) => {
         const substanceName = substance.getName();
-        return "\"" + substanceName + "\" for \"" + appName + "\"";
+        return '"' + substanceName + '" for "' + appName + '"';
       });
     });
     const consumptions = consumptionsNested.flat();
@@ -634,12 +619,7 @@ class ConsumptionListPresenter {
       self._dialog.querySelector(".edit-consumption-retirement-input"),
       self._dialog.querySelector(".retirement-units-input"),
     );
-    const retireCommand = new Command(
-      "retire",
-      null,
-      retirement,
-      null,
-    );
+    const retireCommand = new Command("retire", null, retirement, null);
     substanceBuilder.addCommand(retireCommand);
 
     const rechargePopulation = getEngineNumberValue(
@@ -652,36 +632,21 @@ class ConsumptionListPresenter {
       self._dialog.querySelector(".recharge-volume-units-input"),
     );
 
-    const rechargeCommand = new Command(
-      "recharge",
-      rechargePopulation,
-      rechargeVolume,
-      null,
-    );
+    const rechargeCommand = new Command("recharge", rechargePopulation, rechargeVolume, null);
     substanceBuilder.addCommand(rechargeCommand);
 
-    const levels = getListInput(
-      self._dialog.querySelector(".level-list"),
-      readSetCommandUi,
-    );
+    const levels = getListInput(self._dialog.querySelector(".level-list"), readSetCommandUi);
     levels.forEach((x) => substanceBuilder.addCommand(x));
 
-    const changes = getListInput(
-      self._dialog.querySelector(".change-list"),
-      readChangeCommandUi,
-    );
+    const changes = getListInput(self._dialog.querySelector(".change-list"), readChangeCommandUi);
     changes.forEach((x) => substanceBuilder.addCommand(x));
 
-    const limits = getListInput(
-      self._dialog.querySelector(".limit-list"),
-      readLimitCommandUi,
-    );
+    const limits = getListInput(self._dialog.querySelector(".limit-list"), readLimitCommandUi);
     limits.forEach((x) => substanceBuilder.addCommand(x));
 
     return substanceBuilder.build(true);
   }
 }
-
 
 class PolicyListPresenter {
   constructor(root, getCodeObj, onCodeObjUpdate) {
@@ -716,21 +681,19 @@ class PolicyListPresenter {
     const itemList = d3.select(self._root).select(".item-list");
 
     itemList.html("");
-    const newItems = itemList.selectAll("li")
-      .data(policyNames)
-      .enter()
-      .append("li");
+    const newItems = itemList.selectAll("li").data(policyNames).enter().append("li");
 
     newItems.attr("aria-label", (x) => x);
 
-    const buttonsPane = newItems.append("div")
-      .classed("list-buttons", true);
+    const buttonsPane = newItems.append("div").classed("list-buttons", true);
 
-    newItems.append("div")
+    newItems
+      .append("div")
       .classed("list-label", true)
       .text((x) => x);
 
-    buttonsPane.append("a")
+    buttonsPane
+      .append("a")
       .attr("href", "#")
       .on("click", (event, x) => {
         event.preventDefault();
@@ -741,7 +704,8 @@ class PolicyListPresenter {
 
     buttonsPane.append("span").text(" | ");
 
-    buttonsPane.append("a")
+    buttonsPane
+      .append("a")
       .attr("href", "#")
       .on("click", (event, x) => {
         event.preventDefault();
@@ -792,38 +756,22 @@ class PolicyListPresenter {
 
     const addReplaceButton = self._root.querySelector(".add-replace-button");
     const replaceList = self._root.querySelector(".replace-list");
-    setupListButton(
-      addReplaceButton,
-      replaceList,
-      "replace-command-template",
-      (item, root) => initReplaceCommandUi(item, root, self._getCodeObj()),
+    setupListButton(addReplaceButton, replaceList, "replace-command-template", (item, root) =>
+      initReplaceCommandUi(item, root, self._getCodeObj()),
     );
 
     const addLevelButton = self._root.querySelector(".add-level-button");
     const levelList = self._root.querySelector(".level-list");
-    setupListButton(
-      addLevelButton,
-      levelList,
-      "set-command-template",
-      initSetCommandUi,
-    );
+    setupListButton(addLevelButton, levelList, "set-command-template", initSetCommandUi);
 
     const addChangeButton = self._root.querySelector(".add-change-button");
     const changeList = self._root.querySelector(".change-list");
-    setupListButton(
-      addChangeButton,
-      changeList,
-      "change-command-template",
-      initChangeCommandUi,
-    );
+    setupListButton(addChangeButton, changeList, "change-command-template", initChangeCommandUi);
 
     const addLimitButton = self._root.querySelector(".add-limit-button");
     const limitList = self._root.querySelector(".limit-list");
-    setupListButton(
-      addLimitButton,
-      limitList,
-      "limit-command-template",
-      (item, root) => initLimitCommandUi(item, root, self._getCodeObj()),
+    setupListButton(addLimitButton, limitList, "limit-command-template", (item, root) =>
+      initLimitCommandUi(item, root, self._getCodeObj()),
     );
   }
 
@@ -848,11 +796,8 @@ class PolicyListPresenter {
       self._dialog.querySelector(".action-title").innerHTML = "Edit";
     }
 
-    setFieldValue(
-      self._dialog.querySelector(".edit-policy-name-input"),
-      targetPolicy,
-      "",
-      (x) => x.getName(),
+    setFieldValue(self._dialog.querySelector(".edit-policy-name-input"), targetPolicy, "", (x) =>
+      x.getName(),
     );
 
     const applicationNames = codeObj.getApplications().map((x) => x.getName());
@@ -873,7 +818,8 @@ class PolicyListPresenter {
     const substanceSelect = d3.select(self._dialog.querySelector(".substances-select"));
     const substanceName = targetSubstance === null ? "" : targetSubstance.getName();
     substanceSelect.html("");
-    substanceSelect.selectAll("option")
+    substanceSelect
+      .selectAll("option")
       .data(substanceNames)
       .enter()
       .append("option")
@@ -951,22 +897,13 @@ class PolicyListPresenter {
     );
     replaces.forEach((command) => builder.addCommand(command));
 
-    const levels = getListInput(
-      self._dialog.querySelector(".level-list"),
-      readSetCommandUi,
-    );
+    const levels = getListInput(self._dialog.querySelector(".level-list"), readSetCommandUi);
     levels.forEach((command) => builder.addCommand(command));
 
-    const changes = getListInput(
-      self._dialog.querySelector(".change-list"),
-      readChangeCommandUi,
-    );
+    const changes = getListInput(self._dialog.querySelector(".change-list"), readChangeCommandUi);
     changes.forEach((command) => builder.addCommand(command));
 
-    const limits = getListInput(
-      self._dialog.querySelector(".limit-list"),
-      readLimitCommandUi,
-    );
+    const limits = getListInput(self._dialog.querySelector(".limit-list"), readLimitCommandUi);
     limits.forEach((command) => builder.addCommand(command));
 
     const substance = builder.build(true);
@@ -984,7 +921,6 @@ class PolicyListPresenter {
     self._onCodeObjUpdate(codeObj);
   }
 }
-
 
 class SimulationListPresenter {
   constructor(root, getCodeObj, onCodeObjUpdate) {
@@ -1019,21 +955,19 @@ class SimulationListPresenter {
     const itemList = d3.select(self._root).select(".item-list");
 
     itemList.html("");
-    const newItems = itemList.selectAll("li")
-      .data(simulationNames)
-      .enter()
-      .append("li");
+    const newItems = itemList.selectAll("li").data(simulationNames).enter().append("li");
 
     newItems.attr("aria-label", (x) => x);
 
-    const buttonsPane = newItems.append("div")
-      .classed("list-buttons", true);
+    const buttonsPane = newItems.append("div").classed("list-buttons", true);
 
-    newItems.append("div")
+    newItems
+      .append("div")
       .classed("list-label", true)
       .text((x) => x);
 
-    buttonsPane.append("a")
+    buttonsPane
+      .append("a")
       .attr("href", "#")
       .on("click", (event, x) => {
         event.preventDefault();
@@ -1044,7 +978,8 @@ class SimulationListPresenter {
 
     buttonsPane.append("span").text(" | ");
 
-    buttonsPane.append("a")
+    buttonsPane
+      .append("a")
       .attr("href", "#")
       .on("click", (event, x) => {
         event.preventDefault();
@@ -1098,29 +1033,24 @@ class SimulationListPresenter {
     const policiesSelectedRaw = scenario === null ? [] : scenario.getPolicyNames();
     const policiesSelected = new Set(policiesSelectedRaw);
 
-    setFieldValue(
-      self._dialog.querySelector(".edit-simulation-name-input"),
-      scenario,
-      "",
-      (x) => x.getName(),
+    setFieldValue(self._dialog.querySelector(".edit-simulation-name-input"), scenario, "", (x) =>
+      x.getName(),
     );
 
-    setFieldValue(
-      self._dialog.querySelector(".edit-simulation-start-input"),
-      scenario,
-      1,
-      (x) => x.getYearStart(),
+    setFieldValue(self._dialog.querySelector(".edit-simulation-start-input"), scenario, 1, (x) =>
+      x.getYearStart(),
     );
 
-    setFieldValue(
-      self._dialog.querySelector(".edit-simulation-end-input"),
-      scenario,
-      10,
-      (x) => x.getYearEnd(),
+    setFieldValue(self._dialog.querySelector(".edit-simulation-end-input"), scenario, 10, (x) =>
+      x.getYearEnd(),
     );
 
-    const policyNames = self._getCodeObj().getPolicies().map((x) => x.getName());
-    const newLabels = d3.select(self._dialog.querySelector(".policy-sim-list"))
+    const policyNames = self
+      ._getCodeObj()
+      .getPolicies()
+      .map((x) => x.getName());
+    const newLabels = d3
+      .select(self._dialog.querySelector(".policy-sim-list"))
       .html("")
       .selectAll(".policy-check-label")
       .data(policyNames)
@@ -1129,14 +1059,14 @@ class SimulationListPresenter {
       .classed("policy-check-label", true)
       .append("label");
 
-    newLabels.append("input")
+    newLabels
+      .append("input")
       .attr("type", "checkbox")
       .classed("policy-check", true)
       .attr("value", (x) => x)
       .property("checked", (x) => policiesSelected.has(x));
 
-    newLabels.append("span")
-      .text((x) => x);
+    newLabels.append("span").text((x) => x);
 
     self._dialog.showModal();
   }
@@ -1169,16 +1099,9 @@ class SimulationListPresenter {
     const policiesChecked = policyChecks.filter((x) => x.checked);
     const policyNamesSelected = policiesChecked.map((x) => x.value);
 
-    return new SimulationScenario(
-      scenarioName,
-      policyNamesSelected,
-      start,
-      end,
-      true,
-    );
+    return new SimulationScenario(scenarioName, policyNamesSelected, start, end, true);
   }
 }
-
 
 class UiEditorPresenter {
   constructor(startOnCode, tabRoot, contentsRoot, getCodeAsObj, onCodeObjUpdate, onTabChange) {
@@ -1261,10 +1184,12 @@ class UiEditorPresenter {
   _setupAdvancedLinks() {
     const self = this;
     const links = Array.of(...self._contentsSelection.querySelectorAll(".advanced-editor-link"));
-    links.forEach((link) => link.addEventListener("click", (event) => {
-      self._tabs.toggle("#code-editor-pane");
-      event.preventDefault();
-    }));
+    links.forEach((link) =>
+      link.addEventListener("click", (event) => {
+        self._tabs.toggle("#code-editor-pane");
+        event.preventDefault();
+      }),
+    );
   }
 
   _getCodeAsObj() {
@@ -1324,13 +1249,9 @@ class UiEditorPresenter {
   }
 }
 
-
 function initSetCommandUi(itemObj, root) {
-  setFieldValue(
-    root.querySelector(".set-target-input"),
-    itemObj,
-    "manufacture",
-    (x) => x.getTarget(),
+  setFieldValue(root.querySelector(".set-target-input"), itemObj, "manufacture", (x) =>
+    x.getTarget(),
   );
   setEngineNumberValue(
     root.querySelector(".set-amount-input"),
@@ -1339,13 +1260,8 @@ function initSetCommandUi(itemObj, root) {
     new EngineNumber(1, "mt"),
     (x) => x.getValue(),
   );
-  setDuring(
-    root.querySelector(".duration-subcomponent"),
-    itemObj,
-    new YearMatcher(1, 1),
-  );
+  setDuring(root.querySelector(".duration-subcomponent"), itemObj, new YearMatcher(1, 1));
 }
-
 
 function readSetCommandUi(root) {
   const target = getFieldValue(root.querySelector(".set-target-input"));
@@ -1357,51 +1273,29 @@ function readSetCommandUi(root) {
   return new Command("setVal", target, amount, duration);
 }
 
-
 function initChangeCommandUi(itemObj, root) {
-  setFieldValue(
-    root.querySelector(".change-target-input"),
-    itemObj,
-    "manufacture",
-    (x) => x.getTarget(),
+  setFieldValue(root.querySelector(".change-target-input"), itemObj, "manufacture", (x) =>
+    x.getTarget(),
   );
-  setFieldValue(
-    root.querySelector(".change-sign-input"),
-    itemObj,
-    "+",
-    (x) => x.getValue() < 0 ? "-" : "+",
+  setFieldValue(root.querySelector(".change-sign-input"), itemObj, "+", (x) =>
+    x.getValue() < 0 ? "-" : "+",
   );
-  setFieldValue(
-    root.querySelector(".change-amount-input"),
-    itemObj,
-    5,
-    (x) => {
-      if (x.getValue() === null || x.getValue().getValue() === null) {
-        return 5; // Default
-      }
-      const valueSigned = x.getValue().getValue();
-      const valueUnsigned = Math.abs(valueSigned);
-      return valueUnsigned;
-    },
-  );
-  setFieldValue(
-    root.querySelector(".change-units-input"),
-    itemObj,
-    "% / year",
-    (x) => {
-      if (x.getValue() === null) {
-        return "% / year"; // Default
-      }
-      return x.getValue().getUnits();
-    },
-  );
-  setDuring(
-    root.querySelector(".duration-subcomponent"),
-    itemObj,
-    new YearMatcher(2, 10),
-  );
+  setFieldValue(root.querySelector(".change-amount-input"), itemObj, 5, (x) => {
+    if (x.getValue() === null || x.getValue().getValue() === null) {
+      return 5; // Default
+    }
+    const valueSigned = x.getValue().getValue();
+    const valueUnsigned = Math.abs(valueSigned);
+    return valueUnsigned;
+  });
+  setFieldValue(root.querySelector(".change-units-input"), itemObj, "% / year", (x) => {
+    if (x.getValue() === null) {
+      return "% / year"; // Default
+    }
+    return x.getValue().getUnits();
+  });
+  setDuring(root.querySelector(".duration-subcomponent"), itemObj, new YearMatcher(2, 10));
 }
-
 
 function readChangeCommandUi(root) {
   const target = getFieldValue(root.querySelector(".change-target-input"));
@@ -1414,31 +1308,21 @@ function readChangeCommandUi(root) {
   return new Command("change", target, amountWithUnits, duration);
 }
 
-
 function initLimitCommandUi(itemObj, root, codeObj) {
   const substances = codeObj.getSubstances();
   const substanceNames = substances.map((x) => x.getName());
   const substanceSelect = d3.select(root.querySelector(".substances-select"));
   substanceSelect.html("");
-  substanceSelect.selectAll("option")
+  substanceSelect
+    .selectAll("option")
     .data(substanceNames)
     .enter()
     .append("option")
     .attr("value", (x) => x)
     .text((x) => x);
 
-  setFieldValue(
-    root.querySelector(".limit-type-input"),
-    itemObj,
-    "cap",
-    (x) => x.getTypeName(),
-  );
-  setFieldValue(
-    root.querySelector(".limit-target-input"),
-    itemObj,
-    "sales",
-    (x) => x.getTarget(),
-  );
+  setFieldValue(root.querySelector(".limit-type-input"), itemObj, "cap", (x) => x.getTypeName());
+  setFieldValue(root.querySelector(".limit-target-input"), itemObj, "sales", (x) => x.getTarget());
   setEngineNumberValue(
     root.querySelector(".limit-amount-input"),
     root.querySelector(".limit-units-input"),
@@ -1446,19 +1330,11 @@ function initLimitCommandUi(itemObj, root, codeObj) {
     new EngineNumber(1, "mt"),
     (x) => x.getValue(),
   );
-  setFieldValue(
-    root.querySelector(".displacing-input"),
-    itemObj,
-    "",
-    (x) => x.getDisplacing() === null ? "" : x.getDisplacing(),
+  setFieldValue(root.querySelector(".displacing-input"), itemObj, "", (x) =>
+    x.getDisplacing() === null ? "" : x.getDisplacing(),
   );
-  setDuring(
-    root.querySelector(".duration-subcomponent"),
-    itemObj,
-    new YearMatcher(2, 10),
-  );
+  setDuring(root.querySelector(".duration-subcomponent"), itemObj, new YearMatcher(2, 10));
 }
-
 
 function readLimitCommandUi(root) {
   const limitType = getFieldValue(root.querySelector(".limit-type-input"));
@@ -1472,7 +1348,6 @@ function readLimitCommandUi(root) {
   const duration = readDurationUi(root.querySelector(".duration-subcomponent"));
   return new LimitCommand(limitType, target, amount, duration, displacing);
 }
-
 
 function initRecycleCommandUi(itemObj, root) {
   setEngineNumberValue(
@@ -1489,13 +1364,8 @@ function initRecycleCommandUi(itemObj, root) {
     new EngineNumber(10, "%"),
     (x) => x.getValue(),
   );
-  setDuring(
-    root.querySelector(".duration-subcomponent"),
-    itemObj,
-    new YearMatcher(2, 10),
-  );
+  setDuring(root.querySelector(".duration-subcomponent"), itemObj, new YearMatcher(2, 10));
 }
-
 
 function readRecycleCommandUi(root) {
   const collection = getEngineNumberValue(
@@ -1510,13 +1380,13 @@ function readRecycleCommandUi(root) {
   return new Command("recycle", collection, reuse, duration);
 }
 
-
 function initReplaceCommandUi(itemObj, root, codeObj) {
   const substances = codeObj.getSubstances();
   const substanceNames = substances.map((x) => x.getName());
   const substanceSelect = d3.select(root.querySelector(".substances-select"));
   substanceSelect.html("");
-  substanceSelect.selectAll("option")
+  substanceSelect
+    .selectAll("option")
     .data(substanceNames)
     .enter()
     .append("option")
@@ -1531,27 +1401,16 @@ function initReplaceCommandUi(itemObj, root, codeObj) {
     (x) => x.getVolume(),
   );
 
-  setFieldValue(
-    root.querySelector(".replace-target-input"),
-    itemObj,
-    "sales",
-    (x) => x.getSource(),
+  setFieldValue(root.querySelector(".replace-target-input"), itemObj, "sales", (x) =>
+    x.getSource(),
   );
 
-  setFieldValue(
-    root.querySelector(".replace-replacement-input"),
-    itemObj,
-    substanceNames[0],
-    (x) => x.getDestination(),
+  setFieldValue(root.querySelector(".replace-replacement-input"), itemObj, substanceNames[0], (x) =>
+    x.getDestination(),
   );
 
-  setDuring(
-    root.querySelector(".duration-subcomponent"),
-    itemObj,
-    new YearMatcher(2, 10),
-  );
+  setDuring(root.querySelector(".duration-subcomponent"), itemObj, new YearMatcher(2, 10));
 }
-
 
 function readReplaceCommandUi(root) {
   const target = getFieldValue(root.querySelector(".replace-target-input"));
@@ -1565,21 +1424,19 @@ function readReplaceCommandUi(root) {
   return new ReplaceCommand(amount, target, replacement, duration);
 }
 
-
 function readDurationUi(root) {
   const durationType = getFieldValue(root.querySelector(".duration-type-input"));
   const targets = {
-    "in year": {"min": "duration-start", "max": "duration-start"},
-    "during all years": {"min": null, "max": null},
-    "starting in year": {"min": "duration-start", "max": null},
-    "ending in year": {"min": null, "max": "duration-end"},
-    "during years": {"min": "duration-start", "max": "duration-end"},
+    "in year": {min: "duration-start", max: "duration-start"},
+    "during all years": {min: null, max: null},
+    "starting in year": {min: "duration-start", max: null},
+    "ending in year": {min: null, max: "duration-end"},
+    "during years": {min: "duration-start", max: "duration-end"},
   }[durationType];
-  const getYearValue = (x) => x === null ? null : root.querySelector("." + x).value;
+  const getYearValue = (x) => (x === null ? null : root.querySelector("." + x).value);
   const minYear = getYearValue(targets["min"]);
   const maxYear = getYearValue(targets["max"]);
   return new YearMatcher(minYear, maxYear);
 }
-
 
 export {UiEditorPresenter};

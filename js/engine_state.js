@@ -6,10 +6,7 @@ import {
   STREAM_BASE_UNITS,
 } from "engine_const";
 
-import {
-  EngineNumber,
-} from "engine_number";
-
+import {EngineNumber} from "engine_number";
 
 /**
  * Class representing a range of years where inclusion can be tested.
@@ -81,13 +78,7 @@ class VariableManager {
    * @param substanceContext Map from name of variable to value or undefined if no variables exist
    *    at that substance level.
    */
-  constructor(
-    contextLevel,
-    globalContext,
-    stanzaContext,
-    applicationContext,
-    substanceContext,
-  ) {
+  constructor(contextLevel, globalContext, stanzaContext, applicationContext, substanceContext) {
     const self = this;
 
     const ensureContext = (x) => (x === undefined ? new Map() : x);
@@ -341,12 +332,7 @@ class Scope {
   getWithStanza(newStanza) {
     const self = this;
 
-    return new Scope(
-      newStanza,
-      null,
-      null,
-      self._variableManager.getWithLevel(STANZA_CONTEXT),
-    );
+    return new Scope(newStanza, null, null, self._variableManager.getWithLevel(STANZA_CONTEXT));
   }
 
   /**
@@ -402,8 +388,8 @@ class StreamParameterization {
     const createZero = (x) => new EngineNumber(0, x);
     self._ghgIntensity = createZero("tCO2e / kg");
     self._initialCharge = {
-      "manufacture": createZero("kg / unit"),
-      "import": createZero("kg / unit"),
+      manufacture: createZero("kg / unit"),
+      import: createZero("kg / unit"),
     };
     self._rechargePopulation = createZero("%");
     self._rechargeIntensity = createZero("kg / unit");
@@ -504,7 +490,6 @@ class StreamParameterization {
   }
 }
 
-
 class SubstanceInApplicationId {
   constructor(application, substance) {
     const self = this;
@@ -522,7 +507,6 @@ class SubstanceInApplicationId {
     return self._substance;
   }
 }
-
 
 class StreamKeeper {
   constructor(unitConverter) {
@@ -561,30 +545,15 @@ class StreamKeeper {
     const makeZero = (units) => new EngineNumber(0, units);
 
     // Sales: manufacture, import
-    self._streams.set(
-      self._getKey(application, substance, "manufacture"),
-      makeZero("kg"),
-    );
-    self._streams.set(
-      self._getKey(application, substance, "import"),
-      makeZero("kg"),
-    );
+    self._streams.set(self._getKey(application, substance, "manufacture"), makeZero("kg"));
+    self._streams.set(self._getKey(application, substance, "import"), makeZero("kg"));
 
     // Consumption: count, conversion
-    self._streams.set(
-      self._getKey(application, substance, "consumption"),
-      makeZero("tCO2e"),
-    );
+    self._streams.set(self._getKey(application, substance, "consumption"), makeZero("tCO2e"));
 
     // Population
-    self._streams.set(
-      self._getKey(application, substance, "equipment"),
-      makeZero("units"),
-    );
-    self._streams.set(
-      self._getKey(application, substance, "priorEquipment"),
-      makeZero("units"),
-    );
+    self._streams.set(self._getKey(application, substance, "equipment"), makeZero("units"));
+    self._streams.set(self._getKey(application, substance, "priorEquipment"), makeZero("units"));
   }
 
   setStream(application, substance, name, value) {
@@ -593,16 +562,9 @@ class StreamKeeper {
     self._ensureStreamKnown(name);
 
     if (name === "sales") {
-      const manufactureValueRaw = self.getStream(
-        application,
-        substance,
-        "manufacture",
-      );
+      const manufactureValueRaw = self.getStream(application, substance, "manufacture");
       const importValueRaw = self.getStream(application, substance, "import");
-      const manufactureValue = self._unitConverter.convert(
-        manufactureValueRaw,
-        "kg",
-      );
+      const manufactureValue = self._unitConverter.convert(manufactureValueRaw, "kg");
       const importValue = self._unitConverter.convert(importValueRaw, "kg");
       const manufactureAmount = manufactureValue.getValue();
       const importAmount = importValue.getValue();
@@ -614,28 +576,17 @@ class StreamKeeper {
 
       const manufactureShare = value.getValue() * manufacturePercent;
       const importShare = value.getValue() * importPercent;
-      const manufactureNewValue = new EngineNumber(
-        manufactureShare,
-        value.getUnits(),
-      );
+      const manufactureNewValue = new EngineNumber(manufactureShare, value.getUnits());
       const importNewValue = new EngineNumber(importShare, value.getUnits());
 
-      self.setStream(
-        application,
-        substance,
-        "manufacture",
-        manufactureNewValue,
-      );
+      self.setStream(application, substance, "manufacture", manufactureNewValue);
       self.setStream(application, substance, "import", importNewValue);
       return;
     }
 
     const unitsNeeded = self._getUnits(name);
     const valueConverted = self._unitConverter.convert(value, unitsNeeded);
-    self._streams.set(
-      self._getKey(application, substance, name),
-      valueConverted,
-    );
+    self._streams.set(self._getKey(application, substance, name), valueConverted);
   }
 
   getStream(application, substance, name) {
@@ -644,16 +595,9 @@ class StreamKeeper {
     self._ensureStreamKnown(name);
 
     if (name === "sales") {
-      const manufactureAmountRaw = self.getStream(
-        application,
-        substance,
-        "manufacture",
-      );
+      const manufactureAmountRaw = self.getStream(application, substance, "manufacture");
       const importAmountRaw = self.getStream(application, substance, "import");
-      const manufactureAmount = self._unitConverter.convert(
-        manufactureAmountRaw,
-        "kg",
-      );
+      const manufactureAmount = self._unitConverter.convert(manufactureAmountRaw, "kg");
       const importAmount = self._unitConverter.convert(importAmountRaw, "kg");
       const manufactureAmountValue = manufactureAmount.getValue();
       const importAmountValue = importAmount.getValue();
@@ -821,10 +765,4 @@ class StreamKeeper {
   }
 }
 
-export {
-  YearMatcher,
-  VariableManager,
-  Scope,
-  StreamParameterization,
-  StreamKeeper,
-};
+export {YearMatcher, VariableManager, Scope, StreamParameterization, StreamKeeper};

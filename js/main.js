@@ -7,7 +7,6 @@ import {UiTranslatorCompiler} from "ui_translator";
 
 const WHITESPACE_REGEX = new RegExp("^\\s*$");
 
-
 class ButtonPanelPresenter {
   constructor(root, onBuild) {
     const self = this;
@@ -47,7 +46,6 @@ class ButtonPanelPresenter {
     self._runButton.style.display = "inline-block";
   }
 }
-
 
 class MainPresenter {
   constructor() {
@@ -222,7 +220,7 @@ class MainPresenter {
       if (file) {
         const reader = new FileReader();
         reader.readAsText(file, "UTF-8");
-        reader.onload = function(event) {
+        reader.onload = (event) => {
           self._codeEditorPresenter.setCode(event.target.result);
           self._onCodeChange();
           loadFileDialog.close();
@@ -246,10 +244,8 @@ class MainPresenter {
   }
 }
 
-
 function main() {
   const mainPresenter = new MainPresenter();
 }
-
 
 export {main};

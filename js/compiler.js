@@ -10,7 +10,6 @@ import {YearMatcher} from "engine_state";
 
 const toolkit = QubecTalk.getToolkit();
 
-
 /**
  * Visitor which compiles a QubecTalk program to JS lambdas.
  *
@@ -349,9 +348,9 @@ class CompileVisitor extends toolkit.QubecTalkVisitor {
 
     const simulations = appChildren.map((x) => x.accept(self));
     return {
-      "name": "simulations",
-      "executable": [(engine) => engine.setStanza("simulations")],
-      "simulations": simulations,
+      name: "simulations",
+      executable: [(engine) => engine.setStanza("simulations")],
+      simulations: simulations,
     };
   }
 
@@ -409,8 +408,8 @@ class CompileVisitor extends toolkit.QubecTalkVisitor {
     const self = this;
     const capType = ctx.getChild(0).getText();
     const strategy = {
-      "cap": (engine, stream, value, duration) => engine.cap(stream, value, duration, displace),
-      "floor": (engine, stream, value, duration) => engine.floor(stream, value, duration, displace),
+      cap: (engine, stream, value, duration) => engine.cap(stream, value, duration, displace),
+      floor: (engine, stream, value, duration) => engine.floor(stream, value, duration, displace),
     }[capType];
     return self.buildStreamMod(strategy, ctx, durationFuture);
   }
@@ -537,7 +536,11 @@ class CompileVisitor extends toolkit.QubecTalkVisitor {
 
   visitRecoverAllYears(ctx) {
     const self = this;
-    return self.buildRecover(ctx, (engine) => null, (engine) => null);
+    return self.buildRecover(
+      ctx,
+      (engine) => null,
+      (engine) => null,
+    );
   }
 
   visitRecoverDuration(ctx) {
@@ -782,14 +785,13 @@ class CompileVisitor extends toolkit.QubecTalkVisitor {
 
   _getStringWithoutQuotes(target) {
     const self = this;
-    if (target.startsWith("\"") && target.endsWith("\"")) {
+    if (target.startsWith('"') && target.endsWith('"')) {
       return target.substring(1, target.length - 1);
     } else {
       return target;
     }
   }
 }
-
 
 class SimulationResult {
   constructor(name, trialResults) {
@@ -808,7 +810,6 @@ class SimulationResult {
     return self._trialResults;
   }
 }
-
 
 /**
  * Structure contianing the result of attempting to compile a QubecTalk script.
@@ -846,7 +847,6 @@ class CompileResult {
     return self._errors;
   }
 }
-
 
 class Compiler {
   compile(input) {
@@ -894,6 +894,5 @@ class Compiler {
     return new CompileResult(program, errors);
   }
 }
-
 
 export {Compiler};

@@ -13,7 +13,6 @@ const COLORS = [
 
 const ALLOW_REDUNDANT_ALL = true;
 
-
 function getColor(i) {
   if (i >= COLORS.length) {
     return "#333";
@@ -21,7 +20,6 @@ function getColor(i) {
     return COLORS[i];
   }
 }
-
 
 class ResultsPresenter {
   constructor(root) {
@@ -77,7 +75,6 @@ class ResultsPresenter {
   }
 }
 
-
 class ExportPresenter {
   constructor(root) {
     const self = this;
@@ -90,29 +87,32 @@ class ExportPresenter {
     const nested = rawData.map((trial) => {
       const scenarioName = trial.getName();
       const results = trial.getTrialResults();
-      return results.flat().flat().map((result) => {
-        const application = result.getApplication();
-        const substance = result.getSubstance();
-        const year = result.getYear();
-        const manufactureValue = result.getManufacture();
-        const importValue = result.getImport();
-        const consumptionValue = result.getConsumption();
-        const populationValue = result.getPopulation();
-        return {
-          "scenario": scenarioName,
-          "application": application,
-          "substance": substance,
-          "year": year,
-          "manufactureValue": manufactureValue.getValue(),
-          "manufactureUnits": manufactureValue.getUnits(),
-          "importValue": importValue.getValue(),
-          "importUnits": importValue.getUnits(),
-          "consumptionValue": consumptionValue.getValue(),
-          "consumptionUnits": consumptionValue.getUnits(),
-          "equipmentPopulation": populationValue.getValue(),
-          "equipmentUnits": populationValue.getUnits(),
-        };
-      });
+      return results
+        .flat()
+        .flat()
+        .map((result) => {
+          const application = result.getApplication();
+          const substance = result.getSubstance();
+          const year = result.getYear();
+          const manufactureValue = result.getManufacture();
+          const importValue = result.getImport();
+          const consumptionValue = result.getConsumption();
+          const populationValue = result.getPopulation();
+          return {
+            scenario: scenarioName,
+            application: application,
+            substance: substance,
+            year: year,
+            manufactureValue: manufactureValue.getValue(),
+            manufactureUnits: manufactureValue.getUnits(),
+            importValue: importValue.getValue(),
+            importUnits: importValue.getUnits(),
+            consumptionValue: consumptionValue.getValue(),
+            consumptionUnits: consumptionValue.getUnits(),
+            equipmentPopulation: populationValue.getValue(),
+            equipmentUnits: populationValue.getUnits(),
+          };
+        });
     });
     const flat = nested.flat();
     const contentRows = flat.map((record) => {
@@ -158,7 +158,6 @@ class ExportPresenter {
     exportLink.href = encodedValue;
   }
 }
-
 
 class ScorecardPresenter {
   constructor(root, onUpdateFilterSet) {
@@ -259,7 +258,6 @@ class ScorecardPresenter {
   }
 }
 
-
 class DimensionCardPresenter {
   constructor(root, onUpdateFilterSet) {
     const self = this;
@@ -275,22 +273,22 @@ class DimensionCardPresenter {
 
     const metricSelected = self._filterSet.getMetric();
     const metricUnits = {
-      "consumption": "MtCO2e / yr",
-      "sales": "mt / yr",
-      "population": "units",
+      consumption: "MtCO2e / yr",
+      sales: "mt / yr",
+      population: "units",
     }[metricSelected];
 
     const currentYear = self._filterSet.getYear();
     const scenarios = results.getScenarios(self._filterSet.getWithScenario(null));
 
     const allTickUnits = Array.of(...self._root.querySelectorAll(".units-tick"));
-    allTickUnits.forEach((x) => x.innerHTML = metricUnits);
+    allTickUnits.forEach((x) => (x.innerHTML = metricUnits));
 
     const allTickYears = Array.of(...self._root.querySelectorAll(".years-tick"));
     if (self._filterSet.hasSingleScenario(scenarios)) {
-      allTickYears.forEach((x) => x.innerHTML = "in year " + currentYear);
+      allTickYears.forEach((x) => (x.innerHTML = "in year " + currentYear));
     } else {
-      allTickYears.forEach((x) => x.innerHTML = "");
+      allTickYears.forEach((x) => (x.innerHTML = ""));
     }
 
     const simulationsCard = self._root.querySelector("#simulations-dimension");
@@ -303,9 +301,9 @@ class DimensionCardPresenter {
     const substancesSelected = dimensionSelected === "substances";
 
     const conversionInfo = {
-      "consumption": {"divider": 1000000, "suffix": "M"},
-      "sales": {"divider": 1000, "suffix": ""},
-      "population": {"divider": 1000000, "suffix": "M"},
+      consumption: {divider: 1000000, suffix: "M"},
+      sales: {divider: 1000, suffix: ""},
+      population: {divider: 1000000, suffix: "M"},
     }[self._filterSet.getMetric()];
     const divider = conversionInfo["divider"];
     const suffix = conversionInfo["suffix"];
@@ -351,8 +349,19 @@ class DimensionCardPresenter {
     );
   }
 
-  _updateCard(label, card, identifiers, selected, subSelection, subFilterSetBuilder, addAll,
-    valueGetter, suffix, scenarios, selectedYear) {
+  _updateCard(
+    label,
+    card,
+    identifiers,
+    selected,
+    subSelection,
+    subFilterSetBuilder,
+    addAll,
+    valueGetter,
+    suffix,
+    scenarios,
+    selectedYear,
+  ) {
     const self = this;
 
     if (selected) {
@@ -381,7 +390,8 @@ class DimensionCardPresenter {
     const listSelection = d3.select(card).select(".list");
     listSelection.html("");
 
-    const itemDivs = listSelection.selectAll(".item")
+    const itemDivs = listSelection
+      .selectAll(".item")
       .data(identifiersArray)
       .enter()
       .append("div")
@@ -389,7 +399,8 @@ class DimensionCardPresenter {
 
     const itemLabels = itemDivs.append("label");
 
-    itemLabels.append("input")
+    itemLabels
+      .append("input")
       .attr("type", "radio")
       .classed(label + "-radio", true)
       .attr("name", label + "-viz")
@@ -410,16 +421,18 @@ class DimensionCardPresenter {
 
     if (hasSingleScenario || label === "sim") {
       const offset = allNeeded ? 1 : 0;
-      const lines = itemDivs.append("div")
+      const lines = itemDivs
+        .append("div")
         .classed("list-line", true)
         .style("width", "100%")
-        .style("height", (x, i) => x === "All" ? "0px" : "1px")
-        .style("background-color", (x, i) => selected ? getColor(i - offset) : "#C0C0C0");
+        .style("height", (x, i) => (x === "All" ? "0px" : "1px"))
+        .style("background-color", (x, i) => (selected ? getColor(i - offset) : "#C0C0C0"));
 
-      lines.append("div")
+      lines
+        .append("div")
         .classed("list-bar", true)
-        .style("height", (x, i) => x === "All" ? "0px" : "5px")
-        .style("background-color", (x, i) => selected ? getColor(i - offset) : "#C0C0C0")
+        .style("height", (x, i) => (x === "All" ? "0px" : "5px"))
+        .style("background-color", (x, i) => (selected ? getColor(i - offset) : "#C0C0C0"))
         .style("width", (x) => {
           if (x === "All") {
             return "0%";
@@ -453,7 +466,6 @@ class DimensionCardPresenter {
   }
 }
 
-
 class CenterChartPresenter {
   constructor(root) {
     const self = this;
@@ -472,9 +484,9 @@ class CenterChartPresenter {
     years.sort((a, b) => a - b);
 
     const divider = {
-      "consumption": 1000000,
-      "sales": 1000,
-      "population": 1000000,
+      consumption: 1000000,
+      sales: 1000,
+      population: 1000000,
     }[filterSet.getMetric()];
 
     const dimensionValues = Array.of(...results.getDimensionValues(filterSet));
@@ -487,60 +499,60 @@ class CenterChartPresenter {
       });
       const vals = valsWithUnits.map((x) => x.getValue());
       const valsScaled = vals.map((x) => x / divider);
-      return {"name": dimValue, "vals": valsScaled};
+      return {name: dimValue, vals: valsScaled};
     };
     const dimensionSeries = dimensionValues.map(getForDimValue);
 
-    const unconstrainedDimValues = Array.of(...results.getDimensionValues(
-      filterSet.getWithDimensionValue(null),
-    ));
+    const unconstrainedDimValues = Array.of(
+      ...results.getDimensionValues(filterSet.getWithDimensionValue(null)),
+    );
     unconstrainedDimValues.sort();
 
     const chartJsDatasets = dimensionSeries.map((x) => {
       const index = unconstrainedDimValues.indexOf(x["name"]);
       const color = getColor(index);
       return {
-        "label": x["name"],
-        "data": x["vals"],
-        "fill": false,
-        "borderColor": color,
-        "backgroundColor": color,
+        label: x["name"],
+        data: x["vals"],
+        fill: false,
+        borderColor: color,
+        backgroundColor: color,
       };
     });
 
     const chartJsData = {
-      "labels": years,
-      "datasets": chartJsDatasets,
+      labels: years,
+      datasets: chartJsDatasets,
     };
 
     const metricSelected = filterSet.getMetric();
     const metricUnits = {
-      "consumption": "MtCO2e / yr",
-      "sales": "mt / yr",
-      "population": "units",
+      consumption: "MtCO2e / yr",
+      sales: "mt / yr",
+      population: "units",
     }[metricSelected];
 
     const chartJsConfig = {
-      "type": "line",
-      "data": chartJsData,
-      "options": {
-        "scales": {
-          "y": {
-            "min": 0,
-            "title": {"text": metricUnits, "display": true},
+      type: "line",
+      data: chartJsData,
+      options: {
+        scales: {
+          y: {
+            min: 0,
+            title: {text: metricUnits, display: true},
           },
-          "x": {
-            "title": {"text": "Year", "display": true},
+          x: {
+            title: {text: "Year", display: true},
           },
         },
-        "plugins": {
-          "tooltip": {
-            "callbacks": {
-              "title": (x) => "Year " + x[0]["label"],
+        plugins: {
+          tooltip: {
+            callbacks: {
+              title: (x) => "Year " + x[0]["label"],
             },
           },
-          "legend": {
-            "display": false,
+          legend: {
+            display: false,
           },
         },
       },
@@ -549,7 +561,6 @@ class CenterChartPresenter {
     self._chart = new Chart(self._root, chartJsConfig);
   }
 }
-
 
 class SelectorTitlePresenter {
   constructor(root, changeCallback) {
@@ -575,12 +586,7 @@ class SelectorTitlePresenter {
     const scenarioDropdown = self._selection.querySelector(".scenario-select");
     const scenarioSelected = self._filterSet.getScenario();
     const scenarios = results.getScenarios();
-    self._updateDynamicDropdown(
-      scenarioDropdown,
-      scenarios,
-      scenarioSelected,
-      "All Simulations",
-    );
+    self._updateDynamicDropdown(scenarioDropdown, scenarios, scenarioSelected, "All Simulations");
 
     const applicationDropdown = self._selection.querySelector(".application-select");
     const applicationSelected = self._filterSet.getApplication();
@@ -595,12 +601,7 @@ class SelectorTitlePresenter {
     const substanceDropdown = self._selection.querySelector(".substance-select");
     const substanceSelected = self._filterSet.getSubstance();
     const substances = results.getSubstances(self._filterSet.getWithSubstance(null));
-    self._updateDynamicDropdown(
-      substanceDropdown,
-      substances,
-      substanceSelected,
-      "All Substances",
-    );
+    self._updateDynamicDropdown(substanceDropdown, substances, substanceSelected, "All Substances");
   }
 
   _updateSimpleDropdown(selection, value) {
@@ -617,11 +618,12 @@ class SelectorTitlePresenter {
 
     const d3Selection = d3.select(selection);
     d3Selection.html("");
-    d3Selection.selectAll("option")
+    d3Selection
+      .selectAll("option")
       .data(allValuesArray)
       .enter()
       .append("option")
-      .attr("value", (x) => allText === x ? "" : x)
+      .attr("value", (x) => (allText === x ? "" : x))
       .text((x) => x)
       .property("selected", (x) => {
         const nativelySelected = x === selectedValue;
@@ -657,6 +659,5 @@ class SelectorTitlePresenter {
     addListener(substanceDropdown, (filterSet, val) => filterSet.getWithSubstance(val));
   }
 }
-
 
 export {ResultsPresenter};
