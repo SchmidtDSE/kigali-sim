@@ -23,7 +23,9 @@ class CompileVisitor extends toolkit.QubecTalkVisitor {
     const raw = ctx.getText();
     const signMultiplier = raw.includes("-") ? -1 : 1;
     const bodyRawText = ctx.getChild(ctx.getChildCount() - 1).getText();
-    const bodyParsed = signMultiplier * parseFloat(bodyRawText);
+    const prefix = bodyRawText.startsWith(".") ? "0" : "";
+    const bodyRawTextPrefixed = prefix + bodyRawText;
+    const bodyParsed = signMultiplier * parseFloat(bodyRawTextPrefixed);
 
     return (engine) => bodyParsed;
   }
