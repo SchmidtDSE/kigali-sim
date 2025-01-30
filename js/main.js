@@ -6,6 +6,10 @@ import {UiEditorPresenter} from "ui_editor";
 import {UiTranslatorCompiler} from "ui_translator";
 
 const WHITESPACE_REGEX = new RegExp("^\\s*$");
+const NEW_FILE_MSG = [
+  "Starting a new file will clear your current work.",
+  "Do you want to to continue?",
+].join(" ");
 
 class ButtonPanelPresenter {
   constructor(root, onBuild) {
@@ -82,7 +86,7 @@ class MainPresenter {
     }
 
     self._onCodeChange();
-    self._setupLoadDialog();
+    self._setupFileButtons();
     self._setupWorkshopSample();
   }
 
@@ -196,9 +200,24 @@ class MainPresenter {
     self._onBuild(true);
   }
 
-  _setupLoadDialog() {
+  _setupFileButtons() {
     const self = this;
+
     const loadFileDialog = document.getElementById("load-file-dialog");
+
+    const setCode = (code) => {
+      self._codeEditorPresenter.setCode(code);
+      self._onCodeChange();
+      self._onBuild(true);
+    };
+
+    const newFileDialog = document.getElementById("new-file-button");
+    newFileDialog.addEventListener("click", (event) => {
+      event.preventDefault();
+      if (confirm(NEW_FILE_MSG)) {
+        setCode("");
+      }
+    });
 
     const loadFileButton = document.getElementById("load-file-button");
     loadFileButton.addEventListener("click", (event) => {
@@ -221,10 +240,9 @@ class MainPresenter {
         const reader = new FileReader();
         reader.readAsText(file, "UTF-8");
         reader.onload = (event) => {
-          self._codeEditorPresenter.setCode(event.target.result);
-          self._onCodeChange();
+          const newCode = event.target.result;
+          setCode(newCode);
           loadFileDialog.close();
-          self._onBuild(true);
         };
       }
     });
