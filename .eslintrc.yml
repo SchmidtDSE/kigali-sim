@@ -13,4 +13,11 @@ rules:
   no-unused-vars: off
   valid-jsdoc: off
   no-throw-literal: off
-  space-before-function-paren: ["error", "always"]
+  space-before-function-paren: [
+    "error",
+    {
+       "anonymous": "always",
+       "named": "never",
+       "asyncArrow": "always"
+    }
+  ]
