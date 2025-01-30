@@ -1,10 +1,31 @@
-entrypoint="index.html"
 hidden=[".config"]
-modules = ["java-graalvm22.3", "nodejs-22", "python-3.11", "web:v2-20230623-0b7a606"]
+modules = ["bash", "nodejs-20", "python-3.11", "web"]
+build = "bash support/install_deps.sh; bash support/make.sh"
+run = "python -m http.server"
 
 [nix]
-channel = "stable-23_11"
+channel = "stable-24_05"
 
 [deployment]
 publicDir = "/"
 deploymentTarget = "static"
+run = ["sh", "-c", "node index.js"]
+
+[[ports]]
+localPort = 8000
+externalPort = 80
+
+[workflows]
+
+[[workflows.workflow]]
+name = "Build"
+mode = "sequential"
+author = 35417383
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "bash support/install_deps.sh"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "bash support/make.sh"
