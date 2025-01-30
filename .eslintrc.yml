@@ -13,4 +13,4 @@ rules:
   no-unused-vars: off
   valid-jsdoc: off
   no-throw-literal: off
-  space-before-function-paren: always
+  space-before-function-paren: 0
