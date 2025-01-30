@@ -66,13 +66,13 @@ class UnitConverter {
     const destinationNumeratorUnits = destinationUnitPieces[0];
 
     const numeratorStrategy = {
-      kg: (x) => self._toKg(x),
-      mt: (x) => self._toMt(x),
-      unit: (x) => self._toUnits(x),
-      units: (x) => self._toUnits(x),
-      tCO2e: (x) => self._toConsumption(x),
-      year: (x) => self._toYears(x),
-      years: (x) => self._toYears(x),
+      "kg": (x) => self._toKg(x),
+      "mt": (x) => self._toMt(x),
+      "unit": (x) => self._toUnits(x),
+      "units": (x) => self._toUnits(x),
+      "tCO2e": (x) => self._toConsumption(x),
+      "year": (x) => self._toYears(x),
+      "years": (x) => self._toYears(x),
       "%": (x) => self._toPercent(x),
     }[destinationNumeratorUnits];
 

@@ -220,7 +220,7 @@ class MainPresenter {
       if (file) {
         const reader = new FileReader();
         reader.readAsText(file, "UTF-8");
-        reader.onload = function (event) {
+        reader.onload = (event) => {
           self._codeEditorPresenter.setCode(event.target.result);
           self._onCodeChange();
           loadFileDialog.close();

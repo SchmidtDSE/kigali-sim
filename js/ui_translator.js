@@ -8,18 +8,18 @@ import {EngineNumber} from "engine_number";
 import {YearMatcher} from "engine_state";
 
 const COMMAND_COMPATIBILITIES = {
-  change: "any",
+  "change": "any",
   "define var": "none",
-  retire: "any",
-  setVal: "any",
-  cap: "any",
-  floor: "any",
-  limit: "any",
+  "retire": "any",
+  "setVal": "any",
+  "cap": "any",
+  "floor": "any",
+  "limit": "any",
   "initial charge": "definition",
-  equals: "definition",
-  recharge: "definition",
-  recycle: "policy",
-  replace: "policy",
+  "equals": "definition",
+  "recharge": "definition",
+  "recycle": "policy",
+  "replace": "policy",
 };
 
 const toolkit = QubecTalk.getToolkit();
@@ -627,16 +627,16 @@ class SubstanceBuilder {
     const incompatiblePlace = needsToMoveToMod || needsToMoveToDefinition || noCompat;
 
     const strategy = {
-      change: (x) => self.addChange(x),
-      retire: (x) => self.setRetire(x),
-      setVal: (x) => self.addSetVal(x),
+      "change": (x) => self.addChange(x),
+      "retire": (x) => self.setRetire(x),
+      "setVal": (x) => self.addSetVal(x),
       "initial charge": (x) => self.addInitialCharge(x),
-      recharge: (x) => self.setRecharge(x),
-      equals: (x) => self.setEquals(x),
-      recycle: (x) => self.addRecycle(x),
-      cap: (x) => self.addLimit(x),
-      floor: (x) => self.addLimit(x),
-      replace: (x) => self.addReplace(x),
+      "recharge": (x) => self.setRecharge(x),
+      "equals": (x) => self.setEquals(x),
+      "recycle": (x) => self.addRecycle(x),
+      "cap": (x) => self.addLimit(x),
+      "floor": (x) => self.addLimit(x),
+      "replace": (x) => self.addReplace(x),
     }[commandType];
 
     if (incompatiblePlace) {

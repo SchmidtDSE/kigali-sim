@@ -7,7 +7,7 @@ parserOptions:
   sourceType: module
 rules:
   indent: [error, 2]
-  quotes: [error, double]
+  quotes: ["error", "double", { "avoidEscape": true }]
   max-len: [error, {code: 100}]
   require-jsdoc: off
   no-unused-vars: off
