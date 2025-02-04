@@ -1,5 +1,14 @@
+/**
+ * Presenters and logic to visualize engine result.
+ *
+ * @license BSD, see LICENSE.md.
+ */
 import {FilterSet} from "report_data";
 
+/**
+ * Array of colors used for visualizations
+ * @type {string[]}
+ */
 const COLORS = [
   "#a6cee3",
   "#1f78b4",
@@ -11,8 +20,20 @@ const COLORS = [
   "#A0A0A0",
 ];
 
+/**
+ * Flag to allow an "All" option in filters to make it easy to return to a
+ * default state.
+ *
+ * @type {boolean}
+ */
 const ALLOW_REDUNDANT_ALL = true;
 
+/**
+ * Get a color from the predefined color palette.
+ *
+ * @param {number} i - Index into color array.
+ * @returns {string} Color hex code.
+ */
 function getColor(i) {
   if (i >= COLORS.length) {
     return "#333";
@@ -21,7 +42,15 @@ function getColor(i) {
   }
 }
 
+/**
+ * Main presenter class for displaying simulation results.
+ */
 class ResultsPresenter {
+  /**
+   * Create a new ResultsPresenter.
+   *
+   * @param {HTMLElement} root - Root DOM element for results display
+   */
   constructor(root) {
     const self = this;
     self._root = root;
@@ -43,11 +72,19 @@ class ResultsPresenter {
     self.hide();
   }
 
+  /**
+   * Hide the results display.
+   */
   hide() {
     const self = this;
     self._root.style.display = "none";
   }
 
+  /**
+   * Show simulation results.
+   *
+   * @param {Object} results - Results data to display.
+   */
   showResults(results) {
     const self = this;
     self._root.style.display = "block";
@@ -55,12 +92,23 @@ class ResultsPresenter {
     self._updateInternally();
   }
 
+  /**
+   * Handle filter set updates.
+   *
+   * @param {FilterSet} newFilterSet - Updated filter settings.
+   * @private
+   */
   _onUpdateFilterSet(newFilterSet) {
     const self = this;
     self._filterSet = newFilterSet;
     self._updateInternally();
   }
 
+  /**
+   * Update all sub-presenters with current data.
+   *
+   * @private
+   */
   _updateInternally() {
     const self = this;
 
@@ -75,13 +123,26 @@ class ResultsPresenter {
   }
 }
 
+/**
+ * Presenter for configuring and executing results exports.
+ */
 class ExportPresenter {
+  /**
+   * Create a new ExportPresenter.
+   *
+   * @param {HTMLElement} root - Root DOM element.
+   */
   constructor(root) {
     const self = this;
     self._root = root;
   }
 
-  showResults(results, filterSet) {
+  /**
+   * Update export data with new results.
+   *
+   * @param {Object} results - Results data to export.
+   */
+  showResults(results) {
     const self = this;
     const rawData = results.getRawData();
     const nested = rawData.map((trial) => {
@@ -159,7 +220,19 @@ class ExportPresenter {
   }
 }
 
+/**
+ * Presenter for scorecard metrics display.
+ *
+ * Presenter for scorecard metrics display that, in additoin to optionally
+ * showing a high level metric, also allows for changing filter values.
+ */
 class ScorecardPresenter {
+  /**
+   * Create a new ScorecardPresenter.
+   *
+   * @param {HTMLElement} root - Root DOM element.
+   * @param {Function} onUpdateFilterSet - Callback for filter updates.
+   */
   constructor(root, onUpdateFilterSet) {
     const self = this;
     self._root = root;
@@ -168,6 +241,12 @@ class ScorecardPresenter {
     self._registerEventListeners();
   }
 
+  /**
+   * Update scorecards with new results data.
+   *
+   * @param {Object} results - Results data to display.
+   * @param {FilterSet} filterSet - Current filter settings.
+   */
   showResults(results, filterSet) {
     const self = this;
     self._filterSet = filterSet;
@@ -205,6 +284,18 @@ class ScorecardPresenter {
     self._updateCard(equipmentScorecard, millionEqipment, currentYear, equipmentSelected, hideVal);
   }
 
+  /**
+   * Update an individual scorecard.
+   *
+   * @param {HTMLElement} scorecard - Scorecard DOM element.
+   * @param {string|number} value - Value to display.
+   * @param {number} currentYear - Current year.
+   * @param {boolean} selected - Flag indicating if the card is selected.
+   * @param {boolean} hideVal - Flag indicating if the value display should be
+   *     hidden. True if a value should be displayed and false otherwise which
+   *     may be appropriate if a single summary value cannot be generated.
+   * @private
+   */
   _updateCard(scorecard, value, currentYear, selected, hideVal) {
     const self = this;
     self._setText(scorecard.querySelector(".value"), value);
@@ -230,6 +321,13 @@ class ScorecardPresenter {
     d3.select(scorecard).select(".metric-radio").property("checked", selected);
   }
 
+  /**
+   * Set text content of an element.
+   *
+   * @param {HTMLElement} selection - Element to update.
+   * @param {string} value - New text value.
+   * @private
+   */
   _setText(selection, value) {
     const self = this;
     selection.innerHTML = "";
@@ -237,6 +335,11 @@ class ScorecardPresenter {
     selection.appendChild(newTextNode);
   }
 
+  /**
+   * Register event listeners for scorecard interactions.
+   *
+   * @private
+   */
   _registerEventListeners() {
     const self = this;
 
@@ -258,7 +361,19 @@ class ScorecardPresenter {
   }
 }
 
+/**
+ * Presenter for dimension cards display.
+ *
+ * Presenter which shows the dimensions selectors with embedded bar charts that
+ * allow for changing of filters.
+ */
 class DimensionCardPresenter {
+  /**
+   * Create a new DimensionCardPresenter.
+   *
+   * @param {HTMLElement} root - Root DOM element.
+   * @param {Function} onUpdateFilterSet - Callback for filter updates.
+   */
   constructor(root, onUpdateFilterSet) {
     const self = this;
     self._root = root;
@@ -267,6 +382,11 @@ class DimensionCardPresenter {
     self._registerEventListeners();
   }
 
+  /**
+   * Update dimension cards with new results
+   * @param {Object} results - Results data to display
+   * @param {FilterSet} filterSet - Current filter settings
+   */
   showResults(results, filterSet) {
     const self = this;
     self._filterSet = filterSet;
@@ -349,6 +469,22 @@ class DimensionCardPresenter {
     );
   }
 
+  /**
+   * Update an individual dimension card.
+   *
+   * @param {string} label - Card identifier.
+   * @param {HTMLElement} card - Card DOM element.
+   * @param {Set<string>} identifiers - Set of dimension values.
+   * @param {boolean} selected - Whether card is selected.
+   * @param {string} subSelection - Currently selected value.
+   * @param {Function} subFilterSetBuilder - Filter builder function.
+   * @param {boolean} addAll - Whether to add "All" option. True if should be
+   *     added and false otherwise.
+   * @param {Function} valueGetter - Function to get display value.
+   * @param {string} suffix - Value suffix like for units.
+   * @param {Set<string>} scenarios - Available scenarios.
+   * @private
+   */
   _updateCard(
     label,
     card,
@@ -360,7 +496,6 @@ class DimensionCardPresenter {
     valueGetter,
     suffix,
     scenarios,
-    selectedYear,
   ) {
     const self = this;
 
@@ -445,6 +580,11 @@ class DimensionCardPresenter {
     }
   }
 
+  /**
+   * Register event listeners for dimension card interactions.
+   *
+   * @private
+   */
   _registerEventListeners() {
     const self = this;
 
@@ -466,13 +606,30 @@ class DimensionCardPresenter {
   }
 }
 
+/**
+ * Presenter for the central chart visualization.
+ *
+ * Presenter for the central chart visualization which is currently backed by
+ * Chartjs.
+ */
 class CenterChartPresenter {
+  /**
+   * Create a new CenterChartPresenter.
+   *
+   * @param {HTMLElement} root - Root DOM element
+   */
   constructor(root) {
     const self = this;
     self._root = root;
     self._chart = null;
   }
 
+  /**
+   * Update chart with new results.
+   *
+   * @param {Object} results - Results data to display.
+   * @param {FilterSet} filterSet - Current filter settings.
+   */
   showResults(results, filterSet) {
     const self = this;
 
@@ -562,7 +719,19 @@ class CenterChartPresenter {
   }
 }
 
+/**
+ * Presenter for selector title display.
+ *
+ * Presenter for selector title display using a fill in the blank-like
+ * approach.
+ */
 class SelectorTitlePresenter {
+  /**
+   * Create a new SelectorTitlePresenter.
+   *
+   * @param {HTMLElement} root - Root DOM element.
+   * @param {Function} changeCallback - Callback for selection changes.
+   */
   constructor(root, changeCallback) {
     const self = this;
     self._selection = root;
@@ -571,6 +740,12 @@ class SelectorTitlePresenter {
     self._setupEventListeners();
   }
 
+  /**
+   * Update selector title with new results.
+   *
+   * @param {Object} results - Results data to display.
+   * @param {FilterSet} filterSet - Current filter settings.
+   */
   showResults(results, filterSet) {
     const self = this;
     self._filterSet = filterSet;
@@ -604,11 +779,27 @@ class SelectorTitlePresenter {
     self._updateDynamicDropdown(substanceDropdown, substances, substanceSelected, "All Substances");
   }
 
+  /**
+   * Update a simple dropdown with fixed options.
+   *
+   * @param {HTMLElement} selection - Dropdown element.
+   * @param {string} value - Selected value.
+   * @private
+   */
   _updateSimpleDropdown(selection, value) {
     const self = this;
     selection.value = value;
   }
 
+  /**
+   * Update a dynamic dropdown with variable options.
+   *
+   * @param {HTMLElement} selection - Dropdown element.
+   * @param {Set<string>} allValues - Available values.
+   * @param {string} selectedValue - Currently selected value.
+   * @param {string} allText - Text for "All" option.
+   * @private
+   */
   _updateDynamicDropdown(selection, allValues, selectedValue, allText) {
     const self = this;
 
@@ -632,6 +823,11 @@ class SelectorTitlePresenter {
       });
   }
 
+  /**
+   * Set up event listeners for selector dropdowns.
+   *
+   * @private
+   */
   _setupEventListeners() {
     const self = this;
 

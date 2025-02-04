@@ -1,4 +1,17 @@
+/**
+ * Presenter class for handling code editor functionality.
+ *
+ * @license BSD
+ */
+
 class CodeEditorPresenter {
+  /**
+   * Creates a new CodeEditorPresenter instance
+   *
+   * @param {HTMLElement} root - The root element containing the editor.
+   * @param {Function} onChange - Callback function triggered when editor
+   *     content changes.
+   */
   constructor(root, onChange) {
     const self = this;
     self._root = root;
@@ -9,6 +22,11 @@ class CodeEditorPresenter {
     self._initEditor();
   }
 
+  /**
+   * Force a redraw of the editor.
+   *
+   * Force a redraw of the editor, pushing the request into the event queue.
+   */
   forceUpdate() {
     const self = this;
     setTimeout(() => {
@@ -16,17 +34,32 @@ class CodeEditorPresenter {
     }, 10);
   }
 
+  /**
+   * Gets the current code in the editor.
+   *
+   * @returns {string} The current editor content.
+   */
   getCode() {
     const self = this;
     return self._editor.getValue();
   }
 
+  /**
+   * Sets new code content in the editor
+   *
+   * @param {string} code - The code to set in the editor.
+   */
   setCode(code) {
     const self = this;
     self._editor.getSession().setValue(code, 1);
     self._onChange();
   }
 
+  /**
+   * Display an error message.
+   *
+   * @param {string} error - The error message to display.
+   */
   showError(error) {
     const self = this;
     self._errorDisplay.innerHTML = "";
@@ -37,11 +70,19 @@ class CodeEditorPresenter {
     self._errorDisplay.style.display = "block";
   }
 
+  /**
+   * Hides the error display
+   */
   hideError() {
     const self = this;
     self._errorDisplay.style.display = "none";
   }
 
+  /**
+   * Initializes the Ace editor.
+   *
+   * @private
+   */
   _initEditor() {
     const self = this;
 
@@ -70,6 +111,12 @@ class CodeEditorPresenter {
     ace.config.loadModule("ace/ext/searchbox");
   }
 
+  /**
+   * Gets the Ace editor instance.
+   *
+   * @private
+   * @returns {Object} The Ace editor instance
+   */
   _getAce() {
     const self = this;
 

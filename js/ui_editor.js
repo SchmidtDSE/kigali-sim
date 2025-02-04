@@ -1,3 +1,8 @@
+/**
+ * Presenters and logic for the UI-based authoring experience.
+ *
+ * @license BSD, see LICENSE.md.
+ */
 import {EngineNumber} from "engine_number";
 
 import {YearMatcher} from "engine_state";
@@ -13,6 +18,11 @@ import {
   SubstanceBuilder,
 } from "ui_translator";
 
+/**
+ * Updates the visibility of selector elements based on selected duration type.
+ *
+ * @param {HTMLElement} dateSelector - The date selector element to update.
+ */
 function updateDurationSelector(dateSelector) {
   const makeVisibilityCallback = (showStart, showEnd) => {
     return () => {
@@ -45,6 +55,11 @@ function updateDurationSelector(dateSelector) {
   refreshVisibility(dateSelector);
 }
 
+/**
+ * Initializes a duration selector.
+ *
+ * @param {HTMLElement} newDiv - The new element to set up duration selector for.
+ */
 function setupDurationSelector(newDiv) {
   const dateSelectors = Array.of(...newDiv.querySelectorAll(".duration-subcomponent"));
   dateSelectors.forEach((dateSelector) => {
@@ -55,6 +70,14 @@ function setupDurationSelector(newDiv) {
   });
 }
 
+/**
+ * Sets up a list button with add/delete functionality.
+ *
+ * @param {HTMLElement} button - Button element to set up.
+ * @param {HTMLElement} targetList - List element to add items to.
+ * @param {string} templateId - ID of template to use for new items.
+ * @param {Function} initUiCallback - Callback to invoke when item added.
+ */
 function setupListButton(button, targetList, templateId, initUiCallback) {
   button.addEventListener("click", (event) => {
     event.preventDefault();
@@ -76,21 +99,49 @@ function setupListButton(button, targetList, templateId, initUiCallback) {
   });
 }
 
+/**
+ * Sets a form field value with fallback to default.
+ *
+ * @param {HTMLElement} selection - Form field element.
+ * @param {Object} source - Source object to get value from.
+ * @param {*} defaultValue - Default value if source is null.
+ * @param {Function} strategy - Function to extract value from source.
+ */
 function setFieldValue(selection, source, defaultValue, strategy) {
   const newValue = source === null ? null : strategy(source);
   const valueOrDefault = newValue === null ? defaultValue : newValue;
   selection.value = valueOrDefault;
 }
 
+/**
+ * Gets raw value from a form field.
+ *
+ * @param {HTMLElement} selection - Form field to get value from.
+ * @returns {string} The field's value.
+ */
 function getFieldValue(selection) {
   return selection.value;
 }
 
+/**
+ * Gets sanitized value from a form field, removing quotes and commas.
+ *
+ * @param {HTMLElement} selection - Form field to get sanitized value from.
+ * @returns {string} Sanitized field value.
+ */
 function getSanitizedFieldValue(selection) {
   const valueRaw = getFieldValue(selection);
   return valueRaw.replaceAll('"', "").replaceAll(",", "");
 }
 
+/**
+ * Sets up a list input with template-based items.
+ *
+ * @param {HTMLElement} listSelection - Container element for list.
+ * @param {string} itemTemplate - HTML template for list items.
+ * @param {Array} items - Array of items to populate list.
+ * @param {Function} uiInit - Callback to initialize each item's UI.
+ */
 function setListInput(listSelection, itemTemplate, items, uiInit) {
   listSelection.innerHTML = "";
   const addItem = (item) => {
@@ -109,11 +160,27 @@ function setListInput(listSelection, itemTemplate, items, uiInit) {
   items.forEach(addItem);
 }
 
+/**
+ * Read the current items in a list.
+ *
+ * @param {HTMLElement} selection - The HTML element containing list items.
+ * @param {Function} itemReadStrategy - A function to process each list item.
+ * @returns {Array} An array of processed items returned by the strategy.
+ */
 function getListInput(selection, itemReadStrategy) {
   const dialogListItems = Array.of(...selection.querySelectorAll(".dialog-list-item"));
   return dialogListItems.map(itemReadStrategy);
 }
 
+/**
+ * Sets a value/units pair for engine number inputs.
+ *
+ * @param {HTMLElement} valSelection - Value input element.
+ * @param {HTMLElement} unitsSelection - Units select element.
+ * @param {Object} source - Source object for values.
+ * @param {EngineNumber} defaultValue - Default engine number.
+ * @param {Function} strategy - Function to extract engine number from source.
+ */
 function setEngineNumberValue(valSelection, unitsSelection, source, defaultValue, strategy) {
   const newValue = source === null ? null : strategy(source);
   const valueOrDefault = newValue === null ? defaultValue : newValue;
@@ -121,12 +188,29 @@ function setEngineNumberValue(valSelection, unitsSelection, source, defaultValue
   unitsSelection.value = valueOrDefault.getUnits();
 }
 
+/**
+ * Gets an engine number from value/units form fields.
+ *
+ * @param {HTMLElement} valSelection - Value input element.
+ * @param {HTMLElement} unitsSelection - Units select element.
+ * @returns {EngineNumber} Combined engine number object.
+ */
 function getEngineNumberValue(valSelection, unitsSelection) {
   const value = valSelection.value;
   const units = unitsSelection.value;
   return new EngineNumber(value, units);
 }
 
+/**
+ * Sets the state of a duration selection UI widget.
+ *
+ * Set the duration for shown within a duration selection UI widget to match
+ * that of a given command. If the command is null, it uses the default value.
+ *
+ * @param {HTMLElement} selection - The selection element containing duration-related inputs.
+ * @param {Object} command - The command object from which the duration is extracted.
+ * @param {YearMatcher} defaultVal - The default duration value if the command is null.
+ */
 function setDuring(selection, command, defaultVal) {
   const effectiveVal = command === null ? defaultVal : command.getDuration();
   const durationTypeInput = selection.querySelector(".duration-type-input");
@@ -163,7 +247,20 @@ function setDuring(selection, command, defaultVal) {
   updateDurationSelector(selection);
 }
 
+/**
+ * Manages the UI for listing and editing applications.
+ *
+ * Manages the UI for listing and editing applications where these refer to
+ * collections of substances based on use like commercial refrigeration.
+ */
 class ApplicationsListPresenter {
+  /**
+   * Creates a new ApplicationsListPresenter.
+   *
+   * @param {HTMLElement} root - Root DOM element for the applications list.
+   * @param {Function} getCodeObj - Callback to get the current code object.
+   * @param {Function} onCodeObjUpdate - Callback when code object is updated.
+   */
   constructor(root, getCodeObj, onCodeObjUpdate) {
     const self = this;
     self._root = root;
@@ -175,11 +272,23 @@ class ApplicationsListPresenter {
     self.refresh();
   }
 
+  /**
+   * Refreshes the applications list display.
+   *
+   * @param {Object} codeObj - Current code object.
+   */
   refresh(codeObj) {
     const self = this;
     self._refreshList(codeObj);
   }
 
+  /**
+   * Updates the applications list UI with current data.
+   *
+   * @param {Object} codeObj - Current code object from which to extract
+   *     applications.
+   * @private
+   */
   _refreshList(codeObj) {
     const self = this;
     const appNames = self._getAppNames();
@@ -226,6 +335,11 @@ class ApplicationsListPresenter {
       .attr("aria-label", (x) => "delete " + x);
   }
 
+  /**
+   * Sets up the dialog window for adding/editing applications.
+   *
+   * @private
+   */
   _setupDialog() {
     const self = this;
     const addLink = self._root.querySelector(".add-link");
@@ -268,6 +382,13 @@ class ApplicationsListPresenter {
     });
   }
 
+  /**
+   * Shows the dialog for adding or editing an application.
+   *
+   * @param {string|null} name - Name of application to edit. Pass null if this
+   *     is for a new application.
+   * @private
+   */
   _showDialogFor(name) {
     const self = this;
     self._editingName = name;
@@ -283,6 +404,12 @@ class ApplicationsListPresenter {
     self._dialog.showModal();
   }
 
+  /**
+   * Gets list of all application names.
+   *
+   * @returns {string[]} Array of application names.
+   * @private
+   */
   _getAppNames() {
     const self = this;
     const codeObj = self._getCodeObj();
@@ -292,7 +419,21 @@ class ApplicationsListPresenter {
   }
 }
 
+/**
+ * Manages the UI for listing and editing consumption logic.
+ *
+ * Manages the UI for listing and editing consumption logic where substances
+ * are consumed for different applications.
+ */
 class ConsumptionListPresenter {
+  /**
+   * Creates a new ConsumptionListPresenter.
+   *
+   * @param {HTMLElement} root - The root DOM element for the consumption list.
+   * @param {Function} getCodeObj - Callback to get the current code object.
+   * @param {Function} onCodeObjUpdate - Callback when the code object is
+   *     updated.
+   */
   constructor(root, getCodeObj, onCodeObjUpdate) {
     const self = this;
     self._root = root;
@@ -304,21 +445,38 @@ class ConsumptionListPresenter {
     self.refresh();
   }
 
+  /**
+   * Visually and functionally enables the consumption list interface.
+   */
   enable() {
     const self = this;
     self._root.classList.remove("inactive");
   }
 
+  /**
+   * Visually and functionally disables the consumption list interface.
+   */
   disable() {
     const self = this;
     self._root.classList.add("inactive");
   }
 
+  /**
+   * Updates the consumption list display with new data.
+   *
+   * @param {Object} codeObj - Current code object to display.
+   */
   refresh(codeObj) {
     const self = this;
     self._refreshList(codeObj);
   }
 
+  /**
+   * Refreshes the consumption list display.
+   *
+   * @param {Object} codeObj - The current code object.
+   * @private
+   */
   _refreshList(codeObj) {
     const self = this;
     const consumptionNames = self._getConsumptionNames();
@@ -369,6 +527,14 @@ class ConsumptionListPresenter {
       .attr("aria-label", (x) => "delete " + x);
   }
 
+  /**
+   * Sets up the dialog for adding/editing consumption records.
+   *
+   * Sets up the dialog for adding/editing consumption records, initializing
+   * tabs and event handlers.
+   *
+   * @private
+   */
   _setupDialog() {
     const self = this;
 
@@ -408,6 +574,13 @@ class ConsumptionListPresenter {
     );
   }
 
+  /**
+   * Shows the dialog for editing a consumption record.
+   *
+   * @param {string|null} name - Name of consumption to edit. Pass null for a
+   *     new record.
+   * @private
+   */
   _showDialogFor(name) {
     const self = this;
     self._editingName = name;
@@ -538,6 +711,12 @@ class ConsumptionListPresenter {
     self._dialog.showModal();
   }
 
+  /**
+   * Gets list of all consuming substances.
+   *
+   * @returns {string[]} Array of substances.
+   * @private
+   */
   _getConsumptionNames() {
     const self = this;
     const codeObj = self._getCodeObj();
@@ -554,6 +733,11 @@ class ConsumptionListPresenter {
     return consumptions;
   }
 
+  /**
+   * Saves the current consumption data.
+   *
+   * @private
+   */
   _save() {
     const self = this;
     const substance = self._parseObj();
@@ -576,6 +760,12 @@ class ConsumptionListPresenter {
     self._onCodeObjUpdate(codeObj);
   }
 
+  /**
+   * Parses the dialog form data into a substance object.
+   *
+   * @returns {Object} The parsed substance object.
+   * @private
+   */
   _parseObj() {
     const self = this;
 
@@ -648,7 +838,20 @@ class ConsumptionListPresenter {
   }
 }
 
+/**
+ * Manages the UI for listing and editing policies.
+ *
+ * Manages the UI for listing and editing policies that define recycling,
+ * replacement, level changes, limits, etc on substances.
+ */
 class PolicyListPresenter {
+  /**
+   * Creates a new PolicyListPresenter.
+   *
+   * @param {HTMLElement} root - The root DOM element for the policy list.
+   * @param {Function} getCodeObj - Callback to get the current code object.
+   * @param {Function} onCodeObjUpdate - Callback when the code object is updated.
+   */
   constructor(root, getCodeObj, onCodeObjUpdate) {
     const self = this;
     self._root = root;
@@ -660,21 +863,38 @@ class PolicyListPresenter {
     self.refresh();
   }
 
+  /**
+   * Visually and functionally enables the policy list interface.
+   */
   enable() {
     const self = this;
     self._root.classList.remove("inactive");
   }
 
+  /**
+   * Visually and functionally sisables the policy list interface.
+   */
   disable() {
     const self = this;
     self._root.classList.add("inactive");
   }
 
+  /**
+   * Updates the policy list to visualize new policies.
+   *
+   * @param {Object} codeObj - Current code object to display.
+   */
   refresh(codeObj) {
     const self = this;
     self._refreshList(codeObj);
   }
 
+  /**
+   * Updates the policy list UI with current logic.
+   *
+   * @param {Object} codeObj - Current code object from which to extract policies.
+   * @private
+   */
   _refreshList(codeObj) {
     const self = this;
     const policyNames = self._getPolicyNames();
@@ -721,6 +941,14 @@ class PolicyListPresenter {
       .attr("aria-label", (x) => "delete " + x);
   }
 
+  /**
+   * Sets up the dialog for adding/editing policies.
+   *
+   * Sets up the dialog for adding/editing policies, initializing tabs and
+   * event handlers for recycling, replacement, level changes, limits, etc.
+   *
+   * @private
+   */
   _setupDialog() {
     const self = this;
 
@@ -775,6 +1003,12 @@ class PolicyListPresenter {
     );
   }
 
+  /**
+   * Shows the dialog for adding or editing a policy.
+   *
+   * @param {string|null} name - Name of policy to edit, or null for new policy.
+   * @private
+   */
   _showDialogFor(name) {
     const self = this;
     self._editingName = name;
@@ -865,6 +1099,12 @@ class PolicyListPresenter {
     self._dialog.showModal();
   }
 
+  /**
+   * Gets list of all policy names.
+   *
+   * @returns {string[]} Array of policy names.
+   * @private
+   */
   _getPolicyNames() {
     const self = this;
     const codeObj = self._getCodeObj();
@@ -872,6 +1112,12 @@ class PolicyListPresenter {
     return policies.map((x) => x.getName());
   }
 
+  /**
+   * Parses the dialog form data into a policy object.
+   *
+   * @returns {Object} The parsed policy object.
+   * @private
+   */
   _parseObj() {
     const self = this;
 
@@ -913,6 +1159,11 @@ class PolicyListPresenter {
     return policy;
   }
 
+  /**
+   * Saves the current policy data.
+   *
+   * @private
+   */
   _save() {
     const self = this;
     const policy = self._parseObj();
@@ -922,7 +1173,20 @@ class PolicyListPresenter {
   }
 }
 
+/**
+ * Manages the UI for listing and editing simulation situations.
+ *
+ * Manages the UI for listing and editing simulations. These are individual
+ * situations which include their names, start and end years, and policies.
+ */
 class SimulationListPresenter {
+  /**
+   * Creates a new SimulationListPresenter.
+   *
+   * @param {HTMLElement} root - The root DOM element for the simulation list.
+   * @param {Function} getCodeObj - Callback to get the current code object.
+   * @param {Function} onCodeObjUpdate - Callback when the code object is updated.
+   */
   constructor(root, getCodeObj, onCodeObjUpdate) {
     const self = this;
     self._root = root;
@@ -934,21 +1198,38 @@ class SimulationListPresenter {
     self.refresh();
   }
 
+  /**
+   * Visually and functionally enables the simulation list interface.
+   */
   enable() {
     const self = this;
     self._root.classList.remove("inactive");
   }
 
+  /**
+   * Visually and functionally disables the simulation list interface.
+   */
   disable() {
     const self = this;
     self._root.classList.add("inactive");
   }
 
+  /**
+   * Refreshes the simulation list display.
+   *
+   * @param {Object} codeObj - Current code object to display.
+   */
   refresh(codeObj) {
     const self = this;
     self._refreshList(codeObj);
   }
 
+  /**
+   * Refreshes the simulation list display.
+   *
+   * @param {Object} codeObj - The current code object.
+   * @private
+   */
   _refreshList(codeObj) {
     const self = this;
     const simulationNames = self._getSimulationNames();
@@ -995,6 +1276,14 @@ class SimulationListPresenter {
       .attr("aria-label", (x) => "delete " + x);
   }
 
+  /**
+   * Sets up the dialog for adding/editing simulations.
+   *
+   * Sets up the dialog for adding/editing simulation situations which are
+   * named combinations of stackable scenarios (policies) on top the baseline.
+   *
+   * @private
+   */
   _setupDialog() {
     const self = this;
 
@@ -1018,6 +1307,13 @@ class SimulationListPresenter {
     });
   }
 
+  /**
+   * Shows the dialog for adding or editing a simulation.
+   *
+   * @param {string|null} name - Name of simulation to edit. Pass null for new
+   *     simulation.
+   * @private
+   */
   _showDialogFor(name) {
     const self = this;
     self._editingName = name;
@@ -1071,6 +1367,12 @@ class SimulationListPresenter {
     self._dialog.showModal();
   }
 
+  /**
+   * Gets list of all simulation names.
+   *
+   * @returns {string[]} Array of simulation names.
+   * @private
+   */
   _getSimulationNames() {
     const self = this;
     const codeObj = self._getCodeObj();
@@ -1078,6 +1380,11 @@ class SimulationListPresenter {
     return scenarios.map((x) => x.getName());
   }
 
+  /**
+   * Saves the current simulation data.
+   *
+   * @private
+   */
   _save() {
     const self = this;
     const scenario = self._parseObj();
@@ -1086,6 +1393,12 @@ class SimulationListPresenter {
     self._onCodeObjUpdate(codeObj);
   }
 
+  /**
+   * Parses the dialog form data into a simulation scenario object.
+   *
+   * @returns {Object} The parsed simulation scenario object.
+   * @private
+   */
   _parseObj() {
     const self = this;
 
@@ -1103,7 +1416,24 @@ class SimulationListPresenter {
   }
 }
 
+/**
+ * Manages the UI editor interface.
+ *
+ * Central presenter which coordinates between code editing and visual editing
+ * interfaces, managing tabs and content display with their respective
+ * sub-presenters.
+ */
 class UiEditorPresenter {
+  /**
+   * Creates a new UiEditorPresenter.
+   *
+   * @param {boolean} startOnCode - Whether to start in code view.
+   * @param {HTMLElement} tabRoot - Root element for editor tabs.
+   * @param {HTMLElement} contentsRoot - Root element for editor contents.
+   * @param {Function} getCodeAsObj - Callback to get current code object.
+   * @param {Function} onCodeObjUpdate - Callback when code object updates.
+   * @param {Function} onTabChange - Callback when active tab changes.
+   */
   constructor(startOnCode, tabRoot, contentsRoot, getCodeAsObj, onCodeObjUpdate, onTabChange) {
     const self = this;
 
@@ -1151,11 +1481,19 @@ class UiEditorPresenter {
     }
   }
 
+  /**
+   * Shows the code editor interface.
+   */
   showCode() {
     const self = this;
     self._tabs.toggle("#code-editor-pane");
   }
 
+  /**
+   * Refreshes the UI with new code object data.
+   *
+   * @param {Object} codeObj - The new code object to display.
+   */
   refresh(codeObj) {
     const self = this;
 
@@ -1176,11 +1514,21 @@ class UiEditorPresenter {
     }
   }
 
+  /**
+   * Forces update with new code object.
+   *
+   * @param {Object} codeObj - The code object to force update with.
+   */
   forceCodeObj(codeObj) {
     const self = this;
     self._onCodeObjUpdate(codeObj);
   }
 
+  /**
+   * Sets up event listeners for advanced editor links.
+   *
+   * @private
+   */
   _setupAdvancedLinks() {
     const self = this;
     const links = Array.of(...self._contentsSelection.querySelectorAll(".advanced-editor-link"));
@@ -1192,11 +1540,22 @@ class UiEditorPresenter {
     );
   }
 
+  /**
+   * Gets the current code object.
+   *
+   * @returns {Object} The current code object.
+   * @private
+   */
   _getCodeAsObj() {
     const self = this;
     return self._codeObj;
   }
 
+  /**
+   * Initializes the code object from current state.
+   *
+   * @private
+   */
   _initCodeObj() {
     const self = this;
     const result = self._getCodeAsObjInner();
@@ -1215,18 +1574,34 @@ class UiEditorPresenter {
     }
   }
 
+  /**
+   * Enables the basic panel interface.
+   *
+   * @private
+   */
   _enableBasicPanel() {
     const self = this;
     self._contentsSelection.querySelector(".available-contents").style.display = "block";
     self._contentsSelection.querySelector(".not-available-contents").style.display = "none";
   }
 
+  /**
+   * Disables the basic panel interface.
+   *
+   * @private
+   */
   _disableBasicPanel() {
     const self = this;
     self._contentsSelection.querySelector(".available-contents").style.display = "none";
     self._contentsSelection.querySelector(".not-available-contents").style.display = "block";
   }
 
+  /**
+   * Handles code object updates.
+   *
+   * @param {Object} codeObj - The updated code object.
+   * @private
+   */
   _onCodeObjUpdate(codeObj) {
     const self = this;
     self._codeObj = codeObj;
@@ -1249,6 +1624,12 @@ class UiEditorPresenter {
   }
 }
 
+/**
+ * Initializes a set command UI element.
+ *
+ * @param {Object} itemObj - The command object to initialize from.
+ * @param {HTMLElement} root - The root element containing the UI.
+ */
 function initSetCommandUi(itemObj, root) {
   setFieldValue(root.querySelector(".set-target-input"), itemObj, "manufacture", (x) =>
     x.getTarget(),
@@ -1263,6 +1644,12 @@ function initSetCommandUi(itemObj, root) {
   setDuring(root.querySelector(".duration-subcomponent"), itemObj, new YearMatcher(1, 1));
 }
 
+/**
+ * Reads values from a set command UI element.
+ *
+ * @param {HTMLElement} root - The root element containing the UI.
+ * @returns {Command} A new Command object with the UI values.
+ */
 function readSetCommandUi(root) {
   const target = getFieldValue(root.querySelector(".set-target-input"));
   const amount = getEngineNumberValue(
@@ -1273,6 +1660,12 @@ function readSetCommandUi(root) {
   return new Command("setVal", target, amount, duration);
 }
 
+/**
+ * Initializes a change command UI element.
+ *
+ * @param {Object} itemObj - The command object to initialize from.
+ * @param {HTMLElement} root - The root element containing the UI.
+ */
 function initChangeCommandUi(itemObj, root) {
   setFieldValue(root.querySelector(".change-target-input"), itemObj, "manufacture", (x) =>
     x.getTarget(),
@@ -1297,6 +1690,12 @@ function initChangeCommandUi(itemObj, root) {
   setDuring(root.querySelector(".duration-subcomponent"), itemObj, new YearMatcher(2, 10));
 }
 
+/**
+ * Reads values from a change command UI element.
+ *
+ * @param {HTMLElement} root - The root element containing the UI.
+ * @returns {Command} A new Command object with the UI values.
+ */
 function readChangeCommandUi(root) {
   const target = getFieldValue(root.querySelector(".change-target-input"));
   const invert = getFieldValue(root.querySelector(".change-sign-input")) === "-";
@@ -1308,6 +1707,13 @@ function readChangeCommandUi(root) {
   return new Command("change", target, amountWithUnits, duration);
 }
 
+/**
+ * Initializes a limit command UI widget.
+ *
+ * @param {Object} itemObj - The command object to initialize from.
+ * @param {HTMLElement} root - The root element containing the UI.
+ * @param {Object} codeObj - The code object containing available substances.
+ */
 function initLimitCommandUi(itemObj, root, codeObj) {
   const substances = codeObj.getSubstances();
   const substanceNames = substances.map((x) => x.getName());
@@ -1336,6 +1742,12 @@ function initLimitCommandUi(itemObj, root, codeObj) {
   setDuring(root.querySelector(".duration-subcomponent"), itemObj, new YearMatcher(2, 10));
 }
 
+/**
+ * Reads values from a limit command UI widget.
+ *
+ * @param {HTMLElement} root - The root element containing the UI.
+ * @returns {LimitCommand} A new LimitCommand object with the UI values.
+ */
 function readLimitCommandUi(root) {
   const limitType = getFieldValue(root.querySelector(".limit-type-input"));
   const target = getFieldValue(root.querySelector(".limit-target-input"));
@@ -1349,6 +1761,12 @@ function readLimitCommandUi(root) {
   return new LimitCommand(limitType, target, amount, duration, displacing);
 }
 
+/**
+ * Initializes a recycle command UI widget.
+ *
+ * @param {Object} itemObj - The command object to initialize from.
+ * @param {HTMLElement} root - The root element containing the UI.
+ */
 function initRecycleCommandUi(itemObj, root) {
   setEngineNumberValue(
     root.querySelector(".recycle-amount-input"),
@@ -1367,6 +1785,12 @@ function initRecycleCommandUi(itemObj, root) {
   setDuring(root.querySelector(".duration-subcomponent"), itemObj, new YearMatcher(2, 10));
 }
 
+/**
+ * Reads values from a recycle command UI widget.
+ *
+ * @param {HTMLElement} root - The root element containing the UI.
+ * @returns {Command} A new Command object with the UI values.
+ */
 function readRecycleCommandUi(root) {
   const collection = getEngineNumberValue(
     root.querySelector(".recycle-amount-input"),
@@ -1380,6 +1804,13 @@ function readRecycleCommandUi(root) {
   return new Command("recycle", collection, reuse, duration);
 }
 
+/**
+ * Initializes a replace command UI widget.
+ *
+ * @param {Object} itemObj - The command object to initialize from.
+ * @param {HTMLElement} root - The root element containing the UI.
+ * @param {Object} codeObj - The code object containing available substances.
+ */
 function initReplaceCommandUi(itemObj, root, codeObj) {
   const substances = codeObj.getSubstances();
   const substanceNames = substances.map((x) => x.getName());
@@ -1412,6 +1843,12 @@ function initReplaceCommandUi(itemObj, root, codeObj) {
   setDuring(root.querySelector(".duration-subcomponent"), itemObj, new YearMatcher(2, 10));
 }
 
+/**
+ * Reads values from a replace command UI widget.
+ *
+ * @param {HTMLElement} root - The root element containing the UI.
+ * @returns {ReplaceCommand} A new ReplaceCommand object with the UI values.
+ */
 function readReplaceCommandUi(root) {
   const target = getFieldValue(root.querySelector(".replace-target-input"));
   const amount = getEngineNumberValue(
@@ -1424,6 +1861,12 @@ function readReplaceCommandUi(root) {
   return new ReplaceCommand(amount, target, replacement, duration);
 }
 
+/**
+ * Reads duration values from a duration UI widget.
+ *
+ * @param {HTMLElement} root - The root element containing the UI.
+ * @returns {YearMatcher} A new YearMatcher object with the UI values.
+ */
 function readDurationUi(root) {
   const durationType = getFieldValue(root.querySelector(".duration-type-input"));
   const targets = {

@@ -1,3 +1,9 @@
+/**
+ * Entrypoint into the tool.
+ *
+ * @license BSD, see LICENSE.md.
+ */
+
 import {CodeEditorPresenter} from "code_editor";
 import {Compiler} from "compiler";
 import {ReportDataWrapper} from "report_data";
@@ -11,7 +17,20 @@ const NEW_FILE_MSG = [
   "Do you want to to continue?",
 ].join(" ");
 
+/**
+ * Presenter controlling the main simluation buttons.
+ *
+ * Presenter which controlls the functionality of the script and run button panel
+ * in the UI which allow for basic tool functionality (switching authoring modes
+ * and running the simulation).
+ */
 class ButtonPanelPresenter {
+  /**
+   * Creates a new ButtonPanelPresenter instance.
+   *
+   * @param {HTMLElement} root - The root element containing the button panel.
+   * @param {Function} onBuild - Callback function triggered when build/run is initiated.
+   */
   constructor(root, onBuild) {
     const self = this;
     self._root = root;
@@ -28,30 +47,48 @@ class ButtonPanelPresenter {
     self.enable();
   }
 
+  /**
+   * Enables the button panel and shows available options.
+   */
   enable() {
     const self = this;
     self._availableDisplay.style.display = "block";
     self._loadingDisplay.style.display = "none";
   }
 
+  /**
+   * Disables the button panel and shows loading state.
+   */
   disable() {
     const self = this;
     self._availableDisplay.style.display = "none";
     self._loadingDisplay.style.display = "block";
   }
 
+  /**
+   * Hides script-related buttons.
+   */
   hideScriptButtons() {
     const self = this;
     self._runButton.style.display = "none";
   }
 
+  /**
+   * Shows script-related buttons.
+   */
   showScriptButtons() {
     const self = this;
     self._runButton.style.display = "inline-block";
   }
 }
 
+/**
+ * Main presenter class that coordinates the application's functionality.
+ */
 class MainPresenter {
+  /**
+   * Creates a new MainPresenter instance and initializes the application.
+   */
   constructor() {
     const self = this;
 
@@ -90,6 +127,11 @@ class MainPresenter {
     self._setupWorkshopSample();
   }
 
+  /**
+   * Handles code change events and updates the UI accordingly.
+   *
+   * @private
+   */
   _onCodeChange() {
     const self = this;
     const code = self._codeEditorPresenter.getCode();
@@ -107,6 +149,12 @@ class MainPresenter {
     saveButton.href = encodedValue;
   }
 
+  /**
+   * Handles build/run events and compiles/executes the code.
+   *
+   * @param {boolean} run - Whether to execute the code after compilation.
+   * @private
+   */
   _onBuild(run) {
     const self = this;
     self._buttonPanelPresenter.disable();
@@ -170,12 +218,25 @@ class MainPresenter {
     }
   }
 
+  /**
+   * Handles program execution results and displays them.
+   *
+   * @param {Object} results - The results of program execution.
+   * @private
+   */
   _onResult(results) {
     const self = this;
     const resultsWrapped = new ReportDataWrapper(results);
     self._resultsPresenter.showResults(resultsWrapped);
   }
 
+  /**
+   * Gets the code as an object representation.
+   *
+   * @param {string} [overrideCode] - Optional code to use instead of editor content.
+   * @returns {Object} The compiled code object.
+   * @private
+   */
   _getCodeAsObj(overrideCode) {
     const self = this;
     const code = overrideCode === undefined ? self._codeEditorPresenter.getCode() : overrideCode;
@@ -184,6 +245,12 @@ class MainPresenter {
     return result;
   }
 
+  /**
+   * Handles code object updates and refreshes the UI.
+   *
+   * @param {Object} codeObj - The updated code object.
+   * @private
+   */
   _onCodeObjUpdate(codeObj) {
     const self = this;
     const newCode = codeObj.toCode(0);
@@ -200,6 +267,11 @@ class MainPresenter {
     self._onBuild(true);
   }
 
+  /**
+   * Sets up file-related button handlers.
+   *
+   * @private
+   */
   _setupFileButtons() {
     const self = this;
 
@@ -248,6 +320,11 @@ class MainPresenter {
     });
   }
 
+  /**
+   * Sets up workshop sample button functionality.
+   *
+   * @private
+   */
   _setupWorkshopSample() {
     const self = this;
     const button = document.getElementById("workshop-sample-button");
@@ -262,6 +339,9 @@ class MainPresenter {
   }
 }
 
+/**
+ * Main entry point for the application.
+ */
 function main() {
   const mainPresenter = new MainPresenter();
 }

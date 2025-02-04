@@ -1,3 +1,9 @@
+/**
+ * Simulation engine that underpins simulations regardless of interface.
+ *
+ * @license BSD, see LICENSE.md.
+ */
+
 import {
   EngineNumber,
   UnitConverter,
@@ -16,7 +22,21 @@ const STREAM_NAMES = new Set([
   "sales",
 ]);
 
+/**
+ * Result of an engine execution for a substance for an application and year.
+ */
 class EngineResult {
+  /**
+   * Create an EngineResult.
+   *
+   * @param {string} application - The application associated with the result.
+   * @param {string} substance - The substance associated with the result.
+   * @param {number} year - The year the result is relevant to.
+   * @param {EngineNumber} manufactureValue - The manufacture value.
+   * @param {EngineNumber} importValue - The import value.
+   * @param {EngineNumber} consumptionValue - The consumption value.
+   * @param {EngineNumber} populationValue - The population value.
+   */
   constructor(
     application,
     substance,
@@ -36,36 +56,71 @@ class EngineResult {
     self._populationValue = populationValue;
   }
 
+  /**
+   * Get the application.
+   *
+   * @returns {string} The application.
+   */
   getApplication() {
     const self = this;
     return self._application;
   }
 
+  /**
+   * Get the substance.
+   *
+   * @returns {string} The substance.
+   */
   getSubstance() {
     const self = this;
     return self._substance;
   }
 
+  /**
+   * Get the year the result is relevant to.
+   *
+   * @returns {number} The year.
+   */
   getYear() {
     const self = this;
     return self._year;
   }
 
+  /**
+   * Get the manufacture value.
+   *
+   * @returns {EngineNumber} The manufacture value.
+   */
   getManufacture() {
     const self = this;
     return self._manufactureValue;
   }
 
+  /**
+   * Get the import value.
+   *
+   * @returns {EngineNumber} The import value.
+   */
   getImport() {
     const self = this;
     return self._importValue;
   }
 
+  /**
+   * Get the consumption value.
+   *
+   * @returns {EngineNumber} The consumption value.
+   */
   getConsumption() {
     const self = this;
     return self._consumptionValue;
   }
 
+  /**
+   * Get the population value.
+   *
+   * @returns {EngineNumber} The population value.
+   */
   getPopulation() {
     const self = this;
     return self._populationValue;
@@ -91,11 +146,21 @@ class Engine {
     self._scope = new Scope(null, null, null);
   }
 
+  /**
+   * Get the starting year of the simulation.
+   *
+   * @returns {number} The start year.
+   */
   getStartYear() {
     const self = this;
     return self._startYear;
   }
 
+  /**
+   * Get the ending year of the simulation.
+   *
+   * @returns {number} The start year.
+   */
   getEndYear() {
     const self = this;
     return self._endYear;
@@ -192,6 +257,19 @@ class Engine {
     return self._currentYear > self._endYear;
   }
 
+  /**
+   * Set the value of a stream.
+   *
+   * @param {string} name - The name of the stream to set.
+   * @param {EngineNumber} value - The value to set for the stream.
+   * @param {Object|null} yearMatcher - The year matcher object to determine if
+   *     setting the stream applies to the current year, or null. No-op if the
+   *     year matcher is not satisifed.
+   * @param {Scope} scope - The scope in which the stream is being set. Uses
+   *     default scope if not provided.
+   * @param {boolean} propagateChanges - Specifies if changes should propagate
+   *     to other components. Defaults to true.
+   */
   setStream(name, value, yearMatcher, scope, propagateChanges) {
     const self = this;
 
@@ -234,6 +312,16 @@ class Engine {
     }
   }
 
+  /**
+   * Get the stream value for a given application and substance scope.
+   *
+   * @param {string} name - The name of the stream to retrieve.
+   * @param {Scope} scope - The scope within which the stream exists. Uses
+   *     default scope if not provided.
+   * @param {Object|null} conversion - The conversion specification for units,
+   *     or null for no conversion.
+   * @returns {EngineNumber} The value of the stream, possibly converted.
+   */
   getStream(name, scope, conversion) {
     const self = this;
     const scopeEffective = scope === undefined || scope === null ? self._scope : scope;
@@ -248,6 +336,13 @@ class Engine {
     }
   }
 
+  /**
+   * Create a user-defined variable in the current scope.
+   *
+   * @param {string} name - The name of the variable to define.
+   * @throws {Error} When trying to define protected variables 'yearsElapsed'
+   *     or 'yearAbsolute'.
+   */
   defineVariable(name) {
     const self = this;
     if (name === "yearsElapsed" || name === "yearAbsolute") {
@@ -256,6 +351,13 @@ class Engine {
     self._scope.defineVariable(name);
   }
 
+  /**
+   * Get the value of a user-defined variable in the current scope.
+   *
+   * @param {string} name - The name of the variable to retrieve.
+   * @returns {*} The value of the variable, or special values for
+   *     'yearsElapsed' and 'yearAbsolute'.
+   */
   getVariable(name) {
     const self = this;
     if (name === "yearsElapsed") {
@@ -267,6 +369,14 @@ class Engine {
     }
   }
 
+  /**
+   * Set the value of a variable in the current scope.
+   *
+   * @param {string} name - The name of the variable to set.
+   * @param {*} value - The value to assign to the variable.
+   * @throws {Error} When trying to set protected variables
+   *     'yearsElapsed' or 'yearAbsolute'.
+   */
   setVariable(name, value) {
     const self = this;
     if (name === "yearsElapsed" || name === "yearAbsolute") {
@@ -275,6 +385,13 @@ class Engine {
     self._scope.setVariable(name, value);
   }
 
+  /**
+   * Get the initial charge value for a given stream.
+   *
+   * @param {string} stream - The stream identifier to get the initial charge
+   *     for.
+   * @returns {EngineNumber} The initial charge value for the stream.
+   */
   getInitialCharge(stream) {
     const self = this;
 
@@ -313,6 +430,15 @@ class Engine {
     }
   }
 
+  /**
+   * Set the initial charge for a stream.
+   *
+   * @param {EngineNumber} value - The initial charge value to set.
+   * @param {string} stream - The stream identifier to set the initial charge
+   *     for.
+   * @param {Object} yearMatcher - Matcher to determine if the change applies
+   *     to current year.
+   */
   setInitialCharge(value, stream, yearMatcher) {
     const self = this;
 
@@ -332,6 +458,11 @@ class Engine {
     self._recalcPopulationChange();
   }
 
+  /**
+   * Get the recharge volume for the current application and substance.
+   *
+   * @returns {EngineNumber} The recharge volume value.
+   */
   getRechargeVolume() {
     const self = this;
     const application = self._scope.getApplication();
@@ -339,6 +470,11 @@ class Engine {
     return self._streamKeeper.getRechargeVolume(application, substance);
   }
 
+  /**
+   * Get the recharge intensity for the current application and substance.
+   *
+   * @returns {EngineNumber} The recharge intensity value.
+   */
   getRechargeIntensity() {
     const self = this;
     const application = self._scope.getApplication();
@@ -346,6 +482,14 @@ class Engine {
     return self._streamKeeper.getRechargeIntensity(application, substance);
   }
 
+  /**
+   * Set recharge parameters for the current application and substance.
+   *
+   * @param {EngineNumber} volume - The recharge volume to set.
+   * @param {EngineNumber} intensity - The recharge intensity to set.
+   * @param {Object} yearMatcher - Matcher to determine if the change applies
+   *     to current year.
+   */
   recharge(volume, intensity, yearMatcher) {
     const self = this;
 
@@ -372,6 +516,13 @@ class Engine {
     self._recalcConsumption();
   }
 
+  /**
+   * Set retirement rate for the current application and substance.
+   *
+   * @param {EngineNumber} amount - The retirement rate to set.
+   * @param {Object} yearMatcher - Matcher to determine if the change applies
+   *     to current year.
+   */
   retire(amount, yearMatcher) {
     const self = this;
 
@@ -385,6 +536,11 @@ class Engine {
     self._recalcRetire();
   }
 
+  /**
+   * Get the retirement rate for the current application and substance.
+   *
+   * @returns {EngineNumber} The retirement rate value.
+   */
   getRetirementRate() {
     const self = this;
     const application = self._scope.getApplication();
@@ -392,6 +548,15 @@ class Engine {
     return self._streamKeeper.getRetirementRate(application, substance);
   }
 
+  /**
+   * Set recycling parameters for the current application and substance.
+   *
+   * @param {EngineNumber} recoveryWithUnits - The recovery rate.
+   * @param {EngineNumber} yieldWithUnits - The yield rate.
+   * @param {EngineNumber} displaceLevel - The displacement level.
+   * @param {Object} yearMatcher - Matcher to determine if the change applies
+   *     to current year.
+   */
   recycle(recoveryWithUnits, yieldWithUnits, displaceLevel, yearMatcher) {
     const self = this;
 
@@ -413,6 +578,13 @@ class Engine {
     self._recalcConsumption();
   }
 
+  /**
+   * Set GHG equivalency for the current application and substance.
+   *
+   * @param {EngineNumber} amount - The GHG intensity value to set.
+   * @param {Object} yearMatcher - Matcher to determine if the change applies
+   *     to current year.
+   */
   equals(amount, yearMatcher) {
     const self = this;
 
@@ -427,6 +599,15 @@ class Engine {
     self._recalcConsumption();
   }
 
+  /**
+   * Change a stream value by a delta amount.
+   *
+   * @param {string} stream - The stream identifier to modify.
+   * @param {EngineNumber} amount - The amount to change the stream by.
+   * @param {Object} yearMatcher - Matcher to determine if the change applies
+   *     to current year.
+   * @param {Scope} scope - The scope in which to make the change.
+   */
   changeStream(stream, amount, yearMatcher, scope) {
     const self = this;
 
@@ -443,6 +624,15 @@ class Engine {
     self.setStream(stream, outputWithUnits, null, scope);
   }
 
+  /**
+   * Cap a stream at a maximum value.
+   *
+   * @param {string} stream - The stream identifier to cap.
+   * @param {EngineNumber} amount - The maximum value to cap at.
+   * @param {Object} yearMatcher - Matcher to determine if the change applies
+   *     to current year.
+   * @param {string} displaceTarget - Optional target for displaced amount.
+   */
   cap(stream, amount, yearMatcher, displaceTarget) {
     const self = this;
 
@@ -475,6 +665,15 @@ class Engine {
     }
   }
 
+  /**
+   * Set a minimum floor value for a stream.
+   *
+   * @param {string} stream - The stream identifier to set floor for.
+   * @param {EngineNumber} amount - The minimum value to set as floor.
+   * @param {Object} yearMatcher - Matcher to determine if the change applies
+   *     to current year.
+   * @param {string} displaceTarget - Optional target for displaced amount.
+   */
   floor(stream, amount, yearMatcher, displaceTarget) {
     const self = this;
 
@@ -507,6 +706,15 @@ class Engine {
     }
   }
 
+  /**
+   * Replace an amount from one substance with another.
+   *
+   * @param {EngineNumber} amountRaw - The amount to replace.
+   * @param {string} stream - The stream identifier to modify.
+   * @param {string} destinationSubstance - The substance to replace with.
+   * @param {Object} yearMatcher - Matcher to determine if the change applies
+   *     to current year.
+   */
   replace(amountRaw, stream, destinationSubstance, yearMatcher) {
     const self = this;
 
@@ -524,6 +732,11 @@ class Engine {
     self.changeStream(stream, amount, null, destinationScope);
   }
 
+  /**
+   * Get the results for all registered substances.
+   *
+   * @returns {EngineResult[]} Array of results for each registered substance.
+   */
   getResults() {
     const self = this;
 
@@ -550,6 +763,13 @@ class Engine {
     });
   }
 
+  /**
+   * Creates a unit converter with total values initialized.
+   *
+   * @param {string} stream - The stream identifier to create converter for.
+   * @returns {UnitConverter} A configured unit converter instance.
+   * @private
+   */
   _createUnitConverterWithTotal(stream) {
     const self = this;
 
@@ -567,6 +787,13 @@ class Engine {
     return unitConverter;
   }
 
+  /**
+   * Determines if a year matcher applies to current year.
+   *
+   * @param {Object|null} yearMatcher - The year matcher to check.
+   * @returns {boolean} True if in range or no matcher provided.
+   * @private
+   */
   _getIsInRange(yearMatcher) {
     const self = this;
     const noYearMatcher = yearMatcher === undefined || yearMatcher === null;
@@ -574,6 +801,12 @@ class Engine {
     return inRange;
   }
 
+  /**
+   * Recalculates population changes based on current state.
+   *
+   * @param {Scope|null} scope - The scope to recalculate for.
+   * @private
+   */
   _recalcPopulationChange(scope) {
     const self = this;
 
@@ -651,6 +884,12 @@ class Engine {
     self.setStream("equipment", newVolume, null, scopeEffective, false);
   }
 
+  /**
+   * Recalculates consumption values based on current state.
+   *
+   * @param {Scope|null} scope - The scope to recalculate for.
+   * @private
+   */
   _recalcConsumption(scope) {
     const self = this;
 
@@ -683,6 +922,12 @@ class Engine {
     self.setStream("consumption", consumptionAllowed, null, scopeEffective, false);
   }
 
+  /**
+   * Recalculates sales values based on current state.
+   *
+   * @param {Scope|null} scope - The scope to recalculate for.
+   * @private
+   */
   _recalcSales(scope) {
     const self = this;
 
@@ -774,6 +1019,12 @@ class Engine {
     self.setStream("sales", totalSales, null, scopeEffective, false);
   }
 
+  /**
+   * Recalculates retirement values based on current state.
+   *
+   * @param {Scope|null} scope - The scope to recalculate for.
+   * @private
+   */
   _recalcRetire(scope) {
     const self = this;
 

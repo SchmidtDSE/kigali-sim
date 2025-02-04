@@ -1,4 +1,10 @@
 /**
+ * Structures to represent numbers with units inside the engine.
+ *
+ * @license BSD, see LICENSE.md.
+ */
+
+/**
  * Representation of a number with units within the engine.
  */
 class EngineNumber {
@@ -103,6 +109,7 @@ class UnitConverter {
   /**
    * Convert a number to kilograms.
    *
+   * @private
    * @param target The EngineNumber to convert.
    * @returns Target converted to kilograms.
    */
@@ -120,6 +127,7 @@ class UnitConverter {
   /**
    * Convert a number to metric tons.
    *
+   * @private
    * @param target The EngineNumber to convert.
    * @returns Target converted to metric tons.
    */
@@ -137,6 +145,7 @@ class UnitConverter {
   /**
    * Convert a number to a volume units.
    *
+   * @private
    * @param target The EngineNumber to convert.
    * @returns Target converted to kilograms or metric tons.
    */
@@ -177,6 +186,7 @@ class UnitConverter {
   /**
    * Convert a number to units (population).
    *
+   * @private
    * @param target The EngineNumber to convert.
    * @returns Target converted to units (population).
    */
@@ -220,6 +230,7 @@ class UnitConverter {
   /**
    * Convert a number to consumption as tCO2e.
    *
+   * @private
    * @param target The EngineNumber to convert.
    * @returns Target converted to consumption as tCO2e.
    */
@@ -261,6 +272,7 @@ class UnitConverter {
   /**
    * Convert a number to years.
    *
+   * @private
    * @param target The EngineNumber to convert.
    * @returns Target converted to years.
    */
@@ -301,6 +313,13 @@ class UnitConverter {
     }
   }
 
+  /**
+   * Convert a number to percentage.
+   *
+   * @private
+   * @param target The EngineNumber to convert.
+   * @returns Target converted to percentage.
+   */
   _toPercent(target) {
     const self = this;
 
@@ -330,9 +349,10 @@ class UnitConverter {
   /**
    * Normalize to non-ratio units if possible.
    *
-   * @param target The number to convert from a units with ratio to single type units.
-   * @returns Number after conversion to non-ratio units or target unchanged if it does not have a
-   *    ratio units or could not be normalized.
+   * @param target The number to convert from a units with ratio to single type
+   *     units.
+   * @returns Number after conversion to non-ratio units or target unchanged if
+   *     it does not have a ratio units or could not be normalized.
    */
   _normalize(target) {
     const self = this;
@@ -344,8 +364,10 @@ class UnitConverter {
   }
 
   /**
-   * Convert a number where a units ratio has population in the denominator to a non-ratio units.
+   * Convert a number where a units ratio has population in the denominator to
+   * a non-ratio units.
    *
+   * @private
    * @param target The value to normalize by population.
    * @returns Target without population in its units denominator.
    */
@@ -373,6 +395,7 @@ class UnitConverter {
   /**
    * Convert a number where a units ratio has time in the denominator to a non-ratio units.
    *
+   * @private
    * @param target The value to normalize by time.
    * @returns Target without time in its units denominator.
    */
@@ -394,8 +417,10 @@ class UnitConverter {
   }
 
   /**
-   * Convert a number where a units ratio has consumption in the denominator to a non-ratio units.
+   * Convert a number where a units ratio has consumption in the denominator to
+   * a non-ratio units.
    *
+   * @private
    * @param target The value to normalize by consumption.
    * @returns Target without consumption in its units denominator.
    */
@@ -417,8 +442,10 @@ class UnitConverter {
   }
 
   /**
-   * Convert a number where a units ratio has volume in the denominator to a non-ratio units.
+   * Convert a number where a units ratio has volume in the denominator to a
+   * non-ratio units.
    *
+   * @private
    * @param target The value to normalize by volume.
    * @returns Target without volume in its units denominator.
    */
@@ -449,12 +476,30 @@ class UnitConverter {
   }
 }
 
+/**
+ * Class providing state information needed for unit conversions.
+ *
+ * Interfaces with the engine to retrieve information about current
+ * substance consumption, volumes, populations, time elapsed, and other
+ * metrics needed to convert between different unit types in the model.
+ */
 class ConverterStateGetter {
+  /**
+   * Create a new converter state getter.
+   *
+   * @param {Engine} engine - The engine instance to query for state information.
+   */
   constructor(engine) {
     const self = this;
     self._engine = engine;
   }
 
+  /**
+   * Get the consumption ratio per unit volume of substance.
+   *
+   * @returns {EngineNumber} The consumption per volume ratio in tCO2e/kg or tCO2e/mt.
+   * @throws {string} If consumption or volume units are not as expected.
+   */
   getSubstanceConsumption() {
     const self = this;
     const consumption = self.getConsumption();
@@ -474,33 +519,64 @@ class ConverterStateGetter {
     return new EngineNumber(ratioValue, ratioUnits);
   }
 
+  /**
+   * Get the charge volume per unit for sales.
+   *
+   * @returns {EngineNumber} The charge volume in kg or mt per unit.
+   */
   getAmortizedUnitVolume() {
     const self = this;
     return self._engine.getInitialCharge("sales");
   }
 
+  /**
+   * Get the current equipment population.
+   *
+   * @returns {EngineNumber} The equipment count in units.
+   */
   getPopulation() {
     const self = this;
     return self._engine.getStream("equipment");
   }
 
+  /**
+   * Get the number of years currently elapsed in the simulation.
+   *
+   * @returns {EngineNumber} The elapsed time in years (0 for first year, 1 otherwise).
+   */
   getYearsElapsed() {
     const self = this;
     const firstYear = self._engine.getStartYear() == self._engine.getYear();
     return new EngineNumber(firstYear ? 0 : 1, "year");
   }
 
+  /**
+   * Get the total consumption for the current state.
+   *
+   * @returns {EngineNumber} The consumption value in tCO2e.
+   */
   getConsumption() {
     const self = this;
     return self._engine.getStream("consumption");
   }
 
+  /**
+   * Get the total volume from sales for the current state.
+   *
+   * @returns {EngineNumber} The volume in kg or mt.
+   */
   getVolume() {
     const self = this;
     const sales = self._engine.getStream("sales");
     return sales;
   }
 
+  /**
+   * Get the consumption ratio per unit of population.
+   *
+   * @returns {EngineNumber} The consumption per unit ratio in tCO2e/unit.
+   * @throws {string} If population or volume units are not as expected.
+   */
   getAmortizedUnitConsumption() {
     const self = this;
     const consumption = self.getConsumption();
@@ -520,6 +596,12 @@ class ConverterStateGetter {
     return new EngineNumber(ratioValue, ratioUnits);
   }
 
+  /**
+   * Calculate the change in population between prior and current equipment.
+   *
+   * @param {UnitConverter} unitConverter - Converter for ensuring consistent units.
+   * @returns {EngineNumber} The population change in units.
+   */
   getPopulationChange(unitConverter) {
     const self = this;
 
@@ -534,7 +616,15 @@ class ConverterStateGetter {
   }
 }
 
+/**
+ * State getter that allows overriding values from an inner state getter.
+ */
 class OverridingConverterStateGetter {
+  /**
+   * Create a new overriding converter state getter.
+   *
+   * @param {ConverterStateGetter} innerGetter - The base state getter to wrap.
+   */
   constructor(innerGetter) {
     const self = this;
     self._innerGetter = innerGetter;
@@ -548,6 +638,13 @@ class OverridingConverterStateGetter {
     self._populationChange = null;
   }
 
+  /**
+   * Set total values for different stream types.
+   *
+   * @param {string} streamName - The name of the stream (sales, manufacture,
+   *     import, etc.).
+   * @param {EngineNumber} value - The value to set for the stream.
+   */
   setTotal(streamName, value) {
     const self = this;
     const strategy = {
@@ -561,11 +658,21 @@ class OverridingConverterStateGetter {
     strategy(value);
   }
 
+  /**
+   * Set the substance consumption value.
+   *
+   * @param {EngineNumber} newValue - The new consumption value.
+   */
   setSubstanceConsumption(newValue) {
     const self = this;
     self._substanceConsumption = newValue;
   }
 
+  /**
+   * Get the substance consumption value.
+   *
+   * @returns {EngineNumber} The substance consumption value.
+   */
   getSubstanceConsumption() {
     const self = this;
     if (self._substanceConsumption === null) {
@@ -575,11 +682,21 @@ class OverridingConverterStateGetter {
     }
   }
 
+  /**
+   * Set the amortized unit volume.
+   *
+   * @param {EngineNumber} newValue - The new amortized unit volume.
+   */
   setAmortizedUnitVolume(newValue) {
     const self = this;
     self._amortizedUnitVolume = newValue;
   }
 
+  /**
+   * Get the amortized unit volume.
+   *
+   * @returns {EngineNumber} The amortized unit volume.
+   */
   getAmortizedUnitVolume() {
     const self = this;
     if (self._amortizedUnitVolume === null) {
@@ -589,11 +706,21 @@ class OverridingConverterStateGetter {
     }
   }
 
+  /**
+   * Set the population value.
+   *
+   * @param {EngineNumber} newValue - The new population value.
+   */
   setPopulation(newValue) {
     const self = this;
     self._population = newValue;
   }
 
+  /**
+   * Get the population value.
+   *
+   * @returns {EngineNumber} The population value.
+   */
   getPopulation() {
     const self = this;
     if (self._population === null) {
@@ -603,11 +730,21 @@ class OverridingConverterStateGetter {
     }
   }
 
+  /**
+   * Set the number of years elapsed.
+   *
+   * @param {EngineNumber} newValue - The new years elapsed value.
+   */
   setYearsElapsed(newValue) {
     const self = this;
     self._yearsElapsed = newValue;
   }
 
+  /**
+   * Get the number of years elapsed.
+   *
+   * @returns {EngineNumber} The years elapsed value.
+   */
   getYearsElapsed() {
     const self = this;
     if (self._yearsElapsed === null) {
@@ -617,11 +754,21 @@ class OverridingConverterStateGetter {
     }
   }
 
+  /**
+   * Set the consumption value.
+   *
+   * @param {EngineNumber} newValue - The new consumption value.
+   */
   setConsumption(newValue) {
     const self = this;
     self._totalConsumption = newValue;
   }
 
+  /**
+   * Get the consumption value.
+   *
+   * @returns {EngineNumber} The consumption value.
+   */
   getConsumption() {
     const self = this;
     if (self._totalConsumption === null) {
@@ -631,11 +778,21 @@ class OverridingConverterStateGetter {
     }
   }
 
+  /**
+   * Set the volume value.
+   *
+   * @param {EngineNumber} newValue - The new volume value.
+   */
   setVolume(newValue) {
     const self = this;
     self._volume = newValue;
   }
 
+  /**
+   * Get the volume value.
+   *
+   * @returns {EngineNumber} The volume value.
+   */
   getVolume() {
     const self = this;
     if (self._volume === null) {
@@ -645,11 +802,21 @@ class OverridingConverterStateGetter {
     }
   }
 
+  /**
+   * Set the amortized unit consumption.
+   *
+   * @param {EngineNumber} newValue - The new amortized unit consumption value.
+   */
   setAmortizedUnitConsumption(newValue) {
     const self = this;
     self._amortizedUnitConsumption = newValue;
   }
 
+  /**
+   * Get the amortized unit consumption.
+   *
+   * @returns {EngineNumber} The amortized unit consumption value.
+   */
   getAmortizedUnitConsumption() {
     const self = this;
     if (self._amortizedUnitConsumption === null) {
@@ -659,11 +826,29 @@ class OverridingConverterStateGetter {
     }
   }
 
+  /**
+   * Set the population change value.
+   *
+   * Set the population change value, in other words the change between prior
+   * and new equipment.
+   *
+   * @param {EngineNumber} newValue - The new population change value.
+   */
   setPopulationChange(newValue) {
     const self = this;
     self._populationChange = newValue;
   }
 
+  /**
+   * Get the population change value.
+   *
+   * Get the population change value, in other words the change between prior
+   * and new equipment.
+   *
+   * @param {UnitConverter} unitConverter - Converter for ensuring consistent
+   *     units.
+   * @returns {EngineNumber} The population change value.
+   */
   getPopulationChange(unitConverter) {
     const self = this;
     if (self._populationChange === null) {

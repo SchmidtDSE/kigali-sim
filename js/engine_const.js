@@ -1,3 +1,9 @@
+/**
+ * Constants used across the tool.
+ *
+ * @license BSD, see LICENSE.md.
+ */
+
 const GLOBAL_CONTEXT = 0;
 const STANZA_CONTEXT = 1;
 const APPLICATION_CONTEXT = 2;
