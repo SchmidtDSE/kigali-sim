@@ -1,11 +1,11 @@
 
 # Montreal Policy Simulation
 
-Web-based open source tool and simulation engine capable of simulations related to the Montreal Protocol.
+Fully optional and completely open unofficial web-based tool and simulation engine capable of simulations related to the Montreal Protocol potentially useful at the discretion of relevant stakeholders.
 
 ## Purpose
 
-This open source toolkit provides a domain-specific language (QubecTalk) and simulation engine for modeling and analyzing policies related to the Montreal Protocol. It supports business as usual and policy simulations to optionally support activities such as KIPs. It helps evaluate and compare different intervention options by simulating longitudinal projections of applications, substances, policies, and interactions between these components under different scenarios.
+This open source toolkit provides a domain-specific language (QubecTalk) and simulation engine for modeling and analyzing policies related to the Montreal Protocol. It supports foundational business as usual and policy simulations to optionally support activities such as KIPs. It helps evaluate and compare different intervention options by simulating longitudinal projections of applications, substances, policies, and interactions between these components under different scenarios. Though not intended to be comprehensive or address all relevant modeling techniques so may be too basic for some users, this attempts to provide access to both UI and code-based editing where the later can also conduct probabilistic projection. It is unofficial and completely voluntary. Furthermore, it has minimal analytics to provide privacy while building and executing simulations.
 
 ## Usage
 
