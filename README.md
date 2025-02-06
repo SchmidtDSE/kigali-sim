@@ -1,11 +1,10 @@
+# Montreal Protocol Policy Simulation Tool
 
-# Montreal Policy Simulation
-
-Fully optional and completely open unofficial web-based tool and simulation engine capable of simulations related to the Montreal Protocol potentially useful at the discretion of relevant stakeholders.
+Open source unofficial web-based tool and simulation engine capable of simulations related to substances, applications, and policies relevant to the Montreal Protocol. It may potentially be useful at the discretion of relevant stakeholders as an optional step in informing proposals.
 
 ## Purpose
 
-This open source toolkit provides a domain-specific language (QubecTalk) and simulation engine for modeling and analyzing policies related to the Montreal Protocol. It supports foundational business as usual and policy simulations to optionally support activities such as KIPs. It helps evaluate and compare different intervention options by simulating longitudinal projections of applications, substances, policies, and interactions between these components under different scenarios. Though not intended to be comprehensive or address all relevant modeling techniques so may be too basic for some users, this attempts to provide access to both UI and code-based editing where the later can also conduct probabilistic projection. It is unofficial and completely voluntary. Furthermore, it has minimal analytics to provide privacy while building and executing simulations.
+This open source toolkit provides a simulation engine for modeling substances, applications, and policies related to the Montreal Protocol. It supports a foundational business as usual simulation and then supports "stacking" policy simulations on top of that baseline. These projections may optionally support activities such as KIPs. Though not intended to be comprehensive of all possible relevant modeling techniques, this tool provides access to both UI and code-based editing where the later can also conduct probabilistic projection. The QubecTalk domain specific language allows for high degree of customization and specificity with automated unit conversions. Unofficial and completely voluntary, this privacy-respecting simulation platform offers essential tools to optionally inform potential policy.
 
 ## Usage
 
