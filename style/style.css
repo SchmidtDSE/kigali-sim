@@ -321,6 +321,10 @@ main {
   font-weight: normal;
 }
 
+.scope-reminder {
+  color: #FF5050 !important;
+}
+
 /* Thanks https://codepen.io/code-boxx/pen/RwxbpOz */
 /* MIT License */
 
