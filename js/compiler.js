@@ -1249,7 +1249,7 @@ class CompileVisitor extends toolkit.QubecTalkVisitor {
 
     const execute = () => {
       if (!stanzasByName.has("simulations")) {
-        throw "Need at least one simulation scenario.";
+        return [];
       }
 
       const simulationsStanza = stanzasByName.get("simulations");

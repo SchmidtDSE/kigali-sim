@@ -189,7 +189,11 @@ class MainPresenter {
         try {
           if (run) {
             const programResult = program();
-            self._onResult(programResult);
+            if (programResult.length == 0) {
+              self._resultsPresenter.hide();
+            } else {
+              self._onResult(programResult);
+            }
           }
         } catch (e) {
           alert("" + e);
@@ -261,6 +265,7 @@ class MainPresenter {
     }
 
     if (codeObj.getScenarios() == 0) {
+      self._resultsPresenter.hide();
       return;
     }
 
