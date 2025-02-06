@@ -419,7 +419,22 @@ class ApplicationsListPresenter {
   }
 }
 
+/**
+ * Manages the UI for displaying reminders about current substance and application.
+ * 
+ * Displays the current substance and application being edited in the UI,
+ * updating these reminders when selections change. Also provides links to
+ * return to editing the base properties.
+ */
 class ReminderPresenter {
+  /**
+   * Creates a new ReminderPresenter.
+   *
+   * @param {HTMLElement} root - Root DOM element for the reminder UI.
+   * @param {string} appInputSelector - CSS selector for application input element.
+   * @param {string} substanceInputSelector - CSS selector for substance input element.
+   * @param {string} baseTabSelector - CSS selector for base tab element.
+   */
   constructor(root, appInputSelector, substanceInputSelector, baseTabSelector) {
     const self = this;
 
