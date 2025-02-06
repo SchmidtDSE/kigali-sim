@@ -419,6 +419,55 @@ class ApplicationsListPresenter {
   }
 }
 
+class ReminderPresenter {
+  constructor(root, appInputSelector, substanceInputSelector, baseTabSelector) {
+    const self = this;
+
+    self._root = root;
+    self._appInputSelector = appInputSelector;
+    self._substanceInputSelector = substanceInputSelector;
+    self._baseTabSelector = baseTabSelector;
+
+    self._setupEvents();
+  }
+
+  _setupEvents() {
+    const self = this;
+
+    const applicationInput = self._root.querySelector(self._appInputSelector);
+    const substanceInput = self._root.querySelector(self._substanceInputSelector);
+
+    const updateReminders = () => {
+      const substanceDisplays = self._root.querySelectorAll(".reminder-substance");
+      const appDisplays = self._root.querySelectorAll(".reminder-app");
+
+      substanceDisplays.forEach((display) => {
+        display.innerHTML = "";
+        const textNode = document.createTextNode(substanceInput.value);
+        display.appendChild(textNode);
+      });
+
+      appDisplays.forEach((display) => {
+        display.innerHTML = "";
+        const textNode = document.createTextNode(applicationInput.value);
+        display.appendChild(textNode);
+      });
+    };
+
+    substanceInput.addEventListener("change", updateReminders);
+    applicationInput.addEventListener("change", updateReminders);
+    updateReminders();
+
+    const links = self._root.querySelectorAll(".edit-reminder-link");
+    links.forEach((link) => {
+      link.addEventListener("click", (event) => {
+        event.preventDefault();
+        self._tabs.toggle(self._baseTabSelector);
+      });
+    });
+  }
+}
+
 /**
  * Manages the UI for listing and editing consumption logic.
  *
