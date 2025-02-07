@@ -321,8 +321,12 @@ main {
   font-weight: normal;
 }
 
-.scope-reminder {
-  color: #FF5050 !important;
+.scope-reminder, .scope-reminder a, .scope-reminder a:link, .scope-reminder a:visited {
+  color: #707070 !important;
+}
+
+.scope-reminder a, .scope-reminder a:hover, .scope-reminder a:active {
+  color: #7070A0 !important;
 }
 
 /* Thanks https://codepen.io/code-boxx/pen/RwxbpOz */
