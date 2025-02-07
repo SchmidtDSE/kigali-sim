@@ -1054,7 +1054,7 @@ class PolicyListPresenter {
       ".edit-policy-application-input",
       ".edit-policy-substance-input",
       "#policy-general",
-      self._tabs
+      self._tabs,
     );
 
     const addLink = self._root.querySelector(".add-link");
