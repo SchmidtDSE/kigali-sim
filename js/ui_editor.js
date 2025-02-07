@@ -420,6 +420,92 @@ class ApplicationsListPresenter {
 }
 
 /**
+ * Manages the UI for displaying reminders about current substance and application.
+ *
+ * Displays the current substance and application being edited in the UI,
+ * updating these reminders when selections change. Also provides links to
+ * return to editing the base properties.
+ */
+class ReminderPresenter {
+  /**
+   * Creates a new ReminderPresenter.
+   *
+   * @param {HTMLElement} root - Root DOM element for the reminder UI.
+   * @param {string} appInputSelector - CSS selector for application input element.
+   * @param {string} substanceInputSelector - CSS selector for substance input element.
+   * @param {string} baseTabSelector - CSS selector for base tab element.
+   */
+  constructor(root, appInputSelector, substanceInputSelector, baseTabSelector, tabs) {
+    const self = this;
+
+    self._root = root;
+    self._appInputSelector = appInputSelector;
+    self._substanceInputSelector = substanceInputSelector;
+    self._baseTabSelector = baseTabSelector;
+    self._tabs = tabs;
+
+    self._setupEvents();
+  }
+
+  /**
+   * Update the reminder UI elements with the current application and substance values.
+   *
+   * This function updates the innerHTML of reminder elements to display
+   * the current values for application and substance. It ensures that changes
+   * in the inputs are reflected in the corresponding reminder display fields.
+   */
+  update() {
+    const self = this;
+
+    const applicationInput = self._root.querySelector(self._appInputSelector);
+    const substanceInput = self._root.querySelector(self._substanceInputSelector);
+
+    const substanceDisplays = self._root.querySelectorAll(".reminder-substance");
+    const appDisplays = self._root.querySelectorAll(".reminder-app");
+
+    substanceDisplays.forEach((display) => {
+      display.innerHTML = "";
+      const textNode = document.createTextNode(substanceInput.value);
+      display.appendChild(textNode);
+    });
+
+    appDisplays.forEach((display) => {
+      display.innerHTML = "";
+      const textNode = document.createTextNode(applicationInput.value);
+      display.appendChild(textNode);
+    });
+  }
+
+  /**
+   * Setup event listeners for the reminder UI.
+   *
+   * This method binds change events for the application and substance inputs that update their
+   * respective displays within the reminder interface. It also binds click events to the edit
+   * reminder links, managing the tab switch to the base tab selector when activated.
+   *
+   * @private
+   */
+  _setupEvents() {
+    const self = this;
+
+    const applicationInput = self._root.querySelector(self._appInputSelector);
+    const substanceInput = self._root.querySelector(self._substanceInputSelector);
+
+    substanceInput.addEventListener("change", () => self.update());
+    applicationInput.addEventListener("change", () => self.update());
+    self.update();
+
+    const links = self._root.querySelectorAll(".edit-reminder-link");
+    links.forEach((link) => {
+      link.addEventListener("click", (event) => {
+        event.preventDefault();
+        self._tabs.toggle(self._baseTabSelector);
+      });
+    });
+  }
+}
+
+/**
  * Manages the UI for listing and editing consumption logic.
  *
  * Manages the UI for listing and editing consumption logic where substances
@@ -572,6 +658,14 @@ class ConsumptionListPresenter {
     setupListButton(addLimitButton, limitList, "limit-command-template", (item, root) =>
       initLimitCommandUi(item, root, self._getCodeObj()),
     );
+
+    self._reminderPresenter = new ReminderPresenter(
+      self._dialog,
+      ".edit-consumption-application-input",
+      ".edit-consumption-substance-input",
+      "#consumption-general",
+      self._tabs,
+    );
   }
 
   /**
@@ -709,6 +803,7 @@ class ConsumptionListPresenter {
     );
 
     self._dialog.showModal();
+    self._reminderPresenter.update();
   }
 
   /**
@@ -954,6 +1049,14 @@ class PolicyListPresenter {
 
     self._tabs = new Tabby("#" + self._dialog.querySelector(".tabs").id);
 
+    self._reminderPresenter = new ReminderPresenter(
+      self._dialog,
+      ".edit-policy-application-input",
+      ".edit-policy-substance-input",
+      "#policy-general",
+      self._tabs,
+    );
+
     const addLink = self._root.querySelector(".add-link");
     addLink.addEventListener("click", (event) => {
       self._showDialogFor(null);
@@ -1097,6 +1200,7 @@ class PolicyListPresenter {
     );
 
     self._dialog.showModal();
+    self._reminderPresenter.update();
   }
 
   /**

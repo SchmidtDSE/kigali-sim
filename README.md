@@ -47,7 +47,7 @@ python -m http.server
 This project can be deployed using Github. Simply push your changes to the repository at `main`. The deployment process is automated through GitHub Actions as defined in `.github/workflows/build.yaml`.
 
 ## Development Standards
-While contributing, please maintain existing styles defined in `.prettierrc` and `.eslintrc.yml`. Where ambiguous, follow Google JavaScript Style Guide conventions. Unit tests through QUnit are encouraged but a specific test coverage target is not specified. Document code using JSDoc comments (required for all public members). Note that Replit AI was used to help with documentation but, for other purposes, please disclose use of generative AI before merging pull requests.
+While contributing, please maintain existing styles defined in `.prettierrc` and `.eslintrc.yml`. Where ambiguous, follow Google JavaScript Style Guide conventions. Unit tests through QUnit are encouraged but a specific test coverage target is not specified. Document code using JSDoc comments (required for all public members). Note that Replit AI was used to help with documentation and small trivial code changes but, for other purposes, please disclose use of generative AI before merging pull requests. We generally require that AI not used for architecture or large operations.
 
 ## Open Source
 We thank the following Open Source libaries:
