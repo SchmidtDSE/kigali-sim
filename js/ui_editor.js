@@ -1049,6 +1049,14 @@ class PolicyListPresenter {
 
     self._tabs = new Tabby("#" + self._dialog.querySelector(".tabs").id);
 
+    self._reminderPresenter = new ReminderPresenter(
+      self._dialog,
+      ".edit-policy-application-input",
+      ".edit-policy-substance-input",
+      "#policy-general",
+      self._tabs
+    );
+
     const addLink = self._root.querySelector(".add-link");
     addLink.addEventListener("click", (event) => {
       self._showDialogFor(null);
@@ -1192,6 +1200,7 @@ class PolicyListPresenter {
     );
 
     self._dialog.showModal();
+    self._reminderPresenter.update();
   }
 
   /**
