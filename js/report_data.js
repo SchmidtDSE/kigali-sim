@@ -128,7 +128,7 @@ class AggregatedResult {
    */
   getTotalEmissions() {
     const self = this;
-    return self._rechargeEmissions.add(self._eolEmissions);
+    return self._combineUnitValue(self.getRechargeEmissions(), self.getEolEmissions());
   }
 
   /**
