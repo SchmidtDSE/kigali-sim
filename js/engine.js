@@ -50,7 +50,7 @@ class EngineResult {
     populationValue,
     populationNew,
     rechargeEmissions,
-    eolEmissions
+    eolEmissions,
   ) {
     const self = this;
     self._application = application;
