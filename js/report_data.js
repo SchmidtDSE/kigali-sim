@@ -154,9 +154,11 @@ class ReportDataWrapper {
     const self = this;
     const metric = filterSet.getMetric();
     const strategy = {
-      consumption: () => self.getConsumption(filterSet),
-      sales: () => self.getSales(filterSet),
-      population: () => self.getPopulation(filterSet),
+      "consumption": () => self.getConsumption(filterSet),
+      "sales": () => self.getSales(filterSet),
+      "sales:import": () => self.getImports(filterSet),
+      "sales:manufacture": () => self.getManufacture(filterSet),
+      "population": () => self.getPopulation(filterSet),
     }[metric];
     const value = strategy();
     return value;
@@ -250,6 +252,30 @@ class ReportDataWrapper {
     const self = this;
     const aggregated = self._getAggregatedAfterFilter(filterSet);
     return aggregated.getSales();
+  }
+
+  /**
+   * Get sales from imports matching a given filter set.
+   *
+   * @param {FilterSet} filterSet - The filter criteria to apply.
+   * @returns {EngineNumber} The imports component of sales.
+   */
+  getImport(filterSet) {
+    const self = this;
+    const aggregated = self._getAggregatedAfterFilter(filterSet);
+    return aggregated.getImport();
+  }
+
+  /**
+   * Get sales from domestic manufacture matching a given filter set.
+   *
+   * @param {FilterSet} filterSet - The filter criteria to apply.
+   * @returns {EngineNumber} The domestic manufacture component of sales.
+   */
+  getManufacture(filterSet) {
+    const self = this;
+    const aggregated = self._getAggregatedAfterFilter(filterSet);
+    return aggregated.getManufacture();
   }
 
   /**

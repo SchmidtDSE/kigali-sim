@@ -71,7 +71,7 @@ function buildReportDataTests() {
 
     buildTest("gets all the years", "/test/qta/multiple_with_policies.qta", [
       (result, assert) => {
-        const filterSet = new FilterSet(null, null, null, null);
+        const filterSet = new FilterSet(null, null, null, null, null, null);
         const years = result.getYears(filterSet);
         assert.equal(years.size, 3);
         assert.ok(years.has(1));
@@ -82,7 +82,7 @@ function buildReportDataTests() {
 
     buildTest("gets years matching filter", "/test/qta/multiple_with_policies.qta", [
       (result, assert) => {
-        const filterSet = new FilterSet(null, "sim", null, null);
+        const filterSet = new FilterSet(null, "sim", null, null, null, null);
         const years = result.getYears(filterSet);
         assert.equal(years.size, 2);
         assert.ok(years.has(1));
@@ -92,7 +92,7 @@ function buildReportDataTests() {
 
     buildTest("gets all applications", "/test/qta/multiple_with_policies.qta", [
       (result, assert) => {
-        const filterSet = new FilterSet(null, null, null, null);
+        const filterSet = new FilterSet(null, null, null, null, null, null);
         const years = result.getApplications(filterSet);
         assert.equal(years.size, 2);
         assert.ok(years.has("appA"));
@@ -102,7 +102,7 @@ function buildReportDataTests() {
 
     buildTest("gets applications with filter", "/test/qta/multiple_with_policies.qta", [
       (result, assert) => {
-        const filterSet = new FilterSet(null, null, null, "subA");
+        const filterSet = new FilterSet(null, null, null, "subA", null, null);
         const years = result.getApplications(filterSet);
         assert.equal(years.size, 1);
         assert.ok(years.has("appA"));
@@ -111,7 +111,7 @@ function buildReportDataTests() {
 
     buildTest("gets all substances", "/test/qta/multiple_with_policies.qta", [
       (result, assert) => {
-        const filterSet = new FilterSet(null, null, null, null);
+        const filterSet = new FilterSet(null, null, null, null, null, null);
         const years = result.getSubstances(filterSet);
         assert.equal(years.size, 2);
         assert.ok(years.has("subA"));
@@ -121,7 +121,7 @@ function buildReportDataTests() {
 
     buildTest("gets substances matching filter", "/test/qta/multiple_with_policies.qta", [
       (result, assert) => {
-        const filterSet = new FilterSet(null, null, "appA", null);
+        const filterSet = new FilterSet(null, null, "appA", null, null, null);
         const years = result.getSubstances(filterSet);
         assert.equal(years.size, 1);
         assert.ok(years.has("subA"));
@@ -130,7 +130,7 @@ function buildReportDataTests() {
 
     buildTest("gets consumption", "/test/qta/multiple_with_policies.qta", [
       (result, assert) => {
-        const filterSet = new FilterSet(1, "bau", null, null);
+        const filterSet = new FilterSet(1, "bau", null, null, null, null);
         const totalConsumption = result.getConsumption(filterSet);
         assert.closeTo(totalConsumption.getValue(), 1500, 0.0001);
         assert.deepEqual(totalConsumption.getUnits(), "tCO2e");
@@ -139,8 +139,17 @@ function buildReportDataTests() {
 
     buildTest("gets sales", "/test/qta/multiple_with_policies.qta", [
       (result, assert) => {
-        const filterSet = new FilterSet(1, "bau", null, null);
+        const filterSet = new FilterSet(1, "bau", null, null, null, null);
         const totalSales = result.getSales(filterSet);
+        assert.closeTo(totalSales.getValue(), 200000, 0.0001);
+        assert.deepEqual(totalSales.getUnits(), "kg");
+      },
+    ]);
+
+    buildTest("gets sales by metric", "/test/qta/multiple_with_policies.qta", [
+      (result, assert) => {
+        const filterSet = new FilterSet(1, "bau", null, null, "sales", null);
+        const totalSales = result.getMetric(filterSet);
         assert.closeTo(totalSales.getValue(), 200000, 0.0001);
         assert.deepEqual(totalSales.getUnits(), "kg");
       },
@@ -148,7 +157,7 @@ function buildReportDataTests() {
 
     buildTest("gets population", "/test/qta/multiple_with_policies.qta", [
       (result, assert) => {
-        const filterSet = new FilterSet(1, "bau", null, null);
+        const filterSet = new FilterSet(1, "bau", null, null, null, null);
         const totalPopulation = result.getPopulation(filterSet);
         assert.closeTo(totalPopulation.getValue(), 200000, 0.0001);
         assert.deepEqual(totalPopulation.getUnits(), "units");

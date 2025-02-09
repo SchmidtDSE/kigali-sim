@@ -656,6 +656,19 @@
             </div>
             <div class="value"></div>
             <div class="units">MtCO2e / yr <span class="current-year"></span></div>
+            <div class="submetric">
+              <div class="sel">
+                <select
+                  name="consumption-submetric"
+                  class="consumption-submetric"
+                  aria-label="Type of consumption to display"
+                >
+                  <option value="all" selected>all</option>
+                  <option value="recharge">recharge</option>
+                  <option value="eol">end of life</option>
+                </select>
+              </div>
+            </div>
           </div>
 
           <div></div>
@@ -682,7 +695,7 @@
                   class="sales-submetric"
                   aria-label="Type of sales to display"
                 >
-                  <option value="all">all</option>
+                  <option value="all" selected>all</option>
                   <option value="import">imports</option>
                   <option value="domestic">domestic</option>
                 </select>
@@ -707,6 +720,18 @@
             </div>
             <div class="value"></div>
             <div class="units">units <span class="current-year"></span></div>
+            <div class="submetric">
+              <div class="sel">
+                <select
+                  name="equipment-submetric"
+                  class="equipment-submetric"
+                  aria-label="Type of equipment to display"
+                >
+                  <option value="all" selected>total</option>
+                  <option value="new">new</option>
+                </select>
+              </div>
+            </div>
           </div>
         </div>
 

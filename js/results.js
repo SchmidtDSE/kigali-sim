@@ -347,12 +347,20 @@ class ScorecardPresenter {
     const salesScorecard = self._root.querySelector("#sales-scorecard");
     const equipmentScorecard = self._root.querySelector("#equipment-scorecard");
 
-    const registerListener = (scorecard, value) => {
-      const radio = scorecard.querySelector(".metric-radio");
-      radio.addEventListener("click", () => {
-        const newFilterSet = self._filterSet.getWithMetric(value);
+    const registerListener = (scorecard, family) => {
+      const subMetricDropdown = scorecard.querySelector(".submetric");
+      const subMetric = subMetricDropdown.value;
+
+      const callback = () => {
+        const isAll = subMetric === "all";
+        const extendedName = family + ":" + subMetric;
+        const fullName = isAll ? family : extendedName;
+        const newFilterSet = self._filterSet.getWithMetric(fullName);
         self._onUpdateFilterSet(newFilterSet);
-      });
+      };
+
+      const radio = scorecard.querySelector(".metric-radio");
+      radio.addEventListener("click", callback);
     };
 
     registerListener(consumptionScorecard, "consumption");
