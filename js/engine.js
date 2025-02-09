@@ -144,6 +144,26 @@ class EngineResult {
     const self = this;
     return self._populationNew;
   }
+
+  /**
+   * Get the greenhouse gas emissions from recharge activities.
+   *
+   * @returns {EngineNumber} The recharge emissions value with units.
+   */
+  getRechargeEmissions() {
+    const self = this;
+    return self._rechargeEmissions;
+  }
+
+  /**
+   * Get the greenhouse gas emissions from end-of-life equipment.
+   *
+   * @returns {EngineNumber} The end-of-life emissions value with units.
+   */
+  getEolEmissions() {
+    const self = this;
+    return self._eolEmissions;
+  }
 }
 
 /**
