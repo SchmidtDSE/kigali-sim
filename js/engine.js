@@ -36,6 +36,8 @@ class EngineResult {
    * @param {EngineNumber} importValue - The import value.
    * @param {EngineNumber} consumptionValue - The consumption value.
    * @param {EngineNumber} populationValue - The population value.
+   * @param {EngineNumber} populationChange - The amount of new equipment
+   *     added / rmoved.
    */
   constructor(
     application,
@@ -45,6 +47,7 @@ class EngineResult {
     importValue,
     consumptionValue,
     populationValue,
+    populationChange,
   ) {
     const self = this;
     self._application = application;
@@ -54,6 +57,7 @@ class EngineResult {
     self._importValue = importValue;
     self._consumptionValue = consumptionValue;
     self._populationValue = populationValue;
+    self._populationChange = populationChange;
   }
 
   /**
@@ -124,6 +128,16 @@ class EngineResult {
   getPopulation() {
     const self = this;
     return self._populationValue;
+  }
+
+  /**
+   * Get the amount of new equipment added / removed in this year.
+   *
+   * @returns {EngineNumber} The population added or removed.
+   */
+  getPopulationChange() {
+    const self = this;
+    return self._populationChange;
   }
 }
 
@@ -750,6 +764,20 @@ class Engine {
       const importValue = self._streamKeeper.getStream(application, substance, "import");
       const consumptionValue = self._streamKeeper.getStream(application, substance, "consumption");
       const populationValue = self._streamKeeper.getStream(application, substance, "equipment");
+      const priorPopulation = self._streamKeeper.getStream(
+        application,
+        substance,
+        "priorEquipment",
+      );
+
+      const popConverter = self._createUnitConverterWithTotal("equipment");
+      const popUnits = populationValue.getUnits();
+      const priorPopulationConvert = popConverter.convert(priorPopulation, popUnits);
+      const newPopulationConvert = popConverter.convert(populationValue, popUnits);
+      const populationChange = new EngineNumber(
+        newPopulationConvert.getValue() - priorPopulationConvert.getValue(),
+        popUnits,
+      );
 
       return new EngineResult(
         application,
@@ -759,6 +787,7 @@ class Engine {
         importValue,
         consumptionValue,
         populationValue,
+        populationChange,
       );
     });
   }

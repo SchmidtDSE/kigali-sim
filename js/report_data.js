@@ -17,13 +17,16 @@ class AggregatedResult {
    * @param {EngineNumber} importValue - The import value.
    * @param {EngineNumber} consumptionValue - The consumption value.
    * @param {EngineNumber} populationValue - The equipment population value.
+   * @param {EngineNumber} populationChange - The change in population from the
+   *     prior year.
    */
-  constructor(manufactureValue, importValue, consumptionValue, populationValue) {
+  constructor(manufactureValue, importValue, consumptionValue, populationValue, populationChange) {
     const self = this;
     self._manufactureValue = manufactureValue;
     self._importValue = importValue;
     self._consumptionValue = consumptionValue;
     self._populationValue = populationValue;
+    self._populationChange = populationChange;
   }
 
   /**
@@ -80,6 +83,16 @@ class AggregatedResult {
   }
 
   /**
+   * Get the change in population from the prior year.
+   *
+   * @returns {EngineNumber} The change in population value with units.
+   */
+  getPopulationChange() {
+    const self = this;
+    return self._populationChange;
+  }
+
+  /**
    * Combine this result with another result.
    *
    * Combine this result with another result in an additive way with unit
@@ -95,8 +108,18 @@ class AggregatedResult {
     const importValue = self._combineUnitValue(self.getImport(), other.getImport());
     const consumptionValue = self._combineUnitValue(self.getConsumption(), other.getConsumption());
     const populationValue = self._combineUnitValue(self.getPopulation(), other.getPopulation());
+    const populationChange = self._combineUnitValue(
+      self.getPopulationChange(),
+      other.getPopulationChange(),
+    );
 
-    return new AggregatedResult(manufactureValue, importValue, consumptionValue, populationValue);
+    return new AggregatedResult(
+      manufactureValue,
+      importValue,
+      consumptionValue,
+      populationValue,
+      populationChange,
+    );
   }
 
   /**
@@ -333,6 +356,7 @@ class ReportDataWrapper {
           x.getImport(),
           x.getConsumption(),
           x.getPopulation(),
+          x.getPopulationChange(),
         ),
     );
 
