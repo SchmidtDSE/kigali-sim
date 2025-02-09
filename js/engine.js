@@ -37,6 +37,8 @@ class EngineResult {
    * @param {EngineNumber} consumptionValue - The consumption value.
    * @param {EngineNumber} populationValue - The population value.
    * @param {EngineNumber} populationNew - The amount of new equipment added.
+   * @param {EngineNumber} rechargeEmissions - The GHG emissions from recharge.
+   * @param {EngineNumber} eolEmissions - The GHG emissions from end-of-life equipment.
    */
   constructor(
     application,
@@ -47,6 +49,8 @@ class EngineResult {
     consumptionValue,
     populationValue,
     populationNew,
+    rechargeEmissions,
+    eolEmissions
   ) {
     const self = this;
     self._application = application;
@@ -57,6 +61,8 @@ class EngineResult {
     self._consumptionValue = consumptionValue;
     self._populationValue = populationValue;
     self._populationNew = populationNew;
+    self._rechargeEmissions = rechargeEmissions;
+    self._eolEmissions = eolEmissions;
   }
 
   /**
