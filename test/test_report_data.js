@@ -155,6 +155,33 @@ function buildReportDataTests() {
       },
     ]);
 
+    buildTest("gets sales by metric split", "/test/qta/multiple_with_policies_split.qta", [
+      (result, assert) => {
+        const filterSet = new FilterSet(1, "bau", null, null, "sales", null);
+        const totalSales = result.getMetric(filterSet);
+        assert.closeTo(totalSales.getValue(), 200000, 0.0001);
+        assert.deepEqual(totalSales.getUnits(), "kg");
+      },
+    ]);
+
+    buildTest("gets imports by metric", "/test/qta/multiple_with_policies_split.qta", [
+      (result, assert) => {
+        const filterSet = new FilterSet(1, "bau", null, null, "sales:import", null);
+        const sales = result.getMetric(filterSet);
+        assert.closeTo(sales.getValue(), 200000 * 0.1, 0.0001);
+        assert.deepEqual(sales.getUnits(), "kg");
+      },
+    ]);
+
+    buildTest("gets domestic manfacture by metric", "/test/qta/multiple_with_policies_split.qta", [
+      (result, assert) => {
+        const filterSet = new FilterSet(1, "bau", null, null, "sales:manufacture", null);
+        const sales = result.getMetric(filterSet);
+        assert.closeTo(sales.getValue(), 200000 * 0.9, 0.0001);
+        assert.deepEqual(sales.getUnits(), "kg");
+      },
+    ]);
+
     buildTest("gets population", "/test/qta/multiple_with_policies.qta", [
       (result, assert) => {
         const filterSet = new FilterSet(1, "bau", null, null, null, null);

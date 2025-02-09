@@ -152,11 +152,11 @@ class ReportDataWrapper {
    */
   getMetric(filterSet) {
     const self = this;
-    const metric = filterSet.getMetric();
+    const metric = filterSet.getFullMetricName();
     const strategy = {
       "consumption": () => self.getConsumption(filterSet),
       "sales": () => self.getSales(filterSet),
-      "sales:import": () => self.getImports(filterSet),
+      "sales:import": () => self.getImport(filterSet),
       "sales:manufacture": () => self.getManufacture(filterSet),
       "population": () => self.getPopulation(filterSet),
     }[metric];
