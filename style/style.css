@@ -188,8 +188,18 @@ main {
   color: #333;
 }
 
+#results .scorecards .scorecard.inactive .submetric {
+  display: none;
+}
+
 #results .scorecards .scorecard .label {
   border-bottom: 1px dotted #C0C0C0;
+}
+
+#results .scorecards .scorecard .submetric {
+  border-top: 1px dotted #C0C0C0;
+  padding-bottom: 2px;
+  padding-top: 2px;
 }
 
 #results .scorecards .scorecard .units {

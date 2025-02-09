@@ -375,8 +375,9 @@ class FilterSet {
    * @param {string|null} scenario - Name of scenario for which to filter.
    * @param {string|null} application - Name of application for which to
    *     filter.
-   * @param {string|null} substance - Name of substance for which to filter.
-   * @param {string|null} metric - Metric name for which to filter.
+   * @param {string|null} substance - Name of substance which to filter.
+   * @param {string|null} metric - Metric name for which to display. Note
+   *     that this is the full metric names like sales or sales:import.
    * @param {string|null} dimension - Dimension type for which to filter.
    */
   constructor(year, scenario, application, substance, metric, dimension) {
@@ -386,6 +387,7 @@ class FilterSet {
     self._application = application;
     self._substance = substance;
     self._metric = metric;
+    self._subMetric = subMetric;
     self._dimension = dimension;
   }
 
@@ -521,13 +523,36 @@ class FilterSet {
   }
 
   /**
-   * Get the metric filter.
+   * Get the full name of the metric to display.
    *
-   * @returns {string|null} The metric for which to filter like sales.
+   * @returns {string|null} The metric to display like sales. Note that this is
+   *     the full name like sales:manufacture or sales:all.
+   */
+  getFullMetricName() {
+    const self = this;
+    return self._metric;
+  }
+
+  /**
+   * Get the type of metric to display like sales.
+   *
+   * @returns {string|null} The metric family to display like sales.
    */
   getMetric() {
     const self = this;
-    return self._metric;
+    return self._metric.split(":")[0];
+  }
+
+  /**
+   * Get the substream of the metric to dsiplay.
+   *
+   * @returns {string|null} The submetric to display like import or null if no
+   *     submetric.
+   */
+  getSubMetric() {
+    const self = this;
+    const metricPieces = self._metric.split(":");
+    return metricPieces.length < 2 ? self._metric : metricPieces[1];
   }
 
   /**
