@@ -36,8 +36,7 @@ class EngineResult {
    * @param {EngineNumber} importValue - The import value.
    * @param {EngineNumber} consumptionValue - The consumption value.
    * @param {EngineNumber} populationValue - The population value.
-   * @param {EngineNumber} populationChange - The amount of new equipment
-   *     added / rmoved.
+   * @param {EngineNumber} populationNew - The amount of new equipment added.
    */
   constructor(
     application,
@@ -47,7 +46,7 @@ class EngineResult {
     importValue,
     consumptionValue,
     populationValue,
-    populationChange,
+    populationNew,
   ) {
     const self = this;
     self._application = application;
@@ -57,7 +56,7 @@ class EngineResult {
     self._importValue = importValue;
     self._consumptionValue = consumptionValue;
     self._populationValue = populationValue;
-    self._populationChange = populationChange;
+    self._populationNew = populationNew;
   }
 
   /**
@@ -131,13 +130,13 @@ class EngineResult {
   }
 
   /**
-   * Get the amount of new equipment added / removed in this year.
+   * Get the amount of new equipment added this year.
    *
-   * @returns {EngineNumber} The population added or removed.
+   * @returns {EngineNumber} The amount of new equipment this year in units.
    */
-  getPopulationChange() {
+  getPopulationNew() {
     const self = this;
-    return self._populationChange;
+    return self._populationNew;
   }
 }
 
@@ -764,20 +763,7 @@ class Engine {
       const importValue = self._streamKeeper.getStream(application, substance, "import");
       const consumptionValue = self._streamKeeper.getStream(application, substance, "consumption");
       const populationValue = self._streamKeeper.getStream(application, substance, "equipment");
-      const priorPopulation = self._streamKeeper.getStream(
-        application,
-        substance,
-        "priorEquipment",
-      );
-
-      const popConverter = self._createUnitConverterWithTotal("equipment");
-      const popUnits = populationValue.getUnits();
-      const priorPopulationConvert = popConverter.convert(priorPopulation, popUnits);
-      const newPopulationConvert = popConverter.convert(populationValue, popUnits);
-      const populationChange = new EngineNumber(
-        newPopulationConvert.getValue() - priorPopulationConvert.getValue(),
-        popUnits,
-      );
+      const populationNew = self._streamKeeper.getStream(application, substance, "newEquipment");
 
       return new EngineResult(
         application,
@@ -787,7 +773,7 @@ class Engine {
         importValue,
         consumptionValue,
         populationValue,
-        populationChange,
+        populationNew,
       );
     });
   }
@@ -902,15 +888,17 @@ class Engine {
     const initialCharge = unitConverter.convert(initialChargeRaw, "kg / unit");
     const initialChargeKgUnit = initialCharge.getValue();
     const deltaUnits = availableForNewUnitsKg / initialChargeKgUnit;
+    const newVolume = new EngineNumber(deltaUnits, "units");
 
     // Find new total
     const priorPopulationUnits = priorPopulation.getValue();
     const newUnits = priorPopulationUnits + deltaUnits;
     const newUnitsAllowed = newUnits < 0 ? 0 : newUnits;
-    const newVolume = new EngineNumber(newUnitsAllowed, "units");
+    const newVolumeTotal = new EngineNumber(newUnitsAllowed, "units");
 
     // Save
-    self.setStream("equipment", newVolume, null, scopeEffective, false);
+    self.setStream("equipment", newVolumeTotal, null, scopeEffective, false);
+    self.setStream("newEquipment", newVolume, null, scopeEffective, false);
   }
 
   /**

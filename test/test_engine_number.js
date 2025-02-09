@@ -111,9 +111,9 @@ function buildEngineNumberTests() {
         self._populationChange = newValue;
       }
 
-      getPopulationChange() {
+      getPopulationNew() {
         const self = this;
-        return self._populationChange;
+        return self._populationNew;
       }
     }
 

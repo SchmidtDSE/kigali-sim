@@ -17,16 +17,15 @@ class AggregatedResult {
    * @param {EngineNumber} importValue - The import value.
    * @param {EngineNumber} consumptionValue - The consumption value.
    * @param {EngineNumber} populationValue - The equipment population value.
-   * @param {EngineNumber} populationChange - The change in population from the
-   *     prior year.
+   * @param {EngineNumber} populationNew - The new equipment added this year.
    */
-  constructor(manufactureValue, importValue, consumptionValue, populationValue, populationChange) {
+  constructor(manufactureValue, importValue, consumptionValue, populationValue, populationNew) {
     const self = this;
     self._manufactureValue = manufactureValue;
     self._importValue = importValue;
     self._consumptionValue = consumptionValue;
     self._populationValue = populationValue;
-    self._populationChange = populationChange;
+    self._populationNew = populationNew;
   }
 
   /**
@@ -83,13 +82,13 @@ class AggregatedResult {
   }
 
   /**
-   * Get the change in population from the prior year.
+   * Get the new equipment added in this yaer.
    *
-   * @returns {EngineNumber} The change in population value with units.
+   * @returns {EngineNumber} The new equipment added in units.
    */
-  getPopulationChange() {
+  getPopulationNew() {
     const self = this;
-    return self._populationChange;
+    return self._populationNew;
   }
 
   /**
@@ -108,17 +107,14 @@ class AggregatedResult {
     const importValue = self._combineUnitValue(self.getImport(), other.getImport());
     const consumptionValue = self._combineUnitValue(self.getConsumption(), other.getConsumption());
     const populationValue = self._combineUnitValue(self.getPopulation(), other.getPopulation());
-    const populationChange = self._combineUnitValue(
-      self.getPopulationChange(),
-      other.getPopulationChange(),
-    );
+    const populationNew = self._combineUnitValue(self.getPopulationNew(), other.getPopulationNew());
 
     return new AggregatedResult(
       manufactureValue,
       importValue,
       consumptionValue,
       populationValue,
-      populationChange,
+      populationNew,
     );
   }
 
@@ -182,6 +178,7 @@ class ReportDataWrapper {
       "sales:import": () => self.getImport(filterSet),
       "sales:manufacture": () => self.getManufacture(filterSet),
       "population": () => self.getPopulation(filterSet),
+      "population:new": () => self.getPopulationNew(filterSet),
     }[metric];
     const value = strategy();
     return value;
@@ -356,7 +353,7 @@ class ReportDataWrapper {
           x.getImport(),
           x.getConsumption(),
           x.getPopulation(),
-          x.getPopulationChange(),
+          x.getPopulationNew(),
         ),
     );
 

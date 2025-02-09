@@ -711,6 +711,8 @@ class StreamKeeper {
     // Population
     self._streams.set(self._getKey(application, substance, "equipment"), makeZero("units"));
     self._streams.set(self._getKey(application, substance, "priorEquipment"), makeZero("units"));
+
+    self._streams.set(self._getKey(application, substance, "newEquipment"), makeZero("units"));
   }
 
   /**
