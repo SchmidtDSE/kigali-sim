@@ -414,6 +414,8 @@ class ReportDataWrapper {
           x.getConsumption(),
           x.getPopulation(),
           x.getPopulationNew(),
+          x.getRechargeEmissions(),
+          x.getEolEmissions(),
         ),
     );
 
