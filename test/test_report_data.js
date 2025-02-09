@@ -41,14 +41,14 @@ function buildReportDataTests() {
     };
 
     QUnit.test("parses submetric all", (assert) => {
-      const filterSet = new FilterSet(null, null, "sales", null);
+      const filterSet = new FilterSet(null, null, null, null, "sales", null);
       assert.deepEqual(filterSet.getFullMetricName(), "sales");
       assert.deepEqual(filterSet.getMetric(), "sales");
       assert.deepEqual(filterSet.getSubMetric(), null);
     });
 
     QUnit.test("parses submetric import", (assert) => {
-      const filterSet = new FilterSet(null, null, "sales:import", null);
+      const filterSet = new FilterSet(null, null, null, null, "sales:import", null);
       assert.deepEqual(filterSet.getFullMetricName(), "sales:import");
       assert.deepEqual(filterSet.getMetric(), "sales");
       assert.deepEqual(filterSet.getSubMetric(), "import");

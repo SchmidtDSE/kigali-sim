@@ -387,7 +387,6 @@ class FilterSet {
     self._application = application;
     self._substance = substance;
     self._metric = metric;
-    self._subMetric = subMetric;
     self._dimension = dimension;
   }
 
@@ -540,6 +539,11 @@ class FilterSet {
    */
   getMetric() {
     const self = this;
+
+    if (self._metric === null) {
+      return null;
+    }
+
     return self._metric.split(":")[0];
   }
 
@@ -551,8 +555,13 @@ class FilterSet {
    */
   getSubMetric() {
     const self = this;
+
+    if (self._metric === null) {
+      return null;
+    }
+
     const metricPieces = self._metric.split(":");
-    return metricPieces.length < 2 ? self._metric : metricPieces[1];
+    return metricPieces.length < 2 ? null : metricPieces[1];
   }
 
   /**
