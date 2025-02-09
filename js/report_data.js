@@ -122,6 +122,16 @@ class AggregatedResult {
   }
 
   /**
+   * Get the total greenhouse gas emissions combining recharge and end-of-life emissions.
+   *
+   * @returns {EngineNumber} The combined emissions value with units.
+   */
+  getTotalEmissions() {
+    const self = this;
+    return self._rechargeEmissions.add(self._eolEmissions);
+  }
+
+  /**
    * Combine this result with another result.
    *
    * Combine this result with another result in an additive way with unit
