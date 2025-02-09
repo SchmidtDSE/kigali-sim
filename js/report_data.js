@@ -19,13 +19,15 @@ class AggregatedResult {
    * @param {EngineNumber} populationValue - The equipment population value.
    * @param {EngineNumber} populationNew - The new equipment added this year.
    */
-  constructor(manufactureValue, importValue, consumptionValue, populationValue, populationNew) {
+  constructor(manufactureValue, importValue, consumptionValue, populationValue, populationNew, rechargeEmissions, eolEmissions) {
     const self = this;
     self._manufactureValue = manufactureValue;
     self._importValue = importValue;
     self._consumptionValue = consumptionValue;
     self._populationValue = populationValue;
     self._populationNew = populationNew;
+    self._rechargeEmissions = rechargeEmissions || new EngineNumber(0, "tCO2e");
+    self._eolEmissions = eolEmissions || new EngineNumber(0, "tCO2e");
   }
 
   /**
@@ -92,6 +94,26 @@ class AggregatedResult {
   }
 
   /**
+   * Get the greenhouse gas emissions from recharge activities.
+   *
+   * @returns {EngineNumber} The recharge emissions value with units.
+   */
+  getRechargeEmissions() {
+    const self = this;
+    return self._rechargeEmissions;
+  }
+
+  /**
+   * Get the greenhouse gas emissions from end-of-life equipment.
+   *
+   * @returns {EngineNumber} The end-of-life emissions value with units.
+   */
+  getEolEmissions() {
+    const self = this;
+    return self._eolEmissions;
+  }
+
+  /**
    * Combine this result with another result.
    *
    * Combine this result with another result in an additive way with unit
@@ -109,12 +131,17 @@ class AggregatedResult {
     const populationValue = self._combineUnitValue(self.getPopulation(), other.getPopulation());
     const populationNew = self._combineUnitValue(self.getPopulationNew(), other.getPopulationNew());
 
+    const rechargeEmissions = self._combineUnitValue(self.getRechargeEmissions(), other.getRechargeEmissions());
+    const eolEmissions = self._combineUnitValue(self.getEolEmissions(), other.getEolEmissions());
+
     return new AggregatedResult(
       manufactureValue,
       importValue,
       consumptionValue,
       populationValue,
       populationNew,
+      rechargeEmissions,
+      eolEmissions
     );
   }
 
