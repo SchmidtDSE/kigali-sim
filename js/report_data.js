@@ -311,6 +311,18 @@ class ReportDataWrapper {
   }
 
   /**
+   * Get the amount of new equipment added.
+   *
+   * @param {FilterSet} filterSet - The filter criteria to apply.
+   * @returns {EngineNumber} The new equipment added.
+   */
+  getPopulationNew(filterSet) {
+    const self = this;
+    const aggregated = self._getAggregatedAfterFilter(filterSet);
+    return aggregated.getPopulationNew();
+  }
+
+  /**
    * Get flattened array of all results.
    *
    * @private
