@@ -348,10 +348,10 @@ class ScorecardPresenter {
     const equipmentScorecard = self._root.querySelector("#equipment-scorecard");
 
     const registerListener = (scorecard, family) => {
-      const subMetricDropdown = scorecard.querySelector(".submetric");
-      const subMetric = subMetricDropdown.value;
+      const subMetricDropdown = scorecard.querySelector(".submetric-input");
 
       const callback = () => {
+        const subMetric = subMetricDropdown.value;
         const isAll = subMetric === "all";
         const extendedName = family + ":" + subMetric;
         const fullName = isAll ? family : extendedName;
@@ -361,6 +361,9 @@ class ScorecardPresenter {
 
       const radio = scorecard.querySelector(".metric-radio");
       radio.addEventListener("click", callback);
+
+      const dropdown = scorecard.querySelector(".submetric");
+      dropdown.addEventListener("change", callback);
     };
 
     registerListener(consumptionScorecard, "consumption");
