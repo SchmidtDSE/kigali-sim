@@ -252,21 +252,21 @@ class ScorecardPresenter {
     self._filterSet = filterSet;
     const currentYear = self._filterSet.getYear();
 
-    const consumptionScorecard = self._root.querySelector("#consumption-scorecard");
+    const emissionsScorecard = self._root.querySelector("#emissions-scorecard");
     const salesScorecard = self._root.querySelector("#sales-scorecard");
     const equipmentScorecard = self._root.querySelector("#equipment-scorecard");
 
-    const consumptionValue = results.getConsumption(filterSet);
+    const emissionsValue = results.getTotalEmissions(filterSet);
     const salesValue = results.getSales(filterSet);
     const equipmentValue = results.getPopulation(filterSet);
 
     const roundToTenths = (x) => Math.round(x * 10) / 10;
-    const emissionRounded = roundToTenths(consumptionValue.getValue() / 1000000);
+    const emissionRounded = roundToTenths(emissionsValue.getValue() / 1000000);
     const salesMt = roundToTenths(salesValue.getValue() / 1000000) + " k";
     const millionEqipment = roundToTenths(equipmentValue.getValue() / 1000000) + " M";
 
     const metricSelected = filterSet.getMetric();
-    const consumptionSelected = metricSelected === "consumption";
+    const emissionsSelected = metricSelected === "emissions";
     const salesSelected = metricSelected === "sales";
     const equipmentSelected = metricSelected === "population";
 
@@ -274,10 +274,10 @@ class ScorecardPresenter {
     const hideVal = !self._filterSet.hasSingleScenario(scenarios);
 
     self._updateCard(
-      consumptionScorecard,
+      emissionsScorecard,
       emissionRounded,
       currentYear,
-      consumptionSelected,
+      emissionsSelected,
       hideVal,
     );
     self._updateCard(salesScorecard, salesMt, currentYear, salesSelected, hideVal);
@@ -343,7 +343,7 @@ class ScorecardPresenter {
   _registerEventListeners() {
     const self = this;
 
-    const consumptionScorecard = self._root.querySelector("#consumption-scorecard");
+    const emissionsScorecard = self._root.querySelector("#emissions-scorecard");
     const salesScorecard = self._root.querySelector("#sales-scorecard");
     const equipmentScorecard = self._root.querySelector("#equipment-scorecard");
 
@@ -366,7 +366,7 @@ class ScorecardPresenter {
       dropdown.addEventListener("change", callback);
     };
 
-    registerListener(consumptionScorecard, "consumption");
+    registerListener(emissionsScorecard, "emissions");
     registerListener(salesScorecard, "sales");
     registerListener(equipmentScorecard, "population");
   }
