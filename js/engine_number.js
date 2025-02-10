@@ -540,14 +540,13 @@ class ConverterStateGetter {
   }
 
   /**
-   * Get the number of years currently elapsed in the simulation.
+   * Get number of yearsin the simulation since the last step.
    *
-   * @returns {EngineNumber} The elapsed time in years (0 for first year, 1 otherwise).
+   * @returns {EngineNumber} The elapsed time in years since the last step.
    */
   getYearsElapsed() {
     const self = this;
-    const firstYear = self._engine.getStartYear() == self._engine.getYear();
-    return new EngineNumber(firstYear ? 0 : 1, "year");
+    return new EngineNumber(1, "year");
   }
 
   /**
