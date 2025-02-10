@@ -188,8 +188,8 @@ main {
   color: #333;
 }
 
-#results .scorecards .scorecard.inactive .submetric {
-  display: none;
+#results .scorecards .scorecard.inactive .sel select {
+  background-color: #F8F8F8;
 }
 
 #results .scorecards .scorecard .label {
@@ -197,12 +197,12 @@ main {
 }
 
 #results .scorecards .scorecard .submetric {
-  border-top: 1px dotted #C0C0C0;
   padding-bottom: 2px;
   padding-top: 2px;
 }
 
 #results .scorecards .scorecard .units {
+  display: none;
   font-size: 12px;
 }
 

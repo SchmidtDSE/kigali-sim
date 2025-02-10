@@ -29,6 +29,13 @@ const COLORS = [
 const ALLOW_REDUNDANT_ALL = true;
 
 /**
+ * Flag to indicate if large score displays are active.
+ *
+ * @type {boolean}
+ */
+const ALLOW_SCORE_DISPLAY = false;
+
+/**
  * Get a color from the predefined color palette.
  *
  * @param {number} i - Index into color array.
@@ -278,7 +285,8 @@ class ScorecardPresenter {
     const equipmentSelected = metricSelected === "population";
 
     const scenarios = results.getScenarios(self._filterSet.getWithScenario(null));
-    const hideVal = !self._filterSet.hasSingleScenario(scenarios);
+    const showVal = ALLOW_SCORE_DISPLAY && self._filterSet.hasSingleScenario(scenarios);
+    const hideVal = !showVal;
 
     self._updateCard(emissionsScorecard, emissionRounded, currentYear, emissionsSelected, hideVal);
     self._updateCard(salesScorecard, salesMt, currentYear, salesSelected, hideVal);
@@ -589,6 +597,10 @@ class DimensionCardPresenter {
             return Math.round(percent * 100) + "%";
           }
         });
+
+      d3.select(card).select(".axis").style("display", "grid");
+    } else {
+      d3.select(card).select(".axis").style("display", "none");
     }
   }
 
