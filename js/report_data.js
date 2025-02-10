@@ -313,6 +313,42 @@ class ReportDataWrapper {
   }
 
   /**
+   * Get total emissions value matching a given filter set.
+   *
+   * @param {FilterSet} filterSet - The filter criteria to apply.
+   * @returns {EngineNumber} The total emissions value.
+   */
+  getTotalEmission(filterSet) {
+    const self = this;
+    const aggregated = self._getAggregatedAfterFilter(filterSet);
+    return aggregated.getTotalEmissions();
+  }
+
+  /**
+   * Get recharge emissions value matching a given filter set.
+   *
+   * @param {FilterSet} filterSet - The filter criteria to apply.
+   * @returns {EngineNumber} The recharge emissions value.
+   */
+  getRechargeEmissions(filterSet) {
+    const self = this;
+    const aggregated = self._getAggregatedAfterFilter(filterSet);
+    return aggregated.getRechargeEmissions();
+  }
+
+  /**
+   * Get end-of-life emissions value matching a given filter set.
+   *
+   * @param {FilterSet} filterSet - The filter criteria to apply.
+   * @returns {EngineNumber} The end-of-life emissions value.
+   */
+  getEolEmissions(filterSet) {
+    const self = this;
+    const aggregated = self._getAggregatedAfterFilter(filterSet);
+    return aggregated.getEolEmissions();
+  }
+
+  /**
    * Get sales value matching a given filter set.
    *
    * @param {FilterSet} filterSet - The filter criteria to apply.
