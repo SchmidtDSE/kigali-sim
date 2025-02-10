@@ -55,7 +55,7 @@ class ResultsPresenter {
     const self = this;
     self._root = root;
     self._results = null;
-    self._filterSet = new FilterSet(null, null, null, null, "consumption", "simulations");
+    self._filterSet = new FilterSet(null, null, null, null, "emissions", "simulations");
 
     const scorecardContainer = self._root.querySelector("#scorecards");
     const dimensionsContainer = self._root.querySelector("#dimensions");
@@ -273,13 +273,7 @@ class ScorecardPresenter {
     const scenarios = results.getScenarios(self._filterSet.getWithScenario(null));
     const hideVal = !self._filterSet.hasSingleScenario(scenarios);
 
-    self._updateCard(
-      emissionsScorecard,
-      emissionRounded,
-      currentYear,
-      emissionsSelected,
-      hideVal,
-    );
+    self._updateCard(emissionsScorecard, emissionRounded, currentYear, emissionsSelected, hideVal);
     self._updateCard(salesScorecard, salesMt, currentYear, salesSelected, hideVal);
     self._updateCard(equipmentScorecard, millionEqipment, currentYear, equipmentSelected, hideVal);
   }
@@ -432,7 +426,7 @@ class DimensionCardPresenter {
     const substancesSelected = dimensionSelected === "substances";
 
     const conversionInfo = {
-      consumption: {divider: 1000000, suffix: "M"},
+      emissions: {divider: 1000000, suffix: "M"},
       sales: {divider: 1000, suffix: ""},
       population: {divider: 1000000, suffix: "M"},
     }[self._filterSet.getMetric()];

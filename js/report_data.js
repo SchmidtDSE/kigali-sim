@@ -220,17 +220,17 @@ class ReportDataWrapper {
   getMetric(filterSet) {
     const self = this;
     const metric = filterSet.getFullMetricName();
-    const strategy = {
-      "emissions": () => self.getTotalEmission(filterSet),
-      "emissions:recharge": () => self.getRechargeEmissions(),
-      "emissions:eol": () => self.getEolEmissions(),
+    const metricStrategy = {
+      "emissions": () => self.getTotalEmissions(filterSet),
+      "emissions:recharge": () => self.getRechargeEmissions(filterSet),
+      "emissions:eol": () => self.getEolEmissions(filterSet),
       "sales": () => self.getSales(filterSet),
       "sales:import": () => self.getImport(filterSet),
       "sales:manufacture": () => self.getManufacture(filterSet),
       "population": () => self.getPopulation(filterSet),
       "population:new": () => self.getPopulationNew(filterSet),
     }[metric];
-    const value = strategy();
+    const value = metricStrategy();
     return value;
   }
 
@@ -318,7 +318,7 @@ class ReportDataWrapper {
    * @param {FilterSet} filterSet - The filter criteria to apply.
    * @returns {EngineNumber} The total emissions value.
    */
-  getTotalEmission(filterSet) {
+  getTotalEmissions(filterSet) {
     const self = this;
     const aggregated = self._getAggregatedAfterFilter(filterSet);
     return aggregated.getTotalEmissions();
