@@ -597,6 +597,10 @@ class DimensionCardPresenter {
             return Math.round(percent * 100) + "%";
           }
         });
+
+      d3.select(card).select(".axis").style("display", "grid");
+    } else {
+      d3.select(card).select(".axis").style("display", "none");
     }
   }
 
