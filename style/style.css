@@ -188,8 +188,8 @@ main {
   color: #333;
 }
 
-#results .scorecards .scorecard.inactive .submetric {
-  display: none;
+#results .scorecards .scorecard.inactive .sel select {
+  background-color: #F8F8F8;
 }
 
 #results .scorecards .scorecard .label {
