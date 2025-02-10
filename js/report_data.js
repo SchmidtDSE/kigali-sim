@@ -19,13 +19,23 @@ class AggregatedResult {
    * @param {EngineNumber} populationValue - The equipment population value.
    * @param {EngineNumber} populationNew - The new equipment added this year.
    */
-  constructor(manufactureValue, importValue, consumptionValue, populationValue, populationNew) {
+  constructor(
+    manufactureValue,
+    importValue,
+    consumptionValue,
+    populationValue,
+    populationNew,
+    rechargeEmissions,
+    eolEmissions,
+  ) {
     const self = this;
     self._manufactureValue = manufactureValue;
     self._importValue = importValue;
     self._consumptionValue = consumptionValue;
     self._populationValue = populationValue;
     self._populationNew = populationNew;
+    self._rechargeEmissions = rechargeEmissions;
+    self._eolEmissions = eolEmissions;
   }
 
   /**
@@ -92,6 +102,36 @@ class AggregatedResult {
   }
 
   /**
+   * Get the greenhouse gas emissions from recharge activities.
+   *
+   * @returns {EngineNumber} The recharge emissions value with units.
+   */
+  getRechargeEmissions() {
+    const self = this;
+    return self._rechargeEmissions;
+  }
+
+  /**
+   * Get the greenhouse gas emissions from end-of-life equipment.
+   *
+   * @returns {EngineNumber} The end-of-life emissions value with units.
+   */
+  getEolEmissions() {
+    const self = this;
+    return self._eolEmissions;
+  }
+
+  /**
+   * Get the total greenhouse gas emissions combining recharge and end-of-life emissions.
+   *
+   * @returns {EngineNumber} The combined emissions value with units.
+   */
+  getTotalEmissions() {
+    const self = this;
+    return self._combineUnitValue(self.getRechargeEmissions(), self.getEolEmissions());
+  }
+
+  /**
    * Combine this result with another result.
    *
    * Combine this result with another result in an additive way with unit
@@ -109,12 +149,20 @@ class AggregatedResult {
     const populationValue = self._combineUnitValue(self.getPopulation(), other.getPopulation());
     const populationNew = self._combineUnitValue(self.getPopulationNew(), other.getPopulationNew());
 
+    const rechargeEmissions = self._combineUnitValue(
+      self.getRechargeEmissions(),
+      other.getRechargeEmissions(),
+    );
+    const eolEmissions = self._combineUnitValue(self.getEolEmissions(), other.getEolEmissions());
+
     return new AggregatedResult(
       manufactureValue,
       importValue,
       consumptionValue,
       populationValue,
       populationNew,
+      rechargeEmissions,
+      eolEmissions,
     );
   }
 
@@ -172,15 +220,17 @@ class ReportDataWrapper {
   getMetric(filterSet) {
     const self = this;
     const metric = filterSet.getFullMetricName();
-    const strategy = {
-      "consumption": () => self.getConsumption(filterSet),
+    const metricStrategy = {
+      "emissions": () => self.getTotalEmissions(filterSet),
+      "emissions:recharge": () => self.getRechargeEmissions(filterSet),
+      "emissions:eol": () => self.getEolEmissions(filterSet),
       "sales": () => self.getSales(filterSet),
       "sales:import": () => self.getImport(filterSet),
       "sales:manufacture": () => self.getManufacture(filterSet),
       "population": () => self.getPopulation(filterSet),
       "population:new": () => self.getPopulationNew(filterSet),
     }[metric];
-    const value = strategy();
+    const value = metricStrategy();
     return value;
   }
 
@@ -260,6 +310,42 @@ class ReportDataWrapper {
     const self = this;
     const aggregated = self._getAggregatedAfterFilter(filterSet);
     return aggregated.getConsumption();
+  }
+
+  /**
+   * Get total emissions value matching a given filter set.
+   *
+   * @param {FilterSet} filterSet - The filter criteria to apply.
+   * @returns {EngineNumber} The total emissions value.
+   */
+  getTotalEmissions(filterSet) {
+    const self = this;
+    const aggregated = self._getAggregatedAfterFilter(filterSet);
+    return aggregated.getTotalEmissions();
+  }
+
+  /**
+   * Get recharge emissions value matching a given filter set.
+   *
+   * @param {FilterSet} filterSet - The filter criteria to apply.
+   * @returns {EngineNumber} The recharge emissions value.
+   */
+  getRechargeEmissions(filterSet) {
+    const self = this;
+    const aggregated = self._getAggregatedAfterFilter(filterSet);
+    return aggregated.getRechargeEmissions();
+  }
+
+  /**
+   * Get end-of-life emissions value matching a given filter set.
+   *
+   * @param {FilterSet} filterSet - The filter criteria to apply.
+   * @returns {EngineNumber} The end-of-life emissions value.
+   */
+  getEolEmissions(filterSet) {
+    const self = this;
+    const aggregated = self._getAggregatedAfterFilter(filterSet);
+    return aggregated.getEolEmissions();
   }
 
   /**
@@ -366,6 +452,8 @@ class ReportDataWrapper {
           x.getConsumption(),
           x.getPopulation(),
           x.getPopulationNew(),
+          x.getRechargeEmissions(),
+          x.getEolEmissions(),
         ),
     );
 
