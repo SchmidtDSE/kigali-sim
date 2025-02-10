@@ -157,7 +157,8 @@ class ExportPresenter {
           const year = result.getYear();
           const manufactureValue = result.getManufacture();
           const importValue = result.getImport();
-          const consumptionValue = result.getConsumption();
+          const rechargeEmissionsValue = result.getRechargeEmissions();
+          const eolEmissionsValue = result.getEolEmissions();
           const populationValue = result.getPopulation();
           return {
             scenario: scenarioName,
@@ -168,8 +169,10 @@ class ExportPresenter {
             manufactureUnits: manufactureValue.getUnits(),
             importValue: importValue.getValue(),
             importUnits: importValue.getUnits(),
-            consumptionValue: consumptionValue.getValue(),
-            consumptionUnits: consumptionValue.getUnits(),
+            rechargeEmissionsValue: rechargeEmissionsValue.getValue(),
+            rechargeEmissionsValue: rechargeEmissionsValue.getUnits(),
+            eolEmissionsValue: eolEmissionsValue.getValue(),
+            eolEmissionsUnits: eolEmissionsValue.getUnits(),
             equipmentPopulation: populationValue.getValue(),
             equipmentUnits: populationValue.getUnits(),
           };
@@ -186,8 +189,10 @@ class ExportPresenter {
         record["manufactureUnits"],
         record["importValue"],
         record["importUnits"],
-        record["consumptionValue"],
-        record["consumptionUnits"],
+        record["rechargeEmissionsValue"],
+        record["rechargeEmissionsUnits"],
+        record["eolEmissionsValue"],
+        record["eolEmissionsUnits"],
         record["equipmentPopulation"],
         record["equipmentUnits"],
       ];
@@ -206,8 +211,10 @@ class ExportPresenter {
       "manufactureUnits",
       "importValue",
       "importUnits",
-      "consumptionValue",
-      "consumptionUnits",
+      "rechargeEmissionsValue",
+      "rechargeEmisionsUnits",
+      "eolEmissionsValue",
+      "eolEmisionsUnits",
       "equipmentPopulation",
       "equipmentUnits",
     ];
@@ -398,7 +405,7 @@ class DimensionCardPresenter {
 
     const metricSelected = self._filterSet.getMetric();
     const metricUnits = {
-      consumption: "MtCO2e / yr",
+      emissions: "MtCO2e / yr",
       sales: "mt / yr",
       population: "units",
     }[metricSelected];
@@ -646,7 +653,7 @@ class CenterChartPresenter {
     years.sort((a, b) => a - b);
 
     const divider = {
-      consumption: 1000000,
+      emissions: 1000000,
       sales: 1000,
       population: 1000000,
     }[filterSet.getMetric()];
@@ -689,7 +696,7 @@ class CenterChartPresenter {
 
     const metricSelected = filterSet.getMetric();
     const metricUnits = {
-      consumption: "MtCO2e / yr",
+      emissions: "MtCO2e / yr",
       sales: "mt / yr",
       population: "units",
     }[metricSelected];
