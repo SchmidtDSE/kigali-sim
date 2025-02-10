@@ -221,7 +221,9 @@ class ReportDataWrapper {
     const self = this;
     const metric = filterSet.getFullMetricName();
     const strategy = {
-      "consumption": () => self.getConsumption(filterSet),
+      "emissions": () => self._getAggregatedAfterFilter(filterSet).getTotalEmissions(),
+      "emissions:recharge": () => self._getAggregatedAfterFilter(filterSet).getRechargeEmissions(),
+      "emissions:eol": () => self._getAggregatedAfterFilter(filterSet).getEolEmissions(),
       "sales": () => self.getSales(filterSet),
       "sales:import": () => self.getImport(filterSet),
       "sales:manufacture": () => self.getManufacture(filterSet),
