@@ -698,7 +698,7 @@ class CenterChartPresenter {
     const metricUnits = {
       emissions: "MtCO2e / yr",
       sales: "mt / yr",
-      population: "units",
+      population: "million units",
     }[metricSelected];
 
     const chartJsConfig = {
