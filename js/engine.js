@@ -790,6 +790,12 @@ class Engine {
       const consumptionValue = self._streamKeeper.getStream(application, substance, "consumption");
       const populationValue = self._streamKeeper.getStream(application, substance, "equipment");
       const populationNew = self._streamKeeper.getStream(application, substance, "newEquipment");
+      const rechargeEmissions = self._streamKeeper.getStream(
+        application,
+        substance,
+        "rechargeEmissions",
+      );
+      const eolEmissions = self._streamKeeper.getStream(application, substance, "eolEmissions");
 
       return new EngineResult(
         application,
@@ -800,6 +806,8 @@ class Engine {
         consumptionValue,
         populationValue,
         populationNew,
+        rechargeEmissions,
+        eolEmissions,
       );
     });
   }
