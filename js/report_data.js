@@ -220,15 +220,17 @@ class ReportDataWrapper {
   getMetric(filterSet) {
     const self = this;
     const metric = filterSet.getFullMetricName();
-    const strategy = {
-      "consumption": () => self.getConsumption(filterSet),
+    const metricStrategy = {
+      "emissions": () => self.getTotalEmissions(filterSet),
+      "emissions:recharge": () => self.getRechargeEmissions(filterSet),
+      "emissions:eol": () => self.getEolEmissions(filterSet),
       "sales": () => self.getSales(filterSet),
       "sales:import": () => self.getImport(filterSet),
       "sales:manufacture": () => self.getManufacture(filterSet),
       "population": () => self.getPopulation(filterSet),
       "population:new": () => self.getPopulationNew(filterSet),
     }[metric];
-    const value = strategy();
+    const value = metricStrategy();
     return value;
   }
 
@@ -308,6 +310,42 @@ class ReportDataWrapper {
     const self = this;
     const aggregated = self._getAggregatedAfterFilter(filterSet);
     return aggregated.getConsumption();
+  }
+
+  /**
+   * Get total emissions value matching a given filter set.
+   *
+   * @param {FilterSet} filterSet - The filter criteria to apply.
+   * @returns {EngineNumber} The total emissions value.
+   */
+  getTotalEmissions(filterSet) {
+    const self = this;
+    const aggregated = self._getAggregatedAfterFilter(filterSet);
+    return aggregated.getTotalEmissions();
+  }
+
+  /**
+   * Get recharge emissions value matching a given filter set.
+   *
+   * @param {FilterSet} filterSet - The filter criteria to apply.
+   * @returns {EngineNumber} The recharge emissions value.
+   */
+  getRechargeEmissions(filterSet) {
+    const self = this;
+    const aggregated = self._getAggregatedAfterFilter(filterSet);
+    return aggregated.getRechargeEmissions();
+  }
+
+  /**
+   * Get end-of-life emissions value matching a given filter set.
+   *
+   * @param {FilterSet} filterSet - The filter criteria to apply.
+   * @returns {EngineNumber} The end-of-life emissions value.
+   */
+  getEolEmissions(filterSet) {
+    const self = this;
+    const aggregated = self._getAggregatedAfterFilter(filterSet);
+    return aggregated.getEolEmissions();
   }
 
   /**
