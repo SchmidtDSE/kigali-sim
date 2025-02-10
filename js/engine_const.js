@@ -14,7 +14,10 @@ STREAM_BASE_UNITS.set("manufacture", "kg");
 STREAM_BASE_UNITS.set("import", "kg");
 STREAM_BASE_UNITS.set("sales", "kg");
 STREAM_BASE_UNITS.set("consumption", "tCO2e");
+STREAM_BASE_UNITS.set("rechargeEmissions", "tCO2e");
+STREAM_BASE_UNITS.set("eolEmissions", "tCO2e");
 STREAM_BASE_UNITS.set("equipment", "units");
 STREAM_BASE_UNITS.set("priorEquipment", "units");
+STREAM_BASE_UNITS.set("newEquipment", "units");
 
 export {GLOBAL_CONTEXT, STANZA_CONTEXT, APPLICATION_CONTEXT, SUBSTANCE_CONTEXT, STREAM_BASE_UNITS};

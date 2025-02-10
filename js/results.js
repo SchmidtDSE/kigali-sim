@@ -29,6 +29,13 @@ const COLORS = [
 const ALLOW_REDUNDANT_ALL = true;
 
 /**
+ * Flag to indicate if large score displays are active.
+ *
+ * @type {boolean}
+ */
+const ALLOW_SCORE_DISPLAY = false;
+
+/**
  * Get a color from the predefined color palette.
  *
  * @param {number} i - Index into color array.
@@ -55,7 +62,7 @@ class ResultsPresenter {
     const self = this;
     self._root = root;
     self._results = null;
-    self._filterSet = new FilterSet(null, null, null, null, "consumption", "simulations");
+    self._filterSet = new FilterSet(null, null, null, null, "emissions", "simulations");
 
     const scorecardContainer = self._root.querySelector("#scorecards");
     const dimensionsContainer = self._root.querySelector("#dimensions");
@@ -157,7 +164,8 @@ class ExportPresenter {
           const year = result.getYear();
           const manufactureValue = result.getManufacture();
           const importValue = result.getImport();
-          const consumptionValue = result.getConsumption();
+          const rechargeEmissionsValue = result.getRechargeEmissions();
+          const eolEmissionsValue = result.getEolEmissions();
           const populationValue = result.getPopulation();
           return {
             scenario: scenarioName,
@@ -168,8 +176,10 @@ class ExportPresenter {
             manufactureUnits: manufactureValue.getUnits(),
             importValue: importValue.getValue(),
             importUnits: importValue.getUnits(),
-            consumptionValue: consumptionValue.getValue(),
-            consumptionUnits: consumptionValue.getUnits(),
+            rechargeEmissionsValue: rechargeEmissionsValue.getValue(),
+            rechargeEmissionsValue: rechargeEmissionsValue.getUnits(),
+            eolEmissionsValue: eolEmissionsValue.getValue(),
+            eolEmissionsUnits: eolEmissionsValue.getUnits(),
             equipmentPopulation: populationValue.getValue(),
             equipmentUnits: populationValue.getUnits(),
           };
@@ -186,8 +196,10 @@ class ExportPresenter {
         record["manufactureUnits"],
         record["importValue"],
         record["importUnits"],
-        record["consumptionValue"],
-        record["consumptionUnits"],
+        record["rechargeEmissionsValue"],
+        record["rechargeEmissionsUnits"],
+        record["eolEmissionsValue"],
+        record["eolEmissionsUnits"],
         record["equipmentPopulation"],
         record["equipmentUnits"],
       ];
@@ -206,8 +218,10 @@ class ExportPresenter {
       "manufactureUnits",
       "importValue",
       "importUnits",
-      "consumptionValue",
-      "consumptionUnits",
+      "rechargeEmissionsValue",
+      "rechargeEmisionsUnits",
+      "eolEmissionsValue",
+      "eolEmisionsUnits",
       "equipmentPopulation",
       "equipmentUnits",
     ];
@@ -252,34 +266,29 @@ class ScorecardPresenter {
     self._filterSet = filterSet;
     const currentYear = self._filterSet.getYear();
 
-    const consumptionScorecard = self._root.querySelector("#consumption-scorecard");
+    const emissionsScorecard = self._root.querySelector("#emissions-scorecard");
     const salesScorecard = self._root.querySelector("#sales-scorecard");
     const equipmentScorecard = self._root.querySelector("#equipment-scorecard");
 
-    const consumptionValue = results.getConsumption(filterSet);
+    const emissionsValue = results.getTotalEmissions(filterSet);
     const salesValue = results.getSales(filterSet);
     const equipmentValue = results.getPopulation(filterSet);
 
     const roundToTenths = (x) => Math.round(x * 10) / 10;
-    const emissionRounded = roundToTenths(consumptionValue.getValue() / 1000000);
+    const emissionRounded = roundToTenths(emissionsValue.getValue() / 1000000);
     const salesMt = roundToTenths(salesValue.getValue() / 1000000) + " k";
     const millionEqipment = roundToTenths(equipmentValue.getValue() / 1000000) + " M";
 
     const metricSelected = filterSet.getMetric();
-    const consumptionSelected = metricSelected === "consumption";
+    const emissionsSelected = metricSelected === "emissions";
     const salesSelected = metricSelected === "sales";
     const equipmentSelected = metricSelected === "population";
 
     const scenarios = results.getScenarios(self._filterSet.getWithScenario(null));
-    const hideVal = !self._filterSet.hasSingleScenario(scenarios);
+    const showVal = ALLOW_SCORE_DISPLAY && self._filterSet.hasSingleScenario(scenarios);
+    const hideVal = !showVal;
 
-    self._updateCard(
-      consumptionScorecard,
-      emissionRounded,
-      currentYear,
-      consumptionSelected,
-      hideVal,
-    );
+    self._updateCard(emissionsScorecard, emissionRounded, currentYear, emissionsSelected, hideVal);
     self._updateCard(salesScorecard, salesMt, currentYear, salesSelected, hideVal);
     self._updateCard(equipmentScorecard, millionEqipment, currentYear, equipmentSelected, hideVal);
   }
@@ -343,19 +352,30 @@ class ScorecardPresenter {
   _registerEventListeners() {
     const self = this;
 
-    const consumptionScorecard = self._root.querySelector("#consumption-scorecard");
+    const emissionsScorecard = self._root.querySelector("#emissions-scorecard");
     const salesScorecard = self._root.querySelector("#sales-scorecard");
     const equipmentScorecard = self._root.querySelector("#equipment-scorecard");
 
-    const registerListener = (scorecard, value) => {
-      const radio = scorecard.querySelector(".metric-radio");
-      radio.addEventListener("click", () => {
-        const newFilterSet = self._filterSet.getWithMetric(value);
+    const registerListener = (scorecard, family) => {
+      const subMetricDropdown = scorecard.querySelector(".submetric-input");
+
+      const callback = () => {
+        const subMetric = subMetricDropdown.value;
+        const isAll = subMetric === "all";
+        const extendedName = family + ":" + subMetric;
+        const fullName = isAll ? family : extendedName;
+        const newFilterSet = self._filterSet.getWithMetric(fullName);
         self._onUpdateFilterSet(newFilterSet);
-      });
+      };
+
+      const radio = scorecard.querySelector(".metric-radio");
+      radio.addEventListener("click", callback);
+
+      const dropdown = scorecard.querySelector(".submetric");
+      dropdown.addEventListener("change", callback);
     };
 
-    registerListener(consumptionScorecard, "consumption");
+    registerListener(emissionsScorecard, "emissions");
     registerListener(salesScorecard, "sales");
     registerListener(equipmentScorecard, "population");
   }
@@ -393,7 +413,7 @@ class DimensionCardPresenter {
 
     const metricSelected = self._filterSet.getMetric();
     const metricUnits = {
-      consumption: "MtCO2e / yr",
+      emissions: "MtCO2e / yr",
       sales: "mt / yr",
       population: "units",
     }[metricSelected];
@@ -421,7 +441,7 @@ class DimensionCardPresenter {
     const substancesSelected = dimensionSelected === "substances";
 
     const conversionInfo = {
-      consumption: {divider: 1000000, suffix: "M"},
+      emissions: {divider: 1000000, suffix: "M"},
       sales: {divider: 1000, suffix: ""},
       population: {divider: 1000000, suffix: "M"},
     }[self._filterSet.getMetric()];
@@ -577,6 +597,10 @@ class DimensionCardPresenter {
             return Math.round(percent * 100) + "%";
           }
         });
+
+      d3.select(card).select(".axis").style("display", "grid");
+    } else {
+      d3.select(card).select(".axis").style("display", "none");
     }
   }
 
@@ -641,7 +665,7 @@ class CenterChartPresenter {
     years.sort((a, b) => a - b);
 
     const divider = {
-      consumption: 1000000,
+      emissions: 1000000,
       sales: 1000,
       population: 1000000,
     }[filterSet.getMetric()];
@@ -684,9 +708,9 @@ class CenterChartPresenter {
 
     const metricSelected = filterSet.getMetric();
     const metricUnits = {
-      consumption: "MtCO2e / yr",
+      emissions: "MtCO2e / yr",
       sales: "mt / yr",
-      population: "units",
+      population: "million units",
     }[metricSelected];
 
     const chartJsConfig = {

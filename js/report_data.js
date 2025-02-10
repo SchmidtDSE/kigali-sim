@@ -17,13 +17,25 @@ class AggregatedResult {
    * @param {EngineNumber} importValue - The import value.
    * @param {EngineNumber} consumptionValue - The consumption value.
    * @param {EngineNumber} populationValue - The equipment population value.
+   * @param {EngineNumber} populationNew - The new equipment added this year.
    */
-  constructor(manufactureValue, importValue, consumptionValue, populationValue) {
+  constructor(
+    manufactureValue,
+    importValue,
+    consumptionValue,
+    populationValue,
+    populationNew,
+    rechargeEmissions,
+    eolEmissions,
+  ) {
     const self = this;
     self._manufactureValue = manufactureValue;
     self._importValue = importValue;
     self._consumptionValue = consumptionValue;
     self._populationValue = populationValue;
+    self._populationNew = populationNew;
+    self._rechargeEmissions = rechargeEmissions;
+    self._eolEmissions = eolEmissions;
   }
 
   /**
@@ -80,6 +92,46 @@ class AggregatedResult {
   }
 
   /**
+   * Get the new equipment added in this yaer.
+   *
+   * @returns {EngineNumber} The new equipment added in units.
+   */
+  getPopulationNew() {
+    const self = this;
+    return self._populationNew;
+  }
+
+  /**
+   * Get the greenhouse gas emissions from recharge activities.
+   *
+   * @returns {EngineNumber} The recharge emissions value with units.
+   */
+  getRechargeEmissions() {
+    const self = this;
+    return self._rechargeEmissions;
+  }
+
+  /**
+   * Get the greenhouse gas emissions from end-of-life equipment.
+   *
+   * @returns {EngineNumber} The end-of-life emissions value with units.
+   */
+  getEolEmissions() {
+    const self = this;
+    return self._eolEmissions;
+  }
+
+  /**
+   * Get the total greenhouse gas emissions combining recharge and end-of-life emissions.
+   *
+   * @returns {EngineNumber} The combined emissions value with units.
+   */
+  getTotalEmissions() {
+    const self = this;
+    return self._combineUnitValue(self.getRechargeEmissions(), self.getEolEmissions());
+  }
+
+  /**
    * Combine this result with another result.
    *
    * Combine this result with another result in an additive way with unit
@@ -95,8 +147,23 @@ class AggregatedResult {
     const importValue = self._combineUnitValue(self.getImport(), other.getImport());
     const consumptionValue = self._combineUnitValue(self.getConsumption(), other.getConsumption());
     const populationValue = self._combineUnitValue(self.getPopulation(), other.getPopulation());
+    const populationNew = self._combineUnitValue(self.getPopulationNew(), other.getPopulationNew());
 
-    return new AggregatedResult(manufactureValue, importValue, consumptionValue, populationValue);
+    const rechargeEmissions = self._combineUnitValue(
+      self.getRechargeEmissions(),
+      other.getRechargeEmissions(),
+    );
+    const eolEmissions = self._combineUnitValue(self.getEolEmissions(), other.getEolEmissions());
+
+    return new AggregatedResult(
+      manufactureValue,
+      importValue,
+      consumptionValue,
+      populationValue,
+      populationNew,
+      rechargeEmissions,
+      eolEmissions,
+    );
   }
 
   /**
@@ -152,13 +219,18 @@ class ReportDataWrapper {
    */
   getMetric(filterSet) {
     const self = this;
-    const metric = filterSet.getMetric();
-    const strategy = {
-      consumption: () => self.getConsumption(filterSet),
-      sales: () => self.getSales(filterSet),
-      population: () => self.getPopulation(filterSet),
+    const metric = filterSet.getFullMetricName();
+    const metricStrategy = {
+      "emissions": () => self.getTotalEmissions(filterSet),
+      "emissions:recharge": () => self.getRechargeEmissions(filterSet),
+      "emissions:eol": () => self.getEolEmissions(filterSet),
+      "sales": () => self.getSales(filterSet),
+      "sales:import": () => self.getImport(filterSet),
+      "sales:manufacture": () => self.getManufacture(filterSet),
+      "population": () => self.getPopulation(filterSet),
+      "population:new": () => self.getPopulationNew(filterSet),
     }[metric];
-    const value = strategy();
+    const value = metricStrategy();
     return value;
   }
 
@@ -241,6 +313,42 @@ class ReportDataWrapper {
   }
 
   /**
+   * Get total emissions value matching a given filter set.
+   *
+   * @param {FilterSet} filterSet - The filter criteria to apply.
+   * @returns {EngineNumber} The total emissions value.
+   */
+  getTotalEmissions(filterSet) {
+    const self = this;
+    const aggregated = self._getAggregatedAfterFilter(filterSet);
+    return aggregated.getTotalEmissions();
+  }
+
+  /**
+   * Get recharge emissions value matching a given filter set.
+   *
+   * @param {FilterSet} filterSet - The filter criteria to apply.
+   * @returns {EngineNumber} The recharge emissions value.
+   */
+  getRechargeEmissions(filterSet) {
+    const self = this;
+    const aggregated = self._getAggregatedAfterFilter(filterSet);
+    return aggregated.getRechargeEmissions();
+  }
+
+  /**
+   * Get end-of-life emissions value matching a given filter set.
+   *
+   * @param {FilterSet} filterSet - The filter criteria to apply.
+   * @returns {EngineNumber} The end-of-life emissions value.
+   */
+  getEolEmissions(filterSet) {
+    const self = this;
+    const aggregated = self._getAggregatedAfterFilter(filterSet);
+    return aggregated.getEolEmissions();
+  }
+
+  /**
    * Get sales value matching a given filter set.
    *
    * @param {FilterSet} filterSet - The filter criteria to apply.
@@ -253,6 +361,30 @@ class ReportDataWrapper {
   }
 
   /**
+   * Get sales from imports matching a given filter set.
+   *
+   * @param {FilterSet} filterSet - The filter criteria to apply.
+   * @returns {EngineNumber} The imports component of sales.
+   */
+  getImport(filterSet) {
+    const self = this;
+    const aggregated = self._getAggregatedAfterFilter(filterSet);
+    return aggregated.getImport();
+  }
+
+  /**
+   * Get sales from domestic manufacture matching a given filter set.
+   *
+   * @param {FilterSet} filterSet - The filter criteria to apply.
+   * @returns {EngineNumber} The domestic manufacture component of sales.
+   */
+  getManufacture(filterSet) {
+    const self = this;
+    const aggregated = self._getAggregatedAfterFilter(filterSet);
+    return aggregated.getManufacture();
+  }
+
+  /**
    * Get population value matching a given filter set.
    *
    * @param {FilterSet} filterSet - The filter criteria to apply.
@@ -262,6 +394,18 @@ class ReportDataWrapper {
     const self = this;
     const aggregated = self._getAggregatedAfterFilter(filterSet);
     return aggregated.getPopulation();
+  }
+
+  /**
+   * Get the amount of new equipment added.
+   *
+   * @param {FilterSet} filterSet - The filter criteria to apply.
+   * @returns {EngineNumber} The new equipment added.
+   */
+  getPopulationNew(filterSet) {
+    const self = this;
+    const aggregated = self._getAggregatedAfterFilter(filterSet);
+    return aggregated.getPopulationNew();
   }
 
   /**
@@ -307,6 +451,9 @@ class ReportDataWrapper {
           x.getImport(),
           x.getConsumption(),
           x.getPopulation(),
+          x.getPopulationNew(),
+          x.getRechargeEmissions(),
+          x.getEolEmissions(),
         ),
     );
 
@@ -375,8 +522,9 @@ class FilterSet {
    * @param {string|null} scenario - Name of scenario for which to filter.
    * @param {string|null} application - Name of application for which to
    *     filter.
-   * @param {string|null} substance - Name of substance for which to filter.
-   * @param {string|null} metric - Metric name for which to filter.
+   * @param {string|null} substance - Name of substance which to filter.
+   * @param {string|null} metric - Metric name for which to display. Note
+   *     that this is the full metric names like sales or sales:import.
    * @param {string|null} dimension - Dimension type for which to filter.
    */
   constructor(year, scenario, application, substance, metric, dimension) {
@@ -521,13 +669,46 @@ class FilterSet {
   }
 
   /**
-   * Get the metric filter.
+   * Get the full name of the metric to display.
    *
-   * @returns {string|null} The metric for which to filter like sales.
+   * @returns {string|null} The metric to display like sales. Note that this is
+   *     the full name like sales:manufacture or sales:all.
+   */
+  getFullMetricName() {
+    const self = this;
+    return self._metric;
+  }
+
+  /**
+   * Get the type of metric to display like sales.
+   *
+   * @returns {string|null} The metric family to display like sales.
    */
   getMetric() {
     const self = this;
-    return self._metric;
+
+    if (self._metric === null) {
+      return null;
+    }
+
+    return self._metric.split(":")[0];
+  }
+
+  /**
+   * Get the substream of the metric to dsiplay.
+   *
+   * @returns {string|null} The submetric to display like import or null if no
+   *     submetric.
+   */
+  getSubMetric() {
+    const self = this;
+
+    if (self._metric === null) {
+      return null;
+    }
+
+    const metricPieces = self._metric.split(":");
+    return metricPieces.length < 2 ? null : metricPieces[1];
   }
 
   /**

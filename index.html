@@ -640,22 +640,35 @@
         <h2>Results</h2>
 
         <div class="scorecards" id="scorecards">
-          <div class="scorecard" id="consumption-scorecard">
+          <div class="scorecard" id="emissions-scorecard">
             <div class="label">
-              <label for="consumption-radio"
+              <label for="emissions-radio"
                 ><input
-                  id="consumption-radio"
+                  id="emissions-radio"
                   class="metric-radio"
                   type="radio"
                   name="metric"
-                  value="consumption"
+                  value="emissions"
                   checked="checked"
                 />
-                Consumption</label
+                Emissions</label
               >
             </div>
             <div class="value"></div>
             <div class="units">MtCO2e / yr <span class="current-year"></span></div>
+            <div class="submetric">
+              <div class="sel">
+                <select
+                  name="emissions-submetric"
+                  class="emissions-submetric submetric-input"
+                  aria-label="Type of emissions to display"
+                >
+                  <option value="all" selected>all direct</option>
+                  <option value="recharge">recharge</option>
+                  <option value="eol">end of life</option>
+                </select>
+              </div>
+            </div>
           </div>
 
           <div></div>
@@ -675,6 +688,19 @@
             </div>
             <div class="value"></div>
             <div class="units">mt / yr <span class="current-year"></span></div>
+            <div class="submetric">
+              <div class="sel">
+                <select
+                  name="sales-submetric"
+                  class="sales-submetric submetric-input"
+                  aria-label="Type of sales to display"
+                >
+                  <option value="all" selected>all</option>
+                  <option value="import">imports</option>
+                  <option value="manufacture">domestic</option>
+                </select>
+              </div>
+            </div>
           </div>
 
           <div></div>
@@ -694,6 +720,18 @@
             </div>
             <div class="value"></div>
             <div class="units">units <span class="current-year"></span></div>
+            <div class="submetric">
+              <div class="sel">
+                <select
+                  name="equipment-submetric"
+                  class="equipment-submetric submetric-input"
+                  aria-label="Type of equipment to display"
+                >
+                  <option value="all" selected>total</option>
+                  <option value="new">new</option>
+                </select>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -702,7 +740,7 @@
             Showing
             <span class="sel mid">
               <select class="metric-select" aria-label="Metric selection dropdown menu">
-                <option value="consumption">Consumption</option>
+                <option value="emissions">Emissions</option>
                 <option value="sales">Sales</option>
                 <option value="population">Equipment (Population)</option>
               </select>

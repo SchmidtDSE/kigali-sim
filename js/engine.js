@@ -36,6 +36,9 @@ class EngineResult {
    * @param {EngineNumber} importValue - The import value.
    * @param {EngineNumber} consumptionValue - The consumption value.
    * @param {EngineNumber} populationValue - The population value.
+   * @param {EngineNumber} populationNew - The amount of new equipment added.
+   * @param {EngineNumber} rechargeEmissions - The GHG emissions from recharge.
+   * @param {EngineNumber} eolEmissions - The GHG emissions from end-of-life equipment.
    */
   constructor(
     application,
@@ -45,6 +48,9 @@ class EngineResult {
     importValue,
     consumptionValue,
     populationValue,
+    populationNew,
+    rechargeEmissions,
+    eolEmissions,
   ) {
     const self = this;
     self._application = application;
@@ -54,6 +60,9 @@ class EngineResult {
     self._importValue = importValue;
     self._consumptionValue = consumptionValue;
     self._populationValue = populationValue;
+    self._populationNew = populationNew;
+    self._rechargeEmissions = rechargeEmissions;
+    self._eolEmissions = eolEmissions;
   }
 
   /**
@@ -124,6 +133,36 @@ class EngineResult {
   getPopulation() {
     const self = this;
     return self._populationValue;
+  }
+
+  /**
+   * Get the amount of new equipment added this year.
+   *
+   * @returns {EngineNumber} The amount of new equipment this year in units.
+   */
+  getPopulationNew() {
+    const self = this;
+    return self._populationNew;
+  }
+
+  /**
+   * Get the greenhouse gas emissions from recharge activities.
+   *
+   * @returns {EngineNumber} The recharge emissions value with units.
+   */
+  getRechargeEmissions() {
+    const self = this;
+    return self._rechargeEmissions;
+  }
+
+  /**
+   * Get the greenhouse gas emissions from end-of-life equipment.
+   *
+   * @returns {EngineNumber} The end-of-life emissions value with units.
+   */
+  getEolEmissions() {
+    const self = this;
+    return self._eolEmissions;
   }
 }
 
@@ -750,6 +789,13 @@ class Engine {
       const importValue = self._streamKeeper.getStream(application, substance, "import");
       const consumptionValue = self._streamKeeper.getStream(application, substance, "consumption");
       const populationValue = self._streamKeeper.getStream(application, substance, "equipment");
+      const populationNew = self._streamKeeper.getStream(application, substance, "newEquipment");
+      const rechargeEmissions = self._streamKeeper.getStream(
+        application,
+        substance,
+        "rechargeEmissions",
+      );
+      const eolEmissions = self._streamKeeper.getStream(application, substance, "eolEmissions");
 
       return new EngineResult(
         application,
@@ -759,6 +805,9 @@ class Engine {
         importValue,
         consumptionValue,
         populationValue,
+        populationNew,
+        rechargeEmissions,
+        eolEmissions,
       );
     });
   }
@@ -841,6 +890,7 @@ class Engine {
     // Get recharge amount
     const rechargeIntensityRaw = self._streamKeeper.getRechargeIntensity(application, substance);
     const rechargeVolume = unitConverter.convert(rechargeIntensityRaw, "kg");
+    const rechargeGhg = unitConverter.convert(rechargeVolume, "tCO2e");
 
     // Get recycling volume
     stateGetter.setVolume(rechargeVolume);
@@ -873,15 +923,18 @@ class Engine {
     const initialCharge = unitConverter.convert(initialChargeRaw, "kg / unit");
     const initialChargeKgUnit = initialCharge.getValue();
     const deltaUnits = availableForNewUnitsKg / initialChargeKgUnit;
+    const newVolume = new EngineNumber(deltaUnits, "units");
 
     // Find new total
     const priorPopulationUnits = priorPopulation.getValue();
     const newUnits = priorPopulationUnits + deltaUnits;
     const newUnitsAllowed = newUnits < 0 ? 0 : newUnits;
-    const newVolume = new EngineNumber(newUnitsAllowed, "units");
+    const newVolumeTotal = new EngineNumber(newUnitsAllowed, "units");
 
     // Save
-    self.setStream("equipment", newVolume, null, scopeEffective, false);
+    self.setStream("equipment", newVolumeTotal, null, scopeEffective, false);
+    self.setStream("newEquipment", newVolume, null, scopeEffective, false);
+    self.setStream("rechargeEmissions", rechargeGhg, null, scopeEffective, false);
   }
 
   /**
@@ -1055,9 +1108,13 @@ class Engine {
     const newPrior = new EngineNumber(currentPrior.getValue() - amount.getValue(), "units");
     const newEquipment = new EngineNumber(currentEquipment.getValue() - amount.getValue(), "units");
 
-    // Update streams
+    // Update equipement streams
     self._streamKeeper.setStream(application, substance, "priorEquipment", newPrior);
     self._streamKeeper.setStream(application, substance, "equipment", newEquipment);
+
+    // Update GHG accounting
+    const eolGhg = unitConverter.convert(amount, "tCO2e");
+    self._streamKeeper.setStream(application, substance, "eolEmissions", eolGhg);
 
     // Propogate
     self._recalcPopulationChange();
