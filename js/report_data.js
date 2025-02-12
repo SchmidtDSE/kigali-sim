@@ -376,7 +376,8 @@ class ReportDataWrapper {
    * Get sales from domestic manufacture matching a given filter set.
    *
    * @param {FilterSet} filterSet - The filter criteria to apply.
-   * @returns {EngineNumber|null} The domestic manufacture component of sales, or null if no matching results.
+   * @returns {EngineNumber|null} The domestic manufacture component of sales,
+   *     or null if no matching results.
    */
   getManufacture(filterSet) {
     const self = this;
@@ -388,7 +389,8 @@ class ReportDataWrapper {
    * Get population value matching a given filter set.
    *
    * @param {FilterSet} filterSet - The filter criteria to apply.
-   * @returns {EngineNumber|null} The population value, or null if no matching results.
+   * @returns {EngineNumber|null} The population value, or null if no matching
+   *     results.
    */
   getPopulation(filterSet) {
     const self = this;
@@ -400,7 +402,8 @@ class ReportDataWrapper {
    * Get the amount of new equipment added.
    *
    * @param {FilterSet} filterSet - The filter criteria to apply.
-   * @returns {EngineNumber|null} The new equipment added, or null if no matching results.
+   * @returns {EngineNumber|null} The new equipment added, or null if no matching
+   *     results.
    */
   getPopulationNew(filterSet) {
     const self = this;
