@@ -304,108 +304,108 @@ class ReportDataWrapper {
    * Get consumption value matching a given filter set.
    *
    * @param {FilterSet} filterSet - The filter criteria to apply.
-   * @returns {EngineNumber} The consumption value.
+   * @returns {EngineNumber|null} The consumption value, or null if no matching results.
    */
   getConsumption(filterSet) {
     const self = this;
     const aggregated = self._getAggregatedAfterFilter(filterSet);
-    return aggregated.getConsumption();
+    return aggregated === null ? null : aggregated.getConsumption();
   }
 
   /**
    * Get total emissions value matching a given filter set.
    *
    * @param {FilterSet} filterSet - The filter criteria to apply.
-   * @returns {EngineNumber} The total emissions value.
+   * @returns {EngineNumber|null} The total emissions value, or null if no matching results.
    */
   getTotalEmissions(filterSet) {
     const self = this;
     const aggregated = self._getAggregatedAfterFilter(filterSet);
-    return aggregated.getTotalEmissions();
+    return aggregated === null ? null : aggregated.getTotalEmissions();
   }
 
   /**
    * Get recharge emissions value matching a given filter set.
    *
    * @param {FilterSet} filterSet - The filter criteria to apply.
-   * @returns {EngineNumber} The recharge emissions value.
+   * @returns {EngineNumber|null} The recharge emissions value, or null if no matching results.
    */
   getRechargeEmissions(filterSet) {
     const self = this;
     const aggregated = self._getAggregatedAfterFilter(filterSet);
-    return aggregated.getRechargeEmissions();
+    return aggregated === null ? null : aggregated.getRechargeEmissions();
   }
 
   /**
    * Get end-of-life emissions value matching a given filter set.
    *
    * @param {FilterSet} filterSet - The filter criteria to apply.
-   * @returns {EngineNumber} The end-of-life emissions value.
+   * @returns {EngineNumber|null} The end-of-life emissions value, or null if no matching results.
    */
   getEolEmissions(filterSet) {
     const self = this;
     const aggregated = self._getAggregatedAfterFilter(filterSet);
-    return aggregated.getEolEmissions();
+    return aggregated === null ? null : aggregated.getEolEmissions();
   }
 
   /**
    * Get sales value matching a given filter set.
    *
    * @param {FilterSet} filterSet - The filter criteria to apply.
-   * @returns {EngineNumber} The sales value.
+   * @returns {EngineNumber|null} The sales value, or null if no matching results.
    */
   getSales(filterSet) {
     const self = this;
     const aggregated = self._getAggregatedAfterFilter(filterSet);
-    return aggregated.getSales();
+    return aggregated === null ? null : aggregated.getSales();
   }
 
   /**
    * Get sales from imports matching a given filter set.
    *
    * @param {FilterSet} filterSet - The filter criteria to apply.
-   * @returns {EngineNumber} The imports component of sales.
+   * @returns {EngineNumber|null} The imports component of sales, or null if no matching results.
    */
   getImport(filterSet) {
     const self = this;
     const aggregated = self._getAggregatedAfterFilter(filterSet);
-    return aggregated.getImport();
+    return aggregated === null ? null : aggregated.getImport();
   }
 
   /**
    * Get sales from domestic manufacture matching a given filter set.
    *
    * @param {FilterSet} filterSet - The filter criteria to apply.
-   * @returns {EngineNumber} The domestic manufacture component of sales.
+   * @returns {EngineNumber|null} The domestic manufacture component of sales, or null if no matching results.
    */
   getManufacture(filterSet) {
     const self = this;
     const aggregated = self._getAggregatedAfterFilter(filterSet);
-    return aggregated.getManufacture();
+    return aggregated === null ? null : aggregated.getManufacture();
   }
 
   /**
    * Get population value matching a given filter set.
    *
    * @param {FilterSet} filterSet - The filter criteria to apply.
-   * @returns {EngineNumber} The population value.
+   * @returns {EngineNumber|null} The population value, or null if no matching results.
    */
   getPopulation(filterSet) {
     const self = this;
     const aggregated = self._getAggregatedAfterFilter(filterSet);
-    return aggregated.getPopulation();
+    return aggregated === null ? null : aggregated.getPopulation();
   }
 
   /**
    * Get the amount of new equipment added.
    *
    * @param {FilterSet} filterSet - The filter criteria to apply.
-   * @returns {EngineNumber} The new equipment added.
+   * @returns {EngineNumber|null} The new equipment added, or null if no matching results.
    */
   getPopulationNew(filterSet) {
     const self = this;
     const aggregated = self._getAggregatedAfterFilter(filterSet);
-    return aggregated.getPopulationNew();
+    return aggregated === null ? null : aggregated.getPopulationNew();
   }
 
   /**
