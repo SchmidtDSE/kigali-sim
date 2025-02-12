@@ -176,13 +176,13 @@ class MainPresenter {
 
       const program = result.getProgram();
       if (result.getErrors().length > 0) {
-        alert(result.getErrors()[0]);
+        alert("Program error: " + result.getErrors()[0]);
         self._buttonPanelPresenter.enable();
         return;
       }
 
       if (result.getErrors().length > 0) {
-        alert(result.getErrors()[0]);
+        alert("Result error: " + result.getErrors()[0]);
         self._buttonPanelPresenter.enable();
         return;
       } else if (program !== null) {
@@ -196,7 +196,8 @@ class MainPresenter {
             }
           }
         } catch (e) {
-          alert("" + e);
+          console.log(e);
+          alert("On result error: " + e);
         }
       }
     };
@@ -205,7 +206,7 @@ class MainPresenter {
       try {
         execute();
       } catch (e) {
-        alert("" + e);
+        alert("Execute error: " + e);
       }
       self._buttonPanelPresenter.enable();
     };
