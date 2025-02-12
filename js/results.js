@@ -447,7 +447,7 @@ class DimensionCardPresenter {
     }[self._filterSet.getMetric()];
     const divider = conversionInfo["divider"];
     const suffix = conversionInfo["suffix"];
-    const interpret = (x) => x.getValue() / divider;
+    const interpret = (x) => (x === null ? null : x.getValue() / divider);
 
     self._updateCard(
       "sim",
@@ -675,10 +675,12 @@ class CenterChartPresenter {
 
     const getForDimValue = (dimValue) => {
       const valsWithUnits = years.map((year) => {
-        const subFilterSet = filterSet.getWithYear(year).getWithDimensionValue(dimValue);
+        const withYear = filterSet.getWithYear(year);
+        const subFilterSet = withYear.getWithDimensionValue(dimValue);
         return results.getMetric(subFilterSet);
       });
-      const vals = valsWithUnits.map((x) => x.getValue());
+      const valsWithUnitsValid = valsWithUnits.filter((x) => x !== null);
+      const vals = valsWithUnitsValid.map((x) => x.getValue());
       const valsScaled = vals.map((x) => x / divider);
       return {name: dimValue, vals: valsScaled};
     };
