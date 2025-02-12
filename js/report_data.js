@@ -304,7 +304,8 @@ class ReportDataWrapper {
    * Get consumption value matching a given filter set.
    *
    * @param {FilterSet} filterSet - The filter criteria to apply.
-   * @returns {EngineNumber|null} The consumption value, or null if no matching results.
+   * @returns {EngineNumber|null} The consumption value, or null if no matching
+   *     results.
    */
   getConsumption(filterSet) {
     const self = this;
@@ -316,7 +317,8 @@ class ReportDataWrapper {
    * Get total emissions value matching a given filter set.
    *
    * @param {FilterSet} filterSet - The filter criteria to apply.
-   * @returns {EngineNumber|null} The total emissions value, or null if no matching results.
+   * @returns {EngineNumber|null} The total emissions value, or null if no matching
+   *     results.
    */
   getTotalEmissions(filterSet) {
     const self = this;
@@ -328,7 +330,8 @@ class ReportDataWrapper {
    * Get recharge emissions value matching a given filter set.
    *
    * @param {FilterSet} filterSet - The filter criteria to apply.
-   * @returns {EngineNumber|null} The recharge emissions value, or null if no matching results.
+   * @returns {EngineNumber|null} The recharge emissions value, or null if no
+   *     matching results.
    */
   getRechargeEmissions(filterSet) {
     const self = this;
@@ -340,7 +343,8 @@ class ReportDataWrapper {
    * Get end-of-life emissions value matching a given filter set.
    *
    * @param {FilterSet} filterSet - The filter criteria to apply.
-   * @returns {EngineNumber|null} The end-of-life emissions value, or null if no matching results.
+   * @returns {EngineNumber|null} The end-of-life emissions value, or null if
+   *     no matching results.
    */
   getEolEmissions(filterSet) {
     const self = this;
@@ -352,7 +356,8 @@ class ReportDataWrapper {
    * Get sales value matching a given filter set.
    *
    * @param {FilterSet} filterSet - The filter criteria to apply.
-   * @returns {EngineNumber|null} The sales value, or null if no matching results.
+   * @returns {EngineNumber|null} The sales value, or null if no matching
+   *     results.
    */
   getSales(filterSet) {
     const self = this;
@@ -364,7 +369,8 @@ class ReportDataWrapper {
    * Get sales from imports matching a given filter set.
    *
    * @param {FilterSet} filterSet - The filter criteria to apply.
-   * @returns {EngineNumber|null} The imports component of sales, or null if no matching results.
+   * @returns {EngineNumber|null} The imports component of sales, or null if no
+   *     matching results.
    */
   getImport(filterSet) {
     const self = this;
