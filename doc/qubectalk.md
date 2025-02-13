@@ -105,7 +105,7 @@ If this is omitted and the substance has sales, an error message may be shown. N
 ### Sales
 The sale of substances typically defines the equipment population. QubecTalk considers sales to fit into two groups: `manufacture` and `import`. Though not currently used, `export` is reserved for future use.
 
-**Domestic**: Starting with an example of specifying substances both produced and equalsd domestically. There are typically three important parameters to specify:
+**Domestic**: Starting with an example of specifying substances both produced and consumed domestically. There are typically three important parameters to specify:
 
  - Manufacturing (volume)
  - Sales growth (YoY %)
