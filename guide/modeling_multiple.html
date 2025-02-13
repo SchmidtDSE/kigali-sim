@@ -1,0 +1,145 @@
+<html>
+    <head>
+        <title>Expand to Multiple Substances</title>
+        <link href="/guide/guide.css" rel="stylesheet" type="text/css" />
+    </head>
+    <body>
+        <div class="skip-link">
+            <a href="#main">Skip to content</a>
+        </div>
+        <header>
+            This tutorial is part of the <a href="/guide">guide</a> for the
+            <a href="/">Montreal Policy Simulator</a>.
+        </header>
+        <main id="main">
+            <h1>Expand to Multiple Substances</h1>
+
+            This tutorial looks at expanding into multiple substances and explores how to combine
+            different policies together.
+
+            <details>
+                <summary>Contents</summary>
+                <ul>
+                    <li><a href="#motivation">Motivation</a></li>
+                    <li><a href="#second-substance">Second Substance</a></li>
+                    <li><a href="#new-policy">New Policy</a></li>
+                    <li><a href="#new-simulations">New Simulations</a></li>
+                    <li><a href="#files">Files</a></li>
+                    <li><a href="#conclusion">Conclusion</a></li>
+                </ul>
+            </details>
+
+            <section id="motivation">
+                <h2>Motivation</h2>
+
+                <p>
+                    The first policy from the
+                    <a href="/guide/policy_single.html">previous tutorial</a> only manipulates one
+                    substance. However, some interventions may cause demand to shift from one
+                    substance to another. Therefore, we will now introduce an additional substance
+                    and explore a policy that replaces the eixsting substance, like through an
+                    incentive program.
+                </p>
+            </section>
+
+            <section id="second-substance">
+                <h2>Second Substance</h2>
+
+                <p>
+                    We can define a substance which is used in multiple applications and multiple
+                    substances which can be used in the same application. For now, let's stay
+                    focused on commerical refrigeration but let's add consumption for a second
+                    substance called "R-600a" that is used for commercial refrigeration (com
+                    refrig). Assume it has the following properties:
+                </p>
+
+                <ul>
+                    <li>Equivalency of 50 tCO2e / kg.</li>
+                    <li>Initial charge 0.1 kg / unit for domestic manufacture.</li>
+                    <li>Initial charge 0.1 kg / unit for imported equipment.</li>
+                    <li>5% retired each year and 5% recharged each year.</li>
+                    <li>0.05 kg / unit recharge.</li>
+                </ul>
+
+                <p>Similar to before, let's also set some starting levels:</p>
+
+                <ul>
+                    <li>A starting domestic manufacture level of 10 mt in year 1.</li>
+                    <li>A starting import of 5 mt in year 1.</li>
+                </ul>
+
+                <p>
+                    Finally, let's add some expected changes: have both domestic manufacture and
+                    imports increase 5% each year. You can do this by increasing all sales 5% / year
+                    which applies to both imports and domestic manufacture.
+                </p>
+            </section>
+
+            <section id="new-policy">
+                <h2>New Policy</h2>
+
+                <p>
+                    Create a new policy called "com replace" that applies to HFC-134a. This time,
+                    input the following schedule:
+                </p>
+
+                <ul>
+                    <li>
+                        10 mt / year of all HFC-134a sales to be replaced by R-600a in years 2 to 10
+                    </li>
+                    <li>
+                        20 mt / year of all HFC-134a sales to be replaced by R-600a in years 11 to
+                        20
+                    </li>
+                </ul>
+
+                <p>Now that we have this additional policy, we can build new simulations.</p>
+            </section>
+
+            <section id="new-simulations">
+                <h2>New Simulations</h2>
+
+                <p>After making this schedule, we will make two new simulations:</p>
+
+                <ul>
+                    <li>
+                        Create a new simulation called "replacement" which includes this recycling
+                        policy on it's own.
+                    </li>
+                    <li>
+                        Create a new simulation called "combined" which includes recycling and
+                        replacement together.
+                    </li>
+                </ul>
+
+                <p>
+                    After adding these new scenarios, try to compare simulation outcomes within the
+                    visualization section.
+                </p>
+            </section>
+
+            <section id="files">
+                <h2>Files</h2>
+
+                <p>
+                    We've built up some sophistication in this model. If you want to save your work
+                    for later, be sure to use the save and load file buttons at the top of the page.
+                    This also offers an archival format for your simulations which can be shared
+                    with others.
+                </p>
+            </section>
+
+            <section id="conclusion">
+                <h2>Conclusion</h2>
+
+                <p>
+                    In this tutorial, we added a second substance and explored simulation of
+                    policies both in isolation and together. In the
+                    <a href="/guide/permits.html">next tutorial</a>, we will do a case study of a
+                    permitting system which engages in some further sophisticated modeling of
+                    demand.
+                </p>
+            </section>
+        </main>
+    </body>
+</html>

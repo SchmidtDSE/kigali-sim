@@ -69,6 +69,8 @@ jobs:
         run: bash ./support/install_deps.sh
       - name: Prepare deploy
         run: bash ./support/prepare_deploy.sh
+      - name: Copy guide
+        run: cp -r ./guide ./deploy/guide
       - name: Update cache busters
         run: bash ./support/update_cache_busters.sh
       - name: Upload

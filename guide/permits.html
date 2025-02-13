@@ -1,0 +1,101 @@
+<html>
+    <head>
+        <title>Build a Permit System</title>
+        <link href="/guide/guide.css" rel="stylesheet" type="text/css" />
+    </head>
+    <body>
+        <div class="skip-link">
+            <a href="#main">Skip to content</a>
+        </div>
+        <header>
+            This tutorial is part of the <a href="/guide">guide</a> for the
+            <a href="/">Montreal Policy Simulator</a>.
+        </header>
+        <main id="main">
+            <h1>Case Study of a Permit System</h1>
+
+            This tutorial examines a permitting system where demand from one substance moves into
+            the other. This may help explore how multiple substances may interact with each other in
+            the market.
+
+            <details>
+                <summary>Contents</summary>
+                <ul>
+                    <li><a href="#motivation">Motivation</a></li>
+                    <li><a href="#adding-permits">Adding Permits</a></li>
+                    <li><a href="#new-simulation">New Simulation</a></li>
+                    <li><a href="#adding-displacement">Adding Displacement</a></li>
+                    <li><a href="#conclusion">Conclusion</a></li>
+                </ul>
+            </details>
+
+            <section id="motivation">
+                <h2>Motivation</h2>
+
+                <p>
+                    In the <a href="/guide/modeling_multiple.html">previous tutorial</a>, we both
+                    introduced our simulation to multiple substances and to policies which can
+                    manipulate across two substances. However, that prior policy didn't directly
+                    model how demand might be changing in the market. For example, a permitting
+                    system could cause pressure where some consumers of a refrigerant will move to
+                    an alternative when permits become scarce. In this tutorial, we will tell our
+                    simulation about how we expect demand may shift from one substance to another.
+                </p>
+            </section>
+
+            <section id="adding-permits">
+                <h2>Adding Permits</h2>
+
+                <p>
+                    We will express our permitting intervention as a policy which limits use of a
+                    substance to a target. Go ahead and create a new "limit" policy with the
+                    following properties for HFC-134a:
+                </p>
+
+                <ul>
+                    <li>Cap all sales to 85% from years 5 to 10.</li>
+                    <li>Cap all sales to 75% from years 11 onwards.</li>
+                </ul>
+
+                <p>
+                    This will model a permitting system requiring a reduction of 15% followed by 25%
+                    for HFC-134a. Note that we won't yet introduce the idea of demand shifting so
+                    please leave "displacing" as nothing.
+                </p>
+            </section>
+
+            <section id="new-simulation">
+                <h2>New Simulation</h2>
+
+                <p>
+                    Let's quickly take a look at what this policy looks like. Go ahead and make a
+                    new simulation which shows the impact of this permitting system on its own. You
+                    may also add this to the combined policy scenario.
+                </p>
+            </section>
+
+            <section id="adding-displacement">
+                <h2>Adding Displacement</h2>
+
+                <p>
+                    Right now, the permitting doesn't yet exhibit that pressure which causes an
+                    alternative like R-600a to go up. We can change this by modifying the policy to
+                    say that we "displace" into R-600a. After adding this into the permits policy,
+                    go ahead and take a look again at the simulations to see how the two substances
+                    are interacting with each other.
+                </p>
+            </section>
+
+            <section id="conclusion">
+                <h2>Conclusion</h2>
+
+                <p>
+                    In this tutorial, we explored adding a policy into our simulations which
+                    specifically considers how demand in one substance may impact another. In the
+                    <a href="/guide/interpreting_results.html">next tutorial</a>, we take a closer
+                    look at the visualizations within the tool.
+                </p>
+            </section>
+        </main>
+    </body>
+</html>

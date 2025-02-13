@@ -1,0 +1,137 @@
+<html>
+    <head>
+        <title>Grow the Simulation</title>
+        <link href="/guide/guide.css" rel="stylesheet" type="text/css" />
+    </head>
+    <body>
+        <div class="skip-link">
+            <a href="#main">Skip to content</a>
+        </div>
+        <header>
+            This tutorial is part of the <a href="/guide">guide</a> for the
+            <a href="/">Montreal Policy Simulator</a>.
+        </header>
+        <main id="main">
+            <h1>Grow the Simulation</h1>
+
+            In this tutorial, we grow our simulation through code, exploring how we might be able to
+            save time by interacting with our simulations through this alternative interface.
+
+            <details>
+                <summary>Contents</summary>
+                <ul>
+                    <li><a href="#motivation">Motivation</a></li>
+                    <li><a href="#metrics">Metrics</a></li>
+                    <li><a href="#dimensions">Dimensions</a></li>
+                    <li><a href="#dropdowns">Dropdowns</a></li>
+                    <li><a href="#business-as-usual-questions">Business as Usual Questions</a></li>
+                    <li><a href="#policy-questions">Policy Questions</a></li>
+                    <li><a href="#conclusion">Conclusion</a></li>
+                </ul>
+            </details>
+
+            <section id="motivation">
+                <h2>Motivation</h2>
+
+                <p>
+                    In the <a href="/guide/programming_reveal.html">previous tutorial</a>, we
+                    revealed that we have been writing code all along. That said, there are some
+                    features of the engine which can only be accessed by writing code through the
+                    "Advanced" tab such as probabilistic simulation. Sometimes, it may also be
+                    easier or faster to express your ideas through code than by building it up
+                    through the dialog boxes. All that in mind, we will now make some edits through
+                    code.
+                </p>
+            </section>
+
+            <section id="new-application">
+                <h2>New Application</h2>
+
+                <p>
+                    Create a new "dom refrig" application for domestic refrigeration. First, have it
+                    use "HFC-134a" with the following properties:
+                </p>
+
+                <ul>
+                    <li>Initial charge 0.25 kg / unit for domestic manufacture</li>
+                    <li>Initial charge 0.1 kg / unit for domestic manufacture</li>
+                    <li>Assume emissions 1000 tCO2e / kg</li>
+                    <li>A starting domestic manufacture level of 250 mt in year 1</li>
+                    <li>A starting import of 50 mt in year 1</li>
+                    <li>Increase manufacture by + 5% each year (the plus sign is optional)</li>
+                    <li>Increase import by + 4% each year</li>
+                    <li>
+                        2% retired each year and 5% recharged each year with 0.05 kg / unit recharge
+                    </li>
+                </ul>
+
+                <p>Next, create "R-600a" with the following properties:</p>
+
+                <ul>
+                    <li>Initial charge 0.1 kg / unit for domestic manufacture</li>
+                    <li>Initial charge 0.1 kg / unit for domestic manufacture</li>
+                    <li>Assume emissions 50 tCO2e / kg</li>
+                    <li>2% retired each year and 5% recharged each year</li>
+                    <li>A starting domestic manufacture level of 5 mt in year 1</li>
+                    <li>Increase sales by 5% each year</li>
+                    <li>A starting import of 2 mt in year 1</li>
+                    <li>0.01 kg / unit recharge</li>
+                </ul>
+
+                <p>Be sure to click "run" to execute again when you are done.</p>
+            </section>
+
+            <section id="new-policies">
+                <h2>New Policies</h2>
+
+                <p>
+                    Next, let's make some policies. Create the following for domestic refrigeration:
+                </p>
+
+                <ul>
+                    <li>Recover 30% with 100% reuse during years 2 to 20.</li>
+                    <li>Replace 15 mt / year of all sales with R-600a during years 2 to 20.</li>
+                </ul>
+
+                <p>
+                    Finally, change the current policies from "com recycling" and "com replace" to
+                    simply "recycling" and "replace" as we will have them modify both applications.
+                    Note that this has to be modified in both the simulations and policy sections.
+                </p>
+
+                <p>Once again, be sure to click "run" to execute again.</p>
+            </section>
+
+            <section id="new-simulations">
+                <h2>New Simulations</h2>
+
+                <p>
+                    Finally, create a new simulation called "combined" which uses the replace policy
+                    then adds the recycling policy. To add multiple policies, use the "then" keyword
+                    like so:
+                </p>
+
+                <pre>
+simulate "sim"
+  using "policy1"
+  then "policy2"
+from years 1 to 20           
+                </pre>
+
+                <p>
+                    One last time, be sure to click run. This gives you a sense of a multi-policy
+                    scenario which is only accessible from the code interface.
+                </p>
+            </section>
+
+            <section id="conclusion">
+                <h2>Conclusion</h2>
+
+                <p>
+                    That's it for now. In the future, we will have a follow up simulation looking at
+                    probaiblistic simulation.
+                </p>
+            </section>
+        </main>
+    </body>
+</html>
