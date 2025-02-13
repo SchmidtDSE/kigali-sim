@@ -634,9 +634,9 @@ class CompileVisitor extends toolkit.QubecTalkVisitor {
   }
 
   /**
-   * Process the definition of an application like commerical refrigerant.
+   * Process the definition of an application like commercial refrigerant.
    *
-   * Process the definition of an application like commerical refrigerant such
+   * Process the definition of an application like commercial refrigerant such
    * that multiple substances may be used for an application.
    *
    * @param {Object} ctx - The parser context for the application definition.
