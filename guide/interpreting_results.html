@@ -1,0 +1,162 @@
+<html>
+    <head>
+        <title>Interpret Results</title>
+        <link href="/guide/guide.css" rel="stylesheet" type="text/css" />
+    </head>
+    <body>
+        <div class="skip-link">
+            <a href="#main">Skip to content</a>
+        </div>
+        <header>
+            This tutorial is part of the <a href="/guide">guide</a> for the
+            <a href="/">Montreal Policy Simulator</a>.
+        </header>
+        <main id="main">
+            <h1>Interpret Results</h1>
+
+            This tutorial will open a pre-built simulation and use it as a motivation to explore
+            different aspects of the visualization tools.
+
+            <details>
+                <summary>Contents</summary>
+                <ul>
+                    <li><a href="#motivation">Motivation</a></li>
+                    <li><a href="#metrics">Metrics</a></li>
+                    <li><a href="#dimensions">Dimensions</a></li>
+                    <li><a href="#dropdowns">Dropdowns</a></li>
+                    <li><a href="#business-as-usual-questions">Business as Usual Questions</a></li>
+                    <li><a href="#policy-questions">Policy Questions</a></li>
+                    <li><a href="#conclusion">Conclusion</a></li>
+                </ul>
+            </details>
+
+            <section id="motivation">
+                <h2>Motivation</h2>
+
+                <p>
+                    In the <a href="/guide/modeling_permits.html">previous tutorial</a>, we built
+                    out a permitting system and reviewed the results. Indeed, all of the sections of
+                    the guide so far have included some use of the built-in visualizations of this
+                    tool. However, this tutorial offers an opportunity to take a closer look at that
+                    section of the tool.
+                </p>
+            </section>
+
+            <section id="open-sample">
+                <h2>Opening the Sample</h2>
+
+                <p>
+                    First, be sure to click "save file" at the top of the tool to keep a copy of
+                    your existing work. We will return to it later! After that file is in a safe
+                    spot on your computer, please click on the "open workshop sample" at the bottom
+                    of the page. This simulation continues what we started but adds multiple
+                    applications. Note that this will open code. Don't worry too much about that
+                    right now. Just click run at the bottom of the page.
+                </p>
+            </section>
+
+            <section id="metrics">
+                <h2>Metrics</h2>
+
+                <p>
+                    We will start our tour of the visualization tools by highlighting the three
+                    metrics at the top of the screen. We can look at emissions that happen both
+                    during the useful lifetime and at the end of life for equipment. However, we can
+                    also look at consumption volumes and the size of the equipment fleet.
+                    Furthermore, after toggling between different metrics, various "sub-metrics" can
+                    be selected. For example, try opening emissions and selecting only recharge
+                    which would capture "leakage" given how much of the refrigerant needs to be
+                    replaced during servicing.
+                </p>
+            </section>
+
+            <section id="dimensions">
+                <h2>Dimensions</h2>
+
+                <p>
+                    There are different dimensions at the bottom of the page. For example, you can
+                    compare the emissions of all of the simulations or compare the applications
+                    under just business as usual. Specifically, you can also filter through your
+                    results by selecting different dimension values. In other words, you can look at
+                    these metrics across all simulations or just filter into a single simulation's
+                    results by selecting the radio button next to that simulation's name. You can do
+                    the same for different applications and substances.
+                </p>
+
+                <p>
+                    As an example, we could compare the outcomes of just commercial refrigeration by
+                    selecting com refrig under applications. We could even go further and select the
+                    com recycling simulation, the com refrig application, and then go to substances
+                    to compare projections of different substances within just that application
+                    within just that simulation.
+                </p>
+            </section>
+
+            <section id="dropdowns">
+                <h2>Dropdowns</h2>
+
+                <p>
+                    Finally, before trying out a few questions in this interface, note that there
+                    are also dropdowns within the chart region. For instance, on top of the chart it
+                    says something like "showing emissions summed by simulation scenario" which
+                    would indicate that the graph is showing the total emissions per year (across
+                    all applications and substances) per simulation. Modifying these dropdowns will
+                    update the rest of the tool's visualization section.
+                </p>
+            </section>
+
+            <section id="business-as-usual-questions">
+                <h2>Business as Usual Questions</h2>
+
+                <p>
+                    Now that you have a sesne for what is in the visualization section, we can
+                    answer some example questions about the business as usual scenario within this
+                    example:
+                </p>
+
+                <ul>
+                    <li>
+                        How much emissions in megatons (MtCO2e) are expected at the end of the
+                        simulation (year 20) for business as usual?
+                    </li>
+                    <li>
+                        How much sales in kilotons (kmt / year) are expected at the end of the
+                        simulation (year 20) for business as usual?
+                    </li>
+                    <li>In business as usual, which application had the most sales?</li>
+                    <li>In business as usual, which substance has the most emissions?</li>
+                </ul>
+
+                <p>Explore these questions by manipulating the results panel.</p>
+            </section>
+
+            <section id="policy-questions">
+                <h2>Policy Questions</h2>
+
+                <p>Next, let's compare different policy packages:</p>
+
+                <ul>
+                    <li>Which individual policy results in the lowest emissions?</li>
+                    <li>
+                        Which individual policy results in the lowest emissions from commerical
+                        refrigerants?
+                    </li>
+                    <li>Which substance is that policy mostly acting upon?</li>
+                    <li>Which policy results in the lowest levels of HFC-134a?</li>
+                </ul>
+
+                <p>Which policy would you recommend?</p>
+            </section>
+
+            <section id="conclusion">
+                <h2>Conclusion</h2>
+
+                <p>
+                    In this tutorial, we took a very close look at the visualization part of this
+                    tool. In the <a href="/guide/programming_reveal.html">next tutorial</a>, we
+                    consider some of the options available for making larger simulations.
+                </p>
+            </section>
+        </main>
+    </body>
+</html>
