@@ -623,7 +623,7 @@ class FilterSet {
   /**
    * Get the application filter.
    *
-   * @returns {string|null} The application for which to filter like commerical
+   * @returns {string|null} The application for which to filter like commercial
    *     refrigerant.
    */
   getApplication() {
