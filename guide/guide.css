@@ -59,6 +59,7 @@ header {
 html {
   height: 100%;
   width: 100%;
+  min-width: 600px;
   font-family: PublicSans;
   background-color: #FFFFFF;
   color: #333;
@@ -88,4 +89,14 @@ section {
   top: 10px;
   background: #E0E0E0;
   padding: 3px;
+}
+
+.tutorial-gif-holder {
+  text-align: center;
+}
+
+.tutorial-gif-holder img {
+  width: 500px;
+  border: 2px solid #505050;
+  border-radius: 3px;
 }
