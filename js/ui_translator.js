@@ -35,11 +35,7 @@ const COMMAND_COMPATIBILITIES = {
   "replace": "policy",
 };
 
-const SUPPORTED_EQUALS_UNITS = [
-  "tCO2e / unit",
-  "tCO2e / kg",
-  "tCO2e / mt"
-];
+const SUPPORTED_EQUALS_UNITS = ["tCO2e / unit", "tCO2e / kg", "tCO2e / mt"];
 
 const toolkit = QubecTalk.getToolkit();
 
