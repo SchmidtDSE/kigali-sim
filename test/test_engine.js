@@ -114,6 +114,29 @@ function buildEngineTests() {
       assert.deepEqual(manufactureVal.getUnits(), "kg");
     });
 
+    QUnit.test("applies limit in specific year", function (assert) {
+      const engine = new Engine(1, 2);
+
+      engine.setStanza("default");
+      engine.setApplication("test app");
+      engine.setSubstance("test substance");
+
+      engine.setStream("manufacture", new EngineNumber(100, "kg"), new YearMatcher(1, 1));
+      engine.cap("manufacturing", new EngineNumber(75, "kg"), new YearMatcher(2, 2));
+
+      const salesVal1 = engine.getStream("manufacture");
+      assert.closeTo(salesVal1.getValue(), 100, 0.0001);
+      assert.deepEqual(salesVal1.getUnits(), "kg");
+
+      engine.incrementYear();
+
+      engine.cap("manufacture", new EngineNumber(75, "kg"), new YearMatcher(2, 2));
+
+      const salesVal2 = engine.getStream("manufacture");
+      assert.closeTo(salesVal2.getValue(), 75, 0.0001);
+      assert.deepEqual(salesVal2.getUnits(), "kg");
+    });
+
     QUnit.test("determines populations", function (assert) {
       const engine = new Engine(1, 3);
 
