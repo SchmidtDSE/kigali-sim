@@ -838,7 +838,7 @@ class Engine {
       const domesticConsumptionValue = manufactureConverter.convert(manufactureValue, "tCO2e");
 
       const importConverter = self._createUnitConverterWithTotal("import");
-      const importConsumptionValue = manufactureConverter.convert(importValue, "tCO2e");
+      const importConsumptionValue = importConverter.convert(importValue, "tCO2e");
 
       return new EngineResult(
         application,

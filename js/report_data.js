@@ -226,21 +226,12 @@ class MetricStrategyBuilder {
    */
   constructor() {
     const self = this;
-    self._strategies = null;
+    self._strategies = {};
     self._metric = null;
     self._submetric = null;
     self._units = null;
     self._strategy = null;
     self._transformation = null;
-  }
-
-  /**
-   * Set the strategies object that will contain the built strategies.
-   * @param {Object} strategies - The strategies container object.
-   */
-  setStrategies(strategies) {
-    const self = this;
-    self._strategies = strategies;
   }
 
   /**
@@ -304,7 +295,7 @@ class MetricStrategyBuilder {
     const innerTransformation = self._transformation;
     const execute = (filterSet) => {
       const result = innerStrategy(filterSet);
-      const transformed = self._transformation(result);
+      const transformed = innerTransformation(result);
       return transformed;
     };
 
@@ -361,23 +352,33 @@ class ReportDataWrapper {
     const strategyBuilder = new MetricStrategyBuilder();
 
     const addEmissionsConversion = (strategyBuilder) => {
-      strategyBuilder.setUnits("MtCO2e / yr");
+      strategyBuilder.setUnits("tCO2e / yr");
       strategyBuilder.setTransformation((val) => {
-        if (val.getUnits() !== "tCO2e / yr") {
+        if (val.getUnits() !== "tCO2e") {
           throw "Unexpected emissions source units: " + val.getUnits();
         }
 
-        return new EngineNumber(val.getValue() / 1000000, "MtCO2e / yr");
+        return new EngineNumber(val.getValue(), "tCO2e / yr");
       });
       strategyBuilder.add();
 
       strategyBuilder.setUnits("ktCO2e / yr");
       strategyBuilder.setTransformation((val) => {
-        if (val.getUnits() !== "tCO2e / yr") {
+        if (val.getUnits() !== "tCO2e") {
           throw "Unexpected emissions source units: " + val.getUnits();
         }
 
         return new EngineNumber(val.getValue() / 1000, "ktCO2e / yr");
+      });
+      strategyBuilder.add();
+
+      strategyBuilder.setUnits("MtCO2e / yr");
+      strategyBuilder.setTransformation((val) => {
+        if (val.getUnits() !== "tCO2e") {
+          throw "Unexpected emissions source units: " + val.getUnits();
+        }
+
+        return new EngineNumber(val.getValue() / 1000000, "MtCO2e / yr");
       });
       strategyBuilder.add();
     };
@@ -499,7 +500,7 @@ class ReportDataWrapper {
     const self = this;
     const metric = filterSet.getFullMetricName();
     const metricStrategy = self._metricStrategies[metric];
-    const value = metricStrategy();
+    const value = metricStrategy(filterSet);
     return value;
   }
 
@@ -739,7 +740,8 @@ class ReportDataWrapper {
         new AggregatedResult(
           x.getManufacture(),
           x.getImport(),
-          x.getConsumption(),
+          x.getDomesticConsumption(),
+          x.getImportConsumption(),
           x.getPopulation(),
           x.getPopulationNew(),
           x.getRechargeEmissions(),

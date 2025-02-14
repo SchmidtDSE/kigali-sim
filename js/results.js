@@ -69,7 +69,7 @@ class ResultsPresenter {
       null,
       null,
       null,
-      "emissions:all:MtCO2e / yr",
+      "emissions:all:tCO2e / yr",
       "simulations",
     );
 
@@ -361,11 +361,12 @@ class ScorecardPresenter {
 
     const registerListener = (scorecard, family) => {
       const subMetricDropdown = scorecard.querySelector(".submetric-input");
+      const unitsDropdown = scorecard.querySelector(".units-input");
 
       const callback = () => {
         const subMetric = subMetricDropdown.value;
-        const isAll = subMetric === "all";
-        const fullName = family + ":" + subMetric;
+        const units = unitsDropdown.value;
+        const fullName = family + ":" + subMetric + ":" + units;
         const newFilterSet = self._filterSet.getWithMetric(fullName);
         self._onUpdateFilterSet(newFilterSet);
       };
@@ -373,8 +374,8 @@ class ScorecardPresenter {
       const radio = scorecard.querySelector(".metric-radio");
       radio.addEventListener("click", callback);
 
-      const dropdown = scorecard.querySelector(".submetric");
-      dropdown.addEventListener("change", callback);
+      subMetricDropdown.addEventListener("change", callback);
+      unitsDropdown.addEventListener("change", callback);
     };
 
     registerListener(emissionsScorecard, "emissions");
