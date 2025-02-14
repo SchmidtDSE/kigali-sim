@@ -22,7 +22,8 @@ class AggregatedResult {
   constructor(
     manufactureValue,
     importValue,
-    consumptionValue,
+    domesticConsumptionValue,
+    importConsumptionValue,
     populationValue,
     populationNew,
     rechargeEmissions,
@@ -31,7 +32,8 @@ class AggregatedResult {
     const self = this;
     self._manufactureValue = manufactureValue;
     self._importValue = importValue;
-    self._consumptionValue = consumptionValue;
+    self._domesticConsumptionValue = domesticConsumptionValue;
+    self._importConsumptionValue = importConsumptionValue;
     self._populationValue = populationValue;
     self._populationNew = populationNew;
     self._rechargeEmissions = rechargeEmissions;
@@ -72,16 +74,33 @@ class AggregatedResult {
   }
 
   /**
-   * Get the consumption of substance value.
+   * Get the domestic consumption value.
    *
-   * @returns {EngineNumber} The consumption value with units.
+   * @returns {EngineNumber} The domestic consumption value.
+   */
+  getDomesticConsumption() {
+    const self = this;
+    return self._domesticConsumptionValue;
+  }
+
+  /**
+   * Get the import consumption value.
+   *
+   * @returns {EngineNumber} The import consumption value.
+   */
+  getImportConsumption() {
+    const self = this;
+    return self._importConsumptionValue;
+  }
+
+  /**
+   * Get the total consumption combining domestic and import.
+   *
+   * @returns {EngineNumber} The combined consumption value with units.
    */
   getConsumption() {
     const self = this;
-    const manufactureValue = self.getConsumption();
-    const importValue = self.getImport();
-    const sales = self._combineUnitValue(manufactureValue, importValue);
-    return sales;
+    return self._combineUnitValue(self.getDomesticConsumption(), self.getImportConsumption());
   }
 
   /**
@@ -148,7 +167,8 @@ class AggregatedResult {
 
     const manufactureValue = self._combineUnitValue(self.getManufacture(), other.getManufacture());
     const importValue = self._combineUnitValue(self.getImport(), other.getImport());
-    const consumptionValue = self._combineUnitValue(self.getConsumption(), other.getConsumption());
+    const domesticConsumptionValue = self._combineUnitValue(self.getDomesticConsumption(), other.getDomesticConsumption());
+    const importConsumptionValue = self._combineUnitValue(self.getImportConsumption(), other.getImportConsumption());
     const populationValue = self._combineUnitValue(self.getPopulation(), other.getPopulation());
     const populationNew = self._combineUnitValue(self.getPopulationNew(), other.getPopulationNew());
 
@@ -161,7 +181,8 @@ class AggregatedResult {
     return new AggregatedResult(
       manufactureValue,
       importValue,
-      consumptionValue,
+      domesticConsumptionValue,
+      importConsumptionValue,
       populationValue,
       populationNew,
       rechargeEmissions,
