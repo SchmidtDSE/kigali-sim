@@ -879,6 +879,11 @@
             <option value="priorEquipment">prior equipment</option>
           </select>
         </span>
+        <span class="embed-reminder">
+          of
+          <span class="embed-substance-label"></span>
+          (<span class="embed-app-label"></span>)
+        </span>
         to
         <input type="text" class="set-amount-input short" aria-label="Amount for set command">
         <span class="sel mid">
@@ -931,6 +936,11 @@
                 <option value="priorEquipment">prior equipment</option>
               </select>
             </span>
+          <span class="embed-reminder">
+            of
+            <span class="embed-substance-label"></span>
+            (<span class="embed-app-label"></span>)
+          </span>
           by
         </div>
         <span class="sel short">
@@ -979,24 +989,27 @@
 
     <script type="text/template" id="limit-command-template">
       <div class="limit-command form-group">
-        <div>
-          <span class="sel mid">
-            <select class="limit-type-input" aria-label="Type of limit command">
-              <option value="cap">cap</option>
-              <option value="floor">floor</option>
-            </select>
-          </span>
-          <span class="sel long">
-            <select class="limit-target-input" aria-label="Target for limit command">
-              <option value="manufacture">domestic manufacture</option>
-              <option value="import">import</option>
-              <option value="sales">all sales</option>
-              <option value="equipment">equipment</option>
-              <option value="priorEquipment">prior equipment</option>
-            </select>
-          </span>
-          at
-        </div>
+        <span class="sel mid">
+          <select class="limit-type-input" aria-label="Type of limit command">
+            <option value="cap">cap</option>
+            <option value="floor">floor</option>
+          </select>
+        </span>
+        <span class="sel long">
+          <select class="limit-target-input" aria-label="Target for limit command">
+            <option value="manufacture">domestic manufacture</option>
+            <option value="import">import</option>
+            <option value="sales">all sales</option>
+            <option value="equipment">equipment</option>
+            <option value="priorEquipment">prior equipment</option>
+          </select>
+        </span>
+        <span class="embed-reminder">
+          of
+          <span class="embed-substance-label"></span>
+          (<span class="embed-app-label"></span>)
+        </span>
+        at
         <input type="text" class="limit-amount-input short" aria-label="Amount of limit">
         <span class="sel mid">
           <select class="limit-units-input" aria-label="Units of limit">
@@ -1075,6 +1088,11 @@
             <option value="% each year">% each year</option>
           </select>
         </span>
+        <span class="embed-reminder">
+          of
+          <span class="embed-substance-label"></span>
+          (<span class="embed-app-label"></span>)
+        </span>
         with
         <input type="text" class="recycle-reuse-amount-input short" aria-label="Reuse level after yield loss for recycle command">
         <span class="sel mid">
@@ -1138,7 +1156,11 @@
             <option value="% each year">% each year</option>
           </select>
         </span>
-        of
+        <span class="embed-reminder">
+          of
+          <span class="embed-substance-label"></span>
+          (<span class="embed-app-label"></span>)
+        </span>
         <span class="sel long">
           <select class="replace-target-input" aria-label="Target for replace command">
             <option value="manufacture">domestic manufacture</option>
