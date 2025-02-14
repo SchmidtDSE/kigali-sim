@@ -79,6 +79,22 @@ function buildEngineTests() {
       assert.deepEqual(importVal.getUnits(), "kg");
     });
 
+    QUnit.test("set stream percentage", function (assert) {
+      const engine = new Engine(1, 3);
+
+      engine.setStanza("default");
+      engine.setApplication("test app");
+      engine.setSubstance("test substance");
+
+      engine.setStream("sales", new EngineNumber(100, "mt"), new YearMatcher(null, null));
+
+      engine.setStream("sales", new EngineNumber(75, "%"), new YearMatcher(null, null));
+
+      const salesVal = engine.getStream("sales");
+      assert.closeTo(salesVal.getValue(), 75, 0.0001);
+      assert.deepEqual(salesVal.getUnits(), "mt");
+    });
+
     QUnit.test("checks year", function (assert) {
       const engine = new Engine(1, 3);
 
