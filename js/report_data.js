@@ -214,7 +214,16 @@ class AggregatedResult {
   }
 }
 
+/**
+ * Builder class for creating metric computation strategies.
+ * Handles the construction of metric processing pipelines including
+ * transformations and unit conversions.
+ */
 class MetricStrategyBuilder {
+  /**
+   * Create a new MetricStrategyBuilder instance.
+   * Initializes all strategy components to null.
+   */
   constructor() {
     const self = this;
     self._strategies = null;
@@ -225,36 +234,65 @@ class MetricStrategyBuilder {
     self._transformation = null;
   }
 
+  /**
+   * Set the strategies object that will contain the built strategies.
+   * @param {Object} strategies - The strategies container object.
+   */
   setStrategies(strategies) {
     const self = this;
     self._strategies = strategies;
   }
 
+  /**
+   * Set the metric name for the strategy.
+   * @param {string} metric - The metric name (e.g., 'sales', 'emissions').
+   */
   setMetric(metric) {
     const self = this;
     self._metric = metric;
   }
 
+  /**
+   * Set the submetric name for the strategy.
+   * @param {string} submetric - The submetric name (e.g., 'all', 'import').
+   */
   setSubmetric(submetric) {
     const self = this;
     self._submetric = submetric;
   }
 
+  /**
+   * Set the units for the strategy output.
+   * @param {string} units - The units specification (e.g., 'MtCO2e / yr').
+   */
   setUnits(units) {
     const self = this;
     self._units = units;
   }
 
+  /**
+   * Set the core computation strategy.
+   * @param {Function} strategy - The function that implements the core metric computation.
+   */
   setStrategy(strategy) {
     const self = this;
     self._strategy = strategy;
   }
 
+  /**
+   * Set the transformation to apply after the core strategy.
+   * @param {Function} transformation - The function that transforms the strategy output.
+   */
   setTransformation(transformation) {
     const self = this;
     self._transformation = transformation;
   }
 
+  /**
+   * Add the configured strategy to the strategies collection.
+   * Requires all components to be set (non-null).
+   * @throws {string} If any required component is null.
+   */
   add() {
     const self = this;
     self._requireCompleteDefinition();
@@ -273,11 +311,20 @@ class MetricStrategyBuilder {
     self._strategies[fullName] = execute;
   }
 
+  /**
+   * Build and return the complete strategies object.
+   * @returns {Object} The strategies object containing all added strategies.
+   */
   build() {
     const self = this;
     return self._strategies;
   }
 
+  /**
+   * Verify that all required components have been set.
+   * @private
+   * @throws {string} If any required component is null.
+   */
   _requireCompleteDefinition() {
     const self = this;
     const pieces = [
