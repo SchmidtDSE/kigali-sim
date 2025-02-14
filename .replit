@@ -1,5 +1,5 @@
 hidden=[".config"]
-modules = ["bash", "nodejs-20", "python-3.11", "web"]
+modules = ["nodejs-20", "web", "bash", "python-3.12"]
 build = "bash support/install_deps.sh; bash support/make.sh"
 run = "python -m http.server"
 
@@ -9,7 +9,7 @@ channel = "stable-24_05"
 [deployment]
 publicDir = "/"
 deploymentTarget = "static"
-run = ["python", "-m", "http.server"]
+run = ["sh", "-c", "node index.js"]
 
 [[ports]]
 localPort = 8000
