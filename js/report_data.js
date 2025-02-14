@@ -368,27 +368,22 @@ class ReportDataWrapper {
     };
 
     const addConsumptionStrategies = (strategyBuilder) => {
-      strategyBuilder.setMetric("sales");
+      strategyBuilder.setMetric("consumption");
 
       strategyBuilder.setSubmetric("all");
-      strategyBuilder.setStrategy((x) => self.getSales(x));
+      strategyBuilder.setStrategy((x) => self.getConsumption(x));
 
       strategyBuilder.setSubmetric("import");
-      strategyBuilder.setStrategy((x) => self.getImport(x));
+      strategyBuilder.setStrategy((x) => self.getImportConsumption(x));
 
       strategyBuilder.setSubmetric("manufacture");
-      strategyBuilder.setStrategy((x) => self.getManufacture(filterSet));
+      strategyBuilder.setStrategy((x) => self.getDomesticConsumption(filterSet));
     };
 
     addEmissionsStrategies(strategyBuilder);
+    addSalesStrategies(strategyBuilder);
 
-    self._metricStrategies = {
-      "sales": () => self.getSales(filterSet),
-      "sales:import": () => self.getImport(filterSet),
-      "sales:manufacture": () => self.getManufacture(filterSet),
-      "population": () => self.getPopulation(filterSet),
-      "population:new": () => self.getPopulationNew(filterSet),
-    };
+    self._metricStrategies = strategyBuilder.build();
   }
 
   /**
