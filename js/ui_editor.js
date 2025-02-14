@@ -1143,8 +1143,11 @@ class PolicyListPresenter {
       event.preventDefault();
     });
 
-    const updateReminders = () => self._reminderPresenter.update();
-    const setupListButton = buildSetupListButton(updateReminders);
+    const updateHints = () => {
+      self._reminderPresenter.update();
+      self._updateCounts();
+    };
+    const setupListButton = buildSetupListButton(updateHints);
 
     const addRecyclingButton = self._root.querySelector(".add-recycling-button");
     const recyclingList = self._root.querySelector(".recycling-list");
@@ -1271,6 +1274,7 @@ class PolicyListPresenter {
 
     self._dialog.showModal();
     self._reminderPresenter.update();
+    self._updateCounts();
   }
 
   /**
