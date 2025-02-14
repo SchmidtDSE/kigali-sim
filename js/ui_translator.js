@@ -2824,7 +2824,9 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
 
     for (let i = 0; i < numStanzas; i++) {
       const newStanza = ctx.getChild(i).accept(self);
-      stanzasByName.set(newStanza.getName(), newStanza);
+      if (newStanza !== undefined) {
+        stanzasByName.set(newStanza.getName(), newStanza);
+      }
     }
 
     if (!stanzasByName.has("default")) {
