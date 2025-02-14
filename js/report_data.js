@@ -489,6 +489,18 @@ class ReportDataWrapper {
     return aggregated === null ? null : aggregated.getConsumption();
   }
 
+  getDomesticConsumption(filterSet) {
+    const self = this;
+    const aggregated = self._getAggregatedAfterFilter(filterSet);
+    return aggregated === null ? null : aggregated.getDomesticConsumption();
+  }
+
+  getImportConsumption(filterSet) {
+    const self = this;
+    const aggregated = self._getAggregatedAfterFilter(filterSet);
+    return aggregated === null ? null : aggregated.getImportConsumption();
+  }
+
   /**
    * Get total emissions value matching a given filter set.
    *
