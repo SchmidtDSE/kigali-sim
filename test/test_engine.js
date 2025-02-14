@@ -200,6 +200,38 @@ function buildEngineTests() {
       assert.deepEqual(count3.getUnits(), "kg");
     });
 
+    QUnit.test("change stream alternative notation", function (assert) {
+      const engine = new Engine(1, 3);
+
+      engine.setStanza("default");
+      engine.setApplication("test app");
+      engine.setSubstance("test substance");
+
+      engine.setStream("manufacture", new EngineNumber(10, "kg"), new YearMatcher(null, null));
+
+      engine.changeStream("manufacture", new EngineNumber(10, "%"), new YearMatcher(2, null));
+
+      const count1 = engine.getStream("manufacture");
+      assert.equal(count1.getValue(), 10);
+      assert.deepEqual(count1.getUnits(), "kg");
+
+      engine.incrementYear();
+
+      engine.changeStream("manufacture", new EngineNumber(10, "%"), new YearMatcher(null, null));
+
+      const count2 = engine.getStream("manufacture");
+      assert.equal(count2.getValue(), 11);
+      assert.deepEqual(count2.getUnits(), "kg");
+
+      engine.incrementYear();
+
+      engine.changeStream("manufacture", new EngineNumber(10, "%"), new YearMatcher(null, null));
+
+      const count3 = engine.getStream("manufacture");
+      assert.equal(count3.getValue(), 12.1);
+      assert.deepEqual(count3.getUnits(), "kg");
+    });
+
     QUnit.test("manages parallel stream", function (assert) {
       const engine = new Engine(1, 3);
 
