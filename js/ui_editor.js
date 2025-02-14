@@ -260,6 +260,27 @@ function setDuring(selection, command, defaultVal) {
 }
 
 /**
+ * Build a function which updates displays of command counts.
+ *
+ * @param dialog - Selection over the dialog in which the command count
+ *     displays should be updated.
+ * @returns Funciton which takes a string list selector and a string display
+ *     selector. That function will put the count of commands found in the
+ *     list selector into the display selector.
+ */
+function buildUpdateCount(dialog) {
+  return (listSelector, displaySelector) => {
+    const listSelection = dialog.querySelector(listSelector);
+    const displaySelection = dialog.querySelector(displaySelector);
+
+    const listItems = Array.of(...listSelection.querySelectorAll(".dialog-list-item"));
+    const listCount = listItems.map((x) => 1).reduce((a, b) => a + b, 0);
+
+    displaySelection.innerHTML = listCount;
+  };
+}
+
+/**
  * Manages the UI for listing and editing applications.
  *
  * Manages the UI for listing and editing applications where these refer to
@@ -665,13 +686,15 @@ class ConsumptionListPresenter {
       event.preventDefault();
     });
 
-    const hideEmbedReminder = () => {
+    const updateHints = () => {
       const embedReminders = self._root.querySelectorAll(".embed-reminder");
       embedReminders.forEach((reminder) => {
         reminder.style.display = "none";
       });
+
+      self._updateCounts();
     };
-    const setupListButton = buildSetupListButton(hideEmbedReminder);
+    const setupListButton = buildSetupListButton(updateHints);
 
     const addLevelButton = self._root.querySelector(".add-start-button");
     const levelList = self._root.querySelector(".level-list");
@@ -832,6 +855,7 @@ class ConsumptionListPresenter {
 
     self._dialog.showModal();
     self._reminderPresenter.update();
+    self._updateCounts();
   }
 
   /**
@@ -958,6 +982,20 @@ class ConsumptionListPresenter {
     limits.forEach((x) => substanceBuilder.addCommand(x));
 
     return substanceBuilder.build(true);
+  }
+
+  /**
+   * Updates the UI to display the count of commands in each list.
+   * 
+   * @private
+   */
+  _updateCounts() {
+    const self = this;
+
+    const updateCount = buildUpdateCount(self._dialog);
+    updateCount(".level-list", "#consumption-set-count");
+    updateCount(".change-list", "#consumption-change-count");
+    updateCount(".limit-list", "#consumption-limit-count");
   }
 }
 
