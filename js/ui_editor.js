@@ -71,32 +71,44 @@ function setupDurationSelector(newDiv) {
 }
 
 /**
- * Sets up a list button with add/delete functionality.
+ * Build a function which sets up a list button with add/delete functionality.
  *
- * @param {HTMLElement} button - Button element to set up.
- * @param {HTMLElement} targetList - List element to add items to.
- * @param {string} templateId - ID of template to use for new items.
- * @param {Function} initUiCallback - Callback to invoke when item added.
+ * @param {Function} postCallback - Function to call after each list item UI is
+ *     initialized. If not given, will use a no-op.
  */
-function setupListButton(button, targetList, templateId, initUiCallback) {
-  button.addEventListener("click", (event) => {
-    event.preventDefault();
-
-    const newDiv = document.createElement("div");
-    newDiv.innerHTML = document.getElementById(templateId).innerHTML;
-    newDiv.classList.add("dialog-list-item");
-    targetList.appendChild(newDiv);
-
-    const deleteLink = newDiv.querySelector(".delete-command-link");
-    deleteLink.addEventListener("click", (event) => {
+function buildSetupListButton(postCallback) {
+  /**
+   * Function which exeuctes on setting up a list button.
+   *
+   * @param {HTMLElement} button - Button element to set up.
+   * @param {HTMLElement} targetList - List element to add items to.
+   * @param {string} templateId - ID of template to use for new items.
+   * @param {Function} initUiCallback - Callback to invoke when item added.
+   */
+  return (button, targetList, templateId, initUiCallback) => {
+    button.addEventListener("click", (event) => {
       event.preventDefault();
-      newDiv.remove();
+
+      const newDiv = document.createElement("div");
+      newDiv.innerHTML = document.getElementById(templateId).innerHTML;
+      newDiv.classList.add("dialog-list-item");
+      targetList.appendChild(newDiv);
+
+      const deleteLink = newDiv.querySelector(".delete-command-link");
+      deleteLink.addEventListener("click", (event) => {
+        event.preventDefault();
+        newDiv.remove();
+      });
+
+      initUiCallback(null, newDiv);
+
+      setupDurationSelector(newDiv);
+
+      if (postCallback !== undefined) {
+        postCallback();
+      }
     });
-
-    initUiCallback(null, newDiv);
-
-    setupDurationSelector(newDiv);
-  });
+  };
 }
 
 /**
@@ -462,18 +474,26 @@ class ReminderPresenter {
 
     const substanceDisplays = self._root.querySelectorAll(".reminder-substance");
     const appDisplays = self._root.querySelectorAll(".reminder-app");
+    const embedSubstanceDisplays = self._root.querySelectorAll(".embed-substance-label");
+    const embedAppDisplays = self._root.querySelectorAll(".embed-app-label");
 
-    substanceDisplays.forEach((display) => {
+    const updateSubstance = (display) => {
       display.innerHTML = "";
       const textNode = document.createTextNode(substanceInput.value);
       display.appendChild(textNode);
-    });
+    };
 
-    appDisplays.forEach((display) => {
+    const updateApp = (display) => {
       display.innerHTML = "";
       const textNode = document.createTextNode(applicationInput.value);
       display.appendChild(textNode);
-    });
+    };
+
+    appDisplays.forEach(updateApp);
+    embedAppDisplays.forEach(updateApp);
+
+    substanceDisplays.forEach(updateSubstance);
+    embedSubstanceDisplays.forEach(updateSubstance);
   }
 
   /**
@@ -644,6 +664,14 @@ class ConsumptionListPresenter {
       self._dialog.close();
       event.preventDefault();
     });
+
+    const hideEmbedReminder = () => {
+      const embedReminders = self._root.querySelectorAll(".embed-reminder");
+      embedReminders.forEach((reminder) => {
+        reminder.style.display = "none";
+      });
+    };
+    const setupListButton = buildSetupListButton(hideEmbedReminder);
 
     const addLevelButton = self._root.querySelector(".add-start-button");
     const levelList = self._root.querySelector(".level-list");
@@ -1076,6 +1104,9 @@ class PolicyListPresenter {
       event.preventDefault();
     });
 
+    const updateReminders = () => self._reminderPresenter.update();
+    const setupListButton = buildSetupListButton(updateReminders);
+
     const addRecyclingButton = self._root.querySelector(".add-recycling-button");
     const recyclingList = self._root.querySelector(".recycling-list");
     setupListButton(
@@ -1087,9 +1118,9 @@ class PolicyListPresenter {
 
     const addReplaceButton = self._root.querySelector(".add-replace-button");
     const replaceList = self._root.querySelector(".replace-list");
-    setupListButton(addReplaceButton, replaceList, "replace-command-template", (item, root) =>
-      initReplaceCommandUi(item, root, self._getCodeObj()),
-    );
+    setupListButton(addReplaceButton, replaceList, "replace-command-template", (item, root) => {
+      initReplaceCommandUi(item, root, self._getCodeObj());
+    });
 
     const addLevelButton = self._root.querySelector(".add-level-button");
     const levelList = self._root.querySelector(".level-list");
