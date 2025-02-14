@@ -1244,7 +1244,9 @@ class CompileVisitor extends toolkit.QubecTalkVisitor {
 
     for (let i = 0; i < numStanzas; i++) {
       const newStanza = ctx.getChild(i).accept(self);
-      stanzasByName.set(newStanza.name, newStanza);
+      if (newStanza !== undefined) {
+        stanzasByName.set(newStanza.name, newStanza);
+      }
     }
 
     const execute = () => {

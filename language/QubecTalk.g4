@@ -417,5 +417,5 @@ substanceStatement: (capStatement | changeStatement | equalsStatement | initialC
  * -------------
  **/
 
-program: stanza+;
+program: stanza* EOF;
 
