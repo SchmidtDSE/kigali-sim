@@ -238,6 +238,17 @@ function buildUiTranslatorReverseTests() {
       assert.notEqual(code.indexOf("from years 1 to 5"), -1);
     });
 
+    QUnit.test("converts simulation stanzas to code reverse backwards ranges", function (assert) {
+      const scenario = new SimulationScenario("scenario", ["policy1", "policy2"], 5, 1, true);
+      const stanza = new SimulationStanza([scenario], true);
+      const code = stanza.toCode(0);
+      assert.notEqual(code.indexOf("start simulations"), -1);
+      assert.notEqual(code.indexOf('simulate "scenario"'), -1);
+      assert.notEqual(code.indexOf('using "policy1"'), -1);
+      assert.notEqual(code.indexOf('then "policy2"'), -1);
+      assert.notEqual(code.indexOf("from years 1 to 5"), -1);
+    });
+
     QUnit.test("converts default to code", function (assert) {
       const application = buildTestApplication(false);
       const stanza = new DefinitionalStanza("default", [application], true);

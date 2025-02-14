@@ -624,9 +624,13 @@ class SimulationScenario {
     const self = this;
     self._name = name;
     self._policyNames = policyNames;
-    self._yearStart = yearStart;
-    self._yearEnd = yearEnd;
     self._isCompatible = isCompatible;
+
+    const yearStartRearrange = Math.min(yearStart, yearEnd);
+    const yearEndRearrange = Math.max(yearStart, yearEnd);
+
+    self._yearStart = yearStartRearrange;
+    self._yearEnd = yearEndRearrange;
   }
 
   /**
