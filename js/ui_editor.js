@@ -810,8 +810,8 @@ class ConsumptionListPresenter {
     );
 
     setEngineNumberValue(
-      self._dialog.querySelector(".edit-consumption-consumption-input"),
-      self._dialog.querySelector(".edit-consumption-consumption-units-input"),
+      self._dialog.querySelector(".edit-consumption-ghg-input"),
+      self._dialog.querySelector(".edit-consumption-ghg-units-input"),
       objToShow,
       new EngineNumber(1, "tCO2e / kg"),
       (x) => x.getEquals().getValue(),
@@ -953,8 +953,8 @@ class ConsumptionListPresenter {
     const substanceBuilder = new SubstanceBuilder(substanceName, false);
 
     const consumptionValue = getEngineNumberValue(
-      self._dialog.querySelector(".edit-consumption-consumption-input"),
-      self._dialog.querySelector(".edit-consumption-consumption-units-input"),
+      self._dialog.querySelector(".edit-consumption-ghg-input"),
+      self._dialog.querySelector(".edit-consumption-ghg-units-input"),
     );
     substanceBuilder.addCommand(new Command("equals", null, consumptionValue, null));
 
