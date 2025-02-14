@@ -8,21 +8,21 @@ start default
       # Domestic production
       initial charge with 0.12 kg / unit for manufacture
       set manufacture to 350000 kg during year 1
-      change manufacture by +5 % / year during years 1 to 5
-      change manufacture by +3 % / year during years 6 to 9
+      change manufacture by +5 % each year during years 1 to 5
+      change manufacture by +3 % each year during years 6 to 9
 
       # Trade
       initial charge with 0.30 kg / unit for import
       set import to 90000 kg during year 1
-      change import by +5 % / year during years 1 to 5
-      change import by +3 % / year during years 6 to 9
+      change import by +5 % each year during years 1 to 5
+      change import by +3 % each year during years 6 to 9
       
       # Set prior population
       set priorEquipment to (get equipment as units * 7) units during year 1
 
       # Service
-      retire 6.7 % / year
-      recharge 10 % / year with 0.12 kg / unit
+      retire 6.7 % each year
+      recharge 10 % each year with 0.12 kg / unit
     end substance
 
   end application

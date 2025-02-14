@@ -224,6 +224,8 @@ DAY_: 'day';
 
 DAYS_: 'days';
 
+EACH_: 'each';
+
 KG_: 'kg';
 
 MONTH_: 'month';
@@ -274,7 +276,7 @@ unit: (volumeUnit | relativeUnit | temporalUnit);
 
 unitValue: expression unitOrRatio;
 
-unitOrRatio: (unit | unit DIV_ unit);
+unitOrRatio: (unit | unit DIV_ unit | unit EACH_ unit);
 
 /**
  * -----------------

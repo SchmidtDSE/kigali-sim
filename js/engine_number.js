@@ -11,8 +11,8 @@ class EngineNumber {
   /**
    * Create a new number with units.
    *
-   * @param value The numeric value (float, or int).
-   * @param units The units to associate with this value like kg.
+   * @param value - The numeric value (float, or int).
+   * @param units - The units to associate with this value like kg.
    */
   constructor(value, units) {
     const self = this;
@@ -48,7 +48,7 @@ class UnitConverter {
   /**
    * Create a new unit converter.
    *
-   * @param stateGetter Object allowing access to engine state as needed for unit conversion.
+   * @param stateGetter - Object allowing access to engine state as needed for unit conversion.
    */
   constructor(stateGetter) {
     const self = this;
@@ -58,8 +58,8 @@ class UnitConverter {
   /**
    * Convert a number to new units.
    *
-   * @param source The EngineNumber to convert.
-   * @param destinationUnits The units to which source should be converted.
+   * @param source - The EngineNumber to convert.
+   * @param destinationUnits - The units to which source should be converted.
    */
   convert(source, destinationUnits) {
     const self = this;
@@ -110,7 +110,7 @@ class UnitConverter {
    * Convert a number to kilograms.
    *
    * @private
-   * @param target The EngineNumber to convert.
+   * @param target - The EngineNumber to convert.
    * @returns Target converted to kilograms.
    */
   _toKg(target) {
@@ -128,7 +128,7 @@ class UnitConverter {
    * Convert a number to metric tons.
    *
    * @private
-   * @param target The EngineNumber to convert.
+   * @param target - The EngineNumber to convert.
    * @returns Target converted to metric tons.
    */
   _toMt(target) {
@@ -146,7 +146,7 @@ class UnitConverter {
    * Convert a number to a volume units.
    *
    * @private
-   * @param target The EngineNumber to convert.
+   * @param target - The EngineNumber to convert.
    * @returns Target converted to kilograms or metric tons.
    */
   _toVolume(target) {
@@ -187,7 +187,7 @@ class UnitConverter {
    * Convert a number to units (population).
    *
    * @private
-   * @param target The EngineNumber to convert.
+   * @param target - The EngineNumber to convert.
    * @returns Target converted to units (population).
    */
   _toUnits(target) {
@@ -231,7 +231,7 @@ class UnitConverter {
    * Convert a number to consumption as tCO2e.
    *
    * @private
-   * @param target The EngineNumber to convert.
+   * @param target - The EngineNumber to convert.
    * @returns Target converted to consumption as tCO2e.
    */
   _toConsumption(target) {
@@ -273,7 +273,7 @@ class UnitConverter {
    * Convert a number to years.
    *
    * @private
-   * @param target The EngineNumber to convert.
+   * @param target - The EngineNumber to convert.
    * @returns Target converted to years.
    */
   _toYears(target) {
@@ -317,7 +317,7 @@ class UnitConverter {
    * Convert a number to percentage.
    *
    * @private
-   * @param target The EngineNumber to convert.
+   * @param target - The EngineNumber to convert.
    * @returns Target converted to percentage.
    */
   _toPercent(target) {
@@ -349,7 +349,7 @@ class UnitConverter {
   /**
    * Normalize to non-ratio units if possible.
    *
-   * @param target The number to convert from a units with ratio to single type
+   * @param target - The number to convert from a units with ratio to single type
    *     units.
    * @returns Number after conversion to non-ratio units or target unchanged if
    *     it does not have a ratio units or could not be normalized.
@@ -368,7 +368,7 @@ class UnitConverter {
    * a non-ratio units.
    *
    * @private
-   * @param target The value to normalize by population.
+   * @param target - The value to normalize by population.
    * @returns Target without population in its units denominator.
    */
   _normUnits(target) {
@@ -396,7 +396,7 @@ class UnitConverter {
    * Convert a number where a units ratio has time in the denominator to a non-ratio units.
    *
    * @private
-   * @param target The value to normalize by time.
+   * @param target - The value to normalize by time.
    * @returns Target without time in its units denominator.
    */
   _normTime(target) {
@@ -421,7 +421,7 @@ class UnitConverter {
    * a non-ratio units.
    *
    * @private
-   * @param target The value to normalize by consumption.
+   * @param target - The value to normalize by consumption.
    * @returns Target without consumption in its units denominator.
    */
   _normConsumption(target) {
@@ -446,7 +446,7 @@ class UnitConverter {
    * non-ratio units.
    *
    * @private
-   * @param target The value to normalize by volume.
+   * @param target - The value to normalize by volume.
    * @returns Target without volume in its units denominator.
    */
   _normVolume(target) {

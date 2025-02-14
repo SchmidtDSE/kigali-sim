@@ -761,7 +761,7 @@ class ConsumptionListPresenter {
       self._dialog.querySelector(".edit-consumption-retirement-input"),
       self._dialog.querySelector(".retirement-units-input"),
       objToShow,
-      new EngineNumber(5, "% / year"),
+      new EngineNumber(5, "% each year"),
       (x) => x.getRetire().getValue(),
     );
 
@@ -769,7 +769,7 @@ class ConsumptionListPresenter {
       self._dialog.querySelector(".edit-consumption-recharge-population-input"),
       self._dialog.querySelector(".recharge-population-units-input"),
       objToShow,
-      new EngineNumber(5, "% / year"),
+      new EngineNumber(5, "% each year"),
       (x) => x.getRecharge().getTarget(),
     );
 
@@ -1785,9 +1785,9 @@ function initChangeCommandUi(itemObj, root) {
     const valueUnsigned = Math.abs(valueSigned);
     return valueUnsigned;
   });
-  setFieldValue(root.querySelector(".change-units-input"), itemObj, "% / year", (x) => {
+  setFieldValue(root.querySelector(".change-units-input"), itemObj, "% each year", (x) => {
     if (x.getValue() === null) {
-      return "% / year"; // Default
+      return "% each year"; // Default
     }
     return x.getValue().getUnits();
   });

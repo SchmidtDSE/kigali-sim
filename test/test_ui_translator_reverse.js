@@ -82,12 +82,12 @@ function buildUiTranslatorReverseTests() {
       const command = new Command(
         "change",
         "manufacture",
-        new EngineNumber("+5", "% / year"),
+        new EngineNumber("+5", "% each year"),
         null,
       );
       const substance = createWithCommand("test", true, command);
       const code = substance.toCode(0);
-      assert.notEqual(code.indexOf("change manufacture by +5 % / year"), -1);
+      assert.notEqual(code.indexOf("change manufacture by +5 % each year"), -1);
     });
 
     QUnit.test("equalss from substances", function (assert) {
@@ -100,13 +100,13 @@ function buildUiTranslatorReverseTests() {
     QUnit.test("recharges substances", function (assert) {
       const command = new Command(
         "recharge",
-        new EngineNumber("10", "% / year"),
+        new EngineNumber("10", "% each year"),
         new EngineNumber("5", "kg / unit"),
         null,
       );
       const substance = createWithCommand("test", false, command);
       const code = substance.toCode(0);
-      assert.notEqual(code.indexOf("recharge 10 % / year with 5 kg / unit"), -1);
+      assert.notEqual(code.indexOf("recharge 10 % each year with 5 kg / unit"), -1);
     });
 
     QUnit.test("recycles substances", function (assert) {
@@ -298,18 +298,18 @@ function buildUiTranslatorReverseTests() {
 
     QUnit.test("allows multiple change statements", function (assert) {
       const commands = [
-        new Command("change", "manufacture", new EngineNumber("+1", "mt / year"), null),
-        new Command("change", "import", new EngineNumber("+2", "mt / year"), null),
-        new Command("change", "sales", new EngineNumber("+3", "mt / year"), null),
+        new Command("change", "manufacture", new EngineNumber("+1", "mt each year"), null),
+        new Command("change", "import", new EngineNumber("+2", "mt each year"), null),
+        new Command("change", "sales", new EngineNumber("+3", "mt each year"), null),
       ];
       const substance = createWithCommands("test", false, commands);
       assert.ok(substance.getIsCompatible());
 
       if (substance.getIsCompatible()) {
         const code = substance.toCode(0);
-        assert.notEqual(code.indexOf("change manufacture by +1 mt / year"), -1);
-        assert.notEqual(code.indexOf("change import by +2 mt / year"), -1);
-        assert.notEqual(code.indexOf("change sales by +3 mt / year"), -1);
+        assert.notEqual(code.indexOf("change manufacture by +1 mt each year"), -1);
+        assert.notEqual(code.indexOf("change import by +2 mt each year"), -1);
+        assert.notEqual(code.indexOf("change sales by +3 mt each year"), -1);
       }
     });
 
