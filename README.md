@@ -46,11 +46,13 @@ bash ./support/install_deps.sh
 bash ./support/make.sh
 ```
 
-4. Execute (use any web browser):
+4. Run a local web server (such as Python http.server):
 
 ```bash
 python -m http.server
 ```
+
+5. Visit the local hosted webpage using any web browser.
 
 <br>
 
