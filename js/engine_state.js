@@ -29,8 +29,17 @@ class YearMatcher {
    */
   constructor(start, end) {
     const self = this;
-    self._start = start;
-    self._end = end;
+
+    if (start === null || end === null) {
+      self._start = start;
+      self._end = end;
+    } else {
+      const startRearrange = Math.min(start, end);
+      const endRearrange = Math.max(start, end);
+
+      self._start = startRearrange;
+      self._end = endRearrange;
+    }
   }
 
   /**

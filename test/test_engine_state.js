@@ -33,6 +33,14 @@ function buildEngineStateTests() {
       assert.ok(matcher.getInRange(3));
       assert.ok(!matcher.getInRange(4));
     });
+
+    QUnit.test("matches within reverse", function (assert) {
+      const matcher = new YearMatcher(3, 2);
+      assert.ok(!matcher.getInRange(1));
+      assert.ok(matcher.getInRange(2));
+      assert.ok(matcher.getInRange(3));
+      assert.ok(!matcher.getInRange(4));
+    });
   });
 
   QUnit.module("Scope", function () {
