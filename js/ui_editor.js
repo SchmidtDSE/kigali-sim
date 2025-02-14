@@ -154,8 +154,9 @@ function getSanitizedFieldValue(selection) {
  * @param {string} itemTemplate - HTML template for list items.
  * @param {Array} items - Array of items to populate list.
  * @param {Function} uiInit - Callback to initialize each item's UI.
+ * @param {Function} removeCallback - Callback to invoke if item removed.
  */
-function setListInput(listSelection, itemTemplate, items, uiInit) {
+function setListInput(listSelection, itemTemplate, items, uiInit, removeCallback) {
   listSelection.innerHTML = "";
   const addItem = (item) => {
     const newDiv = document.createElement("div");
@@ -168,6 +169,7 @@ function setListInput(listSelection, itemTemplate, items, uiInit) {
     deleteLink.addEventListener("click", (event) => {
       event.preventDefault();
       newDiv.remove();
+      removeCallback(item);
     });
   };
   items.forEach(addItem);
@@ -833,11 +835,14 @@ class ConsumptionListPresenter {
       (x) => x.getRecharge().getValue(),
     );
 
+    const removeCallback = () => self._updateCounts();
+
     setListInput(
       self._dialog.querySelector(".level-list"),
       document.getElementById("set-command-template").innerHTML,
       objToShow === null ? [] : objToShow.getSetVals(),
       initSetCommandUi,
+      removeCallback,
     );
 
     setListInput(
@@ -845,6 +850,7 @@ class ConsumptionListPresenter {
       document.getElementById("change-command-template").innerHTML,
       objToShow === null ? [] : objToShow.getChanges(),
       initChangeCommandUi,
+      removeCallback,
     );
 
     setListInput(
@@ -852,6 +858,7 @@ class ConsumptionListPresenter {
       document.getElementById("limit-command-template").innerHTML,
       objToShow === null ? [] : objToShow.getLimits(),
       (item, root) => initLimitCommandUi(item, root, self._getCodeObj()),
+      removeCallback,
     );
 
     self._dialog.showModal();
@@ -1237,11 +1244,14 @@ class PolicyListPresenter {
       .text((x) => x)
       .property("selected", (x) => x === substanceName);
 
+    const removeCallback = () => self._updateCounts();
+
     setListInput(
       self._dialog.querySelector(".recycling-list"),
       document.getElementById("recycle-command-template").innerHTML,
       targetSubstance === null ? [] : targetSubstance.getRecycles(),
       initRecycleCommandUi,
+      removeCallback,
     );
 
     setListInput(
@@ -1249,6 +1259,7 @@ class PolicyListPresenter {
       document.getElementById("replace-command-template").innerHTML,
       targetSubstance === null ? [] : targetSubstance.getReplaces(),
       (item, root) => initReplaceCommandUi(item, root, self._getCodeObj()),
+      removeCallback,
     );
 
     setListInput(
@@ -1256,6 +1267,7 @@ class PolicyListPresenter {
       document.getElementById("set-command-template").innerHTML,
       targetSubstance === null ? [] : targetSubstance.getSetVals(),
       initSetCommandUi,
+      removeCallback,
     );
 
     setListInput(
@@ -1263,6 +1275,7 @@ class PolicyListPresenter {
       document.getElementById("change-command-template").innerHTML,
       targetSubstance === null ? [] : targetSubstance.getChanges(),
       initChangeCommandUi,
+      removeCallback,
     );
 
     setListInput(
@@ -1270,6 +1283,7 @@ class PolicyListPresenter {
       document.getElementById("limit-command-template").innerHTML,
       targetSubstance === null ? [] : targetSubstance.getLimits(),
       (item, root) => initLimitCommandUi(item, root, self._getCodeObj()),
+      removeCallback,
     );
 
     self._dialog.showModal();
