@@ -167,8 +167,14 @@ class AggregatedResult {
 
     const manufactureValue = self._combineUnitValue(self.getManufacture(), other.getManufacture());
     const importValue = self._combineUnitValue(self.getImport(), other.getImport());
-    const domesticConsumptionValue = self._combineUnitValue(self.getDomesticConsumption(), other.getDomesticConsumption());
-    const importConsumptionValue = self._combineUnitValue(self.getImportConsumption(), other.getImportConsumption());
+    const domesticConsumptionValue = self._combineUnitValue(
+      self.getDomesticConsumption(),
+      other.getDomesticConsumption(),
+    );
+    const importConsumptionValue = self._combineUnitValue(
+      self.getImportConsumption(),
+      other.getImportConsumption(),
+    );
     const populationValue = self._combineUnitValue(self.getPopulation(), other.getPopulation());
     const populationNew = self._combineUnitValue(self.getPopulationNew(), other.getPopulationNew());
 
@@ -307,29 +313,29 @@ class ReportDataWrapper {
 
     const strategyBuilder = new MetricStrategyBuilder();
 
+    const addEmissionsConversion = (strategyBuilder) => {
+      strategyBuilder.setUnits("MtCO2e / yr");
+      strategyBuilder.setTransformation((val) => {
+        if (val.getUnits() !== "tCO2e / yr") {
+          throw "Unexpected emissions source units: " + val.getUnits();
+        }
+
+        return new EngineNumber(val.getValue() / 1000000, "MtCO2e / yr");
+      });
+      strategyBuilder.add();
+
+      strategyBuilder.setUnits("ktCO2e / yr");
+      strategyBuilder.setTransformation((val) => {
+        if (val.getUnits() !== "tCO2e / yr") {
+          throw "Unexpected emissions source units: " + val.getUnits();
+        }
+
+        return new EngineNumber(val.getValue() / 1000, "ktCO2e / yr");
+      });
+      strategyBuilder.add();
+    };
+
     const addEmissionsStrategies = (strategyBuilder) => {
-      const addEmissionsConversion = (strategyBuilder) => {
-        strategyBuilder.setUnits("MtCO2e / yr");
-        strategyBuilder.setTransformation((val) => {
-          if (val.getUnits() !== "tCO2e / yr") {
-            throw "Unexpected emissions source units: " + val.getUnits();
-          }
-
-          return new EngineNumber(val.getValue() / 1000000, "MtCO2e / yr");
-        });
-        strategyBuilder.add();
-
-        strategyBuilder.setUnits("ktCO2e / yr");
-        strategyBuilder.setTransformation((val) => {
-          if (val.getUnits() !== "tCO2e / yr") {
-            throw "Unexpected emissions source units: " + val.getUnits();
-          }
-
-          return new EngineNumber(val.getValue() / 1000, "ktCO2e / yr");
-        });
-        strategyBuilder.add();
-      };
-
       strategyBuilder.setMetric("emissions");
 
       strategyBuilder.setSubmetric("all");
@@ -359,29 +365,69 @@ class ReportDataWrapper {
 
       strategyBuilder.setSubmetric("all");
       strategyBuilder.setStrategy((x) => self.getSales(x));
+      strategyBuilder.add();
 
       strategyBuilder.setSubmetric("import");
       strategyBuilder.setStrategy((x) => self.getImport(x));
+      strategyBuilder.add();
 
       strategyBuilder.setSubmetric("manufacture");
       strategyBuilder.setStrategy((x) => self.getManufacture(filterSet));
+      strategyBuilder.add();
     };
 
     const addConsumptionStrategies = (strategyBuilder) => {
-      strategyBuilder.setMetric("consumption");
+      strategyBuilder.setMetric("sales");
 
       strategyBuilder.setSubmetric("all");
       strategyBuilder.setStrategy((x) => self.getConsumption(x));
+      addEmissionsConversion(strategyBuilder);
 
       strategyBuilder.setSubmetric("import");
       strategyBuilder.setStrategy((x) => self.getImportConsumption(x));
+      addEmissionsConversion(strategyBuilder);
 
       strategyBuilder.setSubmetric("manufacture");
       strategyBuilder.setStrategy((x) => self.getDomesticConsumption(filterSet));
+      addEmissionsConversion(strategyBuilder);
+    };
+
+    const addPopulationStrategies = (strategyBuilder) => {
+      const makeForThousandAndMillion = (strategyBuilder) => {
+        strategyBuilder.setUnits("thousand units");
+        strategyBuilder.setTransformation((value) => {
+          if (value.getUnits() !== "units") {
+            throw "Unexpected population units: " + value.getUnits();
+          }
+          return new EngineNumber(value.getValue() / 1000, "thousands of units");
+        });
+        strategyBuilder.add();
+
+        strategyBuilder.setUnits("million units");
+        strategyBuilder.setTransformation((value) => {
+          if (value.getUnits() !== "units") {
+            throw "Unexpected population units: " + value.getUnits();
+          }
+          return new EngineNumber(value.getValue() / 1000000, "millions of units");
+        });
+        strategyBuilder.add();
+      };
+
+      strategyBuilder.setMetric("population");
+
+      strategyBuilder.setSubmetric("all");
+      strategyBuilder.setStrategy((x) => self.getPopulation(x));
+      makeForThousandAndMillion(strategyBuilder);
+
+      strategyBuilder.setSubmetric("new");
+      strategyBuilder.setStrategy((x) => self.getPopulationNew(x));
+      makeForThousandAndMillion(strategyBuilder);
     };
 
     addEmissionsStrategies(strategyBuilder);
     addSalesStrategies(strategyBuilder);
+    addConsumptionStrategies(strategyBuilder);
+    addPopulationStrategies(strategyBuilder);
 
     self._metricStrategies = strategyBuilder.build();
   }
