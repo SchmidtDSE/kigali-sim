@@ -986,7 +986,7 @@ class ConsumptionListPresenter {
 
   /**
    * Updates the UI to display the count of commands in each list.
-   * 
+   *
    * @private
    */
   _updateCounts() {
