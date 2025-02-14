@@ -74,7 +74,7 @@ function setupDurationSelector(newDiv) {
  * Build a function which sets up a list button with add/delete functionality.
  *
  * @param {Function} postCallback - Function to call after each list item UI is
- *     initialized. If not given, will use a no-op.
+ *     initialized or removed. If not given, will use a no-op.
  */
 function buildSetupListButton(postCallback) {
   /**
@@ -98,6 +98,7 @@ function buildSetupListButton(postCallback) {
       deleteLink.addEventListener("click", (event) => {
         event.preventDefault();
         newDiv.remove();
+        postCallback();
       });
 
       initUiCallback(null, newDiv);
@@ -153,8 +154,9 @@ function getSanitizedFieldValue(selection) {
  * @param {string} itemTemplate - HTML template for list items.
  * @param {Array} items - Array of items to populate list.
  * @param {Function} uiInit - Callback to initialize each item's UI.
+ * @param {Function} removeCallback - Callback to invoke if item removed.
  */
-function setListInput(listSelection, itemTemplate, items, uiInit) {
+function setListInput(listSelection, itemTemplate, items, uiInit, removeCallback) {
   listSelection.innerHTML = "";
   const addItem = (item) => {
     const newDiv = document.createElement("div");
@@ -167,6 +169,7 @@ function setListInput(listSelection, itemTemplate, items, uiInit) {
     deleteLink.addEventListener("click", (event) => {
       event.preventDefault();
       newDiv.remove();
+      removeCallback(item);
     });
   };
   items.forEach(addItem);
@@ -257,6 +260,27 @@ function setDuring(selection, command, defaultVal) {
   }
 
   updateDurationSelector(selection);
+}
+
+/**
+ * Build a function which updates displays of command counts.
+ *
+ * @param dialog - Selection over the dialog in which the command count
+ *     displays should be updated.
+ * @returns Funciton which takes a string list selector and a string display
+ *     selector. That function will put the count of commands found in the
+ *     list selector into the display selector.
+ */
+function buildUpdateCount(dialog) {
+  return (listSelector, displaySelector) => {
+    const listSelection = dialog.querySelector(listSelector);
+    const displaySelection = dialog.querySelector(displaySelector);
+
+    const listItems = Array.of(...listSelection.querySelectorAll(".dialog-list-item"));
+    const listCount = listItems.map((x) => 1).reduce((a, b) => a + b, 0);
+
+    displaySelection.innerHTML = listCount;
+  };
 }
 
 /**
@@ -665,13 +689,15 @@ class ConsumptionListPresenter {
       event.preventDefault();
     });
 
-    const hideEmbedReminder = () => {
+    const updateHints = () => {
       const embedReminders = self._root.querySelectorAll(".embed-reminder");
       embedReminders.forEach((reminder) => {
         reminder.style.display = "none";
       });
+
+      self._updateCounts();
     };
-    const setupListButton = buildSetupListButton(hideEmbedReminder);
+    const setupListButton = buildSetupListButton(updateHints);
 
     const addLevelButton = self._root.querySelector(".add-start-button");
     const levelList = self._root.querySelector(".level-list");
@@ -809,11 +835,14 @@ class ConsumptionListPresenter {
       (x) => x.getRecharge().getValue(),
     );
 
+    const removeCallback = () => self._updateCounts();
+
     setListInput(
       self._dialog.querySelector(".level-list"),
       document.getElementById("set-command-template").innerHTML,
       objToShow === null ? [] : objToShow.getSetVals(),
       initSetCommandUi,
+      removeCallback,
     );
 
     setListInput(
@@ -821,6 +850,7 @@ class ConsumptionListPresenter {
       document.getElementById("change-command-template").innerHTML,
       objToShow === null ? [] : objToShow.getChanges(),
       initChangeCommandUi,
+      removeCallback,
     );
 
     setListInput(
@@ -828,10 +858,12 @@ class ConsumptionListPresenter {
       document.getElementById("limit-command-template").innerHTML,
       objToShow === null ? [] : objToShow.getLimits(),
       (item, root) => initLimitCommandUi(item, root, self._getCodeObj()),
+      removeCallback,
     );
 
     self._dialog.showModal();
     self._reminderPresenter.update();
+    self._updateCounts();
   }
 
   /**
@@ -958,6 +990,20 @@ class ConsumptionListPresenter {
     limits.forEach((x) => substanceBuilder.addCommand(x));
 
     return substanceBuilder.build(true);
+  }
+
+  /**
+   * Updates the UI to display the count of commands in each list.
+   *
+   * @private
+   */
+  _updateCounts() {
+    const self = this;
+
+    const updateCount = buildUpdateCount(self._dialog);
+    updateCount(".level-list", "#consumption-set-count");
+    updateCount(".change-list", "#consumption-change-count");
+    updateCount(".limit-list", "#consumption-limit-count");
   }
 }
 
@@ -1104,8 +1150,11 @@ class PolicyListPresenter {
       event.preventDefault();
     });
 
-    const updateReminders = () => self._reminderPresenter.update();
-    const setupListButton = buildSetupListButton(updateReminders);
+    const updateHints = () => {
+      self._reminderPresenter.update();
+      self._updateCounts();
+    };
+    const setupListButton = buildSetupListButton(updateHints);
 
     const addRecyclingButton = self._root.querySelector(".add-recycling-button");
     const recyclingList = self._root.querySelector(".recycling-list");
@@ -1195,11 +1244,14 @@ class PolicyListPresenter {
       .text((x) => x)
       .property("selected", (x) => x === substanceName);
 
+    const removeCallback = () => self._updateCounts();
+
     setListInput(
       self._dialog.querySelector(".recycling-list"),
       document.getElementById("recycle-command-template").innerHTML,
       targetSubstance === null ? [] : targetSubstance.getRecycles(),
       initRecycleCommandUi,
+      removeCallback,
     );
 
     setListInput(
@@ -1207,6 +1259,7 @@ class PolicyListPresenter {
       document.getElementById("replace-command-template").innerHTML,
       targetSubstance === null ? [] : targetSubstance.getReplaces(),
       (item, root) => initReplaceCommandUi(item, root, self._getCodeObj()),
+      removeCallback,
     );
 
     setListInput(
@@ -1214,6 +1267,7 @@ class PolicyListPresenter {
       document.getElementById("set-command-template").innerHTML,
       targetSubstance === null ? [] : targetSubstance.getSetVals(),
       initSetCommandUi,
+      removeCallback,
     );
 
     setListInput(
@@ -1221,6 +1275,7 @@ class PolicyListPresenter {
       document.getElementById("change-command-template").innerHTML,
       targetSubstance === null ? [] : targetSubstance.getChanges(),
       initChangeCommandUi,
+      removeCallback,
     );
 
     setListInput(
@@ -1228,10 +1283,12 @@ class PolicyListPresenter {
       document.getElementById("limit-command-template").innerHTML,
       targetSubstance === null ? [] : targetSubstance.getLimits(),
       (item, root) => initLimitCommandUi(item, root, self._getCodeObj()),
+      removeCallback,
     );
 
     self._dialog.showModal();
     self._reminderPresenter.update();
+    self._updateCounts();
   }
 
   /**
@@ -1305,6 +1362,21 @@ class PolicyListPresenter {
     const codeObj = self._getCodeObj();
     codeObj.insertPolicy(self._editingName, policy);
     self._onCodeObjUpdate(codeObj);
+  }
+
+  /**
+   * Updates the UI to display the count of commands in each list.
+   *
+   * @private
+   */
+  _updateCounts() {
+    const self = this;
+    const updateCount = buildUpdateCount(self._dialog);
+    updateCount(".recycling-list", "#policy-recycle-count");
+    updateCount(".replace-list", "#policy-replace-count");
+    updateCount(".level-list", "#policy-set-count");
+    updateCount(".change-list", "#policy-change-count");
+    updateCount(".limit-list", "#policy-limit-count");
   }
 }
 
