@@ -5,7 +5,7 @@ start default
     uses substance "test"
       initial charge with 1 kg / unit for manufacture
       set manufacture to 100 mt during year 1
-      change manufacture by +10 % / year during years 2 to onwards
+      change manufacture by +10 % each year during years 2 to onwards
       equals 5 tCO2e / mt
     end substance
 

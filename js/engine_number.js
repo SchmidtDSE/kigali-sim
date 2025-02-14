@@ -403,7 +403,7 @@ class UnitConverter {
     const self = this;
     const currentUnits = target.getUnits();
 
-    if (!currentUnits.endsWith(" / year")) {
+    if (!currentUnits.endsWith(" each year")) {
       return target;
     }
 

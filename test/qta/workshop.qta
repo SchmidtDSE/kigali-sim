@@ -8,18 +8,18 @@ start default
       # Domestic production
       initial charge with 0.5 kg / unit for manufacture
       set manufacture to 400 mt during year 1
-      change manufacture by +5 % / year during years 2 to 5
-      change manufacture by +3 % / year during years 6 to 10
+      change manufacture by +5 % each year during years 2 to 5
+      change manufacture by +3 % each year during years 6 to 10
 
       # Trade
       initial charge with 0.25 kg / unit for import
       set import to 100 mt during year 1
-      change import by +5 % / year during years 1 to 5
-      change import by +3 % / year during years 6 to 9
+      change import by +5 % each year during years 1 to 5
+      change import by +3 % each year during years 6 to 9
 
       # Service
-      retire 5 % / year
-      recharge 10 % / year with 0.1 kg / unit
+      retire 5 % each year
+      recharge 10 % each year with 0.1 kg / unit
 
       # Historic units already deployed
       set priorEquipment to (get equipment as units * 5) units during year 1
@@ -31,16 +31,16 @@ start default
       # Domestic production
       initial charge with 0.1 kg / unit for manufacture
       set manufacture to 100 mt during year 1
-      change manufacture by +2 % / year
+      change manufacture by +2 % each year
 
       # Trade
       initial charge with 0.05 kg / unit for import
       set import to 1 mt during year 1
-      change import by +2 % / year
+      change import by +2 % each year
 
       # Service
-      retire 5 % / year
-      recharge 10 % / year with 0.05 kg / unit
+      retire 5 % each year
+      recharge 10 % each year with 0.05 kg / unit
 
       # Historic units already deployed
       set priorEquipment to (get equipment as units * 5) units during year 1
@@ -56,22 +56,22 @@ start default
       # Domestic production
       initial charge with 0.5 kg / unit for manufacture
       set manufacture to 90 mt during year 1
-      change manufacture by +5 % / year during years 2 to 3
-      change manufacture by +2 % / year during years 4 to 5
-      change manufacture by -1 % / year during years 8 to 10
-      change manufacture by -1 % / year during years 11 to onwards
+      change manufacture by +5 % each year during years 2 to 3
+      change manufacture by +2 % each year during years 4 to 5
+      change manufacture by -1 % each year during years 8 to 10
+      change manufacture by -1 % each year during years 11 to onwards
 
       # Trade
       initial charge with 0.25 kg / unit for import
       set import to 10 mt during year 1
-      change import by +5 % / year during years 2 to 3
-      change import by +2 % / year during years 4 to 5
-      change import by -1 % / year during years 8 to 10
-      change import by -1 % / year during years 11 to onwards
+      change import by +5 % each year during years 2 to 3
+      change import by +2 % each year during years 4 to 5
+      change import by -1 % each year during years 8 to 10
+      change import by -1 % each year during years 11 to onwards
 
       # Service
-      retire 5 % / year
-      recharge 10 % / year with 0.05 kg / unit
+      retire 5 % each year
+      recharge 10 % each year with 0.05 kg / unit
 
       # Historic units already deployed
       set priorEquipment to (get equipment as units * 5) units during year 1
@@ -83,16 +83,16 @@ start default
       # Domestic production
       initial charge with 0.1 kg / unit for manufacture
       set manufacture to 10 mt during year 1
-      change manufacture by +8 % / year
+      change manufacture by +8 % each year
 
       # Trade
       initial charge with 0.05 kg / unit for import
       set import to 10 mt during year 1
-      change import by +8 % / year
+      change import by +8 % each year
 
       # Service
-      retire 1 % / year
-      recharge 10 % / year with 0.1 kg / unit
+      retire 1 % each year
+      recharge 10 % each year with 0.1 kg / unit
 
       # Historic units already deployed
       set priorEquipment to (get equipment as units * 5) units during year 1
@@ -104,16 +104,16 @@ start default
       # Domestic production
       initial charge with 0.5 kg / unit for manufacture
       set manufacture to 100 mt during year 1
-      change manufacture by -1 % / year
+      change manufacture by -1 % each year
 
       # Trade
       initial charge with 0.5 kg / unit for import
       set import to 50 mt during year 1
-      change import by -1 % / year
+      change import by -1 % each year
 
       # Service
-      retire 5 % / year
-      recharge 10 % / year with 0.1 kg / unit
+      retire 5 % each year
+      recharge 10 % each year with 0.1 kg / unit
 
       # Historic units already deployed
       set priorEquipment to (get equipment as units * 7) units during year 1

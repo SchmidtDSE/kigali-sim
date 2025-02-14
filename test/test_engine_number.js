@@ -168,7 +168,7 @@ function buildEngineNumberTests() {
       mockConverterStateGetter.setYearsElapsed(new EngineNumber(2, "years"));
 
       const result = convertUnits(
-        new EngineNumber(20, "kg / year"),
+        new EngineNumber(20, "kg each year"),
         "kg",
         mockConverterStateGetter,
       );
@@ -241,7 +241,7 @@ function buildEngineNumberTests() {
       mockConverterStateGetter.setYearsElapsed(new EngineNumber(2, "years"));
 
       const result = convertUnits(
-        new EngineNumber(20, "units / year"),
+        new EngineNumber(20, "units each year"),
         "units",
         mockConverterStateGetter,
       );
@@ -324,7 +324,7 @@ function buildEngineNumberTests() {
       mockConverterStateGetter.setYearsElapsed(new EngineNumber(2, "years"));
 
       const result = convertUnits(
-        new EngineNumber(20, "tCO2e / year"),
+        new EngineNumber(20, "tCO2e each year"),
         "tCO2e",
         mockConverterStateGetter,
       );
@@ -470,12 +470,12 @@ function buildEngineNumberTests() {
 
       const result = convertUnits(
         new EngineNumber(10, "units"),
-        "unit / year",
+        "unit each year",
         mockConverterStateGetter,
       );
 
       assert.closeTo(result.getValue(), 5, 0.001);
-      assert.deepEqual(result.getUnits(), "unit / year");
+      assert.deepEqual(result.getUnits(), "unit each year");
     });
   });
 }
