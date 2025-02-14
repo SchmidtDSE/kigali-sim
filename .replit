@@ -9,7 +9,7 @@ channel = "stable-24_05"
 [deployment]
 publicDir = "/"
 deploymentTarget = "static"
-run = ["sh", "-c", "node index.js"]
+run = ["python", "-m", "http.server"]
 
 [[ports]]
 localPort = 8000

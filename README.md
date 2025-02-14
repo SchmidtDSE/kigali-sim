@@ -50,7 +50,7 @@ This project can be deployed using Github. Simply push your changes to the repos
 While contributing, please maintain existing styles defined in `.prettierrc` and `.eslintrc.yml`. Where ambiguous, follow Google JavaScript Style Guide conventions. Unit tests through QUnit are encouraged but a specific test coverage target is not specified. Document code using JSDoc comments (required for all public members). Note that Replit AI was used to help with documentation and small trivial code changes but, for other purposes, please disclose use of generative AI before merging pull requests. We generally require that AI not used for architecture or large operations.
 
 ## Open Source
-We thank the following Open Source libaries:
+We thank the following Open Source libraries:
 
 - [ANTLR4](https://www.antlr.org/) for parsing the QubecTalk domain-specific language under [BSD-3](https://www.antlr.org/license.html).
 - [D3](https://d3js.org/) for data visualization under [ISC](https://github.com/d3/d3/blob/main/LICENSE).

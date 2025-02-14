@@ -237,7 +237,7 @@ class ExportPresenter {
 /**
  * Presenter for scorecard metrics display.
  *
- * Presenter for scorecard metrics display that, in additoin to optionally
+ * Presenter for scorecard metrics display that, in addition to optionally
  * showing a high level metric, also allows for changing filter values.
  */
 class ScorecardPresenter {

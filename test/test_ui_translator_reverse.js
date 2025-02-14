@@ -154,7 +154,7 @@ function buildUiTranslatorReverseTests() {
       assert.notEqual(code.indexOf("set manufacture to 10 mt during year 1"), -1);
     });
 
-    QUnit.test("supports duration muiltiple years", function (assert) {
+    QUnit.test("supports duration multiple years", function (assert) {
       const command = new Command(
         "retire",
         null,

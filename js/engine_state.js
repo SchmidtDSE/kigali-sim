@@ -311,7 +311,7 @@ class Scope {
   /**
    * Create a new scope derived from this scope at the application level.
    *
-   * @param newSubstance The name of the applicatino in which the new scope resides.
+   * @param newSubstance The name of the application in which the new scope resides.
    * @returns New scope at the given application.
    */
   getWithApplication(newApplication) {

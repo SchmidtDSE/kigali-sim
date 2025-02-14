@@ -92,7 +92,7 @@ class AggregatedResult {
   }
 
   /**
-   * Get the new equipment added in this yaer.
+   * Get the new equipment added in this year.
    *
    * @returns {EngineNumber} The new equipment added in units.
    */

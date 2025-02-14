@@ -94,7 +94,7 @@ class CompileVisitor extends toolkit.QubecTalkVisitor {
   }
 
   /**
-   * Process a conditional expression which returns a bolean value.
+   * Process a conditional expression which returns a boolean value.
    *
    * @param {Object} ctx - The parser context containing the condition.
    * @returns {Function} A function that evaluates the condition and returns 1
@@ -533,7 +533,7 @@ class CompileVisitor extends toolkit.QubecTalkVisitor {
    *
    * @param {Object} ctx - The parser context for the default stanza.
    * @returns {Object} A stanza descriptor object with executable function
-   *     describing the baseline scenario. In most cases, this will be busines
+   *     describing the baseline scenario. In most cases, this will be business
    *     as usual.
    */
   visitDefaultStanza(ctx) {
@@ -561,7 +561,7 @@ class CompileVisitor extends toolkit.QubecTalkVisitor {
    *
    * @param {Object} ctx - The parser context for the policy stanza
    * @returns {Object} A stanza descriptor object with executable function
-   *     desribing a policy scenario which may combine multiple interventions.
+   *     describing a policy scenario which may combine multiple interventions.
    */
   visitPolicyStanza(ctx) {
     const self = this;
@@ -1378,7 +1378,7 @@ class SimulationResult {
 }
 
 /**
- * Structure contianing the result of attempting to compile a QubecTalk script.
+ * Structure containing the result of attempting to compile a QubecTalk script.
  */
 class CompileResult {
   /**
@@ -1386,7 +1386,7 @@ class CompileResult {
    *
    * @param program The compiled program as a function if successful or null if
    *     unsuccessful.
-   * @param errors Any errors enountered or empty list if no errors.
+   * @param errors Any errors encountered or empty list if no errors.
    */
   constructor(program, errors) {
     const self = this;
