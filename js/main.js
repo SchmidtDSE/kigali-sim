@@ -20,7 +20,7 @@ const NEW_FILE_MSG = [
 /**
  * Presenter controlling the main simluation buttons.
  *
- * Presenter which controlls the functionality of the script and run button panel
+ * Presenter which controls the functionality of the script and run button panel
  * in the UI which allow for basic tool functionality (switching authoring modes
  * and running the simulation).
  */

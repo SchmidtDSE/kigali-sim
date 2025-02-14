@@ -303,7 +303,7 @@ class Engine {
    * @param {EngineNumber} value - The value to set for the stream.
    * @param {Object|null} yearMatcher - The year matcher object to determine if
    *     setting the stream applies to the current year, or null. No-op if the
-   *     year matcher is not satisifed.
+   *     year matcher is not satisfied.
    * @param {Scope} scope - The scope in which the stream is being set. Uses
    *     default scope if not provided.
    * @param {boolean} propagateChanges - Specifies if changes should propagate
@@ -869,7 +869,7 @@ class Engine {
       throw "Tried recalculating population change without application and substance.";
     }
 
-    // Get prior popoulation
+    // Get prior population
     const priorPopulationRaw = self.getStream("priorEquipment", scopeEffective);
     const priorPopulation = unitConverter.convert(priorPopulationRaw, "units");
     stateGetter.setPopulation(priorPopulation);
@@ -1042,7 +1042,7 @@ class Engine {
     const populationChange = unitConverter.convert(populationChangeRaw, "units");
     const volumeForNew = unitConverter.convert(populationChange, "kg");
 
-    // Get prior popoulation
+    // Get prior population
     const priorPopulationRaw = self.getStream("priorEquipment", scopeEffective);
     const priorPopulation = unitConverter.convert(priorPopulationRaw, "units");
     stateGetter.setPopulation(priorPopulation);
@@ -1093,7 +1093,7 @@ class Engine {
       throw "Tried recalculating population change without application and substance.";
     }
 
-    // Calcuate change
+    // Calculate change
     const currentPriorRaw = self._streamKeeper.getStream(application, substance, "priorEquipment");
     const currentPrior = unitConverter.convert(currentPriorRaw, "units");
 
@@ -1116,7 +1116,7 @@ class Engine {
     const eolGhg = unitConverter.convert(amount, "tCO2e");
     self._streamKeeper.setStream(application, substance, "eolEmissions", eolGhg);
 
-    // Propogate
+    // Propagate
     self._recalcPopulationChange();
     self._recalcSales();
     self._recalcConsumption();

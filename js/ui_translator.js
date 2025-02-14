@@ -2999,7 +2999,7 @@ class TranslationResult {
    *
    * @param program The translated program as a lambda if successful or null if
    *     unsuccessful.
-   * @param errors Any errors enountered or empty list if no errors.
+   * @param errors Any errors encountered or empty list if no errors.
    */
   constructor(program, errors) {
     const self = this;
@@ -3008,7 +3008,7 @@ class TranslationResult {
   }
 
   /**
-   * Get the program as an oject.
+   * Get the program as an object.
    *
    * @returns The compiled program as an object or null if translation failed.
    */
