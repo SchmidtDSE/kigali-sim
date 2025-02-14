@@ -967,7 +967,7 @@ class ConsumptionListPresenter {
     const retireCommand = new Command("retire", null, retirement, null);
     substanceBuilder.addCommand(retireCommand);
 
-    const rechargePopulation= getEngineNumberValue(
+    const rechargePopulation = getEngineNumberValue(
       self._dialog.querySelector(".edit-consumption-recharge-population-input"),
       self._dialog.querySelector(".recharge-population-units-input"),
     );
