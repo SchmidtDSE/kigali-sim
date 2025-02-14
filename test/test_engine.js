@@ -79,20 +79,21 @@ function buildEngineTests() {
       assert.deepEqual(importVal.getUnits(), "kg");
     });
 
-    QUnit.test("set stream percentage", function (assert) {
+    QUnit.test("set percentage", function (assert) {
       const engine = new Engine(1, 3);
 
       engine.setStanza("default");
       engine.setApplication("test app");
       engine.setSubstance("test substance");
 
-      engine.setStream("sales", new EngineNumber(100, "mt"), new YearMatcher(null, null));
+      engine.setStream("manufacture", new EngineNumber(100, "mt"), new YearMatcher(1, 1));
+      engine.setStream("manufacture", new EngineNumber(75, "%"), new YearMatcher(2, 2));
+      engine.incrementYear();
+      engine.setStream("manufacture", new EngineNumber(75, "%"), new YearMatcher(2, 2));
 
-      engine.setStream("sales", new EngineNumber(75, "%"), new YearMatcher(null, null));
-
-      const salesVal = engine.getStream("sales");
-      assert.closeTo(salesVal.getValue(), 75, 0.0001);
-      assert.deepEqual(salesVal.getUnits(), "mt");
+      const salesVal = engine.getStream("manufacture");
+      assert.closeTo(salesVal.getValue(), 75000, 0.0001);
+      assert.deepEqual(salesVal.getUnits(), "kg");
     });
 
     QUnit.test("checks year", function (assert) {
