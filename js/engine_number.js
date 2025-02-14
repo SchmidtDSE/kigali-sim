@@ -5,23 +5,6 @@
  */
 
 /**
- * Standardize the "each year" syntax sugar.
- *
- * Standardize the "each year" syntax sugar such that all ratios are expressed
- * with a forward slash and the per year sugar is ignored.
- *
- * @param source - The source unit string.
- * @returns Standardized ratio unit string.
- */
-function standardizeRatioUnits(source) {
-  if (source.includes(" each ")) {
-    return source.split(" each ")[0];
-  } else {
-    return source;
-  }
-}
-
-/**
  * Representation of a number with units within the engine.
  */
 class EngineNumber {
@@ -34,7 +17,7 @@ class EngineNumber {
   constructor(value, units) {
     const self = this;
     self._value = value;
-    self._units = standardizeRatioUnits(units);
+    self._units = units;
   }
 
   /**
@@ -76,13 +59,10 @@ class UnitConverter {
    * Convert a number to new units.
    *
    * @param source - The EngineNumber to convert.
-   * @param destinationUnitsUnnormalized - The units to which source should be
-   *     converted prior to standardization operations.
+   * @param destinationUnits - The units to which source should be converted.
    */
-  convert(source, destinationUnitsUnnormalized) {
+  convert(source, destinationUnits) {
     const self = this;
-
-    const destinationUnits = standardizeRatioUnits(destinationUnitsUnnormalized);
 
     if (source.getUnits() === destinationUnits) {
       return source;
@@ -507,7 +487,7 @@ class ConverterStateGetter {
   /**
    * Create a new converter state getter.
    *
-   * @param { -Engine} engine - The engine instance to query for state information.
+   * @param {Engine} engine - The engine instance to query for state information.
    */
   constructor(engine) {
     const self = this;
@@ -618,7 +598,7 @@ class ConverterStateGetter {
   /**
    * Calculate the change in population between prior and current equipment.
    *
-   * @param { -UnitConverter} unitConverter - Converter for ensuring consistent units.
+   * @param {UnitConverter} unitConverter - Converter for ensuring consistent units.
    * @returns {EngineNumber} The population change in units.
    */
   getPopulationChange(unitConverter) {
@@ -642,7 +622,7 @@ class OverridingConverterStateGetter {
   /**
    * Create a new overriding converter state getter.
    *
-   * @param { -ConverterStateGetter} innerGetter - The base state getter to wrap.
+   * @param {ConverterStateGetter} innerGetter - The base state getter to wrap.
    */
   constructor(innerGetter) {
     const self = this;
@@ -660,9 +640,9 @@ class OverridingConverterStateGetter {
   /**
    * Set total values for different stream types.
    *
-   * @param { -string} streamName - The name of the stream (sales, manufacture,
+   * @param {string} streamName - The name of the stream (sales, manufacture,
    *     import, etc.).
-   * @param { -EngineNumber} value - The value to set for the stream.
+   * @param {EngineNumber} value - The value to set for the stream.
    */
   setTotal(streamName, value) {
     const self = this;
@@ -680,7 +660,7 @@ class OverridingConverterStateGetter {
   /**
    * Set the substance consumption value.
    *
-   * @param { -EngineNumber} newValue - The new consumption value.
+   * @param {EngineNumber} newValue - The new consumption value.
    */
   setSubstanceConsumption(newValue) {
     const self = this;
@@ -704,7 +684,7 @@ class OverridingConverterStateGetter {
   /**
    * Set the amortized unit volume.
    *
-   * @param { -EngineNumber} newValue - The new amortized unit volume.
+   * @param {EngineNumber} newValue - The new amortized unit volume.
    */
   setAmortizedUnitVolume(newValue) {
     const self = this;
@@ -728,7 +708,7 @@ class OverridingConverterStateGetter {
   /**
    * Set the population value.
    *
-   * @param { -EngineNumber} newValue - The new population value.
+   * @param {EngineNumber} newValue - The new population value.
    */
   setPopulation(newValue) {
     const self = this;
@@ -752,7 +732,7 @@ class OverridingConverterStateGetter {
   /**
    * Set the number of years elapsed.
    *
-   * @param { -EngineNumber} newValue - The new years elapsed value.
+   * @param {EngineNumber} newValue - The new years elapsed value.
    */
   setYearsElapsed(newValue) {
     const self = this;
@@ -776,7 +756,7 @@ class OverridingConverterStateGetter {
   /**
    * Set the consumption value.
    *
-   * @param { -EngineNumber} newValue - The new consumption value.
+   * @param {EngineNumber} newValue - The new consumption value.
    */
   setConsumption(newValue) {
     const self = this;
@@ -800,7 +780,7 @@ class OverridingConverterStateGetter {
   /**
    * Set the volume value.
    *
-   * @param { -EngineNumber} newValue - The new volume value.
+   * @param {EngineNumber} newValue - The new volume value.
    */
   setVolume(newValue) {
     const self = this;
@@ -824,7 +804,7 @@ class OverridingConverterStateGetter {
   /**
    * Set the amortized unit consumption.
    *
-   * @param { -EngineNumber} newValue - The new amortized unit consumption value.
+   * @param {EngineNumber} newValue - The new amortized unit consumption value.
    */
   setAmortizedUnitConsumption(newValue) {
     const self = this;
@@ -851,7 +831,7 @@ class OverridingConverterStateGetter {
    * Set the population change value, in other words the change between prior
    * and new equipment.
    *
-   * @param { -EngineNumber} newValue - The new population change value.
+   * @param {EngineNumber} newValue - The new population change value.
    */
   setPopulationChange(newValue) {
     const self = this;
@@ -864,7 +844,7 @@ class OverridingConverterStateGetter {
    * Get the population change value, in other words the change between prior
    * and new equipment.
    *
-   * @param { -UnitConverter} unitConverter - Converter for ensuring consistent
+   * @param {UnitConverter} unitConverter - Converter for ensuring consistent
    *     units.
    * @returns {EngineNumber} The population change value.
    */
@@ -878,10 +858,4 @@ class OverridingConverterStateGetter {
   }
 }
 
-export {
-  EngineNumber,
-  UnitConverter,
-  ConverterStateGetter,
-  OverridingConverterStateGetter,
-  standardizeRatioUnits,
-};
+export {EngineNumber, UnitConverter, ConverterStateGetter, OverridingConverterStateGetter};

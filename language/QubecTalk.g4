@@ -224,6 +224,8 @@ DAY_: 'day';
 
 DAYS_: 'days';
 
+EACH_: 'each';
+
 KG_: 'kg';
 
 MONTH_: 'month';

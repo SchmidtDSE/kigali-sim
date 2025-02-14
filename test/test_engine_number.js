@@ -22,13 +22,6 @@ function buildEngineNumberTests() {
     });
   });
 
-  QUnit.module("engineNumberUtils", function () {
-    QUnit.test("standardize year sugar", function (assert) {
-      const result = standardizeRatioUnits("% each year");
-      assert.deepEqual(result, "%");
-    });
-  });
-
   QUnit.module("convertUnits", function () {
     class MockConverterStateGetter {
       constructor() {
@@ -175,7 +168,7 @@ function buildEngineNumberTests() {
       mockConverterStateGetter.setYearsElapsed(new EngineNumber(2, "years"));
 
       const result = convertUnits(
-        new EngineNumber(20, "kg each year"),
+        new EngineNumber(20, "kg / year"),
         "kg",
         mockConverterStateGetter,
       );
@@ -248,7 +241,7 @@ function buildEngineNumberTests() {
       mockConverterStateGetter.setYearsElapsed(new EngineNumber(2, "years"));
 
       const result = convertUnits(
-        new EngineNumber(20, "units each year"),
+        new EngineNumber(20, "units / year"),
         "units",
         mockConverterStateGetter,
       );
@@ -331,7 +324,7 @@ function buildEngineNumberTests() {
       mockConverterStateGetter.setYearsElapsed(new EngineNumber(2, "years"));
 
       const result = convertUnits(
-        new EngineNumber(20, "tCO2e each year"),
+        new EngineNumber(20, "tCO2e / year"),
         "tCO2e",
         mockConverterStateGetter,
       );
@@ -477,12 +470,12 @@ function buildEngineNumberTests() {
 
       const result = convertUnits(
         new EngineNumber(10, "units"),
-        "unit each year",
+        "unit / year",
         mockConverterStateGetter,
       );
 
       assert.closeTo(result.getValue(), 5, 0.001);
-      assert.deepEqual(result.getUnits(), "unit each year");
+      assert.deepEqual(result.getUnits(), "unit / year");
     });
   });
 }
