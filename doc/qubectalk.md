@@ -333,7 +333,7 @@ The following are not currently supported but reserved for future use:
  - `day` or `days`: Time as day or days elapsed from start of simulation.
  - `month` or `months`: Time as month or months elapsed from start of simulation.
 
-These may be expressed as a ratio like `tCO2e / mt`. In the case that the division is by a time unit like `year`, this is assumed to be a compounding value per time unit where the first day / month each year is zero.
+These may be expressed as a ratio like `tCO2e / mt`. In the case that the division is by a time unit like `year`, this is assumed to be a compounding value per time unit where the first day / month / year is zero.
 
 ## Behavior
 Interpretation and unit conversion depends on the command:
