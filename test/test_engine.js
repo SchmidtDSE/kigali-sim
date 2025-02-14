@@ -96,6 +96,43 @@ function buildEngineTests() {
       assert.deepEqual(salesVal.getUnits(), "kg");
     });
 
+    QUnit.test("set stream percentage", function (assert) {
+      const engine = new Engine(1, 3);
+
+      engine.setStanza("default");
+      engine.setApplication("test app");
+      engine.setSubstance("test substance");
+
+      engine.setStream("sales", new EngineNumber(100, "mt"), new YearMatcher(null, null));
+
+      engine.setStream("sales", new EngineNumber(75, "%"), new YearMatcher(null, null));
+
+      const salesVal = engine.getStream("sales");
+      assert.closeTo(salesVal.getValue(), 75, 0.0001);
+      assert.deepEqual(salesVal.getUnits(), "mt");
+    });
+
+    QUnit.test("applies limit in specific year", function (assert) {
+      const engine = new Engine(1, 2);
+
+      engine.setStanza("default");
+      engine.setApplication("test app");
+      engine.setSubstance("test substance");
+
+      engine.setStream("sales", new EngineNumber(100, "mt"), new YearMatcher(null, null));
+      engine.cap("sales", new EngineNumber(75, "mt"), new YearMatcher(2, 2));
+
+      const salesVal1 = engine.getStream("sales");
+      assert.closeTo(salesVal1.getValue(), 100000, 0.0001);
+      assert.deepEqual(salesVal1.getUnits(), "kg");
+
+      engine.incrementYear();
+
+      const salesVal2 = engine.getStream("sales");
+      assert.closeTo(salesVal2.getValue(), 75000, 0.0001);
+      assert.deepEqual(salesVal2.getUnits(), "kg");
+    });
+
     QUnit.test("checks year", function (assert) {
       const engine = new Engine(1, 3);
 
