@@ -175,8 +175,13 @@ class Engine {
    */
   constructor(startYear, endYear) {
     const self = this;
-    self._startYear = startYear;
-    self._endYear = endYear;
+
+    const startYearRearrange = Math.min(startYear, endYear);
+    const endYearRearrange = Math.max(startYear, endYear);
+
+    self._startYear = startYearRearrange;
+    self._endYear = endYearRearrange;
+
     self._currentYear = self._startYear;
 
     self._stateGetter = new ConverterStateGetter(self);

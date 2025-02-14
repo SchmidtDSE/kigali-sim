@@ -11,6 +11,18 @@ function buildEngineTests() {
       assert.notDeepEqual(engine, undefined);
     });
 
+    QUnit.test("gets years", function (assert) {
+      const engine = new Engine(1, 30);
+      assert.equal(engine.getStartYear(), 1);
+      assert.equal(engine.getEndYear(), 30);
+    });
+
+    QUnit.test("gets years reverse", function (assert) {
+      const engine = new Engine(30, 1);
+      assert.equal(engine.getStartYear(), 1);
+      assert.equal(engine.getEndYear(), 30);
+    });
+
     QUnit.test("changes scope", function (assert) {
       const engine = new Engine(1, 30);
 

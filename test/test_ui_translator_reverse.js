@@ -166,6 +166,18 @@ function buildUiTranslatorReverseTests() {
       assert.notEqual(code.indexOf("retire 10 % during years 2 to 5"), -1);
     });
 
+    QUnit.test("supports duration multiple years reversed", function (assert) {
+      const command = new Command(
+        "retire",
+        null,
+        new EngineNumber("10", "%"),
+        new YearMatcher(5, 2),
+      );
+      const substance = createWithCommand("test", false, command);
+      const code = substance.toCode(0);
+      assert.notEqual(code.indexOf("retire 10 % during years 2 to 5"), -1);
+    });
+
     QUnit.test("supports duration with min year", function (assert) {
       const command = new ReplaceCommand(
         new EngineNumber("10", "%"),
@@ -229,6 +241,17 @@ function buildUiTranslatorReverseTests() {
 
     QUnit.test("converts simulation stanzas to code", function (assert) {
       const scenario = new SimulationScenario("scenario", ["policy1", "policy2"], 1, 5, true);
+      const stanza = new SimulationStanza([scenario], true);
+      const code = stanza.toCode(0);
+      assert.notEqual(code.indexOf("start simulations"), -1);
+      assert.notEqual(code.indexOf('simulate "scenario"'), -1);
+      assert.notEqual(code.indexOf('using "policy1"'), -1);
+      assert.notEqual(code.indexOf('then "policy2"'), -1);
+      assert.notEqual(code.indexOf("from years 1 to 5"), -1);
+    });
+
+    QUnit.test("converts simulation stanzas to code reverse backwards ranges", function (assert) {
+      const scenario = new SimulationScenario("scenario", ["policy1", "policy2"], 5, 1, true);
       const stanza = new SimulationStanza([scenario], true);
       const code = stanza.toCode(0);
       assert.notEqual(code.indexOf("start simulations"), -1);
