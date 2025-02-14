@@ -1,10 +1,14 @@
 # Montreal Protocol Policy Simulation Tool
 
-Open source unofficial web-based tool and simulation engine capable of simulations related to substances, applications, and policies relevant to the Montreal Protocol. It may potentially be useful at the discretion of relevant stakeholders as an optional step in informing proposals.
+Open source web-based tool and simulation engine capable of simulations related to substances, applications, and policies relevant to the Montreal Protocol. It may potentially be useful at the discretion of relevant stakeholders as an optional step in informing proposals.
 
 ## Purpose
 
-This open source toolkit provides a simulation engine for modeling substances, applications, and policies related to the Montreal Protocol. It supports a foundational business as usual simulation and then supports "stacking" policy simulations on top of that baseline. These projections may optionally support activities such as KIPs. Though not intended to be comprehensive of all possible relevant modeling techniques, this tool provides access to both UI and code-based editing where the later can also conduct probabilistic projection. The QubecTalk domain specific language allows for high degree of customization and specificity with automated unit conversions. Unofficial and completely voluntary, this privacy-respecting simulation platform offers essential tools to optionally inform potential policy.
+This open source toolkit provides a simulation engine for modeling substances, applications, and policies related to the Montreal Protocol. It supports a foundational business as usual simulation and then supports "stacking" policy simulations on top of that baseline. These projections may optionally support activities such as Kigali Amendment Implementation Plans (KIPs). 
+
+Though not intended to be comprehensive of all possible relevant modeling techniques, this tool provides access to both UI and code-based editing where the later can also conduct probabilistic projection. The QubecTalk domain specific language allows for high degree of customization and specificity with automated unit conversions. This includes calculation of direct emissions and energy consumption.
+
+Unofficial and completely voluntary, this privacy-respecting simulation platform offers essential tools to optionally inform potential policy. Though informed by various perspectives from across the Montreal Protocol ecosystem of actors, this is not an official product of any agency, fund, or official international body and is, instead, a community project available to the public as an open source resource.
 
 ## Usage
 
