@@ -2006,7 +2006,12 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
     } else {
       const numerator = ctx.getChild(0).getText();
       const denominator = ctx.getChild(2).getText();
-      return numerator + " / " + denominator;
+
+      if (denominator.startsWith("year")) {
+        return numerator + " each " + denominator;
+      } else {
+        return numerator + " / " + denominator;
+      }
     }
   }
 
