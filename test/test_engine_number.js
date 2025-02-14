@@ -1,4 +1,4 @@
-import {EngineNumber, UnitConverter} from "engine_number";
+import {EngineNumber, UnitConverter, standardizeRatioUnits} from "engine_number";
 
 function buildEngineNumberTests() {
   QUnit.module("EngineNumber", function () {
@@ -19,6 +19,13 @@ function buildEngineNumberTests() {
     QUnit.test("getUnits", function (assert) {
       const number = makeExample();
       assert.deepEqual(number.getUnits(), "kg");
+    });
+  });
+
+  QUnit.module("engineNumberUtils", function () {
+    QUnit.test("standardize year sugar", function (assert) {
+      const result = standardizeRatioUnits("% each year");
+      assert.deepEqual(result, "%");
     });
   });
 
