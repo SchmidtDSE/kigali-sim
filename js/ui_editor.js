@@ -1925,8 +1925,7 @@ function initLimitCommandUi(itemObj, root, codeObj) {
     new EngineNumber(1, "mt"),
     (x) => x.getValue(),
   );
-  setFieldValue(<replit_final_file>
-(root.querySelector(".displacing-input"), itemObj, "", (x) =>
+  setFieldValue(root.querySelector(".displacing-input"), itemObj, "", (x) =>
     x.getDisplacing() === null ? "" : x.getDisplacing(),
   );
   setDuring(root.querySelector(".duration-subcomponent"), itemObj, new YearMatcher(2, 10));
