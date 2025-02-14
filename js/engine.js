@@ -34,11 +34,15 @@ class EngineResult {
    * @param {number} year - The year the result is relevant to.
    * @param {EngineNumber} manufactureValue - The manufacture value.
    * @param {EngineNumber} importValue - The import value.
-   * @param {EngineNumber} consumptionValue - The consumption value.
+   * @param {EngineNumber} domesticConsumptionValue - The consumption value for
+   *     domestic manufacture.
+   * @param {EngineNumber} importConsumptionValue - The consumption value for
+   *     trade.
    * @param {EngineNumber} populationValue - The population value.
    * @param {EngineNumber} populationNew - The amount of new equipment added.
    * @param {EngineNumber} rechargeEmissions - The GHG emissions from recharge.
-   * @param {EngineNumber} eolEmissions - The GHG emissions from end-of-life equipment.
+   * @param {EngineNumber} eolEmissions - The GHG emissions from end-of-life
+   *     equipment.
    */
   constructor(
     application,
@@ -46,7 +50,8 @@ class EngineResult {
     year,
     manufactureValue,
     importValue,
-    consumptionValue,
+    domesticConsumptionValue,
+    importConsumptionValue,
     populationValue,
     populationNew,
     rechargeEmissions,
@@ -58,7 +63,8 @@ class EngineResult {
     self._year = year;
     self._manufactureValue = manufactureValue;
     self._importValue = importValue;
-    self._consumptionValue = consumptionValue;
+    self._domesticConsumptionValue = domesticConsumptionValue;
+    self._importConsumptionValue = importConsumptionValue;
     self._populationValue = populationValue;
     self._populationNew = populationNew;
     self._rechargeEmissions = rechargeEmissions;
@@ -116,13 +122,40 @@ class EngineResult {
   }
 
   /**
-   * Get the consumption value.
+   * Get the total consumption.
    *
    * @returns {EngineNumber} The consumption value.
    */
   getConsumption() {
     const self = this;
-    return self._consumptionValue;
+    if (self._domesticConsumptionValue.getUnits() !== self._importConsumptionValue.getUnits()) {
+      throw "Could not add incompatible units for consumption.";
+    }
+
+    return new EngineNumber(
+      self._domesticConsumptionValue.getValue() + self._importConsumptionValue.getValue(),
+      self._domesticConsumptionValue.getUnits(),
+    );
+  }
+
+  /**
+   * Get the domestic consumption value.
+   *
+   * @returns {EngineNumber} The domestic consumption value.
+   */
+  getDomesticConsumption() {
+    const self = this;
+    return self._domesticConsumptionValue;
+  }
+
+  /**
+   * Get the import consumption value.
+   *
+   * @returns {EngineNumber} The import consumption value.
+   */
+  getImportConsumption() {
+    const self = this;
+    return self._importConsumptionValue;
   }
 
   /**
@@ -792,7 +825,6 @@ class Engine {
       const year = self._currentYear;
       const manufactureValue = self._streamKeeper.getStream(application, substance, "manufacture");
       const importValue = self._streamKeeper.getStream(application, substance, "import");
-      const consumptionValue = self._streamKeeper.getStream(application, substance, "consumption");
       const populationValue = self._streamKeeper.getStream(application, substance, "equipment");
       const populationNew = self._streamKeeper.getStream(application, substance, "newEquipment");
       const rechargeEmissions = self._streamKeeper.getStream(
@@ -802,13 +834,20 @@ class Engine {
       );
       const eolEmissions = self._streamKeeper.getStream(application, substance, "eolEmissions");
 
+      const manufactureConverter = self._createUnitConverterWithTotal("manufacture");
+      const domesticConsumptionValue = manufactureConverter.convert(manufactureValue, "tCO2e");
+
+      const importConverter = self._createUnitConverterWithTotal("import");
+      const importConsumptionValue = manufactureConverter.convert(importValue, "tCO2e");
+
       return new EngineResult(
         application,
         substance,
         year,
         manufactureValue,
         importValue,
-        consumptionValue,
+        domesticConsumptionValue,
+        importConsumptionValue,
         populationValue,
         populationNew,
         rechargeEmissions,

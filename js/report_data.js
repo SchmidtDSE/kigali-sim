@@ -78,7 +78,10 @@ class AggregatedResult {
    */
   getConsumption() {
     const self = this;
-    return self._consumptionValue;
+    const manufactureValue = self.getConsumption();
+    const importValue = self.getImport();
+    const sales = self._combineUnitValue(manufactureValue, importValue);
+    return sales;
   }
 
   /**
@@ -184,6 +187,87 @@ class AggregatedResult {
   }
 }
 
+class MetricStrategyBuilder {
+  constructor() {
+    const self = this;
+    self._strategies = null;
+    self._metric = null;
+    self._submetric = null;
+    self._units = null;
+    self._strategy = null;
+    self._transformation = null;
+  }
+
+  setStrategies(strategies) {
+    const self = this;
+    self._strategies = strategies;
+  }
+
+  setMetric(metric) {
+    const self = this;
+    self._metric = metric;
+  }
+
+  setSubmetric(submetric) {
+    const self = this;
+    self._submetric = submetric;
+  }
+
+  setUnits(units) {
+    const self = this;
+    self._units = units;
+  }
+
+  setStrategy(strategy) {
+    const self = this;
+    self._strategy = strategy;
+  }
+
+  setTransformation(transformation) {
+    const self = this;
+    self._transformation = transformation;
+  }
+
+  add() {
+    const self = this;
+    self._requireCompleteDefinition();
+
+    const fullNamePieces = [self._metric, self._submetric, self._units];
+    const fullName = fullNamePieces.join(":");
+
+    const innerStrategy = self._strategy;
+    const innerTransformation = self._transformation;
+    const execute = (filterSet) => {
+      const result = innerStrategy(filterSet);
+      const transformed = self._transformation(result);
+      return transformed;
+    };
+
+    self._strategies[fullName] = execute;
+  }
+
+  build() {
+    const self = this;
+    return self._strategies;
+  }
+
+  _requireCompleteDefinition() {
+    const self = this;
+    const pieces = [
+      self._metric,
+      self._submetric,
+      self._units,
+      self._strategy,
+      self._transformation,
+    ];
+    const nullPieces = pieces.filter((x) => x === null);
+    const numNullPieces = nullPieces.map((x) => 1).reduce((a, b) => a + b, 0);
+    if (numNullPieces > 0) {
+      throw "Encountered null values on MetricStrategyBuilder";
+    }
+  }
+}
+
 /**
  * Facade which simplifies access to engine outputs.
  *
@@ -199,6 +283,91 @@ class ReportDataWrapper {
   constructor(innerData) {
     const self = this;
     self._innerData = innerData;
+
+    const strategyBuilder = new MetricStrategyBuilder();
+
+    const addEmissionsStrategies = (strategyBuilder) => {
+      const addEmissionsConversion = (strategyBuilder) => {
+        strategyBuilder.setUnits("MtCO2e / yr");
+        strategyBuilder.setTransformation((val) => {
+          if (val.getUnits() !== "tCO2e / yr") {
+            throw "Unexpected emissions source units: " + val.getUnits();
+          }
+
+          return new EngineNumber(val.getValue() / 1000000, "MtCO2e / yr");
+        });
+        strategyBuilder.add();
+
+        strategyBuilder.setUnits("ktCO2e / yr");
+        strategyBuilder.setTransformation((val) => {
+          if (val.getUnits() !== "tCO2e / yr") {
+            throw "Unexpected emissions source units: " + val.getUnits();
+          }
+
+          return new EngineNumber(val.getValue() / 1000, "ktCO2e / yr");
+        });
+        strategyBuilder.add();
+      };
+
+      strategyBuilder.setMetric("emissions");
+
+      strategyBuilder.setSubmetric("all");
+      strategyBuilder.setStrategy((x) => self.getTotalEmissions(x));
+      addEmissionsConversion(strategyBuilder);
+
+      strategyBuilder.setSubmetric("recharge");
+      strategyBuilder.setStrategy((x) => self.getRechargeEmissions(x));
+      addEmissionsConversion(strategyBuilder);
+
+      strategyBuilder.setSubmetric("eol");
+      strategyBuilder.setStrategy((x) => self.getEolEmissions(x));
+      addEmissionsConversion(strategyBuilder);
+    };
+
+    const addSalesStrategies = (strategyBuilder) => {
+      strategyBuilder.setMetric("sales");
+
+      strategyBuilder.setUnits("mt / yr");
+      strategyBuilder.setTransformation((value) => {
+        if (value.getUnits() !== "kg") {
+          throw "Unexpected sales units: " + value.getUnits();
+        }
+
+        return new EngineNumber(value.getValue(), "mt / yr");
+      });
+
+      strategyBuilder.setSubmetric("all");
+      strategyBuilder.setStrategy((x) => self.getSales(x));
+
+      strategyBuilder.setSubmetric("import");
+      strategyBuilder.setStrategy((x) => self.getImport(x));
+
+      strategyBuilder.setSubmetric("manufacture");
+      strategyBuilder.setStrategy((x) => self.getManufacture(filterSet));
+    };
+
+    const addConsumptionStrategies = (strategyBuilder) => {
+      strategyBuilder.setMetric("sales");
+
+      strategyBuilder.setSubmetric("all");
+      strategyBuilder.setStrategy((x) => self.getSales(x));
+
+      strategyBuilder.setSubmetric("import");
+      strategyBuilder.setStrategy((x) => self.getImport(x));
+
+      strategyBuilder.setSubmetric("manufacture");
+      strategyBuilder.setStrategy((x) => self.getManufacture(filterSet));
+    };
+
+    addEmissionsStrategies(strategyBuilder);
+
+    self._metricStrategies = {
+      "sales": () => self.getSales(filterSet),
+      "sales:import": () => self.getImport(filterSet),
+      "sales:manufacture": () => self.getManufacture(filterSet),
+      "population": () => self.getPopulation(filterSet),
+      "population:new": () => self.getPopulationNew(filterSet),
+    };
   }
 
   /**
@@ -220,16 +389,7 @@ class ReportDataWrapper {
   getMetric(filterSet) {
     const self = this;
     const metric = filterSet.getFullMetricName();
-    const metricStrategy = {
-      "emissions": () => self.getTotalEmissions(filterSet),
-      "emissions:recharge": () => self.getRechargeEmissions(filterSet),
-      "emissions:eol": () => self.getEolEmissions(filterSet),
-      "sales": () => self.getSales(filterSet),
-      "sales:import": () => self.getImport(filterSet),
-      "sales:manufacture": () => self.getManufacture(filterSet),
-      "population": () => self.getPopulation(filterSet),
-      "population:new": () => self.getPopulationNew(filterSet),
-    }[metric];
+    const metricStrategy = self._metricStrategies[metric];
     const value = metricStrategy();
     return value;
   }
@@ -718,6 +878,22 @@ class FilterSet {
 
     const metricPieces = self._metric.split(":");
     return metricPieces.length < 2 ? null : metricPieces[1];
+  }
+
+  /**
+   * Get the units of the metric to dsiplay.
+   *
+   * @returns {string|null} The units desired or null if not given.
+   */
+  getUnits() {
+    const self = this;
+
+    if (self._metric === null) {
+      return null;
+    }
+
+    const metricPieces = self._metric.split(":");
+    return metricPieces.length < 3 ? null : metricPieces[2];
   }
 
   /**

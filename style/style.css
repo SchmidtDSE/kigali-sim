@@ -201,11 +201,6 @@ main {
   padding-top: 2px;
 }
 
-#results .scorecards .scorecard .units {
-  display: none;
-  font-size: 12px;
-}
-
 #results .scorecards .scorecard .value {
   font-size: 20px;
   padding-top: 5px;

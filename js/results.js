@@ -20,6 +20,8 @@ const COLORS = [
   "#A0A0A0",
 ];
 
+const DEFAULT_SUFFIX = "";
+
 /**
  * Flag to allow an "All" option in filters to make it easy to return to a
  * default state.
@@ -62,7 +64,14 @@ class ResultsPresenter {
     const self = this;
     self._root = root;
     self._results = null;
-    self._filterSet = new FilterSet(null, null, null, null, "emissions", "simulations");
+    self._filterSet = new FilterSet(
+      null,
+      null,
+      null,
+      null,
+      "emissions:all:MtCO2e / yr",
+      "simulations",
+    );
 
     const scorecardContainer = self._root.querySelector("#scorecards");
     const dimensionsContainer = self._root.querySelector("#dimensions");
@@ -310,12 +319,6 @@ class ScorecardPresenter {
     self._setText(scorecard.querySelector(".value"), value);
 
     if (hideVal) {
-      self._setText(scorecard.querySelector(".current-year"), "");
-    } else {
-      self._setText(scorecard.querySelector(".current-year"), "in year " + currentYear);
-    }
-
-    if (hideVal) {
       scorecard.querySelector(".value").style.display = "none";
     } else {
       scorecard.querySelector(".value").style.display = "block";
@@ -362,8 +365,7 @@ class ScorecardPresenter {
       const callback = () => {
         const subMetric = subMetricDropdown.value;
         const isAll = subMetric === "all";
-        const extendedName = family + ":" + subMetric;
-        const fullName = isAll ? family : extendedName;
+        const fullName = family + ":" + subMetric;
         const newFilterSet = self._filterSet.getWithMetric(fullName);
         self._onUpdateFilterSet(newFilterSet);
       };
@@ -412,11 +414,7 @@ class DimensionCardPresenter {
     self._filterSet = filterSet;
 
     const metricSelected = self._filterSet.getMetric();
-    const metricUnits = {
-      emissions: "MtCO2e / yr",
-      sales: "mt / yr",
-      population: "units",
-    }[metricSelected];
+    const metricUnits = results.length > 0 ? results[0].getUnits() : "";
 
     const currentYear = self._filterSet.getYear();
     const scenarios = results.getScenarios(self._filterSet.getWithScenario(null));
@@ -440,14 +438,7 @@ class DimensionCardPresenter {
     const applicationsSelected = dimensionSelected === "applications";
     const substancesSelected = dimensionSelected === "substances";
 
-    const conversionInfo = {
-      emissions: {divider: 1000000, suffix: "M"},
-      sales: {divider: 1000, suffix: ""},
-      population: {divider: 1000000, suffix: "M"},
-    }[self._filterSet.getMetric()];
-    const divider = conversionInfo["divider"];
-    const suffix = conversionInfo["suffix"];
-    const interpret = (x) => (x === null ? null : x.getValue() / divider);
+    const interpret = (x) => (x === null ? null : x.getValue());
 
     self._updateCard(
       "sim",
@@ -458,7 +449,7 @@ class DimensionCardPresenter {
       (x) => self._filterSet.getWithScenario(x),
       true,
       (value) => interpret(results.getMetric(self._filterSet.getWithScenario(value))),
-      suffix,
+      DEFAULT_SUFFIX,
       scenarios,
     );
 
@@ -471,7 +462,7 @@ class DimensionCardPresenter {
       (x) => self._filterSet.getWithApplication(x),
       true,
       (value) => interpret(results.getMetric(self._filterSet.getWithApplication(value))),
-      suffix,
+      DEFAULT_SUFFIX,
       scenarios,
     );
 
@@ -484,7 +475,7 @@ class DimensionCardPresenter {
       (x) => self._filterSet.getWithSubstance(x),
       true,
       (value) => interpret(results.getMetric(self._filterSet.getWithSubstance(value))),
-      suffix,
+      DEFAULT_SUFFIX,
       scenarios,
     );
   }
