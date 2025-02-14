@@ -1664,15 +1664,27 @@ class Substance {
       return;
     }
 
-    if (startYear === null) {
-      startYear = "beginning";
-    }
+    const processUnbounded = () => {
+      const noStart = startYear === null;
+      const startYearRealized = noStart ? "beginning" : startYear;
 
-    if (endYear === null) {
-      endYear = "onwards";
-    }
+      const noEnd = endYear === null;
+      const endYearRealized = noEnd ? "onwards" : endYear;
 
-    pieces.push("during years " + startYear + " to " + endYear);
+      pieces.push("during years " + startYearRealized + " to " + endYearRealized);
+    };
+
+    const processBounded = () => {
+      const startYearRearrange = Math.min(startYear, endYear);
+      const endYearRearrange = Math.max(startYear, endYear);
+      pieces.push("during years " + startYearRearrange + " to " + endYearRearrange);
+    };
+
+    if (startYear === null || endYear === null) {
+      processUnbounded();
+    } else {
+      processBounded();
+    }
   }
 
   /**

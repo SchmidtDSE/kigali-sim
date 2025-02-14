@@ -166,6 +166,18 @@ function buildUiTranslatorReverseTests() {
       assert.notEqual(code.indexOf("retire 10 % during years 2 to 5"), -1);
     });
 
+    QUnit.test("supports duration multiple years reversed", function (assert) {
+      const command = new Command(
+        "retire",
+        null,
+        new EngineNumber("10", "%"),
+        new YearMatcher(5, 2),
+      );
+      const substance = createWithCommand("test", false, command);
+      const code = substance.toCode(0);
+      assert.notEqual(code.indexOf("retire 10 % during years 2 to 5"), -1);
+    });
+
     QUnit.test("supports duration with min year", function (assert) {
       const command = new ReplaceCommand(
         new EngineNumber("10", "%"),
