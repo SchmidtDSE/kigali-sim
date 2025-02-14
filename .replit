@@ -1,7 +1,7 @@
 hidden=[".config"]
-modules = ["nodejs-20", "web", "bash"]
+modules = ["nodejs-20", "web", "bash", "python-3.12"]
 build = "bash support/install_deps.sh; bash support/make.sh"
-run = "node index.js"
+run = "python -m http.server"
 
 [nix]
 channel = "stable-24_05"
