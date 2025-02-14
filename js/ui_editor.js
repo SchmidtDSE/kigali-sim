@@ -1345,6 +1345,21 @@ class PolicyListPresenter {
     codeObj.insertPolicy(self._editingName, policy);
     self._onCodeObjUpdate(codeObj);
   }
+
+  /**
+   * Updates the UI to display the count of commands in each list.
+   *
+   * @private
+   */
+  _updateCounts() {
+    const self = this;
+    const updateCount = buildUpdateCount(self._dialog);
+    updateCount(".recycling-list", "#policy-recycle-count");
+    updateCount(".replace-list", "#policy-replace-count");
+    updateCount(".level-list", "#policy-set-count");
+    updateCount(".change-list", "#policy-change-count");
+    updateCount(".limit-list", "#policy-limit-count");
+  }
 }
 
 /**
@@ -1910,7 +1925,8 @@ function initLimitCommandUi(itemObj, root, codeObj) {
     new EngineNumber(1, "mt"),
     (x) => x.getValue(),
   );
-  setFieldValue(root.querySelector(".displacing-input"), itemObj, "", (x) =>
+  setFieldValue(<replit_final_file>
+(root.querySelector(".displacing-input"), itemObj, "", (x) =>
     x.getDisplacing() === null ? "" : x.getDisplacing(),
   );
   setDuring(root.querySelector(".duration-subcomponent"), itemObj, new YearMatcher(2, 10));
