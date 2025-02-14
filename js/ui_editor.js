@@ -74,7 +74,7 @@ function setupDurationSelector(newDiv) {
  * Build a function which sets up a list button with add/delete functionality.
  *
  * @param {Function} postCallback - Function to call after each list item UI is
- *     initialized. If not given, will use a no-op.
+ *     initialized or removed. If not given, will use a no-op.
  */
 function buildSetupListButton(postCallback) {
   /**
@@ -98,6 +98,7 @@ function buildSetupListButton(postCallback) {
       deleteLink.addEventListener("click", (event) => {
         event.preventDefault();
         newDiv.remove();
+        postCallback();
       });
 
       initUiCallback(null, newDiv);
