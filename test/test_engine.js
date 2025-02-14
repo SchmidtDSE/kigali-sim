@@ -138,7 +138,7 @@ function buildEngineTests() {
 
       engine.changeStream(
         "manufacture",
-        new EngineNumber(10, "% each year"),
+        new EngineNumber(10, "% / year"),
         new YearMatcher(2, null),
       );
 
@@ -150,7 +150,7 @@ function buildEngineTests() {
 
       engine.changeStream(
         "manufacture",
-        new EngineNumber(10, "% each year"),
+        new EngineNumber(10, "% / year"),
         new YearMatcher(null, null),
       );
 
@@ -162,7 +162,7 @@ function buildEngineTests() {
 
       engine.changeStream(
         "manufacture",
-        new EngineNumber(10, "% each year"),
+        new EngineNumber(10, "% / year"),
         new YearMatcher(null, null),
       );
 
@@ -477,7 +477,7 @@ function buildEngineTests() {
         new YearMatcher(null, null),
       );
 
-      engine.retire(new EngineNumber(10, "% each year"), new YearMatcher(null, null));
+      engine.retire(new EngineNumber(10, "% / year"), new YearMatcher(null, null));
 
       const manufactureVal1 = engine.getStream("equipment");
       assert.closeTo(manufactureVal1.getValue(), 10, 0.0001);
@@ -506,7 +506,7 @@ function buildEngineTests() {
           new YearMatcher(null, null),
         );
 
-        engine.retire(new EngineNumber(10, "% each year"), new YearMatcher(null, null));
+        engine.retire(new EngineNumber(10, "% / year"), new YearMatcher(null, null));
       };
 
       executeLogic();
@@ -539,7 +539,7 @@ function buildEngineTests() {
       );
 
       engine.recharge(
-        new EngineNumber(10, "% each year"),
+        new EngineNumber(10, "% / year"),
         new EngineNumber(1, "kg / unit"),
         new YearMatcher(null, null),
       );
@@ -583,7 +583,7 @@ function buildEngineTests() {
       );
 
       engine.recharge(
-        new EngineNumber(10, "% each year"),
+        new EngineNumber(10, "% / year"),
         new EngineNumber(1, "kg / unit"),
         new YearMatcher(null, null),
       );
@@ -607,7 +607,7 @@ function buildEngineTests() {
       );
 
       engine.recharge(
-        new EngineNumber(10, "% each year"),
+        new EngineNumber(10, "% / year"),
         new EngineNumber(1, "kg / unit"),
         new YearMatcher(null, null),
       );
@@ -637,7 +637,7 @@ function buildEngineTests() {
       );
 
       engine.recharge(
-        new EngineNumber(50, "% each year"),
+        new EngineNumber(50, "% / year"),
         new EngineNumber(1, "kg / unit"),
         new YearMatcher(null, null),
       );
@@ -668,7 +668,7 @@ function buildEngineTests() {
       );
 
       engine.recharge(
-        new EngineNumber(50, "% each year"),
+        new EngineNumber(50, "% / year"),
         new EngineNumber(1, "kg / unit"),
         new YearMatcher(null, null),
       );
@@ -705,7 +705,7 @@ function buildEngineTests() {
       );
 
       engine.recharge(
-        new EngineNumber(50, "% each year"),
+        new EngineNumber(50, "% / year"),
         new EngineNumber(1, "kg / unit"),
         new YearMatcher(null, null),
       );
@@ -736,7 +736,7 @@ function buildEngineTests() {
       );
 
       engine.recharge(
-        new EngineNumber(50, "% each year"),
+        new EngineNumber(50, "% / year"),
         new EngineNumber(1, "kg / unit"),
         new YearMatcher(null, null),
       );
@@ -773,7 +773,7 @@ function buildEngineTests() {
       );
 
       engine.recharge(
-        new EngineNumber(50, "% each year"),
+        new EngineNumber(50, "% / year"),
         new EngineNumber(1, "kg / unit"),
         new YearMatcher(null, null),
       );
@@ -804,7 +804,7 @@ function buildEngineTests() {
       );
 
       engine.recharge(
-        new EngineNumber(50, "% each year"),
+        new EngineNumber(50, "% / year"),
         new EngineNumber(1, "kg / unit"),
         new YearMatcher(null, null),
       );
@@ -841,10 +841,10 @@ function buildEngineTests() {
           new YearMatcher(null, null),
         );
 
-        engine.retire(new EngineNumber(10, "% each year"), new YearMatcher(null, null));
+        engine.retire(new EngineNumber(10, "% / year"), new YearMatcher(null, null));
 
         engine.recharge(
-          new EngineNumber(10, "% each year"),
+          new EngineNumber(10, "% / year"),
           new EngineNumber(1, "kg / unit"),
           new YearMatcher(null, null),
         );
