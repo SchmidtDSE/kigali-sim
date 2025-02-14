@@ -1653,8 +1653,8 @@ class Substance {
       return;
     }
 
-    let startYear = duration.getStart();
-    let endYear = duration.getEnd();
+    const startYear = duration.getStart();
+    const endYear = duration.getEnd();
     if (startYear === null && endYear === null) {
       return;
     }
