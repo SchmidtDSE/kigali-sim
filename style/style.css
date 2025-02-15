@@ -139,6 +139,7 @@ main {
   font-size: 12px;
   display: grid;
   grid-template-columns: 30% 40% 30%;
+  margin-left: 21px;
 }
 
 #results .dimensions .dimension .axis .left-tick {
@@ -159,10 +160,13 @@ main {
   font-size: 12px;
 }
 
+#results .dimensions .dimension .list .list-line-holder {
+  margin-bottom: 5px;
+  margin-left: 21px;
+}
+
 #results .dimensions .dimension .list .list-line {
   height: 1px;
-  margin-bottom: 5px;
-  margin-left: 17px;
 }
 
 #results .dimensions .dimension .title {

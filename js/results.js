@@ -566,7 +566,9 @@ class DimensionCardPresenter {
 
     if (hasSingleScenario || label === "sim") {
       const offset = allNeeded ? 1 : 0;
-      const lines = itemDivs
+      const lineHolders = itemDivs.append("div").classed("list-line-holder", true);
+
+      const lines = lineHolders
         .append("div")
         .classed("list-line", true)
         .style("width", "100%")
