@@ -20,8 +20,6 @@ const COLORS = [
   "#A0A0A0",
 ];
 
-const DEFAULT_SUFFIX = "";
-
 /**
  * Flag to allow an "All" option in filters to make it easy to return to a
  * default state.
@@ -415,7 +413,7 @@ class DimensionCardPresenter {
     self._filterSet = filterSet;
 
     const metricSelected = self._filterSet.getMetric();
-    const metricUnits = results.length > 0 ? results[0].getUnits() : "";
+    const metricUnits = self._filterSet.getUnits();
 
     const currentYear = self._filterSet.getYear();
     const scenarios = results.getScenarios(self._filterSet.getWithScenario(null));
@@ -450,7 +448,7 @@ class DimensionCardPresenter {
       (x) => self._filterSet.getWithScenario(x),
       true,
       (value) => interpret(results.getMetric(self._filterSet.getWithScenario(value))),
-      DEFAULT_SUFFIX,
+      metricUnits,
       scenarios,
     );
 
@@ -463,7 +461,7 @@ class DimensionCardPresenter {
       (x) => self._filterSet.getWithApplication(x),
       true,
       (value) => interpret(results.getMetric(self._filterSet.getWithApplication(value))),
-      DEFAULT_SUFFIX,
+      metricUnits,
       scenarios,
     );
 
@@ -476,7 +474,7 @@ class DimensionCardPresenter {
       (x) => self._filterSet.getWithSubstance(x),
       true,
       (value) => interpret(results.getMetric(self._filterSet.getWithSubstance(value))),
-      DEFAULT_SUFFIX,
+      metricUnits,
       scenarios,
     );
   }
@@ -524,7 +522,7 @@ class DimensionCardPresenter {
 
     const values = identifiersArray.map(valueGetter);
     const maxValue = Math.max(...values);
-    d3.select(card.querySelector(".right-tick")).text(Math.round(maxValue) + suffix);
+    d3.select(card.querySelector(".right-tick")).text(Math.round(maxValue));
 
     const hasSingleScenario = self._filterSet.hasSingleScenario(scenarios);
     const isOnlyValue = identifiersArray.length == 1;
