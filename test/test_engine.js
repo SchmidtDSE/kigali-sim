@@ -769,7 +769,7 @@ function buildEngineTests() {
       assert.deepEqual(manufactureVal2.getUnits(), "kg");
 
       const equipmentVal2 = engine.getStream("equipment");
-      assert.closeTo(equipmentVal2.getValue(), 17.5, 0.0001);
+      assert.closeTo(equipmentVal2.getValue(), 15, 0.0001);
       assert.deepEqual(equipmentVal2.getUnits(), "units");
     });
 
@@ -805,6 +805,10 @@ function buildEngineTests() {
       assert.closeTo(manufactureVal1.getValue(), 10, 0.0001);
       assert.deepEqual(manufactureVal1.getUnits(), "kg");
 
+      const recycleVal1 = engine.getStream("recycle");
+      assert.closeTo(recycleVal1.getValue(), 0, 0.0001);
+      assert.deepEqual(manufactureVal1.getUnits(), "kg");
+
       const equipmentVal1 = engine.getStream("equipment");
       assert.closeTo(equipmentVal1.getValue(), 10, 0.0001);
       assert.deepEqual(equipmentVal1.getUnits(), "units");
@@ -833,11 +837,15 @@ function buildEngineTests() {
       );
 
       const manufactureVal2 = engine.getStream("manufacture");
-      assert.closeTo(manufactureVal2.getValue(), 7.5, 0.0001);
+      assert.closeTo(manufactureVal2.getValue(), 10, 0.0001);
       assert.deepEqual(manufactureVal2.getUnits(), "kg");
 
+      const recycleVal2 = engine.getStream("recycle");
+      assert.closeTo(recycleVal2.getValue(), 2.5, 0.0001);
+      assert.deepEqual(recycleVal2.getUnits(), "kg");
+
       const equipmentVal2 = engine.getStream("equipment");
-      assert.closeTo(equipmentVal2.getValue(), 12.5, 0.0001);
+      assert.closeTo(equipmentVal2.getValue(), 15, 0.0001);
       assert.deepEqual(equipmentVal2.getUnits(), "units");
     });
 
@@ -901,8 +909,12 @@ function buildEngineTests() {
       );
 
       const manufactureVal2 = engine.getStream("manufacture");
-      assert.ok(Math.abs(manufactureVal2.getValue() - (10 - 1.25)) < 0.0001);
+      assert.closeTo(manufactureVal2.getValue(), 10, 0.0001);
       assert.deepEqual(manufactureVal2.getUnits(), "kg");
+
+      const recycleVal2 = engine.getStream("recycle");
+      assert.closeTo(recycleVal2.getValue(), 1.25, 0.0001);
+      assert.deepEqual(recycleVal2.getUnits(), "kg");
 
       const equipmentVal2 = engine.getStream("equipment");
       assert.closeTo(equipmentVal2.getValue(), 15, 0.0001);
