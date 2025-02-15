@@ -158,6 +158,28 @@
                           </span>
                         </div>
                       </div>
+                      <div class="form-group">
+                        <div><label for="edit-consumption-energy">Energy:</label></div>
+                        <div>
+                          <input
+                            type="text"
+                            name="edit-consumption-energy"
+                            class="edit-consumption-energy-input mid"
+                            value="coming soon"
+                            disabled
+                          />
+                          <span class="sel mid">
+                            <select
+                              name="edit-consumption-energy-units"
+                              class="edit-consumption-energy-units-input"
+                              aria-label="Units of energy equivalency"
+                            >
+                              <option value="kwh / unit">kwh / unit</option>
+                              <option value="kwh / kg">kwh / kg</option>
+                            </select>
+                          </span>
+                        </div>
+                      </div>
                     </div>
                     <div id="consumption-equipment">
                       <div class="instructions">
@@ -445,6 +467,11 @@
                         >
                       </li>
                       <li>
+                        <a href="#policy-salvage"
+                          >Savlage (<span id="policy-recycle-count">0</span>)</a
+                        >
+                      </li>
+                      <li>
                         <a href="#policy-replace"
                           >Replace (<span id="policy-replace-count">0</span>)</a
                         >
@@ -518,6 +545,19 @@
                       <div class="dialog-sub-buttons bold-buttons">
                         <a href="#" class="add-recycling-button secondary">Add Recycling</a>
                       </div>
+                    </div>
+                    <div id="policy-salvage">
+                      <div class="instructions">
+                        This tab specifies a recycling program in which substance is recovered at
+                        end of life. There may be yield loss in processing substances prior to
+                        reuse.
+                        <span class="scope-reminder">
+                          Your policy will impact <span class="reminder-substance"></span> for
+                          <span class="reminder-app"></span>.
+                          <a href="#edit" class="edit-reminder-link">Change</a>
+                        </span>
+                      </div>
+                      <div>This policy is coming soon</div>
                     </div>
                     <div id="policy-replace">
                       <div class="instructions">
