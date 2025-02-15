@@ -37,10 +37,9 @@
                     In the <a href="/guide/programming_reveal.html">previous tutorial</a>, we
                     revealed that we have been writing code all along. That said, there are some
                     features of the engine which can only be accessed by writing code through the
-                    "Advanced" tab such as probabilistic simulation. Sometimes, it may also be
-                    easier or faster to express your ideas through code than by building it up
-                    through the dialog boxes. All that in mind, we will now make some edits through
-                    code.
+                    "Editor" tab such as probabilistic simulation. Sometimes, it may also be easier
+                    or faster to express your ideas through code than by building it up through the
+                    dialog boxes. All that in mind, we will now make some edits through code.
                 </p>
             </section>
 
@@ -78,7 +77,41 @@
                     <li>0.01 kg / unit recharge</li>
                 </ul>
 
-                <p>Be sure to click "run" to execute again when you are done.</p>
+                <p>
+                    Be sure to click "run" to execute again when you are done. Here is what that
+                    code may look like right before end default:
+                </p>
+
+                <pre>
+  define application "Dom Refrig"
+
+    uses substance "HFC-134a"
+      initial charge with 0.25 kg / unit for manufacture
+      initial charge with 0.1 kg / unit for import
+      equals 1000 tCO2e / kg
+      set manufacture to 250 mt during year 1
+      set import to 50 mt during year 1
+      change manufacture by 5 % each year
+      change import by 4 % each year
+      retire 2 % each year
+      recharge 5 % each year with 0.5 kg / unit
+    end substance
+
+
+    uses substance "R-600a"
+      initial charge with 0.1 kg / unit for manufacture
+      initial charge with 0.1 kg / unit for import
+      equals 50 tCO2e / kg
+      set manufacture to 5 mt during year 1
+      set import to 5 mt during year 1
+      retire 2 % each year
+      recharge 5 % each year with 0.01 kg / unit
+    end substance
+
+  end application    
+
+end default
+                </pre>
             </section>
 
             <section id="new-policies">
@@ -94,42 +127,96 @@
                 </ul>
 
                 <p>
-                    Finally, change the current policies from "com recycling" and "com replace" to
-                    simply "recycling" and "replace" as we will have them modify both applications.
-                    Note that this has to be modified in both the simulations and policy sections.
+                    Once again, be sure to click "run" to execute again. Here is what that code may
+                    look like (right before start simulations):
                 </p>
 
-                <p>Once again, be sure to click "run" to execute again.</p>
+                <pre>
+start policy "Dom Recycling"
+
+  modify application "Dom Refrig"
+
+    modify substance "HFC-134a"
+      recover 30 % with 100 % reuse during years 2 to onwards
+    end substance
+
+  end application
+
+end policy
+
+
+
+start policy "Dom Replace"
+
+  modify application "Dom Refrig"
+
+    modify substance "HFC-134a"
+      replace 15 mt of sales with "R-600a" during years 2 to 20
+    end substance
+
+  end application
+
+end policy
+
+start simulations
+                </pre>
             </section>
 
             <section id="new-simulations">
                 <h2>New Simulations</h2>
 
                 <p>
-                    Finally, create a new simulation called "combined" which uses the replace policy
-                    then adds the recycling policy. To add multiple policies, use the "then" keyword
-                    like so:
+                    Finally, let's modify our simulations so that recycle and replacement have these
+                    new policies for domestic refrigeration. Note that policies are case sensitive.
+                    Here's what that might look like:
                 </p>
 
                 <pre>
-simulate "sim"
-  using "policy1"
-  then "policy2"
-from years 1 to 20           
+start simulations
+
+  simulate "Business as Usual"
+  from years 1 to 20
+
+
+  simulate "Recycle"
+    using "Com Recycling"
+    then "Dom Recyling"
+  from years 1 to 20
+
+
+  simulate "Replacement"
+    using "Com Replace"
+    then "Dom Replace"
+  from years 1 to 20
+
+
+  simulate "Permitting"
+    using "Com Permit"
+  from years 1 to 20
+
+
+  simulate "Combined"
+    using "Com Recycling"
+    then "Com Replace"
+    then "Com Permit"
+    then "Dom Recyling"
+    then "Dom Replace"
+  from years 1 to 20
+
+end simulations          
                 </pre>
 
-                <p>
-                    One last time, be sure to click run. This gives you a sense of a multi-policy
-                    scenario which is only accessible from the code interface.
-                </p>
+                <p>One last time, be sure to click run.</p>
             </section>
 
             <section id="conclusion">
                 <h2>Conclusion</h2>
 
                 <p>
-                    That's it for now. In the future, we will have a follow up simulation looking at
-                    probabilistic simulation.
+                    Sometimes it is easier to use code to express your idea. However, many
+                    simulations can be built either in the designer or code editor. Let's continue
+                    our journey by looking closer at the visualization tools available in the
+                    <a href="/guide/interpreting_results.html">next tutorial</a>.
                 </p>
             </section>
         </main>
