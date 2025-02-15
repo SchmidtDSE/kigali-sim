@@ -184,7 +184,7 @@ class ExportPresenter {
             importValue: importValue.getValue(),
             importUnits: importValue.getUnits(),
             rechargeEmissionsValue: rechargeEmissionsValue.getValue(),
-            rechargeEmissionsValue: rechargeEmissionsValue.getUnits(),
+            rechargeEmissionsUnits: rechargeEmissionsValue.getUnits(),
             eolEmissionsValue: eolEmissionsValue.getValue(),
             eolEmissionsUnits: eolEmissionsValue.getUnits(),
             equipmentPopulation: populationValue.getValue(),
