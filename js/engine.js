@@ -868,11 +868,16 @@ class Engine {
       );
       const eolEmissions = self._streamKeeper.getStream(application, substance, "eolEmissions");
 
-      const manufactureConverter = self._createUnitConverterWithTotal("manufacture");
-      const domesticConsumptionValue = manufactureConverter.convert(manufactureValue, "tCO2e");
+      const consumptionRaw = self._streamKeeper.getGhgIntensity(application, substance);
 
-      const importConverter = self._createUnitConverterWithTotal("import");
-      const importConsumptionValue = importConverter.convert(importValue, "tCO2e");
+      const stateGetter = new OverridingConverterStateGetter(self._stateGetter);
+      const unitConverter = new UnitConverter(stateGetter);
+
+      stateGetter.setVolume(manufactureValue);
+      const domesticConsumptionValue = unitConverter.convert(consumptionRaw, "tCO2e");
+
+      stateGetter.setVolume(importValue);
+      const importConsumptionValue = unitConverter.convert(consumptionRaw, "tCO2e");
 
       return new EngineResult(
         application,

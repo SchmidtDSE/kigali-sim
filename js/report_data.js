@@ -402,26 +402,39 @@ class ReportDataWrapper {
     const addSalesStrategies = (strategyBuilder) => {
       strategyBuilder.setMetric("sales");
 
-      strategyBuilder.setUnits("mt / yr");
-      strategyBuilder.setTransformation((value) => {
-        if (value.getUnits() !== "kg") {
-          throw "Unexpected sales units: " + value.getUnits();
-        }
+      const makeForKgAndMt = (strategyBuilder) => {
+        strategyBuilder.setUnits("mt / yr");
+        strategyBuilder.setTransformation((value) => {
+          if (value.getUnits() !== "kg") {
+            throw "Unexpected sales units: " + value.getUnits();
+          }
 
-        return new EngineNumber(value.getValue(), "mt / yr");
-      });
+          return new EngineNumber(value.getValue() / 1000, "mt / yr");
+        });
+        strategyBuilder.add();
+
+        strategyBuilder.setUnits("kg / yr");
+        strategyBuilder.setTransformation((value) => {
+          if (value.getUnits() !== "kg") {
+            throw "Unexpected sales units: " + value.getUnits();
+          }
+
+          return new EngineNumber(value.getValue(), "kg / yr");
+        });
+        strategyBuilder.add();
+      };
 
       strategyBuilder.setSubmetric("all");
       strategyBuilder.setStrategy((x) => self.getSales(x));
-      strategyBuilder.add();
+      makeForKgAndMt(strategyBuilder);
 
       strategyBuilder.setSubmetric("import");
       strategyBuilder.setStrategy((x) => self.getImport(x));
-      strategyBuilder.add();
+      makeForKgAndMt(strategyBuilder);
 
       strategyBuilder.setSubmetric("manufacture");
       strategyBuilder.setStrategy((x) => self.getManufacture(x));
-      strategyBuilder.add();
+      makeForKgAndMt(strategyBuilder);
     };
 
     const addConsumptionStrategies = (strategyBuilder) => {
