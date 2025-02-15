@@ -27,22 +27,21 @@ const STREAM_NAMES = new Set([
  */
 class EngineResult {
   /**
-   * Create an EngineResult.
+   * Constructor for creating an EngineResult instance.
    *
-   * @param {string} application - The application associated with the result.
-   * @param {string} substance - The substance associated with the result.
-   * @param {number} year - The year the result is relevant to.
-   * @param {EngineNumber} manufactureValue - The manufacture value.
-   * @param {EngineNumber} importValue - The import value.
-   * @param {EngineNumber} domesticConsumptionValue - The consumption value for
-   *     domestic manufacture.
-   * @param {EngineNumber} importConsumptionValue - The consumption value for
-   *     trade.
+   * @param {string} application - The application associated with this engine result.
+   * @param {string} substance - The substance associated with this engine result.
+   * @param {number} year - The year for which the engine result is relevant.
+   * @param {EngineNumber} manufactureValue - The value associated with manufacturing.
+   * @param {EngineNumber} importValue - The value related to imports.
+   * @param {EngineNumber} recycleValue - The value denoting recycled materials.
+   * @param {EngineNumber} domesticConsumptionValue - The domestic consumption value.
+   * @param {EngineNumber} importConsumptionValue - The import consumption value.
+   * @param {EngineNumber} recycleConsumptionValue - The recycle consumption value.
    * @param {EngineNumber} populationValue - The population value.
-   * @param {EngineNumber} populationNew - The amount of new equipment added.
-   * @param {EngineNumber} rechargeEmissions - The GHG emissions from recharge.
-   * @param {EngineNumber} eolEmissions - The GHG emissions from end-of-life
-   *     equipment.
+   * @param {EngineNumber} populationNew - The amount of new equipment added this year.
+   * @param {EngineNumber} rechargeEmissions - The greenhouse gas emissions from recharge activities.
+   * @param {EngineNumber} eolEmissions - The greenhouse gas emissions from end-of-life equipment.
    */
   constructor(
     application,

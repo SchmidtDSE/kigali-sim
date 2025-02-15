@@ -10,14 +10,20 @@ import {EngineNumber} from "engine_number";
  * Class representing aggregated result which can be visualized.
  */
 class AggregatedResult {
+
   /**
-   * Create a new aggregated result.
+   * Construct an AggregatedResult instance.
    *
-   * @param {EngineNumber} manufactureValue - The manufacturing value.
-   * @param {EngineNumber} importValue - The import value.
-   * @param {EngineNumber} consumptionValue - The consumption value.
-   * @param {EngineNumber} populationValue - The equipment population value.
-   * @param {EngineNumber} populationNew - The new equipment added this year.
+   * @param {EngineNumber} manufactureValue - The value representing manufacturing.
+   * @param {EngineNumber} importValue - The value representing imports.
+   * @param {EngineNumber} recycleValue - The value of recycled goods.
+   * @param {EngineNumber} domesticConsumptionValue - The value representing domestic consumption.
+   * @param {EngineNumber} importConsumptionValue - The consumption value due to imports.
+   * @param {EngineNumber} recycleConsumptionValue - The consumption value due to recycling.
+   * @param {EngineNumber} populationValue - The value of the population amount.
+   * @param {EngineNumber} populationNew - The value representing new equipment added in the current year.
+   * @param {EngineNumber} rechargeEmissions - Emissions resulting from recharge activities.
+   * @param {EngineNumber} eolEmissions - Emissions resulting from end-of-life equipment.
    */
   constructor(
     manufactureValue,
@@ -64,6 +70,11 @@ class AggregatedResult {
     return self._importValue;
   }
 
+  /**
+   * Get the recycle sales.
+   *
+   * @returns {EngineNumber} The recycle sales with units.
+   */
   getRecycle() {
     const self = this;
     return self._recycleValue;
@@ -104,6 +115,11 @@ class AggregatedResult {
     return self._importConsumptionValue;
   }
 
+  /**
+   * Get the recycle consumption.
+   *
+   * @returns {EngineNumber} The recycle consumption with units.
+   */
   getRecycleConsumption() {
     const self = this;
     return self._recycleConsumptionValue;
@@ -322,6 +338,11 @@ class MetricStrategyBuilder {
     const innerTransformation = self._transformation;
     const execute = (filterSet) => {
       const result = innerStrategy(filterSet);
+
+      if (result === null) {
+        return null;
+      }
+
       const transformed = innerTransformation(result);
       return transformed;
     };
@@ -640,18 +661,39 @@ class ReportDataWrapper {
     return aggregated === null ? null : aggregated.getConsumption();
   }
 
+  /**
+   * Get the domestic consumption value matching a given filter set.
+   *
+   * @param {FilterSet} filterSet - The filter criteria to apply.
+   * @returns {EngineNumber|null} The domestic consumption value, or null if no
+   *     matching results.
+   */
   getDomesticConsumption(filterSet) {
     const self = this;
     const aggregated = self._getAggregatedAfterFilter(filterSet);
     return aggregated === null ? null : aggregated.getDomesticConsumption();
   }
 
+  /**
+   * Get the import consumption value matching a given filter set.
+   *
+   * @param {FilterSet} filterSet - The filter criteria to apply.
+   * @returns {EngineNumber|null} The import consumption value, or null if no
+   *     matching results.
+   */
   getImportConsumption(filterSet) {
     const self = this;
     const aggregated = self._getAggregatedAfterFilter(filterSet);
     return aggregated === null ? null : aggregated.getImportConsumption();
   }
 
+  /**
+   * Get the recycled consumption value matching a given filter set.
+   *
+   * @param {FilterSet} filterSet - The filter criteria to apply.
+   * @returns {EngineNumber|null} The recycled consumption value, or null if no
+   *     matching results.
+   */
   getRecycleConsumption(filterSet) {
     const self = this;
     const aggregated = self._getAggregatedAfterFilter(filterSet);
@@ -736,6 +778,13 @@ class ReportDataWrapper {
     return aggregated === null ? null : aggregated.getManufacture();
   }
 
+  /**
+   * Get the recycled sales value matching a given filter set.
+   *
+   * @param {FilterSet} filterSet - The filter criteria to apply.
+   * @returns {EngineNumber|null} The recycled sales value, or null if no
+   *     matching results.
+   */
   getRecycle(filterSet) {
     const self = this;
     const aggregated = self._getAggregatedAfterFilter(filterSet);

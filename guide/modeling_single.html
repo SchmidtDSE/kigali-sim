@@ -62,7 +62,7 @@
 
                 <p>
                     Next, add consumption for a substance called "HFC-134a" with the following
-                    properties:
+                    properties in the general and equipment tabs:
                 </p>
 
                 <ul>
@@ -73,7 +73,10 @@
                     <li>0.1 kg / unit recharge.</li>
                 </ul>
 
-                <p>We also need to set some starting conditions. We will make two levels:</p>
+                <p>
+                    We also need to set some starting conditions. We will make two setpoints in the
+                    set tab:
+                </p>
 
                 <ul>
                     <li>A starting domestic manufacture level of 400 mt in year 1.</li>
@@ -81,13 +84,8 @@
                 </ul>
 
                 <p>
-                    Note that we are currently defining these in terms of consumption levels of
-                    substances but your data may give you insight on the number of equipment units
-                    currently in use. Note that you can change the units from mt to units and the
-                    simulation engine will automatically reverse calculations to determine
-                    consumption from equipment instead of determining equipment by consumption.
-                    Finally, we understand that some countries continue to collect new data over
-                    time. These values can be modified later as you learn more.
+                    See the <a href="#tutorial-gif-1">gif below</a> for a demonstration of this
+                    section.
                 </p>
 
                 <p id="tutorial-gif-1" class="tutorial-gif-holder">
@@ -95,11 +93,6 @@
                         src="/guide/tutorial_1_1.gif"
                         alt="Animated GIF of making the first substance."
                     />
-                </p>
-
-                <p>
-                    See <a href="#tutorial-gif-1">the above gif</a> for a demonstration of this
-                    section.
                 </p>
             </section>
 
@@ -113,16 +106,16 @@
                     how the equipment population changes over time.
                 </p>
 
+                <p>
+                    See the <a href="#tutorial-gif-2">gif below</a> for a video demonstration of how
+                    to do this step.
+                </p>
+
                 <p id="tutorial-gif-2" class="tutorial-gif-holder">
                     <img
                         src="/guide/tutorial_1_2.gif"
                         alt="Animated GIF of making the first simulation"
                     />
-                </p>
-
-                <p>
-                    See the <a href="#tutorial-gif-2">above gif</a> for a video demonstration of how
-                    to do this step.
                 </p>
             </section>
 
@@ -131,7 +124,8 @@
 
                 <p>
                     With this simulation in place, let's add some additional beahaviors. Go ahead
-                    and edit HFC-134a and set some changes:
+                    and edit HFC-134a and set some changes (use the change tab instead of the set
+                    tab this time):
                 </p>
 
                 <ul>
@@ -166,6 +160,15 @@
                     "business as usual" scenario without any policy intervention. In the
                     <a href="/guide/policy_single.html">next tutorial</a>, we will explore adding a
                     policy intervention.
+                </p>
+
+                <p>
+                    Note that, in this example, we are currently defining consumption through sales
+                    volumes. However, your data may give you insight on the number of equipment
+                    units currently in use instead. You can change from specifiying vollumes in mt
+                    to units of equipment. In this case, the simulation engine will automatically
+                    reverse calculations to determine consumption from equipment instead of
+                    determining equipment by consumption.
                 </p>
             </section>
         </main>

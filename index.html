@@ -18,7 +18,7 @@
         <a href="#" id="new-file-button" class="secondary">New File</a>
         <a href="#" id="load-file-button" class="secondary">Load File</a>
         <a href="#" download="simulation.qta" id="save-file-button" class="secondary">Save File</a>
-        <a href="/guide" class="secondary">Guide</a>
+        <a href="/guide" class="secondary" target="_blank">Guide</a>
 
         <dialog id="load-file-dialog">
           <h2>Open Analysis</h2>
@@ -35,10 +35,10 @@
 
     <main>
       <section id="editor">
-        <h2>Editor</h2>
+        <h2>Simulation</h2>
         <ul id="editor-tabs" data-tabs>
-          <li><a data-tabby-default href="#ui-editor-pane">Basic</a></li>
-          <li><a href="#code-editor-pane">Advanced</a></li>
+          <li><a data-tabby-default href="#ui-editor-pane">Designer</a></li>
+          <li><a href="#code-editor-pane">Editor</a></li>
         </ul>
         <div id="ui-editor-pane">
           <div class="available-contents">
@@ -750,9 +750,9 @@
                   class="emissions-units units-input"
                   aria-label="Units to use in display"
                 >
-                  <option value="tCO2e / yr" selected>tCO2e / yr</option>
+                  <option value="tCO2e / yr">tCO2e / yr</option>
                   <option value="ktCO2e / yr">ktCO2e / yr</option>
-                  <option value="MtCO2e / yr">MtCO2e / yr</option>
+                  <option value="MtCO2e / yr" selected>MtCO2e / yr</option>
                 </select>
               </div>
             </div>
@@ -836,9 +836,9 @@
                   class="sales-units units-input"
                   aria-label="Units to use in display of sales / consumption"
                 >
-                  <option value="units" selected>units</option>
+                  <option value="units">units</option>
                   <option value="thousand units">thousand units</option>
-                  <option value="million units">million units</option>
+                  <option value="million units" selected>million units</option>
                 </select>
               </div>
             </div>
