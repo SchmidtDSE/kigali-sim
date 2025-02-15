@@ -1035,12 +1035,12 @@ class Engine {
       throw "Tried recalculating consumption without application and substance.";
     }
 
-    // Determine percent domestic manufacturing
-    const manufacturingRaw = self.getStream("manufacture", scopeEffective);
-    const manufacturing = unitConverter.convert(manufacturingRaw, "kg");
+    // Determine sales
+    const salesRaw = self.getStream("sales", scopeEffective);
+    const sales = unitConverter.convert(salesRaw, "kg");
 
     // Determine consumption
-    stateGetter.setVolume(manufacturing);
+    stateGetter.setVolume(sales);
     const consumptionRaw = self._streamKeeper.getGhgIntensity(application, substance);
     const consumption = unitConverter.convert(consumptionRaw, "tCO2e");
     stateGetter.setVolume(null);

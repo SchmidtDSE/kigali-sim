@@ -96,6 +96,15 @@ function buildCompilerTests() {
       },
     ]);
 
+    buildTest("interprets starting units with conversion", "/test/qta/basic_units_convert.qta", [
+      (result, assert) => {
+        const record = getResult(result, BAU_NAME, 1, 0, "test", "test");
+        const equipment = record.getPopulation();
+        assert.closeTo(equipment.getValue(), 1000, 0.0001);
+        assert.deepEqual(equipment.getUnits(), "units");
+      },
+    ]);
+
     buildTest("runs a basic script with special float", "/test/qta/basic_special_float.qta", [
       (result, assert) => {
         const record = getResult(result, BAU_NAME, 1, 0, "test", "test");
