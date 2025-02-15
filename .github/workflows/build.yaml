@@ -41,6 +41,8 @@ jobs:
         run: bash ./support/make.sh
       - name: Install front end deps
         run: bash ./support/install_deps.sh
+      - name: Update cache busters
+        run: bash ./support/update_cache_busters.sh
       - name: Install browser
         run: sudo apt install -y chromium-browser
       - name: Run unit tests
