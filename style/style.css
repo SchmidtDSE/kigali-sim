@@ -63,6 +63,10 @@ dialog .contents .instructions {
   margin-top: 10px;
 }
 
+footer {
+  margin-bottom: 20px;
+}
+
 html {
   background-color: #F9F9F9;
   font-family: PublicSans;
