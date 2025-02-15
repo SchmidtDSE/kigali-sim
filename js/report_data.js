@@ -10,14 +10,20 @@ import {EngineNumber} from "engine_number";
  * Class representing aggregated result which can be visualized.
  */
 class AggregatedResult {
+
   /**
-   * Create a new aggregated result.
+   * Construct an AggregatedResult instance.
    *
-   * @param {EngineNumber} manufactureValue - The manufacturing value.
-   * @param {EngineNumber} importValue - The import value.
-   * @param {EngineNumber} consumptionValue - The consumption value.
-   * @param {EngineNumber} populationValue - The equipment population value.
-   * @param {EngineNumber} populationNew - The new equipment added this year.
+   * @param {EngineNumber} manufactureValue - The value representing manufacturing.
+   * @param {EngineNumber} importValue - The value representing imports.
+   * @param {EngineNumber} recycleValue - The value of recycled goods.
+   * @param {EngineNumber} domesticConsumptionValue - The value representing domestic consumption.
+   * @param {EngineNumber} importConsumptionValue - The consumption value due to imports.
+   * @param {EngineNumber} recycleConsumptionValue - The consumption value due to recycling.
+   * @param {EngineNumber} populationValue - The value of the population amount.
+   * @param {EngineNumber} populationNew - The value representing new equipment added in the current year.
+   * @param {EngineNumber} rechargeEmissions - Emissions resulting from recharge activities.
+   * @param {EngineNumber} eolEmissions - Emissions resulting from end-of-life equipment.
    */
   constructor(
     manufactureValue,
@@ -64,6 +70,11 @@ class AggregatedResult {
     return self._importValue;
   }
 
+  /**
+   * Get the recycle sales.
+   *
+   * @returns {EngineNumber} The recycle sales with units.
+   */
   getRecycle() {
     const self = this;
     return self._recycleValue;
@@ -104,6 +115,11 @@ class AggregatedResult {
     return self._importConsumptionValue;
   }
 
+  /**
+   * Get the recycle consumption.
+   *
+   * @returns {EngineNumber} The recycle consumption with units.
+   */
   getRecycleConsumption() {
     const self = this;
     return self._recycleConsumptionValue;
