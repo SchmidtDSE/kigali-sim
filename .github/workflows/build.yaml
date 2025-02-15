@@ -46,8 +46,7 @@ jobs:
       - name: Run unit tests
         run: grunt
   checkCacheBusters:
-    environment: deploy
-    if: github.ref == 'refs/heads/main'
+    environment: build
     runs-on: ubuntu-latest
     name: Check Cache Busters
     steps:
