@@ -446,16 +446,50 @@ class Engine {
       const importRaw = self.getStream("import");
       const importValue = self._unitConverter.convert(importRaw, "kg");
 
-      const total = manufactureValue.getValue() + importValue.getValue();
+      const determineTotal = () => {
+        const manufactureRaw = manufactureValue.getValue();
+        const importRaw = importValue.getValue();
+
+        if (!isFinite(manufactureRaw)) {
+          return importRaw;
+        } else if (!isFinite(importRaw)) {
+          return manufactureRaw;
+        } else {
+          return manufactureRaw + importRaw;
+        }
+      };
+
+      const total = determineTotal();
       const emptyStreams = total == 0;
 
       const manufactureInitialChargeRaw = self.getInitialCharge("manufacture");
-      const manufactureInitialCharge = self._unitConverter.convert(
+      const manufactureInitialChargeUnbounded = self._unitConverter.convert(
         manufactureInitialChargeRaw,
         "kg / unit",
       );
       const importInitialChargeRaw = self.getInitialCharge("import");
-      const importInitialCharge = self._unitConverter.convert(importInitialChargeRaw, "kg / unit");
+      const importInitialChargeUnbounded = self._unitConverter.convert(
+        importInitialChargeRaw,
+        "kg / unit",
+      );
+
+      const getBounded = (target, alternative) => {
+        if (target.getValue() == 0) {
+          return alternative;
+        } else {
+          return target;
+        }
+      };
+
+      const manufactureInitialCharge = getBounded(
+        manufactureInitialChargeUnbounded,
+        importInitialChargeUnbounded,
+      );
+
+      const importInitialCharge = getBounded(
+        importInitialChargeUnbounded,
+        manufactureInitialChargeUnbounded,
+      );
 
       const manufactureKg = emptyStreams ? 1 : manufactureValue.getValue();
       const importKg = emptyStreams ? 1 : importValue.getValue();
