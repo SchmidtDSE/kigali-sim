@@ -656,12 +656,6 @@ class CenterChartPresenter {
     const years = Array.of(...results.getYears(filterSet.getWithYear(null)));
     years.sort((a, b) => a - b);
 
-    const divider = {
-      emissions: 1000000,
-      sales: 1000,
-      population: 1000000,
-    }[filterSet.getMetric()];
-
     const dimensionValues = Array.of(...results.getDimensionValues(filterSet));
     dimensionValues.sort();
 
@@ -673,8 +667,7 @@ class CenterChartPresenter {
       });
       const valsWithUnitsValid = valsWithUnits.filter((x) => x !== null);
       const vals = valsWithUnitsValid.map((x) => x.getValue());
-      const valsScaled = vals.map((x) => x / divider);
-      return {name: dimValue, vals: valsScaled};
+      return {name: dimValue, vals: vals};
     };
     const dimensionSeries = dimensionValues.map(getForDimValue);
 
