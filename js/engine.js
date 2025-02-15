@@ -136,11 +136,11 @@ class EngineResult {
   }
 
   /**
-   * Get the total consumption.
+   * Get the total consumption without recycling.
    *
    * @returns {EngineNumber} The consumption value.
    */
-  getConsumption() {
+  getConsumptionNoRecycle() {
     const self = this;
     if (self._domesticConsumptionValue.getUnits() !== self._importConsumptionValue.getUnits()) {
       throw "Could not add incompatible units for consumption.";
@@ -149,6 +149,26 @@ class EngineResult {
     return new EngineNumber(
       self._domesticConsumptionValue.getValue() + self._importConsumptionValue.getValue(),
       self._domesticConsumptionValue.getUnits(),
+    );
+  }
+
+  /**
+   * Get the total consumption.
+   *
+   * @returns {EngineNumber} The consumption value.
+   */
+  getConsumptionNoRecycle() {
+    const self = this;
+
+    const noRecycleValue = self.getConsumptionNoRecycle();
+
+    if (self._recycleConsumptionValue.getUnits() !== noRecycleValue.getUnits()) {
+      throw "Could not add incompatible units for consumption.";
+    }
+
+    return new EngineNumber(
+      self._recycleConsumptionValue.getValue() + noRecycleValue.getValue(),
+      self._recycleConsumptionValue.getUnits(),
     );
   }
 
@@ -878,14 +898,25 @@ class Engine {
     const substances = self._streamKeeper.getRegisteredSubstances();
 
     return substances.map((substanceId) => {
+      // Get meta
       const application = substanceId.getApplication();
       const substance = substanceId.getSubstance();
       const year = self._currentYear;
 
-      const manufactureValue = self._streamKeeper.getStream(application, substance, "manufacture");
-      const importValue = self._streamKeeper.getStream(application, substance, "import");
-      const recycleValue = self._streamKeeper.getStream(application, substance, "recycle");
+      // Prepare units
+      const stateGetter = new OverridingConverterStateGetter(self._stateGetter);
+      const unitConverter = new UnitConverter(stateGetter);
 
+      // Get sales
+      const manufactureRaw = self._streamKeeper.getStream(application, substance, "manufacture");
+      const importRaw = self._streamKeeper.getStream(application, substance, "import");
+      const recycleRaw = self._streamKeeper.getStream(application, substance, "recycle");
+
+      const manufactureValue = unitConverter.convert(manufactureRaw, "kg");
+      const importValue = unitConverter.convert(importRaw, "kg");
+      const recycleValue = unitConverter.convert(recycleRaw, "kg");
+
+      // Get emissions
       const populationValue = self._streamKeeper.getStream(application, substance, "equipment");
       const populationNew = self._streamKeeper.getStream(application, substance, "newEquipment");
       const rechargeEmissions = self._streamKeeper.getStream(
@@ -895,33 +926,57 @@ class Engine {
       );
       const eolEmissions = self._streamKeeper.getStream(application, substance, "eolEmissions");
 
+      // Get percent for offset
+      const manufactureKg = manufactureValue.getValue();
+      const importKg = importValue.getValue();
+      const recycleKg = recycleValue.getValue();
+
+      const nonRecycleSalesKg = manufactureKg + importKg;
+      const percentManufacture = manufactureKg / nonRecycleSalesKg;
+      const percentImport = 1 - percentManufacture;
+
+      // Offset sales
+      const manufactureValueOffset = new EngineNumber(
+        manufactureKg - recycleKg * percentManufacture,
+        "kg",
+      );
+
+      const importValueOffset = new EngineNumber(importKg - recycleKg * percentImport, "kg");
+
+      // Get consumption
       const consumptionRaw = self._streamKeeper.getGhgIntensity(application, substance);
 
-      const stateGetter = new OverridingConverterStateGetter(self._stateGetter);
-      const unitConverter = new UnitConverter(stateGetter);
-
-      stateGetter.setVolume(manufactureValue);
+      stateGetter.setVolume(manufactureValueOffset);
       const domesticConsumptionValue = unitConverter.convert(consumptionRaw, "tCO2e");
 
-      stateGetter.setVolume(importValue);
+      stateGetter.setVolume(importValueOffset);
       const importConsumptionValue = unitConverter.convert(consumptionRaw, "tCO2e");
 
       stateGetter.setVolume(recycleValue);
       const recycleConsumptionValue = unitConverter.convert(consumptionRaw, "tCO2e");
 
+      // Offset recharge emissions
+      stateGetter.setVolume(null);
+      const rechargeEmissionsConvert = unitConverter.convert(rechargeEmissions, "tCO2e");
+      const rechargeEmissionsOffset = new EngineNumber(
+        rechargeEmissionsConvert.getValue() - recycleConsumptionValue.getValue(),
+        "tCO2e",
+      );
+
+      // Package
       return new EngineResult(
         application,
         substance,
         year,
-        manufactureValue,
-        importValue,
+        manufactureValueOffset,
+        importValueOffset,
         recycleValue,
         domesticConsumptionValue,
         importConsumptionValue,
         recycleConsumptionValue,
         populationValue,
         populationNew,
-        rechargeEmissions,
+        rechargeEmissionsOffset,
         eolEmissions,
       );
     });

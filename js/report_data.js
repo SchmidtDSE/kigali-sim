@@ -78,7 +78,9 @@ class AggregatedResult {
     const self = this;
     const manufactureValue = self.getManufacture();
     const importValue = self.getImport();
-    const sales = self._combineUnitValue(manufactureValue, importValue);
+    const recycleValue = self.getRecycle();
+    const noRecycle = self._combineUnitValue(manufactureValue, importValue);
+    const sales = self._combineUnitValue(noRecycle, recycleValue);
     return sales;
   }
 
@@ -114,7 +116,11 @@ class AggregatedResult {
    */
   getConsumption() {
     const self = this;
-    return self._combineUnitValue(self.getDomesticConsumption(), self.getImportConsumption());
+    const noRecycle = self._combineUnitValue(
+      self.getDomesticConsumption(),
+      self.getImportConsumption(),
+    );
+    return self._combineUnitValue(noRecycle, self.getRecycleConsumption());
   }
 
   /**
