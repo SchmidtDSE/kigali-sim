@@ -769,7 +769,7 @@ function buildEngineTests() {
       assert.deepEqual(manufactureVal2.getUnits(), "kg");
 
       const equipmentVal2 = engine.getStream("equipment");
-      assert.closeTo(equipmentVal2.getValue(), 17.5, 0.0001);
+      assert.closeTo(equipmentVal2.getValue(), 15, 0.0001);
       assert.deepEqual(equipmentVal2.getUnits(), "units");
     });
 
@@ -837,7 +837,7 @@ function buildEngineTests() {
       assert.deepEqual(manufactureVal2.getUnits(), "kg");
 
       const equipmentVal2 = engine.getStream("equipment");
-      assert.closeTo(equipmentVal2.getValue(), 12.5, 0.0001);
+      assert.closeTo(equipmentVal2.getValue(), 15, 0.0001);
       assert.deepEqual(equipmentVal2.getUnits(), "units");
     });
 

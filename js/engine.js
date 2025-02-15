@@ -50,8 +50,10 @@ class EngineResult {
     year,
     manufactureValue,
     importValue,
+    recycleValue,
     domesticConsumptionValue,
     importConsumptionValue,
+    recycleConsumptionValue,
     populationValue,
     populationNew,
     rechargeEmissions,
@@ -63,8 +65,10 @@ class EngineResult {
     self._year = year;
     self._manufactureValue = manufactureValue;
     self._importValue = importValue;
+    self._recycleValue = recycleValue;
     self._domesticConsumptionValue = domesticConsumptionValue;
     self._importConsumptionValue = importConsumptionValue;
+    self._recycleConsumptionValue = recycleConsumptionValue;
     self._populationValue = populationValue;
     self._populationNew = populationNew;
     self._rechargeEmissions = rechargeEmissions;
@@ -122,6 +126,16 @@ class EngineResult {
   }
 
   /**
+   * Get the recycle value.
+   *
+   * @returns {EngineNumber} The recycle value.
+   */
+  getRecycle() {
+    const self = this;
+    return self._recycleValue;
+  }
+
+  /**
    * Get the total consumption.
    *
    * @returns {EngineNumber} The consumption value.
@@ -156,6 +170,16 @@ class EngineResult {
   getImportConsumption() {
     const self = this;
     return self._importConsumptionValue;
+  }
+
+  /**
+   * Get the recycle consumption value.
+   *
+   * @returns {EngineNumber} The recycle consumption value.
+   */
+  getRecycleConsumption() {
+    const self = this;
+    return self._recycleConsumptionValue;
   }
 
   /**
@@ -857,8 +881,11 @@ class Engine {
       const application = substanceId.getApplication();
       const substance = substanceId.getSubstance();
       const year = self._currentYear;
+
       const manufactureValue = self._streamKeeper.getStream(application, substance, "manufacture");
       const importValue = self._streamKeeper.getStream(application, substance, "import");
+      const recycleValue = self._streamKeeper.getStream(application, substance, "recycle");
+
       const populationValue = self._streamKeeper.getStream(application, substance, "equipment");
       const populationNew = self._streamKeeper.getStream(application, substance, "newEquipment");
       const rechargeEmissions = self._streamKeeper.getStream(
@@ -879,14 +906,19 @@ class Engine {
       stateGetter.setVolume(importValue);
       const importConsumptionValue = unitConverter.convert(consumptionRaw, "tCO2e");
 
+      stateGetter.setVolume(recycleValue);
+      const recycleConsumptionValue = unitConverter.convert(consumptionRaw, "tCO2e");
+
       return new EngineResult(
         application,
         substance,
         year,
         manufactureValue,
         importValue,
+        recycleValue,
         domesticConsumptionValue,
         importConsumptionValue,
+        recycleConsumptionValue,
         populationValue,
         populationNew,
         rechargeEmissions,
@@ -975,31 +1007,13 @@ class Engine {
     const rechargeVolume = unitConverter.convert(rechargeIntensityRaw, "kg");
     const rechargeGhg = unitConverter.convert(rechargeVolume, "tCO2e");
 
-    // Get recycling volume
-    stateGetter.setVolume(rechargeVolume);
-    const recoveryVolumeRaw = self._streamKeeper.getRecoveryRate(application, substance);
-    const recoveryVolume = unitConverter.convert(recoveryVolumeRaw, "kg");
-    stateGetter.setVolume(null);
-
-    // Get recycling amount
-    stateGetter.setVolume(recoveryVolume);
-    const recycledVolumeRaw = self._streamKeeper.getYieldRate(application, substance);
-    const recycledVolume = unitConverter.convert(recycledVolumeRaw, "kg");
-    stateGetter.setVolume(null);
-
     // Return to prior population
     stateGetter.setPopulation(priorPopulation);
 
     // Get total volume available for new units
     const salesKg = substanceSales.getValue();
-    const recycledKg = recycledVolume.getValue();
     const rechargeKg = rechargeVolume.getValue();
-
-    const displacementRateRaw = self._streamKeeper.getDisplacementRate(application, substance);
-    const displacementRate = unitConverter.convert(displacementRateRaw, "%");
-    const displacementRateRatio = 1 - displacementRate.getValue() / 100;
-    const recycledNonDisplaced = recycledKg * displacementRateRatio;
-    const availableForNewUnitsKg = salesKg + recycledNonDisplaced - rechargeKg;
+    const availableForNewUnitsKg = salesKg - rechargeKg;
 
     // Convert to unit delta
     const initialChargeRaw = self.getInitialCharge("sales");
@@ -1133,26 +1147,33 @@ class Engine {
     // Determine sales prior to recycling
     const kgForRecharge = rechargeVolume.getValue();
     const kgForNew = volumeForNew.getValue();
-    const kgNoRecycling = kgForRecharge + kgForNew;
-    const volumeNoRecycling = new EngineNumber(kgNoRecycling, "kg");
 
     // Return to original initial charge
     stateGetter.setAmortizedUnitVolume(null);
 
-    // Assume this volume for unit conversion
-    stateGetter.setVolume(volumeNoRecycling);
-
     // Return original
     stateGetter.setVolume(null);
 
-    // Determine sales after recycling
-    const kgWithRecycling = kgNoRecycling - recycledDisplacedKg;
-    const isNegative = kgWithRecycling < 0;
-    const kgWithRecyclingAllowed = isNegative ? 0 : kgWithRecycling;
-    const totalSales = new EngineNumber(kgWithRecyclingAllowed, "kg");
+    // Determine how much to offset domestic and imports
+    const manufactureRaw = self.getStream("manufacture", scopeEffective);
+    const importRaw = self.getStream("import", scopeEffective);
+    const priorRecycleRaw = self.getStream("recycle", scopeEffective);
 
-    // Update import and domestic sales proportionally.
-    self.setStream("sales", totalSales, null, scopeEffective, false);
+    const manufactureSalesConverted = unitConverter.convert(manufactureRaw, "kg");
+    const importSalesConverted = unitConverter.convert(importRaw, "kg");
+    const priorRecycleSalesConverted = unitConverter.convert(priorRecycleRaw, "kg");
+
+    const manufactureSalesKg = manufactureSalesConverted.getValue();
+    const importSalesKg = importSalesConverted.getValue();
+    const priorRecycleSalesKg = priorRecycleSalesConverted.getValue();
+    const totalNonRecycleKg = manufactureSalesKg + importSalesKg;
+
+    const percentManufacture = manufactureSalesKg / totalNonRecycleKg;
+    const percentImport = importSalesKg / totalNonRecycleKg;
+
+    // Offset
+    const newRecycleValue = new EngineNumber(recycledDisplacedKg, "kg");
+    self._streamKeeper.setStream(application, substance, "recycle", newRecycleValue, false);
   }
 
   /**

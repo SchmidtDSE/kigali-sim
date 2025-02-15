@@ -594,12 +594,11 @@ class StreamParameterization {
    *
    * @private
    * @param {string} name - The stream name to validate.
-   * @throws {Error} If the stream name is not 'manufacture' or 'import'.
+   * @throws {Error} If the stream name is not a sales substream.
    */
   _ensureSalesStreamAllowed(name) {
     const self = this;
-    if (name !== "manufacture" && name !== "import") {
-      debugger;
+    if (name !== "manufacture" && name !== "import" && name !== "recycle") {
       throw "Must address a sales substream.";
     }
   }
@@ -710,9 +709,10 @@ class StreamKeeper {
 
     const makeZero = (units) => new EngineNumber(0, units);
 
-    // Sales: manufacture, import
+    // Sales: manufacture, import, recycle
     self._streams.set(self._getKey(application, substance, "manufacture"), makeZero("kg"));
     self._streams.set(self._getKey(application, substance, "import"), makeZero("kg"));
+    self._streams.set(self._getKey(application, substance, "recycle"), makeZero("kg"));
 
     // Consumption: count, conversion
     self._streams.set(self._getKey(application, substance, "consumption"), makeZero("tCO2e"));
@@ -743,18 +743,23 @@ class StreamKeeper {
     if (name === "sales") {
       const manufactureValueRaw = self.getStream(application, substance, "manufacture");
       const importValueRaw = self.getStream(application, substance, "import");
+
       const manufactureValue = self._unitConverter.convert(manufactureValueRaw, "kg");
       const importValue = self._unitConverter.convert(importValueRaw, "kg");
+
       const manufactureAmount = manufactureValue.getValue();
       const importAmount = importValue.getValue();
+
+      const valueConverted = self._unitConverter.convert(value, "kg");
+      const amountKg = valueConverted.getValue();
 
       const totalAmount = manufactureAmount + importAmount;
       const isZero = totalAmount == 0;
       const manufacturePercent = isZero ? 0.5 : manufactureAmount / totalAmount;
       const importPercent = isZero ? 0.5 : importAmount / totalAmount;
 
-      const manufactureShare = value.getValue() * manufacturePercent;
-      const importShare = value.getValue() * importPercent;
+      const manufactureShare = amountKg * manufacturePercent;
+      const importShare = amountKg * importPercent;
       const manufactureNewValue = new EngineNumber(manufactureShare, value.getUnits());
       const importNewValue = new EngineNumber(importShare, value.getUnits());
 
@@ -784,11 +789,15 @@ class StreamKeeper {
     if (name === "sales") {
       const manufactureAmountRaw = self.getStream(application, substance, "manufacture");
       const importAmountRaw = self.getStream(application, substance, "import");
+
       const manufactureAmount = self._unitConverter.convert(manufactureAmountRaw, "kg");
       const importAmount = self._unitConverter.convert(importAmountRaw, "kg");
+
       const manufactureAmountValue = manufactureAmount.getValue();
       const importAmountValue = importAmount.getValue();
+
       const newTotal = manufactureAmountValue + importAmountValue;
+
       return new EngineNumber(newTotal, "kg");
     } else {
       return self._streams.get(self._getKey(application, substance, name));
