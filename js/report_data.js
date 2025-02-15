@@ -420,7 +420,7 @@ class ReportDataWrapper {
       strategyBuilder.add();
 
       strategyBuilder.setSubmetric("manufacture");
-      strategyBuilder.setStrategy((x) => self.getManufacture(filterSet));
+      strategyBuilder.setStrategy((x) => self.getManufacture(x));
       strategyBuilder.add();
     };
 
@@ -436,12 +436,21 @@ class ReportDataWrapper {
       addEmissionsConversion(strategyBuilder);
 
       strategyBuilder.setSubmetric("manufacture");
-      strategyBuilder.setStrategy((x) => self.getDomesticConsumption(filterSet));
+      strategyBuilder.setStrategy((x) => self.getDomesticConsumption(x));
       addEmissionsConversion(strategyBuilder);
     };
 
     const addPopulationStrategies = (strategyBuilder) => {
       const makeForThousandAndMillion = (strategyBuilder) => {
+        strategyBuilder.setUnits("units");
+        strategyBuilder.setTransformation((value) => {
+          if (value.getUnits() !== "units") {
+            throw "Unexpected population units: " + value.getUnits();
+          }
+          return value;
+        });
+        strategyBuilder.add();
+
         strategyBuilder.setUnits("thousand units");
         strategyBuilder.setTransformation((value) => {
           if (value.getUnits() !== "units") {

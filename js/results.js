@@ -701,11 +701,7 @@ class CenterChartPresenter {
     };
 
     const metricSelected = filterSet.getMetric();
-    const metricUnits = {
-      emissions: "MtCO2e / yr",
-      sales: "mt / yr",
-      population: "million units",
-    }[metricSelected];
+    const metricUnits = filterSet.getUnits();
 
     const chartJsConfig = {
       type: "line",
