@@ -22,8 +22,10 @@ class AggregatedResult {
   constructor(
     manufactureValue,
     importValue,
+    recycleValue,
     domesticConsumptionValue,
     importConsumptionValue,
+    recycleConsumptionValue,
     populationValue,
     populationNew,
     rechargeEmissions,
@@ -32,8 +34,10 @@ class AggregatedResult {
     const self = this;
     self._manufactureValue = manufactureValue;
     self._importValue = importValue;
+    self._recycleValue = recycleValue;
     self._domesticConsumptionValue = domesticConsumptionValue;
     self._importConsumptionValue = importConsumptionValue;
+    self._recycleConsumptionValue = recycleConsumptionValue;
     self._populationValue = populationValue;
     self._populationNew = populationNew;
     self._rechargeEmissions = rechargeEmissions;
@@ -58,6 +62,11 @@ class AggregatedResult {
   getImport() {
     const self = this;
     return self._importValue;
+  }
+
+  getRecycle() {
+    const self = this;
+    return self._recycleValue;
   }
 
   /**
@@ -91,6 +100,11 @@ class AggregatedResult {
   getImportConsumption() {
     const self = this;
     return self._importConsumptionValue;
+  }
+
+  getRecycleConsumption() {
+    const self = this;
+    return self._recycleConsumptionValue;
   }
 
   /**
@@ -167,6 +181,7 @@ class AggregatedResult {
 
     const manufactureValue = self._combineUnitValue(self.getManufacture(), other.getManufacture());
     const importValue = self._combineUnitValue(self.getImport(), other.getImport());
+    const recycleValue = self._combineUnitValue(self.getRecycle(), other.getRecycle());
     const domesticConsumptionValue = self._combineUnitValue(
       self.getDomesticConsumption(),
       other.getDomesticConsumption(),
@@ -174,6 +189,10 @@ class AggregatedResult {
     const importConsumptionValue = self._combineUnitValue(
       self.getImportConsumption(),
       other.getImportConsumption(),
+    );
+    const recycleConsumptionValue = self._combineUnitValue(
+      self.getRecycleConsumption(),
+      other.getRecycleConsumption(),
     );
     const populationValue = self._combineUnitValue(self.getPopulation(), other.getPopulation());
     const populationNew = self._combineUnitValue(self.getPopulationNew(), other.getPopulationNew());
@@ -187,8 +206,10 @@ class AggregatedResult {
     return new AggregatedResult(
       manufactureValue,
       importValue,
+      recycleValue,
       domesticConsumptionValue,
       importConsumptionValue,
+      recycleConsumptionValue,
       populationValue,
       populationNew,
       rechargeEmissions,
@@ -435,6 +456,10 @@ class ReportDataWrapper {
       strategyBuilder.setSubmetric("manufacture");
       strategyBuilder.setStrategy((x) => self.getManufacture(x));
       makeForKgAndMt(strategyBuilder);
+
+      strategyBuilder.setSubmetric("recycle");
+      strategyBuilder.setStrategy((x) => self.getRecycle(x));
+      makeForKgAndMt(strategyBuilder);
     };
 
     const addConsumptionStrategies = (strategyBuilder) => {
@@ -450,6 +475,10 @@ class ReportDataWrapper {
 
       strategyBuilder.setSubmetric("manufacture");
       strategyBuilder.setStrategy((x) => self.getDomesticConsumption(x));
+      addEmissionsConversion(strategyBuilder);
+
+      strategyBuilder.setSubmetric("recycle");
+      strategyBuilder.setStrategy((x) => self.getRecycleConsumption(x));
       addEmissionsConversion(strategyBuilder);
     };
 
@@ -617,6 +646,12 @@ class ReportDataWrapper {
     return aggregated === null ? null : aggregated.getImportConsumption();
   }
 
+  getRecycleConsumption(filterSet) {
+    const self = this;
+    const aggregated = self._getAggregatedAfterFilter(filterSet);
+    return aggregated === null ? null : aggregated.getRecycleConsumption();
+  }
+
   /**
    * Get total emissions value matching a given filter set.
    *
@@ -695,6 +730,12 @@ class ReportDataWrapper {
     return aggregated === null ? null : aggregated.getManufacture();
   }
 
+  getRecycle(filterSet) {
+    const self = this;
+    const aggregated = self._getAggregatedAfterFilter(filterSet);
+    return aggregated === null ? null : aggregated.getRecycle();
+  }
+
   /**
    * Get population value matching a given filter set.
    *
@@ -762,8 +803,10 @@ class ReportDataWrapper {
         new AggregatedResult(
           x.getManufacture(),
           x.getImport(),
+          x.getRecycle(),
           x.getDomesticConsumption(),
           x.getImportConsumption(),
+          x.getRecycleConsumption(),
           x.getPopulation(),
           x.getPopulationNew(),
           x.getRechargeEmissions(),
