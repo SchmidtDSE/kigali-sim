@@ -223,7 +223,13 @@ function buildCompilerTests() {
       (result, assert) => {
         const record = getResult(result, "result", 2, 0, "test", "test");
         const consumption = record.getConsumption();
-        assert.closeTo(consumption.getValue(), 437.5, 0.0001);
+        assert.closeTo(consumption.getValue(), 500, 0.0001);
+        assert.deepEqual(consumption.getUnits(), "tCO2e");
+      },
+      (result, assert) => {
+        const record = getResult(result, "result", 2, 0, "test", "test");
+        const consumption = record.getRecycleConsumption();
+        assert.closeTo(consumption.getValue(), 500 - 437.5, 0.0001);
         assert.deepEqual(consumption.getUnits(), "tCO2e");
       },
     ]);
