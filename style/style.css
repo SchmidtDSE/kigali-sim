@@ -482,3 +482,13 @@ main {
     padding-left: 10px;
   }
 }
+
+@media (min-width: 30em) {
+  a[role="tab"], a:link[role="tab"], a:visited[role="tab"] {
+    color: #5050C0;
+  }
+
+  a[role="tab"][aria-selected="true"], a:link[role="tab"][aria-selected="true"], a:visited[role="tab"][aria-selected="true"] {
+    color: #202070;
+  }
+}
