@@ -322,6 +322,11 @@ class MetricStrategyBuilder {
     const innerTransformation = self._transformation;
     const execute = (filterSet) => {
       const result = innerStrategy(filterSet);
+
+      if (result === null) {
+        return null;
+      }
+
       const transformed = innerTransformation(result);
       return transformed;
     };
