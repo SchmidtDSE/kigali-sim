@@ -4,8 +4,9 @@
 }
 
 dialog {
-  max-width: 600px;
+  max-width: 670px;
   z-index: 1;
+  font-size: 14px;
 }
 
 dialog h2 {
