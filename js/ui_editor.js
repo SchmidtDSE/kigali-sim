@@ -284,6 +284,26 @@ function buildUpdateCount(dialog) {
 }
 
 /**
+ * Sets up event listeners for internal dialog links.
+ *
+ * This function adds click event listeners to dialog internal links that, when
+ * clicked, will toggle the corresponding tab based on the link's href.
+ *
+ * @param {HTMLElement} root - The root element containing dialog.
+ * @param {Object} tabs - Tabby object for managing tab toggling.
+ */
+function setupDialogInternalLinks(root, tabs) {
+  const internalLinks = root.querySelectorAll(".dialog-internal-link");
+  internalLinks.forEach((link) => {
+    link.addEventListener("click", (event) => {
+      event.preventDefault();
+      const anchor = link.hash;
+      tabs.toggle(anchor);
+    });
+  });
+}
+
+/**
  * Manages the UI for listing and editing applications.
  *
  * Manages the UI for listing and editing applications where these refer to
@@ -720,6 +740,8 @@ class ConsumptionListPresenter {
       "#consumption-general",
       self._tabs,
     );
+
+    setupDialogInternalLinks(self._root, self._tabs);
   }
 
   /**
@@ -1184,6 +1206,8 @@ class PolicyListPresenter {
     setupListButton(addLimitButton, limitList, "limit-command-template", (item, root) =>
       initLimitCommandUi(item, root, self._getCodeObj()),
     );
+
+    setupDialogInternalLinks(self._root, self._tabs);
   }
 
   /**

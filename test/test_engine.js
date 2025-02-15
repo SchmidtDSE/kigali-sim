@@ -79,6 +79,23 @@ function buildEngineTests() {
       assert.deepEqual(importVal.getUnits(), "kg");
     });
 
+    QUnit.test("set percentage", function (assert) {
+      const engine = new Engine(1, 3);
+
+      engine.setStanza("default");
+      engine.setApplication("test app");
+      engine.setSubstance("test substance");
+
+      engine.setStream("manufacture", new EngineNumber(100, "mt"), new YearMatcher(1, 1));
+      engine.setStream("manufacture", new EngineNumber(75, "%"), new YearMatcher(2, 2));
+      engine.incrementYear();
+      engine.setStream("manufacture", new EngineNumber(75, "%"), new YearMatcher(2, 2));
+
+      const salesVal = engine.getStream("manufacture");
+      assert.closeTo(salesVal.getValue(), 75000, 0.0001);
+      assert.deepEqual(salesVal.getUnits(), "kg");
+    });
+
     QUnit.test("checks year", function (assert) {
       const engine = new Engine(1, 3);
 
@@ -95,6 +112,29 @@ function buildEngineTests() {
       const manufactureVal = engine.getStream("manufacture");
       assert.equal(manufactureVal.getValue(), 2);
       assert.deepEqual(manufactureVal.getUnits(), "kg");
+    });
+
+    QUnit.test("applies limit in specific year", function (assert) {
+      const engine = new Engine(1, 2);
+
+      engine.setStanza("default");
+      engine.setApplication("test app");
+      engine.setSubstance("test substance");
+
+      engine.setStream("manufacture", new EngineNumber(100, "kg"), new YearMatcher(1, 1));
+      engine.cap("manufacturing", new EngineNumber(75, "kg"), new YearMatcher(2, 2));
+
+      const salesVal1 = engine.getStream("manufacture");
+      assert.closeTo(salesVal1.getValue(), 100, 0.0001);
+      assert.deepEqual(salesVal1.getUnits(), "kg");
+
+      engine.incrementYear();
+
+      engine.cap("manufacture", new EngineNumber(75, "kg"), new YearMatcher(2, 2));
+
+      const salesVal2 = engine.getStream("manufacture");
+      assert.closeTo(salesVal2.getValue(), 75, 0.0001);
+      assert.deepEqual(salesVal2.getUnits(), "kg");
     });
 
     QUnit.test("determines populations", function (assert) {
@@ -177,6 +217,38 @@ function buildEngineTests() {
         new EngineNumber(10, "% / year"),
         new YearMatcher(null, null),
       );
+
+      const count3 = engine.getStream("manufacture");
+      assert.equal(count3.getValue(), 12.1);
+      assert.deepEqual(count3.getUnits(), "kg");
+    });
+
+    QUnit.test("change stream alternative notation", function (assert) {
+      const engine = new Engine(1, 3);
+
+      engine.setStanza("default");
+      engine.setApplication("test app");
+      engine.setSubstance("test substance");
+
+      engine.setStream("manufacture", new EngineNumber(10, "kg"), new YearMatcher(null, null));
+
+      engine.changeStream("manufacture", new EngineNumber(10, "%"), new YearMatcher(2, null));
+
+      const count1 = engine.getStream("manufacture");
+      assert.equal(count1.getValue(), 10);
+      assert.deepEqual(count1.getUnits(), "kg");
+
+      engine.incrementYear();
+
+      engine.changeStream("manufacture", new EngineNumber(10, "%"), new YearMatcher(null, null));
+
+      const count2 = engine.getStream("manufacture");
+      assert.equal(count2.getValue(), 11);
+      assert.deepEqual(count2.getUnits(), "kg");
+
+      engine.incrementYear();
+
+      engine.changeStream("manufacture", new EngineNumber(10, "%"), new YearMatcher(null, null));
 
       const count3 = engine.getStream("manufacture");
       assert.equal(count3.getValue(), 12.1);

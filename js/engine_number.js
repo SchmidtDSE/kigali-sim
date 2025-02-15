@@ -68,8 +68,18 @@ class UnitConverter {
       return source;
     }
 
+    const sourceUnitPieces = source.getUnits().split(" / ");
+    const sourceHasDenominator = sourceUnitPieces.length > 1;
+    const sourceDenominatorUnits = sourceHasDenominator ? sourceUnitPieces[1] : "";
+
     const destinationUnitPieces = destinationUnits.split(" / ");
+    const destHasDenominator = destinationUnitPieces.length > 1;
+    const destinationDenominatorUnits = destHasDenominator ? destinationUnitPieces[1] : "";
+
+    const sourceNumeratorUnits = sourceUnitPieces[0];
     const destinationNumeratorUnits = destinationUnitPieces[0];
+    const differentDenominator = destinationDenominatorUnits !== sourceDenominatorUnits;
+    const sameDenominator = !differentDenominator;
 
     const numeratorStrategy = {
       "kg": (x) => self._toKg(x),
@@ -82,27 +92,25 @@ class UnitConverter {
       "%": (x) => self._toPercent(x),
     }[destinationNumeratorUnits];
 
-    const destinationNumerator = numeratorStrategy(source);
+    const denominatorStrategy = {
+      "kg": () => self.convert(self._stateGetter.getVolume(), "kg"),
+      "mt": () => self.convert(self._stateGetter.getVolume(), "mt"),
+      "unit": () => self.convert(self._stateGetter.getPopulation(), "unit"),
+      "units": () => self.convert(self._stateGetter.getPopulation(), "units"),
+      "tCO2e": () => self.convert(self._stateGetter.getConsumption(), "tCO2e"),
+      "year": () => self.convert(self._stateGetter.getYearsElapsed(), "year"),
+      "years": () => self.convert(self._stateGetter.getYearsElapsed(), "years"),
+      "": () => new EngineNumber(1, ""),
+    }[destinationDenominatorUnits];
 
-    const hasDenominator = destinationUnitPieces.length > 1;
-    const destinationDenominatorUnits = hasDenominator ? destinationUnitPieces[1] : "";
-    if (hasDenominator) {
-      const denominatorStrategy = {
-        kg: () => self.convert(self._stateGetter.getVolume(), "kg"),
-        mt: () => self.convert(self._stateGetter.getVolume(), "mt"),
-        unit: () => self.convert(self._stateGetter.getPopulation(), "unit"),
-        units: () => self.convert(self._stateGetter.getPopulation(), "units"),
-        tCO2e: () => self.convert(self._stateGetter.getConsumption(), "tCO2e"),
-        year: () => self.convert(self._stateGetter.getYearsElapsed(), "year"),
-        years: () => self.convert(self._stateGetter.getYearsElapsed(), "years"),
-      }[destinationDenominatorUnits];
-      const destinationDenominator = denominatorStrategy();
-      return new EngineNumber(
-        destinationNumerator.getValue() / destinationDenominator.getValue(),
-        destinationUnits,
-      );
+    if (sourceHasDenominator && sameDenominator) {
+      const sourceEffective = new EngineNumber(source.getValue(), sourceNumeratorUnits);
+      const convertedNumerator = numeratorStrategy(sourceEffective);
+      return new EngineNumber(convertedNumerator.getValue(), destinationUnits);
     } else {
-      return destinationNumerator;
+      const numerator = numeratorStrategy(source);
+      const denominator = denominatorStrategy(source);
+      return new EngineNumber(numerator.getValue() / denominator.getValue(), destinationUnits);
     }
   }
 
