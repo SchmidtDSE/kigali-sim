@@ -3,6 +3,14 @@
   src: url("/third_party/publicsans/fonts/otf/PublicSans-Regular.otf") format("opentype");
 }
 
+a, a:link, a:visited {
+  color: #5050C0;
+}
+
+a:hover, a:active {
+  color: #202070;
+}
+
 dialog {
   max-width: 670px;
   z-index: 1;
