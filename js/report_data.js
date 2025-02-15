@@ -10,20 +10,26 @@ import {EngineNumber} from "engine_number";
  * Class representing aggregated result which can be visualized.
  */
 class AggregatedResult {
-
   /**
    * Construct an AggregatedResult instance.
    *
-   * @param {EngineNumber} manufactureValue - The value representing manufacturing.
+   * @param {EngineNumber} manufactureValue - The value representing
+   *     manufacturing.
    * @param {EngineNumber} importValue - The value representing imports.
    * @param {EngineNumber} recycleValue - The value of recycled goods.
-   * @param {EngineNumber} domesticConsumptionValue - The value representing domestic consumption.
-   * @param {EngineNumber} importConsumptionValue - The consumption value due to imports.
-   * @param {EngineNumber} recycleConsumptionValue - The consumption value due to recycling.
+   * @param {EngineNumber} domesticConsumptionValue - The value representing
+   *     domestic consumption.
+   * @param {EngineNumber} importConsumptionValue - The consumption value due
+   *     to imports.
+   * @param {EngineNumber} recycleConsumptionValue - The consumption value due
+   *     to recycling.
    * @param {EngineNumber} populationValue - The value of the population amount.
-   * @param {EngineNumber} populationNew - The value representing new equipment added in the current year.
-   * @param {EngineNumber} rechargeEmissions - Emissions resulting from recharge activities.
-   * @param {EngineNumber} eolEmissions - Emissions resulting from end-of-life equipment.
+   * @param {EngineNumber} populationNew - The value representing new equipment
+   *     added in the current year.
+   * @param {EngineNumber} rechargeEmissions - Emissions resulting from recharge
+   *     activities.
+   * @param {EngineNumber} eolEmissions - Emissions resulting from end-of-life
+   *     equipment.
    */
   constructor(
     manufactureValue,
