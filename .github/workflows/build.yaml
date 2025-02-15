@@ -41,18 +41,43 @@ jobs:
         run: bash ./support/make.sh
       - name: Install front end deps
         run: bash ./support/install_deps.sh
-      - name: Update cache busters
-        run: bash ./support/update_cache_busters.sh
       - name: Install browser
         run: sudo apt install -y chromium-browser
       - name: Run unit tests
         run: grunt
+  checkCacheBusters:
+    environment: deploy
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    name: Check Cache Busters
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Install Node
+        uses: actions/setup-node@v4
+      - name: Install Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '11'
+      - name: Install node deps
+        run: npm install
+      - name: Build
+        run: bash ./support/make.sh
+      - name: Install front end deps
+        run: bash ./support/install_deps.sh
+      - name: Prepare deploy
+        run: bash ./support/prepare_deploy.sh
+      - name: Copy guide
+        run: cp -r ./guide ./deploy/guide
+      - name: Update cache busters
+        run: bash ./support/update_cache_busters.sh
   deploy:
     environment: deploy
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     name: Deploy
-    needs: [lint, unitTests]
+    needs: [lint, unitTests, checkCacheBusters]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
