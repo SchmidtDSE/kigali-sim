@@ -661,18 +661,39 @@ class ReportDataWrapper {
     return aggregated === null ? null : aggregated.getConsumption();
   }
 
+  /**
+   * Get the domestic consumption value matching a given filter set.
+   *
+   * @param {FilterSet} filterSet - The filter criteria to apply.
+   * @returns {EngineNumber|null} The domestic consumption value, or null if no
+   *     matching results.
+   */
   getDomesticConsumption(filterSet) {
     const self = this;
     const aggregated = self._getAggregatedAfterFilter(filterSet);
     return aggregated === null ? null : aggregated.getDomesticConsumption();
   }
 
+  /**
+   * Get the import consumption value matching a given filter set.
+   *
+   * @param {FilterSet} filterSet - The filter criteria to apply.
+   * @returns {EngineNumber|null} The import consumption value, or null if no
+   *     matching results.
+   */
   getImportConsumption(filterSet) {
     const self = this;
     const aggregated = self._getAggregatedAfterFilter(filterSet);
     return aggregated === null ? null : aggregated.getImportConsumption();
   }
 
+  /**
+   * Get the recycled consumption value matching a given filter set.
+   *
+   * @param {FilterSet} filterSet - The filter criteria to apply.
+   * @returns {EngineNumber|null} The recycled consumption value, or null if no
+   *     matching results.
+   */
   getRecycleConsumption(filterSet) {
     const self = this;
     const aggregated = self._getAggregatedAfterFilter(filterSet);
@@ -757,6 +778,13 @@ class ReportDataWrapper {
     return aggregated === null ? null : aggregated.getManufacture();
   }
 
+  /**
+   * Get the recycled sales value matching a given filter set.
+   *
+   * @param {FilterSet} filterSet - The filter criteria to apply.
+   * @returns {EngineNumber|null} The recycled sales value, or null if no
+   *     matching results.
+   */
   getRecycle(filterSet) {
     const self = this;
     const aggregated = self._getAggregatedAfterFilter(filterSet);
