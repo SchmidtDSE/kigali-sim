@@ -62,7 +62,14 @@ class ResultsPresenter {
     const self = this;
     self._root = root;
     self._results = null;
-    self._filterSet = new FilterSet(null, null, null, null, "emissions", "simulations");
+    self._filterSet = new FilterSet(
+      null,
+      null,
+      null,
+      null,
+      "emissions:all:tCO2e / yr",
+      "simulations",
+    );
 
     const scorecardContainer = self._root.querySelector("#scorecards");
     const dimensionsContainer = self._root.querySelector("#dimensions");
@@ -310,12 +317,6 @@ class ScorecardPresenter {
     self._setText(scorecard.querySelector(".value"), value);
 
     if (hideVal) {
-      self._setText(scorecard.querySelector(".current-year"), "");
-    } else {
-      self._setText(scorecard.querySelector(".current-year"), "in year " + currentYear);
-    }
-
-    if (hideVal) {
       scorecard.querySelector(".value").style.display = "none";
     } else {
       scorecard.querySelector(".value").style.display = "block";
@@ -358,12 +359,12 @@ class ScorecardPresenter {
 
     const registerListener = (scorecard, family) => {
       const subMetricDropdown = scorecard.querySelector(".submetric-input");
+      const unitsDropdown = scorecard.querySelector(".units-input");
 
       const callback = () => {
         const subMetric = subMetricDropdown.value;
-        const isAll = subMetric === "all";
-        const extendedName = family + ":" + subMetric;
-        const fullName = isAll ? family : extendedName;
+        const units = unitsDropdown.value;
+        const fullName = family + ":" + subMetric + ":" + units;
         const newFilterSet = self._filterSet.getWithMetric(fullName);
         self._onUpdateFilterSet(newFilterSet);
       };
@@ -371,8 +372,8 @@ class ScorecardPresenter {
       const radio = scorecard.querySelector(".metric-radio");
       radio.addEventListener("click", callback);
 
-      const dropdown = scorecard.querySelector(".submetric");
-      dropdown.addEventListener("change", callback);
+      subMetricDropdown.addEventListener("change", callback);
+      unitsDropdown.addEventListener("change", callback);
     };
 
     registerListener(emissionsScorecard, "emissions");
@@ -412,11 +413,7 @@ class DimensionCardPresenter {
     self._filterSet = filterSet;
 
     const metricSelected = self._filterSet.getMetric();
-    const metricUnits = {
-      emissions: "MtCO2e / yr",
-      sales: "mt / yr",
-      population: "units",
-    }[metricSelected];
+    const metricUnits = self._filterSet.getUnits();
 
     const currentYear = self._filterSet.getYear();
     const scenarios = results.getScenarios(self._filterSet.getWithScenario(null));
@@ -440,14 +437,7 @@ class DimensionCardPresenter {
     const applicationsSelected = dimensionSelected === "applications";
     const substancesSelected = dimensionSelected === "substances";
 
-    const conversionInfo = {
-      emissions: {divider: 1000000, suffix: "M"},
-      sales: {divider: 1000, suffix: ""},
-      population: {divider: 1000000, suffix: "M"},
-    }[self._filterSet.getMetric()];
-    const divider = conversionInfo["divider"];
-    const suffix = conversionInfo["suffix"];
-    const interpret = (x) => (x === null ? null : x.getValue() / divider);
+    const interpret = (x) => (x === null ? null : x.getValue());
 
     self._updateCard(
       "sim",
@@ -458,7 +448,7 @@ class DimensionCardPresenter {
       (x) => self._filterSet.getWithScenario(x),
       true,
       (value) => interpret(results.getMetric(self._filterSet.getWithScenario(value))),
-      suffix,
+      metricUnits,
       scenarios,
     );
 
@@ -471,7 +461,7 @@ class DimensionCardPresenter {
       (x) => self._filterSet.getWithApplication(x),
       true,
       (value) => interpret(results.getMetric(self._filterSet.getWithApplication(value))),
-      suffix,
+      metricUnits,
       scenarios,
     );
 
@@ -484,7 +474,7 @@ class DimensionCardPresenter {
       (x) => self._filterSet.getWithSubstance(x),
       true,
       (value) => interpret(results.getMetric(self._filterSet.getWithSubstance(value))),
-      suffix,
+      metricUnits,
       scenarios,
     );
   }
@@ -532,7 +522,7 @@ class DimensionCardPresenter {
 
     const values = identifiersArray.map(valueGetter);
     const maxValue = Math.max(...values);
-    d3.select(card.querySelector(".right-tick")).text(Math.round(maxValue) + suffix);
+    d3.select(card.querySelector(".right-tick")).text(Math.round(maxValue));
 
     const hasSingleScenario = self._filterSet.hasSingleScenario(scenarios);
     const isOnlyValue = identifiersArray.length == 1;
@@ -664,12 +654,6 @@ class CenterChartPresenter {
     const years = Array.of(...results.getYears(filterSet.getWithYear(null)));
     years.sort((a, b) => a - b);
 
-    const divider = {
-      emissions: 1000000,
-      sales: 1000,
-      population: 1000000,
-    }[filterSet.getMetric()];
-
     const dimensionValues = Array.of(...results.getDimensionValues(filterSet));
     dimensionValues.sort();
 
@@ -681,8 +665,7 @@ class CenterChartPresenter {
       });
       const valsWithUnitsValid = valsWithUnits.filter((x) => x !== null);
       const vals = valsWithUnitsValid.map((x) => x.getValue());
-      const valsScaled = vals.map((x) => x / divider);
-      return {name: dimValue, vals: valsScaled};
+      return {name: dimValue, vals: vals};
     };
     const dimensionSeries = dimensionValues.map(getForDimValue);
 
@@ -709,11 +692,7 @@ class CenterChartPresenter {
     };
 
     const metricSelected = filterSet.getMetric();
-    const metricUnits = {
-      emissions: "MtCO2e / yr",
-      sales: "mt / yr",
-      population: "million units",
-    }[metricSelected];
+    const metricUnits = filterSet.getUnits();
 
     const chartJsConfig = {
       type: "line",

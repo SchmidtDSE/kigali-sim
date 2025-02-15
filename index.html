@@ -692,7 +692,6 @@
               >
             </div>
             <div class="value"></div>
-            <div class="units">MtCO2e / yr <span class="current-year"></span></div>
             <div class="submetric">
               <div class="sel">
                 <select
@@ -703,6 +702,17 @@
                   <option value="all" selected>all direct</option>
                   <option value="recharge">recharge</option>
                   <option value="eol">end of life</option>
+                </select>
+              </div>
+              <div class="sel">
+                <select
+                  name="emissions-units"
+                  class="emissions-units units-input"
+                  aria-label="Units to use in display"
+                >
+                  <option value="tCO2e / yr" selected>tCO2e / yr</option>
+                  <option value="ktCO2e / yr">ktCO2e / yr</option>
+                  <option value="MtCO2e / yr">MtCO2e / yr</option>
                 </select>
               </div>
             </div>
@@ -724,17 +734,29 @@
               >
             </div>
             <div class="value"></div>
-            <div class="units">mt / yr <span class="current-year"></span></div>
             <div class="submetric">
               <div class="sel">
                 <select
                   name="sales-submetric"
                   class="sales-submetric submetric-input"
-                  aria-label="Type of sales to display"
+                  aria-label="Type of sales / consumption to display"
                 >
                   <option value="all" selected>all</option>
                   <option value="import">imports</option>
                   <option value="manufacture">domestic</option>
+                </select>
+              </div>
+              <div class="sel">
+                <select
+                  name="sales-units"
+                  class="sales-units units-input"
+                  aria-label="Units to use in display of sales / consumption"
+                >
+                  <option value="kg / yr">kg / yr</option>
+                  <option value="mt / yr" selected>mt / yr</option>
+                  <option value="tCO2e / yr">tCO2e / yr</option>
+                  <option value="ktCO2e / yr">ktCO2e / yr</option>
+                  <option value="MtCO2e / yr">MtCO2e / yr</option>
                 </select>
               </div>
             </div>
@@ -756,7 +778,6 @@
               >
             </div>
             <div class="value"></div>
-            <div class="units">units <span class="current-year"></span></div>
             <div class="submetric">
               <div class="sel">
                 <select
@@ -766,6 +787,17 @@
                 >
                   <option value="all" selected>total</option>
                   <option value="new">new</option>
+                </select>
+              </div>
+              <div class="sel">
+                <select
+                  name="sales-units"
+                  class="sales-units units-input"
+                  aria-label="Units to use in display of sales / consumption"
+                >
+                  <option value="units" selected>units</option>
+                  <option value="thousand units">thousand units</option>
+                  <option value="million units">million units</option>
                 </select>
               </div>
             </div>

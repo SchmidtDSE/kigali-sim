@@ -22,7 +22,8 @@ class AggregatedResult {
   constructor(
     manufactureValue,
     importValue,
-    consumptionValue,
+    domesticConsumptionValue,
+    importConsumptionValue,
     populationValue,
     populationNew,
     rechargeEmissions,
@@ -31,7 +32,8 @@ class AggregatedResult {
     const self = this;
     self._manufactureValue = manufactureValue;
     self._importValue = importValue;
-    self._consumptionValue = consumptionValue;
+    self._domesticConsumptionValue = domesticConsumptionValue;
+    self._importConsumptionValue = importConsumptionValue;
     self._populationValue = populationValue;
     self._populationNew = populationNew;
     self._rechargeEmissions = rechargeEmissions;
@@ -72,13 +74,33 @@ class AggregatedResult {
   }
 
   /**
-   * Get the consumption of substance value.
+   * Get the domestic consumption value.
    *
-   * @returns {EngineNumber} The consumption value with units.
+   * @returns {EngineNumber} The domestic consumption value.
+   */
+  getDomesticConsumption() {
+    const self = this;
+    return self._domesticConsumptionValue;
+  }
+
+  /**
+   * Get the import consumption value.
+   *
+   * @returns {EngineNumber} The import consumption value.
+   */
+  getImportConsumption() {
+    const self = this;
+    return self._importConsumptionValue;
+  }
+
+  /**
+   * Get the total consumption combining domestic and import.
+   *
+   * @returns {EngineNumber} The combined consumption value with units.
    */
   getConsumption() {
     const self = this;
-    return self._consumptionValue;
+    return self._combineUnitValue(self.getDomesticConsumption(), self.getImportConsumption());
   }
 
   /**
@@ -145,7 +167,14 @@ class AggregatedResult {
 
     const manufactureValue = self._combineUnitValue(self.getManufacture(), other.getManufacture());
     const importValue = self._combineUnitValue(self.getImport(), other.getImport());
-    const consumptionValue = self._combineUnitValue(self.getConsumption(), other.getConsumption());
+    const domesticConsumptionValue = self._combineUnitValue(
+      self.getDomesticConsumption(),
+      other.getDomesticConsumption(),
+    );
+    const importConsumptionValue = self._combineUnitValue(
+      self.getImportConsumption(),
+      other.getImportConsumption(),
+    );
     const populationValue = self._combineUnitValue(self.getPopulation(), other.getPopulation());
     const populationNew = self._combineUnitValue(self.getPopulationNew(), other.getPopulationNew());
 
@@ -158,7 +187,8 @@ class AggregatedResult {
     return new AggregatedResult(
       manufactureValue,
       importValue,
-      consumptionValue,
+      domesticConsumptionValue,
+      importConsumptionValue,
       populationValue,
       populationNew,
       rechargeEmissions,
@@ -185,6 +215,125 @@ class AggregatedResult {
 }
 
 /**
+ * Builder class for creating metric computation strategies.
+ * Handles the construction of metric processing pipelines including
+ * transformations and unit conversions.
+ */
+class MetricStrategyBuilder {
+  /**
+   * Create a new MetricStrategyBuilder instance.
+   * Initializes all strategy components to null.
+   */
+  constructor() {
+    const self = this;
+    self._strategies = {};
+    self._metric = null;
+    self._submetric = null;
+    self._units = null;
+    self._strategy = null;
+    self._transformation = null;
+  }
+
+  /**
+   * Set the metric name for the strategy.
+   * @param {string} metric - The metric name (e.g., 'sales', 'emissions').
+   */
+  setMetric(metric) {
+    const self = this;
+    self._metric = metric;
+  }
+
+  /**
+   * Set the submetric name for the strategy.
+   * @param {string} submetric - The submetric name (e.g., 'all', 'import').
+   */
+  setSubmetric(submetric) {
+    const self = this;
+    self._submetric = submetric;
+  }
+
+  /**
+   * Set the units for the strategy output.
+   * @param {string} units - The units specification (e.g., 'MtCO2e / yr').
+   */
+  setUnits(units) {
+    const self = this;
+    self._units = units;
+  }
+
+  /**
+   * Set the core computation strategy.
+   * @param {Function} strategy - The function that implements the core metric computation.
+   */
+  setStrategy(strategy) {
+    const self = this;
+    self._strategy = strategy;
+  }
+
+  /**
+   * Set the transformation to apply after the core strategy.
+   * @param {Function} transformation - The function that transforms the strategy output.
+   */
+  setTransformation(transformation) {
+    const self = this;
+    self._transformation = transformation;
+  }
+
+  /**
+   * Add the configured strategy to the strategies collection.
+   * Requires all components to be set (non-null).
+   * @throws {string} If any required component is null.
+   */
+  add() {
+    const self = this;
+    self._requireCompleteDefinition();
+
+    const fullNamePieces = [self._metric, self._submetric, self._units];
+    const fullName = fullNamePieces.join(":");
+
+    const innerStrategy = self._strategy;
+    const innerTransformation = self._transformation;
+    const execute = (filterSet) => {
+      const result = innerStrategy(filterSet);
+      const transformed = innerTransformation(result);
+      return transformed;
+    };
+
+    self._strategies[fullName] = execute;
+  }
+
+  /**
+   * Build and return the complete strategies object.
+   * @returns {Object} The strategies object containing all added strategies.
+   */
+  build() {
+    const self = this;
+    return self._strategies;
+  }
+
+  /**
+   * Verify that all required components have been set.
+   * @private
+   * @throws {string} If any required component is null.
+   */
+  _requireCompleteDefinition() {
+    const self = this;
+    const pieces = [
+      self._metric,
+      self._submetric,
+      self._units,
+      self._strategy,
+      self._transformation,
+    ];
+    const nullPieces = pieces.filter((x) => x === null);
+    const numNullPieces = nullPieces.map((x) => 1).reduce((a, b) => a + b, 0);
+    if (numNullPieces > 0) {
+      throw "Encountered null values on MetricStrategyBuilder";
+    }
+  }
+}
+
+/**
  * Facade which simplifies access to engine outputs.
  *
  * Wrapper class for report data that provides filtering and aggregation
@@ -199,6 +348,158 @@ class ReportDataWrapper {
   constructor(innerData) {
     const self = this;
     self._innerData = innerData;
+
+    const strategyBuilder = new MetricStrategyBuilder();
+
+    const addEmissionsConversion = (strategyBuilder) => {
+      strategyBuilder.setUnits("tCO2e / yr");
+      strategyBuilder.setTransformation((val) => {
+        if (val.getUnits() !== "tCO2e") {
+          throw "Unexpected emissions source units: " + val.getUnits();
+        }
+
+        return new EngineNumber(val.getValue(), "tCO2e / yr");
+      });
+      strategyBuilder.add();
+
+      strategyBuilder.setUnits("ktCO2e / yr");
+      strategyBuilder.setTransformation((val) => {
+        if (val.getUnits() !== "tCO2e") {
+          throw "Unexpected emissions source units: " + val.getUnits();
+        }
+
+        return new EngineNumber(val.getValue() / 1000, "ktCO2e / yr");
+      });
+      strategyBuilder.add();
+
+      strategyBuilder.setUnits("MtCO2e / yr");
+      strategyBuilder.setTransformation((val) => {
+        if (val.getUnits() !== "tCO2e") {
+          throw "Unexpected emissions source units: " + val.getUnits();
+        }
+
+        return new EngineNumber(val.getValue() / 1000000, "MtCO2e / yr");
+      });
+      strategyBuilder.add();
+    };
+
+    const addEmissionsStrategies = (strategyBuilder) => {
+      strategyBuilder.setMetric("emissions");
+
+      strategyBuilder.setSubmetric("all");
+      strategyBuilder.setStrategy((x) => self.getTotalEmissions(x));
+      addEmissionsConversion(strategyBuilder);
+
+      strategyBuilder.setSubmetric("recharge");
+      strategyBuilder.setStrategy((x) => self.getRechargeEmissions(x));
+      addEmissionsConversion(strategyBuilder);
+
+      strategyBuilder.setSubmetric("eol");
+      strategyBuilder.setStrategy((x) => self.getEolEmissions(x));
+      addEmissionsConversion(strategyBuilder);
+    };
+
+    const addSalesStrategies = (strategyBuilder) => {
+      strategyBuilder.setMetric("sales");
+
+      const makeForKgAndMt = (strategyBuilder) => {
+        strategyBuilder.setUnits("mt / yr");
+        strategyBuilder.setTransformation((value) => {
+          if (value.getUnits() !== "kg") {
+            throw "Unexpected sales units: " + value.getUnits();
+          }
+
+          return new EngineNumber(value.getValue() / 1000, "mt / yr");
+        });
+        strategyBuilder.add();
+
+        strategyBuilder.setUnits("kg / yr");
+        strategyBuilder.setTransformation((value) => {
+          if (value.getUnits() !== "kg") {
+            throw "Unexpected sales units: " + value.getUnits();
+          }
+
+          return new EngineNumber(value.getValue(), "kg / yr");
+        });
+        strategyBuilder.add();
+      };
+
+      strategyBuilder.setSubmetric("all");
+      strategyBuilder.setStrategy((x) => self.getSales(x));
+      makeForKgAndMt(strategyBuilder);
+
+      strategyBuilder.setSubmetric("import");
+      strategyBuilder.setStrategy((x) => self.getImport(x));
+      makeForKgAndMt(strategyBuilder);
+
+      strategyBuilder.setSubmetric("manufacture");
+      strategyBuilder.setStrategy((x) => self.getManufacture(x));
+      makeForKgAndMt(strategyBuilder);
+    };
+
+    const addConsumptionStrategies = (strategyBuilder) => {
+      strategyBuilder.setMetric("sales");
+
+      strategyBuilder.setSubmetric("all");
+      strategyBuilder.setStrategy((x) => self.getConsumption(x));
+      addEmissionsConversion(strategyBuilder);
+
+      strategyBuilder.setSubmetric("import");
+      strategyBuilder.setStrategy((x) => self.getImportConsumption(x));
+      addEmissionsConversion(strategyBuilder);
+
+      strategyBuilder.setSubmetric("manufacture");
+      strategyBuilder.setStrategy((x) => self.getDomesticConsumption(x));
+      addEmissionsConversion(strategyBuilder);
+    };
+
+    const addPopulationStrategies = (strategyBuilder) => {
+      const makeForThousandAndMillion = (strategyBuilder) => {
+        strategyBuilder.setUnits("units");
+        strategyBuilder.setTransformation((value) => {
+          if (value.getUnits() !== "units") {
+            throw "Unexpected population units: " + value.getUnits();
+          }
+          return value;
+        });
+        strategyBuilder.add();
+
+        strategyBuilder.setUnits("thousand units");
+        strategyBuilder.setTransformation((value) => {
+          if (value.getUnits() !== "units") {
+            throw "Unexpected population units: " + value.getUnits();
+          }
+          return new EngineNumber(value.getValue() / 1000, "thousands of units");
+        });
+        strategyBuilder.add();
+
+        strategyBuilder.setUnits("million units");
+        strategyBuilder.setTransformation((value) => {
+          if (value.getUnits() !== "units") {
+            throw "Unexpected population units: " + value.getUnits();
+          }
+          return new EngineNumber(value.getValue() / 1000000, "millions of units");
+        });
+        strategyBuilder.add();
+      };
+
+      strategyBuilder.setMetric("population");
+
+      strategyBuilder.setSubmetric("all");
+      strategyBuilder.setStrategy((x) => self.getPopulation(x));
+      makeForThousandAndMillion(strategyBuilder);
+
+      strategyBuilder.setSubmetric("new");
+      strategyBuilder.setStrategy((x) => self.getPopulationNew(x));
+      makeForThousandAndMillion(strategyBuilder);
+    };
+
+    addEmissionsStrategies(strategyBuilder);
+    addSalesStrategies(strategyBuilder);
+    addConsumptionStrategies(strategyBuilder);
+    addPopulationStrategies(strategyBuilder);
+
+    self._metricStrategies = strategyBuilder.build();
   }
 
   /**
@@ -220,17 +521,8 @@ class ReportDataWrapper {
   getMetric(filterSet) {
     const self = this;
     const metric = filterSet.getFullMetricName();
-    const metricStrategy = {
-      "emissions": () => self.getTotalEmissions(filterSet),
-      "emissions:recharge": () => self.getRechargeEmissions(filterSet),
-      "emissions:eol": () => self.getEolEmissions(filterSet),
-      "sales": () => self.getSales(filterSet),
-      "sales:import": () => self.getImport(filterSet),
-      "sales:manufacture": () => self.getManufacture(filterSet),
-      "population": () => self.getPopulation(filterSet),
-      "population:new": () => self.getPopulationNew(filterSet),
-    }[metric];
-    const value = metricStrategy();
+    const metricStrategy = self._metricStrategies[metric];
+    const value = metricStrategy(filterSet);
     return value;
   }
 
@@ -311,6 +603,18 @@ class ReportDataWrapper {
     const self = this;
     const aggregated = self._getAggregatedAfterFilter(filterSet);
     return aggregated === null ? null : aggregated.getConsumption();
+  }
+
+  getDomesticConsumption(filterSet) {
+    const self = this;
+    const aggregated = self._getAggregatedAfterFilter(filterSet);
+    return aggregated === null ? null : aggregated.getDomesticConsumption();
+  }
+
+  getImportConsumption(filterSet) {
+    const self = this;
+    const aggregated = self._getAggregatedAfterFilter(filterSet);
+    return aggregated === null ? null : aggregated.getImportConsumption();
   }
 
   /**
@@ -458,7 +762,8 @@ class ReportDataWrapper {
         new AggregatedResult(
           x.getManufacture(),
           x.getImport(),
-          x.getConsumption(),
+          x.getDomesticConsumption(),
+          x.getImportConsumption(),
           x.getPopulation(),
           x.getPopulationNew(),
           x.getRechargeEmissions(),
@@ -718,6 +1023,22 @@ class FilterSet {
 
     const metricPieces = self._metric.split(":");
     return metricPieces.length < 2 ? null : metricPieces[1];
+  }
+
+  /**
+   * Get the units of the metric to dsiplay.
+   *
+   * @returns {string|null} The units desired or null if not given.
+   */
+  getUnits() {
+    const self = this;
+
+    if (self._metric === null) {
+      return null;
+    }
+
+    const metricPieces = self._metric.split(":");
+    return metricPieces.length < 3 ? null : metricPieces[2];
   }
 
   /**
