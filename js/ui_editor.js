@@ -144,7 +144,10 @@ function getFieldValue(selection) {
  */
 function getSanitizedFieldValue(selection) {
   const valueRaw = getFieldValue(selection);
-  return valueRaw.replaceAll('"', "").replaceAll(",", "");
+  const clean = valueRaw.replaceAll('"', "").replaceAll(",", "");
+  const trimmed = clean.trim();
+  const guarded = trimmed === "" ? "Unnamed" : trimmed;
+  return guarded;
 }
 
 /**
@@ -416,7 +419,8 @@ class ApplicationsListPresenter {
       event.preventDefault();
 
       const nameInput = self._dialog.querySelector(".edit-application-name-input");
-      const newName = nameInput.value.replaceAll('"', "").replaceAll(",", "");
+      const newNameUnguarded = nameInput.value.replaceAll('"', "").replaceAll(",", "").trim();
+      const newName = newNameUnguarded === "" ? "Unnamed" : newNameUnguarded;
 
       const priorNames = new Set(self._getAppNames());
       const nameIsDuplicate = priorNames.has(newName);
