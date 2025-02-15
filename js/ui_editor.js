@@ -66,6 +66,7 @@ function setupDurationSelector(newDiv) {
     dateSelector.addEventListener("change", (event) => {
       updateDurationSelector(dateSelector);
     });
+
     updateDurationSelector(dateSelector);
   });
 }
@@ -78,7 +79,7 @@ function setupDurationSelector(newDiv) {
  */
 function buildSetupListButton(postCallback) {
   /**
-   * Function which exeuctes on setting up a list button.
+   * Function which exeuctes on adding a new lits element.
    *
    * @param {HTMLElement} button - Button element to set up.
    * @param {HTMLElement} targetList - List element to add items to.
@@ -228,41 +229,52 @@ function getEngineNumberValue(valSelection, unitsSelection) {
  * @param {HTMLElement} selection - The selection element containing duration-related inputs.
  * @param {Object} command - The command object from which the duration is extracted.
  * @param {YearMatcher} defaultVal - The default duration value if the command is null.
+ * @param {boolean} initListeners - Flag indicating if new event listeners for
+ *     element visibility should be added in response to changing duration type.
  */
-function setDuring(selection, command, defaultVal) {
+function setDuring(selection, command, defaultVal, initListeners) {
   const effectiveVal = command === null ? defaultVal : command.getDuration();
   const durationTypeInput = selection.querySelector(".duration-type-input");
 
-  if (effectiveVal === null) {
-    durationTypeInput.value = "during all years";
-    return;
-  }
+  const setElements = () => {
+    if (effectiveVal === null) {
+      durationTypeInput.value = "during all years";
+      return;
+    }
 
-  const durationStartInput = selection.querySelector(".duration-start");
-  const durationEndInput = selection.querySelector(".duration-end");
-  const durationStart = effectiveVal.getStart();
-  const noStart = durationStart === null;
-  const durationEnd = effectiveVal.getEnd();
-  const noEnd = durationEnd === null;
+    const durationStartInput = selection.querySelector(".duration-start");
+    const durationEndInput = selection.querySelector(".duration-end");
+    const durationStart = effectiveVal.getStart();
+    const noStart = durationStart === null;
+    const durationEnd = effectiveVal.getEnd();
+    const noEnd = durationEnd === null;
 
-  if (noStart && noEnd) {
-    durationTypeInput.value = "during all years";
-  } else if (noStart) {
-    durationTypeInput.value = "ending in year";
-    durationEndInput.value = durationEnd;
-  } else if (noEnd) {
-    durationTypeInput.value = "starting in year";
-    durationStartInput.value = durationStart;
-  } else if (durationStart == durationEnd) {
-    durationTypeInput.value = "in year";
-    durationStartInput.value = durationStart;
-  } else {
-    durationTypeInput.value = "during years";
-    durationStartInput.value = durationStart;
-    durationEndInput.value = durationEnd;
-  }
+    if (noStart && noEnd) {
+      durationTypeInput.value = "during all years";
+    } else if (noStart) {
+      durationTypeInput.value = "ending in year";
+      durationEndInput.value = durationEnd;
+    } else if (noEnd) {
+      durationTypeInput.value = "starting in year";
+      durationStartInput.value = durationStart;
+    } else if (durationStart == durationEnd) {
+      durationTypeInput.value = "in year";
+      durationStartInput.value = durationStart;
+    } else {
+      durationTypeInput.value = "during years";
+      durationStartInput.value = durationStart;
+      durationEndInput.value = durationEnd;
+    }
+  };
 
+  setElements();
   updateDurationSelector(selection);
+
+  if (initListeners) {
+    durationTypeInput.addEventListener("change", (event) => {
+      updateDurationSelector(selection);
+    });
+  }
 }
 
 /**
@@ -1876,7 +1888,7 @@ function initSetCommandUi(itemObj, root) {
     new EngineNumber(1, "mt"),
     (x) => x.getValue(),
   );
-  setDuring(root.querySelector(".duration-subcomponent"), itemObj, new YearMatcher(1, 1));
+  setDuring(root.querySelector(".duration-subcomponent"), itemObj, new YearMatcher(1, 1), true);
 }
 
 /**
@@ -1910,7 +1922,7 @@ function initChangeCommandUi(itemObj, root) {
   );
   setFieldValue(root.querySelector(".change-amount-input"), itemObj, 5, (x) => {
     if (x.getValue() === null || x.getValue().getValue() === null) {
-      return 5; // Default
+      return 5;
     }
     const valueSigned = x.getValue().getValue();
     const valueUnsigned = Math.abs(valueSigned);
@@ -1918,11 +1930,11 @@ function initChangeCommandUi(itemObj, root) {
   });
   setFieldValue(root.querySelector(".change-units-input"), itemObj, "% each year", (x) => {
     if (x.getValue() === null) {
-      return "% each year"; // Default
+      return "% each year";
     }
     return x.getValue().getUnits();
   });
-  setDuring(root.querySelector(".duration-subcomponent"), itemObj, new YearMatcher(2, 10));
+  setDuring(root.querySelector(".duration-subcomponent"), itemObj, new YearMatcher(2, 10), true);
 }
 
 /**
@@ -1974,7 +1986,7 @@ function initLimitCommandUi(itemObj, root, codeObj) {
   setFieldValue(root.querySelector(".displacing-input"), itemObj, "", (x) =>
     x.getDisplacing() === null ? "" : x.getDisplacing(),
   );
-  setDuring(root.querySelector(".duration-subcomponent"), itemObj, new YearMatcher(2, 10));
+  setDuring(root.querySelector(".duration-subcomponent"), itemObj, new YearMatcher(2, 10), true);
 }
 
 /**
@@ -2017,7 +2029,7 @@ function initRecycleCommandUi(itemObj, root) {
     new EngineNumber(10, "%"),
     (x) => x.getValue(),
   );
-  setDuring(root.querySelector(".duration-subcomponent"), itemObj, new YearMatcher(2, 10));
+  setDuring(root.querySelector(".duration-subcomponent"), itemObj, new YearMatcher(2, 10), true);
 }
 
 /**
@@ -2075,7 +2087,7 @@ function initReplaceCommandUi(itemObj, root, codeObj) {
     x.getDestination(),
   );
 
-  setDuring(root.querySelector(".duration-subcomponent"), itemObj, new YearMatcher(2, 10));
+  setDuring(root.querySelector(".duration-subcomponent"), itemObj, new YearMatcher(2, 10), true);
 }
 
 /**
