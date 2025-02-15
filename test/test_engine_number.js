@@ -163,6 +163,20 @@ function buildEngineNumberTests() {
       assert.deepEqual(result.getUnits(), "kg");
     });
 
+    QUnit.test("volume per pop to volume per pop", function (assert) {
+      const mockConverterStateGetter = new MockConverterStateGetter();
+      mockConverterStateGetter.setPopulation(new EngineNumber(10, "units"));
+
+      const result = convertUnits(
+        new EngineNumber(20, "kg / unit"),
+        "mt / unit",
+        mockConverterStateGetter,
+      );
+
+      assert.closeTo(result.getValue(), 20 / 1000, 0.001);
+      assert.deepEqual(result.getUnits(), "mt / unit");
+    });
+
     QUnit.test("volume per time to volume", function (assert) {
       const mockConverterStateGetter = new MockConverterStateGetter();
       mockConverterStateGetter.setYearsElapsed(new EngineNumber(2, "years"));
