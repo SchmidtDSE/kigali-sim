@@ -176,13 +176,17 @@ class MainPresenter {
 
       const program = result.getProgram();
       if (result.getErrors().length > 0) {
-        alert("Program error: " + result.getErrors()[0]);
+        const message = "Program error: " + result.getErrors()[0];
+        alert(message);
         self._buttonPanelPresenter.enable();
+        Sentry.captureMessage(message, "info");
         return;
       }
 
       if (result.getErrors().length > 0) {
-        alert("Result error: " + result.getErrors()[0]);
+        const message = "Result error: " + result.getErrors()[0];
+        alert(message);
+        Sentry.captureMessage(message, "error");
         self._buttonPanelPresenter.enable();
         return;
       } else if (program !== null) {
@@ -206,7 +210,9 @@ class MainPresenter {
       try {
         execute();
       } catch (e) {
-        alert("Execute error: " + e);
+        const message = "Execute error: " + e;
+        alert(message);
+        Sentry.captureMessage(message, "error");
       }
       self._buttonPanelPresenter.enable();
     };
@@ -350,6 +356,10 @@ class MainPresenter {
  */
 function main() {
   const mainPresenter = new MainPresenter();
+
+  Sentry.onLoad(function () {
+    Sentry.init({});
+  });
 }
 
 export {main};
