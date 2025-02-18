@@ -622,6 +622,21 @@ class ReportDataWrapper {
   }
 
   /**
+   * Get the name of the first scenario available  without applying any filter.
+   *
+   * @returns {string|null} The first scenario name or null if no scenarios
+   *     present.
+   */
+  getFirstScenario() {
+    const self = this;
+    const scenarios = self.getScenarios(undefined);
+    for (const scenario of scenarios) {
+      return scenario;
+    }
+    return null;
+  }
+
+  /**
    * Get applications matching a given filter set.
    *
    * @param {FilterSet} filterSet - The filter criteria to apply.
