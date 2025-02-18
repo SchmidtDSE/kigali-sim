@@ -232,9 +232,9 @@ main {
 }
 
 .beta-warning {
-  background-color: #333;
+  background-color: #595959;
   color: white;
-  padding: 5px;
+  padding: 7px;
   border-radius: 2px;
   border: 1px solid black;
 }
