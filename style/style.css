@@ -231,6 +231,22 @@ main {
   text-align: center;
 }
 
+.beta-warning {
+  background-color: #333;
+  color: white;
+  padding: 5px;
+  border-radius: 2px;
+  border: 1px solid black;
+}
+
+.beta-warning a, .beta-warning a:link, .beta-warning a:visited {
+  color: white;
+}
+
+.beta-warning a:hover, .beta-warning a:active {
+  color: white;
+}
+
 .bold-buttons {
   padding-top: 10px;
   padding-bottom: 10px;
