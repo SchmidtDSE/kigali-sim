@@ -97,7 +97,7 @@ class ResultsPresenter {
   /**
    * Show simulation results.
    *
-   * @param {Object} results - Results data to display.
+   * @param {ReportDataWrapper} results - Results data to display.
    */
   showResults(results) {
     const self = this;
@@ -114,8 +114,29 @@ class ResultsPresenter {
    */
   _onUpdateFilterSet(newFilterSet) {
     const self = this;
-    self._filterSet = newFilterSet;
+    self._filterSet = self._constrainFilterSet(newFilterSet);
     self._updateInternally();
+  }
+
+  /**
+   * Constrain the filter set to avoid more difficult to interpret charts.
+   *
+   * Ensure that the filter set does not have both all scenarios and a non-
+   * scenario dimension value.
+   */
+  _constrainFilterSet(filterSet) {
+    const self = this;
+
+    const isAllSimulations = filterSet.getScenario() === null;
+    const isSimulationDimension = filterSet.getDimension() === "simulations";
+    const needsConstraints = isAllSimulations && !isSimulationDimension;
+
+    if (needsConstraints && self._results !== null) {
+      const firstScenario = self._results.getFirstScenario();
+      return filterSet.getWithScenario(firstScenario);
+    } else {
+      return filterSet;
+    }
   }
 
   /**
