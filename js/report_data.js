@@ -853,6 +853,19 @@ class ReportDataWrapper {
   }
 
   /**
+   * Get energy consumption value matching a given filter set.
+   *
+   * @param {FilterSet} filterSet - The filter criteria to apply.
+   * @returns {EngineNumber|null} The energy consumption value, or null if no
+   *     matching results.
+   */
+  getEnergyConsumption(filterSet) {
+    const self = this;
+    const aggregated = self._getAggregatedAfterFilter(filterSet);
+    return aggregated === null ? null : aggregated.getEnergyConsumption();
+  }
+
+  /**
    * Get flattened array of all results.
    *
    * @private
