@@ -67,6 +67,7 @@ class EngineResult {
     populationNew,
     rechargeEmissions,
     eolEmissions,
+    energyConsumption,
   ) {
     const self = this;
     self._application = application;
@@ -82,6 +83,7 @@ class EngineResult {
     self._populationNew = populationNew;
     self._rechargeEmissions = rechargeEmissions;
     self._eolEmissions = eolEmissions;
+    self._energyConsumption = energyConsumption;
   }
 
   /**
@@ -249,6 +251,16 @@ class EngineResult {
   getEolEmissions() {
     const self = this;
     return self._eolEmissions;
+  }
+
+  /**
+   * Get the energy consumption value.
+   *
+   * @returns {EngineNumber} The energy consumption value with units.
+   */
+  getEnergyConsumption() {
+    const self = this;
+    return self._energyConsumption;
   }
 }
 
