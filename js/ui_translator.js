@@ -35,7 +35,14 @@ const COMMAND_COMPATIBILITIES = {
   "replace": "policy",
 };
 
-const SUPPORTED_EQUALS_UNITS = ["tCO2e / unit", "tCO2e / kg", "tCO2e / mt"];
+const SUPPORTED_EQUALS_UNITS = [
+  "tCO2e / unit",
+  "tCO2e / kg",
+  "tCO2e / mt",
+  "kwh / kg",
+  "kwh / mt",
+  "kwh / unit",
+];
 
 const toolkit = QubecTalk.getToolkit();
 
@@ -447,8 +454,7 @@ class Program {
           }
         };
 
-        const getEqualsProblematic = () => {
-          const equals = substance.getEquals();
+        const getEqualsProblematic = (equals) => {
           if (equals === null) {
             return false;
           } else {
@@ -468,7 +474,11 @@ class Program {
           }
         };
 
-        return getInitialChargeProblematic() || getEqualsProblematic();
+        const ghgProblematic = getEqualsProblematic(substance.getEqualsGhg());
+        const kwhProblematic = getEqualsProblematic(substance.getEqualsKwh());
+        const equalsProblematic = ghgProblematic || kwhProblematic;
+
+        return getInitialChargeProblematic() || equalsProblematic;
       });
       return problematicSubstances.length > 0;
     });
