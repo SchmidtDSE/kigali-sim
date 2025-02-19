@@ -954,7 +954,7 @@ class SubstanceBuilder {
     self._initialCharges = [];
     self._limits = [];
     self._changes = [];
-    self._equals = null;
+    self._equalsGhg = null;
     self._recharge = null;
     self._recycles = [];
     self._replaces = [];
@@ -1096,9 +1096,9 @@ class SubstanceBuilder {
    * @param {Command} newVal - Equals command to set.
    * @returns {Command|IncompatibleCommand} The command or incompatibility marker.
    */
-  setEquals(newVal) {
+  setEqualsGhg(newVal) {
     const self = this;
-    self._equals = self._checkDuplicate(self._equals, newVal);
+    self._equalsGhg = self._checkDuplicate(self._equalsGhg, newVal);
   }
 
   /**
@@ -1205,7 +1205,7 @@ class Substance {
     charges,
     limits,
     changes,
-    equals,
+    equalsGhg,
     recharge,
     recycles,
     replaces,
@@ -1219,7 +1219,7 @@ class Substance {
     self._initialCharges = charges;
     self._limits = limits;
     self._changes = changes;
-    self._equals = equals;
+    self._equalsGhg = equalsGhg;
     self._recharge = recharge;
     self._recycles = recycles;
     self._replaces = replaces;
@@ -1286,9 +1286,9 @@ class Substance {
    *
    * @returns {Command|null} The equals command or null if not set.
    */
-  getEquals() {
+  getEqualsGhg() {
     const self = this;
-    return self._equals;
+    return self._equalsGhg;
   }
 
   /**
