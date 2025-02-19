@@ -86,7 +86,7 @@ class UnitConverter {
       "mt": (x) => self._toMt(x),
       "unit": (x) => self._toUnits(x),
       "units": (x) => self._toUnits(x), 
-      "tCO2e": (x) => self._toConsumption(x),
+      "tCO2e": (x) => self._toGhgConsumption(x),
       "kwh": (x) => self._toEnergyConsumption(x),
       "year": (x) => self._toYears(x),
       "years": (x) => self._toYears(x),
@@ -243,7 +243,7 @@ class UnitConverter {
    * @param target - The EngineNumber to convert.
    * @returns Target converted to consumption as tCO2e.
    */
-  _toConsumption(target) {
+  _toGhgConsumption(target) {
     const self = this;
 
     target = self._normalize(target);
