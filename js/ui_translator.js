@@ -955,6 +955,7 @@ class SubstanceBuilder {
     self._limits = [];
     self._changes = [];
     self._equalsGhg = null;
+    self._equalsKwh = null;
     self._recharge = null;
     self._recycles = [];
     self._replaces = [];
@@ -1036,7 +1037,14 @@ class SubstanceBuilder {
       "setVal": (x) => self.addSetVal(x),
       "initial charge": (x) => self.addInitialCharge(x),
       "recharge": (x) => self.setRecharge(x),
-      "equals": (x) => self.setEquals(x),
+      "equals": (x) => {
+        const units = x.getValue().getUnits();
+        if (units.includes("kwh")) {
+          return self.setEqualsKwh(x);
+        } else {
+          return self.setEqualsGhg(x);
+        }
+      },
       "recycle": (x) => self.addRecycle(x),
       "cap": (x) => self.addLimit(x),
       "floor": (x) => self.addLimit(x),
@@ -1099,6 +1107,17 @@ class SubstanceBuilder {
   setEqualsGhg(newVal) {
     const self = this;
     self._equalsGhg = self._checkDuplicate(self._equalsGhg, newVal);
+  }
+
+  /**
+   * Set the energy consumption equals command.
+   *
+   * @param {Command} newVal - Energy equals command to set.
+   * @returns {Command|IncompatibleCommand} The command or incompatibility marker.
+   */
+  setEqualsKwh(newVal) {
+    const self = this;
+    self._equalsKwh = self._checkDuplicate(self._equalsKwh, newVal);
   }
 
   /**
@@ -1220,6 +1239,7 @@ class Substance {
     self._limits = limits;
     self._changes = changes;
     self._equalsGhg = equalsGhg;
+    self._equalsKwh = null;
     self._recharge = recharge;
     self._recycles = recycles;
     self._replaces = replaces;
@@ -1282,13 +1302,23 @@ class Substance {
   }
 
   /**
-   * Get the equals command for this substance.
+   * Get the GHG equals command for this substance.
    *
-   * @returns {Command|null} The equals command or null if not set.
+   * @returns {Command|null} The GHG equals command or null if not set.
    */
   getEqualsGhg() {
     const self = this;
     return self._equalsGhg;
+  }
+
+  /**
+   * Get the energy consumption equals command for this substance.
+   *
+   * @returns {Command|null} The energy equals command or null if not set.
+   */
+  getEqualsKwh() {
+    const self = this;
+    return self._equalsKwh;
   }
 
   /**
