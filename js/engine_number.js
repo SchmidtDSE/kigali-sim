@@ -573,6 +573,25 @@ class ConverterStateGetter {
     return new EngineNumber(ratioValue, ratioUnits);
   }
 
+  getEnergyIntensity() {
+    const self = this;
+    const consumption = self.getEnergyConsumption();
+    const volume = self.getVolume();
+    const ratioValue = consumption.getValue() / volume.getValue();
+
+    const consumptionUnits = consumption.getUnits();
+    const volumeUnits = volume.getUnits();
+    const consumptionUnitsExpected = consumptionUnits === "kwh";
+    const volumeUnitsExpected = volumeUnits === "mt" || volumeUnits === "kg";
+    const unitsExpected = consumptionUnitsExpected && volumeUnitsExpected;
+    if (!unitsExpected) {
+      throw "Unexpected units for getEnergyIntensity.";
+    }
+
+    const ratioUnits = consumptionUnits + " / " + volumeUnits;
+    return new EngineNumber(ratioValue, ratioUnits);
+  }
+
   /**
    * Get the charge volume per unit for sales.
    *
@@ -732,6 +751,15 @@ class OverridingConverterStateGetter {
       return self._innerGetter.getSubstanceConsumption();
     } else {
       return self._substanceConsumption;
+    }
+  }
+
+  getEnergyIntensity() {
+    const self = this;
+    if (self._energyIntensity === null) {
+      return self._innerGetter.getEnergyIntensity();
+    } else {
+      return self._energyIntensity;
     }
   }
 
