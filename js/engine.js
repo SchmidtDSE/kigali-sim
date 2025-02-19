@@ -758,7 +758,12 @@ class Engine {
 
     const application = self._scope.getApplication();
     const substance = self._scope.getSubstance();
-    self._streamKeeper.setGhgIntensity(application, substance, amount);
+    
+    if (amount.getUnits() === "tCO2e" || amount.getUnits() === "tCO2e / kg" || amount.getUnits() === "tCO2e / mt") {
+      self._streamKeeper.setGhgIntensity(application, substance, amount);
+    } else if (amount.getUnits() === "kwh" || amount.getUnits() === "kwh / kg" || amount.getUnits() === "kwh / mt") {
+      self._streamKeeper.setEnergyIntensity(application, substance, amount);
+    }
 
     self._recalcConsumption();
   }
