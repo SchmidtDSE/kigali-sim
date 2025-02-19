@@ -977,7 +977,7 @@ class SubstanceBuilder {
       self._limits,
       self._recycles,
       self._replaces,
-      [self._equals, self._recharge, self._retire],
+      [self._equalsGhg, self._equalsKwh, self._recharge, self._retire],
       self._changes,
       self._setVals,
     ].flat();
