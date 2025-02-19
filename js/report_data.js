@@ -42,6 +42,7 @@ class AggregatedResult {
     populationNew,
     rechargeEmissions,
     eolEmissions,
+    energyConsumption,
   ) {
     const self = this;
     self._manufactureValue = manufactureValue;
@@ -54,6 +55,17 @@ class AggregatedResult {
     self._populationNew = populationNew;
     self._rechargeEmissions = rechargeEmissions;
     self._eolEmissions = eolEmissions;
+    self._energyConsumption = energyConsumption;
+  }
+
+  /**
+   * Get the energy consumption value.
+   *
+   * @returns {EngineNumber} The energy consumption value with units.
+   */
+  getEnergyConsumption() {
+    const self = this;
+    return self._energyConsumption;
   }
 
   /**
@@ -230,6 +242,7 @@ class AggregatedResult {
       other.getRechargeEmissions(),
     );
     const eolEmissions = self._combineUnitValue(self.getEolEmissions(), other.getEolEmissions());
+    const energyConsumption = self._combineUnitValue(self.getEnergyConsumption(), other.getEnergyConsumption());
 
     return new AggregatedResult(
       manufactureValue,
@@ -242,6 +255,7 @@ class AggregatedResult {
       populationNew,
       rechargeEmissions,
       eolEmissions,
+      energyConsumption,
     );
   }
 
