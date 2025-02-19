@@ -85,8 +85,9 @@ class UnitConverter {
       "kg": (x) => self._toKg(x),
       "mt": (x) => self._toMt(x),
       "unit": (x) => self._toUnits(x),
-      "units": (x) => self._toUnits(x),
+      "units": (x) => self._toUnits(x), 
       "tCO2e": (x) => self._toConsumption(x),
+      "kwh": (x) => self._toEnergyConsumption(x),
       "year": (x) => self._toYears(x),
       "years": (x) => self._toYears(x),
       "%": (x) => self._toPercent(x),
@@ -274,6 +275,48 @@ class UnitConverter {
       return new EngineNumber(newValue, "tCO2e");
     } else {
       throw "Unable to convert to consumption: " + currentUnits;
+    }
+  }
+
+  /**
+   * Convert a number to energy consumption as kwh.
+   *
+   * @private
+   * @param target - The EngineNumber to convert.
+   * @returns Target converted to energy consumption as kwh.
+   */
+  _toEnergyConsumption(target) {
+    const self = this;
+
+    target = self._normalize(target);
+    const currentUnits = target.getUnits();
+
+    if (currentUnits === "kwh") {
+      return target;
+    } else if (currentUnits === "kg" || currentUnits === "mt") {
+      const conversion = self._stateGetter.getEnergyIntensity();
+      const conversionValue = conversion.getValue();
+      const conversionUnitPieces = conversion.getUnits().split(" / ");
+      const newUnits = conversionUnitPieces[0];
+      const expectedUnits = conversionUnitPieces[1];
+      const targetConverted = self.convert(target, expectedUnits);
+      const originalValue = targetConverted.getValue();
+      const newValue = originalValue * conversionValue;
+      return new EngineNumber(newValue, newUnits);
+    } else if (currentUnits === "unit" || currentUnits === "units") {
+      const originalValue = target.getValue();
+      const conversion = self._stateGetter.getAmortizedUnitVolume();
+      const conversionValue = conversion.getValue();
+      const newValue = originalValue * conversionValue;
+      return new EngineNumber(newValue, "kwh");
+    } else if (currentUnits === "%") {
+      const originalValue = target.getValue();
+      const asRatio = originalValue / 100;
+      const total = self._stateGetter.getEnergyConsumption();
+      const newValue = total.getValue() * asRatio;
+      return new EngineNumber(newValue, "kwh");
+    } else {
+      throw "Unable to convert to energy consumption: " + currentUnits;
     }
   }
 
