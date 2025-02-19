@@ -968,6 +968,8 @@ class Engine {
 
       stateGetter.setVolume(recycleValue);
       const recycleConsumptionValue = unitConverter.convert(consumptionRaw, "tCO2e");
+      const energyIntensityRaw = self._streamKeeper.getEnergyIntensity(application, substance);
+      const energyConsumptionValue = unitConverter.convert(energyIntensityRaw, "kwh");
 
       // Offset recharge emissions
       stateGetter.setVolume(null);
@@ -992,6 +994,7 @@ class Engine {
         populationNew,
         rechargeEmissionsOffset,
         eolEmissions,
+        energyConsumptionValue,
       );
     });
   }
