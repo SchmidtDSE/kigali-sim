@@ -873,6 +873,19 @@ class StreamKeeper {
   }
 
   /**
+   * Set the energy intensity for a substance in an application.
+   *
+   * @param {string} application - The application name.
+   * @param {string} substance - The substance name.
+   * @param {EngineNumber} newValue - The new energy intensity value.
+   */
+  setEnergyIntensity(application, substance, newValue) {
+    const self = this;
+    const parameterization = self._getParameterization(application, substance);
+    parameterization.setEnergyIntensity(newValue);
+  }
+
+  /**
    * Get the greenhouse gas intensity for a substance in an application.
    *
    * @param {string} application - The application name.
