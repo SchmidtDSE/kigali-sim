@@ -98,7 +98,8 @@ class UnitConverter {
       "mt": () => self.convert(self._stateGetter.getVolume(), "mt"),
       "unit": () => self.convert(self._stateGetter.getPopulation(), "unit"),
       "units": () => self.convert(self._stateGetter.getPopulation(), "units"),
-      "tCO2e": () => self.convert(self._stateGetter.getConsumption(), "tCO2e"),
+      "tCO2e": () => self.convert(self._stateGetter.getGhgConsumption(), "tCO2e"),
+      "kwh": () => self.convert(self._stateGetter.getEnergyConsumption(), "kwh"),
       "year": () => self.convert(self._stateGetter.getYearsElapsed(), "year"),
       "years": () => self.convert(self._stateGetter.getYearsElapsed(), "years"),
       "": () => new EngineNumber(1, ""),
@@ -479,13 +480,15 @@ class UnitConverter {
     const self = this;
     const currentUnits = target.getUnits();
 
-    if (!currentUnits.endsWith(" / tCO2e")) {
+    const isCo2 = currentUnits.endsWith(" / tCO2e");
+    const isKwh = currentUnits.endsWith(" / kwh"); 
+    if (!isCo2 && !isKwh) {
       return target;
     }
 
     const originalValue = target.getValue();
     const newUnits = currentUnits.split(" / ")[0];
-    const totalConsumption = self._stateGetter.getConsumption();
+    const totalConsumption = isCo2 ? self._stateGetter.getGhgConsumption() : self._stateGetter.getEnergyConsumption();
     const totalConsumptionValue = totalConsumption.getValue();
     const newValue = originalValue * totalConsumptionValue;
 
@@ -819,12 +822,21 @@ class OverridingConverterStateGetter {
    *
    * @returns {EngineNumber} The consumption value.
    */
-  getConsumption() {
+  getGhgConsumption() {
     const self = this;
     if (self._totalConsumption === null) {
-      return self._innerGetter.getConsumption();
+      return self._innerGetter.getGhgConsumption();
     } else {
       return self._totalConsumption;
+    }
+  }
+
+  getEnergyConsumption() {
+    const self = this;
+    if (self._energyConsumption === null) {
+      return self._innerGetter.getEnergyConsumption(); 
+    } else {
+      return self._energyConsumption;
     }
   }
 
