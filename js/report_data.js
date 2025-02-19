@@ -490,6 +490,16 @@ class ReportDataWrapper {
           return new EngineNumber(value.getValue(), "kg / yr");
         });
         strategyBuilder.add();
+
+        strategyBuilder.setUnits("kwh / yr");
+        strategyBuilder.setStrategy((x) => self.getEnergyConsumption(x));
+        strategyBuilder.setTransformation((value) => {
+          if (value.getUnits() !== "kwh") {
+            throw "Unexpected energy units: " + value.getUnits();
+          }
+          return new EngineNumber(value.getValue(), "kwh / yr");
+        });
+        strategyBuilder.add();
       };
 
       strategyBuilder.setSubmetric("all");
