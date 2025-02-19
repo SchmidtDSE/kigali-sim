@@ -413,6 +413,7 @@ class StreamParameterization {
     const self = this;
     const createZero = (x) => new EngineNumber(0, x);
     self._ghgIntensity = createZero("tCO2e / kg");
+    self._energyIntensity = createZero("kwh / kg");
     self._initialCharge = {
       manufacture: createZero("kg / unit"),
       import: createZero("kg / unit"),
@@ -443,6 +444,26 @@ class StreamParameterization {
   getGhgIntensity() {
     const self = this;
     return self._ghgIntensity;
+  }
+
+  /**
+   * Set the energy intensity.
+   *
+   * @param {EngineNumber} newValue - The new energy intensity value.
+   */
+  setEnergyIntensity(newValue) {
+    const self = this;
+    self._energyIntensity = newValue;
+  }
+
+  /**
+   * Get the energy intensity.
+   *
+   * @returns {EngineNumber} The current energy intensity value.
+   */
+  getEnergyIntensity() {
+    const self = this;
+    return self._energyIntensity;
   }
 
   /**
