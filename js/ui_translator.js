@@ -1225,6 +1225,7 @@ class Substance {
     limits,
     changes,
     equalsGhg,
+    equalsKwh,
     recharge,
     recycles,
     replaces,
@@ -1239,7 +1240,7 @@ class Substance {
     self._limits = limits;
     self._changes = changes;
     self._equalsGhg = equalsGhg;
-    self._equalsKwh = null;
+    self._equalsKwh = equalsKwh;
     self._recharge = recharge;
     self._recycles = recycles;
     self._replaces = replaces;
@@ -1424,7 +1425,8 @@ class Substance {
     };
 
     addAllIfGiven(self._getInitialChargesCode());
-    addIfGiven(self._getEqualsCode());
+    addIfGiven(self._getEqualsCode(self._equalsGhg));
+    addIfGiven(self._getEqualsCode(self._equalsKwh));
     addAllIfGiven(self._getSetValsCode());
     addAllIfGiven(self._getChangesCode());
     addIfGiven(self._getRetireCode());
@@ -1470,18 +1472,18 @@ class Substance {
    * @returns {string|null} Code string or null if no equals command.
    * @private
    */
-  _getEqualsCode() {
+  _getEqualsCode(equalsCommand) {
     const self = this;
-    if (self._equals === null) {
+    if (equalsCommand === null) {
       return null;
     }
 
     const pieces = [
       "equals",
-      self._equals.getValue().getValue(),
-      self._equals.getValue().getUnits(),
+      equalsCommand.getValue().getValue(),
+      equalsCommand.getValue().getUnits(),
     ];
-    self._addDuration(pieces, self._equals);
+    self._addDuration(pieces, equalsCommand);
 
     return self._finalizeStatement(pieces);
   }
