@@ -30,7 +30,7 @@ function buildEngineNumberTests() {
         self._amortizedUnitVolume = null;
         self._population = null;
         self._yearsElapsed = null;
-        self._totalConsumption = null;
+        self._totalGhgConsumption = null;
         self._volume = null;
         self._amortizedUnitConsumption = null;
         self._populationChange = null;
@@ -76,14 +76,14 @@ function buildEngineNumberTests() {
         return self._yearsElapsed;
       }
 
-      setConsumption(newValue) {
+      setGhgConsumption(newValue) {
         const self = this;
-        self._totalConsumption = newValue;
+        self._totalGhgConsumption = newValue;
       }
 
-      getConsumption() {
+      getGhgConsumption() {
         const self = this;
-        return self._totalConsumption;
+        return self._totalGhgConsumption;
       }
 
       setVolume(newValue) {
