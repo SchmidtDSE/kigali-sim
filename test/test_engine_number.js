@@ -34,6 +34,17 @@ function buildEngineNumberTests() {
         self._volume = null;
         self._amortizedUnitConsumption = null;
         self._populationChange = null;
+        self._totalEnergyConsumption = null;
+      }
+
+      setEnergyConsumption(newValue) {
+        const self = this;
+        self._totalEnergyConsumption = newValue;
+      }
+
+      getEnergyConsumption() {
+        const self = this;
+        return self._totalEnergyConsumption;
       }
 
       setSubstanceConsumption(newValue) {
