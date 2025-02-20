@@ -342,6 +342,10 @@ class UnitConverter {
       const perYearConsumptionValue = self._stateGetter.getGhgConsumption().getValue();
       const newYears = target.getValue() / perYearConsumptionValue;
       return new EngineNumber(newYears, "years");
+    } else if (currentUnits === "kwh") {
+      const perYearConsumptionValue = self._stateGetter.getEnergyConsumption().getValue();
+      const newYears = target.getValue() / perYearConsumptionValue;
+      return new EngineNumber(newYears, "years");
     } else if (currentUnits === "kg" || currentUnits === "mt") {
       const perYearVolume = self._stateGetter.getVolume();
       const perYearVolumeUnits = perYearVolume.getUnits();
