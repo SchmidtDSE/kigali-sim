@@ -73,7 +73,7 @@ function buildUiTranslatorTests() {
         const substances = application.getSubstances();
         const substance = substances[0];
 
-        const consumption = substance.getEquals();
+        const consumption = substance.getEqualsGhg();
         const consumptionVolume = consumption.getValue();
         assert.deepEqual(consumptionVolume.getValue(), 5);
         assert.deepEqual(consumptionVolume.getUnits(), "tCO2e / mt");
