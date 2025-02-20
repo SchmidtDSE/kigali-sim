@@ -486,11 +486,17 @@ class UnitConverter {
       return target;
     }
 
+    const getTargetConsumption = () => {
+      if (isCo2) {
+        return self._stateGetter.getGhgConsumption();
+      } else {
+        return self._stateGetter.getEnergyConsumption();
+      }
+    };
+
     const originalValue = target.getValue();
     const newUnits = currentUnits.split(" / ")[0];
-    const totalConsumption = isCo2
-      ? self._stateGetter.getGhgConsumption()
-      : self._stateGetter.getEnergyConsumption();
+    const totalConsumption = getTargetConsumption();
     const totalConsumptionValue = totalConsumption.getValue();
     const newValue = originalValue * totalConsumptionValue;
 
