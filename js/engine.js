@@ -168,7 +168,7 @@ class EngineResult {
    *
    * @returns {EngineNumber} The consumption value.
    */
-  getConsumption() {
+  getGhgConsumption() {
     const self = this;
 
     const noRecycleValue = self.getConsumptionNoRecycle();

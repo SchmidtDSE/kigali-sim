@@ -271,7 +271,7 @@ class UnitConverter {
     } else if (currentUnits === "%") {
       const originalValue = target.getValue();
       const asRatio = originalValue / 100;
-      const total = self._stateGetter.getConsumption();
+      const total = self._stateGetter.getGhgConsumption();
       const newValue = total.getValue() * asRatio;
       return new EngineNumber(newValue, "tCO2e");
     } else {
@@ -339,7 +339,7 @@ class UnitConverter {
     } else if (currentUnits === "year") {
       return new EngineNumber(target.getValue(), "years");
     } else if (currentUnits === "tCO2e") {
-      const perYearConsumptionValue = self._stateGetter.getConsumption().getValue();
+      const perYearConsumptionValue = self._stateGetter.getGhgConsumption().getValue();
       const newYears = target.getValue() / perYearConsumptionValue;
       return new EngineNumber(newYears, "years");
     } else if (currentUnits === "kg" || currentUnits === "mt") {
@@ -382,7 +382,7 @@ class UnitConverter {
       if (currentUnits === "years" || currentUnits === "year") {
         return self._stateGetter.getYearsElapsed();
       } else if (currentUnits === "tCO2e") {
-        return self._stateGetter.getConsumption();
+        return self._stateGetter.getGhgConsumption();
       } else if (currentUnits === "kg" || currentUnits === "mt") {
         const volume = self._stateGetter.getVolume();
         return self.convert(volume, currentUnits);
@@ -564,7 +564,7 @@ class ConverterStateGetter {
    */
   getSubstanceConsumption() {
     const self = this;
-    const consumption = self.getConsumption();
+    const consumption = self.getGhgConsumption();
     const volume = self.getVolume();
     const ratioValue = consumption.getValue() / volume.getValue();
 
@@ -581,6 +581,12 @@ class ConverterStateGetter {
     return new EngineNumber(ratioValue, ratioUnits);
   }
 
+  /**
+   * Get the energy consumption intensity per unit volume.
+   *
+   * @returns {EngineNumber} The energy intensity as a ratio (e.g., kwh/mt or kwh/kg).
+   * @throws {string} If the consumption or volume units are not as expected.
+   */
   getEnergyIntensity() {
     const self = this;
     const consumption = self.getEnergyConsumption();
@@ -635,7 +641,7 @@ class ConverterStateGetter {
    *
    * @returns {EngineNumber} The consumption value in tCO2e.
    */
-  getConsumption() {
+  getGhgConsumption() {
     const self = this;
     return self._engine.getStream("consumption");
   }
@@ -659,7 +665,7 @@ class ConverterStateGetter {
    */
   getAmortizedUnitConsumption() {
     const self = this;
-    const consumption = self.getConsumption();
+    const consumption = self.getGhgConsumption();
     const population = self.getPopulation();
     const ratioValue = consumption.getValue() / population.getValue();
 

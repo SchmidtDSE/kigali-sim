@@ -148,7 +148,7 @@ class AggregatedResult {
    *
    * @returns {EngineNumber} The combined consumption value with units.
    */
-  getConsumption() {
+  getGhgConsumption() {
     const self = this;
     const noRecycle = self._combineUnitValue(
       self.getDomesticConsumption(),
@@ -526,7 +526,7 @@ class ReportDataWrapper {
       strategyBuilder.setMetric("sales");
 
       strategyBuilder.setSubmetric("all");
-      strategyBuilder.setStrategy((x) => self.getConsumption(x));
+      strategyBuilder.setStrategy((x) => self.getGhgConsumption(x));
       addEmissionsConversion(strategyBuilder);
 
       strategyBuilder.setSubmetric("import");
@@ -703,10 +703,10 @@ class ReportDataWrapper {
    * @returns {EngineNumber|null} The consumption value, or null if no matching
    *     results.
    */
-  getConsumption(filterSet) {
+  getGhgConsumption(filterSet) {
     const self = this;
     const aggregated = self._getAggregatedAfterFilter(filterSet);
-    return aggregated === null ? null : aggregated.getConsumption();
+    return aggregated === null ? null : aggregated.getGhgConsumption();
   }
 
   /**

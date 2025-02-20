@@ -479,11 +479,7 @@ function buildEngineNumberTests() {
       const mockConverterStateGetter = new MockConverterStateGetter();
       mockConverterStateGetter.setVolume(new EngineNumber(5, "kg"));
 
-      const result = convertUnits(
-        new EngineNumber(2, "kwh / kg"),
-        "kwh",
-        mockConverterStateGetter,
-      );
+      const result = convertUnits(new EngineNumber(2, "kwh / kg"), "kwh", mockConverterStateGetter);
 
       assert.closeTo(result.getValue(), 10, 0.001);
       assert.deepEqual(result.getUnits(), "kwh");
