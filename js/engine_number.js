@@ -85,7 +85,7 @@ class UnitConverter {
       "kg": (x) => self._toKg(x),
       "mt": (x) => self._toMt(x),
       "unit": (x) => self._toUnits(x),
-      "units": (x) => self._toUnits(x), 
+      "units": (x) => self._toUnits(x),
       "tCO2e": (x) => self._toGhgConsumption(x),
       "kwh": (x) => self._toEnergyConsumption(x),
       "year": (x) => self._toYears(x),
@@ -481,14 +481,16 @@ class UnitConverter {
     const currentUnits = target.getUnits();
 
     const isCo2 = currentUnits.endsWith(" / tCO2e");
-    const isKwh = currentUnits.endsWith(" / kwh"); 
+    const isKwh = currentUnits.endsWith(" / kwh");
     if (!isCo2 && !isKwh) {
       return target;
     }
 
     const originalValue = target.getValue();
     const newUnits = currentUnits.split(" / ")[0];
-    const totalConsumption = isCo2 ? self._stateGetter.getGhgConsumption() : self._stateGetter.getEnergyConsumption();
+    const totalConsumption = isCo2
+      ? self._stateGetter.getGhgConsumption()
+      : self._stateGetter.getEnergyConsumption();
     const totalConsumptionValue = totalConsumption.getValue();
     const newValue = originalValue * totalConsumptionValue;
 
@@ -705,6 +707,7 @@ class OverridingConverterStateGetter {
     self._population = null;
     self._yearsElapsed = null;
     self._totalConsumption = null;
+    self._energyConsumption = null;
     self._volume = null;
     self._amortizedUnitConsumption = null;
     self._populationChange = null;
@@ -754,6 +757,11 @@ class OverridingConverterStateGetter {
     }
   }
 
+  /**
+   * Get the energy intensity.
+   *
+   * @returns {EngineNumber} The energy intensity value with units.
+   */
   getEnergyIntensity() {
     const self = this;
     if (self._energyIntensity === null) {
@@ -846,6 +854,16 @@ class OverridingConverterStateGetter {
   }
 
   /**
+   * Set the energy consumption equivalency.
+   *
+   * @param {EngineNumber} newValue - The new energy consumption value.
+   */
+  setEnergyConsumption(newValue) {
+    const self = this;
+    self._energyConsumption = newValue;
+  }
+
+  /**
    * Get the consumption value.
    *
    * @returns {EngineNumber} The consumption value.
@@ -859,10 +877,15 @@ class OverridingConverterStateGetter {
     }
   }
 
+  /**
+   * Get the energy consumption equivalency.
+   *
+   * @returns {EngineNumber} The energy consumption value with units.
+   */
   getEnergyConsumption() {
     const self = this;
     if (self._energyConsumption === null) {
-      return self._innerGetter.getEnergyConsumption(); 
+      return self._innerGetter.getEnergyConsumption();
     } else {
       return self._energyConsumption;
     }

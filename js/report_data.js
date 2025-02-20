@@ -242,7 +242,10 @@ class AggregatedResult {
       other.getRechargeEmissions(),
     );
     const eolEmissions = self._combineUnitValue(self.getEolEmissions(), other.getEolEmissions());
-    const energyConsumption = self._combineUnitValue(self.getEnergyConsumption(), other.getEnergyConsumption());
+    const energyConsumption = self._combineUnitValue(
+      self.getEnergyConsumption(),
+      other.getEnergyConsumption(),
+    );
 
     return new AggregatedResult(
       manufactureValue,
@@ -924,6 +927,7 @@ class ReportDataWrapper {
           x.getPopulationNew(),
           x.getRechargeEmissions(),
           x.getEolEmissions(),
+          x.getEnergyConsumption(),
         ),
     );
 

@@ -899,6 +899,19 @@ class StreamKeeper {
   }
 
   /**
+   * Get the energy intensity for a substance in an application.
+   *
+   * @param {string} application - The application name.
+   * @param {string} substance - The substance name.
+   * @returns {EngineNumber} The current energy intensity value.
+   */
+  getEnergyIntensity(application, substance) {
+    const self = this;
+    const parameterization = self._getParameterization(application, substance);
+    return parameterization.getEnergyIntensity();
+  }
+
+  /**
    * Set the initial charge for a substance in an application's stream.
    *
    * @param {string} application - The application name.
