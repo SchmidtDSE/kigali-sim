@@ -430,6 +430,65 @@ function buildEngineNumberTests() {
       assert.deepEqual(result.getUnits(), "kwh");
     });
 
+    QUnit.test("consumption to consumption energy", function (assert) {
+      const result = convertUnits(
+        new EngineNumber(5, "kwh"),
+        "kwh",
+        new MockConverterStateGetter(),
+      );
+
+      assert.closeTo(result.getValue(), 5, 0.001);
+      assert.deepEqual(result.getUnits(), "kwh");
+    });
+
+    QUnit.test("volume to consumption for energy", function (assert) {
+      const mockConverterStateGetter = new MockConverterStateGetter();
+      mockConverterStateGetter.setEnergyConsumption(new EngineNumber(5, "kwh / kg"));
+
+      const result = convertUnits(new EngineNumber(10, "kg"), "kwh", mockConverterStateGetter);
+
+      assert.closeTo(result.getValue(), 50, 0.001);
+      assert.deepEqual(result.getUnits(), "kwh");
+    });
+
+    QUnit.test("pop to consumption for energy", function (assert) {
+      const mockConverterStateGetter = new MockConverterStateGetter();
+      mockConverterStateGetter.setAmortizedUnitVolume(new EngineNumber(0.1, "kwh / unit"));
+
+      const result = convertUnits(new EngineNumber(20, "units"), "kwh", mockConverterStateGetter);
+
+      assert.closeTo(result.getValue(), 2, 0.001);
+      assert.deepEqual(result.getUnits(), "kwh");
+    });
+
+    QUnit.test("consumption per time to consumption for energy", function (assert) {
+      const mockConverterStateGetter = new MockConverterStateGetter();
+      mockConverterStateGetter.setYearsElapsed(new EngineNumber(2, "years"));
+
+      const result = convertUnits(
+        new EngineNumber(20, "kwh / year"),
+        "kwh",
+        mockConverterStateGetter,
+      );
+
+      assert.closeTo(result.getValue(), 40, 0.001);
+      assert.deepEqual(result.getUnits(), "kwh");
+    });
+
+    QUnit.test("consumption per volume to consumption for energy", function (assert) {
+      const mockConverterStateGetter = new MockConverterStateGetter();
+      mockConverterStateGetter.setVolume(new EngineNumber(5, "kg"));
+
+      const result = convertUnits(
+        new EngineNumber(2, "kwh / kg"),
+        "kwh",
+        mockConverterStateGetter,
+      );
+
+      assert.closeTo(result.getValue(), 10, 0.001);
+      assert.deepEqual(result.getUnits(), "kwh");
+    });
+
     QUnit.test("years to years", function (assert) {
       const result = convertUnits(
         new EngineNumber(5, "year"),
