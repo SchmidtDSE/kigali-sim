@@ -27,6 +27,7 @@ function buildEngineNumberTests() {
       constructor() {
         const self = this;
         self._substanceConsumption = null;
+        self._energyIntensity = null;
         self._amortizedUnitVolume = null;
         self._population = null;
         self._yearsElapsed = null;
@@ -55,6 +56,16 @@ function buildEngineNumberTests() {
       getSubstanceConsumption() {
         const self = this;
         return self._substanceConsumption;
+      }
+
+      setEnergyIntensity(newValue) {
+        const self = this;
+        self._energyIntensity = newValue;
+      }
+
+      getEnergyIntensity() {
+        const self = this;
+        return self._energyIntensity;
       }
 
       setAmortizedUnitVolume(newValue) {
@@ -443,7 +454,7 @@ function buildEngineNumberTests() {
 
     QUnit.test("volume to consumption for energy", function (assert) {
       const mockConverterStateGetter = new MockConverterStateGetter();
-      mockConverterStateGetter.setEnergyConsumption(new EngineNumber(5, "kwh / kg"));
+      mockConverterStateGetter.setEnergyIntensity(new EngineNumber(5, "kwh / kg"));
 
       const result = convertUnits(new EngineNumber(10, "kg"), "kwh", mockConverterStateGetter);
 
