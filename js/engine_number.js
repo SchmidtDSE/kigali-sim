@@ -250,9 +250,13 @@ class UnitConverter {
     target = self._normalize(target);
     const currentUnits = target.getUnits();
 
+    const currentVolume = currentUnits === "kg" || currentUnits === "mt";
+    const currentPop = currentUnits === "unit" || currentUnits === "units";
+    const currentInfer = currentVolume || currentPop;
+
     if (currentUnits === "tCO2e") {
       return target;
-    } else if (currentUnits === "kg" || currentUnits === "mt") {
+    } else if (currentInfer) {
       const conversion = self._stateGetter.getSubstanceConsumption();
       const conversionValue = conversion.getValue();
       const conversionUnitPieces = conversion.getUnits().split(" / ");
@@ -262,12 +266,6 @@ class UnitConverter {
       const originalValue = targetConverted.getValue();
       const newValue = originalValue * conversionValue;
       return new EngineNumber(newValue, newUnits);
-    } else if (currentUnits === "unit" || currentUnits === "units") {
-      const originalValue = target.getValue();
-      const conversion = self._stateGetter.getAmortizedUnitVolume();
-      const conversionValue = conversion.getValue();
-      const newValue = originalValue * conversionValue;
-      return new EngineNumber(newValue, "tCO2e");
     } else if (currentUnits === "%") {
       const originalValue = target.getValue();
       const asRatio = originalValue / 100;
@@ -292,9 +290,13 @@ class UnitConverter {
     target = self._normalize(target);
     const currentUnits = target.getUnits();
 
+    const currentVolume = currentUnits === "kg" || currentUnits === "mt";
+    const currentPop = currentUnits === "unit" || currentUnits === "units";
+    const currentInfer = currentVolume || currentPop;
+
     if (currentUnits === "kwh") {
       return target;
-    } else if (currentUnits === "kg" || currentUnits === "mt") {
+    } else if (currentInfer) {
       const conversion = self._stateGetter.getEnergyIntensity();
       const conversionValue = conversion.getValue();
       const conversionUnitPieces = conversion.getUnits().split(" / ");
@@ -304,14 +306,6 @@ class UnitConverter {
       const originalValue = targetConverted.getValue();
       const newValue = originalValue * conversionValue;
       return new EngineNumber(newValue, newUnits);
-    } else if (currentUnits === "unit" || currentUnits === "units") {
-      const originalValue = target.getValue();
-      const conversion = self._stateGetter.getAmortizedUnitVolume();
-      const conversionValue = conversion.getValue();
-      const newValue = originalValue * conversionValue;
-      const volumeUnits = conversion.getUnits().split(" / ")[0];
-      const volume = new EngineNumber(newValue, volumeUnits);
-      return self._toEnergyConsumption(volume);
     } else if (currentUnits === "%") {
       const originalValue = target.getValue();
       const asRatio = originalValue / 100;
@@ -730,7 +724,6 @@ class OverridingConverterStateGetter {
   constructor(innerGetter) {
     const self = this;
     self._innerGetter = innerGetter;
-    self._substanceConsumption = null;
     self._energyIntensity = null;
     self._amortizedUnitVolume = null;
     self._population = null;
@@ -740,6 +733,7 @@ class OverridingConverterStateGetter {
     self._volume = null;
     self._amortizedUnitConsumption = null;
     self._populationChange = null;
+    self._substanceConsumption = null;
   }
 
   /**
@@ -760,16 +754,6 @@ class OverridingConverterStateGetter {
       consumption: (x) => self.setConsumption(x),
     }[streamName];
     strategy(value);
-  }
-
-  /**
-   * Set the substance consumption value.
-   *
-   * @param {EngineNumber} newValue - The new consumption value.
-   */
-  setSubstanceConsumption(newValue) {
-    const self = this;
-    self._substanceConsumption = newValue;
   }
 
   /**

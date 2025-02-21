@@ -371,7 +371,7 @@ function buildEngineNumberTests() {
 
     QUnit.test("pop to consumption for ghg", function (assert) {
       const mockConverterStateGetter = new MockConverterStateGetter();
-      mockConverterStateGetter.setAmortizedUnitVolume(new EngineNumber(0.1, "tCO2e / unit"));
+      mockConverterStateGetter.setSubstanceConsumption(new EngineNumber(0.1, "tCO2e / unit"));
 
       const result = convertUnits(new EngineNumber(20, "units"), "tCO2e", mockConverterStateGetter);
 
@@ -464,7 +464,7 @@ function buildEngineNumberTests() {
 
     QUnit.test("pop to consumption for energy", function (assert) {
       const mockConverterStateGetter = new MockConverterStateGetter();
-      mockConverterStateGetter.setAmortizedUnitVolume(new EngineNumber(0.1, "kwh / unit"));
+      mockConverterStateGetter.setEnergyIntensity(new EngineNumber(0.1, "kwh / unit"));
 
       const result = convertUnits(new EngineNumber(20, "units"), "kwh", mockConverterStateGetter);
 
