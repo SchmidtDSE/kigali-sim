@@ -494,13 +494,30 @@ class ReportDataWrapper {
         });
         strategyBuilder.add();
 
-        strategyBuilder.setUnits("kwh / yr");
         strategyBuilder.setStrategy((x) => self.getEnergyConsumption(x));
-        strategyBuilder.setTransformation((value) => {
+
+        const getKwhYr = (value) => {
           if (value.getUnits() !== "kwh") {
             throw "Unexpected energy units: " + value.getUnits();
           }
           return new EngineNumber(value.getValue(), "kwh / yr");
+        };
+
+        strategyBuilder.setUnits("kwh / yr");
+        strategyBuilder.setTransformation(getKwhYr);
+        strategyBuilder.add();
+
+        strategyBuilder.setUnits("mwh / yr");
+        strategyBuilder.setTransformation((value) => {
+          const kwhValue = getKwhYr(value);
+          return new EngineNumber(kwhValue.getValue() / 1000, "mwh");
+        });
+        strategyBuilder.add();
+
+        strategyBuilder.setUnits("gwh / yr");
+        strategyBuilder.setTransformation((value) => {
+          const kwhValue = getKwhYr(value);
+          return new EngineNumber(kwhValue.getValue() / 1000000, "gwh");
         });
         strategyBuilder.add();
       };
