@@ -175,13 +175,19 @@ recharge 5 % with 0.12 kg / unit during years 1 to 5
 One may also recharge a number of units by changing `%` to `units`.
 
 ### Consumption
-GHG equivalencies can be made through the `equals` command like so:
+The `equals` command can be used to specify two types of intensities:
 
+1. GHG intensity to calculate greenhouse gas emissions in tonnes of CO2 equivalent (tCO2e):
 ```
 equals 1430 tCO2e / mt
 ```
 
-Note that `tCO2e` refers to $CO_{2}$ equivalent in metric tonnes.
+2. Energy intensity to calculate energy consumption in kilowatt hours (kwh):
+```
+equals 100 kwh / kg
+```
+
+Note that `tCO2e` refers to tonnes of CO2 equivalent, and `kwh` refers to kilowatt hours. Both metrics help track different aspects of environmental impact.
 
 ## Policies
 Policies can be defined by name and typically make changes to the business as usual created within the `default` stanza.
