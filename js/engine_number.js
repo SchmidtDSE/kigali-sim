@@ -659,7 +659,7 @@ class ConverterStateGetter {
    */
   getEnergyConsumption() {
     const self = this;
-    return self._engine.getStream("energy"); // TODO: wherever we set consumption need to set energy
+    return self._engine.getStream("energy");
   }
 
   /**

@@ -950,6 +950,9 @@ class Engine {
       const importValue = unitConverter.convert(importRaw, "kg");
       const recycleValue = unitConverter.convert(recycleRaw, "kg");
 
+      // Get total energy consumption
+      const energyConsumptionValue = self._streamKeeper.getStream(application, substance, "energy");
+
       // Get emissions
       const populationValue = self._streamKeeper.getStream(application, substance, "equipment");
       const populationNew = self._streamKeeper.getStream(application, substance, "newEquipment");
@@ -988,9 +991,6 @@ class Engine {
 
       stateGetter.setVolume(recycleValue);
       const recycleConsumptionValue = unitConverter.convert(consumptionRaw, "tCO2e");
-
-      // Get energy
-      const energyConsumptionValue = unitConverter.convert(populationValue, "kwh");
 
       // Offset recharge emissions
       stateGetter.setVolume(null);
@@ -1151,18 +1151,35 @@ class Engine {
     const salesRaw = self.getStream("sales", scopeEffective);
     const sales = unitConverter.convert(salesRaw, "kg");
 
-    // Determine consumption
-    stateGetter.setVolume(sales);
-    const consumptionRaw = self._streamKeeper.getGhgIntensity(application, substance);
-    const consumption = unitConverter.convert(consumptionRaw, "tCO2e");
-    stateGetter.setVolume(null);
+    /**
+     * Calculate and save a consumption stream
+     *
+     * @param {EngineNumber} consumptionRaw - The raw consumption value to be
+     *     converted and saved.
+     * @param {string} units - The unit type to convert the consumption to.
+     * @param {string} stream - The target stream to save the consumption value.
+     */
+    const calcAndSave = (consumptionRaw, units, stream) => {
+      // Determine consumption
+      stateGetter.setVolume(sales);
+      const consumption = unitConverter.convert(consumptionRaw, units);
+      stateGetter.setVolume(null);
 
-    // Ensure in range
-    const isNegative = consumption.getValue() < 0;
-    const consumptionAllowed = isNegative ? new EngineNumber(0, "tCO2e") : consumption;
+      // Ensure in range
+      const isNegative = consumption.getValue() < 0;
+      const consumptionAllowed = isNegative ? new EngineNumber(0, units) : consumption;
 
-    // Save
-    self.setStream("consumption", consumptionAllowed, null, scopeEffective, false);
+      // Save
+      self.setStream(stream, consumptionAllowed, null, scopeEffective, false);
+    };
+
+    // Get intensities
+    const ghgIntensity = self._streamKeeper.getGhgIntensity(application, substance);
+    const energyIntensity = self._streamKeeper.getEnergyIntensity(application, substance);
+
+    // Update streams
+    calcAndSave(ghgIntensity, "tCO2e", "consumption");
+    calcAndSave(energyIntensity, "kwh", "energy");
   }
 
   /**
