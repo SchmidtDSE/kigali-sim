@@ -68,6 +68,10 @@ class UnitConverter {
       return source;
     }
 
+    if (source.getValue() == 0) {
+      return new EngineNumber(0, destinationUnits);
+    }
+
     const sourceUnitPieces = source.getUnits().split(" / ");
     const sourceHasDenominator = sourceUnitPieces.length > 1;
     const sourceDenominatorUnits = sourceHasDenominator ? sourceUnitPieces[1] : "";
@@ -566,6 +570,11 @@ class ConverterStateGetter {
     const self = this;
     const consumption = self.getGhgConsumption();
     const volume = self.getVolume();
+
+    if (volume.getValue() == 0) {
+      return new EngineNumber(0, "tCO2e / kg");
+    }
+
     const ratioValue = consumption.getValue() / volume.getValue();
 
     const consumptionUnits = consumption.getUnits();

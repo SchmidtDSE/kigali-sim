@@ -761,6 +761,12 @@ class StreamKeeper {
     self._ensureSubstancePresent(application, substance, "setStream");
     self._ensureStreamKnown(name);
 
+    if (isNaN(value.getValue())) {
+      const pieces = [application, substance, name];
+      const piecesStr = pieces.join(" > ");
+      throw new Error("Encountered NaN to be set for: " + piecesStr);
+    }
+
     if (name === "sales") {
       const manufactureValueRaw = self.getStream(application, substance, "manufacture");
       const importValueRaw = self.getStream(application, substance, "import");
@@ -791,6 +797,13 @@ class StreamKeeper {
 
     const unitsNeeded = self._getUnits(name);
     const valueConverted = self._unitConverter.convert(value, unitsNeeded);
+
+    if (isNaN(valueConverted.getValue())) {
+      const pieces = [application, substance, name];
+      const piecesStr = pieces.join(" > ");
+      throw new Error("Encountered NaN after conversion to be set for: " + piecesStr);
+    }
+
     self._streams.set(self._getKey(application, substance, name), valueConverted);
   }
 
