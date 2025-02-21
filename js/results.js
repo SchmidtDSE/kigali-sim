@@ -195,6 +195,7 @@ class ExportPresenter {
           const rechargeEmissionsValue = result.getRechargeEmissions();
           const eolEmissionsValue = result.getEolEmissions();
           const populationValue = result.getPopulation();
+          const energyConsumptionValue = result.getEnergyConsumption();
           return {
             scenario: scenarioName,
             application: application,
@@ -208,8 +209,10 @@ class ExportPresenter {
             rechargeEmissionsUnits: rechargeEmissionsValue.getUnits(),
             eolEmissionsValue: eolEmissionsValue.getValue(),
             eolEmissionsUnits: eolEmissionsValue.getUnits(),
-            equipmentPopulation: populationValue.getValue(),
+            equipmentPopulation: populationValue.getValue(), 
             equipmentUnits: populationValue.getUnits(),
+            energyConsumptionValue: energyConsumptionValue.getValue(),
+            energyConsumptionUnits: energyConsumptionValue.getUnits(),
           };
         });
     });
@@ -252,6 +255,8 @@ class ExportPresenter {
       "eolEmisionsUnits",
       "equipmentPopulation",
       "equipmentUnits",
+      "energyConsumptionValue",
+      "energyConsumptionUnits",
     ];
     const headerStr = headerElements.join(",");
 
