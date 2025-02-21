@@ -5,6 +5,7 @@
  */
 
 const CONVERT_ZERO_NOOP = false;
+const ZERO_EMPTY_VOLUME_INTENSITY = false;
 
 /**
  * Representation of a number with units within the engine.
@@ -573,7 +574,7 @@ class ConverterStateGetter {
     const consumption = self.getGhgConsumption();
     const volume = self.getVolume();
 
-    if (volume.getValue() == 0) {
+    if (ZERO_EMPTY_VOLUME_INTENSITY && volume.getValue() == 0) {
       return new EngineNumber(0, "tCO2e / kg");
     }
 
