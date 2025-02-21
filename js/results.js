@@ -196,7 +196,6 @@ class ExportPresenter {
           const eolEmissionsValue = result.getEolEmissions();
           const populationValue = result.getPopulation();
           const energyConsumptionValue = result.getEnergyConsumption();
-          console.log(energyConsumptionValue);
           return {
             scenario: scenarioName,
             application: application,
