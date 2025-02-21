@@ -14,6 +14,8 @@ import {
 
 import {EngineNumber} from "engine_number";
 
+const CHECK_NAN_STATE = false;
+
 /**
  * Class representing a range of years where inclusion can be tested.
  */
@@ -761,7 +763,7 @@ class StreamKeeper {
     self._ensureSubstancePresent(application, substance, "setStream");
     self._ensureStreamKnown(name);
 
-    if (isNaN(value.getValue())) {
+    if (CHECK_NAN_STATE && isNaN(value.getValue())) {
       const pieces = [application, substance, name];
       const piecesStr = pieces.join(" > ");
       throw new Error("Encountered NaN to be set for: " + piecesStr);
@@ -798,7 +800,7 @@ class StreamKeeper {
     const unitsNeeded = self._getUnits(name);
     const valueConverted = self._unitConverter.convert(value, unitsNeeded);
 
-    if (isNaN(valueConverted.getValue())) {
+    if (CHECK_NAN_STATE && isNaN(valueConverted.getValue())) {
       const pieces = [application, substance, name];
       const piecesStr = pieces.join(" > ");
       throw new Error("Encountered NaN after conversion to be set for: " + piecesStr);
