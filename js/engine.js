@@ -979,15 +979,16 @@ class Engine {
 
       // Get consumption
       const consumptionRaw = self._streamKeeper.getGhgIntensity(application, substance);
+      const consumptionByKg = unitConverter.convert(consumptionRaw, "tCO2e / kg");
 
       stateGetter.setVolume(manufactureValueOffset);
-      const domesticConsumptionValue = unitConverter.convert(consumptionRaw, "tCO2e");
+      const domesticConsumptionValue = unitConverter.convert(consumptionByKg, "tCO2e");
 
       stateGetter.setVolume(importValueOffset);
-      const importConsumptionValue = unitConverter.convert(consumptionRaw, "tCO2e");
+      const importConsumptionValue = unitConverter.convert(consumptionByKg, "tCO2e");
 
       stateGetter.setVolume(recycleValue);
-      const recycleConsumptionValue = unitConverter.convert(consumptionRaw, "tCO2e");
+      const recycleConsumptionValue = unitConverter.convert(consumptionByKg, "tCO2e");
 
       // Offset recharge emissions
       stateGetter.setVolume(null);
