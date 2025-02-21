@@ -14,7 +14,7 @@ import {
 
 import {EngineNumber} from "engine_number";
 
-const CHECK_NAN_STATE = false;
+const CHECK_NAN_STATE = true;
 
 /**
  * Class representing a range of years where inclusion can be tested.

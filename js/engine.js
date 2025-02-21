@@ -604,12 +604,19 @@ class Engine {
       const importKg = emptyStreams ? 1 : importValue.getValue();
       const manufactureKgUnit = manufactureInitialCharge.getValue();
       const importKgUnit = importInitialCharge.getValue();
+
       const manufactureUnits = manufactureKgUnit == 0 ? 0 : manufactureKg / manufactureKgUnit;
       const importUnits = importKgUnit == 0 ? 0 : importKg / importKgUnit;
-      const newSumWeighted = manufactureKgUnit * manufactureUnits + importKgUnit * importUnits;
-      const newSumWeight = manufactureUnits + importUnits;
-      const pooledKgUnit = newSumWeighted / newSumWeight;
-      return new EngineNumber(pooledKgUnit, "kg / unit");
+
+      const emptyPopulation = manufactureUnits == 0 && importUnits == 0;
+      if (emptyPopulation) {
+        return new EngineNumber(0, "kg / unit");
+      } else {
+        const newSumWeighted = manufactureKgUnit * manufactureUnits + importKgUnit * importUnits;
+        const newSumWeight = manufactureUnits + importUnits;
+        const pooledKgUnit = newSumWeighted / newSumWeight;
+        return new EngineNumber(pooledKgUnit, "kg / unit");
+      }
     } else {
       const application = self._scope.getApplication();
       const substance = self._scope.getSubstance();
