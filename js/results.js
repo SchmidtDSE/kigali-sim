@@ -196,6 +196,7 @@ class ExportPresenter {
           const eolEmissionsValue = result.getEolEmissions();
           const populationValue = result.getPopulation();
           const energyConsumptionValue = result.getEnergyConsumption();
+          console.log(energyConsumptionValue);
           return {
             scenario: scenarioName,
             application: application,
@@ -209,7 +210,7 @@ class ExportPresenter {
             rechargeEmissionsUnits: rechargeEmissionsValue.getUnits(),
             eolEmissionsValue: eolEmissionsValue.getValue(),
             eolEmissionsUnits: eolEmissionsValue.getUnits(),
-            equipmentPopulation: populationValue.getValue(), 
+            equipmentPopulation: populationValue.getValue(),
             equipmentUnits: populationValue.getUnits(),
             energyConsumptionValue: energyConsumptionValue.getValue(),
             energyConsumptionUnits: energyConsumptionValue.getUnits(),
@@ -233,6 +234,8 @@ class ExportPresenter {
         record["eolEmissionsUnits"],
         record["equipmentPopulation"],
         record["equipmentUnits"],
+        record["energyConsumptionValue"],
+        record["energyConsumptionUnits"],
       ];
       const valsStrs = vals.map((x) => x + "");
       const valsStr = valsStrs.join(",");
