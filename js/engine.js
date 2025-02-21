@@ -771,18 +771,15 @@ class Engine {
     const application = self._scope.getApplication();
     const substance = self._scope.getSubstance();
 
-    if (
-      amount.getUnits() === "tCO2e" ||
-      amount.getUnits() === "tCO2e / kg" ||
-      amount.getUnits() === "tCO2e / mt"
-    ) {
+    const isGhg = amount.getUnits().startsWith("tCO2e");
+    const isKwh = amount.getUnits().startsWith("kwh");
+
+    if (isGhg) {
       self._streamKeeper.setGhgIntensity(application, substance, amount);
-    } else if (
-      amount.getUnits() === "kwh" ||
-      amount.getUnits() === "kwh / kg" ||
-      amount.getUnits() === "kwh / mt"
-    ) {
+    } else if (isKwh) {
       self._streamKeeper.setEnergyIntensity(application, substance, amount);
+    } else {
+      throw "Cannot equals " + amount.getUnits();
     }
 
     self._recalcConsumption();
