@@ -4,8 +4,8 @@
  * @license BSD, see LICENSE.md.
  */
 
-const CONVERT_ZERO_NOOP = false;
-const ZERO_EMPTY_VOLUME_INTENSITY = false;
+const CONVERT_ZERO_NOOP = true;
+const ZERO_EMPTY_VOLUME_INTENSITY = true;
 
 /**
  * Representation of a number with units within the engine.
