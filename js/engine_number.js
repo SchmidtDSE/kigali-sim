@@ -119,7 +119,12 @@ class UnitConverter {
     } else {
       const numerator = numeratorStrategy(source);
       const denominator = denominatorStrategy(source);
-      return new EngineNumber(numerator.getValue() / denominator.getValue(), destinationUnits);
+
+      if (ZERO_EMPTY_VOLUME_INTENSITY && denominator.getValue() == 0) {
+        return new EngineNumber(0, destinationUnits);
+      } else {
+        return new EngineNumber(numerator.getValue() / denominator.getValue(), destinationUnits);
+      }
     }
   }
 
