@@ -4,6 +4,8 @@
  * @license BSD, see LICENSE.md.
  */
 
+const CONVERT_ZERO_NOOP = false;
+
 /**
  * Representation of a number with units within the engine.
  */
@@ -68,7 +70,7 @@ class UnitConverter {
       return source;
     }
 
-    if (source.getValue() == 0) {
+    if (CONVERT_ZERO_NOOP && source.getValue() == 0) {
       return new EngineNumber(0, destinationUnits);
     }
 
