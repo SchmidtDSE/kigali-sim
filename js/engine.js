@@ -966,7 +966,8 @@ class Engine {
       const recycleKg = recycleValue.getValue();
 
       const nonRecycleSalesKg = manufactureKg + importKg;
-      const noSales = nonRecycleSalesKg == 0;
+      const totalSales = nonRecycleSalesKg + recycleKg;
+      const noSales = totalSales == 0;
       const percentManufacture = noSales ? 1 : manufactureKg / nonRecycleSalesKg;
       const percentImport = 1 - percentManufacture;
 
