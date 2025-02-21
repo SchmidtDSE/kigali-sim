@@ -5,7 +5,7 @@
  */
 
 const CONVERT_ZERO_NOOP = true;
-const ZERO_EMPTY_VOLUME_INTENSITY = true;
+const ZERO_EMPTY_VOLUME_INTENSITY = false;
 
 /**
  * Representation of a number with units within the engine.
@@ -576,26 +576,7 @@ class ConverterStateGetter {
    */
   getSubstanceConsumption() {
     const self = this;
-    const consumption = self.getGhgConsumption();
-    const volume = self.getVolume();
-
-    if (ZERO_EMPTY_VOLUME_INTENSITY && volume.getValue() == 0) {
-      return new EngineNumber(0, "tCO2e / kg");
-    }
-
-    const ratioValue = consumption.getValue() / volume.getValue();
-
-    const consumptionUnits = consumption.getUnits();
-    const volumeUnits = volume.getUnits();
-    const consumptionUnitsExpected = consumptionUnits === "tCO2e";
-    const volumeUnitsExpected = volumeUnits === "mt" || volumeUnits === "kg";
-    const unitsExpected = consumptionUnitsExpected && volumeUnitsExpected;
-    if (!unitsExpected) {
-      throw "Unexpected units for getSubstanceConsumption.";
-    }
-
-    const ratioUnits = consumptionUnits + " / " + volumeUnits;
-    return new EngineNumber(ratioValue, ratioUnits);
+    return self._engine.getEqualsGhgIntensity();
   }
 
   /**
@@ -606,21 +587,7 @@ class ConverterStateGetter {
    */
   getEnergyIntensity() {
     const self = this;
-    const consumption = self.getEnergyConsumption();
-    const volume = self.getVolume();
-    const ratioValue = consumption.getValue() / volume.getValue();
-
-    const consumptionUnits = consumption.getUnits();
-    const volumeUnits = volume.getUnits();
-    const consumptionUnitsExpected = consumptionUnits === "kwh";
-    const volumeUnitsExpected = volumeUnits === "mt" || volumeUnits === "kg";
-    const unitsExpected = consumptionUnitsExpected && volumeUnitsExpected;
-    if (!unitsExpected) {
-      throw "Unexpected units for getEnergyIntensity.";
-    }
-
-    const ratioUnits = consumptionUnits + " / " + volumeUnits;
-    return new EngineNumber(ratioValue, ratioUnits);
+    return self._engine.getEqualsEnergyIntensity();
   }
 
   /**
