@@ -439,6 +439,7 @@ start default
 
     uses substance "HFC-134a"
       equals 1430 tCO2e / mt
+      equals 100 kwh / unit
 
       # Domestic production
       initial charge with 0.12 kg / unit for manufacture
@@ -462,6 +463,7 @@ start default
 
     uses substance "R-600a"
       equals 6 tCO2e / mt
+      equals 80 kwh / unit
 
       # Domestic production
       initial charge with 0.05 kg / unit for manufacture
@@ -487,6 +489,7 @@ start default
 
     uses substance "HFC-134a"
       equals 1430 tCO2e / mt
+      equals 100 kwh / unit
 
       # Domestic production
       initial charge with 0.30 kg / unit for manufacture
@@ -510,6 +513,7 @@ start default
 
     uses substance "R-600a"
       equals 6 tCO2e / mt
+      equals 80 kwh / unit
 
       # Domestic production
       initial charge with 0.12 kg / unit for manufacture
@@ -531,6 +535,7 @@ start default
 
     uses substance "R-404A"
       equals 3922 tCO2e / mt
+      equals 100 kwh / unit
 
       # Domestic production
       initial charge with 0.30 kg / unit for manufacture
@@ -556,6 +561,7 @@ start default
 
     uses substance "R-410A"
       equals 2082 tCO2e / mt
+      equals 80 kwh / unit
 
       # Domestic production
       initial charge with 0.90 kg / unit for manufacture
@@ -579,6 +585,7 @@ start default
 
     uses substance "HFC-32"
       equals 632 tCO2e / mt
+      equals 100 kwh / unit
 
       # Domestic production
       initial charge with 0.68 kg / unit for manufacture
@@ -600,6 +607,7 @@ start default
 
     uses substance "R-290"
       equals 6 tCO2e / mt
+      equals 80 kwh / unit
 
       # Domestic production
       initial charge with 0.68 kg / unit for manufacture
@@ -625,6 +633,7 @@ start default
 
     uses substance "HFC-134a"
       equals 1430 tCO2e / mt
+      equals 100 kwh / unit
 
       # Domestic production
       initial charge with 0.90 kg / unit for manufacture
@@ -648,6 +657,7 @@ start default
 
     uses substance "R-1234yf"
       equals 6 tCO2e / mt
+      equals 80 kwh / unit
 
       # Domestic production
       initial charge with 0.90 kg / unit for manufacture
