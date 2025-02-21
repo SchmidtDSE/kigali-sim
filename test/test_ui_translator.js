@@ -80,36 +80,40 @@ function buildUiTranslatorTests() {
       },
     ]);
 
-    buildTest("converts BAU single app substance with energy", "/test/qta/ui/bau_single_energy.qta", [
-      (result, assert) => {
-        assert.ok(result.getIsCompatible());
-      },
-      (result, assert) => {
-        const applications = result.getApplications();
-        assert.equal(applications.length, 1);
+    buildTest(
+      "converts BAU single app substance with energy",
+      "/test/qta/ui/bau_single_energy.qta",
+      [
+        (result, assert) => {
+          assert.ok(result.getIsCompatible());
+        },
+        (result, assert) => {
+          const applications = result.getApplications();
+          assert.equal(applications.length, 1);
 
-        const application = applications[0];
-        assert.deepEqual(application.getName(), "app1");
+          const application = applications[0];
+          assert.deepEqual(application.getName(), "app1");
 
-        const substances = application.getSubstances();
-        assert.equal(substances.length, 1);
+          const substances = application.getSubstances();
+          assert.equal(substances.length, 1);
 
-        const substance = substances[0];
-        assert.equal(substance.getName(), "sub1");
-      },
-      (result, assert) => {
-        const applications = result.getApplications();
-        const application = applications[0];
+          const substance = substances[0];
+          assert.equal(substance.getName(), "sub1");
+        },
+        (result, assert) => {
+          const applications = result.getApplications();
+          const application = applications[0];
 
-        const substances = application.getSubstances();
-        const substance = substances[0];
+          const substances = application.getSubstances();
+          const substance = substances[0];
 
-        const consumption = substance.getEqualsEnergy(); 
-        const consumptionVolume = consumption.getValue();
-        assert.deepEqual(consumptionVolume.getValue(), 5);
-        assert.deepEqual(consumptionVolume.getUnits(), "kwh / mt");
-      },
-    ]);
+          const consumption = substance.getEqualsKwh();
+          const consumptionVolume = consumption.getValue();
+          assert.deepEqual(consumptionVolume.getValue(), 5);
+          assert.deepEqual(consumptionVolume.getUnits(), "kwh / mt");
+        },
+      ],
+    );
 
     buildTest("converts BAU multiple app substance", "/test/qta/ui/bau_multiple.qta", [
       (result, assert) => {

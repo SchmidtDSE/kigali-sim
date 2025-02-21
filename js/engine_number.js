@@ -309,7 +309,9 @@ class UnitConverter {
       const conversion = self._stateGetter.getAmortizedUnitVolume();
       const conversionValue = conversion.getValue();
       const newValue = originalValue * conversionValue;
-      return new EngineNumber(newValue, "kwh");
+      const volumeUnits = conversion.getUnits().split(" / ")[0];
+      const volume = new EngineNumber(newValue, volumeUnits);
+      return self._toEnergyConsumption(volume);
     } else if (currentUnits === "%") {
       const originalValue = target.getValue();
       const asRatio = originalValue / 100;
@@ -641,13 +643,23 @@ class ConverterStateGetter {
   }
 
   /**
-   * Get the total consumption for the current state.
+   * Get the total ghg consumption for the current state.
    *
    * @returns {EngineNumber} The consumption value in tCO2e.
    */
   getGhgConsumption() {
     const self = this;
     return self._engine.getStream("consumption");
+  }
+
+  /**
+   * Get the total energy consumption for the current state.
+   *
+   * @returns {EngineNumber} The consumption value in kwh.
+   */
+  getEnergyConsumption() {
+    const self = this;
+    return self._engine.getStream("energy"); // TODO: wherever we set consumption need to set energy
   }
 
   /**
@@ -719,6 +731,7 @@ class OverridingConverterStateGetter {
     const self = this;
     self._innerGetter = innerGetter;
     self._substanceConsumption = null;
+    self._energyIntensity = null;
     self._amortizedUnitVolume = null;
     self._population = null;
     self._yearsElapsed = null;
