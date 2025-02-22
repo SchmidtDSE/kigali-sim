@@ -165,14 +165,14 @@
                         </div>
                       </div>
                       <div class="form-group">
-                        <div><label for="edit-consumption-energy">Energy:</label></div>
+                        <div>
+                          <label for="edit-consumption-energy">Annual energy consumption:</label>
+                        </div>
                         <div>
                           <input
                             type="text"
                             name="edit-consumption-energy"
                             class="edit-consumption-energy-input mid"
-                            value="coming soon"
-                            disabled
                           />
                           <span class="sel mid">
                             <select
@@ -180,8 +180,9 @@
                               class="edit-consumption-energy-units-input"
                               aria-label="Units of energy equivalency"
                             >
-                              <option value="kwh / unit">kwh / unit</option>
-                              <option value="kwh / kg">kwh / kg</option>
+                              <option value="kwh / unit">kWh / unit</option>
+                              <option value="kwh / kg">kWh / kg</option>
+                              <option value="kwh / kg">kWh / mt</option>
                             </select>
                           </span>
                         </div>
@@ -804,6 +805,9 @@
                   <option value="tCO2e / yr">tCO2e / yr</option>
                   <option value="ktCO2e / yr">ktCO2e / yr</option>
                   <option value="MtCO2e / yr">MtCO2e / yr</option>
+                  <option value="kwh / yr">kWh / yr</option>
+                  <option value="mwh / yr">MWh / yr</option>
+                  <option value="gwh / yr">GWh / yr</option>
                 </select>
               </div>
             </div>
@@ -1314,6 +1318,7 @@
 
           uses substance "HFC-134a"
             equals 1000 tCO2e / mt
+            equals 100 kwh / unit
 
             # Domestic production
             initial charge with 0.5 kg / unit for manufacture
@@ -1343,6 +1348,7 @@
 
           uses substance "R-600a"
             equals 50 tCO2e / mt
+            equals 50 kwh / unit
 
             # Domestic production
             initial charge with 0.1 kg / unit for manufacture
@@ -1368,6 +1374,7 @@
 
           uses substance "HFC-134a"
             equals 1000 tCO2e / mt
+            equals 100 kwh / unit
 
             # Domestic production
             initial charge with 0.5 kg / unit for manufacture
@@ -1397,6 +1404,7 @@
 
           uses substance "R-600a"
             equals 50 tCO2e / mt
+            equals 50 kwh / unit
 
             # Domestic production
             initial charge with 0.1 kg / unit for manufacture
@@ -1418,6 +1426,7 @@
 
           uses substance "R-404A"
             equals 200 tCO2e / mt
+            equals 50 kwh / unit
 
             # Domestic production
             initial charge with 0.5 kg / unit for manufacture

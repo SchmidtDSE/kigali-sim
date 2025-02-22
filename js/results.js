@@ -195,6 +195,7 @@ class ExportPresenter {
           const rechargeEmissionsValue = result.getRechargeEmissions();
           const eolEmissionsValue = result.getEolEmissions();
           const populationValue = result.getPopulation();
+          const energyConsumptionValue = result.getEnergyConsumption();
           return {
             scenario: scenarioName,
             application: application,
@@ -210,6 +211,8 @@ class ExportPresenter {
             eolEmissionsUnits: eolEmissionsValue.getUnits(),
             equipmentPopulation: populationValue.getValue(),
             equipmentUnits: populationValue.getUnits(),
+            energyConsumptionValue: energyConsumptionValue.getValue(),
+            energyConsumptionUnits: energyConsumptionValue.getUnits(),
           };
         });
     });
@@ -230,6 +233,8 @@ class ExportPresenter {
         record["eolEmissionsUnits"],
         record["equipmentPopulation"],
         record["equipmentUnits"],
+        record["energyConsumptionValue"],
+        record["energyConsumptionUnits"],
       ];
       const valsStrs = vals.map((x) => x + "");
       const valsStr = valsStrs.join(",");
@@ -252,6 +257,8 @@ class ExportPresenter {
       "eolEmisionsUnits",
       "equipmentPopulation",
       "equipmentUnits",
+      "energyConsumptionValue",
+      "energyConsumptionUnits",
     ];
     const headerStr = headerElements.join(",");
 

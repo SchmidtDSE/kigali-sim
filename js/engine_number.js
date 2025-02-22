@@ -4,6 +4,9 @@
  * @license BSD, see LICENSE.md.
  */
 
+const CONVERT_ZERO_NOOP = true;
+const ZERO_EMPTY_VOLUME_INTENSITY = false;
+
 /**
  * Representation of a number with units within the engine.
  */
@@ -68,6 +71,10 @@ class UnitConverter {
       return source;
     }
 
+    if (CONVERT_ZERO_NOOP && source.getValue() == 0) {
+      return new EngineNumber(0, destinationUnits);
+    }
+
     const sourceUnitPieces = source.getUnits().split(" / ");
     const sourceHasDenominator = sourceUnitPieces.length > 1;
     const sourceDenominatorUnits = sourceHasDenominator ? sourceUnitPieces[1] : "";
@@ -86,7 +93,8 @@ class UnitConverter {
       "mt": (x) => self._toMt(x),
       "unit": (x) => self._toUnits(x),
       "units": (x) => self._toUnits(x),
-      "tCO2e": (x) => self._toConsumption(x),
+      "tCO2e": (x) => self._toGhgConsumption(x),
+      "kwh": (x) => self._toEnergyConsumption(x),
       "year": (x) => self._toYears(x),
       "years": (x) => self._toYears(x),
       "%": (x) => self._toPercent(x),
@@ -97,7 +105,8 @@ class UnitConverter {
       "mt": () => self.convert(self._stateGetter.getVolume(), "mt"),
       "unit": () => self.convert(self._stateGetter.getPopulation(), "unit"),
       "units": () => self.convert(self._stateGetter.getPopulation(), "units"),
-      "tCO2e": () => self.convert(self._stateGetter.getConsumption(), "tCO2e"),
+      "tCO2e": () => self.convert(self._stateGetter.getGhgConsumption(), "tCO2e"),
+      "kwh": () => self.convert(self._stateGetter.getEnergyConsumption(), "kwh"),
       "year": () => self.convert(self._stateGetter.getYearsElapsed(), "year"),
       "years": () => self.convert(self._stateGetter.getYearsElapsed(), "years"),
       "": () => new EngineNumber(1, ""),
@@ -110,8 +119,45 @@ class UnitConverter {
     } else {
       const numerator = numeratorStrategy(source);
       const denominator = denominatorStrategy(source);
-      return new EngineNumber(numerator.getValue() / denominator.getValue(), destinationUnits);
+
+      if (denominator.getValue() == 0) {
+        const inferredFactor = self._inferScale(
+          sourceDenominatorUnits,
+          destinationDenominatorUnits,
+        );
+        if (inferredFactor !== undefined) {
+          return new EngineNumber(numerator.getValue() / inferredFactor, destinationUnits);
+        } else if (ZERO_EMPTY_VOLUME_INTENSITY) {
+          return new EngineNumber(0, destinationUnits);
+        } else {
+          throw "Encountered unrecoverable NaN in conversion due to no volume.";
+        }
+      } else {
+        return new EngineNumber(numerator.getValue() / denominator.getValue(), destinationUnits);
+      }
     }
+  }
+
+  /**
+   * Infer a scaling factor without population information.
+   *
+   * Infer the scale factor for converting between source and destination
+   * units without population information.
+   *
+   * @param {string} source - The source unit type.
+   * @param {string} destination - The destination unit type.
+   * @returns {number} The scale factor for conversion or undefined if not
+   *     found.
+   */
+  _inferScale(source, destination) {
+    return {
+      kg: {mt: 1000},
+      mt: {kg: 1 / 1000},
+      unit: {units: 1},
+      units: {unit: 1},
+      years: {year: 1},
+      year: {years: 1},
+    }[source][destination];
   }
 
   /**
@@ -242,15 +288,19 @@ class UnitConverter {
    * @param target - The EngineNumber to convert.
    * @returns Target converted to consumption as tCO2e.
    */
-  _toConsumption(target) {
+  _toGhgConsumption(target) {
     const self = this;
 
     target = self._normalize(target);
     const currentUnits = target.getUnits();
 
+    const currentVolume = currentUnits === "kg" || currentUnits === "mt";
+    const currentPop = currentUnits === "unit" || currentUnits === "units";
+    const currentInfer = currentVolume || currentPop;
+
     if (currentUnits === "tCO2e") {
       return target;
-    } else if (currentUnits === "kg" || currentUnits === "mt") {
+    } else if (currentInfer) {
       const conversion = self._stateGetter.getSubstanceConsumption();
       const conversionValue = conversion.getValue();
       const conversionUnitPieces = conversion.getUnits().split(" / ");
@@ -260,20 +310,54 @@ class UnitConverter {
       const originalValue = targetConverted.getValue();
       const newValue = originalValue * conversionValue;
       return new EngineNumber(newValue, newUnits);
-    } else if (currentUnits === "unit" || currentUnits === "units") {
-      const originalValue = target.getValue();
-      const conversion = self._stateGetter.getAmortizedUnitVolume();
-      const conversionValue = conversion.getValue();
-      const newValue = originalValue * conversionValue;
-      return new EngineNumber(newValue, "tCO2e");
     } else if (currentUnits === "%") {
       const originalValue = target.getValue();
       const asRatio = originalValue / 100;
-      const total = self._stateGetter.getConsumption();
+      const total = self._stateGetter.getGhgConsumption();
       const newValue = total.getValue() * asRatio;
       return new EngineNumber(newValue, "tCO2e");
     } else {
       throw "Unable to convert to consumption: " + currentUnits;
+    }
+  }
+
+  /**
+   * Convert a number to energy consumption as kwh.
+   *
+   * @private
+   * @param target - The EngineNumber to convert.
+   * @returns Target converted to energy consumption as kwh.
+   */
+  _toEnergyConsumption(target) {
+    const self = this;
+
+    target = self._normalize(target);
+    const currentUnits = target.getUnits();
+
+    const currentVolume = currentUnits === "kg" || currentUnits === "mt";
+    const currentPop = currentUnits === "unit" || currentUnits === "units";
+    const currentInfer = currentVolume || currentPop;
+
+    if (currentUnits === "kwh") {
+      return target;
+    } else if (currentInfer) {
+      const conversion = self._stateGetter.getEnergyIntensity();
+      const conversionValue = conversion.getValue();
+      const conversionUnitPieces = conversion.getUnits().split(" / ");
+      const newUnits = conversionUnitPieces[0];
+      const expectedUnits = conversionUnitPieces[1];
+      const targetConverted = self.convert(target, expectedUnits);
+      const originalValue = targetConverted.getValue();
+      const newValue = originalValue * conversionValue;
+      return new EngineNumber(newValue, newUnits);
+    } else if (currentUnits === "%") {
+      const originalValue = target.getValue();
+      const asRatio = originalValue / 100;
+      const total = self._stateGetter.getEnergyConsumption();
+      const newValue = total.getValue() * asRatio;
+      return new EngineNumber(newValue, "kwh");
+    } else {
+      throw "Unable to convert to energy consumption: " + currentUnits;
     }
   }
 
@@ -295,7 +379,11 @@ class UnitConverter {
     } else if (currentUnits === "year") {
       return new EngineNumber(target.getValue(), "years");
     } else if (currentUnits === "tCO2e") {
-      const perYearConsumptionValue = self._stateGetter.getConsumption().getValue();
+      const perYearConsumptionValue = self._stateGetter.getGhgConsumption().getValue();
+      const newYears = target.getValue() / perYearConsumptionValue;
+      return new EngineNumber(newYears, "years");
+    } else if (currentUnits === "kwh") {
+      const perYearConsumptionValue = self._stateGetter.getEnergyConsumption().getValue();
       const newYears = target.getValue() / perYearConsumptionValue;
       return new EngineNumber(newYears, "years");
     } else if (currentUnits === "kg" || currentUnits === "mt") {
@@ -338,7 +426,7 @@ class UnitConverter {
       if (currentUnits === "years" || currentUnits === "year") {
         return self._stateGetter.getYearsElapsed();
       } else if (currentUnits === "tCO2e") {
-        return self._stateGetter.getConsumption();
+        return self._stateGetter.getGhgConsumption();
       } else if (currentUnits === "kg" || currentUnits === "mt") {
         const volume = self._stateGetter.getVolume();
         return self.convert(volume, currentUnits);
@@ -436,13 +524,23 @@ class UnitConverter {
     const self = this;
     const currentUnits = target.getUnits();
 
-    if (!currentUnits.endsWith(" / tCO2e")) {
+    const isCo2 = currentUnits.endsWith(" / tCO2e");
+    const isKwh = currentUnits.endsWith(" / kwh");
+    if (!isCo2 && !isKwh) {
       return target;
     }
 
+    const getTargetConsumption = () => {
+      if (isCo2) {
+        return self._stateGetter.getGhgConsumption();
+      } else {
+        return self._stateGetter.getEnergyConsumption();
+      }
+    };
+
     const originalValue = target.getValue();
     const newUnits = currentUnits.split(" / ")[0];
-    const totalConsumption = self._stateGetter.getConsumption();
+    const totalConsumption = getTargetConsumption();
     const totalConsumptionValue = totalConsumption.getValue();
     const newValue = originalValue * totalConsumptionValue;
 
@@ -510,21 +608,18 @@ class ConverterStateGetter {
    */
   getSubstanceConsumption() {
     const self = this;
-    const consumption = self.getConsumption();
-    const volume = self.getVolume();
-    const ratioValue = consumption.getValue() / volume.getValue();
+    return self._engine.getEqualsGhgIntensity();
+  }
 
-    const consumptionUnits = consumption.getUnits();
-    const volumeUnits = volume.getUnits();
-    const consumptionUnitsExpected = consumptionUnits === "tCO2e";
-    const volumeUnitsExpected = volumeUnits === "mt" || volumeUnits === "kg";
-    const unitsExpected = consumptionUnitsExpected && volumeUnitsExpected;
-    if (!unitsExpected) {
-      throw "Unexpected units for getSubstanceConsumption.";
-    }
-
-    const ratioUnits = consumptionUnits + " / " + volumeUnits;
-    return new EngineNumber(ratioValue, ratioUnits);
+  /**
+   * Get the energy consumption intensity per unit volume.
+   *
+   * @returns {EngineNumber} The energy intensity as a ratio (e.g., kwh/mt or kwh/kg).
+   * @throws {string} If the consumption or volume units are not as expected.
+   */
+  getEnergyIntensity() {
+    const self = this;
+    return self._engine.getEqualsEnergyIntensity();
   }
 
   /**
@@ -558,13 +653,23 @@ class ConverterStateGetter {
   }
 
   /**
-   * Get the total consumption for the current state.
+   * Get the total ghg consumption for the current state.
    *
    * @returns {EngineNumber} The consumption value in tCO2e.
    */
-  getConsumption() {
+  getGhgConsumption() {
     const self = this;
     return self._engine.getStream("consumption");
+  }
+
+  /**
+   * Get the total energy consumption for the current state.
+   *
+   * @returns {EngineNumber} The consumption value in kwh.
+   */
+  getEnergyConsumption() {
+    const self = this;
+    return self._engine.getStream("energy");
   }
 
   /**
@@ -586,7 +691,7 @@ class ConverterStateGetter {
    */
   getAmortizedUnitConsumption() {
     const self = this;
-    const consumption = self.getConsumption();
+    const consumption = self.getGhgConsumption();
     const population = self.getPopulation();
     const ratioValue = consumption.getValue() / population.getValue();
 
@@ -635,14 +740,16 @@ class OverridingConverterStateGetter {
   constructor(innerGetter) {
     const self = this;
     self._innerGetter = innerGetter;
-    self._substanceConsumption = null;
+    self._energyIntensity = null;
     self._amortizedUnitVolume = null;
     self._population = null;
     self._yearsElapsed = null;
     self._totalConsumption = null;
+    self._energyConsumption = null;
     self._volume = null;
     self._amortizedUnitConsumption = null;
     self._populationChange = null;
+    self._substanceConsumption = null;
   }
 
   /**
@@ -666,16 +773,6 @@ class OverridingConverterStateGetter {
   }
 
   /**
-   * Set the substance consumption value.
-   *
-   * @param {EngineNumber} newValue - The new consumption value.
-   */
-  setSubstanceConsumption(newValue) {
-    const self = this;
-    self._substanceConsumption = newValue;
-  }
-
-  /**
    * Get the substance consumption value.
    *
    * @returns {EngineNumber} The substance consumption value.
@@ -686,6 +783,20 @@ class OverridingConverterStateGetter {
       return self._innerGetter.getSubstanceConsumption();
     } else {
       return self._substanceConsumption;
+    }
+  }
+
+  /**
+   * Get the energy intensity.
+   *
+   * @returns {EngineNumber} The energy intensity value with units.
+   */
+  getEnergyIntensity() {
+    const self = this;
+    if (self._energyIntensity === null) {
+      return self._innerGetter.getEnergyIntensity();
+    } else {
+      return self._energyIntensity;
     }
   }
 
@@ -772,16 +883,40 @@ class OverridingConverterStateGetter {
   }
 
   /**
+   * Set the energy consumption equivalency.
+   *
+   * @param {EngineNumber} newValue - The new energy consumption value.
+   */
+  setEnergyConsumption(newValue) {
+    const self = this;
+    self._energyConsumption = newValue;
+  }
+
+  /**
    * Get the consumption value.
    *
    * @returns {EngineNumber} The consumption value.
    */
-  getConsumption() {
+  getGhgConsumption() {
     const self = this;
     if (self._totalConsumption === null) {
-      return self._innerGetter.getConsumption();
+      return self._innerGetter.getGhgConsumption();
     } else {
       return self._totalConsumption;
+    }
+  }
+
+  /**
+   * Get the energy consumption equivalency.
+   *
+   * @returns {EngineNumber} The energy consumption value with units.
+   */
+  getEnergyConsumption() {
+    const self = this;
+    if (self._energyConsumption === null) {
+      return self._innerGetter.getEnergyConsumption();
+    } else {
+      return self._energyConsumption;
     }
   }
 

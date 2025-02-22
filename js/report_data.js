@@ -42,6 +42,7 @@ class AggregatedResult {
     populationNew,
     rechargeEmissions,
     eolEmissions,
+    energyConsumption,
   ) {
     const self = this;
     self._manufactureValue = manufactureValue;
@@ -54,6 +55,17 @@ class AggregatedResult {
     self._populationNew = populationNew;
     self._rechargeEmissions = rechargeEmissions;
     self._eolEmissions = eolEmissions;
+    self._energyConsumption = energyConsumption;
+  }
+
+  /**
+   * Get the energy consumption value.
+   *
+   * @returns {EngineNumber} The energy consumption value with units.
+   */
+  getEnergyConsumption() {
+    const self = this;
+    return self._energyConsumption;
   }
 
   /**
@@ -136,7 +148,7 @@ class AggregatedResult {
    *
    * @returns {EngineNumber} The combined consumption value with units.
    */
-  getConsumption() {
+  getGhgConsumption() {
     const self = this;
     const noRecycle = self._combineUnitValue(
       self.getDomesticConsumption(),
@@ -230,6 +242,10 @@ class AggregatedResult {
       other.getRechargeEmissions(),
     );
     const eolEmissions = self._combineUnitValue(self.getEolEmissions(), other.getEolEmissions());
+    const energyConsumption = self._combineUnitValue(
+      self.getEnergyConsumption(),
+      other.getEnergyConsumption(),
+    );
 
     return new AggregatedResult(
       manufactureValue,
@@ -242,6 +258,7 @@ class AggregatedResult {
       populationNew,
       rechargeEmissions,
       eolEmissions,
+      energyConsumption,
     );
   }
 
@@ -476,6 +493,33 @@ class ReportDataWrapper {
           return new EngineNumber(value.getValue(), "kg / yr");
         });
         strategyBuilder.add();
+
+        strategyBuilder.setStrategy((x) => self.getEnergyConsumption(x));
+
+        const getKwhYr = (value) => {
+          if (value.getUnits() !== "kwh") {
+            throw "Unexpected energy units: " + value.getUnits();
+          }
+          return new EngineNumber(value.getValue(), "kwh / yr");
+        };
+
+        strategyBuilder.setUnits("kwh / yr");
+        strategyBuilder.setTransformation(getKwhYr);
+        strategyBuilder.add();
+
+        strategyBuilder.setUnits("mwh / yr");
+        strategyBuilder.setTransformation((value) => {
+          const kwhValue = getKwhYr(value);
+          return new EngineNumber(kwhValue.getValue() / 1000, "mwh");
+        });
+        strategyBuilder.add();
+
+        strategyBuilder.setUnits("gwh / yr");
+        strategyBuilder.setTransformation((value) => {
+          const kwhValue = getKwhYr(value);
+          return new EngineNumber(kwhValue.getValue() / 1000000, "gwh");
+        });
+        strategyBuilder.add();
       };
 
       strategyBuilder.setSubmetric("all");
@@ -499,7 +543,7 @@ class ReportDataWrapper {
       strategyBuilder.setMetric("sales");
 
       strategyBuilder.setSubmetric("all");
-      strategyBuilder.setStrategy((x) => self.getConsumption(x));
+      strategyBuilder.setStrategy((x) => self.getGhgConsumption(x));
       addEmissionsConversion(strategyBuilder);
 
       strategyBuilder.setSubmetric("import");
@@ -676,10 +720,10 @@ class ReportDataWrapper {
    * @returns {EngineNumber|null} The consumption value, or null if no matching
    *     results.
    */
-  getConsumption(filterSet) {
+  getGhgConsumption(filterSet) {
     const self = this;
     const aggregated = self._getAggregatedAfterFilter(filterSet);
-    return aggregated === null ? null : aggregated.getConsumption();
+    return aggregated === null ? null : aggregated.getGhgConsumption();
   }
 
   /**
@@ -839,6 +883,19 @@ class ReportDataWrapper {
   }
 
   /**
+   * Get energy consumption value matching a given filter set.
+   *
+   * @param {FilterSet} filterSet - The filter criteria to apply.
+   * @returns {EngineNumber|null} The energy consumption value, or null if no
+   *     matching results.
+   */
+  getEnergyConsumption(filterSet) {
+    const self = this;
+    const aggregated = self._getAggregatedAfterFilter(filterSet);
+    return aggregated === null ? null : aggregated.getEnergyConsumption();
+  }
+
+  /**
    * Get flattened array of all results.
    *
    * @private
@@ -887,6 +944,7 @@ class ReportDataWrapper {
           x.getPopulationNew(),
           x.getRechargeEmissions(),
           x.getEolEmissions(),
+          x.getEnergyConsumption(),
         ),
     );
 
