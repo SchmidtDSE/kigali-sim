@@ -120,12 +120,44 @@ class UnitConverter {
       const numerator = numeratorStrategy(source);
       const denominator = denominatorStrategy(source);
 
-      if (ZERO_EMPTY_VOLUME_INTENSITY && denominator.getValue() == 0) {
-        return new EngineNumber(0, destinationUnits);
+      if (denominator.getValue() == 0) {
+        const inferredFactor = self._inferScale(
+          sourceDenominatorUnits,
+          destinationDenominatorUnits,
+        );
+        if (inferredFactor !== undefined) {
+          return new EngineNumber(numerator.getValue() / inferredFactor, destinationUnits);
+        } else if (ZERO_EMPTY_VOLUME_INTENSITY) {
+          return new EngineNumber(0, destinationUnits);
+        } else {
+          throw "Encountered unrecoverable NaN in conversion due to no volume.";
+        }
       } else {
         return new EngineNumber(numerator.getValue() / denominator.getValue(), destinationUnits);
       }
     }
+  }
+
+  /**
+   * Infer a scaling factor without population information.
+   *
+   * Infer the scale factor for converting between source and destination
+   * units without population information.
+   *
+   * @param {string} source - The source unit type.
+   * @param {string} destination - The destination unit type.
+   * @returns {number} The scale factor for conversion or undefined if not
+   *     found.
+   */
+  _inferScale(source, destination) {
+    return {
+      kg: {mt: 1000},
+      mt: {kg: 1 / 1000},
+      unit: {units: 1},
+      units: {unit: 1},
+      years: {year: 1},
+      year: {years: 1},
+    }[source][destination];
   }
 
   /**

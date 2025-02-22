@@ -15,6 +15,7 @@ import {
 import {EngineNumber} from "engine_number";
 
 const CHECK_NAN_STATE = true;
+const CHECK_POSITIVE_STREAMS = true;
 
 /**
  * Class representing a range of years where inclusion can be tested.
@@ -804,6 +805,12 @@ class StreamKeeper {
       const pieces = [application, substance, name];
       const piecesStr = pieces.join(" > ");
       throw new Error("Encountered NaN after conversion to be set for: " + piecesStr);
+    }
+
+    if (CHECK_POSITIVE_STREAMS && valueConverted.getValue() < 0) {
+      const pieces = [application, substance, name];
+      const piecesStr = pieces.join(" > ");
+      throw new Error("Encountered negative stream to be set for: " + piecesStr);
     }
 
     self._streams.set(self._getKey(application, substance, name), valueConverted);

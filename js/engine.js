@@ -1148,7 +1148,7 @@ class Engine {
     const initialCharge = unitConverter.convert(initialChargeRaw, "kg / unit");
     const initialChargeKgUnit = initialCharge.getValue();
     const deltaUnits = availableForNewUnitsKg / initialChargeKgUnit;
-    const newVolume = new EngineNumber(deltaUnits, "units");
+    const newVolume = new EngineNumber(deltaUnits < 0 ? 0 : deltaUnits, "units");
 
     // Find new total
     const priorPopulationUnits = priorPopulation.getValue();
