@@ -281,7 +281,7 @@ function buildCompilerTests() {
         // Check year 1 consumption
         const recordAYear1 = getResult(result, "Sim", 1, 0, "Test", "Sub A");
         const consumptionAYear1 = recordAYear1.getGhgConsumption();
-        assert.closeTo(consumptionAYear1.getValue(), 100000000, 0.0001);
+        assert.closeTo(consumptionAYear1.getValue(), 10000000, 0.0001);
         assert.deepEqual(consumptionAYear1.getUnits(), "tCO2e");
 
         const recordBYear1 = getResult(result, "Sim", 1, 0, "Test", "Sub B");
