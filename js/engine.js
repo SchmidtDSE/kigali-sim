@@ -803,6 +803,12 @@ class Engine {
     self._recalcConsumption();
   }
 
+  /**
+   * Retrieve the tCO2e intensity for the current application and substance.
+   *
+   * @returns {EngineNumber} The GHG intensity value with volume normalized
+   *     GHG.
+   */
   getEqualsGhgIntensity() {
     const self = this;
     const application = self._scope.getApplication();
@@ -810,6 +816,12 @@ class Engine {
     return self._streamKeeper.getGhgIntensity(application, substance);
   }
 
+  /**
+   * Retrieve the energy intensity for the current application and substance.
+   *
+   * @returns {EngineNumber} The energy intensity value with volume normalized
+   *     energy.
+   */
   getEqualsEnergyIntensity() {
     const self = this;
     const application = self._scope.getApplication();
