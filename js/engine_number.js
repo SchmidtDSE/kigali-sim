@@ -5,7 +5,7 @@
  */
 
 const CONVERT_ZERO_NOOP = true;
-const ZERO_EMPTY_VOLUME_INTENSITY = true;
+const ZERO_EMPTY_VOLUME_INTENSITY = false;
 
 /**
  * Representation of a number with units within the engine.
@@ -119,8 +119,45 @@ class UnitConverter {
     } else {
       const numerator = numeratorStrategy(source);
       const denominator = denominatorStrategy(source);
-      return new EngineNumber(numerator.getValue() / denominator.getValue(), destinationUnits);
+
+      if (denominator.getValue() == 0) {
+        const inferredFactor = self._inferScale(
+          sourceDenominatorUnits,
+          destinationDenominatorUnits,
+        );
+        if (inferredFactor !== undefined) {
+          return new EngineNumber(numerator.getValue() / inferredFactor, destinationUnits);
+        } else if (ZERO_EMPTY_VOLUME_INTENSITY) {
+          return new EngineNumber(0, destinationUnits);
+        } else {
+          throw "Encountered unrecoverable NaN in conversion due to no volume.";
+        }
+      } else {
+        return new EngineNumber(numerator.getValue() / denominator.getValue(), destinationUnits);
+      }
     }
+  }
+
+  /**
+   * Infer a scaling factor without population information.
+   *
+   * Infer the scale factor for converting between source and destination
+   * units without population information.
+   *
+   * @param {string} source - The source unit type.
+   * @param {string} destination - The destination unit type.
+   * @returns {number} The scale factor for conversion or undefined if not
+   *     found.
+   */
+  _inferScale(source, destination) {
+    return {
+      kg: {mt: 1000},
+      mt: {kg: 1 / 1000},
+      unit: {units: 1},
+      units: {unit: 1},
+      years: {year: 1},
+      year: {years: 1},
+    }[source][destination];
   }
 
   /**
@@ -571,26 +608,7 @@ class ConverterStateGetter {
    */
   getSubstanceConsumption() {
     const self = this;
-    const consumption = self.getGhgConsumption();
-    const volume = self.getVolume();
-
-    if (ZERO_EMPTY_VOLUME_INTENSITY && volume.getValue() == 0) {
-      return new EngineNumber(0, "tCO2e / kg");
-    }
-
-    const ratioValue = consumption.getValue() / volume.getValue();
-
-    const consumptionUnits = consumption.getUnits();
-    const volumeUnits = volume.getUnits();
-    const consumptionUnitsExpected = consumptionUnits === "tCO2e";
-    const volumeUnitsExpected = volumeUnits === "mt" || volumeUnits === "kg";
-    const unitsExpected = consumptionUnitsExpected && volumeUnitsExpected;
-    if (!unitsExpected) {
-      throw "Unexpected units for getSubstanceConsumption.";
-    }
-
-    const ratioUnits = consumptionUnits + " / " + volumeUnits;
-    return new EngineNumber(ratioValue, ratioUnits);
+    return self._engine.getEqualsGhgIntensity();
   }
 
   /**
@@ -601,21 +619,7 @@ class ConverterStateGetter {
    */
   getEnergyIntensity() {
     const self = this;
-    const consumption = self.getEnergyConsumption();
-    const volume = self.getVolume();
-    const ratioValue = consumption.getValue() / volume.getValue();
-
-    const consumptionUnits = consumption.getUnits();
-    const volumeUnits = volume.getUnits();
-    const consumptionUnitsExpected = consumptionUnits === "kwh";
-    const volumeUnitsExpected = volumeUnits === "mt" || volumeUnits === "kg";
-    const unitsExpected = consumptionUnitsExpected && volumeUnitsExpected;
-    if (!unitsExpected) {
-      throw "Unexpected units for getEnergyIntensity.";
-    }
-
-    const ratioUnits = consumptionUnits + " / " + volumeUnits;
-    return new EngineNumber(ratioValue, ratioUnits);
+    return self._engine.getEqualsEnergyIntensity();
   }
 
   /**

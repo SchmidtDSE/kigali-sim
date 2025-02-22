@@ -22,6 +22,8 @@ const STREAM_NAMES = new Set([
   "sales",
 ]);
 
+const OPTIMIZE_RECALCS = true;
+
 /**
  * Result of an engine execution for a substance for an application and year.
  */
@@ -443,12 +445,21 @@ class Engine {
     if (name === "sales" || name === "manufacture" || name === "import") {
       self._recalcPopulationChange(scopeEffective);
       self._recalcConsumption(scopeEffective);
+      if (!OPTIMIZE_RECALCS) {
+        self._recalcSales(scopeEffective);
+      }
     } else if (name === "consumption") {
       self._recalcSales(scopeEffective);
       self._recalcPopulationChange(scopeEffective);
+      if (!OPTIMIZE_RECALCS) {
+        self._recalcConsumption(scopeEffective);
+      }
     } else if (name === "equipment") {
       self._recalcSales(scopeEffective);
       self._recalcConsumption(scopeEffective);
+      if (!OPTIMIZE_RECALCS) {
+        self._recalcPopulationChange(scopeEffective);
+      }
     } else if (name === "priorEquipment") {
       self._recalcRetire(scopeEffective);
     }
@@ -593,12 +604,19 @@ class Engine {
       const importKg = emptyStreams ? 1 : importValue.getValue();
       const manufactureKgUnit = manufactureInitialCharge.getValue();
       const importKgUnit = importInitialCharge.getValue();
+
       const manufactureUnits = manufactureKgUnit == 0 ? 0 : manufactureKg / manufactureKgUnit;
       const importUnits = importKgUnit == 0 ? 0 : importKg / importKgUnit;
-      const newSumWeighted = manufactureKgUnit * manufactureUnits + importKgUnit * importUnits;
-      const newSumWeight = manufactureUnits + importUnits;
-      const pooledKgUnit = newSumWeighted / newSumWeight;
-      return new EngineNumber(pooledKgUnit, "kg / unit");
+
+      const emptyPopulation = manufactureUnits == 0 && importUnits == 0;
+      if (emptyPopulation) {
+        return new EngineNumber(0, "kg / unit");
+      } else {
+        const newSumWeighted = manufactureKgUnit * manufactureUnits + importKgUnit * importUnits;
+        const newSumWeight = manufactureUnits + importUnits;
+        const pooledKgUnit = newSumWeighted / newSumWeight;
+        return new EngineNumber(pooledKgUnit, "kg / unit");
+      }
     } else {
       const application = self._scope.getApplication();
       const substance = self._scope.getSubstance();
@@ -783,6 +801,20 @@ class Engine {
     }
 
     self._recalcConsumption();
+  }
+
+  getEqualsGhgIntensity() {
+    const self = this;
+    const application = self._scope.getApplication();
+    const substance = self._scope.getSubstance();
+    return self._streamKeeper.getGhgIntensity(application, substance);
+  }
+
+  getEqualsEnergyIntensity() {
+    const self = this;
+    const application = self._scope.getApplication();
+    const substance = self._scope.getSubstance();
+    return self._streamKeeper.getEnergyIntensity(application, substance);
   }
 
   /**
@@ -982,14 +1014,18 @@ class Engine {
       const consumptionRaw = self._streamKeeper.getGhgIntensity(application, substance);
       const consumptionByKg = unitConverter.convert(consumptionRaw, "tCO2e / kg");
 
-      stateGetter.setVolume(manufactureValueOffset);
-      const domesticConsumptionValue = unitConverter.convert(consumptionByKg, "tCO2e");
+      const getConsumptionForVolume = (volume) => {
+        if (volume.getValue() == 0) {
+          return new EngineNumber(0, "tCO2e");
+        }
 
-      stateGetter.setVolume(importValueOffset);
-      const importConsumptionValue = unitConverter.convert(consumptionByKg, "tCO2e");
+        stateGetter.setVolume(volume);
+        return unitConverter.convert(consumptionByKg, "tCO2e");
+      };
 
-      stateGetter.setVolume(recycleValue);
-      const recycleConsumptionValue = unitConverter.convert(consumptionByKg, "tCO2e");
+      const domesticConsumptionValue = getConsumptionForVolume(manufactureValueOffset);
+      const importConsumptionValue = getConsumptionForVolume(importValueOffset);
+      const recycleConsumptionValue = getConsumptionForVolume(recycleValue);
 
       // Offset recharge emissions
       stateGetter.setVolume(null);
@@ -1112,7 +1148,7 @@ class Engine {
     const initialCharge = unitConverter.convert(initialChargeRaw, "kg / unit");
     const initialChargeKgUnit = initialCharge.getValue();
     const deltaUnits = availableForNewUnitsKg / initialChargeKgUnit;
-    const newVolume = new EngineNumber(deltaUnits, "units");
+    const newVolume = new EngineNumber(deltaUnits < 0 ? 0 : deltaUnits, "units");
 
     // Find new total
     const priorPopulationUnits = priorPopulation.getValue();
