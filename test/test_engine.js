@@ -455,6 +455,20 @@ function buildEngineTests() {
       assert.deepEqual(displaceVal.getUnits(), "kg");
     });
 
+    QUnit.test("sets energy intensity", function (assert) {
+      const engine = new Engine(1, 3);
+
+      engine.setStanza("default");
+      engine.setApplication("test app");
+      engine.setSubstance("test substance");
+
+      engine.equals(new EngineNumber(100, "kwh / kg"), new YearMatcher(null, null));
+
+      const consumptionRaw = engine._streamKeeper.getEnergyIntensity("test app", "test substance");
+      assert.closeTo(consumptionRaw.getValue(), 100, 0.0001);
+      assert.deepEqual(consumptionRaw.getUnits(), "kwh / kg");
+    });
+
     QUnit.test("replaces substances", function (assert) {
       const engine = new Engine(1, 3);
 

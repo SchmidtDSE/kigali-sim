@@ -22,6 +22,8 @@ const STREAM_NAMES = new Set([
   "sales",
 ]);
 
+const OPTIMIZE_RECALCS = true;
+
 /**
  * Result of an engine execution for a substance for an application and year.
  */
@@ -67,6 +69,7 @@ class EngineResult {
     populationNew,
     rechargeEmissions,
     eolEmissions,
+    energyConsumption,
   ) {
     const self = this;
     self._application = application;
@@ -82,6 +85,7 @@ class EngineResult {
     self._populationNew = populationNew;
     self._rechargeEmissions = rechargeEmissions;
     self._eolEmissions = eolEmissions;
+    self._energyConsumption = energyConsumption;
   }
 
   /**
@@ -166,7 +170,7 @@ class EngineResult {
    *
    * @returns {EngineNumber} The consumption value.
    */
-  getConsumption() {
+  getGhgConsumption() {
     const self = this;
 
     const noRecycleValue = self.getConsumptionNoRecycle();
@@ -249,6 +253,16 @@ class EngineResult {
   getEolEmissions() {
     const self = this;
     return self._eolEmissions;
+  }
+
+  /**
+   * Get the energy consumption value.
+   *
+   * @returns {EngineNumber} The energy consumption value with units.
+   */
+  getEnergyConsumption() {
+    const self = this;
+    return self._energyConsumption;
   }
 }
 
@@ -431,12 +445,21 @@ class Engine {
     if (name === "sales" || name === "manufacture" || name === "import") {
       self._recalcPopulationChange(scopeEffective);
       self._recalcConsumption(scopeEffective);
+      if (!OPTIMIZE_RECALCS) {
+        self._recalcSales(scopeEffective);
+      }
     } else if (name === "consumption") {
       self._recalcSales(scopeEffective);
       self._recalcPopulationChange(scopeEffective);
+      if (!OPTIMIZE_RECALCS) {
+        self._recalcConsumption(scopeEffective);
+      }
     } else if (name === "equipment") {
       self._recalcSales(scopeEffective);
       self._recalcConsumption(scopeEffective);
+      if (!OPTIMIZE_RECALCS) {
+        self._recalcPopulationChange(scopeEffective);
+      }
     } else if (name === "priorEquipment") {
       self._recalcRetire(scopeEffective);
     }
@@ -581,12 +604,19 @@ class Engine {
       const importKg = emptyStreams ? 1 : importValue.getValue();
       const manufactureKgUnit = manufactureInitialCharge.getValue();
       const importKgUnit = importInitialCharge.getValue();
+
       const manufactureUnits = manufactureKgUnit == 0 ? 0 : manufactureKg / manufactureKgUnit;
       const importUnits = importKgUnit == 0 ? 0 : importKg / importKgUnit;
-      const newSumWeighted = manufactureKgUnit * manufactureUnits + importKgUnit * importUnits;
-      const newSumWeight = manufactureUnits + importUnits;
-      const pooledKgUnit = newSumWeighted / newSumWeight;
-      return new EngineNumber(pooledKgUnit, "kg / unit");
+
+      const emptyPopulation = manufactureUnits == 0 && importUnits == 0;
+      if (emptyPopulation) {
+        return new EngineNumber(0, "kg / unit");
+      } else {
+        const newSumWeighted = manufactureKgUnit * manufactureUnits + importKgUnit * importUnits;
+        const newSumWeight = manufactureUnits + importUnits;
+        const pooledKgUnit = newSumWeighted / newSumWeight;
+        return new EngineNumber(pooledKgUnit, "kg / unit");
+      }
     } else {
       const application = self._scope.getApplication();
       const substance = self._scope.getSubstance();
@@ -758,9 +788,45 @@ class Engine {
 
     const application = self._scope.getApplication();
     const substance = self._scope.getSubstance();
-    self._streamKeeper.setGhgIntensity(application, substance, amount);
+
+    const isGhg = amount.getUnits().startsWith("tCO2e");
+    const isKwh = amount.getUnits().startsWith("kwh");
+
+    if (isGhg) {
+      self._streamKeeper.setGhgIntensity(application, substance, amount);
+    } else if (isKwh) {
+      self._streamKeeper.setEnergyIntensity(application, substance, amount);
+    } else {
+      throw "Cannot equals " + amount.getUnits();
+    }
 
     self._recalcConsumption();
+  }
+
+  /**
+   * Retrieve the tCO2e intensity for the current application and substance.
+   *
+   * @returns {EngineNumber} The GHG intensity value with volume normalized
+   *     GHG.
+   */
+  getEqualsGhgIntensity() {
+    const self = this;
+    const application = self._scope.getApplication();
+    const substance = self._scope.getSubstance();
+    return self._streamKeeper.getGhgIntensity(application, substance);
+  }
+
+  /**
+   * Retrieve the energy intensity for the current application and substance.
+   *
+   * @returns {EngineNumber} The energy intensity value with volume normalized
+   *     energy.
+   */
+  getEqualsEnergyIntensity() {
+    const self = this;
+    const application = self._scope.getApplication();
+    const substance = self._scope.getSubstance();
+    return self._streamKeeper.getEnergyIntensity(application, substance);
   }
 
   /**
@@ -925,6 +991,9 @@ class Engine {
       const importValue = unitConverter.convert(importRaw, "kg");
       const recycleValue = unitConverter.convert(recycleRaw, "kg");
 
+      // Get total energy consumption
+      const energyConsumptionValue = self._streamKeeper.getStream(application, substance, "energy");
+
       // Get emissions
       const populationValue = self._streamKeeper.getStream(application, substance, "equipment");
       const populationNew = self._streamKeeper.getStream(application, substance, "newEquipment");
@@ -941,7 +1010,8 @@ class Engine {
       const recycleKg = recycleValue.getValue();
 
       const nonRecycleSalesKg = manufactureKg + importKg;
-      const percentManufacture = manufactureKg / nonRecycleSalesKg;
+      const noSales = nonRecycleSalesKg == 0;
+      const percentManufacture = noSales ? 1 : manufactureKg / nonRecycleSalesKg;
       const percentImport = 1 - percentManufacture;
 
       // Offset sales
@@ -953,16 +1023,30 @@ class Engine {
       const importValueOffset = new EngineNumber(importKg - recycleKg * percentImport, "kg");
 
       // Get consumption
-      const consumptionRaw = self._streamKeeper.getGhgIntensity(application, substance);
+      const getConsumptionByVolume = () => {
+        const consumptionRaw = self._streamKeeper.getGhgIntensity(application, substance);
+        const endsKg = consumptionRaw.getUnits().endsWith("kg");
+        const endsMt = consumptionRaw.getUnits().endsWith("mt");
+        if (endsKg || endsMt) {
+          return consumptionRaw;
+        } else {
+          return unitConverter.convert(consumptionRaw, "tCO2e / kg");
+        }
+      };
+      const consumptionByVolume = getConsumptionByVolume();
 
-      stateGetter.setVolume(manufactureValueOffset);
-      const domesticConsumptionValue = unitConverter.convert(consumptionRaw, "tCO2e");
+      const getConsumptionForVolume = (volume) => {
+        if (volume.getValue() == 0) {
+          return new EngineNumber(0, "tCO2e");
+        }
 
-      stateGetter.setVolume(importValueOffset);
-      const importConsumptionValue = unitConverter.convert(consumptionRaw, "tCO2e");
+        stateGetter.setVolume(volume);
+        return unitConverter.convert(consumptionByVolume, "tCO2e");
+      };
 
-      stateGetter.setVolume(recycleValue);
-      const recycleConsumptionValue = unitConverter.convert(consumptionRaw, "tCO2e");
+      const domesticConsumptionValue = getConsumptionForVolume(manufactureValueOffset);
+      const importConsumptionValue = getConsumptionForVolume(importValueOffset);
+      const recycleConsumptionValue = getConsumptionForVolume(recycleValue);
 
       // Offset recharge emissions
       stateGetter.setVolume(null);
@@ -987,6 +1071,7 @@ class Engine {
         populationNew,
         rechargeEmissionsOffset,
         eolEmissions,
+        energyConsumptionValue,
       );
     });
   }
@@ -1084,7 +1169,7 @@ class Engine {
     const initialCharge = unitConverter.convert(initialChargeRaw, "kg / unit");
     const initialChargeKgUnit = initialCharge.getValue();
     const deltaUnits = availableForNewUnitsKg / initialChargeKgUnit;
-    const newVolume = new EngineNumber(deltaUnits, "units");
+    const newVolume = new EngineNumber(deltaUnits < 0 ? 0 : deltaUnits, "units");
 
     // Find new total
     const priorPopulationUnits = priorPopulation.getValue();
@@ -1122,18 +1207,35 @@ class Engine {
     const salesRaw = self.getStream("sales", scopeEffective);
     const sales = unitConverter.convert(salesRaw, "kg");
 
-    // Determine consumption
-    stateGetter.setVolume(sales);
-    const consumptionRaw = self._streamKeeper.getGhgIntensity(application, substance);
-    const consumption = unitConverter.convert(consumptionRaw, "tCO2e");
-    stateGetter.setVolume(null);
+    /**
+     * Calculate and save a consumption stream
+     *
+     * @param {EngineNumber} consumptionRaw - The raw consumption value to be
+     *     converted and saved.
+     * @param {string} units - The unit type to convert the consumption to.
+     * @param {string} stream - The target stream to save the consumption value.
+     */
+    const calcAndSave = (consumptionRaw, units, stream) => {
+      // Determine consumption
+      stateGetter.setVolume(sales);
+      const consumption = unitConverter.convert(consumptionRaw, units);
+      stateGetter.setVolume(null);
 
-    // Ensure in range
-    const isNegative = consumption.getValue() < 0;
-    const consumptionAllowed = isNegative ? new EngineNumber(0, "tCO2e") : consumption;
+      // Ensure in range
+      const isNegative = consumption.getValue() < 0;
+      const consumptionAllowed = isNegative ? new EngineNumber(0, units) : consumption;
 
-    // Save
-    self.setStream("consumption", consumptionAllowed, null, scopeEffective, false);
+      // Save
+      self.setStream(stream, consumptionAllowed, null, scopeEffective, false);
+    };
+
+    // Get intensities
+    const ghgIntensity = self._streamKeeper.getGhgIntensity(application, substance);
+    const energyIntensity = self._streamKeeper.getEnergyIntensity(application, substance);
+
+    // Update streams
+    calcAndSave(ghgIntensity, "tCO2e", "consumption");
+    calcAndSave(energyIntensity, "kwh", "energy");
   }
 
   /**

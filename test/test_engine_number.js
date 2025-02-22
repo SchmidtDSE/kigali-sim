@@ -27,13 +27,25 @@ function buildEngineNumberTests() {
       constructor() {
         const self = this;
         self._substanceConsumption = null;
+        self._energyIntensity = null;
         self._amortizedUnitVolume = null;
         self._population = null;
         self._yearsElapsed = null;
-        self._totalConsumption = null;
+        self._totalGhgConsumption = null;
         self._volume = null;
         self._amortizedUnitConsumption = null;
         self._populationChange = null;
+        self._totalEnergyConsumption = null;
+      }
+
+      setEnergyConsumption(newValue) {
+        const self = this;
+        self._totalEnergyConsumption = newValue;
+      }
+
+      getEnergyConsumption() {
+        const self = this;
+        return self._totalEnergyConsumption;
       }
 
       setSubstanceConsumption(newValue) {
@@ -44,6 +56,16 @@ function buildEngineNumberTests() {
       getSubstanceConsumption() {
         const self = this;
         return self._substanceConsumption;
+      }
+
+      setEnergyIntensity(newValue) {
+        const self = this;
+        self._energyIntensity = newValue;
+      }
+
+      getEnergyIntensity() {
+        const self = this;
+        return self._energyIntensity;
       }
 
       setAmortizedUnitVolume(newValue) {
@@ -76,14 +98,14 @@ function buildEngineNumberTests() {
         return self._yearsElapsed;
       }
 
-      setConsumption(newValue) {
+      setGhgConsumption(newValue) {
         const self = this;
-        self._totalConsumption = newValue;
+        self._totalGhgConsumption = newValue;
       }
 
-      getConsumption() {
+      getGhgConsumption() {
         const self = this;
-        return self._totalConsumption;
+        return self._totalGhgConsumption;
       }
 
       setVolume(newValue) {
@@ -193,13 +215,23 @@ function buildEngineNumberTests() {
 
     QUnit.test("volume per consumption to volume", function (assert) {
       const mockConverterStateGetter = new MockConverterStateGetter();
-      mockConverterStateGetter.setConsumption(new EngineNumber(10, "tCO2e"));
+      mockConverterStateGetter.setGhgConsumption(new EngineNumber(10, "tCO2e"));
 
       const result = convertUnits(
         new EngineNumber(20, "kg / tCO2e"),
         "kg",
         mockConverterStateGetter,
       );
+
+      assert.closeTo(result.getValue(), 200, 0.001);
+      assert.deepEqual(result.getUnits(), "kg");
+    });
+
+    QUnit.test("volume per consumption to volume using energy consumption", function (assert) {
+      const mockConverterStateGetter = new MockConverterStateGetter();
+      mockConverterStateGetter.setEnergyConsumption(new EngineNumber(10, "MJ"));
+
+      const result = convertUnits(new EngineNumber(20, "kg / kwh"), "kg", mockConverterStateGetter);
 
       assert.closeTo(result.getValue(), 200, 0.001);
       assert.deepEqual(result.getUnits(), "kg");
@@ -280,10 +312,24 @@ function buildEngineNumberTests() {
 
     QUnit.test("pop per consumption to pop", function (assert) {
       const mockConverterStateGetter = new MockConverterStateGetter();
-      mockConverterStateGetter.setConsumption(new EngineNumber(5, "tCO2e"));
+      mockConverterStateGetter.setGhgConsumption(new EngineNumber(5, "tCO2e"));
 
       const result = convertUnits(
         new EngineNumber(2, "units / tCO2e"),
+        "units",
+        mockConverterStateGetter,
+      );
+
+      assert.closeTo(result.getValue(), 10, 0.001);
+      assert.deepEqual(result.getUnits(), "units");
+    });
+
+    QUnit.test("pop per consumption to pop using energy consumption", function (assert) {
+      const mockConverterStateGetter = new MockConverterStateGetter();
+      mockConverterStateGetter.setEnergyConsumption(new EngineNumber(5, "kwh"));
+
+      const result = convertUnits(
+        new EngineNumber(2, "units / kwh"),
         "units",
         mockConverterStateGetter,
       );
@@ -302,7 +348,7 @@ function buildEngineNumberTests() {
       assert.deepEqual(result.getUnits(), "units");
     });
 
-    QUnit.test("consumption to consumption", function (assert) {
+    QUnit.test("consumption to consumption ghg", function (assert) {
       const result = convertUnits(
         new EngineNumber(5, "tCO2e"),
         "tCO2e",
@@ -313,7 +359,7 @@ function buildEngineNumberTests() {
       assert.deepEqual(result.getUnits(), "tCO2e");
     });
 
-    QUnit.test("volume to consumption", function (assert) {
+    QUnit.test("volume to consumption for ghg", function (assert) {
       const mockConverterStateGetter = new MockConverterStateGetter();
       mockConverterStateGetter.setSubstanceConsumption(new EngineNumber(5, "tCO2e / kg"));
 
@@ -323,9 +369,9 @@ function buildEngineNumberTests() {
       assert.deepEqual(result.getUnits(), "tCO2e");
     });
 
-    QUnit.test("pop to consumption", function (assert) {
+    QUnit.test("pop to consumption for ghg", function (assert) {
       const mockConverterStateGetter = new MockConverterStateGetter();
-      mockConverterStateGetter.setAmortizedUnitVolume(new EngineNumber(0.1, "tCO2e / unit"));
+      mockConverterStateGetter.setSubstanceConsumption(new EngineNumber(0.1, "tCO2e / unit"));
 
       const result = convertUnits(new EngineNumber(20, "units"), "tCO2e", mockConverterStateGetter);
 
@@ -333,7 +379,7 @@ function buildEngineNumberTests() {
       assert.deepEqual(result.getUnits(), "tCO2e");
     });
 
-    QUnit.test("consumption per time to consumption", function (assert) {
+    QUnit.test("consumption per time to consumption for ghg", function (assert) {
       const mockConverterStateGetter = new MockConverterStateGetter();
       mockConverterStateGetter.setYearsElapsed(new EngineNumber(2, "years"));
 
@@ -347,7 +393,7 @@ function buildEngineNumberTests() {
       assert.deepEqual(result.getUnits(), "tCO2e");
     });
 
-    QUnit.test("consumption per volume to consumption", function (assert) {
+    QUnit.test("consumption per volume to consumption for ghg", function (assert) {
       const mockConverterStateGetter = new MockConverterStateGetter();
       mockConverterStateGetter.setVolume(new EngineNumber(5, "kg"));
 
@@ -361,7 +407,7 @@ function buildEngineNumberTests() {
       assert.deepEqual(result.getUnits(), "tCO2e");
     });
 
-    QUnit.test("consumption per pop to consumption", function (assert) {
+    QUnit.test("consumption per pop to consumption for ghg", function (assert) {
       const mockConverterStateGetter = new MockConverterStateGetter();
       mockConverterStateGetter.setPopulation(new EngineNumber(20, "units"));
 
@@ -375,14 +421,79 @@ function buildEngineNumberTests() {
       assert.deepEqual(result.getUnits(), "tCO2e");
     });
 
-    QUnit.test("percent to consumption", function (assert) {
+    QUnit.test("percent to consumption for ghg", function (assert) {
       const mockConverterStateGetter = new MockConverterStateGetter();
-      mockConverterStateGetter.setConsumption(new EngineNumber(10, "tCO2e"));
+      mockConverterStateGetter.setGhgConsumption(new EngineNumber(10, "tCO2e"));
 
       const result = convertUnits(new EngineNumber(10, "%"), "tCO2e", mockConverterStateGetter);
 
       assert.closeTo(result.getValue(), 1, 0.001);
       assert.deepEqual(result.getUnits(), "tCO2e");
+    });
+
+    QUnit.test("percent to consumption using energy consumption", function (assert) {
+      const mockConverterStateGetter = new MockConverterStateGetter();
+      mockConverterStateGetter.setEnergyConsumption(new EngineNumber(10, "kwh"));
+
+      const result = convertUnits(new EngineNumber(10, "%"), "kwh", mockConverterStateGetter);
+
+      assert.closeTo(result.getValue(), 1, 0.001);
+      assert.deepEqual(result.getUnits(), "kwh");
+    });
+
+    QUnit.test("consumption to consumption energy", function (assert) {
+      const result = convertUnits(
+        new EngineNumber(5, "kwh"),
+        "kwh",
+        new MockConverterStateGetter(),
+      );
+
+      assert.closeTo(result.getValue(), 5, 0.001);
+      assert.deepEqual(result.getUnits(), "kwh");
+    });
+
+    QUnit.test("volume to consumption for energy", function (assert) {
+      const mockConverterStateGetter = new MockConverterStateGetter();
+      mockConverterStateGetter.setEnergyIntensity(new EngineNumber(5, "kwh / kg"));
+
+      const result = convertUnits(new EngineNumber(10, "kg"), "kwh", mockConverterStateGetter);
+
+      assert.closeTo(result.getValue(), 50, 0.001);
+      assert.deepEqual(result.getUnits(), "kwh");
+    });
+
+    QUnit.test("pop to consumption for energy", function (assert) {
+      const mockConverterStateGetter = new MockConverterStateGetter();
+      mockConverterStateGetter.setEnergyIntensity(new EngineNumber(0.1, "kwh / unit"));
+
+      const result = convertUnits(new EngineNumber(20, "units"), "kwh", mockConverterStateGetter);
+
+      assert.closeTo(result.getValue(), 2, 0.001);
+      assert.deepEqual(result.getUnits(), "kwh");
+    });
+
+    QUnit.test("consumption per time to consumption for energy", function (assert) {
+      const mockConverterStateGetter = new MockConverterStateGetter();
+      mockConverterStateGetter.setYearsElapsed(new EngineNumber(2, "years"));
+
+      const result = convertUnits(
+        new EngineNumber(20, "kwh / year"),
+        "kwh",
+        mockConverterStateGetter,
+      );
+
+      assert.closeTo(result.getValue(), 40, 0.001);
+      assert.deepEqual(result.getUnits(), "kwh");
+    });
+
+    QUnit.test("consumption per volume to consumption for energy", function (assert) {
+      const mockConverterStateGetter = new MockConverterStateGetter();
+      mockConverterStateGetter.setVolume(new EngineNumber(5, "kg"));
+
+      const result = convertUnits(new EngineNumber(2, "kwh / kg"), "kwh", mockConverterStateGetter);
+
+      assert.closeTo(result.getValue(), 10, 0.001);
+      assert.deepEqual(result.getUnits(), "kwh");
     });
 
     QUnit.test("years to years", function (assert) {
@@ -398,9 +509,19 @@ function buildEngineNumberTests() {
 
     QUnit.test("consumption to years", function (assert) {
       const mockConverterStateGetter = new MockConverterStateGetter();
-      mockConverterStateGetter.setConsumption(new EngineNumber(5, "tCO2e"));
+      mockConverterStateGetter.setGhgConsumption(new EngineNumber(5, "tCO2e"));
 
       const result = convertUnits(new EngineNumber(10, "tCO2e"), "years", mockConverterStateGetter);
+
+      assert.closeTo(result.getValue(), 2, 0.001);
+      assert.deepEqual(result.getUnits(), "years");
+    });
+
+    QUnit.test("consumption to years using energy consumption", function (assert) {
+      const mockConverterStateGetter = new MockConverterStateGetter();
+      mockConverterStateGetter.setEnergyConsumption(new EngineNumber(5, "kwh"));
+
+      const result = convertUnits(new EngineNumber(10, "kwh"), "years", mockConverterStateGetter);
 
       assert.closeTo(result.getValue(), 2, 0.001);
       assert.deepEqual(result.getUnits(), "years");
@@ -464,9 +585,9 @@ function buildEngineNumberTests() {
       assert.deepEqual(result.getUnits(), "unit / kg");
     });
 
-    QUnit.test("normalize by consumption", function (assert) {
+    QUnit.test("normalize by ghg consumption", function (assert) {
       const mockConverterStateGetter = new MockConverterStateGetter();
-      mockConverterStateGetter.setConsumption(new EngineNumber(2, "tCO2e"));
+      mockConverterStateGetter.setGhgConsumption(new EngineNumber(2, "tCO2e"));
 
       const result = convertUnits(
         new EngineNumber(10, "units"),

@@ -14,6 +14,9 @@ import {
 
 import {EngineNumber} from "engine_number";
 
+const CHECK_NAN_STATE = true;
+const CHECK_POSITIVE_STREAMS = true;
+
 /**
  * Class representing a range of years where inclusion can be tested.
  */
@@ -413,6 +416,7 @@ class StreamParameterization {
     const self = this;
     const createZero = (x) => new EngineNumber(0, x);
     self._ghgIntensity = createZero("tCO2e / kg");
+    self._energyIntensity = createZero("kwh / kg");
     self._initialCharge = {
       manufacture: createZero("kg / unit"),
       import: createZero("kg / unit"),
@@ -443,6 +447,26 @@ class StreamParameterization {
   getGhgIntensity() {
     const self = this;
     return self._ghgIntensity;
+  }
+
+  /**
+   * Set the energy intensity.
+   *
+   * @param {EngineNumber} newValue - The new energy intensity value.
+   */
+  setEnergyIntensity(newValue) {
+    const self = this;
+    self._energyIntensity = newValue;
+  }
+
+  /**
+   * Get the energy intensity.
+   *
+   * @returns {EngineNumber} The current energy intensity value.
+   */
+  getEnergyIntensity() {
+    const self = this;
+    return self._energyIntensity;
   }
 
   /**
@@ -740,6 +764,12 @@ class StreamKeeper {
     self._ensureSubstancePresent(application, substance, "setStream");
     self._ensureStreamKnown(name);
 
+    if (CHECK_NAN_STATE && isNaN(value.getValue())) {
+      const pieces = [application, substance, name];
+      const piecesStr = pieces.join(" > ");
+      throw new Error("Encountered NaN to be set for: " + piecesStr);
+    }
+
     if (name === "sales") {
       const manufactureValueRaw = self.getStream(application, substance, "manufacture");
       const importValueRaw = self.getStream(application, substance, "import");
@@ -770,6 +800,19 @@ class StreamKeeper {
 
     const unitsNeeded = self._getUnits(name);
     const valueConverted = self._unitConverter.convert(value, unitsNeeded);
+
+    if (CHECK_NAN_STATE && isNaN(valueConverted.getValue())) {
+      const pieces = [application, substance, name];
+      const piecesStr = pieces.join(" > ");
+      throw new Error("Encountered NaN after conversion to be set for: " + piecesStr);
+    }
+
+    if (CHECK_POSITIVE_STREAMS && valueConverted.getValue() < 0) {
+      const pieces = [application, substance, name];
+      const piecesStr = pieces.join(" > ");
+      throw new Error("Encountered negative stream to be set for: " + piecesStr);
+    }
+
     self._streams.set(self._getKey(application, substance, name), valueConverted);
   }
 
@@ -852,6 +895,19 @@ class StreamKeeper {
   }
 
   /**
+   * Set the energy intensity for a substance in an application.
+   *
+   * @param {string} application - The application name.
+   * @param {string} substance - The substance name.
+   * @param {EngineNumber} newValue - The new energy intensity value.
+   */
+  setEnergyIntensity(application, substance, newValue) {
+    const self = this;
+    const parameterization = self._getParameterization(application, substance);
+    parameterization.setEnergyIntensity(newValue);
+  }
+
+  /**
    * Get the greenhouse gas intensity for a substance in an application.
    *
    * @param {string} application - The application name.
@@ -862,6 +918,19 @@ class StreamKeeper {
     const self = this;
     const parameterization = self._getParameterization(application, substance);
     return parameterization.getGhgIntensity();
+  }
+
+  /**
+   * Get the energy intensity for a substance in an application.
+   *
+   * @param {string} application - The application name.
+   * @param {string} substance - The substance name.
+   * @returns {EngineNumber} The current energy intensity value.
+   */
+  getEnergyIntensity(application, substance) {
+    const self = this;
+    const parameterization = self._getParameterization(application, substance);
+    return parameterization.getEnergyIntensity();
   }
 
   /**

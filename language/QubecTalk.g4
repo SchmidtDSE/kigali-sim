@@ -240,6 +240,8 @@ PERCENT_: '%';
 
 TCO2E_: 'tCO2e';
 
+KWH_: 'kwh';
+
 UNIT_: 'unit';
 
 UNITS_: 'units';
@@ -266,7 +268,7 @@ number: (SUB_|ADD_)? (FLOAT_ | INTEGER_);
 
 string: STR_;
 
-volumeUnit: (KG_ | MT_ | TCO2E_ | UNIT_ | UNITS_);
+volumeUnit: (KG_ | MT_ | TCO2E_ | KWH_ | UNIT_ | UNITS_);
 
 relativeUnit: (PERCENT_);
 

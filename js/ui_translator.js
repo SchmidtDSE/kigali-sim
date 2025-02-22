@@ -35,7 +35,14 @@ const COMMAND_COMPATIBILITIES = {
   "replace": "policy",
 };
 
-const SUPPORTED_EQUALS_UNITS = ["tCO2e / unit", "tCO2e / kg", "tCO2e / mt"];
+const SUPPORTED_EQUALS_UNITS = [
+  "tCO2e / unit",
+  "tCO2e / kg",
+  "tCO2e / mt",
+  "kwh / kg",
+  "kwh / mt",
+  "kwh / unit",
+];
 
 const toolkit = QubecTalk.getToolkit();
 
@@ -447,8 +454,7 @@ class Program {
           }
         };
 
-        const getEqualsProblematic = () => {
-          const equals = substance.getEquals();
+        const getEqualsProblematic = (equals) => {
           if (equals === null) {
             return false;
           } else {
@@ -468,7 +474,11 @@ class Program {
           }
         };
 
-        return getInitialChargeProblematic() || getEqualsProblematic();
+        const ghgProblematic = getEqualsProblematic(substance.getEqualsGhg());
+        const kwhProblematic = getEqualsProblematic(substance.getEqualsKwh());
+        const equalsProblematic = ghgProblematic || kwhProblematic;
+
+        return getInitialChargeProblematic() || equalsProblematic;
       });
       return problematicSubstances.length > 0;
     });
@@ -954,7 +964,8 @@ class SubstanceBuilder {
     self._initialCharges = [];
     self._limits = [];
     self._changes = [];
-    self._equals = null;
+    self._equalsGhg = null;
+    self._equalsKwh = null;
     self._recharge = null;
     self._recycles = [];
     self._replaces = [];
@@ -976,7 +987,7 @@ class SubstanceBuilder {
       self._limits,
       self._recycles,
       self._replaces,
-      [self._equals, self._recharge, self._retire],
+      [self._equalsGhg, self._equalsKwh, self._recharge, self._retire],
       self._changes,
       self._setVals,
     ].flat();
@@ -996,7 +1007,8 @@ class SubstanceBuilder {
       self._initialCharges,
       self._limits,
       self._changes,
-      self._equals,
+      self._equalsGhg,
+      self._equalsKwh,
       self._recharge,
       self._recycles,
       self._replaces,
@@ -1036,7 +1048,14 @@ class SubstanceBuilder {
       "setVal": (x) => self.addSetVal(x),
       "initial charge": (x) => self.addInitialCharge(x),
       "recharge": (x) => self.setRecharge(x),
-      "equals": (x) => self.setEquals(x),
+      "equals": (x) => {
+        const units = x.getValue().getUnits();
+        if (units.includes("kwh")) {
+          return self.setEqualsKwh(x);
+        } else {
+          return self.setEqualsGhg(x);
+        }
+      },
       "recycle": (x) => self.addRecycle(x),
       "cap": (x) => self.addLimit(x),
       "floor": (x) => self.addLimit(x),
@@ -1096,9 +1115,20 @@ class SubstanceBuilder {
    * @param {Command} newVal - Equals command to set.
    * @returns {Command|IncompatibleCommand} The command or incompatibility marker.
    */
-  setEquals(newVal) {
+  setEqualsGhg(newVal) {
     const self = this;
-    self._equals = self._checkDuplicate(self._equals, newVal);
+    self._equalsGhg = self._checkDuplicate(self._equalsGhg, newVal);
+  }
+
+  /**
+   * Set the energy consumption equals command.
+   *
+   * @param {Command} newVal - Energy equals command to set.
+   * @returns {Command|IncompatibleCommand} The command or incompatibility marker.
+   */
+  setEqualsKwh(newVal) {
+    const self = this;
+    self._equalsKwh = self._checkDuplicate(self._equalsKwh, newVal);
   }
 
   /**
@@ -1205,7 +1235,8 @@ class Substance {
     charges,
     limits,
     changes,
-    equals,
+    equalsGhg,
+    equalsKwh,
     recharge,
     recycles,
     replaces,
@@ -1219,7 +1250,8 @@ class Substance {
     self._initialCharges = charges;
     self._limits = limits;
     self._changes = changes;
-    self._equals = equals;
+    self._equalsGhg = equalsGhg;
+    self._equalsKwh = equalsKwh;
     self._recharge = recharge;
     self._recycles = recycles;
     self._replaces = replaces;
@@ -1282,13 +1314,23 @@ class Substance {
   }
 
   /**
-   * Get the equals command for this substance.
+   * Get the GHG equals command for this substance.
    *
-   * @returns {Command|null} The equals command or null if not set.
+   * @returns {Command|null} The GHG equals command or null if not set.
    */
-  getEquals() {
+  getEqualsGhg() {
     const self = this;
-    return self._equals;
+    return self._equalsGhg;
+  }
+
+  /**
+   * Get the energy consumption equals command for this substance.
+   *
+   * @returns {Command|null} The energy equals command or null if not set.
+   */
+  getEqualsKwh() {
+    const self = this;
+    return self._equalsKwh;
   }
 
   /**
@@ -1394,7 +1436,8 @@ class Substance {
     };
 
     addAllIfGiven(self._getInitialChargesCode());
-    addIfGiven(self._getEqualsCode());
+    addIfGiven(self._getEqualsCode(self._equalsGhg));
+    addIfGiven(self._getEqualsCode(self._equalsKwh));
     addAllIfGiven(self._getSetValsCode());
     addAllIfGiven(self._getChangesCode());
     addIfGiven(self._getRetireCode());
@@ -1440,18 +1483,18 @@ class Substance {
    * @returns {string|null} Code string or null if no equals command.
    * @private
    */
-  _getEqualsCode() {
+  _getEqualsCode(equalsCommand) {
     const self = this;
-    if (self._equals === null) {
+    if (equalsCommand === null) {
       return null;
     }
 
     const pieces = [
       "equals",
-      self._equals.getValue().getValue(),
-      self._equals.getValue().getUnits(),
+      equalsCommand.getValue().getValue(),
+      equalsCommand.getValue().getUnits(),
     ];
-    self._addDuration(pieces, self._equals);
+    self._addDuration(pieces, equalsCommand);
 
     return self._finalizeStatement(pieces);
   }
