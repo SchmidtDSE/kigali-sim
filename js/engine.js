@@ -1011,8 +1011,17 @@ class Engine {
       const importValueOffset = new EngineNumber(importKg - recycleKg * percentImport, "kg");
 
       // Get consumption
-      const consumptionRaw = self._streamKeeper.getGhgIntensity(application, substance);
-      const consumptionByKg = unitConverter.convert(consumptionRaw, "tCO2e / kg");
+      const getConsumptionByVolume = () => {
+        const consumptionRaw = self._streamKeeper.getGhgIntensity(application, substance);
+        const endsKg = consumptionRaw.getUnits().endsWith("kg");
+        const endsMt = consumptionRaw.getUnits().endsWith("mt");
+        if (endsKg || endsMt) {
+          return consumptionRaw;
+        } else {
+          return unitConverter.convert(consumptionRaw, "tCO2e / kg");
+        }
+      };
+      const consumptionByVolume = getConsumptionByVolume();
 
       const getConsumptionForVolume = (volume) => {
         if (volume.getValue() == 0) {
@@ -1020,7 +1029,7 @@ class Engine {
         }
 
         stateGetter.setVolume(volume);
-        return unitConverter.convert(consumptionByKg, "tCO2e");
+        return unitConverter.convert(consumptionByVolume, "tCO2e");
       };
 
       const domesticConsumptionValue = getConsumptionForVolume(manufactureValueOffset);
