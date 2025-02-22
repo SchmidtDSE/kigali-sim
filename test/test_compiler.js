@@ -75,6 +75,15 @@ function buildCompilerTests() {
       },
     ]);
 
+    buildTest("tests kwh units", "/test/qta/basic_kwh_units.qta", [
+      (result, assert) => {
+        const record = getResult(result, BAU_NAME, 1, 0, "test", "test");
+        const energyConsumption = record.getEnergyConsumption();
+        assert.closeTo(energyConsumption.getValue(), 500, 0.0001);
+        assert.deepEqual(energyConsumption.getUnits(), "kwh");
+      },
+    ]);
+
     buildTest("runs a basic script", "/test/qta/basic.qta", [
       (result, assert) => {
         const record = getResult(result, BAU_NAME, 1, 0, "test", "test");
