@@ -123,6 +123,10 @@ section {
   display: none;
 }
 
+.loading {
+  height: 14px;
+}
+
 .skip-link {
   top: -100px;
   left: 0;

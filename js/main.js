@@ -357,11 +357,21 @@ class MainPresenter {
  * Main entry point for the application.
  */
 function main() {
-  const mainPresenter = new MainPresenter();
+  const showApp = () => {
+    document.getElementById("loading").style.display = "none";
+    document.getElementById("main-holder").style.display = "block";
+  };
 
-  Sentry.onLoad(function () {
-    Sentry.init({});
-  });
+  const onLoad = () => {
+    const mainPresenter = new MainPresenter();
+    setTimeout(showApp, 500);
+
+    Sentry.onLoad(function () {
+      Sentry.init({});
+    });
+  };
+
+  setTimeout(onLoad, 500);
 }
 
 /**
