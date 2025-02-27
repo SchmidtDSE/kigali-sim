@@ -100,3 +100,23 @@ section {
   border: 2px solid #505050;
   border-radius: 3px;
 }
+
+a.primary, a.primary:link, a.primary:visited {
+  background-color: #7070C0;
+  color: white;
+  border-radius: 10px;
+  padding: 7px;
+  text-decoration: none;
+}
+
+a.primary:focus, a.primary:hover, a.primary:active {
+  background-color: #5050C0;
+}
+
+.hidden {
+  display: none;
+}
+
+.form-input {
+  margin-bottom: 15px;
+}
