@@ -94,8 +94,13 @@ section {
 .aside {
   background-color: #F0F0F0;
   border: 1px solid #E0E0E0;
+  color: #333333;
   border-radius: 4px;
   padding: 8px;
+}
+
+.aside strong {
+  color: black;
 }
 
 .form-input {
