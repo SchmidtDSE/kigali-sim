@@ -1,0 +1,83 @@
+<html>
+    <head>
+        <title>Get Help</title>
+        <link href="/guide/guide.css" rel="stylesheet" type="text/css" />
+    </head>
+    <body>
+        <div class="skip-link">
+            <a href="#main">Skip to content</a>
+        </div>
+        <header>
+            This page is part of the
+            <a href="/">Montreal Policy Simulator</a>.
+        </header>
+        <main id="main">
+            <h1>Get Help</h1>
+
+            <div class="aside">
+                <p>
+                    We are here to help. If you are comfortable, this feature allows you to share
+                    your simulation with us. Any information you provide will be held in confidence.
+                    However, sending this information can help diagnose the issue or help you add
+                    something new to your simulation.
+                </p>
+
+                <p>
+                    Your time is valuable. Thank you for using this open source tool in your work.
+                    Also, thank you for sharing your experiences with us so that we may further
+                    improve this software. Your communication helps ensure that the software is not
+                    only better for you but the broader community of the software's users.
+                </p>
+
+                <p>
+                    After clicking submit, this information will be forwarded to our team at UC
+                    Berkeley as described in our privacy policy. We will write back as soon as we
+                    can. Please expect a reply in 0 to 3 business days.
+                </p>
+            </div>
+
+            <div class="form-input">
+                <div><label for="email">Email address so we may contact you:</label></div>
+                <div><input type="email" id="email" required /></div>
+            </div>
+
+            <div class="form-input">
+                <div><label for="description">How can we help?</label></div>
+                <div>
+                    <textarea id="description" rows="5" cols="33"> </textarea>
+                </div>
+            </div>
+
+            <div class="form-input hidden">
+                <div><label for="simulation">Simulation</label></div>
+                <div>
+                    <textarea id="simulation" rows="5" cols="33"> </textarea>
+                </div>
+            </div>
+
+            <div class="form-input">
+                <a href="#" class="primary" id="send-button">Send</a>
+            </div>
+
+            <div class="status-display" id="sending-message">
+                <div class="title">Sending message:</div>
+                <div>Sending message please wait...</div>
+            </div>
+
+            <div class="status-display" id="sent-message">
+                <div class="title">Message sent:</div>
+                <div>We will reach out soon by email with more details.</div>
+            </div>
+        </main>
+        <script
+            src="https://js.sentry-cdn.com/91f12e7f5593a507d7d74a52e3ea14cd.min.js"
+            crossorigin="anonymous"
+        ></script>
+        <script type="text/javascript" src="/guide/get_help.js"></script>
+        <script>
+            Sentry.onLoad(function () {
+                Sentry.init({});
+            });
+        </script>
+    </body>
+</html>
