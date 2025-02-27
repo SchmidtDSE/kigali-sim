@@ -14,24 +14,27 @@
         <main id="main">
             <h1>Get Help</h1>
 
-            <p>
-                We are here to help. If you are comfortable, this feature allows you to share your
-                simulation with us. Any information you provide will be held in confidence. We can
-                help diagnose the issue or help you add something you need assistance with.
-            </p>
+            <div class="aside">
+                <p>
+                    We are here to help. If you are comfortable, this feature allows you to share
+                    your simulation with us. Any information you provide will be held in confidence.
+                    We can help diagnose the issue or help you add something you need assistance
+                    with.
+                </p>
 
-            <p>
-                Your time is valuable. Thank you for using this open source tool in your work. Also,
-                thank you for sharing your experiences with us so that we may further improve this
-                software. Your communication helps ensure that the software is not only better for
-                you but the broader community of the software's users.
-            </p>
+                <p>
+                    Your time is valuable. Thank you for using this open source tool in your work.
+                    Also, thank you for sharing your experiences with us so that we may further
+                    improve this software. Your communication helps ensure that the software is not
+                    only better for you but the broader community of the software's users.
+                </p>
 
-            <p>
-                After clicking submit, this information will be forwarded to our team at UC Berkeley
-                as described in our privacy policy. We will write back as soon as we can. Please
-                expect a reply in 0 to 3 business days.
-            </p>
+                <p>
+                    After clicking submit, this information will be forwarded to our team at UC
+                    Berkeley as described in our privacy policy. We will write back as soon as we
+                    can. Please expect a reply in 0 to 3 business days.
+                </p>
+            </div>
 
             <div class="form-input">
                 <div><label for="email">Email address so we may contact you:</label></div>
@@ -54,6 +57,16 @@
 
             <div class="form-input">
                 <a href="#" class="primary" id="send-button">Send</a>
+            </div>
+
+            <div class="status-display" id="sending-message">
+                <div class="title">Sending message</div>
+                <div>Sending message please wait...</div>
+            </div>
+
+            <div class="status-display" id="sent-message">
+                <div class="title">Message sent</div>
+                <div>We will reach out soon by email with more details.</div>
             </div>
         </main>
         <script

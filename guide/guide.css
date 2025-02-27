@@ -113,6 +113,13 @@ a.primary:focus, a.primary:hover, a.primary:active {
   background-color: #5050C0;
 }
 
+.aside {
+  background-color: #E0E0E0;
+  broder: 1px solid #505050;
+  border-radius: 4px;
+  padding: 8px;
+}
+
 .hidden {
   display: none;
 }
@@ -122,5 +129,13 @@ a.primary:focus, a.primary:hover, a.primary:active {
 }
 
 .form-input label {
+  font-weight: bold;
+}
+
+.status-display {
+  display: none;
+}
+
+.status-display .title {
   font-weight: bold;
 }

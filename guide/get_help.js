@@ -4,7 +4,7 @@
  * @license BSD, see LICENSE.md.
  */
 
-const POST_URL = "https://your-api-gateway-url.amazonaws.com/prod/send-help-email";
+const POST_URL = "https://uyppqr75wwrl3uejzvbm5c3qh40aoncr.lambda-url.us-east-2.on.aws/";
 const FAIL_MESSAGE = "Sorry we ran into an issue. Please email hello@mlf-policy-explorer.org.";
 
 /**
@@ -37,6 +37,23 @@ function checkInputs(email, description) {
 function hideSend() {
   const sendButton = document.getElementById("send-button");
   sendButton.style.display = "none";
+
+  const sendingMessage = document.getElementById("sending-message");
+  sendingMessage.style.display = "none";
+}
+
+/**
+ * Shows the confirmation message after successfully sending feedback.
+ * 
+ * Hides the sending message and displays the sent confirmation message
+ * to inform the user that their feedback has been successfully sent.
+ */
+function showConfirmation() {
+  const sendingMessage = document.getElementById("sending-message");
+  sendingMessage.style.display = "none";
+
+  const sentMessage = document.getElementById("sent-message");
+  sentMessage.style.display = "block";
 }
 
 /**
@@ -73,7 +90,7 @@ function sendFeedback() {
 
   const postHandler = postAction.then((response) => {
     if (response.ok) {
-      alert("Thank you, someone will be in touch soon.");
+      showConfirmation();
     } else {
       alert(FAIL_MESSAGE);
     }
