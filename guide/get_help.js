@@ -4,7 +4,7 @@
  * @license BSD, see LICENSE.md.
  */
 
-const POST_URL = "";
+const POST_URL = "https://your-api-gateway-url.amazonaws.com/prod/send-help-email";
 const FAIL_MESSAGE = "Sorry we ran into an issue. Please email hello@mlf-policy-explorer.org.";
 
 /**
