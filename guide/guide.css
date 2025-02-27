@@ -118,5 +118,9 @@ a.primary:focus, a.primary:hover, a.primary:active {
 }
 
 .form-input {
-  margin-bottom: 15px;
+  margin-top: 15px;
+}
+
+.form-input label {
+  font-weight: bold;
 }
