@@ -20,7 +20,7 @@ function checkInputs(email, description) {
     return false;
   }
 
-  if (decription.trim() === "") {
+  if (description.trim() === "") {
     alert("Please describe how we can help you.");
     return false;
   }
@@ -39,12 +39,12 @@ function hideSend() {
   sendButton.style.display = "none";
 
   const sendingMessage = document.getElementById("sending-message");
-  sendingMessage.style.display = "none";
+  sendingMessage.style.display = "block";
 }
 
 /**
  * Shows the confirmation message after successfully sending feedback.
- * 
+ *
  * Hides the sending message and displays the sent confirmation message
  * to inform the user that their feedback has been successfully sent.
  */
@@ -65,7 +65,7 @@ function sendFeedback() {
   const simulationElement = document.getElementById("simulation");
 
   const email = emailElement.value;
-  const decription = descriptionElement.value;
+  const description = descriptionElement.value;
   const simulation = simulationElement.value;
 
   if (!checkInputs(email, description)) {
@@ -114,12 +114,10 @@ function main() {
   }
 
   const sendButton = document.getElementById("send-button");
-  if (sendButton) {
-    sendButton.addEventListener("click", function (event) {
-      event.preventDefault();
-      sendFeedback();
-    });
-  }
+  sendButton.addEventListener("click", function (event) {
+    event.preventDefault();
+    sendFeedback();
+  });
 }
 
 main();

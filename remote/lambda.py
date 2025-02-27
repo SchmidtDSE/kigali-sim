@@ -35,7 +35,7 @@ Simulation code:
 
 class Payload:
     """Represents the payload data for the help request email. """
-    
+
     def __init__(self, email, description, simulation):
         """Initialize the Payload object with email, description, and simulation.
 
@@ -75,7 +75,7 @@ class Payload:
 
 class Config:
     """Represents the configuration for sending emails."""
-    
+
     def __init__(self, smtp_host, smtp_port, smtp_user, smtp_pass, destination):
         """Initialize the Config object with SMTP and destination settings.
 
@@ -99,7 +99,7 @@ class Config:
             str: The SMTP host server.
         """
         return self._smtp_host
-    
+
     def get_smtp_port(self):
         """Get the SMTP port number.
 
@@ -116,7 +116,7 @@ class Config:
         """
         return self._smtp_user
 
-    
+
     def get_smtp_pass(self):
         """Get the SMTP password.
 
@@ -154,9 +154,7 @@ def get_env_var_decrypt(name):
 
 
 def make_message(payload, config):
-    
-    """
-    Create an email message from the payload.
+    """Create an email message from the payload.
 
     Args:
         payload: Payload class containing the user's email, description of the
@@ -199,6 +197,16 @@ def get_payload(data):
 
 
 def get_config_from_env():
+    """Retrieve configuration from environment variables and decrypt them.
+
+    This function accesses several environment variables related to SMTP 
+    configuration, decrypts them using AWS Key Management Service (KMS),
+    and uses the decrypted values to construct a Config object.
+
+    Returns:
+        Config: The configuration object containing SMTP settings and 
+            destination email address.
+    """
     smtp_host = get_env_var_decrypt('SMTP_HOST')
     smtp_port = int(get_env_var_decrypt('SMTP_PORT'))
     smtp_user = get_env_var_decrypt('SMTP_USER')
@@ -215,8 +223,7 @@ def get_config_from_env():
 
 
 def send_message(message, config):
-    """
-    Send an email message using the specified configuration.
+    """Send an email message using the specified configuration.
 
     Args:
         message: The email message to send.
@@ -229,9 +236,7 @@ def send_message(message, config):
 
 
 def lambda_handler(event, context):
-    """
-    AWS Lambda function to handle form submissions from the get_help.js page
-    and send emails with the form data.
+    """Send emails on behalf of get_help.html
 
     Args:
         event: The event data containing the HTTP request details
@@ -242,7 +247,7 @@ def lambda_handler(event, context):
     """
     body = event.get('body', '{}')
     data = json.loads(body)
-    
+
     payload = get_payload(data)
     config = get_config_from_env()
 
@@ -252,8 +257,7 @@ def lambda_handler(event, context):
     return {
         'statusCode': 200,
         'headers': {
-            'Content-Type': 'application/json',
-            'Access-Control-Allow-Origin': '*'
+            'Content-Type': 'application/json'
         },
         'body': json.dumps({'message': 'Success'})
     }

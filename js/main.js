@@ -11,6 +11,8 @@ import {ResultsPresenter} from "results";
 import {UiEditorPresenter} from "ui_editor";
 import {UiTranslatorCompiler} from "ui_translator";
 
+const HELP_TEXT = "Would you like our help in resolving this issue?";
+
 const WHITESPACE_REGEX = new RegExp("^\\s*$");
 const NEW_FILE_MSG = [
   "Starting a new file will clear your current work.",
@@ -177,7 +179,7 @@ class MainPresenter {
       const program = result.getProgram();
       if (result.getErrors().length > 0) {
         const message = "Program error: " + result.getErrors()[0];
-        alert(message);
+        alertWithHelpOption(message);
         self._buttonPanelPresenter.enable();
         Sentry.captureMessage(message, "info");
         return;
@@ -185,7 +187,7 @@ class MainPresenter {
 
       if (result.getErrors().length > 0) {
         const message = "Result error: " + result.getErrors()[0];
-        alert(message);
+        alertWithHelpOption(message);
         Sentry.captureMessage(message, "error");
         self._buttonPanelPresenter.enable();
         return;
@@ -201,7 +203,7 @@ class MainPresenter {
           }
         } catch (e) {
           console.log(e);
-          alert("On result error: " + e);
+          alertWithHelpOption("On result error: " + e);
         }
       }
     };
@@ -211,7 +213,7 @@ class MainPresenter {
         execute();
       } catch (e) {
         const message = "Execute error: " + e;
-        alert(message);
+        alertWithHelpOption(message);
         Sentry.captureMessage(message, "error");
       }
       self._buttonPanelPresenter.enable();
@@ -360,6 +362,21 @@ function main() {
   Sentry.onLoad(function () {
     Sentry.init({});
   });
+}
+
+/**
+ * Show the user an alert and offer help.
+ *
+ * Show the user an alert to the user with the given message as a confirm
+ * dialog. HELP_TEXT will be added to the end. If the user says OK, then
+ * they will be redirected to /guide/get_help.html
+ *
+ * @param message {string} - The message to display.
+ */
+function alertWithHelpOption(message) {
+  if (confirm(message + " " + HELP_TEXT)) {
+    window.location.href = "/guide/get_help.html";
+  }
 }
 
 export {main};
