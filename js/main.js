@@ -181,14 +181,14 @@ class MainPresenter {
         const message = "Program error: " + result.getErrors()[0];
         alertWithHelpOption(message);
         self._buttonPanelPresenter.enable();
-        Sentry.captureMessage(message, "info");
+        captureSentryMessage(message, "info");
         return;
       }
 
       if (result.getErrors().length > 0) {
         const message = "Result error: " + result.getErrors()[0];
         alertWithHelpOption(message);
-        Sentry.captureMessage(message, "error");
+        captureSentryMessage(message, "error");
         self._buttonPanelPresenter.enable();
         return;
       } else if (program !== null) {
@@ -214,7 +214,7 @@ class MainPresenter {
       } catch (e) {
         const message = "Execute error: " + e;
         alertWithHelpOption(message);
-        Sentry.captureMessage(message, "error");
+        captureSentryMessage(message, "error");
       }
       self._buttonPanelPresenter.enable();
     };
@@ -365,10 +365,6 @@ function main() {
   const onLoad = () => {
     const mainPresenter = new MainPresenter();
     setTimeout(showApp, 500);
-
-    Sentry.onLoad(function () {
-      Sentry.init({});
-    });
   };
 
   setTimeout(onLoad, 500);
@@ -387,6 +383,13 @@ function alertWithHelpOption(message) {
   if (confirm(message + " " + HELP_TEXT)) {
     window.location.href = "/guide/get_help.html";
   }
+}
+
+/**
+ * Send a report of an issue to Sentry if enabled.
+ */
+function captureSentryMessage(message, level) {
+  console.log("Sentry message not sent.", message, level);
 }
 
 export {main};
