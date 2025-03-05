@@ -1,11 +1,14 @@
+
 """Email relay logic for the get help feature.
 
 License: BSD-3-Clause
 """
 import json
 import os
+from typing import Dict, Any
 
 import boto3
+
 
 BODY_TEMPLATE = """
 Hello!
@@ -32,7 +35,7 @@ Simulation code:
 class Payload:
     """Represents the payload data for the help request email. """
 
-    def __init__(self, email, description, simulation):
+    def __init__(self, email: str, description: str, simulation: str) -> None:
         """Initialize the Payload object with email, description, and simulation.
 
         Args:
@@ -44,7 +47,7 @@ class Payload:
         self._description = description
         self._simulation = simulation
 
-    def get_email(self):
+    def get_email(self) -> str:
         """Get the user's email address.
 
         Returns:
@@ -52,7 +55,7 @@ class Payload:
         """
         return self._email
 
-    def get_description(self):
+    def get_description(self) -> str:
         """Get the description of the issue.
 
         Returns:
@@ -60,7 +63,7 @@ class Payload:
         """
         return self._description
 
-    def get_simulation(self):
+    def get_simulation(self) -> str:
         """Get the simulation code.
 
         Returns:
@@ -72,7 +75,7 @@ class Payload:
 class Config:
     """Represents the configuration for sending emails."""
 
-    def __init__(self, from_email, to_email, subject):
+    def __init__(self, from_email: str, to_email: str, subject: str) -> None:
         """Initialize the Config object with message metadata settings.
 
         Args:
@@ -84,7 +87,7 @@ class Config:
         self._to_email = to_email
         self._subject = subject
 
-    def get_from_email(self):
+    def get_from_email(self) -> str:
         """Get the from email address.
 
         Returns:
@@ -92,7 +95,7 @@ class Config:
         """
         return self._from_email
 
-    def get_to_email(self):
+    def get_to_email(self) -> str:
         """Get the to email address.
 
         Returns:
@@ -100,7 +103,7 @@ class Config:
         """
         return self._to_email
 
-    def get_subject(self):
+    def get_subject(self) -> str:
         """Get the subject line for the message.
 
         Returns:
@@ -109,7 +112,7 @@ class Config:
         return self._subject
 
 
-def make_message(payload):
+def make_message(payload: Payload) -> str:
     """Create an email message from the payload.
 
     Args:
@@ -130,8 +133,11 @@ def make_message(payload):
     )
 
 
-def get_payload(data):
+def get_payload(data: Dict[str, str]) -> Payload:
     """Convert a parsed JSON payload to a Payload object.
+
+    Args:
+        data (Dict[str, str]): Dictionary containing email, description and simulation data.
 
     Returns:
         Payload: Parsed payload.
@@ -143,7 +149,7 @@ def get_payload(data):
     return Payload(sender, description, simulation)
 
 
-def get_config_from_env():
+def get_config_from_env() -> Config:
     """Retrieve configuration from environment variables.
 
     Returns:
@@ -157,7 +163,7 @@ def get_config_from_env():
     return Config(from_email, to_email, subject)
 
 
-def send_message(message, config):
+def send_message(message: str, config: Config) -> None:
     """Send an email message using the specified configuration.
 
     Args:
@@ -191,7 +197,7 @@ def send_message(message, config):
         raise RuntimeError('Non-OK response from SES.')
 
 
-def lambda_handler(event, context):
+def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     """Send emails on behalf of get_help.html
 
     Args:
