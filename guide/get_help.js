@@ -8,6 +8,18 @@ const POST_URL = "https://uyppqr75wwrl3uejzvbm5c3qh40aoncr.lambda-url.us-east-2.
 const FAIL_MESSAGE = "Sorry we ran into an issue. Please email hello@mlf-policy-explorer.org.";
 
 /**
+ * Check if a given string is empty.
+ * 
+ * @param {string} testInput - The string to check.
+ * @returns {boolean} True if the string is empty after removing starting / ending whitespace
+ *    and false otherwise.
+ */
+function isEmpty(testInput) {
+  const trimmed = testInput.trim();
+  return trimmed === "";
+}
+
+/**
  * Validates the email and description inputs from the help form.
  *
  * @param {string} email - Email address provided by the user.
@@ -15,12 +27,12 @@ const FAIL_MESSAGE = "Sorry we ran into an issue. Please email hello@mlf-policy-
  * @returns {boolean} - Returns true if both inputs are valid, otherwise false.
  */
 function checkInputs(email, description) {
-  if (email.trim() === "") {
+  if (isEmpty(email)) {
     alert("Please provide your email address so we can contact you.");
     return false;
   }
 
-  if (description.trim() === "") {
+  if (isEmpty(description)) {
     alert("Please describe how we can help you.");
     return false;
   }
@@ -102,13 +114,29 @@ function sendFeedback() {
 }
 
 /**
+ * Get the code from HTML5 local storage.
+ *
+ * Get the current simulation code that the user is working on which is
+ * persisted to local storage which is a limited space area on disk
+ * which is autosaved as the user works. Local storage is persisted between
+ * browser sessions.
+ *
+ * @returns {string} The code that the user was working on and which was
+ *    last autosaved to local storage.
+ */
+function getCurrentCode() {
+  const savedSimulation = localStorage.getItem("source");
+  return savedSimulation;
+}
+
+/**
  * Main function to initialize the get help page logic.
  *
  * Loads any saved simulation data from localStorage into the input fields
  * and sets up the event listener for the send button.
  */
 function main() {
-  const savedSimulation = localStorage.getItem("source");
+  const savedSimulation = getCurrentCode();
   if (savedSimulation) {
     document.getElementById("simulation").value = savedSimulation;
   }
