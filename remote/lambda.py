@@ -5,10 +5,11 @@ License: BSD-3-Clause
 """
 import json
 import os
-from typing import Dict, Any
+import typing
 
 import boto3
 
+AWS_DICT = typing.Dict[str, typing.Any]
 
 BODY_TEMPLATE = """
 Hello!
@@ -35,8 +36,8 @@ Simulation code:
 class Payload:
     """Represents the payload data for the help request email. """
 
-    def __init__(self, email: str, description: str, simulation: str) -> None:
-        """Initialize the Payload object with email, description, and simulation.
+    def __init__(self, email: str, description: str, simulation: str):
+        """Create a Payload object with email, description, and simulation.
 
         Args:
             email (str): The user's email address.
@@ -75,7 +76,7 @@ class Payload:
 class Config:
     """Represents the configuration for sending emails."""
 
-    def __init__(self, from_email: str, to_email: str, subject: str) -> None:
+    def __init__(self, from_email: str, to_email: str, subject: str):
         """Initialize the Config object with message metadata settings.
 
         Args:
@@ -133,11 +134,12 @@ def make_message(payload: Payload) -> str:
     )
 
 
-def get_payload(data: Dict[str, str]) -> Payload:
+def get_payload(data: typing.Dict[str, str]) -> Payload:
     """Convert a parsed JSON payload to a Payload object.
 
     Args:
-        data (Dict[str, str]): Dictionary containing email, description and simulation data.
+        data (Dict[str, str]): Dictionary containing email, description and
+            simulation data.
 
     Returns:
         Payload: Parsed payload.
@@ -163,7 +165,7 @@ def get_config_from_env() -> Config:
     return Config(from_email, to_email, subject)
 
 
-def send_message(message: str, config: Config) -> None:
+def send_message(message: str, config: Config):
     """Send an email message using the specified configuration.
 
     Args:
@@ -197,7 +199,7 @@ def send_message(message: str, config: Config) -> None:
         raise RuntimeError('Non-OK response from SES.')
 
 
-def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
+def lambda_handler(event: AWS_DICT, context: typing.Any) -> AWS_DICT:
     """Send emails on behalf of get_help.html
 
     Args:
