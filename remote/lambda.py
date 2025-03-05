@@ -5,9 +5,6 @@ License: BSD-3-Clause
 import base64
 import json
 import os
-import smtplib
-import email.mime.text
-import email.mime.multipart
 
 import boto3
 
@@ -76,118 +73,69 @@ class Payload:
 class Config:
     """Represents the configuration for sending emails."""
 
-    def __init__(self, smtp_host, smtp_port, smtp_user, smtp_pass, destination):
-        """Initialize the Config object with SMTP and destination settings.
+    def __init__(self, from_email, to_email, subject):
+        """Initialize the Config object with message metadata settings.
 
         Args:
-            smtp_host (str): The SMTP host server.
-            smtp_port (int): The SMTP port number.
-            smtp_user (str): The SMTP username.
-            smtp_pass (str): The SMTP password.
-            destination (str): The email destination address.
+            from_email (str): The email from which the message should be sent.
+            to_email (int): The email to which the message should be sent.
+            subject (str): The subject line for the message.
         """
-        self._smtp_host = smtp_host
-        self._smtp_port = smtp_port
-        self._smtp_user = smtp_user
-        self._smtp_pass = smtp_pass
-        self._destination = destination
+        self._from_email = from_email
+        self._to_email = to_email
+        self._subject = subject
 
-    def get_smtp_host(self):
-        """Get the SMTP host server.
+    def get_from_email(self):
+        """Get the from email address.
 
         Returns:
-            str: The SMTP host server.
+            str: The from email address also used for return email.
         """
-        return self._smtp_host
+        return self._from_email
 
-    def get_smtp_port(self):
-        """Get the SMTP port number.
+    def get_to_email(self):
+        """Get the to email address.
 
         Returns:
-            int: The SMTP port number.
+            int: The to email address (recipient of bug report).
         """
-        return self._smtp_port
+        return self._to_email
 
-    def get_smtp_user(self):
-        """Get the SMTP username.
+    def get_subject(self):
+        """Get the subject line for the message.
 
         Returns:
-            str: The SMTP username.
+            str: The subject line for the message (plaintext).
         """
-        return self._smtp_user
+        return self._subject
 
 
-    def get_smtp_pass(self):
-        """Get the SMTP password.
-
-        Returns:
-            str: The SMTP password.
-        """
-        return self._smtp_pass
-
-    def get_destination(self):
-        """Get the email destination address.
-
-        Returns:
-            str: The email destination address.
-        """
-        return self._destination
-
-
-def get_env_var_decrypt(name):
-    """Get and decrypt an environment variable.
-
-    Args:
-        name: The name of the environment variable.
-
-    Returns:
-        Decrypted environment variable value.
-    """
-    encrypted = os.environ[name]
-    decrypted = boto3.client('kms').decrypt(
-        CiphertextBlob=base64.b64decode(encrypted),
-        EncryptionContext={
-            'LambdaFunctionName': os.environ['AWS_LAMBDA_FUNCTION_NAME']
-        }
-    )['Plaintext'].decode('utf-8')
-    return decrypted
-
-
-def make_message(payload, config):
+def make_message(payload):
     """Create an email message from the payload.
 
     Args:
-        payload: Payload class containing the user's email, description of the
-            issue, and simulation code.
+        payload (Payload): Payload class containing the user's email,
+            description of the issue, and simulation code.
 
     Returns:
-        MIMEMultipart: An email message with plaintext component only.
+        str: Message body rendered as a string.
     """
-    message = email.mime.multipart.MIMEMultipart()
-    message['From'] = config.get_smtp_user()
-    message['To'] = config.get_destination()
-    message['Subject'] = 'MPS Help Request'
-
     sender = payload.get_email()
     description = payload.get_description()
     simulation = payload.get_simulation()
 
-    body = BODY_TEMPLATE.format(
+    return BODY_TEMPLATE.format(
         email=sender,
         description=description,
         simulation=simulation
     )
-
-    message.attach(email.mime.text.MIMEText(body, 'plain'))
-
-    return message
 
 
 def get_payload(data):
     """Convert a parsed JSON payload to a Payload object.
 
     Returns:
-        Parsed payload.
+        Payload: Parsed payload.
     """
     sender = data['email']
     description = data['description']
@@ -197,42 +145,51 @@ def get_payload(data):
 
 
 def get_config_from_env():
-    """Retrieve configuration from environment variables and decrypt them.
-
-    This function accesses several environment variables related to SMTP 
-    configuration, decrypts them using AWS Key Management Service (KMS),
-    and uses the decrypted values to construct a Config object.
+    """Retrieve configuration from environment variables.
 
     Returns:
-        Config: The configuration object containing SMTP settings and 
-            destination email address.
+        Config: The configuration object containing metadata settings including
+            sender and recipient addresses.
     """
-    smtp_host = get_env_var_decrypt('SMTP_HOST')
-    smtp_port = int(get_env_var_decrypt('SMTP_PORT'))
-    smtp_user = get_env_var_decrypt('SMTP_USER')
-    smtp_pass = get_env_var_decrypt('SMTP_PASSWORD')
-    destination = get_env_var_decrypt('DESTINATION')
+    from_email = os.getenv('HELP_EMAIL_FROM')
+    to_email = os.getenv('HELP_EMAIL_TO')
+    subject = os.getenv('HELP_EMAIL_SUBJECT')
 
-    return Config(
-        smtp_host,
-        smtp_port,
-        smtp_user,
-        smtp_pass,
-        destination
-    )
+    return Config(from_email, to_email, subject)
 
 
 def send_message(message, config):
     """Send an email message using the specified configuration.
 
     Args:
-        message: The email message to send.
-        config: Config class containing the SMTP configuration.
+        message (str): The email message to send as a string.
+        config (Config): Config class containing the SMTP configuration.
     """
-    with smtplib.SMTP(config.get_smtp_host(), config.get_smtp_port()) as server:
-        server.starttls()
-        server.login(config.get_smtp_user(), config.get_smtp_pass())
-        server.send_message(message)
+    ses = boto3.client('ses')
+
+    from_email = config.get_from_email()
+    to_email = config.get_to_email()
+    subject = config.get_subject()
+
+    response = ses.send_email(
+        Source=from_email,
+        Destination={
+            'ToAddresses': [to_email]
+        },
+        Message={
+            'Subject': {
+                'Data': subject
+            },
+            'Body': {
+                'Text': {
+                    'Data': message
+                }
+            }
+        }
+    )
+
+    if response['ResponseMetadata']['HTTPStatusCode'] != 200:
+        raise RuntimeError('Non-OK response from SES.')
 
 
 def lambda_handler(event, context):
@@ -251,7 +208,7 @@ def lambda_handler(event, context):
     payload = get_payload(data)
     config = get_config_from_env()
 
-    message = make_message(payload, config)
+    message = make_message(payload)
     send_message(message, config)
 
     return {
