@@ -2,7 +2,6 @@
 
 License: BSD-3-Clause
 """
-import base64
 import json
 import os
 
