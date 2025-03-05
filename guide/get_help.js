@@ -114,13 +114,29 @@ function sendFeedback() {
 }
 
 /**
+ * Get the code from HTML5 local storage.
+ *
+ * Get the current simulation code that the user is working on which is
+ * persisted to local storage which is a limited space area on disk
+ * which is autosaved as the user works. Local storage is persisted between
+ * browser sessions.
+ *
+ * @returns {string} The code that the user was working on and which was
+ *    last autosaved to local storage.
+ */
+function getCurrentCode() {
+  const savedSimulation = localStorage.getItem("source");
+  return savedSimulation;
+}
+
+/**
  * Main function to initialize the get help page logic.
  *
  * Loads any saved simulation data from localStorage into the input fields
  * and sets up the event listener for the send button.
  */
 function main() {
-  const savedSimulation = localStorage.getItem("source");
+  const savedSimulation = getCurrentCode();
   if (savedSimulation) {
     document.getElementById("simulation").value = savedSimulation;
   }
