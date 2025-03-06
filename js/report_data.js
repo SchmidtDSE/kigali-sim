@@ -1271,7 +1271,7 @@ class FilterSet {
       self._baseline,
     );
   }
-  
+
   /**
    * Get the baseline scenario.
    *
@@ -1281,7 +1281,7 @@ class FilterSet {
     const self = this;
     return self._baseline;
   }
-  
+
   /**
    * Get a new filter set with updated baseline.
    *
