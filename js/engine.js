@@ -1321,8 +1321,8 @@ class Engine {
     stateGetter.setPopulation(priorPopulation);
 
     // Determine sales prior to recycling
-    const kgForRecharge = rechargeVolume.getValue() < 0 ? 0 : rechargeVolume.getValue();
-    const kgForNew = volumeForNew.getValue() < 0 ? 0 : volumeForNew.getValue();
+    const kgForRecharge = rechargeVolume.getValue();
+    const kgForNew = volumeForNew.getValue();
 
     // Return to original initial charge
     stateGetter.setAmortizedUnitVolume(null);
@@ -1380,7 +1380,8 @@ class Engine {
     self._streamKeeper.setStream(application, substance, "recycle", newRecycleValue, false);
 
     // New values
-    const requiredKg = kgForRecharge + kgForNew - recycledDisplacedKg;
+    const requiredKgUnbound = kgForRecharge + kgForNew;
+    const requiredKg = requiredKgUnbound < 0 ? 0 : requiredKgUnbound;
     const newManufactureKg = percentManufacture * requiredKg;
     const newImportKg = percentImport * requiredKg;
     const newManufacture = new EngineNumber(newManufactureKg, "kg");
