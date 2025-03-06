@@ -1040,13 +1040,15 @@ class ConsumptionListPresenter {
       const applicationName = getFieldValue(
         self._dialog.querySelector(".edit-consumption-application-input"),
       );
-      codeObj.insertSubstance(applicationName, null, substance);
+      codeObj.insertSubstance(null, applicationName, null, substance);
     } else {
       const objIdentifierRegex = /\"([^\"]+)\" for \"([^\"]+)\"/;
       const match = self._editingName.match(objIdentifierRegex);
       const substanceName = match[1];
       const applicationName = match[2];
-      codeObj.insertSubstance(applicationName, substanceName, substance);
+      const newAppInput = self._dialog.querySelector(".edit-consumption-application-input");
+      const newApplicationName = newAppInput.value;
+      codeObj.insertSubstance(applicationName, newApplicationName, substanceName, substance);
     }
 
     self._onCodeObjUpdate(codeObj);
