@@ -311,31 +311,35 @@ function buildCompilerTests() {
       },
     ]);
 
-    buildTest("verifies substance replacement over time", "/test/qta/basic_replace_units.qta", [
-      (result, assert) => {
-        // Check year 1 consumption
-        const recordAYear1 = getResult(result, "Sim", 1, 0, "Test", "Sub A");
-        const consumptionAYear1 = recordAYear1.getGhgConsumption();
-        assert.closeTo(consumptionAYear1.getValue(), 10000000, 0.0001);
-        assert.deepEqual(consumptionAYear1.getUnits(), "tCO2e");
+    buildTest(
+      "verifies substance replacement over time units",
+      "/test/qta/basic_replace_units.qta",
+      [
+        (result, assert) => {
+          // Check year 1 consumption
+          const recordAYear1 = getResult(result, "Sim", 1, 0, "Test", "Sub A");
+          const consumptionAYear1 = recordAYear1.getGhgConsumption();
+          assert.closeTo(consumptionAYear1.getValue(), 10000000, 0.0001);
+          assert.deepEqual(consumptionAYear1.getUnits(), "tCO2e");
 
-        const recordBYear1 = getResult(result, "Sim", 1, 0, "Test", "Sub B");
-        const consumptionBYear1 = recordBYear1.getGhgConsumption();
-        assert.closeTo(consumptionBYear1.getValue(), 0, 0.0001);
-        assert.deepEqual(consumptionBYear1.getUnits(), "tCO2e");
+          const recordBYear1 = getResult(result, "Sim", 1, 0, "Test", "Sub B");
+          const consumptionBYear1 = recordBYear1.getGhgConsumption();
+          assert.closeTo(consumptionBYear1.getValue(), 0, 0.0001);
+          assert.deepEqual(consumptionBYear1.getUnits(), "tCO2e");
 
-        // Check year 10 consumption
-        const recordAYear10 = getResult(result, "Sim", 10, 0, "Test", "Sub A");
-        const consumptionAYear10 = recordAYear10.getGhgConsumption();
-        assert.closeTo(consumptionAYear10.getValue(), 0, 0.0001);
-        assert.deepEqual(consumptionAYear10.getUnits(), "tCO2e");
+          // Check year 10 consumption
+          const recordAYear10 = getResult(result, "Sim", 10, 0, "Test", "Sub A");
+          const consumptionAYear10 = recordAYear10.getGhgConsumption();
+          assert.closeTo(consumptionAYear10.getValue(), 0, 0.0001);
+          assert.deepEqual(consumptionAYear10.getUnits(), "tCO2e");
 
-        const recordBYear10 = getResult(result, "Sim", 10, 0, "Test", "Sub B");
-        const consumptionBYear10 = recordBYear10.getGhgConsumption();
-        assert.closeTo(consumptionBYear10.getValue(), 1000000, 0.0001);
-        assert.deepEqual(consumptionBYear10.getUnits(), "tCO2e");
-      },
-    ]);
+          const recordBYear10 = getResult(result, "Sim", 10, 0, "Test", "Sub B");
+          const consumptionBYear10 = recordBYear10.getGhgConsumption();
+          assert.closeTo(consumptionBYear10.getValue(), 1000000, 0.0001);
+          assert.deepEqual(consumptionBYear10.getUnits(), "tCO2e");
+        },
+      ],
+    );
 
     buildTest("runs trials", "/test/qta/trials.qta", [
       (result, assert) => {
@@ -355,6 +359,19 @@ function buildCompilerTests() {
     ]);
 
     buildTest("runs reference", "/test/qta/reference.qta", []);
+
+    buildTest("cold starts with equipment", "/test/qta/cold_start_equipment.qta", [
+      (result, assert) => {
+        const record = getResult(result, "BAU", 1, 0, "Test", "Sub");
+        const consumption = record.getGhgConsumption();
+        assert.ok(consumption.getValue() > 0);
+      },
+      (result, assert) => {
+        const record = getResult(result, "BAU", 10, 0, "Test", "Sub");
+        const consumption = record.getGhgConsumption();
+        assert.ok(consumption.getValue() > 0);
+      },
+    ]);
   });
 }
 

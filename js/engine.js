@@ -552,8 +552,16 @@ class Engine {
       const manufactureRaw = self.getStream("manufacture");
       const manufactureValue = self._unitConverter.convert(manufactureRaw, "kg");
 
+      if (manufactureValue.getValue() == 0) {
+        return self.getInitialCharge("import");
+      }
+
       const importRaw = self.getStream("import");
       const importValue = self._unitConverter.convert(importRaw, "kg");
+
+      if (importValue.getValue() == 0) {
+        return self.getInitialCharge("manufacture");
+      }
 
       const determineTotal = () => {
         const manufactureRaw = manufactureValue.getValue();
@@ -1168,7 +1176,9 @@ class Engine {
     const initialChargeRaw = self.getInitialCharge("sales");
     const initialCharge = unitConverter.convert(initialChargeRaw, "kg / unit");
     const initialChargeKgUnit = initialCharge.getValue();
-    const deltaUnits = availableForNewUnitsKg / initialChargeKgUnit;
+    const noInitialCharge = initialChargeKgUnit == 0;
+    const deltaUnitsRaw = availableForNewUnitsKg / initialChargeKgUnit;
+    const deltaUnits = noInitialCharge ? 0 : deltaUnitsRaw;
     const newVolume = new EngineNumber(deltaUnits < 0 ? 0 : deltaUnits, "units");
 
     // Find new total
@@ -1334,12 +1344,50 @@ class Engine {
     const priorRecycleSalesKg = priorRecycleSalesConverted.getValue();
     const totalNonRecycleKg = manufactureSalesKg + importSalesKg;
 
-    const percentManufacture = manufactureSalesKg / totalNonRecycleKg;
-    const percentImport = importSalesKg / totalNonRecycleKg;
+    const getStreamPercents = () => {
+      if (totalNonRecycleKg == 0) {
+        const manufactureInitialCharge = self.getInitialCharge("manufacture");
+        const importInitialCharge = self.getInitialCharge("import");
+        const manufactureInitialChargeVal = manufactureInitialCharge.getValue();
+        const importInitialChargeVal = unitConverter
+          .convert(importInitialCharge, manufactureInitialCharge.getUnits())
+          .getValue();
+        const totalInitialChargeVal = manufactureInitialChargeVal + importInitialChargeVal;
+        if (totalInitialChargeVal == 0) {
+          return {
+            manufacture: 1,
+            import: 0,
+          };
+        } else {
+          return {
+            manufacture: manufactureInitialChargeVal / totalInitialChargeVal,
+            import: importInitialChargeVal / totalInitialChargeVal,
+          };
+        }
+      } else {
+        return {
+          manufacture: totalNonRecycleKg == 0 ? 0 : manufactureSalesKg / totalNonRecycleKg,
+          import: totalNonRecycleKg == 0 ? 0 : importSalesKg / totalNonRecycleKg,
+        };
+      }
+    };
+    const streamPercents = getStreamPercents();
+    const percentManufacture = streamPercents["manufacture"];
+    const percentImport = streamPercents["import"];
 
-    // Offset
+    // Recycle
     const newRecycleValue = new EngineNumber(recycledDisplacedKg, "kg");
     self._streamKeeper.setStream(application, substance, "recycle", newRecycleValue, false);
+
+    // New values
+    const requiredKgUnbound = kgForRecharge + kgForNew;
+    const requiredKg = requiredKgUnbound < 0 ? 0 : requiredKgUnbound;
+    const newManufactureKg = percentManufacture * requiredKg;
+    const newImportKg = percentImport * requiredKg;
+    const newManufacture = new EngineNumber(newManufactureKg, "kg");
+    const newImport = new EngineNumber(newImportKg, "kg");
+    self._streamKeeper.setStream(application, substance, "manufacture", newManufacture, false);
+    self._streamKeeper.setStream(application, substance, "import", newImport, false);
   }
 
   /**

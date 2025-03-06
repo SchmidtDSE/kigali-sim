@@ -139,15 +139,23 @@ class Program {
   /**
    * Insert or updates a substance in an application.
    *
-   * @param {string} priorApplication - Name of application to insert into.
+   * @param {string} priorApplication - Name of application to remove from or
+   *     null if no prior.
+   * @param {string} newApplication - Name of application to insert into.
    * @param {string} priorSubstanceName - Name of substance to replace. Pass
    *     null for new.
    * @param {Substance} substance - The substance to insert.
    */
-  insertSubstance(priorApplication, priorSubstanceName, substance) {
+  insertSubstance(priorApplication, newApplication, priorSubstanceName, substance) {
     const self = this;
-    const application = self.getApplication(priorApplication);
-    application.insertSubstance(priorSubstanceName, substance);
+
+    if (priorApplication !== null) {
+      const priorAppObj = self.getApplication(priorApplication);
+      priorAppObj.deleteSubstance(priorSubstanceName);
+    }
+
+    const newAppObj = self.getApplication(newApplication);
+    newAppObj.insertSubstance(null, substance);
   }
 
   /**

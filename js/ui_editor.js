@@ -430,9 +430,25 @@ class ApplicationsListPresenter {
       self._dialog.close();
       event.preventDefault();
 
+      const cleanName = (x) => x.replaceAll('"', "").replaceAll(",", "").trim();
+
       const nameInput = self._dialog.querySelector(".edit-application-name-input");
-      const newNameUnguarded = nameInput.value.replaceAll('"', "").replaceAll(",", "").trim();
-      const newName = newNameUnguarded === "" ? "Unnamed" : newNameUnguarded;
+      const newNameUnguarded = cleanName(nameInput.value);
+
+      const subnameInput = self._dialog.querySelector(".edit-application-subname-input");
+      const newSubnameUnguarded = cleanName(subnameInput.value);
+      const subnameEmpty = newSubnameUnguarded === "";
+
+      const getEffectiveName = () => {
+        if (subnameEmpty) {
+          return newNameUnguarded;
+        } else {
+          return newNameUnguarded + " - " + newSubnameUnguarded;
+        }
+      };
+
+      const effectiveName = getEffectiveName();
+      const newName = effectiveName === "" ? "Unnamed" : effectiveName;
 
       const priorNames = new Set(self._getAppNames());
       const nameIsDuplicate = priorNames.has(newName);
@@ -467,9 +483,14 @@ class ApplicationsListPresenter {
 
     if (name === null) {
       self._dialog.querySelector(".edit-application-name-input").value = "";
+      self._dialog.querySelector(".edit-application-subname-input").value = "";
       self._dialog.querySelector(".action-title").innerHTML = "Add";
     } else {
-      self._dialog.querySelector(".edit-application-name-input").value = name;
+      const nameComponents = name.split(" - ");
+      const displayName = nameComponents[0];
+      const subname = nameComponents.slice(1).join(" - ");
+      self._dialog.querySelector(".edit-application-name-input").value = displayName;
+      self._dialog.querySelector(".edit-application-subname-input").value = subname;
       self._dialog.querySelector(".action-title").innerHTML = "Edit";
     }
 
@@ -758,6 +779,9 @@ class ConsumptionListPresenter {
     );
 
     setupDialogInternalLinks(self._root, self._tabs);
+
+    const consumptionSource = self._dialog.querySelector(".edit-consumption-source");
+    consumptionSource.addEventListener("change", () => self._updateSource());
   }
 
   /**
@@ -830,7 +854,7 @@ class ConsumptionListPresenter {
       self._dialog.querySelector(".edit-consumption-ghg-units-input"),
       objToShow,
       new EngineNumber(1, "tCO2e / kg"),
-      (x) => x.getEqualsGhg() ? x.getEqualsGhg().getValue() : null,
+      (x) => (x.getEqualsGhg() ? x.getEqualsGhg().getValue() : null),
     );
 
     setEngineNumberValue(
@@ -838,7 +862,7 @@ class ConsumptionListPresenter {
       self._dialog.querySelector(".edit-consumption-energy-units-input"),
       objToShow,
       new EngineNumber(1, "kwh / kg"),
-      (x) => x.getEqualsKwh() ? x.getEqualsKwh().getValue() : null,
+      (x) => (x.getEqualsKwh() ? x.getEqualsKwh().getValue() : null),
     );
 
     setEngineNumberValue(
@@ -907,9 +931,76 @@ class ConsumptionListPresenter {
       removeCallback,
     );
 
+    self._updateSourceDropdown();
+    self._updateSource();
+
     self._dialog.showModal();
     self._reminderPresenter.update();
     self._updateCounts();
+  }
+
+  /**
+   * Update the source inputs value and visibility.
+   */
+  _updateSource() {
+    const self = this;
+
+    const consumptionSource = self._dialog.querySelector(".edit-consumption-source");
+    const consumptionValue = consumptionSource.value;
+
+    const domesticInput = self._dialog.querySelector(
+      ".edit-consumption-initial-charge-domestic-input",
+    );
+    const domesticInputOuter = self._dialog.querySelector(
+      ".edit-consumption-initial-charge-domestic-input-outer",
+    );
+    const importInput = self._dialog.querySelector(".edit-consumption-initial-charge-import-input");
+    const importInputOuter = self._dialog.querySelector(
+      ".edit-consumption-initial-charge-import-input-outer",
+    );
+
+    if (consumptionValue === "all") {
+      domesticInputOuter.style.display = "block";
+      importInputOuter.style.display = "block";
+    } else if (consumptionValue === "import") {
+      domesticInputOuter.style.display = "none";
+      domesticInput.value = 0;
+      importInputOuter.style.display = "block";
+    } else if (consumptionValue === "manufacture") {
+      domesticInputOuter.style.display = "block";
+      importInput.value = 0;
+      importInputOuter.style.display = "none";
+    } else {
+      throw "Unexpected source value: " + consumptionValue;
+    }
+  }
+
+  /**
+   * Update the source dropdown selected value.
+   */
+  _updateSourceDropdown() {
+    const self = this;
+
+    const consumptionSource = self._dialog.querySelector(".edit-consumption-source");
+
+    const domesticInput = self._dialog.querySelector(
+      ".edit-consumption-initial-charge-domestic-input",
+    );
+    const domesticInputOuter = self._dialog.querySelector(
+      ".edit-consumption-initial-charge-domestic-input-outer",
+    );
+    const importInput = self._dialog.querySelector(".edit-consumption-initial-charge-import-input");
+    const importInputOuter = self._dialog.querySelector(
+      ".edit-consumption-initial-charge-import-input-outer",
+    );
+
+    if (domesticInput.value === "0") {
+      consumptionSource.value = "import";
+    } else if (importInput.value === "0") {
+      consumptionSource.value = "manufacture";
+    } else {
+      consumptionSource.value = "all";
+    }
   }
 
   /**
@@ -949,13 +1040,15 @@ class ConsumptionListPresenter {
       const applicationName = getFieldValue(
         self._dialog.querySelector(".edit-consumption-application-input"),
       );
-      codeObj.insertSubstance(applicationName, null, substance);
+      codeObj.insertSubstance(null, applicationName, null, substance);
     } else {
       const objIdentifierRegex = /\"([^\"]+)\" for \"([^\"]+)\"/;
       const match = self._editingName.match(objIdentifierRegex);
       const substanceName = match[1];
       const applicationName = match[2];
-      codeObj.insertSubstance(applicationName, substanceName, substance);
+      const newAppInput = self._dialog.querySelector(".edit-consumption-application-input");
+      const newApplicationName = newAppInput.value;
+      codeObj.insertSubstance(applicationName, newApplicationName, substanceName, substance);
     }
 
     self._onCodeObjUpdate(codeObj);
@@ -1285,7 +1378,8 @@ class PolicyListPresenter {
       .property("selected", (x) => x === targetAppName);
 
     const substances = codeObj.getSubstances();
-    const substanceNames = substances.map((x) => x.getName());
+    const substanceNamesDup = substances.map((x) => x.getName());
+    const substanceNames = Array.of(...new Set(substanceNamesDup));
     const substanceSelect = d3.select(self._dialog.querySelector(".substances-select"));
     const substanceName = targetSubstance === null ? "" : targetSubstance.getName();
     substanceSelect.html("");
@@ -1751,6 +1845,16 @@ class UiEditorPresenter {
   }
 
   /**
+   * Show all sections in the UI editor as enabled.
+   */
+  enableAllSections() {
+    const self = this;
+    self._consumptionList.enable();
+    self._policyList.enable();
+    self._simulationList.enable();
+  }
+
+  /**
    * Refreshes the UI with new code object data.
    *
    * @param {Object} codeObj - The new code object to display.
@@ -1977,7 +2081,8 @@ function readChangeCommandUi(root) {
  */
 function initLimitCommandUi(itemObj, root, codeObj) {
   const substances = codeObj.getSubstances();
-  const substanceNames = substances.map((x) => x.getName());
+  const substanceNamesDup = substances.map((x) => x.getName());
+  const substanceNames = Array.of(...new Set(substanceNamesDup));
   const substanceSelect = d3.select(root.querySelector(".substances-select"));
   substanceSelect.html("");
   substanceSelect
@@ -2074,7 +2179,8 @@ function readRecycleCommandUi(root) {
  */
 function initReplaceCommandUi(itemObj, root, codeObj) {
   const substances = codeObj.getSubstances();
-  const substanceNames = substances.map((x) => x.getName());
+  const substanceNamesDup = substances.map((x) => x.getName());
+  const substanceNames = Array.of(...new Set(substanceNamesDup));
   const substanceSelect = d3.select(root.querySelector(".substances-select"));
   substanceSelect.html("");
   substanceSelect

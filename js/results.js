@@ -4,6 +4,7 @@
  * @license BSD, see LICENSE.md.
  */
 import {FilterSet} from "report_data";
+import {EngineNumber} from "engine_number";
 
 /**
  * Array of colors used for visualizations
@@ -50,6 +51,25 @@ function getColor(i) {
 }
 
 /**
+ * Add references to application metagroups.
+ *
+ * Add references to application metagroups by looking for those with subgroups
+ * (subapplications) and adding an "- All" option which can be used to filter
+ * for all subapplications within the application.
+ *
+ * @param {Array} applicationNamesRaw - Iterable of string application names.
+ */
+function getWithMetaApplications(applicationNamesRaw) {
+  const applicationNames = Array.of(...applicationNamesRaw);
+  const withSubapplications = applicationNames.filter((x) => x.includes(" - "));
+  const repeatedApplications = withSubapplications.map((x) => x.split(" - ")[0]);
+  const applications = Array.of(...new Set(repeatedApplications));
+  const allOptions = applications.map((x) => x + " - All");
+  const newAllOptions = allOptions.filter((x) => applicationNames.indexOf(x) == -1);
+  return newAllOptions.concat(applicationNames);
+}
+
+/**
  * Main presenter class for displaying simulation results.
  */
 class ResultsPresenter {
@@ -62,14 +82,7 @@ class ResultsPresenter {
     const self = this;
     self._root = root;
     self._results = null;
-    self._filterSet = new FilterSet(
-      null,
-      null,
-      null,
-      null,
-      "emissions:all:MtCO2e / yr",
-      "simulations",
-    );
+    self.resetFilter();
 
     const scorecardContainer = self._root.querySelector("#scorecards");
     const dimensionsContainer = self._root.querySelector("#dimensions");
@@ -84,6 +97,22 @@ class ResultsPresenter {
     self._exportPresenter = new ExportPresenter(self._root);
 
     self.hide();
+  }
+
+  /**
+   * Reset the filters active in the results section.
+   */
+  resetFilter() {
+    const self = this;
+    self._filterSet = new FilterSet(
+      null,
+      null,
+      null,
+      null,
+      "emissions:all:MtCO2e / yr",
+      "simulations",
+      null,
+    );
   }
 
   /**
@@ -483,7 +512,7 @@ class DimensionCardPresenter {
     self._updateCard(
       "app",
       applicationsCard,
-      results.getApplications(self._filterSet.getWithApplication(null)),
+      getWithMetaApplications(results.getApplications(self._filterSet.getWithApplication(null))),
       applicationsSelected,
       self._filterSet.getApplication(),
       (x) => self._filterSet.getWithApplication(x),
@@ -684,14 +713,43 @@ class CenterChartPresenter {
     const years = Array.of(...results.getYears(filterSet.getWithYear(null)));
     years.sort((a, b) => a - b);
 
-    const dimensionValues = Array.of(...results.getDimensionValues(filterSet));
+    const getDimensionValues = (filterSet) => {
+      const dimensionValuesRaw = Array.of(...results.getDimensionValues(filterSet));
+
+      if (filterSet.getDimension() === "applications") {
+        return getWithMetaApplications(dimensionValuesRaw);
+      } else {
+        return dimensionValuesRaw;
+      }
+    };
+    const dimensionValues = getDimensionValues(filterSet);
     dimensionValues.sort();
 
     const getForDimValue = (dimValue) => {
       const valsWithUnits = years.map((year) => {
         const withYear = filterSet.getWithYear(year);
         const subFilterSet = withYear.getWithDimensionValue(dimValue);
-        return results.getMetric(subFilterSet);
+
+        if (filterSet.getBaseline() === null) {
+          return results.getMetric(subFilterSet);
+        } else {
+          const absoluteVal = results.getMetric(subFilterSet);
+          const baselineFilterSet = subFilterSet.getWithScenario(filterSet.getBaseline());
+          const baselineVal = results.getMetric(baselineFilterSet);
+
+          if (absoluteVal === null || baselineVal === null) {
+            return null;
+          }
+
+          if (absoluteVal.getUnits() !== baselineVal.getUnits()) {
+            throw "Mismanaged units in absolute vs baseline.";
+          }
+
+          return new EngineNumber(
+            absoluteVal.getValue() - baselineVal.getValue(),
+            absoluteVal.getUnits(),
+          );
+        }
       });
       const valsWithUnitsValid = valsWithUnits.filter((x) => x !== null);
       const vals = valsWithUnitsValid.map((x) => x.getValue());
@@ -699,9 +757,7 @@ class CenterChartPresenter {
     };
     const dimensionSeries = dimensionValues.map(getForDimValue);
 
-    const unconstrainedDimValues = Array.of(
-      ...results.getDimensionValues(filterSet.getWithDimensionValue(null)),
-    );
+    const unconstrainedDimValues = getDimensionValues(filterSet.getWithDimensionValue(null));
     unconstrainedDimValues.sort();
 
     const chartJsDatasets = dimensionSeries.map((x) => {
@@ -715,6 +771,11 @@ class CenterChartPresenter {
         backgroundColor: color,
       };
     });
+
+    const minVals = dimensionSeries.map((x) => {
+      return Math.min(...x["vals"]);
+    });
+    const minVal = Math.min(...minVals);
 
     const chartJsData = {
       labels: years,
@@ -730,7 +791,7 @@ class CenterChartPresenter {
       options: {
         scales: {
           y: {
-            min: 0,
+            min: minVal >= 0 ? 0 : null,
             title: {text: metricUnits, display: true},
           },
           x: {
@@ -798,12 +859,22 @@ class SelectorTitlePresenter {
     const scenarios = results.getScenarios();
     self._updateDynamicDropdown(scenarioDropdown, scenarios, scenarioSelected, "All Simulations");
 
+    const baselineDropdown = self._selection.querySelector(".baseline-select");
+    const baselineSelected = self._filterSet.getBaseline();
+    self._updateDynamicDropdown(
+      baselineDropdown,
+      scenarios,
+      baselineSelected,
+      "Absolute Value",
+      "Relative to ",
+    );
+
     const applicationDropdown = self._selection.querySelector(".application-select");
     const applicationSelected = self._filterSet.getApplication();
     const applications = results.getApplications(self._filterSet.getWithApplication(null));
     self._updateDynamicDropdown(
       applicationDropdown,
-      applications,
+      getWithMetaApplications(applications),
       applicationSelected,
       "All Applications",
     );
@@ -833,10 +904,16 @@ class SelectorTitlePresenter {
    * @param {Set<string>} allValues - Available values.
    * @param {string} selectedValue - Currently selected value.
    * @param {string} allText - Text for "All" option.
+   * @param {string} prefix - Optional string prefix to prepend to non-all text
+   *     defaulting to empty string.
    * @private
    */
-  _updateDynamicDropdown(selection, allValues, selectedValue, allText) {
+  _updateDynamicDropdown(selection, allValues, selectedValue, allText, prefix) {
     const self = this;
+
+    if (prefix === undefined) {
+      prefix = "";
+    }
 
     const allValuesArray = Array.of(...allValues);
     allValuesArray.unshift(allText);
@@ -850,7 +927,7 @@ class SelectorTitlePresenter {
       .enter()
       .append("option")
       .attr("value", (x) => (allText === x ? "" : x))
-      .text((x) => x)
+      .text((x) => (x === allText ? x : prefix + x))
       .property("selected", (x) => {
         const nativelySelected = x === selectedValue;
         const allSelected = x === allText && selectedValue === null;
@@ -888,6 +965,9 @@ class SelectorTitlePresenter {
 
     const substanceDropdown = self._selection.querySelector(".substance-select");
     addListener(substanceDropdown, (filterSet, val) => filterSet.getWithSubstance(val));
+
+    const baselineDropdown = self._selection.querySelector(".baseline-select");
+    addListener(baselineDropdown, (filterSet, val) => filterSet.getWithBaseline(val));
   }
 }
 

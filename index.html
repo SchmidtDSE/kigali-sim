@@ -74,12 +74,25 @@
                     </div>
                     <div class="contents">
                       <div class="form-group">
-                        <div><label for="edit-application-name">Name:</label></div>
+                        <div><label for="edit-application-name">Application:</label></div>
                         <div>
                           <input
                             type="text"
                             name="edit-application-name"
                             class="edit-application-name-input long"
+                            autofocus
+                          />
+                        </div>
+                      </div>
+                      <div class="form-group">
+                        <div>
+                          <label for="edit-application-subname">Subapplication (optional):</label>
+                        </div>
+                        <div>
+                          <input
+                            type="text"
+                            name="edit-application-subname"
+                            class="edit-application-subname-input long"
                             autofocus
                           />
                         </div>
@@ -198,6 +211,18 @@
                             </span>
                           </div>
                         </div>
+                        <div class="form-group">
+                          <div><label for="edit-consumption-source">Source:</label></div>
+                          <div>
+                            <span class="sel long">
+                              <select name="source" class="edit-consumption-source">
+                                <option value="all">Import and Domestic Manufacture</option>
+                                <option value="manufacture">Domestic Manufacture Only</option>
+                                <option value="import">Import Only</option>
+                              </select>
+                            </span>
+                          </div>
+                        </div>
                       </div>
                       <div id="consumption-equipment">
                         <div class="instructions">
@@ -209,7 +234,9 @@
                             <a href="#edit" class="edit-reminder-link">Change</a>
                           </span>
                         </div>
-                        <div class="form-group">
+                        <div
+                          class="form-group edit-consumption-initial-charge-domestic-input-outer"
+                        >
                           <div>
                             <label for="edit-consumption-initial-charge-domestic"
                               >Domestically manufactured equipment initial charge:</label
@@ -249,7 +276,7 @@
                             </span>
                           </div>
                         </div>
-                        <div class="form-group">
+                        <div class="form-group edit-consumption-initial-charge-import-input-outer">
                           <div>
                             <label for="edit-consumption-initial-charge-import"
                               >Imported equipment initial charge:</label
@@ -889,7 +916,8 @@
                   <option value="substances">Substances</option>
                 </select>
               </span>
-              .
+              as
+              <span class="sel long"><select class="baseline-select"></select></span>.
             </div>
             <canvas
               class="center-chart"
