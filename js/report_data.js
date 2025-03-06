@@ -1017,8 +1017,9 @@ class FilterSet {
    * @param {string|null} metric - Metric name for which to display. Note
    *     that this is the full metric names like sales or sales:import.
    * @param {string|null} dimension - Dimension type for which to filter.
+   * @param {string|null} baseline - Baseline scenario for comparison.
    */
-  constructor(year, scenario, application, substance, metric, dimension) {
+  constructor(year, scenario, application, substance, metric, dimension, baseline) {
     const self = this;
     self._year = year;
     self._scenario = scenario;
@@ -1026,6 +1027,7 @@ class FilterSet {
     self._substance = substance;
     self._metric = metric;
     self._dimension = dimension;
+    self._baseline = baseline;
   }
 
   /**
@@ -1070,6 +1072,7 @@ class FilterSet {
       self._substance,
       self._metric,
       self._dimension,
+      self._baseline,
     );
   }
 
@@ -1099,6 +1102,7 @@ class FilterSet {
       self._substance,
       self._metric,
       self._dimension,
+      self._baseline,
     );
   }
 
@@ -1128,6 +1132,7 @@ class FilterSet {
       self._substance,
       self._metric,
       self._dimension,
+      self._baseline,
     );
   }
 
@@ -1156,6 +1161,7 @@ class FilterSet {
       newSubstance,
       self._metric,
       self._dimension,
+      self._baseline,
     );
   }
 
@@ -1233,6 +1239,7 @@ class FilterSet {
       self._substance,
       newMetric,
       self._dimension,
+      self._baseline,
     );
   }
 
@@ -1261,6 +1268,36 @@ class FilterSet {
       self._substance,
       self._metric,
       newDimension,
+      self._baseline,
+    );
+  }
+  
+  /**
+   * Get the baseline scenario.
+   *
+   * @returns {string|null} The baseline scenario name for comparison.
+   */
+  getBaseline() {
+    const self = this;
+    return self._baseline;
+  }
+  
+  /**
+   * Get a new filter set with updated baseline.
+   *
+   * @param {string} newBaseline - The new baseline scenario value.
+   * @returns {FilterSet} New filter set with updated baseline.
+   */
+  getWithBaseline(newBaseline) {
+    const self = this;
+    return new FilterSet(
+      self._year,
+      self._scenario,
+      self._application,
+      self._substance,
+      self._metric,
+      self._dimension,
+      newBaseline,
     );
   }
 
