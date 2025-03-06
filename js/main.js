@@ -154,12 +154,19 @@ class MainPresenter {
   /**
    * Handles build/run events and compiles/executes the code.
    *
-   * @param {boolean} run - Whether to execute the code after compilation.
+   * @param {boolean} run - Flag indicating if to execute the code after
+   *     compilation.
+   * @param {boolean} resetFilters - Flag indicating if to reset the results
+   *     UI filter values. Defaults to false if not given.
    * @private
    */
-  _onBuild(run) {
+  _onBuild(run, resetFilters) {
     const self = this;
     self._buttonPanelPresenter.disable();
+
+    if (resetFilters === undefined) {
+      resetFilters = false;
+    }
 
     const execute = () => {
       const compiler = new Compiler();
@@ -198,6 +205,9 @@ class MainPresenter {
             if (programResult.length == 0) {
               self._resultsPresenter.hide();
             } else {
+              if (resetFilters) {
+                self._resultsPresenter.resetFilter();
+              }
               self._onResult(programResult);
             }
           }
@@ -291,10 +301,10 @@ class MainPresenter {
 
     const loadFileDialog = document.getElementById("load-file-dialog");
 
-    const setCode = (code) => {
+    const setCode = (code, resetFilters) => {
       self._codeEditorPresenter.setCode(code);
       self._onCodeChange();
-      self._onBuild(true);
+      self._onBuild(true, resetFilters);
     };
 
     const newFileDialog = document.getElementById("new-file-button");
@@ -327,7 +337,7 @@ class MainPresenter {
         reader.readAsText(file, "UTF-8");
         reader.onload = (event) => {
           const newCode = event.target.result;
-          setCode(newCode);
+          setCode(newCode, true);
           loadFileDialog.close();
         };
       }

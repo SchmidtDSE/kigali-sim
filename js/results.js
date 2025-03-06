@@ -62,14 +62,7 @@ class ResultsPresenter {
     const self = this;
     self._root = root;
     self._results = null;
-    self._filterSet = new FilterSet(
-      null,
-      null,
-      null,
-      null,
-      "emissions:all:MtCO2e / yr",
-      "simulations",
-    );
+    self.resetFilter();
 
     const scorecardContainer = self._root.querySelector("#scorecards");
     const dimensionsContainer = self._root.querySelector("#dimensions");
@@ -84,6 +77,21 @@ class ResultsPresenter {
     self._exportPresenter = new ExportPresenter(self._root);
 
     self.hide();
+  }
+
+  /**
+   * Reset the filters active in the results section.
+   */
+  resetFilter() {
+    const self = this;
+    self._filterSet = new FilterSet(
+      null,
+      null,
+      null,
+      null,
+      "emissions:all:MtCO2e / yr",
+      "simulations",
+    );
   }
 
   /**
