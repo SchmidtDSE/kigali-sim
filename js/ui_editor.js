@@ -758,6 +758,9 @@ class ConsumptionListPresenter {
     );
 
     setupDialogInternalLinks(self._root, self._tabs);
+
+    const consumptionSource = self._dialog.querySelector(".edit-consumption-source");
+    consumptionSource.addEventListener("change", () => self._updateSource());
   }
 
   /**
@@ -907,9 +910,76 @@ class ConsumptionListPresenter {
       removeCallback,
     );
 
+    self._updateSourceDropdown();
+    self._updateSource();
+
     self._dialog.showModal();
     self._reminderPresenter.update();
     self._updateCounts();
+  }
+
+  /**
+   * Update the source inputs value and visibility.
+   */
+  _updateSource() {
+    const self = this;
+
+    const consumptionSource = self._dialog.querySelector(".edit-consumption-source");
+    const consumptionValue = consumptionSource.value;
+
+    const domesticInput = self._dialog.querySelector(
+      ".edit-consumption-initial-charge-domestic-input",
+    );
+    const domesticInputOuter = self._dialog.querySelector(
+      ".edit-consumption-initial-charge-domestic-input-outer",
+    );
+    const importInput = self._dialog.querySelector(".edit-consumption-initial-charge-import-input");
+    const importInputOuter = self._dialog.querySelector(
+      ".edit-consumption-initial-charge-import-input-outer",
+    );
+
+    if (consumptionValue === "all") {
+      domesticInputOuter.style.display = "block";
+      importInputOuter.style.display = "block";
+    } else if (consumptionValue === "import") {
+      domesticInputOuter.style.display = "none";
+      domesticInput.value = 0;
+      importInputOuter.style.display = "block";
+    } else if (consumptionValue === "manufacture") {
+      domesticInputOuter.style.display = "block";
+      importInput.value = 0;
+      importInputOuter.style.display = "none";
+    } else {
+      throw "Unexpected source value: " + consumptionValue;
+    }
+  }
+
+  /**
+   * Update the source dropdown selected value.
+   */
+  _updateSourceDropdown() {
+    const self = this;
+
+    const consumptionSource = self._dialog.querySelector(".edit-consumption-source");
+
+    const domesticInput = self._dialog.querySelector(
+      ".edit-consumption-initial-charge-domestic-input",
+    );
+    const domesticInputOuter = self._dialog.querySelector(
+      ".edit-consumption-initial-charge-domestic-input-outer",
+    );
+    const importInput = self._dialog.querySelector(".edit-consumption-initial-charge-import-input");
+    const importInputOuter = self._dialog.querySelector(
+      ".edit-consumption-initial-charge-import-input-outer",
+    );
+
+    if (domesticInput.value === "0") {
+      consumptionSource.value = "import";
+    } else if (importInput.value === "0") {
+      consumptionSource.value = "manufacture";
+    } else {
+      consumptionSource.value = "all";
+    }
   }
 
   /**
