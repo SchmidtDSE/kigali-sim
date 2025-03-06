@@ -1000,10 +1000,10 @@ class ReportDataWrapper {
 }
 
 /**
- * Filters to apply in creating a visualization.
+ * Filters and baseline to apply in creating a visualization.
  *
  * Class representing a set of filters to apply in identifying a subset of data
- * to visualize.
+ * to visualize as well as an optional offsetting baseline.
  */
 class FilterSet {
   /**
