@@ -713,7 +713,16 @@ class CenterChartPresenter {
     const years = Array.of(...results.getYears(filterSet.getWithYear(null)));
     years.sort((a, b) => a - b);
 
-    const dimensionValues = Array.of(...results.getDimensionValues(filterSet));
+    const getDimensionValues = (filterSet) => {
+      const dimensionValuesRaw = Array.of(...results.getDimensionValues(filterSet));
+
+      if (filterSet.getDimension() === "applications") {
+        return getWithMetaApplications(dimensionValuesRaw);
+      } else {
+        return dimensionValuesRaw;
+      }
+    };
+    const dimensionValues = getDimensionValues(filterSet);
     dimensionValues.sort();
 
     const getForDimValue = (dimValue) => {
@@ -748,9 +757,7 @@ class CenterChartPresenter {
     };
     const dimensionSeries = dimensionValues.map(getForDimValue);
 
-    const unconstrainedDimValues = Array.of(
-      ...results.getDimensionValues(filterSet.getWithDimensionValue(null)),
-    );
+    const unconstrainedDimValues = getDimensionValues(filterSet.getWithDimensionValue(null));
     unconstrainedDimValues.sort();
 
     const chartJsDatasets = dimensionSeries.map((x) => {
