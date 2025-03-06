@@ -338,6 +338,7 @@ class MainPresenter {
         reader.onload = (event) => {
           const newCode = event.target.result;
           setCode(newCode, true);
+          self._uiEditorPresenter.enableAllSections();
           loadFileDialog.close();
         };
       }

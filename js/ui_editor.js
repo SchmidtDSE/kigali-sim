@@ -830,7 +830,7 @@ class ConsumptionListPresenter {
       self._dialog.querySelector(".edit-consumption-ghg-units-input"),
       objToShow,
       new EngineNumber(1, "tCO2e / kg"),
-      (x) => x.getEqualsGhg() ? x.getEqualsGhg().getValue() : null,
+      (x) => (x.getEqualsGhg() ? x.getEqualsGhg().getValue() : null),
     );
 
     setEngineNumberValue(
@@ -838,7 +838,7 @@ class ConsumptionListPresenter {
       self._dialog.querySelector(".edit-consumption-energy-units-input"),
       objToShow,
       new EngineNumber(1, "kwh / kg"),
-      (x) => x.getEqualsKwh() ? x.getEqualsKwh().getValue() : null,
+      (x) => (x.getEqualsKwh() ? x.getEqualsKwh().getValue() : null),
     );
 
     setEngineNumberValue(
@@ -1748,6 +1748,16 @@ class UiEditorPresenter {
   showCode() {
     const self = this;
     self._tabs.toggle("#code-editor-pane");
+  }
+
+  /**
+   * Show all sections in the UI editor as enabled.
+   */
+  enableAllSections() {
+    const self = this;
+    self._consumptionList.enable();
+    self._policyList.enable();
+    self._simulationList.enable();
   }
 
   /**
