@@ -359,6 +359,19 @@ function buildCompilerTests() {
     ]);
 
     buildTest("runs reference", "/test/qta/reference.qta", []);
+
+    buildTest("cold starts with equipment", "/test/qta/cold_start_equipment.qta", [
+      (result, assert) => {
+        const record = getResult(result, "BAU", 1, 0, "Test", "Sub");
+        const consumption = record.getGhgConsumption();
+        assert.ok(consumption.getValue() > 0);
+      },
+      (result, assert) => {
+        const record = getResult(result, "BAU", 10, 0, "Test", "Sub");
+        const consumption = record.getGhgConsumption();
+        assert.ok(consumption.getValue() > 0);
+      },
+    ]);
   });
 }
 
