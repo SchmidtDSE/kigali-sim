@@ -978,6 +978,25 @@ class ReportDataWrapper {
       });
     };
 
+    const stepWithSubapp = (target, filterVal, getter) => {
+      if (filterVal === null) {
+        return target;
+      }
+
+      const isMetaGroup = filterVal.endsWith(" - All");
+      const withAllReplace = filterVal.replaceAll(" - All", " - ");
+
+      return target.filter((record) => {
+        const candidateVal = getter(record);
+
+        if (isMetaGroup) {
+          return candidateVal.startsWith(withAllReplace);
+        } else {
+          return candidateVal === filterVal;
+        }
+      });
+    };
+
     const allRecords = self._innerData;
 
     const scenario = filterSet.getScenario();
@@ -990,7 +1009,7 @@ class ReportDataWrapper {
     const withYear = step(trialsFlat, year, (x) => x.getYear());
 
     const app = filterSet.getApplication();
-    const withApp = step(withYear, app, (x) => x.getApplication());
+    const withApp = stepWithSubapp(withYear, app, (x) => x.getApplication());
 
     const sub = filterSet.getSubstance();
     const withSub = step(withApp, sub, (x) => x.getSubstance());

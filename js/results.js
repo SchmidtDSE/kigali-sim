@@ -51,6 +51,25 @@ function getColor(i) {
 }
 
 /**
+ * Add references to application metagroups.
+ *
+ * Add references to application metagroups by looking for those with subgroups
+ * (subapplications) and adding an "- All" option which can be used to filter
+ * for all subapplications within the application.
+ *
+ * @param {Array} applicationNamesRaw - Iterable of string application names.
+ */
+function getWithMetaApplications(applicationNamesRaw) {
+  const applicationNames = Array.of(...applicationNamesRaw);
+  const withSubapplications = applicationNames.filter((x) => x.includes(" - "));
+  const repeatedApplications = withSubapplications.map((x) => x.split(" - ")[0]);
+  const applications = Array.of(...new Set(repeatedApplications));
+  const allOptions = applications.map((x) => x + " - All");
+  const newAllOptions = allOptions.filter((x) => applicationNames.indexOf(x) == -1);
+  return newAllOptions.concat(applicationNames);
+}
+
+/**
  * Main presenter class for displaying simulation results.
  */
 class ResultsPresenter {
@@ -493,7 +512,7 @@ class DimensionCardPresenter {
     self._updateCard(
       "app",
       applicationsCard,
-      results.getApplications(self._filterSet.getWithApplication(null)),
+      getWithMetaApplications(results.getApplications(self._filterSet.getWithApplication(null))),
       applicationsSelected,
       self._filterSet.getApplication(),
       (x) => self._filterSet.getWithApplication(x),
@@ -848,7 +867,7 @@ class SelectorTitlePresenter {
     const applications = results.getApplications(self._filterSet.getWithApplication(null));
     self._updateDynamicDropdown(
       applicationDropdown,
-      applications,
+      getWithMetaApplications(applications),
       applicationSelected,
       "All Applications",
     );
