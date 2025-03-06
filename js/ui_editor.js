@@ -1376,7 +1376,8 @@ class PolicyListPresenter {
       .property("selected", (x) => x === targetAppName);
 
     const substances = codeObj.getSubstances();
-    const substanceNames = substances.map((x) => x.getName());
+    const substanceNamesDup = substances.map((x) => x.getName());
+    const substanceNames = Array.of(...new Set(substanceNamesDup));
     const substanceSelect = d3.select(self._dialog.querySelector(".substances-select"));
     const substanceName = targetSubstance === null ? "" : targetSubstance.getName();
     substanceSelect.html("");
@@ -2078,7 +2079,8 @@ function readChangeCommandUi(root) {
  */
 function initLimitCommandUi(itemObj, root, codeObj) {
   const substances = codeObj.getSubstances();
-  const substanceNames = substances.map((x) => x.getName());
+  const substanceNamesDup = substances.map((x) => x.getName());
+  const substanceNames = Array.of(...new Set(substanceNamesDup));
   const substanceSelect = d3.select(root.querySelector(".substances-select"));
   substanceSelect.html("");
   substanceSelect
@@ -2175,7 +2177,8 @@ function readRecycleCommandUi(root) {
  */
 function initReplaceCommandUi(itemObj, root, codeObj) {
   const substances = codeObj.getSubstances();
-  const substanceNames = substances.map((x) => x.getName());
+  const substanceNamesDup = substances.map((x) => x.getName());
+  const substanceNames = Array.of(...new Set(substanceNamesDup));
   const substanceSelect = d3.select(root.querySelector(".substances-select"));
   substanceSelect.html("");
   substanceSelect
