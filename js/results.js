@@ -807,6 +807,16 @@ class SelectorTitlePresenter {
     const scenarios = results.getScenarios();
     self._updateDynamicDropdown(scenarioDropdown, scenarios, scenarioSelected, "All Simulations");
 
+    const baselineDropdown = self._selection.querySelector(".baseline-select");
+    const baselineSelected = self._filterSet.getBaseline();
+    self._updateDynamicDropdown(
+      baselineDropdown,
+      scenarios,
+      baselineSelected,
+      "Absolute Value",
+      "Relative to ",
+    );
+
     const applicationDropdown = self._selection.querySelector(".application-select");
     const applicationSelected = self._filterSet.getApplication();
     const applications = results.getApplications(self._filterSet.getWithApplication(null));
@@ -842,12 +852,19 @@ class SelectorTitlePresenter {
    * @param {Set<string>} allValues - Available values.
    * @param {string} selectedValue - Currently selected value.
    * @param {string} allText - Text for "All" option.
+   * @param {string} prefix - Optional string prefix to prepend to non-all text
+   *     defaulting to empty string.
    * @private
    */
-  _updateDynamicDropdown(selection, allValues, selectedValue, allText) {
+  _updateDynamicDropdown(selection, allValues, selectedValue, allText, prefix) {
     const self = this;
 
-    const allValuesArray = Array.of(...allValues);
+    if (prefix === undefined) {
+      prefix = "";
+    }
+
+    const allValuesArrayNoPrefix = Array.of(...allValues);
+    const allValuesArray = allValuesArrayNoPrefix.map((x) => prefix + x);
     allValuesArray.unshift(allText);
     allValuesArray.sort();
 
@@ -897,6 +914,9 @@ class SelectorTitlePresenter {
 
     const substanceDropdown = self._selection.querySelector(".substance-select");
     addListener(substanceDropdown, (filterSet, val) => filterSet.getWithSubstance(val));
+
+    const baselineDropdown = self._selection.querySelector(".baseline-select");
+    addListener(baselineDropdown, (filterSet, val) => filterSet.getWithBaseline(val));
   }
 }
 
