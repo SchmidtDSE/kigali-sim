@@ -430,9 +430,19 @@ class ApplicationsListPresenter {
       self._dialog.close();
       event.preventDefault();
 
+      const cleanName = (x) => x.replaceAll('"', "").replaceAll(",", "").trim();
+
       const nameInput = self._dialog.querySelector(".edit-application-name-input");
-      const newNameUnguarded = nameInput.value.replaceAll('"', "").replaceAll(",", "").trim();
-      const newName = newNameUnguarded === "" ? "Unnamed" : newNameUnguarded;
+      const newNameUnguarded = cleanName(nameInput.value);
+
+      const subnameInput = self._dialog.querySelector(".edit-application-subname-input");
+      const newSubnameUnguarded = cleanName(subnameInput.value);
+      const subnameEmpty = newSubnameUnguarded === "";
+
+      const effectiveName = subnameEmpty
+        ? newNameUnguarded
+        : newNameUnguarded + " - " + newSubnameUnguarded;
+      const newName = effectiveName === "" ? "Unnamed" : effectiveName;
 
       const priorNames = new Set(self._getAppNames());
       const nameIsDuplicate = priorNames.has(newName);
@@ -467,9 +477,14 @@ class ApplicationsListPresenter {
 
     if (name === null) {
       self._dialog.querySelector(".edit-application-name-input").value = "";
+      self._dialog.querySelector(".edit-application-subname-input").value = "";
       self._dialog.querySelector(".action-title").innerHTML = "Add";
     } else {
-      self._dialog.querySelector(".edit-application-name-input").value = name;
+      const nameComponents = name.split(" - ");
+      const displayName = nameComponents[0];
+      const subname = nameComponents.slice(1).join(" - ");
+      self._dialog.querySelector(".edit-application-name-input").value = displayName;
+      self._dialog.querySelector(".edit-application-subname-input").value = subname;
       self._dialog.querySelector(".action-title").innerHTML = "Edit";
     }
 
