@@ -439,9 +439,15 @@ class ApplicationsListPresenter {
       const newSubnameUnguarded = cleanName(subnameInput.value);
       const subnameEmpty = newSubnameUnguarded === "";
 
-      const effectiveName = subnameEmpty
-        ? newNameUnguarded
-        : newNameUnguarded + " - " + newSubnameUnguarded;
+      const getEffectiveName = () => {
+        if (subnameEmpty) {
+          return newNameUnguarded;
+        } else {
+          return newNameUnguarded + " - " + newSubnameUnguarded;
+        }
+      };
+
+      const effectiveName = getEffectiveName();
       const newName = effectiveName === "" ? "Unnamed" : effectiveName;
 
       const priorNames = new Set(self._getAppNames());

@@ -177,20 +177,36 @@ function buildReportDataTests() {
 
     buildTest("gets domestic manfacture by metric", "/test/qta/multiple_with_policies_split.qta", [
       (result, assert) => {
-        const filterSet = new FilterSet(1, "bau", null, null, "sales:manufacture:kg / yr", null, null);
+        const filterSet = new FilterSet(
+          1,
+          "bau",
+          null,
+          null,
+          "sales:manufacture:kg / yr",
+          null,
+          null,
+        );
         const sales = result.getMetric(filterSet);
         assert.closeTo(sales.getValue(), 200000 * 0.9, 0.0001);
         assert.deepEqual(sales.getUnits(), "kg / yr");
       },
     ]);
-    
+
     QUnit.test("tests getWithBaseline", (assert) => {
-      const filterSet = new FilterSet(1, "sim", "appA", "subA", "emissions:all:MtCO2e / yr", "simulations", null);
+      const filterSet = new FilterSet(
+        1,
+        "sim",
+        "appA",
+        "subA",
+        "emissions:all:MtCO2e / yr",
+        "simulations",
+        null,
+      );
       assert.deepEqual(filterSet.getBaseline(), null);
-      
+
       const newFilterSet = filterSet.getWithBaseline("bau");
       assert.deepEqual(newFilterSet.getBaseline(), "bau");
-      
+
       // Ensure other properties remain the same
       assert.deepEqual(newFilterSet.getYear(), 1);
       assert.deepEqual(newFilterSet.getScenario(), "sim");
