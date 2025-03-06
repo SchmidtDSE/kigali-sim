@@ -552,8 +552,16 @@ class Engine {
       const manufactureRaw = self.getStream("manufacture");
       const manufactureValue = self._unitConverter.convert(manufactureRaw, "kg");
 
+      if (manufactureValue.getValue() == 0) {
+        return self.getInitialCharge("import");
+      }
+
       const importRaw = self.getStream("import");
       const importValue = self._unitConverter.convert(importRaw, "kg");
+
+      if (importValue.getValue() == 0) {
+        return self.getInitialCharge("manufacture");
+      }
 
       const determineTotal = () => {
         const manufactureRaw = manufactureValue.getValue();
@@ -1168,7 +1176,9 @@ class Engine {
     const initialChargeRaw = self.getInitialCharge("sales");
     const initialCharge = unitConverter.convert(initialChargeRaw, "kg / unit");
     const initialChargeKgUnit = initialCharge.getValue();
-    const deltaUnits = availableForNewUnitsKg / initialChargeKgUnit;
+    const noInitialCharge = initialChargeKgUnit == 0;
+    const deltaUnitsRaw = availableForNewUnitsKg / initialChargeKgUnit;
+    const deltaUnits = noInitialCharge ? 0 : deltaUnitsRaw;
     const newVolume = new EngineNumber(deltaUnits < 0 ? 0 : deltaUnits, "units");
 
     // Find new total
