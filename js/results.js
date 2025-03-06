@@ -4,6 +4,7 @@
  * @license BSD, see LICENSE.md.
  */
 import {FilterSet} from "report_data";
+import {EngineNumber} from "engine_number";
 
 /**
  * Array of colors used for visualizations
@@ -700,7 +701,27 @@ class CenterChartPresenter {
       const valsWithUnits = years.map((year) => {
         const withYear = filterSet.getWithYear(year);
         const subFilterSet = withYear.getWithDimensionValue(dimValue);
-        return results.getMetric(subFilterSet);
+
+        if (filterSet.getBaseline() === null) {
+          return results.getMetric(subFilterSet);
+        } else {
+          const absoluteVal = results.getMetric(subFilterSet);
+          const baselineFilterSet = subFilterSet.getWithScenario(filterSet.getBaseline());
+          const baselineVal = results.getMetric(baselineFilterSet);
+
+          if (absoluteVal === null || baselineVal === null) {
+            return null;
+          }
+
+          if (absoluteVal.getUnits() !== baselineVal.getUnits()) {
+            throw "Mismanaged units in absolute vs baseline.";
+          }
+
+          return new EngineNumber(
+            absoluteVal.getValue() - baselineVal.getValue(),
+            absoluteVal.getUnits(),
+          );
+        }
       });
       const valsWithUnitsValid = valsWithUnits.filter((x) => x !== null);
       const vals = valsWithUnitsValid.map((x) => x.getValue());
@@ -725,6 +746,11 @@ class CenterChartPresenter {
       };
     });
 
+    const minVals = dimensionSeries.map((x) => {
+      return Math.min(...x["vals"]);
+    });
+    const minVal = Math.min(...minVals);
+
     const chartJsData = {
       labels: years,
       datasets: chartJsDatasets,
@@ -739,7 +765,7 @@ class CenterChartPresenter {
       options: {
         scales: {
           y: {
-            min: 0,
+            min: minVal >= 0 ? 0 : null,
             title: {text: metricUnits, display: true},
           },
           x: {
@@ -863,8 +889,7 @@ class SelectorTitlePresenter {
       prefix = "";
     }
 
-    const allValuesArrayNoPrefix = Array.of(...allValues);
-    const allValuesArray = allValuesArrayNoPrefix.map((x) => prefix + x);
+    const allValuesArray = Array.of(...allValues);
     allValuesArray.unshift(allText);
     allValuesArray.sort();
 
@@ -876,7 +901,7 @@ class SelectorTitlePresenter {
       .enter()
       .append("option")
       .attr("value", (x) => (allText === x ? "" : x))
-      .text((x) => x)
+      .text((x) => (x === allText ? x : prefix + x))
       .property("selected", (x) => {
         const nativelySelected = x === selectedValue;
         const allSelected = x === allText && selectedValue === null;
