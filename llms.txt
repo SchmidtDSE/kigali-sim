@@ -52,7 +52,10 @@ end simulations
 #### Manufacturing and Trade
 - `initial charge with X kg / unit for manufacture` - Sets substance per unit
 - `set manufacture to X kg during year Y` - Sets production volume
-- `set import to X kg during year Y` - Sets import volume  
+- `set import to X kg during year Y` - Sets import volume
+- `set export to X kg during year Y` - Sets export volume
+- `set sales to X kg during year Y` - Sets sales volume
+- `set equipment to X units during year Y` - Sets equipment population
 - `change manufacture by +X % each year during years Y to Z` - Growth rates
 - `change import by +X % each year during years Y to Z` - Import growth
 
@@ -63,10 +66,13 @@ end simulations
 
 #### Policy Interventions
 - `cap manufacture to X%` - Manufacturing restrictions
-- `cap import to X%` - Import restrictions  
+- `cap import to X%` - Import restrictions
+- `floor manufacture to X%` - Manufacturing minimums
+- `floor import to X%` - Import minimums
 - `replace level % of manufacture with "substance" during years X to Y` - Substance transitions
 - `replace level % of import with "substance" during years X to Y` - Import substitution
-- `recycle X % during years Y to Z` - Recycling requirements
+- `recover X % with Y % reuse` - Recycling with yield rates
+- `recover X % with Y % reuse displacing Z %` - Recycling with displacement
 
 #### Units System
 Supports automatic unit conversion:
@@ -74,15 +80,19 @@ Supports automatic unit conversion:
 - Emissions: tCO2e (tons CO2 equivalent)
 - Energy: kwh (kilowatt hours)
 - Equipment: units
-- Time: years
+- Time: years, months, days
 - Percentages: %
 
 #### Advanced Features
-- **Variables**: `set variable to value` and `get variable`
-- **Conditionals**: `if condition then ... end if`
-- **Uncertainties**: `normal(mean, std)`, `uniform(min, max)` for probabilistic simulation
-- **Timeseries**: `during years X to Y`, `each year`, `onwards`
-- **Mathematical expressions**: Basic arithmetic with `+`, `-`, `*`, `/`, `^`
+- **Variables**: `define identifier as expression` and `get identifier`
+- **Stream access**: `get manufacture`, `get import`, `get export`, `get sales`, `get equipment`, `get priorEquipment`
+- **Unit conversions**: `get manufacture as kg/unit`, `get import of "substance" as mt`
+- **Conditionals**: `if condition then ... else ... endif`
+- **Value constraints**: `limit expression to [min,max]`, `limit expression to [,max]`, `limit expression to [min,]`
+- **Uncertainties**: `sample normally from mean of X std of Y`, `sample uniformly from X to Y`
+- **Timeseries**: `during years X to Y`, `during year X`, `during years X to onwards`, `each year`
+- **Mathematical expressions**: Basic arithmetic with `+`, `-`, `*`, `/`, `^`, parentheses
+- **Displacement**: `displacing` keyword for policy interventions that replace flows
 
 ### Example QubecTalk Program
 
