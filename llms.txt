@@ -51,13 +51,9 @@ end simulations
 
 #### Manufacturing and Trade
 - `initial charge with X kg / unit for manufacture` - Sets substance per unit
-- `set manufacture to X kg during year Y` - Sets production volume
-- `set import to X kg during year Y` - Sets import volume
-- `set export to X kg during year Y` - Sets export volume
-- `set sales to X kg during year Y` - Sets sales volume
+- `set manufacture/import/export/sales to X kg during year Y` - Sets flow volumes
 - `set equipment to X units during year Y` - Sets equipment population
-- `change manufacture by +X % each year during years Y to Z` - Growth rates
-- `change import by +X % each year during years Y to Z` - Import growth
+- `change manufacture/import by +X % each year during years Y to Z` - Growth rates
 
 #### Equipment Lifecycle
 - `retire X % each year` - Equipment retirement rate
@@ -65,34 +61,22 @@ end simulations
 - `set priorEquipment to X units during year Y` - Pre-existing equipment
 
 #### Policy Interventions
-- `cap manufacture to X%` - Manufacturing restrictions
-- `cap import to X%` - Import restrictions
-- `floor manufacture to X%` - Manufacturing minimums
-- `floor import to X%` - Import minimums
-- `replace level % of manufacture with "substance" during years X to Y` - Substance transitions
-- `replace level % of import with "substance" during years X to Y` - Import substitution
-- `recover X % with Y % reuse` - Recycling with yield rates
-- `recover X % with Y % reuse displacing Z %` - Recycling with displacement
+- `cap/floor manufacture/import to X%` - Manufacturing/import restrictions and minimums
+- `replace level % of manufacture/import with "substance" during years X to Y` - Substance transitions
+- `recover X % with Y % reuse [displacing Z %]` - Recycling with optional displacement
 
 #### Units System
-Supports automatic unit conversion:
-- Mass: kg, mt (metric tons)
-- Emissions: tCO2e (tons CO2 equivalent)
-- Energy: kwh (kilowatt hours)
-- Equipment: units
-- Time: years, months, days
-- Percentages: %
+Supports automatic unit conversion: kg, mt (metric tons), tCO2e (tons CO2 equivalent), kwh (kilowatt hours), units (equipment), years/months/days (time), % (percentages)
 
 #### Advanced Features
 - **Variables**: `define identifier as expression` and `get identifier`
-- **Stream access**: `get manufacture`, `get import`, `get export`, `get sales`, `get equipment`, `get priorEquipment`
+- **Stream access**: `get manufacture/import/export/sales/equipment/priorEquipment`
 - **Unit conversions**: `get manufacture as kg/unit`, `get import of "substance" as mt`
 - **Conditionals**: `if condition then ... else ... endif`
-- **Value constraints**: `limit expression to [min,max]`, `limit expression to [,max]`, `limit expression to [min,]`
+- **Constraints**: `limit expression to [min,max]`, `limit expression to [,max]`, `limit expression to [min,]`
 - **Uncertainties**: `sample normally from mean of X std of Y`, `sample uniformly from X to Y`
-- **Timeseries**: `during years X to Y`, `during year X`, `during years X to onwards`, `each year`
-- **Mathematical expressions**: Basic arithmetic with `+`, `-`, `*`, `/`, `^`, parentheses
-- **Displacement**: `displacing` keyword for policy interventions that replace flows
+- **Temporal**: `during years X to Y`, `during year X`, `during years X to onwards`, `each year`
+- **Math expressions**: Basic arithmetic with `+`, `-`, `*`, `/`, `^`, parentheses
 
 ### Example QubecTalk Program
 
