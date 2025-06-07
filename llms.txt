@@ -17,6 +17,8 @@ KigaliSim supports both business-as-usual projections and policy intervention sc
 
 KigaliSim uses QubecTalk, a HyperTalk-inspired domain-specific language for defining simulations. QubecTalk programs are human-readable and use natural language constructs.
 
+**Note**: In this documentation, the pipe symbol (|) is used to indicate different command options or alternatives, not as part of the actual QubecTalk syntax.
+
 ### Program Structure
 
 QubecTalk programs are organized into stanzas:
@@ -51,9 +53,9 @@ end simulations
 
 #### Manufacturing and Trade
 - `initial charge with X kg / unit for manufacture` - Sets substance per unit
-- `set manufacture/import/export/sales to X kg during year Y` - Sets flow volumes
+- `set manufacture|import|export|sales to X kg during year Y` - Sets flow volumes
 - `set equipment to X units during year Y` - Sets equipment population
-- `change manufacture/import by +X % each year during years Y to Z` - Growth rates
+- `change manufacture|import by +X % each year during years Y to Z` - Growth rates
 
 #### Equipment Lifecycle
 - `retire X % each year` - Equipment retirement rate
@@ -61,8 +63,8 @@ end simulations
 - `set priorEquipment to X units during year Y` - Pre-existing equipment
 
 #### Policy Interventions
-- `cap/floor manufacture/import to X%` - Manufacturing/import restrictions and minimums
-- `replace level % of manufacture/import with "substance" during years X to Y` - Substance transitions
+- `cap|floor manufacture|import to X%` - Manufacturing/import restrictions and minimums
+- `replace level % of manufacture|import with "substance" during years X to Y` - Substance transitions
 - `recover X % with Y % reuse [displacing Z %]` - Recycling with optional displacement
 
 #### Units System
@@ -70,7 +72,7 @@ Supports automatic unit conversion: kg, mt (metric tons), tCO2e (tons CO2 equiva
 
 #### Advanced Features
 - **Variables**: `define identifier as expression` and `get identifier`
-- **Stream access**: `get manufacture/import/export/sales/equipment/priorEquipment`
+- **Stream access**: `get manufacture|import|export|sales|equipment|priorEquipment`
 - **Unit conversions**: `get manufacture as kg/unit`, `get import of "substance" as mt`
 - **Conditionals**: `if condition then ... else ... endif`
 - **Constraints**: `limit expression to [min,max]`, `limit expression to [,max]`, `limit expression to [min,]`
