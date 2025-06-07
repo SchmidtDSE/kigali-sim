@@ -5,5 +5,6 @@ cp -r style deploy/style
 cp -r third_party deploy/third_party
 cp index.html deploy/index.html
 cp privacy.html deploy/privacy.html
+cp llms.txt deploy/llms.txt
 
 rm -r deploy/third_party/publicsans
