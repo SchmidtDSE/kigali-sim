@@ -17,7 +17,7 @@ KigaliSim supports both business-as-usual projections and policy intervention sc
 
 KigaliSim uses QubecTalk, a HyperTalk-inspired domain-specific language for defining simulations. QubecTalk programs are human-readable and use natural language constructs.
 
-**Note**: In this documentation, the pipe symbol (|) is used to indicate different command options or alternatives, not as part of the actual QubecTalk syntax.
+**Note**: In this documentation, the pipe symbol (|) is used to indicate different command options or alternatives, not as part of the actual QubecTalk syntax. For example, `set manufacture|import to X kg during year Y` means both `set manufacture to X kg during year Y` and `set import to X kg during year Y` are valid.
 
 ### Program Structure
 
@@ -153,5 +153,7 @@ KigaliSim generates:
 - **Consumption data**: Manufacturing and import volumes
 - **Energy consumption**: Associated electricity usage
 - **Policy impact**: Comparison between scenarios
+
+## Limitations
 
 This tool is unofficial and voluntary, designed to optionally inform Montreal Protocol policy discussions rather than replace official assessment processes.
