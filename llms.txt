@@ -1,0 +1,159 @@
+# KigaliSim - Montreal Protocol Policy Simulation Tool
+
+KigaliSim is an open source web-based simulation engine for modeling substances, applications, and policies related to the Montreal Protocol and Kigali Amendment. It can model high global warming potential greenhouse gases such as HFCs and supports business-as-usual scenarios as well as policy interventions.
+
+## Project Purpose
+
+This tool provides simulation capabilities for:
+- **Substance modeling**: HFCs, HCFCs, and alternative refrigerants with their Global Warming Potential (GWP) values
+- **Application modeling**: Equipment types like domestic refrigeration, commercial refrigeration, residential AC, mobile AC
+- **Policy simulation**: Import restrictions, manufacturing caps, substance replacements, recycling requirements
+- **Business scenarios**: Manufacturing, imports, equipment lifecycles, service activities, energy consumption
+- **Impact assessment**: Direct emissions calculations, energy consumption analysis, equipment population tracking
+
+KigaliSim supports both business-as-usual projections and policy intervention scenarios, making it useful for Kigali Amendment Implementation Plans (KIPs) and Montreal Protocol policy analysis.
+
+## QubecTalk Domain Specific Language
+
+KigaliSim uses QubecTalk, a HyperTalk-inspired domain-specific language for defining simulations. QubecTalk programs are human-readable and use natural language constructs.
+
+**Note**: In this documentation, the pipe symbol (|) is used to indicate different command options or alternatives, not as part of the actual QubecTalk syntax. For example, `set manufacture|import to X kg during year Y` means both `set manufacture to X kg during year Y` and `set import to X kg during year Y` are valid.
+
+### Program Structure
+
+QubecTalk programs are organized into stanzas:
+
+```
+start about
+  # Name: "Simulation Name"
+  # Description: "Description"
+  # Author: "Author Name"
+end about
+
+start default
+  # Business as usual scenario
+end default
+
+start policy "Policy Name"
+  # Policy modifications
+end policy
+
+start simulations
+  # Simulation definitions
+end simulations
+```
+
+### Core Language Features
+
+#### Applications and Substances
+- `define application "name"` - Creates equipment/application type
+- `uses substance "name"` - Associates substance with application
+- `equals X tCO2e / mt` - Sets Global Warming Potential
+- `equals X kwh / unit` - Sets energy consumption per unit
+
+#### Manufacturing and Trade
+- `initial charge with X kg / unit for manufacture` - Sets substance per unit
+- `set manufacture|import|export|sales to X kg during year Y` - Sets flow volumes
+- `set equipment to X units during year Y` - Sets equipment population
+- `change manufacture|import by +X % each year during years Y to Z` - Growth rates
+
+#### Equipment Lifecycle
+- `retire X % each year` - Equipment retirement rate
+- `recharge X % each year with Y kg / unit` - Service recharging
+- `set priorEquipment to X units during year Y` - Pre-existing equipment
+
+#### Policy Interventions
+- `cap|floor manufacture|import to X%` - Manufacturing/import restrictions and minimums
+- `replace level % of manufacture|import with "substance" during years X to Y` - Substance transitions
+- `recover X % with Y % reuse [displacing Z %]` - Recycling with optional displacement
+
+#### Units System
+Supports automatic unit conversion: kg, mt (metric tons), tCO2e (tons CO2 equivalent), kwh (kilowatt hours), units (equipment), years/months/days (time), % (percentages)
+
+#### Advanced Features
+- **Variables**: `define identifier as expression` and `get identifier`
+- **Stream access**: `get manufacture|import|export|sales|equipment|priorEquipment`
+- **Unit conversions**: `get manufacture as kg/unit`, `get import of "substance" as mt`
+- **Conditionals**: `if condition then ... else ... endif`
+- **Constraints**: `limit expression to [min,max]`, `limit expression to [,max]`, `limit expression to [min,]`
+- **Uncertainties**: `sample normally from mean of X std of Y`, `sample uniformly from X to Y`
+- **Temporal**: `during years X to Y`, `during year X`, `during years X to onwards`, `each year`
+- **Math expressions**: Basic arithmetic with `+`, `-`, `*`, `/`, `^`, parentheses
+
+### Example QubecTalk Program
+
+```
+start about
+  # Name: "HFC Refrigeration Analysis"
+  # Description: "Domestic refrigeration HFC phasedown scenario"
+end about
+
+start default
+  define application "dom refrig"
+    uses substance "HFC-134a"
+      equals 1430 tCO2e / mt
+      equals 100 kwh / unit
+      
+      initial charge with 0.12 kg / unit for manufacture
+      set manufacture to 350000 kg during year 1
+      change manufacture by +5 % each year during years 1 to 5
+      
+      initial charge with 0.30 kg / unit for import  
+      set import to 90000 kg during year 1
+      change import by +5 % each year during years 1 to 5
+      
+      retire 6.7 % each year
+      recharge 10 % each year with 0.12 kg / unit
+    end substance
+  end application
+end default
+
+start policy "HFC Phasedown"
+  modify application "dom refrig"
+    modify substance "HFC-134a"
+      cap manufacture to 85% during years 3 to 5
+      cap import to 85% during years 3 to 5
+      replace 50% of manufacture with "R-600a" during years 6 to onwards
+    end substance
+    
+    uses substance "R-600a"
+      equals 6 tCO2e / mt
+      equals 95 kwh / unit
+      initial charge with 0.05 kg / unit for manufacture
+    end substance
+  end application
+end policy
+
+start simulations
+  simulate "business as usual" from years 1 to 10
+  simulate "with phasedown" using "HFC Phasedown" from years 1 to 10
+end simulations
+```
+
+## Web Interface
+
+KigaliSim provides a web interface at https://mlf-policy-explorer.org with two editing modes:
+- **Basic Editor**: UI-based point-and-click interface for building simulations
+- **Advanced Editor**: Code editor for writing QubecTalk directly
+
+The Advanced Editor tab accepts QubecTalk code as input and can run probabilistic simulations not available in the Basic Editor. The Basic Editor can also generate QubecTalk code that can be further customized in the Advanced Editor.
+
+## Technical Implementation
+
+- **Language**: JavaScript with ANTLR4 parser
+- **Architecture**: Browser-based execution with no server-side computation
+- **Output formats**: Visualizations, CSV export, emissions metrics
+- **License**: BSD for code, CC-BY 4.0 for documentation
+
+## Simulation Outputs
+
+KigaliSim generates:
+- **Emissions projections**: Direct HFC/HCFC emissions in tCO2e
+- **Equipment population**: Units in use over time
+- **Consumption data**: Manufacturing and import volumes
+- **Energy consumption**: Associated electricity usage
+- **Policy impact**: Comparison between scenarios
+
+## Limitations
+
+This tool is unofficial and voluntary, designed to optionally inform Montreal Protocol policy discussions rather than replace official assessment processes.
