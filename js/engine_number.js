@@ -313,6 +313,9 @@ class UnitConverter {
       const targetConverted = self.convert(target, expectedUnits);
       const originalValue = targetConverted.getValue();
       const newValue = originalValue * conversionValue;
+      if (newUnits !== "tCO2e") {
+        throw "Unexpected units " + newUnits;
+      }
       return new EngineNumber(newValue, newUnits);
     } else if (currentUnits === "%") {
       const originalValue = target.getValue();
@@ -353,6 +356,9 @@ class UnitConverter {
       const targetConverted = self.convert(target, expectedUnits);
       const originalValue = targetConverted.getValue();
       const newValue = originalValue * conversionValue;
+      if (newUnits !== "kwh") {
+        throw "Unexpected units " + newUnits;
+      }
       return new EngineNumber(newValue, newUnits);
     } else if (currentUnits === "%") {
       const originalValue = target.getValue();
@@ -798,6 +804,16 @@ class OverridingConverterStateGetter {
     } else {
       return self._substanceConsumption;
     }
+  }
+
+  /**
+   * Set the energy intensity.
+   *
+   * @param {EngineNumber} newValue - The new energy intensity value.
+   */
+  setEnergyIntensity(newValue) {
+    const self = this;
+    self._energyIntensity = newValue;
   }
 
   /**

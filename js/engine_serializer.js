@@ -182,10 +182,10 @@ class EngineResultSerializer {
     const unitConverter = new UnitConverter(stateGetter);
 
     const ghgIntensity = self._engine.getEqualsGhgIntensityFor(application, substance);
-    stateGetter.setSubtanceConsumption(ghgIntensity);
+    stateGetter.setSubstanceConsumption(ghgIntensity);
 
     const energyIntensity = self._engine.getEqualsEnergyIntensityFor(application, substance);
-    stateGetter.setEnergyConsumption(energyIntensity);
+    stateGetter.setEnergyIntensity(energyIntensity);
 
     // Determine import value without recharge
     const totalImportValue = self._engine.getStreamRaw(application, substance, "import");
@@ -204,7 +204,7 @@ class EngineResultSerializer {
     const importRechargeKg = proportionImport * totalRechargeKg;
     const importForInitialChargeKg = totalImportValueKg - importRechargeKg;
 
-    const value = new EngineValue(importForInitialChargeKg, "kg");
+    const value = new EngineNumber(importForInitialChargeKg, "kg");
 
     // Determine consumption (tCO2e) and population (units)
     const consumption = unitConverter.convert(value, "tCO2e");
