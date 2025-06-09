@@ -1,5 +1,6 @@
 import {Compiler} from "compiler";
-import {ReportDataWrapper, FilterSet} from "report_data";
+import {ReportDataWrapper} from "report_data";
+import {FilterSet} from user_config.js
 
 function loadRemote(path) {
   return fetch(path).then((response) => response.text());

@@ -3,8 +3,8 @@
  *
  * @license BSD, see LICENSE.md.
  */
-import {FilterSet} from "report_data";
 import {EngineNumber} from "engine_number";
+import {FilterSet} from "user_config";
 
 /**
  * Array of colors used for visualizations
