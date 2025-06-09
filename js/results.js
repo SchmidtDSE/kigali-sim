@@ -112,6 +112,7 @@ class ResultsPresenter {
       "emissions:all:MtCO2e / yr",
       "simulations",
       null,
+      false,
     );
   }
 
