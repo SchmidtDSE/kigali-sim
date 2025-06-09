@@ -4,6 +4,8 @@
  * @license BSD-3-Clause
  */
 
+import {EngineNumber} from "engine_number";
+
 /**
  * Result of an engine execution for a substance for an application and year.
  */
