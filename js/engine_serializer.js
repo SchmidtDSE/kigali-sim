@@ -2,9 +2,10 @@ import {EngineNumber, OverridingConverterStateGetter, UnitConverter} from "engin
 import {EngineResult} from "engine_struct";
 
 class EngineResultSerializer {
-  constructor(engine) {
+  constructor(engine, stateGetter) {
     const self = this;
     self._engine = engine;
+    self._stateGetter = stateGetter;
   }
 
   getResult(application, substance, year) {
