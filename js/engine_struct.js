@@ -849,4 +849,4 @@ class AggregatedResult {
   }
 }
 
-export {AggregatedResult, EngineResult, EngineResultBuilder, ImportSummary};
+export {AggregatedResult, EngineResult, EngineResultBuilder, ImportSupplement};
