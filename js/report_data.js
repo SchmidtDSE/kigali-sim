@@ -282,8 +282,9 @@ class AggregatedResult {
 
 /**
  * Builder class for creating metric computation strategies.
- * Handles the construction of metric processing pipelines including
- * transformations and unit conversions.
+ *
+ * Builder which handles the construction of metric processing pipelines including transformations
+ * and unit conversions.
  */
 class MetricStrategyBuilder {
   /**
