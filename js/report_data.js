@@ -30,6 +30,8 @@ class AggregatedResult {
    *     activities.
    * @param {EngineNumber} eolEmissions - Emissions resulting from end-of-life
    *     equipment.
+   * @param {EngineNumber} energyConsumtion - Equivalent energy consumption for
+   *     activity specified.
    */
   constructor(
     manufactureValue,
@@ -289,7 +291,7 @@ class AggregatedResult {
 class MetricStrategyBuilder {
   /**
    * Create a new MetricStrategyBuilder instance.
-   * 
+   *
    * Create a new MetricStrategyBuilder instance, initalizing all strategy
    * components to null requiring them to be specified later.
    */
@@ -305,7 +307,7 @@ class MetricStrategyBuilder {
 
   /**
    * Set the metric name for the strategy.
-   * 
+   *
    * @param {string} metric - The metric name (e.g., 'sales', 'emissions').
    */
   setMetric(metric) {
@@ -315,7 +317,7 @@ class MetricStrategyBuilder {
 
   /**
    * Set the submetric name for the strategy.
-   * 
+   *
    * @param {string} submetric - The submetric name (e.g., 'all', 'import').
    */
   setSubmetric(submetric) {
