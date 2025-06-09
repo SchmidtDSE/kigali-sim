@@ -273,16 +273,31 @@ class ImportSummary {
     self._newPopulation = newPopulation;
   }
   
+  /**
+   * Get the volume of substance imported via initial charge on imported equipment.
+   *
+   * @returns {EngineValue} The initial charge value in volume units like kg.
+   */
   getInitialChargeValue() {
     const self = this;
     return self._initialChargeValue;
   }
   
+  /**
+   * Get the consumption associated with initial charge of imported equipment.
+   *
+   * @returns {EngineValue} The initial charge consumption value in units like tCO2e.
+   */
   getInitialChargeConsumptionValue() {
     const self = this;
     return self._initialChargeConsumptionValue;
   }
   
+  /**
+   * Get the number of new units imported.
+   *
+   * @returns {EngineValue} The new population value in units.
+   */
   getNewPopulation() {
     const self = this;
     return self._newPopulation;
