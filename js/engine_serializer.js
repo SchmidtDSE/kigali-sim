@@ -5,7 +5,7 @@
  */
 
 import {EngineNumber, OverridingConverterStateGetter, UnitConverter} from "engine_number";
-import {EngineResult} from "engine_struct";
+import {EngineResultBuilder} from "engine_struct";
 
 /**
  * Decorator around an engine to serialize out results.
@@ -38,6 +38,12 @@ class EngineResultSerializer {
    */
   getResult(application, substance, year) {
     const self = this;
+
+    // Create builder
+    const builder = new EngineResultBuilder();
+    builder.setApplication(application);
+    builder.setSubstance(substance);
+    builder.setYear(year);
 
     // Prepare units
     const stateGetter = new OverridingConverterStateGetter(self._stateGetter);
@@ -80,6 +86,7 @@ class EngineResultSerializer {
       manufactureKg - recycleKg * percentManufacture,
       "kg",
     );
+    builder.setManufactureValue(manufactureValueOffset);
 
     const importValueOffset = new EngineNumber(importKg - recycleKg * percentImport, "kg");
 
@@ -119,10 +126,10 @@ class EngineResultSerializer {
 
     // Package
     return new EngineResult(
-      application,
-      substance,
-      year,
-      manufactureValueOffset,
+      application, // Done
+      substance, // Done
+      year, // Done
+      manufactureValueOffset, // Done
       importValueOffset,
       recycleValue,
       domesticConsumptionValue,
@@ -134,6 +141,8 @@ class EngineResultSerializer {
       eolEmissions,
       energyConsumptionValue,
     );
+
+    // Will put build here instead of new EngineResult which is to be removed
   }
 }
 
