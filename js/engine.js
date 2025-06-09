@@ -769,7 +769,7 @@ class Engine {
 
     const substances = self._streamKeeper.getRegisteredSubstances();
     const serializer = new EngineResultSerializer(self);
-    
+
     return substances.map((substanceId) => {
       const application = substanceId.getApplication();
       const substance = substanceId.getSubstance();
