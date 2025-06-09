@@ -60,21 +60,28 @@ class EngineResultSerializer {
 
     // Get total energy consumption
     const energyConsumptionValue = self._engine.getStreamRaw(application, substance, "energy");
+    builder.setEnergyConsumptionValue(energyConsumptionValue);
 
     // Get emissions
     const populationValue = self._engine.getStreamRaw(application, substance, "equipment");
+    builder.setPopulationValue(populationValue);
+
     const populationNew = self._engine.getStreamRaw(application, substance, "newEquipment");
+    builder.setPopulationNew(populationNew);
+
     const rechargeEmissions = self._engine.getStreamRaw(
       application,
       substance,
       "rechargeEmissions",
     );
     const eolEmissions = self._engine.getStreamRaw(application, substance, "eolEmissions");
+    builder.setEolEmissions(eolEmissions);
 
     // Get percent for offset
     const manufactureKg = manufactureValue.getValue();
     const importKg = importValue.getValue();
     const recycleKg = recycleValue.getValue();
+    builder.setRecycleValue(recycleKg);
 
     const nonRecycleSalesKg = manufactureKg + importKg;
     const noSales = nonRecycleSalesKg == 0;
@@ -89,6 +96,7 @@ class EngineResultSerializer {
     builder.setManufactureValue(manufactureValueOffset);
 
     const importValueOffset = new EngineNumber(importKg - recycleKg * percentImport, "kg");
+    builder.setImportValue(importValueOffset);
 
     // Get consumption
     const getConsumptionByVolume = () => {
@@ -113,8 +121,13 @@ class EngineResultSerializer {
     };
 
     const domesticConsumptionValue = getConsumptionForVolume(manufactureValueOffset);
+    builder.setDomesticConsumptionValue(domesticConsumptionValue);
+
     const importConsumptionValue = getConsumptionForVolume(importValueOffset);
+    builder.setImportConsumptionValue(importConsumptionValue);
+
     const recycleConsumptionValue = getConsumptionForVolume(recycleValue);
+    builder.setRecycleConsumptionValue(recycleConsumptionValue);
 
     // Offset recharge emissions
     stateGetter.setVolume(null);
@@ -123,26 +136,10 @@ class EngineResultSerializer {
       rechargeEmissionsConvert.getValue() - recycleConsumptionValue.getValue(),
       "tCO2e",
     );
+    builder.setRechargeEmissions(rechargeEmissionsOffset);
 
     // Package
-    return new EngineResult(
-      application, // Done
-      substance, // Done
-      year, // Done
-      manufactureValueOffset, // Done
-      importValueOffset,
-      recycleValue,
-      domesticConsumptionValue,
-      importConsumptionValue,
-      recycleConsumptionValue,
-      populationValue,
-      populationNew,
-      rechargeEmissionsOffset,
-      eolEmissions,
-      energyConsumptionValue,
-    );
-
-    // Will put build here instead of new EngineResult which is to be removed
+    return builder.build();
   }
 }
 
