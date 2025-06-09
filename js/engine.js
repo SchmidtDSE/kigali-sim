@@ -873,17 +873,17 @@ class Engine {
     const noInitialCharge = initialChargeKgUnit == 0;
     const deltaUnitsRaw = availableForNewUnitsKg / initialChargeKgUnit;
     const deltaUnits = noInitialCharge ? 0 : deltaUnitsRaw;
-    const newVolume = new EngineNumber(deltaUnits < 0 ? 0 : deltaUnits, "units");
+    const newUnitsMarginal = new EngineNumber(deltaUnits < 0 ? 0 : deltaUnits, "units");
 
     // Find new total
     const priorPopulationUnits = priorPopulation.getValue();
     const newUnits = priorPopulationUnits + deltaUnits;
     const newUnitsAllowed = newUnits < 0 ? 0 : newUnits;
-    const newVolumeTotal = new EngineNumber(newUnitsAllowed, "units");
+    const newUnitsEffective = new EngineNumber(newUnitsAllowed, "units");
 
     // Save
-    self.setStream("equipment", newVolumeTotal, null, scopeEffective, false);
-    self.setStream("newEquipment", newVolume, null, scopeEffective, false);
+    self.setStream("equipment", newUnitsEffective, null, scopeEffective, false);
+    self.setStream("newEquipment", newUnitsMarginal, null, scopeEffective, false);
     self.setStream("rechargeEmissions", rechargeGhg, null, scopeEffective, false);
   }
 

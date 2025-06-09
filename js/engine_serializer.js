@@ -5,7 +5,7 @@
  */
 
 import {EngineNumber, OverridingConverterStateGetter, UnitConverter} from "engine_number";
-import {EngineResultBuilder} from "engine_struct";
+import {EngineResultBuilder, ImportSupplement} from "engine_struct";
 
 /**
  * Decorator around an engine to serialize out results.
@@ -44,6 +44,27 @@ class EngineResultSerializer {
     builder.setApplication(application);
     builder.setSubstance(substance);
     builder.setYear(year);
+
+    // Add values into builder
+    self._parseMainBody(builder, application, substance);
+    self._parseImportSupplement(builder, application, substance);
+
+    // Will put build here instead of new EngineResult which is to be removed
+    return builder.build();
+  }
+
+  /**
+   * Parse the attributes which are actually returned to the user.
+   *
+   * @param {EngineResultBuilder} builder - The builder into which parsed
+   *     values should be registered.
+   * @param {string} application - The name of the application for which to get
+   *     values like commerical refrigeration.
+   * @param {string} substance - The name of the substance for which to get
+   *     values like HFC-134a.
+   */
+  _parseMainBody(builder, application, substance) {
+    const self = this;
 
     // Prepare units
     const stateGetter = new OverridingConverterStateGetter(self._stateGetter);
@@ -137,9 +158,34 @@ class EngineResultSerializer {
       "tCO2e",
     );
     builder.setRechargeEmissions(rechargeEmissionsOffset);
+  }
 
-    // Will put build here instead of new EngineResult which is to be removed
-    return builder.build();
+  /**
+   * Parse information for the import supplement.
+   *
+   * Parse information for the import supplement which is needed to perform
+   * user-configurable import attribution options (are substances associated
+   * with importer or exporter).
+   *
+   * @param {EngineResultBuilder} builder - The builder into which parsed
+   *     values should be registered.
+   * @param {string} application - The name of the application for which to get
+   *     values like commerical refrigeration.
+   * @param {string} substance - The name of the substance for which to get
+   *     values like HFC-134a.
+   */
+  _parseImportSupplement(builder, application, substance) {
+    const self = this;
+
+    
+
+    // Package
+    const importSupplement = new ImportSupplement(
+      initialChargeValue,
+      initialChargeConsumptionValue,
+      newPopulation,
+    );
+    builder.setImportSupplement(importSupplement);
   }
 }
 

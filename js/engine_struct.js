@@ -38,6 +38,8 @@ class EngineResult {
    *     from recharge activities.
    * @param {EngineNumber} eolEmissions - The greenhouse gas emissions from
    *     end-of-life equipment.
+   * @param {ImportSupplement} importSupplement - The supplemental import data
+   *     needed for attribution.
    */
   constructor(
     application,
@@ -54,6 +56,7 @@ class EngineResult {
     rechargeEmissions,
     eolEmissions,
     energyConsumption,
+    importSupplement,
   ) {
     const self = this;
     self._application = application;
@@ -70,6 +73,7 @@ class EngineResult {
     self._rechargeEmissions = rechargeEmissions;
     self._eolEmissions = eolEmissions;
     self._energyConsumption = energyConsumption;
+    self._importSupplement = importSupplement;
   }
 
   /**
@@ -249,15 +253,28 @@ class EngineResult {
     const self = this;
     return self._energyConsumption;
   }
+
+  /**
+   * Get the import supplement information.
+   *
+   * @returns {ImportSupplement} The additional import information needed for
+   *     attribution.
+   */
+  getImportSupplement() {
+    const self = this;
+    return self._importSupplement;
+  }
 }
 
 /**
  * Description of trade activity within a result.
  *
  * As a supplement to an {EngineResult}, offers additional description of trade
- * activity to support different kinds of trade attributions.
+ * activity to support different kinds of trade attributions. This is not
+ * reported to the user but is required for some internal caulcations prior to
+ * aggregation operations.
  */
-class ImportSummary {
+class ImportSupplement {
   /**
    * Create a new summary of imports.
    *
@@ -328,6 +345,7 @@ class EngineResultBuilder {
     self._rechargeEmissions = null;
     self._eolEmissions = null;
     self._energyConsumption = null;
+    self._importSupplement = null;
   }
 
   /**
@@ -484,6 +502,17 @@ class EngineResultBuilder {
   }
 
   /**
+   * Specify the supplemental import information needed for attribution.
+   *
+   * @param {ImportSupplement} importSupplement - Supplemental import
+   *     information.
+   */
+  setImportSupplement(importSupplement) {
+    const self = this;
+    self._importSupplement = importSupplement;
+  }
+
+  /**
    * Check that the builder is complete and create a new result.
    *
    * @returns {EngineResult} The result built from the values provided to this
@@ -507,6 +536,7 @@ class EngineResultBuilder {
       self._rechargeEmissions,
       self._eolEmissions,
       self._energyConsumption,
+      self._importSupplement,
     );
   }
 
@@ -533,6 +563,7 @@ class EngineResultBuilder {
     checkValid(self._rechargeEmissions, "rechargeEmissions");
     checkValid(self._eolEmissions, "eolEmissions");
     checkValid(self._energyConsumption, "energyConsumption");
+    checkValid(self._importSupplement, "importSupplement");
   }
 }
 
