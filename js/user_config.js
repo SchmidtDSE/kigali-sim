@@ -23,8 +23,10 @@ class FilterSet {
    *     that this is the full metric names like sales or sales:import.
    * @param {string|null} dimension - Dimension type for which to filter.
    * @param {string|null} baseline - Baseline scenario for comparison.
+   * @param {boolean|null} attributeImporter - Whether to attribute imported
+   *     equipment initial charge to importer (true) or exporter (false).
    */
-  constructor(year, scenario, application, substance, metric, dimension, baseline) {
+  constructor(year, scenario, application, substance, metric, dimension, baseline, attributeImporter) {
     const self = this;
     self._year = year;
     self._scenario = scenario;
@@ -33,6 +35,7 @@ class FilterSet {
     self._metric = metric;
     self._dimension = dimension;
     self._baseline = baseline;
+    self._attributeImporter = attributeImporter;
   }
 
   /**
@@ -78,6 +81,7 @@ class FilterSet {
       self._metric,
       self._dimension,
       self._baseline,
+      self._attributeImporter,
     );
   }
 
@@ -108,6 +112,7 @@ class FilterSet {
       self._metric,
       self._dimension,
       self._baseline,
+      self._attributeImporter,
     );
   }
 
@@ -138,6 +143,7 @@ class FilterSet {
       self._metric,
       self._dimension,
       self._baseline,
+      self._attributeImporter,
     );
   }
 
@@ -167,6 +173,7 @@ class FilterSet {
       self._metric,
       self._dimension,
       self._baseline,
+      self._attributeImporter,
     );
   }
 
@@ -245,6 +252,7 @@ class FilterSet {
       newMetric,
       self._dimension,
       self._baseline,
+      self._attributeImporter,
     );
   }
 
@@ -274,6 +282,7 @@ class FilterSet {
       self._metric,
       newDimension,
       self._baseline,
+      self._attributeImporter,
     );
   }
 
@@ -303,6 +312,38 @@ class FilterSet {
       self._metric,
       self._dimension,
       newBaseline,
+      self._attributeImporter,
+    );
+  }
+
+  /**
+   * Get the attribute importer setting.
+   *
+   * @returns {boolean|null} Whether to attribute imported equipment initial
+   *     charge to importer (true) or exporter (false), or null if not set.
+   */
+  getAttributeImporter() {
+    const self = this;
+    return self._attributeImporter;
+  }
+
+  /**
+   * Get a new filter set with updated attribute importer setting.
+   *
+   * @param {boolean} newAttributeImporter - The new attribute importer value.
+   * @returns {FilterSet} New filter set with updated attribute importer.
+   */
+  getWithAttributeImporter(newAttributeImporter) {
+    const self = this;
+    return new FilterSet(
+      self._year,
+      self._scenario,
+      self._application,
+      self._substance,
+      self._metric,
+      self._dimension,
+      self._baseline,
+      newAttributeImporter,
     );
   }
 
