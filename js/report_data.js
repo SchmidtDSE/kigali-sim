@@ -283,13 +283,15 @@ class AggregatedResult {
 /**
  * Builder class for creating metric computation strategies.
  *
- * Builder which handles the construction of metric processing pipelines including transformations
- * and unit conversions.
+ * Builder which handles the construction of metric processing pipelines
+ * including transformations and unit conversions.
  */
 class MetricStrategyBuilder {
   /**
    * Create a new MetricStrategyBuilder instance.
-   * Initializes all strategy components to null.
+   * 
+   * Create a new MetricStrategyBuilder instance, initalizing all strategy
+   * components to null requiring them to be specified later.
    */
   constructor() {
     const self = this;
@@ -303,6 +305,7 @@ class MetricStrategyBuilder {
 
   /**
    * Set the metric name for the strategy.
+   * 
    * @param {string} metric - The metric name (e.g., 'sales', 'emissions').
    */
   setMetric(metric) {
@@ -312,6 +315,7 @@ class MetricStrategyBuilder {
 
   /**
    * Set the submetric name for the strategy.
+   * 
    * @param {string} submetric - The submetric name (e.g., 'all', 'import').
    */
   setSubmetric(submetric) {
@@ -321,6 +325,7 @@ class MetricStrategyBuilder {
 
   /**
    * Set the units for the strategy output.
+   *
    * @param {string} units - The units specification (e.g., 'MtCO2e / yr').
    */
   setUnits(units) {
@@ -330,7 +335,9 @@ class MetricStrategyBuilder {
 
   /**
    * Set the core computation strategy.
-   * @param {Function} strategy - The function that implements the core metric computation.
+   *
+   * @param {Function} strategy - The function that implements the core metric
+   *     computation.
    */
   setStrategy(strategy) {
     const self = this;
@@ -339,7 +346,9 @@ class MetricStrategyBuilder {
 
   /**
    * Set the transformation to apply after the core strategy.
-   * @param {Function} transformation - The function that transforms the strategy output.
+   *
+   * @param {Function} transformation - The function that transforms the strategy
+   *     output.
    */
   setTransformation(transformation) {
     const self = this;
@@ -348,7 +357,7 @@ class MetricStrategyBuilder {
 
   /**
    * Add the configured strategy to the strategies collection.
-   * Requires all components to be set (non-null).
+   *
    * @throws {string} If any required component is null.
    */
   add() {
@@ -1018,6 +1027,5 @@ class ReportDataWrapper {
     return withSub;
   }
 }
-
 
 export {ReportDataWrapper};
