@@ -309,7 +309,6 @@ class ImportSummary {
  * Builder to help construct an EngineResult.
  */
 class EngineResultBuilder {
-
   /**
    * Create builder without any values initalized.
    */
@@ -519,7 +518,7 @@ class EngineResultBuilder {
         throw "Could not make engine result because " + name + " was not given.";
       }
     };
-    
+
     checkValid(self._application, "application");
     checkValid(self._substance, "substance");
     checkValid(self._year, "year");
@@ -535,7 +534,6 @@ class EngineResultBuilder {
     checkValid(self._eolEmissions, "eolEmissions");
     checkValid(self._energyConsumption, "energyConsumption");
   }
-
 }
 
 /**
@@ -820,4 +818,4 @@ class AggregatedResult {
   }
 }
 
-export {AggregatedResult, EngineResult, ImportSummary};
+export {AggregatedResult, EngineResult, EngineResultBuilder, ImportSummary};
