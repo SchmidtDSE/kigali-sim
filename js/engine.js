@@ -260,7 +260,7 @@ class Engine {
    */
   getStreamRaw(application, substance, stream) {
     const self = this;
-    return self._streamKeeper.getStream(application, substance, "recycle");
+    return self._streamKeeper.getStream(application, substance, stream);
   }
 
   /**

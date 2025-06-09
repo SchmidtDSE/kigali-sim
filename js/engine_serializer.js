@@ -1,13 +1,41 @@
+/**
+ * Logic to serialize out snapshots of results from the engine.
+ *
+ * @license BSD-3-Clause
+ */
+
 import {EngineNumber, OverridingConverterStateGetter, UnitConverter} from "engine_number";
 import {EngineResult} from "engine_struct";
 
+/**
+ * Decorator around an engine to serialize out results.
+ */
 class EngineResultSerializer {
+  /**
+   * Create a new decorator to produce engine result snapshots.
+   *
+   * @param {Engine} engine - The engine from which results will be serialized.
+   * @param {ConverterStateGetter} stateGetter - State getter by which to
+   *     access values at the current state that the engine is focusing on.
+   *     This will not be modified, only read.
+   */
   constructor(engine, stateGetter) {
     const self = this;
     self._engine = engine;
     self._stateGetter = stateGetter;
   }
 
+  /**
+   * Serialize the results for an application and substance in a given year.
+   *
+   * @param {string} application - The name of the application for which a
+   *     result should be serialized like commerical refigeration.
+   * @param {string} substance - The name of the substance like HFC-134a for
+   *     which a result should be serialized.
+   * @param {number} year - The year for which a result should be serialized.
+   * @returns {EngineResult} - Snapshot of the result in the current engine
+   *     state for the given application and substance.
+   */
   getResult(application, substance, year) {
     const self = this;
 
