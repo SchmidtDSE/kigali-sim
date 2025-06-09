@@ -26,7 +26,16 @@ class FilterSet {
    * @param {boolean|null} attributeImporter - Whether to attribute imported
    *     equipment initial charge to importer (true) or exporter (false).
    */
-  constructor(year, scenario, application, substance, metric, dimension, baseline, attributeImporter) {
+  constructor(
+    year,
+    scenario,
+    application,
+    substance,
+    metric,
+    dimension,
+    baseline,
+    attributeImporter,
+  ) {
     const self = this;
     self._year = year;
     self._scenario = scenario;
@@ -360,6 +369,5 @@ class FilterSet {
     return scenarioSelected || onlyOneScenario;
   }
 }
-
 
 export {FilterSet};
