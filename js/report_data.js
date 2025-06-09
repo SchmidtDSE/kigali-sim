@@ -5,6 +5,7 @@
  */
 
 import {EngineNumber} from "engine_number";
+import {AggregatedResult} from "engine_struct";
 
 
 /**

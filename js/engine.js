@@ -10,8 +10,8 @@ import {
   ConverterStateGetter,
   OverridingConverterStateGetter,
 } from "engine_number";
-
 import {Scope, StreamKeeper} from "engine_state";
+import {EngineResult} from "engine_struct";
 
 const STREAM_NAMES = new Set([
   "priorEquipment",

@@ -256,7 +256,6 @@ class EngineResult {
  * activity to support different kinds of trade attributions.
  */
 class ImportSummary {
-
   /**
    * Create a new summary of imports.
    *
@@ -272,7 +271,7 @@ class ImportSummary {
     self._initialChargeConsumptionValue = initialChargeConsumptionValue;
     self._newPopulation = newPopulation;
   }
-  
+
   /**
    * Get the volume of substance imported via initial charge on imported equipment.
    *
@@ -282,7 +281,7 @@ class ImportSummary {
     const self = this;
     return self._initialChargeValue;
   }
-  
+
   /**
    * Get the consumption associated with initial charge of imported equipment.
    *
@@ -292,7 +291,7 @@ class ImportSummary {
     const self = this;
     return self._initialChargeConsumptionValue;
   }
-  
+
   /**
    * Get the number of new units imported.
    *
@@ -302,7 +301,6 @@ class ImportSummary {
     const self = this;
     return self._newPopulation;
   }
-
 }
 
 /**
@@ -586,3 +584,5 @@ class AggregatedResult {
     return new EngineNumber(a.getValue() + b.getValue(), a.getUnits());
   }
 }
+
+export {AggregatedResult, EngineResult, ImportSummary};
