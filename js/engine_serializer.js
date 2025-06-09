@@ -57,6 +57,7 @@ class EngineResultSerializer {
     const manufactureValue = unitConverter.convert(manufactureRaw, "kg");
     const importValue = unitConverter.convert(importRaw, "kg");
     const recycleValue = unitConverter.convert(recycleRaw, "kg");
+    builder.setRecycleValue(recycleValue);
 
     // Get total energy consumption
     const energyConsumptionValue = self._engine.getStreamRaw(application, substance, "energy");
@@ -81,7 +82,6 @@ class EngineResultSerializer {
     const manufactureKg = manufactureValue.getValue();
     const importKg = importValue.getValue();
     const recycleKg = recycleValue.getValue();
-    builder.setRecycleValue(recycleKg);
 
     const nonRecycleSalesKg = manufactureKg + importKg;
     const noSales = nonRecycleSalesKg == 0;
@@ -139,7 +139,24 @@ class EngineResultSerializer {
     builder.setRechargeEmissions(rechargeEmissionsOffset);
 
     // Package
-    return builder.build();
+    /*return new EngineResult(
+      application, // Done
+      substance, // Done
+      year, // Done
+      manufactureValueOffset, // Done
+      importValueOffset,  // Done
+      recycleValue,  // Done
+      domesticConsumptionValue,  // Done
+      importConsumptionValue,  // Done
+      recycleConsumptionValue,  // Done
+      populationValue,  // Done
+      populationNew,  // Done
+      rechargeEmissionsOffset,  // Done
+      eolEmissions,  // DOne
+      energyConsumptionValue,
+    );*/
+
+    // Will put build here instead of new EngineResult which is to be removed
   }
 }
 
