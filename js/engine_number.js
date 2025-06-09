@@ -173,8 +173,10 @@ class UnitConverter {
     const currentUnits = asVolume.getUnits();
     if (currentUnits === "mt") {
       return new EngineNumber(asVolume.getValue() * 1000, "kg");
-    } else {
+    } else if (currentUnits === "kg") {
       return asVolume;
+    } else {
+      throw "Unexpected units " + currentUnits;
     }
   }
 
@@ -191,8 +193,10 @@ class UnitConverter {
     const currentUnits = asVolume.getUnits();
     if (currentUnits === "kg") {
       return new EngineNumber(asVolume.getValue() / 1000, "mt");
-    } else {
+    } else if (currentUnits === "mt") {
       return asVolume;
+    } else {
+      throw "Unexpected units " + currentUnits;
     }
   }
 
@@ -770,6 +774,16 @@ class OverridingConverterStateGetter {
       consumption: (x) => self.setConsumption(x),
     }[streamName];
     strategy(value);
+  }
+
+  /**
+   * Set the substance consumption value.
+   *
+   * @param {EngineNumber} newValue - The new substance consumption value.
+   */
+  setSubstanceConsumption(newValue) {
+    const self = this;
+    self._substanceConsumption = newValue;
   }
 
   /**

@@ -177,12 +177,42 @@ class EngineResultSerializer {
   _parseImportSupplement(builder, application, substance) {
     const self = this;
 
-    // Package
-    const importSupplement = new ImportSupplement(
-      new EngineValue(0, "kg"),
-      new EngineValue(0, "tCO2e"),
-      new EngineValue(0, "units"),
+    // Prepare units
+    const stateGetter = new OverridingConverterStateGetter(self._stateGetter);
+    const unitConverter = new UnitConverter(stateGetter);
+
+    const ghgIntensity = self._engine.getEqualsGhgIntensityFor(application, substance);
+    stateGetter.setSubtanceConsumption(ghgIntensity);
+
+    const energyIntensity = self._engine.getEqualsEnergyIntensityFor(application, substance);
+    stateGetter.setEnergyConsumption(energyIntensity);
+
+    // Determine import value without recharge
+    const totalImportValue = self._engine.getStreamRaw(application, substance, "import");
+    const totalDomesticValue = self._engine.getStreamRaw(application, substance, "manufacture");
+    const totalRechargeEmissions = self._engine.getStreamRaw(
+      application,
+      substance,
+      "rechargeEmissions",
     );
+
+    const totalImportValueKg = unitConverter.convert(totalImportValue, "kg");
+    const totalDomesticValueKg = unitConverter.convert(totalDomesticValue, "kg");
+    const proportionImport = totalImportValueKg / (totalImportValueKg + totalDomesticValueKg);
+    const totalRechargeKg = unitConverter.convert(totalRechargeEmissions, "kg");
+
+    const importRechargeKg = proportionImport * totalRechargeKg;
+    const importForInitialChargeKg = totalImportValueKg - importRechargeKg;
+
+    const value = new EngineValue(importForInitialChargeKg, "kg");
+
+    // Determine consumption (tCO2e) and population (units)
+    const consumption = unitConverter.convert(value, "tCO2e");
+    const population = unitConverter.convert(value, "units");
+    const energy = unitConverter.convert(value, "kwh");
+
+    // Package
+    const importSupplement = new ImportSupplement(value, consumption, population, energy);
     builder.setImportSupplement(importSupplement);
   }
 }

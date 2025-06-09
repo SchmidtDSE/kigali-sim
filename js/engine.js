@@ -470,6 +470,20 @@ class Engine {
     const self = this;
     const application = self._scope.getApplication();
     const substance = self._scope.getSubstance();
+    return self.getRechargeIntensityFor(application, substance);
+  }
+
+  /**
+   * Get the recharge intensity for a given application and substance.
+   *
+   * @param {string} application - The name of the application for which to get
+   *     the recharge intensity like commercial refrigeration.
+   * @param {string} substance - The name of the application for which to get
+   *     the recharge intensity like HFC-134a.
+   * @returns {EngineNumber} The recharge intensity value.
+   */
+  getRechargeIntensityFor(application, substance) {
+    const self = this;
     return self._streamKeeper.getRechargeIntensity(application, substance);
   }
 
@@ -610,6 +624,21 @@ class Engine {
     const self = this;
     const application = self._scope.getApplication();
     const substance = self._scope.getSubstance();
+    return self.getEqualsGhgIntensityFor(application, substance);
+  }
+
+  /**
+   * Retrieve the tCO2e intensity for the given application and substance.
+   *
+   * @param {string} application - The name of the application for which to get
+   *     a tCO2e intensity like commercial refrigeration.
+   * @param {string} substance - The name of the substance for which to get a
+   *     tCO2e intensity like commercial refrigeration.
+   * @returns {EngineNumber} The GHG intensity value with volume normalized
+   *     GHG.
+   */
+  getEqualsGhgIntensityFor(application, substance) {
+    const self = this;
     return self._streamKeeper.getGhgIntensity(application, substance);
   }
 
@@ -623,6 +652,20 @@ class Engine {
     const self = this;
     const application = self._scope.getApplication();
     const substance = self._scope.getSubstance();
+  }
+
+  /**
+   * Retrieve the energy intensity for the given application and substance.
+   *
+   * @param {string} application - The application for which energy intensity
+   *     is requested like commerical refrigeration.
+   * @param {string} substance - The substance for which energy intensity is
+   *     requested like HFC-134a.
+   * @returns {EngineNumber} The energy intensity value with volume normalized
+   *     energy.
+   */
+  getEqualsEnergyIntensityFor(application, substance) {
+    const self = this;
     return self._streamKeeper.getEnergyIntensity(application, substance);
   }
 
