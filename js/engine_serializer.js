@@ -177,13 +177,11 @@ class EngineResultSerializer {
   _parseImportSupplement(builder, application, substance) {
     const self = this;
 
-    
-
     // Package
     const importSupplement = new ImportSupplement(
-      initialChargeValue,
-      initialChargeConsumptionValue,
-      newPopulation,
+      new EngineValue(0, "kg"),
+      new EngineValue(0, "tCO2e"),
+      new EngineValue(0, "units"),
     );
     builder.setImportSupplement(importSupplement);
   }
