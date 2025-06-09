@@ -343,6 +343,148 @@ class EngineResultBuilder {
   }
 
   /**
+   * Set the substance for which a result is being given.
+   *
+   * @param {string} substance - The substance to be associated with this
+   *     engine result.
+   */
+  setSubstance(substance) {
+    const self = this;
+    self._substance = substance;
+  }
+
+  /**
+   * Set the year for which a result is being given.
+   *
+   * @param {number} year - The year to be associated with this engine result.
+   */
+  setYear(year) {
+    const self = this;
+    self._year = year;
+  }
+
+  /**
+   * Set the manufacture value.
+   *
+   * @param {EngineNumber} manufactureValue - The value associated with
+   *     manufacturing in volume like kg.
+   */
+  setManufactureValue(manufactureValue) {
+    const self = this;
+    self._manufactureValue = manufactureValue;
+  }
+
+  /**
+   * Set the import value.
+   *
+   * @param {EngineNumber} importValue - The value related to imports like in
+   *     volume like kg.
+   */
+  setImportValue(importValue) {
+    const self = this;
+    self._importValue = importValue;
+  }
+
+  /**
+   * Set the recycle value.
+   *
+   * @param {EngineNumber} recycleValue - The value denoting recycled
+   *     materials in volume like kg.
+   */
+  setRecycleValue(recycleValue) {
+    const self = this;
+    self._recycleValue = recycleValue;
+  }
+
+  /**
+   * Set the domestic consumption value.
+   *
+   * @param {EngineNumber} domesticConsumptionValue - The domestic consumption
+   *     value in tCO2e or equivalent.
+   */
+  setDomesticConsumptionValue(domesticConsumptionValue) {
+    const self = this;
+    self._domesticConsumptionValue = domesticConsumptionValue;
+  }
+
+  /**
+   * Set the import consumption value.
+   *
+   * @param {EngineNumber} importConsumptionValue - The import consumption
+   *     value in tCO2e or equivalent.
+   */
+  setImportConsumptionValue(importConsumptionValue) {
+    const self = this;
+    self._importConsumptionValue = importConsumptionValue;
+  }
+
+  /**
+   * Set the recycle consumption value.
+   *
+   * @param {EngineNumber} recycleConsumptionValue - The recycle consumption
+   *     value in tCO2e or equivalent.
+   */
+  setRecycleConsumptionValue(recycleConsumptionValue) {
+    const self = this;
+    self._recycleConsumptionValue = recycleConsumptionValue;
+  }
+
+  /**
+   * Set the population value.
+   *
+   * @param {EngineNumber} populationValue - The population value in terms of
+   *     equipment.
+   */
+  setPopulationValue(populationValue) {
+    const self = this;
+    self._populationValue = populationValue;
+  }
+
+  /**
+   * Set the population new value.
+   *
+   * @param {EngineNumber} populationNew - The amount of new equipment added
+   *     this year.
+   */
+  setPopulationNew(populationNew) {
+    const self = this;
+    self._populationNew = populationNew;
+  }
+
+  /**
+   * Set the recharge emissions value.
+   *
+   * @param {EngineNumber} rechargeEmissions - The greenhouse gas emissions
+   *     from recharge activities.
+   */
+  setRechargeEmissions(rechargeEmissions) {
+    const self = this;
+    self._rechargeEmissions = rechargeEmissions;
+  }
+
+  /**
+   * Set the end-of-life emissions value.
+   *
+   * @param {EngineNumber} eolEmissions - The greenhouse gas emissions from
+   *     end-of-life equipment.
+   */
+  setEolEmissions(eolEmissions) {
+    const self = this;
+    self._eolEmissions = eolEmissions;
+  }
+
+  /**
+   * Set the energy consumption value.
+   *
+   * @param {EngineNumber} energyConsumption - The energy consumption value
+   *     with units.
+   */
+  setEnergyConsumption(energyConsumption) {
+    const self = this;
+    self._energyConsumption = energyConsumption;
+  }
+
+  /**
    * Check that the builder is complete and create a new result.
    *
    * @returns {EngineResult} The result built from the values provided to this
