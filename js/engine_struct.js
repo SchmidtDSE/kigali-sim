@@ -306,6 +306,97 @@ class ImportSummary {
 }
 
 /**
+ * Builder to help construct an EngineResult.
+ */
+class EngineResultBuilder {
+
+  /**
+   * Create builder without any values initalized.
+   */
+  constructor() {
+    const self = this;
+    self._application = null;
+    self._substance = null;
+    self._year = null;
+    self._manufactureValue = null;
+    self._importValue = null;
+    self._recycleValue = null;
+    self._domesticConsumptionValue = null;
+    self._importConsumptionValue = null;
+    self._recycleConsumptionValue = null;
+    self._populationValue = null;
+    self._populationNew = null;
+    self._rechargeEmissions = null;
+    self._eolEmissions = null;
+    self._energyConsumption = null;
+  }
+
+  /**
+   * Set the application for which a result is being given.
+   *
+   * @param {string} application - The application to be associated with this
+   *     engine result.
+   */
+  setApplication(application) {
+    const self = this;
+    self._application = application;
+  }
+
+  /**
+   * Check that the builder is complete and create a new result.
+   *
+   * @returns {EngineResult} The result built from the values provided to this
+   *     builder.
+   */
+  build() {
+    const self = this;
+    self._checkReadyToConstruct();
+    return new EngineResult(
+      self._application,
+      self._substance,
+      self._year,
+      self._manufactureValue,
+      self._importValue,
+      self._recycleValue,
+      self._domesticConsumptionValue,
+      self._importConsumptionValue,
+      self._recycleConsumptionValue,
+      self._populationValue,
+      self._populationNew,
+      self._rechargeEmissions,
+      self._eolEmissions,
+      self._energyConsumption,
+    );
+  }
+
+  _checkReadyToConstruct() {
+    const self = this;
+
+    const checkValid = (value, name) => {
+      if (value === null || value === undefined) {
+        throw "Could not make engine result because " + name + " was not given.";
+      }
+    };
+    
+    checkValid(self._application, "application");
+    checkValid(self._substance, "substance");
+    checkValid(self._year, "year");
+    checkValid(self._manufactureValue, "manufactureValue");
+    checkValid(self._importValue, "importValue");
+    checkValid(self._recycleValue, "recycleValue");
+    checkValid(self._domesticConsumptionValue, "domesticConsumptionValue");
+    checkValid(self._importConsumptionValue, "importConsumptionValue");
+    checkValid(self._recycleConsumptionValue, "recycleConsumptionValue");
+    checkValid(self._populationValue, "populationValue");
+    checkValid(self._populationNew, "populationNew");
+    checkValid(self._rechargeEmissions, "rechargeEmissions");
+    checkValid(self._eolEmissions, "eolEmissions");
+    checkValid(self._energyConsumption, "energyConsumption");
+  }
+
+}
+
+/**
  * Class representing aggregated result which can be visualized.
  */
 class AggregatedResult {
