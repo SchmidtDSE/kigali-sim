@@ -161,6 +161,15 @@ function buildReportDataTests() {
 
     buildTest("gets consumption", "/test/qta/multiple_with_policies.qta", [
       (result, assert) => {
+        const filterSet = new FilterSet(1, "bau", null, null, null, null, null, true);
+        const totalConsumption = result.getGhgConsumption(filterSet);
+        assert.closeTo(totalConsumption.getValue(), 1500, 0.0001);
+        assert.deepEqual(totalConsumption.getUnits(), "tCO2e");
+      },
+    ]);
+
+    buildTest("gets consumption with attribution", "/test/qta/multiple_with_policies.qta", [
+      (result, assert) => {
         const filterSet = new FilterSet(1, "bau", null, null, null, null, null, false);
         const totalConsumption = result.getGhgConsumption(filterSet);
         assert.closeTo(totalConsumption.getValue(), 1500, 0.0001);
@@ -170,6 +179,15 @@ function buildReportDataTests() {
 
     buildTest("gets sales", "/test/qta/multiple_with_policies.qta", [
       (result, assert) => {
+        const filterSet = new FilterSet(1, "bau", null, null, null, null, null, true);
+        const totalSales = result.getSales(filterSet);
+        assert.closeTo(totalSales.getValue(), 200000, 0.0001);
+        assert.deepEqual(totalSales.getUnits(), "kg");
+      },
+    ]);
+
+    buildTest("gets sales with attribution", "/test/qta/multiple_with_policies.qta", [
+      (result, assert) => {
         const filterSet = new FilterSet(1, "bau", null, null, null, null, null, false);
         const totalSales = result.getSales(filterSet);
         assert.closeTo(totalSales.getValue(), 200000, 0.0001);
@@ -178,6 +196,24 @@ function buildReportDataTests() {
     ]);
 
     buildTest("gets sales by metric", "/test/qta/multiple_with_policies.qta", [
+      (result, assert) => {
+        const filterSet = new FilterSet(
+          1,
+          "bau",
+          null,
+          null,
+          "sales:all:kg / yr",
+          null,
+          null,
+          true,
+        );
+        const totalSales = result.getMetric(filterSet);
+        assert.closeTo(totalSales.getValue(), 200000, 0.0001);
+        assert.deepEqual(totalSales.getUnits(), "kg / yr");
+      },
+    ]);
+
+    buildTest("gets sales by metric with attribution", "/test/qta/multiple_with_policies.qta", [
       (result, assert) => {
         const filterSet = new FilterSet(
           1,
@@ -205,13 +241,35 @@ function buildReportDataTests() {
           "sales:all:kg / yr",
           null,
           null,
-          false,
+          true,
         );
         const totalSales = result.getMetric(filterSet);
         assert.closeTo(totalSales.getValue(), 200000, 0.0001);
         assert.deepEqual(totalSales.getUnits(), "kg / yr");
       },
     ]);
+
+    buildTest(
+      "gets sales by metric split with attribution",
+      "/test/qta/multiple_with_policies_split.qta",
+      [
+        (result, assert) => {
+          const filterSet = new FilterSet(
+            1,
+            "bau",
+            null,
+            null,
+            "sales:all:kg / yr",
+            null,
+            null,
+            false,
+          );
+          const totalSales = result.getMetric(filterSet);
+          assert.closeTo(totalSales.getValue(), 200000, 0.0001);
+          assert.deepEqual(totalSales.getUnits(), "kg / yr");
+        },
+      ],
+    );
 
     buildTest("gets imports by metric", "/test/qta/multiple_with_policies_split.qta", [
       (result, assert) => {
@@ -223,13 +281,35 @@ function buildReportDataTests() {
           "sales:import:kg / yr",
           null,
           null,
-          false,
+          true,
         );
         const sales = result.getMetric(filterSet);
         assert.closeTo(sales.getValue(), 200000 * 0.1, 0.0001);
         assert.deepEqual(sales.getUnits(), "kg / yr");
       },
     ]);
+
+    buildTest(
+      "gets imports by metric with attribution",
+      "/test/qta/multiple_with_policies_split.qta",
+      [
+        (result, assert) => {
+          const filterSet = new FilterSet(
+            1,
+            "bau",
+            null,
+            null,
+            "sales:import:kg / yr",
+            null,
+            null,
+            false,
+          );
+          const sales = result.getMetric(filterSet);
+          assert.closeTo(sales.getValue(), 200000 * 0.1, 0.0001);
+          assert.deepEqual(sales.getUnits(), "kg / yr");
+        },
+      ],
+    );
 
     buildTest("gets domestic manfacture by metric", "/test/qta/multiple_with_policies_split.qta", [
       (result, assert) => {
@@ -241,13 +321,35 @@ function buildReportDataTests() {
           "sales:manufacture:kg / yr",
           null,
           null,
-          false,
+          true,
         );
         const sales = result.getMetric(filterSet);
         assert.closeTo(sales.getValue(), 200000 * 0.9, 0.0001);
         assert.deepEqual(sales.getUnits(), "kg / yr");
       },
     ]);
+
+    buildTest(
+      "gets domestic manfacture by metric with attribution",
+      "/test/qta/multiple_with_policies_split.qta",
+      [
+        (result, assert) => {
+          const filterSet = new FilterSet(
+            1,
+            "bau",
+            null,
+            null,
+            "sales:manufacture:kg / yr",
+            null,
+            null,
+            false,
+          );
+          const sales = result.getMetric(filterSet);
+          assert.closeTo(sales.getValue(), 200000 * 0.9, 0.0001);
+          assert.deepEqual(sales.getUnits(), "kg / yr");
+        },
+      ],
+    );
 
     QUnit.test("tests getWithBaseline", (assert) => {
       const filterSet = new FilterSet(

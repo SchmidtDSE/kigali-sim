@@ -1077,8 +1077,8 @@ class SimulationResult {
   /**
    * Creates a new simulation result instance
    * @param {string} name - The name of the simulation
-   * @param {Array} trialResults - Array containing the results of each trial
-   *     run.
+   * @param {Array<EngineResult>} trialResults - Array containing the results
+   *     of each trial run.
    */
   constructor(name, trialResults) {
     const self = this;
@@ -1099,7 +1099,7 @@ class SimulationResult {
   /**
    * Gets the results from all trial runs.
    *
-   * @returns {Array<EngineResult>} Array of trial results.
+   * @returns {Array<Array<EngineResult>>} Array of trial results.
    */
   getTrialResults() {
     const self = this;
@@ -1111,7 +1111,11 @@ class SimulationAttributeToExporterResult {
   constructor(inner) {
     const self = this;
     self._inner = inner;
-    self._trialResults = self._inner.getTrialResults().map((x) => new AttributeToExporterResult(x));
+    self._trialResults = self._inner.getTrialResults().map((trial) => {
+      return trial.map((results) => {
+        return results.map((x) => new AttributeToExporterResult(x));
+      });
+    });
   }
 
   getName() {
