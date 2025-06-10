@@ -5,8 +5,7 @@
  */
 
 import {EngineNumber} from "engine_number";
-import {AggregatedResult} from "engine_struct";
-
+import {AggregatedResult, SimulationAttributeToExporterResult} from "engine_struct";
 
 /**
  * Builder class for creating metric computation strategies.
@@ -152,11 +151,12 @@ class ReportDataWrapper {
   /**
    * Create a new report data wrapper.
    *
-   * @param {Object} innerData - The raw report data to wrap.
+   * @param {Array<SimulationResult>} innerData - The raw report data to wrap.
    */
   constructor(innerData) {
     const self = this;
     self._innerData = innerData;
+    self._innerDataExporterAttributed = null;
 
     const strategyBuilder = new MetricStrategyBuilder();
 
@@ -349,11 +349,20 @@ class ReportDataWrapper {
   /**
    * Get the raw underlying data.
    *
-   * @returns {Object} The raw data.
+   * @param {FilterSet} filterSet - Filter set with attribution settings to
+   *     apply.
+   * @returns {Array<SimulationResult>} The raw data.
    */
-  getRawData() {
+  getRawData(filterSet) {
     const self = this;
-    return self._innerData;
+    if (filterSet.getAttributeImporter()) {
+      return self._innerData;
+    } else {
+      if (self._innerDataExporterAttributed === null) {
+        self._innerDataExporterAttributed = self._buildExporterAttributed(self._innerData);
+      }
+      return self._innerDataExporterAttributed;
+    }
   }
 
   /**
@@ -397,7 +406,7 @@ class ReportDataWrapper {
   getScenarios(filterSet) {
     const self = this;
     if (filterSet === undefined || filterSet.getScenario() === null) {
-      return new Set(self._innerData.map((x) => x.getName()));
+      return new Set(self.getRawData(filterSet).map((x) => x.getName()));
     } else {
       return new Set([filterSet.getScenario()]);
     }
@@ -634,17 +643,6 @@ class ReportDataWrapper {
   }
 
   /**
-   * Get flattened array of all results.
-   *
-   * @private
-   * @returns {Array<*>} Flattened results array
-   */
-  _getFlatResults() {
-    const self = this;
-    return self._innerData.map((x) => x.getTrialResults()).flat();
-  }
-
-  /**
    * Get filtered set of values using a getter function.
    *
    * @private
@@ -735,7 +733,7 @@ class ReportDataWrapper {
       });
     };
 
-    const allRecords = self._innerData;
+    const allRecords = self.getRawData(filterSet);
 
     const scenario = filterSet.getScenario();
     const scenarios = step(allRecords, scenario, (x) => x.getName());
@@ -753,6 +751,19 @@ class ReportDataWrapper {
     const withSub = step(withApp, sub, (x) => x.getSubstance());
 
     return withSub;
+  }
+
+  /**
+   * Deocrate the inner data (SimulationResult) to attribute to exporter.
+   *
+   * @private
+   * @param {Array<SimulationResult>} rawResults - The results with attribute
+   *     to importer that should be decorated.
+   * @returns {Array<SimulationAttributeToExporterResult>} Decorated version.
+   */
+  _buildExporterAttributed(rawResults) {
+    const self = this;
+    return rawResults.map((x) => new SimulationAttributeToExporterResult(x));
   }
 }
 
