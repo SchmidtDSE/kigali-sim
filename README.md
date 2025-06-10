@@ -57,7 +57,7 @@ python -m http.server
 <br>
 
 ## Deployment
-This project can be deployed using Github. Simply push your changes to the repository at `main`. The deployment process is automated through GitHub Actions as defined in `.github/workflows/build.yaml`.
+This project can be deployed using Github. Simply push your changes to the repository `deploy` branch. The deployment process is automated through GitHub Actions as defined in `.github/workflows/build.yaml`.
 
 <br>
 
