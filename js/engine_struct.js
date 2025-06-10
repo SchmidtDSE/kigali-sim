@@ -267,6 +267,147 @@ class EngineResult {
 }
 
 /**
+ * Decorator which attributes initial charge to the exporter.
+ *
+ * Decorator which attributes initial charge to the exporter which is in
+ * contrast to the default where initial chanrge is included for the importer
+ * totals. Leaves other attributes including population and all domestic
+ * calculations unchanged.
+ */
+class AttributeToExporterResult {
+  /**
+   * Create a new decorator around a raw result with importer attribution.
+   *
+   * @param {EngineResult} inner - The value to be decorated that will apply
+   *     trade attribution to exporter at time of request.
+   */
+  constructor(inner) {
+    const self = this;
+    self._inner = inner;
+  }
+
+  /**
+   * Get the application for which results are reported.
+   *
+   * @returns {string} The unchanged application from the decorated result.
+   */
+  getApplication() {
+    const self = this;
+    return self._inner.getApplication();
+  }
+
+  getSubstance() {
+    const self = this;
+    return self._inner.getSubstance();
+  }
+
+  getYear() {
+    const self = this;
+    return self._inner.getYear();
+  }
+
+  getManufacture() {
+    const self = this;
+    return self._inner.getManufacture();
+  }
+
+  /**
+   * Get the import volume associated with this result.
+   *
+   * @returns {EngineValue} The import volume in kg or similar from the
+   *     decorated result but with initial charge attributed to exporter.
+   */
+  getImport() {
+    const self = this;
+    const totalImport = self._inner.getImport();
+    const importSupplement = self._inner.getImportSupplement();
+    const importInitialCharge = importSupplement.getInitialChargeValue();
+
+    const totalUnits = totalImport.getUnits();
+    const initialChargeUnits = importInitialCharge.getUnits();
+    if (totalUnits !== initialChargeUnits) {
+      const mismatchDescription = "between " + totalUnits + " and " + initialChargeUnits;
+      throw "Could not attribute trade due to units mismatch " + mismatchDescription;
+    }
+
+    const innerNumber = totalImport.getValue() - importInitialCharge.getValue();
+    return new EngineNumber(innerNumber, totalUnits);
+  }
+
+  getRecycle() {
+    const self = this;
+    return self._inner.getRecycle();
+  }
+
+  getConsumptionNoRecycle() {
+    const self = this;
+    return self._inner.getConsumptionNoRecycle();
+  }
+
+  getGhgConsumption() {
+    const self = this;
+    return self._inner.getGhgConsumption();
+  }
+
+  getDomesticConsumption() {
+    const self = this;
+    return self._inner.getDomesticConsumption();
+  }
+
+  getImportConsumption() {
+    const self = this;
+    const totalImport = self._inner.getImportConsumption();
+    const importSupplement = self._inner.getImportSupplement();
+    const importInitialCharge = importSupplement.getInitialChargeConsumption();
+
+    const totalUnits = totalImport.getUnits();
+    const initialChargeUnits = importInitialCharge.getUnits();
+    if (totalUnits !== initialChargeUnits) {
+      const mismatchDescription = "between " + totalUnits + " and " + initialChargeUnits;
+      throw "Could not attribute trade due to units mismatch " + mismatchDescription;
+    }
+
+    const innerNumber = totalImport.getValue() - importInitialCharge.getValue();
+    return new EngineNumber(innerNumber, totalUnits);
+  }
+
+  getRecycleConsumption() {
+    const self = this;
+    return self._inner.getRecycleConsumption();
+  }
+
+  getPopulation() {
+    const self = this;
+    return self._inner.getPopulation();
+  }
+
+  getPopulationNew() {
+    const self = this;
+    return self._inner.getPopulationNew();
+  }
+
+  getRechargeEmissions() {
+    const self = this;
+    return self._inner.getRechargeEmissions();
+  }
+
+  getEolEmissions() {
+    const self = this;
+    return self._inner.getEolEmissions();
+  }
+
+  getEnergyConsumption() {
+    const self = this;
+    return self._inner.getEnergyConsumption();
+  }
+
+  getImportSupplement() {
+    const self = this;
+    return self._inner.getImportSupplement();
+  }
+}
+
+/**
  * Description of trade activity within a result.
  *
  * As a supplement to an {EngineResult}, offers additional description of trade
@@ -280,14 +421,14 @@ class ImportSupplement {
    *
    * @param {EngineValue} initialChargeValue - The volume of substance imported
    *     via initial charge on imported equipment (like kg).
-   * @param {EngineValue} initialChargeConsumptionValue - The consumption
+   * @param {EngineValue} initialChargeConsumption - The consumption
    *     associated with inital charge of imported equipment (like tCO2e).
    * @param {EngineValue} newPopulation - The number of new units imported.
    */
-  constructor(initialChargeValue, initialChargeConsumptionValue, newPopulation) {
+  constructor(initialChargeValue, initialChargeConsumption, newPopulation) {
     const self = this;
     self._initialChargeValue = initialChargeValue;
-    self._initialChargeConsumptionValue = initialChargeConsumptionValue;
+    self._initialChargeConsumption = initialChargeConsumption;
     self._newPopulation = newPopulation;
   }
 
@@ -306,9 +447,9 @@ class ImportSupplement {
    *
    * @returns {EngineValue} The initial charge consumption value in units like tCO2e.
    */
-  getInitialChargeConsumptionValue() {
+  getInitialChargeConsumption() {
     const self = this;
-    return self._initialChargeConsumptionValue;
+    return self._initialChargeConsumption;
   }
 
   /**
