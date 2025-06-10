@@ -173,8 +173,10 @@ class UnitConverter {
     const currentUnits = asVolume.getUnits();
     if (currentUnits === "mt") {
       return new EngineNumber(asVolume.getValue() * 1000, "kg");
-    } else {
+    } else if (currentUnits === "kg") {
       return asVolume;
+    } else {
+      throw "Unexpected units " + currentUnits;
     }
   }
 
@@ -191,8 +193,10 @@ class UnitConverter {
     const currentUnits = asVolume.getUnits();
     if (currentUnits === "kg") {
       return new EngineNumber(asVolume.getValue() / 1000, "mt");
-    } else {
+    } else if (currentUnits === "mt") {
       return asVolume;
+    } else {
+      throw "Unexpected units " + currentUnits;
     }
   }
 
@@ -309,6 +313,9 @@ class UnitConverter {
       const targetConverted = self.convert(target, expectedUnits);
       const originalValue = targetConverted.getValue();
       const newValue = originalValue * conversionValue;
+      if (newUnits !== "tCO2e") {
+        throw "Unexpected units " + newUnits;
+      }
       return new EngineNumber(newValue, newUnits);
     } else if (currentUnits === "%") {
       const originalValue = target.getValue();
@@ -349,6 +356,9 @@ class UnitConverter {
       const targetConverted = self.convert(target, expectedUnits);
       const originalValue = targetConverted.getValue();
       const newValue = originalValue * conversionValue;
+      if (newUnits !== "kwh") {
+        throw "Unexpected units " + newUnits;
+      }
       return new EngineNumber(newValue, newUnits);
     } else if (currentUnits === "%") {
       const originalValue = target.getValue();
@@ -773,6 +783,16 @@ class OverridingConverterStateGetter {
   }
 
   /**
+   * Set the substance consumption value.
+   *
+   * @param {EngineNumber} newValue - The new substance consumption value.
+   */
+  setSubstanceConsumption(newValue) {
+    const self = this;
+    self._substanceConsumption = newValue;
+  }
+
+  /**
    * Get the substance consumption value.
    *
    * @returns {EngineNumber} The substance consumption value.
@@ -784,6 +804,16 @@ class OverridingConverterStateGetter {
     } else {
       return self._substanceConsumption;
     }
+  }
+
+  /**
+   * Set the energy intensity.
+   *
+   * @param {EngineNumber} newValue - The new energy intensity value.
+   */
+  setEnergyIntensity(newValue) {
+    const self = this;
+    self._energyIntensity = newValue;
   }
 
   /**

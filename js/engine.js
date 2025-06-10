@@ -10,8 +10,8 @@ import {
   ConverterStateGetter,
   OverridingConverterStateGetter,
 } from "engine_number";
-
 import {Scope, StreamKeeper} from "engine_state";
+import {EngineResultSerializer} from "engine_serializer";
 
 const STREAM_NAMES = new Set([
   "priorEquipment",
@@ -23,248 +23,6 @@ const STREAM_NAMES = new Set([
 ]);
 
 const OPTIMIZE_RECALCS = true;
-
-/**
- * Result of an engine execution for a substance for an application and year.
- */
-class EngineResult {
-  /**
-   * Constructor for creating an EngineResult instance.
-   *
-   * @param {string} application - The application associated with this engine
-   *     result.
-   * @param {string} substance - The substance associated with this engine
-   *     result.
-   * @param {number} year - The year for which the engine result is relevant.
-   * @param {EngineNumber} manufactureValue - The value associated with
-   *     manufacturing.
-   * @param {EngineNumber} importValue - The value related to imports.
-   * @param {EngineNumber} recycleValue - The value denoting recycled
-   *     materials.
-   * @param {EngineNumber} domesticConsumptionValue - The domestic consumption
-   *     value.
-   * @param {EngineNumber} importConsumptionValue - The import consumption
-   *     value.
-   * @param {EngineNumber} recycleConsumptionValue - The recycle consumption
-   *     value.
-   * @param {EngineNumber} populationValue - The population value.
-   * @param {EngineNumber} populationNew - The amount of new equipment added
-   *     this year.
-   * @param {EngineNumber} rechargeEmissions - The greenhouse gas emissions
-   *     from recharge activities.
-   * @param {EngineNumber} eolEmissions - The greenhouse gas emissions from
-   *     end-of-life equipment.
-   */
-  constructor(
-    application,
-    substance,
-    year,
-    manufactureValue,
-    importValue,
-    recycleValue,
-    domesticConsumptionValue,
-    importConsumptionValue,
-    recycleConsumptionValue,
-    populationValue,
-    populationNew,
-    rechargeEmissions,
-    eolEmissions,
-    energyConsumption,
-  ) {
-    const self = this;
-    self._application = application;
-    self._substance = substance;
-    self._year = year;
-    self._manufactureValue = manufactureValue;
-    self._importValue = importValue;
-    self._recycleValue = recycleValue;
-    self._domesticConsumptionValue = domesticConsumptionValue;
-    self._importConsumptionValue = importConsumptionValue;
-    self._recycleConsumptionValue = recycleConsumptionValue;
-    self._populationValue = populationValue;
-    self._populationNew = populationNew;
-    self._rechargeEmissions = rechargeEmissions;
-    self._eolEmissions = eolEmissions;
-    self._energyConsumption = energyConsumption;
-  }
-
-  /**
-   * Get the application.
-   *
-   * @returns {string} The application.
-   */
-  getApplication() {
-    const self = this;
-    return self._application;
-  }
-
-  /**
-   * Get the substance.
-   *
-   * @returns {string} The substance.
-   */
-  getSubstance() {
-    const self = this;
-    return self._substance;
-  }
-
-  /**
-   * Get the year the result is relevant to.
-   *
-   * @returns {number} The year.
-   */
-  getYear() {
-    const self = this;
-    return self._year;
-  }
-
-  /**
-   * Get the manufacture value.
-   *
-   * @returns {EngineNumber} The manufacture value.
-   */
-  getManufacture() {
-    const self = this;
-    return self._manufactureValue;
-  }
-
-  /**
-   * Get the import value.
-   *
-   * @returns {EngineNumber} The import value.
-   */
-  getImport() {
-    const self = this;
-    return self._importValue;
-  }
-
-  /**
-   * Get the recycle value.
-   *
-   * @returns {EngineNumber} The recycle value.
-   */
-  getRecycle() {
-    const self = this;
-    return self._recycleValue;
-  }
-
-  /**
-   * Get the total consumption without recycling.
-   *
-   * @returns {EngineNumber} The consumption value.
-   */
-  getConsumptionNoRecycle() {
-    const self = this;
-    if (self._domesticConsumptionValue.getUnits() !== self._importConsumptionValue.getUnits()) {
-      throw "Could not add incompatible units for consumption.";
-    }
-
-    return new EngineNumber(
-      self._domesticConsumptionValue.getValue() + self._importConsumptionValue.getValue(),
-      self._domesticConsumptionValue.getUnits(),
-    );
-  }
-
-  /**
-   * Get the total consumption.
-   *
-   * @returns {EngineNumber} The consumption value.
-   */
-  getGhgConsumption() {
-    const self = this;
-
-    const noRecycleValue = self.getConsumptionNoRecycle();
-
-    if (self._recycleConsumptionValue.getUnits() !== noRecycleValue.getUnits()) {
-      throw "Could not add incompatible units for consumption.";
-    }
-
-    return new EngineNumber(
-      self._recycleConsumptionValue.getValue() + noRecycleValue.getValue(),
-      self._recycleConsumptionValue.getUnits(),
-    );
-  }
-
-  /**
-   * Get the domestic consumption value.
-   *
-   * @returns {EngineNumber} The domestic consumption value.
-   */
-  getDomesticConsumption() {
-    const self = this;
-    return self._domesticConsumptionValue;
-  }
-
-  /**
-   * Get the import consumption value.
-   *
-   * @returns {EngineNumber} The import consumption value.
-   */
-  getImportConsumption() {
-    const self = this;
-    return self._importConsumptionValue;
-  }
-
-  /**
-   * Get the recycle consumption value.
-   *
-   * @returns {EngineNumber} The recycle consumption value.
-   */
-  getRecycleConsumption() {
-    const self = this;
-    return self._recycleConsumptionValue;
-  }
-
-  /**
-   * Get the population value.
-   *
-   * @returns {EngineNumber} The population value.
-   */
-  getPopulation() {
-    const self = this;
-    return self._populationValue;
-  }
-
-  /**
-   * Get the amount of new equipment added this year.
-   *
-   * @returns {EngineNumber} The amount of new equipment this year in units.
-   */
-  getPopulationNew() {
-    const self = this;
-    return self._populationNew;
-  }
-
-  /**
-   * Get the greenhouse gas emissions from recharge activities.
-   *
-   * @returns {EngineNumber} The recharge emissions value with units.
-   */
-  getRechargeEmissions() {
-    const self = this;
-    return self._rechargeEmissions;
-  }
-
-  /**
-   * Get the greenhouse gas emissions from end-of-life equipment.
-   *
-   * @returns {EngineNumber} The end-of-life emissions value with units.
-   */
-  getEolEmissions() {
-    const self = this;
-    return self._eolEmissions;
-  }
-
-  /**
-   * Get the energy consumption value.
-   *
-   * @returns {EngineNumber} The energy consumption value with units.
-   */
-  getEnergyConsumption() {
-    const self = this;
-    return self._energyConsumption;
-  }
-}
 
 /**
  * Facade which runs engine mechanics.
@@ -490,6 +248,37 @@ class Engine {
   }
 
   /**
+   * Get the stream value without any conversion.
+   *
+   * @param {string} application - The application name for which the stream
+   *     should be returned.
+   * @param {string} substance - The name of the substance for which the stream
+   *     should be returned.
+   * @param {string} stream - The name of the stream to get like recycle.
+   * @returns {EngineNumber} The value of the given combination without
+   *     conversion.
+   */
+  getStreamRaw(application, substance, stream) {
+    const self = this;
+    return self._streamKeeper.getStream(application, substance, stream);
+  }
+
+  /**
+   * Get the GHG intensity associated with a substance.
+   *
+   * @param {string} applciation - The application name for which the intensity
+   *     should be returned.
+   * @param {string} substance - The substance name for which the intensity
+   *     should be returned.
+   * @returns {EngineNumber} The GHG intensity value associated with the given
+   *     combination.
+   */
+  getGhgIntensity(application, substance) {
+    const self = this;
+    return self._streamKeeper.getGhgIntensity(application, substance);
+  }
+
+  /**
    * Create a user-defined variable in the current scope.
    *
    * @param {string} name - The name of the variable to define.
@@ -681,6 +470,20 @@ class Engine {
     const self = this;
     const application = self._scope.getApplication();
     const substance = self._scope.getSubstance();
+    return self.getRechargeIntensityFor(application, substance);
+  }
+
+  /**
+   * Get the recharge intensity for a given application and substance.
+   *
+   * @param {string} application - The name of the application for which to get
+   *     the recharge intensity like commercial refrigeration.
+   * @param {string} substance - The name of the application for which to get
+   *     the recharge intensity like HFC-134a.
+   * @returns {EngineNumber} The recharge intensity value.
+   */
+  getRechargeIntensityFor(application, substance) {
+    const self = this;
     return self._streamKeeper.getRechargeIntensity(application, substance);
   }
 
@@ -821,6 +624,21 @@ class Engine {
     const self = this;
     const application = self._scope.getApplication();
     const substance = self._scope.getSubstance();
+    return self.getEqualsGhgIntensityFor(application, substance);
+  }
+
+  /**
+   * Retrieve the tCO2e intensity for the given application and substance.
+   *
+   * @param {string} application - The name of the application for which to get
+   *     a tCO2e intensity like commercial refrigeration.
+   * @param {string} substance - The name of the substance for which to get a
+   *     tCO2e intensity like commercial refrigeration.
+   * @returns {EngineNumber} The GHG intensity value with volume normalized
+   *     GHG.
+   */
+  getEqualsGhgIntensityFor(application, substance) {
+    const self = this;
     return self._streamKeeper.getGhgIntensity(application, substance);
   }
 
@@ -834,6 +652,20 @@ class Engine {
     const self = this;
     const application = self._scope.getApplication();
     const substance = self._scope.getSubstance();
+  }
+
+  /**
+   * Retrieve the energy intensity for the given application and substance.
+   *
+   * @param {string} application - The application for which energy intensity
+   *     is requested like commerical refrigeration.
+   * @param {string} substance - The substance for which energy intensity is
+   *     requested like HFC-134a.
+   * @returns {EngineNumber} The energy intensity value with volume normalized
+   *     energy.
+   */
+  getEqualsEnergyIntensityFor(application, substance) {
+    const self = this;
     return self._streamKeeper.getEnergyIntensity(application, substance);
   }
 
@@ -979,108 +811,13 @@ class Engine {
     const self = this;
 
     const substances = self._streamKeeper.getRegisteredSubstances();
+    const serializer = new EngineResultSerializer(self, self._stateGetter);
 
     return substances.map((substanceId) => {
-      // Get meta
       const application = substanceId.getApplication();
       const substance = substanceId.getSubstance();
       const year = self._currentYear;
-
-      // Prepare units
-      const stateGetter = new OverridingConverterStateGetter(self._stateGetter);
-      const unitConverter = new UnitConverter(stateGetter);
-
-      // Get sales
-      const manufactureRaw = self._streamKeeper.getStream(application, substance, "manufacture");
-      const importRaw = self._streamKeeper.getStream(application, substance, "import");
-      const recycleRaw = self._streamKeeper.getStream(application, substance, "recycle");
-
-      const manufactureValue = unitConverter.convert(manufactureRaw, "kg");
-      const importValue = unitConverter.convert(importRaw, "kg");
-      const recycleValue = unitConverter.convert(recycleRaw, "kg");
-
-      // Get total energy consumption
-      const energyConsumptionValue = self._streamKeeper.getStream(application, substance, "energy");
-
-      // Get emissions
-      const populationValue = self._streamKeeper.getStream(application, substance, "equipment");
-      const populationNew = self._streamKeeper.getStream(application, substance, "newEquipment");
-      const rechargeEmissions = self._streamKeeper.getStream(
-        application,
-        substance,
-        "rechargeEmissions",
-      );
-      const eolEmissions = self._streamKeeper.getStream(application, substance, "eolEmissions");
-
-      // Get percent for offset
-      const manufactureKg = manufactureValue.getValue();
-      const importKg = importValue.getValue();
-      const recycleKg = recycleValue.getValue();
-
-      const nonRecycleSalesKg = manufactureKg + importKg;
-      const noSales = nonRecycleSalesKg == 0;
-      const percentManufacture = noSales ? 1 : manufactureKg / nonRecycleSalesKg;
-      const percentImport = 1 - percentManufacture;
-
-      // Offset sales
-      const manufactureValueOffset = new EngineNumber(
-        manufactureKg - recycleKg * percentManufacture,
-        "kg",
-      );
-
-      const importValueOffset = new EngineNumber(importKg - recycleKg * percentImport, "kg");
-
-      // Get consumption
-      const getConsumptionByVolume = () => {
-        const consumptionRaw = self._streamKeeper.getGhgIntensity(application, substance);
-        const endsKg = consumptionRaw.getUnits().endsWith("kg");
-        const endsMt = consumptionRaw.getUnits().endsWith("mt");
-        if (endsKg || endsMt) {
-          return consumptionRaw;
-        } else {
-          return unitConverter.convert(consumptionRaw, "tCO2e / kg");
-        }
-      };
-      const consumptionByVolume = getConsumptionByVolume();
-
-      const getConsumptionForVolume = (volume) => {
-        if (volume.getValue() == 0) {
-          return new EngineNumber(0, "tCO2e");
-        }
-
-        stateGetter.setVolume(volume);
-        return unitConverter.convert(consumptionByVolume, "tCO2e");
-      };
-
-      const domesticConsumptionValue = getConsumptionForVolume(manufactureValueOffset);
-      const importConsumptionValue = getConsumptionForVolume(importValueOffset);
-      const recycleConsumptionValue = getConsumptionForVolume(recycleValue);
-
-      // Offset recharge emissions
-      stateGetter.setVolume(null);
-      const rechargeEmissionsConvert = unitConverter.convert(rechargeEmissions, "tCO2e");
-      const rechargeEmissionsOffset = new EngineNumber(
-        rechargeEmissionsConvert.getValue() - recycleConsumptionValue.getValue(),
-        "tCO2e",
-      );
-
-      // Package
-      return new EngineResult(
-        application,
-        substance,
-        year,
-        manufactureValueOffset,
-        importValueOffset,
-        recycleValue,
-        domesticConsumptionValue,
-        importConsumptionValue,
-        recycleConsumptionValue,
-        populationValue,
-        populationNew,
-        rechargeEmissionsOffset,
-        eolEmissions,
-        energyConsumptionValue,
-      );
+      return serializer.getResult(application, substance, year);
     });
   }
 
@@ -1179,17 +916,17 @@ class Engine {
     const noInitialCharge = initialChargeKgUnit == 0;
     const deltaUnitsRaw = availableForNewUnitsKg / initialChargeKgUnit;
     const deltaUnits = noInitialCharge ? 0 : deltaUnitsRaw;
-    const newVolume = new EngineNumber(deltaUnits < 0 ? 0 : deltaUnits, "units");
+    const newUnitsMarginal = new EngineNumber(deltaUnits < 0 ? 0 : deltaUnits, "units");
 
     // Find new total
     const priorPopulationUnits = priorPopulation.getValue();
     const newUnits = priorPopulationUnits + deltaUnits;
     const newUnitsAllowed = newUnits < 0 ? 0 : newUnits;
-    const newVolumeTotal = new EngineNumber(newUnitsAllowed, "units");
+    const newUnitsEffective = new EngineNumber(newUnitsAllowed, "units");
 
     // Save
-    self.setStream("equipment", newVolumeTotal, null, scopeEffective, false);
-    self.setStream("newEquipment", newVolume, null, scopeEffective, false);
+    self.setStream("equipment", newUnitsEffective, null, scopeEffective, false);
+    self.setStream("newEquipment", newUnitsMarginal, null, scopeEffective, false);
     self.setStream("rechargeEmissions", rechargeGhg, null, scopeEffective, false);
   }
 

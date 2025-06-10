@@ -73,7 +73,7 @@ jobs:
         run: bash ./support/update_cache_busters.sh
   deploy:
     environment: deploy
-    if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/deploy'
     runs-on: ubuntu-latest
     name: Deploy
     needs: [lint, unitTests, checkCacheBusters]

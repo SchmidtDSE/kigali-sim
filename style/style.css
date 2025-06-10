@@ -3,11 +3,14 @@
   src: url("/third_party/publicsans/fonts/otf/PublicSans-Regular.otf") format("opentype");
 }
 
-a, a:link, a:visited {
+a,
+a:link,
+a:visited {
   color: #5050C0;
 }
 
-a:hover, a:active {
+a:hover,
+a:active {
   color: #202070;
 }
 
@@ -129,7 +132,7 @@ main {
 
 #results .buttons-panel {
   text-align: center;
-  margin-top: 20px;
+  margin-top: 10px;
   padding-top: 20px;
   border-top: 1px dotted #C0C0C0;
 }
@@ -256,11 +259,14 @@ main {
   border: 1px solid black;
 }
 
-.beta-warning a, .beta-warning a:link, .beta-warning a:visited {
+.beta-warning a,
+.beta-warning a:link,
+.beta-warning a:visited {
   color: white;
 }
 
-.beta-warning a:hover, .beta-warning a:active {
+.beta-warning a:hover,
+.beta-warning a:active {
   color: white;
 }
 
@@ -269,7 +275,9 @@ main {
   padding-bottom: 10px;
 }
 
-.bold-buttons a.primary, .bold-buttons a.primary:link, .bold-buttons a.primary:visited {
+.bold-buttons a.primary,
+.bold-buttons a.primary:link,
+.bold-buttons a.primary:visited {
   background-color: #7070C0;
   color: white;
   border-radius: 10px;
@@ -277,11 +285,15 @@ main {
   text-decoration: none;
 }
 
-.bold-buttons a.primary:focus, .bold-buttons a.primary:hover, .bold-buttons a.primary:active {
+.bold-buttons a.primary:focus,
+.bold-buttons a.primary:hover,
+.bold-buttons a.primary:active {
   background-color: #5050C0;
 }
 
-.bold-buttons a.destructive, .bold-buttons a.destructive:link, .bold-buttons a.destructive:visited {
+.bold-buttons a.destructive,
+.bold-buttons a.destructive:link,
+.bold-buttons a.destructive:visited {
   background-color: #C07070;
   color: white;
   border-radius: 10px;
@@ -289,11 +301,15 @@ main {
   text-decoration: none;
 }
 
-.bold-buttons a.destructive:focus, .bold-buttons a.destructive:hover, .bold-buttons a.destructive:active {
+.bold-buttons a.destructive:focus,
+.bold-buttons a.destructive:hover,
+.bold-buttons a.destructive:active {
   background-color: #C05050;
 }
 
-.bold-buttons a.secondary, .bold-buttons a.secondary:link, .bold-buttons a.secondary:visited {
+.bold-buttons a.secondary,
+.bold-buttons a.secondary:link,
+.bold-buttons a.secondary:visited {
   border: 1px solid #7070C0;
   color: #7070C0;
   border-radius: 10px;
@@ -301,7 +317,9 @@ main {
   text-decoration: none;
 }
 
-.bold-buttons a.secondary:focus, .bold-buttons a.secondary:hover, .bold-buttons a.secondary:active {
+.bold-buttons a.secondary:focus,
+.bold-buttons a.secondary:hover,
+.bold-buttons a.secondary:active {
   color: white;
   background-color: #5050C0;
 }
@@ -314,7 +332,9 @@ main {
   display: none;
 }
 
-.buttons-panel a.primary, .buttons-panel a.primary:link, .buttons-panel a.primary:visited {
+.buttons-panel a.primary,
+.buttons-panel a.primary:link,
+.buttons-panel a.primary:visited {
   background-color: #7070C0;
   color: white;
   border-radius: 10px;
@@ -322,11 +342,15 @@ main {
   text-decoration: none;
 }
 
-.buttons-panel a.primary:focus, .buttons-panel a.primary:hover, .buttons-panel a.primary:active {
+.buttons-panel a.primary:focus,
+.buttons-panel a.primary:hover,
+.buttons-panel a.primary:active {
   background-color: #5050C0;
 }
 
-.buttons-panel a.secondary, .buttons-panel a.secondary:link, .buttons-panel a.secondary:visited {
+.buttons-panel a.secondary,
+.buttons-panel a.secondary:link,
+.buttons-panel a.secondary:visited {
   background-color: #E0E0E0;
   color: black;
   border-radius: 10px;
@@ -334,7 +358,9 @@ main {
   text-decoration: none;
 }
 
-.buttons-panel a.secondary:focus, .buttons-panel a.secondary:hover, .buttons-panel a.secondary:active {
+.buttons-panel a.secondary:focus,
+.buttons-panel a.secondary:hover,
+.buttons-panel a.secondary:active {
   background-color: #909090;
   color: white;
 }
@@ -372,15 +398,28 @@ main {
   display: none;
 }
 
+.options-panel {
+  font-size: 12px;
+  text-align: center;
+  margin-top: 20px;
+  padding-top: 9px;
+  border-top: 1px dotted #C0C0C0;
+}
+
 .policy-sim-list label {
   font-weight: normal;
 }
 
-.scope-reminder, .scope-reminder a, .scope-reminder a:link, .scope-reminder a:visited {
+.scope-reminder,
+.scope-reminder a,
+.scope-reminder a:link,
+.scope-reminder a:visited {
   color: #707070 !important;
 }
 
-.scope-reminder a, .scope-reminder a:hover, .scope-reminder a:active {
+.scope-reminder a,
+.scope-reminder a:hover,
+.scope-reminder a:active {
   color: #7070A0 !important;
 }
 
@@ -400,8 +439,13 @@ main {
   width: 50px;
 }
 
-.sel select { appearance: none; }
-.sel::after { content: ">"; }
+.sel select {
+  appearance: none;
+}
+
+.sel::after {
+  content: ">";
+}
 
 /* (B) DIMENSIONS */
 /* (B1) WRAPPER - OPTIONAL */
@@ -433,22 +477,31 @@ main {
 
 /* (C) POSITION CUSTOM ARROW */
 /* (C1) REQUIRED FOR ABSOLUTE POSITION BELOW */
-.sel { position: relative; }
+.sel {
+  position: relative;
+}
 
 /* (C2) DEFAULT - ARROW ON RIGHT SIDE */
 .sel::after {
   position: absolute;
-  top: 48%; right: 10px;
+  top: 48%;
+  right: 10px;
   transform: translateY(-50%);
   pointer-events: none;
 }
 
 /* (D) COSMETICS */
 /* (D1) CUSTOM ARROW IS ESSENTIALLY TEXT! */
-.sel::after { font-size: 13px; color: #aaa; }
+.sel::after {
+  font-size: 13px;
+  color: #aaa;
+}
 
 /* (D2) ROTATE ARROW ON HOVER */
-.sel::after { transition: all 0.3s; }
+.sel::after {
+  transition: all 0.3s;
+}
+
 .sel:hover::after {
   transform: translateY(-50%) rotate(90deg);
   color: #ff1212;
@@ -541,11 +594,16 @@ main {
 }
 
 @media (min-width: 30em) {
-  a[role="tab"], a:link[role="tab"], a:visited[role="tab"] {
+
+  a[role="tab"],
+  a:link[role="tab"],
+  a:visited[role="tab"] {
     color: #5050C0;
   }
 
-  a[role="tab"][aria-selected="true"], a:link[role="tab"][aria-selected="true"], a:visited[role="tab"][aria-selected="true"] {
+  a[role="tab"][aria-selected="true"],
+  a:link[role="tab"][aria-selected="true"],
+  a:visited[role="tab"][aria-selected="true"] {
     color: #202070;
   }
 }
