@@ -1082,7 +1082,7 @@ class AggregatedResult {
 /**
  * Results of a simulation run.
  *
- * Structure containing information 
+ * Structure containing information
  */
 class SimulationResult {
   /**
@@ -1100,7 +1100,7 @@ class SimulationResult {
   /**
    * Gets the name of the simulation as defined in code.
    *
-   * @returns {string} The simulation name.
+   * @returns {string} The simulation name like Package A.
    */
   getName() {
     const self = this;
@@ -1110,7 +1110,8 @@ class SimulationResult {
   /**
    * Gets the results from all trial runs.
    *
-   * @returns {Array<Array<EngineResult>>} Array of trial results.
+   * @returns {Array<Array<EngineResult>>} Array of trial results where
+   *     multiple might be present due to Monte Carlo.
    */
   getTrialResults() {
     const self = this;
@@ -1118,7 +1119,19 @@ class SimulationResult {
   }
 }
 
+/**
+ * Decorator which proivdes results with exporter-attribution.
+ *
+ * Decorator around SimulationResult which attributes consumption to exporters
+ * such that the importer's consumption only reflects recharge and not initial
+ * charge.
+ */
 class SimulationAttributeToExporterResult {
+  /**
+   * Create a new decorator.
+   *
+   * @param {SimulationResult} inner - Result to decorate.
+   */
   constructor(inner) {
     const self = this;
     self._inner = inner;
@@ -1129,11 +1142,22 @@ class SimulationAttributeToExporterResult {
     });
   }
 
+  /**
+   * Get the name of the simulation executed.
+   *
+   * @returns {string} Simulation name like BAU.
+   */
   getName() {
     const self = this;
     return self._inner.getName();
   }
 
+  /**
+   * Gets the results from all trial runs.
+   *
+   * @returns {Array<Array<EngineResult>>} Array of trial results where
+   *     multiple might be present due to Monte Carlo.
+   */
   getTrialResults() {
     const self = this;
     return self._trialResults;
