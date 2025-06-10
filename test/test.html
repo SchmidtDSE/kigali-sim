@@ -20,6 +20,8 @@
                 "compiler": "../js/compiler.js?v=EPOCH",
                 "engine_const": "../js/engine_const.js?v=EPOCH",
                 "engine_number": "../js/engine_number.js?v=EPOCH",
+                "engine_unit": "../js/engine_unit.js?v=EPOCH",
+                "engine_unit_state": "../js/engine_unit_state.js?v=EPOCH",
                 "engine_serializer": "../js/engine_serializer.js?v=EPOCH",
                 "engine_state": "../js/engine_state.js?v=EPOCH",
                 "engine_struct": "../js/engine_struct.js?v=EPOCH",
@@ -29,6 +31,8 @@
                 "user_config": "../js/user_config.js?v=EPOCH",
                 "test_compiler": "./test_compiler.js?v=EPOCH",
                 "test_engine_number": "./test_engine_number.js?v=EPOCH",
+                "test_engine_unit_converter": "./test_engine_unit_converter.js?v=EPOCH",
+                "test_engine_unit_state": "./test_engine_unit_state.js?v=EPOCH",
                 "test_engine_state": "./test_engine_state.js?v=EPOCH",
                 "test_engine_struct": "./test_engine_struct.js?v=EPOCH",
                 "test_engine": "./test_engine.js?v=EPOCH",
@@ -46,6 +50,8 @@
     <script type="module">
         import {buildCompilerTests} from "test_compiler";
         import {buildEngineNumberTests} from "test_engine_number";
+        import {buildEngineUnitConverterTests} from "test_engine_unit_converter";
+        import {buildEngineUnitStateTests} from "test_engine_unit_state";
         import {buildEngineStateTests} from "test_engine_state";
         import {buildEngineStructTests} from "test_engine_struct";
         import {buildEngineTests} from "test_engine";
@@ -55,6 +61,8 @@
 
         buildCompilerTests();
         buildEngineNumberTests();
+        buildEngineUnitConverterTests();
+        buildEngineUnitStateTests();
         buildEngineStateTests();
         buildEngineStructTests();
         buildEngineTests();
