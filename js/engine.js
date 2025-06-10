@@ -417,8 +417,25 @@ class Engine {
     } else {
       const application = self._scope.getApplication();
       const substance = self._scope.getSubstance();
-      return self._streamKeeper.getInitialCharge(application, substance, stream);
+      return self.getRawInitialChargeFor(application, substance, stream);
     }
+  }
+
+  /**
+   * Get the initial charge for a specific application and substance.
+   *
+   * @param {string} application - The name of the application for which inital
+   *     charge is requested like commerical refrigeration.
+   * @param {string} substance - The name of the substance for which inital
+   *     charge is requested like HFC-134a.
+   * @param {string} stream - The stream in which the initial charge is
+   *     requested and must be realized (import or manufacturing).
+   * @returns {EngineNumber} The initial charge for the stream in the given
+   *     application and substance.
+   */
+  getRawInitialChargeFor(application, substance, stream) {
+    const self = this;
+    return self._streamKeeper.getInitialCharge(application, substance, stream);
   }
 
   /**
