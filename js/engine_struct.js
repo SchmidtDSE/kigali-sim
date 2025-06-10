@@ -296,16 +296,32 @@ class AttributeToExporterResult {
     return self._inner.getApplication();
   }
 
+  /**
+   * Get the substance for which results are reported.
+   *
+   * @returns {string} The unchanged substance from the decorated result.
+   */
   getSubstance() {
     const self = this;
     return self._inner.getSubstance();
   }
 
+  /**
+   * Get the year for which results are reported.
+   *
+   * @returns {number} The unchanged year from the decorated result.
+   */
   getYear() {
     const self = this;
     return self._inner.getYear();
   }
 
+  /**
+   * Get the manufacture volume.
+   *
+   * @returns {EngineNumber} The unchanged manufacture volume in kg or similar
+   *     from the decorated result.
+   */
   getManufacture() {
     const self = this;
     return self._inner.getManufacture();
@@ -334,11 +350,23 @@ class AttributeToExporterResult {
     return new EngineNumber(innerNumber, totalUnits);
   }
 
+  /**
+   * Get the recycle volume.
+   *
+   * @returns {EngineNumber} The unchanged recycle volume in kg or similar
+   *     from the decorated result.
+   */
   getRecycle() {
     const self = this;
     return self._inner.getRecycle();
   }
 
+  /**
+   * Get the total consumption without recycling.
+   *
+   * @returns {EngineNumber} The unchanged consumption value in tCO2e or similar
+   *     from the decorated result, combining domestic and import consumption.
+   */
   getConsumptionNoRecycle() {
     const self = this;
     return self._inner.getConsumptionNoRecycle();
