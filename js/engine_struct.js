@@ -1083,16 +1083,16 @@ class AggregatedResult {
  * Results of a simulation run.
  *
  * Structure containing information about results across all applications and
- * substances across all years. This represents a single trial (in terms of
- * Monte Carlo).
+ * substances across all years.
  */
 class SimulationResult {
   /**
    * Creates a new simulation result instance
    * @param {string} name - The name of the simulation
-   * @param {Array<Array<EngineResult>>} trialResults - Array containing the
-   *     results of each year where each year contains mmultiple substances and
-   *     applications.
+   * @param {Array<Array<Array<EngineResult>>>} trialResults - Array containing
+   *     the results of each year where each year contains multiple substances
+   *     and applications. One Array<Array> provided per trial (as in Monte
+   *     Carlo).
    */
   constructor(name, trialResults) {
     const self = this;
@@ -1113,9 +1113,10 @@ class SimulationResult {
   /**
    * Gets the results from all trial runs.
    *
-   * @returns {Array<Array<EngineResult>>} Array of trial results where each
-   *     outer array represents a year and each inner array includes all
-   *     application / substance pairs within that year.
+   * @returns {Array<Array<Array<EngineResult>>>} Array of trial results where
+   *     the outermost array represents a single trial (as in Monte Carlo).
+   *     Each inside array represents a year and each innermost array includes
+   *     all application / substance pairs within that year.
    */
   getTrialResults() {
     const self = this;
@@ -1159,9 +1160,10 @@ class SimulationAttributeToExporterResult {
   /**
    * Gets the results from all trial runs.
    *
-   * @returns {Array<Array<EngineResult>>} Array of trial results where each
-   *     outer array represents a year and each inner array includes all
-   *     application / substance pairs within that year.
+   * @returns {Array<Array<Array<EngineResult>>>} Array of trial results where
+   *     the outermost array represents a single trial (as in Monte Carlo).
+   *     Each inside array represents a year and each innermost array includes
+   *     all application / substance pairs within that year.
    */
   getTrialResults() {
     const self = this;
