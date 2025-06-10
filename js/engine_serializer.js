@@ -184,6 +184,13 @@ class EngineResultSerializer {
     const ghgIntensity = self._engine.getEqualsGhgIntensityFor(application, substance);
     stateGetter.setSubstanceConsumption(ghgIntensity);
 
+    const importInitialChargeUnit = self._engine.getRawInitialChargeFor(
+      application,
+      substance,
+      "import",
+    );
+    stateGetter.setAmortizedUnitVolume(importInitialChargeUnit);
+
     // Determine import value without recharge
     const totalImportValue = self._engine.getStreamRaw(application, substance, "import");
     const totalDomesticValue = self._engine.getStreamRaw(application, substance, "manufacture");
