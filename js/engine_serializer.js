@@ -193,10 +193,10 @@ class EngineResultSerializer {
       "rechargeEmissions",
     );
 
-    const totalImportValueKg = unitConverter.convert(totalImportValue, "kg");
-    const totalDomesticValueKg = unitConverter.convert(totalDomesticValue, "kg");
+    const totalImportValueKg = unitConverter.convert(totalImportValue, "kg").getValue();
+    const totalDomesticValueKg = unitConverter.convert(totalDomesticValue, "kg").getValue();
     const proportionImport = totalImportValueKg / (totalImportValueKg + totalDomesticValueKg);
-    const totalRechargeKg = unitConverter.convert(totalRechargeEmissions, "kg");
+    const totalRechargeKg = unitConverter.convert(totalRechargeEmissions, "kg").getValue();
 
     const importRechargeKg = proportionImport * totalRechargeKg;
     const importForInitialChargeKg = totalImportValueKg - importRechargeKg;
