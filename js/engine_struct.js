@@ -8,6 +8,9 @@ import {EngineNumber} from "engine_number";
 
 /**
  * Result of an engine execution for a substance for an application and year.
+ *
+ * Part of a simulation result representing the values evaluated for a single
+ * substance and application within a single year.
  */
 class EngineResult {
   /**
@@ -272,7 +275,8 @@ class EngineResult {
  * Decorator which attributes initial charge to the exporter which is in
  * contrast to the default where initial chanrge is included for the importer
  * totals. Leaves other attributes including population and all domestic
- * calculations unchanged.
+ * calculations unchanged. This represents a single substance and application
+ * in a single year with attribution added.
  */
 class AttributeToExporterResult {
   /**
@@ -493,7 +497,9 @@ class AttributeToExporterResult {
  * As a supplement to an {EngineResult}, offers additional description of trade
  * activity on new equipment (and their initial charge) to support different
  * kinds of trade attributions. This is not reported to the user but is
- * required for some internal caulcations prior to aggregation operations.
+ * required for some internal caulcations prior to aggregation operations. This
+ * provides supplemental information for a single application and substance in
+ * a single year.
  */
 class ImportSupplement {
   /**
@@ -789,7 +795,10 @@ class EngineResultBuilder {
 }
 
 /**
- * Class representing aggregated result which can be visualized.
+ * Statistics from or summary of a group of results.
+ *
+ * Result for a single group of results after aggregation like for all
+ * consumption across all substances in an application.
  */
 class AggregatedResult {
   /**
@@ -1071,7 +1080,9 @@ class AggregatedResult {
 }
 
 /**
- * Class representing the results of a simulation run.
+ * Results of a simulation run.
+ *
+ * Structure containing information 
  */
 class SimulationResult {
   /**
