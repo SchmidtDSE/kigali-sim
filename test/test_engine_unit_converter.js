@@ -2,7 +2,7 @@ import {EngineNumber} from "engine_number";
 import {UnitConverter} from "engine_unit";
 
 function buildEngineUnitConverterTests() {
-  QUnit.module("convertUnits", function () {
+  QUnit.module("UnitConverter", function () {
     class MockConverterStateGetter {
       constructor() {
         const self = this;

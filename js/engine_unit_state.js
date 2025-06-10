@@ -47,9 +47,9 @@ class ConverterStateGetter {
   }
 
   /**
-   * Get the charge volume per unit for sales.
+   * Get the amortized initial charge volume per unit for sales.
    *
-   * @returns {EngineNumber} The charge volume in kg or mt per unit.
+   * @returns {EngineNumber} The amortized initial charge volume in kg or mt per unit.
    */
   getAmortizedUnitVolume() {
     const self = this;
@@ -245,9 +245,9 @@ class OverridingConverterStateGetter {
   }
 
   /**
-   * Set the amortized unit volume.
+   * Set the amortized initial charge unit volume.
    *
-   * @param {EngineNumber} newValue - The new amortized unit volume.
+   * @param {EngineNumber} newValue - The new amortized initial charge unit volume.
    */
   setAmortizedUnitVolume(newValue) {
     const self = this;
@@ -255,9 +255,9 @@ class OverridingConverterStateGetter {
   }
 
   /**
-   * Get the amortized unit volume.
+   * Get the amortized initial charge unit volume.
    *
-   * @returns {EngineNumber} The amortized unit volume.
+   * @returns {EngineNumber} The amortized initial charge unit volume.
    */
   getAmortizedUnitVolume() {
     const self = this;
