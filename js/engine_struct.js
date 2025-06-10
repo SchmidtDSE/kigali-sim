@@ -344,16 +344,32 @@ class AttributeToExporterResult {
     return self._inner.getConsumptionNoRecycle();
   }
 
+  /**
+   * Get the total greenhouse gas consumption.
+   *
+   * @returns {EngineNumber} The total GHG consumption value in tCO2e or similar.
+   */
   getGhgConsumption() {
     const self = this;
     return self._inner.getGhgConsumption();
   }
 
+  /**
+   * Get the domestic consumption value.
+   *
+   * @returns {EngineNumber} The domestic consumption value in tCO2e or similar.
+   */
   getDomesticConsumption() {
     const self = this;
     return self._inner.getDomesticConsumption();
   }
 
+  /**
+   * Get the import consumption value with exporter attribution.
+   *
+   * @returns {EngineNumber} The import consumption value in tCO2e or similar,
+   *     adjusted for exporter attribution by removing initial charge consumption.
+   */
   getImportConsumption() {
     const self = this;
     const totalImport = self._inner.getImportConsumption();
@@ -371,36 +387,72 @@ class AttributeToExporterResult {
     return new EngineNumber(innerNumber, totalUnits);
   }
 
+  /**
+   * Get the recycle consumption value.
+   *
+   * @returns {EngineNumber} The recycle consumption value in tCO2e or similar.
+   */
   getRecycleConsumption() {
     const self = this;
     return self._inner.getRecycleConsumption();
   }
 
+  /**
+   * Get the population value.
+   *
+   * @returns {EngineNumber} The population value in terms of equipment units.
+   */
   getPopulation() {
     const self = this;
     return self._inner.getPopulation();
   }
 
+  /**
+   * Get the amount of new equipment added this year.
+   *
+   * @returns {EngineNumber} The amount of new equipment added this year in units.
+   */
   getPopulationNew() {
     const self = this;
     return self._inner.getPopulationNew();
   }
 
+  /**
+   * Get the greenhouse gas emissions from recharge activities.
+   *
+   * @returns {EngineNumber} The recharge emissions value in tCO2e or similar.
+   */
   getRechargeEmissions() {
     const self = this;
     return self._inner.getRechargeEmissions();
   }
 
+  /**
+   * Get the greenhouse gas emissions from end-of-life equipment.
+   *
+   * @returns {EngineNumber} The end-of-life emissions value in tCO2e or similar.
+   */
   getEolEmissions() {
     const self = this;
     return self._inner.getEolEmissions();
   }
 
+  /**
+   * Get the energy consumption value.
+   *
+   * @returns {EngineNumber} The energy consumption value with units.
+   */
   getEnergyConsumption() {
     const self = this;
     return self._inner.getEnergyConsumption();
   }
 
+  /**
+   * Get the import supplement information.
+   *
+   * @returns {ImportSupplement} The additional import information needed for
+   *     attribution from the decorated result.
+   */
   getImportSupplement() {
     const self = this;
     return self._inner.getImportSupplement();
