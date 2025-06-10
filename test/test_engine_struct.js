@@ -330,7 +330,7 @@ function buildEngineStructTests() {
       assert.equal(result.getYear(), 2023);
     });
 
-    QUnit.test("fails on incomplete result", function (assert) {
+    QUnit.test("fails on an empty result", function (assert) {
       const builder = new EngineResultBuilder();
       builder.setApplication("test app");
       // Missing required fields
@@ -338,6 +338,59 @@ function buildEngineStructTests() {
       assert.throws(function () {
         builder.build();
       }, "Should throw when required fields are missing");
+    });
+
+    QUnit.test("fails on almost complete result", function (assert) {
+      const builder = new EngineResultBuilder();
+      const importSupplement = new ImportSupplement(
+        new EngineNumber(5, "kg"),
+        new EngineNumber(10, "tCO2e"),
+        new EngineNumber(2, "units"),
+      );
+
+      builder.setApplication("test app");
+      builder.setSubstance("test substance");
+      builder.setYear(2023);
+      builder.setManufactureValue(new EngineNumber(100, "kg"));
+      builder.setImportValue(new EngineNumber(50, "kg"));
+      builder.setRecycleValue(new EngineNumber(25, "kg"));
+      builder.setDomesticConsumptionValue(new EngineNumber(200, "tCO2e"));
+      builder.setImportConsumptionValue(new EngineNumber(100, "tCO2e"));
+      builder.setRecycleConsumptionValue(new EngineNumber(50, "tCO2e"));
+      builder.setPopulationValue(new EngineNumber(1000, "units"));
+      builder.setPopulationNew(new EngineNumber(100, "units"));
+      builder.setRechargeEmissions(new EngineNumber(300, "tCO2e"));
+      // Missing EOL emissions
+      builder.setEnergyConsumption(new EngineNumber(500, "kWh"));
+      builder.setImportSupplement(importSupplement);
+
+      assert.throws(function () {
+        builder.build();
+      }, "Should throw when EOL emissions are missing");
+    });
+
+    QUnit.test("fails when missing import supplement", function (assert) {
+      const builder = new EngineResultBuilder();
+
+      builder.setApplication("test app");
+      builder.setSubstance("test substance");
+      builder.setYear(2023);
+      builder.setManufactureValue(new EngineNumber(100, "kg"));
+      builder.setImportValue(new EngineNumber(50, "kg"));
+      builder.setRecycleValue(new EngineNumber(25, "kg"));
+      builder.setDomesticConsumptionValue(new EngineNumber(200, "tCO2e"));
+      builder.setImportConsumptionValue(new EngineNumber(100, "tCO2e"));
+      builder.setRecycleConsumptionValue(new EngineNumber(50, "tCO2e"));
+      builder.setPopulationValue(new EngineNumber(1000, "units"));
+      builder.setPopulationNew(new EngineNumber(100, "units"));
+      builder.setRechargeEmissions(new EngineNumber(300, "tCO2e"));
+      builder.setEolEmissions(new EngineNumber(150, "tCO2e"));
+      builder.setEnergyConsumption(new EngineNumber(500, "kWh"));
+      // Missing import supplement
+
+      assert.throws(function () {
+        builder.build();
+      }, "Should throw when import supplement is missing");
     });
   });
 
