@@ -1070,4 +1070,10 @@ class AggregatedResult {
   }
 }
 
-export {AggregatedResult, EngineResult, EngineResultBuilder, ImportSupplement};
+export {
+  AggregatedResult,
+  AttributeToExporterResult,
+  EngineResult,
+  EngineResultBuilder,
+  ImportSupplement,
+};
