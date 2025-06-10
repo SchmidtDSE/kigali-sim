@@ -68,9 +68,9 @@
                   <dialog class="dialog">
                     <h2><span class="action-title"></span> Application</h2>
                     <div class="instructions">
-                      An application is a type of use which may use many different substances. For
-                      example, an application may be "commercial ACs" for commercial air
-                      conditioners.
+                      An application is a type of use which may be compatible with many different
+                      substances. For example, an application may be "commercial ACs" for commercial
+                      air conditioners.
                     </div>
                     <div class="contents">
                       <div class="form-group">
@@ -141,8 +141,7 @@
                       </ul>
                       <div id="consumption-general">
                         <div class="instructions">
-                          This tab collects information about the substance and application for this
-                          consumption record.
+                          Information about the substance and application being modeled.
                         </div>
                         <div class="form-group">
                           <div><label for="edit-consumption-substance">Substance:</label></div>
@@ -226,10 +225,10 @@
                       </div>
                       <div id="consumption-equipment">
                         <div class="instructions">
-                          This tab models the equipment that uses this substance for this
-                          application.
+                          Information about equipment that uses this substance for this application.
                           <span class="scope-reminder">
-                            You are editing <span class="reminder-substance"></span> for
+                            You are describing equipment using
+                            <span class="reminder-substance"></span> for
                             <span class="reminder-app"></span>.
                             <a href="#edit" class="edit-reminder-link">Change</a>
                           </span>
@@ -431,57 +430,60 @@
                       </div>
                       <div id="consumption-start">
                         <div class="instructions">
-                          This tab sets sales or consumption to a specific value at a specific time.
-                          This, for example, could be used to set the starting values for different
-                          sales streams. Domestic refers to substance both produced and consumed
-                          within the country. While this sets streams to specific values, use
+                          Substance levels at specific times. These typically describe initial
+                          values for assessing consumption. For example, amount of import and
+                          domestic manufacturing (both produced and consumed within the country) at
+                          the start of the simulation. Note: use
                           <a href="#consumption-change" class="dialog-internal-link">change</a>
-                          insetad to have consumption, sales, etc change repeatedly or relatively
-                          over time.
-                          <span class="scope-reminder">
-                            You are editing <span class="reminder-substance"></span> for
-                            <span class="reminder-app"></span>.
-                            <a href="#edit" class="edit-reminder-link">Change</a>
-                          </span>
+                          instead to describe relative changes over time.
                         </div>
                         <div class="dialog-list level-list"></div>
                         <div class="dialog-sub-buttons bold-buttons">
                           <a href="#" class="add-start-button secondary">Add Setpoint</a>
                         </div>
+                        <div class="scope-reminder detached">
+                          You are making set points for
+                          <span class="reminder-substance"></span> used in
+                          <span class="reminder-app"></span>.
+                          <a href="#edit" class="edit-reminder-link">Change</a>
+                        </div>
                       </div>
                       <div id="consumption-change">
                         <div class="instructions">
-                          This tab indicates how sales or consumption change over time such as by
-                          how much domestic manufacture increases each year. While this sets streams
-                          to change relatively over time, use
+                          How sales or consumption change over time like, for example, how much
+                          domestic manufacture increases each year. While this sets streams to
+                          change relatively over time, use
                           <a href="#consumption-start" class="dialog-internal-link">setpoints</a>
-                          instead to have consumption, sales, etc be specific values.
-                          <span class="scope-reminder">
-                            You are editing <span class="reminder-substance"></span> for
-                            <span class="reminder-app"></span>.
-                            <a href="#edit" class="edit-reminder-link">Change</a>
-                          </span>
+                          instead to have consumption, sales, etc be specific values at specific
+                          times.
                         </div>
                         <div class="dialog-list change-list"></div>
                         <div class="dialog-sub-buttons bold-buttons">
                           <a href="#" class="add-change-button secondary">Add Change</a>
                         </div>
+                        <div class="scope-reminder detached">
+                          You are describing changes in
+                          <span class="reminder-substance"></span> used for
+                          <span class="reminder-app"></span>.
+                          <a href="#edit" class="edit-reminder-link">Change</a>
+                        </div>
                       </div>
                       <div id="consumption-limit">
                         <div class="instructions">
-                          This tab specifies limits (minimum and maximum). Optionally, these limits
-                          can displace other substances or streams. For example, in a 100 kg cap on
-                          A offsetting B, a cap would cause 150 kg of A and 0 kg of B to become 100
-                          and 50 kg respectively.
-                          <span class="scope-reminder">
-                            You are editing <span class="reminder-substance"></span> for
-                            <span class="reminder-app"></span>.
-                            <a href="#edit" class="edit-reminder-link">Change</a>
-                          </span>
+                          Specify limits (minimum and maximum). Optionally, these limits can
+                          displace other substances or streams. For example, in a 100 kg cap on
+                          HFC-134a offsetting R-410A in domestic refrigeration, a cap would cause
+                          150 kg of HFC-134a and 0 kg of R-410A to become 100 and 50 kg
+                          respectively.
                         </div>
                         <div class="dialog-list limit-list"></div>
                         <div class="dialog-sub-buttons bold-buttons">
                           <a href="#" class="add-limit-button secondary">Add Limit</a>
+                        </div>
+                        <div class="scope-reminder detached">
+                          You are limiting <span class="reminder-substance"></span> used for
+                          <span class="reminder-app"></span>.
+                          <a href="#edit" class="edit-reminder-link">Change</a>
                         </div>
                       </div>
                     </div>
@@ -536,7 +538,7 @@
                       </ul>
                       <div id="policy-general">
                         <div class="instructions">
-                          This tab collects information about the name of the policy and the target
+                          Information about the name of the policy as well as its the target
                           substance and application. This is the substance being limited, recycled,
                           or replaced with something else.
                         </div>
@@ -578,96 +580,97 @@
                       </div>
                       <div id="policy-recycle">
                         <div class="instructions">
-                          This tab specifies a recycling program in which substance is recovered
-                          during servicing. There may be yield loss in processing substances prior
-                          to reuse.
-                          <span class="scope-reminder">
-                            Your policy will impact <span class="reminder-substance"></span> for
-                            <span class="reminder-app"></span>.
-                            <a href="#edit" class="edit-reminder-link">Change</a>
-                          </span>
+                          Define a recycling program in which substance is recovered during
+                          servicing. There may be yield loss in processing substances prior to
+                          reuse.
                         </div>
                         <div class="dialog-list recycling-list"></div>
                         <div class="dialog-sub-buttons bold-buttons">
                           <a href="#" class="add-recycling-button secondary">Add Recycling</a>
                         </div>
+                        <div class="scope-reminder detached">
+                          Your policy will recycle <span class="reminder-substance"></span> used for
+                          <span class="reminder-app"></span>.
+                          <a href="#edit" class="edit-reminder-link">Change</a>
+                        </div>
                       </div>
                       <div id="policy-salvage">
                         <div class="instructions">
-                          This tab specifies a recycling program in which substance is recovered at
-                          end of life. There may be yield loss in processing substances prior to
-                          reuse.
-                          <span class="scope-reminder">
-                            Your policy will impact <span class="reminder-substance"></span> for
-                            <span class="reminder-app"></span>.
-                            <a href="#edit" class="edit-reminder-link">Change</a>
-                          </span>
+                          Define a recycling program in which substance is recovered at end of life.
+                          There may be yield loss in processing substances prior to reuse.
                         </div>
                         <div>This policy is coming soon</div>
+                        <div class="scope-reminder detached">
+                          Your policy will recycle <span class="reminder-substance"></span> used for
+                          <span class="reminder-app"></span>.
+                          <a href="#edit" class="edit-reminder-link">Change</a>
+                        </div>
                       </div>
                       <div id="policy-replace">
                         <div class="instructions">
-                          This tab specifies replacement of the policy's target substance with
-                          another compatible substance. For example, this could be used to model
-                          retrofit.
-                          <span class="scope-reminder">
-                            Your policy will impact <span class="reminder-substance"></span> for
-                            <span class="reminder-app"></span>.
-                            <a href="#edit" class="edit-reminder-link">Change</a>
-                          </span>
+                          Specify replacement of the policy's target substance with another
+                          compatible substance. For example, this could be used to model a retrofit
+                          program.
                         </div>
                         <div class="dialog-list replace-list"></div>
                         <div class="dialog-sub-buttons bold-buttons">
                           <a href="#" class="add-replace-button secondary">Add Replacement</a>
                         </div>
+                        <div class="scope-reminder detached">
+                          Your policy will replace <span class="reminder-substance"></span> used for
+                          <span class="reminder-app"></span>.
+                          <a href="#edit" class="edit-reminder-link">Change</a>
+                        </div>
                       </div>
                       <div id="policy-set">
                         <div class="instructions">
-                          This tab sets streams such as imports or equipment to specific levels.
-                          This could be used to model a mandate for a specific year.
-                          <span class="scope-reminder">
-                            Your policy will impact <span class="reminder-substance"></span> for
-                            <span class="reminder-app"></span>.
-                            <a href="#edit" class="edit-reminder-link">Change</a>
-                          </span>
+                          Set streams such as imports or equipment to specific levels. These set
+                          points could be used to model a mandate for a specific year. For example,
+                          an import value set to 0 colud indicate a probition on foreign HFC-134a.
                         </div>
                         <div class="dialog-list level-list"></div>
                         <div class="dialog-sub-buttons bold-buttons">
                           <a href="#" class="add-level-button secondary">Add Level</a>
                         </div>
+                        <div class="scope-reminder detached">
+                          Your policy will add set points
+                          <span class="reminder-substance"></span> used for
+                          <span class="reminder-app"></span>.
+                          <a href="#edit" class="edit-reminder-link">Change</a>
+                        </div>
                       </div>
                       <div id="policy-change">
                         <div class="instructions">
-                          This tab changes streams such as imports or equipment continually over a
-                          period of time. For example, this could be used to model a subsidy
-                          program.
-                          <span class="scope-reminder">
-                            Your policy will impact <span class="reminder-substance"></span> for
-                            <span class="reminder-app"></span>.
-                            <a href="#edit" class="edit-reminder-link">Change</a>
-                          </span>
+                          Make relative changes to streams such as imports or equipment continually
+                          over a period of time. For example, this could be used to model a subsidy
+                          or incentive program.
                         </div>
                         <div class="dialog-list change-list"></div>
                         <div class="dialog-sub-buttons bold-buttons">
                           <a href="#" class="add-change-button secondary">Add Change</a>
                         </div>
+                        <div class="scope-reminder detached">
+                          Your policy will change <span class="reminder-substance"></span> used for
+                          <span class="reminder-app"></span>.
+                          <a href="#edit" class="edit-reminder-link">Change</a>
+                        </div>
                       </div>
                       <div id="policy-limit">
                         <div class="instructions">
-                          This tab imposes limits like to overall sales. Optionally, these limits
-                          can displace other substances or streams. For example, in a 100 kg cap on
-                          A offsetting B, a cap would cause 150 kg of A and 0 kg of B to become 100
+                          Impose limits like to overall sales in a specific application. Optionally,
+                          these caps can displace other substances or streams. For example, a 100 kg
+                          cap on A offsetting B would cause 150 kg of A and 0 kg of B to become 100
                           and 50 kg respectively. For example, this could be used to model a permit
-                          scheme.
-                          <span class="scope-reminder">
-                            Your policy will impact <span class="reminder-substance"></span> for
-                            <span class="reminder-app"></span>.
-                            <a href="#edit" class="edit-reminder-link">Change</a>
-                          </span>
+                          scheme like in domestic refrigeration.
                         </div>
                         <div class="dialog-list limit-list"></div>
                         <div class="dialog-sub-buttons bold-buttons">
                           <a href="#" class="add-limit-button secondary">Add Limit</a>
+                        </div>
+                        <div class="scope-reminder detached">
+                          Your policy will limit <span class="reminder-substance"></span> used for
+                          <span class="reminder-app"></span>.
+                          <a href="#edit" class="edit-reminder-link">Change</a>
                         </div>
                       </div>
                     </div>
@@ -1592,6 +1595,8 @@
           "compiler": "./js/compiler.js?v=EPOCH",
           "engine_const": "./js/engine_const.js?v=EPOCH",
           "engine_number": "./js/engine_number.js?v=EPOCH",
+          "engine_unit": "./js/engine_unit.js?v=EPOCH",
+          "engine_unit_state": "./js/engine_unit_state.js?v=EPOCH",
           "engine_serializer": "./js/engine_serializer.js?v=EPOCH",
           "engine_state": "./js/engine_state.js?v=EPOCH",
           "engine_struct": "./js/engine_struct.js?v=EPOCH",

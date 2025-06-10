@@ -423,6 +423,12 @@ main {
   color: #7070A0 !important;
 }
 
+.scope-reminder.detached {
+  text-align: center;
+  padding-top: 10px;
+  font-size: 12px;
+}
+
 /* Thanks https://codepen.io/code-boxx/pen/RwxbpOz */
 /* MIT License */
 
