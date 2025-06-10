@@ -1107,7 +1107,7 @@ class SimulationResult {
   }
 }
 
-class SimulationAttributeToExporterResults {
+class SimulationAttributeToExporterResult {
   constructor(inner) {
     const self = this;
     self._inner = inner;
@@ -1132,5 +1132,5 @@ export {
   EngineResultBuilder,
   ImportSupplement,
   SimulationResult,
-  SimulationAttributeToExporterResults,
+  SimulationAttributeToExporterResult,
 };

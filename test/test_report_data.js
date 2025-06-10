@@ -83,7 +83,17 @@ function buildReportDataTests() {
 
     buildTest("gets the scenarios", "/test/qta/multiple_with_policies.qta", [
       (result, assert) => {
-        const years = result.getScenarios();
+        const filterSet = new FilterSet(
+          null,
+          null,
+          null,
+          null,
+          "sales:import:mt / yr",
+          null,
+          null,
+          false,
+        );
+        const years = result.getScenarios(filterSet);
         assert.equal(years.size, 2);
         assert.ok(years.has("bau"));
         assert.ok(years.has("sim"));

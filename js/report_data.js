@@ -5,7 +5,7 @@
  */
 
 import {EngineNumber} from "engine_number";
-import {AggregatedResult, SimulationAttributeToExporterResults} from "engine_struct";
+import {AggregatedResult, SimulationAttributeToExporterResult} from "engine_struct";
 
 /**
  * Builder class for creating metric computation strategies.
@@ -359,7 +359,7 @@ class ReportDataWrapper {
       return self._innerData;
     } else {
       if (self._innerDataExporterAttributed === null) {
-        self._innerDataExporterAttributed = self._buildExporterAttributed();
+        self._innerDataExporterAttributed = self._buildExporterAttributed(self._innerData);
       }
       return self._innerDataExporterAttributed;
     }
@@ -753,9 +753,17 @@ class ReportDataWrapper {
     return withSub;
   }
 
-  _buildExporterAttributed() {
+  /**
+   * Deocrate the inner data (SimulationResult) to attribute to exporter.
+   *
+   * @private
+   * @param {Array<SimulationResult>} rawResults - The results with attribute
+   *     to importer that should be decorated.
+   * @returns {Array<SimulationAttributeToExporterResult>} Decorated version.
+   */
+  _buildExporterAttributed(rawResults) {
     const self = this;
-    return new SimulationAttributeToExporterResults(self._innerData);
+    return rawResults.map((x) => new SimulationAttributeToExporterResult(x));
   }
 }
 
