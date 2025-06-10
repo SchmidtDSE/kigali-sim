@@ -7,7 +7,7 @@
 import {EngineNumber} from "engine_number";
 import {Engine} from "engine";
 import {YearMatcher} from "engine_state";
-import {SimulationResult} from "enigne_struct";
+import {SimulationResult} from "engine_struct";
 
 const toolkit = QubecTalk.getToolkit();
 
