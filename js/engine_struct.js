@@ -283,15 +283,12 @@ class ImportSupplement {
    * @param {EngineValue} initialChargeConsumptionValue - The consumption
    *     associated with inital charge of imported equipment (like tCO2e).
    * @param {EngineValue} newPopulation - The number of new units imported.
-   * @param {EngineValue} initialEnergy - Energy associated with initial charge
-   *     of imported equipment.
    */
-  constructor(initialChargeValue, initialChargeConsumptionValue, newPopulation, initialEnergy) {
+  constructor(initialChargeValue, initialChargeConsumptionValue, newPopulation) {
     const self = this;
     self._initialChargeValue = initialChargeValue;
     self._initialChargeConsumptionValue = initialChargeConsumptionValue;
     self._newPopulation = newPopulation;
-    self._initialEnergy = initialEnergy;
   }
 
   /**
@@ -322,17 +319,6 @@ class ImportSupplement {
   getNewPopulation() {
     const self = this;
     return self._newPopulation;
-  }
-
-  /**
-   * Get energy consumption associated with imported units.
-   *
-   * @returns {EngineValue} The energy associated with initial charge for
-   *     imported units.
-   */
-  getInitialEnergy() {
-    const self = this;
-    return self._initialEnergy;
   }
 }
 

@@ -184,9 +184,6 @@ class EngineResultSerializer {
     const ghgIntensity = self._engine.getEqualsGhgIntensityFor(application, substance);
     stateGetter.setSubstanceConsumption(ghgIntensity);
 
-    const energyIntensity = self._engine.getEqualsEnergyIntensityFor(application, substance);
-    stateGetter.setEnergyIntensity(energyIntensity);
-
     // Determine import value without recharge
     const totalImportValue = self._engine.getStreamRaw(application, substance, "import");
     const totalDomesticValue = self._engine.getStreamRaw(application, substance, "manufacture");
@@ -209,10 +206,9 @@ class EngineResultSerializer {
     // Determine consumption (tCO2e) and population (units)
     const consumption = unitConverter.convert(value, "tCO2e");
     const population = unitConverter.convert(value, "units");
-    const energy = unitConverter.convert(value, "kwh");
 
     // Package
-    const importSupplement = new ImportSupplement(value, consumption, population, energy);
+    const importSupplement = new ImportSupplement(value, consumption, population);
     builder.setImportSupplement(importSupplement);
   }
 }
