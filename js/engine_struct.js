@@ -1082,14 +1082,17 @@ class AggregatedResult {
 /**
  * Results of a simulation run.
  *
- * Structure containing information
+ * Structure containing information about results across all applications and
+ * substances across all years. This represents a single trial (in terms of
+ * Monte Carlo).
  */
 class SimulationResult {
   /**
    * Creates a new simulation result instance
    * @param {string} name - The name of the simulation
-   * @param {Array<EngineResult>} trialResults - Array containing the results
-   *     of each trial run.
+   * @param {Array<Array<EngineResult>>} trialResults - Array containing the
+   *     results of each year where each year contains mmultiple substances and
+   *     applications.
    */
   constructor(name, trialResults) {
     const self = this;
@@ -1110,8 +1113,9 @@ class SimulationResult {
   /**
    * Gets the results from all trial runs.
    *
-   * @returns {Array<Array<EngineResult>>} Array of trial results where
-   *     multiple might be present due to Monte Carlo.
+   * @returns {Array<Array<EngineResult>>} Array of trial results where each
+   *     outer array represents a year and each inner array includes all
+   *     application / substance pairs within that year.
    */
   getTrialResults() {
     const self = this;
@@ -1155,8 +1159,9 @@ class SimulationAttributeToExporterResult {
   /**
    * Gets the results from all trial runs.
    *
-   * @returns {Array<Array<EngineResult>>} Array of trial results where
-   *     multiple might be present due to Monte Carlo.
+   * @returns {Array<Array<EngineResult>>} Array of trial results where each
+   *     outer array represents a year and each inner array includes all
+   *     application / substance pairs within that year.
    */
   getTrialResults() {
     const self = this;
