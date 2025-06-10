@@ -5,290 +5,21 @@
  */
 
 import {EngineNumber} from "engine_number";
+import {AggregatedResult} from "engine_struct";
 
-/**
- * Class representing aggregated result which can be visualized.
- */
-class AggregatedResult {
-  /**
-   * Construct an AggregatedResult instance.
-   *
-   * @param {EngineNumber} manufactureValue - The value representing
-   *     manufacturing.
-   * @param {EngineNumber} importValue - The value representing imports.
-   * @param {EngineNumber} recycleValue - The value of recycled goods.
-   * @param {EngineNumber} domesticConsumptionValue - The value representing
-   *     domestic consumption.
-   * @param {EngineNumber} importConsumptionValue - The consumption value due
-   *     to imports.
-   * @param {EngineNumber} recycleConsumptionValue - The consumption value due
-   *     to recycling.
-   * @param {EngineNumber} populationValue - The value of the population amount.
-   * @param {EngineNumber} populationNew - The value representing new equipment
-   *     added in the current year.
-   * @param {EngineNumber} rechargeEmissions - Emissions resulting from recharge
-   *     activities.
-   * @param {EngineNumber} eolEmissions - Emissions resulting from end-of-life
-   *     equipment.
-   */
-  constructor(
-    manufactureValue,
-    importValue,
-    recycleValue,
-    domesticConsumptionValue,
-    importConsumptionValue,
-    recycleConsumptionValue,
-    populationValue,
-    populationNew,
-    rechargeEmissions,
-    eolEmissions,
-    energyConsumption,
-  ) {
-    const self = this;
-    self._manufactureValue = manufactureValue;
-    self._importValue = importValue;
-    self._recycleValue = recycleValue;
-    self._domesticConsumptionValue = domesticConsumptionValue;
-    self._importConsumptionValue = importConsumptionValue;
-    self._recycleConsumptionValue = recycleConsumptionValue;
-    self._populationValue = populationValue;
-    self._populationNew = populationNew;
-    self._rechargeEmissions = rechargeEmissions;
-    self._eolEmissions = eolEmissions;
-    self._energyConsumption = energyConsumption;
-  }
-
-  /**
-   * Get the energy consumption value.
-   *
-   * @returns {EngineNumber} The energy consumption value with units.
-   */
-  getEnergyConsumption() {
-    const self = this;
-    return self._energyConsumption;
-  }
-
-  /**
-   * Get the manufacture (as opposed to import) of substance.
-   *
-   * @returns {EngineNumber} The manufacture value with units.
-   */
-  getManufacture() {
-    const self = this;
-    return self._manufactureValue;
-  }
-
-  /**
-   * Get the import (as opposed to manufacture) value.
-   *
-   * @returns {EngineNumber} The import value with units.
-   */
-  getImport() {
-    const self = this;
-    return self._importValue;
-  }
-
-  /**
-   * Get the recycle sales.
-   *
-   * @returns {EngineNumber} The recycle sales with units.
-   */
-  getRecycle() {
-    const self = this;
-    return self._recycleValue;
-  }
-
-  /**
-   * Get combined sales value (manufacture + import).
-   *
-   * @returns {EngineNumber} The combined sales value with units.
-   */
-  getSales() {
-    const self = this;
-    const manufactureValue = self.getManufacture();
-    const importValue = self.getImport();
-    const recycleValue = self.getRecycle();
-    const noRecycle = self._combineUnitValue(manufactureValue, importValue);
-    const sales = self._combineUnitValue(noRecycle, recycleValue);
-    return sales;
-  }
-
-  /**
-   * Get the domestic consumption value.
-   *
-   * @returns {EngineNumber} The domestic consumption value.
-   */
-  getDomesticConsumption() {
-    const self = this;
-    return self._domesticConsumptionValue;
-  }
-
-  /**
-   * Get the import consumption value.
-   *
-   * @returns {EngineNumber} The import consumption value.
-   */
-  getImportConsumption() {
-    const self = this;
-    return self._importConsumptionValue;
-  }
-
-  /**
-   * Get the recycle consumption.
-   *
-   * @returns {EngineNumber} The recycle consumption with units.
-   */
-  getRecycleConsumption() {
-    const self = this;
-    return self._recycleConsumptionValue;
-  }
-
-  /**
-   * Get the total consumption combining domestic and import.
-   *
-   * @returns {EngineNumber} The combined consumption value with units.
-   */
-  getGhgConsumption() {
-    const self = this;
-    const noRecycle = self._combineUnitValue(
-      self.getDomesticConsumption(),
-      self.getImportConsumption(),
-    );
-    return self._combineUnitValue(noRecycle, self.getRecycleConsumption());
-  }
-
-  /**
-   * Get the population (amount of equipment) value.
-   *
-   * @returns {EngineNumber} The population value with units.
-   */
-  getPopulation() {
-    const self = this;
-    return self._populationValue;
-  }
-
-  /**
-   * Get the new equipment added in this year.
-   *
-   * @returns {EngineNumber} The new equipment added in units.
-   */
-  getPopulationNew() {
-    const self = this;
-    return self._populationNew;
-  }
-
-  /**
-   * Get the greenhouse gas emissions from recharge activities.
-   *
-   * @returns {EngineNumber} The recharge emissions value with units.
-   */
-  getRechargeEmissions() {
-    const self = this;
-    return self._rechargeEmissions;
-  }
-
-  /**
-   * Get the greenhouse gas emissions from end-of-life equipment.
-   *
-   * @returns {EngineNumber} The end-of-life emissions value with units.
-   */
-  getEolEmissions() {
-    const self = this;
-    return self._eolEmissions;
-  }
-
-  /**
-   * Get the total greenhouse gas emissions combining recharge and end-of-life emissions.
-   *
-   * @returns {EngineNumber} The combined emissions value with units.
-   */
-  getTotalEmissions() {
-    const self = this;
-    return self._combineUnitValue(self.getRechargeEmissions(), self.getEolEmissions());
-  }
-
-  /**
-   * Combine this result with another result.
-   *
-   * Combine this result with another result in an additive way with unit
-   * standardization and conversion.
-   *
-   * @param {AggregatedResult} other - The other result to combine with.
-   * @returns {AggregatedResult} A new combined result.
-   */
-  combine(other) {
-    const self = this;
-
-    const manufactureValue = self._combineUnitValue(self.getManufacture(), other.getManufacture());
-    const importValue = self._combineUnitValue(self.getImport(), other.getImport());
-    const recycleValue = self._combineUnitValue(self.getRecycle(), other.getRecycle());
-    const domesticConsumptionValue = self._combineUnitValue(
-      self.getDomesticConsumption(),
-      other.getDomesticConsumption(),
-    );
-    const importConsumptionValue = self._combineUnitValue(
-      self.getImportConsumption(),
-      other.getImportConsumption(),
-    );
-    const recycleConsumptionValue = self._combineUnitValue(
-      self.getRecycleConsumption(),
-      other.getRecycleConsumption(),
-    );
-    const populationValue = self._combineUnitValue(self.getPopulation(), other.getPopulation());
-    const populationNew = self._combineUnitValue(self.getPopulationNew(), other.getPopulationNew());
-
-    const rechargeEmissions = self._combineUnitValue(
-      self.getRechargeEmissions(),
-      other.getRechargeEmissions(),
-    );
-    const eolEmissions = self._combineUnitValue(self.getEolEmissions(), other.getEolEmissions());
-    const energyConsumption = self._combineUnitValue(
-      self.getEnergyConsumption(),
-      other.getEnergyConsumption(),
-    );
-
-    return new AggregatedResult(
-      manufactureValue,
-      importValue,
-      recycleValue,
-      domesticConsumptionValue,
-      importConsumptionValue,
-      recycleConsumptionValue,
-      populationValue,
-      populationNew,
-      rechargeEmissions,
-      eolEmissions,
-      energyConsumption,
-    );
-  }
-
-  /**
-   * Combine two unit values with the same units.
-   *
-   * @private
-   * @param {EngineNumber} a - First value.
-   * @param {EngineNumber} b - Second value.
-   * @returns {EngineNumber} Combined value.
-   * @throws {string} If units don't match.
-   */
-  _combineUnitValue(a, b) {
-    const self = this;
-    if (a.getUnits() !== b.getUnits()) {
-      throw "Encountered different units during aggregation.";
-    }
-    return new EngineNumber(a.getValue() + b.getValue(), a.getUnits());
-  }
-}
 
 /**
  * Builder class for creating metric computation strategies.
- * Handles the construction of metric processing pipelines including
- * transformations and unit conversions.
+ *
+ * Builder which handles the construction of metric processing pipelines
+ * including transformations and unit conversions.
  */
 class MetricStrategyBuilder {
   /**
    * Create a new MetricStrategyBuilder instance.
-   * Initializes all strategy components to null.
+   *
+   * Create a new MetricStrategyBuilder instance, initalizing all strategy
+   * components to null requiring them to be specified later.
    */
   constructor() {
     const self = this;
@@ -302,6 +33,7 @@ class MetricStrategyBuilder {
 
   /**
    * Set the metric name for the strategy.
+   *
    * @param {string} metric - The metric name (e.g., 'sales', 'emissions').
    */
   setMetric(metric) {
@@ -311,6 +43,7 @@ class MetricStrategyBuilder {
 
   /**
    * Set the submetric name for the strategy.
+   *
    * @param {string} submetric - The submetric name (e.g., 'all', 'import').
    */
   setSubmetric(submetric) {
@@ -320,6 +53,7 @@ class MetricStrategyBuilder {
 
   /**
    * Set the units for the strategy output.
+   *
    * @param {string} units - The units specification (e.g., 'MtCO2e / yr').
    */
   setUnits(units) {
@@ -329,7 +63,9 @@ class MetricStrategyBuilder {
 
   /**
    * Set the core computation strategy.
-   * @param {Function} strategy - The function that implements the core metric computation.
+   *
+   * @param {Function} strategy - The function that implements the core metric
+   *     computation.
    */
   setStrategy(strategy) {
     const self = this;
@@ -338,7 +74,9 @@ class MetricStrategyBuilder {
 
   /**
    * Set the transformation to apply after the core strategy.
-   * @param {Function} transformation - The function that transforms the strategy output.
+   *
+   * @param {Function} transformation - The function that transforms the strategy
+   *     output.
    */
   setTransformation(transformation) {
     const self = this;
@@ -347,7 +85,7 @@ class MetricStrategyBuilder {
 
   /**
    * Add the configured strategy to the strategies collection.
-   * Requires all components to be set (non-null).
+   *
    * @throws {string} If any required component is null.
    */
   add() {
@@ -1018,320 +756,4 @@ class ReportDataWrapper {
   }
 }
 
-/**
- * Filters and baseline to apply in creating a visualization.
- *
- * Class representing a set of filters to apply in identifying a subset of data
- * to visualize as well as an optional offsetting baseline.
- */
-class FilterSet {
-  /**
-   * Create a new filter set.
-   *
-   * @param {number|null} year - Year for which data will be filtered.
-   * @param {string|null} scenario - Name of scenario for which to filter.
-   * @param {string|null} application - Name of application for which to
-   *     filter.
-   * @param {string|null} substance - Name of substance which to filter.
-   * @param {string|null} metric - Metric name for which to display. Note
-   *     that this is the full metric names like sales or sales:import.
-   * @param {string|null} dimension - Dimension type for which to filter.
-   * @param {string|null} baseline - Baseline scenario for comparison.
-   */
-  constructor(year, scenario, application, substance, metric, dimension, baseline) {
-    const self = this;
-    self._year = year;
-    self._scenario = scenario;
-    self._application = application;
-    self._substance = substance;
-    self._metric = metric;
-    self._dimension = dimension;
-    self._baseline = baseline;
-  }
-
-  /**
-   * Get a new filter set with updated dimension value.
-   *
-   * @param {*} value - The new dimension value (simulations, applications,
-   *     substances).
-   * @returns {FilterSet} New filter set with updated dimension.
-   */
-  getWithDimensionValue(value) {
-    const self = this;
-    const strategy = {
-      simulations: (x) => self.getWithScenario(x),
-      applications: (x) => self.getWithApplication(x),
-      substances: (x) => self.getWithSubstance(x),
-    }[self.getDimension()];
-    return strategy(value);
-  }
-
-  /**
-   * Get the year filter.
-   *
-   * @returns {number|null} The year for which to filter like 10.
-   */
-  getYear() {
-    const self = this;
-    return self._year;
-  }
-
-  /**
-   * Get a new filter set with updated year.
-   *
-   * @param {number} newYear - The new year value.
-   * @returns {FilterSet} New filter set with updated year.
-   */
-  getWithYear(newYear) {
-    const self = this;
-    return new FilterSet(
-      newYear,
-      self._scenario,
-      self._application,
-      self._substance,
-      self._metric,
-      self._dimension,
-      self._baseline,
-    );
-  }
-
-  /**
-   * Get the scenario filter.
-   *
-   * @returns {string|null} The scenario for which to filter like Business as
-   *     Usual.
-   */
-  getScenario() {
-    const self = this;
-    return self._scenario;
-  }
-
-  /**
-   * Get a new filter set with updated scenario.
-   *
-   * @param {string} newScenario - The new scenario value.
-   * @returns {FilterSet} New filter set with updated scenario.
-   */
-  getWithScenario(newScenario) {
-    const self = this;
-    return new FilterSet(
-      self._year,
-      newScenario,
-      self._application,
-      self._substance,
-      self._metric,
-      self._dimension,
-      self._baseline,
-    );
-  }
-
-  /**
-   * Get the application filter.
-   *
-   * @returns {string|null} The application for which to filter like commercial
-   *     refrigerant.
-   */
-  getApplication() {
-    const self = this;
-    return self._application;
-  }
-
-  /**
-   * Get a new filter set with updated application.
-   *
-   * @param {string} newApplication - The new application value.
-   * @returns {FilterSet} New filter set with updated application.
-   */
-  getWithApplication(newApplication) {
-    const self = this;
-    return new FilterSet(
-      self._year,
-      self._scenario,
-      newApplication,
-      self._substance,
-      self._metric,
-      self._dimension,
-      self._baseline,
-    );
-  }
-
-  /**
-   * Get the substance filter.
-   *
-   * @returns {string|null} The substance for which to filter like HFC-134a.
-   */
-  getSubstance() {
-    const self = this;
-    return self._substance;
-  }
-
-  /**
-   * Get a new filter set with updated substance.
-   *
-   * @param {string} newSubstance - The new substance value.
-   * @returns {FilterSet} New filter set with updated substance.
-   */
-  getWithSubstance(newSubstance) {
-    const self = this;
-    return new FilterSet(
-      self._year,
-      self._scenario,
-      self._application,
-      newSubstance,
-      self._metric,
-      self._dimension,
-      self._baseline,
-    );
-  }
-
-  /**
-   * Get the full name of the metric to display.
-   *
-   * @returns {string|null} The metric to display like sales. Note that this is
-   *     the full name like sales:manufacture or sales:all.
-   */
-  getFullMetricName() {
-    const self = this;
-    return self._metric;
-  }
-
-  /**
-   * Get the type of metric to display like sales.
-   *
-   * @returns {string|null} The metric family to display like sales.
-   */
-  getMetric() {
-    const self = this;
-
-    if (self._metric === null) {
-      return null;
-    }
-
-    return self._metric.split(":")[0];
-  }
-
-  /**
-   * Get the substream of the metric to dsiplay.
-   *
-   * @returns {string|null} The submetric to display like import or null if no
-   *     submetric.
-   */
-  getSubMetric() {
-    const self = this;
-
-    if (self._metric === null) {
-      return null;
-    }
-
-    const metricPieces = self._metric.split(":");
-    return metricPieces.length < 2 ? null : metricPieces[1];
-  }
-
-  /**
-   * Get the units of the metric to dsiplay.
-   *
-   * @returns {string|null} The units desired or null if not given.
-   */
-  getUnits() {
-    const self = this;
-
-    if (self._metric === null) {
-      return null;
-    }
-
-    const metricPieces = self._metric.split(":");
-    return metricPieces.length < 3 ? null : metricPieces[2];
-  }
-
-  /**
-   * Get a new filter set with updated metric.
-   *
-   * @param {string} newMetric - The new metric value.
-   * @returns {FilterSet} New filter set with updated metric.
-   */
-  getWithMetric(newMetric) {
-    const self = this;
-    return new FilterSet(
-      self._year,
-      self._scenario,
-      self._application,
-      self._substance,
-      newMetric,
-      self._dimension,
-      self._baseline,
-    );
-  }
-
-  /**
-   * Get the dimension filter.
-   *
-   * @returns {string|null} The dimension for which to filter like simulations.
-   */
-  getDimension() {
-    const self = this;
-    return self._dimension;
-  }
-
-  /**
-   * Get a new filter set with updated dimension.
-   *
-   * @param {string} newDimension - The new dimension value.
-   * @returns {FilterSet} New filter set with updated dimension.
-   */
-  getWithDimension(newDimension) {
-    const self = this;
-    return new FilterSet(
-      self._year,
-      self._scenario,
-      self._application,
-      self._substance,
-      self._metric,
-      newDimension,
-      self._baseline,
-    );
-  }
-
-  /**
-   * Get the baseline scenario.
-   *
-   * @returns {string|null} The baseline scenario name for comparison.
-   */
-  getBaseline() {
-    const self = this;
-    return self._baseline;
-  }
-
-  /**
-   * Get a new filter set with updated baseline.
-   *
-   * @param {string} newBaseline - The new baseline scenario value.
-   * @returns {FilterSet} New filter set with updated baseline.
-   */
-  getWithBaseline(newBaseline) {
-    const self = this;
-    return new FilterSet(
-      self._year,
-      self._scenario,
-      self._application,
-      self._substance,
-      self._metric,
-      self._dimension,
-      newBaseline,
-    );
-  }
-
-  /**
-   * Check if there is a single scenario selected or available.
-   *
-   * @param {Set<string>} scenarios - Set of available scenarios.
-   * @returns {boolean} True if single scenario.
-   */
-  hasSingleScenario(scenarios) {
-    const self = this;
-    const scenarioSelected = self._scenario !== null;
-    const onlyOneScenario = scenarios.size == 1;
-    return scenarioSelected || onlyOneScenario;
-  }
-}
-
-export {ReportDataWrapper, FilterSet};
+export {ReportDataWrapper};

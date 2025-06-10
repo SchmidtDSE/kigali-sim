@@ -3,8 +3,8 @@
  *
  * @license BSD, see LICENSE.md.
  */
-import {FilterSet} from "report_data";
 import {EngineNumber} from "engine_number";
+import {FilterSet} from "user_config";
 
 /**
  * Array of colors used for visualizations
@@ -95,6 +95,7 @@ class ResultsPresenter {
     self._centerChartPresenter = new CenterChartPresenter(centerChartContainer);
     self._titlePreseter = new SelectorTitlePresenter(centerChartHolderContainer, onUpdateFilterSet);
     self._exportPresenter = new ExportPresenter(self._root);
+    self._optionsPresenter = new OptionsPanelPresenter(self._root, onUpdateFilterSet);
 
     self.hide();
   }
@@ -112,6 +113,7 @@ class ResultsPresenter {
       "emissions:all:MtCO2e / yr",
       "simulations",
       null,
+      false,
     );
   }
 
@@ -184,6 +186,7 @@ class ResultsPresenter {
     self._centerChartPresenter.showResults(self._results, self._filterSet);
     self._titlePreseter.showResults(self._results, self._filterSet);
     self._exportPresenter.showResults(self._results);
+    self._optionsPresenter.showResults(self._results, self._filterSet);
   }
 }
 
@@ -676,6 +679,53 @@ class DimensionCardPresenter {
     registerListener(simulationsCard, "simulations");
     registerListener(applicationsCard, "applications");
     registerListener(substancesCard, "substances");
+  }
+}
+
+/**
+ * Presenter for options checkboxes.
+ *
+ * Presenter for options checkboxes at the bottom of the results panel before export button which,
+ * at this time, only includes a checkbox for attributing initial charge to importer (defaults to
+ * unchecked / attribute to exporter).
+ */
+class OptionsPanelPresenter {
+  /**
+   * Create a new OptionsPanelPresenter.
+   *
+   * @param {HTMLElement} root - Root DOM element.
+   * @param {Function} onUpdateFilterSet - Callback for filter updates.
+   */
+  constructor(root, onUpdateFilterSet) {
+    const self = this;
+    self._root = root;
+    self._onUpdateFilterSet = onUpdateFilterSet;
+    self._filterSet = null;
+    self._attributeImporterCheck = self._root.querySelector("#importer-assignment-check");
+    self._registerEventListeners();
+  }
+
+  /**
+   * Update dimension cards with new results
+   * @param {Object} results - Results data to display
+   * @param {FilterSet} filterSet - Current filter settings
+   */
+  showResults(results, filterSet) {
+    const self = this;
+    self._filterSet = filterSet;
+    self._attributeImporterCheck.checked = self._filterSet.getAttributeImporter();
+  }
+
+  /**
+   * Register event listeners for options being changed.
+   */
+  _registerEventListeners() {
+    const self = this;
+    self._attributeImporterCheck.addEventListener("change", () => {
+      const newValue = self._attributeImporterCheck.checked;
+      const newFilterSet = self._filterSet.getWithAttributeImporter(newValue);
+      self._onUpdateFilterSet(newFilterSet);
+    });
   }
 }
 
