@@ -7,6 +7,7 @@
 import {EngineNumber} from "engine_number";
 import {Engine} from "engine";
 import {YearMatcher} from "engine_state";
+import {SimulationResult} from "enigne_struct";
 
 const toolkit = QubecTalk.getToolkit();
 
@@ -1339,43 +1340,6 @@ class CompileVisitor extends toolkit.QubecTalkVisitor {
     } else {
       return target;
     }
-  }
-}
-
-/**
- * Class representing the results of a simulation run.
- */
-class SimulationResult {
-  /**
-   * Creates a new simulation result instance
-   * @param {string} name - The name of the simulation
-   * @param {Array} trialResults - Array containing the results of each trial
-   *     run.
-   */
-  constructor(name, trialResults) {
-    const self = this;
-    self._name = name;
-    self._trialResults = trialResults;
-  }
-
-  /**
-   * Gets the name of the simulation as defined in code.
-   *
-   * @returns {string} The simulation name.
-   */
-  getName() {
-    const self = this;
-    return self._name;
-  }
-
-  /**
-   * Gets the results from all trial runs.
-   *
-   * @returns {Array} Array of trial results.
-   */
-  getTrialResults() {
-    const self = this;
-    return self._trialResults;
   }
 }
 
