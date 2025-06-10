@@ -1,0 +1,626 @@
+/**
+ * Tests for simulation result structures and builders.
+ *
+ * @license BSD-3-Clause
+ */
+
+import {
+  EngineResult,
+  AttributeToExporterResult,
+  ImportSupplement,
+  EngineResultBuilder,
+  AggregatedResult,
+  SimulationResult,
+  SimulationAttributeToExporterResult,
+} from "engine_struct";
+
+import {EngineNumber} from "engine_number";
+
+function buildEngineStructTests() {
+  QUnit.module("EngineResult", function () {
+    const makeExample = () => {
+      const importSupplement = new ImportSupplement(
+        new EngineNumber(5, "kg"),
+        new EngineNumber(10, "tCO2e"),
+        new EngineNumber(2, "units"),
+      );
+
+      return new EngineResult(
+        "test app",
+        "test substance",
+        2023,
+        new EngineNumber(100, "kg"),
+        new EngineNumber(50, "kg"),
+        new EngineNumber(25, "kg"),
+        new EngineNumber(200, "tCO2e"),
+        new EngineNumber(100, "tCO2e"),
+        new EngineNumber(50, "tCO2e"),
+        new EngineNumber(1000, "units"),
+        new EngineNumber(100, "units"),
+        new EngineNumber(300, "tCO2e"),
+        new EngineNumber(150, "tCO2e"),
+        new EngineNumber(500, "kWh"),
+        importSupplement,
+      );
+    };
+
+    QUnit.test("initializes", function (assert) {
+      const result = makeExample();
+      assert.notDeepEqual(result, undefined);
+    });
+
+    QUnit.test("getApplication", function (assert) {
+      const result = makeExample();
+      assert.deepEqual(result.getApplication(), "test app");
+    });
+
+    QUnit.test("getSubstance", function (assert) {
+      const result = makeExample();
+      assert.deepEqual(result.getSubstance(), "test substance");
+    });
+
+    QUnit.test("getYear", function (assert) {
+      const result = makeExample();
+      assert.equal(result.getYear(), 2023);
+    });
+
+    QUnit.test("getManufacture", function (assert) {
+      const result = makeExample();
+      const manufacture = result.getManufacture();
+      assert.closeTo(manufacture.getValue(), 100, 0.0001);
+      assert.deepEqual(manufacture.getUnits(), "kg");
+    });
+
+    QUnit.test("getImport", function (assert) {
+      const result = makeExample();
+      const importValue = result.getImport();
+      assert.closeTo(importValue.getValue(), 50, 0.0001);
+      assert.deepEqual(importValue.getUnits(), "kg");
+    });
+
+    QUnit.test("getRecycle", function (assert) {
+      const result = makeExample();
+      const recycle = result.getRecycle();
+      assert.closeTo(recycle.getValue(), 25, 0.0001);
+      assert.deepEqual(recycle.getUnits(), "kg");
+    });
+
+    QUnit.test("getConsumptionNoRecycle", function (assert) {
+      const result = makeExample();
+      const consumption = result.getConsumptionNoRecycle();
+      assert.closeTo(consumption.getValue(), 300, 0.0001); // 200 + 100
+      assert.deepEqual(consumption.getUnits(), "tCO2e");
+    });
+
+    QUnit.test("getGhgConsumption", function (assert) {
+      const result = makeExample();
+      const consumption = result.getGhgConsumption();
+      assert.closeTo(consumption.getValue(), 350, 0.0001); // 200 + 100 + 50
+      assert.deepEqual(consumption.getUnits(), "tCO2e");
+    });
+
+    QUnit.test("getDomesticConsumption", function (assert) {
+      const result = makeExample();
+      const consumption = result.getDomesticConsumption();
+      assert.closeTo(consumption.getValue(), 200, 0.0001);
+      assert.deepEqual(consumption.getUnits(), "tCO2e");
+    });
+
+    QUnit.test("getImportConsumption", function (assert) {
+      const result = makeExample();
+      const consumption = result.getImportConsumption();
+      assert.closeTo(consumption.getValue(), 100, 0.0001);
+      assert.deepEqual(consumption.getUnits(), "tCO2e");
+    });
+
+    QUnit.test("getRecycleConsumption", function (assert) {
+      const result = makeExample();
+      const consumption = result.getRecycleConsumption();
+      assert.closeTo(consumption.getValue(), 50, 0.0001);
+      assert.deepEqual(consumption.getUnits(), "tCO2e");
+    });
+
+    QUnit.test("getPopulation", function (assert) {
+      const result = makeExample();
+      const population = result.getPopulation();
+      assert.closeTo(population.getValue(), 1000, 0.0001);
+      assert.deepEqual(population.getUnits(), "units");
+    });
+
+    QUnit.test("getPopulationNew", function (assert) {
+      const result = makeExample();
+      const populationNew = result.getPopulationNew();
+      assert.closeTo(populationNew.getValue(), 100, 0.0001);
+      assert.deepEqual(populationNew.getUnits(), "units");
+    });
+
+    QUnit.test("getRechargeEmissions", function (assert) {
+      const result = makeExample();
+      const emissions = result.getRechargeEmissions();
+      assert.closeTo(emissions.getValue(), 300, 0.0001);
+      assert.deepEqual(emissions.getUnits(), "tCO2e");
+    });
+
+    QUnit.test("getEolEmissions", function (assert) {
+      const result = makeExample();
+      const emissions = result.getEolEmissions();
+      assert.closeTo(emissions.getValue(), 150, 0.0001);
+      assert.deepEqual(emissions.getUnits(), "tCO2e");
+    });
+
+    QUnit.test("getEnergyConsumption", function (assert) {
+      const result = makeExample();
+      const energy = result.getEnergyConsumption();
+      assert.closeTo(energy.getValue(), 500, 0.0001);
+      assert.deepEqual(energy.getUnits(), "kWh");
+    });
+
+    QUnit.test("getImportSupplement", function (assert) {
+      const result = makeExample();
+      const supplement = result.getImportSupplement();
+      assert.notDeepEqual(supplement, undefined);
+      assert.deepEqual(supplement.constructor.name, "ImportSupplement");
+    });
+  });
+
+  QUnit.module("AttributeToExporterResult", function () {
+    const makeInnerResult = () => {
+      const importSupplement = new ImportSupplement(
+        new EngineNumber(5, "kg"),
+        new EngineNumber(10, "tCO2e"),
+        new EngineNumber(2, "units"),
+      );
+
+      return new EngineResult(
+        "test app",
+        "test substance",
+        2023,
+        new EngineNumber(100, "kg"),
+        new EngineNumber(50, "kg"),
+        new EngineNumber(25, "kg"),
+        new EngineNumber(200, "tCO2e"),
+        new EngineNumber(100, "tCO2e"),
+        new EngineNumber(50, "tCO2e"),
+        new EngineNumber(1000, "units"),
+        new EngineNumber(100, "units"),
+        new EngineNumber(300, "tCO2e"),
+        new EngineNumber(150, "tCO2e"),
+        new EngineNumber(500, "kWh"),
+        importSupplement,
+      );
+    };
+
+    const makeExample = () => {
+      return new AttributeToExporterResult(makeInnerResult());
+    };
+
+    QUnit.test("initializes", function (assert) {
+      const result = makeExample();
+      assert.notDeepEqual(result, undefined);
+    });
+
+    QUnit.test("getApplication", function (assert) {
+      const result = makeExample();
+      assert.deepEqual(result.getApplication(), "test app");
+    });
+
+    QUnit.test("getSubstance", function (assert) {
+      const result = makeExample();
+      assert.deepEqual(result.getSubstance(), "test substance");
+    });
+
+    QUnit.test("getYear", function (assert) {
+      const result = makeExample();
+      assert.equal(result.getYear(), 2023);
+    });
+
+    QUnit.test("getManufacture", function (assert) {
+      const result = makeExample();
+      const manufacture = result.getManufacture();
+      assert.closeTo(manufacture.getValue(), 100, 0.0001);
+      assert.deepEqual(manufacture.getUnits(), "kg");
+    });
+
+    QUnit.test("getImport", function (assert) {
+      const result = makeExample();
+      const importValue = result.getImport();
+      // Should be 50 - 5 = 45 due to exporter attribution
+      assert.closeTo(importValue.getValue(), 45, 0.0001);
+      assert.deepEqual(importValue.getUnits(), "kg");
+    });
+
+    QUnit.test("getImportConsumption", function (assert) {
+      const result = makeExample();
+      const consumption = result.getImportConsumption();
+      // Should be 100 - 10 = 90 due to exporter attribution
+      assert.closeTo(consumption.getValue(), 90, 0.0001);
+      assert.deepEqual(consumption.getUnits(), "tCO2e");
+    });
+
+    QUnit.test("getRecycle", function (assert) {
+      const result = makeExample();
+      const recycle = result.getRecycle();
+      assert.closeTo(recycle.getValue(), 25, 0.0001);
+      assert.deepEqual(recycle.getUnits(), "kg");
+    });
+
+    QUnit.test("getDomesticConsumption", function (assert) {
+      const result = makeExample();
+      const consumption = result.getDomesticConsumption();
+      assert.closeTo(consumption.getValue(), 200, 0.0001);
+      assert.deepEqual(consumption.getUnits(), "tCO2e");
+    });
+  });
+
+  QUnit.module("ImportSupplement", function () {
+    const makeExample = () => {
+      return new ImportSupplement(
+        new EngineNumber(5, "kg"),
+        new EngineNumber(10, "tCO2e"),
+        new EngineNumber(2, "units"),
+      );
+    };
+
+    QUnit.test("initializes", function (assert) {
+      const supplement = makeExample();
+      assert.notDeepEqual(supplement, undefined);
+    });
+
+    QUnit.test("getInitialChargeValue", function (assert) {
+      const supplement = makeExample();
+      const value = supplement.getInitialChargeValue();
+      assert.closeTo(value.getValue(), 5, 0.0001);
+      assert.deepEqual(value.getUnits(), "kg");
+    });
+
+    QUnit.test("getInitialChargeConsumption", function (assert) {
+      const supplement = makeExample();
+      const consumption = supplement.getInitialChargeConsumption();
+      assert.closeTo(consumption.getValue(), 10, 0.0001);
+      assert.deepEqual(consumption.getUnits(), "tCO2e");
+    });
+
+    QUnit.test("getNewPopulation", function (assert) {
+      const supplement = makeExample();
+      const population = supplement.getNewPopulation();
+      assert.closeTo(population.getValue(), 2, 0.0001);
+      assert.deepEqual(population.getUnits(), "units");
+    });
+  });
+
+  QUnit.module("EngineResultBuilder", function () {
+    const makeExampleBuilder = () => {
+      const builder = new EngineResultBuilder();
+      const importSupplement = new ImportSupplement(
+        new EngineNumber(5, "kg"),
+        new EngineNumber(10, "tCO2e"),
+        new EngineNumber(2, "units"),
+      );
+
+      builder.setApplication("test app");
+      builder.setSubstance("test substance");
+      builder.setYear(2023);
+      builder.setManufactureValue(new EngineNumber(100, "kg"));
+      builder.setImportValue(new EngineNumber(50, "kg"));
+      builder.setRecycleValue(new EngineNumber(25, "kg"));
+      builder.setDomesticConsumptionValue(new EngineNumber(200, "tCO2e"));
+      builder.setImportConsumptionValue(new EngineNumber(100, "tCO2e"));
+      builder.setRecycleConsumptionValue(new EngineNumber(50, "tCO2e"));
+      builder.setPopulationValue(new EngineNumber(1000, "units"));
+      builder.setPopulationNew(new EngineNumber(100, "units"));
+      builder.setRechargeEmissions(new EngineNumber(300, "tCO2e"));
+      builder.setEolEmissions(new EngineNumber(150, "tCO2e"));
+      builder.setEnergyConsumption(new EngineNumber(500, "kWh"));
+      builder.setImportSupplement(importSupplement);
+
+      return builder;
+    };
+
+    QUnit.test("initializes", function (assert) {
+      const builder = new EngineResultBuilder();
+      assert.notDeepEqual(builder, undefined);
+    });
+
+    QUnit.test("builds complete result", function (assert) {
+      const builder = makeExampleBuilder();
+      const result = builder.build();
+      assert.notDeepEqual(result, undefined);
+      assert.deepEqual(result.getApplication(), "test app");
+      assert.deepEqual(result.getSubstance(), "test substance");
+      assert.equal(result.getYear(), 2023);
+    });
+
+    QUnit.test("fails on incomplete result", function (assert) {
+      const builder = new EngineResultBuilder();
+      builder.setApplication("test app");
+      // Missing required fields
+
+      assert.throws(function () {
+        builder.build();
+      }, "Should throw when required fields are missing");
+    });
+  });
+
+  QUnit.module("AggregatedResult", function () {
+    const makeExample = () => {
+      return new AggregatedResult(
+        new EngineNumber(100, "kg"), // manufacture
+        new EngineNumber(50, "kg"), // import
+        new EngineNumber(25, "kg"), // recycle
+        new EngineNumber(200, "tCO2e"), // domesticConsumption
+        new EngineNumber(100, "tCO2e"), // importConsumption
+        new EngineNumber(50, "tCO2e"), // recycleConsumption
+        new EngineNumber(1000, "units"), // population
+        new EngineNumber(100, "units"), // populationNew
+        new EngineNumber(300, "tCO2e"), // rechargeEmissions
+        new EngineNumber(150, "tCO2e"), // eolEmissions
+        new EngineNumber(500, "kWh"), // energyConsumption
+      );
+    };
+
+    QUnit.test("initializes", function (assert) {
+      const result = makeExample();
+      assert.notDeepEqual(result, undefined);
+    });
+
+    QUnit.test("getManufacture", function (assert) {
+      const result = makeExample();
+      const manufacture = result.getManufacture();
+      assert.closeTo(manufacture.getValue(), 100, 0.0001);
+      assert.deepEqual(manufacture.getUnits(), "kg");
+    });
+
+    QUnit.test("getImport", function (assert) {
+      const result = makeExample();
+      const importValue = result.getImport();
+      assert.closeTo(importValue.getValue(), 50, 0.0001);
+      assert.deepEqual(importValue.getUnits(), "kg");
+    });
+
+    QUnit.test("getRecycle", function (assert) {
+      const result = makeExample();
+      const recycle = result.getRecycle();
+      assert.closeTo(recycle.getValue(), 25, 0.0001);
+      assert.deepEqual(recycle.getUnits(), "kg");
+    });
+
+    QUnit.test("getSales", function (assert) {
+      const result = makeExample();
+      const sales = result.getSales();
+      assert.closeTo(sales.getValue(), 175, 0.0001); // 100 + 50 + 25
+      assert.deepEqual(sales.getUnits(), "kg");
+    });
+
+    QUnit.test("getDomesticConsumption", function (assert) {
+      const result = makeExample();
+      const consumption = result.getDomesticConsumption();
+      assert.closeTo(consumption.getValue(), 200, 0.0001);
+      assert.deepEqual(consumption.getUnits(), "tCO2e");
+    });
+
+    QUnit.test("getImportConsumption", function (assert) {
+      const result = makeExample();
+      const consumption = result.getImportConsumption();
+      assert.closeTo(consumption.getValue(), 100, 0.0001);
+      assert.deepEqual(consumption.getUnits(), "tCO2e");
+    });
+
+    QUnit.test("getRecycleConsumption", function (assert) {
+      const result = makeExample();
+      const consumption = result.getRecycleConsumption();
+      assert.closeTo(consumption.getValue(), 50, 0.0001);
+      assert.deepEqual(consumption.getUnits(), "tCO2e");
+    });
+
+    QUnit.test("getGhgConsumption", function (assert) {
+      const result = makeExample();
+      const consumption = result.getGhgConsumption();
+      assert.closeTo(consumption.getValue(), 350, 0.0001); // 200 + 100 + 50
+      assert.deepEqual(consumption.getUnits(), "tCO2e");
+    });
+
+    QUnit.test("getPopulation", function (assert) {
+      const result = makeExample();
+      const population = result.getPopulation();
+      assert.closeTo(population.getValue(), 1000, 0.0001);
+      assert.deepEqual(population.getUnits(), "units");
+    });
+
+    QUnit.test("getPopulationNew", function (assert) {
+      const result = makeExample();
+      const populationNew = result.getPopulationNew();
+      assert.closeTo(populationNew.getValue(), 100, 0.0001);
+      assert.deepEqual(populationNew.getUnits(), "units");
+    });
+
+    QUnit.test("getRechargeEmissions", function (assert) {
+      const result = makeExample();
+      const emissions = result.getRechargeEmissions();
+      assert.closeTo(emissions.getValue(), 300, 0.0001);
+      assert.deepEqual(emissions.getUnits(), "tCO2e");
+    });
+
+    QUnit.test("getEolEmissions", function (assert) {
+      const result = makeExample();
+      const emissions = result.getEolEmissions();
+      assert.closeTo(emissions.getValue(), 150, 0.0001);
+      assert.deepEqual(emissions.getUnits(), "tCO2e");
+    });
+
+    QUnit.test("getTotalEmissions", function (assert) {
+      const result = makeExample();
+      const emissions = result.getTotalEmissions();
+      assert.closeTo(emissions.getValue(), 450, 0.0001); // 300 + 150
+      assert.deepEqual(emissions.getUnits(), "tCO2e");
+    });
+
+    QUnit.test("getEnergyConsumption", function (assert) {
+      const result = makeExample();
+      const energy = result.getEnergyConsumption();
+      assert.closeTo(energy.getValue(), 500, 0.0001);
+      assert.deepEqual(energy.getUnits(), "kWh");
+    });
+
+    QUnit.test("combine", function (assert) {
+      const result1 = makeExample();
+      const result2 = new AggregatedResult(
+        new EngineNumber(50, "kg"), // manufacture
+        new EngineNumber(25, "kg"), // import
+        new EngineNumber(10, "kg"), // recycle
+        new EngineNumber(100, "tCO2e"), // domesticConsumption
+        new EngineNumber(50, "tCO2e"), // importConsumption
+        new EngineNumber(25, "tCO2e"), // recycleConsumption
+        new EngineNumber(500, "units"), // population
+        new EngineNumber(50, "units"), // populationNew
+        new EngineNumber(150, "tCO2e"), // rechargeEmissions
+        new EngineNumber(75, "tCO2e"), // eolEmissions
+        new EngineNumber(250, "kWh"), // energyConsumption
+      );
+
+      const combined = result1.combine(result2);
+      assert.closeTo(combined.getManufacture().getValue(), 150, 0.0001); // 100 + 50
+      assert.closeTo(combined.getImport().getValue(), 75, 0.0001); // 50 + 25
+      assert.closeTo(combined.getRecycle().getValue(), 35, 0.0001); // 25 + 10
+    });
+  });
+
+  QUnit.module("SimulationResult", function () {
+    const makeExample = () => {
+      const importSupplement = new ImportSupplement(
+        new EngineNumber(5, "kg"),
+        new EngineNumber(10, "tCO2e"),
+        new EngineNumber(2, "units"),
+      );
+
+      const result1 = new EngineResult(
+        "test app",
+        "test substance",
+        2023,
+        new EngineNumber(100, "kg"),
+        new EngineNumber(50, "kg"),
+        new EngineNumber(25, "kg"),
+        new EngineNumber(200, "tCO2e"),
+        new EngineNumber(100, "tCO2e"),
+        new EngineNumber(50, "tCO2e"),
+        new EngineNumber(1000, "units"),
+        new EngineNumber(100, "units"),
+        new EngineNumber(300, "tCO2e"),
+        new EngineNumber(150, "tCO2e"),
+        new EngineNumber(500, "kWh"),
+        importSupplement,
+      );
+
+      const result2 = new EngineResult(
+        "test app",
+        "test substance",
+        2024,
+        new EngineNumber(110, "kg"),
+        new EngineNumber(55, "kg"),
+        new EngineNumber(30, "kg"),
+        new EngineNumber(220, "tCO2e"),
+        new EngineNumber(110, "tCO2e"),
+        new EngineNumber(60, "tCO2e"),
+        new EngineNumber(1100, "units"),
+        new EngineNumber(110, "units"),
+        new EngineNumber(330, "tCO2e"),
+        new EngineNumber(165, "tCO2e"),
+        new EngineNumber(550, "kWh"),
+        importSupplement,
+      );
+
+      const trialResults = [
+        [
+          [result1], // year 1 results
+          [result2], // year 2 results
+        ],
+      ];
+
+      return new SimulationResult("Test Simulation", trialResults);
+    };
+
+    QUnit.test("initializes", function (assert) {
+      const result = makeExample();
+      assert.notDeepEqual(result, undefined);
+    });
+
+    QUnit.test("getName", function (assert) {
+      const result = makeExample();
+      assert.deepEqual(result.getName(), "Test Simulation");
+    });
+
+    QUnit.test("getTrialResults", function (assert) {
+      const result = makeExample();
+      const trials = result.getTrialResults();
+      assert.notDeepEqual(trials, undefined);
+      assert.equal(trials.length, 1); // 1 trial
+      assert.equal(trials[0].length, 2); // 2 years
+      assert.equal(trials[0][0].length, 1); // 1 result in first year
+      assert.equal(trials[0][1].length, 1); // 1 result in second year
+    });
+  });
+
+  QUnit.module("SimulationAttributeToExporterResult", function () {
+    const makeInnerSimulation = () => {
+      const importSupplement = new ImportSupplement(
+        new EngineNumber(5, "kg"),
+        new EngineNumber(10, "tCO2e"),
+        new EngineNumber(2, "units"),
+      );
+
+      const result1 = new EngineResult(
+        "test app",
+        "test substance",
+        2023,
+        new EngineNumber(100, "kg"),
+        new EngineNumber(50, "kg"),
+        new EngineNumber(25, "kg"),
+        new EngineNumber(200, "tCO2e"),
+        new EngineNumber(100, "tCO2e"),
+        new EngineNumber(50, "tCO2e"),
+        new EngineNumber(1000, "units"),
+        new EngineNumber(100, "units"),
+        new EngineNumber(300, "tCO2e"),
+        new EngineNumber(150, "tCO2e"),
+        new EngineNumber(500, "kWh"),
+        importSupplement,
+      );
+
+      const trialResults = [
+        [
+          [result1], // year 1 results
+        ],
+      ];
+
+      return new SimulationResult("Test Simulation", trialResults);
+    };
+
+    const makeExample = () => {
+      return new SimulationAttributeToExporterResult(makeInnerSimulation());
+    };
+
+    QUnit.test("initializes", function (assert) {
+      const result = makeExample();
+      assert.notDeepEqual(result, undefined);
+    });
+
+    QUnit.test("getName", function (assert) {
+      const result = makeExample();
+      assert.deepEqual(result.getName(), "Test Simulation");
+    });
+
+    QUnit.test("getTrialResults", function (assert) {
+      const result = makeExample();
+      const trials = result.getTrialResults();
+      assert.notDeepEqual(trials, undefined);
+      assert.equal(trials.length, 1); // 1 trial
+      assert.equal(trials[0].length, 1); // 1 year
+      assert.equal(trials[0][0].length, 1); // 1 result in first year
+
+      // The results should be AttributeToExporterResult instances
+      const firstResult = trials[0][0][0];
+      assert.deepEqual(firstResult.constructor.name, "AttributeToExporterResult");
+    });
+  });
+}
+
+export {buildEngineStructTests};
