@@ -4,7 +4,9 @@
  * @license BSD-3-Clause
  */
 
-import {EngineNumber, OverridingConverterStateGetter, UnitConverter} from "engine_number";
+import {EngineNumber} from "engine_number";
+import {UnitConverter} from "engine_unit";
+import {OverridingConverterStateGetter} from "engine_unit_state";
 import {EngineResultBuilder, ImportSupplement} from "engine_struct";
 
 /**

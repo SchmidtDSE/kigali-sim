@@ -4,12 +4,9 @@
  * @license BSD, see LICENSE.md.
  */
 
-import {
-  EngineNumber,
-  UnitConverter,
-  ConverterStateGetter,
-  OverridingConverterStateGetter,
-} from "engine_number";
+import {EngineNumber} from "engine_number";
+import {UnitConverter} from "engine_unit";
+import {ConverterStateGetter, OverridingConverterStateGetter} from "engine_unit_state";
 import {Scope, StreamKeeper} from "engine_state";
 import {EngineResultSerializer} from "engine_serializer";
 

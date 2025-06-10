@@ -1,4 +1,5 @@
-import {EngineNumber, UnitConverter} from "engine_number";
+import {EngineNumber} from "engine_number";
+import {UnitConverter} from "engine_unit";
 
 function buildEngineNumberTests() {
   QUnit.module("EngineNumber", function () {
