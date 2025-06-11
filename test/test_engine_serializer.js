@@ -94,7 +94,8 @@ export function buildEngineSerializerTests() {
     });
 
     QUnit.test("gets recharge emissions", function (assert) {
-      // Expected: 1000 mt converted to tCO2e (500,000) - 5000 tCO2e (recycle consumption) = 495,000 tCO2e
+      // Expected: 1000 mt converted to tCO2e (500,000) - 5000 tCO2e (recycle consumption)
+      // = 495,000 tCO2e
       assert.closeTo(result.getRechargeEmissions().getValue(), 495000, 0.00001);
       assert.strictEqual(result.getRechargeEmissions().getUnits(), "tCO2e");
     });
@@ -175,15 +176,27 @@ class MockEngine {
   }
   getGhgIntensity(application, substance) {
     // Only use "ghgIntensity" for mock
-    return this.options.has("ghgIntensity") ? this.options.get("ghgIntensity") : new EngineNumber(0, "tCO2e / kg");
+    if (this.options.has("ghgIntensity")) {
+      return this.options.get("ghgIntensity");
+    } else {
+      return new EngineNumber(0, "tCO2e / kg");
+    }
   }
   getEqualsGhgIntensity() {
     // Return the ghgIntensity for the current scope
-    return this.options.has("ghgIntensity") ? this.options.get("ghgIntensity") : new EngineNumber(0, "tCO2e / kg");
+    if (this.options.has("ghgIntensity")) {
+      return this.options.get("ghgIntensity");
+    } else {
+      return new EngineNumber(0, "tCO2e / kg");
+    }
   }
   getEqualsGhgIntensityFor(application, substance) {
     // Only use "equalsGhgIntensityFor" for mock
-    return this.options.has("equalsGhgIntensityFor") ? this.options.get("equalsGhgIntensityFor") : new EngineNumber(0, "tCO2e / kg");
+    if (this.options.has("equalsGhgIntensityFor")) {
+      return this.options.get("equalsGhgIntensityFor");
+    } else {
+      return new EngineNumber(0, "tCO2e / kg");
+    }
   }
   getRawInitialChargeFor(application, substance, stream) {
     // Only use "rawInitialChargeFor" for mock
