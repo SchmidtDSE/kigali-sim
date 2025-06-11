@@ -125,7 +125,7 @@ export function buildEngineSerializerTests() {
     options.set("import", importMt);
     options.set("rechargeEmissions", recharge);
     options.set("equalsGhgIntensityFor", valueToConsumption);
-    
+
     const rawInitialChargeFor = {
       "import": initialChargeImport,
     };
