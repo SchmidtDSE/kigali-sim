@@ -185,7 +185,7 @@ class ResultsPresenter {
     self._dimensionPresenter.showResults(self._results, self._filterSet);
     self._centerChartPresenter.showResults(self._results, self._filterSet);
     self._titlePreseter.showResults(self._results, self._filterSet);
-    self._exportPresenter.showResults(self._results);
+    self._exportPresenter.showResults(self._results, self._filterSet);
     self._optionsPresenter.showResults(self._results, self._filterSet);
   }
 }
@@ -208,10 +208,11 @@ class ExportPresenter {
    * Update export data with new results.
    *
    * @param {Object} results - Results data to export.
+   * @param {FilterSet} filterSet - Current filter settings.
    */
-  showResults(results) {
+  showResults(results, filterSet) {
     const self = this;
-    const rawData = results.getRawData();
+    const rawData = results.getRawData(filterSet);
     const nested = rawData.map((trial) => {
       const scenarioName = trial.getName();
       const results = trial.getTrialResults();
@@ -502,7 +503,7 @@ class DimensionCardPresenter {
     self._updateCard(
       "sim",
       simulationsCard,
-      results.getScenarios(),
+      results.getScenarios(self._filterSet),
       simulationsSelected,
       self._filterSet.getScenario(),
       (x) => self._filterSet.getWithScenario(x),
@@ -906,7 +907,7 @@ class SelectorTitlePresenter {
 
     const scenarioDropdown = self._selection.querySelector(".scenario-select");
     const scenarioSelected = self._filterSet.getScenario();
-    const scenarios = results.getScenarios();
+    const scenarios = results.getScenarios(self._filterSet);
     self._updateDynamicDropdown(scenarioDropdown, scenarios, scenarioSelected, "All Simulations");
 
     const baselineDropdown = self._selection.querySelector(".baseline-select");
