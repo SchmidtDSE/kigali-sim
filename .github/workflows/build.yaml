@@ -44,7 +44,7 @@ jobs:
       - name: Install browser
         run: sudo apt install -y chromium-browser
       - name: Run unit tests
-        run: grunt
+        run: npx grunt
   checkCacheBusters:
     environment: build
     runs-on: ubuntu-latest

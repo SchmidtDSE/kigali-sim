@@ -33,6 +33,7 @@
                 "test_engine_number": "./test_engine_number.js?v=EPOCH",
                 "test_engine_unit_converter": "./test_engine_unit_converter.js?v=EPOCH",
                 "test_engine_unit_state": "./test_engine_unit_state.js?v=EPOCH",
+                "test_engine_serializer": "./test_engine_serializer.js?v=EPOCH",
                 "test_engine_state": "./test_engine_state.js?v=EPOCH",
                 "test_engine_struct": "./test_engine_struct.js?v=EPOCH",
                 "test_engine": "./test_engine.js?v=EPOCH",
@@ -58,6 +59,7 @@
         import {buildReportDataTests} from "test_report_data";
         import {buildUiTranslatorTests} from "test_ui_translator";
         import {buildUiTranslatorReverseTests} from "test_ui_translator_reverse";
+        import {buildEngineSerializerTests} from "test_engine_serializer";
 
         buildCompilerTests();
         buildEngineNumberTests();
@@ -69,5 +71,6 @@
         buildReportDataTests();
         buildUiTranslatorTests();
         buildUiTranslatorReverseTests();
+        buildEngineSerializerTests();
     </script>
 </body>
