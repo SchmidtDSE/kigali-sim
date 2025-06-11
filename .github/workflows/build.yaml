@@ -71,11 +71,11 @@ jobs:
         run: cp -r ./guide ./deploy/guide
       - name: Update cache busters
         run: bash ./support/update_cache_busters.sh
-  deploy:
-    environment: deploy
+  deploy-prep:
+    environment: build
     if: github.ref == 'refs/heads/deploy'
     runs-on: ubuntu-latest
-    name: Deploy
+    name: Deploy Preparation
     needs: [lint, unitTests, checkCacheBusters]
     steps:
       - name: Checkout
@@ -99,6 +99,24 @@ jobs:
         run: cp -r ./guide ./deploy/guide
       - name: Update cache busters
         run: bash ./support/update_cache_busters.sh
+      - name: Upload deploy artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: deploy-files
+          path: ./deploy
+          retention-days: 1
+  deploy:
+    environment: deploy
+    if: github.ref == 'refs/heads/deploy'
+    runs-on: ubuntu-latest
+    name: Deploy
+    needs: [deploy-prep]
+    steps:
+      - name: Download deploy artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: deploy-files
+          path: ./deploy
       - name: Upload
         uses: Creepios/sftp-action@v1.0.3
         with:
