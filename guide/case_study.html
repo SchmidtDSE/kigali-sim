@@ -141,7 +141,7 @@ start default
       retire 3 % each year
       recharge 30% each year with 0.60 kg / unit
       equals 1430 tCO2e / kg
-      set import to (10000 * (200000 / 750000)) units / year during year 1
+      set import to (10000 * (200000 / 750000)) units / year during beginning
     end substance
   
   end application
@@ -178,6 +178,12 @@ start default
 end default</pre
           >
         </details>
+
+        <p class="aside">
+          <strong>Note:</strong> Don't forget that, when setting starting conditions, use
+          <code>during beginning</code> or <code>during year 1</code> so that the <code>set</code> command is not repeated across
+          all years.
+        </p>
 
         <h3>R-404A Applications</h3>
         <p>R-404A is used in commercial refrigeration applications:</p>
@@ -963,12 +969,6 @@ start simulations
 end simulations</pre
           >
         </details>
-
-        <p class="aside">
-          <strong>Note:</strong> Don't forget that, when setting starting conditions, use
-          <code>during beginning</code> so that the <code>set</code> command is not repeated across
-          all years.
-        </p>
       </section>
 
       <section id="complete-implementation">
