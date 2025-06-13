@@ -109,6 +109,9 @@ class CodeEditorPresenter {
 
     ace.config.set("basePath", "/third_party");
     ace.config.loadModule("ace/ext/searchbox");
+    
+    // Set QubecTalk syntax highlighting mode
+    self._editor.session.setMode("ace/mode/qubectalk");
   }
 
   /**
