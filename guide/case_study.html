@@ -122,11 +122,11 @@ start default
   define application "Domestic Refrigeration"
   
     uses substance "HFC-134a"
-      set priorEquipment to 1000000 units during beginning
+      set priorEquipment to 1000000 units during year beginning
       initial charge with 0.15 kg / unit for sales
       retire 2 % each year
       recharge 10% each year with 0.15 kg / unit
-      set manufacture to 30000 units / year during beginning
+      set manufacture to 30000 units / year during year beginning
       equals 1430 tCO2e / kg
     end substance
   
@@ -136,12 +136,12 @@ start default
   define application "Commercial Refrigeration"
   
     uses substance "HFC-134a"
-      set priorEquipment to 200000 units during beginning
+      set priorEquipment to 200000 units during year beginning
       initial charge with 0.60 kg / unit for sales
       retire 3 % each year
       recharge 30% each year with 0.60 kg / unit
       equals 1430 tCO2e / kg
-      set import to (10000 * (200000 / 750000)) units / year during beginning
+      set import to (10000 * (200000 / 750000)) units / year during year beginning
     end substance
   
   end application
@@ -150,12 +150,12 @@ start default
   define application "MAC"
   
     uses substance "HFC-134a"
-      set priorEquipment to 500000 units during beginning
+      set priorEquipment to 500000 units during year beginning
       initial charge with 1.00 kg / unit for sales
       retire 2 % each year
       recharge 20% each year with 1.00 kg / unit
       equals 1430 tCO2e / kg
-      set import to (10000 * (500000 / 750000)) units / year during beginning
+      set import to (10000 * (500000 / 750000)) units / year during year beginning
     end substance
   
   end application
@@ -165,12 +165,12 @@ start default
   define application "Chiller"
   
     uses substance "HFC-134a"
-      set priorEquipment to 50000 units during beginning
+      set priorEquipment to 50000 units during year beginning
       initial charge with 5.00 kg / unit for sales
       retire 2 % each year
       recharge 25% each year with 5.00 kg / unit
       equals 1430 tCO2e / kg
-      set import to (10000 * (50000 / 750000)) units / year during beginning
+      set import to (10000 * (50000 / 750000)) units / year during year beginning
     end substance
   
   end application
@@ -181,7 +181,7 @@ end default</pre
 
         <p class="aside">
           <strong>Note:</strong> Don't forget that, when setting starting conditions, use
-          <code>during beginning</code> or <code>during year 1</code> so that the <code>set</code> command is not repeated across
+          <code>during year beginning</code> so that the <code>set</code> command is not repeated across
           all years.
         </p>
 
@@ -229,11 +229,11 @@ end default</pre
   define application "Transport Refrigeration"
 
     uses substance "R-404A"
-      set priorEquipment to 90000 units during beginning
+      set priorEquipment to 90000 units during year beginning
       initial charge with 2.00 kg / unit for sales
       retire 2 % each year
       recharge 10% each year with 2.00 kg / unit
-      set import to 900 units / year during beginning
+      set import to 900 units / year during year beginning
       equals 3921.6 tCO2e / kg
     end substance
   
@@ -259,12 +259,12 @@ end default</pre
     # ... HFC-134a ...
   
     uses substance "R-404A"
-      set priorEquipment to 20000 units during beginning
+      set priorEquipment to 20000 units during year beginning
       initial charge with 10.00 kg / unit for sales
       retire 3 % each year
       recharge 30% each year with 10.00 kg / unit
       equals 3921.6 tCO2e / kg
-      set import to 200 units / year during beginning
+      set import to 200 units / year during year beginning
     end substance
   
   end application
@@ -340,11 +340,11 @@ end default</pre
   define application "Domestic AC"
 
     uses substance "HFC-32"
-      set priorEquipment to 20000 units during beginning
+      set priorEquipment to 20000 units during year beginning
       initial charge with 0.85 kg / unit for sales
       retire 1 % each year
       recharge 10% each year with 0.85 kg / unit
-      set import to (1000 * (20000 / 25000)) units / year during beginning
+      set import to (1000 * (20000 / 25000)) units / year during year beginning
       equals 675.0 tCO2e / kg
     end substance
 
@@ -353,11 +353,11 @@ end default</pre
   define application "Commercial AC"
 
     uses substance "HFC-32"
-      set priorEquipment to 5000 units during beginning
+      set priorEquipment to 5000 units during year beginning
       initial charge with 4.00 kg / unit for sales
       retire 1 % each year
       recharge 10% each year with 4.00 kg / unit
-      set import to (1000 * (5000 / 25000)) units / year during beginning
+      set import to (1000 * (5000 / 25000)) units / year during year beginning
       equals 675.0 tCO2e / kg
     end substance
 
@@ -409,12 +409,12 @@ end default</pre
     # ... HFC-32 ...
 
     uses substance "R-410A"
-      set priorEquipment to 400000 units during beginning
+      set priorEquipment to 400000 units during year beginning
       initial charge with 1.00 kg / unit for sales
       retire 1 % each year
       recharge 10% each year with 1.00 kg / unit
-      set import to 100 units / year during beginning
-      set manufacture to 40000 units / year during beginning
+      set import to 100 units / year during year beginning
+      set manufacture to 40000 units / year during year beginning
       equals 2087.5 tCO2e / kg
     end substance
 
@@ -425,11 +425,11 @@ end default</pre
     # ... HFC-32 ...
 
     uses substance "R-410A"
-      set priorEquipment to 30000 units during beginning
+      set priorEquipment to 30000 units during year beginning
       initial charge with 5.00 kg / unit for sales
       retire 1 % each year
       recharge 10% each year with 5.00 kg / unit
-      set import to 3000 units / year during beginning
+      set import to 3000 units / year during year beginning
       equals 2087.5 tCO2e / kg
     end substance
 
@@ -599,7 +599,7 @@ end default</pre
   define application "Domestic Refrigeration"
   
     uses substance "HFC-134a"
-      set priorEquipment to 1000000 * 120 % units during beginning
+      set priorEquipment to 1000000 * 120 % units during year beginning
       # ... other code ...
     end substance
   
@@ -609,7 +609,7 @@ end default</pre
   define application "Commercial Refrigeration"
   
     uses substance "HFC-134a"
-      set priorEquipment to 200000 * 120 % units during beginning
+      set priorEquipment to 200000 * 120 % units during year beginning
       # ... other code ...
     end substance
   
@@ -619,7 +619,7 @@ end default</pre
   define application "Mobile AC"
   
     uses substance "HFC-134a"
-      set priorEquipment to 500000 * 120 % units during beginning
+      set priorEquipment to 500000 * 120 % units during year beginning
       # ... other code ...
     end substance
   
@@ -629,7 +629,7 @@ end default</pre
   define application "Chillers"
   
     uses substance "HFC-134a"
-      set priorEquipment to 50000 * 120 % units during beginning
+      set priorEquipment to 50000 * 120 % units during year beginning
       # ... other code ...
     end substance
   
@@ -639,11 +639,11 @@ end default</pre
   define application "Domestic AC"
 
     uses substance "HFC-32"
-      set priorEquipment to 20000 * 120 % units during beginning
+      set priorEquipment to 20000 * 120 % units during year beginning
       initial charge with 0.85 kg / unit for sales
       retire 1 % each year
       recharge 10% each year with 0.85 kg / unit
-      set import to (1000 * (20000 / 25000)) units / year during beginning
+      set import to (1000 * (20000 / 25000)) units / year during year beginning
       equals 675.0 tCO2e / kg
     end substance
 
@@ -652,11 +652,11 @@ end default</pre
   define application "Commercial AC"
 
     uses substance "HFC-32"
-      set priorEquipment to 5000 * 120 % units during beginning
+      set priorEquipment to 5000 * 120 % units during year beginning
       initial charge with 4.00 kg / unit for sales
       retire 1 % each year
       recharge 10% each year with 4.00 kg / unit
-      set import to (1000 * (5000 / 25000)) units / year during beginning
+      set import to (1000 * (5000 / 25000)) units / year during year beginning
       equals 675.0 tCO2e / kg
     end substance
 
@@ -989,11 +989,11 @@ start default
   define application "Domestic Refrigeration"
 
     uses substance "HFC-134a"
-      set priorEquipment to 1200000 units during year 2025
+      set priorEquipment to 1200000 units during year beginning
       initial charge with 0.15 kg / unit for sales
       retire 2 % each year
       recharge 10 % each year with 0.15 kg / unit
-      set manufacture to 30000 units / year during year 2025
+      set manufacture to 30000 units / year during year beginning
       change equipment by +5 % each year during years 2026 to 2033
       change equipment by +3 % each year during years 2034 to 2035
       equals 1430 tCO2e / kg
@@ -1011,22 +1011,22 @@ start default
   define application "Commercial Refrigeration"
 
     uses substance "HFC-134a"
-      set priorEquipment to 240000 units during year 2025
+      set priorEquipment to 240000 units during year beginning
       initial charge with 0.60 kg / unit for sales
       retire 3 % each year
       recharge 30 % each year with 0.60 kg / unit
-      set import to 2667 units / year during year 2025
+      set import to 2667 units / year during year beginning
       change equipment by +8 % each year during years 2026 to 2033
       change equipment by +5 % each year during years 2034 to 2035
       equals 1430 tCO2e / kg
     end substance
 
     uses substance "R-404A"
-      set priorEquipment to 20000 units during year 2025
+      set priorEquipment to 20000 units during year beginning
       initial charge with 10.00 kg / unit for sales
       retire 3 % each year
       recharge 30 % each year with 10.00 kg / unit
-      set import to 200 units / year during year 2025
+      set import to 200 units / year during year beginning
       change equipment by +8 % each year during years 2026 to 2033
       change equipment by +5 % each year during years 2034 to 2035
       equals 3921.6 tCO2e / kg
@@ -1037,11 +1037,11 @@ start default
   define application "MAC"
 
     uses substance "HFC-134a"
-      set priorEquipment to 600000 units during year 2025
+      set priorEquipment to 600000 units during year beginning
       initial charge with 1.00 kg / unit for sales
       retire 2 % each year
       recharge 20 % each year with 1.00 kg / unit
-      set import to 6667 units / year during year 2025
+      set import to 6667 units / year during year beginning
       equals 1430 tCO2e / kg
     end substance
 
@@ -1057,11 +1057,11 @@ start default
   define application "Chiller"
 
     uses substance "HFC-134a"
-      set priorEquipment to 60000 units during year 2025
+      set priorEquipment to 60000 units during year beginning
       initial charge with 5.00 kg / unit for sales
       retire 2 % each year
       recharge 25 % each year with 5.00 kg / unit
-      set import to 667 units / year during year 2025
+      set import to 667 units / year during year beginning
       equals 1430 tCO2e / kg
     end substance
 
@@ -1077,11 +1077,11 @@ start default
   define application "Transport Refrigeration"
 
     uses substance "R-404A"
-      set priorEquipment to 90000 units during year 2025
+      set priorEquipment to 90000 units during year beginning
       initial charge with 2.00 kg / unit for sales
       retire 2 % each year
       recharge 10 % each year with 2.00 kg / unit
-      set import to 900 units / year during year 2025
+      set import to 900 units / year during year beginning
       equals 3921.6 tCO2e / kg
     end substance
 
@@ -1090,22 +1090,22 @@ start default
   define application "Domestic AC"
 
     uses substance "HFC-32"
-      set priorEquipment to 24000 units during year 2025
+      set priorEquipment to 24000 units during year beginning
       initial charge with 0.90 kg / unit for sales
       retire 1 % each year
       recharge 10 % each year with 0.85 kg / unit
-      set import to 800 units / year during year 2025
+      set import to 800 units / year during year beginning
       change equipment by +7 % each year during years 2026 to 2035
       equals 675 tCO2e / kg
     end substance
 
     uses substance "R-410A"
-      set priorEquipment to 400000 units during year 2025
+      set priorEquipment to 400000 units during year beginning
       initial charge with 1.00 kg / unit for sales
       retire 1 % each year
       recharge 10 % each year with 1.00 kg / unit
-      set import to 100 units / year during year 2025
-      set manufacture to 40000 units / year during year 2025
+      set import to 100 units / year during year beginning
+      set manufacture to 40000 units / year during year beginning
       equals 2087.5 tCO2e / kg
     end substance
 
@@ -1114,21 +1114,21 @@ start default
   define application "Commercial AC"
 
     uses substance "HFC-32"
-      set priorEquipment to 6000 units during year 2025
+      set priorEquipment to 6000 units during year beginning
       initial charge with 4.50 kg / unit for sales
       retire 1 % each year
       recharge 10 % each year with 4.00 kg / unit
-      set import to 200 units / year during year 2025
+      set import to 200 units / year during year beginning
       change equipment by +7 % each year during years 2026 to 2035
       equals 675 tCO2e / kg
     end substance
 
     uses substance "R-410A"
-      set priorEquipment to 30000 units during year 2025
+      set priorEquipment to 30000 units during year beginning
       initial charge with 5.00 kg / unit for sales
       retire 1 % each year
       recharge 10 % each year with 5.00 kg / unit
-      set import to 3000 units / year during year 2025
+      set import to 3000 units / year during year beginning
       change equipment by +8 % each year during years 2026 to 2033
       change equipment by +5 % each year during years 2034 to 2035
       equals 2087.5 tCO2e / kg
