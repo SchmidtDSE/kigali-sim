@@ -7,7 +7,7 @@ To demonstrate the capabilities of Kigali Sim, we will explore ABC. This hypothe
 Before exploring different potential futures, we start by detailing the current state of ABC by substance. These are based on averages of historic information.
 
 ### HFC-134a
-HFC-134a is used across multiple applications with the following equipment populations and average consumption characteristics:
+HFC-134a is used across multiple applications with the following equipment populations and average consumption characteristics (MAC stands for mobile air conditioner):
 
 |                                    | **Prior Equipment Population (Units)** | **Initial Charge (kg/unit)** | **Units Annually Serviced** | **Annual Retirement** | **Annual Recharge (kg/unit)** |
 | ---------------------------------- | -------------------------------------- | ---------------------------- | --------------------------- | --------------------- | ----------------------------- |

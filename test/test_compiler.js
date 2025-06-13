@@ -461,6 +461,12 @@ function buildCompilerTests() {
         // Test that the case study simulation completes successfully
         assert.ok(result.length > 0, "Case study should produce simulation results");
       },
+      (result, assert) => {
+        // Test that at least one stream for one substance/application pair is non-zero in 2030
+        const record = getResult(result, "Business as Usual", 2030, 0, "Domestic Refrigeration", "HFC-134a");
+        const consumption = record.getGhgConsumption();
+        assert.ok(consumption.getValue() > 0, "Should have non-zero consumption for Domestic Refrigeration HFC-134a in 2030");
+      },
     ]);
   });
 }
