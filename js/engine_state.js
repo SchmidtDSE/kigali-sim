@@ -33,7 +33,11 @@ class YearMatcher {
   constructor(start, end) {
     const self = this;
 
-    if (start === null || end === null) {
+    const hasNull = start === null || end === null;
+    const startHasSpecial = start === "beginning" || start === "onwards";
+    const endHasSpecial = end === "beginning" || end === "onwards";
+
+    if (hasNull || startHasSpecial || endHasSpecial) {
       self._start = start;
       self._end = end;
     } else {

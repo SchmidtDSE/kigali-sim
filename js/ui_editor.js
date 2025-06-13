@@ -865,20 +865,24 @@ class ConsumptionListPresenter {
       (x) => (x.getEqualsKwh() ? x.getEqualsKwh().getValue() : null),
     );
 
+    const getValueOrDefault = (target, fallback) => target === null ? fallback : target.getValue();
+
+    const manufactureFallback = new EngineNumber(1, "kg / unit");
     setEngineNumberValue(
       self._dialog.querySelector(".edit-consumption-initial-charge-domestic-input"),
       self._dialog.querySelector(".initial-charge-domestic-units-input"),
       objToShow,
-      new EngineNumber(1, "kg / unit"),
-      (x) => x.getInitialCharge("manufacture").getValue(),
+      manufactureFallback,
+      (x) => getValueOrDefault(x.getInitialCharge("manufacture"), manufactureFallback),
     );
 
+    const importFallback = new EngineNumber(2, "kg / unit");
     setEngineNumberValue(
       self._dialog.querySelector(".edit-consumption-initial-charge-import-input"),
       self._dialog.querySelector(".initial-charge-import-units-input"),
       objToShow,
-      new EngineNumber(2, "kg / unit"),
-      (x) => x.getInitialCharge("import").getValue(),
+      importFallback,
+      (x) => getValueOrDefault(x.getInitialCharge("import"), importFallback),
     );
 
     setEngineNumberValue(
