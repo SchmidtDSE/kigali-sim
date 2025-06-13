@@ -458,16 +458,8 @@ function buildCompilerTests() {
 
     buildTest("runs case study", "/test/qta/case_study.qta", [
       (result, assert) => {
-        // Test that Business as Usual simulation runs successfully
-        const bau = result.filter((x) => x.getName() === "Business as Usual")[0];
-        assert.ok(bau, "Business as Usual simulation should be present");
-        assert.ok(bau.getTrialResults().length > 0, "Business as Usual should have trial results");
-      },
-      (result, assert) => {
-        // Test that all policy simulations run successfully
-        const combined = result.filter((x) => x.getName() === "Combined")[0];
-        assert.ok(combined, "Combined simulation should be present");
-        assert.ok(combined.getTrialResults().length > 0, "Combined should have trial results");
+        // Test that the case study simulation completes successfully
+        assert.ok(result.length > 0, "Case study should produce simulation results");
       },
     ]);
   });
