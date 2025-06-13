@@ -405,7 +405,7 @@ class ReportDataWrapper {
    */
   getScenarios(filterSet) {
     const self = this;
-    if (filterSet === undefined || filterSet.getScenario() === null) {
+    if (filterSet.getScenario() === null) {
       return new Set(self.getRawData(filterSet).map((x) => x.getName()));
     } else {
       return new Set([filterSet.getScenario()]);
@@ -413,14 +413,16 @@ class ReportDataWrapper {
   }
 
   /**
-   * Get the name of the first scenario available  without applying any filter.
+   * Get the name of the first scenario available without applying any filter.
    *
+   * @param {FilterSet} filterSet - The filter set indicating preprocessing
+   *    options even though a filter is not applied.
    * @returns {string|null} The first scenario name or null if no scenarios
-   *     present.
+   *    present.
    */
-  getFirstScenario() {
+  getFirstScenario(filterSet) {
     const self = this;
-    const scenarios = self.getScenarios(undefined);
+    const scenarios = self.getScenarios(filterSet);
     for (const scenario of scenarios) {
       return scenario;
     }
