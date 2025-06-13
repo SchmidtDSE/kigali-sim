@@ -3,7 +3,6 @@
 KigaliSim is an open source web-based simulation engine for modeling substances, applications, and policies related to the Montreal Protocol and Kigali Amendment. It can model high global warming potential greenhouse gases such as HFCs and supports business-as-usual scenarios as well as policy interventions.
 
 ## Project Purpose
-
 This tool provides simulation capabilities for:
 - **Substance modeling**: HFCs, HCFCs, and alternative refrigerants with their Global Warming Potential (GWP) values
 - **Application modeling**: Equipment types like domestic refrigeration, commercial refrigeration, residential AC, mobile AC
@@ -14,13 +13,11 @@ This tool provides simulation capabilities for:
 KigaliSim supports both business-as-usual projections and policy intervention scenarios, making it useful for Kigali Amendment Implementation Plans (KIPs) and Montreal Protocol policy analysis.
 
 ## QubecTalk Domain Specific Language
-
 KigaliSim uses QubecTalk, a HyperTalk-inspired domain-specific language for defining simulations. QubecTalk programs are human-readable and use natural language constructs.
 
-**Note**: In this documentation, the pipe symbol (|) is used to indicate different command options or alternatives, not as part of the actual QubecTalk syntax. For example, `set manufacture|import to X kg during year Y` means both `set manufacture to X kg during year Y` and `set import to X kg during year Y` are valid.
+**Note**: In this documentation, the pipe symbol (|) is used to indicate different command options or alternatives, not as part of the actual QubecTalk syntax. For example, `set manufacture|import to X kg during year Y` means both `set manufacture to X kg during year Y` and `set import to X kg during year Y` are valid. Similarly, chevrons (<) mean a value may be provided while curly brances ({) mean a value must be provided but are only provided for documentation purposes and are not part of QubecTalk syntax.
 
 ### Program Structure
-
 QubecTalk programs are organized into stanzas:
 
 ```
@@ -43,6 +40,8 @@ start simulations
 end simulations
 ```
 
+The about stanza is optional.
+
 ### Core Language Features
 
 #### Applications and Substances
@@ -52,35 +51,68 @@ end simulations
 - `equals X kwh / unit` - Sets energy consumption per unit
 
 #### Manufacturing and Trade
-- `initial charge with X kg / unit for manufacture` - Sets substance per unit
-- `set manufacture|import|export|sales to X kg during year Y` - Sets flow volumes
-- `set equipment to X units during year Y` - Sets equipment population
-- `change manufacture|import by +X % each year during years Y to Z` - Growth rates
+- `initial charge with {amount} <for {stream}>` - Sets substance per unit where amount is typically X kg / unit
+- `set {stream} to {amount} <during>` - Sets flow volumes
+- `change {stream} by {amount} <during>` - Growth or decay rates where amount is often +X %
 
 #### Equipment Lifecycle
-- `retire X % each year` - Equipment retirement rate
-- `recharge X % each year with Y kg / unit` - Service recharging
-- `set priorEquipment to X units during year Y` - Pre-existing equipment
+- `retire {amount} <during>` - Equipment retirement rate
+- `recharge {stream} with {amount} <during>` - Service recharging.
+- `set priorEquipment to {amount} <during>` - Pre-existing equipment.
 
 #### Policy Interventions
-- `cap|floor manufacture|import to X%` - Manufacturing/import restrictions and minimums
-- `replace level % of manufacture|import with "substance" during years X to Y` - Substance transitions
-- `recover X % with Y % reuse [displacing Z %]` - Recycling with optional displacement
+- `cap|floor stream to {amount} <displacing> <during>` - Manufacturing/import restrictions and minimums
+- `replace {amount} of {stream} with "substance" <during>` - Substance transitions
+- `replace {amount} of {stream} with "{stream}" <during>` - Stream transitions
+- `recover {amount} with {amount} reuse <displacing> <during>` - Recycling with optional displacement
 
 #### Units System
 Supports automatic unit conversion: kg, mt (metric tons), tCO2e (tons CO2 equivalent), kwh (kilowatt hours), units (equipment), years/months/days (time), % (percentages)
 
 #### Advanced Features
 - **Variables**: `define identifier as expression` and `get identifier`
-- **Stream access**: `get manufacture|import|export|sales|equipment|priorEquipment`
-- **Unit conversions**: `get manufacture as kg/unit`, `get import of "substance" as mt`
-- **Conditionals**: `if condition then ... else ... endif`
-- **Constraints**: `limit expression to [min,max]`, `limit expression to [,max]`, `limit expression to [min,]`
+- **Stream access**: `get {stream}`
+- **Unit conversions**: `get {stream} as {units}` like `get import of "substance" as mt`
+- **Constraints**: `limit expression to [min,max]`, `limit expression to [,max]` (min of negative infinity), `limit expression to [min,]` (max of infinity)
 - **Uncertainties**: `sample normally from mean of X std of Y`, `sample uniformly from X to Y`
-- **Temporal**: `during years X to Y`, `during year X`, `during years X to onwards`, `each year`
 - **Math expressions**: Basic arithmetic with `+`, `-`, `*`, `/`, `^`, parentheses
 
-### Example QubecTalk Program
+### Time
+Simulations may be run with years as the time unit where each time unit is a single step. Use of months or days is reserved for future use.
+
+To specify when a command should run, during may be appended like `cap equipment to 0 units during year|years 1 to 5` or `cap equipment to 0 units during year|years 2028 to 2033`. This may also be an individual time like `during year 2028`.
+
+Keywords `beginning` and `onwards` are available. For a simulation running from years 2025 to 2030, the following is valid: `during year|years 2025|beginning to 2030|onwards`.
+
+No duration means runs each year though `each year` may also be optionally written to apply to all years.
+
+To have a command only run in the first year, use `during year beginning` which, for a simulation running 2025 to 2030, is the same as `during year 2030`.
+
+### Streams
+Streams may be `manufacture|import|export|sales|equipment|priorEquipment`
+
+ - `manufacture` is domestic manufacturing (as opposed to `import` or `export`)
+ - `sales` is both `manufacture` and `import`
+ - `equipment` is both equipment which entered into service prior steps (`priorEquipment`) and new equipment in the current step
+
+### Formatting
+Curly brances are not supported, start and end keywords must be used. It is recommended but not required to use two spaces per tab.
+
+### Probabilistic simulation
+Multiple Monte Carlo trials can be speified liked `simulate "test" using "policy" from years 1 to 10 across 100 trials`
+
+### Conditional logic
+Ternary operations are available like `set manufacture to 100 if testVar > 10 else 50 endif mt`
+
+### Displacement
+Changes in one substance can be offset by changes in another. For example:
+
+ - `cap sales to 1400 mt displacing "R-404A" during years 1 to 5` offsets with another substance
+ - `cap import to 1400 mt displacing "manufacture" during years 1 to 5` offsets with another stream
+
+This is available for `cap`, `floor`, and `recover`.
+
+## Example QubecTalk Program
 
 ```
 start about
