@@ -159,12 +159,12 @@ section {
 
 table {
   border-collapse: collapse;
-  border: 1px solid #E0E0E0;
+  border: 1px solid #C0C0C0;
 }
 
 table th,
 table td {
-  border: 1px solid #E0E0E0;
+  border: 1px solid #C0C0C0;
   text-align: left;
-  padding: 8px;
+  padding: 5px;
 }
