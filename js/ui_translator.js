@@ -2138,6 +2138,22 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
   }
 
   /**
+   * Visit a logical expression node and format it.
+   *
+   * @param {Object} ctx - The parse tree node context.
+   * @returns {string} The formatted logical expression.
+   */
+  visitLogicalExpression(ctx) {
+    const self = this;
+
+    const leftExpression = ctx.left.accept(self);
+    const opFunc = ctx.op.text;
+    const rightExpression = ctx.right.accept(self);
+
+    return leftExpression + " " + opFunc + " " + rightExpression;
+  }
+
+  /**
    * Visit a conditional expression node and format it.
    *
    * @param {Object} ctx - The parse tree node context.
