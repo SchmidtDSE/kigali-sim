@@ -25,3 +25,6 @@ fi
 [ ! -e third_party/chart.min.js ] && wget https://cdn.jsdelivr.net/npm/chart.js -O third_party/chart.min.js
 [ ! -e third_party/tabby-ui.min.css ] && wget https://cdn.jsdelivr.net/gh/cferdinandi/tabby@12.0.3/dist/css/tabby-ui.min.css -O third_party/tabby-ui.min.css
 [ ! -e third_party/tabby.min.js ] && wget https://cdn.jsdelivr.net/gh/cferdinandi/tabby@12.0.3/dist/js/tabby.min.js -O third_party/tabby.min.js
+[ ! -e third_party/prism-tomorrow.min.css ] && wget https://cdnjs.cloudflare.com/ajax/libs/prism/1.30.0/themes/prism-tomorrow.min.css -O third_party/prism-tomorrow.min.css
+[ ! -e third_party/prism-core.min.js ] && wget https://cdnjs.cloudflare.com/ajax/libs/prism/1.30.0/components/prism-core.min.js -O third_party/prism-core.min.js
+[ ! -e third_party/prism-autoloader.min.js ] && wget https://cdnjs.cloudflare.com/ajax/libs/prism/1.30.0/plugins/autoloader/prism-autoloader.min.js -O third_party/prism-autoloader.min.js
