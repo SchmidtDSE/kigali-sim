@@ -163,7 +163,7 @@ class ResultsPresenter {
     const needsConstraints = isAllSimulations && !isSimulationDimension;
 
     if (needsConstraints && self._results !== null) {
-      const firstScenario = self._results.getFirstScenario();
+      const firstScenario = self._results.getFirstScenario(filterSet);
       return filterSet.getWithScenario(firstScenario);
     } else {
       return filterSet;
