@@ -156,3 +156,15 @@ section {
   border: 2px solid #505050;
   border-radius: 3px;
 }
+
+table {
+  border-collapse: collapse;
+  border: 1px solid #E0E0E0;
+}
+
+table th,
+table td {
+  border: 1px solid #E0E0E0;
+  text-align: left;
+  padding: 8px;
+}
