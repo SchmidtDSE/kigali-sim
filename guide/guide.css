@@ -83,6 +83,7 @@ pre {
   border: 1px solid #505050;
   border-radius: 5px;
   padding: 5px;
+  overflow-x: auto;
 }
 
 section {
@@ -155,4 +156,16 @@ section {
   width: 500px;
   border: 2px solid #505050;
   border-radius: 3px;
+}
+
+table {
+  border-collapse: collapse;
+  border: 1px solid #C0C0C0;
+}
+
+table th,
+table td {
+  border: 1px solid #C0C0C0;
+  text-align: left;
+  padding: 5px;
 }
