@@ -2,6 +2,7 @@
     <head>
         <title>Grow the Simulation</title>
         <link href="/guide/guide.css?v=EPOCH" rel="stylesheet" type="text/css" />
+        <link href="/third_party/prism-tomorrow.min.css" rel="stylesheet" type="text/css" />
     </head>
     <body>
         <div class="skip-link">
@@ -82,8 +83,7 @@
                     code may look like right before end default:
                 </p>
 
-                <pre>
-  define application "Dom Refrig"
+                <pre><code class="language-qubectalk">define application "Dom Refrig"
 
     uses substance "HFC-134a"
       initial charge with 0.25 kg / unit for manufacture
@@ -110,8 +110,7 @@
 
   end application    
 
-end default
-                </pre>
+end default</code></pre>
             </section>
 
             <section id="new-policies">
@@ -131,8 +130,7 @@ end default
                     look like (right before start simulations):
                 </p>
 
-                <pre>
-start policy "Dom Recycling"
+                <pre><code class="language-qubectalk">start policy "Dom Recycling"
 
   modify application "Dom Refrig"
 
@@ -158,8 +156,7 @@ start policy "Dom Replace"
 
 end policy
 
-start simulations
-                </pre>
+start simulations</code></pre>
             </section>
 
             <section id="new-simulations">
@@ -171,8 +168,7 @@ start simulations
                     Here's what that might look like:
                 </p>
 
-                <pre>
-start simulations
+                <pre><code class="language-qubectalk">start simulations
 
   simulate "Business as Usual"
   from years 1 to 20
@@ -203,8 +199,7 @@ start simulations
     then "Dom Replace"
   from years 1 to 20
 
-end simulations          
-                </pre>
+end simulations</code></pre>
 
                 <p>One last time, be sure to click run.</p>
             </section>
@@ -220,5 +215,35 @@ end simulations
                 </p>
             </section>
         </main>
+        <script src="/third_party/prism-core.min.js"></script>
+        <script src="/third_party/prism-autoloader.min.js"></script>
+        <script>
+          Prism.languages.qubectalk = {
+            'comment': {
+              pattern: /#.*/,
+              greedy: true
+            },
+            'string': {
+              pattern: /"[^"]*"/,
+              greedy: true
+            },
+            'number': {
+              pattern: /\b\d+(?:\.\d+)?\b/,
+              greedy: true
+            },
+            'keyword': {
+              pattern: /\b(?:start|end|default|policy|simulations|application|substance|define|uses|modify|simulate|about|variables|across|as|by|cap|change|charge|during|equals|floor|for|from|get|in|initial|of|recharge|recover|replace|retire|reuse|set|then|to|trials|using|with|displacing|and|or|xor|if|else|endif|normally|sample|std|uniformly|limit|annually|beginning|day|days|each|month|months|onwards|year|years|unit|units|kg|mt|tCO2e|kwh|priorEquipment|equipment|export|import|manufacture|sales|mean)\b/,
+              greedy: true
+            },
+            'operator': {
+              pattern: /[=<>!]=?|[+\-*\/^%]/,
+              greedy: true
+            },
+            'punctuation': {
+              pattern: /[{}[\];(),]/,
+              greedy: true
+            }
+          };
+        </script>
     </body>
 </html>

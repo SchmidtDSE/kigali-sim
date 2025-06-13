@@ -2,6 +2,7 @@
   <head>
     <title>ABC Case Study</title>
     <link href="/guide/guide.css?v=EPOCH" rel="stylesheet" type="text/css" />
+    <link href="/third_party/prism-tomorrow.min.css" rel="stylesheet" type="text/css" />
   </head>
   <body>
     <div class="skip-link">
@@ -116,8 +117,7 @@
 
         <details>
           <summary>Code for HFC-134a starting conditions</summary>
-          <pre>
-start default
+          <pre><code class="language-qubectalk">start default
 
   define application "Domestic Refrigeration"
   
@@ -175,8 +175,7 @@ start default
   
   end application
 
-end default</pre
-          >
+end default</code></pre>
         </details>
 
         <p class="aside">
@@ -225,8 +224,7 @@ end default</pre
 
         <details>
           <summary>Code for R-404A starting conditions</summary>
-          <pre>
-  define application "Transport Refrigeration"
+          <pre><code class="language-qubectalk">define application "Transport Refrigeration"
 
     uses substance "R-404A"
       set priorEquipment to 90000 units during year beginning
@@ -295,8 +293,7 @@ end default</pre
       equals 3921.6 tCO2e / kg
     end substance
   
-  end application</pre
-          >
+  end application</code></pre>
         </details>
 
         <h3>HFC-32</h3>
@@ -336,8 +333,7 @@ end default</pre
 
         <details>
           <summary>Code for HFC-32 starting conditions</summary>
-          <pre>
-  define application "Domestic AC"
+          <pre><code class="language-qubectalk">define application "Domestic AC"
 
     uses substance "HFC-32"
       set priorEquipment to 20000 units during year beginning
@@ -361,8 +357,7 @@ end default</pre
       equals 675.0 tCO2e / kg
     end substance
 
-  end application</pre
-          >
+  end application</code></pre>
         </details>
 
         <h3>R-410A</h3>
@@ -403,8 +398,7 @@ end default</pre
 
         <details>
           <summary>Code for R-410A starting conditions</summary>
-          <pre>
-  define application "Domestic AC"
+          <pre><code class="language-qubectalk">define application "Domestic AC"
 
     # ... HFC-32 ...
 
@@ -433,8 +427,7 @@ end default</pre
       equals 2087.5 tCO2e / kg
     end substance
 
-  end application</pre
-          >
+  end application</code></pre>
         </details>
       </section>
 
@@ -488,8 +481,7 @@ end default</pre
 
         <details>
           <summary>Code for general business as usual trends</summary>
-          <pre>
-  define application "Domestic Refrigeration"
+          <pre><code class="language-qubectalk">define application "Domestic Refrigeration"
 
     uses substance "HFC-134a"
       # ... existing code ...
@@ -533,8 +525,7 @@ end default</pre
       change equipment by +5 % each year from year 2034 to 2035
     end substance
 
-  end application</pre
-          >
+  end application</code></pre>
         </details>
 
         <p>
@@ -558,8 +549,7 @@ end default</pre
 
         <details>
           <summary>Code for HFC-32 substance-specific adjustments</summary>
-          <pre>
-  define application "Domestic AC"
+          <pre><code class="language-qubectalk">define application "Domestic AC"
 
     uses substance "HFC-32"
       initial charge with 0.90 kg / unit for sales
@@ -582,8 +572,7 @@ end default</pre
 
     # ... R-410A ...
 
-  end application</pre
-          >
+  end application</code></pre>
         </details>
 
         <p>
@@ -595,8 +584,7 @@ end default</pre
 
         <details>
           <summary>Code for 20% HFC consumption increase</summary>
-          <pre>
-  define application "Domestic Refrigeration"
+          <pre><code class="language-qubectalk">define application "Domestic Refrigeration"
   
     uses substance "HFC-134a"
       set priorEquipment to 1000000 * 120 % units during year beginning
@@ -660,8 +648,7 @@ end default</pre
       equals 675.0 tCO2e / kg
     end substance
 
-  end application</pre
-          >
+  end application</code></pre>
         </details>
 
         <h3>Fallback</h3>
@@ -696,8 +683,7 @@ end default</pre
 
         <details>
           <summary>Code for manufacturing prohibition policy</summary>
-          <pre>
-start policy "Manufacturing Prohibition"
+          <pre><code class="language-qubectalk">start policy "Manufacturing Prohibition"
 
   modify application "Domestic Refrigeration"
   
@@ -723,8 +709,7 @@ start policy "Manufacturing Prohibition"
 
   end application
 
-end policy</pre
-          >
+end policy</code></pre>
         </details>
 
         <h3>Equipment Import Ban</h3>
@@ -737,8 +722,7 @@ end policy</pre
 
         <details>
           <summary>Code for equipment import ban policy</summary>
-          <pre>
-start policy "Equipment Import Ban"
+          <pre><code class="language-qubectalk">start policy "Equipment Import Ban"
 
   modify application "Commercial Refrigeration"
   
@@ -780,8 +764,7 @@ start policy "Equipment Import Ban"
 
   end application
 
-end policy</pre
-          >
+end policy</code></pre>
         </details>
 
         <h3>Enhanced Recovery and Recycling</h3>
@@ -793,8 +776,7 @@ end policy</pre
 
         <details>
           <summary>Code for enhanced recovery and recycling policy</summary>
-          <pre>
-start policy "Recovery and Recycling"
+          <pre><code class="language-qubectalk">start policy "Recovery and Recycling"
 
   modify application "Domestic Refrigeration"
   
@@ -919,8 +901,7 @@ start policy "Recovery and Recycling"
 
   end application
 
-end policy</pre
-          >
+end policy</code></pre>
         </details>
       </section>
 
@@ -949,8 +930,7 @@ end policy</pre
 
         <details>
           <summary>Code for simulation scenarios</summary>
-          <pre>
-start simulations
+          <pre><code class="language-qubectalk">start simulations
 
   simulate "Business as Usual" from years 2025 to 2035
 
@@ -966,8 +946,7 @@ start simulations
     then "Recovery and Recycling" 
   from years 2025 to 2035
 
-end simulations</pre
-          >
+end simulations</code></pre>
         </details>
       </section>
 
@@ -983,8 +962,7 @@ end simulations</pre
 
         <details>
           <summary>Code for complete ABC case study implementation</summary>
-          <pre>
-start default
+          <pre><code class="language-qubectalk">start default
 
   define application "Domestic Refrigeration"
 
@@ -1320,8 +1298,7 @@ start simulations
     then "Recovery and Recycling" 
   from years 2025 to 2035
 
-end simulations</pre
-          >
+end simulations</code></pre>
         </details>
       </section>
 
@@ -1359,5 +1336,35 @@ end simulations</pre
         </p>
       </section>
     </main>
+    <script src="/third_party/prism-core.min.js"></script>
+    <script src="/third_party/prism-autoloader.min.js"></script>
+    <script>
+      Prism.languages.qubectalk = {
+        'comment': {
+          pattern: /#.*/,
+          greedy: true
+        },
+        'string': {
+          pattern: /"[^"]*"/,
+          greedy: true
+        },
+        'number': {
+          pattern: /\b\d+(?:\.\d+)?\b/,
+          greedy: true
+        },
+        'keyword': {
+          pattern: /\b(?:start|end|default|policy|simulations|application|substance|define|uses|modify|simulate|about|variables|across|as|by|cap|change|charge|during|equals|floor|for|from|get|in|initial|of|recharge|recover|replace|retire|reuse|set|then|to|trials|using|with|displacing|and|or|xor|if|else|endif|normally|sample|std|uniformly|limit|annually|beginning|day|days|each|month|months|onwards|year|years|unit|units|kg|mt|tCO2e|kwh|priorEquipment|equipment|export|import|manufacture|sales|mean)\b/,
+          greedy: true
+        },
+        'operator': {
+          pattern: /[=<>!]=?|[+\-*\/^%]/,
+          greedy: true
+        },
+        'punctuation': {
+          pattern: /[{}[\];(),]/,
+          greedy: true
+        }
+      };
+    </script>
   </body>
 </html>
