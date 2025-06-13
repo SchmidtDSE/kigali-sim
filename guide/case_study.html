@@ -160,7 +160,6 @@
   
   end application
 
-  
 
   define application "Chiller"
   
@@ -224,7 +223,7 @@ end default</code></pre>
 
         <details>
           <summary>Code for R-404A starting conditions</summary>
-          <pre><code class="language-qubectalk">define application "Transport Refrigeration"
+          <pre><code class="language-qubectalk">  define application "Transport Refrigeration"
 
     uses substance "R-404A"
       set priorEquipment to 90000 units during year beginning
@@ -333,7 +332,7 @@ end default</code></pre>
 
         <details>
           <summary>Code for HFC-32 starting conditions</summary>
-          <pre><code class="language-qubectalk">define application "Domestic AC"
+          <pre><code class="language-qubectalk">  define application "Domestic AC"
 
     uses substance "HFC-32"
       set priorEquipment to 20000 units during year beginning
@@ -345,6 +344,7 @@ end default</code></pre>
     end substance
 
   end application
+
 
   define application "Commercial AC"
 
@@ -398,7 +398,7 @@ end default</code></pre>
 
         <details>
           <summary>Code for R-410A starting conditions</summary>
-          <pre><code class="language-qubectalk">define application "Domestic AC"
+          <pre><code class="language-qubectalk">  define application "Domestic AC"
 
     # ... HFC-32 ...
 
@@ -413,6 +413,7 @@ end default</code></pre>
     end substance
 
   end application
+
 
   define application "Commercial AC"
 
@@ -481,7 +482,7 @@ end default</code></pre>
 
         <details>
           <summary>Code for general business as usual trends</summary>
-          <pre><code class="language-qubectalk">define application "Domestic Refrigeration"
+          <pre><code class="language-qubectalk">  define application "Domestic Refrigeration"
 
     uses substance "HFC-134a"
       # ... existing code ...
@@ -549,7 +550,7 @@ end default</code></pre>
 
         <details>
           <summary>Code for HFC-32 substance-specific adjustments</summary>
-          <pre><code class="language-qubectalk">define application "Domestic AC"
+          <pre><code class="language-qubectalk">  define application "Domestic AC"
 
     uses substance "HFC-32"
       initial charge with 0.90 kg / unit for sales
@@ -584,7 +585,7 @@ end default</code></pre>
 
         <details>
           <summary>Code for 20% HFC consumption increase</summary>
-          <pre><code class="language-qubectalk">define application "Domestic Refrigeration"
+          <pre><code class="language-qubectalk">  define application "Domestic Refrigeration"
   
     uses substance "HFC-134a"
       set priorEquipment to 1000000 * 120 % units during year beginning
@@ -636,6 +637,7 @@ end default</code></pre>
     end substance
 
   end application
+
 
   define application "Commercial AC"
 
@@ -693,6 +695,7 @@ end default</code></pre>
   
   end application
 
+
   modify application "Domestic AC"
 
     modify substance "R-410A"
@@ -700,6 +703,7 @@ end default</code></pre>
     end substance
 
   end application
+
 
   modify application "Commercial AC"
 
@@ -732,6 +736,7 @@ end policy</code></pre>
   
   end application
 
+
   modify application "MAC"
   
     modify substance "HFC-134a"
@@ -739,6 +744,7 @@ end policy</code></pre>
     end substance
   
   end application
+
 
   modify application "Chiller"
   
@@ -748,6 +754,7 @@ end policy</code></pre>
   
   end application
 
+
   modify application "Domestic AC"
 
     modify substance "HFC-32"
@@ -755,6 +762,7 @@ end policy</code></pre>
     end substance
 
   end application
+
 
   modify application "Commercial AC"
 
@@ -861,6 +869,7 @@ end policy</code></pre>
   
   end application
 
+
   modify application "Residential AC"
 
     modify substance "HFC-32"
@@ -880,6 +889,7 @@ end policy</code></pre>
     end substance
 
   end application
+
 
   modify application "Commercial AC"
 
