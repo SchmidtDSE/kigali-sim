@@ -122,6 +122,30 @@ class CompileVisitor extends toolkit.QubecTalkVisitor {
   }
 
   /**
+   * Process a logical expression which returns a boolean value.
+   *
+   * @param {Object} ctx - The parser context containing the logical operation.
+   * @returns {Function} A function that evaluates the logical expression and
+   *     returns 1 (true) or 0 (false).
+   */
+  visitLogicalExpression(ctx) {
+    const self = this;
+
+    const leftExpression = ctx.left.accept(self);
+    const opFunc = {
+      "and": (a, b) => (a != 0) && (b != 0),
+      "or": (a, b) => (a != 0) || (b != 0),
+      "xor": (a, b) => (a != 0) !== (b != 0),
+    }[ctx.op.text];
+    const rightExpression = ctx.right.accept(self);
+
+    return (engine) => {
+      const result = opFunc(leftExpression(engine), rightExpression(engine));
+      return result ? 1 : 0;
+    };
+  }
+
+  /**
    * Process a conditional expression with a turinary-like notation.
    *
    * @param {Object} ctx - The parser context containing the condition and

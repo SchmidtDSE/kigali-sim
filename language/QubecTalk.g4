@@ -70,6 +70,8 @@ NEQ_: '!=';
 
 OR_: 'or';
 
+XOR_: 'xor';
+
 /**
  * --------------
  * -- Sampling --
@@ -302,6 +304,7 @@ expression: number  # simpleExpression
   | LIMIT_ operand=expression TO_ LBRAC_ COMMA_ limit=expression RBRAC_ # limitMinExpression
   | LIMIT_ operand=expression TO_ LBRAC_ lower=expression COMMA_ upper=expression RBRAC_ # limitBoundExpression
   | pos=expression op=(NEQ_ | GT_ | LT_ | EQEQ_ | LTEQ_ | GTEQ_) neg=expression  # conditionExpression
+  | left=expression op=(AND_ | OR_ | XOR_) right=expression  # logicalExpression
   | pos=expression IF_ cond=expression ELSE_ neg=expression  ENDIF_  # conditionalExpression
   ;
 

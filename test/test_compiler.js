@@ -285,6 +285,74 @@ function buildCompilerTests() {
       },
     ]);
 
+    buildTest("evaluates logical operators", "/test/qta/logical_operators.qta", [
+      (result, assert) => {
+        // Test AND: 1 and 0 = false, so manufacture should be 30 (else branch)
+        const recordYear1 = getResult(result, "business as usual", 1, 0, "test", "test");
+        const consumptionYear1 = recordYear1.getGhgConsumption();
+        assert.closeTo(consumptionYear1.getValue(), 30, 0.0001);
+        assert.deepEqual(consumptionYear1.getUnits(), "tCO2e");
+      },
+      (result, assert) => {
+        // Test OR: 1 or 0 = true, so manufacture should be 50 (if branch)
+        const recordYear2 = getResult(result, "business as usual", 2, 0, "test", "test");
+        const consumptionYear2 = recordYear2.getGhgConsumption();
+        assert.closeTo(consumptionYear2.getValue(), 50, 0.0001);
+        assert.deepEqual(consumptionYear2.getUnits(), "tCO2e");
+      },
+      (result, assert) => {
+        // Test XOR: 1 xor 2 = false (both are truthy), so manufacture should be 40 (else branch)
+        const recordYear3 = getResult(result, "business as usual", 3, 0, "test", "test");
+        const consumptionYear3 = recordYear3.getGhgConsumption();
+        assert.closeTo(consumptionYear3.getValue(), 40, 0.0001);
+        assert.deepEqual(consumptionYear3.getUnits(), "tCO2e");
+      },
+      (result, assert) => {
+        // Test precedence with parentheses: (testA or testB) and testC = (1 or 0) and 2 =
+        // 1 and 2 = true, so manufacture should be 70 (if branch)
+        const recordYear4 = getResult(result, "business as usual", 4, 0, "test", "test");
+        const consumptionYear4 = recordYear4.getGhgConsumption();
+        assert.closeTo(consumptionYear4.getValue(), 70, 0.0001);
+        assert.deepEqual(consumptionYear4.getUnits(), "tCO2e");
+      },
+      (result, assert) => {
+        // Test precedence without parentheses: testA or testB and testC =
+        // testA or (testB and testC) = 1 or (0 and 2) = 1 or 0 = true,
+        // so manufacture should be 80 (if branch)
+        const recordYear5 = getResult(result, "business as usual", 5, 0, "test", "test");
+        const consumptionYear5 = recordYear5.getGhgConsumption();
+        assert.closeTo(consumptionYear5.getValue(), 80, 0.0001);
+        assert.deepEqual(consumptionYear5.getUnits(), "tCO2e");
+      },
+      (result, assert) => {
+        // Test mixed comparison and logical: testA > 0 and testB == 0 =
+        // 1 > 0 and 0 == 0 = true and true = true, so manufacture should be 90 (if branch)
+        const recordYear6 = getResult(result, "business as usual", 6, 0, "test", "test");
+        const consumptionYear6 = recordYear6.getGhgConsumption();
+        assert.closeTo(consumptionYear6.getValue(), 90, 0.0001);
+        assert.deepEqual(consumptionYear6.getUnits(), "tCO2e");
+      },
+      (result, assert) => {
+        // Test complex parentheses: (testA > 0 or testB > 0) and (testC == 2) =
+        // (true or false) and (true) = true and true = true,
+        // so manufacture should be 100 (if branch)
+        const recordYear7 = getResult(result, "business as usual", 7, 0, "test", "test");
+        const consumptionYear7 = recordYear7.getGhgConsumption();
+        assert.closeTo(consumptionYear7.getValue(), 100, 0.0001);
+        assert.deepEqual(consumptionYear7.getUnits(), "tCO2e");
+      },
+    ]);
+
+    buildTest("evaluates simple AND operator", "/test/qta/simple_and.qta", [
+      (result, assert) => {
+        // Test AND: 1 and 0 = false, so manufacture should be 30 (else branch)
+        const record = getResult(result, "business as usual", 1, 0, "test", "test");
+        const consumption = record.getGhgConsumption();
+        assert.closeTo(consumption.getValue(), 30, 0.0001);
+        assert.deepEqual(consumption.getUnits(), "tCO2e");
+      },
+    ]);
+
     buildTest("verifies substance replacement over time", "/test/qta/basic_replace.qta", [
       (result, assert) => {
         // Check year 1 consumption
