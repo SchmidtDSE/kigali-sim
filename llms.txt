@@ -15,7 +15,11 @@ KigaliSim supports both business-as-usual projections and policy intervention sc
 ## QubecTalk Domain Specific Language
 KigaliSim uses QubecTalk, a HyperTalk-inspired domain-specific language for defining simulations. QubecTalk programs are human-readable and use natural language constructs.
 
-**Note**: In this documentation, the pipe symbol (|) is used to indicate different command options or alternatives, not as part of the actual QubecTalk syntax. For example, `set manufacture|import to X kg during year Y` means both `set manufacture to X kg during year Y` and `set import to X kg during year Y` are valid. Similarly, chevrons (<) mean a value may be provided while curly brances ({) mean a value must be provided but are only provided for documentation purposes and are not part of QubecTalk syntax.
+**Note**: In this documentation, the pipe symbol (|) is used to indicate different command options or alternatives, not as part of the actual QubecTalk syntax. For example, `set manufacture|import to X kg during year Y` means both `set manufacture to X kg during year Y` and `set import to X kg during year Y` are valid. Similarly, chevrons (<) mean a value may be provided while curly braces ({) mean a value must be provided but are only provided for documentation purposes and are not part of QubecTalk syntax.
+
+**Comments**: Use `#` to add comments. Comments run to the end of the line and are ignored by the interpreter.
+
+**Define vs Modify**: Use `define` in the `default` stanza to create new applications and substances for the business-as-usual scenario. Use `modify` in `policy` stanzas to change existing applications and substances defined in the default scenario.
 
 ### Program Structure
 QubecTalk programs are organized into stanzas:
@@ -63,19 +67,20 @@ The about stanza is optional.
 #### Policy Interventions
 - `cap|floor stream to {amount} <displacing> <during>` - Manufacturing/import restrictions and minimums
 - `replace {amount} of {stream} with "substance" <during>` - Substance transitions
-- `replace {amount} of {stream} with "{stream}" <during>` - Stream transitions
 - `recover {amount} with {amount} reuse <displacing> <during>` - Recycling with optional displacement
 
 #### Units System
 Supports automatic unit conversion: kg, mt (metric tons), tCO2e (tons CO2 equivalent), kwh (kilowatt hours), units (equipment), years/months/days (time), % (percentages)
 
 #### Advanced Features
-- **Variables**: `define identifier as expression` and `get identifier`
+- **Variables**: `define identifier as expression` and `get identifier` (scoped to enclosing start/end block)
 - **Stream access**: `get {stream}`
 - **Unit conversions**: `get {stream} as {units}` like `get import of "substance" as mt`
 - **Constraints**: `limit expression to [min,max]`, `limit expression to [,max]` (min of negative infinity), `limit expression to [min,]` (max of infinity)
 - **Uncertainties**: `sample normally from mean of X std of Y`, `sample uniformly from X to Y`
 - **Math expressions**: Basic arithmetic with `+`, `-`, `*`, `/`, `^`, parentheses
+- **Logical operators**: `and`, `or`, `xor` for combining boolean expressions
+- **Comparison operators**: `==`, `!=`, `<`, `>`, `<=`, `>=` for conditions
 
 ### Time
 Simulations may be run with years as the time unit where each time unit is a single step. Use of months or days is reserved for future use.
@@ -96,13 +101,37 @@ Streams may be `manufacture|import|export|sales|equipment|priorEquipment`
  - `equipment` is both equipment which entered into service prior steps (`priorEquipment`) and new equipment in the current step
 
 ### Formatting
-Curly brances are not supported, start and end keywords must be used. It is recommended but not required to use two spaces per tab.
+Curly braces are not supported, start and end keywords must be used. It is recommended but not required to use two spaces per tab.
+
+### Built-in Variables
+Special variables available in expressions:
+- `yearAbsolute` - The current absolute year number
+- `yearsElapsed` - Years since simulation start (starts at 0)
+- Similar variables for other time units: `monthAbsolute`, `monthsElapsed`, `dayAbsolute`, `daysElapsed`
+
+### Conditional Logic
+Ternary operations using `if`/`else`/`endif`:
+```
+set manufacture to 100 if testVar > 10 else 50 endif mt
+```
+
+Boolean expressions can be combined with `and`, `or`, `xor`:
+```
+set manufacture to 70 if (testA or testB) and testC else 35 endif mt
+```
 
 ### Probabilistic simulation
-Multiple Monte Carlo trials can be speified liked `simulate "test" using "policy" from years 1 to 10 across 100 trials`
+Multiple Monte Carlo trials can be specified like `simulate "test" using "policy" from years 1 to 10 across 100 trials`
 
-### Conditional logic
-Ternary operations are available like `set manufacture to 100 if testVar > 10 else 50 endif mt`
+### Policy Syntax
+Policies use `then` to chain multiple interventions:
+```
+simulate "Combined Policy" 
+  using "Import Ban"
+  then "Domestic Permit"
+  then "Efficiency Incentive"
+from years 1 to 20
+```
 
 ### Displacement
 Changes in one substance can be offset by changes in another. For example:
