@@ -147,6 +147,21 @@ function buildCompilerTests() {
       },
     ]);
 
+    buildTest("interprets a change command with real years", "/test/qta/real_years.qta", [
+      (result, assert) => {
+        const record = getResult(result, BAU_NAME, 2026, 0, "test", "test");
+        const manufacture = record.getManufacture();
+        assert.closeTo(manufacture.getValue(), 110000, 0.0001);
+        assert.deepEqual(manufacture.getUnits(), "kg");
+      },
+      (result, assert) => {
+        const record = getResult(result, BAU_NAME, 2026, 0, "test", "test");
+        const consumption = record.getGhgConsumption();
+        assert.closeTo(consumption.getValue(), 550, 0.0001);
+        assert.deepEqual(consumption.getUnits(), "tCO2e");
+      },
+    ]);
+
     buildTest("interprets a retire command", "/test/qta/retire.qta", [
       (result, assert) => {
         const record = getResult(result, BAU_NAME, 2, 0, "test", "test");
