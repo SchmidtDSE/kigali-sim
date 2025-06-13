@@ -425,7 +425,7 @@ start policy "Manufacturing Prohibition"
 	modify application "Domestic Refrigeration"
 	
 		modify substance "HFC-134a"
-			cap equipment to 0 units during 2028 to end
+			cap equipment to 0 units during 2028 to onwards
 		end substance
 	
 	end application
@@ -434,7 +434,7 @@ start policy "Manufacturing Prohibition"
 	modify application "Commercial Refrigeration"
 	
 		modify substance "HFC-134a"
-			cap equipment to 0 units during 2028 to end
+			cap equipment to 0 units during 2028 to onwards
 		end substance
 	
 	end application
@@ -443,7 +443,7 @@ start policy "Manufacturing Prohibition"
 	modify application "Mobile AC"
 	
 		modify substance "HFC-134a"
-			cap equipment to 0 units during 2028 to end
+			cap equipment to 0 units during 2028 to onwards
 		end substance
 	
 	end application
@@ -452,7 +452,7 @@ start policy "Manufacturing Prohibition"
 	modify application "Chillers"
 	
 		modify substance "HFC-134a"
-			cap equipment to 0 units during 2028 to end
+			cap equipment to 0 units during 2028 to onwards
 		end substance
 	
 	end application
@@ -460,7 +460,7 @@ start policy "Manufacturing Prohibition"
 	modify application "Residential AC"
 
 	  modify substance "R-410A"
-		  cap equipment to 0 units displacing "HFC-32" during 2028 to end
+		  cap equipment to 0 units displacing "HFC-32" during 2028 to onwards
 	  end substance
 
 	end application
@@ -468,7 +468,7 @@ start policy "Manufacturing Prohibition"
 	modify application "Commercial AC"
 
 		modify substance "R-410A"
-		  cap equipment to 0 units displacing "HFC-32" during 2028 to end
+		  cap equipment to 0 units displacing "HFC-32" during 2028 to onwards
 	  end substance
 
 	end application
@@ -485,7 +485,7 @@ start policy "Equipment Import Ban"
 	modify application "Domestic Refrigeration"
 	
 		modify substance "HFC-134a"
-			cap import to 0 units displacing "R-404A" during 2029 to end
+			cap import to 0 units displacing "R-404A" during 2029 to onwards
 		end substance
 	
 	end application
@@ -494,7 +494,7 @@ start policy "Equipment Import Ban"
 	modify application "Commercial Refrigeration"
 	
 		modify substance "HFC-134a"
-			cap import to 0 units displacing "R-404A" during 2029 to end
+			cap import to 0 units displacing "R-404A" during 2029 to onwards
 		end substance
 	
 	end application
@@ -503,7 +503,7 @@ start policy "Equipment Import Ban"
 	modify application "Mobile AC"
 	
 		modify substance "HFC-134a"
-			cap import to 0 units displacing "R-404A" during 2029 to end
+			cap import to 0 units displacing "R-404A" during 2029 to onwards
 		end substance
 	
 	end application
@@ -512,7 +512,7 @@ start policy "Equipment Import Ban"
 	modify application "Chillers"
 	
 		modify substance "HFC-134a"
-			cap import to 0 units displacing "R-404A" during 2029 to end
+			cap import to 0 units displacing "R-404A" during 2029 to onwards
 		end substance
 	
 	end application
@@ -520,7 +520,7 @@ start policy "Equipment Import Ban"
 	modify application "Residential AC"
 
 	  modify substance "HFC-32"
-		  cap import to 0 units displacing "R-410A" during 2029 to end
+		  cap import to 0 units displacing "R-410A" during 2029 to onwards
 	  end substance
 
 	end application
@@ -528,7 +528,7 @@ start policy "Equipment Import Ban"
 	modify application "Commercial AC"
 
 		modify substance "HFC-32"
-		  cap import to 0 units displacing "R-410A" during 2029 to end
+		  cap import to 0 units displacing "R-410A" during 2029 to onwards
 	  end substance
 
 	end application
@@ -549,7 +549,7 @@ start policy "Recovery and Recycling"
 			recover 28 % with 100 % reuse during year 2027
 			recover 42 % with 100 % reuse during year 2028
 			recover 56 % with 100 % reuse during year 2029
-			recover 70 % with 100 % reuse during years 2030 to end
+			recover 70 % with 100 % reuse during years 2030 to onwards
 		end substance
 		
 		modify substance "R-404A"
@@ -557,7 +557,7 @@ start policy "Recovery and Recycling"
 			recover 28 % with 100 % reuse during year 2027
 			recover 42 % with 100 % reuse during year 2028
 			recover 56 % with 100 % reuse during year 2029
-			recover 70 % with 100 % reuse during years 2030 to end
+			recover 70 % with 100 % reuse during years 2030 to onwards
 		end substance
 	
 	end application
@@ -570,7 +570,7 @@ start policy "Recovery and Recycling"
 			recover 28 % with 100 % reuse during year 2027
 			recover 42 % with 100 % reuse during year 2028
 			recover 56 % with 100 % reuse during year 2029
-			recover 70 % with 100 % reuse during years 2030 to end
+			recover 70 % with 100 % reuse during years 2030 to onwards
 		end substance
 		
 		modify substance "R-404A"
@@ -578,7 +578,7 @@ start policy "Recovery and Recycling"
 			recover 28 % with 100 % reuse during year 2027
 			recover 42 % with 100 % reuse during year 2028
 			recover 56 % with 100 % reuse during year 2029
-			recover 70 % with 100 % reuse during years 2030 to end
+			recover 70 % with 100 % reuse during years 2030 to onwards
 		end substance
 	
 	end application
@@ -591,7 +591,7 @@ start policy "Recovery and Recycling"
 			recover 28 % with 100 % reuse during year 2027
 			recover 42 % with 100 % reuse during year 2028
 			recover 56 % with 100 % reuse during year 2029
-			recover 70 % with 100 % reuse during years 2030 to end
+			recover 70 % with 100 % reuse during years 2030 to onwards
 		end substance
 		
 		modify substance "R-404A"
@@ -599,7 +599,7 @@ start policy "Recovery and Recycling"
 			recover 28 % with 100 % reuse during year 2027
 			recover 42 % with 100 % reuse during year 2028
 			recover 56 % with 100 % reuse during year 2029
-			recover 70 % with 100 % reuse during years 2030 to end
+			recover 70 % with 100 % reuse during years 2030 to onwards
 		end substance
 	
 	end application
@@ -612,7 +612,7 @@ start policy "Recovery and Recycling"
 			recover 28 % with 100 % reuse during year 2027
 			recover 42 % with 100 % reuse during year 2028
 			recover 56 % with 100 % reuse during year 2029
-			recover 70 % with 100 % reuse during years 2030 to end
+			recover 70 % with 100 % reuse during years 2030 to onwards
 		end substance
 		
 		modify substance "R-404A"
@@ -620,7 +620,7 @@ start policy "Recovery and Recycling"
 			recover 28 % with 100 % reuse during year 2027
 			recover 42 % with 100 % reuse during year 2028
 			recover 56 % with 100 % reuse during year 2029
-			recover 70 % with 100 % reuse during years 2030 to end
+			recover 70 % with 100 % reuse during years 2030 to onwards
 		end substance
 	
 	end application
@@ -632,7 +632,7 @@ start policy "Recovery and Recycling"
 			recover 28 % with 100 % reuse during year 2027
 			recover 42 % with 100 % reuse during year 2028
 			recover 56 % with 100 % reuse during year 2029
-			recover 70 % with 100 % reuse during years 2030 to end
+			recover 70 % with 100 % reuse during years 2030 to onwards
 	  end substance
 
 	  modify substance "R-410A"
@@ -640,7 +640,7 @@ start policy "Recovery and Recycling"
 			recover 28 % with 100 % reuse during year 2027
 			recover 42 % with 100 % reuse during year 2028
 			recover 56 % with 100 % reuse during year 2029
-			recover 70 % with 100 % reuse during years 2030 to end
+			recover 70 % with 100 % reuse during years 2030 to onwards
 	  end substance
 
 	end application
@@ -652,7 +652,7 @@ start policy "Recovery and Recycling"
 			recover 28 % with 100 % reuse during year 2027
 			recover 42 % with 100 % reuse during year 2028
 			recover 56 % with 100 % reuse during year 2029
-			recover 70 % with 100 % reuse during years 2030 to end
+			recover 70 % with 100 % reuse during years 2030 to onwards
 	  end substance
 
 		modify substance "R-410A"
@@ -660,7 +660,7 @@ start policy "Recovery and Recycling"
 			recover 28 % with 100 % reuse during year 2027
 			recover 42 % with 100 % reuse during year 2028
 			recover 56 % with 100 % reuse during year 2029
-			recover 70 % with 100 % reuse during years 2030 to end
+			recover 70 % with 100 % reuse during years 2030 to onwards
 	  end substance
 
 	end application
@@ -869,7 +869,7 @@ start policy "Manufacturing Prohibition"
 	modify application "Domestic Refrigeration"
 	
 		modify substance "HFC-134a"
-			cap equipment to 0 units during 2028 to end
+			cap equipment to 0 units during 2028 to onwards
 		end substance
 	
 	end application
@@ -878,7 +878,7 @@ start policy "Manufacturing Prohibition"
 	modify application "Commercial Refrigeration"
 	
 		modify substance "HFC-134a"
-			cap equipment to 0 units during 2028 to end
+			cap equipment to 0 units during 2028 to onwards
 		end substance
 	
 	end application
@@ -887,7 +887,7 @@ start policy "Manufacturing Prohibition"
 	modify application "Mobile AC"
 	
 		modify substance "HFC-134a"
-			cap equipment to 0 units during 2028 to end
+			cap equipment to 0 units during 2028 to onwards
 		end substance
 	
 	end application
@@ -896,7 +896,7 @@ start policy "Manufacturing Prohibition"
 	modify application "Chillers"
 	
 		modify substance "HFC-134a"
-			cap equipment to 0 units during 2028 to end
+			cap equipment to 0 units during 2028 to onwards
 		end substance
 	
 	end application
@@ -904,7 +904,7 @@ start policy "Manufacturing Prohibition"
 	modify application "Residential AC"
 
 	  modify substance "R-410A"
-		  cap equipment to 0 units displacing "HFC-32" during 2028 to end
+		  cap equipment to 0 units displacing "HFC-32" during 2028 to onwards
 	  end substance
 
 	end application
@@ -912,7 +912,7 @@ start policy "Manufacturing Prohibition"
 	modify application "Commercial AC"
 
 		modify substance "R-410A"
-		  cap equipment to 0 units displacing "HFC-32" during 2028 to end
+		  cap equipment to 0 units displacing "HFC-32" during 2028 to onwards
 	  end substance
 
 	end application
@@ -925,7 +925,7 @@ start policy "Equipment Import Ban"
 	modify application "Domestic Refrigeration"
 	
 		modify substance "HFC-134a"
-			cap import to 0 units displacing "R-404A" during 2029 to end
+			cap import to 0 units displacing "R-404A" during 2029 to onwards
 		end substance
 	
 	end application
@@ -934,7 +934,7 @@ start policy "Equipment Import Ban"
 	modify application "Commercial Refrigeration"
 	
 		modify substance "HFC-134a"
-			cap import to 0 units displacing "R-404A" during 2029 to end
+			cap import to 0 units displacing "R-404A" during 2029 to onwards
 		end substance
 	
 	end application
@@ -943,7 +943,7 @@ start policy "Equipment Import Ban"
 	modify application "Mobile AC"
 	
 		modify substance "HFC-134a"
-			cap import to 0 units displacing "R-404A" during 2029 to end
+			cap import to 0 units displacing "R-404A" during 2029 to onwards
 		end substance
 	
 	end application
@@ -952,7 +952,7 @@ start policy "Equipment Import Ban"
 	modify application "Chillers"
 	
 		modify substance "HFC-134a"
-			cap import to 0 units displacing "R-404A" during 2029 to end
+			cap import to 0 units displacing "R-404A" during 2029 to onwards
 		end substance
 	
 	end application
@@ -960,7 +960,7 @@ start policy "Equipment Import Ban"
 	modify application "Residential AC"
 
 	  modify substance "HFC-32"
-		  cap import to 0 units displacing "R-410A" during 2029 to end
+		  cap import to 0 units displacing "R-410A" during 2029 to onwards
 	  end substance
 
 	end application
@@ -968,7 +968,7 @@ start policy "Equipment Import Ban"
 	modify application "Commercial AC"
 
 		modify substance "HFC-32"
-		  cap import to 0 units displacing "R-410A" during 2029 to end
+		  cap import to 0 units displacing "R-410A" during 2029 to onwards
 	  end substance
 
 	end application
@@ -985,7 +985,7 @@ start policy "Recovery and Recycling"
 			recover 28 % with 100 % reuse during year 2027
 			recover 42 % with 100 % reuse during year 2028
 			recover 56 % with 100 % reuse during year 2029
-			recover 70 % with 100 % reuse during years 2030 to end
+			recover 70 % with 100 % reuse during years 2030 to onwards
 		end substance
 		
 		modify substance "R-404A"
@@ -993,7 +993,7 @@ start policy "Recovery and Recycling"
 			recover 28 % with 100 % reuse during year 2027
 			recover 42 % with 100 % reuse during year 2028
 			recover 56 % with 100 % reuse during year 2029
-			recover 70 % with 100 % reuse during years 2030 to end
+			recover 70 % with 100 % reuse during years 2030 to onwards
 		end substance
 	
 	end application
@@ -1006,7 +1006,7 @@ start policy "Recovery and Recycling"
 			recover 28 % with 100 % reuse during year 2027
 			recover 42 % with 100 % reuse during year 2028
 			recover 56 % with 100 % reuse during year 2029
-			recover 70 % with 100 % reuse during years 2030 to end
+			recover 70 % with 100 % reuse during years 2030 to onwards
 		end substance
 		
 		modify substance "R-404A"
@@ -1014,7 +1014,7 @@ start policy "Recovery and Recycling"
 			recover 28 % with 100 % reuse during year 2027
 			recover 42 % with 100 % reuse during year 2028
 			recover 56 % with 100 % reuse during year 2029
-			recover 70 % with 100 % reuse during years 2030 to end
+			recover 70 % with 100 % reuse during years 2030 to onwards
 		end substance
 	
 	end application
@@ -1027,7 +1027,7 @@ start policy "Recovery and Recycling"
 			recover 28 % with 100 % reuse during year 2027
 			recover 42 % with 100 % reuse during year 2028
 			recover 56 % with 100 % reuse during year 2029
-			recover 70 % with 100 % reuse during years 2030 to end
+			recover 70 % with 100 % reuse during years 2030 to onwards
 		end substance
 		
 		modify substance "R-404A"
@@ -1035,7 +1035,7 @@ start policy "Recovery and Recycling"
 			recover 28 % with 100 % reuse during year 2027
 			recover 42 % with 100 % reuse during year 2028
 			recover 56 % with 100 % reuse during year 2029
-			recover 70 % with 100 % reuse during years 2030 to end
+			recover 70 % with 100 % reuse during years 2030 to onwards
 		end substance
 	
 	end application
@@ -1048,7 +1048,7 @@ start policy "Recovery and Recycling"
 			recover 28 % with 100 % reuse during year 2027
 			recover 42 % with 100 % reuse during year 2028
 			recover 56 % with 100 % reuse during year 2029
-			recover 70 % with 100 % reuse during years 2030 to end
+			recover 70 % with 100 % reuse during years 2030 to onwards
 		end substance
 		
 		modify substance "R-404A"
@@ -1056,7 +1056,7 @@ start policy "Recovery and Recycling"
 			recover 28 % with 100 % reuse during year 2027
 			recover 42 % with 100 % reuse during year 2028
 			recover 56 % with 100 % reuse during year 2029
-			recover 70 % with 100 % reuse during years 2030 to end
+			recover 70 % with 100 % reuse during years 2030 to onwards
 		end substance
 	
 	end application
@@ -1068,7 +1068,7 @@ start policy "Recovery and Recycling"
 			recover 28 % with 100 % reuse during year 2027
 			recover 42 % with 100 % reuse during year 2028
 			recover 56 % with 100 % reuse during year 2029
-			recover 70 % with 100 % reuse during years 2030 to end
+			recover 70 % with 100 % reuse during years 2030 to onwards
 	  end substance
 
 	  modify substance "R-410A"
@@ -1076,7 +1076,7 @@ start policy "Recovery and Recycling"
 			recover 28 % with 100 % reuse during year 2027
 			recover 42 % with 100 % reuse during year 2028
 			recover 56 % with 100 % reuse during year 2029
-			recover 70 % with 100 % reuse during years 2030 to end
+			recover 70 % with 100 % reuse during years 2030 to onwards
 	  end substance
 
 	end application
@@ -1088,7 +1088,7 @@ start policy "Recovery and Recycling"
 			recover 28 % with 100 % reuse during year 2027
 			recover 42 % with 100 % reuse during year 2028
 			recover 56 % with 100 % reuse during year 2029
-			recover 70 % with 100 % reuse during years 2030 to end
+			recover 70 % with 100 % reuse during years 2030 to onwards
 	  end substance
 
 		modify substance "R-410A"
@@ -1096,7 +1096,7 @@ start policy "Recovery and Recycling"
 			recover 28 % with 100 % reuse during year 2027
 			recover 42 % with 100 % reuse during year 2028
 			recover 56 % with 100 % reuse during year 2029
-			recover 70 % with 100 % reuse during years 2030 to end
+			recover 70 % with 100 % reuse during years 2030 to onwards
 	  end substance
 
 	end application
