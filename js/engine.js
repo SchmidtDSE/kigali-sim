@@ -697,6 +697,9 @@ class Engine {
 
     if (isGhg) {
       self._streamKeeper.setGhgIntensity(application, substance, amount);
+      const rechargeVolume = self._calculateRechargeVolume(self._scope);
+      const rechargeGhg = self._unitConverter.convert(rechargeVolume, "tCO2e");
+      self.setStream("rechargeEmissions", rechargeGhg, null, self._scope, false);
     } else if (isKwh) {
       self._streamKeeper.setEnergyIntensity(application, substance, amount);
     } else {
