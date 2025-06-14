@@ -168,8 +168,11 @@ class Engine {
    *     default scope if not provided.
    * @param {boolean} propagateChanges - Specifies if changes should propagate
    *     to other components. Defaults to true.
+   * @param {string} unitsToTrack - Optional units to track instead of using
+   *     value.getUnits(). Used when the original user-specified units differ
+   *     from the converted units being set.
    */
-  setStream(name, value, yearMatcher, scope, propagateChanges) {
+  setStream(name, value, yearMatcher, scope, propagateChanges, unitsToTrack) {
     const self = this;
 
     const noYearMatcher = yearMatcher === undefined || yearMatcher === null;
@@ -194,8 +197,9 @@ class Engine {
     }
 
     // Track the units last used to specify this stream (only for user-initiated calls)
-    if (propagateChanges) {
-      self._streamKeeper.setLastSpecifiedUnits(application, substance, value.getUnits());
+    if (propagateChanges && unitsToTrack !== null) {
+      const unitsToRecord = unitsToTrack !== undefined ? unitsToTrack : value.getUnits();
+      self._streamKeeper.setLastSpecifiedUnits(application, substance, unitsToRecord);
     }
 
     if (!propagateChanges) {
@@ -754,7 +758,35 @@ class Engine {
     const convertedDelta = unitConverter.convert(amount, currentValue.getUnits());
     const newAmount = currentValue.getValue() + convertedDelta.getValue();
     const outputWithUnits = new EngineNumber(newAmount, currentValue.getUnits());
-    self.setStream(stream, outputWithUnits, null, scope);
+    // Pass the original user-specified units for tracking
+    self.setStream(stream, outputWithUnits, null, scope, true, amount.getUnits());
+  }
+
+  /**
+   * Internal method to change a stream value without tracking units.
+   * Used by cap, floor, replace methods that handle units tracking themselves.
+   *
+   * @param {string} stream - The stream identifier to modify.
+   * @param {EngineNumber} amount - The amount to change the stream by.
+   * @param {Object} yearMatcher - Matcher to determine if the change applies
+   *     to current year.
+   * @param {Scope} scope - The scope in which to make the change.
+   */
+  _changeStreamInternal(stream, amount, yearMatcher, scope) {
+    const self = this;
+
+    if (!self._getIsInRange(yearMatcher)) {
+      return;
+    }
+
+    const currentValue = self.getStream(stream, scope);
+    const unitConverter = self._createUnitConverterWithTotal(stream);
+
+    const convertedDelta = unitConverter.convert(amount, currentValue.getUnits());
+    const newAmount = currentValue.getValue() + convertedDelta.getValue();
+    const outputWithUnits = new EngineNumber(newAmount, currentValue.getUnits());
+    // Allow propagation but don't track units (since units tracking was handled by the caller)
+    self.setStream(stream, outputWithUnits, null, scope, true, null);
   }
 
   /**
@@ -782,18 +814,30 @@ class Engine {
     const changeAmountRaw = convertedMax.getValue() - currentValue.getValue();
     const changeAmount = Math.min(changeAmountRaw, 0);
 
+    // Only track units if an actual change will be made
+    if (changeAmount !== 0) {
+      const scope = self._scope;
+      const application = scope.getApplication();
+      const substance = scope.getSubstance();
+      if (application === null || substance === null) {
+        throw "Tried setting stream without application and substance specified.";
+      }
+      self._streamKeeper.setLastSpecifiedUnits(application, substance, amount.getUnits());
+    }
+
     const changeWithUnits = new EngineNumber(changeAmount, "kg");
-    self.changeStream(stream, changeWithUnits);
+    // Use internal changeStream that doesn't override the units tracking
+    self._changeStreamInternal(stream, changeWithUnits);
 
     if (displaceTarget !== null && displaceTarget !== undefined) {
       const displaceChange = new EngineNumber(changeAmount * -1, "kg");
       const isStream = STREAM_NAMES.has(displaceTarget);
 
       if (isStream) {
-        self.changeStream(displaceTarget, displaceChange);
+        self._changeStreamInternal(displaceTarget, displaceChange);
       } else {
         const destinationScope = self._scope.getWithSubstance(displaceTarget);
-        self.changeStream(stream, displaceChange, null, destinationScope);
+        self._changeStreamInternal(stream, displaceChange, null, destinationScope);
       }
     }
   }
@@ -823,18 +867,29 @@ class Engine {
     const changeAmountRaw = convertedMin.getValue() - currentValue.getValue();
     const changeAmount = Math.max(changeAmountRaw, 0);
 
+    // Only track units if an actual change will be made
+    if (changeAmount !== 0) {
+      const scope = self._scope;
+      const application = scope.getApplication();
+      const substance = scope.getSubstance();
+      if (application === null || substance === null) {
+        throw "Tried setting stream without application and substance specified.";
+      }
+      self._streamKeeper.setLastSpecifiedUnits(application, substance, amount.getUnits());
+    }
+
     const changeWithUnits = new EngineNumber(changeAmount, "kg");
-    self.changeStream(stream, changeWithUnits);
+    self._changeStreamInternal(stream, changeWithUnits);
 
     if (displaceTarget !== null && displaceTarget !== undefined) {
       const displaceChange = new EngineNumber(changeAmount * -1, "kg");
       const isStream = STREAM_NAMES.has(displaceTarget);
 
       if (isStream) {
-        self.changeStream(displaceTarget, displaceChange);
+        self._changeStreamInternal(displaceTarget, displaceChange);
       } else {
         const destinationScope = self._scope.getWithSubstance(displaceTarget);
-        self.changeStream(stream, displaceChange, null, destinationScope);
+        self._changeStreamInternal(stream, displaceChange, null, destinationScope);
       }
     }
   }
@@ -858,11 +913,23 @@ class Engine {
     const unitConverter = self._createUnitConverterWithTotal(stream);
     const amount = unitConverter.convert(amountRaw, "kg");
 
+    // Track the original user-specified units for the current substance
+    const currentScope = self._scope;
+    const application = currentScope.getApplication();
+    const currentSubstance = currentScope.getSubstance();
+    if (application === null || currentSubstance === null) {
+      throw "Tried setting stream without application and substance specified.";
+    }
+    self._streamKeeper.setLastSpecifiedUnits(application, currentSubstance, amountRaw.getUnits());
+
+    // Track the original user-specified units for the destination substance
+    self._streamKeeper.setLastSpecifiedUnits(application, destinationSubstance, amountRaw.getUnits());
+
     const amountNegative = new EngineNumber(-1 * amount.getValue(), amount.getUnits());
-    self.changeStream(stream, amountNegative);
+    self._changeStreamInternal(stream, amountNegative);
 
     const destinationScope = self._scope.getWithSubstance(destinationSubstance);
-    self.changeStream(stream, amount, null, destinationScope);
+    self._changeStreamInternal(stream, amount, null, destinationScope);
   }
 
   /**

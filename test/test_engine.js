@@ -1037,6 +1037,96 @@ function buildEngineTests() {
         engine.setLastSpecifiedUnits("manufacture", "kg");
       }, /Tried setting last specified units without application and substance specified/);
     });
+
+    QUnit.test("tracks units for setStream operation", function (assert) {
+      const engine = new Engine(1, 2);
+      engine.setStanza("default");
+      engine.setApplication("test app");
+      engine.setSubstance("test substance");
+
+      // Set with equipment units
+      engine.setStream("manufacture", new EngineNumber(100, "units"));
+      const unitsAfterSet = engine.getLastSpecifiedUnits("manufacture");
+      assert.equal(unitsAfterSet, "units");
+    });
+
+    QUnit.test("tracks units for changeStream operation", function (assert) {
+      const engine = new Engine(1, 2);
+      engine.setStanza("default");
+      engine.setApplication("test app");
+      engine.setSubstance("test substance");
+
+      // Set initial value in kg
+      engine.setStream("manufacture", new EngineNumber(50, "kg"));
+      assert.equal(engine.getLastSpecifiedUnits("manufacture"), "kg");
+
+      // Change with equipment units - should track the original units from user
+      engine.changeStream("manufacture", new EngineNumber(25, "units"));
+      const unitsAfterChange = engine.getLastSpecifiedUnits("manufacture");
+      assert.equal(unitsAfterChange, "units");
+    });
+
+    QUnit.test("tracks units for cap operation", function (assert) {
+      const engine = new Engine(1, 2);
+      engine.setStanza("default");
+      engine.setApplication("test app");
+      engine.setSubstance("test substance");
+
+      // Set initial value in kg
+      engine.setStream("manufacture", new EngineNumber(100, "kg"));
+      assert.equal(engine.getLastSpecifiedUnits("manufacture"), "kg");
+
+      // Cap with equipment units - should track the original units from user
+      engine.cap("manufacture", new EngineNumber(50, "units"));
+      const unitsAfterCap = engine.getLastSpecifiedUnits("manufacture");
+      assert.equal(unitsAfterCap, "units");
+    });
+
+    QUnit.test("tracks units for floor operation", function (assert) {
+      const engine = new Engine(1, 2);
+      engine.setStanza("default");
+      engine.setApplication("test app");
+      engine.setSubstance("test substance");
+
+      // Set initial value in kg
+      engine.setStream("manufacture", new EngineNumber(20, "kg"));
+      assert.equal(engine.getLastSpecifiedUnits("manufacture"), "kg");
+
+      // Floor with equipment units - should track the original units from user
+      engine.floor("manufacture", new EngineNumber(30, "units"));
+      const unitsAfterFloor = engine.getLastSpecifiedUnits("manufacture");
+      assert.equal(unitsAfterFloor, "units");
+    });
+
+    QUnit.test("tracks units for replace operation", function (assert) {
+      const engine = new Engine(1, 2);
+      engine.setStanza("default");
+      engine.setApplication("test app");
+
+      // Setup first substance
+      engine.setSubstance("substance1");
+      engine.setStream("manufacture", new EngineNumber(100, "kg"));
+      assert.equal(engine.getLastSpecifiedUnits("manufacture"), "kg");
+
+      // Setup second substance
+      engine.setSubstance("substance2");
+      engine.setStream("manufacture", new EngineNumber(0, "kg"));
+
+      // Go back to first substance
+      engine.setSubstance("substance1");
+
+      // Replace with equipment units - should track the original units from user
+      engine.replace(new EngineNumber(25, "units"), "manufacture", "substance2");
+      
+      // Check that substance1 tracked the units
+      const unitsAfterReplace1 = engine.getLastSpecifiedUnits("manufacture");
+      assert.equal(unitsAfterReplace1, "units");
+
+      // Check that substance2 also tracked the units
+      engine.setSubstance("substance2");
+      const unitsAfterReplace2 = engine.getLastSpecifiedUnits("manufacture");
+      assert.equal(unitsAfterReplace2, "units");
+    });
   });
 }
 
