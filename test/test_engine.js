@@ -1158,7 +1158,7 @@ function buildEngineTests() {
       engine.recharge(
         new EngineNumber(10, "% / year"),
         new EngineNumber(0.5, "kg / unit"),
-        new YearMatcher(null, null)
+        new YearMatcher(null, null),
       );
 
       // Set prior equipment
@@ -1194,7 +1194,7 @@ function buildEngineTests() {
       engine.recharge(
         new EngineNumber(10, "% / year"),
         new EngineNumber(0.5, "kg / unit"),
-        new YearMatcher(null, null)
+        new YearMatcher(null, null),
       );
 
       // Set prior equipment
