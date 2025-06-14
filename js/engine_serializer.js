@@ -204,7 +204,8 @@ class EngineResultSerializer {
 
     const totalImportValueKg = unitConverter.convert(totalImportValue, "kg").getValue();
     const totalDomesticValueKg = unitConverter.convert(totalDomesticValue, "kg").getValue();
-    const proportionImport = totalImportValueKg / (totalImportValueKg + totalDomesticValueKg);
+    const totalKg = totalImportValueKg + totalDomesticValueKg;
+    const proportionImport = totalKg == 0 ? 0 : totalImportValueKg / totalKg;
     const totalRechargeKg = unitConverter.convert(totalRechargeEmissions, "kg").getValue();
 
     const importRechargeKg = proportionImport * totalRechargeKg;
