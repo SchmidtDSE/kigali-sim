@@ -1,0 +1,43 @@
+// Test case 5: Set manufacture to 100 kg, set initial charge before, recharge before end
+// Expected: equipment = 190 units per 100 units + (100 kg - (1% * 1000 units * 1 kg / unit)) * 1 unit / kg
+// Calculation: 100 units + (100 - 10) * 1 = 100 + 90 = 190 units
+
+start default
+
+  define application "App"
+  
+    uses substance "Sub1"
+
+      # A - Equivalencies
+      equals 1 tCO2e / kg
+      equals 1 kwh / kg
+      
+      # B - Set initial charge BEFORE setting manufacture
+      initial charge with 1 kg / unit for manufacture
+      initial charge with 1 kg / unit for import
+      
+      # C - Set prior equipment
+      set priorEquipment to 1000 units during year 1
+      
+      # D - Set recharge
+      recharge at 1 % annually
+      
+      # F - Recharge before setting manufacture
+      recharge during year 1
+      
+      # E - Set manufacture in kg (not units)
+      set manufacture to 100 kg during year 1
+
+    end substance
+  
+  end application
+
+end default
+
+
+start simulations
+
+  simulate "BAU"
+  from years 1 to 3
+
+end simulations

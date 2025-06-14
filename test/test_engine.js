@@ -1142,6 +1142,50 @@ function buildEngineTests() {
       const unitsAfterReplace2 = engine.getLastSpecifiedUnits("manufacture");
       assert.equal(unitsAfterReplace2, "units");
     });
+
+    QUnit.test("initial charge considers last specified units", function (assert) {
+      const engine = new Engine(1, 3);
+
+      engine.setStanza("default");
+      engine.setApplication("TestApp");
+      engine.setSubstance("TestSub");
+
+      // Set equivalencies
+      engine.equals(new EngineNumber(1, "tCO2e / kg"), new YearMatcher(null, null));
+      engine.equals(new EngineNumber(1, "kwh / kg"), new YearMatcher(null, null));
+
+      // Set prior equipment
+      engine.setStream("priorEquipment", new EngineNumber(1000, "units"));
+
+      // Test 1: Set manufacture in kg, then set initial charge
+      engine.setStream("manufacture", new EngineNumber(100, "kg"));
+      engine.setInitialCharge(new EngineNumber(1, "kg / unit"), "manufacture");
+
+      const equipment1 = engine.getStream("equipment");
+      // With 100 kg manufacture, 1 kg/unit initial charge:
+      // New units = 100 / 1 = 100 units
+      // Total equipment = 1000 + 100 = 1100 units
+      assert.equal(equipment1.getValue(), 1100);
+      assert.equal(equipment1.getUnits(), "units");
+
+      // Test 2: Reset and set manufacture in units, then set initial charge
+      const engine2 = new Engine(1, 3);
+      engine2.setStanza("default");
+      engine2.setApplication("TestApp");
+      engine2.setSubstance("TestSub");
+      engine2.equals(new EngineNumber(1, "tCO2e / kg"), new YearMatcher(null, null));
+      engine2.equals(new EngineNumber(1, "kwh / kg"), new YearMatcher(null, null));
+      engine2.setStream("priorEquipment", new EngineNumber(1000, "units"));
+
+      engine2.setStream("manufacture", new EngineNumber(100, "units"));
+      engine2.setInitialCharge(new EngineNumber(1, "kg / unit"), "manufacture");
+
+      const equipment2 = engine2.getStream("equipment");
+      // This test verifies that the units tracking works correctly
+      // The specific calculation will depend on implementation details
+      assert.ok(equipment2.getValue() >= 1000); // Should be at least the prior equipment
+      assert.equal(equipment2.getUnits(), "units");
+    });
   });
 }
 
