@@ -220,6 +220,12 @@ end default</code></pre>
           applications to HFC-134a with the same annual servicing frequency and retirement but 50%
           of the initial charge and recharge levels.
         </p>
+        
+        <p class="aside">
+          Note that when specifying units of equipment in manufacturing (or import) set points, 
+          recharge will not reduce the specified amount. For example, setting manufacture to 100 units 
+          means 100 new units will be produced on top of the kg that goes into recharge for prior equipment.
+        </p>
 
         <details>
           <summary>Code for R-404A starting conditions</summary>
@@ -394,12 +400,6 @@ end default</code></pre>
           There is one Domestic AC manufacturer using R-410A with production volume of 40,000 units
           per annum. Domestic AC are imported at 100 units per year and Commercial AC are imported
           at 3,000 units per year. This has a GWP of 2,087.5 tCO2e.
-        </p>
-        
-        <p>
-          Note that when specifying units of equipment in manufacturing (or import) set points, 
-          recharge will not reduce the specified amount. For example, setting manufacture to 100 units 
-          means 100 new units will be produced on top of the kg that goes into recharge for prior equipment.
         </p>
 
         <details>
@@ -1049,7 +1049,8 @@ end simulations</code></pre>
   end application
 
   define application "Chiller"
-    # Chillers are large size ACs that other simulations may put under the commercial AC category but it should be its own application category for the case study
+    # Chillers are large size ACs that other simulations may put under the commercial AC 
+    # category but it should be its own application category for the case study
 
     uses substance "HFC-134a"
       set priorEquipment to 60000 units during year beginning
@@ -1100,7 +1101,9 @@ end simulations</code></pre>
       retire 6 % each year  # roughly equivalent to 15 years
       recharge 10 % each year with 1.00 kg / unit
       set import to 100 units / year during year beginning
-      set manufacture to 40000 units / year during year beginning  # recharge will not reduce when units are specified in a set point - setting manufacture to 100 units means 100 new units will be produced on top of the kg that goes into recharge for prior equipment
+      set manufacture to 40000 units / year during year beginning  # recharge will not reduce 
+      # when units are specified in a set point - setting manufacture to 100 units means 100 
+      # new units will be produced on top of the kg that goes into recharge for prior equipment
       equals 2087.5 tCO2e / kg
     end substance
 

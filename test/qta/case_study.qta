@@ -69,7 +69,8 @@ start default
   end application
 
   define application "Chiller"
-    # Chillers are large size ACs that other simulations may put under the commercial AC category but it should be its own application category for the case study
+    # Chillers are large size ACs that other simulations may put under the commercial AC 
+    # category but it should be its own application category for the case study
 
     uses substance "HFC-134a"
       set priorEquipment to 60000 units during year beginning
@@ -120,7 +121,9 @@ start default
       retire 6 % each year  # roughly equivalent to 15 years
       recharge 10 % each year with 1.00 kg / unit
       set import to 100 units / year during year beginning
-      set manufacture to 40000 units / year during year beginning  # recharge will not reduce when units are specified in a set point - setting manufacture to 100 units means 100 new units will be produced on top of the kg that goes into recharge for prior equipment
+      set manufacture to 40000 units / year during year beginning  # recharge will not reduce 
+      # when units are specified in a set point - setting manufacture to 100 units means 100 
+      # new units will be produced on top of the kg that goes into recharge for prior equipment
       equals 2087.5 tCO2e / kg
     end substance
 
