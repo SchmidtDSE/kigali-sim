@@ -162,6 +162,46 @@ function buildCompilerTests() {
       },
     ]);
 
+    buildTest("handles change command by adding kg", "/test/qta/change_add_kg.qta", [
+      (result, assert) => {
+        const record = getResult(result, BAU_NAME, 2, 0, "test", "test");
+        const manufacture = record.getManufacture();
+        assert.closeTo(manufacture.getValue(), 110, 0.0001);
+        assert.deepEqual(manufacture.getUnits(), "kg");
+      },
+    ]);
+
+    buildTest("handles change command by subtracting kg", "/test/qta/change_subtract_kg.qta", [
+      (result, assert) => {
+        const record = getResult(result, BAU_NAME, 2, 0, "test", "test");
+        const manufacture = record.getManufacture();
+        assert.closeTo(manufacture.getValue(), 90, 0.0001);
+        assert.deepEqual(manufacture.getUnits(), "kg");
+      },
+    ]);
+
+    buildTest("handles change command by adding units", "/test/qta/change_add_units.qta", [
+      (result, assert) => {
+        const record = getResult(result, BAU_NAME, 2, 0, "test", "test");
+        const manufacture = record.getManufacture();
+        assert.closeTo(manufacture.getValue(), 110, 0.0001);
+        assert.deepEqual(manufacture.getUnits(), "kg");
+      },
+    ]);
+
+    buildTest(
+      "handles change command by subtracting units",
+      "/test/qta/change_subtract_units.qta",
+      [
+        (result, assert) => {
+          const record = getResult(result, BAU_NAME, 2, 0, "test", "test");
+          const manufacture = record.getManufacture();
+          assert.closeTo(manufacture.getValue(), 90, 0.0001);
+          assert.deepEqual(manufacture.getUnits(), "kg");
+        },
+      ],
+    );
+
     buildTest("interprets a retire command", "/test/qta/retire.qta", [
       (result, assert) => {
         const record = getResult(result, BAU_NAME, 2, 0, "test", "test");
