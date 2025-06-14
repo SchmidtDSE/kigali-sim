@@ -725,6 +725,66 @@ function buildCompilerTests() {
         },
       ],
     );
+
+    buildTest("tests cap with units includes recharge on top", "/test/qta/cap_units.qta", [
+      (result, assert) => {
+        const record = getResult(result, "result", 1, 0, "test", "test");
+        const manufacture = record.getManufacture();
+
+        // With recharge on top: 50 units * 2 kg/unit + (20 units * 10% * 1 kg/unit) = 102 kg
+        // Since original value is 100 kg and cap should be 102 kg, no change expected
+        assert.closeTo(manufacture.getValue(), 100, 0.0001);
+        assert.deepEqual(manufacture.getUnits(), "kg");
+      },
+    ]);
+
+    buildTest("tests cap with kg works without recharge addition", "/test/qta/cap_kg.qta", [
+      (result, assert) => {
+        const record = getResult(result, "result", 1, 0, "test", "test");
+        const manufacture = record.getManufacture();
+
+        // Cap at 50 kg should reduce from 100 kg to 50 kg
+        assert.closeTo(manufacture.getValue(), 50, 0.0001);
+        assert.deepEqual(manufacture.getUnits(), "kg");
+      },
+    ]);
+
+    buildTest("tests floor with units includes recharge on top", "/test/qta/floor_units.qta", [
+      (result, assert) => {
+        const record = getResult(result, "result", 1, 0, "test", "test");
+        const manufacture = record.getManufacture();
+
+        // With recharge on top: 50 units * 2 kg/unit + (20 units * 10% * 1 kg/unit) = 102 kg
+        // Since original value is 10 kg and floor should be 102 kg, should increase to 102 kg
+        assert.closeTo(manufacture.getValue(), 102, 0.0001);
+        assert.deepEqual(manufacture.getUnits(), "kg");
+      },
+    ]);
+
+    buildTest("debug baseline for recharge calculations", "/test/qta/debug_baseline.qta", [
+      (result, assert) => {
+        const record = getResult(result, "baseline", 1, 0, "test", "test");
+        const manufacture = record.getManufacture();
+        const rechargeEmissions = record.getRechargeEmissions();
+        
+        console.log("Baseline manufacture:", manufacture.getValue(), manufacture.getUnits());
+        console.log("Baseline recharge emissions:", rechargeEmissions.getValue(), rechargeEmissions.getUnits());
+        
+        assert.closeTo(manufacture.getValue(), 100, 0.0001);
+        assert.deepEqual(manufacture.getUnits(), "kg");
+      },
+    ]);
+
+    buildTest("tests floor with kg works without recharge addition", "/test/qta/floor_kg.qta", [
+      (result, assert) => {
+        const record = getResult(result, "result", 1, 0, "test", "test");
+        const manufacture = record.getManufacture();
+
+        // Floor at 50 kg should increase from 10 kg to 50 kg
+        assert.closeTo(manufacture.getValue(), 50, 0.0001);
+        assert.deepEqual(manufacture.getUnits(), "kg");
+      },
+    ]);
   });
 }
 
