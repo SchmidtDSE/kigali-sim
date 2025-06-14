@@ -1117,7 +1117,7 @@ function buildEngineTests() {
 
       // Replace with equipment units - should track the original units from user
       engine.replace(new EngineNumber(25, "units"), "manufacture", "substance2");
-      
+
       // Check that substance1 tracked the units
       const unitsAfterReplace1 = engine.getLastSpecifiedUnits("manufacture");
       assert.equal(unitsAfterReplace1, "units");

@@ -923,7 +923,8 @@ class Engine {
     self._streamKeeper.setLastSpecifiedUnits(application, currentSubstance, amountRaw.getUnits());
 
     // Track the original user-specified units for the destination substance
-    self._streamKeeper.setLastSpecifiedUnits(application, destinationSubstance, amountRaw.getUnits());
+    self._streamKeeper.setLastSpecifiedUnits(
+      application, destinationSubstance, amountRaw.getUnits());
 
     const amountNegative = new EngineNumber(-1 * amount.getValue(), amount.getUnits());
     self._changeStreamInternal(stream, amountNegative);
