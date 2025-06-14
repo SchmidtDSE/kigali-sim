@@ -312,6 +312,36 @@ function buildEngineStateTests() {
       assert.equal(retrieved.getValue(), 10.0);
       assert.equal(retrieved.getUnits(), "%");
     });
+
+    QUnit.test("last specified units getter and setter", function (assert) {
+      const parameterization = new StreamParameterization();
+
+      // Test default value
+      const defaultUnits = parameterization.getLastSpecifiedUnits();
+      assert.equal(defaultUnits, "kg");
+
+      // Test setting and getting units
+      parameterization.setLastSpecifiedUnits("kg");
+      const retrieved = parameterization.getLastSpecifiedUnits();
+      assert.equal(retrieved, "kg");
+
+      // Test setting different units
+      parameterization.setLastSpecifiedUnits("units");
+      const retrievedUnits = parameterization.getLastSpecifiedUnits();
+      assert.equal(retrievedUnits, "units");
+    });
+
+    QUnit.test("resetInternals resets last specified units", function (assert) {
+      const parameterization = new StreamParameterization();
+
+      // Set units and verify
+      parameterization.setLastSpecifiedUnits("kg");
+      assert.equal(parameterization.getLastSpecifiedUnits(), "kg");
+
+      // Reset and verify default
+      parameterization.resetInternals();
+      assert.equal(parameterization.getLastSpecifiedUnits(), "kg");
+    });
   });
 
   QUnit.module("StreamKeeper", function () {
@@ -561,6 +591,40 @@ function buildEngineStateTests() {
 
       assert.notDeepEqual(substance1, undefined);
       assert.notDeepEqual(substance2, undefined);
+    });
+
+    QUnit.test("last specified units getter and setter delegate to parameterization",
+      function (assert) {
+        const keeper = createMockKeeper();
+        keeper.ensureSubstance("test app", "test substance");
+
+        // Test default value
+        const defaultUnits = keeper.getLastSpecifiedUnits("test app", "test substance");
+        assert.equal(defaultUnits, "kg");
+
+        // Test setting and getting
+        keeper.setLastSpecifiedUnits("test app", "test substance", "kg");
+        const retrieved = keeper.getLastSpecifiedUnits("test app", "test substance");
+        assert.equal(retrieved, "kg");
+      });
+
+    QUnit.test("setStream automatically tracks last specified units", function (assert) {
+      const keeper = createMockKeeper();
+      keeper.ensureSubstance("test app", "test substance");
+
+      // Test default value
+      const defaultUnits = keeper.getLastSpecifiedUnits("test app", "test substance");
+      assert.equal(defaultUnits, "kg");
+
+      // Test setting units directly via StreamKeeper methods
+      keeper.setLastSpecifiedUnits("test app", "test substance", "kg");
+      const unitsAfterKg = keeper.getLastSpecifiedUnits("test app", "test substance");
+      assert.equal(unitsAfterKg, "kg");
+
+      // Test setting different units
+      keeper.setLastSpecifiedUnits("test app", "test substance", "units");
+      const unitsAfterUnits = keeper.getLastSpecifiedUnits("test app", "test substance");
+      assert.equal(unitsAfterUnits, "units");
     });
   });
 }
