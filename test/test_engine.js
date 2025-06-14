@@ -989,17 +989,17 @@ function buildEngineTests() {
 
       // Test default
       const defaultUnits = engine.getLastSpecifiedUnits("manufacture");
-      assert.equal(defaultUnits, "");
-
-      // Test setting with kg units
-      engine.setStream("manufacture", new EngineNumber(100, "kg"));
-      const unitsAfterKg = engine.getLastSpecifiedUnits("manufacture");
-      assert.equal(unitsAfterKg, "kg");
+      assert.equal(defaultUnits, "kg");
 
       // Test setting with units
       engine.setStream("equipment", new EngineNumber(50, "units"));
       const unitsAfterUnits = engine.getLastSpecifiedUnits("equipment");
       assert.equal(unitsAfterUnits, "units");
+
+      // Test setting with kg units
+      engine.setStream("manufacture", new EngineNumber(100, "kg"));
+      const unitsAfterKg = engine.getLastSpecifiedUnits("manufacture");
+      assert.equal(unitsAfterKg, "kg");
     });
 
     QUnit.test("getLastSpecifiedInUnits works with explicit application and substance",
@@ -1064,6 +1064,11 @@ function buildEngineTests() {
       engine.changeStream("manufacture", new EngineNumber(25, "units"));
       const unitsAfterChange = engine.getLastSpecifiedUnits("manufacture");
       assert.equal(unitsAfterChange, "units");
+
+      // Change again with kg units - should update tracked units
+      engine.changeStream("manufacture", new EngineNumber(10, "kg"));
+      const unitsAfterChangeKg = engine.getLastSpecifiedUnits("manufacture");
+      assert.equal(unitsAfterChangeKg, "kg");
     });
 
     QUnit.test("tracks units for cap operation", function (assert) {
@@ -1080,6 +1085,11 @@ function buildEngineTests() {
       engine.cap("manufacture", new EngineNumber(50, "units"));
       const unitsAfterCap = engine.getLastSpecifiedUnits("manufacture");
       assert.equal(unitsAfterCap, "units");
+
+      // Cap again with kg units - should update tracked units
+      engine.cap("manufacture", new EngineNumber(40, "kg"));
+      const unitsAfterCapKg = engine.getLastSpecifiedUnits("manufacture");
+      assert.equal(unitsAfterCapKg, "kg");
     });
 
     QUnit.test("tracks units for floor operation", function (assert) {
@@ -1096,6 +1106,11 @@ function buildEngineTests() {
       engine.floor("manufacture", new EngineNumber(30, "units"));
       const unitsAfterFloor = engine.getLastSpecifiedUnits("manufacture");
       assert.equal(unitsAfterFloor, "units");
+
+      // Floor again with kg units - should update tracked units
+      engine.floor("manufacture", new EngineNumber(25, "kg"));
+      const unitsAfterFloorKg = engine.getLastSpecifiedUnits("manufacture");
+      assert.equal(unitsAfterFloorKg, "kg");
     });
 
     QUnit.test("tracks units for replace operation", function (assert) {

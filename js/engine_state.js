@@ -433,7 +433,7 @@ class StreamParameterization {
     self._yieldRate = createZero("%");
     self._retirementRate = createZero("%");
     self._displacementRate = new EngineNumber(100, "%");
-    self._lastSpecifiedUnits = "";
+    self._lastSpecifiedUnits = "kg";
   }
 
   /**

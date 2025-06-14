@@ -318,7 +318,7 @@ function buildEngineStateTests() {
 
       // Test default value
       const defaultUnits = parameterization.getLastSpecifiedUnits();
-      assert.equal(defaultUnits, "");
+      assert.equal(defaultUnits, "kg");
 
       // Test setting and getting units
       parameterization.setLastSpecifiedUnits("kg");
@@ -340,7 +340,7 @@ function buildEngineStateTests() {
 
       // Reset and verify default
       parameterization.resetInternals();
-      assert.equal(parameterization.getLastSpecifiedUnits(), "");
+      assert.equal(parameterization.getLastSpecifiedUnits(), "kg");
     });
   });
 
@@ -600,7 +600,7 @@ function buildEngineStateTests() {
 
         // Test default value
         const defaultUnits = keeper.getLastSpecifiedUnits("test app", "test substance");
-        assert.equal(defaultUnits, "");
+        assert.equal(defaultUnits, "kg");
 
         // Test setting and getting
         keeper.setLastSpecifiedUnits("test app", "test substance", "kg");
@@ -614,7 +614,7 @@ function buildEngineStateTests() {
 
       // Test default value
       const defaultUnits = keeper.getLastSpecifiedUnits("test app", "test substance");
-      assert.equal(defaultUnits, "");
+      assert.equal(defaultUnits, "kg");
 
       // Test setting units directly via StreamKeeper methods
       keeper.setLastSpecifiedUnits("test app", "test substance", "kg");
