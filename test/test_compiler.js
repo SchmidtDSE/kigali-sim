@@ -771,7 +771,7 @@ function buildCompilerTests() {
         assert.deepEqual(manufacture.getUnits(), "kg");
       },
     ]);
-    
+
     buildTest(
       "tests ordering-sensitive emissions issue",
       "/test/qta/ordering_sensitive_emissions.qta", [
@@ -798,7 +798,7 @@ function buildCompilerTests() {
           const emissionsB = recordB.getRechargeEmissions();
           assert.closeTo(emissionsA.getValue(), emissionsB.getValue(), 0.001);
         },
-      ]
+      ],
     );
   });
 }
