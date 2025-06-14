@@ -162,6 +162,46 @@ function buildCompilerTests() {
       },
     ]);
 
+    buildTest("handles change command by adding kg", "/test/qta/change_add_kg.qta", [
+      (result, assert) => {
+        const record = getResult(result, BAU_NAME, 2, 0, "test", "test");
+        const manufacture = record.getManufacture();
+        assert.closeTo(manufacture.getValue(), 110, 0.0001);
+        assert.deepEqual(manufacture.getUnits(), "kg");
+      },
+    ]);
+
+    buildTest("handles change command by subtracting kg", "/test/qta/change_subtract_kg.qta", [
+      (result, assert) => {
+        const record = getResult(result, BAU_NAME, 2, 0, "test", "test");
+        const manufacture = record.getManufacture();
+        assert.closeTo(manufacture.getValue(), 90, 0.0001);
+        assert.deepEqual(manufacture.getUnits(), "kg");
+      },
+    ]);
+
+    buildTest("handles change command by adding units", "/test/qta/change_add_units.qta", [
+      (result, assert) => {
+        const record = getResult(result, BAU_NAME, 2, 0, "test", "test");
+        const manufacture = record.getManufacture();
+        assert.closeTo(manufacture.getValue(), 110, 0.0001);
+        assert.deepEqual(manufacture.getUnits(), "kg");
+      },
+    ]);
+
+    buildTest(
+      "handles change command by subtracting units",
+      "/test/qta/change_subtract_units.qta",
+      [
+        (result, assert) => {
+          const record = getResult(result, BAU_NAME, 2, 0, "test", "test");
+          const manufacture = record.getManufacture();
+          assert.closeTo(manufacture.getValue(), 90, 0.0001);
+          assert.deepEqual(manufacture.getUnits(), "kg");
+        },
+      ],
+    );
+
     buildTest("interprets a retire command", "/test/qta/retire.qta", [
       (result, assert) => {
         const record = getResult(result, BAU_NAME, 2, 0, "test", "test");
@@ -274,6 +314,50 @@ function buildCompilerTests() {
         const record = getResult(result, "result", 2, 0, "test", "test");
         const consumption = record.getRecycleConsumption();
         assert.closeTo(consumption.getValue(), 500 - 437.5, 0.0001);
+        assert.deepEqual(consumption.getUnits(), "tCO2e");
+      },
+    ]);
+
+    buildTest("handles recycling by kg", "/test/qta/recycle_by_kg.qta", [
+      (result, assert) => {
+        const record = getResult(result, "result", 1, 0, "test", "test");
+        const consumption = record.getGhgConsumption();
+        assert.closeTo(consumption.getValue(), 500, 0.0001);
+        assert.deepEqual(consumption.getUnits(), "tCO2e");
+      },
+      (result, assert) => {
+        const record = getResult(result, "result", 2, 0, "test", "test");
+        const consumption = record.getGhgConsumption();
+        assert.closeTo(consumption.getValue(), 500, 0.0001);
+        assert.deepEqual(consumption.getUnits(), "tCO2e");
+      },
+      (result, assert) => {
+        const record = getResult(result, "result", 2, 0, "test", "test");
+        const consumption = record.getRecycleConsumption();
+        // 25 kg * 5 tCO2e/mt = 25 kg * 5 tCO2e/(1000 kg) = 0.125 tCO2e
+        assert.closeTo(consumption.getValue(), 0.125, 0.0001);
+        assert.deepEqual(consumption.getUnits(), "tCO2e");
+      },
+    ]);
+
+    buildTest("handles recycling by units", "/test/qta/recycle_by_units.qta", [
+      (result, assert) => {
+        const record = getResult(result, "result", 1, 0, "test", "test");
+        const consumption = record.getGhgConsumption();
+        assert.closeTo(consumption.getValue(), 500, 0.0001);
+        assert.deepEqual(consumption.getUnits(), "tCO2e");
+      },
+      (result, assert) => {
+        const record = getResult(result, "result", 2, 0, "test", "test");
+        const consumption = record.getGhgConsumption();
+        assert.closeTo(consumption.getValue(), 500, 0.0001);
+        assert.deepEqual(consumption.getUnits(), "tCO2e");
+      },
+      (result, assert) => {
+        const record = getResult(result, "result", 2, 0, "test", "test");
+        const consumption = record.getRecycleConsumption();
+        // 1000 units * 2 kg/unit = 2000 kg, 2000 kg * 5 tCO2e/(1000 kg) = 10 tCO2e
+        assert.closeTo(consumption.getValue(), 10, 0.0001);
         assert.deepEqual(consumption.getUnits(), "tCO2e");
       },
     ]);
@@ -434,6 +518,40 @@ function buildCompilerTests() {
         },
       ],
     );
+
+    buildTest("handles replace by units", "/test/qta/replace_units.qta", [
+      (result, assert) => {
+        const record = getResult(result, "result", 1, 0, "test", "a");
+        const consumption = record.getGhgConsumption();
+        // Calculation: Original 50 mt - replaced 25 mt = 25 mt remaining × 10 tCO2e/mt = 250 tCO2e
+        assert.closeTo(consumption.getValue(), 250, 0.0001);
+        assert.deepEqual(consumption.getUnits(), "tCO2e");
+      },
+      (result, assert) => {
+        const record = getResult(result, "result", 1, 0, "test", "b");
+        const consumption = record.getGhgConsumption();
+        // Calculation: Original 50 mt + added 25 mt = 75 mt total × 5 tCO2e/mt = 375 tCO2e
+        assert.closeTo(consumption.getValue(), 375, 0.0001);
+        assert.deepEqual(consumption.getUnits(), "tCO2e");
+      },
+    ]);
+
+    buildTest("handles replace by kg", "/test/qta/replace_kg.qta", [
+      (result, assert) => {
+        const record = getResult(result, "result", 1, 0, "test", "a");
+        const consumption = record.getGhgConsumption();
+        // Calculation: Original 50 mt - replaced 25 mt = 25 mt remaining × 10 tCO2e/mt = 250 tCO2e
+        assert.closeTo(consumption.getValue(), 250, 0.0001);
+        assert.deepEqual(consumption.getUnits(), "tCO2e");
+      },
+      (result, assert) => {
+        const record = getResult(result, "result", 1, 0, "test", "b");
+        const consumption = record.getGhgConsumption();
+        // Calculation: Original 50 mt + added 25 mt = 75 mt total × 5 tCO2e/mt = 375 tCO2e
+        assert.closeTo(consumption.getValue(), 375, 0.0001);
+        assert.deepEqual(consumption.getUnits(), "tCO2e");
+      },
+    ]);
 
     buildTest("runs trials", "/test/qta/trials.qta", [
       (result, assert) => {
@@ -604,6 +722,146 @@ function buildCompilerTests() {
           const equipment3 = record3.getPopulation();
           assert.closeTo(equipment3.getValue(), 3000000, 0.0001);
           assert.deepEqual(equipment3.getUnits(), "units");
+        },
+      ],
+    );
+
+    buildTest("tests cap with units includes recharge on top", "/test/qta/cap_units.qta", [
+      (result, assert) => {
+        const record = getResult(result, "result", 1, 0, "test", "test");
+        const manufacture = record.getManufacture();
+
+        // With recharge on top: 50 units * 2 kg/unit + (20 units * 10% * 1 kg/unit) = 102 kg
+        // Since original value is 100 kg and cap should be 102 kg, no change expected
+        assert.closeTo(manufacture.getValue(), 100, 0.0001);
+        assert.deepEqual(manufacture.getUnits(), "kg");
+      },
+    ]);
+
+    buildTest("tests cap with kg works without recharge addition", "/test/qta/cap_kg.qta", [
+      (result, assert) => {
+        const record = getResult(result, "result", 1, 0, "test", "test");
+        const manufacture = record.getManufacture();
+
+        // Cap at 50 kg should reduce from 100 kg to 50 kg
+        assert.closeTo(manufacture.getValue(), 50, 0.0001);
+        assert.deepEqual(manufacture.getUnits(), "kg");
+      },
+    ]);
+
+    buildTest("tests floor with units includes recharge on top", "/test/qta/floor_units.qta", [
+      (result, assert) => {
+        const record = getResult(result, "result", 1, 0, "test", "test");
+        const manufacture = record.getManufacture();
+
+        // With recharge on top: 50 units * 2 kg/unit + (20 units * 10% * 1 kg/unit) = 102 kg
+        // Since original value is 10 kg and floor should be 102 kg, should increase to 102 kg
+        assert.closeTo(manufacture.getValue(), 102, 0.0001);
+        assert.deepEqual(manufacture.getUnits(), "kg");
+      },
+    ]);
+
+    buildTest("tests floor with kg works without recharge addition", "/test/qta/floor_kg.qta", [
+      (result, assert) => {
+        const record = getResult(result, "result", 1, 0, "test", "test");
+        const manufacture = record.getManufacture();
+
+        // Floor at 50 kg should increase from 10 kg to 50 kg
+        assert.closeTo(manufacture.getValue(), 50, 0.0001);
+        assert.deepEqual(manufacture.getUnits(), "kg");
+      },
+    ]);
+
+    buildTest(
+      "tests ordering-sensitive recharge emissions issue",
+      "/test/qta/ordering_sensitive_emissions.qta", [
+        (result, assert) => {
+          // Test SubA (tCO2e equals comes before recharge)
+          const recordA = getResult(result, BAU_NAME, 2035, 0, "test", "SubA");
+          const emissionsA = recordA.getRechargeEmissions();
+          assert.ok(emissionsA.getValue() > 0, "A > 0");
+          assert.deepEqual(emissionsA.getUnits(), "tCO2e");
+        },
+        (result, assert) => {
+          // Test SubB (recharge comes before tCO2e equals)
+          const recordB = getResult(result, BAU_NAME, 2035, 0, "test", "SubB");
+          const emissionsB = recordB.getRechargeEmissions();
+          assert.ok(emissionsB.getValue() > 0, "B > 0");
+          assert.deepEqual(emissionsB.getUnits(), "tCO2e");
+        },
+        (result, assert) => {
+          // Test SubC (recharge comes before tCO2e equals)
+          const recordC = getResult(result, BAU_NAME, 2035, 0, "test", "SubC");
+          const emissionsC = recordC.getRechargeEmissions();
+          assert.ok(emissionsC.getValue() > 0, "C > 0");
+          assert.deepEqual(emissionsC.getUnits(), "tCO2e");
+        },
+        (result, assert) => {
+          // Test SubD (recharge comes before tCO2e equals)
+          const recordD = getResult(result, BAU_NAME, 2035, 0, "test", "SubD");
+          const emissionsD = recordD.getRechargeEmissions();
+          assert.ok(emissionsD.getValue() > 0, "D > 0");
+          assert.deepEqual(emissionsD.getUnits(), "tCO2e");
+        },
+        (result, assert) => {
+          const recordA = getResult(result, BAU_NAME, 2035, 0, "test", "SubA");
+          const recordB = getResult(result, BAU_NAME, 2035, 0, "test", "SubB");
+          const recordC = getResult(result, BAU_NAME, 2035, 0, "test", "SubC");
+          const recordD = getResult(result, BAU_NAME, 2035, 0, "test", "SubD");
+          const emissionsA = recordA.getRechargeEmissions();
+          const emissionsB = recordB.getRechargeEmissions();
+          const emissionsC = recordC.getRechargeEmissions();
+          const emissionsD = recordD.getRechargeEmissions();
+          assert.closeTo(emissionsA.getValue(), emissionsB.getValue(), 0.001, "A = B");
+          assert.closeTo(emissionsB.getValue(), emissionsC.getValue(), 0.001, "B = C");
+          assert.closeTo(emissionsC.getValue(), emissionsD.getValue(), 0.001, "C = D");
+        },
+      ],
+    );
+
+    buildTest(
+      "tests ordering-sensitive eol emissions issue",
+      "/test/qta/ordering_sensitive_emissions.qta", [
+        (result, assert) => {
+          // Test SubA (tCO2e equals comes before recharge)
+          const recordA = getResult(result, BAU_NAME, 2035, 0, "test", "SubA");
+          const emissionsA = recordA.getEolEmissions();
+          assert.ok(emissionsA.getValue() > 0, "A > 0");
+          assert.deepEqual(emissionsA.getUnits(), "tCO2e");
+        },
+        (result, assert) => {
+          // Test SubB (recharge comes before tCO2e equals)
+          const recordB = getResult(result, BAU_NAME, 2035, 0, "test", "SubB");
+          const emissionsB = recordB.getEolEmissions();
+          assert.ok(emissionsB.getValue() > 0, "B > 0");
+          assert.deepEqual(emissionsB.getUnits(), "tCO2e");
+        },
+        (result, assert) => {
+          // Test SubC (recharge comes before tCO2e equals)
+          const recordB = getResult(result, BAU_NAME, 2035, 0, "test", "SubC");
+          const emissionsB = recordB.getEolEmissions();
+          assert.ok(emissionsB.getValue() > 0, "C > 0");
+          assert.deepEqual(emissionsB.getUnits(), "tCO2e");
+        },
+        (result, assert) => {
+          // Test SubD (recharge comes before tCO2e equals)
+          const recordB = getResult(result, BAU_NAME, 2035, 0, "test", "SubD");
+          const emissionsB = recordB.getEolEmissions();
+          assert.ok(emissionsB.getValue() > 0, "D > 0");
+          assert.deepEqual(emissionsB.getUnits(), "tCO2e");
+        },
+        (result, assert) => {
+          const recordA = getResult(result, BAU_NAME, 2035, 0, "test", "SubA");
+          const recordB = getResult(result, BAU_NAME, 2035, 0, "test", "SubB");
+          const recordC = getResult(result, BAU_NAME, 2035, 0, "test", "SubC");
+          const recordD = getResult(result, BAU_NAME, 2035, 0, "test", "SubD");
+          const emissionsA = recordA.getEolEmissions();
+          const emissionsB = recordB.getEolEmissions();
+          const emissionsC = recordC.getEolEmissions();
+          const emissionsD = recordD.getEolEmissions();
+          assert.closeTo(emissionsA.getValue(), emissionsB.getValue(), 0.001, "A = B");
+          assert.closeTo(emissionsB.getValue(), emissionsC.getValue(), 0.001, "B = C");
+          assert.closeTo(emissionsC.getValue(), emissionsD.getValue(), 0.001, "C = D");
         },
       ],
     );

@@ -39,6 +39,16 @@ class EngineNumber {
     const self = this;
     return self._units;
   }
+
+  /**
+   * Check if this number has equipment units.
+   *
+   * @returns {boolean} True if the units represent equipment units.
+   */
+  hasEquipmentUnits() {
+    const self = this;
+    return self._units.startsWith("unit");
+  }
 }
 
 export {EngineNumber};

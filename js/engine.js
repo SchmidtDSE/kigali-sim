@@ -168,8 +168,11 @@ class Engine {
    *     default scope if not provided.
    * @param {boolean} propagateChanges - Specifies if changes should propagate
    *     to other components. Defaults to true.
+   * @param {string} unitsToRecord - Optional units to record instead of using
+   *     value.getUnits(). Used when the original user-specified units differ
+   *     from the converted units being set.
    */
-  setStream(name, value, yearMatcher, scope, propagateChanges) {
+  setStream(name, value, yearMatcher, scope, propagateChanges, unitsToRecord) {
     const self = this;
 
     const noYearMatcher = yearMatcher === undefined || yearMatcher === null;
@@ -193,12 +196,18 @@ class Engine {
       propagateChanges = true;
     }
 
+    // Track the units last used to specify this stream (only for user-initiated calls)
+    if (propagateChanges && unitsToRecord !== null) {
+      const unitsToRecordRealized = unitsToRecord !== undefined ? unitsToRecord : value.getUnits();
+      self._streamKeeper.setLastSpecifiedUnits(application, substance, unitsToRecordRealized);
+    }
+
     if (!propagateChanges) {
       return;
     }
 
     if (name === "sales" || name === "manufacture" || name === "import") {
-      self._recalcPopulationChange(scopeEffective, !value.getUnits().startsWith("unit"));
+      self._recalcPopulationChange(scopeEffective, !value.hasEquipmentUnits());
       self._recalcConsumption(scopeEffective);
       if (!OPTIMIZE_RECALCS) {
         self._recalcSales(scopeEffective);
@@ -452,15 +461,40 @@ class Engine {
     }
 
     if (stream === "sales") {
-      self.setInitialCharge(value, "manufacture");
-      self.setInitialCharge(value, "import");
+      // For sales, set both manufacture and import but don't recalculate yet
+      const application = self._scope.getApplication();
+      const substance = self._scope.getSubstance();
+      self._streamKeeper.setInitialCharge(application, substance, "manufacture", value);
+      self._streamKeeper.setInitialCharge(application, substance, "import", value);
     } else {
       const application = self._scope.getApplication();
       const substance = self._scope.getSubstance();
       self._streamKeeper.setInitialCharge(application, substance, stream, value);
     }
 
-    self._recalcPopulationChange();
+    const getShouldSubtractRecharge = () => {
+      const application = self._scope.getApplication();
+      const substance = self._scope.getSubstance();
+
+      if (stream === "sales") {
+        // For sales, check if either manufacture or import were last specified in units
+        const lastUnits = self._streamKeeper.getLastSpecifiedUnits(application, substance);
+        if (lastUnits && lastUnits.startsWith("unit")) {
+          return false; // Add recharge on top
+        }
+      } else if (stream === "manufacture" || stream === "import") {
+        // For manufacture or import, check if that specific channel was last specified in units
+        const lastUnits = self._streamKeeper.getLastSpecifiedUnits(application, substance);
+        if (lastUnits && lastUnits.startsWith("unit")) {
+          return false; // Add recharge on top
+        }
+      }
+
+      return true;
+    };
+
+    const subtractRecharge = getShouldSubtractRecharge();
+    self._recalcPopulationChange(null, subtractRecharge);
   }
 
   /**
@@ -499,6 +533,50 @@ class Engine {
   getRechargeIntensityFor(application, substance) {
     const self = this;
     return self._streamKeeper.getRechargeIntensity(application, substance);
+  }
+
+  /**
+   * Get the last specified units for the current application and substance.
+   *
+   * @param {string} stream - The stream name (not currently used but kept for API consistency).
+   * @returns {string} The last specified units string.
+   */
+  getLastSpecifiedUnits(stream) {
+    const self = this;
+    const application = self._scope.getApplication();
+    const substance = self._scope.getSubstance();
+    return self.getLastSpecifiedInUnits(application, substance, stream);
+  }
+
+  /**
+   * Get the last specified units for a given application and substance.
+   *
+   * @param {string} application - The name of the application.
+   * @param {string} substance - The name of the substance.
+   * @param {string} stream - The stream name (not currently used but kept for API consistency).
+   * @returns {string} The last specified units string.
+   */
+  getLastSpecifiedInUnits(application, substance, stream) {
+    const self = this;
+    return self._streamKeeper.getLastSpecifiedUnits(application, substance);
+  }
+
+  /**
+   * Set the last specified units for the current application and substance.
+   *
+   * @param {string} stream - The stream name (not currently used but kept for API consistency).
+   * @param {string} units - The units string to set.
+   */
+  setLastSpecifiedUnits(stream, units) {
+    const self = this;
+    const application = self._scope.getApplication();
+    const substance = self._scope.getSubstance();
+
+    if (application === null || substance === null) {
+      throw "Tried setting last specified units without application and substance specified.";
+    }
+
+    self._streamKeeper.setLastSpecifiedUnits(application, substance, units);
   }
 
   /**
@@ -619,6 +697,8 @@ class Engine {
 
     if (isGhg) {
       self._streamKeeper.setGhgIntensity(application, substance, amount);
+      self._recalcRechargeEmissions(self._scope);
+      self._recalcEolEmissions(self._scope);
     } else if (isKwh) {
       self._streamKeeper.setEnergyIntensity(application, substance, amount);
     } else {
@@ -705,7 +785,39 @@ class Engine {
     const convertedDelta = unitConverter.convert(amount, currentValue.getUnits());
     const newAmount = currentValue.getValue() + convertedDelta.getValue();
     const outputWithUnits = new EngineNumber(newAmount, currentValue.getUnits());
-    self.setStream(stream, outputWithUnits, null, scope);
+    // Pass the original user-specified units for tracking
+    self.setStream(stream, outputWithUnits, null, scope, true, amount.getUnits());
+  }
+
+  /**
+   * Set a stream value without changing the last units reported.
+   *
+   * Set a stream value without recording the units as the last units specified
+   * by the user. This is leveraged internally by commands such as cap, floor,
+   * and replace that handle units tracking (report last user provided units)
+   * themselves.
+   *
+   * @param {string} stream - The stream identifier to modify.
+   * @param {EngineNumber} amount - The amount to change the stream by.
+   * @param {Object} yearMatcher - Matcher to determine if the change applies
+   *     to current year.
+   * @param {Scope} scope - The scope in which to make the change.
+   */
+  _changeStreamWithoutReportingUnits(stream, amount, yearMatcher, scope) {
+    const self = this;
+
+    if (!self._getIsInRange(yearMatcher)) {
+      return;
+    }
+
+    const currentValue = self.getStream(stream, scope);
+    const unitConverter = self._createUnitConverterWithTotal(stream);
+
+    const convertedDelta = unitConverter.convert(amount, currentValue.getUnits());
+    const newAmount = currentValue.getValue() + convertedDelta.getValue();
+    const outputWithUnits = new EngineNumber(newAmount, currentValue.getUnits());
+    // Allow propagation but don't track units (since units tracking was handled by the caller)
+    self.setStream(stream, outputWithUnits, null, scope, true, null);
   }
 
   /**
@@ -729,22 +841,51 @@ class Engine {
     const currentValueRaw = self.getStream(stream);
     const currentValue = unitConverter.convert(currentValueRaw, "kg");
 
-    const convertedMax = unitConverter.convert(amount, "kg");
+    /**
+     * Calculate the converted maximum value, adding recharge volume if equipment units are used.
+     *
+     * @returns {EngineNumber} The converted maximum value in kg.
+     */
+    const getConvertedMax = () => {
+      if (amount.hasEquipmentUnits()) {
+        // For equipment units, convert to kg and add recharge volume on top
+        const amountInKg = unitConverter.convert(amount, "kg");
+        const rechargeVolume = self._calculateRechargeVolume();
+        const totalWithRecharge = amountInKg.getValue() + rechargeVolume.getValue();
+        return new EngineNumber(totalWithRecharge, "kg");
+      } else {
+        // For volume units, use as-is
+        return unitConverter.convert(amount, "kg");
+      }
+    };
+
+    const convertedMax = getConvertedMax();
+
     const changeAmountRaw = convertedMax.getValue() - currentValue.getValue();
     const changeAmount = Math.min(changeAmountRaw, 0);
 
+    // Record units regardless of whether change is made
+    const scope = self._scope;
+    const application = scope.getApplication();
+    const substance = scope.getSubstance();
+    if (application === null || substance === null) {
+      throw "Tried setting stream without application and substance specified.";
+    }
+    self._streamKeeper.setLastSpecifiedUnits(application, substance, amount.getUnits());
+
     const changeWithUnits = new EngineNumber(changeAmount, "kg");
-    self.changeStream(stream, changeWithUnits);
+    // Use internal changeStream that doesn't override the units tracking
+    self._changeStreamWithoutReportingUnits(stream, changeWithUnits);
 
     if (displaceTarget !== null && displaceTarget !== undefined) {
       const displaceChange = new EngineNumber(changeAmount * -1, "kg");
       const isStream = STREAM_NAMES.has(displaceTarget);
 
       if (isStream) {
-        self.changeStream(displaceTarget, displaceChange);
+        self._changeStreamWithoutReportingUnits(displaceTarget, displaceChange);
       } else {
         const destinationScope = self._scope.getWithSubstance(displaceTarget);
-        self.changeStream(stream, displaceChange, null, destinationScope);
+        self._changeStreamWithoutReportingUnits(stream, displaceChange, null, destinationScope);
       }
     }
   }
@@ -770,22 +911,50 @@ class Engine {
     const currentValueRaw = self.getStream(stream);
     const currentValue = unitConverter.convert(currentValueRaw, "kg");
 
-    const convertedMin = unitConverter.convert(amount, "kg");
+    /**
+     * Calculate the converted minimum value, adding recharge volume if equipment units are used.
+     *
+     * @returns {EngineNumber} The converted minimum value in kg.
+     */
+    const getConvertedMin = () => {
+      if (amount.hasEquipmentUnits()) {
+        // For equipment units, convert to kg and add recharge volume on top
+        const amountInKg = unitConverter.convert(amount, "kg");
+        const rechargeVolume = self._calculateRechargeVolume();
+        const totalWithRecharge = amountInKg.getValue() + rechargeVolume.getValue();
+        return new EngineNumber(totalWithRecharge, "kg");
+      } else {
+        // For volume units, use as-is
+        return unitConverter.convert(amount, "kg");
+      }
+    };
+
+    const convertedMin = getConvertedMin();
+
     const changeAmountRaw = convertedMin.getValue() - currentValue.getValue();
     const changeAmount = Math.max(changeAmountRaw, 0);
 
+    // Record units regardless of whether change is made
+    const scope = self._scope;
+    const application = scope.getApplication();
+    const substance = scope.getSubstance();
+    if (application === null || substance === null) {
+      throw "Tried setting stream without application and substance specified.";
+    }
+    self._streamKeeper.setLastSpecifiedUnits(application, substance, amount.getUnits());
+
     const changeWithUnits = new EngineNumber(changeAmount, "kg");
-    self.changeStream(stream, changeWithUnits);
+    self._changeStreamWithoutReportingUnits(stream, changeWithUnits);
 
     if (displaceTarget !== null && displaceTarget !== undefined) {
       const displaceChange = new EngineNumber(changeAmount * -1, "kg");
       const isStream = STREAM_NAMES.has(displaceTarget);
 
       if (isStream) {
-        self.changeStream(displaceTarget, displaceChange);
+        self._changeStreamWithoutReportingUnits(displaceTarget, displaceChange);
       } else {
         const destinationScope = self._scope.getWithSubstance(displaceTarget);
-        self.changeStream(stream, displaceChange, null, destinationScope);
+        self._changeStreamWithoutReportingUnits(stream, displaceChange, null, destinationScope);
       }
     }
   }
@@ -809,11 +978,24 @@ class Engine {
     const unitConverter = self._createUnitConverterWithTotal(stream);
     const amount = unitConverter.convert(amountRaw, "kg");
 
+    // Track the original user-specified units for the current substance
+    const currentScope = self._scope;
+    const application = currentScope.getApplication();
+    const currentSubstance = currentScope.getSubstance();
+    if (application === null || currentSubstance === null) {
+      throw "Tried setting stream without application and substance specified.";
+    }
+    self._streamKeeper.setLastSpecifiedUnits(application, currentSubstance, amountRaw.getUnits());
+
+    // Track the original user-specified units for the destination substance
+    const lastUnits = amountRaw.getUnits();
+    self._streamKeeper.setLastSpecifiedUnits(application, destinationSubstance, lastUnits);
+
     const amountNegative = new EngineNumber(-1 * amount.getValue(), amount.getUnits());
-    self.changeStream(stream, amountNegative);
+    self._changeStreamWithoutReportingUnits(stream, amountNegative);
 
     const destinationScope = self._scope.getWithSubstance(destinationSubstance);
-    self.changeStream(stream, amount, null, destinationScope);
+    self._changeStreamWithoutReportingUnits(stream, amount, null, destinationScope);
   }
 
   /**
@@ -874,6 +1056,51 @@ class Engine {
   }
 
   /**
+   * Calculate the recharge volume for the current application and substance.
+   *
+   * @param {Scope|null} scope - The scope to calculate recharge for.
+   *     Defaults to current scope if not provided.
+   * @returns {EngineNumber} The recharge volume in kg.
+   * @private
+   */
+  _calculateRechargeVolume(scope) {
+    const self = this;
+    const isGiven = (x) => x !== null && x !== undefined;
+
+    const stateGetter = new OverridingConverterStateGetter(self._stateGetter);
+    const unitConverter = new UnitConverter(stateGetter);
+    const scopeEffective = isGiven(scope) ? scope : self._scope;
+    const application = scopeEffective.getApplication();
+    const substance = scopeEffective.getSubstance();
+
+    if (application === null || substance === null) {
+      throw "Tried calculating recharge volume without application and substance.";
+    }
+
+    // Get prior population for recharge calculation
+    const priorPopulationRaw = self.getStream("priorEquipment", scopeEffective);
+    const priorPopulation = unitConverter.convert(priorPopulationRaw, "units");
+
+    // Get recharge population
+    stateGetter.setPopulation(self.getStream("priorEquipment", scopeEffective));
+    const rechargePopRaw = self._streamKeeper.getRechargePopulation(application, substance);
+    const rechargePop = unitConverter.convert(rechargePopRaw, "units");
+    stateGetter.setPopulation(null);
+
+    // Switch to recharge population
+    stateGetter.setPopulation(rechargePop);
+
+    // Get recharge amount
+    const rechargeIntensityRaw = self._streamKeeper.getRechargeIntensity(application, substance);
+    const rechargeVolume = unitConverter.convert(rechargeIntensityRaw, "kg");
+
+    // Return to prior population
+    stateGetter.setPopulation(priorPopulation);
+
+    return rechargeVolume;
+  }
+
+  /**
    * Recalculates population changes based on current state.
    *
    * @param {Scope|null} scope - The scope to recalculate for.
@@ -906,22 +1133,8 @@ class Engine {
     const substanceSalesRaw = self.getStream("sales", scopeEffective);
     const substanceSales = unitConverter.convert(substanceSalesRaw, "kg");
 
-    // Get recharge population
-    stateGetter.setPopulation(self.getStream("priorEquipment", scopeEffective));
-    const rechargePopRaw = self._streamKeeper.getRechargePopulation(application, substance);
-    const rechargePop = unitConverter.convert(rechargePopRaw, "units");
-    stateGetter.setPopulation(null);
-
-    // Switch to recharge population
-    stateGetter.setPopulation(rechargePop);
-
-    // Get recharge amount
-    const rechargeIntensityRaw = self._streamKeeper.getRechargeIntensity(application, substance);
-    const rechargeVolume = unitConverter.convert(rechargeIntensityRaw, "kg");
-    const rechargeGhg = unitConverter.convert(rechargeVolume, "tCO2e");
-
-    // Return to prior population
-    stateGetter.setPopulation(priorPopulation);
+    // Get recharge volume using the extracted method
+    const rechargeVolume = self._calculateRechargeVolume(scopeEffective);
 
     // Get total volume available for new units
     const salesKg = substanceSales.getValue();
@@ -946,7 +1159,56 @@ class Engine {
     // Save
     self.setStream("equipment", newUnitsEffective, null, scopeEffective, false);
     self.setStream("newEquipment", newUnitsMarginal, null, scopeEffective, false);
+
+    self._recalcRechargeEmissions(scopeEffective);
+  }
+
+  /**
+   * Recalculate the emissions that are accounted for at time of recharge.
+   *
+   *
+   * @param {Scope|null} scope - The scope in which to set the recharge emissions.
+   */
+  _recalcRechargeEmissions(scope) {
+    const self = this;
+    const scopeEffective = scope === null || scope === undefined ? self._scope : scope;
+    const rechargeVolume = self._calculateRechargeVolume(scopeEffective);
+    const rechargeGhg = self._unitConverter.convert(rechargeVolume, "tCO2e");
     self.setStream("rechargeEmissions", rechargeGhg, null, scopeEffective, false);
+  }
+
+  /**
+   * Recalculate emissions realized at the end of life for a unit.
+   *
+   * @param {Scope|null} scope The scope in which to recalculate EOL emissions.
+   */
+  _recalcEolEmissions(scope) {
+    const self = this;
+
+    // Setup
+    const stateGetter = new OverridingConverterStateGetter(self._stateGetter);
+    const unitConverter = new UnitConverter(stateGetter);
+    const scopeEffective = scope === null || scope === undefined ? self._scope : scope;
+    const application = scopeEffective.getApplication();
+    const substance = scopeEffective.getSubstance();
+
+    // Check allowed
+    if (application === null || substance === null) {
+      throw "Tried recalculating EOL emissions change without application and substance.";
+    }
+
+    // Calculate change
+    const currentPriorRaw = self._streamKeeper.getStream(application, substance, "priorEquipment");
+    const currentPrior = unitConverter.convert(currentPriorRaw, "units");
+
+    stateGetter.setPopulation(currentPrior);
+    const amountRaw = self._streamKeeper.getRetirementRate(application, substance);
+    const amount = unitConverter.convert(amountRaw, "units");
+    stateGetter.setPopulation(null);
+
+    // Update GHG accounting
+    const eolGhg = unitConverter.convert(amount, "tCO2e");
+    self._streamKeeper.setStream(application, substance, "eolEmissions", eolGhg);
   }
 
   /**
@@ -1187,8 +1449,7 @@ class Engine {
     self._streamKeeper.setStream(application, substance, "equipment", newEquipment);
 
     // Update GHG accounting
-    const eolGhg = unitConverter.convert(amount, "tCO2e");
-    self._streamKeeper.setStream(application, substance, "eolEmissions", eolGhg);
+    self._recalcEolEmissions(scopeEffective);
 
     // Propagate
     self._recalcPopulationChange();
