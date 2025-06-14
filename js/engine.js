@@ -207,7 +207,7 @@ class Engine {
     }
 
     if (name === "sales" || name === "manufacture" || name === "import") {
-      self._recalcPopulationChange(scopeEffective, !value.getUnits().startsWith("unit"));
+      self._recalcPopulationChange(scopeEffective, !value.hasEquipmentUnits());
       self._recalcConsumption(scopeEffective);
       if (!OPTIMIZE_RECALCS) {
         self._recalcSales(scopeEffective);
