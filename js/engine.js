@@ -763,8 +763,12 @@ class Engine {
   }
 
   /**
-   * Internal method to change a stream value without tracking units.
-   * Used by cap, floor, replace methods that handle units tracking themselves.
+   * Set a stream value without changing the last units reported.
+   *
+   * Set a stream value without recording the units as the last units specified
+   * by the user. This is leveraged internally by commands such as cap, floor,
+   * and replace that handle units tracking (report last user provided units)
+   * themselves.
    *
    * @param {string} stream - The stream identifier to modify.
    * @param {EngineNumber} amount - The amount to change the stream by.
@@ -772,7 +776,7 @@ class Engine {
    *     to current year.
    * @param {Scope} scope - The scope in which to make the change.
    */
-  _changeStreamInternal(stream, amount, yearMatcher, scope) {
+  _changeStreamWithoutReportingUnits(stream, amount, yearMatcher, scope) {
     const self = this;
 
     if (!self._getIsInRange(yearMatcher)) {
@@ -827,17 +831,17 @@ class Engine {
 
     const changeWithUnits = new EngineNumber(changeAmount, "kg");
     // Use internal changeStream that doesn't override the units tracking
-    self._changeStreamInternal(stream, changeWithUnits);
+    self._changeStreamWithoutReportingUnits(stream, changeWithUnits);
 
     if (displaceTarget !== null && displaceTarget !== undefined) {
       const displaceChange = new EngineNumber(changeAmount * -1, "kg");
       const isStream = STREAM_NAMES.has(displaceTarget);
 
       if (isStream) {
-        self._changeStreamInternal(displaceTarget, displaceChange);
+        self._changeStreamWithoutReportingUnits(displaceTarget, displaceChange);
       } else {
         const destinationScope = self._scope.getWithSubstance(displaceTarget);
-        self._changeStreamInternal(stream, displaceChange, null, destinationScope);
+        self._changeStreamWithoutReportingUnits(stream, displaceChange, null, destinationScope);
       }
     }
   }
@@ -879,17 +883,17 @@ class Engine {
     }
 
     const changeWithUnits = new EngineNumber(changeAmount, "kg");
-    self._changeStreamInternal(stream, changeWithUnits);
+    self._changeStreamWithoutReportingUnits(stream, changeWithUnits);
 
     if (displaceTarget !== null && displaceTarget !== undefined) {
       const displaceChange = new EngineNumber(changeAmount * -1, "kg");
       const isStream = STREAM_NAMES.has(displaceTarget);
 
       if (isStream) {
-        self._changeStreamInternal(displaceTarget, displaceChange);
+        self._changeStreamWithoutReportingUnits(displaceTarget, displaceChange);
       } else {
         const destinationScope = self._scope.getWithSubstance(displaceTarget);
-        self._changeStreamInternal(stream, displaceChange, null, destinationScope);
+        self._changeStreamWithoutReportingUnits(stream, displaceChange, null, destinationScope);
       }
     }
   }
@@ -927,10 +931,10 @@ class Engine {
       application, destinationSubstance, amountRaw.getUnits());
 
     const amountNegative = new EngineNumber(-1 * amount.getValue(), amount.getUnits());
-    self._changeStreamInternal(stream, amountNegative);
+    self._changeStreamWithoutReportingUnits(stream, amountNegative);
 
     const destinationScope = self._scope.getWithSubstance(destinationSubstance);
-    self._changeStreamInternal(stream, amount, null, destinationScope);
+    self._changeStreamWithoutReportingUnits(stream, amount, null, destinationScope);
   }
 
   /**
