@@ -222,6 +222,17 @@ function buildCompilerTests() {
       },
     ]);
 
+    buildTest("handles recharge on top when specifying by units", "/test/qta/recharge_on_top.qta", [
+      (result, assert) => {
+        // Test that recharge is added on top for units-based specifications
+        // Should have 10000 (prior) + 1000 (manufacture) = 11000 units in year 1
+        const record = getResult(result, "BAU", 1, 0, "App", "Sub1");
+        const equipment = record.getPopulation();
+        assert.closeTo(equipment.getValue(), 11000, 0.0001);
+        assert.deepEqual(equipment.getUnits(), "units");
+      },
+    ]);
+
     buildTest("handles multiple consumption", "/test/qta/multiple.qta", [
       (result, assert) => {
         const record = getResult(result, BAU_NAME, 1, 0, "test", "a");
