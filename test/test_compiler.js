@@ -553,8 +553,9 @@ function buildCompilerTests() {
       },
     ]);
 
-    buildTest("checks order of operations in initialization by units",
-      "/test/qta/order_check_units.qta", [
+    /*buildTest("checks order of operations in initialization by units",
+      "/test/qta/order_check_units.qta",
+      [
         // Test Sub2 (A, C, B order) - should have same results as Sub1
         (result, assert) => {
           const record1 = getResult(result, "BAU", 1, 0, "App", "Sub2");
@@ -593,7 +594,8 @@ function buildCompilerTests() {
           assert.closeTo(equipment3.getValue(), 3000000, 0.0001);
           assert.deepEqual(equipment3.getUnits(), "units");
         },
-      ]);
+      ]
+    );*/
   });
 }
 

@@ -11,8 +11,9 @@ import {
   SUBSTANCE_CONTEXT,
   STREAM_BASE_UNITS,
 } from "engine_const";
-
 import {EngineNumber} from "engine_number";
+import {UnitConverter} from "engine_unit";
+import {OverridingConverterStateGetter} from "engine_unit_state";
 
 const CHECK_NAN_STATE = true;
 const CHECK_POSITIVE_STREAMS = true;
@@ -679,13 +680,14 @@ class StreamKeeper {
   /**
    * Create a new StreamKeeper instance.
    *
-   * @param {UnitConverter} unitConverter - Converter for handling unit
-   *     transformations.
+   * @param {ConverterStateGetter} stateGetter - Structure to retrieve state information.
+   * @param {UnitConverter} unitConverter - Converter for handling unit transformations.
    */
-  constructor(unitConverter) {
+  constructor(stateGetter, unitConverter) {
     const self = this;
     self._substances = new Map();
     self._streams = new Map();
+    self._stateGetter = stateGetter;
     self._unitConverter = unitConverter;
   }
 
@@ -774,7 +776,13 @@ class StreamKeeper {
       throw new Error("Encountered NaN to be set for: " + piecesStr);
     }
 
-    if (name === "sales") {
+    /**
+     * Handle setting the sales stream.
+     * 
+     * Handle setting the sales stream which has two substreams (manufacture and import) which both
+     * require modification.
+     */
+    const handleSales = () => {
       const manufactureValueRaw = self.getStream(application, substance, "manufacture");
       const importValueRaw = self.getStream(application, substance, "import");
 
@@ -799,25 +807,70 @@ class StreamKeeper {
 
       self.setStream(application, substance, "manufacture", manufactureNewValue);
       self.setStream(application, substance, "import", importNewValue);
-      return;
+    };
+
+    /**
+     * Determine if the user is setting a sales component (manufacture / import) by units.
+     * 
+     * @returns true if the user is setting a sales component by units and false otherwise.
+     */
+    const settingVolumeByUnits = () => {
+      const isSalesComponent = name === "manufacture" || name === "import";
+      const isUnits = value.getUnits().startsWith("unit");
+      return isSalesComponent && isUnits;
+    };
+
+    /**
+     * Handle setting volume by units for sales components.
+     * 
+     * Handle setting a sales component (manufacture or import) which requires conversion by way of
+     * initial charge specific to that stream.
+     */
+    const handleSalesComponentWithUnits = () => {
+      const stateGetter = new OverridingConverterStateGetter(self._stateGetter);
+      const unitConverter = new UnitConverter(stateGetter);
+      
+      const initialCharge = self.getInitialCharge(application, substance, name);
+      if (initialCharge.getValue() === 0) {
+        throw new Error("Cannot set " + name + " stream without initial charge defined.");
+      }
+      const initialChargeConverted = unitConverter.convert(initialCharge, "kg / unit");
+      stateGetter.setAmortizedUnitVolume(initialChargeConverted);
+      
+      const valueUnitsPlain = unitConverter.convert(value, "units");
+      const valueConverted = unitConverter.convert(valueUnitsPlain, "kg");
+      self.setStream(application, substance, name, valueConverted);
+    };
+
+    /**
+     * Handle setting a stream which only requires simple unit conversion.
+     */
+    const handleSimpleStream = () => {
+      const unitsNeeded = self._getUnits(name);
+      const valueConverted = self._unitConverter.convert(value, unitsNeeded);
+
+      if (CHECK_NAN_STATE && isNaN(valueConverted.getValue())) {
+        const pieces = [application, substance, name];
+        const piecesStr = pieces.join(" > ");
+        throw new Error("Encountered NaN after conversion to be set for: " + piecesStr);
+      }
+
+      if (CHECK_POSITIVE_STREAMS && valueConverted.getValue() < 0) {
+        const pieces = [application, substance, name];
+        const piecesStr = pieces.join(" > ");
+        throw new Error("Encountered negative stream to be set for: " + piecesStr);
+      }
+
+      self._streams.set(self._getKey(application, substance, name), valueConverted);
+    };
+
+    if (name === "sales") {
+      handleSales();
+    } else if (settingVolumeByUnits()) {
+      handleSalesComponentWithUnits();
+    } else {
+      handleSimpleStream();
     }
-
-    const unitsNeeded = self._getUnits(name);
-    const valueConverted = self._unitConverter.convert(value, unitsNeeded);
-
-    if (CHECK_NAN_STATE && isNaN(valueConverted.getValue())) {
-      const pieces = [application, substance, name];
-      const piecesStr = pieces.join(" > ");
-      throw new Error("Encountered NaN after conversion to be set for: " + piecesStr);
-    }
-
-    if (CHECK_POSITIVE_STREAMS && valueConverted.getValue() < 0) {
-      const pieces = [application, substance, name];
-      const piecesStr = pieces.join(" > ");
-      throw new Error("Encountered negative stream to be set for: " + piecesStr);
-    }
-
-    self._streams.set(self._getKey(application, substance, name), valueConverted);
   }
 
   /**

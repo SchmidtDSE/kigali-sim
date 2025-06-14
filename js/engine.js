@@ -41,7 +41,7 @@ class Engine {
 
     self._stateGetter = new ConverterStateGetter(self);
     self._unitConverter = new UnitConverter(self._stateGetter);
-    self._streamKeeper = new StreamKeeper(self._unitConverter);
+    self._streamKeeper = new StreamKeeper(self._stateGetter, self._unitConverter);
     self._scope = new Scope(null, null, null);
   }
 
