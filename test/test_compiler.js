@@ -791,17 +791,17 @@ function buildCompilerTests() {
         },
         (result, assert) => {
           // Test SubC (recharge comes before tCO2e equals)
-          const recordB = getResult(result, BAU_NAME, 2035, 0, "test", "SubC");
-          const emissionsB = recordB.getRechargeEmissions();
-          assert.ok(emissionsB.getValue() > 0, "C > 0");
-          assert.deepEqual(emissionsB.getUnits(), "tCO2e");
+          const recordC = getResult(result, BAU_NAME, 2035, 0, "test", "SubC");
+          const emissionsC = recordC.getRechargeEmissions();
+          assert.ok(emissionsC.getValue() > 0, "C > 0");
+          assert.deepEqual(emissionsC.getUnits(), "tCO2e");
         },
         (result, assert) => {
           // Test SubD (recharge comes before tCO2e equals)
-          const recordB = getResult(result, BAU_NAME, 2035, 0, "test", "SubD");
-          const emissionsB = recordB.getRechargeEmissions();
-          assert.ok(emissionsB.getValue() > 0, "D > 0");
-          assert.deepEqual(emissionsB.getUnits(), "tCO2e");
+          const recordD = getResult(result, BAU_NAME, 2035, 0, "test", "SubD");
+          const emissionsD = recordD.getRechargeEmissions();
+          assert.ok(emissionsD.getValue() > 0, "D > 0");
+          assert.deepEqual(emissionsD.getUnits(), "tCO2e");
         },
         (result, assert) => {
           const recordA = getResult(result, BAU_NAME, 2035, 0, "test", "SubA");
