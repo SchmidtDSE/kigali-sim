@@ -211,6 +211,8 @@ class MainPresenter {
         const message = "Program error: " + result.getErrors()[0];
         if (!isAutoRefresh) {
           alertWithHelpOption(message);
+        } else {
+          self._codeEditorPresenter.showError(message);
         }
         self._buttonPanelPresenter.enable();
         captureSentryMessage(message, "info");
@@ -221,6 +223,8 @@ class MainPresenter {
         const message = "Result error: " + result.getErrors()[0];
         if (!isAutoRefresh) {
           alertWithHelpOption(message);
+        } else {
+          self._codeEditorPresenter.showError(message);
         }
         captureSentryMessage(message, "error");
         self._buttonPanelPresenter.enable();
@@ -238,10 +242,17 @@ class MainPresenter {
               self._onResult(programResult);
             }
           }
+          // Clear any previous runtime errors when execution succeeds during auto-refresh
+          if (isAutoRefresh) {
+            self._codeEditorPresenter.hideError();
+          }
         } catch (e) {
           console.log(e);
+          const message = "On result error: " + e;
           if (!isAutoRefresh) {
-            alertWithHelpOption("On result error: " + e);
+            alertWithHelpOption(message);
+          } else {
+            self._codeEditorPresenter.showError(message);
           }
         }
       }
@@ -254,6 +265,8 @@ class MainPresenter {
         const message = "Execute error: " + e;
         if (!isAutoRefresh) {
           alertWithHelpOption(message);
+        } else {
+          self._codeEditorPresenter.showError(message);
         }
         captureSentryMessage(message, "error");
       }
