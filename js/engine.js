@@ -1165,8 +1165,8 @@ class Engine {
 
   /**
    * Recalculate the emissions that are accounted for at time of recharge.
-   * 
-   * 
+   *
+   *
    * @param {Scope|null} scope - The scope in which to set the recharge emissions.
    */
   _recalcRechargeEmissions(scope) {
@@ -1179,7 +1179,7 @@ class Engine {
 
   /**
    * Recalculate emissions realized at the end of life for a unit.
-   * 
+   *
    * @param {Scope|null} scope The scope in which to recalculate EOL emissions.
    */
   _recalcEolEmissions(scope) {
