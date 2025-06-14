@@ -207,7 +207,7 @@ class Engine {
     }
 
     if (name === "sales" || name === "manufacture" || name === "import") {
-      self._recalcPopulationChange(scopeEffective, !value.getUnits().startsWith("unit"));
+      self._recalcPopulationChange(scopeEffective, !value.hasEquipmentUnits());
       self._recalcConsumption(scopeEffective);
       if (!OPTIMIZE_RECALCS) {
         self._recalcSales(scopeEffective);
@@ -839,7 +839,26 @@ class Engine {
     const currentValueRaw = self.getStream(stream);
     const currentValue = unitConverter.convert(currentValueRaw, "kg");
 
-    const convertedMax = unitConverter.convert(amount, "kg");
+    /**
+     * Calculate the converted maximum value, adding recharge volume if equipment units are used.
+     *
+     * @returns {EngineNumber} The converted maximum value in kg.
+     */
+    const getConvertedMax = () => {
+      if (amount.hasEquipmentUnits()) {
+        // For equipment units, convert to kg and add recharge volume on top
+        const amountInKg = unitConverter.convert(amount, "kg");
+        const rechargeVolume = self._calculateRechargeVolume();
+        const totalWithRecharge = amountInKg.getValue() + rechargeVolume.getValue();
+        return new EngineNumber(totalWithRecharge, "kg");
+      } else {
+        // For volume units, use as-is
+        return unitConverter.convert(amount, "kg");
+      }
+    };
+
+    const convertedMax = getConvertedMax();
+
     const changeAmountRaw = convertedMax.getValue() - currentValue.getValue();
     const changeAmount = Math.min(changeAmountRaw, 0);
 
@@ -890,7 +909,26 @@ class Engine {
     const currentValueRaw = self.getStream(stream);
     const currentValue = unitConverter.convert(currentValueRaw, "kg");
 
-    const convertedMin = unitConverter.convert(amount, "kg");
+    /**
+     * Calculate the converted minimum value, adding recharge volume if equipment units are used.
+     *
+     * @returns {EngineNumber} The converted minimum value in kg.
+     */
+    const getConvertedMin = () => {
+      if (amount.hasEquipmentUnits()) {
+        // For equipment units, convert to kg and add recharge volume on top
+        const amountInKg = unitConverter.convert(amount, "kg");
+        const rechargeVolume = self._calculateRechargeVolume();
+        const totalWithRecharge = amountInKg.getValue() + rechargeVolume.getValue();
+        return new EngineNumber(totalWithRecharge, "kg");
+      } else {
+        // For volume units, use as-is
+        return unitConverter.convert(amount, "kg");
+      }
+    };
+
+    const convertedMin = getConvertedMin();
+
     const changeAmountRaw = convertedMin.getValue() - currentValue.getValue();
     const changeAmount = Math.max(changeAmountRaw, 0);
 
@@ -1016,6 +1054,51 @@ class Engine {
   }
 
   /**
+   * Calculate the recharge volume for the current application and substance.
+   *
+   * @param {Scope|null} scope - The scope to calculate recharge for.
+   *     Defaults to current scope if not provided.
+   * @returns {EngineNumber} The recharge volume in kg.
+   * @private
+   */
+  _calculateRechargeVolume(scope) {
+    const self = this;
+    const isGiven = (x) => x !== null && x !== undefined;
+
+    const stateGetter = new OverridingConverterStateGetter(self._stateGetter);
+    const unitConverter = new UnitConverter(stateGetter);
+    const scopeEffective = isGiven(scope) ? scope : self._scope;
+    const application = scopeEffective.getApplication();
+    const substance = scopeEffective.getSubstance();
+
+    if (application === null || substance === null) {
+      throw "Tried calculating recharge volume without application and substance.";
+    }
+
+    // Get prior population for recharge calculation
+    const priorPopulationRaw = self.getStream("priorEquipment", scopeEffective);
+    const priorPopulation = unitConverter.convert(priorPopulationRaw, "units");
+
+    // Get recharge population
+    stateGetter.setPopulation(self.getStream("priorEquipment", scopeEffective));
+    const rechargePopRaw = self._streamKeeper.getRechargePopulation(application, substance);
+    const rechargePop = unitConverter.convert(rechargePopRaw, "units");
+    stateGetter.setPopulation(null);
+
+    // Switch to recharge population
+    stateGetter.setPopulation(rechargePop);
+
+    // Get recharge amount
+    const rechargeIntensityRaw = self._streamKeeper.getRechargeIntensity(application, substance);
+    const rechargeVolume = unitConverter.convert(rechargeIntensityRaw, "kg");
+
+    // Return to prior population
+    stateGetter.setPopulation(priorPopulation);
+
+    return rechargeVolume;
+  }
+
+  /**
    * Recalculates population changes based on current state.
    *
    * @param {Scope|null} scope - The scope to recalculate for.
@@ -1048,22 +1131,9 @@ class Engine {
     const substanceSalesRaw = self.getStream("sales", scopeEffective);
     const substanceSales = unitConverter.convert(substanceSalesRaw, "kg");
 
-    // Get recharge population
-    stateGetter.setPopulation(self.getStream("priorEquipment", scopeEffective));
-    const rechargePopRaw = self._streamKeeper.getRechargePopulation(application, substance);
-    const rechargePop = unitConverter.convert(rechargePopRaw, "units");
-    stateGetter.setPopulation(null);
-
-    // Switch to recharge population
-    stateGetter.setPopulation(rechargePop);
-
-    // Get recharge amount
-    const rechargeIntensityRaw = self._streamKeeper.getRechargeIntensity(application, substance);
-    const rechargeVolume = unitConverter.convert(rechargeIntensityRaw, "kg");
+    // Get recharge volume using the extracted method
+    const rechargeVolume = self._calculateRechargeVolume(scopeEffective);
     const rechargeGhg = unitConverter.convert(rechargeVolume, "tCO2e");
-
-    // Return to prior population
-    stateGetter.setPopulation(priorPopulation);
 
     // Get total volume available for new units
     const salesKg = substanceSales.getValue();
