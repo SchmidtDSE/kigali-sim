@@ -594,7 +594,7 @@ function buildCompilerTests() {
           assert.closeTo(equipment3.getValue(), 3000000, 0.0001);
           assert.deepEqual(equipment3.getUnits(), "units");
         },
-      ]
+      ],
     );
   });
 }

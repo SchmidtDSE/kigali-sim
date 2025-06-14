@@ -779,7 +779,7 @@ class StreamKeeper {
 
     /**
      * Handle setting the sales stream.
-     * 
+     *
      * Handle setting the sales stream which has two substreams (manufacture and import) which both
      * require modification.
      */
@@ -812,7 +812,7 @@ class StreamKeeper {
 
     /**
      * Determine if the user is setting a sales component (manufacture / import) by units.
-     * 
+     *
      * @returns true if the user is setting a sales component by units and false otherwise.
      */
     const settingVolumeByUnits = () => {
@@ -823,21 +823,21 @@ class StreamKeeper {
 
     /**
      * Handle setting volume by units for sales components.
-     * 
+     *
      * Handle setting a sales component (manufacture or import) which requires conversion by way of
      * initial charge specific to that stream.
      */
     const handleSalesComponentWithUnits = () => {
       const stateGetter = new OverridingConverterStateGetter(self._stateGetter);
       const unitConverter = new UnitConverter(stateGetter);
-      
+
       const initialCharge = self.getInitialCharge(application, substance, name);
       if (initialCharge.getValue() === 0) {
         throw new Error("Cannot set " + name + " stream with a zero initial charge.");
       }
       const initialChargeConverted = unitConverter.convert(initialCharge, "kg / unit");
       stateGetter.setAmortizedUnitVolume(initialChargeConverted);
-      
+
       const valueUnitsPlain = unitConverter.convert(value, "units");
       const valueConverted = unitConverter.convert(valueUnitsPlain, "kg");
       self.setStream(application, substance, name, valueConverted);
