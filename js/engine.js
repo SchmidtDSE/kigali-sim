@@ -697,9 +697,8 @@ class Engine {
 
     if (isGhg) {
       self._streamKeeper.setGhgIntensity(application, substance, amount);
-      const rechargeVolume = self._calculateRechargeVolume(self._scope);
-      const rechargeGhg = self._unitConverter.convert(rechargeVolume, "tCO2e");
-      self.setStream("rechargeEmissions", rechargeGhg, null, self._scope, false);
+      self._recalcRechargeEmissions(self._scope);
+      self._recalcEolEmissions(self._scope);
     } else if (isKwh) {
       self._streamKeeper.setEnergyIntensity(application, substance, amount);
     } else {
@@ -1136,7 +1135,6 @@ class Engine {
 
     // Get recharge volume using the extracted method
     const rechargeVolume = self._calculateRechargeVolume(scopeEffective);
-    const rechargeGhg = unitConverter.convert(rechargeVolume, "tCO2e");
 
     // Get total volume available for new units
     const salesKg = substanceSales.getValue();
@@ -1161,7 +1159,56 @@ class Engine {
     // Save
     self.setStream("equipment", newUnitsEffective, null, scopeEffective, false);
     self.setStream("newEquipment", newUnitsMarginal, null, scopeEffective, false);
-    self.setStream("rechargeEmissions", rechargeGhg, null, scopeEffective, false);
+
+    self._recalcRechargeEmissions(scopeEffective);
+  }
+
+  /**
+   * Recalculate the emissions that are accounted for at time of recharge.
+   * 
+   * 
+   * @param {Scope|null} scope - The scope in which to set the recharge emissions.
+   */
+  _recalcRechargeEmissions(scope) {
+    const self = this;
+    const scopeEffective = scope === null || scope === undefined ? self._scope : scope;
+    const rechargeVolume = self._calculateRechargeVolume(self._scope);
+    const rechargeGhg = self._unitConverter.convert(rechargeVolume, "tCO2e");
+    self.setStream("rechargeEmissions", rechargeGhg, null, self._scope, false);
+  }
+
+  /**
+   * Recalculate emissions realized at the end of life for a unit.
+   * 
+   * @param {Scope|null} scope The scope in which to recalculate EOL emissions.
+   */
+  _recalcEolEmissions(scope) {
+    const self = this;
+
+    // Setup
+    const stateGetter = new OverridingConverterStateGetter(self._stateGetter);
+    const unitConverter = new UnitConverter(stateGetter);
+    const scopeEffective = scope === null || scope === undefined ? self._scope : scope;
+    const application = scopeEffective.getApplication();
+    const substance = scopeEffective.getSubstance();
+
+    // Check allowed
+    if (application === null || substance === null) {
+      throw "Tried recalculating EOL emissions change without application and substance.";
+    }
+
+    // Calculate change
+    const currentPriorRaw = self._streamKeeper.getStream(application, substance, "priorEquipment");
+    const currentPrior = unitConverter.convert(currentPriorRaw, "units");
+
+    stateGetter.setPopulation(currentPrior);
+    const amountRaw = self._streamKeeper.getRetirementRate(application, substance);
+    const amount = unitConverter.convert(amountRaw, "units");
+    stateGetter.setPopulation(null);
+
+    // Update GHG accounting
+    const eolGhg = unitConverter.convert(amount, "tCO2e");
+    self._streamKeeper.setStream(application, substance, "eolEmissions", eolGhg);
   }
 
   /**
@@ -1402,8 +1449,7 @@ class Engine {
     self._streamKeeper.setStream(application, substance, "equipment", newEquipment);
 
     // Update GHG accounting
-    const eolGhg = unitConverter.convert(amount, "tCO2e");
-    self._streamKeeper.setStream(application, substance, "eolEmissions", eolGhg);
+    self._recalcEolEmissions(scopeEffective);
 
     // Propagate
     self._recalcPopulationChange();
