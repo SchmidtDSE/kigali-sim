@@ -771,6 +771,35 @@ function buildCompilerTests() {
         assert.deepEqual(manufacture.getUnits(), "kg");
       },
     ]);
+    
+    buildTest(
+      "tests ordering-sensitive emissions issue",
+      "/test/qta/ordering_sensitive_emissions.qta", [
+        (result, assert) => {
+          // Test SubA (tCO2e equals comes before recharge)
+          const recordA = getResult(result, BAU_NAME, 2035, 0, "test", "SubA");
+          const emissionsA = recordA.getRechargeEmissions();
+          assert.ok(emissionsA.getValue() > 0);
+          assert.deepEqual(emissionsA.getUnits(), "tCO2e");
+        },
+        (result, assert) => {
+          // Test SubB (recharge comes before tCO2e equals)
+          const recordB = getResult(result, BAU_NAME, 2035, 0, "test", "SubB");
+          const emissionsB = recordB.getRechargeEmissions();
+          assert.ok(emissionsB.getValue() > 0);
+          assert.deepEqual(emissionsB.getUnits(), "tCO2e");
+        },
+        (result, assert) => {
+          // Both substances should have similar emissions since they are identical
+          // except for ordering
+          const recordA = getResult(result, BAU_NAME, 2035, 0, "test", "SubA");
+          const recordB = getResult(result, BAU_NAME, 2035, 0, "test", "SubB");
+          const emissionsA = recordA.getRechargeEmissions();
+          const emissionsB = recordB.getRechargeEmissions();
+          assert.closeTo(emissionsA.getValue(), emissionsB.getValue(), 0.001);
+        },
+      ]
+    );
   });
 }
 
