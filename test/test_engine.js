@@ -1173,6 +1173,8 @@ function buildEngineTests() {
       // Since manufacture was set in kg, recharge should be subtracted
       // Available for new units = 100 - (recharge amount) = less than 100 kg
       // New units will be less than 100, so total equipment < 1100 units
+      // But we should still have more than the prior equipment (1000 units)
+      assert.ok(equipment1.getValue() > 1000);
       assert.ok(equipment1.getValue() < 1100);
       assert.equal(equipment1.getUnits(), "units");
     });
