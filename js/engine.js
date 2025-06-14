@@ -475,23 +475,22 @@ class Engine {
     const getShouldSubtractRecharge = () => {
       const application = self._scope.getApplication();
       const substance = self._scope.getSubstance();
-      let subtractRecharge = true; // Default behavior
 
       if (stream === "sales") {
         // For sales, check if either manufacture or import were last specified in units
         const lastUnits = self._streamKeeper.getLastSpecifiedUnits(application, substance);
         if (lastUnits && lastUnits.startsWith("unit")) {
-          subtractRecharge = false; // Add recharge on top
+          return false; // Add recharge on top
         }
       } else if (stream === "manufacture" || stream === "import") {
         // For manufacture or import, check if that specific channel was last specified in units
         const lastUnits = self._streamKeeper.getLastSpecifiedUnits(application, substance);
         if (lastUnits && lastUnits.startsWith("unit")) {
-          subtractRecharge = false; // Add recharge on top
+          return false; // Add recharge on top
         }
       }
 
-      return subtractRecharge;
+      return true;
     };
 
     const subtractRecharge = getShouldSubtractRecharge();
