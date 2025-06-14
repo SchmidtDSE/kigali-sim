@@ -461,8 +461,11 @@ class Engine {
     }
 
     if (stream === "sales") {
-      self.setInitialCharge(value, "manufacture");
-      self.setInitialCharge(value, "import");
+      // For sales, set both manufacture and import but don't recalculate yet
+      const application = self._scope.getApplication();
+      const substance = self._scope.getSubstance();
+      self._streamKeeper.setInitialCharge(application, substance, "manufacture", value);
+      self._streamKeeper.setInitialCharge(application, substance, "import", value);
     } else {
       const application = self._scope.getApplication();
       const substance = self._scope.getSubstance();
