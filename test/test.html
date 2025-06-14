@@ -39,7 +39,9 @@
                 "test_engine": "./test_engine.js?v=EPOCH",
                 "test_report_data": "./test_report_data.js?v=EPOCH",
                 "test_ui_translator": "./test_ui_translator.js?v=EPOCH",
-                "test_ui_translator_reverse": "./test_ui_translator_reverse.js?v=EPOCH"
+                "test_ui_translator_reverse": "./test_ui_translator_reverse.js?v=EPOCH",
+                "test_main": "./test_main.js?v=EPOCH",
+                "main": "../js/main.js?v=EPOCH"
             }
         }
     </script>
@@ -60,6 +62,7 @@
         import {buildUiTranslatorTests} from "test_ui_translator";
         import {buildUiTranslatorReverseTests} from "test_ui_translator_reverse";
         import {buildEngineSerializerTests} from "test_engine_serializer";
+        import {buildMainTests} from "test_main";
 
         buildCompilerTests();
         buildEngineNumberTests();
@@ -72,5 +75,6 @@
         buildUiTranslatorTests();
         buildUiTranslatorReverseTests();
         buildEngineSerializerTests();
+        buildMainTests();
     </script>
 </body>
