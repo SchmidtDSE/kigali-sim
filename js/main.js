@@ -94,9 +94,12 @@ class MainPresenter {
   constructor() {
     const self = this;
 
+    self._hasCompilationErrors = false;
+
     self._codeEditorPresenter = new CodeEditorPresenter(
       document.getElementById("code-editor"),
       () => self._onCodeChange(),
+      () => self._onAutoRefresh(),
     );
     self._buttonPanelPresenter = new ButtonPanelPresenter(
       document.getElementById("code-buttons-panel"),
@@ -152,6 +155,19 @@ class MainPresenter {
   }
 
   /**
+   * Handles automatic refresh after 3 seconds of no code changes.
+   * Only runs the simulation if there are no compilation errors.
+   *
+   * @private
+   */
+  _onAutoRefresh() {
+    const self = this;
+    if (!self._hasCompilationErrors) {
+      self._onBuild(true);
+    }
+  }
+
+  /**
    * Handles build/run events and compiles/executes the code.
    *
    * @param {boolean} run - Flag indicating if to execute the code after
@@ -175,6 +191,7 @@ class MainPresenter {
 
       const compileErrors = result.getErrors();
       const hasErrors = compileErrors.length > 0;
+      self._hasCompilationErrors = hasErrors;
       if (hasErrors) {
         self._codeEditorPresenter.showError(compileErrors[0]);
         self._buttonPanelPresenter.enable();
