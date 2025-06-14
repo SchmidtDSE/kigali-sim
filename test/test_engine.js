@@ -1143,7 +1143,7 @@ function buildEngineTests() {
       assert.equal(unitsAfterReplace2, "units");
     });
 
-    QUnit.test("initial charge considers last specified units", function (assert) {
+    QUnit.test("initial charge considers last specified units - kg format", function (assert) {
       const engine = new Engine(1, 3);
 
       engine.setStanza("default");
@@ -1154,36 +1154,58 @@ function buildEngineTests() {
       engine.equals(new EngineNumber(1, "tCO2e / kg"), new YearMatcher(null, null));
       engine.equals(new EngineNumber(1, "kwh / kg"), new YearMatcher(null, null));
 
+      // Set recharge parameters to test the subtract recharge logic
+      engine.recharge(
+        new EngineNumber(10, "% / year"),
+        new EngineNumber(0.5, "kg / unit"),
+        new YearMatcher(null, null)
+      );
+
       // Set prior equipment
       engine.setStream("priorEquipment", new EngineNumber(1000, "units"));
 
-      // Test 1: Set manufacture in kg, then set initial charge
+      // Set manufacture in kg, then set initial charge
       engine.setStream("manufacture", new EngineNumber(100, "kg"));
       engine.setInitialCharge(new EngineNumber(1, "kg / unit"), "manufacture");
 
       const equipment1 = engine.getStream("equipment");
       // With 100 kg manufacture, 1 kg/unit initial charge:
-      // New units = 100 / 1 = 100 units
-      // Total equipment = 1000 + 100 = 1100 units
-      assert.equal(equipment1.getValue(), 1100);
+      // Since manufacture was set in kg, recharge should be subtracted
+      // Available for new units = 100 - (recharge amount) = less than 100 kg
+      // New units will be less than 100, so total equipment < 1100 units
+      assert.ok(equipment1.getValue() < 1100);
       assert.equal(equipment1.getUnits(), "units");
+    });
 
-      // Test 2: Reset and set manufacture in units, then set initial charge
-      const engine2 = new Engine(1, 3);
-      engine2.setStanza("default");
-      engine2.setApplication("TestApp");
-      engine2.setSubstance("TestSub");
-      engine2.equals(new EngineNumber(1, "tCO2e / kg"), new YearMatcher(null, null));
-      engine2.equals(new EngineNumber(1, "kwh / kg"), new YearMatcher(null, null));
-      engine2.setStream("priorEquipment", new EngineNumber(1000, "units"));
+    QUnit.test("initial charge considers last specified units - units format", function (assert) {
+      const engine = new Engine(1, 3);
 
-      engine2.setStream("manufacture", new EngineNumber(100, "units"));
-      engine2.setInitialCharge(new EngineNumber(1, "kg / unit"), "manufacture");
+      engine.setStanza("default");
+      engine.setApplication("TestApp");
+      engine.setSubstance("TestSub");
 
-      const equipment2 = engine2.getStream("equipment");
-      // This test verifies that the units tracking works correctly
-      // The specific calculation will depend on implementation details
-      assert.ok(equipment2.getValue() >= 1000); // Should be at least the prior equipment
+      // Set equivalencies
+      engine.equals(new EngineNumber(1, "tCO2e / kg"), new YearMatcher(null, null));
+      engine.equals(new EngineNumber(1, "kwh / kg"), new YearMatcher(null, null));
+
+      // Set recharge parameters to test the add recharge logic
+      engine.recharge(
+        new EngineNumber(10, "% / year"),
+        new EngineNumber(0.5, "kg / unit"),
+        new YearMatcher(null, null)
+      );
+
+      // Set prior equipment
+      engine.setStream("priorEquipment", new EngineNumber(1000, "units"));
+
+      // Set manufacture in units, then set initial charge
+      engine.setStream("manufacture", new EngineNumber(100, "units"));
+      engine.setInitialCharge(new EngineNumber(1, "kg / unit"), "manufacture");
+
+      const equipment2 = engine.getStream("equipment");
+      // Since manufacture was set in units, recharge should be added on top
+      // Total equipment = 1000 + 100 = 1100 units exactly
+      assert.equal(equipment2.getValue(), 1100);
       assert.equal(equipment2.getUnits(), "units");
     });
   });
