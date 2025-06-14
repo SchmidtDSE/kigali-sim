@@ -461,15 +461,40 @@ class Engine {
     }
 
     if (stream === "sales") {
-      self.setInitialCharge(value, "manufacture");
-      self.setInitialCharge(value, "import");
+      // For sales, set both manufacture and import but don't recalculate yet
+      const application = self._scope.getApplication();
+      const substance = self._scope.getSubstance();
+      self._streamKeeper.setInitialCharge(application, substance, "manufacture", value);
+      self._streamKeeper.setInitialCharge(application, substance, "import", value);
     } else {
       const application = self._scope.getApplication();
       const substance = self._scope.getSubstance();
       self._streamKeeper.setInitialCharge(application, substance, stream, value);
     }
 
-    self._recalcPopulationChange();
+    const getShouldSubtractRecharge = () => {
+      const application = self._scope.getApplication();
+      const substance = self._scope.getSubstance();
+
+      if (stream === "sales") {
+        // For sales, check if either manufacture or import were last specified in units
+        const lastUnits = self._streamKeeper.getLastSpecifiedUnits(application, substance);
+        if (lastUnits && lastUnits.startsWith("unit")) {
+          return false; // Add recharge on top
+        }
+      } else if (stream === "manufacture" || stream === "import") {
+        // For manufacture or import, check if that specific channel was last specified in units
+        const lastUnits = self._streamKeeper.getLastSpecifiedUnits(application, substance);
+        if (lastUnits && lastUnits.startsWith("unit")) {
+          return false; // Add recharge on top
+        }
+      }
+
+      return true;
+    };
+
+    const subtractRecharge = getShouldSubtractRecharge();
+    self._recalcPopulationChange(null, subtractRecharge);
   }
 
   /**
