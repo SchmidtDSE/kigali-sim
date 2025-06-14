@@ -1172,9 +1172,9 @@ class Engine {
   _recalcRechargeEmissions(scope) {
     const self = this;
     const scopeEffective = scope === null || scope === undefined ? self._scope : scope;
-    const rechargeVolume = self._calculateRechargeVolume(self._scope);
+    const rechargeVolume = self._calculateRechargeVolume(scopeEffective);
     const rechargeGhg = self._unitConverter.convert(rechargeVolume, "tCO2e");
-    self.setStream("rechargeEmissions", rechargeGhg, null, self._scope, false);
+    self.setStream("rechargeEmissions", rechargeGhg, null, scopeEffective, false);
   }
 
   /**
