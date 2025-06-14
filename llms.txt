@@ -69,6 +69,8 @@ The about stanza is optional.
 - `replace {amount} of {stream} with "substance" <during>` - Substance transitions
 - `recover {amount} with {amount} reuse <displacing> <during>` - Recycling with optional displacement
 
+**Note**: When using units (of equipment) in cap, floor, and set commands, those limits apply after recharge calculations.
+
 #### Units System
 Supports automatic unit conversion: kg, mt (metric tons), tCO2e (tons CO2 equivalent), kwh (kilowatt hours), units (equipment), years/months/days (time), % (percentages)
 

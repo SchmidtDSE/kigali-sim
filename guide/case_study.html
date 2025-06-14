@@ -138,7 +138,7 @@
     uses substance "HFC-134a"
       set priorEquipment to 200000 units during year beginning
       initial charge with 0.60 kg / unit for sales
-      retire 3 % each year
+      retire 10 % each year  # roughly equivalent to 10 years
       recharge 30% each year with 0.60 kg / unit
       equals 1430 tCO2e / kg
       set import to (10000 * (200000 / 750000)) units / year during year beginning
@@ -258,7 +258,7 @@ end default</code></pre>
     uses substance "R-404A"
       set priorEquipment to 20000 units during year beginning
       initial charge with 10.00 kg / unit for sales
-      retire 3 % each year
+      retire 10 % each year  # roughly equivalent to 10 years
       recharge 30% each year with 10.00 kg / unit
       equals 3921.6 tCO2e / kg
       set import to 200 units / year during year beginning
@@ -337,7 +337,7 @@ end default</code></pre>
     uses substance "HFC-32"
       set priorEquipment to 20000 units during year beginning
       initial charge with 0.85 kg / unit for sales
-      retire 1 % each year
+      retire 6 % each year  # roughly equivalent to 15 years
       recharge 10% each year with 0.85 kg / unit
       set import to (1000 * (20000 / 25000)) units / year during year beginning
       equals 675.0 tCO2e / kg
@@ -351,7 +351,7 @@ end default</code></pre>
     uses substance "HFC-32"
       set priorEquipment to 5000 units during year beginning
       initial charge with 4.00 kg / unit for sales
-      retire 1 % each year
+      retire 6 % each year  # roughly equivalent to 15 years
       recharge 10% each year with 4.00 kg / unit
       set import to (1000 * (5000 / 25000)) units / year during year beginning
       equals 675.0 tCO2e / kg
@@ -395,6 +395,12 @@ end default</code></pre>
           per annum. Domestic AC are imported at 100 units per year and Commercial AC are imported
           at 3,000 units per year. This has a GWP of 2,087.5 tCO2e.
         </p>
+        
+        <p>
+          Note that when specifying units of equipment in manufacturing (or import) set points, 
+          recharge will not reduce the specified amount. For example, setting manufacture to 100 units 
+          means 100 new units will be produced on top of the kg that goes into recharge for prior equipment.
+        </p>
 
         <details>
           <summary>Code for R-410A starting conditions</summary>
@@ -405,7 +411,7 @@ end default</code></pre>
     uses substance "R-410A"
       set priorEquipment to 400000 units during year beginning
       initial charge with 1.00 kg / unit for sales
-      retire 1 % each year
+      retire 6 % each year  # roughly equivalent to 15 years
       recharge 10% each year with 1.00 kg / unit
       set import to 100 units / year during year beginning
       set manufacture to 40000 units / year during year beginning
@@ -422,7 +428,7 @@ end default</code></pre>
     uses substance "R-410A"
       set priorEquipment to 30000 units during year beginning
       initial charge with 5.00 kg / unit for sales
-      retire 1 % each year
+      retire 6 % each year  # roughly equivalent to 15 years
       recharge 10% each year with 5.00 kg / unit
       set import to 3000 units / year during year beginning
       equals 2087.5 tCO2e / kg
@@ -630,7 +636,7 @@ end default</code></pre>
     uses substance "HFC-32"
       set priorEquipment to 20000 * 120 % units during year beginning
       initial charge with 0.85 kg / unit for sales
-      retire 1 % each year
+      retire 6 % each year  # roughly equivalent to 15 years
       recharge 10% each year with 0.85 kg / unit
       set import to (1000 * (20000 / 25000)) units / year during year beginning
       equals 675.0 tCO2e / kg
@@ -644,7 +650,7 @@ end default</code></pre>
     uses substance "HFC-32"
       set priorEquipment to 5000 * 120 % units during year beginning
       initial charge with 4.00 kg / unit for sales
-      retire 1 % each year
+      retire 6 % each year  # roughly equivalent to 15 years
       recharge 10% each year with 4.00 kg / unit
       set import to (1000 * (5000 / 25000)) units / year during year beginning
       equals 675.0 tCO2e / kg
@@ -1001,7 +1007,7 @@ end simulations</code></pre>
     uses substance "HFC-134a"
       set priorEquipment to 240000 units during year beginning
       initial charge with 0.60 kg / unit for sales
-      retire 3 % each year
+      retire 10 % each year  # roughly equivalent to 10 years
       recharge 30 % each year with 0.60 kg / unit
       set import to 2667 units / year during year beginning
       change equipment by +8 % each year during years 2026 to 2033
@@ -1012,7 +1018,7 @@ end simulations</code></pre>
     uses substance "R-404A"
       set priorEquipment to 20000 units during year beginning
       initial charge with 10.00 kg / unit for sales
-      retire 3 % each year
+      retire 10 % each year  # roughly equivalent to 10 years
       recharge 30 % each year with 10.00 kg / unit
       set import to 200 units / year during year beginning
       change equipment by +8 % each year during years 2026 to 2033
@@ -1043,6 +1049,7 @@ end simulations</code></pre>
   end application
 
   define application "Chiller"
+    # Chillers are large size ACs that other simulations may put under the commercial AC category but it should be its own application category for the case study
 
     uses substance "HFC-134a"
       set priorEquipment to 60000 units during year beginning
@@ -1080,7 +1087,7 @@ end simulations</code></pre>
     uses substance "HFC-32"
       set priorEquipment to 24000 units during year beginning
       initial charge with 0.90 kg / unit for sales
-      retire 1 % each year
+      retire 6 % each year  # roughly equivalent to 15 years
       recharge 10 % each year with 0.85 kg / unit
       set import to 800 units / year during year beginning
       change equipment by +7 % each year during years 2026 to 2035
@@ -1090,10 +1097,10 @@ end simulations</code></pre>
     uses substance "R-410A"
       set priorEquipment to 400000 units during year beginning
       initial charge with 1.00 kg / unit for sales
-      retire 1 % each year
+      retire 6 % each year  # roughly equivalent to 15 years
       recharge 10 % each year with 1.00 kg / unit
       set import to 100 units / year during year beginning
-      set manufacture to 40000 units / year during year beginning
+      set manufacture to 40000 units / year during year beginning  # recharge will not reduce when units are specified in a set point - setting manufacture to 100 units means 100 new units will be produced on top of the kg that goes into recharge for prior equipment
       equals 2087.5 tCO2e / kg
     end substance
 
@@ -1104,7 +1111,7 @@ end simulations</code></pre>
     uses substance "HFC-32"
       set priorEquipment to 6000 units during year beginning
       initial charge with 4.50 kg / unit for sales
-      retire 1 % each year
+      retire 6 % each year  # roughly equivalent to 15 years
       recharge 10 % each year with 4.00 kg / unit
       set import to 200 units / year during year beginning
       change equipment by +7 % each year during years 2026 to 2035
@@ -1114,7 +1121,7 @@ end simulations</code></pre>
     uses substance "R-410A"
       set priorEquipment to 30000 units during year beginning
       initial charge with 5.00 kg / unit for sales
-      retire 1 % each year
+      retire 6 % each year  # roughly equivalent to 15 years
       recharge 10 % each year with 5.00 kg / unit
       set import to 3000 units / year during year beginning
       change equipment by +8 % each year during years 2026 to 2033

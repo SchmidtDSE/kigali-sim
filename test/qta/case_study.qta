@@ -27,7 +27,7 @@ start default
     uses substance "HFC-134a"
       set priorEquipment to 240000 units during year beginning
       initial charge with 0.60 kg / unit for sales
-      retire 3 % each year
+      retire 10 % each year  # roughly equivalent to 10 years
       recharge 30 % each year with 0.60 kg / unit
       set import to 2667 units / year during year beginning
       change equipment by +8 % each year during years 2026 to 2033
@@ -38,7 +38,7 @@ start default
     uses substance "R-404A"
       set priorEquipment to 20000 units during year beginning
       initial charge with 10.00 kg / unit for sales
-      retire 3 % each year
+      retire 10 % each year  # roughly equivalent to 10 years
       recharge 30 % each year with 10.00 kg / unit
       set import to 200 units / year during year beginning
       change equipment by +8 % each year during years 2026 to 2033
@@ -69,6 +69,7 @@ start default
   end application
 
   define application "Chiller"
+    # Chillers are large size ACs that other simulations may put under the commercial AC category but it should be its own application category for the case study
 
     uses substance "HFC-134a"
       set priorEquipment to 60000 units during year beginning
@@ -106,7 +107,7 @@ start default
     uses substance "HFC-32"
       set priorEquipment to 24000 units during year beginning
       initial charge with 0.90 kg / unit for sales
-      retire 1 % each year
+      retire 6 % each year  # roughly equivalent to 15 years
       recharge 10 % each year with 0.85 kg / unit
       set import to 800 units / year during year beginning
       change equipment by +7 % each year during years 2026 to 2035
@@ -116,10 +117,10 @@ start default
     uses substance "R-410A"
       set priorEquipment to 400000 units during year beginning
       initial charge with 1.00 kg / unit for sales
-      retire 1 % each year
+      retire 6 % each year  # roughly equivalent to 15 years
       recharge 10 % each year with 1.00 kg / unit
       set import to 100 units / year during year beginning
-      set manufacture to 40000 units / year during year beginning
+      set manufacture to 40000 units / year during year beginning  # recharge will not reduce when units are specified in a set point - setting manufacture to 100 units means 100 new units will be produced on top of the kg that goes into recharge for prior equipment
       equals 2087.5 tCO2e / kg
     end substance
 
@@ -130,7 +131,7 @@ start default
     uses substance "HFC-32"
       set priorEquipment to 6000 units during year beginning
       initial charge with 4.50 kg / unit for sales
-      retire 1 % each year
+      retire 6 % each year  # roughly equivalent to 15 years
       recharge 10 % each year with 4.00 kg / unit
       set import to 200 units / year during year beginning
       change equipment by +7 % each year during years 2026 to 2035
@@ -140,7 +141,7 @@ start default
     uses substance "R-410A"
       set priorEquipment to 30000 units during year beginning
       initial charge with 5.00 kg / unit for sales
-      retire 1 % each year
+      retire 6 % each year  # roughly equivalent to 15 years
       recharge 10 % each year with 5.00 kg / unit
       set import to 3000 units / year during year beginning
       change equipment by +8 % each year during years 2026 to 2033
