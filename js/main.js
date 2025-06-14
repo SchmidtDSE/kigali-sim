@@ -103,7 +103,7 @@ class MainPresenter {
     );
     self._buttonPanelPresenter = new ButtonPanelPresenter(
       document.getElementById("code-buttons-panel"),
-      () => self._onBuild(true),
+      () => self._onBuild(true, false, false),
     );
     self._resultsPresenter = new ResultsPresenter(document.getElementById("results"));
 
@@ -145,7 +145,7 @@ class MainPresenter {
       self._uiEditorPresenter.refresh(null);
     } else {
       self._buttonPanelPresenter.showScriptButtons();
-      self._onBuild(false);
+      self._onBuild(false, false, false);
     }
     localStorage.setItem("source", code);
 
@@ -163,7 +163,7 @@ class MainPresenter {
   _onAutoRefresh() {
     const self = this;
     if (!self._hasCompilationErrors) {
-      self._onBuild(true);
+      self._onBuild(true, false, true);
     }
   }
 
@@ -174,14 +174,20 @@ class MainPresenter {
    *     compilation.
    * @param {boolean} resetFilters - Flag indicating if to reset the results
    *     UI filter values. Defaults to false if not given.
+   * @param {boolean} isAutoRefresh - Flag indicating if this is triggered by
+   *     auto-refresh. Defaults to false if not given.
    * @private
    */
-  _onBuild(run, resetFilters) {
+  _onBuild(run, resetFilters, isAutoRefresh) {
     const self = this;
     self._buttonPanelPresenter.disable();
 
     if (resetFilters === undefined) {
       resetFilters = false;
+    }
+
+    if (isAutoRefresh === undefined) {
+      isAutoRefresh = false;
     }
 
     const execute = () => {
@@ -203,7 +209,9 @@ class MainPresenter {
       const program = result.getProgram();
       if (result.getErrors().length > 0) {
         const message = "Program error: " + result.getErrors()[0];
-        alertWithHelpOption(message);
+        if (!isAutoRefresh) {
+          alertWithHelpOption(message);
+        }
         self._buttonPanelPresenter.enable();
         captureSentryMessage(message, "info");
         return;
@@ -211,7 +219,9 @@ class MainPresenter {
 
       if (result.getErrors().length > 0) {
         const message = "Result error: " + result.getErrors()[0];
-        alertWithHelpOption(message);
+        if (!isAutoRefresh) {
+          alertWithHelpOption(message);
+        }
         captureSentryMessage(message, "error");
         self._buttonPanelPresenter.enable();
         return;
@@ -230,7 +240,9 @@ class MainPresenter {
           }
         } catch (e) {
           console.log(e);
-          alertWithHelpOption("On result error: " + e);
+          if (!isAutoRefresh) {
+            alertWithHelpOption("On result error: " + e);
+          }
         }
       }
     };
@@ -240,7 +252,9 @@ class MainPresenter {
         execute();
       } catch (e) {
         const message = "Execute error: " + e;
-        alertWithHelpOption(message);
+        if (!isAutoRefresh) {
+          alertWithHelpOption(message);
+        }
         captureSentryMessage(message, "error");
       }
       self._buttonPanelPresenter.enable();
@@ -305,7 +319,7 @@ class MainPresenter {
       return;
     }
 
-    self._onBuild(true);
+    self._onBuild(true, false, false);
   }
 
   /**
@@ -321,7 +335,7 @@ class MainPresenter {
     const setCode = (code, resetFilters) => {
       self._codeEditorPresenter.setCode(code);
       self._onCodeChange();
-      self._onBuild(true, resetFilters);
+      self._onBuild(true, resetFilters, false);
     };
 
     const newFileDialog = document.getElementById("new-file-button");
