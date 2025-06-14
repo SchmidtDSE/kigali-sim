@@ -773,7 +773,7 @@ function buildCompilerTests() {
     ]);
 
     buildTest(
-      "tests ordering-sensitive emissions issue",
+      "tests ordering-sensitive recharge emissions issue",
       "/test/qta/ordering_sensitive_emissions.qta", [
         (result, assert) => {
           // Test SubA (tCO2e equals comes before recharge)
@@ -812,6 +812,53 @@ function buildCompilerTests() {
           const emissionsB = recordB.getRechargeEmissions();
           const emissionsC = recordC.getRechargeEmissions();
           const emissionsD = recordD.getRechargeEmissions();
+          assert.closeTo(emissionsA.getValue(), emissionsB.getValue(), 0.001, "A = B");
+          assert.closeTo(emissionsB.getValue(), emissionsC.getValue(), 0.001, "B = C");
+          assert.closeTo(emissionsC.getValue(), emissionsD.getValue(), 0.001, "C = D");
+        },
+      ],
+    );
+
+    buildTest(
+      "tests ordering-sensitive eol emissions issue",
+      "/test/qta/ordering_sensitive_emissions.qta", [
+        (result, assert) => {
+          // Test SubA (tCO2e equals comes before recharge)
+          const recordA = getResult(result, BAU_NAME, 2035, 0, "test", "SubA");
+          const emissionsA = recordA.getEolEmissions();
+          assert.ok(emissionsA.getValue() > 0, "A > 0");
+          assert.deepEqual(emissionsA.getUnits(), "tCO2e");
+        },
+        (result, assert) => {
+          // Test SubB (recharge comes before tCO2e equals)
+          const recordB = getResult(result, BAU_NAME, 2035, 0, "test", "SubB");
+          const emissionsB = recordB.getEolEmissions();
+          assert.ok(emissionsB.getValue() > 0, "B > 0");
+          assert.deepEqual(emissionsB.getUnits(), "tCO2e");
+        },
+        (result, assert) => {
+          // Test SubC (recharge comes before tCO2e equals)
+          const recordB = getResult(result, BAU_NAME, 2035, 0, "test", "SubC");
+          const emissionsB = recordB.getEolEmissions();
+          assert.ok(emissionsB.getValue() > 0, "C > 0");
+          assert.deepEqual(emissionsB.getUnits(), "tCO2e");
+        },
+        (result, assert) => {
+          // Test SubD (recharge comes before tCO2e equals)
+          const recordB = getResult(result, BAU_NAME, 2035, 0, "test", "SubD");
+          const emissionsB = recordB.getEolEmissions();
+          assert.ok(emissionsB.getValue() > 0, "D > 0");
+          assert.deepEqual(emissionsB.getUnits(), "tCO2e");
+        },
+        (result, assert) => {
+          const recordA = getResult(result, BAU_NAME, 2035, 0, "test", "SubA");
+          const recordB = getResult(result, BAU_NAME, 2035, 0, "test", "SubB");
+          const recordC = getResult(result, BAU_NAME, 2035, 0, "test", "SubC");
+          const recordD = getResult(result, BAU_NAME, 2035, 0, "test", "SubD");
+          const emissionsA = recordA.getEolEmissions();
+          const emissionsB = recordB.getEolEmissions();
+          const emissionsC = recordC.getEolEmissions();
+          const emissionsD = recordD.getEolEmissions();
           assert.closeTo(emissionsA.getValue(), emissionsB.getValue(), 0.001, "A = B");
           assert.closeTo(emissionsB.getValue(), emissionsC.getValue(), 0.001, "B = C");
           assert.closeTo(emissionsC.getValue(), emissionsD.getValue(), 0.001, "C = D");
