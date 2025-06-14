@@ -11,8 +11,9 @@ import {
   SUBSTANCE_CONTEXT,
   STREAM_BASE_UNITS,
 } from "engine_const";
-
 import {EngineNumber} from "engine_number";
+import {UnitConverter} from "engine_unit";
+import {OverridingConverterStateGetter} from "engine_unit_state";
 
 const CHECK_NAN_STATE = true;
 const CHECK_POSITIVE_STREAMS = true;
@@ -33,7 +34,11 @@ class YearMatcher {
   constructor(start, end) {
     const self = this;
 
-    if (start === null || end === null) {
+    const hasNull = start === null || end === null;
+    const startHasSpecial = start === "beginning" || start === "onwards";
+    const endHasSpecial = end === "beginning" || end === "onwards";
+
+    if (hasNull || startHasSpecial || endHasSpecial) {
       self._start = start;
       self._end = end;
     } else {
@@ -415,11 +420,12 @@ class StreamParameterization {
   resetInternals() {
     const self = this;
     const createZero = (x) => new EngineNumber(0, x);
+    const createNominal = (x) => new EngineNumber(1, x);
     self._ghgIntensity = createZero("tCO2e / kg");
     self._energyIntensity = createZero("kwh / kg");
     self._initialCharge = {
-      manufacture: createZero("kg / unit"),
-      import: createZero("kg / unit"),
+      manufacture: createNominal("kg / unit"),
+      import: createNominal("kg / unit"),
     };
     self._rechargePopulation = createZero("%");
     self._rechargeIntensity = createZero("kg / unit");
@@ -675,13 +681,14 @@ class StreamKeeper {
   /**
    * Create a new StreamKeeper instance.
    *
-   * @param {UnitConverter} unitConverter - Converter for handling unit
-   *     transformations.
+   * @param {ConverterStateGetter} stateGetter - Structure to retrieve state information.
+   * @param {UnitConverter} unitConverter - Converter for handling unit transformations.
    */
-  constructor(unitConverter) {
+  constructor(stateGetter, unitConverter) {
     const self = this;
     self._substances = new Map();
     self._streams = new Map();
+    self._stateGetter = stateGetter;
     self._unitConverter = unitConverter;
   }
 
@@ -770,50 +777,13 @@ class StreamKeeper {
       throw new Error("Encountered NaN to be set for: " + piecesStr);
     }
 
-    if (name === "sales") {
-      const manufactureValueRaw = self.getStream(application, substance, "manufacture");
-      const importValueRaw = self.getStream(application, substance, "import");
-
-      const manufactureValue = self._unitConverter.convert(manufactureValueRaw, "kg");
-      const importValue = self._unitConverter.convert(importValueRaw, "kg");
-
-      const manufactureAmount = manufactureValue.getValue();
-      const importAmount = importValue.getValue();
-
-      const valueConverted = self._unitConverter.convert(value, "kg");
-      const amountKg = valueConverted.getValue();
-
-      const totalAmount = manufactureAmount + importAmount;
-      const isZero = totalAmount == 0;
-      const manufacturePercent = isZero ? 0.5 : manufactureAmount / totalAmount;
-      const importPercent = isZero ? 0.5 : importAmount / totalAmount;
-
-      const manufactureShare = amountKg * manufacturePercent;
-      const importShare = amountKg * importPercent;
-      const manufactureNewValue = new EngineNumber(manufactureShare, value.getUnits());
-      const importNewValue = new EngineNumber(importShare, value.getUnits());
-
-      self.setStream(application, substance, "manufacture", manufactureNewValue);
-      self.setStream(application, substance, "import", importNewValue);
-      return;
+    if (self._getIsSettingVolumeByUnits(name, value)) {
+      self._setStreamForSalesWithUnits(application, substance, name, value);
+    } else if (name === "sales") {
+      self._setStreamForSales(application, substance, name, value);
+    } else {
+      self._setSimpleStream(application, substance, name, value);
     }
-
-    const unitsNeeded = self._getUnits(name);
-    const valueConverted = self._unitConverter.convert(value, unitsNeeded);
-
-    if (CHECK_NAN_STATE && isNaN(valueConverted.getValue())) {
-      const pieces = [application, substance, name];
-      const piecesStr = pieces.join(" > ");
-      throw new Error("Encountered NaN after conversion to be set for: " + piecesStr);
-    }
-
-    if (CHECK_POSITIVE_STREAMS && valueConverted.getValue() < 0) {
-      const pieces = [application, substance, name];
-      const piecesStr = pieces.join(" > ");
-      throw new Error("Encountered negative stream to be set for: " + piecesStr);
-    }
-
-    self._streams.set(self._getKey(application, substance, name), valueConverted);
   }
 
   /**
@@ -1196,6 +1166,120 @@ class StreamKeeper {
     const self = this;
     self._ensureStreamKnown(name);
     return STREAM_BASE_UNITS.get(name);
+  }
+
+  /**
+   * Handle setting the sales stream for an application and substance.
+   *
+   * Handle setting the sales stream which has two substreams (manufacture and import) which both
+   * require modification.
+   *
+   * @private
+   * @param {string} application - The application name.
+   * @param {string} substance - The substance name.
+   * @param {string} name - The stream name.
+   * @param {EngineNumber} value - The value to set.
+   */
+  _setStreamForSales(application, substance, name, value) {
+    const self = this;
+    const manufactureValueRaw = self.getStream(application, substance, "manufacture");
+    const importValueRaw = self.getStream(application, substance, "import");
+
+    const manufactureValue = self._unitConverter.convert(manufactureValueRaw, "kg");
+    const importValue = self._unitConverter.convert(importValueRaw, "kg");
+
+    const manufactureAmount = manufactureValue.getValue();
+    const importAmount = importValue.getValue();
+
+    const valueConverted = self._unitConverter.convert(value, "kg");
+    const amountKg = valueConverted.getValue();
+
+    const totalAmount = manufactureAmount + importAmount;
+    const isZero = totalAmount == 0;
+    const manufacturePercent = isZero ? 0.5 : manufactureAmount / totalAmount;
+    const importPercent = isZero ? 0.5 : importAmount / totalAmount;
+
+    const manufactureShare = amountKg * manufacturePercent;
+    const importShare = amountKg * importPercent;
+    const manufactureNewValue = new EngineNumber(manufactureShare, value.getUnits());
+    const importNewValue = new EngineNumber(importShare, value.getUnits());
+
+    self.setStream(application, substance, "manufacture", manufactureNewValue);
+    self.setStream(application, substance, "import", importNewValue);
+  }
+
+  /**
+   * Determine if the user is setting a sales component (manufacture / import / sales) by units.
+   *
+   * @private
+   * @param {string} name - The stream name.
+   * @param {EngineNumber} value - The value to set.
+   * @returns {boolean} true if the user is setting a sales component by units and false otherwise.
+   */
+  _getIsSettingVolumeByUnits(name, value) {
+    const self = this;
+    const isSalesComponent = name === "manufacture" || name === "import" || name === "sales";
+    const isUnits = value.getUnits().startsWith("unit");
+    return isSalesComponent && isUnits;
+  }
+
+  /**
+   * Handle setting a stream which only requires simple unit conversion.
+   *
+   * @private
+   * @param {string} application - The application name.
+   * @param {string} substance - The substance name.
+   * @param {string} name - The stream name.
+   * @param {EngineNumber} value - The value to set.
+   */
+  _setSimpleStream(application, substance, name, value) {
+    const self = this;
+    const unitsNeeded = self._getUnits(name);
+    const valueConverted = self._unitConverter.convert(value, unitsNeeded);
+
+    if (CHECK_NAN_STATE && isNaN(valueConverted.getValue())) {
+      const pieces = [application, substance, name];
+      const piecesStr = pieces.join(" > ");
+      throw new Error("Encountered NaN after conversion to be set for: " + piecesStr);
+    }
+
+    if (CHECK_POSITIVE_STREAMS && valueConverted.getValue() < 0) {
+      const pieces = [application, substance, name];
+      const piecesStr = pieces.join(" > ");
+      throw new Error("Encountered negative stream to be set for: " + piecesStr);
+    }
+
+    self._streams.set(self._getKey(application, substance, name), valueConverted);
+  }
+
+  /**
+   * Handle setting volume by units for sales components.
+   *
+   * Handle setting a sales component (manufacture or import) which requires conversion by way of
+   * initial charge specific to that stream.
+   *
+   * @private
+   * @param {string} application - The application name.
+   * @param {string} substance - The substance name.
+   * @param {string} name - The stream name.
+   * @param {EngineNumber} value - The value to set.
+   */
+  _setStreamForSalesWithUnits(application, substance, name, value) {
+    const self = this;
+    const stateGetter = new OverridingConverterStateGetter(self._stateGetter);
+    const unitConverter = new UnitConverter(stateGetter);
+
+    const initialCharge = self.getInitialCharge(application, substance, name);
+    if (initialCharge.getValue() === 0) {
+      throw new Error("Cannot set " + name + " stream with a zero initial charge.");
+    }
+    const initialChargeConverted = unitConverter.convert(initialCharge, "kg / unit");
+    stateGetter.setAmortizedUnitVolume(initialChargeConverted);
+
+    const valueUnitsPlain = unitConverter.convert(value, "units");
+    const valueConverted = unitConverter.convert(valueUnitsPlain, "kg");
+
+    self.setStream(application, substance, name, valueConverted);
   }
 }
 

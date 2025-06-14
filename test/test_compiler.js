@@ -222,6 +222,17 @@ function buildCompilerTests() {
       },
     ]);
 
+    buildTest("handles recharge on top when specifying by units", "/test/qta/recharge_on_top.qta", [
+      (result, assert) => {
+        // Test that recharge is added on top for units-based specifications
+        // Should have 10000 (prior) + 1000 (manufacture) = 11000 units in year 1
+        const record = getResult(result, "BAU", 1, 0, "App", "Sub1");
+        const equipment = record.getPopulation();
+        assert.closeTo(equipment.getValue(), 11000, 0.0001);
+        assert.deepEqual(equipment.getUnits(), "units");
+      },
+    ]);
+
     buildTest("handles multiple consumption", "/test/qta/multiple.qta", [
       (result, assert) => {
         const record = getResult(result, BAU_NAME, 1, 0, "test", "a");
@@ -456,6 +467,66 @@ function buildCompilerTests() {
       },
     ]);
 
+    buildTest("checks order of operations in initialization", "/test/qta/order_check_volume.qta", [
+      // Test Sub1 (A, B, C order) produces 1 MtCO2e across all years
+      (result, assert) => {
+        const record1 = getResult(result, "BAU", 1, 0, "App", "Sub1");
+        const consumption1 = record1.getGhgConsumption();
+        assert.closeTo(consumption1.getValue(), 1000000, 0.0001);
+        assert.deepEqual(consumption1.getUnits(), "tCO2e");
+      },
+      (result, assert) => {
+        const record2 = getResult(result, "BAU", 2, 0, "App", "Sub1");
+        const consumption2 = record2.getGhgConsumption();
+        assert.closeTo(consumption2.getValue(), 1000000, 0.0001);
+        assert.deepEqual(consumption2.getUnits(), "tCO2e");
+      },
+      (result, assert) => {
+        const record3 = getResult(result, "BAU", 3, 0, "App", "Sub1");
+        const consumption3 = record3.getGhgConsumption();
+        assert.closeTo(consumption3.getValue(), 1000000, 0.0001);
+        assert.deepEqual(consumption3.getUnits(), "tCO2e");
+      },
+      // Test Sub2 (A, C, B order) produces 1 MtCO2e across all years
+      (result, assert) => {
+        const record1 = getResult(result, "BAU", 1, 0, "App", "Sub2");
+        const consumption1 = record1.getGhgConsumption();
+        assert.closeTo(consumption1.getValue(), 1000000, 0.0001);
+        assert.deepEqual(consumption1.getUnits(), "tCO2e");
+      },
+      (result, assert) => {
+        const record2 = getResult(result, "BAU", 2, 0, "App", "Sub2");
+        const consumption2 = record2.getGhgConsumption();
+        assert.closeTo(consumption2.getValue(), 1000000, 0.0001);
+        assert.deepEqual(consumption2.getUnits(), "tCO2e");
+      },
+      (result, assert) => {
+        const record3 = getResult(result, "BAU", 3, 0, "App", "Sub2");
+        const consumption3 = record3.getGhgConsumption();
+        assert.closeTo(consumption3.getValue(), 1000000, 0.0001);
+        assert.deepEqual(consumption3.getUnits(), "tCO2e");
+      },
+      // Test Sub3 (C, A, B order) produces 1 MtCO2e across all years
+      (result, assert) => {
+        const record1 = getResult(result, "BAU", 1, 0, "App", "Sub3");
+        const consumption1 = record1.getGhgConsumption();
+        assert.closeTo(consumption1.getValue(), 1000000, 0.0001);
+        assert.deepEqual(consumption1.getUnits(), "tCO2e");
+      },
+      (result, assert) => {
+        const record2 = getResult(result, "BAU", 2, 0, "App", "Sub3");
+        const consumption2 = record2.getGhgConsumption();
+        assert.closeTo(consumption2.getValue(), 1000000, 0.0001);
+        assert.deepEqual(consumption2.getUnits(), "tCO2e");
+      },
+      (result, assert) => {
+        const record3 = getResult(result, "BAU", 3, 0, "App", "Sub3");
+        const consumption3 = record3.getGhgConsumption();
+        assert.closeTo(consumption3.getValue(), 1000000, 0.0001);
+        assert.deepEqual(consumption3.getUnits(), "tCO2e");
+      },
+    ]);
+
     buildTest("runs case study", "/test/qta/case_study.qta", [
       (result, assert) => {
         // Test that the case study simulation completes successfully
@@ -470,6 +541,72 @@ function buildCompilerTests() {
           "Should have non-zero consumption for Domestic Refrigeration HFC-134a in 2030");
       },
     ]);
+
+    buildTest("tests initialization by units", "/test/qta/init_units.qta", [
+      // Test Sub1 (A, B, C order) - should have 1M units in year 1, 2M in year 2, 3M in year 3
+      (result, assert) => {
+        const record1 = getResult(result, "BAU", 1, 0, "App", "Sub1");
+        const equipment1 = record1.getPopulation();
+        assert.closeTo(equipment1.getValue(), 1000000, 0.0001);
+        assert.deepEqual(equipment1.getUnits(), "units");
+      },
+      (result, assert) => {
+        const record2 = getResult(result, "BAU", 2, 0, "App", "Sub1");
+        const equipment2 = record2.getPopulation();
+        assert.closeTo(equipment2.getValue(), 2000000, 0.0001);
+        assert.deepEqual(equipment2.getUnits(), "units");
+      },
+      (result, assert) => {
+        const record3 = getResult(result, "BAU", 3, 0, "App", "Sub1");
+        const equipment3 = record3.getPopulation();
+        assert.closeTo(equipment3.getValue(), 3000000, 0.0001);
+        assert.deepEqual(equipment3.getUnits(), "units");
+      },
+    ]);
+
+    buildTest("checks order of operations in initialization by units",
+      "/test/qta/order_check_units.qta",
+      [
+        // Test Sub2 (A, C, B order) - should have same results as Sub1
+        (result, assert) => {
+          const record1 = getResult(result, "BAU", 1, 0, "App", "Sub2");
+          const equipment1 = record1.getPopulation();
+          assert.closeTo(equipment1.getValue(), 1000000, 0.0001);
+          assert.deepEqual(equipment1.getUnits(), "units");
+        },
+        (result, assert) => {
+          const record2 = getResult(result, "BAU", 2, 0, "App", "Sub2");
+          const equipment2 = record2.getPopulation();
+          assert.closeTo(equipment2.getValue(), 2000000, 0.0001);
+          assert.deepEqual(equipment2.getUnits(), "units");
+        },
+        (result, assert) => {
+          const record3 = getResult(result, "BAU", 3, 0, "App", "Sub2");
+          const equipment3 = record3.getPopulation();
+          assert.closeTo(equipment3.getValue(), 3000000, 0.0001);
+          assert.deepEqual(equipment3.getUnits(), "units");
+        },
+        // Test Sub3 (C, A, B order) - should have same results as Sub1 and Sub2
+        (result, assert) => {
+          const record1 = getResult(result, "BAU", 1, 0, "App", "Sub3");
+          const equipment1 = record1.getPopulation();
+          assert.closeTo(equipment1.getValue(), 1000000, 0.0001);
+          assert.deepEqual(equipment1.getUnits(), "units");
+        },
+        (result, assert) => {
+          const record2 = getResult(result, "BAU", 2, 0, "App", "Sub3");
+          const equipment2 = record2.getPopulation();
+          assert.closeTo(equipment2.getValue(), 2000000, 0.0001);
+          assert.deepEqual(equipment2.getUnits(), "units");
+        },
+        (result, assert) => {
+          const record3 = getResult(result, "BAU", 3, 0, "App", "Sub3");
+          const equipment3 = record3.getPopulation();
+          assert.closeTo(equipment3.getValue(), 3000000, 0.0001);
+          assert.deepEqual(equipment3.getUnits(), "units");
+        },
+      ],
+    );
   });
 }
 

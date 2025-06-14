@@ -41,7 +41,7 @@ class Engine {
 
     self._stateGetter = new ConverterStateGetter(self);
     self._unitConverter = new UnitConverter(self._stateGetter);
-    self._streamKeeper = new StreamKeeper(self._unitConverter);
+    self._streamKeeper = new StreamKeeper(self._stateGetter, self._unitConverter);
     self._scope = new Scope(null, null, null);
   }
 
@@ -198,7 +198,7 @@ class Engine {
     }
 
     if (name === "sales" || name === "manufacture" || name === "import") {
-      self._recalcPopulationChange(scopeEffective);
+      self._recalcPopulationChange(scopeEffective, !value.getUnits().startsWith("unit"));
       self._recalcConsumption(scopeEffective);
       if (!OPTIMIZE_RECALCS) {
         self._recalcSales(scopeEffective);
@@ -877,14 +877,19 @@ class Engine {
    * Recalculates population changes based on current state.
    *
    * @param {Scope|null} scope - The scope to recalculate for.
+   * @param {boolean|null} subtractRecharge - If true, subtracts recharge from population change
+   *    and, if false, will add recharge on top of the population change. Defaults to true.
    * @private
    */
-  _recalcPopulationChange(scope) {
+  _recalcPopulationChange(scope, subtractRecharge) {
     const self = this;
+
+    const isGiven = (x) => x !== null && x !== undefined;
 
     const stateGetter = new OverridingConverterStateGetter(self._stateGetter);
     const unitConverter = new UnitConverter(stateGetter);
-    const scopeEffective = scope === null || scope === undefined ? self._scope : scope;
+    const scopeEffective = isGiven(scope) ? scope: self._scope;
+    const subtractRechargeEffective = isGiven(subtractRecharge) ? subtractRecharge : true;
     const application = scopeEffective.getApplication();
     const substance = scopeEffective.getSubstance();
 
@@ -920,7 +925,7 @@ class Engine {
 
     // Get total volume available for new units
     const salesKg = substanceSales.getValue();
-    const rechargeKg = rechargeVolume.getValue();
+    const rechargeKg = subtractRechargeEffective ? rechargeVolume.getValue() : 0;
     const availableForNewUnitsKg = salesKg - rechargeKg;
 
     // Convert to unit delta

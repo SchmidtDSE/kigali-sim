@@ -2372,7 +2372,7 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
    */
   visitDuringStart(ctx) {
     const self = this;
-    const startYear = engine.getStartYear();
+    const startYear = "beginning";
     return self.buildDuring(startYear, startYear);
   }
 

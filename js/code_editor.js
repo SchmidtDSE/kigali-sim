@@ -11,14 +11,18 @@ class CodeEditorPresenter {
    * @param {HTMLElement} root - The root element containing the editor.
    * @param {Function} onChange - Callback function triggered when editor
    *     content changes.
+   * @param {Function} onAutoRefresh - Optional callback function for auto-refresh
+   *     after 3 seconds of no changes.
    */
-  constructor(root, onChange) {
+  constructor(root, onChange, onAutoRefresh) {
     const self = this;
     self._root = root;
     self._errorDisplay = self._root.querySelector(".error-display");
     self._editor = null;
     self._timeout = null;
+    self._autoRefreshTimeout = null;
     self._onChange = onChange;
+    self._onAutoRefresh = onAutoRefresh || null;
     self._initEditor();
   }
 
@@ -104,7 +108,15 @@ class CodeEditorPresenter {
       if (self._timeout !== null) {
         clearTimeout(self._timeout);
       }
+      if (self._autoRefreshTimeout !== null) {
+        clearTimeout(self._autoRefreshTimeout);
+      }
+
       self._timeout = setTimeout(() => self._onChange(), 500);
+
+      if (self._onAutoRefresh !== null) {
+        self._autoRefreshTimeout = setTimeout(() => self._onAutoRefresh(), 3000);
+      }
     });
 
     ace.config.set("basePath", "/third_party");

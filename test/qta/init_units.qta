@@ -1,0 +1,30 @@
+start default
+
+  define application "App"
+  
+    uses substance "Sub1"
+
+      # A - Equivalencies
+      equals 1 tCO2e / kg
+      equals 1 kwh / kg
+      
+      # B - Initial charge levels
+      initial charge with 1 kg / unit for manufacture
+      initial charge with 2 kg / unit for import
+      
+      # C - Initial volumes
+      set manufacture to 1000000 units during year 1
+
+    end substance
+  
+  end application
+
+end default
+
+
+start simulations
+
+  simulate "BAU"
+  from years 1 to 3
+
+end simulations
