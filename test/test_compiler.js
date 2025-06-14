@@ -278,6 +278,50 @@ function buildCompilerTests() {
       },
     ]);
 
+    buildTest("handles recycling by kg", "/test/qta/recycle_by_kg.qta", [
+      (result, assert) => {
+        const record = getResult(result, "result", 1, 0, "test", "test");
+        const consumption = record.getGhgConsumption();
+        assert.closeTo(consumption.getValue(), 500, 0.0001);
+        assert.deepEqual(consumption.getUnits(), "tCO2e");
+      },
+      (result, assert) => {
+        const record = getResult(result, "result", 2, 0, "test", "test");
+        const consumption = record.getGhgConsumption();
+        assert.closeTo(consumption.getValue(), 500, 0.0001);
+        assert.deepEqual(consumption.getUnits(), "tCO2e");
+      },
+      (result, assert) => {
+        const record = getResult(result, "result", 2, 0, "test", "test");
+        const consumption = record.getRecycleConsumption();
+        // 25 kg * 5 tCO2e/mt = 25 kg * 5 tCO2e/(1000 kg) = 0.125 tCO2e
+        assert.closeTo(consumption.getValue(), 0.125, 0.0001);
+        assert.deepEqual(consumption.getUnits(), "tCO2e");
+      },
+    ]);
+
+    buildTest("handles recycling by units", "/test/qta/recycle_by_units.qta", [
+      (result, assert) => {
+        const record = getResult(result, "result", 1, 0, "test", "test");
+        const consumption = record.getGhgConsumption();
+        assert.closeTo(consumption.getValue(), 500, 0.0001);
+        assert.deepEqual(consumption.getUnits(), "tCO2e");
+      },
+      (result, assert) => {
+        const record = getResult(result, "result", 2, 0, "test", "test");
+        const consumption = record.getGhgConsumption();
+        assert.closeTo(consumption.getValue(), 500, 0.0001);
+        assert.deepEqual(consumption.getUnits(), "tCO2e");
+      },
+      (result, assert) => {
+        const record = getResult(result, "result", 2, 0, "test", "test");
+        const consumption = record.getRecycleConsumption();
+        // 1000 units * 2 kg/unit = 2000 kg, 2000 kg * 5 tCO2e/(1000 kg) = 10 tCO2e
+        assert.closeTo(consumption.getValue(), 10, 0.0001);
+        assert.deepEqual(consumption.getUnits(), "tCO2e");
+      },
+    ]);
+
     buildTest("handles replace", "/test/qta/replace.qta", [
       (result, assert) => {
         const record = getResult(result, "result", 1, 0, "test", "a");
