@@ -519,6 +519,40 @@ function buildCompilerTests() {
       ],
     );
 
+    buildTest("handles replace by units", "/test/qta/replace_units.qta", [
+      (result, assert) => {
+        const record = getResult(result, "result", 1, 0, "test", "a");
+        const consumption = record.getGhgConsumption();
+        // Calculation: Original 50 mt - replaced 25 mt = 25 mt remaining × 10 tCO2e/mt = 250 tCO2e
+        assert.closeTo(consumption.getValue(), 250, 0.0001);
+        assert.deepEqual(consumption.getUnits(), "tCO2e");
+      },
+      (result, assert) => {
+        const record = getResult(result, "result", 1, 0, "test", "b");
+        const consumption = record.getGhgConsumption();
+        // Calculation: Original 50 mt + added 25 mt = 75 mt total × 5 tCO2e/mt = 375 tCO2e
+        assert.closeTo(consumption.getValue(), 375, 0.0001);
+        assert.deepEqual(consumption.getUnits(), "tCO2e");
+      },
+    ]);
+
+    buildTest("handles replace by kg", "/test/qta/replace_kg.qta", [
+      (result, assert) => {
+        const record = getResult(result, "result", 1, 0, "test", "a");
+        const consumption = record.getGhgConsumption();
+        // Calculation: Original 50 mt - replaced 25 mt = 25 mt remaining × 10 tCO2e/mt = 250 tCO2e
+        assert.closeTo(consumption.getValue(), 250, 0.0001);
+        assert.deepEqual(consumption.getUnits(), "tCO2e");
+      },
+      (result, assert) => {
+        const record = getResult(result, "result", 1, 0, "test", "b");
+        const consumption = record.getGhgConsumption();
+        // Calculation: Original 50 mt + added 25 mt = 75 mt total × 5 tCO2e/mt = 375 tCO2e
+        assert.closeTo(consumption.getValue(), 375, 0.0001);
+        assert.deepEqual(consumption.getUnits(), "tCO2e");
+      },
+    ]);
+
     buildTest("runs trials", "/test/qta/trials.qta", [
       (result, assert) => {
         const record = getResult(result, "business as usual", 1, 0, "test", "test");
