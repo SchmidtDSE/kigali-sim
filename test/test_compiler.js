@@ -761,20 +761,6 @@ function buildCompilerTests() {
       },
     ]);
 
-    buildTest("debug baseline for recharge calculations", "/test/qta/debug_baseline.qta", [
-      (result, assert) => {
-        const record = getResult(result, "baseline", 1, 0, "test", "test");
-        const manufacture = record.getManufacture();
-        const rechargeEmissions = record.getRechargeEmissions();
-        
-        console.log("Baseline manufacture:", manufacture.getValue(), manufacture.getUnits());
-        console.log("Baseline recharge emissions:", rechargeEmissions.getValue(), rechargeEmissions.getUnits());
-        
-        assert.closeTo(manufacture.getValue(), 100, 0.0001);
-        assert.deepEqual(manufacture.getUnits(), "kg");
-      },
-    ]);
-
     buildTest("tests floor with kg works without recharge addition", "/test/qta/floor_kg.qta", [
       (result, assert) => {
         const record = getResult(result, "result", 1, 0, "test", "test");
