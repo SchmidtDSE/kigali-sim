@@ -456,6 +456,66 @@ function buildCompilerTests() {
       },
     ]);
 
+    buildTest("checks order of operations in initialization", "/test/qta/order_check_volume.qta", [
+      // Test Sub1 (A, B, C order) produces 1 MtCO2e across all years
+      (result, assert) => {
+        const record1 = getResult(result, "BAU", 1, 0, "App", "Sub1");
+        const consumption1 = record1.getGhgConsumption();
+        assert.closeTo(consumption1.getValue(), 1000000, 0.0001);
+        assert.deepEqual(consumption1.getUnits(), "tCO2e");
+      },
+      (result, assert) => {
+        const record2 = getResult(result, "BAU", 2, 0, "App", "Sub1");
+        const consumption2 = record2.getGhgConsumption();
+        assert.closeTo(consumption2.getValue(), 1000000, 0.0001);
+        assert.deepEqual(consumption2.getUnits(), "tCO2e");
+      },
+      (result, assert) => {
+        const record3 = getResult(result, "BAU", 3, 0, "App", "Sub1");
+        const consumption3 = record3.getGhgConsumption();
+        assert.closeTo(consumption3.getValue(), 1000000, 0.0001);
+        assert.deepEqual(consumption3.getUnits(), "tCO2e");
+      },
+      // Test Sub2 (A, C, B order) produces 1 MtCO2e across all years
+      (result, assert) => {
+        const record1 = getResult(result, "BAU", 1, 0, "App", "Sub2");
+        const consumption1 = record1.getGhgConsumption();
+        assert.closeTo(consumption1.getValue(), 1000000, 0.0001);
+        assert.deepEqual(consumption1.getUnits(), "tCO2e");
+      },
+      (result, assert) => {
+        const record2 = getResult(result, "BAU", 2, 0, "App", "Sub2");
+        const consumption2 = record2.getGhgConsumption();
+        assert.closeTo(consumption2.getValue(), 1000000, 0.0001);
+        assert.deepEqual(consumption2.getUnits(), "tCO2e");
+      },
+      (result, assert) => {
+        const record3 = getResult(result, "BAU", 3, 0, "App", "Sub2");
+        const consumption3 = record3.getGhgConsumption();
+        assert.closeTo(consumption3.getValue(), 1000000, 0.0001);
+        assert.deepEqual(consumption3.getUnits(), "tCO2e");
+      },
+      // Test Sub3 (C, A, B order) produces 1 MtCO2e across all years
+      (result, assert) => {
+        const record1 = getResult(result, "BAU", 1, 0, "App", "Sub3");
+        const consumption1 = record1.getGhgConsumption();
+        assert.closeTo(consumption1.getValue(), 1000000, 0.0001);
+        assert.deepEqual(consumption1.getUnits(), "tCO2e");
+      },
+      (result, assert) => {
+        const record2 = getResult(result, "BAU", 2, 0, "App", "Sub3");
+        const consumption2 = record2.getGhgConsumption();
+        assert.closeTo(consumption2.getValue(), 1000000, 0.0001);
+        assert.deepEqual(consumption2.getUnits(), "tCO2e");
+      },
+      (result, assert) => {
+        const record3 = getResult(result, "BAU", 3, 0, "App", "Sub3");
+        const consumption3 = record3.getGhgConsumption();
+        assert.closeTo(consumption3.getValue(), 1000000, 0.0001);
+        assert.deepEqual(consumption3.getUnits(), "tCO2e");
+      },
+    ]);
+
     buildTest("runs case study", "/test/qta/case_study.qta", [
       (result, assert) => {
         // Test that the case study simulation completes successfully
