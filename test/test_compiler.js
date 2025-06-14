@@ -553,7 +553,7 @@ function buildCompilerTests() {
       },
     ]);
 
-    /*buildTest("checks order of operations in initialization by units",
+    buildTest("checks order of operations in initialization by units",
       "/test/qta/order_check_units.qta",
       [
         // Test Sub2 (A, C, B order) - should have same results as Sub1
@@ -595,7 +595,7 @@ function buildCompilerTests() {
           assert.deepEqual(equipment3.getUnits(), "units");
         },
       ]
-    );*/
+    );
   });
 }
 

@@ -420,11 +420,12 @@ class StreamParameterization {
   resetInternals() {
     const self = this;
     const createZero = (x) => new EngineNumber(0, x);
+    const createNominal = (x) => new EngineNumber(1, x);
     self._ghgIntensity = createZero("tCO2e / kg");
     self._energyIntensity = createZero("kwh / kg");
     self._initialCharge = {
-      manufacture: createZero("kg / unit"),
-      import: createZero("kg / unit"),
+      manufacture: createNominal("kg / unit"),
+      import: createNominal("kg / unit"),
     };
     self._rechargePopulation = createZero("%");
     self._rechargeIntensity = createZero("kg / unit");
@@ -832,7 +833,7 @@ class StreamKeeper {
       
       const initialCharge = self.getInitialCharge(application, substance, name);
       if (initialCharge.getValue() === 0) {
-        throw new Error("Cannot set " + name + " stream without initial charge defined.");
+        throw new Error("Cannot set " + name + " stream with a zero initial charge.");
       }
       const initialChargeConverted = unitConverter.convert(initialCharge, "kg / unit");
       stateGetter.setAmortizedUnitVolume(initialChargeConverted);
