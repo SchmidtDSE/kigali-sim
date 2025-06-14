@@ -777,10 +777,10 @@ class StreamKeeper {
       throw new Error("Encountered NaN to be set for: " + piecesStr);
     }
 
-    if (name === "sales") {
+    if (self._getIsSettingVolumeByUnits(name, value)) {
+      self._setStreamForSalesWithUnits(application, substance, name, value);
+    } else if (name === "sales") {
       self._setStreamForSales(application, substance, name, value);
-    } else if (self._getIsSettingVolumeByUnits(name, value)) {
-      self._setStreamForSalesComponent(application, substance, name, value);
     } else {
       self._setSimpleStream(application, substance, name, value);
     }
@@ -1209,7 +1209,7 @@ class StreamKeeper {
   }
 
   /**
-   * Determine if the user is setting a sales component (manufacture / import) by units.
+   * Determine if the user is setting a sales component (manufacture / import / sales) by units.
    *
    * @private
    * @param {string} name - The stream name.
@@ -1218,7 +1218,7 @@ class StreamKeeper {
    */
   _getIsSettingVolumeByUnits(name, value) {
     const self = this;
-    const isSalesComponent = name === "manufacture" || name === "import";
+    const isSalesComponent = name === "manufacture" || name === "import" || name === "sales";
     const isUnits = value.getUnits().startsWith("unit");
     return isSalesComponent && isUnits;
   }
@@ -1264,7 +1264,7 @@ class StreamKeeper {
    * @param {string} name - The stream name.
    * @param {EngineNumber} value - The value to set.
    */
-  _setStreamForSalesComponent(application, substance, name, value) {
+  _setStreamForSalesWithUnits(application, substance, name, value) {
     const self = this;
     const stateGetter = new OverridingConverterStateGetter(self._stateGetter);
     const unitConverter = new UnitConverter(stateGetter);
@@ -1278,6 +1278,7 @@ class StreamKeeper {
 
     const valueUnitsPlain = unitConverter.convert(value, "units");
     const valueConverted = unitConverter.convert(valueUnitsPlain, "kg");
+
     self.setStream(application, substance, name, valueConverted);
   }
 }
