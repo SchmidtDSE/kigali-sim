@@ -814,19 +814,25 @@ class Engine {
     const currentValueRaw = self.getStream(stream);
     const currentValue = unitConverter.convert(currentValueRaw, "kg");
 
-    let convertedMax;
+    /**
+     * Calculate the converted maximum value, adding recharge volume if equipment units are used.
+     *
+     * @returns {EngineNumber} The converted maximum value in kg.
+     */
+    const getConvertedMax = () => {
+      if (amount.hasEquipmentUnits()) {
+        // For equipment units, convert to kg and add recharge volume on top
+        const amountInKg = unitConverter.convert(amount, "kg");
+        const rechargeVolume = self._calculateRechargeVolume();
+        const totalWithRecharge = amountInKg.getValue() + rechargeVolume.getValue();
+        return new EngineNumber(totalWithRecharge, "kg");
+      } else {
+        // For volume units, use as-is
+        return unitConverter.convert(amount, "kg");
+      }
+    };
 
-    // Check if amount is specified in equipment units and add recharge if needed
-    if (amount.getUnits().startsWith("unit")) {
-      // For equipment units, convert to kg and add recharge volume on top
-      const amountInKg = unitConverter.convert(amount, "kg");
-      const rechargeVolume = self._calculateRechargeVolume(null);
-      const totalWithRecharge = amountInKg.getValue() + rechargeVolume.getValue();
-      convertedMax = new EngineNumber(totalWithRecharge, "kg");
-    } else {
-      // For volume units, use as-is
-      convertedMax = unitConverter.convert(amount, "kg");
-    }
+    const convertedMax = getConvertedMax();
 
     const changeAmountRaw = convertedMax.getValue() - currentValue.getValue();
     const changeAmount = Math.min(changeAmountRaw, 0);
@@ -878,19 +884,25 @@ class Engine {
     const currentValueRaw = self.getStream(stream);
     const currentValue = unitConverter.convert(currentValueRaw, "kg");
 
-    let convertedMin;
+    /**
+     * Calculate the converted minimum value, adding recharge volume if equipment units are used.
+     *
+     * @returns {EngineNumber} The converted minimum value in kg.
+     */
+    const getConvertedMin = () => {
+      if (amount.hasEquipmentUnits()) {
+        // For equipment units, convert to kg and add recharge volume on top
+        const amountInKg = unitConverter.convert(amount, "kg");
+        const rechargeVolume = self._calculateRechargeVolume();
+        const totalWithRecharge = amountInKg.getValue() + rechargeVolume.getValue();
+        return new EngineNumber(totalWithRecharge, "kg");
+      } else {
+        // For volume units, use as-is
+        return unitConverter.convert(amount, "kg");
+      }
+    };
 
-    // Check if amount is specified in equipment units and add recharge if needed
-    if (amount.getUnits().startsWith("unit")) {
-      // For equipment units, convert to kg and add recharge volume on top
-      const amountInKg = unitConverter.convert(amount, "kg");
-      const rechargeVolume = self._calculateRechargeVolume(null);
-      const totalWithRecharge = amountInKg.getValue() + rechargeVolume.getValue();
-      convertedMin = new EngineNumber(totalWithRecharge, "kg");
-    } else {
-      // For volume units, use as-is
-      convertedMin = unitConverter.convert(amount, "kg");
-    }
+    const convertedMin = getConvertedMin();
 
     const changeAmountRaw = convertedMin.getValue() - currentValue.getValue();
     const changeAmount = Math.max(changeAmountRaw, 0);
@@ -1020,6 +1032,7 @@ class Engine {
    * Calculate the recharge volume for the current application and substance.
    *
    * @param {Scope|null} scope - The scope to calculate recharge for.
+   *     Defaults to current scope if not provided.
    * @returns {EngineNumber} The recharge volume in kg.
    * @private
    */
