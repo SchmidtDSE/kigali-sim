@@ -980,6 +980,63 @@ function buildEngineTests() {
       assert.closeTo(manufactureVal3.getValue(), 10, 0.0001);
       assert.deepEqual(manufactureVal3.getUnits(), "kg");
     });
+
+    QUnit.test("tracks last specified units", function (assert) {
+      const engine = new Engine(1, 2);
+      engine.setStanza("default");
+      engine.setApplication("test app");
+      engine.setSubstance("test substance");
+
+      // Test default
+      const defaultUnits = engine.getLastSpecifiedUnits("manufacture");
+      assert.equal(defaultUnits, "");
+
+      // Test setting with kg units
+      engine.setStream("manufacture", new EngineNumber(100, "kg"));
+      const unitsAfterKg = engine.getLastSpecifiedUnits("manufacture");
+      assert.equal(unitsAfterKg, "kg");
+
+      // Test setting with units
+      engine.setStream("equipment", new EngineNumber(50, "units"));
+      const unitsAfterUnits = engine.getLastSpecifiedUnits("equipment");
+      assert.equal(unitsAfterUnits, "units");
+    });
+
+    QUnit.test("getLastSpecifiedInUnits works with explicit application and substance",
+      function (assert) {
+        const engine = new Engine(1, 2);
+        engine.setStanza("default");
+        engine.setApplication("test app");
+        engine.setSubstance("test substance");
+
+        // Set stream to track units
+        engine.setStream("manufacture", new EngineNumber(100, "kg"));
+
+        // Test explicit method
+        const units = engine.getLastSpecifiedInUnits("test app", "test substance", "manufacture");
+        assert.equal(units, "kg");
+      });
+
+    QUnit.test("setLastSpecifiedUnits allows external setting", function (assert) {
+      const engine = new Engine(1, 2);
+      engine.setStanza("default");
+      engine.setApplication("test app");
+      engine.setSubstance("test substance");
+
+      // Set units externally
+      engine.setLastSpecifiedUnits("manufacture", "mt");
+
+      const units = engine.getLastSpecifiedUnits("manufacture");
+      assert.equal(units, "mt");
+    });
+
+    QUnit.test("setLastSpecifiedUnits throws error without scope", function (assert) {
+      const engine = new Engine(1, 2);
+
+      assert.throws(function () {
+        engine.setLastSpecifiedUnits("manufacture", "kg");
+      }, /Tried setting last specified units without application and substance specified/);
+    });
   });
 }
 

@@ -433,6 +433,7 @@ class StreamParameterization {
     self._yieldRate = createZero("%");
     self._retirementRate = createZero("%");
     self._displacementRate = new EngineNumber(100, "%");
+    self._lastSpecifiedUnits = "";
   }
 
   /**
@@ -617,6 +618,26 @@ class StreamParameterization {
   getRetirementRate() {
     const self = this;
     return self._retirementRate;
+  }
+
+  /**
+   * Set the last specified units for stream operations.
+   *
+   * @param {string} units - The units string last used to specify a stream.
+   */
+  setLastSpecifiedUnits(units) {
+    const self = this;
+    self._lastSpecifiedUnits = units;
+  }
+
+  /**
+   * Get the last specified units for stream operations.
+   *
+   * @returns {string} The units string last used to specify a stream.
+   */
+  getLastSpecifiedUnits() {
+    const self = this;
+    return self._lastSpecifiedUnits;
   }
 
   /**
@@ -1085,6 +1106,32 @@ class StreamKeeper {
     const self = this;
     const parameterization = self._getParameterization(application, substance);
     return parameterization.getRetirementRate();
+  }
+
+  /**
+   * Set the last specified units for a substance in an application.
+   *
+   * @param {string} application - The application name.
+   * @param {string} substance - The substance name.
+   * @param {string} units - The units string last used to specify a stream.
+   */
+  setLastSpecifiedUnits(application, substance, units) {
+    const self = this;
+    const parameterization = self._getParameterization(application, substance);
+    parameterization.setLastSpecifiedUnits(units);
+  }
+
+  /**
+   * Get the last specified units for a substance in an application.
+   *
+   * @param {string} application - The application name.
+   * @param {string} substance - The substance name.
+   * @returns {string} The units string last used to specify a stream.
+   */
+  getLastSpecifiedUnits(application, substance) {
+    const self = this;
+    const parameterization = self._getParameterization(application, substance);
+    return parameterization.getLastSpecifiedUnits();
   }
 
   /**

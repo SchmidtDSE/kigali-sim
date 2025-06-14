@@ -193,6 +193,11 @@ class Engine {
       propagateChanges = true;
     }
 
+    // Track the units last used to specify this stream (only for user-initiated calls)
+    if (propagateChanges) {
+      self._streamKeeper.setLastSpecifiedUnits(application, substance, value.getUnits());
+    }
+
     if (!propagateChanges) {
       return;
     }
@@ -499,6 +504,50 @@ class Engine {
   getRechargeIntensityFor(application, substance) {
     const self = this;
     return self._streamKeeper.getRechargeIntensity(application, substance);
+  }
+
+  /**
+   * Get the last specified units for the current application and substance.
+   *
+   * @param {string} stream - The stream name (not currently used but kept for API consistency).
+   * @returns {string} The last specified units string.
+   */
+  getLastSpecifiedUnits(stream) {
+    const self = this;
+    const application = self._scope.getApplication();
+    const substance = self._scope.getSubstance();
+    return self.getLastSpecifiedInUnits(application, substance, stream);
+  }
+
+  /**
+   * Get the last specified units for a given application and substance.
+   *
+   * @param {string} application - The name of the application.
+   * @param {string} substance - The name of the substance.
+   * @param {string} stream - The stream name (not currently used but kept for API consistency).
+   * @returns {string} The last specified units string.
+   */
+  getLastSpecifiedInUnits(application, substance, stream) {
+    const self = this;
+    return self._streamKeeper.getLastSpecifiedUnits(application, substance);
+  }
+
+  /**
+   * Set the last specified units for the current application and substance.
+   *
+   * @param {string} stream - The stream name (not currently used but kept for API consistency).
+   * @param {string} units - The units string to set.
+   */
+  setLastSpecifiedUnits(stream, units) {
+    const self = this;
+    const application = self._scope.getApplication();
+    const substance = self._scope.getSubstance();
+
+    if (application === null || substance === null) {
+      throw "Tried setting last specified units without application and substance specified.";
+    }
+
+    self._streamKeeper.setLastSpecifiedUnits(application, substance, units);
   }
 
   /**
