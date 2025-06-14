@@ -1,4 +1,6 @@
-import {YearMatcher, Scope} from "engine_state";
+import {YearMatcher, Scope, StreamParameterization, StreamKeeper} from "engine_state";
+import {EngineNumber} from "engine_number";
+import {UnitConverter} from "engine_unit";
 
 function buildEngineStateTests() {
   QUnit.module("YearMatcher", function () {
@@ -126,6 +128,439 @@ function buildEngineStateTests() {
 
       const newScope = tempScope.getWithSubstance("test substance 3");
       assert.equal(newScope.getVariable("testVar"), 124);
+    });
+  });
+
+  QUnit.module("StreamParameterization", function () {
+    QUnit.test("initializes", function (assert) {
+      const parameterization = new StreamParameterization();
+      assert.notDeepEqual(parameterization, undefined);
+    });
+
+    QUnit.test("resetInternals sets default values", function (assert) {
+      const parameterization = new StreamParameterization();
+
+      // Test GHG intensity default
+      const ghgIntensity = parameterization.getGhgIntensity();
+      assert.equal(ghgIntensity.getValue(), 0);
+      assert.equal(ghgIntensity.getUnits(), "tCO2e / kg");
+
+      // Test energy intensity default
+      const energyIntensity = parameterization.getEnergyIntensity();
+      assert.equal(energyIntensity.getValue(), 0);
+      assert.equal(energyIntensity.getUnits(), "kwh / kg");
+
+      // Test initial charge defaults
+      const manufactureCharge = parameterization.getInitialCharge("manufacture");
+      assert.equal(manufactureCharge.getValue(), 1);
+      assert.equal(manufactureCharge.getUnits(), "kg / unit");
+
+      const importCharge = parameterization.getInitialCharge("import");
+      assert.equal(importCharge.getValue(), 1);
+      assert.equal(importCharge.getUnits(), "kg / unit");
+
+      // Test recharge population default
+      const rechargePopulation = parameterization.getRechargePopulation();
+      assert.equal(rechargePopulation.getValue(), 0);
+      assert.equal(rechargePopulation.getUnits(), "%");
+
+      // Test recharge intensity default
+      const rechargeIntensity = parameterization.getRechargeIntensity();
+      assert.equal(rechargeIntensity.getValue(), 0);
+      assert.equal(rechargeIntensity.getUnits(), "kg / unit");
+
+      // Test recovery rate default
+      const recoveryRate = parameterization.getRecoveryRate();
+      assert.equal(recoveryRate.getValue(), 0);
+      assert.equal(recoveryRate.getUnits(), "%");
+
+      // Test yield rate default
+      const yieldRate = parameterization.getYieldRate();
+      assert.equal(yieldRate.getValue(), 0);
+      assert.equal(yieldRate.getUnits(), "%");
+
+      // Test retirement rate default
+      const retirementRate = parameterization.getRetirementRate();
+      assert.equal(retirementRate.getValue(), 0);
+      assert.equal(retirementRate.getUnits(), "%");
+
+      // Test displacement rate default
+      const displacementRate = parameterization.getDisplacementRate();
+      assert.equal(displacementRate.getValue(), 100);
+      assert.equal(displacementRate.getUnits(), "%");
+    });
+
+    QUnit.test("GHG intensity getter and setter", function (assert) {
+      const parameterization = new StreamParameterization();
+      const newValue = new EngineNumber(2.5, "tCO2e / kg");
+
+      parameterization.setGhgIntensity(newValue);
+      const retrieved = parameterization.getGhgIntensity();
+
+      assert.equal(retrieved.getValue(), 2.5);
+      assert.equal(retrieved.getUnits(), "tCO2e / kg");
+    });
+
+    QUnit.test("energy intensity getter and setter", function (assert) {
+      const parameterization = new StreamParameterization();
+      const newValue = new EngineNumber(1.5, "kwh / kg");
+
+      parameterization.setEnergyIntensity(newValue);
+      const retrieved = parameterization.getEnergyIntensity();
+
+      assert.equal(retrieved.getValue(), 1.5);
+      assert.equal(retrieved.getUnits(), "kwh / kg");
+    });
+
+    QUnit.test("initial charge getter and setter for manufacture", function (assert) {
+      const parameterization = new StreamParameterization();
+      const newValue = new EngineNumber(2.0, "kg / unit");
+
+      parameterization.setInitialCharge("manufacture", newValue);
+      const retrieved = parameterization.getInitialCharge("manufacture");
+
+      assert.equal(retrieved.getValue(), 2.0);
+      assert.equal(retrieved.getUnits(), "kg / unit");
+    });
+
+    QUnit.test("initial charge getter and setter for import", function (assert) {
+      const parameterization = new StreamParameterization();
+      const newValue = new EngineNumber(1.8, "kg / unit");
+
+      parameterization.setInitialCharge("import", newValue);
+      const retrieved = parameterization.getInitialCharge("import");
+
+      assert.equal(retrieved.getValue(), 1.8);
+      assert.equal(retrieved.getUnits(), "kg / unit");
+    });
+
+    QUnit.test("initial charge throws error for invalid stream", function (assert) {
+      const parameterization = new StreamParameterization();
+      const newValue = new EngineNumber(1.0, "kg / unit");
+
+      assert.throws(function () {
+        parameterization.setInitialCharge("invalid", newValue);
+      }, "Must address a sales substream.");
+
+      assert.throws(function () {
+        parameterization.getInitialCharge("invalid");
+      }, "Must address a sales substream.");
+    });
+
+    QUnit.test("recharge population getter and setter", function (assert) {
+      const parameterization = new StreamParameterization();
+      const newValue = new EngineNumber(15.5, "%");
+
+      parameterization.setRechargePopulation(newValue);
+      const retrieved = parameterization.getRechargePopulation();
+
+      assert.equal(retrieved.getValue(), 15.5);
+      assert.equal(retrieved.getUnits(), "%");
+    });
+
+    QUnit.test("recharge intensity getter and setter", function (assert) {
+      const parameterization = new StreamParameterization();
+      const newValue = new EngineNumber(0.5, "kg / unit");
+
+      parameterization.setRechargeIntensity(newValue);
+      const retrieved = parameterization.getRechargeIntensity();
+
+      assert.equal(retrieved.getValue(), 0.5);
+      assert.equal(retrieved.getUnits(), "kg / unit");
+    });
+
+    QUnit.test("recovery rate getter and setter", function (assert) {
+      const parameterization = new StreamParameterization();
+      const newValue = new EngineNumber(80.0, "%");
+
+      parameterization.setRecoveryRate(newValue);
+      const retrieved = parameterization.getRecoveryRate();
+
+      assert.equal(retrieved.getValue(), 80.0);
+      assert.equal(retrieved.getUnits(), "%");
+    });
+
+    QUnit.test("yield rate getter and setter", function (assert) {
+      const parameterization = new StreamParameterization();
+      const newValue = new EngineNumber(90.0, "%");
+
+      parameterization.setYieldRate(newValue);
+      const retrieved = parameterization.getYieldRate();
+
+      assert.equal(retrieved.getValue(), 90.0);
+      assert.equal(retrieved.getUnits(), "%");
+    });
+
+    QUnit.test("displacement rate getter and setter", function (assert) {
+      const parameterization = new StreamParameterization();
+      const newValue = new EngineNumber(75.0, "%");
+
+      parameterization.setDisplacementRate(newValue);
+      const retrieved = parameterization.getDisplacementRate();
+
+      assert.equal(retrieved.getValue(), 75.0);
+      assert.equal(retrieved.getUnits(), "%");
+    });
+
+    QUnit.test("retirement rate getter and setter", function (assert) {
+      const parameterization = new StreamParameterization();
+      const newValue = new EngineNumber(10.0, "%");
+
+      parameterization.setRetirementRate(newValue);
+      const retrieved = parameterization.getRetirementRate();
+
+      assert.equal(retrieved.getValue(), 10.0);
+      assert.equal(retrieved.getUnits(), "%");
+    });
+  });
+
+  QUnit.module("StreamKeeper", function () {
+    // Mock state getter
+    class MockConverterStateGetter {
+      constructor() {
+        const self = this;
+        self._substanceConsumption = new EngineNumber(1, "tCO2e / kg");
+        self._energyIntensity = new EngineNumber(1, "kwh / kg");
+        self._amortizedUnitVolume = new EngineNumber(1, "kg / unit");
+        self._population = new EngineNumber(100, "units");
+        self._yearsElapsed = new EngineNumber(1, "year");
+        self._totalGhgConsumption = new EngineNumber(50, "tCO2e");
+        self._totalEnergyConsumption = new EngineNumber(100, "kwh");
+        self._volume = new EngineNumber(200, "kg");
+        self._amortizedUnitConsumption = new EngineNumber(0.5, "tCO2e / unit");
+        self._populationChange = new EngineNumber(10, "units");
+      }
+
+      getSubstanceConsumption() {
+        const self = this;
+        return self._substanceConsumption;
+      }
+
+      getEnergyIntensity() {
+        const self = this;
+        return self._energyIntensity;
+      }
+
+      getAmortizedUnitVolume() {
+        const self = this;
+        return self._amortizedUnitVolume;
+      }
+
+      getPopulation() {
+        const self = this;
+        return self._population;
+      }
+
+      setPopulation(newValue) {
+        const self = this;
+        self._population = newValue;
+      }
+
+      getYearsElapsed() {
+        const self = this;
+        return self._yearsElapsed;
+      }
+
+      getGhgConsumption() {
+        const self = this;
+        return self._totalGhgConsumption;
+      }
+
+      getEnergyConsumption() {
+        const self = this;
+        return self._totalEnergyConsumption;
+      }
+
+      getVolume() {
+        const self = this;
+        return self._volume;
+      }
+
+      getAmortizedUnitConsumption() {
+        const self = this;
+        return self._amortizedUnitConsumption;
+      }
+
+      getPopulationChange(unitConverter) {
+        const self = this;
+        return self._populationChange;
+      }
+    }
+
+    const createMockKeeper = () => {
+      const stateGetter = new MockConverterStateGetter();
+      const unitConverter = new UnitConverter(stateGetter);
+      return new StreamKeeper(stateGetter, unitConverter);
+    };
+
+    QUnit.test("initializes", function (assert) {
+      const keeper = createMockKeeper();
+      assert.notDeepEqual(keeper, undefined);
+    });
+
+    QUnit.test("hasSubstance returns false for unknown substance", function (assert) {
+      const keeper = createMockKeeper();
+      assert.ok(!keeper.hasSubstance("test app", "test substance"));
+    });
+
+    QUnit.test("ensureSubstance creates new substance", function (assert) {
+      const keeper = createMockKeeper();
+
+      keeper.ensureSubstance("test app", "test substance");
+
+      assert.ok(keeper.hasSubstance("test app", "test substance"));
+    });
+
+    QUnit.test("ensureSubstance creates default streams", function (assert) {
+      const keeper = createMockKeeper();
+
+      keeper.ensureSubstance("test app", "test substance");
+
+      // Test that default streams exist with zero values
+      const manufacture = keeper.getStream("test app", "test substance", "manufacture");
+      assert.equal(manufacture.getValue(), 0);
+      assert.equal(manufacture.getUnits(), "kg");
+
+      const importValue = keeper.getStream("test app", "test substance", "import");
+      assert.equal(importValue.getValue(), 0);
+      assert.equal(importValue.getUnits(), "kg");
+
+      const recycle = keeper.getStream("test app", "test substance", "recycle");
+      assert.equal(recycle.getValue(), 0);
+      assert.equal(recycle.getUnits(), "kg");
+
+      const consumption = keeper.getStream("test app", "test substance", "consumption");
+      assert.equal(consumption.getValue(), 0);
+      assert.equal(consumption.getUnits(), "tCO2e");
+
+      const equipment = keeper.getStream("test app", "test substance", "equipment");
+      assert.equal(equipment.getValue(), 0);
+      assert.equal(equipment.getUnits(), "units");
+    });
+
+    QUnit.test("setStream and getStream work for simple streams", function (assert) {
+      const keeper = createMockKeeper();
+      keeper.ensureSubstance("test app", "test substance");
+
+      const newValue = new EngineNumber(100, "kg");
+      keeper.setStream("test app", "test substance", "manufacture", newValue);
+
+      const retrieved = keeper.getStream("test app", "test substance", "manufacture");
+      assert.equal(retrieved.getValue(), 100);
+      assert.equal(retrieved.getUnits(), "kg");
+    });
+
+    QUnit.test("sales stream returns sum of manufacture and import", function (assert) {
+      const keeper = createMockKeeper();
+      keeper.ensureSubstance("test app", "test substance");
+
+      keeper.setStream("test app", "test substance", "manufacture", new EngineNumber(50, "kg"));
+      keeper.setStream("test app", "test substance", "import", new EngineNumber(30, "kg"));
+
+      const sales = keeper.getStream("test app", "test substance", "sales");
+      assert.equal(sales.getValue(), 80);
+      assert.equal(sales.getUnits(), "kg");
+    });
+
+    QUnit.test("ghg intensity getter and setter delegate to parameterization", function (assert) {
+      const keeper = createMockKeeper();
+      keeper.ensureSubstance("test app", "test substance");
+
+      const newValue = new EngineNumber(2.5, "tCO2e / kg");
+      keeper.setGhgIntensity("test app", "test substance", newValue);
+
+      const retrieved = keeper.getGhgIntensity("test app", "test substance");
+      assert.equal(retrieved.getValue(), 2.5);
+      assert.equal(retrieved.getUnits(), "tCO2e / kg");
+    });
+
+    QUnit.test("energy intensity getter and setter delegate to parameterization",
+      function (assert) {
+        const keeper = createMockKeeper();
+        keeper.ensureSubstance("test app", "test substance");
+
+        const newValue = new EngineNumber(1.5, "kwh / kg");
+        keeper.setEnergyIntensity("test app", "test substance", newValue);
+
+        const retrieved = keeper.getEnergyIntensity("test app", "test substance");
+        assert.equal(retrieved.getValue(), 1.5);
+        assert.equal(retrieved.getUnits(), "kwh / kg");
+      });
+
+    QUnit.test("initial charge getter and setter delegate to parameterization", function (assert) {
+      const keeper = createMockKeeper();
+      keeper.ensureSubstance("test app", "test substance");
+
+      const newValue = new EngineNumber(2.0, "kg / unit");
+      keeper.setInitialCharge("test app", "test substance", "manufacture", newValue);
+
+      const retrieved = keeper.getInitialCharge("test app", "test substance", "manufacture");
+      assert.equal(retrieved.getValue(), 2.0);
+      assert.equal(retrieved.getUnits(), "kg / unit");
+    });
+
+    QUnit.test("incrementYear moves equipment to priorEquipment", function (assert) {
+      const keeper = createMockKeeper();
+      keeper.ensureSubstance("test app", "test substance");
+
+      // Set equipment value
+      keeper.setStream("test app", "test substance", "equipment", new EngineNumber(150, "units"));
+
+      // Increment year
+      keeper.incrementYear();
+
+      // Check that equipment was moved to priorEquipment
+      const priorEquipment = keeper.getStream("test app", "test substance", "priorEquipment");
+      assert.equal(priorEquipment.getValue(), 150);
+      assert.equal(priorEquipment.getUnits(), "units");
+    });
+
+    QUnit.test("throws error for unknown substance in setStream", function (assert) {
+      const keeper = createMockKeeper();
+
+      assert.throws(function () {
+        keeper.setStream("unknown app", "unknown substance", "manufacture",
+          new EngineNumber(100, "kg"));
+      }, /Not a known application substance pair/);
+    });
+
+    QUnit.test("throws error for unknown substance in getStream", function (assert) {
+      const keeper = createMockKeeper();
+
+      assert.throws(function () {
+        keeper.getStream("unknown app", "unknown substance", "manufacture");
+      }, /Not a known application substance pair/);
+    });
+
+    QUnit.test("throws error for unknown stream", function (assert) {
+      const keeper = createMockKeeper();
+      keeper.ensureSubstance("test app", "test substance");
+
+      assert.throws(function () {
+        keeper.setStream("test app", "test substance", "unknown_stream",
+          new EngineNumber(100, "kg"));
+      }, /Unknown stream/);
+
+      assert.throws(function () {
+        keeper.getStream("test app", "test substance", "unknown_stream");
+      }, /Unknown stream/);
+    });
+
+    QUnit.test("getRegisteredSubstances returns substance list", function (assert) {
+      const keeper = createMockKeeper();
+      keeper.ensureSubstance("app1", "substance1");
+      keeper.ensureSubstance("app2", "substance2");
+
+      const substances = keeper.getRegisteredSubstances();
+      assert.equal(substances.length, 2);
+
+      const substance1 = substances.find((s) => s.getApplication() === "app1" &&
+        s.getSubstance() === "substance1");
+      const substance2 = substances.find((s) => s.getApplication() === "app2" &&
+        s.getSubstance() === "substance2");
+
+      assert.notDeepEqual(substance1, undefined);
+      assert.notDeepEqual(substance2, undefined);
     });
   });
 }
