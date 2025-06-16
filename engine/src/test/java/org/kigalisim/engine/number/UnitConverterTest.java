@@ -7,11 +7,13 @@
 package org.kigalisim.engine.number;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 
 import java.math.BigDecimal;
 import org.junit.jupiter.api.Test;
+import org.kigalisim.engine.state.StateGetter;
 
 /**
  * Tests for the UnitConverter class.
@@ -35,7 +37,8 @@ public class UnitConverterTest {
     lenient().when(mock.getVolume()).thenReturn(new EngineNumber(0, "kg"));
     lenient().when(mock.getAmortizedUnitConsumption())
         .thenReturn(new EngineNumber(0, "tCO2e / unit"));
-    lenient().when(mock.getPopulationChange()).thenReturn(new EngineNumber(0, "units"));
+    lenient().when(mock.getPopulationChange(any(UnitConverter.class)))
+        .thenReturn(new EngineNumber(0, "units"));
     lenient().when(mock.getEnergyConsumption()).thenReturn(new EngineNumber(0, "kwh"));
     return mock;
   }
@@ -447,7 +450,7 @@ public class UnitConverterTest {
   @Test
   public void testPopToYears() {
     StateGetter mockStateGetter = createMockStateGetter();
-    lenient().when(mockStateGetter.getPopulationChange())
+    lenient().when(mockStateGetter.getPopulationChange(any(UnitConverter.class)))
         .thenReturn(new EngineNumber(2, "units"));
 
     EngineNumber result = convertUnits(new EngineNumber(20, "units"), "years", mockStateGetter);

@@ -8,7 +8,10 @@
  * @license BSD-3-Clause
  */
 
-package org.kigalisim.engine.number;
+package org.kigalisim.engine.state;
+
+import org.kigalisim.engine.number.EngineNumber;
+import org.kigalisim.engine.number.UnitConverter;
 
 /**
  * Interface defining methods to access engine state for unit conversions.
@@ -85,7 +88,8 @@ public interface StateGetter {
   /**
    * Get the population change.
    *
+   * @param unitConverter Converter for ensuring consistent units
    * @return The population change with units like "units"
    */
-  EngineNumber getPopulationChange();
+  EngineNumber getPopulationChange(UnitConverter unitConverter);
 }

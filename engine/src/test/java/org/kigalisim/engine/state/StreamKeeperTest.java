@@ -11,6 +11,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -18,8 +19,8 @@ import java.math.BigDecimal;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.kigalisim.engine.number.EngineNumber;
-import org.kigalisim.engine.number.StateGetter;
 import org.kigalisim.engine.number.UnitConverter;
+import org.kigalisim.engine.state.StateGetter;
 
 /**
  * Tests for the StreamKeeper class.
@@ -51,10 +52,10 @@ public class StreamKeeperTest {
         .thenReturn(new EngineNumber(new BigDecimal("200"), "kg"));
     when(stateGetter.getAmortizedUnitConsumption())
         .thenReturn(new EngineNumber(new BigDecimal("0.5"), "tCO2e / unit"));
-    when(stateGetter.getPopulationChange())
+    when(stateGetter.getPopulationChange(any(UnitConverter.class)))
         .thenReturn(new EngineNumber(new BigDecimal("10"), "units"));
 
-    UnitConverter unitConverter = new UnitConverter(stateGetter);
+    final UnitConverter unitConverter = new UnitConverter(stateGetter);
 
     // Create a mock OverridingConverterStateGetter for StreamKeeper
     OverridingConverterStateGetter mockOverridingStateGetter =
@@ -77,7 +78,7 @@ public class StreamKeeperTest {
         .thenReturn(new EngineNumber(new BigDecimal("200"), "kg"));
     when(mockOverridingStateGetter.getAmortizedUnitConsumption())
         .thenReturn(new EngineNumber(new BigDecimal("0.5"), "tCO2e / unit"));
-    when(mockOverridingStateGetter.getPopulationChange(unitConverter))
+    when(mockOverridingStateGetter.getPopulationChange(any(UnitConverter.class)))
         .thenReturn(new EngineNumber(new BigDecimal("10"), "units"));
 
     return new StreamKeeper(mockOverridingStateGetter, unitConverter);

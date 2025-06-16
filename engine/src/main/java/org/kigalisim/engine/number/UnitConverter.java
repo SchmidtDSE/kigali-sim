@@ -14,6 +14,7 @@ import java.math.BigDecimal;
 import java.math.MathContext;
 import java.util.HashMap;
 import java.util.Map;
+import org.kigalisim.engine.state.StateGetter;
 
 /**
  * Object simplifying conversion between units.
@@ -427,7 +428,7 @@ public class UnitConverter {
       BigDecimal newYears = volumeConvertedValue.divide(perYearVolumeValue, MATH_CONTEXT);
       return new EngineNumber(newYears, "years");
     } else if ("unit".equals(currentUnits) || "units".equals(currentUnits)) {
-      BigDecimal perYearPopulation = stateGetter.getPopulationChange().getValue();
+      BigDecimal perYearPopulation = stateGetter.getPopulationChange(this).getValue();
       BigDecimal newYears = target.getValue().divide(perYearPopulation, MATH_CONTEXT);
       return new EngineNumber(newYears, "years");
     } else if ("%".equals(currentUnits)) {
