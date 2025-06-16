@@ -638,19 +638,24 @@ public class StreamKeeper {
    */
   private void setStreamForSalesWithUnits(String application, String substance, String name,
                                          EngineNumber value) {
-    // For now, this is a simplified implementation
-    // The full implementation would require a more complex state getter setup
+    OverridingConverterStateGetter overridingStateGetter = new OverridingConverterStateGetter(
+        stateGetter
+    );
+    UnitConverter unitConverter = new UnitConverter(overridingStateGetter);
+
     EngineNumber initialCharge = getInitialCharge(application, substance, name);
     if (initialCharge.getValue().compareTo(BigDecimal.ZERO) == 0) {
       throw new RuntimeException("Cannot set " + name + " stream with a zero initial charge.");
     }
+    
+    EngineNumber initialChargeConverted = unitConverter.convert(initialCharge, "kg / unit");
+    overridingStateGetter.setAmortizedUnitVolume(initialChargeConverted);
 
-    // Convert units to kg using initial charge
-    BigDecimal unitsValue = value.getValue();
-    BigDecimal chargeValue = initialCharge.getValue();
-    BigDecimal kgValue = unitsValue.multiply(chargeValue);
-    EngineNumber valueConverted = new EngineNumber(kgValue, "kg");
+    EngineNumber valueUnitsPlain = unitConverter.convert(value, "units");
+    EngineNumber valueConverted = unitConverter.convert(valueUnitsPlain, "kg");
 
-    setStream(application, substance, name, valueConverted);
+    // Set the stream directly to avoid recursion
+    String streamKey = getKey(application, substance, name);
+    streams.put(streamKey, valueConverted);
   }
 }

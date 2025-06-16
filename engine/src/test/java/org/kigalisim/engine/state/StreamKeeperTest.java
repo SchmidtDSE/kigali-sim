@@ -370,4 +370,48 @@ public class StreamKeeperTest {
     String unitsAfterUnits = keeper.getLastSpecifiedUnits("test app", "test substance");
     assertEquals("units", unitsAfterUnits, "Should have units after setting");
   }
+
+  /**
+   * Test setStream with units for sales components (manufacture/import).
+   */
+  @Test
+  public void testSetStreamForSalesWithUnits() {
+    StreamKeeper keeper = createMockKeeper();
+    keeper.ensureSubstance("test app", "test substance");
+
+    // Set initial charge of 2 kg/unit for manufacture stream
+    keeper.setInitialCharge("test app", "test substance", "manufacture",
+                           new EngineNumber(new BigDecimal("2.0"), "kg / unit"));
+
+    // Set manufacture to 10 units - this should trigger setStreamForSalesWithUnits
+    keeper.setStream("test app", "test substance", "manufacture",
+                    new EngineNumber(new BigDecimal("10"), "units"));
+
+    // Get the stream value back - should be converted to kg (10 units * 2 kg/unit = 20 kg)
+    EngineNumber result = keeper.getStream("test app", "test substance", "manufacture");
+    
+    // The result should be in kg and the value should be 20
+    assertEquals("kg", result.getUnits(), "Should convert units to kg");
+    assertEquals(0, new BigDecimal("20.0").compareTo(result.getValue()),
+                "Should multiply units by initial charge: 10 units * 2 kg/unit = 20 kg");
+  }
+
+  /**
+   * Test setStreamForSalesWithUnits throws exception with zero initial charge.
+   */
+  @Test
+  public void testSetStreamForSalesWithUnitsZeroInitialCharge() {
+    StreamKeeper keeper = createMockKeeper();
+    keeper.ensureSubstance("test app", "test substance");
+
+    // Set initial charge to zero 
+    keeper.setInitialCharge("test app", "test substance", "manufacture",
+                           new EngineNumber(BigDecimal.ZERO, "kg / unit"));
+
+    // Attempting to set units should throw an exception
+    assertThrows(RuntimeException.class, () -> {
+      keeper.setStream("test app", "test substance", "manufacture",
+                      new EngineNumber(new BigDecimal("10"), "units"));
+    }, "Should throw exception when initial charge is zero");
+  }
 }
