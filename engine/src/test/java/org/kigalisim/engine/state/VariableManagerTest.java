@@ -13,7 +13,9 @@ import static org.kigalisim.engine.state.EngineConstants.APPLICATION_CONTEXT;
 import static org.kigalisim.engine.state.EngineConstants.GLOBAL_CONTEXT;
 import static org.kigalisim.engine.state.EngineConstants.STANZA_CONTEXT;
 
+import java.math.BigDecimal;
 import org.junit.jupiter.api.Test;
+import org.kigalisim.engine.number.EngineNumber;
 
 /**
  * Tests for the VariableManager class.
@@ -37,9 +39,12 @@ public class VariableManagerTest {
     VariableManager manager = new VariableManager(GLOBAL_CONTEXT);
 
     manager.defineVariable("testVar");
-    manager.setVariable("testVar", 123);
+    EngineNumber testValue = new EngineNumber(BigDecimal.valueOf(123), "units");
+    manager.setVariable("testVar", testValue);
 
-    assertEquals(123, manager.getVariable("testVar"), "Should retrieve set variable value");
+    EngineNumber result = manager.getVariable("testVar");
+    assertEquals(testValue.getValue(), result.getValue(), "Should retrieve set variable value");
+    assertEquals(testValue.getUnits(), result.getUnits(), "Should retrieve set variable units");
   }
 
   /**
@@ -64,7 +69,8 @@ public class VariableManagerTest {
     VariableManager manager = new VariableManager(GLOBAL_CONTEXT);
 
     assertThrows(IllegalStateException.class, () -> {
-      manager.setVariable("undefinedVar", 123);
+      EngineNumber testValue = new EngineNumber(BigDecimal.valueOf(123), "units");
+      manager.setVariable("undefinedVar", testValue);
     }, "Should throw when setting undefined variable");
   }
 
@@ -87,19 +93,28 @@ public class VariableManagerTest {
   public void testGetWithLevel() {
     VariableManager globalManager = new VariableManager(GLOBAL_CONTEXT);
     globalManager.defineVariable("globalVar");
-    globalManager.setVariable("globalVar", "global");
+    EngineNumber globalValue = new EngineNumber(BigDecimal.valueOf(100), "global_units");
+    globalManager.setVariable("globalVar", globalValue);
 
     VariableManager stanzaManager = globalManager.getWithLevel(STANZA_CONTEXT);
 
     // Should still be able to access global variable
-    assertEquals("global", stanzaManager.getVariable("globalVar"),
+    EngineNumber result = stanzaManager.getVariable("globalVar");
+    assertEquals(globalValue.getValue(), result.getValue(),
                  "Should access global variable from stanza level");
+    assertEquals(globalValue.getUnits(), result.getUnits(),
+                 "Should access global variable units from stanza level");
 
     // Should be able to define stanza-level variable
     stanzaManager.defineVariable("stanzaVar");
-    stanzaManager.setVariable("stanzaVar", "stanza");
-    assertEquals("stanza", stanzaManager.getVariable("stanzaVar"),
+    EngineNumber stanzaValue = new EngineNumber(BigDecimal.valueOf(200), "stanza_units");
+    stanzaManager.setVariable("stanzaVar", stanzaValue);
+    
+    EngineNumber stanzaResult = stanzaManager.getVariable("stanzaVar");
+    assertEquals(stanzaValue.getValue(), stanzaResult.getValue(), 
                  "Should access stanza variable");
+    assertEquals(stanzaValue.getUnits(), stanzaResult.getUnits(), 
+                 "Should access stanza variable units");
   }
 
   /**
@@ -109,26 +124,43 @@ public class VariableManagerTest {
   public void testVariableShadowing() {
     VariableManager globalManager = new VariableManager(GLOBAL_CONTEXT);
     globalManager.defineVariable("testVar");
-    globalManager.setVariable("testVar", "global");
+    EngineNumber globalValue = new EngineNumber(BigDecimal.valueOf(100), "global_units");
+    globalManager.setVariable("testVar", globalValue);
 
     VariableManager stanzaManager = globalManager.getWithLevel(STANZA_CONTEXT);
-    assertEquals("global", stanzaManager.getVariable("testVar"),
+    EngineNumber result1 = stanzaManager.getVariable("testVar");
+    assertEquals(globalValue.getValue(), result1.getValue(),
                  "Should read global variable from stanza level");
+    assertEquals(globalValue.getUnits(), result1.getUnits(),
+                 "Should read global variable units from stanza level");
 
     // Define variable with same name at stanza level
     stanzaManager.defineVariable("testVar");
-    stanzaManager.setVariable("testVar", "stanza");
-    assertEquals("stanza", stanzaManager.getVariable("testVar"),
+    EngineNumber stanzaValue = new EngineNumber(BigDecimal.valueOf(200), "stanza_units");
+    stanzaManager.setVariable("testVar", stanzaValue);
+    
+    EngineNumber result2 = stanzaManager.getVariable("testVar");
+    assertEquals(stanzaValue.getValue(), result2.getValue(),
                  "Should read stanza variable when shadowing global");
+    assertEquals(stanzaValue.getUnits(), result2.getUnits(),
+                 "Should read stanza variable units when shadowing global");
 
     // Setting the variable should affect stanza level, not global
-    stanzaManager.setVariable("testVar", "stanza_modified");
-    assertEquals("stanza_modified", stanzaManager.getVariable("testVar"),
+    EngineNumber modifiedValue = new EngineNumber(BigDecimal.valueOf(250), "modified_units");
+    stanzaManager.setVariable("testVar", modifiedValue);
+    
+    EngineNumber result3 = stanzaManager.getVariable("testVar");
+    assertEquals(modifiedValue.getValue(), result3.getValue(),
                  "Should read modified stanza variable");
+    assertEquals(modifiedValue.getUnits(), result3.getUnits(),
+                 "Should read modified stanza variable units");
 
     // Global should remain unchanged
-    assertEquals("global", globalManager.getVariable("testVar"),
+    EngineNumber globalResult = globalManager.getVariable("testVar");
+    assertEquals(globalValue.getValue(), globalResult.getValue(),
                  "Global variable should remain unchanged");
+    assertEquals(globalValue.getUnits(), globalResult.getUnits(),
+                 "Global variable units should remain unchanged");
   }
 
   /**
@@ -154,24 +186,38 @@ public class VariableManagerTest {
   public void testMultiLevelVariableAccess() {
     VariableManager globalManager = new VariableManager(GLOBAL_CONTEXT);
     globalManager.defineVariable("globalVar");
-    globalManager.setVariable("globalVar", "global");
+    EngineNumber globalValue = new EngineNumber(BigDecimal.valueOf(100), "global_units");
+    globalManager.setVariable("globalVar", globalValue);
 
     VariableManager stanzaManager = globalManager.getWithLevel(STANZA_CONTEXT);
     stanzaManager.defineVariable("stanzaVar");
-    stanzaManager.setVariable("stanzaVar", "stanza");
+    EngineNumber stanzaValue = new EngineNumber(BigDecimal.valueOf(200), "stanza_units");
+    stanzaManager.setVariable("stanzaVar", stanzaValue);
 
     VariableManager appManager = stanzaManager.getWithLevel(APPLICATION_CONTEXT);
 
     // Should access both global and stanza variables
-    assertEquals("global", appManager.getVariable("globalVar"),
+    EngineNumber globalResult = appManager.getVariable("globalVar");
+    assertEquals(globalValue.getValue(), globalResult.getValue(),
                  "Should access global variable from application level");
-    assertEquals("stanza", appManager.getVariable("stanzaVar"),
+    assertEquals(globalValue.getUnits(), globalResult.getUnits(),
+                 "Should access global variable units from application level");
+    
+    EngineNumber stanzaResult = appManager.getVariable("stanzaVar");
+    assertEquals(stanzaValue.getValue(), stanzaResult.getValue(),
                  "Should access stanza variable from application level");
+    assertEquals(stanzaValue.getUnits(), stanzaResult.getUnits(),
+                 "Should access stanza variable units from application level");
 
     // Should be able to define app-level variable
     appManager.defineVariable("appVar");
-    appManager.setVariable("appVar", "application");
-    assertEquals("application", appManager.getVariable("appVar"),
+    EngineNumber appValue = new EngineNumber(BigDecimal.valueOf(300), "app_units");
+    appManager.setVariable("appVar", appValue);
+    
+    EngineNumber appResult = appManager.getVariable("appVar");
+    assertEquals(appValue.getValue(), appResult.getValue(),
                  "Should access application variable");
+    assertEquals(appValue.getUnits(), appResult.getUnits(),
+                 "Should access application variable units");
   }
 }

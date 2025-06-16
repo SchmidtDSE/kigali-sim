@@ -13,6 +13,8 @@ import static org.kigalisim.engine.state.EngineConstants.APPLICATION_CONTEXT;
 import static org.kigalisim.engine.state.EngineConstants.STANZA_CONTEXT;
 import static org.kigalisim.engine.state.EngineConstants.SUBSTANCE_CONTEXT;
 
+import org.kigalisim.engine.number.EngineNumber;
+
 /**
  * Object defining a scope within the engine including variables accessible from that scope.
  *
@@ -163,7 +165,7 @@ public class Scope {
    * @param name The name of the variable to set
    * @param value The new value of the variable
    */
-  public void setVariable(String name, Object value) {
+  public void setVariable(String name, EngineNumber value) {
     variableManager.setVariable(name, value);
   }
 
@@ -176,7 +178,7 @@ public class Scope {
    * @param name The name of the variable to get
    * @return Value of the given variable
    */
-  public Object getVariable(String name) {
+  public EngineNumber getVariable(String name) {
     return variableManager.getVariable(name);
   }
 

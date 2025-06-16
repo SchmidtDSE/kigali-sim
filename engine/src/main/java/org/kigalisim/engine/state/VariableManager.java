@@ -17,6 +17,7 @@ import static org.kigalisim.engine.state.EngineConstants.SUBSTANCE_CONTEXT;
 
 import java.util.HashMap;
 import java.util.Map;
+import org.kigalisim.engine.number.EngineNumber;
 
 /**
  * Internal object which manages user defined variables at different scopes.
@@ -26,10 +27,10 @@ import java.util.Map;
  */
 public class VariableManager {
 
-  private final Map<String, Object> globalContext;
-  private final Map<String, Object> stanzaContext;
-  private final Map<String, Object> applicationContext;
-  private final Map<String, Object> substanceContext;
+  private final Map<String, EngineNumber> globalContext;
+  private final Map<String, EngineNumber> stanzaContext;
+  private final Map<String, EngineNumber> applicationContext;
+  private final Map<String, EngineNumber> substanceContext;
   private final int contextLevel;
 
   /**
@@ -45,10 +46,10 @@ public class VariableManager {
    * @param substanceContext Map from name of variable to value or null if no variables
    *     exist at that substance level
    */
-  public VariableManager(int contextLevel, Map<String, Object> globalContext,
-                        Map<String, Object> stanzaContext,
-                        Map<String, Object> applicationContext,
-                        Map<String, Object> substanceContext) {
+  public VariableManager(int contextLevel, Map<String, EngineNumber> globalContext,
+                        Map<String, EngineNumber> stanzaContext,
+                        Map<String, EngineNumber> applicationContext,
+                        Map<String, EngineNumber> substanceContext) {
     this.globalContext = ensureContext(globalContext);
     this.stanzaContext = ensureContext(stanzaContext);
     this.applicationContext = ensureContext(applicationContext);
@@ -77,17 +78,17 @@ public class VariableManager {
       throw new IllegalArgumentException("Unexpected context level: " + contextLevel);
     }
 
-    Map<String, Object> newStanzaContext = this.stanzaContext;
+    Map<String, EngineNumber> newStanzaContext = this.stanzaContext;
     if (contextLevel <= STANZA_CONTEXT) {
       newStanzaContext = new HashMap<>();
     }
 
-    Map<String, Object> newApplicationContext = this.applicationContext;
+    Map<String, EngineNumber> newApplicationContext = this.applicationContext;
     if (contextLevel <= APPLICATION_CONTEXT) {
       newApplicationContext = new HashMap<>();
     }
 
-    Map<String, Object> newSubstanceContext = this.substanceContext;
+    Map<String, EngineNumber> newSubstanceContext = this.substanceContext;
     if (contextLevel <= SUBSTANCE_CONTEXT) {
       newSubstanceContext = new HashMap<>();
     }
@@ -110,7 +111,7 @@ public class VariableManager {
    * @param name The name of the variable to define
    */
   public void defineVariable(String name) {
-    Map<String, Object> context = getContextForLevel(contextLevel);
+    Map<String, EngineNumber> context = getContextForLevel(contextLevel);
 
     if (context.containsKey(name)) {
       throw new IllegalStateException("Variable already defined in this scope: " + name);
@@ -129,9 +130,9 @@ public class VariableManager {
    * @param name The name of the variable to be set
    * @param value The new value of the variable
    */
-  public void setVariable(String name, Object value) {
+  public void setVariable(String name, EngineNumber value) {
     for (int level = contextLevel; level >= GLOBAL_CONTEXT; level--) {
-      Map<String, Object> currentContext = getContextForLevel(level);
+      Map<String, EngineNumber> currentContext = getContextForLevel(level);
       if (currentContext.containsKey(name)) {
         currentContext.put(name, value);
         return;
@@ -151,9 +152,9 @@ public class VariableManager {
    * @param name The name of the variable to be retrieved
    * @return Current value of this variable
    */
-  public Object getVariable(String name) {
+  public EngineNumber getVariable(String name) {
     for (int level = contextLevel; level >= GLOBAL_CONTEXT; level--) {
-      Map<String, Object> currentContext = getContextForLevel(level);
+      Map<String, EngineNumber> currentContext = getContextForLevel(level);
       if (currentContext.containsKey(name)) {
         return currentContext.get(name);
       }
@@ -168,7 +169,7 @@ public class VariableManager {
    * @param level Constant corresponding to context level
    * @return Map from name of variable to value at the given context level
    */
-  private Map<String, Object> getContextForLevel(int level) {
+  private Map<String, EngineNumber> getContextForLevel(int level) {
     switch (level) {
       case GLOBAL_CONTEXT:
         return globalContext;
@@ -189,7 +190,7 @@ public class VariableManager {
    * @param context The context map or null
    * @return The context map or a new empty map if null
    */
-  private Map<String, Object> ensureContext(Map<String, Object> context) {
+  private Map<String, EngineNumber> ensureContext(Map<String, EngineNumber> context) {
     return context == null ? new HashMap<>() : context;
   }
 }

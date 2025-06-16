@@ -171,7 +171,7 @@ public interface Engine {
    * @param name The name of the variable to retrieve
    * @return The value of the variable, or special values for 'yearsElapsed' and 'yearAbsolute'
    */
-  Object getVariable(String name);
+  EngineNumber getVariable(String name);
 
   /**
    * Set the value of a variable in the current scope.
@@ -181,7 +181,7 @@ public interface Engine {
    * @throws RuntimeException When trying to set protected variables 'yearsElapsed'
    *     or 'yearAbsolute'
    */
-  void setVariable(String name, Object value);
+  void setVariable(String name, EngineNumber value);
 
   /**
    * Get the initial charge value for a given stream.

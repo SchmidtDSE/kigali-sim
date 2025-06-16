@@ -11,7 +11,9 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import java.math.BigDecimal;
 import org.junit.jupiter.api.Test;
+import org.kigalisim.engine.number.EngineNumber;
 
 /**
  * Tests for the Scope class.
@@ -84,8 +86,12 @@ public class ScopeTest {
   public void testWritesAndReadsVar() {
     Scope scope = new Scope("default", "test app", "test substance");
     scope.defineVariable("testVar");
-    scope.setVariable("testVar", 123);
-    assertEquals(123, scope.getVariable("testVar"), "Should retrieve set variable value");
+    EngineNumber testValue = new EngineNumber(BigDecimal.valueOf(123), "test_units");
+    scope.setVariable("testVar", testValue);
+    
+    EngineNumber result = scope.getVariable("testVar");
+    assertEquals(testValue.getValue(), result.getValue(), "Should retrieve set variable value");
+    assertEquals(testValue.getUnits(), result.getUnits(), "Should retrieve set variable units");
   }
 
   /**
@@ -95,14 +101,28 @@ public class ScopeTest {
   public void testReadsUpwardsInScope() {
     Scope oldScope = new Scope("default", "test app", null);
     oldScope.defineVariable("testVar");
-    oldScope.setVariable("testVar", 123);
-    assertEquals(123, oldScope.getVariable("testVar"), "Should read variable in original scope");
+    EngineNumber testValue = new EngineNumber(BigDecimal.valueOf(123), "test_units");
+    oldScope.setVariable("testVar", testValue);
+    
+    EngineNumber result1 = oldScope.getVariable("testVar");
+    assertEquals(testValue.getValue(), result1.getValue(), 
+                 "Should read variable in original scope");
+    assertEquals(testValue.getUnits(), result1.getUnits(), 
+                 "Should read variable units in original scope");
 
     Scope newScope = oldScope.getWithSubstance("test substance 2");
-    assertEquals(123, newScope.getVariable("testVar"), "Should read variable from parent scope");
+    EngineNumber result2 = newScope.getVariable("testVar");
+    assertEquals(testValue.getValue(), result2.getValue(), 
+                 "Should read variable from parent scope");
+    assertEquals(testValue.getUnits(), result2.getUnits(), 
+                 "Should read variable units from parent scope");
 
-    newScope.setVariable("testVar", 124);
-    assertEquals(124, newScope.getVariable("testVar"), "Should read updated variable value");
+    EngineNumber updatedValue = new EngineNumber(BigDecimal.valueOf(124), "updated_units");
+    newScope.setVariable("testVar", updatedValue);
+    
+    EngineNumber result3 = newScope.getVariable("testVar");
+    assertEquals(updatedValue.getValue(), result3.getValue(), "Should read updated variable value");
+    assertEquals(updatedValue.getUnits(), result3.getUnits(), "Should read updated variable units");
   }
 
   /**
@@ -112,17 +132,30 @@ public class ScopeTest {
   public void testVariableShadowing() {
     Scope oldScope = new Scope("default", "test app", null);
     oldScope.defineVariable("testVar");
-    oldScope.setVariable("testVar", 123);
-    assertEquals(123, oldScope.getVariable("testVar"), "Should read variable in original scope");
+    EngineNumber originalValue = new EngineNumber(BigDecimal.valueOf(123), "original_units");
+    oldScope.setVariable("testVar", originalValue);
+    
+    EngineNumber result1 = oldScope.getVariable("testVar");
+    assertEquals(originalValue.getValue(), result1.getValue(), 
+                 "Should read variable in original scope");
+    assertEquals(originalValue.getUnits(), result1.getUnits(), 
+                 "Should read variable units in original scope");
 
     Scope newScope = oldScope.getWithSubstance("test substance 2");
     newScope.defineVariable("testVar");
-    newScope.setVariable("testVar", 124);
-    assertEquals(124, newScope.getVariable("testVar"), "Should read shadowed variable");
+    EngineNumber shadowValue = new EngineNumber(BigDecimal.valueOf(124), "shadow_units");
+    newScope.setVariable("testVar", shadowValue);
+    
+    EngineNumber result2 = newScope.getVariable("testVar");
+    assertEquals(shadowValue.getValue(), result2.getValue(), "Should read shadowed variable");
+    assertEquals(shadowValue.getUnits(), result2.getUnits(), "Should read shadowed variable units");
 
     Scope restoredScope = newScope.getWithSubstance("test substance 3");
-    assertEquals(123, restoredScope.getVariable("testVar"),
+    EngineNumber result3 = restoredScope.getVariable("testVar");
+    assertEquals(originalValue.getValue(), result3.getValue(),
                  "Should read original variable when shadow is removed");
+    assertEquals(originalValue.getUnits(), result3.getUnits(),
+                 "Should read original variable units when shadow is removed");
   }
 
   /**
@@ -132,15 +165,25 @@ public class ScopeTest {
   public void testEditsScopesAbove() {
     Scope oldScope = new Scope("default", "test app", null);
     oldScope.defineVariable("testVar");
-    oldScope.setVariable("testVar", 123);
-    assertEquals(123, oldScope.getVariable("testVar"), "Should read variable in original scope");
+    EngineNumber originalValue = new EngineNumber(BigDecimal.valueOf(123), "original_units");
+    oldScope.setVariable("testVar", originalValue);
+    
+    EngineNumber result1 = oldScope.getVariable("testVar");
+    assertEquals(originalValue.getValue(), result1.getValue(), 
+                 "Should read variable in original scope");
+    assertEquals(originalValue.getUnits(), result1.getUnits(), 
+                 "Should read variable units in original scope");
 
     Scope tempScope = oldScope.getWithSubstance("test substance 2");
-    tempScope.setVariable("testVar", 124);
+    EngineNumber modifiedValue = new EngineNumber(BigDecimal.valueOf(124), "modified_units");
+    tempScope.setVariable("testVar", modifiedValue);
 
     Scope newScope = tempScope.getWithSubstance("test substance 3");
-    assertEquals(124, newScope.getVariable("testVar"),
+    EngineNumber result2 = newScope.getVariable("testVar");
+    assertEquals(modifiedValue.getValue(), result2.getValue(),
                  "Should read modified variable from parent scope");
+    assertEquals(modifiedValue.getUnits(), result2.getUnits(),
+                 "Should read modified variable units from parent scope");
   }
 
   /**
