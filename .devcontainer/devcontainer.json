@@ -1,0 +1,33 @@
+{
+  "name": "Kigali Sim Dev Container",
+  "build": {
+    "dockerfile": "Dockerfile"
+  },
+  "remoteUser": "devuser",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-vscode.vscode-java-pack",
+        "ms-vscode.vscode-gradle",
+        "ms-vscode.vscode-eslint",
+        "ms-vscode.vscode-json",
+        "ms-vscode.vscode-npm",
+        "ms-vscode.vscode-js-debug"
+      ],
+      "settings": {
+        "java.configuration.runtimes": [
+          {
+            "name": "JavaSE-21",
+            "path": "/opt/java/openjdk"
+          }
+        ],
+        "java.home": "/opt/java/openjdk",
+        "gradle.java.home": "/opt/java/openjdk"
+      }
+    }
+  },
+  "forwardPorts": [8000, 8080],
+  "postCreateCommand": "npm install",
+  "workspaceFolder": "/workspace",
+  "workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind,consistency=cached"
+}

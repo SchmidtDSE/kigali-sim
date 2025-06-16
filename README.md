@@ -53,7 +53,46 @@ This project can be deployed using Github. Simply push your changes to the repos
 
 <br>
 
-## Local Setup
+## Development Setup
+
+### Development Container Setup
+
+This project includes a dev container configuration that provides a complete development environment for both the JavaScript frontend and Java engine components.
+
+#### Using with VS Code
+
+1. Install the [Dev Containers extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers)
+2. Open the project in VS Code
+3. When prompted, click "Reopen in Container" or press `F1` and select "Dev Containers: Reopen in Container"
+4. The container will build automatically with all required dependencies
+
+#### Using with GitHub Codespaces
+
+1. Navigate to the repository on GitHub
+2. Click the green "Code" button
+3. Select the "Codespaces" tab  
+4. Click "Create codespace on main"
+5. The development environment will be set up automatically
+
+#### Container Features
+
+The dev container includes:
+- Eclipse Temurin JDK 21 (as specified in requirements)
+- Node.js 18.x with npm
+- All system dependencies for building and testing
+- VS Code extensions for Java, JavaScript, and Gradle development
+- Pre-configured ports (8000, 8080) for local development servers
+
+#### Automated Checks in Container
+
+All the automated checks described below work in the dev container environment:
+
+- JavaScript linting: `npx eslint ./js/*.js` and `npx eslint ./test/*.js`
+- JavaScript testing: `npx grunt`
+- Java testing: `cd engine && ./gradlew test`
+- Java linting: `cd engine && ./gradlew checkstyleMain` and `cd engine && ./gradlew checkstyleTest`
+
+### Local Setup
 To run this system locally, please complete the following steps:
 
 1. Install dependencies:
