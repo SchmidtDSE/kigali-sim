@@ -85,7 +85,7 @@ public class EngineNumberTest {
     BigDecimal value = new BigDecimal("123.456789");
     String units = "mt";
     EngineNumber number = new EngineNumber(value, units);
-    
+
     assertEquals(value, number.getValue(), "getValue should return the exact BigDecimal value");
     assertEquals(units, number.getUnits(), "getUnits should return the correct units");
   }
@@ -98,10 +98,10 @@ public class EngineNumberTest {
     double value = 42.5;
     String units = "liters";
     EngineNumber number = new EngineNumber(value, units);
-    
+
     assertEquals(
         BigDecimal.valueOf(value),
-        number.getValue(), 
+        number.getValue(),
         "getValue should return the converted BigDecimal value"
     );
     assertEquals(units, number.getUnits(), "getUnits should return the correct units");

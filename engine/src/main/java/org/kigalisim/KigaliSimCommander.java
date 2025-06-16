@@ -10,8 +10,6 @@ package org.kigalisim;
 
 import org.kigalisim.command.VersionCommand;
 import picocli.CommandLine;
-import picocli.CommandLine.Command;
-import picocli.CommandLine.Option;
 
 /**
  * Entry point for the KigaliSim command line.

@@ -17,7 +17,7 @@ package org.kigalisim.engine.number;
  * algorithms. Each implementation handles conversion to a specific unit type.</p>
  */
 public interface UnitConverterStrategy {
-  
+
   /**
    * Convert an EngineNumber to the target unit type.
    *

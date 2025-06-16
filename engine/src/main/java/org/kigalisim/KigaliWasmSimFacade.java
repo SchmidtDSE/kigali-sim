@@ -6,7 +6,6 @@
 
 package org.kigalisim;
 
-import org.teavm.jso.JSBody;
 import org.teavm.jso.JSExport;
 
 

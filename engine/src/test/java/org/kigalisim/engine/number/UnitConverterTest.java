@@ -7,10 +7,8 @@
 package org.kigalisim.engine.number;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 import java.math.BigDecimal;
 import org.junit.jupiter.api.Test;
@@ -23,7 +21,7 @@ public class UnitConverterTest {
   /**
    * Helper method to create a mockito-based StateGetter for testing.
    *
-   * @return Mock StateGetter with lenient stubbing  
+   * @return Mock StateGetter with lenient stubbing
    */
   private StateGetter createMockStateGetter() {
     StateGetter mock = mock(StateGetter.class);
@@ -50,7 +48,7 @@ public class UnitConverterTest {
    * @param stateGetter The state getter for conversion context
    * @return The converted EngineNumber
    */
-  private EngineNumber convertUnits(EngineNumber source, String destination, 
+  private EngineNumber convertUnits(EngineNumber source, String destination,
       StateGetter stateGetter) {
     UnitConverter converter = new UnitConverter(stateGetter);
     return converter.convert(source, destination);

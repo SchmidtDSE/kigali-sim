@@ -1,7 +1,7 @@
 /**
  * Unit conversion logic for the engine.
  *
- * <p>This class provides functionality to convert between different units used in the 
+ * <p>This class provides functionality to convert between different units used in the
  * simulation engine, including volume, population, consumption, and time-based units.
  * It uses BigDecimal for numerical precision and stability.</p>
  *
@@ -23,20 +23,20 @@ import java.util.Map;
  * (tCO2e, kwh), time units (year, years), and percentage units (%).</p>
  */
 public class UnitConverter {
-  
+
   // Configuration constants
   private static final boolean CONVERT_ZERO_NOOP = true;
   private static final boolean ZERO_EMPTY_VOLUME_INTENSITY = false;
-  
+
   // Math context for BigDecimal operations
   private static final MathContext MATH_CONTEXT = MathContext.DECIMAL128;
-  
+
   // Conversion factors
   private static final BigDecimal KG_TO_MT_FACTOR = new BigDecimal("1000");
   private static final BigDecimal PERCENT_FACTOR = new BigDecimal("100");
-  
+
   private final StateGetter stateGetter;
-  
+
   /**
    * Create a new unit converter.
    *
@@ -45,7 +45,7 @@ public class UnitConverter {
   public UnitConverter(StateGetter stateGetter) {
     this.stateGetter = stateGetter;
   }
-  
+
   /**
    * Convert a number to new units.
    *
@@ -57,35 +57,35 @@ public class UnitConverter {
     if (source.getUnits().equals(destinationUnits)) {
       return source;
     }
-    
+
     if (CONVERT_ZERO_NOOP && source.getValue().compareTo(BigDecimal.ZERO) == 0) {
       return new EngineNumber(BigDecimal.ZERO, destinationUnits);
     }
-    
+
     String[] sourceUnitPieces = source.getUnits().split(" / ");
     boolean sourceHasDenominator = sourceUnitPieces.length > 1;
     String sourceDenominatorUnits = sourceHasDenominator ? sourceUnitPieces[1] : "";
-    
+
     String[] destinationUnitPieces = destinationUnits.split(" / ");
     boolean destHasDenominator = destinationUnitPieces.length > 1;
     String destinationDenominatorUnits = destHasDenominator ? destinationUnitPieces[1] : "";
-    
+
     String sourceNumeratorUnits = sourceUnitPieces[0];
     String destinationNumeratorUnits = destinationUnitPieces[0];
     boolean differentDenominator = !destinationDenominatorUnits.equals(sourceDenominatorUnits);
     boolean sameDenominator = !differentDenominator;
-    
+
     // Create strategy maps
-    Map<String, UnitConverterStrategy> numeratorStrategy = 
+    Map<String, UnitConverterStrategy> numeratorStrategy =
         createNumeratorStrategy();
-    Map<String, UnitConverterStrategy> denominatorStrategy = 
+    Map<String, UnitConverterStrategy> denominatorStrategy =
         createDenominatorStrategy();
-    
-    UnitConverterStrategy numeratorFunc = 
+
+    UnitConverterStrategy numeratorFunc =
         numeratorStrategy.get(destinationNumeratorUnits);
-    UnitConverterStrategy denominatorFunc = 
+    UnitConverterStrategy denominatorFunc =
         denominatorStrategy.get(destinationDenominatorUnits);
-    
+
     if (numeratorFunc == null) {
       throw new IllegalArgumentException(
           "Unsupported destination numerator units: " + destinationNumeratorUnits);
@@ -94,7 +94,7 @@ public class UnitConverter {
       throw new IllegalArgumentException(
           "Unsupported destination denominator units: " + destinationDenominatorUnits);
     }
-    
+
     if (sourceHasDenominator && sameDenominator) {
       EngineNumber sourceEffective = new EngineNumber(source.getValue(), sourceNumeratorUnits);
       EngineNumber convertedNumerator = numeratorFunc.convert(sourceEffective);
@@ -102,9 +102,9 @@ public class UnitConverter {
     } else {
       EngineNumber numerator = numeratorFunc.convert(source);
       EngineNumber denominator = denominatorFunc.convert(source);
-      
+
       if (denominator.getValue().compareTo(BigDecimal.ZERO) == 0) {
-        BigDecimal inferredFactor = inferScale(sourceDenominatorUnits, 
+        BigDecimal inferredFactor = inferScale(sourceDenominatorUnits,
             destinationDenominatorUnits);
         if (inferredFactor != null) {
           return new EngineNumber(
@@ -121,7 +121,7 @@ public class UnitConverter {
       }
     }
   }
-  
+
   /**
    * Create the numerator conversion strategy map.
    *
@@ -140,7 +140,7 @@ public class UnitConverter {
     strategy.put("%", this::toPercent);
     return strategy;
   }
-  
+
   /**
    * Create the denominator conversion strategy map.
    *
@@ -159,7 +159,7 @@ public class UnitConverter {
     strategy.put("", x -> new EngineNumber(BigDecimal.ONE, ""));
     return strategy;
   }
-  
+
   /**
    * Infer a scaling factor without population information.
    *
@@ -169,38 +169,38 @@ public class UnitConverter {
    */
   private BigDecimal inferScale(String source, String destination) {
     Map<String, Map<String, BigDecimal>> scaleMap = new HashMap<>();
-    
+
     Map<String, BigDecimal> kgScales = new HashMap<>();
     kgScales.put("mt", KG_TO_MT_FACTOR);
     scaleMap.put("kg", kgScales);
-    
+
     Map<String, BigDecimal> mtScales = new HashMap<>();
     mtScales.put("kg", BigDecimal.ONE.divide(KG_TO_MT_FACTOR, MATH_CONTEXT));
     scaleMap.put("mt", mtScales);
-    
+
     Map<String, BigDecimal> unitScales = new HashMap<>();
     unitScales.put("units", BigDecimal.ONE);
     scaleMap.put("unit", unitScales);
-    
+
     Map<String, BigDecimal> unitsScales = new HashMap<>();
     unitsScales.put("unit", BigDecimal.ONE);
     scaleMap.put("units", unitsScales);
-    
+
     Map<String, BigDecimal> yearsScales = new HashMap<>();
     yearsScales.put("year", BigDecimal.ONE);
     scaleMap.put("years", yearsScales);
-    
+
     Map<String, BigDecimal> yearScales = new HashMap<>();
     yearScales.put("years", BigDecimal.ONE);
     scaleMap.put("year", yearScales);
-    
+
     Map<String, BigDecimal> sourceScales = scaleMap.get(source);
     if (sourceScales != null) {
       return sourceScales.get(destination);
     }
     return null;
   }
-  
+
   /**
    * Convert a number to kilograms.
    *
@@ -218,7 +218,7 @@ public class UnitConverter {
       throw new IllegalArgumentException("Unexpected units " + currentUnits);
     }
   }
-  
+
   /**
    * Convert a number to metric tons.
    *
@@ -236,7 +236,7 @@ public class UnitConverter {
       throw new IllegalArgumentException("Unexpected units " + currentUnits);
     }
   }
-  
+
   /**
    * Convert a number to volume units.
    *
@@ -246,7 +246,7 @@ public class UnitConverter {
   private EngineNumber toVolume(EngineNumber target) {
     target = normalize(target);
     String currentUnits = target.getUnits();
-    
+
     if ("mt".equals(currentUnits) || "kg".equals(currentUnits)) {
       return target;
     } else if ("tCO2e".equals(currentUnits)) {
@@ -274,7 +274,7 @@ public class UnitConverter {
       throw new IllegalArgumentException("Unable to convert to volume: " + currentUnits);
     }
   }
-  
+
   /**
    * Convert a number to units (population).
    *
@@ -284,7 +284,7 @@ public class UnitConverter {
   private EngineNumber toUnits(EngineNumber target) {
     target = normalize(target);
     String currentUnits = target.getUnits();
-    
+
     if ("units".equals(currentUnits)) {
       return target;
     } else if ("unit".equals(currentUnits)) {
@@ -314,7 +314,7 @@ public class UnitConverter {
       throw new IllegalArgumentException("Unable to convert to population: " + currentUnits);
     }
   }
-  
+
   /**
    * Convert a number to consumption as tCO2e.
    *
@@ -324,11 +324,11 @@ public class UnitConverter {
   private EngineNumber toGhgConsumption(EngineNumber target) {
     target = normalize(target);
     String currentUnits = target.getUnits();
-    
+
     boolean currentVolume = "kg".equals(currentUnits) || "mt".equals(currentUnits);
     boolean currentPop = "unit".equals(currentUnits) || "units".equals(currentUnits);
     boolean currentInfer = currentVolume || currentPop;
-    
+
     if ("tCO2e".equals(currentUnits)) {
       return target;
     } else if (currentInfer) {
@@ -354,7 +354,7 @@ public class UnitConverter {
       throw new IllegalArgumentException("Unable to convert to consumption: " + currentUnits);
     }
   }
-  
+
   /**
    * Convert a number to energy consumption as kwh.
    *
@@ -364,11 +364,11 @@ public class UnitConverter {
   private EngineNumber toEnergyConsumption(EngineNumber target) {
     target = normalize(target);
     String currentUnits = target.getUnits();
-    
+
     boolean currentVolume = "kg".equals(currentUnits) || "mt".equals(currentUnits);
     boolean currentPop = "unit".equals(currentUnits) || "units".equals(currentUnits);
     boolean currentInfer = currentVolume || currentPop;
-    
+
     if ("kwh".equals(currentUnits)) {
       return target;
     } else if (currentInfer) {
@@ -395,7 +395,7 @@ public class UnitConverter {
           "Unable to convert to energy consumption: " + currentUnits);
     }
   }
-  
+
   /**
    * Convert a number to years.
    *
@@ -405,7 +405,7 @@ public class UnitConverter {
   private EngineNumber toYears(EngineNumber target) {
     target = normalize(target);
     String currentUnits = target.getUnits();
-    
+
     if ("years".equals(currentUnits)) {
       return target;
     } else if ("year".equals(currentUnits)) {
@@ -440,7 +440,7 @@ public class UnitConverter {
       throw new IllegalArgumentException("Unable to convert to years: " + currentUnits);
     }
   }
-  
+
   /**
    * Convert a number to percentage.
    *
@@ -450,7 +450,7 @@ public class UnitConverter {
   private EngineNumber toPercent(EngineNumber target) {
     target = normalize(target);
     String currentUnits = target.getUnits();
-    
+
     EngineNumber total;
     if ("years".equals(currentUnits) || "year".equals(currentUnits)) {
       total = stateGetter.getYearsElapsed();
@@ -465,13 +465,13 @@ public class UnitConverter {
       throw new IllegalArgumentException(
           "Unable to convert to %: " + currentUnits);
     }
-    
+
     BigDecimal percentValue = target.getValue()
         .divide(total.getValue(), MATH_CONTEXT)
         .multiply(PERCENT_FACTOR);
     return new EngineNumber(percentValue, "%");
   }
-  
+
   /**
    * Normalize to non-ratio units if possible.
    *
@@ -486,9 +486,9 @@ public class UnitConverter {
     target = normVolume(target);
     return target;
   }
-  
+
   /**
-   * Convert a number where a units ratio has population in the denominator to a 
+   * Convert a number where a units ratio has population in the denominator to a
    * non-ratio units.
    *
    * @param target The value to normalize by population
@@ -496,24 +496,24 @@ public class UnitConverter {
    */
   private EngineNumber normUnits(EngineNumber target) {
     String currentUnits = target.getUnits();
-    
+
     boolean divUnit = currentUnits.endsWith("/ unit");
     boolean divUnits = currentUnits.endsWith("/ units");
     boolean isPerUnit = divUnit || divUnits;
-    
+
     if (!isPerUnit) {
       return target;
     }
-    
+
     BigDecimal originalValue = target.getValue();
     String newUnits = currentUnits.split(" / ")[0];
     EngineNumber population = stateGetter.getPopulation();
     BigDecimal populationValue = population.getValue();
     BigDecimal newValue = originalValue.multiply(populationValue);
-    
+
     return new EngineNumber(newValue, newUnits);
   }
-  
+
   /**
    * Convert a number where a units ratio has time in the denominator to a non-ratio units.
    *
@@ -522,22 +522,22 @@ public class UnitConverter {
    */
   private EngineNumber normTime(EngineNumber target) {
     String currentUnits = target.getUnits();
-    
+
     if (!currentUnits.endsWith(" / year")) {
       return target;
     }
-    
+
     BigDecimal originalValue = target.getValue();
     String newUnits = currentUnits.split(" / ")[0];
     EngineNumber years = stateGetter.getYearsElapsed();
     BigDecimal yearsValue = years.getValue();
     BigDecimal newValue = originalValue.multiply(yearsValue);
-    
+
     return new EngineNumber(newValue, newUnits);
   }
-  
+
   /**
-   * Convert a number where a units ratio has consumption in the denominator to a 
+   * Convert a number where a units ratio has consumption in the denominator to a
    * non-ratio units.
    *
    * @param target The value to normalize by consumption
@@ -545,28 +545,28 @@ public class UnitConverter {
    */
   private EngineNumber normConsumption(EngineNumber target) {
     String currentUnits = target.getUnits();
-    
+
     boolean isCo2 = currentUnits.endsWith(" / tCO2e");
     boolean isKwh = currentUnits.endsWith(" / kwh");
     if (!isCo2 && !isKwh) {
       return target;
     }
-    
+
     EngineNumber targetConsumption;
     if (isCo2) {
       targetConsumption = stateGetter.getGhgConsumption();
     } else {
       targetConsumption = stateGetter.getEnergyConsumption();
     }
-    
+
     BigDecimal originalValue = target.getValue();
     String newUnits = currentUnits.split(" / ")[0];
     BigDecimal totalConsumptionValue = targetConsumption.getValue();
     BigDecimal newValue = originalValue.multiply(totalConsumptionValue);
-    
+
     return new EngineNumber(newValue, newUnits);
   }
-  
+
   /**
    * Convert a number where a units ratio has volume in the denominator to a non-ratio units.
    *
@@ -575,25 +575,25 @@ public class UnitConverter {
    */
   private EngineNumber normVolume(EngineNumber target) {
     String targetUnits = target.getUnits();
-    
+
     boolean divKg = targetUnits.endsWith(" / kg");
     boolean divMt = targetUnits.endsWith(" / mt");
     boolean needsNorm = divKg || divMt;
     if (!needsNorm) {
       return target;
     }
-    
+
     String[] targetUnitPieces = targetUnits.split(" / ");
     String newUnits = targetUnitPieces[0];
     String expectedUnits = targetUnitPieces[1];
-    
+
     EngineNumber volume = stateGetter.getVolume();
     EngineNumber volumeConverted = convert(volume, expectedUnits);
     BigDecimal conversionValue = volumeConverted.getValue();
-    
+
     BigDecimal originalValue = target.getValue();
     BigDecimal newValue = originalValue.multiply(conversionValue);
-    
+
     return new EngineNumber(newValue, newUnits);
   }
 }
