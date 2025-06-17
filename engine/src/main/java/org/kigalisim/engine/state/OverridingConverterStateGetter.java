@@ -9,8 +9,6 @@
 
 package org.kigalisim.engine.state;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Optional;
 import org.kigalisim.engine.number.EngineNumber;
 import org.kigalisim.engine.number.UnitConverter;

@@ -127,20 +127,20 @@ public class ConverterStateGetter implements StateGetter {
   public EngineNumber getAmortizedUnitConsumption() {
     EngineNumber consumption = getGhgConsumption();
     EngineNumber population = getPopulation();
-    
+
     BigDecimal ratioValue = consumption.getValue().divide(population.getValue());
-    
+
     String populationUnits = population.getUnits();
     String consumptionUnits = consumption.getUnits();
-    boolean populationUnitsExpected = "unit".equals(populationUnits) 
+    boolean populationUnitsExpected = "unit".equals(populationUnits)
         || "units".equals(populationUnits);
     boolean consumptionUnitsExpected = "tCO2e".equals(consumptionUnits);
     boolean unitsExpected = populationUnitsExpected && consumptionUnitsExpected;
-    
+
     if (!unitsExpected) {
       throw new RuntimeException("Unexpected units for getAmortizedUnitConsumption.");
     }
-    
+
     String ratioUnits = consumptionUnits + " / " + populationUnits;
     return new EngineNumber(ratioValue, ratioUnits);
   }
@@ -155,10 +155,10 @@ public class ConverterStateGetter implements StateGetter {
   public EngineNumber getPopulationChange(UnitConverter unitConverter) {
     EngineNumber priorEquipmentRaw = engine.getStream("priorEquipment");
     EngineNumber newEquipmentRaw = engine.getStream("equipment");
-    
+
     EngineNumber priorEquipment = unitConverter.convert(priorEquipmentRaw, "units");
     EngineNumber newEquipment = unitConverter.convert(newEquipmentRaw, "units");
-    
+
     BigDecimal deltaValue = newEquipment.getValue().subtract(priorEquipment.getValue());
     return new EngineNumber(deltaValue, "units");
   }

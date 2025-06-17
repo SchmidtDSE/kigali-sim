@@ -390,6 +390,6 @@ public interface Engine {
    * @return Array of results for each registered substance
    */
   Object[] getResults();
-  
+
   // TODO: getResults will return EngineResult after that object is converted to Java.
 }

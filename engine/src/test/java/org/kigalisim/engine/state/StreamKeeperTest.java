@@ -20,7 +20,6 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.kigalisim.engine.number.EngineNumber;
 import org.kigalisim.engine.number.UnitConverter;
-import org.kigalisim.engine.state.StateGetter;
 
 /**
  * Tests for the StreamKeeper class.
@@ -389,7 +388,7 @@ public class StreamKeeperTest {
 
     // Get the stream value back - should be converted to kg (10 units * 2 kg/unit = 20 kg)
     EngineNumber result = keeper.getStream("test app", "test substance", "manufacture");
-    
+
     // The result should be in kg and the value should be 20
     assertEquals("kg", result.getUnits(), "Should convert units to kg");
     assertEquals(0, new BigDecimal("20.0").compareTo(result.getValue()),
@@ -404,7 +403,7 @@ public class StreamKeeperTest {
     StreamKeeper keeper = createMockKeeper();
     keeper.ensureSubstance("test app", "test substance");
 
-    // Set initial charge to zero 
+    // Set initial charge to zero
     keeper.setInitialCharge("test app", "test substance", "manufacture",
                            new EngineNumber(BigDecimal.ZERO, "kg / unit"));
 

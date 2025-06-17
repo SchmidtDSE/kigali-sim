@@ -647,7 +647,7 @@ public class StreamKeeper {
     if (initialCharge.getValue().compareTo(BigDecimal.ZERO) == 0) {
       throw new RuntimeException("Cannot set " + name + " stream with a zero initial charge.");
     }
-    
+
     EngineNumber initialChargeConverted = unitConverter.convert(initialCharge, "kg / unit");
     overridingStateGetter.setAmortizedUnitVolume(initialChargeConverted);
 

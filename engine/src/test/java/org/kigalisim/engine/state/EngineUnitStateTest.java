@@ -16,7 +16,6 @@ import java.math.BigDecimal;
 import org.junit.jupiter.api.Test;
 import org.kigalisim.engine.Engine;
 import org.kigalisim.engine.number.EngineNumber;
-import org.kigalisim.engine.number.UnitConverter;
 
 /**
  * Unit tests for the ConverterStateGetter and OverridingConverterStateGetter classes.
@@ -134,7 +133,7 @@ public class EngineUnitStateTest {
   @Test
   public void testOverridingConverterStateGetterInitializesWithInnerGetter() {
     StateGetter inner = mock(StateGetter.class);
-    OverridingConverterStateGetter overriding = 
+    OverridingConverterStateGetter overriding =
         new OverridingConverterStateGetter(inner);
     assertNotNull(overriding);
   }
@@ -144,7 +143,7 @@ public class EngineUnitStateTest {
     StateGetter inner = mock(StateGetter.class);
     EngineNumber expected = new EngineNumber(new BigDecimal("3"), "tCO2e / kg");
     when(inner.getSubstanceConsumption()).thenReturn(expected);
-    
+
     OverridingConverterStateGetter overriding = new OverridingConverterStateGetter(inner);
 
     EngineNumber result = overriding.getSubstanceConsumption();
@@ -158,7 +157,7 @@ public class EngineUnitStateTest {
     StateGetter inner = mock(StateGetter.class);
     EngineNumber innerValue = new EngineNumber(new BigDecimal("3"), "tCO2e / kg");
     when(inner.getSubstanceConsumption()).thenReturn(innerValue);
-    
+
     OverridingConverterStateGetter overriding = new OverridingConverterStateGetter(inner);
 
     overriding.setSubstanceConsumption(new EngineNumber(new BigDecimal("5"), "tCO2e / kg"));
@@ -173,7 +172,7 @@ public class EngineUnitStateTest {
     StateGetter inner = mock(StateGetter.class);
     EngineNumber expected = new EngineNumber(new BigDecimal("2"), "kwh / kg");
     when(inner.getEnergyIntensity()).thenReturn(expected);
-    
+
     OverridingConverterStateGetter overriding = new OverridingConverterStateGetter(inner);
 
     EngineNumber result = overriding.getEnergyIntensity();
@@ -187,7 +186,7 @@ public class EngineUnitStateTest {
     StateGetter inner = mock(StateGetter.class);
     EngineNumber innerValue = new EngineNumber(new BigDecimal("2"), "kwh / kg");
     when(inner.getEnergyIntensity()).thenReturn(innerValue);
-    
+
     OverridingConverterStateGetter overriding = new OverridingConverterStateGetter(inner);
 
     overriding.setEnergyIntensity(new EngineNumber(new BigDecimal("4"), "kwh / kg"));
@@ -202,7 +201,7 @@ public class EngineUnitStateTest {
     StateGetter inner = mock(StateGetter.class);
     EngineNumber expected = new EngineNumber(new BigDecimal("20"), "units");
     when(inner.getPopulation()).thenReturn(expected);
-    
+
     OverridingConverterStateGetter overriding = new OverridingConverterStateGetter(inner);
 
     EngineNumber result = overriding.getPopulation();
@@ -216,7 +215,7 @@ public class EngineUnitStateTest {
     StateGetter inner = mock(StateGetter.class);
     EngineNumber innerValue = new EngineNumber(new BigDecimal("20"), "units");
     when(inner.getPopulation()).thenReturn(innerValue);
-    
+
     OverridingConverterStateGetter overriding = new OverridingConverterStateGetter(inner);
 
     overriding.setPopulation(new EngineNumber(new BigDecimal("30"), "units"));
@@ -231,7 +230,7 @@ public class EngineUnitStateTest {
     StateGetter inner = mock(StateGetter.class);
     EngineNumber expected = new EngineNumber(new BigDecimal("100"), "kg");
     when(inner.getVolume()).thenReturn(expected);
-    
+
     OverridingConverterStateGetter overriding = new OverridingConverterStateGetter(inner);
 
     EngineNumber result = overriding.getVolume();
@@ -245,7 +244,7 @@ public class EngineUnitStateTest {
     StateGetter inner = mock(StateGetter.class);
     EngineNumber innerValue = new EngineNumber(new BigDecimal("100"), "kg");
     when(inner.getVolume()).thenReturn(innerValue);
-    
+
     OverridingConverterStateGetter overriding = new OverridingConverterStateGetter(inner);
 
     overriding.setVolume(new EngineNumber(new BigDecimal("150"), "kg"));

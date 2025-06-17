@@ -109,11 +109,11 @@ public class VariableManagerTest {
     stanzaManager.defineVariable("stanzaVar");
     EngineNumber stanzaValue = new EngineNumber(BigDecimal.valueOf(200), "stanza_units");
     stanzaManager.setVariable("stanzaVar", stanzaValue);
-    
+
     EngineNumber stanzaResult = stanzaManager.getVariable("stanzaVar");
-    assertEquals(stanzaValue.getValue(), stanzaResult.getValue(), 
+    assertEquals(stanzaValue.getValue(), stanzaResult.getValue(),
                  "Should access stanza variable");
-    assertEquals(stanzaValue.getUnits(), stanzaResult.getUnits(), 
+    assertEquals(stanzaValue.getUnits(), stanzaResult.getUnits(),
                  "Should access stanza variable units");
   }
 
@@ -138,7 +138,7 @@ public class VariableManagerTest {
     stanzaManager.defineVariable("testVar");
     EngineNumber stanzaValue = new EngineNumber(BigDecimal.valueOf(200), "stanza_units");
     stanzaManager.setVariable("testVar", stanzaValue);
-    
+
     EngineNumber result2 = stanzaManager.getVariable("testVar");
     assertEquals(stanzaValue.getValue(), result2.getValue(),
                  "Should read stanza variable when shadowing global");
@@ -148,7 +148,7 @@ public class VariableManagerTest {
     // Setting the variable should affect stanza level, not global
     EngineNumber modifiedValue = new EngineNumber(BigDecimal.valueOf(250), "modified_units");
     stanzaManager.setVariable("testVar", modifiedValue);
-    
+
     EngineNumber result3 = stanzaManager.getVariable("testVar");
     assertEquals(modifiedValue.getValue(), result3.getValue(),
                  "Should read modified stanza variable");
@@ -202,7 +202,7 @@ public class VariableManagerTest {
                  "Should access global variable from application level");
     assertEquals(globalValue.getUnits(), globalResult.getUnits(),
                  "Should access global variable units from application level");
-    
+
     EngineNumber stanzaResult = appManager.getVariable("stanzaVar");
     assertEquals(stanzaValue.getValue(), stanzaResult.getValue(),
                  "Should access stanza variable from application level");
@@ -213,7 +213,7 @@ public class VariableManagerTest {
     appManager.defineVariable("appVar");
     EngineNumber appValue = new EngineNumber(BigDecimal.valueOf(300), "app_units");
     appManager.setVariable("appVar", appValue);
-    
+
     EngineNumber appResult = appManager.getVariable("appVar");
     assertEquals(appValue.getValue(), appResult.getValue(),
                  "Should access application variable");
