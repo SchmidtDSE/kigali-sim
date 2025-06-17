@@ -562,17 +562,7 @@ public class SingleThreadEngine implements Engine {
     // Use internal changeStream that doesn't override the units tracking
     changeStreamWithoutReportingUnits(stream, changeWithUnits, null, null);
 
-    if (displaceTarget != null) {
-      EngineNumber displaceChange = new EngineNumber(changeAmount.negate(), "kg");
-      boolean isStream = STREAM_NAMES.contains(displaceTarget);
-
-      if (isStream) {
-        changeStreamWithoutReportingUnits(displaceTarget, displaceChange, null, null);
-      } else {
-        Scope destinationScope = this.scope.getWithSubstance(displaceTarget);
-        changeStreamWithoutReportingUnits(stream, displaceChange, null, destinationScope);
-      }
-    }
+    handleDisplacement(stream, amount, changeAmount, displaceTarget);
   }
 
   @Override
@@ -615,17 +605,7 @@ public class SingleThreadEngine implements Engine {
     EngineNumber changeWithUnits = new EngineNumber(changeAmount, "kg");
     changeStreamWithoutReportingUnits(stream, changeWithUnits, null, null);
 
-    if (displaceTarget != null) {
-      EngineNumber displaceChange = new EngineNumber(changeAmount.negate(), "kg");
-      boolean isStream = STREAM_NAMES.contains(displaceTarget);
-
-      if (isStream) {
-        changeStreamWithoutReportingUnits(displaceTarget, displaceChange, null, null);
-      } else {
-        Scope destinationScope = this.scope.getWithSubstance(displaceTarget);
-        changeStreamWithoutReportingUnits(stream, displaceChange, null, destinationScope);
-      }
-    }
+    handleDisplacement(stream, amount, changeAmount, displaceTarget);
   }
 
   @Override
@@ -723,6 +703,65 @@ public class SingleThreadEngine implements Engine {
     stateGetter.setPopulation(priorPopulation);
 
     return rechargeVolume;
+  }
+
+  /**
+   * Handle displacement logic for cap and floor operations.
+   *
+   * @param stream The stream identifier being modified
+   * @param amount The amount used for the operation
+   * @param changeAmount The actual change amount in kg
+   * @param displaceTarget Optional target for displaced amount
+   */
+  private void handleDisplacement(String stream, EngineNumber amount, 
+      BigDecimal changeAmount, String displaceTarget) {
+    if (displaceTarget == null) {
+      return;
+    }
+
+    EngineNumber displaceChange;
+
+    if (amount.hasEquipmentUnits()) {
+      // For equipment units, displacement should be unit-based, not volume-based
+      Scope currentScope = this.scope;
+      UnitConverter currentUnitConverter = createUnitConverterWithTotal(stream);
+
+      // Convert the volume change back to units in the original substance
+      EngineNumber volumeChangePositive = new EngineNumber(changeAmount.abs(), "kg");
+      EngineNumber unitsChanged = currentUnitConverter.convert(volumeChangePositive, "units");
+
+      boolean isStream = STREAM_NAMES.contains(displaceTarget);
+      if (isStream) {
+        // Same substance, same stream - use volume displacement
+        displaceChange = new EngineNumber(changeAmount.negate(), "kg");
+        changeStreamWithoutReportingUnits(displaceTarget, displaceChange, null, null);
+      } else {
+        // Different substance - apply the same number of units to the destination substance
+        Scope destinationScope = this.scope.getWithSubstance(displaceTarget);
+
+        // Temporarily change scope to destination for unit conversion
+        Scope originalScope = this.scope;
+        this.scope = destinationScope;
+        UnitConverter destinationUnitConverter = createUnitConverterWithTotal(stream);
+        this.scope = originalScope;
+
+        // Convert units to destination substance volume using destination's initial charge
+        EngineNumber destinationVolumeChange = destinationUnitConverter.convert(unitsChanged, "kg");
+        displaceChange = new EngineNumber(destinationVolumeChange.getValue(), "kg");
+        changeStreamWithoutReportingUnits(stream, displaceChange, null, destinationScope);
+      }
+    } else {
+      // For volume units, use volume-based displacement as before
+      displaceChange = new EngineNumber(changeAmount.negate(), "kg");
+      boolean isStream = STREAM_NAMES.contains(displaceTarget);
+
+      if (isStream) {
+        changeStreamWithoutReportingUnits(displaceTarget, displaceChange, null, null);
+      } else {
+        Scope destinationScope = this.scope.getWithSubstance(displaceTarget);
+        changeStreamWithoutReportingUnits(stream, displaceChange, null, destinationScope);
+      }
+    }
   }
 
   /**

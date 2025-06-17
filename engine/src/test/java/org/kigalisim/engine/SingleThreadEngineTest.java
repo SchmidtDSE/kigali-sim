@@ -406,4 +406,134 @@ public class SingleThreadEngineTest {
     assertEquals(1, results2.size(), "Should still have one result");
     assertEquals(2021, results2.get(0).getYear(), "Should now have year 2021");
   }
+
+  /**
+   * Test cap with displacement across different substances using equipment units.
+   * This tests the unit-based displacement logic when substances have different
+   * initial charges per unit.
+   */
+  @Test
+  public void testCapDisplacementWithUnits() {
+    SingleThreadEngine engine = new SingleThreadEngine(1, 3);
+
+    engine.setStanza("default");
+    engine.setApplication("test app");
+
+    // Set up sub1 with 10 kg/unit initial charge
+    engine.setSubstance("sub1");
+    engine.setInitialCharge(
+        new EngineNumber(BigDecimal.valueOf(10), "kg / unit"),
+        "manufacture",
+        null
+    );
+    engine.setStream("manufacture", new EngineNumber(BigDecimal.valueOf(100), "kg"), null);
+    engine.setStream("priorEquipment", new EngineNumber(BigDecimal.valueOf(20), "units"), null);
+    engine.recharge(
+        new EngineNumber(BigDecimal.valueOf(10), "%"),
+        new EngineNumber(BigDecimal.valueOf(10), "kg / unit"),
+        null
+    );
+
+    // Set up sub2 with 20 kg/unit initial charge
+    engine.setSubstance("sub2");
+    engine.setInitialCharge(
+        new EngineNumber(BigDecimal.valueOf(20), "kg / unit"),
+        "manufacture",
+        null
+    );
+    engine.setStream("manufacture", new EngineNumber(BigDecimal.valueOf(200), "kg"), null);
+
+    // Apply cap with displacement
+    engine.setSubstance("sub1");
+    engine.cap(
+        "manufacture",
+        new EngineNumber(BigDecimal.valueOf(5), "units"),
+        null,
+        "sub2"
+    );
+
+    // Check sub1 was capped: 5 units * 10 kg/unit + recharge
+    // (20 units * 10% * 10 kg/unit) = 50 + 20 = 70 kg
+    EngineNumber capVal = engine.getStream("manufacture");
+    assertEquals(0, BigDecimal.valueOf(70).compareTo(capVal.getValue()),
+        "Sub1 should be capped to 70 kg (50 kg + 20 kg recharge)");
+    assertEquals("kg", capVal.getUnits(), "Sub1 should have kg units");
+
+    // Check sub2 received displacement: original 200 kg + displaced units
+    // converted to sub2's charge
+    // Original sub1: 100 kg, after cap: 70 kg, displaced: 30 kg
+    // 30 kg displaced from sub1 = 30 kg / 10 kg/unit = 3 units
+    // 3 units in sub2 = 3 units * 20 kg/unit = 60 kg
+    // Final sub2: 200 kg + 60 kg = 260 kg
+    engine.setSubstance("sub2");
+    EngineNumber displaceVal = engine.getStream("manufacture");
+    assertEquals(0, BigDecimal.valueOf(260).compareTo(displaceVal.getValue()),
+        "Sub2 should receive displaced units: 200 kg + 60 kg = 260 kg");
+    assertEquals("kg", displaceVal.getUnits(), "Sub2 should have kg units");
+  }
+
+  /**
+   * Test floor with displacement across different substances using equipment units.
+   * This tests the unit-based displacement logic when substances have different
+   * initial charges per unit.
+   */
+  @Test
+  public void testFloorDisplacementWithUnits() {
+    SingleThreadEngine engine = new SingleThreadEngine(1, 3);
+
+    engine.setStanza("default");
+    engine.setApplication("test app");
+
+    // Set up sub1 with 10 kg/unit initial charge
+    engine.setSubstance("sub1");
+    engine.setInitialCharge(
+        new EngineNumber(BigDecimal.valueOf(10), "kg / unit"),
+        "manufacture",
+        null
+    );
+    engine.setStream("manufacture", new EngineNumber(BigDecimal.valueOf(50), "kg"), null);
+    engine.setStream("priorEquipment", new EngineNumber(BigDecimal.valueOf(20), "units"), null);
+    engine.recharge(
+        new EngineNumber(BigDecimal.valueOf(10), "%"),
+        new EngineNumber(BigDecimal.valueOf(10), "kg / unit"),
+        null
+    );
+
+    // Set up sub2 with 20 kg/unit initial charge
+    engine.setSubstance("sub2");
+    engine.setInitialCharge(
+        new EngineNumber(BigDecimal.valueOf(20), "kg / unit"),
+        "manufacture",
+        null
+    );
+    engine.setStream("manufacture", new EngineNumber(BigDecimal.valueOf(200), "kg"), null);
+
+    // Apply floor with displacement
+    engine.setSubstance("sub1");
+    engine.floor(
+        "manufacture",
+        new EngineNumber(BigDecimal.valueOf(10), "units"),
+        null,
+        "sub2"
+    );
+
+    // Check sub1 was floored: 10 units * 10 kg/unit + recharge
+    // (20 units * 10% * 10 kg/unit) = 100 + 20 = 120 kg
+    EngineNumber floorVal = engine.getStream("manufacture");
+    assertEquals(0, BigDecimal.valueOf(120).compareTo(floorVal.getValue()),
+        "Sub1 should be floored to 120 kg (100 kg + 20 kg recharge)");
+    assertEquals("kg", floorVal.getUnits(), "Sub1 should have kg units");
+
+    // Check sub2 received displacement: original 200 kg + displaced units
+    // converted to sub2's charge
+    // Original sub1: 50 kg, after floor: 120 kg, displaced: 70 kg
+    // 70 kg displaced from sub1 = 70 kg / 10 kg/unit = 7 units
+    // 7 units in sub2 = 7 units * 20 kg/unit = 140 kg
+    // Final sub2: 200 kg + 140 kg = 340 kg
+    engine.setSubstance("sub2");
+    EngineNumber displaceVal = engine.getStream("manufacture");
+    assertEquals(0, BigDecimal.valueOf(340).compareTo(displaceVal.getValue()),
+        "Sub2 should receive displaced units: 200 kg + 140 kg = 340 kg");
+    assertEquals("kg", displaceVal.getUnits(), "Sub2 should have kg units");
+  }
 }
