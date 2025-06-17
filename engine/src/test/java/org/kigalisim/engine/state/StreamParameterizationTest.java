@@ -321,4 +321,113 @@ public class StreamParameterizationTest {
     assertEquals("kg", parameterization.getLastSpecifiedUnits(),
                  "Should reset to default units");
   }
+
+  /**
+   * Test that setLastSpecifiedUnits ignores percentage units.
+   */
+  @Test
+  public void testSetLastSpecifiedUnitsIgnoresPercentageUnits() {
+    StreamParameterization parameterization = new StreamParameterization();
+
+    // Set initial non-percentage units
+    parameterization.setLastSpecifiedUnits("kg");
+    assertEquals("kg", parameterization.getLastSpecifiedUnits(),
+                 "Should set initial units");
+
+    // Try to set percentage unit - should be ignored
+    parameterization.setLastSpecifiedUnits("%");
+    assertEquals("kg", parameterization.getLastSpecifiedUnits(),
+                 "Pure percentage units should be ignored");
+
+    // Try to set unit containing percentage - should be ignored
+    parameterization.setLastSpecifiedUnits("kg / %");
+    assertEquals("kg", parameterization.getLastSpecifiedUnits(),
+                 "Units containing percentage should be ignored");
+
+    // Try another percentage format - should be ignored
+    parameterization.setLastSpecifiedUnits("15%");
+    assertEquals("kg", parameterization.getLastSpecifiedUnits(),
+                 "Percentage values should be ignored");
+
+    // Set valid non-percentage units - should work
+    parameterization.setLastSpecifiedUnits("units");
+    assertEquals("units", parameterization.getLastSpecifiedUnits(),
+                 "Non-percentage units should still work");
+
+    // Try percentage again - should be ignored, keeping "units"
+    parameterization.setLastSpecifiedUnits("%");
+    assertEquals("units", parameterization.getLastSpecifiedUnits(),
+                 "Percentage should still be ignored after setting valid units");
+  }
+
+  /**
+   * Test that setLastSpecifiedUnits handles null values properly.
+   */
+  @Test
+  public void testSetLastSpecifiedUnitsHandlesNull() {
+    StreamParameterization parameterization = new StreamParameterization();
+
+    // Set initial units
+    parameterization.setLastSpecifiedUnits("kg");
+    assertEquals("kg", parameterization.getLastSpecifiedUnits(),
+                 "Should set initial units");
+
+    // Try null - should update to null (original behavior preserved)
+    parameterization.setLastSpecifiedUnits(null);
+    assertEquals(null, parameterization.getLastSpecifiedUnits(),
+                 "Null units should update last specified units (original behavior)");
+
+    // Set valid units again - should work
+    parameterization.setLastSpecifiedUnits("mt");
+    assertEquals("mt", parameterization.getLastSpecifiedUnits(),
+                 "Valid units should still work after null");
+  }
+
+  /**
+   * Test that setLastSpecifiedUnits handles various percentage formats.
+   */
+  @Test
+  public void testSetLastSpecifiedUnitsHandlesVariousPercentageFormats() {
+    StreamParameterization parameterization = new StreamParameterization();
+
+    // Set initial units
+    parameterization.setLastSpecifiedUnits("kg");
+    assertEquals("kg", parameterization.getLastSpecifiedUnits(),
+                 "Should set initial units");
+
+    // Test various percentage formats that should be ignored
+    String[] percentageFormats = {
+      "%",
+      "50%",
+      "kg/%",
+      "units / %",
+      "% / year",
+      "tCO2e / %",
+      "% per unit",
+      "percentage %"
+    };
+
+    for (String format : percentageFormats) {
+      parameterization.setLastSpecifiedUnits(format);
+      assertEquals("kg", parameterization.getLastSpecifiedUnits(),
+                   "Format \"" + format + "\" should be ignored");
+    }
+
+    // Test valid formats that should NOT be ignored
+    String[] validFormats = {
+      "units",
+      "mt",
+      "kg / unit",
+      "tCO2e / kg",
+      "kwh / kg",
+      "year",
+      "years"
+    };
+
+    for (String format : validFormats) {
+      parameterization.setLastSpecifiedUnits(format);
+      assertEquals(format, parameterization.getLastSpecifiedUnits(),
+                   "Format \"" + format + "\" should be accepted");
+    }
+  }
 }

@@ -232,6 +232,10 @@ public class StreamParameterization {
    * @param units The units string last used to specify a stream
    */
   public void setLastSpecifiedUnits(String units) {
+    // Ignore percentage units to avoid impacting last recorded units
+    if (units != null && units.contains("%")) {
+      return;
+    }
     this.lastSpecifiedUnits = units;
   }
 
