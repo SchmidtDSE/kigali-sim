@@ -16,7 +16,6 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.function.BiConsumer;
 import org.kigalisim.engine.number.EngineNumber;
 import org.kigalisim.engine.number.UnitConverter;
 import org.kigalisim.engine.serializer.EngineResult;
@@ -25,6 +24,7 @@ import org.kigalisim.engine.state.OverridingConverterStateGetter;
 import org.kigalisim.engine.state.Scope;
 import org.kigalisim.engine.state.StreamKeeper;
 import org.kigalisim.engine.state.YearMatcher;
+import org.kigalisim.engine.support.ConsumptionCalculator;
 
 /**
  * Single-threaded implementation of the Engine interface.
@@ -37,7 +37,7 @@ public class SingleThreadEngine implements Engine {
 
   private static final Set<String> STREAM_NAMES = new HashSet<>();
   private static final boolean OPTIMIZE_RECALCS = true;
-  private static final String NO_APP_OR_SUBSTANCE_MESSAGE = 
+  private static final String NO_APP_OR_SUBSTANCE_MESSAGE =
       "Tried %s without application and substance%s.";
 
   static {
@@ -126,6 +126,15 @@ public class SingleThreadEngine implements Engine {
   @Override
   public Scope getScope() {
     return scope;
+  }
+
+  /**
+   * Get the state getter used by this engine instance.
+   *
+   * @return The ConverterStateGetter instance
+   */
+  public ConverterStateGetter getStateGetter() {
+    return stateGetter;
   }
 
   @Override
@@ -444,7 +453,7 @@ public class SingleThreadEngine implements Engine {
 
     String application = this.scope.getApplication();
     String substance = this.scope.getSubstance();
-    
+
     String units = amount.getUnits();
     boolean isGhg = units.startsWith("tCO2e");
     boolean isKwh = units.startsWith("kwh");
@@ -660,7 +669,7 @@ public class SingleThreadEngine implements Engine {
    * @return True if in range or no matcher provided
    */
   private boolean getIsInRange(YearMatcher yearMatcher) {
-    return yearMatcher == null || yearMatcher.getInRange(this.currentYear);  
+    return yearMatcher == null || yearMatcher.getInRange(this.currentYear);
   }
 
   /**
@@ -725,7 +734,7 @@ public class SingleThreadEngine implements Engine {
     EngineNumber convertedDelta = unitConverter.convert(amount, currentValue.getUnits());
     BigDecimal newAmount = currentValue.getValue().add(convertedDelta.getValue());
     EngineNumber outputWithUnits = new EngineNumber(newAmount, currentValue.getUnits());
-    
+
     // Allow propagation but don't track units (since units tracking was handled by the caller)
     setStream(stream, outputWithUnits, null, scope, true, null);
   }
@@ -869,9 +878,6 @@ public class SingleThreadEngine implements Engine {
   private void recalcConsumption(Scope scope) {
     Scope scopeEffective = scope != null ? scope : this.scope;
 
-    OverridingConverterStateGetter stateGetter =
-        new OverridingConverterStateGetter(this.stateGetter);
-    UnitConverter unitConverter = new UnitConverter(stateGetter);
     String application = scopeEffective.getApplication();
     String substance = scopeEffective.getSubstance();
 
@@ -879,34 +885,21 @@ public class SingleThreadEngine implements Engine {
       raiseNoAppOrSubstance("recalculating consumption", "");
     }
 
-    // Determine sales
-    EngineNumber salesRaw = getStream("sales", scopeEffective, null);
-    EngineNumber sales = unitConverter.convert(salesRaw, "kg");
+    // Update streams using ConsumptionCalculator
+    ConsumptionCalculator calculator = new ConsumptionCalculator();
 
-    // Helper method to calculate and save a consumption stream
-    BiConsumer<EngineNumber, String> calcAndSave = (consumptionRaw, streamName) -> {
-      // Determine consumption
-      stateGetter.setVolume(sales);
-      String targetUnits = streamName.equals("consumption") ? "tCO2e" : "kwh";
-      EngineNumber consumption = unitConverter.convert(consumptionRaw, targetUnits);
-      stateGetter.clearVolume();
-
-      // Ensure in range
-      boolean isNegative = consumption.getValue().compareTo(BigDecimal.ZERO) < 0;
-      EngineNumber consumptionAllowed = isNegative 
-          ? new EngineNumber(BigDecimal.ZERO, consumption.getUnits()) : consumption;
-
-      // Save
-      setStream(streamName, consumptionAllowed, null, scopeEffective, false, null);
-    };
-
-    // Get intensities
+    // Get GHG intensity and calculate consumption
     EngineNumber ghgIntensity = this.streamKeeper.getGhgIntensity(application, substance);
-    EngineNumber energyIntensity = this.streamKeeper.getEnergyIntensity(application, substance);
+    calculator.setConsumptionRaw(ghgIntensity);
+    calculator.setStreamName("consumption");
+    calculator.execute(this);
 
-    // Update streams
-    calcAndSave.accept(ghgIntensity, "consumption");
-    calcAndSave.accept(energyIntensity, "energy");
+    // Get energy intensity and calculate energy
+    calculator = new ConsumptionCalculator();
+    EngineNumber energyIntensity = this.streamKeeper.getEnergyIntensity(application, substance);
+    calculator.setConsumptionRaw(energyIntensity);
+    calculator.setStreamName("energy");
+    calculator.execute(this);
   }
 
   /**
@@ -1012,7 +1005,7 @@ public class SingleThreadEngine implements Engine {
     // Get stream percentages for allocation
     BigDecimal percentManufacture;
     BigDecimal percentImport;
-    
+
     if (totalNonRecycleKg.compareTo(BigDecimal.ZERO) == 0) {
       EngineNumber manufactureInitialCharge = getInitialCharge("manufacture");
       EngineNumber importInitialCharge = getInitialCharge("import");
@@ -1020,7 +1013,7 @@ public class SingleThreadEngine implements Engine {
       BigDecimal importInitialChargeVal = unitConverter
           .convert(importInitialCharge, manufactureInitialCharge.getUnits()).getValue();
       BigDecimal totalInitialChargeVal = manufactureInitialChargeVal.add(importInitialChargeVal);
-      
+
       if (totalInitialChargeVal.compareTo(BigDecimal.ZERO) == 0) {
         percentManufacture = BigDecimal.ONE;
         percentImport = BigDecimal.ZERO;

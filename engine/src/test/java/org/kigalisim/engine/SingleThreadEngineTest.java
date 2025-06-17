@@ -99,7 +99,7 @@ public class SingleThreadEngineTest {
 
     // Test scope changes like JavaScript test does
     engine.setSubstance("test substance 2");
-    
+
     Scope newScope = engine.getScope();
     assertEquals("default", newScope.getStanza(), "Should maintain stanza after substance change");
     assertEquals(
@@ -226,19 +226,19 @@ public class SingleThreadEngineTest {
   @Test
   public void testChangeStream() {
     SingleThreadEngine engine = new SingleThreadEngine(1, 3);
-    
+
     engine.setStanza("default");
     engine.setApplication("test app");
     engine.setSubstance("test substance");
-    
+
     // Set initial value
     EngineNumber initialValue = new EngineNumber(BigDecimal.valueOf(10), "kg");
     engine.setStream("manufacture", initialValue, null);
-    
+
     // Change stream by a delta
     EngineNumber delta = new EngineNumber(BigDecimal.valueOf(5), "kg");
     engine.changeStream("manufacture", delta, null);
-    
+
     EngineNumber result = engine.getStream("manufacture");
     assertEquals(BigDecimal.valueOf(15), result.getValue(), "Should add delta to original value");
     assertEquals("kg", result.getUnits(), "Should maintain original units");
@@ -250,34 +250,34 @@ public class SingleThreadEngineTest {
   @Test
   public void testChangeStreamWithYearMatcher() {
     SingleThreadEngine engine = new SingleThreadEngine(1, 3);
-    
+
     engine.setStanza("default");
     engine.setApplication("test app");
     engine.setSubstance("test substance");
-    
+
     // Set initial value
     EngineNumber initialValue = new EngineNumber(BigDecimal.valueOf(10), "kg");
     engine.setStream("manufacture", initialValue, null);
-    
+
     // Change stream with year matcher that should apply
     EngineNumber delta = new EngineNumber(BigDecimal.valueOf(5), "kg");
     YearMatcher matcher = new YearMatcher(1, null);
     engine.changeStream("manufacture", delta, matcher);
-    
+
     EngineNumber result = engine.getStream("manufacture");
     assertEquals(
         BigDecimal.valueOf(15),
         result.getValue(),
         "Should apply change when year matches"
     );
-    
+
     // Try to change stream with year matcher that should not apply
     EngineNumber delta2 = new EngineNumber(BigDecimal.valueOf(10), "kg");
     YearMatcher matcher2 = new YearMatcher(2, null);
     engine.changeStream("manufacture", delta2, matcher2);
-    
+
     EngineNumber result2 = engine.getStream("manufacture");
-    assertEquals(BigDecimal.valueOf(15), result2.getValue(), 
+    assertEquals(BigDecimal.valueOf(15), result2.getValue(),
         "Should not apply change when year doesn't match");
   }
 
@@ -287,19 +287,19 @@ public class SingleThreadEngineTest {
   @Test
   public void testChangeStreamAlternativeNotation() {
     SingleThreadEngine engine = new SingleThreadEngine(1, 3);
-    
+
     engine.setStanza("default");
     engine.setApplication("test app");
     engine.setSubstance("test substance");
-    
+
     // Set initial value
     EngineNumber initialValue = new EngineNumber(BigDecimal.valueOf(10), "kg");
     engine.setStream("manufacture", initialValue, new YearMatcher(null, null));
-    
+
     // Change by 10% when year doesn't match (should not apply)
     EngineNumber percentChange = new EngineNumber(BigDecimal.valueOf(10), "%");
     engine.changeStream("manufacture", percentChange, new YearMatcher(2, null));
-    
+
     EngineNumber result1 = engine.getStream("manufacture");
     assertEquals(
         BigDecimal.valueOf(10),
@@ -307,15 +307,15 @@ public class SingleThreadEngineTest {
         "Should remain 10 when year doesn't match"
     );
     assertEquals("kg", result1.getUnits(), "Should maintain kg units");
-    
+
     // Increment year to 2
     engine.incrementYear();
-    
+
     // Change by 10% when year matches (should apply)
     engine.changeStream("manufacture", percentChange, new YearMatcher(null, null));
-    
+
     EngineNumber result2 = engine.getStream("manufacture");
-    assertEquals(0, BigDecimal.valueOf(11).compareTo(result2.getValue()), 
+    assertEquals(0, BigDecimal.valueOf(11).compareTo(result2.getValue()),
         "Should be 11 after 10% increase");
     assertEquals("kg", result2.getUnits(), "Should maintain kg units");
   }
