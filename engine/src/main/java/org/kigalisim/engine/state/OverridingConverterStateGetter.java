@@ -123,6 +123,13 @@ public class OverridingConverterStateGetter implements StateGetter {
   }
 
   /**
+   * Clear the amortized unit volume override to use the inner getter's value.
+   */
+  public void clearAmortizedUnitVolume() {
+    this.amortizedUnitVolume = Optional.empty();
+  }
+
+  /**
    * Get the amortized unit volume value.
    *
    * @return The amortized unit volume value
@@ -143,6 +150,13 @@ public class OverridingConverterStateGetter implements StateGetter {
    */
   public void setPopulation(EngineNumber newValue) {
     this.population = Optional.of(newValue);
+  }
+
+  /**
+   * Clear the population override to use the inner getter's value.
+   */
+  public void clearPopulation() {
+    this.population = Optional.empty();
   }
 
   /**
@@ -235,6 +249,13 @@ public class OverridingConverterStateGetter implements StateGetter {
    */
   public void setVolume(EngineNumber newValue) {
     this.volume = Optional.of(newValue);
+  }
+
+  /**
+   * Clear the volume override to use the inner getter's value.
+   */
+  public void clearVolume() {
+    this.volume = Optional.empty();
   }
 
   /**

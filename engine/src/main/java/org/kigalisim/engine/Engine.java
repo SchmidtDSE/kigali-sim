@@ -11,7 +11,9 @@
 
 package org.kigalisim.engine;
 
+import java.util.List;
 import org.kigalisim.engine.number.EngineNumber;
+import org.kigalisim.engine.serializer.EngineResult;
 import org.kigalisim.engine.state.Scope;
 import org.kigalisim.engine.state.YearMatcher;
 
@@ -387,9 +389,7 @@ public interface Engine {
   /**
    * Get the results for all registered substances.
    *
-   * @return Array of results for each registered substance
+   * @return List of results for each registered substance
    */
-  Object[] getResults();
-
-  // TODO: getResults will return EngineResult after that object is converted to Java.
+  List<EngineResult> getResults();
 }

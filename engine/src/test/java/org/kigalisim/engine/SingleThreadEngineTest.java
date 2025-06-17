@@ -43,6 +43,17 @@ public class SingleThreadEngineTest {
   }
 
   /**
+   * Test year range handling when arguments are reversed.
+   * Note: This test mirrors the JavaScript "gets years reverse" test.
+   */
+  @Test
+  public void testGettersReverse() {
+    SingleThreadEngine engine = new SingleThreadEngine(30, 1);
+    assertEquals(1, engine.getStartYear(), "Should return correct start year when args reversed");
+    assertEquals(30, engine.getEndYear(), "Should return correct end year when args reversed");
+  }
+
+  /**
    * Test year management.
    */
   @Test
@@ -70,6 +81,8 @@ public class SingleThreadEngineTest {
 
   /**
    * Test scope management.
+   * Note: This test is similar to JavaScript "changes scope" test but doesn't verify scope changes.
+   * JavaScript test also verifies that setSubstance changes scope correctly.
    */
   @Test
   public void testScopeManagement() {
@@ -83,6 +96,18 @@ public class SingleThreadEngineTest {
     assertEquals("default", scope.getStanza(), "Should have correct stanza");
     assertEquals("test app", scope.getApplication(), "Should have correct application");
     assertEquals("test substance", scope.getSubstance(), "Should have correct substance");
+
+    // Test scope changes like JavaScript test does
+    engine.setSubstance("test substance 2");
+    
+    Scope newScope = engine.getScope();
+    assertEquals("default", newScope.getStanza(), "Should maintain stanza after substance change");
+    assertEquals(
+        "test app",
+        newScope.getApplication(),
+        "Should maintain application after substance change"
+    );
+    assertEquals("test substance 2", newScope.getSubstance(), "Should have updated substance");
   }
 
   /**

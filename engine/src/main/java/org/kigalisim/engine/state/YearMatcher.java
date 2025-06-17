@@ -11,9 +11,6 @@ package org.kigalisim.engine.state;
 
 /**
  * Class representing a range of years where inclusion can be tested.
- *
- * <p>Supports testing year inclusion within a range where null values
- * represent positive or negative infinity bounds.</p>
  */
 public class YearMatcher {
 
