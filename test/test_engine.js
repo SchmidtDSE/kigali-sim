@@ -1262,6 +1262,53 @@ function buildEngineTests() {
       assert.equal(unitsAfterReplace2, "units");
     });
 
+    QUnit.test("replace with units converts correctly between substances", function (assert) {
+      const engine = new Engine(1, 3);
+
+      engine.setStanza("default");
+      engine.setApplication("test app");
+
+      // Set up substance A with 10 kg/unit initial charge
+      engine.setSubstance("sub A");
+      engine.setInitialCharge(
+        new EngineNumber(10, "kg / unit"),
+        "manufacture",
+        new YearMatcher(null, null),
+      );
+      engine.setStream("manufacture", new EngineNumber(50, "kg"), new YearMatcher(null, null));
+
+      // Set up substance B with 20 kg/unit initial charge
+      engine.setSubstance("sub B");
+      engine.setInitialCharge(
+        new EngineNumber(20, "kg / unit"),
+        "manufacture",
+        new YearMatcher(null, null),
+      );
+      engine.setStream("manufacture", new EngineNumber(0, "kg"), new YearMatcher(null, null));
+
+      // Go back to substance A and replace 2 units with substance B
+      engine.setSubstance("sub A");
+      engine.replace(
+        new EngineNumber(2, "units"),
+        "manufacture",
+        "sub B",
+        new YearMatcher(null, null),
+      );
+
+      // Check substance A: should lose 2 units * 10 kg/unit = 20 kg
+      // Original: 50 kg, after replace: 30 kg
+      const subAManufacture = engine.getStream("manufacture");
+      assert.closeTo(subAManufacture.getValue(), 30, 0.0001);
+      assert.deepEqual(subAManufacture.getUnits(), "kg");
+
+      // Check substance B: should gain 2 units * 20 kg/unit = 40 kg
+      // Original: 0 kg, after replace: 40 kg
+      engine.setSubstance("sub B");
+      const subBManufacture = engine.getStream("manufacture");
+      assert.closeTo(subBManufacture.getValue(), 40, 0.0001);
+      assert.deepEqual(subBManufacture.getUnits(), "kg");
+    });
+
     QUnit.test("initial charge considers last specified units - kg format", function (assert) {
       const engine = new Engine(1, 3);
 

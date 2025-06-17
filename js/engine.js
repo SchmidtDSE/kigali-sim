@@ -955,9 +955,6 @@ class Engine {
       return;
     }
 
-    const unitConverter = self._createUnitConverterWithTotal(stream);
-    const amount = unitConverter.convert(amountRaw, "kg");
-
     // Track the original user-specified units for the current substance
     const currentScope = self._scope;
     const application = currentScope.getApplication();
@@ -971,11 +968,47 @@ class Engine {
     const lastUnits = amountRaw.getUnits();
     self._streamKeeper.setLastSpecifiedUnits(application, destinationSubstance, lastUnits);
 
-    const amountNegative = new EngineNumber(-1 * amount.getValue(), amount.getUnits());
-    self._changeStreamWithoutReportingUnits(stream, amountNegative);
+    if (amountRaw.hasEquipmentUnits()) {
+      // For equipment units, convert to units first, then handle each substance separately
+      const sourceUnitConverter = self._createUnitConverterWithTotal(stream);
+      const unitsToReplace = sourceUnitConverter.convert(amountRaw, "units");
 
-    const destinationScope = self._scope.getWithSubstance(destinationSubstance);
-    self._changeStreamWithoutReportingUnits(stream, amount, null, destinationScope);
+      // Remove from source substance using source's initial charge
+      const sourceVolumeChange = sourceUnitConverter.convert(unitsToReplace, "kg");
+      const sourceAmountNegative = new EngineNumber(
+        -1 * sourceVolumeChange.getValue(),
+        sourceVolumeChange.getUnits(),
+      );
+      self._changeStreamWithoutReportingUnits(stream, sourceAmountNegative);
+
+      // Add to destination substance using destination's initial charge
+      const destinationScope = self._scope.getWithSubstance(destinationSubstance);
+      const originalScope = self._scope;
+      self._scope = destinationScope;
+      const destinationUnitConverter = self._createUnitConverterWithTotal(stream);
+      self._scope = originalScope;
+
+      const destinationVolumeChange = destinationUnitConverter.convert(
+        unitsToReplace,
+        "kg",
+      );
+      self._changeStreamWithoutReportingUnits(
+        stream,
+        destinationVolumeChange,
+        null,
+        destinationScope,
+      );
+    } else {
+      // For volume units, use the original logic
+      const unitConverter = self._createUnitConverterWithTotal(stream);
+      const amount = unitConverter.convert(amountRaw, "kg");
+
+      const amountNegative = new EngineNumber(-1 * amount.getValue(), amount.getUnits());
+      self._changeStreamWithoutReportingUnits(stream, amountNegative);
+
+      const destinationScope = self._scope.getWithSubstance(destinationSubstance);
+      self._changeStreamWithoutReportingUnits(stream, amount, null, destinationScope);
+    }
   }
 
   /**
