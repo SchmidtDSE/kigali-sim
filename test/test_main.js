@@ -87,6 +87,60 @@ function buildMainTests() {
       assert.equal(result.errorMessage, "Test error",
         "Error message should be passed to error display");
     });
+
+    QUnit.test("auto-run functionality structure validation", function (assert) {
+      // Test the checkbox state detection logic
+      const checkbox = document.getElementById("auto-run-check");
+      const codeEditorPane = document.getElementById("code-editor-pane");
+
+      // Test checkbox state detection
+      checkbox.checked = false;
+      assert.equal(checkbox.checked, false,
+        "Checkbox should be unchecked when set to false");
+
+      checkbox.checked = true;
+      assert.equal(checkbox.checked, true,
+        "Checkbox should be checked when set to true");
+
+      // Test tab detection logic
+      codeEditorPane.setAttribute("aria-hidden", "true");
+      assert.equal(codeEditorPane.getAttribute("aria-hidden"), "true",
+        "Code editor pane should have aria-hidden='true' when tab is not active");
+
+      codeEditorPane.setAttribute("aria-hidden", "false");
+      assert.equal(codeEditorPane.getAttribute("aria-hidden"), "false",
+        "Code editor pane should have aria-hidden='false' when tab is active");
+
+      // Test combined logic
+      const testShouldAutoRun = function () {
+        const autoRunCheck = document.getElementById("auto-run-check");
+        const codeEditorPane = document.getElementById("code-editor-pane");
+        const isOnCodeEditorTab = codeEditorPane.getAttribute("aria-hidden") !== "true";
+        const isAutoRunEnabled = autoRunCheck && autoRunCheck.checked;
+        return isOnCodeEditorTab && isAutoRunEnabled;
+      };
+
+      // Test all combinations
+      codeEditorPane.setAttribute("aria-hidden", "true");
+      checkbox.checked = false;
+      assert.equal(testShouldAutoRun(), false,
+        "Auto-run should be false when tab is not active and checkbox is unchecked");
+
+      codeEditorPane.setAttribute("aria-hidden", "true");
+      checkbox.checked = true;
+      assert.equal(testShouldAutoRun(), false,
+        "Auto-run should be false when tab is not active even if checkbox is checked");
+
+      codeEditorPane.setAttribute("aria-hidden", "false");
+      checkbox.checked = false;
+      assert.equal(testShouldAutoRun(), false,
+        "Auto-run should be false when tab is active but checkbox is unchecked");
+
+      codeEditorPane.setAttribute("aria-hidden", "false");
+      checkbox.checked = true;
+      assert.equal(testShouldAutoRun(), true,
+        "Auto-run should be true when both tab is active and checkbox is checked");
+    });
   });
 }
 

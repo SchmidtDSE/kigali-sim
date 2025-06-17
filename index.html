@@ -758,9 +758,13 @@
               <div id="code-editor-inner" class="inner"></div>
               <div class="error-display"></div>
             </div>
-            <div id="code-buttons-panel" class="buttons-panel">
+            <div id="code-buttons-panel" class="buttons-panel code-buttons-grid">
               <div id="available-panel">
                 <a class="primary" id="run-button" href="#loading">Run</a>
+              </div>
+              <div id="auto-run-panel">
+                <label for="auto-run-check">Automatically re-run when code is changed</label>
+                <input type="checkbox" id="auto-run-check" name="auto-run-check" checked />
               </div>
               <div id="loading">Loading please wait...</div>
             </div>
@@ -768,6 +772,10 @@
         </section>
         <section id="results">
           <h2>Results</h2>
+          
+          <div id="no-results-message" class="no-results-message" style="display: none;">
+            <p>No results to display. This likely means no simulations were defined in the code.</p>
+          </div>
 
           <div class="scorecards" id="scorecards">
             <div class="scorecard" id="emissions-scorecard">

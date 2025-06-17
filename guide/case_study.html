@@ -696,7 +696,7 @@ end default</code></pre>
   modify application "Domestic Refrigeration"
   
     modify substance "HFC-134a"
-      cap manufacture to 0% during years 2028 to onwards
+      cap manufacture to 0 units during years 2028 to onwards
     end substance
   
   end application
@@ -705,7 +705,7 @@ end default</code></pre>
   modify application "Domestic AC"
 
     modify substance "R-410A"
-      cap manufacture to 0% displacing "HFC-32" during years 2028 to onwards
+      cap manufacture to 0 units displacing "HFC-32" during years 2028 to onwards
     end substance
 
   end application
@@ -714,13 +714,19 @@ end default</code></pre>
   modify application "Commercial AC"
 
     modify substance "R-410A"
-      cap manufacture to 0% displacing "HFC-32" during years 2028 to onwards
+      cap manufacture to 0 units displacing "HFC-32" during years 2028 to onwards
     end substance
 
   end application
 
 end policy</code></pre>
         </details>
+
+        <aside>
+          <p>
+            <strong>Note:</strong> If only a cap on new equipment but not recharge is desired, set the cap to units. This approach ensures that displacement occurs only for new sales (manufacture or import) minus recharge for existing units (priorEquipment).
+          </p>
+        </aside>
 
         <h3>Equipment Import Ban</h3>
         <p>
@@ -737,7 +743,7 @@ end policy</code></pre>
   modify application "Commercial Refrigeration"
   
     modify substance "HFC-134a"
-      cap import to 0% displacing "R-404A" during years 2029 to onwards
+      cap import to 0 units displacing "R-404A" during years 2029 to onwards
     end substance
   
   end application
@@ -746,7 +752,7 @@ end policy</code></pre>
   modify application "MAC"
   
     modify substance "HFC-134a"
-      cap import to 0% displacing "R-404A" during years 2029 to onwards
+      cap import to 0 units displacing "R-404A" during years 2029 to onwards
     end substance
   
   end application
@@ -755,7 +761,7 @@ end policy</code></pre>
   modify application "Chiller"
   
     modify substance "HFC-134a"
-      cap import to 0% displacing "R-404A" during years 2029 to onwards
+      cap import to 0 units displacing "R-404A" during years 2029 to onwards
     end substance
   
   end application
@@ -764,7 +770,7 @@ end policy</code></pre>
   modify application "Domestic AC"
 
     modify substance "HFC-32"
-      cap import to 0% displacing "R-410A" during years 2029 to onwards
+      cap import to 0 units displacing "R-410A" during years 2029 to onwards
     end substance
 
   end application
@@ -773,7 +779,7 @@ end policy</code></pre>
   modify application "Commercial AC"
 
     modify substance "HFC-32"
-      cap import to 0% displacing "R-410A" during years 2029 to onwards
+      cap import to 0 units displacing "R-410A" during years 2029 to onwards
     end substance
 
   end application
@@ -1141,19 +1147,19 @@ start policy "Manufacturing Prohibition"
 
   modify application "Domestic Refrigeration"
     modify substance "HFC-134a"
-      cap manufacture to 0% during years 2028 to onwards
+      cap manufacture to 0 units during years 2028 to onwards
     end substance
   end application
 
   modify application "Domestic AC"
     modify substance "R-410A"
-      cap manufacture to 0% displacing "HFC-32" during years 2028 to onwards
+      cap manufacture to 0 units displacing "HFC-32" during years 2028 to onwards
     end substance
   end application
 
   modify application "Commercial AC"
     modify substance "R-410A"
-      cap manufacture to 0% displacing "HFC-32" during years 2028 to onwards
+      cap manufacture to 0 units displacing "HFC-32" during years 2028 to onwards
     end substance
   end application
 
@@ -1164,31 +1170,31 @@ start policy "Equipment Import Ban"
 
   modify application "Commercial Refrigeration"
     modify substance "HFC-134a"
-      cap import to 0% displacing "R-404A" during years 2029 to onwards
+      cap import to 0 units displacing "R-404A" during years 2029 to onwards
     end substance
   end application
 
   modify application "MAC"
     modify substance "HFC-134a"
-      cap import to 0% displacing "R-404A" during years 2029 to onwards
+      cap import to 0 units displacing "R-404A" during years 2029 to onwards
     end substance
   end application
 
   modify application "Chiller"
     modify substance "HFC-134a"
-      cap import to 0% displacing "R-404A" during years 2029 to onwards
+      cap import to 0 units displacing "R-404A" during years 2029 to onwards
     end substance
   end application
 
   modify application "Domestic AC"
     modify substance "HFC-32"
-      cap import to 0% displacing "R-410A" during years 2029 to onwards
+      cap import to 0 units displacing "R-410A" during years 2029 to onwards
     end substance
   end application
 
   modify application "Commercial AC"
     modify substance "HFC-32"
-      cap import to 0% displacing "R-410A" during years 2029 to onwards
+      cap import to 0 units displacing "R-410A" during years 2029 to onwards
     end substance
   end application
 

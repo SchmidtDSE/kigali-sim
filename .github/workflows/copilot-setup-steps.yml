@@ -22,8 +22,18 @@ jobs:
       - name: Install Java
         uses: actions/setup-java@v4
         with:
-          distribution: 'zulu'
-          java-version: '11'
+          distribution: 'temurin'
+          java-version: '21'
+      - name: Build fat jar
+        run: cd engine; ./gradlew fatJar
+      - name: Check grammar
+        run: cd engine; ./gradlew generateGrammarSource
+      - name: Check main style
+        run: cd engine; ./gradlew checkstyleMain
+      - name: Check test style
+        run: cd engine; ./gradlew checkstyleTest
+      - name: Build war
+        run: cd engine; ./gradlew war
       - name: Install node deps
         run: npm install
       - name: Build

@@ -25,7 +25,74 @@ Data can also be downloaded through the export button shown in the results tab.
 
 <br>
 
-## Local Development Setup
+## Development
+
+When developing on the tool, please try to ensure all automated checks pass, development standards are followed, and deployments only happen through the process described where possible (if releasing to the official release website).
+
+### Automated checks
+
+Various automated tests and checks are available to help those developing on the tool and engine.
+
+In the engine (`cd engine`):
+
+ - `./gradlew test`: Run unit tests for the engine.
+ - `./gradlew checkstyleMain`: Lint production Java code built into WASM engine.
+ - `./gradlew checkstyleTest`: Lint test Java code.
+
+In the project root:
+
+ - `npx grunt`: Runs front-end unit tests and end-to-end integration tests.
+ - `npx eslint ./js/*.js`: Lint production JavaScript.
+ - `npx eslint ./test/*.js`: Lint test JavaScript.
+
+### Development Standards
+While contributing, please maintain existing styles defined in `.prettierrc` and `.eslintrc.yml`. Where ambiguous, follow [Google JavaScript / TypeScript Style Guide](https://google.github.io/styleguide/tsguide.html) conventions. Unit tests through QUnit are encouraged but a specific test coverage target is not specified. Document code using JSDoc comments (required for all public members). Note that Replit AI was used to help with documentation and small trivial code changes but, for other purposes, please disclose use of generative AI before merging pull requests. We generally require that AI not used for architecture or large operations. At this time, we are not considering a change to TypeScript.
+
+### Deployment
+This project can be deployed using Github. Simply push your changes to the repository `deploy` branch. The deployment process is automated through GitHub Actions as defined in `.github/workflows/build.yaml`.
+
+<br>
+
+## Development Setup
+
+### Development Container Setup
+
+This project includes a dev container configuration that provides a complete development environment for both the JavaScript frontend and Java engine components.
+
+#### Using with VS Code
+
+1. Install the [Dev Containers extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers)
+2. Open the project in VS Code
+3. When prompted, click "Reopen in Container" or press `F1` and select "Dev Containers: Reopen in Container"
+4. The container will build automatically with all required dependencies
+
+#### Using with GitHub Codespaces
+
+1. Navigate to the repository on GitHub
+2. Click the green "Code" button
+3. Select the "Codespaces" tab  
+4. Click "Create codespace on main"
+5. The development environment will be set up automatically
+
+#### Container Features
+
+The dev container includes:
+- Eclipse Temurin JDK 21 (as specified in requirements)
+- Node.js 18.x with npm
+- All system dependencies for building and testing
+- VS Code extensions for Java, JavaScript, and Gradle development
+- Pre-configured ports (8000, 8080) for local development servers
+
+#### Automated Checks in Container
+
+All the automated checks described below work in the dev container environment:
+
+- JavaScript linting: `npx eslint ./js/*.js` and `npx eslint ./test/*.js`
+- JavaScript testing: `npx grunt`
+- Java testing: `cd engine && ./gradlew test`
+- Java linting: `cd engine && ./gradlew checkstyleMain` and `cd engine && ./gradlew checkstyleTest`
+
+### Local Setup
 To run this system locally, please complete the following steps:
 
 1. Install dependencies:
@@ -53,16 +120,6 @@ python -m http.server
 ```
 
 5. Visit the local hosted webpage using any web browser.
-
-<br>
-
-## Deployment
-This project can be deployed using Github. Simply push your changes to the repository `deploy` branch. The deployment process is automated through GitHub Actions as defined in `.github/workflows/build.yaml`.
-
-<br>
-
-## Development Standards
-While contributing, please maintain existing styles defined in `.prettierrc` and `.eslintrc.yml`. Where ambiguous, follow [Google JavaScript / TypeScript Style Guide](https://google.github.io/styleguide/tsguide.html) conventions. Unit tests through QUnit are encouraged but a specific test coverage target is not specified. Document code using JSDoc comments (required for all public members). Note that Replit AI was used to help with documentation and small trivial code changes but, for other purposes, please disclose use of generative AI before merging pull requests. We generally require that AI not used for architecture or large operations. At this time, we are not considering a change to TypeScript.
 
 <br>
 

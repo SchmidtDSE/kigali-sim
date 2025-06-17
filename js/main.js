@@ -38,6 +38,7 @@ class ButtonPanelPresenter {
     self._root = root;
 
     self._availableDisplay = self._root.querySelector("#available-panel");
+    self._autorunDisplay = self._root.querySelector("#auto-run-panel");
     self._loadingDisplay = self._root.querySelector("#loading");
     self._runButton = self._root.querySelector("#run-button");
 
@@ -55,6 +56,7 @@ class ButtonPanelPresenter {
   enable() {
     const self = this;
     self._availableDisplay.style.display = "block";
+    self._autorunDisplay.style.display = "block";
     self._loadingDisplay.style.display = "none";
   }
 
@@ -64,6 +66,7 @@ class ButtonPanelPresenter {
   disable() {
     const self = this;
     self._availableDisplay.style.display = "none";
+    self._autorunDisplay.style.display = "none";
     self._loadingDisplay.style.display = "block";
   }
 
@@ -162,8 +165,58 @@ class MainPresenter {
    */
   _onAutoRefresh() {
     const self = this;
-    if (!self._hasCompilationErrors) {
+    if (!self._hasCompilationErrors && self._shouldAutoRun()) {
       self._onBuild(true, false, true);
+    }
+  }
+
+  /**
+   * Checks if auto-run should be executed based on tab and checkbox state.
+   *
+   * @returns {boolean} True if auto-run should execute, false otherwise.
+   * @private
+   */
+  _shouldAutoRun() {
+    const self = this;
+    return self._isOnCodeEditorTab() && self._isAutoRunEnabled();
+  }
+
+  /**
+   * Checks if the user is currently on the code editor tab.
+   *
+   * @returns {boolean} True if on code editor tab, false otherwise.
+   * @private
+   */
+  _isOnCodeEditorTab() {
+    const codeEditorPane = document.getElementById("code-editor-pane");
+    return codeEditorPane && codeEditorPane.getAttribute("hidden") !== "hidden";
+  }
+
+  /**
+   * Checks if the auto-run checkbox is checked.
+   *
+   * @returns {boolean} True if auto-run is enabled, false otherwise.
+   * @private
+   */
+  _isAutoRunEnabled() {
+    const autoRunCheck = document.getElementById("auto-run-check");
+    return autoRunCheck && autoRunCheck.checked;
+  }
+
+  /**
+   * Shows a message indicating no results were produced.
+   *
+   * @private
+   */
+  _showNoResultsMessage() {
+    const self = this;
+    const resultsSection = document.getElementById("results");
+    resultsSection.style.display = "block";
+
+    // Show the pre-existing no-results message
+    const noResultsMessage = document.getElementById("no-results-message");
+    if (noResultsMessage) {
+      noResultsMessage.style.display = "block";
     }
   }
 
@@ -234,7 +287,7 @@ class MainPresenter {
           if (run) {
             const programResult = program();
             if (programResult.length == 0) {
-              self._resultsPresenter.hide();
+              self._showNoResultsMessage();
             } else {
               if (resetFilters) {
                 self._resultsPresenter.resetFilter();
@@ -293,6 +346,13 @@ class MainPresenter {
    */
   _onResult(results) {
     const self = this;
+
+    // Hide any existing no-results message
+    const noResultsMessage = document.getElementById("no-results-message");
+    if (noResultsMessage) {
+      noResultsMessage.style.display = "none";
+    }
+
     const resultsWrapped = new ReportDataWrapper(results);
     self._resultsPresenter.showResults(resultsWrapped);
   }

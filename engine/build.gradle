@@ -1,0 +1,217 @@
+plugins {
+  id "java"
+  id "war"
+  id "eclipse" // optional (to generate Eclipse project files)
+  id "idea" // optional (to generate IntelliJ IDEA project files)
+  id "application" // for creating executable JARs
+  id "checkstyle" // for code style checking
+  id "antlr" // for ANTLR grammar
+  id "org.teavm" version "0.11.0" // TeaVM for WASM compilation
+  id "com.diffplug.spotless" version "7.0.2" // Autoformatting
+}
+
+group = 'org.kigalisim'
+
+eclipse {
+    classpath {
+        file {
+            whenMerged {
+                entries.add(new org.gradle.plugins.ide.eclipse.model.SourceFolder('src-generated/main/java', null))
+            }
+        }
+    }
+}
+
+java {
+  sourceCompatibility = JavaVersion.VERSION_19
+  targetCompatibility = JavaVersion.VERSION_19
+}
+
+repositories {
+  mavenCentral()
+}
+
+dependencies {
+  // ANTLR dependencies
+  antlr("org.antlr:antlr4:4.13.2") // The ANTLR tool for grammar processing
+  implementation("org.antlr:antlr4-runtime:4.13.2") // ANTLR runtime for generated code
+
+  // Interaction with browser
+  implementation("org.teavm:teavm-core:0.11.0")
+  implementation("org.teavm:teavm-jso:0.11.0")
+
+  // Testing dependencies
+  testImplementation(platform("org.junit:junit-bom:5.12.1"))
+  testImplementation("org.junit.jupiter:junit-jupiter")
+  testImplementation("org.mockito:mockito-core:5.16.1")
+  testImplementation("org.mockito:mockito-junit-jupiter:5.16.1")
+  testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+
+  // Command line parsing
+  implementation("info.picocli:picocli:4.7.6")
+}
+
+teavm {
+  js {
+    mainClass = "org.kigalisim.KigaliWasmSimFacade"
+    addedToWebApp = true
+    moduleType = org.teavm.gradle.api.JSModuleType.NONE
+  }
+  wasmGC {
+    mainClass = "org.kigalisim.KigaliWasmSimFacade"
+    addedToWebApp = true
+  }
+}
+
+application {
+  mainClass = "org.kigalisim.KigaliSimCommander"
+}
+
+// JUnit target for all tests.
+test {
+  useJUnitPlatform()
+  testLogging {
+    events "skipped", "failed"
+    exceptionFormat = "full"
+  }
+}
+
+// JUnit resource assets for tests.
+sourceSets {
+    test {
+        resources {
+            srcDirs = ['src/test/resources']
+        }
+    }
+}
+
+// Jar containing all dependencies required for production
+task fatJar(type: Jar) {
+  manifest {
+    attributes(
+      "Main-Class": "org.kigalisim.KigaliSimCommander"
+    )
+  }
+  archiveBaseName = "kigalisim"
+  archiveClassifier = "fat"
+
+  // Include all dependencies
+  from { 
+    configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) } 
+  }
+
+  // Exclude duplicates
+  duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+
+  // Include the main classes
+  with jar
+
+  // Exclude META-INF signatures to avoid security exceptions
+  exclude "META-INF/*.RSA", "META-INF/*.SF", "META-INF/*.DSA"
+}
+
+// Standard JavaDoc target
+javadoc {
+  options {
+    outputLevel = JavadocOutputLevel.QUIET
+    encoding = "UTF-8"
+    memberLevel = JavadocMemberLevel.PROTECTED
+    links "https://docs.oracle.com/en/java/javase/11/docs/api/"
+    windowTitle = "KigaliSim"
+  }
+
+  destinationDir = file("${buildDir}/docs/javadoc")
+}
+
+// Shared configuration options for checkstyle
+checkstyle {
+  toolVersion = "10.21.4"
+  configFile = file("${rootDir}/config/checkstyle/google_checks.xml")
+  configDirectory = file("${rootDir}/config/checkstyle")
+  maxErrors = 0
+  maxWarnings = 0
+  ignoreFailures = false
+}
+
+// Checkstyle target for main code
+checkstyleMain {
+  source = "src/main/java/org/kigalisim"
+}
+
+// Checkstyle target for test code
+checkstyleTest {
+  source = "src/test/java/org/kigalisim"
+}
+
+// Formatting configuration
+spotless {
+  java {
+    target 'src/main/java/**/*.java', 'src/test/java/**/*.java'
+
+    cleanthat().addMutator('SafeAndConsensual')
+    importOrder()
+    removeUnusedImports()
+    leadingTabsToSpaces(2)
+    trimTrailingWhitespace()
+    endWithNewline()
+
+    custom 'ensure empty line at end', {
+      def last = it[-1]
+      return last == '\n' ? it : it + '\n'
+    }
+
+    custom 'ensure space after typecast', {
+      return it.replaceAll('\\)([a-zA-Z0-9_])', ') $1')
+    }
+
+    custom 'ensure blank line after header', {
+      if (it.contains('*/')) {
+        return it.replaceAll('\\*/\\s*package', '*/\n\npackage')
+      }
+      return it
+    }
+
+  }
+}
+
+// Create directory and checkstyle config if it doesn"t exist
+task setupCheckstyle {
+  doLast {
+    def configDir = file("${rootDir}/config/checkstyle")
+    configDir.mkdirs()
+    def checksFile = new File(configDir, "google_checks.xml")
+    if (!checksFile.exists()) {
+      checksFile << new URL("https://raw.githubusercontent.com/checkstyle/checkstyle/master/src/main/resources/google_checks.xml").text
+    }
+  }
+}
+
+// ANTLR configuration
+generateGrammarSource {
+  // Set output directory for generated files
+  outputDirectory = file("src-generated/main/java")
+
+  // Set package for the generated visitor and other classes
+  arguments += ["-visitor"]
+
+  // To use direct left recursion
+  arguments += ["-Dlanguage=Java"]
+}
+
+// Add generated sources to the compile path
+sourceSets {
+  main {
+    java {
+      srcDirs += file("src-generated/main/java")
+    }
+  }
+}
+
+// Make compileJava depend on generating ANTLR sources
+compileJava.dependsOn generateGrammarSource
+
+// Require Checkstyle set up before checking main.
+checkstyleMain.dependsOn setupCheckstyle
+
+// Require Checkstyle set up before checking test.
+checkstyleTest.dependsOn setupCheckstyle

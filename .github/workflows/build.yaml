@@ -6,10 +6,10 @@ permissions:
   contents: read
 
 jobs:
-  lint:
+  lintJs:
     environment: build
     runs-on: ubuntu-latest
-    name: Run Linter
+    name: Run JS Linter
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -21,30 +21,6 @@ jobs:
         run: npx eslint ./js/*.js
       - name: Lint test code
         run: npx eslint ./test/*.js
-  unitTests:
-    environment: build
-    runs-on: ubuntu-latest
-    name: Run Unit Tests
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      - name: Install Node
-        uses: actions/setup-node@v4
-      - name: Install Java
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'zulu'
-          java-version: '11'
-      - name: Install node deps
-        run: npm install
-      - name: Build
-        run: bash ./support/make.sh
-      - name: Install front end deps
-        run: bash ./support/install_deps.sh
-      - name: Install browser
-        run: sudo apt install -y chromium-browser
-      - name: Run unit tests
-        run: npx grunt
   checkCacheBusters:
     environment: build
     runs-on: ubuntu-latest
@@ -57,8 +33,8 @@ jobs:
       - name: Install Java
         uses: actions/setup-java@v4
         with:
-          distribution: 'zulu'
-          java-version: '11'
+          distribution: 'temurin'
+          java-version: '21'
       - name: Install node deps
         run: npm install
       - name: Build
@@ -71,12 +47,100 @@ jobs:
         run: cp -r ./guide ./deploy/guide
       - name: Update cache busters
         run: bash ./support/update_cache_busters.sh
-  deploy-prep:
-    environment: build
-    if: github.ref == 'refs/heads/deploy'
+  buildEngine:
+    environment: Build
     runs-on: ubuntu-latest
-    name: Deploy Preparation
-    needs: [lint, unitTests, checkCacheBusters]
+    name: Build Fat Jar
+    defaults:
+      run:
+        shell: bash
+        working-directory: ./engine
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+      - name: Build fat jar
+        run: ./gradlew fatJar
+      - name: Upload jar
+        uses: actions/upload-artifact@v4
+        with:
+          name: fatJar
+          path: engine/build/libs/kigalisim-fat.jar
+  checkEngine:
+    needs: buildEngine
+    environment: Build
+    runs-on: ubuntu-latest
+    name: Static Engine Checks
+    defaults:
+      run:
+        shell: bash
+        working-directory: ./engine
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+      - name: Check grammar
+        run: ./gradlew generateGrammarSource
+      - name: Check main style
+        run: ./gradlew checkstyleMain
+      - name: Check test style
+        run: ./gradlew checkstyleTest
+  testEngine:
+    needs: buildEngine
+    environment: Build
+    runs-on: ubuntu-latest
+    name: Test Engine
+    defaults:
+      run:
+        shell: bash
+        working-directory: ./engine
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+      - name: Run tests
+        run: ./gradlew test
+  buildWasm:
+    environment: Build
+    needs: [ checkEngine, buildEngine, testEngine ]
+    runs-on: ubuntu-latest
+    name: Build WASM Engine
+    defaults:
+      run:
+        shell: bash
+        working-directory: ./engine
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+      - name: Build war
+        run: ./gradlew war
+      - name: Upload war
+        uses: actions/upload-artifact@v4
+        with:
+          name: war
+          path: engine/build/libs/KigaliSim.war
+  unitTestsBrowser:
+    environment: build
+    runs-on: ubuntu-latest
+    name: Run Unit Tests
+    needs: [ buildWasm ]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -85,8 +149,34 @@ jobs:
       - name: Install Java
         uses: actions/setup-java@v4
         with:
-          distribution: 'zulu'
-          java-version: '11'
+          distribution: 'temurin'
+          java-version: '21'
+      - name: Install node deps
+        run: npm install
+      - name: Build
+        run: bash ./support/make.sh
+      - name: Install front end deps
+        run: bash ./support/install_deps.sh
+      - name: Install browser
+        run: sudo apt install -y chromium-browser
+      - name: Run unit tests
+        run: npx grunt
+  deploy-prep:
+    environment: build
+    if: github.ref == 'refs/heads/deploy'
+    runs-on: ubuntu-latest
+    name: Deploy Preparation
+    needs: [ lintJs, unitTestsBrowser, checkCacheBusters, buildWasm ]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Install Node
+        uses: actions/setup-node@v4
+      - name: Install Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
       - name: Install node deps
         run: npm install
       - name: Build
