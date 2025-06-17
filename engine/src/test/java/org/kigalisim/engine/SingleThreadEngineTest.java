@@ -536,4 +536,62 @@ public class SingleThreadEngineTest {
         "Sub2 should receive displaced units: 200 kg + 140 kg = 340 kg");
     assertEquals("kg", displaceVal.getUnits(), "Sub2 should have kg units");
   }
+
+  /**
+   * Test replace with units converts correctly between substances.
+   * This mirrors the JavaScript test to ensure the Java implementation
+   * handles equipment units properly when replacing between substances
+   * with different initial charges per unit.
+   */
+  @Test
+  public void testReplaceWithUnitsConvertsCorrectlyBetweenSubstances() {
+    SingleThreadEngine engine = new SingleThreadEngine(1, 3);
+
+    engine.setStanza("default");
+    engine.setApplication("test app");
+
+    // Set up substance A with 10 kg/unit initial charge
+    engine.setSubstance("sub A");
+    engine.setInitialCharge(
+        new EngineNumber(BigDecimal.valueOf(10), "kg / unit"),
+        "manufacture",
+        new YearMatcher(null, null)
+    );
+    engine.setStream("manufacture", new EngineNumber(BigDecimal.valueOf(50), "kg"), 
+        new YearMatcher(null, null));
+
+    // Set up substance B with 20 kg/unit initial charge
+    engine.setSubstance("sub B");
+    engine.setInitialCharge(
+        new EngineNumber(BigDecimal.valueOf(20), "kg / unit"),
+        "manufacture",
+        new YearMatcher(null, null)
+    );
+    engine.setStream("manufacture", new EngineNumber(BigDecimal.valueOf(0), "kg"), 
+        new YearMatcher(null, null));
+
+    // Go back to substance A and replace 2 units with substance B
+    engine.setSubstance("sub A");
+    engine.replace(
+        new EngineNumber(BigDecimal.valueOf(2), "units"),
+        "manufacture",
+        "sub B",
+        new YearMatcher(null, null)
+    );
+
+    // Check substance A: should lose 2 units * 10 kg/unit = 20 kg
+    // Original: 50 kg, after replace: 30 kg
+    EngineNumber substanceOneResult = engine.getStream("manufacture");
+    assertEquals(0, BigDecimal.valueOf(30).compareTo(substanceOneResult.getValue()),
+        "Sub A should lose 20 kg (2 units * 10 kg/unit): 50 - 20 = 30");
+    assertEquals("kg", substanceOneResult.getUnits(), "Sub A should have kg units");
+
+    // Check substance B: should gain 2 units * 20 kg/unit = 40 kg
+    // Original: 0 kg, after replace: 40 kg
+    engine.setSubstance("sub B");
+    EngineNumber substanceTwoResult = engine.getStream("manufacture");
+    assertEquals(0, BigDecimal.valueOf(40).compareTo(substanceTwoResult.getValue()),
+        "Sub B should gain 40 kg (2 units * 20 kg/unit): 0 + 40 = 40");
+    assertEquals("kg", substanceTwoResult.getUnits(), "Sub B should have kg units");
+  }
 }

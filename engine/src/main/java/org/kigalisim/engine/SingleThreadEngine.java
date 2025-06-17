@@ -625,17 +625,42 @@ public class SingleThreadEngine implements Engine {
     this.streamKeeper.setLastSpecifiedUnits(application, currentSubstance, amountRaw.getUnits());
 
     // Track the original user-specified units for the destination substance
-    UnitConverter unitConverter = createUnitConverterWithTotal(stream);
-    EngineNumber amount = unitConverter.convert(amountRaw, "kg");
-
     String lastUnits = amountRaw.getUnits();
     this.streamKeeper.setLastSpecifiedUnits(application, destinationSubstance, lastUnits);
 
-    EngineNumber amountNegative = new EngineNumber(amount.getValue().negate(), amount.getUnits());
-    changeStreamWithoutReportingUnits(stream, amountNegative, null, null);
+    if (amountRaw.hasEquipmentUnits()) {
+      // For equipment units, convert to units first, then handle each substance separately
+      UnitConverter sourceUnitConverter = createUnitConverterWithTotal(stream);
+      EngineNumber unitsToReplace = sourceUnitConverter.convert(amountRaw, "units");
 
-    Scope destinationScope = this.scope.getWithSubstance(destinationSubstance);
-    changeStreamWithoutReportingUnits(stream, amount, null, destinationScope);
+      // Remove from source substance using source's initial charge
+      EngineNumber sourceVolumeChange = sourceUnitConverter.convert(unitsToReplace, "kg");
+      EngineNumber sourceAmountNegative = new EngineNumber(
+          sourceVolumeChange.getValue().negate(),
+          sourceVolumeChange.getUnits()
+      );
+      changeStreamWithoutReportingUnits(stream, sourceAmountNegative, null, null);
+
+      // Add to destination substance using destination's initial charge
+      Scope destinationScope = this.scope.getWithSubstance(destinationSubstance);
+      Scope originalScope = this.scope;
+      this.scope = destinationScope;
+      UnitConverter destinationUnitConverter = createUnitConverterWithTotal(stream);
+      this.scope = originalScope;
+
+      EngineNumber destinationVolumeChange = destinationUnitConverter.convert(unitsToReplace, "kg");
+      changeStreamWithoutReportingUnits(stream, destinationVolumeChange, null, destinationScope);
+    } else {
+      // For volume units, use the original logic
+      UnitConverter unitConverter = createUnitConverterWithTotal(stream);
+      EngineNumber amount = unitConverter.convert(amountRaw, "kg");
+
+      EngineNumber amountNegative = new EngineNumber(amount.getValue().negate(), amount.getUnits());
+      changeStreamWithoutReportingUnits(stream, amountNegative, null, null);
+
+      Scope destinationScope = this.scope.getWithSubstance(destinationSubstance);
+      changeStreamWithoutReportingUnits(stream, amount, null, destinationScope);
+    }
   }
 
   @Override
