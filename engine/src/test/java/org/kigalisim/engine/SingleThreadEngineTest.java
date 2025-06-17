@@ -11,8 +11,10 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.math.BigDecimal;
+import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.kigalisim.engine.number.EngineNumber;
+import org.kigalisim.engine.serializer.EngineResult;
 import org.kigalisim.engine.state.Scope;
 import org.kigalisim.engine.state.YearMatcher;
 
@@ -318,5 +320,90 @@ public class SingleThreadEngineTest {
     assertEquals(0, BigDecimal.valueOf(11).compareTo(result2.getValue()),
         "Should be 11 after 10% increase");
     assertEquals("kg", result2.getUnits(), "Should maintain kg units");
+  }
+
+  /**
+   * Test getResults returns empty list when no substances are registered.
+   */
+  @Test
+  public void testGetResultsEmpty() {
+    SingleThreadEngine engine = new SingleThreadEngine(1, 3);
+
+    List<EngineResult> results = engine.getResults();
+
+    assertNotNull(results, "Should return a non-null list");
+    assertTrue(results.isEmpty(), "Should return empty list when no substances registered");
+  }
+
+  /**
+   * Test getResults returns results for registered substances.
+   */
+  @Test
+  public void testGetResultsWithSubstances() {
+    SingleThreadEngine engine = new SingleThreadEngine(2020, 2025);
+
+    // Set up first substance
+    engine.setStanza("default");
+    engine.setApplication("test app");
+    engine.setSubstance("test substance");
+
+    // Set some stream values to ensure substance is registered
+    EngineNumber manufactureValue = new EngineNumber(BigDecimal.valueOf(100), "kg");
+    engine.setStream("manufacture", manufactureValue, null);
+
+    // Set up second substance
+    engine.setApplication("test app 2");
+    engine.setSubstance("test substance 2");
+
+    EngineNumber importValue = new EngineNumber(BigDecimal.valueOf(50), "kg");
+    engine.setStream("import", importValue, null);
+
+    // Get results
+    List<EngineResult> results = engine.getResults();
+
+    // Verify results
+    assertNotNull(results, "Should return a non-null list");
+    assertEquals(2, results.size(), "Should return results for both substances");
+
+    // Check that results contain expected data
+    for (EngineResult result : results) {
+      assertNotNull(result.getApplication(), "Result should have application");
+      assertNotNull(result.getSubstance(), "Result should have substance");
+      assertEquals(2020, result.getYear(), "Result should have current year");
+
+      // Verify we have expected applications and substances
+      boolean isFirstExpected = "test app".equals(result.getApplication())
+          && "test substance".equals(result.getSubstance());
+      boolean isSecondExpected = "test app 2".equals(result.getApplication())
+          && "test substance 2".equals(result.getSubstance());
+      boolean isExpectedCombination = isFirstExpected || isSecondExpected;
+      assertTrue(isExpectedCombination,
+          "Result should contain expected app/substance combinations");
+    }
+  }
+
+  /**
+   * Test getResults reflects current year.
+   */
+  @Test
+  public void testGetResultsCurrentYear() {
+    SingleThreadEngine engine = new SingleThreadEngine(2020, 2025);
+
+    // Set up substance
+    engine.setStanza("default");
+    engine.setApplication("test app");
+    engine.setSubstance("test substance");
+    engine.setStream("manufacture", new EngineNumber(BigDecimal.valueOf(100), "kg"), null);
+
+    // Get results for initial year
+    List<EngineResult> results1 = engine.getResults();
+    assertEquals(1, results1.size(), "Should have one result");
+    assertEquals(2020, results1.get(0).getYear(), "Should have year 2020");
+
+    // Increment year and get results again
+    engine.incrementYear();
+    List<EngineResult> results2 = engine.getResults();
+    assertEquals(1, results2.size(), "Should still have one result");
+    assertEquals(2021, results2.get(0).getYear(), "Should now have year 2021");
   }
 }
