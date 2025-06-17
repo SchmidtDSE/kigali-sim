@@ -877,17 +877,7 @@ class Engine {
     // Use internal changeStream that doesn't override the units tracking
     self._changeStreamWithoutReportingUnits(stream, changeWithUnits);
 
-    if (displaceTarget !== null && displaceTarget !== undefined) {
-      const displaceChange = new EngineNumber(changeAmount * -1, "kg");
-      const isStream = STREAM_NAMES.has(displaceTarget);
-
-      if (isStream) {
-        self._changeStreamWithoutReportingUnits(displaceTarget, displaceChange);
-      } else {
-        const destinationScope = self._scope.getWithSubstance(displaceTarget);
-        self._changeStreamWithoutReportingUnits(stream, displaceChange, null, destinationScope);
-      }
-    }
+    self._handleDisplacement(stream, amount, changeAmount, displaceTarget);
   }
 
   /**
@@ -946,17 +936,7 @@ class Engine {
     const changeWithUnits = new EngineNumber(changeAmount, "kg");
     self._changeStreamWithoutReportingUnits(stream, changeWithUnits);
 
-    if (displaceTarget !== null && displaceTarget !== undefined) {
-      const displaceChange = new EngineNumber(changeAmount * -1, "kg");
-      const isStream = STREAM_NAMES.has(displaceTarget);
-
-      if (isStream) {
-        self._changeStreamWithoutReportingUnits(displaceTarget, displaceChange);
-      } else {
-        const destinationScope = self._scope.getWithSubstance(displaceTarget);
-        self._changeStreamWithoutReportingUnits(stream, displaceChange, null, destinationScope);
-      }
-    }
+    self._handleDisplacement(stream, amount, changeAmount, displaceTarget);
   }
 
   /**
@@ -1455,6 +1435,65 @@ class Engine {
     self._recalcPopulationChange();
     self._recalcSales();
     self._recalcConsumption();
+  }
+
+  /**
+   * Handle displacement logic for cap and floor operations.
+   *
+   * @param {string} stream - The stream identifier being modified.
+   * @param {EngineNumber} amount - The amount used for the operation.
+   * @param {number} changeAmount - The actual change amount in kg.
+   * @param {string} displaceTarget - Optional target for displaced amount.
+   * @private
+   */
+  _handleDisplacement(stream, amount, changeAmount, displaceTarget) {
+    const self = this;
+
+    if (displaceTarget !== null && displaceTarget !== undefined) {
+      let displaceChange;
+
+      if (amount.hasEquipmentUnits()) {
+        // For equipment units, displacement should be unit-based, not volume-based
+        const currentScope = self._scope;
+        const currentUnitConverter = self._createUnitConverterWithTotal(stream);
+
+        // Convert the volume change back to units in the original substance
+        const volumeChangePositive = new EngineNumber(Math.abs(changeAmount), "kg");
+        const unitsChanged = currentUnitConverter.convert(volumeChangePositive, "units");
+
+        const isStream = STREAM_NAMES.has(displaceTarget);
+        if (isStream) {
+          // Same substance, same stream - use volume displacement
+          displaceChange = new EngineNumber(changeAmount * -1, "kg");
+          self._changeStreamWithoutReportingUnits(displaceTarget, displaceChange);
+        } else {
+          // Different substance - apply the same number of units to the destination substance
+          const destinationScope = self._scope.getWithSubstance(displaceTarget);
+
+          // Temporarily change scope to destination for unit conversion
+          const originalScope = self._scope;
+          self._scope = destinationScope;
+          const destinationUnitConverter = self._createUnitConverterWithTotal(stream);
+          self._scope = originalScope;
+
+          // Convert units to destination substance volume using destination's initial charge
+          const destinationVolumeChange = destinationUnitConverter.convert(unitsChanged, "kg");
+          displaceChange = new EngineNumber(destinationVolumeChange.getValue(), "kg");
+          self._changeStreamWithoutReportingUnits(stream, displaceChange, null, destinationScope);
+        }
+      } else {
+        // For volume units, use volume-based displacement as before
+        displaceChange = new EngineNumber(changeAmount * -1, "kg");
+        const isStream = STREAM_NAMES.has(displaceTarget);
+
+        if (isStream) {
+          self._changeStreamWithoutReportingUnits(displaceTarget, displaceChange);
+        } else {
+          const destinationScope = self._scope.getWithSubstance(displaceTarget);
+          self._changeStreamWithoutReportingUnits(stream, displaceChange, null, destinationScope);
+        }
+      }
+    }
   }
 }
 

@@ -749,6 +749,60 @@ function buildCompilerTests() {
       },
     ]);
 
+    buildTest("tests cap with units displacement", "/test/qta/cap_displace_units.qta", [
+      (result, assert) => {
+        // Check that sub_a manufacture was capped
+        const recordSubA = getResult(result, "result", 1, 0, "test", "sub_a");
+        const manufactureSubA = recordSubA.getManufacture();
+
+        // Cap is 5 units, with recharge: 5 units * 10 kg/unit +
+        // (20 units * 10% * 10 kg/unit) = 50 + 20 = 70 kg
+        // Original was 100 kg, so should be capped to 70 kg
+        assert.closeTo(manufactureSubA.getValue(), 70, 0.0001);
+        assert.deepEqual(manufactureSubA.getUnits(), "kg");
+
+        // Check displacement to sub_b
+        const recordSubB = getResult(result, "result", 1, 0, "test", "sub_b");
+        const manufactureSubB = recordSubB.getManufacture();
+
+        // With unit-based displacement: 30 kg reduction in sub_a = 30 kg / 10 kg/unit = 3 units
+        // 3 units displaced to sub_b = 3 units * 20 kg/unit = 60 kg
+        // Original sub_b: 200 kg, Final sub_b: 200 kg + 60 kg = 260 kg
+        assert.closeTo(manufactureSubB.getValue(), 260, 0.0001);
+        assert.deepEqual(manufactureSubB.getUnits(), "kg");
+      },
+    ]);
+
+    buildTest(
+      "tests unit-to-unit displacement conversion",
+      "/test/qta/cap_displace_unit_conversion.qta",
+      [
+        (result, assert) => {
+        // Check that sub_a manufacture was capped
+          const recordSubA = getResult(result, "result", 1, 0, "test", "sub_a");
+          const manufactureSubA = recordSubA.getManufacture();
+
+          // Cap is 5 units, with recharge: 5 units * 10 kg/unit +
+          // (20 units * 10% * 10 kg/unit) = 50 + 20 = 70 kg
+          // Original was 30 units * 10 kg/unit = 300 kg, so should be capped to 70 kg
+          // Reduction: 300 - 70 = 230 kg
+          assert.closeTo(manufactureSubA.getValue(), 70, 0.0001);
+          assert.deepEqual(manufactureSubA.getUnits(), "kg");
+
+          // Check displacement to sub_b
+          const recordSubB = getResult(result, "result", 1, 0, "test", "sub_b");
+          const manufactureSubB = recordSubB.getManufacture();
+
+          // With the fix, displacement should be unit-based:
+          // 230 kg reduction in sub_a = 230 kg / 10 kg/unit = 23 units
+          // 23 units displaced to sub_b = 23 units * 20 kg/unit = 460 kg
+          // Original sub_b: 10 units * 20 kg/unit = 200 kg
+          // Final sub_b: 200 kg + 460 kg = 660 kg
+          assert.closeTo(manufactureSubB.getValue(), 660, 0.0001);
+          assert.deepEqual(manufactureSubB.getUnits(), "kg");
+        },
+      ]);
+
     buildTest("tests floor with units includes recharge on top", "/test/qta/floor_units.qta", [
       (result, assert) => {
         const record = getResult(result, "result", 1, 0, "test", "test");
