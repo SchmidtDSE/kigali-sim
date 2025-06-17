@@ -140,7 +140,7 @@ public class EngineResult {
   public EngineNumber getConsumptionNoRecycle() {
     String domesticUnits = domesticConsumptionValue.getUnits();
     String importUnits = importConsumptionValue.getUnits();
-    
+
     if (!domesticUnits.equals(importUnits)) {
       throw new IllegalStateException(
           "Could not add incompatible units for consumption.");
