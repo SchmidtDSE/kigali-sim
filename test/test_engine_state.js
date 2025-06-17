@@ -342,6 +342,109 @@ function buildEngineStateTests() {
       parameterization.resetInternals();
       assert.equal(parameterization.getLastSpecifiedUnits(), "kg");
     });
+
+    QUnit.test("setLastSpecifiedUnits ignores percentage units", function (assert) {
+      const parameterization = new StreamParameterization();
+
+      // Set initial non-percentage units
+      parameterization.setLastSpecifiedUnits("kg");
+      assert.equal(parameterization.getLastSpecifiedUnits(), "kg");
+
+      // Try to set percentage unit - should be ignored
+      parameterization.setLastSpecifiedUnits("%");
+      assert.equal(parameterization.getLastSpecifiedUnits(), "kg",
+        "Pure percentage units should be ignored");
+
+      // Try to set unit containing percentage - should be ignored
+      parameterization.setLastSpecifiedUnits("kg / %");
+      assert.equal(parameterization.getLastSpecifiedUnits(), "kg",
+        "Units containing percentage should be ignored");
+
+      // Try another percentage format - should be ignored
+      parameterization.setLastSpecifiedUnits("15%");
+      assert.equal(parameterization.getLastSpecifiedUnits(), "kg",
+        "Percentage values should be ignored");
+
+      // Set valid non-percentage units - should work
+      parameterization.setLastSpecifiedUnits("units");
+      assert.equal(parameterization.getLastSpecifiedUnits(), "units",
+        "Non-percentage units should still work");
+
+      // Try percentage again - should be ignored, keeping "units"
+      parameterization.setLastSpecifiedUnits("%");
+      assert.equal(parameterization.getLastSpecifiedUnits(), "units",
+        "Percentage should still be ignored after setting valid units");
+    });
+
+    QUnit.test("setLastSpecifiedUnits handles null and undefined", function (assert) {
+      const parameterization = new StreamParameterization();
+
+      // Set initial units
+      parameterization.setLastSpecifiedUnits("kg");
+      assert.equal(parameterization.getLastSpecifiedUnits(), "kg");
+
+      // Try null - should update to null (original behavior preserved)
+      parameterization.setLastSpecifiedUnits(null);
+      assert.equal(parameterization.getLastSpecifiedUnits(), null,
+        "Null units should update last specified units (original behavior)");
+
+      // Reset to test undefined
+      parameterization.setLastSpecifiedUnits("kg");
+      assert.equal(parameterization.getLastSpecifiedUnits(), "kg");
+
+      // Try undefined - should update to undefined (original behavior preserved)
+      parameterization.setLastSpecifiedUnits(undefined);
+      assert.equal(parameterization.getLastSpecifiedUnits(), undefined,
+        "Undefined units should update last specified units (original behavior)");
+
+      // Set valid units again - should work
+      parameterization.setLastSpecifiedUnits("mt");
+      assert.equal(parameterization.getLastSpecifiedUnits(), "mt",
+        "Valid units should still work after null/undefined");
+    });
+
+    QUnit.test("setLastSpecifiedUnits handles various percentage formats", function (assert) {
+      const parameterization = new StreamParameterization();
+
+      // Set initial units
+      parameterization.setLastSpecifiedUnits("kg");
+      assert.equal(parameterization.getLastSpecifiedUnits(), "kg");
+
+      // Test various percentage formats that should be ignored
+      const percentageFormats = [
+        "%",
+        "50%",
+        "kg/%",
+        "units / %",
+        "% / year",
+        "tCO2e / %",
+        "% per unit",
+        "percentage %",
+      ];
+
+      percentageFormats.forEach((format) => {
+        parameterization.setLastSpecifiedUnits(format);
+        assert.equal(parameterization.getLastSpecifiedUnits(), "kg",
+          `Format "${format}" should be ignored`);
+      });
+
+      // Test valid formats that should NOT be ignored
+      const validFormats = [
+        "units",
+        "mt",
+        "kg / unit",
+        "tCO2e / kg",
+        "kwh / kg",
+        "year",
+        "years",
+      ];
+
+      validFormats.forEach((format) => {
+        parameterization.setLastSpecifiedUnits(format);
+        assert.equal(parameterization.getLastSpecifiedUnits(), format,
+          `Format "${format}" should be accepted`);
+      });
+    });
   });
 
   QUnit.module("StreamKeeper", function () {
@@ -625,6 +728,33 @@ function buildEngineStateTests() {
       keeper.setLastSpecifiedUnits("test app", "test substance", "units");
       const unitsAfterUnits = keeper.getLastSpecifiedUnits("test app", "test substance");
       assert.equal(unitsAfterUnits, "units");
+    });
+
+    QUnit.test("StreamKeeper ignores percentage units in setLastSpecifiedUnits", function (assert) {
+      const keeper = createMockKeeper();
+      keeper.ensureSubstance("test app", "test substance");
+
+      // Set initial units
+      keeper.setLastSpecifiedUnits("test app", "test substance", "kg");
+      assert.equal(keeper.getLastSpecifiedUnits("test app", "test substance"), "kg");
+
+      // Try to set percentage units - should be ignored
+      keeper.setLastSpecifiedUnits("test app", "test substance", "%");
+      assert.equal(keeper.getLastSpecifiedUnits("test app", "test substance"), "kg",
+        "Percentage units should be ignored by StreamKeeper");
+
+      keeper.setLastSpecifiedUnits("test app", "test substance", "50%");
+      assert.equal(keeper.getLastSpecifiedUnits("test app", "test substance"), "kg",
+        "Percentage values should be ignored by StreamKeeper");
+
+      keeper.setLastSpecifiedUnits("test app", "test substance", "kg / %");
+      assert.equal(keeper.getLastSpecifiedUnits("test app", "test substance"), "kg",
+        "Units containing percentages should be ignored by StreamKeeper");
+
+      // Set valid units - should work
+      keeper.setLastSpecifiedUnits("test app", "test substance", "units");
+      assert.equal(keeper.getLastSpecifiedUnits("test app", "test substance"), "units",
+        "Valid units should still work through StreamKeeper");
     });
   });
 }

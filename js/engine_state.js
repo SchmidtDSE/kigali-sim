@@ -627,6 +627,10 @@ class StreamParameterization {
    */
   setLastSpecifiedUnits(units) {
     const self = this;
+    // Ignore percentage units to avoid impacting last recorded units
+    if (units && units.includes("%")) {
+      return;
+    }
     self._lastSpecifiedUnits = units;
   }
 
