@@ -2,7 +2,7 @@
  * Tests for recalculation strategy classes.
  */
 
-package org.kigalisim.engine.support;
+package org.kigalisim.engine.recalc;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertNotNull;

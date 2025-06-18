@@ -2,7 +2,7 @@
  * Tests for individual recalculation strategy classes.
  */
 
-package org.kigalisim.engine.support;
+package org.kigalisim.engine.recalc;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -10,7 +10,6 @@ import static org.mockito.Mockito.mock;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.kigalisim.engine.Engine;
 import org.kigalisim.engine.number.UnitConverter;
 import org.kigalisim.engine.state.ConverterStateGetter;
 import org.kigalisim.engine.state.Scope;
@@ -20,7 +19,7 @@ import org.kigalisim.engine.state.StreamKeeper;
  * Test class for individual recalculation strategy classes.
  *
  * <p>These tests focus on verifying the strategy pattern implementation
- * with RecalcKit dependency injection. Full integration testing is covered 
+ * with RecalcKit dependency injection. Full integration testing is covered
  * by existing engine tests.</p>
  */
 public class RecalcStrategyTest {
@@ -34,12 +33,12 @@ public class RecalcStrategyTest {
   @BeforeEach
   public void setUp() {
     testScope = new Scope("test", "testApp", "testSubstance");
-    
+
     // Create a mock RecalcKit for testing
     StreamKeeper streamKeeper = mock(StreamKeeper.class);
     UnitConverter unitConverter = mock(UnitConverter.class);
     ConverterStateGetter stateGetter = mock(ConverterStateGetter.class);
-    
+
     testKit = new RecalcKit(streamKeeper, unitConverter, stateGetter);
   }
 

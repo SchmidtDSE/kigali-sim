@@ -7,7 +7,7 @@
  * @license BSD-3-Clause
  */
 
-package org.kigalisim.engine.support;
+package org.kigalisim.engine.recalc;
 
 import java.math.BigDecimal;
 import org.kigalisim.engine.Engine;
@@ -16,6 +16,9 @@ import org.kigalisim.engine.number.UnitConverter;
 import org.kigalisim.engine.state.ConverterStateGetter;
 import org.kigalisim.engine.state.OverridingConverterStateGetter;
 import org.kigalisim.engine.state.Scope;
+import org.kigalisim.engine.support.DivisionHelper;
+import org.kigalisim.engine.support.ExceptionsGenerator;
+import org.kigalisim.engine.support.RechargeVolumeCalculator;
 
 /**
  * Strategy for recalculating population changes.
@@ -39,7 +42,7 @@ public class PopulationChangeRecalcStrategy implements RecalcStrategy {
   @Override
   public void execute(Engine target, RecalcKit kit) {
     ConverterStateGetter baseStateGetter = kit.getStateGetter();
-    OverridingConverterStateGetter stateGetter = 
+    OverridingConverterStateGetter stateGetter =
         new OverridingConverterStateGetter(baseStateGetter);
     UnitConverter unitConverter = new UnitConverter(stateGetter);
     Scope scopeEffective = scope != null ? scope : target.getScope();
@@ -62,8 +65,8 @@ public class PopulationChangeRecalcStrategy implements RecalcStrategy {
 
     // Get recharge volume using the calculator
     EngineNumber rechargeVolume = RechargeVolumeCalculator.calculateRechargeVolume(
-        scopeEffective, 
-        kit.getStateGetter(), 
+        scopeEffective,
+        kit.getStateGetter(),
         kit.getStreamKeeper(),
         target
     );
@@ -78,12 +81,12 @@ public class PopulationChangeRecalcStrategy implements RecalcStrategy {
     EngineNumber initialCharge = unitConverter.convert(initialChargeRaw, "kg / unit");
     BigDecimal initialChargeKgUnit = initialCharge.getValue();
     BigDecimal deltaUnitsRaw = DivisionHelper.divideWithZero(
-        availableForNewUnitsKg, 
+        availableForNewUnitsKg,
         initialChargeKgUnit
     );
     BigDecimal deltaUnits = deltaUnitsRaw;
     EngineNumber newUnitsMarginal = new EngineNumber(
-        deltaUnits.compareTo(BigDecimal.ZERO) < 0 ? BigDecimal.ZERO : deltaUnits, 
+        deltaUnits.compareTo(BigDecimal.ZERO) < 0 ? BigDecimal.ZERO : deltaUnits,
         "units"
     );
 

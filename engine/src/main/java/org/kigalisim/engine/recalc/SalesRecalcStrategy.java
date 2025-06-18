@@ -7,7 +7,7 @@
  * @license BSD-3-Clause
  */
 
-package org.kigalisim.engine.support;
+package org.kigalisim.engine.recalc;
 
 import java.math.BigDecimal;
 import org.kigalisim.engine.Engine;
@@ -16,6 +16,8 @@ import org.kigalisim.engine.number.UnitConverter;
 import org.kigalisim.engine.state.OverridingConverterStateGetter;
 import org.kigalisim.engine.state.Scope;
 import org.kigalisim.engine.state.StreamKeeper;
+import org.kigalisim.engine.support.DivisionHelper;
+import org.kigalisim.engine.support.ExceptionsGenerator;
 
 /**
  * Strategy for recalculating sales.

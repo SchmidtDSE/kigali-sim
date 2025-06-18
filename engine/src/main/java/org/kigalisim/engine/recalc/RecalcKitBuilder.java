@@ -7,7 +7,7 @@
  * @license BSD-3-Clause
  */
 
-package org.kigalisim.engine.support;
+package org.kigalisim.engine.recalc;
 
 import java.util.Optional;
 import org.kigalisim.engine.number.UnitConverter;

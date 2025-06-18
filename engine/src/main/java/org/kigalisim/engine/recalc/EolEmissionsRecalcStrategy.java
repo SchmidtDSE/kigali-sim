@@ -7,7 +7,7 @@
  * @license BSD-3-Clause
  */
 
-package org.kigalisim.engine.support;
+package org.kigalisim.engine.recalc;
 
 import org.kigalisim.engine.Engine;
 import org.kigalisim.engine.number.EngineNumber;
@@ -15,6 +15,7 @@ import org.kigalisim.engine.number.UnitConverter;
 import org.kigalisim.engine.state.OverridingConverterStateGetter;
 import org.kigalisim.engine.state.Scope;
 import org.kigalisim.engine.state.StreamKeeper;
+import org.kigalisim.engine.support.ExceptionsGenerator;
 
 /**
  * Strategy for recalculating end-of-life emissions.

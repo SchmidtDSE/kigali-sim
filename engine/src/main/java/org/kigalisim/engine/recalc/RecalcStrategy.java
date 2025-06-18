@@ -9,7 +9,7 @@
  * @license BSD-3-Clause
  */
 
-package org.kigalisim.engine.support;
+package org.kigalisim.engine.recalc;
 
 import org.kigalisim.engine.Engine;
 

@@ -3,7 +3,7 @@
  * This test shows how the builder pattern replaces the old direct method calls.
  */
 
-package org.kigalisim.engine.support;
+package org.kigalisim.engine.recalc;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertNotNull;

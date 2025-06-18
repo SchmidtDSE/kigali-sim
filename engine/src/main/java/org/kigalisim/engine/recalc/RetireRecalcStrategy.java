@@ -7,7 +7,7 @@
  * @license BSD-3-Clause
  */
 
-package org.kigalisim.engine.support;
+package org.kigalisim.engine.recalc;
 
 import java.math.BigDecimal;
 import org.kigalisim.engine.Engine;
@@ -15,6 +15,7 @@ import org.kigalisim.engine.number.EngineNumber;
 import org.kigalisim.engine.number.UnitConverter;
 import org.kigalisim.engine.state.OverridingConverterStateGetter;
 import org.kigalisim.engine.state.Scope;
+import org.kigalisim.engine.support.ExceptionsGenerator;
 
 /**
  * Strategy for recalculating retirement.
@@ -86,7 +87,7 @@ public class RetireRecalcStrategy implements RecalcStrategy {
     eolStrategy.execute(target, kit);
 
     // Propagate
-    PopulationChangeRecalcStrategy populationStrategy = 
+    PopulationChangeRecalcStrategy populationStrategy =
         new PopulationChangeRecalcStrategy(null, null);
     populationStrategy.execute(target, kit);
     SalesRecalcStrategy salesStrategy = new SalesRecalcStrategy(null);

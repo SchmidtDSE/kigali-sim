@@ -11,13 +11,22 @@
 package org.kigalisim.engine;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.kigalisim.engine.number.EngineNumber;
 import org.kigalisim.engine.number.UnitConverter;
+import org.kigalisim.engine.recalc.ConsumptionRecalcStrategy;
+import org.kigalisim.engine.recalc.EolEmissionsRecalcStrategy;
+import org.kigalisim.engine.recalc.PopulationChangeRecalcStrategy;
+import org.kigalisim.engine.recalc.RecalcKit;
+import org.kigalisim.engine.recalc.RecalcKitBuilder;
+import org.kigalisim.engine.recalc.RecalcOperation;
+import org.kigalisim.engine.recalc.RecalcOperationBuilder;
+import org.kigalisim.engine.recalc.RechargeEmissionsRecalcStrategy;
+import org.kigalisim.engine.recalc.RetireRecalcStrategy;
+import org.kigalisim.engine.recalc.SalesRecalcStrategy;
 import org.kigalisim.engine.serializer.EngineResult;
 import org.kigalisim.engine.serializer.EngineResultSerializer;
 import org.kigalisim.engine.state.ConverterStateGetter;
@@ -26,18 +35,8 @@ import org.kigalisim.engine.state.Scope;
 import org.kigalisim.engine.state.StreamKeeper;
 import org.kigalisim.engine.state.SubstanceInApplicationId;
 import org.kigalisim.engine.state.YearMatcher;
-import org.kigalisim.engine.support.ConsumptionRecalcStrategy;
-import org.kigalisim.engine.support.EolEmissionsRecalcStrategy;
 import org.kigalisim.engine.support.ExceptionsGenerator;
-import org.kigalisim.engine.support.PopulationChangeRecalcStrategy;
-import org.kigalisim.engine.support.RecalcKit;
-import org.kigalisim.engine.support.RecalcKitBuilder;
-import org.kigalisim.engine.support.RecalcOperation;
-import org.kigalisim.engine.support.RecalcOperationBuilder;
-import org.kigalisim.engine.support.RechargeEmissionsRecalcStrategy;
 import org.kigalisim.engine.support.RechargeVolumeCalculator;
-import org.kigalisim.engine.support.RetireRecalcStrategy;
-import org.kigalisim.engine.support.SalesRecalcStrategy;
 
 /**
  * Single-threaded implementation of the Engine interface.
@@ -620,9 +619,9 @@ public class SingleThreadEngine implements Engine {
       // For equipment units, convert to kg and add recharge volume on top
       EngineNumber amountInKg = unitConverter.convert(amount, "kg");
       EngineNumber rechargeVolume = RechargeVolumeCalculator.calculateRechargeVolume(
-          scope, 
-          stateGetter, 
-          streamKeeper, 
+          scope,
+          stateGetter,
+          streamKeeper,
           this
       );
       BigDecimal totalWithRecharge = amountInKg.getValue().add(rechargeVolume.getValue());
@@ -669,9 +668,9 @@ public class SingleThreadEngine implements Engine {
       // For equipment units, convert to kg and add recharge volume on top
       EngineNumber amountInKg = unitConverter.convert(amount, "kg");
       EngineNumber rechargeVolume = RechargeVolumeCalculator.calculateRechargeVolume(
-          scope, 
-          stateGetter, 
-          streamKeeper, 
+          scope,
+          stateGetter,
+          streamKeeper,
           this
       );
       BigDecimal totalWithRecharge = amountInKg.getValue().add(rechargeVolume.getValue());

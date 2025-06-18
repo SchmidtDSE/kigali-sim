@@ -100,7 +100,7 @@ public class Scope {
   /**
    * Get the name of the application where this scope resides as an Optional.
    *
-   * @return Optional containing the name of the current application, 
+   * @return Optional containing the name of the current application,
    *         or empty if in stanza or higher scope
    */
   public Optional<String> getApplicationOptional() {
@@ -119,7 +119,7 @@ public class Scope {
   /**
    * Get the name of the substance where this scope resides as an Optional.
    *
-   * @return Optional containing the name of the current substance, 
+   * @return Optional containing the name of the current substance,
    *         or empty if in application or higher scope
    */
   public Optional<String> getSubstanceOptional() {
