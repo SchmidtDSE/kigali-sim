@@ -195,8 +195,8 @@ public class SingleThreadEngine implements Engine {
     }
 
     Scope scopeEffective = scope != null ? scope : this.scope;
-    String application = scopeEffective.getApplication();
-    String substance = scopeEffective.getSubstance();
+    String application = scopeEffective.getApplicationOptional().orElse(null);
+    String substance = scopeEffective.getSubstanceOptional().orElse(null);
 
     if (application == null || substance == null) {
       raiseNoAppOrSubstance("setting stream", " specified");
@@ -1006,6 +1006,44 @@ public class SingleThreadEngine implements Engine {
    */
   private void raiseNoAppOrSubstance(String operation, String suffix) {
     ExceptionsGenerator.raiseNoAppOrSubstance(operation, suffix);
+  }
+
+  /**
+   * Helper method to get the application from the current scope.
+   *
+   * @return The application or null if not set
+   */
+  private String getApplicationFromScope() {
+    return scope.getApplication();
+  }
+
+  /**
+   * Helper method to get the application from the given scope.
+   *
+   * @param scope The scope to get the application from
+   * @return The application or null if not set
+   */
+  private String getApplicationFromScope(Scope scope) {
+    return scope.getApplication();
+  }
+
+  /**
+   * Helper method to get the substance from the current scope.
+   *
+   * @return The substance or null if not set
+   */
+  private String getSubstanceFromScope() {
+    return scope.getSubstance();
+  }
+
+  /**
+   * Helper method to get the substance from the given scope.
+   *
+   * @param scope The scope to get the substance from
+   * @return The substance or null if not set
+   */
+  private String getSubstanceFromScope(Scope scope) {
+    return scope.getSubstance();
   }
 
   /**

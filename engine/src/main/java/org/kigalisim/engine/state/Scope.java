@@ -13,6 +13,7 @@ import static org.kigalisim.engine.state.EngineConstants.APPLICATION_CONTEXT;
 import static org.kigalisim.engine.state.EngineConstants.STANZA_CONTEXT;
 import static org.kigalisim.engine.state.EngineConstants.SUBSTANCE_CONTEXT;
 
+import java.util.Optional;
 import org.kigalisim.engine.number.EngineNumber;
 
 /**
@@ -22,9 +23,9 @@ import org.kigalisim.engine.number.EngineNumber;
  */
 public class Scope {
 
-  private final String stanza;
-  private final String application;
-  private final String substance;
+  private final Optional<String> stanza;
+  private final Optional<String> application;
+  private final Optional<String> substance;
   private final VariableManager variableManager;
 
   /**
@@ -38,9 +39,9 @@ public class Scope {
    */
   public Scope(String stanza, String application, String substance,
                VariableManager variableManager) {
-    this.stanza = stanza;
-    this.application = application;
-    this.substance = substance;
+    this.stanza = Optional.ofNullable(stanza);
+    this.application = Optional.ofNullable(application);
+    this.substance = Optional.ofNullable(substance);
 
     if (substance != null && application == null) {
       throw new IllegalArgumentException("Cannot specify substance without application.");
@@ -75,6 +76,15 @@ public class Scope {
    * @return The name of the current stanza or null if in global scope
    */
   public String getStanza() {
+    return stanza.orElse(null);
+  }
+
+  /**
+   * Get the name of the stanza where this scope resides as an Optional.
+   *
+   * @return Optional containing the name of the current stanza, or empty if in global scope
+   */
+  public Optional<String> getStanzaOptional() {
     return stanza;
   }
 
@@ -84,6 +94,16 @@ public class Scope {
    * @return The name of the current application or null if in stanza or higher scope
    */
   public String getApplication() {
+    return application.orElse(null);
+  }
+
+  /**
+   * Get the name of the application where this scope resides as an Optional.
+   *
+   * @return Optional containing the name of the current application, 
+   *         or empty if in stanza or higher scope
+   */
+  public Optional<String> getApplicationOptional() {
     return application;
   }
 
@@ -93,6 +113,16 @@ public class Scope {
    * @return The name of the current substance or null if in application or higher scope
    */
   public String getSubstance() {
+    return substance.orElse(null);
+  }
+
+  /**
+   * Get the name of the substance where this scope resides as an Optional.
+   *
+   * @return Optional containing the name of the current substance, 
+   *         or empty if in application or higher scope
+   */
+  public Optional<String> getSubstanceOptional() {
     return substance;
   }
 
@@ -103,13 +133,13 @@ public class Scope {
    * @return New scope at the given substance
    */
   public Scope getWithSubstance(String newSubstance) {
-    if (application == null) {
+    if (application.isEmpty()) {
       throw new IllegalStateException("Not able to set substance without application.");
     }
 
     return new Scope(
-        stanza,
-        application,
+        stanza.orElse(null),
+        application.orElse(null),
         newSubstance,
         variableManager.getWithLevel(SUBSTANCE_CONTEXT)
     );
@@ -122,12 +152,12 @@ public class Scope {
    * @return New scope at the given application
    */
   public Scope getWithApplication(String newApplication) {
-    if (stanza == null) {
-      throw new IllegalStateException("Not able to set substance without stanza.");
+    if (stanza.isEmpty()) {
+      throw new IllegalStateException("Not able to set application without stanza.");
     }
 
     return new Scope(
-        stanza,
+        stanza.orElse(null),
         newApplication,
         null,
         variableManager.getWithLevel(APPLICATION_CONTEXT)
