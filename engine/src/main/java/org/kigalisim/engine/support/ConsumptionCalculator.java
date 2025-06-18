@@ -89,8 +89,12 @@ public class ConsumptionCalculator {
 
     // Ensure in range
     boolean isNegative = consumption.getValue().compareTo(BigDecimal.ZERO) < 0;
-    EngineNumber consumptionAllowed = isNegative
-        ? new EngineNumber(BigDecimal.ZERO, consumption.getUnits()) : consumption;
+    EngineNumber consumptionAllowed;
+    if (isNegative) {
+      consumptionAllowed = new EngineNumber(BigDecimal.ZERO, consumption.getUnits());
+    } else {
+      consumptionAllowed = consumption;
+    }
 
     // Save
     engine.setStream(streamName, consumptionAllowed, null, scopeEffective, false, null);

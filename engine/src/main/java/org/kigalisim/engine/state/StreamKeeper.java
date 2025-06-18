@@ -570,10 +570,18 @@ public class StreamKeeper {
 
     BigDecimal totalAmount = manufactureAmount.add(importAmount);
     boolean isZero = totalAmount.compareTo(BigDecimal.ZERO) == 0;
-    BigDecimal manufacturePercent = isZero ? new BigDecimal("0.5") :
-        manufactureAmount.divide(totalAmount);
-    BigDecimal importPercent = isZero ? new BigDecimal("0.5") :
-        importAmount.divide(totalAmount);
+    BigDecimal manufacturePercent;
+    if (isZero) {
+      manufacturePercent = new BigDecimal("0.5");
+    } else {
+      manufacturePercent = manufactureAmount.divide(totalAmount);
+    }
+    BigDecimal importPercent;
+    if (isZero) {
+      importPercent = new BigDecimal("0.5");
+    } else {
+      importPercent = importAmount.divide(totalAmount);
+    }
 
     BigDecimal manufactureShare = amountKg.multiply(manufacturePercent);
     BigDecimal importShare = amountKg.multiply(importPercent);

@@ -100,8 +100,6 @@ public class EngineResultSerializer {
     EngineNumber populationNew = engine.getStreamRaw(application, substance, "newEquipment");
     builder.setPopulationNew(populationNew);
 
-    EngineNumber rechargeEmissions = engine.getStreamRaw(
-        application, substance, "rechargeEmissions");
     EngineNumber eolEmissions = engine.getStreamRaw(application, substance, "eolEmissions");
     builder.setEolEmissions(eolEmissions);
 
@@ -112,8 +110,12 @@ public class EngineResultSerializer {
 
     BigDecimal nonRecycleSalesKg = manufactureKg.add(importKg);
     boolean noSales = nonRecycleSalesKg.compareTo(BigDecimal.ZERO) == 0;
-    BigDecimal percentManufacture = noSales ? BigDecimal.ONE :
-        manufactureKg.divide(nonRecycleSalesKg, MathContext.DECIMAL128);
+    BigDecimal percentManufacture;
+    if (noSales) {
+      percentManufacture = BigDecimal.ONE;
+    } else {
+      percentManufacture = manufactureKg.divide(nonRecycleSalesKg, MathContext.DECIMAL128);
+    }
     BigDecimal percentImport = BigDecimal.ONE.subtract(percentManufacture);
 
     // Offset sales
@@ -142,6 +144,11 @@ public class EngineResultSerializer {
     builder.setRecycleConsumptionValue(recycleConsumptionValue);
 
     // Offset recharge emissions
+    EngineNumber rechargeEmissions = engine.getStreamRaw(
+        application,
+        substance,
+        "rechargeEmissions"
+    );
     OverridingConverterStateGetter clearStateGetter =
         new OverridingConverterStateGetter(this.stateGetter);
     UnitConverter clearUnitConverter = new UnitConverter(clearStateGetter);
@@ -228,8 +235,12 @@ public class EngineResultSerializer {
     BigDecimal totalDomesticValueKg = unitConverter.convert(totalDomesticValue, "kg").getValue();
     BigDecimal totalKg = totalImportValueKg.add(totalDomesticValueKg);
 
-    BigDecimal proportionImport = totalKg.compareTo(BigDecimal.ZERO) == 0 ? BigDecimal.ZERO :
-        totalImportValueKg.divide(totalKg, MathContext.DECIMAL128);
+    BigDecimal proportionImport;
+    if (totalKg.compareTo(BigDecimal.ZERO) == 0) {
+      proportionImport = BigDecimal.ZERO;
+    } else {
+      proportionImport = totalImportValueKg.divide(totalKg, MathContext.DECIMAL128);
+    }
     BigDecimal totalRechargeKg = unitConverter.convert(totalRechargeEmissions, "kg").getValue();
 
     BigDecimal importRechargeKg = proportionImport.multiply(totalRechargeKg);
