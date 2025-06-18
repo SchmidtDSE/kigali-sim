@@ -557,7 +557,7 @@ public class SingleThreadEngineTest {
         "manufacture",
         new YearMatcher(null, null)
     );
-    engine.setStream("manufacture", new EngineNumber(BigDecimal.valueOf(50), "kg"), 
+    engine.setStream("manufacture", new EngineNumber(BigDecimal.valueOf(50), "kg"),
         new YearMatcher(null, null));
 
     // Set up substance B with 20 kg/unit initial charge
@@ -567,7 +567,7 @@ public class SingleThreadEngineTest {
         "manufacture",
         new YearMatcher(null, null)
     );
-    engine.setStream("manufacture", new EngineNumber(BigDecimal.valueOf(0), "kg"), 
+    engine.setStream("manufacture", new EngineNumber(BigDecimal.valueOf(0), "kg"),
         new YearMatcher(null, null));
 
     // Go back to substance A and replace 2 units with substance B
