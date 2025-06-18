@@ -10,11 +10,11 @@
 package org.kigalisim.engine.state;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.StringJoiner;
+import java.util.stream.Collectors;
 import org.kigalisim.engine.number.EngineNumber;
 import org.kigalisim.engine.number.UnitConverter;
 
@@ -53,12 +53,12 @@ public class StreamKeeper {
    * @return Array of substance identifiers
    */
   public List<SubstanceInApplicationId> getRegisteredSubstances() {
-    List<SubstanceInApplicationId> substanceIds = new ArrayList<>();
-    for (String key : substances.keySet()) {
-      String[] keyComponents = key.split("\t");
-      substanceIds.add(new SubstanceInApplicationId(keyComponents[0], keyComponents[1]));
-    }
-    return substanceIds;
+    return substances.keySet().stream()
+        .map(key -> {
+          String[] keyComponents = key.split("\t");
+          return new SubstanceInApplicationId(keyComponents[0], keyComponents[1]);
+        })
+        .collect(Collectors.toList());
   }
 
   /**
