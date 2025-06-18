@@ -84,13 +84,13 @@ public class SingleThreadEngine implements Engine {
 
     this.startYear = startYearRearrange;
     this.endYear = endYearRearrange;
-    this.currentYear = this.startYear;
+    currentYear = startYear;
 
-    this.stateGetter = new ConverterStateGetter(this);
-    this.unitConverter = new UnitConverter(this.stateGetter);
+    stateGetter = new ConverterStateGetter(this);
+    unitConverter = new UnitConverter(stateGetter);
     this.streamKeeper = new StreamKeeper(
-        new OverridingConverterStateGetter(this.stateGetter), this.unitConverter);
-    this.scope = new Scope(null, null, null);
+        new OverridingConverterStateGetter(stateGetter), unitConverter);
+    scope = new Scope(null, null, null);
   }
 
   @Override
@@ -105,29 +105,29 @@ public class SingleThreadEngine implements Engine {
 
   @Override
   public void setStanza(String newStanza) {
-    this.scope = this.scope.getWithStanza(newStanza);
+    scope = scope.getWithStanza(newStanza);
   }
 
   @Override
   public void setApplication(String newApplication) {
-    this.scope = this.scope.getWithApplication(newApplication);
+    scope = scope.getWithApplication(newApplication);
   }
 
   @Override
   public void setSubstance(String newSubstance, Boolean checkValid) {
-    this.scope = this.scope.getWithSubstance(newSubstance);
+    scope = scope.getWithSubstance(newSubstance);
 
     boolean checkValidEffective = checkValid != null && checkValid;
-    String application = this.scope.getApplication();
+    String application = scope.getApplication();
 
     if (checkValidEffective) {
-      boolean knownSubstance = this.streamKeeper.hasSubstance(application, newSubstance);
+      boolean knownSubstance = streamKeeper.hasSubstance(application, newSubstance);
       if (!knownSubstance) {
         throw new RuntimeException("Tried accessing unknown app / substance pair: "
             + application + ", " + newSubstance);
       }
     } else {
-      this.streamKeeper.ensureSubstance(application, newSubstance);
+      streamKeeper.ensureSubstance(application, newSubstance);
     }
   }
 
@@ -156,7 +156,7 @@ public class SingleThreadEngine implements Engine {
    * @return The unit converter
    */
   public UnitConverter getUnitConverter() {
-    return this.unitConverter;
+    return unitConverter;
   }
 
   /**
@@ -165,7 +165,7 @@ public class SingleThreadEngine implements Engine {
    * @return The stream keeper
    */
   public StreamKeeper getStreamKeeper() {
-    return this.streamKeeper;
+    return streamKeeper;
   }
 
   @Override
@@ -173,8 +173,8 @@ public class SingleThreadEngine implements Engine {
     if (getIsDone()) {
       throw new RuntimeException("Already completed.");
     }
-    this.currentYear += 1;
-    this.streamKeeper.incrementYear();
+    currentYear += 1;
+    streamKeeper.incrementYear();
   }
 
   @Override
@@ -202,12 +202,12 @@ public class SingleThreadEngine implements Engine {
       raiseNoAppOrSubstance("setting stream", " specified");
     }
 
-    this.streamKeeper.setStream(application, substance, name, value);
+    streamKeeper.setStream(application, substance, name, value);
 
     // Track the units last used to specify this stream (only for user-initiated calls)
     if (propagateChanges && unitsToRecord != null) {
       String unitsToRecordRealized = unitsToRecord != null ? unitsToRecord : value.getUnits();
-      this.streamKeeper.setLastSpecifiedUnits(application, substance, unitsToRecordRealized);
+      streamKeeper.setLastSpecifiedUnits(application, substance, unitsToRecordRealized);
     }
 
     if (!propagateChanges) {
@@ -274,12 +274,12 @@ public class SingleThreadEngine implements Engine {
     Scope scopeEffective = scope != null ? scope : this.scope;
     String application = scopeEffective.getApplication();
     String substance = scopeEffective.getSubstance();
-    EngineNumber value = this.streamKeeper.getStream(application, substance, name);
+    EngineNumber value = streamKeeper.getStream(application, substance, name);
 
     if (conversion == null) {
       return value;
     } else {
-      return this.unitConverter.convert(value, conversion);
+      return unitConverter.convert(value, conversion);
     }
   }
 
@@ -290,12 +290,12 @@ public class SingleThreadEngine implements Engine {
 
   @Override
   public EngineNumber getStreamRaw(String application, String substance, String stream) {
-    return this.streamKeeper.getStream(application, substance, stream);
+    return streamKeeper.getStream(application, substance, stream);
   }
 
   @Override
   public EngineNumber getGhgIntensity(String application, String substance) {
-    return this.streamKeeper.getGhgIntensity(application, substance);
+    return streamKeeper.getGhgIntensity(application, substance);
   }
 
   @Override
@@ -303,17 +303,17 @@ public class SingleThreadEngine implements Engine {
     if ("yearsElapsed".equals(name) || "yearAbsolute".equals(name)) {
       throw new RuntimeException("Cannot override yearsElapsed or yearAbsolute.");
     }
-    this.scope.defineVariable(name);
+    scope.defineVariable(name);
   }
 
   @Override
   public EngineNumber getVariable(String name) {
     if ("yearsElapsed".equals(name)) {
-      return new EngineNumber(BigDecimal.valueOf(this.currentYear - this.startYear), "years");
+      return new EngineNumber(BigDecimal.valueOf(currentYear - startYear), "years");
     } else if ("yearAbsolute".equals(name)) {
-      return new EngineNumber(BigDecimal.valueOf(this.currentYear), "year");
+      return new EngineNumber(BigDecimal.valueOf(currentYear), "year");
     } else {
-      return this.scope.getVariable(name);
+      return scope.getVariable(name);
     }
   }
 
@@ -322,7 +322,7 @@ public class SingleThreadEngine implements Engine {
     if ("yearsElapsed".equals(name) || "yearAbsolute".equals(name)) {
       throw new RuntimeException("Cannot set yearsElapsed or yearAbsolute.");
     }
-    this.scope.setVariable(name, value);
+    scope.setVariable(name, value);
   }
 
   // Placeholder implementations for remaining methods - to be completed
@@ -331,19 +331,19 @@ public class SingleThreadEngine implements Engine {
     if ("sales".equals(stream)) {
       // For now, implement a simplified version - the full implementation is complex
       // and involves pooling initial charges from manufacture and import
-      String application = this.scope.getApplication();
-      String substance = this.scope.getSubstance();
+      String application = scope.getApplication();
+      String substance = scope.getSubstance();
       return getRawInitialChargeFor(application, substance, "manufacture");
     } else {
-      String application = this.scope.getApplication();
-      String substance = this.scope.getSubstance();
+      String application = scope.getApplication();
+      String substance = scope.getSubstance();
       return getRawInitialChargeFor(application, substance, stream);
     }
   }
 
   @Override
   public EngineNumber getRawInitialChargeFor(String application, String substance, String stream) {
-    return this.streamKeeper.getInitialCharge(application, substance, stream);
+    return streamKeeper.getInitialCharge(application, substance, stream);
   }
 
   @Override
@@ -352,15 +352,15 @@ public class SingleThreadEngine implements Engine {
       return;
     }
 
-    String application = this.scope.getApplication();
-    String substance = this.scope.getSubstance();
+    String application = scope.getApplication();
+    String substance = scope.getSubstance();
 
     if ("sales".equals(stream)) {
       // For sales, set both manufacture and import but don't recalculate yet
-      this.streamKeeper.setInitialCharge(application, substance, "manufacture", value);
-      this.streamKeeper.setInitialCharge(application, substance, "import", value);
+      streamKeeper.setInitialCharge(application, substance, "manufacture", value);
+      streamKeeper.setInitialCharge(application, substance, "import", value);
     } else {
-      this.streamKeeper.setInitialCharge(application, substance, stream, value);
+      streamKeeper.setInitialCharge(application, substance, stream, value);
     }
 
     boolean subtractRecharge = getShouldSubtractRecharge(stream);
@@ -379,18 +379,18 @@ public class SingleThreadEngine implements Engine {
    * @return true if recharge should be subtracted, false if added on top
    */
   private boolean getShouldSubtractRecharge(String stream) {
-    String application = this.scope.getApplication();
-    String substance = this.scope.getSubstance();
+    String application = scope.getApplication();
+    String substance = scope.getSubstance();
 
     if ("sales".equals(stream)) {
       // For sales, check if either manufacture or import were last specified in units
-      String lastUnits = this.streamKeeper.getLastSpecifiedUnits(application, substance);
+      String lastUnits = streamKeeper.getLastSpecifiedUnits(application, substance);
       if (lastUnits != null && lastUnits.startsWith("unit")) {
         return false; // Add recharge on top
       }
     } else if ("manufacture".equals(stream) || "import".equals(stream)) {
       // For manufacture or import, check if that specific channel was last specified in units
-      String lastUnits = this.streamKeeper.getLastSpecifiedUnits(application, substance);
+      String lastUnits = streamKeeper.getLastSpecifiedUnits(application, substance);
       if (lastUnits != null && lastUnits.startsWith("unit")) {
         return false; // Add recharge on top
       }
@@ -401,45 +401,45 @@ public class SingleThreadEngine implements Engine {
 
   @Override
   public EngineNumber getRechargeVolume() {
-    String application = this.scope.getApplication();
-    String substance = this.scope.getSubstance();
-    return this.streamKeeper.getRechargePopulation(application, substance);
+    String application = scope.getApplication();
+    String substance = scope.getSubstance();
+    return streamKeeper.getRechargePopulation(application, substance);
   }
 
   @Override
   public EngineNumber getRechargeIntensity() {
-    String application = this.scope.getApplication();
-    String substance = this.scope.getSubstance();
+    String application = scope.getApplication();
+    String substance = scope.getSubstance();
     return getRechargeIntensityFor(application, substance);
   }
 
   @Override
   public EngineNumber getRechargeIntensityFor(String application, String substance) {
-    return this.streamKeeper.getRechargeIntensity(application, substance);
+    return streamKeeper.getRechargeIntensity(application, substance);
   }
 
   @Override
   public String getLastSpecifiedUnits(String stream) {
-    String application = this.scope.getApplication();
-    String substance = this.scope.getSubstance();
+    String application = scope.getApplication();
+    String substance = scope.getSubstance();
     return getLastSpecifiedInUnits(application, substance, stream);
   }
 
   @Override
   public String getLastSpecifiedInUnits(String application, String substance, String stream) {
-    return this.streamKeeper.getLastSpecifiedUnits(application, substance);
+    return streamKeeper.getLastSpecifiedUnits(application, substance);
   }
 
   @Override
   public void setLastSpecifiedUnits(String stream, String units) {
-    String application = this.scope.getApplication();
-    String substance = this.scope.getSubstance();
+    String application = scope.getApplication();
+    String substance = scope.getSubstance();
 
     if (application == null || substance == null) {
       raiseNoAppOrSubstance("setting last specified units", " specified");
     }
 
-    this.streamKeeper.setLastSpecifiedUnits(application, substance, units);
+    streamKeeper.setLastSpecifiedUnits(application, substance, units);
   }
 
   // Additional placeholder methods for remaining interface methods
@@ -450,8 +450,8 @@ public class SingleThreadEngine implements Engine {
     }
 
     // Setup
-    String application = this.scope.getApplication();
-    String substance = this.scope.getSubstance();
+    String application = scope.getApplication();
+    String substance = scope.getSubstance();
 
     // Check allowed
     if (application == null || substance == null) {
@@ -459,8 +459,8 @@ public class SingleThreadEngine implements Engine {
     }
 
     // Set values
-    this.streamKeeper.setRechargePopulation(application, substance, volume);
-    this.streamKeeper.setRechargeIntensity(application, substance, intensity);
+    streamKeeper.setRechargePopulation(application, substance, volume);
+    streamKeeper.setRechargeIntensity(application, substance, intensity);
 
     // Recalculate
     RecalcOperation operation = new RecalcOperationBuilder()
@@ -478,9 +478,9 @@ public class SingleThreadEngine implements Engine {
       return;
     }
 
-    String application = this.scope.getApplication();
-    String substance = this.scope.getSubstance();
-    this.streamKeeper.setRetirementRate(application, substance, amount);
+    String application = scope.getApplication();
+    String substance = scope.getSubstance();
+    streamKeeper.setRetirementRate(application, substance, amount);
     RecalcOperation operation = new RecalcOperationBuilder()
         .setRecalcKit(createRecalcKit())
         .recalcRetire()
@@ -490,9 +490,9 @@ public class SingleThreadEngine implements Engine {
 
   @Override
   public EngineNumber getRetirementRate() {
-    String application = this.scope.getApplication();
-    String substance = this.scope.getSubstance();
-    return this.streamKeeper.getRetirementRate(application, substance);
+    String application = scope.getApplication();
+    String substance = scope.getSubstance();
+    return streamKeeper.getRetirementRate(application, substance);
   }
 
   @Override
@@ -502,13 +502,13 @@ public class SingleThreadEngine implements Engine {
       return;
     }
 
-    String application = this.scope.getApplication();
-    String substance = this.scope.getSubstance();
-    this.streamKeeper.setRecoveryRate(application, substance, recoveryWithUnits);
-    this.streamKeeper.setYieldRate(application, substance, yieldWithUnits);
+    String application = scope.getApplication();
+    String substance = scope.getSubstance();
+    streamKeeper.setRecoveryRate(application, substance, recoveryWithUnits);
+    streamKeeper.setYieldRate(application, substance, yieldWithUnits);
 
     if (displaceLevel != null) {
-      this.streamKeeper.setDisplacementRate(application, substance, displaceLevel);
+      streamKeeper.setDisplacementRate(application, substance, displaceLevel);
     }
 
     RecalcOperation operation = new RecalcOperationBuilder()
@@ -526,24 +526,24 @@ public class SingleThreadEngine implements Engine {
       return;
     }
 
-    String application = this.scope.getApplication();
-    String substance = this.scope.getSubstance();
+    String application = scope.getApplication();
+    String substance = scope.getSubstance();
 
     String units = amount.getUnits();
     boolean isGhg = units.startsWith("tCO2e");
     boolean isKwh = units.startsWith("kwh");
 
     if (isGhg) {
-      this.streamKeeper.setGhgIntensity(application, substance, amount);
+      streamKeeper.setGhgIntensity(application, substance, amount);
       RecalcOperation operation = new RecalcOperationBuilder()
-          .setScopeEffective(this.scope)
+          .setScopeEffective(scope)
           .setRecalcKit(createRecalcKit())
           .recalcRechargeEmissions()
           .thenPropagateToEolEmissions()
           .build();
       operation.execute(this);
     } else if (isKwh) {
-      this.streamKeeper.setEnergyIntensity(application, substance, amount);
+      streamKeeper.setEnergyIntensity(application, substance, amount);
     } else {
       throw new RuntimeException("Cannot equals " + amount.getUnits());
     }
@@ -557,26 +557,26 @@ public class SingleThreadEngine implements Engine {
 
   @Override
   public EngineNumber getEqualsGhgIntensity() {
-    String application = this.scope.getApplication();
-    String substance = this.scope.getSubstance();
+    String application = scope.getApplication();
+    String substance = scope.getSubstance();
     return getEqualsGhgIntensityFor(application, substance);
   }
 
   @Override
   public EngineNumber getEqualsGhgIntensityFor(String application, String substance) {
-    return this.streamKeeper.getGhgIntensity(application, substance);
+    return streamKeeper.getGhgIntensity(application, substance);
   }
 
   @Override
   public EngineNumber getEqualsEnergyIntensity() {
-    String application = this.scope.getApplication();
-    String substance = this.scope.getSubstance();
+    String application = scope.getApplication();
+    String substance = scope.getSubstance();
     return getEqualsEnergyIntensityFor(application, substance);
   }
 
   @Override
   public EngineNumber getEqualsEnergyIntensityFor(String application, String substance) {
-    return this.streamKeeper.getEnergyIntensity(application, substance);
+    return streamKeeper.getEnergyIntensity(application, substance);
   }
 
   @Override
@@ -620,9 +620,9 @@ public class SingleThreadEngine implements Engine {
       // For equipment units, convert to kg and add recharge volume on top
       EngineNumber amountInKg = unitConverter.convert(amount, "kg");
       EngineNumber rechargeVolume = RechargeVolumeCalculator.calculateRechargeVolume(
-          this.scope, 
-          this.stateGetter, 
-          this.streamKeeper, 
+          scope, 
+          stateGetter, 
+          streamKeeper, 
           this
       );
       BigDecimal totalWithRecharge = amountInKg.getValue().add(rechargeVolume.getValue());
@@ -642,7 +642,7 @@ public class SingleThreadEngine implements Engine {
     if (application == null || substance == null) {
       raiseNoAppOrSubstance("setting stream", " specified");
     }
-    this.streamKeeper.setLastSpecifiedUnits(application, substance, amount.getUnits());
+    streamKeeper.setLastSpecifiedUnits(application, substance, amount.getUnits());
 
     EngineNumber changeWithUnits = new EngineNumber(changeAmount, "kg");
     // Use internal changeStream that doesn't override the units tracking
@@ -669,9 +669,9 @@ public class SingleThreadEngine implements Engine {
       // For equipment units, convert to kg and add recharge volume on top
       EngineNumber amountInKg = unitConverter.convert(amount, "kg");
       EngineNumber rechargeVolume = RechargeVolumeCalculator.calculateRechargeVolume(
-          this.scope, 
-          this.stateGetter, 
-          this.streamKeeper, 
+          scope, 
+          stateGetter, 
+          streamKeeper, 
           this
       );
       BigDecimal totalWithRecharge = amountInKg.getValue().add(rechargeVolume.getValue());
@@ -691,7 +691,7 @@ public class SingleThreadEngine implements Engine {
     if (application == null || substance == null) {
       raiseNoAppOrSubstance("setting stream", " specified");
     }
-    this.streamKeeper.setLastSpecifiedUnits(application, substance, amount.getUnits());
+    streamKeeper.setLastSpecifiedUnits(application, substance, amount.getUnits());
 
     EngineNumber changeWithUnits = new EngineNumber(changeAmount, "kg");
     changeStreamWithoutReportingUnits(stream, changeWithUnits, null, null);
@@ -707,17 +707,17 @@ public class SingleThreadEngine implements Engine {
     }
 
     // Track the original user-specified units for the current substance
-    Scope currentScope = this.scope;
+    Scope currentScope = scope;
     String application = currentScope.getApplication();
     String currentSubstance = currentScope.getSubstance();
     if (application == null || currentSubstance == null) {
       raiseNoAppOrSubstance("setting stream", " specified");
     }
-    this.streamKeeper.setLastSpecifiedUnits(application, currentSubstance, amountRaw.getUnits());
+    streamKeeper.setLastSpecifiedUnits(application, currentSubstance, amountRaw.getUnits());
 
     // Track the original user-specified units for the destination substance
     String lastUnits = amountRaw.getUnits();
-    this.streamKeeper.setLastSpecifiedUnits(application, destinationSubstance, lastUnits);
+    streamKeeper.setLastSpecifiedUnits(application, destinationSubstance, lastUnits);
 
     if (amountRaw.hasEquipmentUnits()) {
       // For equipment units, convert to units first, then handle each substance separately
@@ -733,11 +733,11 @@ public class SingleThreadEngine implements Engine {
       changeStreamWithoutReportingUnits(stream, sourceAmountNegative, null, null);
 
       // Add to destination substance using destination's initial charge
-      Scope destinationScope = this.scope.getWithSubstance(destinationSubstance);
-      Scope originalScope = this.scope;
-      this.scope = destinationScope;
+      Scope destinationScope = scope.getWithSubstance(destinationSubstance);
+      Scope originalScope = scope;
+      scope = destinationScope;
       UnitConverter destinationUnitConverter = createUnitConverterWithTotal(stream);
-      this.scope = originalScope;
+      scope = originalScope;
 
       EngineNumber destinationVolumeChange = destinationUnitConverter.convert(unitsToReplace, "kg");
       changeStreamWithoutReportingUnits(stream, destinationVolumeChange, null, destinationScope);
@@ -749,21 +749,21 @@ public class SingleThreadEngine implements Engine {
       EngineNumber amountNegative = new EngineNumber(amount.getValue().negate(), amount.getUnits());
       changeStreamWithoutReportingUnits(stream, amountNegative, null, null);
 
-      Scope destinationScope = this.scope.getWithSubstance(destinationSubstance);
+      Scope destinationScope = scope.getWithSubstance(destinationSubstance);
       changeStreamWithoutReportingUnits(stream, amount, null, destinationScope);
     }
   }
 
   @Override
   public List<EngineResult> getResults() {
-    List<SubstanceInApplicationId> substances = this.streamKeeper.getRegisteredSubstances();
-    EngineResultSerializer serializer = new EngineResultSerializer(this, this.stateGetter);
+    List<SubstanceInApplicationId> substances = streamKeeper.getRegisteredSubstances();
+    EngineResultSerializer serializer = new EngineResultSerializer(this, stateGetter);
 
     return substances.stream()
         .map(substanceId -> {
           String application = substanceId.getApplication();
           String substance = substanceId.getSubstance();
-          int year = this.currentYear;
+          int year = currentYear;
           return serializer.getResult(application, substance, year);
         })
         .collect(Collectors.toList());
@@ -776,7 +776,7 @@ public class SingleThreadEngine implements Engine {
    * @return True if in range or no matcher provided
    */
   private boolean getIsInRange(YearMatcher yearMatcher) {
-    return yearMatcher == null || yearMatcher.getInRange(this.currentYear);
+    return yearMatcher == null || yearMatcher.getInRange(currentYear);
   }
 
   /**
@@ -788,8 +788,8 @@ public class SingleThreadEngine implements Engine {
     OverridingConverterStateGetter stateGetter =
         new OverridingConverterStateGetter(this.stateGetter);
     UnitConverter unitConverter = new UnitConverter(stateGetter);
-    String application = this.scope.getApplication();
-    String substance = this.scope.getSubstance();
+    String application = scope.getApplication();
+    String substance = scope.getSubstance();
 
     if (application == null || substance == null) {
       raiseNoAppOrSubstance("calculating recharge volume", "");
@@ -801,7 +801,7 @@ public class SingleThreadEngine implements Engine {
 
     // Get recharge population
     stateGetter.setPopulation(getStream("priorEquipment"));
-    EngineNumber rechargePopRaw = this.streamKeeper.getRechargePopulation(application, substance);
+    EngineNumber rechargePopRaw = streamKeeper.getRechargePopulation(application, substance);
     EngineNumber rechargePop = unitConverter.convert(rechargePopRaw, "units");
     stateGetter.clearPopulation();
 
@@ -809,7 +809,7 @@ public class SingleThreadEngine implements Engine {
     stateGetter.setPopulation(rechargePop);
 
     // Get recharge amount
-    EngineNumber rechargeIntensityRaw = this.streamKeeper.getRechargeIntensity(
+    EngineNumber rechargeIntensityRaw = streamKeeper.getRechargeIntensity(
         application,
         substance
     );
@@ -839,7 +839,7 @@ public class SingleThreadEngine implements Engine {
 
     if (amount.hasEquipmentUnits()) {
       // For equipment units, displacement should be unit-based, not volume-based
-      Scope currentScope = this.scope;
+      Scope currentScope = scope;
       UnitConverter currentUnitConverter = createUnitConverterWithTotal(stream);
 
       // Convert the volume change back to units in the original substance
@@ -853,13 +853,13 @@ public class SingleThreadEngine implements Engine {
         changeStreamWithoutReportingUnits(displaceTarget, displaceChange, null, null);
       } else {
         // Different substance - apply the same number of units to the destination substance
-        Scope destinationScope = this.scope.getWithSubstance(displaceTarget);
+        Scope destinationScope = scope.getWithSubstance(displaceTarget);
 
         // Temporarily change scope to destination for unit conversion
-        Scope originalScope = this.scope;
-        this.scope = destinationScope;
+        Scope originalScope = scope;
+        scope = destinationScope;
         UnitConverter destinationUnitConverter = createUnitConverterWithTotal(stream);
-        this.scope = originalScope;
+        scope = originalScope;
 
         // Convert units to destination substance volume using destination's initial charge
         EngineNumber destinationVolumeChange = destinationUnitConverter.convert(unitsChanged, "kg");
@@ -874,7 +874,7 @@ public class SingleThreadEngine implements Engine {
       if (isStream) {
         changeStreamWithoutReportingUnits(displaceTarget, displaceChange, null, null);
       } else {
-        Scope destinationScope = this.scope.getWithSubstance(displaceTarget);
+        Scope destinationScope = scope.getWithSubstance(displaceTarget);
         changeStreamWithoutReportingUnits(stream, displaceChange, null, destinationScope);
       }
     }
@@ -1015,9 +1015,9 @@ public class SingleThreadEngine implements Engine {
    */
   private RecalcKit createRecalcKit() {
     return new RecalcKitBuilder()
-        .setStreamKeeper(this.streamKeeper)
-        .setUnitConverter(this.unitConverter)
-        .setStateGetter(this.stateGetter)
+        .setStreamKeeper(streamKeeper)
+        .setUnitConverter(unitConverter)
+        .setStateGetter(stateGetter)
         .build();
   }
 }

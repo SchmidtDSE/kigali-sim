@@ -39,21 +39,21 @@ public class EngineResultBuilder {
    * Create builder without any values initialized.
    */
   public EngineResultBuilder() {
-    this.application = Optional.empty();
-    this.substance = Optional.empty();
-    this.year = Optional.empty();
-    this.manufactureValue = Optional.empty();
-    this.importValue = Optional.empty();
-    this.recycleValue = Optional.empty();
-    this.domesticConsumptionValue = Optional.empty();
-    this.importConsumptionValue = Optional.empty();
-    this.recycleConsumptionValue = Optional.empty();
-    this.populationValue = Optional.empty();
-    this.populationNew = Optional.empty();
-    this.rechargeEmissions = Optional.empty();
-    this.eolEmissions = Optional.empty();
-    this.energyConsumption = Optional.empty();
-    this.importSupplement = Optional.empty();
+    application = Optional.empty();
+    substance = Optional.empty();
+    year = Optional.empty();
+    manufactureValue = Optional.empty();
+    importValue = Optional.empty();
+    recycleValue = Optional.empty();
+    domesticConsumptionValue = Optional.empty();
+    importConsumptionValue = Optional.empty();
+    recycleConsumptionValue = Optional.empty();
+    populationValue = Optional.empty();
+    populationNew = Optional.empty();
+    rechargeEmissions = Optional.empty();
+    eolEmissions = Optional.empty();
+    energyConsumption = Optional.empty();
+    importSupplement = Optional.empty();
   }
 
   /**

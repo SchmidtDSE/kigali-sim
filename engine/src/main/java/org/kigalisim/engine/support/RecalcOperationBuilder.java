@@ -30,11 +30,11 @@ public class RecalcOperationBuilder {
    * Create a new RecalcOperationBuilder.
    */
   public RecalcOperationBuilder() {
-    this.scopeEffective = Optional.empty();
-    this.subtractRecharge = Optional.empty();
-    this.recalcKit = Optional.empty();
+    scopeEffective = Optional.empty();
+    subtractRecharge = Optional.empty();
+    recalcKit = Optional.empty();
     this.strategies = new ArrayList<>();
-    this.hasInitialRecalc = false;
+    hasInitialRecalc = false;
   }
 
   /**
@@ -44,7 +44,7 @@ public class RecalcOperationBuilder {
    * @return This builder for method chaining
    */
   public RecalcOperationBuilder setScopeEffective(Scope scope) {
-    this.scopeEffective = Optional.ofNullable(scope);
+    scopeEffective = Optional.ofNullable(scope);
     return this;
   }
 

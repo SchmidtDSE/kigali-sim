@@ -40,16 +40,16 @@ public class OverridingConverterStateGetter implements StateGetter {
    */
   public OverridingConverterStateGetter(StateGetter innerGetter) {
     this.innerGetter = innerGetter;
-    this.energyIntensity = Optional.empty();
-    this.amortizedUnitVolume = Optional.empty();
-    this.population = Optional.empty();
-    this.yearsElapsed = Optional.empty();
-    this.totalConsumption = Optional.empty();
-    this.energyConsumption = Optional.empty();
-    this.volume = Optional.empty();
-    this.amortizedUnitConsumption = Optional.empty();
-    this.populationChange = Optional.empty();
-    this.substanceConsumption = Optional.empty();
+    energyIntensity = Optional.empty();
+    amortizedUnitVolume = Optional.empty();
+    population = Optional.empty();
+    yearsElapsed = Optional.empty();
+    totalConsumption = Optional.empty();
+    energyConsumption = Optional.empty();
+    volume = Optional.empty();
+    amortizedUnitConsumption = Optional.empty();
+    populationChange = Optional.empty();
+    substanceConsumption = Optional.empty();
   }
 
   /**
@@ -73,7 +73,7 @@ public class OverridingConverterStateGetter implements StateGetter {
    * @param newValue The new substance consumption value
    */
   public void setSubstanceConsumption(EngineNumber newValue) {
-    this.substanceConsumption = Optional.of(newValue);
+    substanceConsumption = Optional.of(newValue);
   }
 
   /**
@@ -96,7 +96,7 @@ public class OverridingConverterStateGetter implements StateGetter {
    * @param newValue The new energy intensity value
    */
   public void setEnergyIntensity(EngineNumber newValue) {
-    this.energyIntensity = Optional.of(newValue);
+    energyIntensity = Optional.of(newValue);
   }
 
   /**
@@ -119,14 +119,14 @@ public class OverridingConverterStateGetter implements StateGetter {
    * @param newValue The new amortized unit volume value
    */
   public void setAmortizedUnitVolume(EngineNumber newValue) {
-    this.amortizedUnitVolume = Optional.of(newValue);
+    amortizedUnitVolume = Optional.of(newValue);
   }
 
   /**
    * Clear the amortized unit volume override to use the inner getter's value.
    */
   public void clearAmortizedUnitVolume() {
-    this.amortizedUnitVolume = Optional.empty();
+    amortizedUnitVolume = Optional.empty();
   }
 
   /**
@@ -149,14 +149,14 @@ public class OverridingConverterStateGetter implements StateGetter {
    * @param newValue The new population value
    */
   public void setPopulation(EngineNumber newValue) {
-    this.population = Optional.of(newValue);
+    population = Optional.of(newValue);
   }
 
   /**
    * Clear the population override to use the inner getter's value.
    */
   public void clearPopulation() {
-    this.population = Optional.empty();
+    population = Optional.empty();
   }
 
   /**
@@ -179,7 +179,7 @@ public class OverridingConverterStateGetter implements StateGetter {
    * @param newValue The new years elapsed value
    */
   public void setYearsElapsed(EngineNumber newValue) {
-    this.yearsElapsed = Optional.of(newValue);
+    yearsElapsed = Optional.of(newValue);
   }
 
   /**
@@ -202,7 +202,7 @@ public class OverridingConverterStateGetter implements StateGetter {
    * @param newValue The new consumption value
    */
   public void setConsumption(EngineNumber newValue) {
-    this.totalConsumption = Optional.of(newValue);
+    totalConsumption = Optional.of(newValue);
   }
 
   /**
@@ -211,7 +211,7 @@ public class OverridingConverterStateGetter implements StateGetter {
    * @param newValue The new energy consumption value
    */
   public void setEnergyConsumption(EngineNumber newValue) {
-    this.energyConsumption = Optional.of(newValue);
+    energyConsumption = Optional.of(newValue);
   }
 
   /**
@@ -248,14 +248,14 @@ public class OverridingConverterStateGetter implements StateGetter {
    * @param newValue The new volume value
    */
   public void setVolume(EngineNumber newValue) {
-    this.volume = Optional.of(newValue);
+    volume = Optional.of(newValue);
   }
 
   /**
    * Clear the volume override to use the inner getter's value.
    */
   public void clearVolume() {
-    this.volume = Optional.empty();
+    volume = Optional.empty();
   }
 
   /**
@@ -278,7 +278,7 @@ public class OverridingConverterStateGetter implements StateGetter {
    * @param newValue The new amortized unit consumption value
    */
   public void setAmortizedUnitConsumption(EngineNumber newValue) {
-    this.amortizedUnitConsumption = Optional.of(newValue);
+    amortizedUnitConsumption = Optional.of(newValue);
   }
 
   /**
@@ -301,7 +301,7 @@ public class OverridingConverterStateGetter implements StateGetter {
    * @param newValue The new population change value
    */
   public void setPopulationChange(EngineNumber newValue) {
-    this.populationChange = Optional.of(newValue);
+    populationChange = Optional.of(newValue);
   }
 
   /**
