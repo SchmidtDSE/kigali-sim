@@ -12,6 +12,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.kigalisim.engine.number.EngineNumber;
 import org.kigalisim.engine.serializer.EngineResult;
@@ -206,7 +207,7 @@ public class SingleThreadEngineTest {
 
     // Set a stream with year matcher that should apply
     EngineNumber value = new EngineNumber(BigDecimal.valueOf(10), "kg");
-    YearMatcher matcher = new YearMatcher(1, null);
+    YearMatcher matcher = new YearMatcher(Optional.of(1), Optional.empty());
     engine.setStream("manufacture", value, matcher);
 
     EngineNumber result = engine.getStream("manufacture");
@@ -214,7 +215,7 @@ public class SingleThreadEngineTest {
 
     // Set a stream with year matcher that should not apply
     EngineNumber value2 = new EngineNumber(BigDecimal.valueOf(20), "kg");
-    YearMatcher matcher2 = new YearMatcher(2, null);
+    YearMatcher matcher2 = new YearMatcher(Optional.of(2), Optional.empty());
     engine.setStream("manufacture", value2, matcher2);
 
     EngineNumber result2 = engine.getStream("manufacture");
@@ -263,7 +264,7 @@ public class SingleThreadEngineTest {
 
     // Change stream with year matcher that should apply
     EngineNumber delta = new EngineNumber(BigDecimal.valueOf(5), "kg");
-    YearMatcher matcher = new YearMatcher(1, null);
+    YearMatcher matcher = new YearMatcher(Optional.of(1), Optional.empty());
     engine.changeStream("manufacture", delta, matcher);
 
     EngineNumber result = engine.getStream("manufacture");
@@ -275,7 +276,7 @@ public class SingleThreadEngineTest {
 
     // Try to change stream with year matcher that should not apply
     EngineNumber delta2 = new EngineNumber(BigDecimal.valueOf(10), "kg");
-    YearMatcher matcher2 = new YearMatcher(2, null);
+    YearMatcher matcher2 = new YearMatcher(Optional.of(2), Optional.empty());
     engine.changeStream("manufacture", delta2, matcher2);
 
     EngineNumber result2 = engine.getStream("manufacture");
@@ -296,7 +297,7 @@ public class SingleThreadEngineTest {
 
     // Set initial value
     EngineNumber initialValue = new EngineNumber(BigDecimal.valueOf(10), "kg");
-    engine.setStream("manufacture", initialValue, new YearMatcher(null, null));
+    engine.setStream("manufacture", initialValue, YearMatcher.unbounded());
 
     // Change by 10% when year doesn't match (should not apply)
     EngineNumber percentChange = new EngineNumber(BigDecimal.valueOf(10), "%");
@@ -314,7 +315,7 @@ public class SingleThreadEngineTest {
     engine.incrementYear();
 
     // Change by 10% when year matches (should apply)
-    engine.changeStream("manufacture", percentChange, new YearMatcher(null, null));
+    engine.changeStream("manufacture", percentChange, YearMatcher.unbounded());
 
     EngineNumber result2 = engine.getStream("manufacture");
     assertEquals(0, BigDecimal.valueOf(11).compareTo(result2.getValue()),
@@ -555,20 +556,20 @@ public class SingleThreadEngineTest {
     engine.setInitialCharge(
         new EngineNumber(BigDecimal.valueOf(10), "kg / unit"),
         "manufacture",
-        new YearMatcher(null, null)
+        YearMatcher.unbounded()
     );
     engine.setStream("manufacture", new EngineNumber(BigDecimal.valueOf(50), "kg"),
-        new YearMatcher(null, null));
+        YearMatcher.unbounded());
 
     // Set up substance B with 20 kg/unit initial charge
     engine.setSubstance("sub B");
     engine.setInitialCharge(
         new EngineNumber(BigDecimal.valueOf(20), "kg / unit"),
         "manufacture",
-        new YearMatcher(null, null)
+        YearMatcher.unbounded()
     );
     engine.setStream("manufacture", new EngineNumber(BigDecimal.valueOf(0), "kg"),
-        new YearMatcher(null, null));
+        YearMatcher.unbounded());
 
     // Go back to substance A and replace 2 units with substance B
     engine.setSubstance("sub A");
@@ -576,7 +577,7 @@ public class SingleThreadEngineTest {
         new EngineNumber(BigDecimal.valueOf(2), "units"),
         "manufacture",
         "sub B",
-        new YearMatcher(null, null)
+        YearMatcher.unbounded()
     );
 
     // Check substance A: should lose 2 units * 10 kg/unit = 20 kg

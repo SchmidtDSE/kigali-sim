@@ -36,8 +36,8 @@ public class RecalcOperationBuilderIntegrationTest {
     engine.setSubstance("testSubstance");
 
     // Initialize some basic streams
-    engine.setStream("manufacture", new EngineNumber(100, "kg"), new YearMatcher(null, null));
-    engine.setStream("import", new EngineNumber(50, "kg"), new YearMatcher(null, null));
+    engine.setStream("manufacture", new EngineNumber(100, "kg"), YearMatcher.unbounded());
+    engine.setStream("import", new EngineNumber(50, "kg"), YearMatcher.unbounded());
   }
 
   @Test

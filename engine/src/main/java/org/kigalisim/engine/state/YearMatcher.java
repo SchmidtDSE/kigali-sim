@@ -9,16 +9,42 @@
 
 package org.kigalisim.engine.state;
 
+import java.util.Optional;
+
 /**
  * Class representing a range of years where inclusion can be tested.
  */
 public class YearMatcher {
 
-  private final Integer start;
-  private final Integer end;
+  private final Optional<Integer> start;
+  private final Optional<Integer> end;
 
   /**
    * Create a new year range.
+   *
+   * <p>Create a new year range between start and end where empty Optional in either means
+   * positive or negative infinity.</p>
+   *
+   * @param start The starting year (inclusive) in this range or empty if no min year
+   * @param end The ending year (inclusive) in this range or empty if no max year
+   */
+  public YearMatcher(Optional<Integer> start, Optional<Integer> end) {
+    boolean hasEmpty = start.isEmpty() || end.isEmpty();
+
+    if (hasEmpty) {
+      this.start = start;
+      this.end = end;
+    } else {
+      int startRearrange = Math.min(start.get(), end.get());
+      int endRearrange = Math.max(start.get(), end.get());
+
+      this.start = Optional.of(startRearrange);
+      this.end = Optional.of(endRearrange);
+    }
+  }
+
+  /**
+   * Create a new year range from Integer values.
    *
    * <p>Create a new year range between start and end where null in either means
    * positive or negative infinity.</p>
@@ -27,20 +53,18 @@ public class YearMatcher {
    * @param end The ending year (inclusive) in this range or null if no max year
    */
   public YearMatcher(Integer start, Integer end) {
-    boolean hasNull = start == null || end == null;
-    boolean startHasSpecial = "beginning".equals(start) || "onwards".equals(start);
-    boolean endHasSpecial = "beginning".equals(end) || "onwards".equals(end);
+    this(Optional.ofNullable(start), Optional.ofNullable(end));
+  }
 
-    if (hasNull || startHasSpecial || endHasSpecial) {
-      this.start = start;
-      this.end = end;
-    } else {
-      int startRearrange = Math.min(start, end);
-      int endRearrange = Math.max(start, end);
-
-      this.start = startRearrange;
-      this.end = endRearrange;
-    }
+  /**
+   * Create a new unbounded year range.
+   *
+   * <p>Create a new year range with no bounds (matches any year).</p>
+   *
+   * @return A YearMatcher with no bounds
+   */
+  public static YearMatcher unbounded() {
+    return new YearMatcher(Optional.empty(), Optional.empty());
   }
 
   /**
@@ -50,26 +74,26 @@ public class YearMatcher {
    * @return true if this value is between getStart and getEnd
    */
   public boolean getInRange(int year) {
-    boolean meetsMin = start == null || start <= year;
-    boolean meetsMax = end == null || end >= year;
+    boolean meetsMin = start.isEmpty() || start.get() <= year;
+    boolean meetsMax = end.isEmpty() || end.get() >= year;
     return meetsMin && meetsMax;
   }
 
   /**
    * Get the start of the year range.
    *
-   * @return The minimum included year in this range or null if negative infinity
+   * @return The minimum included year in this range or empty if negative infinity
    */
-  public Integer getStart() {
+  public Optional<Integer> getStart() {
     return start;
   }
 
   /**
    * Get the end of the year range.
    *
-   * @return The maximum included year in this range or null if positive infinity
+   * @return The maximum included year in this range or empty if positive infinity
    */
-  public Integer getEnd() {
+  public Optional<Integer> getEnd() {
     return end;
   }
 }
