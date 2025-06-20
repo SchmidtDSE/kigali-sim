@@ -13,7 +13,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.kigalisim.lang.time.ParsedDuring;
-import org.kigalisim.lang.time.TimePointFuture;
 
 /**
  * Tests for the DuringFragment class.

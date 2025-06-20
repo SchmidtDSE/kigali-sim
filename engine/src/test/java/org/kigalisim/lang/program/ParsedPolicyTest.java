@@ -44,12 +44,12 @@ public class ParsedPolicyTest {
     ParsedSubstance substance = new ParsedSubstance(SUBSTANCE_NAME, List.of(new TestOperation()));
     application1 = new ParsedApplication(APPLICATION1_NAME, List.of(substance));
     application2 = new ParsedApplication(APPLICATION2_NAME, List.of(substance));
-    
+
     // Create list of applications
     applications = new ArrayList<>();
     applications.add(application1);
     applications.add(application2);
-    
+
     // Create policy with applications
     policy = new ParsedPolicy(POLICY_NAME, applications);
   }
@@ -80,7 +80,7 @@ public class ParsedPolicyTest {
   public void testGetApplication() {
     ParsedApplication retrievedApplication1 = policy.getApplication(APPLICATION1_NAME);
     ParsedApplication retrievedApplication2 = policy.getApplication(APPLICATION2_NAME);
-    
+
     assertSame(application1, retrievedApplication1, "Should return the same application1 instance");
     assertSame(application2, retrievedApplication2, "Should return the same application2 instance");
   }
@@ -95,7 +95,7 @@ public class ParsedPolicyTest {
         () -> policy.getApplication(NONEXISTENT_APPLICATION),
         "Should throw IllegalArgumentException for nonexistent application"
     );
-    
+
     assertTrue(exception.getMessage().contains(NONEXISTENT_APPLICATION),
         "Exception message should contain the nonexistent application name");
   }

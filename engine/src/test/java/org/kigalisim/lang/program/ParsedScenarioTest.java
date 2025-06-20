@@ -7,7 +7,6 @@
 package org.kigalisim.lang.program;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,7 +34,7 @@ public class ParsedScenarioTest {
     policies = new ArrayList<>();
     policies.add(POLICY1_NAME);
     policies.add(POLICY2_NAME);
-    
+
     // Create scenario with policy names
     scenario = new ParsedScenario(SCENARIO_NAME, policies);
   }
@@ -68,11 +67,11 @@ public class ParsedScenarioTest {
   public void testPolicyOrder() {
     List<String> retrievedPolicies = new ArrayList<>();
     scenario.getPolicies().forEach(retrievedPolicies::add);
-    
+
     assertEquals(policies.size(), retrievedPolicies.size(), "Number of policies should match");
-    
+
     for (int i = 0; i < policies.size(); i++) {
-      assertEquals(policies.get(i), retrievedPolicies.get(i), 
+      assertEquals(policies.get(i), retrievedPolicies.get(i),
           "Policies should be in the same order");
     }
   }

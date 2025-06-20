@@ -128,7 +128,7 @@ public class SetOperationTest {
 
     // Verify the stream was not set in the engine (should be 0)
     EngineNumber result = engine.getStream("manufacture");
-    assertEquals(BigDecimal.ZERO, result.getValue(), 
+    assertEquals(BigDecimal.ZERO, result.getValue(),
         "Stream value should not be set when during doesn't apply");
     assertEquals("kg", result.getUnits(), "Stream units should be kg by default");
   }
@@ -148,7 +148,7 @@ public class SetOperationTest {
 
     // Verify the stream was set in the engine
     EngineNumber result = engine.getStream("manufacture");
-    assertEquals(BigDecimal.valueOf(42), result.getValue(), 
+    assertEquals(BigDecimal.valueOf(42), result.getValue(),
         "Stream value should be calculated and set correctly");
     assertEquals("kg", result.getUnits(), "Stream units should be set correctly");
   }

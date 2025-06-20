@@ -127,6 +127,7 @@ python -m http.server
 We thank the following Open Source libraries:
 
 - [ANTLR4](https://www.antlr.org/) for parsing the QubecTalk domain-specific language under [BSD-3](https://www.antlr.org/license.html).
+- [Apache Commons CSV](https://commons.apache.org/proper/commons-csv/) for CSV file processing under [Apache-2.0](https://github.com/apache/commons-csv/blob/master/LICENSE.txt).
 - [D3](https://d3js.org/) for data visualization under [ISC](https://github.com/d3/d3/blob/main/LICENSE).
 - [Chart.js](https://www.chartjs.org/) for rendering some charts and graphs under [MIT](https://github.com/chartjs/Chart.js/blob/master/LICENSE.md).
 - [ACE Editor](https://ace.c9.io/) for the code editing interface under [BSD-3](https://github.com/ajaxorg/ace/blob/master/LICENSE).

@@ -49,22 +49,22 @@ public class ParsedProgramTest {
     // Create test substances, applications, policies, and scenarios
     ParsedSubstance substance = new ParsedSubstance(SUBSTANCE_NAME, List.of(new TestOperation()));
     ParsedApplication application = new ParsedApplication(APPLICATION_NAME, List.of(substance));
-    
+
     policy1 = new ParsedPolicy(POLICY1_NAME, List.of(application));
     policy2 = new ParsedPolicy(POLICY2_NAME, List.of(application));
-    
+
     scenario1 = new ParsedScenario(SCENARIO1_NAME, List.of(POLICY1_NAME));
     scenario2 = new ParsedScenario(SCENARIO2_NAME, List.of(POLICY2_NAME));
-    
+
     // Create lists of policies and scenarios
     policies = new ArrayList<>();
     policies.add(policy1);
     policies.add(policy2);
-    
+
     scenarios = new ArrayList<>();
     scenarios.add(scenario1);
     scenarios.add(scenario2);
-    
+
     // Create program with policies and scenarios
     program = new ParsedProgram(policies, scenarios);
   }
@@ -87,7 +87,7 @@ public class ParsedProgramTest {
   public void testGetPolicy() {
     ParsedPolicy retrievedPolicy1 = program.getPolicy(POLICY1_NAME);
     ParsedPolicy retrievedPolicy2 = program.getPolicy(POLICY2_NAME);
-    
+
     assertSame(policy1, retrievedPolicy1, "Should return the same policy1 instance");
     assertSame(policy2, retrievedPolicy2, "Should return the same policy2 instance");
   }
@@ -102,7 +102,7 @@ public class ParsedProgramTest {
         () -> program.getPolicy(NONEXISTENT_POLICY),
         "Should throw IllegalArgumentException for nonexistent policy"
     );
-    
+
     assertTrue(exception.getMessage().contains(NONEXISTENT_POLICY),
         "Exception message should contain the nonexistent policy name");
   }
@@ -125,7 +125,7 @@ public class ParsedProgramTest {
   public void testGetScenario() {
     ParsedScenario retrievedScenario1 = program.getScenario(SCENARIO1_NAME);
     ParsedScenario retrievedScenario2 = program.getScenario(SCENARIO2_NAME);
-    
+
     assertSame(scenario1, retrievedScenario1, "Should return the same scenario1 instance");
     assertSame(scenario2, retrievedScenario2, "Should return the same scenario2 instance");
   }
@@ -140,7 +140,7 @@ public class ParsedProgramTest {
         () -> program.getScenario(NONEXISTENT_SCENARIO),
         "Should throw IllegalArgumentException for nonexistent scenario"
     );
-    
+
     assertTrue(exception.getMessage().contains(NONEXISTENT_SCENARIO),
         "Exception message should contain the nonexistent scenario name");
   }

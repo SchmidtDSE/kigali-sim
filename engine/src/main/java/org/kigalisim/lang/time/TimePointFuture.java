@@ -1,6 +1,6 @@
 /**
  * Description of a time point which can be resolved at QubecTalk runtime.
- * 
+ *
  *
  * @license BSD-3-Clause
  */

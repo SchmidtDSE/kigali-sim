@@ -42,12 +42,12 @@ public class ParsedApplicationTest {
     // Create test substances
     substance1 = new ParsedSubstance(SUBSTANCE1_NAME, List.of(new TestOperation()));
     substance2 = new ParsedSubstance(SUBSTANCE2_NAME, List.of(new TestOperation()));
-    
+
     // Create list of substances
     substances = new ArrayList<>();
     substances.add(substance1);
     substances.add(substance2);
-    
+
     // Create application with substances
     application = new ParsedApplication(APPLICATION_NAME, substances);
   }
@@ -78,7 +78,7 @@ public class ParsedApplicationTest {
   public void testGetSubstance() {
     ParsedSubstance retrievedSubstance1 = application.getSubstance(SUBSTANCE1_NAME);
     ParsedSubstance retrievedSubstance2 = application.getSubstance(SUBSTANCE2_NAME);
-    
+
     assertSame(substance1, retrievedSubstance1, "Should return the same substance1 instance");
     assertSame(substance2, retrievedSubstance2, "Should return the same substance2 instance");
   }
@@ -93,7 +93,7 @@ public class ParsedApplicationTest {
         () -> application.getSubstance(NONEXISTENT_SUBSTANCE),
         "Should throw IllegalArgumentException for nonexistent substance"
     );
-    
+
     assertTrue(exception.getMessage().contains(NONEXISTENT_SUBSTANCE),
         "Exception message should contain the nonexistent substance name");
   }

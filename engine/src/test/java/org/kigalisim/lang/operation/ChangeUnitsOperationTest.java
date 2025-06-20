@@ -53,9 +53,9 @@ public class ChangeUnitsOperationTest {
   public void testExecuteFromEmptyUnits() {
     Operation operand = new PreCalculatedOperation(new EngineNumber(BigDecimal.valueOf(42), ""));
     ChangeUnitsOperation operation = new ChangeUnitsOperation(operand, "kg");
-    
+
     operation.execute(machine);
-    
+
     EngineNumber result = machine.getResult();
     assertEquals(BigDecimal.valueOf(42), result.getValue(), "Value should be preserved after changing units");
     assertEquals("kg", result.getUnits(), "Units should be changed correctly");
@@ -68,9 +68,9 @@ public class ChangeUnitsOperationTest {
   public void testExecuteWithMatchingUnits() {
     Operation operand = new PreCalculatedOperation(new EngineNumber(BigDecimal.valueOf(42), "kg"));
     ChangeUnitsOperation operation = new ChangeUnitsOperation(operand, "kg");
-    
+
     operation.execute(machine);
-    
+
     EngineNumber result = machine.getResult();
     assertEquals(BigDecimal.valueOf(42), result.getValue(), "Value should be preserved after changing units");
     assertEquals("kg", result.getUnits(), "Units should remain the same");
@@ -84,11 +84,11 @@ public class ChangeUnitsOperationTest {
     Operation leftInner = new PreCalculatedOperation(new EngineNumber(BigDecimal.valueOf(30), ""));
     Operation rightInner = new PreCalculatedOperation(new EngineNumber(BigDecimal.valueOf(12), ""));
     Operation operand = new AdditionOperation(leftInner, rightInner); // 30 + 12 = 42
-    
+
     ChangeUnitsOperation operation = new ChangeUnitsOperation(operand, "kg");
-    
+
     operation.execute(machine);
-    
+
     EngineNumber result = machine.getResult();
     assertEquals(BigDecimal.valueOf(42), result.getValue(), "Value should be calculated correctly");
     assertEquals("kg", result.getUnits(), "Units should be applied correctly after calculation");
@@ -101,7 +101,7 @@ public class ChangeUnitsOperationTest {
   public void testExecuteWithUnitsMismatch() {
     Operation operand = new PreCalculatedOperation(new EngineNumber(BigDecimal.valueOf(42), "liters"));
     ChangeUnitsOperation operation = new ChangeUnitsOperation(operand, "kg");
-    
+
     assertThrows(RuntimeException.class, () -> operation.execute(machine),
         "execute should throw RuntimeException when units don't match");
   }

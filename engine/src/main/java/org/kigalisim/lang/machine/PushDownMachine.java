@@ -6,7 +6,6 @@
 
 package org.kigalisim.lang.machine;
 
-import java.util.Stack;
 import org.kigalisim.engine.Engine;
 import org.kigalisim.engine.number.EngineNumber;
 

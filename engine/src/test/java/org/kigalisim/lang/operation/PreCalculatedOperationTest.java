@@ -52,9 +52,9 @@ public class PreCalculatedOperationTest {
   public void testExecute() {
     EngineNumber value = new EngineNumber(BigDecimal.valueOf(42), "kg");
     PreCalculatedOperation operation = new PreCalculatedOperation(value);
-    
+
     operation.execute(machine);
-    
+
     EngineNumber result = machine.getResult();
     assertEquals(value.getValue(), result.getValue(), "Value should be preserved after execution");
     assertEquals(value.getUnits(), result.getUnits(), "Units should be preserved after execution");
@@ -67,9 +67,9 @@ public class PreCalculatedOperationTest {
   public void testExecuteWithZero() {
     EngineNumber value = new EngineNumber(BigDecimal.ZERO, "kg");
     PreCalculatedOperation operation = new PreCalculatedOperation(value);
-    
+
     operation.execute(machine);
-    
+
     EngineNumber result = machine.getResult();
     assertEquals(BigDecimal.ZERO, result.getValue(), "Zero value should be preserved after execution");
     assertEquals("kg", result.getUnits(), "Units should be preserved after execution");
@@ -82,9 +82,9 @@ public class PreCalculatedOperationTest {
   public void testExecuteWithEmptyUnits() {
     EngineNumber value = new EngineNumber(BigDecimal.valueOf(42), "");
     PreCalculatedOperation operation = new PreCalculatedOperation(value);
-    
+
     operation.execute(machine);
-    
+
     EngineNumber result = machine.getResult();
     assertEquals(BigDecimal.valueOf(42), result.getValue(), "Value should be preserved after execution");
     assertEquals("", result.getUnits(), "Empty units should be preserved after execution");
@@ -97,9 +97,9 @@ public class PreCalculatedOperationTest {
   public void testExecuteWithNegativeValue() {
     EngineNumber value = new EngineNumber(BigDecimal.valueOf(-42), "kg");
     PreCalculatedOperation operation = new PreCalculatedOperation(value);
-    
+
     operation.execute(machine);
-    
+
     EngineNumber result = machine.getResult();
     assertEquals(BigDecimal.valueOf(-42), result.getValue(), "Negative value should be preserved after execution");
     assertEquals("kg", result.getUnits(), "Units should be preserved after execution");

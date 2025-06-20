@@ -49,12 +49,12 @@ public class DynamicCapFutureTest {
   @Test
   public void testRealizeBeginning() {
     DynamicCapFuture future = new DynamicCapFuture("beginning");
-    
+
     TimePointRealized realized = future.realize(machine);
-    
+
     assertNotNull(realized, "Realized time point should not be null");
     assertTrue(realized.isDynamicCap(), "Realized time point should be a dynamic cap");
-    assertEquals("beginning", realized.getDynamicCap(), 
+    assertEquals("beginning", realized.getDynamicCap(),
         "Realized time point should have the correct dynamic cap value");
   }
 
@@ -64,12 +64,12 @@ public class DynamicCapFutureTest {
   @Test
   public void testRealizeOnwards() {
     DynamicCapFuture future = new DynamicCapFuture("onwards");
-    
+
     TimePointRealized realized = future.realize(machine);
-    
+
     assertNotNull(realized, "Realized time point should not be null");
     assertTrue(realized.isDynamicCap(), "Realized time point should be a dynamic cap");
-    assertEquals("onwards", realized.getDynamicCap(), 
+    assertEquals("onwards", realized.getDynamicCap(),
         "Realized time point should have the correct dynamic cap value");
   }
 
@@ -80,12 +80,12 @@ public class DynamicCapFutureTest {
   public void testRealizeCustomValue() {
     String customValue = "custom-cap-value";
     DynamicCapFuture future = new DynamicCapFuture(customValue);
-    
+
     TimePointRealized realized = future.realize(machine);
-    
+
     assertNotNull(realized, "Realized time point should not be null");
     assertTrue(realized.isDynamicCap(), "Realized time point should be a dynamic cap");
-    assertEquals(customValue, realized.getDynamicCap(), 
+    assertEquals(customValue, realized.getDynamicCap(),
         "Realized time point should have the correct dynamic cap value");
   }
 }

@@ -56,14 +56,14 @@ public class CalculatedTimePointFutureTest {
   public void testRealize() {
     Operation operation = new PreCalculatedOperation(new EngineNumber(BigDecimal.valueOf(2020), ""));
     CalculatedTimePointFuture future = new CalculatedTimePointFuture(operation);
-    
+
     TimePointRealized realized = future.realize(machine);
-    
+
     assertNotNull(realized, "Realized time point should not be null");
     assertFalse(realized.isDynamicCap(), "Realized time point should not be a dynamic cap");
-    assertEquals(BigDecimal.valueOf(2020), realized.getPointValue().getValue(), 
+    assertEquals(BigDecimal.valueOf(2020), realized.getPointValue().getValue(),
         "Realized time point should have the correct value");
-    assertEquals("", realized.getPointValue().getUnits(), 
+    assertEquals("", realized.getPointValue().getUnits(),
         "Realized time point should have empty units");
   }
 
@@ -74,7 +74,7 @@ public class CalculatedTimePointFutureTest {
   public void testRealizeWithUnits() {
     Operation operation = new PreCalculatedOperation(new EngineNumber(BigDecimal.valueOf(2020), "kg"));
     CalculatedTimePointFuture future = new CalculatedTimePointFuture(operation);
-    
+
     assertThrows(IllegalStateException.class, () -> future.realize(machine),
         "realize should throw IllegalStateException when operation result has units");
   }

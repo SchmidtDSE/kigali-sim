@@ -12,7 +12,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import org.junit.jupiter.api.Test;
 import org.kigalisim.engine.number.EngineNumber;
-import org.kigalisim.lang.machine.PushDownMachine;
 import org.kigalisim.lang.operation.Operation;
 import org.kigalisim.lang.operation.PreCalculatedOperation;
 
@@ -47,7 +46,7 @@ public class OperationFragmentTest {
   public void testGetOperation() {
     Operation operation = createTestOperation();
     OperationFragment fragment = new OperationFragment(operation);
-    assertEquals(operation, fragment.getOperation(), 
+    assertEquals(operation, fragment.getOperation(),
         "getOperation should return the correct Operation");
   }
 

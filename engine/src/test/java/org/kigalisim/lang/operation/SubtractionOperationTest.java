@@ -54,9 +54,9 @@ public class SubtractionOperationTest {
     Operation left = new PreCalculatedOperation(new EngineNumber(BigDecimal.valueOf(10), "kg"));
     Operation right = new PreCalculatedOperation(new EngineNumber(BigDecimal.valueOf(4), "kg"));
     SubtractionOperation operation = new SubtractionOperation(left, right);
-    
+
     operation.execute(machine);
-    
+
     EngineNumber result = machine.getResult();
     assertEquals(BigDecimal.valueOf(6), result.getValue(), "Subtraction should work correctly");
     assertEquals("kg", result.getUnits(), "Units should be preserved after subtraction");
@@ -70,12 +70,12 @@ public class SubtractionOperationTest {
     Operation leftInner = new PreCalculatedOperation(new EngineNumber(BigDecimal.valueOf(15), "kg"));
     Operation rightInner = new PreCalculatedOperation(new EngineNumber(BigDecimal.valueOf(5), "kg"));
     Operation left = new SubtractionOperation(leftInner, rightInner); // 15 - 5 = 10
-    
+
     Operation right = new PreCalculatedOperation(new EngineNumber(BigDecimal.valueOf(4), "kg"));
     SubtractionOperation operation = new SubtractionOperation(left, right); // (15 - 5) - 4 = 6
-    
+
     operation.execute(machine);
-    
+
     EngineNumber result = machine.getResult();
     assertEquals(BigDecimal.valueOf(6), result.getValue(), "Nested subtraction should work correctly");
     assertEquals("kg", result.getUnits(), "Units should be preserved after nested subtraction");
@@ -89,12 +89,12 @@ public class SubtractionOperationTest {
     Operation leftInner = new PreCalculatedOperation(new EngineNumber(BigDecimal.valueOf(5), "kg"));
     Operation rightInner = new PreCalculatedOperation(new EngineNumber(BigDecimal.valueOf(3), "kg"));
     Operation left = new AdditionOperation(leftInner, rightInner); // 5 + 3 = 8
-    
+
     Operation right = new PreCalculatedOperation(new EngineNumber(BigDecimal.valueOf(2), "kg"));
     SubtractionOperation operation = new SubtractionOperation(left, right); // (5 + 3) - 2 = 6
-    
+
     operation.execute(machine);
-    
+
     EngineNumber result = machine.getResult();
     assertEquals(BigDecimal.valueOf(6), result.getValue(), "Mixed operations should work correctly");
     assertEquals("kg", result.getUnits(), "Units should be preserved after mixed operations");

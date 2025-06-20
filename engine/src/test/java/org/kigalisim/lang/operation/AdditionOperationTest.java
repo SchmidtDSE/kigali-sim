@@ -54,9 +54,9 @@ public class AdditionOperationTest {
     Operation left = new PreCalculatedOperation(new EngineNumber(BigDecimal.valueOf(3), "kg"));
     Operation right = new PreCalculatedOperation(new EngineNumber(BigDecimal.valueOf(4), "kg"));
     AdditionOperation operation = new AdditionOperation(left, right);
-    
+
     operation.execute(machine);
-    
+
     EngineNumber result = machine.getResult();
     assertEquals(BigDecimal.valueOf(7), result.getValue(), "Addition should work correctly");
     assertEquals("kg", result.getUnits(), "Units should be preserved after addition");
@@ -70,12 +70,12 @@ public class AdditionOperationTest {
     Operation leftInner = new PreCalculatedOperation(new EngineNumber(BigDecimal.valueOf(1), "kg"));
     Operation rightInner = new PreCalculatedOperation(new EngineNumber(BigDecimal.valueOf(2), "kg"));
     Operation left = new AdditionOperation(leftInner, rightInner); // 1 + 2 = 3
-    
+
     Operation right = new PreCalculatedOperation(new EngineNumber(BigDecimal.valueOf(4), "kg"));
     AdditionOperation operation = new AdditionOperation(left, right); // (1 + 2) + 4 = 7
-    
+
     operation.execute(machine);
-    
+
     EngineNumber result = machine.getResult();
     assertEquals(BigDecimal.valueOf(7), result.getValue(), "Nested addition should work correctly");
     assertEquals("kg", result.getUnits(), "Units should be preserved after nested addition");

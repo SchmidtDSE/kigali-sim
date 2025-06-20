@@ -68,8 +68,8 @@ public class ParsedDuring {
 
   /**
    * Build a YearMatcher from this parsed version of a during statement.
-   * 
-   * <p>If a TimePointFuture is a dynamic cap (beginning or onwards), it is interpreted as 
+   *
+   * <p>If a TimePointFuture is a dynamic cap (beginning or onwards), it is interpreted as
    * Optional.empty().</p>
    *
    * @param machine Machine to use for calculations if needed.
