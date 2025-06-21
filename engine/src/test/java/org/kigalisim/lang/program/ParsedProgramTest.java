@@ -53,8 +53,8 @@ public class ParsedProgramTest {
     policy1 = new ParsedPolicy(POLICY1_NAME, List.of(application));
     policy2 = new ParsedPolicy(POLICY2_NAME, List.of(application));
 
-    scenario1 = new ParsedScenario(SCENARIO1_NAME, List.of(POLICY1_NAME));
-    scenario2 = new ParsedScenario(SCENARIO2_NAME, List.of(POLICY2_NAME));
+    scenario1 = new ParsedScenario(SCENARIO1_NAME, List.of(POLICY1_NAME), 1, 3, 1);
+    scenario2 = new ParsedScenario(SCENARIO2_NAME, List.of(POLICY2_NAME), 1, 3, 1);
 
     // Create lists of policies and scenarios
     policies = new ArrayList<>();

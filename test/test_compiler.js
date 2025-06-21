@@ -923,6 +923,27 @@ function buildCompilerTests() {
         },
       ],
     );
+    buildTest("runs minimal interpreter example", "/test/qta/minimal_interpreter.qta", [
+      (result, assert) => {
+        // Check year 1
+        const record1 = getResult(result, BAU_NAME, 1, 0, "testApp", "testSubstance");
+        const manufacture1 = record1.getManufacture();
+        assert.closeTo(manufacture1.getValue(), 100000, 0.0001); // 100 mt = 100000 kg
+        assert.deepEqual(manufacture1.getUnits(), "kg");
+
+        // Check year 2
+        const record2 = getResult(result, BAU_NAME, 2, 0, "testApp", "testSubstance");
+        const manufacture2 = record2.getManufacture();
+        assert.closeTo(manufacture2.getValue(), 100000, 0.0001);
+        assert.deepEqual(manufacture2.getUnits(), "kg");
+
+        // Check year 3
+        const record3 = getResult(result, BAU_NAME, 3, 0, "testApp", "testSubstance");
+        const manufacture3 = record3.getManufacture();
+        assert.closeTo(manufacture3.getValue(), 100000, 0.0001);
+        assert.deepEqual(manufacture3.getUnits(), "kg");
+      },
+    ]);
   });
 }
 

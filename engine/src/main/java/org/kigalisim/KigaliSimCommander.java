@@ -8,6 +8,8 @@
 
 package org.kigalisim;
 
+import org.kigalisim.command.RunCommand;
+import org.kigalisim.command.ValidateCommand;
 import org.kigalisim.command.VersionCommand;
 import picocli.CommandLine;
 
@@ -29,7 +31,9 @@ import picocli.CommandLine;
     version = "0.0.1",
     description = "KigaliSim command line interface",
     subcommands = {
-        VersionCommand.class
+        VersionCommand.class,
+        RunCommand.class,
+        ValidateCommand.class
     }
 )
 public class KigaliSimCommander {

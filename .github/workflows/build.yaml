@@ -112,9 +112,33 @@ jobs:
           java-version: '21'
       - name: Run tests
         run: ./gradlew test
+  runEngineLocal:
+    needs: buildEngine
+    environment: Build
+    runs-on: ubuntu-latest
+    name: Run Engine Locally
+    defaults:
+      run:
+        shell: bash
+        working-directory: ./engine
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+      - name: Download fat jar
+        uses: actions/download-artifact@v4
+        with:
+          name: fatJar
+          path: engine/build/libs/
+      - name: Run example QTA file
+        run: java -jar build/libs/kigalisim-fat.jar run ../test/qta/minimal_interpreter.qta
   buildWasm:
     environment: Build
-    needs: [ checkEngine, buildEngine, testEngine ]
+    needs: [ checkEngine, buildEngine, testEngine, runEngineLocal ]
     runs-on: ubuntu-latest
     name: Build WASM Engine
     defaults:

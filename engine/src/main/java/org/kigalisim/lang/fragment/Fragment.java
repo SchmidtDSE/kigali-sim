@@ -7,6 +7,12 @@
 package org.kigalisim.lang.fragment;
 
 import org.kigalisim.lang.operation.Operation;
+import org.kigalisim.lang.program.ParsedApplication;
+import org.kigalisim.lang.program.ParsedPolicy;
+import org.kigalisim.lang.program.ParsedProgram;
+import org.kigalisim.lang.program.ParsedScenario;
+import org.kigalisim.lang.program.ParsedScenarios;
+import org.kigalisim.lang.program.ParsedSubstance;
 import org.kigalisim.lang.time.ParsedDuring;
 
 
@@ -17,6 +23,15 @@ import org.kigalisim.lang.time.ParsedDuring;
  * facilitate the ANTLR visitor.</p>
  */
 public abstract class Fragment {
+
+  /**
+   * Get the string parsed from the source of this fragment.
+   *
+   * @return The string found on this fragment.
+   */
+  public String getString() {
+    throw new RuntimeException("This fragment does not have a string.");
+  }
 
   /**
    * Get the calculation parsed from the source of this fragment.
@@ -45,4 +60,67 @@ public abstract class Fragment {
     throw new RuntimeException("This fragment does not have a during.");
   }
 
+  /**
+   * Get the program parsed from the source of this fragment.
+   *
+   * @return Parsed program.
+   */
+  public ParsedProgram getProgram() {
+    throw new RuntimeException("This fragment does not have a program.");
+  }
+
+  /**
+   * Get the policy parsed from the source of this fragment.
+   *
+   * @return Parsed policy.
+   */
+  public ParsedPolicy getPolicy() {
+    throw new RuntimeException("This fragment does not have a policy.");
+  }
+
+  /**
+   * Get the scenario parsed from the source of this fragment.
+   *
+   * @return Parsed scenario.
+   */
+  public ParsedScenario getScenario() {
+    throw new RuntimeException("This fragment does not have a scenario.");
+  }
+
+  /**
+   * Get the application parsed from the source of this fragment.
+   *
+   * @return Parsed application.
+   */
+  public ParsedApplication getApplication() {
+    throw new RuntimeException("This fragment does not have an application.");
+  }
+
+  /**
+   * Get the substance parsed from the source of this fragment.
+   *
+   * @return Parsed substance.
+   */
+  public ParsedSubstance getSubstance() {
+    throw new RuntimeException("This fragment does not have a substance.");
+  }
+
+  /**
+   * Get the scenarios parsed from the source of this fragment.
+   *
+   * @return The parsed scenarios.
+   */
+  public ParsedScenarios getScenarios() {
+    throw new RuntimeException("This fragment does not have scenarios.");
+  }
+
+  /**
+   * Check if this fragment is a scenarios stanza.
+   *
+   * @return True if this fragment is a scenarios stanza, false if another stanza.
+   * @throws RuntimeException Thrown if requested on a non-stanza.
+   */
+  public boolean getIsStanzaScenarios() {
+    throw new RuntimeException("This fragment is not a stanza.");
+  }
 }

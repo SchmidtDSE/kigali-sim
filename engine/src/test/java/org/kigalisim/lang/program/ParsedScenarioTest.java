@@ -36,7 +36,7 @@ public class ParsedScenarioTest {
     policies.add(POLICY2_NAME);
 
     // Create scenario with policy names
-    scenario = new ParsedScenario(SCENARIO_NAME, policies);
+    scenario = new ParsedScenario(SCENARIO_NAME, policies, 1, 3, 1);
   }
 
   /**

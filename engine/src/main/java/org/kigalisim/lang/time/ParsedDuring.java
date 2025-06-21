@@ -82,7 +82,9 @@ public class ParsedDuring {
     // Process start time point if present
     if (start.isPresent()) {
       TimePointRealized startRealized = start.get().realize(machine);
-      if (!startRealized.isDynamicCap()) {
+      if (startRealized.isDynamicCap()) {
+        startYear = Optional.of(machine.getEngine().getStartYear());
+      } else {
         EngineNumber startValue = startRealized.getPointValue();
         startYear = Optional.of(startValue.getValue().intValue());
       }
@@ -91,7 +93,9 @@ public class ParsedDuring {
     // Process end time point if present
     if (end.isPresent()) {
       TimePointRealized endRealized = end.get().realize(machine);
-      if (!endRealized.isDynamicCap()) {
+      if (endRealized.isDynamicCap()) {
+        endYear = Optional.of(machine.getEngine().getEndYear());
+      } else {
         EngineNumber endValue = endRealized.getPointValue();
         endYear = Optional.of(endValue.getValue().intValue());
       }
