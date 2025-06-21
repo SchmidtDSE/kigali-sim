@@ -39,7 +39,7 @@ public abstract class Fragment {
    * @return Operation which can be resolved to an EngineNumber at runtime.
    */
   public Operation getOperation() {
-    throw new RuntimeException("This fragment does not have a calculation.");
+    throw new RuntimeException("This fragment does not have an operation.");
   }
 
   /**

@@ -277,6 +277,12 @@ public class UnitConverter {
       BigDecimal populationValue = population.getValue();
       BigDecimal newValue = originalValue.multiply(populationValue);
       return new EngineNumber(newValue, "kg");
+    } else if ("mt/unit".equals(currentUnits)) {
+      BigDecimal originalValue = target.getValue();
+      EngineNumber population = stateGetter.getPopulation();
+      BigDecimal populationValue = population.getValue();
+      BigDecimal newValue = originalValue.multiply(populationValue);
+      return new EngineNumber(newValue, "mt");
     } else {
       throw new IllegalArgumentException("Unable to convert to volume: " + currentUnits);
     }
@@ -311,7 +317,7 @@ public class UnitConverter {
       BigDecimal conversionValue = conversion.getValue();
       BigDecimal newValue = originalValue.divide(conversionValue, MATH_CONTEXT);
       return new EngineNumber(newValue, "units");
-    } else if ("%".equals(currentUnits)) {
+    } else if ("%".equals(currentUnits) || "%eachyear".equals(currentUnits)) {
       BigDecimal originalValue = target.getValue();
       BigDecimal asRatio = originalValue.divide(PERCENT_FACTOR, MATH_CONTEXT);
       EngineNumber total = stateGetter.getPopulation();
@@ -410,6 +416,20 @@ public class UnitConverter {
       BigDecimal asRatio = originalValue.divide(PERCENT_FACTOR, MATH_CONTEXT);
       EngineNumber total = stateGetter.getEnergyConsumption();
       BigDecimal newValue = total.getValue().multiply(asRatio);
+      return new EngineNumber(newValue, "kwh");
+    } else if ("kwh/mt".equals(currentUnits)) {
+      // Handle kwh per metric ton - this is a conversion factor
+      // We need to convert to just kwh by multiplying by the volume in mt
+      EngineNumber volume = stateGetter.getVolume();
+      EngineNumber volumeInMt = convert(volume, "mt");
+      BigDecimal newValue = target.getValue().multiply(volumeInMt.getValue());
+      return new EngineNumber(newValue, "kwh");
+    } else if ("kwh/kg".equals(currentUnits)) {
+      // Handle kwh per kilogram - this is a conversion factor
+      // We need to convert to just kwh by multiplying by the volume in kg
+      EngineNumber volume = stateGetter.getVolume();
+      EngineNumber volumeInKg = convert(volume, "kg");
+      BigDecimal newValue = target.getValue().multiply(volumeInKg.getValue());
       return new EngineNumber(newValue, "kwh");
     } else {
       throw new IllegalArgumentException(

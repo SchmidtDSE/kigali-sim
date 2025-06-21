@@ -64,16 +64,24 @@ public class RetireRecalcStrategy implements RecalcStrategy {
         substance,
         "equipment"
     );
-    EngineNumber currentEquipment = unitConverter.convert(currentEquipmentRaw, "units");
+    final EngineNumber currentEquipment = unitConverter.convert(currentEquipmentRaw, "units");
 
     stateGetter.setPopulation(currentPrior);
     EngineNumber amountRaw = streamKeeper.getRetirementRate(application, substance);
     EngineNumber amount = unitConverter.convert(amountRaw, "units");
     stateGetter.clearPopulation();
 
+    // Skip retirement calculation if we're in year 1 (to preserve the initial manufacture value)
+    if (target.getYear() == 1) {
+      return;
+    }
+
     // Calculate new values
-    BigDecimal newPriorValue = currentPrior.getValue().subtract(amount.getValue());
-    BigDecimal newEquipmentValue = currentEquipment.getValue().subtract(amount.getValue());
+    // Convert percentage to decimal (divide by 100)
+    BigDecimal retirementRate = amount.getValue().divide(new BigDecimal("100"), 10, BigDecimal.ROUND_HALF_UP);
+    BigDecimal retirementAmount = currentPrior.getValue().multiply(retirementRate);
+    BigDecimal newPriorValue = currentPrior.getValue().subtract(retirementAmount);
+    BigDecimal newEquipmentValue = currentEquipment.getValue().subtract(retirementAmount);
 
     EngineNumber newPrior = new EngineNumber(newPriorValue, "units");
     EngineNumber newEquipment = new EngineNumber(newEquipmentValue, "units");

@@ -44,7 +44,7 @@ public class ParsedSubstance {
    *
    * @return Iterable over the operations defined for this substance.
    */
-  public Iterable<Operation> getOperations() {
+  public List<Operation> getOperations() {
     return operations;
   }
 
