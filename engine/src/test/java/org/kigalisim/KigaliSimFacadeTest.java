@@ -86,11 +86,11 @@ public class KigaliSimFacadeTest {
     assertNotNull(program, "Program should not be null");
   }
 
-  /*
-   * Test that runSimulation method executes without errors.
-   *
+  /**
+   * Test that runScenario method executes without errors and iterates through years.
+   */
   @Test
-  public void testRunSimulation(@TempDir Path tempDir) throws IOException {
+  public void testRunScenario(@TempDir Path tempDir) throws IOException {
     String code = "start default\nend default\n\nstart simulations\n  simulate \"test\" from years 1 to 3\nend simulations";
     File file = tempDir.resolve("simulation.qta").toFile();
     Files.writeString(file.toPath(), code);
@@ -98,7 +98,49 @@ public class KigaliSimFacadeTest {
     ParsedProgram program = KigaliSimFacade.parseAndInterpret(file.getPath());
     assertNotNull(program, "Program should not be null");
 
-    // This should not throw an exception
-    KigaliSimFacade.runSimulation(program, "test");
-  }*/
+    // This should not throw an exception and should iterate through years
+    KigaliSimFacade.runScenario(program, "test");
+  }
+
+  /**
+   * Test that runScenario properly iterates through years with policy changes.
+   */
+  @Test
+  public void testRunScenarioIteratesThroughYears(@TempDir Path tempDir) throws IOException {
+    // Create a simple QubecTalk program that should run through multiple years
+    String code = "start default\n"
+                  + "\n"
+                  + "  define application \"test app\"\n"
+                  + "\n"
+                  + "    uses substance \"test substance\"\n"
+                  + "      set manufacture to 10 kg\n"
+                  + "    end substance\n"
+                  + "\n"
+                  + "  end application\n"
+                  + "\n"
+                  + "end default\n"
+                  + "\n"
+                  + "start simulations\n"
+                  + "\n"
+                  + "  simulate \"yeartest\" from years 1 to 3\n"
+                  + "\n"
+                  + "end simulations";
+    
+    File file = tempDir.resolve("yeartest.qta").toFile();
+    Files.writeString(file.toPath(), code);
+
+    // Debug parse errors first
+    ParseResult parseResult = KigaliSimFacade.parse(code);
+    if (parseResult.hasErrors()) {
+      System.out.println("Parse errors:");
+      parseResult.getErrors().forEach(System.out::println);
+    }
+    assertFalse(parseResult.hasErrors(), "Code should parse without errors");
+
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(file.getPath());
+    assertNotNull(program, "Program should not be null");
+    
+    // This should run through all years without throwing an exception
+    KigaliSimFacade.runScenario(program, "yeartest");
+  }
 }

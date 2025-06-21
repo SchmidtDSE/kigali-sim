@@ -70,7 +70,9 @@ public class KigaliSimFacade {
    * Run a scenario from the provided program.
    *
    * <p>Creates and executes a simulation using the provided program and simulation name where this
-   * name refers to a scenario indicating the set of policies to be stacked.</p>
+   * name refers to a scenario indicating the set of policies to be stacked. The simulation will
+   * iterate through all years from the scenario's start year to end year, similar to the JavaScript
+   * implementation.</p>
    *
    * @param program The parsed program containing the simulation to run.
    * @param scenarioName The name of the simulation to execute from the program.
@@ -92,14 +94,20 @@ public class KigaliSimFacade {
     Engine engine = new SingleThreadEngine(startYear, endYear);
     PushDownMachine machine = new SingleThreadPushDownMachine(engine);
 
-    // Execute the default policy first
-    ParsedPolicy defaultPolicy = program.getPolicy("default");
-    executePolicy(defaultPolicy, machine);
+    // Run simulation through all years, similar to JavaScript implementation
+    while (!engine.getIsDone()) {
+      // Execute the default policy first
+      ParsedPolicy defaultPolicy = program.getPolicy("default");
+      executePolicy(defaultPolicy, machine);
 
-    // Execute the other named policies in the scenario
-    for (String policyName : scenario.getPolicies()) {
-      ParsedPolicy policy = program.getPolicy(policyName);
-      executePolicy(policy, machine);
+      // Execute the other named policies in the scenario
+      for (String policyName : scenario.getPolicies()) {
+        ParsedPolicy policy = program.getPolicy(policyName);
+        executePolicy(policy, machine);
+      }
+
+      // Increment to the next year
+      engine.incrementYear();
     }
   }
 
