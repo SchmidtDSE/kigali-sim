@@ -225,6 +225,36 @@ public class EngineResult {
   }
 
   /**
+   * Get the total greenhouse gas consumption combining all consumption types.
+   *
+   * <p>This method combines domestic consumption, import consumption, and recycle
+   * consumption to provide the total GHG consumption value, matching the behavior
+   * of the JavaScript implementation.</p>
+   *
+   * @return The total GHG consumption value in tCO2e or equivalent
+   */
+  public EngineNumber getGhgConsumption() {
+    // Get consumption without recycle (domestic + import)
+    EngineNumber noRecycleConsumption = getConsumptionNoRecycle();
+    
+    // Check unit compatibility
+    String noRecycleUnits = noRecycleConsumption.getUnits();
+    String recycleUnits = recycleConsumptionValue.getUnits();
+    
+    if (!noRecycleUnits.equals(recycleUnits)) {
+      throw new IllegalStateException(
+          "Could not add incompatible units for total GHG consumption.");
+    }
+    
+    // Combine with recycle consumption
+    BigDecimal noRecycleValue = noRecycleConsumption.getValue();
+    BigDecimal recycleValue = recycleConsumptionValue.getValue();
+    BigDecimal totalValue = noRecycleValue.add(recycleValue);
+    
+    return new EngineNumber(totalValue, noRecycleUnits);
+  }
+
+  /**
    * Get the import supplement data.
    *
    * @return The import supplement containing attribution data

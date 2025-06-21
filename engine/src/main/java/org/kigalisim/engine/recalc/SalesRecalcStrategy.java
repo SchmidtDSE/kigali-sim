@@ -39,11 +39,6 @@ public class SalesRecalcStrategy implements RecalcStrategy {
   public void execute(Engine target, RecalcKit kit) {
     Scope scopeEffective = scope != null ? scope : target.getScope();
 
-    // Skip sales recalculation if we're in year 1 (to preserve the initial manufacture value)
-    if (target.getYear() == 1) {
-      return;
-    }
-
     OverridingConverterStateGetter stateGetter =
         new OverridingConverterStateGetter(kit.getStateGetter());
     UnitConverter unitConverter = new UnitConverter(stateGetter);
@@ -172,15 +167,18 @@ public class SalesRecalcStrategy implements RecalcStrategy {
     EngineNumber newRecycleValue = new EngineNumber(recycledDisplacedKg, "kg");
     streamKeeper.setStream(application, substance, "recycle", newRecycleValue);
 
-    // New values
+    // New values - preserve explicit values when demand is zero, recalculate when there's demand
     BigDecimal requiredKgUnbound = kgForRecharge.add(kgForNew);
     boolean requiredKgNegative = requiredKgUnbound.compareTo(BigDecimal.ZERO) < 0;
     BigDecimal requiredKg = requiredKgNegative ? BigDecimal.ZERO : requiredKgUnbound;
+    
     BigDecimal newManufactureKg = percentManufacture.multiply(requiredKg);
     BigDecimal newImportKg = percentImport.multiply(requiredKg);
     EngineNumber newManufacture = new EngineNumber(newManufactureKg, "kg");
     EngineNumber newImport = new EngineNumber(newImportKg, "kg");
-    streamKeeper.setStream(application, substance, "manufacture", newManufacture);
-    streamKeeper.setStream(application, substance, "import", newImport);
+    
+    // Call Engine.setStream with propagateChanges=false to match JavaScript behavior
+    target.setStream("manufacture", newManufacture, null, scopeEffective, false, null);
+    target.setStream("import", newImport, null, scopeEffective, false, null);
   }
 }

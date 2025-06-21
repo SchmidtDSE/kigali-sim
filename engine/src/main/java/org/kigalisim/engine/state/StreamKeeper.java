@@ -155,14 +155,17 @@ public class StreamKeeper {
     if ("sales".equals(name)) {
       EngineNumber manufactureAmountRaw = getStream(application, substance, "manufacture");
       EngineNumber importAmountRaw = getStream(application, substance, "import");
+      EngineNumber recycleAmountRaw = getStream(application, substance, "recycle");
 
       EngineNumber manufactureAmount = unitConverter.convert(manufactureAmountRaw, "kg");
       EngineNumber importAmount = unitConverter.convert(importAmountRaw, "kg");
+      EngineNumber recycleAmount = unitConverter.convert(recycleAmountRaw, "kg");
 
       BigDecimal manufactureAmountValue = manufactureAmount.getValue();
       BigDecimal importAmountValue = importAmount.getValue();
+      BigDecimal recycleAmountValue = recycleAmount.getValue();
 
-      BigDecimal newTotal = manufactureAmountValue.add(importAmountValue);
+      BigDecimal newTotal = manufactureAmountValue.add(importAmountValue).add(recycleAmountValue);
 
       return new EngineNumber(newTotal, "kg");
     } else {

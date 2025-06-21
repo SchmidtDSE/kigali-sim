@@ -165,10 +165,10 @@ public class StreamKeeperTest {
   }
 
   /**
-   * Test that sales stream returns sum of manufacture and import.
+   * Test that sales stream returns sum of manufacture and import and recycle.
    */
   @Test
-  public void testSalesStreamReturnsSumOfManufactureAndImport() {
+  public void testSalesStreamReturnsSumOfManufactureAndImportAndRecycle() {
     StreamKeeper keeper = createMockKeeper();
     keeper.ensureSubstance("test app", "test substance");
 
@@ -176,10 +176,12 @@ public class StreamKeeperTest {
                      new EngineNumber(new BigDecimal("50"), "kg"));
     keeper.setStream("test app", "test substance", "import",
                      new EngineNumber(new BigDecimal("30"), "kg"));
+    keeper.setStream("test app", "test substance", "recycle",
+                     new EngineNumber(new BigDecimal("10"), "kg"));
 
     EngineNumber sales = keeper.getStream("test app", "test substance", "sales");
-    assertEquals(new BigDecimal("80"), sales.getValue(),
-                 "Sales should be sum of manufacture and import");
+    assertEquals(new BigDecimal("90"), sales.getValue(),
+                 "Sales should be sum of manufacture, import, and recycle");
     assertEquals("kg", sales.getUnits(), "Sales should have kg units");
   }
 

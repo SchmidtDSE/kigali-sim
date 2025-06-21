@@ -705,6 +705,11 @@ public class SingleThreadEngine implements Engine {
       return;
     }
 
+    // Debug output for replacement operation
+    System.out.printf("DEBUG: Replace operation - Year %d, Stream: %s, Amount: %.2f %s, From: %s, To: %s\n",
+        currentYear, stream, amountRaw.getValue(), amountRaw.getUnits(), 
+        scope.getSubstance(), destinationSubstance);
+
     // Track the original user-specified units for the current substance
     Scope currentScope = scope;
     String application = currentScope.getApplication();
@@ -744,6 +749,9 @@ public class SingleThreadEngine implements Engine {
       // For volume units, use the original logic
       UnitConverter unitConverter = createUnitConverterWithTotal(stream);
       EngineNumber amount = unitConverter.convert(amountRaw, "kg");
+
+      System.out.printf("DEBUG: Converting %.2f %s to %.2f kg for replacement\n",
+          amountRaw.getValue(), amountRaw.getUnits(), amount.getValue());
 
       EngineNumber amountNegative = new EngineNumber(amount.getValue().negate(), amount.getUnits());
       changeStreamWithoutReportingUnits(stream, amountNegative, null, null);
