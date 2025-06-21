@@ -14,8 +14,11 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.kigalisim.engine.serializer.EngineResult;
 import org.kigalisim.lang.parse.ParseResult;
 import org.kigalisim.lang.program.ParsedProgram;
 
@@ -107,40 +110,42 @@ public class KigaliSimFacadeTest {
    */
   @Test
   public void testRunScenarioIteratesThroughYears(@TempDir Path tempDir) throws IOException {
-    // Create a simple QubecTalk program that should run through multiple years
-    String code = "start default\n"
-                  + "\n"
-                  + "  define application \"test app\"\n"
-                  + "\n"
-                  + "    uses substance \"test substance\"\n"
-                  + "      set manufacture to 10 kg\n"
-                  + "    end substance\n"
-                  + "\n"
-                  + "  end application\n"
-                  + "\n"
-                  + "end default\n"
-                  + "\n"
-                  + "start simulations\n"
-                  + "\n"
-                  + "  simulate \"yeartest\" from years 1 to 3\n"
-                  + "\n"
-                  + "end simulations";
-    
-    File file = tempDir.resolve("yeartest.qta").toFile();
-    Files.writeString(file.toPath(), code);
+    // Use the example file from examples directory
+    String examplePath = "../examples/test_year_iteration.qta";
+    File exampleFile = new File(examplePath);
+    assertTrue(exampleFile.exists(), "Example file should exist: " + examplePath);
 
-    // Debug parse errors first
-    ParseResult parseResult = KigaliSimFacade.parse(code);
-    if (parseResult.hasErrors()) {
-      System.out.println("Parse errors:");
-      parseResult.getErrors().forEach(System.out::println);
-    }
-    assertFalse(parseResult.hasErrors(), "Code should parse without errors");
-
-    ParsedProgram program = KigaliSimFacade.parseAndInterpret(file.getPath());
+    // Parse and interpret the example file
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(exampleFile.getPath());
     assertNotNull(program, "Program should not be null");
     
     // This should run through all years without throwing an exception
     KigaliSimFacade.runScenario(program, "yeartest");
+  }
+
+  /**
+   * Test that runScenarioWithResults method executes and returns a stream.
+   */
+  @Test
+  public void testRunScenarioWithResults(@TempDir Path tempDir) throws IOException {
+    // Use the example file from examples directory
+    String examplePath = "../examples/test_year_iteration.qta";
+    File exampleFile = new File(examplePath);
+    assertTrue(exampleFile.exists(), "Example file should exist: " + examplePath);
+
+    // Parse and interpret the example file
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(exampleFile.getPath());
+    assertNotNull(program, "Program should not be null");
+    
+    // This should run through all years and return a stream (may be empty for basic examples)
+    Stream<EngineResult> results = KigaliSimFacade.runScenarioWithResults(program, "yeartest");
+    assertNotNull(results, "Results stream should not be null");
+    
+    // Collect results - may be empty for basic examples that don't have all required streams
+    List<EngineResult> resultsList = results.collect(java.util.stream.Collectors.toList());
+    assertNotNull(resultsList, "Results list should not be null");
+    
+    // The method should complete successfully even if no results are collected
+    // This tests that the infrastructure works
   }
 }

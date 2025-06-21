@@ -134,8 +134,21 @@ jobs:
         with:
           name: fatJar
           path: engine/build/libs/
-      - name: Run example QTA file
-        run: java -jar build/libs/kigalisim-fat.jar run ../examples/minimal_interpreter.qta
+      - name: Run example QTA file with CSV export
+        run: java -jar build/libs/kigalisim-fat.jar run ../examples/minimal_interpreter.qta -o /tmp/minimal_interpreter.csv
+      - name: Check CSV file was created and is non-empty
+        run: |
+          if [ ! -f /tmp/minimal_interpreter.csv ]; then
+            echo "ERROR: CSV file was not created"
+            exit 1
+          fi
+          if [ ! -s /tmp/minimal_interpreter.csv ]; then
+            echo "ERROR: CSV file is empty"
+            exit 1
+          fi
+          echo "SUCCESS: CSV file was created and is non-empty"
+          echo "CSV file contents:"
+          cat /tmp/minimal_interpreter.csv
   buildWasm:
     environment: Build
     needs: [ checkEngine, buildEngine, testEngine, runEngineLocal ]
