@@ -80,17 +80,16 @@ public class EngineResultSerializer {
     UnitConverter unitConverter = new UnitConverter(stateGetter);
 
     // Get sales
-    EngineNumber manufactureRaw = engine.getStreamRaw(application, substance, "manufacture");
-    EngineNumber importRaw = engine.getStreamRaw(application, substance, "import");
     EngineNumber recycleRaw = engine.getStreamRaw(application, substance, "recycle");
-
-    EngineNumber manufactureValue = unitConverter.convert(manufactureRaw, "kg");
-    EngineNumber importValue = unitConverter.convert(importRaw, "kg");
     EngineNumber recycleValue = unitConverter.convert(recycleRaw, "kg");
     builder.setRecycleValue(recycleValue);
 
     // Get total energy consumption
     EngineNumber energyConsumptionValue = engine.getStreamRaw(application, substance, "energy");
+    // Default to 0 kwh if energy stream is not calculated (consistent with JS version)
+    if (energyConsumptionValue == null) {
+      energyConsumptionValue = new EngineNumber(BigDecimal.ZERO, "kwh");
+    }
     builder.setEnergyConsumption(energyConsumptionValue);
 
     // Get emissions
@@ -102,6 +101,14 @@ public class EngineResultSerializer {
 
     EngineNumber eolEmissions = engine.getStreamRaw(application, substance, "eolEmissions");
     builder.setEolEmissions(eolEmissions);
+
+    // Get sales for offset calculation
+    EngineNumber manufactureRaw = engine.getStreamRaw(application, substance, "manufacture");
+    EngineNumber importRaw = engine.getStreamRaw(application, substance, "import");
+    
+    // Convert sales values for offset calculation
+    EngineNumber manufactureValue = unitConverter.convert(manufactureRaw, "kg");
+    EngineNumber importValue = unitConverter.convert(importRaw, "kg");
 
     // Get percent for offset
     BigDecimal manufactureKg = manufactureValue.getValue();

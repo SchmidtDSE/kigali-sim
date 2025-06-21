@@ -207,7 +207,7 @@ public class EngineResultBuilder {
    * @return This builder for method chaining
    */
   public EngineResultBuilder setEnergyConsumption(EngineNumber energyConsumption) {
-    this.energyConsumption = Optional.of(energyConsumption);
+    this.energyConsumption = Optional.ofNullable(energyConsumption);
     return this;
   }
 
