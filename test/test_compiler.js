@@ -105,6 +105,15 @@ function buildCompilerTests() {
       },
     ]);
 
+    buildTest("tests minimal interpreter example", "/examples/minimal_interpreter.qta", [
+      (result, assert) => {
+        const record = getResult(result, BAU_NAME, 1, 0, "testApp", "testSubstance");
+        const manufacture = record.getManufacture();
+        assert.closeTo(manufacture.getValue(), 100000, 0.0001, "Manufacture should be 100000 kg");
+        assert.deepEqual(manufacture.getUnits(), "kg", "Manufacture units should be kg");
+      },
+    ]);
+
     buildTest("interprets starting units", "/examples/basic_units.qta", [
       (result, assert) => {
         const record = getResult(result, BAU_NAME, 1, 0, "test", "test");

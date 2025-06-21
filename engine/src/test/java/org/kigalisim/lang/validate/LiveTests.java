@@ -38,6 +38,7 @@ public class LiveTests {
   @Test
   public void testMinimalInterpreterExample() throws IOException {
     // Load and parse the QTA file
+    // Note that this is up a directory so not using classpath.
     String qtaPath = "../examples/minimal_interpreter.qta";
     ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
     assertNotNull(program, "Program should not be null");
@@ -60,7 +61,7 @@ public class LiveTests {
     // Execute the default policy
     ParsedPolicy defaultPolicy = program.getPolicy("default");
     assertNotNull(defaultPolicy, "Default policy should exist");
-    
+
     executePolicy(defaultPolicy, machine);
 
     // Execute other policies in the scenario (if any)
@@ -79,17 +80,17 @@ public class LiveTests {
     for (int year = startYear; year <= endYear; year++) {
       // Get results for current year
       List<EngineResult> results = engine.getResults();
-      
+
       // Find the result for testApp/testSubstance
       EngineResult result = findResult(results, "testApp", "testSubstance", year);
       assertNotNull(result, "Should have result for testApp/testSubstance in year " + year);
-      
+
       // Check manufacture value - should be 100 mt = 100000 kg
       assertEquals(100000.0, result.getManufacture().getValue().doubleValue(), 0.0001,
           "Manufacture should be 100000 kg in year " + year);
       assertEquals("kg", result.getManufacture().getUnits(),
           "Manufacture units should be kg in year " + year);
-      
+
       // Move to next year if not at end
       if (year < endYear) {
         engine.incrementYear();
@@ -104,13 +105,23 @@ public class LiveTests {
    * @param machine The machine to use for execution.
    */
   private void executePolicy(ParsedPolicy policy, PushDownMachine machine) {
+    // Set the stanza (policy name)
+    String stanzaName = policy.getName();
+    machine.getEngine().setStanza(stanzaName != null ? stanzaName : "default");
+
     // For each application in the policy
     for (String applicationName : policy.getApplications()) {
       ParsedApplication application = policy.getApplication(applicationName);
 
+      // Set the application scope
+      machine.getEngine().setApplication(applicationName);
+
       // For each substance in the application
       for (String substanceName : application.getSubstances()) {
         ParsedSubstance substance = application.getSubstance(substanceName);
+
+        // Set the substance scope
+        machine.getEngine().setSubstance(substanceName);
 
         // Execute each operation in the substance
         for (Operation operation : substance.getOperations()) {

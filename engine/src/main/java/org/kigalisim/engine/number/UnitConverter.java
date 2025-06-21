@@ -27,7 +27,7 @@ public class UnitConverter {
 
   // Configuration constants
   private static final boolean CONVERT_ZERO_NOOP = true;
-  private static final boolean ZERO_EMPTY_VOLUME_INTENSITY = false;
+  private static final boolean ZERO_EMPTY_VOLUME_INTENSITY = true;
 
   // Math context for BigDecimal operations
   private static final MathContext MATH_CONTEXT = MathContext.DECIMAL128;
@@ -271,6 +271,12 @@ public class UnitConverter {
       String newUnits = total.getUnits();
       BigDecimal newValue = total.getValue().multiply(asRatio);
       return new EngineNumber(newValue, newUnits);
+    } else if ("kg/unit".equals(currentUnits)) {
+      BigDecimal originalValue = target.getValue();
+      EngineNumber population = stateGetter.getPopulation();
+      BigDecimal populationValue = population.getValue();
+      BigDecimal newValue = originalValue.multiply(populationValue);
+      return new EngineNumber(newValue, "kg");
     } else {
       throw new IllegalArgumentException("Unable to convert to volume: " + currentUnits);
     }
@@ -350,6 +356,20 @@ public class UnitConverter {
       BigDecimal asRatio = originalValue.divide(PERCENT_FACTOR, MATH_CONTEXT);
       EngineNumber total = stateGetter.getGhgConsumption();
       BigDecimal newValue = total.getValue().multiply(asRatio);
+      return new EngineNumber(newValue, "tCO2e");
+    } else if ("tCO2e/mt".equals(currentUnits)) {
+      // Handle tCO2e per metric ton - this is a conversion factor
+      // We need to convert to just tCO2e by multiplying by the volume in mt
+      EngineNumber volume = stateGetter.getVolume();
+      EngineNumber volumeInMt = convert(volume, "mt");
+      BigDecimal newValue = target.getValue().multiply(volumeInMt.getValue());
+      return new EngineNumber(newValue, "tCO2e");
+    } else if ("tCO2e/kg".equals(currentUnits)) {
+      // Handle tCO2e per kilogram - this is a conversion factor
+      // We need to convert to just tCO2e by multiplying by the volume in kg
+      EngineNumber volume = stateGetter.getVolume();
+      EngineNumber volumeInKg = convert(volume, "kg");
+      BigDecimal newValue = target.getValue().multiply(volumeInKg.getValue());
       return new EngineNumber(newValue, "tCO2e");
     } else {
       throw new IllegalArgumentException("Unable to convert to consumption: " + currentUnits);
