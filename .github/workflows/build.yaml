@@ -135,7 +135,7 @@ jobs:
           name: fatJar
           path: engine/build/libs/
       - name: Run example QTA file
-        run: java -jar build/libs/kigalisim-fat.jar run ../test/qta/minimal_interpreter.qta
+        run: java -jar build/libs/kigalisim-fat.jar run ../examples/minimal_interpreter.qta
   buildWasm:
     environment: Build
     needs: [ checkEngine, buildEngine, testEngine, runEngineLocal ]

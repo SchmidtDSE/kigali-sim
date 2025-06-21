@@ -66,7 +66,7 @@ function buildCompilerTests() {
 
     const BAU_NAME = "business as usual";
 
-    buildTest("tests kwh units", "/test/qta/basic_kwh.qta", [
+    buildTest("tests kwh units", "/examples/basic_kwh.qta", [
       (result, assert) => {
         const record = getResult(result, BAU_NAME, 1, 0, "test", "test");
         const energyConsumption = record.getEnergyConsumption();
@@ -75,7 +75,7 @@ function buildCompilerTests() {
       },
     ]);
 
-    buildTest("tests kwh units", "/test/qta/basic_kwh_units.qta", [
+    buildTest("tests kwh units", "/examples/basic_kwh_units.qta", [
       (result, assert) => {
         const record = getResult(result, BAU_NAME, 1, 0, "test", "test");
         const energyConsumption = record.getEnergyConsumption();
@@ -84,7 +84,7 @@ function buildCompilerTests() {
       },
     ]);
 
-    buildTest("runs a basic script", "/test/qta/basic.qta", [
+    buildTest("runs a basic script", "/examples/basic.qta", [
       (result, assert) => {
         const record = getResult(result, BAU_NAME, 1, 0, "test", "test");
         const equipment = record.getPopulation();
@@ -105,7 +105,7 @@ function buildCompilerTests() {
       },
     ]);
 
-    buildTest("interprets starting units", "/test/qta/basic_units.qta", [
+    buildTest("interprets starting units", "/examples/basic_units.qta", [
       (result, assert) => {
         const record = getResult(result, BAU_NAME, 1, 0, "test", "test");
         const equipment = record.getPopulation();
@@ -114,7 +114,7 @@ function buildCompilerTests() {
       },
     ]);
 
-    buildTest("interprets starting units with conversion", "/test/qta/basic_units_convert.qta", [
+    buildTest("interprets starting units with conversion", "/examples/basic_units_convert.qta", [
       (result, assert) => {
         const record = getResult(result, BAU_NAME, 1, 0, "test", "test");
         const equipment = record.getPopulation();
@@ -123,7 +123,7 @@ function buildCompilerTests() {
       },
     ]);
 
-    buildTest("runs a basic script with special float", "/test/qta/basic_special_float.qta", [
+    buildTest("runs a basic script with special float", "/examples/basic_special_float.qta", [
       (result, assert) => {
         const record = getResult(result, BAU_NAME, 1, 0, "test", "test");
         const equipment = record.getPopulation();
@@ -132,7 +132,7 @@ function buildCompilerTests() {
       },
     ]);
 
-    buildTest("interprets a change command", "/test/qta/change.qta", [
+    buildTest("interprets a change command", "/examples/change.qta", [
       (result, assert) => {
         const record = getResult(result, BAU_NAME, 2, 0, "test", "test");
         const manufacture = record.getManufacture();
@@ -147,7 +147,7 @@ function buildCompilerTests() {
       },
     ]);
 
-    buildTest("interprets a change command with real years", "/test/qta/real_years.qta", [
+    buildTest("interprets a change command with real years", "/examples/real_years.qta", [
       (result, assert) => {
         const record = getResult(result, BAU_NAME, 2026, 0, "test", "test");
         const manufacture = record.getManufacture();
@@ -162,7 +162,7 @@ function buildCompilerTests() {
       },
     ]);
 
-    buildTest("handles change command by adding kg", "/test/qta/change_add_kg.qta", [
+    buildTest("handles change command by adding kg", "/examples/change_add_kg.qta", [
       (result, assert) => {
         const record = getResult(result, BAU_NAME, 2, 0, "test", "test");
         const manufacture = record.getManufacture();
@@ -171,7 +171,7 @@ function buildCompilerTests() {
       },
     ]);
 
-    buildTest("handles change command by subtracting kg", "/test/qta/change_subtract_kg.qta", [
+    buildTest("handles change command by subtracting kg", "/examples/change_subtract_kg.qta", [
       (result, assert) => {
         const record = getResult(result, BAU_NAME, 2, 0, "test", "test");
         const manufacture = record.getManufacture();
@@ -180,7 +180,7 @@ function buildCompilerTests() {
       },
     ]);
 
-    buildTest("handles change command by adding units", "/test/qta/change_add_units.qta", [
+    buildTest("handles change command by adding units", "/examples/change_add_units.qta", [
       (result, assert) => {
         const record = getResult(result, BAU_NAME, 2, 0, "test", "test");
         const manufacture = record.getManufacture();
@@ -191,7 +191,7 @@ function buildCompilerTests() {
 
     buildTest(
       "handles change command by subtracting units",
-      "/test/qta/change_subtract_units.qta",
+      "/examples/change_subtract_units.qta",
       [
         (result, assert) => {
           const record = getResult(result, BAU_NAME, 2, 0, "test", "test");
@@ -202,7 +202,7 @@ function buildCompilerTests() {
       ],
     );
 
-    buildTest("interprets a retire command", "/test/qta/retire.qta", [
+    buildTest("interprets a retire command", "/examples/retire.qta", [
       (result, assert) => {
         const record = getResult(result, BAU_NAME, 2, 0, "test", "test");
         const manufacture = record.getManufacture();
@@ -229,7 +229,7 @@ function buildCompilerTests() {
       },
     ]);
 
-    buildTest("interprets a retire command with prior population", "/test/qta/retire_prior.qta", [
+    buildTest("interprets a retire command with prior population", "/examples/retire_prior.qta", [
       (result, assert) => {
         const record = getResult(result, BAU_NAME, 1, 0, "test", "test");
         const population = record.getPopulation();
@@ -238,7 +238,7 @@ function buildCompilerTests() {
       },
     ]);
 
-    buildTest("interprets multiple retire commands", "/test/qta/retire_multiple.qta", [
+    buildTest("interprets multiple retire commands", "/examples/retire_multiple.qta", [
       (result, assert) => {
         const record = getResult(result, BAU_NAME, 1, 0, "test", "test");
         const population = record.getPopulation();
@@ -247,7 +247,7 @@ function buildCompilerTests() {
       },
     ]);
 
-    buildTest("interprets a recharge command", "/test/qta/recharge.qta", [
+    buildTest("interprets a recharge command", "/examples/recharge.qta", [
       (result, assert) => {
         const record = getResult(result, BAU_NAME, 1, 0, "test", "test");
         const equipment = record.getPopulation();
@@ -262,7 +262,7 @@ function buildCompilerTests() {
       },
     ]);
 
-    buildTest("handles recharge on top when specifying by units", "/test/qta/recharge_on_top.qta", [
+    buildTest("handles recharge on top when specifying by units", "/examples/recharge_on_top.qta", [
       (result, assert) => {
         // Test that recharge is added on top for units-based specifications
         // Should have 10000 (prior) + 1000 (manufacture) = 11000 units in year 1
@@ -273,7 +273,7 @@ function buildCompilerTests() {
       },
     ]);
 
-    buildTest("handles multiple consumption", "/test/qta/multiple.qta", [
+    buildTest("handles multiple consumption", "/examples/multiple.qta", [
       (result, assert) => {
         const record = getResult(result, BAU_NAME, 1, 0, "test", "a");
         const consumption = record.getGhgConsumption();
@@ -288,7 +288,7 @@ function buildCompilerTests() {
       },
     ]);
 
-    buildTest("handles policies", "/test/qta/policies.qta", [
+    buildTest("handles policies", "/examples/policies.qta", [
       (result, assert) => {
         const record = getResult(result, "result", 1, 0, "test", "test");
         const consumption = record.getGhgConsumption();
@@ -297,7 +297,7 @@ function buildCompilerTests() {
       },
     ]);
 
-    buildTest("handles recycling", "/test/qta/recycling.qta", [
+    buildTest("handles recycling", "/examples/recycling.qta", [
       (result, assert) => {
         const record = getResult(result, "result", 1, 0, "test", "test");
         const consumption = record.getGhgConsumption();
@@ -318,7 +318,7 @@ function buildCompilerTests() {
       },
     ]);
 
-    buildTest("handles recycling by kg", "/test/qta/recycle_by_kg.qta", [
+    buildTest("handles recycling by kg", "/examples/recycle_by_kg.qta", [
       (result, assert) => {
         const record = getResult(result, "result", 1, 0, "test", "test");
         const consumption = record.getGhgConsumption();
@@ -340,7 +340,7 @@ function buildCompilerTests() {
       },
     ]);
 
-    buildTest("handles recycling by units", "/test/qta/recycle_by_units.qta", [
+    buildTest("handles recycling by units", "/examples/recycle_by_units.qta", [
       (result, assert) => {
         const record = getResult(result, "result", 1, 0, "test", "test");
         const consumption = record.getGhgConsumption();
@@ -362,7 +362,7 @@ function buildCompilerTests() {
       },
     ]);
 
-    buildTest("handles replace", "/test/qta/replace.qta", [
+    buildTest("handles replace", "/examples/replace.qta", [
       (result, assert) => {
         const record = getResult(result, "result", 1, 0, "test", "a");
         const consumption = record.getGhgConsumption();
@@ -377,7 +377,7 @@ function buildCompilerTests() {
       },
     ]);
 
-    buildTest("combines policies", "/test/qta/combination.qta", [
+    buildTest("combines policies", "/examples/combination.qta", [
       (result, assert) => {
         const record = getResult(result, "result", 1, 0, "test", "test");
         const consumption = record.getGhgConsumption();
@@ -386,7 +386,7 @@ function buildCompilerTests() {
       },
     ]);
 
-    buildTest("evaluates conditionals", "/test/qta/conditional.qta", [
+    buildTest("evaluates conditionals", "/examples/conditional.qta", [
       (result, assert) => {
         const record = getResult(result, "business as usual", 1, 0, "test", "test");
         const consumption = record.getGhgConsumption();
@@ -395,7 +395,7 @@ function buildCompilerTests() {
       },
     ]);
 
-    buildTest("evaluates logical operators", "/test/qta/logical_operators.qta", [
+    buildTest("evaluates logical operators", "/examples/logical_operators.qta", [
       (result, assert) => {
         // Test AND: 1 and 0 = false, so manufacture should be 30 (else branch)
         const recordYear1 = getResult(result, "business as usual", 1, 0, "test", "test");
@@ -453,7 +453,7 @@ function buildCompilerTests() {
       },
     ]);
 
-    buildTest("evaluates simple AND operator", "/test/qta/simple_and.qta", [
+    buildTest("evaluates simple AND operator", "/examples/simple_and.qta", [
       (result, assert) => {
         // Test AND: 1 and 0 = false, so manufacture should be 30 (else branch)
         const record = getResult(result, "business as usual", 1, 0, "test", "test");
@@ -463,7 +463,7 @@ function buildCompilerTests() {
       },
     ]);
 
-    buildTest("verifies substance replacement over time", "/test/qta/basic_replace.qta", [
+    buildTest("verifies substance replacement over time", "/examples/basic_replace.qta", [
       (result, assert) => {
         // Check year 1 consumption
         const recordAYear1 = getResult(result, "Sim", 1, 0, "Test", "Sub A");
@@ -491,7 +491,7 @@ function buildCompilerTests() {
 
     buildTest(
       "verifies substance replacement over time units",
-      "/test/qta/basic_replace_units.qta",
+      "/examples/basic_replace_units.qta",
       [
         (result, assert) => {
           // Check year 1 - no replacement yet
@@ -523,7 +523,7 @@ function buildCompilerTests() {
       ],
     );
 
-    buildTest("handles replace by units", "/test/qta/replace_units.qta", [
+    buildTest("handles replace by units", "/examples/replace_units.qta", [
       (result, assert) => {
         const record = getResult(result, "result", 1, 0, "test", "a");
         const consumption = record.getGhgConsumption();
@@ -540,7 +540,7 @@ function buildCompilerTests() {
       },
     ]);
 
-    buildTest("handles replace by kg", "/test/qta/replace_kg.qta", [
+    buildTest("handles replace by kg", "/examples/replace_kg.qta", [
       (result, assert) => {
         const record = getResult(result, "result", 1, 0, "test", "a");
         const consumption = record.getGhgConsumption();
@@ -557,7 +557,7 @@ function buildCompilerTests() {
       },
     ]);
 
-    buildTest("runs trials", "/test/qta/trials.qta", [
+    buildTest("runs trials", "/examples/trials.qta", [
       (result, assert) => {
         const record = getResult(result, "business as usual", 1, 0, "test", "test");
         const consumption = record.getGhgConsumption();
@@ -574,9 +574,9 @@ function buildCompilerTests() {
       },
     ]);
 
-    buildTest("runs reference", "/test/qta/reference.qta", []);
+    buildTest("runs reference", "/examples/reference.qta", []);
 
-    buildTest("cold starts with equipment", "/test/qta/cold_start_equipment.qta", [
+    buildTest("cold starts with equipment", "/examples/cold_start_equipment.qta", [
       (result, assert) => {
         const record = getResult(result, "BAU", 1, 0, "Test", "Sub");
         const consumption = record.getGhgConsumption();
@@ -589,7 +589,7 @@ function buildCompilerTests() {
       },
     ]);
 
-    buildTest("checks order of operations in initialization", "/test/qta/order_check_volume.qta", [
+    buildTest("checks order of operations in initialization", "/examples/order_check_volume.qta", [
       // Test Sub1 (A, B, C order) produces 1 MtCO2e across all years
       (result, assert) => {
         const record1 = getResult(result, "BAU", 1, 0, "App", "Sub1");
@@ -649,7 +649,7 @@ function buildCompilerTests() {
       },
     ]);
 
-    buildTest("runs case study", "/test/qta/case_study.qta", [
+    buildTest("runs case study", "/examples/case_study.qta", [
       (result, assert) => {
         // Test that the case study simulation completes successfully
         assert.ok(result.length > 0, "Case study should produce simulation results");
@@ -664,7 +664,7 @@ function buildCompilerTests() {
       },
     ]);
 
-    buildTest("tests initialization by units", "/test/qta/init_units.qta", [
+    buildTest("tests initialization by units", "/examples/init_units.qta", [
       // Test Sub1 (A, B, C order) - should have 1M units in year 1, 2M in year 2, 3M in year 3
       (result, assert) => {
         const record1 = getResult(result, "BAU", 1, 0, "App", "Sub1");
@@ -687,7 +687,7 @@ function buildCompilerTests() {
     ]);
 
     buildTest("checks order of operations in initialization by units",
-      "/test/qta/order_check_units.qta",
+      "/examples/order_check_units.qta",
       [
         // Test Sub2 (A, C, B order) - should have same results as Sub1
         (result, assert) => {
@@ -730,7 +730,7 @@ function buildCompilerTests() {
       ],
     );
 
-    buildTest("tests cap with units includes recharge on top", "/test/qta/cap_units.qta", [
+    buildTest("tests cap with units includes recharge on top", "/examples/cap_units.qta", [
       (result, assert) => {
         const record = getResult(result, "result", 1, 0, "test", "test");
         const manufacture = record.getManufacture();
@@ -742,7 +742,7 @@ function buildCompilerTests() {
       },
     ]);
 
-    buildTest("tests cap with kg works without recharge addition", "/test/qta/cap_kg.qta", [
+    buildTest("tests cap with kg works without recharge addition", "/examples/cap_kg.qta", [
       (result, assert) => {
         const record = getResult(result, "result", 1, 0, "test", "test");
         const manufacture = record.getManufacture();
@@ -753,7 +753,7 @@ function buildCompilerTests() {
       },
     ]);
 
-    buildTest("tests cap with units displacement", "/test/qta/cap_displace_units.qta", [
+    buildTest("tests cap with units displacement", "/examples/cap_displace_units.qta", [
       (result, assert) => {
         // Check that sub_a manufacture was capped
         const recordSubA = getResult(result, "result", 1, 0, "test", "sub_a");
@@ -779,7 +779,7 @@ function buildCompilerTests() {
 
     buildTest(
       "tests unit-to-unit displacement conversion",
-      "/test/qta/cap_displace_unit_conversion.qta",
+      "/examples/cap_displace_unit_conversion.qta",
       [
         (result, assert) => {
         // Check that sub_a manufacture was capped
@@ -807,7 +807,7 @@ function buildCompilerTests() {
         },
       ]);
 
-    buildTest("tests floor with units includes recharge on top", "/test/qta/floor_units.qta", [
+    buildTest("tests floor with units includes recharge on top", "/examples/floor_units.qta", [
       (result, assert) => {
         const record = getResult(result, "result", 1, 0, "test", "test");
         const manufacture = record.getManufacture();
@@ -819,7 +819,7 @@ function buildCompilerTests() {
       },
     ]);
 
-    buildTest("tests floor with kg works without recharge addition", "/test/qta/floor_kg.qta", [
+    buildTest("tests floor with kg works without recharge addition", "/examples/floor_kg.qta", [
       (result, assert) => {
         const record = getResult(result, "result", 1, 0, "test", "test");
         const manufacture = record.getManufacture();
@@ -832,7 +832,7 @@ function buildCompilerTests() {
 
     buildTest(
       "tests ordering-sensitive recharge emissions issue",
-      "/test/qta/ordering_sensitive_emissions.qta", [
+      "/examples/ordering_sensitive_emissions.qta", [
         (result, assert) => {
           // Test SubA (tCO2e equals comes before recharge)
           const recordA = getResult(result, BAU_NAME, 2035, 0, "test", "SubA");
@@ -879,7 +879,7 @@ function buildCompilerTests() {
 
     buildTest(
       "tests ordering-sensitive eol emissions issue",
-      "/test/qta/ordering_sensitive_emissions.qta", [
+      "/examples/ordering_sensitive_emissions.qta", [
         (result, assert) => {
           // Test SubA (tCO2e equals comes before recharge)
           const recordA = getResult(result, BAU_NAME, 2035, 0, "test", "SubA");
@@ -923,7 +923,7 @@ function buildCompilerTests() {
         },
       ],
     );
-    buildTest("runs minimal interpreter example", "/test/qta/minimal_interpreter.qta", [
+    buildTest("runs minimal interpreter example", "/examples/minimal_interpreter.qta", [
       (result, assert) => {
         // Check year 1
         const record1 = getResult(result, BAU_NAME, 1, 0, "testApp", "testSubstance");
