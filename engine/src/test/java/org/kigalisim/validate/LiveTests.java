@@ -346,9 +346,9 @@ public class LiveTests {
         "Manufacture units should be kg");
   }
 
-  /*
+  /**
    * Test basic_replace.qta produces expected values.
-   *
+   */
   @Test
   public void testBasicReplace() throws IOException {
     // Load and parse the QTA file
@@ -417,7 +417,6 @@ public class LiveTests {
     assertNotNull(resultSubB5.getManufacture(),
         "Sub B should have manufacture data in year 5 due to replacement");
   }
-   */
 
   /**
    * Test basic_replace_units.qta produces expected values.

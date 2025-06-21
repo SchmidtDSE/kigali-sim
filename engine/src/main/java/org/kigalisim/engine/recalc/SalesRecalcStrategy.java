@@ -39,6 +39,11 @@ public class SalesRecalcStrategy implements RecalcStrategy {
   public void execute(Engine target, RecalcKit kit) {
     Scope scopeEffective = scope != null ? scope : target.getScope();
 
+    // Skip sales recalculation if we're in year 1 (to preserve the initial manufacture value)
+    if (target.getYear() == 1) {
+      return;
+    }
+
     OverridingConverterStateGetter stateGetter =
         new OverridingConverterStateGetter(kit.getStateGetter());
     UnitConverter unitConverter = new UnitConverter(stateGetter);
