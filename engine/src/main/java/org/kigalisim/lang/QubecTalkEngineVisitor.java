@@ -23,6 +23,7 @@ import org.kigalisim.lang.fragment.StringFragment;
 import org.kigalisim.lang.fragment.SubstanceFragment;
 import org.kigalisim.lang.fragment.UnitFragment;
 import org.kigalisim.lang.operation.AdditionOperation;
+import org.kigalisim.lang.operation.ChangeOperation;
 import org.kigalisim.lang.operation.ChangeUnitsOperation;
 import org.kigalisim.lang.operation.DivisionOperation;
 import org.kigalisim.lang.operation.EqualsOperation;
@@ -522,7 +523,10 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
    */
   @Override
   public Fragment visitChangeAllYears(QubecTalkParser.ChangeAllYearsContext ctx) {
-    return visitChildren(ctx);
+    String stream = ctx.target.getText();
+    Operation valueOperation = visit(ctx.value).getOperation();
+    Operation operation = new ChangeOperation(stream, valueOperation);
+    return new OperationFragment(operation);
   }
 
   /**
@@ -530,7 +534,11 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
    */
   @Override
   public Fragment visitChangeDuration(QubecTalkParser.ChangeDurationContext ctx) {
-    return visitChildren(ctx);
+    String stream = ctx.target.getText();
+    Operation valueOperation = visit(ctx.value).getOperation();
+    ParsedDuring during = visit(ctx.duration).getDuring();
+    Operation operation = new ChangeOperation(stream, valueOperation, during);
+    return new OperationFragment(operation);
   }
 
   /**
