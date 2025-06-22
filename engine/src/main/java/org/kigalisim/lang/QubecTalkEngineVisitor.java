@@ -23,10 +23,12 @@ import org.kigalisim.lang.fragment.StringFragment;
 import org.kigalisim.lang.fragment.SubstanceFragment;
 import org.kigalisim.lang.fragment.UnitFragment;
 import org.kigalisim.lang.operation.AdditionOperation;
+import org.kigalisim.lang.operation.CapOperation;
 import org.kigalisim.lang.operation.ChangeOperation;
 import org.kigalisim.lang.operation.ChangeUnitsOperation;
 import org.kigalisim.lang.operation.DivisionOperation;
 import org.kigalisim.lang.operation.EqualsOperation;
+import org.kigalisim.lang.operation.FloorOperation;
 import org.kigalisim.lang.operation.InitialChargeOperation;
 import org.kigalisim.lang.operation.MultiplicationOperation;
 import org.kigalisim.lang.operation.Operation;
@@ -255,7 +257,7 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
    */
   @Override
   public Fragment visitStream(QubecTalkParser.StreamContext ctx) {
-    return visitChildren(ctx);
+    return new StringFragment(ctx.getText().replaceAll("\"", ""));
   }
 
   /**
@@ -489,7 +491,18 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
    */
   @Override
   public Fragment visitLimitCommandAllYears(QubecTalkParser.LimitCommandAllYearsContext ctx) {
-    return visitChildren(ctx);
+    String stream = ctx.target.getText();
+    Operation valueOperation = visit(ctx.value).getOperation();
+    Operation operation;
+
+    // Check if this is a cap or floor operation
+    if (ctx.getText().startsWith("cap")) {
+      operation = new CapOperation(stream, valueOperation);
+    } else {
+      operation = new FloorOperation(stream, valueOperation);
+    }
+
+    return new OperationFragment(operation);
   }
 
   /**
@@ -498,7 +511,20 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
   @Override
   public Fragment visitLimitCommandDisplacingAllYears(
       QubecTalkParser.LimitCommandDisplacingAllYearsContext ctx) {
-    return visitChildren(ctx);
+    String stream = ctx.target.getText();
+    Operation valueOperation = visit(ctx.value).getOperation();
+    String displaceTarget = ctx.getChild(5).accept(this).getString();
+
+    Operation operation;
+
+    // Check if this is a cap or floor operation
+    if (ctx.getText().startsWith("cap")) {
+      operation = new CapOperation(stream, valueOperation, displaceTarget);
+    } else {
+      operation = new FloorOperation(stream, valueOperation, displaceTarget);
+    }
+
+    return new OperationFragment(operation);
   }
 
   /**
@@ -506,7 +532,19 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
    */
   @Override
   public Fragment visitLimitCommandDuration(QubecTalkParser.LimitCommandDurationContext ctx) {
-    return visitChildren(ctx);
+    String stream = ctx.target.getText();
+    Operation valueOperation = visit(ctx.value).getOperation();
+    ParsedDuring during = visit(ctx.duration).getDuring();
+    Operation operation;
+
+    // Check if this is a cap or floor operation
+    if (ctx.getText().startsWith("cap")) {
+      operation = new CapOperation(stream, valueOperation, during);
+    } else {
+      operation = new FloorOperation(stream, valueOperation, during);
+    }
+
+    return new OperationFragment(operation);
   }
 
   /**
@@ -515,7 +553,21 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
   @Override
   public Fragment visitLimitCommandDisplacingDuration(
       QubecTalkParser.LimitCommandDisplacingDurationContext ctx) {
-    return visitChildren(ctx);
+    String stream = ctx.target.getText();
+    Operation valueOperation = visit(ctx.value).getOperation();
+    ParsedDuring during = visit(ctx.duration).getDuring();
+    String displaceTarget = ctx.getChild(5).accept(this).getString();
+
+    Operation operation;
+
+    // Check if this is a cap or floor operation
+    if (ctx.getText().startsWith("cap")) {
+      operation = new CapOperation(stream, valueOperation, displaceTarget, during);
+    } else {
+      operation = new FloorOperation(stream, valueOperation, displaceTarget, during);
+    }
+
+    return new OperationFragment(operation);
   }
 
   /**
