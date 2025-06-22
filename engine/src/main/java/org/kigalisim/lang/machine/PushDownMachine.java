@@ -53,6 +53,26 @@ public interface PushDownMachine {
   void subtract();
 
   /**
+   * Multiply the two numbers on top of the stack.
+   *
+   * <p>Multiply the two numbers on top of the stack, pushing the result of the calculation to the
+   * top of the stack. It assumes that the left operand was pushed prior to the right operand such
+   * that the right operand is on the top of the stack and the left operand is right below.</p>
+   */
+  void multiply();
+
+  /**
+   * Divide the two numbers on top of the stack.
+   *
+   * <p>Divide the two numbers on top of the stack, pushing the result of the calculation to the
+   * top of the stack. It assumes that the left operand was pushed prior to the right operand such
+   * that the right operand is on the top of the stack and the left operand is right below.</p>
+   *
+   * @throws ArithmeticException If the right operand (divisor) is zero.
+   */
+  void divide();
+
+  /**
    * Change the units of the number at the top of the stack.
    *
    * @param units The new units for the number at the top of the stack.

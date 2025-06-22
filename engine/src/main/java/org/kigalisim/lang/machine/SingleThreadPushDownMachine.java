@@ -7,6 +7,7 @@
 package org.kigalisim.lang.machine;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.Optional;
 import java.util.Stack;
 import org.kigalisim.engine.Engine;
@@ -66,6 +67,34 @@ public class SingleThreadPushDownMachine implements PushDownMachine {
     setExpectedUnits(right.getUnits());
     EngineNumber left = pop();
     BigDecimal resultValue = left.getValue().subtract(right.getValue());
+    EngineNumber result = new EngineNumber(resultValue, getExpectedUnits());
+    push(result);
+    clearExpectedUnits();
+  }
+
+  @Override
+  public void multiply() {
+    EngineNumber right = pop();
+    setExpectedUnits(right.getUnits());
+    EngineNumber left = pop();
+    BigDecimal resultValue = left.getValue().multiply(right.getValue());
+    EngineNumber result = new EngineNumber(resultValue, getExpectedUnits());
+    push(result);
+    clearExpectedUnits();
+  }
+
+  @Override
+  public void divide() {
+    EngineNumber right = pop();
+    if (right.getValue().compareTo(BigDecimal.ZERO) == 0) {
+      throw new ArithmeticException("Division by zero");
+    }
+    setExpectedUnits(right.getUnits());
+    EngineNumber left = pop();
+    // Use a scale of 10 and HALF_UP rounding mode for division
+    BigDecimal resultValue = left.getValue().divide(right.getValue(), 10, RoundingMode.HALF_UP);
+    // Strip trailing zeros to get a cleaner representation
+    resultValue = resultValue.stripTrailingZeros();
     EngineNumber result = new EngineNumber(resultValue, getExpectedUnits());
     push(result);
     clearExpectedUnits();

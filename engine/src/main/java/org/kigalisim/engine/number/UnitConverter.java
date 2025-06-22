@@ -63,16 +63,16 @@ public class UnitConverter {
       return new EngineNumber(BigDecimal.ZERO, destinationUnits);
     }
 
-    String[] sourceUnitPieces = source.getUnits().split(" / ");
+    String[] sourceUnitPieces = source.getUnits().split("/");
     boolean sourceHasDenominator = sourceUnitPieces.length > 1;
-    String sourceDenominatorUnits = sourceHasDenominator ? sourceUnitPieces[1] : "";
+    String sourceDenominatorUnits = sourceHasDenominator ? sourceUnitPieces[1].strip() : "";
 
-    String[] destinationUnitPieces = destinationUnits.split(" / ");
+    String[] destinationUnitPieces = destinationUnits.split("/");
     boolean destHasDenominator = destinationUnitPieces.length > 1;
-    String destinationDenominatorUnits = destHasDenominator ? destinationUnitPieces[1] : "";
+    String destinationDenominatorUnits = destHasDenominator ? destinationUnitPieces[1].strip() : "";
 
-    String sourceNumeratorUnits = sourceUnitPieces[0];
-    String destinationNumeratorUnits = destinationUnitPieces[0];
+    String sourceNumeratorUnits = sourceUnitPieces[0].strip();
+    String destinationNumeratorUnits = destinationUnitPieces[0].strip();
     boolean differentDenominator = !destinationDenominatorUnits.equals(sourceDenominatorUnits);
     boolean sameDenominator = !differentDenominator;
 
@@ -216,6 +216,21 @@ public class UnitConverter {
     } else if ("kg".equals(currentUnits)) {
       return asVolume;
     } else {
+      // Try one more time with normalization
+      if (currentUnits.contains("/") || currentUnits.contains(" / ")) {
+        // This is a ratio unit that wasn't properly normalized
+        // Let's handle it directly
+        if (currentUnits.contains("kg")) {
+          BigDecimal originalValue = asVolume.getValue();
+          if (currentUnits.contains("unit") || currentUnits.contains("units")) {
+            // It's a kg/unit or kg/units ratio
+            EngineNumber population = stateGetter.getPopulation();
+            BigDecimal populationValue = population.getValue();
+            BigDecimal newValue = originalValue.multiply(populationValue);
+            return new EngineNumber(newValue, "kg");
+          }
+        }
+      }
       throw new IllegalArgumentException("Unexpected units " + currentUnits);
     }
   }
@@ -254,14 +269,14 @@ public class UnitConverter {
       BigDecimal originalValue = target.getValue();
       EngineNumber conversion = stateGetter.getSubstanceConsumption();
       BigDecimal conversionValue = conversion.getValue();
-      String newUnits = conversion.getUnits().split(" / ")[1];
+      String newUnits = conversion.getUnits().split("/")[1].strip();
       BigDecimal newValue = originalValue.divide(conversionValue, MATH_CONTEXT);
       return new EngineNumber(newValue, newUnits);
     } else if ("unit".equals(currentUnits) || "units".equals(currentUnits)) {
       BigDecimal originalValue = target.getValue();
       EngineNumber conversion = stateGetter.getAmortizedUnitVolume();
       BigDecimal conversionValue = conversion.getValue();
-      String newUnits = conversion.getUnits().split(" / ")[0];
+      String newUnits = conversion.getUnits().split("/")[0].strip();
       BigDecimal newValue = originalValue.multiply(conversionValue);
       return new EngineNumber(newValue, newUnits);
     } else if ("%".equals(currentUnits)) {
@@ -271,13 +286,13 @@ public class UnitConverter {
       String newUnits = total.getUnits();
       BigDecimal newValue = total.getValue().multiply(asRatio);
       return new EngineNumber(newValue, newUnits);
-    } else if ("kg/unit".equals(currentUnits)) {
+    } else if ("kg/unit".equals(currentUnits) || "kg / unit".equals(currentUnits)) {
       BigDecimal originalValue = target.getValue();
       EngineNumber population = stateGetter.getPopulation();
       BigDecimal populationValue = population.getValue();
       BigDecimal newValue = originalValue.multiply(populationValue);
       return new EngineNumber(newValue, "kg");
-    } else if ("mt/unit".equals(currentUnits)) {
+    } else if ("mt/unit".equals(currentUnits) || "mt / unit".equals(currentUnits)) {
       BigDecimal originalValue = target.getValue();
       EngineNumber population = stateGetter.getPopulation();
       BigDecimal populationValue = population.getValue();
@@ -305,8 +320,8 @@ public class UnitConverter {
     } else if ("kg".equals(currentUnits) || "mt".equals(currentUnits)) {
       EngineNumber conversion = stateGetter.getAmortizedUnitVolume();
       BigDecimal conversionValue = conversion.getValue();
-      String[] conversionUnitPieces = conversion.getUnits().split(" / ");
-      String expectedUnits = conversionUnitPieces[0];
+      String[] conversionUnitPieces = conversion.getUnits().split("/");
+      String expectedUnits = conversionUnitPieces[0].strip();
       EngineNumber targetConverted = convert(target, expectedUnits);
       BigDecimal originalValue = targetConverted.getValue();
       BigDecimal newValue = originalValue.divide(conversionValue, MATH_CONTEXT);
@@ -347,9 +362,9 @@ public class UnitConverter {
     } else if (currentInfer) {
       EngineNumber conversion = stateGetter.getSubstanceConsumption();
       BigDecimal conversionValue = conversion.getValue();
-      String[] conversionUnitPieces = conversion.getUnits().split(" / ");
-      String newUnits = conversionUnitPieces[0];
-      String expectedUnits = conversionUnitPieces[1];
+      String[] conversionUnitPieces = conversion.getUnits().split("/");
+      String newUnits = conversionUnitPieces[0].strip();
+      String expectedUnits = conversionUnitPieces[1].strip();
       EngineNumber targetConverted = convert(target, expectedUnits);
       BigDecimal originalValue = targetConverted.getValue();
       BigDecimal newValue = originalValue.multiply(conversionValue);
@@ -538,8 +553,8 @@ public class UnitConverter {
   private EngineNumber normUnits(EngineNumber target) {
     String currentUnits = target.getUnits();
 
-    boolean divUnit = currentUnits.endsWith("/ unit");
-    boolean divUnits = currentUnits.endsWith("/ units");
+    boolean divUnit = currentUnits.endsWith("/ unit") || currentUnits.endsWith("/unit");
+    boolean divUnits = currentUnits.endsWith("/ units") || currentUnits.endsWith("/units");
     boolean isPerUnit = divUnit || divUnits;
 
     if (!isPerUnit) {
@@ -547,7 +562,16 @@ public class UnitConverter {
     }
 
     BigDecimal originalValue = target.getValue();
-    String newUnits = currentUnits.split(" / ")[0];
+    String newUnits;
+    if (currentUnits.contains(" / ")) {
+      newUnits = currentUnits.split(" / ")[0];
+    } else if (currentUnits.contains("/")) {
+      newUnits = currentUnits.split("/")[0];
+    } else {
+      // This should never happen given the checks above, but just in case
+      return target;
+    }
+
     EngineNumber population = stateGetter.getPopulation();
     BigDecimal populationValue = population.getValue();
     BigDecimal newValue = originalValue.multiply(populationValue);

@@ -24,8 +24,10 @@ import org.kigalisim.lang.fragment.SubstanceFragment;
 import org.kigalisim.lang.fragment.UnitFragment;
 import org.kigalisim.lang.operation.AdditionOperation;
 import org.kigalisim.lang.operation.ChangeUnitsOperation;
+import org.kigalisim.lang.operation.DivisionOperation;
 import org.kigalisim.lang.operation.EqualsOperation;
 import org.kigalisim.lang.operation.InitialChargeOperation;
+import org.kigalisim.lang.operation.MultiplicationOperation;
 import org.kigalisim.lang.operation.Operation;
 import org.kigalisim.lang.operation.PreCalculatedOperation;
 import org.kigalisim.lang.operation.RechargeOperation;
@@ -176,7 +178,19 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
    */
   @Override
   public Fragment visitMultiplyExpression(QubecTalkParser.MultiplyExpressionContext ctx) {
-    return visitChildren(ctx);
+    Operation left = visit(ctx.expression(0)).getOperation();
+    Operation right = visit(ctx.expression(1)).getOperation();
+
+    String operatorStr = ctx.op.getText();
+    Operation calculation;
+    if (operatorStr.equals("*")) {
+      calculation = new MultiplicationOperation(left, right);
+    } else if (operatorStr.equals("/")) {
+      calculation = new DivisionOperation(left, right);
+    } else {
+      throw new RuntimeException("Unknown multiplication operation");
+    }
+    return new OperationFragment(calculation);
   }
 
   /**

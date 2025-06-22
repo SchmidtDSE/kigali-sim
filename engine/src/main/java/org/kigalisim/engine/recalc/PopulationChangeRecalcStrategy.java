@@ -80,11 +80,10 @@ public class PopulationChangeRecalcStrategy implements RecalcStrategy {
     EngineNumber initialChargeRaw = target.getInitialCharge("sales");
     EngineNumber initialCharge = unitConverter.convert(initialChargeRaw, "kg / unit");
     BigDecimal initialChargeKgUnit = initialCharge.getValue();
-    BigDecimal deltaUnitsRaw = DivisionHelper.divideWithZero(
+    BigDecimal deltaUnits = DivisionHelper.divideWithZero(
         availableForNewUnitsKg,
         initialChargeKgUnit
     );
-    BigDecimal deltaUnits = deltaUnitsRaw;
     EngineNumber newUnitsMarginal = new EngineNumber(
         deltaUnits.compareTo(BigDecimal.ZERO) < 0 ? BigDecimal.ZERO : deltaUnits,
         "units"

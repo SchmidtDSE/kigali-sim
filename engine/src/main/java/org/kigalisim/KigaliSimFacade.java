@@ -117,13 +117,8 @@ public class KigaliSimFacade {
       }
 
       // Collect results for this year using the engine's built-in method
-      try {
-        List<EngineResult> yearResults = engine.getResults();
-        results.addAll(yearResults);
-      } catch (Exception e) {
-        // Continue without results for this year - this is expected for basic examples
-        // that don't have all required streams
-      }
+      List<EngineResult> yearResults = engine.getResults();
+      results.addAll(yearResults);
 
       // Increment to the next year
       engine.incrementYear();

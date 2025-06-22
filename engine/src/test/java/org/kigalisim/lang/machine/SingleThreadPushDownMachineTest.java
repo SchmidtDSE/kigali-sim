@@ -163,4 +163,63 @@ public class SingleThreadPushDownMachineTest {
     assertThrows(RuntimeException.class, () -> machine.changeUnits("liters"),
         "changeUnits should throw RuntimeException when units don't match");
   }
+
+  /**
+   * Test the multiply operation.
+   */
+  @Test
+  public void testMultiply() {
+    machine.push(new EngineNumber(BigDecimal.valueOf(3), "kg"));
+    machine.push(new EngineNumber(BigDecimal.valueOf(4), "kg"));
+    machine.multiply();
+    EngineNumber result = machine.getResult();
+    assertEquals(BigDecimal.valueOf(12), result.getValue(), "Multiplication should work correctly");
+    assertEquals("kg", result.getUnits(), "Units should be preserved after multiplication");
+  }
+
+  /**
+   * Test that multiply throws an exception when units don't match.
+   */
+  @Test
+  public void testMultiplyUnitsMismatch() {
+    machine.push(new EngineNumber(BigDecimal.valueOf(3), "kg"));
+    machine.push(new EngineNumber(BigDecimal.valueOf(4), "liters"));
+    assertThrows(RuntimeException.class, () -> machine.multiply(),
+        "multiply should throw RuntimeException when units don't match");
+  }
+
+  /**
+   * Test the divide operation.
+   */
+  @Test
+  public void testDivide() {
+    machine.push(new EngineNumber(BigDecimal.valueOf(12), "kg"));
+    machine.push(new EngineNumber(BigDecimal.valueOf(4), "kg"));
+    machine.divide();
+    EngineNumber result = machine.getResult();
+    assertEquals(BigDecimal.valueOf(3), result.getValue(), "Division should work correctly");
+    assertEquals("kg", result.getUnits(), "Units should be preserved after division");
+  }
+
+  /**
+   * Test that divide throws an exception when units don't match.
+   */
+  @Test
+  public void testDivideUnitsMismatch() {
+    machine.push(new EngineNumber(BigDecimal.valueOf(12), "kg"));
+    machine.push(new EngineNumber(BigDecimal.valueOf(4), "liters"));
+    assertThrows(RuntimeException.class, () -> machine.divide(),
+        "divide should throw RuntimeException when units don't match");
+  }
+
+  /**
+   * Test that divide throws an exception when dividing by zero.
+   */
+  @Test
+  public void testDivideByZero() {
+    machine.push(new EngineNumber(BigDecimal.valueOf(12), "kg"));
+    machine.push(new EngineNumber(BigDecimal.valueOf(0), "kg"));
+    assertThrows(ArithmeticException.class, () -> machine.divide(),
+        "divide should throw ArithmeticException when dividing by zero");
+  }
 }
