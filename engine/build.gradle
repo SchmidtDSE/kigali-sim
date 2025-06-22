@@ -134,6 +134,9 @@ checkstyle {
   maxErrors = 0
   maxWarnings = 0
   ignoreFailures = false
+  configProperties = [
+    'org.checkstyle.google.suppressionfilter.config': "${rootDir}/config/checkstyle/checkstyle-suppressions.xml"
+  ]
 }
 
 // Checkstyle target for main code

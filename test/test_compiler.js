@@ -498,6 +498,32 @@ function buildCompilerTests() {
       },
     ]);
 
+    buildTest("verifies simple substance replacement", "/examples/basic_replace_simple.qta", [
+      (result, assert) => {
+        // Check year 1 - no replacement yet
+        const recordAYear1 = getResult(result, "Sim", 1, 0, "Test", "Sub A");
+        const consumptionAYear1 = recordAYear1.getGhgConsumption();
+        assert.closeTo(consumptionAYear1.getValue(), 10000000, 0.0001);
+        assert.deepEqual(consumptionAYear1.getUnits(), "tCO2e");
+
+        const recordBYear1 = getResult(result, "Sim", 1, 0, "Test", "Sub B");
+        const consumptionBYear1 = recordBYear1.getGhgConsumption();
+        assert.closeTo(consumptionBYear1.getValue(), 0, 0.0001);
+        assert.deepEqual(consumptionBYear1.getUnits(), "tCO2e");
+
+        // Check year 10 - replacement should result in complete shift from A to B
+        const recordAYear10 = getResult(result, "Sim", 10, 0, "Test", "Sub A");
+        const consumptionAYear10 = recordAYear10.getGhgConsumption();
+        assert.closeTo(consumptionAYear10.getValue(), 0, 0.0001);
+        assert.deepEqual(consumptionAYear10.getUnits(), "tCO2e");
+
+        const recordBYear10 = getResult(result, "Sim", 10, 0, "Test", "Sub B");
+        const consumptionBYear10 = recordBYear10.getGhgConsumption();
+        assert.closeTo(consumptionBYear10.getValue(), 1000000, 0.0001);
+        assert.deepEqual(consumptionBYear10.getUnits(), "tCO2e");
+      },
+    ]);
+
     buildTest(
       "verifies substance replacement over time units",
       "/examples/basic_replace_units.qta",
