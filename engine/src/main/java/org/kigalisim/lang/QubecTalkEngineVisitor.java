@@ -34,6 +34,7 @@ import org.kigalisim.lang.operation.MultiplicationOperation;
 import org.kigalisim.lang.operation.Operation;
 import org.kigalisim.lang.operation.PreCalculatedOperation;
 import org.kigalisim.lang.operation.RechargeOperation;
+import org.kigalisim.lang.operation.RecoverOperation;
 import org.kigalisim.lang.operation.ReplaceOperation;
 import org.kigalisim.lang.operation.RetireOperation;
 import org.kigalisim.lang.operation.SetOperation;
@@ -666,7 +667,10 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
    */
   @Override
   public Fragment visitRecoverAllYears(QubecTalkParser.RecoverAllYearsContext ctx) {
-    return visitChildren(ctx);
+    Operation volumeOperation = visit(ctx.volume).getOperation();
+    Operation yieldOperation = visit(ctx.yieldVal).getOperation();
+    Operation operation = new RecoverOperation(volumeOperation, yieldOperation);
+    return new OperationFragment(operation);
   }
 
   /**
@@ -674,7 +678,11 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
    */
   @Override
   public Fragment visitRecoverDuration(QubecTalkParser.RecoverDurationContext ctx) {
-    return visitChildren(ctx);
+    Operation volumeOperation = visit(ctx.volume).getOperation();
+    Operation yieldOperation = visit(ctx.yieldVal).getOperation();
+    ParsedDuring during = visit(ctx.duration).getDuring();
+    Operation operation = new RecoverOperation(volumeOperation, yieldOperation, during);
+    return new OperationFragment(operation);
   }
 
   /**
@@ -683,7 +691,12 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
   @Override
   public Fragment visitRecoverDisplacementAllYears(
       QubecTalkParser.RecoverDisplacementAllYearsContext ctx) {
-    return visitChildren(ctx);
+    Operation volumeOperation = visit(ctx.volume).getOperation();
+    Operation yieldOperation = visit(ctx.yieldVal).getOperation();
+    String displacementTarget = ctx.getChild(5).accept(this).getString();
+    Operation operation = new RecoverOperation(volumeOperation, yieldOperation, 
+                                             new PreCalculatedOperation(new EngineNumber(new BigDecimal(0), displacementTarget)));
+    return new OperationFragment(operation);
   }
 
   /**
@@ -692,7 +705,13 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
   @Override
   public Fragment visitRecoverDisplacementDuration(
       QubecTalkParser.RecoverDisplacementDurationContext ctx) {
-    return visitChildren(ctx);
+    Operation volumeOperation = visit(ctx.volume).getOperation();
+    Operation yieldOperation = visit(ctx.yieldVal).getOperation();
+    String displacementTarget = ctx.getChild(6).accept(this).getString();
+    ParsedDuring during = visit(ctx.duration).getDuring();
+    Operation operation = new RecoverOperation(volumeOperation, yieldOperation, 
+                                             new PreCalculatedOperation(new EngineNumber(new BigDecimal(0), displacementTarget)), during);
+    return new OperationFragment(operation);
   }
 
   /**
