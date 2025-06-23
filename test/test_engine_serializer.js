@@ -111,6 +111,16 @@ export function buildEngineSerializerTests() {
       assert.closeTo(result.getEnergyConsumption().getValue(), 5, 0.00001);
       assert.strictEqual(result.getEnergyConsumption().getUnits(), "kwh / kg");
     });
+
+    QUnit.test("gets scenario name", function (assert) {
+      // Expected: "test scenario" from MockEngine
+      assert.strictEqual(result.getScenarioName(), "test scenario");
+    });
+
+    QUnit.test("gets trial number", function (assert) {
+      // Expected: 1 from MockEngine
+      assert.strictEqual(result.getTrialNumber(), 1);
+    });
   });
 
   QUnit.module("EngineResultSerializer import supplement", function (hooks) {
@@ -165,6 +175,16 @@ export function buildEngineSerializerTests() {
 class MockEngine {
   constructor(options) {
     this.options = options;
+    this._scenarioName = options.has("scenarioName") ? options.get("scenarioName") : "test scenario";
+    this._trialNumber = options.has("trialNumber") ? options.get("trialNumber") : 1;
+  }
+
+  getScenarioName() {
+    return this._scenarioName;
+  }
+
+  getTrialNumber() {
+    return this._trialNumber;
   }
   getStream(name, scope, conversion) {
     // Only use "name" for mock, ignore scope/conversion

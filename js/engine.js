@@ -38,6 +38,8 @@ class Engine {
     self._endYear = endYearRearrange;
 
     self._currentYear = self._startYear;
+    self._scenarioName = "";
+    self._trialNumber = 0;
 
     self._stateGetter = new ConverterStateGetter(self);
     self._unitConverter = new UnitConverter(self._stateGetter);
@@ -63,6 +65,46 @@ class Engine {
   getEndYear() {
     const self = this;
     return self._endYear;
+  }
+
+  /**
+   * Get the scenario name.
+   *
+   * @returns {string} The name of the scenario being run.
+   */
+  getScenarioName() {
+    const self = this;
+    return self._scenarioName;
+  }
+
+  /**
+   * Set the scenario name.
+   *
+   * @param {string} scenarioName - The name of the scenario being run.
+   */
+  setScenarioName(scenarioName) {
+    const self = this;
+    self._scenarioName = scenarioName;
+  }
+
+  /**
+   * Get the trial number.
+   *
+   * @returns {number} The trial number of the current run.
+   */
+  getTrialNumber() {
+    const self = this;
+    return self._trialNumber;
+  }
+
+  /**
+   * Set the trial number.
+   *
+   * @param {number} trialNumber - The trial number of the current run.
+   */
+  setTrialNumber(trialNumber) {
+    const self = this;
+    self._trialNumber = trialNumber;
   }
 
   /**

@@ -21,6 +21,8 @@ class EngineResult {
    * @param {string} substance - The substance associated with this engine
    *     result.
    * @param {number} year - The year for which the engine result is relevant.
+   * @param {string} scenarioName - The name of the scenario being run.
+   * @param {number} trialNumber - The trial number of the current run.
    * @param {EngineNumber} manufactureValue - The value associated with
    *     manufacturing in volume like kg.
    * @param {EngineNumber} importValue - The value related to imports like in
@@ -48,6 +50,8 @@ class EngineResult {
     application,
     substance,
     year,
+    scenarioName,
+    trialNumber,
     manufactureValue,
     importValue,
     recycleValue,
@@ -65,6 +69,8 @@ class EngineResult {
     self._application = application;
     self._substance = substance;
     self._year = year;
+    self._scenarioName = scenarioName;
+    self._trialNumber = trialNumber;
     self._manufactureValue = manufactureValue;
     self._importValue = importValue;
     self._recycleValue = recycleValue;
@@ -266,6 +272,26 @@ class EngineResult {
   getImportSupplement() {
     const self = this;
     return self._importSupplement;
+  }
+
+  /**
+   * Get the scenario name.
+   *
+   * @returns {string} The name of the scenario being run.
+   */
+  getScenarioName() {
+    const self = this;
+    return self._scenarioName;
+  }
+
+  /**
+   * Get the trial number.
+   *
+   * @returns {number} The trial number of the current run.
+   */
+  getTrialNumber() {
+    const self = this;
+    return self._trialNumber;
   }
 }
 
@@ -561,6 +587,8 @@ class EngineResultBuilder {
     self._application = null;
     self._substance = null;
     self._year = null;
+    self._scenarioName = null;
+    self._trialNumber = null;
     self._manufactureValue = null;
     self._importValue = null;
     self._recycleValue = null;
@@ -605,6 +633,26 @@ class EngineResultBuilder {
   setYear(year) {
     const self = this;
     self._year = year;
+  }
+
+  /**
+   * Set the scenario name for which a result is being given.
+   *
+   * @param {string} scenarioName - The name of the scenario being run.
+   */
+  setScenarioName(scenarioName) {
+    const self = this;
+    self._scenarioName = scenarioName;
+  }
+
+  /**
+   * Set the trial number for which a result is being given.
+   *
+   * @param {number} trialNumber - The trial number of the current run.
+   */
+  setTrialNumber(trialNumber) {
+    const self = this;
+    self._trialNumber = trialNumber;
   }
 
   /**
@@ -752,6 +800,8 @@ class EngineResultBuilder {
       self._application,
       self._substance,
       self._year,
+      self._scenarioName,
+      self._trialNumber,
       self._manufactureValue,
       self._importValue,
       self._recycleValue,
@@ -779,6 +829,8 @@ class EngineResultBuilder {
     checkValid(self._application, "application");
     checkValid(self._substance, "substance");
     checkValid(self._year, "year");
+    checkValid(self._scenarioName, "scenarioName");
+    checkValid(self._trialNumber, "trialNumber");
     checkValid(self._manufactureValue, "manufactureValue");
     checkValid(self._importValue, "importValue");
     checkValid(self._recycleValue, "recycleValue");
