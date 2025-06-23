@@ -73,6 +73,6 @@ public class RecoverOperation implements Operation {
 
     // Call the recycle method on the engine
     Engine engine = machine.getEngine();
-    engine.recycle(recoveryAmount, yieldRate, null, yearMatcher);
+    engine.recycle(recoveryAmount, yieldRate, yearMatcher);
   }
 }

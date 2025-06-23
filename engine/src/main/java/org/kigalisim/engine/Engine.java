@@ -293,7 +293,7 @@ public interface Engine {
    * @param yearMatcher Matcher to determine if the change applies to current year
    */
   void recycle(EngineNumber recoveryWithUnits, EngineNumber yieldWithUnits,
-      EngineNumber displaceLevel, YearMatcher yearMatcher);
+      YearMatcher yearMatcher);
 
   /**
    * Set GHG equivalency for the current application and substance.

@@ -110,7 +110,7 @@ public class RecoverOperationTest {
     operation.execute(mockMachine);
 
     // Verify the recycle method was called with the correct parameters
-    verify(mockEngine).recycle(eq(volume), eq(yield), eq(null), any(YearMatcher.class));
+    verify(mockEngine).recycle(eq(volume), eq(yield), any(YearMatcher.class));
   }
 
   /**
@@ -171,6 +171,6 @@ public class RecoverOperationTest {
     operation.execute(mockMachine);
 
     // Verify the recycle method was called with the correct parameters
-    verify(mockEngine).recycle(eq(volume), eq(yield), eq(null), any(YearMatcher.class));
+    verify(mockEngine).recycle(eq(volume), eq(yield), any(YearMatcher.class));
   }
 }

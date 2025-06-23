@@ -576,7 +576,7 @@ public class SingleThreadEngine implements Engine {
 
   @Override
   public void recycle(EngineNumber recoveryWithUnits, EngineNumber yieldWithUnits,
-      EngineNumber displaceLevel, YearMatcher yearMatcher) {
+      YearMatcher yearMatcher) {
     if (!getIsInRange(yearMatcher)) {
       return;
     }
