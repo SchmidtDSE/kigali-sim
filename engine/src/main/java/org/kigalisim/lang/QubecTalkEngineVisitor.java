@@ -722,8 +722,11 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
     Operation volumeOperation = visit(ctx.volume).getOperation();
     Operation yieldOperation = visit(ctx.yieldVal).getOperation();
     String displacementTarget = ctx.getChild(5).accept(this).getString();
-    Operation operation = new RecoverOperation(volumeOperation, yieldOperation,
-                                             new PreCalculatedOperation(new EngineNumber(new BigDecimal(0), displacementTarget)));
+    Operation operation = new RecoverOperation(
+        volumeOperation,
+        yieldOperation,
+        new PreCalculatedOperation(new EngineNumber(new BigDecimal(0), displacementTarget))
+    );
     return new OperationFragment(operation);
   }
 
@@ -737,8 +740,12 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
     Operation yieldOperation = visit(ctx.yieldVal).getOperation();
     String displacementTarget = ctx.getChild(6).accept(this).getString();
     ParsedDuring during = visit(ctx.duration).getDuring();
-    Operation operation = new RecoverOperation(volumeOperation, yieldOperation,
-                                             new PreCalculatedOperation(new EngineNumber(new BigDecimal(0), displacementTarget)), during);
+    Operation operation = new RecoverOperation(
+        volumeOperation,
+        yieldOperation,
+        new PreCalculatedOperation(new EngineNumber(new BigDecimal(0), displacementTarget)),
+        during
+    );
     return new OperationFragment(operation);
   }
 
