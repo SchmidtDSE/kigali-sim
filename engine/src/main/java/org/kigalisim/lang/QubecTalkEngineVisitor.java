@@ -32,8 +32,10 @@ import org.kigalisim.lang.operation.DivisionOperation;
 import org.kigalisim.lang.operation.EqualityOperation;
 import org.kigalisim.lang.operation.EqualsOperation;
 import org.kigalisim.lang.operation.FloorOperation;
+import org.kigalisim.lang.operation.GetStreamOperation;
 import org.kigalisim.lang.operation.GetVariableOperation;
 import org.kigalisim.lang.operation.InitialChargeOperation;
+import org.kigalisim.lang.operation.LimitOperation;
 import org.kigalisim.lang.operation.LogicalOperation;
 import org.kigalisim.lang.operation.MultiplicationOperation;
 import org.kigalisim.lang.operation.Operation;
@@ -164,7 +166,17 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
    */
   @Override
   public Fragment visitGetStreamConversion(QubecTalkParser.GetStreamConversionContext ctx) {
-    return visitChildren(ctx);
+    // Get the stream name
+    String streamName = visit(ctx.target).getString();
+
+    // Get the unit conversion
+    UnitFragment unitFragment = (UnitFragment) visit(ctx.conversion);
+    String unitConversion = unitFragment.getUnit();
+
+    // Create an operation that represents getting the stream value and converting it to the specified unit
+    Operation operation = new GetStreamOperation(streamName, unitConversion);
+
+    return new OperationFragment(operation);
   }
 
   /**
@@ -197,8 +209,28 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
    */
   @Override
   public Fragment visitMultiplyExpression(QubecTalkParser.MultiplyExpressionContext ctx) {
-    Operation left = visit(ctx.expression(0)).getOperation();
-    Operation right = visit(ctx.expression(1)).getOperation();
+    Fragment leftFragment = visit(ctx.expression(0));
+    Fragment rightFragment = visit(ctx.expression(1));
+
+    // Check if fragments have operations
+    if (leftFragment == null || rightFragment == null) {
+      throw new RuntimeException("Null fragment in multiply expression");
+    }
+
+    Operation left;
+    Operation right;
+
+    try {
+      left = leftFragment.getOperation();
+    } catch (RuntimeException e) {
+      throw new RuntimeException("Left fragment does not have an operation: " + e.getMessage());
+    }
+
+    try {
+      right = rightFragment.getOperation();
+    } catch (RuntimeException e) {
+      throw new RuntimeException("Right fragment does not have an operation: " + e.getMessage());
+    }
 
     String operatorStr = ctx.op.getText();
     Operation calculation;
@@ -267,7 +299,13 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
    */
   @Override
   public Fragment visitGetStream(QubecTalkParser.GetStreamContext ctx) {
-    return visitChildren(ctx);
+    // Get the stream name
+    String streamName = visit(ctx.target).getString();
+
+    // Create an operation that represents getting the stream value
+    Operation operation = new GetStreamOperation(streamName);
+
+    return new OperationFragment(operation);
   }
 
   /**
@@ -291,7 +329,9 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
    */
   @Override
   public Fragment visitIdentifierAsVar(QubecTalkParser.IdentifierAsVarContext ctx) {
-    return visitChildren(ctx);
+    String identifier = ctx.getChild(0).getText();
+    Operation operation = new GetVariableOperation(identifier);
+    return new OperationFragment(operation);
   }
 
   /**
@@ -363,7 +403,9 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
    */
   @Override
   public Fragment visitAboutStanza(QubecTalkParser.AboutStanzaContext ctx) {
-    return visitChildren(ctx);
+    // Return a policy fragment with an empty policy
+    ParsedPolicy policy = new ParsedPolicy("about", new ArrayList<>());
+    return new PolicyFragment(policy);
   }
 
   /**
