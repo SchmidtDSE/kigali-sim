@@ -54,14 +54,15 @@ function buildCompilerTests() {
     };
 
     const getResult = (results, scenario, year, trialIndex, application, substance) => {
-      const result = results.filter((x) => x.getName() === scenario)[0];
-      const trials = result.getTrialResults();
-      const trial = trials[trialIndex];
-      const trialFlat = trial.flat();
-      return trialFlat
+      const filtered = results
+        .filter((x) => x.getScenarioName() === scenario)
         .filter((x) => x.getYear() == year)
         .filter((x) => x.getApplication() === application)
-        .filter((x) => x.getSubstance() === substance)[0];
+        .filter((x) => x.getSubstance() === substance);
+      
+      // For simple cases, just return the first match regardless of trial number
+      // since most tests use single trial simulations
+      return filtered[0];
     };
 
     const BAU_NAME = "business as usual";

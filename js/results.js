@@ -213,43 +213,36 @@ class ExportPresenter {
   showResults(results, filterSet) {
     const self = this;
     const rawData = results.getRawData(filterSet);
-    const nested = rawData.map((trial) => {
-      const scenarioName = trial.getName();
-      const results = trial.getTrialResults();
-      return results
-        .flat()
-        .flat()
-        .map((result) => {
-          const application = result.getApplication();
-          const substance = result.getSubstance();
-          const year = result.getYear();
-          const manufactureValue = result.getManufacture();
-          const importValue = result.getImport();
-          const rechargeEmissionsValue = result.getRechargeEmissions();
-          const eolEmissionsValue = result.getEolEmissions();
-          const populationValue = result.getPopulation();
-          const energyConsumptionValue = result.getEnergyConsumption();
-          return {
-            scenario: scenarioName,
-            application: application,
-            substance: substance,
-            year: year,
-            manufactureValue: manufactureValue.getValue(),
-            manufactureUnits: manufactureValue.getUnits(),
-            importValue: importValue.getValue(),
-            importUnits: importValue.getUnits(),
-            rechargeEmissionsValue: rechargeEmissionsValue.getValue(),
-            rechargeEmissionsUnits: rechargeEmissionsValue.getUnits(),
-            eolEmissionsValue: eolEmissionsValue.getValue(),
-            eolEmissionsUnits: eolEmissionsValue.getUnits(),
-            equipmentPopulation: populationValue.getValue(),
-            equipmentUnits: populationValue.getUnits(),
-            energyConsumptionValue: energyConsumptionValue.getValue(),
-            energyConsumptionUnits: energyConsumptionValue.getUnits(),
-          };
-        });
+    const flat = rawData.map((result) => {
+      const scenarioName = result.getScenarioName();
+      const application = result.getApplication();
+      const substance = result.getSubstance();
+      const year = result.getYear();
+      const manufactureValue = result.getManufacture();
+      const importValue = result.getImport();
+      const rechargeEmissionsValue = result.getRechargeEmissions();
+      const eolEmissionsValue = result.getEolEmissions();
+      const populationValue = result.getPopulation();
+      const energyConsumptionValue = result.getEnergyConsumption();
+      return {
+        scenario: scenarioName,
+        application: application,
+        substance: substance,
+        year: year,
+        manufactureValue: manufactureValue.getValue(),
+        manufactureUnits: manufactureValue.getUnits(),
+        importValue: importValue.getValue(),
+        importUnits: importValue.getUnits(),
+        rechargeEmissionsValue: rechargeEmissionsValue.getValue(),
+        rechargeEmissionsUnits: rechargeEmissionsValue.getUnits(),
+        eolEmissionsValue: eolEmissionsValue.getValue(),
+        eolEmissionsUnits: eolEmissionsValue.getUnits(),
+        equipmentPopulation: populationValue.getValue(),
+        equipmentUnits: populationValue.getUnits(),
+        energyConsumptionValue: energyConsumptionValue.getValue(),
+        energyConsumptionUnits: energyConsumptionValue.getUnits(),
+      };
     });
-    const flat = nested.flat();
     const contentRows = flat.map((record) => {
       const vals = [
         record["scenario"],

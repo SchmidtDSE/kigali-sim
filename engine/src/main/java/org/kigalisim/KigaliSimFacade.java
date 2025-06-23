@@ -249,6 +249,9 @@ public class KigaliSimFacade {
     headerJoiner.add("rechargeEmissions");
     headerJoiner.add("eolEmissions");
     headerJoiner.add("energyConsumption");
+    headerJoiner.add("initialChargeValue");
+    headerJoiner.add("initialChargeConsumption");
+    headerJoiner.add("importNewPopulation");
 
     StringBuilder csvBuilder = new StringBuilder();
     csvBuilder.append(headerJoiner.toString()).append("\n");
@@ -272,6 +275,9 @@ public class KigaliSimFacade {
       rowJoiner.add(result.getRechargeEmissions().getValue().toString());
       rowJoiner.add(result.getEolEmissions().getValue().toString());
       rowJoiner.add(result.getEnergyConsumption().getValue().toString());
+      rowJoiner.add(result.getImportSupplement().getInitialChargeValue().getValue().toString());
+      rowJoiner.add(result.getImportSupplement().getInitialChargeConsumption().getValue().toString());
+      rowJoiner.add(result.getImportSupplement().getNewPopulation().getValue().toString());
 
       csvBuilder.append(rowJoiner.toString()).append("\n");
     }
