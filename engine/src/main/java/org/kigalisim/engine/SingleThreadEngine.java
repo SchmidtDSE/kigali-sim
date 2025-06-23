@@ -586,10 +586,6 @@ public class SingleThreadEngine implements Engine {
     streamKeeper.setRecoveryRate(application, substance, recoveryWithUnits);
     streamKeeper.setYieldRate(application, substance, yieldWithUnits);
 
-    if (displaceLevel != null) {
-      streamKeeper.setDisplacementRate(application, substance, displaceLevel);
-    }
-
     RecalcOperation operation = new RecalcOperationBuilder()
         .setRecalcKit(createRecalcKit())
         .recalcSales()

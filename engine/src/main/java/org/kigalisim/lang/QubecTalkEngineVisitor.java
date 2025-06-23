@@ -713,41 +713,6 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
     return new OperationFragment(operation);
   }
 
-  /**
-   * {@inheritDoc}
-   */
-  @Override
-  public Fragment visitRecoverDisplacementAllYears(
-      QubecTalkParser.RecoverDisplacementAllYearsContext ctx) {
-    Operation volumeOperation = visit(ctx.volume).getOperation();
-    Operation yieldOperation = visit(ctx.yieldVal).getOperation();
-    String displacementTarget = ctx.getChild(5).accept(this).getString();
-    Operation operation = new RecoverOperation(
-        volumeOperation,
-        yieldOperation,
-        new PreCalculatedOperation(new EngineNumber(new BigDecimal(0), displacementTarget))
-    );
-    return new OperationFragment(operation);
-  }
-
-  /**
-   * {@inheritDoc}
-   */
-  @Override
-  public Fragment visitRecoverDisplacementDuration(
-      QubecTalkParser.RecoverDisplacementDurationContext ctx) {
-    Operation volumeOperation = visit(ctx.volume).getOperation();
-    Operation yieldOperation = visit(ctx.yieldVal).getOperation();
-    String displacementTarget = ctx.getChild(6).accept(this).getString();
-    ParsedDuring during = visit(ctx.duration).getDuring();
-    Operation operation = new RecoverOperation(
-        volumeOperation,
-        yieldOperation,
-        volumeOperation,
-        during
-    );
-    return new OperationFragment(operation);
-  }
 
   /**
    * {@inheritDoc}

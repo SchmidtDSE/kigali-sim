@@ -290,7 +290,6 @@ public interface Engine {
    *
    * @param recoveryWithUnits The recovery rate
    * @param yieldWithUnits The yield rate
-   * @param displaceLevel The displacement level
    * @param yearMatcher Matcher to determine if the change applies to current year
    */
   void recycle(EngineNumber recoveryWithUnits, EngineNumber yieldWithUnits,
