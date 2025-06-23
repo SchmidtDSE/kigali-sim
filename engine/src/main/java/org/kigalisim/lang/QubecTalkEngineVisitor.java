@@ -28,9 +28,11 @@ import org.kigalisim.lang.operation.ChangeOperation;
 import org.kigalisim.lang.operation.ChangeUnitsOperation;
 import org.kigalisim.lang.operation.ComparisonOperation;
 import org.kigalisim.lang.operation.ConditionalOperation;
+import org.kigalisim.lang.operation.DefineVariableOperation;
 import org.kigalisim.lang.operation.DivisionOperation;
 import org.kigalisim.lang.operation.EqualsOperation;
 import org.kigalisim.lang.operation.FloorOperation;
+import org.kigalisim.lang.operation.GetVariableOperation;
 import org.kigalisim.lang.operation.InitialChargeOperation;
 import org.kigalisim.lang.operation.LogicalOperation;
 import org.kigalisim.lang.operation.MultiplicationOperation;
@@ -252,7 +254,9 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
    */
   @Override
   public Fragment visitSimpleIdentifier(QubecTalkParser.SimpleIdentifierContext ctx) {
-    return visitChildren(ctx);
+    String identifier = ctx.getChild(0).getText();
+    Operation operation = new GetVariableOperation(identifier);
+    return new OperationFragment(operation);
   }
 
   /**
@@ -617,7 +621,10 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
    */
   @Override
   public Fragment visitDefineVarStatement(QubecTalkParser.DefineVarStatementContext ctx) {
-    return visitChildren(ctx);
+    String identifier = ctx.target.getText();
+    Operation valueOperation = visit(ctx.value).getOperation();
+    Operation operation = new DefineVariableOperation(identifier, valueOperation);
+    return new OperationFragment(operation);
   }
 
   /**
