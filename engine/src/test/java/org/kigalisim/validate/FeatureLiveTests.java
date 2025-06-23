@@ -30,7 +30,7 @@ public class FeatureLiveTests {
 
     // Run the scenario using KigaliSimFacade
     String scenarioName = "result";
-    Stream<EngineResult> results = KigaliSimFacade.runScenarioWithResults(program, scenarioName);
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName);
 
     List<EngineResult> resultsList = results.collect(Collectors.toList());
     EngineResult result = LiveTestsUtil.getResult(resultsList.stream(), 1, "test", "test");
@@ -46,7 +46,7 @@ public class FeatureLiveTests {
   /**
    * Test conditional.qta produces expected values.
    */
-  //@Test
+  @Test
   public void testConditional() throws IOException {
     // Load and parse the QTA file
     String qtaPath = "../examples/conditional.qta";
@@ -55,7 +55,7 @@ public class FeatureLiveTests {
 
     // Run the scenario using KigaliSimFacade
     String scenarioName = "business as usual";
-    Stream<EngineResult> results = KigaliSimFacade.runScenarioWithResults(program, scenarioName);
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName);
 
     List<EngineResult> resultsList = results.collect(Collectors.toList());
     EngineResult result = LiveTestsUtil.getResult(resultsList.stream(), 1, "test", "test");
@@ -80,7 +80,7 @@ public class FeatureLiveTests {
 
     // Run the scenario using KigaliSimFacade
     String scenarioName = "BAU";
-    Stream<EngineResult> results = KigaliSimFacade.runScenarioWithResults(program, scenarioName);
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName);
 
     List<EngineResult> resultsList = results.collect(Collectors.toList());
 
@@ -121,7 +121,7 @@ public class FeatureLiveTests {
 
     // Run the scenario using KigaliSimFacade
     String scenarioName = "business as usual";
-    Stream<EngineResult> results = KigaliSimFacade.runScenarioWithResults(program, scenarioName);
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName);
 
     List<EngineResult> resultsList = results.collect(Collectors.toList());
 
@@ -200,7 +200,7 @@ public class FeatureLiveTests {
 
     // Run the scenario using KigaliSimFacade
     String scenarioName = "BAU";
-    Stream<EngineResult> results = KigaliSimFacade.runScenarioWithResults(program, scenarioName);
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName);
 
     List<EngineResult> resultsList = results.collect(Collectors.toList());
 
@@ -267,7 +267,7 @@ public class FeatureLiveTests {
 
     // Run the scenario using KigaliSimFacade
     String scenarioName = "BAU";
-    Stream<EngineResult> results = KigaliSimFacade.runScenarioWithResults(program, scenarioName);
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName);
 
     List<EngineResult> resultsList = results.collect(Collectors.toList());
 
@@ -314,7 +314,7 @@ public class FeatureLiveTests {
 
     // Run the scenario using KigaliSimFacade
     String scenarioName = "business as usual";
-    Stream<EngineResult> results = KigaliSimFacade.runScenarioWithResults(program, scenarioName);
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName);
 
     List<EngineResult> resultsList = results.collect(Collectors.toList());
 
@@ -402,7 +402,7 @@ public class FeatureLiveTests {
 
     // Run the scenario using KigaliSimFacade
     String scenarioName = "result";
-    Stream<EngineResult> results = KigaliSimFacade.runScenarioWithResults(program, scenarioName);
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName);
 
     List<EngineResult> resultsList = results.collect(Collectors.toList());
     EngineResult result = LiveTestsUtil.getResult(resultsList.stream(), 1, "test", "test");
@@ -427,7 +427,7 @@ public class FeatureLiveTests {
 
     // Run the scenario using KigaliSimFacade
     String scenarioName = "business as usual";
-    Stream<EngineResult> results = KigaliSimFacade.runScenarioWithResults(program, scenarioName);
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName);
 
     List<EngineResult> resultsList = results.collect(Collectors.toList());
 
@@ -449,7 +449,7 @@ public class FeatureLiveTests {
   /**
    * Test simple_and.qta produces expected values.
    */
-  //@Test
+  @Test
   public void testSimpleAnd() throws IOException {
     // Load and parse the QTA file
     String qtaPath = "../examples/simple_and.qta";
@@ -458,7 +458,7 @@ public class FeatureLiveTests {
 
     // Run the scenario using KigaliSimFacade
     String scenarioName = "business as usual";
-    Stream<EngineResult> results = KigaliSimFacade.runScenarioWithResults(program, scenarioName);
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName);
 
     List<EngineResult> resultsList = results.collect(Collectors.toList());
     EngineResult result = LiveTestsUtil.getResult(resultsList.stream(), 1, "test", "test");
@@ -474,7 +474,7 @@ public class FeatureLiveTests {
   /**
    * Test trials.qta produces expected values.
    */
-  //@Test
+  @Test
   public void testTrials() throws IOException {
     // Load and parse the QTA file
     String qtaPath = "../examples/trials.qta";
@@ -483,7 +483,7 @@ public class FeatureLiveTests {
 
     // Run the scenario using KigaliSimFacade
     String scenarioName = "business as usual";
-    Stream<EngineResult> results = KigaliSimFacade.runScenarioWithResults(program, scenarioName);
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName);
 
     List<EngineResult> resultsList = results.collect(Collectors.toList());
 

@@ -6,8 +6,6 @@
 
 package org.kigalisim.lang.operation;
 
-import java.math.BigDecimal;
-import org.kigalisim.engine.number.EngineNumber;
 import org.kigalisim.lang.machine.PushDownMachine;
 
 /**
@@ -41,17 +39,10 @@ public class LogicalOperation implements Operation {
     right.execute(machine);
 
     switch (operator) {
-      case "and":
-        machine.and();
-        break;
-      case "or":
-        machine.or();
-        break;
-      case "xor":
-        machine.xor();
-        break;
-      default:
-        throw new RuntimeException("Unknown logical operator: " + operator);
+      case "and" -> machine.and();
+      case "or" -> machine.or();
+      case "xor" -> machine.xor();
+      default -> throw new RuntimeException("Unknown logical operator: " + operator);
     }
   }
 }

@@ -49,7 +49,7 @@ public class FloorDisplacingOperation implements Operation {
    * @param displaceTarget The name of the stream to displace excess to.
    * @param during The time period during which this operation applies.
    */
-  public FloorDisplacingOperation(String stream, Operation valueOperation, 
+  public FloorDisplacingOperation(String stream, Operation valueOperation,
                                  String displaceTarget, ParsedDuring during) {
     this.stream = stream;
     this.valueOperation = valueOperation;

@@ -36,24 +36,24 @@ public class ReplaceLiveTests {
 
     // Run the scenario using KigaliSimFacade
     String scenarioName = "result";
-    Stream<EngineResult> results = KigaliSimFacade.runScenarioWithResults(program, scenarioName);
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName);
 
     List<EngineResult> resultsList = results.collect(Collectors.toList());
-    
+
     // Check substance "a" consumption
     EngineResult resultA = LiveTestsUtil.getResult(resultsList.stream(), 1, "test", "a");
     assertNotNull(resultA, "Should have result for test/a in year 1");
-    
+
     // Calculation: Original 50 mt - replaced 50% = 25 mt remaining × 10 tCO2e/mt = 250 tCO2e
     assertEquals(250.0, resultA.getGhgConsumption().getValue().doubleValue(), 0.0001,
         "Consumption for substance a should be 250 tCO2e");
     assertEquals("tCO2e", resultA.getGhgConsumption().getUnits(),
         "Consumption units should be tCO2e");
-    
+
     // Check substance "b" consumption
     EngineResult resultB = LiveTestsUtil.getResult(resultsList.stream(), 1, "test", "b");
     assertNotNull(resultB, "Should have result for test/b in year 1");
-    
+
     // Calculation: Original 50 mt + added 25 mt = 75 mt total × 5 tCO2e/mt = 375 tCO2e
     assertEquals(375.0, resultB.getGhgConsumption().getValue().doubleValue(), 0.0001,
         "Consumption for substance b should be 375 tCO2e");
@@ -74,24 +74,24 @@ public class ReplaceLiveTests {
 
     // Run the scenario using KigaliSimFacade
     String scenarioName = "result";
-    Stream<EngineResult> results = KigaliSimFacade.runScenarioWithResults(program, scenarioName);
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName);
 
     List<EngineResult> resultsList = results.collect(Collectors.toList());
-    
+
     // Check substance "a" consumption
     EngineResult resultA = LiveTestsUtil.getResult(resultsList.stream(), 1, "test", "a");
     assertNotNull(resultA, "Should have result for test/a in year 1");
-    
+
     // Calculation: Original 50 mt - replaced 25 kg = 25 mt remaining × 10 tCO2e/mt = 250 tCO2e
     assertEquals(250.0, resultA.getGhgConsumption().getValue().doubleValue(), 0.0001,
         "Consumption for substance a should be 250 tCO2e");
     assertEquals("tCO2e", resultA.getGhgConsumption().getUnits(),
         "Consumption units should be tCO2e");
-    
+
     // Check substance "b" consumption
     EngineResult resultB = LiveTestsUtil.getResult(resultsList.stream(), 1, "test", "b");
     assertNotNull(resultB, "Should have result for test/b in year 1");
-    
+
     // Calculation: Original 50 mt + added 25 kg = 75 mt total × 5 tCO2e/mt = 375 tCO2e
     assertEquals(375.0, resultB.getGhgConsumption().getValue().doubleValue(), 0.0001,
         "Consumption for substance b should be 375 tCO2e");
@@ -112,24 +112,24 @@ public class ReplaceLiveTests {
 
     // Run the scenario using KigaliSimFacade
     String scenarioName = "result";
-    Stream<EngineResult> results = KigaliSimFacade.runScenarioWithResults(program, scenarioName);
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName);
 
     List<EngineResult> resultsList = results.collect(Collectors.toList());
-    
+
     // Check substance "a" consumption
     EngineResult resultA = LiveTestsUtil.getResult(resultsList.stream(), 1, "test", "a");
     assertNotNull(resultA, "Should have result for test/a in year 1");
-    
+
     // Calculation: Original 50 mt - replaced 25000 units = 25 mt remaining × 10 tCO2e/mt = 250 tCO2e
     assertEquals(250.0, resultA.getGhgConsumption().getValue().doubleValue(), 0.0001,
         "Consumption for substance a should be 250 tCO2e");
     assertEquals("tCO2e", resultA.getGhgConsumption().getUnits(),
         "Consumption units should be tCO2e");
-    
+
     // Check substance "b" consumption
     EngineResult resultB = LiveTestsUtil.getResult(resultsList.stream(), 1, "test", "b");
     assertNotNull(resultB, "Should have result for test/b in year 1");
-    
+
     // Calculation: Original 50 mt + added 25000 units = 75 mt total × 5 tCO2e/mt = 375 tCO2e
     assertEquals(375.0, resultB.getGhgConsumption().getValue().doubleValue(), 0.0001,
         "Consumption for substance b should be 375 tCO2e");

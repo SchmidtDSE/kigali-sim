@@ -35,8 +35,5 @@ public class DefineVariableOperation implements Operation {
 
     // Set the variable value in the engine
     machine.getEngine().setVariable(variableName, value);
-
-    // Push the value back onto the stack
-    machine.push(value);
   }
 }

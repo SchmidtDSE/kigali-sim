@@ -105,7 +105,7 @@ public class EngineResultSerializer {
     // Get sales for offset calculation
     EngineNumber manufactureRaw = engine.getStreamRaw(application, substance, "manufacture");
     EngineNumber importRaw = engine.getStreamRaw(application, substance, "import");
-    
+
     // Convert sales values for offset calculation
     EngineNumber manufactureValue = unitConverter.convert(manufactureRaw, "kg");
     EngineNumber importValue = unitConverter.convert(importRaw, "kg");

@@ -60,7 +60,7 @@ public class DefineVariableOperationTest {
     // Create a simple value operation
     EngineNumber expectedValue = new EngineNumber(BigDecimal.valueOf(42), "kg");
     Operation valueOperation = new PreCalculatedOperation(expectedValue);
-    
+
     // Create and execute the operation
     String variableName = "testVar";
     DefineVariableOperation operation = new DefineVariableOperation(variableName, valueOperation);
@@ -70,11 +70,6 @@ public class DefineVariableOperationTest {
     EngineNumber result = engine.getVariable(variableName);
     assertEquals(BigDecimal.valueOf(42), result.getValue(), "Variable value should be set correctly");
     assertEquals("kg", result.getUnits(), "Variable units should be set correctly");
-    
-    // Verify the value was pushed onto the stack
-    EngineNumber stackResult = machine.getResult();
-    assertEquals(BigDecimal.valueOf(42), stackResult.getValue(), "Stack should have the variable value");
-    assertEquals("kg", stackResult.getUnits(), "Stack should have the variable units");
   }
 
   /**
@@ -86,7 +81,7 @@ public class DefineVariableOperationTest {
     Operation left = new PreCalculatedOperation(new EngineNumber(BigDecimal.valueOf(30), "kg"));
     Operation right = new PreCalculatedOperation(new EngineNumber(BigDecimal.valueOf(12), "kg"));
     Operation valueOperation = new AdditionOperation(left, right); // 30 + 12 = 42
-    
+
     // Create and execute the operation
     String variableName = "testVar";
     DefineVariableOperation operation = new DefineVariableOperation(variableName, valueOperation);
@@ -96,11 +91,6 @@ public class DefineVariableOperationTest {
     EngineNumber result = engine.getVariable(variableName);
     assertEquals(BigDecimal.valueOf(42), result.getValue(), "Variable value should be calculated and set correctly");
     assertEquals("kg", result.getUnits(), "Variable units should be set correctly");
-    
-    // Verify the value was pushed onto the stack
-    EngineNumber stackResult = machine.getResult();
-    assertEquals(BigDecimal.valueOf(42), stackResult.getValue(), "Stack should have the calculated variable value");
-    assertEquals("kg", stackResult.getUnits(), "Stack should have the variable units");
   }
 
   /**
@@ -111,7 +101,7 @@ public class DefineVariableOperationTest {
     // Create a value operation with no units
     EngineNumber expectedValue = new EngineNumber(BigDecimal.valueOf(123), "");
     Operation valueOperation = new PreCalculatedOperation(expectedValue);
-    
+
     // Create and execute the operation
     String variableName = "unitlessVar";
     DefineVariableOperation operation = new DefineVariableOperation(variableName, valueOperation);
@@ -121,11 +111,6 @@ public class DefineVariableOperationTest {
     EngineNumber result = engine.getVariable(variableName);
     assertEquals(BigDecimal.valueOf(123), result.getValue(), "Variable value should be set correctly");
     assertEquals("", result.getUnits(), "Variable should have no units");
-    
-    // Verify the value was pushed onto the stack
-    EngineNumber stackResult = machine.getResult();
-    assertEquals(BigDecimal.valueOf(123), stackResult.getValue(), "Stack should have the variable value");
-    assertEquals("", stackResult.getUnits(), "Stack should have no units");
   }
 
   /**
@@ -138,7 +123,7 @@ public class DefineVariableOperationTest {
     EngineNumber initialValue = new EngineNumber(BigDecimal.valueOf(10), "kg");
     engine.defineVariable(variableName);
     engine.setVariable(variableName, initialValue);
-    
+
     // Now redefine it with a new value
     EngineNumber newValue = new EngineNumber(BigDecimal.valueOf(42), "kg");
     Operation valueOperation = new PreCalculatedOperation(newValue);

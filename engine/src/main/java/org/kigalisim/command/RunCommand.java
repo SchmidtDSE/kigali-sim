@@ -21,8 +21,6 @@ import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
 import org.kigalisim.KigaliSimFacade;
 import org.kigalisim.engine.serializer.EngineResult;
-import org.kigalisim.lang.program.ParsedApplication;
-import org.kigalisim.lang.program.ParsedPolicy;
 import org.kigalisim.lang.program.ParsedProgram;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
@@ -63,7 +61,7 @@ public class RunCommand implements Callable<Integer> {
 
       // Run all scenarios in the program and collect results
       Stream<EngineResult> allResults = program.getScenarios().stream()
-          .flatMap(scenarioName -> KigaliSimFacade.runScenarioWithResults(program, scenarioName));
+          .flatMap(scenarioName -> KigaliSimFacade.runScenario(program, scenarioName));
 
       // Collect to a list to see how many results we have
       List<EngineResult> resultsList = allResults.collect(java.util.stream.Collectors.toList());

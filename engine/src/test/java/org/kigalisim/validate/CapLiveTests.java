@@ -36,7 +36,7 @@ public class CapLiveTests {
 
     // Run the scenario using KigaliSimFacade
     String scenarioName = "result";
-    Stream<EngineResult> results = KigaliSimFacade.runScenarioWithResults(program, scenarioName);
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName);
 
     List<EngineResult> resultsList = results.collect(Collectors.toList());
     EngineResult result = LiveTestsUtil.getResult(resultsList.stream(), 1, "test", "test");
@@ -62,7 +62,7 @@ public class CapLiveTests {
 
     // Run the scenario using KigaliSimFacade
     String scenarioName = "result";
-    Stream<EngineResult> results = KigaliSimFacade.runScenarioWithResults(program, scenarioName);
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName);
 
     List<EngineResult> resultsList = results.collect(Collectors.toList());
     EngineResult result = LiveTestsUtil.getResult(resultsList.stream(), 1, "test", "test");
@@ -90,25 +90,25 @@ public class CapLiveTests {
 
     // Run the scenario using KigaliSimFacade
     String scenarioName = "result";
-    Stream<EngineResult> results = KigaliSimFacade.runScenarioWithResults(program, scenarioName);
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName);
 
     List<EngineResult> resultsList = results.collect(Collectors.toList());
-    
+
     // Check that sub_a manufacture was capped
     EngineResult recordSubA = LiveTestsUtil.getResult(resultsList.stream(), 1, "test", "sub_a");
     assertNotNull(recordSubA, "Should have result for test/sub_a in year 1");
-    
+
     // Cap is 5 units, with recharge: 5 units * 10 kg/unit + (20 units * 10% * 10 kg/unit) = 50 + 20 = 70 kg
     // Original was 100 kg, so should be capped to 70 kg
     assertEquals(70.0, recordSubA.getManufacture().getValue().doubleValue(), 0.0001,
         "Manufacture for sub_a should be capped at 70 kg");
     assertEquals("kg", recordSubA.getManufacture().getUnits(),
         "Manufacture units for sub_a should be kg");
-    
+
     // Check displacement to sub_b
     EngineResult recordSubB = LiveTestsUtil.getResult(resultsList.stream(), 1, "test", "sub_b");
     assertNotNull(recordSubB, "Should have result for test/sub_b in year 1");
-    
+
     // With unit-based displacement: 30 kg reduction in sub_a = 30 kg / 10 kg/unit = 3 units
     // 3 units displaced to sub_b = 3 units * 20 kg/unit = 60 kg
     // Original sub_b: 200 kg, Final sub_b: 200 kg + 60 kg = 260 kg
@@ -131,14 +131,14 @@ public class CapLiveTests {
 
     // Run the scenario using KigaliSimFacade
     String scenarioName = "result";
-    Stream<EngineResult> results = KigaliSimFacade.runScenarioWithResults(program, scenarioName);
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName);
 
     List<EngineResult> resultsList = results.collect(Collectors.toList());
-    
+
     // Check that sub_a manufacture was capped
     EngineResult recordSubA = LiveTestsUtil.getResult(resultsList.stream(), 1, "test", "sub_a");
     assertNotNull(recordSubA, "Should have result for test/sub_a in year 1");
-    
+
     // Cap is 5 units, with recharge: 5 units * 10 kg/unit + (20 units * 10% * 10 kg/unit) = 50 + 20 = 70 kg
     // Original was 30 units * 10 kg/unit = 300 kg, so should be capped to 70 kg
     // Reduction: 300 - 70 = 230 kg
@@ -146,11 +146,11 @@ public class CapLiveTests {
         "Manufacture for sub_a should be capped at 70 kg");
     assertEquals("kg", recordSubA.getManufacture().getUnits(),
         "Manufacture units for sub_a should be kg");
-    
+
     // Check displacement to sub_b
     EngineResult recordSubB = LiveTestsUtil.getResult(resultsList.stream(), 1, "test", "sub_b");
     assertNotNull(recordSubB, "Should have result for test/sub_b in year 1");
-    
+
     // With unit-based displacement:
     // 230 kg reduction in sub_a = 230 kg / 10 kg/unit = 23 units
     // 23 units displaced to sub_b = 23 units * 20 kg/unit = 460 kg

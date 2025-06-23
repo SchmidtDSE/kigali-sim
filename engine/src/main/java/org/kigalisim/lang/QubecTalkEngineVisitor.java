@@ -26,11 +26,10 @@ import org.kigalisim.lang.operation.AdditionOperation;
 import org.kigalisim.lang.operation.CapOperation;
 import org.kigalisim.lang.operation.ChangeOperation;
 import org.kigalisim.lang.operation.ChangeUnitsOperation;
-import org.kigalisim.lang.operation.ComparisonOperation;
-import org.kigalisim.lang.operation.EqualityOperation;
 import org.kigalisim.lang.operation.ConditionalOperation;
 import org.kigalisim.lang.operation.DefineVariableOperation;
 import org.kigalisim.lang.operation.DivisionOperation;
+import org.kigalisim.lang.operation.EqualityOperation;
 import org.kigalisim.lang.operation.EqualsOperation;
 import org.kigalisim.lang.operation.FloorOperation;
 import org.kigalisim.lang.operation.GetVariableOperation;
@@ -723,7 +722,7 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
     Operation volumeOperation = visit(ctx.volume).getOperation();
     Operation yieldOperation = visit(ctx.yieldVal).getOperation();
     String displacementTarget = ctx.getChild(5).accept(this).getString();
-    Operation operation = new RecoverOperation(volumeOperation, yieldOperation, 
+    Operation operation = new RecoverOperation(volumeOperation, yieldOperation,
                                              new PreCalculatedOperation(new EngineNumber(new BigDecimal(0), displacementTarget)));
     return new OperationFragment(operation);
   }
@@ -738,7 +737,7 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
     Operation yieldOperation = visit(ctx.yieldVal).getOperation();
     String displacementTarget = ctx.getChild(6).accept(this).getString();
     ParsedDuring during = visit(ctx.duration).getDuring();
-    Operation operation = new RecoverOperation(volumeOperation, yieldOperation, 
+    Operation operation = new RecoverOperation(volumeOperation, yieldOperation,
                                              new PreCalculatedOperation(new EngineNumber(new BigDecimal(0), displacementTarget)), during);
     return new OperationFragment(operation);
   }

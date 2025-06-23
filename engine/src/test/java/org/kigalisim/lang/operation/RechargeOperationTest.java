@@ -168,10 +168,10 @@ public class RechargeOperationTest {
     // Verify the recharge values were not changed in the engine
     EngineNumber resultVolume = engine.getRechargeVolume();
     EngineNumber resultIntensity = engine.getRechargeIntensity();
-    assertEquals(BigDecimal.valueOf(5), resultVolume.getValue(), 
+    assertEquals(BigDecimal.valueOf(5), resultVolume.getValue(),
         "Recharge volume should not be changed when during doesn't apply");
     assertEquals("%", resultVolume.getUnits(), "Recharge volume units should remain the same");
-    assertEquals(BigDecimal.valueOf(3), resultIntensity.getValue(), 
+    assertEquals(BigDecimal.valueOf(3), resultIntensity.getValue(),
         "Recharge intensity should not be changed when during doesn't apply");
     assertEquals("kg / unit", resultIntensity.getUnits(), "Recharge intensity units should remain the same");
   }
@@ -201,10 +201,10 @@ public class RechargeOperationTest {
     // Verify the recharge values were set in the engine
     EngineNumber resultVolume = engine.getRechargeVolume();
     EngineNumber resultIntensity = engine.getRechargeIntensity();
-    assertEquals(BigDecimal.valueOf(10), resultVolume.getValue(), 
+    assertEquals(BigDecimal.valueOf(10), resultVolume.getValue(),
         "Recharge volume should be calculated and set correctly");
     assertEquals("%", resultVolume.getUnits(), "Recharge volume units should be set correctly");
-    assertEquals(BigDecimal.valueOf(5), resultIntensity.getValue(), 
+    assertEquals(BigDecimal.valueOf(5), resultIntensity.getValue(),
         "Recharge intensity should be calculated and set correctly");
     assertEquals("kg / unit", resultIntensity.getUnits(), "Recharge intensity units should be set correctly");
   }

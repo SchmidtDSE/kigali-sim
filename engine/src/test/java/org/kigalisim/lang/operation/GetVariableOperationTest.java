@@ -78,7 +78,7 @@ public class GetVariableOperationTest {
   public void testExecuteVariableDoesNotExist() {
     // Create and execute the operation for a non-existent variable
     GetVariableOperation operation = new GetVariableOperation("nonExistentVar");
-    
+
     // This should throw an exception
     assertThrows(RuntimeException.class, () -> operation.execute(machine),
         "Should throw exception when variable doesn't exist");

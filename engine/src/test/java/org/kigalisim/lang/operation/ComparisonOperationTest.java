@@ -1,16 +1,10 @@
 package org.kigalisim.lang.operation;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
-import java.math.BigDecimal;
 import org.junit.jupiter.api.Test;
-import org.kigalisim.engine.number.EngineNumber;
 import org.kigalisim.lang.machine.PushDownMachine;
-import org.mockito.ArgumentCaptor;
 
 /**
  * Tests for the ComparisonOperation class.
@@ -27,11 +21,6 @@ public class ComparisonOperationTest {
     Operation left = mock(Operation.class);
     Operation right = mock(Operation.class);
 
-    EngineNumber leftNumber = new EngineNumber(new BigDecimal("10"), "kg");
-    EngineNumber rightNumber = new EngineNumber(new BigDecimal("10"), "kg");
-
-    when(machine.getResult()).thenReturn(leftNumber, rightNumber);
-
     ComparisonOperation operation = new ComparisonOperation(left, right, "==");
 
     // Execute
@@ -40,14 +29,7 @@ public class ComparisonOperationTest {
     // Verify
     verify(left).execute(machine);
     verify(right).execute(machine);
-
-    // Capture the argument passed to push
-    ArgumentCaptor<EngineNumber> captor = ArgumentCaptor.forClass(EngineNumber.class);
-    verify(machine).push(captor.capture());
-
-    // Verify the value is 1 (true)
-    assertEquals(BigDecimal.ONE, captor.getValue().getValue());
-    assertEquals("", captor.getValue().getUnits());
+    verify(machine).equals();
   }
 
   /**
@@ -60,11 +42,6 @@ public class ComparisonOperationTest {
     Operation left = mock(Operation.class);
     Operation right = mock(Operation.class);
 
-    EngineNumber leftNumber = new EngineNumber(new BigDecimal("10"), "kg");
-    EngineNumber rightNumber = new EngineNumber(new BigDecimal("20"), "kg");
-
-    when(machine.getResult()).thenReturn(leftNumber, rightNumber);
-
     ComparisonOperation operation = new ComparisonOperation(left, right, "!=");
 
     // Execute
@@ -73,14 +50,7 @@ public class ComparisonOperationTest {
     // Verify
     verify(left).execute(machine);
     verify(right).execute(machine);
-
-    // Capture the argument passed to push
-    ArgumentCaptor<EngineNumber> captor = ArgumentCaptor.forClass(EngineNumber.class);
-    verify(machine).push(captor.capture());
-
-    // Verify the value is 1 (true)
-    assertEquals(BigDecimal.ONE, captor.getValue().getValue());
-    assertEquals("", captor.getValue().getUnits());
+    verify(machine).notEquals();
   }
 
   /**
@@ -93,11 +63,6 @@ public class ComparisonOperationTest {
     Operation left = mock(Operation.class);
     Operation right = mock(Operation.class);
 
-    EngineNumber leftNumber = new EngineNumber(new BigDecimal("20"), "kg");
-    EngineNumber rightNumber = new EngineNumber(new BigDecimal("10"), "kg");
-
-    when(machine.getResult()).thenReturn(leftNumber, rightNumber);
-
     ComparisonOperation operation = new ComparisonOperation(left, right, ">");
 
     // Execute
@@ -106,14 +71,7 @@ public class ComparisonOperationTest {
     // Verify
     verify(left).execute(machine);
     verify(right).execute(machine);
-
-    // Capture the argument passed to push
-    ArgumentCaptor<EngineNumber> captor = ArgumentCaptor.forClass(EngineNumber.class);
-    verify(machine).push(captor.capture());
-
-    // Verify the value is 1 (true)
-    assertEquals(BigDecimal.ONE, captor.getValue().getValue());
-    assertEquals("", captor.getValue().getUnits());
+    verify(machine).greaterThan();
   }
 
   /**
@@ -126,11 +84,6 @@ public class ComparisonOperationTest {
     Operation left = mock(Operation.class);
     Operation right = mock(Operation.class);
 
-    EngineNumber leftNumber = new EngineNumber(new BigDecimal("10"), "kg");
-    EngineNumber rightNumber = new EngineNumber(new BigDecimal("20"), "kg");
-
-    when(machine.getResult()).thenReturn(leftNumber, rightNumber);
-
     ComparisonOperation operation = new ComparisonOperation(left, right, "<");
 
     // Execute
@@ -139,14 +92,7 @@ public class ComparisonOperationTest {
     // Verify
     verify(left).execute(machine);
     verify(right).execute(machine);
-
-    // Capture the argument passed to push
-    ArgumentCaptor<EngineNumber> captor = ArgumentCaptor.forClass(EngineNumber.class);
-    verify(machine).push(captor.capture());
-
-    // Verify the value is 1 (true)
-    assertEquals(BigDecimal.ONE, captor.getValue().getValue());
-    assertEquals("", captor.getValue().getUnits());
+    verify(machine).lessThan();
   }
 
   /**
@@ -159,11 +105,6 @@ public class ComparisonOperationTest {
     Operation left = mock(Operation.class);
     Operation right = mock(Operation.class);
 
-    EngineNumber leftNumber = new EngineNumber(new BigDecimal("10"), "kg");
-    EngineNumber rightNumber = new EngineNumber(new BigDecimal("10"), "kg");
-
-    when(machine.getResult()).thenReturn(leftNumber, rightNumber);
-
     ComparisonOperation operation = new ComparisonOperation(left, right, ">=");
 
     // Execute
@@ -172,14 +113,7 @@ public class ComparisonOperationTest {
     // Verify
     verify(left).execute(machine);
     verify(right).execute(machine);
-
-    // Capture the argument passed to push
-    ArgumentCaptor<EngineNumber> captor = ArgumentCaptor.forClass(EngineNumber.class);
-    verify(machine).push(captor.capture());
-
-    // Verify the value is 1 (true)
-    assertEquals(BigDecimal.ONE, captor.getValue().getValue());
-    assertEquals("", captor.getValue().getUnits());
+    verify(machine).greaterThanOrEqual();
   }
 
   /**
@@ -192,11 +126,6 @@ public class ComparisonOperationTest {
     Operation left = mock(Operation.class);
     Operation right = mock(Operation.class);
 
-    EngineNumber leftNumber = new EngineNumber(new BigDecimal("10"), "kg");
-    EngineNumber rightNumber = new EngineNumber(new BigDecimal("10"), "kg");
-
-    when(machine.getResult()).thenReturn(leftNumber, rightNumber);
-
     ComparisonOperation operation = new ComparisonOperation(left, right, "<=");
 
     // Execute
@@ -205,18 +134,13 @@ public class ComparisonOperationTest {
     // Verify
     verify(left).execute(machine);
     verify(right).execute(machine);
-
-    // Capture the argument passed to push
-    ArgumentCaptor<EngineNumber> captor = ArgumentCaptor.forClass(EngineNumber.class);
-    verify(machine).push(captor.capture());
-
-    // Verify the value is 1 (true)
-    assertEquals(BigDecimal.ONE, captor.getValue().getValue());
-    assertEquals("", captor.getValue().getUnits());
+    verify(machine).lessThanOrEqual();
   }
 
   /**
-   * Test false comparison result.
+   * Test equals comparison with false result.
+   * Note: This test is redundant with testEqualsComparison() since we're now testing
+   * that the correct comparison method is called, rather than the specific result value.
    */
   @Test
   public void testFalseComparisonResult() {
@@ -224,11 +148,6 @@ public class ComparisonOperationTest {
     PushDownMachine machine = mock(PushDownMachine.class);
     Operation left = mock(Operation.class);
     Operation right = mock(Operation.class);
-
-    EngineNumber leftNumber = new EngineNumber(new BigDecimal("10"), "kg");
-    EngineNumber rightNumber = new EngineNumber(new BigDecimal("20"), "kg");
-
-    when(machine.getResult()).thenReturn(leftNumber, rightNumber);
 
     ComparisonOperation operation = new ComparisonOperation(left, right, "==");
 
@@ -238,13 +157,6 @@ public class ComparisonOperationTest {
     // Verify
     verify(left).execute(machine);
     verify(right).execute(machine);
-
-    // Capture the argument passed to push
-    ArgumentCaptor<EngineNumber> captor = ArgumentCaptor.forClass(EngineNumber.class);
-    verify(machine).push(captor.capture());
-
-    // Verify the value is 0 (false)
-    assertEquals(BigDecimal.ZERO, captor.getValue().getValue());
-    assertEquals("", captor.getValue().getUnits());
+    verify(machine).equals();
   }
 }

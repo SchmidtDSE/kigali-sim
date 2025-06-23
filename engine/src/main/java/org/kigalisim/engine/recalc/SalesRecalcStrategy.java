@@ -171,12 +171,12 @@ public class SalesRecalcStrategy implements RecalcStrategy {
     BigDecimal requiredKgUnbound = kgForRecharge.add(kgForNew);
     boolean requiredKgNegative = requiredKgUnbound.compareTo(BigDecimal.ZERO) < 0;
     BigDecimal requiredKg = requiredKgNegative ? BigDecimal.ZERO : requiredKgUnbound;
-    
+
     BigDecimal newManufactureKg = percentManufacture.multiply(requiredKg);
     BigDecimal newImportKg = percentImport.multiply(requiredKg);
     EngineNumber newManufacture = new EngineNumber(newManufactureKg, "kg");
     EngineNumber newImport = new EngineNumber(newImportKg, "kg");
-    
+
     // Call Engine.setStream with propagateChanges=false to match JavaScript behavior
     target.setStream("manufacture", newManufacture, null, scopeEffective, false, null);
     target.setStream("import", newImport, null, scopeEffective, false, null);

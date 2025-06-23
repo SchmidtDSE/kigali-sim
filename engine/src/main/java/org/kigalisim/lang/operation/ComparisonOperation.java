@@ -6,8 +6,6 @@
 
 package org.kigalisim.lang.operation;
 
-import java.math.BigDecimal;
-import org.kigalisim.engine.number.EngineNumber;
 import org.kigalisim.lang.machine.PushDownMachine;
 
 /**
@@ -38,37 +36,16 @@ public class ComparisonOperation implements Operation {
   @Override
   public void execute(PushDownMachine machine) {
     left.execute(machine);
-    EngineNumber leftResult = machine.getResult();
-    
     right.execute(machine);
-    EngineNumber rightResult = machine.getResult();
-    
-    boolean result = false;
-    
+
     switch (operator) {
-      case "==":
-        result = leftResult.getValue().compareTo(rightResult.getValue()) == 0;
-        break;
-      case "!=":
-        result = leftResult.getValue().compareTo(rightResult.getValue()) != 0;
-        break;
-      case ">":
-        result = leftResult.getValue().compareTo(rightResult.getValue()) > 0;
-        break;
-      case "<":
-        result = leftResult.getValue().compareTo(rightResult.getValue()) < 0;
-        break;
-      case ">=":
-        result = leftResult.getValue().compareTo(rightResult.getValue()) >= 0;
-        break;
-      case "<=":
-        result = leftResult.getValue().compareTo(rightResult.getValue()) <= 0;
-        break;
-      default:
-        throw new RuntimeException("Unknown comparison operator: " + operator);
+      case "==" -> machine.equals();
+      case "!=" -> machine.notEquals();
+      case ">" -> machine.greaterThan();
+      case "<" -> machine.lessThan();
+      case ">=" -> machine.greaterThanOrEqual();
+      case "<=" -> machine.lessThanOrEqual();
+      default -> throw new RuntimeException("Unknown comparison operator: " + operator);
     }
-    
-    // Push the result as a 1 (true) or 0 (false) with no units
-    machine.push(new EngineNumber(result ? BigDecimal.ONE : BigDecimal.ZERO, ""));
   }
 }

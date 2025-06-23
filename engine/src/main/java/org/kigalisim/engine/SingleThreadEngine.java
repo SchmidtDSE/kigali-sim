@@ -358,12 +358,12 @@ public class SingleThreadEngine implements Engine {
           importInitialChargeRaw, "kg / unit");
 
       // Get bounded values
-      EngineNumber manufactureInitialCharge = manufactureInitialChargeUnbounded.getValue().compareTo(BigDecimal.ZERO) == 0 
-          ? importInitialChargeUnbounded 
+      EngineNumber manufactureInitialCharge = manufactureInitialChargeUnbounded.getValue().compareTo(BigDecimal.ZERO) == 0
+          ? importInitialChargeUnbounded
           : manufactureInitialChargeUnbounded;
 
-      EngineNumber importInitialCharge = importInitialChargeUnbounded.getValue().compareTo(BigDecimal.ZERO) == 0 
-          ? manufactureInitialChargeUnbounded 
+      EngineNumber importInitialCharge = importInitialChargeUnbounded.getValue().compareTo(BigDecimal.ZERO) == 0
+          ? manufactureInitialChargeUnbounded
           : importInitialChargeUnbounded;
 
       // Calculate units
@@ -372,15 +372,15 @@ public class SingleThreadEngine implements Engine {
       BigDecimal manufactureKgUnit = manufactureInitialCharge.getValue();
       BigDecimal importKgUnit = importInitialCharge.getValue();
 
-      BigDecimal manufactureUnits = manufactureKgUnit.compareTo(BigDecimal.ZERO) == 0 
-          ? BigDecimal.ZERO 
+      BigDecimal manufactureUnits = manufactureKgUnit.compareTo(BigDecimal.ZERO) == 0
+          ? BigDecimal.ZERO
           : manufactureKg.divide(manufactureKgUnit, MathContext.DECIMAL128);
 
-      BigDecimal importUnits = importKgUnit.compareTo(BigDecimal.ZERO) == 0 
-          ? BigDecimal.ZERO 
+      BigDecimal importUnits = importKgUnit.compareTo(BigDecimal.ZERO) == 0
+          ? BigDecimal.ZERO
           : importKg.divide(importKgUnit, MathContext.DECIMAL128);
 
-      boolean emptyPopulation = manufactureUnits.compareTo(BigDecimal.ZERO) == 0 
+      boolean emptyPopulation = manufactureUnits.compareTo(BigDecimal.ZERO) == 0
           && importUnits.compareTo(BigDecimal.ZERO) == 0;
 
       if (emptyPopulation) {

@@ -118,7 +118,7 @@ public class KigaliSimFacadeTest {
     // Parse and interpret the example file
     ParsedProgram program = KigaliSimFacade.parseAndInterpret(exampleFile.getPath());
     assertNotNull(program, "Program should not be null");
-    
+
     // This should run through all years without throwing an exception
     KigaliSimFacade.runScenario(program, "yeartest");
   }
@@ -136,15 +136,15 @@ public class KigaliSimFacadeTest {
     // Parse and interpret the example file
     ParsedProgram program = KigaliSimFacade.parseAndInterpret(exampleFile.getPath());
     assertNotNull(program, "Program should not be null");
-    
+
     // This should run through all years and return a stream (may be empty for basic examples)
-    Stream<EngineResult> results = KigaliSimFacade.runScenarioWithResults(program, "yeartest");
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, "yeartest");
     assertNotNull(results, "Results stream should not be null");
-    
+
     // Collect results - may be empty for basic examples that don't have all required streams
     List<EngineResult> resultsList = results.collect(java.util.stream.Collectors.toList());
     assertNotNull(resultsList, "Results list should not be null");
-    
+
     // The method should complete successfully even if no results are collected
     // This tests that the infrastructure works
   }

@@ -40,7 +40,7 @@ public class ParsedScenariosTest {
     // Create test scenarios
     List<String> policies = new ArrayList<>();
     policies.add(POLICY_NAME);
-    
+
     scenario1 = new ParsedScenario(SCENARIO1_NAME, policies, 1, 3, 1);
     scenario2 = new ParsedScenario(SCENARIO2_NAME, policies, 1, 3, 1);
 

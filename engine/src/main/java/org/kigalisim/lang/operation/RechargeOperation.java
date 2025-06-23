@@ -39,7 +39,7 @@ public class RechargeOperation implements Operation {
    * @param intensityOperation The operation that calculates the recharge intensity.
    * @param during The time period during which this operation applies.
    */
-  public RechargeOperation(Operation volumeOperation, Operation intensityOperation, 
+  public RechargeOperation(Operation volumeOperation, Operation intensityOperation,
       ParsedDuring during) {
     this.volumeOperation = volumeOperation;
     this.intensityOperation = intensityOperation;

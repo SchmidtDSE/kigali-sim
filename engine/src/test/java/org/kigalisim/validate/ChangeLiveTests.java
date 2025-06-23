@@ -35,10 +35,10 @@ public class ChangeLiveTests {
 
     // Run the scenario using KigaliSimFacade
     String scenarioName = "business as usual";
-    Stream<EngineResult> results = KigaliSimFacade.runScenarioWithResults(program, scenarioName);
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName);
 
     List<EngineResult> resultsList = results.collect(Collectors.toList());
-    
+
     // Check year 2 manufacture value - should be 110 mt = 110000 kg (10% increase from 100 mt)
     EngineResult result = LiveTestsUtil.getResult(resultsList.stream(), 2, "test", "test");
     assertNotNull(result, "Should have result for test/test in year 2");
@@ -46,7 +46,7 @@ public class ChangeLiveTests {
         "Manufacture should be 110000 kg");
     assertEquals("kg", result.getManufacture().getUnits(),
         "Manufacture units should be kg");
-    
+
     // Check year 2 consumption value - should be 550 tCO2e (110 mt * 5 tCO2e/mt)
     assertEquals(550.0, result.getGhgConsumption().getValue().doubleValue(), 0.0001,
         "Consumption should be 550 tCO2e");
@@ -66,10 +66,10 @@ public class ChangeLiveTests {
 
     // Run the scenario using KigaliSimFacade
     String scenarioName = "business as usual";
-    Stream<EngineResult> results = KigaliSimFacade.runScenarioWithResults(program, scenarioName);
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName);
 
     List<EngineResult> resultsList = results.collect(Collectors.toList());
-    
+
     // Check year 2 manufacture value - should be 110 kg (100 kg + 10 kg)
     EngineResult result = LiveTestsUtil.getResult(resultsList.stream(), 2, "test", "test");
     assertNotNull(result, "Should have result for test/test in year 2");
@@ -91,10 +91,10 @@ public class ChangeLiveTests {
 
     // Run the scenario using KigaliSimFacade
     String scenarioName = "business as usual";
-    Stream<EngineResult> results = KigaliSimFacade.runScenarioWithResults(program, scenarioName);
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName);
 
     List<EngineResult> resultsList = results.collect(Collectors.toList());
-    
+
     // Check year 2 manufacture value - should be 90 kg (100 kg - 10 kg)
     EngineResult result = LiveTestsUtil.getResult(resultsList.stream(), 2, "test", "test");
     assertNotNull(result, "Should have result for test/test in year 2");
@@ -116,10 +116,10 @@ public class ChangeLiveTests {
 
     // Run the scenario using KigaliSimFacade
     String scenarioName = "business as usual";
-    Stream<EngineResult> results = KigaliSimFacade.runScenarioWithResults(program, scenarioName);
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName);
 
     List<EngineResult> resultsList = results.collect(Collectors.toList());
-    
+
     // Check year 2 manufacture value - should be 110 kg (100 units + 10 units = 110 units * 1 kg/unit)
     EngineResult result = LiveTestsUtil.getResult(resultsList.stream(), 2, "test", "test");
     assertNotNull(result, "Should have result for test/test in year 2");
@@ -141,10 +141,10 @@ public class ChangeLiveTests {
 
     // Run the scenario using KigaliSimFacade
     String scenarioName = "business as usual";
-    Stream<EngineResult> results = KigaliSimFacade.runScenarioWithResults(program, scenarioName);
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName);
 
     List<EngineResult> resultsList = results.collect(Collectors.toList());
-    
+
     // Check year 2 manufacture value - should be 90 kg (100 units - 10 units = 90 units * 1 kg/unit)
     EngineResult result = LiveTestsUtil.getResult(resultsList.stream(), 2, "test", "test");
     assertNotNull(result, "Should have result for test/test in year 2");

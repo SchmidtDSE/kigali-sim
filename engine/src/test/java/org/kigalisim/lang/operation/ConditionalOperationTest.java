@@ -1,6 +1,5 @@
 package org.kigalisim.lang.operation;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -10,7 +9,6 @@ import java.math.BigDecimal;
 import org.junit.jupiter.api.Test;
 import org.kigalisim.engine.number.EngineNumber;
 import org.kigalisim.lang.machine.PushDownMachine;
-import org.mockito.ArgumentCaptor;
 
 /**
  * Tests for the ConditionalOperation class.
