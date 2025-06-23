@@ -58,7 +58,7 @@ function buildCompilerTests() {
         .filter((x) => x.getScenarioName() === scenario)
         .filter((x) => x.getYear() == year)
         .filter((x) => x.getApplication() === application)
-        .filter((x) => x.getSubstance() === substance);      
+        .filter((x) => x.getSubstance() === substance);
 
       // For simple cases, just return the first match regardless of trial number
       // since most tests use single trial simulations
