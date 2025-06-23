@@ -41,6 +41,20 @@ public interface Engine {
   int getEndYear();
 
   /**
+   * Get the scenario name.
+   *
+   * @return The name of the scenario being run
+   */
+  String getScenarioName();
+
+  /**
+   * Get the trial number.
+   *
+   * @return The trial number of the current run
+   */
+  int getTrialNumber();
+
+  /**
    * Set the stanza for the engine current scope.
    *
    * @param newStanza The new stanza name
