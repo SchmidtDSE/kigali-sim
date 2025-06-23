@@ -26,10 +26,13 @@ import org.kigalisim.lang.operation.AdditionOperation;
 import org.kigalisim.lang.operation.CapOperation;
 import org.kigalisim.lang.operation.ChangeOperation;
 import org.kigalisim.lang.operation.ChangeUnitsOperation;
+import org.kigalisim.lang.operation.ComparisonOperation;
+import org.kigalisim.lang.operation.ConditionalOperation;
 import org.kigalisim.lang.operation.DivisionOperation;
 import org.kigalisim.lang.operation.EqualsOperation;
 import org.kigalisim.lang.operation.FloorOperation;
 import org.kigalisim.lang.operation.InitialChargeOperation;
+import org.kigalisim.lang.operation.LogicalOperation;
 import org.kigalisim.lang.operation.MultiplicationOperation;
 import org.kigalisim.lang.operation.Operation;
 import org.kigalisim.lang.operation.PreCalculatedOperation;
@@ -105,7 +108,12 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
    */
   @Override
   public Fragment visitConditionExpression(QubecTalkParser.ConditionExpressionContext ctx) {
-    return visitChildren(ctx);
+    Operation left = visit(ctx.pos).getOperation();
+    Operation right = visit(ctx.neg).getOperation();
+
+    String operatorStr = ctx.op.getText();
+    Operation operation = new ComparisonOperation(left, right, operatorStr);
+    return new OperationFragment(operation);
   }
 
   /**
@@ -141,7 +149,12 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
    */
   @Override
   public Fragment visitConditionalExpression(QubecTalkParser.ConditionalExpressionContext ctx) {
-    return visitChildren(ctx);
+    Operation condition = visit(ctx.cond).getOperation();
+    Operation trueCase = visit(ctx.pos).getOperation();
+    Operation falseCase = visit(ctx.neg).getOperation();
+
+    Operation operation = new ConditionalOperation(condition, trueCase, falseCase);
+    return new OperationFragment(operation);
   }
 
   /**
@@ -210,7 +223,12 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
    */
   @Override
   public Fragment visitLogicalExpression(QubecTalkParser.LogicalExpressionContext ctx) {
-    return visitChildren(ctx);
+    Operation left = visit(ctx.left).getOperation();
+    Operation right = visit(ctx.right).getOperation();
+
+    String operatorStr = ctx.op.getText();
+    Operation operation = new LogicalOperation(left, right, operatorStr);
+    return new OperationFragment(operation);
   }
 
   /**
