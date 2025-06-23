@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import org.kigalisim.engine.number.EngineNumber;
+import org.kigalisim.lang.fragment.AboutStanzaFragment;
 import org.kigalisim.lang.fragment.ApplicationFragment;
 import org.kigalisim.lang.fragment.DuringFragment;
 import org.kigalisim.lang.fragment.Fragment;
@@ -209,28 +210,8 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
    */
   @Override
   public Fragment visitMultiplyExpression(QubecTalkParser.MultiplyExpressionContext ctx) {
-    Fragment leftFragment = visit(ctx.expression(0));
-    Fragment rightFragment = visit(ctx.expression(1));
-
-    // Check if fragments have operations
-    if (leftFragment == null || rightFragment == null) {
-      throw new RuntimeException("Null fragment in multiply expression");
-    }
-
-    Operation left;
-    Operation right;
-
-    try {
-      left = leftFragment.getOperation();
-    } catch (RuntimeException e) {
-      throw new RuntimeException("Left fragment does not have an operation: " + e.getMessage());
-    }
-
-    try {
-      right = rightFragment.getOperation();
-    } catch (RuntimeException e) {
-      throw new RuntimeException("Right fragment does not have an operation: " + e.getMessage());
-    }
+    Operation left = visit(ctx.expression(0)).getOperation();
+    Operation right = visit(ctx.expression(1)).getOperation();
 
     String operatorStr = ctx.op.getText();
     Operation calculation;
@@ -402,16 +383,6 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
    * {@inheritDoc}
    */
   @Override
-  public Fragment visitAboutStanza(QubecTalkParser.AboutStanzaContext ctx) {
-    // Return a policy fragment with an empty policy
-    ParsedPolicy policy = new ParsedPolicy("about", new ArrayList<>());
-    return new PolicyFragment(policy);
-  }
-
-  /**
-   * {@inheritDoc}
-   */
-  @Override
   public Fragment visitDefaultStanza(QubecTalkParser.DefaultStanzaContext ctx) {
     List<ParsedApplication> applications = new ArrayList<>();
 
@@ -422,6 +393,14 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
 
     ParsedPolicy policy = new ParsedPolicy("default", applications);
     return new PolicyFragment(policy);
+  }
+
+  /**
+   * {@inheritDoc}}
+   */
+  @Override
+  public Fragment visitAboutStanza(QubecTalkParser.AboutStanzaContext ctx) {
+    return new AboutStanzaFragment();
   }
 
   /**
@@ -986,7 +965,7 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
         for (String scenarioName : parsedScenarios.getScenarios()) {
           scenarios.add(parsedScenarios.getScenario(scenarioName));
         }
-      } else {
+      } else if (stanzaFragment.getIsStanzaPolicyOrDefault()) {
         policies.add(stanzaFragment.getPolicy());
       }
     }

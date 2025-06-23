@@ -240,7 +240,11 @@ public class SingleThreadPushDownMachine implements PushDownMachine {
     EngineNumber result = stack.pop();
     if (expectedUnitsMaybe.isPresent()) {
       String expectedUnits = expectedUnitsMaybe.get();
-      if (!result.getUnits().equals(expectedUnits)) {
+      String actualUnits = result.getUnits();
+      boolean haveBlank = expectedUnits.isEmpty() || actualUnits.isEmpty();
+      boolean haveSameUnits = expectedUnits.equals(actualUnits);
+      boolean unitsOk = haveBlank || haveSameUnits;
+      if (!unitsOk) {
         String message = String.format(
             "Unexpected units for popped value. Anticipated %s but got %s.",
             expectedUnits,

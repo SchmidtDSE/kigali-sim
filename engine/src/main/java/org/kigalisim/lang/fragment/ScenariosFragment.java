@@ -33,4 +33,9 @@ public class ScenariosFragment extends Fragment {
   public boolean getIsStanzaScenarios() {
     return true;
   }
+
+  @Override
+  public boolean getIsStanzaPolicyOrDefault() {
+    return false;
+  }
 }
