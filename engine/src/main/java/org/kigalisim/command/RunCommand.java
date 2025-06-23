@@ -93,8 +93,8 @@ public class RunCommand implements Callable<Integer> {
          CSVPrinter printer = new CSVPrinter(fileWriter, CSVFormat.DEFAULT)) {
 
       // Write header
-      printer.printRecord("Application", "Substance", "Year", "Manufacture", "Import",
-          "Recycle", "DomesticConsumption", "ImportConsumption",
+      printer.printRecord("Application", "Substance", "Year", "ScenarioName", "TrialNumber", 
+          "Manufacture", "Import", "Recycle", "DomesticConsumption", "ImportConsumption",
           "RecycleConsumption", "Population", "PopulationNew",
           "RechargeEmissions", "EolEmissions", "EnergyConsumption");
 
@@ -105,6 +105,8 @@ public class RunCommand implements Callable<Integer> {
           row.put("Application", result.getApplication());
           row.put("Substance", result.getSubstance());
           row.put("Year", String.valueOf(result.getYear()));
+          row.put("ScenarioName", result.getScenarioName());
+          row.put("TrialNumber", String.valueOf(result.getTrialNumber()));
           row.put("Manufacture", result.getManufacture().toString());
           row.put("Import", result.getImport().toString());
           row.put("Recycle", result.getRecycle().toString());

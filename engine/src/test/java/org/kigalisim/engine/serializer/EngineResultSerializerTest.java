@@ -308,6 +308,10 @@ public class EngineResultSerializerTest {
     // Configure energy intensity
     when(engine.getEqualsEnergyIntensity()).thenReturn(energyIntensity);
 
+    // Configure scenario name and trial number
+    when(engine.getScenarioName()).thenReturn("Test Scenario");
+    when(engine.getTrialNumber()).thenReturn(1);
+
     return engine;
   }
 
@@ -370,6 +374,10 @@ public class EngineResultSerializerTest {
 
     // Configure energy intensity
     when(engine.getEqualsEnergyIntensity()).thenReturn(energyIntensity);
+
+    // Configure scenario name and trial number
+    when(engine.getScenarioName()).thenReturn("Test Scenario");
+    when(engine.getTrialNumber()).thenReturn(1);
 
     return engine;
   }

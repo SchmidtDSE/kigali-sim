@@ -66,6 +66,8 @@ public class SingleThreadEngine implements Engine {
   private final int startYear;
   private final int endYear;
   private int currentYear;
+  private String scenarioName;
+  private int trialNumber;
 
   private final ConverterStateGetter stateGetter;
   private final UnitConverter unitConverter;
@@ -86,6 +88,8 @@ public class SingleThreadEngine implements Engine {
     this.startYear = startYearRearrange;
     this.endYear = endYearRearrange;
     currentYear = startYear;
+    this.scenarioName = "";
+    this.trialNumber = 0;
 
     stateGetter = new ConverterStateGetter(this);
     unitConverter = new UnitConverter(stateGetter);
@@ -102,6 +106,42 @@ public class SingleThreadEngine implements Engine {
   @Override
   public int getEndYear() {
     return endYear;
+  }
+
+  /**
+   * Get the scenario name.
+   *
+   * @return The name of the scenario being run
+   */
+  public String getScenarioName() {
+    return scenarioName;
+  }
+
+  /**
+   * Set the scenario name.
+   *
+   * @param scenarioName The name of the scenario being run
+   */
+  public void setScenarioName(String scenarioName) {
+    this.scenarioName = scenarioName;
+  }
+
+  /**
+   * Get the trial number.
+   *
+   * @return The trial number of the current run
+   */
+  public int getTrialNumber() {
+    return trialNumber;
+  }
+
+  /**
+   * Set the trial number.
+   *
+   * @param trialNumber The trial number of the current run
+   */
+  public void setTrialNumber(int trialNumber) {
+    this.trialNumber = trialNumber;
   }
 
   @Override
