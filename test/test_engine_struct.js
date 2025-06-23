@@ -554,7 +554,6 @@ function buildEngineStructTests() {
       assert.closeTo(combined.getRecycle().getValue(), 35, 0.0001); // 25 + 10
     });
   });
-
 }
 
 export {buildEngineStructTests};

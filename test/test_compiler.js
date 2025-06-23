@@ -1,4 +1,5 @@
 import {Compiler} from "compiler";
+import {LegacyJsBackend, LegacyJsLayer} from "legacy_backend";
 
 function loadRemote(path) {
   return fetch(path).then((response) => response.text());
@@ -24,28 +25,21 @@ function buildCompilerTests() {
     const buildTest = (name, filepath, checks) => {
       QUnit.test(name, (assert) => {
         const done = assert.async();
-        loadRemote(filepath).then((content) => {
+        loadRemote(filepath).then(async (content) => {
           assert.ok(content.length > 0);
 
-          const compiler = new Compiler();
-          const compilerResult = compiler.compile(content);
-          assert.equal(compilerResult.getErrors().length, 0);
+          // Use the new backend for execution
+          const legacyJsLayer = new LegacyJsLayer();
+          const legacyJsBackend = new LegacyJsBackend(legacyJsLayer);
 
-          const program = compilerResult.getProgram();
-          assert.equal(compilerResult.getErrors().length, 0);
-
-          if (compilerResult.getErrors().length > 0) {
-            console.log(compilerResult.getErrors());
-          } else {
-            try {
-              const programResult = program();
-              checks.forEach((check) => {
-                check(programResult, assert);
-              });
-            } catch (e) {
-              console.log(e);
-              assert.ok(false);
-            }
+          try {
+            const programResult = await legacyJsBackend.execute(content);
+            checks.forEach((check) => {
+              check(programResult, assert);
+            });
+          } catch (e) {
+            console.log(e);
+            assert.ok(false, "Execution failed: " + e.message);
           }
 
           done();
@@ -59,7 +53,7 @@ function buildCompilerTests() {
         .filter((x) => x.getYear() == year)
         .filter((x) => x.getApplication() === application)
         .filter((x) => x.getSubstance() === substance);
-      
+
       // For simple cases, just return the first match regardless of trial number
       // since most tests use single trial simulations
       return filtered[0];

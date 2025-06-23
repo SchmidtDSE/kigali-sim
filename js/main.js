@@ -10,6 +10,7 @@ import {ReportDataWrapper} from "report_data";
 import {ResultsPresenter} from "results";
 import {UiEditorPresenter} from "ui_editor";
 import {UiTranslatorCompiler} from "ui_translator";
+import {LegacyJsBackend, LegacyJsLayer} from "legacy_backend";
 
 const HELP_TEXT = "Would you like our help in resolving this issue?";
 
@@ -98,6 +99,10 @@ class MainPresenter {
     const self = this;
 
     self._hasCompilationErrors = false;
+
+    // Initialize the legacy JS backend for worker-based execution
+    self._legacyJsLayer = new LegacyJsLayer();
+    self._legacyJsBackend = new LegacyJsBackend(self._legacyJsLayer);
 
     self._codeEditorPresenter = new CodeEditorPresenter(
       document.getElementById("code-editor"),
@@ -243,14 +248,17 @@ class MainPresenter {
       isAutoRefresh = false;
     }
 
-    const execute = () => {
-      const compiler = new Compiler();
+    const execute = async () => {
       const code = self._codeEditorPresenter.getCode();
-      const result = compiler.compile(code);
 
-      const compileErrors = result.getErrors();
+      // First, validate syntax using the compiler (for UI feedback)
+      const compiler = new Compiler();
+      const validationResult = compiler.compile(code);
+
+      const compileErrors = validationResult.getErrors();
       const hasErrors = compileErrors.length > 0;
       self._hasCompilationErrors = hasErrors;
+
       if (hasErrors) {
         self._codeEditorPresenter.showError(compileErrors[0]);
         self._buttonPanelPresenter.enable();
@@ -259,61 +267,40 @@ class MainPresenter {
         self._codeEditorPresenter.hideError();
       }
 
-      const program = result.getProgram();
-      if (result.getErrors().length > 0) {
-        const message = "Program error: " + result.getErrors()[0];
-        if (!isAutoRefresh) {
-          alertWithHelpOption(message);
-        } else {
-          self._codeEditorPresenter.showError(message);
-        }
-        self._buttonPanelPresenter.enable();
-        captureSentryMessage(message, "info");
-        return;
-      }
-
-      if (result.getErrors().length > 0) {
-        const message = "Result error: " + result.getErrors()[0];
-        if (!isAutoRefresh) {
-          alertWithHelpOption(message);
-        } else {
-          self._codeEditorPresenter.showError(message);
-        }
-        captureSentryMessage(message, "error");
-        self._buttonPanelPresenter.enable();
-        return;
-      } else if (program !== null) {
+      if (run) {
         try {
-          if (run) {
-            const programResult = program();
-            if (programResult.length == 0) {
-              self._showNoResultsMessage();
-            } else {
-              if (resetFilters) {
-                self._resultsPresenter.resetFilter();
-              }
-              self._onResult(programResult);
+          // Execute using the backend worker
+          const programResult = await self._legacyJsBackend.execute(code);
+
+          if (programResult.length === 0) {
+            self._showNoResultsMessage();
+          } else {
+            if (resetFilters) {
+              self._resultsPresenter.resetFilter();
             }
+            self._onResult(programResult);
           }
+
           // Clear any previous runtime errors when execution succeeds during auto-refresh
           if (isAutoRefresh) {
             self._codeEditorPresenter.hideError();
           }
         } catch (e) {
           console.log(e);
-          const message = "On result error: " + e;
+          const message = "Execution error: " + e.message;
           if (!isAutoRefresh) {
             alertWithHelpOption(message);
           } else {
             self._codeEditorPresenter.showError(message);
           }
+          captureSentryMessage(message, "error");
         }
       }
     };
 
-    const executeSafe = () => {
+    const executeSafe = async () => {
       try {
-        execute();
+        await execute();
       } catch (e) {
         const message = "Execute error: " + e;
         if (!isAutoRefresh) {
