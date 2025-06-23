@@ -145,37 +145,4 @@ public class RecycleRecoverLiveTests {
         "Recycled consumption units should be tCO2e in year 2");
   }
 
-  /**
-   * Test recover_displace_units.qta produces expected values.
-   */
-  @Test
-  public void testRecoverDisplaceUnits() throws IOException {
-    // Load and parse the QTA file
-    String qtaPath = "../examples/recover_displace_units.qta";
-    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
-    assertNotNull(program, "Program should not be null");
-
-    // Run the scenario using KigaliSimFacade
-    String scenarioName = "result";
-    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName);
-
-    // Convert to list for multiple access
-    List<EngineResult> resultsList = results.collect(Collectors.toList());
-
-    // Check year 1 for sub_a
-    EngineResult recordSubA = LiveTestsUtil.getResult(resultsList.stream(), 1, "test", "sub_a");
-    assertNotNull(recordSubA, "Should have result for test/sub_a in year 1");
-
-    // Check year 1 for sub_b
-    EngineResult recordSubB = LiveTestsUtil.getResult(resultsList.stream(), 1, "test", "sub_b");
-    assertNotNull(recordSubB, "Should have result for test/sub_b in year 1");
-
-    // Verify that sub_a has been recovered and sub_b has been displaced
-    // The exact values would depend on the implementation details, but we can at least
-    // verify that the operation has some effect
-    assertNotNull(recordSubA.getRecycleConsumption(),
-        "sub_a should have recycled consumption in year 1");
-    assertEquals("tCO2e", recordSubA.getRecycleConsumption().getUnits(),
-        "Recycled consumption units should be tCO2e in year 1");
-  }
 }

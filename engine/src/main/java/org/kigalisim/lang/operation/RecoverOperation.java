@@ -1,7 +1,7 @@
 /**
- * Operation that recovers a percentage or amount of refrigerant and optionally displaces it.
+ * Operation that recovers a percentage or amount of refrigerant.
  *
- * <p>This operation calculates a recovery amount, yield rate, and optional displacement amount
+ * <p>This operation calculates a recovery amount and yield rate
  * and applies it to the engine. It can optionally be limited to a specific time period using
  * a ParsedDuring object.</p>
  *
@@ -18,9 +18,9 @@ import org.kigalisim.lang.machine.PushDownMachine;
 import org.kigalisim.lang.time.ParsedDuring;
 
 /**
- * Operation that recovers a percentage or amount of refrigerant and optionally displaces it.
+ * Operation that recovers a percentage or amount of refrigerant.
  *
- * <p>This operation calculates a recovery amount, yield rate, and optional displacement amount
+ * <p>This operation calculates a recovery amount and yield rate
  * and applies it to the engine. It can optionally be limited to a specific time period using
  * a ParsedDuring object.</p>
  */
@@ -28,11 +28,10 @@ public class RecoverOperation implements Operation {
 
   private final Operation volumeOperation;
   private final Operation yieldOperation;
-  private final Optional<Operation> displacementOperation;
   private final Optional<ParsedDuring> duringMaybe;
 
   /**
-   * Create a new RecoverOperation that applies to all years without displacement.
+   * Create a new RecoverOperation that applies to all years.
    *
    * @param volumeOperation The operation that calculates the recovery amount.
    * @param yieldOperation The operation that calculates the yield rate.
@@ -40,12 +39,11 @@ public class RecoverOperation implements Operation {
   public RecoverOperation(Operation volumeOperation, Operation yieldOperation) {
     this.volumeOperation = volumeOperation;
     this.yieldOperation = yieldOperation;
-    this.displacementOperation = Optional.empty();
     duringMaybe = Optional.empty();
   }
 
   /**
-   * Create a new RecoverOperation that applies to a specific time period without displacement.
+   * Create a new RecoverOperation that applies to a specific time period.
    *
    * @param volumeOperation The operation that calculates the recovery amount.
    * @param yieldOperation The operation that calculates the yield rate.
@@ -54,38 +52,6 @@ public class RecoverOperation implements Operation {
   public RecoverOperation(Operation volumeOperation, Operation yieldOperation, ParsedDuring during) {
     this.volumeOperation = volumeOperation;
     this.yieldOperation = yieldOperation;
-    this.displacementOperation = Optional.empty();
-    duringMaybe = Optional.of(during);
-  }
-
-  /**
-   * Create a new RecoverOperation that applies to all years with displacement.
-   *
-   * @param volumeOperation The operation that calculates the recovery amount.
-   * @param yieldOperation The operation that calculates the yield rate.
-   * @param displacementOperation The operation that calculates the displacement amount.
-   */
-  public RecoverOperation(Operation volumeOperation, Operation yieldOperation,
-                         Operation displacementOperation) {
-    this.volumeOperation = volumeOperation;
-    this.yieldOperation = yieldOperation;
-    this.displacementOperation = Optional.of(displacementOperation);
-    duringMaybe = Optional.empty();
-  }
-
-  /**
-   * Create a new RecoverOperation that applies to a specific time period with displacement.
-   *
-   * @param volumeOperation The operation that calculates the recovery amount.
-   * @param yieldOperation The operation that calculates the yield rate.
-   * @param displacementOperation The operation that calculates the displacement amount.
-   * @param during The time period during which this operation applies.
-   */
-  public RecoverOperation(Operation volumeOperation, Operation yieldOperation,
-                         Operation displacementOperation, ParsedDuring during) {
-    this.volumeOperation = volumeOperation;
-    this.yieldOperation = yieldOperation;
-    this.displacementOperation = Optional.of(displacementOperation);
     duringMaybe = Optional.of(during);
   }
 
@@ -99,13 +65,6 @@ public class RecoverOperation implements Operation {
     yieldOperation.execute(machine);
     EngineNumber yieldRate = machine.getResult();
 
-    // Execute the displacement operation to get the displacement amount (if provided)
-    EngineNumber displacementAmount = null;
-    if (displacementOperation.isPresent()) {
-      displacementOperation.get().execute(machine);
-      displacementAmount = machine.getResult();
-    }
-
     // Build the year matcher
     ParsedDuring parsedDuring = duringMaybe.orElseGet(
         () -> new ParsedDuring(Optional.empty(), Optional.empty())
@@ -114,6 +73,6 @@ public class RecoverOperation implements Operation {
 
     // Call the recycle method on the engine
     Engine engine = machine.getEngine();
-    engine.recycle(recoveryAmount, yieldRate, displacementAmount, yearMatcher);
+    engine.recycle(recoveryAmount, yieldRate, yearMatcher);
   }
 }

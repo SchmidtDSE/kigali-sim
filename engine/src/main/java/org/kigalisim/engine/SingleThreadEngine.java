@@ -576,7 +576,7 @@ public class SingleThreadEngine implements Engine {
 
   @Override
   public void recycle(EngineNumber recoveryWithUnits, EngineNumber yieldWithUnits,
-      EngineNumber displaceLevel, YearMatcher yearMatcher) {
+      YearMatcher yearMatcher) {
     if (!getIsInRange(yearMatcher)) {
       return;
     }
@@ -585,10 +585,6 @@ public class SingleThreadEngine implements Engine {
     String substance = scope.getSubstance();
     streamKeeper.setRecoveryRate(application, substance, recoveryWithUnits);
     streamKeeper.setYieldRate(application, substance, yieldWithUnits);
-
-    if (displaceLevel != null) {
-      streamKeeper.setDisplacementRate(application, substance, displaceLevel);
-    }
 
     RecalcOperation operation = new RecalcOperationBuilder()
         .setRecalcKit(createRecalcKit())
