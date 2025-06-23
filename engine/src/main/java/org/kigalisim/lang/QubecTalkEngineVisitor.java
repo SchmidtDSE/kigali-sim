@@ -27,6 +27,7 @@ import org.kigalisim.lang.operation.CapOperation;
 import org.kigalisim.lang.operation.ChangeOperation;
 import org.kigalisim.lang.operation.ChangeUnitsOperation;
 import org.kigalisim.lang.operation.ComparisonOperation;
+import org.kigalisim.lang.operation.EqualityOperation;
 import org.kigalisim.lang.operation.ConditionalOperation;
 import org.kigalisim.lang.operation.DefineVariableOperation;
 import org.kigalisim.lang.operation.DivisionOperation;
@@ -114,7 +115,7 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
     Operation right = visit(ctx.neg).getOperation();
 
     String operatorStr = ctx.op.getText();
-    Operation operation = new ComparisonOperation(left, right, operatorStr);
+    Operation operation = new EqualityOperation(left, right, operatorStr);
     return new OperationFragment(operation);
   }
 
@@ -225,8 +226,11 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
    */
   @Override
   public Fragment visitLogicalExpression(QubecTalkParser.LogicalExpressionContext ctx) {
-    Operation left = visit(ctx.left).getOperation();
-    Operation right = visit(ctx.right).getOperation();
+    Fragment leftFragment = visit(ctx.left);
+    Operation left = leftFragment.getOperation();
+
+    Fragment rightFragment = visit(ctx.right);
+    Operation right = rightFragment.getOperation();
 
     String operatorStr = ctx.op.getText();
     Operation operation = new LogicalOperation(left, right, operatorStr);
@@ -908,6 +912,14 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
   @Override
   public Fragment visitSubstanceStatement(QubecTalkParser.SubstanceStatementContext ctx) {
     return visitChildren(ctx);
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public Fragment visitParenExpression(QubecTalkParser.ParenExpressionContext ctx) {
+    return visit(ctx.getChild(1));
   }
 
   /**

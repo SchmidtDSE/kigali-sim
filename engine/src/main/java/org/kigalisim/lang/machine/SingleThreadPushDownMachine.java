@@ -45,7 +45,7 @@ public class SingleThreadPushDownMachine implements PushDownMachine {
   @Override
   public EngineNumber getResult() {
     if (stack.size() != 1) {
-      throw new RuntimeException("Expected exactly one result on the stack.");
+      throw new RuntimeException("Expected exactly one result on the stack. Saw: " + stack.size());
     }
     return pop();
   }
@@ -91,10 +91,7 @@ public class SingleThreadPushDownMachine implements PushDownMachine {
     }
     setExpectedUnits(right.getUnits());
     EngineNumber left = pop();
-    // Use a scale of 10 and HALF_UP rounding mode for division
     BigDecimal resultValue = left.getValue().divide(right.getValue(), 10, RoundingMode.HALF_UP);
-    // Strip trailing zeros to get a cleaner representation
-    resultValue = resultValue.stripTrailingZeros();
     EngineNumber result = new EngineNumber(resultValue, getExpectedUnits());
     push(result);
     clearExpectedUnits();
@@ -119,6 +116,117 @@ public class SingleThreadPushDownMachine implements PushDownMachine {
   @Override
   public Engine getEngine() {
     return engine;
+  }
+
+  @Override
+  public void and() {
+    EngineNumber right = pop();
+    setExpectedUnits(right.getUnits());
+    EngineNumber left = pop();
+    boolean leftBool = !left.getValue().equals(BigDecimal.ZERO);
+    boolean rightBool = !right.getValue().equals(BigDecimal.ZERO);
+    BigDecimal resultValue = (leftBool && rightBool) ? BigDecimal.ONE : BigDecimal.ZERO;
+    EngineNumber result = new EngineNumber(resultValue, getExpectedUnits());
+    push(result);
+    clearExpectedUnits();
+  }
+
+  @Override
+  public void or() {
+    EngineNumber right = pop();
+    setExpectedUnits(right.getUnits());
+    EngineNumber left = pop();
+    boolean leftBool = !left.getValue().equals(BigDecimal.ZERO);
+    boolean rightBool = !right.getValue().equals(BigDecimal.ZERO);
+    BigDecimal resultValue = (leftBool || rightBool) ? BigDecimal.ONE : BigDecimal.ZERO;
+    EngineNumber result = new EngineNumber(resultValue, getExpectedUnits());
+    push(result);
+    clearExpectedUnits();
+  }
+
+  @Override
+  public void xor() {
+    EngineNumber right = pop();
+    setExpectedUnits(right.getUnits());
+    EngineNumber left = pop();
+    boolean leftBool = !left.getValue().equals(BigDecimal.ZERO);
+    boolean rightBool = !right.getValue().equals(BigDecimal.ZERO);
+    BigDecimal resultValue = (leftBool ^ rightBool) ? BigDecimal.ONE : BigDecimal.ZERO;
+    EngineNumber result = new EngineNumber(resultValue, getExpectedUnits());
+    push(result);
+    clearExpectedUnits();
+  }
+
+  @Override
+  public void equals() {
+    EngineNumber right = pop();
+    setExpectedUnits(right.getUnits());
+    EngineNumber left = pop();
+    boolean result = left.getValue().compareTo(right.getValue()) == 0;
+    BigDecimal resultValue = result ? BigDecimal.ONE : BigDecimal.ZERO;
+    EngineNumber resultNumber = new EngineNumber(resultValue, getExpectedUnits());
+    push(resultNumber);
+    clearExpectedUnits();
+  }
+
+  @Override
+  public void notEquals() {
+    EngineNumber right = pop();
+    setExpectedUnits(right.getUnits());
+    EngineNumber left = pop();
+    boolean result = left.getValue().compareTo(right.getValue()) != 0;
+    BigDecimal resultValue = result ? BigDecimal.ONE : BigDecimal.ZERO;
+    EngineNumber resultNumber = new EngineNumber(resultValue, getExpectedUnits());
+    push(resultNumber);
+    clearExpectedUnits();
+  }
+
+  @Override
+  public void greaterThan() {
+    EngineNumber right = pop();
+    setExpectedUnits(right.getUnits());
+    EngineNumber left = pop();
+    boolean result = left.getValue().compareTo(right.getValue()) > 0;
+    BigDecimal resultValue = result ? BigDecimal.ONE : BigDecimal.ZERO;
+    EngineNumber resultNumber = new EngineNumber(resultValue, getExpectedUnits());
+    push(resultNumber);
+    clearExpectedUnits();
+  }
+
+  @Override
+  public void lessThan() {
+    EngineNumber right = pop();
+    setExpectedUnits(right.getUnits());
+    EngineNumber left = pop();
+    boolean result = left.getValue().compareTo(right.getValue()) < 0;
+    BigDecimal resultValue = result ? BigDecimal.ONE : BigDecimal.ZERO;
+    EngineNumber resultNumber = new EngineNumber(resultValue, getExpectedUnits());
+    push(resultNumber);
+    clearExpectedUnits();
+  }
+
+  @Override
+  public void greaterThanOrEqual() {
+    EngineNumber right = pop();
+    setExpectedUnits(right.getUnits());
+    EngineNumber left = pop();
+    boolean result = left.getValue().compareTo(right.getValue()) >= 0;
+    BigDecimal resultValue = result ? BigDecimal.ONE : BigDecimal.ZERO;
+    EngineNumber resultNumber = new EngineNumber(resultValue, getExpectedUnits());
+    push(resultNumber);
+    clearExpectedUnits();
+  }
+
+  @Override
+  public void lessThanOrEqual() {
+    EngineNumber right = pop();
+    setExpectedUnits(right.getUnits());
+    EngineNumber left = pop();
+    boolean result = left.getValue().compareTo(right.getValue()) <= 0;
+    BigDecimal resultValue = result ? BigDecimal.ONE : BigDecimal.ZERO;
+    EngineNumber resultNumber = new EngineNumber(resultValue, getExpectedUnits());
+    push(resultNumber);
+    clearExpectedUnits();
   }
 
   /**

@@ -112,7 +112,7 @@ public class FeatureLiveTests {
   /**
    * Test logical_operators.qta produces expected values.
    */
-  //@Test
+  @Test
   public void testLogicalOperators() throws IOException {
     // Load and parse the QTA file
     String qtaPath = "../examples/logical_operators.qta";

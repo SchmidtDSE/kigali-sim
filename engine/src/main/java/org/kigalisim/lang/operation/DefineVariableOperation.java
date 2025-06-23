@@ -31,11 +31,7 @@ public class DefineVariableOperation implements Operation {
     EngineNumber value = machine.getResult();
 
     // Define the variable if it doesn't exist already
-    try {
-      machine.getEngine().defineVariable(variableName);
-    } catch (IllegalStateException e) {
-      // Variable already defined, which is fine
-    }
+    machine.getEngine().defineVariable(variableName);
 
     // Set the variable value in the engine
     machine.getEngine().setVariable(variableName, value);

@@ -38,30 +38,20 @@ public class LogicalOperation implements Operation {
   @Override
   public void execute(PushDownMachine machine) {
     left.execute(machine);
-    EngineNumber leftResult = machine.getResult();
-    
     right.execute(machine);
-    EngineNumber rightResult = machine.getResult();
-    
-    boolean leftBool = !leftResult.getValue().equals(BigDecimal.ZERO);
-    boolean rightBool = !rightResult.getValue().equals(BigDecimal.ZERO);
-    boolean result = false;
-    
+
     switch (operator) {
       case "and":
-        result = leftBool && rightBool;
+        machine.and();
         break;
       case "or":
-        result = leftBool || rightBool;
+        machine.or();
         break;
       case "xor":
-        result = leftBool ^ rightBool;
+        machine.xor();
         break;
       default:
         throw new RuntimeException("Unknown logical operator: " + operator);
     }
-    
-    // Push the result as a 1 (true) or 0 (false) with no units
-    machine.push(new EngineNumber(result ? BigDecimal.ONE : BigDecimal.ZERO, ""));
   }
 }

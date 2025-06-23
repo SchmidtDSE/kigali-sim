@@ -38,15 +38,27 @@ public class ConditionalOperation implements Operation {
 
   @Override
   public void execute(PushDownMachine machine) {
-    condition.execute(machine);
-    EngineNumber conditionResult = machine.getResult();
-    
-    boolean conditionBool = !conditionResult.getValue().equals(BigDecimal.ZERO);
-    
-    if (conditionBool) {
-      trueCase.execute(machine);
-    } else {
-      falseCase.execute(machine);
-    }
+    // Create a simple operation that evaluates the condition and executes the appropriate case
+    Operation simpleOp = new Operation() {
+      @Override
+      public void execute(PushDownMachine m) {
+        // Execute the condition and get its result
+        condition.execute(m);
+        EngineNumber conditionResult = m.getResult();
+
+        // Convert to boolean
+        boolean conditionBool = !conditionResult.getValue().equals(BigDecimal.ZERO);
+
+        // Execute the appropriate case
+        if (conditionBool) {
+          trueCase.execute(m);
+        } else {
+          falseCase.execute(m);
+        }
+      }
+    };
+
+    // Execute the simple operation
+    simpleOp.execute(machine);
   }
 }

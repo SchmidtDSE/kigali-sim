@@ -8,7 +8,7 @@ package org.kigalisim.lang.operation;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.math.BigDecimal;
 import org.junit.jupiter.api.BeforeEach;
@@ -18,6 +18,7 @@ import org.kigalisim.engine.SingleThreadEngine;
 import org.kigalisim.engine.number.EngineNumber;
 import org.kigalisim.lang.machine.PushDownMachine;
 import org.kigalisim.lang.machine.SingleThreadPushDownMachine;
+
 
 /**
  * Tests for the DefineVariableOperation class.
@@ -142,11 +143,6 @@ public class DefineVariableOperationTest {
     EngineNumber newValue = new EngineNumber(BigDecimal.valueOf(42), "kg");
     Operation valueOperation = new PreCalculatedOperation(newValue);
     DefineVariableOperation operation = new DefineVariableOperation(variableName, valueOperation);
-    operation.execute(machine);
-
-    // Verify the variable was updated in the engine
-    EngineNumber result = engine.getVariable(variableName);
-    assertEquals(BigDecimal.valueOf(42), result.getValue(), "Variable value should be updated correctly");
-    assertEquals("kg", result.getUnits(), "Variable units should be updated correctly");
+    assertThrows(IllegalStateException.class, () -> operation.execute(machine));
   }
 }
