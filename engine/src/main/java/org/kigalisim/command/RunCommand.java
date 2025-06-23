@@ -12,13 +12,9 @@ package org.kigalisim.command;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.stream.Stream;
-import org.apache.commons.csv.CSVFormat;
-import org.apache.commons.csv.CSVPrinter;
 import org.kigalisim.KigaliSimFacade;
 import org.kigalisim.engine.serializer.EngineResult;
 import org.kigalisim.lang.program.ParsedProgram;
@@ -66,8 +62,11 @@ public class RunCommand implements Callable<Integer> {
       // Collect to a list to see how many results we have
       List<EngineResult> resultsList = allResults.collect(java.util.stream.Collectors.toList());
 
-      // Write results to CSV
-      writeResultsToCsv(resultsList.stream(), csvOutputFile);
+      // Convert results to CSV and write to file
+      String csvContent = KigaliSimFacade.convertResultsToCsv(resultsList);
+      try (FileWriter writer = new FileWriter(csvOutputFile)) {
+        writer.write(csvContent);
+      }
 
       System.out.println("Successfully ran all simulations and wrote results to " + csvOutputFile);
       return 0;
@@ -81,49 +80,4 @@ public class RunCommand implements Callable<Integer> {
     }
   }
 
-  /**
-   * Write EngineResult objects to CSV file.
-   *
-   * @param results Stream of EngineResult objects to write
-   * @param outputFile File to write CSV data to
-   * @throws IOException If there is an error writing to the file
-   */
-  private void writeResultsToCsv(Stream<EngineResult> results, File outputFile) throws IOException {
-    try (FileWriter fileWriter = new FileWriter(outputFile);
-         CSVPrinter printer = new CSVPrinter(fileWriter, CSVFormat.DEFAULT)) {
-
-      // Write header
-      printer.printRecord("Application", "Substance", "Year", "ScenarioName", "TrialNumber", 
-          "Manufacture", "Import", "Recycle", "DomesticConsumption", "ImportConsumption",
-          "RecycleConsumption", "Population", "PopulationNew",
-          "RechargeEmissions", "EolEmissions", "EnergyConsumption");
-
-      // Write data rows
-      results.forEach(result -> {
-        try {
-          Map<String, String> row = new LinkedHashMap<>();
-          row.put("Application", result.getApplication());
-          row.put("Substance", result.getSubstance());
-          row.put("Year", String.valueOf(result.getYear()));
-          row.put("ScenarioName", result.getScenarioName());
-          row.put("TrialNumber", String.valueOf(result.getTrialNumber()));
-          row.put("Manufacture", result.getManufacture().toString());
-          row.put("Import", result.getImport().toString());
-          row.put("Recycle", result.getRecycle().toString());
-          row.put("DomesticConsumption", result.getDomesticConsumption().toString());
-          row.put("ImportConsumption", result.getImportConsumption().toString());
-          row.put("RecycleConsumption", result.getRecycleConsumption().toString());
-          row.put("Population", result.getPopulation().toString());
-          row.put("PopulationNew", result.getPopulationNew().toString());
-          row.put("RechargeEmissions", result.getRechargeEmissions().toString());
-          row.put("EolEmissions", result.getEolEmissions().toString());
-          row.put("EnergyConsumption", result.getEnergyConsumption().toString());
-
-          printer.printRecord(row.values());
-        } catch (IOException e) {
-          throw new RuntimeException("Error writing CSV row", e);
-        }
-      });
-    }
-  }
 }

@@ -26,6 +26,7 @@ import org.kigalisim.lang.program.ParsedPolicy;
 import org.kigalisim.lang.program.ParsedProgram;
 import org.kigalisim.lang.program.ParsedScenario;
 import org.kigalisim.lang.program.ParsedSubstance;
+import org.kigalisim.util.EmulatedStringJoiner;
 
 /**
  * Entry point into the Kigali platform when used as a library.
@@ -217,5 +218,64 @@ public class KigaliSimFacade {
     }
 
     return results.stream();
+  }
+
+  /**
+   * Convert a list of EngineResult objects to a CSV string.
+   *
+   * @param results The list of EngineResult objects to convert.
+   * @return A CSV string representation of the results.
+   */
+  public static String convertResultsToCsv(List<EngineResult> results) {
+    if (results.isEmpty()) {
+      return "";
+    }
+
+    // Create header row
+    EmulatedStringJoiner headerJoiner = new EmulatedStringJoiner(",");
+    headerJoiner.add("scenario");
+    headerJoiner.add("trial");
+    headerJoiner.add("year");
+    headerJoiner.add("application");
+    headerJoiner.add("substance");
+    headerJoiner.add("manufacture");
+    headerJoiner.add("import");
+    headerJoiner.add("recycle");
+    headerJoiner.add("domesticConsumption");
+    headerJoiner.add("importConsumption");
+    headerJoiner.add("recycleConsumption");
+    headerJoiner.add("population");
+    headerJoiner.add("populationNew");
+    headerJoiner.add("rechargeEmissions");
+    headerJoiner.add("eolEmissions");
+    headerJoiner.add("energyConsumption");
+
+    StringBuilder csvBuilder = new StringBuilder();
+    csvBuilder.append(headerJoiner.toString()).append("\n");
+
+    // Add data rows
+    for (EngineResult result : results) {
+      EmulatedStringJoiner rowJoiner = new EmulatedStringJoiner(",");
+      rowJoiner.add(result.getScenarioName());
+      rowJoiner.add(String.valueOf(result.getTrialNumber()));
+      rowJoiner.add(String.valueOf(result.getYear()));
+      rowJoiner.add(result.getApplication());
+      rowJoiner.add(result.getSubstance());
+      rowJoiner.add(result.getManufacture().getValue().toString());
+      rowJoiner.add(result.getImport().getValue().toString());
+      rowJoiner.add(result.getRecycle().getValue().toString());
+      rowJoiner.add(result.getDomesticConsumption().getValue().toString());
+      rowJoiner.add(result.getImportConsumption().getValue().toString());
+      rowJoiner.add(result.getRecycleConsumption().getValue().toString());
+      rowJoiner.add(result.getPopulation().getValue().toString());
+      rowJoiner.add(result.getPopulationNew().getValue().toString());
+      rowJoiner.add(result.getRechargeEmissions().getValue().toString());
+      rowJoiner.add(result.getEolEmissions().getValue().toString());
+      rowJoiner.add(result.getEnergyConsumption().getValue().toString());
+
+      csvBuilder.append(rowJoiner.toString()).append("\n");
+    }
+
+    return csvBuilder.toString();
   }
 }
