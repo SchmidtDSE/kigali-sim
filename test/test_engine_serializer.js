@@ -113,8 +113,8 @@ export function buildEngineSerializerTests() {
     });
 
     QUnit.test("gets scenario name", function (assert) {
-      // Expected: "test scenario" from MockEngine
-      assert.strictEqual(result.getScenarioName(), "test scenario");
+      // Expected: "test" from MockEngine
+      assert.strictEqual(result.getScenarioName(), "test");
     });
 
     QUnit.test("gets trial number", function (assert) {
@@ -175,7 +175,7 @@ export function buildEngineSerializerTests() {
 class MockEngine {
   constructor(options) {
     this.options = options;
-    this._scenarioName = options.has("scenarioName") ? options.get("scenarioName") : "test scenario";
+    this._scenarioName = options.has("scenarioName") ? options.get("scenarioName") : "test";
     this._trialNumber = options.has("trialNumber") ? options.get("trialNumber") : 1;
   }
 
