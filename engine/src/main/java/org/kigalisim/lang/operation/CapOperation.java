@@ -17,7 +17,7 @@ import org.kigalisim.lang.time.ParsedDuring;
  * Operation that caps a stream value to a specified maximum and optionally displaces the excess.
  *
  * <p>This operation calculates a value and caps a specified stream in the engine to that maximum.
- * The excess can optionally be displaced to another stream. It can also optionally be limited to a 
+ * The excess can optionally be displaced to another stream. It can also optionally be limited to a
  * specific time period using a ParsedDuring object.</p>
  */
 public class CapOperation implements Operation {
@@ -76,7 +76,7 @@ public class CapOperation implements Operation {
    * @param displaceTarget The name of the stream to displace excess to.
    * @param during The time period during which this operation applies.
    */
-  public CapOperation(String stream, Operation valueOperation, 
+  public CapOperation(String stream, Operation valueOperation,
                      String displaceTarget, ParsedDuring during) {
     this.stream = stream;
     this.valueOperation = valueOperation;

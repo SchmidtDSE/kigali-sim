@@ -87,4 +87,94 @@ public interface PushDownMachine {
    * @return The engine in which this machine is running.
    */
   Engine getEngine();
+
+  /**
+   * Perform a logical AND operation on the two numbers on top of the stack.
+   *
+   * <p>Perform a logical AND operation on the two numbers on top of the stack, pushing the result
+   * of the calculation to the top of the stack. It assumes that the left operand was pushed prior
+   * to the right operand such that the right operand is on the top of the stack and the left
+   * operand is right below. Non-zero values are treated as true, zero values as false.</p>
+   */
+  void and();
+
+  /**
+   * Perform a logical OR operation on the two numbers on top of the stack.
+   *
+   * <p>Perform a logical OR operation on the two numbers on top of the stack, pushing the result
+   * of the calculation to the top of the stack. It assumes that the left operand was pushed prior
+   * to the right operand such that the right operand is on the top of the stack and the left
+   * operand is right below. Non-zero values are treated as true, zero values as false.</p>
+   */
+  void or();
+
+  /**
+   * Perform a logical XOR operation on the two numbers on top of the stack.
+   *
+   * <p>Perform a logical XOR operation on the two numbers on top of the stack, pushing the result
+   * of the calculation to the top of the stack. It assumes that the left operand was pushed prior
+   * to the right operand such that the right operand is on the top of the stack and the left
+   * operand is right below. Non-zero values are treated as true, zero values as false.</p>
+   */
+  void xor();
+
+  /**
+   * Perform an equality comparison on the two numbers on top of the stack.
+   *
+   * <p>Perform an equality comparison on the two numbers on top of the stack, pushing the result
+   * of the calculation to the top of the stack. It assumes that the left operand was pushed prior
+   * to the right operand such that the right operand is on the top of the stack and the left
+   * operand is right below.</p>
+   */
+  void equals();
+
+  /**
+   * Perform a not-equals comparison on the two numbers on top of the stack.
+   *
+   * <p>Perform a not-equals comparison on the two numbers on top of the stack, pushing the result
+   * of the calculation to the top of the stack. It assumes that the left operand was pushed prior
+   * to the right operand such that the right operand is on the top of the stack and the left
+   * operand is right below.</p>
+   */
+  void notEquals();
+
+  /**
+   * Perform a greater-than comparison on the two numbers on top of the stack.
+   *
+   * <p>Perform a greater-than comparison on the two numbers on top of the stack, pushing the result
+   * of the calculation to the top of the stack. It assumes that the left operand was pushed prior
+   * to the right operand such that the right operand is on the top of the stack and the left
+   * operand is right below.</p>
+   */
+  void greaterThan();
+
+  /**
+   * Perform a less-than comparison on the two numbers on top of the stack.
+   *
+   * <p>Perform a less-than comparison on the two numbers on top of the stack, pushing the result
+   * of the calculation to the top of the stack. It assumes that the left operand was pushed prior
+   * to the right operand such that the right operand is on the top of the stack and the left
+   * operand is right below.</p>
+   */
+  void lessThan();
+
+  /**
+   * Perform a greater-than-or-equal comparison on the two numbers on top of the stack.
+   *
+   * <p>Perform a greater-than-or-equal comparison on the two numbers on top of the stack, pushing
+   * the result of the calculation to the top of the stack. It assumes that the left operand was
+   * pushed prior to the right operand such that the right operand is on the top of the stack and
+   * the left operand is right below.</p>
+   */
+  void greaterThanOrEqual();
+
+  /**
+   * Perform a less-than-or-equal comparison on the two numbers on top of the stack.
+   *
+   * <p>Perform a less-than-or-equal comparison on the two numbers on top of the stack, pushing the
+   * result of the calculation to the top of the stack. It assumes that the left operand was pushed
+   * prior to the right operand such that the right operand is on the top of the stack and the left
+   * operand is right below.</p>
+   */
+  void lessThanOrEqual();
 }

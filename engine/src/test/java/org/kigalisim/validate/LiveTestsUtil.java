@@ -24,7 +24,7 @@ public class LiveTestsUtil {
    * @param substance The substance name
    * @return The matching EngineResult or null if not found
    */
-  public static EngineResult getResult(Stream<EngineResult> results, int year, 
+  public static EngineResult getResult(Stream<EngineResult> results, int year,
       String application, String substance) {
     return results
         .filter(r -> r.getYear() == year)

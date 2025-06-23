@@ -6,7 +6,6 @@
 
 package org.kigalisim.lang.operation;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -118,7 +117,7 @@ public class RecoverOperationTest {
     Operation displacementOperation = new PreCalculatedOperation(displacement);
 
     ParsedDuring during = new ParsedDuring(Optional.empty(), Optional.empty());
-    RecoverOperation operation = new RecoverOperation(volumeOperation, yieldOperation, 
+    RecoverOperation operation = new RecoverOperation(volumeOperation, yieldOperation,
                                                     displacementOperation, during);
     assertNotNull(operation, "RecoverOperation should be constructable with during and displacement");
   }
@@ -230,7 +229,7 @@ public class RecoverOperationTest {
     TimePointFuture start = new CalculatedTimePointFuture(yearOperation);
     ParsedDuring during = new ParsedDuring(Optional.of(start), Optional.empty());
 
-    RecoverOperation operation = new RecoverOperation(volumeOperation, yieldOperation, 
+    RecoverOperation operation = new RecoverOperation(volumeOperation, yieldOperation,
                                                     displacementOperation, during);
 
     operation.execute(machine);

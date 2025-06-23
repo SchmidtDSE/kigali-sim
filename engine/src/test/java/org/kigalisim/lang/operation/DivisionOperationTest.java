@@ -59,7 +59,7 @@ public class DivisionOperationTest {
     operation.execute(machine);
 
     EngineNumber result = machine.getResult();
-    assertEquals(BigDecimal.valueOf(3), result.getValue(), "Division should work correctly");
+    assertEquals(3, result.getValue().doubleValue(), 0.00001);
     assertEquals("kg", result.getUnits(), "Units should be preserved after division");
   }
 
@@ -78,7 +78,7 @@ public class DivisionOperationTest {
     operation.execute(machine);
 
     EngineNumber result = machine.getResult();
-    assertEquals(BigDecimal.valueOf(3), result.getValue(), "Nested division should work correctly");
+    assertEquals(3, result.getValue().doubleValue(), 0.0001);
     assertEquals("kg", result.getUnits(), "Units should be preserved after nested division");
   }
 

@@ -13,7 +13,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Collections;
 import org.junit.jupiter.api.Test;
-import org.kigalisim.lang.program.ParsedScenario;
 import org.kigalisim.lang.program.ParsedScenarios;
 
 /**

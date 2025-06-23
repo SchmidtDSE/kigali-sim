@@ -236,21 +236,21 @@ public class EngineResult {
   public EngineNumber getGhgConsumption() {
     // Get consumption without recycle (domestic + import)
     EngineNumber noRecycleConsumption = getConsumptionNoRecycle();
-    
+
     // Check unit compatibility
     String noRecycleUnits = noRecycleConsumption.getUnits();
     String recycleUnits = recycleConsumptionValue.getUnits();
-    
+
     if (!noRecycleUnits.equals(recycleUnits)) {
       throw new IllegalStateException(
           "Could not add incompatible units for total GHG consumption.");
     }
-    
+
     // Combine with recycle consumption
     BigDecimal noRecycleValue = noRecycleConsumption.getValue();
     BigDecimal recycleValue = recycleConsumptionValue.getValue();
     BigDecimal totalValue = noRecycleValue.add(recycleValue);
-    
+
     return new EngineNumber(totalValue, noRecycleUnits);
   }
 

@@ -35,7 +35,7 @@ public class RecycleRecoverLiveTests {
 
     // Run the scenario using KigaliSimFacade
     String scenarioName = "result";
-    Stream<EngineResult> results = KigaliSimFacade.runScenarioWithResults(program, scenarioName);
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName);
 
     // Convert to list for multiple access
     List<EngineResult> resultsList = results.collect(Collectors.toList());
@@ -75,7 +75,7 @@ public class RecycleRecoverLiveTests {
 
     // Run the scenario using KigaliSimFacade
     String scenarioName = "result";
-    Stream<EngineResult> results = KigaliSimFacade.runScenarioWithResults(program, scenarioName);
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName);
 
     // Convert to list for multiple access
     List<EngineResult> resultsList = results.collect(Collectors.toList());
@@ -116,7 +116,7 @@ public class RecycleRecoverLiveTests {
 
     // Run the scenario using KigaliSimFacade
     String scenarioName = "result";
-    Stream<EngineResult> results = KigaliSimFacade.runScenarioWithResults(program, scenarioName);
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName);
 
     // Convert to list for multiple access
     List<EngineResult> resultsList = results.collect(Collectors.toList());
@@ -157,7 +157,7 @@ public class RecycleRecoverLiveTests {
 
     // Run the scenario using KigaliSimFacade
     String scenarioName = "result";
-    Stream<EngineResult> results = KigaliSimFacade.runScenarioWithResults(program, scenarioName);
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName);
 
     // Convert to list for multiple access
     List<EngineResult> resultsList = results.collect(Collectors.toList());
@@ -173,7 +173,7 @@ public class RecycleRecoverLiveTests {
     // Verify that sub_a has been recovered and sub_b has been displaced
     // The exact values would depend on the implementation details, but we can at least
     // verify that the operation has some effect
-    assertNotNull(recordSubA.getRecycleConsumption(), 
+    assertNotNull(recordSubA.getRecycleConsumption(),
         "sub_a should have recycled consumption in year 1");
     assertEquals("tCO2e", recordSubA.getRecycleConsumption().getUnits(),
         "Recycled consumption units should be tCO2e in year 1");

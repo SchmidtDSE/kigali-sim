@@ -36,6 +36,7 @@ import org.kigalisim.engine.state.Scope;
 import org.kigalisim.engine.state.StreamKeeper;
 import org.kigalisim.engine.state.SubstanceInApplicationId;
 import org.kigalisim.engine.state.YearMatcher;
+import org.kigalisim.engine.support.DivisionHelper;
 import org.kigalisim.engine.support.ExceptionsGenerator;
 import org.kigalisim.engine.support.RechargeVolumeCalculator;
 
@@ -350,37 +351,42 @@ public class SingleThreadEngine implements Engine {
 
       // Get initial charges
       EngineNumber manufactureInitialChargeRaw = getRawInitialChargeFor(application, substance, "manufacture");
-      EngineNumber manufactureInitialChargeUnbounded = unitConverter.convert(
+      EngineNumber manufactureChargeUnbound = unitConverter.convert(
           manufactureInitialChargeRaw, "kg / unit");
 
       EngineNumber importInitialChargeRaw = getRawInitialChargeFor(application, substance, "import");
-      EngineNumber importInitialChargeUnbounded = unitConverter.convert(
+      EngineNumber importChargeUnbound = unitConverter.convert(
           importInitialChargeRaw, "kg / unit");
 
       // Get bounded values
-      EngineNumber manufactureInitialCharge = manufactureInitialChargeUnbounded.getValue().compareTo(BigDecimal.ZERO) == 0 
-          ? importInitialChargeUnbounded 
-          : manufactureInitialChargeUnbounded;
-
-      EngineNumber importInitialCharge = importInitialChargeUnbounded.getValue().compareTo(BigDecimal.ZERO) == 0 
-          ? manufactureInitialChargeUnbounded 
-          : importInitialChargeUnbounded;
+      EngineNumber manufactureCharge = useIfZeroOrElse(
+          manufactureChargeUnbound,
+          importChargeUnbound,
+          manufactureChargeUnbound
+      );
+      EngineNumber importInitialCharge = useIfZeroOrElse(
+          importChargeUnbound,
+          manufactureChargeUnbound,
+          importChargeUnbound
+      );
 
       // Calculate units
       BigDecimal manufactureKg = emptyStreams ? BigDecimal.ONE : manufactureValue.getValue();
       BigDecimal importKg = emptyStreams ? BigDecimal.ONE : importValue.getValue();
-      BigDecimal manufactureKgUnit = manufactureInitialCharge.getValue();
+      BigDecimal manufactureKgUnit = manufactureCharge.getValue();
       BigDecimal importKgUnit = importInitialCharge.getValue();
 
-      BigDecimal manufactureUnits = manufactureKgUnit.compareTo(BigDecimal.ZERO) == 0 
-          ? BigDecimal.ZERO 
-          : manufactureKg.divide(manufactureKgUnit, MathContext.DECIMAL128);
+      BigDecimal manufactureUnits = DivisionHelper.divideWithZero(
+          manufactureKg,
+          manufactureKgUnit
+      );
 
-      BigDecimal importUnits = importKgUnit.compareTo(BigDecimal.ZERO) == 0 
-          ? BigDecimal.ZERO 
-          : importKg.divide(importKgUnit, MathContext.DECIMAL128);
+      BigDecimal importUnits = DivisionHelper.divideWithZero(
+          importKg,
+          importKgUnit
+      );
 
-      boolean emptyPopulation = manufactureUnits.compareTo(BigDecimal.ZERO) == 0 
+      boolean emptyPopulation = manufactureUnits.compareTo(BigDecimal.ZERO) == 0
           && importUnits.compareTo(BigDecimal.ZERO) == 0;
 
       if (emptyPopulation) {
@@ -1130,5 +1136,39 @@ public class SingleThreadEngine implements Engine {
         .setUnitConverter(unitConverter)
         .setStateGetter(stateGetter)
         .build();
+  }
+
+  /**
+   * Determine which value to use based on a branching value being zero.
+   *
+   * @param branchVal The value to branch on.
+   * @param trueVal The value to use if the branch value is zero.
+   * @param falseVal The value to use if the branch value is not zero.
+   * @return The value based on branching.
+   */
+  private EngineNumber useIfZeroOrElse(EngineNumber branchVal, EngineNumber trueVal,
+      EngineNumber falseVal) {
+    boolean valueIsZero = isZero(branchVal);
+    return valueIsZero ? trueVal : falseVal;
+  }
+
+  /**
+   * Determine if the target is zero.
+   *
+   * @param target The number to check.
+   * @return True if zero and false otherwise.
+   */
+  private boolean isZero(EngineNumber target) {
+    return isZero(target.getValue());
+  }
+
+  /**
+   * Determine if the target is zero.
+   *
+   * @param target The number to check.
+   * @return True if zero and false otherwise.
+   */
+  private boolean isZero(BigDecimal target) {
+    return target.compareTo(BigDecimal.ZERO) == 0;
   }
 }

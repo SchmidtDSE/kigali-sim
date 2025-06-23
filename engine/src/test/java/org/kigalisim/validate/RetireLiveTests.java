@@ -36,10 +36,10 @@ public class RetireLiveTests {
 
     // Run the scenario using KigaliSimFacade
     String scenarioName = "business as usual";
-    Stream<EngineResult> results = KigaliSimFacade.runScenarioWithResults(program, scenarioName);
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName);
 
     List<EngineResult> resultsList = results.collect(Collectors.toList());
-    
+
     // Check year 1 equipment (population) value
     EngineResult resultYear1 = LiveTestsUtil.getResult(resultsList.stream(), 1, "test", "test");
     assertNotNull(resultYear1, "Should have result for test/test in year 1");
@@ -47,7 +47,7 @@ public class RetireLiveTests {
         "Equipment should be 100000 units in year 1");
     assertEquals("units", resultYear1.getPopulation().getUnits(),
         "Equipment units should be units");
-    
+
     // Check year 2 equipment (population) value
     EngineResult resultYear2 = LiveTestsUtil.getResult(resultsList.stream(), 2, "test", "test");
     assertNotNull(resultYear2, "Should have result for test/test in year 2");
@@ -69,10 +69,10 @@ public class RetireLiveTests {
 
     // Run the scenario using KigaliSimFacade
     String scenarioName = "business as usual";
-    Stream<EngineResult> results = KigaliSimFacade.runScenarioWithResults(program, scenarioName);
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName);
 
     List<EngineResult> resultsList = results.collect(Collectors.toList());
-    
+
     // Check year 1 equipment (population) value
     EngineResult resultYear1 = LiveTestsUtil.getResult(resultsList.stream(), 1, "test", "test");
     assertNotNull(resultYear1, "Should have result for test/test in year 1");
@@ -94,10 +94,10 @@ public class RetireLiveTests {
 
     // Run the scenario using KigaliSimFacade
     String scenarioName = "business as usual";
-    Stream<EngineResult> results = KigaliSimFacade.runScenarioWithResults(program, scenarioName);
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName);
 
     List<EngineResult> resultsList = results.collect(Collectors.toList());
-    
+
     // Check year 1 equipment (population) value
     EngineResult resultYear1 = LiveTestsUtil.getResult(resultsList.stream(), 1, "test", "test");
     assertNotNull(resultYear1, "Should have result for test/test in year 1");

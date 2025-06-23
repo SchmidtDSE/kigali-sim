@@ -26,10 +26,15 @@ import org.kigalisim.lang.operation.AdditionOperation;
 import org.kigalisim.lang.operation.CapOperation;
 import org.kigalisim.lang.operation.ChangeOperation;
 import org.kigalisim.lang.operation.ChangeUnitsOperation;
+import org.kigalisim.lang.operation.ConditionalOperation;
+import org.kigalisim.lang.operation.DefineVariableOperation;
 import org.kigalisim.lang.operation.DivisionOperation;
+import org.kigalisim.lang.operation.EqualityOperation;
 import org.kigalisim.lang.operation.EqualsOperation;
 import org.kigalisim.lang.operation.FloorOperation;
+import org.kigalisim.lang.operation.GetVariableOperation;
 import org.kigalisim.lang.operation.InitialChargeOperation;
+import org.kigalisim.lang.operation.LogicalOperation;
 import org.kigalisim.lang.operation.MultiplicationOperation;
 import org.kigalisim.lang.operation.Operation;
 import org.kigalisim.lang.operation.PreCalculatedOperation;
@@ -105,7 +110,12 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
    */
   @Override
   public Fragment visitConditionExpression(QubecTalkParser.ConditionExpressionContext ctx) {
-    return visitChildren(ctx);
+    Operation left = visit(ctx.pos).getOperation();
+    Operation right = visit(ctx.neg).getOperation();
+
+    String operatorStr = ctx.op.getText();
+    Operation operation = new EqualityOperation(left, right, operatorStr);
+    return new OperationFragment(operation);
   }
 
   /**
@@ -141,7 +151,12 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
    */
   @Override
   public Fragment visitConditionalExpression(QubecTalkParser.ConditionalExpressionContext ctx) {
-    return visitChildren(ctx);
+    Operation condition = visit(ctx.cond).getOperation();
+    Operation trueCase = visit(ctx.pos).getOperation();
+    Operation falseCase = visit(ctx.neg).getOperation();
+
+    Operation operation = new ConditionalOperation(condition, trueCase, falseCase);
+    return new OperationFragment(operation);
   }
 
   /**
@@ -210,7 +225,15 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
    */
   @Override
   public Fragment visitLogicalExpression(QubecTalkParser.LogicalExpressionContext ctx) {
-    return visitChildren(ctx);
+    Fragment leftFragment = visit(ctx.left);
+    Operation left = leftFragment.getOperation();
+
+    Fragment rightFragment = visit(ctx.right);
+    Operation right = rightFragment.getOperation();
+
+    String operatorStr = ctx.op.getText();
+    Operation operation = new LogicalOperation(left, right, operatorStr);
+    return new OperationFragment(operation);
   }
 
   /**
@@ -234,7 +257,9 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
    */
   @Override
   public Fragment visitSimpleIdentifier(QubecTalkParser.SimpleIdentifierContext ctx) {
-    return visitChildren(ctx);
+    String identifier = ctx.getChild(0).getText();
+    Operation operation = new GetVariableOperation(identifier);
+    return new OperationFragment(operation);
   }
 
   /**
@@ -599,7 +624,10 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
    */
   @Override
   public Fragment visitDefineVarStatement(QubecTalkParser.DefineVarStatementContext ctx) {
-    return visitChildren(ctx);
+    String identifier = ctx.target.getText();
+    Operation valueOperation = visit(ctx.value).getOperation();
+    Operation operation = new DefineVariableOperation(identifier, valueOperation);
+    return new OperationFragment(operation);
   }
 
   /**
@@ -694,8 +722,11 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
     Operation volumeOperation = visit(ctx.volume).getOperation();
     Operation yieldOperation = visit(ctx.yieldVal).getOperation();
     String displacementTarget = ctx.getChild(5).accept(this).getString();
-    Operation operation = new RecoverOperation(volumeOperation, yieldOperation, 
-                                             new PreCalculatedOperation(new EngineNumber(new BigDecimal(0), displacementTarget)));
+    Operation operation = new RecoverOperation(
+        volumeOperation,
+        yieldOperation,
+        new PreCalculatedOperation(new EngineNumber(new BigDecimal(0), displacementTarget))
+    );
     return new OperationFragment(operation);
   }
 
@@ -709,8 +740,12 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
     Operation yieldOperation = visit(ctx.yieldVal).getOperation();
     String displacementTarget = ctx.getChild(6).accept(this).getString();
     ParsedDuring during = visit(ctx.duration).getDuring();
-    Operation operation = new RecoverOperation(volumeOperation, yieldOperation, 
-                                             new PreCalculatedOperation(new EngineNumber(new BigDecimal(0), displacementTarget)), during);
+    Operation operation = new RecoverOperation(
+        volumeOperation,
+        yieldOperation,
+        volumeOperation,
+        during
+    );
     return new OperationFragment(operation);
   }
 
@@ -883,6 +918,14 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
   @Override
   public Fragment visitSubstanceStatement(QubecTalkParser.SubstanceStatementContext ctx) {
     return visitChildren(ctx);
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public Fragment visitParenExpression(QubecTalkParser.ParenExpressionContext ctx) {
+    return visit(ctx.getChild(1));
   }
 
   /**

@@ -6,7 +6,6 @@
 
 package org.kigalisim.lang.operation;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.math.BigDecimal;
