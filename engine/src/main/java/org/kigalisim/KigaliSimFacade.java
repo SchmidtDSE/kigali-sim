@@ -35,6 +35,8 @@ import org.kigalisim.lang.program.ParsedSubstance;
  */
 public class KigaliSimFacade {
 
+  private static final String DEFAULT_STANZA = "default";
+
   /**
    * Parse a QubecTalk script.
    *
@@ -139,7 +141,7 @@ public class KigaliSimFacade {
   private static void executePolicy(ParsedPolicy policy, PushDownMachine machine) {
     // Set the stanza (policy name)
     String stanzaName = policy.getName();
-    machine.getEngine().setStanza(stanzaName != null ? stanzaName : "default");
+    machine.getEngine().setStanza(stanzaName);
 
     // For each application in the policy
     for (String applicationName : policy.getApplications()) {
@@ -188,10 +190,10 @@ public class KigaliSimFacade {
     // Store results as we iterate through years
     List<EngineResult> results = new ArrayList<>();
 
-    // Run simulation through all years, similar to the original runScenario method
+    // Run simulation through all years
     while (!engine.getIsDone()) {
       // Execute the default policy first
-      ParsedPolicy defaultPolicy = program.getPolicy("default");
+      ParsedPolicy defaultPolicy = program.getPolicy(DEFAULT_STANZA);
       executePolicy(defaultPolicy, machine);
 
       // Execute the other named policies in the scenario

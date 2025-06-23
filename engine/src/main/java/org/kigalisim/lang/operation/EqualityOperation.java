@@ -39,26 +39,13 @@ public class EqualityOperation implements Operation {
     right.execute(machine);
 
     switch (operator) {
-      case "==":
-        machine.equals();
-        break;
-      case "!=":
-        machine.notEquals();
-        break;
-      case ">":
-        machine.greaterThan();
-        break;
-      case "<":
-        machine.lessThan();
-        break;
-      case ">=":
-        machine.greaterThanOrEqual();
-        break;
-      case "<=":
-        machine.lessThanOrEqual();
-        break;
-      default:
-        throw new RuntimeException("Unknown equality operator: " + operator);
+      case "==" -> machine.equals();
+      case "!=" -> machine.notEquals();
+      case ">" -> machine.greaterThan();
+      case "<" -> machine.lessThan();
+      case ">=" -> machine.greaterThanOrEqual();
+      case "<=" -> machine.lessThanOrEqual();
+      default -> throw new RuntimeException("Unknown equality operator: " + operator);
     }
   }
 }

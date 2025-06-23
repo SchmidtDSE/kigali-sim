@@ -743,7 +743,7 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
     Operation operation = new RecoverOperation(
         volumeOperation,
         yieldOperation,
-        new PreCalculatedOperation(new EngineNumber(new BigDecimal(0), displacementTarget)),
+        volumeOperation,
         during
     );
     return new OperationFragment(operation);
