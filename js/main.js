@@ -11,6 +11,7 @@ import {ResultsPresenter} from "results";
 import {UiEditorPresenter} from "ui_editor";
 import {UiTranslatorCompiler} from "ui_translator";
 import {LegacyJsBackend, LegacyJsLayer} from "legacy_backend";
+import {WasmBackend, WasmLayer} from "wasm_backend";
 
 const HELP_TEXT = "Would you like our help in resolving this issue?";
 
@@ -100,9 +101,9 @@ class MainPresenter {
 
     self._hasCompilationErrors = false;
 
-    // Initialize the legacy JS backend for worker-based execution
-    self._legacyJsLayer = new LegacyJsLayer();
-    self._legacyJsBackend = new LegacyJsBackend(self._legacyJsLayer);
+    // Initialize the WASM backend for worker-based execution
+    self._wasmLayer = new WasmLayer();
+    self._wasmBackend = new WasmBackend(self._wasmLayer);
 
     self._codeEditorPresenter = new CodeEditorPresenter(
       document.getElementById("code-editor"),
@@ -269,8 +270,8 @@ class MainPresenter {
 
       if (run) {
         try {
-          // Execute using the backend worker
-          const programResult = await self._legacyJsBackend.execute(code);
+          // Execute using the WASM backend worker
+          const programResult = await self._wasmBackend.execute(code);
 
           if (programResult.length === 0) {
             self._showNoResultsMessage();

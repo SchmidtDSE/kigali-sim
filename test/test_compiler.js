@@ -1,5 +1,5 @@
 import {Compiler} from "compiler";
-import {LegacyJsBackend, LegacyJsLayer} from "legacy_backend";
+import {WasmBackend, WasmLayer} from "wasm_backend";
 
 function loadRemote(path) {
   return fetch(path).then((response) => response.text());
@@ -28,12 +28,12 @@ function buildCompilerTests() {
         loadRemote(filepath).then(async (content) => {
           assert.ok(content.length > 0);
 
-          // Use the new backend for execution
-          const legacyJsLayer = new LegacyJsLayer();
-          const legacyJsBackend = new LegacyJsBackend(legacyJsLayer);
+          // Use the WASM backend for execution
+          const wasmLayer = new WasmLayer();
+          const wasmBackend = new WasmBackend(wasmLayer);
 
           try {
-            const programResult = await legacyJsBackend.execute(content);
+            const programResult = await wasmBackend.execute(content);
             checks.forEach((check) => {
               check(programResult, assert);
             });

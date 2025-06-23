@@ -188,6 +188,16 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '21'
+      - name: Download WASM war
+        uses: actions/download-artifact@v4
+        with:
+          name: war
+          path: ./
+      - name: Extract WASM files to wasm directory
+        run: |
+          mkdir -p wasm
+          unzip -j KigaliSim.war "wasm-gc/*" -d wasm/ || echo "No WASM files found in war"
+          unzip -j KigaliSim.war "js/*" -d wasm/ || echo "No JS files found in war"
       - name: Install node deps
         run: npm install
       - name: Build
@@ -214,6 +224,16 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '21'
+      - name: Download WASM war
+        uses: actions/download-artifact@v4
+        with:
+          name: war
+          path: ./
+      - name: Extract WASM files to wasm directory
+        run: |
+          mkdir -p wasm
+          unzip -j KigaliSim.war "wasm-gc/*" -d wasm/ || echo "No WASM files found in war"
+          unzip -j KigaliSim.war "js/*" -d wasm/ || echo "No JS files found in war"
       - name: Install node deps
         run: npm install
       - name: Build
@@ -224,6 +244,8 @@ jobs:
         run: bash ./support/prepare_deploy.sh
       - name: Copy guide
         run: cp -r ./guide ./deploy/guide
+      - name: Copy WASM files
+        run: cp -r ./wasm ./deploy/wasm
       - name: Update cache busters
         run: bash ./support/update_cache_busters.sh
       - name: Upload deploy artifact

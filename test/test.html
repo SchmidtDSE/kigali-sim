@@ -32,6 +32,7 @@
                 "engine_struct": "../js/engine_struct.js?v=EPOCH",
                 "engine": "../js/engine.js?v=EPOCH",
                 "legacy_backend": "../js/legacy_backend.js?v=EPOCH",
+                "wasm_backend": "../js/wasm_backend.js?v=EPOCH",
                 "report_data": "../js/report_data.js?v=EPOCH",
                 "ui_translator": "../js/ui_translator.js?v=EPOCH",
                 "user_config": "../js/user_config.js?v=EPOCH",
@@ -47,6 +48,7 @@
                 "test_ui_translator": "./test_ui_translator.js?v=EPOCH",
                 "test_ui_translator_reverse": "./test_ui_translator_reverse.js?v=EPOCH",
                 "test_main": "./test_main.js?v=EPOCH",
+                "test_wasm_backend": "./test_wasm_backend.js?v=EPOCH",
                 "main": "../js/main.js?v=EPOCH"
             }
         }
@@ -69,6 +71,7 @@
         import {buildUiTranslatorReverseTests} from "test_ui_translator_reverse";
         import {buildEngineSerializerTests} from "test_engine_serializer";
         import {buildMainTests} from "test_main";
+        import {buildWasmBackendTests} from "test_wasm_backend";
 
         buildCompilerTests();
         buildEngineNumberTests();
@@ -82,5 +85,6 @@
         buildUiTranslatorReverseTests();
         buildEngineSerializerTests();
         buildMainTests();
+        buildWasmBackendTests();
     </script>
 </body>
