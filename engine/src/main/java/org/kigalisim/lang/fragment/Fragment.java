@@ -123,4 +123,13 @@ public abstract class Fragment {
   public boolean getIsStanzaScenarios() {
     throw new RuntimeException("This fragment is not a stanza.");
   }
+
+  /**
+   * Check if this fragment is a policy stanza (or default).
+   *
+   * @return True if policy stanza, false if another stanza.
+   */
+  public boolean getIsStanzaPolicyOrDefault() {
+    throw new RuntimeException("This fragment is not a stanza.");
+  }
 }

@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import org.kigalisim.engine.number.EngineNumber;
+import org.kigalisim.lang.fragment.AboutStanzaFragment;
 import org.kigalisim.lang.fragment.ApplicationFragment;
 import org.kigalisim.lang.fragment.DuringFragment;
 import org.kigalisim.lang.fragment.Fragment;
@@ -32,8 +33,10 @@ import org.kigalisim.lang.operation.DivisionOperation;
 import org.kigalisim.lang.operation.EqualityOperation;
 import org.kigalisim.lang.operation.EqualsOperation;
 import org.kigalisim.lang.operation.FloorOperation;
+import org.kigalisim.lang.operation.GetStreamOperation;
 import org.kigalisim.lang.operation.GetVariableOperation;
 import org.kigalisim.lang.operation.InitialChargeOperation;
+import org.kigalisim.lang.operation.LimitOperation;
 import org.kigalisim.lang.operation.LogicalOperation;
 import org.kigalisim.lang.operation.MultiplicationOperation;
 import org.kigalisim.lang.operation.Operation;
@@ -164,7 +167,17 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
    */
   @Override
   public Fragment visitGetStreamConversion(QubecTalkParser.GetStreamConversionContext ctx) {
-    return visitChildren(ctx);
+    // Get the stream name
+    String streamName = visit(ctx.target).getString();
+
+    // Get the unit conversion
+    UnitFragment unitFragment = (UnitFragment) visit(ctx.conversion);
+    String unitConversion = unitFragment.getUnit();
+
+    // Create an operation that represents getting the stream value and converting it to the specified unit
+    Operation operation = new GetStreamOperation(streamName, unitConversion);
+
+    return new OperationFragment(operation);
   }
 
   /**
@@ -267,7 +280,13 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
    */
   @Override
   public Fragment visitGetStream(QubecTalkParser.GetStreamContext ctx) {
-    return visitChildren(ctx);
+    // Get the stream name
+    String streamName = visit(ctx.target).getString();
+
+    // Create an operation that represents getting the stream value
+    Operation operation = new GetStreamOperation(streamName);
+
+    return new OperationFragment(operation);
   }
 
   /**
@@ -291,7 +310,9 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
    */
   @Override
   public Fragment visitIdentifierAsVar(QubecTalkParser.IdentifierAsVarContext ctx) {
-    return visitChildren(ctx);
+    String identifier = ctx.getChild(0).getText();
+    Operation operation = new GetVariableOperation(identifier);
+    return new OperationFragment(operation);
   }
 
   /**
@@ -362,14 +383,6 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
    * {@inheritDoc}
    */
   @Override
-  public Fragment visitAboutStanza(QubecTalkParser.AboutStanzaContext ctx) {
-    return visitChildren(ctx);
-  }
-
-  /**
-   * {@inheritDoc}
-   */
-  @Override
   public Fragment visitDefaultStanza(QubecTalkParser.DefaultStanzaContext ctx) {
     List<ParsedApplication> applications = new ArrayList<>();
 
@@ -380,6 +393,14 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
 
     ParsedPolicy policy = new ParsedPolicy("default", applications);
     return new PolicyFragment(policy);
+  }
+
+  /**
+   * {@inheritDoc}}
+   */
+  @Override
+  public Fragment visitAboutStanza(QubecTalkParser.AboutStanzaContext ctx) {
+    return new AboutStanzaFragment();
   }
 
   /**
@@ -909,7 +930,7 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
         for (String scenarioName : parsedScenarios.getScenarios()) {
           scenarios.add(parsedScenarios.getScenario(scenarioName));
         }
-      } else {
+      } else if (stanzaFragment.getIsStanzaPolicyOrDefault()) {
         policies.add(stanzaFragment.getPolicy());
       }
     }
