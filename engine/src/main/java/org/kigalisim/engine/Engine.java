@@ -48,11 +48,25 @@ public interface Engine {
   String getScenarioName();
 
   /**
+   * Set the scenario name.
+   *
+   * @param scenarioName The name of the scenario being run
+   */
+  void setScenarioName(String scenarioName);
+
+  /**
    * Get the trial number.
    *
    * @return The trial number of the current run
    */
   int getTrialNumber();
+
+  /**
+   * Set the trial number.
+   *
+   * @param trialNumber The trial number of the current run
+   */
+  void setTrialNumber(int trialNumber);
 
   /**
    * Set the stanza for the engine current scope.

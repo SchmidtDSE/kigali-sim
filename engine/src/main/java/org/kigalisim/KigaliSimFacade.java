@@ -97,7 +97,7 @@ public class KigaliSimFacade {
     int numTrials = scenario.getTrials();
     Stream<EngineResult> results = Stream.empty();
     for (int i = 0; i < numTrials; i++) {
-      results = Stream.concat(results, runTrial(program, scenario));
+      results = Stream.concat(results, runTrial(program, scenario, i + 1));
     }
     return results;
   }
@@ -176,15 +176,21 @@ public class KigaliSimFacade {
    *
    * @param program The parsed program containing the simulation to run.
    * @param scenario The scenario to execute in a single trial.
+   * @param trialNumber The trial number for this run.
    * @return Stream of EngineResult objects containing the simulation results
    */
-  private static Stream<EngineResult> runTrial(ParsedProgram program, ParsedScenario scenario) {
+  private static Stream<EngineResult> runTrial(ParsedProgram program, ParsedScenario scenario, int trialNumber) {
     // Get startYear and endYear from ParsedScenario
     int startYear = scenario.getStartYear();
     int endYear = scenario.getEndYear();
 
     // Create the engine and machine
     Engine engine = new SingleThreadEngine(startYear, endYear);
+
+    // Set scenario name and trial number
+    engine.setScenarioName(scenario.getName());
+    engine.setTrialNumber(trialNumber);
+
     PushDownMachine machine = new SingleThreadPushDownMachine(engine);
 
     // Store results as we iterate through years
