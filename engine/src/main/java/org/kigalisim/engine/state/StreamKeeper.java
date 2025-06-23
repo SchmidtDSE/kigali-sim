@@ -13,10 +13,10 @@ import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.StringJoiner;
 import java.util.stream.Collectors;
 import org.kigalisim.engine.number.EngineNumber;
 import org.kigalisim.engine.number.UnitConverter;
+import org.kigalisim.util.EmulatedStringJoiner;
 
 /**
  * Class responsible for managing / tracking substance streams.
@@ -471,7 +471,7 @@ public class StreamKeeper {
    * @return The generated key
    */
   private String getKey(String application, String substance, String name, String substream) {
-    StringJoiner joiner = new StringJoiner("\t");
+    EmulatedStringJoiner joiner = new EmulatedStringJoiner("\t");
     joiner.add(application != null ? application : "-");
     joiner.add(substance != null ? substance : "-");
     joiner.add(name != null ? name : "-");
