@@ -323,4 +323,29 @@ public class BasicLiveTests {
     assertEquals("tCO2e", recordYear10B.getGhgConsumption().getUnits(),
         "Sub B GHG consumption units should be tCO2e in year 10");
   }
+
+  /**
+   * Test basic_kwh_units.qta produces expected values.
+   */
+  @Test
+  public void testBasicKwhUnits() throws IOException {
+    // Load and parse the QTA file
+    String qtaPath = "../examples/basic_kwh_units.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    // Run the scenario using KigaliSimFacade
+    String scenarioName = "business as usual";
+    Stream<EngineResult> results = KigaliSimFacade.runScenarioWithResults(program, scenarioName);
+
+    List<EngineResult> resultsList = results.collect(Collectors.toList());
+    EngineResult result = LiveTestsUtil.getResult(resultsList.stream(), 1, "test", "test");
+    assertNotNull(result, "Should have result for test/test in year 1");
+
+    // Check energy consumption
+    assertEquals(500.0, result.getEnergyConsumption().getValue().doubleValue(), 0.0001,
+        "Energy consumption should be 500 kwh");
+    assertEquals("kwh", result.getEnergyConsumption().getUnits(),
+        "Energy consumption units should be kwh");
+  }
 }
