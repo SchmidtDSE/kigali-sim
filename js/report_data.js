@@ -5,7 +5,7 @@
  */
 
 import {EngineNumber} from "engine_number";
-import {AggregatedResult, SimulationAttributeToExporterResult} from "engine_struct";
+import {AggregatedResult, AttributeToExporterResult} from "engine_struct";
 
 /**
  * Builder class for creating metric computation strategies.
@@ -151,7 +151,7 @@ class ReportDataWrapper {
   /**
    * Create a new report data wrapper.
    *
-   * @param {Array<SimulationResult>} innerData - The raw report data to wrap.
+   * @param {Array<EngineResult>} innerData - The raw report data to wrap.
    */
   constructor(innerData) {
     const self = this;
@@ -351,7 +351,7 @@ class ReportDataWrapper {
    *
    * @param {FilterSet} filterSet - Filter set with attribution settings to
    *     apply.
-   * @returns {Array<SimulationResult>} The raw data.
+   * @returns {Array<EngineResult>} The raw data.
    */
   getRawData(filterSet) {
     const self = this;
@@ -406,7 +406,7 @@ class ReportDataWrapper {
   getScenarios(filterSet) {
     const self = this;
     if (filterSet.getScenario() === null) {
-      return new Set(self.getRawData(filterSet).map((x) => x.getName()));
+      return new Set(self.getRawData(filterSet).map((x) => x.getScenarioName()));
     } else {
       return new Set([filterSet.getScenario()]);
     }
@@ -738,13 +738,10 @@ class ReportDataWrapper {
     const allRecords = self.getRawData(filterSet);
 
     const scenario = filterSet.getScenario();
-    const scenarios = step(allRecords, scenario, (x) => x.getName());
-
-    const trials = scenarios.map((x) => x.getTrialResults());
-    const trialsFlat = trials.flat(3);
+    const withScenario = step(allRecords, scenario, (x) => x.getScenarioName());
 
     const year = filterSet.getYear();
-    const withYear = step(trialsFlat, year, (x) => x.getYear());
+    const withYear = step(withScenario, year, (x) => x.getYear());
 
     const app = filterSet.getApplication();
     const withApp = stepWithSubapp(withYear, app, (x) => x.getApplication());
@@ -756,16 +753,16 @@ class ReportDataWrapper {
   }
 
   /**
-   * Deocrate the inner data (SimulationResult) to attribute to exporter.
+   * Decorate the inner data (EngineResult) to attribute to exporter.
    *
    * @private
-   * @param {Array<SimulationResult>} rawResults - The results with attribute
+   * @param {Array<EngineResult>} rawResults - The results with attribute
    *     to importer that should be decorated.
-   * @returns {Array<SimulationAttributeToExporterResult>} Decorated version.
+   * @returns {Array<AttributeToExporterResult>} Decorated version.
    */
   _buildExporterAttributed(rawResults) {
     const self = this;
-    return rawResults.map((x) => new SimulationAttributeToExporterResult(x));
+    return rawResults.map((x) => new AttributeToExporterResult(x));
   }
 }
 
