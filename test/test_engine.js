@@ -23,6 +23,22 @@ function buildEngineTests() {
       assert.equal(engine.getEndYear(), 30);
     });
 
+    QUnit.test("gets and sets scenario name", function (assert) {
+      const engine = new Engine(1, 30);
+      assert.equal(engine.getScenarioName(), "");
+
+      engine.setScenarioName("test scenario");
+      assert.equal(engine.getScenarioName(), "test scenario");
+    });
+
+    QUnit.test("gets and sets trial number", function (assert) {
+      const engine = new Engine(1, 30);
+      assert.equal(engine.getTrialNumber(), 0);
+
+      engine.setTrialNumber(5);
+      assert.equal(engine.getTrialNumber(), 5);
+    });
+
     QUnit.test("changes scope", function (assert) {
       const engine = new Engine(1, 30);
 

@@ -46,6 +46,8 @@ class EngineResultSerializer {
     builder.setApplication(application);
     builder.setSubstance(substance);
     builder.setYear(year);
+    builder.setScenarioName(self._engine.getScenarioName());
+    builder.setTrialNumber(self._engine.getTrialNumber());
 
     // Add values into builder
     self._parseMainBody(builder, application, substance);

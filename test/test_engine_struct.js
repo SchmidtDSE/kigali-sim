@@ -29,6 +29,8 @@ function buildEngineStructTests() {
         "test app",
         "test substance",
         2023,
+        "test scenario",
+        1,
         new EngineNumber(100, "kg"),
         new EngineNumber(50, "kg"),
         new EngineNumber(25, "kg"),
@@ -161,6 +163,16 @@ function buildEngineStructTests() {
       assert.notDeepEqual(supplement, undefined);
       assert.deepEqual(supplement.constructor.name, "ImportSupplement");
     });
+
+    QUnit.test("getScenarioName", function (assert) {
+      const result = makeExample();
+      assert.deepEqual(result.getScenarioName(), "test scenario");
+    });
+
+    QUnit.test("getTrialNumber", function (assert) {
+      const result = makeExample();
+      assert.equal(result.getTrialNumber(), 1);
+    });
   });
 
   QUnit.module("AttributeToExporterResult", function () {
@@ -175,6 +187,8 @@ function buildEngineStructTests() {
         "test app",
         "test substance",
         2023,
+        "test scenario",
+        1,
         new EngineNumber(100, "kg"),
         new EngineNumber(50, "kg"),
         new EngineNumber(25, "kg"),
@@ -300,6 +314,8 @@ function buildEngineStructTests() {
       builder.setApplication("test app");
       builder.setSubstance("test substance");
       builder.setYear(2023);
+      builder.setScenarioName("test scenario");
+      builder.setTrialNumber(1);
       builder.setManufactureValue(new EngineNumber(100, "kg"));
       builder.setImportValue(new EngineNumber(50, "kg"));
       builder.setRecycleValue(new EngineNumber(25, "kg"));
@@ -328,6 +344,8 @@ function buildEngineStructTests() {
       assert.deepEqual(result.getApplication(), "test app");
       assert.deepEqual(result.getSubstance(), "test substance");
       assert.equal(result.getYear(), 2023);
+      assert.deepEqual(result.getScenarioName(), "test scenario");
+      assert.equal(result.getTrialNumber(), 1);
     });
 
     QUnit.test("fails on an empty result", function (assert) {
@@ -351,6 +369,8 @@ function buildEngineStructTests() {
       builder.setApplication("test app");
       builder.setSubstance("test substance");
       builder.setYear(2023);
+      builder.setScenarioName("test scenario");
+      builder.setTrialNumber(1);
       builder.setManufactureValue(new EngineNumber(100, "kg"));
       builder.setImportValue(new EngineNumber(50, "kg"));
       builder.setRecycleValue(new EngineNumber(25, "kg"));
@@ -549,6 +569,8 @@ function buildEngineStructTests() {
         "test app",
         "test substance",
         2023,
+        "test scenario",
+        1,
         new EngineNumber(100, "kg"),
         new EngineNumber(50, "kg"),
         new EngineNumber(25, "kg"),
@@ -567,6 +589,8 @@ function buildEngineStructTests() {
         "test app",
         "test substance",
         2024,
+        "test scenario",
+        1,
         new EngineNumber(110, "kg"),
         new EngineNumber(55, "kg"),
         new EngineNumber(30, "kg"),
@@ -624,6 +648,8 @@ function buildEngineStructTests() {
         "test app",
         "test substance",
         2023,
+        "test scenario",
+        1,
         new EngineNumber(100, "kg"),
         new EngineNumber(50, "kg"),
         new EngineNumber(25, "kg"),
