@@ -48,7 +48,7 @@ public class LimitOperationTest {
     Operation operand = new PreCalculatedOperation(new EngineNumber(BigDecimal.valueOf(50), "kg"));
     Operation lowerBound = new PreCalculatedOperation(new EngineNumber(BigDecimal.valueOf(0), "kg"));
     Operation upperBound = new PreCalculatedOperation(new EngineNumber(BigDecimal.valueOf(100), "kg"));
-    
+
     LimitOperation operation = new LimitOperation(operand, lowerBound, upperBound);
     assertNotNull(operation, "LimitOperation should be constructable with both bounds");
   }
@@ -60,7 +60,7 @@ public class LimitOperationTest {
   public void testInitializesWithUpperBound() {
     Operation operand = new PreCalculatedOperation(new EngineNumber(BigDecimal.valueOf(50), "kg"));
     Operation upperBound = new PreCalculatedOperation(new EngineNumber(BigDecimal.valueOf(100), "kg"));
-    
+
     LimitOperation operation = new LimitOperation(operand, upperBound);
     assertNotNull(operation, "LimitOperation should be constructable with only upper bound");
   }
@@ -72,7 +72,7 @@ public class LimitOperationTest {
   public void testInitializesWithLowerBound() {
     Operation operand = new PreCalculatedOperation(new EngineNumber(BigDecimal.valueOf(50), "kg"));
     Operation lowerBound = new PreCalculatedOperation(new EngineNumber(BigDecimal.valueOf(0), "kg"));
-    
+
     LimitOperation operation = new LimitOperation(operand, lowerBound, true);
     assertNotNull(operation, "LimitOperation should be constructable with only lower bound");
   }
@@ -85,10 +85,10 @@ public class LimitOperationTest {
     Operation operand = new PreCalculatedOperation(new EngineNumber(BigDecimal.valueOf(50), "kg"));
     Operation lowerBound = new PreCalculatedOperation(new EngineNumber(BigDecimal.valueOf(0), "kg"));
     Operation upperBound = new PreCalculatedOperation(new EngineNumber(BigDecimal.valueOf(100), "kg"));
-    
+
     LimitOperation operation = new LimitOperation(operand, lowerBound, upperBound);
     operation.execute(machine);
-    
+
     EngineNumber result = machine.getResult();
     assertEquals(BigDecimal.valueOf(50), result.getValue(), "Value within bounds should remain unchanged");
     assertEquals("kg", result.getUnits(), "Units should be preserved");
@@ -102,10 +102,10 @@ public class LimitOperationTest {
     Operation operand = new PreCalculatedOperation(new EngineNumber(BigDecimal.valueOf(-10), "kg"));
     Operation lowerBound = new PreCalculatedOperation(new EngineNumber(BigDecimal.valueOf(0), "kg"));
     Operation upperBound = new PreCalculatedOperation(new EngineNumber(BigDecimal.valueOf(100), "kg"));
-    
+
     LimitOperation operation = new LimitOperation(operand, lowerBound, upperBound);
     operation.execute(machine);
-    
+
     EngineNumber result = machine.getResult();
     assertEquals(BigDecimal.valueOf(0), result.getValue(), "Value below lower bound should be limited to lower bound");
     assertEquals("kg", result.getUnits(), "Units should be preserved");
@@ -119,10 +119,10 @@ public class LimitOperationTest {
     Operation operand = new PreCalculatedOperation(new EngineNumber(BigDecimal.valueOf(150), "kg"));
     Operation lowerBound = new PreCalculatedOperation(new EngineNumber(BigDecimal.valueOf(0), "kg"));
     Operation upperBound = new PreCalculatedOperation(new EngineNumber(BigDecimal.valueOf(100), "kg"));
-    
+
     LimitOperation operation = new LimitOperation(operand, lowerBound, upperBound);
     operation.execute(machine);
-    
+
     EngineNumber result = machine.getResult();
     assertEquals(BigDecimal.valueOf(100), result.getValue(), "Value above upper bound should be limited to upper bound");
     assertEquals("kg", result.getUnits(), "Units should be preserved");
@@ -135,10 +135,10 @@ public class LimitOperationTest {
   public void testExecuteWithOnlyLowerBound() {
     Operation operand = new PreCalculatedOperation(new EngineNumber(BigDecimal.valueOf(-10), "kg"));
     Operation lowerBound = new PreCalculatedOperation(new EngineNumber(BigDecimal.valueOf(0), "kg"));
-    
+
     LimitOperation operation = new LimitOperation(operand, lowerBound, true);
     operation.execute(machine);
-    
+
     EngineNumber result = machine.getResult();
     assertEquals(BigDecimal.valueOf(0), result.getValue(), "Value below lower bound should be limited to lower bound");
     assertEquals("kg", result.getUnits(), "Units should be preserved");
@@ -151,10 +151,10 @@ public class LimitOperationTest {
   public void testExecuteWithOnlyUpperBound() {
     Operation operand = new PreCalculatedOperation(new EngineNumber(BigDecimal.valueOf(150), "kg"));
     Operation upperBound = new PreCalculatedOperation(new EngineNumber(BigDecimal.valueOf(100), "kg"));
-    
+
     LimitOperation operation = new LimitOperation(operand, upperBound);
     operation.execute(machine);
-    
+
     EngineNumber result = machine.getResult();
     assertEquals(BigDecimal.valueOf(100), result.getValue(), "Value above upper bound should be limited to upper bound");
     assertEquals("kg", result.getUnits(), "Units should be preserved");
@@ -166,20 +166,20 @@ public class LimitOperationTest {
   @Test
   public void testExecuteWithComplexBoundOperations() {
     Operation operand = new PreCalculatedOperation(new EngineNumber(BigDecimal.valueOf(50), "kg"));
-    
+
     // Lower bound: 10 + 15 = 25
     Operation lowerLeft = new PreCalculatedOperation(new EngineNumber(BigDecimal.valueOf(10), "kg"));
     Operation lowerRight = new PreCalculatedOperation(new EngineNumber(BigDecimal.valueOf(15), "kg"));
     Operation lowerBound = new AdditionOperation(lowerLeft, lowerRight);
-    
+
     // Upper bound: 100 - 20 = 80
     Operation upperLeft = new PreCalculatedOperation(new EngineNumber(BigDecimal.valueOf(100), "kg"));
     Operation upperRight = new PreCalculatedOperation(new EngineNumber(BigDecimal.valueOf(20), "kg"));
     Operation upperBound = new SubtractionOperation(upperLeft, upperRight);
-    
+
     LimitOperation operation = new LimitOperation(operand, lowerBound, upperBound);
     operation.execute(machine);
-    
+
     EngineNumber result = machine.getResult();
     assertEquals(BigDecimal.valueOf(50), result.getValue(), "Value within complex bounds should remain unchanged");
     assertEquals("kg", result.getUnits(), "Units should be preserved");

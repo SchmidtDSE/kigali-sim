@@ -45,10 +45,10 @@ public class ReferenceLiveTests {
     assertTrue(resultsList.size() > 0, "Case study should produce simulation results");
 
     // Test that at least one stream for one substance/application pair is non-zero in 2030
-    EngineResult record = LiveTestsUtil.getResult(resultsList.stream(), 2030, 
+    EngineResult record = LiveTestsUtil.getResult(resultsList.stream(), 2030,
         "Domestic Refrigeration", "HFC-134a");
     assertNotNull(record, "Should have result for Domestic Refrigeration/HFC-134a in 2030");
-    
+
     assertTrue(record.getGhgConsumption().getValue().doubleValue() > 0,
         "Should have non-zero consumption for Domestic Refrigeration HFC-134a in 2030");
   }
@@ -69,25 +69,25 @@ public class ReferenceLiveTests {
 
     // Convert to list for multiple access
     List<EngineResult> resultsList = results.collect(Collectors.toList());
-    
+
     // Verify that the simulation completes successfully
     assertTrue(resultsList.size() > 0, "Workshop should produce simulation results");
-    
+
     // Check that we have results for each application and substance in year 1
-    EngineResult domRefrigHfc134a = LiveTestsUtil.getResult(resultsList.stream(), 1, 
+    EngineResult domRefrigHfc134a = LiveTestsUtil.getResult(resultsList.stream(), 1,
         "dom refrig", "HFC-134a");
     assertNotNull(domRefrigHfc134a, "Should have result for dom refrig/HFC-134a in year 1");
-    
-    EngineResult comRefrigHfc134a = LiveTestsUtil.getResult(resultsList.stream(), 1, 
+
+    EngineResult comRefrigHfc134a = LiveTestsUtil.getResult(resultsList.stream(), 1,
         "com refrig", "HFC-134a");
     assertNotNull(comRefrigHfc134a, "Should have result for com refrig/HFC-134a in year 1");
-    
+
     // Check that manufacture values are as expected
     assertEquals(400000.0, domRefrigHfc134a.getManufacture().getValue().doubleValue(), 0.0001,
         "dom refrig/HFC-134a manufacture should be 400000 kg in year 1");
     assertEquals("kg", domRefrigHfc134a.getManufacture().getUnits(),
         "dom refrig/HFC-134a manufacture units should be kg in year 1");
-    
+
     assertEquals(90000.0, comRefrigHfc134a.getManufacture().getValue().doubleValue(), 0.0001,
         "com refrig/HFC-134a manufacture should be 90000 kg in year 1");
     assertEquals("kg", comRefrigHfc134a.getManufacture().getUnits(),

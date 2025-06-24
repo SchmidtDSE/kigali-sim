@@ -62,31 +62,31 @@ public class LimitOperation implements Operation {
     // Execute the operand
     operand.execute(machine);
     EngineNumber value = machine.getResult();
-    
+
     // Get the bounds
     EngineNumber lower = null;
     if (lowerBound != null) {
       lowerBound.execute(machine);
       lower = machine.getResult();
     }
-    
+
     EngineNumber upper = null;
     if (upperBound != null) {
       upperBound.execute(machine);
       upper = machine.getResult();
     }
-    
+
     // Apply the limits
     BigDecimal result = value.getValue();
-    
+
     if (lower != null && result.compareTo(lower.getValue()) < 0) {
       result = lower.getValue();
     }
-    
+
     if (upper != null && result.compareTo(upper.getValue()) > 0) {
       result = upper.getValue();
     }
-    
+
     // Push the result
     machine.push(new EngineNumber(result, value.getUnits()));
   }

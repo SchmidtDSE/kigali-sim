@@ -53,21 +53,19 @@ public class RetireRecalcStrategy implements RecalcStrategy {
 
     // Calculate change
     EngineNumber currentPriorRaw = streamKeeper.getStream(
-        application,
-        substance,
+        scopeEffective,
         "priorEquipment"
     );
     EngineNumber currentPrior = unitConverter.convert(currentPriorRaw, "units");
 
     EngineNumber currentEquipmentRaw = streamKeeper.getStream(
-        application,
-        substance,
+        scopeEffective,
         "equipment"
     );
     final EngineNumber currentEquipment = unitConverter.convert(currentEquipmentRaw, "units");
 
     stateGetter.setPopulation(currentPrior);
-    EngineNumber amountRaw = streamKeeper.getRetirementRate(application, substance);
+    EngineNumber amountRaw = streamKeeper.getRetirementRate(scopeEffective);
     EngineNumber amount = unitConverter.convert(amountRaw, "units");
     stateGetter.clearPopulation();
 
@@ -79,8 +77,8 @@ public class RetireRecalcStrategy implements RecalcStrategy {
     EngineNumber newEquipment = new EngineNumber(newEquipmentValue, "units");
 
     // Update equipment streams
-    streamKeeper.setStream(application, substance, "priorEquipment", newPrior);
-    streamKeeper.setStream(application, substance, "equipment", newEquipment);
+    streamKeeper.setStream(scopeEffective, "priorEquipment", newPrior);
+    streamKeeper.setStream(scopeEffective, "equipment", newEquipment);
 
     // Update GHG accounting
     EolEmissionsRecalcStrategy eolStrategy = new EolEmissionsRecalcStrategy(scopeEffective);

@@ -48,7 +48,7 @@ public class RechargeVolumeCalculator {
 
     // Get recharge population
     overridingStateGetter.setPopulation(engine.getStream("priorEquipment"));
-    EngineNumber rechargePopRaw = streamKeeper.getRechargePopulation(application, substance);
+    EngineNumber rechargePopRaw = streamKeeper.getRechargePopulation(scope);
     EngineNumber rechargePop = unitConverter.convert(rechargePopRaw, "units");
     overridingStateGetter.clearPopulation();
 
@@ -56,7 +56,7 @@ public class RechargeVolumeCalculator {
     overridingStateGetter.setPopulation(rechargePop);
 
     // Get recharge amount
-    EngineNumber rechargeIntensityRaw = streamKeeper.getRechargeIntensity(application, substance);
+    EngineNumber rechargeIntensityRaw = streamKeeper.getRechargeIntensity(scope);
     EngineNumber rechargeVolume = unitConverter.convert(rechargeIntensityRaw, "kg");
 
     // Return to prior population

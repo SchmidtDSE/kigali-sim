@@ -16,7 +16,7 @@ public class EmulatedStringJoiner {
 
   private final String delimiter;
   private boolean isFirst;
-  private String value;
+  private final StringBuilder value;
 
   /**
    * Constructs a new EmulatedStringJoiner with the specified delimiter.
@@ -25,7 +25,7 @@ public class EmulatedStringJoiner {
    */
   public EmulatedStringJoiner(CharSequence delimiter) {
     this.delimiter = delimiter.toString();
-    this.value = "";
+    this.value = new StringBuilder();
     this.isFirst = true;
   }
 
@@ -38,10 +38,10 @@ public class EmulatedStringJoiner {
   public EmulatedStringJoiner add(CharSequence newElement) {
     String elementStr = newElement == null ? "null" : newElement.toString();
     if (isFirst) {
-      value = elementStr;
+      value.append(elementStr);
       isFirst = false;
     } else {
-      value = value + delimiter + elementStr;
+      value.append(delimiter).append(elementStr);
     }
 
     return this;
@@ -54,6 +54,6 @@ public class EmulatedStringJoiner {
    */
   @Override
   public String toString() {
-    return value;
+    return value.toString();
   }
 }

@@ -159,16 +159,15 @@ public class SingleThreadEngine implements Engine {
     scope = scope.getWithSubstance(newSubstance);
 
     boolean checkValidEffective = checkValid != null && checkValid;
-    String application = scope.getApplication();
 
     if (checkValidEffective) {
-      boolean knownSubstance = streamKeeper.hasSubstance(application, newSubstance);
+      boolean knownSubstance = streamKeeper.hasSubstance(scope);
       if (!knownSubstance) {
         throw new RuntimeException("Tried accessing unknown app / substance pair: "
-            + application + ", " + newSubstance);
+            + scope.getApplication() + ", " + newSubstance);
       }
     } else {
-      streamKeeper.ensureSubstance(application, newSubstance);
+      streamKeeper.ensureSubstance(scope);
     }
   }
 
@@ -243,7 +242,7 @@ public class SingleThreadEngine implements Engine {
       raiseNoAppOrSubstance("setting stream", " specified");
     }
 
-    streamKeeper.setStream(application, substance, name, value);
+    streamKeeper.setStream(scopeEffective, name, value);
 
     // Track the units last used to specify this stream (only for user-initiated calls)
     if (!propagateChanges) {
@@ -251,7 +250,7 @@ public class SingleThreadEngine implements Engine {
     }
 
     String unitsToRecordRealized = unitsToRecord != null ? unitsToRecord : value.getUnits();
-    streamKeeper.setLastSpecifiedUnits(application, substance, unitsToRecordRealized);
+    streamKeeper.setLastSpecifiedUnits(scopeEffective, unitsToRecordRealized);
 
     if ("sales".equals(name) || "manufacture".equals(name) || "import".equals(name)) {
       RecalcOperationBuilder builder = new RecalcOperationBuilder()
@@ -313,7 +312,7 @@ public class SingleThreadEngine implements Engine {
     Scope scopeEffective = scope != null ? scope : this.scope;
     String application = scopeEffective.getApplication();
     String substance = scopeEffective.getSubstance();
-    EngineNumber value = streamKeeper.getStream(application, substance, name);
+    EngineNumber value = streamKeeper.getStream(scopeEffective, name);
 
     if (conversion == null) {
       return value;
@@ -329,12 +328,14 @@ public class SingleThreadEngine implements Engine {
 
   @Override
   public EngineNumber getStreamRaw(String application, String substance, String stream) {
-    return streamKeeper.getStream(application, substance, stream);
+    Scope requestScope = new Scope(scope.getStanza(), application, substance);
+    return streamKeeper.getStream(requestScope, stream);
   }
 
   @Override
   public EngineNumber getGhgIntensity(String application, String substance) {
-    return streamKeeper.getGhgIntensity(application, substance);
+    Scope requestScope = new Scope(scope.getStanza(), application, substance);
+    return streamKeeper.getGhgIntensity(requestScope);
   }
 
   @Override
@@ -464,7 +465,7 @@ public class SingleThreadEngine implements Engine {
 
   @Override
   public EngineNumber getRawInitialChargeFor(String application, String substance, String stream) {
-    return streamKeeper.getInitialCharge(application, substance, stream);
+    return streamKeeper.getInitialCharge(scope, stream);
   }
 
   @Override
@@ -478,10 +479,10 @@ public class SingleThreadEngine implements Engine {
 
     if ("sales".equals(stream)) {
       // For sales, set both manufacture and import but don't recalculate yet
-      streamKeeper.setInitialCharge(application, substance, "manufacture", value);
-      streamKeeper.setInitialCharge(application, substance, "import", value);
+      streamKeeper.setInitialCharge(scope, "manufacture", value);
+      streamKeeper.setInitialCharge(scope, "import", value);
     } else {
-      streamKeeper.setInitialCharge(application, substance, stream, value);
+      streamKeeper.setInitialCharge(scope, stream, value);
     }
 
     boolean subtractRecharge = getShouldSubtractRecharge(stream);
@@ -505,13 +506,13 @@ public class SingleThreadEngine implements Engine {
 
     if ("sales".equals(stream)) {
       // For sales, check if either manufacture or import were last specified in units
-      String lastUnits = streamKeeper.getLastSpecifiedUnits(application, substance);
+      String lastUnits = streamKeeper.getLastSpecifiedUnits(scope);
       if (lastUnits != null && lastUnits.startsWith("unit")) {
         return false; // Add recharge on top
       }
     } else if ("manufacture".equals(stream) || "import".equals(stream)) {
       // For manufacture or import, check if that specific channel was last specified in units
-      String lastUnits = streamKeeper.getLastSpecifiedUnits(application, substance);
+      String lastUnits = streamKeeper.getLastSpecifiedUnits(scope);
       return lastUnits == null || !lastUnits.startsWith("unit"); // Add recharge on top
     }
 
@@ -522,7 +523,7 @@ public class SingleThreadEngine implements Engine {
   public EngineNumber getRechargeVolume() {
     String application = scope.getApplication();
     String substance = scope.getSubstance();
-    return streamKeeper.getRechargePopulation(application, substance);
+    return streamKeeper.getRechargePopulation(scope);
   }
 
   @Override
@@ -534,7 +535,7 @@ public class SingleThreadEngine implements Engine {
 
   @Override
   public EngineNumber getRechargeIntensityFor(String application, String substance) {
-    return streamKeeper.getRechargeIntensity(application, substance);
+    return streamKeeper.getRechargeIntensity(scope);
   }
 
   @Override
@@ -546,7 +547,7 @@ public class SingleThreadEngine implements Engine {
 
   @Override
   public String getLastSpecifiedInUnits(String application, String substance, String stream) {
-    return streamKeeper.getLastSpecifiedUnits(application, substance);
+    return streamKeeper.getLastSpecifiedUnits(scope);
   }
 
   @Override
@@ -558,7 +559,7 @@ public class SingleThreadEngine implements Engine {
       raiseNoAppOrSubstance("setting last specified units", " specified");
     }
 
-    streamKeeper.setLastSpecifiedUnits(application, substance, units);
+    streamKeeper.setLastSpecifiedUnits(scope, units);
   }
 
   // Additional placeholder methods for remaining interface methods
@@ -578,8 +579,8 @@ public class SingleThreadEngine implements Engine {
     }
 
     // Set values
-    streamKeeper.setRechargePopulation(application, substance, volume);
-    streamKeeper.setRechargeIntensity(application, substance, intensity);
+    streamKeeper.setRechargePopulation(scope, volume);
+    streamKeeper.setRechargeIntensity(scope, intensity);
 
     // Recalculate
     RecalcOperation operation = new RecalcOperationBuilder()
@@ -599,7 +600,7 @@ public class SingleThreadEngine implements Engine {
 
     String application = scope.getApplication();
     String substance = scope.getSubstance();
-    streamKeeper.setRetirementRate(application, substance, amount);
+    streamKeeper.setRetirementRate(scope, amount);
     RecalcOperation operation = new RecalcOperationBuilder()
         .setRecalcKit(createRecalcKit())
         .recalcRetire()
@@ -611,7 +612,7 @@ public class SingleThreadEngine implements Engine {
   public EngineNumber getRetirementRate() {
     String application = scope.getApplication();
     String substance = scope.getSubstance();
-    return streamKeeper.getRetirementRate(application, substance);
+    return streamKeeper.getRetirementRate(scope);
   }
 
   @Override
@@ -623,8 +624,8 @@ public class SingleThreadEngine implements Engine {
 
     String application = scope.getApplication();
     String substance = scope.getSubstance();
-    streamKeeper.setRecoveryRate(application, substance, recoveryWithUnits);
-    streamKeeper.setYieldRate(application, substance, yieldWithUnits);
+    streamKeeper.setRecoveryRate(scope, recoveryWithUnits);
+    streamKeeper.setYieldRate(scope, yieldWithUnits);
 
     RecalcOperation operation = new RecalcOperationBuilder()
         .setRecalcKit(createRecalcKit())
@@ -649,7 +650,7 @@ public class SingleThreadEngine implements Engine {
     boolean isKwh = units.startsWith("kwh");
 
     if (isGhg) {
-      streamKeeper.setGhgIntensity(application, substance, amount);
+      streamKeeper.setGhgIntensity(scope, amount);
       RecalcOperation operation = new RecalcOperationBuilder()
           .setScopeEffective(scope)
           .setRecalcKit(createRecalcKit())
@@ -658,7 +659,7 @@ public class SingleThreadEngine implements Engine {
           .build();
       operation.execute(this);
     } else if (isKwh) {
-      streamKeeper.setEnergyIntensity(application, substance, amount);
+      streamKeeper.setEnergyIntensity(scope, amount);
     } else {
       throw new RuntimeException("Cannot equals " + amount.getUnits());
     }
@@ -679,7 +680,8 @@ public class SingleThreadEngine implements Engine {
 
   @Override
   public EngineNumber getEqualsGhgIntensityFor(String application, String substance) {
-    return streamKeeper.getGhgIntensity(application, substance);
+    Scope requestScope = new Scope(scope.getStanza(), application, substance);
+    return streamKeeper.getGhgIntensity(requestScope);
   }
 
   @Override
@@ -691,7 +693,8 @@ public class SingleThreadEngine implements Engine {
 
   @Override
   public EngineNumber getEqualsEnergyIntensityFor(String application, String substance) {
-    return streamKeeper.getEnergyIntensity(application, substance);
+    Scope requestScope = new Scope(scope.getStanza(), application, substance);
+    return streamKeeper.getEnergyIntensity(requestScope);
   }
 
   @Override
@@ -757,7 +760,7 @@ public class SingleThreadEngine implements Engine {
     if (application == null || substance == null) {
       raiseNoAppOrSubstance("setting stream", " specified");
     }
-    streamKeeper.setLastSpecifiedUnits(application, substance, amount.getUnits());
+    streamKeeper.setLastSpecifiedUnits(scope, amount.getUnits());
 
     EngineNumber changeWithUnits = new EngineNumber(changeAmount, "kg");
     // Use internal changeStream that doesn't override the units tracking
@@ -806,7 +809,7 @@ public class SingleThreadEngine implements Engine {
     if (application == null || substance == null) {
       raiseNoAppOrSubstance("setting stream", " specified");
     }
-    streamKeeper.setLastSpecifiedUnits(application, substance, amount.getUnits());
+    streamKeeper.setLastSpecifiedUnits(scope, amount.getUnits());
 
     EngineNumber changeWithUnits = new EngineNumber(changeAmount, "kg");
     changeStreamWithoutReportingUnits(stream, changeWithUnits, null, null);
@@ -828,11 +831,12 @@ public class SingleThreadEngine implements Engine {
     if (application == null || currentSubstance == null) {
       raiseNoAppOrSubstance("setting stream", " specified");
     }
-    streamKeeper.setLastSpecifiedUnits(application, currentSubstance, amountRaw.getUnits());
+    streamKeeper.setLastSpecifiedUnits(currentScope, amountRaw.getUnits());
 
     // Track the original user-specified units for the destination substance
     String lastUnits = amountRaw.getUnits();
-    streamKeeper.setLastSpecifiedUnits(application, destinationSubstance, lastUnits);
+    Scope destScope = new Scope(currentScope.getStanza(), application, destinationSubstance);
+    streamKeeper.setLastSpecifiedUnits(destScope, lastUnits);
 
     if (amountRaw.hasEquipmentUnits()) {
       // For equipment units, convert to units first, then handle each substance separately
@@ -916,7 +920,7 @@ public class SingleThreadEngine implements Engine {
 
     // Get recharge population
     stateGetter.setPopulation(getStream("priorEquipment"));
-    EngineNumber rechargePopRaw = streamKeeper.getRechargePopulation(application, substance);
+    EngineNumber rechargePopRaw = streamKeeper.getRechargePopulation(scope);
     EngineNumber rechargePop = unitConverter.convert(rechargePopRaw, "units");
     stateGetter.clearPopulation();
 

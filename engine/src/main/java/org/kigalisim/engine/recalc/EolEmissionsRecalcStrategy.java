@@ -40,26 +40,24 @@ public class EolEmissionsRecalcStrategy implements RecalcStrategy {
         new OverridingConverterStateGetter(kit.getStateGetter());
     UnitConverter unitConverter = new UnitConverter(stateGetter);
     Scope scopeEffective = scope != null ? scope : target.getScope();
-    String application = scopeEffective.getApplication();
-    String substance = scopeEffective.getSubstance();
 
     // Check allowed
-    if (application == null || substance == null) {
+    if (scopeEffective.getApplication() == null || scopeEffective.getSubstance() == null) {
       ExceptionsGenerator.raiseNoAppOrSubstance("recalculating EOL emissions change", "");
     }
 
     // Calculate change
-    EngineNumber currentPriorRaw = target.getStreamRaw(application, substance, "priorEquipment");
+    EngineNumber currentPriorRaw = target.getStreamRaw(scopeEffective.getApplication(), scopeEffective.getSubstance(), "priorEquipment");
     EngineNumber currentPrior = unitConverter.convert(currentPriorRaw, "units");
 
     stateGetter.setPopulation(currentPrior);
     StreamKeeper streamKeeper = kit.getStreamKeeper();
-    EngineNumber amountRaw = streamKeeper.getRetirementRate(application, substance);
+    EngineNumber amountRaw = streamKeeper.getRetirementRate(scopeEffective);
     EngineNumber amount = unitConverter.convert(amountRaw, "units");
     stateGetter.clearPopulation();
 
     // Update GHG accounting
     EngineNumber eolGhg = unitConverter.convert(amount, "tCO2e");
-    streamKeeper.setStream(application, substance, "eolEmissions", eolGhg);
+    streamKeeper.setStream(scopeEffective, "eolEmissions", eolGhg);
   }
 }

@@ -37,6 +37,8 @@ public class UnitConverter {
   private static final BigDecimal PERCENT_FACTOR = new BigDecimal("100");
 
   private final StateGetter stateGetter;
+  private final Map<String, UnitConverterStrategy> numeratorStrategy;
+  private final Map<String, UnitConverterStrategy> denominatorStrategy;
 
   /**
    * Create a new unit converter.
@@ -45,6 +47,8 @@ public class UnitConverter {
    */
   public UnitConverter(StateGetter stateGetter) {
     this.stateGetter = stateGetter;
+    this.numeratorStrategy = createNumeratorStrategy();
+    this.denominatorStrategy = createDenominatorStrategy();
   }
 
   /**
@@ -89,11 +93,7 @@ public class UnitConverter {
     boolean differentDenominator = !destinationDenominatorUnits.equals(sourceDenominatorUnits);
     boolean sameDenominator = !differentDenominator;
 
-    // Create strategy maps
-    Map<String, UnitConverterStrategy> numeratorStrategy =
-        createNumeratorStrategy();
-    Map<String, UnitConverterStrategy> denominatorStrategy =
-        createDenominatorStrategy();
+    // Use cached strategy maps
 
     UnitConverterStrategy numeratorFunc =
         numeratorStrategy.get(destinationNumeratorUnits);

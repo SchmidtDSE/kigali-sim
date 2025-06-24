@@ -42,10 +42,8 @@ public class SalesRecalcStrategy implements RecalcStrategy {
     OverridingConverterStateGetter stateGetter =
         new OverridingConverterStateGetter(kit.getStateGetter());
     UnitConverter unitConverter = new UnitConverter(stateGetter);
-    String application = scopeEffective.getApplication();
-    String substance = scopeEffective.getSubstance();
 
-    if (application == null || substance == null) {
+    if (scopeEffective.getApplication() == null || scopeEffective.getSubstance() == null) {
       ExceptionsGenerator.raiseNoAppOrSubstance("recalculating sales", "");
     }
 
@@ -54,9 +52,7 @@ public class SalesRecalcStrategy implements RecalcStrategy {
     // Get recharge population
     EngineNumber basePopulation = target.getStream("priorEquipment", scopeEffective, null);
     stateGetter.setPopulation(basePopulation);
-    EngineNumber rechargePopRaw = streamKeeper.getRechargePopulation(
-        application,
-        substance
+    EngineNumber rechargePopRaw = streamKeeper.getRechargePopulation(scopeEffective
     );
     EngineNumber rechargePop = unitConverter.convert(rechargePopRaw, "units");
     stateGetter.clearPopulation();
@@ -65,10 +61,7 @@ public class SalesRecalcStrategy implements RecalcStrategy {
     stateGetter.setPopulation(rechargePop);
 
     // Get recharge amount
-    EngineNumber rechargeIntensityRaw = streamKeeper.getRechargeIntensity(
-        application,
-        substance
-    );
+    EngineNumber rechargeIntensityRaw = streamKeeper.getRechargeIntensity(scopeEffective);
     EngineNumber rechargeVolume = unitConverter.convert(rechargeIntensityRaw, "kg");
 
     // Determine initial charge
@@ -77,23 +70,20 @@ public class SalesRecalcStrategy implements RecalcStrategy {
 
     // Get recycling volume
     stateGetter.setVolume(rechargeVolume);
-    EngineNumber recoveryVolumeRaw = streamKeeper.getRecoveryRate(application, substance);
+    EngineNumber recoveryVolumeRaw = streamKeeper.getRecoveryRate(scopeEffective);
     EngineNumber recoveryVolume = unitConverter.convert(recoveryVolumeRaw, "kg");
     stateGetter.clearVolume();
 
     // Get recycling amount
     stateGetter.setVolume(recoveryVolume);
-    EngineNumber recycledVolumeRaw = streamKeeper.getYieldRate(application, substance);
+    EngineNumber recycledVolumeRaw = streamKeeper.getYieldRate(scopeEffective);
     EngineNumber recycledVolume = unitConverter.convert(recycledVolumeRaw, "kg");
     stateGetter.clearVolume();
 
     // Get recycling displaced
     BigDecimal recycledKg = recycledVolume.getValue();
 
-    EngineNumber displacementRateRaw = streamKeeper.getDisplacementRate(
-        application,
-        substance
-    );
+    EngineNumber displacementRateRaw = streamKeeper.getDisplacementRate(scopeEffective);
     EngineNumber displacementRate = unitConverter.convert(displacementRateRaw, "%");
     BigDecimal displacementRateRatio = displacementRate.getValue().divide(BigDecimal.valueOf(100));
     final BigDecimal recycledDisplacedKg = recycledKg.multiply(displacementRateRatio);
@@ -165,7 +155,7 @@ public class SalesRecalcStrategy implements RecalcStrategy {
 
     // Recycle
     EngineNumber newRecycleValue = new EngineNumber(recycledDisplacedKg, "kg");
-    streamKeeper.setStream(application, substance, "recycle", newRecycleValue);
+    streamKeeper.setStream(scopeEffective, "recycle", newRecycleValue);
 
     // New values - preserve explicit values when demand is zero, recalculate when there's demand
     BigDecimal requiredKgUnbound = kgForRecharge.add(kgForNew);

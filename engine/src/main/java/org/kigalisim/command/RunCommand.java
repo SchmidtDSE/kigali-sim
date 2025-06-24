@@ -11,7 +11,6 @@ package org.kigalisim.command;
 
 import java.io.File;
 import java.io.FileWriter;
-import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.stream.Stream;
