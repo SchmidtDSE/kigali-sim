@@ -53,4 +53,14 @@ public class SimpleUseKey implements UseKey {
     }
     return localKey.get();
   }
+
+  @Override
+  public String getApplication() {
+    return application.orElse(null);
+  }
+
+  @Override
+  public String getSubstance() {
+    return substance.orElse(null);
+  }
 }

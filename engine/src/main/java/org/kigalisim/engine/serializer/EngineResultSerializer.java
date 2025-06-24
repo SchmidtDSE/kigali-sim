@@ -16,6 +16,8 @@ import org.kigalisim.engine.number.EngineNumber;
 import org.kigalisim.engine.number.UnitConverter;
 import org.kigalisim.engine.state.ConverterStateGetter;
 import org.kigalisim.engine.state.OverridingConverterStateGetter;
+import org.kigalisim.engine.state.SimpleUseKey;
+import org.kigalisim.engine.state.UseKey;
 
 /**
  * Decorator around an engine to serialize out results.
@@ -42,6 +44,30 @@ public class EngineResultSerializer {
   /**
    * Serialize the results for an application and substance in a given year.
    *
+   * @param useKey The UseKey containing application and substance information
+   * @param year The year for which a result should be serialized
+   * @return Snapshot of the result in the current engine state for the given
+   *     application and substance
+   */
+  public EngineResult getResult(UseKey useKey, int year) {
+    // Create builder
+    EngineResultBuilder builder = new EngineResultBuilder();
+    builder.setApplication(useKey.getApplication());
+    builder.setSubstance(useKey.getSubstance());
+    builder.setYear(year);
+    builder.setScenarioName(engine.getScenarioName());
+    builder.setTrialNumber(engine.getTrialNumber());
+
+    // Add values into builder
+    parseMainBody(builder, useKey);
+    parseImportSupplement(builder, useKey);
+
+    return builder.build();
+  }
+
+  /**
+   * Serialize the results for an application and substance in a given year.
+   *
    * @param application The name of the application for which a result should be
    *     serialized like commercial refrigeration
    * @param substance The name of the substance like HFC-134a for which a result
@@ -49,45 +75,32 @@ public class EngineResultSerializer {
    * @param year The year for which a result should be serialized
    * @return Snapshot of the result in the current engine state for the given
    *     application and substance
+   * @deprecated Use {@link #getResult(UseKey, int)} instead
    */
+  @Deprecated
   public EngineResult getResult(String application, String substance, int year) {
-    // Create builder
-    EngineResultBuilder builder = new EngineResultBuilder();
-    builder.setApplication(application);
-    builder.setSubstance(substance);
-    builder.setYear(year);
-    builder.setScenarioName(engine.getScenarioName());
-    builder.setTrialNumber(engine.getTrialNumber());
-
-    // Add values into builder
-    parseMainBody(builder, application, substance);
-    parseImportSupplement(builder, application, substance);
-
-    return builder.build();
+    return getResult(new SimpleUseKey(application, substance), year);
   }
 
   /**
    * Parse the attributes which are actually returned to the user.
    *
    * @param builder The builder into which parsed values should be registered
-   * @param application The name of the application for which to get values
-   *     like commercial refrigeration
-   * @param substance The name of the substance for which to get values
-   *     like HFC-134a
+   * @param useKey The UseKey containing application and substance information
    */
-  private void parseMainBody(EngineResultBuilder builder, String application, String substance) {
+  private void parseMainBody(EngineResultBuilder builder, UseKey useKey) {
     // Prepare units
     OverridingConverterStateGetter stateGetter =
         new OverridingConverterStateGetter(this.stateGetter);
     UnitConverter unitConverter = new UnitConverter(stateGetter);
 
     // Get sales
-    EngineNumber recycleRaw = engine.getStreamRaw(application, substance, "recycle");
+    EngineNumber recycleRaw = engine.getStreamRaw(useKey, "recycle");
     EngineNumber recycleValue = unitConverter.convert(recycleRaw, "kg");
     builder.setRecycleValue(recycleValue);
 
     // Get total energy consumption
-    EngineNumber energyConsumptionValue = engine.getStreamRaw(application, substance, "energy");
+    EngineNumber energyConsumptionValue = engine.getStreamRaw(useKey, "energy");
     // Default to 0 kwh if energy stream is not calculated (consistent with JS version)
     if (energyConsumptionValue == null) {
       energyConsumptionValue = new EngineNumber(BigDecimal.ZERO, "kwh");
@@ -95,18 +108,18 @@ public class EngineResultSerializer {
     builder.setEnergyConsumption(energyConsumptionValue);
 
     // Get emissions
-    EngineNumber populationValue = engine.getStreamRaw(application, substance, "equipment");
+    EngineNumber populationValue = engine.getStreamRaw(useKey, "equipment");
     builder.setPopulationValue(populationValue);
 
-    EngineNumber populationNew = engine.getStreamRaw(application, substance, "newEquipment");
+    EngineNumber populationNew = engine.getStreamRaw(useKey, "newEquipment");
     builder.setPopulationNew(populationNew);
 
-    EngineNumber eolEmissions = engine.getStreamRaw(application, substance, "eolEmissions");
+    EngineNumber eolEmissions = engine.getStreamRaw(useKey, "eolEmissions");
     builder.setEolEmissions(eolEmissions);
 
     // Get sales for offset calculation
-    EngineNumber manufactureRaw = engine.getStreamRaw(application, substance, "manufacture");
-    EngineNumber importRaw = engine.getStreamRaw(application, substance, "import");
+    EngineNumber manufactureRaw = engine.getStreamRaw(useKey, "manufacture");
+    EngineNumber importRaw = engine.getStreamRaw(useKey, "import");
 
     // Convert sales values for offset calculation
     EngineNumber manufactureValue = unitConverter.convert(manufactureRaw, "kg");
@@ -138,7 +151,7 @@ public class EngineResultSerializer {
 
     // Get consumption
     EngineNumber consumptionByVolume = getConsumptionByVolume(
-        application, substance, unitConverter);
+        useKey, unitConverter);
 
     EngineNumber domesticConsumptionValue = getConsumptionForVolume(
         manufactureValueOffset, consumptionByVolume, stateGetter, unitConverter);
@@ -154,8 +167,7 @@ public class EngineResultSerializer {
 
     // Offset recharge emissions
     EngineNumber rechargeEmissions = engine.getStreamRaw(
-        application,
-        substance,
+        useKey,
         "rechargeEmissions"
     );
     OverridingConverterStateGetter clearStateGetter =
@@ -170,14 +182,13 @@ public class EngineResultSerializer {
   /**
    * Get consumption calculation strategy based on volume.
    *
-   * @param application The application name
-   * @param substance The substance name
+   * @param useKey The UseKey containing application and substance information
    * @param unitConverter The unit converter to use
    * @return The consumption by volume engine number
    */
-  private EngineNumber getConsumptionByVolume(String application, String substance,
+  private EngineNumber getConsumptionByVolume(UseKey useKey,
                                             UnitConverter unitConverter) {
-    EngineNumber consumptionRaw = engine.getGhgIntensity(application, substance);
+    EngineNumber consumptionRaw = engine.getGhgIntensity(useKey);
     String units = consumptionRaw.getUnits();
     if (units.endsWith("kg") || units.endsWith("mt")) {
       return consumptionRaw;
@@ -215,30 +226,27 @@ public class EngineResultSerializer {
    * with importer or exporter).</p>
    *
    * @param builder The builder into which parsed values should be registered
-   * @param application The name of the application for which to get values
-   *     like commercial refrigeration
-   * @param substance The name of the substance for which to get values
-   *     like HFC-134a
+   * @param useKey The UseKey containing application and substance information
    */
   private void parseImportSupplement(EngineResultBuilder builder,
-                                    String application, String substance) {
+                                    UseKey useKey) {
     // Prepare units
     OverridingConverterStateGetter stateGetter =
         new OverridingConverterStateGetter(this.stateGetter);
     UnitConverter unitConverter = new UnitConverter(stateGetter);
 
-    EngineNumber ghgIntensity = engine.getEqualsGhgIntensityFor(application, substance);
+    EngineNumber ghgIntensity = engine.getEqualsGhgIntensityFor(useKey);
     stateGetter.setSubstanceConsumption(ghgIntensity);
 
     EngineNumber importInitialChargeUnit = engine.getRawInitialChargeFor(
-        application, substance, "import");
+        useKey, "import");
     stateGetter.setAmortizedUnitVolume(importInitialChargeUnit);
 
     // Determine import value without recharge
-    EngineNumber totalImportValue = engine.getStreamRaw(application, substance, "import");
-    EngineNumber totalDomesticValue = engine.getStreamRaw(application, substance, "manufacture");
+    EngineNumber totalImportValue = engine.getStreamRaw(useKey, "import");
+    EngineNumber totalDomesticValue = engine.getStreamRaw(useKey, "manufacture");
     EngineNumber totalRechargeEmissions = engine.getStreamRaw(
-        application, substance, "rechargeEmissions");
+        useKey, "rechargeEmissions");
 
     BigDecimal totalImportValueKg = unitConverter.convert(totalImportValue, "kg").getValue();
     BigDecimal totalDomesticValueKg = unitConverter.convert(totalDomesticValue, "kg").getValue();

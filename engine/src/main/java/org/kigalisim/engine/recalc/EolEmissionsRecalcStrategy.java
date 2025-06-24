@@ -47,7 +47,7 @@ public class EolEmissionsRecalcStrategy implements RecalcStrategy {
     }
 
     // Calculate change
-    EngineNumber currentPriorRaw = target.getStreamRaw(scopeEffective.getApplication(), scopeEffective.getSubstance(), "priorEquipment");
+    EngineNumber currentPriorRaw = target.getStreamRaw(scopeEffective, "priorEquipment");
     EngineNumber currentPrior = unitConverter.convert(currentPriorRaw, "units");
 
     stateGetter.setPopulation(currentPrior);

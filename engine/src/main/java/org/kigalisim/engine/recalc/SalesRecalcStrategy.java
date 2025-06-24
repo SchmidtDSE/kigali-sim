@@ -52,8 +52,7 @@ public class SalesRecalcStrategy implements RecalcStrategy {
     // Get recharge population
     EngineNumber basePopulation = target.getStream("priorEquipment", scopeEffective, null);
     stateGetter.setPopulation(basePopulation);
-    EngineNumber rechargePopRaw = streamKeeper.getRechargePopulation(scopeEffective
-    );
+    EngineNumber rechargePopRaw = streamKeeper.getRechargePopulation(scopeEffective);
     EngineNumber rechargePop = unitConverter.convert(rechargePopRaw, "units");
     stateGetter.clearPopulation();
 

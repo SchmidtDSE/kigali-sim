@@ -36,6 +36,7 @@ import org.kigalisim.engine.state.Scope;
 import org.kigalisim.engine.state.SimpleUseKey;
 import org.kigalisim.engine.state.StreamKeeper;
 import org.kigalisim.engine.state.SubstanceInApplicationId;
+import org.kigalisim.engine.state.UseKey;
 import org.kigalisim.engine.state.YearMatcher;
 import org.kigalisim.engine.support.DivisionHelper;
 import org.kigalisim.engine.support.ExceptionsGenerator;
@@ -321,21 +322,30 @@ public class SingleThreadEngine implements Engine {
   }
 
   @Override
+  public EngineNumber getStream(String name, UseKey useKey, String conversion) {
+    if (useKey == null) {
+      throw new RuntimeException("Must provide a key to getStream");
+    }
+    EngineNumber value = streamKeeper.getStream(useKey, name);
+
+    if (conversion == null) {
+      return value;
+    } else {
+      return unitConverter.convert(value, conversion);
+    }
+  }
+
+  @Override
   public EngineNumber getStream(String name) {
     return getStream(name, null, null);
   }
 
   @Override
-  public EngineNumber getStreamRaw(String application, String substance, String stream) {
-    SimpleUseKey requestKey = new SimpleUseKey(application, substance);
-    return streamKeeper.getStream(requestKey, stream);
+  public EngineNumber getStreamRaw(UseKey key, String stream) {
+    return streamKeeper.getStream(key, stream);
   }
 
-  @Override
-  public EngineNumber getGhgIntensity(String application, String substance) {
-    SimpleUseKey requestKey = new SimpleUseKey(application, substance);
-    return streamKeeper.getGhgIntensity(requestKey);
-  }
+
 
   @Override
   public void defineVariable(String name) {
@@ -464,9 +474,10 @@ public class SingleThreadEngine implements Engine {
   }
 
   @Override
-  public EngineNumber getRawInitialChargeFor(String application, String substance, String stream) {
-    return streamKeeper.getInitialCharge(new SimpleUseKey(application, substance), stream);
+  public EngineNumber getRawInitialChargeFor(UseKey useKey, String stream) {
+    return streamKeeper.getInitialCharge(useKey, stream);
   }
+
 
   @Override
   public void setInitialCharge(EngineNumber value, String stream, YearMatcher yearMatcher) {
@@ -623,25 +634,24 @@ public class SingleThreadEngine implements Engine {
   }
 
   @Override
+  public EngineNumber getGhgIntensity(UseKey useKey) {
+    return streamKeeper.getGhgIntensity(useKey);
+  }
+
+  @Override
   public EngineNumber getEqualsGhgIntensity() {
     return streamKeeper.getGhgIntensity(scope);
   }
 
   @Override
-  public EngineNumber getEqualsGhgIntensityFor(String application, String substance) {
-    SimpleUseKey requestKey = new SimpleUseKey(application, substance);
-    return streamKeeper.getGhgIntensity(requestKey);
+  public EngineNumber getEqualsGhgIntensityFor(UseKey useKey) {
+    return streamKeeper.getGhgIntensity(useKey);
   }
+
 
   @Override
   public EngineNumber getEqualsEnergyIntensity() {
     return streamKeeper.getEnergyIntensity(scope);
-  }
-
-  @Override
-  public EngineNumber getEqualsEnergyIntensityFor(String application, String substance) {
-    SimpleUseKey requestKey = new SimpleUseKey(application, substance);
-    return streamKeeper.getEnergyIntensity(requestKey);
   }
 
   @Override
@@ -665,6 +675,25 @@ public class SingleThreadEngine implements Engine {
   @Override
   public void changeStream(String stream, EngineNumber amount, YearMatcher yearMatcher) {
     changeStream(stream, amount, yearMatcher, null);
+  }
+
+  @Override
+  public void changeStream(String stream, EngineNumber amount, YearMatcher yearMatcher,
+      UseKey useKey) {
+    if (!getIsInRange(yearMatcher)) {
+      return;
+    }
+
+    EngineNumber currentValue = getStream(stream, useKey, null);
+    UnitConverter unitConverter = createUnitConverterWithTotal(stream);
+
+    EngineNumber convertedDelta = unitConverter.convert(amount, currentValue.getUnits());
+    BigDecimal newAmount = currentValue.getValue().add(convertedDelta.getValue());
+    EngineNumber outputWithUnits = new EngineNumber(newAmount, currentValue.getUnits());
+
+    // Need to convert UseKey to Scope for setStream call since setStream requires scope for variable management
+    Scope useKeyAsScope = new Scope(null, useKey.getApplication(), useKey.getSubstance());
+    setStream(stream, outputWithUnits, null, useKeyAsScope, true, amount.getUnits());
   }
 
   @Override

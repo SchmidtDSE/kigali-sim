@@ -15,6 +15,7 @@ import java.util.List;
 import org.kigalisim.engine.number.EngineNumber;
 import org.kigalisim.engine.serializer.EngineResult;
 import org.kigalisim.engine.state.Scope;
+import org.kigalisim.engine.state.UseKey;
 import org.kigalisim.engine.state.YearMatcher;
 
 /**
@@ -160,6 +161,16 @@ public interface Engine {
   EngineNumber getStream(String name, Scope scope, String conversion);
 
   /**
+   * Get the stream value for a given application and substance key.
+   *
+   * @param name The name of the stream to retrieve
+   * @param useKey The key containing application and substance information
+   * @param conversion The conversion specification for units, or null for no conversion
+   * @return The value of the stream, possibly converted
+   */
+  EngineNumber getStream(String name, UseKey useKey, String conversion);
+
+  /**
    * Get the stream value with default scope and no conversion.
    *
    * @param name The name of the stream to retrieve
@@ -170,21 +181,13 @@ public interface Engine {
   /**
    * Get the stream value without any conversion.
    *
-   * @param application The application name for which the stream should be returned
-   * @param substance The name of the substance for which the stream should be returned
+   * @param useKey The application and substance name for which the stream should be returned.
    * @param stream The name of the stream to get like recycle
    * @return The value of the given combination without conversion
    */
-  EngineNumber getStreamRaw(String application, String substance, String stream);
+  EngineNumber getStreamRaw(UseKey useKey, String stream);
 
-  /**
-   * Get the GHG intensity associated with a substance.
-   *
-   * @param application The application name for which the intensity should be returned
-   * @param substance The substance name for which the intensity should be returned
-   * @return The GHG intensity value associated with the given combination
-   */
-  EngineNumber getGhgIntensity(String application, String substance);
+
 
   /**
    * Create a user-defined variable in the current scope.
@@ -233,12 +236,12 @@ public interface Engine {
   /**
    * Get the initial charge for a specific application and substance.
    *
-   * @param application The name of the application for which initial charge is requested
-   * @param substance The name of the substance for which initial charge is requested
+   * @param useKey The UseKey containing application and substance information
    * @param stream The stream in which the initial charge is requested and must be realized
    * @return The initial charge for the stream in the given application and substance
    */
-  EngineNumber getRawInitialChargeFor(String application, String substance, String stream);
+  EngineNumber getRawInitialChargeFor(UseKey useKey, String stream);
+
 
   /**
    * Set the initial charge for a stream.
@@ -306,6 +309,14 @@ public interface Engine {
   void equals(EngineNumber amount, YearMatcher yearMatcher);
 
   /**
+   * Get the GHG intensity associated with a substance.
+   *
+   * @param useKey The UseKey containing application and substance information
+   * @return The GHG intensity value associated with the given combination
+   */
+  EngineNumber getGhgIntensity(UseKey useKey);
+
+  /**
    * Retrieve the tCO2e intensity for the current application and substance.
    *
    * @return The GHG intensity value with volume normalized GHG
@@ -313,13 +324,13 @@ public interface Engine {
   EngineNumber getEqualsGhgIntensity();
 
   /**
-   * Retrieve the tCO2e intensity for the given application and substance.
+   * Retrieve the tCO2e intensity for the given UseKey.
    *
-   * @param application The name of the application for which to get a tCO2e intensity
-   * @param substance The name of the substance for which to get a tCO2e intensity
+   * @param useKey The UseKey containing application and substance information
    * @return The GHG intensity value with volume normalized GHG
    */
-  EngineNumber getEqualsGhgIntensityFor(String application, String substance);
+  EngineNumber getEqualsGhgIntensityFor(UseKey useKey);
+
 
   /**
    * Retrieve the energy intensity for the current application and substance.
@@ -327,15 +338,6 @@ public interface Engine {
    * @return The energy intensity value with volume normalized energy
    */
   EngineNumber getEqualsEnergyIntensity();
-
-  /**
-   * Retrieve the energy intensity for the given application and substance.
-   *
-   * @param application The application for which energy intensity is requested
-   * @param substance The substance for which energy intensity is requested
-   * @return The energy intensity value with volume normalized energy
-   */
-  EngineNumber getEqualsEnergyIntensityFor(String application, String substance);
 
   /**
    * Change a stream value by a delta amount.
@@ -346,6 +348,16 @@ public interface Engine {
    * @param scope The scope in which to make the change
    */
   void changeStream(String stream, EngineNumber amount, YearMatcher yearMatcher, Scope scope);
+
+  /**
+   * Change a stream value by a delta amount.
+   *
+   * @param stream The stream identifier to modify
+   * @param amount The amount to change the stream by
+   * @param yearMatcher Matcher to determine if the change applies to current year
+   * @param useKey The key containing application and substance information
+   */
+  void changeStream(String stream, EngineNumber amount, YearMatcher yearMatcher, UseKey useKey);
 
   /**
    * Change a stream value by a delta amount with default scope.
