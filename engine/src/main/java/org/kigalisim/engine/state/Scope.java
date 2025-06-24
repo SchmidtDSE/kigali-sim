@@ -21,7 +21,7 @@ import org.kigalisim.engine.number.EngineNumber;
  *
  * <p>Manages scope hierarchy and variable access across different context levels in the engine.</p>
  */
-public class Scope {
+public class Scope implements UseKey {
 
   private final Optional<String> stanza;
   private final Optional<String> application;

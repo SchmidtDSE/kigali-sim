@@ -194,9 +194,9 @@ public class StreamKeeper {
       String application = keyPieces[0];
       String substance = keyPieces[1];
 
-      Scope scope = new Scope("", application, substance);
-      EngineNumber equipment = getStream(scope, "equipment");
-      setStream(scope, "priorEquipment", equipment);
+      SimpleUseKey useKey = new SimpleUseKey(application, substance);
+      EngineNumber equipment = getStream(useKey, "equipment");
+      setStream(useKey, "priorEquipment", equipment);
 
       substances.get(key).resetInternals();
     }
@@ -433,6 +433,11 @@ public class StreamKeeper {
     return substances.get(key);
   }
 
+  private StreamParameterization getParameterization(String key) {
+    ensureSubstancePresent(key, "getParameterization");
+    return substances.get(key);
+  }
+
   /**
    * Generate a key for a scope.
    *
@@ -441,6 +446,207 @@ public class StreamKeeper {
    */
   private String getKey(Scope scope) {
     return scope.getKey();
+  }
+
+  /**
+   * Generate a key for a UseKey.
+   *
+   * @param useKey The UseKey to generate a key for
+   * @return The generated key
+   */
+  private String getKey(UseKey useKey) {
+    return useKey.getKey();
+  }
+
+  /**
+   * Get the value of a specific stream using UseKey.
+   *
+   * @param useKey The UseKey containing application and substance
+   * @param name The stream name
+   * @return The stream value
+   */
+  public EngineNumber getStream(UseKey useKey, String name) {
+    String key = getKey(useKey);
+    ensureSubstancePresent(key, "getStream");
+    ensureStreamKnown(name);
+
+    if ("sales".equals(name)) {
+      EngineNumber manufactureAmountRaw = getStream(useKey, "manufacture");
+      EngineNumber importAmountRaw = getStream(useKey, "import");
+      EngineNumber recycleAmountRaw = getStream(useKey, "recycle");
+
+      EngineNumber manufactureAmount = unitConverter.convert(manufactureAmountRaw, "kg");
+      EngineNumber importAmount = unitConverter.convert(importAmountRaw, "kg");
+      EngineNumber recycleAmount = unitConverter.convert(recycleAmountRaw, "kg");
+
+      BigDecimal manufactureAmountValue = manufactureAmount.getValue();
+      BigDecimal importAmountValue = importAmount.getValue();
+      BigDecimal recycleAmountValue = recycleAmount.getValue();
+
+      BigDecimal newTotal = manufactureAmountValue.add(importAmountValue).add(recycleAmountValue);
+
+      return new EngineNumber(newTotal, "kg");
+    } else {
+      return streams.get(getKey(useKey, name));
+    }
+  }
+
+  /**
+   * Get the greenhouse gas intensity for a UseKey.
+   *
+   * @param useKey The UseKey containing application and substance
+   * @return The GHG intensity value
+   */
+  public EngineNumber getGhgIntensity(UseKey useKey) {
+    String key = getKey(useKey);
+    ensureSubstancePresent(key, "getGhgIntensity");
+    StreamParameterization parameterization = substances.get(key);
+    return parameterization.getGhgIntensity();
+  }
+
+  /**
+   * Get the energy intensity for a UseKey.
+   *
+   * @param useKey The UseKey containing application and substance
+   * @return The energy intensity value
+   */
+  public EngineNumber getEnergyIntensity(UseKey useKey) {
+    String key = getKey(useKey);
+    ensureSubstancePresent(key, "getEnergyIntensity");
+    StreamParameterization parameterization = substances.get(key);
+    return parameterization.getEnergyIntensity();
+  }
+
+  /**
+   * Set the last specified units for a UseKey.
+   *
+   * @param useKey The UseKey containing application and substance
+   * @param units The units to set
+   */
+  public void setLastSpecifiedUnits(UseKey useKey, String units) {
+    String key = getKey(useKey);
+    ensureSubstancePresent(key, "setLastSpecifiedUnits");
+    StreamParameterization parameterization = substances.get(key);
+    parameterization.setLastSpecifiedUnits(units);
+  }
+
+  /**
+   * Set the value for a specific stream using UseKey.
+   *
+   * @param useKey The UseKey containing application and substance
+   * @param name The stream name
+   * @param value The value to set
+   */
+  public void setStream(UseKey useKey, String name, EngineNumber value) {
+    String key = getKey(useKey);
+    ensureSubstancePresent(key, "setStream");
+    ensureStreamKnown(name);
+
+    if (CHECK_NAN_STATE && value.getValue().toString().equals("NaN")) {
+      String[] keyPieces = key.split("\t");
+      String application = keyPieces.length > 0 ? keyPieces[0] : "";
+      String substance = keyPieces.length > 1 ? keyPieces[1] : "";
+      String pieces = String.join(" > ", 
+          "-".equals(application) ? "null" : application, 
+          "-".equals(substance) ? "null" : substance, 
+          name);
+      throw new RuntimeException("Encountered NaN to be set for: " + pieces);
+    }
+
+    if (getIsSettingVolumeByUnits(name, value)) {
+      setStreamForSalesWithUnits(useKey, name, value);
+    } else if ("sales".equals(name)) {
+      setStreamForSales(useKey, name, value);
+    } else {
+      setSimpleStream(useKey, name, value);
+    }
+  }
+
+  private void setSimpleStream(UseKey useKey, String name, EngineNumber value) {
+    String unitsNeeded = getUnits(name);
+    EngineNumber valueConverted = unitConverter.convert(value, unitsNeeded);
+
+    if (CHECK_NAN_STATE && valueConverted.getValue().toString().equals("NaN")) {
+      String key = getKey(useKey);
+      String[] keyPieces = key.split("\t");
+      String application = keyPieces.length > 0 ? keyPieces[0] : "";
+      String substance = keyPieces.length > 1 ? keyPieces[1] : "";
+      String pieces = String.join(" > ", 
+          "-".equals(application) ? "null" : application, 
+          "-".equals(substance) ? "null" : substance, 
+          name);
+      throw new RuntimeException("Encountered NaN after conversion for: " + pieces);
+    }
+
+    String streamKey = getKey(useKey, name);
+    streams.put(streamKey, valueConverted);
+  }
+
+  private void setStreamForSales(UseKey useKey, String name, EngineNumber value) {
+    EngineNumber manufactureValueRaw = getStream(useKey, "manufacture");
+    EngineNumber importValueRaw = getStream(useKey, "import");
+
+    EngineNumber manufactureValue = unitConverter.convert(manufactureValueRaw, "kg");
+    EngineNumber importValue = unitConverter.convert(importValueRaw, "kg");
+
+    BigDecimal manufactureAmount = manufactureValue.getValue();
+    BigDecimal importAmount = importValue.getValue();
+
+    EngineNumber valueConverted = unitConverter.convert(value, "kg");
+    BigDecimal amountKg = valueConverted.getValue();
+
+    BigDecimal totalAmount = manufactureAmount.add(importAmount);
+    boolean isZero = totalAmount.compareTo(BigDecimal.ZERO) == 0;
+    BigDecimal manufacturePercent;
+    if (isZero) {
+      manufacturePercent = new BigDecimal("0.5");
+    } else {
+      manufacturePercent = manufactureAmount.divide(totalAmount);
+    }
+
+    BigDecimal newManufactureAmount = amountKg.multiply(manufacturePercent);
+    BigDecimal newImportAmount = amountKg.subtract(newManufactureAmount);
+
+    EngineNumber manufactureAmountToSet = new EngineNumber(newManufactureAmount, "kg");
+    EngineNumber importAmountToSet = new EngineNumber(newImportAmount, "kg");
+
+    setSimpleStream(useKey, "manufacture", manufactureAmountToSet);
+    setSimpleStream(useKey, "import", importAmountToSet);
+  }
+
+  private void setStreamForSalesWithUnits(UseKey useKey, String name, EngineNumber value) {
+    OverridingConverterStateGetter overridingStateGetter = new OverridingConverterStateGetter(
+        stateGetter
+    );
+    UnitConverter unitConverter = new UnitConverter(overridingStateGetter);
+
+    EngineNumber initialCharge = getInitialCharge(useKey, name);
+    if (initialCharge.getValue().compareTo(BigDecimal.ZERO) == 0) {
+      throw new RuntimeException("Cannot set " + name + " stream with a zero initial charge.");
+    }
+
+    EngineNumber initialChargeConverted = unitConverter.convert(initialCharge, "kg / unit");
+    overridingStateGetter.setAmortizedUnitVolume(initialChargeConverted);
+
+    EngineNumber valueUnitsPlain = unitConverter.convert(value, "units");
+    EngineNumber valueConverted = unitConverter.convert(valueUnitsPlain, "kg");
+
+    // Set the stream directly to avoid recursion
+    String streamKey = getKey(useKey, name);
+    streams.put(streamKey, valueConverted);
+  }
+
+  /**
+   * Get the initial charge for a UseKey.
+   *
+   * @param useKey The UseKey containing application and substance
+   * @param substream The substream name
+   * @return The initial charge value
+   */
+  public EngineNumber getInitialCharge(UseKey useKey, String substream) {
+    String key = getKey(useKey);
+    StreamParameterization parameterization = getParameterization(key);
+    return parameterization.getInitialCharge(substream);
   }
 
   /**
@@ -453,6 +659,14 @@ public class StreamKeeper {
   private String getKey(Scope scope, String name) {
     StringBuilder keyBuilder = new StringBuilder();
     keyBuilder.append(getKey(scope));
+    keyBuilder.append("\t");
+    keyBuilder.append(name != null ? name : "-");
+    return keyBuilder.toString();
+  }
+
+  private String getKey(UseKey useKey, String name) {
+    StringBuilder keyBuilder = new StringBuilder();
+    keyBuilder.append(getKey(useKey));
     keyBuilder.append("\t");
     keyBuilder.append(name != null ? name : "-");
     return keyBuilder.toString();
@@ -493,6 +707,25 @@ public class StreamKeeper {
       message.append(scope.getApplication());
       message.append(", ");
       message.append(scope.getSubstance());
+      throw new IllegalStateException(message.toString());
+    }
+  }
+
+  private void ensureSubstancePresent(String key, String context) {
+    if (key == null) {
+      throw new IllegalStateException("Key cannot be null in " + context);
+    }
+    if (!substances.containsKey(key)) {
+      String[] keyPieces = key.split("\t");
+      String application = keyPieces.length > 0 ? keyPieces[0] : "";
+      String substance = keyPieces.length > 1 ? keyPieces[1] : "";
+      StringBuilder message = new StringBuilder();
+      message.append("Not a known application substance pair in ");
+      message.append(context);
+      message.append(": ");
+      message.append("-".equals(application) ? "null" : application);
+      message.append(", ");
+      message.append("-".equals(substance) ? "null" : substance);
       throw new IllegalStateException(message.toString());
     }
   }

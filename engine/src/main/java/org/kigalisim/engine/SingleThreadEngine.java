@@ -33,6 +33,7 @@ import org.kigalisim.engine.serializer.EngineResultSerializer;
 import org.kigalisim.engine.state.ConverterStateGetter;
 import org.kigalisim.engine.state.OverridingConverterStateGetter;
 import org.kigalisim.engine.state.Scope;
+import org.kigalisim.engine.state.SimpleUseKey;
 import org.kigalisim.engine.state.StreamKeeper;
 import org.kigalisim.engine.state.SubstanceInApplicationId;
 import org.kigalisim.engine.state.YearMatcher;
@@ -328,14 +329,14 @@ public class SingleThreadEngine implements Engine {
 
   @Override
   public EngineNumber getStreamRaw(String application, String substance, String stream) {
-    Scope requestScope = new Scope(scope.getStanza(), application, substance);
-    return streamKeeper.getStream(requestScope, stream);
+    SimpleUseKey requestKey = new SimpleUseKey(application, substance);
+    return streamKeeper.getStream(requestKey, stream);
   }
 
   @Override
   public EngineNumber getGhgIntensity(String application, String substance) {
-    Scope requestScope = new Scope(scope.getStanza(), application, substance);
-    return streamKeeper.getGhgIntensity(requestScope);
+    SimpleUseKey requestKey = new SimpleUseKey(application, substance);
+    return streamKeeper.getGhgIntensity(requestKey);
   }
 
   @Override
@@ -680,8 +681,8 @@ public class SingleThreadEngine implements Engine {
 
   @Override
   public EngineNumber getEqualsGhgIntensityFor(String application, String substance) {
-    Scope requestScope = new Scope(scope.getStanza(), application, substance);
-    return streamKeeper.getGhgIntensity(requestScope);
+    SimpleUseKey requestKey = new SimpleUseKey(application, substance);
+    return streamKeeper.getGhgIntensity(requestKey);
   }
 
   @Override
@@ -693,8 +694,8 @@ public class SingleThreadEngine implements Engine {
 
   @Override
   public EngineNumber getEqualsEnergyIntensityFor(String application, String substance) {
-    Scope requestScope = new Scope(scope.getStanza(), application, substance);
-    return streamKeeper.getEnergyIntensity(requestScope);
+    SimpleUseKey requestKey = new SimpleUseKey(application, substance);
+    return streamKeeper.getEnergyIntensity(requestKey);
   }
 
   @Override
@@ -835,8 +836,8 @@ public class SingleThreadEngine implements Engine {
 
     // Track the original user-specified units for the destination substance
     String lastUnits = amountRaw.getUnits();
-    Scope destScope = new Scope(currentScope.getStanza(), application, destinationSubstance);
-    streamKeeper.setLastSpecifiedUnits(destScope, lastUnits);
+    SimpleUseKey destKey = new SimpleUseKey(application, destinationSubstance);
+    streamKeeper.setLastSpecifiedUnits(destKey, lastUnits);
 
     if (amountRaw.hasEquipmentUnits()) {
       // For equipment units, convert to units first, then handle each substance separately
