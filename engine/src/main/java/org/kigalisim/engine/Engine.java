@@ -224,6 +224,15 @@ public interface Engine {
   /**
    * Get the initial charge for a specific application and substance.
    *
+   * @param scope Application and substance for which initial charge is requested
+   * @param stream The stream in which the initial charge is requested and must be realized
+   * @return The initial charge for the stream in the given application and substance
+   */
+  EngineNumber getRawInitialChargeFor(Scope scope, String stream);
+
+  /**
+   * Get the initial charge for a specific application and substance.
+   *
    * @param application The name of the application for which initial charge is requested
    * @param substance The name of the substance for which initial charge is requested
    * @param stream The stream in which the initial charge is requested and must be realized
@@ -253,41 +262,6 @@ public interface Engine {
    * @return The recharge intensity value
    */
   EngineNumber getRechargeIntensity();
-
-  /**
-   * Get the recharge intensity for a given application and substance.
-   *
-   * @param application The name of the application for which to get the recharge intensity
-   * @param substance The name of the substance for which to get the recharge intensity
-   * @return The recharge intensity value
-   */
-  EngineNumber getRechargeIntensityFor(String application, String substance);
-
-  /**
-   * Get the last specified units for the current application and substance.
-   *
-   * @param stream The stream name (kept for API consistency)
-   * @return The last specified units string
-   */
-  String getLastSpecifiedUnits(String stream);
-
-  /**
-   * Get the last specified units for a given application and substance.
-   *
-   * @param application The name of the application
-   * @param substance The name of the substance
-   * @param stream The stream name (kept for API consistency)
-   * @return The last specified units string
-   */
-  String getLastSpecifiedInUnits(String application, String substance, String stream);
-
-  /**
-   * Set the last specified units for the current application and substance.
-   *
-   * @param stream The stream name (kept for API consistency)
-   * @param units The units string to set
-   */
-  void setLastSpecifiedUnits(String stream, String units);
 
   /**
    * Set recharge parameters for the current application and substance.
