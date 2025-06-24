@@ -18,73 +18,29 @@ async function initializeWasm() {
   }
 
   try {
-    // Import WASM runtime and try to load WASM
+    // Import TeaVM-compiled JavaScript version first (for fallback)
     importScripts("/wasm/KigaliSim.js");
     importScripts("/wasm/KigaliSim.wasm-runtime.js");
 
+    // Try to load WASM
     wasmLayer = await TeaVM.wasmGC.load("/wasm/KigaliSim.wasm");
     console.log("WASM backend initialized successfully");
   } catch (error) {
-    console.log("Failed to load WASM, falling back to JS:", error);
+    console.log("Failed to load WASM, falling back to TeaVM JavaScript:", error);
 
-    // Fallback to legacy JS implementation
-    try {
-      importScripts("/intermediate/static/qubectalk.js");
-      wasmLayer = {
-        exports: {
-          execute: executeWithJsFallback,
-        },
-      };
-      console.log("JS fallback initialized successfully");
-    } catch (jsError) {
-      console.error("Failed to initialize both WASM and JS fallback:", jsError);
-      throw new Error("Failed to initialize execution backend");
-    }
+    // Fallback to TeaVM-compiled JavaScript implementation
+    wasmLayer = {
+      exports: {
+        execute: execute, // Use the TeaVM-compiled execute function
+        getVersion: getVersion, // Also available if needed
+      },
+    };
+    console.log("TeaVM JavaScript fallback initialized successfully");
   }
 
   isInitialized = true;
 }
 
-/**
- * JS fallback execution function using legacy QubecTalk toolkit.
- *
- * @param {string} code - The QubecTalk code to execute.
- * @returns {string} Status line + blank line + CSV results.
- */
-function executeWithJsFallback(code) {
-  try {
-    // Basic validation first
-    const toolkit = QubecTalk.getToolkit();
-    const antlr4 = toolkit.antlr4;
-    const QubecTalkLexer = toolkit.QubecTalkLexer;
-    const QubecTalkParser = toolkit.QubecTalkParser;
-
-    const input = new antlr4.InputStream(code);
-    const lexer = new QubecTalkLexer(input);
-    const tokens = new antlr4.CommonTokenStream(lexer);
-    const parser = new QubecTalkParser(tokens);
-
-    // Parse to check for syntax errors
-    const tree = parser.program();
-
-    // For now, return empty CSV with headers (placeholder implementation)
-    // TODO: Implement full JS execution once module loading is resolved
-    const csvHeaders = [
-      "application", "substance", "year", "scenarioName", "trialNumber",
-      "manufacture", "manufactureUnits", "import", "importUnits",
-      "recycle", "recycleUnits", "domesticConsumption", "domesticConsumptionUnits",
-      "importConsumption", "importConsumptionUnits",
-      "recycleConsumption", "recycleConsumptionUnits",
-      "population", "populationUnits", "populationNew", "populationNewUnits",
-      "rechargeEmissions", "rechargeEmissionsUnits", "eolEmissions", "eolEmissionsUnits",
-      "energyConsumption", "energyConsumptionUnits",
-    ].join(",");
-
-    return `OK\n\n${csvHeaders}`;
-  } catch (error) {
-    return `Compilation Error: ${error.message}\n\n`;
-  }
-}
 
 /**
  * Execute QubecTalk code using WASM backend.
@@ -124,7 +80,6 @@ async function executeCode(code) {
 
 /**
  * Handle messages from the main thread.
- * Maintains the same interface as legacy.worker.js
  */
 self.onmessage = async function (event) {
   const {id, command, code} = event.data;

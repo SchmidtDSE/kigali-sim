@@ -5,7 +5,7 @@
  */
 
 import {EngineNumber} from "engine_number";
-import {EngineResult} from "engine_struct";
+import {EngineResult, ImportSupplement} from "engine_struct";
 
 /**
  * Parser for handling CSV report data returned from the WASM worker.
@@ -140,12 +140,12 @@ class ReportDataParser {
     const initialChargeConsumption = parseEngineNumber(row["initialChargeConsumption"], "tCO2e");
     const importNewPopulation = parseEngineNumber(row["importNewPopulation"], "units");
 
-    // Create importSupplement object
-    const importSupplement = {
-      getInitialChargeValue: () => initialChargeValue,
-      getInitialChargeConsumption: () => initialChargeConsumption,
-      getNewPopulation: () => importNewPopulation,
-    };
+    // Create importSupplement object using the proper ImportSupplement class
+    const importSupplement = new ImportSupplement(
+      initialChargeValue,
+      initialChargeConsumption,
+      importNewPopulation,
+    );
 
     return new EngineResult(
       application,

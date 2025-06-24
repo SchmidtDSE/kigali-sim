@@ -6,7 +6,7 @@
 
 import {WasmBackend, WasmLayer, ReportDataParser} from "wasm_backend";
 import {EngineNumber} from "engine_number";
-import {EngineResult} from "engine_struct";
+import {EngineResult, ImportSupplement} from "engine_struct";
 
 function buildWasmBackendTests() {
   QUnit.module("WasmBackend", function () {
@@ -125,6 +125,20 @@ function buildWasmBackendTests() {
           "Energy consumption value should be correct");
         assert.equal(result.getEnergyConsumption().getUnits(), "kwh",
           "Energy consumption units should be correct");
+
+        // Test ImportSupplement
+        const importSupplement = result.getImportSupplement();
+        assert.ok(importSupplement, "ImportSupplement should be defined");
+        assert.ok(importSupplement.getInitialChargeValue() instanceof EngineNumber,
+          "InitialChargeValue should be EngineNumber");
+        assert.equal(importSupplement.getInitialChargeValue().getValue(), 0,
+          "InitialChargeValue should be 0");
+        assert.equal(importSupplement.getInitialChargeValue().getUnits(), "kg",
+          "InitialChargeValue units should be kg");
+        assert.ok(importSupplement.getInitialChargeConsumption() instanceof EngineNumber,
+          "InitialChargeConsumption should be EngineNumber");
+        assert.equal(importSupplement.getNewPopulation().getUnits(), "units",
+          "NewPopulation units should be units");
       });
     });
 
