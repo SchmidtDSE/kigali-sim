@@ -15,7 +15,7 @@ class CodeEditorPresenter {
    * @param {Function} onChange - Callback function triggered when editor
    *     content changes.
    * @param {Function} onAutoRefresh - Optional callback function for auto-refresh
-   *     after 0.75 seconds of no changes.
+   *     after AUTORUN_WAIT milliseconds of no changes.
    */
   constructor(root, onChange, onAutoRefresh) {
     const self = this;
