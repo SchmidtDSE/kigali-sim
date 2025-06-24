@@ -10,7 +10,6 @@ import {ReportDataWrapper} from "report_data";
 import {ResultsPresenter} from "results";
 import {UiEditorPresenter} from "ui_editor";
 import {UiTranslatorCompiler} from "ui_translator";
-import {LegacyJsBackend, LegacyJsLayer} from "legacy_backend";
 import {WasmBackend, WasmLayer} from "wasm_backend";
 
 const HELP_TEXT = "Would you like our help in resolving this issue?";

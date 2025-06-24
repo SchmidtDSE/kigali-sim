@@ -5,8 +5,7 @@
  */
 
 import {EngineNumber} from "engine_number";
-import {Engine} from "engine";
-import {YearMatcher} from "engine_state";
+import {YearMatcher} from "year_matcher";
 
 const toolkit = QubecTalk.getToolkit();
 
