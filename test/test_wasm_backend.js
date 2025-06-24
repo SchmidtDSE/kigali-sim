@@ -13,9 +13,15 @@ function buildWasmBackendTests() {
     QUnit.module("ReportDataParser", function () {
       QUnit.test("parseResponse handles OK status with CSV data", function (assert) {
         const response = "OK\n\n" +
-          "application,substance,year,scenarioName,trialNumber," +
-          "manufacture,manufactureUnits,import,importUnits\n" +
-          "TestApp,TestSub,2024,TestScenario,1,100,kg,50,kg";
+          "scenario,trial,year,application,substance," +
+          "manufacture,import,recycle,domesticConsumption,importConsumption," +
+          "recycleConsumption,population,populationNew,rechargeEmissions," +
+          "eolEmissions,energyConsumption,initialChargeValue," +
+          "initialChargeConsumption,importNewPopulation\n" +
+          "TestScenario,1,2024,TestApp,TestSub," +
+          "100 kg,50 kg,0 kg,0 tCO2e,0 tCO2e," +
+          "0 tCO2e,0 units,0 units,0 tCO2e," +
+          "0 tCO2e,0 kwh,0 kg,0 tCO2e,0 units";
 
         const results = ReportDataParser.parseResponse(response);
 
@@ -60,8 +66,11 @@ function buildWasmBackendTests() {
 
       QUnit.test("parseResponse handles headers-only CSV", function (assert) {
         const response = "OK\n\n" +
-          "application,substance,year,scenarioName,trialNumber," +
-          "manufacture,manufactureUnits,import,importUnits";
+          "scenario,trial,year,application,substance," +
+          "manufacture,import,recycle,domesticConsumption,importConsumption," +
+          "recycleConsumption,population,populationNew,rechargeEmissions," +
+          "eolEmissions,energyConsumption,initialChargeValue," +
+          "initialChargeConsumption,importNewPopulation";
 
         const results = ReportDataParser.parseResponse(response);
         assert.equal(results.length, 0, "Should return empty array for headers-only CSV");
@@ -81,12 +90,15 @@ function buildWasmBackendTests() {
 
       QUnit.test("parseResponse creates EngineNumber objects correctly", function (assert) {
         const response = "OK\n\n" +
-          "application,substance,year,scenarioName,trialNumber," +
-          "manufacture,manufactureUnits,import,importUnits," +
-          "population,populationUnits,energyConsumption,energyConsumptionUnits\n" +
-          "TestApp,TestSub,2024,TestScenario,1," +
-          "100.5,kg,50.25,kg," +
-          "1000,units,500.75,kwh";
+          "scenario,trial,year,application,substance," +
+          "manufacture,import,recycle,domesticConsumption,importConsumption," +
+          "recycleConsumption,population,populationNew,rechargeEmissions," +
+          "eolEmissions,energyConsumption,initialChargeValue," +
+          "initialChargeConsumption,importNewPopulation\n" +
+          "TestScenario,1,2024,TestApp,TestSub," +
+          "100.5 kg,50.25 kg,0 kg,0 tCO2e,0 tCO2e," +
+          "0 tCO2e,1000 units,0 units,0 tCO2e," +
+          "0 tCO2e,500.75 kwh,0 kg,0 tCO2e,0 units";
 
         const results = ReportDataParser.parseResponse(response);
 
@@ -224,32 +236,50 @@ function buildWasmBackendTests() {
         wasmLayer.initialize().then(() => {
           const runPromise = wasmLayer.runSimulation(testCode);
 
-          // Check the message sent to worker
-          assert.ok(workerMessage, "Message should be sent to worker");
-          assert.equal(workerMessage.command, "execute", "Command should be execute");
-          assert.equal(workerMessage.code, testCode, "Code should be passed correctly");
-          assert.ok(workerMessage.id > 0, "Request ID should be positive");
+          // Wait a tick for postMessage to be called
+          setTimeout(() => {
+            // Check the message sent to worker
+            assert.ok(workerMessage, "Message should be sent to worker");
+            assert.equal(workerMessage.command, "execute", "Command should be execute");
+            assert.equal(workerMessage.code, testCode, "Code should be passed correctly");
+            assert.ok(workerMessage.id > 0, "Request ID should be positive");
 
-          // Simulate successful response
-          const responseData = {
-            id: workerMessage.id,
-            success: true,
-            result: "OK\n\napplication,substance\nTestApp,TestSub",
-          };
+            // Simulate successful response
+            const responseData = {
+              id: workerMessage.id,
+              success: true,
+              result: "OK\n\n" +
+                "scenario,trial,year,application,substance,manufacture,import," +
+                "recycle,domesticConsumption,importConsumption," +
+                "recycleConsumption,population,populationNew,rechargeEmissions," +
+                "eolEmissions,energyConsumption,initialChargeValue," +
+                "initialChargeConsumption,importNewPopulation\n" +
+                "TestScenario,1,2024,TestApp,TestSub,0 kg,0 kg,0 kg,0 tCO2e," +
+                "0 tCO2e,0 tCO2e,0 units,0 units,0 tCO2e,0 tCO2e,0 kwh," +
+                "0 kg,0 tCO2e,0 units",
+            };
 
-          mockWorker.onmessage({data: responseData});
+            mockWorker.onmessage({data: responseData});
 
-          return runPromise;
-        }).then((results) => {
-          assert.ok(Array.isArray(results), "Should return array of results");
+            runPromise.then((results) => {
+              assert.ok(Array.isArray(results), "Should return array of results");
+              // Restore original Worker
+              window.Worker = originalWorker;
+              done();
+            }).catch((error) => {
+              // Restore original Worker
+              window.Worker = originalWorker;
+              assert.ok(false, "runSimulation should not fail: " + error.message);
+              done();
+            });
+          }, 0);
 
-          // Restore original Worker
-          window.Worker = originalWorker;
-          done();
+          // Return a resolved promise since we handle everything in setTimeout
+          return Promise.resolve();
         }).catch((error) => {
-          // Restore original Worker
+          // Restore original Worker in case of initialization failure
           window.Worker = originalWorker;
-          assert.ok(false, "runSimulation should not fail: " + error.message);
+          assert.ok(false, "Initialization failed: " + error.message);
           done();
         });
       });

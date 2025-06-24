@@ -102,7 +102,6 @@ class ReportDataParser {
       if (!valueStr || valueStr.trim() === "") {
         return new EngineNumber(0, defaultUnits);
       }
-      
       const parts = valueStr.trim().split(/\s+/);
       if (parts.length >= 2) {
         // Format: "value units"

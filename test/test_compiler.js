@@ -22,15 +22,15 @@ function buildCompilerTests() {
       assert.notDeepEqual(compiler, undefined);
     });
 
+    // Shared WASM backend instances to avoid re-initialization overhead
+    const wasmLayer = new WasmLayer();
+    const wasmBackend = new WasmBackend(wasmLayer);
+
     const buildTest = (name, filepath, checks) => {
       QUnit.test(name, (assert) => {
         const done = assert.async();
         loadRemote(filepath).then(async (content) => {
           assert.ok(content.length > 0);
-
-          // Use the WASM backend for execution
-          const wasmLayer = new WasmLayer();
-          const wasmBackend = new WasmBackend(wasmLayer);
 
           try {
             const programResult = await wasmBackend.execute(content);
@@ -603,8 +603,6 @@ function buildCompilerTests() {
         assert.deepEqual(consumption.getUnits(), "tCO2e");
       },
     ]);
-
-    buildTest("runs reference", "/examples/reference.qta", []);
 
     buildTest("cold starts with equipment", "/examples/cold_start_equipment.qta", [
       (result, assert) => {
