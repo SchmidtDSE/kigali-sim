@@ -194,10 +194,7 @@ jobs:
           name: war
           path: ./
       - name: Extract WASM files to wasm directory
-        run: |
-          mkdir -p wasm
-          unzip -j KigaliSim.war "wasm-gc/*" -d wasm/ || echo "No WASM files found in war"
-          unzip -j KigaliSim.war "js/*" -d wasm/ || echo "No JS files found in war"
+        run: bash ./support/update_wasm_from_war.sh KigaliSim.war
       - name: Install node deps
         run: npm install
       - name: Build
@@ -230,10 +227,7 @@ jobs:
           name: war
           path: ./
       - name: Extract WASM files to wasm directory
-        run: |
-          mkdir -p wasm
-          unzip -j KigaliSim.war "wasm-gc/*" -d wasm/ || echo "No WASM files found in war"
-          unzip -j KigaliSim.war "js/*" -d wasm/ || echo "No JS files found in war"
+        run: bash ./support/update_wasm_from_war.sh KigaliSim.war
       - name: Install node deps
         run: npm install
       - name: Build

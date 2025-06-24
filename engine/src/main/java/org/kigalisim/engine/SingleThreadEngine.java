@@ -928,10 +928,7 @@ public class SingleThreadEngine implements Engine {
     stateGetter.setPopulation(rechargePop);
 
     // Get recharge amount
-    EngineNumber rechargeIntensityRaw = streamKeeper.getRechargeIntensity(
-        application,
-        substance
-    );
+    EngineNumber rechargeIntensityRaw = streamKeeper.getRechargeIntensity(scope);
     EngineNumber rechargeVolume = unitConverter.convert(rechargeIntensityRaw, "kg");
 
     // Return to prior population

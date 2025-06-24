@@ -37,8 +37,6 @@ public class UnitConverter {
   private static final BigDecimal PERCENT_FACTOR = new BigDecimal("100");
 
   private final StateGetter stateGetter;
-  private final Map<String, UnitConverterStrategy> numeratorStrategy;
-  private final Map<String, UnitConverterStrategy> denominatorStrategy;
 
   /**
    * Create a new unit converter.
@@ -47,8 +45,6 @@ public class UnitConverter {
    */
   public UnitConverter(StateGetter stateGetter) {
     this.stateGetter = stateGetter;
-    this.numeratorStrategy = createNumeratorStrategy();
-    this.denominatorStrategy = createDenominatorStrategy();
   }
 
   /**
@@ -93,29 +89,13 @@ public class UnitConverter {
     boolean differentDenominator = !destinationDenominatorUnits.equals(sourceDenominatorUnits);
     boolean sameDenominator = !differentDenominator;
 
-    // Use cached strategy maps
-
-    UnitConverterStrategy numeratorFunc =
-        numeratorStrategy.get(destinationNumeratorUnits);
-    UnitConverterStrategy denominatorFunc =
-        denominatorStrategy.get(destinationDenominatorUnits);
-
-    if (numeratorFunc == null) {
-      throw new IllegalArgumentException(
-          "Unsupported destination numerator units: " + destinationNumeratorUnits);
-    }
-    if (denominatorFunc == null) {
-      throw new IllegalArgumentException(
-          "Unsupported destination denominator units: " + destinationDenominatorUnits);
-    }
-
     if (sourceHasDenominator && sameDenominator) {
       EngineNumber sourceEffective = new EngineNumber(source.getValue(), sourceNumeratorUnits);
-      EngineNumber convertedNumerator = numeratorFunc.convert(sourceEffective);
+      EngineNumber convertedNumerator = convertNumerator(sourceEffective, destinationNumeratorUnits);
       return new EngineNumber(convertedNumerator.getValue(), destinationUnits);
     } else {
-      EngineNumber numerator = numeratorFunc.convert(source);
-      EngineNumber denominator = denominatorFunc.convert(source);
+      EngineNumber numerator = convertNumerator(source, destinationNumeratorUnits);
+      EngineNumber denominator = convertDenominator(source, destinationDenominatorUnits);
 
       if (denominator.getValue().compareTo(BigDecimal.ZERO) == 0) {
         BigDecimal inferredFactor = inferScale(sourceDenominatorUnits,
@@ -137,41 +117,45 @@ public class UnitConverter {
   }
 
   /**
-   * Create the numerator conversion strategy map.
+   * Convert a number to the specified numerator units.
    *
-   * @return Map of unit types to conversion strategies
+   * @param input The EngineNumber to convert
+   * @param destinationUnits The target numerator units
+   * @return The converted EngineNumber
    */
-  private Map<String, UnitConverterStrategy> createNumeratorStrategy() {
-    Map<String, UnitConverterStrategy> strategy = new HashMap<>();
-    strategy.put("kg", this::toKg);
-    strategy.put("mt", this::toMt);
-    strategy.put("unit", this::toUnits);
-    strategy.put("units", this::toUnits);
-    strategy.put("tCO2e", this::toGhgConsumption);
-    strategy.put("kwh", this::toEnergyConsumption);
-    strategy.put("year", this::toYears);
-    strategy.put("years", this::toYears);
-    strategy.put("%", this::toPercent);
-    return strategy;
+  private EngineNumber convertNumerator(EngineNumber input, String destinationUnits) {
+    return switch (destinationUnits) {
+      case "kg" -> toKg(input);
+      case "mt" -> toMt(input);
+      case "unit", "units" -> toUnits(input);
+      case "tCO2e" -> toGhgConsumption(input);
+      case "kwh" -> toEnergyConsumption(input);
+      case "year", "years" -> toYears(input);
+      case "%" -> toPercent(input);
+      default -> throw new IllegalArgumentException(
+          "Unsupported destination numerator units: " + destinationUnits);
+    };
   }
 
   /**
-   * Create the denominator conversion strategy map.
+   * Convert a number to the specified denominator units.
    *
-   * @return Map of unit types to conversion strategies
+   * @param input The EngineNumber to convert (not used for denominator conversions)
+   * @param destinationUnits The target denominator units
+   * @return The converted EngineNumber representing the denominator
    */
-  private Map<String, UnitConverterStrategy> createDenominatorStrategy() {
-    Map<String, UnitConverterStrategy> strategy = new HashMap<>();
-    strategy.put("kg", x -> convert(stateGetter.getVolume(), "kg"));
-    strategy.put("mt", x -> convert(stateGetter.getVolume(), "mt"));
-    strategy.put("unit", x -> convert(stateGetter.getPopulation(), "unit"));
-    strategy.put("units", x -> convert(stateGetter.getPopulation(), "units"));
-    strategy.put("tCO2e", x -> convert(stateGetter.getGhgConsumption(), "tCO2e"));
-    strategy.put("kwh", x -> convert(stateGetter.getEnergyConsumption(), "kwh"));
-    strategy.put("year", x -> convert(stateGetter.getYearsElapsed(), "year"));
-    strategy.put("years", x -> convert(stateGetter.getYearsElapsed(), "years"));
-    strategy.put("", x -> new EngineNumber(BigDecimal.ONE, ""));
-    return strategy;
+  private EngineNumber convertDenominator(EngineNumber input, String destinationUnits) {
+    return switch (destinationUnits) {
+      case "kg" -> convert(stateGetter.getVolume(), "kg");
+      case "mt" -> convert(stateGetter.getVolume(), "mt");
+      case "unit", "units" -> convert(stateGetter.getPopulation(), destinationUnits);
+      case "tCO2e" -> convert(stateGetter.getGhgConsumption(), "tCO2e");
+      case "kwh" -> convert(stateGetter.getEnergyConsumption(), "kwh");
+      case "year", "years" -> convert(stateGetter.getYearsElapsed(), destinationUnits);
+      case "" -> new EngineNumber(BigDecimal.ONE, "");
+      default -> throw new IllegalArgumentException(
+          "Unsupported destination denominator units: " + destinationUnits);
+    };
   }
 
   /**

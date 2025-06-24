@@ -332,7 +332,7 @@ start simulations
 
   simulate "Recovery and Recycling" using "Recovery and Recycling" from years 2025 to 2035
 
-  simulate "Combined Policies" 
+  simulate "Combined Policies"
     using "Manufacturing Prohibition" 
     then "Equipment Import Ban" 
     then "Recovery and Recycling" 
