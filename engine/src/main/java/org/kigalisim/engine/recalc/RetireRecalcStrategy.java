@@ -14,7 +14,7 @@ import org.kigalisim.engine.Engine;
 import org.kigalisim.engine.number.EngineNumber;
 import org.kigalisim.engine.number.UnitConverter;
 import org.kigalisim.engine.state.OverridingConverterStateGetter;
-import org.kigalisim.engine.state.Scope;
+import org.kigalisim.engine.state.UseKey;
 import org.kigalisim.engine.support.ExceptionsGenerator;
 
 /**
@@ -22,14 +22,14 @@ import org.kigalisim.engine.support.ExceptionsGenerator;
  */
 public class RetireRecalcStrategy implements RecalcStrategy {
 
-  private final Scope scope;
+  private final UseKey scope;
 
   /**
    * Create a new RetireRecalcStrategy.
    *
    * @param scope The scope to use for calculations, null to use engine's current scope
    */
-  public RetireRecalcStrategy(Scope scope) {
+  public RetireRecalcStrategy(UseKey scope) {
     this.scope = scope;
   }
 
@@ -39,7 +39,7 @@ public class RetireRecalcStrategy implements RecalcStrategy {
     OverridingConverterStateGetter stateGetter =
         new OverridingConverterStateGetter(kit.getStateGetter());
     UnitConverter unitConverter = new UnitConverter(stateGetter);
-    Scope scopeEffective = scope != null ? scope : target.getScope();
+    UseKey scopeEffective = scope != null ? scope : target.getScope();
     String application = scopeEffective.getApplication();
     String substance = scopeEffective.getSubstance();
 
@@ -53,21 +53,19 @@ public class RetireRecalcStrategy implements RecalcStrategy {
 
     // Calculate change
     EngineNumber currentPriorRaw = streamKeeper.getStream(
-        application,
-        substance,
+        scopeEffective,
         "priorEquipment"
     );
     EngineNumber currentPrior = unitConverter.convert(currentPriorRaw, "units");
 
     EngineNumber currentEquipmentRaw = streamKeeper.getStream(
-        application,
-        substance,
+        scopeEffective,
         "equipment"
     );
     final EngineNumber currentEquipment = unitConverter.convert(currentEquipmentRaw, "units");
 
     stateGetter.setPopulation(currentPrior);
-    EngineNumber amountRaw = streamKeeper.getRetirementRate(application, substance);
+    EngineNumber amountRaw = streamKeeper.getRetirementRate(scopeEffective);
     EngineNumber amount = unitConverter.convert(amountRaw, "units");
     stateGetter.clearPopulation();
 
@@ -79,8 +77,8 @@ public class RetireRecalcStrategy implements RecalcStrategy {
     EngineNumber newEquipment = new EngineNumber(newEquipmentValue, "units");
 
     // Update equipment streams
-    streamKeeper.setStream(application, substance, "priorEquipment", newPrior);
-    streamKeeper.setStream(application, substance, "equipment", newEquipment);
+    streamKeeper.setStream(scopeEffective, "priorEquipment", newPrior);
+    streamKeeper.setStream(scopeEffective, "equipment", newEquipment);
 
     // Update GHG accounting
     EolEmissionsRecalcStrategy eolStrategy = new EolEmissionsRecalcStrategy(scopeEffective);

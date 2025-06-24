@@ -15,6 +15,7 @@ import java.util.List;
 import org.kigalisim.engine.number.EngineNumber;
 import org.kigalisim.engine.serializer.EngineResult;
 import org.kigalisim.engine.state.Scope;
+import org.kigalisim.engine.state.UseKey;
 import org.kigalisim.engine.state.YearMatcher;
 
 /**
@@ -131,14 +132,14 @@ public interface Engine {
    * @param value The value to set for the stream
    * @param yearMatcher The year matcher object to determine if setting the stream applies to the
    *     current year, or null. No-op if the year matcher is not satisfied.
-   * @param scope The scope in which the stream is being set. Uses default scope if not provided.
+   * @param key The scope in which the stream is being set. Uses default scope if not provided.
    * @param propagateChanges Specifies if changes should propagate to other components.
    *     Defaults to true.
    * @param unitsToRecord Optional units to record instead of using value.getUnits().
    *     Used when the original user-specified units differ from the converted units being set.
    */
-  void setStream(String name, EngineNumber value, YearMatcher yearMatcher, Scope scope,
-      boolean propagateChanges, String unitsToRecord);
+  void setStreamFor(String name, EngineNumber value, YearMatcher yearMatcher, UseKey key,
+                    boolean propagateChanges, String unitsToRecord);
 
   /**
    * Set the value of a stream with default parameters.
@@ -150,14 +151,14 @@ public interface Engine {
   void setStream(String name, EngineNumber value, YearMatcher yearMatcher);
 
   /**
-   * Get the stream value for a given application and substance scope.
+   * Get the stream value for a given application and substance key.
    *
    * @param name The name of the stream to retrieve
-   * @param scope The scope within which the stream exists. Uses default scope if not provided.
+   * @param useKey The key containing application and substance information
    * @param conversion The conversion specification for units, or null for no conversion
    * @return The value of the stream, possibly converted
    */
-  EngineNumber getStream(String name, Scope scope, String conversion);
+  EngineNumber getStream(String name, UseKey useKey, String conversion);
 
   /**
    * Get the stream value with default scope and no conversion.
@@ -170,21 +171,11 @@ public interface Engine {
   /**
    * Get the stream value without any conversion.
    *
-   * @param application The application name for which the stream should be returned
-   * @param substance The name of the substance for which the stream should be returned
+   * @param useKey The application and substance name for which the stream should be returned.
    * @param stream The name of the stream to get like recycle
    * @return The value of the given combination without conversion
    */
-  EngineNumber getStreamRaw(String application, String substance, String stream);
-
-  /**
-   * Get the GHG intensity associated with a substance.
-   *
-   * @param application The application name for which the intensity should be returned
-   * @param substance The substance name for which the intensity should be returned
-   * @return The GHG intensity value associated with the given combination
-   */
-  EngineNumber getGhgIntensity(String application, String substance);
+  EngineNumber getStreamFor(UseKey useKey, String stream);
 
   /**
    * Create a user-defined variable in the current scope.
@@ -224,12 +215,12 @@ public interface Engine {
   /**
    * Get the initial charge for a specific application and substance.
    *
-   * @param application The name of the application for which initial charge is requested
-   * @param substance The name of the substance for which initial charge is requested
+   * @param key Application and substance for which initial charge is requested
    * @param stream The stream in which the initial charge is requested and must be realized
    * @return The initial charge for the stream in the given application and substance
    */
-  EngineNumber getRawInitialChargeFor(String application, String substance, String stream);
+  EngineNumber getRawInitialChargeFor(UseKey key, String stream);
+
 
   /**
    * Set the initial charge for a stream.
@@ -253,41 +244,6 @@ public interface Engine {
    * @return The recharge intensity value
    */
   EngineNumber getRechargeIntensity();
-
-  /**
-   * Get the recharge intensity for a given application and substance.
-   *
-   * @param application The name of the application for which to get the recharge intensity
-   * @param substance The name of the substance for which to get the recharge intensity
-   * @return The recharge intensity value
-   */
-  EngineNumber getRechargeIntensityFor(String application, String substance);
-
-  /**
-   * Get the last specified units for the current application and substance.
-   *
-   * @param stream The stream name (kept for API consistency)
-   * @return The last specified units string
-   */
-  String getLastSpecifiedUnits(String stream);
-
-  /**
-   * Get the last specified units for a given application and substance.
-   *
-   * @param application The name of the application
-   * @param substance The name of the substance
-   * @param stream The stream name (kept for API consistency)
-   * @return The last specified units string
-   */
-  String getLastSpecifiedInUnits(String application, String substance, String stream);
-
-  /**
-   * Set the last specified units for the current application and substance.
-   *
-   * @param stream The stream name (kept for API consistency)
-   * @param units The units string to set
-   */
-  void setLastSpecifiedUnits(String stream, String units);
 
   /**
    * Set recharge parameters for the current application and substance.
@@ -332,6 +288,14 @@ public interface Engine {
   void equals(EngineNumber amount, YearMatcher yearMatcher);
 
   /**
+   * Get the GHG intensity associated with a substance.
+   *
+   * @param useKey The UseKey containing application and substance information
+   * @return The GHG intensity value associated with the given combination
+   */
+  EngineNumber getGhgIntensity(UseKey useKey);
+
+  /**
    * Retrieve the tCO2e intensity for the current application and substance.
    *
    * @return The GHG intensity value with volume normalized GHG
@@ -339,13 +303,13 @@ public interface Engine {
   EngineNumber getEqualsGhgIntensity();
 
   /**
-   * Retrieve the tCO2e intensity for the given application and substance.
+   * Retrieve the tCO2e intensity for the given UseKey.
    *
-   * @param application The name of the application for which to get a tCO2e intensity
-   * @param substance The name of the substance for which to get a tCO2e intensity
+   * @param useKey The UseKey containing application and substance information
    * @return The GHG intensity value with volume normalized GHG
    */
-  EngineNumber getEqualsGhgIntensityFor(String application, String substance);
+  EngineNumber getEqualsGhgIntensityFor(UseKey useKey);
+
 
   /**
    * Retrieve the energy intensity for the current application and substance.
@@ -355,23 +319,14 @@ public interface Engine {
   EngineNumber getEqualsEnergyIntensity();
 
   /**
-   * Retrieve the energy intensity for the given application and substance.
-   *
-   * @param application The application for which energy intensity is requested
-   * @param substance The substance for which energy intensity is requested
-   * @return The energy intensity value with volume normalized energy
-   */
-  EngineNumber getEqualsEnergyIntensityFor(String application, String substance);
-
-  /**
    * Change a stream value by a delta amount.
    *
    * @param stream The stream identifier to modify
    * @param amount The amount to change the stream by
    * @param yearMatcher Matcher to determine if the change applies to current year
-   * @param scope The scope in which to make the change
+   * @param useKey The key containing application and substance information
    */
-  void changeStream(String stream, EngineNumber amount, YearMatcher yearMatcher, Scope scope);
+  void changeStream(String stream, EngineNumber amount, YearMatcher yearMatcher, UseKey useKey);
 
   /**
    * Change a stream value by a delta amount with default scope.

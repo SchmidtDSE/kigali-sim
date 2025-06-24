@@ -36,7 +36,6 @@ import org.kigalisim.lang.operation.FloorOperation;
 import org.kigalisim.lang.operation.GetStreamOperation;
 import org.kigalisim.lang.operation.GetVariableOperation;
 import org.kigalisim.lang.operation.InitialChargeOperation;
-import org.kigalisim.lang.operation.LimitOperation;
 import org.kigalisim.lang.operation.LogicalOperation;
 import org.kigalisim.lang.operation.MultiplicationOperation;
 import org.kigalisim.lang.operation.Operation;

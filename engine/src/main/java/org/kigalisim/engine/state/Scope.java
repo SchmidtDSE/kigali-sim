@@ -21,12 +21,13 @@ import org.kigalisim.engine.number.EngineNumber;
  *
  * <p>Manages scope hierarchy and variable access across different context levels in the engine.</p>
  */
-public class Scope {
+public class Scope implements UseKey {
 
   private final Optional<String> stanza;
   private final Optional<String> application;
   private final Optional<String> substance;
   private final VariableManager variableManager;
+  private volatile Optional<String> key;
 
   /**
    * Create a new scope.
@@ -42,6 +43,7 @@ public class Scope {
     this.stanza = Optional.ofNullable(stanza);
     this.application = Optional.ofNullable(application);
     this.substance = Optional.ofNullable(substance);
+    this.key = Optional.empty();
 
     if (substance != null && application == null) {
       throw new IllegalArgumentException("Cannot specify substance without application.");
@@ -210,6 +212,32 @@ public class Scope {
    */
   public EngineNumber getVariable(String name) {
     return variableManager.getVariable(name);
+  }
+
+  /**
+   * Get a unique key for this scope based on application and substance.
+   *
+   * <p>The key is lazily initialized and cached. It consists of the application
+   * and substance names separated by a tab character, with "-" used for null values.</p>
+   *
+   * @return The unique key for this scope
+   */
+  public String getKey() {
+    Optional<String> localKey = key;
+    if (localKey.isEmpty()) {
+      synchronized (this) {
+        localKey = key;
+        if (localKey.isEmpty()) {
+          StringBuilder keyBuilder = new StringBuilder();
+          keyBuilder.append(application.orElse("-"));
+          keyBuilder.append("\t");
+          keyBuilder.append(substance.orElse("-"));
+          String computedKey = keyBuilder.toString();
+          key = localKey = Optional.of(computedKey);
+        }
+      }
+    }
+    return localKey.get();
   }
 
   /**

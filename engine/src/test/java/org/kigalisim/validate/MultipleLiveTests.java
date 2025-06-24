@@ -38,7 +38,7 @@ public class MultipleLiveTests {
     Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName);
 
     List<EngineResult> resultsList = results.collect(Collectors.toList());
-    
+
     // Check substance "a"
     EngineResult resultA = LiveTestsUtil.getResult(resultsList.stream(), 1, "test", "a");
     assertNotNull(resultA, "Should have result for test/a in year 1");
@@ -54,7 +54,7 @@ public class MultipleLiveTests {
         "Manufacture for substance a should be 100000 kg");
     assertEquals("kg", resultA.getManufacture().getUnits(),
         "Manufacture units for substance a should be kg");
-    
+
     // Check substance "b"
     EngineResult resultB = LiveTestsUtil.getResult(resultsList.stream(), 1, "test", "b");
     assertNotNull(resultB, "Should have result for test/b in year 1");
@@ -86,7 +86,7 @@ public class MultipleLiveTests {
     String bauScenarioName = "bau";
     Stream<EngineResult> bauResults = KigaliSimFacade.runScenario(program, bauScenarioName);
     List<EngineResult> bauResultsList = bauResults.collect(Collectors.toList());
-    
+
     // Check BAU scenario for appA/subA
     EngineResult bauResultA = LiveTestsUtil.getResult(bauResultsList.stream(), 1, "appA", "subA");
     assertNotNull(bauResultA, "Should have result for appA/subA in year 1 for BAU scenario");
@@ -96,7 +96,7 @@ public class MultipleLiveTests {
         "Manufacture for appA/subA in BAU should be 100000 kg");
     assertEquals("kg", bauResultA.getManufacture().getUnits(),
         "Manufacture units for appA/subA in BAU should be kg");
-    
+
     // Check BAU scenario for appB/subB
     EngineResult bauResultB = LiveTestsUtil.getResult(bauResultsList.stream(), 1, "appB", "subB");
     assertNotNull(bauResultB, "Should have result for appB/subB in year 1 for BAU scenario");
@@ -111,7 +111,7 @@ public class MultipleLiveTests {
     String policyScenarioName = "sim";
     Stream<EngineResult> policyResults = KigaliSimFacade.runScenario(program, policyScenarioName);
     List<EngineResult> policyResultsList = policyResults.collect(Collectors.toList());
-    
+
     // Check policy scenario for appA/subA
     EngineResult policyResultA = LiveTestsUtil.getResult(policyResultsList.stream(), 1, "appA", "subA");
     assertNotNull(policyResultA, "Should have result for appA/subA in year 1 for policy scenario");
@@ -121,7 +121,7 @@ public class MultipleLiveTests {
         "Manufacture for appA/subA in policy scenario should be 50000 kg (50% cap)");
     assertEquals("kg", policyResultA.getManufacture().getUnits(),
         "Manufacture units for appA/subA in policy scenario should be kg");
-    
+
     // Check policy scenario for appB/subB
     EngineResult policyResultB = LiveTestsUtil.getResult(policyResultsList.stream(), 1, "appB", "subB");
     assertNotNull(policyResultB, "Should have result for appB/subB in year 1 for policy scenario");
@@ -147,7 +147,7 @@ public class MultipleLiveTests {
     String bauScenarioName = "bau";
     Stream<EngineResult> bauResults = KigaliSimFacade.runScenario(program, bauScenarioName);
     List<EngineResult> bauResultsList = bauResults.collect(Collectors.toList());
-    
+
     // Check BAU scenario for appA/subA
     EngineResult bauResultA = LiveTestsUtil.getResult(bauResultsList.stream(), 1, "appA", "subA");
     assertNotNull(bauResultA, "Should have result for appA/subA in year 1 for BAU scenario");
@@ -157,13 +157,13 @@ public class MultipleLiveTests {
         "Manufacture for appA/subA in BAU should be 90000 kg");
     assertEquals("kg", bauResultA.getManufacture().getUnits(),
         "Manufacture units for appA/subA in BAU should be kg");
-        
+
     // Check import value for appA/subA in BAU - should be 10 mt = 10000 kg
     assertEquals(10000.0, bauResultA.getImport().getValue().doubleValue(), 0.0001,
         "Import for appA/subA in BAU should be 10000 kg");
     assertEquals("kg", bauResultA.getImport().getUnits(),
         "Import units for appA/subA in BAU should be kg");
-    
+
     // Check BAU scenario for appB/subB
     EngineResult bauResultB = LiveTestsUtil.getResult(bauResultsList.stream(), 1, "appB", "subB");
     assertNotNull(bauResultB, "Should have result for appB/subB in year 1 for BAU scenario");
@@ -173,7 +173,7 @@ public class MultipleLiveTests {
         "Manufacture for appB/subB in BAU should be 90000 kg");
     assertEquals("kg", bauResultB.getManufacture().getUnits(),
         "Manufacture units for appB/subB in BAU should be kg");
-        
+
     // Check import value for appB/subB in BAU - should be 10 mt = 10000 kg
     assertEquals(10000.0, bauResultB.getImport().getValue().doubleValue(), 0.0001,
         "Import for appB/subB in BAU should be 10000 kg");
@@ -184,7 +184,7 @@ public class MultipleLiveTests {
     String policyScenarioName = "sim";
     Stream<EngineResult> policyResults = KigaliSimFacade.runScenario(program, policyScenarioName);
     List<EngineResult> policyResultsList = policyResults.collect(Collectors.toList());
-    
+
     // Check policy scenario for appA/subA
     EngineResult policyResultA = LiveTestsUtil.getResult(policyResultsList.stream(), 1, "appA", "subA");
     assertNotNull(policyResultA, "Should have result for appA/subA in year 1 for policy scenario");
@@ -194,13 +194,13 @@ public class MultipleLiveTests {
         "Manufacture for appA/subA in policy scenario should be 45000 kg (50% cap)");
     assertEquals("kg", policyResultA.getManufacture().getUnits(),
         "Manufacture units for appA/subA in policy scenario should be kg");
-        
+
     // Check import value for appA/subA in policy scenario - should remain unchanged at 10 mt = 10000 kg
     assertEquals(10000.0, policyResultA.getImport().getValue().doubleValue(), 0.0001,
         "Import for appA/subA in policy scenario should remain at 10000 kg (unchanged)");
     assertEquals("kg", policyResultA.getImport().getUnits(),
         "Import units for appA/subA in policy scenario should be kg");
-    
+
     // Check policy scenario for appB/subB
     EngineResult policyResultB = LiveTestsUtil.getResult(policyResultsList.stream(), 1, "appB", "subB");
     assertNotNull(policyResultB, "Should have result for appB/subB in year 1 for policy scenario");
@@ -210,7 +210,7 @@ public class MultipleLiveTests {
         "Manufacture for appB/subB in policy scenario should be 45000 kg (50% cap)");
     assertEquals("kg", policyResultB.getManufacture().getUnits(),
         "Manufacture units for appB/subB in policy scenario should be kg");
-        
+
     // Check import value for appB/subB in policy scenario - should remain unchanged at 10 mt = 10000 kg
     assertEquals(10000.0, policyResultB.getImport().getValue().doubleValue(), 0.0001,
         "Import for appB/subB in policy scenario should remain at 10000 kg (unchanged)");

@@ -97,7 +97,7 @@ public class ConsumptionCalculator {
     }
 
     // Save
-    engine.setStream(streamName, consumptionAllowed, null, scopeEffective, false, null);
+    engine.setStreamFor(streamName, consumptionAllowed, null, scopeEffective, false, null);
   }
 
   /**

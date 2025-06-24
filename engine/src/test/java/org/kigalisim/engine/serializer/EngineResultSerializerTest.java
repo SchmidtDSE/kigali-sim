@@ -8,6 +8,7 @@ package org.kigalisim.engine.serializer;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -18,6 +19,7 @@ import org.junit.jupiter.api.Test;
 import org.kigalisim.engine.Engine;
 import org.kigalisim.engine.number.EngineNumber;
 import org.kigalisim.engine.state.ConverterStateGetter;
+import org.kigalisim.engine.state.UseKey;
 
 /**
  * Tests for the EngineResultSerializer class.
@@ -268,36 +270,63 @@ public class EngineResultSerializerTest {
     EngineNumber priorEquipment = new EngineNumber(1000, "units");
     EngineNumber eolEmissions = new EngineNumber(100, "tCO2e");
 
-    // Configure mock responses for getStreamRaw
-    when(engine.getStreamRaw("commercialRefrigeration", "HFC-134a", "manufacture"))
-        .thenReturn(manufacture);
-    when(engine.getStreamRaw("commercialRefrigeration", "HFC-134a", "import"))
-        .thenReturn(importMt);
-    when(engine.getStreamRaw("commercialRefrigeration", "HFC-134a", "recycle"))
-        .thenReturn(recycling);
-    when(engine.getStreamRaw("commercialRefrigeration", "HFC-134a", "energy"))
-        .thenReturn(energyIntensity);
-    when(engine.getStreamRaw("commercialRefrigeration", "HFC-134a", "equipment"))
-        .thenReturn(priorEquipment);
-    when(engine.getStreamRaw("commercialRefrigeration", "HFC-134a", "newEquipment"))
-        .thenReturn(priorEquipment);
-    when(engine.getStreamRaw("commercialRefrigeration", "HFC-134a", "rechargeEmissions"))
-        .thenReturn(recharge);
-    when(engine.getStreamRaw("commercialRefrigeration", "HFC-134a", "eolEmissions"))
-        .thenReturn(eolEmissions);
+
+    // Configure mock responses for getStreamRaw with UseKey
+    when(engine.getStreamFor(any(UseKey.class), any(String.class))).thenAnswer(invocation -> {
+      UseKey useKey = invocation.getArgument(0);
+      String stream = invocation.getArgument(1);
+
+      if ("commercialRefrigeration".equals(useKey.getApplication())
+          && "HFC-134a".equals(useKey.getSubstance())) {
+        switch (stream) {
+          case "manufacture": return manufacture;
+          case "import": return importMt;
+          case "recycle": return recycling;
+          case "energy": return energyIntensity;
+          case "equipment": return priorEquipment;
+          case "newEquipment": return priorEquipment;
+          case "rechargeEmissions": return recharge;
+          case "eolEmissions": return eolEmissions;
+          default: return null;
+        }
+      }
+      return null;
+    });
 
     // Configure GHG intensity methods
-    when(engine.getGhgIntensity("commercialRefrigeration", "HFC-134a"))
-        .thenReturn(valueToConsumption);
-    when(engine.getEqualsGhgIntensityFor("commercialRefrigeration", "HFC-134a"))
-        .thenReturn(valueToConsumption);
+    when(engine.getGhgIntensity(any(UseKey.class))).thenAnswer(invocation -> {
+      UseKey useKey = invocation.getArgument(0);
+      if ("commercialRefrigeration".equals(useKey.getApplication())
+          && "HFC-134a".equals(useKey.getSubstance())) {
+        return valueToConsumption;
+      }
+      return null;
+    });
+    when(engine.getEqualsGhgIntensityFor(any(UseKey.class))).thenAnswer(invocation -> {
+      UseKey useKey = invocation.getArgument(0);
+      if ("commercialRefrigeration".equals(useKey.getApplication())
+          && "HFC-134a".equals(useKey.getSubstance())) {
+        return valueToConsumption;
+      }
+      return null;
+    });
     when(engine.getEqualsGhgIntensity()).thenReturn(valueToConsumption);
 
     // Configure initial charge methods
-    when(engine.getRawInitialChargeFor("commercialRefrigeration", "HFC-134a", "import"))
-        .thenReturn(initialChargeImport);
-    when(engine.getRawInitialChargeFor("commercialRefrigeration", "HFC-134a", "manufacture"))
-        .thenReturn(initialChargeDomestic);
+    when(engine.getRawInitialChargeFor(any(UseKey.class), any(String.class))).thenAnswer(invocation -> {
+      UseKey useKey = invocation.getArgument(0);
+      String stream = invocation.getArgument(1);
+
+      if ("commercialRefrigeration".equals(useKey.getApplication())
+          && "HFC-134a".equals(useKey.getSubstance())) {
+        switch (stream) {
+          case "import": return initialChargeImport;
+          case "manufacture": return initialChargeDomestic;
+          default: return null;
+        }
+      }
+      return null;
+    });
     when(engine.getInitialCharge("sales")).thenReturn(initialChargeImport);
 
     // Configure stream methods that ConverterStateGetter might call
@@ -335,36 +364,63 @@ public class EngineResultSerializerTest {
     EngineNumber priorEquipment = new EngineNumber(1000, "units");
     EngineNumber eolEmissions = new EngineNumber(100, "tCO2e");
 
-    // Configure all the mock responses that are needed for complete functionality
-    when(engine.getStreamRaw("commercialRefrigeration", "HFC-134a", "manufacture"))
-        .thenReturn(manufacture);
-    when(engine.getStreamRaw("commercialRefrigeration", "HFC-134a", "import"))
-        .thenReturn(importMt);
-    when(engine.getStreamRaw("commercialRefrigeration", "HFC-134a", "recycle"))
-        .thenReturn(recycling);
-    when(engine.getStreamRaw("commercialRefrigeration", "HFC-134a", "energy"))
-        .thenReturn(energyIntensity);
-    when(engine.getStreamRaw("commercialRefrigeration", "HFC-134a", "equipment"))
-        .thenReturn(priorEquipment);
-    when(engine.getStreamRaw("commercialRefrigeration", "HFC-134a", "newEquipment"))
-        .thenReturn(priorEquipment);
-    when(engine.getStreamRaw("commercialRefrigeration", "HFC-134a", "rechargeEmissions"))
-        .thenReturn(recharge);
-    when(engine.getStreamRaw("commercialRefrigeration", "HFC-134a", "eolEmissions"))
-        .thenReturn(eolEmissions);
+
+    // Configure mock responses for getStreamRaw with UseKey
+    when(engine.getStreamFor(any(UseKey.class), any(String.class))).thenAnswer(invocation -> {
+      UseKey useKey = invocation.getArgument(0);
+      String stream = invocation.getArgument(1);
+
+      if ("commercialRefrigeration".equals(useKey.getApplication())
+          && "HFC-134a".equals(useKey.getSubstance())) {
+        switch (stream) {
+          case "manufacture": return manufacture;
+          case "import": return importMt;
+          case "recycle": return recycling;
+          case "energy": return energyIntensity;
+          case "equipment": return priorEquipment;
+          case "newEquipment": return priorEquipment;
+          case "rechargeEmissions": return recharge;
+          case "eolEmissions": return eolEmissions;
+          default: return null;
+        }
+      }
+      return null;
+    });
 
     // Configure GHG intensity methods
-    when(engine.getGhgIntensity("commercialRefrigeration", "HFC-134a"))
-        .thenReturn(valueToConsumption);
-    when(engine.getEqualsGhgIntensityFor("commercialRefrigeration", "HFC-134a"))
-        .thenReturn(valueToConsumption);
+    when(engine.getGhgIntensity(any(UseKey.class))).thenAnswer(invocation -> {
+      UseKey useKey = invocation.getArgument(0);
+      if ("commercialRefrigeration".equals(useKey.getApplication())
+          && "HFC-134a".equals(useKey.getSubstance())) {
+        return valueToConsumption;
+      }
+      return null;
+    });
+    when(engine.getEqualsGhgIntensityFor(any(UseKey.class))).thenAnswer(invocation -> {
+      UseKey useKey = invocation.getArgument(0);
+      if ("commercialRefrigeration".equals(useKey.getApplication())
+          && "HFC-134a".equals(useKey.getSubstance())) {
+        return valueToConsumption;
+      }
+      return null;
+    });
     when(engine.getEqualsGhgIntensity()).thenReturn(valueToConsumption);
 
     // Configure initial charge methods
-    when(engine.getRawInitialChargeFor("commercialRefrigeration", "HFC-134a", "import"))
-        .thenReturn(initialChargeImport);
-    when(engine.getRawInitialChargeFor("commercialRefrigeration", "HFC-134a", "manufacture"))
-        .thenReturn(initialChargeDomestic);
+    when(engine.getRawInitialChargeFor(any(UseKey.class), any(String.class))).thenAnswer(invocation -> {
+      UseKey useKey = invocation.getArgument(0);
+      String stream = invocation.getArgument(1);
+
+      if ("commercialRefrigeration".equals(useKey.getApplication())
+          && "HFC-134a".equals(useKey.getSubstance())) {
+        switch (stream) {
+          case "import": return initialChargeImport;
+          case "manufacture": return initialChargeDomestic;
+          default: return null;
+        }
+      }
+      return null;
+    });
     when(engine.getInitialCharge("sales")).thenReturn(initialChargeImport);
 
     // Configure stream methods that ConverterStateGetter might call

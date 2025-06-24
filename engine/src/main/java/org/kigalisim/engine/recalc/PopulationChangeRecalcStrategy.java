@@ -15,7 +15,7 @@ import org.kigalisim.engine.number.EngineNumber;
 import org.kigalisim.engine.number.UnitConverter;
 import org.kigalisim.engine.state.ConverterStateGetter;
 import org.kigalisim.engine.state.OverridingConverterStateGetter;
-import org.kigalisim.engine.state.Scope;
+import org.kigalisim.engine.state.UseKey;
 import org.kigalisim.engine.support.DivisionHelper;
 import org.kigalisim.engine.support.ExceptionsGenerator;
 import org.kigalisim.engine.support.RechargeVolumeCalculator;
@@ -25,7 +25,7 @@ import org.kigalisim.engine.support.RechargeVolumeCalculator;
  */
 public class PopulationChangeRecalcStrategy implements RecalcStrategy {
 
-  private final Scope scope;
+  private final UseKey scope;
   private final Boolean subtractRecharge;
 
   /**
@@ -34,7 +34,7 @@ public class PopulationChangeRecalcStrategy implements RecalcStrategy {
    * @param scope The scope to use for calculations, null to use engine's current scope
    * @param subtractRecharge Whether to subtract recharge, null to default to true
    */
-  public PopulationChangeRecalcStrategy(Scope scope, Boolean subtractRecharge) {
+  public PopulationChangeRecalcStrategy(UseKey scope, Boolean subtractRecharge) {
     this.scope = scope;
     this.subtractRecharge = subtractRecharge;
   }
@@ -45,7 +45,7 @@ public class PopulationChangeRecalcStrategy implements RecalcStrategy {
     OverridingConverterStateGetter stateGetter =
         new OverridingConverterStateGetter(baseStateGetter);
     UnitConverter unitConverter = new UnitConverter(stateGetter);
-    Scope scopeEffective = scope != null ? scope : target.getScope();
+    UseKey scopeEffective = scope != null ? scope : target.getScope();
     boolean subtractRechargeEffective = subtractRecharge != null ? subtractRecharge : true;
     String application = scopeEffective.getApplication();
     String substance = scopeEffective.getSubstance();
@@ -97,8 +97,8 @@ public class PopulationChangeRecalcStrategy implements RecalcStrategy {
     EngineNumber newUnitsEffective = new EngineNumber(newUnitsAllowed, "units");
 
     // Save
-    target.setStream("equipment", newUnitsEffective, null, scopeEffective, false, null);
-    target.setStream("newEquipment", newUnitsMarginal, null, scopeEffective, false, null);
+    target.setStreamFor("equipment", newUnitsEffective, null, scopeEffective, false, null);
+    target.setStreamFor("newEquipment", newUnitsMarginal, null, scopeEffective, false, null);
 
     // Recalc recharge emissions - need to create a new operation
     RechargeEmissionsRecalcStrategy rechargeStrategy = new RechargeEmissionsRecalcStrategy(

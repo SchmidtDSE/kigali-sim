@@ -13,8 +13,8 @@ import org.kigalisim.engine.number.EngineNumber;
 import org.kigalisim.engine.number.UnitConverter;
 import org.kigalisim.engine.state.ConverterStateGetter;
 import org.kigalisim.engine.state.OverridingConverterStateGetter;
-import org.kigalisim.engine.state.Scope;
 import org.kigalisim.engine.state.StreamKeeper;
+import org.kigalisim.engine.state.UseKey;
 
 /**
  * Calculator for recharge volume operations.
@@ -30,8 +30,8 @@ public class RechargeVolumeCalculator {
    * @param engine The engine for getting stream values
    * @return The recharge volume in kg
    */
-  public static EngineNumber calculateRechargeVolume(Scope scope, ConverterStateGetter stateGetter,
-      StreamKeeper streamKeeper, org.kigalisim.engine.Engine engine) {
+  public static EngineNumber calculateRechargeVolume(UseKey scope, ConverterStateGetter stateGetter,
+                                                     StreamKeeper streamKeeper, org.kigalisim.engine.Engine engine) {
     OverridingConverterStateGetter overridingStateGetter =
         new OverridingConverterStateGetter(stateGetter);
     UnitConverter unitConverter = new UnitConverter(overridingStateGetter);
@@ -48,7 +48,7 @@ public class RechargeVolumeCalculator {
 
     // Get recharge population
     overridingStateGetter.setPopulation(engine.getStream("priorEquipment"));
-    EngineNumber rechargePopRaw = streamKeeper.getRechargePopulation(application, substance);
+    EngineNumber rechargePopRaw = streamKeeper.getRechargePopulation(scope);
     EngineNumber rechargePop = unitConverter.convert(rechargePopRaw, "units");
     overridingStateGetter.clearPopulation();
 
@@ -56,7 +56,7 @@ public class RechargeVolumeCalculator {
     overridingStateGetter.setPopulation(rechargePop);
 
     // Get recharge amount
-    EngineNumber rechargeIntensityRaw = streamKeeper.getRechargeIntensity(application, substance);
+    EngineNumber rechargeIntensityRaw = streamKeeper.getRechargeIntensity(scope);
     EngineNumber rechargeVolume = unitConverter.convert(rechargeIntensityRaw, "kg");
 
     // Return to prior population

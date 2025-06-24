@@ -13,8 +13,8 @@ import org.kigalisim.engine.Engine;
 import org.kigalisim.engine.number.EngineNumber;
 import org.kigalisim.engine.number.UnitConverter;
 import org.kigalisim.engine.state.OverridingConverterStateGetter;
-import org.kigalisim.engine.state.Scope;
 import org.kigalisim.engine.state.StreamKeeper;
+import org.kigalisim.engine.state.UseKey;
 import org.kigalisim.engine.support.ExceptionsGenerator;
 
 /**
@@ -22,14 +22,14 @@ import org.kigalisim.engine.support.ExceptionsGenerator;
  */
 public class EolEmissionsRecalcStrategy implements RecalcStrategy {
 
-  private final Scope scope;
+  private final UseKey scope;
 
   /**
    * Create a new EolEmissionsRecalcStrategy.
    *
    * @param scope The scope to use for calculations, null to use engine's current scope
    */
-  public EolEmissionsRecalcStrategy(Scope scope) {
+  public EolEmissionsRecalcStrategy(UseKey scope) {
     this.scope = scope;
   }
 
@@ -39,27 +39,25 @@ public class EolEmissionsRecalcStrategy implements RecalcStrategy {
     OverridingConverterStateGetter stateGetter =
         new OverridingConverterStateGetter(kit.getStateGetter());
     UnitConverter unitConverter = new UnitConverter(stateGetter);
-    Scope scopeEffective = scope != null ? scope : target.getScope();
-    String application = scopeEffective.getApplication();
-    String substance = scopeEffective.getSubstance();
+    UseKey scopeEffective = scope != null ? scope : target.getScope();
 
     // Check allowed
-    if (application == null || substance == null) {
+    if (scopeEffective.getApplication() == null || scopeEffective.getSubstance() == null) {
       ExceptionsGenerator.raiseNoAppOrSubstance("recalculating EOL emissions change", "");
     }
 
     // Calculate change
-    EngineNumber currentPriorRaw = target.getStreamRaw(application, substance, "priorEquipment");
+    EngineNumber currentPriorRaw = target.getStreamFor(scopeEffective, "priorEquipment");
     EngineNumber currentPrior = unitConverter.convert(currentPriorRaw, "units");
 
     stateGetter.setPopulation(currentPrior);
     StreamKeeper streamKeeper = kit.getStreamKeeper();
-    EngineNumber amountRaw = streamKeeper.getRetirementRate(application, substance);
+    EngineNumber amountRaw = streamKeeper.getRetirementRate(scopeEffective);
     EngineNumber amount = unitConverter.convert(amountRaw, "units");
     stateGetter.clearPopulation();
 
     // Update GHG accounting
     EngineNumber eolGhg = unitConverter.convert(amount, "tCO2e");
-    streamKeeper.setStream(application, substance, "eolEmissions", eolGhg);
+    streamKeeper.setStream(scopeEffective, "eolEmissions", eolGhg);
   }
 }

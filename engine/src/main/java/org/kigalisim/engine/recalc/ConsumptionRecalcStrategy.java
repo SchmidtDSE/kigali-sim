@@ -11,8 +11,8 @@ package org.kigalisim.engine.recalc;
 
 import org.kigalisim.engine.Engine;
 import org.kigalisim.engine.number.EngineNumber;
-import org.kigalisim.engine.state.Scope;
 import org.kigalisim.engine.state.StreamKeeper;
+import org.kigalisim.engine.state.UseKey;
 import org.kigalisim.engine.support.ConsumptionCalculator;
 import org.kigalisim.engine.support.ExceptionsGenerator;
 
@@ -21,20 +21,20 @@ import org.kigalisim.engine.support.ExceptionsGenerator;
  */
 public class ConsumptionRecalcStrategy implements RecalcStrategy {
 
-  private final Scope scope;
+  private final UseKey scope;
 
   /**
    * Create a new ConsumptionRecalcStrategy.
    *
    * @param scope The scope to use for calculations, null to use engine's current scope
    */
-  public ConsumptionRecalcStrategy(Scope scope) {
+  public ConsumptionRecalcStrategy(UseKey scope) {
     this.scope = scope;
   }
 
   @Override
   public void execute(Engine target, RecalcKit kit) {
-    Scope scopeEffective = scope != null ? scope : target.getScope();
+    UseKey scopeEffective = scope != null ? scope : target.getScope();
 
     String application = scopeEffective.getApplication();
     String substance = scopeEffective.getSubstance();
@@ -50,14 +50,14 @@ public class ConsumptionRecalcStrategy implements RecalcStrategy {
     StreamKeeper streamKeeper = kit.getStreamKeeper();
 
     // Get GHG intensity and calculate consumption
-    EngineNumber ghgIntensity = streamKeeper.getGhgIntensity(application, substance);
+    EngineNumber ghgIntensity = streamKeeper.getGhgIntensity(scopeEffective);
     calculator.setConsumptionRaw(ghgIntensity);
     calculator.setStreamName("consumption");
     calculator.execute(target);
 
     // Get energy intensity and calculate energy
     calculator = new ConsumptionCalculator();
-    EngineNumber energyIntensity = streamKeeper.getEnergyIntensity(application, substance);
+    EngineNumber energyIntensity = streamKeeper.getEnergyIntensity(scopeEffective);
     calculator.setConsumptionRaw(energyIntensity);
     calculator.setStreamName("energy");
     calculator.execute(target);
