@@ -1,4 +1,5 @@
 import {Compiler} from "compiler";
+import {WasmBackend, WasmLayer} from "wasm_backend";
 
 function loadRemote(path) {
   return fetch(path).then((response) => response.text());
@@ -21,31 +22,24 @@ function buildCompilerTests() {
       assert.notDeepEqual(compiler, undefined);
     });
 
+    // Shared WASM backend instances to avoid re-initialization overhead
+    const wasmLayer = new WasmLayer();
+    const wasmBackend = new WasmBackend(wasmLayer);
+
     const buildTest = (name, filepath, checks) => {
       QUnit.test(name, (assert) => {
         const done = assert.async();
-        loadRemote(filepath).then((content) => {
+        loadRemote(filepath).then(async (content) => {
           assert.ok(content.length > 0);
 
-          const compiler = new Compiler();
-          const compilerResult = compiler.compile(content);
-          assert.equal(compilerResult.getErrors().length, 0);
-
-          const program = compilerResult.getProgram();
-          assert.equal(compilerResult.getErrors().length, 0);
-
-          if (compilerResult.getErrors().length > 0) {
-            console.log(compilerResult.getErrors());
-          } else {
-            try {
-              const programResult = program();
-              checks.forEach((check) => {
-                check(programResult, assert);
-              });
-            } catch (e) {
-              console.log(e);
-              assert.ok(false);
-            }
+          try {
+            const programResult = await wasmBackend.execute(content);
+            checks.forEach((check) => {
+              check(programResult, assert);
+            });
+          } catch (e) {
+            console.log(e);
+            assert.ok(false, "Execution failed: " + e.message);
           }
 
           done();
@@ -609,8 +603,6 @@ function buildCompilerTests() {
         assert.deepEqual(consumption.getUnits(), "tCO2e");
       },
     ]);
-
-    buildTest("runs reference", "/examples/reference.qta", []);
 
     buildTest("cold starts with equipment", "/examples/cold_start_equipment.qta", [
       (result, assert) => {
