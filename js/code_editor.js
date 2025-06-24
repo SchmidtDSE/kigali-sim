@@ -4,6 +4,9 @@
  * @license BSD
  */
 
+const AUTORUN_WAIT = 1000;
+
+
 class CodeEditorPresenter {
   /**
    * Creates a new CodeEditorPresenter instance
@@ -115,7 +118,7 @@ class CodeEditorPresenter {
       self._timeout = setTimeout(() => self._onChange(), 500);
 
       if (self._onAutoRefresh !== null) {
-        self._autoRefreshTimeout = setTimeout(() => self._onAutoRefresh(), 500);
+        self._autoRefreshTimeout = setTimeout(() => self._onAutoRefresh(), AUTORUN_WAIT);
       }
     });
 
