@@ -97,47 +97,56 @@ class ReportDataParser {
    * @returns {EngineResult} The created engine result.
    */
   static _createEngineResult(row) {
-    // Helper function to create EngineNumber from row data
-    const getEngineNumber = (valueKey, unitsKey, defaultUnits = "units") => {
-      const value = parseFloat(row[valueKey] || "0");
-      const units = row[unitsKey] || defaultUnits;
-      return new EngineNumber(value, units);
+    // Helper function to parse Java EngineNumber.toString() format: "value units"
+    const parseEngineNumber = (valueStr, defaultUnits = "units") => {
+      if (!valueStr || valueStr.trim() === "") {
+        return new EngineNumber(0, defaultUnits);
+      }
+      
+      const parts = valueStr.trim().split(/\s+/);
+      if (parts.length >= 2) {
+        // Format: "value units"
+        const value = parseFloat(parts[0]) || 0;
+        const units = parts.slice(1).join(" "); // Handle multi-word units
+        return new EngineNumber(value, units);
+      } else {
+        // Only value, use default units
+        const value = parseFloat(parts[0]) || 0;
+        return new EngineNumber(value, defaultUnits);
+      }
     };
 
+    // Extract fields matching Java CSV format
     const application = row["application"] || "";
     const substance = row["substance"] || "";
     const year = parseInt(row["year"] || "0");
-    const scenarioName = row["scenarioName"] || "";
-    const trialNumber = parseInt(row["trialNumber"] || "0");
+    const scenarioName = row["scenario"] || ""; // Java uses "scenario", not "scenarioName"
+    const trialNumber = parseInt(row["trial"] || "0"); // Java uses "trial", not "trialNumber"
 
-    // Create EngineNumber objects for all the numeric fields
-    const manufactureValue = getEngineNumber("manufacture", "manufactureUnits", "kg");
-    const importValue = getEngineNumber("import", "importUnits", "kg");
-    const recycleValue = getEngineNumber("recycle", "recycleUnits", "kg");
-    const domesticConsumptionValue = getEngineNumber(
-      "domesticConsumption",
-      "domesticConsumptionUnits",
-      "tCO2e",
-    );
-    const importConsumptionValue = getEngineNumber(
-      "importConsumption",
-      "importConsumptionUnits",
-      "tCO2e",
-    );
-    const recycleConsumptionValue = getEngineNumber(
-      "recycleConsumption",
-      "recycleConsumptionUnits",
-      "tCO2e",
-    );
-    const populationValue = getEngineNumber("population", "populationUnits", "units");
-    const populationNew = getEngineNumber("populationNew", "populationNewUnits", "units");
-    const rechargeEmissions = getEngineNumber(
-      "rechargeEmissions",
-      "rechargeEmissionsUnits",
-      "tCO2e",
-    );
-    const eolEmissions = getEngineNumber("eolEmissions", "eolEmissionsUnits", "tCO2e");
-    const energyConsumption = getEngineNumber("energyConsumption", "energyConsumptionUnits", "kwh");
+    // Parse EngineNumber fields from Java's "value units" format
+    const manufactureValue = parseEngineNumber(row["manufacture"], "kg");
+    const importValue = parseEngineNumber(row["import"], "kg");
+    const recycleValue = parseEngineNumber(row["recycle"], "kg");
+    const domesticConsumptionValue = parseEngineNumber(row["domesticConsumption"], "tCO2e");
+    const importConsumptionValue = parseEngineNumber(row["importConsumption"], "tCO2e");
+    const recycleConsumptionValue = parseEngineNumber(row["recycleConsumption"], "tCO2e");
+    const populationValue = parseEngineNumber(row["population"], "units");
+    const populationNew = parseEngineNumber(row["populationNew"], "units");
+    const rechargeEmissions = parseEngineNumber(row["rechargeEmissions"], "tCO2e");
+    const eolEmissions = parseEngineNumber(row["eolEmissions"], "tCO2e");
+    const energyConsumption = parseEngineNumber(row["energyConsumption"], "kwh");
+
+    // Handle importSupplement fields from Java CSV
+    const initialChargeValue = parseEngineNumber(row["initialChargeValue"], "kg");
+    const initialChargeConsumption = parseEngineNumber(row["initialChargeConsumption"], "tCO2e");
+    const importNewPopulation = parseEngineNumber(row["importNewPopulation"], "units");
+
+    // Create importSupplement object
+    const importSupplement = {
+      getInitialChargeValue: () => initialChargeValue,
+      getInitialChargeConsumption: () => initialChargeConsumption,
+      getNewPopulation: () => importNewPopulation,
+    };
 
     return new EngineResult(
       application,
@@ -156,7 +165,7 @@ class ReportDataParser {
       rechargeEmissions,
       eolEmissions,
       energyConsumption,
-      null, // importSupplement - not used in WASM backend
+      importSupplement,
     );
   }
 }

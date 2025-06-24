@@ -113,13 +113,9 @@ async function executeCode(code) {
       throw new Error("Execute function not found in WASM or fallback");
     }
 
-    // Ensure result follows the expected format: status + blank line + CSV
-    if (typeof result === "string") {
-      return result;
-    } else {
-      // If WASM returns structured data, convert to expected string format
-      return `OK\n\n${result}`;
-    }
+    // The Java facade already returns the properly formatted string: "OK\n\nCSV"
+    // So we just return the result as-is
+    return result;
   } catch (error) {
     console.error("WASM execution error:", error);
     return `Execution Error: ${error.message}\n\n`;
