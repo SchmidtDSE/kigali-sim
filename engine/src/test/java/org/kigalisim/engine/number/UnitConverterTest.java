@@ -515,4 +515,23 @@ public class UnitConverterTest {
     assertCloseTo(5, result.getValue(), 0.001);
     assertEquals("unit / year", result.getUnits());
   }
+
+  @Test
+  public void testWhitespaceHandling() {
+    StateGetter mockStateGetter = createMockStateGetter();
+    lenient().when(mockStateGetter.getPopulation()).thenReturn(new EngineNumber(10, "units"));
+
+    // Test with different whitespace configurations
+    EngineNumber result1 = convertUnits(new EngineNumber(20, "kg/unit"), "kg", mockStateGetter);
+    EngineNumber result2 = convertUnits(new EngineNumber(20, "kg / unit"), "kg", mockStateGetter);
+    final EngineNumber result3 = convertUnits(new EngineNumber(20, "kg  /  unit"), "kg", mockStateGetter);
+
+    // All should produce the same result
+    assertCloseTo(200, result1.getValue(), 0.001);
+    assertEquals("kg", result1.getUnits());
+    assertCloseTo(200, result2.getValue(), 0.001);
+    assertEquals("kg", result2.getUnits());
+    assertCloseTo(200, result3.getValue(), 0.001);
+    assertEquals("kg", result3.getUnits());
+  }
 }

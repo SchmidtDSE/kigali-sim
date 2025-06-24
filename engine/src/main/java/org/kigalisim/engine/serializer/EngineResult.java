@@ -22,6 +22,8 @@ public class EngineResult {
   private final String application;
   private final String substance;
   private final int year;
+  private final String scenarioName;
+  private final int trialNumber;
   private final EngineNumber manufactureValue;
   private final EngineNumber importValue;
   private final EngineNumber recycleValue;
@@ -41,6 +43,8 @@ public class EngineResult {
    * @param application The application associated with this engine result
    * @param substance The substance associated with this engine result
    * @param year The year for which the engine result is relevant
+   * @param scenarioName The name of the scenario being run
+   * @param trialNumber The trial number of the current run
    * @param manufactureValue The value associated with manufacturing in volume like kg
    * @param importValue The value related to imports like in volume like kg
    * @param recycleValue The value denoting recycled materials in volume like kg
@@ -54,7 +58,7 @@ public class EngineResult {
    * @param energyConsumption The energy consumption value
    * @param importSupplement The supplemental import data needed for attribution
    */
-  public EngineResult(String application, String substance, int year,
+  public EngineResult(String application, String substance, int year, String scenarioName, int trialNumber,
                      EngineNumber manufactureValue, EngineNumber importValue,
                      EngineNumber recycleValue, EngineNumber domesticConsumptionValue,
                      EngineNumber importConsumptionValue, EngineNumber recycleConsumptionValue,
@@ -64,6 +68,8 @@ public class EngineResult {
     this.application = application;
     this.substance = substance;
     this.year = year;
+    this.scenarioName = scenarioName;
+    this.trialNumber = trialNumber;
     this.manufactureValue = manufactureValue;
     this.importValue = importValue;
     this.recycleValue = recycleValue;
@@ -225,11 +231,59 @@ public class EngineResult {
   }
 
   /**
+   * Get the total greenhouse gas consumption combining all consumption types.
+   *
+   * <p>This method combines domestic consumption, import consumption, and recycle
+   * consumption to provide the total GHG consumption value, matching the behavior
+   * of the JavaScript implementation.</p>
+   *
+   * @return The total GHG consumption value in tCO2e or equivalent
+   */
+  public EngineNumber getGhgConsumption() {
+    // Get consumption without recycle (domestic + import)
+    EngineNumber noRecycleConsumption = getConsumptionNoRecycle();
+
+    // Check unit compatibility
+    String noRecycleUnits = noRecycleConsumption.getUnits();
+    String recycleUnits = recycleConsumptionValue.getUnits();
+
+    if (!noRecycleUnits.equals(recycleUnits)) {
+      throw new IllegalStateException(
+          "Could not add incompatible units for total GHG consumption.");
+    }
+
+    // Combine with recycle consumption
+    BigDecimal noRecycleValue = noRecycleConsumption.getValue();
+    BigDecimal recycleValue = recycleConsumptionValue.getValue();
+    BigDecimal totalValue = noRecycleValue.add(recycleValue);
+
+    return new EngineNumber(totalValue, noRecycleUnits);
+  }
+
+  /**
    * Get the import supplement data.
    *
    * @return The import supplement containing attribution data
    */
   public ImportSupplement getImportSupplement() {
     return importSupplement;
+  }
+
+  /**
+   * Get the scenario name.
+   *
+   * @return The name of the scenario being run
+   */
+  public String getScenarioName() {
+    return scenarioName;
+  }
+
+  /**
+   * Get the trial number.
+   *
+   * @return The trial number of the current run
+   */
+  public int getTrialNumber() {
+    return trialNumber;
   }
 }

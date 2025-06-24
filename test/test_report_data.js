@@ -1,4 +1,5 @@
 import {Compiler} from "compiler";
+import {WasmBackend, WasmLayer} from "wasm_backend";
 import {ReportDataWrapper} from "report_data";
 import {FilterSet} from "user_config";
 
@@ -8,32 +9,26 @@ function loadRemote(path) {
 
 function buildReportDataTests() {
   QUnit.module("ReportData", function () {
+    // Shared WASM backend instances to avoid re-initialization overhead
+    const wasmLayer = new WasmLayer();
+    const wasmBackend = new WasmBackend(wasmLayer);
+
     const buildTest = (name, filepath, checks) => {
       QUnit.test(name, (assert) => {
         const done = assert.async();
-        loadRemote(filepath).then((content) => {
+        loadRemote(filepath).then(async (content) => {
           assert.ok(content.length > 0);
 
-          const compiler = new Compiler();
-          const compilerResult = compiler.compile(content);
-          assert.equal(compilerResult.getErrors().length, 0);
-
-          const program = compilerResult.getProgram();
-          assert.equal(compilerResult.getErrors().length, 0);
-
-          if (compilerResult.getErrors().length > 0) {
-            console.log(compilerResult.getErrors());
-          } else {
-            try {
-              const programResult = program();
-              const programResultWrapped = new ReportDataWrapper(programResult);
-              checks.forEach((check) => {
-                check(programResultWrapped, assert);
-              });
-            } catch (e) {
-              assert.ok(false);
-              console.log(e);
-            }
+          try {
+            // Execute using WASM backend instead of old JS engine
+            const programResult = await wasmBackend.execute(content);
+            const programResultWrapped = new ReportDataWrapper(programResult);
+            checks.forEach((check) => {
+              check(programResultWrapped, assert);
+            });
+          } catch (e) {
+            console.log(e);
+            assert.ok(false, "Execution failed: " + e.message);
           }
 
           done();
@@ -75,13 +70,13 @@ function buildReportDataTests() {
       assert.deepEqual(filterSet.getUnits(), "mt / yr");
     });
 
-    buildTest("runs the base script", "/test/qta/multiple_with_policies.qta", [
+    buildTest("runs the base script", "/examples/multiple_with_policies.qta", [
       (result, assert) => {
         assert.notDeepEqual(result, null);
       },
     ]);
 
-    buildTest("gets the scenarios", "/test/qta/multiple_with_policies.qta", [
+    buildTest("gets the scenarios", "/examples/multiple_with_policies.qta", [
       (result, assert) => {
         const filterSet = new FilterSet(
           null,
@@ -100,7 +95,7 @@ function buildReportDataTests() {
       },
     ]);
 
-    buildTest("gets all the years", "/test/qta/multiple_with_policies.qta", [
+    buildTest("gets all the years", "/examples/multiple_with_policies.qta", [
       (result, assert) => {
         const filterSet = new FilterSet(null, null, null, null, null, null, null, false);
         const years = result.getYears(filterSet);
@@ -111,7 +106,7 @@ function buildReportDataTests() {
       },
     ]);
 
-    buildTest("gets years matching filter", "/test/qta/multiple_with_policies.qta", [
+    buildTest("gets years matching filter", "/examples/multiple_with_policies.qta", [
       (result, assert) => {
         const filterSet = new FilterSet(null, "sim", null, null, null, null, null, false);
         const years = result.getYears(filterSet);
@@ -121,7 +116,7 @@ function buildReportDataTests() {
       },
     ]);
 
-    buildTest("gets all applications", "/test/qta/multiple_with_policies.qta", [
+    buildTest("gets all applications", "/examples/multiple_with_policies.qta", [
       (result, assert) => {
         const filterSet = new FilterSet(null, null, null, null, null, null, null, false);
         const years = result.getApplications(filterSet);
@@ -131,7 +126,7 @@ function buildReportDataTests() {
       },
     ]);
 
-    buildTest("gets applications with filter", "/test/qta/multiple_with_policies.qta", [
+    buildTest("gets applications with filter", "/examples/multiple_with_policies.qta", [
       (result, assert) => {
         const filterSet = new FilterSet(null, null, null, "subA", null, null, null, false);
         const years = result.getApplications(filterSet);
@@ -140,7 +135,7 @@ function buildReportDataTests() {
       },
     ]);
 
-    buildTest("gets all substances", "/test/qta/multiple_with_policies.qta", [
+    buildTest("gets all substances", "/examples/multiple_with_policies.qta", [
       (result, assert) => {
         const filterSet = new FilterSet(null, null, null, null, null, null, null, false);
         const years = result.getSubstances(filterSet);
@@ -150,7 +145,7 @@ function buildReportDataTests() {
       },
     ]);
 
-    buildTest("gets substances matching filter", "/test/qta/multiple_with_policies.qta", [
+    buildTest("gets substances matching filter", "/examples/multiple_with_policies.qta", [
       (result, assert) => {
         const filterSet = new FilterSet(null, null, "appA", null, null, null, null, false);
         const years = result.getSubstances(filterSet);
@@ -159,7 +154,7 @@ function buildReportDataTests() {
       },
     ]);
 
-    buildTest("gets consumption", "/test/qta/multiple_with_policies.qta", [
+    buildTest("gets consumption", "/examples/multiple_with_policies.qta", [
       (result, assert) => {
         const filterSet = new FilterSet(1, "bau", null, null, null, null, null, true);
         const totalConsumption = result.getGhgConsumption(filterSet);
@@ -168,7 +163,7 @@ function buildReportDataTests() {
       },
     ]);
 
-    buildTest("gets consumption with attribution", "/test/qta/multiple_with_policies.qta", [
+    buildTest("gets consumption with attribution", "/examples/multiple_with_policies.qta", [
       (result, assert) => {
         const filterSet = new FilterSet(1, "bau", null, null, null, null, null, false);
         const totalConsumption = result.getGhgConsumption(filterSet);
@@ -177,7 +172,7 @@ function buildReportDataTests() {
       },
     ]);
 
-    buildTest("gets sales", "/test/qta/multiple_with_policies.qta", [
+    buildTest("gets sales", "/examples/multiple_with_policies.qta", [
       (result, assert) => {
         const filterSet = new FilterSet(1, "bau", null, null, null, null, null, true);
         const totalSales = result.getSales(filterSet);
@@ -186,7 +181,7 @@ function buildReportDataTests() {
       },
     ]);
 
-    buildTest("gets sales with attribution", "/test/qta/multiple_with_policies.qta", [
+    buildTest("gets sales with attribution", "/examples/multiple_with_policies.qta", [
       (result, assert) => {
         const filterSet = new FilterSet(1, "bau", null, null, null, null, null, false);
         const totalSales = result.getSales(filterSet);
@@ -195,7 +190,7 @@ function buildReportDataTests() {
       },
     ]);
 
-    buildTest("gets sales by metric", "/test/qta/multiple_with_policies.qta", [
+    buildTest("gets sales by metric", "/examples/multiple_with_policies.qta", [
       (result, assert) => {
         const filterSet = new FilterSet(
           1,
@@ -213,7 +208,7 @@ function buildReportDataTests() {
       },
     ]);
 
-    buildTest("gets sales by metric with attribution", "/test/qta/multiple_with_policies.qta", [
+    buildTest("gets sales by metric with attribution", "/examples/multiple_with_policies.qta", [
       (result, assert) => {
         const filterSet = new FilterSet(
           1,
@@ -231,7 +226,7 @@ function buildReportDataTests() {
       },
     ]);
 
-    buildTest("gets sales by metric split", "/test/qta/multiple_with_policies_split.qta", [
+    buildTest("gets sales by metric split", "/examples/multiple_with_policies_split.qta", [
       (result, assert) => {
         const filterSet = new FilterSet(
           1,
@@ -251,7 +246,7 @@ function buildReportDataTests() {
 
     buildTest(
       "gets sales by metric split with attribution",
-      "/test/qta/multiple_with_policies_split.qta",
+      "/examples/multiple_with_policies_split.qta",
       [
         (result, assert) => {
           const filterSet = new FilterSet(
@@ -271,7 +266,7 @@ function buildReportDataTests() {
       ],
     );
 
-    buildTest("gets imports by metric", "/test/qta/multiple_with_policies_split.qta", [
+    buildTest("gets imports by metric", "/examples/multiple_with_policies_split.qta", [
       (result, assert) => {
         const filterSet = new FilterSet(
           1,
@@ -291,7 +286,7 @@ function buildReportDataTests() {
 
     buildTest(
       "gets imports by metric with attribution",
-      "/test/qta/multiple_with_policies_split.qta",
+      "/examples/multiple_with_policies_split.qta",
       [
         (result, assert) => {
           const filterSet = new FilterSet(
@@ -311,7 +306,7 @@ function buildReportDataTests() {
       ],
     );
 
-    buildTest("gets domestic manfacture by metric", "/test/qta/multiple_with_policies_split.qta", [
+    buildTest("gets domestic manfacture by metric", "/examples/multiple_with_policies_split.qta", [
       (result, assert) => {
         const filterSet = new FilterSet(
           1,
@@ -331,7 +326,7 @@ function buildReportDataTests() {
 
     buildTest(
       "gets domestic manfacture by metric with attribution",
-      "/test/qta/multiple_with_policies_split.qta",
+      "/examples/multiple_with_policies_split.qta",
       [
         (result, assert) => {
           const filterSet = new FilterSet(
@@ -376,7 +371,7 @@ function buildReportDataTests() {
       assert.deepEqual(newFilterSet.getDimension(), "simulations");
     });
 
-    buildTest("gets population", "/test/qta/multiple_with_policies.qta", [
+    buildTest("gets population", "/examples/multiple_with_policies.qta", [
       (result, assert) => {
         const filterSet = new FilterSet(1, "bau", null, null, null, null, null, false);
         const totalPopulation = result.getPopulation(filterSet);

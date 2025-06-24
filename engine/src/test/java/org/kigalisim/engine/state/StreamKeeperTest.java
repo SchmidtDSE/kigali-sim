@@ -27,6 +27,15 @@ import org.kigalisim.engine.number.UnitConverter;
 public class StreamKeeperTest {
 
   /**
+   * Create a test scope for testing.
+   *
+   * @return A new Scope with test values
+   */
+  private Scope createTestScope() {
+    return new Scope("test stanza", "test app", "test substance");
+  }
+
+  /**
    * Create a mock StreamKeeper for testing.
    *
    * @return A new StreamKeeper with mock dependencies
@@ -98,7 +107,8 @@ public class StreamKeeperTest {
   @Test
   public void testHasSubstanceReturnsFalseForUnknownSubstance() {
     StreamKeeper keeper = createMockKeeper();
-    assertFalse(keeper.hasSubstance("test app", "test substance"),
+    Scope testScope = createTestScope();
+    assertFalse(keeper.hasSubstance(testScope),
                 "Should return false for unknown substance");
   }
 
@@ -108,10 +118,11 @@ public class StreamKeeperTest {
   @Test
   public void testEnsureSubstanceCreatesNewSubstance() {
     StreamKeeper keeper = createMockKeeper();
+    Scope testScope = createTestScope();
 
-    keeper.ensureSubstance("test app", "test substance");
+    keeper.ensureSubstance(testScope);
 
-    assertTrue(keeper.hasSubstance("test app", "test substance"),
+    assertTrue(keeper.hasSubstance(testScope),
                "Should return true after ensuring substance");
   }
 
@@ -121,28 +132,29 @@ public class StreamKeeperTest {
   @Test
   public void testEnsureSubstanceCreatesDefaultStreams() {
     StreamKeeper keeper = createMockKeeper();
+    Scope testScope = createTestScope();
 
-    keeper.ensureSubstance("test app", "test substance");
+    keeper.ensureSubstance(testScope);
 
     // Test that default streams exist with zero values
-    EngineNumber manufacture = keeper.getStream("test app", "test substance", "manufacture");
+    EngineNumber manufacture = keeper.getStream(testScope, "manufacture");
     assertEquals(BigDecimal.ZERO, manufacture.getValue(),
                  "Manufacture should default to 0");
     assertEquals("kg", manufacture.getUnits(), "Manufacture should have kg units");
 
-    EngineNumber importValue = keeper.getStream("test app", "test substance", "import");
+    EngineNumber importValue = keeper.getStream(testScope, "import");
     assertEquals(BigDecimal.ZERO, importValue.getValue(), "Import should default to 0");
     assertEquals("kg", importValue.getUnits(), "Import should have kg units");
 
-    EngineNumber recycle = keeper.getStream("test app", "test substance", "recycle");
+    EngineNumber recycle = keeper.getStream(testScope, "recycle");
     assertEquals(BigDecimal.ZERO, recycle.getValue(), "Recycle should default to 0");
     assertEquals("kg", recycle.getUnits(), "Recycle should have kg units");
 
-    EngineNumber consumption = keeper.getStream("test app", "test substance", "consumption");
+    EngineNumber consumption = keeper.getStream(testScope, "consumption");
     assertEquals(BigDecimal.ZERO, consumption.getValue(), "Consumption should default to 0");
     assertEquals("tCO2e", consumption.getUnits(), "Consumption should have tCO2e units");
 
-    EngineNumber equipment = keeper.getStream("test app", "test substance", "equipment");
+    EngineNumber equipment = keeper.getStream(testScope, "equipment");
     assertEquals(BigDecimal.ZERO, equipment.getValue(), "Equipment should default to 0");
     assertEquals("units", equipment.getUnits(), "Equipment should have units");
   }
@@ -153,33 +165,37 @@ public class StreamKeeperTest {
   @Test
   public void testSetStreamAndGetStreamWorkForSimpleStreams() {
     StreamKeeper keeper = createMockKeeper();
-    keeper.ensureSubstance("test app", "test substance");
+    Scope testScope = createTestScope();
+    keeper.ensureSubstance(testScope);
 
     EngineNumber newValue = new EngineNumber(new BigDecimal("100"), "kg");
-    keeper.setStream("test app", "test substance", "manufacture", newValue);
+    keeper.setStream(testScope, "manufacture", newValue);
 
-    EngineNumber retrieved = keeper.getStream("test app", "test substance", "manufacture");
+    EngineNumber retrieved = keeper.getStream(testScope, "manufacture");
     assertEquals(new BigDecimal("100"), retrieved.getValue(),
                  "Should retrieve set value");
     assertEquals("kg", retrieved.getUnits(), "Should retrieve correct units");
   }
 
   /**
-   * Test that sales stream returns sum of manufacture and import.
+   * Test that sales stream returns sum of manufacture and import and recycle.
    */
   @Test
-  public void testSalesStreamReturnsSumOfManufactureAndImport() {
+  public void testSalesStreamReturnsSumOfManufactureAndImportAndRecycle() {
     StreamKeeper keeper = createMockKeeper();
-    keeper.ensureSubstance("test app", "test substance");
+    Scope testScope = createTestScope();
+    keeper.ensureSubstance(testScope);
 
-    keeper.setStream("test app", "test substance", "manufacture",
+    keeper.setStream(testScope, "manufacture",
                      new EngineNumber(new BigDecimal("50"), "kg"));
-    keeper.setStream("test app", "test substance", "import",
+    keeper.setStream(testScope, "import",
                      new EngineNumber(new BigDecimal("30"), "kg"));
+    keeper.setStream(testScope, "recycle",
+                     new EngineNumber(new BigDecimal("10"), "kg"));
 
-    EngineNumber sales = keeper.getStream("test app", "test substance", "sales");
-    assertEquals(new BigDecimal("80"), sales.getValue(),
-                 "Sales should be sum of manufacture and import");
+    EngineNumber sales = keeper.getStream(testScope, "sales");
+    assertEquals(new BigDecimal("90"), sales.getValue(),
+                 "Sales should be sum of manufacture, import, and recycle");
     assertEquals("kg", sales.getUnits(), "Sales should have kg units");
   }
 
@@ -189,12 +205,13 @@ public class StreamKeeperTest {
   @Test
   public void testGhgIntensityGetterAndSetterDelegateToParameterization() {
     StreamKeeper keeper = createMockKeeper();
-    keeper.ensureSubstance("test app", "test substance");
+    Scope testScope = createTestScope();
+    keeper.ensureSubstance(testScope);
 
     EngineNumber newValue = new EngineNumber(new BigDecimal("2.5"), "tCO2e / kg");
-    keeper.setGhgIntensity("test app", "test substance", newValue);
+    keeper.setGhgIntensity(testScope, newValue);
 
-    EngineNumber retrieved = keeper.getGhgIntensity("test app", "test substance");
+    EngineNumber retrieved = keeper.getGhgIntensity(testScope);
     assertEquals(new BigDecimal("2.5"), retrieved.getValue(),
                  "Should retrieve set GHG intensity");
     assertEquals("tCO2e / kg", retrieved.getUnits(),
@@ -207,12 +224,13 @@ public class StreamKeeperTest {
   @Test
   public void testEnergyIntensityGetterAndSetterDelegateToParameterization() {
     StreamKeeper keeper = createMockKeeper();
-    keeper.ensureSubstance("test app", "test substance");
+    Scope testScope = createTestScope();
+    keeper.ensureSubstance(testScope);
 
     EngineNumber newValue = new EngineNumber(new BigDecimal("1.5"), "kwh / kg");
-    keeper.setEnergyIntensity("test app", "test substance", newValue);
+    keeper.setEnergyIntensity(testScope, newValue);
 
-    EngineNumber retrieved = keeper.getEnergyIntensity("test app", "test substance");
+    EngineNumber retrieved = keeper.getEnergyIntensity(testScope);
     assertEquals(new BigDecimal("1.5"), retrieved.getValue(),
                  "Should retrieve set energy intensity");
     assertEquals("kwh / kg", retrieved.getUnits(),
@@ -225,12 +243,13 @@ public class StreamKeeperTest {
   @Test
   public void testInitialChargeGetterAndSetterDelegateToParameterization() {
     StreamKeeper keeper = createMockKeeper();
-    keeper.ensureSubstance("test app", "test substance");
+    Scope testScope = createTestScope();
+    keeper.ensureSubstance(testScope);
 
     EngineNumber newValue = new EngineNumber(new BigDecimal("2.0"), "kg / unit");
-    keeper.setInitialCharge("test app", "test substance", "manufacture", newValue);
+    keeper.setInitialCharge(testScope, "manufacture", newValue);
 
-    EngineNumber retrieved = keeper.getInitialCharge("test app", "test substance", "manufacture");
+    EngineNumber retrieved = keeper.getInitialCharge(testScope, "manufacture");
     assertEquals(new BigDecimal("2.0"), retrieved.getValue(),
                  "Should retrieve set initial charge");
     assertEquals("kg / unit", retrieved.getUnits(),
@@ -243,18 +262,18 @@ public class StreamKeeperTest {
   @Test
   public void testIncrementYearMovesEquipmentToPriorEquipment() {
     StreamKeeper keeper = createMockKeeper();
-    keeper.ensureSubstance("test app", "test substance");
+    Scope testScope = createTestScope();
+    keeper.ensureSubstance(testScope);
 
     // Set equipment value
-    keeper.setStream("test app", "test substance", "equipment",
+    keeper.setStream(testScope, "equipment",
                      new EngineNumber(new BigDecimal("150"), "units"));
 
     // Increment year
     keeper.incrementYear();
 
     // Check that equipment was moved to priorEquipment
-    EngineNumber priorEquipment = keeper.getStream("test app", "test substance",
-                                                   "priorEquipment");
+    EngineNumber priorEquipment = keeper.getStream(testScope, "priorEquipment");
     assertEquals(new BigDecimal("150"), priorEquipment.getValue(),
                  "Prior equipment should equal previous equipment value");
     assertEquals("units", priorEquipment.getUnits(),
@@ -267,9 +286,10 @@ public class StreamKeeperTest {
   @Test
   public void testThrowsErrorForUnknownSubstanceInSetStream() {
     StreamKeeper keeper = createMockKeeper();
+    Scope unknownScope = new Scope("test stanza", "unknown app", "unknown substance");
 
     assertThrows(IllegalStateException.class, () -> {
-      keeper.setStream("unknown app", "unknown substance", "manufacture",
+      keeper.setStream(unknownScope, "manufacture",
                        new EngineNumber(new BigDecimal("100"), "kg"));
     }, "Should throw for unknown substance in setStream");
   }
@@ -280,9 +300,10 @@ public class StreamKeeperTest {
   @Test
   public void testThrowsErrorForUnknownSubstanceInGetStream() {
     StreamKeeper keeper = createMockKeeper();
+    Scope unknownScope = new Scope("test stanza", "unknown app", "unknown substance");
 
     assertThrows(IllegalStateException.class, () -> {
-      keeper.getStream("unknown app", "unknown substance", "manufacture");
+      keeper.getStream(unknownScope, "manufacture");
     }, "Should throw for unknown substance in getStream");
   }
 
@@ -292,15 +313,16 @@ public class StreamKeeperTest {
   @Test
   public void testThrowsErrorForUnknownStream() {
     StreamKeeper keeper = createMockKeeper();
-    keeper.ensureSubstance("test app", "test substance");
+    Scope testScope = createTestScope();
+    keeper.ensureSubstance(testScope);
 
     assertThrows(IllegalArgumentException.class, () -> {
-      keeper.setStream("test app", "test substance", "unknown_stream",
+      keeper.setStream(testScope, "unknown_stream",
                        new EngineNumber(new BigDecimal("100"), "kg"));
     }, "Should throw for unknown stream in setStream");
 
     assertThrows(IllegalArgumentException.class, () -> {
-      keeper.getStream("test app", "test substance", "unknown_stream");
+      keeper.getStream(testScope, "unknown_stream");
     }, "Should throw for unknown stream in getStream");
   }
 
@@ -310,8 +332,10 @@ public class StreamKeeperTest {
   @Test
   public void testGetRegisteredSubstancesReturnsSubstanceList() {
     StreamKeeper keeper = createMockKeeper();
-    keeper.ensureSubstance("app1", "substance1");
-    keeper.ensureSubstance("app2", "substance2");
+    Scope scope1 = new Scope("test stanza", "app1", "substance1");
+    Scope scope2 = new Scope("test stanza", "app2", "substance2");
+    keeper.ensureSubstance(scope1);
+    keeper.ensureSubstance(scope2);
 
     List<SubstanceInApplicationId> substances = keeper.getRegisteredSubstances();
     assertEquals(2, substances.size(), "Should return correct number of substances");
@@ -335,15 +359,16 @@ public class StreamKeeperTest {
   @Test
   public void testLastSpecifiedUnitsGetterAndSetterDelegateToParameterization() {
     StreamKeeper keeper = createMockKeeper();
-    keeper.ensureSubstance("test app", "test substance");
+    Scope testScope = createTestScope();
+    keeper.ensureSubstance(testScope);
 
     // Test default value
-    String defaultUnits = keeper.getLastSpecifiedUnits("test app", "test substance");
+    String defaultUnits = keeper.getLastSpecifiedUnits(testScope);
     assertEquals("kg", defaultUnits, "Should have default units of kg");
 
     // Test setting and getting
-    keeper.setLastSpecifiedUnits("test app", "test substance", "units");
-    String retrieved = keeper.getLastSpecifiedUnits("test app", "test substance");
+    keeper.setLastSpecifiedUnits(testScope, "units");
+    String retrieved = keeper.getLastSpecifiedUnits(testScope);
     assertEquals("units", retrieved, "Should retrieve set units");
   }
 
@@ -353,20 +378,21 @@ public class StreamKeeperTest {
   @Test
   public void testSetStreamAutomaticallyTracksLastSpecifiedUnits() {
     StreamKeeper keeper = createMockKeeper();
-    keeper.ensureSubstance("test app", "test substance");
+    Scope testScope = createTestScope();
+    keeper.ensureSubstance(testScope);
 
     // Test default value
-    String defaultUnits = keeper.getLastSpecifiedUnits("test app", "test substance");
+    String defaultUnits = keeper.getLastSpecifiedUnits(testScope);
     assertEquals("kg", defaultUnits, "Should have default units of kg");
 
     // Test setting units directly via StreamKeeper methods
-    keeper.setLastSpecifiedUnits("test app", "test substance", "kg");
-    String unitsAfterKg = keeper.getLastSpecifiedUnits("test app", "test substance");
+    keeper.setLastSpecifiedUnits(testScope, "kg");
+    String unitsAfterKg = keeper.getLastSpecifiedUnits(testScope);
     assertEquals("kg", unitsAfterKg, "Should have kg units after setting");
 
     // Test setting different units
-    keeper.setLastSpecifiedUnits("test app", "test substance", "units");
-    String unitsAfterUnits = keeper.getLastSpecifiedUnits("test app", "test substance");
+    keeper.setLastSpecifiedUnits(testScope, "units");
+    String unitsAfterUnits = keeper.getLastSpecifiedUnits(testScope);
     assertEquals("units", unitsAfterUnits, "Should have units after setting");
   }
 
@@ -376,18 +402,19 @@ public class StreamKeeperTest {
   @Test
   public void testSetStreamForSalesWithUnits() {
     StreamKeeper keeper = createMockKeeper();
-    keeper.ensureSubstance("test app", "test substance");
+    Scope testScope = createTestScope();
+    keeper.ensureSubstance(testScope);
 
     // Set initial charge of 2 kg/unit for manufacture stream
-    keeper.setInitialCharge("test app", "test substance", "manufacture",
+    keeper.setInitialCharge(testScope, "manufacture",
                            new EngineNumber(new BigDecimal("2.0"), "kg / unit"));
 
     // Set manufacture to 10 units - this should trigger setStreamForSalesWithUnits
-    keeper.setStream("test app", "test substance", "manufacture",
+    keeper.setStream(testScope, "manufacture",
                     new EngineNumber(new BigDecimal("10"), "units"));
 
     // Get the stream value back - should be converted to kg (10 units * 2 kg/unit = 20 kg)
-    EngineNumber result = keeper.getStream("test app", "test substance", "manufacture");
+    EngineNumber result = keeper.getStream(testScope, "manufacture");
 
     // The result should be in kg and the value should be 20
     assertEquals("kg", result.getUnits(), "Should convert units to kg");
@@ -401,15 +428,16 @@ public class StreamKeeperTest {
   @Test
   public void testSetStreamForSalesWithUnitsZeroInitialCharge() {
     StreamKeeper keeper = createMockKeeper();
-    keeper.ensureSubstance("test app", "test substance");
+    Scope testScope = createTestScope();
+    keeper.ensureSubstance(testScope);
 
     // Set initial charge to zero
-    keeper.setInitialCharge("test app", "test substance", "manufacture",
+    keeper.setInitialCharge(testScope, "manufacture",
                            new EngineNumber(BigDecimal.ZERO, "kg / unit"));
 
     // Attempting to set units should throw an exception
     assertThrows(RuntimeException.class, () -> {
-      keeper.setStream("test app", "test substance", "manufacture",
+      keeper.setStream(testScope, "manufacture",
                       new EngineNumber(new BigDecimal("10"), "units"));
     }, "Should throw exception when initial charge is zero");
   }

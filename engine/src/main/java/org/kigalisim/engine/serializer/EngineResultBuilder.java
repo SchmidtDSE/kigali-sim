@@ -22,6 +22,8 @@ public class EngineResultBuilder {
   private Optional<String> application;
   private Optional<String> substance;
   private Optional<Integer> year;
+  private Optional<String> scenarioName;
+  private Optional<Integer> trialNumber;
   private Optional<EngineNumber> manufactureValue;
   private Optional<EngineNumber> importValue;
   private Optional<EngineNumber> recycleValue;
@@ -39,21 +41,23 @@ public class EngineResultBuilder {
    * Create builder without any values initialized.
    */
   public EngineResultBuilder() {
-    this.application = Optional.empty();
-    this.substance = Optional.empty();
-    this.year = Optional.empty();
-    this.manufactureValue = Optional.empty();
-    this.importValue = Optional.empty();
-    this.recycleValue = Optional.empty();
-    this.domesticConsumptionValue = Optional.empty();
-    this.importConsumptionValue = Optional.empty();
-    this.recycleConsumptionValue = Optional.empty();
-    this.populationValue = Optional.empty();
-    this.populationNew = Optional.empty();
-    this.rechargeEmissions = Optional.empty();
-    this.eolEmissions = Optional.empty();
-    this.energyConsumption = Optional.empty();
-    this.importSupplement = Optional.empty();
+    application = Optional.empty();
+    substance = Optional.empty();
+    year = Optional.empty();
+    scenarioName = Optional.empty();
+    trialNumber = Optional.empty();
+    manufactureValue = Optional.empty();
+    importValue = Optional.empty();
+    recycleValue = Optional.empty();
+    domesticConsumptionValue = Optional.empty();
+    importConsumptionValue = Optional.empty();
+    recycleConsumptionValue = Optional.empty();
+    populationValue = Optional.empty();
+    populationNew = Optional.empty();
+    rechargeEmissions = Optional.empty();
+    eolEmissions = Optional.empty();
+    energyConsumption = Optional.empty();
+    importSupplement = Optional.empty();
   }
 
   /**
@@ -86,6 +90,28 @@ public class EngineResultBuilder {
    */
   public EngineResultBuilder setYear(int year) {
     this.year = Optional.of(year);
+    return this;
+  }
+
+  /**
+   * Set the scenario name for which a result is being given.
+   *
+   * @param scenarioName The name of the scenario being run
+   * @return This builder for method chaining
+   */
+  public EngineResultBuilder setScenarioName(String scenarioName) {
+    this.scenarioName = Optional.of(scenarioName);
+    return this;
+  }
+
+  /**
+   * Set the trial number for which a result is being given.
+   *
+   * @param trialNumber The trial number of the current run
+   * @return This builder for method chaining
+   */
+  public EngineResultBuilder setTrialNumber(int trialNumber) {
+    this.trialNumber = Optional.of(trialNumber);
     return this;
   }
 
@@ -207,7 +233,7 @@ public class EngineResultBuilder {
    * @return This builder for method chaining
    */
   public EngineResultBuilder setEnergyConsumption(EngineNumber energyConsumption) {
-    this.energyConsumption = Optional.of(energyConsumption);
+    this.energyConsumption = Optional.ofNullable(energyConsumption);
     return this;
   }
 
@@ -234,6 +260,8 @@ public class EngineResultBuilder {
         application.get(),
         substance.get(),
         year.get(),
+        scenarioName.get(),
+        trialNumber.get(),
         manufactureValue.get(),
         importValue.get(),
         recycleValue.get(),
@@ -258,6 +286,8 @@ public class EngineResultBuilder {
     checkValid(application, "application");
     checkValid(substance, "substance");
     checkValid(year, "year");
+    checkValid(scenarioName, "scenarioName");
+    checkValid(trialNumber, "trialNumber");
     checkValid(manufactureValue, "manufactureValue");
     checkValid(importValue, "importValue");
     checkValid(recycleValue, "recycleValue");

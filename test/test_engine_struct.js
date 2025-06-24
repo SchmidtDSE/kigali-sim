@@ -10,8 +10,6 @@ import {
   ImportSupplement,
   EngineResultBuilder,
   AggregatedResult,
-  SimulationResult,
-  SimulationAttributeToExporterResult,
 } from "engine_struct";
 
 import {EngineNumber} from "engine_number";
@@ -29,6 +27,8 @@ function buildEngineStructTests() {
         "test app",
         "test substance",
         2023,
+        "test scenario",
+        1,
         new EngineNumber(100, "kg"),
         new EngineNumber(50, "kg"),
         new EngineNumber(25, "kg"),
@@ -161,6 +161,16 @@ function buildEngineStructTests() {
       assert.notDeepEqual(supplement, undefined);
       assert.deepEqual(supplement.constructor.name, "ImportSupplement");
     });
+
+    QUnit.test("getScenarioName", function (assert) {
+      const result = makeExample();
+      assert.deepEqual(result.getScenarioName(), "test scenario");
+    });
+
+    QUnit.test("getTrialNumber", function (assert) {
+      const result = makeExample();
+      assert.equal(result.getTrialNumber(), 1);
+    });
   });
 
   QUnit.module("AttributeToExporterResult", function () {
@@ -175,6 +185,8 @@ function buildEngineStructTests() {
         "test app",
         "test substance",
         2023,
+        "test scenario",
+        1,
         new EngineNumber(100, "kg"),
         new EngineNumber(50, "kg"),
         new EngineNumber(25, "kg"),
@@ -300,6 +312,8 @@ function buildEngineStructTests() {
       builder.setApplication("test app");
       builder.setSubstance("test substance");
       builder.setYear(2023);
+      builder.setScenarioName("test scenario");
+      builder.setTrialNumber(1);
       builder.setManufactureValue(new EngineNumber(100, "kg"));
       builder.setImportValue(new EngineNumber(50, "kg"));
       builder.setRecycleValue(new EngineNumber(25, "kg"));
@@ -328,6 +342,8 @@ function buildEngineStructTests() {
       assert.deepEqual(result.getApplication(), "test app");
       assert.deepEqual(result.getSubstance(), "test substance");
       assert.equal(result.getYear(), 2023);
+      assert.deepEqual(result.getScenarioName(), "test scenario");
+      assert.equal(result.getTrialNumber(), 1);
     });
 
     QUnit.test("fails on an empty result", function (assert) {
@@ -351,6 +367,8 @@ function buildEngineStructTests() {
       builder.setApplication("test app");
       builder.setSubstance("test substance");
       builder.setYear(2023);
+      builder.setScenarioName("test scenario");
+      builder.setTrialNumber(1);
       builder.setManufactureValue(new EngineNumber(100, "kg"));
       builder.setImportValue(new EngineNumber(50, "kg"));
       builder.setRecycleValue(new EngineNumber(25, "kg"));
@@ -534,144 +552,6 @@ function buildEngineStructTests() {
       assert.closeTo(combined.getManufacture().getValue(), 150, 0.0001); // 100 + 50
       assert.closeTo(combined.getImport().getValue(), 75, 0.0001); // 50 + 25
       assert.closeTo(combined.getRecycle().getValue(), 35, 0.0001); // 25 + 10
-    });
-  });
-
-  QUnit.module("SimulationResult", function () {
-    const makeExample = () => {
-      const importSupplement = new ImportSupplement(
-        new EngineNumber(5, "kg"),
-        new EngineNumber(10, "tCO2e"),
-        new EngineNumber(2, "units"),
-      );
-
-      const result1 = new EngineResult(
-        "test app",
-        "test substance",
-        2023,
-        new EngineNumber(100, "kg"),
-        new EngineNumber(50, "kg"),
-        new EngineNumber(25, "kg"),
-        new EngineNumber(200, "tCO2e"),
-        new EngineNumber(100, "tCO2e"),
-        new EngineNumber(50, "tCO2e"),
-        new EngineNumber(1000, "units"),
-        new EngineNumber(100, "units"),
-        new EngineNumber(300, "tCO2e"),
-        new EngineNumber(150, "tCO2e"),
-        new EngineNumber(500, "kWh"),
-        importSupplement,
-      );
-
-      const result2 = new EngineResult(
-        "test app",
-        "test substance",
-        2024,
-        new EngineNumber(110, "kg"),
-        new EngineNumber(55, "kg"),
-        new EngineNumber(30, "kg"),
-        new EngineNumber(220, "tCO2e"),
-        new EngineNumber(110, "tCO2e"),
-        new EngineNumber(60, "tCO2e"),
-        new EngineNumber(1100, "units"),
-        new EngineNumber(110, "units"),
-        new EngineNumber(330, "tCO2e"),
-        new EngineNumber(165, "tCO2e"),
-        new EngineNumber(550, "kWh"),
-        importSupplement,
-      );
-
-      const trialResults = [
-        [
-          [result1], // year 1 results
-          [result2], // year 2 results
-        ],
-      ];
-
-      return new SimulationResult("Test Simulation", trialResults);
-    };
-
-    QUnit.test("initializes", function (assert) {
-      const result = makeExample();
-      assert.notDeepEqual(result, undefined);
-    });
-
-    QUnit.test("getName", function (assert) {
-      const result = makeExample();
-      assert.deepEqual(result.getName(), "Test Simulation");
-    });
-
-    QUnit.test("getTrialResults", function (assert) {
-      const result = makeExample();
-      const trials = result.getTrialResults();
-      assert.notDeepEqual(trials, undefined);
-      assert.equal(trials.length, 1); // 1 trial
-      assert.equal(trials[0].length, 2); // 2 years
-      assert.equal(trials[0][0].length, 1); // 1 result in first year
-      assert.equal(trials[0][1].length, 1); // 1 result in second year
-    });
-  });
-
-  QUnit.module("SimulationAttributeToExporterResult", function () {
-    const makeInnerSimulation = () => {
-      const importSupplement = new ImportSupplement(
-        new EngineNumber(5, "kg"),
-        new EngineNumber(10, "tCO2e"),
-        new EngineNumber(2, "units"),
-      );
-
-      const result1 = new EngineResult(
-        "test app",
-        "test substance",
-        2023,
-        new EngineNumber(100, "kg"),
-        new EngineNumber(50, "kg"),
-        new EngineNumber(25, "kg"),
-        new EngineNumber(200, "tCO2e"),
-        new EngineNumber(100, "tCO2e"),
-        new EngineNumber(50, "tCO2e"),
-        new EngineNumber(1000, "units"),
-        new EngineNumber(100, "units"),
-        new EngineNumber(300, "tCO2e"),
-        new EngineNumber(150, "tCO2e"),
-        new EngineNumber(500, "kWh"),
-        importSupplement,
-      );
-
-      const trialResults = [
-        [
-          [result1], // year 1 results
-        ],
-      ];
-
-      return new SimulationResult("Test Simulation", trialResults);
-    };
-
-    const makeExample = () => {
-      return new SimulationAttributeToExporterResult(makeInnerSimulation());
-    };
-
-    QUnit.test("initializes", function (assert) {
-      const result = makeExample();
-      assert.notDeepEqual(result, undefined);
-    });
-
-    QUnit.test("getName", function (assert) {
-      const result = makeExample();
-      assert.deepEqual(result.getName(), "Test Simulation");
-    });
-
-    QUnit.test("getTrialResults", function (assert) {
-      const result = makeExample();
-      const trials = result.getTrialResults();
-      assert.notDeepEqual(trials, undefined);
-      assert.equal(trials.length, 1); // 1 trial
-      assert.equal(trials[0].length, 1); // 1 year
-      assert.equal(trials[0][0].length, 1); // 1 result in first year
-
-      // The results should be AttributeToExporterResult instances
-      const firstResult = trials[0][0][0];
-      assert.deepEqual(firstResult.constructor.name, "AttributeToExporterResult");
     });
   });
 }

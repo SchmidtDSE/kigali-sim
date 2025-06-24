@@ -27,7 +27,7 @@ public class UnitConverter {
 
   // Configuration constants
   private static final boolean CONVERT_ZERO_NOOP = true;
-  private static final boolean ZERO_EMPTY_VOLUME_INTENSITY = false;
+  private static final boolean ZERO_EMPTY_VOLUME_INTENSITY = true;
 
   // Math context for BigDecimal operations
   private static final MathContext MATH_CONTEXT = MathContext.DECIMAL128;
@@ -48,6 +48,16 @@ public class UnitConverter {
   }
 
   /**
+   * Remove all spaces from a unit string.
+   *
+   * @param unitString The unit string to normalize
+   * @return The normalized unit string with all spaces removed
+   */
+  private static String normalizeUnitString(String unitString) {
+    return unitString.replaceAll("\\s+", "");
+  }
+
+  /**
    * Convert a number to new units.
    *
    * @param source The EngineNumber to convert
@@ -63,11 +73,14 @@ public class UnitConverter {
       return new EngineNumber(BigDecimal.ZERO, destinationUnits);
     }
 
-    String[] sourceUnitPieces = source.getUnits().split(" / ");
+    String normalizedSourceUnits = normalizeUnitString(source.getUnits());
+    String normalizedDestinationUnits = normalizeUnitString(destinationUnits);
+
+    String[] sourceUnitPieces = normalizedSourceUnits.split("/");
     boolean sourceHasDenominator = sourceUnitPieces.length > 1;
     String sourceDenominatorUnits = sourceHasDenominator ? sourceUnitPieces[1] : "";
 
-    String[] destinationUnitPieces = destinationUnits.split(" / ");
+    String[] destinationUnitPieces = normalizedDestinationUnits.split("/");
     boolean destHasDenominator = destinationUnitPieces.length > 1;
     String destinationDenominatorUnits = destHasDenominator ? destinationUnitPieces[1] : "";
 
@@ -76,33 +89,13 @@ public class UnitConverter {
     boolean differentDenominator = !destinationDenominatorUnits.equals(sourceDenominatorUnits);
     boolean sameDenominator = !differentDenominator;
 
-    // Create strategy maps
-    Map<String, UnitConverterStrategy> numeratorStrategy =
-        createNumeratorStrategy();
-    Map<String, UnitConverterStrategy> denominatorStrategy =
-        createDenominatorStrategy();
-
-    UnitConverterStrategy numeratorFunc =
-        numeratorStrategy.get(destinationNumeratorUnits);
-    UnitConverterStrategy denominatorFunc =
-        denominatorStrategy.get(destinationDenominatorUnits);
-
-    if (numeratorFunc == null) {
-      throw new IllegalArgumentException(
-          "Unsupported destination numerator units: " + destinationNumeratorUnits);
-    }
-    if (denominatorFunc == null) {
-      throw new IllegalArgumentException(
-          "Unsupported destination denominator units: " + destinationDenominatorUnits);
-    }
-
     if (sourceHasDenominator && sameDenominator) {
       EngineNumber sourceEffective = new EngineNumber(source.getValue(), sourceNumeratorUnits);
-      EngineNumber convertedNumerator = numeratorFunc.convert(sourceEffective);
+      EngineNumber convertedNumerator = convertNumerator(sourceEffective, destinationNumeratorUnits);
       return new EngineNumber(convertedNumerator.getValue(), destinationUnits);
     } else {
-      EngineNumber numerator = numeratorFunc.convert(source);
-      EngineNumber denominator = denominatorFunc.convert(source);
+      EngineNumber numerator = convertNumerator(source, destinationNumeratorUnits);
+      EngineNumber denominator = convertDenominator(source, destinationDenominatorUnits);
 
       if (denominator.getValue().compareTo(BigDecimal.ZERO) == 0) {
         BigDecimal inferredFactor = inferScale(sourceDenominatorUnits,
@@ -124,45 +117,52 @@ public class UnitConverter {
   }
 
   /**
-   * Create the numerator conversion strategy map.
+   * Convert a number to the specified numerator units.
    *
-   * @return Map of unit types to conversion strategies
+   * @param input The EngineNumber to convert
+   * @param destinationUnits The target numerator units
+   * @return The converted EngineNumber
    */
-  private Map<String, UnitConverterStrategy> createNumeratorStrategy() {
-    Map<String, UnitConverterStrategy> strategy = new HashMap<>();
-    strategy.put("kg", this::toKg);
-    strategy.put("mt", this::toMt);
-    strategy.put("unit", this::toUnits);
-    strategy.put("units", this::toUnits);
-    strategy.put("tCO2e", this::toGhgConsumption);
-    strategy.put("kwh", this::toEnergyConsumption);
-    strategy.put("year", this::toYears);
-    strategy.put("years", this::toYears);
-    strategy.put("%", this::toPercent);
-    return strategy;
+  private EngineNumber convertNumerator(EngineNumber input, String destinationUnits) {
+    return switch (destinationUnits) {
+      case "kg" -> toKg(input);
+      case "mt" -> toMt(input);
+      case "unit", "units" -> toUnits(input);
+      case "tCO2e" -> toGhgConsumption(input);
+      case "kwh" -> toEnergyConsumption(input);
+      case "year", "years" -> toYears(input);
+      case "%" -> toPercent(input);
+      default -> throw new IllegalArgumentException(
+          "Unsupported destination numerator units: " + destinationUnits);
+    };
   }
 
   /**
-   * Create the denominator conversion strategy map.
+   * Convert a number to the specified denominator units.
    *
-   * @return Map of unit types to conversion strategies
+   * @param input The EngineNumber to convert (not used for denominator conversions)
+   * @param destinationUnits The target denominator units
+   * @return The converted EngineNumber representing the denominator
    */
-  private Map<String, UnitConverterStrategy> createDenominatorStrategy() {
-    Map<String, UnitConverterStrategy> strategy = new HashMap<>();
-    strategy.put("kg", x -> convert(stateGetter.getVolume(), "kg"));
-    strategy.put("mt", x -> convert(stateGetter.getVolume(), "mt"));
-    strategy.put("unit", x -> convert(stateGetter.getPopulation(), "unit"));
-    strategy.put("units", x -> convert(stateGetter.getPopulation(), "units"));
-    strategy.put("tCO2e", x -> convert(stateGetter.getGhgConsumption(), "tCO2e"));
-    strategy.put("kwh", x -> convert(stateGetter.getEnergyConsumption(), "kwh"));
-    strategy.put("year", x -> convert(stateGetter.getYearsElapsed(), "year"));
-    strategy.put("years", x -> convert(stateGetter.getYearsElapsed(), "years"));
-    strategy.put("", x -> new EngineNumber(BigDecimal.ONE, ""));
-    return strategy;
+  private EngineNumber convertDenominator(EngineNumber input, String destinationUnits) {
+    return switch (destinationUnits) {
+      case "kg" -> convert(stateGetter.getVolume(), "kg");
+      case "mt" -> convert(stateGetter.getVolume(), "mt");
+      case "unit", "units" -> convert(stateGetter.getPopulation(), destinationUnits);
+      case "tCO2e" -> convert(stateGetter.getGhgConsumption(), "tCO2e");
+      case "kwh" -> convert(stateGetter.getEnergyConsumption(), "kwh");
+      case "year", "years" -> convert(stateGetter.getYearsElapsed(), destinationUnits);
+      case "" -> new EngineNumber(BigDecimal.ONE, "");
+      default -> throw new IllegalArgumentException(
+          "Unsupported destination denominator units: " + destinationUnits);
+    };
   }
 
   /**
    * Infer a scaling factor without population information.
+   *
+   * <p>Infer the scale factor for converting between source and destination
+   * units without population information.</p>
    *
    * @param source The source unit type
    * @param destination The destination unit type
@@ -254,14 +254,18 @@ public class UnitConverter {
       BigDecimal originalValue = target.getValue();
       EngineNumber conversion = stateGetter.getSubstanceConsumption();
       BigDecimal conversionValue = conversion.getValue();
-      String newUnits = conversion.getUnits().split(" / ")[1];
+      String normalizedUnits = normalizeUnitString(conversion.getUnits());
+      String[] conversionUnitPieces = normalizedUnits.split("/");
+      String newUnits = conversionUnitPieces[1];
       BigDecimal newValue = originalValue.divide(conversionValue, MATH_CONTEXT);
       return new EngineNumber(newValue, newUnits);
     } else if ("unit".equals(currentUnits) || "units".equals(currentUnits)) {
       BigDecimal originalValue = target.getValue();
       EngineNumber conversion = stateGetter.getAmortizedUnitVolume();
       BigDecimal conversionValue = conversion.getValue();
-      String newUnits = conversion.getUnits().split(" / ")[0];
+      String normalizedUnits = normalizeUnitString(conversion.getUnits());
+      String[] conversionUnitPieces = normalizedUnits.split("/");
+      String newUnits = conversionUnitPieces[0];
       BigDecimal newValue = originalValue.multiply(conversionValue);
       return new EngineNumber(newValue, newUnits);
     } else if ("%".equals(currentUnits)) {
@@ -293,7 +297,8 @@ public class UnitConverter {
     } else if ("kg".equals(currentUnits) || "mt".equals(currentUnits)) {
       EngineNumber conversion = stateGetter.getAmortizedUnitVolume();
       BigDecimal conversionValue = conversion.getValue();
-      String[] conversionUnitPieces = conversion.getUnits().split(" / ");
+      String normalizedUnits = normalizeUnitString(conversion.getUnits());
+      String[] conversionUnitPieces = normalizedUnits.split("/");
       String expectedUnits = conversionUnitPieces[0];
       EngineNumber targetConverted = convert(target, expectedUnits);
       BigDecimal originalValue = targetConverted.getValue();
@@ -305,7 +310,7 @@ public class UnitConverter {
       BigDecimal conversionValue = conversion.getValue();
       BigDecimal newValue = originalValue.divide(conversionValue, MATH_CONTEXT);
       return new EngineNumber(newValue, "units");
-    } else if ("%".equals(currentUnits)) {
+    } else if ("%".equals(currentUnits) || "%eachyear".equals(currentUnits)) {
       BigDecimal originalValue = target.getValue();
       BigDecimal asRatio = originalValue.divide(PERCENT_FACTOR, MATH_CONTEXT);
       EngineNumber total = stateGetter.getPopulation();
@@ -335,7 +340,8 @@ public class UnitConverter {
     } else if (currentInfer) {
       EngineNumber conversion = stateGetter.getSubstanceConsumption();
       BigDecimal conversionValue = conversion.getValue();
-      String[] conversionUnitPieces = conversion.getUnits().split(" / ");
+      String normalizedUnits = normalizeUnitString(conversion.getUnits());
+      String[] conversionUnitPieces = normalizedUnits.split("/");
       String newUnits = conversionUnitPieces[0];
       String expectedUnits = conversionUnitPieces[1];
       EngineNumber targetConverted = convert(target, expectedUnits);
@@ -375,7 +381,8 @@ public class UnitConverter {
     } else if (currentInfer) {
       EngineNumber conversion = stateGetter.getEnergyIntensity();
       BigDecimal conversionValue = conversion.getValue();
-      String[] conversionUnitPieces = conversion.getUnits().split(" / ");
+      String normalizedUnits = normalizeUnitString(conversion.getUnits());
+      String[] conversionUnitPieces = normalizedUnits.split("/");
       String newUnits = conversionUnitPieces[0];
       String expectedUnits = conversionUnitPieces[1];
       EngineNumber targetConverted = convert(target, expectedUnits);
@@ -497,17 +504,16 @@ public class UnitConverter {
    */
   private EngineNumber normUnits(EngineNumber target) {
     String currentUnits = target.getUnits();
+    String normalizedCurrentUnits = normalizeUnitString(currentUnits);
 
-    boolean divUnit = currentUnits.endsWith("/ unit");
-    boolean divUnits = currentUnits.endsWith("/ units");
-    boolean isPerUnit = divUnit || divUnits;
+    boolean isPerUnit = normalizedCurrentUnits.endsWith("/unit") || normalizedCurrentUnits.endsWith("/units");
 
     if (!isPerUnit) {
       return target;
     }
 
     BigDecimal originalValue = target.getValue();
-    String newUnits = currentUnits.split(" / ")[0];
+    String newUnits = normalizedCurrentUnits.split("/")[0];
     EngineNumber population = stateGetter.getPopulation();
     BigDecimal populationValue = population.getValue();
     BigDecimal newValue = originalValue.multiply(populationValue);
@@ -523,13 +529,14 @@ public class UnitConverter {
    */
   private EngineNumber normTime(EngineNumber target) {
     String currentUnits = target.getUnits();
+    String normalizedCurrentUnits = normalizeUnitString(currentUnits);
 
-    if (!currentUnits.endsWith(" / year")) {
+    if (!normalizedCurrentUnits.endsWith("/year")) {
       return target;
     }
 
     BigDecimal originalValue = target.getValue();
-    String newUnits = currentUnits.split(" / ")[0];
+    String newUnits = normalizedCurrentUnits.split("/")[0];
     EngineNumber years = stateGetter.getYearsElapsed();
     BigDecimal yearsValue = years.getValue();
     BigDecimal newValue = originalValue.multiply(yearsValue);
@@ -546,9 +553,10 @@ public class UnitConverter {
    */
   private EngineNumber normConsumption(EngineNumber target) {
     String currentUnits = target.getUnits();
+    String normalizedCurrentUnits = normalizeUnitString(currentUnits);
 
-    boolean isCo2 = currentUnits.endsWith(" / tCO2e");
-    boolean isKwh = currentUnits.endsWith(" / kwh");
+    boolean isCo2 = normalizedCurrentUnits.endsWith("/tCO2e");
+    boolean isKwh = normalizedCurrentUnits.endsWith("/kwh");
     if (!isCo2 && !isKwh) {
       return target;
     }
@@ -561,7 +569,7 @@ public class UnitConverter {
     }
 
     BigDecimal originalValue = target.getValue();
-    String newUnits = currentUnits.split(" / ")[0];
+    String newUnits = normalizedCurrentUnits.split("/")[0];
     BigDecimal totalConsumptionValue = targetConsumption.getValue();
     BigDecimal newValue = originalValue.multiply(totalConsumptionValue);
 
@@ -576,15 +584,16 @@ public class UnitConverter {
    */
   private EngineNumber normVolume(EngineNumber target) {
     String targetUnits = target.getUnits();
+    String normalizedTargetUnits = normalizeUnitString(targetUnits);
 
-    boolean divKg = targetUnits.endsWith(" / kg");
-    boolean divMt = targetUnits.endsWith(" / mt");
+    boolean divKg = normalizedTargetUnits.endsWith("/kg");
+    boolean divMt = normalizedTargetUnits.endsWith("/mt");
     boolean needsNorm = divKg || divMt;
     if (!needsNorm) {
       return target;
     }
 
-    String[] targetUnitPieces = targetUnits.split(" / ");
+    String[] targetUnitPieces = normalizedTargetUnits.split("/");
     String newUnits = targetUnitPieces[0];
     String expectedUnits = targetUnitPieces[1];
 

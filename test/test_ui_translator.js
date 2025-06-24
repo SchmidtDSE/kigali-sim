@@ -49,7 +49,7 @@ function buildUiTranslatorTests() {
       });
     };
 
-    buildTest("converts BAU single app substance", "/test/qta/ui/bau_single.qta", [
+    buildTest("converts BAU single app substance", "/examples/ui/bau_single.qta", [
       (result, assert) => {
         assert.ok(result.getIsCompatible());
       },
@@ -82,7 +82,7 @@ function buildUiTranslatorTests() {
 
     buildTest(
       "converts BAU single app substance with energy",
-      "/test/qta/ui/bau_single_energy.qta",
+      "/examples/ui/bau_single_energy.qta",
       [
         (result, assert) => {
           assert.ok(result.getIsCompatible());
@@ -115,7 +115,7 @@ function buildUiTranslatorTests() {
       ],
     );
 
-    buildTest("converts BAU multiple app substance", "/test/qta/ui/bau_multiple.qta", [
+    buildTest("converts BAU multiple app substance", "/examples/ui/bau_multiple.qta", [
       (result, assert) => {
         assert.ok(result.getIsCompatible());
       },
@@ -137,7 +137,7 @@ function buildUiTranslatorTests() {
       },
     ]);
 
-    buildTest("converts single policy", "/test/qta/ui/policy_single.qta", [
+    buildTest("converts single policy", "/examples/ui/policy_single.qta", [
       (result, assert) => {
         assert.ok(result.getIsCompatible());
       },
@@ -162,7 +162,7 @@ function buildUiTranslatorTests() {
       },
     ]);
 
-    buildTest("converts multiple policies", "/test/qta/ui/policy_multiple.qta", [
+    buildTest("converts multiple policies", "/examples/ui/policy_multiple.qta", [
       (result, assert) => {
         assert.ok(result.getIsCompatible());
       },
@@ -190,7 +190,7 @@ function buildUiTranslatorTests() {
       },
     ]);
 
-    buildTest("includes only business as usual", "/test/qta/ui/bau_single.qta", [
+    buildTest("includes only business as usual", "/examples/ui/bau_single.qta", [
       (result, assert) => {
         assert.ok(result.getIsCompatible());
       },
@@ -203,7 +203,7 @@ function buildUiTranslatorTests() {
       },
     ]);
 
-    buildTest("includes additional sim", "/test/qta/ui/sim.qta", [
+    buildTest("includes additional sim", "/examples/ui/sim.qta", [
       (result, assert) => {
         assert.ok(result.getIsCompatible());
       },
@@ -219,13 +219,13 @@ function buildUiTranslatorTests() {
       },
     ]);
 
-    buildTest("converts policy incompatible feature", "/test/qta/ui/incompatible_feature.qta", [
+    buildTest("converts policy incompatible feature", "/examples/ui/incompatible_feature.qta", [
       (result, assert) => {
         assert.ok(!result.getIsCompatible());
       },
     ]);
 
-    buildTest("converts policy incompatible structure", "/test/qta/ui/incompatible_structure.qta", [
+    buildTest("converts policy incompatible structure", "/examples/ui/incompatible_structure.qta", [
       (result, assert) => {
         assert.ok(!result.getIsCompatible());
       },

@@ -57,6 +57,9 @@
     <property name="max" value="100"/>
     <property name="ignorePattern"
              value="^package.*|^import.*|href\s*=\s*&quot;[^&quot;]*&quot;|http://|https://|ftp://"/>
+    <!-- Exclude test files from line length check -->
+    <property name="severity" value="ignore" default="ignore" />
+    <metadata name="net.sf.eclipsecs.core.lastEnabledSeverity" value="inherit"/>
   </module>
 
   <module name="TreeWalker">

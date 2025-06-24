@@ -45,19 +45,19 @@ public class StreamParameterization {
    * Reset all internal parameters to their default values.
    */
   public void resetInternals() {
-    this.ghgIntensity = new EngineNumber(BigDecimal.ZERO, "tCO2e / kg");
-    this.energyIntensity = new EngineNumber(BigDecimal.ZERO, "kwh / kg");
+    ghgIntensity = new EngineNumber(BigDecimal.ZERO, "tCO2e / kg");
+    energyIntensity = new EngineNumber(BigDecimal.ZERO, "kwh / kg");
 
-    this.initialCharge.put("manufacture", new EngineNumber(BigDecimal.ONE, "kg / unit"));
-    this.initialCharge.put("import", new EngineNumber(BigDecimal.ONE, "kg / unit"));
+    initialCharge.put("manufacture", new EngineNumber(BigDecimal.ONE, "kg / unit"));
+    initialCharge.put("import", new EngineNumber(BigDecimal.ONE, "kg / unit"));
 
-    this.rechargePopulation = new EngineNumber(BigDecimal.ZERO, "%");
-    this.rechargeIntensity = new EngineNumber(BigDecimal.ZERO, "kg / unit");
-    this.recoveryRate = new EngineNumber(BigDecimal.ZERO, "%");
-    this.yieldRate = new EngineNumber(BigDecimal.ZERO, "%");
-    this.retirementRate = new EngineNumber(BigDecimal.ZERO, "%");
-    this.displacementRate = new EngineNumber(new BigDecimal("100"), "%");
-    this.lastSpecifiedUnits = "kg";
+    rechargePopulation = new EngineNumber(BigDecimal.ZERO, "%");
+    rechargeIntensity = new EngineNumber(BigDecimal.ZERO, "kg / unit");
+    recoveryRate = new EngineNumber(BigDecimal.ZERO, "%");
+    yieldRate = new EngineNumber(BigDecimal.ZERO, "%");
+    retirementRate = new EngineNumber(BigDecimal.ZERO, "%");
+    displacementRate = new EngineNumber(new BigDecimal("100"), "%");
+    lastSpecifiedUnits = "kg";
   }
 
   /**
@@ -66,7 +66,7 @@ public class StreamParameterization {
    * @param newValue The new GHG intensity value
    */
   public void setGhgIntensity(EngineNumber newValue) {
-    this.ghgIntensity = newValue;
+    ghgIntensity = newValue;
   }
 
   /**
@@ -84,7 +84,7 @@ public class StreamParameterization {
    * @param newValue The new energy intensity value
    */
   public void setEnergyIntensity(EngineNumber newValue) {
-    this.energyIntensity = newValue;
+    energyIntensity = newValue;
   }
 
   /**
@@ -124,7 +124,7 @@ public class StreamParameterization {
    * @param newValue The new recharge population value
    */
   public void setRechargePopulation(EngineNumber newValue) {
-    this.rechargePopulation = newValue;
+    rechargePopulation = newValue;
   }
 
   /**
@@ -142,7 +142,7 @@ public class StreamParameterization {
    * @param newValue The new recharge intensity value
    */
   public void setRechargeIntensity(EngineNumber newValue) {
-    this.rechargeIntensity = newValue;
+    rechargeIntensity = newValue;
   }
 
   /**
@@ -160,7 +160,7 @@ public class StreamParameterization {
    * @param newValue The new recovery rate value
    */
   public void setRecoveryRate(EngineNumber newValue) {
-    this.recoveryRate = newValue;
+    recoveryRate = newValue;
   }
 
   /**
@@ -178,7 +178,7 @@ public class StreamParameterization {
    * @param newValue The new yield rate value
    */
   public void setYieldRate(EngineNumber newValue) {
-    this.yieldRate = newValue;
+    yieldRate = newValue;
   }
 
   /**
@@ -196,7 +196,7 @@ public class StreamParameterization {
    * @param newValue The new displacement rate value
    */
   public void setDisplacementRate(EngineNumber newValue) {
-    this.displacementRate = newValue;
+    displacementRate = newValue;
   }
 
   /**
@@ -214,7 +214,7 @@ public class StreamParameterization {
    * @param newValue The new retirement rate value
    */
   public void setRetirementRate(EngineNumber newValue) {
-    this.retirementRate = newValue;
+    retirementRate = newValue;
   }
 
   /**
@@ -232,7 +232,11 @@ public class StreamParameterization {
    * @param units The units string last used to specify a stream
    */
   public void setLastSpecifiedUnits(String units) {
-    this.lastSpecifiedUnits = units;
+    // Ignore percentage units to avoid impacting last recorded units
+    if (units != null && units.contains("%")) {
+      return;
+    }
+    lastSpecifiedUnits = units;
   }
 
   /**

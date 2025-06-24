@@ -21,6 +21,8 @@ class EngineResult {
    * @param {string} substance - The substance associated with this engine
    *     result.
    * @param {number} year - The year for which the engine result is relevant.
+   * @param {string} scenarioName - The name of the scenario being run.
+   * @param {number} trialNumber - The trial number of the current run.
    * @param {EngineNumber} manufactureValue - The value associated with
    *     manufacturing in volume like kg.
    * @param {EngineNumber} importValue - The value related to imports like in
@@ -48,6 +50,8 @@ class EngineResult {
     application,
     substance,
     year,
+    scenarioName,
+    trialNumber,
     manufactureValue,
     importValue,
     recycleValue,
@@ -65,6 +69,8 @@ class EngineResult {
     self._application = application;
     self._substance = substance;
     self._year = year;
+    self._scenarioName = scenarioName;
+    self._trialNumber = trialNumber;
     self._manufactureValue = manufactureValue;
     self._importValue = importValue;
     self._recycleValue = recycleValue;
@@ -266,6 +272,26 @@ class EngineResult {
   getImportSupplement() {
     const self = this;
     return self._importSupplement;
+  }
+
+  /**
+   * Get the scenario name.
+   *
+   * @returns {string} The name of the scenario being run.
+   */
+  getScenarioName() {
+    const self = this;
+    return self._scenarioName;
+  }
+
+  /**
+   * Get the trial number.
+   *
+   * @returns {number} The trial number of the current run.
+   */
+  getTrialNumber() {
+    const self = this;
+    return self._trialNumber;
   }
 }
 
@@ -489,6 +515,26 @@ class AttributeToExporterResult {
     const self = this;
     return self._inner.getImportSupplement();
   }
+
+  /**
+   * Get the scenario name.
+   *
+   * @returns {string} The name of the scenario being run.
+   */
+  getScenarioName() {
+    const self = this;
+    return self._inner.getScenarioName();
+  }
+
+  /**
+   * Get the trial number.
+   *
+   * @returns {number} The trial number of the current run.
+   */
+  getTrialNumber() {
+    const self = this;
+    return self._inner.getTrialNumber();
+  }
 }
 
 /**
@@ -561,6 +607,8 @@ class EngineResultBuilder {
     self._application = null;
     self._substance = null;
     self._year = null;
+    self._scenarioName = null;
+    self._trialNumber = null;
     self._manufactureValue = null;
     self._importValue = null;
     self._recycleValue = null;
@@ -605,6 +653,26 @@ class EngineResultBuilder {
   setYear(year) {
     const self = this;
     self._year = year;
+  }
+
+  /**
+   * Set the scenario name for which a result is being given.
+   *
+   * @param {string} scenarioName - The name of the scenario being run.
+   */
+  setScenarioName(scenarioName) {
+    const self = this;
+    self._scenarioName = scenarioName;
+  }
+
+  /**
+   * Set the trial number for which a result is being given.
+   *
+   * @param {number} trialNumber - The trial number of the current run.
+   */
+  setTrialNumber(trialNumber) {
+    const self = this;
+    self._trialNumber = trialNumber;
   }
 
   /**
@@ -752,6 +820,8 @@ class EngineResultBuilder {
       self._application,
       self._substance,
       self._year,
+      self._scenarioName,
+      self._trialNumber,
       self._manufactureValue,
       self._importValue,
       self._recycleValue,
@@ -779,6 +849,8 @@ class EngineResultBuilder {
     checkValid(self._application, "application");
     checkValid(self._substance, "substance");
     checkValid(self._year, "year");
+    checkValid(self._scenarioName, "scenarioName");
+    checkValid(self._trialNumber, "trialNumber");
     checkValid(self._manufactureValue, "manufactureValue");
     checkValid(self._importValue, "importValue");
     checkValid(self._recycleValue, "recycleValue");
@@ -1079,97 +1151,6 @@ class AggregatedResult {
   }
 }
 
-/**
- * Results of a simulation run.
- *
- * Structure containing information about results across all applications and
- * substances across all years.
- */
-class SimulationResult {
-  /**
-   * Creates a new simulation result instance
-   * @param {string} name - The name of the simulation
-   * @param {Array<Array<Array<EngineResult>>>} trialResults - Array containing
-   *     the results of each year where each year contains multiple substances
-   *     and applications. One Array<Array> provided per trial (as in Monte
-   *     Carlo).
-   */
-  constructor(name, trialResults) {
-    const self = this;
-    self._name = name;
-    self._trialResults = trialResults;
-  }
-
-  /**
-   * Gets the name of the simulation as defined in code.
-   *
-   * @returns {string} The simulation name like Package A.
-   */
-  getName() {
-    const self = this;
-    return self._name;
-  }
-
-  /**
-   * Gets the results from all trial runs.
-   *
-   * @returns {Array<Array<Array<EngineResult>>>} Array of trial results where
-   *     the outermost array represents a single trial (as in Monte Carlo).
-   *     Each inside array represents a year and each innermost array includes
-   *     all application / substance pairs within that year.
-   */
-  getTrialResults() {
-    const self = this;
-    return self._trialResults;
-  }
-}
-
-/**
- * Decorator which proivdes results with exporter-attribution.
- *
- * Decorator around SimulationResult which attributes consumption to exporters
- * such that the importer's consumption only reflects recharge and not initial
- * charge.
- */
-class SimulationAttributeToExporterResult {
-  /**
-   * Create a new decorator.
-   *
-   * @param {SimulationResult} inner - Result to decorate.
-   */
-  constructor(inner) {
-    const self = this;
-    self._inner = inner;
-    self._trialResults = self._inner.getTrialResults().map((trial) => {
-      return trial.map((results) => {
-        return results.map((x) => new AttributeToExporterResult(x));
-      });
-    });
-  }
-
-  /**
-   * Get the name of the simulation executed.
-   *
-   * @returns {string} Simulation name like BAU.
-   */
-  getName() {
-    const self = this;
-    return self._inner.getName();
-  }
-
-  /**
-   * Gets the results from all trial runs.
-   *
-   * @returns {Array<Array<Array<EngineResult>>>} Array of trial results where
-   *     the outermost array represents a single trial (as in Monte Carlo).
-   *     Each inside array represents a year and each innermost array includes
-   *     all application / substance pairs within that year.
-   */
-  getTrialResults() {
-    const self = this;
-    return self._trialResults;
-  }
-}
 
 export {
   AggregatedResult,
@@ -1177,6 +1158,4 @@ export {
   EngineResult,
   EngineResultBuilder,
   ImportSupplement,
-  SimulationResult,
-  SimulationAttributeToExporterResult,
 };

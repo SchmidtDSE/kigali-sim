@@ -5,9 +5,7 @@
  */
 
 import {EngineNumber} from "engine_number";
-import {Engine} from "engine";
-import {YearMatcher} from "engine_state";
-import {SimulationResult} from "engine_struct";
+import {YearMatcher} from "year_matcher";
 
 const toolkit = QubecTalk.getToolkit();
 
@@ -1289,39 +1287,40 @@ class CompileVisitor extends toolkit.QubecTalkVisitor {
         return simulationFuture(bootstrapEngine);
       });
       const results = simulations.map((simulation) => {
-        const runSimulation = () => {
-          const engine = new Engine(simulation.start, simulation.end);
-
-          const runYear = () => {
-            const stanzas = simulation.stanzas;
-            stanzas.forEach((stanzaName) => {
-              if (!stanzasByName.get(stanzaName)) {
-                throw "Could not find " + stanzaName;
-              }
-              const stanzaDetails = stanzasByName.get(stanzaName);
-              const stanzaExecutable = stanzaDetails.executable;
-              stanzaExecutable(engine);
-            });
-            return engine.getResults();
-          };
-
-          const yearResults = [];
-          while (!engine.getIsDone()) {
-            yearResults.push(runYear());
-            engine.incrementYear();
-          }
-
-          return yearResults;
-        };
-
         const trialResults = [];
         for (let i = 0; i < simulation.trials; i++) {
-          trialResults.push(runSimulation());
+          const runSimulationWithContext = () => {
+            const engine = new Engine(simulation.start, simulation.end);
+            engine.setScenarioName(simulation.name);
+            engine.setTrialNumber(i + 1);
+
+            const runYear = () => {
+              const stanzas = simulation.stanzas;
+              stanzas.forEach((stanzaName) => {
+                if (!stanzasByName.get(stanzaName)) {
+                  throw "Could not find " + stanzaName;
+                }
+                const stanzaDetails = stanzasByName.get(stanzaName);
+                const stanzaExecutable = stanzaDetails.executable;
+                stanzaExecutable(engine);
+              });
+              return engine.getResults();
+            };
+
+            const yearResults = [];
+            while (!engine.getIsDone()) {
+              yearResults.push(runYear());
+              engine.incrementYear();
+            }
+
+            return yearResults;
+          };
+          trialResults.push(runSimulationWithContext());
         }
 
-        return new SimulationResult(simulation.name, trialResults);
+        return trialResults.flat(2);
       });
-      return results;
+      return results.flat();
     };
 
     return execute;

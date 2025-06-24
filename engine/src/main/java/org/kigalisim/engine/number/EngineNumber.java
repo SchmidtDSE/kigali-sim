@@ -72,4 +72,14 @@ public class EngineNumber {
   public boolean hasEquipmentUnits() {
     return units.startsWith("unit");
   }
+
+  /**
+   * Return a string representation of this number with its value and units.
+   *
+   * @return String representation in the format "value units"
+   */
+  @Override
+  public String toString() {
+    return value + " " + units;
+  }
 }

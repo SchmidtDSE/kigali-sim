@@ -78,24 +78,24 @@ public class VariableManager {
       throw new IllegalArgumentException("Unexpected context level: " + contextLevel);
     }
 
-    Map<String, EngineNumber> newStanzaContext = this.stanzaContext;
+    Map<String, EngineNumber> newStanzaContext = stanzaContext;
     if (contextLevel <= STANZA_CONTEXT) {
       newStanzaContext = new HashMap<>();
     }
 
-    Map<String, EngineNumber> newApplicationContext = this.applicationContext;
+    Map<String, EngineNumber> newApplicationContext = applicationContext;
     if (contextLevel <= APPLICATION_CONTEXT) {
       newApplicationContext = new HashMap<>();
     }
 
-    Map<String, EngineNumber> newSubstanceContext = this.substanceContext;
+    Map<String, EngineNumber> newSubstanceContext = substanceContext;
     if (contextLevel <= SUBSTANCE_CONTEXT) {
       newSubstanceContext = new HashMap<>();
     }
 
     return new VariableManager(
         contextLevel,
-        this.globalContext,
+        globalContext,
         newStanzaContext,
         newApplicationContext,
         newSubstanceContext
