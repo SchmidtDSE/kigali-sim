@@ -11,10 +11,10 @@ HFC-134a is used across multiple applications with the following equipment popul
 
 |                                    | **Prior Equipment Population (Units)** | **Initial Charge (kg/unit)** | **Units Annually Serviced** | **Annual Retirement** | **Annual Recharge (kg/unit)** |
 | ---------------------------------- | -------------------------------------- | ---------------------------- | --------------------------- | --------------------- | ----------------------------- |
-| **Domestic refrigeration**         | 1,000,000                              | 0.15                         | 10%                         | 2%                    | 0.15                          |
-| **Commercial refrigeration**       | 200,000                                | 0.60                         | 30%                         | 3%                    | 0.60                          |
-| **MAC**                            | 500,000                                | 1.00                         | 20%                         | 2%                    | 1.00                          |
-| **Chiller**                        | 50,000                                 | 5.00                         | 25%                         | 2%                    | 5.00                          |
+| **Domestic refrigeration**         | 1,000,000                              | 0.15                         | 10%                         | 5%                    | 0.15                          |
+| **Commercial refrigeration**       | 200,000                                | 0.60                         | 30%                         | 10%                   | 0.60                          |
+| **MAC**                            | 500,000                                | 1.00                         | 20%                         | 5%                    | 1.00                          |
+| **Chiller**                        | 50,000                                 | 5.00                         | 25%                         | 5%                    | 5.00                          |
 
 Local manufacturing for domestic refrigeration is made up of a single manufacturer accounts which for 30,000 units per year are produced. There is no import for domestic refrigeration with HFC-134a. However, 10,000 units per year are imported spread proportionally across all other applications. This has a GWP of 1,430.0 tCO2e.
 
@@ -26,7 +26,7 @@ start default
 	  uses substance "HFC-134a"
 		  set priorEquipment to 1000000 units during beginning
 		  initial charge with 0.15 kg / unit for sales
-		  retire 2 % each year
+		  retire 5 % each year
 		  recharge 10% each year with 0.15 kg / unit
 		  set manufacture to 30000 units / year during beginning
 		  equals 1430 tCO2e / kg
@@ -40,7 +40,7 @@ start default
 	  uses substance "HFC-134a"
 		  set priorEquipment to 200000 units during beginning
 		  initial charge with 0.60 kg / unit for sales
-		  retire 3 % each year
+		  retire 10 % each year
 		  recharge 30% each year with 0.60 kg / unit
 		  equals 1430 tCO2e / kg
 		  set import to (10000 * (200000 / 750000)) units / year during year 1
@@ -54,7 +54,7 @@ start default
 	  uses substance "HFC-134a"
 		  set priorEquipment to 500000 units during beginning
 		  initial charge with 1.00 kg / unit for sales
-		  retire 2 % each year
+		  retire 5 % each year
 		  recharge 20% each year with 1.00 kg / unit
 		  equals 1430 tCO2e / kg
 		  set import to (10000 * (500000 / 750000)) units / year during beginning
@@ -69,7 +69,7 @@ start default
 	  uses substance "HFC-134a"
 		  set priorEquipment to 50000 units during beginning
 		  initial charge with 5.00 kg / unit for sales
-		  retire 2 % each year
+		  retire 5 % each year
 		  recharge 25% each year with 5.00 kg / unit
 		  equals 1430 tCO2e / kg
 		  set import to (10000 * (50000 / 750000)) units / year during beginning
@@ -85,8 +85,8 @@ R-404A is used in commercial refrigeration applications:
 
 |                              | **Prior Equipment Population (Units)** | **Initial Charge (kg/unit)** | **Units Annually Serviced** | **Annual Retirement** | **Recharge (kg/unit)** |
 | ---------------------------- | -------------------------------------- | ---------------------------- | --------------------------- | --------------------- | ---------------------- |
-| **Commercial refrigeration** | 90,000                                 | 2.00                         | 10%                         | 2%                    | 2.00                   |
-| **Transport refrigeration**  | 20,000                                 | 10.00                        | 30%                         | 3%                    | 10.00                  |
+| **Commercial refrigeration** | 90,000                                 | 2.00                         | 10%                         | 5%                    | 2.00                   |
+| **Transport refrigeration**  | 20,000                                 | 10.00                        | 30%                         | 10%                   | 10.00                  |
 
 This substance is fully imported and there is no domestic manufacturing. 1,100 units are being imported currently per year. This has a GWP of 3,921.6 tCO2e. While not currently used in domestic refrigeration, MAC and chiller, this could be a replacement in those applications to HFC-134a with the same annual servicing frequency and retirement but 50% of the initial charge and recharge levels.
 
@@ -96,7 +96,7 @@ This substance is fully imported and there is no domestic manufacturing. 1,100 u
 	  uses substance "R-404A"
 		  set priorEquipment to 90000 units during beginning
 		  initial charge with 2.00 kg / unit for sales
-		  retire 2 % each year
+		  retire 5 % each year
 		  recharge 10% each year with 2.00 kg / unit
 		  set import to 900 units / year during beginning
 		  equals 3921.6 tCO2e / kg
@@ -111,7 +111,7 @@ This substance is fully imported and there is no domestic manufacturing. 1,100 u
 
 		uses substance "R-404A"
 		  initial charge with 0.08 kg / unit for sales
-		  retire 2 % each year
+		  retire 5 % each year
 		  recharge 10% each year with 0.08 kg / unit
 		  equals 3921.6 tCO2e / kg
 	  end substance
@@ -126,7 +126,7 @@ This substance is fully imported and there is no domestic manufacturing. 1,100 u
 	  uses substance "R-404A"
 		  set priorEquipment to 20000 units during beginning
 		  initial charge with 10.00 kg / unit for sales
-		  retire 3 % each year
+		  retire 10 % each year
 		  recharge 30% each year with 10.00 kg / unit
 		  equals 3921.6 tCO2e / kg
 		  set import to 200 units / year during beginning
@@ -141,7 +141,7 @@ This substance is fully imported and there is no domestic manufacturing. 1,100 u
 	
 	  uses substance "R-404A"
 		  initial charge with 0.50 kg / unit for sales
-		  retire 2 % each year
+		  retire 5 % each year
 		  recharge 20% each year with 0.50 kg / unit
 		  equals 3921.6 tCO2e / kg
 	  end substance
@@ -155,7 +155,7 @@ This substance is fully imported and there is no domestic manufacturing. 1,100 u
 	
 	  uses substance "R-404A"
 		  initial charge with 2.50 kg / unit for sales
-		  retire 2 % each year
+		  retire 5 % each year
 		  recharge 25% each year with 2.50 kg / unit
 		  equals 3921.6 tCO2e / kg
 	  end substance
@@ -168,8 +168,8 @@ HFC-32 is used in domestic and commercial air conditioning:
 
 |                     | **Prior Equipment Population (Units)** | **Initial Charge (kg/unit)** | **Units Annually Serviced** | **Annual Retirement** | **Recharge (kg/unit)** |
 | ------------------- | -------------------------------------- | ---------------------------- | --------------------------- | --------------------- | ---------------------- |
-| **Domestic AC**     | 20,000                                 | 0.85                         | 10%                         | 1%                    | 0.85                   |
-| **Commercial AC**   | 5,000                                  | 4.00                         | 10%                         | 1%                    | 4.00                   |
+| **Domestic AC**     | 20,000                                 | 0.85                         | 10%                         | 5%                    | 0.85                   |
+| **Commercial AC**   | 5,000                                  | 4.00                         | 10%                         | 5%                    | 4.00                   |
 
 There is currently no domestic manufacturing for HFC-32 and 1,000 units are imported per year. This has a GWP of 675.0 tCO2e.
 
@@ -179,7 +179,7 @@ There is currently no domestic manufacturing for HFC-32 and 1,000 units are impo
 	  uses substance "HFC-32"
 		  set priorEquipment to 20000 units during beginning
 		  initial charge with 0.85 kg / unit for sales
-		  retire 1 % each year
+		  retire 5 % each year
 		  recharge 10% each year with 0.85 kg / unit
 		  set import to (1000 * (20000 / 25000)) units / year during beginning
 		  equals 675.0 tCO2e / kg
@@ -192,7 +192,7 @@ There is currently no domestic manufacturing for HFC-32 and 1,000 units are impo
 		uses substance "HFC-32"
 		  set priorEquipment to 5000 units during beginning
 		  initial charge with 4.00 kg / unit for sales
-		  retire 1 % each year
+		  retire 5 % each year
 		  recharge 10% each year with 4.00 kg / unit
 		  set import to (1000 * (5000 / 25000)) units / year during beginning
 		  equals 675.0 tCO2e / kg
@@ -206,8 +206,8 @@ Both substances are used in domestic and commercial air conditioning:
 
 |                     | **Prior Equipment Population (Units)** | **Initial Charge (kg/unit)** | **Units Annually Serviced** | **Annual Retirement** | **Recharge (kg/unit)** |
 | ------------------- | -------------------------------------- | ---------------------------- | --------------------------- | --------------------- | ---------------------- |
-| **Domestic AC**     | 400,000                                | 1.00                         | 10%                         | 1%                    | 1.00                   |
-| **Commercial AC**   | 30,000                                 | 5.00                         | 10%                         | 1%                    | 5.00                   |
+| **Domestic AC**     | 400,000                                | 1.00                         | 10%                         | 5%                    | 1.00                   |
+| **Commercial AC**   | 30,000                                 | 5.00                         | 10%                         | 5%                    | 5.00                   |
 
 There is one Domestic AC manufacturer using R-410A with production volume of 40,000 units per annum. Domestic AC are imported at 100 units per year and Commercial AC are imported at 3,000 units per year. This has a GWP of 2,087.5 tCO2e.
 
@@ -219,7 +219,7 @@ There is one Domestic AC manufacturer using R-410A with production volume of 40,
 	  uses substance "R-410A"
 		  set priorEquipment to 400000 units during beginning
 		  initial charge with 1.00 kg / unit for sales
-		  retire 1 % each year
+		  retire 5 % each year
 		  recharge 10% each year with 1.00 kg / unit
 		  set import to 100 units / year during beginning
 		  set manufacture to 40000 units / year during beginning
@@ -235,7 +235,7 @@ There is one Domestic AC manufacturer using R-410A with production volume of 40,
 		uses substance "R-410A"
 		  set priorEquipment to 30000 units during beginning
 		  initial charge with 5.00 kg / unit for sales
-		  retire 1 % each year
+		  retire 5 % each year
 		  recharge 10% each year with 5.00 kg / unit
 		  set import to 3000 units / year during beginning
 		  equals 2087.5 tCO2e / kg
@@ -250,21 +250,21 @@ Before considering policy interventions, we start by examining a business as usu
 ### General
 We first can use national economic growth projections as well as industry growth projections to set overall trends.
 
-| **Application**          | **2025 - 2033**    | **2034 - 2035**    | **Source**                                     |
+| **Application**          | **2025 - 2030**    | **2031 - 2035**    | **Source**                                     |
 | ------------------------ | ------------------ | ------------------ | ---------------------------------------------- |
 | Domestic refrigeration   | + 5% annual growth | + 3% annual growth | National economic growth                       |
 | Commercial refrigeration | + 8% annual growth | + 5% annual growth | Industry growth in food processing and tourism |
 | Commercial AC            | + 8% annual growth | + 5% annual growth | Industry growth in food processing and tourism |
 
-In addition to these high level trends, there are some assumptions specific to individual substances. First, we anticipate 50% by weight of HFC initial charge for refrigeration equipment for alternatives. This leads to R-404A initial charges of 0.03 kg / unit for commercial refrigeration and 0.08 for domestic refrigeration.
+In addition to these high level trends, there are some assumptions specific to individual substances based on industry surveys. First, we anticipate 50% by weight of HFC initial charge for refrigeration equipment for alternatives. This leads to R-404A initial charges of 0.03 kg / unit for commercial refrigeration and 0.08 for domestic refrigeration.
 
 ```
 	define application "Domestic Refrigeration"
 
 		uses substance "HFC-134a"
 			# ... existing code ...
-			change equipment by +5 % each year from year 2025 to 2033
-			change equipment by +3 % each year from year 2034 to 2035
+			change equipment by +5 % each year from year 2025 to 2030
+			change equipment by +3 % each year from year 2031 to 2035
 		end substance
 
 		# ... R-404A ...
@@ -276,14 +276,14 @@ In addition to these high level trends, there are some assumptions specific to i
 
 		uses substance "HFC-134a"
 			# ... existing code ...
-			change equipment by +8 % each year from year 2025 to 2033
-			change equipment by +5 % each year from year 2034 to 2035
+			change equipment by +8 % each year from year 2025 to 2030
+			change equipment by +5 % each year from year 2031 to 2035
 		end substance
 
 		uses substance "R-404A"
 			# ... existing code ...
-			change equipment by +8 % each year from year 2025 to 2033
-			change equipment by +5 % each year from year 2034 to 2035
+			change equipment by +8 % each year from year 2025 to 2030
+			change equipment by +5 % each year from year 2031 to 2035
 		end substance
 
 	end application
@@ -293,14 +293,14 @@ In addition to these high level trends, there are some assumptions specific to i
 
 		uses substance "HFC-32"
 			# ... existing code ...
-			change equipment by +8 % each year from year 2025 to 2033
-			change equipment by +5 % each year from year 2034 to 2035
+			change equipment by +8 % each year from year 2025 to 2030
+			change equipment by +5 % each year from year 2031 to 2035
 		end substance
 
 		uses substance "R-410A"
 			# ... existing code ...
-			change equipment by +8 % each year from year 2025 to 2033
-			change equipment by +5 % each year from year 2034 to 2035
+			change equipment by +8 % each year from year 2025 to 2030
+			change equipment by +5 % each year from year 2031 to 2035
 		end substance
 
 	end application
@@ -319,7 +319,7 @@ First, for HFC-32, we expect growth in imports to grow by 100% linearly from 202
 		uses substance "HFC-32"
 		  initial charge with 0.90 kg / unit for sales
 			# ... other code ...
-			change equipment by +7.18 % each year from year 2025 to 2035
+			change equipment by +7 % each year from year 2025 to 2035
 		end substance
 
 		# ... R-410A ...
@@ -332,7 +332,7 @@ First, for HFC-32, we expect growth in imports to grow by 100% linearly from 202
 		uses substance "HFC-32"
 		  initial charge with 4.50 kg / unit for sales
 			# ... other code ...
-			change equipment by +7.18 % each year from year 2025 to 2035
+			change equipment by +7 % each year from year 2025 to 2035
 		end substance
 
 		# ... R-410A ...
@@ -388,7 +388,7 @@ Next, moving forward, we will assume that HFC consumption will be a bit higher t
 	  uses substance "HFC-32"
 		  set priorEquipment to 20000 * 120 % units during beginning
 		  initial charge with 0.85 kg / unit for sales
-		  retire 1 % each year
+		  retire 5 % each year
 		  recharge 10% each year with 0.85 kg / unit
 		  set import to (1000 * (20000 / 25000)) units / year during beginning
 		  equals 675.0 tCO2e / kg
@@ -401,7 +401,7 @@ Next, moving forward, we will assume that HFC consumption will be a bit higher t
 		uses substance "HFC-32"
 		  set priorEquipment to 5000 * 120 % units during beginning
 		  initial charge with 4.00 kg / unit for sales
-		  retire 1 % each year
+		  retire 5 % each year
 		  recharge 10% each year with 4.00 kg / unit
 		  set import to (1000 * (5000 / 25000)) units / year during beginning
 		  equals 675.0 tCO2e / kg
@@ -511,7 +511,7 @@ start policy "Recovery and Recycling"
 			recover 28 % with 100 % reuse during year 2027
 			recover 42 % with 100 % reuse during year 2028
 			recover 56 % with 100 % reuse during year 2029
-			recover 70 % with 100 % reuse during years 2030 to onwards
+			recover 40 % with 100 % reuse during years 2030 to onwards
 		end substance
 		
 		modify substance "R-404A"
@@ -519,7 +519,7 @@ start policy "Recovery and Recycling"
 			recover 28 % with 100 % reuse during year 2027
 			recover 42 % with 100 % reuse during year 2028
 			recover 56 % with 100 % reuse during year 2029
-			recover 70 % with 100 % reuse during years 2030 to onwards
+			recover 40 % with 100 % reuse during years 2030 to onwards
 		end substance
 	
 	end application
@@ -532,7 +532,7 @@ start policy "Recovery and Recycling"
 			recover 28 % with 100 % reuse during year 2027
 			recover 42 % with 100 % reuse during year 2028
 			recover 56 % with 100 % reuse during year 2029
-			recover 70 % with 100 % reuse during years 2030 to onwards
+			recover 40 % with 100 % reuse during years 2030 to onwards
 		end substance
 		
 		modify substance "R-404A"
@@ -540,7 +540,7 @@ start policy "Recovery and Recycling"
 			recover 28 % with 100 % reuse during year 2027
 			recover 42 % with 100 % reuse during year 2028
 			recover 56 % with 100 % reuse during year 2029
-			recover 70 % with 100 % reuse during years 2030 to onwards
+			recover 40 % with 100 % reuse during years 2030 to onwards
 		end substance
 	
 	end application
@@ -553,7 +553,7 @@ start policy "Recovery and Recycling"
 			recover 28 % with 100 % reuse during year 2027
 			recover 42 % with 100 % reuse during year 2028
 			recover 56 % with 100 % reuse during year 2029
-			recover 70 % with 100 % reuse during years 2030 to onwards
+			recover 40 % with 100 % reuse during years 2030 to onwards
 		end substance
 		
 		modify substance "R-404A"
@@ -561,7 +561,7 @@ start policy "Recovery and Recycling"
 			recover 28 % with 100 % reuse during year 2027
 			recover 42 % with 100 % reuse during year 2028
 			recover 56 % with 100 % reuse during year 2029
-			recover 70 % with 100 % reuse during years 2030 to onwards
+			recover 40 % with 100 % reuse during years 2030 to onwards
 		end substance
 	
 	end application
@@ -574,7 +574,7 @@ start policy "Recovery and Recycling"
 			recover 28 % with 100 % reuse during year 2027
 			recover 42 % with 100 % reuse during year 2028
 			recover 56 % with 100 % reuse during year 2029
-			recover 70 % with 100 % reuse during years 2030 to onwards
+			recover 40 % with 100 % reuse during years 2030 to onwards
 		end substance
 		
 		modify substance "R-404A"
@@ -582,7 +582,7 @@ start policy "Recovery and Recycling"
 			recover 28 % with 100 % reuse during year 2027
 			recover 42 % with 100 % reuse during year 2028
 			recover 56 % with 100 % reuse during year 2029
-			recover 70 % with 100 % reuse during years 2030 to onwards
+			recover 40 % with 100 % reuse during years 2030 to onwards
 		end substance
 	
 	end application
@@ -594,7 +594,7 @@ start policy "Recovery and Recycling"
 			recover 28 % with 100 % reuse during year 2027
 			recover 42 % with 100 % reuse during year 2028
 			recover 56 % with 100 % reuse during year 2029
-			recover 70 % with 100 % reuse during years 2030 to onwards
+			recover 40 % with 100 % reuse during years 2030 to onwards
 	  end substance
 
 	  modify substance "R-410A"
@@ -602,7 +602,7 @@ start policy "Recovery and Recycling"
 			recover 28 % with 100 % reuse during year 2027
 			recover 42 % with 100 % reuse during year 2028
 			recover 56 % with 100 % reuse during year 2029
-			recover 70 % with 100 % reuse during years 2030 to onwards
+			recover 40 % with 100 % reuse during years 2030 to onwards
 	  end substance
 
 	end application
@@ -614,7 +614,7 @@ start policy "Recovery and Recycling"
 			recover 28 % with 100 % reuse during year 2027
 			recover 42 % with 100 % reuse during year 2028
 			recover 56 % with 100 % reuse during year 2029
-			recover 70 % with 100 % reuse during years 2030 to onwards
+			recover 40 % with 100 % reuse during years 2030 to onwards
 	  end substance
 
 		modify substance "R-410A"
@@ -622,7 +622,7 @@ start policy "Recovery and Recycling"
 			recover 28 % with 100 % reuse during year 2027
 			recover 42 % with 100 % reuse during year 2028
 			recover 56 % with 100 % reuse during year 2029
-			recover 70 % with 100 % reuse during years 2030 to onwards
+			recover 40 % with 100 % reuse during years 2030 to onwards
 	  end substance
 
 	end application
@@ -675,7 +675,7 @@ start default
     uses substance "HFC-134a"
       set priorEquipment to 1200000 units during year 2025
       initial charge with 0.15 kg / unit for sales
-      retire 2 % each year
+      retire 5 % each year
       recharge 10 % each year with 0.15 kg / unit
       set manufacture to 30000 units / year during year 2025
       change equipment by +5 % each year during years 2026 to 2033
@@ -685,7 +685,7 @@ start default
 
     uses substance "R-404A"
       initial charge with 0.08 kg / unit for sales
-      retire 2 % each year
+      retire 5 % each year
       recharge 10 % each year with 0.08 kg / unit
       equals 3921.6 tCO2e / kg
     end substance
@@ -697,7 +697,7 @@ start default
     uses substance "HFC-134a"
       set priorEquipment to 240000 units during year 2025
       initial charge with 0.60 kg / unit for sales
-      retire 3 % each year
+      retire 10 % each year
       recharge 30 % each year with 0.60 kg / unit
       set import to 2667 units / year during year 2025
       change equipment by +8 % each year during years 2026 to 2033
@@ -708,7 +708,7 @@ start default
     uses substance "R-404A"
       set priorEquipment to 20000 units during year 2025
       initial charge with 10.00 kg / unit for sales
-      retire 3 % each year
+      retire 10 % each year
       recharge 30 % each year with 10.00 kg / unit
       set import to 200 units / year during year 2025
       change equipment by +8 % each year during years 2026 to 2033
@@ -723,7 +723,7 @@ start default
     uses substance "HFC-134a"
       set priorEquipment to 600000 units during year 2025
       initial charge with 1.00 kg / unit for sales
-      retire 2 % each year
+      retire 5 % each year
       recharge 20 % each year with 1.00 kg / unit
       set import to 6667 units / year during year 2025
       equals 1430 tCO2e / kg
@@ -731,7 +731,7 @@ start default
 
     uses substance "R-404A"
       initial charge with 0.50 kg / unit for sales
-      retire 2 % each year
+      retire 5 % each year
       recharge 20 % each year with 0.50 kg / unit
       equals 3921.6 tCO2e / kg
     end substance
@@ -743,7 +743,7 @@ start default
     uses substance "HFC-134a"
       set priorEquipment to 60000 units during year 2025
       initial charge with 5.00 kg / unit for sales
-      retire 2 % each year
+      retire 5 % each year
       recharge 25 % each year with 5.00 kg / unit
       set import to 667 units / year during year 2025
       equals 1430 tCO2e / kg
@@ -751,7 +751,7 @@ start default
 
     uses substance "R-404A"
       initial charge with 2.50 kg / unit for sales
-      retire 2 % each year
+      retire 5 % each year
       recharge 25 % each year with 2.50 kg / unit
       equals 3921.6 tCO2e / kg
     end substance
@@ -763,7 +763,7 @@ start default
     uses substance "R-404A"
       set priorEquipment to 90000 units during year 2025
       initial charge with 2.00 kg / unit for sales
-      retire 2 % each year
+      retire 5 % each year
       recharge 10 % each year with 2.00 kg / unit
       set import to 900 units / year during year 2025
       equals 3921.6 tCO2e / kg
@@ -776,7 +776,7 @@ start default
     uses substance "HFC-32"
       set priorEquipment to 24000 units during year 2025
       initial charge with 0.90 kg / unit for sales
-      retire 1 % each year
+      retire 5 % each year
       recharge 10 % each year with 0.85 kg / unit
       set import to 800 units / year during year 2025
       change equipment by +7 % each year during years 2026 to 2035
@@ -786,7 +786,7 @@ start default
     uses substance "R-410A"
       set priorEquipment to 400000 units during year 2025
       initial charge with 1.00 kg / unit for sales
-      retire 1 % each year
+      retire 5 % each year
       recharge 10 % each year with 1.00 kg / unit
       set import to 100 units / year during year 2025
       set manufacture to 40000 units / year during year 2025
@@ -800,7 +800,7 @@ start default
     uses substance "HFC-32"
       set priorEquipment to 6000 units during year 2025
       initial charge with 4.50 kg / unit for sales
-      retire 1 % each year
+      retire 5 % each year
       recharge 10 % each year with 4.00 kg / unit
       set import to 200 units / year during year 2025
       change equipment by +7 % each year during years 2026 to 2035
@@ -810,7 +810,7 @@ start default
     uses substance "R-410A"
       set priorEquipment to 30000 units during year 2025
       initial charge with 5.00 kg / unit for sales
-      retire 1 % each year
+      retire 5 % each year
       recharge 10 % each year with 5.00 kg / unit
       set import to 3000 units / year during year 2025
       change equipment by +8 % each year during years 2026 to 2033
@@ -889,14 +889,14 @@ start policy "Recovery and Recycling"
       recover 28 % with 100 % reuse during year 2027
       recover 42 % with 100 % reuse during year 2028
       recover 56 % with 100 % reuse during year 2029
-      recover 70 % with 100 % reuse during years 2030 to onwards
+      recover 40 % with 100 % reuse during years 2030 to onwards
     end substance
     modify substance "R-404A"
       recover 14 % with 100 % reuse during year 2026
       recover 28 % with 100 % reuse during year 2027
       recover 42 % with 100 % reuse during year 2028
       recover 56 % with 100 % reuse during year 2029
-      recover 70 % with 100 % reuse during years 2030 to onwards
+      recover 40 % with 100 % reuse during years 2030 to onwards
     end substance
   end application
 
@@ -906,14 +906,14 @@ start policy "Recovery and Recycling"
       recover 28 % with 100 % reuse during year 2027
       recover 42 % with 100 % reuse during year 2028
       recover 56 % with 100 % reuse during year 2029
-      recover 70 % with 100 % reuse during years 2030 to onwards
+      recover 40 % with 100 % reuse during years 2030 to onwards
     end substance
     modify substance "R-404A"
       recover 14 % with 100 % reuse during year 2026
       recover 28 % with 100 % reuse during year 2027
       recover 42 % with 100 % reuse during year 2028
       recover 56 % with 100 % reuse during year 2029
-      recover 70 % with 100 % reuse during years 2030 to onwards
+      recover 40 % with 100 % reuse during years 2030 to onwards
     end substance
   end application
 
@@ -923,14 +923,14 @@ start policy "Recovery and Recycling"
       recover 28 % with 100 % reuse during year 2027
       recover 42 % with 100 % reuse during year 2028
       recover 56 % with 100 % reuse during year 2029
-      recover 70 % with 100 % reuse during years 2030 to onwards
+      recover 40 % with 100 % reuse during years 2030 to onwards
     end substance
     modify substance "R-404A"
       recover 14 % with 100 % reuse during year 2026
       recover 28 % with 100 % reuse during year 2027
       recover 42 % with 100 % reuse during year 2028
       recover 56 % with 100 % reuse during year 2029
-      recover 70 % with 100 % reuse during years 2030 to onwards
+      recover 40 % with 100 % reuse during years 2030 to onwards
     end substance
   end application
 
@@ -940,14 +940,14 @@ start policy "Recovery and Recycling"
       recover 28 % with 100 % reuse during year 2027
       recover 42 % with 100 % reuse during year 2028
       recover 56 % with 100 % reuse during year 2029
-      recover 70 % with 100 % reuse during years 2030 to onwards
+      recover 40 % with 100 % reuse during years 2030 to onwards
     end substance
     modify substance "R-404A"
       recover 14 % with 100 % reuse during year 2026
       recover 28 % with 100 % reuse during year 2027
       recover 42 % with 100 % reuse during year 2028
       recover 56 % with 100 % reuse during year 2029
-      recover 70 % with 100 % reuse during years 2030 to onwards
+      recover 40 % with 100 % reuse during years 2030 to onwards
     end substance
   end application
 
@@ -957,14 +957,14 @@ start policy "Recovery and Recycling"
       recover 28 % with 100 % reuse during year 2027
       recover 42 % with 100 % reuse during year 2028
       recover 56 % with 100 % reuse during year 2029
-      recover 70 % with 100 % reuse during years 2030 to onwards
+      recover 40 % with 100 % reuse during years 2030 to onwards
     end substance
     modify substance "R-410A"
       recover 14 % with 100 % reuse during year 2026
       recover 28 % with 100 % reuse during year 2027
       recover 42 % with 100 % reuse during year 2028
       recover 56 % with 100 % reuse during year 2029
-      recover 70 % with 100 % reuse during years 2030 to onwards
+      recover 40 % with 100 % reuse during years 2030 to onwards
     end substance
   end application
 
@@ -974,14 +974,14 @@ start policy "Recovery and Recycling"
       recover 28 % with 100 % reuse during year 2027
       recover 42 % with 100 % reuse during year 2028
       recover 56 % with 100 % reuse during year 2029
-      recover 70 % with 100 % reuse during years 2030 to onwards
+      recover 40 % with 100 % reuse during years 2030 to onwards
     end substance
     modify substance "R-410A"
       recover 14 % with 100 % reuse during year 2026
       recover 28 % with 100 % reuse during year 2027
       recover 42 % with 100 % reuse during year 2028
       recover 56 % with 100 % reuse during year 2029
-      recover 70 % with 100 % reuse during years 2030 to onwards
+      recover 40 % with 100 % reuse during years 2030 to onwards
     end substance
   end application
 
