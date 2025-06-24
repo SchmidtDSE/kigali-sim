@@ -79,7 +79,7 @@ public class ChangeOperationTest {
   public void testExecuteNoDuring() {
     // Set initial value
     EngineNumber initialNumber = new EngineNumber(BigDecimal.valueOf(100), "kg");
-    engine.setStream("manufacture", initialNumber, allYearsMatcher);
+    engine.setStream("manufacture", initialNumber, Optional.ofNullable(allYearsMatcher));
 
     // Change the value
     EngineNumber changeNumber = new EngineNumber(BigDecimal.valueOf(42), "kg");
@@ -101,7 +101,7 @@ public class ChangeOperationTest {
   public void testExecuteWithDuring() {
     // Set initial value
     EngineNumber initialNumber = new EngineNumber(BigDecimal.valueOf(100), "kg");
-    engine.setStream("manufacture", initialNumber, allYearsMatcher);
+    engine.setStream("manufacture", initialNumber, Optional.ofNullable(allYearsMatcher));
 
     // Change the value with a during that applies to the current year (2020)
     EngineNumber changeNumber = new EngineNumber(BigDecimal.valueOf(42), "kg");
@@ -129,7 +129,7 @@ public class ChangeOperationTest {
   public void testExecuteWithDuringNotApplying() {
     // Set initial value
     EngineNumber initialNumber = new EngineNumber(BigDecimal.valueOf(100), "kg");
-    engine.setStream("manufacture", initialNumber, allYearsMatcher);
+    engine.setStream("manufacture", initialNumber, Optional.ofNullable(allYearsMatcher));
 
     // Change the value with a during that applies to a future year (2021)
     EngineNumber changeNumber = new EngineNumber(BigDecimal.valueOf(42), "kg");
@@ -158,7 +158,7 @@ public class ChangeOperationTest {
   public void testExecuteWithComplexValueOperation() {
     // Set initial value
     EngineNumber initialNumber = new EngineNumber(BigDecimal.valueOf(100), "kg");
-    engine.setStream("manufacture", initialNumber, allYearsMatcher);
+    engine.setStream("manufacture", initialNumber, Optional.ofNullable(allYearsMatcher));
 
     // Change the value with a complex operation
     Operation left = new PreCalculatedOperation(new EngineNumber(BigDecimal.valueOf(30), "kg"));
@@ -183,7 +183,7 @@ public class ChangeOperationTest {
   public void testExecuteWithEachYearUnits() {
     // Set initial value
     EngineNumber initialNumber = new EngineNumber(BigDecimal.valueOf(100), "kg");
-    engine.setStream("manufacture", initialNumber, allYearsMatcher);
+    engine.setStream("manufacture", initialNumber, Optional.ofNullable(allYearsMatcher));
 
     // Change the value with eachyear units
     EngineNumber changeNumber = new EngineNumber(BigDecimal.valueOf(42), "kgeachyear");

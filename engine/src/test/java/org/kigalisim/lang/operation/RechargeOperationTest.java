@@ -83,7 +83,7 @@ public class RechargeOperationTest {
   public void testExecuteNoDuring() {
     // Set up prior equipment population
     EngineNumber priorEquipment = new EngineNumber(BigDecimal.valueOf(1000), "units");
-    engine.setStream("priorEquipment", priorEquipment, allYearsMatcher);
+    engine.setStream("priorEquipment", priorEquipment, Optional.ofNullable(allYearsMatcher));
 
     // Set up recharge values
     EngineNumber volume = new EngineNumber(BigDecimal.valueOf(10), "%");
@@ -110,7 +110,7 @@ public class RechargeOperationTest {
   public void testExecuteWithDuring() {
     // Set up prior equipment population
     EngineNumber priorEquipment = new EngineNumber(BigDecimal.valueOf(1000), "units");
-    engine.setStream("priorEquipment", priorEquipment, allYearsMatcher);
+    engine.setStream("priorEquipment", priorEquipment, Optional.ofNullable(allYearsMatcher));
 
     // Set up recharge values with a during that applies to the current year (2020)
     EngineNumber volume = new EngineNumber(BigDecimal.valueOf(10), "%");
@@ -143,7 +143,7 @@ public class RechargeOperationTest {
   public void testExecuteWithDuringNotApplying() {
     // Set up prior equipment population
     EngineNumber priorEquipment = new EngineNumber(BigDecimal.valueOf(1000), "units");
-    engine.setStream("priorEquipment", priorEquipment, allYearsMatcher);
+    engine.setStream("priorEquipment", priorEquipment, Optional.ofNullable(allYearsMatcher));
 
     // Set up initial recharge values
     EngineNumber initialVolume = new EngineNumber(BigDecimal.valueOf(5), "%");
@@ -183,7 +183,7 @@ public class RechargeOperationTest {
   public void testExecuteWithComplexValueOperations() {
     // Set up prior equipment population
     EngineNumber priorEquipment = new EngineNumber(BigDecimal.valueOf(1000), "units");
-    engine.setStream("priorEquipment", priorEquipment, allYearsMatcher);
+    engine.setStream("priorEquipment", priorEquipment, Optional.ofNullable(allYearsMatcher));
 
     // Set up recharge values with complex operations
     Operation volumeLeft = new PreCalculatedOperation(new EngineNumber(BigDecimal.valueOf(6), "%"));

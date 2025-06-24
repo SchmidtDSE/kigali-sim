@@ -6,6 +6,7 @@
 
 package org.kigalisim.lang.operation;
 
+import java.util.Optional;
 import org.kigalisim.engine.Engine;
 import org.kigalisim.engine.number.EngineNumber;
 import org.kigalisim.engine.state.Scope;
@@ -49,7 +50,7 @@ public class GetStreamOperation implements Operation {
     EngineNumber value;
     if (units != null) {
       Scope scope = engine.getScope();
-      value = engine.getStream(streamName, scope, units);
+      value = engine.getStream(streamName, Optional.of(scope), Optional.of(units));
     } else {
       value = engine.getStream(streamName);
     }

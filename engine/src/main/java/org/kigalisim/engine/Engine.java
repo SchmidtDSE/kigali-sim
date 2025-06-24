@@ -12,6 +12,7 @@
 package org.kigalisim.engine;
 
 import java.util.List;
+import java.util.Optional;
 import org.kigalisim.engine.number.EngineNumber;
 import org.kigalisim.engine.serializer.EngineResult;
 import org.kigalisim.engine.state.Scope;
@@ -131,34 +132,34 @@ public interface Engine {
    * @param name The name of the stream to set
    * @param value The value to set for the stream
    * @param yearMatcher The year matcher object to determine if setting the stream applies to the
-   *     current year, or null. No-op if the year matcher is not satisfied.
-   * @param key The scope in which the stream is being set. Uses default scope if not provided.
+   *     current year, or empty. No-op if the year matcher is not satisfied.
+   * @param key The scope in which the stream is being set. Uses default scope if empty.
    * @param propagateChanges Specifies if changes should propagate to other components.
    *     Defaults to true.
    * @param unitsToRecord Optional units to record instead of using value.getUnits().
    *     Used when the original user-specified units differ from the converted units being set.
    */
-  void setStreamFor(String name, EngineNumber value, YearMatcher yearMatcher, UseKey key,
-                    boolean propagateChanges, String unitsToRecord);
+  void setStreamFor(String name, EngineNumber value, Optional<YearMatcher> yearMatcher, Optional<UseKey> key,
+                    boolean propagateChanges, Optional<String> unitsToRecord);
 
   /**
    * Set the value of a stream with default parameters.
    *
    * @param name The name of the stream to set
    * @param value The value to set for the stream
-   * @param yearMatcher The year matcher object or null
+   * @param yearMatcher The year matcher object or empty
    */
-  void setStream(String name, EngineNumber value, YearMatcher yearMatcher);
+  void setStream(String name, EngineNumber value, Optional<YearMatcher> yearMatcher);
 
   /**
    * Get the stream value for a given application and substance key.
    *
    * @param name The name of the stream to retrieve
    * @param useKey The key containing application and substance information
-   * @param conversion The conversion specification for units, or null for no conversion
+   * @param conversion The conversion specification for units, or empty for no conversion
    * @return The value of the stream, possibly converted
    */
-  EngineNumber getStream(String name, UseKey useKey, String conversion);
+  EngineNumber getStream(String name, Optional<UseKey> useKey, Optional<String> conversion);
 
   /**
    * Get the stream value with default scope and no conversion.

@@ -10,6 +10,7 @@
 package org.kigalisim.engine.recalc;
 
 import java.math.BigDecimal;
+import java.util.Optional;
 import org.kigalisim.engine.Engine;
 import org.kigalisim.engine.number.EngineNumber;
 import org.kigalisim.engine.number.UnitConverter;
@@ -24,20 +25,20 @@ import org.kigalisim.engine.support.ExceptionsGenerator;
  */
 public class SalesRecalcStrategy implements RecalcStrategy {
 
-  private final UseKey scope;
+  private final Optional<UseKey> scope;
 
   /**
    * Create a new SalesRecalcStrategy.
    *
-   * @param scope The scope to use for calculations, null to use engine's current scope
+   * @param scope The scope to use for calculations, empty to use engine's current scope
    */
-  public SalesRecalcStrategy(UseKey scope) {
+  public SalesRecalcStrategy(Optional<UseKey> scope) {
     this.scope = scope;
   }
 
   @Override
   public void execute(Engine target, RecalcKit kit) {
-    UseKey scopeEffective = scope != null ? scope : target.getScope();
+    UseKey scopeEffective = scope.orElse(target.getScope());
 
     OverridingConverterStateGetter stateGetter =
         new OverridingConverterStateGetter(kit.getStateGetter());
@@ -50,7 +51,7 @@ public class SalesRecalcStrategy implements RecalcStrategy {
     StreamKeeper streamKeeper = kit.getStreamKeeper();
 
     // Get recharge population
-    EngineNumber basePopulation = target.getStream("priorEquipment", scopeEffective, null);
+    EngineNumber basePopulation = target.getStream("priorEquipment", Optional.of(scopeEffective), Optional.empty());
     stateGetter.setPopulation(basePopulation);
     EngineNumber rechargePopRaw = streamKeeper.getRechargePopulation(scopeEffective);
     EngineNumber rechargePop = unitConverter.convert(rechargePopRaw, "units");
@@ -98,7 +99,7 @@ public class SalesRecalcStrategy implements RecalcStrategy {
     EngineNumber volumeForNew = unitConverter.convert(populationChange, "kg");
 
     // Get prior population
-    EngineNumber priorPopulationRaw = target.getStream("priorEquipment", scopeEffective, null);
+    EngineNumber priorPopulationRaw = target.getStream("priorEquipment", Optional.of(scopeEffective), Optional.empty());
     EngineNumber priorPopulation = unitConverter.convert(priorPopulationRaw, "units");
     stateGetter.setPopulation(priorPopulation);
 
@@ -113,9 +114,9 @@ public class SalesRecalcStrategy implements RecalcStrategy {
     stateGetter.clearVolume();
 
     // Determine how much to offset domestic and imports
-    EngineNumber manufactureRaw = target.getStream("manufacture", scopeEffective, null);
-    EngineNumber importRaw = target.getStream("import", scopeEffective, null);
-    EngineNumber priorRecycleRaw = target.getStream("recycle", scopeEffective, null);
+    EngineNumber manufactureRaw = target.getStream("manufacture", Optional.of(scopeEffective), Optional.empty());
+    EngineNumber importRaw = target.getStream("import", Optional.of(scopeEffective), Optional.empty());
+    EngineNumber priorRecycleRaw = target.getStream("recycle", Optional.of(scopeEffective), Optional.empty());
 
     EngineNumber manufactureSalesConverted = unitConverter.convert(manufactureRaw, "kg");
     EngineNumber importSalesConverted = unitConverter.convert(importRaw, "kg");
@@ -167,7 +168,7 @@ public class SalesRecalcStrategy implements RecalcStrategy {
     EngineNumber newImport = new EngineNumber(newImportKg, "kg");
 
     // Call Engine.setStream with propagateChanges=false to match JavaScript behavior
-    target.setStreamFor("manufacture", newManufacture, null, scopeEffective, false, null);
-    target.setStreamFor("import", newImport, null, scopeEffective, false, null);
+    target.setStreamFor("manufacture", newManufacture, Optional.empty(), Optional.of(scopeEffective), false, Optional.empty());
+    target.setStreamFor("import", newImport, Optional.empty(), Optional.of(scopeEffective), false, Optional.empty());
   }
 }

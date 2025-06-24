@@ -9,6 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.kigalisim.engine.SingleThreadEngine;
@@ -140,27 +141,27 @@ public class RecalcOperationBuilderTest {
 
     // Test individual strategy creation and execution
     PopulationChangeRecalcStrategy popStrategy =
-        new PopulationChangeRecalcStrategy(testScope, true);
+        new PopulationChangeRecalcStrategy(Optional.of(testScope), Optional.of(true));
     assertDoesNotThrow(() -> popStrategy.execute(engine, recalcKit));
 
     ConsumptionRecalcStrategy consumptionStrategy =
-        new ConsumptionRecalcStrategy(testScope);
+        new ConsumptionRecalcStrategy(Optional.of(testScope));
     assertDoesNotThrow(() -> consumptionStrategy.execute(engine, recalcKit));
 
     SalesRecalcStrategy salesStrategy =
-        new SalesRecalcStrategy(testScope);
+        new SalesRecalcStrategy(Optional.of(testScope));
     assertDoesNotThrow(() -> salesStrategy.execute(engine, recalcKit));
 
     RechargeEmissionsRecalcStrategy rechargeStrategy =
-        new RechargeEmissionsRecalcStrategy(testScope);
+        new RechargeEmissionsRecalcStrategy(Optional.of(testScope));
     assertDoesNotThrow(() -> rechargeStrategy.execute(engine, recalcKit));
 
     EolEmissionsRecalcStrategy eolStrategy =
-        new EolEmissionsRecalcStrategy(testScope);
+        new EolEmissionsRecalcStrategy(Optional.of(testScope));
     assertDoesNotThrow(() -> eolStrategy.execute(engine, recalcKit));
 
     RetireRecalcStrategy retireStrategy =
-        new RetireRecalcStrategy(testScope);
+        new RetireRecalcStrategy(Optional.of(testScope));
     assertDoesNotThrow(() -> retireStrategy.execute(engine, recalcKit));
   }
 

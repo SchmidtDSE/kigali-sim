@@ -10,6 +10,7 @@
 package org.kigalisim.engine.recalc;
 
 import java.math.BigDecimal;
+import java.util.Optional;
 import org.kigalisim.engine.Engine;
 import org.kigalisim.engine.number.EngineNumber;
 import org.kigalisim.engine.number.UnitConverter;
@@ -22,14 +23,14 @@ import org.kigalisim.engine.support.ExceptionsGenerator;
  */
 public class RetireRecalcStrategy implements RecalcStrategy {
 
-  private final UseKey scope;
+  private final Optional<UseKey> scope;
 
   /**
    * Create a new RetireRecalcStrategy.
    *
-   * @param scope The scope to use for calculations, null to use engine's current scope
+   * @param scope The scope to use for calculations, empty to use engine's current scope
    */
-  public RetireRecalcStrategy(UseKey scope) {
+  public RetireRecalcStrategy(Optional<UseKey> scope) {
     this.scope = scope;
   }
 
@@ -39,7 +40,7 @@ public class RetireRecalcStrategy implements RecalcStrategy {
     OverridingConverterStateGetter stateGetter =
         new OverridingConverterStateGetter(kit.getStateGetter());
     UnitConverter unitConverter = new UnitConverter(stateGetter);
-    UseKey scopeEffective = scope != null ? scope : target.getScope();
+    UseKey scopeEffective = scope.orElse(target.getScope());
     String application = scopeEffective.getApplication();
     String substance = scopeEffective.getSubstance();
 
@@ -81,16 +82,16 @@ public class RetireRecalcStrategy implements RecalcStrategy {
     streamKeeper.setStream(scopeEffective, "equipment", newEquipment);
 
     // Update GHG accounting
-    EolEmissionsRecalcStrategy eolStrategy = new EolEmissionsRecalcStrategy(scopeEffective);
+    EolEmissionsRecalcStrategy eolStrategy = new EolEmissionsRecalcStrategy(Optional.of(scopeEffective));
     eolStrategy.execute(target, kit);
 
     // Propagate
     PopulationChangeRecalcStrategy populationStrategy =
-        new PopulationChangeRecalcStrategy(null, null);
+        new PopulationChangeRecalcStrategy(Optional.empty(), Optional.empty());
     populationStrategy.execute(target, kit);
-    SalesRecalcStrategy salesStrategy = new SalesRecalcStrategy(null);
+    SalesRecalcStrategy salesStrategy = new SalesRecalcStrategy(Optional.empty());
     salesStrategy.execute(target, kit);
-    ConsumptionRecalcStrategy consumptionStrategy = new ConsumptionRecalcStrategy(null);
+    ConsumptionRecalcStrategy consumptionStrategy = new ConsumptionRecalcStrategy(Optional.empty());
     consumptionStrategy.execute(target, kit);
   }
 }

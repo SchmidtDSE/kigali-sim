@@ -9,6 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.kigalisim.engine.SingleThreadEngine;
@@ -36,8 +37,8 @@ public class RecalcOperationBuilderIntegrationTest {
     engine.setSubstance("testSubstance");
 
     // Initialize some basic streams
-    engine.setStream("manufacture", new EngineNumber(100, "kg"), YearMatcher.unbounded());
-    engine.setStream("import", new EngineNumber(50, "kg"), YearMatcher.unbounded());
+    engine.setStream("manufacture", new EngineNumber(100, "kg"), Optional.of(YearMatcher.unbounded()));
+    engine.setStream("import", new EngineNumber(50, "kg"), Optional.of(YearMatcher.unbounded()));
   }
 
   @Test

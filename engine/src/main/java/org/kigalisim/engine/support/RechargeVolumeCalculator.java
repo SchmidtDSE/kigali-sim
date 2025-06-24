@@ -9,6 +9,7 @@
 
 package org.kigalisim.engine.support;
 
+import java.util.Optional;
 import org.kigalisim.engine.number.EngineNumber;
 import org.kigalisim.engine.number.UnitConverter;
 import org.kigalisim.engine.state.ConverterStateGetter;
@@ -35,10 +36,10 @@ public class RechargeVolumeCalculator {
     OverridingConverterStateGetter overridingStateGetter =
         new OverridingConverterStateGetter(stateGetter);
     UnitConverter unitConverter = new UnitConverter(overridingStateGetter);
-    String application = scope.getApplication();
-    String substance = scope.getSubstance();
+    Optional<String> application = Optional.ofNullable(scope.getApplication());
+    Optional<String> substance = Optional.ofNullable(scope.getSubstance());
 
-    if (application == null || substance == null) {
+    if (!application.isPresent() || !substance.isPresent()) {
       ExceptionsGenerator.raiseNoAppOrSubstance("calculating recharge volume", "");
     }
 

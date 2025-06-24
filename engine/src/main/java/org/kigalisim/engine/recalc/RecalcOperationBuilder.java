@@ -82,12 +82,10 @@ public class RecalcOperationBuilder {
           + "for subsequent operations"
       );
     }
-    UseKey keyRealized = scopeEffective.orElse(null);
-    Boolean subtractRechargeRealized = subtractRecharge.orElse(null);
     strategies.add(
         new PopulationChangeRecalcStrategy(
-            keyRealized,
-            subtractRechargeRealized
+            scopeEffective,
+            subtractRecharge
         )
     );
     hasInitialRecalc = true;
@@ -106,8 +104,7 @@ public class RecalcOperationBuilder {
           + "for subsequent operations"
       );
     }
-    UseKey scopeEffectiveRealized = scopeEffective.orElse(null);
-    strategies.add(new ConsumptionRecalcStrategy(scopeEffectiveRealized));
+    strategies.add(new ConsumptionRecalcStrategy(scopeEffective));
     hasInitialRecalc = true;
     return this;
   }
@@ -124,8 +121,7 @@ public class RecalcOperationBuilder {
           + "for subsequent operations"
       );
     }
-    UseKey scopeEffectiveRealized = scopeEffective.orElse(null);
-    strategies.add(new SalesRecalcStrategy(scopeEffectiveRealized));
+    strategies.add(new SalesRecalcStrategy(scopeEffective));
     hasInitialRecalc = true;
     return this;
   }
@@ -142,8 +138,7 @@ public class RecalcOperationBuilder {
           + "for subsequent operations"
       );
     }
-    UseKey scopeEffectiveRealized = scopeEffective.orElse(null);
-    strategies.add(new RechargeEmissionsRecalcStrategy(scopeEffectiveRealized));
+    strategies.add(new RechargeEmissionsRecalcStrategy(scopeEffective));
     hasInitialRecalc = true;
     return this;
   }
@@ -160,8 +155,7 @@ public class RecalcOperationBuilder {
           + "for subsequent operations"
       );
     }
-    UseKey scopeEffectiveRealized = scopeEffective.orElse(null);
-    strategies.add(new EolEmissionsRecalcStrategy(scopeEffectiveRealized));
+    strategies.add(new EolEmissionsRecalcStrategy(scopeEffective));
     hasInitialRecalc = true;
     return this;
   }
@@ -178,8 +172,7 @@ public class RecalcOperationBuilder {
           + "for subsequent operations"
       );
     }
-    UseKey scopeEffectiveRealized = scopeEffective.orElse(null);
-    strategies.add(new RetireRecalcStrategy(scopeEffectiveRealized));
+    strategies.add(new RetireRecalcStrategy(scopeEffective));
     hasInitialRecalc = true;
     return this;
   }
@@ -195,10 +188,9 @@ public class RecalcOperationBuilder {
           "Must call a recalc method before using thenPropagate methods"
       );
     }
-    UseKey scopeEffectiveRealized = scopeEffective.orElse(null);
     RecalcStrategy newStrategy = new PopulationChangeRecalcStrategy(
-        scopeEffectiveRealized,
-        subtractRecharge.orElse(null)
+        scopeEffective,
+        subtractRecharge
     );
     strategies.add(newStrategy);
     return this;
@@ -215,8 +207,7 @@ public class RecalcOperationBuilder {
           "Must call a recalc method before using thenPropagate methods"
       );
     }
-    UseKey scopeEffectiveRealized = scopeEffective.orElse(null);
-    strategies.add(new ConsumptionRecalcStrategy(scopeEffectiveRealized));
+    strategies.add(new ConsumptionRecalcStrategy(scopeEffective));
     return this;
   }
 
@@ -231,8 +222,7 @@ public class RecalcOperationBuilder {
           "Must call a recalc method before using thenPropagate methods"
       );
     }
-    UseKey scopeEffectiveRealized = scopeEffective.orElse(null);
-    strategies.add(new SalesRecalcStrategy(scopeEffectiveRealized));
+    strategies.add(new SalesRecalcStrategy(scopeEffective));
     return this;
   }
 
@@ -247,8 +237,7 @@ public class RecalcOperationBuilder {
           "Must call a recalc method before using thenPropagate methods"
       );
     }
-    UseKey scopeEffectiveRealized = scopeEffective.orElse(null);
-    strategies.add(new RechargeEmissionsRecalcStrategy(scopeEffectiveRealized));
+    strategies.add(new RechargeEmissionsRecalcStrategy(scopeEffective));
     return this;
   }
 
@@ -263,8 +252,7 @@ public class RecalcOperationBuilder {
           "Must call a recalc method before using thenPropagate methods"
       );
     }
-    UseKey scopeEffectiveRealized = scopeEffective.orElse(null);
-    strategies.add(new EolEmissionsRecalcStrategy(scopeEffectiveRealized));
+    strategies.add(new EolEmissionsRecalcStrategy(scopeEffective));
     return this;
   }
 
@@ -279,8 +267,7 @@ public class RecalcOperationBuilder {
           "Must call a recalc method before using thenPropagate methods"
       );
     }
-    UseKey scopeEffectiveRealized = scopeEffective.orElse(null);
-    strategies.add(new RetireRecalcStrategy(scopeEffectiveRealized));
+    strategies.add(new RetireRecalcStrategy(scopeEffective));
     return this;
   }
 
