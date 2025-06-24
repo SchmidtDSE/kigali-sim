@@ -10,6 +10,7 @@
 package org.kigalisim.engine.recalc;
 
 import java.math.BigDecimal;
+import java.util.Optional;
 import org.kigalisim.engine.Engine;
 import org.kigalisim.engine.number.EngineNumber;
 import org.kigalisim.engine.number.UnitConverter;
@@ -25,16 +26,16 @@ import org.kigalisim.engine.support.RechargeVolumeCalculator;
  */
 public class PopulationChangeRecalcStrategy implements RecalcStrategy {
 
-  private final UseKey scope;
-  private final Boolean subtractRecharge;
+  private final Optional<UseKey> scope;
+  private final Optional<Boolean> subtractRecharge;
 
   /**
    * Create a new PopulationChangeRecalcStrategy.
    *
-   * @param scope The scope to use for calculations, null to use engine's current scope
-   * @param subtractRecharge Whether to subtract recharge, null to default to true
+   * @param scope The scope to use for calculations, empty to use engine's current scope
+   * @param subtractRecharge Whether to subtract recharge, empty to default to true
    */
-  public PopulationChangeRecalcStrategy(UseKey scope, Boolean subtractRecharge) {
+  public PopulationChangeRecalcStrategy(Optional<UseKey> scope, Optional<Boolean> subtractRecharge) {
     this.scope = scope;
     this.subtractRecharge = subtractRecharge;
   }
@@ -45,8 +46,8 @@ public class PopulationChangeRecalcStrategy implements RecalcStrategy {
     OverridingConverterStateGetter stateGetter =
         new OverridingConverterStateGetter(baseStateGetter);
     UnitConverter unitConverter = new UnitConverter(stateGetter);
-    UseKey scopeEffective = scope != null ? scope : target.getScope();
-    boolean subtractRechargeEffective = subtractRecharge != null ? subtractRecharge : true;
+    UseKey scopeEffective = scope.orElse(target.getScope());
+    boolean subtractRechargeEffective = subtractRecharge.orElse(true);
     String application = scopeEffective.getApplication();
     String substance = scopeEffective.getSubstance();
 
@@ -55,12 +56,12 @@ public class PopulationChangeRecalcStrategy implements RecalcStrategy {
     }
 
     // Get prior population
-    EngineNumber priorPopulationRaw = target.getStream("priorEquipment", scopeEffective, null);
+    EngineNumber priorPopulationRaw = target.getStream("priorEquipment", Optional.of(scopeEffective), Optional.empty());
     EngineNumber priorPopulation = unitConverter.convert(priorPopulationRaw, "units");
     stateGetter.setPopulation(priorPopulation);
 
     // Get substance sales
-    EngineNumber substanceSalesRaw = target.getStream("sales", scopeEffective, null);
+    EngineNumber substanceSalesRaw = target.getStream("sales", Optional.of(scopeEffective), Optional.empty());
     EngineNumber substanceSales = unitConverter.convert(substanceSalesRaw, "kg");
 
     // Get recharge volume using the calculator
@@ -97,12 +98,12 @@ public class PopulationChangeRecalcStrategy implements RecalcStrategy {
     EngineNumber newUnitsEffective = new EngineNumber(newUnitsAllowed, "units");
 
     // Save
-    target.setStreamFor("equipment", newUnitsEffective, null, scopeEffective, false, null);
-    target.setStreamFor("newEquipment", newUnitsMarginal, null, scopeEffective, false, null);
+    target.setStreamFor("equipment", newUnitsEffective, Optional.empty(), Optional.of(scopeEffective), false, Optional.empty());
+    target.setStreamFor("newEquipment", newUnitsMarginal, Optional.empty(), Optional.of(scopeEffective), false, Optional.empty());
 
     // Recalc recharge emissions - need to create a new operation
     RechargeEmissionsRecalcStrategy rechargeStrategy = new RechargeEmissionsRecalcStrategy(
-        scopeEffective
+        Optional.of(scopeEffective)
     );
     rechargeStrategy.execute(target, kit);
   }

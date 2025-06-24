@@ -79,7 +79,7 @@ public class RetireOperationTest {
   public void testExecuteNoDuring() {
     // Set up prior equipment population
     EngineNumber priorEquipment = new EngineNumber(BigDecimal.valueOf(1000), "units");
-    engine.setStream("priorEquipment", priorEquipment, allYearsMatcher);
+    engine.setStream("priorEquipment", priorEquipment, Optional.ofNullable(allYearsMatcher));
 
     // Set up retirement rate
     EngineNumber rate = new EngineNumber(BigDecimal.valueOf(10), "%");
@@ -101,7 +101,7 @@ public class RetireOperationTest {
   public void testExecuteWithDuring() {
     // Set up prior equipment population
     EngineNumber priorEquipment = new EngineNumber(BigDecimal.valueOf(1000), "units");
-    engine.setStream("priorEquipment", priorEquipment, allYearsMatcher);
+    engine.setStream("priorEquipment", priorEquipment, Optional.ofNullable(allYearsMatcher));
 
     // Set up retirement rate with a during that applies to the current year (2020)
     EngineNumber rate = new EngineNumber(BigDecimal.valueOf(10), "%");
@@ -129,7 +129,7 @@ public class RetireOperationTest {
   public void testExecuteWithDuringNotApplying() {
     // Set up prior equipment population
     EngineNumber priorEquipment = new EngineNumber(BigDecimal.valueOf(1000), "units");
-    engine.setStream("priorEquipment", priorEquipment, allYearsMatcher);
+    engine.setStream("priorEquipment", priorEquipment, Optional.ofNullable(allYearsMatcher));
 
     // Set initial retirement rate
     EngineNumber initialRate = new EngineNumber(BigDecimal.valueOf(5), "%");

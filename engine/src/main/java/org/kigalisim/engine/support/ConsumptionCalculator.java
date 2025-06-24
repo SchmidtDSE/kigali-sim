@@ -12,6 +12,7 @@
 package org.kigalisim.engine.support;
 
 import java.math.BigDecimal;
+import java.util.Optional;
 import org.kigalisim.engine.Engine;
 import org.kigalisim.engine.SingleThreadEngine;
 import org.kigalisim.engine.number.EngineNumber;
@@ -28,8 +29,8 @@ import org.kigalisim.engine.state.Scope;
  */
 public class ConsumptionCalculator {
 
-  private EngineNumber consumptionRaw;
-  private String streamName;
+  private Optional<EngineNumber> consumptionRaw = Optional.empty();
+  private Optional<String> streamName = Optional.empty();
 
   /**
    * Set the raw consumption value to be processed.
@@ -37,7 +38,7 @@ public class ConsumptionCalculator {
    * @param consumptionRaw The raw consumption value
    */
   public void setConsumptionRaw(EngineNumber consumptionRaw) {
-    this.consumptionRaw = consumptionRaw;
+    this.consumptionRaw = Optional.ofNullable(consumptionRaw);
   }
 
   /**
@@ -46,7 +47,7 @@ public class ConsumptionCalculator {
    * @param streamName The name of the stream ("consumption" or "energy")
    */
   public void setStreamName(String streamName) {
-    this.streamName = streamName;
+    this.streamName = Optional.ofNullable(streamName);
   }
 
   /**
@@ -78,13 +79,13 @@ public class ConsumptionCalculator {
     UnitConverter unitConverter = new UnitConverter(stateGetter);
 
     // Get sales for conversion context
-    EngineNumber salesRaw = engine.getStream("sales", scopeEffective, null);
+    EngineNumber salesRaw = engine.getStream("sales", Optional.of(scopeEffective), Optional.empty());
     EngineNumber sales = unitConverter.convert(salesRaw, "kg");
 
     // Determine consumption
     stateGetter.setVolume(sales);
-    String targetUnits = streamName.equals("consumption") ? "tCO2e" : "kwh";
-    EngineNumber consumption = unitConverter.convert(consumptionRaw, targetUnits);
+    String targetUnits = streamName.get().equals("consumption") ? "tCO2e" : "kwh";
+    EngineNumber consumption = unitConverter.convert(consumptionRaw.get(), targetUnits);
     stateGetter.clearVolume();
 
     // Ensure in range
@@ -97,7 +98,7 @@ public class ConsumptionCalculator {
     }
 
     // Save
-    engine.setStreamFor(streamName, consumptionAllowed, null, scopeEffective, false, null);
+    engine.setStreamFor(streamName.get(), consumptionAllowed, Optional.empty(), Optional.of(scopeEffective), false, Optional.empty());
   }
 
   /**
@@ -106,10 +107,10 @@ public class ConsumptionCalculator {
    * @throws IllegalStateException if any required property is null
    */
   private void validateState() {
-    if (consumptionRaw == null) {
+    if (!consumptionRaw.isPresent()) {
       throw new IllegalStateException("consumptionRaw must be set");
     }
-    if (streamName == null) {
+    if (!streamName.isPresent()) {
       throw new IllegalStateException("streamName must be set");
     }
   }

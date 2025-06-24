@@ -9,6 +9,7 @@
 
 package org.kigalisim.engine.recalc;
 
+import java.util.Optional;
 import org.kigalisim.engine.Engine;
 import org.kigalisim.engine.number.EngineNumber;
 import org.kigalisim.engine.state.StreamKeeper;
@@ -21,20 +22,20 @@ import org.kigalisim.engine.support.ExceptionsGenerator;
  */
 public class ConsumptionRecalcStrategy implements RecalcStrategy {
 
-  private final UseKey scope;
+  private final Optional<UseKey> scope;
 
   /**
    * Create a new ConsumptionRecalcStrategy.
    *
-   * @param scope The scope to use for calculations, null to use engine's current scope
+   * @param scope The scope to use for calculations, empty to use engine's current scope
    */
-  public ConsumptionRecalcStrategy(UseKey scope) {
+  public ConsumptionRecalcStrategy(Optional<UseKey> scope) {
     this.scope = scope;
   }
 
   @Override
   public void execute(Engine target, RecalcKit kit) {
-    UseKey scopeEffective = scope != null ? scope : target.getScope();
+    UseKey scopeEffective = scope.orElse(target.getScope());
 
     String application = scopeEffective.getApplication();
     String substance = scopeEffective.getSubstance();

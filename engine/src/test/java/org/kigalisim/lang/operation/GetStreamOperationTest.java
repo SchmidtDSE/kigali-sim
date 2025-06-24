@@ -12,6 +12,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.math.BigDecimal;
+import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.kigalisim.engine.Engine;
@@ -67,7 +68,7 @@ public class GetStreamOperationTest {
   public void testExecuteRetrievesStreamValue() {
     // Set a stream value in the engine
     EngineNumber number = new EngineNumber(BigDecimal.valueOf(42), "kg");
-    engine.setStream("manufacture", number, null);
+    engine.setStream("manufacture", number, Optional.empty());
 
     // Create and execute the operation
     GetStreamOperation operation = new GetStreamOperation("manufacture");
@@ -86,7 +87,7 @@ public class GetStreamOperationTest {
   public void testExecuteRetrievesStreamValueWithUnitConversion() {
     // Set a stream value in the engine
     EngineNumber number = new EngineNumber(BigDecimal.valueOf(1), "kg");
-    engine.setStream("manufacture", number, null);
+    engine.setStream("manufacture", number, Optional.empty());
 
     // Create and execute the operation with unit conversion
     GetStreamOperation operation = new GetStreamOperation("manufacture", "mt");

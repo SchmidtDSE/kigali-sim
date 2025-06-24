@@ -56,7 +56,7 @@ public class SetOperation implements Operation {
     YearMatcher yearMatcher = parsedDuring.buildYearMatcher(machine);
 
     Engine engine = machine.getEngine();
-    engine.setStream(stream, result, yearMatcher);
+    engine.setStream(stream, result, Optional.ofNullable(yearMatcher));
   }
 
 }

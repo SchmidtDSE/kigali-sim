@@ -14,6 +14,7 @@ import java.math.BigDecimal;
 import java.math.MathContext;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.kigalisim.engine.number.EngineNumber;
@@ -230,13 +231,13 @@ public class SingleThreadEngine implements Engine {
   }
 
   @Override
-  public void setStreamFor(String name, EngineNumber value, YearMatcher yearMatcher, UseKey key,
-                           boolean propagateChanges, String unitsToRecord) {
-    if (!getIsInRange(yearMatcher)) {
+  public void setStreamFor(String name, EngineNumber value, Optional<YearMatcher> yearMatcher, Optional<UseKey> key,
+                           boolean propagateChanges, Optional<String> unitsToRecord) {
+    if (!getIsInRange(yearMatcher.orElse(null))) {
       return;
     }
 
-    UseKey keyEffective = key != null ? key : scope;
+    UseKey keyEffective = key.orElse(scope);
     String application = keyEffective.getApplication();
     String substance = keyEffective.getSubstance();
 
@@ -251,7 +252,7 @@ public class SingleThreadEngine implements Engine {
       return;
     }
 
-    String unitsToRecordRealized = unitsToRecord != null ? unitsToRecord : value.getUnits();
+    String unitsToRecordRealized = unitsToRecord.orElse(value.getUnits());
     streamKeeper.setLastSpecifiedUnits(keyEffective, unitsToRecordRealized);
 
     if ("sales".equals(name) || "manufacture".equals(name) || "import".equals(name)) {
@@ -305,27 +306,21 @@ public class SingleThreadEngine implements Engine {
   }
 
   @Override
-  public void setStream(String name, EngineNumber value, YearMatcher yearMatcher) {
-    setStreamFor(name, value, yearMatcher, null, true, null);
+  public void setStream(String name, EngineNumber value, Optional<YearMatcher> yearMatcher) {
+    setStreamFor(name, value, yearMatcher, Optional.empty(), true, Optional.empty());
   }
 
   @Override
-  public EngineNumber getStream(String name, UseKey useKey, String conversion) {
-    if (useKey == null) {
-      useKey = scope;
-    }
-    EngineNumber value = streamKeeper.getStream(useKey, name);
+  public EngineNumber getStream(String name, Optional<UseKey> useKey, Optional<String> conversion) {
+    UseKey effectiveKey = useKey.orElse(scope);
+    EngineNumber value = streamKeeper.getStream(effectiveKey, name);
 
-    if (conversion == null) {
-      return value;
-    } else {
-      return unitConverter.convert(value, conversion);
-    }
+    return conversion.map(conv -> unitConverter.convert(value, conv)).orElse(value);
   }
 
   @Override
   public EngineNumber getStream(String name) {
-    return getStream(name, scope, null);
+    return getStream(name, Optional.of(scope), Optional.empty());
   }
 
   @Override
@@ -651,7 +646,7 @@ public class SingleThreadEngine implements Engine {
 
     UseKey useKeyEffective = useKey == null ? scope : useKey;
 
-    EngineNumber currentValue = getStream(stream, useKeyEffective, null);
+    EngineNumber currentValue = getStream(stream, Optional.of(useKeyEffective), Optional.empty());
     UnitConverter unitConverter = createUnitConverterWithTotal(stream);
 
     EngineNumber convertedDelta = unitConverter.convert(amount, currentValue.getUnits());
@@ -659,7 +654,7 @@ public class SingleThreadEngine implements Engine {
     EngineNumber outputWithUnits = new EngineNumber(newAmount, currentValue.getUnits());
 
     // Need to convert UseKey to Scope for setStream call since setStream requires scope for variable management
-    setStreamFor(stream, outputWithUnits, null, useKeyEffective, true, amount.getUnits());
+    setStreamFor(stream, outputWithUnits, Optional.empty(), Optional.of(useKeyEffective), true, Optional.of(amount.getUnits()));
   }
 
   @Override
@@ -952,7 +947,7 @@ public class SingleThreadEngine implements Engine {
       return;
     }
 
-    EngineNumber currentValue = getStream(stream, scope, null);
+    EngineNumber currentValue = getStream(stream, Optional.ofNullable(scope), Optional.empty());
     UnitConverter unitConverter = createUnitConverterWithTotal(stream);
 
     EngineNumber convertedDelta = unitConverter.convert(amount, currentValue.getUnits());
@@ -960,7 +955,7 @@ public class SingleThreadEngine implements Engine {
     EngineNumber outputWithUnits = new EngineNumber(newAmount, currentValue.getUnits());
 
     // Allow propagation but don't track units (since units tracking was handled by the caller)
-    setStreamFor(stream, outputWithUnits, null, scope, true, null);
+    setStreamFor(stream, outputWithUnits, Optional.empty(), Optional.ofNullable(scope), true, Optional.empty());
   }
 
   /**
@@ -995,8 +990,8 @@ public class SingleThreadEngine implements Engine {
   private void recalcPopulationChange(Scope scope, Boolean subtractRecharge) {
     // Delegate to strategy with RecalcKit
     PopulationChangeRecalcStrategy strategy = new PopulationChangeRecalcStrategy(
-        scope,
-        subtractRecharge
+        Optional.ofNullable(scope),
+        Optional.ofNullable(subtractRecharge)
     );
     strategy.execute(this, createRecalcKit());
   }
@@ -1008,7 +1003,7 @@ public class SingleThreadEngine implements Engine {
    */
   private void recalcRechargeEmissions(Scope scope) {
     // Delegate to strategy with RecalcKit
-    RechargeEmissionsRecalcStrategy strategy = new RechargeEmissionsRecalcStrategy(scope);
+    RechargeEmissionsRecalcStrategy strategy = new RechargeEmissionsRecalcStrategy(Optional.ofNullable(scope));
     strategy.execute(this, createRecalcKit());
   }
 
@@ -1019,7 +1014,7 @@ public class SingleThreadEngine implements Engine {
    */
   private void recalcEolEmissions(Scope scope) {
     // Delegate to strategy with RecalcKit
-    EolEmissionsRecalcStrategy strategy = new EolEmissionsRecalcStrategy(scope);
+    EolEmissionsRecalcStrategy strategy = new EolEmissionsRecalcStrategy(Optional.ofNullable(scope));
     strategy.execute(this, createRecalcKit());
   }
 
@@ -1030,7 +1025,7 @@ public class SingleThreadEngine implements Engine {
    */
   private void recalcConsumption(Scope scope) {
     // Delegate to strategy with RecalcKit
-    ConsumptionRecalcStrategy strategy = new ConsumptionRecalcStrategy(scope);
+    ConsumptionRecalcStrategy strategy = new ConsumptionRecalcStrategy(Optional.ofNullable(scope));
     strategy.execute(this, createRecalcKit());
   }
 
@@ -1041,7 +1036,7 @@ public class SingleThreadEngine implements Engine {
    */
   private void recalcSales(Scope scope) {
     // Delegate to strategy with RecalcKit
-    SalesRecalcStrategy strategy = new SalesRecalcStrategy(scope);
+    SalesRecalcStrategy strategy = new SalesRecalcStrategy(Optional.ofNullable(scope));
     strategy.execute(this, createRecalcKit());
   }
 
@@ -1052,7 +1047,7 @@ public class SingleThreadEngine implements Engine {
    */
   private void recalcRetire(Scope scope) {
     // Delegate to strategy with RecalcKit
-    RetireRecalcStrategy strategy = new RetireRecalcStrategy(scope);
+    RetireRecalcStrategy strategy = new RetireRecalcStrategy(Optional.ofNullable(scope));
     strategy.execute(this, createRecalcKit());
   }
 

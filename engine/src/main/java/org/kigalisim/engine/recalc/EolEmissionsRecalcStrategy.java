@@ -9,6 +9,7 @@
 
 package org.kigalisim.engine.recalc;
 
+import java.util.Optional;
 import org.kigalisim.engine.Engine;
 import org.kigalisim.engine.number.EngineNumber;
 import org.kigalisim.engine.number.UnitConverter;
@@ -22,14 +23,14 @@ import org.kigalisim.engine.support.ExceptionsGenerator;
  */
 public class EolEmissionsRecalcStrategy implements RecalcStrategy {
 
-  private final UseKey scope;
+  private final Optional<UseKey> scope;
 
   /**
    * Create a new EolEmissionsRecalcStrategy.
    *
-   * @param scope The scope to use for calculations, null to use engine's current scope
+   * @param scope The scope to use for calculations, empty to use engine's current scope
    */
-  public EolEmissionsRecalcStrategy(UseKey scope) {
+  public EolEmissionsRecalcStrategy(Optional<UseKey> scope) {
     this.scope = scope;
   }
 
@@ -39,7 +40,7 @@ public class EolEmissionsRecalcStrategy implements RecalcStrategy {
     OverridingConverterStateGetter stateGetter =
         new OverridingConverterStateGetter(kit.getStateGetter());
     UnitConverter unitConverter = new UnitConverter(stateGetter);
-    UseKey scopeEffective = scope != null ? scope : target.getScope();
+    UseKey scopeEffective = scope.orElse(target.getScope());
 
     // Check allowed
     if (scopeEffective.getApplication() == null || scopeEffective.getSubstance() == null) {

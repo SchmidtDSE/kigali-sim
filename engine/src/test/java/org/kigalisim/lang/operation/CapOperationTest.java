@@ -96,7 +96,7 @@ public class CapOperationTest {
   @Test
   public void testExecuteNoDuringNoDisplacementWithCapping() {
     // Set up a stream with a value higher than the cap
-    engine.setStream("manufacture", new EngineNumber(BigDecimal.valueOf(100), "kg"), null);
+    engine.setStream("manufacture", new EngineNumber(BigDecimal.valueOf(100), "kg"), Optional.empty());
 
     // Create a cap operation with a lower value
     EngineNumber number = new EngineNumber(BigDecimal.valueOf(42), "kg");
@@ -117,7 +117,7 @@ public class CapOperationTest {
   @Test
   public void testExecuteNoDuringNoDisplacementWithoutCapping() {
     // Set up a stream with a value lower than the cap
-    engine.setStream("manufacture", new EngineNumber(BigDecimal.valueOf(20), "kg"), null);
+    engine.setStream("manufacture", new EngineNumber(BigDecimal.valueOf(20), "kg"), Optional.empty());
 
     // Create a cap operation with a higher value
     EngineNumber number = new EngineNumber(BigDecimal.valueOf(42), "kg");
@@ -138,7 +138,7 @@ public class CapOperationTest {
   @Test
   public void testExecuteWithDuringApplying() {
     // Set up a stream with a value higher than the cap
-    engine.setStream("manufacture", new EngineNumber(BigDecimal.valueOf(100), "kg"), null);
+    engine.setStream("manufacture", new EngineNumber(BigDecimal.valueOf(100), "kg"), Optional.empty());
 
     // Create a cap operation with a lower value and a during that applies to the current year
     EngineNumber number = new EngineNumber(BigDecimal.valueOf(42), "kg");
@@ -165,7 +165,7 @@ public class CapOperationTest {
   @Test
   public void testExecuteWithDuringNotApplying() {
     // Set up a stream with a value higher than the cap
-    engine.setStream("manufacture", new EngineNumber(BigDecimal.valueOf(100), "kg"), null);
+    engine.setStream("manufacture", new EngineNumber(BigDecimal.valueOf(100), "kg"), Optional.empty());
 
     // Create a cap operation with a lower value and a during that applies to a future year
     EngineNumber number = new EngineNumber(BigDecimal.valueOf(42), "kg");
@@ -192,7 +192,7 @@ public class CapOperationTest {
   @Test
   public void testExecuteWithComplexValueOperation() {
     // Set up a stream with a value higher than the cap
-    engine.setStream("manufacture", new EngineNumber(BigDecimal.valueOf(100), "kg"), null);
+    engine.setStream("manufacture", new EngineNumber(BigDecimal.valueOf(100), "kg"), Optional.empty());
 
     // Create a cap operation with a complex value operation
     Operation left = new PreCalculatedOperation(new EngineNumber(BigDecimal.valueOf(30), "kg"));
@@ -215,10 +215,10 @@ public class CapOperationTest {
   @Test
   public void testExecuteWithDisplacement() {
     // Set up the source stream with a value higher than the cap
-    engine.setStream("manufacture", new EngineNumber(BigDecimal.valueOf(100), "kg"), null);
+    engine.setStream("manufacture", new EngineNumber(BigDecimal.valueOf(100), "kg"), Optional.empty());
 
     // Set up the target stream for displacement
-    engine.setStream("import", new EngineNumber(BigDecimal.valueOf(0), "kg"), null);
+    engine.setStream("import", new EngineNumber(BigDecimal.valueOf(0), "kg"), Optional.empty());
 
     // Create a cap operation with displacement
     EngineNumber number = new EngineNumber(BigDecimal.valueOf(42), "kg");

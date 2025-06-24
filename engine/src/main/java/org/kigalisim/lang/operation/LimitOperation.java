@@ -7,6 +7,7 @@
 package org.kigalisim.lang.operation;
 
 import java.math.BigDecimal;
+import java.util.Optional;
 import org.kigalisim.engine.number.EngineNumber;
 import org.kigalisim.lang.machine.PushDownMachine;
 
@@ -16,8 +17,8 @@ import org.kigalisim.lang.machine.PushDownMachine;
 public class LimitOperation implements Operation {
 
   private final Operation operand;
-  private final Operation lowerBound;
-  private final Operation upperBound;
+  private final Optional<Operation> lowerBound;
+  private final Optional<Operation> upperBound;
 
   /**
    * Create a new LimitOperation with both lower and upper bounds.
@@ -28,8 +29,8 @@ public class LimitOperation implements Operation {
    */
   public LimitOperation(Operation operand, Operation lowerBound, Operation upperBound) {
     this.operand = operand;
-    this.lowerBound = lowerBound;
-    this.upperBound = upperBound;
+    this.lowerBound = Optional.ofNullable(lowerBound);
+    this.upperBound = Optional.ofNullable(upperBound);
   }
 
   /**
@@ -40,8 +41,8 @@ public class LimitOperation implements Operation {
    */
   public LimitOperation(Operation operand, Operation upperBound) {
     this.operand = operand;
-    this.lowerBound = null;
-    this.upperBound = upperBound;
+    this.lowerBound = Optional.empty();
+    this.upperBound = Optional.ofNullable(upperBound);
   }
 
   /**
@@ -53,8 +54,8 @@ public class LimitOperation implements Operation {
    */
   public LimitOperation(Operation operand, Operation lowerBound, boolean isLowerBound) {
     this.operand = operand;
-    this.lowerBound = lowerBound;
-    this.upperBound = null;
+    this.lowerBound = Optional.ofNullable(lowerBound);
+    this.upperBound = Optional.empty();
   }
 
   @Override
@@ -64,27 +65,27 @@ public class LimitOperation implements Operation {
     EngineNumber value = machine.getResult();
 
     // Get the bounds
-    EngineNumber lower = null;
-    if (lowerBound != null) {
-      lowerBound.execute(machine);
-      lower = machine.getResult();
+    Optional<EngineNumber> lower = Optional.empty();
+    if (lowerBound.isPresent()) {
+      lowerBound.get().execute(machine);
+      lower = Optional.of(machine.getResult());
     }
 
-    EngineNumber upper = null;
-    if (upperBound != null) {
-      upperBound.execute(machine);
-      upper = machine.getResult();
+    Optional<EngineNumber> upper = Optional.empty();
+    if (upperBound.isPresent()) {
+      upperBound.get().execute(machine);
+      upper = Optional.of(machine.getResult());
     }
 
     // Apply the limits
     BigDecimal result = value.getValue();
 
-    if (lower != null && result.compareTo(lower.getValue()) < 0) {
-      result = lower.getValue();
+    if (lower.isPresent() && result.compareTo(lower.get().getValue()) < 0) {
+      result = lower.get().getValue();
     }
 
-    if (upper != null && result.compareTo(upper.getValue()) > 0) {
-      result = upper.getValue();
+    if (upper.isPresent() && result.compareTo(upper.get().getValue()) > 0) {
+      result = upper.get().getValue();
     }
 
     // Push the result
