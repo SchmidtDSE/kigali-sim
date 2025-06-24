@@ -4,7 +4,7 @@
  * @license BSD
  */
 
-const AUTORUN_WAIT = 750;
+const AUTORUN_WAIT = 500;
 
 
 class CodeEditorPresenter {
