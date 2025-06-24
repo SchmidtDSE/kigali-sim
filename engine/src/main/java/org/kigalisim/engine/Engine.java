@@ -132,14 +132,14 @@ public interface Engine {
    * @param value The value to set for the stream
    * @param yearMatcher The year matcher object to determine if setting the stream applies to the
    *     current year, or null. No-op if the year matcher is not satisfied.
-   * @param scope The scope in which the stream is being set. Uses default scope if not provided.
+   * @param key The scope in which the stream is being set. Uses default scope if not provided.
    * @param propagateChanges Specifies if changes should propagate to other components.
    *     Defaults to true.
    * @param unitsToRecord Optional units to record instead of using value.getUnits().
    *     Used when the original user-specified units differ from the converted units being set.
    */
-  void setStream(String name, EngineNumber value, YearMatcher yearMatcher, Scope scope,
-      boolean propagateChanges, String unitsToRecord);
+  void setStreamFor(String name, EngineNumber value, YearMatcher yearMatcher, UseKey key,
+                    boolean propagateChanges, String unitsToRecord);
 
   /**
    * Set the value of a stream with default parameters.
@@ -149,16 +149,6 @@ public interface Engine {
    * @param yearMatcher The year matcher object or null
    */
   void setStream(String name, EngineNumber value, YearMatcher yearMatcher);
-
-  /**
-   * Get the stream value for a given application and substance scope.
-   *
-   * @param name The name of the stream to retrieve
-   * @param scope The scope within which the stream exists. Uses default scope if not provided.
-   * @param conversion The conversion specification for units, or null for no conversion
-   * @return The value of the stream, possibly converted
-   */
-  EngineNumber getStream(String name, Scope scope, String conversion);
 
   /**
    * Get the stream value for a given application and substance key.
@@ -185,9 +175,7 @@ public interface Engine {
    * @param stream The name of the stream to get like recycle
    * @return The value of the given combination without conversion
    */
-  EngineNumber getStreamRaw(UseKey useKey, String stream);
-
-
+  EngineNumber getStreamFor(UseKey useKey, String stream);
 
   /**
    * Create a user-defined variable in the current scope.
@@ -227,20 +215,11 @@ public interface Engine {
   /**
    * Get the initial charge for a specific application and substance.
    *
-   * @param scope Application and substance for which initial charge is requested
+   * @param key Application and substance for which initial charge is requested
    * @param stream The stream in which the initial charge is requested and must be realized
    * @return The initial charge for the stream in the given application and substance
    */
-  EngineNumber getRawInitialChargeFor(Scope scope, String stream);
-
-  /**
-   * Get the initial charge for a specific application and substance.
-   *
-   * @param useKey The UseKey containing application and substance information
-   * @param stream The stream in which the initial charge is requested and must be realized
-   * @return The initial charge for the stream in the given application and substance
-   */
-  EngineNumber getRawInitialChargeFor(UseKey useKey, String stream);
+  EngineNumber getRawInitialChargeFor(UseKey key, String stream);
 
 
   /**
@@ -338,16 +317,6 @@ public interface Engine {
    * @return The energy intensity value with volume normalized energy
    */
   EngineNumber getEqualsEnergyIntensity();
-
-  /**
-   * Change a stream value by a delta amount.
-   *
-   * @param stream The stream identifier to modify
-   * @param amount The amount to change the stream by
-   * @param yearMatcher Matcher to determine if the change applies to current year
-   * @param scope The scope in which to make the change
-   */
-  void changeStream(String stream, EngineNumber amount, YearMatcher yearMatcher, Scope scope);
 
   /**
    * Change a stream value by a delta amount.

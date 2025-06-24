@@ -12,7 +12,7 @@ package org.kigalisim.engine.recalc;
 import org.kigalisim.engine.Engine;
 import org.kigalisim.engine.number.EngineNumber;
 import org.kigalisim.engine.number.UnitConverter;
-import org.kigalisim.engine.state.Scope;
+import org.kigalisim.engine.state.UseKey;
 import org.kigalisim.engine.support.RechargeVolumeCalculator;
 
 /**
@@ -20,20 +20,20 @@ import org.kigalisim.engine.support.RechargeVolumeCalculator;
  */
 public class RechargeEmissionsRecalcStrategy implements RecalcStrategy {
 
-  private final Scope scope;
+  private final UseKey scope;
 
   /**
    * Create a new RechargeEmissionsRecalcStrategy.
    *
    * @param scope The scope to use for calculations, null to use engine's current scope
    */
-  public RechargeEmissionsRecalcStrategy(Scope scope) {
+  public RechargeEmissionsRecalcStrategy(UseKey scope) {
     this.scope = scope;
   }
 
   @Override
   public void execute(Engine target, RecalcKit kit) {
-    Scope scopeEffective = scope != null ? scope : target.getScope();
+    UseKey scopeEffective = scope != null ? scope : target.getScope();
     EngineNumber rechargeVolume = RechargeVolumeCalculator.calculateRechargeVolume(
         scopeEffective,
         kit.getStateGetter(),
@@ -42,6 +42,6 @@ public class RechargeEmissionsRecalcStrategy implements RecalcStrategy {
     );
     UnitConverter unitConverter = kit.getUnitConverter();
     EngineNumber rechargeGhg = unitConverter.convert(rechargeVolume, "tCO2e");
-    target.setStream("rechargeEmissions", rechargeGhg, null, scopeEffective, false, null);
+    target.setStreamFor("rechargeEmissions", rechargeGhg, null, scopeEffective, false, null);
   }
 }

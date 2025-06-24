@@ -95,12 +95,12 @@ public class EngineResultSerializer {
     UnitConverter unitConverter = new UnitConverter(stateGetter);
 
     // Get sales
-    EngineNumber recycleRaw = engine.getStreamRaw(useKey, "recycle");
+    EngineNumber recycleRaw = engine.getStreamFor(useKey, "recycle");
     EngineNumber recycleValue = unitConverter.convert(recycleRaw, "kg");
     builder.setRecycleValue(recycleValue);
 
     // Get total energy consumption
-    EngineNumber energyConsumptionValue = engine.getStreamRaw(useKey, "energy");
+    EngineNumber energyConsumptionValue = engine.getStreamFor(useKey, "energy");
     // Default to 0 kwh if energy stream is not calculated (consistent with JS version)
     if (energyConsumptionValue == null) {
       energyConsumptionValue = new EngineNumber(BigDecimal.ZERO, "kwh");
@@ -108,18 +108,18 @@ public class EngineResultSerializer {
     builder.setEnergyConsumption(energyConsumptionValue);
 
     // Get emissions
-    EngineNumber populationValue = engine.getStreamRaw(useKey, "equipment");
+    EngineNumber populationValue = engine.getStreamFor(useKey, "equipment");
     builder.setPopulationValue(populationValue);
 
-    EngineNumber populationNew = engine.getStreamRaw(useKey, "newEquipment");
+    EngineNumber populationNew = engine.getStreamFor(useKey, "newEquipment");
     builder.setPopulationNew(populationNew);
 
-    EngineNumber eolEmissions = engine.getStreamRaw(useKey, "eolEmissions");
+    EngineNumber eolEmissions = engine.getStreamFor(useKey, "eolEmissions");
     builder.setEolEmissions(eolEmissions);
 
     // Get sales for offset calculation
-    EngineNumber manufactureRaw = engine.getStreamRaw(useKey, "manufacture");
-    EngineNumber importRaw = engine.getStreamRaw(useKey, "import");
+    EngineNumber manufactureRaw = engine.getStreamFor(useKey, "manufacture");
+    EngineNumber importRaw = engine.getStreamFor(useKey, "import");
 
     // Convert sales values for offset calculation
     EngineNumber manufactureValue = unitConverter.convert(manufactureRaw, "kg");
@@ -166,7 +166,7 @@ public class EngineResultSerializer {
     builder.setRecycleConsumptionValue(recycleConsumptionValue);
 
     // Offset recharge emissions
-    EngineNumber rechargeEmissions = engine.getStreamRaw(
+    EngineNumber rechargeEmissions = engine.getStreamFor(
         useKey,
         "rechargeEmissions"
     );
@@ -243,9 +243,9 @@ public class EngineResultSerializer {
     stateGetter.setAmortizedUnitVolume(importInitialChargeUnit);
 
     // Determine import value without recharge
-    EngineNumber totalImportValue = engine.getStreamRaw(useKey, "import");
-    EngineNumber totalDomesticValue = engine.getStreamRaw(useKey, "manufacture");
-    EngineNumber totalRechargeEmissions = engine.getStreamRaw(
+    EngineNumber totalImportValue = engine.getStreamFor(useKey, "import");
+    EngineNumber totalDomesticValue = engine.getStreamFor(useKey, "manufacture");
+    EngineNumber totalRechargeEmissions = engine.getStreamFor(
         useKey, "rechargeEmissions");
 
     BigDecimal totalImportValueKg = unitConverter.convert(totalImportValue, "kg").getValue();

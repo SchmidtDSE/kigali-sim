@@ -194,9 +194,9 @@ public class StreamKeeper {
       String[] keyPieces = key.split("\t");
       String application = keyPieces.length > 0 ? keyPieces[0] : "";
       String substance = keyPieces.length > 1 ? keyPieces[1] : "";
-      String pieces = String.join(" > ", 
-          "-".equals(application) ? "null" : application, 
-          "-".equals(substance) ? "null" : substance, 
+      String pieces = String.join(" > ",
+          "-".equals(application) ? "null" : application,
+          "-".equals(substance) ? "null" : substance,
           name);
       throw new RuntimeException("Encountered NaN to be set for: " + pieces);
     }
@@ -838,9 +838,9 @@ public class StreamKeeper {
       String[] keyPieces = key.split("\t");
       String application = keyPieces.length > 0 ? keyPieces[0] : "";
       String substance = keyPieces.length > 1 ? keyPieces[1] : "";
-      String pieces = String.join(" > ", 
-          "-".equals(application) ? "null" : application, 
-          "-".equals(substance) ? "null" : substance, 
+      String pieces = String.join(" > ",
+          "-".equals(application) ? "null" : application,
+          "-".equals(substance) ? "null" : substance,
           name);
       throw new RuntimeException("Encountered NaN after conversion for: " + pieces);
     }

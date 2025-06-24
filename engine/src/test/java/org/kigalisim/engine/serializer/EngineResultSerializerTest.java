@@ -272,10 +272,10 @@ public class EngineResultSerializerTest {
 
 
     // Configure mock responses for getStreamRaw with UseKey
-    when(engine.getStreamRaw(any(UseKey.class), any(String.class))).thenAnswer(invocation -> {
+    when(engine.getStreamFor(any(UseKey.class), any(String.class))).thenAnswer(invocation -> {
       UseKey useKey = invocation.getArgument(0);
       String stream = invocation.getArgument(1);
-      
+
       if ("commercialRefrigeration".equals(useKey.getApplication())
           && "HFC-134a".equals(useKey.getSubstance())) {
         switch (stream) {
@@ -316,7 +316,7 @@ public class EngineResultSerializerTest {
     when(engine.getRawInitialChargeFor(any(UseKey.class), any(String.class))).thenAnswer(invocation -> {
       UseKey useKey = invocation.getArgument(0);
       String stream = invocation.getArgument(1);
-      
+
       if ("commercialRefrigeration".equals(useKey.getApplication())
           && "HFC-134a".equals(useKey.getSubstance())) {
         switch (stream) {
@@ -366,10 +366,10 @@ public class EngineResultSerializerTest {
 
 
     // Configure mock responses for getStreamRaw with UseKey
-    when(engine.getStreamRaw(any(UseKey.class), any(String.class))).thenAnswer(invocation -> {
+    when(engine.getStreamFor(any(UseKey.class), any(String.class))).thenAnswer(invocation -> {
       UseKey useKey = invocation.getArgument(0);
       String stream = invocation.getArgument(1);
-      
+
       if ("commercialRefrigeration".equals(useKey.getApplication())
           && "HFC-134a".equals(useKey.getSubstance())) {
         switch (stream) {
@@ -410,7 +410,7 @@ public class EngineResultSerializerTest {
     when(engine.getRawInitialChargeFor(any(UseKey.class), any(String.class))).thenAnswer(invocation -> {
       UseKey useKey = invocation.getArgument(0);
       String stream = invocation.getArgument(1);
-      
+
       if ("commercialRefrigeration".equals(useKey.getApplication())
           && "HFC-134a".equals(useKey.getSubstance())) {
         switch (stream) {

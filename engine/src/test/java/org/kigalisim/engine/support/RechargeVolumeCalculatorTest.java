@@ -17,6 +17,7 @@ import org.kigalisim.engine.number.EngineNumber;
 import org.kigalisim.engine.state.ConverterStateGetter;
 import org.kigalisim.engine.state.Scope;
 import org.kigalisim.engine.state.StreamKeeper;
+import org.kigalisim.engine.state.UseKey;
 
 /**
  * Tests for RechargeVolumeCalculator.
@@ -26,7 +27,7 @@ public class RechargeVolumeCalculatorTest {
   @Test
   public void testCalculateRechargeVolume() {
     // Setup mocks
-    Scope scope = mock(Scope.class);
+    UseKey scope = mock(UseKey.class);
     ConverterStateGetter stateGetter = mock(ConverterStateGetter.class);
     StreamKeeper streamKeeper = mock(StreamKeeper.class);
     org.kigalisim.engine.Engine engine = mock(org.kigalisim.engine.Engine.class);
@@ -55,7 +56,7 @@ public class RechargeVolumeCalculatorTest {
   @Test
   public void testCalculateRechargeVolumeZero() {
     // Setup mocks
-    Scope scope = mock(Scope.class);
+    UseKey scope = mock(UseKey.class);
     ConverterStateGetter stateGetter = mock(ConverterStateGetter.class);
     StreamKeeper streamKeeper = mock(StreamKeeper.class);
     org.kigalisim.engine.Engine engine = mock(org.kigalisim.engine.Engine.class);
@@ -75,7 +76,11 @@ public class RechargeVolumeCalculatorTest {
 
     // Call the method
     EngineNumber result = RechargeVolumeCalculator.calculateRechargeVolume(
-        scope, stateGetter, streamKeeper, engine);
+        scope,
+        stateGetter,
+        streamKeeper,
+        engine
+    );
 
     // Verify the result
     assertEquals(BigDecimal.ZERO, result.getValue());

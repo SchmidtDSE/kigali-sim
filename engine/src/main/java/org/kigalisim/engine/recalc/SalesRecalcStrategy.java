@@ -14,8 +14,8 @@ import org.kigalisim.engine.Engine;
 import org.kigalisim.engine.number.EngineNumber;
 import org.kigalisim.engine.number.UnitConverter;
 import org.kigalisim.engine.state.OverridingConverterStateGetter;
-import org.kigalisim.engine.state.Scope;
 import org.kigalisim.engine.state.StreamKeeper;
+import org.kigalisim.engine.state.UseKey;
 import org.kigalisim.engine.support.DivisionHelper;
 import org.kigalisim.engine.support.ExceptionsGenerator;
 
@@ -24,20 +24,20 @@ import org.kigalisim.engine.support.ExceptionsGenerator;
  */
 public class SalesRecalcStrategy implements RecalcStrategy {
 
-  private final Scope scope;
+  private final UseKey scope;
 
   /**
    * Create a new SalesRecalcStrategy.
    *
    * @param scope The scope to use for calculations, null to use engine's current scope
    */
-  public SalesRecalcStrategy(Scope scope) {
+  public SalesRecalcStrategy(UseKey scope) {
     this.scope = scope;
   }
 
   @Override
   public void execute(Engine target, RecalcKit kit) {
-    Scope scopeEffective = scope != null ? scope : target.getScope();
+    UseKey scopeEffective = scope != null ? scope : target.getScope();
 
     OverridingConverterStateGetter stateGetter =
         new OverridingConverterStateGetter(kit.getStateGetter());
@@ -167,7 +167,7 @@ public class SalesRecalcStrategy implements RecalcStrategy {
     EngineNumber newImport = new EngineNumber(newImportKg, "kg");
 
     // Call Engine.setStream with propagateChanges=false to match JavaScript behavior
-    target.setStream("manufacture", newManufacture, null, scopeEffective, false, null);
-    target.setStream("import", newImport, null, scopeEffective, false, null);
+    target.setStreamFor("manufacture", newManufacture, null, scopeEffective, false, null);
+    target.setStreamFor("import", newImport, null, scopeEffective, false, null);
   }
 }

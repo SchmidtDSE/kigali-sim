@@ -230,21 +230,21 @@ public class SingleThreadEngine implements Engine {
   }
 
   @Override
-  public void setStream(String name, EngineNumber value, YearMatcher yearMatcher, Scope scope,
-      boolean propagateChanges, String unitsToRecord) {
+  public void setStreamFor(String name, EngineNumber value, YearMatcher yearMatcher, UseKey key,
+                           boolean propagateChanges, String unitsToRecord) {
     if (!getIsInRange(yearMatcher)) {
       return;
     }
 
-    Scope scopeEffective = scope != null ? scope : this.scope;
-    String application = scopeEffective.getApplicationOptional().orElse(null);
-    String substance = scopeEffective.getSubstanceOptional().orElse(null);
+    UseKey keyEffective = key != null ? key : scope;
+    String application = keyEffective.getApplication();
+    String substance = keyEffective.getSubstance();
 
     if (application == null || substance == null) {
       raiseNoAppOrSubstance("setting stream", " specified");
     }
 
-    streamKeeper.setStream(scopeEffective, name, value);
+    streamKeeper.setStream(keyEffective, name, value);
 
     // Track the units last used to specify this stream (only for user-initiated calls)
     if (!propagateChanges) {
@@ -252,11 +252,11 @@ public class SingleThreadEngine implements Engine {
     }
 
     String unitsToRecordRealized = unitsToRecord != null ? unitsToRecord : value.getUnits();
-    streamKeeper.setLastSpecifiedUnits(scopeEffective, unitsToRecordRealized);
+    streamKeeper.setLastSpecifiedUnits(keyEffective, unitsToRecordRealized);
 
     if ("sales".equals(name) || "manufacture".equals(name) || "import".equals(name)) {
       RecalcOperationBuilder builder = new RecalcOperationBuilder()
-          .setScopeEffective(scopeEffective)
+          .setScopeEffective(keyEffective)
           .setSubtractRecharge(!value.hasEquipmentUnits())
           .setRecalcKit(createRecalcKit())
           .recalcPopulationChange()
@@ -270,7 +270,7 @@ public class SingleThreadEngine implements Engine {
       operation.execute(this);
     } else if ("consumption".equals(name)) {
       RecalcOperationBuilder builder = new RecalcOperationBuilder()
-          .setScopeEffective(scopeEffective)
+          .setScopeEffective(keyEffective)
           .setRecalcKit(createRecalcKit())
           .recalcSales()
           .thenPropagateToPopulationChange();
@@ -283,7 +283,7 @@ public class SingleThreadEngine implements Engine {
       operation.execute(this);
     } else if ("equipment".equals(name)) {
       RecalcOperationBuilder builder = new RecalcOperationBuilder()
-          .setScopeEffective(scopeEffective)
+          .setScopeEffective(keyEffective)
           .setRecalcKit(createRecalcKit())
           .recalcSales()
           .thenPropagateToConsumption();
@@ -296,7 +296,7 @@ public class SingleThreadEngine implements Engine {
       operation.execute(this);
     } else if ("priorEquipment".equals(name)) {
       RecalcOperation operation = new RecalcOperationBuilder()
-          .setScopeEffective(scopeEffective)
+          .setScopeEffective(keyEffective)
           .setRecalcKit(createRecalcKit())
           .recalcRetire()
           .build();
@@ -306,25 +306,13 @@ public class SingleThreadEngine implements Engine {
 
   @Override
   public void setStream(String name, EngineNumber value, YearMatcher yearMatcher) {
-    setStream(name, value, yearMatcher, null, true, null);
-  }
-
-  @Override
-  public EngineNumber getStream(String name, Scope scope, String conversion) {
-    Scope scopeEffective = scope != null ? scope : this.scope;
-    EngineNumber value = streamKeeper.getStream(scopeEffective, name);
-
-    if (conversion == null) {
-      return value;
-    } else {
-      return unitConverter.convert(value, conversion);
-    }
+    setStreamFor(name, value, yearMatcher, null, true, null);
   }
 
   @Override
   public EngineNumber getStream(String name, UseKey useKey, String conversion) {
     if (useKey == null) {
-      throw new RuntimeException("Must provide a key to getStream");
+      useKey = scope;
     }
     EngineNumber value = streamKeeper.getStream(useKey, name);
 
@@ -337,11 +325,11 @@ public class SingleThreadEngine implements Engine {
 
   @Override
   public EngineNumber getStream(String name) {
-    return getStream(name, null, null);
+    return getStream(name, scope, null);
   }
 
   @Override
-  public EngineNumber getStreamRaw(UseKey key, String stream) {
+  public EngineNumber getStreamFor(UseKey key, String stream) {
     return streamKeeper.getStream(key, stream);
   }
 
@@ -466,11 +454,6 @@ public class SingleThreadEngine implements Engine {
     }
 
     return total.compareTo(BigDecimal.ZERO) == 0;
-  }
-
-  @Override
-  public EngineNumber getRawInitialChargeFor(Scope scope, String stream) {
-    return streamKeeper.getInitialCharge(scope, stream);
   }
 
   @Override
@@ -655,24 +638,6 @@ public class SingleThreadEngine implements Engine {
   }
 
   @Override
-  public void changeStream(String stream, EngineNumber amount, YearMatcher yearMatcher,
-      Scope scope) {
-    if (!getIsInRange(yearMatcher)) {
-      return;
-    }
-
-    EngineNumber currentValue = getStream(stream, scope, null);
-    UnitConverter unitConverter = createUnitConverterWithTotal(stream);
-
-    EngineNumber convertedDelta = unitConverter.convert(amount, currentValue.getUnits());
-    BigDecimal newAmount = currentValue.getValue().add(convertedDelta.getValue());
-    EngineNumber outputWithUnits = new EngineNumber(newAmount, currentValue.getUnits());
-
-    // Pass the original user-specified units for tracking
-    setStream(stream, outputWithUnits, null, scope, true, amount.getUnits());
-  }
-
-  @Override
   public void changeStream(String stream, EngineNumber amount, YearMatcher yearMatcher) {
     changeStream(stream, amount, yearMatcher, null);
   }
@@ -684,7 +649,9 @@ public class SingleThreadEngine implements Engine {
       return;
     }
 
-    EngineNumber currentValue = getStream(stream, useKey, null);
+    UseKey useKeyEffective = useKey == null ? scope : useKey;
+
+    EngineNumber currentValue = getStream(stream, useKeyEffective, null);
     UnitConverter unitConverter = createUnitConverterWithTotal(stream);
 
     EngineNumber convertedDelta = unitConverter.convert(amount, currentValue.getUnits());
@@ -692,8 +659,7 @@ public class SingleThreadEngine implements Engine {
     EngineNumber outputWithUnits = new EngineNumber(newAmount, currentValue.getUnits());
 
     // Need to convert UseKey to Scope for setStream call since setStream requires scope for variable management
-    Scope useKeyAsScope = new Scope(null, useKey.getApplication(), useKey.getSubstance());
-    setStream(stream, outputWithUnits, null, useKeyAsScope, true, amount.getUnits());
+    setStreamFor(stream, outputWithUnits, null, useKeyEffective, true, amount.getUnits());
   }
 
   @Override
@@ -994,7 +960,7 @@ public class SingleThreadEngine implements Engine {
     EngineNumber outputWithUnits = new EngineNumber(newAmount, currentValue.getUnits());
 
     // Allow propagation but don't track units (since units tracking was handled by the caller)
-    setStream(stream, outputWithUnits, null, scope, true, null);
+    setStreamFor(stream, outputWithUnits, null, scope, true, null);
   }
 
   /**
