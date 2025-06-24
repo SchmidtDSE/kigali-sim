@@ -4,6 +4,9 @@
  * @license BSD
  */
 
+const AUTORUN_WAIT = 750;
+
+
 class CodeEditorPresenter {
   /**
    * Creates a new CodeEditorPresenter instance
@@ -12,7 +15,7 @@ class CodeEditorPresenter {
    * @param {Function} onChange - Callback function triggered when editor
    *     content changes.
    * @param {Function} onAutoRefresh - Optional callback function for auto-refresh
-   *     after 3 seconds of no changes.
+   *     after 0.75 seconds of no changes.
    */
   constructor(root, onChange, onAutoRefresh) {
     const self = this;
@@ -115,7 +118,7 @@ class CodeEditorPresenter {
       self._timeout = setTimeout(() => self._onChange(), 500);
 
       if (self._onAutoRefresh !== null) {
-        self._autoRefreshTimeout = setTimeout(() => self._onAutoRefresh(), 500);
+        self._autoRefreshTimeout = setTimeout(() => self._onAutoRefresh(), AUTORUN_WAIT);
       }
     });
 
