@@ -1,4 +1,5 @@
 import {Compiler} from "compiler";
+import {WasmBackend, WasmLayer} from "wasm_backend";
 import {ReportDataWrapper} from "report_data";
 import {FilterSet} from "user_config";
 
@@ -8,32 +9,26 @@ function loadRemote(path) {
 
 function buildReportDataTests() {
   QUnit.module("ReportData", function () {
+    // Shared WASM backend instances to avoid re-initialization overhead
+    const wasmLayer = new WasmLayer();
+    const wasmBackend = new WasmBackend(wasmLayer);
+
     const buildTest = (name, filepath, checks) => {
       QUnit.test(name, (assert) => {
         const done = assert.async();
-        loadRemote(filepath).then((content) => {
+        loadRemote(filepath).then(async (content) => {
           assert.ok(content.length > 0);
 
-          const compiler = new Compiler();
-          const compilerResult = compiler.compile(content);
-          assert.equal(compilerResult.getErrors().length, 0);
-
-          const program = compilerResult.getProgram();
-          assert.equal(compilerResult.getErrors().length, 0);
-
-          if (compilerResult.getErrors().length > 0) {
-            console.log(compilerResult.getErrors());
-          } else {
-            try {
-              const programResult = program();
-              const programResultWrapped = new ReportDataWrapper(programResult);
-              checks.forEach((check) => {
-                check(programResultWrapped, assert);
-              });
-            } catch (e) {
-              assert.ok(false);
-              console.log(e);
-            }
+          try {
+            // Execute using WASM backend instead of old JS engine
+            const programResult = await wasmBackend.execute(content);
+            const programResultWrapped = new ReportDataWrapper(programResult);
+            checks.forEach((check) => {
+              check(programResultWrapped, assert);
+            });
+          } catch (e) {
+            console.log(e);
+            assert.ok(false, "Execution failed: " + e.message);
           }
 
           done();
