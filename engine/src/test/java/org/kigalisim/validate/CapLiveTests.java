@@ -219,7 +219,7 @@ public class CapLiveTests {
    * Test cap_displace_bug_units.qta produces expected values.
    * This tests capping equipment to 0 units with displacement.
    */
-  //@Test
+  @Test
   public void testCapDisplaceBugUnits() throws IOException {
     // Load and parse the QTA file
     String qtaPath = "../examples/cap_displace_bug_units.qta";
@@ -241,14 +241,52 @@ public class CapLiveTests {
     assertEquals(0.0, recordHfc2030.getPopulationNew().getValue().doubleValue(), 0.0001,
         "New equipment for HFC-134a should be zero in 2030");
 
-    // Check HFC-134a consumption is greater than zero in 2030
-    double domesticConsumption = recordHfc2030.getDomesticConsumption().getValue().doubleValue();
-    double importConsumption = recordHfc2030.getImportConsumption().getValue().doubleValue();
-    double totalConsumption = domesticConsumption + importConsumption;
+
+    // Check R-404A new equipment is not zero in year 2035
+    EngineResult recordR404A2035 = LiveTestsUtil.getResult(resultsList.stream(), 2035,
+        "Commercial Refrigeration", "R-404A");
+    assertNotNull(recordR404A2035, "Should have result for Commercial Refrigeration/R-404A in year 2035");
+    
+    // Should have new equipment due to displacement
+    double newEquipmentR404A = recordR404A2035.getPopulationNew().getValue().doubleValue();
     assertTrue(
-        totalConsumption > 0,
-        "Total consumption for HFC-134a should be greater than zero in 2030"
+        newEquipmentR404A > 0,
+        "R-404A new equipment should be greater than 0 in 2035 due to displacement"
     );
+  }
+
+  /**
+   * Test cap_displace_with_recharge_units.qta produces expected values.
+   * This tests capping equipment to 0 units with displacement, but with recharge.
+   */
+  @Test
+  public void testCapDisplaceWithRechargeUnits() throws IOException {
+    // Load and parse the QTA file
+    String qtaPath = "../examples/cap_displace_with_recharge_units.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    // Run the scenario using KigaliSimFacade
+    String scenarioName = "Equipment Import Ban";
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName);
+
+    List<EngineResult> resultsList = results.collect(Collectors.toList());
+
+    // Check HFC-134a new equipment is zero in 2030
+    EngineResult recordHfc2030 = LiveTestsUtil.getResult(resultsList.stream(), 2030,
+        "Commercial Refrigeration", "HFC-134a");
+    assertNotNull(recordHfc2030, "Should have result for Commercial Refrigeration/HFC-134a in year 2030");
+
+    // Should be zero new equipment
+    assertEquals(0.0, recordHfc2030.getPopulationNew().getValue().doubleValue(), 0.0001,
+        "New equipment for HFC-134a should be zero in 2030");
+
+    // Check HFC-134a consumption is NOT zero in 2030 due to recharge
+    double domesticConsumptionHfc = recordHfc2030.getDomesticConsumption().getValue().doubleValue();
+    double importConsumptionHfc = recordHfc2030.getImportConsumption().getValue().doubleValue();
+    double totalConsumptionHfc = domesticConsumptionHfc + importConsumptionHfc;
+    assertTrue(totalConsumptionHfc > 0,
+        "Total consumption for HFC-134a should be greater than zero in 2030 due to recharge");
 
     // Check R-404A new equipment is not zero in year 2035
     EngineResult recordR404A2035 = LiveTestsUtil.getResult(resultsList.stream(), 2035,

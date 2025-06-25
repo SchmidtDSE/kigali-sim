@@ -247,6 +247,12 @@ public class SingleThreadEngine implements Engine {
 
     streamKeeper.setStream(keyEffective, name, value);
 
+    // Track enabled streams when set to non-zero values
+    if (value.getValue().compareTo(BigDecimal.ZERO) != 0 
+        && ("manufacture".equals(name) || "import".equals(name))) {
+      streamKeeper.markStreamAsEnabled(keyEffective, name);
+    }
+
     // Track the units last used to specify this stream (only for user-initiated calls)
     if (!propagateChanges) {
       return;
@@ -700,7 +706,6 @@ public class SingleThreadEngine implements Engine {
     streamKeeper.setLastSpecifiedUnits(scope, amount.getUnits());
 
     EngineNumber changeWithUnits = new EngineNumber(changeAmount, "kg");
-    // Use internal changeStream that doesn't override the units tracking
     changeStreamWithoutReportingUnits(stream, changeWithUnits, null, null);
 
     handleDisplacement(stream, amount, changeAmount, displaceTarget);
@@ -953,6 +958,7 @@ public class SingleThreadEngine implements Engine {
     BigDecimal newAmount = currentValue.getValue().add(convertedDelta.getValue());
     BigDecimal newAmountBound = newAmount.max(BigDecimal.ZERO);
     EngineNumber outputWithUnits = new EngineNumber(newAmountBound, currentValue.getUnits());
+
 
     // Allow propagation but don't track units (since units tracking was handled by the caller)
     setStreamFor(stream, outputWithUnits, Optional.empty(), Optional.ofNullable(scope), true, Optional.empty());

@@ -129,31 +129,20 @@ public class SalesRecalcStrategy implements RecalcStrategy {
     BigDecimal importSalesKg = importSalesConverted.getValue();
     BigDecimal totalNonRecycleKg = manufactureSalesKg.add(importSalesKg);
 
-    // Get stream percentages for allocation
-    BigDecimal percentManufacture;
-    BigDecimal percentImport;
+    // Get stream enabled status
+    boolean manufactureEnabled = streamKeeper.hasStreamBeenEnabled(scopeEffective, "manufacture");
+    boolean importEnabled = streamKeeper.hasStreamBeenEnabled(scopeEffective, "import");
 
-    if (totalNonRecycleKg.compareTo(BigDecimal.ZERO) == 0) {
-      EngineNumber manufactureInitialCharge = target.getInitialCharge("manufacture");
-      EngineNumber importInitialCharge = target.getInitialCharge("import");
-      BigDecimal manufactureInitialChargeVal = manufactureInitialCharge.getValue();
-      BigDecimal importInitialChargeVal = unitConverter
-          .convert(importInitialCharge, manufactureInitialCharge.getUnits()).getValue();
-      BigDecimal totalInitialChargeVal = manufactureInitialChargeVal.add(importInitialChargeVal);
+    // Build distribution using the new builder
+    SalesStreamDistribution distribution = SalesStreamDistributionBuilder.buildDistribution(
+        manufactureSalesConverted,
+        importSalesConverted,
+        manufactureEnabled,
+        importEnabled
+    );
 
-      if (totalInitialChargeVal.compareTo(BigDecimal.ZERO) == 0) {
-        percentManufacture = BigDecimal.ONE;
-        percentImport = BigDecimal.ZERO;
-      } else {
-        percentManufacture = DivisionHelper.divideWithZero(
-            manufactureInitialChargeVal, totalInitialChargeVal);
-        percentImport = DivisionHelper.divideWithZero(
-            importInitialChargeVal, totalInitialChargeVal);
-      }
-    } else {
-      percentManufacture = DivisionHelper.divideWithZero(manufactureSalesKg, totalNonRecycleKg);
-      percentImport = DivisionHelper.divideWithZero(importSalesKg, totalNonRecycleKg);
-    }
+    BigDecimal percentManufacture = distribution.getPercentManufacture();
+    BigDecimal percentImport = distribution.getPercentImport();
 
     // Recycle
     EngineNumber newRecycleValue = new EngineNumber(recycledDisplacedKg, "kg");

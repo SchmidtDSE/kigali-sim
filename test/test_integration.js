@@ -103,13 +103,13 @@ function buildCompilerTests() {
     buildTest("runs a manufacture set by units", "/examples/basic_set_manufacture_units.qta", [
       (result, assert) => {
         const firstRecord = getResult(result, BAU_NAME, 2025, 0, "Test", "HFC-134a");
-        const firstEquipment = record.getPopulation();
+        const firstEquipment = firstRecord.getPopulation();
 
-        const secondRecord = getResult(result, BAU_NAME, 1, 0, "Test", "HFC-134a");
-        const secondEquipment = record.getPopulation();
+        const secondRecord = getResult(result, BAU_NAME, 2035, 0, "Test", "HFC-134a");
+        const secondEquipment = secondRecord.getPopulation();
 
         assert.deepEqual(firstEquipment.getUnits(), secondEquipment.getUnits());
-        assert.ok(firstEquipment.getValue() > secondEquipment.getValue());
+        assert.ok(secondEquipment.getValue() > firstEquipment.getValue());
       },
     ]);
 
@@ -991,10 +991,10 @@ function buildCompilerTests() {
     buildTest("tests cap displace bug with kg", "/examples/cap_displace_bug_kg.qta", [
       (result, assert) => {
         // Check HFC-134a new equipment is zero in 2030
-        const recordHFC2030 = getResult(result, "Equipment Import Ban", 2030, 0, 
+        const recordHFC2030 = getResult(result, "Equipment Import Ban", 2030, 0,
           "Commercial Refrigeration", "HFC-134a");
         const newEquipmentHFC2030 = recordHFC2030.getPopulationNew();
-        
+
         // Should be zero new equipment
         assert.closeTo(newEquipmentHFC2030.getValue(), 0, 0.0001);
       },
@@ -1005,7 +1005,7 @@ function buildCompilerTests() {
         const domesticConsumption = recordHFC2030.getDomesticConsumption();
         const importConsumption = recordHFC2030.getImportConsumption();
         const totalConsumption = domesticConsumption.getValue() + importConsumption.getValue();
-        
+
         // Should be zero consumption
         assert.closeTo(totalConsumption, 0, 0.0001);
       },
@@ -1014,7 +1014,7 @@ function buildCompilerTests() {
         const recordR404A2035 = getResult(result, "Equipment Import Ban", 2035, 0,
           "Commercial Refrigeration", "R-404A");
         const newEquipmentR404A2035 = recordR404A2035.getPopulationNew();
-        
+
         // Should have new equipment due to displacement
         assert.ok(newEquipmentR404A2035.getValue() > 0);
       },
@@ -1026,31 +1026,54 @@ function buildCompilerTests() {
         const recordHFC2030 = getResult(result, "Equipment Import Ban", 2030, 0,
           "Commercial Refrigeration", "HFC-134a");
         const newEquipmentHFC2030 = recordHFC2030.getPopulationNew();
-        
+
         // Should be zero new equipment
         assert.closeTo(newEquipmentHFC2030.getValue(), 0, 0.0001);
-      },
-      (result, assert) => {
-        // Check HFC-134a consumption is greater than zero in 2030
-        const recordHFC2030 = getResult(result, "Equipment Import Ban", 2030, 0,
-          "Commercial Refrigeration", "HFC-134a");
-        const domesticConsumption = recordHFC2030.getDomesticConsumption();
-        const importConsumption = recordHFC2030.getImportConsumption();
-        const totalConsumption = domesticConsumption.getValue() + importConsumption.getValue();
-        
-        // Should have consumption greater than zero
-        assert.ok(totalConsumption > 0);
       },
       (result, assert) => {
         // Check R-404A new equipment is not zero in year 2035
         const recordR404A2035 = getResult(result, "Equipment Import Ban", 2035, 0,
           "Commercial Refrigeration", "R-404A");
         const newEquipmentR404A2035 = recordR404A2035.getPopulationNew();
-        
+
         // Should have new equipment due to displacement
         assert.ok(newEquipmentR404A2035.getValue() > 0);
       },
     ]);
+
+    buildTest("tests cap displace bug with recharge and units",
+      "/examples/cap_displace_with_recharge_units.qta", [
+        (result, assert) => {
+        // Check HFC-134a new equipment is zero in 2030
+          const recordHFC2030 = getResult(result, "Equipment Import Ban", 2030, 0,
+            "Commercial Refrigeration", "HFC-134a");
+          const newEquipmentHFC2030 = recordHFC2030.getPopulationNew();
+
+          // Should be zero new equipment
+          assert.closeTo(newEquipmentHFC2030.getValue(), 0, 0.0001);
+        },
+        (result, assert) => {
+        // Check HFC-134a consumption is NOT zero in 2030 due to recharge
+          const recordHFC2030 = getResult(result, "Equipment Import Ban", 2030, 0,
+            "Commercial Refrigeration", "HFC-134a");
+          const domesticConsumption = recordHFC2030.getDomesticConsumption();
+          const importConsumption = recordHFC2030.getImportConsumption();
+          const totalConsumption = domesticConsumption.getValue() + importConsumption.getValue();
+
+          // Should have consumption due to recharge
+          assert.ok(totalConsumption > 0,
+            "Total consumption for HFC-134a should be greater than zero in 2030 due to recharge");
+        },
+        (result, assert) => {
+        // Check R-404A new equipment is not zero in year 2035
+          const recordR404A2035 = getResult(result, "Equipment Import Ban", 2035, 0,
+            "Commercial Refrigeration", "R-404A");
+          const newEquipmentR404A2035 = recordR404A2035.getPopulationNew();
+
+          // Should have new equipment due to displacement
+          assert.ok(newEquipmentR404A2035.getValue() > 0);
+        },
+      ]);
     buildTest("runs minimal interpreter example", "/examples/minimal_interpreter.qta", [
       (result, assert) => {
         // Check year 1

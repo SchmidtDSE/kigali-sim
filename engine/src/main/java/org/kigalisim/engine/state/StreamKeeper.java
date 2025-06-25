@@ -16,6 +16,8 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import org.kigalisim.engine.number.EngineNumber;
 import org.kigalisim.engine.number.UnitConverter;
+import org.kigalisim.engine.recalc.SalesStreamDistribution;
+import org.kigalisim.engine.recalc.SalesStreamDistributionBuilder;
 
 /**
  * Class responsible for managing / tracking substance streams.
@@ -455,6 +457,29 @@ public class StreamKeeper {
   }
 
   /**
+   * Check if a stream has ever been enabled (set to non-zero value).
+   *
+   * @param useKey The key containing application and substance
+   * @param streamName The name of the stream to check
+   * @return true if the stream has been enabled, false otherwise
+   */
+  public boolean hasStreamBeenEnabled(UseKey useKey, String streamName) {
+    StreamParameterization parameterization = getParameterization(useKey);
+    return parameterization.hasStreamBeenEnabled(streamName);
+  }
+
+  /**
+   * Mark a stream as having been enabled (set to non-zero value).
+   *
+   * @param useKey The key containing application and substance
+   * @param streamName The name of the stream to mark as enabled
+   */
+  public void markStreamAsEnabled(UseKey useKey, String streamName) {
+    StreamParameterization parameterization = getParameterization(useKey);
+    parameterization.markStreamAsEnabled(streamName);
+  }
+
+  /**
    * Retrieve parameterization for a specific key.
    *
    * <p>Verifies the existence of the substance and application combination
@@ -534,17 +559,23 @@ public class StreamKeeper {
     EngineNumber valueConverted = unitConverter.convert(value, "kg");
     BigDecimal amountKg = valueConverted.getValue();
 
-    BigDecimal totalAmount = manufactureAmount.add(importAmount);
-    boolean isZero = totalAmount.compareTo(BigDecimal.ZERO) == 0;
-    BigDecimal manufacturePercent;
-    if (isZero) {
-      manufacturePercent = new BigDecimal("0.5");
-    } else {
-      manufacturePercent = manufactureAmount.divide(totalAmount);
-    }
+    // Get stream enabled status
+    boolean manufactureEnabled = hasStreamBeenEnabled(useKey, "manufacture");
+    boolean importEnabled = hasStreamBeenEnabled(useKey, "import");
+
+    // Build distribution using the new builder
+    SalesStreamDistribution distribution = SalesStreamDistributionBuilder.buildDistribution(
+        manufactureValue,
+        importValue,
+        manufactureEnabled,
+        importEnabled
+    );
+
+    BigDecimal manufacturePercent = distribution.getPercentManufacture();
+    BigDecimal importPercent = distribution.getPercentImport();
 
     BigDecimal newManufactureAmount = amountKg.multiply(manufacturePercent);
-    BigDecimal newImportAmount = amountKg.subtract(newManufactureAmount);
+    BigDecimal newImportAmount = amountKg.multiply(importPercent);
 
     EngineNumber manufactureAmountToSet = new EngineNumber(newManufactureAmount, "kg");
     EngineNumber importAmountToSet = new EngineNumber(newImportAmount, "kg");

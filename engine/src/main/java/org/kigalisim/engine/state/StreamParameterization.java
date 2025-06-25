@@ -11,7 +11,9 @@ package org.kigalisim.engine.state;
 
 import java.math.BigDecimal;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import org.kigalisim.engine.number.EngineNumber;
 
 /**
@@ -32,12 +34,14 @@ public class StreamParameterization {
   private EngineNumber retirementRate;
   private EngineNumber displacementRate;
   private String lastSpecifiedUnits;
+  private final Set<String> enabledStreams;
 
   /**
    * Create a new stream parameterization instance.
    */
   public StreamParameterization() {
     this.initialCharge = new HashMap<>();
+    this.enabledStreams = new HashSet<>();
     resetInternals();
   }
 
@@ -246,6 +250,25 @@ public class StreamParameterization {
    */
   public String getLastSpecifiedUnits() {
     return lastSpecifiedUnits;
+  }
+
+  /**
+   * Mark a stream as having been enabled (set to non-zero value).
+   *
+   * @param streamName The name of the stream to mark as enabled
+   */
+  public void markStreamAsEnabled(String streamName) {
+    enabledStreams.add(streamName);
+  }
+
+  /**
+   * Check if a stream has ever been enabled (set to non-zero value).
+   *
+   * @param streamName The name of the stream to check
+   * @return true if the stream has been enabled, false otherwise
+   */
+  public boolean hasStreamBeenEnabled(String streamName) {
+    return enabledStreams.contains(streamName);
   }
 
   /**
