@@ -258,6 +258,41 @@ class MainPresenter {
   }
 
   /**
+   * Shows the error indicator overlay in the results section.
+   * This displays an error message when simulations fail.
+   *
+   * @private
+   */
+  _showErrorIndicator() {
+    const self = this;
+    const resultsSection = document.getElementById("results");
+    const errorIndicator = document.getElementById("error-indicator");
+    const runningIndicator = document.getElementById("running-indicator");
+
+    if (resultsSection && errorIndicator) {
+      resultsSection.style.display = "block";
+      if (runningIndicator) {
+        runningIndicator.style.display = "none";
+      }
+      errorIndicator.style.display = "block";
+    }
+  }
+
+  /**
+   * Hides the error indicator overlay in the results section.
+   *
+   * @private
+   */
+  _hideErrorIndicator() {
+    const self = this;
+    const errorIndicator = document.getElementById("error-indicator");
+
+    if (errorIndicator) {
+      errorIndicator.style.display = "none";
+    }
+  }
+
+  /**
    * Handles build/run events and compiles/executes the code.
    *
    * @param {boolean} run - Flag indicating if to execute the code after
@@ -324,8 +359,8 @@ class MainPresenter {
             self._codeEditorPresenter.hideError();
           }
         } catch (e) {
-          // Hide the running indicator on error
-          self._hideRunningIndicator();
+          // Show error indicator on simulation failure
+          self._showErrorIndicator();
 
           console.log(e);
           const message = "Execution error: " + e.message;
@@ -375,11 +410,12 @@ class MainPresenter {
   _onResult(results) {
     const self = this;
 
-    // Hide any existing no-results message
+    // Hide any existing no-results message and error indicator
     const noResultsMessage = document.getElementById("no-results-message");
     if (noResultsMessage) {
       noResultsMessage.style.display = "none";
     }
+    self._hideErrorIndicator();
 
     const resultsWrapped = new ReportDataWrapper(results);
     self._resultsPresenter.showResults(resultsWrapped);
