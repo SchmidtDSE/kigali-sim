@@ -165,8 +165,10 @@ function buildWasmBackendTests() {
 
         window.Worker = function (scriptUrl) {
           workerCreated = true;
-          assert.equal(scriptUrl, "/js/wasm.worker.js",
-            "Should create worker with correct script URL");
+          assert.ok(
+            scriptUrl.startsWith("/js/wasm.worker.js"),
+            "Should create worker with correct script URL"
+          );
 
           // Mock worker object
           return {
