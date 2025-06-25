@@ -240,6 +240,8 @@ jobs:
         run: cp -r ./guide ./deploy/guide
       - name: Copy case study QTA file to guide
         run: cp ./examples/case_study.qta ./deploy/guide/case_study.qta
+      - name: Copy subdivided case study QTA file to guide
+        run: cp ./examples/case_study_subdivided.qta ./deploy/guide/case_study_subdivided.qta
       - name: Copy WASM files
         run: cp -r ./wasm ./deploy/wasm
       - name: Update cache busters

@@ -248,7 +248,10 @@ public class UnitConverter {
     target = normalize(target);
     String currentUnits = target.getUnits();
 
-    if ("mt".equals(currentUnits) || "kg".equals(currentUnits)) {
+    boolean alreadyMt = "mt".equals(currentUnits) || "mteachyear".equals(currentUnits);
+    boolean alreadyKg = "kg".equals(currentUnits)  || "kgeachyear".equals(currentUnits);
+
+    if (alreadyMt || alreadyKg) {
       return target;
     } else if ("tCO2e".equals(currentUnits)) {
       BigDecimal originalValue = target.getValue();
@@ -290,9 +293,11 @@ public class UnitConverter {
     target = normalize(target);
     String currentUnits = target.getUnits();
 
+    boolean isUnitsAlias = "unit".equals(currentUnits) || "unitseachyear".equals(currentUnits);
+
     if ("units".equals(currentUnits)) {
       return target;
-    } else if ("unit".equals(currentUnits)) {
+    } else if (isUnitsAlias) {
       return new EngineNumber(target.getValue(), "units");
     } else if ("kg".equals(currentUnits) || "mt".equals(currentUnits)) {
       EngineNumber conversion = stateGetter.getAmortizedUnitVolume();
@@ -331,11 +336,13 @@ public class UnitConverter {
     target = normalize(target);
     String currentUnits = target.getUnits();
 
+    boolean alreadyCorrect = "tCO2e".equals(currentUnits) || "tCO2eeachyear".equals(currentUnits);
+
     boolean currentVolume = "kg".equals(currentUnits) || "mt".equals(currentUnits);
     boolean currentPop = "unit".equals(currentUnits) || "units".equals(currentUnits);
     boolean currentInfer = currentVolume || currentPop;
 
-    if ("tCO2e".equals(currentUnits)) {
+    if (alreadyCorrect) {
       return target;
     } else if (currentInfer) {
       EngineNumber conversion = stateGetter.getSubstanceConsumption();
@@ -376,7 +383,9 @@ public class UnitConverter {
     boolean currentPop = "unit".equals(currentUnits) || "units".equals(currentUnits);
     boolean currentInfer = currentVolume || currentPop;
 
-    if ("kwh".equals(currentUnits)) {
+    boolean alreadyCorrect = "kwh".equals(currentUnits) || "kwheachyear".equals(currentUnits);
+
+    if (alreadyCorrect) {
       return target;
     } else if (currentInfer) {
       EngineNumber conversion = stateGetter.getEnergyIntensity();
@@ -460,7 +469,10 @@ public class UnitConverter {
     String currentUnits = target.getUnits();
 
     EngineNumber total;
-    if ("years".equals(currentUnits) || "year".equals(currentUnits)) {
+
+    if ("%".equals(currentUnits)) {
+      return target;
+    } else if ("years".equals(currentUnits) || "year".equals(currentUnits)) {
       total = stateGetter.getYearsElapsed();
     } else if ("tCO2e".equals(currentUnits)) {
       total = stateGetter.getGhgConsumption();
