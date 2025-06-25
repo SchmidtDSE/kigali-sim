@@ -112,7 +112,7 @@ public class UnitConverter {
         }
       } else {
         return new EngineNumber(
-            numerator.getValue().divide(denominator.getValue(), RoundingMode.HALF_UP), destinationUnits);
+            numerator.getValue().divide(denominator.getValue(), MATH_CONTEXT), destinationUnits);
       }
     }
   }

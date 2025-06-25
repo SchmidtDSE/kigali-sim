@@ -957,6 +957,13 @@ public class SingleThreadEngine implements Engine {
     EngineNumber convertedDelta = unitConverter.convert(amount, currentValue.getUnits());
     BigDecimal newAmount = currentValue.getValue().add(convertedDelta.getValue());
     BigDecimal newAmountBound = newAmount.max(BigDecimal.ZERO);
+    
+    // Warn when negative values are clamped to zero
+    if (newAmount.compareTo(BigDecimal.ZERO) < 0) {
+      System.err.println("WARNING: Negative stream value clamped to zero for stream '" + stream + 
+          "': " + newAmount + " " + currentValue.getUnits() + " -> 0 " + currentValue.getUnits());
+    }
+    
     EngineNumber outputWithUnits = new EngineNumber(newAmountBound, currentValue.getUnits());
 
 
