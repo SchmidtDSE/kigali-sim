@@ -960,8 +960,16 @@ public class SingleThreadEngine implements Engine {
     
     // Warn when negative values are clamped to zero
     if (newAmount.compareTo(BigDecimal.ZERO) < 0) {
-      System.err.println("WARNING: Negative stream value clamped to zero for stream '" + stream + 
-          "': " + newAmount + " " + currentValue.getUnits() + " -> 0 " + currentValue.getUnits());
+      StringBuilder warning = new StringBuilder();
+      warning.append("WARNING: Negative stream value clamped to zero for stream '");
+      warning.append(stream);
+      warning.append("': ");
+      warning.append(newAmount);
+      warning.append(" ");
+      warning.append(currentValue.getUnits());
+      warning.append(" -> 0 ");
+      warning.append(currentValue.getUnits());
+      System.err.println(warning.toString());
     }
     
     EngineNumber outputWithUnits = new EngineNumber(newAmountBound, currentValue.getUnits());
