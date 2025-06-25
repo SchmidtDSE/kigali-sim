@@ -362,7 +362,10 @@ class ScorecardPresenter {
     const self = this;
     self._filterSet = filterSet;
 
-    try {
+    /**
+     * Execute updates in the UI to show the results without checks for invalid user selections.
+     */
+    const showUnsafe = () => {
       const currentYear = self._filterSet.getYear();
 
       const emissionsScorecard = self._root.querySelector("#emissions-scorecard");
@@ -392,6 +395,11 @@ class ScorecardPresenter {
       self._updateCard(salesScorecard, salesMt, currentYear, salesSelected, hideVal);
       self._updateCard(equipmentScorecard, millionEqipment, currentYear,
         equipmentSelected, hideVal);
+    };
+
+    // Execute with a catch for invalid user selections.
+    try {
+      showUnsafe();
     } catch (error) {
       // Reset filter set to default when null values cause errors
       console.warn("Error in ScorecardPresenter.showResults, resetting filter set:", error);
