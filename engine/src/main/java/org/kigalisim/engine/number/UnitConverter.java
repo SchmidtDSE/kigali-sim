@@ -12,6 +12,7 @@ package org.kigalisim.engine.number;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
+import java.math.RoundingMode;
 import java.util.HashMap;
 import java.util.Map;
 import org.kigalisim.engine.state.StateGetter;
@@ -111,7 +112,7 @@ public class UnitConverter {
         }
       } else {
         return new EngineNumber(
-            numerator.getValue().divide(denominator.getValue(), MATH_CONTEXT), destinationUnits);
+            numerator.getValue().divide(denominator.getValue(), RoundingMode.HALF_UP), destinationUnits);
       }
     }
   }

@@ -10,6 +10,7 @@
 package org.kigalisim.engine.recalc;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.Optional;
 import org.kigalisim.engine.Engine;
 import org.kigalisim.engine.number.EngineNumber;
@@ -85,7 +86,10 @@ public class SalesRecalcStrategy implements RecalcStrategy {
 
     EngineNumber displacementRateRaw = streamKeeper.getDisplacementRate(scopeEffective);
     EngineNumber displacementRate = unitConverter.convert(displacementRateRaw, "%");
-    BigDecimal displacementRateRatio = displacementRate.getValue().divide(BigDecimal.valueOf(100));
+    BigDecimal displacementRateRatio = displacementRate.getValue().divide(
+        BigDecimal.valueOf(100),
+        RoundingMode.HALF_UP
+    );
     final BigDecimal recycledDisplacedKg = recycledKg.multiply(displacementRateRatio);
 
     // Switch out of recharge population

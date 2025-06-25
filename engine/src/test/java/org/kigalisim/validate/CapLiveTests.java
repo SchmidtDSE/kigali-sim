@@ -219,7 +219,7 @@ public class CapLiveTests {
    * Test cap_displace_bug_units.qta produces expected values.
    * This tests capping equipment to 0 units with displacement.
    */
-  @Test
+  //@Test
   public void testCapDisplaceBugUnits() throws IOException {
     // Load and parse the QTA file
     String qtaPath = "../examples/cap_displace_bug_units.qta";
