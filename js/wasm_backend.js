@@ -198,7 +198,7 @@ class WasmLayer {
 
     self._initPromise = new Promise((resolve, reject) => {
       try {
-        self._worker = new Worker("/js/wasm.worker.js");
+        self._worker = new Worker("/js/wasm.worker.js?v=EPOCH");
 
         self._worker.onmessage = (event) => {
           self._handleWorkerMessage(event);
