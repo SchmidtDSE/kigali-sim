@@ -496,7 +496,7 @@ class DimensionCardPresenter {
     self._updateCard(
       "sim",
       simulationsCard,
-      results.getScenarios(self._filterSet),
+      results.getScenarios(self._filterSet.getWithScenario(null)),
       simulationsSelected,
       self._filterSet.getScenario(),
       (x) => self._filterSet.getWithScenario(x),
