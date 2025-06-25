@@ -361,33 +361,51 @@ class ScorecardPresenter {
   showResults(results, filterSet) {
     const self = this;
     self._filterSet = filterSet;
-    const currentYear = self._filterSet.getYear();
 
-    const emissionsScorecard = self._root.querySelector("#emissions-scorecard");
-    const salesScorecard = self._root.querySelector("#sales-scorecard");
-    const equipmentScorecard = self._root.querySelector("#equipment-scorecard");
+    try {
+      const currentYear = self._filterSet.getYear();
 
-    const emissionsValue = results.getTotalEmissions(filterSet);
-    const salesValue = results.getSales(filterSet);
-    const equipmentValue = results.getPopulation(filterSet);
+      const emissionsScorecard = self._root.querySelector("#emissions-scorecard");
+      const salesScorecard = self._root.querySelector("#sales-scorecard");
+      const equipmentScorecard = self._root.querySelector("#equipment-scorecard");
 
-    const roundToTenths = (x) => Math.round(x * 10) / 10;
-    const emissionRounded = roundToTenths(emissionsValue.getValue() / 1000000);
-    const salesMt = roundToTenths(salesValue.getValue() / 1000000) + " k";
-    const millionEqipment = roundToTenths(equipmentValue.getValue() / 1000000) + " M";
+      const emissionsValue = results.getTotalEmissions(filterSet);
+      const salesValue = results.getSales(filterSet);
+      const equipmentValue = results.getPopulation(filterSet);
 
-    const metricSelected = filterSet.getMetric();
-    const emissionsSelected = metricSelected === "emissions";
-    const salesSelected = metricSelected === "sales";
-    const equipmentSelected = metricSelected === "population";
+      const roundToTenths = (x) => Math.round(x * 10) / 10;
+      const emissionRounded = roundToTenths(emissionsValue.getValue() / 1000000);
+      const salesMt = roundToTenths(salesValue.getValue() / 1000000) + " k";
+      const millionEqipment = roundToTenths(equipmentValue.getValue() / 1000000) + " M";
 
-    const scenarios = results.getScenarios(self._filterSet.getWithScenario(null));
-    const showVal = ALLOW_SCORE_DISPLAY && self._filterSet.hasSingleScenario(scenarios);
-    const hideVal = !showVal;
+      const metricSelected = filterSet.getMetric();
+      const emissionsSelected = metricSelected === "emissions";
+      const salesSelected = metricSelected === "sales";
+      const equipmentSelected = metricSelected === "population";
 
-    self._updateCard(emissionsScorecard, emissionRounded, currentYear, emissionsSelected, hideVal);
-    self._updateCard(salesScorecard, salesMt, currentYear, salesSelected, hideVal);
-    self._updateCard(equipmentScorecard, millionEqipment, currentYear, equipmentSelected, hideVal);
+      const scenarios = results.getScenarios(self._filterSet.getWithScenario(null));
+      const showVal = ALLOW_SCORE_DISPLAY && self._filterSet.hasSingleScenario(scenarios);
+      const hideVal = !showVal;
+
+      self._updateCard(emissionsScorecard, emissionRounded, currentYear,
+        emissionsSelected, hideVal);
+      self._updateCard(salesScorecard, salesMt, currentYear, salesSelected, hideVal);
+      self._updateCard(equipmentScorecard, millionEqipment, currentYear,
+        equipmentSelected, hideVal);
+    } catch (error) {
+      // Reset filter set to default when null values cause errors
+      console.warn("Error in ScorecardPresenter.showResults, resetting filter set:", error);
+      self._onUpdateFilterSet(new FilterSet(
+        null,
+        null,
+        null,
+        null,
+        "emissions:all:MtCO2e / yr",
+        "simulations",
+        null,
+        false,
+      ));
+    }
   }
 
   /**
