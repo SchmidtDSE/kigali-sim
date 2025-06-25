@@ -892,12 +892,11 @@ public class SingleThreadEngine implements Engine {
 
     if (amount.hasEquipmentUnits()) {
       // For equipment units, displacement should be unit-based, not volume-based
-      Scope currentScope = scope;
       UnitConverter currentUnitConverter = createUnitConverterWithTotal(stream);
 
       // Convert the volume change back to units in the original substance
-      EngineNumber volumeChangePositive = new EngineNumber(changeAmount.abs(), "kg");
-      EngineNumber unitsChanged = currentUnitConverter.convert(volumeChangePositive, "units");
+      EngineNumber volumeChangeFlip = new EngineNumber(changeAmount.negate(), "kg");
+      EngineNumber unitsChanged = currentUnitConverter.convert(volumeChangeFlip, "units");
 
       boolean isStream = STREAM_NAMES.contains(displaceTarget);
       if (isStream) {
@@ -952,7 +951,8 @@ public class SingleThreadEngine implements Engine {
 
     EngineNumber convertedDelta = unitConverter.convert(amount, currentValue.getUnits());
     BigDecimal newAmount = currentValue.getValue().add(convertedDelta.getValue());
-    EngineNumber outputWithUnits = new EngineNumber(newAmount, currentValue.getUnits());
+    BigDecimal newAmountBound = newAmount.max(BigDecimal.ZERO);
+    EngineNumber outputWithUnits = new EngineNumber(newAmountBound, currentValue.getUnits());
 
     // Allow propagation but don't track units (since units tracking was handled by the caller)
     setStreamFor(stream, outputWithUnits, Optional.empty(), Optional.ofNullable(scope), true, Optional.empty());
@@ -1144,5 +1144,14 @@ public class SingleThreadEngine implements Engine {
    */
   private boolean isZero(BigDecimal target) {
     return target.compareTo(BigDecimal.ZERO) == 0;
+  }
+
+  /**
+   * Determine if the current scope was last specified in units.
+   *
+   * @return True if last in units and false otherwise.
+   */
+  private boolean getWasLastGivenUnits() {
+    return streamKeeper.getLastSpecifiedUnits(scope).startsWith("unit");
   }
 }

@@ -85,10 +85,7 @@ public class PopulationChangeRecalcStrategy implements RecalcStrategy {
         availableForNewUnitsKg,
         initialChargeKgUnit
     );
-    EngineNumber newUnitsMarginal = new EngineNumber(
-        deltaUnits.compareTo(BigDecimal.ZERO) < 0 ? BigDecimal.ZERO : deltaUnits,
-        "units"
-    );
+    EngineNumber newUnitsMarginal = new EngineNumber(deltaUnits, "units");
 
     // Find new total
     BigDecimal priorPopulationUnits = priorPopulation.getValue();

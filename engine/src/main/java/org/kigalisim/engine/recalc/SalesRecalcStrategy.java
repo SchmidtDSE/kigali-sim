@@ -120,11 +120,9 @@ public class SalesRecalcStrategy implements RecalcStrategy {
 
     EngineNumber manufactureSalesConverted = unitConverter.convert(manufactureRaw, "kg");
     EngineNumber importSalesConverted = unitConverter.convert(importRaw, "kg");
-    EngineNumber priorRecycleSalesConverted = unitConverter.convert(priorRecycleRaw, "kg");
 
     BigDecimal manufactureSalesKg = manufactureSalesConverted.getValue();
     BigDecimal importSalesKg = importSalesConverted.getValue();
-    BigDecimal priorRecycleSalesKg = priorRecycleSalesConverted.getValue();
     BigDecimal totalNonRecycleKg = manufactureSalesKg.add(importSalesKg);
 
     // Get stream percentages for allocation

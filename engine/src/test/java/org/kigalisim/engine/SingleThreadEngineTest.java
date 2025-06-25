@@ -525,16 +525,16 @@ public class SingleThreadEngineTest {
         "Sub1 should be floored to 120 kg (100 kg + 20 kg recharge)");
     assertEquals("kg", floorVal.getUnits(), "Sub1 should have kg units");
 
-    // Check sub2 received displacement: original 200 kg + displaced units
+    // Check sub2 received displacement: original 200 kg - displaced units
     // converted to sub2's charge
     // Original sub1: 50 kg, after floor: 120 kg, displaced: 70 kg
     // 70 kg displaced from sub1 = 70 kg / 10 kg/unit = 7 units
     // 7 units in sub2 = 7 units * 20 kg/unit = 140 kg
-    // Final sub2: 200 kg + 140 kg = 340 kg
+    // Final sub2: 200 kg - 140 kg = 60 kg
     engine.setSubstance("sub2");
     EngineNumber displaceVal = engine.getStream("manufacture");
-    assertEquals(0, BigDecimal.valueOf(340).compareTo(displaceVal.getValue()),
-        "Sub2 should receive displaced units: 200 kg + 140 kg = 340 kg");
+    assertEquals(0, BigDecimal.valueOf(60).compareTo(displaceVal.getValue()),
+        "Sub2 should receive displaced units: 200 kg - 140 kg = 60 kg");
     assertEquals("kg", displaceVal.getUnits(), "Sub2 should have kg units");
   }
 

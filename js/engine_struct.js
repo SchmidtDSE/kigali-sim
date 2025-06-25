@@ -376,7 +376,9 @@ class AttributeToExporterResult {
       throw "Could not attribute trade due to units mismatch " + mismatchDescription;
     }
 
-    const innerNumber = totalImport.getValue() - importInitialCharge.getValue();
+    const importInitialChargeValue = importInitialCharge.getValue();
+    const effectiveInitialCharge = importInitialChargeValue > 0 ? importInitialChargeValue : 0;
+    const innerNumber = totalImport.getValue() - effectiveInitialCharge;
     return new EngineNumber(innerNumber, totalUnits);
   }
 
@@ -441,7 +443,9 @@ class AttributeToExporterResult {
       throw "Could not attribute trade due to units mismatch " + mismatchDescription;
     }
 
-    const innerNumber = totalImport.getValue() - importInitialCharge.getValue();
+    const importInitialChargeValue = importInitialCharge.getValue();
+    const effectiveInitialCharge = importInitialChargeValue > 0 ? importInitialChargeValue : 0;
+    const innerNumber = totalImport.getValue() - effectiveInitialCharge;
     return new EngineNumber(innerNumber, totalUnits);
   }
 
