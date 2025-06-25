@@ -226,6 +226,38 @@ class MainPresenter {
   }
 
   /**
+   * Shows the running indicator overlay in the results section.
+   * This displays a loading animation and message while simulations are running.
+   *
+   * @private
+   */
+  _showRunningIndicator() {
+    const self = this;
+    const resultsSection = document.getElementById("results");
+    const runningIndicator = document.getElementById("running-indicator");
+
+    if (resultsSection && runningIndicator) {
+      resultsSection.style.display = "block";
+      runningIndicator.style.display = "block";
+    }
+  }
+
+  /**
+   * Hides the running indicator overlay in the results section.
+   * This should be called when simulation execution completes or fails.
+   *
+   * @private
+   */
+  _hideRunningIndicator() {
+    const self = this;
+    const runningIndicator = document.getElementById("running-indicator");
+
+    if (runningIndicator) {
+      runningIndicator.style.display = "none";
+    }
+  }
+
+  /**
    * Handles build/run events and compiles/executes the code.
    *
    * @param {boolean} run - Flag indicating if to execute the code after
@@ -268,9 +300,15 @@ class MainPresenter {
       }
 
       if (run) {
+        // Show the running indicator when simulation starts
+        self._showRunningIndicator();
+
         try {
           // Execute using the WASM backend worker
           const programResult = await self._wasmBackend.execute(code);
+
+          // Hide the running indicator when execution completes
+          self._hideRunningIndicator();
 
           if (programResult.length === 0) {
             self._showNoResultsMessage();
@@ -286,6 +324,9 @@ class MainPresenter {
             self._codeEditorPresenter.hideError();
           }
         } catch (e) {
+          // Hide the running indicator on error
+          self._hideRunningIndicator();
+
           console.log(e);
           const message = "Execution error: " + e.message;
           if (!isAutoRefresh) {
