@@ -153,7 +153,29 @@ start default
 end default
 
 
-start policy "Manufacturing Prohibition"
+start policy "R-410A Dom AC Manufact Prohib"
+
+  modify application "Domestic AC"
+    modify substance "R-410A"
+      cap manufacture to 0 units displacing "HFC-32" during years 2028 to onwards
+    end substance
+  end application
+
+end policy
+
+
+start policy "R-410A Com AC Manufact Prohib"
+
+  modify application "Commercial AC"
+    modify substance "R-410A"
+      cap manufacture to 0 units displacing "HFC-32" during years 2028 to onwards
+    end substance
+  end application
+
+end policy
+
+
+start policy "HFC-134a Dom Refrig Manufact Prohib"
 
   modify application "Domestic Refrigeration"
     modify substance "HFC-134a"
@@ -161,22 +183,10 @@ start policy "Manufacturing Prohibition"
     end substance
   end application
 
-  modify application "Domestic AC"
-    modify substance "R-410A"
-      cap manufacture to 0 units displacing "HFC-32" during years 2028 to onwards
-    end substance
-  end application
-
-  modify application "Commercial AC"
-    modify substance "R-410A"
-      cap manufacture to 0 units displacing "HFC-32" during years 2028 to onwards
-    end substance
-  end application
-
 end policy
 
 
-start policy "Equipment Import Ban"
+start policy "HFC-134a Com Refrig Import Ban"
 
   modify application "Commercial Refrigeration"
     modify substance "HFC-134a"
@@ -184,11 +194,21 @@ start policy "Equipment Import Ban"
     end substance
   end application
 
+end policy
+
+
+start policy "HFC-134a MAC Import Ban"
+
   modify application "MAC"
     modify substance "HFC-134a"
       cap import to 0 units displacing "R-404A" during years 2029 to onwards
     end substance
   end application
+
+end policy
+
+
+start policy "HFC-134a Chiller Import Ban"
 
   modify application "Chiller"
     modify substance "HFC-134a"
@@ -196,11 +216,21 @@ start policy "Equipment Import Ban"
     end substance
   end application
 
+end policy
+
+
+start policy "HFC-32 Dom AC Import Ban"
+
   modify application "Domestic AC"
     modify substance "HFC-32"
       cap import to 0 units displacing "R-410A" during years 2029 to onwards
     end substance
   end application
+
+end policy
+
+
+start policy "HFC-32 Com AC Import Ban"
 
   modify application "Commercial AC"
     modify substance "HFC-32"
@@ -211,7 +241,7 @@ start policy "Equipment Import Ban"
 end policy
 
 
-start policy "Recovery and Recycling"
+start policy "HFC-134a Dom Refrig Recovery"
 
   modify application "Domestic Refrigeration"
     modify substance "HFC-134a"
@@ -221,6 +251,14 @@ start policy "Recovery and Recycling"
       recover 56 % with 100 % reuse during year 2029
       recover 40 % with 100 % reuse during years 2030 to onwards
     end substance
+  end application
+
+end policy
+
+
+start policy "R-404A Dom Refrig Recovery"
+
+  modify application "Domestic Refrigeration"
     modify substance "R-404A"
       recover 14 % with 100 % reuse during year 2026
       recover 28 % with 100 % reuse during year 2027
@@ -229,6 +267,11 @@ start policy "Recovery and Recycling"
       recover 40 % with 100 % reuse during years 2030 to onwards
     end substance
   end application
+
+end policy
+
+
+start policy "HFC-134a Com Refrig Recovery"
 
   modify application "Commercial Refrigeration"
     modify substance "HFC-134a"
@@ -238,6 +281,14 @@ start policy "Recovery and Recycling"
       recover 56 % with 100 % reuse during year 2029
       recover 40 % with 100 % reuse during years 2030 to onwards
     end substance
+  end application
+
+end policy
+
+
+start policy "R-404A Com Refrig Recovery"
+
+  modify application "Commercial Refrigeration"
     modify substance "R-404A"
       recover 14 % with 100 % reuse during year 2026
       recover 28 % with 100 % reuse during year 2027
@@ -246,6 +297,11 @@ start policy "Recovery and Recycling"
       recover 40 % with 100 % reuse during years 2030 to onwards
     end substance
   end application
+
+end policy
+
+
+start policy "HFC-134a MAC Recovery"
 
   modify application "MAC"
     modify substance "HFC-134a"
@@ -255,6 +311,14 @@ start policy "Recovery and Recycling"
       recover 56 % with 100 % reuse during year 2029
       recover 40 % with 100 % reuse during years 2030 to onwards
     end substance
+  end application
+
+end policy
+
+
+start policy "R-404A MAC Recovery"
+
+  modify application "MAC"
     modify substance "R-404A"
       recover 14 % with 100 % reuse during year 2026
       recover 28 % with 100 % reuse during year 2027
@@ -263,6 +327,11 @@ start policy "Recovery and Recycling"
       recover 40 % with 100 % reuse during years 2030 to onwards
     end substance
   end application
+
+end policy
+
+
+start policy "HFC-134a Chiller Recovery"
 
   modify application "Chiller"
     modify substance "HFC-134a"
@@ -272,6 +341,14 @@ start policy "Recovery and Recycling"
       recover 56 % with 100 % reuse during year 2029
       recover 40 % with 100 % reuse during years 2030 to onwards
     end substance
+  end application
+
+end policy
+
+
+start policy "R-404A Chiller Recovery"
+
+  modify application "Chiller"
     modify substance "R-404A"
       recover 14 % with 100 % reuse during year 2026
       recover 28 % with 100 % reuse during year 2027
@@ -281,6 +358,11 @@ start policy "Recovery and Recycling"
     end substance
   end application
 
+end policy
+
+
+start policy "HFC-32 Dom AC Recovery"
+
   modify application "Domestic AC"
     modify substance "HFC-32"
       recover 14 % with 100 % reuse during year 2026
@@ -289,6 +371,14 @@ start policy "Recovery and Recycling"
       recover 56 % with 100 % reuse during year 2029
       recover 40 % with 100 % reuse during years 2030 to onwards
     end substance
+  end application
+
+end policy
+
+
+start policy "R-410A Dom AC Recovery"
+
+  modify application "Domestic AC"
     modify substance "R-410A"
       recover 14 % with 100 % reuse during year 2026
       recover 28 % with 100 % reuse during year 2027
@@ -298,6 +388,11 @@ start policy "Recovery and Recycling"
     end substance
   end application
 
+end policy
+
+
+start policy "HFC-32 Com AC Recovery"
+
   modify application "Commercial AC"
     modify substance "HFC-32"
       recover 14 % with 100 % reuse during year 2026
@@ -306,7 +401,30 @@ start policy "Recovery and Recycling"
       recover 56 % with 100 % reuse during year 2029
       recover 40 % with 100 % reuse during years 2030 to onwards
     end substance
+  end application
+
+end policy
+
+
+start policy "R-410A Com AC Recovery"
+
+  modify application "Commercial AC"
     modify substance "R-410A"
+      recover 14 % with 100 % reuse during year 2026
+      recover 28 % with 100 % reuse during year 2027
+      recover 42 % with 100 % reuse during year 2028
+      recover 56 % with 100 % reuse during year 2029
+      recover 40 % with 100 % reuse during years 2030 to onwards
+    end substance
+  end application
+
+end policy
+
+
+start policy "R-404A Transport Refrig Recovery"
+
+  modify application "Transport Refrigeration"
+    modify substance "R-404A"
       recover 14 % with 100 % reuse during year 2026
       recover 28 % with 100 % reuse during year 2027
       recover 42 % with 100 % reuse during year 2028
@@ -322,16 +440,56 @@ start simulations
 
   simulate "Business as Usual" from years 2025 to 2035
 
-  simulate "Manufacturing Prohibition" using "Manufacturing Prohibition" from years 2025 to 2035
+  simulate "Manufacturing Prohibition"
+    using "R-410A Dom AC Manufact Prohib"
+    then "R-410A Com AC Manufact Prohib"
+    then "HFC-134a Dom Refrig Manufact Prohib"
+  from years 2025 to 2035
 
-  simulate "Equipment Import Ban" using "Equipment Import Ban" from years 2025 to 2035
+  simulate "Equipment Import Ban"
+    using "HFC-134a Com Refrig Import Ban"
+    then "HFC-134a MAC Import Ban"
+    then "HFC-134a Chiller Import Ban"
+    then "HFC-32 Dom AC Import Ban"
+    then "HFC-32 Com AC Import Ban"
+  from years 2025 to 2035
 
-  simulate "Recovery and Recycling" using "Recovery and Recycling" from years 2025 to 2035
+  simulate "Recovery and Recycling"
+    using "HFC-134a Dom Refrig Recovery"
+    then "R-404A Dom Refrig Recovery"
+    then "HFC-134a Com Refrig Recovery"
+    then "R-404A Com Refrig Recovery"
+    then "HFC-134a MAC Recovery"
+    then "R-404A MAC Recovery"
+    then "HFC-134a Chiller Recovery"
+    then "R-404A Chiller Recovery"
+    then "HFC-32 Dom AC Recovery"
+    then "R-410A Dom AC Recovery"
+    then "HFC-32 Com AC Recovery"
+    then "R-410A Com AC Recovery"
+  from years 2025 to 2035
 
   simulate "Combined Policies"
-    using "Manufacturing Prohibition"
-    then "Equipment Import Ban"
-    then "Recovery and Recycling"
+    using "R-410A Dom AC Manufact Prohib"
+    then "R-410A Com AC Manufact Prohib"
+    then "HFC-134a Dom Refrig Manufact Prohib"
+    then "HFC-134a Com Refrig Import Ban"
+    then "HFC-134a MAC Import Ban"
+    then "HFC-134a Chiller Import Ban"
+    then "HFC-32 Dom AC Import Ban"
+    then "HFC-32 Com AC Import Ban"
+    then "HFC-134a Dom Refrig Recovery"
+    then "R-404A Dom Refrig Recovery"
+    then "HFC-134a Com Refrig Recovery"
+    then "R-404A Com Refrig Recovery"
+    then "HFC-134a MAC Recovery"
+    then "R-404A MAC Recovery"
+    then "HFC-134a Chiller Recovery"
+    then "R-404A Chiller Recovery"
+    then "HFC-32 Dom AC Recovery"
+    then "R-410A Dom AC Recovery"
+    then "HFC-32 Com AC Recovery"
+    then "R-410A Com AC Recovery"
   from years 2025 to 2035
 
 end simulations

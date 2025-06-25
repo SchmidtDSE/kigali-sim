@@ -692,6 +692,29 @@ function buildCompilerTests() {
       },
     ]);
 
+    buildTest("runs case study subdivided", "/examples/case_study_subdivided.qta", [
+      (result, assert) => {
+        // Test that the subdivided case study simulation completes successfully
+        assert.ok(result.length > 0, "Subdivided case study should produce simulation results");
+      },
+      (result, assert) => {
+        // Test that at least one stream for one substance/application pair is non-zero in 2030
+        const record = getResult(result, "Business as Usual", 2030, 0,
+          "Domestic Refrigeration", "HFC-134a");
+        const consumption = record.getGhgConsumption();
+        assert.ok(consumption.getValue() > 0,
+          "Should have non-zero consumption for Domestic Refrigeration HFC-134a in 2030");
+      },
+      (result, assert) => {
+        // Test that the subdivided policies work - check Manufacturing Prohibition scenario
+        const record = getResult(result, "Manufacturing Prohibition", 2030, 0,
+          "Domestic Refrigeration", "HFC-134a");
+        const consumption = record.getGhgConsumption();
+        assert.ok(consumption.getValue() >= 0,
+          "Should have valid consumption for Manufacturing Prohibition scenario");
+      },
+    ]);
+
     buildTest("tests initialization by units", "/examples/init_units.qta", [
       // Test Sub1 (A, B, C order) - should have 1M units in year 1, 2M in year 2, 3M in year 3
       (result, assert) => {
