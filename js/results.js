@@ -158,15 +158,51 @@ class ResultsPresenter {
   _constrainFilterSet(filterSet) {
     const self = this;
 
-    const isAllSimulations = filterSet.getScenario() === null;
-    const isSimulationDimension = filterSet.getDimension() === "simulations";
+    let constrainedFilterSet = filterSet;
+
+    // Validate that selected values exist in results and reset to "all" if not found
+    if (self._results !== null) {
+      // Check if selected scenario exists
+      const selectedScenario = constrainedFilterSet.getScenario();
+      if (selectedScenario !== null) {
+        const availableScenarios = self._results.getScenarios(
+          constrainedFilterSet.getWithScenario(null));
+        if (!availableScenarios.has(selectedScenario)) {
+          constrainedFilterSet = constrainedFilterSet.getWithScenario(null);
+        }
+      }
+
+      // Check if selected application exists
+      const selectedApplication = constrainedFilterSet.getApplication();
+      if (selectedApplication !== null) {
+        const availableApplications = self._results.getApplications(
+          constrainedFilterSet.getWithApplication(null));
+        if (!availableApplications.has(selectedApplication)) {
+          constrainedFilterSet = constrainedFilterSet.getWithApplication(null);
+        }
+      }
+
+      // Check if selected substance exists
+      const selectedSubstance = constrainedFilterSet.getSubstance();
+      if (selectedSubstance !== null) {
+        const availableSubstances = self._results.getSubstances(
+          constrainedFilterSet.getWithSubstance(null));
+        if (!availableSubstances.has(selectedSubstance)) {
+          constrainedFilterSet = constrainedFilterSet.getWithSubstance(null);
+        }
+      }
+    }
+
+    // Original constraint logic to avoid difficult to interpret charts
+    const isAllSimulations = constrainedFilterSet.getScenario() === null;
+    const isSimulationDimension = constrainedFilterSet.getDimension() === "simulations";
     const needsConstraints = isAllSimulations && !isSimulationDimension;
 
     if (needsConstraints && self._results !== null) {
-      const firstScenario = self._results.getFirstScenario(filterSet);
-      return filterSet.getWithScenario(firstScenario);
+      const firstScenario = self._results.getFirstScenario(constrainedFilterSet);
+      return constrainedFilterSet.getWithScenario(firstScenario);
     } else {
-      return filterSet;
+      return constrainedFilterSet;
     }
   }
 
