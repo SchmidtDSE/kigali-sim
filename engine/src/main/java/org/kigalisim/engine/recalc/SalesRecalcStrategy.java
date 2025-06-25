@@ -10,6 +10,8 @@
 package org.kigalisim.engine.recalc;
 
 import java.math.BigDecimal;
+import java.math.MathContext;
+import java.math.RoundingMode;
 import java.util.Optional;
 import org.kigalisim.engine.Engine;
 import org.kigalisim.engine.number.EngineNumber;
@@ -85,7 +87,10 @@ public class SalesRecalcStrategy implements RecalcStrategy {
 
     EngineNumber displacementRateRaw = streamKeeper.getDisplacementRate(scopeEffective);
     EngineNumber displacementRate = unitConverter.convert(displacementRateRaw, "%");
-    BigDecimal displacementRateRatio = displacementRate.getValue().divide(BigDecimal.valueOf(100));
+    BigDecimal displacementRateRatio = displacementRate.getValue().divide(
+        BigDecimal.valueOf(100),
+        MathContext.DECIMAL128
+    );
     final BigDecimal recycledDisplacedKg = recycledKg.multiply(displacementRateRatio);
 
     // Switch out of recharge population
@@ -120,38 +125,25 @@ public class SalesRecalcStrategy implements RecalcStrategy {
 
     EngineNumber manufactureSalesConverted = unitConverter.convert(manufactureRaw, "kg");
     EngineNumber importSalesConverted = unitConverter.convert(importRaw, "kg");
-    EngineNumber priorRecycleSalesConverted = unitConverter.convert(priorRecycleRaw, "kg");
 
     BigDecimal manufactureSalesKg = manufactureSalesConverted.getValue();
     BigDecimal importSalesKg = importSalesConverted.getValue();
-    BigDecimal priorRecycleSalesKg = priorRecycleSalesConverted.getValue();
     BigDecimal totalNonRecycleKg = manufactureSalesKg.add(importSalesKg);
 
-    // Get stream percentages for allocation
-    BigDecimal percentManufacture;
-    BigDecimal percentImport;
+    // Get stream enabled status
+    boolean manufactureEnabled = streamKeeper.hasStreamBeenEnabled(scopeEffective, "manufacture");
+    boolean importEnabled = streamKeeper.hasStreamBeenEnabled(scopeEffective, "import");
 
-    if (totalNonRecycleKg.compareTo(BigDecimal.ZERO) == 0) {
-      EngineNumber manufactureInitialCharge = target.getInitialCharge("manufacture");
-      EngineNumber importInitialCharge = target.getInitialCharge("import");
-      BigDecimal manufactureInitialChargeVal = manufactureInitialCharge.getValue();
-      BigDecimal importInitialChargeVal = unitConverter
-          .convert(importInitialCharge, manufactureInitialCharge.getUnits()).getValue();
-      BigDecimal totalInitialChargeVal = manufactureInitialChargeVal.add(importInitialChargeVal);
+    // Build distribution using the new builder
+    SalesStreamDistribution distribution = SalesStreamDistributionBuilder.buildDistribution(
+        manufactureSalesConverted,
+        importSalesConverted,
+        manufactureEnabled,
+        importEnabled
+    );
 
-      if (totalInitialChargeVal.compareTo(BigDecimal.ZERO) == 0) {
-        percentManufacture = BigDecimal.ONE;
-        percentImport = BigDecimal.ZERO;
-      } else {
-        percentManufacture = DivisionHelper.divideWithZero(
-            manufactureInitialChargeVal, totalInitialChargeVal);
-        percentImport = DivisionHelper.divideWithZero(
-            importInitialChargeVal, totalInitialChargeVal);
-      }
-    } else {
-      percentManufacture = DivisionHelper.divideWithZero(manufactureSalesKg, totalNonRecycleKg);
-      percentImport = DivisionHelper.divideWithZero(importSalesKg, totalNonRecycleKg);
-    }
+    BigDecimal percentManufacture = distribution.getPercentManufacture();
+    BigDecimal percentImport = distribution.getPercentImport();
 
     // Recycle
     EngineNumber newRecycleValue = new EngineNumber(recycledDisplacedKg, "kg");

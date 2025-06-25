@@ -19,11 +19,11 @@ async function initializeWasm() {
 
   try {
     // Import TeaVM-compiled JavaScript version first (for fallback)
-    importScripts("/wasm/KigaliSim.js");
-    importScripts("/wasm/KigaliSim.wasm-runtime.js");
+    importScripts("/wasm/KigaliSim.js?v=EPOCH");
+    importScripts("/wasm/KigaliSim.wasm-runtime.js?v=EPOCH");
 
     // Try to load WASM
-    wasmLayer = await TeaVM.wasmGC.load("/wasm/KigaliSim.wasm");
+    wasmLayer = await TeaVM.wasmGC.load("/wasm/KigaliSim.wasm?v=EPOCH");
     console.log("WASM backend initialized successfully");
   } catch (error) {
     console.log("Failed to load WASM, falling back to TeaVM JavaScript:", error);

@@ -16,6 +16,8 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import org.kigalisim.engine.number.EngineNumber;
 import org.kigalisim.engine.number.UnitConverter;
+import org.kigalisim.engine.recalc.SalesStreamDistribution;
+import org.kigalisim.engine.recalc.SalesStreamDistributionBuilder;
 
 /**
  * Class responsible for managing / tracking substance streams.
@@ -71,47 +73,6 @@ public class StreamKeeper {
     return substances.containsKey(key);
   }
 
-
-  /**
-   * Ensure a substance exists for a scope, creating it if needed.
-   *
-   * @param scope The scope containing application and substance
-   */
-  public void ensureSubstance(Scope scope) {
-    if (hasSubstance(scope)) {
-      return;
-    }
-
-    String key = getKey(scope);
-    substances.put(key, new StreamParameterization());
-
-    // Sales: manufacture, import, recycle
-    String manufactureKey = getKey(scope, "manufacture");
-    streams.put(manufactureKey, new EngineNumber(BigDecimal.ZERO, "kg"));
-    String importKey = getKey(scope, "import");
-    streams.put(importKey, new EngineNumber(BigDecimal.ZERO, "kg"));
-    String recycleKey = getKey(scope, "recycle");
-    streams.put(recycleKey, new EngineNumber(BigDecimal.ZERO, "kg"));
-
-    // Consumption: count, conversion
-    String consumptionKey = getKey(scope, "consumption");
-    streams.put(consumptionKey, new EngineNumber(BigDecimal.ZERO, "tCO2e"));
-
-    // Population
-    String equipmentKey = getKey(scope, "equipment");
-    streams.put(equipmentKey, new EngineNumber(BigDecimal.ZERO, "units"));
-    String priorEquipmentKey = getKey(scope, "priorEquipment");
-    streams.put(priorEquipmentKey, new EngineNumber(BigDecimal.ZERO, "units"));
-    String newEquipmentKey = getKey(scope, "newEquipment");
-    streams.put(newEquipmentKey, new EngineNumber(BigDecimal.ZERO, "units"));
-
-    // Emissions
-    String rechargeEmissionsKey = getKey(scope, "rechargeEmissions");
-    streams.put(rechargeEmissionsKey, new EngineNumber(BigDecimal.ZERO, "tCO2e"));
-    String eolEmissionsKey = getKey(scope, "eolEmissions");
-    streams.put(eolEmissionsKey, new EngineNumber(BigDecimal.ZERO, "tCO2e"));
-  }
-
   /**
    * Ensure a substance exists for a key, creating it if needed.
    *
@@ -152,32 +113,6 @@ public class StreamKeeper {
     streams.put(eolEmissionsKey, new EngineNumber(BigDecimal.ZERO, "tCO2e"));
   }
 
-
-  /**
-   * Set the value for a specific stream.
-   *
-   * @param scope The scope containing application and substance
-   * @param name The stream name
-   * @param value The value to set
-   */
-  public void setStream(Scope scope, String name, EngineNumber value) {
-    ensureSubstancePresent(scope, "setStream");
-    ensureStreamKnown(name);
-
-    if (CHECK_NAN_STATE && value.getValue().toString().equals("NaN")) {
-      String pieces = String.join(" > ", scope.getApplication(), scope.getSubstance(), name);
-      throw new RuntimeException("Encountered NaN to be set for: " + pieces);
-    }
-
-    if (getIsSettingVolumeByUnits(name, value)) {
-      setStreamForSalesWithUnits(scope, name, value);
-    } else if ("sales".equals(name)) {
-      setStreamForSales(scope, name, value);
-    } else {
-      setSimpleStream(scope, name, value);
-    }
-  }
-
   /**
    * Set the value for a specific stream using key.
    *
@@ -207,39 +142,6 @@ public class StreamKeeper {
       setStreamForSales(useKey, name, value);
     } else {
       setSimpleStream(useKey, name, value);
-    }
-  }
-
-
-  /**
-   * Get the value of a specific stream.
-   *
-   * @param scope The scope containing application and substance
-   * @param name The stream name
-   * @return The stream value
-   */
-  public EngineNumber getStream(Scope scope, String name) {
-    ensureSubstancePresent(scope, "getStream");
-    ensureStreamKnown(name);
-
-    if ("sales".equals(name)) {
-      EngineNumber manufactureAmountRaw = getStream(scope, "manufacture");
-      EngineNumber importAmountRaw = getStream(scope, "import");
-      EngineNumber recycleAmountRaw = getStream(scope, "recycle");
-
-      EngineNumber manufactureAmount = unitConverter.convert(manufactureAmountRaw, "kg");
-      EngineNumber importAmount = unitConverter.convert(importAmountRaw, "kg");
-      EngineNumber recycleAmount = unitConverter.convert(recycleAmountRaw, "kg");
-
-      BigDecimal manufactureAmountValue = manufactureAmount.getValue();
-      BigDecimal importAmountValue = importAmount.getValue();
-      BigDecimal recycleAmountValue = recycleAmount.getValue();
-
-      BigDecimal newTotal = manufactureAmountValue.add(importAmountValue).add(recycleAmountValue);
-
-      return new EngineNumber(newTotal, "kg");
-    } else {
-      return streams.get(getKey(scope, name));
     }
   }
 
@@ -276,18 +178,6 @@ public class StreamKeeper {
     }
   }
 
-
-  /**
-   * Check if a stream exists for a scope.
-   *
-   * @param scope The scope containing application and substance
-   * @param name The stream name
-   * @return true if the stream exists
-   */
-  public boolean isKnownStream(Scope scope, String name) {
-    return streams.containsKey(getKey(scope, name));
-  }
-
   /**
    * Check if a stream exists for a key.
    *
@@ -319,17 +209,6 @@ public class StreamKeeper {
   }
 
   /**
-   * Set the greenhouse gas intensity for a scope.
-   *
-   * @param scope The scope containing application and substance
-   * @param newValue The new GHG intensity value
-   */
-  public void setGhgIntensity(Scope scope, EngineNumber newValue) {
-    StreamParameterization parameterization = getParameterization(scope);
-    parameterization.setGhgIntensity(newValue);
-  }
-
-  /**
    * Set the greenhouse gas intensity for a key.
    *
    * @param useKey The key containing application and substance
@@ -341,16 +220,6 @@ public class StreamKeeper {
   }
 
 
-  /**
-   * Set the energy intensity for a scope.
-   *
-   * @param scope The scope containing application and substance
-   * @param newValue The new energy intensity value
-   */
-  public void setEnergyIntensity(Scope scope, EngineNumber newValue) {
-    StreamParameterization parameterization = getParameterization(scope);
-    parameterization.setEnergyIntensity(newValue);
-  }
 
   /**
    * Set the energy intensity for a key.
@@ -364,16 +233,6 @@ public class StreamKeeper {
   }
 
 
-  /**
-   * Get the greenhouse gas intensity for a scope.
-   *
-   * @param scope The scope containing application and substance
-   * @return The current GHG intensity value
-   */
-  public EngineNumber getGhgIntensity(Scope scope) {
-    StreamParameterization parameterization = getParameterization(scope);
-    return parameterization.getGhgIntensity();
-  }
 
   /**
    * Get the greenhouse gas intensity for a key.
@@ -388,16 +247,6 @@ public class StreamKeeper {
     return parameterization.getGhgIntensity();
   }
 
-  /**
-   * Get the energy intensity for a scope.
-   *
-   * @param scope The scope containing application and substance
-   * @return The current energy intensity value
-   */
-  public EngineNumber getEnergyIntensity(Scope scope) {
-    StreamParameterization parameterization = getParameterization(scope);
-    return parameterization.getEnergyIntensity();
-  }
 
   /**
    * Get the energy intensity for a key.
@@ -410,19 +259,6 @@ public class StreamKeeper {
     ensureSubstancePresent(key, "getEnergyIntensity");
     StreamParameterization parameterization = substances.get(key);
     return parameterization.getEnergyIntensity();
-  }
-
-
-  /**
-   * Set the initial charge for a scope's stream.
-   *
-   * @param scope The scope containing application and substance
-   * @param substream The stream identifier ('manufacture' or 'import')
-   * @param newValue The new initial charge value
-   */
-  public void setInitialCharge(Scope scope, String substream, EngineNumber newValue) {
-    StreamParameterization parameterization = getParameterization(scope);
-    parameterization.setInitialCharge(substream, newValue);
   }
 
   /**
@@ -438,17 +274,6 @@ public class StreamKeeper {
   }
 
 
-  /**
-   * Get the initial charge for a scope's stream.
-   *
-   * @param scope The scope containing application and substance
-   * @param substream The stream identifier ('manufacture' or 'import')
-   * @return The current initial charge value
-   */
-  public EngineNumber getInitialCharge(Scope scope, String substream) {
-    StreamParameterization parameterization = getParameterization(scope);
-    return parameterization.getInitialCharge(substream);
-  }
 
   /**
    * Get the initial charge for a key.
@@ -463,16 +288,6 @@ public class StreamKeeper {
     return parameterization.getInitialCharge(substream);
   }
 
-  /**
-   * Set the recharge population percentage for a scope.
-   *
-   * @param scope The scope containing application and substance
-   * @param newValue The new recharge population value
-   */
-  public void setRechargePopulation(Scope scope, EngineNumber newValue) {
-    StreamParameterization parameterization = getParameterization(scope);
-    parameterization.setRechargePopulation(newValue);
-  }
 
   /**
    * Set the recharge population percentage for a key.
@@ -485,16 +300,6 @@ public class StreamKeeper {
     parameterization.setRechargePopulation(newValue);
   }
 
-  /**
-   * Get the recharge population percentage for a scope.
-   *
-   * @param scope The scope containing application and substance
-   * @return The current recharge population value
-   */
-  public EngineNumber getRechargePopulation(Scope scope) {
-    StreamParameterization parameterization = getParameterization(scope);
-    return parameterization.getRechargePopulation();
-  }
 
   /**
    * Get the recharge population percentage for a key.
@@ -507,16 +312,6 @@ public class StreamKeeper {
     return parameterization.getRechargePopulation();
   }
 
-  /**
-   * Set the recharge intensity for a scope.
-   *
-   * @param scope The scope containing application and substance
-   * @param newValue The new recharge intensity value
-   */
-  public void setRechargeIntensity(Scope scope, EngineNumber newValue) {
-    StreamParameterization parameterization = getParameterization(scope);
-    parameterization.setRechargeIntensity(newValue);
-  }
 
   /**
    * Set the recharge intensity for a key.
@@ -529,16 +324,6 @@ public class StreamKeeper {
     parameterization.setRechargeIntensity(newValue);
   }
 
-  /**
-   * Get the recharge intensity for a scope.
-   *
-   * @param scope The scope containing application and substance
-   * @return The current recharge intensity value
-   */
-  public EngineNumber getRechargeIntensity(Scope scope) {
-    StreamParameterization parameterization = getParameterization(scope);
-    return parameterization.getRechargeIntensity();
-  }
 
   /**
    * Get the recharge intensity for a key.
@@ -551,16 +336,6 @@ public class StreamKeeper {
     return parameterization.getRechargeIntensity();
   }
 
-  /**
-   * Set the recovery rate percentage for a scope.
-   *
-   * @param scope The scope containing application and substance
-   * @param newValue The new recovery rate value
-   */
-  public void setRecoveryRate(Scope scope, EngineNumber newValue) {
-    StreamParameterization parameterization = getParameterization(scope);
-    parameterization.setRecoveryRate(newValue);
-  }
 
   /**
    * Set the recovery rate percentage for a key.
@@ -573,16 +348,6 @@ public class StreamKeeper {
     parameterization.setRecoveryRate(newValue);
   }
 
-  /**
-   * Get the recovery rate percentage for a scope.
-   *
-   * @param scope The scope containing application and substance
-   * @return The current recovery rate value
-   */
-  public EngineNumber getRecoveryRate(Scope scope) {
-    StreamParameterization parameterization = getParameterization(scope);
-    return parameterization.getRecoveryRate();
-  }
 
   /**
    * Get the recovery rate percentage for a key.
@@ -617,16 +382,6 @@ public class StreamKeeper {
     return parameterization.getDisplacementRate();
   }
 
-  /**
-   * Set the yield rate percentage for recycling in a scope.
-   *
-   * @param scope The scope containing application and substance
-   * @param newValue The new yield rate value
-   */
-  public void setYieldRate(Scope scope, EngineNumber newValue) {
-    StreamParameterization parameterization = getParameterization(scope);
-    parameterization.setYieldRate(newValue);
-  }
 
   /**
    * Set the yield rate percentage for recycling for a key.
@@ -639,16 +394,6 @@ public class StreamKeeper {
     parameterization.setYieldRate(newValue);
   }
 
-  /**
-   * Get the yield rate percentage for recycling in a scope.
-   *
-   * @param scope The scope containing application and substance
-   * @return The current yield rate value
-   */
-  public EngineNumber getYieldRate(Scope scope) {
-    StreamParameterization parameterization = getParameterization(scope);
-    return parameterization.getYieldRate();
-  }
 
   /**
    * Get the yield rate percentage for recycling for a key.
@@ -661,16 +406,6 @@ public class StreamKeeper {
     return parameterization.getYieldRate();
   }
 
-  /**
-   * Set the retirement rate percentage for a scope.
-   *
-   * @param scope The scope containing application and substance
-   * @param newValue The new retirement rate value
-   */
-  public void setRetirementRate(Scope scope, EngineNumber newValue) {
-    StreamParameterization parameterization = getParameterization(scope);
-    parameterization.setRetirementRate(newValue);
-  }
 
   /**
    * Set the retirement rate percentage for a key.
@@ -683,16 +418,6 @@ public class StreamKeeper {
     parameterization.setRetirementRate(newValue);
   }
 
-  /**
-   * Get the retirement rate percentage for a scope.
-   *
-   * @param scope The scope containing application and substance
-   * @return The current retirement rate value
-   */
-  public EngineNumber getRetirementRate(Scope scope) {
-    StreamParameterization parameterization = getParameterization(scope);
-    return parameterization.getRetirementRate();
-  }
 
   /**
    * Get the retirement rate percentage for a key.
@@ -705,16 +430,6 @@ public class StreamKeeper {
     return parameterization.getRetirementRate();
   }
 
-  /**
-   * Set the last specified units for a scope.
-   *
-   * @param scope The scope containing application and substance
-   * @param units The units string last used to specify a stream
-   */
-  public void setLastSpecifiedUnits(Scope scope, String units) {
-    StreamParameterization parameterization = getParameterization(scope);
-    parameterization.setLastSpecifiedUnits(units);
-  }
 
   /**
    * Set the last specified units for a key.
@@ -729,16 +444,6 @@ public class StreamKeeper {
     parameterization.setLastSpecifiedUnits(units);
   }
 
-  /**
-   * Get the last specified units for a scope.
-   *
-   * @param scope The scope containing application and substance
-   * @return The units string last used to specify a stream
-   */
-  public String getLastSpecifiedUnits(Scope scope) {
-    StreamParameterization parameterization = getParameterization(scope);
-    return parameterization.getLastSpecifiedUnits();
-  }
 
   /**
    * Get the last specified units for a key.
@@ -749,6 +454,29 @@ public class StreamKeeper {
   public String getLastSpecifiedUnits(UseKey useKey) {
     StreamParameterization parameterization = getParameterization(useKey);
     return parameterization.getLastSpecifiedUnits();
+  }
+
+  /**
+   * Check if a stream has ever been enabled (set to non-zero value).
+   *
+   * @param useKey The key containing application and substance
+   * @param streamName The name of the stream to check
+   * @return true if the stream has been enabled, false otherwise
+   */
+  public boolean hasStreamBeenEnabled(UseKey useKey, String streamName) {
+    StreamParameterization parameterization = getParameterization(useKey);
+    return parameterization.hasStreamBeenEnabled(streamName);
+  }
+
+  /**
+   * Mark a stream as having been enabled (set to non-zero value).
+   *
+   * @param useKey The key containing application and substance
+   * @param streamName The name of the stream to mark as enabled
+   */
+  public void markStreamAsEnabled(UseKey useKey, String streamName) {
+    StreamParameterization parameterization = getParameterization(useKey);
+    parameterization.markStreamAsEnabled(streamName);
   }
 
   /**
@@ -766,20 +494,6 @@ public class StreamKeeper {
     return substances.get(key);
   }
 
-  /**
-   * Retrieve parameterization for a specific scope.
-   *
-   * <p>Verifies the existence of the substance and application combination
-   * and returns the associated StreamParameterization object.</p>
-   *
-   * @param scope The scope containing application and substance
-   * @return The parameterization for the given scope
-   */
-  private StreamParameterization getParameterization(Scope scope) {
-    ensureSubstancePresent(scope, "getParameterization");
-    String key = getKey(scope);
-    return substances.get(key);
-  }
 
   private StreamParameterization getParameterization(String key) {
     ensureSubstancePresent(key, "getParameterization");
@@ -796,15 +510,6 @@ public class StreamKeeper {
     return useKey.getKey();
   }
 
-  /**
-   * Generate a key for a Scope.
-   *
-   * @param scope The Scope to generate a key for
-   * @return The generated key
-   */
-  private String getKey(Scope scope) {
-    return scope.getKey();
-  }
 
   /**
    * Generate a stream key for a Scope and stream name.
@@ -813,14 +518,6 @@ public class StreamKeeper {
    * @param name The stream name
    * @return The generated stream key
    */
-  private String getKey(Scope scope, String name) {
-    StringBuilder keyBuilder = new StringBuilder();
-    keyBuilder.append(getKey(scope));
-    keyBuilder.append("\t");
-    keyBuilder.append(name != null ? name : "-");
-    return keyBuilder.toString();
-  }
-
   private String getKey(UseKey useKey, String name) {
     StringBuilder keyBuilder = new StringBuilder();
     keyBuilder.append(getKey(useKey));
@@ -849,24 +546,6 @@ public class StreamKeeper {
     streams.put(streamKey, valueConverted);
   }
 
-  private void setSimpleStream(Scope scope, String name, EngineNumber value) {
-    String unitsNeeded = getUnits(name);
-    EngineNumber valueConverted = unitConverter.convert(value, unitsNeeded);
-
-    if (CHECK_NAN_STATE && valueConverted.getValue().toString().equals("NaN")) {
-      String pieces = String.join(" > ", scope.getApplication(), scope.getSubstance(), name);
-      throw new RuntimeException("Encountered NaN after conversion to be set for: " + pieces);
-    }
-
-    if (CHECK_POSITIVE_STREAMS && valueConverted.getValue().compareTo(BigDecimal.ZERO) < 0) {
-      String pieces = String.join(" > ", scope.getApplication(), scope.getSubstance(), name);
-      throw new RuntimeException("Encountered negative stream to be set for: " + pieces);
-    }
-
-    String streamKey = getKey(scope, name);
-    streams.put(streamKey, valueConverted);
-  }
-
   private void setStreamForSales(UseKey useKey, String name, EngineNumber value) {
     EngineNumber manufactureValueRaw = getStream(useKey, "manufacture");
     EngineNumber importValueRaw = getStream(useKey, "import");
@@ -880,60 +559,29 @@ public class StreamKeeper {
     EngineNumber valueConverted = unitConverter.convert(value, "kg");
     BigDecimal amountKg = valueConverted.getValue();
 
-    BigDecimal totalAmount = manufactureAmount.add(importAmount);
-    boolean isZero = totalAmount.compareTo(BigDecimal.ZERO) == 0;
-    BigDecimal manufacturePercent;
-    if (isZero) {
-      manufacturePercent = new BigDecimal("0.5");
-    } else {
-      manufacturePercent = manufactureAmount.divide(totalAmount);
-    }
+    // Get stream enabled status
+    boolean manufactureEnabled = hasStreamBeenEnabled(useKey, "manufacture");
+    boolean importEnabled = hasStreamBeenEnabled(useKey, "import");
+
+    // Build distribution using the new builder
+    SalesStreamDistribution distribution = SalesStreamDistributionBuilder.buildDistribution(
+        manufactureValue,
+        importValue,
+        manufactureEnabled,
+        importEnabled
+    );
+
+    BigDecimal manufacturePercent = distribution.getPercentManufacture();
+    BigDecimal importPercent = distribution.getPercentImport();
 
     BigDecimal newManufactureAmount = amountKg.multiply(manufacturePercent);
-    BigDecimal newImportAmount = amountKg.subtract(newManufactureAmount);
+    BigDecimal newImportAmount = amountKg.multiply(importPercent);
 
     EngineNumber manufactureAmountToSet = new EngineNumber(newManufactureAmount, "kg");
     EngineNumber importAmountToSet = new EngineNumber(newImportAmount, "kg");
 
     setSimpleStream(useKey, "manufacture", manufactureAmountToSet);
     setSimpleStream(useKey, "import", importAmountToSet);
-  }
-
-  private void setStreamForSales(Scope scope, String name, EngineNumber value) {
-    EngineNumber manufactureValueRaw = getStream(scope, "manufacture");
-    EngineNumber importValueRaw = getStream(scope, "import");
-
-    EngineNumber manufactureValue = unitConverter.convert(manufactureValueRaw, "kg");
-    EngineNumber importValue = unitConverter.convert(importValueRaw, "kg");
-
-    BigDecimal manufactureAmount = manufactureValue.getValue();
-    BigDecimal importAmount = importValue.getValue();
-
-    EngineNumber valueConverted = unitConverter.convert(value, "kg");
-    BigDecimal amountKg = valueConverted.getValue();
-
-    BigDecimal totalAmount = manufactureAmount.add(importAmount);
-    boolean isZero = totalAmount.compareTo(BigDecimal.ZERO) == 0;
-    BigDecimal manufacturePercent;
-    if (isZero) {
-      manufacturePercent = new BigDecimal("0.5");
-    } else {
-      manufacturePercent = manufactureAmount.divide(totalAmount);
-    }
-    BigDecimal importPercent;
-    if (isZero) {
-      importPercent = new BigDecimal("0.5");
-    } else {
-      importPercent = importAmount.divide(totalAmount);
-    }
-
-    BigDecimal manufactureShare = amountKg.multiply(manufacturePercent);
-    BigDecimal importShare = amountKg.multiply(importPercent);
-    EngineNumber manufactureNewValue = new EngineNumber(manufactureShare, value.getUnits());
-    EngineNumber importNewValue = new EngineNumber(importShare, value.getUnits());
-
-    setStream(scope, "manufacture", manufactureNewValue);
-    setStream(scope, "import", importNewValue);
   }
 
   private void setStreamForSalesWithUnits(UseKey useKey, String name, EngineNumber value) {
@@ -955,28 +603,6 @@ public class StreamKeeper {
 
     // Set the stream directly to avoid recursion
     String streamKey = getKey(useKey, name);
-    streams.put(streamKey, valueConverted);
-  }
-
-  private void setStreamForSalesWithUnits(Scope scope, String name, EngineNumber value) {
-    OverridingConverterStateGetter overridingStateGetter = new OverridingConverterStateGetter(
-        stateGetter
-    );
-    UnitConverter unitConverter = new UnitConverter(overridingStateGetter);
-
-    EngineNumber initialCharge = getInitialCharge(scope, name);
-    if (initialCharge.getValue().compareTo(BigDecimal.ZERO) == 0) {
-      throw new RuntimeException("Cannot set " + name + " stream with a zero initial charge.");
-    }
-
-    EngineNumber initialChargeConverted = unitConverter.convert(initialCharge, "kg / unit");
-    overridingStateGetter.setAmortizedUnitVolume(initialChargeConverted);
-
-    EngineNumber valueUnitsPlain = unitConverter.convert(value, "units");
-    EngineNumber valueConverted = unitConverter.convert(valueUnitsPlain, "kg");
-
-    // Set the stream directly to avoid recursion
-    String streamKey = getKey(scope, name);
     streams.put(streamKey, valueConverted);
   }
 
@@ -1003,28 +629,6 @@ public class StreamKeeper {
     }
   }
 
-  /**
-   * Verify that a substance exists for a scope.
-   *
-   * @param scope The scope containing application and substance
-   * @param context The context for error reporting
-   * @throws IllegalStateException If the substance does not exist for the scope
-   */
-  private void ensureSubstancePresent(Scope scope, String context) {
-    if (scope == null) {
-      throw new IllegalStateException("Scope cannot be null in " + context);
-    }
-    if (!hasSubstance(scope)) {
-      StringBuilder message = new StringBuilder();
-      message.append("Not a known application substance pair in ");
-      message.append(context);
-      message.append(": ");
-      message.append(scope.getApplication());
-      message.append(", ");
-      message.append(scope.getSubstance());
-      throw new IllegalStateException(message.toString());
-    }
-  }
 
   private void ensureSubstancePresent(String key, String context) {
     if (key == null) {

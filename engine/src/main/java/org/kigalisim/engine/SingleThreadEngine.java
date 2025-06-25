@@ -247,6 +247,12 @@ public class SingleThreadEngine implements Engine {
 
     streamKeeper.setStream(keyEffective, name, value);
 
+    // Track enabled streams when set to non-zero values
+    if (value.getValue().compareTo(BigDecimal.ZERO) != 0 
+        && ("manufacture".equals(name) || "import".equals(name))) {
+      streamKeeper.markStreamAsEnabled(keyEffective, name);
+    }
+
     // Track the units last used to specify this stream (only for user-initiated calls)
     if (!propagateChanges) {
       return;
@@ -700,7 +706,6 @@ public class SingleThreadEngine implements Engine {
     streamKeeper.setLastSpecifiedUnits(scope, amount.getUnits());
 
     EngineNumber changeWithUnits = new EngineNumber(changeAmount, "kg");
-    // Use internal changeStream that doesn't override the units tracking
     changeStreamWithoutReportingUnits(stream, changeWithUnits, null, null);
 
     handleDisplacement(stream, amount, changeAmount, displaceTarget);
@@ -892,12 +897,11 @@ public class SingleThreadEngine implements Engine {
 
     if (amount.hasEquipmentUnits()) {
       // For equipment units, displacement should be unit-based, not volume-based
-      Scope currentScope = scope;
       UnitConverter currentUnitConverter = createUnitConverterWithTotal(stream);
 
       // Convert the volume change back to units in the original substance
-      EngineNumber volumeChangePositive = new EngineNumber(changeAmount.abs(), "kg");
-      EngineNumber unitsChanged = currentUnitConverter.convert(volumeChangePositive, "units");
+      EngineNumber volumeChangeFlip = new EngineNumber(changeAmount.negate(), "kg");
+      EngineNumber unitsChanged = currentUnitConverter.convert(volumeChangeFlip, "units");
 
       boolean isStream = STREAM_NAMES.contains(displaceTarget);
       if (isStream) {
@@ -952,7 +956,24 @@ public class SingleThreadEngine implements Engine {
 
     EngineNumber convertedDelta = unitConverter.convert(amount, currentValue.getUnits());
     BigDecimal newAmount = currentValue.getValue().add(convertedDelta.getValue());
-    EngineNumber outputWithUnits = new EngineNumber(newAmount, currentValue.getUnits());
+    BigDecimal newAmountBound = newAmount.max(BigDecimal.ZERO);
+    
+    // Warn when negative values are clamped to zero
+    if (newAmount.compareTo(BigDecimal.ZERO) < 0) {
+      StringBuilder warning = new StringBuilder();
+      warning.append("WARNING: Negative stream value clamped to zero for stream '");
+      warning.append(stream);
+      warning.append("': ");
+      warning.append(newAmount);
+      warning.append(" ");
+      warning.append(currentValue.getUnits());
+      warning.append(" -> 0 ");
+      warning.append(currentValue.getUnits());
+      System.err.println(warning.toString());
+    }
+    
+    EngineNumber outputWithUnits = new EngineNumber(newAmountBound, currentValue.getUnits());
+
 
     // Allow propagation but don't track units (since units tracking was handled by the caller)
     setStreamFor(stream, outputWithUnits, Optional.empty(), Optional.ofNullable(scope), true, Optional.empty());
@@ -1144,5 +1165,14 @@ public class SingleThreadEngine implements Engine {
    */
   private boolean isZero(BigDecimal target) {
     return target.compareTo(BigDecimal.ZERO) == 0;
+  }
+
+  /**
+   * Determine if the current scope was last specified in units.
+   *
+   * @return True if last in units and false otherwise.
+   */
+  private boolean getWasLastGivenUnits() {
+    return streamKeeper.getLastSpecifiedUnits(scope).startsWith("unit");
   }
 }

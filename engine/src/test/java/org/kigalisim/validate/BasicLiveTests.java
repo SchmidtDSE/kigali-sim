@@ -8,6 +8,7 @@ package org.kigalisim.validate;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.util.List;
@@ -347,5 +348,71 @@ public class BasicLiveTests {
         "Energy consumption should be 500 kwh");
     assertEquals("kwh", result.getEnergyConsumption().getUnits(),
         "Energy consumption units should be kwh");
+  }
+
+  /**
+   * Test basic_kwh_units.qta produces expected values.
+   */
+  @Test
+  public void testSetByImport() throws IOException {
+    // Load and parse the QTA file
+    String qtaPath = "../examples/set_by_import.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    // Run the scenario using KigaliSimFacade
+    String scenarioName = "BAU";
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName);
+
+    List<EngineResult> resultsList = results.collect(Collectors.toList());
+    EngineResult result = LiveTestsUtil.getResult(resultsList.stream(), 10, "Test", "SubA");
+    assertNotNull(result, "Should have result for test/test in year 10");
+
+    // Check imports
+    assertTrue(
+        result.getImport().getValue().doubleValue() > 0,
+        "Should have imports"
+    );
+  }
+
+  /**
+   * Test basic_set_manufacture_units.qta - equipment should increase over time.
+   */
+  @Test
+  public void testBasicSetManufactureUnits() throws IOException {
+    // Load and parse the QTA file
+    String qtaPath = "../examples/basic_set_manufacture_units.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should parse successfully");
+
+    // Run the scenario using KigaliSimFacade
+    String scenarioName = "business as usual";
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName);
+    List<EngineResult> resultsList = results.collect(Collectors.toList());
+
+    // Get results for year 2025 (start year)
+    EngineResult firstRecord = LiveTestsUtil.getResult(resultsList.stream(), 2025,
+        "Test", "HFC-134a");
+    assertNotNull(firstRecord, "Should have result for Test/HFC-134a in year 2025");
+
+    // Get results for year 2030 (mid-way)
+    EngineResult secondRecord = LiveTestsUtil.getResult(resultsList.stream(), 2030,
+        "Test", "HFC-134a");
+    assertNotNull(secondRecord, "Should have result for Test/HFC-134a in year 2030");
+
+    // Verify units are the same
+    assertEquals(firstRecord.getPopulation().getUnits(), secondRecord.getPopulation().getUnits(),
+        "Equipment units should be consistent");
+
+    // Verify equipment population increases over time
+    double firstPopulation = firstRecord.getPopulation().getValue().doubleValue();
+    double secondPopulation = secondRecord.getPopulation().getValue().doubleValue();
+
+    // Debug output
+    System.out.println("Population in 2025: " + firstPopulation);
+    System.out.println("Population in 2030: " + secondPopulation);
+
+    assertTrue(firstPopulation < secondPopulation,
+        "Equipment population should increase from 2025 to 2030. Was " + firstPopulation + " in 2025 and " + secondPopulation + " in 2030");
   }
 }

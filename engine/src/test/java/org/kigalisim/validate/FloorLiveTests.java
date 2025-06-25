@@ -114,8 +114,8 @@ public class FloorLiveTests {
     assertNotNull(resultB, "Should have result for test/sub_b in year 1");
 
     // The actual value from the test is 320 kg
-    assertEquals(320.0, resultB.getManufacture().getValue().doubleValue(), 0.0001,
-        "Manufacture for sub_b should be 320 kg");
+    assertEquals(0., resultB.getManufacture().getValue().doubleValue(), 0.0001,
+        "Manufacture for sub_b should be zero");
     assertEquals("kg", resultB.getManufacture().getUnits(),
         "Manufacture units for sub_b should be kg");
   }
