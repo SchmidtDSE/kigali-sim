@@ -1,0 +1,1980 @@
+diff --git a/engine/src/main/java/org/kigalisim/engine/SingleThreadEngine.java b/engine/src/main/java/org/kigalisim/engine/SingleThreadEngine.java
+index b7d23e87..f3763e9b 100644
+--- a/engine/src/main/java/org/kigalisim/engine/SingleThreadEngine.java
++++ b/engine/src/main/java/org/kigalisim/engine/SingleThreadEngine.java
+@@ -247,6 +247,12 @@ public void setStreamFor(String name, EngineNumber value, Optional<YearMatcher>
+ 
+     streamKeeper.setStream(keyEffective, name, value);
+ 
++    // Track enabled streams when set to non-zero values
++    if (value.getValue().compareTo(BigDecimal.ZERO) != 0 
++        && ("manufacture".equals(name) || "import".equals(name))) {
++      streamKeeper.markStreamAsEnabled(keyEffective, name);
++    }
++
+     // Track the units last used to specify this stream (only for user-initiated calls)
+     if (!propagateChanges) {
+       return;
+@@ -700,7 +706,6 @@ public void cap(String stream, EngineNumber amount, YearMatcher yearMatcher,
+     streamKeeper.setLastSpecifiedUnits(scope, amount.getUnits());
+ 
+     EngineNumber changeWithUnits = new EngineNumber(changeAmount, "kg");
+-    // Use internal changeStream that doesn't override the units tracking
+     changeStreamWithoutReportingUnits(stream, changeWithUnits, null, null);
+ 
+     handleDisplacement(stream, amount, changeAmount, displaceTarget);
+@@ -892,12 +897,11 @@ private void handleDisplacement(String stream, EngineNumber amount,
+ 
+     if (amount.hasEquipmentUnits()) {
+       // For equipment units, displacement should be unit-based, not volume-based
+-      Scope currentScope = scope;
+       UnitConverter currentUnitConverter = createUnitConverterWithTotal(stream);
+ 
+       // Convert the volume change back to units in the original substance
+-      EngineNumber volumeChangePositive = new EngineNumber(changeAmount.abs(), "kg");
+-      EngineNumber unitsChanged = currentUnitConverter.convert(volumeChangePositive, "units");
++      EngineNumber volumeChangeFlip = new EngineNumber(changeAmount.negate(), "kg");
++      EngineNumber unitsChanged = currentUnitConverter.convert(volumeChangeFlip, "units");
+ 
+       boolean isStream = STREAM_NAMES.contains(displaceTarget);
+       if (isStream) {
+@@ -952,7 +956,9 @@ private void changeStreamWithoutReportingUnits(String stream, EngineNumber amoun
+ 
+     EngineNumber convertedDelta = unitConverter.convert(amount, currentValue.getUnits());
+     BigDecimal newAmount = currentValue.getValue().add(convertedDelta.getValue());
+-    EngineNumber outputWithUnits = new EngineNumber(newAmount, currentValue.getUnits());
++    BigDecimal newAmountBound = newAmount.max(BigDecimal.ZERO);
++    EngineNumber outputWithUnits = new EngineNumber(newAmountBound, currentValue.getUnits());
++
+ 
+     // Allow propagation but don't track units (since units tracking was handled by the caller)
+     setStreamFor(stream, outputWithUnits, Optional.empty(), Optional.ofNullable(scope), true, Optional.empty());
+@@ -1145,4 +1151,13 @@ private boolean isZero(EngineNumber target) {
+   private boolean isZero(BigDecimal target) {
+     return target.compareTo(BigDecimal.ZERO) == 0;
+   }
++
++  /**
++   * Determine if the current scope was last specified in units.
++   *
++   * @return True if last in units and false otherwise.
++   */
++  private boolean getWasLastGivenUnits() {
++    return streamKeeper.getLastSpecifiedUnits(scope).startsWith("unit");
++  }
+ }
+diff --git a/engine/src/main/java/org/kigalisim/engine/number/UnitConverter.java b/engine/src/main/java/org/kigalisim/engine/number/UnitConverter.java
+index 039dfae6..8e56be71 100644
+--- a/engine/src/main/java/org/kigalisim/engine/number/UnitConverter.java
++++ b/engine/src/main/java/org/kigalisim/engine/number/UnitConverter.java
+@@ -12,6 +12,7 @@
+ 
+ import java.math.BigDecimal;
+ import java.math.MathContext;
++import java.math.RoundingMode;
+ import java.util.HashMap;
+ import java.util.Map;
+ import org.kigalisim.engine.state.StateGetter;
+@@ -111,7 +112,7 @@ public EngineNumber convert(EngineNumber source, String destinationUnits) {
+         }
+       } else {
+         return new EngineNumber(
+-            numerator.getValue().divide(denominator.getValue(), MATH_CONTEXT), destinationUnits);
++            numerator.getValue().divide(denominator.getValue(), RoundingMode.HALF_UP), destinationUnits);
+       }
+     }
+   }
+diff --git a/engine/src/main/java/org/kigalisim/engine/recalc/PopulationChangeRecalcStrategy.java b/engine/src/main/java/org/kigalisim/engine/recalc/PopulationChangeRecalcStrategy.java
+index 53ed67a5..ee8e23ef 100644
+--- a/engine/src/main/java/org/kigalisim/engine/recalc/PopulationChangeRecalcStrategy.java
++++ b/engine/src/main/java/org/kigalisim/engine/recalc/PopulationChangeRecalcStrategy.java
+@@ -76,6 +76,7 @@ public void execute(Engine target, RecalcKit kit) {
+     BigDecimal salesKg = substanceSales.getValue();
+     BigDecimal rechargeKg = subtractRechargeEffective ? rechargeVolume.getValue() : BigDecimal.ZERO;
+     BigDecimal availableForNewUnitsKg = salesKg.subtract(rechargeKg);
++    
+ 
+     // Convert to unit delta
+     EngineNumber initialChargeRaw = target.getInitialCharge("sales");
+@@ -85,10 +86,7 @@ public void execute(Engine target, RecalcKit kit) {
+         availableForNewUnitsKg,
+         initialChargeKgUnit
+     );
+-    EngineNumber newUnitsMarginal = new EngineNumber(
+-        deltaUnits.compareTo(BigDecimal.ZERO) < 0 ? BigDecimal.ZERO : deltaUnits,
+-        "units"
+-    );
++    EngineNumber newUnitsMarginal = new EngineNumber(deltaUnits, "units");
+ 
+     // Find new total
+     BigDecimal priorPopulationUnits = priorPopulation.getValue();
+diff --git a/engine/src/main/java/org/kigalisim/engine/recalc/SalesRecalcStrategy.java b/engine/src/main/java/org/kigalisim/engine/recalc/SalesRecalcStrategy.java
+index a5eeeb4d..8be716ad 100644
+--- a/engine/src/main/java/org/kigalisim/engine/recalc/SalesRecalcStrategy.java
++++ b/engine/src/main/java/org/kigalisim/engine/recalc/SalesRecalcStrategy.java
+@@ -10,6 +10,7 @@
+ package org.kigalisim.engine.recalc;
+ 
+ import java.math.BigDecimal;
++import java.math.RoundingMode;
+ import java.util.Optional;
+ import org.kigalisim.engine.Engine;
+ import org.kigalisim.engine.number.EngineNumber;
+@@ -85,7 +86,10 @@ public void execute(Engine target, RecalcKit kit) {
+ 
+     EngineNumber displacementRateRaw = streamKeeper.getDisplacementRate(scopeEffective);
+     EngineNumber displacementRate = unitConverter.convert(displacementRateRaw, "%");
+-    BigDecimal displacementRateRatio = displacementRate.getValue().divide(BigDecimal.valueOf(100));
++    BigDecimal displacementRateRatio = displacementRate.getValue().divide(
++        BigDecimal.valueOf(100),
++        RoundingMode.HALF_UP
++    );
+     final BigDecimal recycledDisplacedKg = recycledKg.multiply(displacementRateRatio);
+ 
+     // Switch out of recharge population
+@@ -120,38 +124,25 @@ public void execute(Engine target, RecalcKit kit) {
+ 
+     EngineNumber manufactureSalesConverted = unitConverter.convert(manufactureRaw, "kg");
+     EngineNumber importSalesConverted = unitConverter.convert(importRaw, "kg");
+-    EngineNumber priorRecycleSalesConverted = unitConverter.convert(priorRecycleRaw, "kg");
+ 
+     BigDecimal manufactureSalesKg = manufactureSalesConverted.getValue();
+     BigDecimal importSalesKg = importSalesConverted.getValue();
+-    BigDecimal priorRecycleSalesKg = priorRecycleSalesConverted.getValue();
+     BigDecimal totalNonRecycleKg = manufactureSalesKg.add(importSalesKg);
+ 
+-    // Get stream percentages for allocation
+-    BigDecimal percentManufacture;
+-    BigDecimal percentImport;
+-
+-    if (totalNonRecycleKg.compareTo(BigDecimal.ZERO) == 0) {
+-      EngineNumber manufactureInitialCharge = target.getInitialCharge("manufacture");
+-      EngineNumber importInitialCharge = target.getInitialCharge("import");
+-      BigDecimal manufactureInitialChargeVal = manufactureInitialCharge.getValue();
+-      BigDecimal importInitialChargeVal = unitConverter
+-          .convert(importInitialCharge, manufactureInitialCharge.getUnits()).getValue();
+-      BigDecimal totalInitialChargeVal = manufactureInitialChargeVal.add(importInitialChargeVal);
+-
+-      if (totalInitialChargeVal.compareTo(BigDecimal.ZERO) == 0) {
+-        percentManufacture = BigDecimal.ONE;
+-        percentImport = BigDecimal.ZERO;
+-      } else {
+-        percentManufacture = DivisionHelper.divideWithZero(
+-            manufactureInitialChargeVal, totalInitialChargeVal);
+-        percentImport = DivisionHelper.divideWithZero(
+-            importInitialChargeVal, totalInitialChargeVal);
+-      }
+-    } else {
+-      percentManufacture = DivisionHelper.divideWithZero(manufactureSalesKg, totalNonRecycleKg);
+-      percentImport = DivisionHelper.divideWithZero(importSalesKg, totalNonRecycleKg);
+-    }
++    // Get stream enabled status
++    boolean manufactureEnabled = streamKeeper.hasStreamBeenEnabled(scopeEffective, "manufacture");
++    boolean importEnabled = streamKeeper.hasStreamBeenEnabled(scopeEffective, "import");
++
++    // Build distribution using the new builder
++    SalesStreamDistribution distribution = SalesStreamDistributionBuilder.buildDistribution(
++        manufactureSalesConverted,
++        importSalesConverted,
++        manufactureEnabled,
++        importEnabled
++    );
++
++    BigDecimal percentManufacture = distribution.getPercentManufacture();
++    BigDecimal percentImport = distribution.getPercentImport();
+ 
+     // Recycle
+     EngineNumber newRecycleValue = new EngineNumber(recycledDisplacedKg, "kg");
+diff --git a/engine/src/main/java/org/kigalisim/engine/recalc/SalesStreamDistribution.java b/engine/src/main/java/org/kigalisim/engine/recalc/SalesStreamDistribution.java
+new file mode 100644
+index 00000000..3c65c08c
+--- /dev/null
++++ b/engine/src/main/java/org/kigalisim/engine/recalc/SalesStreamDistribution.java
+@@ -0,0 +1,55 @@
++/**
++ * Represents the percentage distribution between manufacture and import streams for sales.
++ *
++ * <p>This class encapsulates the percentage split logic for distributing sales
++ * between domestic manufacture and import streams based on which streams have
++ * been enabled and their current values.</p>
++ *
++ * @license BSD-3-Clause
++ */
++
++package org.kigalisim.engine.recalc;
++
++import java.math.BigDecimal;
++
++/**
++ * Represents the percentage distribution between manufacture and import streams for sales.
++ *
++ * <p>This class encapsulates the percentage split logic for distributing sales
++ * between domestic manufacture and import streams based on which streams have
++ * been enabled and their current values.</p>
++ */
++public class SalesStreamDistribution {
++
++  private final BigDecimal percentManufacture;
++  private final BigDecimal percentImport;
++
++  /**
++   * Create a new sales stream distribution.
++   *
++   * @param percentManufacture The percentage of sales attributed to manufacture (0.0 to 1.0)
++   * @param percentImport The percentage of sales attributed to import (0.0 to 1.0)
++   */
++  public SalesStreamDistribution(BigDecimal percentManufacture, BigDecimal percentImport) {
++    this.percentManufacture = percentManufacture;
++    this.percentImport = percentImport;
++  }
++
++  /**
++   * Get the percentage of sales attributed to manufacture.
++   *
++   * @return The manufacture percentage (0.0 to 1.0)
++   */
++  public BigDecimal getPercentManufacture() {
++    return percentManufacture;
++  }
++
++  /**
++   * Get the percentage of sales attributed to import.
++   *
++   * @return The import percentage (0.0 to 1.0)
++   */
++  public BigDecimal getPercentImport() {
++    return percentImport;
++  }
++}
+\ No newline at end of file
+diff --git a/engine/src/main/java/org/kigalisim/engine/recalc/SalesStreamDistributionBuilder.java b/engine/src/main/java/org/kigalisim/engine/recalc/SalesStreamDistributionBuilder.java
+new file mode 100644
+index 00000000..445f526f
+--- /dev/null
++++ b/engine/src/main/java/org/kigalisim/engine/recalc/SalesStreamDistributionBuilder.java
+@@ -0,0 +1,73 @@
++/**
++ * Builder for creating sales stream distribution percentages.
++ *
++ * <p>This class implements the logic for determining the appropriate percentage
++ * split between import and domestic manufacture based on which streams have been
++ * explicitly enabled and their current values.</p>
++ *
++ * @license BSD-3-Clause
++ */
++
++package org.kigalisim.engine.recalc;
++
++import java.math.BigDecimal;
++import java.math.MathContext;
++import org.kigalisim.engine.number.EngineNumber;
++
++/**
++ * Builder for creating sales stream distribution percentages.
++ *
++ * <p>This class implements the logic for determining the appropriate percentage
++ * split between import and domestic manufacture based on which streams have been
++ * explicitly enabled and their current values.</p>
++ */
++public class SalesStreamDistributionBuilder {
++
++  /**
++   * Build a sales stream distribution based on current values and enabled status.
++   *
++   * <p>Distribution logic:
++   * <ul>
++   * <li>100% to import if only import was ever explicitly set to non-zero</li>
++   * <li>100% to manufacture if only manufacture was ever explicitly set to non-zero</li>
++   * <li>Current proportional split if both were enabled</li>
++   * <li>50/50 split if neither was ever explicitly enabled (fallback)</li>
++   * </ul>
++   *
++   * @param manufactureSales Current manufacture sales value
++   * @param importSales Current import sales value
++   * @param manufactureEnabled true if manufacture stream has ever been enabled
++   * @param importEnabled true if import stream has ever been enabled
++   * @return A SalesStreamDistribution with appropriate percentages
++   */
++  public static SalesStreamDistribution buildDistribution(
++      EngineNumber manufactureSales,
++      EngineNumber importSales,
++      boolean manufactureEnabled,
++      boolean importEnabled
++  ) {
++    BigDecimal manufactureSalesKg = manufactureSales.getValue();
++    BigDecimal importSalesKg = importSales.getValue();
++    BigDecimal totalSalesKg = manufactureSalesKg.add(importSalesKg);
++
++    // If both streams have current sales, use proportional split
++    if (totalSalesKg.compareTo(BigDecimal.ZERO) > 0) {
++      BigDecimal percentManufacture = manufactureSalesKg.divide(totalSalesKg, MathContext.DECIMAL128);
++      BigDecimal percentImport = importSalesKg.divide(totalSalesKg, MathContext.DECIMAL128);
++      return new SalesStreamDistribution(percentManufacture, percentImport);
++    }
++
++    // When both are zero, use enabled status to determine allocation
++    if (manufactureEnabled && !importEnabled) {
++      return new SalesStreamDistribution(BigDecimal.ONE, BigDecimal.ZERO);
++    } else if (importEnabled && !manufactureEnabled) {
++      return new SalesStreamDistribution(BigDecimal.ZERO, BigDecimal.ONE);
++    } else {
++      // Both enabled or both disabled - use 50/50 split
++      return new SalesStreamDistribution(
++          new BigDecimal("0.5"),
++          new BigDecimal("0.5")
++      );
++    }
++  }
++}
+\ No newline at end of file
+diff --git a/engine/src/main/java/org/kigalisim/engine/state/StreamKeeper.java b/engine/src/main/java/org/kigalisim/engine/state/StreamKeeper.java
+index 4e78aa04..85cbbc79 100644
+--- a/engine/src/main/java/org/kigalisim/engine/state/StreamKeeper.java
++++ b/engine/src/main/java/org/kigalisim/engine/state/StreamKeeper.java
+@@ -16,6 +16,8 @@
+ import java.util.stream.Collectors;
+ import org.kigalisim.engine.number.EngineNumber;
+ import org.kigalisim.engine.number.UnitConverter;
++import org.kigalisim.engine.recalc.SalesStreamDistribution;
++import org.kigalisim.engine.recalc.SalesStreamDistributionBuilder;
+ 
+ /**
+  * Class responsible for managing / tracking substance streams.
+@@ -71,47 +73,6 @@ public boolean hasSubstance(UseKey useKey) {
+     return substances.containsKey(key);
+   }
+ 
+-
+-  /**
+-   * Ensure a substance exists for a scope, creating it if needed.
+-   *
+-   * @param scope The scope containing application and substance
+-   */
+-  public void ensureSubstance(Scope scope) {
+-    if (hasSubstance(scope)) {
+-      return;
+-    }
+-
+-    String key = getKey(scope);
+-    substances.put(key, new StreamParameterization());
+-
+-    // Sales: manufacture, import, recycle
+-    String manufactureKey = getKey(scope, "manufacture");
+-    streams.put(manufactureKey, new EngineNumber(BigDecimal.ZERO, "kg"));
+-    String importKey = getKey(scope, "import");
+-    streams.put(importKey, new EngineNumber(BigDecimal.ZERO, "kg"));
+-    String recycleKey = getKey(scope, "recycle");
+-    streams.put(recycleKey, new EngineNumber(BigDecimal.ZERO, "kg"));
+-
+-    // Consumption: count, conversion
+-    String consumptionKey = getKey(scope, "consumption");
+-    streams.put(consumptionKey, new EngineNumber(BigDecimal.ZERO, "tCO2e"));
+-
+-    // Population
+-    String equipmentKey = getKey(scope, "equipment");
+-    streams.put(equipmentKey, new EngineNumber(BigDecimal.ZERO, "units"));
+-    String priorEquipmentKey = getKey(scope, "priorEquipment");
+-    streams.put(priorEquipmentKey, new EngineNumber(BigDecimal.ZERO, "units"));
+-    String newEquipmentKey = getKey(scope, "newEquipment");
+-    streams.put(newEquipmentKey, new EngineNumber(BigDecimal.ZERO, "units"));
+-
+-    // Emissions
+-    String rechargeEmissionsKey = getKey(scope, "rechargeEmissions");
+-    streams.put(rechargeEmissionsKey, new EngineNumber(BigDecimal.ZERO, "tCO2e"));
+-    String eolEmissionsKey = getKey(scope, "eolEmissions");
+-    streams.put(eolEmissionsKey, new EngineNumber(BigDecimal.ZERO, "tCO2e"));
+-  }
+-
+   /**
+    * Ensure a substance exists for a key, creating it if needed.
+    *
+@@ -152,32 +113,6 @@ public void ensureSubstance(UseKey useKey) {
+     streams.put(eolEmissionsKey, new EngineNumber(BigDecimal.ZERO, "tCO2e"));
+   }
+ 
+-
+-  /**
+-   * Set the value for a specific stream.
+-   *
+-   * @param scope The scope containing application and substance
+-   * @param name The stream name
+-   * @param value The value to set
+-   */
+-  public void setStream(Scope scope, String name, EngineNumber value) {
+-    ensureSubstancePresent(scope, "setStream");
+-    ensureStreamKnown(name);
+-
+-    if (CHECK_NAN_STATE && value.getValue().toString().equals("NaN")) {
+-      String pieces = String.join(" > ", scope.getApplication(), scope.getSubstance(), name);
+-      throw new RuntimeException("Encountered NaN to be set for: " + pieces);
+-    }
+-
+-    if (getIsSettingVolumeByUnits(name, value)) {
+-      setStreamForSalesWithUnits(scope, name, value);
+-    } else if ("sales".equals(name)) {
+-      setStreamForSales(scope, name, value);
+-    } else {
+-      setSimpleStream(scope, name, value);
+-    }
+-  }
+-
+   /**
+    * Set the value for a specific stream using key.
+    *
+@@ -210,39 +145,6 @@ public void setStream(UseKey useKey, String name, EngineNumber value) {
+     }
+   }
+ 
+-
+-  /**
+-   * Get the value of a specific stream.
+-   *
+-   * @param scope The scope containing application and substance
+-   * @param name The stream name
+-   * @return The stream value
+-   */
+-  public EngineNumber getStream(Scope scope, String name) {
+-    ensureSubstancePresent(scope, "getStream");
+-    ensureStreamKnown(name);
+-
+-    if ("sales".equals(name)) {
+-      EngineNumber manufactureAmountRaw = getStream(scope, "manufacture");
+-      EngineNumber importAmountRaw = getStream(scope, "import");
+-      EngineNumber recycleAmountRaw = getStream(scope, "recycle");
+-
+-      EngineNumber manufactureAmount = unitConverter.convert(manufactureAmountRaw, "kg");
+-      EngineNumber importAmount = unitConverter.convert(importAmountRaw, "kg");
+-      EngineNumber recycleAmount = unitConverter.convert(recycleAmountRaw, "kg");
+-
+-      BigDecimal manufactureAmountValue = manufactureAmount.getValue();
+-      BigDecimal importAmountValue = importAmount.getValue();
+-      BigDecimal recycleAmountValue = recycleAmount.getValue();
+-
+-      BigDecimal newTotal = manufactureAmountValue.add(importAmountValue).add(recycleAmountValue);
+-
+-      return new EngineNumber(newTotal, "kg");
+-    } else {
+-      return streams.get(getKey(scope, name));
+-    }
+-  }
+-
+   /**
+    * Get the value of a specific stream using key.
+    *
+@@ -276,18 +178,6 @@ public EngineNumber getStream(UseKey useKey, String name) {
+     }
+   }
+ 
+-
+-  /**
+-   * Check if a stream exists for a scope.
+-   *
+-   * @param scope The scope containing application and substance
+-   * @param name The stream name
+-   * @return true if the stream exists
+-   */
+-  public boolean isKnownStream(Scope scope, String name) {
+-    return streams.containsKey(getKey(scope, name));
+-  }
+-
+   /**
+    * Check if a stream exists for a key.
+    *
+@@ -318,17 +208,6 @@ public void incrementYear() {
+     }
+   }
+ 
+-  /**
+-   * Set the greenhouse gas intensity for a scope.
+-   *
+-   * @param scope The scope containing application and substance
+-   * @param newValue The new GHG intensity value
+-   */
+-  public void setGhgIntensity(Scope scope, EngineNumber newValue) {
+-    StreamParameterization parameterization = getParameterization(scope);
+-    parameterization.setGhgIntensity(newValue);
+-  }
+-
+   /**
+    * Set the greenhouse gas intensity for a key.
+    *
+@@ -341,16 +220,6 @@ public void setGhgIntensity(UseKey useKey, EngineNumber newValue) {
+   }
+ 
+ 
+-  /**
+-   * Set the energy intensity for a scope.
+-   *
+-   * @param scope The scope containing application and substance
+-   * @param newValue The new energy intensity value
+-   */
+-  public void setEnergyIntensity(Scope scope, EngineNumber newValue) {
+-    StreamParameterization parameterization = getParameterization(scope);
+-    parameterization.setEnergyIntensity(newValue);
+-  }
+ 
+   /**
+    * Set the energy intensity for a key.
+@@ -364,16 +233,6 @@ public void setEnergyIntensity(UseKey useKey, EngineNumber newValue) {
+   }
+ 
+ 
+-  /**
+-   * Get the greenhouse gas intensity for a scope.
+-   *
+-   * @param scope The scope containing application and substance
+-   * @return The current GHG intensity value
+-   */
+-  public EngineNumber getGhgIntensity(Scope scope) {
+-    StreamParameterization parameterization = getParameterization(scope);
+-    return parameterization.getGhgIntensity();
+-  }
+ 
+   /**
+    * Get the greenhouse gas intensity for a key.
+@@ -388,16 +247,6 @@ public EngineNumber getGhgIntensity(UseKey useKey) {
+     return parameterization.getGhgIntensity();
+   }
+ 
+-  /**
+-   * Get the energy intensity for a scope.
+-   *
+-   * @param scope The scope containing application and substance
+-   * @return The current energy intensity value
+-   */
+-  public EngineNumber getEnergyIntensity(Scope scope) {
+-    StreamParameterization parameterization = getParameterization(scope);
+-    return parameterization.getEnergyIntensity();
+-  }
+ 
+   /**
+    * Get the energy intensity for a key.
+@@ -412,19 +261,6 @@ public EngineNumber getEnergyIntensity(UseKey useKey) {
+     return parameterization.getEnergyIntensity();
+   }
+ 
+-
+-  /**
+-   * Set the initial charge for a scope's stream.
+-   *
+-   * @param scope The scope containing application and substance
+-   * @param substream The stream identifier ('manufacture' or 'import')
+-   * @param newValue The new initial charge value
+-   */
+-  public void setInitialCharge(Scope scope, String substream, EngineNumber newValue) {
+-    StreamParameterization parameterization = getParameterization(scope);
+-    parameterization.setInitialCharge(substream, newValue);
+-  }
+-
+   /**
+    * Set the initial charge for a key's stream.
+    *
+@@ -438,17 +274,6 @@ public void setInitialCharge(UseKey useKey, String substream, EngineNumber newVa
+   }
+ 
+ 
+-  /**
+-   * Get the initial charge for a scope's stream.
+-   *
+-   * @param scope The scope containing application and substance
+-   * @param substream The stream identifier ('manufacture' or 'import')
+-   * @return The current initial charge value
+-   */
+-  public EngineNumber getInitialCharge(Scope scope, String substream) {
+-    StreamParameterization parameterization = getParameterization(scope);
+-    return parameterization.getInitialCharge(substream);
+-  }
+ 
+   /**
+    * Get the initial charge for a key.
+@@ -463,16 +288,6 @@ public EngineNumber getInitialCharge(UseKey useKey, String substream) {
+     return parameterization.getInitialCharge(substream);
+   }
+ 
+-  /**
+-   * Set the recharge population percentage for a scope.
+-   *
+-   * @param scope The scope containing application and substance
+-   * @param newValue The new recharge population value
+-   */
+-  public void setRechargePopulation(Scope scope, EngineNumber newValue) {
+-    StreamParameterization parameterization = getParameterization(scope);
+-    parameterization.setRechargePopulation(newValue);
+-  }
+ 
+   /**
+    * Set the recharge population percentage for a key.
+@@ -485,16 +300,6 @@ public void setRechargePopulation(UseKey useKey, EngineNumber newValue) {
+     parameterization.setRechargePopulation(newValue);
+   }
+ 
+-  /**
+-   * Get the recharge population percentage for a scope.
+-   *
+-   * @param scope The scope containing application and substance
+-   * @return The current recharge population value
+-   */
+-  public EngineNumber getRechargePopulation(Scope scope) {
+-    StreamParameterization parameterization = getParameterization(scope);
+-    return parameterization.getRechargePopulation();
+-  }
+ 
+   /**
+    * Get the recharge population percentage for a key.
+@@ -507,16 +312,6 @@ public EngineNumber getRechargePopulation(UseKey useKey) {
+     return parameterization.getRechargePopulation();
+   }
+ 
+-  /**
+-   * Set the recharge intensity for a scope.
+-   *
+-   * @param scope The scope containing application and substance
+-   * @param newValue The new recharge intensity value
+-   */
+-  public void setRechargeIntensity(Scope scope, EngineNumber newValue) {
+-    StreamParameterization parameterization = getParameterization(scope);
+-    parameterization.setRechargeIntensity(newValue);
+-  }
+ 
+   /**
+    * Set the recharge intensity for a key.
+@@ -529,16 +324,6 @@ public void setRechargeIntensity(UseKey useKey, EngineNumber newValue) {
+     parameterization.setRechargeIntensity(newValue);
+   }
+ 
+-  /**
+-   * Get the recharge intensity for a scope.
+-   *
+-   * @param scope The scope containing application and substance
+-   * @return The current recharge intensity value
+-   */
+-  public EngineNumber getRechargeIntensity(Scope scope) {
+-    StreamParameterization parameterization = getParameterization(scope);
+-    return parameterization.getRechargeIntensity();
+-  }
+ 
+   /**
+    * Get the recharge intensity for a key.
+@@ -551,16 +336,6 @@ public EngineNumber getRechargeIntensity(UseKey useKey) {
+     return parameterization.getRechargeIntensity();
+   }
+ 
+-  /**
+-   * Set the recovery rate percentage for a scope.
+-   *
+-   * @param scope The scope containing application and substance
+-   * @param newValue The new recovery rate value
+-   */
+-  public void setRecoveryRate(Scope scope, EngineNumber newValue) {
+-    StreamParameterization parameterization = getParameterization(scope);
+-    parameterization.setRecoveryRate(newValue);
+-  }
+ 
+   /**
+    * Set the recovery rate percentage for a key.
+@@ -573,16 +348,6 @@ public void setRecoveryRate(UseKey useKey, EngineNumber newValue) {
+     parameterization.setRecoveryRate(newValue);
+   }
+ 
+-  /**
+-   * Get the recovery rate percentage for a scope.
+-   *
+-   * @param scope The scope containing application and substance
+-   * @return The current recovery rate value
+-   */
+-  public EngineNumber getRecoveryRate(Scope scope) {
+-    StreamParameterization parameterization = getParameterization(scope);
+-    return parameterization.getRecoveryRate();
+-  }
+ 
+   /**
+    * Get the recovery rate percentage for a key.
+@@ -617,16 +382,6 @@ public EngineNumber getDisplacementRate(UseKey key) {
+     return parameterization.getDisplacementRate();
+   }
+ 
+-  /**
+-   * Set the yield rate percentage for recycling in a scope.
+-   *
+-   * @param scope The scope containing application and substance
+-   * @param newValue The new yield rate value
+-   */
+-  public void setYieldRate(Scope scope, EngineNumber newValue) {
+-    StreamParameterization parameterization = getParameterization(scope);
+-    parameterization.setYieldRate(newValue);
+-  }
+ 
+   /**
+    * Set the yield rate percentage for recycling for a key.
+@@ -639,16 +394,6 @@ public void setYieldRate(UseKey useKey, EngineNumber newValue) {
+     parameterization.setYieldRate(newValue);
+   }
+ 
+-  /**
+-   * Get the yield rate percentage for recycling in a scope.
+-   *
+-   * @param scope The scope containing application and substance
+-   * @return The current yield rate value
+-   */
+-  public EngineNumber getYieldRate(Scope scope) {
+-    StreamParameterization parameterization = getParameterization(scope);
+-    return parameterization.getYieldRate();
+-  }
+ 
+   /**
+    * Get the yield rate percentage for recycling for a key.
+@@ -661,16 +406,6 @@ public EngineNumber getYieldRate(UseKey useKey) {
+     return parameterization.getYieldRate();
+   }
+ 
+-  /**
+-   * Set the retirement rate percentage for a scope.
+-   *
+-   * @param scope The scope containing application and substance
+-   * @param newValue The new retirement rate value
+-   */
+-  public void setRetirementRate(Scope scope, EngineNumber newValue) {
+-    StreamParameterization parameterization = getParameterization(scope);
+-    parameterization.setRetirementRate(newValue);
+-  }
+ 
+   /**
+    * Set the retirement rate percentage for a key.
+@@ -683,16 +418,6 @@ public void setRetirementRate(UseKey useKey, EngineNumber newValue) {
+     parameterization.setRetirementRate(newValue);
+   }
+ 
+-  /**
+-   * Get the retirement rate percentage for a scope.
+-   *
+-   * @param scope The scope containing application and substance
+-   * @return The current retirement rate value
+-   */
+-  public EngineNumber getRetirementRate(Scope scope) {
+-    StreamParameterization parameterization = getParameterization(scope);
+-    return parameterization.getRetirementRate();
+-  }
+ 
+   /**
+    * Get the retirement rate percentage for a key.
+@@ -705,16 +430,6 @@ public EngineNumber getRetirementRate(UseKey useKey) {
+     return parameterization.getRetirementRate();
+   }
+ 
+-  /**
+-   * Set the last specified units for a scope.
+-   *
+-   * @param scope The scope containing application and substance
+-   * @param units The units string last used to specify a stream
+-   */
+-  public void setLastSpecifiedUnits(Scope scope, String units) {
+-    StreamParameterization parameterization = getParameterization(scope);
+-    parameterization.setLastSpecifiedUnits(units);
+-  }
+ 
+   /**
+    * Set the last specified units for a key.
+@@ -729,58 +444,57 @@ public void setLastSpecifiedUnits(UseKey useKey, String units) {
+     parameterization.setLastSpecifiedUnits(units);
+   }
+ 
++
+   /**
+-   * Get the last specified units for a scope.
++   * Get the last specified units for a key.
+    *
+-   * @param scope The scope containing application and substance
++   * @param useKey The key containing application and substance
+    * @return The units string last used to specify a stream
+    */
+-  public String getLastSpecifiedUnits(Scope scope) {
+-    StreamParameterization parameterization = getParameterization(scope);
++  public String getLastSpecifiedUnits(UseKey useKey) {
++    StreamParameterization parameterization = getParameterization(useKey);
+     return parameterization.getLastSpecifiedUnits();
+   }
+ 
+   /**
+-   * Get the last specified units for a key.
++   * Check if a stream has ever been enabled (set to non-zero value).
+    *
+    * @param useKey The key containing application and substance
+-   * @return The units string last used to specify a stream
++   * @param streamName The name of the stream to check
++   * @return true if the stream has been enabled, false otherwise
+    */
+-  public String getLastSpecifiedUnits(UseKey useKey) {
++  public boolean hasStreamBeenEnabled(UseKey useKey, String streamName) {
+     StreamParameterization parameterization = getParameterization(useKey);
+-    return parameterization.getLastSpecifiedUnits();
++    return parameterization.hasStreamBeenEnabled(streamName);
+   }
+ 
+   /**
+-   * Retrieve parameterization for a specific key.
++   * Mark a stream as having been enabled (set to non-zero value).
+    *
+-   * <p>Verifies the existence of the substance and application combination
+-   * and returns the associated StreamParameterization object.</p>
+-   *
+-   * @param scope The key containing application and substance
+-   * @return The parameterization for the given key
++   * @param useKey The key containing application and substance
++   * @param streamName The name of the stream to mark as enabled
+    */
+-  private StreamParameterization getParameterization(UseKey scope) {
+-    ensureSubstancePresent(scope, "getParameterization");
+-    String key = getKey(scope);
+-    return substances.get(key);
++  public void markStreamAsEnabled(UseKey useKey, String streamName) {
++    StreamParameterization parameterization = getParameterization(useKey);
++    parameterization.markStreamAsEnabled(streamName);
+   }
+ 
+   /**
+-   * Retrieve parameterization for a specific scope.
++   * Retrieve parameterization for a specific key.
+    *
+    * <p>Verifies the existence of the substance and application combination
+    * and returns the associated StreamParameterization object.</p>
+    *
+-   * @param scope The scope containing application and substance
+-   * @return The parameterization for the given scope
++   * @param scope The key containing application and substance
++   * @return The parameterization for the given key
+    */
+-  private StreamParameterization getParameterization(Scope scope) {
++  private StreamParameterization getParameterization(UseKey scope) {
+     ensureSubstancePresent(scope, "getParameterization");
+     String key = getKey(scope);
+     return substances.get(key);
+   }
+ 
++
+   private StreamParameterization getParameterization(String key) {
+     ensureSubstancePresent(key, "getParameterization");
+     return substances.get(key);
+@@ -796,15 +510,6 @@ private String getKey(UseKey useKey) {
+     return useKey.getKey();
+   }
+ 
+-  /**
+-   * Generate a key for a Scope.
+-   *
+-   * @param scope The Scope to generate a key for
+-   * @return The generated key
+-   */
+-  private String getKey(Scope scope) {
+-    return scope.getKey();
+-  }
+ 
+   /**
+    * Generate a stream key for a Scope and stream name.
+@@ -813,14 +518,6 @@ private String getKey(Scope scope) {
+    * @param name The stream name
+    * @return The generated stream key
+    */
+-  private String getKey(Scope scope, String name) {
+-    StringBuilder keyBuilder = new StringBuilder();
+-    keyBuilder.append(getKey(scope));
+-    keyBuilder.append("\t");
+-    keyBuilder.append(name != null ? name : "-");
+-    return keyBuilder.toString();
+-  }
+-
+   private String getKey(UseKey useKey, String name) {
+     StringBuilder keyBuilder = new StringBuilder();
+     keyBuilder.append(getKey(useKey));
+@@ -849,24 +546,6 @@ private void setSimpleStream(UseKey useKey, String name, EngineNumber value) {
+     streams.put(streamKey, valueConverted);
+   }
+ 
+-  private void setSimpleStream(Scope scope, String name, EngineNumber value) {
+-    String unitsNeeded = getUnits(name);
+-    EngineNumber valueConverted = unitConverter.convert(value, unitsNeeded);
+-
+-    if (CHECK_NAN_STATE && valueConverted.getValue().toString().equals("NaN")) {
+-      String pieces = String.join(" > ", scope.getApplication(), scope.getSubstance(), name);
+-      throw new RuntimeException("Encountered NaN after conversion to be set for: " + pieces);
+-    }
+-
+-    if (CHECK_POSITIVE_STREAMS && valueConverted.getValue().compareTo(BigDecimal.ZERO) < 0) {
+-      String pieces = String.join(" > ", scope.getApplication(), scope.getSubstance(), name);
+-      throw new RuntimeException("Encountered negative stream to be set for: " + pieces);
+-    }
+-
+-    String streamKey = getKey(scope, name);
+-    streams.put(streamKey, valueConverted);
+-  }
+-
+   private void setStreamForSales(UseKey useKey, String name, EngineNumber value) {
+     EngineNumber manufactureValueRaw = getStream(useKey, "manufacture");
+     EngineNumber importValueRaw = getStream(useKey, "import");
+@@ -880,17 +559,23 @@ private void setStreamForSales(UseKey useKey, String name, EngineNumber value) {
+     EngineNumber valueConverted = unitConverter.convert(value, "kg");
+     BigDecimal amountKg = valueConverted.getValue();
+ 
+-    BigDecimal totalAmount = manufactureAmount.add(importAmount);
+-    boolean isZero = totalAmount.compareTo(BigDecimal.ZERO) == 0;
+-    BigDecimal manufacturePercent;
+-    if (isZero) {
+-      manufacturePercent = new BigDecimal("0.5");
+-    } else {
+-      manufacturePercent = manufactureAmount.divide(totalAmount);
+-    }
++    // Get stream enabled status
++    boolean manufactureEnabled = hasStreamBeenEnabled(useKey, "manufacture");
++    boolean importEnabled = hasStreamBeenEnabled(useKey, "import");
++
++    // Build distribution using the new builder
++    SalesStreamDistribution distribution = SalesStreamDistributionBuilder.buildDistribution(
++        manufactureValue,
++        importValue,
++        manufactureEnabled,
++        importEnabled
++    );
++
++    BigDecimal manufacturePercent = distribution.getPercentManufacture();
++    BigDecimal importPercent = distribution.getPercentImport();
+ 
+     BigDecimal newManufactureAmount = amountKg.multiply(manufacturePercent);
+-    BigDecimal newImportAmount = amountKg.subtract(newManufactureAmount);
++    BigDecimal newImportAmount = amountKg.multiply(importPercent);
+ 
+     EngineNumber manufactureAmountToSet = new EngineNumber(newManufactureAmount, "kg");
+     EngineNumber importAmountToSet = new EngineNumber(newImportAmount, "kg");
+@@ -899,43 +584,6 @@ private void setStreamForSales(UseKey useKey, String name, EngineNumber value) {
+     setSimpleStream(useKey, "import", importAmountToSet);
+   }
+ 
+-  private void setStreamForSales(Scope scope, String name, EngineNumber value) {
+-    EngineNumber manufactureValueRaw = getStream(scope, "manufacture");
+-    EngineNumber importValueRaw = getStream(scope, "import");
+-
+-    EngineNumber manufactureValue = unitConverter.convert(manufactureValueRaw, "kg");
+-    EngineNumber importValue = unitConverter.convert(importValueRaw, "kg");
+-
+-    BigDecimal manufactureAmount = manufactureValue.getValue();
+-    BigDecimal importAmount = importValue.getValue();
+-
+-    EngineNumber valueConverted = unitConverter.convert(value, "kg");
+-    BigDecimal amountKg = valueConverted.getValue();
+-
+-    BigDecimal totalAmount = manufactureAmount.add(importAmount);
+-    boolean isZero = totalAmount.compareTo(BigDecimal.ZERO) == 0;
+-    BigDecimal manufacturePercent;
+-    if (isZero) {
+-      manufacturePercent = new BigDecimal("0.5");
+-    } else {
+-      manufacturePercent = manufactureAmount.divide(totalAmount);
+-    }
+-    BigDecimal importPercent;
+-    if (isZero) {
+-      importPercent = new BigDecimal("0.5");
+-    } else {
+-      importPercent = importAmount.divide(totalAmount);
+-    }
+-
+-    BigDecimal manufactureShare = amountKg.multiply(manufacturePercent);
+-    BigDecimal importShare = amountKg.multiply(importPercent);
+-    EngineNumber manufactureNewValue = new EngineNumber(manufactureShare, value.getUnits());
+-    EngineNumber importNewValue = new EngineNumber(importShare, value.getUnits());
+-
+-    setStream(scope, "manufacture", manufactureNewValue);
+-    setStream(scope, "import", importNewValue);
+-  }
+-
+   private void setStreamForSalesWithUnits(UseKey useKey, String name, EngineNumber value) {
+     OverridingConverterStateGetter overridingStateGetter = new OverridingConverterStateGetter(
+         stateGetter
+@@ -958,28 +606,6 @@ private void setStreamForSalesWithUnits(UseKey useKey, String name, EngineNumber
+     streams.put(streamKey, valueConverted);
+   }
+ 
+-  private void setStreamForSalesWithUnits(Scope scope, String name, EngineNumber value) {
+-    OverridingConverterStateGetter overridingStateGetter = new OverridingConverterStateGetter(
+-        stateGetter
+-    );
+-    UnitConverter unitConverter = new UnitConverter(overridingStateGetter);
+-
+-    EngineNumber initialCharge = getInitialCharge(scope, name);
+-    if (initialCharge.getValue().compareTo(BigDecimal.ZERO) == 0) {
+-      throw new RuntimeException("Cannot set " + name + " stream with a zero initial charge.");
+-    }
+-
+-    EngineNumber initialChargeConverted = unitConverter.convert(initialCharge, "kg / unit");
+-    overridingStateGetter.setAmortizedUnitVolume(initialChargeConverted);
+-
+-    EngineNumber valueUnitsPlain = unitConverter.convert(value, "units");
+-    EngineNumber valueConverted = unitConverter.convert(valueUnitsPlain, "kg");
+-
+-    // Set the stream directly to avoid recursion
+-    String streamKey = getKey(scope, name);
+-    streams.put(streamKey, valueConverted);
+-  }
+-
+   /**
+    * Verify that a substance exists for a key.
+    *
+@@ -1003,28 +629,6 @@ private void ensureSubstancePresent(UseKey key, String context) {
+     }
+   }
+ 
+-  /**
+-   * Verify that a substance exists for a scope.
+-   *
+-   * @param scope The scope containing application and substance
+-   * @param context The context for error reporting
+-   * @throws IllegalStateException If the substance does not exist for the scope
+-   */
+-  private void ensureSubstancePresent(Scope scope, String context) {
+-    if (scope == null) {
+-      throw new IllegalStateException("Scope cannot be null in " + context);
+-    }
+-    if (!hasSubstance(scope)) {
+-      StringBuilder message = new StringBuilder();
+-      message.append("Not a known application substance pair in ");
+-      message.append(context);
+-      message.append(": ");
+-      message.append(scope.getApplication());
+-      message.append(", ");
+-      message.append(scope.getSubstance());
+-      throw new IllegalStateException(message.toString());
+-    }
+-  }
+ 
+   private void ensureSubstancePresent(String key, String context) {
+     if (key == null) {
+diff --git a/engine/src/main/java/org/kigalisim/engine/state/StreamParameterization.java b/engine/src/main/java/org/kigalisim/engine/state/StreamParameterization.java
+index 559090c9..32331037 100644
+--- a/engine/src/main/java/org/kigalisim/engine/state/StreamParameterization.java
++++ b/engine/src/main/java/org/kigalisim/engine/state/StreamParameterization.java
+@@ -11,7 +11,9 @@
+ 
+ import java.math.BigDecimal;
+ import java.util.HashMap;
++import java.util.HashSet;
+ import java.util.Map;
++import java.util.Set;
+ import org.kigalisim.engine.number.EngineNumber;
+ 
+ /**
+@@ -32,12 +34,14 @@ public class StreamParameterization {
+   private EngineNumber retirementRate;
+   private EngineNumber displacementRate;
+   private String lastSpecifiedUnits;
++  private final Set<String> enabledStreams;
+ 
+   /**
+    * Create a new stream parameterization instance.
+    */
+   public StreamParameterization() {
+     this.initialCharge = new HashMap<>();
++    this.enabledStreams = new HashSet<>();
+     resetInternals();
+   }
+ 
+@@ -248,6 +252,25 @@ public String getLastSpecifiedUnits() {
+     return lastSpecifiedUnits;
+   }
+ 
++  /**
++   * Mark a stream as having been enabled (set to non-zero value).
++   *
++   * @param streamName The name of the stream to mark as enabled
++   */
++  public void markStreamAsEnabled(String streamName) {
++    enabledStreams.add(streamName);
++  }
++
++  /**
++   * Check if a stream has ever been enabled (set to non-zero value).
++   *
++   * @param streamName The name of the stream to check
++   * @return true if the stream has been enabled, false otherwise
++   */
++  public boolean hasStreamBeenEnabled(String streamName) {
++    return enabledStreams.contains(streamName);
++  }
++
+   /**
+    * Validate that the given stream name is allowed for sales operations.
+    *
+diff --git a/engine/src/main/java/org/kigalisim/lang/time/ParsedDuring.java b/engine/src/main/java/org/kigalisim/lang/time/ParsedDuring.java
+index 13a07cc4..0c334396 100644
+--- a/engine/src/main/java/org/kigalisim/lang/time/ParsedDuring.java
++++ b/engine/src/main/java/org/kigalisim/lang/time/ParsedDuring.java
+@@ -83,7 +83,11 @@ public YearMatcher buildYearMatcher(PushDownMachine machine) {
+     if (start.isPresent()) {
+       TimePointRealized startRealized = start.get().realize(machine);
+       if (startRealized.isDynamicCap()) {
+-        startYear = Optional.of(machine.getEngine().getStartYear());
++        if (startRealized.getDynamicCap().equals("beginning")) {
++          startYear = Optional.of(machine.getEngine().getStartYear());
++        } else {
++          startYear = Optional.of(machine.getEngine().getEndYear());
++        }
+       } else {
+         EngineNumber startValue = startRealized.getPointValue();
+         startYear = Optional.of(startValue.getValue().intValue());
+@@ -94,7 +98,11 @@ public YearMatcher buildYearMatcher(PushDownMachine machine) {
+     if (end.isPresent()) {
+       TimePointRealized endRealized = end.get().realize(machine);
+       if (endRealized.isDynamicCap()) {
+-        endYear = Optional.of(machine.getEngine().getEndYear());
++        if (endRealized.getDynamicCap().equals("beginning")) {
++          endYear = Optional.of(machine.getEngine().getStartYear());
++        } else {
++          endYear = Optional.of(machine.getEngine().getEndYear());
++        }
+       } else {
+         EngineNumber endValue = endRealized.getPointValue();
+         endYear = Optional.of(endValue.getValue().intValue());
+diff --git a/engine/src/test/java/org/kigalisim/engine/SingleThreadEngineTest.java b/engine/src/test/java/org/kigalisim/engine/SingleThreadEngineTest.java
+index 473441f1..ee226133 100644
+--- a/engine/src/test/java/org/kigalisim/engine/SingleThreadEngineTest.java
++++ b/engine/src/test/java/org/kigalisim/engine/SingleThreadEngineTest.java
+@@ -525,16 +525,16 @@ public void testFloorDisplacementWithUnits() {
+         "Sub1 should be floored to 120 kg (100 kg + 20 kg recharge)");
+     assertEquals("kg", floorVal.getUnits(), "Sub1 should have kg units");
+ 
+-    // Check sub2 received displacement: original 200 kg + displaced units
++    // Check sub2 received displacement: original 200 kg - displaced units
+     // converted to sub2's charge
+     // Original sub1: 50 kg, after floor: 120 kg, displaced: 70 kg
+     // 70 kg displaced from sub1 = 70 kg / 10 kg/unit = 7 units
+     // 7 units in sub2 = 7 units * 20 kg/unit = 140 kg
+-    // Final sub2: 200 kg + 140 kg = 340 kg
++    // Final sub2: 200 kg - 140 kg = 60 kg
+     engine.setSubstance("sub2");
+     EngineNumber displaceVal = engine.getStream("manufacture");
+-    assertEquals(0, BigDecimal.valueOf(340).compareTo(displaceVal.getValue()),
+-        "Sub2 should receive displaced units: 200 kg + 140 kg = 340 kg");
++    assertEquals(0, BigDecimal.valueOf(60).compareTo(displaceVal.getValue()),
++        "Sub2 should receive displaced units: 200 kg - 140 kg = 60 kg");
+     assertEquals("kg", displaceVal.getUnits(), "Sub2 should have kg units");
+   }
+ 
+diff --git a/engine/src/test/java/org/kigalisim/engine/recalc/SalesStreamDistributionBuilderTest.java b/engine/src/test/java/org/kigalisim/engine/recalc/SalesStreamDistributionBuilderTest.java
+new file mode 100644
+index 00000000..a2e61843
+--- /dev/null
++++ b/engine/src/test/java/org/kigalisim/engine/recalc/SalesStreamDistributionBuilderTest.java
+@@ -0,0 +1,132 @@
++/**
++ * Tests for SalesStreamDistributionBuilder class.
++ *
++ * @license BSD-3-Clause
++ */
++
++package org.kigalisim.engine.recalc;
++
++import static org.junit.jupiter.api.Assertions.assertEquals;
++
++import java.math.BigDecimal;
++import org.junit.jupiter.api.Test;
++import org.kigalisim.engine.number.EngineNumber;
++
++/**
++ * Tests for SalesStreamDistributionBuilder class.
++ */
++public class SalesStreamDistributionBuilderTest {
++
++  @Test
++  public void testProportionalSplitWithNonZeroValues() {
++    // Test proportional split when both streams have non-zero values
++    EngineNumber manufactureSales = new EngineNumber(new BigDecimal("60"), "kg");
++    EngineNumber importSales = new EngineNumber(new BigDecimal("40"), "kg");
++
++    SalesStreamDistribution distribution = SalesStreamDistributionBuilder.buildDistribution(
++        manufactureSales, importSales, true, true);
++
++    assertEquals(new BigDecimal("0.6"), distribution.getPercentManufacture(),
++        "Manufacture percentage should be 0.6 (60/100)");
++    assertEquals(new BigDecimal("0.4"), distribution.getPercentImport(),
++        "Import percentage should be 0.4 (40/100)");
++  }
++
++  @Test
++  public void testOnlyManufactureEnabled() {
++    // Test 100% to manufacture when only manufacture was enabled
++    EngineNumber manufactureSales = new EngineNumber(BigDecimal.ZERO, "kg");
++    EngineNumber importSales = new EngineNumber(BigDecimal.ZERO, "kg");
++
++    SalesStreamDistribution distribution = SalesStreamDistributionBuilder.buildDistribution(
++        manufactureSales, importSales, true, false);
++
++    assertEquals(BigDecimal.ONE, distribution.getPercentManufacture(),
++        "Manufacture percentage should be 1.0 when only manufacture enabled");
++    assertEquals(BigDecimal.ZERO, distribution.getPercentImport(),
++        "Import percentage should be 0.0 when only manufacture enabled");
++  }
++
++  @Test
++  public void testOnlyImportEnabled() {
++    // Test 100% to import when only import was enabled
++    EngineNumber manufactureSales = new EngineNumber(BigDecimal.ZERO, "kg");
++    EngineNumber importSales = new EngineNumber(BigDecimal.ZERO, "kg");
++
++    SalesStreamDistribution distribution = SalesStreamDistributionBuilder.buildDistribution(
++        manufactureSales, importSales, false, true);
++
++    assertEquals(BigDecimal.ZERO, distribution.getPercentManufacture(),
++        "Manufacture percentage should be 0.0 when only import enabled");
++    assertEquals(BigDecimal.ONE, distribution.getPercentImport(),
++        "Import percentage should be 1.0 when only import enabled");
++  }
++
++  @Test
++  public void testBothEnabledWithZeroValues() {
++    // Test 50/50 fallback when both enabled but both have zero values
++    EngineNumber manufactureSales = new EngineNumber(BigDecimal.ZERO, "kg");
++    EngineNumber importSales = new EngineNumber(BigDecimal.ZERO, "kg");
++
++    SalesStreamDistribution distribution = SalesStreamDistributionBuilder.buildDistribution(
++        manufactureSales, importSales, true, true);
++
++    assertEquals(new BigDecimal("0.5"), distribution.getPercentManufacture(),
++        "Manufacture percentage should be 0.5 when both enabled with zero values");
++    assertEquals(new BigDecimal("0.5"), distribution.getPercentImport(),
++        "Import percentage should be 0.5 when both enabled with zero values");
++  }
++
++  @Test
++  public void testNeitherEnabled() {
++    // Test 50/50 fallback when neither was enabled
++    EngineNumber manufactureSales = new EngineNumber(BigDecimal.ZERO, "kg");
++    EngineNumber importSales = new EngineNumber(BigDecimal.ZERO, "kg");
++
++    SalesStreamDistribution distribution = SalesStreamDistributionBuilder.buildDistribution(
++        manufactureSales, importSales, false, false);
++
++    assertEquals(new BigDecimal("0.5"), distribution.getPercentManufacture(),
++        "Manufacture percentage should be 0.5 when neither enabled");
++    assertEquals(new BigDecimal("0.5"), distribution.getPercentImport(),
++        "Import percentage should be 0.5 when neither enabled");
++  }
++
++  @Test
++  public void testProportionalSplitOverridesEnabledStatus() {
++    // Test that proportional split takes precedence when both have non-zero values,
++    // regardless of enabled status
++    EngineNumber manufactureSales = new EngineNumber(new BigDecimal("30"), "kg");
++    EngineNumber importSales = new EngineNumber(new BigDecimal("70"), "kg");
++
++    // Even though only manufacture is enabled, proportional split should be used
++    SalesStreamDistribution distribution = SalesStreamDistributionBuilder.buildDistribution(
++        manufactureSales, importSales, true, false);
++
++    assertEquals(new BigDecimal("0.3"), distribution.getPercentManufacture(),
++        "Manufacture percentage should be 0.3 (30/100)");
++    assertEquals(new BigDecimal("0.7"), distribution.getPercentImport(),
++        "Import percentage should be 0.7 (70/100)");
++  }
++
++  @Test
++  public void testUnequal100SplitPrecision() {
++    // Test proportional split with values that result in repeating decimals
++    EngineNumber manufactureSales = new EngineNumber(new BigDecimal("1"), "kg");
++    EngineNumber importSales = new EngineNumber(new BigDecimal("2"), "kg");
++
++    SalesStreamDistribution distribution = SalesStreamDistributionBuilder.buildDistribution(
++        manufactureSales, importSales, true, true);
++
++    // 1/3 and 2/3 split
++    BigDecimal expectedManufacture = new BigDecimal("1").divide(new BigDecimal("3"), 
++        java.math.MathContext.DECIMAL128);
++    BigDecimal expectedImport = new BigDecimal("2").divide(new BigDecimal("3"), 
++        java.math.MathContext.DECIMAL128);
++
++    assertEquals(expectedManufacture, distribution.getPercentManufacture(),
++        "Manufacture percentage should be 1/3");
++    assertEquals(expectedImport, distribution.getPercentImport(),
++        "Import percentage should be 2/3");
++  }
++}
+\ No newline at end of file
+diff --git a/engine/src/test/java/org/kigalisim/engine/recalc/SalesStreamDistributionTest.java b/engine/src/test/java/org/kigalisim/engine/recalc/SalesStreamDistributionTest.java
+new file mode 100644
+index 00000000..ef27ec58
+--- /dev/null
++++ b/engine/src/test/java/org/kigalisim/engine/recalc/SalesStreamDistributionTest.java
+@@ -0,0 +1,67 @@
++/**
++ * Tests for SalesStreamDistribution class.
++ *
++ * @license BSD-3-Clause
++ */
++
++package org.kigalisim.engine.recalc;
++
++import static org.junit.jupiter.api.Assertions.assertEquals;
++
++import java.math.BigDecimal;
++import org.junit.jupiter.api.Test;
++
++/**
++ * Tests for SalesStreamDistribution class.
++ */
++public class SalesStreamDistributionTest {
++
++  @Test
++  public void testConstructorAndGetters() {
++    // Test basic constructor and getter functionality
++    BigDecimal percentManufacture = new BigDecimal("0.7");
++    BigDecimal percentImport = new BigDecimal("0.3");
++
++    SalesStreamDistribution distribution = new SalesStreamDistribution(percentManufacture, percentImport);
++
++    assertEquals(percentManufacture, distribution.getPercentManufacture(),
++        "Manufacture percentage should match constructor argument");
++    assertEquals(percentImport, distribution.getPercentImport(),
++        "Import percentage should match constructor argument");
++  }
++
++  @Test
++  public void testFiftyFiftySplit() {
++    // Test the common 50/50 fallback case
++    BigDecimal fifty = new BigDecimal("0.5");
++
++    SalesStreamDistribution distribution = new SalesStreamDistribution(fifty, fifty);
++
++    assertEquals(fifty, distribution.getPercentManufacture(),
++        "Manufacture percentage should be 0.5");
++    assertEquals(fifty, distribution.getPercentImport(),
++        "Import percentage should be 0.5");
++  }
++
++  @Test
++  public void testHundredPercentManufacture() {
++    // Test 100% manufacture case
++    SalesStreamDistribution distribution = new SalesStreamDistribution(BigDecimal.ONE, BigDecimal.ZERO);
++
++    assertEquals(BigDecimal.ONE, distribution.getPercentManufacture(),
++        "Manufacture percentage should be 1.0");
++    assertEquals(BigDecimal.ZERO, distribution.getPercentImport(),
++        "Import percentage should be 0.0");
++  }
++
++  @Test
++  public void testHundredPercentImport() {
++    // Test 100% import case
++    SalesStreamDistribution distribution = new SalesStreamDistribution(BigDecimal.ZERO, BigDecimal.ONE);
++
++    assertEquals(BigDecimal.ZERO, distribution.getPercentManufacture(),
++        "Manufacture percentage should be 0.0");
++    assertEquals(BigDecimal.ONE, distribution.getPercentImport(),
++        "Import percentage should be 1.0");
++  }
++}
+\ No newline at end of file
+diff --git a/engine/src/test/java/org/kigalisim/validate/BasicLiveTests.java b/engine/src/test/java/org/kigalisim/validate/BasicLiveTests.java
+index b9d37a96..8f545c54 100644
+--- a/engine/src/test/java/org/kigalisim/validate/BasicLiveTests.java
++++ b/engine/src/test/java/org/kigalisim/validate/BasicLiveTests.java
+@@ -8,6 +8,7 @@
+ 
+ import static org.junit.jupiter.api.Assertions.assertEquals;
+ import static org.junit.jupiter.api.Assertions.assertNotNull;
++import static org.junit.jupiter.api.Assertions.assertTrue;
+ 
+ import java.io.IOException;
+ import java.util.List;
+@@ -348,4 +349,70 @@ public void testBasicKwhUnits() throws IOException {
+     assertEquals("kwh", result.getEnergyConsumption().getUnits(),
+         "Energy consumption units should be kwh");
+   }
++
++  /**
++   * Test basic_kwh_units.qta produces expected values.
++   */
++  @Test
++  public void testSetByImport() throws IOException {
++    // Load and parse the QTA file
++    String qtaPath = "../examples/set_by_import.qta";
++    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
++    assertNotNull(program, "Program should not be null");
++
++    // Run the scenario using KigaliSimFacade
++    String scenarioName = "BAU";
++    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName);
++
++    List<EngineResult> resultsList = results.collect(Collectors.toList());
++    EngineResult result = LiveTestsUtil.getResult(resultsList.stream(), 10, "Test", "SubA");
++    assertNotNull(result, "Should have result for test/test in year 10");
++
++    // Check imports
++    assertTrue(
++        result.getImport().getValue().doubleValue() > 0,
++        "Should have imports"
++    );
++  }
++
++  /**
++   * Test basic_set_manufacture_units.qta - equipment should increase over time.
++   */
++  @Test
++  public void testBasicSetManufactureUnits() throws IOException {
++    // Load and parse the QTA file
++    String qtaPath = "../examples/basic_set_manufacture_units.qta";
++    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
++    assertNotNull(program, "Program should parse successfully");
++
++    // Run the scenario using KigaliSimFacade
++    String scenarioName = "business as usual";
++    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName);
++    List<EngineResult> resultsList = results.collect(Collectors.toList());
++
++    // Get results for year 2025 (start year)
++    EngineResult firstRecord = LiveTestsUtil.getResult(resultsList.stream(), 2025,
++        "Test", "HFC-134a");
++    assertNotNull(firstRecord, "Should have result for Test/HFC-134a in year 2025");
++
++    // Get results for year 2030 (mid-way)
++    EngineResult secondRecord = LiveTestsUtil.getResult(resultsList.stream(), 2030,
++        "Test", "HFC-134a");
++    assertNotNull(secondRecord, "Should have result for Test/HFC-134a in year 2030");
++
++    // Verify units are the same
++    assertEquals(firstRecord.getPopulation().getUnits(), secondRecord.getPopulation().getUnits(),
++        "Equipment units should be consistent");
++
++    // Verify equipment population increases over time
++    double firstPopulation = firstRecord.getPopulation().getValue().doubleValue();
++    double secondPopulation = secondRecord.getPopulation().getValue().doubleValue();
++
++    // Debug output
++    System.out.println("Population in 2025: " + firstPopulation);
++    System.out.println("Population in 2030: " + secondPopulation);
++
++    assertTrue(firstPopulation < secondPopulation,
++        "Equipment population should increase from 2025 to 2030. Was " + firstPopulation + " in 2025 and " + secondPopulation + " in 2030");
++  }
+ }
+diff --git a/engine/src/test/java/org/kigalisim/validate/CapLiveTests.java b/engine/src/test/java/org/kigalisim/validate/CapLiveTests.java
+index ff77c20b..cd5de45c 100644
+--- a/engine/src/test/java/org/kigalisim/validate/CapLiveTests.java
++++ b/engine/src/test/java/org/kigalisim/validate/CapLiveTests.java
+@@ -8,6 +8,7 @@
+ 
+ import static org.junit.jupiter.api.Assertions.assertEquals;
+ import static org.junit.jupiter.api.Assertions.assertNotNull;
++import static org.junit.jupiter.api.Assertions.assertTrue;
+ 
+ import java.io.IOException;
+ import java.util.List;
+@@ -161,4 +162,142 @@ public void testCapDisplaceUnitConversion() throws IOException {
+     assertEquals("kg", recordSubB.getManufacture().getUnits(),
+         "Manufacture units for sub_b should be kg");
+   }
++
++  /**
++   * Test cap_displace_bug_kg.qta produces expected values.
++   * This tests capping sales to 0 kg with displacement.
++   */
++  @Test
++  public void testCapDisplaceBugKg() throws IOException {
++    // Load and parse the QTA file
++    String qtaPath = "../examples/cap_displace_bug_kg.qta";
++    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
++    assertNotNull(program, "Program should not be null");
++
++    // Run the scenario using KigaliSimFacade
++    String scenarioName = "Equipment Import Ban";
++    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName);
++
++    List<EngineResult> resultsList = results.collect(Collectors.toList());
++
++    // Check HFC-134a new equipment is zero in 2030
++    EngineResult recordHfc2030 = LiveTestsUtil.getResult(resultsList.stream(), 2030, 
++        "Commercial Refrigeration", "HFC-134a");
++    assertNotNull(recordHfc2030, "Should have result for Commercial Refrigeration/HFC-134a in year 2030");
++
++    // Should be zero new equipment
++    assertEquals(0.0, recordHfc2030.getPopulationNew().getValue().doubleValue(), 0.0001,
++        "New equipment for HFC-134a should be zero in 2030");
++
++    // Check HFC-134a consumption is zero in 2030
++    double domesticConsumptionHfc = recordHfc2030.getDomesticConsumption().getValue().doubleValue();
++    double importConsumptionHfc = recordHfc2030.getImportConsumption().getValue().doubleValue();
++    double totalConsumptionHfc = domesticConsumptionHfc + importConsumptionHfc;
++    assertEquals(0.0, totalConsumptionHfc, 0.0001,
++        "Total consumption for HFC-134a should be zero in 2030");
++
++    // Check R-404A new equipment is not zero in year 2035
++    EngineResult recordR404A2035 = LiveTestsUtil.getResult(resultsList.stream(), 2035,
++        "Commercial Refrigeration", "R-404A");
++    assertNotNull(recordR404A2035, "Should have result for Commercial Refrigeration/R-404A in year 2035");
++
++    // Should have new equipment due to displacement
++    double newEquipmentR404A = recordR404A2035.getPopulationNew().getValue().doubleValue();
++    assertTrue(newEquipmentR404A > 0,  "R-404A new equipment should be greater than 0 in 2035 due to displacement");
++
++    // Should have consumption
++    double domesticConsumptionR404 = recordR404A2035.getDomesticConsumption().getValue().doubleValue();
++    double importConsumptionR404 = recordR404A2035.getImportConsumption().getValue().doubleValue();
++    double totalConsumptionR404 = domesticConsumptionR404 + importConsumptionR404;
++    assertTrue(
++        totalConsumptionR404 > 0,
++        "Total consumption for R404A should be more than zero in 2030"
++    );
++  }
++
++  /**
++   * Test cap_displace_bug_units.qta produces expected values.
++   * This tests capping equipment to 0 units with displacement.
++   */
++  @Test
++  public void testCapDisplaceBugUnits() throws IOException {
++    // Load and parse the QTA file
++    String qtaPath = "../examples/cap_displace_bug_units.qta";
++    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
++    assertNotNull(program, "Program should not be null");
++
++    // Run the scenario using KigaliSimFacade
++    String scenarioName = "Equipment Import Ban";
++    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName);
++
++    List<EngineResult> resultsList = results.collect(Collectors.toList());
++
++    // Check HFC-134a new equipment is zero in 2030
++    EngineResult recordHfc2030 = LiveTestsUtil.getResult(resultsList.stream(), 2030,
++        "Commercial Refrigeration", "HFC-134a");
++    assertNotNull(recordHfc2030, "Should have result for Commercial Refrigeration/HFC-134a in year 2030");
++
++    // Should be zero new equipment
++    assertEquals(0.0, recordHfc2030.getPopulationNew().getValue().doubleValue(), 0.0001,
++        "New equipment for HFC-134a should be zero in 2030");
++
++
++    // Check R-404A new equipment is not zero in year 2035
++    EngineResult recordR404A2035 = LiveTestsUtil.getResult(resultsList.stream(), 2035,
++        "Commercial Refrigeration", "R-404A");
++    assertNotNull(recordR404A2035, "Should have result for Commercial Refrigeration/R-404A in year 2035");
++    
++    // Should have new equipment due to displacement
++    double newEquipmentR404A = recordR404A2035.getPopulationNew().getValue().doubleValue();
++    assertTrue(
++        newEquipmentR404A > 0,
++        "R-404A new equipment should be greater than 0 in 2035 due to displacement"
++    );
++  }
++
++  /**
++   * Test cap_displace_with_recharge_units.qta produces expected values.
++   * This tests capping equipment to 0 units with displacement, but with recharge.
++   */
++  @Test
++  public void testCapDisplaceWithRechargeUnits() throws IOException {
++    // Load and parse the QTA file
++    String qtaPath = "../examples/cap_displace_with_recharge_units.qta";
++    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
++    assertNotNull(program, "Program should not be null");
++
++    // Run the scenario using KigaliSimFacade
++    String scenarioName = "Equipment Import Ban";
++    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName);
++
++    List<EngineResult> resultsList = results.collect(Collectors.toList());
++
++    // Check HFC-134a new equipment is zero in 2030
++    EngineResult recordHfc2030 = LiveTestsUtil.getResult(resultsList.stream(), 2030,
++        "Commercial Refrigeration", "HFC-134a");
++    assertNotNull(recordHfc2030, "Should have result for Commercial Refrigeration/HFC-134a in year 2030");
++
++    // Should be zero new equipment
++    assertEquals(0.0, recordHfc2030.getPopulationNew().getValue().doubleValue(), 0.0001,
++        "New equipment for HFC-134a should be zero in 2030");
++
++    // Check HFC-134a consumption is NOT zero in 2030 due to recharge
++    double domesticConsumptionHfc = recordHfc2030.getDomesticConsumption().getValue().doubleValue();
++    double importConsumptionHfc = recordHfc2030.getImportConsumption().getValue().doubleValue();
++    double totalConsumptionHfc = domesticConsumptionHfc + importConsumptionHfc;
++    assertTrue(totalConsumptionHfc > 0,
++        "Total consumption for HFC-134a should be greater than zero in 2030 due to recharge");
++
++    // Check R-404A new equipment is not zero in year 2035
++    EngineResult recordR404A2035 = LiveTestsUtil.getResult(resultsList.stream(), 2035,
++        "Commercial Refrigeration", "R-404A");
++    assertNotNull(recordR404A2035, "Should have result for Commercial Refrigeration/R-404A in year 2035");
++    
++    // Should have new equipment due to displacement
++    double newEquipmentR404A = recordR404A2035.getPopulationNew().getValue().doubleValue();
++    assertTrue(
++        newEquipmentR404A > 0,
++        "R-404A new equipment should be greater than 0 in 2035 due to displacement"
++    );
++  }
+ }
+diff --git a/engine/src/test/java/org/kigalisim/validate/FloorLiveTests.java b/engine/src/test/java/org/kigalisim/validate/FloorLiveTests.java
+index 14f1d082..b4eb878f 100644
+--- a/engine/src/test/java/org/kigalisim/validate/FloorLiveTests.java
++++ b/engine/src/test/java/org/kigalisim/validate/FloorLiveTests.java
+@@ -114,8 +114,8 @@ public void testFloorDisplaceUnits() throws IOException {
+     assertNotNull(resultB, "Should have result for test/sub_b in year 1");
+ 
+     // The actual value from the test is 320 kg
+-    assertEquals(320.0, resultB.getManufacture().getValue().doubleValue(), 0.0001,
+-        "Manufacture for sub_b should be 320 kg");
++    assertEquals(0., resultB.getManufacture().getValue().doubleValue(), 0.0001,
++        "Manufacture for sub_b should be zero");
+     assertEquals("kg", resultB.getManufacture().getUnits(),
+         "Manufacture units for sub_b should be kg");
+   }
+diff --git a/examples/basic_set_manufacture_units.qta b/examples/basic_set_manufacture_units.qta
+new file mode 100644
+index 00000000..afbd4744
+--- /dev/null
++++ b/examples/basic_set_manufacture_units.qta
+@@ -0,0 +1,22 @@
++start default
++
++  define application "Test"
++  
++    uses substance "HFC-134a"
++      initial charge with 0.6 kg / unit for sales
++      equals 1430 tCO2e / kg
++      set priorEquipment to 240000 units during year beginning
++      set manufacture to 2667 units
++    end substance
++  
++  end application
++
++end default
++
++
++start simulations
++
++  simulate "business as usual"
++  from years 2025 to 2035
++
++end simulations
+\ No newline at end of file
+diff --git a/examples/cap_displace_bug_kg.qta b/examples/cap_displace_bug_kg.qta
+new file mode 100644
+index 00000000..b4b1f583
+--- /dev/null
++++ b/examples/cap_displace_bug_kg.qta
+@@ -0,0 +1,45 @@
++start default
++
++  define application "Commercial Refrigeration"
++
++    uses substance "HFC-134a"
++      set priorEquipment to 240000 units during year beginning
++      initial charge with 0.60 kg / unit for sales
++      retire 5 % each year
++      set import to 2667 units / year during year beginning
++      change equipment by +8 % each year during years 2026 to 2030
++      change equipment by +5 % each year during years 2031 to 2035
++      equals 1430 tCO2e / kg
++    end substance
++
++    uses substance "R-404A"
++      set priorEquipment to 20000 units during year beginning
++      initial charge with 10.00 kg / unit for sales
++      retire 5 % each year
++      set import to 200 units / year during year beginning
++      change equipment by +8 % each year during years 2026 to 2030
++      change equipment by +5 % each year during years 2031 to 2035
++      equals 3921.6 tCO2e / kg
++    end substance
++
++  end application
++
++end default
++
++
++start policy "Equipment Import Ban"
++
++  modify application "Commercial Refrigeration"
++    modify substance "HFC-134a"
++      cap sales to 0 kg displacing "R-404A" during years 2029 to onwards
++    end substance
++  end application
++
++end policy
++
++
++start simulations
++
++  simulate "Equipment Import Ban" using "Equipment Import Ban" from years 2025 to 2035
++
++end simulations
+diff --git a/examples/cap_displace_bug_units.qta b/examples/cap_displace_bug_units.qta
+new file mode 100644
+index 00000000..e7ba21a8
+--- /dev/null
++++ b/examples/cap_displace_bug_units.qta
+@@ -0,0 +1,45 @@
++start default
++
++  define application "Commercial Refrigeration"
++
++    uses substance "HFC-134a"
++      set priorEquipment to 240000 units during year beginning
++      initial charge with 0.60 kg / unit for sales
++      retire 5 % each year
++      set import to 2667 units / year during year beginning
++      change equipment by +8 % each year during years 2026 to 2030
++      change equipment by +5 % each year during years 2031 to 2035
++      equals 1430 tCO2e / kg
++    end substance
++
++    uses substance "R-404A"
++      set priorEquipment to 20000 units during year beginning
++      initial charge with 10.00 kg / unit for sales
++      retire 5 % each year
++      set import to 200 units / year during year beginning
++      change equipment by +8 % each year during years 2026 to 2030
++      change equipment by +5 % each year during years 2031 to 2035
++      equals 3921.6 tCO2e / kg
++    end substance
++
++  end application
++
++end default
++
++
++start policy "Equipment Import Ban"
++
++  modify application "Commercial Refrigeration"
++    modify substance "HFC-134a"
++      cap import to 0 units displacing "R-404A" during years 2029 to onwards
++    end substance
++  end application
++
++end policy
++
++
++start simulations
++
++  simulate "Equipment Import Ban" using "Equipment Import Ban" from years 2025 to 2035
++
++end simulations
+diff --git a/examples/cap_displace_with_recharge_units.qta b/examples/cap_displace_with_recharge_units.qta
+new file mode 100644
+index 00000000..8e60eaf9
+--- /dev/null
++++ b/examples/cap_displace_with_recharge_units.qta
+@@ -0,0 +1,47 @@
++start default
++
++  define application "Commercial Refrigeration"
++
++    uses substance "HFC-134a"
++      set priorEquipment to 240000 units during year beginning
++      initial charge with 0.60 kg / unit for sales
++      retire 5 % each year
++      recharge 10 % each year with 0.1 kg / unit
++      set import to 2667 units / year during year beginning
++      change equipment by +8 % each year during years 2026 to 2030
++      change equipment by +5 % each year during years 2031 to 2035
++      equals 1430 tCO2e / kg
++    end substance
++
++    uses substance "R-404A"
++      set priorEquipment to 20000 units during year beginning
++      initial charge with 10.00 kg / unit for sales
++      retire 5 % each year
++      recharge 10 % each year with 0.1 kg / unit
++      set import to 200 units / year during year beginning
++      change equipment by +8 % each year during years 2026 to 2030
++      change equipment by +5 % each year during years 2031 to 2035
++      equals 3921.6 tCO2e / kg
++    end substance
++
++  end application
++
++end default
++
++
++start policy "Equipment Import Ban"
++
++  modify application "Commercial Refrigeration"
++    modify substance "HFC-134a"
++      cap import to 0 units displacing "R-404A" during years 2029 to onwards
++    end substance
++  end application
++
++end policy
++
++
++start simulations
++
++  simulate "Equipment Import Ban" using "Equipment Import Ban" from years 2025 to 2035
++
++end simulations
+\ No newline at end of file
+diff --git a/examples/set_by_import.qta b/examples/set_by_import.qta
+new file mode 100644
+index 00000000..78aed4ab
+--- /dev/null
++++ b/examples/set_by_import.qta
+@@ -0,0 +1,21 @@
++start default
++
++  define application "Test"
++  
++    uses substance "SubA"
++      initial charge with 1 kg / unit for sales
++      set import to 1 kg during year 1
++      equals 1 tCO2e / kg
++    end substance
++  
++  end application
++
++end default
++
++
++start simulations
++
++  simulate "BAU"
++  from years 1 to 10
++
++end simulations
+\ No newline at end of file
+diff --git a/js/engine_struct.js b/js/engine_struct.js
+index a10ca3f6..09baf029 100644
+--- a/js/engine_struct.js
++++ b/js/engine_struct.js
+@@ -376,7 +376,9 @@ class AttributeToExporterResult {
+       throw "Could not attribute trade due to units mismatch " + mismatchDescription;
+     }
+ 
+-    const innerNumber = totalImport.getValue() - importInitialCharge.getValue();
++    const importInitialChargeValue = importInitialCharge.getValue();
++    const effectiveInitialCharge = importInitialChargeValue > 0 ? importInitialChargeValue : 0;
++    const innerNumber = totalImport.getValue() - effectiveInitialCharge;
+     return new EngineNumber(innerNumber, totalUnits);
+   }
+ 
+@@ -441,7 +443,9 @@ class AttributeToExporterResult {
+       throw "Could not attribute trade due to units mismatch " + mismatchDescription;
+     }
+ 
+-    const innerNumber = totalImport.getValue() - importInitialCharge.getValue();
++    const importInitialChargeValue = importInitialCharge.getValue();
++    const effectiveInitialCharge = importInitialChargeValue > 0 ? importInitialChargeValue : 0;
++    const innerNumber = totalImport.getValue() - effectiveInitialCharge;
+     return new EngineNumber(innerNumber, totalUnits);
+   }
+ 
+diff --git a/test/test_integration.js b/test/test_integration.js
+index 0463b8cb..35850596 100644
+--- a/test/test_integration.js
++++ b/test/test_integration.js
+@@ -100,6 +100,19 @@ function buildCompilerTests() {
+       },
+     ]);
+ 
++    buildTest("runs a manufacture set by units", "/examples/basic_set_manufacture_units.qta", [
++      (result, assert) => {
++        const firstRecord = getResult(result, BAU_NAME, 2025, 0, "Test", "HFC-134a");
++        const firstEquipment = firstRecord.getPopulation();
++
++        const secondRecord = getResult(result, BAU_NAME, 2035, 0, "Test", "HFC-134a");
++        const secondEquipment = secondRecord.getPopulation();
++
++        assert.deepEqual(firstEquipment.getUnits(), secondEquipment.getUnits());
++        assert.ok(secondEquipment.getValue() > firstEquipment.getValue());
++      },
++    ]);
++
+     buildTest("tests minimal interpreter example", "/examples/minimal_interpreter.qta", [
+       (result, assert) => {
+         const record = getResult(result, BAU_NAME, 1, 0, "testApp", "testSubstance");
+@@ -974,6 +987,93 @@ function buildCompilerTests() {
+         },
+       ],
+     );
++
++    buildTest("tests cap displace bug with kg", "/examples/cap_displace_bug_kg.qta", [
++      (result, assert) => {
++        // Check HFC-134a new equipment is zero in 2030
++        const recordHFC2030 = getResult(result, "Equipment Import Ban", 2030, 0,
++          "Commercial Refrigeration", "HFC-134a");
++        const newEquipmentHFC2030 = recordHFC2030.getPopulationNew();
++
++        // Should be zero new equipment
++        assert.closeTo(newEquipmentHFC2030.getValue(), 0, 0.0001);
++      },
++      (result, assert) => {
++        // Check HFC-134a consumption is zero in 2030
++        const recordHFC2030 = getResult(result, "Equipment Import Ban", 2030, 0,
++          "Commercial Refrigeration", "HFC-134a");
++        const domesticConsumption = recordHFC2030.getDomesticConsumption();
++        const importConsumption = recordHFC2030.getImportConsumption();
++        const totalConsumption = domesticConsumption.getValue() + importConsumption.getValue();
++
++        // Should be zero consumption
++        assert.closeTo(totalConsumption, 0, 0.0001);
++      },
++      (result, assert) => {
++        // Check R-404A new equipment is not zero in year 2035
++        const recordR404A2035 = getResult(result, "Equipment Import Ban", 2035, 0,
++          "Commercial Refrigeration", "R-404A");
++        const newEquipmentR404A2035 = recordR404A2035.getPopulationNew();
++
++        // Should have new equipment due to displacement
++        assert.ok(newEquipmentR404A2035.getValue() > 0);
++      },
++    ]);
++
++    buildTest("tests cap displace bug with units", "/examples/cap_displace_bug_units.qta", [
++      (result, assert) => {
++        // Check HFC-134a new equipment is zero in 2030
++        const recordHFC2030 = getResult(result, "Equipment Import Ban", 2030, 0,
++          "Commercial Refrigeration", "HFC-134a");
++        const newEquipmentHFC2030 = recordHFC2030.getPopulationNew();
++
++        // Should be zero new equipment
++        assert.closeTo(newEquipmentHFC2030.getValue(), 0, 0.0001);
++      },
++      (result, assert) => {
++        // Check R-404A new equipment is not zero in year 2035
++        const recordR404A2035 = getResult(result, "Equipment Import Ban", 2035, 0,
++          "Commercial Refrigeration", "R-404A");
++        const newEquipmentR404A2035 = recordR404A2035.getPopulationNew();
++
++        // Should have new equipment due to displacement
++        assert.ok(newEquipmentR404A2035.getValue() > 0);
++      },
++    ]);
++
++    buildTest("tests cap displace bug with recharge and units",
++      "/examples/cap_displace_with_recharge_units.qta", [
++        (result, assert) => {
++        // Check HFC-134a new equipment is zero in 2030
++          const recordHFC2030 = getResult(result, "Equipment Import Ban", 2030, 0,
++            "Commercial Refrigeration", "HFC-134a");
++          const newEquipmentHFC2030 = recordHFC2030.getPopulationNew();
++
++          // Should be zero new equipment
++          assert.closeTo(newEquipmentHFC2030.getValue(), 0, 0.0001);
++        },
++        (result, assert) => {
++        // Check HFC-134a consumption is NOT zero in 2030 due to recharge
++          const recordHFC2030 = getResult(result, "Equipment Import Ban", 2030, 0,
++            "Commercial Refrigeration", "HFC-134a");
++          const domesticConsumption = recordHFC2030.getDomesticConsumption();
++          const importConsumption = recordHFC2030.getImportConsumption();
++          const totalConsumption = domesticConsumption.getValue() + importConsumption.getValue();
++
++          // Should have consumption due to recharge
++          assert.ok(totalConsumption > 0,
++            "Total consumption for HFC-134a should be greater than zero in 2030 due to recharge");
++        },
++        (result, assert) => {
++        // Check R-404A new equipment is not zero in year 2035
++          const recordR404A2035 = getResult(result, "Equipment Import Ban", 2035, 0,
++            "Commercial Refrigeration", "R-404A");
++          const newEquipmentR404A2035 = recordR404A2035.getPopulationNew();
++
++          // Should have new equipment due to displacement
++          assert.ok(newEquipmentR404A2035.getValue() > 0);
++        },
++      ]);
+     buildTest("runs minimal interpreter example", "/examples/minimal_interpreter.qta", [
+       (result, assert) => {
+         // Check year 1
