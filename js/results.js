@@ -158,15 +158,51 @@ class ResultsPresenter {
   _constrainFilterSet(filterSet) {
     const self = this;
 
-    const isAllSimulations = filterSet.getScenario() === null;
-    const isSimulationDimension = filterSet.getDimension() === "simulations";
+    let constrainedFilterSet = filterSet;
+
+    // Validate that selected values exist in results and reset to "all" if not found
+    if (self._results !== null) {
+      // Check if selected scenario exists
+      const selectedScenario = constrainedFilterSet.getScenario();
+      if (selectedScenario !== null) {
+        const availableScenarios = self._results.getScenarios(
+          constrainedFilterSet.getWithScenario(null));
+        if (!availableScenarios.has(selectedScenario)) {
+          constrainedFilterSet = constrainedFilterSet.getWithScenario(null);
+        }
+      }
+
+      // Check if selected application exists
+      const selectedApplication = constrainedFilterSet.getApplication();
+      if (selectedApplication !== null) {
+        const availableApplications = self._results.getApplications(
+          constrainedFilterSet.getWithApplication(null));
+        if (!availableApplications.has(selectedApplication)) {
+          constrainedFilterSet = constrainedFilterSet.getWithApplication(null);
+        }
+      }
+
+      // Check if selected substance exists
+      const selectedSubstance = constrainedFilterSet.getSubstance();
+      if (selectedSubstance !== null) {
+        const availableSubstances = self._results.getSubstances(
+          constrainedFilterSet.getWithSubstance(null));
+        if (!availableSubstances.has(selectedSubstance)) {
+          constrainedFilterSet = constrainedFilterSet.getWithSubstance(null);
+        }
+      }
+    }
+
+    // Original constraint logic to avoid difficult to interpret charts
+    const isAllSimulations = constrainedFilterSet.getScenario() === null;
+    const isSimulationDimension = constrainedFilterSet.getDimension() === "simulations";
     const needsConstraints = isAllSimulations && !isSimulationDimension;
 
     if (needsConstraints && self._results !== null) {
-      const firstScenario = self._results.getFirstScenario(filterSet);
-      return filterSet.getWithScenario(firstScenario);
+      const firstScenario = self._results.getFirstScenario(constrainedFilterSet);
+      return constrainedFilterSet.getWithScenario(firstScenario);
     } else {
-      return filterSet;
+      return constrainedFilterSet;
     }
   }
 
@@ -325,33 +361,59 @@ class ScorecardPresenter {
   showResults(results, filterSet) {
     const self = this;
     self._filterSet = filterSet;
-    const currentYear = self._filterSet.getYear();
 
-    const emissionsScorecard = self._root.querySelector("#emissions-scorecard");
-    const salesScorecard = self._root.querySelector("#sales-scorecard");
-    const equipmentScorecard = self._root.querySelector("#equipment-scorecard");
+    /**
+     * Execute updates in the UI to show the results without checks for invalid user selections.
+     */
+    const showUnsafe = () => {
+      const currentYear = self._filterSet.getYear();
 
-    const emissionsValue = results.getTotalEmissions(filterSet);
-    const salesValue = results.getSales(filterSet);
-    const equipmentValue = results.getPopulation(filterSet);
+      const emissionsScorecard = self._root.querySelector("#emissions-scorecard");
+      const salesScorecard = self._root.querySelector("#sales-scorecard");
+      const equipmentScorecard = self._root.querySelector("#equipment-scorecard");
 
-    const roundToTenths = (x) => Math.round(x * 10) / 10;
-    const emissionRounded = roundToTenths(emissionsValue.getValue() / 1000000);
-    const salesMt = roundToTenths(salesValue.getValue() / 1000000) + " k";
-    const millionEqipment = roundToTenths(equipmentValue.getValue() / 1000000) + " M";
+      const emissionsValue = results.getTotalEmissions(filterSet);
+      const salesValue = results.getSales(filterSet);
+      const equipmentValue = results.getPopulation(filterSet);
 
-    const metricSelected = filterSet.getMetric();
-    const emissionsSelected = metricSelected === "emissions";
-    const salesSelected = metricSelected === "sales";
-    const equipmentSelected = metricSelected === "population";
+      const roundToTenths = (x) => Math.round(x * 10) / 10;
+      const emissionRounded = roundToTenths(emissionsValue.getValue() / 1000000);
+      const salesMt = roundToTenths(salesValue.getValue() / 1000000) + " k";
+      const millionEqipment = roundToTenths(equipmentValue.getValue() / 1000000) + " M";
 
-    const scenarios = results.getScenarios(self._filterSet.getWithScenario(null));
-    const showVal = ALLOW_SCORE_DISPLAY && self._filterSet.hasSingleScenario(scenarios);
-    const hideVal = !showVal;
+      const metricSelected = filterSet.getMetric();
+      const emissionsSelected = metricSelected === "emissions";
+      const salesSelected = metricSelected === "sales";
+      const equipmentSelected = metricSelected === "population";
 
-    self._updateCard(emissionsScorecard, emissionRounded, currentYear, emissionsSelected, hideVal);
-    self._updateCard(salesScorecard, salesMt, currentYear, salesSelected, hideVal);
-    self._updateCard(equipmentScorecard, millionEqipment, currentYear, equipmentSelected, hideVal);
+      const scenarios = results.getScenarios(self._filterSet.getWithScenario(null));
+      const showVal = ALLOW_SCORE_DISPLAY && self._filterSet.hasSingleScenario(scenarios);
+      const hideVal = !showVal;
+
+      self._updateCard(emissionsScorecard, emissionRounded, currentYear,
+        emissionsSelected, hideVal);
+      self._updateCard(salesScorecard, salesMt, currentYear, salesSelected, hideVal);
+      self._updateCard(equipmentScorecard, millionEqipment, currentYear,
+        equipmentSelected, hideVal);
+    };
+
+    // Execute with a catch for invalid user selections.
+    try {
+      showUnsafe();
+    } catch (error) {
+      // Reset filter set to default when null values cause errors
+      console.warn("Error in ScorecardPresenter.showResults, resetting filter set:", error);
+      self._onUpdateFilterSet(new FilterSet(
+        null,
+        null,
+        null,
+        null,
+        "emissions:all:MtCO2e / yr",
+        "simulations",
+        null,
+        false,
+      ));
+    }
   }
 
   /**
@@ -496,7 +558,7 @@ class DimensionCardPresenter {
     self._updateCard(
       "sim",
       simulationsCard,
-      results.getScenarios(self._filterSet),
+      results.getScenarios(self._filterSet.getWithScenario(null)),
       simulationsSelected,
       self._filterSet.getScenario(),
       (x) => self._filterSet.getWithScenario(x),
@@ -708,6 +770,41 @@ class OptionsPanelPresenter {
     const self = this;
     self._filterSet = filterSet;
     self._attributeImporterCheck.checked = self._filterSet.getAttributeImporter();
+    self._updateSalesSubmetricVisibility();
+  }
+
+  /**
+   * Updates the visibility of sales-submetric options based on importer assignment checkbox.
+   * When unchecked, hides 'import' and 'all' options and resets selection if needed.
+   *
+   * @private
+   */
+  _updateSalesSubmetricVisibility() {
+    const self = this;
+    const salesDropdown = self._root.querySelector(".sales-submetric");
+    const isImporterAttributed = self._attributeImporterCheck.checked;
+
+    if (salesDropdown) {
+      const allOption = salesDropdown.querySelector('option[value="all"]');
+      const importOption = salesDropdown.querySelector('option[value="import"]');
+
+      if (isImporterAttributed) {
+        // Show all options when importer assignment is enabled
+        if (allOption) allOption.style.display = "";
+        if (importOption) importOption.style.display = "";
+      } else {
+        // Hide import and all options when importer assignment is disabled
+        if (allOption) allOption.style.display = "none";
+        if (importOption) importOption.style.display = "none";
+
+        // Reset to domestic if import or all was selected
+        if (salesDropdown.value === "all" || salesDropdown.value === "import") {
+          salesDropdown.value = "manufacture";
+          // Trigger change event to update filter set
+          salesDropdown.dispatchEvent(new Event("change"));
+        }
+      }
+    }
   }
 
   /**
@@ -717,6 +814,10 @@ class OptionsPanelPresenter {
     const self = this;
     self._attributeImporterCheck.addEventListener("change", () => {
       const newValue = self._attributeImporterCheck.checked;
+
+      // Update sales submetric visibility first
+      self._updateSalesSubmetricVisibility();
+
       const newFilterSet = self._filterSet.getWithAttributeImporter(newValue);
       self._onUpdateFilterSet(newFilterSet);
     });
