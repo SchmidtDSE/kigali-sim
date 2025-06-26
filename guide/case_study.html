@@ -141,7 +141,7 @@
       retire 10 % each year  # roughly equivalent to 10 years
       recharge 30% each year with 0.60 kg / unit
       equals 1430 tCO2e / kg
-      set import to 2667 units / year during year beginning
+      set import to (10000 * (200000 / 750000)) units / year during year beginning
     end substance
   
   end application
@@ -155,7 +155,7 @@
       retire 5 % each year
       recharge 20% each year with 1.00 kg / unit
       equals 1430 tCO2e / kg
-      set import to 6667 units / year during year beginning
+      set import to (10000 * (500000 / 750000)) units / year during year beginning
     end substance
   
   end application
@@ -169,7 +169,7 @@
       retire 5 % each year
       recharge 25% each year with 5.00 kg / unit
       equals 1430 tCO2e / kg
-      set import to 667 units / year during year beginning
+      set import to (10000 * (50000 / 750000)) units / year during year beginning
     end substance
   
   end application
@@ -198,7 +198,7 @@ end default</code></pre>
           <tr>
             <td><strong>Commercial refrigeration</strong></td>
             <td>90,000</td>
-            <td>2.00</td>
+            <td>10.00</td>
             <td>10%</td>
             <td>5%</td>
             <td>2.00</td>
@@ -206,7 +206,7 @@ end default</code></pre>
           <tr>
             <td><strong>Transport refrigeration</strong></td>
             <td>20,000</td>
-            <td>10.00</td>
+            <td>2.00</td>
             <td>30%</td>
             <td>10%</td>
             <td>10.00</td>
@@ -341,11 +341,11 @@ end default</code></pre>
           <pre><code class="language-qubectalk">  define application "Domestic AC"
 
     uses substance "HFC-32"
-      set priorEquipment to 24000 units during year beginning
+      set priorEquipment to 20000 units during year beginning
       initial charge with 0.85 kg / unit for sales
       retire 5 % each year  # roughly equivalent to 15 years
       recharge 10% each year with 0.85 kg / unit
-      set import to 800 units / year during year beginning
+      set import to (1000 * (20000 / 25000)) units / year during year beginning
       equals 675.0 tCO2e / kg
     end substance
 
@@ -355,11 +355,11 @@ end default</code></pre>
   define application "Commercial AC"
 
     uses substance "HFC-32"
-      set priorEquipment to 6000 units during year beginning
+      set priorEquipment to 5000 units during year beginning
       initial charge with 4.00 kg / unit for sales
       retire 5 % each year  # roughly equivalent to 15 years
       recharge 10% each year with 4.00 kg / unit
-      set import to 200 units / year during year beginning
+      set import to (1000 * (5000 / 25000)) units / year during year beginning
       equals 675.0 tCO2e / kg
     end substance
 
@@ -789,9 +789,9 @@ end policy</code></pre>
 
         <h3>Enhanced Recovery and Recycling</h3>
         <p>
-          Continuous starting now (2025) and increasing to 2030. Over these 5 years, recycling at
-          recharge would go from 0% to 70% with 14% added each year. By adding code for this, we
-          reduce recharge effectively to 30% of the original value once the policy is in full force.
+          Continuous starting in 2026 and increasing to 2029. Over these 4 years, recycling at
+          recharge would go from 14% to 56% with 14% added each year, then drop to 40% from 2030 onwards.
+          By adding code for this, we reduce recharge effectively to 60% of the original value once the policy is in full force.
           This policy assumes there is no induced demand from the recovered substances displacing sales.
         </p>
 
