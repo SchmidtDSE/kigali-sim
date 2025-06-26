@@ -7,7 +7,7 @@
 import {
   EngineResult,
   AttributeToExporterResult,
-  ImportSupplement,
+  TradeSupplement,
   EngineResultBuilder,
   AggregatedResult,
 } from "engine_struct";
@@ -17,10 +17,12 @@ import {EngineNumber} from "engine_number";
 function buildEngineStructTests() {
   QUnit.module("EngineResult", function () {
     const makeExample = () => {
-      const importSupplement = new ImportSupplement(
+      const tradeSupplement = new TradeSupplement(
         new EngineNumber(5, "kg"),
         new EngineNumber(10, "tCO2e"),
         new EngineNumber(2, "units"),
+        new EngineNumber(3, "kg"),
+        new EngineNumber(6, "tCO2e"),
       );
 
       return new EngineResult(
@@ -31,16 +33,18 @@ function buildEngineStructTests() {
         1,
         new EngineNumber(100, "kg"),
         new EngineNumber(50, "kg"),
+        new EngineNumber(30, "kg"), // export value
         new EngineNumber(25, "kg"),
         new EngineNumber(200, "tCO2e"),
         new EngineNumber(100, "tCO2e"),
+        new EngineNumber(60, "tCO2e"), // export consumption
         new EngineNumber(50, "tCO2e"),
         new EngineNumber(1000, "units"),
         new EngineNumber(100, "units"),
         new EngineNumber(300, "tCO2e"),
         new EngineNumber(150, "tCO2e"),
         new EngineNumber(500, "kWh"),
-        importSupplement,
+        tradeSupplement,
       );
     };
 
@@ -175,10 +179,12 @@ function buildEngineStructTests() {
 
   QUnit.module("AttributeToExporterResult", function () {
     const makeInnerResult = () => {
-      const importSupplement = new ImportSupplement(
+      const tradeSupplement = new TradeSupplement(
         new EngineNumber(5, "kg"),
         new EngineNumber(10, "tCO2e"),
         new EngineNumber(2, "units"),
+        new EngineNumber(3, "kg"),
+        new EngineNumber(6, "tCO2e"),
       );
 
       return new EngineResult(
@@ -189,16 +195,18 @@ function buildEngineStructTests() {
         1,
         new EngineNumber(100, "kg"),
         new EngineNumber(50, "kg"),
+        new EngineNumber(30, "kg"), // export value
         new EngineNumber(25, "kg"),
         new EngineNumber(200, "tCO2e"),
         new EngineNumber(100, "tCO2e"),
+        new EngineNumber(60, "tCO2e"), // export consumption
         new EngineNumber(50, "tCO2e"),
         new EngineNumber(1000, "units"),
         new EngineNumber(100, "units"),
         new EngineNumber(300, "tCO2e"),
         new EngineNumber(150, "tCO2e"),
         new EngineNumber(500, "kWh"),
-        importSupplement,
+        tradeSupplement,
       );
     };
 
@@ -264,12 +272,14 @@ function buildEngineStructTests() {
     });
   });
 
-  QUnit.module("ImportSupplement", function () {
+  QUnit.module("TradeSupplement", function () {
     const makeExample = () => {
-      return new ImportSupplement(
+      return new TradeSupplement(
         new EngineNumber(5, "kg"),
         new EngineNumber(10, "tCO2e"),
         new EngineNumber(2, "units"),
+        new EngineNumber(3, "kg"),
+        new EngineNumber(6, "tCO2e"),
       );
     };
 
@@ -278,21 +288,57 @@ function buildEngineStructTests() {
       assert.notDeepEqual(supplement, undefined);
     });
 
-    QUnit.test("getInitialChargeValue", function (assert) {
+    QUnit.test("getImportInitialChargeValue", function (assert) {
+      const supplement = makeExample();
+      const value = supplement.getImportInitialChargeValue();
+      assert.closeTo(value.getValue(), 5, 0.0001);
+      assert.deepEqual(value.getUnits(), "kg");
+    });
+
+    QUnit.test("getImportInitialChargeConsumption", function (assert) {
+      const supplement = makeExample();
+      const consumption = supplement.getImportInitialChargeConsumption();
+      assert.closeTo(consumption.getValue(), 10, 0.0001);
+      assert.deepEqual(consumption.getUnits(), "tCO2e");
+    });
+
+    QUnit.test("getImportPopulation", function (assert) {
+      const supplement = makeExample();
+      const population = supplement.getImportPopulation();
+      assert.closeTo(population.getValue(), 2, 0.0001);
+      assert.deepEqual(population.getUnits(), "units");
+    });
+
+    QUnit.test("getExportInitialChargeValue", function (assert) {
+      const supplement = makeExample();
+      const value = supplement.getExportInitialChargeValue();
+      assert.closeTo(value.getValue(), 3, 0.0001);
+      assert.deepEqual(value.getUnits(), "kg");
+    });
+
+    QUnit.test("getExportInitialChargeConsumption", function (assert) {
+      const supplement = makeExample();
+      const consumption = supplement.getExportInitialChargeConsumption();
+      assert.closeTo(consumption.getValue(), 6, 0.0001);
+      assert.deepEqual(consumption.getUnits(), "tCO2e");
+    });
+
+    // Test legacy methods
+    QUnit.test("getInitialChargeValue (legacy)", function (assert) {
       const supplement = makeExample();
       const value = supplement.getInitialChargeValue();
       assert.closeTo(value.getValue(), 5, 0.0001);
       assert.deepEqual(value.getUnits(), "kg");
     });
 
-    QUnit.test("getInitialChargeConsumption", function (assert) {
+    QUnit.test("getInitialChargeConsumption (legacy)", function (assert) {
       const supplement = makeExample();
       const consumption = supplement.getInitialChargeConsumption();
       assert.closeTo(consumption.getValue(), 10, 0.0001);
       assert.deepEqual(consumption.getUnits(), "tCO2e");
     });
 
-    QUnit.test("getNewPopulation", function (assert) {
+    QUnit.test("getNewPopulation (legacy)", function (assert) {
       const supplement = makeExample();
       const population = supplement.getNewPopulation();
       assert.closeTo(population.getValue(), 2, 0.0001);
@@ -303,10 +349,12 @@ function buildEngineStructTests() {
   QUnit.module("EngineResultBuilder", function () {
     const makeExampleBuilder = () => {
       const builder = new EngineResultBuilder();
-      const importSupplement = new ImportSupplement(
+      const tradeSupplement = new TradeSupplement(
         new EngineNumber(5, "kg"),
         new EngineNumber(10, "tCO2e"),
         new EngineNumber(2, "units"),
+        new EngineNumber(3, "kg"),
+        new EngineNumber(6, "tCO2e"),
       );
 
       builder.setApplication("test app");
@@ -316,16 +364,18 @@ function buildEngineStructTests() {
       builder.setTrialNumber(1);
       builder.setManufactureValue(new EngineNumber(100, "kg"));
       builder.setImportValue(new EngineNumber(50, "kg"));
+      builder.setExportValue(new EngineNumber(30, "kg"));
       builder.setRecycleValue(new EngineNumber(25, "kg"));
       builder.setDomesticConsumptionValue(new EngineNumber(200, "tCO2e"));
       builder.setImportConsumptionValue(new EngineNumber(100, "tCO2e"));
+      builder.setExportConsumptionValue(new EngineNumber(60, "tCO2e"));
       builder.setRecycleConsumptionValue(new EngineNumber(50, "tCO2e"));
       builder.setPopulationValue(new EngineNumber(1000, "units"));
       builder.setPopulationNew(new EngineNumber(100, "units"));
       builder.setRechargeEmissions(new EngineNumber(300, "tCO2e"));
       builder.setEolEmissions(new EngineNumber(150, "tCO2e"));
       builder.setEnergyConsumption(new EngineNumber(500, "kWh"));
-      builder.setImportSupplement(importSupplement);
+      builder.setTradeSupplement(tradeSupplement);
 
       return builder;
     };
@@ -358,10 +408,12 @@ function buildEngineStructTests() {
 
     QUnit.test("fails on almost complete result", function (assert) {
       const builder = new EngineResultBuilder();
-      const importSupplement = new ImportSupplement(
+      const tradeSupplement = new TradeSupplement(
         new EngineNumber(5, "kg"),
         new EngineNumber(10, "tCO2e"),
         new EngineNumber(2, "units"),
+        new EngineNumber(3, "kg"),
+        new EngineNumber(6, "tCO2e"),
       );
 
       builder.setApplication("test app");
@@ -371,44 +423,50 @@ function buildEngineStructTests() {
       builder.setTrialNumber(1);
       builder.setManufactureValue(new EngineNumber(100, "kg"));
       builder.setImportValue(new EngineNumber(50, "kg"));
+      builder.setExportValue(new EngineNumber(30, "kg"));
       builder.setRecycleValue(new EngineNumber(25, "kg"));
       builder.setDomesticConsumptionValue(new EngineNumber(200, "tCO2e"));
       builder.setImportConsumptionValue(new EngineNumber(100, "tCO2e"));
+      builder.setExportConsumptionValue(new EngineNumber(60, "tCO2e"));
       builder.setRecycleConsumptionValue(new EngineNumber(50, "tCO2e"));
       builder.setPopulationValue(new EngineNumber(1000, "units"));
       builder.setPopulationNew(new EngineNumber(100, "units"));
       builder.setRechargeEmissions(new EngineNumber(300, "tCO2e"));
       // Missing EOL emissions
       builder.setEnergyConsumption(new EngineNumber(500, "kWh"));
-      builder.setImportSupplement(importSupplement);
+      builder.setTradeSupplement(tradeSupplement);
 
       assert.throws(function () {
         builder.build();
       }, "Should throw when EOL emissions are missing");
     });
 
-    QUnit.test("fails when missing import supplement", function (assert) {
+    QUnit.test("fails when missing trade supplement", function (assert) {
       const builder = new EngineResultBuilder();
 
       builder.setApplication("test app");
       builder.setSubstance("test substance");
       builder.setYear(2023);
+      builder.setScenarioName("test scenario");
+      builder.setTrialNumber(1);
       builder.setManufactureValue(new EngineNumber(100, "kg"));
       builder.setImportValue(new EngineNumber(50, "kg"));
+      builder.setExportValue(new EngineNumber(30, "kg"));
       builder.setRecycleValue(new EngineNumber(25, "kg"));
       builder.setDomesticConsumptionValue(new EngineNumber(200, "tCO2e"));
       builder.setImportConsumptionValue(new EngineNumber(100, "tCO2e"));
+      builder.setExportConsumptionValue(new EngineNumber(60, "tCO2e"));
       builder.setRecycleConsumptionValue(new EngineNumber(50, "tCO2e"));
       builder.setPopulationValue(new EngineNumber(1000, "units"));
       builder.setPopulationNew(new EngineNumber(100, "units"));
       builder.setRechargeEmissions(new EngineNumber(300, "tCO2e"));
       builder.setEolEmissions(new EngineNumber(150, "tCO2e"));
       builder.setEnergyConsumption(new EngineNumber(500, "kWh"));
-      // Missing import supplement
+      // Missing trade supplement
 
       assert.throws(function () {
         builder.build();
-      }, "Should throw when import supplement is missing");
+      }, "Should throw when trade supplement is missing");
     });
   });
 
