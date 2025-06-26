@@ -197,7 +197,7 @@ end default</code></pre>
           </tr>
           <tr>
             <td><strong>Commercial refrigeration</strong></td>
-            <td>20,000</td>
+            <td>90,000</td>
             <td>2.00</td>
             <td>10%</td>
             <td>5%</td>
@@ -205,7 +205,7 @@ end default</code></pre>
           </tr>
           <tr>
             <td><strong>Transport refrigeration</strong></td>
-            <td>90,000</td>
+            <td>20,000</td>
             <td>10.00</td>
             <td>30%</td>
             <td>10%</td>
@@ -232,7 +232,7 @@ end default</code></pre>
           <pre><code class="language-qubectalk">  define application "Transport Refrigeration"
 
     uses substance "R-404A"
-      set priorEquipment to 90000 units during year beginning
+      set priorEquipment to 20000 units during year beginning
       initial charge with 2.00 kg / unit for sales
       retire 5 % each year
       recharge 10% each year with 2.00 kg / unit
@@ -262,7 +262,7 @@ end default</code></pre>
     # ... HFC-134a ...
   
     uses substance "R-404A"
-      set priorEquipment to 20000 units during year beginning
+      set priorEquipment to 90000 units during year beginning
       initial charge with 10.00 kg / unit for sales
       retire 10 % each year  # roughly equivalent to 10 years
       recharge 30% each year with 10.00 kg / unit
@@ -1023,7 +1023,7 @@ end simulations</code></pre>
     end substance
 
     uses substance "R-404A"
-      set priorEquipment to 20000 units during year beginning
+      set priorEquipment to 90000 units during year beginning
       initial charge with 10.00 kg / unit for sales
       retire 10 % each year  # roughly equivalent to 10 years
       recharge 30 % each year with 10.00 kg / unit
@@ -1080,7 +1080,7 @@ end simulations</code></pre>
   define application "Transport Refrigeration"
 
     uses substance "R-404A"
-      set priorEquipment to 90000 units during year beginning
+      set priorEquipment to 20000 units during year beginning
       initial charge with 2.00 kg / unit for sales
       retire 5 % each year
       recharge 10 % each year with 2.00 kg / unit
@@ -1093,11 +1093,11 @@ end simulations</code></pre>
   define application "Domestic AC"
 
     uses substance "HFC-32"
-      set priorEquipment to 24000 units during year beginning
+      set priorEquipment to 20000 units during year beginning
       initial charge with 0.85 kg / unit for sales
       retire 5 % each year  # roughly equivalent to 15 years
       recharge 10 % each year with 0.85 kg / unit
-      set import to 800 units / year during year beginning
+      set import to (1000 * (20000 / 25000)) units / year during year beginning
       change equipment by +7 % each year during years 2026 to 2035
       equals 675 tCO2e / kg
     end substance
@@ -1119,11 +1119,11 @@ end simulations</code></pre>
   define application "Commercial AC"
 
     uses substance "HFC-32"
-      set priorEquipment to 6000 units during year beginning
+      set priorEquipment to 5000 units during year beginning
       initial charge with 4.00 kg / unit for sales
       retire 5 % each year  # roughly equivalent to 15 years
       recharge 10 % each year with 4.00 kg / unit
-      set import to 200 units / year during year beginning
+      set import to (1000 * (5000 / 25000)) units / year during year beginning
       change equipment by +7 % each year during years 2026 to 2035
       equals 675 tCO2e / kg
     end substance

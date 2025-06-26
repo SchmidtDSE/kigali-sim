@@ -36,7 +36,7 @@ start default
     end substance
 
     uses substance "R-404A"
-      set priorEquipment to 20000 units during year beginning
+      set priorEquipment to 90000 units during year beginning
       initial charge with 10.00 kg / unit for sales
       retire 10 % each year
       recharge 30 % each year with 10.00 kg / unit
@@ -91,7 +91,7 @@ start default
   define application "Transport Refrigeration"
 
     uses substance "R-404A"
-      set priorEquipment to 90000 units during year beginning
+      set priorEquipment to 20000 units during year beginning
       initial charge with 2.00 kg / unit for sales
       retire 5 % each year
       recharge 10 % each year with 2.00 kg / unit
