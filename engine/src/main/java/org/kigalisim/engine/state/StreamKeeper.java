@@ -189,6 +189,33 @@ public class StreamKeeper {
     return streams.containsKey(getKey(useKey, name));
   }
 
+  /**
+   * Get a sales stream distribution for the given substance/application.
+   *
+   * <p>This method centralizes the logic for creating sales distributions by getting
+   * the current manufacture and import values, determining their enabled status,
+   * and building an appropriate distribution using the builder pattern.</p>
+   *
+   * @param useKey The key containing application and substance
+   * @return A SalesStreamDistribution with appropriate percentages
+   */
+  public SalesStreamDistribution getDistribution(UseKey useKey) {
+    EngineNumber manufactureValueRaw = getStream(useKey, "manufacture");
+    EngineNumber importValueRaw = getStream(useKey, "import");
+
+    EngineNumber manufactureValue = unitConverter.convert(manufactureValueRaw, "kg");
+    EngineNumber importValue = unitConverter.convert(importValueRaw, "kg");
+
+    boolean manufactureEnabled = hasStreamBeenEnabled(useKey, "manufacture");
+    boolean importEnabled = hasStreamBeenEnabled(useKey, "import");
+
+    return new SalesStreamDistributionBuilder()
+        .setManufactureSales(manufactureValue)
+        .setImportSales(importValue)
+        .setManufactureEnabled(manufactureEnabled)
+        .setImportEnabled(importEnabled)
+        .build();
+  }
 
   /**
    * Increment the year, updating populations and resetting internal params.
@@ -547,29 +574,11 @@ public class StreamKeeper {
   }
 
   private void setStreamForSales(UseKey useKey, String name, EngineNumber value) {
-    EngineNumber manufactureValueRaw = getStream(useKey, "manufacture");
-    EngineNumber importValueRaw = getStream(useKey, "import");
-
-    EngineNumber manufactureValue = unitConverter.convert(manufactureValueRaw, "kg");
-    EngineNumber importValue = unitConverter.convert(importValueRaw, "kg");
-
-    BigDecimal manufactureAmount = manufactureValue.getValue();
-    BigDecimal importAmount = importValue.getValue();
-
     EngineNumber valueConverted = unitConverter.convert(value, "kg");
     BigDecimal amountKg = valueConverted.getValue();
 
-    // Get stream enabled status
-    boolean manufactureEnabled = hasStreamBeenEnabled(useKey, "manufacture");
-    boolean importEnabled = hasStreamBeenEnabled(useKey, "import");
-
-    // Build distribution using the new builder
-    SalesStreamDistribution distribution = SalesStreamDistributionBuilder.buildDistribution(
-        manufactureValue,
-        importValue,
-        manufactureEnabled,
-        importEnabled
-    );
+    // Get distribution using centralized method
+    SalesStreamDistribution distribution = getDistribution(useKey);
 
     BigDecimal manufacturePercent = distribution.getPercentManufacture();
     BigDecimal importPercent = distribution.getPercentImport();
