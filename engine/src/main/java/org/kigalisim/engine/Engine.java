@@ -281,6 +281,17 @@ public interface Engine {
       YearMatcher yearMatcher);
 
   /**
+   * Recycle or recover a substance with displacement to another stream.
+   *
+   * @param recoveryWithUnits The recovery rate
+   * @param yieldWithUnits The yield rate
+   * @param yearMatcher Matcher to determine if the change applies to current year
+   * @param displacementTarget The stream or substance to displace (reduce)
+   */
+  void recycle(EngineNumber recoveryWithUnits, EngineNumber yieldWithUnits,
+      YearMatcher yearMatcher, String displacementTarget);
+
+  /**
    * Set GHG equivalency for the current application and substance.
    *
    * @param amount The GHG intensity value to set

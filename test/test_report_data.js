@@ -1,4 +1,3 @@
-import {Compiler} from "compiler";
 import {WasmBackend, WasmLayer} from "wasm_backend";
 import {ReportDataWrapper} from "report_data";
 import {FilterSet} from "user_config";

@@ -22,7 +22,6 @@
     <script type="importmap">
         {
             "imports": {
-                "compiler": "../js/compiler.js?v=EPOCH",
                 "engine_const": "../js/engine_const.js?v=EPOCH",
                 "engine_number": "../js/engine_number.js?v=EPOCH",
                 "engine_struct": "../js/engine_struct.js?v=EPOCH",
@@ -49,7 +48,7 @@
     </script>
 
     <script type="module">
-        import {buildCompilerTests} from "test_integration";
+        import {buildIntegrationTests} from "test_integration";
         import {buildEngineNumberTests} from "test_engine_number";
         import {buildEngineStructTests} from "test_engine_struct";
         import {buildReportDataTests} from "test_report_data";
@@ -58,7 +57,7 @@
         import {buildMainTests} from "test_main";
         import {buildWasmBackendTests} from "test_wasm_backend";
 
-        buildCompilerTests();
+        buildIntegrationTests();
         buildEngineNumberTests();
         buildEngineStructTests();
         buildReportDataTests();

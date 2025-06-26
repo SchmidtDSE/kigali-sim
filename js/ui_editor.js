@@ -12,6 +12,7 @@ import {
   DefinitionalStanza,
   LimitCommand,
   Program,
+  RecycleCommand,
   ReplaceCommand,
   SimulationScenario,
   SubstanceBuilder,
@@ -889,7 +890,7 @@ class ConsumptionListPresenter {
       self._dialog.querySelector(".retirement-units-input"),
       objToShow,
       new EngineNumber(5, "% each year"),
-      (x) => x.getRetire().getValue(),
+      (x) => x.getRetire() ? x.getRetire().getValue() : null,
     );
 
     setEngineNumberValue(
@@ -897,7 +898,7 @@ class ConsumptionListPresenter {
       self._dialog.querySelector(".recharge-population-units-input"),
       objToShow,
       new EngineNumber(5, "% each year"),
-      (x) => x.getRecharge().getTarget(),
+      (x) => x.getRecharge() ? x.getRecharge().getTarget() : null,
     );
 
     setEngineNumberValue(
@@ -905,7 +906,7 @@ class ConsumptionListPresenter {
       self._dialog.querySelector(".recharge-volume-units-input"),
       objToShow,
       new EngineNumber(1, "kg / unit"),
-      (x) => x.getRecharge().getValue(),
+      (x) => x.getRecharge() ? x.getRecharge().getValue() : null,
     );
 
     const removeCallback = () => self._updateCounts();
@@ -2151,6 +2152,9 @@ function initRecycleCommandUi(itemObj, root) {
     new EngineNumber(10, "%"),
     (x) => x.getValue(),
   );
+  setFieldValue(root.querySelector(".displacing-input"), itemObj, "", (x) =>
+    x.getDisplacing() === null ? "" : x.getDisplacing(),
+  );
   setDuring(root.querySelector(".duration-subcomponent"), itemObj, new YearMatcher(2, 10), true);
 }
 
@@ -2169,8 +2173,10 @@ function readRecycleCommandUi(root) {
     root.querySelector(".recycle-reuse-amount-input"),
     root.querySelector(".recycle-reuse-units-input"),
   );
+  const displacingRaw = getFieldValue(root.querySelector(".displacing-input"));
+  const displacing = displacingRaw === "" ? null : displacingRaw;
   const duration = readDurationUi(root.querySelector(".duration-subcomponent"));
-  return new Command("recycle", collection, reuse, duration);
+  return new RecycleCommand(collection, reuse, duration, displacing);
 }
 
 /**

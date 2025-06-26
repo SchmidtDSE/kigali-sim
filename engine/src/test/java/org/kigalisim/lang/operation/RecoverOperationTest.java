@@ -173,4 +173,120 @@ public class RecoverOperationTest {
     // Verify the recycle method was called with the correct parameters
     verify(mockEngine).recycle(eq(volume), eq(yield), any(YearMatcher.class));
   }
+
+  /**
+   * Test that RecoverOperation can be initialized with displacement but no during.
+   */
+  @Test
+  public void testInitializesWithDisplacementNoDuring() {
+    EngineNumber volume = new EngineNumber(BigDecimal.valueOf(100), "kg");
+    Operation volumeOperation = new PreCalculatedOperation(volume);
+
+    EngineNumber yield = new EngineNumber(BigDecimal.valueOf(100), "%");
+    Operation yieldOperation = new PreCalculatedOperation(yield);
+
+    String displaceTarget = "sales";
+    RecoverOperation operation = new RecoverOperation(volumeOperation, yieldOperation, displaceTarget);
+    assertNotNull(operation, "RecoverOperation should be constructable with displacement but no during");
+  }
+
+  /**
+   * Test that RecoverOperation can be initialized with both displacement and during.
+   */
+  @Test
+  public void testInitializesWithDisplacementAndDuring() {
+    EngineNumber volume = new EngineNumber(BigDecimal.valueOf(100), "kg");
+    Operation volumeOperation = new PreCalculatedOperation(volume);
+
+    EngineNumber yield = new EngineNumber(BigDecimal.valueOf(100), "%");
+    Operation yieldOperation = new PreCalculatedOperation(yield);
+
+    String displaceTarget = "R-404A";
+    ParsedDuring during = new ParsedDuring(Optional.empty(), Optional.empty());
+    RecoverOperation operation = new RecoverOperation(volumeOperation, yieldOperation, displaceTarget, during);
+    assertNotNull(operation, "RecoverOperation should be constructable with both displacement and during");
+  }
+
+  /**
+   * Test the execute method with displacement to a stream.
+   */
+  @Test
+  public void testExecuteWithStreamDisplacement() {
+    // Create a mock engine to verify the recycle method is called with displacement
+    Engine mockEngine = mock(Engine.class);
+    PushDownMachine mockMachine = mock(PushDownMachine.class);
+    when(mockMachine.getEngine()).thenReturn(mockEngine);
+
+    // Set up recovery volume and yield
+    EngineNumber volume = new EngineNumber(BigDecimal.valueOf(50), "kg");
+    Operation volumeOperation = new PreCalculatedOperation(volume);
+
+    EngineNumber yield = new EngineNumber(BigDecimal.valueOf(100), "%");
+    Operation yieldOperation = new PreCalculatedOperation(yield);
+
+    // Set up the mock machine to return the correct values
+    when(mockMachine.getResult()).thenReturn(volume, yield);
+
+    String displaceTarget = "sales";
+    RecoverOperation operation = new RecoverOperation(volumeOperation, yieldOperation, displaceTarget);
+
+    operation.execute(mockMachine);
+
+    // Verify the recycle method was called with displacement parameter
+    verify(mockEngine).recycle(eq(volume), eq(yield), any(YearMatcher.class), eq(displaceTarget));
+  }
+
+  /**
+   * Test the execute method with displacement to a substance.
+   */
+  @Test
+  public void testExecuteWithSubstanceDisplacement() {
+    // Create a mock engine to verify the recycle method is called with displacement
+    Engine mockEngine = mock(Engine.class);
+    PushDownMachine mockMachine = mock(PushDownMachine.class);
+    when(mockMachine.getEngine()).thenReturn(mockEngine);
+
+    // Set up recovery volume and yield
+    EngineNumber volume = new EngineNumber(BigDecimal.valueOf(30), "kg");
+    Operation volumeOperation = new PreCalculatedOperation(volume);
+
+    EngineNumber yield = new EngineNumber(BigDecimal.valueOf(100), "%");
+    Operation yieldOperation = new PreCalculatedOperation(yield);
+
+    // Set up the mock machine to return the correct values
+    when(mockMachine.getResult()).thenReturn(volume, yield);
+
+    String displaceTarget = "R-404A";
+    RecoverOperation operation = new RecoverOperation(volumeOperation, yieldOperation, displaceTarget);
+
+    operation.execute(mockMachine);
+
+    // Verify the recycle method was called with displacement parameter
+    verify(mockEngine).recycle(eq(volume), eq(yield), any(YearMatcher.class), eq(displaceTarget));
+  }
+
+  /**
+   * Test the execute method with displacement and during.
+   */
+  @Test
+  public void testExecuteWithDisplacementAndDuring() {
+    // Set up recovery volume and yield using real engine (simpler approach)
+    EngineNumber volume = new EngineNumber(BigDecimal.valueOf(25), "kg");
+    Operation volumeOperation = new PreCalculatedOperation(volume);
+
+    EngineNumber yield = new EngineNumber(BigDecimal.valueOf(100), "%");
+    Operation yieldOperation = new PreCalculatedOperation(yield);
+
+    // Set up during with no specific time constraints for simplicity
+    ParsedDuring during = new ParsedDuring(Optional.empty(), Optional.empty());
+
+    String displaceTarget = "manufacture";
+    RecoverOperation operation = new RecoverOperation(volumeOperation, yieldOperation, displaceTarget, during);
+
+    // Execute with real machine - just verify it doesn't throw an exception
+    operation.execute(machine);
+
+    // Test passes if no exception is thrown
+    assertNotNull(operation, "RecoverOperation should execute with displacement and during");
+  }
 }

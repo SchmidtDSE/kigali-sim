@@ -5,7 +5,6 @@
  */
 
 import {CodeEditorPresenter} from "code_editor";
-import {Compiler} from "compiler";
 import {ReportDataWrapper} from "report_data";
 import {ResultsPresenter} from "results";
 import {UiEditorPresenter} from "ui_editor";
@@ -318,8 +317,8 @@ class MainPresenter {
     const execute = async () => {
       const code = self._codeEditorPresenter.getCode();
 
-      // First, validate syntax using the compiler (for UI feedback)
-      const compiler = new Compiler();
+      // First, validate syntax using the UI translator compiler (for UI feedback)
+      const compiler = new UiTranslatorCompiler();
       const validationResult = compiler.compile(code);
 
       const compileErrors = validationResult.getErrors();

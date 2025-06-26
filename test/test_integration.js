@@ -1,12 +1,11 @@
-import {Compiler} from "compiler";
 import {WasmBackend, WasmLayer} from "wasm_backend";
 
 function loadRemote(path) {
   return fetch(path).then((response) => response.text());
 }
 
-function buildCompilerTests() {
-  QUnit.module("Compiler", function () {
+function buildIntegrationTests() {
+  QUnit.module("Integration", function () {
     QUnit.test("gets toolkit", function (assert) {
       const toolkit = QubecTalk.getToolkit();
       assert.notDeepEqual(toolkit, undefined);
@@ -17,10 +16,6 @@ function buildCompilerTests() {
       assert.notDeepEqual(toolkit["QubecTalkVisitor"], undefined);
     });
 
-    QUnit.test("initializes a compiler", (assert) => {
-      const compiler = new Compiler();
-      assert.notDeepEqual(compiler, undefined);
-    });
 
     // Shared WASM backend instances to avoid re-initialization overhead
     const wasmLayer = new WasmLayer();
@@ -1136,7 +1131,40 @@ function buildCompilerTests() {
         assert.deepEqual(newEquipmentR404A2030.getUnits(), "units");
       },
     ]);
+
+    buildTest("tests recover with sales displacement", "/examples/recover_displace_sales_kg.qta", [
+      (result, assert) => {
+        // Check that sales were displaced (reduced) for the same substance
+        const recordSubA = getResult(result, "result", 1, 0, "test", "sub_a");
+        const manufactureSubA = recordSubA.getManufacture();
+        const importSubA = recordSubA.getImport();
+
+        // Calculate total sales (manufacture + import)
+        const totalSales = manufactureSubA.getValue() + importSubA.getValue();
+
+        // Original sales: 150 kg (100 manufacture + 50 import)
+        // After 20 kg displacement: 150 - 20 = 130 kg
+        assert.closeTo(totalSales, 130, 0.0001);
+      },
+    ]);
+
+    buildTest("tests recover with substance displacement",
+      "/examples/recover_displace_substance.qta", [
+        (result, assert) => {
+        // Check that sub_b sales were displaced (reduced)
+          const recordSubB = getResult(result, "result", 1, 0, "test", "sub_b");
+          const manufactureSubB = recordSubB.getManufacture();
+          const importSubB = recordSubB.getImport();
+
+          // Calculate total sales (manufacture + import)
+          const totalSales = manufactureSubB.getValue() + importSubB.getValue();
+
+          // Original sales for sub_b: 300 kg (200 manufacture + 100 import)
+          // After 30 kg displacement: 300 - 30 = 270 kg
+          assert.closeTo(totalSales, 270, 0.0001);
+        },
+      ]);
   });
 }
 
-export {buildCompilerTests};
+export {buildIntegrationTests};
