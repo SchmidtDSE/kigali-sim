@@ -1,4 +1,5 @@
 import {WasmBackend, WasmLayer} from "wasm_backend";
+import {AttributeToExporterResult} from "engine_struct";
 
 function loadRemote(path) {
   return fetch(path).then((response) => response.text());
@@ -1164,6 +1165,30 @@ function buildIntegrationTests() {
           assert.closeTo(totalSales, 270, 0.0001);
         },
       ]);
+
+    buildTest("tests imports with recharge attribution", "/examples/import_recharge_test.qta", [
+      (result, assert) => {
+        // Year 2: Test default behavior (importer attribution)
+        // Actual result shows 100 kg import (includes all import activity)
+        const record2 = getResult(result, "BAU", 2, 0, "ImportRechargeTest", "TestSubstance");
+        const import2 = record2.getImport();
+        assert.closeTo(import2.getValue(), 100, 0.0001);
+        assert.deepEqual(import2.getUnits(), "kg");
+      },
+      (result, assert) => {
+        // Year 2: Test exporter attribution using AttributeToExporterResult
+        // With exporter attribution, initial charge should be subtracted from imports
+        const record2 = getResult(result, "BAU", 2, 0, "ImportRechargeTest", "TestSubstance");
+        const exporterAttributed2 = new AttributeToExporterResult(record2);
+        const exporterImport2 = exporterAttributed2.getImport();
+
+        // Should be less than the full 100 kg due to initial charge attribution to exporter
+        assert.ok(exporterImport2.getValue() > 0, "Import should be greater than 0");
+        assert.ok(exporterImport2.getValue() < 100,
+          "Import should be less than 100 kg due to exporter attribution");
+        assert.deepEqual(exporterImport2.getUnits(), "kg");
+      },
+    ]);
   });
 }
 
