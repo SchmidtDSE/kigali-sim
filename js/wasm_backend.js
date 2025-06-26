@@ -220,10 +220,10 @@ class WasmLayer {
   }
 
   /**
-   * Execute QubecTalk code and return parsed results.
+   * Execute QubecTalk code and return backend result.
    *
    * @param {string} code - The QubecTalk code to execute.
-   * @returns {Promise<Array<EngineResult>>} Promise resolving to execution results.
+   * @returns {Promise<BackendResult>} Promise resolving to backend result with CSV and parsed data.
    */
   async runSimulation(code) {
     const self = this;
@@ -272,7 +272,15 @@ class WasmLayer {
     if (success) {
       try {
         const parsedResults = ReportDataParser.parseResponse(result);
-        request.resolve(parsedResults);
+
+        // Extract CSV string from the response
+        // The response format is "OK\n\n<CSV_DATA>"
+        const lines = result.split("\n");
+        const csvString = lines.slice(2).join("\n").trim();
+
+        // Create BackendResult with both CSV and parsed data
+        const backendResult = new BackendResult(csvString, parsedResults);
+        request.resolve(backendResult);
       } catch (parseError) {
         request.reject(parseError);
       }
@@ -323,18 +331,55 @@ class WasmBackend {
    * Execute QubecTalk simulation code.
    *
    * @param {string} simCode - The QubecTalk code to execute.
-   * @returns {Promise<Array<EngineResult>>} Promise resolving to simulation results.
+   * @returns {Promise<BackendResult>} Promise resolving to backend result with CSV and parsed data.
    */
   async execute(simCode) {
     const self = this;
 
     try {
-      const results = await self._wasmLayer.runSimulation(simCode);
-      return results;
+      const backendResult = await self._wasmLayer.runSimulation(simCode);
+      return backendResult;
     } catch (error) {
       throw new Error("WASM simulation execution failed: " + error.message);
     }
   }
 }
 
-export {WasmBackend, WasmLayer, ReportDataParser};
+/**
+ * Result object containing both CSV string and parsed results from backend execution.
+ */
+class BackendResult {
+  /**
+   * Create a new BackendResult instance.
+   *
+   * @param {string} csvString - The raw CSV string from the backend.
+   * @param {Array<EngineResult>} parsedResults - The parsed engine results.
+   */
+  constructor(csvString, parsedResults) {
+    const self = this;
+    self._csvString = csvString;
+    self._parsedResults = parsedResults;
+  }
+
+  /**
+   * Get the raw CSV string from the backend.
+   *
+   * @returns {string} The CSV string.
+   */
+  getCsvString() {
+    const self = this;
+    return self._csvString;
+  }
+
+  /**
+   * Get the parsed results array.
+   *
+   * @returns {Array<EngineResult>} The parsed engine results.
+   */
+  getParsedResults() {
+    const self = this;
+    return self._parsedResults;
+  }
+}
+
+export {WasmBackend, WasmLayer, ReportDataParser, BackendResult};

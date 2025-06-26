@@ -20,7 +20,8 @@ function buildReportDataTests() {
 
           try {
             // Execute using WASM backend instead of old JS engine
-            const programResult = await wasmBackend.execute(content);
+            const backendResult = await wasmBackend.execute(content);
+            const programResult = backendResult.getParsedResults();
             const programResultWrapped = new ReportDataWrapper(programResult);
             checks.forEach((check) => {
               check(programResultWrapped, assert);

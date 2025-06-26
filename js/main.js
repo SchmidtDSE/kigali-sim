@@ -9,7 +9,7 @@ import {ReportDataWrapper} from "report_data";
 import {ResultsPresenter} from "results";
 import {UiEditorPresenter} from "ui_editor";
 import {UiTranslatorCompiler} from "ui_translator";
-import {WasmBackend, WasmLayer} from "wasm_backend";
+import {WasmBackend, WasmLayer, BackendResult} from "wasm_backend";
 
 const HELP_TEXT = "Would you like our help in resolving this issue?";
 
@@ -344,7 +344,7 @@ class MainPresenter {
           // Hide the running indicator when execution completes
           self._hideRunningIndicator();
 
-          if (programResult.length === 0) {
+          if (programResult.getParsedResults().length === 0) {
             self._showNoResultsMessage();
           } else {
             if (resetFilters) {
@@ -403,10 +403,10 @@ class MainPresenter {
   /**
    * Handles program execution results and displays them.
    *
-   * @param {Object} results - The results of program execution.
+   * @param {BackendResult} backendResult - The backend result containing CSV and parsed data.
    * @private
    */
-  _onResult(results) {
+  _onResult(backendResult) {
     const self = this;
 
     // Hide any existing no-results message and error indicator
@@ -416,8 +416,8 @@ class MainPresenter {
     }
     self._hideErrorIndicator();
 
-    const resultsWrapped = new ReportDataWrapper(results);
-    self._resultsPresenter.showResults(resultsWrapped);
+    const resultsWrapped = new ReportDataWrapper(backendResult.getParsedResults());
+    self._resultsPresenter.showResults(resultsWrapped, backendResult);
   }
 
   /**

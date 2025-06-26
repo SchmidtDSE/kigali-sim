@@ -129,11 +129,13 @@ class ResultsPresenter {
    * Show simulation results.
    *
    * @param {ReportDataWrapper} results - Results data to display.
+   * @param {BackendResult} backendResult - Backend result containing CSV string.
    */
-  showResults(results) {
+  showResults(results, backendResult) {
     const self = this;
     self._root.style.display = "block";
     self._results = results;
+    self._backendResult = backendResult;
     self._updateInternally();
   }
 
@@ -221,7 +223,7 @@ class ResultsPresenter {
     self._dimensionPresenter.showResults(self._results, self._filterSet);
     self._centerChartPresenter.showResults(self._results, self._filterSet);
     self._titlePreseter.showResults(self._results, self._filterSet);
-    self._exportPresenter.showResults(self._results, self._filterSet);
+    self._exportPresenter.showResults(self._results, self._filterSet, self._backendResult);
     self._optionsPresenter.showResults(self._results, self._filterSet);
   }
 }
@@ -245,86 +247,13 @@ class ExportPresenter {
    *
    * @param {Object} results - Results data to export.
    * @param {FilterSet} filterSet - Current filter settings.
+   * @param {BackendResult} backendResult - Backend result containing CSV string.
    */
-  showResults(results, filterSet) {
+  showResults(results, filterSet, backendResult) {
     const self = this;
-    const rawData = results.getRawData(filterSet);
-    const flat = rawData.map((result) => {
-      const scenarioName = result.getScenarioName();
-      const application = result.getApplication();
-      const substance = result.getSubstance();
-      const year = result.getYear();
-      const manufactureValue = result.getManufacture();
-      const importValue = result.getImport();
-      const rechargeEmissionsValue = result.getRechargeEmissions();
-      const eolEmissionsValue = result.getEolEmissions();
-      const populationValue = result.getPopulation();
-      const energyConsumptionValue = result.getEnergyConsumption();
-      return {
-        scenario: scenarioName,
-        application: application,
-        substance: substance,
-        year: year,
-        manufactureValue: manufactureValue.getValue(),
-        manufactureUnits: manufactureValue.getUnits(),
-        importValue: importValue.getValue(),
-        importUnits: importValue.getUnits(),
-        rechargeEmissionsValue: rechargeEmissionsValue.getValue(),
-        rechargeEmissionsUnits: rechargeEmissionsValue.getUnits(),
-        eolEmissionsValue: eolEmissionsValue.getValue(),
-        eolEmissionsUnits: eolEmissionsValue.getUnits(),
-        equipmentPopulation: populationValue.getValue(),
-        equipmentUnits: populationValue.getUnits(),
-        energyConsumptionValue: energyConsumptionValue.getValue(),
-        energyConsumptionUnits: energyConsumptionValue.getUnits(),
-      };
-    });
-    const contentRows = flat.map((record) => {
-      const vals = [
-        record["scenario"],
-        record["application"],
-        record["substance"],
-        record["year"],
-        record["manufactureValue"],
-        record["manufactureUnits"],
-        record["importValue"],
-        record["importUnits"],
-        record["rechargeEmissionsValue"],
-        record["rechargeEmissionsUnits"],
-        record["eolEmissionsValue"],
-        record["eolEmissionsUnits"],
-        record["equipmentPopulation"],
-        record["equipmentUnits"],
-        record["energyConsumptionValue"],
-        record["energyConsumptionUnits"],
-      ];
-      const valsStrs = vals.map((x) => x + "");
-      const valsStr = valsStrs.join(",");
-      return valsStr;
-    });
-    const contentStr = contentRows.join("\n");
 
-    const headerElements = [
-      "scenario",
-      "application",
-      "substance",
-      "year",
-      "manufactureValue",
-      "manufactureUnits",
-      "importValue",
-      "importUnits",
-      "rechargeEmissionsValue",
-      "rechargeEmisionsUnits",
-      "eolEmissionsValue",
-      "eolEmisionsUnits",
-      "equipmentPopulation",
-      "equipmentUnits",
-      "energyConsumptionValue",
-      "energyConsumptionUnits",
-    ];
-    const headerStr = headerElements.join(",");
-
-    const csvStr = headerStr + "\n" + contentStr;
+    // Use the CSV string directly from the backend instead of generating our own
+    const csvStr = backendResult.getCsvString();
     const encodedValue = encodeURI("data:text/csv;charset=utf-8," + csvStr);
     const exportLink = document.getElementById("export-button");
     exportLink.href = encodedValue;
