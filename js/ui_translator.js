@@ -1664,6 +1664,20 @@ class Substance {
         recycle.getValue().getUnits(),
         "reuse",
       ];
+
+      const displacing = recycle.getDisplacing ? recycle.getDisplacing() : null;
+      if (displacing !== null && displacing !== undefined && displacing !== "") {
+        pieces.push("displacing");
+        // Stream names (manufacture, import, sales, etc.) don't need quotes
+        // Substance names need quotes
+        const streamNames = ["manufacture", "import", "sales", "equipment", "priorEquipment", "export"];
+        if (streamNames.includes(displacing)) {
+          pieces.push(displacing);
+        } else {
+          pieces.push('"' + displacing + '"');
+        }
+      }
+
       self._addDuration(pieces, recycle);
 
       return self._finalizeStatement(pieces);
@@ -1914,6 +1928,77 @@ class LimitCommand {
    * Check if this limit command is compatible with UI editing.
    *
    * @returns {boolean} Always returns true as limit commands are UI-compatible.
+   */
+  getIsCompatible() {
+    const self = this;
+    return true;
+  }
+}
+
+/**
+ * Recycle command with displacement capability.
+ */
+class RecycleCommand {
+  /**
+   * Create a new RecycleCommand.
+   *
+   * @param {EngineNumber} target - Recovery amount and units.
+   * @param {EngineNumber} value - Reuse amount and units.
+   * @param {YearMatcher} duration - Duration of recovery.
+   * @param {string} displacing - Stream or substance being displaced.
+   */
+  constructor(target, value, duration, displacing) {
+    const self = this;
+    self._target = target;
+    self._value = value;
+    self._duration = duration;
+    self._displacing = displacing;
+  }
+
+  /**
+   * Get the target (recovery amount) of this recycle command.
+   *
+   * @returns {EngineNumber} The recovery amount with units.
+   */
+  getTarget() {
+    const self = this;
+    return self._target;
+  }
+
+  /**
+   * Get the value (reuse amount) associated with this recycle.
+   *
+   * @returns {EngineNumber} The reuse amount with units.
+   */
+  getValue() {
+    const self = this;
+    return self._value;
+  }
+
+  /**
+   * Get the duration for which this recycle applies.
+   *
+   * @returns {YearMatcher} The duration specification, or null for all years.
+   */
+  getDuration() {
+    const self = this;
+    return self._duration;
+  }
+
+  /**
+   * Get the stream or substance being displaced by this recycle.
+   *
+   * @returns {string|null} Name of stream or substance being displaced, or null if none.
+   */
+  getDisplacing() {
+    const self = this;
+    return self._displacing;
+  }
+
+  /**
+   * Check if this recycle command is compatible with UI editing.
+   *
+   * @returns {boolean} Always returns true as recycle commands are UI-compatible.
    */
   getIsCompatible() {
     const self = this;
@@ -3203,6 +3288,7 @@ export {
   DefinitionalStanza,
   LimitCommand,
   Program,
+  RecycleCommand,
   ReplaceCommand,
   SimulationScenario,
   SimulationStanza,
