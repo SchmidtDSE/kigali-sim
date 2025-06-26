@@ -29,7 +29,8 @@ function buildIntegrationTests() {
           assert.ok(content.length > 0);
 
           try {
-            const programResult = await wasmBackend.execute(content);
+            const backendResult = await wasmBackend.execute(content);
+            const programResult = backendResult.getParsedResults();
             checks.forEach((check) => {
               check(programResult, assert);
             });
