@@ -130,17 +130,8 @@ public class SalesRecalcStrategy implements RecalcStrategy {
     BigDecimal importSalesKg = importSalesConverted.getValue();
     BigDecimal totalNonRecycleKg = manufactureSalesKg.add(importSalesKg);
 
-    // Get stream enabled status
-    boolean manufactureEnabled = streamKeeper.hasStreamBeenEnabled(scopeEffective, "manufacture");
-    boolean importEnabled = streamKeeper.hasStreamBeenEnabled(scopeEffective, "import");
-
-    // Build distribution using the new builder
-    SalesStreamDistribution distribution = SalesStreamDistributionBuilder.buildDistribution(
-        manufactureSalesConverted,
-        importSalesConverted,
-        manufactureEnabled,
-        importEnabled
-    );
+    // Get distribution using centralized method
+    SalesStreamDistribution distribution = streamKeeper.getDistribution(scopeEffective);
 
     BigDecimal percentManufacture = distribution.getPercentManufacture();
     BigDecimal percentImport = distribution.getPercentImport();
