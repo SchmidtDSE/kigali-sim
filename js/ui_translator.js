@@ -1670,7 +1670,9 @@ class Substance {
         pieces.push("displacing");
         // Stream names (manufacture, import, sales, etc.) don't need quotes
         // Substance names need quotes
-        const streamNames = ["manufacture", "import", "sales", "equipment", "priorEquipment", "export"];
+        const streamNames = [
+          "manufacture", "import", "sales", "equipment", "priorEquipment", "export",
+        ];
         if (streamNames.includes(displacing)) {
           pieces.push(displacing);
         } else {
