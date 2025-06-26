@@ -3,7 +3,7 @@ start default
   define application "Domestic Refrigeration"
 
     uses substance "HFC-134a"
-      set priorEquipment to 1200000 units during year beginning
+      set priorEquipment to 1000000 units during year beginning
       initial charge with 0.15 kg / unit for sales
       retire 5 % each year
       recharge 10 % each year with 0.15 kg / unit
@@ -25,7 +25,7 @@ start default
   define application "Commercial Refrigeration"
 
     uses substance "HFC-134a"
-      set priorEquipment to 240000 units during year beginning
+      set priorEquipment to 200000 units during year beginning
       initial charge with 0.60 kg / unit for sales
       retire 10 % each year
       recharge 30 % each year with 0.60 kg / unit
@@ -36,7 +36,7 @@ start default
     end substance
 
     uses substance "R-404A"
-      set priorEquipment to 20000 units during year beginning
+      set priorEquipment to 90000 units during year beginning
       initial charge with 10.00 kg / unit for sales
       retire 10 % each year
       recharge 30 % each year with 10.00 kg / unit
@@ -51,7 +51,7 @@ start default
   define application "MAC"
 
     uses substance "HFC-134a"
-      set priorEquipment to 600000 units during year beginning
+      set priorEquipment to 500000 units during year beginning
       initial charge with 1.00 kg / unit for sales
       retire 5 % each year
       recharge 20 % each year with 1.00 kg / unit
@@ -71,7 +71,7 @@ start default
   define application "Chiller"
 
     uses substance "HFC-134a"
-      set priorEquipment to 60000 units during year beginning
+      set priorEquipment to 50000 units during year beginning
       initial charge with 5.00 kg / unit for sales
       retire 5 % each year
       recharge 25 % each year with 5.00 kg / unit
@@ -91,7 +91,7 @@ start default
   define application "Transport Refrigeration"
 
     uses substance "R-404A"
-      set priorEquipment to 90000 units during year beginning
+      set priorEquipment to 20000 units during year beginning
       initial charge with 2.00 kg / unit for sales
       retire 5 % each year
       recharge 10 % each year with 2.00 kg / unit
@@ -104,8 +104,8 @@ start default
   define application "Domestic AC"
 
     uses substance "HFC-32"
-      set priorEquipment to 24000 units during year beginning
-      initial charge with 0.90 kg / unit for sales
+      set priorEquipment to 20000 units during year beginning
+      initial charge with 0.85 kg / unit for sales
       retire 5 % each year
       recharge 10 % each year with 0.85 kg / unit
       set import to 800 units / year during year beginning
@@ -128,8 +128,8 @@ start default
   define application "Commercial AC"
 
     uses substance "HFC-32"
-      set priorEquipment to 6000 units during year beginning
-      initial charge with 4.50 kg / unit for sales
+      set priorEquipment to 5000 units during year beginning
+      initial charge with 4.00 kg / unit for sales
       retire 5 % each year
       recharge 10 % each year with 4.00 kg / unit
       set import to 200 units / year during year beginning
@@ -467,6 +467,7 @@ start simulations
     then "R-410A Dom AC Recovery"
     then "HFC-32 Com AC Recovery"
     then "R-410A Com AC Recovery"
+    then "R-404A Transport Refrig Recovery"
   from years 2025 to 2035
 
   simulate "Combined Policies"
@@ -490,6 +491,7 @@ start simulations
     then "R-410A Dom AC Recovery"
     then "HFC-32 Com AC Recovery"
     then "R-410A Com AC Recovery"
+    then "R-404A Transport Refrig Recovery"
   from years 2025 to 2035
 
 end simulations
