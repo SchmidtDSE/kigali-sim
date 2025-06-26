@@ -1095,6 +1095,47 @@ function buildCompilerTests() {
         assert.deepEqual(manufacture3.getUnits(), "kg");
       },
     ]);
+
+    buildTest("tests cap displace units magnitude", "/examples/cap_displace_units_magnitude.qta", [
+      (result, assert) => {
+        // Check 2025 new equipment - R-404A should have 200 units, HFC-134a should have 400 units
+        const recordR404A2025 = getResult(result, "Import Ban", 2025, 0, "Test", "R-404A");
+        const newEquipmentR404A2025 = recordR404A2025.getPopulationNew();
+        assert.closeTo(newEquipmentR404A2025.getValue(), 200, 0.0001);
+        assert.deepEqual(newEquipmentR404A2025.getUnits(), "units");
+
+        const recordHFC2025 = getResult(result, "Import Ban", 2025, 0, "Test", "HFC-134a");
+        const newEquipmentHFC2025 = recordHFC2025.getPopulationNew();
+        assert.closeTo(newEquipmentHFC2025.getValue(), 400, 0.0001);
+        assert.deepEqual(newEquipmentHFC2025.getUnits(), "units");
+      },
+      (result, assert) => {
+        // Check 2029 new equipment - HFC-134a should have 0 units (capped),
+        // R-404A should have 600 units (displaced)
+        const recordHFC2029 = getResult(result, "Import Ban", 2029, 0, "Test", "HFC-134a");
+        const newEquipmentHFC2029 = recordHFC2029.getPopulationNew();
+        assert.closeTo(newEquipmentHFC2029.getValue(), 0, 0.0001);
+        assert.deepEqual(newEquipmentHFC2029.getUnits(), "units");
+
+        const recordR404A2029 = getResult(result, "Import Ban", 2029, 0, "Test", "R-404A");
+        const newEquipmentR404A2029 = recordR404A2029.getPopulationNew();
+        assert.closeTo(newEquipmentR404A2029.getValue(), 600, 0.0001);
+        assert.deepEqual(newEquipmentR404A2029.getUnits(), "units");
+      },
+      (result, assert) => {
+        // Check 2030 new equipment - same as 2029 (HFC-134a should have 0 units,
+        // R-404A should have 600 units)
+        const recordHFC2030 = getResult(result, "Import Ban", 2030, 0, "Test", "HFC-134a");
+        const newEquipmentHFC2030 = recordHFC2030.getPopulationNew();
+        assert.closeTo(newEquipmentHFC2030.getValue(), 0, 0.0001);
+        assert.deepEqual(newEquipmentHFC2030.getUnits(), "units");
+
+        const recordR404A2030 = getResult(result, "Import Ban", 2030, 0, "Test", "R-404A");
+        const newEquipmentR404A2030 = recordR404A2030.getPopulationNew();
+        assert.closeTo(newEquipmentR404A2030.getValue(), 600, 0.0001);
+        assert.deepEqual(newEquipmentR404A2030.getUnits(), "units");
+      },
+    ]);
   });
 }
 
