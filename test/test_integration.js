@@ -1,12 +1,11 @@
-import {Compiler} from "compiler";
 import {WasmBackend, WasmLayer} from "wasm_backend";
 
 function loadRemote(path) {
   return fetch(path).then((response) => response.text());
 }
 
-function buildCompilerTests() {
-  QUnit.module("Compiler", function () {
+function buildIntegrationTests() {
+  QUnit.module("Integration", function () {
     QUnit.test("gets toolkit", function (assert) {
       const toolkit = QubecTalk.getToolkit();
       assert.notDeepEqual(toolkit, undefined);
@@ -17,10 +16,6 @@ function buildCompilerTests() {
       assert.notDeepEqual(toolkit["QubecTalkVisitor"], undefined);
     });
 
-    QUnit.test("initializes a compiler", (assert) => {
-      const compiler = new Compiler();
-      assert.notDeepEqual(compiler, undefined);
-    });
 
     // Shared WASM backend instances to avoid re-initialization overhead
     const wasmLayer = new WasmLayer();
@@ -1172,4 +1167,4 @@ function buildCompilerTests() {
   });
 }
 
-export {buildCompilerTests};
+export {buildIntegrationTests};

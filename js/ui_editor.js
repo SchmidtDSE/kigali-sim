@@ -890,7 +890,7 @@ class ConsumptionListPresenter {
       self._dialog.querySelector(".retirement-units-input"),
       objToShow,
       new EngineNumber(5, "% each year"),
-      (x) => x.getRetire().getValue(),
+      (x) => x.getRetire() ? x.getRetire().getValue() : null,
     );
 
     setEngineNumberValue(
@@ -898,7 +898,7 @@ class ConsumptionListPresenter {
       self._dialog.querySelector(".recharge-population-units-input"),
       objToShow,
       new EngineNumber(5, "% each year"),
-      (x) => x.getRecharge().getTarget(),
+      (x) => x.getRecharge() ? x.getRecharge().getTarget() : null,
     );
 
     setEngineNumberValue(
@@ -906,7 +906,7 @@ class ConsumptionListPresenter {
       self._dialog.querySelector(".recharge-volume-units-input"),
       objToShow,
       new EngineNumber(1, "kg / unit"),
-      (x) => x.getRecharge().getValue(),
+      (x) => x.getRecharge() ? x.getRecharge().getValue() : null,
     );
 
     const removeCallback = () => self._updateCounts();

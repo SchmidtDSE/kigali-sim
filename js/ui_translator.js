@@ -1958,6 +1958,16 @@ class RecycleCommand {
   }
 
   /**
+   * Get the type name of this recycle command.
+   *
+   * @returns {string} Always returns "recycle".
+   */
+  getTypeName() {
+    const self = this;
+    return "recycle";
+  }
+
+  /**
    * Get the target (recovery amount) of this recycle command.
    *
    * @returns {EngineNumber} The recovery amount with units.
@@ -2796,22 +2806,66 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
    * Visit a recover command with displacement and all years duration node.
    *
    * @param {Object} ctx - The parse tree node context.
-   * @returns {IncompatibleCommand} Incompatibility marker for recover with displace.
+   * @returns {RecycleCommand} New recycle command with displacement.
    */
   visitRecoverDisplacementAllYears(ctx) {
     const self = this;
-    return new IncompatibleCommand("recover with displace");
+
+    // Check if required properties exist
+    if (!ctx.volume || !ctx.yieldVal) {
+      console.error("Missing volume or yieldVal in displacement context:", ctx);
+      return new IncompatibleCommand("recover with displace - missing parameters");
+    }
+
+    const volume = ctx.volume.accept(self);
+    const yieldVal = ctx.yieldVal.accept(self);
+
+    // Find the displacement target - it's after "displacing"
+    // Grammar: RECOVER_ volume WITH_ yieldVal REUSE_ DISPLACING_ (string | stream)
+    let displacementTarget = null;
+    for (let i = 0; i < ctx.getChildCount(); i++) {
+      const child = ctx.getChild(i);
+      if (child && child.getText() === "displacing" && i + 1 < ctx.getChildCount()) {
+        const targetChild = ctx.getChild(i + 1);
+        if (targetChild) {
+          displacementTarget = targetChild.getText();
+        }
+        break;
+      }
+    }
+
+    const cleanTarget = displacementTarget && displacementTarget.startsWith('"') ?
+      displacementTarget.slice(1, -1) : displacementTarget;
+    return new RecycleCommand(volume, yieldVal, null, cleanTarget);
   }
 
   /**
    * Visit a recover command with displacement and duration node.
    *
    * @param {Object} ctx - The parse tree node context.
-   * @returns {IncompatibleCommand} Incompatibility marker for recover with displace.
+   * @returns {RecycleCommand} New recycle command with displacement and duration.
    */
   visitRecoverDisplacementDuration(ctx) {
     const self = this;
-    return new IncompatibleCommand("recover with displace");
+    const volume = ctx.volume.accept(self);
+    const yieldVal = ctx.yieldVal.accept(self);
+
+    // Find the displacement target - it's after "displacing"
+    // Grammar: RECOVER_ volume WITH_ yieldVal REUSE_ DISPLACING_ (string | stream) duration
+    let displacementTarget = null;
+    for (let i = 0; i < ctx.getChildCount(); i++) {
+      const child = ctx.getChild(i);
+      if (child.getText() === "displacing" && i + 1 < ctx.getChildCount()) {
+        const targetChild = ctx.getChild(i + 1);
+        displacementTarget = targetChild.getText();
+        break;
+      }
+    }
+
+    const cleanTarget = displacementTarget && displacementTarget.startsWith('"') ?
+      displacementTarget.slice(1, -1) : displacementTarget;
+    const duration = ctx.duration.accept(self);
+    return new RecycleCommand(volume, yieldVal, duration, cleanTarget);
   }
 
   /**
