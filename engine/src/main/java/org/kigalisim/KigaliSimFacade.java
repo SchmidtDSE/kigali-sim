@@ -231,55 +231,38 @@ public class KigaliSimFacade {
       return "";
     }
 
-    // Create header row
-    EmulatedStringJoiner headerJoiner = new EmulatedStringJoiner(",");
-    headerJoiner.add("scenario");
-    headerJoiner.add("trial");
-    headerJoiner.add("year");
-    headerJoiner.add("application");
-    headerJoiner.add("substance");
-    headerJoiner.add("manufacture");
-    headerJoiner.add("import");
-    headerJoiner.add("recycle");
-    headerJoiner.add("domesticConsumption");
-    headerJoiner.add("importConsumption");
-    headerJoiner.add("recycleConsumption");
-    headerJoiner.add("population");
-    headerJoiner.add("populationNew");
-    headerJoiner.add("rechargeEmissions");
-    headerJoiner.add("eolEmissions");
-    headerJoiner.add("energyConsumption");
-    headerJoiner.add("initialChargeValue");
-    headerJoiner.add("initialChargeConsumption");
-    headerJoiner.add("importNewPopulation");
+    // Estimate capacity: header + (rows * estimated_chars_per_row)
+    // 13 decimal fields (15 chars each) + strings (~45) + integers (~6) + 19 overhead = ~265 chars per row
+    int estimatedCapacity = 300 + (results.size() * 265);
+    StringBuilder csvBuilder = new StringBuilder(estimatedCapacity);
 
-    StringBuilder csvBuilder = new StringBuilder();
-    csvBuilder.append(headerJoiner.toString()).append("\n");
+    // Create header row - direct append with commas
+    csvBuilder.append("scenario,trial,year,application,substance,manufacture,import,recycle,")
+              .append("domesticConsumption,importConsumption,recycleConsumption,population,")
+              .append("populationNew,rechargeEmissions,eolEmissions,energyConsumption,")
+              .append("initialChargeValue,initialChargeConsumption,importNewPopulation\n");
 
-    // Add data rows
+    // Add data rows - direct append with commas
     for (EngineResult result : results) {
-      EmulatedStringJoiner rowJoiner = new EmulatedStringJoiner(",");
-      rowJoiner.add(result.getScenarioName());
-      rowJoiner.add(String.valueOf(result.getTrialNumber()));
-      rowJoiner.add(String.valueOf(result.getYear()));
-      rowJoiner.add(result.getApplication());
-      rowJoiner.add(result.getSubstance());
-      rowJoiner.add(result.getManufacture().getValue().toString());
-      rowJoiner.add(result.getImport().getValue().toString());
-      rowJoiner.add(result.getRecycle().getValue().toString());
-      rowJoiner.add(result.getDomesticConsumption().getValue().toString());
-      rowJoiner.add(result.getImportConsumption().getValue().toString());
-      rowJoiner.add(result.getRecycleConsumption().getValue().toString());
-      rowJoiner.add(result.getPopulation().getValue().toString());
-      rowJoiner.add(result.getPopulationNew().getValue().toString());
-      rowJoiner.add(result.getRechargeEmissions().getValue().toString());
-      rowJoiner.add(result.getEolEmissions().getValue().toString());
-      rowJoiner.add(result.getEnergyConsumption().getValue().toString());
-      rowJoiner.add(result.getImportSupplement().getInitialChargeValue().getValue().toString());
-      rowJoiner.add(result.getImportSupplement().getInitialChargeConsumption().getValue().toString());
-      rowJoiner.add(result.getImportSupplement().getNewPopulation().getValue().toString());
-
-      csvBuilder.append(rowJoiner.toString()).append("\n");
+      csvBuilder.append(result.getScenarioName()).append(',')
+                .append(result.getTrialNumber()).append(',')
+                .append(result.getYear()).append(',')
+                .append(result.getApplication()).append(',')
+                .append(result.getSubstance()).append(',')
+                .append(result.getManufacture().getValue()).append(',')
+                .append(result.getImport().getValue()).append(',')
+                .append(result.getRecycle().getValue()).append(',')
+                .append(result.getDomesticConsumption().getValue()).append(',')
+                .append(result.getImportConsumption().getValue()).append(',')
+                .append(result.getRecycleConsumption().getValue()).append(',')
+                .append(result.getPopulation().getValue()).append(',')
+                .append(result.getPopulationNew().getValue()).append(',')
+                .append(result.getRechargeEmissions().getValue()).append(',')
+                .append(result.getEolEmissions().getValue()).append(',')
+                .append(result.getEnergyConsumption().getValue()).append(',')
+                .append(result.getImportSupplement().getInitialChargeValue().getValue()).append(',')
+                .append(result.getImportSupplement().getInitialChargeConsumption().getValue()).append(',')
+                .append(result.getImportSupplement().getNewPopulation().getValue()).append('\n');
     }
 
     return csvBuilder.toString();
