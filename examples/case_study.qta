@@ -330,18 +330,18 @@ end policy
 
 start simulations
 
-  simulate "Business as Usual" from years 2025 to 2035
+  simulate "Business as Usual" from years 2025 to 2035 across 100 trials
 
-  simulate "Manufacturing Prohibition" using "Manufacturing Prohibition" from years 2025 to 2035
+  simulate "Manufacturing Prohibition" using "Manufacturing Prohibition" from years 2025 to 2035 across 100 trials
 
-  simulate "Equipment Import Ban" using "Equipment Import Ban" from years 2025 to 2035
+  simulate "Equipment Import Ban" using "Equipment Import Ban" from years 2025 to 2035 across 100 trials
 
-  simulate "Recovery and Recycling" using "Recovery and Recycling" from years 2025 to 2035
+  simulate "Recovery and Recycling" using "Recovery and Recycling" from years 2025 to 2035 across 100 trials
 
   simulate "Combined Policies"
     using "Manufacturing Prohibition"
     then "Equipment Import Ban"
     then "Recovery and Recycling"
-  from years 2025 to 2035
+  from years 2025 to 2035 across 100 trials
 
 end simulations

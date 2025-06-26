@@ -154,7 +154,19 @@ public class StreamKeeper {
    */
   public EngineNumber getStream(UseKey useKey, String name) {
     String key = getKey(useKey);
-    ensureSubstancePresent(key, "getStream");
+    
+    if (substances.get(key) == null) {
+      String[] keyPieces = key.split("\t");
+      String application = keyPieces.length > 0 ? keyPieces[0] : "";
+      String substance = keyPieces.length > 1 ? keyPieces[1] : "";
+      StringBuilder message = new StringBuilder();
+      message.append("Not a known application substance pair in getStream: ");
+      message.append("-".equals(application) ? "null" : application);
+      message.append(", ");
+      message.append("-".equals(substance) ? "null" : substance);
+      throw new IllegalStateException(message.toString());
+    }
+    
     ensureStreamKnown(name);
 
     if ("sales".equals(name)) {
@@ -174,7 +186,12 @@ public class StreamKeeper {
 
       return new EngineNumber(newTotal, "kg");
     } else {
-      return streams.get(getKey(useKey, name));
+      String streamKey = getKey(useKey, name);
+      EngineNumber result = streams.get(streamKey);
+      if (result == null) {
+        throw new IllegalArgumentException("Unknown stream: " + name);
+      }
+      return result;
     }
   }
 
