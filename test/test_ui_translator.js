@@ -230,6 +230,31 @@ function buildUiTranslatorTests() {
         assert.ok(!result.getIsCompatible());
       },
     ]);
+
+    buildTest("converts recover with displacement", "/examples/recover_displace_sales_kg.qta", [
+      (result, assert) => {
+        assert.ok(result.getIsCompatible());
+      },
+      (result, assert) => {
+        const policies = result.getPolicies();
+        assert.equal(policies.length, 1);
+
+        const policy = policies[0];
+        const applications = policy.getApplications();
+        assert.equal(applications.length, 1);
+
+        const application = applications[0];
+        const substances = application.getSubstances();
+        assert.equal(substances.length, 1);
+
+        const substance = substances[0];
+        const recycles = substance.getRecycles();
+        assert.equal(recycles.length, 1);
+
+        const recycle = recycles[0];
+        assert.equal(recycle.getDisplacing(), "sales");
+      },
+    ]);
   });
 }
 

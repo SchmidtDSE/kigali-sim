@@ -28,6 +28,7 @@ public class RecoverOperation implements Operation {
 
   private final Operation volumeOperation;
   private final Operation yieldOperation;
+  private final Optional<String> displaceTarget;
   private final Optional<ParsedDuring> duringMaybe;
 
   /**
@@ -39,6 +40,21 @@ public class RecoverOperation implements Operation {
   public RecoverOperation(Operation volumeOperation, Operation yieldOperation) {
     this.volumeOperation = volumeOperation;
     this.yieldOperation = yieldOperation;
+    this.displaceTarget = Optional.empty();
+    duringMaybe = Optional.empty();
+  }
+
+  /**
+   * Create a new RecoverOperation that applies to all years with displacement.
+   *
+   * @param volumeOperation The operation that calculates the recovery amount.
+   * @param yieldOperation The operation that calculates the yield rate.
+   * @param displaceTarget The name of the stream or substance to displace.
+   */
+  public RecoverOperation(Operation volumeOperation, Operation yieldOperation, String displaceTarget) {
+    this.volumeOperation = volumeOperation;
+    this.yieldOperation = yieldOperation;
+    this.displaceTarget = Optional.ofNullable(displaceTarget);
     duringMaybe = Optional.empty();
   }
 
@@ -52,6 +68,23 @@ public class RecoverOperation implements Operation {
   public RecoverOperation(Operation volumeOperation, Operation yieldOperation, ParsedDuring during) {
     this.volumeOperation = volumeOperation;
     this.yieldOperation = yieldOperation;
+    this.displaceTarget = Optional.empty();
+    duringMaybe = Optional.of(during);
+  }
+
+  /**
+   * Create a new RecoverOperation that applies to a specific time period with displacement.
+   *
+   * @param volumeOperation The operation that calculates the recovery amount.
+   * @param yieldOperation The operation that calculates the yield rate.
+   * @param displaceTarget The name of the stream or substance to displace.
+   * @param during The time period during which this operation applies.
+   */
+  public RecoverOperation(Operation volumeOperation, Operation yieldOperation,
+                         String displaceTarget, ParsedDuring during) {
+    this.volumeOperation = volumeOperation;
+    this.yieldOperation = yieldOperation;
+    this.displaceTarget = Optional.ofNullable(displaceTarget);
     duringMaybe = Optional.of(during);
   }
 
@@ -71,8 +104,12 @@ public class RecoverOperation implements Operation {
     );
     YearMatcher yearMatcher = parsedDuring.buildYearMatcher(machine);
 
-    // Call the recycle method on the engine
+    // Call the appropriate recycle method on the engine
     Engine engine = machine.getEngine();
-    engine.recycle(recoveryAmount, yieldRate, yearMatcher);
+    if (displaceTarget.isPresent()) {
+      engine.recycle(recoveryAmount, yieldRate, yearMatcher, displaceTarget.get());
+    } else {
+      engine.recycle(recoveryAmount, yieldRate, yearMatcher);
+    }
   }
 }

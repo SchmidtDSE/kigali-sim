@@ -1664,6 +1664,22 @@ class Substance {
         recycle.getValue().getUnits(),
         "reuse",
       ];
+
+      const displacing = recycle.getDisplacing ? recycle.getDisplacing() : null;
+      if (displacing !== null && displacing !== undefined && displacing !== "") {
+        pieces.push("displacing");
+        // Stream names (manufacture, import, sales, etc.) don't need quotes
+        // Substance names need quotes
+        const streamNames = [
+          "manufacture", "import", "sales", "equipment", "priorEquipment", "export",
+        ];
+        if (streamNames.includes(displacing)) {
+          pieces.push(displacing);
+        } else {
+          pieces.push('"' + displacing + '"');
+        }
+      }
+
       self._addDuration(pieces, recycle);
 
       return self._finalizeStatement(pieces);
@@ -1914,6 +1930,87 @@ class LimitCommand {
    * Check if this limit command is compatible with UI editing.
    *
    * @returns {boolean} Always returns true as limit commands are UI-compatible.
+   */
+  getIsCompatible() {
+    const self = this;
+    return true;
+  }
+}
+
+/**
+ * Recycle command with displacement capability.
+ */
+class RecycleCommand {
+  /**
+   * Create a new RecycleCommand.
+   *
+   * @param {EngineNumber} target - Recovery amount and units.
+   * @param {EngineNumber} value - Reuse amount and units.
+   * @param {YearMatcher} duration - Duration of recovery.
+   * @param {string} displacing - Stream or substance being displaced.
+   */
+  constructor(target, value, duration, displacing) {
+    const self = this;
+    self._target = target;
+    self._value = value;
+    self._duration = duration;
+    self._displacing = displacing;
+  }
+
+  /**
+   * Get the type name of this recycle command.
+   *
+   * @returns {string} Always returns "recycle".
+   */
+  getTypeName() {
+    const self = this;
+    return "recycle";
+  }
+
+  /**
+   * Get the target (recovery amount) of this recycle command.
+   *
+   * @returns {EngineNumber} The recovery amount with units.
+   */
+  getTarget() {
+    const self = this;
+    return self._target;
+  }
+
+  /**
+   * Get the value (reuse amount) associated with this recycle.
+   *
+   * @returns {EngineNumber} The reuse amount with units.
+   */
+  getValue() {
+    const self = this;
+    return self._value;
+  }
+
+  /**
+   * Get the duration for which this recycle applies.
+   *
+   * @returns {YearMatcher} The duration specification, or null for all years.
+   */
+  getDuration() {
+    const self = this;
+    return self._duration;
+  }
+
+  /**
+   * Get the stream or substance being displaced by this recycle.
+   *
+   * @returns {string|null} Name of stream or substance being displaced, or null if none.
+   */
+  getDisplacing() {
+    const self = this;
+    return self._displacing;
+  }
+
+  /**
+   * Check if this recycle command is compatible with UI editing.
+   *
+   * @returns {boolean} Always returns true as recycle commands are UI-compatible.
    */
   getIsCompatible() {
     const self = this;
@@ -2709,22 +2806,66 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
    * Visit a recover command with displacement and all years duration node.
    *
    * @param {Object} ctx - The parse tree node context.
-   * @returns {IncompatibleCommand} Incompatibility marker for recover with displace.
+   * @returns {RecycleCommand} New recycle command with displacement.
    */
   visitRecoverDisplacementAllYears(ctx) {
     const self = this;
-    return new IncompatibleCommand("recover with displace");
+
+    // Check if required properties exist
+    if (!ctx.volume || !ctx.yieldVal) {
+      console.error("Missing volume or yieldVal in displacement context:", ctx);
+      return new IncompatibleCommand("recover with displace - missing parameters");
+    }
+
+    const volume = ctx.volume.accept(self);
+    const yieldVal = ctx.yieldVal.accept(self);
+
+    // Find the displacement target - it's after "displacing"
+    // Grammar: RECOVER_ volume WITH_ yieldVal REUSE_ DISPLACING_ (string | stream)
+    let displacementTarget = null;
+    for (let i = 0; i < ctx.getChildCount(); i++) {
+      const child = ctx.getChild(i);
+      if (child && child.getText() === "displacing" && i + 1 < ctx.getChildCount()) {
+        const targetChild = ctx.getChild(i + 1);
+        if (targetChild) {
+          displacementTarget = targetChild.getText();
+        }
+        break;
+      }
+    }
+
+    const cleanTarget = displacementTarget && displacementTarget.startsWith('"') ?
+      displacementTarget.slice(1, -1) : displacementTarget;
+    return new RecycleCommand(volume, yieldVal, null, cleanTarget);
   }
 
   /**
    * Visit a recover command with displacement and duration node.
    *
    * @param {Object} ctx - The parse tree node context.
-   * @returns {IncompatibleCommand} Incompatibility marker for recover with displace.
+   * @returns {RecycleCommand} New recycle command with displacement and duration.
    */
   visitRecoverDisplacementDuration(ctx) {
     const self = this;
-    return new IncompatibleCommand("recover with displace");
+    const volume = ctx.volume.accept(self);
+    const yieldVal = ctx.yieldVal.accept(self);
+
+    // Find the displacement target - it's after "displacing"
+    // Grammar: RECOVER_ volume WITH_ yieldVal REUSE_ DISPLACING_ (string | stream) duration
+    let displacementTarget = null;
+    for (let i = 0; i < ctx.getChildCount(); i++) {
+      const child = ctx.getChild(i);
+      if (child.getText() === "displacing" && i + 1 < ctx.getChildCount()) {
+        const targetChild = ctx.getChild(i + 1);
+        displacementTarget = targetChild.getText();
+        break;
+      }
+    }
+
+    const cleanTarget = displacementTarget && displacementTarget.startsWith('"') ?
+      displacementTarget.slice(1, -1) : displacementTarget;
+    const duration = ctx.duration.accept(self);
+    return new RecycleCommand(volume, yieldVal, duration, cleanTarget);
   }
 
   /**
@@ -3203,6 +3344,7 @@ export {
   DefinitionalStanza,
   LimitCommand,
   Program,
+  RecycleCommand,
   ReplaceCommand,
   SimulationScenario,
   SimulationStanza,

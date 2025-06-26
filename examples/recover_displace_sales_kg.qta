@@ -1,0 +1,47 @@
+start default
+
+  define application "test"
+
+    uses substance "sub_a"
+      initial charge with 10 kg / unit for manufacture
+      initial charge with 10 kg / unit for import
+      recharge 10% each year with 10 kg / unit
+      set manufacture to 100 kg during year 1
+      set import to 50 kg during year 1
+      set priorEquipment to 50 units during year 1
+      retire 10% each year
+      equals 5 tCO2e / mt
+    end substance
+
+    uses substance "sub_b"
+      initial charge with 20 kg / unit for manufacture
+      initial charge with 20 kg / unit for import
+      recharge 10% each year with 20 kg / unit
+      set manufacture to 200 kg during year 1
+      set import to 100 kg during year 1
+      equals 10 tCO2e / mt
+    end substance
+
+  end application
+
+end default
+
+
+start policy "test_recover_displace_sales"
+
+  modify application "test"
+    
+    modify substance "sub_a"
+      recover 20 kg with 100% reuse displacing sales during year 1
+    end substance
+
+  end application
+
+end policy
+
+
+start simulations
+
+  simulate "result" using "test_recover_displace_sales" from years 1 to 1
+
+end simulations

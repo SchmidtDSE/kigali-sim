@@ -60,6 +60,8 @@ public class SingleThreadEngine implements Engine {
     STREAM_NAMES.add("sales");
   }
 
+  private static final String RECYCLE_RECOVER_STREAM = "sales";
+
   private final int startYear;
   private final int endYear;
   private int currentYear;
@@ -580,6 +582,31 @@ public class SingleThreadEngine implements Engine {
   }
 
   @Override
+  public void recycle(EngineNumber recoveryWithUnits, EngineNumber yieldWithUnits,
+      YearMatcher yearMatcher, String displacementTarget) {
+    if (!getIsInRange(yearMatcher)) {
+      return;
+    }
+
+    streamKeeper.setRecoveryRate(scope, recoveryWithUnits);
+    streamKeeper.setYieldRate(scope, yieldWithUnits);
+
+    // Apply the recovery through normal recycle operation
+    RecalcOperation operation = new RecalcOperationBuilder()
+        .setRecalcKit(createRecalcKit())
+        .recalcSales()
+        .thenPropagateToPopulationChange()
+        .thenPropagateToConsumption()
+        .build();
+    operation.execute(this);
+
+    // Handle displacement using the existing displacement logic
+    UnitConverter unitConverter = createUnitConverterWithTotal(RECYCLE_RECOVER_STREAM);
+    EngineNumber recoveryInKg = unitConverter.convert(recoveryWithUnits, "kg");
+    handleDisplacement(RECYCLE_RECOVER_STREAM, recoveryWithUnits, recoveryInKg.getValue(), displacementTarget);
+  }
+
+  @Override
   public void equals(EngineNumber amount, YearMatcher yearMatcher) {
     if (!getIsInRange(yearMatcher)) {
       return;
@@ -893,6 +920,7 @@ public class SingleThreadEngine implements Engine {
       }
     }
   }
+
 
   /**
    * Change a stream value without reporting units to the last units tracking system.

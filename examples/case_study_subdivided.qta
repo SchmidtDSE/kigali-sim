@@ -245,11 +245,11 @@ start policy "HFC-134a Dom Refrig Recovery"
 
   modify application "Domestic Refrigeration"
     modify substance "HFC-134a"
-      recover 14 % with 100 % reuse during year 2026
-      recover 28 % with 100 % reuse during year 2027
-      recover 42 % with 100 % reuse during year 2028
-      recover 56 % with 100 % reuse during year 2029
-      recover 40 % with 100 % reuse during years 2030 to onwards
+      recover 14 % with 100 % reuse displacing sales during year 2026
+      recover 28 % with 100 % reuse displacing sales during year 2027
+      recover 42 % with 100 % reuse displacing sales during year 2028
+      recover 56 % with 100 % reuse displacing sales during year 2029
+      recover 40 % with 100 % reuse displacing sales during years 2030 to onwards
     end substance
   end application
 
@@ -260,11 +260,11 @@ start policy "R-404A Dom Refrig Recovery"
 
   modify application "Domestic Refrigeration"
     modify substance "R-404A"
-      recover 14 % with 100 % reuse during year 2026
-      recover 28 % with 100 % reuse during year 2027
-      recover 42 % with 100 % reuse during year 2028
-      recover 56 % with 100 % reuse during year 2029
-      recover 40 % with 100 % reuse during years 2030 to onwards
+      recover 14 % with 100 % reuse displacing sales during year 2026
+      recover 28 % with 100 % reuse displacing sales during year 2027
+      recover 42 % with 100 % reuse displacing sales during year 2028
+      recover 56 % with 100 % reuse displacing sales during year 2029
+      recover 40 % with 100 % reuse displacing sales during years 2030 to onwards
     end substance
   end application
 
@@ -275,11 +275,11 @@ start policy "HFC-134a Com Refrig Recovery"
 
   modify application "Commercial Refrigeration"
     modify substance "HFC-134a"
-      recover 14 % with 100 % reuse during year 2026
-      recover 28 % with 100 % reuse during year 2027
-      recover 42 % with 100 % reuse during year 2028
-      recover 56 % with 100 % reuse during year 2029
-      recover 40 % with 100 % reuse during years 2030 to onwards
+      recover 14 % with 100 % reuse displacing sales during year 2026
+      recover 28 % with 100 % reuse displacing sales during year 2027
+      recover 42 % with 100 % reuse displacing sales during year 2028
+      recover 56 % with 100 % reuse displacing sales during year 2029
+      recover 40 % with 100 % reuse displacing sales during years 2030 to onwards
     end substance
   end application
 
@@ -290,11 +290,11 @@ start policy "R-404A Com Refrig Recovery"
 
   modify application "Commercial Refrigeration"
     modify substance "R-404A"
-      recover 14 % with 100 % reuse during year 2026
-      recover 28 % with 100 % reuse during year 2027
-      recover 42 % with 100 % reuse during year 2028
-      recover 56 % with 100 % reuse during year 2029
-      recover 40 % with 100 % reuse during years 2030 to onwards
+      recover 14 % with 100 % reuse displacing sales during year 2026
+      recover 28 % with 100 % reuse displacing sales during year 2027
+      recover 42 % with 100 % reuse displacing sales during year 2028
+      recover 56 % with 100 % reuse displacing sales during year 2029
+      recover 40 % with 100 % reuse displacing sales during years 2030 to onwards
     end substance
   end application
 
@@ -305,11 +305,11 @@ start policy "HFC-134a MAC Recovery"
 
   modify application "MAC"
     modify substance "HFC-134a"
-      recover 14 % with 100 % reuse during year 2026
-      recover 28 % with 100 % reuse during year 2027
-      recover 42 % with 100 % reuse during year 2028
-      recover 56 % with 100 % reuse during year 2029
-      recover 40 % with 100 % reuse during years 2030 to onwards
+      recover 14 % with 100 % reuse displacing sales during year 2026
+      recover 28 % with 100 % reuse displacing sales during year 2027
+      recover 42 % with 100 % reuse displacing sales during year 2028
+      recover 56 % with 100 % reuse displacing sales during year 2029
+      recover 40 % with 100 % reuse displacing sales during years 2030 to onwards
     end substance
   end application
 
@@ -320,11 +320,11 @@ start policy "R-404A MAC Recovery"
 
   modify application "MAC"
     modify substance "R-404A"
-      recover 14 % with 100 % reuse during year 2026
-      recover 28 % with 100 % reuse during year 2027
-      recover 42 % with 100 % reuse during year 2028
-      recover 56 % with 100 % reuse during year 2029
-      recover 40 % with 100 % reuse during years 2030 to onwards
+      recover 14 % with 100 % reuse displacing sales during year 2026
+      recover 28 % with 100 % reuse displacing sales during year 2027
+      recover 42 % with 100 % reuse displacing sales during year 2028
+      recover 56 % with 100 % reuse displacing sales during year 2029
+      recover 40 % with 100 % reuse displacing sales during years 2030 to onwards
     end substance
   end application
 
@@ -335,11 +335,11 @@ start policy "HFC-134a Chiller Recovery"
 
   modify application "Chiller"
     modify substance "HFC-134a"
-      recover 14 % with 100 % reuse during year 2026
-      recover 28 % with 100 % reuse during year 2027
-      recover 42 % with 100 % reuse during year 2028
-      recover 56 % with 100 % reuse during year 2029
-      recover 40 % with 100 % reuse during years 2030 to onwards
+      recover 14 % with 100 % reuse displacing sales during year 2026
+      recover 28 % with 100 % reuse displacing sales during year 2027
+      recover 42 % with 100 % reuse displacing sales during year 2028
+      recover 56 % with 100 % reuse displacing sales during year 2029
+      recover 40 % with 100 % reuse displacing sales during years 2030 to onwards
     end substance
   end application
 
@@ -350,11 +350,11 @@ start policy "R-404A Chiller Recovery"
 
   modify application "Chiller"
     modify substance "R-404A"
-      recover 14 % with 100 % reuse during year 2026
-      recover 28 % with 100 % reuse during year 2027
-      recover 42 % with 100 % reuse during year 2028
-      recover 56 % with 100 % reuse during year 2029
-      recover 40 % with 100 % reuse during years 2030 to onwards
+      recover 14 % with 100 % reuse displacing sales during year 2026
+      recover 28 % with 100 % reuse displacing sales during year 2027
+      recover 42 % with 100 % reuse displacing sales during year 2028
+      recover 56 % with 100 % reuse displacing sales during year 2029
+      recover 40 % with 100 % reuse displacing sales during years 2030 to onwards
     end substance
   end application
 
@@ -365,11 +365,11 @@ start policy "HFC-32 Dom AC Recovery"
 
   modify application "Domestic AC"
     modify substance "HFC-32"
-      recover 14 % with 100 % reuse during year 2026
-      recover 28 % with 100 % reuse during year 2027
-      recover 42 % with 100 % reuse during year 2028
-      recover 56 % with 100 % reuse during year 2029
-      recover 40 % with 100 % reuse during years 2030 to onwards
+      recover 14 % with 100 % reuse displacing sales during year 2026
+      recover 28 % with 100 % reuse displacing sales during year 2027
+      recover 42 % with 100 % reuse displacing sales during year 2028
+      recover 56 % with 100 % reuse displacing sales during year 2029
+      recover 40 % with 100 % reuse displacing sales during years 2030 to onwards
     end substance
   end application
 
@@ -380,11 +380,11 @@ start policy "R-410A Dom AC Recovery"
 
   modify application "Domestic AC"
     modify substance "R-410A"
-      recover 14 % with 100 % reuse during year 2026
-      recover 28 % with 100 % reuse during year 2027
-      recover 42 % with 100 % reuse during year 2028
-      recover 56 % with 100 % reuse during year 2029
-      recover 40 % with 100 % reuse during years 2030 to onwards
+      recover 14 % with 100 % reuse displacing sales during year 2026
+      recover 28 % with 100 % reuse displacing sales during year 2027
+      recover 42 % with 100 % reuse displacing sales during year 2028
+      recover 56 % with 100 % reuse displacing sales during year 2029
+      recover 40 % with 100 % reuse displacing sales during years 2030 to onwards
     end substance
   end application
 
@@ -395,11 +395,11 @@ start policy "HFC-32 Com AC Recovery"
 
   modify application "Commercial AC"
     modify substance "HFC-32"
-      recover 14 % with 100 % reuse during year 2026
-      recover 28 % with 100 % reuse during year 2027
-      recover 42 % with 100 % reuse during year 2028
-      recover 56 % with 100 % reuse during year 2029
-      recover 40 % with 100 % reuse during years 2030 to onwards
+      recover 14 % with 100 % reuse displacing sales during year 2026
+      recover 28 % with 100 % reuse displacing sales during year 2027
+      recover 42 % with 100 % reuse displacing sales during year 2028
+      recover 56 % with 100 % reuse displacing sales during year 2029
+      recover 40 % with 100 % reuse displacing sales during years 2030 to onwards
     end substance
   end application
 
@@ -410,11 +410,11 @@ start policy "R-410A Com AC Recovery"
 
   modify application "Commercial AC"
     modify substance "R-410A"
-      recover 14 % with 100 % reuse during year 2026
-      recover 28 % with 100 % reuse during year 2027
-      recover 42 % with 100 % reuse during year 2028
-      recover 56 % with 100 % reuse during year 2029
-      recover 40 % with 100 % reuse during years 2030 to onwards
+      recover 14 % with 100 % reuse displacing sales during year 2026
+      recover 28 % with 100 % reuse displacing sales during year 2027
+      recover 42 % with 100 % reuse displacing sales during year 2028
+      recover 56 % with 100 % reuse displacing sales during year 2029
+      recover 40 % with 100 % reuse displacing sales during years 2030 to onwards
     end substance
   end application
 
@@ -425,11 +425,11 @@ start policy "R-404A Transport Refrig Recovery"
 
   modify application "Transport Refrigeration"
     modify substance "R-404A"
-      recover 14 % with 100 % reuse during year 2026
-      recover 28 % with 100 % reuse during year 2027
-      recover 42 % with 100 % reuse during year 2028
-      recover 56 % with 100 % reuse during year 2029
-      recover 40 % with 100 % reuse during years 2030 to onwards
+      recover 14 % with 100 % reuse displacing sales during year 2026
+      recover 28 % with 100 % reuse displacing sales during year 2027
+      recover 42 % with 100 % reuse displacing sales during year 2028
+      recover 56 % with 100 % reuse displacing sales during year 2029
+      recover 40 % with 100 % reuse displacing sales during years 2030 to onwards
     end substance
   end application
 
