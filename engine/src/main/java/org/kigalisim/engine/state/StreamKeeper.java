@@ -70,7 +70,7 @@ public class StreamKeeper {
    */
   public boolean hasSubstance(UseKey useKey) {
     String key = getKey(useKey);
-    return substances.containsKey(key);
+    return substances.get(key) != null;
   }
 
   /**
@@ -79,11 +79,13 @@ public class StreamKeeper {
    * @param useKey The key containing application and substance
    */
   public void ensureSubstance(UseKey useKey) {
-    if (hasSubstance(useKey)) {
+    String key = getKey(useKey);
+    
+    // Single HashMap lookup instead of hasSubstance() which does containsKey()
+    if (substances.get(key) != null) {
       return;
     }
 
-    String key = getKey(useKey);
     substances.put(key, new StreamParameterization());
 
     // Sales: manufacture, import, recycle
@@ -634,7 +636,10 @@ public class StreamKeeper {
     if (key == null) {
       throw new IllegalStateException("Scope cannot be null in " + context);
     }
-    if (!hasSubstance(key)) {
+    
+    // Single HashMap lookup instead of hasSubstance() which does containsKey()
+    String keyString = getKey(key);
+    if (substances.get(keyString) == null) {
       StringBuilder message = new StringBuilder();
       message.append("Not a known application substance pair in ");
       message.append(context);
