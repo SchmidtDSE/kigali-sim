@@ -249,9 +249,13 @@ public class KigaliSimFacade {
     headerJoiner.add("rechargeEmissions");
     headerJoiner.add("eolEmissions");
     headerJoiner.add("energyConsumption");
-    headerJoiner.add("initialChargeValue");
-    headerJoiner.add("initialChargeConsumption");
-    headerJoiner.add("importNewPopulation");
+    headerJoiner.add("export");
+    headerJoiner.add("exportConsumption");
+    headerJoiner.add("importInitialChargeValue");
+    headerJoiner.add("importInitialChargeConsumption");
+    headerJoiner.add("importPopulation");
+    headerJoiner.add("exportInitialChargeValue");
+    headerJoiner.add("exportInitialChargeConsumption");
 
     StringBuilder csvBuilder = new StringBuilder();
     csvBuilder.append(headerJoiner.toString()).append("\n");
@@ -275,9 +279,13 @@ public class KigaliSimFacade {
       rowJoiner.add(result.getRechargeEmissions().getValue().toString());
       rowJoiner.add(result.getEolEmissions().getValue().toString());
       rowJoiner.add(result.getEnergyConsumption().getValue().toString());
-      rowJoiner.add(result.getImportSupplement().getInitialChargeValue().getValue().toString());
-      rowJoiner.add(result.getImportSupplement().getInitialChargeConsumption().getValue().toString());
-      rowJoiner.add(result.getImportSupplement().getNewPopulation().getValue().toString());
+      rowJoiner.add(result.getExport().getValue().toString());
+      rowJoiner.add(result.getExportConsumption().getValue().toString());
+      rowJoiner.add(result.getTradeSupplement().getImportInitialChargeValue().getValue().toString());
+      rowJoiner.add(result.getTradeSupplement().getImportInitialChargeConsumption().getValue().toString());
+      rowJoiner.add(result.getTradeSupplement().getImportPopulation().getValue().toString());
+      rowJoiner.add(result.getTradeSupplement().getExportInitialChargeValue().getValue().toString());
+      rowJoiner.add(result.getTradeSupplement().getExportInitialChargeConsumption().getValue().toString());
 
       csvBuilder.append(rowJoiner.toString()).append("\n");
     }

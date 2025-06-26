@@ -54,6 +54,7 @@ public final class EngineConstants {
     Map<String, String> units = new HashMap<>();
     units.put("manufacture", "kg");
     units.put("import", "kg");
+    units.put("export", "kg");
     units.put("sales", "kg");
     units.put("energy", "kwh");
     units.put("recycle", "kg");

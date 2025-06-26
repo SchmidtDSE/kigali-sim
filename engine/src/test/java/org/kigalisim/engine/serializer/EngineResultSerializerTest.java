@@ -184,13 +184,13 @@ public class EngineResultSerializerTest {
    * Tests for import supplement functionality of EngineResultSerializer.
    */
   @Nested
-  public class ImportSupplementTests {
+  public class TradeSupplementTests {
 
     private Engine mockEngine;
     private ConverterStateGetter stateGetter;
     private EngineResultSerializer serializer;
     private EngineResult result;
-    private ImportSupplement importSupplement;
+    private TradeSupplement tradeSupplement;
 
     /**
      * Set up test fixtures before each test.
@@ -198,28 +198,28 @@ public class EngineResultSerializerTest {
     @BeforeEach
     public void setUp() {
       // Create mock engine with test data
-      mockEngine = createMockEngineForImportSupplement();
+      mockEngine = createMockEngineForTradeSupplement();
       stateGetter = new ConverterStateGetter(mockEngine);
       serializer = new EngineResultSerializer(mockEngine, stateGetter);
       result = serializer.getResult("commercialRefrigeration", "HFC-134a", 1);
-      importSupplement = result.getImportSupplement();
+      tradeSupplement = result.getTradeSupplement();
     }
 
     /**
      * Test that serializer generates import supplement correctly.
      */
     @Test
-    public void testGeneratesImportSupplement() {
-      assertNotNull(importSupplement, "Import supplement should not be null");
+    public void testGeneratesTradeSupplement() {
+      assertNotNull(tradeSupplement, "Trade supplement should not be null");
 
       // Calculate: total import (400 mt = 400,000 kg) - import recharge portion
       // Import proportion: 400,000 / (1,600,000 + 400,000) = 0.2
       // Import recharge: 0.2 * 1,000,000 kg = 200,000 kg
       // Import for initial charge: 400,000 - 200,000 = 200,000 kg
-      assertEquals(0, importSupplement.getInitialChargeValue().getValue()
+      assertEquals(0, tradeSupplement.getImportInitialChargeValue().getValue()
           .compareTo(BigDecimal.valueOf(200000)),
           "Import supplement value should be 200,000 kg");
-      assertEquals("kg", importSupplement.getInitialChargeValue().getUnits(),
+      assertEquals("kg", tradeSupplement.getImportInitialChargeValue().getUnits(),
           "Import supplement value units should be kg");
     }
 
@@ -227,12 +227,12 @@ public class EngineResultSerializerTest {
      * Test that serializer generates import supplement consumption correctly.
      */
     @Test
-    public void testGeneratesImportSupplementConsumption() {
+    public void testGeneratesTradeSupplementConsumption() {
       // 200,000 kg * 500 tCO2e/mt * (1 mt/1000 kg) = 100,000 tCO2e
-      assertEquals(0, importSupplement.getInitialChargeConsumption().getValue()
+      assertEquals(0, tradeSupplement.getImportInitialChargeConsumption().getValue()
           .compareTo(BigDecimal.valueOf(100000)),
           "Import supplement consumption should be 100,000 tCO2e");
-      assertEquals("tCO2e", importSupplement.getInitialChargeConsumption().getUnits(),
+      assertEquals("tCO2e", tradeSupplement.getImportInitialChargeConsumption().getUnits(),
           "Import supplement consumption units should be tCO2e");
     }
 
@@ -240,12 +240,12 @@ public class EngineResultSerializerTest {
      * Test that serializer generates import supplement units correctly.
      */
     @Test
-    public void testGeneratesImportSupplementUnits() {
+    public void testGeneratesTradeSupplementUnits() {
       // 200,000 kg / 200 kg/unit = 1,000 units
-      assertEquals(0, importSupplement.getNewPopulation().getValue()
+      assertEquals(0, tradeSupplement.getImportPopulation().getValue()
           .compareTo(BigDecimal.valueOf(1000)),
           "Import supplement units should be 1,000 units");
-      assertEquals("units", importSupplement.getNewPopulation().getUnits(),
+      assertEquals("units", tradeSupplement.getImportPopulation().getUnits(),
           "Import supplement units should be units");
     }
   }
@@ -261,6 +261,7 @@ public class EngineResultSerializerTest {
     // Test data matching JavaScript tests
     EngineNumber manufacture = new EngineNumber(1600, "mt");
     EngineNumber importMt = new EngineNumber(400, "mt");
+    EngineNumber exportMt = new EngineNumber(200, "mt");
     EngineNumber recharge = new EngineNumber(1000, "mt");
     EngineNumber valueToConsumption = new EngineNumber(500, "tCO2e / mt");
     EngineNumber initialChargeImport = new EngineNumber(200, "kg / unit");
@@ -281,6 +282,7 @@ public class EngineResultSerializerTest {
         switch (stream) {
           case "manufacture": return manufacture;
           case "import": return importMt;
+          case "export": return exportMt;
           case "recycle": return recycling;
           case "energy": return energyIntensity;
           case "equipment": return priorEquipment;
@@ -349,12 +351,13 @@ public class EngineResultSerializerTest {
    *
    * @return Mock engine configured with import supplement test data
    */
-  private static Engine createMockEngineForImportSupplement() {
+  private static Engine createMockEngineForTradeSupplement() {
     Engine engine = mock(Engine.class);
 
     // Test data for import supplement tests - use the same data as main tests
     EngineNumber manufacture = new EngineNumber(1600, "mt");
     EngineNumber importMt = new EngineNumber(400, "mt");
+    EngineNumber exportMt = new EngineNumber(200, "mt");
     EngineNumber recharge = new EngineNumber(1000, "mt");
     EngineNumber valueToConsumption = new EngineNumber(500, "tCO2e / mt");
     EngineNumber initialChargeImport = new EngineNumber(200, "kg / unit");
@@ -375,6 +378,7 @@ public class EngineResultSerializerTest {
         switch (stream) {
           case "manufacture": return manufacture;
           case "import": return importMt;
+          case "export": return exportMt;
           case "recycle": return recycling;
           case "energy": return energyIntensity;
           case "equipment": return priorEquipment;

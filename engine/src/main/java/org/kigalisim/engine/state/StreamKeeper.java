@@ -194,26 +194,53 @@ public class StreamKeeper {
    *
    * <p>This method centralizes the logic for creating sales distributions by getting
    * the current manufacture and import values, determining their enabled status,
-   * and building an appropriate distribution using the builder pattern.</p>
+   * and building an appropriate distribution using the builder pattern.
+   * Exports are excluded for backward compatibility.</p>
    *
    * @param useKey The key containing application and substance
    * @return A SalesStreamDistribution with appropriate percentages
    */
   public SalesStreamDistribution getDistribution(UseKey useKey) {
+    return getDistribution(useKey, false);
+  }
+
+  /**
+   * Get a sales stream distribution for the given substance/application.
+   *
+   * <p>This method centralizes the logic for creating sales distributions by getting
+   * the current manufacture, import, and optionally export values, determining their enabled status,
+   * and building an appropriate distribution using the builder pattern.</p>
+   *
+   * @param useKey The key containing application and substance
+   * @param includeExports Whether to include exports in the distribution calculation
+   * @return A SalesStreamDistribution with appropriate percentages
+   */
+  public SalesStreamDistribution getDistribution(UseKey useKey, boolean includeExports) {
     EngineNumber manufactureValueRaw = getStream(useKey, "manufacture");
     EngineNumber importValueRaw = getStream(useKey, "import");
+    EngineNumber exportValueRaw = getStream(useKey, "export");
 
     EngineNumber manufactureValue = unitConverter.convert(manufactureValueRaw, "kg");
     EngineNumber importValue = unitConverter.convert(importValueRaw, "kg");
+    EngineNumber exportValue;
+    if (exportValueRaw == null) {
+      exportValue = new EngineNumber(BigDecimal.ZERO, "kg");
+    } else {
+      exportValue = unitConverter.convert(exportValueRaw, "kg");
+    }
 
     boolean manufactureEnabled = hasStreamBeenEnabled(useKey, "manufacture");
     boolean importEnabled = hasStreamBeenEnabled(useKey, "import");
+    boolean exportEnabled = hasStreamBeenEnabled(useKey, "export");
 
     return new SalesStreamDistributionBuilder()
         .setManufactureSales(manufactureValue)
         .setImportSales(importValue)
+        .setExportSales(exportValue)
         .setManufactureEnabled(manufactureEnabled)
         .setImportEnabled(importEnabled)
+        .setExportEnabled(exportEnabled)
+        .setIncludeExports(includeExports)
         .build();
   }
 

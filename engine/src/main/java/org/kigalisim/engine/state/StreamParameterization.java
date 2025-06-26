@@ -278,7 +278,7 @@ public class StreamParameterization {
    * @throws IllegalArgumentException If the stream name is not a sales substream
    */
   private void ensureSalesStreamAllowed(String name) {
-    if (!"manufacture".equals(name) && !"import".equals(name) && !"recycle".equals(name)) {
+    if (!"manufacture".equals(name) && !"import".equals(name) && !"export".equals(name) && !"recycle".equals(name)) {
       throw new IllegalArgumentException("Must address a sales substream.");
     }
   }
