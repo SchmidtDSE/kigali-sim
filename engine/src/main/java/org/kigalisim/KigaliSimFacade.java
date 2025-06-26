@@ -26,7 +26,6 @@ import org.kigalisim.lang.program.ParsedPolicy;
 import org.kigalisim.lang.program.ParsedProgram;
 import org.kigalisim.lang.program.ParsedScenario;
 import org.kigalisim.lang.program.ParsedSubstance;
-import org.kigalisim.util.EmulatedStringJoiner;
 
 /**
  * Entry point into the Kigali platform when used as a library.
@@ -231,63 +230,44 @@ public class KigaliSimFacade {
       return "";
     }
 
-    // Create header row
-    EmulatedStringJoiner headerJoiner = new EmulatedStringJoiner(",");
-    headerJoiner.add("scenario");
-    headerJoiner.add("trial");
-    headerJoiner.add("year");
-    headerJoiner.add("application");
-    headerJoiner.add("substance");
-    headerJoiner.add("manufacture");
-    headerJoiner.add("import");
-    headerJoiner.add("recycle");
-    headerJoiner.add("domesticConsumption");
-    headerJoiner.add("importConsumption");
-    headerJoiner.add("recycleConsumption");
-    headerJoiner.add("population");
-    headerJoiner.add("populationNew");
-    headerJoiner.add("rechargeEmissions");
-    headerJoiner.add("eolEmissions");
-    headerJoiner.add("energyConsumption");
-    headerJoiner.add("export");
-    headerJoiner.add("exportConsumption");
-    headerJoiner.add("importInitialChargeValue");
-    headerJoiner.add("importInitialChargeConsumption");
-    headerJoiner.add("importPopulation");
-    headerJoiner.add("exportInitialChargeValue");
-    headerJoiner.add("exportInitialChargeConsumption");
+    // Estimate capacity: header + (rows * estimated_chars_per_row)
+    // With export fields: 21 decimal fields (15 chars each) + strings (~45) + integers (~6) + overhead = ~370 chars per row
+    int estimatedCapacity = 400 + (results.size() * 370);
+    StringBuilder csvBuilder = new StringBuilder(estimatedCapacity);
 
-    StringBuilder csvBuilder = new StringBuilder();
-    csvBuilder.append(headerJoiner.toString()).append("\n");
+    // Create header row - direct append with commas, including export fields
+    csvBuilder.append("scenario,trial,year,application,substance,manufacture,import,recycle,")
+              .append("domesticConsumption,importConsumption,recycleConsumption,population,")
+              .append("populationNew,rechargeEmissions,eolEmissions,energyConsumption,")
+              .append("export,exportConsumption,importInitialChargeValue,")
+              .append("importInitialChargeConsumption,importPopulation,")
+              .append("exportInitialChargeValue,exportInitialChargeConsumption\n");
 
-    // Add data rows
+    // Add data rows - direct append with commas, including export fields
     for (EngineResult result : results) {
-      EmulatedStringJoiner rowJoiner = new EmulatedStringJoiner(",");
-      rowJoiner.add(result.getScenarioName());
-      rowJoiner.add(String.valueOf(result.getTrialNumber()));
-      rowJoiner.add(String.valueOf(result.getYear()));
-      rowJoiner.add(result.getApplication());
-      rowJoiner.add(result.getSubstance());
-      rowJoiner.add(result.getManufacture().getValue().toString());
-      rowJoiner.add(result.getImport().getValue().toString());
-      rowJoiner.add(result.getRecycle().getValue().toString());
-      rowJoiner.add(result.getDomesticConsumption().getValue().toString());
-      rowJoiner.add(result.getImportConsumption().getValue().toString());
-      rowJoiner.add(result.getRecycleConsumption().getValue().toString());
-      rowJoiner.add(result.getPopulation().getValue().toString());
-      rowJoiner.add(result.getPopulationNew().getValue().toString());
-      rowJoiner.add(result.getRechargeEmissions().getValue().toString());
-      rowJoiner.add(result.getEolEmissions().getValue().toString());
-      rowJoiner.add(result.getEnergyConsumption().getValue().toString());
-      rowJoiner.add(result.getExport().getValue().toString());
-      rowJoiner.add(result.getExportConsumption().getValue().toString());
-      rowJoiner.add(result.getTradeSupplement().getImportInitialChargeValue().getValue().toString());
-      rowJoiner.add(result.getTradeSupplement().getImportInitialChargeConsumption().getValue().toString());
-      rowJoiner.add(result.getTradeSupplement().getImportPopulation().getValue().toString());
-      rowJoiner.add(result.getTradeSupplement().getExportInitialChargeValue().getValue().toString());
-      rowJoiner.add(result.getTradeSupplement().getExportInitialChargeConsumption().getValue().toString());
-
-      csvBuilder.append(rowJoiner.toString()).append("\n");
+      csvBuilder.append(result.getScenarioName()).append(',')
+                .append(result.getTrialNumber()).append(',')
+                .append(result.getYear()).append(',')
+                .append(result.getApplication()).append(',')
+                .append(result.getSubstance()).append(',')
+                .append(result.getManufacture().getValue()).append(',')
+                .append(result.getImport().getValue()).append(',')
+                .append(result.getRecycle().getValue()).append(',')
+                .append(result.getDomesticConsumption().getValue()).append(',')
+                .append(result.getImportConsumption().getValue()).append(',')
+                .append(result.getRecycleConsumption().getValue()).append(',')
+                .append(result.getPopulation().getValue()).append(',')
+                .append(result.getPopulationNew().getValue()).append(',')
+                .append(result.getRechargeEmissions().getValue()).append(',')
+                .append(result.getEolEmissions().getValue()).append(',')
+                .append(result.getEnergyConsumption().getValue()).append(',')
+                .append(result.getExport().getValue()).append(',')
+                .append(result.getExportConsumption().getValue()).append(',')
+                .append(result.getTradeSupplement().getImportInitialChargeValue().getValue()).append(',')
+                .append(result.getTradeSupplement().getImportInitialChargeConsumption().getValue()).append(',')
+                .append(result.getTradeSupplement().getImportPopulation().getValue()).append(',')
+                .append(result.getTradeSupplement().getExportInitialChargeValue().getValue()).append(',')
+                .append(result.getTradeSupplement().getExportInitialChargeConsumption().getValue()).append('\n');
     }
 
     return csvBuilder.toString();

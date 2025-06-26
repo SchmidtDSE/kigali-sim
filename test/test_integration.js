@@ -1190,6 +1190,45 @@ function buildIntegrationTests() {
         assert.deepEqual(exporterImport2.getUnits(), "kg");
       },
     ]);
+
+    buildTest("tests basic export functionality", "/examples/basic_exporter.qta", [
+      (result, assert) => {
+        // Test that the basic exporter simulation completes successfully
+        assert.ok(result.length > 0, "Basic exporter should produce simulation results");
+      },
+      (result, assert) => {
+        // Test that export stream shows the expected value
+        const record = getResult(result, "business as usual", 1, 0, "test", "HFC-134a");
+        const exportValue = record.getExport();
+        assert.closeTo(exportValue.getValue(), 200000, 0.0001); // 200 mt = 200000 kg
+        assert.deepEqual(exportValue.getUnits(), "kg");
+      },
+      (result, assert) => {
+        // Test that export consumption is calculated correctly
+        const record = getResult(result, "business as usual", 1, 0, "test", "HFC-134a");
+        const exportConsumption = record.getExportConsumption();
+        
+        // Export consumption: 200 mt * 200 kg/unit = 40,000 kg
+        // 40,000 kg * 1.43 tCO2e/1000kg = 57.2 tCO2e
+        assert.closeTo(exportConsumption.getValue(), 57.2, 0.1);
+        assert.deepEqual(exportConsumption.getUnits(), "tCO2e");
+      },
+      (result, assert) => {
+        // Test that TradeSupplement export fields are populated
+        const record = getResult(result, "business as usual", 1, 0, "test", "HFC-134a");
+        const tradeSupplement = record.getTradeSupplement();
+        
+        // Export initial charge value should be 200 kg/unit
+        const exportInitialChargeValue = tradeSupplement.getExportInitialChargeValue();
+        assert.closeTo(exportInitialChargeValue.getValue(), 200, 0.0001);
+        assert.deepEqual(exportInitialChargeValue.getUnits(), "kg / unit");
+        
+        // Export initial charge consumption should be calculated: 200 kg/unit * 1.43 tCO2e/1000kg = 0.286 tCO2e/unit
+        const exportInitialChargeConsumption = tradeSupplement.getExportInitialChargeConsumption();
+        assert.closeTo(exportInitialChargeConsumption.getValue(), 0.286, 0.001);
+        assert.deepEqual(exportInitialChargeConsumption.getUnits(), "tCO2e / unit");
+      },
+    ]);
   });
 }
 

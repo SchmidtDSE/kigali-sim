@@ -28,7 +28,6 @@ import org.kigalisim.engine.recalc.SalesStreamDistributionBuilder;
 public class StreamKeeper {
 
   private static final boolean CHECK_NAN_STATE = true;
-  private static final boolean CHECK_POSITIVE_STREAMS = true;
 
   private final Map<String, StreamParameterization> substances;
   private final Map<String, EngineNumber> streams;
@@ -86,11 +85,13 @@ public class StreamKeeper {
     String key = getKey(useKey);
     substances.put(key, new StreamParameterization());
 
-    // Sales: manufacture, import, recycle
+    // Sales: manufacture, import, export, recycle
     String manufactureKey = getKey(useKey, "manufacture");
     streams.put(manufactureKey, new EngineNumber(BigDecimal.ZERO, "kg"));
     String importKey = getKey(useKey, "import");
     streams.put(importKey, new EngineNumber(BigDecimal.ZERO, "kg"));
+    String exportKey = getKey(useKey, "export");
+    streams.put(exportKey, new EngineNumber(BigDecimal.ZERO, "kg"));
     String recycleKey = getKey(useKey, "recycle");
     streams.put(recycleKey, new EngineNumber(BigDecimal.ZERO, "kg"));
 
@@ -122,7 +123,7 @@ public class StreamKeeper {
    */
   public void setStream(UseKey useKey, String name, EngineNumber value) {
     String key = getKey(useKey);
-    ensureSubstancePresent(key, "setStream");
+    ensureSubstanceOrThrow(key, "setStream");
     ensureStreamKnown(name);
 
     if (CHECK_NAN_STATE && value.getValue().toString().equals("NaN")) {
@@ -153,8 +154,6 @@ public class StreamKeeper {
    * @return The stream value
    */
   public EngineNumber getStream(UseKey useKey, String name) {
-    String key = getKey(useKey);
-    ensureSubstancePresent(key, "getStream");
     ensureStreamKnown(name);
 
     if ("sales".equals(name)) {
@@ -174,7 +173,15 @@ public class StreamKeeper {
 
       return new EngineNumber(newTotal, "kg");
     } else {
-      return streams.get(getKey(useKey, name));
+      EngineNumber result = streams.get(getKey(useKey, name));
+      if (result == null) {
+        throwSubstanceMissing(
+            "getStream",
+            useKey.getApplication(),
+            useKey.getSubstance()
+        );
+      }
+      return result;
     }
   }
 
@@ -273,8 +280,6 @@ public class StreamKeeper {
     parameterization.setGhgIntensity(newValue);
   }
 
-
-
   /**
    * Set the energy intensity for a key.
    *
@@ -286,8 +291,6 @@ public class StreamKeeper {
     parameterization.setEnergyIntensity(newValue);
   }
 
-
-
   /**
    * Get the greenhouse gas intensity for a key.
    *
@@ -296,8 +299,14 @@ public class StreamKeeper {
    */
   public EngineNumber getGhgIntensity(UseKey useKey) {
     String key = getKey(useKey);
-    ensureSubstancePresent(key, "getGhgIntensity");
     StreamParameterization parameterization = substances.get(key);
+    if (parameterization == null) {
+      throwSubstanceMissing(
+          "getGhgIntensity",
+          useKey.getApplication(),
+          useKey.getSubstance()
+      );
+    }
     return parameterization.getGhgIntensity();
   }
 
@@ -310,8 +319,14 @@ public class StreamKeeper {
    */
   public EngineNumber getEnergyIntensity(UseKey useKey) {
     String key = getKey(useKey);
-    ensureSubstancePresent(key, "getEnergyIntensity");
     StreamParameterization parameterization = substances.get(key);
+    if (parameterization == null) {
+      throwSubstanceMissing(
+          "getEnergyIntensity",
+          useKey.getApplication(),
+          useKey.getSubstance()
+      );
+    }
     return parameterization.getEnergyIntensity();
   }
 
@@ -327,8 +342,6 @@ public class StreamKeeper {
     parameterization.setInitialCharge(substream, newValue);
   }
 
-
-
   /**
    * Get the initial charge for a key.
    *
@@ -337,11 +350,9 @@ public class StreamKeeper {
    * @return The initial charge value
    */
   public EngineNumber getInitialCharge(UseKey useKey, String substream) {
-    String key = getKey(useKey);
-    StreamParameterization parameterization = getParameterization(key);
+    StreamParameterization parameterization = getParameterization(useKey);
     return parameterization.getInitialCharge(substream);
   }
-
 
   /**
    * Set the recharge population percentage for a key.
@@ -354,7 +365,6 @@ public class StreamKeeper {
     parameterization.setRechargePopulation(newValue);
   }
 
-
   /**
    * Get the recharge population percentage for a key.
    *
@@ -365,7 +375,6 @@ public class StreamKeeper {
     StreamParameterization parameterization = getParameterization(useKey);
     return parameterization.getRechargePopulation();
   }
-
 
   /**
    * Set the recharge intensity for a key.
@@ -378,7 +387,6 @@ public class StreamKeeper {
     parameterization.setRechargeIntensity(newValue);
   }
 
-
   /**
    * Get the recharge intensity for a key.
    *
@@ -389,7 +397,6 @@ public class StreamKeeper {
     StreamParameterization parameterization = getParameterization(useKey);
     return parameterization.getRechargeIntensity();
   }
-
 
   /**
    * Set the recovery rate percentage for a key.
@@ -493,8 +500,14 @@ public class StreamKeeper {
    */
   public void setLastSpecifiedUnits(UseKey useKey, String units) {
     String key = getKey(useKey);
-    ensureSubstancePresent(key, "setLastSpecifiedUnits");
     StreamParameterization parameterization = substances.get(key);
+    if (parameterization == null) {
+      throwSubstanceMissing(
+          "setLastSpecifiedUnits",
+          useKey.getApplication(),
+          useKey.getSubstance()
+      );
+    }
     parameterization.setLastSpecifiedUnits(units);
   }
 
@@ -543,15 +556,16 @@ public class StreamKeeper {
    * @return The parameterization for the given key
    */
   private StreamParameterization getParameterization(UseKey scope) {
-    ensureSubstancePresent(scope, "getParameterization");
     String key = getKey(scope);
-    return substances.get(key);
-  }
-
-
-  private StreamParameterization getParameterization(String key) {
-    ensureSubstancePresent(key, "getParameterization");
-    return substances.get(key);
+    StreamParameterization result = substances.get(key);
+    if (result == null) {
+      throwSubstanceMissing(
+          "getParameterization",
+          scope.getApplication(),
+          scope.getSubstance()
+      );
+    }
+    return result;
   }
 
   /**
@@ -564,11 +578,10 @@ public class StreamKeeper {
     return useKey.getKey();
   }
 
-
   /**
    * Generate a stream key for a Scope and stream name.
    *
-   * @param scope The Scope to generate a key for
+   * @param useKey The Scope to generate a key for
    * @param name The stream name
    * @return The generated stream key
    */
@@ -580,6 +593,17 @@ public class StreamKeeper {
     return keyBuilder.toString();
   }
 
+  /**
+   * Sets a simple stream by converting the provided value to the appropriate units and storing it
+   * in the streams map with a key generated from the given parameters. If the converted value
+   * is NaN, an exception is thrown indicating the source of the issue.
+   *
+   * @param useKey An instance of UseKey that helps determine stream-specific characteristics
+   *               for generating the stream key.
+   * @param name A string representing the name of the stream or parameter to be processed.
+   * @param value An instance of EngineNumber that contains the numerical value to be converted
+   *              and stored in the appropriate stream.
+   */
   private void setSimpleStream(UseKey useKey, String name, EngineNumber value) {
     String unitsNeeded = getUnits(name);
     EngineNumber valueConverted = unitConverter.convert(value, unitsNeeded);
@@ -600,6 +624,18 @@ public class StreamKeeper {
     streams.put(streamKey, valueConverted);
   }
 
+  /**
+   * Configures and sets the sales stream distribution for manufacturing and import
+   * based on the provided key, name, and engine number value. The provided value
+   * is converted to kilograms and further distributed according to pre-defined
+   * distribution percentages.
+   *
+   * @param useKey A key object representing the context or identifier for the sales stream to be
+   *               set.
+   * @param name The name associated with the sales stream being configured.
+   * @param value The engine number input value to be converted and distributed into manufacturing
+   *              and import streams.
+   */
   private void setStreamForSales(UseKey useKey, String name, EngineNumber value) {
     EngineNumber valueConverted = unitConverter.convert(value, "kg");
     BigDecimal amountKg = valueConverted.getValue();
@@ -620,6 +656,16 @@ public class StreamKeeper {
     setSimpleStream(useKey, "import", importAmountToSet);
   }
 
+  /**
+   * Sets the sales stream with units for a specific use key and name. This method
+   * converts the initial charge and input value to specified units, validates the charge,
+   * and updates the internal state to reflect the conversions. The resulting stream is then
+   * stored with the corresponding key.
+   *
+   * @param useKey The identifier representing the context or use case for which the stream is being set.
+   * @param name The name associated with the stream to be updated.
+   * @param value The value to be converted and used for updating the stream, typically representing sales units.
+   */
   private void setStreamForSalesWithUnits(UseKey useKey, String name, EngineNumber value) {
     OverridingConverterStateGetter overridingStateGetter = new OverridingConverterStateGetter(
         stateGetter
@@ -649,40 +695,34 @@ public class StreamKeeper {
    * @param context The context for error reporting
    * @throws IllegalStateException If the substance does not exist for the key
    */
-  private void ensureSubstancePresent(UseKey key, String context) {
-    if (key == null) {
-      throw new IllegalStateException("Scope cannot be null in " + context);
-    }
-    if (!hasSubstance(key)) {
-      StringBuilder message = new StringBuilder();
-      message.append("Not a known application substance pair in ");
-      message.append(context);
-      message.append(": ");
-      message.append(key.getApplication());
-      message.append(", ");
-      message.append(key.getSubstance());
-      throw new IllegalStateException(message.toString());
-    }
-  }
-
-
-  private void ensureSubstancePresent(String key, String context) {
+  private void ensureSubstanceOrThrow(String key, String context) {
     if (key == null) {
       throw new IllegalStateException("Key cannot be null in " + context);
     }
     if (!substances.containsKey(key)) {
-      String[] keyPieces = key.split("\t");
-      String application = keyPieces.length > 0 ? keyPieces[0] : "";
-      String substance = keyPieces.length > 1 ? keyPieces[1] : "";
-      StringBuilder message = new StringBuilder();
-      message.append("Not a known application substance pair in ");
-      message.append(context);
-      message.append(": ");
-      message.append("-".equals(application) ? "null" : application);
-      message.append(", ");
-      message.append("-".equals(substance) ? "null" : substance);
-      throw new IllegalStateException(message.toString());
+      throwSubstanceMissing(context, key.split("\t")[0], key.split("\t")[1]);
     }
+  }
+
+  /**
+   * Indicate that a substance / application was not found.
+   *
+   * <p>Throw an IllegalStateException when an unknown application-substance pair is encountered
+   * in the specified context.</p>
+   *
+   * @param context the context in which the application-substance pair is unknown
+   * @param application the name of the application being checked
+   * @param substance the name of the substance being checked
+   */
+  private void throwSubstanceMissing(String context, String application, String substance) {
+    StringBuilder message = new StringBuilder();
+    message.append("Not a known application substance pair in ");
+    message.append(context);
+    message.append(": ");
+    message.append(application);
+    message.append(", ");
+    message.append(substance);
+    throw new IllegalStateException(message.toString());
   }
 
   /**
