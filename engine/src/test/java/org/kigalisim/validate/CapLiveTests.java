@@ -300,4 +300,67 @@ public class CapLiveTests {
         "R-404A new equipment should be greater than 0 in 2035 due to displacement"
     );
   }
+
+  /**
+   * Test cap_displace_units_magnitude.qta produces expected values.
+   * This tests capping equipment with specific magnitude values for displacement.
+   */
+  @Test
+  public void testCapDisplaceUnitsMagnitude() throws IOException {
+    // Load and parse the QTA file
+    String qtaPath = "../examples/cap_displace_units_magnitude.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    // Run the scenario using KigaliSimFacade
+    String scenarioName = "Import Ban";
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName);
+
+    List<EngineResult> resultsList = results.collect(Collectors.toList());
+
+    // Check 2025 new equipment - R-404A should have 200 units, HFC-134a should have 400 units
+    EngineResult recordR404A2025 = LiveTestsUtil.getResult(resultsList.stream(), 2025, "Test", "R-404A");
+    assertNotNull(recordR404A2025, "Should have result for Test/R-404A in year 2025");
+    assertEquals(200.0, recordR404A2025.getPopulationNew().getValue().doubleValue(), 0.0001,
+        "R-404A new equipment should be 200 units in 2025");
+    assertEquals("units", recordR404A2025.getPopulationNew().getUnits(),
+        "R-404A new equipment units should be units");
+
+    EngineResult recordHfc2025 = LiveTestsUtil.getResult(resultsList.stream(), 2025, "Test", "HFC-134a");
+    assertNotNull(recordHfc2025, "Should have result for Test/HFC-134a in year 2025");
+    assertEquals(400.0, recordHfc2025.getPopulationNew().getValue().doubleValue(), 0.0001,
+        "HFC-134a new equipment should be 400 units in 2025");
+    assertEquals("units", recordHfc2025.getPopulationNew().getUnits(),
+        "HFC-134a new equipment units should be units");
+
+    // Check 2029 new equipment - HFC-134a should have 0 units (capped), R-404A should have 600 units (displaced)
+    EngineResult recordHfc2029 = LiveTestsUtil.getResult(resultsList.stream(), 2029, "Test", "HFC-134a");
+    assertNotNull(recordHfc2029, "Should have result for Test/HFC-134a in year 2029");
+    assertEquals(0.0, recordHfc2029.getPopulationNew().getValue().doubleValue(), 0.0001,
+        "HFC-134a new equipment should be 0 units in 2029");
+    assertEquals("units", recordHfc2029.getPopulationNew().getUnits(),
+        "HFC-134a new equipment units should be units");
+
+    EngineResult recordR404A2029 = LiveTestsUtil.getResult(resultsList.stream(), 2029, "Test", "R-404A");
+    assertNotNull(recordR404A2029, "Should have result for Test/R-404A in year 2029");
+    assertEquals(600.0, recordR404A2029.getPopulationNew().getValue().doubleValue(), 0.0001,
+        "R-404A new equipment should be 600 units in 2029");
+    assertEquals("units", recordR404A2029.getPopulationNew().getUnits(),
+        "R-404A new equipment units should be units");
+
+    // Check 2030 new equipment - same as 2029 (HFC-134a should have 0 units, R-404A should have 600 units)
+    EngineResult recordHfc2030 = LiveTestsUtil.getResult(resultsList.stream(), 2030, "Test", "HFC-134a");
+    assertNotNull(recordHfc2030, "Should have result for Test/HFC-134a in year 2030");
+    assertEquals(0.0, recordHfc2030.getPopulationNew().getValue().doubleValue(), 0.0001,
+        "HFC-134a new equipment should be 0 units in 2030");
+    assertEquals("units", recordHfc2030.getPopulationNew().getUnits(),
+        "HFC-134a new equipment units should be units");
+
+    EngineResult recordR404A2030 = LiveTestsUtil.getResult(resultsList.stream(), 2030, "Test", "R-404A");
+    assertNotNull(recordR404A2030, "Should have result for Test/R-404A in year 2030");
+    assertEquals(600.0, recordR404A2030.getPopulationNew().getValue().doubleValue(), 0.0001,
+        "R-404A new equipment should be 600 units in 2030");
+    assertEquals("units", recordR404A2030.getPopulationNew().getUnits(),
+        "R-404A new equipment units should be units");
+  }
 }

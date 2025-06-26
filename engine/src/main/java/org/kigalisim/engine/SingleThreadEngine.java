@@ -19,16 +19,10 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import org.kigalisim.engine.number.EngineNumber;
 import org.kigalisim.engine.number.UnitConverter;
-import org.kigalisim.engine.recalc.ConsumptionRecalcStrategy;
-import org.kigalisim.engine.recalc.EolEmissionsRecalcStrategy;
-import org.kigalisim.engine.recalc.PopulationChangeRecalcStrategy;
 import org.kigalisim.engine.recalc.RecalcKit;
 import org.kigalisim.engine.recalc.RecalcKitBuilder;
 import org.kigalisim.engine.recalc.RecalcOperation;
 import org.kigalisim.engine.recalc.RecalcOperationBuilder;
-import org.kigalisim.engine.recalc.RechargeEmissionsRecalcStrategy;
-import org.kigalisim.engine.recalc.RetireRecalcStrategy;
-import org.kigalisim.engine.recalc.SalesRecalcStrategy;
 import org.kigalisim.engine.serializer.EngineResult;
 import org.kigalisim.engine.serializer.EngineResultSerializer;
 import org.kigalisim.engine.state.ConverterStateGetter;
@@ -841,45 +835,6 @@ public class SingleThreadEngine implements Engine {
   }
 
   /**
-   * Calculate the recharge volume for the current application and substance.
-   *
-   * @return The recharge volume in kg
-   */
-  private EngineNumber calculateRechargeVolume() {
-    OverridingConverterStateGetter stateGetter =
-        new OverridingConverterStateGetter(this.stateGetter);
-    UnitConverter unitConverter = new UnitConverter(stateGetter);
-    String application = scope.getApplication();
-    String substance = scope.getSubstance();
-
-    if (application == null || substance == null) {
-      raiseNoAppOrSubstance("calculating recharge volume", "");
-    }
-
-    // Get prior population for recharge calculation
-    EngineNumber priorPopulationRaw = getStream("priorEquipment");
-    EngineNumber priorPopulation = unitConverter.convert(priorPopulationRaw, "units");
-
-    // Get recharge population
-    stateGetter.setPopulation(getStream("priorEquipment"));
-    EngineNumber rechargePopRaw = streamKeeper.getRechargePopulation(scope);
-    EngineNumber rechargePop = unitConverter.convert(rechargePopRaw, "units");
-    stateGetter.clearPopulation();
-
-    // Switch to recharge population
-    stateGetter.setPopulation(rechargePop);
-
-    // Get recharge amount
-    EngineNumber rechargeIntensityRaw = streamKeeper.getRechargeIntensity(scope);
-    EngineNumber rechargeVolume = unitConverter.convert(rechargeIntensityRaw, "kg");
-
-    // Return to prior population
-    stateGetter.setPopulation(priorPopulation);
-
-    return rechargeVolume;
-  }
-
-  /**
    * Handle displacement logic for cap and floor operations.
    *
    * @param stream The stream identifier being modified
@@ -913,15 +868,17 @@ public class SingleThreadEngine implements Engine {
         Scope destinationScope = scope.getWithSubstance(displaceTarget);
 
         // Temporarily change scope to destination for unit conversion
-        Scope originalScope = scope;
+        final Scope originalScope = scope;
         scope = destinationScope;
         UnitConverter destinationUnitConverter = createUnitConverterWithTotal(stream);
-        scope = originalScope;
 
         // Convert units to destination substance volume using destination's initial charge
         EngineNumber destinationVolumeChange = destinationUnitConverter.convert(unitsChanged, "kg");
         displaceChange = new EngineNumber(destinationVolumeChange.getValue(), "kg");
         changeStreamWithoutReportingUnits(stream, displaceChange, null, destinationScope);
+
+        // Restore original scope
+        scope = originalScope;
       }
     } else {
       // For volume units, use volume-based displacement as before
@@ -1003,76 +960,6 @@ public class SingleThreadEngine implements Engine {
   }
 
   /**
-   * Recalculates population changes based on current state.
-   *
-   * @param scope The scope to recalculate for
-   * @param subtractRecharge Whether to subtract recharge
-   */
-  private void recalcPopulationChange(Scope scope, Boolean subtractRecharge) {
-    // Delegate to strategy with RecalcKit
-    PopulationChangeRecalcStrategy strategy = new PopulationChangeRecalcStrategy(
-        Optional.ofNullable(scope),
-        Optional.ofNullable(subtractRecharge)
-    );
-    strategy.execute(this, createRecalcKit());
-  }
-
-  /**
-   * Recalculate the emissions that are accounted for at time of recharge.
-   *
-   * @param scope The scope in which to set the recharge emissions
-   */
-  private void recalcRechargeEmissions(Scope scope) {
-    // Delegate to strategy with RecalcKit
-    RechargeEmissionsRecalcStrategy strategy = new RechargeEmissionsRecalcStrategy(Optional.ofNullable(scope));
-    strategy.execute(this, createRecalcKit());
-  }
-
-  /**
-   * Recalculate emissions realized at the end of life for a unit.
-   *
-   * @param scope The scope in which to recalculate EOL emissions
-   */
-  private void recalcEolEmissions(Scope scope) {
-    // Delegate to strategy with RecalcKit
-    EolEmissionsRecalcStrategy strategy = new EolEmissionsRecalcStrategy(Optional.ofNullable(scope));
-    strategy.execute(this, createRecalcKit());
-  }
-
-  /**
-   * Recalculates consumption values based on current state.
-   *
-   * @param scope The scope to recalculate for
-   */
-  private void recalcConsumption(Scope scope) {
-    // Delegate to strategy with RecalcKit
-    ConsumptionRecalcStrategy strategy = new ConsumptionRecalcStrategy(Optional.ofNullable(scope));
-    strategy.execute(this, createRecalcKit());
-  }
-
-  /**
-   * Recalculates sales values based on current state.
-   *
-   * @param scope The scope to recalculate for
-   */
-  private void recalcSales(Scope scope) {
-    // Delegate to strategy with RecalcKit
-    SalesRecalcStrategy strategy = new SalesRecalcStrategy(Optional.ofNullable(scope));
-    strategy.execute(this, createRecalcKit());
-  }
-
-  /**
-   * Recalculates retirement values based on current state.
-   *
-   * @param scope The scope to recalculate for
-   */
-  private void recalcRetire(Scope scope) {
-    // Delegate to strategy with RecalcKit
-    RetireRecalcStrategy strategy = new RetireRecalcStrategy(Optional.ofNullable(scope));
-    strategy.execute(this, createRecalcKit());
-  }
-
-  /**
    * Helper method to raise exception for missing application or substance.
    *
    * @param operation The operation being attempted
@@ -1080,44 +967,6 @@ public class SingleThreadEngine implements Engine {
    */
   private void raiseNoAppOrSubstance(String operation, String suffix) {
     ExceptionsGenerator.raiseNoAppOrSubstance(operation, suffix);
-  }
-
-  /**
-   * Helper method to get the application from the current scope.
-   *
-   * @return The application or null if not set
-   */
-  private String getApplicationFromScope() {
-    return scope.getApplication();
-  }
-
-  /**
-   * Helper method to get the application from the given scope.
-   *
-   * @param scope The scope to get the application from
-   * @return The application or null if not set
-   */
-  private String getApplicationFromScope(Scope scope) {
-    return scope.getApplication();
-  }
-
-  /**
-   * Helper method to get the substance from the current scope.
-   *
-   * @return The substance or null if not set
-   */
-  private String getSubstanceFromScope() {
-    return scope.getSubstance();
-  }
-
-  /**
-   * Helper method to get the substance from the given scope.
-   *
-   * @param scope The scope to get the substance from
-   * @return The substance or null if not set
-   */
-  private String getSubstanceFromScope(Scope scope) {
-    return scope.getSubstance();
   }
 
   /**
@@ -1167,12 +1016,4 @@ public class SingleThreadEngine implements Engine {
     return target.compareTo(BigDecimal.ZERO) == 0;
   }
 
-  /**
-   * Determine if the current scope was last specified in units.
-   *
-   * @return True if last in units and false otherwise.
-   */
-  private boolean getWasLastGivenUnits() {
-    return streamKeeper.getLastSpecifiedUnits(scope).startsWith("unit");
-  }
 }
