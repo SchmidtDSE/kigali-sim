@@ -8,3 +8,4 @@ test/qunit.min.js
 engine/scratch
 engine/src-generated
 wasm
+tasks
