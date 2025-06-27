@@ -80,7 +80,6 @@ public class StreamKeeper {
   public void ensureSubstance(UseKey useKey) {
     String key = getKey(useKey);
     
-    // Single HashMap lookup instead of hasSubstance() which does containsKey()
     if (substances.get(key) != null) {
       return;
     }
