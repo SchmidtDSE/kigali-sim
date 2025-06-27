@@ -155,14 +155,6 @@ public class StreamKeeper {
   public EngineNumber getStream(UseKey useKey, String name) {
     String key = getKey(useKey);
     
-    if (!substances.containsKey(key)) {
-      throwSubstanceMissing(
-          "getStream",
-          useKey.getApplication(),
-          useKey.getSubstance()
-      );
-    }
-    
     ensureStreamKnown(name);
 
     if ("sales".equals(name)) {
