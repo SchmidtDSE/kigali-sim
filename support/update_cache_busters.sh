@@ -19,3 +19,8 @@ fi
 if ! sed -i "s/EPOCH/${epoch}/g" deploy/js/wasm_backend.js; then
     exit 4
 fi
+
+# PWA cache invalidation - forces service worker to update and clear old caches
+if ! sed -i "s/EPOCH/${epoch}/g" deploy/service_worker.js; then
+    exit 5
+fi
