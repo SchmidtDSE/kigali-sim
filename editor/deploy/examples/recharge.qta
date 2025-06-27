@@ -1,0 +1,21 @@
+start default
+
+  define application "test"
+
+    uses substance "test"
+      set manufacture to 100 mt
+      initial charge with 1 kg / unit for manufacture
+      recharge 10% with 1 kg / unit
+      equals 5 tCO2e / mt
+    end substance
+
+  end application
+
+end default
+
+
+start simulations
+
+  simulate "business as usual" from years 1 to 2
+
+end simulations

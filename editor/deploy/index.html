@@ -1,0 +1,1733 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width" />
+    <title>Montreal Policy Simulator</title>
+    <link rel="manifest" href="/manifest.json" />
+    <link rel="icon" type="image/png" href="/style/icon.png" />
+    <meta name="theme-color" content="#C0C0C0" />
+    <link href="/third_party/tabby-ui.min.css" rel="stylesheet" type="text/css" />
+    <link href="/style/style.css?v=EPOCH" rel="stylesheet" type="text/css" />
+  </head>
+
+  <body>
+    <header>
+      <div class="beta-warning">
+        This tool is under development and currently in beta testing. We would love to hear from
+        you! Let us know your feedback at
+        <a href="mailto:hello@mlf-policy-explorer.org">hello@mlf-policy-explorer.org</a> and we are
+        here to help if you run into any issues. You are also very welcome to
+        <a href="https://calendar.app.google/xqLF4DXWwPCC2js58" target="_blank"
+          >book a time to meet with us</a
+        >. See also our
+        <a href="https://vimeo.com/1061085671?share=copy" target="_blank">getting help video</a>.
+      </div>
+      <h1>Montreal Policy Simulator</h1>
+      Online open source / open science engine for business as usual and policy simulation on HFCs.
+      This webpage enables exploration and analysis of potential outcomes for multiple substances
+      and applications under different scenarios.
+      <div class="file-buttons buttons-panel">
+        <a href="#" id="new-file-button" class="secondary">New File</a>
+        <a href="#" id="load-file-button" class="secondary">Load File</a>
+        <a href="#" download="simulation.qta" id="save-file-button" class="secondary">Save File</a>
+        <a href="/guide" class="secondary" target="_blank">Guide</a>
+        <a href="/guide/get_help.html" class="secondary" id="get-help-button">Get Help</a>
+
+        <dialog id="load-file-dialog">
+          <h2>Open Analysis</h2>
+          <p>Note that this will override code currently entered into the application.</p>
+          <div><label for="upload-file">File (.qta recommended):</label></div>
+          <div><input type="file" class="upload-file" id="upload-file" name="upload-file" /></div>
+          <div class="dialog-buttons bold-buttons">
+            <a href="#" class="load-button primary">Open</a>
+            <a href="#" class="cancel-button destructive">Cancel</a>
+          </div>
+        </dialog>
+
+        <dialog id="custom-emissions-dialog">
+          <h2>Configure Custom Emissions Metric</h2>
+          <p>Select which emission types to include in your custom metric:</p>
+          <div class="checkbox-list">
+            <label><input type="checkbox" value="recharge"> Recharge emissions</label>
+            <label><input type="checkbox" value="eol"> End of life emissions</label>
+          </div>
+          <div class="dialog-buttons bold-buttons">
+            <a href="#" class="primary">Apply</a>
+            <a href="#" class="secondary">Cancel</a>
+          </div>
+        </dialog>
+
+        <dialog id="custom-sales-dialog">
+          <h2>Configure Custom Sales/Consumption Metric</h2>
+          <p>Select which consumption types to include in your custom metric:</p>
+          <div class="checkbox-list">
+            <label><input type="checkbox" value="manufacture"> Domestic manufacture</label>
+            <label><input type="checkbox" value="import"> Imports</label>
+            <label><input type="checkbox" value="recycle"> Recycle</label>
+          </div>
+          <div class="dialog-buttons bold-buttons">
+            <a href="#" class="primary">Apply</a>
+            <a href="#" class="secondary">Cancel</a>
+          </div>
+        </dialog>
+      </div>
+    </header>
+
+    <section id="loading">
+      <img src="/style/90-ring.svg" alt="Loading indicator" /> Loading please wait...
+    </section>
+
+    <div id="main-holder">
+      <main id="main">
+        <section id="editor">
+          <h2>Simulation</h2>
+          <ul id="editor-tabs" data-tabs>
+            <li><a data-tabby-default href="#ui-editor-pane">Designer</a></li>
+            <li><a href="#code-editor-pane">Editor</a></li>
+          </ul>
+          <div id="ui-editor-pane">
+            <div class="available-contents">
+              <div class="ui-editor-sections">
+                <div class="ui-editor-section applications">
+                  <h3>Applications</h3>
+                  <ul class="item-list"></ul>
+                  <div class="add-link-pane bold-buttons">
+                    <a href="#add-application" class="add-link secondary">Add Application</a>
+                  </div>
+                  <dialog class="dialog">
+                    <h2><span class="action-title"></span> Application</h2>
+                    <div class="instructions">
+                      An application is a type of use which may be compatible with many different
+                      substances. For example, an application may be "commercial ACs" for commercial
+                      air conditioners.
+                    </div>
+                    <div class="contents">
+                      <div class="form-group">
+                        <div><label for="edit-application-name">Application:</label></div>
+                        <div>
+                          <input
+                            type="text"
+                            name="edit-application-name"
+                            class="edit-application-name-input long"
+                            autofocus
+                          />
+                        </div>
+                      </div>
+                      <div class="form-group">
+                        <div>
+                          <label for="edit-application-subname">Subapplication (optional):</label>
+                        </div>
+                        <div>
+                          <input
+                            type="text"
+                            name="edit-application-subname"
+                            class="edit-application-subname-input long"
+                            autofocus
+                          />
+                        </div>
+                      </div>
+                    </div>
+                    <div class="dialog-buttons bold-buttons">
+                      <a href="#ui-editor-sections" class="save-button primary">Save</a>
+                      <a href="#ui-editor-sections" class="cancel-button destructive">Cancel</a>
+                    </div>
+                  </dialog>
+                </div>
+
+                <div></div>
+
+                <div class="ui-editor-section consumption inactive">
+                  <h3>Consumption</h3>
+                  <ul class="item-list"></ul>
+                  <div class="add-link-pane bold-buttons">
+                    <a href="#add-consumption" class="add-link secondary">Add consumption</a>
+                  </div>
+                  <dialog class="dialog">
+                    <h2><span class="action-title"></span> Consumption</h2>
+                    <div class="instructions">
+                      A consumption records describes use of a single substance like HFC-134a in a
+                      single application like domestic refrigeration.
+                    </div>
+                    <div class="contents">
+                      <ul id="consumption-tabs" class="tabs" data-tabs>
+                        <li><a data-tabby-default href="#consumption-general">General</a></li>
+                        <li><a href="#consumption-equipment">Equipment</a></li>
+                        <li>
+                          <a href="#consumption-start"
+                            >Set (<span id="consumption-set-count">0</span>)</a
+                          >
+                        </li>
+                        <li>
+                          <a href="#consumption-change"
+                            >Change (<span id="consumption-change-count">0</span>)</a
+                          >
+                        </li>
+                        <li>
+                          <a href="#consumption-limit"
+                            >Limit (<span id="consumption-limit-count">0</span>)</a
+                          >
+                        </li>
+                      </ul>
+                      <div id="consumption-general">
+                        <div class="instructions">
+                          Information about the substance and application being modeled.
+                        </div>
+                        <div class="form-group">
+                          <div><label for="edit-consumption-substance">Substance:</label></div>
+                          <div>
+                            <input
+                              type="text"
+                              name="edit-consumption-substance"
+                              class="edit-consumption-substance-input long"
+                              autofocus
+                            />
+                          </div>
+                        </div>
+                        <div class="form-group">
+                          <div><label for="edit-consumption-application">Application:</label></div>
+                          <div>
+                            <span class="sel long">
+                              <select
+                                id="edit-consumption-application"
+                                name="edit-consumption-application"
+                                class="edit-consumption-application-input application-select"
+                              ></select>
+                            </span>
+                          </div>
+                        </div>
+                        <div class="form-group">
+                          <div><label for="edit-consumption-ghg">GHG Equivalency:</label></div>
+                          <div>
+                            <input
+                              type="text"
+                              name="edit-consumption-ghg"
+                              class="edit-consumption-ghg-input mid"
+                            />
+                            <span class="sel mid">
+                              <select
+                                name="edit-consumption-ghg-units"
+                                class="edit-consumption-ghg-units-input"
+                                aria-label="Units of GHG equivalency"
+                              >
+                                <option value="tCO2e / unit">tCO2e / unit</option>
+                                <option value="tCO2e / kg">tCO2e / kg</option>
+                                <option value="tCO2e / mt">tCO2e / mt</option>
+                              </select>
+                            </span>
+                          </div>
+                        </div>
+                        <div class="form-group">
+                          <div>
+                            <label for="edit-consumption-energy">Annual energy consumption:</label>
+                          </div>
+                          <div>
+                            <input
+                              type="text"
+                              name="edit-consumption-energy"
+                              class="edit-consumption-energy-input mid"
+                            />
+                            <span class="sel mid">
+                              <select
+                                name="edit-consumption-energy-units"
+                                class="edit-consumption-energy-units-input"
+                                aria-label="Units of energy equivalency"
+                              >
+                                <option value="kwh / unit">kWh / unit</option>
+                                <option value="kwh / kg">kWh / kg</option>
+                                <option value="kwh / kg">kWh / mt</option>
+                              </select>
+                            </span>
+                          </div>
+                        </div>
+                        <div class="form-group">
+                          <div><label for="edit-consumption-source">Source:</label></div>
+                          <div>
+                            <span class="sel long">
+                              <select name="source" class="edit-consumption-source">
+                                <option value="all">Import and Domestic Manufacture</option>
+                                <option value="manufacture">Domestic Manufacture Only</option>
+                                <option value="import">Import Only</option>
+                              </select>
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                      <div id="consumption-equipment">
+                        <div class="instructions">
+                          Information about equipment that uses this substance for this application.
+                          <span class="scope-reminder">
+                            You are describing equipment using
+                            <span class="reminder-substance"></span> for
+                            <span class="reminder-app"></span>.
+                            <a href="#edit" class="edit-reminder-link">Change</a>
+                          </span>
+                        </div>
+                        <div
+                          class="form-group edit-consumption-initial-charge-domestic-input-outer"
+                        >
+                          <div>
+                            <label for="edit-consumption-initial-charge-domestic"
+                              >Domestically manufactured equipment initial charge:</label
+                            >
+                          </div>
+                          <div>
+                            <input
+                              type="text"
+                              name="edit-consumption-initial-charge-domestic"
+                              class="edit-consumption-initial-charge-domestic-input mid"
+                              data-lpignore="true"
+                              data-protonpass-ignore="true"
+                              data-1p-ignore
+                            />
+                            <span class="sel mid">
+                              <select
+                                name="initial-charge-domestic-units"
+                                class="initial-charge-domestic-units-input"
+                                aria-label="Units of initial charge"
+                              >
+                                <option value="kg">kg</option>
+                                <option value="mt">mt</option>
+                                <option value="tCO2e">tCO2e</option>
+                                <option value="units">units</option>
+                                <option value="kg each year">kg each year</option>
+                                <option value="mt each year">mt each year</option>
+                                <option value="tCO2e each year">tCO2e each year</option>
+                                <option value="units each year">units each year</option>
+                                <option value="kg / unit">kg / unit</option>
+                                <option value="mt / unit">mt / unit</option>
+                                <option value="tCO2e / unit">tCO2e / unit</option>
+                                <option value="tCO2e / kg">tCO2e / kg</option>
+                                <option value="tCO2e / mt">tCO2e / mt</option>
+                                <option value="%">%</option>
+                                <option value="% each year">% each year</option>
+                              </select>
+                            </span>
+                          </div>
+                        </div>
+                        <div class="form-group edit-consumption-initial-charge-import-input-outer">
+                          <div>
+                            <label for="edit-consumption-initial-charge-import"
+                              >Imported equipment initial charge:</label
+                            >
+                          </div>
+                          <div>
+                            <input
+                              type="text"
+                              name="edit-consumption-initial-charge-import"
+                              class="edit-consumption-initial-charge-import-input mid"
+                              data-lpignore="true"
+                              data-protonpass-ignore="true"
+                              data-1p-ignore
+                            />
+                            <span class="sel mid">
+                              <select
+                                name="initial-charge-import-units"
+                                class="initial-charge-import-units-input"
+                                aria-label="Units of initial charge"
+                              >
+                                <option value="kg">kg</option>
+                                <option value="mt">mt</option>
+                                <option value="tCO2e">tCO2e</option>
+                                <option value="units">units</option>
+                                <option value="kg each year">kg each year</option>
+                                <option value="mt each year">mt each year</option>
+                                <option value="tCO2e each year">tCO2e each year</option>
+                                <option value="units each year">units each year</option>
+                                <option value="kg / unit">kg / unit</option>
+                                <option value="mt / unit">mt / unit</option>
+                                <option value="tCO2e / unit">tCO2e / unit</option>
+                                <option value="tCO2e / kg">tCO2e / kg</option>
+                                <option value="tCO2e / mt">tCO2e / mt</option>
+                                <option value="%">%</option>
+                                <option value="% each year">% each year</option>
+                              </select>
+                            </span>
+                          </div>
+                        </div>
+                        <div class="form-group edit-consumption-initial-charge-export-input-outer">
+                          <div>
+                            <label for="edit-consumption-initial-charge-export"
+                              >Exported equipment initial charge:</label
+                            >
+                          </div>
+                          <div>
+                            <input
+                              type="text"
+                              name="edit-consumption-initial-charge-export"
+                              class="edit-consumption-initial-charge-export-input mid"
+                              data-lpignore="true"
+                              data-protonpass-ignore="true"
+                              data-1p-ignore
+                            />
+                            <span class="sel mid">
+                              <select
+                                name="initial-charge-export-units"
+                                class="initial-charge-export-units-input"
+                                aria-label="Units of initial charge"
+                              >
+                                <option value="kg">kg</option>
+                                <option value="mt">mt</option>
+                                <option value="tCO2e">tCO2e</option>
+                                <option value="units">units</option>
+                                <option value="kg each year">kg each year</option>
+                                <option value="mt each year">mt each year</option>
+                                <option value="tCO2e each year">tCO2e each year</option>
+                                <option value="units each year">units each year</option>
+                                <option value="kg / unit">kg / unit</option>
+                                <option value="mt / unit">mt / unit</option>
+                                <option value="tCO2e / unit">tCO2e / unit</option>
+                                <option value="tCO2e / kg">tCO2e / kg</option>
+                                <option value="tCO2e / mt">tCO2e / mt</option>
+                                <option value="%">%</option>
+                                <option value="% each year">% each year</option>
+                              </select>
+                            </span>
+                          </div>
+                        </div>
+                        <div class="form-group">
+                          <div>
+                            <label for="edit-consumption-retirement"
+                              >Amount of equipment retired annually:</label
+                            >
+                          </div>
+                          <div>
+                            <input
+                              type="text"
+                              name="edit-consumption-retirement"
+                              class="edit-consumption-retirement-input mid"
+                              data-lpignore="true"
+                              data-protonpass-ignore="true"
+                              data-1p-ignore
+                            />
+                            <span class="sel mid">
+                              <select
+                                name="retirement-units"
+                                class="retirement-units-input"
+                                aria-label="Units of equipment annual retirement"
+                              >
+                                <option value="kg">kg</option>
+                                <option value="mt">mt</option>
+                                <option value="tCO2e">tCO2e</option>
+                                <option value="units">units</option>
+                                <option value="kg each year">kg each year</option>
+                                <option value="mt each year">mt each year</option>
+                                <option value="tCO2e each year">tCO2e each year</option>
+                                <option value="units each year">units each year</option>
+                                <option value="kg / unit">kg / unit</option>
+                                <option value="mt / unit">mt / unit</option>
+                                <option value="tCO2e / unit">tCO2e / unit</option>
+                                <option value="tCO2e / kg">tCO2e / kg</option>
+                                <option value="tCO2e / mt">tCO2e / mt</option>
+                                <option value="%">%</option>
+                                <option value="% each year">% each year</option>
+                              </select>
+                            </span>
+                          </div>
+                        </div>
+                        <div class="form-group">
+                          <div>
+                            <label for="edit-consumption-recharge-population"
+                              >Amount of equipment recharged annually:</label
+                            >
+                          </div>
+                          <div>
+                            <input
+                              type="text"
+                              name="edit-consumption-recharge-population"
+                              class="edit-consumption-recharge-population-input mid"
+                            />
+                            <span class="sel mid">
+                              <select
+                                name="recharge-population-units"
+                                class="recharge-population-units-input"
+                                aria-label="Units of equipment recharge frequency"
+                              >
+                                <option value="kg">kg</option>
+                                <option value="mt">mt</option>
+                                <option value="tCO2e">tCO2e</option>
+                                <option value="units">units</option>
+                                <option value="kg each year">kg each year</option>
+                                <option value="mt each year">mt each year</option>
+                                <option value="tCO2e each year">tCO2e each year</option>
+                                <option value="units each year">units each year</option>
+                                <option value="kg / unit">kg / unit</option>
+                                <option value="mt / unit">mt / unit</option>
+                                <option value="tCO2e / unit">tCO2e / unit</option>
+                                <option value="tCO2e / kg">tCO2e / kg</option>
+                                <option value="tCO2e / mt">tCO2e / mt</option>
+                                <option value="%">%</option>
+                                <option value="% each year">% each year</option>
+                              </select>
+                            </span>
+                          </div>
+                        </div>
+                        <div class="form-group">
+                          <div>
+                            <label for="edit-consumption-recharge-volume">Recharge volume:</label>
+                          </div>
+                          <div>
+                            <input
+                              type="text"
+                              name="edit-consumption-recharge-volume"
+                              class="edit-consumption-recharge-volume-input mid"
+                            />
+                            <span class="sel mid">
+                              <select
+                                name="recharge-volume-units"
+                                class="recharge-volume-units-input"
+                                aria-label="Units of equipment recharge frequency"
+                              >
+                                <option value="kg">kg</option>
+                                <option value="mt">mt</option>
+                                <option value="tCO2e">tCO2e</option>
+                                <option value="units">units</option>
+                                <option value="kg each year">kg each year</option>
+                                <option value="mt each year">mt each year</option>
+                                <option value="tCO2e each year">tCO2e each year</option>
+                                <option value="units each year">units each year</option>
+                                <option value="kg / unit">kg / unit</option>
+                                <option value="mt / unit">mt / unit</option>
+                                <option value="tCO2e / unit">tCO2e / unit</option>
+                                <option value="tCO2e / kg">tCO2e / kg</option>
+                                <option value="tCO2e / mt">tCO2e / mt</option>
+                                <option value="%">%</option>
+                                <option value="% each year">% each year</option>
+                              </select>
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                      <div id="consumption-start">
+                        <div class="instructions">
+                          Substance levels at specific times. These typically describe initial
+                          values for assessing consumption. For example, amount of import and
+                          domestic manufacturing (both produced and consumed within the country) at
+                          the start of the simulation. Note: use
+                          <a href="#consumption-change" class="dialog-internal-link">change</a>
+                          instead to describe relative changes over time.
+                        </div>
+                        <div class="dialog-list level-list"></div>
+                        <div class="dialog-sub-buttons bold-buttons">
+                          <a href="#" class="add-start-button secondary">Add Setpoint</a>
+                        </div>
+                        <div class="scope-reminder detached">
+                          You are making set points for
+                          <span class="reminder-substance"></span> used in
+                          <span class="reminder-app"></span>.
+                          <a href="#edit" class="edit-reminder-link">Change</a>
+                        </div>
+                      </div>
+                      <div id="consumption-change">
+                        <div class="instructions">
+                          How sales or consumption change over time like, for example, how much
+                          domestic manufacture increases each year. While this sets streams to
+                          change relatively over time, use
+                          <a href="#consumption-start" class="dialog-internal-link">setpoints</a>
+                          instead to have consumption, sales, etc be specific values at specific
+                          times.
+                        </div>
+                        <div class="dialog-list change-list"></div>
+                        <div class="dialog-sub-buttons bold-buttons">
+                          <a href="#" class="add-change-button secondary">Add Change</a>
+                        </div>
+                        <div class="scope-reminder detached">
+                          You are describing changes in
+                          <span class="reminder-substance"></span> used for
+                          <span class="reminder-app"></span>.
+                          <a href="#edit" class="edit-reminder-link">Change</a>
+                        </div>
+                      </div>
+                      <div id="consumption-limit">
+                        <div class="instructions">
+                          Specify limits (minimum and maximum). Optionally, these limits can
+                          displace other substances or streams. For example, in a 100 kg cap on
+                          HFC-134a offsetting R-410A in domestic refrigeration, a cap would cause
+                          150 kg of HFC-134a and 0 kg of R-410A to become 100 and 50 kg
+                          respectively.
+                        </div>
+                        <div class="dialog-list limit-list"></div>
+                        <div class="dialog-sub-buttons bold-buttons">
+                          <a href="#" class="add-limit-button secondary">Add Limit</a>
+                        </div>
+                        <div class="scope-reminder detached">
+                          You are limiting <span class="reminder-substance"></span> used for
+                          <span class="reminder-app"></span>.
+                          <a href="#edit" class="edit-reminder-link">Change</a>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="dialog-buttons bold-buttons">
+                      <a href="#ui-editor-sections" class="save-button primary">Save</a>
+                      <a href="#ui-editor-sections" class="cancel-button destructive">Cancel</a>
+                    </div>
+                  </dialog>
+                </div>
+
+                <div class="ui-editor-section policies inactive">
+                  <h3>Policies</h3>
+                  <ul class="item-list"></ul>
+                  <div class="add-link-pane bold-buttons">
+                    <a href="#add-policy" class="add-link secondary">Add Policy</a>
+                  </div>
+                  <dialog class="dialog">
+                    <h2><span class="action-title"></span> Policy</h2>
+                    <div class="instructions">
+                      Policies can modify substances within applications. They can also be combined
+                      into a package tested in a simulation.
+                    </div>
+                    <div class="contents">
+                      <ul id="policy-tabs" class="tabs" data-tabs>
+                        <li><a data-tabby-default href="#policy-general">General</a></li>
+                        <li>
+                          <a href="#policy-recycle"
+                            >Recycle (<span id="policy-recycle-count">0</span>)</a
+                          >
+                        </li>
+                        <li>
+                          <a href="#policy-salvage"
+                            >Savlage (<span id="policy-recycle-count">0</span>)</a
+                          >
+                        </li>
+                        <li>
+                          <a href="#policy-replace"
+                            >Replace (<span id="policy-replace-count">0</span>)</a
+                          >
+                        </li>
+                        <li>
+                          <a href="#policy-set">Set (<span id="policy-set-count">0</span>)</a>
+                        </li>
+                        <li>
+                          <a href="#policy-change"
+                            >Change (<span id="policy-change-count">0</span>)</a
+                          >
+                        </li>
+                        <li>
+                          <a href="#policy-limit">Limit (<span id="policy-limit-count">0</span>)</a>
+                        </li>
+                      </ul>
+                      <div id="policy-general">
+                        <div class="instructions">
+                          Information about the name of the policy as well as its the target
+                          substance and application. This is the substance being limited, recycled,
+                          or replaced with something else.
+                        </div>
+                        <div class="form-group">
+                          <div><label for="edit-policy-name">Name:</label></div>
+                          <div>
+                            <input
+                              type="text"
+                              name="edit-policy-name"
+                              class="edit-policy-name-input long"
+                              autofocus
+                            />
+                          </div>
+                        </div>
+                        <div class="form-group">
+                          <div><label for="edit-policy-application">Application:</label></div>
+                          <div>
+                            <span class="sel long">
+                              <select
+                                id="edit-policy-application"
+                                name="edit-policy-application"
+                                class="edit-policy-application-input application-select"
+                              ></select>
+                            </span>
+                          </div>
+                        </div>
+                        <div class="form-group">
+                          <div><label for="edit-policy-substance">Substance:</label></div>
+                          <div>
+                            <span class="sel long">
+                              <select
+                                id="edit-policy-substance"
+                                name="edit-policy-substance"
+                                class="edit-policy-substance-input substances-select"
+                              ></select>
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                      <div id="policy-recycle">
+                        <div class="instructions">
+                          Define a recycling program in which substance is recovered during
+                          servicing. There may be yield loss in processing substances prior to
+                          reuse.
+                        </div>
+                        <div class="dialog-list recycling-list"></div>
+                        <div class="dialog-sub-buttons bold-buttons">
+                          <a href="#" class="add-recycling-button secondary">Add Recycling</a>
+                        </div>
+                        <div class="scope-reminder detached">
+                          Your policy will recycle <span class="reminder-substance"></span> used for
+                          <span class="reminder-app"></span>.
+                          <a href="#edit" class="edit-reminder-link">Change</a>
+                        </div>
+                      </div>
+                      <div id="policy-salvage">
+                        <div class="instructions">
+                          Define a recycling program in which substance is recovered at end of life.
+                          There may be yield loss in processing substances prior to reuse.
+                        </div>
+                        <div>This policy is coming soon</div>
+                        <div class="scope-reminder detached">
+                          Your policy will recycle <span class="reminder-substance"></span> used for
+                          <span class="reminder-app"></span>.
+                          <a href="#edit" class="edit-reminder-link">Change</a>
+                        </div>
+                      </div>
+                      <div id="policy-replace">
+                        <div class="instructions">
+                          Specify replacement of the policy's target substance with another
+                          compatible substance. For example, this could be used to model a retrofit
+                          program.
+                        </div>
+                        <div class="dialog-list replace-list"></div>
+                        <div class="dialog-sub-buttons bold-buttons">
+                          <a href="#" class="add-replace-button secondary">Add Replacement</a>
+                        </div>
+                        <div class="scope-reminder detached">
+                          Your policy will replace <span class="reminder-substance"></span> used for
+                          <span class="reminder-app"></span>.
+                          <a href="#edit" class="edit-reminder-link">Change</a>
+                        </div>
+                      </div>
+                      <div id="policy-set">
+                        <div class="instructions">
+                          Set streams such as imports or equipment to specific levels. These set
+                          points could be used to model a mandate for a specific year. For example,
+                          an import value set to 0 colud indicate a probition on foreign HFC-134a.
+                        </div>
+                        <div class="dialog-list level-list"></div>
+                        <div class="dialog-sub-buttons bold-buttons">
+                          <a href="#" class="add-level-button secondary">Add Level</a>
+                        </div>
+                        <div class="scope-reminder detached">
+                          Your policy will add set points
+                          <span class="reminder-substance"></span> used for
+                          <span class="reminder-app"></span>.
+                          <a href="#edit" class="edit-reminder-link">Change</a>
+                        </div>
+                      </div>
+                      <div id="policy-change">
+                        <div class="instructions">
+                          Make relative changes to streams such as imports or equipment continually
+                          over a period of time. For example, this could be used to model a subsidy
+                          or incentive program.
+                        </div>
+                        <div class="dialog-list change-list"></div>
+                        <div class="dialog-sub-buttons bold-buttons">
+                          <a href="#" class="add-change-button secondary">Add Change</a>
+                        </div>
+                        <div class="scope-reminder detached">
+                          Your policy will change <span class="reminder-substance"></span> used for
+                          <span class="reminder-app"></span>.
+                          <a href="#edit" class="edit-reminder-link">Change</a>
+                        </div>
+                      </div>
+                      <div id="policy-limit">
+                        <div class="instructions">
+                          Impose limits like to overall sales in a specific application. Optionally,
+                          these caps can displace other substances or streams. For example, a 100 kg
+                          cap on A offsetting B would cause 150 kg of A and 0 kg of B to become 100
+                          and 50 kg respectively. For example, this could be used to model a permit
+                          scheme like in domestic refrigeration.
+                        </div>
+                        <div class="dialog-list limit-list"></div>
+                        <div class="dialog-sub-buttons bold-buttons">
+                          <a href="#" class="add-limit-button secondary">Add Limit</a>
+                        </div>
+                        <div class="scope-reminder detached">
+                          Your policy will limit <span class="reminder-substance"></span> used for
+                          <span class="reminder-app"></span>.
+                          <a href="#edit" class="edit-reminder-link">Change</a>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="dialog-buttons bold-buttons">
+                      <a href="#ui-editor-sections" class="save-button primary">Save</a>
+                      <a href="#ui-editor-sections" class="cancel-button destructive">Cancel</a>
+                    </div>
+                  </dialog>
+                </div>
+
+                <div></div>
+
+                <div class="ui-editor-section simulations inactive">
+                  <h3>Simulations</h3>
+                  <ul class="item-list"></ul>
+                  <div class="add-link-pane bold-buttons">
+                    <a href="#add-simulation" class="add-link secondary">Add Simulation</a>
+                  </div>
+                  <dialog class="dialog">
+                    <h2><span class="action-title"></span> Simulation</h2>
+                    <div class="instructions">
+                      Simulations are collections of policies. If no policies are selected, this
+                      will simulate business as usual (no policy interventions).
+                    </div>
+                    <div class="contents">
+                      <div class="form-group">
+                        <div><label for="edit-simulation-name">Name:</label></div>
+                        <div>
+                          <input
+                            type="text"
+                            name="edit-simulation-name"
+                            class="edit-simulation-name-input long"
+                            autofocus
+                          />
+                        </div>
+                      </div>
+                      <div class="form-group">
+                        <div><label for="edit-simulation-start">Start year:</label></div>
+                        <div>
+                          <input
+                            type="text"
+                            name="edit-simulation-start"
+                            class="edit-simulation-start-input long"
+                          />
+                        </div>
+                      </div>
+                      <div class="form-group">
+                        <div><label for="edit-simulation-end">End year:</label></div>
+                        <div>
+                          <input
+                            type="text"
+                            name="edit-simulation-end"
+                            class="edit-simulation-end-input long"
+                          />
+                        </div>
+                      </div>
+                      <div class="form-group">
+                        <div><label for="edit-simulation-policies">Policies:</label></div>
+                        <div class="dialog-list policy-sim-list small"></div>
+                      </div>
+                      <div class="dialog-buttons bold-buttons">
+                        <a href="#ui-editor-sections" class="save-button primary">Save</a>
+                        <a href="#ui-editor-sections" class="cancel-button destructive">Cancel</a>
+                      </div>
+                    </div>
+                  </dialog>
+                </div>
+              </div>
+              <div class="advanced-link-pane">
+                Need more control? Switch to the
+                <a class="advanced-editor-link" href="#code-editor-pane"
+                  >code-based advanced editor</a
+                >.
+              </div>
+            </div>
+            <div class="not-available-contents">
+              The analysis you are currently working on uses features not available in the basic
+              editor. Instead, switch to the
+              <a class="advanced-editor-link" href="#code-editor-pane">code-based advanced editor</a
+              >.
+            </div>
+          </div>
+          <div id="code-editor-pane">
+            <div id="code-editor">
+              <div id="code-editor-inner" class="inner"></div>
+              <div class="error-display"></div>
+            </div>
+            <div id="code-buttons-panel" class="buttons-panel code-buttons-grid">
+              <div id="available-panel">
+                <a class="primary" id="run-button" href="#loading">Run</a>
+              </div>
+              <div id="auto-run-panel">
+                <label for="auto-run-check">Automatically re-run when code is changed</label>
+                <input type="checkbox" id="auto-run-check" name="auto-run-check" checked />
+              </div>
+              <div id="loading">Loading please wait...</div>
+            </div>
+          </div>
+        </section>
+        <section id="results">
+          <h2>Results</h2>
+          
+          <div id="running-indicator" class="running-indicator" style="display: none;">
+            <div class="running-overlay">
+              <img src="/style/90-ring.svg" alt="Running indicator" />
+              <div class="running-message">Running Simulations...</div>
+            </div>
+          </div>
+          
+          <div id="error-indicator" class="error-indicator" style="display: none;">
+            <div class="error-overlay">
+              <div class="error-message">Simulation Error</div>
+              <div class="error-details">An error occurred while running the simulation. Please check your code and try again.</div>
+            </div>
+          </div>
+          
+          <div id="no-results-message" class="no-results-message" style="display: none;">
+            <p>No results to display. This likely means no simulations were defined in the code.</p>
+          </div>
+
+          <div class="scorecards" id="scorecards">
+            <div class="scorecard" id="emissions-scorecard">
+              <div class="label">
+                <label for="emissions-radio"
+                  ><input
+                    id="emissions-radio"
+                    class="metric-radio"
+                    type="radio"
+                    name="metric"
+                    value="emissions"
+                    checked="checked"
+                  />
+                  Emissions</label
+                >
+              </div>
+              <div class="value"></div>
+              <div class="submetric">
+                <div class="sel">
+                  <select
+                    name="emissions-submetric"
+                    class="emissions-submetric submetric-input"
+                    aria-label="Type of emissions to display"
+                  >
+                    <option value="recharge" selected>recharge</option>
+                    <option value="eol">end of life</option>
+                    <option value="custom">custom</option>
+                  </select>
+                </div>
+                <div class="sel">
+                  <select
+                    name="emissions-units"
+                    class="emissions-units units-input"
+                    aria-label="Units to use in display"
+                  >
+                    <option value="tCO2e / yr">tCO2e / yr</option>
+                    <option value="ktCO2e / yr">ktCO2e / yr</option>
+                    <option value="MtCO2e / yr" selected>MtCO2e / yr</option>
+                  </select>
+                </div>
+              </div>
+              <div class="scorecard-custom-link">
+                <a href="#" class="configure-custom-link">configure custom</a>
+              </div>
+            </div>
+
+            <div></div>
+
+            <div class="scorecard inactive" id="sales-scorecard">
+              <div class="label">
+                <label for="sales-radio"
+                  ><input
+                    id="sales-radio"
+                    class="metric-radio"
+                    type="radio"
+                    name="metric"
+                    value="sales"
+                  />
+                  Consumption</label
+                >
+              </div>
+              <div class="value"></div>
+              <div class="submetric">
+                <div class="sel">
+                  <select
+                    name="sales-submetric"
+                    class="sales-submetric submetric-input"
+                    aria-label="Type of sales / consumption to display"
+                  >
+                    <option value="manufacture" selected>domestic manufacture</option>
+                    <option value="import">imports</option>
+                    <option value="recycle">recycle</option>
+                    <option value="custom">custom</option>
+                  </select>
+                </div>
+                <div class="sel">
+                  <select
+                    name="sales-units"
+                    class="sales-units units-input"
+                    aria-label="Units to use in display of sales / consumption"
+                  >
+                    <option value="kg / yr">kg / yr</option>
+                    <option value="mt / yr" selected>mt / yr</option>
+                    <option value="tCO2e / yr">tCO2e / yr</option>
+                    <option value="ktCO2e / yr">ktCO2e / yr</option>
+                    <option value="MtCO2e / yr">MtCO2e / yr</option>
+                    <option value="kwh / yr">kWh / yr</option>
+                    <option value="mwh / yr">MWh / yr</option>
+                    <option value="gwh / yr">GWh / yr</option>
+                  </select>
+                </div>
+              </div>
+              <div class="scorecard-custom-link">
+                <a href="#" class="configure-custom-link">configure custom</a>
+              </div>
+            </div>
+
+            <div></div>
+
+            <div class="scorecard inactive" id="equipment-scorecard">
+              <div class="label">
+                <label for="population-radio"
+                  ><input
+                    id="population-radio"
+                    class="metric-radio"
+                    type="radio"
+                    name="metric"
+                    value="population"
+                  />
+                  Equipment</label
+                >
+              </div>
+              <div class="value"></div>
+              <div class="submetric">
+                <div class="sel">
+                  <select
+                    name="equipment-submetric"
+                    class="equipment-submetric submetric-input"
+                    aria-label="Type of equipment to display"
+                  >
+                    <option value="all" selected>total</option>
+                    <option value="new">new</option>
+                  </select>
+                </div>
+                <div class="sel">
+                  <select
+                    name="sales-units"
+                    class="sales-units units-input"
+                    aria-label="Units to use in display of sales / consumption"
+                  >
+                    <option value="units">units</option>
+                    <option value="thousand units">thousand units</option>
+                    <option value="million units" selected>million units</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div id="center-chart-holder">
+            <div id="top-chart-title">
+              Showing
+              <span class="sel mid">
+                <select class="metric-select" aria-label="Metric selection dropdown menu">
+                  <option value="emissions">Emissions</option>
+                  <option value="sales">Consumption</option>
+                  <option value="population">Equipment (Population)</option>
+                </select>
+              </span>
+              summed by
+              <span class="sel mid">
+                <select class="dimension-select" aria-label="Dimension selection dropdown menu">
+                  <option value="simulations">Simulation Scenario</option>
+                  <option value="applications">Applications</option>
+                  <option value="substances">Substances</option>
+                </select>
+              </span>
+              as
+              <span class="sel"><select class="baseline-select"></select></span>.
+            </div>
+            <canvas
+              class="center-chart"
+              id="center-chart"
+              aria-describedby="top-chart-title"
+            ></canvas>
+            <div id="bottom-chart-title">
+              Filter for
+              <span class="sel mid"><select class="scenario-select"></select></span>
+              <span class="sel mid"><select class="application-select"></select></span>
+              <span class="sel mid"><select class="substance-select"></select></span>
+              .
+            </div>
+          </div>
+
+          <div class="dimensions" id="dimensions">
+            <div class="dimension" id="simulations-dimension">
+              <div class="title">
+                <label for="simulations-radio"
+                  ><input
+                    id="simulations-radio"
+                    class="dimension-radio"
+                    type="radio"
+                    name="dimension"
+                    value="simulations"
+                    checked="checked"
+                  />
+                  Simulations</label
+                >
+              </div>
+              <div class="list"></div>
+              <div class="axis">
+                <div class="left-tick">0</div>
+                <div class="units-tick-parent">
+                  <div class="units-tick"></div>
+                  <div class="years-tick"></div>
+                </div>
+                <div class="right-tick"></div>
+              </div>
+            </div>
+
+            <div></div>
+
+            <div class="dimension inactive" id="applications-dimension">
+              <div class="title">
+                <label for="applications-radio"
+                  ><input
+                    id="applications-radio"
+                    class="dimension-radio"
+                    type="radio"
+                    name="dimension"
+                    value="applications"
+                  />
+                  Applications</label
+                >
+              </div>
+              <div class="list"></div>
+              <div class="axis">
+                <div class="left-tick">0</div>
+                <div class="units-tick-parent">
+                  <div class="units-tick"></div>
+                  <div class="years-tick"></div>
+                </div>
+                <div class="right-tick"></div>
+              </div>
+            </div>
+
+            <div></div>
+
+            <div class="dimension inactive" id="substances-dimension">
+              <div class="title">
+                <label for="substances-radio"
+                  ><input
+                    id="substances-radio"
+                    class="dimension-radio"
+                    type="radio"
+                    name="dimension"
+                    value="substances"
+                  />
+                  Substances</label
+                >
+              </div>
+              <div class="list"></div>
+              <div class="axis">
+                <div class="left-tick">0</div>
+                <div class="units-tick-parent">
+                  <div class="units-tick"></div>
+                  <div class="years-tick"></div>
+                </div>
+                <div class="right-tick"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="options-panel">
+            <input
+              type="checkbox"
+              name="importer-assignment-check"
+              id="importer-assignment-check"
+            />
+            <label for="importer-assignment-check">Attribute initial charge to importer</label>
+          </div>
+
+          <div class="buttons-panel" ="export-panel">
+            <a class="primary" download="export.csv" id="export-button" href="#export"
+              >Export Spreadsheet</a
+            >
+          </div>
+        </section>
+      </main>
+    </div>
+    <footer>
+      <div class="file-buttons buttons-panel">
+        <a href="#" id="workshop-sample-button" class="secondary">Open Workshop Sample</a>
+        <a href="/privacy.html" target="_blank" class="secondary">Privacy and Terms</a>
+        <a href="https://github.com/SchmidtDSE/montreal-protocol" target="_blank" class="secondary"
+          >Open Source</a
+        >
+      </div>
+    </footer>
+
+    <script type="text/template" id="set-command-template">
+      <div class="set-command form-group">
+        Set
+        <span class="sel long">
+          <select class="set-target-input" aria-label="Target for set command">
+            <option value="manufacture">domestic manufacture</option>
+            <option value="import">import</option>
+            <option value="sales">all sales</option>
+            <option value="equipment">equipment</option>
+            <option value="priorEquipment">prior equipment</option>
+          </select>
+        </span>
+        <span class="embed-reminder">
+          of
+          <span class="embed-substance-label"></span>
+          (<span class="embed-app-label"></span>)
+        </span>
+        to
+        <input type="text" class="set-amount-input short" aria-label="Amount for set command">
+        <span class="sel mid">
+          <select class="set-units-input" aria-label="Units for set command">
+            <option value="kg">kg</option>
+            <option value="mt">mt</option>
+            <option value="tCO2e">tCO2e</option>
+            <option value="units">units</option>
+            <option value="kg each year">kg each year</option>
+            <option value="mt each year">mt each year</option>
+            <option value="tCO2e each year">tCO2e each year</option>
+            <option value="units each year">units each year</option>
+            <option value="kg / unit">kg / unit</option>
+            <option value="mt / unit">mt / unit</option>
+            <option value="tCO2e / unit">tCO2e / unit</option>
+            <option value="tCO2e / kg">tCO2e / kg</option>
+            <option value="tCO2e / mt">tCO2e / mt</option>
+            <option value="%">%</option>
+            <option value="% each year">% each year</option>
+          </select>
+        </span>
+        <span class="duration-subcomponent">
+          <span class="sel mid">
+            <select class="duration-type-input" aria-label="Duration type for command">
+              <option value="in year">in year</option>
+              <option value="during all years">during all years</option>
+              <option value="starting in year">starting in year</option>
+              <option value="ending in year">ending in year</option>
+              <option value="during years">during years</option>
+            </select>
+          </span>
+          <input type="text" class="duration-start short" aria-label="Start year of substance import">
+          <span class="duration-to">to</span>
+          <input type="text" class="duration-end short" aria-label="End year of substance import"> .
+        </span>
+        - <a href="#" class="delete-command-link">delete</a>
+      </div>
+    </script>
+
+    <script type="text/template" id="change-command-template">
+      <div class="change-command form-group">
+        <div>
+          Change
+            <span class="sel long">
+              <select class="change-target-input" aria-label="Target for change command">
+                <option value="manufacture">domestic manufacture</option>
+                <option value="import">import</option>
+                <option value="sales">all sales</option>
+                <option value="equipment">equipment</option>
+                <option value="priorEquipment">prior equipment</option>
+              </select>
+            </span>
+          <span class="embed-reminder">
+            of
+            <span class="embed-substance-label"></span>
+            (<span class="embed-app-label"></span>)
+          </span>
+          by
+        </div>
+        <span class="sel short">
+          <select class="change-sign-input" aria-label="Sign of substance change">
+            <option value="+">+</option>
+            <option value="-">-</option>
+          </select>
+        </span>
+        <input type="text" class="change-amount-input short" aria-label="Change amount">
+        <span class="sel mid">
+          <select class="change-units-input" aria-label="Units of change">
+            <option value="kg">kg</option>
+            <option value="mt">mt</option>
+            <option value="tCO2e">tCO2e</option>
+            <option value="units">units</option>
+            <option value="kg each year">kg each year</option>
+            <option value="mt each year">mt each year</option>
+            <option value="tCO2e each year">tCO2e each year</option>
+            <option value="units each year">units each year</option>
+            <option value="kg / unit">kg / unit</option>
+            <option value="mt / unit">mt / unit</option>
+            <option value="tCO2e / unit">tCO2e / unit</option>
+            <option value="tCO2e / kg">tCO2e / kg</option>
+            <option value="tCO2e / mt">tCO2e / mt</option>
+            <option value="%">%</option>
+            <option value="% each year">% each year</option>
+          </select>
+        </span>
+        <span class="duration-subcomponent">
+          <span class="sel mid">
+            <select class="duration-type-input" aria-label="Duration type for command">
+              <option value="in year">in year</option>
+              <option value="during all years">during all years</option>
+              <option value="starting in year">starting in year</option>
+              <option value="ending in year">ending in year</option>
+              <option value="during years">during years</option>
+            </select>
+          </span>
+          <input type="text" class="duration-start short" aria-label="Start year of substance import">
+          <span class="duration-to">to</span>
+          <input type="text" class="duration-end short" aria-label="End year of substance import"> .
+        </span>
+        - <a href="#" class="delete-command-link">delete</a>
+      </div>
+    </script>
+
+    <script type="text/template" id="limit-command-template">
+      <div class="limit-command form-group">
+        <span class="sel mid">
+          <select class="limit-type-input" aria-label="Type of limit command">
+            <option value="cap">cap</option>
+            <option value="floor">floor</option>
+          </select>
+        </span>
+        <span class="sel long">
+          <select class="limit-target-input" aria-label="Target for limit command">
+            <option value="manufacture">domestic manufacture</option>
+            <option value="import">import</option>
+            <option value="sales">all sales</option>
+            <option value="equipment">equipment</option>
+            <option value="priorEquipment">prior equipment</option>
+          </select>
+        </span>
+        <span class="embed-reminder">
+          of
+          <span class="embed-substance-label"></span>
+          (<span class="embed-app-label"></span>)
+        </span>
+        at
+        <input type="text" class="limit-amount-input short" aria-label="Amount of limit">
+        <span class="sel mid">
+          <select class="limit-units-input" aria-label="Units of limit">
+            <option value="kg">kg</option>
+            <option value="mt">mt</option>
+            <option value="tCO2e">tCO2e</option>
+            <option value="units">units</option>
+            <option value="kg each year">kg each year</option>
+            <option value="mt each year">mt each year</option>
+            <option value="tCO2e each year">tCO2e each year</option>
+            <option value="units each year">units each year</option>
+            <option value="kg / unit">kg / unit</option>
+            <option value="mt / unit">mt / unit</option>
+            <option value="tCO2e / unit">tCO2e / unit</option>
+            <option value="tCO2e / kg">tCO2e / kg</option>
+            <option value="tCO2e / mt">tCO2e / mt</option>
+            <option value="%">%</option>
+            <option value="% each year">% each year</option>
+          </select>
+        </span>
+        displacing
+        <span class="sel mid">
+          <select class="displacing-input" aria-label="The source of displacement to meet limit">
+            <optgroup label="None">
+              <option value="">nothing</option>
+            </optgroup>
+            <optgroup label="Streams">
+              <option value="manufacture">domestic manufacture</option>
+              <option value="import">import</option>
+              <option value="sales">all sales</option>
+              <option value="equipment">equipment</option>
+              <option value="priorEquipment">prior equipment</option>
+            </optgroup>
+            <optgroup class="substances-select" label="Substances">
+            </optgroup>
+          </select>
+        </span>
+        <span class="duration-subcomponent">
+          <span class="sel mid">
+            <select class="duration-type-input" aria-label="Duration type for command">
+              <option value="in year">in year</option>
+              <option value="during all years">during all years</option>
+              <option value="starting in year">starting in year</option>
+              <option value="ending in year">ending in year</option>
+              <option value="during years">during years</option>
+            </select>
+          </span>
+          <input type="text" class="duration-start short" aria-label="Start year of substance import">
+          <span class="duration-to">to</span>
+          <input type="text" class="duration-end short" aria-label="End year of substance import"> .
+        </span>
+        - <a href="#" class="delete-command-link">delete</a>
+      </div>
+    </script>
+
+    <script type="text/template" id="recycle-command-template">
+      <div class="recycle-command form-group">
+        Recover
+        <input type="text" class="recycle-amount-input short" aria-label="Amount for recycle command">
+        <span class="sel mid">
+          <select class="recycle-units-input" aria-label="Units for recycle command">
+            <option value="kg">kg</option>
+            <option value="mt">mt</option>
+            <option value="tCO2e">tCO2e</option>
+            <option value="units">units</option>
+            <option value="kg each year">kg each year</option>
+            <option value="mt each year">mt each year</option>
+            <option value="tCO2e each year">tCO2e each year</option>
+            <option value="units each year">units each year</option>
+            <option value="kg / unit">kg / unit</option>
+            <option value="mt / unit">mt / unit</option>
+            <option value="tCO2e / unit">tCO2e / unit</option>
+            <option value="tCO2e / kg">tCO2e / kg</option>
+            <option value="tCO2e / mt">tCO2e / mt</option>
+            <option value="%">%</option>
+            <option value="% each year">% each year</option>
+          </select>
+        </span>
+        <span class="embed-reminder">
+          of
+          <span class="embed-substance-label"></span>
+          (<span class="embed-app-label"></span>)
+        </span>
+        with
+        <input type="text" class="recycle-reuse-amount-input short" aria-label="Reuse level after yield loss for recycle command">
+        <span class="sel mid">
+          <select class="recycle-reuse-units-input" aria-label="Units for reuse level after yield loss">
+            <option value="kg">kg</option>
+            <option value="mt">mt</option>
+            <option value="tCO2e">tCO2e</option>
+            <option value="units">units</option>
+            <option value="kg each year">kg each year</option>
+            <option value="mt each year">mt each year</option>
+            <option value="tCO2e each year">tCO2e each year</option>
+            <option value="units each year">units each year</option>
+            <option value="kg / unit">kg / unit</option>
+            <option value="mt / unit">mt / unit</option>
+            <option value="tCO2e / unit">tCO2e / unit</option>
+            <option value="tCO2e / kg">tCO2e / kg</option>
+            <option value="tCO2e / mt">tCO2e / mt</option>
+            <option value="%">%</option>
+            <option value="% each year">% each year</option>
+          </select>
+        </span>
+        reuse
+        displacing
+        <span class="sel mid">
+          <select class="displacing-input" aria-label="The source of displacement for recover command">
+            <optgroup label="None">
+              <option value="">nothing</option>
+            </optgroup>
+            <optgroup label="Streams">
+              <option value="manufacture">domestic manufacture</option>
+              <option value="import">import</option>
+              <option value="sales">all sales</option>
+              <option value="equipment">equipment</option>
+              <option value="priorEquipment">prior equipment</option>
+            </optgroup>
+            <optgroup class="substances-select" label="Substances">
+            </optgroup>
+          </select>
+        </span>
+        <span class="duration-subcomponent">
+          <span class="sel mid">
+            <select class="duration-type-input" aria-label="Duration type for command">
+              <option value="in year">in year</option>
+              <option value="during all years">during all years</option>
+              <option value="starting in year">starting in year</option>
+              <option value="ending in year">ending in year</option>
+              <option value="during years">during years</option>
+            </select>
+          </span>
+          <input type="text" class="duration-start short" aria-label="Start year of substance import">
+          <span class="duration-to">to</span>
+          <input type="text" class="duration-end short" aria-label="End year of substance import"> .
+        </span>
+        - <a href="#" class="delete-command-link">delete</a>
+      </div>
+    </script>
+
+    <script type="text/template" id="replace-command-template">
+      <div class="replace-command form-group">
+        Replace
+        <input type="text" class="replace-amount-input short" aria-label="Amount for replace command">
+        <span class="sel mid">
+          <select class="replace-units-input" aria-label="Units for replace command">
+            <option value="kg">kg</option>
+            <option value="mt">mt</option>
+            <option value="tCO2e">tCO2e</option>
+            <option value="units">units</option>
+            <option value="kg each year">kg each year</option>
+            <option value="mt each year">mt each year</option>
+            <option value="tCO2e each year">tCO2e each year</option>
+            <option value="units each year">units each year</option>
+            <option value="kg / unit">kg / unit</option>
+            <option value="mt / unit">mt / unit</option>
+            <option value="tCO2e / unit">tCO2e / unit</option>
+            <option value="tCO2e / kg">tCO2e / kg</option>
+            <option value="tCO2e / mt">tCO2e / mt</option>
+            <option value="%">%</option>
+            <option value="% each year">% each year</option>
+          </select>
+        </span>
+        <span class="embed-reminder">
+          of
+          <span class="embed-substance-label"></span>
+          (<span class="embed-app-label"></span>)
+        </span>
+        <span class="sel long">
+          <select class="replace-target-input" aria-label="Target for replace command">
+            <option value="manufacture">domestic manufacture</option>
+            <option value="import">import</option>
+            <option value="sales">all sales</option>
+            <option value="equipment">equipment</option>
+            <option value="priorEquipment">prior equipment</option>
+          </select>
+        </span>
+        with
+        <span class="sel long">
+          <select class="replace-replacement-input substances-select" aria-label="Replacement substance for replace command">
+          </select>
+        </span>
+        <span class="duration-subcomponent">
+          <span class="sel mid">
+            <select class="duration-type-input" aria-label="Duration type for command">
+              <option value="in year">in year</option>
+              <option value="during all years">during all years</option>
+              <option value="starting in year">starting in year</option>
+              <option value="ending in year">ending in year</option>
+              <option value="during years">during years</option>
+            </select>
+          </span>
+          <input type="text" class="duration-start short" aria-label="Start year of substance import">
+          <span class="duration-to">to</span>
+          <input type="text" class="duration-end short" aria-label="End year of substance import"> .
+        </span>
+        - <a href="#" class="delete-command-link">delete</a>
+      </div>
+    </script>
+
+    <script type="text/template" id="workshop-sample">
+      start default
+
+        define application "dom refrig"
+
+          uses substance "HFC-134a"
+            equals 1000 tCO2e / mt
+            equals 100 kwh / unit
+
+            # Domestic production
+            initial charge with 0.5 kg / unit for manufacture
+            set manufacture to 400 mt during year 1
+            change manufacture by +5 % each year during years 2 to 4
+            change manufacture by +4 % each year during years 5 to 7
+            change manufacture by +3 % each year during years 8 to 10
+            change manufacture by +2 % each year during years 11 to 13
+            change manufacture by +1 % each year during years 14 to onwards
+
+            # Trade
+            initial charge with 0.25 kg / unit for import
+            set import to 100 mt during year 1
+            change import by +5 % each year during years 2 to 4
+            change import by +4 % each year during years 5 to 7
+            change import by +3 % each year during years 8 to 10
+            change import by +2 % each year during years 11 to 13
+            change import by +1 % each year during years 14 to onwards
+
+            # Service
+            retire 5 % each year
+            recharge 10 % each year with 0.1 kg / unit
+
+            # Historic units already deployed
+            set priorEquipment to (get equipment as units * 5) units during year 1
+          end substance
+
+          uses substance "R-600a"
+            equals 50 tCO2e / mt
+            equals 50 kwh / unit
+
+            # Domestic production
+            initial charge with 0.1 kg / unit for manufacture
+            set manufacture to 100 mt during year 1
+            change manufacture by +2 % each year
+
+            # Trade
+            initial charge with 0.05 kg / unit for import
+            set import to 1 mt during year 1
+            change import by +2 % each year
+
+            # Service
+            retire 5 % each year
+            recharge 10 % each year with 0.05 kg / unit
+
+            # Historic units already deployed
+            set priorEquipment to (get equipment as units * 5) units during year 1
+          end substance
+
+        end application
+
+        define application "com refrig"
+
+          uses substance "HFC-134a"
+            equals 1000 tCO2e / mt
+            equals 100 kwh / unit
+
+            # Domestic production
+            initial charge with 0.5 kg / unit for manufacture
+            set manufacture to 900 mt during year 1
+            change manufacture by +5 % each year during years 2 to 4
+            change manufacture by +3 % each year during years 5 to 7
+            change manufacture by +1 % each year during years 8 to 10
+            change manufacture by -1 % each year during years 11 to 13
+            change manufacture by -3 % each year during years 14 to onwards
+
+            # Trade
+            initial charge with 0.25 kg / unit for import
+            set import to 100 mt during year 1
+            change import by +5 % each year during years 2 to 4
+            change import by +3 % each year during years 5 to 7
+            change import by +1 % each year during years 8 to 10
+            change import by -1 % each year during years 11 to 13
+            change import by -3 % each year during years 14 to onwards
+
+            # Service
+            retire 5 % each year
+            recharge 10 % each year with 0.1 kg / unit
+
+            # Historic units already deployed
+            set priorEquipment to (get equipment as units * 5) units during year 1
+          end substance
+
+          uses substance "R-600a"
+            equals 50 tCO2e / mt
+            equals 50 kwh / unit
+
+            # Domestic production
+            initial charge with 0.1 kg / unit for manufacture
+            set manufacture to 10 mt during year 1
+            change manufacture by +8 % each year
+
+            # Trade
+            initial charge with 0.05 kg / unit for import
+            set import to 10 mt during year 1
+            change import by +8 % each year
+
+            # Service
+            retire 1 % each year
+            recharge 10 % each year with 0.1 kg / unit
+
+            # Historic units already deployed
+            set priorEquipment to (get equipment as units * 5) units during year 1
+          end substance
+
+          uses substance "R-404A"
+            equals 200 tCO2e / mt
+            equals 50 kwh / unit
+
+            # Domestic production
+            initial charge with 0.5 kg / unit for manufacture
+            set manufacture to 100 mt during year 1
+            change manufacture by -1 % each year
+
+            # Trade
+            initial charge with 0.5 kg / unit for import
+            set import to 50 mt during year 1
+            change import by -1 % each year
+
+            # Service
+            retire 5 % each year
+            recharge 10 % each year with 0.1 kg / unit
+
+            # Historic units already deployed
+            set priorEquipment to (get equipment as units * 7) units during year 1
+          end substance
+
+        end application
+
+      end default
+
+
+      start policy "com recycling"
+
+        modify application "com refrig"
+
+          modify substance "HFC-134a"
+            recover 10 % with 80 % reuse during years 2 to onwards
+          end substance
+
+        end application
+
+      end policy
+
+
+      start policy "dom retrofit"
+
+        modify application "dom refrig"
+
+          modify substance "HFC-134a"
+            replace 20 % of sales with "R-600a"
+          end substance
+
+        end application
+
+      end policy
+
+
+      start policy "permit HFC-134a"
+
+        modify application "com refrig"
+
+          modify substance "HFC-134a"
+            cap sales to 1400 mt displacing "R-404A" during years 1 to 5
+            cap sales to 1200 mt displacing "R-404A" during years 6 to 10
+            cap sales to 1000 mt displacing "R-404A" during years 11 to 15
+            cap sales to 800 mt displacing "R-404A" during years 16 to 20
+          end substance
+
+          modify substance "HFC-134a"
+            cap sales to 1400 mt displacing "R-404A" during years 1 to 5
+            cap sales to 1200 mt displacing "R-404A" during years 6 to 10
+            cap sales to 1000 mt displacing "R-404A" during years 11 to 15
+            cap sales to 800 mt displacing "R-404A" during years 16 to 20
+          end substance
+
+        end application
+
+      end policy
+
+
+      start simulations
+
+        simulate "business as usual" from years 1 to 20
+
+        simulate "com recycling" using "com recycling" from years 1 to 20
+
+        simulate "dom retrofit" using "dom retrofit" from years 1 to 20
+
+        simulate "permit HFC-134a" using "permit HFC-134a" from years 1 to 20
+
+        simulate "combined"
+          using "dom retrofit"
+          then "com recycling"
+          then "permit HFC-134a"
+        from years 1 to 20
+
+      end simulations
+    </script>
+
+    <script type="text/javascript" src="/third_party/ace.min.js"></script>
+    <script type="text/javascript" src="/js/ace-mode-qubectalk.js"></script>
+    <script type="text/javascript" src="/third_party/ext-language_tools.js"></script>
+    <script type="text/javascript" src="/third_party/ext-options.js"></script>
+    <script type="text/javascript" src="/third_party/ext-prompt.js"></script>
+    <script type="text/javascript" src="/third_party/ext-searchbox.js"></script>
+
+    <script type="text/javascript" src="/third_party/chart.min.js"></script>
+    <script type="text/javascript" src="/third_party/d3.min.js"></script>
+    <script type="text/javascript" src="/third_party/tabby.min.js"></script>
+
+    <script type="text/javascript" src="/intermediate/static/qubectalk.js?v=EPOCH"></script>
+
+    <script type="importmap">
+      {
+        "imports": {
+          "code_editor": "./js/code_editor.js?v=EPOCH",
+          "engine_const": "./js/engine_const.js?v=EPOCH",
+          "engine_number": "./js/engine_number.js?v=EPOCH",
+          "engine_struct": "./js/engine_struct.js?v=EPOCH",
+          "year_matcher": "./js/year_matcher.js?v=EPOCH",
+          "wasm_backend": "./js/wasm_backend.js?v=EPOCH",
+          "main": "./js/main.js?v=EPOCH",
+          "report_data": "./js/report_data.js?v=EPOCH",
+          "results": "./js/results.js?v=EPOCH",
+          "ui_editor": "./js/ui_editor.js?v=EPOCH",
+          "ui_translator": "./js/ui_translator.js?v=EPOCH",
+          "user_config": "./js/user_config.js?v=EPOCH"
+        }
+      }
+    </script>
+
+    <script type="module">
+      import {main} from "main";
+      main();
+    </script>
+    
+    <script type="text/javascript" src="/js/sw_load.js"></script>
+  </body>
+</html>

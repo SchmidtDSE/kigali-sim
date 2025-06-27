@@ -17,10 +17,13 @@ jobs:
         uses: actions/setup-node@v4
       - name: Install node deps
         run: npm install --dev
+        working-directory: ./editor
       - name: Lint production code
         run: npx eslint ./js/*.js
+        working-directory: ./editor
       - name: Lint test code
         run: npx eslint ./test/*.js
+        working-directory: ./editor
   checkCacheBusters:
     environment: build
     runs-on: ubuntu-latest
@@ -37,16 +40,21 @@ jobs:
           java-version: '21'
       - name: Install node deps
         run: npm install
+        working-directory: ./editor
       - name: Build
         run: bash ./support/make.sh
+        working-directory: ./editor
       - name: Install front end deps
         run: bash ./support/install_deps.sh
+        working-directory: ./editor
       - name: Prepare deploy
         run: bash ./support/prepare_deploy.sh
+        working-directory: ./editor
       - name: Copy guide
-        run: cp -r ./guide ./deploy/guide
+        run: cp -r ./docs/guide ./editor/deploy/guide
       - name: Update cache busters
         run: bash ./support/update_cache_busters.sh
+        working-directory: ./editor
   buildEngine:
     environment: Build
     runs-on: ubuntu-latest
@@ -194,17 +202,22 @@ jobs:
           name: war
           path: ./
       - name: Extract WASM files to wasm directory
-        run: bash ./support/update_wasm_from_war.sh KigaliSim.war
+        run: bash ./support/update_wasm_from_war.sh ../KigaliSim.war
+        working-directory: ./editor
       - name: Install node deps
         run: npm install
+        working-directory: ./editor
       - name: Build
         run: bash ./support/make.sh
+        working-directory: ./editor
       - name: Install front end deps
         run: bash ./support/install_deps.sh
+        working-directory: ./editor
       - name: Install browser
         run: sudo apt install -y chromium-browser
       - name: Run unit tests
         run: npx grunt
+        working-directory: ./editor
   deploy-prep:
     environment: build
     if: github.ref == 'refs/heads/deploy'
@@ -227,30 +240,36 @@ jobs:
           name: war
           path: ./
       - name: Extract WASM files to wasm directory
-        run: bash ./support/update_wasm_from_war.sh KigaliSim.war
+        run: bash ./support/update_wasm_from_war.sh ../KigaliSim.war
+        working-directory: ./editor
       - name: Install node deps
         run: npm install
+        working-directory: ./editor
       - name: Build
         run: bash ./support/make.sh
+        working-directory: ./editor
       - name: Install front end deps
         run: bash ./support/install_deps.sh
+        working-directory: ./editor
       - name: Prepare deploy
         run: bash ./support/prepare_deploy.sh
+        working-directory: ./editor
       - name: Copy guide
-        run: cp -r ./guide ./deploy/guide
+        run: cp -r ./docs/guide ./editor/deploy/guide
       - name: Copy case study QTA file to guide
-        run: cp ./examples/case_study.qta ./deploy/guide/case_study.qta
+        run: cp ./editor/examples/case_study.qta ./editor/deploy/guide/case_study.qta
       - name: Copy subdivided case study QTA file to guide
-        run: cp ./examples/case_study_subdivided.qta ./deploy/guide/case_study_subdivided.qta
+        run: cp ./editor/examples/case_study_subdivided.qta ./editor/deploy/guide/case_study_subdivided.qta
       - name: Copy WASM files
-        run: cp -r ./wasm ./deploy/wasm
+        run: cp -r ./editor/wasm ./editor/deploy/wasm
       - name: Update cache busters
         run: bash ./support/update_cache_busters.sh
+        working-directory: ./editor
       - name: Upload deploy artifact
         uses: actions/upload-artifact@v4
         with:
           name: deploy-files
-          path: ./deploy
+          path: ./editor/deploy
           retention-days: 1
   deploy:
     environment: deploy

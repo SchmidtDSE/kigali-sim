@@ -1,0 +1,21 @@
+
+start default
+
+  define application "test"
+
+    uses substance "test"
+      initial charge with 5 kg / unit for manufacture
+      set manufacture to 100 mt
+      equals 5 kwh / mt
+    end substance
+
+  end application
+
+end default
+
+
+start simulations
+
+  simulate "business as usual" from years 1 to 1
+
+end simulations

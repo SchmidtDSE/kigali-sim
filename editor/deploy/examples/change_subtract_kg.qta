@@ -1,0 +1,21 @@
+start default
+
+  define application "test"
+
+    uses substance "test"
+      initial charge with 1 kg / unit for manufacture
+      set manufacture to 100 kg during year 1
+      change manufacture by -10 kg each year during years 2 to onwards
+      equals 5 tCO2e / kg
+    end substance
+
+  end application
+
+end default
+
+
+start simulations
+
+  simulate "business as usual" from years 1 to 2
+
+end simulations

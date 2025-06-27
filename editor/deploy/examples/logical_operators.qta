@@ -1,0 +1,45 @@
+start default
+
+  define application "test"
+
+    uses substance "test"
+      initial charge with 1 kg / unit for manufacture
+      define testA as 1
+      define testB as 0
+      define testC as 2
+      # Test AND: 1 and 0 = 0 (false), so should use else branch (30)
+      set manufacture to 100 if testA and testB else 30 endif mt during year 1
+      # Test OR: 1 or 0 = 1 (true), so should use if branch (50)
+      set manufacture to 50 if testA or testB else 20 endif mt during year 2
+      # Test XOR: 1 xor 2 = 0 (both are truthy), so should use else branch (40)
+      set manufacture to 60 if testA xor testC else 40 endif mt during year 3
+      
+      # Test operator precedence with parentheses
+      # (testA or testB) and testC = (1 or 0) and 2 = 1 and 2 = 1 (true), so should use if branch (70)
+      set manufacture to 70 if (testA or testB) and testC else 35 endif mt during year 4
+      
+      # Test precedence without parentheses - should be same as above due to precedence rules
+      # testA or testB and testC = testA or (testB and testC) = 1 or (0 and 2) = 1 or 0 = 1 (true), so should use if branch (80)
+      set manufacture to 80 if testA or testB and testC else 45 endif mt during year 5
+      
+      # Test mixed comparison and logical operators
+      # testA > 0 and testB == 0 = 1 > 0 and 0 == 0 = true and true = true, so should use if branch (90)
+      set manufacture to 90 if testA > 0 and testB == 0 else 55 endif mt during year 6
+      
+      # Test complex parentheses expression
+      # (testA > 0 or testB > 0) and (testC == 2) = (true or false) and (true) = true and true = true, so should use if branch (100)
+      set manufacture to 100 if (testA > 0 or testB > 0) and (testC == 2) else 65 endif mt during year 7
+      
+      equals 1 tCO2e / mt
+    end substance
+
+  end application
+
+end default
+
+
+start simulations
+
+  simulate "business as usual" from years 1 to 7
+
+end simulations

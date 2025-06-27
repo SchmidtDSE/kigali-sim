@@ -1,0 +1,49 @@
+start default
+
+  define application "Test"
+
+    uses substance "Sub A"
+      initial charge with 1 kg / unit for manufacture
+      initial charge with 2 kg / unit for import
+      equals 100 tCO2e / kg
+      equals 1 kwh / kg
+      set manufacture to 100 mt during year 1
+      retire 5 % each year
+      recharge 5 % each year with 1 kg / unit
+    end substance
+
+
+    uses substance "Sub B"
+      initial charge with 1 kg / unit for manufacture
+      initial charge with 2 kg / unit for import
+      equals 10 tCO2e / kg
+      equals 1 kwh / kg
+      retire 5 % each year
+      recharge 5 % each year with 1 kg / unit
+    end substance
+
+  end application
+
+end default
+
+
+start policy "Replace"
+
+  modify application "Test"
+
+    modify substance "Sub A"
+      replace 100 % of sales with "Sub B" during years 5 to 10
+    end substance
+
+  end application
+
+end policy
+
+
+start simulations
+
+  simulate "Sim"
+    using "Replace"
+  from years 1 to 10
+
+end simulations

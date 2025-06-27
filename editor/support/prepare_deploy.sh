@@ -9,6 +9,6 @@ cp index.html deploy/index.html
 cp privacy.html deploy/privacy.html
 cp manifest.json deploy/manifest.json
 cp service_worker.js deploy/service_worker.js
-cp llms.txt deploy/llms.txt
+cp ../llms.txt deploy/llms.txt
 
 rm -r deploy/third_party/publicsans

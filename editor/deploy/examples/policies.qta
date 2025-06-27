@@ -1,0 +1,33 @@
+start default
+
+  define application "test"
+
+    uses substance "test"
+      initial charge with 1 kg / unit for manufacture
+      set manufacture to 100 mt
+      equals 5 tCO2e / mt
+    end substance
+
+  end application
+
+end default
+
+
+start policy "intervention"
+
+  modify application "test"
+    
+    modify substance "test"
+      cap manufacture to 50%
+    end substance
+
+  end application
+
+end policy
+
+
+start simulations
+
+  simulate "result" using "intervention" from years 1 to 1
+
+end simulations

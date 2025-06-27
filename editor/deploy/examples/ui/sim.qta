@@ -1,0 +1,35 @@
+start default
+
+  define application "app1"
+
+    uses substance "sub1"
+      initial charge with 5 kg / unit for manufacture
+      set manufacture to 100 mt
+      equals 5 tCO2e / mt
+    end substance
+
+  end application
+
+end default
+
+
+start policy "policy1"
+
+  modify application "app1"
+
+    modify substance "sub1"
+      cap manufacture to 50 mt
+    end substance
+
+  end application
+
+end policy
+
+
+start simulations
+
+  simulate "business as usual" from years 1 to 5
+
+  simulate "policy scenario" using "policy1" from years 1 to 5
+
+end simulations
