@@ -302,16 +302,6 @@ class EngineResult {
     return self._tradeSupplement;
   }
 
-  /**
-   * Get the import supplement information (deprecated, use getTradeSupplement).
-   *
-   * @returns {TradeSupplement} The additional import information needed for
-   *     attribution.
-   */
-  getImportSupplement() {
-    const self = this;
-    return self._tradeSupplement;
-  }
 
   /**
    * Get the scenario name.
@@ -405,8 +395,8 @@ class AttributeToExporterResult {
   getImport() {
     const self = this;
     const totalImport = self._inner.getImport();
-    const importSupplement = self._inner.getImportSupplement();
-    const importInitialCharge = importSupplement.getInitialChargeValue();
+    const tradeSupplement = self._inner.getTradeSupplement();
+    const importInitialCharge = tradeSupplement.getImportInitialChargeValue();
 
     const totalUnits = totalImport.getUnits();
     const initialChargeUnits = importInitialCharge.getUnits();
@@ -472,8 +462,8 @@ class AttributeToExporterResult {
   getImportConsumption() {
     const self = this;
     const totalImport = self._inner.getImportConsumption();
-    const importSupplement = self._inner.getImportSupplement();
-    const importInitialCharge = importSupplement.getInitialChargeConsumption();
+    const tradeSupplement = self._inner.getTradeSupplement();
+    const importInitialCharge = tradeSupplement.getImportInitialChargeConsumption();
 
     const totalUnits = totalImport.getUnits();
     const initialChargeUnits = importInitialCharge.getUnits();
@@ -554,9 +544,9 @@ class AttributeToExporterResult {
    * @returns {ImportSupplement} The additional import information needed for
    *     attribution from the decorated result.
    */
-  getImportSupplement() {
+  getTradeSupplement() {
     const self = this;
-    return self._inner.getImportSupplement();
+    return self._inner.getTradeSupplement();
   }
 
   /**
@@ -604,7 +594,13 @@ class TradeSupplement {
    * @param {EngineValue} exportInitialChargeConsumption - The consumption
    *     associated with initial charge of exported equipment (like tCO2e).
    */
-  constructor(importInitialChargeValue, importInitialChargeConsumption, importPopulation, exportInitialChargeValue, exportInitialChargeConsumption) {
+  constructor(
+    importInitialChargeValue,
+    importInitialChargeConsumption,
+    importPopulation,
+    exportInitialChargeValue,
+    exportInitialChargeConsumption,
+  ) {
     const self = this;
     self._importInitialChargeValue = importInitialChargeValue;
     self._importInitialChargeConsumption = importInitialChargeConsumption;
@@ -661,37 +657,6 @@ class TradeSupplement {
   getExportInitialChargeConsumption() {
     const self = this;
     return self._exportInitialChargeConsumption;
-  }
-
-  // Legacy methods for backward compatibility
-  /**
-   * Get the volume of substance imported via initial charge on imported equipment (deprecated).
-   *
-   * @returns {EngineValue} The initial charge value in volume units like kg.
-   */
-  getInitialChargeValue() {
-    const self = this;
-    return self._importInitialChargeValue;
-  }
-
-  /**
-   * Get the consumption associated with initial charge of imported equipment (deprecated).
-   *
-   * @returns {EngineValue} The initial charge consumption value in units like tCO2e.
-   */
-  getInitialChargeConsumption() {
-    const self = this;
-    return self._importInitialChargeConsumption;
-  }
-
-  /**
-   * Get the number of new units imported (deprecated).
-   *
-   * @returns {EngineValue} The new population value in units.
-   */
-  getNewPopulation() {
-    const self = this;
-    return self._importPopulation;
   }
 }
 
@@ -934,16 +899,6 @@ class EngineResultBuilder {
     self._tradeSupplement = tradeSupplement;
   }
 
-  /**
-   * Specify the supplemental import information needed for attribution (deprecated).
-   *
-   * @param {TradeSupplement} importSupplement - Supplemental import
-   *     information.
-   */
-  setImportSupplement(importSupplement) {
-    const self = this;
-    self._tradeSupplement = importSupplement;
-  }
 
   /**
    * Check that the builder is complete and create a new result.

@@ -138,11 +138,23 @@ class ReportDataParser {
     const energyConsumption = parseEngineNumber(row["energyConsumption"], "kwh");
 
     // Handle TradeSupplement fields from Java CSV
-    const importInitialChargeValue = parseEngineNumber(row["importInitialChargeValue"], "kg");
-    const importInitialChargeConsumption = parseEngineNumber(row["importInitialChargeConsumption"], "tCO2e");
+    const importInitialChargeValue = parseEngineNumber(
+      row["importInitialChargeValue"],
+      "kg",
+    );
+    const importInitialChargeConsumption = parseEngineNumber(
+      row["importInitialChargeConsumption"],
+      "tCO2e",
+    );
     const importPopulation = parseEngineNumber(row["importPopulation"], "units");
-    const exportInitialChargeValue = parseEngineNumber(row["exportInitialChargeValue"], "kg");
-    const exportInitialChargeConsumption = parseEngineNumber(row["exportInitialChargeConsumption"], "tCO2e");
+    const exportInitialChargeValue = parseEngineNumber(
+      row["exportInitialChargeValue"],
+      "kg",
+    );
+    const exportInitialChargeConsumption = parseEngineNumber(
+      row["exportInitialChargeConsumption"],
+      "tCO2e",
+    );
 
     // Create tradeSupplement object using the TradeSupplement class
     const tradeSupplement = new TradeSupplement(

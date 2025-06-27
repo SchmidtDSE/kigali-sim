@@ -159,11 +159,11 @@ function buildEngineStructTests() {
       assert.deepEqual(energy.getUnits(), "kWh");
     });
 
-    QUnit.test("getImportSupplement", function (assert) {
+    QUnit.test("getTradeSupplement", function (assert) {
       const result = makeExample();
-      const supplement = result.getImportSupplement();
+      const supplement = result.getTradeSupplement();
       assert.notDeepEqual(supplement, undefined);
-      assert.deepEqual(supplement.constructor.name, "ImportSupplement");
+      assert.deepEqual(supplement.constructor.name, "TradeSupplement");
     });
 
     QUnit.test("getScenarioName", function (assert) {
@@ -324,23 +324,23 @@ function buildEngineStructTests() {
     });
 
     // Test legacy methods
-    QUnit.test("getInitialChargeValue (legacy)", function (assert) {
+    QUnit.test("getImportInitialChargeValue", function (assert) {
       const supplement = makeExample();
-      const value = supplement.getInitialChargeValue();
+      const value = supplement.getImportInitialChargeValue();
       assert.closeTo(value.getValue(), 5, 0.0001);
       assert.deepEqual(value.getUnits(), "kg");
     });
 
-    QUnit.test("getInitialChargeConsumption (legacy)", function (assert) {
+    QUnit.test("getImportInitialChargeConsumption", function (assert) {
       const supplement = makeExample();
-      const consumption = supplement.getInitialChargeConsumption();
+      const consumption = supplement.getImportInitialChargeConsumption();
       assert.closeTo(consumption.getValue(), 10, 0.0001);
       assert.deepEqual(consumption.getUnits(), "tCO2e");
     });
 
-    QUnit.test("getNewPopulation (legacy)", function (assert) {
+    QUnit.test("getImportPopulation", function (assert) {
       const supplement = makeExample();
-      const population = supplement.getNewPopulation();
+      const population = supplement.getImportPopulation();
       assert.closeTo(population.getValue(), 2, 0.0001);
       assert.deepEqual(population.getUnits(), "units");
     });

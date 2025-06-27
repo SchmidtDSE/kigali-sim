@@ -127,18 +127,18 @@ function buildWasmBackendTests() {
           "Energy consumption units should be correct");
 
         // Test ImportSupplement
-        const importSupplement = result.getImportSupplement();
-        assert.ok(importSupplement, "ImportSupplement should be defined");
-        assert.ok(importSupplement.getInitialChargeValue() instanceof EngineNumber,
-          "InitialChargeValue should be EngineNumber");
-        assert.equal(importSupplement.getInitialChargeValue().getValue(), 0,
-          "InitialChargeValue should be 0");
-        assert.equal(importSupplement.getInitialChargeValue().getUnits(), "kg",
-          "InitialChargeValue units should be kg");
-        assert.ok(importSupplement.getInitialChargeConsumption() instanceof EngineNumber,
-          "InitialChargeConsumption should be EngineNumber");
-        assert.equal(importSupplement.getNewPopulation().getUnits(), "units",
-          "NewPopulation units should be units");
+        const tradeSupplement = result.getTradeSupplement();
+        assert.ok(tradeSupplement, "TradeSupplement should be defined");
+        assert.ok(tradeSupplement.getImportInitialChargeValue() instanceof EngineNumber,
+          "ImportInitialChargeValue should be EngineNumber");
+        assert.equal(tradeSupplement.getImportInitialChargeValue().getValue(), 0,
+          "ImportInitialChargeValue should be 0");
+        assert.equal(tradeSupplement.getImportInitialChargeValue().getUnits(), "kg",
+          "ImportInitialChargeValue units should be kg");
+        assert.ok(tradeSupplement.getImportInitialChargeConsumption() instanceof EngineNumber,
+          "ImportInitialChargeConsumption should be EngineNumber");
+        assert.equal(tradeSupplement.getImportPopulation().getUnits(), "units",
+          "ImportPopulation units should be units");
       });
     });
 

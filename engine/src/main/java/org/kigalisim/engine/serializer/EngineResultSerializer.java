@@ -65,22 +65,6 @@ public class EngineResultSerializer {
     return builder.build();
   }
 
-  /**
-   * Serialize the results for an application and substance in a given year.
-   *
-   * @param application The name of the application for which a result should be
-   *     serialized like commercial refrigeration
-   * @param substance The name of the substance like HFC-134a for which a result
-   *     should be serialized
-   * @param year The year for which a result should be serialized
-   * @return Snapshot of the result in the current engine state for the given
-   *     application and substance
-   * @deprecated Use {@link #getResult(UseKey, int)} instead
-   */
-  @Deprecated
-  public EngineResult getResult(String application, String substance, int year) {
-    return getResult(new SimpleUseKey(application, substance), year);
-  }
 
   /**
    * Parse the attributes which are actually returned to the user.

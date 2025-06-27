@@ -19,6 +19,7 @@ import org.junit.jupiter.api.Test;
 import org.kigalisim.engine.Engine;
 import org.kigalisim.engine.number.EngineNumber;
 import org.kigalisim.engine.state.ConverterStateGetter;
+import org.kigalisim.engine.state.SimpleUseKey;
 import org.kigalisim.engine.state.UseKey;
 
 /**
@@ -46,7 +47,7 @@ public class EngineResultSerializerTest {
       mockEngine = createMockEngine();
       stateGetter = new ConverterStateGetter(mockEngine);
       serializer = new EngineResultSerializer(mockEngine, stateGetter);
-      result = serializer.getResult("commercialRefrigeration", "HFC-134a", 1);
+      result = serializer.getResult(new SimpleUseKey("commercialRefrigeration", "HFC-134a"), 1);
     }
 
     /**
@@ -201,7 +202,7 @@ public class EngineResultSerializerTest {
       mockEngine = createMockEngineForTradeSupplement();
       stateGetter = new ConverterStateGetter(mockEngine);
       serializer = new EngineResultSerializer(mockEngine, stateGetter);
-      result = serializer.getResult("commercialRefrigeration", "HFC-134a", 1);
+      result = serializer.getResult(new SimpleUseKey("commercialRefrigeration", "HFC-134a"), 1);
       tradeSupplement = result.getTradeSupplement();
     }
 

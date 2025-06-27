@@ -235,35 +235,4 @@ public class SalesStreamDistributionBuilder {
     }
   }
 
-  /**
-   * Build a sales stream distribution based on current values and enabled status.
-   *
-   * <p>This method excludes exports from the distribution for backward compatibility.
-   *
-   * @param manufactureSales Current manufacture sales value
-   * @param importSales Current import sales value
-   * @param manufactureEnabled true if manufacture stream has ever been enabled
-   * @param importEnabled true if import stream has ever been enabled
-   * @return A SalesStreamDistribution with appropriate percentages
-   * @deprecated Use the builder pattern instead: new SalesStreamDistributionBuilder()
-   *     .setManufactureSales(...).setImportSales(...).build()
-   */
-  @Deprecated
-  public static SalesStreamDistribution buildDistribution(
-      EngineNumber manufactureSales,
-      EngineNumber importSales,
-      boolean manufactureEnabled,
-      boolean importEnabled
-  ) {
-    EngineNumber zeroExport = new EngineNumber(BigDecimal.ZERO, manufactureSales.getUnits());
-    return new SalesStreamDistributionBuilder()
-        .setManufactureSales(manufactureSales)
-        .setImportSales(importSales)
-        .setExportSales(zeroExport)
-        .setManufactureEnabled(manufactureEnabled)
-        .setImportEnabled(importEnabled)
-        .setExportEnabled(false)
-        .setIncludeExports(false)
-        .build();
-  }
 }
