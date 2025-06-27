@@ -220,7 +220,6 @@ jobs:
         working-directory: ./editor
   deploy-prep:
     environment: build
-    if: github.ref == 'refs/heads/deploy'
     runs-on: ubuntu-latest
     name: Deploy Preparation
     needs: [ lintJs, unitTestsBrowser, checkCacheBusters, buildWasm ]
