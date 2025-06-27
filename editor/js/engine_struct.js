@@ -999,9 +999,11 @@ class AggregatedResult {
     manufactureValue,
     importValue,
     recycleValue,
+    exportValue,
     domesticConsumptionValue,
     importConsumptionValue,
     recycleConsumptionValue,
+    exportConsumptionValue,
     populationValue,
     populationNew,
     rechargeEmissions,
@@ -1012,9 +1014,11 @@ class AggregatedResult {
     self._manufactureValue = manufactureValue;
     self._importValue = importValue;
     self._recycleValue = recycleValue;
+    self._exportValue = exportValue;
     self._domesticConsumptionValue = domesticConsumptionValue;
     self._importConsumptionValue = importConsumptionValue;
     self._recycleConsumptionValue = recycleConsumptionValue;
+    self._exportConsumptionValue = exportConsumptionValue;
     self._populationValue = populationValue;
     self._populationNew = populationNew;
     self._rechargeEmissions = rechargeEmissions;
@@ -1063,6 +1067,16 @@ class AggregatedResult {
   }
 
   /**
+   * Get the export sales.
+   *
+   * @returns {EngineNumber} The export sales with units like kg.
+   */
+  getExport() {
+    const self = this;
+    return self._exportValue;
+  }
+
+  /**
    * Get combined sales value (manufacture + import).
    *
    * @returns {EngineNumber} The combined sales value with units like kg.
@@ -1106,6 +1120,16 @@ class AggregatedResult {
   getRecycleConsumption() {
     const self = this;
     return self._recycleConsumptionValue;
+  }
+
+  /**
+   * Get the export consumption.
+   *
+   * @returns {EngineNumber} The export consumption with units like tCO2e.
+   */
+  getExportConsumption() {
+    const self = this;
+    return self._exportConsumptionValue;
   }
 
   /**
@@ -1190,6 +1214,7 @@ class AggregatedResult {
     const manufactureValue = self._combineUnitValue(self.getManufacture(), other.getManufacture());
     const importValue = self._combineUnitValue(self.getImport(), other.getImport());
     const recycleValue = self._combineUnitValue(self.getRecycle(), other.getRecycle());
+    const exportValue = self._combineUnitValue(self.getExport(), other.getExport());
     const domesticConsumptionValue = self._combineUnitValue(
       self.getDomesticConsumption(),
       other.getDomesticConsumption(),
@@ -1201,6 +1226,10 @@ class AggregatedResult {
     const recycleConsumptionValue = self._combineUnitValue(
       self.getRecycleConsumption(),
       other.getRecycleConsumption(),
+    );
+    const exportConsumptionValue = self._combineUnitValue(
+      self.getExportConsumption(),
+      other.getExportConsumption(),
     );
     const populationValue = self._combineUnitValue(self.getPopulation(), other.getPopulation());
     const populationNew = self._combineUnitValue(self.getPopulationNew(), other.getPopulationNew());
@@ -1219,9 +1248,11 @@ class AggregatedResult {
       manufactureValue,
       importValue,
       recycleValue,
+      exportValue,
       domesticConsumptionValue,
       importConsumptionValue,
       recycleConsumptionValue,
+      exportConsumptionValue,
       populationValue,
       populationNew,
       rechargeEmissions,
