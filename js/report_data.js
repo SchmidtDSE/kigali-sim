@@ -195,16 +195,33 @@ class ReportDataWrapper {
     const addEmissionsStrategies = (strategyBuilder) => {
       strategyBuilder.setMetric("emissions");
 
-      strategyBuilder.setSubmetric("all");
-      strategyBuilder.setStrategy((x) => self.getTotalEmissions(x));
-      addEmissionsConversion(strategyBuilder);
-
       strategyBuilder.setSubmetric("recharge");
       strategyBuilder.setStrategy((x) => self.getRechargeEmissions(x));
       addEmissionsConversion(strategyBuilder);
 
       strategyBuilder.setSubmetric("eol");
       strategyBuilder.setStrategy((x) => self.getEolEmissions(x));
+      addEmissionsConversion(strategyBuilder);
+
+      strategyBuilder.setSubmetric("custom");
+      strategyBuilder.setStrategy((filterSet) => {
+        const customDef = filterSet.getCustomDefinition('emissions');
+        if (!customDef || customDef.length === 0) return null;
+        
+        const results = customDef.map(submetric => {
+          const tempFilter = filterSet.getWithMetric(`emissions:${submetric}:${filterSet.getUnits()}`);
+          return self.getMetric(tempFilter);
+        });
+        
+        return results.reduce((a, b) => {
+          if (!a) return b;
+          if (!b) return a;
+          if (a.getUnits() !== b.getUnits()) {
+            throw new Error(`Cannot combine incompatible units: ${a.getUnits()} and ${b.getUnits()}`);
+          }
+          return new EngineNumber(a.getValue() + b.getValue(), a.getUnits());
+        });
+      });
       addEmissionsConversion(strategyBuilder);
     };
 
@@ -260,10 +277,6 @@ class ReportDataWrapper {
         strategyBuilder.add();
       };
 
-      strategyBuilder.setSubmetric("all");
-      strategyBuilder.setStrategy((x) => self.getSales(x));
-      makeForKgAndMt(strategyBuilder);
-
       strategyBuilder.setSubmetric("import");
       strategyBuilder.setStrategy((x) => self.getImport(x));
       makeForKgAndMt(strategyBuilder);
@@ -275,14 +288,31 @@ class ReportDataWrapper {
       strategyBuilder.setSubmetric("recycle");
       strategyBuilder.setStrategy((x) => self.getRecycle(x));
       makeForKgAndMt(strategyBuilder);
+
+      strategyBuilder.setSubmetric("custom");
+      strategyBuilder.setStrategy((filterSet) => {
+        const customDef = filterSet.getCustomDefinition('sales');
+        if (!customDef || customDef.length === 0) return null;
+        
+        const results = customDef.map(submetric => {
+          const tempFilter = filterSet.getWithMetric(`sales:${submetric}:${filterSet.getUnits()}`);
+          return self.getMetric(tempFilter);
+        });
+        
+        return results.reduce((a, b) => {
+          if (!a) return b;
+          if (!b) return a;
+          if (a.getUnits() !== b.getUnits()) {
+            throw new Error(`Cannot combine incompatible units: ${a.getUnits()} and ${b.getUnits()}`);
+          }
+          return new EngineNumber(a.getValue() + b.getValue(), a.getUnits());
+        });
+      });
+      makeForKgAndMt(strategyBuilder);
     };
 
     const addConsumptionStrategies = (strategyBuilder) => {
       strategyBuilder.setMetric("sales");
-
-      strategyBuilder.setSubmetric("all");
-      strategyBuilder.setStrategy((x) => self.getGhgConsumption(x));
-      addEmissionsConversion(strategyBuilder);
 
       strategyBuilder.setSubmetric("import");
       strategyBuilder.setStrategy((x) => self.getImportConsumption(x));
@@ -294,6 +324,36 @@ class ReportDataWrapper {
 
       strategyBuilder.setSubmetric("recycle");
       strategyBuilder.setStrategy((x) => self.getRecycleConsumption(x));
+      addEmissionsConversion(strategyBuilder);
+
+      strategyBuilder.setSubmetric("custom");
+      strategyBuilder.setStrategy((filterSet) => {
+        const customDef = filterSet.getCustomDefinition('sales');
+        if (!customDef || customDef.length === 0) return null;
+        
+        // Map submetrics to their consumption equivalents
+        const consumptionMethods = {
+          'manufacture': (x) => self.getDomesticConsumption(x),
+          'import': (x) => self.getImportConsumption(x),
+          'recycle': (x) => self.getRecycleConsumption(x)
+        };
+        
+        const results = customDef.map(submetric => {
+          const method = consumptionMethods[submetric];
+          return method ? method(filterSet) : null;
+        }).filter(result => result !== null);
+        
+        if (results.length === 0) return null;
+        
+        return results.reduce((a, b) => {
+          if (!a) return b;
+          if (!b) return a;
+          if (a.getUnits() !== b.getUnits()) {
+            throw new Error(`Cannot combine incompatible units: ${a.getUnits()} and ${b.getUnits()}`);
+          }
+          return new EngineNumber(a.getValue() + b.getValue(), a.getUnits());
+        });
+      });
       addEmissionsConversion(strategyBuilder);
     };
 
