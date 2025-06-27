@@ -1,4 +1,4 @@
-# Montreal Protocol Policy Simulation Tool
+# Kigali Sim
 Open source web-based tool and simulation engine capable of simulations related to substances, applications, and policies relevant to the Montreal Protocol. It may potentially be useful at the discretion of relevant stakeholders as an optional step in informing proposals.
 
 ## Project Structure

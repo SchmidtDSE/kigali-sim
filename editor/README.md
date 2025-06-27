@@ -1,6 +1,6 @@
 # Web Editor
 
-This directory contains the web-based editor and analysis tool for the Montreal Protocol Policy Simulation Tool.
+This directory contains the web-based editor and analysis tool for Kigali Sim.
 
 ## Purpose
 
