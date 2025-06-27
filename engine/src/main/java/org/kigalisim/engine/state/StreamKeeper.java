@@ -78,11 +78,12 @@ public class StreamKeeper {
    * @param useKey The key containing application and substance
    */
   public void ensureSubstance(UseKey useKey) {
-    if (hasSubstance(useKey)) {
+    String key = getKey(useKey);
+    
+    if (substances.containsKey(key)) {
       return;
     }
 
-    String key = getKey(useKey);
     substances.put(key, new StreamParameterization());
 
     // Sales: manufacture, import, export, recycle
@@ -154,6 +155,8 @@ public class StreamKeeper {
    * @return The stream value
    */
   public EngineNumber getStream(UseKey useKey, String name) {
+    String key = getKey(useKey);
+    
     ensureStreamKnown(name);
 
     if ("sales".equals(name)) {
