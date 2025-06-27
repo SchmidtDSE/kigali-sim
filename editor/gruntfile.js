@@ -55,5 +55,23 @@ module.exports = function (grunt) {
     });
   });
 
-  grunt.registerTask("default", ["connect", "qunit-with-fallback"]);
+  grunt.registerTask("copy-examples", function() {
+    if (!grunt.file.exists("examples")) {
+      grunt.file.recurse("../examples", function(abspath, rootdir, subdir, filename) {
+        var destPath = "examples/" + (subdir ? subdir + "/" : "") + filename;
+        grunt.file.copy(abspath, destPath);
+      });
+      grunt.log.ok("Examples copied for testing");
+    }
+  });
+
+  grunt.registerTask("cleanup-examples", function() {
+    if (grunt.file.exists("examples")) {
+      grunt.file.delete("examples");
+      grunt.log.ok("Examples directory cleaned up");
+    }
+  });
+
+  grunt.registerTask("test-with-cleanup", ["copy-examples", "connect", "qunit-with-fallback", "cleanup-examples"]);
+  grunt.registerTask("default", ["test-with-cleanup"]);
 };
