@@ -203,6 +203,10 @@ class ReportDataWrapper {
       strategyBuilder.setStrategy((x) => self.getEolEmissions(x));
       addEmissionsConversion(strategyBuilder);
 
+      strategyBuilder.setSubmetric("export");
+      strategyBuilder.setStrategy((x) => self.getExportEmissions(x));
+      addEmissionsConversion(strategyBuilder);
+
       strategyBuilder.setSubmetric("custom");
       strategyBuilder.setStrategy((filterSet) => {
         const customDef = filterSet.getCustomDefinition("emissions");
@@ -293,6 +297,10 @@ class ReportDataWrapper {
       strategyBuilder.setStrategy((x) => self.getRecycle(x));
       makeForKgAndMt(strategyBuilder);
 
+      strategyBuilder.setSubmetric("export");
+      strategyBuilder.setStrategy((x) => self.getExport(x));
+      makeForKgAndMt(strategyBuilder);
+
       strategyBuilder.setSubmetric("custom");
       strategyBuilder.setStrategy((filterSet) => {
         const customDef = filterSet.getCustomDefinition("sales");
@@ -334,6 +342,10 @@ class ReportDataWrapper {
       strategyBuilder.setStrategy((x) => self.getRecycleConsumption(x));
       addEmissionsConversion(strategyBuilder);
 
+      strategyBuilder.setSubmetric("export");
+      strategyBuilder.setStrategy((x) => self.getExportConsumption(x));
+      addEmissionsConversion(strategyBuilder);
+
       strategyBuilder.setSubmetric("custom");
       strategyBuilder.setStrategy((filterSet) => {
         const customDef = filterSet.getCustomDefinition("sales");
@@ -343,6 +355,7 @@ class ReportDataWrapper {
         const consumptionMethods = {
           "manufacture": (x) => self.getDomesticConsumption(x),
           "import": (x) => self.getImportConsumption(x),
+          "export": (x) => self.getExportConsumption(x),
           "recycle": (x) => self.getRecycleConsumption(x),
         };
 
@@ -585,6 +598,19 @@ class ReportDataWrapper {
   }
 
   /**
+   * Get export consumption value matching a given filter set.
+   *
+   * @param {FilterSet} filterSet - The filter criteria to apply.
+   * @returns {EngineNumber|null} The export consumption value, or null if no matching
+   *     results.
+   */
+  getExportConsumption(filterSet) {
+    const self = this;
+    const aggregated = self._getAggregatedAfterFilter(filterSet);
+    return aggregated === null ? null : aggregated.getExportConsumption();
+  }
+
+  /**
    * Get total emissions value matching a given filter set.
    *
    * @param {FilterSet} filterSet - The filter criteria to apply.
@@ -621,6 +647,19 @@ class ReportDataWrapper {
     const self = this;
     const aggregated = self._getAggregatedAfterFilter(filterSet);
     return aggregated === null ? null : aggregated.getEolEmissions();
+  }
+
+  /**
+   * Get export emissions value matching a given filter set.
+   *
+   * @param {FilterSet} filterSet - The filter criteria to apply.
+   * @returns {EngineNumber|null} The export emissions value, or null if no matching
+   *     results.
+   */
+  getExportEmissions(filterSet) {
+    const self = this;
+    const aggregated = self._getAggregatedAfterFilter(filterSet);
+    return aggregated === null ? null : aggregated.getExportConsumption();
   }
 
   /**
@@ -673,6 +712,19 @@ class ReportDataWrapper {
     const self = this;
     const aggregated = self._getAggregatedAfterFilter(filterSet);
     return aggregated === null ? null : aggregated.getRecycle();
+  }
+
+  /**
+   * Get export value matching a given filter set.
+   *
+   * @param {FilterSet} filterSet - The filter criteria to apply.
+   * @returns {EngineNumber|null} The export value, or null if no matching
+   *     results.
+   */
+  getExport(filterSet) {
+    const self = this;
+    const aggregated = self._getAggregatedAfterFilter(filterSet);
+    return aggregated === null ? null : aggregated.getExport();
   }
 
   /**
@@ -745,9 +797,11 @@ class ReportDataWrapper {
           x.getManufacture(),
           x.getImport(),
           x.getRecycle(),
+          x.getExport(),
           x.getDomesticConsumption(),
           x.getImportConsumption(),
           x.getRecycleConsumption(),
+          x.getExportConsumption(),
           x.getPopulation(),
           x.getPopulationNew(),
           x.getRechargeEmissions(),
