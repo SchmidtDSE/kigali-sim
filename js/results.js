@@ -699,42 +699,8 @@ class OptionsPanelPresenter {
     const self = this;
     self._filterSet = filterSet;
     self._attributeImporterCheck.checked = self._filterSet.getAttributeImporter();
-    self._updateSalesSubmetricVisibility();
   }
 
-  /**
-   * Updates the visibility of sales-submetric options based on importer assignment checkbox.
-   * When unchecked, hides 'import' and 'all' options and resets selection if needed.
-   *
-   * @private
-   */
-  _updateSalesSubmetricVisibility() {
-    const self = this;
-    const salesDropdown = self._root.querySelector(".sales-submetric");
-    const isImporterAttributed = self._attributeImporterCheck.checked;
-
-    if (salesDropdown) {
-      const allOption = salesDropdown.querySelector('option[value="all"]');
-      const importOption = salesDropdown.querySelector('option[value="import"]');
-
-      if (isImporterAttributed) {
-        // Show all options when importer assignment is enabled
-        if (allOption) allOption.style.display = "";
-        if (importOption) importOption.style.display = "";
-      } else {
-        // Hide import and all options when importer assignment is disabled
-        if (allOption) allOption.style.display = "none";
-        if (importOption) importOption.style.display = "none";
-
-        // Reset to domestic if import or all was selected
-        if (salesDropdown.value === "all" || salesDropdown.value === "import") {
-          salesDropdown.value = "manufacture";
-          // Trigger change event to update filter set
-          salesDropdown.dispatchEvent(new Event("change"));
-        }
-      }
-    }
-  }
 
   /**
    * Register event listeners for options being changed.
@@ -743,9 +709,6 @@ class OptionsPanelPresenter {
     const self = this;
     self._attributeImporterCheck.addEventListener("change", () => {
       const newValue = self._attributeImporterCheck.checked;
-
-      // Update sales submetric visibility first
-      self._updateSalesSubmetricVisibility();
 
       const newFilterSet = self._filterSet.getWithAttributeImporter(newValue);
       self._onUpdateFilterSet(newFilterSet);

@@ -41,6 +41,34 @@
             <a href="#" class="cancel-button destructive">Cancel</a>
           </div>
         </dialog>
+
+        <dialog id="custom-emissions-dialog">
+          <h2>Configure Custom Emissions Metric</h2>
+          <p>Select which emission types to include in your custom metric:</p>
+          <div class="checkbox-list">
+            <label><input type="checkbox" value="recharge"> Recharge emissions</label>
+            <label><input type="checkbox" value="eol"> End of life emissions</label>
+            <label><input type="checkbox" value="exported"> Exported emissions</label>
+          </div>
+          <div class="dialog-buttons bold-buttons">
+            <a href="#" class="primary">Apply</a>
+            <a href="#" class="secondary">Cancel</a>
+          </div>
+        </dialog>
+
+        <dialog id="custom-sales-dialog">
+          <h2>Configure Custom Sales/Consumption Metric</h2>
+          <p>Select which consumption types to include in your custom metric:</p>
+          <div class="checkbox-list">
+            <label><input type="checkbox" value="manufacture"> Domestic manufacture</label>
+            <label><input type="checkbox" value="import"> Imports</label>
+            <label><input type="checkbox" value="recycle"> Recycle</label>
+          </div>
+          <div class="dialog-buttons bold-buttons">
+            <a href="#" class="primary">Apply</a>
+            <a href="#" class="secondary">Cancel</a>
+          </div>
+        </dialog>
       </div>
     </header>
 
@@ -854,10 +882,10 @@
                     class="emissions-submetric submetric-input"
                     aria-label="Type of emissions to display"
                   >
-                    <option value="all" selected>all direct</option>
-                    <option value="recharge">recharge</option>
+                    <option value="recharge" selected>recharge</option>
                     <option value="eol">end of life</option>
                     <option value="exported">exported</option>
+                    <option value="custom">custom</option>
                   </select>
                 </div>
                 <div class="sel">
@@ -871,6 +899,9 @@
                     <option value="MtCO2e / yr" selected>MtCO2e / yr</option>
                   </select>
                 </div>
+              </div>
+              <div class="scorecard-custom-link">
+                <a href="#" class="configure-custom-link">configure custom</a>
               </div>
             </div>
 
@@ -897,10 +928,10 @@
                     class="sales-submetric submetric-input"
                     aria-label="Type of sales / consumption to display"
                   >
-                    <option value="all" selected>all</option>
+                    <option value="manufacture" selected>domestic manufacture</option>
                     <option value="import">imports</option>
-                    <option value="manufacture">domestic</option>
                     <option value="recycle">recycle</option>
+                    <option value="custom">custom</option>
                   </select>
                 </div>
                 <div class="sel">
@@ -919,6 +950,9 @@
                     <option value="gwh / yr">GWh / yr</option>
                   </select>
                 </div>
+              </div>
+              <div class="scorecard-custom-link">
+                <a href="#" class="configure-custom-link">configure custom</a>
               </div>
             </div>
 

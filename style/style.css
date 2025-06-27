@@ -66,6 +66,19 @@ dialog .contents .instructions {
   margin-top: 10px;
 }
 
+.configure-custom-link {
+  font-size: 0.85em;
+  color: #555;
+  text-decoration: none;
+  margin-top: 4px;
+  display: inline-block;
+}
+
+.configure-custom-link:hover {
+  color: #333;
+  text-decoration: underline;
+}
+
 footer {
   margin-bottom: 20px;
 }
