@@ -8,7 +8,7 @@ SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
 
 # Change to the project root
-cd "$PROJECT_ROOT"
+cd "$PROJECT_ROOT/.."
 
 # Change to the engine directory
 cd engine
@@ -28,6 +28,6 @@ cd "$PROJECT_ROOT"
 
 # Use the extraction script
 echo "Extracting WASM files..."
-bash support/update_wasm_from_war.sh engine/build/libs/KigaliSim.war
+bash support/update_wasm_from_war.sh ../engine/build/libs/KigaliSim.war
 
 echo "WASM files updated successfully"
