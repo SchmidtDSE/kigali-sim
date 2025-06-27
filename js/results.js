@@ -279,6 +279,20 @@ class ScorecardPresenter {
     self._root = root;
     self._filterSet = null;
     self._onUpdateFilterSet = onUpdateFilterSet;
+    
+    // Create custom metric presenters
+    self._customPresenters = {};
+    self._customPresenters.emissions = new CustomMetricPresenter(
+      'custom-emissions-dialog',
+      ['recharge', 'eol'],
+      (selection) => self._onCustomMetricChanged('emissions', selection)
+    );
+    self._customPresenters.sales = new CustomMetricPresenter(
+      'custom-sales-dialog',
+      ['manufacture', 'import', 'recycle'],
+      (selection) => self._onCustomMetricChanged('sales', selection)
+    );
+    
     self._registerEventListeners();
   }
 
@@ -348,6 +362,32 @@ class ScorecardPresenter {
   }
 
   /**
+   * Handle custom metric definition changes.
+   *
+   * @param {string} metricFamily - The metric family ('emissions' or 'sales').
+   * @param {Array<string>} selection - Array of selected submetrics.
+   * @private
+   */
+  _onCustomMetricChanged(metricFamily, selection) {
+    const self = this;
+    
+    // Update custom definition in filter set
+    const newFilterSet = self._filterSet.getWithCustomDefinition(metricFamily, selection);
+    
+    // Switch to custom metric if not already
+    const currentMetric = newFilterSet.getMetric();
+    const currentUnits = newFilterSet.getUnits();
+    
+    if (currentMetric === metricFamily) {
+      const customMetric = `${metricFamily}:custom:${currentUnits}`;
+      const finalFilterSet = newFilterSet.getWithMetric(customMetric);
+      self._onUpdateFilterSet(finalFilterSet);
+    } else {
+      self._onUpdateFilterSet(newFilterSet);
+    }
+  }
+
+  /**
    * Update an individual scorecard.
    *
    * @param {HTMLElement} scorecard - Scorecard DOM element.
@@ -407,10 +447,29 @@ class ScorecardPresenter {
     const registerListener = (scorecard, family) => {
       const subMetricDropdown = scorecard.querySelector(".submetric-input");
       const unitsDropdown = scorecard.querySelector(".units-input");
+      const customConfigLink = scorecard.querySelector(".configure-custom-link");
 
       const callback = () => {
         const subMetric = subMetricDropdown.value;
         const units = unitsDropdown.value;
+        
+        // Handle custom metric selection
+        if (subMetric === "custom") {
+          const customPresenter = self._customPresenters[family];
+          const currentDef = customPresenter.getCurrentDefinition();
+          
+          // Set the current definition based on FilterSet
+          const filterSetDef = self._filterSet.getCustomDefinition(family);
+          if (filterSetDef) {
+            customPresenter.setCurrentDefinition(filterSetDef);
+          }
+          
+          if (!currentDef || currentDef.length === 0) {
+            customPresenter.showDialog();
+            return; // Don't update filter until dialog is completed
+          }
+        }
+        
         const fullName = family + ":" + subMetric + ":" + units;
         const newFilterSet = self._filterSet.getWithMetric(fullName);
         self._onUpdateFilterSet(newFilterSet);
@@ -421,6 +480,22 @@ class ScorecardPresenter {
 
       subMetricDropdown.addEventListener("change", callback);
       unitsDropdown.addEventListener("change", callback);
+      
+      // Custom configuration link listener
+      if (customConfigLink) {
+        customConfigLink.addEventListener("click", (event) => {
+          event.preventDefault();
+          const customPresenter = self._customPresenters[family];
+          
+          // Set current definition before showing dialog
+          const filterSetDef = self._filterSet.getCustomDefinition(family);
+          if (filterSetDef) {
+            customPresenter.setCurrentDefinition(filterSetDef);
+          }
+          
+          customPresenter.showDialog();
+        });
+      }
     };
 
     registerListener(emissionsScorecard, "emissions");
