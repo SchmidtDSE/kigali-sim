@@ -69,7 +69,7 @@ public class StreamKeeper {
    */
   public boolean hasSubstance(UseKey useKey) {
     String key = getKey(useKey);
-    return substances.get(key) != null;
+    return substances.containsKey(key);
   }
 
   /**
@@ -80,7 +80,7 @@ public class StreamKeeper {
   public void ensureSubstance(UseKey useKey) {
     String key = getKey(useKey);
     
-    if (substances.get(key) != null) {
+    if (substances.containsKey(key)) {
       return;
     }
 
@@ -155,7 +155,7 @@ public class StreamKeeper {
   public EngineNumber getStream(UseKey useKey, String name) {
     String key = getKey(useKey);
     
-    if (substances.get(key) == null) {
+    if (!substances.containsKey(key)) {
       throwSubstanceMissing(
           "getStream",
           useKey.getApplication(),
