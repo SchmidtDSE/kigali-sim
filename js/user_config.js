@@ -25,6 +25,8 @@ class FilterSet {
    * @param {string|null} baseline - Baseline scenario for comparison.
    * @param {boolean|null} attributeImporter - Whether to attribute imported
    *     equipment initial charge to importer (true) or exporter (false).
+   * @param {Object|null} customDefinitions - Custom metric definitions object
+   *     with keys 'emissions' and 'sales' mapping to arrays of submetrics.
    */
   constructor(
     year,
@@ -35,6 +37,7 @@ class FilterSet {
     dimension,
     baseline,
     attributeImporter,
+    customDefinitions,
   ) {
     const self = this;
     self._year = year;
@@ -45,6 +48,10 @@ class FilterSet {
     self._dimension = dimension;
     self._baseline = baseline;
     self._attributeImporter = attributeImporter;
+    self._customDefinitions = customDefinitions || {
+      'emissions': null,
+      'sales': null
+    };
   }
 
   /**
@@ -91,6 +98,7 @@ class FilterSet {
       self._dimension,
       self._baseline,
       self._attributeImporter,
+      self._customDefinitions,
     );
   }
 
@@ -122,6 +130,7 @@ class FilterSet {
       self._dimension,
       self._baseline,
       self._attributeImporter,
+      self._customDefinitions,
     );
   }
 
@@ -153,6 +162,7 @@ class FilterSet {
       self._dimension,
       self._baseline,
       self._attributeImporter,
+      self._customDefinitions,
     );
   }
 
@@ -183,6 +193,7 @@ class FilterSet {
       self._dimension,
       self._baseline,
       self._attributeImporter,
+      self._customDefinitions,
     );
   }
 
@@ -262,6 +273,7 @@ class FilterSet {
       self._dimension,
       self._baseline,
       self._attributeImporter,
+      self._customDefinitions,
     );
   }
 
@@ -292,6 +304,7 @@ class FilterSet {
       newDimension,
       self._baseline,
       self._attributeImporter,
+      self._customDefinitions,
     );
   }
 
@@ -322,6 +335,7 @@ class FilterSet {
       self._dimension,
       newBaseline,
       self._attributeImporter,
+      self._customDefinitions,
     );
   }
 
@@ -353,7 +367,58 @@ class FilterSet {
       self._dimension,
       self._baseline,
       newAttributeImporter,
+      self._customDefinitions,
     );
+  }
+
+  /**
+   * Get custom metric definition for a specific metric family.
+   *
+   * @param {string} metricFamily - The metric family ('emissions' or 'sales').
+   * @returns {Array<string>|null} Array of selected submetrics or null if none.
+   */
+  getCustomDefinition(metricFamily) {
+    const self = this;
+    return self._customDefinitions[metricFamily];
+  }
+
+  /**
+   * Get a new filter set with updated custom definition for a metric family.
+   *
+   * @param {string} metricFamily - The metric family ('emissions' or 'sales').
+   * @param {Array<string>|null} definition - Array of submetrics or null.
+   * @returns {FilterSet} New filter set with updated custom definition.
+   */
+  getWithCustomDefinition(metricFamily, definition) {
+    const self = this;
+    const newCustomDefinitions = {...self._customDefinitions};
+    newCustomDefinitions[metricFamily] = definition;
+    
+    return new FilterSet(
+      self._year,
+      self._scenario,
+      self._application,
+      self._substance,
+      self._metric,
+      self._dimension,
+      self._baseline,
+      self._attributeImporter,
+      newCustomDefinitions,
+    );
+  }
+
+  /**
+   * Check if the current metric is a custom metric.
+   *
+   * @returns {boolean} True if current metric uses custom submetric.
+   */
+  isCustomMetric() {
+    const self = this;
+    if (self._metric === null) {
+      return false;
+    }
+    const submetric = self.getSubMetric();
+    return submetric === 'custom';
   }
 
   /**

@@ -110,10 +110,11 @@ class ResultsPresenter {
       null,
       null,
       null,
-      "emissions:all:MtCO2e / yr",
+      "emissions:recharge:MtCO2e / yr",
       "simulations",
       null,
       false,
+      null,
     );
   }
 
@@ -337,10 +338,11 @@ class ScorecardPresenter {
         null,
         null,
         null,
-        "emissions:all:MtCO2e / yr",
+        "emissions:recharge:MtCO2e / yr",
         "simulations",
         null,
         false,
+        null,
       ));
     }
   }
