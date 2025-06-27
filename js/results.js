@@ -163,7 +163,7 @@ class ResultsPresenter {
 
     let constrainedFilterSet = filterSet;
 
-    // Validate that selected values exist in results and reset to "all" if not found
+    // Validate that selected values exist in results and reset to null if not found
     if (self._results !== null) {
       // Check if selected scenario exists
       const selectedScenario = constrainedFilterSet.getScenario();
@@ -192,6 +192,27 @@ class ResultsPresenter {
           constrainedFilterSet.getWithSubstance(null));
         if (!availableSubstances.has(selectedSubstance)) {
           constrainedFilterSet = constrainedFilterSet.getWithSubstance(null);
+        }
+      }
+    }
+
+    // Validate custom metrics have definitions
+    if (constrainedFilterSet.isCustomMetric()) {
+      const metricFamily = constrainedFilterSet.getMetric();
+      const customDef = constrainedFilterSet.getCustomDefinition(metricFamily);
+      
+      if (!customDef || customDef.length === 0) {
+        // Switch to a default submetric for the family
+        const defaultSubmetrics = {
+          'emissions': 'recharge',
+          'sales': 'manufacture'
+        };
+        
+        const defaultSubmetric = defaultSubmetrics[metricFamily];
+        if (defaultSubmetric) {
+          const currentUnits = constrainedFilterSet.getUnits();
+          const defaultMetric = `${metricFamily}:${defaultSubmetric}:${currentUnits}`;
+          constrainedFilterSet = constrainedFilterSet.getWithMetric(defaultMetric);
         }
       }
     }

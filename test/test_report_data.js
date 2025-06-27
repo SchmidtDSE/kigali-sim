@@ -36,20 +36,20 @@ function buildReportDataTests() {
       });
     };
 
-    QUnit.test("parses submetric all", (assert) => {
+    QUnit.test("parses submetric manufacture", (assert) => {
       const filterSet = new FilterSet(
         null,
         null,
         null,
         null,
-        "sales:all:mt / yr",
+        "sales:manufacture:mt / yr",
         null,
         null,
         false,
       );
-      assert.deepEqual(filterSet.getFullMetricName(), "sales:all:mt / yr");
+      assert.deepEqual(filterSet.getFullMetricName(), "sales:manufacture:mt / yr");
       assert.deepEqual(filterSet.getMetric(), "sales");
-      assert.deepEqual(filterSet.getSubMetric(), "all");
+      assert.deepEqual(filterSet.getSubMetric(), "manufacture");
       assert.deepEqual(filterSet.getUnits(), "mt / yr");
     });
 
