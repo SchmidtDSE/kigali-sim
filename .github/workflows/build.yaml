@@ -256,9 +256,9 @@ jobs:
       - name: Copy guide
         run: cp -r ./docs/guide ./editor/deploy/guide
       - name: Copy case study QTA file to guide
-        run: cp ./editor/examples/case_study.qta ./editor/deploy/guide/case_study.qta
+        run: cp ./examples/case_study.qta ./editor/deploy/guide/case_study.qta
       - name: Copy subdivided case study QTA file to guide
-        run: cp ./editor/examples/case_study_subdivided.qta ./editor/deploy/guide/case_study_subdivided.qta
+        run: cp ./examples/case_study_subdivided.qta ./editor/deploy/guide/case_study_subdivided.qta
       - name: Copy WASM files
         run: cp -r ./editor/wasm ./editor/deploy/wasm
       - name: Update cache busters
