@@ -301,6 +301,10 @@ main {
   color: #333;
 }
 
+#results .scorecards .scorecard .sel select {
+  width: 100px;
+}
+
 #results .scorecards .scorecard.inactive .sel select {
   background-color: #F8F8F8;
 }
@@ -684,6 +688,14 @@ main {
 }
 
 @media (max-width: 999px) {
+  #results .scorecards .scorecard .sel {
+    display: block;
+  }
+
+  #results .scorecards .scorecard .sel select {
+    width: 100%;
+  }
+
   #results .dimensions .dimension {
     margin-bottom: 10px;
   }
