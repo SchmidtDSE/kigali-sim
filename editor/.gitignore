@@ -1,7 +1,8 @@
 node_modules/
 examples/
 deploy/
-intermediate/
+intermediate/static/
+intermediate/QubecTalk*
 language/*.jar
 third_party/
 test/qunit.css
