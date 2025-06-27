@@ -1,6 +1,6 @@
 # Simulation Engine
 
-This directory contains the Java-based simulation engine for the Montreal Protocol Policy Simulation Tool.
+This directory contains the Java-based simulation engine for Kigali Sim.
 
 ## Purpose
 

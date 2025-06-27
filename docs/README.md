@@ -1,6 +1,6 @@
 # Documentation
 
-This directory contains all documentation for the Montreal Protocol Policy Simulation Tool.
+This directory contains all documentation for Kigali Sim.
 
 ## Purpose
 

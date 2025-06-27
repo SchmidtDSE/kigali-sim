@@ -14,7 +14,7 @@ AWS_DICT = typing.Dict[str, typing.Any]
 BODY_TEMPLATE = """
 Hello!
 
-A user has submitted a help request from the Montreal Policy Simulator.
+A user has submitted a help request from Kigali Sim.
 
 Thanks,
 HelpBot
