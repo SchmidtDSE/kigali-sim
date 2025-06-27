@@ -200,14 +200,14 @@ class ResultsPresenter {
     if (constrainedFilterSet.isCustomMetric()) {
       const metricFamily = constrainedFilterSet.getMetric();
       const customDef = constrainedFilterSet.getCustomDefinition(metricFamily);
-      
+
       if (!customDef || customDef.length === 0) {
         // Switch to a default submetric for the family
         const defaultSubmetrics = {
-          'emissions': 'recharge',
-          'sales': 'manufacture'
+          "emissions": "recharge",
+          "sales": "manufacture",
         };
-        
+
         const defaultSubmetric = defaultSubmetrics[metricFamily];
         if (defaultSubmetric) {
           const currentUnits = constrainedFilterSet.getUnits();
@@ -300,20 +300,20 @@ class ScorecardPresenter {
     self._root = root;
     self._filterSet = null;
     self._onUpdateFilterSet = onUpdateFilterSet;
-    
+
     // Create custom metric presenters
     self._customPresenters = {};
     self._customPresenters.emissions = new CustomMetricPresenter(
-      'custom-emissions-dialog',
-      ['recharge', 'eol'],
-      (selection) => self._onCustomMetricChanged('emissions', selection)
+      "custom-emissions-dialog",
+      ["recharge", "eol"],
+      (selection) => self._onCustomMetricChanged("emissions", selection),
     );
     self._customPresenters.sales = new CustomMetricPresenter(
-      'custom-sales-dialog',
-      ['manufacture', 'import', 'recycle'],
-      (selection) => self._onCustomMetricChanged('sales', selection)
+      "custom-sales-dialog",
+      ["manufacture", "import", "recycle"],
+      (selection) => self._onCustomMetricChanged("sales", selection),
     );
-    
+
     self._registerEventListeners();
   }
 
@@ -391,14 +391,14 @@ class ScorecardPresenter {
    */
   _onCustomMetricChanged(metricFamily, selection) {
     const self = this;
-    
+
     // Update custom definition in filter set
     const newFilterSet = self._filterSet.getWithCustomDefinition(metricFamily, selection);
-    
+
     // Switch to custom metric if not already
     const currentMetric = newFilterSet.getMetric();
     const currentUnits = newFilterSet.getUnits();
-    
+
     if (currentMetric === metricFamily) {
       const customMetric = `${metricFamily}:custom:${currentUnits}`;
       const finalFilterSet = newFilterSet.getWithMetric(customMetric);
@@ -473,24 +473,24 @@ class ScorecardPresenter {
       const callback = () => {
         const subMetric = subMetricDropdown.value;
         const units = unitsDropdown.value;
-        
+
         // Handle custom metric selection
         if (subMetric === "custom") {
           const customPresenter = self._customPresenters[family];
           const currentDef = customPresenter.getCurrentDefinition();
-          
+
           // Set the current definition based on FilterSet
           const filterSetDef = self._filterSet.getCustomDefinition(family);
           if (filterSetDef) {
             customPresenter.setCurrentDefinition(filterSetDef);
           }
-          
+
           if (!currentDef || currentDef.length === 0) {
             customPresenter.showDialog();
             return; // Don't update filter until dialog is completed
           }
         }
-        
+
         const fullName = family + ":" + subMetric + ":" + units;
         const newFilterSet = self._filterSet.getWithMetric(fullName);
         self._onUpdateFilterSet(newFilterSet);
@@ -501,19 +501,19 @@ class ScorecardPresenter {
 
       subMetricDropdown.addEventListener("change", callback);
       unitsDropdown.addEventListener("change", callback);
-      
+
       // Custom configuration link listener
       if (customConfigLink) {
         customConfigLink.addEventListener("click", (event) => {
           event.preventDefault();
           const customPresenter = self._customPresenters[family];
-          
+
           // Set current definition before showing dialog
           const filterSetDef = self._filterSet.getCustomDefinition(family);
           if (filterSetDef) {
             customPresenter.setCurrentDefinition(filterSetDef);
           }
-          
+
           customPresenter.showDialog();
         });
       }
@@ -1108,7 +1108,7 @@ class SelectorTitlePresenter {
 
 /**
  * Presenter for custom metric configuration and management.
- * 
+ *
  * Handles the definition and presentation of custom metrics that combine
  * multiple submetrics based on user selection. Manages dialog interactions
  * and maintains the current custom metric definition.
@@ -1116,7 +1116,7 @@ class SelectorTitlePresenter {
 class CustomMetricPresenter {
   /**
    * Create a new CustomMetricPresenter.
-   * 
+   *
    * @param {string} dialogId - ID of the configuration dialog element.
    * @param {Array<string>} availableOptions - Array of available submetric options.
    * @param {Function} onSelectionChanged - Callback when custom definition changes.
@@ -1126,39 +1126,39 @@ class CustomMetricPresenter {
     self._dialog = document.getElementById(dialogId);
     self._availableOptions = availableOptions;
     self._onSelectionChanged = onSelectionChanged;
-    
+
     if (!self._dialog) {
       throw new Error(`Dialog with id '${dialogId}' not found`);
     }
-    
+
     self._setupEventListeners();
   }
 
   /**
    * Get the current custom metric definition.
-   * 
+   *
    * @returns {Array<string>|null} Array of selected submetrics or null if none.
    */
   getCurrentDefinition() {
     const self = this;
     const checkboxes = self._dialog.querySelectorAll('input[type="checkbox"]:checked');
-    const selected = Array.from(checkboxes).map(cb => cb.value);
+    const selected = Array.from(checkboxes).map((cb) => cb.value);
     return selected.length > 0 ? selected : null;
   }
 
   /**
    * Set the current custom metric definition.
-   * 
+   *
    * @param {Array<string>|null} definition - Array of submetrics to select.
    */
   setCurrentDefinition(definition) {
     const self = this;
     const checkboxes = self._dialog.querySelectorAll('input[type="checkbox"]');
-    
-    checkboxes.forEach(checkbox => {
+
+    checkboxes.forEach((checkbox) => {
       checkbox.checked = definition && definition.includes(checkbox.value);
     });
-    
+
     self._validateSelection();
   }
 
@@ -1168,7 +1168,7 @@ class CustomMetricPresenter {
   showDialog() {
     const self = this;
     self._dialog.showModal();
-    
+
     // Focus first checkbox
     const firstCheckbox = self._dialog.querySelector('input[type="checkbox"]');
     if (firstCheckbox) {
@@ -1186,39 +1186,39 @@ class CustomMetricPresenter {
 
   /**
    * Validate current selection and enable/disable Apply button.
-   * 
+   *
    * Ensures at least one checkbox is selected before enabling Apply button.
    * Updates Apply button disabled state and shows/hides validation messages.
-   * 
+   *
    * @private
    */
   _validateSelection() {
     const self = this;
     const selected = self.getCurrentDefinition();
-    const applyButton = self._dialog.querySelector('.primary');
-    
+    const applyButton = self._dialog.querySelector(".primary");
+
     if (selected && selected.length > 0) {
-      applyButton.classList.remove('disabled');
-      applyButton.style.pointerEvents = 'auto';
-      applyButton.style.opacity = '1';
+      applyButton.classList.remove("disabled");
+      applyButton.style.pointerEvents = "auto";
+      applyButton.style.opacity = "1";
     } else {
-      applyButton.classList.add('disabled');
-      applyButton.style.pointerEvents = 'none';
-      applyButton.style.opacity = '0.5';
+      applyButton.classList.add("disabled");
+      applyButton.style.pointerEvents = "none";
+      applyButton.style.opacity = "0.5";
     }
   }
 
   /**
    * Set up event listeners for dialog interactions.
-   * 
+   *
    * @private
    */
   _setupEventListeners() {
     const self = this;
-    
+
     // Apply button listener
-    const applyButton = self._dialog.querySelector('.primary');
-    applyButton.addEventListener('click', (event) => {
+    const applyButton = self._dialog.querySelector(".primary");
+    applyButton.addEventListener("click", (event) => {
       event.preventDefault();
       const selected = self.getCurrentDefinition();
       if (selected && selected.length > 0) {
@@ -1226,22 +1226,22 @@ class CustomMetricPresenter {
         self.hideDialog();
       }
     });
-    
-    // Cancel button listener  
-    const cancelButton = self._dialog.querySelector('.secondary');
-    cancelButton.addEventListener('click', (event) => {
+
+    // Cancel button listener
+    const cancelButton = self._dialog.querySelector(".secondary");
+    cancelButton.addEventListener("click", (event) => {
       event.preventDefault();
       self.hideDialog();
     });
-    
+
     // Checkbox change listeners for immediate validation
     const checkboxes = self._dialog.querySelectorAll('input[type="checkbox"]');
-    checkboxes.forEach(checkbox => {
-      checkbox.addEventListener('change', () => {
+    checkboxes.forEach((checkbox) => {
+      checkbox.addEventListener("change", () => {
         self._validateSelection();
       });
     });
-    
+
     // Initialize validation state
     self._validateSelection();
   }

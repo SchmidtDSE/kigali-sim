@@ -205,19 +205,23 @@ class ReportDataWrapper {
 
       strategyBuilder.setSubmetric("custom");
       strategyBuilder.setStrategy((filterSet) => {
-        const customDef = filterSet.getCustomDefinition('emissions');
+        const customDef = filterSet.getCustomDefinition("emissions");
         if (!customDef || customDef.length === 0) return null;
-        
-        const results = customDef.map(submetric => {
-          const tempFilter = filterSet.getWithMetric(`emissions:${submetric}:${filterSet.getUnits()}`);
+
+        const results = customDef.map((submetric) => {
+          const tempFilter = filterSet.getWithMetric(
+            `emissions:${submetric}:${filterSet.getUnits()}`,
+          );
           return self.getMetric(tempFilter);
         });
-        
+
         return results.reduce((a, b) => {
           if (!a) return b;
           if (!b) return a;
           if (a.getUnits() !== b.getUnits()) {
-            throw new Error(`Cannot combine incompatible units: ${a.getUnits()} and ${b.getUnits()}`);
+            throw new Error(
+              `Cannot combine incompatible units: ${a.getUnits()} and ${b.getUnits()}`,
+            );
           }
           return new EngineNumber(a.getValue() + b.getValue(), a.getUnits());
         });
@@ -291,19 +295,23 @@ class ReportDataWrapper {
 
       strategyBuilder.setSubmetric("custom");
       strategyBuilder.setStrategy((filterSet) => {
-        const customDef = filterSet.getCustomDefinition('sales');
+        const customDef = filterSet.getCustomDefinition("sales");
         if (!customDef || customDef.length === 0) return null;
-        
-        const results = customDef.map(submetric => {
-          const tempFilter = filterSet.getWithMetric(`sales:${submetric}:${filterSet.getUnits()}`);
+
+        const results = customDef.map((submetric) => {
+          const tempFilter = filterSet.getWithMetric(
+            `sales:${submetric}:${filterSet.getUnits()}`,
+          );
           return self.getMetric(tempFilter);
         });
-        
+
         return results.reduce((a, b) => {
           if (!a) return b;
           if (!b) return a;
           if (a.getUnits() !== b.getUnits()) {
-            throw new Error(`Cannot combine incompatible units: ${a.getUnits()} and ${b.getUnits()}`);
+            throw new Error(
+              `Cannot combine incompatible units: ${a.getUnits()} and ${b.getUnits()}`,
+            );
           }
           return new EngineNumber(a.getValue() + b.getValue(), a.getUnits());
         });
@@ -328,28 +336,30 @@ class ReportDataWrapper {
 
       strategyBuilder.setSubmetric("custom");
       strategyBuilder.setStrategy((filterSet) => {
-        const customDef = filterSet.getCustomDefinition('sales');
+        const customDef = filterSet.getCustomDefinition("sales");
         if (!customDef || customDef.length === 0) return null;
-        
+
         // Map submetrics to their consumption equivalents
         const consumptionMethods = {
-          'manufacture': (x) => self.getDomesticConsumption(x),
-          'import': (x) => self.getImportConsumption(x),
-          'recycle': (x) => self.getRecycleConsumption(x)
+          "manufacture": (x) => self.getDomesticConsumption(x),
+          "import": (x) => self.getImportConsumption(x),
+          "recycle": (x) => self.getRecycleConsumption(x),
         };
-        
-        const results = customDef.map(submetric => {
+
+        const results = customDef.map((submetric) => {
           const method = consumptionMethods[submetric];
           return method ? method(filterSet) : null;
-        }).filter(result => result !== null);
-        
+        }).filter((result) => result !== null);
+
         if (results.length === 0) return null;
-        
+
         return results.reduce((a, b) => {
           if (!a) return b;
           if (!b) return a;
           if (a.getUnits() !== b.getUnits()) {
-            throw new Error(`Cannot combine incompatible units: ${a.getUnits()} and ${b.getUnits()}`);
+            throw new Error(
+              `Cannot combine incompatible units: ${a.getUnits()} and ${b.getUnits()}`,
+            );
           }
           return new EngineNumber(a.getValue() + b.getValue(), a.getUnits());
         });

@@ -49,8 +49,8 @@ class FilterSet {
     self._baseline = baseline;
     self._attributeImporter = attributeImporter;
     self._customDefinitions = customDefinitions || {
-      'emissions': null,
-      'sales': null
+      "emissions": null,
+      "sales": null,
     };
   }
 
@@ -393,7 +393,7 @@ class FilterSet {
     const self = this;
     const newCustomDefinitions = {...self._customDefinitions};
     newCustomDefinitions[metricFamily] = definition;
-    
+
     return new FilterSet(
       self._year,
       self._scenario,
@@ -418,7 +418,7 @@ class FilterSet {
       return false;
     }
     const submetric = self.getSubMetric();
-    return submetric === 'custom';
+    return submetric === "custom";
   }
 
   /**
