@@ -24,7 +24,7 @@ Unofficial and completely voluntary, this privacy-respecting simulation platform
 ## Usage
 To use the public hosted version of the tool:
 
-1. Open the application in your web browser (https://mlf-policy-explorer.org).
+1. Open the application in your web browser (https://kigalisim.org).
 2. Use either the Basic (UI-based) or Advanced (code-based) editor to define your simulation
 3. Click Run to execute the simulation
 4. View results in the visualization panel, which shows emissions metrics, consumption / sales data, and equipment population.
@@ -70,7 +70,7 @@ This extracts the compiled TeaVM/WASM output from the engine build and places it
 While contributing, please maintain existing styles defined in `.prettierrc` and `.eslintrc.yml`. Where ambiguous, follow [Google JavaScript / TypeScript Style Guide](https://google.github.io/styleguide/tsguide.html) conventions. Unit tests through QUnit are encouraged but a specific test coverage target is not specified. Document code using JSDoc comments (required for all public members). Note that Replit AI was used to help with documentation and small trivial code changes but, for other purposes, please disclose use of generative AI before merging pull requests. We generally require that AI not used for architecture or large operations. At this time, we are not considering a change to TypeScript.
 
 ### Deployment
-This project can be deployed using Github. Simply push your changes to the repository `deploy` branch. The deployment process is automated through GitHub Actions as defined in `.github/workflows/build.yaml`.
+This project can be deployed using Github. Simply push your changes to the repository `deploy` branch. The deployment process is automated through GitHub Actions as defined in `.github/workflows/build.yaml`. The `main` branch will push to a preview (staging) URL at https://preview.kigalisim.org.
 
 <br>
 
