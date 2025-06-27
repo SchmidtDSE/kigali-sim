@@ -305,12 +305,12 @@ class ScorecardPresenter {
     self._customPresenters = {};
     self._customPresenters.emissions = new CustomMetricPresenter(
       "custom-emissions-dialog",
-      ["recharge", "eol"],
+      ["recharge", "eol", "export"],
       (selection) => self._onCustomMetricChanged("emissions", selection),
     );
     self._customPresenters.sales = new CustomMetricPresenter(
       "custom-sales-dialog",
-      ["manufacture", "import", "recycle"],
+      ["manufacture", "import", "export", "recycle"],
       (selection) => self._onCustomMetricChanged("sales", selection),
     );
 
