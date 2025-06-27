@@ -276,16 +276,19 @@ function buildIntegrationTests() {
       },
     ]);
 
-    buildTest("handles recharge on top when specifying by units", "/examples/recharge_on_top.qta", [
-      (result, assert) => {
+    buildTest(
+      "handles recharge on top when specifying by units",
+      "/examples/recharge_on_top.qta",
+      [
+        (result, assert) => {
         // Test that recharge is added on top for units-based specifications
         // Should have 10000 (prior) + 1000 (manufacture) = 11000 units in year 1
-        const record = getResult(result, "BAU", 1, 0, "App", "Sub1");
-        const equipment = record.getPopulation();
-        assert.closeTo(equipment.getValue(), 11000, 0.0001);
-        assert.deepEqual(equipment.getUnits(), "units");
-      },
-    ]);
+          const record = getResult(result, "BAU", 1, 0, "App", "Sub1");
+          const equipment = record.getPopulation();
+          assert.closeTo(equipment.getValue(), 11000, 0.0001);
+          assert.deepEqual(equipment.getUnits(), "units");
+        },
+      ]);
 
     buildTest("handles multiple consumption", "/examples/multiple.qta", [
       (result, assert) => {
@@ -627,65 +630,68 @@ function buildIntegrationTests() {
       },
     ]);
 
-    buildTest("checks order of operations in initialization", "/examples/order_check_volume.qta", [
+    buildTest(
+      "checks order of operations in initialization",
+      "/examples/order_check_volume.qta",
+      [
       // Test Sub1 (A, B, C order) produces 1 MtCO2e across all years
-      (result, assert) => {
-        const record1 = getResult(result, "BAU", 1, 0, "App", "Sub1");
-        const consumption1 = record1.getGhgConsumption();
-        assert.closeTo(consumption1.getValue(), 1000000, 0.0001);
-        assert.deepEqual(consumption1.getUnits(), "tCO2e");
-      },
-      (result, assert) => {
-        const record2 = getResult(result, "BAU", 2, 0, "App", "Sub1");
-        const consumption2 = record2.getGhgConsumption();
-        assert.closeTo(consumption2.getValue(), 1000000, 0.0001);
-        assert.deepEqual(consumption2.getUnits(), "tCO2e");
-      },
-      (result, assert) => {
-        const record3 = getResult(result, "BAU", 3, 0, "App", "Sub1");
-        const consumption3 = record3.getGhgConsumption();
-        assert.closeTo(consumption3.getValue(), 1000000, 0.0001);
-        assert.deepEqual(consumption3.getUnits(), "tCO2e");
-      },
-      // Test Sub2 (A, C, B order) produces 1 MtCO2e across all years
-      (result, assert) => {
-        const record1 = getResult(result, "BAU", 1, 0, "App", "Sub2");
-        const consumption1 = record1.getGhgConsumption();
-        assert.closeTo(consumption1.getValue(), 1000000, 0.0001);
-        assert.deepEqual(consumption1.getUnits(), "tCO2e");
-      },
-      (result, assert) => {
-        const record2 = getResult(result, "BAU", 2, 0, "App", "Sub2");
-        const consumption2 = record2.getGhgConsumption();
-        assert.closeTo(consumption2.getValue(), 1000000, 0.0001);
-        assert.deepEqual(consumption2.getUnits(), "tCO2e");
-      },
-      (result, assert) => {
-        const record3 = getResult(result, "BAU", 3, 0, "App", "Sub2");
-        const consumption3 = record3.getGhgConsumption();
-        assert.closeTo(consumption3.getValue(), 1000000, 0.0001);
-        assert.deepEqual(consumption3.getUnits(), "tCO2e");
-      },
-      // Test Sub3 (C, A, B order) produces 1 MtCO2e across all years
-      (result, assert) => {
-        const record1 = getResult(result, "BAU", 1, 0, "App", "Sub3");
-        const consumption1 = record1.getGhgConsumption();
-        assert.closeTo(consumption1.getValue(), 1000000, 0.0001);
-        assert.deepEqual(consumption1.getUnits(), "tCO2e");
-      },
-      (result, assert) => {
-        const record2 = getResult(result, "BAU", 2, 0, "App", "Sub3");
-        const consumption2 = record2.getGhgConsumption();
-        assert.closeTo(consumption2.getValue(), 1000000, 0.0001);
-        assert.deepEqual(consumption2.getUnits(), "tCO2e");
-      },
-      (result, assert) => {
-        const record3 = getResult(result, "BAU", 3, 0, "App", "Sub3");
-        const consumption3 = record3.getGhgConsumption();
-        assert.closeTo(consumption3.getValue(), 1000000, 0.0001);
-        assert.deepEqual(consumption3.getUnits(), "tCO2e");
-      },
-    ]);
+        (result, assert) => {
+          const record1 = getResult(result, "BAU", 1, 0, "App", "Sub1");
+          const consumption1 = record1.getGhgConsumption();
+          assert.closeTo(consumption1.getValue(), 1000000, 0.0001);
+          assert.deepEqual(consumption1.getUnits(), "tCO2e");
+        },
+        (result, assert) => {
+          const record2 = getResult(result, "BAU", 2, 0, "App", "Sub1");
+          const consumption2 = record2.getGhgConsumption();
+          assert.closeTo(consumption2.getValue(), 1000000, 0.0001);
+          assert.deepEqual(consumption2.getUnits(), "tCO2e");
+        },
+        (result, assert) => {
+          const record3 = getResult(result, "BAU", 3, 0, "App", "Sub1");
+          const consumption3 = record3.getGhgConsumption();
+          assert.closeTo(consumption3.getValue(), 1000000, 0.0001);
+          assert.deepEqual(consumption3.getUnits(), "tCO2e");
+        },
+        // Test Sub2 (A, C, B order) produces 1 MtCO2e across all years
+        (result, assert) => {
+          const record1 = getResult(result, "BAU", 1, 0, "App", "Sub2");
+          const consumption1 = record1.getGhgConsumption();
+          assert.closeTo(consumption1.getValue(), 1000000, 0.0001);
+          assert.deepEqual(consumption1.getUnits(), "tCO2e");
+        },
+        (result, assert) => {
+          const record2 = getResult(result, "BAU", 2, 0, "App", "Sub2");
+          const consumption2 = record2.getGhgConsumption();
+          assert.closeTo(consumption2.getValue(), 1000000, 0.0001);
+          assert.deepEqual(consumption2.getUnits(), "tCO2e");
+        },
+        (result, assert) => {
+          const record3 = getResult(result, "BAU", 3, 0, "App", "Sub2");
+          const consumption3 = record3.getGhgConsumption();
+          assert.closeTo(consumption3.getValue(), 1000000, 0.0001);
+          assert.deepEqual(consumption3.getUnits(), "tCO2e");
+        },
+        // Test Sub3 (C, A, B order) produces 1 MtCO2e across all years
+        (result, assert) => {
+          const record1 = getResult(result, "BAU", 1, 0, "App", "Sub3");
+          const consumption1 = record1.getGhgConsumption();
+          assert.closeTo(consumption1.getValue(), 1000000, 0.0001);
+          assert.deepEqual(consumption1.getUnits(), "tCO2e");
+        },
+        (result, assert) => {
+          const record2 = getResult(result, "BAU", 2, 0, "App", "Sub3");
+          const consumption2 = record2.getGhgConsumption();
+          assert.closeTo(consumption2.getValue(), 1000000, 0.0001);
+          assert.deepEqual(consumption2.getUnits(), "tCO2e");
+        },
+        (result, assert) => {
+          const record3 = getResult(result, "BAU", 3, 0, "App", "Sub3");
+          const consumption3 = record3.getGhgConsumption();
+          assert.closeTo(consumption3.getValue(), 1000000, 0.0001);
+          assert.deepEqual(consumption3.getUnits(), "tCO2e");
+        },
+      ]);
 
     buildTest("runs case study", "/examples/case_study.qta", [
       (result, assert) => {
@@ -1093,62 +1099,68 @@ function buildIntegrationTests() {
       },
     ]);
 
-    buildTest("tests cap displace units magnitude", "/examples/cap_displace_units_magnitude.qta", [
-      (result, assert) => {
+    buildTest(
+      "tests cap displace units magnitude",
+      "/examples/cap_displace_units_magnitude.qta",
+      [
+        (result, assert) => {
         // Check 2025 new equipment - R-404A should have 200 units, HFC-134a should have 400 units
-        const recordR404A2025 = getResult(result, "Import Ban", 2025, 0, "Test", "R-404A");
-        const newEquipmentR404A2025 = recordR404A2025.getPopulationNew();
-        assert.closeTo(newEquipmentR404A2025.getValue(), 200, 0.0001);
-        assert.deepEqual(newEquipmentR404A2025.getUnits(), "units");
+          const recordR404A2025 = getResult(result, "Import Ban", 2025, 0, "Test", "R-404A");
+          const newEquipmentR404A2025 = recordR404A2025.getPopulationNew();
+          assert.closeTo(newEquipmentR404A2025.getValue(), 200, 0.0001);
+          assert.deepEqual(newEquipmentR404A2025.getUnits(), "units");
 
-        const recordHFC2025 = getResult(result, "Import Ban", 2025, 0, "Test", "HFC-134a");
-        const newEquipmentHFC2025 = recordHFC2025.getPopulationNew();
-        assert.closeTo(newEquipmentHFC2025.getValue(), 400, 0.0001);
-        assert.deepEqual(newEquipmentHFC2025.getUnits(), "units");
-      },
-      (result, assert) => {
+          const recordHFC2025 = getResult(result, "Import Ban", 2025, 0, "Test", "HFC-134a");
+          const newEquipmentHFC2025 = recordHFC2025.getPopulationNew();
+          assert.closeTo(newEquipmentHFC2025.getValue(), 400, 0.0001);
+          assert.deepEqual(newEquipmentHFC2025.getUnits(), "units");
+        },
+        (result, assert) => {
         // Check 2029 new equipment - HFC-134a should have 0 units (capped),
         // R-404A should have 600 units (displaced)
-        const recordHFC2029 = getResult(result, "Import Ban", 2029, 0, "Test", "HFC-134a");
-        const newEquipmentHFC2029 = recordHFC2029.getPopulationNew();
-        assert.closeTo(newEquipmentHFC2029.getValue(), 0, 0.0001);
-        assert.deepEqual(newEquipmentHFC2029.getUnits(), "units");
+          const recordHFC2029 = getResult(result, "Import Ban", 2029, 0, "Test", "HFC-134a");
+          const newEquipmentHFC2029 = recordHFC2029.getPopulationNew();
+          assert.closeTo(newEquipmentHFC2029.getValue(), 0, 0.0001);
+          assert.deepEqual(newEquipmentHFC2029.getUnits(), "units");
 
-        const recordR404A2029 = getResult(result, "Import Ban", 2029, 0, "Test", "R-404A");
-        const newEquipmentR404A2029 = recordR404A2029.getPopulationNew();
-        assert.closeTo(newEquipmentR404A2029.getValue(), 600, 0.0001);
-        assert.deepEqual(newEquipmentR404A2029.getUnits(), "units");
-      },
-      (result, assert) => {
+          const recordR404A2029 = getResult(result, "Import Ban", 2029, 0, "Test", "R-404A");
+          const newEquipmentR404A2029 = recordR404A2029.getPopulationNew();
+          assert.closeTo(newEquipmentR404A2029.getValue(), 600, 0.0001);
+          assert.deepEqual(newEquipmentR404A2029.getUnits(), "units");
+        },
+        (result, assert) => {
         // Check 2030 new equipment - same as 2029 (HFC-134a should have 0 units,
         // R-404A should have 600 units)
-        const recordHFC2030 = getResult(result, "Import Ban", 2030, 0, "Test", "HFC-134a");
-        const newEquipmentHFC2030 = recordHFC2030.getPopulationNew();
-        assert.closeTo(newEquipmentHFC2030.getValue(), 0, 0.0001);
-        assert.deepEqual(newEquipmentHFC2030.getUnits(), "units");
+          const recordHFC2030 = getResult(result, "Import Ban", 2030, 0, "Test", "HFC-134a");
+          const newEquipmentHFC2030 = recordHFC2030.getPopulationNew();
+          assert.closeTo(newEquipmentHFC2030.getValue(), 0, 0.0001);
+          assert.deepEqual(newEquipmentHFC2030.getUnits(), "units");
 
-        const recordR404A2030 = getResult(result, "Import Ban", 2030, 0, "Test", "R-404A");
-        const newEquipmentR404A2030 = recordR404A2030.getPopulationNew();
-        assert.closeTo(newEquipmentR404A2030.getValue(), 600, 0.0001);
-        assert.deepEqual(newEquipmentR404A2030.getUnits(), "units");
-      },
-    ]);
+          const recordR404A2030 = getResult(result, "Import Ban", 2030, 0, "Test", "R-404A");
+          const newEquipmentR404A2030 = recordR404A2030.getPopulationNew();
+          assert.closeTo(newEquipmentR404A2030.getValue(), 600, 0.0001);
+          assert.deepEqual(newEquipmentR404A2030.getUnits(), "units");
+        },
+      ]);
 
-    buildTest("tests recover with sales displacement", "/examples/recover_displace_sales_kg.qta", [
-      (result, assert) => {
+    buildTest(
+      "tests recover with sales displacement",
+      "/examples/recover_displace_sales_kg.qta",
+      [
+        (result, assert) => {
         // Check that sales were displaced (reduced) for the same substance
-        const recordSubA = getResult(result, "result", 1, 0, "test", "sub_a");
-        const manufactureSubA = recordSubA.getManufacture();
-        const importSubA = recordSubA.getImport();
+          const recordSubA = getResult(result, "result", 1, 0, "test", "sub_a");
+          const manufactureSubA = recordSubA.getManufacture();
+          const importSubA = recordSubA.getImport();
 
-        // Calculate total sales (manufacture + import)
-        const totalSales = manufactureSubA.getValue() + importSubA.getValue();
+          // Calculate total sales (manufacture + import)
+          const totalSales = manufactureSubA.getValue() + importSubA.getValue();
 
-        // Original sales: 150 kg (100 manufacture + 50 import)
-        // After 20 kg displacement: 150 - 20 = 130 kg
-        assert.closeTo(totalSales, 130, 0.0001);
-      },
-    ]);
+          // Original sales: 150 kg (100 manufacture + 50 import)
+          // After 20 kg displacement: 150 - 20 = 130 kg
+          assert.closeTo(totalSales, 130, 0.0001);
+        },
+      ]);
 
     buildTest("tests recover with substance displacement",
       "/examples/recover_displace_substance.qta", [

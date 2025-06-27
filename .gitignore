@@ -1,11 +1,14 @@
-node_modules/
-intermediate/
-language/*.jar
-third_party/
-test/qunit.css
-test/qunit.min.js
-/test/localStorage.json
-engine/scratch
-engine/src-generated
-wasm
-tasks
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# Editor files
+.vscode/
+.idea/
+
+# Temporary files
+*.tmp
+*.temp
+
+# Tasks directory (local development)
+tasks/
