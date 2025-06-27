@@ -1190,6 +1190,62 @@ function buildIntegrationTests() {
         assert.deepEqual(exporterImport2.getUnits(), "kg");
       },
     ]);
+
+    buildTest("tests basic export functionality", "/examples/basic_exporter.qta", [
+      (result, assert) => {
+        // Test that the basic exporter simulation completes successfully
+        assert.ok(result.length > 0, "Basic exporter should produce simulation results");
+      },
+      (result, assert) => {
+        // Test that export stream shows the expected value
+        const record = getResult(
+          result,
+          "exporter scenario",
+          1,
+          0,
+          "commercial refrigeration",
+          "HFC-134a",
+        );
+        const exportValue = record.getExport();
+        assert.closeTo(exportValue.getValue(), 200000, 0.0001); // 200 mt = 200000 kg
+        assert.deepEqual(exportValue.getUnits(), "kg");
+      },
+      (result, assert) => {
+        // Test that export consumption is calculated correctly
+        const record = getResult(
+          result,
+          "exporter scenario",
+          1,
+          0,
+          "commercial refrigeration",
+          "HFC-134a",
+        );
+        const exportConsumption = record.getExportConsumption();
+        // Export consumption: 200 mt * 500 tCO2e/mt = 100,000 tCO2e
+        assert.closeTo(exportConsumption.getValue(), 100000, 0.1);
+        assert.deepEqual(exportConsumption.getUnits(), "tCO2e");
+      },
+      (result, assert) => {
+        // Test that TradeSupplement export fields are populated
+        const record = getResult(
+          result,
+          "exporter scenario",
+          1,
+          0,
+          "commercial refrigeration",
+          "HFC-134a",
+        );
+        const tradeSupplement = record.getTradeSupplement();
+        // Test that TradeSupplement export fields are populated (like Java test)
+        const exportInitialChargeValue = tradeSupplement.getExportInitialChargeValue();
+        assert.ok(exportInitialChargeValue, "Export initial charge value should not be null");
+        const exportInitialChargeConsumption = tradeSupplement.getExportInitialChargeConsumption();
+        assert.ok(
+          exportInitialChargeConsumption,
+          "Export initial charge consumption should not be null",
+        );
+      },
+    ]);
   });
 }
 

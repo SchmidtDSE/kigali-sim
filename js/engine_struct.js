@@ -27,11 +27,15 @@ class EngineResult {
    *     manufacturing in volume like kg.
    * @param {EngineNumber} importValue - The value related to imports like in
    *     volume like kg.
+   * @param {EngineNumber} exportValue - The value related to exports like in
+   *     volume like kg.
    * @param {EngineNumber} recycleValue - The value denoting recycled
    *     materials in volume like kg.
    * @param {EngineNumber} domesticConsumptionValue - The domestic consumption
    *     value in tCO2e or equivalent.
    * @param {EngineNumber} importConsumptionValue - The import consumption
+   *     value in tCO2e or equivalent.
+   * @param {EngineNumber} exportConsumptionValue - The export consumption
    *     value in tCO2e or equivalent.
    * @param {EngineNumber} recycleConsumptionValue - The recycle consumption
    *     value in tCO2e or equivalent.
@@ -43,7 +47,7 @@ class EngineResult {
    *     from recharge activities.
    * @param {EngineNumber} eolEmissions - The greenhouse gas emissions from
    *     end-of-life equipment.
-   * @param {ImportSupplement} importSupplement - The supplemental import data
+   * @param {TradeSupplement} tradeSupplement - The supplemental trade data
    *     needed for attribution.
    */
   constructor(
@@ -54,16 +58,18 @@ class EngineResult {
     trialNumber,
     manufactureValue,
     importValue,
+    exportValue,
     recycleValue,
     domesticConsumptionValue,
     importConsumptionValue,
+    exportConsumptionValue,
     recycleConsumptionValue,
     populationValue,
     populationNew,
     rechargeEmissions,
     eolEmissions,
     energyConsumption,
-    importSupplement,
+    tradeSupplement,
   ) {
     const self = this;
     self._application = application;
@@ -73,16 +79,18 @@ class EngineResult {
     self._trialNumber = trialNumber;
     self._manufactureValue = manufactureValue;
     self._importValue = importValue;
+    self._exportValue = exportValue;
     self._recycleValue = recycleValue;
     self._domesticConsumptionValue = domesticConsumptionValue;
     self._importConsumptionValue = importConsumptionValue;
+    self._exportConsumptionValue = exportConsumptionValue;
     self._recycleConsumptionValue = recycleConsumptionValue;
     self._populationValue = populationValue;
     self._populationNew = populationNew;
     self._rechargeEmissions = rechargeEmissions;
     self._eolEmissions = eolEmissions;
     self._energyConsumption = energyConsumption;
-    self._importSupplement = importSupplement;
+    self._tradeSupplement = tradeSupplement;
   }
 
   /**
@@ -133,6 +141,16 @@ class EngineResult {
   getImport() {
     const self = this;
     return self._importValue;
+  }
+
+  /**
+   * Get the export value.
+   *
+   * @returns {EngineNumber} The export value in volume like kg.
+   */
+  getExport() {
+    const self = this;
+    return self._exportValue;
   }
 
   /**
@@ -204,6 +222,16 @@ class EngineResult {
   }
 
   /**
+   * Get the export consumption value.
+   *
+   * @returns {EngineNumber} The export consumption value.
+   */
+  getExportConsumption() {
+    const self = this;
+    return self._exportConsumptionValue;
+  }
+
+  /**
    * Get the recycle consumption value.
    *
    * @returns {EngineNumber} The recycle consumption value.
@@ -264,15 +292,16 @@ class EngineResult {
   }
 
   /**
-   * Get the import supplement information.
+   * Get the trade supplement information.
    *
-   * @returns {ImportSupplement} The additional import information needed for
+   * @returns {TradeSupplement} The additional trade information needed for
    *     attribution.
    */
-  getImportSupplement() {
+  getTradeSupplement() {
     const self = this;
-    return self._importSupplement;
+    return self._tradeSupplement;
   }
+
 
   /**
    * Get the scenario name.
@@ -366,8 +395,8 @@ class AttributeToExporterResult {
   getImport() {
     const self = this;
     const totalImport = self._inner.getImport();
-    const importSupplement = self._inner.getImportSupplement();
-    const importInitialCharge = importSupplement.getInitialChargeValue();
+    const tradeSupplement = self._inner.getTradeSupplement();
+    const importInitialCharge = tradeSupplement.getImportInitialChargeValue();
 
     const totalUnits = totalImport.getUnits();
     const initialChargeUnits = importInitialCharge.getUnits();
@@ -433,8 +462,8 @@ class AttributeToExporterResult {
   getImportConsumption() {
     const self = this;
     const totalImport = self._inner.getImportConsumption();
-    const importSupplement = self._inner.getImportSupplement();
-    const importInitialCharge = importSupplement.getInitialChargeConsumption();
+    const tradeSupplement = self._inner.getTradeSupplement();
+    const importInitialCharge = tradeSupplement.getImportInitialChargeConsumption();
 
     const totalUnits = totalImport.getUnits();
     const initialChargeUnits = importInitialCharge.getUnits();
@@ -515,9 +544,9 @@ class AttributeToExporterResult {
    * @returns {ImportSupplement} The additional import information needed for
    *     attribution from the decorated result.
    */
-  getImportSupplement() {
+  getTradeSupplement() {
     const self = this;
-    return self._inner.getImportSupplement();
+    return self._inner.getTradeSupplement();
   }
 
   /**
@@ -547,57 +576,92 @@ class AttributeToExporterResult {
  * As a supplement to an {EngineResult}, offers additional description of trade
  * activity on new equipment (and their initial charge) to support different
  * kinds of trade attributions. This is not reported to the user but is
- * required for some internal caulcations prior to aggregation operations. This
+ * required for some internal calculations prior to aggregation operations. This
  * provides supplemental information for a single application and substance in
  * a single year.
  */
-class ImportSupplement {
+class TradeSupplement {
   /**
-   * Create a new summary of imports.
+   * Create a new summary of trade activities.
    *
-   * @param {EngineValue} initialChargeValue - The volume of substance imported
+   * @param {EngineValue} importInitialChargeValue - The volume of substance imported
    *     via initial charge on imported equipment (like kg).
-   * @param {EngineValue} initialChargeConsumption - The consumption
-   *     associated with inital charge of imported equipment (like tCO2e).
-   * @param {EngineValue} newPopulation - The number of new units imported.
+   * @param {EngineValue} importInitialChargeConsumption - The consumption
+   *     associated with initial charge of imported equipment (like tCO2e).
+   * @param {EngineValue} importPopulation - The number of new units imported.
+   * @param {EngineValue} exportInitialChargeValue - The volume of substance exported
+   *     via initial charge on exported equipment (like kg).
+   * @param {EngineValue} exportInitialChargeConsumption - The consumption
+   *     associated with initial charge of exported equipment (like tCO2e).
    */
-  constructor(initialChargeValue, initialChargeConsumption, newPopulation) {
+  constructor(
+    importInitialChargeValue,
+    importInitialChargeConsumption,
+    importPopulation,
+    exportInitialChargeValue,
+    exportInitialChargeConsumption,
+  ) {
     const self = this;
-    self._initialChargeValue = initialChargeValue;
-    self._initialChargeConsumption = initialChargeConsumption;
-    self._newPopulation = newPopulation;
+    self._importInitialChargeValue = importInitialChargeValue;
+    self._importInitialChargeConsumption = importInitialChargeConsumption;
+    self._importPopulation = importPopulation;
+    self._exportInitialChargeValue = exportInitialChargeValue;
+    self._exportInitialChargeConsumption = exportInitialChargeConsumption;
   }
 
   /**
    * Get the volume of substance imported via initial charge on imported equipment.
    *
-   * @returns {EngineValue} The initial charge value in volume units like kg.
+   * @returns {EngineValue} The import initial charge value in volume units like kg.
    */
-  getInitialChargeValue() {
+  getImportInitialChargeValue() {
     const self = this;
-    return self._initialChargeValue;
+    return self._importInitialChargeValue;
   }
 
   /**
    * Get the consumption associated with initial charge of imported equipment.
    *
-   * @returns {EngineValue} The initial charge consumption value in units like tCO2e.
+   * @returns {EngineValue} The import initial charge consumption value in units like tCO2e.
    */
-  getInitialChargeConsumption() {
+  getImportInitialChargeConsumption() {
     const self = this;
-    return self._initialChargeConsumption;
+    return self._importInitialChargeConsumption;
   }
 
   /**
    * Get the number of new units imported.
    *
-   * @returns {EngineValue} The new population value in units.
+   * @returns {EngineValue} The import population value in units.
    */
-  getNewPopulation() {
+  getImportPopulation() {
     const self = this;
-    return self._newPopulation;
+    return self._importPopulation;
+  }
+
+  /**
+   * Get the volume of substance exported via initial charge on exported equipment.
+   *
+   * @returns {EngineValue} The export initial charge value in volume units like kg.
+   */
+  getExportInitialChargeValue() {
+    const self = this;
+    return self._exportInitialChargeValue;
+  }
+
+  /**
+   * Get the consumption associated with initial charge of exported equipment.
+   *
+   * @returns {EngineValue} The export initial charge consumption value in units like tCO2e.
+   */
+  getExportInitialChargeConsumption() {
+    const self = this;
+    return self._exportInitialChargeConsumption;
   }
 }
+
+// Alias for backward compatibility
+const ImportSupplement = TradeSupplement;
 
 /**
  * Builder to help construct an EngineResult.
@@ -615,16 +679,18 @@ class EngineResultBuilder {
     self._trialNumber = null;
     self._manufactureValue = null;
     self._importValue = null;
+    self._exportValue = null;
     self._recycleValue = null;
     self._domesticConsumptionValue = null;
     self._importConsumptionValue = null;
+    self._exportConsumptionValue = null;
     self._recycleConsumptionValue = null;
     self._populationValue = null;
     self._populationNew = null;
     self._rechargeEmissions = null;
     self._eolEmissions = null;
     self._energyConsumption = null;
-    self._importSupplement = null;
+    self._tradeSupplement = null;
   }
 
   /**
@@ -702,6 +768,17 @@ class EngineResultBuilder {
   }
 
   /**
+   * Set the export value.
+   *
+   * @param {EngineNumber} exportValue - The value related to exports like in
+   *     volume like kg.
+   */
+  setExportValue(exportValue) {
+    const self = this;
+    self._exportValue = exportValue;
+  }
+
+  /**
    * Set the recycle value.
    *
    * @param {EngineNumber} recycleValue - The value denoting recycled
@@ -732,6 +809,17 @@ class EngineResultBuilder {
   setImportConsumptionValue(importConsumptionValue) {
     const self = this;
     self._importConsumptionValue = importConsumptionValue;
+  }
+
+  /**
+   * Set the export consumption value.
+   *
+   * @param {EngineNumber} exportConsumptionValue - The export consumption
+   *     value in tCO2e or equivalent.
+   */
+  setExportConsumptionValue(exportConsumptionValue) {
+    const self = this;
+    self._exportConsumptionValue = exportConsumptionValue;
   }
 
   /**
@@ -801,15 +889,16 @@ class EngineResultBuilder {
   }
 
   /**
-   * Specify the supplemental import information needed for attribution.
+   * Specify the supplemental trade information needed for attribution.
    *
-   * @param {ImportSupplement} importSupplement - Supplemental import
+   * @param {TradeSupplement} tradeSupplement - Supplemental trade
    *     information.
    */
-  setImportSupplement(importSupplement) {
+  setTradeSupplement(tradeSupplement) {
     const self = this;
-    self._importSupplement = importSupplement;
+    self._tradeSupplement = tradeSupplement;
   }
+
 
   /**
    * Check that the builder is complete and create a new result.
@@ -828,16 +917,18 @@ class EngineResultBuilder {
       self._trialNumber,
       self._manufactureValue,
       self._importValue,
+      self._exportValue,
       self._recycleValue,
       self._domesticConsumptionValue,
       self._importConsumptionValue,
+      self._exportConsumptionValue,
       self._recycleConsumptionValue,
       self._populationValue,
       self._populationNew,
       self._rechargeEmissions,
       self._eolEmissions,
       self._energyConsumption,
-      self._importSupplement,
+      self._tradeSupplement,
     );
   }
 
@@ -857,16 +948,18 @@ class EngineResultBuilder {
     checkValid(self._trialNumber, "trialNumber");
     checkValid(self._manufactureValue, "manufactureValue");
     checkValid(self._importValue, "importValue");
+    checkValid(self._exportValue, "exportValue");
     checkValid(self._recycleValue, "recycleValue");
     checkValid(self._domesticConsumptionValue, "domesticConsumptionValue");
     checkValid(self._importConsumptionValue, "importConsumptionValue");
+    checkValid(self._exportConsumptionValue, "exportConsumptionValue");
     checkValid(self._recycleConsumptionValue, "recycleConsumptionValue");
     checkValid(self._populationValue, "populationValue");
     checkValid(self._populationNew, "populationNew");
     checkValid(self._rechargeEmissions, "rechargeEmissions");
     checkValid(self._eolEmissions, "eolEmissions");
     checkValid(self._energyConsumption, "energyConsumption");
-    checkValid(self._importSupplement, "importSupplement");
+    checkValid(self._tradeSupplement, "tradeSupplement");
   }
 }
 
@@ -1162,4 +1255,5 @@ export {
   EngineResult,
   EngineResultBuilder,
   ImportSupplement,
+  TradeSupplement,
 };

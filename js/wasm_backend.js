@@ -5,7 +5,7 @@
  */
 
 import {EngineNumber} from "engine_number";
-import {EngineResult, ImportSupplement} from "engine_struct";
+import {EngineResult, TradeSupplement} from "engine_struct";
 
 /**
  * Parser for handling CSV report data returned from the WASM worker.
@@ -125,9 +125,11 @@ class ReportDataParser {
     // Parse EngineNumber fields from Java's "value units" format
     const manufactureValue = parseEngineNumber(row["manufacture"], "kg");
     const importValue = parseEngineNumber(row["import"], "kg");
+    const exportValue = parseEngineNumber(row["export"], "kg");
     const recycleValue = parseEngineNumber(row["recycle"], "kg");
     const domesticConsumptionValue = parseEngineNumber(row["domesticConsumption"], "tCO2e");
     const importConsumptionValue = parseEngineNumber(row["importConsumption"], "tCO2e");
+    const exportConsumptionValue = parseEngineNumber(row["exportConsumption"], "tCO2e");
     const recycleConsumptionValue = parseEngineNumber(row["recycleConsumption"], "tCO2e");
     const populationValue = parseEngineNumber(row["population"], "units");
     const populationNew = parseEngineNumber(row["populationNew"], "units");
@@ -135,16 +137,32 @@ class ReportDataParser {
     const eolEmissions = parseEngineNumber(row["eolEmissions"], "tCO2e");
     const energyConsumption = parseEngineNumber(row["energyConsumption"], "kwh");
 
-    // Handle importSupplement fields from Java CSV
-    const initialChargeValue = parseEngineNumber(row["initialChargeValue"], "kg");
-    const initialChargeConsumption = parseEngineNumber(row["initialChargeConsumption"], "tCO2e");
-    const importNewPopulation = parseEngineNumber(row["importNewPopulation"], "units");
+    // Handle TradeSupplement fields from Java CSV
+    const importInitialChargeValue = parseEngineNumber(
+      row["importInitialChargeValue"],
+      "kg",
+    );
+    const importInitialChargeConsumption = parseEngineNumber(
+      row["importInitialChargeConsumption"],
+      "tCO2e",
+    );
+    const importPopulation = parseEngineNumber(row["importPopulation"], "units");
+    const exportInitialChargeValue = parseEngineNumber(
+      row["exportInitialChargeValue"],
+      "kg",
+    );
+    const exportInitialChargeConsumption = parseEngineNumber(
+      row["exportInitialChargeConsumption"],
+      "tCO2e",
+    );
 
-    // Create importSupplement object using the proper ImportSupplement class
-    const importSupplement = new ImportSupplement(
-      initialChargeValue,
-      initialChargeConsumption,
-      importNewPopulation,
+    // Create tradeSupplement object using the TradeSupplement class
+    const tradeSupplement = new TradeSupplement(
+      importInitialChargeValue,
+      importInitialChargeConsumption,
+      importPopulation,
+      exportInitialChargeValue,
+      exportInitialChargeConsumption,
     );
 
     return new EngineResult(
@@ -155,16 +173,18 @@ class ReportDataParser {
       trialNumber,
       manufactureValue,
       importValue,
+      exportValue,
       recycleValue,
       domesticConsumptionValue,
       importConsumptionValue,
+      exportConsumptionValue,
       recycleConsumptionValue,
       populationValue,
       populationNew,
       rechargeEmissions,
       eolEmissions,
       energyConsumption,
-      importSupplement,
+      tradeSupplement,
     );
   }
 }

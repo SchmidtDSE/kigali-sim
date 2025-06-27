@@ -26,7 +26,6 @@ import org.kigalisim.lang.program.ParsedPolicy;
 import org.kigalisim.lang.program.ParsedProgram;
 import org.kigalisim.lang.program.ParsedScenario;
 import org.kigalisim.lang.program.ParsedSubstance;
-import org.kigalisim.util.EmulatedStringJoiner;
 
 /**
  * Entry point into the Kigali platform when used as a library.
@@ -232,17 +231,19 @@ public class KigaliSimFacade {
     }
 
     // Estimate capacity: header + (rows * estimated_chars_per_row)
-    // 13 decimal fields (15 chars each) + strings (~45) + integers (~6) + 19 overhead = ~265 chars per row
-    int estimatedCapacity = 300 + (results.size() * 265);
+    // With export fields: 21 decimal fields (15 chars each) + strings (~45) + integers (~6) + overhead = ~370 chars per row
+    int estimatedCapacity = 400 + (results.size() * 370);
     StringBuilder csvBuilder = new StringBuilder(estimatedCapacity);
 
-    // Create header row - direct append with commas
+    // Create header row - direct append with commas, including export fields
     csvBuilder.append("scenario,trial,year,application,substance,manufacture,import,recycle,")
               .append("domesticConsumption,importConsumption,recycleConsumption,population,")
               .append("populationNew,rechargeEmissions,eolEmissions,energyConsumption,")
-              .append("initialChargeValue,initialChargeConsumption,importNewPopulation\n");
+              .append("export,exportConsumption,importInitialChargeValue,")
+              .append("importInitialChargeConsumption,importPopulation,")
+              .append("exportInitialChargeValue,exportInitialChargeConsumption\n");
 
-    // Add data rows - direct append with commas
+    // Add data rows - direct append with commas, including export fields
     for (EngineResult result : results) {
       csvBuilder.append(result.getScenarioName()).append(',')
                 .append(result.getTrialNumber()).append(',')
@@ -260,9 +261,13 @@ public class KigaliSimFacade {
                 .append(result.getRechargeEmissions().getValue()).append(',')
                 .append(result.getEolEmissions().getValue()).append(',')
                 .append(result.getEnergyConsumption().getValue()).append(',')
-                .append(result.getImportSupplement().getInitialChargeValue().getValue()).append(',')
-                .append(result.getImportSupplement().getInitialChargeConsumption().getValue()).append(',')
-                .append(result.getImportSupplement().getNewPopulation().getValue()).append('\n');
+                .append(result.getExport().getValue()).append(',')
+                .append(result.getExportConsumption().getValue()).append(',')
+                .append(result.getTradeSupplement().getImportInitialChargeValue().getValue()).append(',')
+                .append(result.getTradeSupplement().getImportInitialChargeConsumption().getValue()).append(',')
+                .append(result.getTradeSupplement().getImportPopulation().getValue()).append(',')
+                .append(result.getTradeSupplement().getExportInitialChargeValue().getValue()).append(',')
+                .append(result.getTradeSupplement().getExportInitialChargeConsumption().getValue()).append('\n');
     }
 
     return csvBuilder.toString();

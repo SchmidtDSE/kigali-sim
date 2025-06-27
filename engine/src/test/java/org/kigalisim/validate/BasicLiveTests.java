@@ -415,4 +415,55 @@ public class BasicLiveTests {
     assertTrue(firstPopulation < secondPopulation,
         "Equipment population should increase from 2025 to 2030. Was " + firstPopulation + " in 2025 and " + secondPopulation + " in 2030");
   }
+
+  /**
+   * Test basic_exporter.qta produces expected values with export streams.
+   */
+  @Test
+  public void testBasicExporter() throws IOException {
+    // Load and parse the QTA file
+    String qtaPath = "../examples/basic_exporter.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    // Run the scenario using KigaliSimFacade
+    String scenarioName = "exporter scenario";
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName);
+
+    List<EngineResult> resultsList = results.collect(Collectors.toList());
+    EngineResult result = LiveTestsUtil.getResult(resultsList.stream(), 1, 
+        "commercial refrigeration", "HFC-134a");
+    assertNotNull(result, "Should have result for commercial refrigeration/HFC-134a in year 1");
+
+    // Check manufacture value - should be 1600 mt = 1600000 kg
+    assertEquals(1600000.0, result.getManufacture().getValue().doubleValue(), 0.0001,
+        "Manufacture should be 1600000 kg");
+    assertEquals("kg", result.getManufacture().getUnits(),
+        "Manufacture units should be kg");
+
+    // Check import value - should be 400 mt = 400000 kg
+    assertEquals(400000.0, result.getImport().getValue().doubleValue(), 0.0001,
+        "Import should be 400000 kg");
+    assertEquals("kg", result.getImport().getUnits(),
+        "Import units should be kg");
+
+    // Check export value - should be 200 mt = 200000 kg
+    assertEquals(200000.0, result.getExport().getValue().doubleValue(), 0.0001,
+        "Export should be 200000 kg");
+    assertEquals("kg", result.getExport().getUnits(),
+        "Export units should be kg");
+
+    // Check export consumption value - should be 200 mt * 500 tCO2e/mt = 100000 tCO2e
+    assertEquals(100000.0, result.getExportConsumption().getValue().doubleValue(), 0.0001,
+        "Export consumption should be 100000 tCO2e");
+    assertEquals("tCO2e", result.getExportConsumption().getUnits(),
+        "Export consumption units should be tCO2e");
+
+    // Check trade supplement contains export data
+    assertNotNull(result.getTradeSupplement(), "Trade supplement should not be null");
+    assertNotNull(result.getTradeSupplement().getExportInitialChargeValue(),
+        "Export initial charge value should not be null");
+    assertNotNull(result.getTradeSupplement().getExportInitialChargeConsumption(),
+        "Export initial charge consumption should not be null");
+  }
 }
