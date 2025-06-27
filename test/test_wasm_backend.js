@@ -4,7 +4,7 @@
  * @license BSD, see LICENSE.md.
  */
 
-import {WasmBackend, WasmLayer, ReportDataParser} from "wasm_backend";
+import {WasmBackend, WasmLayer, ReportDataParser, BackendResult} from "wasm_backend";
 import {EngineNumber} from "engine_number";
 import {EngineResult, ImportSupplement} from "engine_struct";
 
@@ -277,8 +277,11 @@ function buildWasmBackendTests() {
 
             mockWorker.onmessage({data: responseData});
 
-            runPromise.then((results) => {
-              assert.ok(Array.isArray(results), "Should return array of results");
+            runPromise.then((backendResult) => {
+              assert.ok(backendResult instanceof BackendResult,
+                "Should return BackendResult instance");
+              assert.ok(Array.isArray(backendResult.getParsedResults()),
+                "Should contain array of parsed results");
               // Restore original Worker
               window.Worker = originalWorker;
               done();
