@@ -1010,4 +1010,145 @@ class SelectorTitlePresenter {
   }
 }
 
+/**
+ * Presenter for custom metric configuration and management.
+ * 
+ * Handles the definition and presentation of custom metrics that combine
+ * multiple submetrics based on user selection. Manages dialog interactions
+ * and maintains the current custom metric definition.
+ */
+class CustomMetricPresenter {
+  /**
+   * Create a new CustomMetricPresenter.
+   * 
+   * @param {string} dialogId - ID of the configuration dialog element.
+   * @param {Array<string>} availableOptions - Array of available submetric options.
+   * @param {Function} onSelectionChanged - Callback when custom definition changes.
+   */
+  constructor(dialogId, availableOptions, onSelectionChanged) {
+    const self = this;
+    self._dialog = document.getElementById(dialogId);
+    self._availableOptions = availableOptions;
+    self._onSelectionChanged = onSelectionChanged;
+    
+    if (!self._dialog) {
+      throw new Error(`Dialog with id '${dialogId}' not found`);
+    }
+    
+    self._setupEventListeners();
+  }
+
+  /**
+   * Get the current custom metric definition.
+   * 
+   * @returns {Array<string>|null} Array of selected submetrics or null if none.
+   */
+  getCurrentDefinition() {
+    const self = this;
+    const checkboxes = self._dialog.querySelectorAll('input[type="checkbox"]:checked');
+    const selected = Array.from(checkboxes).map(cb => cb.value);
+    return selected.length > 0 ? selected : null;
+  }
+
+  /**
+   * Set the current custom metric definition.
+   * 
+   * @param {Array<string>|null} definition - Array of submetrics to select.
+   */
+  setCurrentDefinition(definition) {
+    const self = this;
+    const checkboxes = self._dialog.querySelectorAll('input[type="checkbox"]');
+    
+    checkboxes.forEach(checkbox => {
+      checkbox.checked = definition && definition.includes(checkbox.value);
+    });
+    
+    self._validateSelection();
+  }
+
+  /**
+   * Show the custom metric configuration dialog.
+   */
+  showDialog() {
+    const self = this;
+    self._dialog.showModal();
+    
+    // Focus first checkbox
+    const firstCheckbox = self._dialog.querySelector('input[type="checkbox"]');
+    if (firstCheckbox) {
+      firstCheckbox.focus();
+    }
+  }
+
+  /**
+   * Hide the custom metric configuration dialog.
+   */
+  hideDialog() {
+    const self = this;
+    self._dialog.close();
+  }
+
+  /**
+   * Validate current selection and enable/disable Apply button.
+   * 
+   * Ensures at least one checkbox is selected before enabling Apply button.
+   * Updates Apply button disabled state and shows/hides validation messages.
+   * 
+   * @private
+   */
+  _validateSelection() {
+    const self = this;
+    const selected = self.getCurrentDefinition();
+    const applyButton = self._dialog.querySelector('.primary');
+    
+    if (selected && selected.length > 0) {
+      applyButton.classList.remove('disabled');
+      applyButton.style.pointerEvents = 'auto';
+      applyButton.style.opacity = '1';
+    } else {
+      applyButton.classList.add('disabled');
+      applyButton.style.pointerEvents = 'none';
+      applyButton.style.opacity = '0.5';
+    }
+  }
+
+  /**
+   * Set up event listeners for dialog interactions.
+   * 
+   * @private
+   */
+  _setupEventListeners() {
+    const self = this;
+    
+    // Apply button listener
+    const applyButton = self._dialog.querySelector('.primary');
+    applyButton.addEventListener('click', (event) => {
+      event.preventDefault();
+      const selected = self.getCurrentDefinition();
+      if (selected && selected.length > 0) {
+        self._onSelectionChanged(selected);
+        self.hideDialog();
+      }
+    });
+    
+    // Cancel button listener  
+    const cancelButton = self._dialog.querySelector('.secondary');
+    cancelButton.addEventListener('click', (event) => {
+      event.preventDefault();
+      self.hideDialog();
+    });
+    
+    // Checkbox change listeners for immediate validation
+    const checkboxes = self._dialog.querySelectorAll('input[type="checkbox"]');
+    checkboxes.forEach(checkbox => {
+      checkbox.addEventListener('change', () => {
+        self._validateSelection();
+      });
+    });
+    
+    // Initialize validation state
+    self._validateSelection();
+  }
+}
+
 export {ResultsPresenter};
