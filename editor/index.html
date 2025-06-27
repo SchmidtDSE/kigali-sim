@@ -49,8 +49,9 @@
           <h2>Configure Custom Emissions Metric</h2>
           <p>Select which emission types to include in your custom metric:</p>
           <div class="checkbox-list">
-            <label><input type="checkbox" value="recharge"> Recharge emissions</label>
-            <label><input type="checkbox" value="eol"> End of life emissions</label>
+            <div><label><input type="checkbox" value="recharge"> Recharge emissions</label></div>
+            <div><label><input type="checkbox" value="eol"> End of life emissions</label></div>
+            <div><label><input type="checkbox" value="export"> Export emissions</label></div>
           </div>
           <div class="dialog-buttons bold-buttons">
             <a href="#" class="primary">Apply</a>
@@ -62,9 +63,10 @@
           <h2>Configure Custom Sales/Consumption Metric</h2>
           <p>Select which consumption types to include in your custom metric:</p>
           <div class="checkbox-list">
-            <label><input type="checkbox" value="manufacture"> Domestic manufacture</label>
-            <label><input type="checkbox" value="import"> Imports</label>
-            <label><input type="checkbox" value="recycle"> Recycle</label>
+            <div><label><input type="checkbox" value="manufacture"> Domestic manufacture</label></div>
+            <div><label><input type="checkbox" value="import"> Imports</label></div>
+            <div><label><input type="checkbox" value="export"> Exports</label></div>
+            <div><label><input type="checkbox" value="recycle"> Recycle</label></div>
           </div>
           <div class="dialog-buttons bold-buttons">
             <a href="#" class="primary">Apply</a>
@@ -886,6 +888,7 @@
                   >
                     <option value="recharge" selected>recharge</option>
                     <option value="eol">end of life</option>
+                    <option value="export">export</option>
                     <option value="custom">custom</option>
                   </select>
                 </div>
@@ -931,6 +934,7 @@
                   >
                     <option value="manufacture" selected>domestic manufacture</option>
                     <option value="import">imports</option>
+                    <option value="export">exports</option>
                     <option value="recycle">recycle</option>
                     <option value="custom">custom</option>
                   </select>
@@ -1147,6 +1151,7 @@
           <select class="set-target-input" aria-label="Target for set command">
             <option value="manufacture">domestic manufacture</option>
             <option value="import">import</option>
+            <option value="export">export</option>
             <option value="sales">all sales</option>
             <option value="equipment">equipment</option>
             <option value="priorEquipment">prior equipment</option>
@@ -1204,6 +1209,7 @@
               <select class="change-target-input" aria-label="Target for change command">
                 <option value="manufacture">domestic manufacture</option>
                 <option value="import">import</option>
+                <option value="export">export</option>
                 <option value="sales">all sales</option>
                 <option value="equipment">equipment</option>
                 <option value="priorEquipment">prior equipment</option>
@@ -1272,6 +1278,7 @@
           <select class="limit-target-input" aria-label="Target for limit command">
             <option value="manufacture">domestic manufacture</option>
             <option value="import">import</option>
+            <option value="export">export</option>
             <option value="sales">all sales</option>
             <option value="equipment">equipment</option>
             <option value="priorEquipment">prior equipment</option>
@@ -1312,6 +1319,7 @@
             <optgroup label="Streams">
               <option value="manufacture">domestic manufacture</option>
               <option value="import">import</option>
+              <option value="export">export</option>
               <option value="sales">all sales</option>
               <option value="equipment">equipment</option>
               <option value="priorEquipment">prior equipment</option>
@@ -1397,6 +1405,7 @@
             <optgroup label="Streams">
               <option value="manufacture">domestic manufacture</option>
               <option value="import">import</option>
+              <option value="export">export</option>
               <option value="sales">all sales</option>
               <option value="equipment">equipment</option>
               <option value="priorEquipment">prior equipment</option>
@@ -1455,6 +1464,7 @@
           <select class="replace-target-input" aria-label="Target for replace command">
             <option value="manufacture">domestic manufacture</option>
             <option value="import">import</option>
+            <option value="export">export</option>
             <option value="sales">all sales</option>
             <option value="equipment">equipment</option>
             <option value="priorEquipment">prior equipment</option>
