@@ -110,10 +110,11 @@ class ResultsPresenter {
       null,
       null,
       null,
-      "emissions:all:MtCO2e / yr",
+      "emissions:recharge:MtCO2e / yr",
       "simulations",
       null,
       false,
+      null,
     );
   }
 
@@ -162,7 +163,7 @@ class ResultsPresenter {
 
     let constrainedFilterSet = filterSet;
 
-    // Validate that selected values exist in results and reset to "all" if not found
+    // Validate that selected values exist in results and reset to null if not found
     if (self._results !== null) {
       // Check if selected scenario exists
       const selectedScenario = constrainedFilterSet.getScenario();
@@ -191,6 +192,27 @@ class ResultsPresenter {
           constrainedFilterSet.getWithSubstance(null));
         if (!availableSubstances.has(selectedSubstance)) {
           constrainedFilterSet = constrainedFilterSet.getWithSubstance(null);
+        }
+      }
+    }
+
+    // Validate custom metrics have definitions
+    if (constrainedFilterSet.isCustomMetric()) {
+      const metricFamily = constrainedFilterSet.getMetric();
+      const customDef = constrainedFilterSet.getCustomDefinition(metricFamily);
+
+      if (!customDef || customDef.length === 0) {
+        // Switch to a default submetric for the family
+        const defaultSubmetrics = {
+          "emissions": "recharge",
+          "sales": "manufacture",
+        };
+
+        const defaultSubmetric = defaultSubmetrics[metricFamily];
+        if (defaultSubmetric) {
+          const currentUnits = constrainedFilterSet.getUnits();
+          const defaultMetric = `${metricFamily}:${defaultSubmetric}:${currentUnits}`;
+          constrainedFilterSet = constrainedFilterSet.getWithMetric(defaultMetric);
         }
       }
     }
@@ -278,6 +300,20 @@ class ScorecardPresenter {
     self._root = root;
     self._filterSet = null;
     self._onUpdateFilterSet = onUpdateFilterSet;
+
+    // Create custom metric presenters
+    self._customPresenters = {};
+    self._customPresenters.emissions = new CustomMetricPresenter(
+      "custom-emissions-dialog",
+      ["recharge", "eol"],
+      (selection) => self._onCustomMetricChanged("emissions", selection),
+    );
+    self._customPresenters.sales = new CustomMetricPresenter(
+      "custom-sales-dialog",
+      ["manufacture", "import", "recycle"],
+      (selection) => self._onCustomMetricChanged("sales", selection),
+    );
+
     self._registerEventListeners();
   }
 
@@ -337,11 +373,38 @@ class ScorecardPresenter {
         null,
         null,
         null,
-        "emissions:all:MtCO2e / yr",
+        "emissions:recharge:MtCO2e / yr",
         "simulations",
         null,
         false,
+        null,
       ));
+    }
+  }
+
+  /**
+   * Handle custom metric definition changes.
+   *
+   * @param {string} metricFamily - The metric family ('emissions' or 'sales').
+   * @param {Array<string>} selection - Array of selected submetrics.
+   * @private
+   */
+  _onCustomMetricChanged(metricFamily, selection) {
+    const self = this;
+
+    // Update custom definition in filter set
+    const newFilterSet = self._filterSet.getWithCustomDefinition(metricFamily, selection);
+
+    // Switch to custom metric if not already
+    const currentMetric = newFilterSet.getMetric();
+    const currentUnits = newFilterSet.getUnits();
+
+    if (currentMetric === metricFamily) {
+      const customMetric = `${metricFamily}:custom:${currentUnits}`;
+      const finalFilterSet = newFilterSet.getWithMetric(customMetric);
+      self._onUpdateFilterSet(finalFilterSet);
+    } else {
+      self._onUpdateFilterSet(newFilterSet);
     }
   }
 
@@ -405,10 +468,29 @@ class ScorecardPresenter {
     const registerListener = (scorecard, family) => {
       const subMetricDropdown = scorecard.querySelector(".submetric-input");
       const unitsDropdown = scorecard.querySelector(".units-input");
+      const customConfigLink = scorecard.querySelector(".configure-custom-link");
 
       const callback = () => {
         const subMetric = subMetricDropdown.value;
         const units = unitsDropdown.value;
+
+        // Handle custom metric selection
+        if (subMetric === "custom") {
+          const customPresenter = self._customPresenters[family];
+          const currentDef = customPresenter.getCurrentDefinition();
+
+          // Set the current definition based on FilterSet
+          const filterSetDef = self._filterSet.getCustomDefinition(family);
+          if (filterSetDef) {
+            customPresenter.setCurrentDefinition(filterSetDef);
+          }
+
+          if (!currentDef || currentDef.length === 0) {
+            customPresenter.showDialog();
+            return; // Don't update filter until dialog is completed
+          }
+        }
+
         const fullName = family + ":" + subMetric + ":" + units;
         const newFilterSet = self._filterSet.getWithMetric(fullName);
         self._onUpdateFilterSet(newFilterSet);
@@ -419,6 +501,22 @@ class ScorecardPresenter {
 
       subMetricDropdown.addEventListener("change", callback);
       unitsDropdown.addEventListener("change", callback);
+
+      // Custom configuration link listener
+      if (customConfigLink) {
+        customConfigLink.addEventListener("click", (event) => {
+          event.preventDefault();
+          const customPresenter = self._customPresenters[family];
+
+          // Set current definition before showing dialog
+          const filterSetDef = self._filterSet.getCustomDefinition(family);
+          if (filterSetDef) {
+            customPresenter.setCurrentDefinition(filterSetDef);
+          }
+
+          customPresenter.showDialog();
+        });
+      }
     };
 
     registerListener(emissionsScorecard, "emissions");
@@ -699,42 +797,8 @@ class OptionsPanelPresenter {
     const self = this;
     self._filterSet = filterSet;
     self._attributeImporterCheck.checked = self._filterSet.getAttributeImporter();
-    self._updateSalesSubmetricVisibility();
   }
 
-  /**
-   * Updates the visibility of sales-submetric options based on importer assignment checkbox.
-   * When unchecked, hides 'import' and 'all' options and resets selection if needed.
-   *
-   * @private
-   */
-  _updateSalesSubmetricVisibility() {
-    const self = this;
-    const salesDropdown = self._root.querySelector(".sales-submetric");
-    const isImporterAttributed = self._attributeImporterCheck.checked;
-
-    if (salesDropdown) {
-      const allOption = salesDropdown.querySelector('option[value="all"]');
-      const importOption = salesDropdown.querySelector('option[value="import"]');
-
-      if (isImporterAttributed) {
-        // Show all options when importer assignment is enabled
-        if (allOption) allOption.style.display = "";
-        if (importOption) importOption.style.display = "";
-      } else {
-        // Hide import and all options when importer assignment is disabled
-        if (allOption) allOption.style.display = "none";
-        if (importOption) importOption.style.display = "none";
-
-        // Reset to domestic if import or all was selected
-        if (salesDropdown.value === "all" || salesDropdown.value === "import") {
-          salesDropdown.value = "manufacture";
-          // Trigger change event to update filter set
-          salesDropdown.dispatchEvent(new Event("change"));
-        }
-      }
-    }
-  }
 
   /**
    * Register event listeners for options being changed.
@@ -743,9 +807,6 @@ class OptionsPanelPresenter {
     const self = this;
     self._attributeImporterCheck.addEventListener("change", () => {
       const newValue = self._attributeImporterCheck.checked;
-
-      // Update sales submetric visibility first
-      self._updateSalesSubmetricVisibility();
 
       const newFilterSet = self._filterSet.getWithAttributeImporter(newValue);
       self._onUpdateFilterSet(newFilterSet);
@@ -1042,6 +1103,147 @@ class SelectorTitlePresenter {
 
     const baselineDropdown = self._selection.querySelector(".baseline-select");
     addListener(baselineDropdown, (filterSet, val) => filterSet.getWithBaseline(val));
+  }
+}
+
+/**
+ * Presenter for custom metric configuration and management.
+ *
+ * Handles the definition and presentation of custom metrics that combine
+ * multiple submetrics based on user selection. Manages dialog interactions
+ * and maintains the current custom metric definition.
+ */
+class CustomMetricPresenter {
+  /**
+   * Create a new CustomMetricPresenter.
+   *
+   * @param {string} dialogId - ID of the configuration dialog element.
+   * @param {Array<string>} availableOptions - Array of available submetric options.
+   * @param {Function} onSelectionChanged - Callback when custom definition changes.
+   */
+  constructor(dialogId, availableOptions, onSelectionChanged) {
+    const self = this;
+    self._dialog = document.getElementById(dialogId);
+    self._availableOptions = availableOptions;
+    self._onSelectionChanged = onSelectionChanged;
+
+    if (!self._dialog) {
+      throw new Error(`Dialog with id '${dialogId}' not found`);
+    }
+
+    self._setupEventListeners();
+  }
+
+  /**
+   * Get the current custom metric definition.
+   *
+   * @returns {Array<string>|null} Array of selected submetrics or null if none.
+   */
+  getCurrentDefinition() {
+    const self = this;
+    const checkboxes = self._dialog.querySelectorAll('input[type="checkbox"]:checked');
+    const selected = Array.from(checkboxes).map((cb) => cb.value);
+    return selected.length > 0 ? selected : null;
+  }
+
+  /**
+   * Set the current custom metric definition.
+   *
+   * @param {Array<string>|null} definition - Array of submetrics to select.
+   */
+  setCurrentDefinition(definition) {
+    const self = this;
+    const checkboxes = self._dialog.querySelectorAll('input[type="checkbox"]');
+
+    checkboxes.forEach((checkbox) => {
+      checkbox.checked = definition && definition.includes(checkbox.value);
+    });
+
+    self._validateSelection();
+  }
+
+  /**
+   * Show the custom metric configuration dialog.
+   */
+  showDialog() {
+    const self = this;
+    self._dialog.showModal();
+
+    // Focus first checkbox
+    const firstCheckbox = self._dialog.querySelector('input[type="checkbox"]');
+    if (firstCheckbox) {
+      firstCheckbox.focus();
+    }
+  }
+
+  /**
+   * Hide the custom metric configuration dialog.
+   */
+  hideDialog() {
+    const self = this;
+    self._dialog.close();
+  }
+
+  /**
+   * Validate current selection and enable/disable Apply button.
+   *
+   * Ensures at least one checkbox is selected before enabling Apply button.
+   * Updates Apply button disabled state and shows/hides validation messages.
+   *
+   * @private
+   */
+  _validateSelection() {
+    const self = this;
+    const selected = self.getCurrentDefinition();
+    const applyButton = self._dialog.querySelector(".primary");
+
+    if (selected && selected.length > 0) {
+      applyButton.classList.remove("disabled");
+      applyButton.style.pointerEvents = "auto";
+      applyButton.style.opacity = "1";
+    } else {
+      applyButton.classList.add("disabled");
+      applyButton.style.pointerEvents = "none";
+      applyButton.style.opacity = "0.5";
+    }
+  }
+
+  /**
+   * Set up event listeners for dialog interactions.
+   *
+   * @private
+   */
+  _setupEventListeners() {
+    const self = this;
+
+    // Apply button listener
+    const applyButton = self._dialog.querySelector(".primary");
+    applyButton.addEventListener("click", (event) => {
+      event.preventDefault();
+      const selected = self.getCurrentDefinition();
+      if (selected && selected.length > 0) {
+        self._onSelectionChanged(selected);
+        self.hideDialog();
+      }
+    });
+
+    // Cancel button listener
+    const cancelButton = self._dialog.querySelector(".secondary");
+    cancelButton.addEventListener("click", (event) => {
+      event.preventDefault();
+      self.hideDialog();
+    });
+
+    // Checkbox change listeners for immediate validation
+    const checkboxes = self._dialog.querySelectorAll('input[type="checkbox"]');
+    checkboxes.forEach((checkbox) => {
+      checkbox.addEventListener("change", () => {
+        self._validateSelection();
+      });
+    });
+
+    // Initialize validation state
+    self._validateSelection();
   }
 }
 

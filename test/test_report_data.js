@@ -36,20 +36,20 @@ function buildReportDataTests() {
       });
     };
 
-    QUnit.test("parses submetric all", (assert) => {
+    QUnit.test("parses submetric manufacture", (assert) => {
       const filterSet = new FilterSet(
         null,
         null,
         null,
         null,
-        "sales:all:mt / yr",
+        "sales:manufacture:mt / yr",
         null,
         null,
         false,
       );
-      assert.deepEqual(filterSet.getFullMetricName(), "sales:all:mt / yr");
+      assert.deepEqual(filterSet.getFullMetricName(), "sales:manufacture:mt / yr");
       assert.deepEqual(filterSet.getMetric(), "sales");
-      assert.deepEqual(filterSet.getSubMetric(), "all");
+      assert.deepEqual(filterSet.getSubMetric(), "manufacture");
       assert.deepEqual(filterSet.getUnits(), "mt / yr");
     });
 
@@ -68,6 +68,48 @@ function buildReportDataTests() {
       assert.deepEqual(filterSet.getMetric(), "sales");
       assert.deepEqual(filterSet.getSubMetric(), "import");
       assert.deepEqual(filterSet.getUnits(), "mt / yr");
+    });
+
+    QUnit.test("parses custom metric", (assert) => {
+      const filterSet = new FilterSet(
+        null,
+        null,
+        null,
+        null,
+        "emissions:custom:MtCO2e / yr",
+        null,
+        null,
+        false,
+      );
+      assert.deepEqual(filterSet.getFullMetricName(), "emissions:custom:MtCO2e / yr");
+      assert.deepEqual(filterSet.getMetric(), "emissions");
+      assert.deepEqual(filterSet.getSubMetric(), "custom");
+      assert.deepEqual(filterSet.getUnits(), "MtCO2e / yr");
+      assert.ok(filterSet.isCustomMetric());
+    });
+
+    QUnit.test("handles custom definitions", (assert) => {
+      const customDefs = {
+        "emissions": ["recharge", "eol"],
+        "sales": ["manufacture", "import"],
+      };
+      const filterSet = new FilterSet(
+        null,
+        null,
+        null,
+        null,
+        "emissions:custom:MtCO2e / yr",
+        null,
+        null,
+        false,
+        customDefs,
+      );
+      assert.deepEqual(filterSet.getCustomDefinition("emissions"), ["recharge", "eol"]);
+      assert.deepEqual(filterSet.getCustomDefinition("sales"), ["manufacture", "import"]);
+
+      const updatedFilterSet = filterSet.getWithCustomDefinition("emissions", ["recharge"]);
+      assert.deepEqual(updatedFilterSet.getCustomDefinition("emissions"), ["recharge"]);
+      assert.deepEqual(updatedFilterSet.getCustomDefinition("sales"), ["manufacture", "import"]);
     });
 
     buildTest("runs the base script", "/examples/multiple_with_policies.qta", [
@@ -197,7 +239,7 @@ function buildReportDataTests() {
           "bau",
           null,
           null,
-          "sales:all:kg / yr",
+          "sales:manufacture:kg / yr",
           null,
           null,
           true,
@@ -215,7 +257,7 @@ function buildReportDataTests() {
           "bau",
           null,
           null,
-          "sales:all:kg / yr",
+          "sales:manufacture:kg / yr",
           null,
           null,
           false,
@@ -233,13 +275,13 @@ function buildReportDataTests() {
           "bau",
           null,
           null,
-          "sales:all:kg / yr",
+          "sales:manufacture:kg / yr",
           null,
           null,
           true,
         );
         const totalSales = result.getMetric(filterSet);
-        assert.closeTo(totalSales.getValue(), 200000, 0.0001);
+        assert.closeTo(totalSales.getValue(), 180000, 0.0001);
         assert.deepEqual(totalSales.getUnits(), "kg / yr");
       },
     ]);
@@ -254,7 +296,7 @@ function buildReportDataTests() {
             "bau",
             null,
             null,
-            "sales:all:kg / yr",
+            "sales:manufacture:kg / yr",
             null,
             null,
             false,
