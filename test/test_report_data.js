@@ -90,8 +90,8 @@ function buildReportDataTests() {
 
     QUnit.test("handles custom definitions", (assert) => {
       const customDefs = {
-        'emissions': ['recharge', 'eol'],
-        'sales': ['manufacture', 'import']
+        "emissions": ["recharge", "eol"],
+        "sales": ["manufacture", "import"],
       };
       const filterSet = new FilterSet(
         null,
@@ -104,12 +104,12 @@ function buildReportDataTests() {
         false,
         customDefs,
       );
-      assert.deepEqual(filterSet.getCustomDefinition('emissions'), ['recharge', 'eol']);
-      assert.deepEqual(filterSet.getCustomDefinition('sales'), ['manufacture', 'import']);
-      
-      const updatedFilterSet = filterSet.getWithCustomDefinition('emissions', ['recharge']);
-      assert.deepEqual(updatedFilterSet.getCustomDefinition('emissions'), ['recharge']);
-      assert.deepEqual(updatedFilterSet.getCustomDefinition('sales'), ['manufacture', 'import']);
+      assert.deepEqual(filterSet.getCustomDefinition("emissions"), ["recharge", "eol"]);
+      assert.deepEqual(filterSet.getCustomDefinition("sales"), ["manufacture", "import"]);
+
+      const updatedFilterSet = filterSet.getWithCustomDefinition("emissions", ["recharge"]);
+      assert.deepEqual(updatedFilterSet.getCustomDefinition("emissions"), ["recharge"]);
+      assert.deepEqual(updatedFilterSet.getCustomDefinition("sales"), ["manufacture", "import"]);
     });
 
     buildTest("runs the base script", "/examples/multiple_with_policies.qta", [
