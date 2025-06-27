@@ -138,6 +138,8 @@ We thank the following Open Source libraries:
 - [Public Sans](https://public-sans.digital.gov/) font under [OFL-1.1](https://github.com/uswds/public-sans/blob/master/LICENSE.md).
 - [SVG Spinners](https://github.com/n3r4zzurr0/svg-spinners?tab=readme-ov-file) under [MIT](https://github.com/n3r4zzurr0/svg-spinners?tab=readme-ov-file)
 - [Tabby](https://github.com/cferdinandi/tabby) for tab interface management under [MIT](https://github.com/cferdinandi/tabby/blob/master/LICENSE.md).
+- [Global Plastics AI Policy Tool](https://global-plastics-tool.org/) under [BSD-3-Clause](https://github.com/SchmidtDSE/plastics-prototype/blob/main/LICENSE.md).
+- [Josh](https://joshsim.org/) under [BSD-3-Clause](https://github.com/SchmidtDSE/josh/blob/main/LICENSE.md).
 
 <br>
 
