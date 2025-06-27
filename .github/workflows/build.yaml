@@ -270,6 +270,27 @@ jobs:
           name: deploy-files
           path: ./editor/deploy
           retention-days: 1
+  deployPreview:
+    environment: deploy
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    name: Deploy
+    needs: [deploy-prep]
+    steps:
+      - name: Download deploy artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: deploy-files
+          path: ./deploy
+      - name: Upload
+        uses: Creepios/sftp-action@v1.0.3
+        with:
+          host: ${{ secrets.SFTPHOST }}
+          port: 22
+          username: ${{ secrets.SFTPUSER }}
+          password: ${{ secrets.SFTPPASSWORD }}
+          localPath: './deploy'
+          remotePath: './preview.kigalisim.org'
   deploy:
     environment: deploy
     if: github.ref == 'refs/heads/deploy'
@@ -290,4 +311,4 @@ jobs:
           username: ${{ secrets.SFTPUSER }}
           password: ${{ secrets.SFTPPASSWORD }}
           localPath: './deploy'
-          remotePath: './mlf-policy-explorer.org'
+          remotePath: './kigalisim.org'
