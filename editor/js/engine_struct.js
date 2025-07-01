@@ -568,6 +568,56 @@ class AttributeToExporterResult {
     const self = this;
     return self._inner.getTrialNumber();
   }
+
+  /**
+   * Get the export volume associated with this result.
+   *
+   * @returns {EngineValue} The export volume in kg or similar from the
+   *     decorated result but with initial charge attributed to exporter.
+   */
+  getExport() {
+    const self = this;
+    const totalExport = self._inner.getExport();
+    const tradeSupplement = self._inner.getTradeSupplement();
+    const exportInitialCharge = tradeSupplement.getExportInitialChargeValue();
+
+    const totalUnits = totalExport.getUnits();
+    const initialChargeUnits = exportInitialCharge.getUnits();
+    if (totalUnits !== initialChargeUnits) {
+      const mismatchDescription = "between " + totalUnits + " and " + initialChargeUnits;
+      throw "Could not attribute trade due to units mismatch " + mismatchDescription;
+    }
+
+    const exportInitialChargeValue = exportInitialCharge.getValue();
+    const effectiveInitialCharge = exportInitialChargeValue > 0 ? exportInitialChargeValue : 0;
+    const innerNumber = totalExport.getValue() + effectiveInitialCharge;
+    return new EngineNumber(innerNumber, totalUnits);
+  }
+
+  /**
+   * Get the export consumption value with exporter attribution.
+   *
+   * @returns {EngineNumber} The export consumption value in tCO2e or similar,
+   *     adjusted for exporter attribution by adding initial charge consumption.
+   */
+  getExportConsumption() {
+    const self = this;
+    const totalExport = self._inner.getExportConsumption();
+    const tradeSupplement = self._inner.getTradeSupplement();
+    const exportInitialCharge = tradeSupplement.getExportInitialChargeConsumption();
+
+    const totalUnits = totalExport.getUnits();
+    const initialChargeUnits = exportInitialCharge.getUnits();
+    if (totalUnits !== initialChargeUnits) {
+      const mismatchDescription = "between " + totalUnits + " and " + initialChargeUnits;
+      throw "Could not attribute trade due to units mismatch " + mismatchDescription;
+    }
+
+    const exportInitialChargeValue = exportInitialCharge.getValue();
+    const effectiveInitialCharge = exportInitialChargeValue > 0 ? exportInitialChargeValue : 0;
+    const innerNumber = totalExport.getValue() + effectiveInitialCharge;
+    return new EngineNumber(innerNumber, totalUnits);
+  }
 }
 
 /**

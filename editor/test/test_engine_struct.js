@@ -270,6 +270,22 @@ function buildEngineStructTests() {
       assert.closeTo(consumption.getValue(), 200, 0.0001);
       assert.deepEqual(consumption.getUnits(), "tCO2e");
     });
+
+    QUnit.test("getExport", function (assert) {
+      const result = makeExample();
+      const exportValue = result.getExport();
+      // Should be 30 + 3 = 33 due to exporter attribution (adding export initial charge)
+      assert.closeTo(exportValue.getValue(), 33, 0.0001);
+      assert.deepEqual(exportValue.getUnits(), "kg");
+    });
+
+    QUnit.test("getExportConsumption", function (assert) {
+      const result = makeExample();
+      const consumption = result.getExportConsumption();
+      // Should be 60 + 6 = 66 due to exporter attribution (adding export initial charge)
+      assert.closeTo(consumption.getValue(), 66, 0.0001);
+      assert.deepEqual(consumption.getUnits(), "tCO2e");
+    });
   });
 
   QUnit.module("TradeSupplement", function () {
@@ -476,9 +492,11 @@ function buildEngineStructTests() {
         new EngineNumber(100, "kg"), // manufacture
         new EngineNumber(50, "kg"), // import
         new EngineNumber(25, "kg"), // recycle
+        new EngineNumber(30, "kg"), // export
         new EngineNumber(200, "tCO2e"), // domesticConsumption
         new EngineNumber(100, "tCO2e"), // importConsumption
         new EngineNumber(50, "tCO2e"), // recycleConsumption
+        new EngineNumber(60, "tCO2e"), // exportConsumption
         new EngineNumber(1000, "units"), // population
         new EngineNumber(100, "units"), // populationNew
         new EngineNumber(300, "tCO2e"), // rechargeEmissions
@@ -596,9 +614,11 @@ function buildEngineStructTests() {
         new EngineNumber(50, "kg"), // manufacture
         new EngineNumber(25, "kg"), // import
         new EngineNumber(10, "kg"), // recycle
+        new EngineNumber(15, "kg"), // export
         new EngineNumber(100, "tCO2e"), // domesticConsumption
         new EngineNumber(50, "tCO2e"), // importConsumption
         new EngineNumber(25, "tCO2e"), // recycleConsumption
+        new EngineNumber(30, "tCO2e"), // exportConsumption
         new EngineNumber(500, "units"), // population
         new EngineNumber(50, "units"), // populationNew
         new EngineNumber(150, "tCO2e"), // rechargeEmissions

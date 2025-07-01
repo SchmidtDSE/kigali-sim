@@ -388,6 +388,86 @@ function buildReportDataTests() {
       ],
     );
 
+    buildTest("gets exports by metric", "/examples/multiple_with_policies_split.qta", [
+      (result, assert) => {
+        const filterSet = new FilterSet(
+          1,
+          "bau",
+          null,
+          null,
+          "sales:export:kg / yr",
+          null,
+          null,
+          true,
+        );
+        const sales = result.getMetric(filterSet);
+        assert.ok(sales.getValue() >= 0);
+        assert.deepEqual(sales.getUnits(), "kg / yr");
+      },
+    ]);
+
+    buildTest(
+      "gets exports by metric with attribution",
+      "/examples/multiple_with_policies_split.qta",
+      [
+        (result, assert) => {
+          const filterSet = new FilterSet(
+            1,
+            "bau",
+            null,
+            null,
+            "sales:export:kg / yr",
+            null,
+            null,
+            false,
+          );
+          const sales = result.getMetric(filterSet);
+          assert.ok(sales.getValue() >= 0);
+          assert.deepEqual(sales.getUnits(), "kg / yr");
+        },
+      ],
+    );
+
+    buildTest("gets export emissions by metric", "/examples/multiple_with_policies_split.qta", [
+      (result, assert) => {
+        const filterSet = new FilterSet(
+          1,
+          "bau",
+          null,
+          null,
+          "emissions:export:tCO2e / yr",
+          null,
+          null,
+          true,
+        );
+        const emissions = result.getMetric(filterSet);
+        assert.ok(emissions.getValue() >= 0);
+        assert.deepEqual(emissions.getUnits(), "tCO2e / yr");
+      },
+    ]);
+
+    buildTest(
+      "gets export emissions by metric with attribution",
+      "/examples/multiple_with_policies_split.qta",
+      [
+        (result, assert) => {
+          const filterSet = new FilterSet(
+            1,
+            "bau",
+            null,
+            null,
+            "emissions:export:tCO2e / yr",
+            null,
+            null,
+            false,
+          );
+          const emissions = result.getMetric(filterSet);
+          assert.ok(emissions.getValue() >= 0);
+          assert.deepEqual(emissions.getUnits(), "tCO2e / yr");
+        },
+      ],
+    );
+
     QUnit.test("tests getWithBaseline", (assert) => {
       const filterSet = new FilterSet(
         1,
