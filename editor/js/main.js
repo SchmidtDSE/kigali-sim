@@ -532,12 +532,90 @@ class MainPresenter {
 }
 
 /**
+ * Presenter for managing the introduction sequence.
+ */
+class IntroductionPresenter {
+  constructor() {
+    this.PREFERENCE_KEY = "hideIntroduction";
+    this.loadingPanel = document.getElementById("loading");
+    this.mainHolder = document.getElementById("main-holder");
+  }
+
+  /**
+   * Initialize the introduction sequence.
+   * @return {Promise} Promise that resolves when the user continues.
+   */
+  async initialize() {
+    const hideIntroduction = localStorage.getItem(this.PREFERENCE_KEY) === "true";
+
+    if (hideIntroduction) {
+      return Promise.resolve();
+    }
+
+    return new Promise((resolve) => {
+      this.setupIntroductionUI(resolve);
+    });
+  }
+
+  /**
+   * Set up the introduction UI with buttons.
+   * @param {Function} resolve - Callback to resolve the promise when user continues.
+   */
+  setupIntroductionUI(resolve) {
+    const loadingIndicator = document.getElementById("initial-loading-indicator");
+
+    const buttonContainer = document.createElement("div");
+    buttonContainer.className = "dialog-buttons";
+    buttonContainer.style.marginTop = "20px";
+
+    const continueButton = document.createElement("a");
+    continueButton.href = "#";
+    continueButton.className = "primary";
+    continueButton.textContent = "Continue";
+    continueButton.onclick = (e) => {
+      e.preventDefault();
+      loadingIndicator.style.display = "block";
+      buttonContainer.style.display = "none";
+      resolve();
+    };
+
+    const dontShowAgainButton = document.createElement("a");
+    dontShowAgainButton.href = "#";
+    dontShowAgainButton.className = "secondary";
+    dontShowAgainButton.textContent = "Continue and don't show again";
+    dontShowAgainButton.onclick = (e) => {
+      e.preventDefault();
+      localStorage.setItem(this.PREFERENCE_KEY, "true");
+      loadingIndicator.style.display = "block";
+      buttonContainer.style.display = "none";
+      resolve();
+    };
+
+    buttonContainer.appendChild(continueButton);
+    buttonContainer.appendChild(dontShowAgainButton);
+
+    loadingIndicator.style.display = "none";
+    this.loadingPanel.appendChild(buttonContainer);
+  }
+
+  /**
+   * Show the main application content.
+   */
+  showMainContent() {
+    this.loadingPanel.style.display = "none";
+    this.mainHolder.style.display = "block";
+  }
+}
+
+/**
  * Main entry point for the application.
  */
 function main() {
-  const showApp = () => {
-    document.getElementById("loading").style.display = "none";
-    document.getElementById("main-holder").style.display = "block";
+  const introPresenter = new IntroductionPresenter();
+
+  const showApp = async () => {
+    await introPresenter.initialize();
+    introPresenter.showMainContent();
   };
 
   const onLoad = () => {

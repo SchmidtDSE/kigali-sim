@@ -3,6 +3,22 @@
   src: url("/third_party/publicsans/fonts/otf/PublicSans-Regular.otf") format("opentype");
 }
 
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  z-index: 999;
+  padding: 1em;
+  background-color: #333333;
+  color: #F0F0F0;
+  text-decoration: none;
+}
+
+.skip-link:focus {
+  left: 10%;
+  transform: none;
+  top: 10px;
+}
+
 a,
 a:link,
 a:visited {
