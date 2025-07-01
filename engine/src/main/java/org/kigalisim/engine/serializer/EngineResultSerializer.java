@@ -60,27 +60,11 @@ public class EngineResultSerializer {
 
     // Add values into builder
     parseMainBody(builder, useKey);
-    parseImportSupplement(builder, useKey);
+    parseTradeSupplement(builder, useKey);
 
     return builder.build();
   }
 
-  /**
-   * Serialize the results for an application and substance in a given year.
-   *
-   * @param application The name of the application for which a result should be
-   *     serialized like commercial refrigeration
-   * @param substance The name of the substance like HFC-134a for which a result
-   *     should be serialized
-   * @param year The year for which a result should be serialized
-   * @return Snapshot of the result in the current engine state for the given
-   *     application and substance
-   * @deprecated Use {@link #getResult(UseKey, int)} instead
-   */
-  @Deprecated
-  public EngineResult getResult(String application, String substance, int year) {
-    return getResult(new SimpleUseKey(application, substance), year);
-  }
 
   /**
    * Parse the attributes which are actually returned to the user.
@@ -161,6 +145,19 @@ public class EngineResultSerializer {
         importValueOffset, consumptionByVolume, stateGetter, unitConverter);
     builder.setImportConsumptionValue(importConsumptionValue);
 
+    // Set export values (exports don't affect equipment population, just track volume and consumption)
+    EngineNumber exportRaw = engine.getStreamFor(useKey, "export");
+    EngineNumber exportValue;
+    if (exportRaw == null) {
+      exportValue = new EngineNumber(BigDecimal.ZERO, "kg");
+    } else {
+      exportValue = unitConverter.convert(exportRaw, "kg");
+    }
+    builder.setExportValue(exportValue);
+    EngineNumber exportConsumptionValue = getConsumptionForVolume(
+        exportValue, consumptionByVolume, stateGetter, unitConverter);
+    builder.setExportConsumptionValue(exportConsumptionValue);
+
     EngineNumber recycleConsumptionValue = getConsumptionForVolume(
         recycleValue, consumptionByVolume, stateGetter, unitConverter);
     builder.setRecycleConsumptionValue(recycleConsumptionValue);
@@ -228,7 +225,7 @@ public class EngineResultSerializer {
    * @param builder The builder into which parsed values should be registered
    * @param useKey The UseKey containing application and substance information
    */
-  private void parseImportSupplement(EngineResultBuilder builder,
+  private void parseTradeSupplement(EngineResultBuilder builder,
                                     UseKey useKey) {
     // Prepare units
     OverridingConverterStateGetter stateGetter =
@@ -269,8 +266,10 @@ public class EngineResultSerializer {
     EngineNumber consumption = unitConverter.convert(value, "tCO2e");
     EngineNumber population = unitConverter.convert(value, "units");
 
-    // Package
-    ImportSupplement importSupplement = new ImportSupplement(value, consumption, population);
-    builder.setImportSupplement(importSupplement);
+    // Package trade supplement with placeholder export values (zero for now)
+    EngineNumber zeroValue = new EngineNumber(BigDecimal.ZERO, "kg");
+    EngineNumber zeroConsumption = new EngineNumber(BigDecimal.ZERO, "tCO2e");
+    TradeSupplement tradeSupplement = new TradeSupplement(value, consumption, population, zeroValue, zeroConsumption);
+    builder.setTradeSupplement(tradeSupplement);
   }
 }

@@ -1,0 +1,177 @@
+<html>
+    <head>
+        <title>Model a single substance</title>
+        <link href="/guide/guide.css?v=EPOCH" rel="stylesheet" type="text/css" />
+    </head>
+    <body>
+        <div class="skip-link">
+            <a href="#main">Skip to content</a>
+        </div>
+        <header>
+            This tutorial is part of the <a href="/guide">guide</a> for the
+            <a href="/">Kigali Sim</a>.
+        </header>
+        <main id="main">
+            <h1>Model a Single Substance</h1>
+
+            This first tutorial walks through the process of defining and simulating a single
+            substance. This is the foundational building block for any model built within the
+            Kigali Sim.
+
+            <details>
+                <summary>Contents</summary>
+                <ul>
+                    <li><a href="#motivation">Motivation</a></li>
+                    <li><a href="#first-application">First Application</a></li>
+                    <li><a href="#first-simulation">First Simulation</a></li>
+                    <li><a href="#add-behavior">Add Behavior</a></li>
+                    <li><a href="#conclusion">Conclusion</a></li>
+                </ul>
+            </details>
+
+            <section id="motivation">
+                <h2>Motivation</h2>
+
+                <p>
+                    At the core of the simulation engine is the concept that there are multiple
+                    applications that consume different substances like HFC-134a or R-600a.
+                    Depending on your context, you can define applications broadly like all of
+                    commercial refrigeration or more narrowly like commercial refrigeration in a
+                    specific sector. After defining the system through these applications and
+                    substances, we can then try out different policy scenarios on top of a "business
+                    as usual" base case.
+                </p>
+
+                <p>
+                    Note that this first exercise will start by building a small analysis. Don't
+                    worry if this feels a little too elementary for your national context. We will
+                    expand into more complex simulations as we go on. With that, start by opening up
+                    the <a href="/" target="_blank">simulation tool</a>. Also, the numbers in these
+                    tutorials are fake.
+                </p>
+            </section>
+
+            <section id="first-application">
+                <h2>First Application</h2>
+
+                <p>
+                    We will start by creating an application called "com refrig" which will be short
+                    for commercial refrigeration. You can do this by clicking the add application
+                    button.
+                </p>
+
+                <p>
+                    Next, add consumption for a substance called "HFC-134a" with the following
+                    properties in the general and equipment tabs:
+                </p>
+
+                <ul>
+                    <li>Assume equivalency of 1000 tCO2e / kg.</li>
+                    <li>Assume equivalency of 100 kwh / unit.</li>
+                    <li>Initial charge 0.5 kg / unit for domestic manufacture.</li>
+                    <li>Initial charge 0.25 kg / unit for imported equipment.</li>
+                    <li>5% retired each year and 5% recharged each year.</li>
+                    <li>0.1 kg / unit recharge.</li>
+                </ul>
+
+                <p>
+                    We also need to set some starting conditions. We will make two setpoints in the
+                    set tab:
+                </p>
+
+                <ul>
+                    <li>A starting domestic manufacture level of 400 mt in year 1.</li>
+                    <li>A starting import of 100 mt in year 1.</li>
+                </ul>
+
+                <p>
+                    See the <a href="#tutorial-gif-1">gif below</a> for a demonstration of this
+                    section.
+                </p>
+
+                <p id="tutorial-gif-1" class="tutorial-gif-holder">
+                    <img
+                        src="/guide/tutorial_1_1.gif"
+                        alt="Animated GIF of making the first substance."
+                    />
+                </p>
+            </section>
+
+            <section id="first-simulation">
+                <h2>First Simulation</h2>
+
+                <p>
+                    Go ahead and add a simulation called "business as usual" that runs from year 1
+                    to 20. In the results section of the screen, try out a few different
+                    perspectives. For example, take a look at how emissions play out over time or
+                    how the equipment population changes over time.
+                </p>
+
+                <p>
+                    See the <a href="#tutorial-gif-2">gif below</a> for a video demonstration of how
+                    to do this step.
+                </p>
+
+                <p id="tutorial-gif-2" class="tutorial-gif-holder">
+                    <img
+                        src="/guide/tutorial_1_2.gif"
+                        alt="Animated GIF of making the first simulation"
+                    />
+                </p>
+            </section>
+
+            <section id="add-behavior">
+                <h2>Add Behavior</h2>
+
+                <p>
+                    With this simulation in place, let's add some additional beahaviors. Go ahead
+                    and edit HFC-134a and set some changes (use the change tab instead of the set
+                    tab this time):
+                </p>
+
+                <ul>
+                    <li>Increase domestic manufacture by 5% each year in years 2 to 10.</li>
+                    <li>Increase domestic manufacture by 3% each year in years 11 to 20.</li>
+                    <li>Increase imports by 4% for all years.</li>
+                </ul>
+
+                <p>
+                    This schedule will play out year to year based on the source of the substance.
+                </p>
+
+                <p id="tutorial-gif-3" class="tutorial-gif-holder">
+                    <img
+                        src="/guide/tutorial_1_3.gif"
+                        alt="Animated GIF of modifying the first substance"
+                    />
+                </p>
+
+                <p>
+                    See the <a href="#tutorial-gif-3">above gif</a> for a video demonstration of how
+                    to do this step.
+                </p>
+            </section>
+
+            <section id="conclusion">
+                <h2>Conclusion</h2>
+
+                <p>
+                    You built a model! In this first tutorial, we built the smallest possible
+                    simulation. This includes just one application and just one substance under a
+                    "business as usual" scenario without any policy intervention. In the
+                    <a href="/guide/policy_single.html">next tutorial</a>, we will explore adding a
+                    policy intervention.
+                </p>
+
+                <p>
+                    Note that, in this example, we are currently defining consumption through sales
+                    volumes. However, your data may give you insight on the number of equipment
+                    units currently in use instead. You can change from specifiying vollumes in mt
+                    to units of equipment. In this case, the simulation engine will automatically
+                    reverse calculations to determine consumption from equipment instead of
+                    determining equipment by consumption.
+                </p>
+            </section>
+        </main>
+    </body>
+</html>

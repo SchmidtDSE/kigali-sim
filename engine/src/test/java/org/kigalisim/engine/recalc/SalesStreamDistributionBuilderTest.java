@@ -22,9 +22,17 @@ public class SalesStreamDistributionBuilderTest {
     // Test proportional split when both streams have non-zero values
     EngineNumber manufactureSales = new EngineNumber(new BigDecimal("60"), "kg");
     EngineNumber importSales = new EngineNumber(new BigDecimal("40"), "kg");
+    EngineNumber exportSales = new EngineNumber(BigDecimal.ZERO, "kg");
 
-    SalesStreamDistribution distribution = SalesStreamDistributionBuilder.buildDistribution(
-        manufactureSales, importSales, true, true);
+    SalesStreamDistribution distribution = new SalesStreamDistributionBuilder()
+        .setManufactureSales(manufactureSales)
+        .setImportSales(importSales)
+        .setExportSales(exportSales)
+        .setManufactureEnabled(true)
+        .setImportEnabled(true)
+        .setExportEnabled(false)
+        .setIncludeExports(false)
+        .build();
 
     assertEquals(new BigDecimal("0.6"), distribution.getPercentManufacture(),
         "Manufacture percentage should be 0.6 (60/100)");
@@ -37,9 +45,17 @@ public class SalesStreamDistributionBuilderTest {
     // Test 100% to manufacture when only manufacture was enabled
     EngineNumber manufactureSales = new EngineNumber(BigDecimal.ZERO, "kg");
     EngineNumber importSales = new EngineNumber(BigDecimal.ZERO, "kg");
+    EngineNumber exportSales = new EngineNumber(BigDecimal.ZERO, "kg");
 
-    SalesStreamDistribution distribution = SalesStreamDistributionBuilder.buildDistribution(
-        manufactureSales, importSales, true, false);
+    SalesStreamDistribution distribution = new SalesStreamDistributionBuilder()
+        .setManufactureSales(manufactureSales)
+        .setImportSales(importSales)
+        .setExportSales(exportSales)
+        .setManufactureEnabled(true)
+        .setImportEnabled(false)
+        .setExportEnabled(false)
+        .setIncludeExports(false)
+        .build();
 
     assertEquals(BigDecimal.ONE, distribution.getPercentManufacture(),
         "Manufacture percentage should be 1.0 when only manufacture enabled");
@@ -52,9 +68,17 @@ public class SalesStreamDistributionBuilderTest {
     // Test 100% to import when only import was enabled
     EngineNumber manufactureSales = new EngineNumber(BigDecimal.ZERO, "kg");
     EngineNumber importSales = new EngineNumber(BigDecimal.ZERO, "kg");
+    EngineNumber exportSales = new EngineNumber(BigDecimal.ZERO, "kg");
 
-    SalesStreamDistribution distribution = SalesStreamDistributionBuilder.buildDistribution(
-        manufactureSales, importSales, false, true);
+    SalesStreamDistribution distribution = new SalesStreamDistributionBuilder()
+        .setManufactureSales(manufactureSales)
+        .setImportSales(importSales)
+        .setExportSales(exportSales)
+        .setManufactureEnabled(false)
+        .setImportEnabled(true)
+        .setExportEnabled(false)
+        .setIncludeExports(false)
+        .build();
 
     assertEquals(BigDecimal.ZERO, distribution.getPercentManufacture(),
         "Manufacture percentage should be 0.0 when only import enabled");
@@ -67,9 +91,17 @@ public class SalesStreamDistributionBuilderTest {
     // Test 50/50 fallback when both enabled but both have zero values
     EngineNumber manufactureSales = new EngineNumber(BigDecimal.ZERO, "kg");
     EngineNumber importSales = new EngineNumber(BigDecimal.ZERO, "kg");
+    EngineNumber exportSales = new EngineNumber(BigDecimal.ZERO, "kg");
 
-    SalesStreamDistribution distribution = SalesStreamDistributionBuilder.buildDistribution(
-        manufactureSales, importSales, true, true);
+    SalesStreamDistribution distribution = new SalesStreamDistributionBuilder()
+        .setManufactureSales(manufactureSales)
+        .setImportSales(importSales)
+        .setExportSales(exportSales)
+        .setManufactureEnabled(true)
+        .setImportEnabled(true)
+        .setExportEnabled(false)
+        .setIncludeExports(false)
+        .build();
 
     assertEquals(new BigDecimal("0.5"), distribution.getPercentManufacture(),
         "Manufacture percentage should be 0.5 when both enabled with zero values");
@@ -82,9 +114,17 @@ public class SalesStreamDistributionBuilderTest {
     // Test 50/50 fallback when neither was enabled
     EngineNumber manufactureSales = new EngineNumber(BigDecimal.ZERO, "kg");
     EngineNumber importSales = new EngineNumber(BigDecimal.ZERO, "kg");
+    EngineNumber exportSales = new EngineNumber(BigDecimal.ZERO, "kg");
 
-    SalesStreamDistribution distribution = SalesStreamDistributionBuilder.buildDistribution(
-        manufactureSales, importSales, false, false);
+    SalesStreamDistribution distribution = new SalesStreamDistributionBuilder()
+        .setManufactureSales(manufactureSales)
+        .setImportSales(importSales)
+        .setExportSales(exportSales)
+        .setManufactureEnabled(false)
+        .setImportEnabled(false)
+        .setExportEnabled(false)
+        .setIncludeExports(false)
+        .build();
 
     assertEquals(new BigDecimal("0.5"), distribution.getPercentManufacture(),
         "Manufacture percentage should be 0.5 when neither enabled");
@@ -100,8 +140,16 @@ public class SalesStreamDistributionBuilderTest {
     EngineNumber importSales = new EngineNumber(new BigDecimal("70"), "kg");
 
     // Even though only manufacture is enabled, proportional split should be used
-    SalesStreamDistribution distribution = SalesStreamDistributionBuilder.buildDistribution(
-        manufactureSales, importSales, true, false);
+    EngineNumber exportSales = new EngineNumber(BigDecimal.ZERO, "kg");
+    SalesStreamDistribution distribution = new SalesStreamDistributionBuilder()
+        .setManufactureSales(manufactureSales)
+        .setImportSales(importSales)
+        .setExportSales(exportSales)
+        .setManufactureEnabled(true)
+        .setImportEnabled(false)
+        .setExportEnabled(false)
+        .setIncludeExports(false)
+        .build();
 
     assertEquals(new BigDecimal("0.3"), distribution.getPercentManufacture(),
         "Manufacture percentage should be 0.3 (30/100)");
@@ -115,8 +163,16 @@ public class SalesStreamDistributionBuilderTest {
     EngineNumber manufactureSales = new EngineNumber(new BigDecimal("1"), "kg");
     EngineNumber importSales = new EngineNumber(new BigDecimal("2"), "kg");
 
-    SalesStreamDistribution distribution = SalesStreamDistributionBuilder.buildDistribution(
-        manufactureSales, importSales, true, true);
+    EngineNumber exportSales = new EngineNumber(BigDecimal.ZERO, "kg");
+    SalesStreamDistribution distribution = new SalesStreamDistributionBuilder()
+        .setManufactureSales(manufactureSales)
+        .setImportSales(importSales)
+        .setExportSales(exportSales)
+        .setManufactureEnabled(true)
+        .setImportEnabled(true)
+        .setExportEnabled(false)
+        .setIncludeExports(false)
+        .build();
 
     // 1/3 and 2/3 split
     BigDecimal expectedManufacture = new BigDecimal("1").divide(new BigDecimal("3"), 

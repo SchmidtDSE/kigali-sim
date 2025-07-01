@@ -1,0 +1,110 @@
+<html>
+    <head>
+        <title>Model a Single Policy</title>
+        <link href="/guide/guide.css?v=EPOCH" rel="stylesheet" type="text/css" />
+    </head>
+    <body>
+        <div class="skip-link">
+            <a href="#main">Skip to content</a>
+        </div>
+        <header>
+            This tutorial is part of the <a href="/guide">guide</a> for the
+            <a href="/">Kigali Sim</a>.
+        </header>
+        <main id="main">
+            <h1>Model a Single Policy</h1>
+
+            This second tutorial walks through the process of defining a single policy that
+            manipulates a single substance, demonstrating how to create multiple simulations.
+
+            <details>
+                <summary>Contents</summary>
+                <ul>
+                    <li><a href="#motivation">Motivation</a></li>
+                    <li><a href="#first-policy">First Policy</a></li>
+                    <li><a href="#second-simulation">Second Simulation</a></li>
+                    <li><a href="#conclusion">Conclusion</a></li>
+                </ul>
+            </details>
+
+            <section id="motivation">
+                <h2>Motivation</h2>
+
+                <p>
+                    In the <a href="/guide/modeling_single.html">previous tutorial</a>, we built a
+                    "business as usual" scenario describing a single substance and application
+                    without policy intervention. In this next tutorial, we will simulate a recycling
+                    program which captures and reuses refrigerant after a "yield loss" which is
+                    substance lost during recovery.
+                </p>
+            </section>
+
+            <section id="first-policy">
+                <h2>First Policy</h2>
+
+                <p>
+                    Let's try this sample policy which recycles HFC-134a. Create a new policy called
+                    "com recycling" which will be short for commercial recycling program. Let's have
+                    10% recovery with 90% reuse for years 2 and onwards.
+                </p>
+
+                <p>
+                    See the <a href="#tutorial-gif-1">gif below</a> for a video demonstration of how
+                    to do this step.
+                </p>
+
+                <p id="tutorial-gif-1" class="tutorial-gif-holder">
+                    <img
+                        src="/guide/tutorial_2_1.gif"
+                        alt="Animated GIF of adding the first policy"
+                    />
+                </p>
+            </section>
+
+            <section id="second-simulation">
+                <h2>Second Simulation</h2>
+
+                <p>
+                    Now, add another simulation called "recycling" which includes the commercial
+                    recycling policy. This can be done by selecting the recycling policy checkbox.
+                    Once again, please have this run from year 1 to 20.
+                </p>
+                <p>
+                    As you review the updated results, notice that the second simulation becomes
+                    visible in the visualization of the results. In addition to comparing the two
+                    outcomes, you can also use the radio buttons to zoom into just one simulation or
+                    the other. Note that recycling is an option under consumption as a source
+                    distinct to imports and domestic (virgin) manufacturing.
+                </p>
+
+                <p>
+                    See the <a href="#tutorial-gif-2">gif below</a> for a video demonstration of how
+                    to do this step.
+                </p>
+
+                <p id="tutorial-gif-2" class="tutorial-gif-holder">
+                    <img
+                        src="/guide/tutorial_2_2.gif"
+                        alt="Animated GIF of adding the second simulation"
+                    />
+                </p>
+            </section>
+
+            <section id="conclusion">
+                <h2>Conclusion</h2>
+
+                <p>
+                    In this second tutorial, we explored adding a policy into our simulations. We
+                    also started to see how we can use this tool to compare different scenarios. In
+                    the <a href="/guide/modeling_multiple.html">next tutorial</a>, we will expand
+                    into multiple substances.
+                </p>
+
+                <p>
+                    Note that, while this sample policy only has one step, note that this schedule
+                    can be used to model different phases of a possible intervention.
+                </p>
+            </section>
+        </main>
+    </body>
+</html>

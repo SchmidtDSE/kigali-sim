@@ -35,7 +35,9 @@ public class EngineResult {
   private final EngineNumber rechargeEmissions;
   private final EngineNumber eolEmissions;
   private final EngineNumber energyConsumption;
-  private final ImportSupplement importSupplement;
+  private final EngineNumber exportValue;
+  private final EngineNumber exportConsumptionValue;
+  private final TradeSupplement tradeSupplement;
 
   /**
    * Constructor for creating an EngineResult instance.
@@ -56,7 +58,9 @@ public class EngineResult {
    * @param rechargeEmissions The greenhouse gas emissions from recharge activities
    * @param eolEmissions The greenhouse gas emissions from end-of-life equipment
    * @param energyConsumption The energy consumption value
-   * @param importSupplement The supplemental import data needed for attribution
+   * @param exportValue The value related to exports in volume like kg
+   * @param exportConsumptionValue The export consumption value in tCO2e or equivalent
+   * @param tradeSupplement The supplemental trade data needed for attribution
    */
   public EngineResult(String application, String substance, int year, String scenarioName, int trialNumber,
                      EngineNumber manufactureValue, EngineNumber importValue,
@@ -64,7 +68,8 @@ public class EngineResult {
                      EngineNumber importConsumptionValue, EngineNumber recycleConsumptionValue,
                      EngineNumber populationValue, EngineNumber populationNew,
                      EngineNumber rechargeEmissions, EngineNumber eolEmissions,
-                     EngineNumber energyConsumption, ImportSupplement importSupplement) {
+                     EngineNumber energyConsumption, EngineNumber exportValue,
+                     EngineNumber exportConsumptionValue, TradeSupplement tradeSupplement) {
     this.application = application;
     this.substance = substance;
     this.year = year;
@@ -81,7 +86,9 @@ public class EngineResult {
     this.rechargeEmissions = rechargeEmissions;
     this.eolEmissions = eolEmissions;
     this.energyConsumption = energyConsumption;
-    this.importSupplement = importSupplement;
+    this.exportValue = exportValue;
+    this.exportConsumptionValue = exportConsumptionValue;
+    this.tradeSupplement = tradeSupplement;
   }
 
   /**
@@ -261,12 +268,30 @@ public class EngineResult {
   }
 
   /**
-   * Get the import supplement data.
+   * Get the export value.
    *
-   * @return The import supplement containing attribution data
+   * @return The export value in volume like kg
    */
-  public ImportSupplement getImportSupplement() {
-    return importSupplement;
+  public EngineNumber getExport() {
+    return exportValue;
+  }
+
+  /**
+   * Get the export consumption value.
+   *
+   * @return The export consumption value in tCO2e or equivalent
+   */
+  public EngineNumber getExportConsumption() {
+    return exportConsumptionValue;
+  }
+
+  /**
+   * Get the trade supplement data.
+   *
+   * @return The trade supplement containing attribution data
+   */
+  public TradeSupplement getTradeSupplement() {
+    return tradeSupplement;
   }
 
   /**

@@ -35,7 +35,9 @@ public class EngineResultBuilder {
   private Optional<EngineNumber> rechargeEmissions;
   private Optional<EngineNumber> eolEmissions;
   private Optional<EngineNumber> energyConsumption;
-  private Optional<ImportSupplement> importSupplement;
+  private Optional<EngineNumber> exportValue;
+  private Optional<EngineNumber> exportConsumptionValue;
+  private Optional<TradeSupplement> tradeSupplement;
 
   /**
    * Create builder without any values initialized.
@@ -57,7 +59,9 @@ public class EngineResultBuilder {
     rechargeEmissions = Optional.empty();
     eolEmissions = Optional.empty();
     energyConsumption = Optional.empty();
-    importSupplement = Optional.empty();
+    exportValue = Optional.empty();
+    exportConsumptionValue = Optional.empty();
+    tradeSupplement = Optional.empty();
   }
 
   /**
@@ -238,13 +242,35 @@ public class EngineResultBuilder {
   }
 
   /**
-   * Set the import supplement data.
+   * Set the export value.
    *
-   * @param importSupplement Supplemental import information
+   * @param exportValue The export value in volume like kg
    * @return This builder for method chaining
    */
-  public EngineResultBuilder setImportSupplement(ImportSupplement importSupplement) {
-    this.importSupplement = Optional.of(importSupplement);
+  public EngineResultBuilder setExportValue(EngineNumber exportValue) {
+    this.exportValue = Optional.of(exportValue);
+    return this;
+  }
+
+  /**
+   * Set the export consumption value.
+   *
+   * @param exportConsumptionValue The export consumption value in tCO2e or equivalent
+   * @return This builder for method chaining
+   */
+  public EngineResultBuilder setExportConsumptionValue(EngineNumber exportConsumptionValue) {
+    this.exportConsumptionValue = Optional.of(exportConsumptionValue);
+    return this;
+  }
+
+  /**
+   * Set the trade supplement data.
+   *
+   * @param tradeSupplement Supplemental trade information
+   * @return This builder for method chaining
+   */
+  public EngineResultBuilder setTradeSupplement(TradeSupplement tradeSupplement) {
+    this.tradeSupplement = Optional.of(tradeSupplement);
     return this;
   }
 
@@ -273,7 +299,9 @@ public class EngineResultBuilder {
         rechargeEmissions.get(),
         eolEmissions.get(),
         energyConsumption.get(),
-        importSupplement.get()
+        exportValue.get(),
+        exportConsumptionValue.get(),
+        tradeSupplement.get()
     );
   }
 
@@ -299,7 +327,9 @@ public class EngineResultBuilder {
     checkValid(rechargeEmissions, "rechargeEmissions");
     checkValid(eolEmissions, "eolEmissions");
     checkValid(energyConsumption, "energyConsumption");
-    checkValid(importSupplement, "importSupplement");
+    checkValid(exportValue, "exportValue");
+    checkValid(exportConsumptionValue, "exportConsumptionValue");
+    checkValid(tradeSupplement, "tradeSupplement");
   }
 
   /**

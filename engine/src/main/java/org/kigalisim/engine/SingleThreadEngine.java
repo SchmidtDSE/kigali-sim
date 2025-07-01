@@ -846,7 +846,7 @@ public class SingleThreadEngine implements Engine {
           String application = substanceId.getApplication();
           String substance = substanceId.getSubstance();
           int year = currentYear;
-          return serializer.getResult(application, substance, year);
+          return serializer.getResult(new SimpleUseKey(application, substance), year);
         })
         .collect(Collectors.toList());
   }

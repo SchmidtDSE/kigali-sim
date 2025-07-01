@@ -1,5 +1,13 @@
-# Montreal Protocol Policy Simulation Tool
+# Kigali Sim
 Open source web-based tool and simulation engine capable of simulations related to substances, applications, and policies relevant to the Montreal Protocol. It may potentially be useful at the discretion of relevant stakeholders as an optional step in informing proposals.
+
+## Project Structure
+
+This repository is organized into three main components:
+
+- **`docs/`**: Documentation including technical specifications and user guides
+- **`engine/`**: Java-based simulation engine that can run standalone or in-browser via WASM
+- **`editor/`**: Web-based editor and analysis tool interface
 
 <br>
 <br>
@@ -16,7 +24,7 @@ Unofficial and completely voluntary, this privacy-respecting simulation platform
 ## Usage
 To use the public hosted version of the tool:
 
-1. Open the application in your web browser (https://mlf-policy-explorer.org).
+1. Open the application in your web browser (https://kigalisim.org).
 2. Use either the Basic (UI-based) or Advanced (code-based) editor to define your simulation
 3. Click Run to execute the simulation
 4. View results in the visualization panel, which shows emissions metrics, consumption / sales data, and equipment population.
@@ -33,23 +41,36 @@ When developing on the tool, please try to ensure all automated checks pass, dev
 
 Various automated tests and checks are available to help those developing on the tool and engine.
 
-In the engine (`cd engine`):
+#### Java Engine Development
 
- - `./gradlew test`: Run unit tests for the engine.
- - `./gradlew checkstyleMain`: Lint production Java code built into WASM engine.
- - `./gradlew checkstyleTest`: Lint test Java code.
+In the engine directory (`cd engine`):
 
-In the project root:
+ - `./gradlew test`: Run unit tests for the engine
+ - `./gradlew checkstyleMain`: Lint production Java code built into WASM engine
+ - `./gradlew checkstyleTest`: Lint test Java code
 
- - `npx grunt`: Runs front-end unit tests and end-to-end integration tests.
- - `npx eslint ./js/*.js`: Lint production JavaScript.
- - `npx eslint ./test/*.js`: Lint test JavaScript.
+#### JavaScript Editor Development
+
+In the editor directory (`cd editor`):
+
+ - `npx grunt`: Runs front-end unit tests and end-to-end integration tests
+ - `npx eslint ./js/*.js`: Lint production JavaScript
+ - `npx eslint ./test/*.js`: Lint test JavaScript
+
+#### Building and Deploying WASM Engine
+
+To update the web editor with changes from the Java engine:
+
+1. Build the engine WASM output: `cd engine && ./gradlew war`
+2. Update WASM files in editor: `cd editor && bash support/update_wasm.sh`
+
+This extracts the compiled TeaVM/WASM output from the engine build and places it in the editor's `wasm/` directory.
 
 ### Development Standards
 While contributing, please maintain existing styles defined in `.prettierrc` and `.eslintrc.yml`. Where ambiguous, follow [Google JavaScript / TypeScript Style Guide](https://google.github.io/styleguide/tsguide.html) conventions. Unit tests through QUnit are encouraged but a specific test coverage target is not specified. Document code using JSDoc comments (required for all public members). Note that Replit AI was used to help with documentation and small trivial code changes but, for other purposes, please disclose use of generative AI before merging pull requests. We generally require that AI not used for architecture or large operations. At this time, we are not considering a change to TypeScript.
 
 ### Deployment
-This project can be deployed using Github. Simply push your changes to the repository `deploy` branch. The deployment process is automated through GitHub Actions as defined in `.github/workflows/build.yaml`.
+This project can be deployed using Github. Simply push your changes to the repository `deploy` branch. The deployment process is automated through GitHub Actions as defined in `.github/workflows/build.yaml`. The `main` branch will push to a preview (staging) URL at https://preview.kigalisim.org.
 
 <br>
 
@@ -87,17 +108,18 @@ The dev container includes:
 
 All the automated checks described below work in the dev container environment:
 
-- JavaScript linting: `npx eslint ./js/*.js` and `npx eslint ./test/*.js`
-- JavaScript testing: `npx grunt`
+- JavaScript linting: `cd editor && npx eslint ./js/*.js` and `cd editor && npx eslint ./test/*.js`
+- JavaScript testing: `cd editor && npx grunt`
 - Java testing: `cd engine && ./gradlew test`
 - Java linting: `cd engine && ./gradlew checkstyleMain` and `cd engine && ./gradlew checkstyleTest`
 
 ### Local Setup
 To run this system locally, please complete the following steps:
 
-1. Install dependencies:
+1. Navigate to the editor directory and install dependencies:
 
 ```bash
+cd editor
 npm install
 ```
 
@@ -138,6 +160,8 @@ We thank the following Open Source libraries:
 - [Public Sans](https://public-sans.digital.gov/) font under [OFL-1.1](https://github.com/uswds/public-sans/blob/master/LICENSE.md).
 - [SVG Spinners](https://github.com/n3r4zzurr0/svg-spinners?tab=readme-ov-file) under [MIT](https://github.com/n3r4zzurr0/svg-spinners?tab=readme-ov-file)
 - [Tabby](https://github.com/cferdinandi/tabby) for tab interface management under [MIT](https://github.com/cferdinandi/tabby/blob/master/LICENSE.md).
+- [Global Plastics AI Policy Tool](https://global-plastics-tool.org/) under [BSD-3-Clause](https://github.com/SchmidtDSE/plastics-prototype/blob/main/LICENSE.md).
+- [Josh](https://joshsim.org/) under [BSD-3-Clause](https://github.com/SchmidtDSE/josh/blob/main/LICENSE.md).
 
 <br>
 

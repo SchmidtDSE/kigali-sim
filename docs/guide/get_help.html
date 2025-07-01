@@ -1,0 +1,89 @@
+<html>
+    <head>
+        <title>Get Help</title>
+        <link href="/guide/guide.css?v=EPOCH" rel="stylesheet" type="text/css" />
+    </head>
+    <body>
+        <div class="skip-link">
+            <a href="#main">Skip to content</a>
+        </div>
+        <header>
+            This page is part of the
+            <a href="/">Kigali Sim</a>.
+        </header>
+        <main id="main">
+            <h1>Get Help</h1>
+
+            <div class="aside">
+                <p>
+                    <strong>We are here to help.</strong> If you are comfortable, this web page
+                    allows you to share your simulation with us. Using this feature can help us more
+                    quckily diagnose any issues or otherwise assist you.
+                </p>
+
+                <p>
+                    <strong>Thank you.</strong> Your time is valuable. Thank you for using this open
+                    source tool in your work. We appreciate your sharing your experiences with us so
+                    that we may further improve this software. Your communication helps ensure that
+                    the software is not only better for you but the broader community of the
+                    software's users.
+                </p>
+
+                <p>
+                    <strong>We will keep your communication private.</strong> Any information you
+                    provide will be held in confidence. After clicking submit, this information will
+                    be forwarded to our team at UC Berkeley. See
+                    <a href="/privacy.html">privacy policy</a> for additional information.
+                </p>
+
+                <p>
+                    <strong>We will write back as soon as we can.</strong> Our team is generally
+                    based in California though team members do travel for work. Please expect a
+                    reply in 0 to 3 business days. If you don't want to use this feature, you can
+                    still get help by writing to us at
+                    <a href="mailto:hello@mlf-policy-explorer.org">hello@mlf-policy-explorer.org</a
+                    >.
+                </p>
+            </div>
+
+            <div class="form-input">
+                <div><label for="email">Email address so we may contact you:</label></div>
+                <div><input type="email" id="email" required /></div>
+            </div>
+
+            <div class="form-input">
+                <div><label for="description">What is happening or how can we help?</label></div>
+                <div>
+                    <textarea id="description" rows="5" cols="33"> </textarea>
+                </div>
+            </div>
+
+            <div class="form-input hidden">
+                <div><label for="simulation">Simulation</label></div>
+                <div>
+                    <textarea id="simulation" rows="5" cols="33"> </textarea>
+                </div>
+            </div>
+
+            <div class="form-input">
+                <a href="#" class="primary" id="send-button">Send</a>
+            </div>
+
+            <div class="status-display" id="sending-message">
+                <div class="title">Sending message:</div>
+                <div>
+                    <img src="/style/90-ring.svg" class="loading" alt="Loading indicator" /> Sending
+                    message please wait...
+                </div>
+            </div>
+
+            <div class="status-display" id="sent-message">
+                <div class="title">Message sent:</div>
+                <div>We will reach out soon by email with more details.</div>
+            </div>
+        </main>
+    </body>
+
+    
+    <script src="/guide/get_help.js"></script>
+</html>

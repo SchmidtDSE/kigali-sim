@@ -148,4 +148,55 @@ public class KigaliSimFacadeTest {
     // The method should complete successfully even if no results are collected
     // This tests that the infrastructure works
   }
+
+  /**
+   * Test that convertResultsToCsv outputs individual metrics without 'all' aggregations.
+   */
+  @Test
+  public void testConvertResultsToCsvIndividualMetrics(@TempDir Path tempDir) throws IOException {
+    // Use a comprehensive example file
+    String examplePath = "../examples/minimal_interpreter.qta";
+    File exampleFile = new File(examplePath);
+    assertTrue(exampleFile.exists(), "Example file should exist: " + examplePath);
+
+    // Parse and interpret the example file
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(exampleFile.getPath());
+    assertNotNull(program, "Program should not be null");
+
+    // Run scenario and collect results
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, "business as usual");
+    List<EngineResult> resultsList = results.collect(java.util.stream.Collectors.toList());
+
+    // Convert to CSV
+    String csvOutput = KigaliSimFacade.convertResultsToCsv(resultsList);
+    assertNotNull(csvOutput, "CSV output should not be null");
+
+    // Verify CSV header contains individual metrics only
+    String[] lines = csvOutput.split("\n");
+    assertTrue(lines.length > 0, "CSV should have at least a header line");
+    
+    String header = lines[0];
+    
+    // Verify individual metrics are present
+    assertTrue(header.contains("manufacture"), "CSV should contain manufacture column");
+    assertTrue(header.contains("import"), "CSV should contain import column");
+    assertTrue(header.contains("recycle"), "CSV should contain recycle column");
+    assertTrue(header.contains("domesticConsumption"), "CSV should contain domesticConsumption column");
+    assertTrue(header.contains("importConsumption"), "CSV should contain importConsumption column");
+    assertTrue(header.contains("recycleConsumption"), "CSV should contain recycleConsumption column");
+    assertTrue(header.contains("rechargeEmissions"), "CSV should contain rechargeEmissions column");
+    assertTrue(header.contains("eolEmissions"), "CSV should contain eolEmissions column");
+    
+    // Verify 'all' aggregated columns are NOT present (they shouldn't exist in Java)
+    assertFalse(header.contains("allSales"), "CSV should not contain allSales column");
+    assertFalse(header.contains("totalSales"), "CSV should not contain totalSales column");
+    assertFalse(header.contains("allEmissions"), "CSV should not contain allEmissions column");
+    assertFalse(header.contains("totalEmissions"), "CSV should not contain totalEmissions column");
+    assertFalse(header.contains("allConsumption"), "CSV should not contain allConsumption column");
+    
+    // Verify proper CSV structure for non-empty results
+    if (resultsList.size() > 0) {
+      assertTrue(lines.length > 1, "CSV should have data rows for non-empty results");
+    }
+  }
 }

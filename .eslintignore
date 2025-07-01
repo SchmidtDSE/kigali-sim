@@ -1,8 +1,0 @@
-# Minified files
-*.min.js
-
-# Generated files
-intermediate/
-
-# Node modules
-node_modules/
