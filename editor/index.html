@@ -15,8 +15,8 @@
       property="og:description"
       content="Interactive tool for simulating Montreal Protocol and Kigali Amendment policy interventions. Explore impacts on emissions, consumption, and equipment across multiple scenarios."
     />
-    <meta property="og:url" content="https://kigali.mlf-policy-explorer.org" />
-    <meta property="og:image" content="https://kigali.mlf-policy-explorer.org/style/card.png" />
+    <meta property="og:url" content="https://kigalisim.org" />
+    <meta property="og:image" content="https://kigalisim.org/style/card.png" />
 
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="Kigali Sim - Montreal Protocol Policy Simulator" />
@@ -24,7 +24,7 @@
       name="twitter:description"
       content="Interactive tool for simulating Montreal Protocol and Kigali Amendment policy interventions. Explore impacts on emissions, consumption, and equipment across multiple scenarios."
     />
-    <meta name="twitter:image" content="https://kigali.mlf-policy-explorer.org/style/card.png" />
+    <meta name="twitter:image" content="https://kigalisim.org/style/card.png" />
 
     <meta
       name="description"
@@ -117,15 +117,15 @@
 
     <main id="kigali-sim-app">
       <section id="loading">
-        <h2>Welcome to Kigali Sim</h2>
+	<h2><span aria-hidden="true">👋</span> Welcome to Kigali Sim</h2>
 
         <p>
-          Kigali Sim is an interactive, open source tool that simulates the long term outcomes of
+          Kigali Sim is an interactive, open source tool that simulates the possible outcomes of
           different policy interventions related to the Montreal Protocol and Kigali Amendment. It
-          provides an easy to use interface where you can enter your country-level modeling data,
-          consumption levels, and policies under consideration to quickly simulate potential impacts
-          on emissions, consumption, and equipment across multiple scenarios. This can be used to
-          explore many different substances like HFCs and sectors like commercial refrigeration.
+          provides an easy to use interface where you can enter your country-level modeling data and
+	  policies under consideration to quickly simulate potential impacts on emissions,
+	  consumption, and equipment across multiple scenarios. This can be used to explore many
+	  different substances like HFCs and sectors like commercial refrigeration.
         </p>
 
         <p>
@@ -137,12 +137,20 @@
         </p>
 
         <p>
-          We want to work with you! If you have any questions, suggestions, or requests, or just
-          want to talk to us about Kigali Sim, you can reach us at hello@mlf-policy-explorer.org.
+          We want to help and hear from you! If you have any questions, suggestions, requests, or
+	  just want to talk to us about Kigali Sim, you can reach us at
+	  hello@mlf-policy-explorer.org.
         </p>
 
         <div id="initial-loading-indicator">
           <img src="/style/90-ring.svg" alt="Loading indicator" /> Loading please wait...
+        </div>
+
+        <div id="continue-buttons-panel" class="buttons-panel">
+          <a href="#" id="continue-button" class="primary">Continue</a>
+          <a href="#" id="continue-no-show-button" class="secondary"
+            >Continue + Skip to App Next Time</a
+          >
         </div>
       </section>
 

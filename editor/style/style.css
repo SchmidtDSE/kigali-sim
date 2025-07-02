@@ -3,7 +3,9 @@
   src: url("/third_party/publicsans/fonts/otf/PublicSans-Regular.otf") format("opentype");
 }
 
-.skip-link {
+a.skip-link,
+a.skip-link:link,
+a.skip-link:visited {
   position: absolute;
   left: -9999px;
   z-index: 999;
@@ -13,10 +15,13 @@
   text-decoration: none;
 }
 
-.skip-link:focus {
+a.skip-link:focus,
+a.skip-link:hover,
+a.skip-link:active {
   left: 10%;
   transform: none;
   top: 10px;
+  color: #FFFFFF;
 }
 
 a,
@@ -128,15 +133,30 @@ main {
 
 #loading {
   background-color: white;
-  font-size: 20px;
-  text-align: center;
+  font-size: 15px;
+  text-align: left;
   padding: 10px;
   border-radius: 5px;
   border: 1px solid #E0E0E0;
 }
 
+#loading h2 {
+  font-size: 25px;
+}
+
 #loading img {
   height: 20px;
+}
+
+#continue-buttons-panel {
+  display: none;
+  margin-top: 30px;
+  padding-top: 20px;
+  border-top: 1px dotted #C0C0C0;
+}
+
+#initial-loading-indicator {
+  font-size: 20px;
 }
 
 #main-holder {
@@ -422,10 +442,14 @@ main {
 
 .buttons-panel {
   margin-top: 20px;
+  line-height: 3;
 }
 
 .buttons-panel #loading {
   display: none;
+  margin-top: 30px;
+  padding-top: 20px;
+  border-top: 1px dotted #C0C0C0;
 }
 
 .buttons-panel a.primary,
@@ -723,7 +747,7 @@ main {
 }
 
 @media (min-width: 1000px) {
-  main {
+  #main {
     display: grid;
     grid-template-columns: 50% 50%;
   }
