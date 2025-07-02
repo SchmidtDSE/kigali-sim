@@ -12,6 +12,7 @@ import {UiTranslatorCompiler} from "ui_translator";
 import {WasmBackend, WasmLayer, BackendResult} from "wasm_backend";
 
 const HELP_TEXT = "Would you like our help in resolving this issue?";
+const INTRODUCTION_PREFERENCE_KEY = "hideIntroduction";
 
 const WHITESPACE_REGEX = new RegExp("^\\s*$");
 const NEW_FILE_MSG = [
@@ -536,9 +537,9 @@ class MainPresenter {
  */
 class IntroductionPresenter {
   constructor() {
-    this.PREFERENCE_KEY = "hideIntroduction";
-    this.loadingPanel = document.getElementById("loading");
-    this.mainHolder = document.getElementById("main-holder");
+    const self = this;
+    self._loadingPanel = document.getElementById("loading");
+    self._mainHolder = document.getElementById("main-holder");
   }
 
   /**
@@ -546,14 +547,15 @@ class IntroductionPresenter {
    * @return {Promise} Promise that resolves when the user continues.
    */
   async initialize() {
-    const hideIntroduction = localStorage.getItem(this.PREFERENCE_KEY) === "true";
+    const self = this;
+    const hideIntroduction = localStorage.getItem(INTRODUCTION_PREFERENCE_KEY) === "true";
 
     if (hideIntroduction) {
       return Promise.resolve();
     }
 
     return new Promise((resolve) => {
-      this.setupIntroductionUI(resolve);
+      self._setupIntroductionUI(resolve);
     });
   }
 
@@ -561,49 +563,39 @@ class IntroductionPresenter {
    * Set up the introduction UI with buttons.
    * @param {Function} resolve - Callback to resolve the promise when user continues.
    */
-  setupIntroductionUI(resolve) {
+  _setupIntroductionUI(resolve) {
+    const self = this;
     const loadingIndicator = document.getElementById("initial-loading-indicator");
+    const buttonPanel = document.getElementById("continue-buttons-panel");
+    const continueButton = document.getElementById("continue-button");
+    const dontShowAgainButton = document.getElementById("continue-no-show-button");
 
-    const buttonContainer = document.createElement("div");
-    buttonContainer.className = "dialog-buttons";
-    buttonContainer.style.marginTop = "20px";
-
-    const continueButton = document.createElement("a");
-    continueButton.href = "#";
-    continueButton.className = "primary";
-    continueButton.textContent = "Continue";
     continueButton.onclick = (e) => {
       e.preventDefault();
       loadingIndicator.style.display = "block";
-      buttonContainer.style.display = "none";
+      buttonPanel.style.display = "none";
       resolve();
     };
 
-    const dontShowAgainButton = document.createElement("a");
-    dontShowAgainButton.href = "#";
-    dontShowAgainButton.className = "secondary";
-    dontShowAgainButton.textContent = "Continue and don't show again";
     dontShowAgainButton.onclick = (e) => {
       e.preventDefault();
-      localStorage.setItem(this.PREFERENCE_KEY, "true");
+      localStorage.setItem(INTRODUCTION_PREFERENCE_KEY, "true");
       loadingIndicator.style.display = "block";
-      buttonContainer.style.display = "none";
+      buttonPanel.style.display = "none";
       resolve();
     };
 
-    buttonContainer.appendChild(continueButton);
-    buttonContainer.appendChild(dontShowAgainButton);
-
     loadingIndicator.style.display = "none";
-    this.loadingPanel.appendChild(buttonContainer);
+    buttonPanel.style.display = "block";
   }
 
   /**
    * Show the main application content.
    */
-  showMainContent() {
-    this.loadingPanel.style.display = "none";
-    this.mainHolder.style.display = "block";
+  _showMainContent() {
+    const self = this;
+    self._loadingPanel.style.display = "none";
+    self._mainHolder.style.display = "block";
   }
 }
 
@@ -615,7 +607,7 @@ function main() {
 
   const showApp = async () => {
     await introPresenter.initialize();
-    introPresenter.showMainContent();
+    introPresenter._showMainContent();
   };
 
   const onLoad = () => {
