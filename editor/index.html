@@ -1586,212 +1586,503 @@
       </div>
     </script>
 
-    <script type="text/template" id="workshop-sample">
-      start default
+    <script type="text/template" id="workshop-sample">start default
 
-        define application "dom refrig"
+  define application "Domestic Refrigeration"
 
-          uses substance "HFC-134a"
-            equals 1000 tCO2e / mt
-            equals 100 kwh / unit
+    uses substance "HFC-134a"
+      set priorEquipment to 1000000 units during year beginning
+      initial charge with 0.15 kg / unit for sales
+      retire 5 % each year
+      recharge 10 % each year with 0.15 kg / unit
+      set manufacture to 30000 units / year during year beginning
+      change equipment by +5 % each year during years 2026 to 2030
+      change equipment by +3 % each year during years 2031 to 2035
+      equals 1430 tCO2e / kg
+    end substance
 
-            # Domestic production
-            initial charge with 0.5 kg / unit for manufacture
-            set manufacture to 400 mt during year 1
-            change manufacture by +5 % each year during years 2 to 4
-            change manufacture by +4 % each year during years 5 to 7
-            change manufacture by +3 % each year during years 8 to 10
-            change manufacture by +2 % each year during years 11 to 13
-            change manufacture by +1 % each year during years 14 to onwards
+    uses substance "R-404A"
+      initial charge with 0.08 kg / unit for sales
+      retire 5 % each year
+      recharge 10 % each year with 0.08 kg / unit
+      equals 3921.6 tCO2e / kg
+    end substance
 
-            # Trade
-            initial charge with 0.25 kg / unit for import
-            set import to 100 mt during year 1
-            change import by +5 % each year during years 2 to 4
-            change import by +4 % each year during years 5 to 7
-            change import by +3 % each year during years 8 to 10
-            change import by +2 % each year during years 11 to 13
-            change import by +1 % each year during years 14 to onwards
+  end application
 
-            # Service
-            retire 5 % each year
-            recharge 10 % each year with 0.1 kg / unit
+  define application "Commercial Refrigeration"
 
-            # Historic units already deployed
-            set priorEquipment to (get equipment as units * 5) units during year 1
-          end substance
+    uses substance "HFC-134a"
+      set priorEquipment to 200000 units during year beginning
+      initial charge with 0.60 kg / unit for sales
+      retire 10 % each year
+      recharge 30 % each year with 0.60 kg / unit
+      set import to 2667 units / year during year beginning
+      change equipment by +8 % each year during years 2026 to 2030
+      change equipment by +5 % each year during years 2031 to 2035
+      equals 1430 tCO2e / kg
+    end substance
 
-          uses substance "R-600a"
-            equals 50 tCO2e / mt
-            equals 50 kwh / unit
+    uses substance "R-404A"
+      set priorEquipment to 90000 units during year beginning
+      initial charge with 10.00 kg / unit for sales
+      retire 10 % each year
+      recharge 30 % each year with 10.00 kg / unit
+      set import to 200 units / year during year beginning
+      change equipment by +8 % each year during years 2026 to 2030
+      change equipment by +5 % each year during years 2031 to 2035
+      equals 3921.6 tCO2e / kg
+    end substance
 
-            # Domestic production
-            initial charge with 0.1 kg / unit for manufacture
-            set manufacture to 100 mt during year 1
-            change manufacture by +2 % each year
+  end application
 
-            # Trade
-            initial charge with 0.05 kg / unit for import
-            set import to 1 mt during year 1
-            change import by +2 % each year
+  define application "MAC"
 
-            # Service
-            retire 5 % each year
-            recharge 10 % each year with 0.05 kg / unit
+    uses substance "HFC-134a"
+      set priorEquipment to 500000 units during year beginning
+      initial charge with 1.00 kg / unit for sales
+      retire 5 % each year
+      recharge 20 % each year with 1.00 kg / unit
+      set import to 6667 units / year during year beginning
+      equals 1430 tCO2e / kg
+    end substance
 
-            # Historic units already deployed
-            set priorEquipment to (get equipment as units * 5) units during year 1
-          end substance
+    uses substance "R-404A"
+      initial charge with 0.50 kg / unit for sales
+      retire 5 % each year
+      recharge 20 % each year with 0.50 kg / unit
+      equals 3921.6 tCO2e / kg
+    end substance
 
-        end application
+  end application
 
-        define application "com refrig"
+  define application "Chiller"
 
-          uses substance "HFC-134a"
-            equals 1000 tCO2e / mt
-            equals 100 kwh / unit
+    uses substance "HFC-134a"
+      set priorEquipment to 50000 units during year beginning
+      initial charge with 5.00 kg / unit for sales
+      retire 5 % each year
+      recharge 25 % each year with 5.00 kg / unit
+      set import to 667 units / year during year beginning
+      equals 1430 tCO2e / kg
+    end substance
 
-            # Domestic production
-            initial charge with 0.5 kg / unit for manufacture
-            set manufacture to 900 mt during year 1
-            change manufacture by +5 % each year during years 2 to 4
-            change manufacture by +3 % each year during years 5 to 7
-            change manufacture by +1 % each year during years 8 to 10
-            change manufacture by -1 % each year during years 11 to 13
-            change manufacture by -3 % each year during years 14 to onwards
+    uses substance "R-404A"
+      initial charge with 2.50 kg / unit for sales
+      retire 5 % each year
+      recharge 25 % each year with 2.50 kg / unit
+      equals 3921.6 tCO2e / kg
+    end substance
 
-            # Trade
-            initial charge with 0.25 kg / unit for import
-            set import to 100 mt during year 1
-            change import by +5 % each year during years 2 to 4
-            change import by +3 % each year during years 5 to 7
-            change import by +1 % each year during years 8 to 10
-            change import by -1 % each year during years 11 to 13
-            change import by -3 % each year during years 14 to onwards
+  end application
 
-            # Service
-            retire 5 % each year
-            recharge 10 % each year with 0.1 kg / unit
+  define application "Transport Refrigeration"
 
-            # Historic units already deployed
-            set priorEquipment to (get equipment as units * 5) units during year 1
-          end substance
+    uses substance "R-404A"
+      set priorEquipment to 20000 units during year beginning
+      initial charge with 2.00 kg / unit for sales
+      retire 5 % each year
+      recharge 10 % each year with 2.00 kg / unit
+      set import to 900 units / year during year beginning
+      equals 3921.6 tCO2e / kg
+    end substance
 
-          uses substance "R-600a"
-            equals 50 tCO2e / mt
-            equals 50 kwh / unit
+  end application
 
-            # Domestic production
-            initial charge with 0.1 kg / unit for manufacture
-            set manufacture to 10 mt during year 1
-            change manufacture by +8 % each year
+  define application "Domestic AC"
 
-            # Trade
-            initial charge with 0.05 kg / unit for import
-            set import to 10 mt during year 1
-            change import by +8 % each year
+    uses substance "HFC-32"
+      set priorEquipment to 20000 units during year beginning
+      initial charge with 0.85 kg / unit for sales
+      retire 5 % each year
+      recharge 10 % each year with 0.85 kg / unit
+      set import to 800 units / year during year beginning
+      change equipment by +7 % each year during years 2026 to 2035
+      equals 675 tCO2e / kg
+    end substance
 
-            # Service
-            retire 1 % each year
-            recharge 10 % each year with 0.1 kg / unit
+    uses substance "R-410A"
+      set priorEquipment to 400000 units during year beginning
+      initial charge with 1.00 kg / unit for sales
+      retire 5 % each year
+      recharge 10 % each year with 1.00 kg / unit
+      set import to 100 units / year during year beginning
+      set manufacture to 40000 units / year during year beginning
+      equals 2087.5 tCO2e / kg
+    end substance
 
-            # Historic units already deployed
-            set priorEquipment to (get equipment as units * 5) units during year 1
-          end substance
+  end application
 
-          uses substance "R-404A"
-            equals 200 tCO2e / mt
-            equals 50 kwh / unit
+  define application "Commercial AC"
 
-            # Domestic production
-            initial charge with 0.5 kg / unit for manufacture
-            set manufacture to 100 mt during year 1
-            change manufacture by -1 % each year
+    uses substance "HFC-32"
+      set priorEquipment to 5000 units during year beginning
+      initial charge with 4.00 kg / unit for sales
+      retire 5 % each year
+      recharge 10 % each year with 4.00 kg / unit
+      set import to 200 units / year during year beginning
+      change equipment by +7 % each year during years 2026 to 2035
+      equals 675 tCO2e / kg
+    end substance
 
-            # Trade
-            initial charge with 0.5 kg / unit for import
-            set import to 50 mt during year 1
-            change import by -1 % each year
+    uses substance "R-410A"
+      set priorEquipment to 30000 units during year beginning
+      initial charge with 5.00 kg / unit for sales
+      retire 5 % each year
+      recharge 10 % each year with 5.00 kg / unit
+      set import to 3000 units / year during year beginning
+      change equipment by +8 % each year during years 2026 to 2030
+      change equipment by +5 % each year during years 2031 to 2035
+      equals 2087.5 tCO2e / kg
+    end substance
 
-            # Service
-            retire 5 % each year
-            recharge 10 % each year with 0.1 kg / unit
+  end application
 
-            # Historic units already deployed
-            set priorEquipment to (get equipment as units * 7) units during year 1
-          end substance
-
-        end application
-
-      end default
-
-
-      start policy "com recycling"
-
-        modify application "com refrig"
-
-          modify substance "HFC-134a"
-            recover 10 % with 80 % reuse during years 2 to onwards
-          end substance
-
-        end application
-
-      end policy
-
-
-      start policy "dom retrofit"
-
-        modify application "dom refrig"
-
-          modify substance "HFC-134a"
-            replace 20 % of sales with "R-600a"
-          end substance
-
-        end application
-
-      end policy
+end default
 
 
-      start policy "permit HFC-134a"
+start policy "R-410A Dom AC Manufact Prohib"
 
-        modify application "com refrig"
+  modify application "Domestic AC"
+    modify substance "R-410A"
+      cap manufacture to 0 units displacing "HFC-32" during years 2028 to onwards
+    end substance
+  end application
 
-          modify substance "HFC-134a"
-            cap sales to 1400 mt displacing "R-404A" during years 1 to 5
-            cap sales to 1200 mt displacing "R-404A" during years 6 to 10
-            cap sales to 1000 mt displacing "R-404A" during years 11 to 15
-            cap sales to 800 mt displacing "R-404A" during years 16 to 20
-          end substance
-
-          modify substance "HFC-134a"
-            cap sales to 1400 mt displacing "R-404A" during years 1 to 5
-            cap sales to 1200 mt displacing "R-404A" during years 6 to 10
-            cap sales to 1000 mt displacing "R-404A" during years 11 to 15
-            cap sales to 800 mt displacing "R-404A" during years 16 to 20
-          end substance
-
-        end application
-
-      end policy
+end policy
 
 
-      start simulations
+start policy "R-410A Com AC Manufact Prohib"
 
-        simulate "business as usual" from years 1 to 20
+  modify application "Commercial AC"
+    modify substance "R-410A"
+      cap manufacture to 0 units displacing "HFC-32" during years 2028 to onwards
+    end substance
+  end application
 
-        simulate "com recycling" using "com recycling" from years 1 to 20
+end policy
 
-        simulate "dom retrofit" using "dom retrofit" from years 1 to 20
 
-        simulate "permit HFC-134a" using "permit HFC-134a" from years 1 to 20
+start policy "HFC-134a Dom Refrig Manufact Prohib"
 
-        simulate "combined"
-          using "dom retrofit"
-          then "com recycling"
-          then "permit HFC-134a"
-        from years 1 to 20
+  modify application "Domestic Refrigeration"
+    modify substance "HFC-134a"
+      cap manufacture to 0 units during years 2028 to onwards
+    end substance
+  end application
 
-      end simulations
+end policy
+
+
+start policy "HFC-134a Com Refrig Import Ban"
+
+  modify application "Commercial Refrigeration"
+    modify substance "HFC-134a"
+      cap import to 0 units displacing "R-404A" during years 2029 to onwards
+    end substance
+  end application
+
+end policy
+
+
+start policy "HFC-134a MAC Import Ban"
+
+  modify application "MAC"
+    modify substance "HFC-134a"
+      cap import to 0 units displacing "R-404A" during years 2029 to onwards
+    end substance
+  end application
+
+end policy
+
+
+start policy "HFC-134a Chiller Import Ban"
+
+  modify application "Chiller"
+    modify substance "HFC-134a"
+      cap import to 0 units displacing "R-404A" during years 2029 to onwards
+    end substance
+  end application
+
+end policy
+
+
+start policy "HFC-32 Dom AC Import Ban"
+
+  modify application "Domestic AC"
+    modify substance "HFC-32"
+      cap import to 0 units displacing "R-410A" during years 2029 to onwards
+    end substance
+  end application
+
+end policy
+
+
+start policy "HFC-32 Com AC Import Ban"
+
+  modify application "Commercial AC"
+    modify substance "HFC-32"
+      cap import to 0 units displacing "R-410A" during years 2029 to onwards
+    end substance
+  end application
+
+end policy
+
+
+start policy "HFC-134a Dom Refrig Recovery"
+
+  modify application "Domestic Refrigeration"
+    modify substance "HFC-134a"
+      recover 14 % with 100 % reuse displacing sales during year 2026
+      recover 28 % with 100 % reuse displacing sales during year 2027
+      recover 42 % with 100 % reuse displacing sales during year 2028
+      recover 56 % with 100 % reuse displacing sales during year 2029
+      recover 40 % with 100 % reuse displacing sales during years 2030 to onwards
+    end substance
+  end application
+
+end policy
+
+
+start policy "R-404A Dom Refrig Recovery"
+
+  modify application "Domestic Refrigeration"
+    modify substance "R-404A"
+      recover 14 % with 100 % reuse displacing sales during year 2026
+      recover 28 % with 100 % reuse displacing sales during year 2027
+      recover 42 % with 100 % reuse displacing sales during year 2028
+      recover 56 % with 100 % reuse displacing sales during year 2029
+      recover 40 % with 100 % reuse displacing sales during years 2030 to onwards
+    end substance
+  end application
+
+end policy
+
+
+start policy "HFC-134a Com Refrig Recovery"
+
+  modify application "Commercial Refrigeration"
+    modify substance "HFC-134a"
+      recover 14 % with 100 % reuse displacing sales during year 2026
+      recover 28 % with 100 % reuse displacing sales during year 2027
+      recover 42 % with 100 % reuse displacing sales during year 2028
+      recover 56 % with 100 % reuse displacing sales during year 2029
+      recover 40 % with 100 % reuse displacing sales during years 2030 to onwards
+    end substance
+  end application
+
+end policy
+
+
+start policy "R-404A Com Refrig Recovery"
+
+  modify application "Commercial Refrigeration"
+    modify substance "R-404A"
+      recover 14 % with 100 % reuse displacing sales during year 2026
+      recover 28 % with 100 % reuse displacing sales during year 2027
+      recover 42 % with 100 % reuse displacing sales during year 2028
+      recover 56 % with 100 % reuse displacing sales during year 2029
+      recover 40 % with 100 % reuse displacing sales during years 2030 to onwards
+    end substance
+  end application
+
+end policy
+
+
+start policy "HFC-134a MAC Recovery"
+
+  modify application "MAC"
+    modify substance "HFC-134a"
+      recover 14 % with 100 % reuse displacing sales during year 2026
+      recover 28 % with 100 % reuse displacing sales during year 2027
+      recover 42 % with 100 % reuse displacing sales during year 2028
+      recover 56 % with 100 % reuse displacing sales during year 2029
+      recover 40 % with 100 % reuse displacing sales during years 2030 to onwards
+    end substance
+  end application
+
+end policy
+
+
+start policy "R-404A MAC Recovery"
+
+  modify application "MAC"
+    modify substance "R-404A"
+      recover 14 % with 100 % reuse displacing sales during year 2026
+      recover 28 % with 100 % reuse displacing sales during year 2027
+      recover 42 % with 100 % reuse displacing sales during year 2028
+      recover 56 % with 100 % reuse displacing sales during year 2029
+      recover 40 % with 100 % reuse displacing sales during years 2030 to onwards
+    end substance
+  end application
+
+end policy
+
+
+start policy "HFC-134a Chiller Recovery"
+
+  modify application "Chiller"
+    modify substance "HFC-134a"
+      recover 14 % with 100 % reuse displacing sales during year 2026
+      recover 28 % with 100 % reuse displacing sales during year 2027
+      recover 42 % with 100 % reuse displacing sales during year 2028
+      recover 56 % with 100 % reuse displacing sales during year 2029
+      recover 40 % with 100 % reuse displacing sales during years 2030 to onwards
+    end substance
+  end application
+
+end policy
+
+
+start policy "R-404A Chiller Recovery"
+
+  modify application "Chiller"
+    modify substance "R-404A"
+      recover 14 % with 100 % reuse displacing sales during year 2026
+      recover 28 % with 100 % reuse displacing sales during year 2027
+      recover 42 % with 100 % reuse displacing sales during year 2028
+      recover 56 % with 100 % reuse displacing sales during year 2029
+      recover 40 % with 100 % reuse displacing sales during years 2030 to onwards
+    end substance
+  end application
+
+end policy
+
+
+start policy "HFC-32 Dom AC Recovery"
+
+  modify application "Domestic AC"
+    modify substance "HFC-32"
+      recover 14 % with 100 % reuse displacing sales during year 2026
+      recover 28 % with 100 % reuse displacing sales during year 2027
+      recover 42 % with 100 % reuse displacing sales during year 2028
+      recover 56 % with 100 % reuse displacing sales during year 2029
+      recover 40 % with 100 % reuse displacing sales during years 2030 to onwards
+    end substance
+  end application
+
+end policy
+
+
+start policy "R-410A Dom AC Recovery"
+
+  modify application "Domestic AC"
+    modify substance "R-410A"
+      recover 14 % with 100 % reuse displacing sales during year 2026
+      recover 28 % with 100 % reuse displacing sales during year 2027
+      recover 42 % with 100 % reuse displacing sales during year 2028
+      recover 56 % with 100 % reuse displacing sales during year 2029
+      recover 40 % with 100 % reuse displacing sales during years 2030 to onwards
+    end substance
+  end application
+
+end policy
+
+
+start policy "HFC-32 Com AC Recovery"
+
+  modify application "Commercial AC"
+    modify substance "HFC-32"
+      recover 14 % with 100 % reuse displacing sales during year 2026
+      recover 28 % with 100 % reuse displacing sales during year 2027
+      recover 42 % with 100 % reuse displacing sales during year 2028
+      recover 56 % with 100 % reuse displacing sales during year 2029
+      recover 40 % with 100 % reuse displacing sales during years 2030 to onwards
+    end substance
+  end application
+
+end policy
+
+
+start policy "R-410A Com AC Recovery"
+
+  modify application "Commercial AC"
+    modify substance "R-410A"
+      recover 14 % with 100 % reuse displacing sales during year 2026
+      recover 28 % with 100 % reuse displacing sales during year 2027
+      recover 42 % with 100 % reuse displacing sales during year 2028
+      recover 56 % with 100 % reuse displacing sales during year 2029
+      recover 40 % with 100 % reuse displacing sales during years 2030 to onwards
+    end substance
+  end application
+
+end policy
+
+
+start policy "R-404A Transport Refrig Recovery"
+
+  modify application "Transport Refrigeration"
+    modify substance "R-404A"
+      recover 14 % with 100 % reuse displacing sales during year 2026
+      recover 28 % with 100 % reuse displacing sales during year 2027
+      recover 42 % with 100 % reuse displacing sales during year 2028
+      recover 56 % with 100 % reuse displacing sales during year 2029
+      recover 40 % with 100 % reuse displacing sales during years 2030 to onwards
+    end substance
+  end application
+
+end policy
+
+
+start simulations
+
+  simulate "Business as Usual" from years 2025 to 2035
+
+  simulate "Manufacturing Prohibition"
+    using "R-410A Dom AC Manufact Prohib"
+    then "R-410A Com AC Manufact Prohib"
+    then "HFC-134a Dom Refrig Manufact Prohib"
+  from years 2025 to 2035
+
+  simulate "Equipment Import Ban"
+    using "HFC-134a Com Refrig Import Ban"
+    then "HFC-134a MAC Import Ban"
+    then "HFC-134a Chiller Import Ban"
+    then "HFC-32 Dom AC Import Ban"
+    then "HFC-32 Com AC Import Ban"
+  from years 2025 to 2035
+
+  simulate "Recovery and Recycling"
+    using "HFC-134a Dom Refrig Recovery"
+    then "R-404A Dom Refrig Recovery"
+    then "HFC-134a Com Refrig Recovery"
+    then "R-404A Com Refrig Recovery"
+    then "HFC-134a MAC Recovery"
+    then "R-404A MAC Recovery"
+    then "HFC-134a Chiller Recovery"
+    then "R-404A Chiller Recovery"
+    then "HFC-32 Dom AC Recovery"
+    then "R-410A Dom AC Recovery"
+    then "HFC-32 Com AC Recovery"
+    then "R-410A Com AC Recovery"
+    then "R-404A Transport Refrig Recovery"
+  from years 2025 to 2035
+
+  simulate "Combined Policies"
+    using "R-410A Dom AC Manufact Prohib"
+    then "R-410A Com AC Manufact Prohib"
+    then "HFC-134a Dom Refrig Manufact Prohib"
+    then "HFC-134a Com Refrig Import Ban"
+    then "HFC-134a MAC Import Ban"
+    then "HFC-134a Chiller Import Ban"
+    then "HFC-32 Dom AC Import Ban"
+    then "HFC-32 Com AC Import Ban"
+    then "HFC-134a Dom Refrig Recovery"
+    then "R-404A Dom Refrig Recovery"
+    then "HFC-134a Com Refrig Recovery"
+    then "R-404A Com Refrig Recovery"
+    then "HFC-134a MAC Recovery"
+    then "R-404A MAC Recovery"
+    then "HFC-134a Chiller Recovery"
+    then "R-404A Chiller Recovery"
+    then "HFC-32 Dom AC Recovery"
+    then "R-410A Dom AC Recovery"
+    then "HFC-32 Com AC Recovery"
+    then "R-410A Com AC Recovery"
+    then "R-404A Transport Refrig Recovery"
+  from years 2025 to 2035
+
+end simulations
     </script>
 
     <script type="text/javascript" src="/third_party/ace.min.js"></script>
