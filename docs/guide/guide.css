@@ -129,16 +129,25 @@ section {
   height: 14px;
 }
 
-.skip-link {
-  top: -100px;
-  left: 0;
+a.skip-link,
+a.skip-link:link,
+a.skip-link:visited {
   position: absolute;
+  left: -9999px;
+  z-index: 999;
+  padding: 1em;
+  background-color: #333333;
+  color: #F0F0F0;
+  text-decoration: none;
 }
 
-.skip-link:focus {
+a.skip-link:focus,
+a.skip-link:hover,
+a.skip-link:active {
+  left: 10%;
+  transform: none;
   top: 10px;
-  background: #E0E0E0;
-  padding: 3px;
+  color: #FFFFFF;
 }
 
 .status-display {

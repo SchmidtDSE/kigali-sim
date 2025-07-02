@@ -12,6 +12,7 @@ import {UiTranslatorCompiler} from "ui_translator";
 import {WasmBackend, WasmLayer, BackendResult} from "wasm_backend";
 
 const HELP_TEXT = "Would you like our help in resolving this issue?";
+const INTRODUCTION_PREFERENCE_KEY = "hideIntroduction";
 
 const WHITESPACE_REGEX = new RegExp("^\\s*$");
 const NEW_FILE_MSG = [
@@ -532,12 +533,81 @@ class MainPresenter {
 }
 
 /**
+ * Presenter for managing the introduction sequence.
+ */
+class IntroductionPresenter {
+  constructor() {
+    const self = this;
+    self._loadingPanel = document.getElementById("loading");
+    self._mainHolder = document.getElementById("main-holder");
+  }
+
+  /**
+   * Initialize the introduction sequence.
+   * @return {Promise} Promise that resolves when the user continues.
+   */
+  async initialize() {
+    const self = this;
+    const hideIntroduction = localStorage.getItem(INTRODUCTION_PREFERENCE_KEY) === "true";
+
+    if (hideIntroduction) {
+      return Promise.resolve();
+    }
+
+    return new Promise((resolve) => {
+      self._setupIntroductionUI(resolve);
+    });
+  }
+
+  /**
+   * Set up the introduction UI with buttons.
+   * @param {Function} resolve - Callback to resolve the promise when user continues.
+   */
+  _setupIntroductionUI(resolve) {
+    const self = this;
+    const loadingIndicator = document.getElementById("initial-loading-indicator");
+    const buttonPanel = document.getElementById("continue-buttons-panel");
+    const continueButton = document.getElementById("continue-button");
+    const dontShowAgainButton = document.getElementById("continue-no-show-button");
+
+    continueButton.onclick = (e) => {
+      e.preventDefault();
+      loadingIndicator.style.display = "block";
+      buttonPanel.style.display = "none";
+      resolve();
+    };
+
+    dontShowAgainButton.onclick = (e) => {
+      e.preventDefault();
+      localStorage.setItem(INTRODUCTION_PREFERENCE_KEY, "true");
+      loadingIndicator.style.display = "block";
+      buttonPanel.style.display = "none";
+      resolve();
+    };
+
+    loadingIndicator.style.display = "none";
+    buttonPanel.style.display = "block";
+  }
+
+  /**
+   * Show the main application content.
+   */
+  _showMainContent() {
+    const self = this;
+    self._loadingPanel.style.display = "none";
+    self._mainHolder.style.display = "block";
+  }
+}
+
+/**
  * Main entry point for the application.
  */
 function main() {
-  const showApp = () => {
-    document.getElementById("loading").style.display = "none";
-    document.getElementById("main-holder").style.display = "block";
+  const introPresenter = new IntroductionPresenter();
+
+  const showApp = async () => {
+    await introPresenter.initialize();
+    introPresenter._showMainContent();
   };
 
   const onLoad = () => {
