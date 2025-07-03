@@ -202,6 +202,31 @@ main {
   font-size: 18px;
   font-weight: bold;
   color: #333;
+  margin-bottom: 15px;
+}
+
+#results .running-indicator .running-overlay progress {
+  width: 300px;
+  height: 20px;
+  border-radius: 10px;
+  border: 1px solid #ddd;
+  background-color: #f9f9f9;
+}
+
+#results .running-indicator .running-overlay progress::-webkit-progress-bar {
+  background-color: #f9f9f9;
+  border-radius: 10px;
+}
+
+#results .running-indicator .running-overlay progress::-webkit-progress-value {
+  background-color: #4CAF50;
+  border-radius: 10px;
+  transition: width 0.3s ease;
+}
+
+#results .running-indicator .running-overlay progress::-moz-progress-bar {
+  background-color: #4CAF50;
+  border-radius: 10px;
 }
 
 #results .error-indicator {

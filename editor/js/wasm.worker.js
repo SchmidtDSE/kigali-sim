@@ -11,6 +11,19 @@
 let wasmLayer = null;
 let isInitialized = false;
 
+/**
+ * Global reportProgress function called by WASM to report simulation progress.
+ * This function is available globally for the Java code to call via @JSBody.
+ *
+ * @param {number} progress - Progress value between 0.0 and 1.0
+ */
+function reportProgress(progress) {
+  self.postMessage({
+    resultType: "progress",
+    progress: progress,
+  });
+}
+
 // Load WASM files with fallback to JS
 async function initializeWasm() {
   if (isInitialized) {
@@ -89,12 +102,14 @@ self.onmessage = async function (event) {
       const result = await executeCode(code);
 
       self.postMessage({
+        resultType: "dataset",
         id: id,
         success: true,
         result: result,
       });
     } else {
       self.postMessage({
+        resultType: "dataset",
         id: id,
         success: false,
         error: `Unknown command: ${command}`,
@@ -102,6 +117,7 @@ self.onmessage = async function (event) {
     }
   } catch (error) {
     self.postMessage({
+      resultType: "dataset",
       id: id,
       success: false,
       error: error.message,

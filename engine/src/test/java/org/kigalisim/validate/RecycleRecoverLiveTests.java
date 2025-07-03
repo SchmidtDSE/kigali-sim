@@ -35,7 +35,7 @@ public class RecycleRecoverLiveTests {
 
     // Run the scenario using KigaliSimFacade
     String scenarioName = "result";
-    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName);
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
 
     // Convert to list for multiple access
     List<EngineResult> resultsList = results.collect(Collectors.toList());
@@ -75,7 +75,7 @@ public class RecycleRecoverLiveTests {
 
     // Run the scenario using KigaliSimFacade
     String scenarioName = "result";
-    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName);
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
 
     // Convert to list for multiple access
     List<EngineResult> resultsList = results.collect(Collectors.toList());
@@ -116,7 +116,7 @@ public class RecycleRecoverLiveTests {
 
     // Run the scenario using KigaliSimFacade
     String scenarioName = "result";
-    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName);
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
 
     // Convert to list for multiple access
     List<EngineResult> resultsList = results.collect(Collectors.toList());
@@ -157,7 +157,7 @@ public class RecycleRecoverLiveTests {
 
     // Run the scenario using KigaliSimFacade
     String scenarioName = "result";
-    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName);
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
 
     // Convert to list for multiple access
     List<EngineResult> resultsList = results.collect(Collectors.toList());
@@ -187,7 +187,7 @@ public class RecycleRecoverLiveTests {
 
     // Run the scenario using KigaliSimFacade
     String scenarioName = "result";
-    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName);
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
 
     // Convert to list for multiple access
     List<EngineResult> resultsList = results.collect(Collectors.toList());

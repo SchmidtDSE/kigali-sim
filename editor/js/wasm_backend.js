@@ -195,13 +195,16 @@ class ReportDataParser {
 class WasmLayer {
   /**
    * Create a new WasmLayer instance.
+   *
+   * @param {Function} reportProgressCallback - Callback for progress updates.
    */
-  constructor() {
+  constructor(reportProgressCallback) {
     const self = this;
     self._worker = null;
     self._initPromise = null;
     self._pendingRequests = new Map();
     self._nextRequestId = 1;
+    self._reportProgressCallback = reportProgressCallback;
   }
 
   /**
@@ -279,8 +282,17 @@ class WasmLayer {
    */
   _handleWorkerMessage(event) {
     const self = this;
-    const {id, success, result, error} = event.data;
+    const {resultType, id, success, result, error, progress} = event.data;
 
+    // Handle progress messages
+    if (resultType === "progress") {
+      if (self._reportProgressCallback) {
+        self._reportProgressCallback(progress);
+      }
+      return;
+    }
+
+    // Handle regular result messages
     const request = self._pendingRequests.get(id);
     if (!request) {
       console.warn("Received response for unknown request:", id);
@@ -341,10 +353,17 @@ class WasmBackend {
    * Create a new WasmBackend instance.
    *
    * @param {WasmLayer} wasmLayer - The layer for worker communication.
+   * @param {Function} reportProgressCallback - Callback for progress updates.
    */
-  constructor(wasmLayer) {
+  constructor(wasmLayer, reportProgressCallback) {
     const self = this;
     self._wasmLayer = wasmLayer;
+    self._reportProgressCallback = reportProgressCallback;
+
+    // Set the progress callback on the WASM layer
+    if (self._wasmLayer && reportProgressCallback) {
+      self._wasmLayer._reportProgressCallback = reportProgressCallback;
+    }
   }
 
   /**
