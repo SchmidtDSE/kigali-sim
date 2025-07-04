@@ -36,7 +36,7 @@ public class ReplaceLiveTests {
 
     // Run the scenario using KigaliSimFacade
     String scenarioName = "result";
-    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName);
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
 
     List<EngineResult> resultsList = results.collect(Collectors.toList());
 
@@ -74,7 +74,7 @@ public class ReplaceLiveTests {
 
     // Run the scenario using KigaliSimFacade
     String scenarioName = "result";
-    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName);
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
 
     List<EngineResult> resultsList = results.collect(Collectors.toList());
 
@@ -112,7 +112,7 @@ public class ReplaceLiveTests {
 
     // Run the scenario using KigaliSimFacade
     String scenarioName = "result";
-    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName);
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
 
     List<EngineResult> resultsList = results.collect(Collectors.toList());
 
