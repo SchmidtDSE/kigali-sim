@@ -11,6 +11,53 @@ import {UiEditorPresenter} from "ui_editor";
 import {UiTranslatorCompiler} from "ui_translator";
 import {WasmBackend, WasmLayer, BackendResult} from "wasm_backend";
 
+/**
+ * Manages the running indicator and progress bar display.
+ */
+class RunningIndicatorPresenter {
+  constructor() {
+    const self = this;
+    self._runningIndicator = document.getElementById("running-indicator");
+    self._progressBar = document.getElementById("simulation-progress");
+    self._resultsSection = document.getElementById("results");
+  }
+
+  /**
+   * Show the running indicator with progress at 0%.
+   */
+  show() {
+    const self = this;
+    self.reset();
+    self._resultsSection.style.display = "block";
+    self._runningIndicator.style.display = "block";
+  }
+
+  /**
+   * Hide the running indicator.
+   */
+  hide() {
+    const self = this;
+    self._runningIndicator.style.display = "none";
+  }
+
+  /**
+   * Update the progress bar.
+   * @param {number} percentage - Progress percentage (0-100)
+   */
+  updateProgress(percentage) {
+    const self = this;
+    self._progressBar.value = percentage;
+  }
+
+  /**
+   * Reset progress to 0%.
+   */
+  reset() {
+    const self = this;
+    self.updateProgress(0);
+  }
+}
+
 const HELP_TEXT = "Would you like our help in resolving this issue?";
 const INTRODUCTION_PREFERENCE_KEY = "hideIntroduction";
 
@@ -100,9 +147,18 @@ class MainPresenter {
 
     self._hasCompilationErrors = false;
 
+    // Initialize the running indicator presenter
+    self._runningIndicatorPresenter = new RunningIndicatorPresenter();
+
+    // Create progress callback
+    const progressCallback = (progress) => {
+      const percentage = Math.round(progress * 100);
+      self._runningIndicatorPresenter.updateProgress(percentage);
+    };
+
     // Initialize the WASM backend for worker-based execution
-    self._wasmLayer = new WasmLayer();
-    self._wasmBackend = new WasmBackend(self._wasmLayer);
+    self._wasmLayer = new WasmLayer(progressCallback);
+    self._wasmBackend = new WasmBackend(self._wasmLayer, progressCallback);
 
     self._codeEditorPresenter = new CodeEditorPresenter(
       document.getElementById("code-editor"),
@@ -225,37 +281,6 @@ class MainPresenter {
     }
   }
 
-  /**
-   * Shows the running indicator overlay in the results section.
-   * This displays a loading animation and message while simulations are running.
-   *
-   * @private
-   */
-  _showRunningIndicator() {
-    const self = this;
-    const resultsSection = document.getElementById("results");
-    const runningIndicator = document.getElementById("running-indicator");
-
-    if (resultsSection && runningIndicator) {
-      resultsSection.style.display = "block";
-      runningIndicator.style.display = "block";
-    }
-  }
-
-  /**
-   * Hides the running indicator overlay in the results section.
-   * This should be called when simulation execution completes or fails.
-   *
-   * @private
-   */
-  _hideRunningIndicator() {
-    const self = this;
-    const runningIndicator = document.getElementById("running-indicator");
-
-    if (runningIndicator) {
-      runningIndicator.style.display = "none";
-    }
-  }
 
   /**
    * Shows the error indicator overlay in the results section.
@@ -336,14 +361,14 @@ class MainPresenter {
 
       if (run) {
         // Show the running indicator when simulation starts
-        self._showRunningIndicator();
+        self._runningIndicatorPresenter.show();
 
         try {
           // Execute using the WASM backend worker
           const programResult = await self._wasmBackend.execute(code);
 
           // Hide the running indicator when execution completes
-          self._hideRunningIndicator();
+          self._runningIndicatorPresenter.hide();
 
           if (programResult.getParsedResults().length === 0) {
             self._showNoResultsMessage();

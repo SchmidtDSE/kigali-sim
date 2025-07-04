@@ -6,6 +6,7 @@
 
 package org.kigalisim;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -14,6 +15,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
@@ -102,7 +104,8 @@ public class KigaliSimFacadeTest {
     assertNotNull(program, "Program should not be null");
 
     // This should not throw an exception and should iterate through years
-    KigaliSimFacade.runScenario(program, "test");
+    // Use a no-op progress callback
+    KigaliSimFacade.runScenario(program, "test", progress -> {});
   }
 
   /**
@@ -120,7 +123,8 @@ public class KigaliSimFacadeTest {
     assertNotNull(program, "Program should not be null");
 
     // This should run through all years without throwing an exception
-    KigaliSimFacade.runScenario(program, "yeartest");
+    // Use a no-op progress callback
+    KigaliSimFacade.runScenario(program, "yeartest", progress -> {});
   }
 
   /**
@@ -138,7 +142,8 @@ public class KigaliSimFacadeTest {
     assertNotNull(program, "Program should not be null");
 
     // This should run through all years and return a stream (may be empty for basic examples)
-    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, "yeartest");
+    // Use a no-op progress callback
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, "yeartest", progress -> {});
     assertNotNull(results, "Results stream should not be null");
 
     // Collect results - may be empty for basic examples that don't have all required streams
@@ -164,7 +169,8 @@ public class KigaliSimFacadeTest {
     assertNotNull(program, "Program should not be null");
 
     // Run scenario and collect results
-    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, "business as usual");
+    // Use a no-op progress callback
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, "business as usual", progress -> {});
     List<EngineResult> resultsList = results.collect(java.util.stream.Collectors.toList());
 
     // Convert to CSV
@@ -198,5 +204,110 @@ public class KigaliSimFacadeTest {
     if (resultsList.size() > 0) {
       assertTrue(lines.length > 1, "CSV should have data rows for non-empty results");
     }
+  }
+
+  /**
+   * Test that getNumberTotalTrials calculates the correct total.
+   */
+  @Test
+  public void testGetNumberTotalTrials(@TempDir Path tempDir) throws IOException {
+    // Create a program with multiple scenarios and different trial counts
+    String code = "start default\nend default\n\n"
+                  + "start simulations\n"
+                  + "  simulate \"scenario1\" from years 1 to 3 across 5 trials\n"
+                  + "  simulate \"scenario2\" from years 1 to 3 across 3 trials\n"
+                  + "  simulate \"scenario3\" from years 1 to 3 across 2 trials\n"
+                  + "end simulations";
+    File file = tempDir.resolve("multi_trial.qta").toFile();
+    Files.writeString(file.toPath(), code);
+
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(file.getPath());
+    assertNotNull(program, "Program should not be null");
+
+    // Test that total trials is correctly calculated (5 + 3 + 2 = 10)
+    int totalTrials = KigaliSimFacade.getNumberTotalTrials(program);
+    assertEquals(10, totalTrials, "Total trials should be 10");
+  }
+
+  /**
+   * Test that getNumberTotalTrials works with single scenario.
+   */
+  @Test
+  public void testGetNumberTotalTrialsSingleScenario(@TempDir Path tempDir) throws IOException {
+    String code = "start default\nend default\n\n"
+                  + "start simulations\n"
+                  + "  simulate \"only\" from years 1 to 3 across 7 trials\n"
+                  + "end simulations";
+    File file = tempDir.resolve("single_trial.qta").toFile();
+    Files.writeString(file.toPath(), code);
+
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(file.getPath());
+    int totalTrials = KigaliSimFacade.getNumberTotalTrials(program);
+    assertEquals(7, totalTrials, "Total trials should be 7");
+  }
+
+  /**
+   * Test that progress callback is invoked with correct values.
+   */
+  @Test
+  public void testProgressCallbackInvocation(@TempDir Path tempDir) throws IOException {
+    // Create a program with multiple trials
+    String code = "start default\nend default\n\n"
+                  + "start simulations\n"
+                  + "  simulate \"test\" from years 1 to 2 across 3 trials\n"
+                  + "end simulations";
+    File file = tempDir.resolve("progress_test.qta").toFile();
+    Files.writeString(file.toPath(), code);
+
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(file.getPath());
+    
+    // Track progress calls
+    List<Double> progressValues = new ArrayList<>();
+    ProgressReportCallback callback = progress -> progressValues.add(progress);
+    
+    // Run scenario with progress tracking
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, "test", callback);
+    results.collect(java.util.stream.Collectors.toList()); // Force stream evaluation
+    
+    // Verify progress was reported for each trial
+    assertEquals(3, progressValues.size(), "Progress should be reported 3 times (once per trial)");
+    
+    // Verify progress values are correct (1/3, 2/3, 3/3)
+    assertEquals(1.0 / 3.0, progressValues.get(0), 0.001, "First progress should be ~0.333");
+    assertEquals(2.0 / 3.0, progressValues.get(1), 0.001, "Second progress should be ~0.667");
+    assertEquals(1.0, progressValues.get(2), 0.001, "Final progress should be 1.0");
+  }
+
+  /**
+   * Test progress callback with multiple scenarios.
+   */
+  @Test
+  public void testProgressCallbackMultipleScenarios(@TempDir Path tempDir) throws IOException {
+    String code = "start default\nend default\n\n"
+                  + "start simulations\n"
+                  + "  simulate \"first\" from years 1 to 2 across 2 trials\n"
+                  + "  simulate \"second\" from years 1 to 2 across 3 trials\n"
+                  + "end simulations";
+    File file = tempDir.resolve("multi_scenario_progress.qta").toFile();
+    Files.writeString(file.toPath(), code);
+
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(file.getPath());
+    
+    // Track progress for second scenario
+    List<Double> progressValues = new ArrayList<>();
+    ProgressReportCallback callback = progress -> progressValues.add(progress);
+    
+    // Run second scenario - should account for completed trials from first scenario
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, "second", callback);
+    results.collect(java.util.stream.Collectors.toList());
+    
+    // Progress should be reported 3 times (trials for second scenario)
+    assertEquals(3, progressValues.size(), "Progress should be reported 3 times");
+    
+    // Progress values should account for total trials (5) and already completed (2)
+    // So: 3/5, 4/5, 5/5
+    assertEquals(3.0 / 5.0, progressValues.get(0), 0.001, "First progress should be 0.6");
+    assertEquals(4.0 / 5.0, progressValues.get(1), 0.001, "Second progress should be 0.8");
+    assertEquals(1.0, progressValues.get(2), 0.001, "Final progress should be 1.0");
   }
 }

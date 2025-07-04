@@ -35,7 +35,7 @@ public class MultipleLiveTests {
 
     // Run the scenario using KigaliSimFacade
     String scenarioName = "business as usual";
-    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName);
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
 
     List<EngineResult> resultsList = results.collect(Collectors.toList());
 
@@ -84,7 +84,7 @@ public class MultipleLiveTests {
 
     // Run the BAU scenario using KigaliSimFacade
     String bauScenarioName = "bau";
-    Stream<EngineResult> bauResults = KigaliSimFacade.runScenario(program, bauScenarioName);
+    Stream<EngineResult> bauResults = KigaliSimFacade.runScenario(program, bauScenarioName, progress -> {});
     List<EngineResult> bauResultsList = bauResults.collect(Collectors.toList());
 
     // Check BAU scenario for appA/subA
@@ -109,7 +109,7 @@ public class MultipleLiveTests {
 
     // Run the policy scenario using KigaliSimFacade
     String policyScenarioName = "sim";
-    Stream<EngineResult> policyResults = KigaliSimFacade.runScenario(program, policyScenarioName);
+    Stream<EngineResult> policyResults = KigaliSimFacade.runScenario(program, policyScenarioName, progress -> {});
     List<EngineResult> policyResultsList = policyResults.collect(Collectors.toList());
 
     // Check policy scenario for appA/subA
@@ -145,7 +145,7 @@ public class MultipleLiveTests {
 
     // Run the BAU scenario using KigaliSimFacade
     String bauScenarioName = "bau";
-    Stream<EngineResult> bauResults = KigaliSimFacade.runScenario(program, bauScenarioName);
+    Stream<EngineResult> bauResults = KigaliSimFacade.runScenario(program, bauScenarioName, progress -> {});
     List<EngineResult> bauResultsList = bauResults.collect(Collectors.toList());
 
     // Check BAU scenario for appA/subA
@@ -182,7 +182,7 @@ public class MultipleLiveTests {
 
     // Run the policy scenario using KigaliSimFacade
     String policyScenarioName = "sim";
-    Stream<EngineResult> policyResults = KigaliSimFacade.runScenario(program, policyScenarioName);
+    Stream<EngineResult> policyResults = KigaliSimFacade.runScenario(program, policyScenarioName, progress -> {});
     List<EngineResult> policyResultsList = policyResults.collect(Collectors.toList());
 
     // Check policy scenario for appA/subA

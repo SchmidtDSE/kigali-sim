@@ -37,7 +37,7 @@ public class CapLiveTests {
 
     // Run the scenario using KigaliSimFacade
     String scenarioName = "result";
-    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName);
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
 
     List<EngineResult> resultsList = results.collect(Collectors.toList());
     EngineResult result = LiveTestsUtil.getResult(resultsList.stream(), 1, "test", "test");
@@ -63,7 +63,7 @@ public class CapLiveTests {
 
     // Run the scenario using KigaliSimFacade
     String scenarioName = "result";
-    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName);
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
 
     List<EngineResult> resultsList = results.collect(Collectors.toList());
     EngineResult result = LiveTestsUtil.getResult(resultsList.stream(), 1, "test", "test");
@@ -91,7 +91,7 @@ public class CapLiveTests {
 
     // Run the scenario using KigaliSimFacade
     String scenarioName = "result";
-    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName);
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
 
     List<EngineResult> resultsList = results.collect(Collectors.toList());
 
@@ -132,7 +132,7 @@ public class CapLiveTests {
 
     // Run the scenario using KigaliSimFacade
     String scenarioName = "result";
-    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName);
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
 
     List<EngineResult> resultsList = results.collect(Collectors.toList());
 
@@ -176,7 +176,7 @@ public class CapLiveTests {
 
     // Run the scenario using KigaliSimFacade
     String scenarioName = "Equipment Import Ban";
-    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName);
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
 
     List<EngineResult> resultsList = results.collect(Collectors.toList());
 
@@ -228,7 +228,7 @@ public class CapLiveTests {
 
     // Run the scenario using KigaliSimFacade
     String scenarioName = "Equipment Import Ban";
-    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName);
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
 
     List<EngineResult> resultsList = results.collect(Collectors.toList());
 
@@ -268,7 +268,7 @@ public class CapLiveTests {
 
     // Run the scenario using KigaliSimFacade
     String scenarioName = "Equipment Import Ban";
-    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName);
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
 
     List<EngineResult> resultsList = results.collect(Collectors.toList());
 
@@ -314,7 +314,7 @@ public class CapLiveTests {
 
     // Run the scenario using KigaliSimFacade
     String scenarioName = "Import Ban";
-    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName);
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
 
     List<EngineResult> resultsList = results.collect(Collectors.toList());
 

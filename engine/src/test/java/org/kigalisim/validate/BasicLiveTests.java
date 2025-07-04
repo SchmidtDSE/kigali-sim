@@ -36,7 +36,7 @@ public class BasicLiveTests {
 
     // Run the scenario using KigaliSimFacade
     String scenarioName = "business as usual";
-    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName);
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
 
     List<EngineResult> resultsList = results.collect(Collectors.toList());
     EngineResult result = LiveTestsUtil.getResult(resultsList.stream(), 1, "test", "test");
@@ -73,7 +73,7 @@ public class BasicLiveTests {
 
     // Run the scenario using KigaliSimFacade
     String scenarioName = "business as usual";
-    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName);
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
 
     List<EngineResult> resultsList = results.collect(Collectors.toList());
     EngineResult result = LiveTestsUtil.getResult(resultsList.stream(), 1, "test", "test");
@@ -104,7 +104,7 @@ public class BasicLiveTests {
 
     // Run the scenario using KigaliSimFacade
     String scenarioName = "business as usual";
-    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName);
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
 
     List<EngineResult> resultsList = results.collect(Collectors.toList());
     EngineResult result = LiveTestsUtil.getResult(resultsList.stream(), 1, "test", "test");
@@ -135,7 +135,7 @@ public class BasicLiveTests {
 
     // Run the scenario using KigaliSimFacade
     String scenarioName = "business as usual";
-    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName);
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
 
     List<EngineResult> resultsList = results.collect(Collectors.toList());
     EngineResult result = LiveTestsUtil.getResult(resultsList.stream(), 1, "test", "test");
@@ -160,7 +160,7 @@ public class BasicLiveTests {
 
     // Run the scenario using KigaliSimFacade
     String scenarioName = "business as usual";
-    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName);
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
 
     List<EngineResult> resultsList = results.collect(Collectors.toList());
     EngineResult result = LiveTestsUtil.getResult(resultsList.stream(), 1, "test", "test");
@@ -186,7 +186,7 @@ public class BasicLiveTests {
 
     // Run the scenario using KigaliSimFacade
     String scenarioName = "Sim";
-    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName);
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
 
     // Convert to list for multiple access
     List<EngineResult> resultsList = results.collect(Collectors.toList());
@@ -236,7 +236,7 @@ public class BasicLiveTests {
 
     // Run the scenario using KigaliSimFacade
     String scenarioName = "Sim";
-    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName);
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
 
     // Convert to list for multiple access
     List<EngineResult> resultsList = results.collect(Collectors.toList());
@@ -285,7 +285,7 @@ public class BasicLiveTests {
 
     // Run the scenario using KigaliSimFacade
     String scenarioName = "Sim";
-    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName);
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
 
     // Convert to list for multiple access
     List<EngineResult> resultsList = results.collect(Collectors.toList());
@@ -337,7 +337,7 @@ public class BasicLiveTests {
 
     // Run the scenario using KigaliSimFacade
     String scenarioName = "business as usual";
-    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName);
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
 
     List<EngineResult> resultsList = results.collect(Collectors.toList());
     EngineResult result = LiveTestsUtil.getResult(resultsList.stream(), 1, "test", "test");
@@ -362,7 +362,7 @@ public class BasicLiveTests {
 
     // Run the scenario using KigaliSimFacade
     String scenarioName = "BAU";
-    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName);
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
 
     List<EngineResult> resultsList = results.collect(Collectors.toList());
     EngineResult result = LiveTestsUtil.getResult(resultsList.stream(), 10, "Test", "SubA");
@@ -387,7 +387,7 @@ public class BasicLiveTests {
 
     // Run the scenario using KigaliSimFacade
     String scenarioName = "business as usual";
-    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName);
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
     List<EngineResult> resultsList = results.collect(Collectors.toList());
 
     // Get results for year 2025 (start year)
@@ -428,7 +428,7 @@ public class BasicLiveTests {
 
     // Run the scenario using KigaliSimFacade
     String scenarioName = "exporter scenario";
-    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName);
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
 
     List<EngineResult> resultsList = results.collect(Collectors.toList());
     EngineResult result = LiveTestsUtil.getResult(resultsList.stream(), 1, 

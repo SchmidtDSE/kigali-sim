@@ -36,7 +36,7 @@ public class ReferenceLiveTests {
 
     // Run the scenario using KigaliSimFacade
     String scenarioName = "Business as Usual";
-    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName);
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
 
     // Convert to list for multiple access
     List<EngineResult> resultsList = results.collect(Collectors.toList());
@@ -65,7 +65,7 @@ public class ReferenceLiveTests {
 
     // Run the scenario using KigaliSimFacade
     String scenarioName = "business as usual";
-    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName);
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
 
     // Convert to list for multiple access
     List<EngineResult> resultsList = results.collect(Collectors.toList());

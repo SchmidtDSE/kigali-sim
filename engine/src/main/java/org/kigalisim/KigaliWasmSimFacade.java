@@ -12,6 +12,7 @@ import java.util.stream.Collectors;
 import org.kigalisim.engine.serializer.EngineResult;
 import org.kigalisim.lang.parse.ParseResult;
 import org.kigalisim.lang.program.ParsedProgram;
+import org.teavm.jso.JSBody;
 import org.teavm.jso.JSExport;
 
 /**
@@ -31,6 +32,14 @@ public class KigaliWasmSimFacade {
   public static String getVersion() {
     return "0.0.1";
   }
+
+  /**
+   * Reports progress to JavaScript by calling the global reportProgress function.
+   *
+   * @param progress The progress value between 0.0 and 1.0.
+   */
+  @JSBody(params = {"progress"}, script = "if (typeof reportProgress === 'function') { reportProgress(progress); }")
+  private static native void reportProgressToJavaScript(double progress);
 
   /**
    * Executes all scenarios in the provided QubecTalk code and returns the results.
@@ -60,9 +69,12 @@ public class KigaliWasmSimFacade {
 
       List<EngineResult> allResults = new ArrayList<>();
 
+      // Create progress callback that reports to JavaScript
+      ProgressReportCallback progressCallback = progress -> reportProgressToJavaScript(progress);
+
       // Run all scenarios
       for (String scenarioName : program.getScenarios()) {
-        List<EngineResult> scenarioResults = KigaliSimFacade.runScenario(program, scenarioName)
+        List<EngineResult> scenarioResults = KigaliSimFacade.runScenario(program, scenarioName, progressCallback)
             .collect(Collectors.toList());
         allResults.addAll(scenarioResults);
       }

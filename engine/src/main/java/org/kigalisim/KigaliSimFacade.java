@@ -73,6 +73,21 @@ public class KigaliSimFacade {
   }
 
   /**
+   * Calculate the total number of trials across all scenarios in a program.
+   *
+   * @param program The parsed program containing scenarios.
+   * @return The total number of trials across all scenarios.
+   */
+  public static int getNumberTotalTrials(ParsedProgram program) {
+    int totalTrials = 0;
+    for (String scenarioName : program.getScenarios()) {
+      ParsedScenario scenario = program.getScenario(scenarioName);
+      totalTrials += scenario.getTrials();
+    }
+    return totalTrials;
+  }
+
+  /**
    * Run a scenario from the provided program and return results.
    *
    * <p>Creates and executes a simulation using the provided program and simulation name where this
@@ -82,9 +97,11 @@ public class KigaliSimFacade {
    *
    * @param program The parsed program containing the simulation to run.
    * @param scenarioName The name of the simulation to execute from the program.
+   * @param progressCallback Callback for reporting progress, called after each trial completes.
    * @return Stream of EngineResult objects containing the simulation results
    */
-  public static Stream<EngineResult> runScenario(ParsedProgram program, String scenarioName) {
+  public static Stream<EngineResult> runScenario(ParsedProgram program, String scenarioName, 
+                                                  ProgressReportCallback progressCallback) {
     // Get the scenario from the program
     if (!program.getScenarios().contains(scenarioName)) {
       throw new IllegalArgumentException("Scenario not found: " + scenarioName);
@@ -93,11 +110,30 @@ public class KigaliSimFacade {
     // Get the scenario
     ParsedScenario scenario = program.getScenario(scenarioName);
 
+    // Calculate total trials across all scenarios for progress tracking
+    int totalTrials = getNumberTotalTrials(program);
+    
+    // Calculate completed trials before this scenario
+    int completedTrialsBeforeScenario = 0;
+    for (String otherScenarioName : program.getScenarios()) {
+      if (otherScenarioName.equals(scenarioName)) {
+        break;
+      }
+      completedTrialsBeforeScenario += program.getScenario(otherScenarioName).getTrials();
+    }
+
     // Run trials
     int numTrials = scenario.getTrials();
     Stream<EngineResult> results = Stream.empty();
     for (int i = 0; i < numTrials; i++) {
       results = Stream.concat(results, runTrial(program, scenario, i + 1));
+      
+      // Report progress after each trial
+      if (progressCallback != null) {
+        int completedTrials = completedTrialsBeforeScenario + i + 1;
+        double progress = (double) completedTrials / totalTrials;
+        progressCallback.reportProgress(progress);
+      }
     }
     return results;
   }

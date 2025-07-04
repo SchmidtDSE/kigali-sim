@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.stream.Stream;
 import org.kigalisim.KigaliSimFacade;
+import org.kigalisim.ProgressReportCallback;
 import org.kigalisim.engine.serializer.EngineResult;
 import org.kigalisim.lang.program.ParsedProgram;
 import picocli.CommandLine.Command;
@@ -54,12 +55,22 @@ public class RunCommand implements Callable<Integer> {
       // Parse and interpret the file
       ParsedProgram program = KigaliSimFacade.parseAndInterpret(file.getPath());
 
+      // Create progress callback that prints to stdout
+      ProgressReportCallback progressCallback = progress -> {
+        int percentage = (int) (progress * 100);
+        System.out.print("\rProgress: " + percentage + "%");
+        System.out.flush();
+      };
+
       // Run all scenarios in the program and collect results
       Stream<EngineResult> allResults = program.getScenarios().stream()
-          .flatMap(scenarioName -> KigaliSimFacade.runScenario(program, scenarioName));
+          .flatMap(scenarioName -> KigaliSimFacade.runScenario(program, scenarioName, progressCallback));
 
       // Collect to a list to see how many results we have
       List<EngineResult> resultsList = allResults.collect(java.util.stream.Collectors.toList());
+      
+      // Print a newline after progress is complete
+      System.out.println();
 
       // Convert results to CSV and write to file
       String csvContent = KigaliSimFacade.convertResultsToCsv(resultsList);

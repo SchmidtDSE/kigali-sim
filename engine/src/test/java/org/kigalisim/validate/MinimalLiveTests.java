@@ -35,7 +35,7 @@ public class MinimalLiveTests {
 
     // Run the scenario using KigaliSimFacade
     String scenarioName = "business as usual";
-    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName);
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
 
     // Convert to list for checking results across multiple years
     List<EngineResult> resultsList = results.collect(Collectors.toList());
@@ -65,7 +65,7 @@ public class MinimalLiveTests {
 
     // Run the scenario using KigaliSimFacade
     String scenarioName = "Sim";
-    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName);
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
 
     // Convert to list for multiple access
     List<EngineResult> resultsList = results.collect(Collectors.toList());
