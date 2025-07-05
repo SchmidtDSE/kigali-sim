@@ -885,6 +885,15 @@ class ConsumptionListPresenter {
       (x) => getValueOrDefault(x.getInitialCharge("import"), importFallback),
     );
 
+    const exportFallback = new EngineNumber(1, "kg / unit");
+    setEngineNumberValue(
+      self._dialog.querySelector(".edit-consumption-initial-charge-export-input"),
+      self._dialog.querySelector(".initial-charge-export-units-input"),
+      objToShow,
+      exportFallback,
+      (x) => getValueOrDefault(x.getInitialCharge("export"), exportFallback),
+    );
+
     setEngineNumberValue(
       self._dialog.querySelector(".edit-consumption-retirement-input"),
       self._dialog.querySelector(".retirement-units-input"),
@@ -1108,6 +1117,18 @@ class ConsumptionListPresenter {
       null,
     );
     substanceBuilder.addCommand(initialChargeImportCommand);
+
+    const initialChargeExport = getEngineNumberValue(
+      self._dialog.querySelector(".edit-consumption-initial-charge-export-input"),
+      self._dialog.querySelector(".initial-charge-export-units-input"),
+    );
+    const initialChargeExportCommand = new Command(
+      "initial charge",
+      "export",
+      initialChargeExport,
+      null,
+    );
+    substanceBuilder.addCommand(initialChargeExportCommand);
 
     const retirement = getEngineNumberValue(
       self._dialog.querySelector(".edit-consumption-retirement-input"),
