@@ -722,6 +722,7 @@ public class SingleThreadEngine implements Engine {
     BigDecimal changeAmountRaw = convertedMax.getValue().subtract(currentValue.getValue());
     BigDecimal changeAmount = changeAmountRaw.min(BigDecimal.ZERO);
 
+
     // Record units regardless of whether change is made
     Scope scope = this.scope;
     String application = scope.getApplication();
@@ -729,10 +730,11 @@ public class SingleThreadEngine implements Engine {
     if (application == null || substance == null) {
       raiseNoAppOrSubstance("setting stream", " specified");
     }
-    streamKeeper.setLastSpecifiedUnits(scope, amount.getUnits());
+    streamKeeper.setLastSpecifiedUnits(scope, "kg");
 
     EngineNumber changeWithUnits = new EngineNumber(changeAmount, "kg");
     changeStreamWithoutReportingUnits(stream, changeWithUnits, null, null);
+
 
     handleDisplacement(stream, amount, changeAmount, displaceTarget);
   }
@@ -777,7 +779,7 @@ public class SingleThreadEngine implements Engine {
     if (application == null || substance == null) {
       raiseNoAppOrSubstance("setting stream", " specified");
     }
-    streamKeeper.setLastSpecifiedUnits(scope, amount.getUnits());
+    streamKeeper.setLastSpecifiedUnits(scope, "kg");
 
     EngineNumber changeWithUnits = new EngineNumber(changeAmount, "kg");
     changeStreamWithoutReportingUnits(stream, changeWithUnits, null, null);
