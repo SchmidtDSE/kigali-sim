@@ -260,7 +260,7 @@ public class SingleThreadEngine implements Engine {
     if ("sales".equals(name) || "manufacture".equals(name) || "import".equals(name)) {
       RecalcOperationBuilder builder = new RecalcOperationBuilder()
           .setScopeEffective(keyEffective)
-          .setSubtractRecharge(!value.hasEquipmentUnits())
+          .setSubtractRecharge(getShouldSubtractRecharge(name))
           .setRecalcKit(createRecalcKit())
           .recalcPopulationChange()
           .thenPropagateToConsumption();
@@ -514,7 +514,6 @@ public class SingleThreadEngine implements Engine {
     return streamKeeper.getRechargeIntensity(scope);
   }
 
-  // Additional placeholder methods for remaining interface methods
   @Override
   public void recharge(EngineNumber volume, EngineNumber intensity, YearMatcher yearMatcher) {
     if (!getIsInRange(yearMatcher)) {
@@ -534,9 +533,13 @@ public class SingleThreadEngine implements Engine {
     streamKeeper.setRechargePopulation(scope, volume);
     streamKeeper.setRechargeIntensity(scope, intensity);
 
+    // Determine if we should subtract recharge based on how sales streams were specified
+    boolean subtractRecharge = getShouldSubtractRecharge("sales");
+
     // Recalculate
     RecalcOperation operation = new RecalcOperationBuilder()
         .setRecalcKit(createRecalcKit())
+        .setSubtractRecharge(subtractRecharge)
         .recalcPopulationChange()
         .thenPropagateToSales()
         .thenPropagateToConsumption()
@@ -724,12 +727,19 @@ public class SingleThreadEngine implements Engine {
     if (application == null || substance == null) {
       raiseNoAppOrSubstance("setting stream", " specified");
     }
-    streamKeeper.setLastSpecifiedUnits(scope, amount.getUnits());
+    // Save original user-specified units, temporarily set to kg for this operation
+    final String originalUnits = streamKeeper.getLastSpecifiedUnits(scope);
+    streamKeeper.setLastSpecifiedUnits(scope, "kg");
 
     EngineNumber changeWithUnits = new EngineNumber(changeAmount, "kg");
     changeStreamWithoutReportingUnits(stream, changeWithUnits, null, null);
 
     handleDisplacement(stream, amount, changeAmount, displaceTarget);
+    
+    // Restore original user-specified units after the cap operation
+    if (originalUnits != null) {
+      streamKeeper.setLastSpecifiedUnits(scope, originalUnits);
+    }
   }
 
   @Override
@@ -772,12 +782,19 @@ public class SingleThreadEngine implements Engine {
     if (application == null || substance == null) {
       raiseNoAppOrSubstance("setting stream", " specified");
     }
-    streamKeeper.setLastSpecifiedUnits(scope, amount.getUnits());
+    // Save original user-specified units, temporarily set to kg for this operation
+    final String originalUnits = streamKeeper.getLastSpecifiedUnits(scope);
+    streamKeeper.setLastSpecifiedUnits(scope, "kg");
 
     EngineNumber changeWithUnits = new EngineNumber(changeAmount, "kg");
     changeStreamWithoutReportingUnits(stream, changeWithUnits, null, null);
 
     handleDisplacement(stream, amount, changeAmount, displaceTarget);
+    
+    // Restore original user-specified units after the floor operation
+    if (originalUnits != null) {
+      streamKeeper.setLastSpecifiedUnits(scope, originalUnits);
+    }
   }
 
   @Override

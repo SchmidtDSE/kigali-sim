@@ -1,0 +1,27 @@
+start default
+
+  define application "Domestic AC"
+  
+    uses substance "HFC-32"
+      initial charge with 0.85 kg / unit for manufacture
+      initial charge with 0.85 kg / unit for import
+      initial charge with 1 kg / unit for export
+      equals 675 tCO2e / kg
+      equals 1 kwh / kg
+      set priorEquipment to 20000 units during year 2025
+      set import to 800 units during year 2025
+      change import by 7 % each year during years 2025 to 2035
+      recharge 10 % each year with 0.85 kg / unit
+    end substance
+  
+  end application
+
+end default
+
+
+start simulations
+
+  simulate "BAU"
+  from years 2025 to 2035
+
+end simulations

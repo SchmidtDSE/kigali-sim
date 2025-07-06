@@ -81,4 +81,37 @@ public class RechargeLiveTests {
     assertEquals("units", resultYear1.getPopulation().getUnits(),
         "Equipment units should be units");
   }
+
+  /**
+   * Test recharge_import_issue.qta to verify units with recharge and import.
+   * This test validates that when we have priorEquipment of 20000 units and import set,
+   * the total units should be at least 20000 in 2025 (not decrease).
+   */
+  @Test
+  public void testRechargeImportIssue() throws IOException {
+    // Load and parse the QTA file
+    String qtaPath = "../examples/recharge_import_issue.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    // Run the scenario using KigaliSimFacade
+    String scenarioName = "BAU";
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
+
+    List<EngineResult> resultsList = results.collect(Collectors.toList());
+
+    // Check year 2025 equipment (population) value
+    // Should have at least 20000 units (the priorEquipment value)
+    EngineResult resultYear2025 = LiveTestsUtil.getResult(resultsList.stream(), 2025, "Domestic AC", "HFC-32");
+    assertNotNull(resultYear2025, "Should have result for Domestic AC/HFC-32 in year 2025");
+    
+    double unitsIn2025 = resultYear2025.getPopulation().getValue().doubleValue();
+    
+    // Assert that units should be at least 20000 (the priorEquipment value)
+    assertEquals(true, unitsIn2025 >= 20000.0,
+        "Equipment should be at least 20000 units in year 2025 (priorEquipment value), but was " + unitsIn2025);
+    assertEquals("units", resultYear2025.getPopulation().getUnits(),
+        "Equipment units should be units");
+  }
+
 }

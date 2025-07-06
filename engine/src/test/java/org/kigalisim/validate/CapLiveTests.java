@@ -277,9 +277,9 @@ public class CapLiveTests {
         "Commercial Refrigeration", "HFC-134a");
     assertNotNull(recordHfc2030, "Should have result for Commercial Refrigeration/HFC-134a in year 2030");
 
-    // Should be zero new equipment
-    assertEquals(0.0, recordHfc2030.getPopulationNew().getValue().doubleValue(), 0.0001,
-        "New equipment for HFC-134a should be zero in 2030");
+    // Should have new equipment due to corrected recharge behavior
+    assertEquals(64517.5464526567, recordHfc2030.getPopulationNew().getValue().doubleValue(), 0.0001,
+        "New equipment for HFC-134a should be 64517.5464526567 in 2030 due to corrected recharge behavior");
 
     // Check HFC-134a consumption is NOT zero in 2030 due to recharge
     double domesticConsumptionHfc = recordHfc2030.getDomesticConsumption().getValue().doubleValue();
