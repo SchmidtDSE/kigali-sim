@@ -10,6 +10,7 @@ start default
       
       # Initial charge and recharge levels
       initial charge with 1 kg / unit for sales
+      enable manufacture
       recharge 5% each year with 1 kg / unit
 
       # Specify prior equipment

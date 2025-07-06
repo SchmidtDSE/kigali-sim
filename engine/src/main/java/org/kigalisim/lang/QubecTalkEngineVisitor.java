@@ -30,6 +30,7 @@ import org.kigalisim.lang.operation.ChangeUnitsOperation;
 import org.kigalisim.lang.operation.ConditionalOperation;
 import org.kigalisim.lang.operation.DefineVariableOperation;
 import org.kigalisim.lang.operation.DivisionOperation;
+import org.kigalisim.lang.operation.EnableOperation;
 import org.kigalisim.lang.operation.EqualityOperation;
 import org.kigalisim.lang.operation.EqualsOperation;
 import org.kigalisim.lang.operation.FloorOperation;
@@ -839,6 +840,27 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
     String stream = ctx.target.getText();
     ParsedDuring during = visit(ctx.duration).getDuring();
     Operation operation = new SetOperation(stream, valueOperation, during);
+    return new OperationFragment(operation);
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public Fragment visitEnableAllYears(QubecTalkParser.EnableAllYearsContext ctx) {
+    String stream = ctx.target.getText();
+    Operation operation = new EnableOperation(stream);
+    return new OperationFragment(operation);
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public Fragment visitEnableDuration(QubecTalkParser.EnableDurationContext ctx) {
+    String stream = ctx.target.getText();
+    ParsedDuring during = visit(ctx.duration).getDuring();
+    Operation operation = new EnableOperation(stream, during);
     return new OperationFragment(operation);
   }
 

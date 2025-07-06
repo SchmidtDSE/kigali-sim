@@ -243,8 +243,9 @@ public class SingleThreadEngine implements Engine {
 
     streamKeeper.setStream(keyEffective, name, value);
 
-    // Track enabled streams when set to non-zero values
-    if (value.getValue().compareTo(BigDecimal.ZERO) != 0 
+    // Track enabled streams when set to non-zero values (using epsilon to handle floating point precision)
+    BigDecimal epsilon = new BigDecimal("1e-9");
+    if (value.getValue().abs().compareTo(epsilon) > 0
         && ("manufacture".equals(name) || "import".equals(name))) {
       streamKeeper.markStreamAsEnabled(keyEffective, name);
     }
@@ -310,6 +311,26 @@ public class SingleThreadEngine implements Engine {
   @Override
   public void setStream(String name, EngineNumber value, Optional<YearMatcher> yearMatcher) {
     setStreamFor(name, value, yearMatcher, Optional.empty(), true, Optional.empty());
+  }
+
+  @Override
+  public void enable(String name, Optional<YearMatcher> yearMatcher) {
+    if (!getIsInRange(yearMatcher.orElse(null))) {
+      return;
+    }
+
+    UseKey keyEffective = scope;
+    String application = keyEffective.getApplication();
+    String substance = keyEffective.getSubstance();
+
+    if (application == null || substance == null) {
+      raiseNoAppOrSubstance("enabling stream", " specified");
+    }
+
+    // Only allow enabling of manufacture, import, and export streams
+    if ("manufacture".equals(name) || "import".equals(name) || "export".equals(name)) {
+      streamKeeper.markStreamAsEnabled(keyEffective, name);
+    }
   }
 
   @Override
@@ -537,6 +558,7 @@ public class SingleThreadEngine implements Engine {
     // Determine if recharge should be subtracted based on last specified units
     String lastUnits = streamKeeper.getLastSpecifiedUnits(scope);
     boolean subtractRecharge = lastUnits == null || !lastUnits.startsWith("unit");
+    
 
     // Recalculate
     RecalcOperation operation = new RecalcOperationBuilder()
@@ -677,6 +699,7 @@ public class SingleThreadEngine implements Engine {
     }
 
     UseKey useKeyEffective = useKey == null ? scope : useKey;
+    
 
     EngineNumber currentValue = getStream(stream, Optional.of(useKeyEffective), Optional.empty());
     UnitConverter unitConverter = createUnitConverterWithTotal(stream);
@@ -714,6 +737,7 @@ public class SingleThreadEngine implements Engine {
       );
       BigDecimal totalWithRecharge = amountInKg.getValue().add(rechargeVolume.getValue());
       convertedMax = new EngineNumber(totalWithRecharge, "kg");
+      
     } else {
       // For volume units, use as-is
       convertedMax = unitConverter.convert(amount, "kg");
@@ -730,11 +754,12 @@ public class SingleThreadEngine implements Engine {
     if (application == null || substance == null) {
       raiseNoAppOrSubstance("setting stream", " specified");
     }
-    streamKeeper.setLastSpecifiedUnits(scope, "kg");
+    // Don't change lastSpecifiedUnits for cap operations - preserve original context
+    // streamKeeper.setLastSpecifiedUnits(scope, "kg");
+
 
     EngineNumber changeWithUnits = new EngineNumber(changeAmount, "kg");
     changeStreamWithoutReportingUnits(stream, changeWithUnits, null, null);
-
 
     handleDisplacement(stream, amount, changeAmount, displaceTarget);
   }
@@ -779,7 +804,8 @@ public class SingleThreadEngine implements Engine {
     if (application == null || substance == null) {
       raiseNoAppOrSubstance("setting stream", " specified");
     }
-    streamKeeper.setLastSpecifiedUnits(scope, "kg");
+    // Don't change lastSpecifiedUnits for floor operations - preserve original context
+    // streamKeeper.setLastSpecifiedUnits(scope, "kg");
 
     EngineNumber changeWithUnits = new EngineNumber(changeAmount, "kg");
     changeStreamWithoutReportingUnits(stream, changeWithUnits, null, null);
@@ -882,6 +908,7 @@ public class SingleThreadEngine implements Engine {
       return;
     }
 
+
     EngineNumber displaceChange;
 
     if (amount.hasEquipmentUnits()) {
@@ -892,10 +919,13 @@ public class SingleThreadEngine implements Engine {
       EngineNumber volumeChangeFlip = new EngineNumber(changeAmount.negate(), "kg");
       EngineNumber unitsChanged = currentUnitConverter.convert(volumeChangeFlip, "units");
 
+
       boolean isStream = STREAM_NAMES.contains(displaceTarget);
       if (isStream) {
         // Same substance, same stream - use volume displacement
         displaceChange = new EngineNumber(changeAmount.negate(), "kg");
+        
+        
         changeStreamWithoutReportingUnits(displaceTarget, displaceChange, null, null);
       } else {
         // Different substance - apply the same number of units to the destination substance
@@ -909,6 +939,7 @@ public class SingleThreadEngine implements Engine {
         // Convert units to destination substance volume using destination's initial charge
         EngineNumber destinationVolumeChange = destinationUnitConverter.convert(unitsChanged, "kg");
         displaceChange = new EngineNumber(destinationVolumeChange.getValue(), "kg");
+        
         
         changeStreamWithoutReportingUnits(stream, displaceChange, null, destinationScope);
 

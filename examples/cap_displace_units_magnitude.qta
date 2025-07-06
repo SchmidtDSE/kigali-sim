@@ -5,6 +5,7 @@ start default
     uses substance "HFC-134a"
       initial charge with 0.6 kg / unit for sales
       equals 1430 tCO2e / kg
+      enable import
       set priorEquipment to 1000 units during year beginning
       set import to 400 units each year during year beginning
     end substance
@@ -13,6 +14,7 @@ start default
     uses substance "R-404A"
       initial charge with 10 kg / unit for sales
       equals 3921.6 tCO2e / kg
+      enable import
       set priorEquipment to 100 units during year beginning
       set import to 200 units each year during year beginning
     end substance

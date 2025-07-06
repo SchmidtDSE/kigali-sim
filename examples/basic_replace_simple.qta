@@ -14,6 +14,7 @@ start default
       initial charge with 20 kg / unit for manufacture
       equals 10 * 1000 tCO2e / mt
       equals 1 * 1000 kwh / mt
+      enable manufacture
     end substance
 
   end application

@@ -5,6 +5,8 @@ start default
     uses substance "sub_a"
       initial charge with 10 kg / unit for manufacture
       initial charge with 10 kg / unit for import
+      enable manufacture
+      enable import
       recharge 10% each year with 10 kg / unit
       set manufacture to 100 kg during year 1
       set import to 50 kg during year 1
@@ -15,6 +17,8 @@ start default
     uses substance "sub_b"
       initial charge with 20 kg / unit for manufacture
       initial charge with 20 kg / unit for import
+      enable manufacture
+      enable import
       recharge 10% each year with 20 kg / unit
       set manufacture to 200 kg during year 1
       set import to 100 kg during year 1

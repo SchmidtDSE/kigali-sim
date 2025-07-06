@@ -8,6 +8,7 @@ start default
       initial charge with 1 kg / unit for export
       equals 675 tCO2e / kg
       equals 1 kwh / kg
+      enable import
       set priorEquipment to 20000 units during year 2025
       set import to 800 units during year 2025
       change import by 7 % each year during years 2025 to 2035

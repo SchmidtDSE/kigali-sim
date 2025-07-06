@@ -152,6 +152,8 @@ DISPLACING_ : 'displacing';
 
 DURING_: 'during';
 
+ENABLE_: 'enable';
+
 CONSUME_: 'equals';
 
 FLOOR_: 'floor';
@@ -400,6 +402,10 @@ setStatement: SET_ target=stream TO_ value=unitValue  # setAllYears
   | SET_ target=stream TO_ value=unitValue duration=during  # setDuration
   ;
 
+enableStatement: ENABLE_ target=stream  # enableAllYears
+  | ENABLE_ target=stream duration=during  # enableDuration
+  ;
+
 simulate: SIMULATE_ name=string FROM_ YEARS_ start=expression TO_ end=expression  # baseSimulation
   | SIMULATE_ name=string USING_ string (THEN_ string)* FROM_ YEARS_ start=expression TO_ end=expression  # policySim
   | SIMULATE_ name=string FROM_ YEARS_ start=expression TO_ end=expression ACROSS_ trials=expression TRIALS_  # baseSimulationTrials
@@ -414,7 +420,7 @@ simulate: SIMULATE_ name=string FROM_ YEARS_ start=expression TO_ end=expression
 
 globalStatement: (defineVarStatement | setStatement);
 
-substanceStatement: (capStatement | changeStatement | equalsStatement | initialChargeStatement | rechargeStatement | recycleStatement | replaceStatement | retireStatement);
+substanceStatement: (capStatement | changeStatement | enableStatement | equalsStatement | initialChargeStatement | rechargeStatement | recycleStatement | replaceStatement | retireStatement);
 
 /**
  * -------------

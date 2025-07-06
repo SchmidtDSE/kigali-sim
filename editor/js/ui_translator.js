@@ -33,6 +33,7 @@ const COMMAND_COMPATIBILITIES = {
   "recharge": "definition",
   "recycle": "policy",
   "replace": "policy",
+  "enable": "none",
 };
 
 const SUPPORTED_EQUALS_UNITS = [
@@ -2970,6 +2971,28 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
     const targetFuture = (ctx) => null;
     const duration = ctx.duration.accept(self);
     return self._buildOperation(ctx, "equals", duration, targetFuture);
+  }
+
+  /**
+   * Visit an enable command with all years duration node.
+   *
+   * @param {Object} ctx - The parse tree node context.
+   * @returns {IncompatibleCommand} Incompatibility marker for enable.
+   */
+  visitEnableAllYears(ctx) {
+    const self = this;
+    return new IncompatibleCommand("enable");
+  }
+
+  /**
+   * Visit an enable command with duration node.
+   *
+   * @param {Object} ctx - The parse tree node context.
+   * @returns {IncompatibleCommand} Incompatibility marker for enable.
+   */
+  visitEnableDuration(ctx) {
+    const self = this;
+    return new IncompatibleCommand("enable");
   }
 
   /**

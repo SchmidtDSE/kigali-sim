@@ -7,6 +7,7 @@ start default
       initial charge with 2 kg / unit for import
       equals 100 tCO2e / kg
       equals 1 kwh / kg
+      enable manufacture
       set manufacture to 100 mt during year 1
       retire 5 % each year
       recharge 5 % each year with 1 kg / unit
@@ -18,6 +19,7 @@ start default
       initial charge with 2 kg / unit for import
       equals 10 tCO2e / kg
       equals 1 kwh / kg
+      enable manufacture
       retire 5 % each year
       recharge 5 % each year with 1 kg / unit
     end substance

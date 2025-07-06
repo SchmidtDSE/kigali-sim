@@ -135,6 +135,7 @@ public class SalesRecalcStrategy implements RecalcStrategy {
 
     BigDecimal percentManufacture = distribution.getPercentManufacture();
     BigDecimal percentImport = distribution.getPercentImport();
+    
 
     // Recycle
     EngineNumber newRecycleValue = new EngineNumber(recycledDisplacedKg, "kg");

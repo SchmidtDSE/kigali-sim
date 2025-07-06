@@ -124,6 +124,7 @@
     uses substance "HFC-134a"
       set priorEquipment to 1000000 units during year beginning
       initial charge with 0.15 kg / unit for sales
+      enable manufacture
       retire 5 % each year
       recharge 10% each year with 0.15 kg / unit
       set manufacture to 30000 units / year during year beginning
@@ -992,6 +993,7 @@ end simulations</code></pre>
     uses substance "HFC-134a"
       set priorEquipment to 1000000 units during year beginning
       initial charge with 0.15 kg / unit for sales
+      enable manufacture
       retire 5 % each year
       recharge 10 % each year with 0.15 kg / unit
       set manufacture to 30000 units / year during year beginning
@@ -1014,6 +1016,7 @@ end simulations</code></pre>
     uses substance "HFC-134a"
       set priorEquipment to 200000 units during year beginning
       initial charge with 0.60 kg / unit for sales
+      enable import
       retire 10 % each year  # roughly equivalent to 10 years
       recharge 30 % each year with 0.60 kg / unit
       set import to (10000 * (200000 / 750000)) units / year during year beginning
@@ -1107,6 +1110,8 @@ end simulations</code></pre>
       initial charge with 1.00 kg / unit for sales
       retire 5 % each year  # roughly equivalent to 15 years
       recharge 10 % each year with 1.00 kg / unit
+      enable import
+      enable manufacture
       set import to 100 units / year during year beginning
       set manufacture to 40000 units / year during year beginning  # recharge will not reduce 
       # when units are specified in a set point - setting manufacture to 100 units means 100 

@@ -160,12 +160,18 @@ public class SalesStreamDistributionBuilder {
         return new SalesStreamDistribution(BigDecimal.ONE, BigDecimal.ZERO, BigDecimal.ZERO);
       } else if (importEnabled.get() && !manufactureEnabled.get()) {
         return new SalesStreamDistribution(BigDecimal.ZERO, BigDecimal.ONE, BigDecimal.ZERO);
-      } else {
-        // Both enabled or both disabled - use 50/50 split
+      } else if (manufactureEnabled.get() && importEnabled.get()) {
+        // Both enabled - use 50/50 split
         return new SalesStreamDistribution(
             new BigDecimal("0.5"),
             new BigDecimal("0.5"),
             BigDecimal.ZERO
+        );
+      } else {
+        // Both disabled - this is an error condition
+        throw new IllegalStateException(
+            "Cannot calculate sales distribution: no streams have been enabled. "
+            + "Use 'set import' or 'set manufacture' statements to enable streams before operations like 'recharge' that require sales recalculation."
         );
       }
     } else {
@@ -192,9 +198,11 @@ public class SalesStreamDistributionBuilder {
       }
       
       if (enabledCount == 0) {
-        // None enabled - equal split among all three
-        BigDecimal third = new BigDecimal("0.333333333333333");
-        return new SalesStreamDistribution(third, third, third);
+        // None enabled - this is an error condition
+        throw new IllegalStateException(
+            "Cannot calculate sales distribution: no streams have been enabled. "
+            + "Use 'set import', 'set manufacture', or 'set export' statements to enable streams before operations like 'recharge' that require sales recalculation."
+        );
       } else {
         BigDecimal equalShare = BigDecimal.ONE.divide(BigDecimal.valueOf(enabledCount), MathContext.DECIMAL128);
         return new SalesStreamDistribution(

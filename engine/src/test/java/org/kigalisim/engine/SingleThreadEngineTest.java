@@ -595,4 +595,112 @@ public class SingleThreadEngineTest {
         "Sub B should gain 40 kg (2 units * 20 kg/unit): 0 + 40 = 40");
     assertEquals("kg", substanceTwoResult.getUnits(), "Sub B should have kg units");
   }
+
+  /**
+   * Test enable method for manufacture stream.
+   */
+  @Test
+  public void testEnableManufactureStream() {
+    SingleThreadEngine engine = new SingleThreadEngine(2020, 2025);
+
+    // Set up the engine with a scope
+    engine.setStanza("default");
+    engine.setApplication("test app");
+    engine.setSubstance("test substance");
+
+    // Enable manufacture stream
+    engine.enable("manufacture", Optional.empty());
+    
+    // Test passes if no exception is thrown
+    assertTrue(true, "Enable method should execute without error for manufacture stream");
+  }
+
+  /**
+   * Test enable method for import stream.
+   */
+  @Test
+  public void testEnableImportStream() {
+    SingleThreadEngine engine = new SingleThreadEngine(2020, 2025);
+
+    // Set up the engine with a scope
+    engine.setStanza("default");
+    engine.setApplication("test app");
+    engine.setSubstance("test substance");
+
+    // Enable import stream
+    engine.enable("import", Optional.empty());
+    
+    // Test passes if no exception is thrown
+    assertTrue(true, "Enable method should execute without error for import stream");
+  }
+
+  /**
+   * Test enable method for export stream.
+   */
+  @Test
+  public void testEnableExportStream() {
+    SingleThreadEngine engine = new SingleThreadEngine(2020, 2025);
+
+    // Set up the engine with a scope
+    engine.setStanza("default");
+    engine.setApplication("test app");
+    engine.setSubstance("test substance");
+
+    // Enable export stream
+    engine.enable("export", Optional.empty());
+    
+    // Test passes if no exception is thrown
+    assertTrue(true, "Enable method should execute without error for export stream");
+  }
+
+  /**
+   * Test enable method with year matcher.
+   */
+  @Test
+  public void testEnableWithYearMatcher() {
+    SingleThreadEngine engine = new SingleThreadEngine(2020, 2025);
+
+    // Set up the engine with a scope
+    engine.setStanza("default");
+    engine.setApplication("test app");
+    engine.setSubstance("test substance");
+
+    // Enable manufacture stream with year matcher
+    YearMatcher yearMatcher = YearMatcher.unbounded();
+    engine.enable("manufacture", Optional.of(yearMatcher));
+    
+    // Test passes if no exception is thrown
+    assertTrue(true, "Enable method should execute without error with year matcher");
+  }
+
+  /**
+   * Test enable method throws error without scope.
+   */
+  @Test
+  public void testEnableThrowsWithoutScope() {
+    SingleThreadEngine engine = new SingleThreadEngine(2020, 2025);
+
+    // Don't set up scope - should throw error
+    assertThrows(RuntimeException.class, () -> engine.enable("manufacture", Optional.empty()),
+        "Enable method should throw error when called without proper scope");
+  }
+
+  /**
+   * Test enable method ignores invalid stream names.
+   */
+  @Test
+  public void testEnableIgnoresInvalidStreams() {
+    SingleThreadEngine engine = new SingleThreadEngine(2020, 2025);
+
+    // Set up the engine with a scope
+    engine.setStanza("default");
+    engine.setApplication("test app");
+    engine.setSubstance("test substance");
+
+    // Try to enable invalid stream - should not throw error
+    engine.enable("invalidStream", Optional.empty());
+    
+    // Test passes if no exception is thrown
+    assertTrue(true, "Enable method should ignore invalid stream names without error");
+  }
 }
