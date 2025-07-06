@@ -462,14 +462,14 @@ public class SingleThreadEngineTest {
 
     // Check sub2 received displacement: original 200 kg + displaced units
     // converted to sub2's charge
-    // Original sub1: 100 kg, after cap: 70 kg, displaced: 30 kg
-    // 30 kg displaced from sub1 = 30 kg / 10 kg/unit = 3 units
-    // 3 units in sub2 = 3 units * 20 kg/unit = 60 kg
-    // Final sub2: 200 kg + 60 kg = 260 kg
+    // Original sub1 new equipment: 100 kg, after cap: 50 kg (5 units * 10 kg/unit), displaced: 50 kg
+    // 50 kg displaced from sub1 = 50 kg / 10 kg/unit = 5 units
+    // 5 units in sub2 = 5 units * 20 kg/unit = 100 kg
+    // Final sub2: 200 kg + 100 kg = 300 kg
     engine.setSubstance("sub2");
     EngineNumber displaceVal = engine.getStream("manufacture");
-    assertEquals(0, BigDecimal.valueOf(260).compareTo(displaceVal.getValue()),
-        "Sub2 should receive displaced units: 200 kg + 60 kg = 260 kg");
+    assertEquals(0, BigDecimal.valueOf(300).compareTo(displaceVal.getValue()),
+        "Sub2 should receive displaced units: 200 kg + 100 kg = 300 kg");
     assertEquals("kg", displaceVal.getUnits(), "Sub2 should have kg units");
   }
 
@@ -527,14 +527,14 @@ public class SingleThreadEngineTest {
 
     // Check sub2 received displacement: original 200 kg - displaced units
     // converted to sub2's charge
-    // Original sub1: 50 kg, after floor: 120 kg, displaced: 70 kg
-    // 70 kg displaced from sub1 = 70 kg / 10 kg/unit = 7 units
-    // 7 units in sub2 = 7 units * 20 kg/unit = 140 kg
-    // Final sub2: 200 kg - 140 kg = 60 kg
+    // Original sub1 new equipment: 50 kg, after floor: 100 kg (10 units * 10 kg/unit), displaced: -50 kg
+    // 50 kg added to sub1 = 50 kg / 10 kg/unit = 5 units
+    // 5 units removed from sub2 = 5 units * 20 kg/unit = 100 kg
+    // Final sub2: 200 kg - 100 kg = 100 kg
     engine.setSubstance("sub2");
     EngineNumber displaceVal = engine.getStream("manufacture");
-    assertEquals(0, BigDecimal.valueOf(60).compareTo(displaceVal.getValue()),
-        "Sub2 should receive displaced units: 200 kg - 140 kg = 60 kg");
+    assertEquals(0, BigDecimal.valueOf(100).compareTo(displaceVal.getValue()),
+        "Sub2 should receive displaced units: 200 kg - 100 kg = 100 kg");
     assertEquals("kg", displaceVal.getUnits(), "Sub2 should have kg units");
   }
 

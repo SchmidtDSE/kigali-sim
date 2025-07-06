@@ -534,8 +534,13 @@ public class SingleThreadEngine implements Engine {
     streamKeeper.setRechargePopulation(scope, volume);
     streamKeeper.setRechargeIntensity(scope, intensity);
 
+    // Determine if recharge should be subtracted based on last specified units
+    String lastUnits = streamKeeper.getLastSpecifiedUnits(scope);
+    boolean subtractRecharge = lastUnits == null || !lastUnits.startsWith("unit");
+
     // Recalculate
     RecalcOperation operation = new RecalcOperationBuilder()
+        .setSubtractRecharge(subtractRecharge)
         .setRecalcKit(createRecalcKit())
         .recalcPopulationChange()
         .thenPropagateToSales()
@@ -902,6 +907,7 @@ public class SingleThreadEngine implements Engine {
         // Convert units to destination substance volume using destination's initial charge
         EngineNumber destinationVolumeChange = destinationUnitConverter.convert(unitsChanged, "kg");
         displaceChange = new EngineNumber(destinationVolumeChange.getValue(), "kg");
+        
         changeStreamWithoutReportingUnits(stream, displaceChange, null, destinationScope);
 
         // Restore original scope
