@@ -461,11 +461,15 @@ public class SingleThreadEngineTest {
     assertEquals("kg", capVal.getUnits(), "Sub1 should have kg units");
 
     // Check sub2 received displacement: original 200 kg + displaced units
-    // With the fix, displacement calculation gives different results
+    // converted to sub2's charge
+    // Original sub1: 100 kg, after cap: 70 kg, displaced: 30 kg
+    // 30 kg displaced from sub1 = 30 kg / 10 kg/unit = 3 units
+    // 3 units in sub2 = 3 units * 20 kg/unit = 60 kg
+    // Final sub2: 200 kg + 60 kg = 260 kg
     engine.setSubstance("sub2");
     EngineNumber displaceVal = engine.getStream("manufacture");
-    assertEquals(0, BigDecimal.valueOf(300).compareTo(displaceVal.getValue()),
-        "Sub2 should receive displaced units: 300 kg with corrected unit-based cap behavior");
+    assertEquals(0, BigDecimal.valueOf(260).compareTo(displaceVal.getValue()),
+        "Sub2 should receive displaced units: 200 kg + 60 kg = 260 kg");
     assertEquals("kg", displaceVal.getUnits(), "Sub2 should have kg units");
   }
 
@@ -522,11 +526,15 @@ public class SingleThreadEngineTest {
     assertEquals("kg", floorVal.getUnits(), "Sub1 should have kg units");
 
     // Check sub2 received displacement: original 200 kg - displaced units
-    // With the fix, displacement calculation gives different results
+    // converted to sub2's charge
+    // Original sub1: 50 kg, after floor: 120 kg, displaced: 70 kg
+    // 70 kg displaced from sub1 = 70 kg / 10 kg/unit = 7 units
+    // 7 units in sub2 = 7 units * 20 kg/unit = 140 kg
+    // Final sub2: 200 kg - 140 kg = 60 kg
     engine.setSubstance("sub2");
     EngineNumber displaceVal = engine.getStream("manufacture");
-    assertEquals(0, BigDecimal.valueOf(100).compareTo(displaceVal.getValue()),
-        "Sub2 should have 100 kg with corrected unit-based floor behavior");
+    assertEquals(0, BigDecimal.valueOf(60).compareTo(displaceVal.getValue()),
+        "Sub2 should receive displaced units: 200 kg - 140 kg = 60 kg");
     assertEquals("kg", displaceVal.getUnits(), "Sub2 should have kg units");
   }
 
