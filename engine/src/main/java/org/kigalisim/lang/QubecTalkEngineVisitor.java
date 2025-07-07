@@ -773,7 +773,6 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
     return new OperationFragment(operation);
   }
 
-
   /**
    * {@inheritDoc}
    */

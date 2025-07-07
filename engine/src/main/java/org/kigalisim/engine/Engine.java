@@ -234,7 +234,6 @@ public interface Engine {
    */
   EngineNumber getRawInitialChargeFor(UseKey key, String stream);
 
-
   /**
    * Set the initial charge for a stream.
    *
@@ -333,7 +332,6 @@ public interface Engine {
    * @return The GHG intensity value with volume normalized GHG
    */
   EngineNumber getEqualsGhgIntensityFor(UseKey useKey);
-
 
   /**
    * Retrieve the energy intensity for the current application and substance.

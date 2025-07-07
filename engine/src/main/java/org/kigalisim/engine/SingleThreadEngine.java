@@ -347,8 +347,6 @@ public class SingleThreadEngine implements Engine {
     return streamKeeper.getStream(key, stream);
   }
 
-
-
   @Override
   public void defineVariable(String name) {
     if ("yearsElapsed".equals(name) || "yearAbsolute".equals(name)) {
@@ -475,7 +473,6 @@ public class SingleThreadEngine implements Engine {
     return streamKeeper.getInitialCharge(useKey, stream);
   }
 
-
   @Override
   public void setInitialCharge(EngineNumber value, String stream, YearMatcher yearMatcher) {
     if (!getIsInRange(yearMatcher)) {
@@ -554,7 +551,7 @@ public class SingleThreadEngine implements Engine {
     // Determine if explicit recharge should be used based on last sales units
     String lastUnits = streamKeeper.getLastSalesUnits(scope);
     boolean useExplicitRecharge = lastUnits == null || !lastUnits.startsWith("unit");
-    
+
     // Recalculate
     RecalcOperation operation = new RecalcOperationBuilder()
         .setUseExplicitRecharge(useExplicitRecharge)
@@ -675,7 +672,6 @@ public class SingleThreadEngine implements Engine {
     return streamKeeper.getGhgIntensity(useKey);
   }
 
-
   @Override
   public EngineNumber getEqualsEnergyIntensity() {
     return streamKeeper.getEnergyIntensity(scope);
@@ -694,7 +690,6 @@ public class SingleThreadEngine implements Engine {
     }
 
     UseKey useKeyEffective = useKey == null ? scope : useKey;
-    
     EngineNumber currentValue = getStream(stream, Optional.of(useKeyEffective), Optional.empty());
     UnitConverter unitConverter = createUnitConverterWithTotal(stream);
 
@@ -962,7 +957,6 @@ public class SingleThreadEngine implements Engine {
     }
   }
 
-
   /**
    * Check if a stream is a sales-related stream that influences recharge displacement.
    *
@@ -1009,7 +1003,6 @@ public class SingleThreadEngine implements Engine {
     }
     
     EngineNumber outputWithUnits = new EngineNumber(newAmountBound, currentValue.getUnits());
-
 
     // Allow propagation but don't track units (since units tracking was handled by the caller)
     setStreamFor(stream, outputWithUnits, Optional.empty(), Optional.ofNullable(scope), true, Optional.empty());

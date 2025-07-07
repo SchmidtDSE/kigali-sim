@@ -320,7 +320,6 @@ public class StreamKeeper {
     return parameterization.getGhgIntensity();
   }
 
-
   /**
    * Get the energy intensity for a key.
    *
@@ -419,7 +418,6 @@ public class StreamKeeper {
     parameterization.setRecoveryRate(newValue);
   }
 
-
   /**
    * Get the recovery rate percentage for a key.
    *
@@ -453,7 +451,6 @@ public class StreamKeeper {
     return parameterization.getDisplacementRate();
   }
 
-
   /**
    * Set the yield rate percentage for recycling for a key.
    *
@@ -464,7 +461,6 @@ public class StreamKeeper {
     StreamParameterization parameterization = getParameterization(useKey);
     parameterization.setYieldRate(newValue);
   }
-
 
   /**
    * Get the yield rate percentage for recycling for a key.
@@ -477,7 +473,6 @@ public class StreamKeeper {
     return parameterization.getYieldRate();
   }
 
-
   /**
    * Set the retirement rate percentage for a key.
    *
@@ -489,7 +484,6 @@ public class StreamKeeper {
     parameterization.setRetirementRate(newValue);
   }
 
-
   /**
    * Get the retirement rate percentage for a key.
    *
@@ -500,7 +494,6 @@ public class StreamKeeper {
     StreamParameterization parameterization = getParameterization(useKey);
     return parameterization.getRetirementRate();
   }
-
 
   /**
    * Set the last sales units for a key.
@@ -523,7 +516,6 @@ public class StreamKeeper {
     }
     parameterization.setLastSalesUnits(units);
   }
-
 
   /**
    * Get the last sales units for a key.
@@ -789,7 +781,6 @@ public class StreamKeeper {
     return EngineConstants.getBaseUnits(name);
   }
 
-
   /**
    * Determine if the user is setting a sales component (manufacture / import / sales) by units.
    *
@@ -803,6 +794,5 @@ public class StreamKeeper {
     boolean isUnits = value.getUnits().startsWith("unit");
     return isSalesComponent && isUnits;
   }
-
 
 }
