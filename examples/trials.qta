@@ -3,6 +3,7 @@ start default
   define application "test"
 
     uses substance "test"
+      enable manufacture
       initial charge with 1 kg / unit for manufacture
       set manufacture to 100 mt
       equals sample uniformly from 3 to 7 tCO2e / mt

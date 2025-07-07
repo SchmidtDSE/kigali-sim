@@ -42,6 +42,7 @@ public class StreamParameterization {
   public StreamParameterization() {
     this.initialCharge = new HashMap<>();
     this.enabledStreams = new HashSet<>();
+    this.lastSpecifiedUnits = "kg";  // Set initial default
     resetInternals();
   }
 
@@ -61,7 +62,6 @@ public class StreamParameterization {
     yieldRate = new EngineNumber(BigDecimal.ZERO, "%");
     retirementRate = new EngineNumber(BigDecimal.ZERO, "%");
     displacementRate = new EngineNumber(new BigDecimal("100"), "%");
-    lastSpecifiedUnits = "kg";
   }
 
   /**

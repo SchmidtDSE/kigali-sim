@@ -3,6 +3,7 @@ start default
   define application "test"
 
     uses substance "test"
+      enable manufacture
       initial charge with 2 kg / unit for manufacture
       recharge 10% each year with 1 kg / unit
       set manufacture to 10 kg

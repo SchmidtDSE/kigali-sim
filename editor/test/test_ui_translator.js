@@ -233,7 +233,7 @@ function buildUiTranslatorTests() {
 
     buildTest("converts recover with displacement", "/examples/recover_displace_sales_kg.qta", [
       (result, assert) => {
-        assert.ok(result.getIsCompatible());
+        assert.ok(!result.getIsCompatible());
       },
       (result, assert) => {
         const policies = result.getPolicies();

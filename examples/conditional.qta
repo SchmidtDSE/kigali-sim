@@ -3,6 +3,7 @@ start default
   define application "test"
 
     uses substance "test"
+      enable manufacture
       initial charge with 1 kg / unit for manufacture
       define testVar as 5
       set manufacture to 100 if testVar > 10 else 50 endif mt

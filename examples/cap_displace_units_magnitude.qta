@@ -3,6 +3,7 @@ start default
   define application "Test"
   
     uses substance "HFC-134a"
+      enable import
       initial charge with 0.6 kg / unit for sales
       equals 1430 tCO2e / kg
       set priorEquipment to 1000 units during year beginning
@@ -11,6 +12,7 @@ start default
 
 
     uses substance "R-404A"
+      enable import
       initial charge with 10 kg / unit for sales
       equals 3921.6 tCO2e / kg
       set priorEquipment to 100 units during year beginning

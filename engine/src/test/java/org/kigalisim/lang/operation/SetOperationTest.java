@@ -42,6 +42,9 @@ public class SetOperationTest {
     engine.setStanza("default");
     engine.setApplication("test app");
     engine.setSubstance("test substance");
+    
+    // Enable streams that will be used in tests
+    engine.enable("manufacture", Optional.empty());
   }
 
   /**

@@ -3,6 +3,7 @@ start default
   define application "test"
 
     uses substance "test"
+      enable manufacture
       initial charge with 1 kg / unit for manufacture
       set manufacture to 100 kg during year 1
       change manufacture by +10 kg each year during years 2 to onwards

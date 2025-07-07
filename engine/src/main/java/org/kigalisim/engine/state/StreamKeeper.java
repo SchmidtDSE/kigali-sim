@@ -127,6 +127,9 @@ public class StreamKeeper {
     ensureSubstanceOrThrow(key, "setStream");
     ensureStreamKnown(name);
 
+    // Check if stream needs to be enabled before setting
+    assertStreamEnabled(useKey, name, value);
+
     if (CHECK_NAN_STATE && value.getValue().toString().equals("NaN")) {
       String[] keyPieces = key.split("\t");
       String application = keyPieces.length > 0 ? keyPieces[0] : "";
@@ -737,6 +740,34 @@ public class StreamKeeper {
   private void ensureStreamKnown(String name) {
     if (EngineConstants.getBaseUnits(name) == null) {
       throw new IllegalArgumentException("Unknown stream: " + name);
+    }
+  }
+
+  /**
+   * Assert that a stream has been enabled for the given use key.
+   * Only checks manufacture, import, and export streams.
+   *
+   * @param useKey The key containing application and substance
+   * @param streamName The name of the stream to check
+   * @param value The value being set (no assertion needed if zero)
+   * @throws RuntimeException If the stream has not been enabled and value is non-zero
+   */
+  private void assertStreamEnabled(UseKey useKey, String streamName, EngineNumber value) {
+    // Only check enabling for sales streams that require explicit enabling
+    if (!"manufacture".equals(streamName) && !"import".equals(streamName) && !"export".equals(streamName)) {
+      return;
+    }
+    
+    // Don't require enabling if setting to zero
+    if (value.getValue().compareTo(BigDecimal.ZERO) == 0) {
+      return;
+    }
+    
+    StreamParameterization parameterization = getParameterization(useKey);
+    if (!parameterization.hasStreamBeenEnabled(streamName)) {
+      throw new RuntimeException("Stream '" + streamName + "' has not been enabled for " 
+          + useKey.getApplication() + "/" + useKey.getSubstance() 
+          + ". Use 'enable " + streamName + "' statement before setting this stream.");
     }
   }
 

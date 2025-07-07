@@ -305,10 +305,10 @@ public class StreamParameterizationTest {
   }
 
   /**
-   * Test that resetInternals resets last specified units.
+   * Test that resetInternals preserves last specified units.
    */
   @Test
-  public void testResetInternalsResetsLastSpecifiedUnits() {
+  public void testResetInternalsPreservesLastSpecifiedUnits() {
     StreamParameterization parameterization = new StreamParameterization();
 
     // Set units and verify
@@ -316,10 +316,10 @@ public class StreamParameterizationTest {
     assertEquals("units", parameterization.getLastSpecifiedUnits(),
                  "Should have set units");
 
-    // Reset and verify default
+    // Reset and verify units are preserved
     parameterization.resetInternals();
-    assertEquals("kg", parameterization.getLastSpecifiedUnits(),
-                 "Should reset to default units");
+    assertEquals("units", parameterization.getLastSpecifiedUnits(),
+                 "Should preserve units context across resets");
   }
 
   /**

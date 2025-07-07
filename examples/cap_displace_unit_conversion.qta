@@ -3,6 +3,7 @@ start default
   define application "test"
 
     uses substance "sub_a"
+      enable manufacture
       initial charge with 10 kg / unit for manufacture
       recharge 10% each year with 10 kg / unit
       set manufacture to 30 units during year 1  # 30 units * 10 kg/unit = 300 kg
@@ -11,6 +12,7 @@ start default
     end substance
 
     uses substance "sub_b"
+      enable manufacture
       initial charge with 20 kg / unit for manufacture
       recharge 10% each year with 20 kg / unit
       set manufacture to 10 units during year 1  # 10 units * 20 kg/unit = 200 kg

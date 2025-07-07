@@ -33,6 +33,7 @@ const COMMAND_COMPATIBILITIES = {
   "recharge": "definition",
   "recycle": "policy",
   "replace": "policy",
+  "enable": "definition",
 };
 
 const SUPPORTED_EQUALS_UNITS = [
@@ -979,6 +980,7 @@ class SubstanceBuilder {
     self._replaces = [];
     self._retire = null;
     self._setVals = [];
+    self._enables = [];
   }
 
   /**
@@ -991,6 +993,7 @@ class SubstanceBuilder {
     const self = this;
 
     const commandsConsolidatedInterpreted = [
+      self._enables,
       self._initialCharges,
       self._limits,
       self._recycles,
@@ -1022,6 +1025,7 @@ class SubstanceBuilder {
       self._replaces,
       self._retire,
       self._setVals,
+      self._enables,
       self._isModification,
       isCompatible,
     );
@@ -1068,6 +1072,7 @@ class SubstanceBuilder {
       "cap": (x) => self.addLimit(x),
       "floor": (x) => self.addLimit(x),
       "replace": (x) => self.addReplace(x),
+      "enable": (x) => self.addEnable(x),
     }[commandType];
 
     if (incompatiblePlace) {
@@ -1191,6 +1196,16 @@ class SubstanceBuilder {
   }
 
   /**
+   * Add an enable command to this substance.
+   *
+   * @param {Command} enable - The enable command to add.
+   */
+  addEnable(enable) {
+    const self = this;
+    self._enables.push(enable);
+  }
+
+  /**
    * Check for duplicate single-value commands.
    *
    * @param {Command|null} originalVal - Existing command if any.
@@ -1235,6 +1250,7 @@ class Substance {
    * @param {ReplaceCommand[]} replaces - Replace commands.
    * @param {Command} retire - Retire command.
    * @param {Command[]} setVals - Set value commands.
+   * @param {Command[]} enables - Enable commands.
    * @param {boolean} isMod - Whether this modifies existing substance.
    * @param {boolean} compat - Whether substance is UI-compatible.
    */
@@ -1250,6 +1266,7 @@ class Substance {
     replaces,
     retire,
     setVals,
+    enables,
     isMod,
     compat,
   ) {
@@ -1265,6 +1282,7 @@ class Substance {
     self._replaces = replaces;
     self._retire = retire;
     self._setVals = setVals;
+    self._enables = enables;
     self._isModification = isMod;
     self._isCompatible = compat;
   }
@@ -1389,6 +1407,16 @@ class Substance {
   getSetVals() {
     const self = this;
     return self._setVals;
+  }
+
+  /**
+   * Get all enable commands for this substance.
+   *
+   * @returns {Command[]} Array of enable commands.
+   */
+  getEnables() {
+    const self = this;
+    return self._enables;
   }
 
   /**
@@ -2970,6 +2998,28 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
     const targetFuture = (ctx) => null;
     const duration = ctx.duration.accept(self);
     return self._buildOperation(ctx, "equals", duration, targetFuture);
+  }
+
+  /**
+   * Visit an enable command with all years duration node.
+   *
+   * @param {Object} ctx - The parse tree node context.
+   * @returns {IncompatibleCommand} Incompatibility marker for enable.
+   */
+  visitEnableAllYears(ctx) {
+    const self = this;
+    return new IncompatibleCommand("enable");
+  }
+
+  /**
+   * Visit an enable command with duration node.
+   *
+   * @param {Object} ctx - The parse tree node context.
+   * @returns {IncompatibleCommand} Incompatibility marker for enable.
+   */
+  visitEnableDuration(ctx) {
+    const self = this;
+    return new IncompatibleCommand("enable");
   }
 
   /**

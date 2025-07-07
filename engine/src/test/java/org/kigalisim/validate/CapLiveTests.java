@@ -288,6 +288,7 @@ public class CapLiveTests {
     assertTrue(totalConsumptionHfc > 0,
         "Total consumption for HFC-134a should be greater than zero in 2030 due to recharge");
 
+
     // Check R-404A new equipment is not zero in year 2035
     EngineResult recordR404A2035 = LiveTestsUtil.getResult(resultsList.stream(), 2035,
         "Commercial Refrigeration", "R-404A");
@@ -299,6 +300,39 @@ public class CapLiveTests {
         newEquipmentR404A > 0,
         "R-404A new equipment should be greater than 0 in 2035 due to displacement"
     );
+  }
+
+  /**
+   * Test cap scenario without change statements to isolate the issue.
+   * 
+   * <p>This test caps import to 0 units. Since there are no change statements and no retire
+   * statement, we expect 0 new equipment. The cap should allow enough import to satisfy
+   * recharge needs (10% of existing equipment at 0.1 kg/unit) but no more.</p>
+   * 
+   * <p>Expected: PopulationNew = 0.0 (no new equipment when import is capped to 0 units)
+   * Actual: PopulationNew = -267.3 (negative equipment, indicating a bug)</p>
+   */
+  @Test
+  public void testCapDisplaceWithRechargeUnitsNoChange() throws IOException {
+    // Load and parse the QTA file without change statements
+    String qtaPath = "../examples/cap_displace_with_recharge_units_no_change.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    // Run the scenario using KigaliSimFacade
+    String scenarioName = "Equipment Import Ban";
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
+
+    List<EngineResult> resultsList = results.collect(Collectors.toList());
+
+    // Check HFC-134a new equipment is zero in 2030 (when cap is active)
+    EngineResult recordHfc2030 = LiveTestsUtil.getResult(resultsList.stream(), 2030,
+        "Commercial Refrigeration", "HFC-134a");
+    assertNotNull(recordHfc2030, "Should have result for Commercial Refrigeration/HFC-134a in year 2030");
+
+    // Should be zero new equipment
+    assertEquals(0.0, recordHfc2030.getPopulationNew().getValue().doubleValue(), 0.0001,
+        "New equipment for HFC-134a should be zero in 2030 (without change statements)");
   }
 
   /**

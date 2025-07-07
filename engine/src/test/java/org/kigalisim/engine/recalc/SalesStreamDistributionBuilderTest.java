@@ -7,6 +7,8 @@
 package org.kigalisim.engine.recalc;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.math.BigDecimal;
 import org.junit.jupiter.api.Test;
@@ -111,25 +113,26 @@ public class SalesStreamDistributionBuilderTest {
 
   @Test
   public void testNeitherEnabled() {
-    // Test 50/50 fallback when neither was enabled
+    // Test that exception is thrown when neither stream is enabled
     EngineNumber manufactureSales = new EngineNumber(BigDecimal.ZERO, "kg");
     EngineNumber importSales = new EngineNumber(BigDecimal.ZERO, "kg");
     EngineNumber exportSales = new EngineNumber(BigDecimal.ZERO, "kg");
 
-    SalesStreamDistribution distribution = new SalesStreamDistributionBuilder()
+    SalesStreamDistributionBuilder builder = new SalesStreamDistributionBuilder()
         .setManufactureSales(manufactureSales)
         .setImportSales(importSales)
         .setExportSales(exportSales)
         .setManufactureEnabled(false)
         .setImportEnabled(false)
         .setExportEnabled(false)
-        .setIncludeExports(false)
-        .build();
+        .setIncludeExports(false);
 
-    assertEquals(new BigDecimal("0.5"), distribution.getPercentManufacture(),
-        "Manufacture percentage should be 0.5 when neither enabled");
-    assertEquals(new BigDecimal("0.5"), distribution.getPercentImport(),
-        "Import percentage should be 0.5 when neither enabled");
+    IllegalStateException exception = assertThrows(IllegalStateException.class, 
+        builder::build, 
+        "Should throw exception when no streams are enabled");
+    
+    assertTrue(exception.getMessage().contains("no streams have been enabled"),
+        "Exception message should mention no streams enabled");
   }
 
   @Test

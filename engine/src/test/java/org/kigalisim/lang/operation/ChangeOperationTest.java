@@ -78,6 +78,7 @@ public class ChangeOperationTest {
   @Test
   public void testExecuteNoDuring() {
     // Set initial value
+    engine.enable("manufacture", Optional.empty());
     EngineNumber initialNumber = new EngineNumber(BigDecimal.valueOf(100), "kg");
     engine.setStream("manufacture", initialNumber, Optional.ofNullable(allYearsMatcher));
 
@@ -100,6 +101,7 @@ public class ChangeOperationTest {
   @Test
   public void testExecuteWithDuring() {
     // Set initial value
+    engine.enable("manufacture", Optional.empty());
     EngineNumber initialNumber = new EngineNumber(BigDecimal.valueOf(100), "kg");
     engine.setStream("manufacture", initialNumber, Optional.ofNullable(allYearsMatcher));
 
@@ -128,6 +130,7 @@ public class ChangeOperationTest {
   @Test
   public void testExecuteWithDuringNotApplying() {
     // Set initial value
+    engine.enable("manufacture", Optional.empty());
     EngineNumber initialNumber = new EngineNumber(BigDecimal.valueOf(100), "kg");
     engine.setStream("manufacture", initialNumber, Optional.ofNullable(allYearsMatcher));
 
@@ -157,6 +160,7 @@ public class ChangeOperationTest {
   @Test
   public void testExecuteWithComplexValueOperation() {
     // Set initial value
+    engine.enable("manufacture", Optional.empty());
     EngineNumber initialNumber = new EngineNumber(BigDecimal.valueOf(100), "kg");
     engine.setStream("manufacture", initialNumber, Optional.ofNullable(allYearsMatcher));
 
@@ -182,6 +186,7 @@ public class ChangeOperationTest {
   @Test
   public void testExecuteWithEachYearUnits() {
     // Set initial value
+    engine.enable("manufacture", Optional.empty());
     EngineNumber initialNumber = new EngineNumber(BigDecimal.valueOf(100), "kg");
     engine.setStream("manufacture", initialNumber, Optional.ofNullable(allYearsMatcher));
 

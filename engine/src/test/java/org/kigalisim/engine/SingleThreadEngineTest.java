@@ -174,6 +174,7 @@ public class SingleThreadEngineTest {
     assertEquals("kg", manufacture.getUnits(), "Should have kg units");
 
     // Test setting a stream
+    engine.enable("manufacture", Optional.empty());
     EngineNumber newValue = new EngineNumber(BigDecimal.valueOf(10), "kg");
     engine.setStream("manufacture", newValue, Optional.empty());
 
@@ -206,6 +207,7 @@ public class SingleThreadEngineTest {
     engine.setSubstance("test substance");
 
     // Set a stream with year matcher that should apply
+    engine.enable("manufacture", Optional.empty());
     EngineNumber value = new EngineNumber(BigDecimal.valueOf(10), "kg");
     YearMatcher matcher = new YearMatcher(Optional.of(1), Optional.empty());
     engine.setStream("manufacture", value, Optional.ofNullable(matcher));
@@ -235,6 +237,7 @@ public class SingleThreadEngineTest {
     engine.setSubstance("test substance");
 
     // Set initial value
+    engine.enable("manufacture", Optional.empty());
     EngineNumber initialValue = new EngineNumber(BigDecimal.valueOf(10), "kg");
     engine.setStream("manufacture", initialValue, Optional.empty());
 
@@ -259,6 +262,7 @@ public class SingleThreadEngineTest {
     engine.setSubstance("test substance");
 
     // Set initial value
+    engine.enable("manufacture", Optional.empty());
     EngineNumber initialValue = new EngineNumber(BigDecimal.valueOf(10), "kg");
     engine.setStream("manufacture", initialValue, Optional.empty());
 
@@ -296,6 +300,7 @@ public class SingleThreadEngineTest {
     engine.setSubstance("test substance");
 
     // Set initial value
+    engine.enable("manufacture", Optional.empty());
     EngineNumber initialValue = new EngineNumber(BigDecimal.valueOf(10), "kg");
     engine.setStream("manufacture", initialValue, Optional.ofNullable(YearMatcher.unbounded()));
 
@@ -349,6 +354,7 @@ public class SingleThreadEngineTest {
     engine.setSubstance("test substance");
 
     // Set some stream values to ensure substance is registered
+    engine.enable("manufacture", Optional.empty());
     EngineNumber manufactureValue = new EngineNumber(BigDecimal.valueOf(100), "kg");
     engine.setStream("manufacture", manufactureValue, Optional.empty());
 
@@ -356,6 +362,7 @@ public class SingleThreadEngineTest {
     engine.setApplication("test app 2");
     engine.setSubstance("test substance 2");
 
+    engine.enable("import", Optional.empty());
     EngineNumber importValue = new EngineNumber(BigDecimal.valueOf(50), "kg");
     engine.setStream("import", importValue, Optional.empty());
 
@@ -394,6 +401,7 @@ public class SingleThreadEngineTest {
     engine.setStanza("default");
     engine.setApplication("test app");
     engine.setSubstance("test substance");
+    engine.enable("manufacture", Optional.empty());
     engine.setStream("manufacture", new EngineNumber(BigDecimal.valueOf(100), "kg"), Optional.empty());
 
     // Get results for initial year
@@ -422,6 +430,7 @@ public class SingleThreadEngineTest {
 
     // Set up sub1 with 10 kg/unit initial charge
     engine.setSubstance("sub1");
+    engine.enable("manufacture", Optional.empty());
     engine.setInitialCharge(
         new EngineNumber(BigDecimal.valueOf(10), "kg / unit"),
         "manufacture",
@@ -437,6 +446,7 @@ public class SingleThreadEngineTest {
 
     // Set up sub2 with 20 kg/unit initial charge
     engine.setSubstance("sub2");
+    engine.enable("manufacture", Optional.empty());
     engine.setInitialCharge(
         new EngineNumber(BigDecimal.valueOf(20), "kg / unit"),
         "manufacture",
@@ -462,14 +472,14 @@ public class SingleThreadEngineTest {
 
     // Check sub2 received displacement: original 200 kg + displaced units
     // converted to sub2's charge
-    // Original sub1: 100 kg, after cap: 70 kg, displaced: 30 kg
-    // 30 kg displaced from sub1 = 30 kg / 10 kg/unit = 3 units
-    // 3 units in sub2 = 3 units * 20 kg/unit = 60 kg
-    // Final sub2: 200 kg + 60 kg = 260 kg
+    // Original sub1 new equipment: 100 kg, after cap: 50 kg (5 units * 10 kg/unit), displaced: 50 kg
+    // 50 kg displaced from sub1 = 50 kg / 10 kg/unit = 5 units
+    // 5 units in sub2 = 5 units * 20 kg/unit = 100 kg
+    // Final sub2: 200 kg + 100 kg = 300 kg
     engine.setSubstance("sub2");
     EngineNumber displaceVal = engine.getStream("manufacture");
-    assertEquals(0, BigDecimal.valueOf(260).compareTo(displaceVal.getValue()),
-        "Sub2 should receive displaced units: 200 kg + 60 kg = 260 kg");
+    assertEquals(0, BigDecimal.valueOf(300).compareTo(displaceVal.getValue()),
+        "Sub2 should receive displaced units: 200 kg + 100 kg = 300 kg");
     assertEquals("kg", displaceVal.getUnits(), "Sub2 should have kg units");
   }
 
@@ -487,6 +497,7 @@ public class SingleThreadEngineTest {
 
     // Set up sub1 with 10 kg/unit initial charge
     engine.setSubstance("sub1");
+    engine.enable("manufacture", Optional.empty());
     engine.setInitialCharge(
         new EngineNumber(BigDecimal.valueOf(10), "kg / unit"),
         "manufacture",
@@ -502,6 +513,7 @@ public class SingleThreadEngineTest {
 
     // Set up sub2 with 20 kg/unit initial charge
     engine.setSubstance("sub2");
+    engine.enable("manufacture", Optional.empty());
     engine.setInitialCharge(
         new EngineNumber(BigDecimal.valueOf(20), "kg / unit"),
         "manufacture",
@@ -527,14 +539,14 @@ public class SingleThreadEngineTest {
 
     // Check sub2 received displacement: original 200 kg - displaced units
     // converted to sub2's charge
-    // Original sub1: 50 kg, after floor: 120 kg, displaced: 70 kg
-    // 70 kg displaced from sub1 = 70 kg / 10 kg/unit = 7 units
-    // 7 units in sub2 = 7 units * 20 kg/unit = 140 kg
-    // Final sub2: 200 kg - 140 kg = 60 kg
+    // Original sub1 new equipment: 50 kg, after floor: 100 kg (10 units * 10 kg/unit), displaced: -50 kg
+    // 50 kg added to sub1 = 50 kg / 10 kg/unit = 5 units
+    // 5 units removed from sub2 = 5 units * 20 kg/unit = 100 kg
+    // Final sub2: 200 kg - 100 kg = 100 kg
     engine.setSubstance("sub2");
     EngineNumber displaceVal = engine.getStream("manufacture");
-    assertEquals(0, BigDecimal.valueOf(60).compareTo(displaceVal.getValue()),
-        "Sub2 should receive displaced units: 200 kg - 140 kg = 60 kg");
+    assertEquals(0, BigDecimal.valueOf(100).compareTo(displaceVal.getValue()),
+        "Sub2 should receive displaced units: 200 kg - 100 kg = 100 kg");
     assertEquals("kg", displaceVal.getUnits(), "Sub2 should have kg units");
   }
 
@@ -553,6 +565,7 @@ public class SingleThreadEngineTest {
 
     // Set up substance A with 10 kg/unit initial charge
     engine.setSubstance("sub A");
+    engine.enable("manufacture", Optional.empty());
     engine.setInitialCharge(
         new EngineNumber(BigDecimal.valueOf(10), "kg / unit"),
         "manufacture",
@@ -563,6 +576,7 @@ public class SingleThreadEngineTest {
 
     // Set up substance B with 20 kg/unit initial charge
     engine.setSubstance("sub B");
+    engine.enable("manufacture", Optional.empty());
     engine.setInitialCharge(
         new EngineNumber(BigDecimal.valueOf(20), "kg / unit"),
         "manufacture",
@@ -594,5 +608,113 @@ public class SingleThreadEngineTest {
     assertEquals(0, BigDecimal.valueOf(40).compareTo(substanceTwoResult.getValue()),
         "Sub B should gain 40 kg (2 units * 20 kg/unit): 0 + 40 = 40");
     assertEquals("kg", substanceTwoResult.getUnits(), "Sub B should have kg units");
+  }
+
+  /**
+   * Test enable method for manufacture stream.
+   */
+  @Test
+  public void testEnableManufactureStream() {
+    SingleThreadEngine engine = new SingleThreadEngine(2020, 2025);
+
+    // Set up the engine with a scope
+    engine.setStanza("default");
+    engine.setApplication("test app");
+    engine.setSubstance("test substance");
+
+    // Enable manufacture stream
+    engine.enable("manufacture", Optional.empty());
+    
+    // Test passes if no exception is thrown
+    assertTrue(true, "Enable method should execute without error for manufacture stream");
+  }
+
+  /**
+   * Test enable method for import stream.
+   */
+  @Test
+  public void testEnableImportStream() {
+    SingleThreadEngine engine = new SingleThreadEngine(2020, 2025);
+
+    // Set up the engine with a scope
+    engine.setStanza("default");
+    engine.setApplication("test app");
+    engine.setSubstance("test substance");
+
+    // Enable import stream
+    engine.enable("import", Optional.empty());
+    
+    // Test passes if no exception is thrown
+    assertTrue(true, "Enable method should execute without error for import stream");
+  }
+
+  /**
+   * Test enable method for export stream.
+   */
+  @Test
+  public void testEnableExportStream() {
+    SingleThreadEngine engine = new SingleThreadEngine(2020, 2025);
+
+    // Set up the engine with a scope
+    engine.setStanza("default");
+    engine.setApplication("test app");
+    engine.setSubstance("test substance");
+
+    // Enable export stream
+    engine.enable("export", Optional.empty());
+    
+    // Test passes if no exception is thrown
+    assertTrue(true, "Enable method should execute without error for export stream");
+  }
+
+  /**
+   * Test enable method with year matcher.
+   */
+  @Test
+  public void testEnableWithYearMatcher() {
+    SingleThreadEngine engine = new SingleThreadEngine(2020, 2025);
+
+    // Set up the engine with a scope
+    engine.setStanza("default");
+    engine.setApplication("test app");
+    engine.setSubstance("test substance");
+
+    // Enable manufacture stream with year matcher
+    YearMatcher yearMatcher = YearMatcher.unbounded();
+    engine.enable("manufacture", Optional.of(yearMatcher));
+    
+    // Test passes if no exception is thrown
+    assertTrue(true, "Enable method should execute without error with year matcher");
+  }
+
+  /**
+   * Test enable method throws error without scope.
+   */
+  @Test
+  public void testEnableThrowsWithoutScope() {
+    SingleThreadEngine engine = new SingleThreadEngine(2020, 2025);
+
+    // Don't set up scope - should throw error
+    assertThrows(RuntimeException.class, () -> engine.enable("manufacture", Optional.empty()),
+        "Enable method should throw error when called without proper scope");
+  }
+
+  /**
+   * Test enable method ignores invalid stream names.
+   */
+  @Test
+  public void testEnableIgnoresInvalidStreams() {
+    SingleThreadEngine engine = new SingleThreadEngine(2020, 2025);
+
+    // Set up the engine with a scope
+    engine.setStanza("default");
+    engine.setApplication("test app");
+    engine.setSubstance("test substance");
+
+    // Try to enable invalid stream - should not throw error
+    engine.enable("invalidStream", Optional.empty());
+    
+    // Test passes if no exception is thrown
+    assertTrue(true, "Enable method should ignore invalid stream names without error");
   }
 }
