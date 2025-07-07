@@ -3,6 +3,7 @@ start default
   define application "App"
   
     uses substance "Sub1"
+      enable manufacture
 
       # A - Equivalencies
       equals 1 tCO2e / kg

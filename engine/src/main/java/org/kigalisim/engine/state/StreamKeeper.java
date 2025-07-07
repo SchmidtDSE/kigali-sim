@@ -640,6 +640,9 @@ public class StreamKeeper {
    *              and import streams.
    */
   private void setStreamForSales(UseKey useKey, String name, EngineNumber value) {
+    // Assert that the stream has been enabled before setting it
+    assertStreamEnabled(useKey, name);
+    
     EngineNumber valueConverted = unitConverter.convert(value, "kg");
     BigDecimal amountKg = valueConverted.getValue();
 
@@ -670,6 +673,9 @@ public class StreamKeeper {
    * @param value The value to be converted and used for updating the stream, typically representing sales units.
    */
   private void setStreamForSalesWithUnits(UseKey useKey, String name, EngineNumber value) {
+    // Assert that the stream has been enabled before setting it
+    assertStreamEnabled(useKey, name);
+    
     OverridingConverterStateGetter overridingStateGetter = new OverridingConverterStateGetter(
         stateGetter
     );
@@ -737,6 +743,28 @@ public class StreamKeeper {
   private void ensureStreamKnown(String name) {
     if (EngineConstants.getBaseUnits(name) == null) {
       throw new IllegalArgumentException("Unknown stream: " + name);
+    }
+  }
+
+  /**
+   * Assert that a stream has been enabled for the given use key.
+   * Only checks manufacture, import, and export streams.
+   *
+   * @param useKey The key containing application and substance
+   * @param streamName The name of the stream to check
+   * @throws RuntimeException If the stream has not been enabled
+   */
+  private void assertStreamEnabled(UseKey useKey, String streamName) {
+    // Only check enabling for sales streams that require explicit enabling
+    if (!"manufacture".equals(streamName) && !"import".equals(streamName) && !"export".equals(streamName)) {
+      return;
+    }
+    
+    StreamParameterization parameterization = getParameterization(useKey);
+    if (!parameterization.hasStreamBeenEnabled(streamName)) {
+      throw new RuntimeException("Stream '" + streamName + "' has not been enabled for " 
+          + useKey.getApplication() + "/" + useKey.getSubstance() 
+          + ". Use 'enable " + streamName + "' statement before setting this stream.");
     }
   }
 

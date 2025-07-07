@@ -405,6 +405,9 @@ public class StreamKeeperTest {
     Scope testScope = createTestScope();
     keeper.ensureSubstance(testScope);
 
+    // Enable the manufacture stream first
+    keeper.markStreamAsEnabled(testScope, "manufacture");
+
     // Set initial charge of 2 kg/unit for manufacture stream
     keeper.setInitialCharge(testScope, "manufacture",
                            new EngineNumber(new BigDecimal("2.0"), "kg / unit"));
