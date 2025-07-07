@@ -444,4 +444,65 @@ public class StreamKeeperTest {
                       new EngineNumber(new BigDecimal("10"), "units"));
     }, "Should throw exception when initial charge is zero");
   }
+
+  /**
+   * Test that setting a non-zero value on an unenabled stream throws exception.
+   */
+  @Test
+  public void testAssertStreamEnabledThrowsForNonZeroOnUnenabledStream() {
+    StreamKeeper keeper = createMockKeeper();
+    Scope testScope = createTestScope();
+    keeper.ensureSubstance(testScope);
+
+    // Set non-zero initial charge so the setStream won't fail for that reason
+    keeper.setInitialCharge(testScope, "manufacture",
+                           new EngineNumber(new BigDecimal("2.0"), "kg / unit"));
+
+    // Don't enable the stream - this should cause the assertion to fail
+    assertThrows(RuntimeException.class, () -> {
+      keeper.setStream(testScope, "manufacture",
+                      new EngineNumber(new BigDecimal("10"), "kg"));
+    }, "Should throw exception when stream is not enabled and value is non-zero");
+  }
+
+  /**
+   * Test that setting a zero value on an unenabled stream does not throw exception.
+   */
+  @Test
+  public void testAssertStreamEnabledAllowsZeroOnUnenabledStream() {
+    StreamKeeper keeper = createMockKeeper();
+    Scope testScope = createTestScope();
+    keeper.ensureSubstance(testScope);
+
+    // Don't enable the stream but try to set it to zero - this should work
+    keeper.setStream(testScope, "manufacture",
+                    new EngineNumber(BigDecimal.ZERO, "kg"));
+
+    // Verify the value was set to zero
+    EngineNumber result = keeper.getStream(testScope, "manufacture");
+    assertEquals(BigDecimal.ZERO, result.getValue(),
+                "Should allow setting zero value on unenabled stream");
+  }
+
+  /**
+   * Test that setting a non-zero value on an enabled stream works correctly.
+   */
+  @Test
+  public void testAssertStreamEnabledAllowsNonZeroOnEnabledStream() {
+    StreamKeeper keeper = createMockKeeper();
+    Scope testScope = createTestScope();
+    keeper.ensureSubstance(testScope);
+
+    // Enable the stream first
+    keeper.markStreamAsEnabled(testScope, "manufacture");
+
+    // Set non-zero value - this should work
+    keeper.setStream(testScope, "manufacture",
+                    new EngineNumber(new BigDecimal("10"), "kg"));
+
+    // Verify the value was set correctly
+    EngineNumber result = keeper.getStream(testScope, "manufacture");
+    assertEquals(new BigDecimal("10"), result.getValue(),
+                "Should allow setting non-zero value on enabled stream");
+  }
 }

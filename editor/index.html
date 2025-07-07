@@ -321,15 +321,17 @@
                             </div>
                           </div>
                           <div class="form-group">
-                            <div><label for="edit-consumption-source">Source:</label></div>
-                            <div>
-                              <span class="sel long">
-                                <select name="source" class="edit-consumption-source">
-                                  <option value="all">Import and Domestic Manufacture</option>
-                                  <option value="manufacture">Domestic Manufacture Only</option>
-                                  <option value="import">Import Only</option>
-                                </select>
-                              </span>
+                            <div><label>Enabled Streams:</label></div>
+                            <div class="checkbox-list">
+                              <div>
+                                <label><input type="checkbox" name="enable-import" class="enable-import-checkbox" /> Import</label>
+                              </div>
+                              <div>
+                                <label><input type="checkbox" name="enable-manufacture" class="enable-manufacture-checkbox" /> Domestic manufacture</label>
+                              </div>
+                              <div>
+                                <label><input type="checkbox" name="enable-export" class="enable-export-checkbox" /> Export</label>
+                              </div>
                             </div>
                           </div>
                         </div>

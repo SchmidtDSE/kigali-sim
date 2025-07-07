@@ -127,6 +127,9 @@ public class StreamKeeper {
     ensureSubstanceOrThrow(key, "setStream");
     ensureStreamKnown(name);
 
+    // Check if stream needs to be enabled before setting
+    assertStreamEnabled(useKey, name, value);
+
     if (CHECK_NAN_STATE && value.getValue().toString().equals("NaN")) {
       String[] keyPieces = key.split("\t");
       String application = keyPieces.length > 0 ? keyPieces[0] : "";
@@ -640,9 +643,6 @@ public class StreamKeeper {
    *              and import streams.
    */
   private void setStreamForSales(UseKey useKey, String name, EngineNumber value) {
-    // Assert that the stream has been enabled before setting it
-    assertStreamEnabled(useKey, name);
-    
     EngineNumber valueConverted = unitConverter.convert(value, "kg");
     BigDecimal amountKg = valueConverted.getValue();
 
@@ -673,9 +673,6 @@ public class StreamKeeper {
    * @param value The value to be converted and used for updating the stream, typically representing sales units.
    */
   private void setStreamForSalesWithUnits(UseKey useKey, String name, EngineNumber value) {
-    // Assert that the stream has been enabled before setting it
-    assertStreamEnabled(useKey, name);
-    
     OverridingConverterStateGetter overridingStateGetter = new OverridingConverterStateGetter(
         stateGetter
     );
@@ -752,11 +749,17 @@ public class StreamKeeper {
    *
    * @param useKey The key containing application and substance
    * @param streamName The name of the stream to check
-   * @throws RuntimeException If the stream has not been enabled
+   * @param value The value being set (no assertion needed if zero)
+   * @throws RuntimeException If the stream has not been enabled and value is non-zero
    */
-  private void assertStreamEnabled(UseKey useKey, String streamName) {
+  private void assertStreamEnabled(UseKey useKey, String streamName, EngineNumber value) {
     // Only check enabling for sales streams that require explicit enabling
     if (!"manufacture".equals(streamName) && !"import".equals(streamName) && !"export".equals(streamName)) {
+      return;
+    }
+    
+    // Don't require enabling if setting to zero
+    if (value.getValue().compareTo(BigDecimal.ZERO) == 0) {
       return;
     }
     
