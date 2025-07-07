@@ -56,7 +56,7 @@ The about stanza is optional.
 
 #### Manufacturing and Trade
 - `initial charge with {amount} <for {stream}>` - Sets substance per unit where amount is typically X kg / unit
-- `enable {stream}` - Explicitly marks a stream as enabled without setting values (required before operations like recharge that need sales recalculation)
+- `enable {stream}` - Explicitly marks a stream as enabled without setting values (required before operations like recharge that need sales recalculation). By convention, enable statements should be placed at the top of substance definitions within application definitions, though this is not enforced by the language.
 - `set {stream} to {amount} <during>` - Sets flow volumes
 - `change {stream} by {amount} <during>` - Growth or decay rates where amount is often +X %
 
@@ -157,16 +157,16 @@ end about
 start default
   define application "dom refrig"
     uses substance "HFC-134a"
+      enable manufacture
+      enable import
       equals 1430 tCO2e / mt
       equals 100 kwh / unit
       
       initial charge with 0.12 kg / unit for manufacture
-      enable manufacture
       set manufacture to 350000 kg during year 1
       change manufacture by +5 % each year during years 1 to 5
       
       initial charge with 0.30 kg / unit for import
-      enable import  
       set import to 90000 kg during year 1
       change import by +5 % each year during years 1 to 5
       
