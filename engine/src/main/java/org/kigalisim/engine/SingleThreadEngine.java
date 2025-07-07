@@ -248,10 +248,7 @@ public class SingleThreadEngine implements Engine {
       return;
     }
 
-    // Determine if this is a sales-related stream that influences recharge displacement
-    boolean isSalesStream = "sales".equals(name) || "manufacture".equals(name) || "import".equals(name) || "export".equals(name);
-    
-    if (isSalesStream) {
+    if (isSalesStream(name)) {
       // Only track lastSalesUnits for sales-related streams that influence recharge displacement
       String unitsToRecordRealized = unitsToRecord.orElse(value.getUnits());
       streamKeeper.setLastSalesUnits(keyEffective, unitsToRecordRealized);
@@ -716,6 +713,11 @@ public class SingleThreadEngine implements Engine {
       return;
     }
 
+    // Set lastSalesUnits if this is a sales stream - do this before unit conversion
+    if (isSalesStream(stream)) {
+      streamKeeper.setLastSalesUnits(scope, amount.getUnits());
+    }
+
     UnitConverter unitConverter = createUnitConverterWithTotal(stream);
 
     EngineNumber currentValueRaw = getStream(stream);
@@ -762,6 +764,11 @@ public class SingleThreadEngine implements Engine {
       String displaceTarget) {
     if (!getIsInRange(yearMatcher)) {
       return;
+    }
+
+    // Set lastSalesUnits if this is a sales stream - do this before unit conversion
+    if (isSalesStream(stream)) {
+      streamKeeper.setLastSalesUnits(scope, amount.getUnits());
     }
 
     UnitConverter unitConverter = createUnitConverterWithTotal(stream);
@@ -819,10 +826,7 @@ public class SingleThreadEngine implements Engine {
       raiseNoAppOrSubstance("setting stream", " specified");
     }
     
-    // Determine if this is a sales-related stream that influences recharge displacement
-    boolean isSalesStream = "sales".equals(stream) || "manufacture".equals(stream) || "import".equals(stream) || "export".equals(stream);
-    
-    if (isSalesStream) {
+    if (isSalesStream(stream)) {
       streamKeeper.setLastSalesUnits(currentScope, amountRaw.getUnits());
 
       // Track the original user-specified units for the destination substance
@@ -925,6 +929,11 @@ public class SingleThreadEngine implements Engine {
         // Different substance - apply the same number of units to the destination substance
         Scope destinationScope = scope.getWithSubstance(displaceTarget);
 
+        // Set lastSalesUnits for displacement target if it's a sales stream
+        if (isSalesStream(stream)) {
+          streamKeeper.setLastSalesUnits(destinationScope, "units");
+        }
+
         // Temporarily change scope to destination for unit conversion
         final Scope originalScope = scope;
         scope = destinationScope;
@@ -953,6 +962,16 @@ public class SingleThreadEngine implements Engine {
     }
   }
 
+
+  /**
+   * Check if a stream is a sales-related stream that influences recharge displacement.
+   *
+   * @param stream The stream name to check
+   * @return true if the stream is sales, manufacture, import, or export
+   */
+  private boolean isSalesStream(String stream) {
+    return "sales".equals(stream) || "manufacture".equals(stream) || "import".equals(stream) || "export".equals(stream);
+  }
 
   /**
    * Change a stream value without reporting units to the last units tracking system.
