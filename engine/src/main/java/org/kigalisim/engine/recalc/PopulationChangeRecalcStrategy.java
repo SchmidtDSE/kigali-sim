@@ -79,20 +79,21 @@ public class PopulationChangeRecalcStrategy implements RecalcStrategy {
     // Choose which recharge to use and update implicit recharge stream
     BigDecimal rechargeKg;
     if (useExplicitRechargeEffective) {
-        // Using explicit recharge - clear implicit recharge
-        target.setStreamFor("implicitRecharge", new EngineNumber(BigDecimal.ZERO, "kg"), 
-                           Optional.empty(), Optional.of(scopeEffective), false, Optional.empty());
-        rechargeKg = explicitRechargeVolume.getValue();
+      // Using explicit recharge - clear implicit recharge
+      target.setStreamFor("implicitRecharge", new EngineNumber(BigDecimal.ZERO, "kg"), 
+                         Optional.empty(), Optional.of(scopeEffective), false, Optional.empty());
+      rechargeKg = explicitRechargeVolume.getValue();
     } else {
-        // Using implicit recharge - save current calculation for next iteration
-        target.setStreamFor("implicitRecharge", explicitRechargeVolume, 
-                           Optional.empty(), Optional.of(scopeEffective), false, Optional.empty());
-        rechargeKg = implicitRecharge.getValue();
+      // Using implicit recharge - save current calculation for next iteration
+      target.setStreamFor("implicitRecharge", explicitRechargeVolume, 
+                         Optional.empty(), Optional.of(scopeEffective), false, Optional.empty());
+      rechargeKg = implicitRecharge.getValue();
     }
 
     // Get total volume available for new units
     BigDecimal salesKg = substanceSales.getValue();
     BigDecimal availableForNewUnitsKg = salesKg.subtract(rechargeKg);
+    
     
     
 

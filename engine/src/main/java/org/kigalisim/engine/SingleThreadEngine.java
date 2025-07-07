@@ -248,9 +248,12 @@ public class SingleThreadEngine implements Engine {
       return;
     }
 
-    String unitsToRecordRealized = unitsToRecord.orElse(value.getUnits());
-    streamKeeper.setLastSpecifiedUnits(keyEffective, unitsToRecordRealized);
-
+    if ("sales".equals(name) || "manufacture".equals(name) || "import".equals(name) || "export".equals(name)) {
+      // Only track lastSalesUnits for sales-related streams that influence recharge displacement
+      String unitsToRecordRealized = unitsToRecord.orElse(value.getUnits());
+      streamKeeper.setLastSalesUnits(keyEffective, unitsToRecordRealized);
+    }
+    
     if ("sales".equals(name) || "manufacture".equals(name) || "import".equals(name)) {
       RecalcOperationBuilder builder = new RecalcOperationBuilder()
           .setScopeEffective(keyEffective)
@@ -505,13 +508,13 @@ public class SingleThreadEngine implements Engine {
   private boolean getShouldUseExplicitRecharge(String stream) {
     if ("sales".equals(stream)) {
       // For sales, check if either manufacture or import were last specified in units
-      String lastUnits = streamKeeper.getLastSpecifiedUnits(scope);
+      String lastUnits = streamKeeper.getLastSalesUnits(scope);
       if (lastUnits != null && lastUnits.startsWith("unit")) {
         return false; // Add recharge on top
       }
     } else if ("manufacture".equals(stream) || "import".equals(stream)) {
       // For manufacture or import, check if that specific channel was last specified in units
-      String lastUnits = streamKeeper.getLastSpecifiedUnits(scope);
+      String lastUnits = streamKeeper.getLastSalesUnits(scope);
       return lastUnits == null || !lastUnits.startsWith("unit"); // Add recharge on top
     }
 
@@ -548,8 +551,8 @@ public class SingleThreadEngine implements Engine {
     streamKeeper.setRechargePopulation(scope, volume);
     streamKeeper.setRechargeIntensity(scope, intensity);
 
-    // Determine if explicit recharge should be used based on last specified units
-    String lastUnits = streamKeeper.getLastSpecifiedUnits(scope);
+    // Determine if explicit recharge should be used based on last sales units
+    String lastUnits = streamKeeper.getLastSalesUnits(scope);
     boolean useExplicitRecharge = lastUnits == null || !lastUnits.startsWith("unit");
     
     // Recalculate
@@ -812,12 +815,12 @@ public class SingleThreadEngine implements Engine {
     if (application == null || currentSubstance == null) {
       raiseNoAppOrSubstance("setting stream", " specified");
     }
-    streamKeeper.setLastSpecifiedUnits(currentScope, amountRaw.getUnits());
+    streamKeeper.setLastSalesUnits(currentScope, amountRaw.getUnits());
 
     // Track the original user-specified units for the destination substance
     String lastUnits = amountRaw.getUnits();
     SimpleUseKey destKey = new SimpleUseKey(application, destinationSubstance);
-    streamKeeper.setLastSpecifiedUnits(destKey, lastUnits);
+    streamKeeper.setLastSalesUnits(destKey, lastUnits);
 
     if (amountRaw.hasEquipmentUnits()) {
       // For equipment units, convert to units first, then handle each substance separately
