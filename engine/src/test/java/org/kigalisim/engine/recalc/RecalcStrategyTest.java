@@ -103,9 +103,30 @@ public class RecalcStrategyTest {
   }
 
   @Test
-  public void testPopulationChangeAcceptsNullSubtractRecharge() {
-    // Test that PopulationChangeRecalcStrategy handles null subtractRecharge
+  public void testPopulationChangeAcceptsNullUseExplicitRecharge() {
+    // Test that PopulationChangeRecalcStrategy handles null useExplicitRecharge
     assertDoesNotThrow(() -> new PopulationChangeRecalcStrategy(Optional.of(testScope), Optional.empty()));
+  }
+
+  @Test
+  public void testPopulationChangeRecalcStrategyWithExplicitRecharge() {
+    PopulationChangeRecalcStrategy strategy = new PopulationChangeRecalcStrategy(
+        Optional.of(testScope), Optional.of(true)); // useExplicitRecharge = true
+    assertTrue(strategy instanceof RecalcStrategy);
+  }
+
+  @Test
+  public void testPopulationChangeRecalcStrategyWithImplicitRecharge() {
+    PopulationChangeRecalcStrategy strategy = new PopulationChangeRecalcStrategy(
+        Optional.of(testScope), Optional.of(false)); // useExplicitRecharge = false
+    assertTrue(strategy instanceof RecalcStrategy);
+  }
+
+  @Test
+  public void testPopulationChangeRecalcStrategyDefaultsToExplicitRecharge() {
+    PopulationChangeRecalcStrategy strategy = new PopulationChangeRecalcStrategy(
+        Optional.of(testScope), Optional.empty()); // default behavior
+    assertTrue(strategy instanceof RecalcStrategy);
   }
 
   @Test

@@ -370,12 +370,12 @@ public class StreamKeeperTest {
     keeper.ensureSubstance(testScope);
 
     // Test default value
-    String defaultUnits = keeper.getLastSpecifiedUnits(testScope);
+    String defaultUnits = keeper.getLastSalesUnits(testScope);
     assertEquals("kg", defaultUnits, "Should have default units of kg");
 
     // Test setting and getting
-    keeper.setLastSpecifiedUnits(testScope, "units");
-    String retrieved = keeper.getLastSpecifiedUnits(testScope);
+    keeper.setLastSalesUnits(testScope, "units");
+    String retrieved = keeper.getLastSalesUnits(testScope);
     assertEquals("units", retrieved, "Should retrieve set units");
   }
 
@@ -389,17 +389,17 @@ public class StreamKeeperTest {
     keeper.ensureSubstance(testScope);
 
     // Test default value
-    String defaultUnits = keeper.getLastSpecifiedUnits(testScope);
+    String defaultUnits = keeper.getLastSalesUnits(testScope);
     assertEquals("kg", defaultUnits, "Should have default units of kg");
 
     // Test setting units directly via StreamKeeper methods
-    keeper.setLastSpecifiedUnits(testScope, "kg");
-    String unitsAfterKg = keeper.getLastSpecifiedUnits(testScope);
+    keeper.setLastSalesUnits(testScope, "kg");
+    String unitsAfterKg = keeper.getLastSalesUnits(testScope);
     assertEquals("kg", unitsAfterKg, "Should have kg units after setting");
 
     // Test setting different units
-    keeper.setLastSpecifiedUnits(testScope, "units");
-    String unitsAfterUnits = keeper.getLastSpecifiedUnits(testScope);
+    keeper.setLastSalesUnits(testScope, "units");
+    String unitsAfterUnits = keeper.getLastSalesUnits(testScope);
     assertEquals("units", unitsAfterUnits, "Should have units after setting");
   }
 

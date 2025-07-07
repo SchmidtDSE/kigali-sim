@@ -113,6 +113,10 @@ public class StreamKeeper {
     streams.put(rechargeEmissionsKey, new EngineNumber(BigDecimal.ZERO, "tCO2e"));
     String eolEmissionsKey = getKey(useKey, "eolEmissions");
     streams.put(eolEmissionsKey, new EngineNumber(BigDecimal.ZERO, "tCO2e"));
+
+    // Recharge tracking
+    String implicitRechargeKey = getKey(useKey, "implicitRecharge");
+    streams.put(implicitRechargeKey, new EngineNumber(BigDecimal.ZERO, "kg"));
   }
 
   /**
@@ -492,33 +496,36 @@ public class StreamKeeper {
   }
 
   /**
-   * Set the last specified units for a key.
+   * Set the last sales units for a key.
+   *
+   * <p>This tracks the units last used when setting sales-related streams
+   * to determine if recharge should use explicit or implicit calculations.</p>
    *
    * @param useKey The key containing application and substance
-   * @param units The units to set
+   * @param units The units to set for sales-related streams
    */
-  public void setLastSpecifiedUnits(UseKey useKey, String units) {
+  public void setLastSalesUnits(UseKey useKey, String units) {
     String key = getKey(useKey);
     StreamParameterization parameterization = substances.get(key);
     if (parameterization == null) {
       throwSubstanceMissing(
-          "setLastSpecifiedUnits",
+          "setLastSalesUnits",
           useKey.getApplication(),
           useKey.getSubstance()
       );
     }
-    parameterization.setLastSpecifiedUnits(units);
+    parameterization.setLastSalesUnits(units);
   }
 
   /**
-   * Get the last specified units for a key.
+   * Get the last sales units for a key.
    *
    * @param useKey The key containing application and substance
-   * @return The units string last used to specify a stream
+   * @return The units string last used to specify a sales-related stream
    */
-  public String getLastSpecifiedUnits(UseKey useKey) {
+  public String getLastSalesUnits(UseKey useKey) {
     StreamParameterization parameterization = getParameterization(useKey);
-    return parameterization.getLastSpecifiedUnits();
+    return parameterization.getLastSalesUnits();
   }
 
   /**

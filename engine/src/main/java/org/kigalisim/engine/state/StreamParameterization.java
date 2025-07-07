@@ -33,7 +33,7 @@ public class StreamParameterization {
   private EngineNumber yieldRate;
   private EngineNumber retirementRate;
   private EngineNumber displacementRate;
-  private String lastSpecifiedUnits;
+  private String lastSalesUnits;
   private final Set<String> enabledStreams;
 
   /**
@@ -42,7 +42,7 @@ public class StreamParameterization {
   public StreamParameterization() {
     this.initialCharge = new HashMap<>();
     this.enabledStreams = new HashSet<>();
-    this.lastSpecifiedUnits = "kg";  // Set initial default
+    this.lastSalesUnits = "kg";  // Set initial default
     resetInternals();
   }
 
@@ -231,25 +231,28 @@ public class StreamParameterization {
   }
 
   /**
-   * Set the last specified units for stream operations.
+   * Set the last sales units for stream operations.
    *
-   * @param units The units string last used to specify a stream
+   * <p>This tracks the units last used when setting sales-related streams
+   * to determine if recharge should use explicit or implicit calculations.</p>
+   *
+   * @param units The units string last used to specify a sales-related stream
    */
-  public void setLastSpecifiedUnits(String units) {
+  public void setLastSalesUnits(String units) {
     // Ignore percentage units to avoid impacting last recorded units
     if (units != null && units.contains("%")) {
       return;
     }
-    lastSpecifiedUnits = units;
+    lastSalesUnits = units;
   }
 
   /**
-   * Get the last specified units for stream operations.
+   * Get the last sales units for stream operations.
    *
-   * @return The units string last used to specify a stream
+   * @return The units string last used to specify a sales-related stream
    */
-  public String getLastSpecifiedUnits() {
-    return lastSpecifiedUnits;
+  public String getLastSalesUnits() {
+    return lastSalesUnits;
   }
 
   /**
