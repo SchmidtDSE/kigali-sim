@@ -818,12 +818,18 @@ public class SingleThreadEngine implements Engine {
     if (application == null || currentSubstance == null) {
       raiseNoAppOrSubstance("setting stream", " specified");
     }
-    streamKeeper.setLastSalesUnits(currentScope, amountRaw.getUnits());
+    
+    // Determine if this is a sales-related stream that influences recharge displacement
+    boolean isSalesStream = "sales".equals(stream) || "manufacture".equals(stream) || "import".equals(stream) || "export".equals(stream);
+    
+    if (isSalesStream) {
+      streamKeeper.setLastSalesUnits(currentScope, amountRaw.getUnits());
 
-    // Track the original user-specified units for the destination substance
-    String lastUnits = amountRaw.getUnits();
-    SimpleUseKey destKey = new SimpleUseKey(application, destinationSubstance);
-    streamKeeper.setLastSalesUnits(destKey, lastUnits);
+      // Track the original user-specified units for the destination substance
+      String lastUnits = amountRaw.getUnits();
+      SimpleUseKey destKey = new SimpleUseKey(application, destinationSubstance);
+      streamKeeper.setLastSalesUnits(destKey, lastUnits);
+    }
 
     if (amountRaw.hasEquipmentUnits()) {
       // For equipment units, convert to units first, then handle each substance separately
