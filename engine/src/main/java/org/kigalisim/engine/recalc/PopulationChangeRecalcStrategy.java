@@ -76,8 +76,6 @@ public class PopulationChangeRecalcStrategy implements RecalcStrategy {
     BigDecimal salesKg = substanceSales.getValue();
     BigDecimal rechargeKg = subtractRechargeEffective ? rechargeVolume.getValue() : BigDecimal.ZERO;
     BigDecimal availableForNewUnitsKg = salesKg.subtract(rechargeKg);
-    
-    
 
     // Convert to unit delta
     EngineNumber initialChargeRaw = target.getInitialCharge("sales");
