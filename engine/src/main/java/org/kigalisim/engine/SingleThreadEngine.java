@@ -248,7 +248,10 @@ public class SingleThreadEngine implements Engine {
       return;
     }
 
-    if ("sales".equals(name) || "manufacture".equals(name) || "import".equals(name) || "export".equals(name)) {
+    // Determine if this is a sales-related stream that influences recharge displacement
+    boolean isSalesStream = "sales".equals(name) || "manufacture".equals(name) || "import".equals(name) || "export".equals(name);
+    
+    if (isSalesStream) {
       // Only track lastSalesUnits for sales-related streams that influence recharge displacement
       String unitsToRecordRealized = unitsToRecord.orElse(value.getUnits());
       streamKeeper.setLastSalesUnits(keyEffective, unitsToRecordRealized);
