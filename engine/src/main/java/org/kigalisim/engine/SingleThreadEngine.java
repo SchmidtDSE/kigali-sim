@@ -686,8 +686,7 @@ public class SingleThreadEngine implements Engine {
       return;
     }
 
-    UseKey useKeyEffective = useKey == null ? scope : useKey;    
-
+    UseKey useKeyEffective = useKey == null ? scope : useKey;
     EngineNumber currentValue = getStream(stream, Optional.of(useKeyEffective), Optional.empty());
     UnitConverter unitConverter = createUnitConverterWithTotal(stream);
 
@@ -787,8 +786,6 @@ public class SingleThreadEngine implements Engine {
     if (application == null || substance == null) {
       raiseNoAppOrSubstance("setting stream", " specified");
     }
-    // Don't change lastSpecifiedUnits for floor operations - preserve original context
-    // streamKeeper.setLastSpecifiedUnits(scope, "kg");
 
     EngineNumber changeWithUnits = new EngineNumber(changeAmount, "kg");
     changeStreamWithoutReportingUnits(stream, changeWithUnits, null, null);
