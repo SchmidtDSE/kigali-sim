@@ -747,9 +747,6 @@ public class SingleThreadEngine implements Engine {
     if (application == null || substance == null) {
       raiseNoAppOrSubstance("setting stream", " specified");
     }
-    // Don't change lastSpecifiedUnits for cap operations - preserve original context
-    // streamKeeper.setLastSpecifiedUnits(scope, "kg");
-
 
     EngineNumber changeWithUnits = new EngineNumber(changeAmount, "kg");
     changeStreamWithoutReportingUnits(stream, changeWithUnits, null, null);

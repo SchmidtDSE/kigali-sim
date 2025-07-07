@@ -325,11 +325,10 @@ public class CapLiveTests {
 
     List<EngineResult> resultsList = results.collect(Collectors.toList());
 
-    // Check HFC-134a new equipment is zero in 2030
+    // Check HFC-134a new equipment is zero in 2030 (when cap is active)
     EngineResult recordHfc2030 = LiveTestsUtil.getResult(resultsList.stream(), 2030,
         "Commercial Refrigeration", "HFC-134a");
     assertNotNull(recordHfc2030, "Should have result for Commercial Refrigeration/HFC-134a in year 2030");
-
 
     // Should be zero new equipment
     assertEquals(0.0, recordHfc2030.getPopulationNew().getValue().doubleValue(), 0.0001,
