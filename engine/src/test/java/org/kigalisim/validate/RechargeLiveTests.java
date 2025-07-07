@@ -166,4 +166,28 @@ public class RechargeLiveTests {
         "Equipment units should be units");
   }
 
+  /**
+   * Test the reordered version of recharge_units_no_change to see if order matters.
+   */
+  @Test
+  public void testRechargeUnitsNoChangeReordered() throws IOException {
+    String qtaPath = "../examples/recharge_units_no_change_reordered.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+    
+    String scenarioName = "No Policy";
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
+    List<EngineResult> resultsList = results.collect(Collectors.toList());
+    
+    // Find year 2025 result
+    EngineResult resultYear2025 = LiveTestsUtil.getResult(resultsList.stream(), 2025, 
+        "Commercial Refrigeration", "HFC-134a");
+    assertNotNull(resultYear2025, "Should have result for Commercial Refrigeration/HFC-134a in year 2025");
+    
+    // Check new equipment - should be 2667 (the import amount)
+    double newEquipment = resultYear2025.getPopulationNew().getValue().doubleValue();
+    assertEquals(2667.0, newEquipment, 0.01,
+        "New equipment for HFC-134a should be 2667 in year 2025 when recharge comes after set import");
+  }
+
 }
