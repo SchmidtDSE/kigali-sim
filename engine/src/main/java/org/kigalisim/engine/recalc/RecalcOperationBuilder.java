@@ -21,7 +21,7 @@ import org.kigalisim.engine.state.UseKey;
 public class RecalcOperationBuilder {
 
   private Optional<UseKey> scopeEffective;
-  private Optional<Boolean> subtractRecharge;
+  private Optional<Boolean> useExplicitRecharge;
   private Optional<RecalcKit> recalcKit;
   private final List<RecalcStrategy> strategies;
   private boolean hasInitialRecalc;
@@ -31,7 +31,7 @@ public class RecalcOperationBuilder {
    */
   public RecalcOperationBuilder() {
     scopeEffective = Optional.empty();
-    subtractRecharge = Optional.empty();
+    useExplicitRecharge = Optional.empty();
     recalcKit = Optional.empty();
     this.strategies = new ArrayList<>();
     hasInitialRecalc = false;
@@ -49,13 +49,13 @@ public class RecalcOperationBuilder {
   }
 
   /**
-   * Set whether to subtract recharge in population calculations.
+   * Set whether to use explicit recharge in population calculations.
    *
-   * @param subtractRecharge Whether to subtract recharge
+   * @param useExplicitRecharge Whether to use explicit recharge
    * @return This builder for method chaining
    */
-  public RecalcOperationBuilder setSubtractRecharge(Boolean subtractRecharge) {
-    this.subtractRecharge = Optional.ofNullable(subtractRecharge);
+  public RecalcOperationBuilder setUseExplicitRecharge(Boolean useExplicitRecharge) {
+    this.useExplicitRecharge = Optional.ofNullable(useExplicitRecharge);
     return this;
   }
 
@@ -85,7 +85,7 @@ public class RecalcOperationBuilder {
     strategies.add(
         new PopulationChangeRecalcStrategy(
             scopeEffective,
-            subtractRecharge
+            useExplicitRecharge
         )
     );
     hasInitialRecalc = true;
@@ -190,7 +190,7 @@ public class RecalcOperationBuilder {
     }
     RecalcStrategy newStrategy = new PopulationChangeRecalcStrategy(
         scopeEffective,
-        subtractRecharge
+        useExplicitRecharge
     );
     strategies.add(newStrategy);
     return this;

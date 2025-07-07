@@ -248,13 +248,16 @@ public class SingleThreadEngine implements Engine {
       return;
     }
 
-    String unitsToRecordRealized = unitsToRecord.orElse(value.getUnits());
-    streamKeeper.setLastSpecifiedUnits(keyEffective, unitsToRecordRealized);
-
+    if (isSalesStream(name)) {
+      // Only track lastSalesUnits for sales-related streams that influence recharge displacement
+      String unitsToRecordRealized = unitsToRecord.orElse(value.getUnits());
+      streamKeeper.setLastSalesUnits(keyEffective, unitsToRecordRealized);
+    }
+    
     if ("sales".equals(name) || "manufacture".equals(name) || "import".equals(name)) {
       RecalcOperationBuilder builder = new RecalcOperationBuilder()
           .setScopeEffective(keyEffective)
-          .setSubtractRecharge(!value.hasEquipmentUnits())
+          .setUseExplicitRecharge(!value.hasEquipmentUnits())
           .setRecalcKit(createRecalcKit())
           .recalcPopulationChange()
           .thenPropagateToConsumption();
@@ -343,8 +346,6 @@ public class SingleThreadEngine implements Engine {
   public EngineNumber getStreamFor(UseKey key, String stream) {
     return streamKeeper.getStream(key, stream);
   }
-
-
 
   @Override
   public void defineVariable(String name) {
@@ -472,7 +473,6 @@ public class SingleThreadEngine implements Engine {
     return streamKeeper.getInitialCharge(useKey, stream);
   }
 
-
   @Override
   public void setInitialCharge(EngineNumber value, String stream, YearMatcher yearMatcher) {
     if (!getIsInRange(yearMatcher)) {
@@ -487,9 +487,9 @@ public class SingleThreadEngine implements Engine {
       streamKeeper.setInitialCharge(scope, stream, value);
     }
 
-    boolean subtractRecharge = getShouldSubtractRecharge(stream);
+    boolean useExplicitRecharge = getShouldUseExplicitRecharge(stream);
     RecalcOperation operation = new RecalcOperationBuilder()
-        .setSubtractRecharge(subtractRecharge)
+        .setUseExplicitRecharge(useExplicitRecharge)
         .setRecalcKit(createRecalcKit())
         .recalcPopulationChange()
         .build();
@@ -502,16 +502,16 @@ public class SingleThreadEngine implements Engine {
    * @param stream The stream being set
    * @return true if recharge should be subtracted, false if added on top
    */
-  private boolean getShouldSubtractRecharge(String stream) {
+  private boolean getShouldUseExplicitRecharge(String stream) {
     if ("sales".equals(stream)) {
       // For sales, check if either manufacture or import were last specified in units
-      String lastUnits = streamKeeper.getLastSpecifiedUnits(scope);
+      String lastUnits = streamKeeper.getLastSalesUnits(scope);
       if (lastUnits != null && lastUnits.startsWith("unit")) {
         return false; // Add recharge on top
       }
     } else if ("manufacture".equals(stream) || "import".equals(stream)) {
       // For manufacture or import, check if that specific channel was last specified in units
-      String lastUnits = streamKeeper.getLastSpecifiedUnits(scope);
+      String lastUnits = streamKeeper.getLastSalesUnits(scope);
       return lastUnits == null || !lastUnits.startsWith("unit"); // Add recharge on top
     }
 
@@ -548,13 +548,13 @@ public class SingleThreadEngine implements Engine {
     streamKeeper.setRechargePopulation(scope, volume);
     streamKeeper.setRechargeIntensity(scope, intensity);
 
-    // Determine if recharge should be subtracted based on last specified units
-    String lastUnits = streamKeeper.getLastSpecifiedUnits(scope);
-    boolean subtractRecharge = lastUnits == null || !lastUnits.startsWith("unit");
-    
+    // Determine if explicit recharge should be used based on last sales units
+    String lastUnits = streamKeeper.getLastSalesUnits(scope);
+    boolean useExplicitRecharge = lastUnits == null || !lastUnits.startsWith("unit");
+
     // Recalculate
     RecalcOperation operation = new RecalcOperationBuilder()
-        .setSubtractRecharge(subtractRecharge)
+        .setUseExplicitRecharge(useExplicitRecharge)
         .setRecalcKit(createRecalcKit())
         .recalcPopulationChange()
         .thenPropagateToSales()
@@ -672,7 +672,6 @@ public class SingleThreadEngine implements Engine {
     return streamKeeper.getGhgIntensity(useKey);
   }
 
-
   @Override
   public EngineNumber getEqualsEnergyIntensity() {
     return streamKeeper.getEnergyIntensity(scope);
@@ -691,7 +690,6 @@ public class SingleThreadEngine implements Engine {
     }
 
     UseKey useKeyEffective = useKey == null ? scope : useKey;
-    
     EngineNumber currentValue = getStream(stream, Optional.of(useKeyEffective), Optional.empty());
     UnitConverter unitConverter = createUnitConverterWithTotal(stream);
 
@@ -708,6 +706,11 @@ public class SingleThreadEngine implements Engine {
       String displaceTarget) {
     if (!getIsInRange(yearMatcher)) {
       return;
+    }
+
+    // Set lastSalesUnits if this is a sales stream - do this before unit conversion
+    if (isSalesStream(stream)) {
+      streamKeeper.setLastSalesUnits(scope, amount.getUnits());
     }
 
     UnitConverter unitConverter = createUnitConverterWithTotal(stream);
@@ -756,6 +759,11 @@ public class SingleThreadEngine implements Engine {
       String displaceTarget) {
     if (!getIsInRange(yearMatcher)) {
       return;
+    }
+
+    // Set lastSalesUnits if this is a sales stream - do this before unit conversion
+    if (isSalesStream(stream)) {
+      streamKeeper.setLastSalesUnits(scope, amount.getUnits());
     }
 
     UnitConverter unitConverter = createUnitConverterWithTotal(stream);
@@ -812,12 +820,15 @@ public class SingleThreadEngine implements Engine {
     if (application == null || currentSubstance == null) {
       raiseNoAppOrSubstance("setting stream", " specified");
     }
-    streamKeeper.setLastSpecifiedUnits(currentScope, amountRaw.getUnits());
+    
+    if (isSalesStream(stream)) {
+      streamKeeper.setLastSalesUnits(currentScope, amountRaw.getUnits());
 
-    // Track the original user-specified units for the destination substance
-    String lastUnits = amountRaw.getUnits();
-    SimpleUseKey destKey = new SimpleUseKey(application, destinationSubstance);
-    streamKeeper.setLastSpecifiedUnits(destKey, lastUnits);
+      // Track the original user-specified units for the destination substance
+      String lastUnits = amountRaw.getUnits();
+      SimpleUseKey destKey = new SimpleUseKey(application, destinationSubstance);
+      streamKeeper.setLastSalesUnits(destKey, lastUnits);
+    }
 
     if (amountRaw.hasEquipmentUnits()) {
       // For equipment units, convert to units first, then handle each substance separately
@@ -913,6 +924,11 @@ public class SingleThreadEngine implements Engine {
         // Different substance - apply the same number of units to the destination substance
         Scope destinationScope = scope.getWithSubstance(displaceTarget);
 
+        // Set lastSalesUnits for displacement target if it's a sales stream
+        if (isSalesStream(stream)) {
+          streamKeeper.setLastSalesUnits(destinationScope, "units");
+        }
+
         // Temporarily change scope to destination for unit conversion
         final Scope originalScope = scope;
         scope = destinationScope;
@@ -941,6 +957,15 @@ public class SingleThreadEngine implements Engine {
     }
   }
 
+  /**
+   * Check if a stream is a sales-related stream that influences recharge displacement.
+   *
+   * @param stream The stream name to check
+   * @return true if the stream is sales, manufacture, import, or export
+   */
+  private boolean isSalesStream(String stream) {
+    return "sales".equals(stream) || "manufacture".equals(stream) || "import".equals(stream) || "export".equals(stream);
+  }
 
   /**
    * Change a stream value without reporting units to the last units tracking system.
@@ -978,7 +1003,6 @@ public class SingleThreadEngine implements Engine {
     }
     
     EngineNumber outputWithUnits = new EngineNumber(newAmountBound, currentValue.getUnits());
-
 
     // Allow propagation but don't track units (since units tracking was handled by the caller)
     setStreamFor(stream, outputWithUnits, Optional.empty(), Optional.ofNullable(scope), true, Optional.empty());

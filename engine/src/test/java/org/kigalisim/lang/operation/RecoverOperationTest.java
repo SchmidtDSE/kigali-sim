@@ -84,7 +84,6 @@ public class RecoverOperationTest {
     assertNotNull(operation, "RecoverOperation should be constructable with during but no displacement");
   }
 
-
   /**
    * Test the execute method with no during and no displacement.
    */
@@ -142,7 +141,6 @@ public class RecoverOperationTest {
     // in a real engine, we'll just assert that the test completes without throwing an exception
     assertNotNull(operation, "RecoverOperation should execute without throwing an exception");
   }
-
 
   /**
    * Test the execute method with complex value operations.
