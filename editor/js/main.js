@@ -536,7 +536,6 @@ class MainPresenter {
       }
     });
   }
-
 }
 
 /**
