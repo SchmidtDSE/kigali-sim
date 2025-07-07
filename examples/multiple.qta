@@ -3,12 +3,14 @@ start default
   define application "test"
 
     uses substance "a"
+      enable manufacture
       initial charge with 1 kg / unit for manufacture
       set manufacture to 100 mt
       equals 5 tCO2e / mt
     end substance
 
     uses substance "b"
+      enable manufacture
       initial charge with 1 kg / unit for manufacture
       set manufacture to 100 mt
       equals 10 tCO2e / mt

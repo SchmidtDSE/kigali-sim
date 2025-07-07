@@ -3,9 +3,9 @@ start default
   define application "Test"
   
     uses substance "HFC-134a"
+      enable manufacture
       initial charge with 0.6 kg / unit for sales
       equals 1430 tCO2e / kg
-      enable manufacture
       set priorEquipment to 240000 units during year beginning
       set manufacture to 2667 units
     end substance

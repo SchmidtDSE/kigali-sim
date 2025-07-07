@@ -3,8 +3,8 @@ start default
   define application "Commercial Refrigeration"
 
     uses substance "HFC-134a"
-      initial charge with 0.60 kg / unit for sales
       enable import
+      initial charge with 0.60 kg / unit for sales
       set priorEquipment to 240000 units during year beginning
       retire 5 % each year
       set import to 2667 units / year during year beginning
@@ -14,8 +14,8 @@ start default
     end substance
 
     uses substance "R-404A"
-      initial charge with 10.00 kg / unit for sales
       enable import
+      initial charge with 10.00 kg / unit for sales
       set priorEquipment to 20000 units during year beginning
       retire 5 % each year
       set import to 200 units / year during year beginning

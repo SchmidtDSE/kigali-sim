@@ -243,13 +243,6 @@ public class SingleThreadEngine implements Engine {
 
     streamKeeper.setStream(keyEffective, name, value);
 
-    // Track enabled streams when set to non-zero values (using epsilon to handle floating point precision)
-    BigDecimal epsilon = new BigDecimal("1e-9");
-    if (value.getValue().abs().compareTo(epsilon) > 0
-        && ("manufacture".equals(name) || "import".equals(name))) {
-      streamKeeper.markStreamAsEnabled(keyEffective, name);
-    }
-
     // Track the units last used to specify this stream (only for user-initiated calls)
     if (!propagateChanges) {
       return;

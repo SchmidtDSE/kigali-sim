@@ -3,6 +3,7 @@ start default
   define application "Test"
   
     uses substance "SubA"
+      enable import
       initial charge with 1 kg / unit for sales
       set import to 1 kg during year 1
       equals 1 tCO2e / kg

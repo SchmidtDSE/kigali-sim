@@ -3,8 +3,8 @@ start default
   define application "ImportRechargeTest"
   
     uses substance "TestSubstance"
-      initial charge with 5 kg / unit for import
       enable import
+      initial charge with 5 kg / unit for import
       recharge 10% each year with 0.5 kg / unit
       retire 0% each year
       set import to 100 kg during year 1

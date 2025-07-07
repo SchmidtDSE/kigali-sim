@@ -3,12 +3,12 @@ start default
   define application "Test"
 
     uses substance "Sub"
+      enable manufacture
+      enable import
       initial charge with 1 kg / unit for manufacture
       initial charge with 2 kg / unit for import
       equals 1 tCO2e / kg
       equals 1 kwh / kg
-      enable manufacture
-      enable import
       set priorEquipment to 1000 units during year 1
       change equipment by 5 % during years 1 to 10
       retire 5 % each year
