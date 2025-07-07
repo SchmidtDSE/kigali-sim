@@ -86,6 +86,8 @@
                 <pre><code class="language-qubectalk">define application "Dom Refrig"
 
     uses substance "HFC-134a"
+      enable manufacture
+      enable import
       initial charge with 0.25 kg / unit for manufacture
       initial charge with 0.1 kg / unit for import
       equals 1000 tCO2e / kg
@@ -99,6 +101,8 @@
 
 
     uses substance "R-600a"
+      enable manufacture
+      enable import
       initial charge with 0.1 kg / unit for manufacture
       initial charge with 0.1 kg / unit for import
       equals 50 tCO2e / kg

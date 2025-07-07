@@ -3,6 +3,7 @@ start default
   define application "App"
   
     uses substance "Sub1"
+      enable manufacture
 
       # Equivalencies
       equals 1 tCO2e / kg
@@ -10,7 +11,6 @@ start default
       
       # Initial charge and recharge levels
       initial charge with 1 kg / unit for sales
-      enable manufacture
       recharge 5% each year with 1 kg / unit
 
       # Specify prior equipment
