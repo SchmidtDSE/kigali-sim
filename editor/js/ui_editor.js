@@ -950,17 +950,22 @@ class ConsumptionListPresenter {
     );
 
     // Set enable checkboxes based on existing substance data
-    if (objToShow !== null) {
-      const enableImport = self._dialog.querySelector(".enable-import-checkbox");
-      const enableManufacture = self._dialog.querySelector(".enable-manufacture-checkbox");
-      const enableExport = self._dialog.querySelector(".enable-export-checkbox");
+    const enableImport = self._dialog.querySelector(".enable-import-checkbox");
+    const enableManufacture = self._dialog.querySelector(".enable-manufacture-checkbox");
+    const enableExport = self._dialog.querySelector(".enable-export-checkbox");
 
+    if (objToShow !== null) {
       // Check if the substance has enable commands
       const enableCommands = objToShow.getEnables();
 
       enableManufacture.checked = enableCommands.some((cmd) => cmd.getTarget() === "manufacture");
       enableImport.checked = enableCommands.some((cmd) => cmd.getTarget() === "import");
       enableExport.checked = enableCommands.some((cmd) => cmd.getTarget() === "export");
+    } else {
+      // For new substances, default all enable checkboxes to unchecked
+      enableManufacture.checked = false;
+      enableImport.checked = false;
+      enableExport.checked = false;
     }
 
     self._updateEnableCheckboxes();
@@ -996,9 +1001,19 @@ class ConsumptionListPresenter {
       ".edit-consumption-initial-charge-export-input-outer",
     );
 
-    // Show/hide fields based on checkbox states
+    // Show/hide fields based on checkbox states and set default values
     if (enableManufacture.checked) {
       domesticInputOuter.style.display = "block";
+      // If enabling and current value is 0, set to 1 kg/unit
+      if (domesticInput.value === "0" || domesticInput.value === "") {
+        domesticInput.value = 1;
+        const domesticUnitsInput = self._dialog.querySelector(
+          ".initial-charge-domestic-units-input",
+        );
+        if (domesticUnitsInput) {
+          domesticUnitsInput.value = "kg / unit";
+        }
+      }
     } else {
       domesticInputOuter.style.display = "none";
       domesticInput.value = 0;
@@ -1006,6 +1021,14 @@ class ConsumptionListPresenter {
 
     if (enableImport.checked) {
       importInputOuter.style.display = "block";
+      // If enabling and current value is 0, set to 1 kg/unit
+      if (importInput.value === "0" || importInput.value === "") {
+        importInput.value = 1;
+        const importUnitsInput = self._dialog.querySelector(".initial-charge-import-units-input");
+        if (importUnitsInput) {
+          importUnitsInput.value = "kg / unit";
+        }
+      }
     } else {
       importInputOuter.style.display = "none";
       importInput.value = 0;
@@ -1013,6 +1036,14 @@ class ConsumptionListPresenter {
 
     if (enableExport.checked) {
       exportInputOuter.style.display = "block";
+      // If enabling and current value is 0, set to 1 kg/unit
+      if (exportInput.value === "0" || exportInput.value === "") {
+        exportInput.value = 1;
+        const exportUnitsInput = self._dialog.querySelector(".initial-charge-export-units-input");
+        if (exportUnitsInput) {
+          exportUnitsInput.value = "kg / unit";
+        }
+      }
     } else {
       exportInputOuter.style.display = "none";
       exportInput.value = 0;
@@ -1035,13 +1066,9 @@ class ConsumptionListPresenter {
     const importInput = self._dialog.querySelector(".edit-consumption-initial-charge-import-input");
     const exportInput = self._dialog.querySelector(".edit-consumption-initial-charge-export-input");
 
-    // For new substances, set checkboxes based on whether fields have non-zero values
-    // For existing substances, they should already be set based on existing enable commands
-    if (self._editingName === null) {
-      enableManufacture.checked = domesticInput.value !== "0" && domesticInput.value !== "";
-      enableImport.checked = importInput.value !== "0" && importInput.value !== "";
-      enableExport.checked = exportInput.value !== "0" && exportInput.value !== "";
-    }
+    // For new substances, checkboxes should remain as explicitly set
+    // (either unchecked by default or checked by user interaction)
+    // Don't automatically check based on field values
   }
 
   /**
