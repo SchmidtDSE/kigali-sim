@@ -6,7 +6,6 @@ import org.kigalisim.engine.state.YearMatcher;
 import org.kigalisim.lang.machine.PushDownMachine;
 import org.kigalisim.lang.time.ParsedDuring;
 
-
 /**
  * Operation that enables a stream in the engine without setting a value.
  *

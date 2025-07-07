@@ -739,7 +739,6 @@ public class SingleThreadEngine implements Engine {
     BigDecimal changeAmountRaw = convertedMax.getValue().subtract(currentValue.getValue());
     BigDecimal changeAmount = changeAmountRaw.min(BigDecimal.ZERO);
 
-
     // Record units regardless of whether change is made
     Scope scope = this.scope;
     String application = scope.getApplication();
