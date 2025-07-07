@@ -331,15 +331,6 @@ public class CapLiveTests {
     assertNotNull(recordHfc2030, "Should have result for Commercial Refrigeration/HFC-134a in year 2030");
 
 
-    double populationNew = recordHfc2030.getPopulationNew().getValue().doubleValue();
-    
-    // Document known issue: negative equipment when import is capped to 0 units
-    // This appears to be related to how recharge offsets are calculated when caps are in units
-    if (populationNew < 0) {
-      // For now, we'll document this known issue but not fail the test
-      return;
-    }
-    
     // Should be zero new equipment
     assertEquals(0.0, recordHfc2030.getPopulationNew().getValue().doubleValue(), 0.0001,
         "New equipment for HFC-134a should be zero in 2030 (without change statements)");

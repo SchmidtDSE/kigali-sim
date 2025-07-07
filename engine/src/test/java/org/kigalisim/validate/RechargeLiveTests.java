@@ -1,9 +1,3 @@
-/**
- * Recharge live tests using actual QTA files.
- *
- * @license BSD-3-Clause
- */
-
 package org.kigalisim.validate;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -19,26 +13,24 @@ import org.kigalisim.engine.serializer.EngineResult;
 import org.kigalisim.lang.program.ParsedProgram;
 
 /**
- * Tests that validate recharge QTA files against expected behavior.
+ * Live tests for recharge functionality in the Kigali Simulator.
+ * These tests verify the behavior of recharge calculations and equipment populations.
  */
 public class RechargeLiveTests {
 
   /**
-   * Test recharge.qta produces expected values.
+   * Basic test for recharge functionality using the standard recharge example.
    */
   @Test
   public void testRecharge() throws IOException {
-    // Load and parse the QTA file
     String qtaPath = "../examples/recharge.qta";
     ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
     assertNotNull(program, "Program should not be null");
-
-    // Run the scenario using KigaliSimFacade
+    
     String scenarioName = "business as usual";
     Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
-
     List<EngineResult> resultsList = results.collect(Collectors.toList());
-
+    
     // Check year 1 equipment (population) value
     EngineResult resultYear1 = LiveTestsUtil.getResult(resultsList.stream(), 1, "test", "test");
     assertNotNull(resultYear1, "Should have result for test/test in year 1");
@@ -57,21 +49,45 @@ public class RechargeLiveTests {
   }
 
   /**
-   * Test recharge_on_top.qta produces expected values.
+   * Test for recharge import issue where recharge can go negative when sales exceed total demand.
+   */
+  @Test
+  public void testRechargeImportIssue() throws IOException {
+    String qtaPath = "../examples/recharge_import_issue.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+    
+    String scenarioName = "BAU";
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
+    List<EngineResult> resultsList = results.collect(Collectors.toList());
+    
+    // Check year 2025 equipment (population) value
+    // Should have at least 20000 units (the priorEquipment value)
+    EngineResult resultYear2025 = LiveTestsUtil.getResult(resultsList.stream(), 2025, "Domestic AC", "HFC-32");
+    assertNotNull(resultYear2025, "Should have result for Domestic AC/HFC-32 in year 2025");
+    
+    double unitsIn2025 = resultYear2025.getPopulation().getValue().doubleValue();
+    
+    // Assert that units should be at least 20000 (the priorEquipment value)
+    assertEquals(true, unitsIn2025 >= 20000.0,
+        "Equipment should be at least 20000 units in year 2025 (priorEquipment value), but was " + unitsIn2025);
+    assertEquals("units", resultYear2025.getPopulation().getUnits(),
+        "Equipment units should be units");
+  }
+
+  /**
+   * Test for recharge on top functionality ensuring recharge is added to sales.
    */
   @Test
   public void testRechargeOnTop() throws IOException {
-    // Load and parse the QTA file
     String qtaPath = "../examples/recharge_on_top.qta";
     ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
     assertNotNull(program, "Program should not be null");
-
-    // Run the scenario using KigaliSimFacade
+    
     String scenarioName = "BAU";
     Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
-
     List<EngineResult> resultsList = results.collect(Collectors.toList());
-
+    
     // Check year 1 equipment (population) value
     // Should have 10000 (prior) + 1000 (manufacture) = 11000 units in year 1
     EngineResult resultYear1 = LiveTestsUtil.getResult(resultsList.stream(), 1, "App", "Sub1");
@@ -83,28 +99,30 @@ public class RechargeLiveTests {
   }
 
   /**
-   * Test recharge_import_issue.qta to verify units with recharge and import.
-   * This test validates that when we have priorEquipment of 20000 units and import set,
-   * the total units should be at least 20000 in 2025 (not decrease).
+   * Test that setting import to match recharge needs exactly results in zero new equipment.
+   * This verifies that unit-based imports correctly account for recharge requirements.
    */
   @Test
-  public void testRechargeImportIssue() throws IOException {
-    // Load and parse the QTA file
-    String qtaPath = "../examples/recharge_import_issue.qta";
+  public void testRechargeUnitsNoChange() throws IOException {
+    String qtaPath = "../examples/recharge_units_no_change.qta";
     ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
     assertNotNull(program, "Program should not be null");
-
-    // Run the scenario using KigaliSimFacade
-    String scenarioName = "BAU";
-    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
-
-    List<EngineResult> resultsList = results.collect(Collectors.toList());
-
-    // Check year 2025 equipment (population) value
-    // Should have at least 20000 units (the priorEquipment value)
-    EngineResult resultYear2025 = LiveTestsUtil.getResult(resultsList.stream(), 2025, "Domestic AC", "HFC-32");
-    assertNotNull(resultYear2025, "Should have result for Domestic AC/HFC-32 in year 2025");
     
+    String scenarioName = "No Policy";
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
+    List<EngineResult> resultsList = results.collect(Collectors.toList());
+    
+    // Find year 2025 result
+    EngineResult resultYear2025 = LiveTestsUtil.getResult(resultsList.stream(), 2025, 
+        "Commercial Refrigeration", "HFC-134a");
+    assertNotNull(resultYear2025, "Should have result for Commercial Refrigeration/HFC-134a in year 2025");
+    
+    // Check new equipment - should be zero
+    double newEquipment = resultYear2025.getPopulationNew().getValue().doubleValue();
+    assertEquals(0.0, newEquipment, 0.01,
+        "New equipment for HFC-134a should be zero in year 2025 when imports match recharge needs");
+    
+    // Verify equipment units remain at prior level
     double unitsIn2025 = resultYear2025.getPopulation().getValue().doubleValue();
     
     // Assert that units should be at least 20000 (the priorEquipment value)
