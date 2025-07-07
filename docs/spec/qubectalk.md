@@ -105,6 +105,16 @@ If this is omitted and the substance has sales, an error message may be shown. N
 ### Sales
 The sale of substances typically defines the equipment population. QubecTalk considers sales to fit into two groups: `manufacture` and `import`. Though not currently used, `export` is reserved for future use.
 
+**Enable Statement**: Before setting sales values, streams must be explicitly enabled using the `enable` command. This command indicates which streams (manufacture, import, export) will be used for a substance:
+
+```
+enable manufacture
+enable import
+enable export
+```
+
+By convention, enable statements should be placed at the top of substance definitions, though this is not enforced by the language.
+
 **Domestic**: Starting with an example of specifying substances both produced and consumed domestically. There are typically three important parameters to specify:
 
  - Manufacturing (volume)
@@ -438,6 +448,8 @@ start default
   define application "dom refrig"
 
     uses substance "HFC-134a"
+      enable manufacture
+      enable import
       equals 1430 tCO2e / mt
       equals 100 kwh / unit
 
@@ -462,6 +474,8 @@ start default
     end substance
 
     uses substance "R-600a"
+      enable manufacture
+      enable import
       equals 6 tCO2e / mt
       equals 80 kwh / unit
 

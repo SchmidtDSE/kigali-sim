@@ -3,6 +3,7 @@ start default
   define application "App"
   
     uses substance "Sub2"
+      enable manufacture
 
       # A - Equivalencies
       equals 1 tCO2e / kg
@@ -18,6 +19,7 @@ start default
     end substance
 
     uses substance "Sub3"
+      enable manufacture
 
       # C - Initial volumes
       set manufacture to 1000000 units during year 1

@@ -3,6 +3,7 @@ start default
   define application "test"
 
     uses substance "test"
+      enable manufacture
       initial charge with 1 kg / unit for manufacture
       define testA as 1
       define testB as 0

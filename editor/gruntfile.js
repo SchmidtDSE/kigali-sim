@@ -72,6 +72,19 @@ module.exports = function (grunt) {
     }
   });
 
-  grunt.registerTask("test-with-cleanup", ["copy-examples", "connect", "qunit-with-fallback", "cleanup-examples"]);
+  grunt.registerTask("test-with-cleanup", "Run tests with automatic cleanup", function() {
+    var done = this.async();
+    
+    // Ensure cleanup happens even if tests fail
+    process.on('exit', function() {
+      if (grunt.file.exists("examples")) {
+        grunt.file.delete("examples");
+      }
+    });
+    
+    grunt.task.run(["copy-examples", "connect", "qunit-with-fallback", "cleanup-examples"]);
+    done();
+  });
+  
   grunt.registerTask("default", ["test-with-cleanup"]);
 };

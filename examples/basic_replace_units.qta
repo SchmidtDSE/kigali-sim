@@ -3,6 +3,7 @@ start default
   define application "Test"
 
     uses substance "Sub A"
+      enable manufacture
       initial charge with 10 kg / unit for manufacture
       equals 100 * 1000 tCO2e / mt
       equals 10 * 1000 kwh / mt
@@ -11,6 +12,7 @@ start default
 
 
     uses substance "Sub B"
+      enable manufacture
       initial charge with 20 kg / unit for manufacture
       equals 10 * 1000 tCO2e / mt
       equals 1 * 1000 kwh / mt

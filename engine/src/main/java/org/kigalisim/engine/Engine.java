@@ -152,6 +152,18 @@ public interface Engine {
   void setStream(String name, EngineNumber value, Optional<YearMatcher> yearMatcher);
 
   /**
+   * Enable a stream without setting its value.
+   *
+   * <p>This method marks a stream as enabled, allowing it to be included in distribution
+   * calculations for operations like recharge, retire, and recover without having to
+   * set an actual value to the stream.</p>
+   *
+   * @param name The name of the stream to enable
+   * @param yearMatcher The year matcher object or empty
+   */
+  void enable(String name, Optional<YearMatcher> yearMatcher);
+
+  /**
    * Get the stream value for a given application and substance key.
    *
    * @param name The name of the stream to retrieve

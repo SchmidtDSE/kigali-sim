@@ -77,6 +77,9 @@ public class RetireOperationTest {
    */
   @Test
   public void testExecuteNoDuring() {
+    // Enable import stream to enable sales distribution calculation (BEFORE priorEquipment)
+    engine.enable("import", Optional.ofNullable(allYearsMatcher));
+    
     // Set up prior equipment population
     EngineNumber priorEquipment = new EngineNumber(BigDecimal.valueOf(1000), "units");
     engine.setStream("priorEquipment", priorEquipment, Optional.ofNullable(allYearsMatcher));
@@ -99,6 +102,9 @@ public class RetireOperationTest {
    */
   @Test
   public void testExecuteWithDuring() {
+    // Enable import stream to enable sales distribution calculation (BEFORE priorEquipment)
+    engine.enable("import", Optional.ofNullable(allYearsMatcher));
+    
     // Set up prior equipment population
     EngineNumber priorEquipment = new EngineNumber(BigDecimal.valueOf(1000), "units");
     engine.setStream("priorEquipment", priorEquipment, Optional.ofNullable(allYearsMatcher));
@@ -127,6 +133,9 @@ public class RetireOperationTest {
    */
   @Test
   public void testExecuteWithDuringNotApplying() {
+    // Enable import stream to enable sales distribution calculation (BEFORE priorEquipment)
+    engine.enable("import", Optional.ofNullable(allYearsMatcher));
+    
     // Set up prior equipment population
     EngineNumber priorEquipment = new EngineNumber(BigDecimal.valueOf(1000), "units");
     engine.setStream("priorEquipment", priorEquipment, Optional.ofNullable(allYearsMatcher));
@@ -160,6 +169,13 @@ public class RetireOperationTest {
    */
   @Test
   public void testExecuteWithComplexValueOperation() {
+    // Enable import stream to enable sales distribution calculation (BEFORE priorEquipment)
+    engine.enable("import", Optional.ofNullable(allYearsMatcher));
+    
+    // Set up prior equipment population
+    EngineNumber priorEquipment = new EngineNumber(BigDecimal.valueOf(1000), "units");
+    engine.setStream("priorEquipment", priorEquipment, Optional.ofNullable(allYearsMatcher));
+
     // Set up retirement rate with a complex operation
     Operation left = new PreCalculatedOperation(new EngineNumber(BigDecimal.valueOf(6), "%"));
     Operation right = new PreCalculatedOperation(new EngineNumber(BigDecimal.valueOf(4), "%"));

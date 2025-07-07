@@ -4,6 +4,7 @@ start default
   define application "test"
 
     uses substance "test"
+      enable manufacture
       initial charge with 1 mt / unit for manufacture
       set manufacture to 100 mt
       equals 5 kwh / unit

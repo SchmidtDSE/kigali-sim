@@ -118,6 +118,9 @@ public class RecoverOperationTest {
    */
   @Test
   public void testExecuteWithDuringNoDisplacement() {
+    // Enable import stream to enable sales distribution calculation
+    engine.enable("import", Optional.empty());
+    
     // Set up recovery volume and yield
     EngineNumber volume = new EngineNumber(BigDecimal.valueOf(100), "kg");
     Operation volumeOperation = new PreCalculatedOperation(volume);
@@ -270,6 +273,9 @@ public class RecoverOperationTest {
    */
   @Test
   public void testExecuteWithDisplacementAndDuring() {
+    // Enable import stream to enable sales distribution calculation
+    engine.enable("import", Optional.empty());
+    
     // Set up recovery volume and yield using real engine (simpler approach)
     EngineNumber volume = new EngineNumber(BigDecimal.valueOf(25), "kg");
     Operation volumeOperation = new PreCalculatedOperation(volume);

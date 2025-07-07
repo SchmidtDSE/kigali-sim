@@ -3,6 +3,7 @@ start default
   define application "Test"
 
     uses substance "Sub A"
+      enable manufacture
       initial charge with 1 kg / unit for manufacture
       initial charge with 2 kg / unit for import
       equals 100 tCO2e / kg
@@ -14,6 +15,7 @@ start default
 
 
     uses substance "Sub B"
+      enable manufacture
       initial charge with 1 kg / unit for manufacture
       initial charge with 2 kg / unit for import
       equals 10 tCO2e / kg

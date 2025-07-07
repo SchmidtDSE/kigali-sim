@@ -780,8 +780,13 @@ class ConsumptionListPresenter {
 
     setupDialogInternalLinks(self._root, self._tabs);
 
-    const consumptionSource = self._dialog.querySelector(".edit-consumption-source");
-    consumptionSource.addEventListener("change", () => self._updateSource());
+    const enableImport = self._dialog.querySelector(".enable-import-checkbox");
+    const enableManufacture = self._dialog.querySelector(".enable-manufacture-checkbox");
+    const enableExport = self._dialog.querySelector(".enable-export-checkbox");
+
+    enableImport.addEventListener("change", () => self._updateSource());
+    enableManufacture.addEventListener("change", () => self._updateSource());
+    enableExport.addEventListener("change", () => self._updateSource());
   }
 
   /**
@@ -944,7 +949,26 @@ class ConsumptionListPresenter {
       removeCallback,
     );
 
-    self._updateSourceDropdown();
+    // Set enable checkboxes based on existing substance data
+    const enableImport = self._dialog.querySelector(".enable-import-checkbox");
+    const enableManufacture = self._dialog.querySelector(".enable-manufacture-checkbox");
+    const enableExport = self._dialog.querySelector(".enable-export-checkbox");
+
+    if (objToShow !== null) {
+      // Check if the substance has enable commands
+      const enableCommands = objToShow.getEnables();
+
+      enableManufacture.checked = enableCommands.some((cmd) => cmd.getTarget() === "manufacture");
+      enableImport.checked = enableCommands.some((cmd) => cmd.getTarget() === "import");
+      enableExport.checked = enableCommands.some((cmd) => cmd.getTarget() === "export");
+    } else {
+      // For new substances, default all enable checkboxes to unchecked
+      enableManufacture.checked = false;
+      enableImport.checked = false;
+      enableExport.checked = false;
+    }
+
+    self._updateEnableCheckboxes();
     self._updateSource();
 
     self._dialog.showModal();
@@ -958,8 +982,9 @@ class ConsumptionListPresenter {
   _updateSource() {
     const self = this;
 
-    const consumptionSource = self._dialog.querySelector(".edit-consumption-source");
-    const consumptionValue = consumptionSource.value;
+    const enableImport = self._dialog.querySelector(".enable-import-checkbox");
+    const enableManufacture = self._dialog.querySelector(".enable-manufacture-checkbox");
+    const enableExport = self._dialog.querySelector(".enable-export-checkbox");
 
     const domesticInput = self._dialog.querySelector(
       ".edit-consumption-initial-charge-domestic-input",
@@ -971,49 +996,79 @@ class ConsumptionListPresenter {
     const importInputOuter = self._dialog.querySelector(
       ".edit-consumption-initial-charge-import-input-outer",
     );
+    const exportInput = self._dialog.querySelector(".edit-consumption-initial-charge-export-input");
+    const exportInputOuter = self._dialog.querySelector(
+      ".edit-consumption-initial-charge-export-input-outer",
+    );
 
-    if (consumptionValue === "all") {
+    // Show/hide fields based on checkbox states and set default values
+    if (enableManufacture.checked) {
       domesticInputOuter.style.display = "block";
-      importInputOuter.style.display = "block";
-    } else if (consumptionValue === "import") {
+      // If enabling and current value is 0, set to 1 kg/unit
+      if (domesticInput.value === "0" || domesticInput.value === "") {
+        domesticInput.value = 1;
+        const domesticUnitsInput = self._dialog.querySelector(
+          ".initial-charge-domestic-units-input",
+        );
+        if (domesticUnitsInput) {
+          domesticUnitsInput.value = "kg / unit";
+        }
+      }
+    } else {
       domesticInputOuter.style.display = "none";
       domesticInput.value = 0;
+    }
+
+    if (enableImport.checked) {
       importInputOuter.style.display = "block";
-    } else if (consumptionValue === "manufacture") {
-      domesticInputOuter.style.display = "block";
-      importInput.value = 0;
-      importInputOuter.style.display = "none";
+      // If enabling and current value is 0, set to 1 kg/unit
+      if (importInput.value === "0" || importInput.value === "") {
+        importInput.value = 1;
+        const importUnitsInput = self._dialog.querySelector(".initial-charge-import-units-input");
+        if (importUnitsInput) {
+          importUnitsInput.value = "kg / unit";
+        }
+      }
     } else {
-      throw "Unexpected source value: " + consumptionValue;
+      importInputOuter.style.display = "none";
+      importInput.value = 0;
+    }
+
+    if (enableExport.checked) {
+      exportInputOuter.style.display = "block";
+      // If enabling and current value is 0, set to 1 kg/unit
+      if (exportInput.value === "0" || exportInput.value === "") {
+        exportInput.value = 1;
+        const exportUnitsInput = self._dialog.querySelector(".initial-charge-export-units-input");
+        if (exportUnitsInput) {
+          exportUnitsInput.value = "kg / unit";
+        }
+      }
+    } else {
+      exportInputOuter.style.display = "none";
+      exportInput.value = 0;
     }
   }
 
   /**
-   * Update the source dropdown selected value.
+   * Update the enable checkboxes based on current field values.
    */
-  _updateSourceDropdown() {
+  _updateEnableCheckboxes() {
     const self = this;
 
-    const consumptionSource = self._dialog.querySelector(".edit-consumption-source");
+    const enableImport = self._dialog.querySelector(".enable-import-checkbox");
+    const enableManufacture = self._dialog.querySelector(".enable-manufacture-checkbox");
+    const enableExport = self._dialog.querySelector(".enable-export-checkbox");
 
     const domesticInput = self._dialog.querySelector(
       ".edit-consumption-initial-charge-domestic-input",
     );
-    const domesticInputOuter = self._dialog.querySelector(
-      ".edit-consumption-initial-charge-domestic-input-outer",
-    );
     const importInput = self._dialog.querySelector(".edit-consumption-initial-charge-import-input");
-    const importInputOuter = self._dialog.querySelector(
-      ".edit-consumption-initial-charge-import-input-outer",
-    );
+    const exportInput = self._dialog.querySelector(".edit-consumption-initial-charge-export-input");
 
-    if (domesticInput.value === "0") {
-      consumptionSource.value = "import";
-    } else if (importInput.value === "0") {
-      consumptionSource.value = "manufacture";
-    } else {
-      consumptionSource.value = "all";
-    }
+    // For new substances, checkboxes should remain as explicitly set
+    // (either unchecked by default or checked by user interaction)
+    // Don't automatically check based on field values
   }
 
   /**
@@ -1081,6 +1136,21 @@ class ConsumptionListPresenter {
     );
 
     const substanceBuilder = new SubstanceBuilder(substanceName, false);
+
+    // Add enable commands based on checkbox states
+    const enableImport = self._dialog.querySelector(".enable-import-checkbox");
+    const enableManufacture = self._dialog.querySelector(".enable-manufacture-checkbox");
+    const enableExport = self._dialog.querySelector(".enable-export-checkbox");
+
+    if (enableManufacture.checked) {
+      substanceBuilder.addCommand(new Command("enable", "manufacture", null, null));
+    }
+    if (enableImport.checked) {
+      substanceBuilder.addCommand(new Command("enable", "import", null, null));
+    }
+    if (enableExport.checked) {
+      substanceBuilder.addCommand(new Command("enable", "export", null, null));
+    }
 
     const ghgValue = getEngineNumberValue(
       self._dialog.querySelector(".edit-consumption-ghg-input"),

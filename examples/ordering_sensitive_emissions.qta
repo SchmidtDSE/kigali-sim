@@ -3,9 +3,10 @@ start default
   define application "test"
 
     uses substance "SubA"
+      enable manufacture
       equals 1430 tCO2e / kg
-      set priorEquipment to 1200000 units during year beginning
       initial charge with 0.15 kg / unit for sales
+      set priorEquipment to 1200000 units during year beginning
       retire 2 % each year
       recharge 10 % each year with 0.15 kg / unit
       set manufacture to 30000 units / year during year beginning
@@ -14,8 +15,9 @@ start default
     end substance
 
     uses substance "SubB"
-      set priorEquipment to 1200000 units during year beginning
+      enable manufacture
       initial charge with 0.15 kg / unit for sales
+      set priorEquipment to 1200000 units during year beginning
       retire 2 % each year
       equals 1430 tCO2e / kg
       recharge 10 % each year with 0.15 kg / unit
@@ -25,8 +27,9 @@ start default
     end substance
 
     uses substance "SubC"
-      set priorEquipment to 1200000 units during year beginning
+      enable manufacture
       initial charge with 0.15 kg / unit for sales
+      set priorEquipment to 1200000 units during year beginning
       retire 2 % each year
       recharge 10 % each year with 0.15 kg / unit
       equals 1430 tCO2e / kg
@@ -36,8 +39,9 @@ start default
     end substance
 
     uses substance "SubD"
-      set priorEquipment to 1200000 units during year beginning
+      enable manufacture
       initial charge with 0.15 kg / unit for sales
+      set priorEquipment to 1200000 units during year beginning
       retire 2 % each year
       recharge 10 % each year with 0.15 kg / unit
       set manufacture to 30000 units / year during year beginning

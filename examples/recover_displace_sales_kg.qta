@@ -3,6 +3,8 @@ start default
   define application "test"
 
     uses substance "sub_a"
+      enable manufacture
+      enable import
       initial charge with 10 kg / unit for manufacture
       initial charge with 10 kg / unit for import
       recharge 10% each year with 10 kg / unit
@@ -14,6 +16,8 @@ start default
     end substance
 
     uses substance "sub_b"
+      enable manufacture
+      enable import
       initial charge with 20 kg / unit for manufacture
       initial charge with 20 kg / unit for import
       recharge 10% each year with 20 kg / unit

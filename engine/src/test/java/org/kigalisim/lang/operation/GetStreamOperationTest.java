@@ -68,6 +68,7 @@ public class GetStreamOperationTest {
   public void testExecuteRetrievesStreamValue() {
     // Set a stream value in the engine
     EngineNumber number = new EngineNumber(BigDecimal.valueOf(42), "kg");
+    engine.enable("manufacture", Optional.empty());
     engine.setStream("manufacture", number, Optional.empty());
 
     // Create and execute the operation
@@ -87,6 +88,7 @@ public class GetStreamOperationTest {
   public void testExecuteRetrievesStreamValueWithUnitConversion() {
     // Set a stream value in the engine
     EngineNumber number = new EngineNumber(BigDecimal.valueOf(1), "kg");
+    engine.enable("manufacture", Optional.empty());
     engine.setStream("manufacture", number, Optional.empty());
 
     // Create and execute the operation with unit conversion
