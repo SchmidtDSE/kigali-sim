@@ -3,6 +3,7 @@ start default
   define application "appA"
 
     uses substance "subA"
+      enable manufacture
       initial charge with 1 kg / unit for manufacture
       set manufacture to 100 mt during year 1
       equals 5 tCO2e / mt
@@ -13,6 +14,7 @@ start default
   define application "appB"
 
     uses substance "subB"
+      enable manufacture
       initial charge with 1 kg / unit for manufacture
       set manufacture to 100 mt during year 1
       equals 10 tCO2e / mt

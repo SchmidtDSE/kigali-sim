@@ -3,6 +3,8 @@ start default
   define application "appA"
 
     uses substance "subA"
+      enable manufacture
+      enable import
       initial charge with 1 kg / unit for sales
       set manufacture to 90 mt during year 1
       set import to 10 mt during year 1
@@ -14,6 +16,8 @@ start default
   define application "appB"
 
     uses substance "subB"
+      enable manufacture
+      enable import
       initial charge with 1 kg / unit for sales
       set manufacture to 90 mt during year 1
       set import to 10 mt during year 1

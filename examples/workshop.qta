@@ -3,6 +3,8 @@ start default
   define application "dom refrig"
 
     uses substance "HFC-134a"
+      enable manufacture
+      enable import
       equals 1000 tCO2e / mt
 
       # Domestic production
@@ -26,6 +28,8 @@ start default
     end substance
 
     uses substance "R-600a"
+      enable manufacture
+      enable import
       equals 10 tCO2e / mt
 
       # Domestic production
@@ -51,6 +55,8 @@ start default
   define application "com refrig"
 
     uses substance "HFC-134a"
+      enable manufacture
+      enable import
       equals 1000 tCO2e / mt
 
       # Domestic production
@@ -78,6 +84,8 @@ start default
     end substance
 
     uses substance "R-600a"
+      enable manufacture
+      enable import
       equals 10 tCO2e / mt
 
       # Domestic production
@@ -99,6 +107,8 @@ start default
     end substance
 
     uses substance "R-404A"
+      enable manufacture
+      enable import
       equals 5000 tCO2e / mt
 
       # Domestic production
