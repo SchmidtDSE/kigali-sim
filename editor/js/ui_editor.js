@@ -955,15 +955,12 @@ class ConsumptionListPresenter {
       const enableManufacture = self._dialog.querySelector(".enable-manufacture-checkbox");
       const enableExport = self._dialog.querySelector(".enable-export-checkbox");
 
-      // Check if the substance has enable commands - assume enabled if initial charges are non-zero
-      // This is a temporary approach until we can access enable commands directly
-      const domesticCharge = objToShow.getInitialCharge("manufacture");
-      const importCharge = objToShow.getInitialCharge("import");
-      const exportCharge = objToShow.getInitialCharge("export");
+      // Check if the substance has enable commands
+      const enableCommands = objToShow.getEnables();
 
-      enableManufacture.checked = domesticCharge && domesticCharge.getValue().toString() !== "0";
-      enableImport.checked = importCharge && importCharge.getValue().toString() !== "0";
-      enableExport.checked = exportCharge && exportCharge.getValue().toString() !== "0";
+      enableManufacture.checked = enableCommands.some((cmd) => cmd.getTarget() === "manufacture");
+      enableImport.checked = enableCommands.some((cmd) => cmd.getTarget() === "import");
+      enableExport.checked = enableCommands.some((cmd) => cmd.getTarget() === "export");
     }
 
     self._updateEnableCheckboxes();

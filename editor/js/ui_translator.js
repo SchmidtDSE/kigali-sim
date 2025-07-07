@@ -1025,6 +1025,7 @@ class SubstanceBuilder {
       self._replaces,
       self._retire,
       self._setVals,
+      self._enables,
       self._isModification,
       isCompatible,
     );
@@ -1249,6 +1250,7 @@ class Substance {
    * @param {ReplaceCommand[]} replaces - Replace commands.
    * @param {Command} retire - Retire command.
    * @param {Command[]} setVals - Set value commands.
+   * @param {Command[]} enables - Enable commands.
    * @param {boolean} isMod - Whether this modifies existing substance.
    * @param {boolean} compat - Whether substance is UI-compatible.
    */
@@ -1264,6 +1266,7 @@ class Substance {
     replaces,
     retire,
     setVals,
+    enables,
     isMod,
     compat,
   ) {
@@ -1279,6 +1282,7 @@ class Substance {
     self._replaces = replaces;
     self._retire = retire;
     self._setVals = setVals;
+    self._enables = enables;
     self._isModification = isMod;
     self._isCompatible = compat;
   }
@@ -1403,6 +1407,16 @@ class Substance {
   getSetVals() {
     const self = this;
     return self._setVals;
+  }
+
+  /**
+   * Get all enable commands for this substance.
+   *
+   * @returns {Command[]} Array of enable commands.
+   */
+  getEnables() {
+    const self = this;
+    return self._enables;
   }
 
   /**
