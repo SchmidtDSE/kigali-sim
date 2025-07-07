@@ -116,6 +116,7 @@ start default
 
     uses substance "HFC-32"
       enable import
+      enable manufacture
       initial charge with 0.85 kg / unit for sales
       set priorEquipment to 20000 units during year beginning
       retire 5 % each year
@@ -143,6 +144,7 @@ start default
 
     uses substance "HFC-32"
       enable import
+      enable manufacture
       initial charge with 4.00 kg / unit for sales
       set priorEquipment to 5000 units during year beginning
       retire 5 % each year

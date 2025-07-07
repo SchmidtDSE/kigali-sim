@@ -342,6 +342,8 @@ end default</code></pre>
           <pre><code class="language-qubectalk">  define application "Domestic AC"
 
     uses substance "HFC-32"
+      enable import
+      enable manufacture
       set priorEquipment to 20000 units during year beginning
       initial charge with 0.85 kg / unit for sales
       retire 5 % each year  # roughly equivalent to 15 years
@@ -356,6 +358,8 @@ end default</code></pre>
   define application "Commercial AC"
 
     uses substance "HFC-32"
+      enable import
+      enable manufacture
       set priorEquipment to 5000 units during year beginning
       initial charge with 4.00 kg / unit for sales
       retire 5 % each year  # roughly equivalent to 15 years
@@ -560,6 +564,8 @@ end default</code></pre>
           <pre><code class="language-qubectalk">  define application "Domestic AC"
 
     uses substance "HFC-32"
+      enable import
+      enable manufacture
       initial charge with 0.85 kg / unit for sales
       # ... other code ...
       change equipment by +7 % each year from year 2025 to 2035
@@ -573,6 +579,8 @@ end default</code></pre>
   define application "Commercial AC"
 
     uses substance "HFC-32"
+      enable import
+      enable manufacture
       initial charge with 4.00 kg / unit for sales
       # ... other code ...
       change equipment by +7 % each year from year 2025 to 2035
@@ -635,6 +643,8 @@ end default</code></pre>
   define application "Domestic AC"
 
     uses substance "HFC-32"
+      enable import
+      enable manufacture
       set priorEquipment to 20000 * 120 % units during year beginning
       initial charge with 0.85 kg / unit for sales
       retire 5 % each year  # roughly equivalent to 15 years
@@ -649,6 +659,8 @@ end default</code></pre>
   define application "Commercial AC"
 
     uses substance "HFC-32"
+      enable import
+      enable manufacture
       set priorEquipment to 5000 * 120 % units during year beginning
       initial charge with 4.00 kg / unit for sales
       retire 5 % each year  # roughly equivalent to 15 years
@@ -1096,6 +1108,8 @@ end simulations</code></pre>
   define application "Domestic AC"
 
     uses substance "HFC-32"
+      enable import
+      enable manufacture
       set priorEquipment to 20000 units during year beginning
       initial charge with 0.85 kg / unit for sales
       retire 5 % each year  # roughly equivalent to 15 years
@@ -1124,6 +1138,8 @@ end simulations</code></pre>
   define application "Commercial AC"
 
     uses substance "HFC-32"
+      enable import
+      enable manufacture
       set priorEquipment to 5000 units during year beginning
       initial charge with 4.00 kg / unit for sales
       retire 5 % each year  # roughly equivalent to 15 years
