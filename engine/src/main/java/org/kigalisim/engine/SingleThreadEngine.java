@@ -254,7 +254,7 @@ public class SingleThreadEngine implements Engine {
     if ("sales".equals(name) || "manufacture".equals(name) || "import".equals(name)) {
       RecalcOperationBuilder builder = new RecalcOperationBuilder()
           .setScopeEffective(keyEffective)
-          .setSubtractRecharge(!value.hasEquipmentUnits())
+          .setUseExplicitRecharge(!value.hasEquipmentUnits())
           .setRecalcKit(createRecalcKit())
           .recalcPopulationChange()
           .thenPropagateToConsumption();
@@ -487,9 +487,9 @@ public class SingleThreadEngine implements Engine {
       streamKeeper.setInitialCharge(scope, stream, value);
     }
 
-    boolean subtractRecharge = getShouldSubtractRecharge(stream);
+    boolean useExplicitRecharge = getShouldUseExplicitRecharge(stream);
     RecalcOperation operation = new RecalcOperationBuilder()
-        .setSubtractRecharge(subtractRecharge)
+        .setUseExplicitRecharge(useExplicitRecharge)
         .setRecalcKit(createRecalcKit())
         .recalcPopulationChange()
         .build();
@@ -502,7 +502,7 @@ public class SingleThreadEngine implements Engine {
    * @param stream The stream being set
    * @return true if recharge should be subtracted, false if added on top
    */
-  private boolean getShouldSubtractRecharge(String stream) {
+  private boolean getShouldUseExplicitRecharge(String stream) {
     if ("sales".equals(stream)) {
       // For sales, check if either manufacture or import were last specified in units
       String lastUnits = streamKeeper.getLastSpecifiedUnits(scope);
@@ -548,13 +548,13 @@ public class SingleThreadEngine implements Engine {
     streamKeeper.setRechargePopulation(scope, volume);
     streamKeeper.setRechargeIntensity(scope, intensity);
 
-    // Determine if recharge should be subtracted based on last specified units
+    // Determine if explicit recharge should be used based on last specified units
     String lastUnits = streamKeeper.getLastSpecifiedUnits(scope);
-    boolean subtractRecharge = lastUnits == null || !lastUnits.startsWith("unit");
+    boolean useExplicitRecharge = lastUnits == null || !lastUnits.startsWith("unit");
     
     // Recalculate
     RecalcOperation operation = new RecalcOperationBuilder()
-        .setSubtractRecharge(subtractRecharge)
+        .setUseExplicitRecharge(useExplicitRecharge)
         .setRecalcKit(createRecalcKit())
         .recalcPopulationChange()
         .thenPropagateToSales()

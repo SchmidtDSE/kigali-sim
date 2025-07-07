@@ -63,7 +63,7 @@ public class RecalcOperationBuilderIntegrationTest {
     // New way using builder pattern:
     RecalcOperationBuilder recalcBuilder = new RecalcOperationBuilder();
     recalcBuilder.setScopeEffective(scopeEffective)
-        .setSubtractRecharge(true)
+        .setUseExplicitRecharge(true)
         .setRecalcKit(recalcKit)
         .recalcPopulationChange()
         .thenPropagateToConsumption()

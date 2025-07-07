@@ -27,17 +27,17 @@ import org.kigalisim.engine.support.RechargeVolumeCalculator;
 public class PopulationChangeRecalcStrategy implements RecalcStrategy {
 
   private final Optional<UseKey> scope;
-  private final Optional<Boolean> subtractRecharge;
+  private final Optional<Boolean> useExplicitRecharge;
 
   /**
    * Create a new PopulationChangeRecalcStrategy.
    *
    * @param scope The scope to use for calculations, empty to use engine's current scope
-   * @param subtractRecharge Whether to subtract recharge, empty to default to true
+   * @param useExplicitRecharge Whether to use explicit recharge, empty to default to true
    */
-  public PopulationChangeRecalcStrategy(Optional<UseKey> scope, Optional<Boolean> subtractRecharge) {
+  public PopulationChangeRecalcStrategy(Optional<UseKey> scope, Optional<Boolean> useExplicitRecharge) {
     this.scope = scope;
-    this.subtractRecharge = subtractRecharge;
+    this.useExplicitRecharge = useExplicitRecharge;
   }
 
   @Override
@@ -47,7 +47,7 @@ public class PopulationChangeRecalcStrategy implements RecalcStrategy {
         new OverridingConverterStateGetter(baseStateGetter);
     UnitConverter unitConverter = new UnitConverter(stateGetter);
     UseKey scopeEffective = scope.orElse(target.getScope());
-    boolean subtractRechargeEffective = subtractRecharge.orElse(true);
+    boolean useExplicitRechargeEffective = useExplicitRecharge.orElse(true);
     String application = scopeEffective.getApplication();
     String substance = scopeEffective.getSubstance();
 
@@ -64,17 +64,34 @@ public class PopulationChangeRecalcStrategy implements RecalcStrategy {
     EngineNumber substanceSalesRaw = target.getStream("sales", Optional.of(scopeEffective), Optional.empty());
     EngineNumber substanceSales = unitConverter.convert(substanceSalesRaw, "kg");
 
-    // Get recharge volume using the calculator
-    EngineNumber rechargeVolume = RechargeVolumeCalculator.calculateRechargeVolume(
+    // Get explicit recharge volume using the calculator
+    EngineNumber explicitRechargeVolume = RechargeVolumeCalculator.calculateRechargeVolume(
         scopeEffective,
         kit.getStateGetter(),
         kit.getStreamKeeper(),
         target
     );
 
+    // Get existing implicit recharge stream (defaults to 0 kg if not set)
+    EngineNumber implicitRechargeRaw = target.getStream("implicitRecharge", Optional.of(scopeEffective), Optional.empty());
+    EngineNumber implicitRecharge = unitConverter.convert(implicitRechargeRaw, "kg");
+
+    // Choose which recharge to use and update implicit recharge stream
+    BigDecimal rechargeKg;
+    if (useExplicitRechargeEffective) {
+        // Using explicit recharge - clear implicit recharge
+        target.setStreamFor("implicitRecharge", new EngineNumber(BigDecimal.ZERO, "kg"), 
+                           Optional.empty(), Optional.of(scopeEffective), false, Optional.empty());
+        rechargeKg = explicitRechargeVolume.getValue();
+    } else {
+        // Using implicit recharge - save current calculation for next iteration
+        target.setStreamFor("implicitRecharge", explicitRechargeVolume, 
+                           Optional.empty(), Optional.of(scopeEffective), false, Optional.empty());
+        rechargeKg = implicitRecharge.getValue();
+    }
+
     // Get total volume available for new units
     BigDecimal salesKg = substanceSales.getValue();
-    BigDecimal rechargeKg = subtractRechargeEffective ? rechargeVolume.getValue() : BigDecimal.ZERO;
     BigDecimal availableForNewUnitsKg = salesKg.subtract(rechargeKg);
     
     

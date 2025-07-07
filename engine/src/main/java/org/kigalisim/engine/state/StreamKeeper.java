@@ -113,6 +113,10 @@ public class StreamKeeper {
     streams.put(rechargeEmissionsKey, new EngineNumber(BigDecimal.ZERO, "tCO2e"));
     String eolEmissionsKey = getKey(useKey, "eolEmissions");
     streams.put(eolEmissionsKey, new EngineNumber(BigDecimal.ZERO, "tCO2e"));
+
+    // Recharge tracking
+    String implicitRechargeKey = getKey(useKey, "implicitRecharge");
+    streams.put(implicitRechargeKey, new EngineNumber(BigDecimal.ZERO, "kg"));
   }
 
   /**

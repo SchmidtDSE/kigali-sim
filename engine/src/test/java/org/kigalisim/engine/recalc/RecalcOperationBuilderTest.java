@@ -92,7 +92,7 @@ public class RecalcOperationBuilderTest {
 
     RecalcOperation operation = builder
         .setScopeEffective(testScope)
-        .setSubtractRecharge(true)
+        .setUseExplicitRecharge(true)
         .setRecalcKit(recalcKit)
         .recalcPopulationChange()
         .thenPropagateToConsumption()
