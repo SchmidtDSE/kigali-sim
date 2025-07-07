@@ -1471,6 +1471,7 @@ class Substance {
       codeLines.forEach(addIfGiven);
     };
 
+    addAllIfGiven(self._getEnablesCode());
     addAllIfGiven(self._getInitialChargesCode());
     addIfGiven(self._getEqualsCode(self._equalsGhg));
     addIfGiven(self._getEqualsCode(self._equalsKwh));
@@ -1484,6 +1485,30 @@ class Substance {
 
     addCode("end substance", spaces);
     return finalizeCodePieces(baselinePieces);
+  }
+
+  /**
+   * Generate code for enable commands.
+   *
+   * @returns {string[]|null} Array of code strings or null if no enables.
+   * @private
+   */
+  _getEnablesCode() {
+    const self = this;
+    if (self._enables.length == 0) {
+      return null;
+    }
+
+    const buildEnable = (enable) => {
+      const pieces = [
+        "enable",
+        enable.getTarget(),
+      ];
+      self._addDuration(pieces, enable);
+      return self._finalizeStatement(pieces);
+    };
+
+    return self._enables.map(buildEnable);
   }
 
   /**
@@ -3004,22 +3029,25 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
    * Visit an enable command with all years duration node.
    *
    * @param {Object} ctx - The parse tree node context.
-   * @returns {IncompatibleCommand} Incompatibility marker for enable.
+   * @returns {Command} Enable command.
    */
   visitEnableAllYears(ctx) {
     const self = this;
-    return new IncompatibleCommand("enable");
+    const target = ctx.target.getText();
+    return new Command("enable", target, null, null);
   }
 
   /**
    * Visit an enable command with duration node.
    *
    * @param {Object} ctx - The parse tree node context.
-   * @returns {IncompatibleCommand} Incompatibility marker for enable.
+   * @returns {Command} Enable command.
    */
   visitEnableDuration(ctx) {
     const self = this;
-    return new IncompatibleCommand("enable");
+    const target = ctx.target.getText();
+    const duration = ctx.duration.accept(self);
+    return new Command("enable", target, null, duration);
   }
 
   /**
