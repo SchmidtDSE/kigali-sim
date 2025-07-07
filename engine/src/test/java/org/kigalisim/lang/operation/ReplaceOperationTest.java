@@ -48,6 +48,7 @@ public class ReplaceOperationTest {
 
     // Register the destination substance
     engine.setSubstance(DESTINATION_SUBSTANCE);
+    engine.enable(STREAM_NAME, Optional.empty());
 
     // Switch back to the source substance
     engine.setSubstance("test substance");
@@ -85,6 +86,7 @@ public class ReplaceOperationTest {
   @Test
   public void testExecuteNoDuring() {
     // Set initial value
+    engine.enable(STREAM_NAME, Optional.empty());
     EngineNumber initialNumber = new EngineNumber(BigDecimal.valueOf(100), "kg");
     engine.setStream(STREAM_NAME, initialNumber, Optional.ofNullable(allYearsMatcher));
 
@@ -107,6 +109,7 @@ public class ReplaceOperationTest {
   @Test
   public void testExecuteWithDuring() {
     // Set initial value
+    engine.enable(STREAM_NAME, Optional.empty());
     EngineNumber initialNumber = new EngineNumber(BigDecimal.valueOf(100), "kg");
     engine.setStream(STREAM_NAME, initialNumber, Optional.ofNullable(allYearsMatcher));
 
@@ -133,6 +136,7 @@ public class ReplaceOperationTest {
   @Test
   public void testExecuteWithDuringNotApplying() {
     // Set initial value
+    engine.enable(STREAM_NAME, Optional.empty());
     EngineNumber initialNumber = new EngineNumber(BigDecimal.valueOf(100), "kg");
     engine.setStream(STREAM_NAME, initialNumber, Optional.ofNullable(allYearsMatcher));
 
@@ -159,6 +163,7 @@ public class ReplaceOperationTest {
   @Test
   public void testExecuteWithComplexValueOperation() {
     // Set initial value
+    engine.enable(STREAM_NAME, Optional.empty());
     EngineNumber initialNumber = new EngineNumber(BigDecimal.valueOf(100), "kg");
     engine.setStream(STREAM_NAME, initialNumber, Optional.ofNullable(allYearsMatcher));
 

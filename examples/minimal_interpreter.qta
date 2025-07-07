@@ -3,6 +3,7 @@ start default
   define application "testApp"
 
     uses substance "testSubstance"
+      enable manufacture
       initial charge with 5 kg / unit for manufacture
       set manufacture to 20 + 80 mt
       equals 5 tCO2e / mt

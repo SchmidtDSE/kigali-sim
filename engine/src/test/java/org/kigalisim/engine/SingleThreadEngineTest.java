@@ -174,6 +174,7 @@ public class SingleThreadEngineTest {
     assertEquals("kg", manufacture.getUnits(), "Should have kg units");
 
     // Test setting a stream
+    engine.enable("manufacture", Optional.empty());
     EngineNumber newValue = new EngineNumber(BigDecimal.valueOf(10), "kg");
     engine.setStream("manufacture", newValue, Optional.empty());
 
@@ -206,6 +207,7 @@ public class SingleThreadEngineTest {
     engine.setSubstance("test substance");
 
     // Set a stream with year matcher that should apply
+    engine.enable("manufacture", Optional.empty());
     EngineNumber value = new EngineNumber(BigDecimal.valueOf(10), "kg");
     YearMatcher matcher = new YearMatcher(Optional.of(1), Optional.empty());
     engine.setStream("manufacture", value, Optional.ofNullable(matcher));
@@ -235,6 +237,7 @@ public class SingleThreadEngineTest {
     engine.setSubstance("test substance");
 
     // Set initial value
+    engine.enable("manufacture", Optional.empty());
     EngineNumber initialValue = new EngineNumber(BigDecimal.valueOf(10), "kg");
     engine.setStream("manufacture", initialValue, Optional.empty());
 
@@ -259,6 +262,7 @@ public class SingleThreadEngineTest {
     engine.setSubstance("test substance");
 
     // Set initial value
+    engine.enable("manufacture", Optional.empty());
     EngineNumber initialValue = new EngineNumber(BigDecimal.valueOf(10), "kg");
     engine.setStream("manufacture", initialValue, Optional.empty());
 
@@ -296,6 +300,7 @@ public class SingleThreadEngineTest {
     engine.setSubstance("test substance");
 
     // Set initial value
+    engine.enable("manufacture", Optional.empty());
     EngineNumber initialValue = new EngineNumber(BigDecimal.valueOf(10), "kg");
     engine.setStream("manufacture", initialValue, Optional.ofNullable(YearMatcher.unbounded()));
 
@@ -349,6 +354,7 @@ public class SingleThreadEngineTest {
     engine.setSubstance("test substance");
 
     // Set some stream values to ensure substance is registered
+    engine.enable("manufacture", Optional.empty());
     EngineNumber manufactureValue = new EngineNumber(BigDecimal.valueOf(100), "kg");
     engine.setStream("manufacture", manufactureValue, Optional.empty());
 
@@ -356,6 +362,7 @@ public class SingleThreadEngineTest {
     engine.setApplication("test app 2");
     engine.setSubstance("test substance 2");
 
+    engine.enable("import", Optional.empty());
     EngineNumber importValue = new EngineNumber(BigDecimal.valueOf(50), "kg");
     engine.setStream("import", importValue, Optional.empty());
 
@@ -394,6 +401,7 @@ public class SingleThreadEngineTest {
     engine.setStanza("default");
     engine.setApplication("test app");
     engine.setSubstance("test substance");
+    engine.enable("manufacture", Optional.empty());
     engine.setStream("manufacture", new EngineNumber(BigDecimal.valueOf(100), "kg"), Optional.empty());
 
     // Get results for initial year
@@ -422,6 +430,7 @@ public class SingleThreadEngineTest {
 
     // Set up sub1 with 10 kg/unit initial charge
     engine.setSubstance("sub1");
+    engine.enable("manufacture", Optional.empty());
     engine.setInitialCharge(
         new EngineNumber(BigDecimal.valueOf(10), "kg / unit"),
         "manufacture",
@@ -437,6 +446,7 @@ public class SingleThreadEngineTest {
 
     // Set up sub2 with 20 kg/unit initial charge
     engine.setSubstance("sub2");
+    engine.enable("manufacture", Optional.empty());
     engine.setInitialCharge(
         new EngineNumber(BigDecimal.valueOf(20), "kg / unit"),
         "manufacture",
@@ -487,6 +497,7 @@ public class SingleThreadEngineTest {
 
     // Set up sub1 with 10 kg/unit initial charge
     engine.setSubstance("sub1");
+    engine.enable("manufacture", Optional.empty());
     engine.setInitialCharge(
         new EngineNumber(BigDecimal.valueOf(10), "kg / unit"),
         "manufacture",
@@ -502,6 +513,7 @@ public class SingleThreadEngineTest {
 
     // Set up sub2 with 20 kg/unit initial charge
     engine.setSubstance("sub2");
+    engine.enable("manufacture", Optional.empty());
     engine.setInitialCharge(
         new EngineNumber(BigDecimal.valueOf(20), "kg / unit"),
         "manufacture",
@@ -553,6 +565,7 @@ public class SingleThreadEngineTest {
 
     // Set up substance A with 10 kg/unit initial charge
     engine.setSubstance("sub A");
+    engine.enable("manufacture", Optional.empty());
     engine.setInitialCharge(
         new EngineNumber(BigDecimal.valueOf(10), "kg / unit"),
         "manufacture",
@@ -563,6 +576,7 @@ public class SingleThreadEngineTest {
 
     // Set up substance B with 20 kg/unit initial charge
     engine.setSubstance("sub B");
+    engine.enable("manufacture", Optional.empty());
     engine.setInitialCharge(
         new EngineNumber(BigDecimal.valueOf(20), "kg / unit"),
         "manufacture",

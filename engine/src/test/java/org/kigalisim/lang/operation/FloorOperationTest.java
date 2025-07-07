@@ -96,6 +96,7 @@ public class FloorOperationTest {
   @Test
   public void testExecuteNoDuringNoDisplacementWithFlooring() {
     // Set up a stream with a value lower than the floor
+    engine.enable("manufacture", Optional.empty());
     engine.setStream("manufacture", new EngineNumber(BigDecimal.valueOf(20), "kg"), Optional.empty());
 
     // Create a floor operation with a higher value
@@ -117,6 +118,7 @@ public class FloorOperationTest {
   @Test
   public void testExecuteNoDuringNoDisplacementWithoutFlooring() {
     // Set up a stream with a value higher than the floor
+    engine.enable("manufacture", Optional.empty());
     engine.setStream("manufacture", new EngineNumber(BigDecimal.valueOf(100), "kg"), Optional.empty());
 
     // Create a floor operation with a lower value
@@ -138,6 +140,7 @@ public class FloorOperationTest {
   @Test
   public void testExecuteWithDuringApplying() {
     // Set up a stream with a value lower than the floor
+    engine.enable("manufacture", Optional.empty());
     engine.setStream("manufacture", new EngineNumber(BigDecimal.valueOf(20), "kg"), Optional.empty());
 
     // Create a floor operation with a higher value and a during that applies to the current year
@@ -165,6 +168,7 @@ public class FloorOperationTest {
   @Test
   public void testExecuteWithDuringNotApplying() {
     // Set up a stream with a value lower than the floor
+    engine.enable("manufacture", Optional.empty());
     engine.setStream("manufacture", new EngineNumber(BigDecimal.valueOf(20), "kg"), Optional.empty());
 
     // Create a floor operation with a higher value and a during that applies to a future year
@@ -192,6 +196,7 @@ public class FloorOperationTest {
   @Test
   public void testExecuteWithComplexValueOperation() {
     // Set up a stream with a value lower than the floor
+    engine.enable("manufacture", Optional.empty());
     engine.setStream("manufacture", new EngineNumber(BigDecimal.valueOf(20), "kg"), Optional.empty());
 
     // Create a floor operation with a complex value operation
@@ -215,9 +220,11 @@ public class FloorOperationTest {
   @Test
   public void testExecuteWithDisplacement() {
     // Set up the source stream with a value lower than the floor
+    engine.enable("manufacture", Optional.empty());
     engine.setStream("manufacture", new EngineNumber(BigDecimal.valueOf(20), "kg"), Optional.empty());
 
     // Set up the target stream for displacement with an initial value
+    engine.enable("import", Optional.empty());
     engine.setStream("import", new EngineNumber(BigDecimal.valueOf(50), "kg"), Optional.empty());
 
     // Create a floor operation with displacement

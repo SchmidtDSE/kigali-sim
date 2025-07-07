@@ -168,6 +168,9 @@ public class StreamKeeperTest {
     Scope testScope = createTestScope();
     keeper.ensureSubstance(testScope);
 
+    // Enable the manufacture stream first
+    keeper.markStreamAsEnabled(testScope, "manufacture");
+
     EngineNumber newValue = new EngineNumber(new BigDecimal("100"), "kg");
     keeper.setStream(testScope, "manufacture", newValue);
 
@@ -185,6 +188,10 @@ public class StreamKeeperTest {
     StreamKeeper keeper = createMockKeeper();
     Scope testScope = createTestScope();
     keeper.ensureSubstance(testScope);
+
+    // Enable the streams first
+    keeper.markStreamAsEnabled(testScope, "manufacture");
+    keeper.markStreamAsEnabled(testScope, "import");
 
     keeper.setStream(testScope, "manufacture",
                      new EngineNumber(new BigDecimal("50"), "kg"));
