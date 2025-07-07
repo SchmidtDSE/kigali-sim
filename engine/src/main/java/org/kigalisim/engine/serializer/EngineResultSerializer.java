@@ -65,7 +65,6 @@ public class EngineResultSerializer {
     return builder.build();
   }
 
-
   /**
    * Parse the attributes which are actually returned to the user.
    *

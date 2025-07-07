@@ -272,7 +272,6 @@ public class EngineResultSerializerTest {
     EngineNumber priorEquipment = new EngineNumber(1000, "units");
     EngineNumber eolEmissions = new EngineNumber(100, "tCO2e");
 
-
     // Configure mock responses for getStreamRaw with UseKey
     when(engine.getStreamFor(any(UseKey.class), any(String.class))).thenAnswer(invocation -> {
       UseKey useKey = invocation.getArgument(0);
@@ -367,7 +366,6 @@ public class EngineResultSerializerTest {
     EngineNumber energyIntensity = new EngineNumber(5, "kwh / kg");
     EngineNumber priorEquipment = new EngineNumber(1000, "units");
     EngineNumber eolEmissions = new EngineNumber(100, "tCO2e");
-
 
     // Configure mock responses for getStreamRaw with UseKey
     when(engine.getStreamFor(any(UseKey.class), any(String.class))).thenAnswer(invocation -> {
