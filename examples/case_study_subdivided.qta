@@ -66,6 +66,7 @@ start default
 
     uses substance "R-404A"
       enable manufacture
+      enable import
       initial charge with 0.50 kg / unit for sales
       retire 5 % each year
       recharge 20 % each year with 0.50 kg / unit
@@ -88,6 +89,7 @@ start default
 
     uses substance "R-404A"
       enable manufacture
+      enable import
       initial charge with 2.50 kg / unit for sales
       retire 5 % each year
       recharge 25 % each year with 2.50 kg / unit
