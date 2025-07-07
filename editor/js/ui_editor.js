@@ -949,6 +949,23 @@ class ConsumptionListPresenter {
       removeCallback,
     );
 
+    // Set enable checkboxes based on existing substance data
+    if (objToShow !== null) {
+      const enableImport = self._dialog.querySelector(".enable-import-checkbox");
+      const enableManufacture = self._dialog.querySelector(".enable-manufacture-checkbox");
+      const enableExport = self._dialog.querySelector(".enable-export-checkbox");
+
+      // Check if the substance has enable commands - assume enabled if initial charges are non-zero
+      // This is a temporary approach until we can access enable commands directly
+      const domesticCharge = objToShow.getInitialCharge("manufacture");
+      const importCharge = objToShow.getInitialCharge("import");
+      const exportCharge = objToShow.getInitialCharge("export");
+
+      enableManufacture.checked = domesticCharge && domesticCharge.getValue().toString() !== "0";
+      enableImport.checked = importCharge && importCharge.getValue().toString() !== "0";
+      enableExport.checked = exportCharge && exportCharge.getValue().toString() !== "0";
+    }
+
     self._updateEnableCheckboxes();
     self._updateSource();
 
@@ -1021,10 +1038,13 @@ class ConsumptionListPresenter {
     const importInput = self._dialog.querySelector(".edit-consumption-initial-charge-import-input");
     const exportInput = self._dialog.querySelector(".edit-consumption-initial-charge-export-input");
 
-    // Set checkboxes based on whether fields have non-zero values
-    enableManufacture.checked = domesticInput.value !== "0" && domesticInput.value !== "";
-    enableImport.checked = importInput.value !== "0" && importInput.value !== "";
-    enableExport.checked = exportInput.value !== "0" && exportInput.value !== "";
+    // For new substances, set checkboxes based on whether fields have non-zero values
+    // For existing substances, they should already be set based on existing enable commands
+    if (self._editingName === null) {
+      enableManufacture.checked = domesticInput.value !== "0" && domesticInput.value !== "";
+      enableImport.checked = importInput.value !== "0" && importInput.value !== "";
+      enableExport.checked = exportInput.value !== "0" && exportInput.value !== "";
+    }
   }
 
   /**
@@ -1092,6 +1112,21 @@ class ConsumptionListPresenter {
     );
 
     const substanceBuilder = new SubstanceBuilder(substanceName, false);
+
+    // Add enable commands based on checkbox states
+    const enableImport = self._dialog.querySelector(".enable-import-checkbox");
+    const enableManufacture = self._dialog.querySelector(".enable-manufacture-checkbox");
+    const enableExport = self._dialog.querySelector(".enable-export-checkbox");
+
+    if (enableManufacture.checked) {
+      substanceBuilder.addCommand(new Command("enable", "manufacture", null, null));
+    }
+    if (enableImport.checked) {
+      substanceBuilder.addCommand(new Command("enable", "import", null, null));
+    }
+    if (enableExport.checked) {
+      substanceBuilder.addCommand(new Command("enable", "export", null, null));
+    }
 
     const ghgValue = getEngineNumberValue(
       self._dialog.querySelector(".edit-consumption-ghg-input"),

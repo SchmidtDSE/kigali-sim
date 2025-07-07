@@ -33,7 +33,7 @@ const COMMAND_COMPATIBILITIES = {
   "recharge": "definition",
   "recycle": "policy",
   "replace": "policy",
-  "enable": "none",
+  "enable": "definition",
 };
 
 const SUPPORTED_EQUALS_UNITS = [
@@ -980,6 +980,7 @@ class SubstanceBuilder {
     self._replaces = [];
     self._retire = null;
     self._setVals = [];
+    self._enables = [];
   }
 
   /**
@@ -992,6 +993,7 @@ class SubstanceBuilder {
     const self = this;
 
     const commandsConsolidatedInterpreted = [
+      self._enables,
       self._initialCharges,
       self._limits,
       self._recycles,
@@ -1069,6 +1071,7 @@ class SubstanceBuilder {
       "cap": (x) => self.addLimit(x),
       "floor": (x) => self.addLimit(x),
       "replace": (x) => self.addReplace(x),
+      "enable": (x) => self.addEnable(x),
     }[commandType];
 
     if (incompatiblePlace) {
@@ -1189,6 +1192,16 @@ class SubstanceBuilder {
   addSetVal(newVal) {
     const self = this;
     self._setVals.push(newVal);
+  }
+
+  /**
+   * Add an enable command to this substance.
+   *
+   * @param {Command} enable - The enable command to add.
+   */
+  addEnable(enable) {
+    const self = this;
+    self._enables.push(enable);
   }
 
   /**
