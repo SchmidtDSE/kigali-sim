@@ -552,7 +552,6 @@ public class SingleThreadEngine implements Engine {
     String lastUnits = streamKeeper.getLastSpecifiedUnits(scope);
     boolean subtractRecharge = lastUnits == null || !lastUnits.startsWith("unit");
     
-
     // Recalculate
     RecalcOperation operation = new RecalcOperationBuilder()
         .setSubtractRecharge(subtractRecharge)
@@ -693,7 +692,6 @@ public class SingleThreadEngine implements Engine {
 
     UseKey useKeyEffective = useKey == null ? scope : useKey;
     
-
     EngineNumber currentValue = getStream(stream, Optional.of(useKeyEffective), Optional.empty());
     UnitConverter unitConverter = createUnitConverterWithTotal(stream);
 
@@ -793,8 +791,6 @@ public class SingleThreadEngine implements Engine {
     if (application == null || substance == null) {
       raiseNoAppOrSubstance("setting stream", " specified");
     }
-    // Don't change lastSpecifiedUnits for floor operations - preserve original context
-    // streamKeeper.setLastSpecifiedUnits(scope, "kg");
 
     EngineNumber changeWithUnits = new EngineNumber(changeAmount, "kg");
     changeStreamWithoutReportingUnits(stream, changeWithUnits, null, null);
@@ -897,7 +893,6 @@ public class SingleThreadEngine implements Engine {
       return;
     }
 
-
     EngineNumber displaceChange;
 
     if (amount.hasEquipmentUnits()) {
@@ -908,12 +903,10 @@ public class SingleThreadEngine implements Engine {
       EngineNumber volumeChangeFlip = new EngineNumber(changeAmount.negate(), "kg");
       EngineNumber unitsChanged = currentUnitConverter.convert(volumeChangeFlip, "units");
 
-
       boolean isStream = STREAM_NAMES.contains(displaceTarget);
       if (isStream) {
         // Same substance, same stream - use volume displacement
         displaceChange = new EngineNumber(changeAmount.negate(), "kg");
-        
         
         changeStreamWithoutReportingUnits(displaceTarget, displaceChange, null, null);
       } else {
@@ -928,7 +921,6 @@ public class SingleThreadEngine implements Engine {
         // Convert units to destination substance volume using destination's initial charge
         EngineNumber destinationVolumeChange = destinationUnitConverter.convert(unitsChanged, "kg");
         displaceChange = new EngineNumber(destinationVolumeChange.getValue(), "kg");
-        
         
         changeStreamWithoutReportingUnits(stream, displaceChange, null, destinationScope);
 
