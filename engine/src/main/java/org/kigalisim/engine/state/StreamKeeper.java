@@ -274,8 +274,6 @@ public class StreamKeeper {
       SimpleUseKey useKey = new SimpleUseKey(application, substance);
       EngineNumber equipment = getStream(useKey, "equipment");
       setStream(useKey, "priorEquipment", equipment);
-
-      substances.get(key).resetInternals();
     }
   }
 

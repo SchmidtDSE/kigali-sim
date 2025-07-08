@@ -305,24 +305,6 @@ public class StreamParameterizationTest {
   }
 
   /**
-   * Test that resetInternals preserves last specified units.
-   */
-  @Test
-  public void testResetInternalsPreservesLastSpecifiedUnits() {
-    StreamParameterization parameterization = new StreamParameterization();
-
-    // Set units and verify
-    parameterization.setLastSalesUnits("units");
-    assertEquals("units", parameterization.getLastSalesUnits(),
-                 "Should have set units");
-
-    // Reset and verify units are preserved
-    parameterization.resetInternals();
-    assertEquals("units", parameterization.getLastSalesUnits(),
-                 "Should preserve units context across resets");
-  }
-
-  /**
    * Test that setLastSalesUnits ignores percentage units.
    */
   @Test

@@ -466,4 +466,64 @@ public class BasicLiveTests {
     assertNotNull(result.getTradeSupplement().getExportInitialChargeConsumption(),
         "Export initial charge consumption should not be null");
   }
+
+  /**
+   * Test similar to cap_displace_with_recharge_units_no_change but using set instead of cap.
+   * This tests if setting import to 0 units causes the same negative equipment issue.
+   */
+  @Test
+  public void testSetImportToZeroWithRecharge() throws IOException {
+    // Load and parse the QTA file
+    String qtaPath = "../examples/set_import_zero_with_recharge.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    // Run the scenario using KigaliSimFacade
+    String scenarioName = "Test";
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
+
+    List<EngineResult> resultsList = results.collect(Collectors.toList());
+
+    // Check HFC-134a new equipment in 2030 (when import is set to 0)
+    EngineResult recordHfc2030 = LiveTestsUtil.getResult(resultsList.stream(), 2030,
+        "Commercial Refrigeration", "HFC-134a");
+    assertNotNull(recordHfc2030, "Should have result for Commercial Refrigeration/HFC-134a in year 2030");
+
+    // Should be zero new equipment when import is set to 0
+    double newEquipment = recordHfc2030.getPopulationNew().getValue().doubleValue();
+    assertEquals(0.0, newEquipment, 0.0001,
+        "New equipment for HFC-134a should be zero in 2030 when import is set to 0 units, but was " + newEquipment);
+  }
+
+  /**
+   * Test similar to cap_displace_units but using set instead of cap.
+   * This tests if setting with units includes recharge on top.
+   */
+  @Test
+  public void testSetUnitsWithRecharge() throws IOException {
+    // Load and parse the QTA file
+    String qtaPath = "../examples/set_units_with_recharge.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    // Run the scenario using KigaliSimFacade
+    String scenarioName = "result";
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
+
+    List<EngineResult> resultsList = results.collect(Collectors.toList());
+
+    // Check that sub_a manufacture is set with recharge
+    EngineResult recordSubA = LiveTestsUtil.getResult(resultsList.stream(), 1, "test", "sub_a");
+    assertNotNull(recordSubA, "Should have result for test/sub_a in year 1");
+
+    // When setting to 5 units, should we get:
+    // Option A: Just 50 kg (5 units * 10 kg/unit)
+    // Option B: 70 kg (50 kg + 20 kg recharge for 20 units * 10% * 10 kg/unit)
+    double manufactureValue = recordSubA.getManufacture().getValue().doubleValue();
+    System.out.println("DEBUG: When setting manufacture to 5 units, we get: " + manufactureValue + " kg");
+    
+    // Let's see what actually happens
+    assertEquals(70.0, manufactureValue, 0.0001,
+        "Manufacture for sub_a should be 70 kg (50 + 20 recharge) when set to 5 units");
+  }
 }

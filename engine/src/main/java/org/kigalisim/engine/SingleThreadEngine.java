@@ -232,7 +232,7 @@ public class SingleThreadEngine implements Engine {
     if (!getIsInRange(yearMatcher.orElse(null))) {
       return;
     }
-
+    
     UseKey keyEffective = key.orElse(scope);
     String application = keyEffective.getApplication();
     String substance = keyEffective.getSubstance();
@@ -241,23 +241,51 @@ public class SingleThreadEngine implements Engine {
       raiseNoAppOrSubstance("setting stream", " specified");
     }
 
-    streamKeeper.setStream(keyEffective, name, value);
+    // Check if this is a sales stream with units - if so, add recharge on top
+    boolean isSales = isSalesStream(name);
+    boolean isUnits = value.hasEquipmentUnits();
+    
+    EngineNumber valueToSet = value;
+    if (isSales && isUnits) {
+      // Convert to kg and add recharge on top
+      UnitConverter unitConverter = createUnitConverterWithTotal(name);
+      EngineNumber valueInKg = unitConverter.convert(value, "kg");
+      EngineNumber rechargeVolume = RechargeVolumeCalculator.calculateRechargeVolume(
+          keyEffective,
+          stateGetter,
+          streamKeeper,
+          this
+      );
+      BigDecimal totalWithRecharge = valueInKg.getValue().add(rechargeVolume.getValue());
+      valueToSet = new EngineNumber(totalWithRecharge, "kg");
+      
+      // Set implicit recharge to indicate we've added recharge automatically
+      streamKeeper.setStream(keyEffective, "implicitRecharge", rechargeVolume);
+    } else if (isSales) {
+      // Sales stream without units - clear implicit recharge
+      streamKeeper.setStream(keyEffective, "implicitRecharge", new EngineNumber(BigDecimal.ZERO, "kg"));
+    }
+
+    streamKeeper.setStream(keyEffective, name, valueToSet);
 
     // Track the units last used to specify this stream (only for user-initiated calls)
     if (!propagateChanges) {
       return;
     }
 
-    if (isSalesStream(name)) {
+    if (isSales) {
       // Only track lastSalesUnits for sales-related streams that influence recharge displacement
+      // Use the original units, not the converted kg units
       String unitsToRecordRealized = unitsToRecord.orElse(value.getUnits());
       streamKeeper.setLastSalesUnits(keyEffective, unitsToRecordRealized);
     }
     
     if ("sales".equals(name) || "manufacture".equals(name) || "import".equals(name)) {
+      // Use implicit recharge only if we added recharge (units were used)
+      boolean useImplicitRecharge = isSales && isUnits;
       RecalcOperationBuilder builder = new RecalcOperationBuilder()
           .setScopeEffective(keyEffective)
-          .setUseExplicitRecharge(!value.hasEquipmentUnits())
+          .setUseExplicitRecharge(!useImplicitRecharge)
           .setRecalcKit(createRecalcKit())
           .recalcPopulationChange()
           .thenPropagateToConsumption();
@@ -708,50 +736,44 @@ public class SingleThreadEngine implements Engine {
       return;
     }
 
-    // Set lastSalesUnits if this is a sales stream - do this before unit conversion
-    if (isSalesStream(stream)) {
-      streamKeeper.setLastSalesUnits(scope, amount.getUnits());
-    }
-
     UnitConverter unitConverter = createUnitConverterWithTotal(stream);
-
     EngineNumber currentValueRaw = getStream(stream);
     EngineNumber currentValue = unitConverter.convert(currentValueRaw, "kg");
 
-    // Calculate the converted maximum value, adding recharge volume if equipment units are used
-    EngineNumber convertedMax;
-    if (amount.hasEquipmentUnits()) {
-      // For equipment units, convert to kg and add recharge volume on top
-      EngineNumber amountInKg = unitConverter.convert(amount, "kg");
-      EngineNumber rechargeVolume = RechargeVolumeCalculator.calculateRechargeVolume(
-          scope,
-          stateGetter,
-          streamKeeper,
-          this
-      );
-      BigDecimal totalWithRecharge = amountInKg.getValue().add(rechargeVolume.getValue());
-      convertedMax = new EngineNumber(totalWithRecharge, "kg");
+    // Handle percentage caps differently - use change approach
+    if ("%".equals(amount.getUnits())) {
+      // Convert percentage to kg
+      EngineNumber convertedMax = unitConverter.convert(amount, "kg");
       
+      BigDecimal changeAmountRaw = convertedMax.getValue().subtract(currentValue.getValue());
+      BigDecimal changeAmount = changeAmountRaw.min(BigDecimal.ZERO);
+      
+      if (changeAmount.compareTo(BigDecimal.ZERO) < 0) {
+        EngineNumber changeWithUnits = new EngineNumber(changeAmount, "kg");
+        changeStreamWithoutReportingUnits(stream, changeWithUnits, null, null);
+        handleDisplacement(stream, amount, changeAmount, displaceTarget);
+      }
     } else {
-      // For volume units, use as-is
-      convertedMax = unitConverter.convert(amount, "kg");
+      // For non-percentage caps, use setStream approach
+      EngineNumber currentValueInAmountUnits = unitConverter.convert(currentValueRaw, amount.getUnits());
+      
+      if (currentValueInAmountUnits.getValue().compareTo(amount.getValue()) > 0) {
+        // Get current value in kg before capping
+        EngineNumber currentInKg = unitConverter.convert(currentValueRaw, "kg");
+        
+        // Current exceeds cap, so set to the cap value
+        setStream(stream, amount, Optional.empty());
+        
+        // Calculate displacement if needed
+        if (displaceTarget != null) {
+          // Get the new value in kg after capping (includes recharge if units)
+          EngineNumber cappedInKg = getStream(stream);
+          // Calculate the actual change in kg (negative for reduction, positive for increase)
+          BigDecimal changeInKg = cappedInKg.getValue().subtract(currentInKg.getValue());
+          handleDisplacement(stream, amount, changeInKg, displaceTarget);
+        }
+      }
     }
-
-    BigDecimal changeAmountRaw = convertedMax.getValue().subtract(currentValue.getValue());
-    BigDecimal changeAmount = changeAmountRaw.min(BigDecimal.ZERO);
-
-    // Record units regardless of whether change is made
-    Scope scope = this.scope;
-    String application = scope.getApplication();
-    String substance = scope.getSubstance();
-    if (application == null || substance == null) {
-      raiseNoAppOrSubstance("setting stream", " specified");
-    }
-
-    EngineNumber changeWithUnits = new EngineNumber(changeAmount, "kg");
-    changeStreamWithoutReportingUnits(stream, changeWithUnits, null, null);
-
-    handleDisplacement(stream, amount, changeAmount, displaceTarget);
   }
 
   @Override
@@ -761,49 +783,44 @@ public class SingleThreadEngine implements Engine {
       return;
     }
 
-    // Set lastSalesUnits if this is a sales stream - do this before unit conversion
-    if (isSalesStream(stream)) {
-      streamKeeper.setLastSalesUnits(scope, amount.getUnits());
-    }
-
     UnitConverter unitConverter = createUnitConverterWithTotal(stream);
-
     EngineNumber currentValueRaw = getStream(stream);
     EngineNumber currentValue = unitConverter.convert(currentValueRaw, "kg");
 
-    // Calculate the converted minimum value, adding recharge volume if equipment units are used
-    EngineNumber convertedMin;
-    if (amount.hasEquipmentUnits()) {
-      // For equipment units, convert to kg and add recharge volume on top
-      EngineNumber amountInKg = unitConverter.convert(amount, "kg");
-      EngineNumber rechargeVolume = RechargeVolumeCalculator.calculateRechargeVolume(
-          scope,
-          stateGetter,
-          streamKeeper,
-          this
-      );
-      BigDecimal totalWithRecharge = amountInKg.getValue().add(rechargeVolume.getValue());
-      convertedMin = new EngineNumber(totalWithRecharge, "kg");
+    // Handle percentage floors differently - use change approach
+    if ("%".equals(amount.getUnits())) {
+      // Convert percentage to kg
+      EngineNumber convertedMin = unitConverter.convert(amount, "kg");
+      
+      BigDecimal changeAmountRaw = convertedMin.getValue().subtract(currentValue.getValue());
+      BigDecimal changeAmount = changeAmountRaw.max(BigDecimal.ZERO);
+      
+      if (changeAmount.compareTo(BigDecimal.ZERO) > 0) {
+        EngineNumber changeWithUnits = new EngineNumber(changeAmount, "kg");
+        changeStreamWithoutReportingUnits(stream, changeWithUnits, null, null);
+        handleDisplacement(stream, amount, changeAmount, displaceTarget);
+      }
     } else {
-      // For volume units, use as-is
-      convertedMin = unitConverter.convert(amount, "kg");
+      // For non-percentage floors, use setStream approach
+      EngineNumber currentValueInAmountUnits = unitConverter.convert(currentValueRaw, amount.getUnits());
+      
+      if (currentValueInAmountUnits.getValue().compareTo(amount.getValue()) < 0) {
+        // Get current value in kg before flooring
+        EngineNumber currentInKg = unitConverter.convert(currentValueRaw, "kg");
+        
+        // Current is below floor, so set to the floor value
+        setStream(stream, amount, Optional.empty());
+        
+        // Calculate displacement if needed
+        if (displaceTarget != null) {
+          // Get the new value in kg after flooring (includes recharge if units)
+          EngineNumber newInKg = getStream(stream);
+          // Calculate the actual change in kg (positive for increase)
+          BigDecimal changeInKg = newInKg.getValue().subtract(currentInKg.getValue());
+          handleDisplacement(stream, amount, changeInKg, displaceTarget);
+        }
+      }
     }
-
-    BigDecimal changeAmountRaw = convertedMin.getValue().subtract(currentValue.getValue());
-    BigDecimal changeAmount = changeAmountRaw.max(BigDecimal.ZERO);
-
-    // Record units regardless of whether change is made
-    Scope scope = this.scope;
-    String application = scope.getApplication();
-    String substance = scope.getSubstance();
-    if (application == null || substance == null) {
-      raiseNoAppOrSubstance("setting stream", " specified");
-    }
-
-    EngineNumber changeWithUnits = new EngineNumber(changeAmount, "kg");
-    changeStreamWithoutReportingUnits(stream, changeWithUnits, null, null);
-
-    handleDisplacement(stream, amount, changeAmount, displaceTarget);
   }
 
   @Override
