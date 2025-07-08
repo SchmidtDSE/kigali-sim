@@ -144,7 +144,7 @@ public class SalesRecalcStrategy implements RecalcStrategy {
     EngineNumber implicitRechargeRaw = target.getStream("implicitRecharge", Optional.of(scopeEffective), Optional.empty());
     EngineNumber implicitRecharge = unitConverter.convert(implicitRechargeRaw, "kg");
     BigDecimal implicitRechargeKg = implicitRecharge.getValue();
-    
+
     // New values - preserve explicit values when demand is zero, recalculate when there's demand
     // Only subtract implicit recharge if it doesn't make the total negative
     BigDecimal totalBeforeImplicit = kgForRecharge.add(kgForNew);

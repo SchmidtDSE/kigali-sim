@@ -259,7 +259,6 @@ public class SingleThreadEngine implements Engine {
       BigDecimal totalWithRecharge = valueInKg.getValue().add(rechargeVolume.getValue());
       valueToSet = new EngineNumber(totalWithRecharge, "kg");
       
-      
       // Set implicit recharge to indicate we've added recharge automatically
       streamKeeper.setStream(keyEffective, "implicitRecharge", rechargeVolume);
     } else if (isSales) {

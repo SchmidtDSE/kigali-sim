@@ -79,8 +79,6 @@ public class PopulationChangeRecalcStrategy implements RecalcStrategy {
     EngineNumber implicitRechargeRaw = target.getStream("implicitRecharge", Optional.of(scopeEffective), Optional.empty());
     EngineNumber implicitRecharge = unitConverter.convert(implicitRechargeRaw, "kg");
 
-
-
     // Choose which recharge to use based on useExplicitRecharge flag
     BigDecimal rechargeKg;
     if (useExplicitRechargeEffective) {
@@ -93,12 +91,8 @@ public class PopulationChangeRecalcStrategy implements RecalcStrategy {
 
     // Get total volume available for new units
     BigDecimal salesKg = substanceSales.getValue();
-    // When using explicit mode, subtract calculated recharge from sales
-    // When using implicit mode, sales already includes recharge so subtract it  
-    BigDecimal availableForNewUnitsKg = useExplicitRechargeEffective 
-        ? salesKg.subtract(rechargeKg)
-        : salesKg.subtract(rechargeKg);
-        
+    // Always subtract recharge to get the net volume available for new equipment
+    BigDecimal availableForNewUnitsKg = salesKg.subtract(rechargeKg);
 
     // Convert to unit delta
     EngineNumber initialChargeRaw = target.getInitialCharge("sales");
@@ -109,7 +103,6 @@ public class PopulationChangeRecalcStrategy implements RecalcStrategy {
         initialChargeKgUnit
     );
     EngineNumber newUnitsMarginal = new EngineNumber(deltaUnits, "units");
-    
 
     // Find new total
     BigDecimal priorPopulationUnits = priorPopulation.getValue();
