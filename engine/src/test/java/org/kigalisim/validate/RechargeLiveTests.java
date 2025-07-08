@@ -164,6 +164,15 @@ public class RechargeLiveTests {
         "Equipment should be 21600 units in year 2026 (20800 from 2025 + 800 import for 2026)");
     assertEquals("units", resultYear2026.getPopulation().getUnits(),
         "Equipment units should be units");
+
+    // Check year 2027 equipment (population) value
+    // Should be 22400 units (20000 + 800 * 3) with continued implicit recharge
+    EngineResult resultYear2027 = LiveTestsUtil.getResult(resultsList.stream(), 2027, "Domestic AC", "HFC-32");
+    assertNotNull(resultYear2027, "Should have result for Domestic AC/HFC-32 in year 2027");
+    assertEquals(22400.0, resultYear2027.getPopulation().getValue().doubleValue(), 0.0001,
+        "Equipment should be 22400 units in year 2027 (20000 + 800 * 3) with continued implicit recharge");
+    assertEquals("units", resultYear2027.getPopulation().getUnits(),
+        "Equipment units should be units");
   }
 
   /**

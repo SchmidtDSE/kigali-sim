@@ -232,7 +232,7 @@ public class SingleThreadEngine implements Engine {
     if (!getIsInRange(yearMatcher.orElse(null))) {
       return;
     }
-
+    
     UseKey keyEffective = key.orElse(scope);
     String application = keyEffective.getApplication();
     String substance = keyEffective.getSubstance();
