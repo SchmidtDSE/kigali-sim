@@ -43,13 +43,8 @@ public class StreamParameterization {
     this.initialCharge = new HashMap<>();
     this.enabledStreams = new HashSet<>();
     this.lastSalesUnits = "kg";  // Set initial default
-    resetInternals();
-  }
-
-  /**
-   * Reset all internal parameters to their default values.
-   */
-  public void resetInternals() {
+    
+    // Initialize all parameters with default values
     ghgIntensity = new EngineNumber(BigDecimal.ZERO, "tCO2e / kg");
     energyIntensity = new EngineNumber(BigDecimal.ZERO, "kwh / kg");
 
@@ -63,6 +58,7 @@ public class StreamParameterization {
     retirementRate = new EngineNumber(BigDecimal.ZERO, "%");
     displacementRate = new EngineNumber(new BigDecimal("100"), "%");
   }
+
 
   /**
    * Set the greenhouse gas intensity.

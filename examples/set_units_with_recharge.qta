@@ -1,0 +1,50 @@
+start default
+
+  define application "test"
+
+    uses substance "sub_a"
+      enable manufacture
+      enable import
+      initial charge with 10 kg / unit for manufacture
+      initial charge with 10 kg / unit for import
+      recharge 10% each year with 10 kg / unit
+      set manufacture to 100 kg during year 1
+      set import to 50 kg during year 1
+      set priorEquipment to 20 units during year 1
+      equals 5 tCO2e / mt
+    end substance
+
+    uses substance "sub_b"
+      enable manufacture
+      enable import
+      initial charge with 20 kg / unit for manufacture
+      initial charge with 20 kg / unit for import
+      recharge 10% each year with 20 kg / unit
+      set manufacture to 200 kg during year 1
+      set import to 100 kg during year 1
+      equals 10 tCO2e / mt
+    end substance
+
+  end application
+
+end default
+
+
+start policy "test_set_units"
+
+  modify application "test"
+    
+    modify substance "sub_a"
+      set manufacture to 5 units during year 1
+    end substance
+
+  end application
+
+end policy
+
+
+start simulations
+
+  simulate "result" using "test_set_units" from years 1 to 1
+
+end simulations
