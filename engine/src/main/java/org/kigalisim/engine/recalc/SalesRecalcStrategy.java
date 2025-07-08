@@ -140,8 +140,15 @@ public class SalesRecalcStrategy implements RecalcStrategy {
     EngineNumber newRecycleValue = new EngineNumber(recycledDisplacedKg, "kg");
     streamKeeper.setStream(scopeEffective, "recycle", newRecycleValue);
 
+    // Get implicit recharge to avoid double-counting
+    EngineNumber implicitRechargeRaw = target.getStream("implicitRecharge", Optional.of(scopeEffective), Optional.empty());
+    EngineNumber implicitRecharge = unitConverter.convert(implicitRechargeRaw, "kg");
+    BigDecimal implicitRechargeKg = implicitRecharge.getValue();
+    
     // New values - preserve explicit values when demand is zero, recalculate when there's demand
-    BigDecimal requiredKgUnbound = kgForRecharge.add(kgForNew);
+    // Only subtract implicit recharge if it doesn't make the total negative
+    BigDecimal totalBeforeImplicit = kgForRecharge.add(kgForNew);
+    BigDecimal requiredKgUnbound = totalBeforeImplicit.subtract(implicitRechargeKg);
     boolean requiredKgNegative = requiredKgUnbound.compareTo(BigDecimal.ZERO) < 0;
     BigDecimal requiredKg = requiredKgNegative ? BigDecimal.ZERO : requiredKgUnbound;
 

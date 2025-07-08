@@ -79,23 +79,26 @@ public class PopulationChangeRecalcStrategy implements RecalcStrategy {
     EngineNumber implicitRechargeRaw = target.getStream("implicitRecharge", Optional.of(scopeEffective), Optional.empty());
     EngineNumber implicitRecharge = unitConverter.convert(implicitRechargeRaw, "kg");
 
-    // Choose which recharge to use and update implicit recharge stream
+
+
+    // Choose which recharge to use based on useExplicitRecharge flag
     BigDecimal rechargeKg;
     if (useExplicitRechargeEffective) {
-      // Using explicit recharge - clear implicit recharge
-      target.setStreamFor("implicitRecharge", new EngineNumber(BigDecimal.ZERO, "kg"), 
-                         Optional.empty(), Optional.of(scopeEffective), false, Optional.empty());
+      // Using explicit recharge calculation
       rechargeKg = explicitRechargeVolume.getValue();
     } else {
-      // Using implicit recharge - save current calculation for next iteration
-      target.setStreamFor("implicitRecharge", explicitRechargeVolume, 
-                         Optional.empty(), Optional.of(scopeEffective), false, Optional.empty());
+      // Using implicit recharge (set by setStreamFor when units are used)
       rechargeKg = implicitRecharge.getValue();
     }
 
     // Get total volume available for new units
     BigDecimal salesKg = substanceSales.getValue();
-    BigDecimal availableForNewUnitsKg = salesKg.subtract(rechargeKg);
+    // When using explicit mode, subtract calculated recharge from sales
+    // When using implicit mode, sales already includes recharge so subtract it  
+    BigDecimal availableForNewUnitsKg = useExplicitRechargeEffective 
+        ? salesKg.subtract(rechargeKg)
+        : salesKg.subtract(rechargeKg);
+        
 
     // Convert to unit delta
     EngineNumber initialChargeRaw = target.getInitialCharge("sales");
@@ -106,6 +109,7 @@ public class PopulationChangeRecalcStrategy implements RecalcStrategy {
         initialChargeKgUnit
     );
     EngineNumber newUnitsMarginal = new EngineNumber(deltaUnits, "units");
+    
 
     // Find new total
     BigDecimal priorPopulationUnits = priorPopulation.getValue();

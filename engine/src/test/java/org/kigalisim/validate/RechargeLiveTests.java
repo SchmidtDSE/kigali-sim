@@ -176,6 +176,32 @@ public class RechargeLiveTests {
   }
 
   /**
+   * Test the reordered version of recharge_equipment_growth to see if order matters.
+   */
+  @Test
+  public void testRechargeEquipmentGrowthReordered() throws IOException {
+    String qtaPath = "../examples/recharge_equipment_growth_reordered.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+    
+    String scenarioName = "BAU";
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
+    List<EngineResult> resultsList = results.collect(Collectors.toList());
+    
+    // Check year 2025 equipment (population) value
+    EngineResult resultYear2025 = LiveTestsUtil.getResult(resultsList.stream(), 2025, "Domestic AC", "HFC-32");
+    assertNotNull(resultYear2025, "Should have result for Domestic AC/HFC-32 in year 2025");
+    assertEquals(20800.0, resultYear2025.getPopulation().getValue().doubleValue(), 0.0001,
+        "Equipment should be 20800 units in year 2025 when recharge comes before import");
+    
+    // Check year 2026 equipment (population) value
+    EngineResult resultYear2026 = LiveTestsUtil.getResult(resultsList.stream(), 2026, "Domestic AC", "HFC-32");
+    assertNotNull(resultYear2026, "Should have result for Domestic AC/HFC-32 in year 2026");
+    assertEquals(21600.0, resultYear2026.getPopulation().getValue().doubleValue(), 0.0001,
+        "Equipment should be 21600 units in year 2026 when recharge comes before import");
+  }
+
+  /**
    * Test the reordered version of recharge_units_no_change to see if order matters.
    */
   @Test

@@ -263,7 +263,7 @@ public class UnitConverter {
       String newUnits = conversionUnitPieces[1];
       BigDecimal newValue = originalValue.divide(conversionValue, MATH_CONTEXT);
       return new EngineNumber(newValue, newUnits);
-    } else if ("unit".equals(currentUnits) || "units".equals(currentUnits)) {
+    } else if ("unit".equals(currentUnits) || "units".equals(currentUnits) || "unitseachyear".equals(currentUnits)) {
       BigDecimal originalValue = target.getValue();
       EngineNumber conversion = stateGetter.getAmortizedUnitVolume();
       BigDecimal conversionValue = conversion.getValue();
