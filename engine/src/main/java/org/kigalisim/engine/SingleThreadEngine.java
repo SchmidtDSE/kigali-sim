@@ -594,7 +594,6 @@ public class SingleThreadEngine implements Engine {
     // This ensures implicit recharge persists for carried-over values
     if (useExplicitRecharge) {
       streamKeeper.setStream(scope, "implicitRecharge", new EngineNumber(BigDecimal.ZERO, "kg"));
-    } else {
     }
   }
 
