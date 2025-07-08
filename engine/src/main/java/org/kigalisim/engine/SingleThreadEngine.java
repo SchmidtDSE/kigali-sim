@@ -589,6 +589,13 @@ public class SingleThreadEngine implements Engine {
         .thenPropagateToConsumption()
         .build();
     operation.execute(this);
+    
+    // Only clear implicit recharge if NOT using explicit recharge (i.e., when units were used)
+    // This ensures implicit recharge persists for carried-over values
+    if (useExplicitRecharge) {
+      streamKeeper.setStream(scope, "implicitRecharge", new EngineNumber(BigDecimal.ZERO, "kg"));
+    } else {
+    }
   }
 
   @Override

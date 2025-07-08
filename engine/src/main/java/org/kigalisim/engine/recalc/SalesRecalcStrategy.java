@@ -145,20 +145,26 @@ public class SalesRecalcStrategy implements RecalcStrategy {
     EngineNumber implicitRecharge = unitConverter.convert(implicitRechargeRaw, "kg");
     BigDecimal implicitRechargeKg = implicitRecharge.getValue();
 
-    // New values - preserve explicit values when demand is zero, recalculate when there's demand
-    // Only subtract implicit recharge if it doesn't make the total negative
-    BigDecimal totalBeforeImplicit = kgForRecharge.add(kgForNew);
-    BigDecimal requiredKgUnbound = totalBeforeImplicit.subtract(implicitRechargeKg);
-    boolean requiredKgNegative = requiredKgUnbound.compareTo(BigDecimal.ZERO) < 0;
-    BigDecimal requiredKg = requiredKgNegative ? BigDecimal.ZERO : requiredKgUnbound;
+    // Check if streams were explicitly set by checking lastSalesUnits
+    String lastUnits = streamKeeper.getLastSalesUnits(scopeEffective);
+    boolean wasExplicitlySetWithUnits = lastUnits != null && lastUnits.startsWith("unit");
+    // Only recalculate if NOT explicitly set with units
+    if (!wasExplicitlySetWithUnits) {
+      // New values - preserve explicit values when demand is zero, recalculate when there's demand
+      // Only subtract implicit recharge if it doesn't make the total negative
+      BigDecimal totalBeforeImplicit = kgForRecharge.add(kgForNew);
+      BigDecimal requiredKgUnbound = totalBeforeImplicit.subtract(implicitRechargeKg);
+      boolean requiredKgNegative = requiredKgUnbound.compareTo(BigDecimal.ZERO) < 0;
+      BigDecimal requiredKg = requiredKgNegative ? BigDecimal.ZERO : requiredKgUnbound;
 
-    BigDecimal newManufactureKg = percentManufacture.multiply(requiredKg);
-    BigDecimal newImportKg = percentImport.multiply(requiredKg);
-    EngineNumber newManufacture = new EngineNumber(newManufactureKg, "kg");
-    EngineNumber newImport = new EngineNumber(newImportKg, "kg");
+      BigDecimal newManufactureKg = percentManufacture.multiply(requiredKg);
+      BigDecimal newImportKg = percentImport.multiply(requiredKg);
+      EngineNumber newManufacture = new EngineNumber(newManufactureKg, "kg");
+      EngineNumber newImport = new EngineNumber(newImportKg, "kg");
 
-    // Call Engine.setStream with propagateChanges=false to match JavaScript behavior
-    target.setStreamFor("manufacture", newManufacture, Optional.empty(), Optional.of(scopeEffective), false, Optional.empty());
-    target.setStreamFor("import", newImport, Optional.empty(), Optional.of(scopeEffective), false, Optional.empty());
+      // Call Engine.setStream with propagateChanges=false to match JavaScript behavior
+      target.setStreamFor("manufacture", newManufacture, Optional.empty(), Optional.of(scopeEffective), false, Optional.empty());
+      target.setStreamFor("import", newImport, Optional.empty(), Optional.of(scopeEffective), false, Optional.empty());
+    }
   }
 }
