@@ -105,7 +105,7 @@ jobs:
     needs: buildEngine
     environment: Build
     runs-on: ubuntu-latest
-    name: Test Engine
+    name: Run Engine Tests
     defaults:
       run:
         shell: bash
@@ -184,7 +184,7 @@ jobs:
   unitTestsBrowser:
     environment: build
     runs-on: ubuntu-latest
-    name: Run Unit Tests
+    name: Run Web Tests
     needs: [ buildWasm ]
     steps:
       - name: Checkout
