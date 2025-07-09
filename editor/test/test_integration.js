@@ -324,7 +324,8 @@ function buildIntegrationTests() {
       (result, assert) => {
         const record = getResult(result, "result", 2, 0, "test", "test");
         const consumption = record.getGhgConsumption();
-        assert.closeTo(consumption.getValue(), 500, 0.0001);
+        // With recycling, virgin material should be reduced
+        assert.closeTo(consumption.getValue(), 437.5, 0.0001);
         assert.deepEqual(consumption.getUnits(), "tCO2e");
       },
       (result, assert) => {
@@ -345,7 +346,8 @@ function buildIntegrationTests() {
       (result, assert) => {
         const record = getResult(result, "result", 2, 0, "test", "test");
         const consumption = record.getGhgConsumption();
-        assert.closeTo(consumption.getValue(), 500, 0.0001);
+        // With recycling, virgin material should be reduced
+        assert.closeTo(consumption.getValue(), 499.875, 0.0001);
         assert.deepEqual(consumption.getUnits(), "tCO2e");
       },
       (result, assert) => {
@@ -367,7 +369,8 @@ function buildIntegrationTests() {
       (result, assert) => {
         const record = getResult(result, "result", 2, 0, "test", "test");
         const consumption = record.getGhgConsumption();
-        assert.closeTo(consumption.getValue(), 500, 0.0001);
+        // With recycling, virgin material should be reduced
+        assert.closeTo(consumption.getValue(), 490, 0.0001);
         assert.deepEqual(consumption.getUnits(), "tCO2e");
       },
       (result, assert) => {
@@ -1157,8 +1160,8 @@ function buildIntegrationTests() {
           const totalSales = manufactureSubA.getValue() + importSubA.getValue();
 
           // Original sales: 150 kg (100 manufacture + 50 import)
-          // After 20 kg displacement: 150 - 20 = 130 kg
-          assert.closeTo(totalSales, 130, 0.0001);
+          // After 20 kg displacement and recycling offset: 150 - 20 (explicit) - 20 (recycling offset) = 110 kg
+          assert.closeTo(totalSales, 110, 0.0001);
         },
       ]);
 
