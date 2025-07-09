@@ -2198,7 +2198,7 @@ function initLimitCommandUi(itemObj, root, codeObj) {
     (x) => x.getValue(),
   );
   setFieldValue(root.querySelector(".displacing-input"), itemObj, "", (x) =>
-    x.getDisplacing() === null ? "" : x.getDisplacing(),
+    x && x.getDisplacing ? (x.getDisplacing() === null ? "" : x.getDisplacing()) : "",
   );
   setDuring(root.querySelector(".duration-subcomponent"), itemObj, new YearMatcher(2, 10), true);
 }
@@ -2244,7 +2244,7 @@ function initRecycleCommandUi(itemObj, root) {
     (x) => x.getValue(),
   );
   setFieldValue(root.querySelector(".displacing-input"), itemObj, "", (x) =>
-    x.getDisplacing() === null ? "" : x.getDisplacing(),
+    x && x.getDisplacing ? (x.getDisplacing() === null ? "" : x.getDisplacing()) : "",
   );
   setDuring(root.querySelector(".duration-subcomponent"), itemObj, new YearMatcher(2, 10), true);
 }
