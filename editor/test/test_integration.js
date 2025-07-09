@@ -1160,7 +1160,8 @@ function buildIntegrationTests() {
           const totalSales = manufactureSubA.getValue() + importSubA.getValue();
 
           // Original sales: 150 kg (100 manufacture + 50 import)
-          // After 20 kg displacement and recycling offset: 150 - 20 (explicit) - 20 (recycling offset) = 110 kg
+          // After 20 kg displacement and recycling offset:
+          // 150 - 20 (explicit) - 20 (recycling offset) = 110 kg
           assert.closeTo(totalSales, 110, 0.0001);
         },
       ]);
