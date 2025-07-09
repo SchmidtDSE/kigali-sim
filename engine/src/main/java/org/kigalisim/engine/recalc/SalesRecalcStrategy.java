@@ -145,9 +145,17 @@ public class SalesRecalcStrategy implements RecalcStrategy {
     EngineNumber implicitRecharge = unitConverter.convert(implicitRechargeRaw, "kg");
     BigDecimal implicitRechargeKg = implicitRecharge.getValue();
     
-    // Deal with implicit recharge  
-    BigDecimal totalBeforeImplicit = kgForRecharge.add(kgForNew);
-    BigDecimal requiredKgUnbound = totalBeforeImplicit.subtract(implicitRechargeKg);
+    // Deal with implicit recharge and recycling
+    // Total demand is recharge + new equipment needs
+    BigDecimal totalDemand = kgForRecharge.add(kgForNew);
+    
+    // Subtract what we can fulfill from other sources:
+    // - implicitRechargeKg: recharge that was already added when units were specified
+    // - recycledDisplacedKg: material available from recycling
+    BigDecimal requiredKgUnbound = totalDemand
+        .subtract(implicitRechargeKg)
+        .subtract(recycledDisplacedKg);
+    
     boolean requiredKgNegative = requiredKgUnbound.compareTo(BigDecimal.ZERO) < 0;
     BigDecimal requiredKg = requiredKgNegative ? BigDecimal.ZERO : requiredKgUnbound;
 
