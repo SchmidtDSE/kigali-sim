@@ -494,37 +494,73 @@ public class StreamKeeper {
   }
 
   /**
-   * Set the last sales units for a key.
+   * Set the last specified value for a stream.
    *
-   * <p>This tracks the units last used when setting sales-related streams
-   * to determine if recharge should use explicit or implicit calculations.</p>
+   * <p>This tracks the value and units last used when setting streams
+   * to preserve user intent across carry-over years.</p>
    *
    * @param useKey The key containing application and substance
-   * @param units The units to set for sales-related streams
+   * @param streamName The name of the stream
+   * @param value The last specified value with units
    */
-  public void setLastSalesUnits(UseKey useKey, String units) {
+  public void setLastSpecifiedValue(UseKey useKey, String streamName, EngineNumber value) {
     String key = getKey(useKey);
     StreamParameterization parameterization = substances.get(key);
     if (parameterization == null) {
       throwSubstanceMissing(
-          "setLastSalesUnits",
+          "setLastSpecifiedValue",
           useKey.getApplication(),
           useKey.getSubstance()
       );
     }
-    parameterization.setLastSalesUnits(units);
+    parameterization.setLastSpecifiedValue(streamName, value);
   }
 
   /**
-   * Get the last sales units for a key.
+   * Get the last specified value for a stream.
    *
    * @param useKey The key containing application and substance
-   * @return The units string last used to specify a sales-related stream
+   * @param streamName The name of the stream
+   * @return The last specified value with units, or null if not set
    */
-  public String getLastSalesUnits(UseKey useKey) {
+  public EngineNumber getLastSpecifiedValue(UseKey useKey, String streamName) {
     StreamParameterization parameterization = getParameterization(useKey);
-    return parameterization.getLastSalesUnits();
+    return parameterization.getLastSpecifiedValue(streamName);
   }
+
+  /**
+   * Check if a stream has a last specified value.
+   *
+   * @param useKey The key containing application and substance
+   * @param streamName The name of the stream
+   * @return true if the stream has a last specified value, false otherwise
+   */
+  public boolean hasLastSpecifiedValue(UseKey useKey, String streamName) {
+    StreamParameterization parameterization = getParameterization(useKey);
+    return parameterization.hasLastSpecifiedValue(streamName);
+  }
+
+  /**
+   * Check if sales intent has been freshly set for the given scope.
+   *
+   * @param useKey The key containing application and substance
+   * @return true if sales intent was freshly set, false otherwise
+   */
+  public boolean isSalesIntentFreshlySet(UseKey useKey) {
+    StreamParameterization parameterization = getParameterization(useKey);
+    return parameterization.isSalesIntentFreshlySet();
+  }
+
+  /**
+   * Reset the sales intent flag for the given scope.
+   *
+   * @param useKey The key containing application and substance
+   */
+  public void resetSalesIntentFlag(UseKey useKey) {
+    StreamParameterization parameterization = getParameterization(useKey);
+    parameterization.setSalesIntentFreshlySet(false);
+  }
+
 
   /**
    * Check if a stream has ever been enabled (set to non-zero value).

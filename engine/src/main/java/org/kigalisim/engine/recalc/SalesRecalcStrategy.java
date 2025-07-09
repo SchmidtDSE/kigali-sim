@@ -144,27 +144,83 @@ public class SalesRecalcStrategy implements RecalcStrategy {
     EngineNumber implicitRechargeRaw = target.getStream("implicitRecharge", Optional.of(scopeEffective), Optional.empty());
     EngineNumber implicitRecharge = unitConverter.convert(implicitRechargeRaw, "kg");
     BigDecimal implicitRechargeKg = implicitRecharge.getValue();
+    
+    // Deal with implicit recharge  
+    BigDecimal totalBeforeImplicit = kgForRecharge.add(kgForNew);
+    BigDecimal requiredKgUnbound = totalBeforeImplicit.subtract(implicitRechargeKg);
+    boolean requiredKgNegative = requiredKgUnbound.compareTo(BigDecimal.ZERO) < 0;
+    BigDecimal requiredKg = requiredKgNegative ? BigDecimal.ZERO : requiredKgUnbound;
 
-    // Check if streams were explicitly set by checking lastSalesUnits
-    String lastUnits = streamKeeper.getLastSalesUnits(scopeEffective);
-    boolean wasExplicitlySetWithUnits = lastUnits != null && lastUnits.startsWith("unit");
-    // Only recalculate if NOT explicitly set with units
-    if (!wasExplicitlySetWithUnits) {
-      // New values - preserve explicit values when demand is zero, recalculate when there's demand
-      // Only subtract implicit recharge if it doesn't make the total negative
-      BigDecimal totalBeforeImplicit = kgForRecharge.add(kgForNew);
-      BigDecimal requiredKgUnbound = totalBeforeImplicit.subtract(implicitRechargeKg);
-      boolean requiredKgNegative = requiredKgUnbound.compareTo(BigDecimal.ZERO) < 0;
-      BigDecimal requiredKg = requiredKgNegative ? BigDecimal.ZERO : requiredKgUnbound;
-
-      BigDecimal newManufactureKg = percentManufacture.multiply(requiredKg);
-      BigDecimal newImportKg = percentImport.multiply(requiredKg);
-      EngineNumber newManufacture = new EngineNumber(newManufactureKg, "kg");
-      EngineNumber newImport = new EngineNumber(newImportKg, "kg");
-
-      // Call Engine.setStream with propagateChanges=false to match JavaScript behavior
-      target.setStreamFor("manufacture", newManufacture, Optional.empty(), Optional.of(scopeEffective), false, Optional.empty());
-      target.setStreamFor("import", newImport, Optional.empty(), Optional.of(scopeEffective), false, Optional.empty());
+    BigDecimal newManufactureKg = percentManufacture.multiply(requiredKg);
+    BigDecimal newImportKg = percentImport.multiply(requiredKg);
+    
+    boolean hasUnitBasedSpecs = getHasUnitBasedSpecs(streamKeeper, scopeEffective, implicitRechargeKg);
+    
+    if (hasUnitBasedSpecs) {
+      // Convert back to units to preserve user intent
+      // This ensures that unit-based specifications are maintained through recycling operations
+      // Need to set up the converter state for proper unit conversion
+      stateGetter.setAmortizedUnitVolume(initialCharge);
+      
+      // Only set streams that have non-zero allocations (i.e., are enabled)
+      if (percentManufacture.compareTo(BigDecimal.ZERO) > 0) {
+        EngineNumber newManufactureUnits = unitConverter.convert(
+            new EngineNumber(newManufactureKg, "kg"), "units");
+        target.setStreamFor("manufacture", newManufactureUnits, Optional.empty(), 
+            Optional.of(scopeEffective), false, Optional.empty());
+      }
+      
+      if (percentImport.compareTo(BigDecimal.ZERO) > 0) {
+        EngineNumber newImportUnits = unitConverter.convert(
+            new EngineNumber(newImportKg, "kg"), "units");
+        target.setStreamFor("import", newImportUnits, Optional.empty(), 
+            Optional.of(scopeEffective), false, Optional.empty());
+      }
+      
+      // Clear the state after conversion
+      stateGetter.clearAmortizedUnitVolume();
+    } else {
+      // Normal kg-based setting for non-unit specifications
+      // Only set streams that have non-zero allocations (i.e., are enabled)
+      if (percentManufacture.compareTo(BigDecimal.ZERO) > 0) {
+        EngineNumber newManufacture = new EngineNumber(newManufactureKg, "kg");
+        target.setStreamFor("manufacture", newManufacture, Optional.empty(), 
+            Optional.of(scopeEffective), false, Optional.empty());
+      }
+      
+      if (percentImport.compareTo(BigDecimal.ZERO) > 0) {
+        EngineNumber newImport = new EngineNumber(newImportKg, "kg");
+        target.setStreamFor("import", newImport, Optional.empty(), 
+            Optional.of(scopeEffective), false, Optional.empty());
+      }
     }
+  }
+  
+  /**
+   * Determines if unit-based specifications should be preserved.
+   *
+   * @param streamKeeper the stream keeper to use for checking specifications
+   * @param scopeEffective the scope to check
+   * @param implicitRechargeKg the implicit recharge amount in kg
+   * @return true if unit-based specifications should be preserved
+   */
+  private boolean getHasUnitBasedSpecs(StreamKeeper streamKeeper, UseKey scopeEffective, BigDecimal implicitRechargeKg) {
+    // Check if we had unit-based specifications that need to be preserved
+    boolean hasUnitBasedSpecs = streamKeeper.hasLastSpecifiedValue(scopeEffective, "sales")
+        && streamKeeper.getLastSpecifiedValue(scopeEffective, "sales").hasEquipmentUnits();
+    
+    if (hasUnitBasedSpecs) {
+      // Check if the current values indicate a unit-based operation
+      // If implicit recharge is present, we know units were used in the current operation
+      // TODO: Consider making this explicit rather than using implicit recharge as a heuristic
+      boolean currentOperationIsUnitBased = implicitRechargeKg.compareTo(BigDecimal.ZERO) > 0;
+      
+      if (!currentOperationIsUnitBased) {
+        // Current operation is kg-based (like displacement), don't preserve units
+        hasUnitBasedSpecs = false;
+      }
+    }
+    
+    return hasUnitBasedSpecs;
   }
 }

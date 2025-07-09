@@ -10,6 +10,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -203,6 +205,122 @@ public class RecycleRecoverLiveTests {
                        + recordSubB.getImport().getValue().doubleValue();
     assertEquals(270.0, totalSales, 0.0001,
         "Sub_b total sales should be reduced by 30 kg due to displacement from sub_a recovery");
+  }
+
+  /**
+   * Test that BAU and Recovery/Recycling scenarios have the same total equipment values.
+   * This test is expected to fail initially to investigate the discrepancy.
+   */
+  @Test
+  public void testRecycleNoneBug() throws IOException {
+    // Load and parse the QTA file
+    String qtaPath = "../examples/recycle_none_bug.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    // Run BAU scenario
+    Stream<EngineResult> bauResults = KigaliSimFacade.runScenario(program, "Business as Usual", progress -> {});
+    List<EngineResult> bauResultsList = bauResults.collect(Collectors.toList());
+
+    // Run Recovery and Recycling scenario
+    Stream<EngineResult> rrResults = KigaliSimFacade.runScenario(program, "Recovery and Recycling", progress -> {});
+    List<EngineResult> rrResultsList = rrResults.collect(Collectors.toList());
+
+    // Check equipment values for years 2025, 2026, and 2027
+    int[] yearsToCheck = {2025, 2026, 2027};
+    for (int year : yearsToCheck) {
+      EngineResult bauResult = LiveTestsUtil.getResult(bauResultsList.stream(), year, "MAC", "HFC-134a");
+      EngineResult rrResult = LiveTestsUtil.getResult(rrResultsList.stream(), year, "MAC", "HFC-134a");
+
+      assertNotNull(bauResult, "Should have BAU result for MAC/HFC-134a in year " + year);
+      assertNotNull(rrResult, "Should have Recovery/Recycling result for MAC/HFC-134a in year " + year);
+
+      double bauEquipment = bauResult.getPopulation().getValue().doubleValue();
+      double rrEquipment = rrResult.getPopulation().getValue().doubleValue();
+
+      assertEquals(bauEquipment, rrEquipment, 0.0001,
+          "Year " + year + ": BAU equipment (" + bauEquipment
+          + ") should equal Recovery/Recycling equipment (" + rrEquipment
+          + ") when recovery rate is 0%");
+    }
+  }
+
+  /**
+   * Test that BAU and Recovery/Recycling scenarios have the same total equipment values
+   * when import is specified in kg instead of units.
+   * This test checks if the bug is related to unit-based import specification.
+   */
+  @Test
+  public void testRecycleNoneBugKg() throws IOException {
+    // Load and parse the QTA file
+    String qtaPath = "../examples/recycle_none_bug_kg.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    // Run BAU scenario
+    Stream<EngineResult> bauResults = KigaliSimFacade.runScenario(program, "Business as Usual", progress -> {});
+    List<EngineResult> bauResultsList = bauResults.collect(Collectors.toList());
+
+    // Run Recovery and Recycling scenario
+    Stream<EngineResult> rrResults = KigaliSimFacade.runScenario(program, "Recovery and Recycling", progress -> {});
+    List<EngineResult> rrResultsList = rrResults.collect(Collectors.toList());
+
+    // Check equipment values for years 2025, 2026, and 2027
+    int[] yearsToCheck = {2025, 2026, 2027};
+    for (int year : yearsToCheck) {
+      EngineResult bauResult = LiveTestsUtil.getResult(bauResultsList.stream(), year, "MAC", "HFC-134a");
+      EngineResult rrResult = LiveTestsUtil.getResult(rrResultsList.stream(), year, "MAC", "HFC-134a");
+
+      assertNotNull(bauResult, "Should have BAU result for MAC/HFC-134a in year " + year);
+      assertNotNull(rrResult, "Should have Recovery/Recycling result for MAC/HFC-134a in year " + year);
+
+      double bauEquipment = bauResult.getPopulation().getValue().doubleValue();
+      double rrEquipment = rrResult.getPopulation().getValue().doubleValue();
+
+      assertEquals(bauEquipment, rrEquipment, 0.0001,
+          "Year " + year + ": BAU equipment (" + bauEquipment
+          + ") should equal Recovery/Recycling equipment (" + rrEquipment
+          + ") when recovery rate is 0% and import is in kg");
+    }
+  }
+
+  /**
+   * Test that BAU and Recovery/Recycling scenarios have the same total equipment values
+   * when manufacture is specified in units instead of import.
+   * This test checks if the bug also affects manufacture-based unit specification.
+   */
+  @Test
+  public void testRecycleNoneBugManufacture() throws IOException {
+    // Load and parse the QTA file
+    String qtaPath = "../examples/recycle_none_bug_manufacture.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    // Run BAU scenario
+    Stream<EngineResult> bauResults = KigaliSimFacade.runScenario(program, "Business as Usual", progress -> {});
+    List<EngineResult> bauResultsList = bauResults.collect(Collectors.toList());
+
+    // Run Recovery and Recycling scenario
+    Stream<EngineResult> rrResults = KigaliSimFacade.runScenario(program, "Recovery and Recycling", progress -> {});
+    List<EngineResult> rrResultsList = rrResults.collect(Collectors.toList());
+
+    // Check equipment values for years 2025, 2026, and 2027
+    int[] yearsToCheck = {2025, 2026, 2027};
+    for (int year : yearsToCheck) {
+      EngineResult bauResult = LiveTestsUtil.getResult(bauResultsList.stream(), year, "MAC", "HFC-134a");
+      EngineResult rrResult = LiveTestsUtil.getResult(rrResultsList.stream(), year, "MAC", "HFC-134a");
+
+      assertNotNull(bauResult, "Should have BAU result for MAC/HFC-134a in year " + year);
+      assertNotNull(rrResult, "Should have Recovery/Recycling result for MAC/HFC-134a in year " + year);
+
+      double bauEquipment = bauResult.getPopulation().getValue().doubleValue();
+      double rrEquipment = rrResult.getPopulation().getValue().doubleValue();
+
+      assertEquals(bauEquipment, rrEquipment, 0.0001,
+          "Year " + year + ": BAU equipment (" + bauEquipment
+          + ") should equal Recovery/Recycling equipment (" + rrEquipment
+          + ") when recovery rate is 0% and manufacture is in units");
+    }
   }
 
 }

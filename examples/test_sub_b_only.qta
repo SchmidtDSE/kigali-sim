@@ -1,0 +1,21 @@
+start default
+
+  define application "test"
+
+    uses substance "sub_b"
+      enable manufacture
+      initial charge with 20 kg / unit for manufacture
+      recharge 10% each year with 20 kg / unit
+      set manufacture to 10 units during year 1  # 10 units * 20 kg/unit = 200 kg
+      equals 10 tCO2e / mt
+    end substance
+
+  end application
+
+end default
+
+start simulations
+
+  simulate "result" using "default" from years 1 to 1
+
+end simulations

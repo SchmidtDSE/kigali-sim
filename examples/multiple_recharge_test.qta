@@ -10,7 +10,8 @@ start default
       set priorEquipment to 20000 units during year 2025
       set import to 800 units during year 2025
       set import to 800 units during year 2026
-      recharge 10% with 0.85 kg / unit
+      recharge 5% with 0.85 kg / unit during year 2027
+      recharge 5% with 0.85 kg / unit during year 2027
     end substance
   
   end application
