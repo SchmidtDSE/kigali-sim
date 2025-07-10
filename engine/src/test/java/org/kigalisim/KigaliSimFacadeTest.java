@@ -348,6 +348,20 @@ public class KigaliSimFacadeTest {
     assertNotNull(bauYear3, "BAU year 3 result should exist");
     assertNotNull(policyYear3, "Policy year 3 result should exist");
 
+    // Find year 5 results for both scenarios to check equipment
+    EngineResult bauYear5 = bauResultsList.stream()
+        .filter(r -> r.getYear() == 5 && r.getScenarioName().equals("BAU"))
+        .findFirst()
+        .orElse(null);
+    
+    EngineResult policyYear5 = policyResultsList.stream()
+        .filter(r -> r.getYear() == 5 && r.getScenarioName().equals("With Recycling"))
+        .findFirst()
+        .orElse(null);
+
+    assertNotNull(bauYear5, "BAU year 5 result should exist");
+    assertNotNull(policyYear5, "Policy year 5 result should exist");
+
     // Get import values
     double bauImports = bauYear3.getImport().getValue().doubleValue();
     double policyImports = policyYear3.getImport().getValue().doubleValue();
@@ -371,6 +385,19 @@ public class KigaliSimFacadeTest {
                                      bauConsumption, bauYear3.getImportConsumption().getUnits()));
     System.out.println(String.format("Year 3 - Policy consumption: %.2f %s", 
                                      policyConsumption, policyYear3.getImportConsumption().getUnits()));
+
+    // Check equipment (population) at year 5 - should be the same for both scenarios
+    double bauEquipmentYear5 = bauYear5.getPopulation().getValue().doubleValue();
+    double policyEquipmentYear5 = policyYear5.getPopulation().getValue().doubleValue();
+    
+    assertEquals(bauEquipmentYear5, policyEquipmentYear5, 0.001, 
+        String.format("Equipment population at year 5 should be the same for both scenarios - BAU: %.2f, Policy: %.2f", 
+                      bauEquipmentYear5, policyEquipmentYear5));
+    
+    System.out.println(String.format("Year 5 - BAU equipment: %.2f %s", 
+                                     bauEquipmentYear5, bauYear5.getPopulation().getUnits()));
+    System.out.println(String.format("Year 5 - Policy equipment: %.2f %s", 
+                                     policyEquipmentYear5, policyYear5.getPopulation().getUnits()));
   }
 
   /**
@@ -410,6 +437,20 @@ public class KigaliSimFacadeTest {
     assertNotNull(bauYear3, "BAU year 3 result should exist");
     assertNotNull(policyYear3, "Policy year 3 result should exist");
 
+    // Find year 5 results for both scenarios to check equipment
+    EngineResult bauYear5 = bauResultsList.stream()
+        .filter(r -> r.getYear() == 5 && r.getScenarioName().equals("BAU"))
+        .findFirst()
+        .orElse(null);
+    
+    EngineResult policyYear5 = policyResultsList.stream()
+        .filter(r -> r.getYear() == 5 && r.getScenarioName().equals("With Recycling"))
+        .findFirst()
+        .orElse(null);
+
+    assertNotNull(bauYear5, "BAU year 5 result should exist");
+    assertNotNull(policyYear5, "Policy year 5 result should exist");
+
     // Get import values
     double bauImports = bauYear3.getImport().getValue().doubleValue();
     double policyImports = policyYear3.getImport().getValue().doubleValue();
@@ -439,5 +480,18 @@ public class KigaliSimFacadeTest {
     
     System.out.println(String.format("KG-based - Year 3 Policy recycled consumption: %.2f %s", 
                                      recycledConsumption, policyYear3.getRecycleConsumption().getUnits()));
+
+    // Check equipment (population) at year 5 - should be the same for both scenarios
+    double bauEquipmentYear5 = bauYear5.getPopulation().getValue().doubleValue();
+    double policyEquipmentYear5 = policyYear5.getPopulation().getValue().doubleValue();
+    
+    assertEquals(bauEquipmentYear5, policyEquipmentYear5, 0.001, 
+        String.format("Equipment population at year 5 should be the same for both scenarios - BAU: %.2f, Policy: %.2f", 
+                      bauEquipmentYear5, policyEquipmentYear5));
+    
+    System.out.println(String.format("KG-based - Year 5 BAU equipment: %.2f %s", 
+                                     bauEquipmentYear5, bauYear5.getPopulation().getUnits()));
+    System.out.println(String.format("KG-based - Year 5 Policy equipment: %.2f %s", 
+                                     policyEquipmentYear5, policyYear5.getPopulation().getUnits()));
   }
 }
