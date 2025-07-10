@@ -25,6 +25,7 @@ public class RecalcOperationBuilder {
   private Optional<RecalcKit> recalcKit;
   private final List<RecalcStrategy> strategies;
   private boolean hasInitialRecalc;
+  private boolean includesSalesModification;
 
   /**
    * Create a new RecalcOperationBuilder.
@@ -35,6 +36,7 @@ public class RecalcOperationBuilder {
     recalcKit = Optional.empty();
     this.strategies = new ArrayList<>();
     hasInitialRecalc = false;
+    includesSalesModification = false;
   }
 
   /**
@@ -123,6 +125,7 @@ public class RecalcOperationBuilder {
     }
     strategies.add(new SalesRecalcStrategy(scopeEffective));
     hasInitialRecalc = true;
+    includesSalesModification = true;
     return this;
   }
 
@@ -223,6 +226,7 @@ public class RecalcOperationBuilder {
       );
     }
     strategies.add(new SalesRecalcStrategy(scopeEffective));
+    includesSalesModification = true;
     return this;
   }
 
@@ -284,6 +288,6 @@ public class RecalcOperationBuilder {
     if (!recalcKit.isPresent()) {
       throw new IllegalStateException("RecalcKit is required");
     }
-    return new RecalcOperation(new ArrayList<>(strategies), recalcKit.get());
+    return new RecalcOperation(new ArrayList<>(strategies), recalcKit.get(), includesSalesModification);
   }
 }

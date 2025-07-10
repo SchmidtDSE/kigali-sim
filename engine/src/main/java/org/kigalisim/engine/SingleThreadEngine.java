@@ -590,8 +590,6 @@ public class SingleThreadEngine implements Engine {
     streamKeeper.setRechargeIntensity(scope, intensity);
 
     boolean isCarryOver = isCarryOver(scope);
-    // Reset the flag after checking - it should only affect the first recharge check
-    streamKeeper.resetSalesIntentFlag(scope);
     
     if (isCarryOver) {
       // Preserve user's original unit-based intent
