@@ -33,8 +33,9 @@ public class StreamParameterization {
   private EngineNumber yieldRate;
   private EngineNumber retirementRate;
   private EngineNumber displacementRate;
-  private String lastSalesUnits;
+  private final Map<String, EngineNumber> lastSpecifiedValue;
   private final Set<String> enabledStreams;
+  private boolean salesIntentFreshlySet;
 
   /**
    * Create a new stream parameterization instance.
@@ -42,7 +43,8 @@ public class StreamParameterization {
   public StreamParameterization() {
     this.initialCharge = new HashMap<>();
     this.enabledStreams = new HashSet<>();
-    this.lastSalesUnits = "kg";  // Set initial default
+    this.lastSpecifiedValue = new HashMap<>();
+    this.salesIntentFreshlySet = false;
     
     // Initialize all parameters with default values
     ghgIntensity = new EngineNumber(BigDecimal.ZERO, "tCO2e / kg");
@@ -227,29 +229,47 @@ public class StreamParameterization {
   }
 
   /**
-   * Set the last sales units for stream operations.
+   * Set the last specified value for a stream.
    *
-   * <p>This tracks the units last used when setting sales-related streams
-   * to determine if recharge should use explicit or implicit calculations.</p>
+   * <p>This tracks the value and units last used when setting streams
+   * to preserve user intent across carry-over years.</p>
    *
-   * @param units The units string last used to specify a sales-related stream
+   * @param streamName The name of the stream
+   * @param value The last specified value with units
    */
-  public void setLastSalesUnits(String units) {
-    // Ignore percentage units to avoid impacting last recorded units
-    if (units != null && units.contains("%")) {
+  public void setLastSpecifiedValue(String streamName, EngineNumber value) {
+    // Ignore percentage units to avoid impacting last recorded values
+    if (value != null && value.getUnits() != null && value.getUnits().contains("%")) {
       return;
     }
-    lastSalesUnits = units;
+    lastSpecifiedValue.put(streamName, value);
+    
+    // Set the flag if this is a sales-related stream
+    if ("sales".equals(streamName) || "import".equals(streamName) || "manufacture".equals(streamName)) {
+      salesIntentFreshlySet = true;
+    }
   }
 
   /**
-   * Get the last sales units for stream operations.
+   * Get the last specified value for a stream.
    *
-   * @return The units string last used to specify a sales-related stream
+   * @param streamName The name of the stream
+   * @return The last specified value with units, or null if not set
    */
-  public String getLastSalesUnits() {
-    return lastSalesUnits;
+  public EngineNumber getLastSpecifiedValue(String streamName) {
+    return lastSpecifiedValue.get(streamName);
   }
+
+  /**
+   * Check if a stream has a last specified value.
+   *
+   * @param streamName The name of the stream
+   * @return true if the stream has a last specified value, false otherwise
+   */
+  public boolean hasLastSpecifiedValue(String streamName) {
+    return lastSpecifiedValue.containsKey(streamName);
+  }
+
 
   /**
    * Mark a stream as having been enabled (set to non-zero value).
@@ -268,6 +288,24 @@ public class StreamParameterization {
    */
   public boolean hasStreamBeenEnabled(String streamName) {
     return enabledStreams.contains(streamName);
+  }
+
+  /**
+   * Check if sales intent has been freshly set in the current processing cycle.
+   *
+   * @return true if sales intent was freshly set, false otherwise
+   */
+  public boolean isSalesIntentFreshlySet() {
+    return salesIntentFreshlySet;
+  }
+
+  /**
+   * Set the flag indicating whether sales intent has been freshly set.
+   *
+   * @param freshlySet true if sales intent was freshly set, false otherwise
+   */
+  public void setSalesIntentFreshlySet(boolean freshlySet) {
+    this.salesIntentFreshlySet = freshlySet;
   }
 
   /**

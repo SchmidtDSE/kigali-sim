@@ -526,4 +526,55 @@ public class BasicLiveTests {
     assertEquals(70.0, manufactureValue, 0.0001,
         "Manufacture for sub_a should be 70 kg (50 + 20 recharge) when set to 5 units");
   }
+
+  /**
+   * Test basic carry over of unit-based imports without initial charge or recharge.
+   * This tests if 800 units set in years 2025 and 2026 carry over to subsequent years.
+   */
+  @Test
+  public void testBasicCarryOver() throws IOException {
+    String qtaPath = "../examples/basic_carry_over.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+    
+    String scenarioName = "BAU";
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
+    List<EngineResult> resultsList = results.collect(Collectors.toList());
+    
+    // Check year 2025 equipment (population) value
+    // Should be 20800 units (20000 prior + 800 import)
+    EngineResult resultYear2025 = LiveTestsUtil.getResult(resultsList.stream(), 2025, "Domestic AC", "HFC-32");
+    assertNotNull(resultYear2025, "Should have result for Domestic AC/HFC-32 in year 2025");
+    assertEquals(20800.0, resultYear2025.getPopulation().getValue().doubleValue(), 0.0001,
+        "Equipment should be 20800 units in year 2025 (20000 prior + 800 import)");
+    assertEquals("units", resultYear2025.getPopulation().getUnits(),
+        "Equipment units should be units");
+
+    // Check year 2026 equipment (population) value
+    // Should be 21600 units (20800 from 2025 + 800 import for 2026)
+    EngineResult resultYear2026 = LiveTestsUtil.getResult(resultsList.stream(), 2026, "Domestic AC", "HFC-32");
+    assertNotNull(resultYear2026, "Should have result for Domestic AC/HFC-32 in year 2026");
+    assertEquals(21600.0, resultYear2026.getPopulation().getValue().doubleValue(), 0.0001,
+        "Equipment should be 21600 units in year 2026 (20800 from 2025 + 800 import for 2026)");
+    assertEquals("units", resultYear2026.getPopulation().getUnits(),
+        "Equipment units should be units");
+
+    // Check year 2027 equipment (population) value
+    // Should be 21600 units (carried over from 2026 with no new imports)
+    EngineResult resultYear2027 = LiveTestsUtil.getResult(resultsList.stream(), 2027, "Domestic AC", "HFC-32");
+    assertNotNull(resultYear2027, "Should have result for Domestic AC/HFC-32 in year 2027");
+    assertEquals(21600.0, resultYear2027.getPopulation().getValue().doubleValue(), 0.0001,
+        "Equipment should be 21600 units in year 2027 (carried over from 2026)");
+    assertEquals("units", resultYear2027.getPopulation().getUnits(),
+        "Equipment units should be units");
+    
+    // Check year 2028 equipment (population) value
+    // Should still be 21600 units (carried over)
+    EngineResult resultYear2028 = LiveTestsUtil.getResult(resultsList.stream(), 2028, "Domestic AC", "HFC-32");
+    assertNotNull(resultYear2028, "Should have result for Domestic AC/HFC-32 in year 2028");
+    assertEquals(21600.0, resultYear2028.getPopulation().getValue().doubleValue(), 0.0001,
+        "Equipment should be 21600 units in year 2028 (carried over from 2026)");
+    assertEquals("units", resultYear2028.getPopulation().getUnits(),
+        "Equipment units should be units");
+  }
 }

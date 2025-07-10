@@ -360,48 +360,8 @@ public class StreamKeeperTest {
     assertNotNull(substance2, "Should find second substance");
   }
 
-  /**
-   * Test last specified units getter and setter delegate to parameterization.
-   */
-  @Test
-  public void testLastSpecifiedUnitsGetterAndSetterDelegateToParameterization() {
-    StreamKeeper keeper = createMockKeeper();
-    Scope testScope = createTestScope();
-    keeper.ensureSubstance(testScope);
-
-    // Test default value
-    String defaultUnits = keeper.getLastSalesUnits(testScope);
-    assertEquals("kg", defaultUnits, "Should have default units of kg");
-
-    // Test setting and getting
-    keeper.setLastSalesUnits(testScope, "units");
-    String retrieved = keeper.getLastSalesUnits(testScope);
-    assertEquals("units", retrieved, "Should retrieve set units");
-  }
-
-  /**
-   * Test setStream automatically tracks last specified units.
-   */
-  @Test
-  public void testSetStreamAutomaticallyTracksLastSpecifiedUnits() {
-    StreamKeeper keeper = createMockKeeper();
-    Scope testScope = createTestScope();
-    keeper.ensureSubstance(testScope);
-
-    // Test default value
-    String defaultUnits = keeper.getLastSalesUnits(testScope);
-    assertEquals("kg", defaultUnits, "Should have default units of kg");
-
-    // Test setting units directly via StreamKeeper methods
-    keeper.setLastSalesUnits(testScope, "kg");
-    String unitsAfterKg = keeper.getLastSalesUnits(testScope);
-    assertEquals("kg", unitsAfterKg, "Should have kg units after setting");
-
-    // Test setting different units
-    keeper.setLastSalesUnits(testScope, "units");
-    String unitsAfterUnits = keeper.getLastSalesUnits(testScope);
-    assertEquals("units", unitsAfterUnits, "Should have units after setting");
-  }
+  // Note: Tests for deprecated setLastSalesUnits and getLastSalesUnits methods have been removed.
+  // The functionality is now tested through setLastSpecifiedValue and getLastSpecifiedValue tests.
 
   /**
    * Test setStream with units for sales components (manufacture/import).
@@ -511,5 +471,183 @@ public class StreamKeeperTest {
     EngineNumber result = keeper.getStream(testScope, "manufacture");
     assertEquals(new BigDecimal("10"), result.getValue(),
                 "Should allow setting non-zero value on enabled stream");
+  }
+
+  /**
+   * Test setting and getting last specified value.
+   */
+  @Test
+  public void testSetAndGetLastSpecifiedValue() {
+    StreamKeeper keeper = createMockKeeper();
+    Scope testScope = createTestScope();
+    keeper.ensureSubstance(testScope);
+
+    // Test setting a value with units
+    EngineNumber testValue = new EngineNumber(new BigDecimal("800"), "units");
+    keeper.setLastSpecifiedValue(testScope, "sales", testValue);
+
+    // Test getting the value back
+    EngineNumber retrieved = keeper.getLastSpecifiedValue(testScope, "sales");
+    assertNotNull(retrieved, "Retrieved value should not be null");
+    assertEquals(new BigDecimal("800"), retrieved.getValue(), "Value should match");
+    assertEquals("units", retrieved.getUnits(), "Units should match");
+  }
+
+  /**
+   * Test hasLastSpecifiedValue method.
+   */
+  @Test
+  public void testHasLastSpecifiedValue() {
+    StreamKeeper keeper = createMockKeeper();
+    Scope testScope = createTestScope();
+    keeper.ensureSubstance(testScope);
+
+    // Initially should not have a value
+    assertFalse(keeper.hasLastSpecifiedValue(testScope, "sales"),
+                "Should not have value initially");
+
+    // Set a value
+    EngineNumber testValue = new EngineNumber(new BigDecimal("500"), "units");
+    keeper.setLastSpecifiedValue(testScope, "import", testValue);
+
+    // Now should have the value
+    assertTrue(keeper.hasLastSpecifiedValue(testScope, "import"),
+               "Should have value after setting");
+    assertFalse(keeper.hasLastSpecifiedValue(testScope, "sales"),
+                "Should not have value for different stream");
+  }
+
+  /**
+   * Test that percentage units are ignored in setLastSpecifiedValue.
+   */
+  @Test
+  public void testSetLastSpecifiedValueIgnoresPercentages() {
+    StreamKeeper keeper = createMockKeeper();
+    Scope testScope = createTestScope();
+    keeper.ensureSubstance(testScope);
+
+    // Set initial value
+    EngineNumber initialValue = new EngineNumber(new BigDecimal("100"), "kg");
+    keeper.setLastSpecifiedValue(testScope, "sales", initialValue);
+
+    // Try to set percentage value - should be ignored
+    EngineNumber percentValue = new EngineNumber(new BigDecimal("50"), "%");
+    keeper.setLastSpecifiedValue(testScope, "sales", percentValue);
+
+    // Original value should still be there
+    EngineNumber retrieved = keeper.getLastSpecifiedValue(testScope, "sales");
+    assertEquals("kg", retrieved.getUnits(), "Units should still be kg, not %");
+    assertEquals(new BigDecimal("100"), retrieved.getValue(), 
+                 "Value should be unchanged");
+  }
+
+
+  /**
+   * Test setLastSpecifiedValue with null stream name throws appropriate exception.
+   */
+  @Test
+  public void testSetLastSpecifiedValueWithUnknownSubstance() {
+    StreamKeeper keeper = createMockKeeper();
+    Scope unknownScope = new Scope("test", "unknown", "substance");
+    
+    EngineNumber testValue = new EngineNumber(new BigDecimal("100"), "kg");
+    
+    assertThrows(IllegalStateException.class, () -> {
+      keeper.setLastSpecifiedValue(unknownScope, "sales", testValue);
+    }, "Should throw exception for unknown substance");
+  }
+
+  /**
+   * Test isSalesIntentFreshlySet method.
+   */
+  @Test
+  public void testIsSalesIntentFreshlySet() {
+    StreamKeeper keeper = createMockKeeper();
+    Scope testScope = createTestScope();
+    keeper.ensureSubstance(testScope);
+
+    // Initially should be false
+    assertFalse(keeper.isSalesIntentFreshlySet(testScope),
+                "Sales intent flag should start false");
+
+    // Set a sales value - should set the flag
+    EngineNumber salesValue = new EngineNumber(new BigDecimal("100"), "units");
+    keeper.setLastSpecifiedValue(testScope, "sales", salesValue);
+    
+    assertTrue(keeper.isSalesIntentFreshlySet(testScope),
+               "Sales intent flag should be true after setting sales value");
+  }
+
+  /**
+   * Test resetSalesIntentFlag method.
+   */
+  @Test
+  public void testResetSalesIntentFlag() {
+    StreamKeeper keeper = createMockKeeper();
+    Scope testScope = createTestScope();
+    keeper.ensureSubstance(testScope);
+
+    // Set a value to trigger the flag
+    EngineNumber importValue = new EngineNumber(new BigDecimal("50"), "units");
+    keeper.setLastSpecifiedValue(testScope, "import", importValue);
+    
+    assertTrue(keeper.isSalesIntentFreshlySet(testScope),
+               "Flag should be true after setting import value");
+
+    // Reset the flag
+    keeper.resetSalesIntentFlag(testScope);
+    
+    assertFalse(keeper.isSalesIntentFreshlySet(testScope),
+                "Flag should be false after reset");
+  }
+
+  /**
+   * Test that sales intent flag is independent per scope.
+   */
+  @Test
+  public void testSalesIntentFlagIndependentPerScope() {
+    StreamKeeper keeper = createMockKeeper();
+    Scope scope1 = new Scope("test1", "app1", "sub1");
+    Scope scope2 = new Scope("test2", "app2", "sub2");
+    
+    keeper.ensureSubstance(scope1);
+    keeper.ensureSubstance(scope2);
+
+    // Set value for scope1
+    EngineNumber value = new EngineNumber(new BigDecimal("100"), "kg");
+    keeper.setLastSpecifiedValue(scope1, "manufacture", value);
+    
+    // Check flags
+    assertTrue(keeper.isSalesIntentFreshlySet(scope1),
+               "Scope1 flag should be true");
+    assertFalse(keeper.isSalesIntentFreshlySet(scope2),
+                "Scope2 flag should remain false");
+    
+    // Reset scope1 and set scope2
+    keeper.resetSalesIntentFlag(scope1);
+    keeper.setLastSpecifiedValue(scope2, "sales", value);
+    
+    // Check flags again
+    assertFalse(keeper.isSalesIntentFreshlySet(scope1),
+                "Scope1 flag should be false after reset");
+    assertTrue(keeper.isSalesIntentFreshlySet(scope2),
+               "Scope2 flag should be true after setting");
+  }
+
+  /**
+   * Test sales intent flag with unknown substance.
+   */
+  @Test
+  public void testSalesIntentFlagWithUnknownSubstance() {
+    StreamKeeper keeper = createMockKeeper();
+    Scope unknownScope = new Scope("test", "unknown", "substance");
+    
+    assertThrows(IllegalStateException.class, () -> {
+      keeper.isSalesIntentFreshlySet(unknownScope);
+    }, "Should throw exception for unknown substance when checking flag");
+    
+    assertThrows(IllegalStateException.class, () -> {
+      keeper.resetSalesIntentFlag(unknownScope);
+    }, "Should throw exception for unknown substance when resetting flag");
   }
 }

@@ -4,13 +4,11 @@ start default
   
     uses substance "HFC-32"
       enable import
-      initial charge with 0.85 kg / unit for import
       equals 675 tCO2e / kg
       equals 1 kwh / kg
       set priorEquipment to 20000 units during year 2025
       set import to 800 units during year 2025
       set import to 800 units during year 2026
-      recharge 10% with 0.85 kg / unit
     end substance
   
   end application

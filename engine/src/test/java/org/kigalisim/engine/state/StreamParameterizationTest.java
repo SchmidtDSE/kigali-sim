@@ -282,134 +282,169 @@ public class StreamParameterizationTest {
     assertEquals("%", retrieved.getUnits(), "Should retrieve correct retirement rate units");
   }
 
+  // Note: Tests for deprecated setLastSalesUnits and getLastSalesUnits methods have been removed.
+  // The functionality is now tested through setLastSpecifiedValue and getLastSpecifiedValue tests.
+
   /**
-   * Test last specified units getter and setter.
+   * Test setting and getting last specified value.
    */
   @Test
-  public void testLastSpecifiedUnitsGetterAndSetter() {
+  public void testSetAndGetLastSpecifiedValue() {
     StreamParameterization parameterization = new StreamParameterization();
 
-    // Test default value
-    String defaultUnits = parameterization.getLastSalesUnits();
-    assertEquals("kg", defaultUnits, "Should have default units of kg");
+    // Test setting a value
+    EngineNumber testValue = new EngineNumber(new BigDecimal("500"), "units");
+    parameterization.setLastSpecifiedValue("import", testValue);
 
-    // Test setting and getting units
-    parameterization.setLastSalesUnits("kg");
-    String retrieved = parameterization.getLastSalesUnits();
-    assertEquals("kg", retrieved, "Should retrieve set units");
+    // Test getting the value back
+    EngineNumber retrieved = parameterization.getLastSpecifiedValue("import");
+    assertNotNull(retrieved, "Retrieved value should not be null");
+    assertEquals(new BigDecimal("500"), retrieved.getValue(), "Value should match");
+    assertEquals("units", retrieved.getUnits(), "Units should match");
 
-    // Test setting different units
-    parameterization.setLastSalesUnits("units");
-    String retrievedUnits = parameterization.getLastSalesUnits();
-    assertEquals("units", retrievedUnits, "Should retrieve updated units");
+    // Test getting a non-existent value
+    EngineNumber nonExistent = parameterization.getLastSpecifiedValue("sales");
+    assertEquals(null, nonExistent, "Non-existent value should be null");
   }
 
   /**
-   * Test that setLastSalesUnits ignores percentage units.
+   * Test hasLastSpecifiedValue method.
    */
   @Test
-  public void testSetLastSpecifiedUnitsIgnoresPercentageUnits() {
+  public void testHasLastSpecifiedValue() {
     StreamParameterization parameterization = new StreamParameterization();
 
-    // Set initial non-percentage units
-    parameterization.setLastSalesUnits("kg");
-    assertEquals("kg", parameterization.getLastSalesUnits(),
-                 "Should set initial units");
+    // Initially should not have any values
+    assertEquals(false, parameterization.hasLastSpecifiedValue("sales"),
+                 "Should not have value initially");
 
-    // Try to set percentage unit - should be ignored
-    parameterization.setLastSalesUnits("%");
-    assertEquals("kg", parameterization.getLastSalesUnits(),
-                 "Pure percentage units should be ignored");
+    // Set a value
+    EngineNumber testValue = new EngineNumber(new BigDecimal("800"), "units");
+    parameterization.setLastSpecifiedValue("sales", testValue);
 
-    // Try to set unit containing percentage - should be ignored
-    parameterization.setLastSalesUnits("kg / %");
-    assertEquals("kg", parameterization.getLastSalesUnits(),
-                 "Units containing percentage should be ignored");
-
-    // Try another percentage format - should be ignored
-    parameterization.setLastSalesUnits("15%");
-    assertEquals("kg", parameterization.getLastSalesUnits(),
-                 "Percentage values should be ignored");
-
-    // Set valid non-percentage units - should work
-    parameterization.setLastSalesUnits("units");
-    assertEquals("units", parameterization.getLastSalesUnits(),
-                 "Non-percentage units should still work");
-
-    // Try percentage again - should be ignored, keeping "units"
-    parameterization.setLastSalesUnits("%");
-    assertEquals("units", parameterization.getLastSalesUnits(),
-                 "Percentage should still be ignored after setting valid units");
+    // Now should have the value
+    assertEquals(true, parameterization.hasLastSpecifiedValue("sales"),
+                 "Should have value after setting");
+    assertEquals(false, parameterization.hasLastSpecifiedValue("import"),
+                 "Should not have value for different stream");
   }
 
   /**
-   * Test that setLastSalesUnits handles null values properly.
+   * Test that percentage units are ignored in setLastSpecifiedValue.
    */
   @Test
-  public void testSetLastSpecifiedUnitsHandlesNull() {
+  public void testSetLastSpecifiedValueIgnoresPercentages() {
     StreamParameterization parameterization = new StreamParameterization();
 
-    // Set initial units
-    parameterization.setLastSalesUnits("kg");
-    assertEquals("kg", parameterization.getLastSalesUnits(),
-                 "Should set initial units");
+    // Set initial value
+    EngineNumber initialValue = new EngineNumber(new BigDecimal("100"), "kg");
+    parameterization.setLastSpecifiedValue("sales", initialValue);
 
-    // Try null - should update to null (original behavior preserved)
-    parameterization.setLastSalesUnits(null);
-    assertEquals(null, parameterization.getLastSalesUnits(),
-                 "Null units should update last specified units (original behavior)");
+    // Try to set percentage value - should be ignored
+    EngineNumber percentValue = new EngineNumber(new BigDecimal("50"), "%");
+    parameterization.setLastSpecifiedValue("sales", percentValue);
 
-    // Set valid units again - should work
-    parameterization.setLastSalesUnits("mt");
-    assertEquals("mt", parameterization.getLastSalesUnits(),
-                 "Valid units should still work after null");
+    // Original value should still be there
+    EngineNumber retrieved = parameterization.getLastSpecifiedValue("sales");
+    assertEquals("kg", retrieved.getUnits(), "Units should still be kg, not %");
+    assertEquals(new BigDecimal("100"), retrieved.getValue(), 
+                 "Value should be unchanged");
   }
 
   /**
-   * Test that setLastSalesUnits handles various percentage formats.
+   * Test salesIntentFreshlySet flag default value.
    */
   @Test
-  public void testSetLastSpecifiedUnitsHandlesVariousPercentageFormats() {
+  public void testSalesIntentFreshlySetDefaultValue() {
     StreamParameterization parameterization = new StreamParameterization();
-
-    // Set initial units
-    parameterization.setLastSalesUnits("kg");
-    assertEquals("kg", parameterization.getLastSalesUnits(),
-                 "Should set initial units");
-
-    // Test various percentage formats that should be ignored
-    String[] percentageFormats = {
-      "%",
-      "50%",
-      "kg/%",
-      "units / %",
-      "% / year",
-      "tCO2e / %",
-      "% per unit",
-      "percentage %"
-    };
-
-    for (String format : percentageFormats) {
-      parameterization.setLastSalesUnits(format);
-      assertEquals("kg", parameterization.getLastSalesUnits(),
-                   "Format \"" + format + "\" should be ignored");
-    }
-
-    // Test valid formats that should NOT be ignored
-    String[] validFormats = {
-      "units",
-      "mt",
-      "kg / unit",
-      "tCO2e / kg",
-      "kwh / kg",
-      "year",
-      "years"
-    };
-
-    for (String format : validFormats) {
-      parameterization.setLastSalesUnits(format);
-      assertEquals(format, parameterization.getLastSalesUnits(),
-                   "Format \"" + format + "\" should be accepted");
-    }
+    assertEquals(false, parameterization.isSalesIntentFreshlySet(),
+                 "Sales intent flag should default to false");
   }
+
+  /**
+   * Test salesIntentFreshlySet getter and setter.
+   */
+  @Test
+  public void testSalesIntentFreshlySetGetterAndSetter() {
+    StreamParameterization parameterization = new StreamParameterization();
+    
+    // Set to true
+    parameterization.setSalesIntentFreshlySet(true);
+    assertEquals(true, parameterization.isSalesIntentFreshlySet(),
+                 "Should return true after setting to true");
+    
+    // Set back to false
+    parameterization.setSalesIntentFreshlySet(false);
+    assertEquals(false, parameterization.isSalesIntentFreshlySet(),
+                 "Should return false after setting to false");
+  }
+
+  /**
+   * Test that setLastSpecifiedValue sets salesIntentFreshlySet flag for sales streams.
+   */
+  @Test
+  public void testSetLastSpecifiedValueSetsSalesIntentFlag() {
+    StreamParameterization parameterization = new StreamParameterization();
+    
+    // Initially false
+    assertEquals(false, parameterization.isSalesIntentFreshlySet(),
+                 "Flag should start false");
+    
+    // Set sales value - should set flag
+    EngineNumber salesValue = new EngineNumber(new BigDecimal("100"), "units");
+    parameterization.setLastSpecifiedValue("sales", salesValue);
+    assertEquals(true, parameterization.isSalesIntentFreshlySet(),
+                 "Flag should be true after setting sales value");
+    
+    // Reset flag
+    parameterization.setSalesIntentFreshlySet(false);
+    
+    // Set import value - should set flag
+    EngineNumber importValue = new EngineNumber(new BigDecimal("50"), "units");
+    parameterization.setLastSpecifiedValue("import", importValue);
+    assertEquals(true, parameterization.isSalesIntentFreshlySet(),
+                 "Flag should be true after setting import value");
+    
+    // Reset flag
+    parameterization.setSalesIntentFreshlySet(false);
+    
+    // Set manufacture value - should set flag
+    EngineNumber manufactureValue = new EngineNumber(new BigDecimal("75"), "kg");
+    parameterization.setLastSpecifiedValue("manufacture", manufactureValue);
+    assertEquals(true, parameterization.isSalesIntentFreshlySet(),
+                 "Flag should be true after setting manufacture value");
+  }
+
+  /**
+   * Test that setLastSpecifiedValue does not set flag for non-sales streams.
+   */
+  @Test
+  public void testSetLastSpecifiedValueDoesNotSetFlagForNonSalesStreams() {
+    StreamParameterization parameterization = new StreamParameterization();
+    
+    // Set value for non-sales stream
+    EngineNumber otherValue = new EngineNumber(new BigDecimal("200"), "kg");
+    parameterization.setLastSpecifiedValue("consumption", otherValue);
+    
+    // Flag should remain false
+    assertEquals(false, parameterization.isSalesIntentFreshlySet(),
+                 "Flag should remain false for non-sales streams");
+  }
+
+  /**
+   * Test that percentage values don't affect sales intent flag.
+   */
+  @Test
+  public void testPercentageValuesDontSetSalesIntentFlag() {
+    StreamParameterization parameterization = new StreamParameterization();
+    
+    // Try to set percentage value for sales stream
+    EngineNumber percentValue = new EngineNumber(new BigDecimal("50"), "%");
+    parameterization.setLastSpecifiedValue("sales", percentValue);
+    
+    // Flag should remain false since percentage values are ignored
+    assertEquals(false, parameterization.isSalesIntentFreshlySet(),
+                 "Flag should remain false when percentage values are ignored");
+  }
+
 }

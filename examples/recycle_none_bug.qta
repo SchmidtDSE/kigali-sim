@@ -1,0 +1,40 @@
+start default
+
+  define application "MAC"
+
+    uses substance "HFC-134a"
+      enable import
+      initial charge with 1.00 kg / unit for sales
+      set priorEquipment to 500000 units during year beginning
+      retire 5 % each year
+      recharge 20 % each year with 1.00 kg / unit
+      set import to (10000 * (500000 / 750000)) units / year during year beginning
+      equals 1430 tCO2e / kg
+    end substance
+
+  end application
+
+end default
+
+
+start policy "Recovery and Recycling"
+
+  modify application "MAC"
+    modify substance "HFC-134a"
+      recover 0 % with 100 % reuse during year 2026
+      recover 0 % with 100 % reuse during year 2027
+      recover 0 % with 100 % reuse during year 2028
+      recover 0 % with 100 % reuse during year 2029
+      recover 0 % with 100 % reuse during years 2030 to onwards
+    end substance
+  end application
+
+end policy
+
+
+start simulations
+
+  simulate "Business as Usual" from years 2025 to 2035
+  simulate "Recovery and Recycling" using "Recovery and Recycling" from years 2025 to 2035
+
+end simulations

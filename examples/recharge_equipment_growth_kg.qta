@@ -8,8 +8,8 @@ start default
       equals 675 tCO2e / kg
       equals 1 kwh / kg
       set priorEquipment to 20000 units during year 2025
-      set import to 800 units during year 2025
-      set import to 800 units during year 2026
+      set import to 800 kg during year 2025
+      set import to 800 kg during year 2026
       recharge 10% with 0.85 kg / unit
     end substance
   

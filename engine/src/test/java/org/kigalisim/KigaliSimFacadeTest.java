@@ -310,4 +310,134 @@ public class KigaliSimFacadeTest {
     assertEquals(4.0 / 5.0, progressValues.get(1), 0.001, "Second progress should be 0.8");
     assertEquals(1.0, progressValues.get(2), 0.001, "Final progress should be 1.0");
   }
+
+  /**
+   * Test recharge with recycling interaction for units-based imports.
+   * This test verifies that recycling properly reduces imports when using units-based import policies.
+   */
+  @Test
+  public void testRechargeWithRecyclingUnitsBasedImports() throws IOException {
+    // Use the test example we created
+    String examplePath = "../examples/test_recharge_recycle_units_bug.qta";
+    File exampleFile = new File(examplePath);
+    assertTrue(exampleFile.exists(), "Example file should exist: " + examplePath);
+
+    // Parse and interpret the example file
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(exampleFile.getPath());
+    assertNotNull(program, "Program should not be null");
+
+    // Run BAU scenario
+    Stream<EngineResult> bauResults = KigaliSimFacade.runScenario(program, "BAU", progress -> {});
+    List<EngineResult> bauResultsList = bauResults.collect(java.util.stream.Collectors.toList());
+
+    // Run policy scenario
+    Stream<EngineResult> policyResults = KigaliSimFacade.runScenario(program, "With Recycling", progress -> {});
+    List<EngineResult> policyResultsList = policyResults.collect(java.util.stream.Collectors.toList());
+
+    // Find year 3 results for both scenarios
+    EngineResult bauYear3 = bauResultsList.stream()
+        .filter(r -> r.getYear() == 3 && r.getScenarioName().equals("BAU"))
+        .findFirst()
+        .orElse(null);
+    
+    EngineResult policyYear3 = policyResultsList.stream()
+        .filter(r -> r.getYear() == 3 && r.getScenarioName().equals("With Recycling"))
+        .findFirst()
+        .orElse(null);
+
+    assertNotNull(bauYear3, "BAU year 3 result should exist");
+    assertNotNull(policyYear3, "Policy year 3 result should exist");
+
+    // Get import values
+    double bauImports = bauYear3.getImport().getValue().doubleValue();
+    double policyImports = policyYear3.getImport().getValue().doubleValue();
+
+    // With 50% recovery and 90% reuse, imports should be lower with the policy
+    assertTrue(policyImports < bauImports, 
+        String.format("Imports with recycling policy (%.2f) should be less than BAU (%.2f)", 
+                      policyImports, bauImports));
+
+    // Log values for debugging
+    System.out.println(String.format("Year 3 - BAU imports: %.2f %s", 
+                                     bauImports, bauYear3.getImport().getUnits()));
+    System.out.println(String.format("Year 3 - Policy imports: %.2f %s", 
+                                     policyImports, policyYear3.getImport().getUnits()));
+
+    // Also check consumption
+    double bauConsumption = bauYear3.getImportConsumption().getValue().doubleValue();
+    double policyConsumption = policyYear3.getImportConsumption().getValue().doubleValue();
+
+    System.out.println(String.format("Year 3 - BAU consumption: %.2f %s", 
+                                     bauConsumption, bauYear3.getImportConsumption().getUnits()));
+    System.out.println(String.format("Year 3 - Policy consumption: %.2f %s", 
+                                     policyConsumption, policyYear3.getImportConsumption().getUnits()));
+  }
+
+  /**
+   * Test recharge with recycling interaction for kg-based imports.
+   * This test verifies that the existing behavior is preserved when using kg-based import policies.
+   */
+  @Test
+  public void testRechargeWithRecyclingKgBasedImports() throws IOException {
+    // Use the kg-based test example we created
+    String examplePath = "../examples/test_recharge_recycle_kg_bug.qta";
+    File exampleFile = new File(examplePath);
+    assertTrue(exampleFile.exists(), "Example file should exist: " + examplePath);
+
+    // Parse and interpret the example file
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(exampleFile.getPath());
+    assertNotNull(program, "Program should not be null");
+
+    // Run BAU scenario
+    Stream<EngineResult> bauResults = KigaliSimFacade.runScenario(program, "BAU", progress -> {});
+    List<EngineResult> bauResultsList = bauResults.collect(java.util.stream.Collectors.toList());
+
+    // Run policy scenario
+    Stream<EngineResult> policyResults = KigaliSimFacade.runScenario(program, "With Recycling", progress -> {});
+    List<EngineResult> policyResultsList = policyResults.collect(java.util.stream.Collectors.toList());
+
+    // Find year 3 results for both scenarios
+    EngineResult bauYear3 = bauResultsList.stream()
+        .filter(r -> r.getYear() == 3 && r.getScenarioName().equals("BAU"))
+        .findFirst()
+        .orElse(null);
+    
+    EngineResult policyYear3 = policyResultsList.stream()
+        .filter(r -> r.getYear() == 3 && r.getScenarioName().equals("With Recycling"))
+        .findFirst()
+        .orElse(null);
+
+    assertNotNull(bauYear3, "BAU year 3 result should exist");
+    assertNotNull(policyYear3, "Policy year 3 result should exist");
+
+    // Get import values
+    double bauImports = bauYear3.getImport().getValue().doubleValue();
+    double policyImports = policyYear3.getImport().getValue().doubleValue();
+
+    // Get total GHG consumption (virgin + recycled)
+    double bauTotalConsumption = bauYear3.getGhgConsumption().getValue().doubleValue();
+    double policyTotalConsumption = policyYear3.getGhgConsumption().getValue().doubleValue();
+
+    // Log values for debugging
+    System.out.println(String.format("KG-based - Year 3 BAU imports: %.2f %s", 
+                                     bauImports, bauYear3.getImport().getUnits()));
+    System.out.println(String.format("KG-based - Year 3 Policy imports: %.2f %s", 
+                                     policyImports, policyYear3.getImport().getUnits()));
+    System.out.println(String.format("KG-based - Year 3 BAU total consumption: %.2f %s", 
+                                     bauTotalConsumption, bauYear3.getGhgConsumption().getUnits()));
+    System.out.println(String.format("KG-based - Year 3 Policy total consumption: %.2f %s", 
+                                     policyTotalConsumption, policyYear3.getGhgConsumption().getUnits()));
+
+    // With recycling always reducing virgin material demand, imports should be lower with recycling
+    assertTrue(policyImports < bauImports, 
+        String.format("Imports with recycling policy (%.2f) should be less than BAU (%.2f)", 
+                      policyImports, bauImports));
+
+    // Also verify recycling stream is present
+    double recycledConsumption = policyYear3.getRecycleConsumption().getValue().doubleValue();
+    assertTrue(recycledConsumption > 0, "Recycled consumption should be greater than 0");
+    
+    System.out.println(String.format("KG-based - Year 3 Policy recycled consumption: %.2f %s", 
+                                     recycledConsumption, policyYear3.getRecycleConsumption().getUnits()));
+  }
 }
