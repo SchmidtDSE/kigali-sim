@@ -8,6 +8,7 @@ package org.kigalisim.validate;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -185,6 +186,45 @@ public class RecycleRecoverLiveTests {
                        + recordSubA.getImport().getValue().doubleValue();
     assertEquals(110.0, totalSales, 0.0001,
         "Total sales should be reduced by 40 kg due to displacement (20 kg explicit + 20 kg recycling offset)");
+  }
+
+  /**
+   * Test multiple recycles with additive recycling behavior.
+   */
+  @Test
+  public void testMultipleRecycles() throws IOException {
+    // Load and parse the QTA file
+    String qtaPath = "../examples/test_multiple_recycles.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    // Run both scenarios
+    Stream<EngineResult> bauResults = KigaliSimFacade.runScenario(program, "BAU", progress -> {});
+    List<EngineResult> bauResultsList = bauResults.collect(Collectors.toList());
+    
+    Stream<EngineResult> policyResults = KigaliSimFacade.runScenario(program, "Multiple Recycles", progress -> {});
+    List<EngineResult> policyResultsList = policyResults.collect(Collectors.toList());
+
+    // Check year 1 results
+    EngineResult bauYear1 = LiveTestsUtil.getResult(bauResultsList.stream(), 1, "TestApp", "HFC-134a");
+    EngineResult policyYear1 = LiveTestsUtil.getResult(policyResultsList.stream(), 1, "TestApp", "HFC-134a");
+
+    assertNotNull(bauYear1, "Should have BAU result for year 1");
+    assertNotNull(policyYear1, "Should have policy result for year 1");
+
+    // Multiple recycles should provide more recycled material than single recycle
+    // Recovery rates: 30% + 20% = 50%
+    // Yield rates: weighted average of 80% and 90% = (30*80 + 20*90)/(30+20) = 84%
+    double bauImports = bauYear1.getImport().getValue().doubleValue();
+    double policyImports = policyYear1.getImport().getValue().doubleValue();
+    double policyRecycled = policyYear1.getRecycleConsumption().getValue().doubleValue();
+
+    // With additive recycling, policy should have lower imports and higher recycled content
+    assertTrue(policyImports < bauImports, 
+        String.format("Policy imports (%.2f) should be less than BAU imports (%.2f)", 
+                      policyImports, bauImports));
+    assertTrue(policyRecycled > 0, 
+        String.format("Policy should have recycled content (%.2f)", policyRecycled));
   }
 
   /**

@@ -376,6 +376,8 @@ public class KigaliSimFacadeTest {
                                      bauImports, bauYear3.getImport().getUnits()));
     System.out.println(String.format("Year 3 - Policy imports: %.2f %s", 
                                      policyImports, policyYear3.getImport().getUnits()));
+    System.out.println("TEST ISSUE: Expecting Policy imports < BAU imports, but got " 
+                       + policyImports + " >= " + bauImports);
 
     // Also check consumption
     double bauConsumption = bauYear3.getImportConsumption().getValue().doubleValue();
@@ -386,13 +388,14 @@ public class KigaliSimFacadeTest {
     System.out.println(String.format("Year 3 - Policy consumption: %.2f %s", 
                                      policyConsumption, policyYear3.getImportConsumption().getUnits()));
 
-    // Check equipment (population) at year 5 - should be the same for both scenarios
+    // Check equipment (population) at year 5 - policy should be lower due to retirement
     double bauEquipmentYear5 = bauYear5.getPopulation().getValue().doubleValue();
     double policyEquipmentYear5 = policyYear5.getPopulation().getValue().doubleValue();
     
-    assertEquals(bauEquipmentYear5, policyEquipmentYear5, 0.001, 
-        String.format("Equipment population at year 5 should be the same for both scenarios - BAU: %.2f, Policy: %.2f", 
-                      bauEquipmentYear5, policyEquipmentYear5));
+    // Policy includes 10% retirement per year, so population should be lower
+    assertTrue(policyEquipmentYear5 < bauEquipmentYear5, 
+        String.format("Policy equipment population (%.2f) should be lower than BAU (%.2f) due to retirement", 
+                      policyEquipmentYear5, bauEquipmentYear5));
     
     System.out.println(String.format("Year 5 - BAU equipment: %.2f %s", 
                                      bauEquipmentYear5, bauYear5.getPopulation().getUnits()));

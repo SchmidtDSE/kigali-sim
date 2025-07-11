@@ -309,6 +309,17 @@ public class StreamParameterization {
   }
 
   /**
+   * Reset state at the beginning of a timestep.
+   *
+   * <p>This method resets recovery rate to 0% between years since recycling
+   * programs may cease and should not be expected to continue unchanged.</p>
+   */
+  public void resetStateAtTimestep() {
+    // Reset recovery to 0% between years since recycling programs may cease
+    recoveryRate = new EngineNumber(BigDecimal.ZERO, "%");
+  }
+
+  /**
    * Validate that the given stream name is allowed for sales operations.
    *
    * @param name The stream name to validate

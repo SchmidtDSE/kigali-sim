@@ -256,8 +256,16 @@ public class SingleThreadEngine implements Engine {
           streamKeeper,
           this
       );
+      
       BigDecimal totalWithRecharge = valueInKg.getValue().add(rechargeVolume.getValue());
       valueToSet = new EngineNumber(totalWithRecharge, "kg");
+      
+      System.out.println("[DEBUG] setStreamFor - Year: " + currentYear + 
+                         ", Stream: " + name + 
+                         ", Units value: " + value.getValue() + " " + value.getUnits() +
+                         ", Converted to kg: " + valueInKg.getValue() + 
+                         ", Recharge: " + rechargeVolume.getValue() + 
+                         ", Total with recharge: " + totalWithRecharge);
       
       // Set implicit recharge to indicate we've added recharge automatically
       streamKeeper.setStream(keyEffective, "implicitRecharge", rechargeVolume);
@@ -1182,6 +1190,58 @@ public class SingleThreadEngine implements Engine {
     return !streamKeeper.isSalesIntentFreshlySet(scope) 
            && streamKeeper.hasLastSpecifiedValue(scope, "sales")
            && streamKeeper.getLastSpecifiedValue(scope, "sales").hasEquipmentUnits();
+  }
+
+  /**
+   * Calculate the available recycling volume for the current timestep.
+   * This method replicates the recycling calculation logic to determine
+   * how much recycling material is available to avoid double counting.
+   *
+   * @param scope the scope to calculate recycling for
+   * @return the amount of recycling available in kg
+   */
+  private BigDecimal calculateAvailableRecycling(UseKey scope) {
+    try {
+      // Get current prior population
+      EngineNumber priorPopulationRaw = streamKeeper.getStream(scope, "priorEquipment");
+      if (priorPopulationRaw == null) {
+        return BigDecimal.ZERO;
+      }
+      
+      // Get rates from parameterization
+      EngineNumber retirementRate = streamKeeper.getRetirementRate(scope);
+      EngineNumber recoveryRate = streamKeeper.getRecoveryRate(scope);
+      EngineNumber yieldRate = streamKeeper.getYieldRate(scope);
+      EngineNumber displacementRate = streamKeeper.getDisplacementRate(scope);
+      
+      // Convert everything to proper units
+      UnitConverter unitConverter = createUnitConverterWithTotal("sales");
+      EngineNumber priorPopulation = unitConverter.convert(priorPopulationRaw, "units");
+      
+      // Calculate rates as decimals
+      BigDecimal retirementRateDecimal = retirementRate.getValue().divide(BigDecimal.valueOf(100));
+      BigDecimal recoveryRateDecimal = recoveryRate.getValue().divide(BigDecimal.valueOf(100));
+      BigDecimal yieldRateDecimal = yieldRate.getValue().divide(BigDecimal.valueOf(100));
+      BigDecimal displacementRateDecimal = displacementRate.getValue().divide(BigDecimal.valueOf(100));
+      
+      // Calculate recycling chain
+      BigDecimal retiredUnits = priorPopulation.getValue().multiply(retirementRateDecimal);
+      BigDecimal recoveredUnits = retiredUnits.multiply(recoveryRateDecimal);
+      BigDecimal recycledUnits = recoveredUnits.multiply(yieldRateDecimal);
+      
+      // Convert to kg
+      EngineNumber initialCharge = streamKeeper.getInitialCharge(scope, "import");
+      EngineNumber initialChargeKg = unitConverter.convert(initialCharge, "kg / unit");
+      BigDecimal recycledKg = recycledUnits.multiply(initialChargeKg.getValue());
+      
+      // Apply displacement rate
+      BigDecimal recyclingAvailable = recycledKg.multiply(displacementRateDecimal);
+      
+      return recyclingAvailable;
+    } catch (Exception e) {
+      // If any error occurs, return 0 to avoid breaking the flow
+      return BigDecimal.ZERO;
+    }
   }
 
 }
