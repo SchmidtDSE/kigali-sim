@@ -269,11 +269,6 @@ public class RechargeLiveTests {
     EngineResult resultYear2028 = LiveTestsUtil.getResult(resultsList.stream(), 2028, "Domestic AC", "HFC-32");
     assertNotNull(resultYear2028, "Should have result for Domestic AC/HFC-32 in year 2028");
     
-    // Log actual values for investigation
-    double equipment2027 = resultYear2027.getPopulation().getValue().doubleValue();
-    double equipment2028 = resultYear2028.getPopulation().getValue().doubleValue();
-    System.out.println("Equipment 2027 (multiple recharge year): " + equipment2027);
-    System.out.println("Equipment 2028 (after multiple recharge): " + equipment2028);
   }
 
   /**

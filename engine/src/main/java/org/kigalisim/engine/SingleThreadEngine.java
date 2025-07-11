@@ -256,6 +256,7 @@ public class SingleThreadEngine implements Engine {
           streamKeeper,
           this
       );
+      
       BigDecimal totalWithRecharge = valueInKg.getValue().add(rechargeVolume.getValue());
       valueToSet = new EngineNumber(totalWithRecharge, "kg");
       
@@ -363,7 +364,6 @@ public class SingleThreadEngine implements Engine {
   public EngineNumber getStream(String name, Optional<UseKey> useKey, Optional<String> conversion) {
     UseKey effectiveKey = useKey.orElse(scope);
     EngineNumber value = streamKeeper.getStream(effectiveKey, name);
-
     return conversion.map(conv -> unitConverter.convert(value, conv)).orElse(value);
   }
 
@@ -590,8 +590,6 @@ public class SingleThreadEngine implements Engine {
     streamKeeper.setRechargeIntensity(scope, intensity);
 
     boolean isCarryOver = isCarryOver(scope);
-    // Reset the flag after checking - it should only affect the first recharge check
-    streamKeeper.resetSalesIntentFlag(scope);
     
     if (isCarryOver) {
       // Preserve user's original unit-based intent
@@ -952,6 +950,18 @@ public class SingleThreadEngine implements Engine {
       return;
     }
 
+    // Check if this is a stream-based displacement (moved to top to avoid duplication)
+    boolean isStream = STREAM_NAMES.contains(displaceTarget);
+    
+    // Automatic recycling addition: if recovery creates recycled material from sales stream,
+    // always add it back to sales first before applying targeted displacement
+    boolean displacementAutomatic = isStream && RECYCLE_RECOVER_STREAM.equals(stream);
+    if (displacementAutomatic) {
+      // Add recycled material back to sales to maintain total material balance
+      EngineNumber recycledAddition = new EngineNumber(changeAmount, "kg");
+      changeStreamWithoutReportingUnits(RECYCLE_RECOVER_STREAM, recycledAddition, null, null);
+    }
+
     EngineNumber displaceChange;
 
     if (amount.hasEquipmentUnits()) {
@@ -962,7 +972,6 @@ public class SingleThreadEngine implements Engine {
       EngineNumber volumeChangeFlip = new EngineNumber(changeAmount.negate(), "kg");
       EngineNumber unitsChanged = currentUnitConverter.convert(volumeChangeFlip, "units");
 
-      boolean isStream = STREAM_NAMES.contains(displaceTarget);
       if (isStream) {
         // Same substance, same stream - use volume displacement
         displaceChange = new EngineNumber(changeAmount.negate(), "kg");
@@ -989,7 +998,6 @@ public class SingleThreadEngine implements Engine {
     } else {
       // For volume units, use volume-based displacement as before
       displaceChange = new EngineNumber(changeAmount.negate(), "kg");
-      boolean isStream = STREAM_NAMES.contains(displaceTarget);
 
       if (isStream) {
         changeStreamWithoutReportingUnits(displaceTarget, displaceChange, null, null);
@@ -1033,16 +1041,7 @@ public class SingleThreadEngine implements Engine {
     
     // Warn when negative values are clamped to zero
     if (newAmount.compareTo(BigDecimal.ZERO) < 0) {
-      StringBuilder warning = new StringBuilder();
-      warning.append("WARNING: Negative stream value clamped to zero for stream '");
-      warning.append(stream);
-      warning.append("': ");
-      warning.append(newAmount);
-      warning.append(" ");
-      warning.append(currentValue.getUnits());
-      warning.append(" -> 0 ");
-      warning.append(currentValue.getUnits());
-      System.err.println(warning.toString());
+      System.err.println("WARNING: Negative stream value clamped to zero for stream " + stream);
     }
     
     EngineNumber outputWithUnits = new EngineNumber(newAmountBound, currentValue.getUnits());
@@ -1184,6 +1183,58 @@ public class SingleThreadEngine implements Engine {
     return !streamKeeper.isSalesIntentFreshlySet(scope) 
            && streamKeeper.hasLastSpecifiedValue(scope, "sales")
            && streamKeeper.getLastSpecifiedValue(scope, "sales").hasEquipmentUnits();
+  }
+
+  /**
+   * Calculate the available recycling volume for the current timestep.
+   * This method replicates the recycling calculation logic to determine
+   * how much recycling material is available to avoid double counting.
+   *
+   * @param scope the scope to calculate recycling for
+   * @return the amount of recycling available in kg
+   */
+  private BigDecimal calculateAvailableRecycling(UseKey scope) {
+    try {
+      // Get current prior population
+      EngineNumber priorPopulationRaw = streamKeeper.getStream(scope, "priorEquipment");
+      if (priorPopulationRaw == null) {
+        return BigDecimal.ZERO;
+      }
+      
+      // Get rates from parameterization
+      EngineNumber retirementRate = streamKeeper.getRetirementRate(scope);
+      EngineNumber recoveryRate = streamKeeper.getRecoveryRate(scope);
+      EngineNumber yieldRate = streamKeeper.getYieldRate(scope);
+      EngineNumber displacementRate = streamKeeper.getDisplacementRate(scope);
+      
+      // Convert everything to proper units
+      UnitConverter unitConverter = createUnitConverterWithTotal("sales");
+      EngineNumber priorPopulation = unitConverter.convert(priorPopulationRaw, "units");
+      
+      // Calculate rates as decimals
+      BigDecimal retirementRateDecimal = retirementRate.getValue().divide(BigDecimal.valueOf(100));
+      BigDecimal recoveryRateDecimal = recoveryRate.getValue().divide(BigDecimal.valueOf(100));
+      BigDecimal yieldRateDecimal = yieldRate.getValue().divide(BigDecimal.valueOf(100));
+      BigDecimal displacementRateDecimal = displacementRate.getValue().divide(BigDecimal.valueOf(100));
+      
+      // Calculate recycling chain
+      BigDecimal retiredUnits = priorPopulation.getValue().multiply(retirementRateDecimal);
+      BigDecimal recoveredUnits = retiredUnits.multiply(recoveryRateDecimal);
+      BigDecimal recycledUnits = recoveredUnits.multiply(yieldRateDecimal);
+      
+      // Convert to kg
+      EngineNumber initialCharge = streamKeeper.getInitialCharge(scope, "import");
+      EngineNumber initialChargeKg = unitConverter.convert(initialCharge, "kg / unit");
+      BigDecimal recycledKg = recycledUnits.multiply(initialChargeKg.getValue());
+      
+      // Apply displacement rate
+      BigDecimal recyclingAvailable = recycledKg.multiply(displacementRateDecimal);
+      
+      return recyclingAvailable;
+    } catch (Exception e) {
+      // If any error occurs, return 0 to avoid breaking the flow
+      return BigDecimal.ZERO;
+    }
   }
 
 }

@@ -408,9 +408,6 @@ public class BasicLiveTests {
     double firstPopulation = firstRecord.getPopulation().getValue().doubleValue();
     double secondPopulation = secondRecord.getPopulation().getValue().doubleValue();
 
-    // Debug output
-    System.out.println("Population in 2025: " + firstPopulation);
-    System.out.println("Population in 2030: " + secondPopulation);
 
     assertTrue(firstPopulation < secondPopulation,
         "Equipment population should increase from 2025 to 2030. Was " + firstPopulation + " in 2025 and " + secondPopulation + " in 2030");
@@ -520,7 +517,6 @@ public class BasicLiveTests {
     // Option A: Just 50 kg (5 units * 10 kg/unit)
     // Option B: 70 kg (50 kg + 20 kg recharge for 20 units * 10% * 10 kg/unit)
     double manufactureValue = recordSubA.getManufacture().getValue().doubleValue();
-    System.out.println("DEBUG: When setting manufacture to 5 units, we get: " + manufactureValue + " kg");
     
     // Let's see what actually happens
     assertEquals(70.0, manufactureValue, 0.0001,
