@@ -371,22 +371,11 @@ public class KigaliSimFacadeTest {
         String.format("Imports with recycling policy (%.2f) should be less than BAU (%.2f)", 
                       policyImports, bauImports));
 
-    // Log values for debugging
-    System.out.println(String.format("Year 3 - BAU imports: %.2f %s", 
-                                     bauImports, bauYear3.getImport().getUnits()));
-    System.out.println(String.format("Year 3 - Policy imports: %.2f %s", 
-                                     policyImports, policyYear3.getImport().getUnits()));
-    System.out.println("TEST ISSUE: Expecting Policy imports < BAU imports, but got " 
-                       + policyImports + " >= " + bauImports);
 
     // Also check consumption
     double bauConsumption = bauYear3.getImportConsumption().getValue().doubleValue();
     double policyConsumption = policyYear3.getImportConsumption().getValue().doubleValue();
 
-    System.out.println(String.format("Year 3 - BAU consumption: %.2f %s", 
-                                     bauConsumption, bauYear3.getImportConsumption().getUnits()));
-    System.out.println(String.format("Year 3 - Policy consumption: %.2f %s", 
-                                     policyConsumption, policyYear3.getImportConsumption().getUnits()));
 
     // Check equipment (population) at year 5 - policy should be lower due to retirement
     double bauEquipmentYear5 = bauYear5.getPopulation().getValue().doubleValue();
@@ -397,10 +386,6 @@ public class KigaliSimFacadeTest {
         String.format("Policy equipment population (%.2f) should be lower than BAU (%.2f) due to retirement", 
                       policyEquipmentYear5, bauEquipmentYear5));
     
-    System.out.println(String.format("Year 5 - BAU equipment: %.2f %s", 
-                                     bauEquipmentYear5, bauYear5.getPopulation().getUnits()));
-    System.out.println(String.format("Year 5 - Policy equipment: %.2f %s", 
-                                     policyEquipmentYear5, policyYear5.getPopulation().getUnits()));
   }
 
   /**
@@ -462,15 +447,6 @@ public class KigaliSimFacadeTest {
     double bauTotalConsumption = bauYear3.getGhgConsumption().getValue().doubleValue();
     double policyTotalConsumption = policyYear3.getGhgConsumption().getValue().doubleValue();
 
-    // Log values for debugging
-    System.out.println(String.format("KG-based - Year 3 BAU imports: %.2f %s", 
-                                     bauImports, bauYear3.getImport().getUnits()));
-    System.out.println(String.format("KG-based - Year 3 Policy imports: %.2f %s", 
-                                     policyImports, policyYear3.getImport().getUnits()));
-    System.out.println(String.format("KG-based - Year 3 BAU total consumption: %.2f %s", 
-                                     bauTotalConsumption, bauYear3.getGhgConsumption().getUnits()));
-    System.out.println(String.format("KG-based - Year 3 Policy total consumption: %.2f %s", 
-                                     policyTotalConsumption, policyYear3.getGhgConsumption().getUnits()));
 
     // With recycling always reducing virgin material demand, imports should be lower with recycling
     assertTrue(policyImports < bauImports, 
@@ -481,8 +457,6 @@ public class KigaliSimFacadeTest {
     double recycledConsumption = policyYear3.getRecycleConsumption().getValue().doubleValue();
     assertTrue(recycledConsumption > 0, "Recycled consumption should be greater than 0");
     
-    System.out.println(String.format("KG-based - Year 3 Policy recycled consumption: %.2f %s", 
-                                     recycledConsumption, policyYear3.getRecycleConsumption().getUnits()));
 
     // Check equipment (population) at year 5 - should be the same for both scenarios
     double bauEquipmentYear5 = bauYear5.getPopulation().getValue().doubleValue();
@@ -492,9 +466,5 @@ public class KigaliSimFacadeTest {
         String.format("Equipment population at year 5 should be the same for both scenarios - BAU: %.2f, Policy: %.2f", 
                       bauEquipmentYear5, policyEquipmentYear5));
     
-    System.out.println(String.format("KG-based - Year 5 BAU equipment: %.2f %s", 
-                                     bauEquipmentYear5, bauYear5.getPopulation().getUnits()));
-    System.out.println(String.format("KG-based - Year 5 Policy equipment: %.2f %s", 
-                                     policyEquipmentYear5, policyYear5.getPopulation().getUnits()));
   }
 }
