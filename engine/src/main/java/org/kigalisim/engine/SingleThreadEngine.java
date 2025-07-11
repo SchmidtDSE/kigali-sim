@@ -57,7 +57,7 @@ public class SingleThreadEngine implements Engine {
     STREAM_NAMES.add("export");
     STREAM_NAMES.add("import");
     STREAM_NAMES.add("manufacture");
-    STREAM_NAMES.add("sales"); // ⚠️ Added for uniform displacement - monitor for side effects
+    STREAM_NAMES.add("sales");
   }
 
   private static final String RECYCLE_RECOVER_STREAM = "sales";
@@ -260,7 +260,6 @@ public class SingleThreadEngine implements Engine {
       BigDecimal totalWithRecharge = valueInKg.getValue().add(rechargeVolume.getValue());
       valueToSet = new EngineNumber(totalWithRecharge, "kg");
       
-      
       // Set implicit recharge to indicate we've added recharge automatically
       streamKeeper.setStream(keyEffective, "implicitRecharge", rechargeVolume);
     } else if (isSales) {
@@ -365,7 +364,6 @@ public class SingleThreadEngine implements Engine {
   public EngineNumber getStream(String name, Optional<UseKey> useKey, Optional<String> conversion) {
     UseKey effectiveKey = useKey.orElse(scope);
     EngineNumber value = streamKeeper.getStream(effectiveKey, name);
-
     return conversion.map(conv -> unitConverter.convert(value, conv)).orElse(value);
   }
 
