@@ -1,0 +1,38 @@
+start default
+
+  define application "TestApp"
+
+    uses substance "HFC-134a"
+      enable import
+      initial charge with 1.0 kg / unit for import
+      recharge 20% each year with 0.2 kg / unit
+      set priorEquipment to 1000 units during year beginning
+      set import to 100 units / year during year beginning
+      equals 1430 tCO2e / kg
+    end substance
+
+  end application
+
+end default
+
+
+start policy "MultipleRecyclesPolicy"
+
+  modify application "TestApp"
+    
+    modify substance "HFC-134a"
+      recover 30 % with 80 % reuse during years 1 to onwards
+      recover 20 % with 90 % reuse during years 1 to onwards
+    end substance
+
+  end application
+
+end policy
+
+
+start simulations
+
+  simulate "BAU" from years 1 to 3
+  simulate "Multiple Recycles" using "MultipleRecyclesPolicy" from years 1 to 3
+
+end simulations

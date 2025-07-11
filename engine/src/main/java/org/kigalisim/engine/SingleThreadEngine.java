@@ -57,7 +57,7 @@ public class SingleThreadEngine implements Engine {
     STREAM_NAMES.add("export");
     STREAM_NAMES.add("import");
     STREAM_NAMES.add("manufacture");
-    STREAM_NAMES.add("sales");
+    STREAM_NAMES.add("sales"); // ⚠️ Added for uniform displacement - monitor for side effects
   }
 
   private static final String RECYCLE_RECOVER_STREAM = "sales";
@@ -260,12 +260,6 @@ public class SingleThreadEngine implements Engine {
       BigDecimal totalWithRecharge = valueInKg.getValue().add(rechargeVolume.getValue());
       valueToSet = new EngineNumber(totalWithRecharge, "kg");
       
-      System.out.println("[DEBUG] setStreamFor - Year: " + currentYear + 
-                         ", Stream: " + name + 
-                         ", Units value: " + value.getValue() + " " + value.getUnits() +
-                         ", Converted to kg: " + valueInKg.getValue() + 
-                         ", Recharge: " + rechargeVolume.getValue() + 
-                         ", Total with recharge: " + totalWithRecharge);
       
       // Set implicit recharge to indicate we've added recharge automatically
       streamKeeper.setStream(keyEffective, "implicitRecharge", rechargeVolume);
@@ -958,6 +952,18 @@ public class SingleThreadEngine implements Engine {
       return;
     }
 
+    // Check if this is a stream-based displacement (moved to top to avoid duplication)
+    boolean isStream = STREAM_NAMES.contains(displaceTarget);
+    
+    // Automatic recycling addition: if recovery creates recycled material from sales stream,
+    // always add it back to sales first before applying targeted displacement
+    boolean displacementAutomatic = isStream && RECYCLE_RECOVER_STREAM.equals(stream);
+    if (displacementAutomatic) {
+      // Add recycled material back to sales to maintain total material balance
+      EngineNumber recycledAddition = new EngineNumber(changeAmount, "kg");
+      changeStreamWithoutReportingUnits(RECYCLE_RECOVER_STREAM, recycledAddition, null, null);
+    }
+
     EngineNumber displaceChange;
 
     if (amount.hasEquipmentUnits()) {
@@ -968,7 +974,6 @@ public class SingleThreadEngine implements Engine {
       EngineNumber volumeChangeFlip = new EngineNumber(changeAmount.negate(), "kg");
       EngineNumber unitsChanged = currentUnitConverter.convert(volumeChangeFlip, "units");
 
-      boolean isStream = STREAM_NAMES.contains(displaceTarget);
       if (isStream) {
         // Same substance, same stream - use volume displacement
         displaceChange = new EngineNumber(changeAmount.negate(), "kg");
@@ -995,7 +1000,6 @@ public class SingleThreadEngine implements Engine {
     } else {
       // For volume units, use volume-based displacement as before
       displaceChange = new EngineNumber(changeAmount.negate(), "kg");
-      boolean isStream = STREAM_NAMES.contains(displaceTarget);
 
       if (isStream) {
         changeStreamWithoutReportingUnits(displaceTarget, displaceChange, null, null);

@@ -94,10 +94,6 @@ public class PopulationChangeRecalcStrategy implements RecalcStrategy {
     // Always subtract recharge to get the net volume available for new equipment
     BigDecimal availableForNewUnitsKg = salesKg.subtract(rechargeKg);
 
-    System.out.println("[DEBUG] PopulationChangeRecalc - Year: " + target.getYear() + 
-                       ", Sales: " + salesKg + " kg" +
-                       ", Recharge: " + rechargeKg + " kg" +
-                       ", Available for new: " + availableForNewUnitsKg + " kg");
 
     // Convert to unit delta
     EngineNumber initialChargeRaw = target.getInitialCharge("sales");
@@ -116,9 +112,6 @@ public class PopulationChangeRecalcStrategy implements RecalcStrategy {
     BigDecimal newUnitsAllowed = newUnitsNegative ? BigDecimal.ZERO : newUnits;
     EngineNumber newUnitsEffective = new EngineNumber(newUnitsAllowed, "units");
 
-    System.out.println("[DEBUG] PopulationChangeRecalc - Prior population: " + priorPopulationUnits + " units" +
-                       ", Delta units: " + deltaUnits + 
-                       ", New population: " + newUnitsAllowed + " units");
 
     // Save
     target.setStreamFor("equipment", newUnitsEffective, Optional.empty(), Optional.of(scopeEffective), false, Optional.empty());

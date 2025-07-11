@@ -127,7 +127,6 @@ public class StreamKeeper {
    * @param value The value to set
    */
   public void setStream(UseKey useKey, String name, EngineNumber value) {
-    System.out.println("[DEBUG] StreamKeeper.setStream - " + name + " = " + value.getValue() + " " + value.getUnits());
     String key = getKey(useKey);
     ensureSubstanceOrThrow(key, "setStream");
     ensureStreamKnown(name);
