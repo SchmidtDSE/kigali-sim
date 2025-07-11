@@ -51,8 +51,6 @@ public class PopulationChangeRecalcStrategy implements RecalcStrategy {
     boolean useExplicitRechargeEffective = useExplicitRecharge.orElse(true);
     String application = scopeEffective.getApplication();
     String substance = scopeEffective.getSubstance();
-    
-    
 
     if (application == null || substance == null) {
       ExceptionsGenerator.raiseNoAppOrSubstance("recalculating population change", "");

@@ -89,8 +89,8 @@ public class RetireRecalcStrategy implements RecalcStrategy {
     PopulationChangeRecalcStrategy populationStrategy =
         new PopulationChangeRecalcStrategy(Optional.empty(), Optional.empty());
     populationStrategy.execute(target, kit);
-    SalesRecalcStrategy salesStrategy = new SalesRecalcStrategy(Optional.empty());
-    salesStrategy.execute(target, kit);
+    // Note: SalesRecalcStrategy removed - retirement should not recalculate sales
+    // Sales were already calculated correctly before retirement with proper population context
     ConsumptionRecalcStrategy consumptionStrategy = new ConsumptionRecalcStrategy(Optional.empty());
     consumptionStrategy.execute(target, kit);
   }
