@@ -39,6 +39,7 @@
   </head>
 
   <body>
+    <input type="hidden" id="app-version" value="EPOCH" />
     <a href="#kigali-sim-app" class="skip-link">Skip to main content</a>
     <header>
       <div class="beta-warning">
@@ -110,6 +111,15 @@
           <div class="dialog-buttons bold-buttons">
             <a href="#" class="primary">Apply</a>
             <a href="#" class="secondary">Cancel</a>
+          </div>
+        </dialog>
+
+        <dialog id="update-notice-dialog">
+          <h2>Update Available</h2>
+          <p>A new version of Kigali Sim is available. You can reload now to use the latest version, or continue with the current version. The updated version will be automatically loaded on your next visit.</p>
+          <div class="dialog-buttons bold-buttons">
+            <a href="#" class="reload-button primary">Update Now</a>
+            <a href="#" class="cancel-button destructive">Update Later</a>
           </div>
         </dialog>
       </div>
@@ -1619,6 +1629,7 @@
           "results": "./js/results.js?v=EPOCH",
           "ui_editor": "./js/ui_editor.js?v=EPOCH",
           "ui_translator": "./js/ui_translator.js?v=EPOCH",
+          "updates": "./js/updates.js?v=EPOCH",
           "user_config": "./js/user_config.js?v=EPOCH"
         }
       }

@@ -9,6 +9,7 @@ import {ReportDataWrapper} from "report_data";
 import {ResultsPresenter} from "results";
 import {UiEditorPresenter} from "ui_editor";
 import {UiTranslatorCompiler} from "ui_translator";
+import {UpdateUtil} from "updates";
 import {WasmBackend, WasmLayer, BackendResult} from "wasm_backend";
 
 /**
@@ -193,6 +194,10 @@ class MainPresenter {
 
     self._onCodeChange();
     self._setupFileButtons();
+
+    // Initialize update utility and check for updates (fails silently if offline)
+    self._updateUtil = new UpdateUtil();
+    self._checkForUpdates();
   }
 
   /**
@@ -481,6 +486,27 @@ class MainPresenter {
     }
 
     self._onBuild(true, false, false);
+  }
+
+  /**
+   * Checks for application updates and shows dialog if available.
+   *
+   * This method fails silently on all errors to support offline usage.
+   * Only checks for updates in WASM builds, not during engine development.
+   *
+   * @private
+   */
+  async _checkForUpdates() {
+    const self = this;
+    try {
+      const updateAvailable = await self._updateUtil.checkForUpdates();
+      if (updateAvailable) {
+        await self._updateUtil.showUpdateDialog();
+      }
+    } catch (error) {
+      // Fail silently - likely due to offline
+      console.debug("Update check did not respond, possibly offline:", error);
+    }
   }
 
   /**

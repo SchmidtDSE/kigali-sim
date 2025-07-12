@@ -37,7 +37,9 @@
                 "test_ui_translator": "./test_ui_translator.js?v=EPOCH",
                 "test_ui_translator_reverse": "./test_ui_translator_reverse.js?v=EPOCH",
                 "test_main": "./test_main.js?v=EPOCH",
+                "test_update": "./test_update.js?v=EPOCH",
                 "test_wasm_backend": "./test_wasm_backend.js?v=EPOCH",
+                "updates": "../js/updates.js?v=EPOCH",
                 "main": "../js/main.js?v=EPOCH"
             }
         }
@@ -55,6 +57,7 @@
         import {buildUiTranslatorTests} from "test_ui_translator";
         import {buildUiTranslatorReverseTests} from "test_ui_translator_reverse";
         import {buildMainTests} from "test_main";
+        import {buildUpdateTests} from "test_update";
         import {buildWasmBackendTests} from "test_wasm_backend";
 
         buildIntegrationTests();
@@ -64,6 +67,7 @@
         buildUiTranslatorTests();
         buildUiTranslatorReverseTests();
         buildMainTests();
+        buildUpdateTests();
         buildWasmBackendTests();
     </script>
 </body>
