@@ -52,29 +52,35 @@ public class EolRecyclingRecalcStrategy extends AbstractRecyclingRecalcStrategy 
     StreamKeeper streamKeeper = kit.getStreamKeeper();
 
     try {
-      // Get current prior population (available for retirement)
-      EngineNumber priorPopulationRaw = streamKeeper.getStream(scope, "priorEquipment");
-      if (priorPopulationRaw == null) {
-        return new EngineNumber(BigDecimal.ZERO, "kg");
-      }
+      // Get prior equipment population (similar to recharge pattern)
+      EngineNumber priorPopulationRaw = target.getStream("priorEquipment", Optional.of(scope), Optional.empty());
       EngineNumber priorPopulation = unitConverter.convert(priorPopulationRaw, "units");
-
-      // Get retirement rate
-      EngineNumber retirementRateRaw = streamKeeper.getRetirementRate(scope);
-
-      // Calculate retiring units using population context
+      
+      // Set population context for retirement rate calculation
       stateGetter.setPopulation(priorPopulation);
+      
+      // Get retirement rate and calculate retiring units
+      EngineNumber retirementRateRaw = streamKeeper.getRetirementRate(scope);
       EngineNumber retiringUnits = unitConverter.convert(retirementRateRaw, "units");
+      
+      // Clear population context
       stateGetter.clearPopulation();
-
-      // Convert retiring units to volume using initial charge
-      EngineNumber initialChargeRaw = target.getRawInitialChargeFor(scope, "import");
-      EngineNumber initialCharge = unitConverter.convert(initialChargeRaw, "kg / unit");
-
-      // Calculate total volume from retiring equipment
-      BigDecimal retiringVolume = retiringUnits.getValue().multiply(initialCharge.getValue());
-
-      return new EngineNumber(retiringVolume, "kg");
+      
+      // Set retiring units as population for substance volume calculation
+      stateGetter.setPopulation(retiringUnits);
+      
+      // Get initial charge to calculate substance volume per unit
+      EngineNumber initialChargeRaw = target.getInitialCharge("sales");
+      EngineNumber substanceVolumePerUnit = unitConverter.convert(initialChargeRaw, "kg");
+      
+      // Clear population context
+      stateGetter.clearPopulation();
+      
+      
+      // The retiring equipment volume is calculated similar to recharge recycling:
+      // recharge: rechargePopulation × rechargeIntensity
+      // EOL: retiringUnits × substanceVolumePerUnit (which is total substance in retiring equipment)
+      return substanceVolumePerUnit;
     } catch (Exception e) {
       // If any error occurs in volume calculation, return 0 to avoid breaking the flow
       return new EngineNumber(BigDecimal.ZERO, "kg");
