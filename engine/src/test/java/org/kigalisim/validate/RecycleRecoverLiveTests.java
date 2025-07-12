@@ -11,8 +11,6 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -54,7 +52,7 @@ public class RecycleRecoverLiveTests {
     // Check year 2 - recycling active
     EngineResult recordYear2 = LiveTestsUtil.getResult(resultsList.stream(), 2, "test", "test");
     assertNotNull(recordYear2, "Should have result for test/test in year 2");
-    
+
     // With recycling, virgin material should be reduced
     double expectedTotalConsumption = 437.5; // Reduced due to recycling displacing virgin material
     assertEquals(expectedTotalConsumption, recordYear2.getGhgConsumption().getValue().doubleValue(), 0.0001,
@@ -98,7 +96,7 @@ public class RecycleRecoverLiveTests {
     // Check year 2 - recycling active
     EngineResult recordYear2 = LiveTestsUtil.getResult(resultsList.stream(), 2, "test", "test");
     assertNotNull(recordYear2, "Should have result for test/test in year 2");
-    
+
     // With recycling, virgin material should be reduced
     double expectedTotalConsumption = 499.875; // Reduced due to recycling displacing virgin material
     assertEquals(expectedTotalConsumption, recordYear2.getGhgConsumption().getValue().doubleValue(), 0.0001,
@@ -142,7 +140,7 @@ public class RecycleRecoverLiveTests {
     // Check year 2 - recycling active
     EngineResult recordYear2 = LiveTestsUtil.getResult(resultsList.stream(), 2, "test", "test");
     assertNotNull(recordYear2, "Should have result for test/test in year 2");
-    
+
     // With recycling, virgin material should be reduced
     double expectedTotalConsumption = 490.0; // Reduced due to recycling displacing virgin material
     assertEquals(expectedTotalConsumption, recordYear2.getGhgConsumption().getValue().doubleValue(), 0.0001,
@@ -186,16 +184,16 @@ public class RecycleRecoverLiveTests {
     double manufacture = recordSubA.getManufacture().getValue().doubleValue();
     double importValue = recordSubA.getImport().getValue().doubleValue();
     double recycled = recordSubA.getRecycleConsumption().getValue().doubleValue();
-    
+
     double totalSales = manufacture + importValue;
-    
+
     // The displacement should reduce virgin sales proportionally
     // Manufacture: 100 * (130/150) = 86.67 kg
-    // Import: 50 * (130/150) = 43.33 kg  
+    // Import: 50 * (130/150) = 43.33 kg
     // Total: 130 kg virgin + recycled amount
     assertTrue(totalSales > 0, "Virgin sales should be positive");
     assertTrue(recycled > 0, "Recycled content should be positive");
-    
+
     // Check that manufacture and import are proportionally reduced
     double manufactureRatio = manufacture / (manufacture + importValue);
     double expectedManufactureRatio = 100.0 / 150.0; // Original ratio
@@ -216,7 +214,7 @@ public class RecycleRecoverLiveTests {
     // Run both scenarios
     Stream<EngineResult> bauResults = KigaliSimFacade.runScenario(program, "BAU", progress -> {});
     List<EngineResult> bauResultsList = bauResults.collect(Collectors.toList());
-    
+
     Stream<EngineResult> policyResults = KigaliSimFacade.runScenario(program, "Multiple Recycles", progress -> {});
     List<EngineResult> policyResultsList = policyResults.collect(Collectors.toList());
 
@@ -235,10 +233,10 @@ public class RecycleRecoverLiveTests {
     double policyRecycled = policyYear1.getRecycleConsumption().getValue().doubleValue();
 
     // With additive recycling, policy should have lower imports and higher recycled content
-    assertTrue(policyImports < bauImports, 
-        String.format("Policy imports (%.2f) should be less than BAU imports (%.2f)", 
+    assertTrue(policyImports < bauImports,
+        String.format("Policy imports (%.2f) should be less than BAU imports (%.2f)",
                       policyImports, bauImports));
-    assertTrue(policyRecycled > 0, 
+    assertTrue(policyRecycled > 0,
         String.format("Policy should have recycled content (%.2f)", policyRecycled));
   }
 
@@ -266,7 +264,7 @@ public class RecycleRecoverLiveTests {
     // Check that sub_b sales were displaced (reduced by 30 kg)
     // Original: 200 kg manufacture + 100 kg import = 300 kg sales
     // After 30 kg displacement: 300 - 30 = 270 kg total
-    double totalSales = recordSubB.getManufacture().getValue().doubleValue() 
+    double totalSales = recordSubB.getManufacture().getValue().doubleValue()
                        + recordSubB.getImport().getValue().doubleValue();
     assertEquals(270.0, totalSales, 0.0001,
         "Sub_b total sales should be reduced by 30 kg due to displacement from sub_a recovery");
@@ -298,19 +296,19 @@ public class RecycleRecoverLiveTests {
     double importSales = recordSubA.getImport().getValue().doubleValue();
     double manufactureSales = recordSubA.getManufacture().getValue().doubleValue();
     double recycledContent = recordSubA.getRecycleConsumption().getValue().doubleValue();
-    
+
     // The import should be reduced from original 50 kg
     assertTrue(importSales < 50.0,
         "Import should be reduced due to displacement");
-    
+
     // The manufacture should also be affected due to the uniform displacement logic
     assertTrue(manufactureSales < 100.0,
         "Manufacture should be reduced due to uniform displacement logic");
-    
+
     // Check recycled content is positive
     assertTrue(recycledContent > 0,
         "Recycled content should be positive");
-    
+
     // Total should be less than original 150 kg
     double totalSales = importSales + manufactureSales;
     assertTrue(totalSales < 150.0,

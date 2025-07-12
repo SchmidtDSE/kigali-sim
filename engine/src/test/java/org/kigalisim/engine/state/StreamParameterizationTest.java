@@ -347,7 +347,7 @@ public class StreamParameterizationTest {
     // Original value should still be there
     EngineNumber retrieved = parameterization.getLastSpecifiedValue("sales");
     assertEquals("kg", retrieved.getUnits(), "Units should still be kg, not %");
-    assertEquals(new BigDecimal("100"), retrieved.getValue(), 
+    assertEquals(new BigDecimal("100"), retrieved.getValue(),
                  "Value should be unchanged");
   }
 
@@ -367,12 +367,12 @@ public class StreamParameterizationTest {
   @Test
   public void testSalesIntentFreshlySetGetterAndSetter() {
     StreamParameterization parameterization = new StreamParameterization();
-    
+
     // Set to true
     parameterization.setSalesIntentFreshlySet(true);
     assertEquals(true, parameterization.isSalesIntentFreshlySet(),
                  "Should return true after setting to true");
-    
+
     // Set back to false
     parameterization.setSalesIntentFreshlySet(false);
     assertEquals(false, parameterization.isSalesIntentFreshlySet(),
@@ -385,29 +385,29 @@ public class StreamParameterizationTest {
   @Test
   public void testSetLastSpecifiedValueSetsSalesIntentFlag() {
     StreamParameterization parameterization = new StreamParameterization();
-    
+
     // Initially false
     assertEquals(false, parameterization.isSalesIntentFreshlySet(),
                  "Flag should start false");
-    
+
     // Set sales value - should set flag
     EngineNumber salesValue = new EngineNumber(new BigDecimal("100"), "units");
     parameterization.setLastSpecifiedValue("sales", salesValue);
     assertEquals(true, parameterization.isSalesIntentFreshlySet(),
                  "Flag should be true after setting sales value");
-    
+
     // Reset flag
     parameterization.setSalesIntentFreshlySet(false);
-    
+
     // Set import value - should set flag
     EngineNumber importValue = new EngineNumber(new BigDecimal("50"), "units");
     parameterization.setLastSpecifiedValue("import", importValue);
     assertEquals(true, parameterization.isSalesIntentFreshlySet(),
                  "Flag should be true after setting import value");
-    
+
     // Reset flag
     parameterization.setSalesIntentFreshlySet(false);
-    
+
     // Set manufacture value - should set flag
     EngineNumber manufactureValue = new EngineNumber(new BigDecimal("75"), "kg");
     parameterization.setLastSpecifiedValue("manufacture", manufactureValue);
@@ -421,11 +421,11 @@ public class StreamParameterizationTest {
   @Test
   public void testSetLastSpecifiedValueDoesNotSetFlagForNonSalesStreams() {
     StreamParameterization parameterization = new StreamParameterization();
-    
+
     // Set value for non-sales stream
     EngineNumber otherValue = new EngineNumber(new BigDecimal("200"), "kg");
     parameterization.setLastSpecifiedValue("consumption", otherValue);
-    
+
     // Flag should remain false
     assertEquals(false, parameterization.isSalesIntentFreshlySet(),
                  "Flag should remain false for non-sales streams");
@@ -437,11 +437,11 @@ public class StreamParameterizationTest {
   @Test
   public void testPercentageValuesDontSetSalesIntentFlag() {
     StreamParameterization parameterization = new StreamParameterization();
-    
+
     // Try to set percentage value for sales stream
     EngineNumber percentValue = new EngineNumber(new BigDecimal("50"), "%");
     parameterization.setLastSpecifiedValue("sales", percentValue);
-    
+
     // Flag should remain false since percentage values are ignored
     assertEquals(false, parameterization.isSalesIntentFreshlySet(),
                  "Flag should remain false when percentage values are ignored");

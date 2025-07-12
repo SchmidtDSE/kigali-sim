@@ -624,7 +624,7 @@ public class SingleThreadEngineTest {
 
     // Enable manufacture stream
     engine.enable("manufacture", Optional.empty());
-    
+
     // Test passes if no exception is thrown
     assertTrue(true, "Enable method should execute without error for manufacture stream");
   }
@@ -643,7 +643,7 @@ public class SingleThreadEngineTest {
 
     // Enable import stream
     engine.enable("import", Optional.empty());
-    
+
     // Test passes if no exception is thrown
     assertTrue(true, "Enable method should execute without error for import stream");
   }
@@ -662,7 +662,7 @@ public class SingleThreadEngineTest {
 
     // Enable export stream
     engine.enable("export", Optional.empty());
-    
+
     // Test passes if no exception is thrown
     assertTrue(true, "Enable method should execute without error for export stream");
   }
@@ -682,7 +682,7 @@ public class SingleThreadEngineTest {
     // Enable manufacture stream with year matcher
     YearMatcher yearMatcher = YearMatcher.unbounded();
     engine.enable("manufacture", Optional.of(yearMatcher));
-    
+
     // Test passes if no exception is thrown
     assertTrue(true, "Enable method should execute without error with year matcher");
   }
@@ -713,7 +713,7 @@ public class SingleThreadEngineTest {
 
     // Try to enable invalid stream - should not throw error
     engine.enable("invalidStream", Optional.empty());
-    
+
     // Test passes if no exception is thrown
     assertTrue(true, "Enable method should ignore invalid stream names without error");
   }

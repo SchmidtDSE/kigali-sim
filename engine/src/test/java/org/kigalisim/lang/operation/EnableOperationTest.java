@@ -16,8 +16,6 @@ import org.junit.jupiter.api.Test;
 import org.kigalisim.engine.Engine;
 import org.kigalisim.engine.SingleThreadEngine;
 import org.kigalisim.engine.number.EngineNumber;
-import org.kigalisim.engine.state.StreamKeeper;
-import org.kigalisim.engine.state.UseKey;
 import org.kigalisim.lang.machine.PushDownMachine;
 import org.kigalisim.lang.machine.SingleThreadPushDownMachine;
 import org.kigalisim.lang.time.CalculatedTimePointFuture;
@@ -72,7 +70,7 @@ public class EnableOperationTest {
   public void testExecuteManufactureNoDuring() {
     EnableOperation operation = new EnableOperation("manufacture");
     operation.execute(machine);
-    
+
     // The stream should be enabled now (though we can't directly test this without access to StreamKeeper)
     // We can verify by testing that operations requiring enabled streams work
     assertTrue(true, "EnableOperation should execute without error");
@@ -85,7 +83,7 @@ public class EnableOperationTest {
   public void testExecuteImportNoDuring() {
     EnableOperation operation = new EnableOperation("import");
     operation.execute(machine);
-    
+
     // The stream should be enabled now
     assertTrue(true, "EnableOperation should execute without error");
   }
@@ -97,7 +95,7 @@ public class EnableOperationTest {
   public void testExecuteExportNoDuring() {
     EnableOperation operation = new EnableOperation("export");
     operation.execute(machine);
-    
+
     // The stream should be enabled now
     assertTrue(true, "EnableOperation should execute without error");
   }
@@ -115,7 +113,7 @@ public class EnableOperationTest {
 
     EnableOperation operation = new EnableOperation("manufacture", during);
     operation.execute(machine);
-    
+
     // The stream should be enabled now
     assertTrue(true, "EnableOperation should execute without error with during");
   }
@@ -133,7 +131,7 @@ public class EnableOperationTest {
 
     EnableOperation operation = new EnableOperation("manufacture", during);
     operation.execute(machine);
-    
+
     // The stream should not be enabled for the current year
     assertTrue(true, "EnableOperation should execute without error even when during doesn't apply");
   }
@@ -144,7 +142,7 @@ public class EnableOperationTest {
   @Test
   public void testEnableValidStreams() {
     String[] validStreams = {"manufacture", "import", "export"};
-    
+
     for (String stream : validStreams) {
       EnableOperation operation = new EnableOperation(stream);
       operation.execute(machine);

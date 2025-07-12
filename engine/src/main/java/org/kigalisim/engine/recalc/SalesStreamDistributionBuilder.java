@@ -138,23 +138,23 @@ public class SalesStreamDistributionBuilder {
    */
   public SalesStreamDistribution build() {
     checkReadyToConstruct();
-    
+
     BigDecimal manufactureSalesKg = manufactureSales.get().getValue();
     BigDecimal importSalesKg = importSales.get().getValue();
     BigDecimal exportSalesKg = exportSales.get().getValue();
-    
+
     boolean includeExportsFlag = includeExports.get();
-    
+
     if (!includeExportsFlag) {
       // Legacy behavior: only import and manufacture, export is always 0%
       BigDecimal totalSalesKg = manufactureSalesKg.add(importSalesKg);
-      
+
       if (totalSalesKg.compareTo(BigDecimal.ZERO) > 0) {
         BigDecimal percentManufacture = manufactureSalesKg.divide(totalSalesKg, MathContext.DECIMAL128);
         BigDecimal percentImport = importSalesKg.divide(totalSalesKg, MathContext.DECIMAL128);
         return new SalesStreamDistribution(percentManufacture, percentImport, BigDecimal.ZERO);
       }
-      
+
       // When both are zero, use enabled status to determine allocation
       if (manufactureEnabled.get() && !importEnabled.get()) {
         return new SalesStreamDistribution(BigDecimal.ONE, BigDecimal.ZERO, BigDecimal.ZERO);
@@ -177,14 +177,14 @@ public class SalesStreamDistributionBuilder {
     } else {
       // Include exports in distribution
       BigDecimal totalSalesKg = manufactureSalesKg.add(importSalesKg).add(exportSalesKg);
-      
+
       if (totalSalesKg.compareTo(BigDecimal.ZERO) > 0) {
         BigDecimal percentManufacture = manufactureSalesKg.divide(totalSalesKg, MathContext.DECIMAL128);
         BigDecimal percentImport = importSalesKg.divide(totalSalesKg, MathContext.DECIMAL128);
         BigDecimal percentExport = exportSalesKg.divide(totalSalesKg, MathContext.DECIMAL128);
         return new SalesStreamDistribution(percentManufacture, percentImport, percentExport);
       }
-      
+
       // When all are zero, use enabled status to determine allocation
       int enabledCount = 0;
       if (manufactureEnabled.get()) {
@@ -196,7 +196,7 @@ public class SalesStreamDistributionBuilder {
       if (exportEnabled.get()) {
         enabledCount++;
       }
-      
+
       if (enabledCount == 0) {
         // None enabled - this is an error condition
         throw new IllegalStateException(

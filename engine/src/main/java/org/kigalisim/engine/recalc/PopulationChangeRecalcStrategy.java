@@ -38,7 +38,7 @@ public class PopulationChangeRecalcStrategy implements RecalcStrategy {
   public PopulationChangeRecalcStrategy(Optional<UseKey> scope, Optional<Boolean> useExplicitRecharge) {
     this.scope = scope;
     this.useExplicitRecharge = useExplicitRecharge;
-    
+
   }
 
   @Override

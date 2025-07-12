@@ -100,7 +100,7 @@ public class KigaliSimFacade {
    * @param progressCallback Callback for reporting progress, called after each trial completes.
    * @return Stream of EngineResult objects containing the simulation results
    */
-  public static Stream<EngineResult> runScenario(ParsedProgram program, String scenarioName, 
+  public static Stream<EngineResult> runScenario(ParsedProgram program, String scenarioName,
                                                   ProgressReportCallback progressCallback) {
     // Get the scenario from the program
     if (!program.getScenarios().contains(scenarioName)) {
@@ -112,7 +112,7 @@ public class KigaliSimFacade {
 
     // Calculate total trials across all scenarios for progress tracking
     int totalTrials = getNumberTotalTrials(program);
-    
+
     // Calculate completed trials before this scenario
     int completedTrialsBeforeScenario = 0;
     for (String otherScenarioName : program.getScenarios()) {
@@ -127,7 +127,7 @@ public class KigaliSimFacade {
     Stream<EngineResult> results = Stream.empty();
     for (int i = 0; i < numTrials; i++) {
       results = Stream.concat(results, runTrial(program, scenario, i + 1));
-      
+
       // Report progress after each trial
       if (progressCallback != null) {
         int completedTrials = completedTrialsBeforeScenario + i + 1;

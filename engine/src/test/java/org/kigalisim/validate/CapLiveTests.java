@@ -181,7 +181,7 @@ public class CapLiveTests {
     List<EngineResult> resultsList = results.collect(Collectors.toList());
 
     // Check HFC-134a new equipment is zero in 2030
-    EngineResult recordHfc2030 = LiveTestsUtil.getResult(resultsList.stream(), 2030, 
+    EngineResult recordHfc2030 = LiveTestsUtil.getResult(resultsList.stream(), 2030,
         "Commercial Refrigeration", "HFC-134a");
     assertNotNull(recordHfc2030, "Should have result for Commercial Refrigeration/HFC-134a in year 2030");
 
@@ -245,7 +245,7 @@ public class CapLiveTests {
     EngineResult recordR404A2035 = LiveTestsUtil.getResult(resultsList.stream(), 2035,
         "Commercial Refrigeration", "R-404A");
     assertNotNull(recordR404A2035, "Should have result for Commercial Refrigeration/R-404A in year 2035");
-    
+
     // Should have new equipment due to displacement
     double newEquipmentR404A = recordR404A2035.getPopulationNew().getValue().doubleValue();
     assertTrue(
@@ -291,7 +291,7 @@ public class CapLiveTests {
     EngineResult recordR404A2035 = LiveTestsUtil.getResult(resultsList.stream(), 2035,
         "Commercial Refrigeration", "R-404A");
     assertNotNull(recordR404A2035, "Should have result for Commercial Refrigeration/R-404A in year 2035");
-    
+
     // Should have new equipment due to displacement
     double newEquipmentR404A = recordR404A2035.getPopulationNew().getValue().doubleValue();
     assertTrue(
@@ -302,11 +302,11 @@ public class CapLiveTests {
 
   /**
    * Test cap scenario without change statements to isolate the issue.
-   * 
+   *
    * <p>This test caps import to 0 units. Since there are no change statements and no retire
    * statement, we expect 0 new equipment. The cap should allow enough import to satisfy
    * recharge needs (10% of existing equipment at 0.1 kg/unit) but no more.</p>
-   * 
+   *
    * <p>Expected: PopulationNew = 0.0 (no new equipment when import is capped to 0 units)
    * Actual: PopulationNew = -267.3 (negative equipment, indicating a bug)</p>
    */

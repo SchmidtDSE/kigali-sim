@@ -537,7 +537,7 @@ public class StreamKeeperTest {
     // Original value should still be there
     EngineNumber retrieved = keeper.getLastSpecifiedValue(testScope, "sales");
     assertEquals("kg", retrieved.getUnits(), "Units should still be kg, not %");
-    assertEquals(new BigDecimal("100"), retrieved.getValue(), 
+    assertEquals(new BigDecimal("100"), retrieved.getValue(),
                  "Value should be unchanged");
   }
 
@@ -549,9 +549,9 @@ public class StreamKeeperTest {
   public void testSetLastSpecifiedValueWithUnknownSubstance() {
     StreamKeeper keeper = createMockKeeper();
     Scope unknownScope = new Scope("test", "unknown", "substance");
-    
+
     EngineNumber testValue = new EngineNumber(new BigDecimal("100"), "kg");
-    
+
     assertThrows(IllegalStateException.class, () -> {
       keeper.setLastSpecifiedValue(unknownScope, "sales", testValue);
     }, "Should throw exception for unknown substance");
@@ -573,7 +573,7 @@ public class StreamKeeperTest {
     // Set a sales value - should set the flag
     EngineNumber salesValue = new EngineNumber(new BigDecimal("100"), "units");
     keeper.setLastSpecifiedValue(testScope, "sales", salesValue);
-    
+
     assertTrue(keeper.isSalesIntentFreshlySet(testScope),
                "Sales intent flag should be true after setting sales value");
   }
@@ -590,13 +590,13 @@ public class StreamKeeperTest {
     // Set a value to trigger the flag
     EngineNumber importValue = new EngineNumber(new BigDecimal("50"), "units");
     keeper.setLastSpecifiedValue(testScope, "import", importValue);
-    
+
     assertTrue(keeper.isSalesIntentFreshlySet(testScope),
                "Flag should be true after setting import value");
 
     // Reset the flag
     keeper.resetSalesIntentFlag(testScope);
-    
+
     assertFalse(keeper.isSalesIntentFreshlySet(testScope),
                 "Flag should be false after reset");
   }
@@ -609,24 +609,24 @@ public class StreamKeeperTest {
     StreamKeeper keeper = createMockKeeper();
     Scope scope1 = new Scope("test1", "app1", "sub1");
     Scope scope2 = new Scope("test2", "app2", "sub2");
-    
+
     keeper.ensureSubstance(scope1);
     keeper.ensureSubstance(scope2);
 
     // Set value for scope1
     EngineNumber value = new EngineNumber(new BigDecimal("100"), "kg");
     keeper.setLastSpecifiedValue(scope1, "manufacture", value);
-    
+
     // Check flags
     assertTrue(keeper.isSalesIntentFreshlySet(scope1),
                "Scope1 flag should be true");
     assertFalse(keeper.isSalesIntentFreshlySet(scope2),
                 "Scope2 flag should remain false");
-    
+
     // Reset scope1 and set scope2
     keeper.resetSalesIntentFlag(scope1);
     keeper.setLastSpecifiedValue(scope2, "sales", value);
-    
+
     // Check flags again
     assertFalse(keeper.isSalesIntentFreshlySet(scope1),
                 "Scope1 flag should be false after reset");
@@ -641,11 +641,11 @@ public class StreamKeeperTest {
   public void testSalesIntentFlagWithUnknownSubstance() {
     StreamKeeper keeper = createMockKeeper();
     Scope unknownScope = new Scope("test", "unknown", "substance");
-    
+
     assertThrows(IllegalStateException.class, () -> {
       keeper.isSalesIntentFreshlySet(unknownScope);
     }, "Should throw exception for unknown substance when checking flag");
-    
+
     assertThrows(IllegalStateException.class, () -> {
       keeper.resetSalesIntentFlag(unknownScope);
     }, "Should throw exception for unknown substance when resetting flag");
