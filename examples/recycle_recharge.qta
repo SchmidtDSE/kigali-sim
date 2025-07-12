@@ -1,0 +1,37 @@
+start default
+
+  define application "test"
+
+    uses substance "test"
+      enable manufacture
+      enable import
+      initial charge with 2 kg / unit for manufacture
+      set manufacture to 100 mt
+      set import to 50 mt
+      recharge 50% with 1 kg / unit
+      equals 5 tCO2e / mt
+    end substance
+
+  end application
+
+end default
+
+
+start policy "recharge_recycling"
+
+  modify application "test"
+    
+    modify substance "test"
+      recover 25 % with 90 % reuse at recharge displacing import during year 2
+    end substance
+
+  end application
+
+end policy
+
+
+start simulations
+
+  simulate "result" using "recharge_recycling" from years 1 to 3
+
+end simulations

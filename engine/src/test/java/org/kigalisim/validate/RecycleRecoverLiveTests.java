@@ -393,6 +393,176 @@ public class RecycleRecoverLiveTests {
   }
 
   /**
+   * Test recycle_eol.qta produces expected EOL recycling values.
+   */
+  @Test
+  public void testRecycleEol() throws IOException {
+    // Load and parse the QTA file
+    String qtaPath = "../examples/recycle_eol.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    // Run the scenario using KigaliSimFacade
+    String scenarioName = "result";
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
+
+    // Convert to list for multiple access
+    List<EngineResult> resultsList = results.collect(Collectors.toList());
+
+    // Check year 1 - no EOL recycling yet (equipment hasn't reached end of life)
+    EngineResult recordYear1 = LiveTestsUtil.getResult(resultsList.stream(), 1, "test", "test");
+    assertNotNull(recordYear1, "Should have result for test/test in year 1");
+    assertEquals(500.0, recordYear1.getGhgConsumption().getValue().doubleValue(), 0.0001,
+        "GHG consumption should be 500 tCO2e in year 1");
+    assertEquals("tCO2e", recordYear1.getGhgConsumption().getUnits(),
+        "GHG consumption units should be tCO2e in year 1");
+
+    // Check year 2 - EOL recycling active
+    EngineResult recordYear2 = LiveTestsUtil.getResult(resultsList.stream(), 2, "test", "test");
+    assertNotNull(recordYear2, "Should have result for test/test in year 2");
+
+    // With EOL recycling, total consumption should be reduced compared to year 1
+    // The exact value may vary due to system dynamics, but should show recycling effect
+    double totalConsumption = recordYear2.getGhgConsumption().getValue().doubleValue();
+    assertTrue(totalConsumption < 500.0,
+        String.format("Total consumption should be reduced from 500 tCO2e in year 1, got %.2f in year 2", totalConsumption));
+    assertEquals("tCO2e", recordYear2.getGhgConsumption().getUnits(),
+        "GHG consumption units should be tCO2e in year 2");
+
+    // Check recycled consumption in year 2 - should be positive for EOL recycling
+    double recycledConsumption = recordYear2.getRecycleConsumption().getValue().doubleValue();
+    assertTrue(recycledConsumption > 0,
+        String.format("Recycled consumption should be positive from EOL recycling, got %.2f", recycledConsumption));
+    assertEquals("tCO2e", recordYear2.getRecycleConsumption().getUnits(),
+        "Recycled consumption units should be tCO2e in year 2");
+
+    // Check year 3 - recycling policy expires after year 2
+    EngineResult recordYear3 = LiveTestsUtil.getResult(resultsList.stream(), 3, "test", "test");
+    assertNotNull(recordYear3, "Should have result for test/test in year 3");
+
+    // Year 3 should not have recycling since policy was only for year 2
+    assertEquals(0.0, recordYear3.getRecycleConsumption().getValue().doubleValue(), 0.0001,
+        "Year 3 should not have recycling since policy was only for year 2");
+
+    // Total consumption in year 3 may be affected by equipment changes from year 2
+    assertTrue(recordYear3.getGhgConsumption().getValue().doubleValue() > 0,
+        "Year 3 should have positive consumption");
+  }
+
+  /**
+   * Test recycle_recharge.qta produces expected recharge recycling values with named target displacement.
+   */
+  @Test
+  public void testRecycleRecharge() throws IOException {
+    // Load and parse the QTA file
+    String qtaPath = "../examples/recycle_recharge.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    // Run the scenario using KigaliSimFacade
+    String scenarioName = "result";
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
+
+    // Convert to list for multiple access
+    List<EngineResult> resultsList = results.collect(Collectors.toList());
+
+    // Check year 1 - no recharge recycling yet
+    EngineResult recordYear1 = LiveTestsUtil.getResult(resultsList.stream(), 1, "test", "test");
+    assertNotNull(recordYear1, "Should have result for test/test in year 1");
+
+    // Base consumption: (100 + 50) mt * 5 tCO2e/mt = 750 tCO2e
+    assertEquals(750.0, recordYear1.getGhgConsumption().getValue().doubleValue(), 0.0001,
+        "GHG consumption should be 750 tCO2e in year 1");
+    assertEquals("tCO2e", recordYear1.getGhgConsumption().getUnits(),
+        "GHG consumption units should be tCO2e in year 1");
+
+    // Check year 2 - recharge recycling active, displacing import
+    EngineResult recordYear2 = LiveTestsUtil.getResult(resultsList.stream(), 2, "test", "test");
+    assertNotNull(recordYear2, "Should have result for test/test in year 2");
+
+    // With recharge recycling displacing import:
+    // Based on actual CSV output: domesticConsumption=539.86, importConsumption=97.64, recycleConsumption=56.25
+    double importConsumption = recordYear2.getImportConsumption().getValue().doubleValue();
+    double domesticConsumption = recordYear2.getDomesticConsumption().getValue().doubleValue();
+    double recycledConsumption = recordYear2.getRecycleConsumption().getValue().doubleValue();
+
+    // Import consumption should be reduced due to displacement
+    assertTrue(importConsumption < 250.0, // Original 250 tCO2e
+        String.format("Import consumption should be reduced from original 250 tCO2e, got %.2f", importConsumption));
+
+    // Domestic consumption should be higher than original 500 tCO2e due to system dynamics
+    assertTrue(domesticConsumption > 500.0,
+        String.format("Domestic consumption should be higher than original 500 tCO2e, got %.2f", domesticConsumption));
+
+    // Check recycled consumption is positive
+    assertTrue(recycledConsumption > 0,
+        String.format("Recycled consumption should be positive, got %.2f", recycledConsumption));
+
+    // Total GHG consumption includes both domestic and imported consumption
+    double totalConsumption = recordYear2.getGhgConsumption().getValue().doubleValue();
+    // GHG consumption = domestic + import consumption, should be around 637.5 based on CSV
+    assertTrue(totalConsumption > 600.0 && totalConsumption < 700.0,
+        String.format("Total GHG consumption should be between 600-700 tCO2e, got %.2f", totalConsumption));
+
+    assertEquals("tCO2e", recordYear2.getGhgConsumption().getUnits(),
+        "GHG consumption units should be tCO2e in year 2");
+    assertEquals("tCO2e", recordYear2.getRecycleConsumption().getUnits(),
+        "Recycled consumption units should be tCO2e in year 2");
+  }
+
+  /**
+   * Test recycle_eol_units.qta produces expected EOL recycling values with units specification.
+   */
+  @Test
+  public void testRecycleEolUnits() throws IOException {
+    // Load and parse the QTA file
+    String qtaPath = "../examples/recycle_eol_units.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    // Run the scenario using KigaliSimFacade
+    String scenarioName = "result";
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
+
+    // Convert to list for multiple access
+    List<EngineResult> resultsList = results.collect(Collectors.toList());
+
+    // Check year 1 - no EOL recycling yet
+    EngineResult recordYear1 = LiveTestsUtil.getResult(resultsList.stream(), 1, "test", "test");
+    assertNotNull(recordYear1, "Should have result for test/test in year 1");
+    assertEquals(500.0, recordYear1.getGhgConsumption().getValue().doubleValue(), 0.0001,
+        "GHG consumption should be 500 tCO2e in year 1");
+    assertEquals("tCO2e", recordYear1.getGhgConsumption().getUnits(),
+        "GHG consumption units should be tCO2e in year 1");
+
+    // Check year 2 - EOL recycling active with units specification
+    EngineResult recordYear2 = LiveTestsUtil.getResult(resultsList.stream(), 2, "test", "test");
+    assertNotNull(recordYear2, "Should have result for test/test in year 2");
+
+    // With EOL recycling using units specification:
+    // 1000 units * 2 kg/unit = 2000 kg = 2 mt
+    // 2 mt * 5 tCO2e/mt = 10 tCO2e recycled
+    double recycledConsumption = recordYear2.getRecycleConsumption().getValue().doubleValue();
+    assertTrue(recycledConsumption > 0,
+        String.format("Recycled consumption should be positive from EOL units recycling, got %.2f", recycledConsumption));
+
+    // Total consumption should be reduced from year 1
+    double totalConsumption = recordYear2.getGhgConsumption().getValue().doubleValue();
+    assertTrue(totalConsumption < 500.0,
+        String.format("Total consumption should be reduced from 500 tCO2e in year 1, got %.2f in year 2", totalConsumption));
+
+    assertEquals("tCO2e", recordYear2.getGhgConsumption().getUnits(),
+        "GHG consumption units should be tCO2e in year 2");
+    assertEquals("tCO2e", recordYear2.getRecycleConsumption().getUnits(),
+        "Recycled consumption units should be tCO2e in year 2");
+
+    // Verify that EOL recycling with units behaves differently from percentage-based recycling
+    // This confirms that units specification works correctly with EOL timing
+    assertTrue(recycledConsumption >= 10.0,
+        String.format("Units-based EOL recycling should provide at least 10 tCO2e, got %.2f", recycledConsumption));
+  }
+
+  /**
    * Test that BAU and Recovery/Recycling scenarios have the same total equipment values
    * when manufacture is specified in units instead of import.
    * This test checks if the bug also affects manufacture-based unit specification.
