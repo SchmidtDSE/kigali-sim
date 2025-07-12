@@ -81,6 +81,10 @@ public class RetireRecalcStrategy implements RecalcStrategy {
     streamKeeper.setStream(scopeEffective, "priorEquipment", newPrior);
     streamKeeper.setStream(scopeEffective, "equipment", newEquipment);
 
+    // Apply EOL recycling before emissions calculation
+    EolRecyclingRecalcStrategy eolRecycling = new EolRecyclingRecalcStrategy(Optional.of(scopeEffective));
+    eolRecycling.execute(target, kit);
+
     // Update GHG accounting
     EolEmissionsRecalcStrategy eolStrategy = new EolEmissionsRecalcStrategy(Optional.of(scopeEffective));
     eolStrategy.execute(target, kit);

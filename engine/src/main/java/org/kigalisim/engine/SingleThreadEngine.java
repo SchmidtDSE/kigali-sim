@@ -690,18 +690,12 @@ public class SingleThreadEngine implements Engine {
       return;
     }
 
-    // For now, delegate to existing method regardless of stage
-    // TODO: Implement stage-specific logic for EOL vs RECHARGE timing
-    streamKeeper.setRecoveryRate(scope, recoveryWithUnits);
-    streamKeeper.setYieldRate(scope, yieldWithUnits);
+    // Set stage-specific recovery and yield rates
+    streamKeeper.setRecoveryRate(scope, recoveryWithUnits, recoverStage);
+    streamKeeper.setYieldRate(scope, yieldWithUnits, recoverStage);
 
-    RecalcOperation operation = new RecalcOperationBuilder()
-        .setRecalcKit(createRecalcKit())
-        .recalcSales()
-        .thenPropagateToPopulationChange()
-        .thenPropagateToConsumption()
-        .build();
-    operation.execute(this);
+    // No immediate recalc operation needed - recycling will be applied by
+    // stage-specific strategies during RetireRecalcStrategy or PopulationChangeRecalcStrategy
   }
 
   @Override
@@ -711,19 +705,12 @@ public class SingleThreadEngine implements Engine {
       return;
     }
 
-    // For now, delegate to existing method regardless of stage
-    // TODO: Implement stage-specific logic for EOL vs RECHARGE timing
-    streamKeeper.setRecoveryRate(scope, recoveryWithUnits);
-    streamKeeper.setYieldRate(scope, yieldWithUnits);
+    // Set stage-specific recovery and yield rates
+    streamKeeper.setRecoveryRate(scope, recoveryWithUnits, recoverStage);
+    streamKeeper.setYieldRate(scope, yieldWithUnits, recoverStage);
 
-    // Apply the recovery through normal recycle operation
-    RecalcOperation operation = new RecalcOperationBuilder()
-        .setRecalcKit(createRecalcKit())
-        .recalcSales()
-        .thenPropagateToPopulationChange()
-        .thenPropagateToConsumption()
-        .build();
-    operation.execute(this);
+    // No immediate recalc operation needed - recycling will be applied by
+    // stage-specific strategies during RetireRecalcStrategy or PopulationChangeRecalcStrategy
 
     // Handle displacement using the existing displacement logic
     UnitConverter unitConverter = createUnitConverterWithTotal(RECYCLE_RECOVER_STREAM);

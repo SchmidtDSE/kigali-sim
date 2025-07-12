@@ -31,6 +31,10 @@ public class StreamParameterization {
   private EngineNumber rechargeIntensity;
   private EngineNumber recoveryRate;
   private EngineNumber yieldRate;
+  private EngineNumber eolRecoveryRate;
+  private EngineNumber eolYieldRate;
+  private EngineNumber rechargeRecoveryRate;
+  private EngineNumber rechargeYieldRate;
   private EngineNumber retirementRate;
   private EngineNumber displacementRate;
   private final Map<String, EngineNumber> lastSpecifiedValue;
@@ -57,6 +61,10 @@ public class StreamParameterization {
     rechargeIntensity = new EngineNumber(BigDecimal.ZERO, "kg / unit");
     recoveryRate = new EngineNumber(BigDecimal.ZERO, "%");
     yieldRate = new EngineNumber(BigDecimal.ZERO, "%");
+    eolRecoveryRate = new EngineNumber(BigDecimal.ZERO, "%");
+    eolYieldRate = new EngineNumber(BigDecimal.ZERO, "%");
+    rechargeRecoveryRate = new EngineNumber(BigDecimal.ZERO, "%");
+    rechargeYieldRate = new EngineNumber(BigDecimal.ZERO, "%");
     retirementRate = new EngineNumber(BigDecimal.ZERO, "%");
     displacementRate = new EngineNumber(new BigDecimal("100"), "%");
   }
@@ -193,6 +201,78 @@ public class StreamParameterization {
   }
 
   /**
+   * Set the EOL recovery rate percentage.
+   *
+   * @param newValue The new EOL recovery rate value
+   */
+  public void setEolRecoveryRate(EngineNumber newValue) {
+    eolRecoveryRate = newValue;
+  }
+
+  /**
+   * Get the EOL recovery rate percentage.
+   *
+   * @return The current EOL recovery rate value
+   */
+  public EngineNumber getEolRecoveryRate() {
+    return eolRecoveryRate;
+  }
+
+  /**
+   * Set the EOL yield rate percentage.
+   *
+   * @param newValue The new EOL yield rate value
+   */
+  public void setEolYieldRate(EngineNumber newValue) {
+    eolYieldRate = newValue;
+  }
+
+  /**
+   * Get the EOL yield rate percentage.
+   *
+   * @return The current EOL yield rate value
+   */
+  public EngineNumber getEolYieldRate() {
+    return eolYieldRate;
+  }
+
+  /**
+   * Set the recharge recovery rate percentage.
+   *
+   * @param newValue The new recharge recovery rate value
+   */
+  public void setRechargeRecoveryRate(EngineNumber newValue) {
+    rechargeRecoveryRate = newValue;
+  }
+
+  /**
+   * Get the recharge recovery rate percentage.
+   *
+   * @return The current recharge recovery rate value
+   */
+  public EngineNumber getRechargeRecoveryRate() {
+    return rechargeRecoveryRate;
+  }
+
+  /**
+   * Set the recharge yield rate percentage.
+   *
+   * @param newValue The new recharge yield rate value
+   */
+  public void setRechargeYieldRate(EngineNumber newValue) {
+    rechargeYieldRate = newValue;
+  }
+
+  /**
+   * Get the recharge yield rate percentage.
+   *
+   * @return The current recharge yield rate value
+   */
+  public EngineNumber getRechargeYieldRate() {
+    return rechargeYieldRate;
+  }
+
+  /**
    * Set the displacement rate percentage.
    *
    * @param newValue The new displacement rate value
@@ -311,12 +391,15 @@ public class StreamParameterization {
   /**
    * Reset state at the beginning of a timestep.
    *
-   * <p>This method resets recovery rate to 0% between years since recycling
+   * <p>This method resets recovery rates to 0% between years since recycling
    * programs may cease and should not be expected to continue unchanged.</p>
    */
   public void resetStateAtTimestep() {
     // Reset recovery to 0% between years since recycling programs may cease
     recoveryRate = new EngineNumber(BigDecimal.ZERO, "%");
+    eolRecoveryRate = new EngineNumber(BigDecimal.ZERO, "%");
+    rechargeRecoveryRate = new EngineNumber(BigDecimal.ZERO, "%");
+    // Note: yield rates represent efficiency, not program activation, so they are not reset
   }
 
   /**

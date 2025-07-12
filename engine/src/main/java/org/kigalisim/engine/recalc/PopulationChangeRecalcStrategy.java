@@ -113,6 +113,10 @@ public class PopulationChangeRecalcStrategy implements RecalcStrategy {
     target.setStreamFor("equipment", newUnitsEffective, Optional.empty(), Optional.of(scopeEffective), false, Optional.empty());
     target.setStreamFor("newEquipment", newUnitsMarginal, Optional.empty(), Optional.of(scopeEffective), false, Optional.empty());
 
+    // Apply recharge recycling before emissions calculation
+    RechargeRecyclingRecalcStrategy rechargeRecycling = new RechargeRecyclingRecalcStrategy(Optional.of(scopeEffective));
+    rechargeRecycling.execute(target, kit);
+
     // Recalc recharge emissions - need to create a new operation
     RechargeEmissionsRecalcStrategy rechargeStrategy = new RechargeEmissionsRecalcStrategy(
         Optional.of(scopeEffective)

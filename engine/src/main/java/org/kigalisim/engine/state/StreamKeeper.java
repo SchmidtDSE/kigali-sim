@@ -18,6 +18,7 @@ import org.kigalisim.engine.number.EngineNumber;
 import org.kigalisim.engine.number.UnitConverter;
 import org.kigalisim.engine.recalc.SalesStreamDistribution;
 import org.kigalisim.engine.recalc.SalesStreamDistributionBuilder;
+import org.kigalisim.lang.operation.RecoverOperation.RecoverStage;
 
 /**
  * Class responsible for managing / tracking substance streams.
@@ -443,6 +444,60 @@ public class StreamKeeper {
   }
 
   /**
+   * Set the recovery rate percentage for a specific stage.
+   *
+   * <p>If a recovery rate is already set for the stage, this method implements additive recycling:
+   * - Recovery rates are added together</p>
+   *
+   * @param useKey The key containing application and substance
+   * @param newValue The new recovery rate value
+   * @param stage The recovery stage (EOL or RECHARGE)
+   */
+  public void setRecoveryRate(UseKey useKey, EngineNumber newValue, RecoverStage stage) {
+    StreamParameterization parameterization = getParameterization(useKey);
+
+    if (stage == RecoverStage.EOL) {
+      // Get existing EOL recovery rate
+      EngineNumber existingRecovery = parameterization.getEolRecoveryRate();
+
+      // If existing recovery rate is non-zero, implement additive recycling
+      if (existingRecovery.getValue().compareTo(BigDecimal.ZERO) > 0) {
+        // Convert both rates to the same units (percentage)
+        EngineNumber existingRecoveryPercent = unitConverter.convert(existingRecovery, "%");
+        EngineNumber newRecoveryPercent = unitConverter.convert(newValue, "%");
+
+        // Add recovery rates
+        BigDecimal combinedRecovery = existingRecoveryPercent.getValue().add(newRecoveryPercent.getValue());
+
+        // Set the combined recovery rate
+        parameterization.setEolRecoveryRate(new EngineNumber(combinedRecovery, "%"));
+      } else {
+        // First recovery rate, set normally
+        parameterization.setEolRecoveryRate(newValue);
+      }
+    } else { // RECHARGE
+      // Get existing recharge recovery rate
+      EngineNumber existingRecovery = parameterization.getRechargeRecoveryRate();
+
+      // If existing recovery rate is non-zero, implement additive recycling
+      if (existingRecovery.getValue().compareTo(BigDecimal.ZERO) > 0) {
+        // Convert both rates to the same units (percentage)
+        EngineNumber existingRecoveryPercent = unitConverter.convert(existingRecovery, "%");
+        EngineNumber newRecoveryPercent = unitConverter.convert(newValue, "%");
+
+        // Add recovery rates
+        BigDecimal combinedRecovery = existingRecoveryPercent.getValue().add(newRecoveryPercent.getValue());
+
+        // Set the combined recovery rate
+        parameterization.setRechargeRecoveryRate(new EngineNumber(combinedRecovery, "%"));
+      } else {
+        // First recovery rate, set normally
+        parameterization.setRechargeRecoveryRate(newValue);
+      }
+    }
+  }
+
+  /**
    * Get the recovery rate percentage for a key.
    *
    * @param useKey The key containing application and substance
@@ -452,6 +507,24 @@ public class StreamKeeper {
     StreamParameterization parameterization = getParameterization(useKey);
     return parameterization.getRecoveryRate();
   }
+
+  /**
+   * Get the recovery rate percentage for a specific stage.
+   *
+   * @param useKey The key containing application and substance
+   * @param stage The recovery stage (EOL or RECHARGE)
+   * @return The current recovery rate value for the stage
+   */
+  public EngineNumber getRecoveryRate(UseKey useKey, RecoverStage stage) {
+    StreamParameterization parameterization = getParameterization(useKey);
+    if (stage == RecoverStage.EOL) {
+      return parameterization.getEolRecoveryRate();
+    } else {
+      return parameterization.getRechargeRecoveryRate();
+    }
+  }
+
+
 
   /**
    * Set the displacement rate percentage for a substance in an application.
@@ -517,6 +590,68 @@ public class StreamKeeper {
   }
 
   /**
+   * Set the yield rate percentage for a specific stage.
+   *
+   * <p>If a yield rate is already set and recovery rate is non-zero, this method implements
+   * weighted average yield calculation based on recovery rates.</p>
+   *
+   * @param useKey The key containing application and substance
+   * @param newValue The new yield rate value
+   * @param stage The recovery stage (EOL or RECHARGE)
+   */
+  public void setYieldRate(UseKey useKey, EngineNumber newValue, RecoverStage stage) {
+    StreamParameterization parameterization = getParameterization(useKey);
+
+    if (stage == RecoverStage.EOL) {
+      // Get existing yield and recovery rates
+      EngineNumber existingYield = parameterization.getEolYieldRate();
+      EngineNumber existingRecovery = parameterization.getEolRecoveryRate();
+
+      // If existing yield is non-zero and recovery rate is non-zero, calculate weighted average
+      if (existingYield.getValue().compareTo(BigDecimal.ZERO) > 0
+          && existingRecovery.getValue().compareTo(BigDecimal.ZERO) > 0) {
+
+        // Convert yield rates to the same units (percentage)
+        EngineNumber existingYieldPercent = unitConverter.convert(existingYield, "%");
+        EngineNumber newYieldPercent = unitConverter.convert(newValue, "%");
+
+        // For simplicity, assume equal weighting if we can't determine recovery components
+        BigDecimal combinedYield = existingYieldPercent.getValue().add(newYieldPercent.getValue()).divide(
+            BigDecimal.valueOf(2), java.math.MathContext.DECIMAL128);
+
+        // Set the combined yield rate
+        parameterization.setEolYieldRate(new EngineNumber(combinedYield, "%"));
+      } else {
+        // First yield rate or no existing recovery, set normally
+        parameterization.setEolYieldRate(newValue);
+      }
+    } else { // RECHARGE
+      // Get existing yield and recovery rates
+      EngineNumber existingYield = parameterization.getRechargeYieldRate();
+      EngineNumber existingRecovery = parameterization.getRechargeRecoveryRate();
+
+      // If existing yield is non-zero and recovery rate is non-zero, calculate weighted average
+      if (existingYield.getValue().compareTo(BigDecimal.ZERO) > 0
+          && existingRecovery.getValue().compareTo(BigDecimal.ZERO) > 0) {
+
+        // Convert yield rates to the same units (percentage)
+        EngineNumber existingYieldPercent = unitConverter.convert(existingYield, "%");
+        EngineNumber newYieldPercent = unitConverter.convert(newValue, "%");
+
+        // For simplicity, assume equal weighting if we can't determine recovery components
+        BigDecimal combinedYield = existingYieldPercent.getValue().add(newYieldPercent.getValue()).divide(
+            BigDecimal.valueOf(2), java.math.MathContext.DECIMAL128);
+
+        // Set the combined yield rate
+        parameterization.setRechargeYieldRate(new EngineNumber(combinedYield, "%"));
+      } else {
+        // First yield rate or no existing recovery, set normally
+        parameterization.setRechargeYieldRate(newValue);
+      }
+    }
+  }
+
+  /**
    * Get the yield rate percentage for recycling for a key.
    *
    * @param useKey The key containing application and substance
@@ -526,6 +661,24 @@ public class StreamKeeper {
     StreamParameterization parameterization = getParameterization(useKey);
     return parameterization.getYieldRate();
   }
+
+  /**
+   * Get the yield rate percentage for a specific stage.
+   *
+   * @param useKey The key containing application and substance
+   * @param stage The recovery stage (EOL or RECHARGE)
+   * @return The current yield rate value for the stage
+   */
+  public EngineNumber getYieldRate(UseKey useKey, RecoverStage stage) {
+    StreamParameterization parameterization = getParameterization(useKey);
+    if (stage == RecoverStage.EOL) {
+      return parameterization.getEolYieldRate();
+    } else {
+      return parameterization.getRechargeYieldRate();
+    }
+  }
+
+
 
   /**
    * Set the retirement rate percentage for a key.
