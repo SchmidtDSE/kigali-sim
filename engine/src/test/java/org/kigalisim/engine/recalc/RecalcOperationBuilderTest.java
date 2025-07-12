@@ -9,12 +9,10 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.math.BigDecimal;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.kigalisim.engine.SingleThreadEngine;
-import org.kigalisim.engine.number.EngineNumber;
 import org.kigalisim.engine.state.Scope;
 
 /**
@@ -133,7 +131,7 @@ public class RecalcOperationBuilderTest {
     engine.setStanza("test");
     engine.setApplication("testApp");
     engine.setSubstance("testSubstance");
-    
+
     // Enable streams to enable sales distribution calculation
     engine.enable("import", Optional.empty());
 
@@ -229,7 +227,7 @@ public class RecalcOperationBuilderTest {
     engine.setStanza("test");
     engine.setApplication("testApp");
     engine.setSubstance("testSubstance");
-    
+
     // Enable streams to enable sales distribution calculation
     engine.enable("import", Optional.empty());
 

@@ -61,17 +61,17 @@ public class QubecTalkParserTest {
   public void testParseEnableStatements() {
     String code = """
         start default
-        
+
         define application "Test"
-        
+
           uses substance "TestSub"
             enable manufacture
             enable import during year 2020
             enable export during years 2020 to 2025
           end substance
-          
+
         end application
-        
+
         end default
         """;
     ParseResult result = parser.parse(code);
@@ -88,18 +88,18 @@ public class QubecTalkParserTest {
   public void testParseEnableWithSetStatements() {
     String code = """
         start default
-        
+
         define application "Test"
-        
+
           uses substance "TestSub"
             enable manufacture
             set manufacture to 100 kg
             enable import
             recharge 5 % each year with 1 kg / unit
           end substance
-          
+
         end application
-        
+
         end default
         """;
     ParseResult result = parser.parse(code);

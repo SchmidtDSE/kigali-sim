@@ -127,10 +127,10 @@ public class SalesStreamDistributionBuilderTest {
         .setExportEnabled(false)
         .setIncludeExports(false);
 
-    IllegalStateException exception = assertThrows(IllegalStateException.class, 
-        builder::build, 
+    IllegalStateException exception = assertThrows(IllegalStateException.class,
+        builder::build,
         "Should throw exception when no streams are enabled");
-    
+
     assertTrue(exception.getMessage().contains("no streams have been enabled"),
         "Exception message should mention no streams enabled");
   }
@@ -178,9 +178,9 @@ public class SalesStreamDistributionBuilderTest {
         .build();
 
     // 1/3 and 2/3 split
-    BigDecimal expectedManufacture = new BigDecimal("1").divide(new BigDecimal("3"), 
+    BigDecimal expectedManufacture = new BigDecimal("1").divide(new BigDecimal("3"),
         java.math.MathContext.DECIMAL128);
-    BigDecimal expectedImport = new BigDecimal("2").divide(new BigDecimal("3"), 
+    BigDecimal expectedImport = new BigDecimal("2").divide(new BigDecimal("3"),
         java.math.MathContext.DECIMAL128);
 
     assertEquals(expectedManufacture, distribution.getPercentManufacture(),

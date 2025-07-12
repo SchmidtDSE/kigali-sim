@@ -180,9 +180,9 @@ public class KigaliSimFacadeTest {
     // Verify CSV header contains individual metrics only
     String[] lines = csvOutput.split("\n");
     assertTrue(lines.length > 0, "CSV should have at least a header line");
-    
+
     String header = lines[0];
-    
+
     // Verify individual metrics are present
     assertTrue(header.contains("manufacture"), "CSV should contain manufacture column");
     assertTrue(header.contains("import"), "CSV should contain import column");
@@ -192,14 +192,14 @@ public class KigaliSimFacadeTest {
     assertTrue(header.contains("recycleConsumption"), "CSV should contain recycleConsumption column");
     assertTrue(header.contains("rechargeEmissions"), "CSV should contain rechargeEmissions column");
     assertTrue(header.contains("eolEmissions"), "CSV should contain eolEmissions column");
-    
+
     // Verify 'all' aggregated columns are NOT present (they shouldn't exist in Java)
     assertFalse(header.contains("allSales"), "CSV should not contain allSales column");
     assertFalse(header.contains("totalSales"), "CSV should not contain totalSales column");
     assertFalse(header.contains("allEmissions"), "CSV should not contain allEmissions column");
     assertFalse(header.contains("totalEmissions"), "CSV should not contain totalEmissions column");
     assertFalse(header.contains("allConsumption"), "CSV should not contain allConsumption column");
-    
+
     // Verify proper CSV structure for non-empty results
     if (resultsList.size() > 0) {
       assertTrue(lines.length > 1, "CSV should have data rows for non-empty results");
@@ -260,18 +260,18 @@ public class KigaliSimFacadeTest {
     Files.writeString(file.toPath(), code);
 
     ParsedProgram program = KigaliSimFacade.parseAndInterpret(file.getPath());
-    
+
     // Track progress calls
     List<Double> progressValues = new ArrayList<>();
     ProgressReportCallback callback = progress -> progressValues.add(progress);
-    
+
     // Run scenario with progress tracking
     Stream<EngineResult> results = KigaliSimFacade.runScenario(program, "test", callback);
     results.collect(java.util.stream.Collectors.toList()); // Force stream evaluation
-    
+
     // Verify progress was reported for each trial
     assertEquals(3, progressValues.size(), "Progress should be reported 3 times (once per trial)");
-    
+
     // Verify progress values are correct (1/3, 2/3, 3/3)
     assertEquals(1.0 / 3.0, progressValues.get(0), 0.001, "First progress should be ~0.333");
     assertEquals(2.0 / 3.0, progressValues.get(1), 0.001, "Second progress should be ~0.667");
@@ -292,18 +292,18 @@ public class KigaliSimFacadeTest {
     Files.writeString(file.toPath(), code);
 
     ParsedProgram program = KigaliSimFacade.parseAndInterpret(file.getPath());
-    
+
     // Track progress for second scenario
     List<Double> progressValues = new ArrayList<>();
     ProgressReportCallback callback = progress -> progressValues.add(progress);
-    
+
     // Run second scenario - should account for completed trials from first scenario
     Stream<EngineResult> results = KigaliSimFacade.runScenario(program, "second", callback);
     results.collect(java.util.stream.Collectors.toList());
-    
+
     // Progress should be reported 3 times (trials for second scenario)
     assertEquals(3, progressValues.size(), "Progress should be reported 3 times");
-    
+
     // Progress values should account for total trials (5) and already completed (2)
     // So: 3/5, 4/5, 5/5
     assertEquals(3.0 / 5.0, progressValues.get(0), 0.001, "First progress should be 0.6");
@@ -339,7 +339,7 @@ public class KigaliSimFacadeTest {
         .filter(r -> r.getYear() == 3 && r.getScenarioName().equals("BAU"))
         .findFirst()
         .orElse(null);
-    
+
     EngineResult policyYear3 = policyResultsList.stream()
         .filter(r -> r.getYear() == 3 && r.getScenarioName().equals("With Recycling"))
         .findFirst()
@@ -353,7 +353,7 @@ public class KigaliSimFacadeTest {
         .filter(r -> r.getYear() == 5 && r.getScenarioName().equals("BAU"))
         .findFirst()
         .orElse(null);
-    
+
     EngineResult policyYear5 = policyResultsList.stream()
         .filter(r -> r.getYear() == 5 && r.getScenarioName().equals("With Recycling"))
         .findFirst()
@@ -367,8 +367,8 @@ public class KigaliSimFacadeTest {
     double policyImports = policyYear3.getImport().getValue().doubleValue();
 
     // With 50% recovery and 90% reuse, imports should be lower with the policy
-    assertTrue(policyImports < bauImports, 
-        String.format("Imports with recycling policy (%.2f) should be less than BAU (%.2f)", 
+    assertTrue(policyImports < bauImports,
+        String.format("Imports with recycling policy (%.2f) should be less than BAU (%.2f)",
                       policyImports, bauImports));
 
 
@@ -380,12 +380,12 @@ public class KigaliSimFacadeTest {
     // Check equipment (population) at year 5 - policy should be lower due to retirement
     double bauEquipmentYear5 = bauYear5.getPopulation().getValue().doubleValue();
     double policyEquipmentYear5 = policyYear5.getPopulation().getValue().doubleValue();
-    
+
     // Policy includes 10% retirement per year, so population should be lower
-    assertTrue(policyEquipmentYear5 < bauEquipmentYear5, 
-        String.format("Policy equipment population (%.2f) should be lower than BAU (%.2f) due to retirement", 
+    assertTrue(policyEquipmentYear5 < bauEquipmentYear5,
+        String.format("Policy equipment population (%.2f) should be lower than BAU (%.2f) due to retirement",
                       policyEquipmentYear5, bauEquipmentYear5));
-    
+
   }
 
   /**
@@ -416,7 +416,7 @@ public class KigaliSimFacadeTest {
         .filter(r -> r.getYear() == 3 && r.getScenarioName().equals("BAU"))
         .findFirst()
         .orElse(null);
-    
+
     EngineResult policyYear3 = policyResultsList.stream()
         .filter(r -> r.getYear() == 3 && r.getScenarioName().equals("With Recycling"))
         .findFirst()
@@ -430,7 +430,7 @@ public class KigaliSimFacadeTest {
         .filter(r -> r.getYear() == 5 && r.getScenarioName().equals("BAU"))
         .findFirst()
         .orElse(null);
-    
+
     EngineResult policyYear5 = policyResultsList.stream()
         .filter(r -> r.getYear() == 5 && r.getScenarioName().equals("With Recycling"))
         .findFirst()
@@ -449,22 +449,22 @@ public class KigaliSimFacadeTest {
 
 
     // With recycling always reducing virgin material demand, imports should be lower with recycling
-    assertTrue(policyImports < bauImports, 
-        String.format("Imports with recycling policy (%.2f) should be less than BAU (%.2f)", 
+    assertTrue(policyImports < bauImports,
+        String.format("Imports with recycling policy (%.2f) should be less than BAU (%.2f)",
                       policyImports, bauImports));
 
     // Also verify recycling stream is present
     double recycledConsumption = policyYear3.getRecycleConsumption().getValue().doubleValue();
     assertTrue(recycledConsumption > 0, "Recycled consumption should be greater than 0");
-    
+
 
     // Check equipment (population) at year 5 - should be the same for both scenarios
     double bauEquipmentYear5 = bauYear5.getPopulation().getValue().doubleValue();
     double policyEquipmentYear5 = policyYear5.getPopulation().getValue().doubleValue();
-    
-    assertEquals(bauEquipmentYear5, policyEquipmentYear5, 0.001, 
-        String.format("Equipment population at year 5 should be the same for both scenarios - BAU: %.2f, Policy: %.2f", 
+
+    assertEquals(bauEquipmentYear5, policyEquipmentYear5, 0.001,
+        String.format("Equipment population at year 5 should be the same for both scenarios - BAU: %.2f, Policy: %.2f",
                       bauEquipmentYear5, policyEquipmentYear5));
-    
+
   }
 }

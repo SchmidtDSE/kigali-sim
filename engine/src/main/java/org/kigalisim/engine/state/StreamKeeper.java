@@ -79,7 +79,7 @@ public class StreamKeeper {
    */
   public void ensureSubstance(UseKey useKey) {
     String key = getKey(useKey);
-    
+
     if (substances.containsKey(key)) {
       return;
     }
@@ -163,7 +163,7 @@ public class StreamKeeper {
    */
   public EngineNumber getStream(UseKey useKey, String name) {
     String key = getKey(useKey);
-    
+
     ensureStreamKnown(name);
 
     if ("sales".equals(name)) {
@@ -421,19 +421,19 @@ public class StreamKeeper {
    */
   public void setRecoveryRate(UseKey useKey, EngineNumber newValue) {
     StreamParameterization parameterization = getParameterization(useKey);
-    
+
     // Get existing recovery rate
     EngineNumber existingRecovery = parameterization.getRecoveryRate();
-    
+
     // If existing recovery rate is non-zero, implement additive recycling
     if (existingRecovery.getValue().compareTo(BigDecimal.ZERO) > 0) {
       // Convert both rates to the same units (percentage)
       EngineNumber existingRecoveryPercent = unitConverter.convert(existingRecovery, "%");
       EngineNumber newRecoveryPercent = unitConverter.convert(newValue, "%");
-      
+
       // Add recovery rates
       BigDecimal combinedRecovery = existingRecoveryPercent.getValue().add(newRecoveryPercent.getValue());
-      
+
       // Set the combined recovery rate
       parameterization.setRecoveryRate(new EngineNumber(combinedRecovery, "%"));
     } else {
@@ -478,7 +478,7 @@ public class StreamKeeper {
   /**
    * Set the yield rate percentage for recycling for a key.
    *
-   * <p>If a yield rate is already set and recovery rate is non-zero, this method implements 
+   * <p>If a yield rate is already set and recovery rate is non-zero, this method implements
    * weighted average yield calculation based on recovery rates.</p>
    *
    * @param useKey The key containing application and substance
@@ -486,28 +486,28 @@ public class StreamKeeper {
    */
   public void setYieldRate(UseKey useKey, EngineNumber newValue) {
     StreamParameterization parameterization = getParameterization(useKey);
-    
+
     // Get existing yield and recovery rates
     EngineNumber existingYield = parameterization.getYieldRate();
     EngineNumber existingRecovery = parameterization.getRecoveryRate();
-    
+
     // If existing yield is non-zero and recovery rate is non-zero, calculate weighted average
-    if (existingYield.getValue().compareTo(BigDecimal.ZERO) > 0 
+    if (existingYield.getValue().compareTo(BigDecimal.ZERO) > 0
         && existingRecovery.getValue().compareTo(BigDecimal.ZERO) > 0) {
-      
+
       // For weighted average, we need to know the recovery rate components
       // Since recovery rates were already combined in setRecoveryRate, we need to estimate
       // the new recovery rate component from the context
-      
+
       // Convert yield rates to the same units (percentage)
       EngineNumber existingYieldPercent = unitConverter.convert(existingYield, "%");
       EngineNumber newYieldPercent = unitConverter.convert(newValue, "%");
-      
+
       // For simplicity, assume equal weighting if we can't determine recovery components
       // This is a reasonable approximation for the weighted average
       BigDecimal combinedYield = existingYieldPercent.getValue().add(newYieldPercent.getValue()).divide(
           BigDecimal.valueOf(2), java.math.MathContext.DECIMAL128);
-      
+
       // Set the combined yield rate
       parameterization.setYieldRate(new EngineNumber(combinedYield, "%"));
     } else {
@@ -739,13 +739,13 @@ public class StreamKeeper {
     EngineNumber recycleAmountRaw = getStream(useKey, "recycle");
     EngineNumber recycleAmount = unitConverter.convert(recycleAmountRaw, "kg");
     BigDecimal recycleKg = recycleAmount != null ? recycleAmount.getValue() : BigDecimal.ZERO;
-    
+
     // Calculate virgin material needed (sales - recycling)
     BigDecimal virginMaterialKg = amountKg.subtract(recycleKg);
     if (virginMaterialKg.compareTo(BigDecimal.ZERO) < 0) {
       virginMaterialKg = BigDecimal.ZERO;
     }
-    
+
     // Get distribution using centralized method
     SalesStreamDistribution distribution = getDistribution(useKey);
 
@@ -858,16 +858,16 @@ public class StreamKeeper {
     if (!"manufacture".equals(streamName) && !"import".equals(streamName) && !"export".equals(streamName)) {
       return;
     }
-    
+
     // Don't require enabling if setting to zero
     if (value.getValue().compareTo(BigDecimal.ZERO) == 0) {
       return;
     }
-    
+
     StreamParameterization parameterization = getParameterization(useKey);
     if (!parameterization.hasStreamBeenEnabled(streamName)) {
-      throw new RuntimeException("Stream '" + streamName + "' has not been enabled for " 
-          + useKey.getApplication() + "/" + useKey.getSubstance() 
+      throw new RuntimeException("Stream '" + streamName + "' has not been enabled for "
+          + useKey.getApplication() + "/" + useKey.getSubstance()
           + ". Use 'enable " + streamName + "' statement before setting this stream.");
     }
   }
@@ -913,11 +913,11 @@ public class StreamKeeper {
         return BigDecimal.ZERO;
       }
       EngineNumber priorPopulation = unitConverter.convert(priorPopulationRaw, "units");
-      
+
       // Get retirement rate
       StreamParameterization parameterization = getParameterization(useKey);
       EngineNumber retirementRate = parameterization.getRetirementRate();
-      
+
       // Handle different retirement rate units
       BigDecimal retirementRateRatio;
       if (retirementRate.getUnits().contains("%")) {
@@ -927,10 +927,10 @@ public class StreamKeeper {
         // If units are not percentage, assume it's already a ratio
         retirementRateRatio = retirementRate.getValue();
       }
-      
+
       // Calculate retired units
       BigDecimal retiredUnits = priorPopulation.getValue().multiply(retirementRateRatio);
-      
+
       // Get recovery rate
       EngineNumber recoveryRate = parameterization.getRecoveryRate();
       BigDecimal recoveryRateRatio;
@@ -940,10 +940,10 @@ public class StreamKeeper {
       } else {
         recoveryRateRatio = recoveryRate.getValue();
       }
-      
+
       // Calculate recovered units
       BigDecimal recoveredUnits = retiredUnits.multiply(recoveryRateRatio);
-      
+
       // Get yield rate
       EngineNumber yieldRate = parameterization.getYieldRate();
       BigDecimal yieldRateRatio;
@@ -953,15 +953,15 @@ public class StreamKeeper {
       } else {
         yieldRateRatio = yieldRate.getValue();
       }
-      
+
       // Calculate recycled material volume
       BigDecimal recycledUnits = recoveredUnits.multiply(yieldRateRatio);
-      
+
       // Convert to kg using initial charge
       EngineNumber initialCharge = parameterization.getInitialCharge("import");
       EngineNumber initialChargeConverted = unitConverter.convert(initialCharge, "kg / unit");
       BigDecimal recycledKg = recycledUnits.multiply(initialChargeConverted.getValue());
-      
+
       // Apply displacement rate
       EngineNumber displacementRate = parameterization.getDisplacementRate();
       BigDecimal displacementRateRatio;
@@ -971,9 +971,9 @@ public class StreamKeeper {
       } else {
         displacementRateRatio = displacementRate.getValue();
       }
-      
+
       BigDecimal recycledDisplacedKg = recycledKg.multiply(displacementRateRatio);
-      
+
       return recycledDisplacedKg;
     } catch (Exception e) {
       // If any error occurs in recycling calculation, return 0 to avoid breaking the flow

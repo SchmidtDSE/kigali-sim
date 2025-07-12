@@ -428,7 +428,7 @@ public class BasicLiveTests {
     Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
 
     List<EngineResult> resultsList = results.collect(Collectors.toList());
-    EngineResult result = LiveTestsUtil.getResult(resultsList.stream(), 1, 
+    EngineResult result = LiveTestsUtil.getResult(resultsList.stream(), 1,
         "commercial refrigeration", "HFC-134a");
     assertNotNull(result, "Should have result for commercial refrigeration/HFC-134a in year 1");
 
@@ -517,7 +517,7 @@ public class BasicLiveTests {
     // Option A: Just 50 kg (5 units * 10 kg/unit)
     // Option B: 70 kg (50 kg + 20 kg recharge for 20 units * 10% * 10 kg/unit)
     double manufactureValue = recordSubA.getManufacture().getValue().doubleValue();
-    
+
     // Let's see what actually happens
     assertEquals(70.0, manufactureValue, 0.0001,
         "Manufacture for sub_a should be 70 kg (50 + 20 recharge) when set to 5 units");
@@ -532,11 +532,11 @@ public class BasicLiveTests {
     String qtaPath = "../examples/basic_carry_over.qta";
     ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
     assertNotNull(program, "Program should not be null");
-    
+
     String scenarioName = "BAU";
     Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
     List<EngineResult> resultsList = results.collect(Collectors.toList());
-    
+
     // Check year 2025 equipment (population) value
     // Should be 20800 units (20000 prior + 800 import)
     EngineResult resultYear2025 = LiveTestsUtil.getResult(resultsList.stream(), 2025, "Domestic AC", "HFC-32");
@@ -563,7 +563,7 @@ public class BasicLiveTests {
         "Equipment should be 21600 units in year 2027 (carried over from 2026)");
     assertEquals("units", resultYear2027.getPopulation().getUnits(),
         "Equipment units should be units");
-    
+
     // Check year 2028 equipment (population) value
     // Should still be 21600 units (carried over)
     EngineResult resultYear2028 = LiveTestsUtil.getResult(resultsList.stream(), 2028, "Domestic AC", "HFC-32");

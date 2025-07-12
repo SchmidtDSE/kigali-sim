@@ -45,7 +45,7 @@ public class StreamParameterization {
     this.enabledStreams = new HashSet<>();
     this.lastSpecifiedValue = new HashMap<>();
     this.salesIntentFreshlySet = false;
-    
+
     // Initialize all parameters with default values
     ghgIntensity = new EngineNumber(BigDecimal.ZERO, "tCO2e / kg");
     energyIntensity = new EngineNumber(BigDecimal.ZERO, "kwh / kg");
@@ -243,7 +243,7 @@ public class StreamParameterization {
       return;
     }
     lastSpecifiedValue.put(streamName, value);
-    
+
     // Set the flag if this is a sales-related stream
     if ("sales".equals(streamName) || "import".equals(streamName) || "manufacture".equals(streamName)) {
       salesIntentFreshlySet = true;

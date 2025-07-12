@@ -68,7 +68,7 @@ public class RunCommand implements Callable<Integer> {
 
       // Collect to a list to see how many results we have
       List<EngineResult> resultsList = allResults.collect(java.util.stream.Collectors.toList());
-      
+
       // Print a newline after progress is complete
       System.out.println();
 

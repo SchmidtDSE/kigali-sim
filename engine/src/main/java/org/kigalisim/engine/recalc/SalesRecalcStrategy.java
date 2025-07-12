@@ -11,7 +11,6 @@ package org.kigalisim.engine.recalc;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
-import java.math.RoundingMode;
 import java.util.Optional;
 import org.kigalisim.engine.Engine;
 import org.kigalisim.engine.number.EngineNumber;
@@ -19,7 +18,6 @@ import org.kigalisim.engine.number.UnitConverter;
 import org.kigalisim.engine.state.OverridingConverterStateGetter;
 import org.kigalisim.engine.state.StreamKeeper;
 import org.kigalisim.engine.state.UseKey;
-import org.kigalisim.engine.support.DivisionHelper;
 import org.kigalisim.engine.support.ExceptionsGenerator;
 
 /**
@@ -144,47 +142,47 @@ public class SalesRecalcStrategy implements RecalcStrategy {
     EngineNumber implicitRechargeRaw = target.getStream("implicitRecharge", Optional.of(scopeEffective), Optional.empty());
     EngineNumber implicitRecharge = unitConverter.convert(implicitRechargeRaw, "kg");
     BigDecimal implicitRechargeKg = implicitRecharge.getValue();
-    
+
     // Deal with implicit recharge and recycling
     // Total demand is recharge + new equipment needs
     BigDecimal totalDemand = kgForRecharge.add(kgForNew);
-    
+
     // Subtract what we can fulfill from other sources:
     // - implicitRechargeKg: recharge that was already added when units were specified
     // - recycledDisplacedKg: material available from recycling
     BigDecimal requiredKgUnbound = totalDemand
         .subtract(implicitRechargeKg)
         .subtract(recycledDisplacedKg);
-    
+
     boolean requiredKgNegative = requiredKgUnbound.compareTo(BigDecimal.ZERO) < 0;
     BigDecimal requiredKg = requiredKgNegative ? BigDecimal.ZERO : requiredKgUnbound;
-    
+
     BigDecimal newManufactureKg = percentManufacture.multiply(requiredKg);
     BigDecimal newImportKg = percentImport.multiply(requiredKg);
-    
+
     boolean hasUnitBasedSpecs = getHasUnitBasedSpecs(streamKeeper, scopeEffective, implicitRechargeKg);
-    
+
     if (hasUnitBasedSpecs) {
       // Convert back to units to preserve user intent
       // This ensures that unit-based specifications are maintained through recycling operations
       // Need to set up the converter state for proper unit conversion
       stateGetter.setAmortizedUnitVolume(initialCharge);
-      
+
       // Only set streams that have non-zero allocations (i.e., are enabled)
       if (percentManufacture.compareTo(BigDecimal.ZERO) > 0) {
         EngineNumber newManufactureUnits = unitConverter.convert(
             new EngineNumber(newManufactureKg, "kg"), "units");
-        target.setStreamFor("manufacture", newManufactureUnits, Optional.empty(), 
+        target.setStreamFor("manufacture", newManufactureUnits, Optional.empty(),
             Optional.of(scopeEffective), false, Optional.empty());
       }
-      
+
       if (percentImport.compareTo(BigDecimal.ZERO) > 0) {
         EngineNumber newImportUnits = unitConverter.convert(
             new EngineNumber(newImportKg, "kg"), "units");
-        target.setStreamFor("import", newImportUnits, Optional.empty(), 
+        target.setStreamFor("import", newImportUnits, Optional.empty(),
             Optional.of(scopeEffective), false, Optional.empty());
       }
-      
+
       // Clear the state after conversion
       stateGetter.clearAmortizedUnitVolume();
     } else {
@@ -192,18 +190,18 @@ public class SalesRecalcStrategy implements RecalcStrategy {
       // Only set streams that have non-zero allocations (i.e., are enabled)
       if (percentManufacture.compareTo(BigDecimal.ZERO) > 0) {
         EngineNumber newManufacture = new EngineNumber(newManufactureKg, "kg");
-        target.setStreamFor("manufacture", newManufacture, Optional.empty(), 
+        target.setStreamFor("manufacture", newManufacture, Optional.empty(),
             Optional.of(scopeEffective), false, Optional.empty());
       }
-      
+
       if (percentImport.compareTo(BigDecimal.ZERO) > 0) {
         EngineNumber newImport = new EngineNumber(newImportKg, "kg");
-        target.setStreamFor("import", newImport, Optional.empty(), 
+        target.setStreamFor("import", newImport, Optional.empty(),
             Optional.of(scopeEffective), false, Optional.empty());
       }
     }
   }
-  
+
   /**
    * Determines if unit-based specifications should be preserved.
    *
@@ -216,19 +214,19 @@ public class SalesRecalcStrategy implements RecalcStrategy {
     // Check if we had unit-based specifications that need to be preserved
     boolean hasUnitBasedSpecs = streamKeeper.hasLastSpecifiedValue(scopeEffective, "sales")
         && streamKeeper.getLastSpecifiedValue(scopeEffective, "sales").hasEquipmentUnits();
-    
+
     if (hasUnitBasedSpecs) {
       // Check if the current values indicate a unit-based operation
       // If implicit recharge is present, we know units were used in the current operation
       // TODO: Consider making this explicit rather than using implicit recharge as a heuristic
       boolean currentOperationIsUnitBased = implicitRechargeKg.compareTo(BigDecimal.ZERO) > 0;
-      
+
       if (!currentOperationIsUnitBased) {
         // Current operation is kg-based (like displacement), don't preserve units
         hasUnitBasedSpecs = false;
       }
     }
-    
+
     return hasUnitBasedSpecs;
   }
 }
