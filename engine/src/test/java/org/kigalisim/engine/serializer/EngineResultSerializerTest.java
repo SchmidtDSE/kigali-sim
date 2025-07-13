@@ -280,7 +280,7 @@ public class EngineResultSerializerTest {
       if ("commercialRefrigeration".equals(useKey.getApplication())
           && "HFC-134a".equals(useKey.getSubstance())) {
         switch (stream) {
-          case "manufacture": return manufacture;
+          case "domestic": return manufacture;
           case "import": return importMt;
           case "export": return exportMt;
           case "recycle": return recycling;
@@ -323,7 +323,7 @@ public class EngineResultSerializerTest {
           && "HFC-134a".equals(useKey.getSubstance())) {
         switch (stream) {
           case "import": return initialChargeImport;
-          case "manufacture": return initialChargeDomestic;
+          case "domestic": return initialChargeDomestic;
           default: return null;
         }
       }
@@ -375,7 +375,7 @@ public class EngineResultSerializerTest {
       if ("commercialRefrigeration".equals(useKey.getApplication())
           && "HFC-134a".equals(useKey.getSubstance())) {
         switch (stream) {
-          case "manufacture": return manufacture;
+          case "domestic": return manufacture;
           case "import": return importMt;
           case "export": return exportMt;
           case "recycle": return recycling;
@@ -418,7 +418,7 @@ public class EngineResultSerializerTest {
           && "HFC-134a".equals(useKey.getSubstance())) {
         switch (stream) {
           case "import": return initialChargeImport;
-          case "manufacture": return initialChargeDomestic;
+          case "domestic": return initialChargeDomestic;
           default: return null;
         }
       }

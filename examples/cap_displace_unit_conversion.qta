@@ -3,19 +3,19 @@ start default
   define application "test"
 
     uses substance "sub_a"
-      enable manufacture
-      initial charge with 10 kg / unit for manufacture
+      enable domestic
+      initial charge with 10 kg / unit for domestic
       recharge 10% each year with 10 kg / unit
-      set manufacture to 30 units during year 1  # 30 units * 10 kg/unit = 300 kg
+      set domestic to 30 units during year 1  # 30 units * 10 kg/unit = 300 kg
       set priorEquipment to 20 units during year 1
       equals 5 tCO2e / mt
     end substance
 
     uses substance "sub_b"
-      enable manufacture
-      initial charge with 20 kg / unit for manufacture
+      enable domestic
+      initial charge with 20 kg / unit for domestic
       recharge 10% each year with 20 kg / unit
-      set manufacture to 10 units during year 1  # 10 units * 20 kg/unit = 200 kg
+      set domestic to 10 units during year 1  # 10 units * 20 kg/unit = 200 kg
       equals 10 tCO2e / mt
     end substance
 
@@ -33,7 +33,7 @@ start policy "test_unit_displace"
       # This should reduce sub_a by 25 units (30 - 5 = 25)
       # If displacement is unit-to-unit, sub_b should increase by 25 units
       # If displacement is volume-to-volume, sub_b should increase by different amount
-      cap manufacture to 5 units displacing "sub_b" during year 1
+      cap domestic to 5 units displacing "sub_b" during year 1
     end substance
 
   end application

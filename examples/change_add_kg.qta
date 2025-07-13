@@ -3,10 +3,10 @@ start default
   define application "test"
 
     uses substance "test"
-      enable manufacture
-      initial charge with 1 kg / unit for manufacture
-      set manufacture to 100 kg during year 1
-      change manufacture by +10 kg each year during years 2 to onwards
+      enable domestic
+      initial charge with 1 kg / unit for domestic
+      set domestic to 100 kg during year 1
+      change domestic by +10 kg each year during years 2 to onwards
       equals 5 tCO2e / kg
     end substance
 

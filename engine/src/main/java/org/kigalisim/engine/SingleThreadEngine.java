@@ -56,7 +56,7 @@ public class SingleThreadEngine implements Engine {
     STREAM_NAMES.add("equipment");
     STREAM_NAMES.add("export");
     STREAM_NAMES.add("import");
-    STREAM_NAMES.add("manufacture");
+    STREAM_NAMES.add("domestic");
     STREAM_NAMES.add("sales");
   }
 
@@ -283,7 +283,7 @@ public class SingleThreadEngine implements Engine {
       updateSalesCarryOver(keyEffective, name, value);
     }
 
-    if ("sales".equals(name) || "manufacture".equals(name) || "import".equals(name)) {
+    if ("sales".equals(name) || "domestic".equals(name) || "import".equals(name)) {
       // Use implicit recharge only if we added recharge (units were used)
       boolean useImplicitRecharge = isSales && isUnits;
       RecalcOperationBuilder builder = new RecalcOperationBuilder()
@@ -355,7 +355,7 @@ public class SingleThreadEngine implements Engine {
     }
 
     // Only allow enabling of manufacture, import, and export streams
-    if ("manufacture".equals(name) || "import".equals(name) || "export".equals(name)) {
+    if ("domestic".equals(name) || "import".equals(name) || "export".equals(name)) {
       streamKeeper.markStreamAsEnabled(keyEffective, name);
     }
   }
@@ -410,7 +410,7 @@ public class SingleThreadEngine implements Engine {
     if ("sales".equals(stream)) {
 
       // Get manufacture and import values
-      EngineNumber manufactureRaw = getStream("manufacture");
+      EngineNumber manufactureRaw = getStream("domestic");
       EngineNumber manufactureValue = unitConverter.convert(manufactureRaw, "kg");
 
       if (manufactureValue.getValue().compareTo(BigDecimal.ZERO) == 0) {
@@ -421,14 +421,14 @@ public class SingleThreadEngine implements Engine {
       EngineNumber importValue = unitConverter.convert(importRaw, "kg");
 
       if (importValue.getValue().compareTo(BigDecimal.ZERO) == 0) {
-        return getRawInitialChargeFor(scope, "manufacture");
+        return getRawInitialChargeFor(scope, "domestic");
       }
 
       // Determine total
       boolean emptyStreams = isEmptyStreams(manufactureValue, importValue);
 
       // Get initial charges
-      EngineNumber manufactureInitialChargeRaw = getRawInitialChargeFor(scope, "manufacture");
+      EngineNumber manufactureInitialChargeRaw = getRawInitialChargeFor(scope, "domestic");
       EngineNumber manufactureChargeUnbound = unitConverter.convert(
           manufactureInitialChargeRaw, "kg / unit");
 
@@ -511,7 +511,7 @@ public class SingleThreadEngine implements Engine {
 
     if ("sales".equals(stream)) {
       // For sales, set both manufacture and import but don't recalculate yet
-      streamKeeper.setInitialCharge(scope, "manufacture", value);
+      streamKeeper.setInitialCharge(scope, "domestic", value);
       streamKeeper.setInitialCharge(scope, "import", value);
     } else {
       streamKeeper.setInitialCharge(scope, stream, value);
@@ -550,7 +550,7 @@ public class SingleThreadEngine implements Engine {
       if (lastUnits.isPresent() && lastUnits.get().startsWith("unit")) {
         return false; // Add recharge on top
       }
-    } else if ("manufacture".equals(stream) || "import".equals(stream)) {
+    } else if ("domestic".equals(stream) || "import".equals(stream)) {
       // For manufacture or import, check if that specific channel was last specified in units
       Optional<String> lastUnits = getLastSalesUnits(scope);
       return !lastUnits.isPresent() || !lastUnits.get().startsWith("unit"); // Add recharge on top
@@ -1015,7 +1015,7 @@ public class SingleThreadEngine implements Engine {
    * @return true if the stream is sales, manufacture, import, or export
    */
   private boolean isSalesStream(String stream) {
-    return "sales".equals(stream) || "manufacture".equals(stream) || "import".equals(stream) || "export".equals(stream);
+    return "sales".equals(stream) || "domestic".equals(stream) || "import".equals(stream) || "export".equals(stream);
   }
 
   /**
@@ -1064,7 +1064,7 @@ public class SingleThreadEngine implements Engine {
     EngineNumber currentValue = getStream(stream);
     stateGetter.setTotal(stream, currentValue);
 
-    boolean isSalesSubstream = "manufacture".equals(stream) || "import".equals(stream);
+    boolean isSalesSubstream = "domestic".equals(stream) || "import".equals(stream);
     if (isSalesSubstream) {
       EngineNumber initialCharge = getInitialCharge(stream);
       stateGetter.setAmortizedUnitVolume(initialCharge);
@@ -1145,12 +1145,12 @@ public class SingleThreadEngine implements Engine {
     }
 
     // Only handle manufacture and import streams for combination
-    if (!"manufacture".equals(streamName) && !"import".equals(streamName)) {
+    if (!"domestic".equals(streamName) && !"import".equals(streamName)) {
       return;
     }
 
     // When setting manufacture or import, combine with the other to create sales intent
-    String otherStream = "manufacture".equals(streamName) ? "import" : "manufacture";
+    String otherStream = "domestic".equals(streamName) ? "import" : "domestic";
     EngineNumber otherValue = streamKeeper.getLastSpecifiedValue(useKey, otherStream);
 
     if (otherValue != null && otherValue.hasEquipmentUnits()) {

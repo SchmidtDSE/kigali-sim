@@ -30,7 +30,7 @@ public class ReplaceOperationTest {
   private Engine engine;
   private PushDownMachine machine;
   private YearMatcher allYearsMatcher;
-  private static final String STREAM_NAME = "manufacture";
+  private static final String STREAM_NAME = "domestic";
   private static final String DESTINATION_SUBSTANCE = "replacement substance";
 
   /**

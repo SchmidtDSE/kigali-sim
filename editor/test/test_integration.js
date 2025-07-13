@@ -91,13 +91,13 @@ function buildIntegrationTests() {
       },
       (result, assert) => {
         const record = getResult(result, BAU_NAME, 1, 0, "test", "test");
-        const manufacture = record.getManufacture();
-        assert.closeTo(manufacture.getValue(), 100000, 0.0001);
-        assert.deepEqual(manufacture.getUnits(), "kg");
+        const domestic = record.getManufacture();
+        assert.closeTo(domestic.getValue(), 100000, 0.0001);
+        assert.deepEqual(domestic.getUnits(), "kg");
       },
     ]);
 
-    buildTest("runs a manufacture set by units", "/examples/basic_set_manufacture_units.qta", [
+    buildTest("runs a domestic set by units", "/examples/basic_set_manufacture_units.qta", [
       (result, assert) => {
         const firstRecord = getResult(result, BAU_NAME, 2025, 0, "Test", "HFC-134a");
         const firstEquipment = firstRecord.getPopulation();
@@ -113,9 +113,9 @@ function buildIntegrationTests() {
     buildTest("tests minimal interpreter example", "/examples/minimal_interpreter.qta", [
       (result, assert) => {
         const record = getResult(result, BAU_NAME, 1, 0, "testApp", "testSubstance");
-        const manufacture = record.getManufacture();
-        assert.closeTo(manufacture.getValue(), 100000, 0.0001, "Manufacture should be 100000 kg");
-        assert.deepEqual(manufacture.getUnits(), "kg", "Manufacture units should be kg");
+        const domestic = record.getManufacture();
+        assert.closeTo(domestic.getValue(), 100000, 0.0001, "Manufacture should be 100000 kg");
+        assert.deepEqual(domestic.getUnits(), "kg", "Manufacture units should be kg");
       },
     ]);
 
@@ -149,9 +149,9 @@ function buildIntegrationTests() {
     buildTest("interprets a change command", "/examples/change.qta", [
       (result, assert) => {
         const record = getResult(result, BAU_NAME, 2, 0, "test", "test");
-        const manufacture = record.getManufacture();
-        assert.closeTo(manufacture.getValue(), 110000, 0.0001);
-        assert.deepEqual(manufacture.getUnits(), "kg");
+        const domestic = record.getManufacture();
+        assert.closeTo(domestic.getValue(), 110000, 0.0001);
+        assert.deepEqual(domestic.getUnits(), "kg");
       },
       (result, assert) => {
         const record = getResult(result, BAU_NAME, 2, 0, "test", "test");
@@ -164,9 +164,9 @@ function buildIntegrationTests() {
     buildTest("interprets a change command with real years", "/examples/real_years.qta", [
       (result, assert) => {
         const record = getResult(result, BAU_NAME, 2026, 0, "test", "test");
-        const manufacture = record.getManufacture();
-        assert.closeTo(manufacture.getValue(), 110000, 0.0001);
-        assert.deepEqual(manufacture.getUnits(), "kg");
+        const domestic = record.getManufacture();
+        assert.closeTo(domestic.getValue(), 110000, 0.0001);
+        assert.deepEqual(domestic.getUnits(), "kg");
       },
       (result, assert) => {
         const record = getResult(result, BAU_NAME, 2026, 0, "test", "test");
@@ -179,27 +179,27 @@ function buildIntegrationTests() {
     buildTest("handles change command by adding kg", "/examples/change_add_kg.qta", [
       (result, assert) => {
         const record = getResult(result, BAU_NAME, 2, 0, "test", "test");
-        const manufacture = record.getManufacture();
-        assert.closeTo(manufacture.getValue(), 110, 0.0001);
-        assert.deepEqual(manufacture.getUnits(), "kg");
+        const domestic = record.getManufacture();
+        assert.closeTo(domestic.getValue(), 110, 0.0001);
+        assert.deepEqual(domestic.getUnits(), "kg");
       },
     ]);
 
     buildTest("handles change command by subtracting kg", "/examples/change_subtract_kg.qta", [
       (result, assert) => {
         const record = getResult(result, BAU_NAME, 2, 0, "test", "test");
-        const manufacture = record.getManufacture();
-        assert.closeTo(manufacture.getValue(), 90, 0.0001);
-        assert.deepEqual(manufacture.getUnits(), "kg");
+        const domestic = record.getManufacture();
+        assert.closeTo(domestic.getValue(), 90, 0.0001);
+        assert.deepEqual(domestic.getUnits(), "kg");
       },
     ]);
 
     buildTest("handles change command by adding units", "/examples/change_add_units.qta", [
       (result, assert) => {
         const record = getResult(result, BAU_NAME, 2, 0, "test", "test");
-        const manufacture = record.getManufacture();
-        assert.closeTo(manufacture.getValue(), 110, 0.0001);
-        assert.deepEqual(manufacture.getUnits(), "kg");
+        const domestic = record.getManufacture();
+        assert.closeTo(domestic.getValue(), 110, 0.0001);
+        assert.deepEqual(domestic.getUnits(), "kg");
       },
     ]);
 
@@ -209,9 +209,9 @@ function buildIntegrationTests() {
       [
         (result, assert) => {
           const record = getResult(result, BAU_NAME, 2, 0, "test", "test");
-          const manufacture = record.getManufacture();
-          assert.closeTo(manufacture.getValue(), 90, 0.0001);
-          assert.deepEqual(manufacture.getUnits(), "kg");
+          const domestic = record.getManufacture();
+          assert.closeTo(domestic.getValue(), 90, 0.0001);
+          assert.deepEqual(domestic.getUnits(), "kg");
         },
       ],
     );
@@ -219,9 +219,9 @@ function buildIntegrationTests() {
     buildTest("interprets a retire command", "/examples/retire.qta", [
       (result, assert) => {
         const record = getResult(result, BAU_NAME, 2, 0, "test", "test");
-        const manufacture = record.getManufacture();
-        assert.closeTo(manufacture.getValue(), 100000, 0.0001);
-        assert.deepEqual(manufacture.getUnits(), "kg");
+        const domestic = record.getManufacture();
+        assert.closeTo(domestic.getValue(), 100000, 0.0001);
+        assert.deepEqual(domestic.getUnits(), "kg");
       },
       (result, assert) => {
         const record = getResult(result, BAU_NAME, 2, 0, "test", "test");
@@ -282,7 +282,7 @@ function buildIntegrationTests() {
       [
         (result, assert) => {
         // Test that recharge is added on top for units-based specifications
-        // Should have 10000 (prior) + 1000 (manufacture) = 11000 units in year 1
+        // Should have 10000 (prior) + 1000 (domestic) = 11000 units in year 1
           const record = getResult(result, "BAU", 1, 0, "App", "Sub1");
           const equipment = record.getPopulation();
           assert.closeTo(equipment.getValue(), 11000, 0.0001);
@@ -417,21 +417,21 @@ function buildIntegrationTests() {
 
     buildTest("evaluates logical operators", "/examples/logical_operators.qta", [
       (result, assert) => {
-        // Test AND: 1 and 0 = false, so manufacture should be 30 (else branch)
+        // Test AND: 1 and 0 = false, so domestic should be 30 (else branch)
         const recordYear1 = getResult(result, "business as usual", 1, 0, "test", "test");
         const consumptionYear1 = recordYear1.getGhgConsumption();
         assert.closeTo(consumptionYear1.getValue(), 30, 0.0001);
         assert.deepEqual(consumptionYear1.getUnits(), "tCO2e");
       },
       (result, assert) => {
-        // Test OR: 1 or 0 = true, so manufacture should be 50 (if branch)
+        // Test OR: 1 or 0 = true, so domestic should be 50 (if branch)
         const recordYear2 = getResult(result, "business as usual", 2, 0, "test", "test");
         const consumptionYear2 = recordYear2.getGhgConsumption();
         assert.closeTo(consumptionYear2.getValue(), 50, 0.0001);
         assert.deepEqual(consumptionYear2.getUnits(), "tCO2e");
       },
       (result, assert) => {
-        // Test XOR: 1 xor 2 = false (both are truthy), so manufacture should be 40 (else branch)
+        // Test XOR: 1 xor 2 = false (both are truthy), so domestic should be 40 (else branch)
         const recordYear3 = getResult(result, "business as usual", 3, 0, "test", "test");
         const consumptionYear3 = recordYear3.getGhgConsumption();
         assert.closeTo(consumptionYear3.getValue(), 40, 0.0001);
@@ -439,7 +439,7 @@ function buildIntegrationTests() {
       },
       (result, assert) => {
         // Test precedence with parentheses: (testA or testB) and testC = (1 or 0) and 2 =
-        // 1 and 2 = true, so manufacture should be 70 (if branch)
+        // 1 and 2 = true, so domestic should be 70 (if branch)
         const recordYear4 = getResult(result, "business as usual", 4, 0, "test", "test");
         const consumptionYear4 = recordYear4.getGhgConsumption();
         assert.closeTo(consumptionYear4.getValue(), 70, 0.0001);
@@ -448,7 +448,7 @@ function buildIntegrationTests() {
       (result, assert) => {
         // Test precedence without parentheses: testA or testB and testC =
         // testA or (testB and testC) = 1 or (0 and 2) = 1 or 0 = true,
-        // so manufacture should be 80 (if branch)
+        // so domestic should be 80 (if branch)
         const recordYear5 = getResult(result, "business as usual", 5, 0, "test", "test");
         const consumptionYear5 = recordYear5.getGhgConsumption();
         assert.closeTo(consumptionYear5.getValue(), 80, 0.0001);
@@ -456,7 +456,7 @@ function buildIntegrationTests() {
       },
       (result, assert) => {
         // Test mixed comparison and logical: testA > 0 and testB == 0 =
-        // 1 > 0 and 0 == 0 = true and true = true, so manufacture should be 90 (if branch)
+        // 1 > 0 and 0 == 0 = true and true = true, so domestic should be 90 (if branch)
         const recordYear6 = getResult(result, "business as usual", 6, 0, "test", "test");
         const consumptionYear6 = recordYear6.getGhgConsumption();
         assert.closeTo(consumptionYear6.getValue(), 90, 0.0001);
@@ -465,7 +465,7 @@ function buildIntegrationTests() {
       (result, assert) => {
         // Test complex parentheses: (testA > 0 or testB > 0) and (testC == 2) =
         // (true or false) and (true) = true and true = true,
-        // so manufacture should be 100 (if branch)
+        // so domestic should be 100 (if branch)
         const recordYear7 = getResult(result, "business as usual", 7, 0, "test", "test");
         const consumptionYear7 = recordYear7.getGhgConsumption();
         assert.closeTo(consumptionYear7.getValue(), 100, 0.0001);
@@ -475,7 +475,7 @@ function buildIntegrationTests() {
 
     buildTest("evaluates simple AND operator", "/examples/simple_and.qta", [
       (result, assert) => {
-        // Test AND: 1 and 0 = false, so manufacture should be 30 (else branch)
+        // Test AND: 1 and 0 = false, so domestic should be 30 (else branch)
         const record = getResult(result, "business as usual", 1, 0, "test", "test");
         const consumption = record.getGhgConsumption();
         assert.closeTo(consumption.getValue(), 30, 0.0001);
@@ -803,29 +803,29 @@ function buildIntegrationTests() {
     buildTest("tests cap with units includes recharge on top", "/examples/cap_units.qta", [
       (result, assert) => {
         const record = getResult(result, "result", 1, 0, "test", "test");
-        const manufacture = record.getManufacture();
+        const domestic = record.getManufacture();
 
         // With recharge on top: 50 units * 2 kg/unit + (20 units * 10% * 1 kg/unit) = 102 kg
         // Since original value is 100 kg and cap should be 102 kg, no change expected
-        assert.closeTo(manufacture.getValue(), 100, 0.0001);
-        assert.deepEqual(manufacture.getUnits(), "kg");
+        assert.closeTo(domestic.getValue(), 100, 0.0001);
+        assert.deepEqual(domestic.getUnits(), "kg");
       },
     ]);
 
     buildTest("tests cap with kg works without recharge addition", "/examples/cap_kg.qta", [
       (result, assert) => {
         const record = getResult(result, "result", 1, 0, "test", "test");
-        const manufacture = record.getManufacture();
+        const domestic = record.getManufacture();
 
         // Cap at 50 kg should reduce from 100 kg to 50 kg
-        assert.closeTo(manufacture.getValue(), 50, 0.0001);
-        assert.deepEqual(manufacture.getUnits(), "kg");
+        assert.closeTo(domestic.getValue(), 50, 0.0001);
+        assert.deepEqual(domestic.getUnits(), "kg");
       },
     ]);
 
     buildTest("tests cap with units displacement", "/examples/cap_displace_units.qta", [
       (result, assert) => {
-        // Check that sub_a manufacture was capped
+        // Check that sub_a domestic was capped
         const recordSubA = getResult(result, "result", 1, 0, "test", "sub_a");
         const manufactureSubA = recordSubA.getManufacture();
 
@@ -852,7 +852,7 @@ function buildIntegrationTests() {
       "/examples/cap_displace_unit_conversion.qta",
       [
         (result, assert) => {
-        // Check that sub_a manufacture was capped
+        // Check that sub_a domestic was capped
           const recordSubA = getResult(result, "result", 1, 0, "test", "sub_a");
           const manufactureSubA = recordSubA.getManufacture();
 
@@ -880,23 +880,23 @@ function buildIntegrationTests() {
     buildTest("tests floor with units includes recharge on top", "/examples/floor_units.qta", [
       (result, assert) => {
         const record = getResult(result, "result", 1, 0, "test", "test");
-        const manufacture = record.getManufacture();
+        const domestic = record.getManufacture();
 
         // With recharge on top: 50 units * 2 kg/unit + (20 units * 10% * 1 kg/unit) = 102 kg
         // Since original value is 10 kg and floor should be 102 kg, should increase to 102 kg
-        assert.closeTo(manufacture.getValue(), 102, 0.0001);
-        assert.deepEqual(manufacture.getUnits(), "kg");
+        assert.closeTo(domestic.getValue(), 102, 0.0001);
+        assert.deepEqual(domestic.getUnits(), "kg");
       },
     ]);
 
     buildTest("tests floor with kg works without recharge addition", "/examples/floor_kg.qta", [
       (result, assert) => {
         const record = getResult(result, "result", 1, 0, "test", "test");
-        const manufacture = record.getManufacture();
+        const domestic = record.getManufacture();
 
         // Floor at 50 kg should increase from 10 kg to 50 kg
-        assert.closeTo(manufacture.getValue(), 50, 0.0001);
-        assert.deepEqual(manufacture.getUnits(), "kg");
+        assert.closeTo(domestic.getValue(), 50, 0.0001);
+        assert.deepEqual(domestic.getUnits(), "kg");
       },
     ]);
 
@@ -1156,10 +1156,10 @@ function buildIntegrationTests() {
           const manufactureSubA = recordSubA.getManufacture();
           const importSubA = recordSubA.getImport();
 
-          // Calculate total sales (manufacture + import)
+          // Calculate total sales (domestic + import)
           const totalSales = manufactureSubA.getValue() + importSubA.getValue();
 
-          // Original sales: 150 kg (100 manufacture + 50 import)
+          // Original sales: 150 kg (100 domestic + 50 import)
           // After 20 kg displacement and recycling offset:
           // 150 - 20 (explicit) - 20 (recycling offset) = 110 kg
           assert.closeTo(totalSales, 110, 0.0001);
@@ -1174,10 +1174,10 @@ function buildIntegrationTests() {
           const manufactureSubB = recordSubB.getManufacture();
           const importSubB = recordSubB.getImport();
 
-          // Calculate total sales (manufacture + import)
+          // Calculate total sales (domestic + import)
           const totalSales = manufactureSubB.getValue() + importSubB.getValue();
 
-          // Original sales for sub_b: 300 kg (200 manufacture + 100 import)
+          // Original sales for sub_b: 300 kg (200 domestic + 100 import)
           // After 30 kg displacement: 300 - 30 = 270 kg
           assert.closeTo(totalSales, 270, 0.0001);
         },

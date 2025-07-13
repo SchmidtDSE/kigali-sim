@@ -3,17 +3,17 @@ start default
   define application "Test"
 
     uses substance "Sub A"
-      enable manufacture
-      initial charge with 10 kg / unit for manufacture
+      enable domestic
+      initial charge with 10 kg / unit for domestic
       equals 100 * 1000 tCO2e / mt
       equals 10 * 1000 kwh / mt
-      set manufacture to 100 mt during year 1
+      set domestic to 100 mt during year 1
     end substance
 
 
     uses substance "Sub B"
-      enable manufacture
-      initial charge with 20 kg / unit for manufacture
+      enable domestic
+      initial charge with 20 kg / unit for domestic
       equals 10 * 1000 tCO2e / mt
       equals 1 * 1000 kwh / mt
     end substance
@@ -28,7 +28,7 @@ start policy "Replace"
   modify application "Test"
 
     modify substance "Sub A"
-      replace 1000 units of manufacture with "Sub B" during years 5 to 10
+      replace 1000 units of domestic with "Sub B" during years 5 to 10
     end substance
 
   end application

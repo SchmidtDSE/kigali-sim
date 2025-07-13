@@ -210,7 +210,7 @@ EXPORT_: 'export';
 
 IMPORT_: 'import';
 
-MANUFACTURE_: 'manufacture';
+DOMESTIC_: 'domestic';
 
 SALES_: 'sales';
 
@@ -316,7 +316,7 @@ expression: number  # simpleExpression
  * -----------------
  **/
 
-stream: (PRIOR_EQUIPMENT_ | EQUIPMENT_ | EXPORT_ | IMPORT_ | MANUFACTURE_ | SALES_);
+stream: (PRIOR_EQUIPMENT_ | EQUIPMENT_ | EXPORT_ | IMPORT_ | DOMESTIC_ | SALES_);
 
 identifier: IDENTIFIER_  # identifierAsVar;
 

@@ -48,7 +48,7 @@ public class GetStreamOperationTest {
    */
   @Test
   public void testInitializesWithStreamName() {
-    GetStreamOperation operation = new GetStreamOperation("manufacture");
+    GetStreamOperation operation = new GetStreamOperation("domestic");
     assertNotNull(operation, "GetStreamOperation should be constructable with stream name");
   }
 
@@ -57,7 +57,7 @@ public class GetStreamOperationTest {
    */
   @Test
   public void testInitializesWithStreamNameAndUnits() {
-    GetStreamOperation operation = new GetStreamOperation("manufacture", "kg");
+    GetStreamOperation operation = new GetStreamOperation("domestic", "kg");
     assertNotNull(operation, "GetStreamOperation should be constructable with stream name and units");
   }
 
@@ -68,11 +68,11 @@ public class GetStreamOperationTest {
   public void testExecuteRetrievesStreamValue() {
     // Set a stream value in the engine
     EngineNumber number = new EngineNumber(BigDecimal.valueOf(42), "kg");
-    engine.enable("manufacture", Optional.empty());
-    engine.setStream("manufacture", number, Optional.empty());
+    engine.enable("domestic", Optional.empty());
+    engine.setStream("domestic", number, Optional.empty());
 
     // Create and execute the operation
-    GetStreamOperation operation = new GetStreamOperation("manufacture");
+    GetStreamOperation operation = new GetStreamOperation("domestic");
     operation.execute(machine);
 
     // Verify the value was pushed onto the stack
@@ -88,11 +88,11 @@ public class GetStreamOperationTest {
   public void testExecuteRetrievesStreamValueWithUnitConversion() {
     // Set a stream value in the engine
     EngineNumber number = new EngineNumber(BigDecimal.valueOf(1), "kg");
-    engine.enable("manufacture", Optional.empty());
-    engine.setStream("manufacture", number, Optional.empty());
+    engine.enable("domestic", Optional.empty());
+    engine.setStream("domestic", number, Optional.empty());
 
     // Create and execute the operation with unit conversion
-    GetStreamOperation operation = new GetStreamOperation("manufacture", "mt");
+    GetStreamOperation operation = new GetStreamOperation("domestic", "mt");
     operation.execute(machine);
 
     // Verify the value was pushed onto the stack with converted units

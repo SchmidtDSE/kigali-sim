@@ -100,7 +100,7 @@ public class EngineResultSerializer {
     builder.setEolEmissions(eolEmissions);
 
     // Get sales for offset calculation
-    EngineNumber manufactureRaw = engine.getStreamFor(useKey, "manufacture");
+    EngineNumber manufactureRaw = engine.getStreamFor(useKey, "domestic");
     EngineNumber importRaw = engine.getStreamFor(useKey, "import");
 
     // Convert sales values for offset calculation
@@ -239,7 +239,7 @@ public class EngineResultSerializer {
 
     // Determine import value without recharge
     EngineNumber totalImportValue = engine.getStreamFor(useKey, "import");
-    EngineNumber totalDomesticValue = engine.getStreamFor(useKey, "manufacture");
+    EngineNumber totalDomesticValue = engine.getStreamFor(useKey, "domestic");
     EngineNumber totalRechargeEmissions = engine.getStreamFor(
         useKey, "rechargeEmissions");
 

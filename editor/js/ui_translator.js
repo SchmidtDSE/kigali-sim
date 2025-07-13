@@ -1721,10 +1721,10 @@ class Substance {
       const displacing = recycle.getDisplacing ? recycle.getDisplacing() : null;
       if (displacing !== null && displacing !== undefined && displacing !== "") {
         pieces.push("displacing");
-        // Stream names (manufacture, import, sales, etc.) don't need quotes
+        // Stream names (domestic, import, sales, etc.) don't need quotes
         // Substance names need quotes
         const streamNames = [
-          "manufacture", "import", "sales", "equipment", "priorEquipment", "export",
+          "domestic", "import", "sales", "equipment", "priorEquipment", "export",
         ];
         if (streamNames.includes(displacing)) {
           pieces.push(displacing);
@@ -1869,7 +1869,7 @@ class Command {
   /**
    * Get the target of this command.
    *
-   * @returns {string} The target name (e.g. "manufacture", "import", etc).
+   * @returns {string} The target name (e.g. "domestic", "import", etc).
    */
   getTarget() {
     const self = this;
@@ -1942,7 +1942,7 @@ class LimitCommand {
   /**
    * Get the target of this limit command.
    *
-   * @returns {string} The target name (e.g. "manufacture", "import", etc).
+   * @returns {string} The target name (e.g. "domestic", "import", etc).
    */
   getTarget() {
     const self = this;

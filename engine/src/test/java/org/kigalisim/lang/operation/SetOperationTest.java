@@ -44,7 +44,7 @@ public class SetOperationTest {
     engine.setSubstance("test substance");
 
     // Enable streams that will be used in tests
-    engine.enable("manufacture", Optional.empty());
+    engine.enable("domestic", Optional.empty());
   }
 
   /**
@@ -54,7 +54,7 @@ public class SetOperationTest {
   public void testInitializesNoDuring() {
     EngineNumber number = new EngineNumber(BigDecimal.valueOf(42), "kg");
     Operation valueOperation = new PreCalculatedOperation(number);
-    SetOperation operation = new SetOperation("manufacture", valueOperation);
+    SetOperation operation = new SetOperation("domestic", valueOperation);
     assertNotNull(operation, "SetOperation should be constructable without during");
   }
 
@@ -66,7 +66,7 @@ public class SetOperationTest {
     EngineNumber number = new EngineNumber(BigDecimal.valueOf(42), "kg");
     Operation valueOperation = new PreCalculatedOperation(number);
     ParsedDuring during = new ParsedDuring(Optional.empty(), Optional.empty());
-    SetOperation operation = new SetOperation("manufacture", valueOperation, during);
+    SetOperation operation = new SetOperation("domestic", valueOperation, during);
     assertNotNull(operation, "SetOperation should be constructable with during");
   }
 
@@ -77,12 +77,12 @@ public class SetOperationTest {
   public void testExecuteNoDuring() {
     EngineNumber number = new EngineNumber(BigDecimal.valueOf(42), "kg");
     Operation valueOperation = new PreCalculatedOperation(number);
-    SetOperation operation = new SetOperation("manufacture", valueOperation);
+    SetOperation operation = new SetOperation("domestic", valueOperation);
 
     operation.execute(machine);
 
     // Verify the stream was set in the engine
-    EngineNumber result = engine.getStream("manufacture");
+    EngineNumber result = engine.getStream("domestic");
     assertEquals(BigDecimal.valueOf(42), result.getValue(), "Stream value should be set correctly");
     assertEquals("kg", result.getUnits(), "Stream units should be set correctly");
   }
@@ -101,12 +101,12 @@ public class SetOperationTest {
     TimePointFuture start = new CalculatedTimePointFuture(yearOperation);
     ParsedDuring during = new ParsedDuring(Optional.of(start), Optional.empty());
 
-    SetOperation operation = new SetOperation("manufacture", valueOperation, during);
+    SetOperation operation = new SetOperation("domestic", valueOperation, during);
 
     operation.execute(machine);
 
     // Verify the stream was set in the engine
-    EngineNumber result = engine.getStream("manufacture");
+    EngineNumber result = engine.getStream("domestic");
     assertEquals(BigDecimal.valueOf(42), result.getValue(), "Stream value should be set correctly");
     assertEquals("kg", result.getUnits(), "Stream units should be set correctly");
   }
@@ -125,12 +125,12 @@ public class SetOperationTest {
     TimePointFuture start = new CalculatedTimePointFuture(yearOperation);
     ParsedDuring during = new ParsedDuring(Optional.of(start), Optional.empty());
 
-    SetOperation operation = new SetOperation("manufacture", valueOperation, during);
+    SetOperation operation = new SetOperation("domestic", valueOperation, during);
 
     operation.execute(machine);
 
     // Verify the stream was not set in the engine (should be 0)
-    EngineNumber result = engine.getStream("manufacture");
+    EngineNumber result = engine.getStream("domestic");
     assertEquals(BigDecimal.ZERO, result.getValue(),
         "Stream value should not be set when during doesn't apply");
     assertEquals("kg", result.getUnits(), "Stream units should be kg by default");
@@ -145,12 +145,12 @@ public class SetOperationTest {
     Operation right = new PreCalculatedOperation(new EngineNumber(BigDecimal.valueOf(12), "kg"));
     Operation valueOperation = new AdditionOperation(left, right); // 30 + 12 = 42
 
-    SetOperation operation = new SetOperation("manufacture", valueOperation);
+    SetOperation operation = new SetOperation("domestic", valueOperation);
 
     operation.execute(machine);
 
     // Verify the stream was set in the engine
-    EngineNumber result = engine.getStream("manufacture");
+    EngineNumber result = engine.getStream("domestic");
     assertEquals(BigDecimal.valueOf(42), result.getValue(),
         "Stream value should be calculated and set correctly");
     assertEquals("kg", result.getUnits(), "Stream units should be set correctly");

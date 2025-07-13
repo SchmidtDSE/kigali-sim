@@ -117,21 +117,21 @@ public class SalesRecalcStrategy implements RecalcStrategy {
     stateGetter.clearVolume();
 
     // Determine how much to offset domestic and imports
-    EngineNumber manufactureRaw = target.getStream("manufacture", Optional.of(scopeEffective), Optional.empty());
+    EngineNumber domesticRaw = target.getStream("domestic", Optional.of(scopeEffective), Optional.empty());
     EngineNumber importRaw = target.getStream("import", Optional.of(scopeEffective), Optional.empty());
     EngineNumber priorRecycleRaw = target.getStream("recycle", Optional.of(scopeEffective), Optional.empty());
 
-    EngineNumber manufactureSalesConverted = unitConverter.convert(manufactureRaw, "kg");
+    EngineNumber domesticSalesConverted = unitConverter.convert(domesticRaw, "kg");
     EngineNumber importSalesConverted = unitConverter.convert(importRaw, "kg");
 
-    BigDecimal manufactureSalesKg = manufactureSalesConverted.getValue();
+    BigDecimal domesticSalesKg = domesticSalesConverted.getValue();
     BigDecimal importSalesKg = importSalesConverted.getValue();
-    BigDecimal totalNonRecycleKg = manufactureSalesKg.add(importSalesKg);
+    BigDecimal totalNonRecycleKg = domesticSalesKg.add(importSalesKg);
 
     // Get distribution using centralized method
     SalesStreamDistribution distribution = streamKeeper.getDistribution(scopeEffective);
 
-    BigDecimal percentManufacture = distribution.getPercentManufacture();
+    BigDecimal percentDomestic = distribution.getPercentDomestic();
     BigDecimal percentImport = distribution.getPercentImport();
 
     // Recycle
@@ -157,7 +157,7 @@ public class SalesRecalcStrategy implements RecalcStrategy {
     boolean requiredKgNegative = requiredKgUnbound.compareTo(BigDecimal.ZERO) < 0;
     BigDecimal requiredKg = requiredKgNegative ? BigDecimal.ZERO : requiredKgUnbound;
 
-    BigDecimal newManufactureKg = percentManufacture.multiply(requiredKg);
+    BigDecimal newDomesticKg = percentDomestic.multiply(requiredKg);
     BigDecimal newImportKg = percentImport.multiply(requiredKg);
 
     boolean hasUnitBasedSpecs = getHasUnitBasedSpecs(streamKeeper, scopeEffective, implicitRechargeKg);
@@ -169,10 +169,10 @@ public class SalesRecalcStrategy implements RecalcStrategy {
       stateGetter.setAmortizedUnitVolume(initialCharge);
 
       // Only set streams that have non-zero allocations (i.e., are enabled)
-      if (percentManufacture.compareTo(BigDecimal.ZERO) > 0) {
-        EngineNumber newManufactureUnits = unitConverter.convert(
-            new EngineNumber(newManufactureKg, "kg"), "units");
-        target.setStreamFor("manufacture", newManufactureUnits, Optional.empty(),
+      if (percentDomestic.compareTo(BigDecimal.ZERO) > 0) {
+        EngineNumber newDomesticUnits = unitConverter.convert(
+            new EngineNumber(newDomesticKg, "kg"), "units");
+        target.setStreamFor("domestic", newDomesticUnits, Optional.empty(),
             Optional.of(scopeEffective), false, Optional.empty());
       }
 
@@ -188,9 +188,9 @@ public class SalesRecalcStrategy implements RecalcStrategy {
     } else {
       // Normal kg-based setting for non-unit specifications
       // Only set streams that have non-zero allocations (i.e., are enabled)
-      if (percentManufacture.compareTo(BigDecimal.ZERO) > 0) {
-        EngineNumber newManufacture = new EngineNumber(newManufactureKg, "kg");
-        target.setStreamFor("manufacture", newManufacture, Optional.empty(),
+      if (percentDomestic.compareTo(BigDecimal.ZERO) > 0) {
+        EngineNumber newDomestic = new EngineNumber(newDomesticKg, "kg");
+        target.setStreamFor("domestic", newDomestic, Optional.empty(),
             Optional.of(scopeEffective), false, Optional.empty());
       }
 

@@ -14,7 +14,7 @@ function buildWasmBackendTests() {
       QUnit.test("parseResponse handles OK status with CSV data", function (assert) {
         const response = "OK\n\n" +
           "scenario,trial,year,application,substance," +
-          "manufacture,import,recycle,domesticConsumption,importConsumption," +
+          "domestic,import,recycle,domesticConsumption,importConsumption," +
           "recycleConsumption,population,populationNew,rechargeEmissions," +
           "eolEmissions,energyConsumption,initialChargeValue," +
           "initialChargeConsumption,importNewPopulation\n" +
@@ -67,7 +67,7 @@ function buildWasmBackendTests() {
       QUnit.test("parseResponse handles headers-only CSV", function (assert) {
         const response = "OK\n\n" +
           "scenario,trial,year,application,substance," +
-          "manufacture,import,recycle,domesticConsumption,importConsumption," +
+          "domestic,import,recycle,domesticConsumption,importConsumption," +
           "recycleConsumption,population,populationNew,rechargeEmissions," +
           "eolEmissions,energyConsumption,initialChargeValue," +
           "initialChargeConsumption,importNewPopulation";
@@ -91,7 +91,7 @@ function buildWasmBackendTests() {
       QUnit.test("parseResponse creates EngineNumber objects correctly", function (assert) {
         const response = "OK\n\n" +
           "scenario,trial,year,application,substance," +
-          "manufacture,import,recycle,domesticConsumption,importConsumption," +
+          "domestic,import,recycle,domesticConsumption,importConsumption," +
           "recycleConsumption,population,populationNew,rechargeEmissions," +
           "eolEmissions,energyConsumption,initialChargeValue," +
           "initialChargeConsumption,importNewPopulation\n" +
@@ -265,7 +265,7 @@ function buildWasmBackendTests() {
               id: workerMessage.id,
               success: true,
               result: "OK\n\n" +
-                "scenario,trial,year,application,substance,manufacture,import," +
+                "scenario,trial,year,application,substance,domestic,import," +
                 "recycle,domesticConsumption,importConsumption," +
                 "recycleConsumption,population,populationNew,rechargeEmissions," +
                 "eolEmissions,energyConsumption,initialChargeValue," +

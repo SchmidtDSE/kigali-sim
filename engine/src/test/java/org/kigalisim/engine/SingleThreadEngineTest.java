@@ -168,17 +168,17 @@ public class SingleThreadEngineTest {
     engine.setSubstance("test substance");
 
     // Test getting a stream (should return zero initially)
-    EngineNumber manufacture = engine.getStream("manufacture");
+    EngineNumber manufacture = engine.getStream("domestic");
     assertNotNull(manufacture, "Should return a value for manufacture stream");
     assertEquals(BigDecimal.ZERO, manufacture.getValue(), "Should be zero initially");
     assertEquals("kg", manufacture.getUnits(), "Should have kg units");
 
     // Test setting a stream
-    engine.enable("manufacture", Optional.empty());
+    engine.enable("domestic", Optional.empty());
     EngineNumber newValue = new EngineNumber(BigDecimal.valueOf(10), "kg");
-    engine.setStream("manufacture", newValue, Optional.empty());
+    engine.setStream("domestic", newValue, Optional.empty());
 
-    EngineNumber updated = engine.getStream("manufacture");
+    EngineNumber updated = engine.getStream("domestic");
     assertEquals(BigDecimal.valueOf(10), updated.getValue(), "Should have updated value");
     assertEquals("kg", updated.getUnits(), "Should maintain units");
   }
@@ -191,7 +191,7 @@ public class SingleThreadEngineTest {
     SingleThreadEngine engine = new SingleThreadEngine(1, 3);
 
     EngineNumber value = new EngineNumber(BigDecimal.valueOf(10), "kg");
-    assertThrows(RuntimeException.class, () -> engine.setStream("manufacture", value, Optional.empty()),
+    assertThrows(RuntimeException.class, () -> engine.setStream("domestic", value, Optional.empty()),
         "Should throw error when setting stream without application and substance");
   }
 
@@ -207,20 +207,20 @@ public class SingleThreadEngineTest {
     engine.setSubstance("test substance");
 
     // Set a stream with year matcher that should apply
-    engine.enable("manufacture", Optional.empty());
+    engine.enable("domestic", Optional.empty());
     EngineNumber value = new EngineNumber(BigDecimal.valueOf(10), "kg");
     YearMatcher matcher = new YearMatcher(Optional.of(1), Optional.empty());
-    engine.setStream("manufacture", value, Optional.ofNullable(matcher));
+    engine.setStream("domestic", value, Optional.ofNullable(matcher));
 
-    EngineNumber result = engine.getStream("manufacture");
+    EngineNumber result = engine.getStream("domestic");
     assertEquals(BigDecimal.valueOf(10), result.getValue(), "Should set value when year matches");
 
     // Set a stream with year matcher that should not apply
     EngineNumber value2 = new EngineNumber(BigDecimal.valueOf(20), "kg");
     YearMatcher matcher2 = new YearMatcher(Optional.of(2), Optional.empty());
-    engine.setStream("manufacture", value2, Optional.ofNullable(matcher2));
+    engine.setStream("domestic", value2, Optional.ofNullable(matcher2));
 
-    EngineNumber result2 = engine.getStream("manufacture");
+    EngineNumber result2 = engine.getStream("domestic");
     assertEquals(BigDecimal.valueOf(10), result2.getValue(),
         "Should not change value when year doesn't match");
   }
@@ -237,15 +237,15 @@ public class SingleThreadEngineTest {
     engine.setSubstance("test substance");
 
     // Set initial value
-    engine.enable("manufacture", Optional.empty());
+    engine.enable("domestic", Optional.empty());
     EngineNumber initialValue = new EngineNumber(BigDecimal.valueOf(10), "kg");
-    engine.setStream("manufacture", initialValue, Optional.empty());
+    engine.setStream("domestic", initialValue, Optional.empty());
 
     // Change stream by a delta
     EngineNumber delta = new EngineNumber(BigDecimal.valueOf(5), "kg");
-    engine.changeStream("manufacture", delta, null);
+    engine.changeStream("domestic", delta, null);
 
-    EngineNumber result = engine.getStream("manufacture");
+    EngineNumber result = engine.getStream("domestic");
     assertEquals(BigDecimal.valueOf(15), result.getValue(), "Should add delta to original value");
     assertEquals("kg", result.getUnits(), "Should maintain original units");
   }
@@ -262,16 +262,16 @@ public class SingleThreadEngineTest {
     engine.setSubstance("test substance");
 
     // Set initial value
-    engine.enable("manufacture", Optional.empty());
+    engine.enable("domestic", Optional.empty());
     EngineNumber initialValue = new EngineNumber(BigDecimal.valueOf(10), "kg");
-    engine.setStream("manufacture", initialValue, Optional.empty());
+    engine.setStream("domestic", initialValue, Optional.empty());
 
     // Change stream with year matcher that should apply
     EngineNumber delta = new EngineNumber(BigDecimal.valueOf(5), "kg");
     YearMatcher matcher = new YearMatcher(Optional.of(1), Optional.empty());
-    engine.changeStream("manufacture", delta, matcher);
+    engine.changeStream("domestic", delta, matcher);
 
-    EngineNumber result = engine.getStream("manufacture");
+    EngineNumber result = engine.getStream("domestic");
     assertEquals(
         BigDecimal.valueOf(15),
         result.getValue(),
@@ -281,9 +281,9 @@ public class SingleThreadEngineTest {
     // Try to change stream with year matcher that should not apply
     EngineNumber delta2 = new EngineNumber(BigDecimal.valueOf(10), "kg");
     YearMatcher matcher2 = new YearMatcher(Optional.of(2), Optional.empty());
-    engine.changeStream("manufacture", delta2, matcher2);
+    engine.changeStream("domestic", delta2, matcher2);
 
-    EngineNumber result2 = engine.getStream("manufacture");
+    EngineNumber result2 = engine.getStream("domestic");
     assertEquals(BigDecimal.valueOf(15), result2.getValue(),
         "Should not apply change when year doesn't match");
   }
@@ -300,15 +300,15 @@ public class SingleThreadEngineTest {
     engine.setSubstance("test substance");
 
     // Set initial value
-    engine.enable("manufacture", Optional.empty());
+    engine.enable("domestic", Optional.empty());
     EngineNumber initialValue = new EngineNumber(BigDecimal.valueOf(10), "kg");
-    engine.setStream("manufacture", initialValue, Optional.ofNullable(YearMatcher.unbounded()));
+    engine.setStream("domestic", initialValue, Optional.ofNullable(YearMatcher.unbounded()));
 
     // Change by 10% when year doesn't match (should not apply)
     EngineNumber percentChange = new EngineNumber(BigDecimal.valueOf(10), "%");
-    engine.changeStream("manufacture", percentChange, new YearMatcher(2, null));
+    engine.changeStream("domestic", percentChange, new YearMatcher(2, null));
 
-    EngineNumber result1 = engine.getStream("manufacture");
+    EngineNumber result1 = engine.getStream("domestic");
     assertEquals(
         BigDecimal.valueOf(10),
         result1.getValue(),
@@ -320,9 +320,9 @@ public class SingleThreadEngineTest {
     engine.incrementYear();
 
     // Change by 10% when year matches (should apply)
-    engine.changeStream("manufacture", percentChange, YearMatcher.unbounded());
+    engine.changeStream("domestic", percentChange, YearMatcher.unbounded());
 
-    EngineNumber result2 = engine.getStream("manufacture");
+    EngineNumber result2 = engine.getStream("domestic");
     assertEquals(0, BigDecimal.valueOf(11).compareTo(result2.getValue()),
         "Should be 11 after 10% increase");
     assertEquals("kg", result2.getUnits(), "Should maintain kg units");
@@ -354,9 +354,9 @@ public class SingleThreadEngineTest {
     engine.setSubstance("test substance");
 
     // Set some stream values to ensure substance is registered
-    engine.enable("manufacture", Optional.empty());
+    engine.enable("domestic", Optional.empty());
     EngineNumber manufactureValue = new EngineNumber(BigDecimal.valueOf(100), "kg");
-    engine.setStream("manufacture", manufactureValue, Optional.empty());
+    engine.setStream("domestic", manufactureValue, Optional.empty());
 
     // Set up second substance
     engine.setApplication("test app 2");
@@ -401,8 +401,8 @@ public class SingleThreadEngineTest {
     engine.setStanza("default");
     engine.setApplication("test app");
     engine.setSubstance("test substance");
-    engine.enable("manufacture", Optional.empty());
-    engine.setStream("manufacture", new EngineNumber(BigDecimal.valueOf(100), "kg"), Optional.empty());
+    engine.enable("domestic", Optional.empty());
+    engine.setStream("domestic", new EngineNumber(BigDecimal.valueOf(100), "kg"), Optional.empty());
 
     // Get results for initial year
     List<EngineResult> results1 = engine.getResults();
@@ -430,13 +430,13 @@ public class SingleThreadEngineTest {
 
     // Set up sub1 with 10 kg/unit initial charge
     engine.setSubstance("sub1");
-    engine.enable("manufacture", Optional.empty());
+    engine.enable("domestic", Optional.empty());
     engine.setInitialCharge(
         new EngineNumber(BigDecimal.valueOf(10), "kg / unit"),
-        "manufacture",
+        "domestic",
         null
     );
-    engine.setStream("manufacture", new EngineNumber(BigDecimal.valueOf(100), "kg"), Optional.empty());
+    engine.setStream("domestic", new EngineNumber(BigDecimal.valueOf(100), "kg"), Optional.empty());
     engine.setStream("priorEquipment", new EngineNumber(BigDecimal.valueOf(20), "units"), Optional.empty());
     engine.recharge(
         new EngineNumber(BigDecimal.valueOf(10), "%"),
@@ -446,18 +446,18 @@ public class SingleThreadEngineTest {
 
     // Set up sub2 with 20 kg/unit initial charge
     engine.setSubstance("sub2");
-    engine.enable("manufacture", Optional.empty());
+    engine.enable("domestic", Optional.empty());
     engine.setInitialCharge(
         new EngineNumber(BigDecimal.valueOf(20), "kg / unit"),
-        "manufacture",
+        "domestic",
         null
     );
-    engine.setStream("manufacture", new EngineNumber(BigDecimal.valueOf(200), "kg"), Optional.empty());
+    engine.setStream("domestic", new EngineNumber(BigDecimal.valueOf(200), "kg"), Optional.empty());
 
     // Apply cap with displacement
     engine.setSubstance("sub1");
     engine.cap(
-        "manufacture",
+        "domestic",
         new EngineNumber(BigDecimal.valueOf(5), "units"),
         null,
         "sub2"
@@ -465,7 +465,7 @@ public class SingleThreadEngineTest {
 
     // Check sub1 was capped: 5 units * 10 kg/unit + recharge
     // (20 units * 10% * 10 kg/unit) = 50 + 20 = 70 kg
-    EngineNumber capVal = engine.getStream("manufacture");
+    EngineNumber capVal = engine.getStream("domestic");
     assertEquals(0, BigDecimal.valueOf(70).compareTo(capVal.getValue()),
         "Sub1 should be capped to 70 kg (50 kg + 20 kg recharge)");
     assertEquals("kg", capVal.getUnits(), "Sub1 should have kg units");
@@ -477,7 +477,7 @@ public class SingleThreadEngineTest {
     // 3 units in sub2 = 3 units * 20 kg/unit = 60 kg
     // Final sub2: 200 kg + 60 kg = 260 kg
     engine.setSubstance("sub2");
-    EngineNumber displaceVal = engine.getStream("manufacture");
+    EngineNumber displaceVal = engine.getStream("domestic");
     assertEquals(0, BigDecimal.valueOf(260).compareTo(displaceVal.getValue()),
         "Sub2 should receive displaced units: 200 kg + 60 kg = 260 kg");
     assertEquals("kg", displaceVal.getUnits(), "Sub2 should have kg units");
@@ -497,13 +497,13 @@ public class SingleThreadEngineTest {
 
     // Set up sub1 with 10 kg/unit initial charge
     engine.setSubstance("sub1");
-    engine.enable("manufacture", Optional.empty());
+    engine.enable("domestic", Optional.empty());
     engine.setInitialCharge(
         new EngineNumber(BigDecimal.valueOf(10), "kg / unit"),
-        "manufacture",
+        "domestic",
         null
     );
-    engine.setStream("manufacture", new EngineNumber(BigDecimal.valueOf(50), "kg"), Optional.empty());
+    engine.setStream("domestic", new EngineNumber(BigDecimal.valueOf(50), "kg"), Optional.empty());
     engine.setStream("priorEquipment", new EngineNumber(BigDecimal.valueOf(20), "units"), Optional.empty());
     engine.recharge(
         new EngineNumber(BigDecimal.valueOf(10), "%"),
@@ -513,18 +513,18 @@ public class SingleThreadEngineTest {
 
     // Set up sub2 with 20 kg/unit initial charge
     engine.setSubstance("sub2");
-    engine.enable("manufacture", Optional.empty());
+    engine.enable("domestic", Optional.empty());
     engine.setInitialCharge(
         new EngineNumber(BigDecimal.valueOf(20), "kg / unit"),
-        "manufacture",
+        "domestic",
         null
     );
-    engine.setStream("manufacture", new EngineNumber(BigDecimal.valueOf(200), "kg"), Optional.empty());
+    engine.setStream("domestic", new EngineNumber(BigDecimal.valueOf(200), "kg"), Optional.empty());
 
     // Apply floor with displacement
     engine.setSubstance("sub1");
     engine.floor(
-        "manufacture",
+        "domestic",
         new EngineNumber(BigDecimal.valueOf(10), "units"),
         null,
         "sub2"
@@ -532,7 +532,7 @@ public class SingleThreadEngineTest {
 
     // Check sub1 was floored: 10 units * 10 kg/unit + recharge
     // (20 units * 10% * 10 kg/unit) = 100 + 20 = 120 kg
-    EngineNumber floorVal = engine.getStream("manufacture");
+    EngineNumber floorVal = engine.getStream("domestic");
     assertEquals(0, BigDecimal.valueOf(120).compareTo(floorVal.getValue()),
         "Sub1 should be floored to 120 kg (100 kg + 20 kg recharge)");
     assertEquals("kg", floorVal.getUnits(), "Sub1 should have kg units");
@@ -544,7 +544,7 @@ public class SingleThreadEngineTest {
     // 7 units removed from sub2 = 7 units * 20 kg/unit = 140 kg
     // Final sub2: 200 kg - 140 kg = 60 kg
     engine.setSubstance("sub2");
-    EngineNumber displaceVal = engine.getStream("manufacture");
+    EngineNumber displaceVal = engine.getStream("domestic");
     assertEquals(0, BigDecimal.valueOf(60).compareTo(displaceVal.getValue()),
         "Sub2 should receive displaced units: 200 kg - 140 kg = 60 kg");
     assertEquals("kg", displaceVal.getUnits(), "Sub2 should have kg units");
@@ -565,38 +565,38 @@ public class SingleThreadEngineTest {
 
     // Set up substance A with 10 kg/unit initial charge
     engine.setSubstance("sub A");
-    engine.enable("manufacture", Optional.empty());
+    engine.enable("domestic", Optional.empty());
     engine.setInitialCharge(
         new EngineNumber(BigDecimal.valueOf(10), "kg / unit"),
-        "manufacture",
+        "domestic",
         YearMatcher.unbounded()
     );
-    engine.setStream("manufacture", new EngineNumber(BigDecimal.valueOf(50), "kg"),
+    engine.setStream("domestic", new EngineNumber(BigDecimal.valueOf(50), "kg"),
         Optional.of(YearMatcher.unbounded()));
 
     // Set up substance B with 20 kg/unit initial charge
     engine.setSubstance("sub B");
-    engine.enable("manufacture", Optional.empty());
+    engine.enable("domestic", Optional.empty());
     engine.setInitialCharge(
         new EngineNumber(BigDecimal.valueOf(20), "kg / unit"),
-        "manufacture",
+        "domestic",
         YearMatcher.unbounded()
     );
-    engine.setStream("manufacture", new EngineNumber(BigDecimal.valueOf(0), "kg"),
+    engine.setStream("domestic", new EngineNumber(BigDecimal.valueOf(0), "kg"),
         Optional.of(YearMatcher.unbounded()));
 
     // Go back to substance A and replace 2 units with substance B
     engine.setSubstance("sub A");
     engine.replace(
         new EngineNumber(BigDecimal.valueOf(2), "units"),
-        "manufacture",
+        "domestic",
         "sub B",
         YearMatcher.unbounded()
     );
 
     // Check substance A: should lose 2 units * 10 kg/unit = 20 kg
     // Original: 50 kg, after replace: 30 kg
-    EngineNumber substanceOneResult = engine.getStream("manufacture");
+    EngineNumber substanceOneResult = engine.getStream("domestic");
     assertEquals(0, BigDecimal.valueOf(30).compareTo(substanceOneResult.getValue()),
         "Sub A should lose 20 kg (2 units * 10 kg/unit): 50 - 20 = 30");
     assertEquals("kg", substanceOneResult.getUnits(), "Sub A should have kg units");
@@ -604,7 +604,7 @@ public class SingleThreadEngineTest {
     // Check substance B: should gain 2 units * 20 kg/unit = 40 kg
     // Original: 0 kg, after replace: 40 kg
     engine.setSubstance("sub B");
-    EngineNumber substanceTwoResult = engine.getStream("manufacture");
+    EngineNumber substanceTwoResult = engine.getStream("domestic");
     assertEquals(0, BigDecimal.valueOf(40).compareTo(substanceTwoResult.getValue()),
         "Sub B should gain 40 kg (2 units * 20 kg/unit): 0 + 40 = 40");
     assertEquals("kg", substanceTwoResult.getUnits(), "Sub B should have kg units");
@@ -623,7 +623,7 @@ public class SingleThreadEngineTest {
     engine.setSubstance("test substance");
 
     // Enable manufacture stream
-    engine.enable("manufacture", Optional.empty());
+    engine.enable("domestic", Optional.empty());
 
     // Test passes if no exception is thrown
     assertTrue(true, "Enable method should execute without error for manufacture stream");
@@ -681,7 +681,7 @@ public class SingleThreadEngineTest {
 
     // Enable manufacture stream with year matcher
     YearMatcher yearMatcher = YearMatcher.unbounded();
-    engine.enable("manufacture", Optional.of(yearMatcher));
+    engine.enable("domestic", Optional.of(yearMatcher));
 
     // Test passes if no exception is thrown
     assertTrue(true, "Enable method should execute without error with year matcher");
@@ -695,7 +695,7 @@ public class SingleThreadEngineTest {
     SingleThreadEngine engine = new SingleThreadEngine(2020, 2025);
 
     // Don't set up scope - should throw error
-    assertThrows(RuntimeException.class, () -> engine.enable("manufacture", Optional.empty()),
+    assertThrows(RuntimeException.class, () -> engine.enable("domestic", Optional.empty()),
         "Enable method should throw error when called without proper scope");
   }
 

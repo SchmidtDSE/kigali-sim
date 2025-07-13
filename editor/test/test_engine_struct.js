@@ -70,9 +70,9 @@ function buildEngineStructTests() {
 
     QUnit.test("getManufacture", function (assert) {
       const result = makeExample();
-      const manufacture = result.getManufacture();
-      assert.closeTo(manufacture.getValue(), 100, 0.0001);
-      assert.deepEqual(manufacture.getUnits(), "kg");
+      const domestic = result.getManufacture();
+      assert.closeTo(domestic.getValue(), 100, 0.0001);
+      assert.deepEqual(domestic.getUnits(), "kg");
     });
 
     QUnit.test("getImport", function (assert) {
@@ -236,9 +236,9 @@ function buildEngineStructTests() {
 
     QUnit.test("getManufacture", function (assert) {
       const result = makeExample();
-      const manufacture = result.getManufacture();
-      assert.closeTo(manufacture.getValue(), 100, 0.0001);
-      assert.deepEqual(manufacture.getUnits(), "kg");
+      const domestic = result.getManufacture();
+      assert.closeTo(domestic.getValue(), 100, 0.0001);
+      assert.deepEqual(domestic.getUnits(), "kg");
     });
 
     QUnit.test("getImport", function (assert) {
@@ -489,7 +489,7 @@ function buildEngineStructTests() {
   QUnit.module("AggregatedResult", function () {
     const makeExample = () => {
       return new AggregatedResult(
-        new EngineNumber(100, "kg"), // manufacture
+        new EngineNumber(100, "kg"), // domestic
         new EngineNumber(50, "kg"), // import
         new EngineNumber(25, "kg"), // recycle
         new EngineNumber(30, "kg"), // export
@@ -512,9 +512,9 @@ function buildEngineStructTests() {
 
     QUnit.test("getManufacture", function (assert) {
       const result = makeExample();
-      const manufacture = result.getManufacture();
-      assert.closeTo(manufacture.getValue(), 100, 0.0001);
-      assert.deepEqual(manufacture.getUnits(), "kg");
+      const domestic = result.getManufacture();
+      assert.closeTo(domestic.getValue(), 100, 0.0001);
+      assert.deepEqual(domestic.getUnits(), "kg");
     });
 
     QUnit.test("getImport", function (assert) {
@@ -611,7 +611,7 @@ function buildEngineStructTests() {
     QUnit.test("combine", function (assert) {
       const result1 = makeExample();
       const result2 = new AggregatedResult(
-        new EngineNumber(50, "kg"), // manufacture
+        new EngineNumber(50, "kg"), // domestic
         new EngineNumber(25, "kg"), // import
         new EngineNumber(10, "kg"), // recycle
         new EngineNumber(15, "kg"), // export
