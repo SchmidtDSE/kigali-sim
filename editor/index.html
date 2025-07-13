@@ -258,6 +258,11 @@
                               >Limit (<span id="consumption-limit-count">0</span>)</a
                             >
                           </li>
+                          <li>
+                            <a href="#consumption-servicing"
+                              >Servicing (<span id="consumption-servicing-count">0</span>)</a
+                            >
+                          </li>
                         </ul>
                         <div id="consumption-general">
                           <div class="instructions">
@@ -653,6 +658,22 @@
                           </div>
                           <div class="scope-reminder detached">
                             You are limiting <span class="reminder-substance"></span> used for
+                            <span class="reminder-app"></span>.
+                            <a href="#edit" class="edit-reminder-link">Change</a>
+                          </div>
+                        </div>
+                        <div id="consumption-servicing">
+                          <div class="instructions">
+                            Specify multiple recharge operations for equipment servicing. This can be used for both "top up" 
+                            operations (smaller amounts) and "repair" operations (amounts closer to initial charge). Multiple 
+                            recharge commands can be specified per substance/application pair.
+                          </div>
+                          <div class="dialog-list recharge-list"></div>
+                          <div class="dialog-sub-buttons bold-buttons">
+                            <a href="#" class="add-recharge-button secondary">Add Recharge</a>
+                          </div>
+                          <div class="scope-reminder detached">
+                            You are servicing <span class="reminder-substance"></span> used for
                             <span class="reminder-app"></span>.
                             <a href="#edit" class="edit-reminder-link">Change</a>
                           </div>
@@ -1597,6 +1618,49 @@
           <input type="text" class="duration-start short" aria-label="Start year of substance import">
           <span class="duration-to">to</span>
           <input type="text" class="duration-end short" aria-label="End year of substance import"> .
+        </span>
+        - <a href="#" class="delete-command-link">delete</a>
+      </div>
+    </script>
+
+    <script type="text/template" id="recharge-command-template">
+      <div class="recharge-command form-group">
+        Recharge
+        <input type="text" class="recharge-population-input short" placeholder="5" aria-label="Population to recharge">
+        <span class="sel mid">
+          <select class="recharge-population-units-input" aria-label="Population units">
+            <option value="%">%</option>
+            <option value="% each year">% each year</option>
+            <option value="units">units</option>
+            <option value="units each year">units each year</option>
+          </select>
+        </span>
+        with
+        <input type="text" class="recharge-volume-input short" placeholder="0.85" aria-label="Recharge volume">
+        <span class="sel mid">
+          <select class="recharge-volume-units-input" aria-label="Volume units">
+            <option value="kg / unit">kg / unit</option>
+            <option value="mt / unit">mt / unit</option>
+            <option value="tCO2e / unit">tCO2e / unit</option>
+            <option value="kwh / unit">kwh / unit</option>
+          </select>
+        </span>
+        <span class="recharge-duration-section">
+          <label><input type="checkbox" class="recharge-has-duration"> during</label>
+          <span class="recharge-duration-inputs" style="display: none;">
+            <span class="sel mid">
+              <select class="recharge-duration-type" aria-label="Duration type">
+                <option value="year">year</option>
+                <option value="years-range">years range</option>
+                <option value="years-onwards">years onwards</option>
+                <option value="years-beginning">years beginning</option>
+              </select>
+            </span>
+            <input type="text" class="recharge-year-start short" placeholder="2027" aria-label="Start year">
+            <span class="recharge-year-to" style="display: none;">to</span>
+            <input type="text" class="recharge-year-end short" placeholder="2030" style="display: none;" aria-label="End year">
+            <span class="recharge-onwards" style="display: none;">onwards</span>
+          </span>
         </span>
         - <a href="#" class="delete-command-link">delete</a>
       </div>
