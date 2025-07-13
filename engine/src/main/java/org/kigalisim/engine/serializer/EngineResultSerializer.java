@@ -125,7 +125,7 @@ public class EngineResultSerializer {
     // Offset sales
     EngineNumber manufactureValueOffset = new EngineNumber(
         manufactureKg.subtract(recycleKg.multiply(percentManufacture)), "kg");
-    builder.setManufactureValue(manufactureValueOffset);
+    builder.setDomesticValue(manufactureValueOffset);
 
     EngineNumber importValueOffset = new EngineNumber(
         importKg.subtract(recycleKg.multiply(percentImport)), "kg");

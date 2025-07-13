@@ -51,14 +51,14 @@ public class EngineResultSerializerTest {
     }
 
     /**
-     * Test that serializer gets manufacture value correctly.
+     * Test that serializer gets domestic value correctly.
      */
     @Test
-    public void testGetsManufactureValue() {
+    public void testGetsDomesticValue() {
       // Expected: 1600 mt - (10 mt * (1600/(1600+400))) = 1600 - 8 = 1592 mt = 1,592,000 kg
-      assertEquals(0, result.getManufacture().getValue().compareTo(BigDecimal.valueOf(1592000)),
-          "Manufacture value should be 1,592,000 kg");
-      assertEquals("kg", result.getManufacture().getUnits(), "Manufacture units should be kg");
+      assertEquals(0, result.getDomestic().getValue().compareTo(BigDecimal.valueOf(1592000)),
+          "Domestic value should be 1,592,000 kg");
+      assertEquals("kg", result.getDomestic().getUnits(), "Domestic units should be kg");
     }
 
     /**

@@ -348,7 +348,7 @@ function buildReportDataTests() {
       ],
     );
 
-    buildTest("gets domestic manfacture by metric", "/examples/multiple_with_policies_split.qta", [
+    buildTest("gets domestic domestic by metric", "/examples/multiple_with_policies_split.qta", [
       (result, assert) => {
         const filterSet = new FilterSet(
           1,
@@ -367,7 +367,7 @@ function buildReportDataTests() {
     ]);
 
     buildTest(
-      "gets domestic manfacture by metric with attribution",
+      "gets domestic domestic by metric with attribution",
       "/examples/multiple_with_policies_split.qta",
       [
         (result, assert) => {

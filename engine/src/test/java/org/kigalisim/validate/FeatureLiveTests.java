@@ -431,13 +431,13 @@ public class FeatureLiveTests {
 
     List<EngineResult> resultsList = results.collect(Collectors.toList());
 
-    // Check year 2026 - should have 110 mt = 110000 kg manufacture
+    // Check year 2026 - should have 110 mt = 110000 kg domestic
     EngineResult result = LiveTestsUtil.getResult(resultsList.stream(), 2026, "test", "test");
     assertNotNull(result, "Should have result for test/test in year 2026");
-    assertEquals(110000.0, result.getManufacture().getValue().doubleValue(), 0.0001,
-        "Manufacture should be 110000 kg");
-    assertEquals("kg", result.getManufacture().getUnits(),
-        "Manufacture units should be kg");
+    assertEquals(110000.0, result.getDomestic().getValue().doubleValue(), 0.0001,
+        "Domestic should be 110000 kg");
+    assertEquals("kg", result.getDomestic().getUnits(),
+        "Domestic units should be kg");
 
     // Check consumption value - should be 550 tCO2e (110 mt * 5 tCO2e/mt)
     assertEquals(550.0, result.getGhgConsumption().getValue().doubleValue(), 0.0001,

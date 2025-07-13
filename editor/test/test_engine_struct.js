@@ -68,9 +68,9 @@ function buildEngineStructTests() {
       assert.equal(result.getYear(), 2023);
     });
 
-    QUnit.test("getManufacture", function (assert) {
+    QUnit.test("getDomestic", function (assert) {
       const result = makeExample();
-      const domestic = result.getManufacture();
+      const domestic = result.getDomestic();
       assert.closeTo(domestic.getValue(), 100, 0.0001);
       assert.deepEqual(domestic.getUnits(), "kg");
     });
@@ -234,9 +234,9 @@ function buildEngineStructTests() {
       assert.equal(result.getYear(), 2023);
     });
 
-    QUnit.test("getManufacture", function (assert) {
+    QUnit.test("getDomestic", function (assert) {
       const result = makeExample();
-      const domestic = result.getManufacture();
+      const domestic = result.getDomestic();
       assert.closeTo(domestic.getValue(), 100, 0.0001);
       assert.deepEqual(domestic.getUnits(), "kg");
     });
@@ -378,7 +378,7 @@ function buildEngineStructTests() {
       builder.setYear(2023);
       builder.setScenarioName("test scenario");
       builder.setTrialNumber(1);
-      builder.setManufactureValue(new EngineNumber(100, "kg"));
+      builder.setDomesticValue(new EngineNumber(100, "kg"));
       builder.setImportValue(new EngineNumber(50, "kg"));
       builder.setExportValue(new EngineNumber(30, "kg"));
       builder.setRecycleValue(new EngineNumber(25, "kg"));
@@ -437,7 +437,7 @@ function buildEngineStructTests() {
       builder.setYear(2023);
       builder.setScenarioName("test scenario");
       builder.setTrialNumber(1);
-      builder.setManufactureValue(new EngineNumber(100, "kg"));
+      builder.setDomesticValue(new EngineNumber(100, "kg"));
       builder.setImportValue(new EngineNumber(50, "kg"));
       builder.setExportValue(new EngineNumber(30, "kg"));
       builder.setRecycleValue(new EngineNumber(25, "kg"));
@@ -465,7 +465,7 @@ function buildEngineStructTests() {
       builder.setYear(2023);
       builder.setScenarioName("test scenario");
       builder.setTrialNumber(1);
-      builder.setManufactureValue(new EngineNumber(100, "kg"));
+      builder.setDomesticValue(new EngineNumber(100, "kg"));
       builder.setImportValue(new EngineNumber(50, "kg"));
       builder.setExportValue(new EngineNumber(30, "kg"));
       builder.setRecycleValue(new EngineNumber(25, "kg"));
@@ -510,9 +510,9 @@ function buildEngineStructTests() {
       assert.notDeepEqual(result, undefined);
     });
 
-    QUnit.test("getManufacture", function (assert) {
+    QUnit.test("getDomestic", function (assert) {
       const result = makeExample();
-      const domestic = result.getManufacture();
+      const domestic = result.getDomestic();
       assert.closeTo(domestic.getValue(), 100, 0.0001);
       assert.deepEqual(domestic.getUnits(), "kg");
     });
@@ -627,7 +627,7 @@ function buildEngineStructTests() {
       );
 
       const combined = result1.combine(result2);
-      assert.closeTo(combined.getManufacture().getValue(), 150, 0.0001); // 100 + 50
+      assert.closeTo(combined.getDomestic().getValue(), 150, 0.0001); // 100 + 50
       assert.closeTo(combined.getImport().getValue(), 75, 0.0001); // 50 + 25
       assert.closeTo(combined.getRecycle().getValue(), 35, 0.0001); // 25 + 10
     });

@@ -35,10 +35,10 @@ function buildWasmBackendTests() {
           "Scenario name should be parsed correctly");
         assert.equal(results[0].getTrialNumber(), 1,
           "Trial number should be parsed correctly");
-        assert.equal(results[0].getManufacture().getValue(), 100,
-          "Manufacture value should be parsed correctly");
-        assert.equal(results[0].getManufacture().getUnits(), "kg",
-          "Manufacture units should be parsed correctly");
+        assert.equal(results[0].getDomestic().getValue(), 100,
+          "Domestic value should be parsed correctly");
+        assert.equal(results[0].getDomestic().getUnits(), "kg",
+          "Domestic units should be parsed correctly");
         assert.equal(results[0].getImport().getValue(), 50,
           "Import value should be parsed correctly");
         assert.equal(results[0].getImport().getUnits(), "kg",
@@ -105,12 +105,12 @@ function buildWasmBackendTests() {
         assert.equal(results.length, 1, "Should parse one result");
 
         const result = results[0];
-        assert.ok(result.getManufacture() instanceof EngineNumber,
-          "Manufacture should be EngineNumber");
-        assert.equal(result.getManufacture().getValue(), 100.5,
-          "Manufacture value should be correct");
-        assert.equal(result.getManufacture().getUnits(), "kg",
-          "Manufacture units should be correct");
+        assert.ok(result.getDomestic() instanceof EngineNumber,
+          "Domestic should be EngineNumber");
+        assert.equal(result.getDomestic().getValue(), 100.5,
+          "Domestic value should be correct");
+        assert.equal(result.getDomestic().getUnits(), "kg",
+          "Domestic units should be correct");
 
         assert.ok(result.getPopulation() instanceof EngineNumber,
           "Population should be EngineNumber");

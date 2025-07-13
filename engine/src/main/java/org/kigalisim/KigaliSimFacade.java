@@ -272,7 +272,7 @@ public class KigaliSimFacade {
     StringBuilder csvBuilder = new StringBuilder(estimatedCapacity);
 
     // Create header row - direct append with commas, including export fields
-    csvBuilder.append("scenario,trial,year,application,substance,manufacture,import,recycle,")
+    csvBuilder.append("scenario,trial,year,application,substance,domestic,import,recycle,")
               .append("domesticConsumption,importConsumption,recycleConsumption,population,")
               .append("populationNew,rechargeEmissions,eolEmissions,energyConsumption,")
               .append("export,exportConsumption,importInitialChargeValue,")
@@ -286,7 +286,7 @@ public class KigaliSimFacade {
                 .append(result.getYear()).append(',')
                 .append(result.getApplication()).append(',')
                 .append(result.getSubstance()).append(',')
-                .append(result.getManufacture().getValue()).append(',')
+                .append(result.getDomestic().getValue()).append(',')
                 .append(result.getImport().getValue()).append(',')
                 .append(result.getRecycle().getValue()).append(',')
                 .append(result.getDomesticConsumption().getValue()).append(',')
