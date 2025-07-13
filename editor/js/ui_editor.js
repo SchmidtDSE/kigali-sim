@@ -758,7 +758,9 @@ class ConsumptionListPresenter {
 
     const addLevelButton = self._root.querySelector(".add-start-button");
     const levelList = self._root.querySelector(".level-list");
-    setupListButton(addLevelButton, levelList, "set-command-template", initSetCommandUi);
+    setupListButton(addLevelButton, levelList, "set-command-template", (item, root) =>
+      initSetCommandUi(item, root, self._getCodeObj()),
+    );
 
     const addChangeButton = self._root.querySelector(".add-change-button");
     const changeList = self._root.querySelector(".change-list");
@@ -1413,7 +1415,9 @@ class PolicyListPresenter {
 
     const addLevelButton = self._root.querySelector(".add-level-button");
     const levelList = self._root.querySelector(".level-list");
-    setupListButton(addLevelButton, levelList, "set-command-template", initSetCommandUi);
+    setupListButton(addLevelButton, levelList, "set-command-template", (item, root) =>
+      initSetCommandUi(item, root, self._getCodeObj()),
+    );
 
     const addChangeButton = self._root.querySelector(".add-change-button");
     const changeList = self._root.querySelector(".change-list");
@@ -2085,12 +2089,93 @@ class UiEditorPresenter {
 }
 
 /**
+ * Gets enabled streams for a given substance by checking its enable commands.
+ *
+ * @param {string} substanceName - The name of the substance to check.
+ * @param {Object} codeObj - The code object containing substances data.
+ * @returns {Array<string>} Array of enabled stream names.
+ */
+function getEnabledStreamsForSubstance(substanceName, codeObj) {
+  const substances = codeObj.getSubstances();
+  const substance = substances.find((s) => s.getName() === substanceName);
+
+  if (!substance) return [];
+
+  const commands = substance.getCommands();
+  const enabledStreams = [];
+
+  commands.forEach((cmd) => {
+    if (cmd.getCommandName() === "enable") {
+      const target = cmd.getTarget();
+      if (target && ["manufacture", "import", "export"].includes(target)) {
+        enabledStreams.push(target);
+      }
+    }
+  });
+
+  return enabledStreams;
+}
+
+/**
+ * Gets the first enabled option from a select element.
+ *
+ * @param {HTMLSelectElement} selectElement - The select element to check.
+ * @returns {string} Value of the first enabled option, or 'sales' as fallback.
+ */
+function getFirstEnabledOption(selectElement) {
+  const options = selectElement.querySelectorAll("option:not([disabled])");
+  return options.length > 0 ? options[0].value : "sales";
+}
+
+/**
+ * Updates stream option disabled states based on enabled streams for a substance.
+ *
+ * @param {HTMLSelectElement} selectElement - The select element to update.
+ * @param {Array<string>} enabledStreams - Array of enabled stream names.
+ */
+function updateStreamOptionStates(selectElement, enabledStreams) {
+  const options = selectElement.querySelectorAll("option");
+  options.forEach((option) => {
+    const value = option.value;
+
+    // Always enable sales, equipment, priorEquipment
+    if (["sales", "equipment", "priorEquipment"].includes(value)) {
+      option.removeAttribute("disabled");
+    } else if (["manufacture", "import", "export"].includes(value)) {
+      // Enable stream options only if stream is enabled
+      if (enabledStreams.includes(value)) {
+        option.removeAttribute("disabled");
+      } else {
+        option.setAttribute("disabled", "disabled");
+      }
+    }
+  });
+}
+
+/**
  * Initializes a set command UI element.
  *
  * @param {Object} itemObj - The command object to initialize from.
  * @param {HTMLElement} root - The root element containing the UI.
+ * @param {Object} codeObj - Optional code object containing substances data.
  */
-function initSetCommandUi(itemObj, root) {
+function initSetCommandUi(itemObj, root, codeObj) {
+  // Get current substance name from the consumption dialog if available
+  let currentSubstanceName = null;
+  const substanceInput = document.querySelector(".edit-consumption-substance-input");
+  if (substanceInput && substanceInput.value) {
+    currentSubstanceName = substanceInput.value;
+  }
+
+  // Update stream options based on enabled streams if we have the necessary context
+  if (codeObj && currentSubstanceName) {
+    const enabledStreams = getEnabledStreamsForSubstance(currentSubstanceName, codeObj);
+    const targetSelect = root.querySelector(".set-target-input");
+    if (targetSelect) {
+      updateStreamOptionStates(targetSelect, enabledStreams);
+    }
+  }
+
   setFieldValue(root.querySelector(".set-target-input"), itemObj, "manufacture", (x) =>
     x.getTarget(),
   );
@@ -2189,6 +2274,26 @@ function initLimitCommandUi(itemObj, root, codeObj) {
     .text((x) => x);
 
   setFieldValue(root.querySelector(".limit-type-input"), itemObj, "cap", (x) => x.getTypeName());
+
+  // Update stream options based on substance selection
+  const updateLimitTargetOptions = () => {
+    const substanceSelect = root.querySelector(".substances-select");
+    const limitTargetSelect = root.querySelector(".limit-target-input");
+
+    if (substanceSelect && limitTargetSelect && substanceSelect.value) {
+      const enabledStreams = getEnabledStreamsForSubstance(substanceSelect.value, codeObj);
+      updateStreamOptionStates(limitTargetSelect, enabledStreams);
+    }
+  };
+
+  // Add event listener to update options when substance changes
+  const substanceSelectElement = root.querySelector(".substances-select");
+  if (substanceSelectElement) {
+    substanceSelectElement.addEventListener("change", updateLimitTargetOptions);
+    // Initial update
+    setTimeout(updateLimitTargetOptions, 0);
+  }
+
   setFieldValue(root.querySelector(".limit-target-input"), itemObj, "sales", (x) => x.getTarget());
   setEngineNumberValue(
     root.querySelector(".limit-amount-input"),

@@ -845,3 +845,13 @@ main {
   margin: 0;
   color: #666;
 }
+
+/* Styling for disabled options in stream target dropdowns */
+option[disabled] {
+  color: #999;
+  font-style: italic;
+}
+
+select option[disabled] {
+  background-color: #f5f5f5;
+}
