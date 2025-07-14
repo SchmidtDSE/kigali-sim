@@ -22,6 +22,7 @@ function buildLocalStorageKeeperTests() {
     end substance
   end application
 end default`;
+
       keeper.setSource(testCode);
       assert.equal(keeper.getSource(), testCode,
         "Should retrieve the same source code that was set");
@@ -73,6 +74,7 @@ end default`;
     end substance
   end application
 end default`;
+      
       keeper.setSource(qubecTalkCode);
       keeper.setHideIntroduction(true);
 
@@ -108,6 +110,7 @@ end default`;
     end substance
   end application
 end default`;
+      
       keeper.setSource(specialCode);
       assert.equal(keeper.getSource(), specialCode,
         "Should handle special characters in source code");
