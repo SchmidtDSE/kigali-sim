@@ -565,6 +565,69 @@ class MainPresenter {
 }
 
 /**
+ * Presenter for managing the privacy confirmation checkbox and dialog.
+ */
+class PrivacyConfirmationPresenter {
+  constructor() {
+    const self = this;
+    self._checkbox = document.getElementById("privacy-confirmation-check");
+    self._dialog = document.getElementById("privacy-confirmation-dialog");
+    self._closeButton = self._dialog.querySelector(".close-button");
+
+    self._setupEventListeners();
+  }
+
+  /**
+   * Set up event listeners for checkbox and dialog interactions.
+   */
+  _setupEventListeners() {
+    const self = this;
+
+    // Listen for checkbox changes
+    self._checkbox.addEventListener("change", (event) => {
+      if (!event.target.checked) {
+        self._showDialog();
+      }
+    });
+
+    // Listen for dialog close button
+    self._closeButton.addEventListener("click", (event) => {
+      event.preventDefault();
+      self._hideDialog();
+    });
+
+    // Listen for dialog close via ESC key or backdrop click
+    self._dialog.addEventListener("close", () => {
+      self._onDialogClose();
+    });
+  }
+
+  /**
+   * Show the privacy confirmation dialog.
+   */
+  _showDialog() {
+    const self = this;
+    self._dialog.showModal();
+  }
+
+  /**
+   * Hide the privacy confirmation dialog.
+   */
+  _hideDialog() {
+    const self = this;
+    self._dialog.close();
+  }
+
+  /**
+   * Handle dialog close event - re-check the checkbox.
+   */
+  _onDialogClose() {
+    const self = this;
+    self._checkbox.checked = true;
+  }
+}
+
+/**
  * Presenter for managing the introduction sequence.
  */
 class IntroductionPresenter {
@@ -644,6 +707,7 @@ function main() {
 
   const onLoad = () => {
     const mainPresenter = new MainPresenter();
+    const privacyPresenter = new PrivacyConfirmationPresenter();
     setTimeout(showApp, 500);
   };
 
