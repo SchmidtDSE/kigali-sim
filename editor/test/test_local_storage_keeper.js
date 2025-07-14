@@ -74,7 +74,7 @@ end default`;
     end substance
   end application
 end default`;
-      
+
       keeper.setSource(qubecTalkCode);
       keeper.setHideIntroduction(true);
 
@@ -110,7 +110,7 @@ end default`;
     end substance
   end application
 end default`;
-      
+
       keeper.setSource(specialCode);
       assert.equal(keeper.getSource(), specialCode,
         "Should handle special characters in source code");
