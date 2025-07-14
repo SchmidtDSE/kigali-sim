@@ -21,6 +21,7 @@ class LocalStorageKeeper {
    * @returns {string|null} The saved source code or null if not found
    */
   getSource() {
+    const self = this;
     return localStorage.getItem(LocalStorageKeeper.SOURCE_KEY);
   }
 
@@ -30,6 +31,7 @@ class LocalStorageKeeper {
    * @param {string} code - The source code to save
    */
   setSource(code) {
+    const self = this;
     localStorage.setItem(LocalStorageKeeper.SOURCE_KEY, code);
   }
 
@@ -39,6 +41,7 @@ class LocalStorageKeeper {
    * @returns {boolean} True if the introduction should be hidden, false otherwise
    */
   getHideIntroduction() {
+    const self = this;
     return localStorage.getItem(LocalStorageKeeper.HIDE_INTRODUCTION_KEY) === "true";
   }
 
@@ -48,6 +51,7 @@ class LocalStorageKeeper {
    * @param {boolean} hide - Whether to hide the introduction
    */
   setHideIntroduction(hide) {
+    const self = this;
     const value = Boolean(hide).toString();
     localStorage.setItem(LocalStorageKeeper.HIDE_INTRODUCTION_KEY, value);
   }
@@ -56,6 +60,7 @@ class LocalStorageKeeper {
    * Clear all local storage data.
    */
   clear() {
+    const self = this;
     localStorage.removeItem(LocalStorageKeeper.SOURCE_KEY);
     localStorage.removeItem(LocalStorageKeeper.HIDE_INTRODUCTION_KEY);
   }
