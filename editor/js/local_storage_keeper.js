@@ -7,18 +7,17 @@
 
 /**
  * Facade to manage local storage.
- * 
+ *
  * Facade to manage interactions with local storage for user preferences and
  * code.
  */
 class LocalStorageKeeper {
-
   static SOURCE_KEY = "source";
   static HIDE_INTRODUCTION_KEY = "hideIntroduction";
 
   /**
    * Get the user's saved source code from local storage.
-   * 
+   *
    * @returns {string|null} The saved source code or null if not found
    */
   getSource() {
@@ -27,7 +26,7 @@ class LocalStorageKeeper {
 
   /**
    * Save the user's source code to local storage.
-   * 
+   *
    * @param {string} code - The source code to save
    */
   setSource(code) {
@@ -36,7 +35,7 @@ class LocalStorageKeeper {
 
   /**
    * Get the user's introduction hiding preference from local storage.
-   * 
+   *
    * @returns {boolean} True if the introduction should be hidden, false otherwise
    */
   getHideIntroduction() {
@@ -45,7 +44,7 @@ class LocalStorageKeeper {
 
   /**
    * Set the user's introduction hiding preference in local storage.
-   * 
+   *
    * @param {boolean} hide - Whether to hide the introduction
    */
   setHideIntroduction(hide) {
