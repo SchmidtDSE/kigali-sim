@@ -153,7 +153,6 @@ class MainPresenter {
 
     // Initialize the local storage keeper
     self._localStorageKeeper = new LocalStorageKeeper();
-
     // Create progress callback
     const progressCallback = (progress) => {
       const percentage = Math.round(progress * 100);
@@ -197,6 +196,7 @@ class MainPresenter {
 
     self._onCodeChange();
     self._setupFileButtons();
+    self._setupStorageControls();
 
     // Initialize update utility and check for updates (fails silently if offline)
     self._updateUtil = new UpdateUtil();
@@ -565,14 +565,89 @@ class MainPresenter {
       }
     });
   }
+
+  /**
+   * Sets up storage control event handlers for checkbox and clear button.
+   * @private
+   */
+  _setupStorageControls() {
+    const self = this;
+
+    // Set up the save preferences checkbox
+    const savePreferencesCheckbox = document.getElementById("save-preferences-checkbox");
+    savePreferencesCheckbox.addEventListener("change", (event) => {
+      self._handleSavePreferencesChange(event.target.checked);
+    });
+
+    // Set up the clear data button
+    const clearDataButton = document.getElementById("clear-data-button");
+    clearDataButton.addEventListener("click", (event) => {
+      event.preventDefault();
+      self._handleClearDataClick();
+    });
+  }
+
+  /**
+   * Handles changes to the save preferences checkbox.
+   * @param {boolean} savePreferences - Whether to save preferences
+   * @private
+   */
+  _handleSavePreferencesChange(savePreferences) {
+    // For now, we only use LocalStorageKeeper
+    // This method is kept for future extensibility
+  }
+
+  /**
+   * Handles the clear data button click with confirmation.
+   * @private
+   */
+  _handleClearDataClick() {
+    const self = this;
+
+    const confirmed = window.confirm(
+      "This will clear all saved preferences and the current model you are " +
+      "working on in the designer and editor. Continue?",
+    );
+
+    if (confirmed) {
+      self._localStorageKeeper.clear();
+      self._resetApplicationState();
+    }
+  }
+
+  /**
+   * Resets application state after clearing data.
+   * @private
+   */
+  _resetApplicationState() {
+    const self = this;
+
+    // Clear the code editor
+    self._codeEditorPresenter.setCode("");
+
+    // Reset UI editor
+    self._uiEditorPresenter.refresh(null);
+
+    // Clear any results
+    self._resultsPresenter.clear();
+
+    // Hide results section
+    const resultsSection = document.getElementById("results");
+    resultsSection.style.display = "none";
+
+    // Update file save button
+    const saveButton = document.getElementById("save-file-button");
+    saveButton.href = "data:text/qubectalk;charset=utf-8,";
+  }
 }
 
 /**
  * Presenter for managing the introduction sequence.
  */
 class IntroductionPresenter {
-  constructor() {
+  constructor(localStorageKeeper) {
     const self = this;
+    self._localStorageKeeper = localStorageKeeper;
     self._loadingPanel = document.getElementById("loading");
     self._mainHolder = document.getElementById("main-holder");
   }
@@ -638,15 +713,14 @@ class IntroductionPresenter {
  * Main entry point for the application.
  */
 function main() {
-  const introPresenter = new IntroductionPresenter();
-
-  const showApp = async () => {
-    await introPresenter.initialize();
-    introPresenter._showMainContent();
-  };
-
   const onLoad = () => {
     const mainPresenter = new MainPresenter();
+    const introPresenter = new IntroductionPresenter(mainPresenter._localStorageKeeper);
+
+    const showApp = async () => {
+      await introPresenter.initialize();
+      introPresenter._showMainContent();
+    };
     setTimeout(showApp, 500);
   };
 
