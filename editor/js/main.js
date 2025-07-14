@@ -5,6 +5,7 @@
  */
 
 import {CodeEditorPresenter} from "code_editor";
+import {EphemeralStorageKeeper, LocalStorageKeeper} from "storage_keeper";
 import {ReportDataWrapper} from "report_data";
 import {ResultsPresenter} from "results";
 import {UiEditorPresenter} from "ui_editor";
@@ -151,6 +152,8 @@ class MainPresenter {
     // Initialize the running indicator presenter
     self._runningIndicatorPresenter = new RunningIndicatorPresenter();
 
+    // Initialize storage keeper (defaults to LocalStorageKeeper)
+    self._storageKeeper = new LocalStorageKeeper();
     // Create progress callback
     const progressCallback = (progress) => {
       const percentage = Math.round(progress * 100);
@@ -181,7 +184,7 @@ class MainPresenter {
       () => self._codeEditorPresenter.forceUpdate(),
     );
 
-    const source = localStorage.getItem("source");
+    const source = self._storageKeeper.getSource();
     if (source) {
       self._codeEditorPresenter.setCode(source);
       const results = self._getCodeAsObj();
@@ -194,6 +197,7 @@ class MainPresenter {
 
     self._onCodeChange();
     self._setupFileButtons();
+    self._setupStorageControls();
 
     // Initialize update utility and check for updates (fails silently if offline)
     self._updateUtil = new UpdateUtil();
@@ -215,7 +219,7 @@ class MainPresenter {
       self._buttonPanelPresenter.showScriptButtons();
       self._onBuild(false, false, false);
     }
-    localStorage.setItem("source", code);
+    self._storageKeeper.setSource(code);
 
     const encodedValue = encodeURI("data:text/qubectalk;charset=utf-8," + code);
     const saveButton = document.getElementById("save-file-button");
@@ -562,14 +566,126 @@ class MainPresenter {
       }
     });
   }
+
+  /**
+   * Sets up storage control event handlers for checkbox and clear button.
+   * @private
+   */
+  _setupStorageControls() {
+    const self = this;
+
+    // Set up the save preferences checkbox
+    const savePreferencesCheckbox = document.getElementById("save-preferences-checkbox");
+    savePreferencesCheckbox.addEventListener("change", (event) => {
+      self._handleSavePreferencesChange(event.target.checked);
+    });
+
+    // Set up the clear data button
+    const clearDataButton = document.getElementById("clear-data-button");
+    clearDataButton.addEventListener("click", (event) => {
+      event.preventDefault();
+      self._handleClearDataClick();
+    });
+  }
+
+  /**
+   * Handles changes to the save preferences checkbox.
+   * @param {boolean} savePreferences - Whether to save preferences
+   * @private
+   */
+  _handleSavePreferencesChange(savePreferences) {
+    const self = this;
+
+    if (savePreferences) {
+      // Switch from ephemeral to local storage
+      if (self._storageKeeper instanceof EphemeralStorageKeeper) {
+        const ephemeralData = {
+          source: self._storageKeeper.getSource(),
+          hideIntroduction: self._storageKeeper.getHideIntroduction(),
+        };
+
+        self._storageKeeper = new LocalStorageKeeper();
+
+        // Migrate data to local storage
+        if (ephemeralData.source) {
+          self._storageKeeper.setSource(ephemeralData.source);
+        }
+        if (ephemeralData.hideIntroduction) {
+          self._storageKeeper.setHideIntroduction(ephemeralData.hideIntroduction);
+        }
+      }
+    } else {
+      // Switch from local to ephemeral storage
+      if (self._storageKeeper instanceof LocalStorageKeeper) {
+        const localData = {
+          source: self._storageKeeper.getSource(),
+          hideIntroduction: self._storageKeeper.getHideIntroduction(),
+        };
+
+        self._storageKeeper = new EphemeralStorageKeeper();
+
+        // Migrate data to ephemeral storage
+        if (localData.source) {
+          self._storageKeeper.setSource(localData.source);
+        }
+        if (localData.hideIntroduction) {
+          self._storageKeeper.setHideIntroduction(localData.hideIntroduction);
+        }
+      }
+    }
+  }
+
+  /**
+   * Handles the clear data button click with confirmation.
+   * @private
+   */
+  _handleClearDataClick() {
+    const self = this;
+
+    const confirmed = window.confirm(
+      "This will clear all saved preferences and the current model you are " +
+      "working on in the designer and editor. Continue?",
+    );
+
+    if (confirmed) {
+      self._storageKeeper.clear();
+      self._resetApplicationState();
+    }
+  }
+
+  /**
+   * Resets application state after clearing data.
+   * @private
+   */
+  _resetApplicationState() {
+    const self = this;
+
+    // Clear the code editor
+    self._codeEditorPresenter.setCode("");
+
+    // Reset UI editor
+    self._uiEditorPresenter.refresh(null);
+
+    // Clear any results
+    self._resultsPresenter.clear();
+
+    // Hide results section
+    const resultsSection = document.getElementById("results");
+    resultsSection.style.display = "none";
+
+    // Update file save button
+    const saveButton = document.getElementById("save-file-button");
+    saveButton.href = "data:text/qubectalk;charset=utf-8,";
+  }
 }
 
 /**
  * Presenter for managing the introduction sequence.
  */
 class IntroductionPresenter {
-  constructor() {
+  constructor(storageKeeper) {
     const self = this;
+    self._storageKeeper = storageKeeper;
     self._loadingPanel = document.getElementById("loading");
     self._mainHolder = document.getElementById("main-holder");
   }
@@ -580,7 +696,7 @@ class IntroductionPresenter {
    */
   async initialize() {
     const self = this;
-    const hideIntroduction = localStorage.getItem(INTRODUCTION_PREFERENCE_KEY) === "true";
+    const hideIntroduction = self._storageKeeper.getHideIntroduction();
 
     if (hideIntroduction) {
       return Promise.resolve();
@@ -611,7 +727,7 @@ class IntroductionPresenter {
 
     dontShowAgainButton.onclick = (e) => {
       e.preventDefault();
-      localStorage.setItem(INTRODUCTION_PREFERENCE_KEY, "true");
+      self._storageKeeper.setHideIntroduction(true);
       loadingIndicator.style.display = "block";
       buttonPanel.style.display = "none";
       resolve();
@@ -635,15 +751,14 @@ class IntroductionPresenter {
  * Main entry point for the application.
  */
 function main() {
-  const introPresenter = new IntroductionPresenter();
-
-  const showApp = async () => {
-    await introPresenter.initialize();
-    introPresenter._showMainContent();
-  };
-
   const onLoad = () => {
     const mainPresenter = new MainPresenter();
+    const introPresenter = new IntroductionPresenter(mainPresenter._storageKeeper);
+
+    const showApp = async () => {
+      await introPresenter.initialize();
+      introPresenter._showMainContent();
+    };
     setTimeout(showApp, 500);
   };
 
