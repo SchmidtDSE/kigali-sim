@@ -5,6 +5,7 @@
  */
 
 import {CodeEditorPresenter} from "code_editor";
+import {LocalStorageKeeper} from "local_storage_keeper";
 import {ReportDataWrapper} from "report_data";
 import {ResultsPresenter} from "results";
 import {UiEditorPresenter} from "ui_editor";
@@ -60,7 +61,6 @@ class RunningIndicatorPresenter {
 }
 
 const HELP_TEXT = "Would you like our help in resolving this issue?";
-const INTRODUCTION_PREFERENCE_KEY = "hideIntroduction";
 
 const WHITESPACE_REGEX = new RegExp("^\\s*$");
 const NEW_FILE_MSG = [
@@ -151,6 +151,9 @@ class MainPresenter {
     // Initialize the running indicator presenter
     self._runningIndicatorPresenter = new RunningIndicatorPresenter();
 
+    // Initialize the local storage keeper
+    self._localStorageKeeper = new LocalStorageKeeper();
+
     // Create progress callback
     const progressCallback = (progress) => {
       const percentage = Math.round(progress * 100);
@@ -181,7 +184,7 @@ class MainPresenter {
       () => self._codeEditorPresenter.forceUpdate(),
     );
 
-    const source = localStorage.getItem("source");
+    const source = self._localStorageKeeper.getSource();
     if (source) {
       self._codeEditorPresenter.setCode(source);
       const results = self._getCodeAsObj();
@@ -215,7 +218,7 @@ class MainPresenter {
       self._buttonPanelPresenter.showScriptButtons();
       self._onBuild(false, false, false);
     }
-    localStorage.setItem("source", code);
+    self._localStorageKeeper.setSource(code);
 
     const encodedValue = encodeURI("data:text/qubectalk;charset=utf-8," + code);
     const saveButton = document.getElementById("save-file-button");
@@ -580,7 +583,7 @@ class IntroductionPresenter {
    */
   async initialize() {
     const self = this;
-    const hideIntroduction = localStorage.getItem(INTRODUCTION_PREFERENCE_KEY) === "true";
+    const hideIntroduction = self._localStorageKeeper.getHideIntroduction();
 
     if (hideIntroduction) {
       return Promise.resolve();
@@ -611,7 +614,7 @@ class IntroductionPresenter {
 
     dontShowAgainButton.onclick = (e) => {
       e.preventDefault();
-      localStorage.setItem(INTRODUCTION_PREFERENCE_KEY, "true");
+      self._localStorageKeeper.setHideIntroduction(true);
       loadingIndicator.style.display = "block";
       buttonPanel.style.display = "none";
       resolve();
