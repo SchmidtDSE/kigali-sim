@@ -5,7 +5,7 @@
  */
 
 import {CodeEditorPresenter} from "code_editor";
-import {EphemeralStorageKeeper, LocalStorageKeeper} from "storage_keeper";
+import {LocalStorageKeeper} from "local_storage_keeper";
 import {ReportDataWrapper} from "report_data";
 import {ResultsPresenter} from "results";
 import {UiEditorPresenter} from "ui_editor";
@@ -61,7 +61,6 @@ class RunningIndicatorPresenter {
 }
 
 const HELP_TEXT = "Would you like our help in resolving this issue?";
-const INTRODUCTION_PREFERENCE_KEY = "hideIntroduction";
 
 const WHITESPACE_REGEX = new RegExp("^\\s*$");
 const NEW_FILE_MSG = [
@@ -152,8 +151,8 @@ class MainPresenter {
     // Initialize the running indicator presenter
     self._runningIndicatorPresenter = new RunningIndicatorPresenter();
 
-    // Initialize storage keeper (defaults to LocalStorageKeeper)
-    self._storageKeeper = new LocalStorageKeeper();
+    // Initialize the local storage keeper
+    self._localStorageKeeper = new LocalStorageKeeper();
     // Create progress callback
     const progressCallback = (progress) => {
       const percentage = Math.round(progress * 100);
@@ -184,7 +183,7 @@ class MainPresenter {
       () => self._codeEditorPresenter.forceUpdate(),
     );
 
-    const source = self._storageKeeper.getSource();
+    const source = self._localStorageKeeper.getSource();
     if (source) {
       self._codeEditorPresenter.setCode(source);
       const results = self._getCodeAsObj();
@@ -219,7 +218,7 @@ class MainPresenter {
       self._buttonPanelPresenter.showScriptButtons();
       self._onBuild(false, false, false);
     }
-    self._storageKeeper.setSource(code);
+    self._localStorageKeeper.setSource(code);
 
     const encodedValue = encodeURI("data:text/qubectalk;charset=utf-8," + code);
     const saveButton = document.getElementById("save-file-button");
@@ -594,45 +593,8 @@ class MainPresenter {
    * @private
    */
   _handleSavePreferencesChange(savePreferences) {
-    const self = this;
-
-    if (savePreferences) {
-      // Switch from ephemeral to local storage
-      if (self._storageKeeper instanceof EphemeralStorageKeeper) {
-        const ephemeralData = {
-          source: self._storageKeeper.getSource(),
-          hideIntroduction: self._storageKeeper.getHideIntroduction(),
-        };
-
-        self._storageKeeper = new LocalStorageKeeper();
-
-        // Migrate data to local storage
-        if (ephemeralData.source) {
-          self._storageKeeper.setSource(ephemeralData.source);
-        }
-        if (ephemeralData.hideIntroduction) {
-          self._storageKeeper.setHideIntroduction(ephemeralData.hideIntroduction);
-        }
-      }
-    } else {
-      // Switch from local to ephemeral storage
-      if (self._storageKeeper instanceof LocalStorageKeeper) {
-        const localData = {
-          source: self._storageKeeper.getSource(),
-          hideIntroduction: self._storageKeeper.getHideIntroduction(),
-        };
-
-        self._storageKeeper = new EphemeralStorageKeeper();
-
-        // Migrate data to ephemeral storage
-        if (localData.source) {
-          self._storageKeeper.setSource(localData.source);
-        }
-        if (localData.hideIntroduction) {
-          self._storageKeeper.setHideIntroduction(localData.hideIntroduction);
-        }
-      }
-    }
+    // For now, we only use LocalStorageKeeper
+    // This method is kept for future extensibility
   }
 
   /**
@@ -648,7 +610,7 @@ class MainPresenter {
     );
 
     if (confirmed) {
-      self._storageKeeper.clear();
+      self._localStorageKeeper.clear();
       self._resetApplicationState();
     }
   }
@@ -683,9 +645,9 @@ class MainPresenter {
  * Presenter for managing the introduction sequence.
  */
 class IntroductionPresenter {
-  constructor(storageKeeper) {
+  constructor(localStorageKeeper) {
     const self = this;
-    self._storageKeeper = storageKeeper;
+    self._localStorageKeeper = localStorageKeeper;
     self._loadingPanel = document.getElementById("loading");
     self._mainHolder = document.getElementById("main-holder");
   }
@@ -696,7 +658,7 @@ class IntroductionPresenter {
    */
   async initialize() {
     const self = this;
-    const hideIntroduction = self._storageKeeper.getHideIntroduction();
+    const hideIntroduction = self._localStorageKeeper.getHideIntroduction();
 
     if (hideIntroduction) {
       return Promise.resolve();
@@ -727,7 +689,7 @@ class IntroductionPresenter {
 
     dontShowAgainButton.onclick = (e) => {
       e.preventDefault();
-      self._storageKeeper.setHideIntroduction(true);
+      self._localStorageKeeper.setHideIntroduction(true);
       loadingIndicator.style.display = "block";
       buttonPanel.style.display = "none";
       resolve();
@@ -753,7 +715,7 @@ class IntroductionPresenter {
 function main() {
   const onLoad = () => {
     const mainPresenter = new MainPresenter();
-    const introPresenter = new IntroductionPresenter(mainPresenter._storageKeeper);
+    const introPresenter = new IntroductionPresenter(mainPresenter._localStorageKeeper);
 
     const showApp = async () => {
       await introPresenter.initialize();
