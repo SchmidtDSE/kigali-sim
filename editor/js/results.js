@@ -70,6 +70,27 @@ function getWithMetaApplications(applicationNamesRaw) {
 }
 
 /**
+ * Adds equipment model meta-options to application names.
+ *
+ * Creates "Application - All Equipment" options for applications that have
+ * equipment models, similar to how getWithMetaApplications works for subapplications.
+ *
+ * @param {Array} applicationNamesRaw - Iterable of string application names.
+ */
+function getWithMetaEquipment(applicationNamesRaw) {
+  const applicationNames = Array.of(...applicationNamesRaw);
+  const withEquipment = applicationNames.filter((x) => {
+    const parts = x.split(" - ");
+    return parts.length >= 2 && !parts[1].startsWith("All");
+  });
+  const baseApplications = withEquipment.map((x) => x.split(" - ")[0]);
+  const uniqueApplications = Array.of(...new Set(baseApplications));
+  const equipmentAllOptions = uniqueApplications.map((x) => x + " - All Equipment");
+  const newEquipmentOptions = equipmentAllOptions.filter((x) => applicationNames.indexOf(x) == -1);
+  return newEquipmentOptions.concat(applicationNames);
+}
+
+/**
  * Main presenter class for displaying simulation results.
  */
 class ResultsPresenter {
@@ -598,7 +619,9 @@ class DimensionCardPresenter {
     self._updateCard(
       "app",
       applicationsCard,
-      getWithMetaApplications(results.getApplications(self._filterSet.getWithApplication(null))),
+      getWithMetaEquipment(
+        getWithMetaApplications(results.getApplications(self._filterSet.getWithApplication(null))),
+      ),
       applicationsSelected,
       self._filterSet.getApplication(),
       (x) => self._filterSet.getWithApplication(x),
@@ -852,7 +875,7 @@ class CenterChartPresenter {
       const dimensionValuesRaw = Array.of(...results.getDimensionValues(filterSet));
 
       if (filterSet.getDimension() === "applications") {
-        return getWithMetaApplications(dimensionValuesRaw);
+        return getWithMetaEquipment(getWithMetaApplications(dimensionValuesRaw));
       } else {
         return dimensionValuesRaw;
       }
@@ -1009,7 +1032,7 @@ class SelectorTitlePresenter {
     const applications = results.getApplications(self._filterSet.getWithApplication(null));
     self._updateDynamicDropdown(
       applicationDropdown,
-      getWithMetaApplications(applications),
+      getWithMetaEquipment(getWithMetaApplications(applications)),
       applicationSelected,
       "All Applications",
     );
