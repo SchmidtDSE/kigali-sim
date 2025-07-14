@@ -12,7 +12,16 @@ function buildLocalStorageKeeperTests() {
       const keeper = new LocalStorageKeeper();
 
       // Test setting and getting source code
-      const testCode = "function test() { return 42; }";
+      const testCode = `start default
+  define application "refrigeration"
+    uses substance "HFC-134a"
+      enable manufacture
+      initial charge with 0.15 kg / unit for manufacture
+      set manufacture to 500 mt during year 1
+      equals 1430 tCO2e / mt
+    end substance
+  end application
+end default`;
       keeper.setSource(testCode);
       assert.equal(keeper.getSource(), testCode,
         "Should retrieve the same source code that was set");
@@ -56,11 +65,19 @@ function buildLocalStorageKeeperTests() {
       const keeper = new LocalStorageKeeper();
 
       // Set both values
-      keeper.setSource("test code");
+      const qubecTalkCode = `start default
+  define application "test"
+    uses substance "test"
+      enable manufacture
+      set manufacture to 100 mt
+    end substance
+  end application
+end default`;
+      keeper.setSource(qubecTalkCode);
       keeper.setHideIntroduction(true);
 
       // Verify they are set
-      assert.equal(keeper.getSource(), "test code", "Source should be set before clear");
+      assert.equal(keeper.getSource(), qubecTalkCode, "Source should be set before clear");
       assert.equal(keeper.getHideIntroduction(), true,
         "Hide introduction should be set before clear");
 
@@ -81,7 +98,16 @@ function buildLocalStorageKeeperTests() {
       const keeper = new LocalStorageKeeper();
 
       // Test with special characters in source
-      const specialCode = "function test() { return \"hello\\nworld\"; }";
+      const specialCode = `start default
+  define application "test app"
+    uses substance "test-substance"
+      enable manufacture
+      # Comment with special chars: @#$%^&*()
+      set manufacture to 50 mt during year 1
+      equals 100 tCO2e / mt
+    end substance
+  end application
+end default`;
       keeper.setSource(specialCode);
       assert.equal(keeper.getSource(), specialCode,
         "Should handle special characters in source code");
