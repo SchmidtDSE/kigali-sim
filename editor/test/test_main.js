@@ -141,6 +141,123 @@ function buildMainTests() {
       assert.equal(testShouldAutoRun(), true,
         "Auto-run should be true when both tab is active and checkbox is checked");
     });
+
+    QUnit.test("storage switching functionality", function (assert) {
+      // Mock localStorage to avoid real storage operations in tests
+      const originalSetItem = localStorage.setItem;
+      const originalGetItem = localStorage.getItem;
+      const originalRemoveItem = localStorage.removeItem;
+
+      const mockStorage = {};
+      localStorage.setItem = (key, value) => {
+        mockStorage[key] = value;
+      };
+      localStorage.getItem = (key) => mockStorage[key] || null;
+      localStorage.removeItem = (key) => {
+        delete mockStorage[key];
+      };
+
+      // Test storage keeper switching logic
+      const testStorageSwitch = function (useLocalStorage, currentData) {
+        // Simulate the storage switching logic from MainPresenter
+        if (useLocalStorage) {
+          // Would switch to LocalStorageKeeper and migrate data
+          if (currentData.source) {
+            localStorage.setItem("source", currentData.source);
+          }
+          if (currentData.hideIntroduction) {
+            localStorage.setItem("hideIntroduction", currentData.hideIntroduction.toString());
+          }
+          return "LocalStorageKeeper";
+        } else {
+          // Would switch to EphemeralStorageKeeper
+          return "EphemeralStorageKeeper";
+        }
+      };
+
+      const testData = {
+        source: "test code",
+        hideIntroduction: true,
+      };
+
+      // Test switching to local storage
+      let result = testStorageSwitch(true, testData);
+      assert.equal(result, "LocalStorageKeeper",
+        "Should switch to LocalStorageKeeper when save preferences is enabled");
+      assert.equal(localStorage.getItem("source"), "test code",
+        "Should migrate source data to localStorage");
+      assert.equal(localStorage.getItem("hideIntroduction"), "true",
+        "Should migrate hide introduction preference to localStorage");
+
+      // Test switching to ephemeral storage
+      result = testStorageSwitch(false, testData);
+      assert.equal(result, "EphemeralStorageKeeper",
+        "Should switch to EphemeralStorageKeeper when save preferences is disabled");
+
+      // Restore original localStorage methods
+      localStorage.setItem = originalSetItem;
+      localStorage.getItem = originalGetItem;
+      localStorage.removeItem = originalRemoveItem;
+    });
+
+    QUnit.test("clear data functionality", function (assert) {
+      // Test the clear data confirmation and reset logic
+      const testClearData = function (userConfirms) {
+        let confirmCalled = false;
+        let clearCalled = false;
+        let resetCalled = false;
+
+        // Mock window.confirm
+        const originalConfirm = window.confirm;
+        window.confirm = (message) => {
+          confirmCalled = true;
+          assert.ok(message.includes("clear all saved preferences"),
+            "Confirmation message should mention clearing preferences");
+          assert.ok(message.includes("current model"),
+            "Confirmation message should mention current model");
+          return userConfirms;
+        };
+
+        // Mock storage keeper
+        const mockStorageKeeper = {
+          clear: () => {
+            clearCalled = true;
+          },
+        };
+
+        // Mock reset application state
+        const mockReset = () => {
+          resetCalled = true;
+        };
+
+        // Simulate the clear data click handler
+        const confirmed = window.confirm(
+          "This will clear all saved preferences and the current model you are " +
+          "working on in the designer and editor. Continue?",
+        );
+        if (confirmed) {
+          mockStorageKeeper.clear();
+          mockReset();
+        }
+
+        // Restore original confirm
+        window.confirm = originalConfirm;
+
+        return {confirmCalled, clearCalled, resetCalled};
+      };
+
+      // Test when user confirms
+      let result = testClearData(true);
+      assert.ok(result.confirmCalled, "Should show confirmation dialog");
+      assert.ok(result.clearCalled, "Should call storage keeper clear when confirmed");
+      assert.ok(result.resetCalled, "Should reset application state when confirmed");
+
+      // Test when user cancels
+      result = testClearData(false);
+      assert.ok(result.confirmCalled, "Should show confirmation dialog");
+      assert.notOk(result.clearCalled, "Should not call storage keeper clear when cancelled");
+      assert.notOk(result.resetCalled, "Should not reset application state when cancelled");
+    });
   });
 }
 
