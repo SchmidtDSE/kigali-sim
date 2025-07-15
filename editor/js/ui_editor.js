@@ -31,6 +31,18 @@ const STREAM_TARGET_SELECTORS = [
 ];
 
 /**
+ * Stream types that can be enabled/disabled based on substance configuration.
+ * @constant {Array<string>}
+ */
+const ENABLEABLE_STREAMS = ["manufacture", "import", "export"];
+
+/**
+ * Stream types that are always available regardless of substance configuration.
+ * @constant {Array<string>}
+ */
+const ALWAYS_ON_STREAMS = ["sales", "equipment", "priorEquipment"];
+
+/**
  * Updates the visibility of selector elements based on selected duration type.
  *
  * @param {HTMLElement} dateSelector - The date selector element to update.
@@ -2321,9 +2333,9 @@ class StreamSelectionAvailabilityUpdater {
     options.forEach((option) => {
       const value = option.value;
 
-      if (["sales", "equipment", "priorEquipment"].includes(value)) {
+      if (ALWAYS_ON_STREAMS.includes(value)) {
         option.removeAttribute("disabled");
-      } else if (["manufacture", "import", "export"].includes(value)) {
+      } else if (ENABLEABLE_STREAMS.includes(value)) {
         if (enabledStreams.includes(value)) {
           option.removeAttribute("disabled");
         } else {
@@ -2373,7 +2385,7 @@ class StreamSelectionAvailabilityUpdater {
       const enableCommands = substance.getEnables();
       return enableCommands
         .map((cmd) => cmd.getTarget())
-        .filter((x) => ["manufacture", "import", "export"].includes(x));
+        .filter((x) => ENABLEABLE_STREAMS.includes(x));
     }
 
     return [];
@@ -2547,34 +2559,24 @@ function initLimitCommandUi(itemObj, root, codeObj, context, streamUpdater) {
 
   setFieldValue(root.querySelector(".limit-type-input"), itemObj, "cap", (x) => x.getTypeName());
 
-  // Update stream options based on substance selection
+  // Add event listener to update options when substance changes
+  const substanceSelectElement = root.querySelector(".substances-select");
   const updateLimitTargetOptions = () => {
     const limitTargetSelect = root.querySelector(".limit-target-input");
-
     const enabledStreams = streamUpdater.getEnabledStreamsForCurrentContext(codeObj, null, context);
-
     streamUpdater.updateStreamOptionStates(limitTargetSelect, enabledStreams);
   };
-
-  // Update displacing options based on substance selection
   const updateDisplacingOptions = () => {
     const displacingSelect = root.querySelector(".displacing-input");
     if (displacingSelect) {
       const enabledStreams = streamUpdater.getEnabledStreamsForCurrentContext(
         codeObj, null, context,
       );
-
       streamUpdater.updateStreamOptionStates(displacingSelect, enabledStreams);
     }
   };
-
-  // Add event listener to update options when substance changes
-  const substanceSelectElement = root.querySelector(".substances-select");
   substanceSelectElement.addEventListener("change", updateLimitTargetOptions);
   substanceSelectElement.addEventListener("change", updateDisplacingOptions);
-  // Initial update
-  setTimeout(updateLimitTargetOptions, 0);
-  setTimeout(updateDisplacingOptions, 0);
 
   setFieldValue(root.querySelector(".limit-target-input"), itemObj, "sales", (x) => x.getTarget());
   setEngineNumberValue(
@@ -2588,6 +2590,10 @@ function initLimitCommandUi(itemObj, root, codeObj, context, streamUpdater) {
     x && x.getDisplacing ? (x.getDisplacing() === null ? "" : x.getDisplacing()) : "",
   );
   setDuring(root.querySelector(".duration-subcomponent"), itemObj, new YearMatcher(2, 10), true);
+
+  // Initial update of stream options
+  updateLimitTargetOptions();
+  updateDisplacingOptions();
 }
 
 /**
@@ -2694,34 +2700,24 @@ function initReplaceCommandUi(itemObj, root, codeObj, context, streamUpdater) {
     (x) => x.getVolume(),
   );
 
-  // Update stream options based on substance selection
+  // Add event listener to update options when substance changes
+  const substanceSelectElement = root.querySelector(".substances-select");
   const updateReplaceTargetOptions = () => {
     const replaceTargetSelect = root.querySelector(".replace-target-input");
-
     const enabledStreams = streamUpdater.getEnabledStreamsForCurrentContext(codeObj, null, context);
-
     streamUpdater.updateStreamOptionStates(replaceTargetSelect, enabledStreams);
   };
-
-  // Update displacing options based on substance selection
   const updateDisplacingOptions = () => {
     const displacingSelect = root.querySelector(".displacing-input");
     if (displacingSelect) {
       const enabledStreams = streamUpdater.getEnabledStreamsForCurrentContext(
         codeObj, null, context,
       );
-
       streamUpdater.updateStreamOptionStates(displacingSelect, enabledStreams);
     }
   };
-
-  // Add event listener to update options when substance changes
-  const substanceSelectElement = root.querySelector(".substances-select");
   substanceSelectElement.addEventListener("change", updateReplaceTargetOptions);
   substanceSelectElement.addEventListener("change", updateDisplacingOptions);
-  // Initial update
-  setTimeout(updateReplaceTargetOptions, 0);
-  setTimeout(updateDisplacingOptions, 0);
 
   setFieldValue(root.querySelector(".replace-target-input"), itemObj, "sales", (x) =>
     x.getSource(),
@@ -2732,6 +2728,10 @@ function initReplaceCommandUi(itemObj, root, codeObj, context, streamUpdater) {
   );
 
   setDuring(root.querySelector(".duration-subcomponent"), itemObj, new YearMatcher(2, 10), true);
+
+  // Initial update of stream options
+  updateReplaceTargetOptions();
+  updateDisplacingOptions();
 }
 
 /**
