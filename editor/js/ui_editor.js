@@ -847,11 +847,32 @@ class ConsumptionListPresenter {
       (x) => x.getName(),
     );
 
+    // Split application name to separate application and equipment model
+    const getApplicationAndEquipment = (fullAppName) => {
+      if (!fullAppName) {
+        return {application: "", equipment: ""};
+      }
+      const parts = fullAppName.split(" - ");
+      return {
+        application: parts[0] || "",
+        equipment: parts.slice(1).join(" - ") || "",
+      };
+    };
+
+    const appAndEquipment = getApplicationAndEquipment(applicationName);
+
     setFieldValue(
       self._dialog.querySelector(".edit-consumption-application-input"),
       objToShow,
       applicationNames[0],
-      (x) => applicationName,
+      (x) => appAndEquipment.application,
+    );
+
+    setFieldValue(
+      self._dialog.querySelector(".edit-consumption-equipment-input"),
+      objToShow,
+      "",
+      (x) => appAndEquipment.equipment,
     );
 
     setEngineNumberValue(
@@ -1104,18 +1125,30 @@ class ConsumptionListPresenter {
 
     const codeObj = self._getCodeObj();
 
-    if (self._editingName === null) {
-      const applicationName = getFieldValue(
+    // Helper function to combine application and equipment model
+    const getEffectiveApplicationName = () => {
+      const baseApplication = getFieldValue(
         self._dialog.querySelector(".edit-consumption-application-input"),
       );
+      const equipmentModel = getFieldValue(
+        self._dialog.querySelector(".edit-consumption-equipment-input"),
+      );
+
+      if (equipmentModel && equipmentModel.trim() !== "") {
+        return baseApplication + " - " + equipmentModel.trim();
+      }
+      return baseApplication;
+    };
+
+    if (self._editingName === null) {
+      const applicationName = getEffectiveApplicationName();
       codeObj.insertSubstance(null, applicationName, null, substance);
     } else {
       const objIdentifierRegex = /\"([^\"]+)\" for \"([^\"]+)\"/;
       const match = self._editingName.match(objIdentifierRegex);
       const substanceName = match[1];
       const applicationName = match[2];
-      const newAppInput = self._dialog.querySelector(".edit-consumption-application-input");
-      const newApplicationName = newAppInput.value;
+      const newApplicationName = getEffectiveApplicationName();
       codeObj.insertSubstance(applicationName, newApplicationName, substanceName, substance);
     }
 
