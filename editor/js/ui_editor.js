@@ -2558,26 +2558,6 @@ function initLimitCommandUi(itemObj, root, codeObj, context, streamUpdater) {
     .text((x) => x);
 
   setFieldValue(root.querySelector(".limit-type-input"), itemObj, "cap", (x) => x.getTypeName());
-
-  // Add event listener to update options when substance changes
-  const substanceSelectElement = root.querySelector(".substances-select");
-  const updateLimitTargetOptions = () => {
-    const limitTargetSelect = root.querySelector(".limit-target-input");
-    const enabledStreams = streamUpdater.getEnabledStreamsForCurrentContext(codeObj, null, context);
-    streamUpdater.updateStreamOptionStates(limitTargetSelect, enabledStreams);
-  };
-  const updateDisplacingOptions = () => {
-    const displacingSelect = root.querySelector(".displacing-input");
-    if (displacingSelect) {
-      const enabledStreams = streamUpdater.getEnabledStreamsForCurrentContext(
-        codeObj, null, context,
-      );
-      streamUpdater.updateStreamOptionStates(displacingSelect, enabledStreams);
-    }
-  };
-  substanceSelectElement.addEventListener("change", updateLimitTargetOptions);
-  substanceSelectElement.addEventListener("change", updateDisplacingOptions);
-
   setFieldValue(root.querySelector(".limit-target-input"), itemObj, "sales", (x) => x.getTarget());
   setEngineNumberValue(
     root.querySelector(".limit-amount-input"),
@@ -2590,6 +2570,28 @@ function initLimitCommandUi(itemObj, root, codeObj, context, streamUpdater) {
     x && x.getDisplacing ? (x.getDisplacing() === null ? "" : x.getDisplacing()) : "",
   );
   setDuring(root.querySelector(".duration-subcomponent"), itemObj, new YearMatcher(2, 10), true);
+
+  // Add event listener to update options when substance changes
+  const substanceSelectElement = root.querySelector(".substances-select");
+
+  const updateLimitTargetOptions = () => {
+    const limitTargetSelect = root.querySelector(".limit-target-input");
+    const enabledStreams = streamUpdater.getEnabledStreamsForCurrentContext(codeObj, null, context);
+    streamUpdater.updateStreamOptionStates(limitTargetSelect, enabledStreams);
+  };
+
+  const updateDisplacingOptions = () => {
+    const displacingSelect = root.querySelector(".displacing-input");
+    if (displacingSelect) {
+      const enabledStreams = streamUpdater.getEnabledStreamsForCurrentContext(
+        codeObj, null, context,
+      );
+      streamUpdater.updateStreamOptionStates(displacingSelect, enabledStreams);
+    }
+  };
+
+  substanceSelectElement.addEventListener("change", updateLimitTargetOptions);
+  substanceSelectElement.addEventListener("change", updateDisplacingOptions);
 
   // Initial update of stream options
   updateLimitTargetOptions();
