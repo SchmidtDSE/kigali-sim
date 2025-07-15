@@ -113,7 +113,6 @@ main {
 
 option[disabled] {
   color: #555555;
-  font-style: italic;
 }
 
 select option[disabled] {
