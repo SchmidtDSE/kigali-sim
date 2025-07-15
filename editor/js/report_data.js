@@ -871,7 +871,7 @@ class ReportDataWrapper {
     const withApp = stepWithSubapp(withYear, app, (x) => x.getApplication());
 
     const sub = filterSet.getSubstance();
-    const withSub = step(withApp, sub, (x) => x.getSubstance());
+    const withSub = stepWithSubapp(withApp, sub, (x) => x.getSubstance());
 
     return withSub;
   }
