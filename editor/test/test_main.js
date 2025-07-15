@@ -9,6 +9,7 @@ import {
   RunningIndicatorPresenter,
   ButtonPanelPresenter,
   MainPresenter,
+  PrivacyConfirmationPresenter,
 } from "main";
 
 function buildMainTests() {
@@ -36,6 +37,11 @@ function buildMainTests() {
       assert.notEqual(MainPresenter, null, "MainPresenter should not be null");
       // Note: Full initialization requires extensive DOM setup,
       // so we test class existence instead of full instantiation
+    });
+
+    QUnit.test("PrivacyConfirmationPresenter can be initialized", function (assert) {
+      const presenter = new PrivacyConfirmationPresenter();
+      assert.notEqual(presenter, null, "PrivacyConfirmationPresenter should be initialized");
     });
   });
 }
