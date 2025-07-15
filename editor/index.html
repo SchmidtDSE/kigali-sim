@@ -189,6 +189,15 @@
           </label>
         </p>
 
+        <p id="welcome-preferences">
+          <div class="storage-preferences">
+            <label>
+              <input type="checkbox" id="save-preferences-checkbox" checked>
+              💾 Save preferences and simulation locally
+            </label>
+          </div>
+        </p>
+
         <div id="initial-loading-indicator">
           <img src="/style/90-ring.svg" alt="Loading indicator" /> Loading please wait...
         </div>
@@ -1283,6 +1292,7 @@
         <a href="https://github.com/SchmidtDSE/montreal-protocol" target="_blank" class="secondary"
           >Open Source</a
         >
+        <a href="#" id="clear-data-button" class="secondary">Clear Data</a>
       </div>
     </footer>
 
@@ -1655,15 +1665,17 @@
           "engine_const": "./js/engine_const.js?v=EPOCH",
           "engine_number": "./js/engine_number.js?v=EPOCH",
           "engine_struct": "./js/engine_struct.js?v=EPOCH",
-          "year_matcher": "./js/year_matcher.js?v=EPOCH",
-          "wasm_backend": "./js/wasm_backend.js?v=EPOCH",
+          "local_storage_keeper": "./js/local_storage_keeper.js?v=EPOCH",
           "main": "./js/main.js?v=EPOCH",
           "report_data": "./js/report_data.js?v=EPOCH",
           "results": "./js/results.js?v=EPOCH",
+          "storage_keeper": "./js/storage_keeper.js?v=EPOCH",
           "ui_editor": "./js/ui_editor.js?v=EPOCH",
           "ui_translator": "./js/ui_translator.js?v=EPOCH",
           "updates": "./js/updates.js?v=EPOCH",
-          "user_config": "./js/user_config.js?v=EPOCH"
+          "user_config": "./js/user_config.js?v=EPOCH",
+          "wasm_backend": "./js/wasm_backend.js?v=EPOCH",
+          "year_matcher": "./js/year_matcher.js?v=EPOCH"
         }
       }
     </script>
