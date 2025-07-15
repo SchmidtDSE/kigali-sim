@@ -6,12 +6,23 @@
 
 import {CodeEditorPresenter} from "code_editor";
 import {LocalStorageKeeper} from "local_storage_keeper";
+import {EphemeralStorageKeeper} from "storage_keeper";
 import {ReportDataWrapper} from "report_data";
 import {ResultsPresenter} from "results";
 import {UiEditorPresenter} from "ui_editor";
 import {UiTranslatorCompiler} from "ui_translator";
 import {UpdateUtil} from "updates";
 import {WasmBackend, WasmLayer, BackendResult} from "wasm_backend";
+
+const INCOGNITO_MESSAGE = [
+  "This will clear your preferences and prior simulations upon closing this tab. Your preferences",
+  "and actions during this session will also be deleted when you close the tab. Do you want to",
+  "continue?",
+].join(" ");
+const CLEAR_ALL_DATA_MESSAGE = [
+  "This will clear all saved preferences and the current model you are working on in the designer",
+  "and editor. Do you want to continue?",
+].join(" ");
 
 /**
  * Manages the running indicator and progress bar display.
@@ -151,8 +162,10 @@ class MainPresenter {
     // Initialize the running indicator presenter
     self._runningIndicatorPresenter = new RunningIndicatorPresenter();
 
-    // Initialize the local storage keeper
-    self._localStorageKeeper = new LocalStorageKeeper();
+    // Initialize the storage keeper based on save preferences checkbox
+    const savePreferencesCheckbox = document.getElementById("save-preferences-checkbox");
+    const shouldSave = savePreferencesCheckbox.checked;
+    self._localStorageKeeper = shouldSave ? new LocalStorageKeeper() : new EphemeralStorageKeeper();
     // Create progress callback
     const progressCallback = (progress) => {
       const percentage = Math.round(progress * 100);
@@ -593,8 +606,31 @@ class MainPresenter {
    * @private
    */
   _handleSavePreferencesChange(savePreferences) {
-    // For now, we only use LocalStorageKeeper
-    // This method is kept for future extensibility
+    const self = this;
+
+    // Get current code before switching storage keepers
+    const currentCode = self._codeEditorPresenter.getCode();
+
+    // Switch to appropriate storage keeper
+    if (savePreferences) {
+      self._localStorageKeeper = new LocalStorageKeeper();
+      // Save current code to new storage keeper
+      if (currentCode) {
+        self._localStorageKeeper.setSource(currentCode);
+      }
+    } else {
+      // Ask for confirmation before clearing data
+      const confirmed = window.confirm(INCOGNITO_MESSAGE);
+      if (confirmed) {
+        // Clear the current storage keeper before switching
+        self._localStorageKeeper.clear();
+        self._localStorageKeeper = new EphemeralStorageKeeper();
+      } else {
+        // Re-check the checkbox if user cancels
+        const savePreferencesCheckbox = document.getElementById("save-preferences-checkbox");
+        savePreferencesCheckbox.checked = true;
+      }
+    }
   }
 
   /**
@@ -604,14 +640,12 @@ class MainPresenter {
   _handleClearDataClick() {
     const self = this;
 
-    const confirmed = window.confirm(
-      "This will clear all saved preferences and the current model you are " +
-      "working on in the designer and editor. Continue?",
-    );
+    const confirmed = window.confirm(CLEAR_ALL_DATA_MESSAGE);
 
     if (confirmed) {
       self._localStorageKeeper.clear();
       self._resetApplicationState();
+      window.location.reload();
     }
   }
 
@@ -749,4 +783,10 @@ function captureSentryMessage(message, level) {
   console.log("Sentry message not sent.", message, level);
 }
 
-export {main};
+export {
+  main,
+  IntroductionPresenter,
+  RunningIndicatorPresenter,
+  ButtonPanelPresenter,
+  MainPresenter,
+};
