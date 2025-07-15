@@ -111,6 +111,14 @@ main {
   padding-bottom: 30px;
 }
 
+option[disabled] {
+  color: #555555;
+}
+
+select option[disabled] {
+  background-color: #F0F0F0;
+}
+
 #code-editor .error-display {
   padding: 10px;
   border-radius: 5px;
