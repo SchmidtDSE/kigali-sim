@@ -865,6 +865,7 @@ class ConsumptionListPresenter {
       ._getCodeObj()
       .getApplications()
       .map((x) => x.getName());
+    
     const applicationSelect = self._dialog.querySelector(".application-select");
     d3.select(applicationSelect)
       .html("")
@@ -2249,10 +2250,8 @@ function getEnabledStreamsForSubstance(substanceName, codeObj) {
     if (typeof substance.getEnables === "function") {
       const enableCommands = substance.getEnables();
       return enableCommands
-        .filter((cmd) => {
-          return cmd.getTarget && ["manufacture", "import", "export"].includes(cmd.getTarget());
-        })
-        .map((cmd) => cmd.getTarget());
+        .map((cmd) => cmd.getTarget())
+        .filter((x) => ["manufacture", "import", "export"].includes(x));
     }
 
     // Check if substance has getCommands method (policy objects)
@@ -2312,46 +2311,34 @@ function getCurrentEnabledStreamsFromCheckboxes() {
  *
  * @param {string} substanceName - The name of the substance to check.
  * @param {Object} codeObj - Optional code object containing substances data.
+ * @param {string} context - The context like "consumption" in which this is executing.
  * @returns {Array<string>} Array of enabled stream names.
  */
 function getEnabledStreamsForCurrentContext(substanceName, codeObj, context) {
   if (context === "consumption") {
-    // In consumption dialog context, use checkbox state
     return getCurrentEnabledStreamsFromCheckboxes();
+  } else {
+    return getCurrentEnabledStreamsFromCode(substanceName, codeObj);
   }
+}
 
-  if (context === "policy") {
-    // In policy dialog context, use the selected substance from policy dialog
-    const policySubstanceInput = document.querySelector(
-      ".edit-policy-substance-input",
-    );
-    if (policySubstanceInput) {
-      let policySubstanceName = policySubstanceInput.value;
+/**
+ * Gets enabled streams for the current context, using the appropriate source.
+ * Consumption context: Uses checkboxes. Policy context: Uses substance selection.
+ *
+ * @param {string} substanceName - The name of the substance to check.
+ * @param {Object} codeObj - Optional code object containing substances data.
+ * @returns {Array<string>} Array of enabled stream names.
+ */
+function getCurrentEnabledStreamsFromCode(substanceName, codeObj) {
+  const firstName = policySubstanceInput.options[0].value;
+  const policySubstanceNameCandidate = policySubstanceInput.value;
+  const noneSelected = !policySubstanceNameCandidate &&
+    policySubstanceInput.options &&
+    policySubstanceInput.options.length > 0;
 
-      // If no value, try to get the first option as fallback
-      if (
-        !policySubstanceName &&
-        policySubstanceInput.options &&
-        policySubstanceInput.options.length > 0
-      ) {
-        policySubstanceName = policySubstanceInput.options[0].value;
-      }
-
-      if (policySubstanceName) {
-        return getEnabledStreamsForSubstance(policySubstanceName, codeObj);
-      }
-    }
-    // If no substance available in policy dialog, enable all streams as default
-    return ["manufacture", "import", "export"];
-  }
-
-  // Fallback: try to get from provided substance name
-  if (codeObj && substanceName) {
-    return getEnabledStreamsForSubstance(substanceName, codeObj);
-  }
-
-  // Final fallback: return empty array (all streams disabled)
-  return [];
+  const policySubstanceName = noneSelected ? firstName : policySubstanceNameCandidate;
+  return getEnabledStreamsForSubstance(policySubstanceName, codeObj);
 }
 
 /**
