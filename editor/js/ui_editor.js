@@ -85,8 +85,9 @@ function buildSetupListButton(postCallback) {
    * @param {HTMLElement} targetList - List element to add items to.
    * @param {string} templateId - ID of template to use for new items.
    * @param {Function} initUiCallback - Callback to invoke when item added.
+   * @param {string} context - Context for stream detection ('consumption' or 'policy').
    */
-  return (button, targetList, templateId, initUiCallback) => {
+  return (button, targetList, templateId, initUiCallback, context) => {
     button.addEventListener("click", (event) => {
       event.preventDefault();
 
@@ -102,7 +103,7 @@ function buildSetupListButton(postCallback) {
         postCallback();
       });
 
-      initUiCallback(null, newDiv);
+      initUiCallback(null, newDiv, context);
 
       setupDurationSelector(newDiv);
 
@@ -758,19 +759,21 @@ class ConsumptionListPresenter {
 
     const addLevelButton = self._root.querySelector(".add-start-button");
     const levelList = self._root.querySelector(".level-list");
-    setupListButton(addLevelButton, levelList, "set-command-template", (item, root) =>
-      initSetCommandUi(item, root, self._getCodeObj()),
-    );
+    setupListButton(addLevelButton, levelList, "set-command-template", (item, root, context) =>
+      initSetCommandUi(item, root, self._getCodeObj(), context),
+    "consumption");
 
     const addChangeButton = self._root.querySelector(".add-change-button");
     const changeList = self._root.querySelector(".change-list");
-    setupListButton(addChangeButton, changeList, "change-command-template", initChangeCommandUi);
+    setupListButton(addChangeButton, changeList, "change-command-template", (item, root, context) =>
+      initChangeCommandUi(item, root, self._getCodeObj(), context),
+    "consumption");
 
     const addLimitButton = self._root.querySelector(".add-limit-button");
     const limitList = self._root.querySelector(".limit-list");
-    setupListButton(addLimitButton, limitList, "limit-command-template", (item, root) =>
-      initLimitCommandUi(item, root, self._getCodeObj()),
-    );
+    setupListButton(addLimitButton, limitList, "limit-command-template", (item, root, context) =>
+      initLimitCommandUi(item, root, self._getCodeObj(), context),
+    "consumption");
 
     self._reminderPresenter = new ReminderPresenter(
       self._dialog,
@@ -962,7 +965,7 @@ class ConsumptionListPresenter {
       self._dialog.querySelector(".change-list"),
       document.getElementById("change-command-template").innerHTML,
       objToShow === null ? [] : objToShow.getChanges(),
-      initChangeCommandUi,
+      (item, root) => initChangeCommandUi(item, root, self._getCodeObj()),
       removeCallback,
     );
 
@@ -1072,6 +1075,36 @@ class ConsumptionListPresenter {
     } else {
       exportInputOuter.style.display = "none";
       exportInput.value = 0;
+    }
+
+    // Update stream target dropdowns in all open dialogs when checkbox states change
+    const substanceInput = self._dialog.querySelector(".edit-consumption-substance-input");
+    if (substanceInput && substanceInput.value) {
+      const currentSubstanceName = substanceInput.value;
+      // Create a temporary substance object with current checkbox states to get enabled streams
+      const tempEnabledStreams = [];
+      if (enableManufacture.checked) tempEnabledStreams.push("manufacture");
+      if (enableImport.checked) tempEnabledStreams.push("import");
+      if (enableExport.checked) tempEnabledStreams.push("export");
+
+      // Update all open dialogs with the new stream states
+      const streamTargetSelectors = [
+        ".set-target-input",
+        ".change-target-input",
+        ".limit-target-input",
+        ".replace-target-input",
+        ".displacing-input",
+      ];
+
+      streamTargetSelectors.forEach((selector) => {
+        const dropdowns = document.querySelectorAll(selector);
+        dropdowns.forEach((dropdown) => {
+          const dialog = dropdown.closest(".dialog");
+          if (dialog && (dialog.style.display !== "none") && !dialog.hasAttribute("hidden")) {
+            updateStreamOptionStates(dropdown, tempEnabledStreams);
+          }
+        });
+      });
     }
   }
 
@@ -1435,36 +1468,73 @@ class PolicyListPresenter {
     };
     const setupListButton = buildSetupListButton(updateHints);
 
+    // Add event listener for substance selection changes to update stream target dropdowns
+    const substanceInput = self._dialog.querySelector(".edit-policy-substance-input");
+    if (substanceInput) {
+      substanceInput.addEventListener("change", () => {
+        const selectedSubstance = substanceInput.value;
+        if (selectedSubstance) {
+          const codeObj = self._getCodeObj();
+          const enabledStreams = getEnabledStreamsForSubstance(selectedSubstance, codeObj);
+
+          // Update all stream target dropdowns in the policy dialog
+          const streamTargetSelectors = [
+            ".set-target-input",
+            ".change-target-input",
+            ".limit-target-input",
+            ".replace-target-input",
+            ".displacing-input",
+          ];
+
+          streamTargetSelectors.forEach((selector) => {
+            const dropdowns = self._dialog.querySelectorAll(selector);
+            dropdowns.forEach((dropdown) => {
+              updateStreamOptionStates(dropdown, enabledStreams);
+            });
+          });
+        }
+      });
+    }
+
     const addRecyclingButton = self._root.querySelector(".add-recycling-button");
     const recyclingList = self._root.querySelector(".recycling-list");
     setupListButton(
       addRecyclingButton,
       recyclingList,
       "recycle-command-template",
-      initRecycleCommandUi,
+      (item, root, context) => initRecycleCommandUi(item, root, self._getCodeObj(), context),
+      "policy",
     );
 
     const addReplaceButton = self._root.querySelector(".add-replace-button");
     const replaceList = self._root.querySelector(".replace-list");
-    setupListButton(addReplaceButton, replaceList, "replace-command-template", (item, root) => {
-      initReplaceCommandUi(item, root, self._getCodeObj());
-    });
+    setupListButton(
+      addReplaceButton,
+      replaceList,
+      "replace-command-template",
+      (item, root, context) => {
+        initReplaceCommandUi(item, root, self._getCodeObj(), context);
+      },
+      "policy",
+    );
 
     const addLevelButton = self._root.querySelector(".add-level-button");
     const levelList = self._root.querySelector(".level-list");
-    setupListButton(addLevelButton, levelList, "set-command-template", (item, root) =>
-      initSetCommandUi(item, root, self._getCodeObj()),
-    );
+    setupListButton(addLevelButton, levelList, "set-command-template", (item, root, context) =>
+      initSetCommandUi(item, root, self._getCodeObj(), context),
+    "policy");
 
     const addChangeButton = self._root.querySelector(".add-change-button");
     const changeList = self._root.querySelector(".change-list");
-    setupListButton(addChangeButton, changeList, "change-command-template", initChangeCommandUi);
+    setupListButton(addChangeButton, changeList, "change-command-template", (item, root, context) =>
+      initChangeCommandUi(item, root, self._getCodeObj(), context),
+    "policy");
 
     const addLimitButton = self._root.querySelector(".add-limit-button");
     const limitList = self._root.querySelector(".limit-list");
-    setupListButton(addLimitButton, limitList, "limit-command-template", (item, root) =>
-      initLimitCommandUi(item, root, self._getCodeObj()),
-    );
+    setupListButton(addLimitButton, limitList, "limit-command-template", (item, root, context) =>
+      initLimitCommandUi(item, root, self._getCodeObj(), context),
+    "policy");
 
     setupDialogInternalLinks(self._root, self._tabs);
   }
@@ -1534,7 +1604,7 @@ class PolicyListPresenter {
       self._dialog.querySelector(".recycling-list"),
       document.getElementById("recycle-command-template").innerHTML,
       targetSubstance === null ? [] : targetSubstance.getRecycles(),
-      initRecycleCommandUi,
+      (item, root) => initRecycleCommandUi(item, root, self._getCodeObj()),
       removeCallback,
     );
 
@@ -1558,7 +1628,7 @@ class PolicyListPresenter {
       self._dialog.querySelector(".change-list"),
       document.getElementById("change-command-template").innerHTML,
       targetSubstance === null ? [] : targetSubstance.getChanges(),
-      initChangeCommandUi,
+      (item, root) => initChangeCommandUi(item, root, self._getCodeObj()),
       removeCallback,
     );
 
@@ -1573,6 +1643,29 @@ class PolicyListPresenter {
     self._dialog.showModal();
     self._reminderPresenter.update();
     self._updateCounts();
+
+    // Initialize stream target dropdown states based on selected substance
+    const substanceInput = self._dialog.querySelector(".edit-policy-substance-input");
+    const selectedSubstance = substanceInput ? substanceInput.value : "";
+    if (selectedSubstance) {
+      const enabledStreams = getEnabledStreamsForSubstance(selectedSubstance, codeObj);
+
+      // Update all stream target dropdowns in the policy dialog
+      const streamTargetSelectors = [
+        ".set-target-input",
+        ".change-target-input",
+        ".limit-target-input",
+        ".replace-target-input",
+        ".displacing-input",
+      ];
+
+      streamTargetSelectors.forEach((selector) => {
+        const dropdowns = self._dialog.querySelectorAll(selector);
+        dropdowns.forEach((dropdown) => {
+          updateStreamOptionStates(dropdown, enabledStreams);
+        });
+      });
+    }
   }
 
   /**
@@ -2133,24 +2226,120 @@ class UiEditorPresenter {
  * @returns {Array<string>} Array of enabled stream names.
  */
 function getEnabledStreamsForSubstance(substanceName, codeObj) {
-  const substances = codeObj.getSubstances();
-  const substance = substances.find((s) => s.getName() === substanceName);
+  if (!codeObj || !substanceName) return [];
 
-  if (!substance) return [];
+  try {
+    const substances = codeObj.getSubstances();
+    const substance = substances.find((s) => s.getName() === substanceName);
 
-  const commands = substance.getCommands();
+    if (!substance) return [];
+
+    // Check if substance has getEnables method (consumption objects)
+    if (typeof substance.getEnables === "function") {
+      const enableCommands = substance.getEnables();
+      return enableCommands
+        .filter((cmd) => {
+          return cmd.getTarget && ["manufacture", "import", "export"].includes(cmd.getTarget());
+        })
+        .map((cmd) => cmd.getTarget());
+    }
+
+    // Check if substance has getCommands method (policy objects)
+    if (typeof substance.getCommands === "function") {
+      const commands = substance.getCommands();
+      const enabledStreams = [];
+
+      commands.forEach((cmd) => {
+        if (cmd.getCommandName && cmd.getCommandName() === "enable") {
+          const target = cmd.getTarget();
+          if (target && ["manufacture", "import", "export"].includes(target)) {
+            enabledStreams.push(target);
+          }
+        }
+      });
+
+      return enabledStreams;
+    }
+
+    return [];
+  } catch (error) {
+    console.warn("Error getting enabled streams for substance:", substanceName, error);
+    return [];
+  }
+}
+
+/**
+ * Gets currently enabled streams based on consumption dialog checkboxes.
+ * This is used when we need current checkbox state rather than saved substance data.
+ *
+ * @returns {Array<string>} Array of currently enabled stream names based on checkbox state.
+ */
+function getCurrentEnabledStreamsFromCheckboxes() {
   const enabledStreams = [];
 
-  commands.forEach((cmd) => {
-    if (cmd.getCommandName() === "enable") {
-      const target = cmd.getTarget();
-      if (target && ["manufacture", "import", "export"].includes(target)) {
-        enabledStreams.push(target);
-      }
-    }
-  });
+  const enableManufacture = document.querySelector(".enable-manufacture-checkbox");
+  const enableImport = document.querySelector(".enable-import-checkbox");
+  const enableExport = document.querySelector(".enable-export-checkbox");
+
+  if (enableManufacture && enableManufacture.checked) {
+    enabledStreams.push("manufacture");
+  }
+  if (enableImport && enableImport.checked) {
+    enabledStreams.push("import");
+  }
+  if (enableExport && enableExport.checked) {
+    enabledStreams.push("export");
+  }
 
   return enabledStreams;
+}
+
+/**
+ * Gets enabled streams for the current context, using the appropriate source.
+ * Consumption context: Uses checkboxes. Policy context: Uses substance selection.
+ *
+ * @param {string} substanceName - The name of the substance to check.
+ * @param {Object} codeObj - Optional code object containing substances data.
+ * @returns {Array<string>} Array of enabled stream names.
+ */
+function getEnabledStreamsForCurrentContext(substanceName, codeObj, context) {
+  if (context === "consumption") {
+    // In consumption dialog context, use checkbox state
+    return getCurrentEnabledStreamsFromCheckboxes();
+  }
+
+  if (context === "policy") {
+    // In policy dialog context, use the selected substance from policy dialog
+    const policySubstanceInput = document.querySelector(
+      ".edit-policy-substance-input",
+    );
+    if (policySubstanceInput) {
+      let policySubstanceName = policySubstanceInput.value;
+
+      // If no value, try to get the first option as fallback
+      if (
+        !policySubstanceName &&
+        policySubstanceInput.options &&
+        policySubstanceInput.options.length > 0
+      ) {
+        policySubstanceName = policySubstanceInput.options[0].value;
+      }
+
+      if (policySubstanceName) {
+        return getEnabledStreamsForSubstance(policySubstanceName, codeObj);
+      }
+    }
+    // If no substance available in policy dialog, enable all streams as default
+    return ["manufacture", "import", "export"];
+  }
+
+  // Fallback: try to get from provided substance name
+  if (codeObj && substanceName) {
+    return getEnabledStreamsForSubstance(substanceName, codeObj);
+  }
+
+  // Final fallback: return empty array (all streams disabled)
+  return [];
 }
 
 /**
@@ -2190,30 +2379,65 @@ function updateStreamOptionStates(selectElement, enabledStreams) {
 }
 
 /**
+ * Updates all open dialogs with stream target dropdowns based on current substance stream states.
+ * This function should be called whenever stream enable states change.
+ *
+ * @param {string} substanceName - The name of the substance whose streams changed.
+ * @param {Object} codeObj - The code object containing updated substances data.
+ */
+function refreshAllStreamTargetDropdowns(substanceName, codeObj) {
+  if (!substanceName || !codeObj) return;
+
+  const enabledStreams = getEnabledStreamsForSubstance(substanceName, codeObj);
+
+  // Update all visible stream target dropdowns
+  const streamTargetSelectors = [
+    ".set-target-input",
+    ".change-target-input",
+    ".limit-target-input",
+    ".replace-target-input",
+    ".displacing-input",
+  ];
+
+  streamTargetSelectors.forEach((selector) => {
+    const dropdowns = document.querySelectorAll(selector);
+    dropdowns.forEach((dropdown) => {
+      // Check if this dropdown is in a visible dialog and relates to the current substance
+      const dialog = dropdown.closest(".dialog");
+      if (dialog && (dialog.style.display !== "none") && !dialog.hasAttribute("hidden")) {
+        // For limit commands, check if the substance selector matches
+        const substanceSelect = dialog.querySelector(".substances-select");
+        if (substanceSelect && substanceSelect.value === substanceName) {
+          updateStreamOptionStates(dropdown, enabledStreams);
+        } else if (!substanceSelect) {
+          // For other commands in consumption context, check if we're editing the right substance
+          const substanceInput = document.querySelector(".edit-consumption-substance-input");
+          if (substanceInput && substanceInput.value === substanceName) {
+            updateStreamOptionStates(dropdown, enabledStreams);
+          }
+        }
+      }
+    });
+  });
+}
+
+/**
  * Initializes a set command UI element.
  *
  * @param {Object} itemObj - The command object to initialize from.
  * @param {HTMLElement} root - The root element containing the UI.
  * @param {Object} codeObj - Optional code object containing substances data.
+ * @param {string} context - Context for stream detection ('consumption' or 'policy').
  */
-function initSetCommandUi(itemObj, root, codeObj) {
-  // Get current substance name from the consumption dialog if available
-  let currentSubstanceName = null;
-  const substanceInput = document.querySelector(".edit-consumption-substance-input");
-  if (substanceInput && substanceInput.value) {
-    currentSubstanceName = substanceInput.value;
+function initSetCommandUi(itemObj, root, codeObj, context) {
+  // Update stream options based on enabled streams - use context-aware detection
+  const enabledStreams = getEnabledStreamsForCurrentContext(null, codeObj, context);
+  const targetSelect = root.querySelector(".set-target-input");
+  if (targetSelect) {
+    updateStreamOptionStates(targetSelect, enabledStreams);
   }
 
-  // Update stream options based on enabled streams if we have the necessary context
-  if (codeObj && currentSubstanceName) {
-    const enabledStreams = getEnabledStreamsForSubstance(currentSubstanceName, codeObj);
-    const targetSelect = root.querySelector(".set-target-input");
-    if (targetSelect) {
-      updateStreamOptionStates(targetSelect, enabledStreams);
-    }
-  }
-
-  setFieldValue(root.querySelector(".set-target-input"), itemObj, "manufacture", (x) =>
+  setFieldValue(root.querySelector(".set-target-input"), itemObj, "sales", (x) =>
     x.getTarget(),
   );
   setEngineNumberValue(
@@ -2247,9 +2471,17 @@ function readSetCommandUi(root) {
  *
  * @param {Object} itemObj - The command object to initialize from.
  * @param {HTMLElement} root - The root element containing the UI.
+ * @param {Object} codeObj - Optional code object containing substances data.
+ * @param {string} context - Context for stream detection ('consumption' or 'policy').
  */
-function initChangeCommandUi(itemObj, root) {
-  setFieldValue(root.querySelector(".change-target-input"), itemObj, "manufacture", (x) =>
+function initChangeCommandUi(itemObj, root, codeObj, context) {
+  // Update stream options based on enabled streams - use context-aware detection
+  const enabledStreams = getEnabledStreamsForCurrentContext(null, codeObj, context);
+  const targetSelect = root.querySelector(".change-target-input");
+  if (targetSelect) {
+    updateStreamOptionStates(targetSelect, enabledStreams);
+  }
+  setFieldValue(root.querySelector(".change-target-input"), itemObj, "sales", (x) =>
     x.getTarget(),
   );
   setFieldValue(root.querySelector(".change-sign-input"), itemObj, "+", (x) =>
@@ -2295,8 +2527,9 @@ function readChangeCommandUi(root) {
  * @param {Object} itemObj - The command object to initialize from.
  * @param {HTMLElement} root - The root element containing the UI.
  * @param {Object} codeObj - The code object containing available substances.
+ * @param {string} context - Context for stream detection ('consumption' or 'policy').
  */
-function initLimitCommandUi(itemObj, root, codeObj) {
+function initLimitCommandUi(itemObj, root, codeObj, context) {
   const substances = codeObj.getSubstances();
   const substanceNamesDup = substances.map((x) => x.getName());
   const substanceNames = Array.of(...new Set(substanceNamesDup));
@@ -2314,11 +2547,10 @@ function initLimitCommandUi(itemObj, root, codeObj) {
 
   // Update stream options based on substance selection
   const updateLimitTargetOptions = () => {
-    const substanceSelect = root.querySelector(".substances-select");
     const limitTargetSelect = root.querySelector(".limit-target-input");
 
-    if (substanceSelect && limitTargetSelect && substanceSelect.value) {
-      const enabledStreams = getEnabledStreamsForSubstance(substanceSelect.value, codeObj);
+    if (limitTargetSelect) {
+      const enabledStreams = getEnabledStreamsForCurrentContext(null, codeObj, context);
       updateStreamOptionStates(limitTargetSelect, enabledStreams);
     }
   };
@@ -2369,8 +2601,16 @@ function readLimitCommandUi(root) {
  *
  * @param {Object} itemObj - The command object to initialize from.
  * @param {HTMLElement} root - The root element containing the UI.
+ * @param {Object} codeObj - Optional code object containing substances data.
+ * @param {string} context - Context for stream detection ('consumption' or 'policy').
  */
-function initRecycleCommandUi(itemObj, root) {
+function initRecycleCommandUi(itemObj, root, codeObj, context) {
+  // Update stream options based on enabled streams - use context-aware detection
+  const enabledStreams = getEnabledStreamsForCurrentContext(null, codeObj, context);
+  const displacingSelect = root.querySelector(".displacing-input");
+  if (displacingSelect) {
+    updateStreamOptionStates(displacingSelect, enabledStreams);
+  }
   setEngineNumberValue(
     root.querySelector(".recycle-amount-input"),
     root.querySelector(".recycle-units-input"),
@@ -2418,8 +2658,9 @@ function readRecycleCommandUi(root) {
  * @param {Object} itemObj - The command object to initialize from.
  * @param {HTMLElement} root - The root element containing the UI.
  * @param {Object} codeObj - The code object containing available substances.
+ * @param {string} context - Context for stream detection ('consumption' or 'policy').
  */
-function initReplaceCommandUi(itemObj, root, codeObj) {
+function initReplaceCommandUi(itemObj, root, codeObj, context) {
   const substances = codeObj.getSubstances();
   const substanceNamesDup = substances.map((x) => x.getName());
   const substanceNames = Array.of(...new Set(substanceNamesDup));
@@ -2440,6 +2681,24 @@ function initReplaceCommandUi(itemObj, root, codeObj) {
     new EngineNumber(10, "%"),
     (x) => x.getVolume(),
   );
+
+  // Update stream options based on substance selection
+  const updateReplaceTargetOptions = () => {
+    const replaceTargetSelect = root.querySelector(".replace-target-input");
+
+    if (replaceTargetSelect) {
+      const enabledStreams = getEnabledStreamsForCurrentContext(null, codeObj, context);
+      updateStreamOptionStates(replaceTargetSelect, enabledStreams);
+    }
+  };
+
+  // Add event listener to update options when substance changes
+  const substanceSelectElement = root.querySelector(".substances-select");
+  if (substanceSelectElement) {
+    substanceSelectElement.addEventListener("change", updateReplaceTargetOptions);
+    // Initial update
+    setTimeout(updateReplaceTargetOptions, 0);
+  }
 
   setFieldValue(root.querySelector(".replace-target-input"), itemObj, "sales", (x) =>
     x.getSource(),
