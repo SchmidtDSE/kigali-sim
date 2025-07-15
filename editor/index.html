@@ -116,10 +116,36 @@
 
         <dialog id="update-notice-dialog">
           <h2>Update Available</h2>
-          <p>A new version of Kigali Sim is available. You can reload now to use the latest version, or continue with the current version. The updated version will be automatically loaded on your next visit.</p>
+          <p>
+            A new version of Kigali Sim is available. You can reload now to use the latest
+            version, or continue with the current version. The updated version will be
+            automatically loaded on your next visit.
+          </p>
           <div class="dialog-buttons bold-buttons">
             <a href="#" class="reload-button primary">Update Now</a>
             <a href="#" class="cancel-button destructive">Update Later</a>
+          </div>
+        </dialog>
+
+        <dialog id="privacy-confirmation-dialog">
+          <h2>Your Privacy is Protected</h2>
+          <p>
+            By default, no data or simulation configurations are shared with others, including the
+            development team. All simulations and supporting simulation data are saved only within
+            your computer, specifically inside your browser. Use the <strong>Save</strong> and
+            <strong>Load</strong> buttons to store simulations long term and to send simulations to
+            others.
+          </p>
+          <p>
+            That said, if you would like our help, simulations can be sent to the University of
+            California team using the <strong>Get Help</strong> feature. This can be used to
+            facilitate support when you request it or provide feedback.
+          </p>
+          <p>
+            For more details, see our <a href="/privacy.html" target="_blank">Privacy Policy</a>.
+          </p>
+          <div class="dialog-buttons bold-buttons">
+            <a href="#" class="close-button primary">Close</a>
           </div>
         </dialog>
       </div>
@@ -154,6 +180,22 @@
 
         <p>
           ⚠️ Note: this prototype is outdated. We will be releasing the beta version shortly.
+        </p>
+
+        <p id="welcome-preferences">
+          <div class="privacy-preferences">
+            <label>
+              <input type="checkbox" id="privacy-confirmation-check" checked />
+              🔒 Data not shared or remotely stored
+            </label>
+          </div>
+          
+          <div class="storage-preferences">
+            <label>
+              <input type="checkbox" id="save-preferences-checkbox" checked>
+              💾 Save preferences and simulation locally
+            </label>
+          </div>
         </p>
 
         <div id="initial-loading-indicator">
@@ -1262,6 +1304,7 @@
         <a href="https://github.com/SchmidtDSE/montreal-protocol" target="_blank" class="secondary"
           >Open Source</a
         >
+        <a href="#" id="clear-data-button" class="secondary">Clear Data</a>
       </div>
     </footer>
 
@@ -1634,15 +1677,17 @@
           "engine_const": "./js/engine_const.js?v=EPOCH",
           "engine_number": "./js/engine_number.js?v=EPOCH",
           "engine_struct": "./js/engine_struct.js?v=EPOCH",
-          "year_matcher": "./js/year_matcher.js?v=EPOCH",
-          "wasm_backend": "./js/wasm_backend.js?v=EPOCH",
+          "local_storage_keeper": "./js/local_storage_keeper.js?v=EPOCH",
           "main": "./js/main.js?v=EPOCH",
           "report_data": "./js/report_data.js?v=EPOCH",
           "results": "./js/results.js?v=EPOCH",
+          "storage_keeper": "./js/storage_keeper.js?v=EPOCH",
           "ui_editor": "./js/ui_editor.js?v=EPOCH",
           "ui_translator": "./js/ui_translator.js?v=EPOCH",
           "updates": "./js/updates.js?v=EPOCH",
-          "user_config": "./js/user_config.js?v=EPOCH"
+          "user_config": "./js/user_config.js?v=EPOCH",
+          "wasm_backend": "./js/wasm_backend.js?v=EPOCH",
+          "year_matcher": "./js/year_matcher.js?v=EPOCH"
         }
       }
     </script>
