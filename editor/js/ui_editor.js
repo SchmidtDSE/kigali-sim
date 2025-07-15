@@ -840,39 +840,41 @@ class ConsumptionListPresenter {
       .attr("value", (x) => x)
       .text((x) => x);
 
-    setFieldValue(
-      self._dialog.querySelector(".edit-consumption-substance-input"),
-      objToShow,
-      "",
-      (x) => x.getName(),
-    );
-
-    // Split application name to separate application and equipment model
-    const getApplicationAndEquipment = (fullAppName) => {
-      if (!fullAppName) {
-        return {application: "", equipment: ""};
+    // Split substance name to separate substance and equipment model
+    const getSubstanceAndEquipment = (fullSubstanceName) => {
+      if (!fullSubstanceName) {
+        return {substance: "", equipment: ""};
       }
-      const parts = fullAppName.split(" - ");
+      const parts = fullSubstanceName.split(" - ");
       return {
-        application: parts[0] || "",
+        substance: parts[0] || "",
         equipment: parts.slice(1).join(" - ") || "",
       };
     };
 
-    const appAndEquipment = getApplicationAndEquipment(applicationName);
+    const substanceAndEquipment = objToShow ?
+      getSubstanceAndEquipment(objToShow.getName()) :
+      {substance: "", equipment: ""};
+
+    setFieldValue(
+      self._dialog.querySelector(".edit-consumption-substance-input"),
+      objToShow,
+      "",
+      (x) => substanceAndEquipment.substance,
+    );
 
     setFieldValue(
       self._dialog.querySelector(".edit-consumption-application-input"),
       objToShow,
       applicationNames[0],
-      (x) => appAndEquipment.application,
+      (x) => applicationName,
     );
 
     setFieldValue(
       self._dialog.querySelector(".edit-consumption-equipment-input"),
       objToShow,
       "",
-      (x) => appAndEquipment.equipment,
+      (x) => substanceAndEquipment.equipment,
     );
 
     setEngineNumberValue(
@@ -1125,30 +1127,19 @@ class ConsumptionListPresenter {
 
     const codeObj = self._getCodeObj();
 
-    // Helper function to combine application and equipment model
-    const getEffectiveApplicationName = () => {
-      const baseApplication = getFieldValue(
+    if (self._editingName === null) {
+      const applicationName = getFieldValue(
         self._dialog.querySelector(".edit-consumption-application-input"),
       );
-      const equipmentModel = getFieldValue(
-        self._dialog.querySelector(".edit-consumption-equipment-input"),
-      );
-
-      if (equipmentModel && equipmentModel.trim() !== "") {
-        return baseApplication + " - " + equipmentModel.trim();
-      }
-      return baseApplication;
-    };
-
-    if (self._editingName === null) {
-      const applicationName = getEffectiveApplicationName();
       codeObj.insertSubstance(null, applicationName, null, substance);
     } else {
       const objIdentifierRegex = /\"([^\"]+)\" for \"([^\"]+)\"/;
       const match = self._editingName.match(objIdentifierRegex);
       const substanceName = match[1];
       const applicationName = match[2];
-      const newApplicationName = getEffectiveApplicationName();
+      const newApplicationName = getFieldValue(
+        self._dialog.querySelector(".edit-consumption-application-input"),
+      );
       codeObj.insertSubstance(applicationName, newApplicationName, substanceName, substance);
     }
 
@@ -1164,9 +1155,22 @@ class ConsumptionListPresenter {
   _parseObj() {
     const self = this;
 
-    const substanceName = getSanitizedFieldValue(
-      self._dialog.querySelector(".edit-consumption-substance-input"),
-    );
+    // Helper function to combine substance and equipment model
+    const getEffectiveSubstanceName = () => {
+      const baseSubstance = getSanitizedFieldValue(
+        self._dialog.querySelector(".edit-consumption-substance-input"),
+      );
+      const equipmentModel = getFieldValue(
+        self._dialog.querySelector(".edit-consumption-equipment-input"),
+      );
+
+      if (equipmentModel && equipmentModel.trim() !== "") {
+        return baseSubstance + " - " + equipmentModel.trim();
+      }
+      return baseSubstance;
+    };
+
+    const substanceName = getEffectiveSubstanceName();
 
     const substanceBuilder = new SubstanceBuilder(substanceName, false);
 
