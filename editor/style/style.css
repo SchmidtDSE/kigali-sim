@@ -111,6 +111,15 @@ main {
   padding-bottom: 30px;
 }
 
+option[disabled] {
+  color: #555555;
+  font-style: italic;
+}
+
+select option[disabled] {
+  background-color: #F0F0F0;
+}
+
 #code-editor .error-display {
   padding: 10px;
   border-radius: 5px;
@@ -845,14 +854,4 @@ main {
 .no-results-message p {
   margin: 0;
   color: #666;
-}
-
-/* Styling for disabled options in stream target dropdowns */
-option[disabled] {
-  color: #999;
-  font-style: italic;
-}
-
-select option[disabled] {
-  background-color: #f5f5f5;
 }
