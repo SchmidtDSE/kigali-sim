@@ -853,4 +853,5 @@ export {
   RunningIndicatorPresenter,
   ButtonPanelPresenter,
   MainPresenter,
+  PrivacyConfirmationPresenter,
 };
