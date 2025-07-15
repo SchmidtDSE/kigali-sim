@@ -842,11 +842,27 @@ class ConsumptionListPresenter {
       .attr("value", (x) => x)
       .text((x) => x);
 
+    // Split substance name to separate substance and equipment model
+    const getSubstanceAndEquipment = (fullSubstanceName) => {
+      if (!fullSubstanceName) {
+        return {substance: "", equipment: ""};
+      }
+      const parts = fullSubstanceName.split(" - ");
+      return {
+        substance: parts[0] || "",
+        equipment: parts.slice(1).join(" - ") || "",
+      };
+    };
+
+    const substanceAndEquipment = objToShow ?
+      getSubstanceAndEquipment(objToShow.getName()) :
+      {substance: "", equipment: ""};
+
     setFieldValue(
       self._dialog.querySelector(".edit-consumption-substance-input"),
       objToShow,
       "",
-      (x) => x.getName(),
+      (x) => substanceAndEquipment.substance,
     );
 
     setFieldValue(
@@ -854,6 +870,13 @@ class ConsumptionListPresenter {
       objToShow,
       applicationNames[0],
       (x) => applicationName,
+    );
+
+    setFieldValue(
+      self._dialog.querySelector(".edit-consumption-equipment-input"),
+      objToShow,
+      "",
+      (x) => substanceAndEquipment.equipment,
     );
 
     setEngineNumberValue(
@@ -1116,8 +1139,9 @@ class ConsumptionListPresenter {
       const match = self._editingName.match(objIdentifierRegex);
       const substanceName = match[1];
       const applicationName = match[2];
-      const newAppInput = self._dialog.querySelector(".edit-consumption-application-input");
-      const newApplicationName = newAppInput.value;
+      const newApplicationName = getFieldValue(
+        self._dialog.querySelector(".edit-consumption-application-input"),
+      );
       codeObj.insertSubstance(applicationName, newApplicationName, substanceName, substance);
     }
 
@@ -1133,9 +1157,22 @@ class ConsumptionListPresenter {
   _parseObj() {
     const self = this;
 
-    const substanceName = getSanitizedFieldValue(
-      self._dialog.querySelector(".edit-consumption-substance-input"),
-    );
+    // Helper function to combine substance and equipment model
+    const getEffectiveSubstanceName = () => {
+      const baseSubstance = getSanitizedFieldValue(
+        self._dialog.querySelector(".edit-consumption-substance-input"),
+      );
+      const equipmentModel = getFieldValue(
+        self._dialog.querySelector(".edit-consumption-equipment-input"),
+      );
+
+      if (equipmentModel && equipmentModel.trim() !== "") {
+        return baseSubstance + " - " + equipmentModel.trim();
+      }
+      return baseSubstance;
+    };
+
+    const substanceName = getEffectiveSubstanceName();
 
     const substanceBuilder = new SubstanceBuilder(substanceName, false);
 
