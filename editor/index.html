@@ -156,16 +156,18 @@
           ⚠️ Note: this prototype is outdated. We will be releasing the beta version shortly.
         </p>
 
-        <div id="initial-loading-indicator">
-          <img src="/style/90-ring.svg" alt="Loading indicator" /> Loading please wait...
-        </div>
+        <p id="welcome-preferences">
+          <div class="storage-preferences">
+            <label>
+              <input type="checkbox" id="save-preferences-checkbox" checked>
+              💾 Save preferences and simulation locally
+            </label>
+          </div>
 
-        <div class="storage-preferences">
-          <label>
-            <input type="checkbox" id="save-preferences-checkbox" checked>
-            💾 Save preferences and simulation locally
-          </label>
-        </div>
+          <div id="initial-loading-indicator">
+            <img src="/style/90-ring.svg" alt="Loading indicator" /> Loading please wait...
+          </div>
+        </p>
 
         <div id="continue-buttons-panel" class="buttons-panel">
           <a href="#" id="continue-button" class="primary">Continue</a>
@@ -1257,7 +1259,7 @@
         <a href="https://github.com/SchmidtDSE/montreal-protocol" target="_blank" class="secondary"
           >Open Source</a
         >
-        <a href="#" id="clear-data-button" class="destructive">Clear Data</a>
+        <a href="#" id="clear-data-button" class="secondary">Clear Data</a>
       </div>
     </footer>
 
@@ -1630,6 +1632,7 @@
           "engine_const": "./js/engine_const.js?v=EPOCH",
           "engine_number": "./js/engine_number.js?v=EPOCH",
           "engine_struct": "./js/engine_struct.js?v=EPOCH",
+          "local_storage_keeper": "./js/local_storage_keeper.js?v=EPOCH",
           "main": "./js/main.js?v=EPOCH",
           "report_data": "./js/report_data.js?v=EPOCH",
           "results": "./js/results.js?v=EPOCH",
