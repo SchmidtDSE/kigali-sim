@@ -2774,7 +2774,7 @@ function readRecycleCommandUi(root) {
   );
   const displacingRaw = getFieldValue(root.querySelector(".displacing-input"));
   const displacing = displacingRaw === "" ? null : displacingRaw;
-  const stage = getFieldValue(root.querySelector(".recycle-stage-input")) || "recharge";
+  const stage = getFieldValue(root.querySelector(".recycle-stage-input"));
   const duration = readDurationUi(root.querySelector(".duration-subcomponent"));
   return new RecycleCommand(collection, reuse, duration, displacing, stage);
 }
