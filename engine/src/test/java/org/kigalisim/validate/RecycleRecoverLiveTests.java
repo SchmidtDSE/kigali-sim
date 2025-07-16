@@ -431,4 +431,129 @@ public class RecycleRecoverLiveTests {
     }
   }
 
+  /**
+   * Test recycling_at_recharge.qta produces expected values with explicit "at recharge" syntax.
+   */
+  @Test
+  public void testRecyclingAtRecharge() throws IOException {
+    // Load and parse the QTA file
+    String qtaPath = "../examples/recycling_at_recharge.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    // Run the scenario using KigaliSimFacade
+    String scenarioName = "result";
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
+
+    // Convert to list for multiple access
+    List<EngineResult> resultsList = results.collect(Collectors.toList());
+
+    // Check year 1 - no recycling yet
+    EngineResult recordYear1 = LiveTestsUtil.getResult(resultsList.stream(), 1, "test", "test");
+    assertNotNull(recordYear1, "Should have result for test/test in year 1");
+    assertEquals(500.0, recordYear1.getGhgConsumption().getValue().doubleValue(), 0.0001,
+        "GHG consumption should be 500 tCO2e in year 1");
+    assertEquals("tCO2e", recordYear1.getGhgConsumption().getUnits(),
+        "GHG consumption units should be tCO2e in year 1");
+
+    // Check year 2 - recycling at recharge active
+    EngineResult recordYear2 = LiveTestsUtil.getResult(resultsList.stream(), 2, "test", "test");
+    assertNotNull(recordYear2, "Should have result for test/test in year 2");
+
+    // With recycling at recharge, virgin material should be reduced
+    // The behavior should be identical to the original recycling.qta test
+    // since "at recharge" is the default behavior for recycling
+    double expectedTotalConsumption = 437.5; // Same as original recycling test
+    assertEquals(expectedTotalConsumption, recordYear2.getGhgConsumption().getValue().doubleValue(), 0.0001,
+        "GHG consumption should be reduced to 437.5 tCO2e in year 2 due to recycling at recharge");
+    assertEquals("tCO2e", recordYear2.getGhgConsumption().getUnits(),
+        "GHG consumption units should be tCO2e in year 2");
+
+    // Check recycled consumption in year 2
+    // Should match the original recycling test: 500 - 437.5 = 62.5
+    double expectedRecycledConsumption = 62.5;
+    assertEquals(expectedRecycledConsumption, recordYear2.getRecycleConsumption().getValue().doubleValue(), 0.0001,
+        "Recycled consumption should be 62.5 tCO2e in year 2");
+    assertEquals("tCO2e", recordYear2.getRecycleConsumption().getUnits(),
+        "Recycled consumption units should be tCO2e in year 2");
+  }
+
+  /**
+   * Test that BAU and Recovery/Recycling scenarios have the same total equipment values
+   * when using explicit "at recharge" syntax with kg-based import.
+   * This test verifies that 0% recovery rate with "at recharge" syntax doesn't affect equipment population.
+   */
+  @Test
+  public void testRecycleNoneBugKgAtRecharge() throws IOException {
+    // Load and parse the QTA file
+    String qtaPath = "../examples/recycle_none_bug_kg_at_recharge.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    // Run BAU scenario
+    Stream<EngineResult> bauResults = KigaliSimFacade.runScenario(program, "Business as Usual", progress -> {});
+    List<EngineResult> bauResultsList = bauResults.collect(Collectors.toList());
+
+    // Run Recovery and Recycling scenario
+    Stream<EngineResult> rrResults = KigaliSimFacade.runScenario(program, "Recovery and Recycling", progress -> {});
+    List<EngineResult> rrResultsList = rrResults.collect(Collectors.toList());
+
+    // Check equipment values for years 2025, 2026, and 2027
+    int[] yearsToCheck = {2025, 2026, 2027};
+    for (int year : yearsToCheck) {
+      EngineResult bauResult = LiveTestsUtil.getResult(bauResultsList.stream(), year, "MAC", "HFC-134a");
+      EngineResult rrResult = LiveTestsUtil.getResult(rrResultsList.stream(), year, "MAC", "HFC-134a");
+
+      assertNotNull(bauResult, "Should have BAU result for MAC/HFC-134a in year " + year);
+      assertNotNull(rrResult, "Should have Recovery/Recycling result for MAC/HFC-134a in year " + year);
+
+      double bauEquipment = bauResult.getPopulation().getValue().doubleValue();
+      double rrEquipment = rrResult.getPopulation().getValue().doubleValue();
+
+      assertEquals(bauEquipment, rrEquipment, 0.0001,
+          "Year " + year + ": BAU equipment (" + bauEquipment
+          + ") should equal Recovery/Recycling equipment (" + rrEquipment
+          + ") when recovery rate is 0% with 'at recharge' syntax and kg-based import");
+    }
+  }
+
+  /**
+   * Test that BAU and Recovery/Recycling scenarios have the same total equipment values
+   * when using explicit "at recharge" syntax with units-based import.
+   * This test verifies that 0% recovery rate with "at recharge" syntax doesn't affect equipment population.
+   */
+  @Test
+  public void testRecycleNoneBugAtRecharge() throws IOException {
+    // Load and parse the QTA file
+    String qtaPath = "../examples/recycle_none_bug_at_recharge.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    // Run BAU scenario
+    Stream<EngineResult> bauResults = KigaliSimFacade.runScenario(program, "Business as Usual", progress -> {});
+    List<EngineResult> bauResultsList = bauResults.collect(Collectors.toList());
+
+    // Run Recovery and Recycling scenario
+    Stream<EngineResult> rrResults = KigaliSimFacade.runScenario(program, "Recovery and Recycling", progress -> {});
+    List<EngineResult> rrResultsList = rrResults.collect(Collectors.toList());
+
+    // Check equipment values for years 2025, 2026, and 2027
+    int[] yearsToCheck = {2025, 2026, 2027};
+    for (int year : yearsToCheck) {
+      EngineResult bauResult = LiveTestsUtil.getResult(bauResultsList.stream(), year, "MAC", "HFC-134a");
+      EngineResult rrResult = LiveTestsUtil.getResult(rrResultsList.stream(), year, "MAC", "HFC-134a");
+
+      assertNotNull(bauResult, "Should have BAU result for MAC/HFC-134a in year " + year);
+      assertNotNull(rrResult, "Should have Recovery/Recycling result for MAC/HFC-134a in year " + year);
+
+      double bauEquipment = bauResult.getPopulation().getValue().doubleValue();
+      double rrEquipment = rrResult.getPopulation().getValue().doubleValue();
+
+      assertEquals(bauEquipment, rrEquipment, 0.0001,
+          "Year " + year + ": BAU equipment (" + bauEquipment
+          + ") should equal Recovery/Recycling equipment (" + rrEquipment
+          + ") when recovery rate is 0% with 'at recharge' syntax and units-based import");
+    }
+  }
+
 }
