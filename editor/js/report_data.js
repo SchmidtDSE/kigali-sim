@@ -840,7 +840,7 @@ class ReportDataWrapper {
       });
     };
 
-    const stepWithSubapp = (target, filterVal, getter) => {
+    const stepWithSubtype = (target, filterVal, getter) => {
       if (filterVal === null) {
         return target;
       }
@@ -868,10 +868,10 @@ class ReportDataWrapper {
     const withYear = step(withScenario, year, (x) => x.getYear());
 
     const app = filterSet.getApplication();
-    const withApp = stepWithSubapp(withYear, app, (x) => x.getApplication());
+    const withApp = stepWithSubtype(withYear, app, (x) => x.getApplication());
 
     const sub = filterSet.getSubstance();
-    const withSub = step(withApp, sub, (x) => x.getSubstance());
+    const withSub = stepWithSubtype(withApp, sub, (x) => x.getSubstance());
 
     return withSub;
   }

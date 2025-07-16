@@ -116,10 +116,36 @@
 
         <dialog id="update-notice-dialog">
           <h2>Update Available</h2>
-          <p>A new version of Kigali Sim is available. You can reload now to use the latest version, or continue with the current version. The updated version will be automatically loaded on your next visit.</p>
+          <p>
+            A new version of Kigali Sim is available. You can reload now to use the latest
+            version, or continue with the current version. The updated version will be
+            automatically loaded on your next visit.
+          </p>
           <div class="dialog-buttons bold-buttons">
             <a href="#" class="reload-button primary">Update Now</a>
             <a href="#" class="cancel-button destructive">Update Later</a>
+          </div>
+        </dialog>
+
+        <dialog id="privacy-confirmation-dialog">
+          <h2>Your Privacy is Protected</h2>
+          <p>
+            By default, no data or simulation configurations are shared with others, including the
+            development team. All simulations and supporting simulation data are saved only within
+            your computer, specifically inside your browser. Use the <strong>Save</strong> and
+            <strong>Load</strong> buttons to store simulations long term and to send simulations to
+            others.
+          </p>
+          <p>
+            That said, if you would like our help, simulations can be sent to the University of
+            California team using the <strong>Get Help</strong> feature. This can be used to
+            facilitate support when you request it or provide feedback.
+          </p>
+          <p>
+            For more details, see our <a href="/privacy.html" target="_blank">Privacy Policy</a>.
+          </p>
+          <div class="dialog-buttons bold-buttons">
+            <a href="#" class="close-button primary">Close</a>
           </div>
         </dialog>
       </div>
@@ -154,6 +180,22 @@
 
         <p>
           ⚠️ Note: this prototype is outdated. We will be releasing the beta version shortly.
+        </p>
+
+        <p id="welcome-preferences">
+          <div class="privacy-preferences">
+            <label>
+              <input type="checkbox" id="privacy-confirmation-check" checked />
+              🔒 Data not shared or remotely stored
+            </label>
+          </div>
+          
+          <div class="storage-preferences">
+            <label>
+              <input type="checkbox" id="save-preferences-checkbox" checked>
+              💾 Save preferences and simulation locally
+            </label>
+          </div>
         </p>
 
         <div id="initial-loading-indicator">
@@ -243,6 +285,11 @@
                         <ul id="consumption-tabs" class="tabs" data-tabs>
                           <li><a data-tabby-default href="#consumption-general">General</a></li>
                           <li><a href="#consumption-equipment">Equipment</a></li>
+                          <li>
+                            <a href="#consumption-servicing"
+                              >Servicing (<span id="consumption-servicing-count">0</span>)</a
+                            >
+                          </li>
                           <li>
                             <a href="#consumption-start"
                               >Set (<span id="consumption-set-count">0</span>)</a
@@ -359,6 +406,18 @@
                               <span class="reminder-app"></span>.
                               <a href="#edit" class="edit-reminder-link">Change</a>
                             </span>
+                          </div>
+                          <div class="form-group">
+                            <div>
+                              <label for="edit-consumption-equipment">Equipment type / model (optional):</label>
+                            </div>
+                            <div>
+                              <input
+                                type="text"
+                                name="edit-consumption-equipment"
+                                class="edit-consumption-equipment-input long"
+                              />
+                            </div>
                           </div>
                           <div
                             class="form-group edit-consumption-initial-charge-domestic-input-outer"
@@ -526,78 +585,6 @@
                               </span>
                             </div>
                           </div>
-                          <div class="form-group">
-                            <div>
-                              <label for="edit-consumption-recharge-population"
-                                >Amount of equipment recharged annually:</label
-                              >
-                            </div>
-                            <div>
-                              <input
-                                type="text"
-                                name="edit-consumption-recharge-population"
-                                class="edit-consumption-recharge-population-input mid"
-                              />
-                              <span class="sel mid">
-                                <select
-                                  name="recharge-population-units"
-                                  class="recharge-population-units-input"
-                                  aria-label="Units of equipment recharge frequency"
-                                >
-                                  <option value="kg">kg</option>
-                                  <option value="mt">mt</option>
-                                  <option value="tCO2e">tCO2e</option>
-                                  <option value="units">units</option>
-                                  <option value="kg each year">kg each year</option>
-                                  <option value="mt each year">mt each year</option>
-                                  <option value="tCO2e each year">tCO2e each year</option>
-                                  <option value="units each year">units each year</option>
-                                  <option value="kg / unit">kg / unit</option>
-                                  <option value="mt / unit">mt / unit</option>
-                                  <option value="tCO2e / unit">tCO2e / unit</option>
-                                  <option value="tCO2e / kg">tCO2e / kg</option>
-                                  <option value="tCO2e / mt">tCO2e / mt</option>
-                                  <option value="%">%</option>
-                                  <option value="% each year">% each year</option>
-                                </select>
-                              </span>
-                            </div>
-                          </div>
-                          <div class="form-group">
-                            <div>
-                              <label for="edit-consumption-recharge-volume">Recharge volume:</label>
-                            </div>
-                            <div>
-                              <input
-                                type="text"
-                                name="edit-consumption-recharge-volume"
-                                class="edit-consumption-recharge-volume-input mid"
-                              />
-                              <span class="sel mid">
-                                <select
-                                  name="recharge-volume-units"
-                                  class="recharge-volume-units-input"
-                                  aria-label="Units of equipment recharge frequency"
-                                >
-                                  <option value="kg">kg</option>
-                                  <option value="mt">mt</option>
-                                  <option value="tCO2e">tCO2e</option>
-                                  <option value="units">units</option>
-                                  <option value="kg each year">kg each year</option>
-                                  <option value="mt each year">mt each year</option>
-                                  <option value="tCO2e each year">tCO2e each year</option>
-                                  <option value="units each year">units each year</option>
-                                  <option value="kg / unit">kg / unit</option>
-                                  <option value="mt / unit">mt / unit</option>
-                                  <option value="tCO2e / unit">tCO2e / unit</option>
-                                  <option value="tCO2e / kg">tCO2e / kg</option>
-                                  <option value="tCO2e / mt">tCO2e / mt</option>
-                                  <option value="%">%</option>
-                                  <option value="% each year">% each year</option>
-                                </select>
-                              </span>
-                            </div>
-                          </div>
                         </div>
                         <div id="consumption-start">
                           <div class="instructions">
@@ -653,6 +640,22 @@
                           </div>
                           <div class="scope-reminder detached">
                             You are limiting <span class="reminder-substance"></span> used for
+                            <span class="reminder-app"></span>.
+                            <a href="#edit" class="edit-reminder-link">Change</a>
+                          </div>
+                        </div>
+                        <div id="consumption-servicing">
+                          <div class="instructions">
+                            Specify multiple recharge operations for equipment servicing. This can be used for both "top up" 
+                            operations (smaller amounts) and "repair" operations (amounts closer to initial charge). Multiple 
+                            recharge commands can be specified per substance/application pair.
+                          </div>
+                          <div class="dialog-list recharge-list"></div>
+                          <div class="dialog-sub-buttons bold-buttons">
+                            <a href="#" class="add-recharge-button secondary">Add Recharge</a>
+                          </div>
+                          <div class="scope-reminder detached">
+                            You are servicing <span class="reminder-substance"></span> used for
                             <span class="reminder-app"></span>.
                             <a href="#edit" class="edit-reminder-link">Change</a>
                           </div>
@@ -1250,6 +1253,7 @@
         <a href="https://github.com/SchmidtDSE/montreal-protocol" target="_blank" class="secondary"
           >Open Source</a
         >
+        <a href="#" id="clear-data-button" class="secondary">Clear Data</a>
       </div>
     </footer>
 
@@ -1258,10 +1262,10 @@
         Set
         <span class="sel long">
           <select class="set-target-input" aria-label="Target for set command">
+            <option value="sales">all sales</option>
             <option value="domestic">domestic</option>
             <option value="import">import</option>
             <option value="export">export</option>
-            <option value="sales">all sales</option>
             <option value="equipment">equipment</option>
             <option value="priorEquipment">prior equipment</option>
           </select>
@@ -1316,10 +1320,10 @@
           Change
             <span class="sel long">
               <select class="change-target-input" aria-label="Target for change command">
+                <option value="sales">all sales</option>
                 <option value="domestic">domestic</option>
                 <option value="import">import</option>
                 <option value="export">export</option>
-                <option value="sales">all sales</option>
                 <option value="equipment">equipment</option>
                 <option value="priorEquipment">prior equipment</option>
               </select>
@@ -1385,10 +1389,10 @@
         </span>
         <span class="sel long">
           <select class="limit-target-input" aria-label="Target for limit command">
+            <option value="sales">all sales</option>
             <option value="domestic">domestic</option>
             <option value="import">import</option>
             <option value="export">export</option>
-            <option value="sales">all sales</option>
             <option value="equipment">equipment</option>
             <option value="priorEquipment">prior equipment</option>
           </select>
@@ -1426,10 +1430,10 @@
               <option value="">nothing</option>
             </optgroup>
             <optgroup label="Streams">
+              <option value="sales">all sales</option>
               <option value="domestic">domestic</option>
               <option value="import">import</option>
               <option value="export">export</option>
-              <option value="sales">all sales</option>
               <option value="equipment">equipment</option>
               <option value="priorEquipment">prior equipment</option>
             </optgroup>
@@ -1512,10 +1516,10 @@
               <option value="">nothing</option>
             </optgroup>
             <optgroup label="Streams">
+              <option value="sales">all sales</option>
               <option value="domestic">domestic</option>
               <option value="import">import</option>
               <option value="export">export</option>
-              <option value="sales">all sales</option>
               <option value="equipment">equipment</option>
               <option value="priorEquipment">prior equipment</option>
             </optgroup>
@@ -1571,10 +1575,10 @@
         </span>
         <span class="sel long">
           <select class="replace-target-input" aria-label="Target for replace command">
+            <option value="sales">all sales</option>
             <option value="domestic">domestic</option>
             <option value="import">import</option>
             <option value="export">export</option>
-            <option value="sales">all sales</option>
             <option value="equipment">equipment</option>
             <option value="priorEquipment">prior equipment</option>
           </select>
@@ -1602,6 +1606,46 @@
       </div>
     </script>
 
+    <script type="text/template" id="recharge-command-template">
+      <div class="recharge-command form-group">
+        Recharge
+        <input type="text" class="recharge-population-input short" placeholder="5" aria-label="Population to recharge">
+        <span class="sel mid">
+          <select class="recharge-population-units-input" aria-label="Population units">
+            <option value="%">%</option>
+            <option value="% each year">% each year</option>
+            <option value="units">units</option>
+            <option value="units each year">units each year</option>
+          </select>
+        </span>
+        with
+        <input type="text" class="recharge-volume-input short" placeholder="0.85" aria-label="Recharge volume">
+        <span class="sel mid">
+          <select class="recharge-volume-units-input" aria-label="Volume units">
+            <option value="kg / unit">kg / unit</option>
+            <option value="mt / unit">mt / unit</option>
+            <option value="tCO2e / unit">tCO2e / unit</option>
+            <option value="kwh / unit">kwh / unit</option>
+          </select>
+        </span>
+        <span class="duration-subcomponent">
+          <span class="sel mid">
+            <select class="duration-type-input" aria-label="Duration type for command">
+              <option value="in year">in year</option>
+              <option value="during all years">during all years</option>
+              <option value="starting in year">starting in year</option>
+              <option value="ending in year">ending in year</option>
+              <option value="during years">during years</option>
+            </select>
+          </span>
+          <input type="text" class="duration-start short" aria-label="Start year of recharge">
+          <span class="duration-to">to</span>
+          <input type="text" class="duration-end short" aria-label="End year of recharge"> .
+        </span>
+        - <a href="#" class="delete-command-link">delete</a>
+      </div>
+    </script>
+
     <script type="text/javascript" src="/third_party/ace.min.js"></script>
     <script type="text/javascript" src="/js/ace-mode-qubectalk.js"></script>
     <script type="text/javascript" src="/third_party/ext-language_tools.js"></script>
@@ -1622,15 +1666,17 @@
           "engine_const": "./js/engine_const.js?v=EPOCH",
           "engine_number": "./js/engine_number.js?v=EPOCH",
           "engine_struct": "./js/engine_struct.js?v=EPOCH",
-          "year_matcher": "./js/year_matcher.js?v=EPOCH",
-          "wasm_backend": "./js/wasm_backend.js?v=EPOCH",
+          "local_storage_keeper": "./js/local_storage_keeper.js?v=EPOCH",
           "main": "./js/main.js?v=EPOCH",
           "report_data": "./js/report_data.js?v=EPOCH",
           "results": "./js/results.js?v=EPOCH",
+          "storage_keeper": "./js/storage_keeper.js?v=EPOCH",
           "ui_editor": "./js/ui_editor.js?v=EPOCH",
           "ui_translator": "./js/ui_translator.js?v=EPOCH",
           "updates": "./js/updates.js?v=EPOCH",
-          "user_config": "./js/user_config.js?v=EPOCH"
+          "user_config": "./js/user_config.js?v=EPOCH",
+          "wasm_backend": "./js/wasm_backend.js?v=EPOCH",
+          "year_matcher": "./js/year_matcher.js?v=EPOCH"
         }
       }
     </script>

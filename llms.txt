@@ -62,7 +62,7 @@ The about stanza is optional.
 
 #### Equipment Lifecycle
 - `retire {amount} <during>` - Equipment retirement rate
-- `recharge {stream} with {amount} <during>` - Service recharging.
+- `recharge {population} with {volume} <during>` - Service recharging where population specifies equipment to recharge and volume is substance per unit.
 - `set priorEquipment to {amount} <during>` - Pre-existing equipment.
 
 #### Policy Interventions
@@ -171,7 +171,7 @@ start default
       change import by +5 % each year during years 1 to 5
       
       retire 6.7 % each year
-      recharge 10 % each year with 0.12 kg / unit
+      recharge 10 % with 0.12 kg / unit
     end substance
   end application
 end default

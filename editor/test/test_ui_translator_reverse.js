@@ -7,6 +7,7 @@ import {
   DefinitionalStanza,
   LimitCommand,
   Program,
+  RechargeCommand,
   ReplaceCommand,
   SimulationScenario,
   SimulationStanza,
@@ -76,6 +77,22 @@ function buildUiTranslatorReverseTests() {
       const substance = createWithCommand("test", true, command);
       const code = substance.toCode(0);
       assert.notEqual(code.indexOf("cap domestic to 5 mt"), -1);
+    });
+    QUnit.test("recharges substances", function (assert) {
+      const command = new RechargeCommand("10", "%", "0.12", "kg / unit", null, null, null);
+      const substance = createWithCommand("test", false, command);
+      const code = substance.toCode(0);
+      assert.notEqual(code.indexOf("recharge 10 % with 0.12 kg / unit"), -1);
+    });
+    QUnit.test("recharges substances with duration", function (assert) {
+      const yearMatcher = new YearMatcher(2025, 2030);
+      const command = new RechargeCommand(
+        "5", "% each year", "0.85", "kg / unit", "during years", 2025, 2030,
+      );
+      const substance = createWithCommand("test", false, command);
+      const code = substance.toCode(0);
+      const expectedText = "recharge 5 % each year with 0.85 kg / unit during years 2025 to 2030";
+      assert.notEqual(code.indexOf(expectedText), -1);
     });
 
     QUnit.test("changes substances", function (assert) {
