@@ -110,6 +110,8 @@ public class StreamKeeper {
     streams.put(priorEquipmentKey, new EngineNumber(BigDecimal.ZERO, "units"));
     String newEquipmentKey = getKey(useKey, "newEquipment");
     streams.put(newEquipmentKey, new EngineNumber(BigDecimal.ZERO, "units"));
+    String retiredKey = getKey(useKey, "retired");
+    streams.put(retiredKey, new EngineNumber(BigDecimal.ZERO, "units"));
 
     // Emissions
     String rechargeEmissionsKey = getKey(useKey, "rechargeEmissions");

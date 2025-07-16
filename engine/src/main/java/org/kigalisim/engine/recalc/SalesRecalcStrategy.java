@@ -72,10 +72,22 @@ public class SalesRecalcStrategy implements RecalcStrategy {
     // Get recycling volume and amount for both EOL and recharge stages
     BigDecimal totalRecycledKg = BigDecimal.ZERO;
 
-    // Calculate EOL recycling (from retirement)
+    // Calculate EOL recycling (from actual retired equipment)
+    EngineNumber retiredPopulationRaw = streamKeeper.getStream(scopeEffective, "retired");
+    EngineNumber retiredPopulation = unitConverter.convert(retiredPopulationRaw, "units");
+    
+    // Calculate EOL volume from retired equipment
+    stateGetter.setPopulation(retiredPopulation);
+    EngineNumber eolVolumeRaw = streamKeeper.getStream(scopeEffective, "retired");
+    EngineNumber eolVolume = unitConverter.convert(eolVolumeRaw, "kg");
+    // Convert from units to kg using initial charge
+    BigDecimal eolVolumeKg = retiredPopulation.getValue().multiply(initialCharge.getValue());
+    EngineNumber eolVolumeConverted = new EngineNumber(eolVolumeKg, "kg");
+    stateGetter.clearPopulation();
+    
     BigDecimal eolRecycledKg = calculateRecyclingForStage(
         streamKeeper, stateGetter, unitConverter, scopeEffective,
-        rechargeVolume, RecoveryStage.EOL);
+        eolVolumeConverted, RecoveryStage.EOL);
 
     // Calculate recharge recycling (from recharge population)
     BigDecimal rechargeRecycledKg = calculateRecyclingForStage(

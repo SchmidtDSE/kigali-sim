@@ -1217,8 +1217,10 @@ public class SingleThreadEngine implements Engine {
       BigDecimal rechargePopulationDecimal = rechargePopulation.getValue().divide(BigDecimal.valueOf(100));
       BigDecimal displacementRateDecimal = displacementRate.getValue().divide(BigDecimal.valueOf(100));
 
-      // Calculate EOL recycling (after retirement)
-      BigDecimal retiredUnits = priorPopulation.getValue().multiply(retirementRateDecimal);
+      // Calculate EOL recycling (from actual retired equipment)
+      EngineNumber retiredPopulationRaw = streamKeeper.getStream(scope, "retired");
+      EngineNumber retiredPopulation = unitConverter.convert(retiredPopulationRaw, "units");
+      BigDecimal retiredUnits = retiredPopulation.getValue();
       BigDecimal eolRecycling = calculateRecyclingForStage(scope, retiredUnits, RecoveryStage.EOL, unitConverter);
 
       // Calculate recharge recycling (after recharge population)

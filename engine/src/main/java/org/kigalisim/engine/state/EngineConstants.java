@@ -66,6 +66,7 @@ public final class EngineConstants {
     units.put("equipment", "units");
     units.put("priorEquipment", "units");
     units.put("newEquipment", "units");
+    units.put("retired", "units");
     units.put("implicitRecharge", "kg");
     return units;
   }
