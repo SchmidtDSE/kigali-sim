@@ -19,6 +19,7 @@ import org.kigalisim.engine.state.OverridingConverterStateGetter;
 import org.kigalisim.engine.state.StreamKeeper;
 import org.kigalisim.engine.state.UseKey;
 import org.kigalisim.engine.support.ExceptionsGenerator;
+import org.kigalisim.lang.operation.RecoverOperation.RecoveryStage;
 
 /**
  * Strategy for recalculating sales.
@@ -68,20 +69,33 @@ public class SalesRecalcStrategy implements RecalcStrategy {
     EngineNumber initialChargeRaw = target.getInitialCharge("sales");
     EngineNumber initialCharge = unitConverter.convert(initialChargeRaw, "kg / unit");
 
-    // Get recycling volume
-    stateGetter.setVolume(rechargeVolume);
-    EngineNumber recoveryVolumeRaw = streamKeeper.getRecoveryRate(scopeEffective);
-    EngineNumber recoveryVolume = unitConverter.convert(recoveryVolumeRaw, "kg");
-    stateGetter.clearVolume();
+    // Calculate EOL recycling (from actual retired equipment)
+    EngineNumber retiredPopulationRaw = streamKeeper.getStream(scopeEffective, "retired");
+    EngineNumber retiredPopulation = unitConverter.convert(retiredPopulationRaw, "units");
 
-    // Get recycling amount
-    stateGetter.setVolume(recoveryVolume);
-    EngineNumber recycledVolumeRaw = streamKeeper.getYieldRate(scopeEffective);
-    EngineNumber recycledVolume = unitConverter.convert(recycledVolumeRaw, "kg");
-    stateGetter.clearVolume();
+    // Calculate EOL volume from retired equipment
+    stateGetter.setPopulation(retiredPopulation);
+    EngineNumber eolVolumeRaw = streamKeeper.getStream(scopeEffective, "retired");
+    EngineNumber eolVolume = unitConverter.convert(eolVolumeRaw, "kg");
+    // Convert from units to kg using initial charge
+    BigDecimal eolVolumeKg = retiredPopulation.getValue().multiply(initialCharge.getValue());
+    EngineNumber eolVolumeConverted = new EngineNumber(eolVolumeKg, "kg");
+    stateGetter.clearPopulation();
+
+    BigDecimal eolRecycledKg = calculateRecyclingForStage(
+        streamKeeper, stateGetter, unitConverter, scopeEffective,
+        eolVolumeConverted, RecoveryStage.EOL);
+
+    // Calculate recharge recycling (from recharge population)
+    BigDecimal rechargeRecycledKg = calculateRecyclingForStage(
+        streamKeeper, stateGetter, unitConverter, scopeEffective,
+        rechargeVolume, RecoveryStage.RECHARGE);
+
+    // Combine both recycling amounts
+    BigDecimal totalRecycledKg = eolRecycledKg.add(rechargeRecycledKg);
 
     // Get recycling displaced
-    BigDecimal recycledKg = recycledVolume.getValue();
+    BigDecimal recycledKg = totalRecycledKg;
 
     EngineNumber displacementRateRaw = streamKeeper.getDisplacementRate(scopeEffective);
     EngineNumber displacementRate = unitConverter.convert(displacementRateRaw, "%");
@@ -228,5 +242,39 @@ public class SalesRecalcStrategy implements RecalcStrategy {
     }
 
     return hasUnitBasedSpecs;
+  }
+
+  /**
+   * Calculate recycling for a specific stage (EOL or RECHARGE).
+   *
+   * @param streamKeeper the stream keeper to use for getting rates
+   * @param stateGetter the state getter for volume calculations
+   * @param unitConverter the unit converter to use
+   * @param scopeEffective the scope to calculate for
+   * @param baseVolume the base volume to use for calculations
+   * @param stage the recovery stage (EOL or RECHARGE)
+   * @return the recycled amount in kg for this stage
+   */
+  private BigDecimal calculateRecyclingForStage(
+      StreamKeeper streamKeeper,
+      OverridingConverterStateGetter stateGetter,
+      UnitConverter unitConverter,
+      UseKey scopeEffective,
+      EngineNumber baseVolume,
+      RecoveryStage stage) {
+
+    // Get recycling volume (recovery rate) for this stage
+    stateGetter.setVolume(baseVolume);
+    EngineNumber recoveryVolumeRaw = streamKeeper.getRecoveryRate(scopeEffective, stage);
+    EngineNumber recoveryVolume = unitConverter.convert(recoveryVolumeRaw, "kg");
+    stateGetter.clearVolume();
+
+    // Get recycling amount (yield rate) for this stage
+    stateGetter.setVolume(recoveryVolume);
+    EngineNumber recycledVolumeRaw = streamKeeper.getYieldRate(scopeEffective, stage);
+    EngineNumber recycledVolume = unitConverter.convert(recycledVolumeRaw, "kg");
+    stateGetter.clearVolume();
+
+    return recycledVolume.getValue();
   }
 }

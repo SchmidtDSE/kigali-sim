@@ -19,8 +19,8 @@ Prism.languages.qubectalk = {
     pattern: new RegExp("\\b(?:" + [
       "start", "end", "default", "policy", "simulations", "application",
       "substance", "define", "uses", "modify", "simulate", "about",
-      "variables", "across", "as", "by", "cap", "change", "charge",
-      "during", "enable", "equals", "floor", "for", "from", "get", "in", "initial",
+      "variables", "across", "as", "at", "by", "cap", "change", "charge",
+      "during", "enable", "eol", "equals", "floor", "for", "from", "get", "in", "initial",
       "of", "recharge", "recover", "replace", "retire", "reuse", "set",
       "then", "to", "trials", "using", "with", "displacing", "and", "or",
       "xor", "if", "else", "endif", "normally", "sample", "std",

@@ -1,0 +1,35 @@
+start default
+
+  define application "test"
+
+    uses substance "test"
+      enable domestic
+      initial charge with 2 kg / unit for domestic
+      set domestic to 100 kg
+      retire 10% each year
+      equals 5 tCO2e / kg
+    end substance
+
+  end application
+
+end default
+
+
+start policy "intervention"
+
+  modify application "test"
+    
+    modify substance "test"
+      recover 50 % with 100 % reuse at eol during year 2
+    end substance
+
+  end application
+
+end policy
+
+
+start simulations
+
+  simulate "result" using "intervention" from years 1 to 2
+
+end simulations
