@@ -975,7 +975,7 @@ class SubstanceBuilder {
     self._changes = [];
     self._equalsGhg = null;
     self._equalsKwh = null;
-    self._recharge = null;
+    self._recharges = [];
     self._recycles = [];
     self._replaces = [];
     self._retire = null;
@@ -998,7 +998,8 @@ class SubstanceBuilder {
       self._limits,
       self._recycles,
       self._replaces,
-      [self._equalsGhg, self._equalsKwh, self._recharge, self._retire],
+      [self._equalsGhg, self._equalsKwh, self._retire],
+      self._recharges,
       self._changes,
       self._setVals,
     ].flat();
@@ -1020,7 +1021,7 @@ class SubstanceBuilder {
       self._changes,
       self._equalsGhg,
       self._equalsKwh,
-      self._recharge,
+      self._recharges,
       self._recycles,
       self._replaces,
       self._retire,
@@ -1059,7 +1060,7 @@ class SubstanceBuilder {
       "retire": (x) => self.setRetire(x),
       "setVal": (x) => self.addSetVal(x),
       "initial charge": (x) => self.addInitialCharge(x),
-      "recharge": (x) => self.setRecharge(x),
+      "recharge": (x) => self.addRecharge(x),
       "equals": (x) => {
         const units = x.getValue().getUnits();
         if (units.includes("kwh")) {
@@ -1145,13 +1146,13 @@ class SubstanceBuilder {
   }
 
   /**
-   * Set the recharge command.
+   * Add a recharge command.
    *
-   * @param {Command} newVal - Recharge command to set.
-   * @returns {Command|IncompatibleCommand} The command or incompatibility marker. */
-  setRecharge(newVal) {
+   * @param {Command} newVal - Recharge command to add.
+   */
+  addRecharge(newVal) {
     const self = this;
-    self._recharge = self._checkDuplicate(self._recharge, newVal);
+    self._recharges.push(newVal);
   }
 
   /**
@@ -1245,7 +1246,7 @@ class Substance {
    * @param {LimitCommand[]} limits - Limit commands.
    * @param {Command[]} changes - Change commands.
    * @param {Command} equals - Equals command.
-   * @param {Command} recharge - Recharge command.
+   * @param {Command[]} recharges - Recharge commands.
    * @param {Command[]} recycles - Recycle commands.
    * @param {ReplaceCommand[]} replaces - Replace commands.
    * @param {Command} retire - Retire command.
@@ -1261,7 +1262,7 @@ class Substance {
     changes,
     equalsGhg,
     equalsKwh,
-    recharge,
+    recharges,
     recycles,
     replaces,
     retire,
@@ -1277,7 +1278,7 @@ class Substance {
     self._changes = changes;
     self._equalsGhg = equalsGhg;
     self._equalsKwh = equalsKwh;
-    self._recharge = recharge;
+    self._recharges = recharges;
     self._recycles = recycles;
     self._replaces = replaces;
     self._retire = retire;
@@ -1360,13 +1361,13 @@ class Substance {
   }
 
   /**
-   * Get the recharge command for this substance.
+   * Get all recharge commands for this substance.
    *
-   * @returns {Command|null} The recharge command or null if not set.
+   * @returns {Command[]} Array of recharge commands.
    */
-  getRecharge() {
+  getRecharges() {
     const self = this;
-    return self._recharge;
+    return self._recharges;
   }
 
   /**
@@ -1479,7 +1480,7 @@ class Substance {
     addAllIfGiven(self._getChangesCode());
     addIfGiven(self._getRetireCode());
     addAllIfGiven(self._getLimitCode());
-    addIfGiven(self._getRechargeCode());
+    addAllIfGiven(self._getRechargeCode());
     addAllIfGiven(self._getRecycleCode());
     addAllIfGiven(self._getReplaceCode());
 
@@ -1671,28 +1672,35 @@ class Substance {
   }
 
   /**
-   * Generate code for the recharge command.
+   * Generate code for recharge commands.
    *
-   * @returns {string|null} Code string or null if no recharge command.
+   * @returns {string[]|null} Array of code strings or null if no recharge commands.
    * @private
    */
   _getRechargeCode() {
     const self = this;
-    if (self._recharge === null) {
+    if (self._recharges.length == 0) {
       return null;
     }
 
-    const pieces = [
-      "recharge",
-      self._recharge.getTarget().getValue(),
-      self._recharge.getTarget().getUnits(),
-      "with",
-      self._recharge.getValue().getValue(),
-      self._recharge.getValue().getUnits(),
-    ];
-    self._addDuration(pieces, self._recharge);
-
-    return self._finalizeStatement(pieces);
+    return self._recharges.map((recharge) => {
+      if (recharge.buildCommand) {
+        // New RechargeCommand objects with buildCommand method
+        return self._finalizeStatement([recharge.buildCommand()]);
+      } else {
+        // Legacy Command objects
+        const pieces = [
+          "recharge",
+          recharge.getTarget().getValue(),
+          recharge.getTarget().getUnits(),
+          "with",
+          recharge.getValue().getValue(),
+          recharge.getValue().getUnits(),
+        ];
+        self._addDuration(pieces, recharge);
+        return self._finalizeStatement(pieces);
+      }
+    });
   }
 
   /**
@@ -1983,6 +1991,155 @@ class LimitCommand {
    * Check if this limit command is compatible with UI editing.
    *
    * @returns {boolean} Always returns true as limit commands are UI-compatible.
+   */
+  getIsCompatible() {
+    const self = this;
+    return true;
+  }
+}
+
+/**
+ * Recharge command with duration capability.
+ */
+class RechargeCommand {
+  /**
+   * Create a new RechargeCommand.
+   *
+   * @param {string} population - Population to recharge (e.g. "5").
+   * @param {string} populationUnits - Population units (e.g. "%", "% each year", "units").
+   * @param {string} volume - Volume per unit (e.g. "0.85").
+   * @param {string} volumeUnits - Volume units (e.g. "kg / unit", "mt / unit").
+   * @param {string|null} durationType - Duration type ("year", "years-range", etc.) or null.
+   * @param {string|null} yearStart - Start year for duration or null.
+   * @param {string|null} yearEnd - End year for duration or null.
+   */
+  constructor(population, populationUnits, volume, volumeUnits, durationType, yearStart, yearEnd) {
+    const self = this;
+    self._population = population;
+    self._populationUnits = populationUnits;
+    self._volume = volume;
+    self._volumeUnits = volumeUnits;
+    self._durationType = durationType;
+    self._yearStart = yearStart;
+    self._yearEnd = yearEnd;
+  }
+
+  /**
+   * Get the population to recharge.
+   *
+   * @returns {string} The population value.
+   */
+  getPopulation() {
+    const self = this;
+    return self._population;
+  }
+
+  /**
+   * Get the population units.
+   *
+   * @returns {string} The population units.
+   */
+  getPopulationUnits() {
+    const self = this;
+    return self._populationUnits;
+  }
+
+  /**
+   * Get the volume per unit.
+   *
+   * @returns {string} The volume value.
+   */
+  getVolume() {
+    const self = this;
+    return self._volume;
+  }
+
+  /**
+   * Get the volume units.
+   *
+   * @returns {string} The volume units.
+   */
+  getVolumeUnits() {
+    const self = this;
+    return self._volumeUnits;
+  }
+
+  /**
+   * Get the duration type.
+   *
+   * @returns {string|null} The duration type or null for all years.
+   */
+  getDurationType() {
+    const self = this;
+    return self._durationType;
+  }
+
+  /**
+   * Get the start year.
+   *
+   * @returns {string|null} The start year or null.
+   */
+  getYearStart() {
+    const self = this;
+    return self._yearStart;
+  }
+
+  /**
+   * Get the end year.
+   *
+   * @returns {string|null} The end year or null.
+   */
+  getYearEnd() {
+    const self = this;
+    return self._yearEnd;
+  }
+
+  /**
+   * Build the command string for this recharge.
+   *
+   * @param {string} substance - The substance name (unused but kept for consistency).
+   * @returns {string} The generated recharge command.
+   */
+  buildCommand(substance) {
+    const self = this;
+    const baseCommand = `recharge ${self._population} ${self._populationUnits}` +
+      ` with ${self._volume} ${self._volumeUnits}`;
+    let command = baseCommand;
+
+    if (self._durationType) {
+      switch (self._durationType) {
+      case "during year":
+        command += ` during year ${self._yearStart}`;
+        break;
+      case "during years":
+        command += ` during years ${self._yearStart} to ${self._yearEnd}`;
+        break;
+      case "years-onwards":
+        command += ` during years ${self._yearStart} to onwards`;
+        break;
+      case "years-beginning":
+        command += ` during years beginning to ${self._yearEnd}`;
+        break;
+      }
+    }
+
+    return command;
+  }
+
+  /**
+   * Get the type name of this command.
+   *
+   * @returns {string} The command type name.
+   */
+  getTypeName() {
+    const self = this;
+    return "recharge";
+  }
+
+  /**
+   * Check if this recharge command is compatible with UI editing.
+   *
+   * @returns {boolean} Always returns true as recharge commands are UI-compatible.
    */
   getIsCompatible() {
     const self = this;
@@ -3422,6 +3579,7 @@ export {
   DefinitionalStanza,
   LimitCommand,
   Program,
+  RechargeCommand,
   RecycleCommand,
   ReplaceCommand,
   SimulationScenario,
