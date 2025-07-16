@@ -713,8 +713,6 @@ public class RecycleRecoverLiveTests {
     assertNotNull(recordYear2, "Should have result for test/test in year 2");
 
     // With combined recycling, both EOL and recharge recycling should contribute
-    // The actual calculation is more complex than initial estimate due to recharge population dynamics
-    // Based on actual engine behavior: 465.775 tCO2e total consumption
     double expectedTotalConsumption = 465.775;
     assertEquals(expectedTotalConsumption, recordYear2.getGhgConsumption().getValue().doubleValue(), 0.001,
         "GHG consumption should be reduced to 465.775 tCO2e in year 2 due to combined EOL and recharge recycling");
@@ -722,7 +720,6 @@ public class RecycleRecoverLiveTests {
         "GHG consumption units should be tCO2e in year 2");
 
     // Check recycled consumption in year 2
-    // Based on actual engine behavior: 500 - 465.775 = 34.225 tCO2e recycled
     double expectedRecycledConsumption = 34.225;
     assertEquals(expectedRecycledConsumption, recordYear2.getRecycleConsumption().getValue().doubleValue(), 0.001,
         "Recycled consumption should be 34.225 tCO2e in year 2 from combined recycling");
