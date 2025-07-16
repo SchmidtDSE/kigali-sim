@@ -1741,6 +1741,12 @@ class Substance {
         }
       }
 
+      const stage = recycle.getStage ? recycle.getStage() : "recharge";
+      if (stage !== "recharge") {
+        pieces.push("at");
+        pieces.push(stage);
+      }
+
       self._addDuration(pieces, recycle);
 
       return self._finalizeStatement(pieces);
@@ -3091,7 +3097,7 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
     const self = this;
     const volume = ctx.volume.accept(self);
     const yieldVal = ctx.yieldVal.accept(self);
-    const stage = ctx.stage.getText();
+    const stage = ctx.stage.text;
     return new RecycleCommand(volume, yieldVal, null, null, stage);
   }
 
@@ -3105,7 +3111,7 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
     const self = this;
     const volume = ctx.volume.accept(self);
     const yieldVal = ctx.yieldVal.accept(self);
-    const stage = ctx.stage.getText();
+    const stage = ctx.stage.text;
     const duration = ctx.duration.accept(self);
     return new RecycleCommand(volume, yieldVal, duration, null, stage);
   }
@@ -3120,7 +3126,7 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
     const self = this;
     const volume = ctx.volume.accept(self);
     const yieldVal = ctx.yieldVal.accept(self);
-    const stage = ctx.stage.getText();
+    const stage = ctx.stage.text;
     const cleanTarget = self._findDisplacementTarget(ctx);
     return new RecycleCommand(volume, yieldVal, null, cleanTarget, stage);
   }
@@ -3135,7 +3141,7 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
     const self = this;
     const volume = ctx.volume.accept(self);
     const yieldVal = ctx.yieldVal.accept(self);
-    const stage = ctx.stage.getText();
+    const stage = ctx.stage.text;
     const cleanTarget = self._findDisplacementTarget(ctx);
     const duration = ctx.duration.accept(self);
     return new RecycleCommand(volume, yieldVal, duration, cleanTarget, stage);

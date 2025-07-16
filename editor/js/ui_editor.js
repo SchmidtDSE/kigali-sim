@@ -1780,12 +1780,6 @@ class PolicyListPresenter {
     const limits = getListInput(self._dialog.querySelector(".limit-list"), readLimitCommandUi);
     limits.forEach((command) => builder.addCommand(command));
 
-    const recharges = getListInput(
-      self._dialog.querySelector(".recharge-list"),
-      readRechargeCommandUi,
-    );
-    recharges.forEach((command) => builder.addCommand(command));
-
     const substance = builder.build(true);
     const application = new Application(applicationName, [substance], true, true);
     const policy = new DefinitionalStanza(policyName, [application], true, true);
