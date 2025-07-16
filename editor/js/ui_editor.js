@@ -35,7 +35,7 @@ const STREAM_TARGET_SELECTORS = [
  * Stream types that can be enabled/disabled based on substance configuration.
  * @constant {Array<string>}
  */
-const ENABLEABLE_STREAMS = ["manufacture", "import", "export"];
+const ENABLEABLE_STREAMS = ["domestic", "import", "export"];
 
 /**
  * Stream types that are always available regardless of substance configuration.
@@ -839,11 +839,11 @@ class ConsumptionListPresenter {
     setupDialogInternalLinks(self._root, self._tabs);
 
     const enableImport = self._dialog.querySelector(".enable-import-checkbox");
-    const enableManufacture = self._dialog.querySelector(".enable-manufacture-checkbox");
+    const enableDomestic = self._dialog.querySelector(".enable-domestic-checkbox");
     const enableExport = self._dialog.querySelector(".enable-export-checkbox");
 
     enableImport.addEventListener("change", () => self._updateSource());
-    enableManufacture.addEventListener("change", () => self._updateSource());
+    enableDomestic.addEventListener("change", () => self._updateSource());
     enableExport.addEventListener("change", () => self._updateSource());
   }
 
@@ -954,13 +954,13 @@ class ConsumptionListPresenter {
 
     const getValueOrDefault = (target, fallback) => target === null ? fallback : target.getValue();
 
-    const manufactureFallback = new EngineNumber(1, "kg / unit");
+    const domesticFallback = new EngineNumber(1, "kg / unit");
     setEngineNumberValue(
       self._dialog.querySelector(".edit-consumption-initial-charge-domestic-input"),
       self._dialog.querySelector(".initial-charge-domestic-units-input"),
       objToShow,
-      manufactureFallback,
-      (x) => getValueOrDefault(x.getInitialCharge("manufacture"), manufactureFallback),
+      domesticFallback,
+      (x) => getValueOrDefault(x.getInitialCharge("domestic"), domesticFallback),
     );
 
     const importFallback = new EngineNumber(2, "kg / unit");
@@ -1035,19 +1035,19 @@ class ConsumptionListPresenter {
 
     // Set enable checkboxes based on existing substance data
     const enableImport = self._dialog.querySelector(".enable-import-checkbox");
-    const enableManufacture = self._dialog.querySelector(".enable-manufacture-checkbox");
+    const enableDomestic = self._dialog.querySelector(".enable-domestic-checkbox");
     const enableExport = self._dialog.querySelector(".enable-export-checkbox");
 
     if (objToShow !== null) {
       // Check if the substance has enable commands
       const enableCommands = objToShow.getEnables();
 
-      enableManufacture.checked = enableCommands.some((cmd) => cmd.getTarget() === "manufacture");
+      enableDomestic.checked = enableCommands.some((cmd) => cmd.getTarget() === "domestic");
       enableImport.checked = enableCommands.some((cmd) => cmd.getTarget() === "import");
       enableExport.checked = enableCommands.some((cmd) => cmd.getTarget() === "export");
     } else {
       // For new substances, default all enable checkboxes to unchecked
-      enableManufacture.checked = false;
+      enableDomestic.checked = false;
       enableImport.checked = false;
       enableExport.checked = false;
     }
@@ -1067,7 +1067,7 @@ class ConsumptionListPresenter {
     const self = this;
 
     const enableImport = self._dialog.querySelector(".enable-import-checkbox");
-    const enableManufacture = self._dialog.querySelector(".enable-manufacture-checkbox");
+    const enableDomestic = self._dialog.querySelector(".enable-domestic-checkbox");
     const enableExport = self._dialog.querySelector(".enable-export-checkbox");
 
     const domesticInput = self._dialog.querySelector(
@@ -1086,7 +1086,7 @@ class ConsumptionListPresenter {
     );
 
     // Show/hide fields based on checkbox states and set default values
-    if (enableManufacture.checked) {
+    if (enableDomestic.checked) {
       domesticInputOuter.style.display = "block";
       // If enabling and current value is 0, set to 1 kg/unit
       if (domesticInput.value === "0" || domesticInput.value === "") {
@@ -1138,8 +1138,8 @@ class ConsumptionListPresenter {
     const currentSubstanceName = substanceInput.value;
     // Create a temporary substance object with current checkbox states to get enabled streams
     const tempEnabledStreams = [];
-    if (enableManufacture.checked) {
-      tempEnabledStreams.push("manufacture");
+    if (enableDomestic.checked) {
+      tempEnabledStreams.push("domestic");
     }
     if (enableImport.checked) {
       tempEnabledStreams.push("import");
@@ -1159,7 +1159,7 @@ class ConsumptionListPresenter {
     const self = this;
 
     const enableImport = self._dialog.querySelector(".enable-import-checkbox");
-    const enableManufacture = self._dialog.querySelector(".enable-manufacture-checkbox");
+    const enableDomestic = self._dialog.querySelector(".enable-domestic-checkbox");
     const enableExport = self._dialog.querySelector(".enable-export-checkbox");
 
     const domesticInput = self._dialog.querySelector(
@@ -1255,11 +1255,11 @@ class ConsumptionListPresenter {
 
     // Add enable commands based on checkbox states
     const enableImport = self._dialog.querySelector(".enable-import-checkbox");
-    const enableManufacture = self._dialog.querySelector(".enable-manufacture-checkbox");
+    const enableDomestic = self._dialog.querySelector(".enable-domestic-checkbox");
     const enableExport = self._dialog.querySelector(".enable-export-checkbox");
 
-    if (enableManufacture.checked) {
-      substanceBuilder.addCommand(new Command("enable", "manufacture", null, null));
+    if (enableDomestic.checked) {
+      substanceBuilder.addCommand(new Command("enable", "domestic", null, null));
     }
     if (enableImport.checked) {
       substanceBuilder.addCommand(new Command("enable", "import", null, null));
@@ -1286,7 +1286,7 @@ class ConsumptionListPresenter {
     );
     const initialChargeDomesticCommand = new Command(
       "initial charge",
-      "manufacture",
+      "domestic",
       initialChargeDomestic,
       null,
     );
@@ -2399,12 +2399,12 @@ class StreamSelectionAvailabilityUpdater {
     const enabledStreams = [];
     const container = this._container;
 
-    const enableManufacture = container.querySelector(".enable-manufacture-checkbox");
+    const enableDomestic = container.querySelector(".enable-domestic-checkbox");
     const enableImport = container.querySelector(".enable-import-checkbox");
     const enableExport = container.querySelector(".enable-export-checkbox");
 
-    if (enableManufacture && enableManufacture.checked) {
-      enabledStreams.push("manufacture");
+    if (enableDomestic && enableDomestic.checked) {
+      enabledStreams.push("domestic");
     }
     if (enableImport && enableImport.checked) {
       enabledStreams.push("import");

@@ -49,7 +49,7 @@ public class StreamParameterizationTest {
                  "Energy intensity should have correct units");
 
     // Test initial charge defaults
-    EngineNumber manufactureCharge = parameterization.getInitialCharge("manufacture");
+    EngineNumber manufactureCharge = parameterization.getInitialCharge("domestic");
     assertEquals(BigDecimal.ONE, manufactureCharge.getValue(),
                  "Manufacture charge should default to 1");
     assertEquals("kg / unit", manufactureCharge.getUnits(),
@@ -142,8 +142,8 @@ public class StreamParameterizationTest {
     StreamParameterization parameterization = new StreamParameterization();
     EngineNumber newValue = new EngineNumber(new BigDecimal("2.0"), "kg / unit");
 
-    parameterization.setInitialCharge("manufacture", newValue);
-    EngineNumber retrieved = parameterization.getInitialCharge("manufacture");
+    parameterization.setInitialCharge("domestic", newValue);
+    EngineNumber retrieved = parameterization.getInitialCharge("domestic");
 
     assertEquals(new BigDecimal("2.0"), retrieved.getValue(),
                  "Should retrieve set initial charge value");
@@ -410,7 +410,7 @@ public class StreamParameterizationTest {
 
     // Set manufacture value - should set flag
     EngineNumber manufactureValue = new EngineNumber(new BigDecimal("75"), "kg");
-    parameterization.setLastSpecifiedValue("manufacture", manufactureValue);
+    parameterization.setLastSpecifiedValue("domestic", manufactureValue);
     assertEquals(true, parameterization.isSalesIntentFreshlySet(),
                  "Flag should be true after setting manufacture value");
   }

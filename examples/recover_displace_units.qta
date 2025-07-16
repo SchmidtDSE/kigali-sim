@@ -3,12 +3,12 @@ start default
   define application "test"
 
     uses substance "sub_a"
-      enable manufacture
+      enable domestic
       enable import
-      initial charge with 10 kg / unit for manufacture
+      initial charge with 10 kg / unit for domestic
       initial charge with 10 kg / unit for import
       recharge 10% each year with 10 kg / unit
-      set manufacture to 100 kg during year 1
+      set domestic to 100 kg during year 1
       set import to 50 kg during year 1
       set priorEquipment to 50 units during year 1
       retire 10% each year
@@ -16,12 +16,12 @@ start default
     end substance
 
     uses substance "sub_b"
-      enable manufacture
+      enable domestic
       enable import
-      initial charge with 20 kg / unit for manufacture
+      initial charge with 20 kg / unit for domestic
       initial charge with 20 kg / unit for import
       recharge 10% each year with 20 kg / unit
-      set manufacture to 200 kg during year 1
+      set domestic to 200 kg during year 1
       set import to 100 kg during year 1
       equals 10 tCO2e / mt
     end substance

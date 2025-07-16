@@ -3,48 +3,48 @@ start default
   define application "test"
 
     uses substance "SubA"
-      enable manufacture
+      enable domestic
       equals 1430 tCO2e / kg
       initial charge with 0.15 kg / unit for sales
       set priorEquipment to 1200000 units during year beginning
       retire 2 % each year
       recharge 10 % each year with 0.15 kg / unit
-      set manufacture to 30000 units / year during year beginning
+      set domestic to 30000 units / year during year beginning
       change equipment by +5 % each year during years 2026 to 2033
       change equipment by +3 % each year during years 2034 to 2035
     end substance
 
     uses substance "SubB"
-      enable manufacture
+      enable domestic
       initial charge with 0.15 kg / unit for sales
       set priorEquipment to 1200000 units during year beginning
       retire 2 % each year
       equals 1430 tCO2e / kg
       recharge 10 % each year with 0.15 kg / unit
-      set manufacture to 30000 units / year during year beginning
+      set domestic to 30000 units / year during year beginning
       change equipment by +5 % each year during years 2026 to 2033
       change equipment by +3 % each year during years 2034 to 2035
     end substance
 
     uses substance "SubC"
-      enable manufacture
+      enable domestic
       initial charge with 0.15 kg / unit for sales
       set priorEquipment to 1200000 units during year beginning
       retire 2 % each year
       recharge 10 % each year with 0.15 kg / unit
       equals 1430 tCO2e / kg
-      set manufacture to 30000 units / year during year beginning
+      set domestic to 30000 units / year during year beginning
       change equipment by +5 % each year during years 2026 to 2033
       change equipment by +3 % each year during years 2034 to 2035
     end substance
 
     uses substance "SubD"
-      enable manufacture
+      enable domestic
       initial charge with 0.15 kg / unit for sales
       set priorEquipment to 1200000 units during year beginning
       retire 2 % each year
       recharge 10 % each year with 0.15 kg / unit
-      set manufacture to 30000 units / year during year beginning
+      set domestic to 30000 units / year during year beginning
       change equipment by +5 % each year during years 2026 to 2033
       change equipment by +3 % each year during years 2034 to 2035
       equals 1430 tCO2e / kg

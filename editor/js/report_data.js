@@ -289,8 +289,8 @@ class ReportDataWrapper {
       strategyBuilder.setStrategy((x) => self.getImport(x));
       makeForKgAndMt(strategyBuilder);
 
-      strategyBuilder.setSubmetric("manufacture");
-      strategyBuilder.setStrategy((x) => self.getManufacture(x));
+      strategyBuilder.setSubmetric("domestic");
+      strategyBuilder.setStrategy((x) => self.getDomestic(x));
       makeForKgAndMt(strategyBuilder);
 
       strategyBuilder.setSubmetric("recycle");
@@ -334,7 +334,7 @@ class ReportDataWrapper {
       strategyBuilder.setStrategy((x) => self.getImportConsumption(x));
       addEmissionsConversion(strategyBuilder);
 
-      strategyBuilder.setSubmetric("manufacture");
+      strategyBuilder.setSubmetric("domestic");
       strategyBuilder.setStrategy((x) => self.getDomesticConsumption(x));
       addEmissionsConversion(strategyBuilder);
 
@@ -353,7 +353,7 @@ class ReportDataWrapper {
 
         // Map submetrics to their consumption equivalents
         const consumptionMethods = {
-          "manufacture": (x) => self.getDomesticConsumption(x),
+          "domestic": (x) => self.getDomesticConsumption(x),
           "import": (x) => self.getImportConsumption(x),
           "export": (x) => self.getExportConsumption(x),
           "recycle": (x) => self.getRecycleConsumption(x),
@@ -695,10 +695,10 @@ class ReportDataWrapper {
    * @returns {EngineNumber|null} The domestic manufacture component of sales,
    *     or null if no matching results.
    */
-  getManufacture(filterSet) {
+  getDomestic(filterSet) {
     const self = this;
     const aggregated = self._getAggregatedAfterFilter(filterSet);
-    return aggregated === null ? null : aggregated.getManufacture();
+    return aggregated === null ? null : aggregated.getDomestic();
   }
 
   /**
@@ -794,7 +794,7 @@ class ReportDataWrapper {
     const preAggregated = afterFilter.map(
       (x) =>
         new AggregatedResult(
-          x.getManufacture(),
+          x.getDomestic(),
           x.getImport(),
           x.getRecycle(),
           x.getExport(),

@@ -284,7 +284,7 @@ public class RecoverOperationTest {
     // Set up during with no specific time constraints for simplicity
     ParsedDuring during = new ParsedDuring(Optional.empty(), Optional.empty());
 
-    String displaceTarget = "manufacture";
+    String displaceTarget = "domestic";
     RecoverOperation operation = new RecoverOperation(volumeOperation, yieldOperation, displaceTarget, during);
 
     // Execute with real machine - just verify it doesn't throw an exception

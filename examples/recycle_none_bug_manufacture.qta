@@ -3,12 +3,12 @@ start default
   define application "MAC"
 
     uses substance "HFC-134a"
-      enable manufacture
+      enable domestic
       initial charge with 1.00 kg / unit for sales
       set priorEquipment to 500000 units during year beginning
       retire 5 % each year
       recharge 20 % each year with 1.00 kg / unit
-      set manufacture to (10000 * (500000 / 750000)) units / year during year beginning
+      set domestic to (10000 * (500000 / 750000)) units / year during year beginning
       equals 1430 tCO2e / kg
     end substance
 

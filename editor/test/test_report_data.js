@@ -36,20 +36,20 @@ function buildReportDataTests() {
       });
     };
 
-    QUnit.test("parses submetric manufacture", (assert) => {
+    QUnit.test("parses submetric domestic", (assert) => {
       const filterSet = new FilterSet(
         null,
         null,
         null,
         null,
-        "sales:manufacture:mt / yr",
+        "sales:domestic:mt / yr",
         null,
         null,
         false,
       );
-      assert.deepEqual(filterSet.getFullMetricName(), "sales:manufacture:mt / yr");
+      assert.deepEqual(filterSet.getFullMetricName(), "sales:domestic:mt / yr");
       assert.deepEqual(filterSet.getMetric(), "sales");
-      assert.deepEqual(filterSet.getSubMetric(), "manufacture");
+      assert.deepEqual(filterSet.getSubMetric(), "domestic");
       assert.deepEqual(filterSet.getUnits(), "mt / yr");
     });
 
@@ -91,7 +91,7 @@ function buildReportDataTests() {
     QUnit.test("handles custom definitions", (assert) => {
       const customDefs = {
         "emissions": ["recharge", "eol"],
-        "sales": ["manufacture", "import"],
+        "sales": ["domestic", "import"],
       };
       const filterSet = new FilterSet(
         null,
@@ -105,11 +105,11 @@ function buildReportDataTests() {
         customDefs,
       );
       assert.deepEqual(filterSet.getCustomDefinition("emissions"), ["recharge", "eol"]);
-      assert.deepEqual(filterSet.getCustomDefinition("sales"), ["manufacture", "import"]);
+      assert.deepEqual(filterSet.getCustomDefinition("sales"), ["domestic", "import"]);
 
       const updatedFilterSet = filterSet.getWithCustomDefinition("emissions", ["recharge"]);
       assert.deepEqual(updatedFilterSet.getCustomDefinition("emissions"), ["recharge"]);
-      assert.deepEqual(updatedFilterSet.getCustomDefinition("sales"), ["manufacture", "import"]);
+      assert.deepEqual(updatedFilterSet.getCustomDefinition("sales"), ["domestic", "import"]);
     });
 
     buildTest("runs the base script", "/examples/multiple_with_policies.qta", [
@@ -239,7 +239,7 @@ function buildReportDataTests() {
           "bau",
           null,
           null,
-          "sales:manufacture:kg / yr",
+          "sales:domestic:kg / yr",
           null,
           null,
           true,
@@ -257,7 +257,7 @@ function buildReportDataTests() {
           "bau",
           null,
           null,
-          "sales:manufacture:kg / yr",
+          "sales:domestic:kg / yr",
           null,
           null,
           false,
@@ -275,7 +275,7 @@ function buildReportDataTests() {
           "bau",
           null,
           null,
-          "sales:manufacture:kg / yr",
+          "sales:domestic:kg / yr",
           null,
           null,
           true,
@@ -296,7 +296,7 @@ function buildReportDataTests() {
             "bau",
             null,
             null,
-            "sales:manufacture:kg / yr",
+            "sales:domestic:kg / yr",
             null,
             null,
             false,
@@ -348,14 +348,14 @@ function buildReportDataTests() {
       ],
     );
 
-    buildTest("gets domestic manfacture by metric", "/examples/multiple_with_policies_split.qta", [
+    buildTest("gets domestic domestic by metric", "/examples/multiple_with_policies_split.qta", [
       (result, assert) => {
         const filterSet = new FilterSet(
           1,
           "bau",
           null,
           null,
-          "sales:manufacture:kg / yr",
+          "sales:domestic:kg / yr",
           null,
           null,
           true,
@@ -367,7 +367,7 @@ function buildReportDataTests() {
     ]);
 
     buildTest(
-      "gets domestic manfacture by metric with attribution",
+      "gets domestic domestic by metric with attribution",
       "/examples/multiple_with_policies_split.qta",
       [
         (result, assert) => {
@@ -376,7 +376,7 @@ function buildReportDataTests() {
             "bau",
             null,
             null,
-            "sales:manufacture:kg / yr",
+            "sales:domestic:kg / yr",
             null,
             null,
             false,

@@ -82,15 +82,15 @@ public class ReferenceLiveTests {
         "com refrig", "HFC-134a");
     assertNotNull(comRefrigHfc134a, "Should have result for com refrig/HFC-134a in year 1");
 
-    // Check that manufacture values are as expected
-    assertEquals(400000.0, domRefrigHfc134a.getManufacture().getValue().doubleValue(), 0.0001,
-        "dom refrig/HFC-134a manufacture should be 400000 kg in year 1");
-    assertEquals("kg", domRefrigHfc134a.getManufacture().getUnits(),
-        "dom refrig/HFC-134a manufacture units should be kg in year 1");
+    // Check that domestic values are as expected
+    assertEquals(400000.0, domRefrigHfc134a.getDomestic().getValue().doubleValue(), 0.0001,
+        "dom refrig/HFC-134a domestic should be 400000 kg in year 1");
+    assertEquals("kg", domRefrigHfc134a.getDomestic().getUnits(),
+        "dom refrig/HFC-134a domestic units should be kg in year 1");
 
-    assertEquals(90000.0, comRefrigHfc134a.getManufacture().getValue().doubleValue(), 0.0001,
-        "com refrig/HFC-134a manufacture should be 90000 kg in year 1");
-    assertEquals("kg", comRefrigHfc134a.getManufacture().getUnits(),
-        "com refrig/HFC-134a manufacture units should be kg in year 1");
+    assertEquals(90000.0, comRefrigHfc134a.getDomestic().getValue().doubleValue(), 0.0001,
+        "com refrig/HFC-134a domestic should be 90000 kg in year 1");
+    assertEquals("kg", comRefrigHfc134a.getDomestic().getUnits(),
+        "com refrig/HFC-134a domestic units should be kg in year 1");
   }
 }

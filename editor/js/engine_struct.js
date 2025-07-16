@@ -23,8 +23,8 @@ class EngineResult {
    * @param {number} year - The year for which the engine result is relevant.
    * @param {string} scenarioName - The name of the scenario being run.
    * @param {number} trialNumber - The trial number of the current run.
-   * @param {EngineNumber} manufactureValue - The value associated with
-   *     manufacturing in volume like kg.
+   * @param {EngineNumber} domesticValue - The value associated with
+   *     domestic production in volume like kg.
    * @param {EngineNumber} importValue - The value related to imports like in
    *     volume like kg.
    * @param {EngineNumber} exportValue - The value related to exports like in
@@ -56,7 +56,7 @@ class EngineResult {
     year,
     scenarioName,
     trialNumber,
-    manufactureValue,
+    domesticValue,
     importValue,
     exportValue,
     recycleValue,
@@ -77,7 +77,7 @@ class EngineResult {
     self._year = year;
     self._scenarioName = scenarioName;
     self._trialNumber = trialNumber;
-    self._manufactureValue = manufactureValue;
+    self._domesticValue = domesticValue;
     self._importValue = importValue;
     self._exportValue = exportValue;
     self._recycleValue = recycleValue;
@@ -124,13 +124,13 @@ class EngineResult {
   }
 
   /**
-   * Get the manufacture value.
+   * Get the domestic value.
    *
-   * @returns {EngineNumber} The manufacture value in volume like kg.
+   * @returns {EngineNumber} The domestic value in volume like kg.
    */
-  getManufacture() {
+  getDomestic() {
     const self = this;
-    return self._manufactureValue;
+    return self._domesticValue;
   }
 
   /**
@@ -376,14 +376,14 @@ class AttributeToExporterResult {
   }
 
   /**
-   * Get the manufacture volume.
+   * Get the domestic volume.
    *
-   * @returns {EngineNumber} The unchanged manufacture volume in kg or similar
+   * @returns {EngineNumber} The unchanged domestic volume in kg or similar
    *     from the decorated result.
    */
-  getManufacture() {
+  getDomestic() {
     const self = this;
-    return self._inner.getManufacture();
+    return self._inner.getDomestic();
   }
 
   /**
@@ -727,7 +727,7 @@ class EngineResultBuilder {
     self._year = null;
     self._scenarioName = null;
     self._trialNumber = null;
-    self._manufactureValue = null;
+    self._domesticValue = null;
     self._importValue = null;
     self._exportValue = null;
     self._recycleValue = null;
@@ -796,14 +796,14 @@ class EngineResultBuilder {
   }
 
   /**
-   * Set the manufacture value.
+   * Set the domestic value.
    *
-   * @param {EngineNumber} manufactureValue - The value associated with
-   *     manufacturing in volume like kg.
+   * @param {EngineNumber} domesticValue - The value associated with
+   *     domestic production in volume like kg.
    */
-  setManufactureValue(manufactureValue) {
+  setDomesticValue(domesticValue) {
     const self = this;
-    self._manufactureValue = manufactureValue;
+    self._domesticValue = domesticValue;
   }
 
   /**
@@ -965,7 +965,7 @@ class EngineResultBuilder {
       self._year,
       self._scenarioName,
       self._trialNumber,
-      self._manufactureValue,
+      self._domesticValue,
       self._importValue,
       self._exportValue,
       self._recycleValue,
@@ -996,7 +996,7 @@ class EngineResultBuilder {
     checkValid(self._year, "year");
     checkValid(self._scenarioName, "scenarioName");
     checkValid(self._trialNumber, "trialNumber");
-    checkValid(self._manufactureValue, "manufactureValue");
+    checkValid(self._domesticValue, "domesticValue");
     checkValid(self._importValue, "importValue");
     checkValid(self._exportValue, "exportValue");
     checkValid(self._recycleValue, "recycleValue");
@@ -1023,8 +1023,8 @@ class AggregatedResult {
   /**
    * Construct an AggregatedResult instance.
    *
-   * @param {EngineNumber} manufactureValue - The value representing
-   *     manufacturing in volume like kg.
+   * @param {EngineNumber} domesticValue - The value representing
+   *     domestic production in volume like kg.
    * @param {EngineNumber} importValue - The value representing imports in
    *     volume like kg.
    * @param {EngineNumber} recycleValue - The value of recycled goods in volume
@@ -1046,7 +1046,7 @@ class AggregatedResult {
    *     activity specified.
    */
   constructor(
-    manufactureValue,
+    domesticValue,
     importValue,
     recycleValue,
     exportValue,
@@ -1061,7 +1061,7 @@ class AggregatedResult {
     energyConsumption,
   ) {
     const self = this;
-    self._manufactureValue = manufactureValue;
+    self._domesticValue = domesticValue;
     self._importValue = importValue;
     self._recycleValue = recycleValue;
     self._exportValue = exportValue;
@@ -1087,13 +1087,13 @@ class AggregatedResult {
   }
 
   /**
-   * Get the manufacture (as opposed to import) of substance.
+   * Get the domestic (as opposed to import) of substance.
    *
-   * @returns {EngineNumber} The manufacture value with units like kg.
+   * @returns {EngineNumber} The domestic value with units like kg.
    */
-  getManufacture() {
+  getDomestic() {
     const self = this;
-    return self._manufactureValue;
+    return self._domesticValue;
   }
 
   /**
@@ -1133,10 +1133,10 @@ class AggregatedResult {
    */
   getSales() {
     const self = this;
-    const manufactureValue = self.getManufacture();
+    const domesticValue = self.getDomestic();
     const importValue = self.getImport();
     const recycleValue = self.getRecycle();
-    const noRecycle = self._combineUnitValue(manufactureValue, importValue);
+    const noRecycle = self._combineUnitValue(domesticValue, importValue);
     const sales = self._combineUnitValue(noRecycle, recycleValue);
     return sales;
   }
@@ -1261,7 +1261,7 @@ class AggregatedResult {
   combine(other) {
     const self = this;
 
-    const manufactureValue = self._combineUnitValue(self.getManufacture(), other.getManufacture());
+    const domesticValue = self._combineUnitValue(self.getDomestic(), other.getDomestic());
     const importValue = self._combineUnitValue(self.getImport(), other.getImport());
     const recycleValue = self._combineUnitValue(self.getRecycle(), other.getRecycle());
     const exportValue = self._combineUnitValue(self.getExport(), other.getExport());
@@ -1295,7 +1295,7 @@ class AggregatedResult {
     );
 
     return new AggregatedResult(
-      manufactureValue,
+      domesticValue,
       importValue,
       recycleValue,
       exportValue,

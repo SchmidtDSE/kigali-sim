@@ -3,9 +3,9 @@ start default
   define application "test"
 
     uses substance "test"
-      enable manufacture
-      set manufacture to 100 mt
-      initial charge with 1 kg / unit for manufacture
+      enable domestic
+      set domestic to 100 mt
+      initial charge with 1 kg / unit for domestic
       recharge 10% with 1 kg / unit
       equals 5 tCO2e / mt
     end substance

@@ -10,7 +10,7 @@ const APPLICATION_CONTEXT = 2;
 const SUBSTANCE_CONTEXT = 3;
 
 const STREAM_BASE_UNITS = new Map();
-STREAM_BASE_UNITS.set("manufacture", "kg");
+STREAM_BASE_UNITS.set("domestic", "kg");
 STREAM_BASE_UNITS.set("import", "kg");
 STREAM_BASE_UNITS.set("sales", "kg");
 STREAM_BASE_UNITS.set("energy", "kwh");

@@ -15,10 +15,10 @@ start default
       equals 1430 tCO2e / mt
 
       # Domestic production
-      initial charge with 0.12 kg / unit for manufacture
-      set manufacture to 350000 kg during year 1
-      change manufacture by +5 % each year during years 1 to 5
-      change manufacture by +3 % each year during years 6 to 9
+      initial charge with 0.12 kg / unit for domestic
+      set domestic to 350000 kg during year 1
+      change domestic by +5 % each year during years 1 to 5
+      change domestic by +3 % each year during years 6 to 9
 
       # Trade
       initial charge with 0.30 kg / unit for import
@@ -38,9 +38,9 @@ start default
       equals 6 tCO2e / mt
 
       # Domestic production
-      initial charge with 0.05 kg / unit for manufacture
-      set manufacture to 200000 kg during year 1
-      change manufacture by +8 % each year
+      initial charge with 0.05 kg / unit for domestic
+      set domestic to 200000 kg during year 1
+      change domestic by +8 % each year
 
       # Trade
       initial charge with 0.05 kg / unit for import
@@ -63,10 +63,10 @@ start default
       equals 1430 tCO2e / mt
 
       # Domestic production
-      initial charge with 0.30 kg / unit for manufacture
-      set manufacture to 90000 kg during year 1
-      change manufacture by +5 % each year during years 1 to 5
-      change manufacture by +3 % each year during years 6 to 9
+      initial charge with 0.30 kg / unit for domestic
+      set domestic to 90000 kg during year 1
+      change domestic by +5 % each year during years 1 to 5
+      change domestic by +3 % each year during years 6 to 9
 
       # Trade
       initial charge with 0.30 kg / unit for import
@@ -86,9 +86,9 @@ start default
       equals 6 tCO2e / mt
 
       # Domestic production
-      initial charge with 0.12 kg / unit for manufacture
-      set manufacture to 10000 kg during year 1
-      change manufacture by +8 % each year
+      initial charge with 0.12 kg / unit for domestic
+      set domestic to 10000 kg during year 1
+      change domestic by +8 % each year
 
       # Trade
       initial charge with 0.12 kg / unit for import
@@ -107,9 +107,9 @@ start default
       equals 3922 tCO2e / mt
 
       # Domestic production
-      initial charge with 0.30 kg / unit for manufacture
-      set manufacture to 30000 kg during year 1
-      change manufacture by +5 % each year
+      initial charge with 0.30 kg / unit for domestic
+      set domestic to 30000 kg during year 1
+      change domestic by +5 % each year
 
       # Trade
       initial charge with 0.30 kg / unit for import
@@ -132,10 +132,10 @@ start default
       equals 2082 tCO2e / mt
 
       # Domestic production
-      initial charge with 0.90 kg / unit for manufacture
-      set manufacture to 175000 kg during year 1
-      change manufacture by +5 % each year during years 1 to 5
-      change manufacture by +3 % each year during years 6 to 9
+      initial charge with 0.90 kg / unit for domestic
+      set domestic to 175000 kg during year 1
+      change domestic by +5 % each year during years 1 to 5
+      change domestic by +3 % each year during years 6 to 9
 
       # Trade
       initial charge with 0.90 kg / unit for import
@@ -155,9 +155,9 @@ start default
       equals 632 tCO2e / mt
 
       # Domestic production
-      initial charge with 0.68 kg / unit for manufacture
-      set manufacture to 85000 kg during year 1
-      change manufacture by +8 % each year
+      initial charge with 0.68 kg / unit for domestic
+      set domestic to 85000 kg during year 1
+      change domestic by +8 % each year
 
       # Trade
       initial charge with 0.68 kg / unit for import
@@ -176,9 +176,9 @@ start default
       equals 6 tCO2e / mt
 
       # Domestic production
-      initial charge with 0.68 kg / unit for manufacture
-      set manufacture to 10000 kg during year 1
-      change manufacture by +5 % each year
+      initial charge with 0.68 kg / unit for domestic
+      set domestic to 10000 kg during year 1
+      change domestic by +5 % each year
 
       # Trade
       initial charge with 0.68 kg / unit for import
@@ -201,10 +201,10 @@ start default
       equals 1430 tCO2e / mt
 
       # Domestic production
-      initial charge with 0.90 kg / unit for manufacture
-      set manufacture to 175000 kg during year 1
-      change manufacture by +5 % each year during years 1 to 5
-      change manufacture by +3 % each year during years 6 to 9
+      initial charge with 0.90 kg / unit for domestic
+      set domestic to 175000 kg during year 1
+      change domestic by +5 % each year during years 1 to 5
+      change domestic by +3 % each year during years 6 to 9
 
       # Trade
       initial charge with 0.90 kg / unit for import
@@ -224,9 +224,9 @@ start default
       equals 6 tCO2e / mt
 
       # Domestic production
-      initial charge with 0.90 kg / unit for manufacture
-      set manufacture to 85000 kg during year 1
-      change manufacture by +8 % each year
+      initial charge with 0.90 kg / unit for domestic
+      set domestic to 85000 kg during year 1
+      change domestic by +8 % each year
 
       # Trade
       initial charge with 0.90 kg / unit for import
@@ -267,7 +267,7 @@ start policy "dom refrig low-GWP"
 
     modify substance "HFC-134a"
       define level as limit (yearAbsolute - 2) * 20 to [0, 100]
-      replace level % of manufacture with "R-600a" during years 3 to onwards
+      replace level % of domestic with "R-600a" during years 3 to onwards
       replace level % of import with "R-600a" during years 3 to onwards
     end substance
 
@@ -303,13 +303,13 @@ start policy "com refrig low-GWP"
 
     modify substance "HFC-134a"
       define level as limit (yearAbsolute - 2) * 20 to [0, 100]
-      replace level % of manufacture with "R-600a" during years 3 to onwards
+      replace level % of domestic with "R-600a" during years 3 to onwards
       replace level % of import with "R-600a" during years 3 to onwards
     end substance
 
     modify substance "R-404A"
       define level as limit (yearAbsolute - 2) * 20 to [0, 100]
-      replace level % of manufacture with "R-600a" during years 3 to onwards
+      replace level % of domestic with "R-600a" during years 3 to onwards
       replace level % of import with "R-600a" during years 3 to onwards
     end substance
 
@@ -345,13 +345,13 @@ start policy "res AC low-GWP"
 
     modify substance "R-410A"
       define level as limit (yearAbsolute - 2) * 20 to [0, 100]
-      replace level % of manufacture with "R-290" during years 3 to onwards
+      replace level % of domestic with "R-290" during years 3 to onwards
       replace level % of import with "R-290" during years 3 to onwards
     end substance
 
     modify substance "HFC-32"
       define level as limit (yearAbsolute - 2) * 20 to [0, 100]
-      replace level % of manufacture with "R-290" during years 3 to onwards
+      replace level % of domestic with "R-290" during years 3 to onwards
       replace level % of import with "R-290" during years 3 to onwards
     end substance
 
@@ -387,7 +387,7 @@ start policy "mobile AC low-GWP"
 
     modify substance "HFC-134a"
       define level as limit (yearAbsolute - 2) * 20 to [0, 100]
-      replace level % of manufacture with "R-1234yf" during years 3 to onwards
+      replace level % of domestic with "R-1234yf" during years 3 to onwards
       replace level % of import with "R-1234yf" during years 3 to onwards
     end substance
 

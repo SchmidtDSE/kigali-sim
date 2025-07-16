@@ -49,11 +49,11 @@ public class MultipleLiveTests {
     assertEquals("tCO2e", resultA.getGhgConsumption().getUnits(),
         "Consumption units for substance a should be tCO2e");
 
-    // Check manufacture value for substance "a" - should be 100 mt = 100000 kg
-    assertEquals(100000.0, resultA.getManufacture().getValue().doubleValue(), 0.0001,
-        "Manufacture for substance a should be 100000 kg");
-    assertEquals("kg", resultA.getManufacture().getUnits(),
-        "Manufacture units for substance a should be kg");
+    // Check domestic value for substance "a" - should be 100 mt = 100000 kg
+    assertEquals(100000.0, resultA.getDomestic().getValue().doubleValue(), 0.0001,
+        "Domestic for substance a should be 100000 kg");
+    assertEquals("kg", resultA.getDomestic().getUnits(),
+        "Domestic units for substance a should be kg");
 
     // Check substance "b"
     EngineResult resultB = LiveTestsUtil.getResult(resultsList.stream(), 1, "test", "b");
@@ -65,11 +65,11 @@ public class MultipleLiveTests {
     assertEquals("tCO2e", resultB.getGhgConsumption().getUnits(),
         "Consumption units for substance b should be tCO2e");
 
-    // Check manufacture value for substance "b" - should be 100 mt = 100000 kg
-    assertEquals(100000.0, resultB.getManufacture().getValue().doubleValue(), 0.0001,
-        "Manufacture for substance b should be 100000 kg");
-    assertEquals("kg", resultB.getManufacture().getUnits(),
-        "Manufacture units for substance b should be kg");
+    // Check domestic value for substance "b" - should be 100 mt = 100000 kg
+    assertEquals(100000.0, resultB.getDomestic().getValue().doubleValue(), 0.0001,
+        "Domestic for substance b should be 100000 kg");
+    assertEquals("kg", resultB.getDomestic().getUnits(),
+        "Domestic units for substance b should be kg");
   }
 
   /**
@@ -91,21 +91,21 @@ public class MultipleLiveTests {
     EngineResult bauResultA = LiveTestsUtil.getResult(bauResultsList.stream(), 1, "appA", "subA");
     assertNotNull(bauResultA, "Should have result for appA/subA in year 1 for BAU scenario");
 
-    // Check manufacture value for appA/subA in BAU - should be 100 mt = 100000 kg
-    assertEquals(100000.0, bauResultA.getManufacture().getValue().doubleValue(), 0.0001,
-        "Manufacture for appA/subA in BAU should be 100000 kg");
-    assertEquals("kg", bauResultA.getManufacture().getUnits(),
-        "Manufacture units for appA/subA in BAU should be kg");
+    // Check domestic value for appA/subA in BAU - should be 100 mt = 100000 kg
+    assertEquals(100000.0, bauResultA.getDomestic().getValue().doubleValue(), 0.0001,
+        "Domestic for appA/subA in BAU should be 100000 kg");
+    assertEquals("kg", bauResultA.getDomestic().getUnits(),
+        "Domestic units for appA/subA in BAU should be kg");
 
     // Check BAU scenario for appB/subB
     EngineResult bauResultB = LiveTestsUtil.getResult(bauResultsList.stream(), 1, "appB", "subB");
     assertNotNull(bauResultB, "Should have result for appB/subB in year 1 for BAU scenario");
 
-    // Check manufacture value for appB/subB in BAU - should be 100 mt = 100000 kg
-    assertEquals(100000.0, bauResultB.getManufacture().getValue().doubleValue(), 0.0001,
-        "Manufacture for appB/subB in BAU should be 100000 kg");
-    assertEquals("kg", bauResultB.getManufacture().getUnits(),
-        "Manufacture units for appB/subB in BAU should be kg");
+    // Check domestic value for appB/subB in BAU - should be 100 mt = 100000 kg
+    assertEquals(100000.0, bauResultB.getDomestic().getValue().doubleValue(), 0.0001,
+        "Domestic for appB/subB in BAU should be 100000 kg");
+    assertEquals("kg", bauResultB.getDomestic().getUnits(),
+        "Domestic units for appB/subB in BAU should be kg");
 
     // Run the policy scenario using KigaliSimFacade
     String policyScenarioName = "sim";
@@ -116,21 +116,21 @@ public class MultipleLiveTests {
     EngineResult policyResultA = LiveTestsUtil.getResult(policyResultsList.stream(), 1, "appA", "subA");
     assertNotNull(policyResultA, "Should have result for appA/subA in year 1 for policy scenario");
 
-    // Check manufacture value for appA/subA in policy scenario - should be capped to 50% = 50 mt = 50000 kg
-    assertEquals(50000.0, policyResultA.getManufacture().getValue().doubleValue(), 0.0001,
-        "Manufacture for appA/subA in policy scenario should be 50000 kg (50% cap)");
-    assertEquals("kg", policyResultA.getManufacture().getUnits(),
-        "Manufacture units for appA/subA in policy scenario should be kg");
+    // Check domestic value for appA/subA in policy scenario - should be capped to 50% = 50 mt = 50000 kg
+    assertEquals(50000.0, policyResultA.getDomestic().getValue().doubleValue(), 0.0001,
+        "Domestic for appA/subA in policy scenario should be 50000 kg (50% cap)");
+    assertEquals("kg", policyResultA.getDomestic().getUnits(),
+        "Domestic units for appA/subA in policy scenario should be kg");
 
     // Check policy scenario for appB/subB
     EngineResult policyResultB = LiveTestsUtil.getResult(policyResultsList.stream(), 1, "appB", "subB");
     assertNotNull(policyResultB, "Should have result for appB/subB in year 1 for policy scenario");
 
-    // Check manufacture value for appB/subB in policy scenario - should be capped to 50% = 50 mt = 50000 kg
-    assertEquals(50000.0, policyResultB.getManufacture().getValue().doubleValue(), 0.0001,
-        "Manufacture for appB/subB in policy scenario should be 50000 kg (50% cap)");
-    assertEquals("kg", policyResultB.getManufacture().getUnits(),
-        "Manufacture units for appB/subB in policy scenario should be kg");
+    // Check domestic value for appB/subB in policy scenario - should be capped to 50% = 50 mt = 50000 kg
+    assertEquals(50000.0, policyResultB.getDomestic().getValue().doubleValue(), 0.0001,
+        "Domestic for appB/subB in policy scenario should be 50000 kg (50% cap)");
+    assertEquals("kg", policyResultB.getDomestic().getUnits(),
+        "Domestic units for appB/subB in policy scenario should be kg");
   }
 
   /**
@@ -152,11 +152,11 @@ public class MultipleLiveTests {
     EngineResult bauResultA = LiveTestsUtil.getResult(bauResultsList.stream(), 1, "appA", "subA");
     assertNotNull(bauResultA, "Should have result for appA/subA in year 1 for BAU scenario");
 
-    // Check manufacture value for appA/subA in BAU - should be 90 mt = 90000 kg
-    assertEquals(90000.0, bauResultA.getManufacture().getValue().doubleValue(), 0.0001,
-        "Manufacture for appA/subA in BAU should be 90000 kg");
-    assertEquals("kg", bauResultA.getManufacture().getUnits(),
-        "Manufacture units for appA/subA in BAU should be kg");
+    // Check domestic value for appA/subA in BAU - should be 90 mt = 90000 kg
+    assertEquals(90000.0, bauResultA.getDomestic().getValue().doubleValue(), 0.0001,
+        "Domestic for appA/subA in BAU should be 90000 kg");
+    assertEquals("kg", bauResultA.getDomestic().getUnits(),
+        "Domestic units for appA/subA in BAU should be kg");
 
     // Check import value for appA/subA in BAU - should be 10 mt = 10000 kg
     assertEquals(10000.0, bauResultA.getImport().getValue().doubleValue(), 0.0001,
@@ -168,11 +168,11 @@ public class MultipleLiveTests {
     EngineResult bauResultB = LiveTestsUtil.getResult(bauResultsList.stream(), 1, "appB", "subB");
     assertNotNull(bauResultB, "Should have result for appB/subB in year 1 for BAU scenario");
 
-    // Check manufacture value for appB/subB in BAU - should be 90 mt = 90000 kg
-    assertEquals(90000.0, bauResultB.getManufacture().getValue().doubleValue(), 0.0001,
-        "Manufacture for appB/subB in BAU should be 90000 kg");
-    assertEquals("kg", bauResultB.getManufacture().getUnits(),
-        "Manufacture units for appB/subB in BAU should be kg");
+    // Check domestic value for appB/subB in BAU - should be 90 mt = 90000 kg
+    assertEquals(90000.0, bauResultB.getDomestic().getValue().doubleValue(), 0.0001,
+        "Domestic for appB/subB in BAU should be 90000 kg");
+    assertEquals("kg", bauResultB.getDomestic().getUnits(),
+        "Domestic units for appB/subB in BAU should be kg");
 
     // Check import value for appB/subB in BAU - should be 10 mt = 10000 kg
     assertEquals(10000.0, bauResultB.getImport().getValue().doubleValue(), 0.0001,
@@ -189,11 +189,11 @@ public class MultipleLiveTests {
     EngineResult policyResultA = LiveTestsUtil.getResult(policyResultsList.stream(), 1, "appA", "subA");
     assertNotNull(policyResultA, "Should have result for appA/subA in year 1 for policy scenario");
 
-    // Check manufacture value for appA/subA in policy scenario - should be capped to 50% = 45 mt = 45000 kg
-    assertEquals(45000.0, policyResultA.getManufacture().getValue().doubleValue(), 0.0001,
-        "Manufacture for appA/subA in policy scenario should be 45000 kg (50% cap)");
-    assertEquals("kg", policyResultA.getManufacture().getUnits(),
-        "Manufacture units for appA/subA in policy scenario should be kg");
+    // Check domestic value for appA/subA in policy scenario - should be capped to 50% = 45 mt = 45000 kg
+    assertEquals(45000.0, policyResultA.getDomestic().getValue().doubleValue(), 0.0001,
+        "Domestic for appA/subA in policy scenario should be 45000 kg (50% cap)");
+    assertEquals("kg", policyResultA.getDomestic().getUnits(),
+        "Domestic units for appA/subA in policy scenario should be kg");
 
     // Check import value for appA/subA in policy scenario - should remain unchanged at 10 mt = 10000 kg
     assertEquals(10000.0, policyResultA.getImport().getValue().doubleValue(), 0.0001,
@@ -205,11 +205,11 @@ public class MultipleLiveTests {
     EngineResult policyResultB = LiveTestsUtil.getResult(policyResultsList.stream(), 1, "appB", "subB");
     assertNotNull(policyResultB, "Should have result for appB/subB in year 1 for policy scenario");
 
-    // Check manufacture value for appB/subB in policy scenario - should be capped to 50% = 45 mt = 45000 kg
-    assertEquals(45000.0, policyResultB.getManufacture().getValue().doubleValue(), 0.0001,
-        "Manufacture for appB/subB in policy scenario should be 45000 kg (50% cap)");
-    assertEquals("kg", policyResultB.getManufacture().getUnits(),
-        "Manufacture units for appB/subB in policy scenario should be kg");
+    // Check domestic value for appB/subB in policy scenario - should be capped to 50% = 45 mt = 45000 kg
+    assertEquals(45000.0, policyResultB.getDomestic().getValue().doubleValue(), 0.0001,
+        "Domestic for appB/subB in policy scenario should be 45000 kg (50% cap)");
+    assertEquals("kg", policyResultB.getDomestic().getUnits(),
+        "Domestic units for appB/subB in policy scenario should be kg");
 
     // Check import value for appB/subB in policy scenario - should remain unchanged at 10 mt = 10000 kg
     assertEquals(10000.0, policyResultB.getImport().getValue().doubleValue(), 0.0001,
