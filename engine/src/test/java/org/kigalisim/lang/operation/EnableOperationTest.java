@@ -49,7 +49,7 @@ public class EnableOperationTest {
    */
   @Test
   public void testInitializesNoDuring() {
-    EnableOperation operation = new EnableOperation("manufacture");
+    EnableOperation operation = new EnableOperation("domestic");
     assertNotNull(operation, "EnableOperation should be constructable without during");
   }
 
@@ -59,7 +59,7 @@ public class EnableOperationTest {
   @Test
   public void testInitializesWithDuring() {
     ParsedDuring during = new ParsedDuring(Optional.empty(), Optional.empty());
-    EnableOperation operation = new EnableOperation("manufacture", during);
+    EnableOperation operation = new EnableOperation("domestic", during);
     assertNotNull(operation, "EnableOperation should be constructable with during");
   }
 
@@ -68,7 +68,7 @@ public class EnableOperationTest {
    */
   @Test
   public void testExecuteManufactureNoDuring() {
-    EnableOperation operation = new EnableOperation("manufacture");
+    EnableOperation operation = new EnableOperation("domestic");
     operation.execute(machine);
 
     // The stream should be enabled now (though we can't directly test this without access to StreamKeeper)
@@ -111,7 +111,7 @@ public class EnableOperationTest {
     TimePointFuture start = new CalculatedTimePointFuture(yearOperation);
     ParsedDuring during = new ParsedDuring(Optional.of(start), Optional.empty());
 
-    EnableOperation operation = new EnableOperation("manufacture", during);
+    EnableOperation operation = new EnableOperation("domestic", during);
     operation.execute(machine);
 
     // The stream should be enabled now
@@ -129,7 +129,7 @@ public class EnableOperationTest {
     TimePointFuture start = new CalculatedTimePointFuture(yearOperation);
     ParsedDuring during = new ParsedDuring(Optional.of(start), Optional.empty());
 
-    EnableOperation operation = new EnableOperation("manufacture", during);
+    EnableOperation operation = new EnableOperation("domestic", during);
     operation.execute(machine);
 
     // The stream should not be enabled for the current year
@@ -141,7 +141,7 @@ public class EnableOperationTest {
    */
   @Test
   public void testEnableValidStreams() {
-    String[] validStreams = {"manufacture", "import", "export"};
+    String[] validStreams = {"domestic", "import", "export"};
 
     for (String stream : validStreams) {
       EnableOperation operation = new EnableOperation(stream);

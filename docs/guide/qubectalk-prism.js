@@ -27,7 +27,7 @@ Prism.languages.qubectalk = {
       "uniformly", "limit", "annually", "beginning", "day", "days",
       "each", "month", "months", "onwards", "year", "years", "unit",
       "units", "kg", "mt", "tCO2e", "kwh", "priorEquipment", "equipment",
-      "export", "import", "manufacture", "sales", "mean",
+      "export", "import", "domestic", "sales", "mean",
     ].join("|") + ")\\b"),
     greedy: true,
   },

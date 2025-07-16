@@ -50,7 +50,7 @@ public class StreamParameterization {
     ghgIntensity = new EngineNumber(BigDecimal.ZERO, "tCO2e / kg");
     energyIntensity = new EngineNumber(BigDecimal.ZERO, "kwh / kg");
 
-    initialCharge.put("manufacture", new EngineNumber(BigDecimal.ONE, "kg / unit"));
+    initialCharge.put("domestic", new EngineNumber(BigDecimal.ONE, "kg / unit"));
     initialCharge.put("import", new EngineNumber(BigDecimal.ONE, "kg / unit"));
 
     rechargePopulation = new EngineNumber(BigDecimal.ZERO, "%");
@@ -101,7 +101,7 @@ public class StreamParameterization {
   /**
    * Set the initial charge for a stream.
    *
-   * @param stream The stream identifier ('manufacture' or 'import')
+   * @param stream The stream identifier ('domestic' or 'import')
    * @param newValue The new initial charge value
    */
   public void setInitialCharge(String stream, EngineNumber newValue) {
@@ -112,7 +112,7 @@ public class StreamParameterization {
   /**
    * Get the initial charge for a stream.
    *
-   * @param stream The stream identifier ('manufacture' or 'import')
+   * @param stream The stream identifier ('domestic' or 'import')
    * @return The initial charge value for the stream
    */
   public EngineNumber getInitialCharge(String stream) {
@@ -245,7 +245,7 @@ public class StreamParameterization {
     lastSpecifiedValue.put(streamName, value);
 
     // Set the flag if this is a sales-related stream
-    if ("sales".equals(streamName) || "import".equals(streamName) || "manufacture".equals(streamName)) {
+    if ("sales".equals(streamName) || "import".equals(streamName) || "domestic".equals(streamName)) {
       salesIntentFreshlySet = true;
     }
   }
@@ -326,7 +326,7 @@ public class StreamParameterization {
    * @throws IllegalArgumentException If the stream name is not a sales substream
    */
   private void ensureSalesStreamAllowed(String name) {
-    if (!"manufacture".equals(name) && !"import".equals(name) && !"export".equals(name) && !"recycle".equals(name)) {
+    if (!"domestic".equals(name) && !"import".equals(name) && !"export".equals(name) && !"recycle".equals(name)) {
       throw new IllegalArgumentException("Must address a sales substream.");
     }
   }

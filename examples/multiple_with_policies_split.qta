@@ -3,10 +3,10 @@ start default
   define application "appA"
 
     uses substance "subA"
-      enable manufacture
+      enable domestic
       enable import
       initial charge with 1 kg / unit for sales
-      set manufacture to 90 mt during year 1
+      set domestic to 90 mt during year 1
       set import to 10 mt during year 1
       equals 5 tCO2e / mt
     end substance
@@ -16,10 +16,10 @@ start default
   define application "appB"
 
     uses substance "subB"
-      enable manufacture
+      enable domestic
       enable import
       initial charge with 1 kg / unit for sales
-      set manufacture to 90 mt during year 1
+      set domestic to 90 mt during year 1
       set import to 10 mt during year 1
       equals 10 tCO2e / mt
     end substance
@@ -34,7 +34,7 @@ start policy "policyA"
   modify application "appA"
 
     modify substance "subA"
-      cap manufacture to 50%
+      cap domestic to 50%
     end substance
 
   end application
@@ -47,7 +47,7 @@ start policy "policyB"
   modify application "appB"
 
     modify substance "subB"
-      cap manufacture to 50%
+      cap domestic to 50%
     end substance
 
   end application

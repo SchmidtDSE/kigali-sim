@@ -86,9 +86,9 @@ public class StreamKeeper {
 
     substances.put(key, new StreamParameterization());
 
-    // Sales: manufacture, import, export, recycle
-    String manufactureKey = getKey(useKey, "manufacture");
-    streams.put(manufactureKey, new EngineNumber(BigDecimal.ZERO, "kg"));
+    // Sales: domestic, import, export, recycle
+    String domesticKey = getKey(useKey, "domestic");
+    streams.put(domesticKey, new EngineNumber(BigDecimal.ZERO, "kg"));
     String importKey = getKey(useKey, "import");
     streams.put(importKey, new EngineNumber(BigDecimal.ZERO, "kg"));
     String exportKey = getKey(useKey, "export");
@@ -167,19 +167,19 @@ public class StreamKeeper {
     ensureStreamKnown(name);
 
     if ("sales".equals(name)) {
-      EngineNumber manufactureAmountRaw = getStream(useKey, "manufacture");
+      EngineNumber domesticAmountRaw = getStream(useKey, "domestic");
       EngineNumber importAmountRaw = getStream(useKey, "import");
       EngineNumber recycleAmountRaw = getStream(useKey, "recycle");
 
-      EngineNumber manufactureAmount = unitConverter.convert(manufactureAmountRaw, "kg");
+      EngineNumber domesticAmount = unitConverter.convert(domesticAmountRaw, "kg");
       EngineNumber importAmount = unitConverter.convert(importAmountRaw, "kg");
       EngineNumber recycleAmount = unitConverter.convert(recycleAmountRaw, "kg");
 
-      BigDecimal manufactureAmountValue = manufactureAmount.getValue();
+      BigDecimal domesticAmountValue = domesticAmount.getValue();
       BigDecimal importAmountValue = importAmount.getValue();
       BigDecimal recycleAmountValue = recycleAmount.getValue();
 
-      BigDecimal newTotal = manufactureAmountValue.add(importAmountValue).add(recycleAmountValue);
+      BigDecimal newTotal = domesticAmountValue.add(importAmountValue).add(recycleAmountValue);
 
       return new EngineNumber(newTotal, "kg");
     } else {
@@ -210,7 +210,7 @@ public class StreamKeeper {
    * Get a sales stream distribution for the given substance/application.
    *
    * <p>This method centralizes the logic for creating sales distributions by getting
-   * the current manufacture and import values, determining their enabled status,
+   * the current domestic and import values, determining their enabled status,
    * and building an appropriate distribution using the builder pattern.
    * Exports are excluded for backward compatibility.</p>
    *
@@ -225,7 +225,7 @@ public class StreamKeeper {
    * Get a sales stream distribution for the given substance/application.
    *
    * <p>This method centralizes the logic for creating sales distributions by getting
-   * the current manufacture, import, and optionally export values, determining their enabled status,
+   * the current domestic, import, and optionally export values, determining their enabled status,
    * and building an appropriate distribution using the builder pattern.</p>
    *
    * @param useKey The key containing application and substance
@@ -233,11 +233,11 @@ public class StreamKeeper {
    * @return A SalesStreamDistribution with appropriate percentages
    */
   public SalesStreamDistribution getDistribution(UseKey useKey, boolean includeExports) {
-    EngineNumber manufactureValueRaw = getStream(useKey, "manufacture");
+    EngineNumber domesticValueRaw = getStream(useKey, "domestic");
     EngineNumber importValueRaw = getStream(useKey, "import");
     EngineNumber exportValueRaw = getStream(useKey, "export");
 
-    EngineNumber manufactureValue = unitConverter.convert(manufactureValueRaw, "kg");
+    EngineNumber domesticValue = unitConverter.convert(domesticValueRaw, "kg");
     EngineNumber importValue = unitConverter.convert(importValueRaw, "kg");
     EngineNumber exportValue;
     if (exportValueRaw == null) {
@@ -246,15 +246,15 @@ public class StreamKeeper {
       exportValue = unitConverter.convert(exportValueRaw, "kg");
     }
 
-    boolean manufactureEnabled = hasStreamBeenEnabled(useKey, "manufacture");
+    boolean domesticEnabled = hasStreamBeenEnabled(useKey, "domestic");
     boolean importEnabled = hasStreamBeenEnabled(useKey, "import");
     boolean exportEnabled = hasStreamBeenEnabled(useKey, "export");
 
     return new SalesStreamDistributionBuilder()
-        .setManufactureSales(manufactureValue)
+        .setDomesticSales(domesticValue)
         .setImportSales(importValue)
         .setExportSales(exportValue)
-        .setManufactureEnabled(manufactureEnabled)
+        .setDomesticEnabled(domesticEnabled)
         .setImportEnabled(importEnabled)
         .setExportEnabled(exportEnabled)
         .setIncludeExports(includeExports)
@@ -346,7 +346,7 @@ public class StreamKeeper {
    * Set the initial charge for a key's stream.
    *
    * @param useKey The key containing application and substance
-   * @param substream The stream identifier ('manufacture' or 'import')
+   * @param substream The stream identifier ('domestic' or 'import')
    * @param newValue The new initial charge value
    */
   public void setInitialCharge(UseKey useKey, String substream, EngineNumber newValue) {
@@ -749,17 +749,17 @@ public class StreamKeeper {
     // Get distribution using centralized method
     SalesStreamDistribution distribution = getDistribution(useKey);
 
-    BigDecimal manufacturePercent = distribution.getPercentManufacture();
+    BigDecimal domesticPercent = distribution.getPercentDomestic();
     BigDecimal importPercent = distribution.getPercentImport();
 
-    // Distribute only the virgin material between manufacture and import
-    BigDecimal newManufactureAmount = virginMaterialKg.multiply(manufacturePercent);
+    // Distribute only the virgin material between domestic and import
+    BigDecimal newDomesticAmount = virginMaterialKg.multiply(domesticPercent);
     BigDecimal newImportAmount = virginMaterialKg.multiply(importPercent);
 
-    EngineNumber manufactureAmountToSet = new EngineNumber(newManufactureAmount, "kg");
+    EngineNumber domesticAmountToSet = new EngineNumber(newDomesticAmount, "kg");
     EngineNumber importAmountToSet = new EngineNumber(newImportAmount, "kg");
 
-    setSimpleStream(useKey, "manufacture", manufactureAmountToSet);
+    setSimpleStream(useKey, "domestic", domesticAmountToSet);
     setSimpleStream(useKey, "import", importAmountToSet);
   }
 
@@ -846,7 +846,7 @@ public class StreamKeeper {
 
   /**
    * Assert that a stream has been enabled for the given use key.
-   * Only checks manufacture, import, and export streams.
+   * Only checks domestic, import, and export streams.
    *
    * @param useKey The key containing application and substance
    * @param streamName The name of the stream to check
@@ -855,7 +855,7 @@ public class StreamKeeper {
    */
   private void assertStreamEnabled(UseKey useKey, String streamName, EngineNumber value) {
     // Only check enabling for sales streams that require explicit enabling
-    if (!"manufacture".equals(streamName) && !"import".equals(streamName) && !"export".equals(streamName)) {
+    if (!"domestic".equals(streamName) && !"import".equals(streamName) && !"export".equals(streamName)) {
       return;
     }
 
@@ -884,14 +884,14 @@ public class StreamKeeper {
   }
 
   /**
-   * Determine if the user is setting a sales component (manufacture / import / sales) by units.
+   * Determine if the user is setting a sales component (domestic / import / sales) by units.
    *
    * @param name The stream name
    * @param value The value to set
    * @return true if the user is setting a sales component by units and false otherwise
    */
   private boolean getIsSettingVolumeByUnits(String name, EngineNumber value) {
-    boolean isSalesComponent = "manufacture".equals(name) || "import".equals(name)
+    boolean isSalesComponent = "domestic".equals(name) || "import".equals(name)
                                || "sales".equals(name);
     boolean isUnits = value.getUnits().startsWith("unit");
     return isSalesComponent && isUnits;

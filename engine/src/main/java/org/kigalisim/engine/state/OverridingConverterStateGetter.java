@@ -60,7 +60,7 @@ public class OverridingConverterStateGetter implements StateGetter {
    */
   public void setTotal(String streamName, EngineNumber value) {
     switch (streamName) {
-      case "sales", "manufacture", "import" -> setVolume(value);
+      case "sales", "domestic", "import" -> setVolume(value);
       case "equipment", "priorEquipment" -> setPopulation(value);
       case "consumption" -> setConsumption(value);
       default -> throw new IllegalArgumentException("Unrecognized stream name: " + streamName);

@@ -184,7 +184,7 @@ public class KigaliSimFacadeTest {
     String header = lines[0];
 
     // Verify individual metrics are present
-    assertTrue(header.contains("manufacture"), "CSV should contain manufacture column");
+    assertTrue(header.contains("domestic"), "CSV should contain manufacture column");
     assertTrue(header.contains("import"), "CSV should contain import column");
     assertTrue(header.contains("recycle"), "CSV should contain recycle column");
     assertTrue(header.contains("domesticConsumption"), "CSV should contain domesticConsumption column");

@@ -123,7 +123,7 @@ class ReportDataParser {
     const trialNumber = parseInt(row["trial"] || "0"); // Java uses "trial", not "trialNumber"
 
     // Parse EngineNumber fields from Java's "value units" format
-    const manufactureValue = parseEngineNumber(row["manufacture"], "kg");
+    const domesticValue = parseEngineNumber(row["domestic"], "kg");
     const importValue = parseEngineNumber(row["import"], "kg");
     const exportValue = parseEngineNumber(row["export"], "kg");
     const recycleValue = parseEngineNumber(row["recycle"], "kg");
@@ -171,7 +171,7 @@ class ReportDataParser {
       year,
       scenarioName,
       trialNumber,
-      manufactureValue,
+      domesticValue,
       importValue,
       exportValue,
       recycleValue,

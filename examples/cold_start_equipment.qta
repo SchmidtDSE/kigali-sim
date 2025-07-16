@@ -3,9 +3,9 @@ start default
   define application "Test"
 
     uses substance "Sub"
-      enable manufacture
+      enable domestic
       enable import
-      initial charge with 1 kg / unit for manufacture
+      initial charge with 1 kg / unit for domestic
       initial charge with 2 kg / unit for import
       equals 1 tCO2e / kg
       equals 1 kwh / kg

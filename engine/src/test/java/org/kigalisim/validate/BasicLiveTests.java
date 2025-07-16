@@ -54,11 +54,11 @@ public class BasicLiveTests {
     assertEquals("tCO2e", result.getGhgConsumption().getUnits(),
         "Consumption units should be tCO2e");
 
-    // Check manufacture value - should be 100 mt = 100000 kg
-    assertEquals(100000.0, result.getManufacture().getValue().doubleValue(), 0.0001,
-        "Manufacture should be 100000 kg");
-    assertEquals("kg", result.getManufacture().getUnits(),
-        "Manufacture units should be kg");
+    // Check domestic value - should be 100 mt = 100000 kg
+    assertEquals(100000.0, result.getDomestic().getValue().doubleValue(), 0.0001,
+        "Domestic should be 100000 kg");
+    assertEquals("kg", result.getDomestic().getUnits(),
+        "Domestic units should be kg");
   }
 
   /**
@@ -79,11 +79,11 @@ public class BasicLiveTests {
     EngineResult result = LiveTestsUtil.getResult(resultsList.stream(), 1, "test", "test");
     assertNotNull(result, "Should have result for test/test in year 1");
 
-    // Check manufacture value - should be 100 mt = 100000 kg
-    assertEquals(100000.0, result.getManufacture().getValue().doubleValue(), 0.0001,
-        "Manufacture should be 100000 kg");
-    assertEquals("kg", result.getManufacture().getUnits(),
-        "Manufacture units should be kg");
+    // Check domestic value - should be 100 mt = 100000 kg
+    assertEquals(100000.0, result.getDomestic().getValue().doubleValue(), 0.0001,
+        "Domestic should be 100000 kg");
+    assertEquals("kg", result.getDomestic().getUnits(),
+        "Domestic units should be kg");
 
     // Check energy consumption
     assertEquals(500.0, result.getEnergyConsumption().getValue().doubleValue(), 0.0001,
@@ -116,11 +116,11 @@ public class BasicLiveTests {
     assertEquals("units", result.getPopulation().getUnits(),
         "Equipment units should be units");
 
-    // Check manufacture value - should be 100 mt = 100000 kg
-    assertEquals(100000.0, result.getManufacture().getValue().doubleValue(), 0.0001,
-        "Manufacture should be 100000 kg");
-    assertEquals("kg", result.getManufacture().getUnits(),
-        "Manufacture units should be kg");
+    // Check domestic value - should be 100 mt = 100000 kg
+    assertEquals(100000.0, result.getDomestic().getValue().doubleValue(), 0.0001,
+        "Domestic should be 100000 kg");
+    assertEquals("kg", result.getDomestic().getUnits(),
+        "Domestic units should be kg");
   }
 
   /**
@@ -141,11 +141,11 @@ public class BasicLiveTests {
     EngineResult result = LiveTestsUtil.getResult(resultsList.stream(), 1, "test", "test");
     assertNotNull(result, "Should have result for test/test in year 1");
 
-    // Check manufacture value - should be 1 mt = 1000 kg
-    assertEquals(1000.0, result.getManufacture().getValue().doubleValue(), 0.0001,
-        "Manufacture should be 1000 kg");
-    assertEquals("kg", result.getManufacture().getUnits(),
-        "Manufacture units should be kg");
+    // Check domestic value - should be 1 mt = 1000 kg
+    assertEquals(1000.0, result.getDomestic().getValue().doubleValue(), 0.0001,
+        "Domestic should be 1000 kg");
+    assertEquals("kg", result.getDomestic().getUnits(),
+        "Domestic units should be kg");
   }
 
   /**
@@ -166,11 +166,11 @@ public class BasicLiveTests {
     EngineResult result = LiveTestsUtil.getResult(resultsList.stream(), 1, "test", "test");
     assertNotNull(result, "Should have result for test/test in year 1");
 
-    // Check manufacture value - should be 1 mt = 1000 kg
-    assertEquals(1000.0, result.getManufacture().getValue().doubleValue(), 0.0001,
-        "Manufacture should be 1000 kg");
-    assertEquals("kg", result.getManufacture().getUnits(),
-        "Manufacture units should be kg");
+    // Check domestic value - should be 1 mt = 1000 kg
+    assertEquals(1000.0, result.getDomestic().getValue().doubleValue(), 0.0001,
+        "Domestic should be 1000 kg");
+    assertEquals("kg", result.getDomestic().getUnits(),
+        "Domestic units should be kg");
   }
 
   /**
@@ -432,11 +432,11 @@ public class BasicLiveTests {
         "commercial refrigeration", "HFC-134a");
     assertNotNull(result, "Should have result for commercial refrigeration/HFC-134a in year 1");
 
-    // Check manufacture value - should be 1600 mt = 1600000 kg
-    assertEquals(1600000.0, result.getManufacture().getValue().doubleValue(), 0.0001,
-        "Manufacture should be 1600000 kg");
-    assertEquals("kg", result.getManufacture().getUnits(),
-        "Manufacture units should be kg");
+    // Check domestic value - should be 1600 mt = 1600000 kg
+    assertEquals(1600000.0, result.getDomestic().getValue().doubleValue(), 0.0001,
+        "Domestic should be 1600000 kg");
+    assertEquals("kg", result.getDomestic().getUnits(),
+        "Domestic units should be kg");
 
     // Check import value - should be 400 mt = 400000 kg
     assertEquals(400000.0, result.getImport().getValue().doubleValue(), 0.0001,
@@ -509,18 +509,18 @@ public class BasicLiveTests {
 
     List<EngineResult> resultsList = results.collect(Collectors.toList());
 
-    // Check that sub_a manufacture is set with recharge
+    // Check that sub_a domestic is set with recharge
     EngineResult recordSubA = LiveTestsUtil.getResult(resultsList.stream(), 1, "test", "sub_a");
     assertNotNull(recordSubA, "Should have result for test/sub_a in year 1");
 
     // When setting to 5 units, should we get:
     // Option A: Just 50 kg (5 units * 10 kg/unit)
     // Option B: 70 kg (50 kg + 20 kg recharge for 20 units * 10% * 10 kg/unit)
-    double manufactureValue = recordSubA.getManufacture().getValue().doubleValue();
+    double domesticValue = recordSubA.getDomestic().getValue().doubleValue();
 
     // Let's see what actually happens
-    assertEquals(70.0, manufactureValue, 0.0001,
-        "Manufacture for sub_a should be 70 kg (50 + 20 recharge) when set to 5 units");
+    assertEquals(70.0, domesticValue, 0.0001,
+        "Domestic for sub_a should be 70 kg (50 + 20 recharge) when set to 5 units");
   }
 
   /**

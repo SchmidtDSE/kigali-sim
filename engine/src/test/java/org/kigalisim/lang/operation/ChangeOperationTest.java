@@ -56,7 +56,7 @@ public class ChangeOperationTest {
   public void testInitializesNoDuring() {
     EngineNumber number = new EngineNumber(BigDecimal.valueOf(42), "kg");
     Operation valueOperation = new PreCalculatedOperation(number);
-    ChangeOperation operation = new ChangeOperation("manufacture", valueOperation);
+    ChangeOperation operation = new ChangeOperation("domestic", valueOperation);
     assertNotNull(operation, "ChangeOperation should be constructable without during");
   }
 
@@ -68,7 +68,7 @@ public class ChangeOperationTest {
     EngineNumber number = new EngineNumber(BigDecimal.valueOf(42), "kg");
     Operation valueOperation = new PreCalculatedOperation(number);
     ParsedDuring during = new ParsedDuring(Optional.empty(), Optional.empty());
-    ChangeOperation operation = new ChangeOperation("manufacture", valueOperation, during);
+    ChangeOperation operation = new ChangeOperation("domestic", valueOperation, during);
     assertNotNull(operation, "ChangeOperation should be constructable with during");
   }
 
@@ -78,19 +78,19 @@ public class ChangeOperationTest {
   @Test
   public void testExecuteNoDuring() {
     // Set initial value
-    engine.enable("manufacture", Optional.empty());
+    engine.enable("domestic", Optional.empty());
     EngineNumber initialNumber = new EngineNumber(BigDecimal.valueOf(100), "kg");
-    engine.setStream("manufacture", initialNumber, Optional.ofNullable(allYearsMatcher));
+    engine.setStream("domestic", initialNumber, Optional.ofNullable(allYearsMatcher));
 
     // Change the value
     EngineNumber changeNumber = new EngineNumber(BigDecimal.valueOf(42), "kg");
     Operation valueOperation = new PreCalculatedOperation(changeNumber);
-    ChangeOperation operation = new ChangeOperation("manufacture", valueOperation);
+    ChangeOperation operation = new ChangeOperation("domestic", valueOperation);
 
     operation.execute(machine);
 
     // Verify the stream was changed in the engine
-    EngineNumber result = engine.getStream("manufacture");
+    EngineNumber result = engine.getStream("domestic");
     assertEquals(BigDecimal.valueOf(142), result.getValue(), "Stream value should be changed correctly");
     assertEquals("kg", result.getUnits(), "Stream units should remain the same");
   }
@@ -101,9 +101,9 @@ public class ChangeOperationTest {
   @Test
   public void testExecuteWithDuring() {
     // Set initial value
-    engine.enable("manufacture", Optional.empty());
+    engine.enable("domestic", Optional.empty());
     EngineNumber initialNumber = new EngineNumber(BigDecimal.valueOf(100), "kg");
-    engine.setStream("manufacture", initialNumber, Optional.ofNullable(allYearsMatcher));
+    engine.setStream("domestic", initialNumber, Optional.ofNullable(allYearsMatcher));
 
     // Change the value with a during that applies to the current year (2020)
     EngineNumber changeNumber = new EngineNumber(BigDecimal.valueOf(42), "kg");
@@ -114,12 +114,12 @@ public class ChangeOperationTest {
     TimePointFuture start = new CalculatedTimePointFuture(yearOperation);
     ParsedDuring during = new ParsedDuring(Optional.of(start), Optional.empty());
 
-    ChangeOperation operation = new ChangeOperation("manufacture", valueOperation, during);
+    ChangeOperation operation = new ChangeOperation("domestic", valueOperation, during);
 
     operation.execute(machine);
 
     // Verify the stream was changed in the engine
-    EngineNumber result = engine.getStream("manufacture");
+    EngineNumber result = engine.getStream("domestic");
     assertEquals(BigDecimal.valueOf(142), result.getValue(), "Stream value should be changed correctly");
     assertEquals("kg", result.getUnits(), "Stream units should remain the same");
   }
@@ -130,9 +130,9 @@ public class ChangeOperationTest {
   @Test
   public void testExecuteWithDuringNotApplying() {
     // Set initial value
-    engine.enable("manufacture", Optional.empty());
+    engine.enable("domestic", Optional.empty());
     EngineNumber initialNumber = new EngineNumber(BigDecimal.valueOf(100), "kg");
-    engine.setStream("manufacture", initialNumber, Optional.ofNullable(allYearsMatcher));
+    engine.setStream("domestic", initialNumber, Optional.ofNullable(allYearsMatcher));
 
     // Change the value with a during that applies to a future year (2021)
     EngineNumber changeNumber = new EngineNumber(BigDecimal.valueOf(42), "kg");
@@ -143,12 +143,12 @@ public class ChangeOperationTest {
     TimePointFuture start = new CalculatedTimePointFuture(yearOperation);
     ParsedDuring during = new ParsedDuring(Optional.of(start), Optional.empty());
 
-    ChangeOperation operation = new ChangeOperation("manufacture", valueOperation, during);
+    ChangeOperation operation = new ChangeOperation("domestic", valueOperation, during);
 
     operation.execute(machine);
 
     // Verify the stream was not changed in the engine (should still be 100)
-    EngineNumber result = engine.getStream("manufacture");
+    EngineNumber result = engine.getStream("domestic");
     assertEquals(BigDecimal.valueOf(100), result.getValue(),
         "Stream value should not be changed when during doesn't apply");
     assertEquals("kg", result.getUnits(), "Stream units should remain the same");
@@ -160,21 +160,21 @@ public class ChangeOperationTest {
   @Test
   public void testExecuteWithComplexValueOperation() {
     // Set initial value
-    engine.enable("manufacture", Optional.empty());
+    engine.enable("domestic", Optional.empty());
     EngineNumber initialNumber = new EngineNumber(BigDecimal.valueOf(100), "kg");
-    engine.setStream("manufacture", initialNumber, Optional.ofNullable(allYearsMatcher));
+    engine.setStream("domestic", initialNumber, Optional.ofNullable(allYearsMatcher));
 
     // Change the value with a complex operation
     Operation left = new PreCalculatedOperation(new EngineNumber(BigDecimal.valueOf(30), "kg"));
     Operation right = new PreCalculatedOperation(new EngineNumber(BigDecimal.valueOf(12), "kg"));
     Operation valueOperation = new AdditionOperation(left, right); // 30 + 12 = 42
 
-    ChangeOperation operation = new ChangeOperation("manufacture", valueOperation);
+    ChangeOperation operation = new ChangeOperation("domestic", valueOperation);
 
     operation.execute(machine);
 
     // Verify the stream was changed in the engine
-    EngineNumber result = engine.getStream("manufacture");
+    EngineNumber result = engine.getStream("domestic");
     assertEquals(BigDecimal.valueOf(142), result.getValue(),
         "Stream value should be calculated and changed correctly");
     assertEquals("kg", result.getUnits(), "Stream units should remain the same");
@@ -186,19 +186,19 @@ public class ChangeOperationTest {
   @Test
   public void testExecuteWithEachYearUnits() {
     // Set initial value
-    engine.enable("manufacture", Optional.empty());
+    engine.enable("domestic", Optional.empty());
     EngineNumber initialNumber = new EngineNumber(BigDecimal.valueOf(100), "kg");
-    engine.setStream("manufacture", initialNumber, Optional.ofNullable(allYearsMatcher));
+    engine.setStream("domestic", initialNumber, Optional.ofNullable(allYearsMatcher));
 
     // Change the value with eachyear units
     EngineNumber changeNumber = new EngineNumber(BigDecimal.valueOf(42), "kgeachyear");
     Operation valueOperation = new PreCalculatedOperation(changeNumber);
-    ChangeOperation operation = new ChangeOperation("manufacture", valueOperation);
+    ChangeOperation operation = new ChangeOperation("domestic", valueOperation);
 
     operation.execute(machine);
 
     // Verify the stream was changed in the engine and units were handled correctly
-    EngineNumber result = engine.getStream("manufacture");
+    EngineNumber result = engine.getStream("domestic");
     assertEquals(BigDecimal.valueOf(142), result.getValue(), "Stream value should be changed correctly");
     assertEquals("kg", result.getUnits(), "Stream units should be extracted from eachyear units");
   }

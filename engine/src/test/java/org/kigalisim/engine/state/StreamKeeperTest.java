@@ -137,7 +137,7 @@ public class StreamKeeperTest {
     keeper.ensureSubstance(testScope);
 
     // Test that default streams exist with zero values
-    EngineNumber manufacture = keeper.getStream(testScope, "manufacture");
+    EngineNumber manufacture = keeper.getStream(testScope, "domestic");
     assertEquals(BigDecimal.ZERO, manufacture.getValue(),
                  "Manufacture should default to 0");
     assertEquals("kg", manufacture.getUnits(), "Manufacture should have kg units");
@@ -169,12 +169,12 @@ public class StreamKeeperTest {
     keeper.ensureSubstance(testScope);
 
     // Enable the manufacture stream first
-    keeper.markStreamAsEnabled(testScope, "manufacture");
+    keeper.markStreamAsEnabled(testScope, "domestic");
 
     EngineNumber newValue = new EngineNumber(new BigDecimal("100"), "kg");
-    keeper.setStream(testScope, "manufacture", newValue);
+    keeper.setStream(testScope, "domestic", newValue);
 
-    EngineNumber retrieved = keeper.getStream(testScope, "manufacture");
+    EngineNumber retrieved = keeper.getStream(testScope, "domestic");
     assertEquals(new BigDecimal("100"), retrieved.getValue(),
                  "Should retrieve set value");
     assertEquals("kg", retrieved.getUnits(), "Should retrieve correct units");
@@ -190,10 +190,10 @@ public class StreamKeeperTest {
     keeper.ensureSubstance(testScope);
 
     // Enable the streams first
-    keeper.markStreamAsEnabled(testScope, "manufacture");
+    keeper.markStreamAsEnabled(testScope, "domestic");
     keeper.markStreamAsEnabled(testScope, "import");
 
-    keeper.setStream(testScope, "manufacture",
+    keeper.setStream(testScope, "domestic",
                      new EngineNumber(new BigDecimal("50"), "kg"));
     keeper.setStream(testScope, "import",
                      new EngineNumber(new BigDecimal("30"), "kg"));
@@ -254,9 +254,9 @@ public class StreamKeeperTest {
     keeper.ensureSubstance(testScope);
 
     EngineNumber newValue = new EngineNumber(new BigDecimal("2.0"), "kg / unit");
-    keeper.setInitialCharge(testScope, "manufacture", newValue);
+    keeper.setInitialCharge(testScope, "domestic", newValue);
 
-    EngineNumber retrieved = keeper.getInitialCharge(testScope, "manufacture");
+    EngineNumber retrieved = keeper.getInitialCharge(testScope, "domestic");
     assertEquals(new BigDecimal("2.0"), retrieved.getValue(),
                  "Should retrieve set initial charge");
     assertEquals("kg / unit", retrieved.getUnits(),
@@ -296,7 +296,7 @@ public class StreamKeeperTest {
     Scope unknownScope = new Scope("test stanza", "unknown app", "unknown substance");
 
     assertThrows(IllegalStateException.class, () -> {
-      keeper.setStream(unknownScope, "manufacture",
+      keeper.setStream(unknownScope, "domestic",
                        new EngineNumber(new BigDecimal("100"), "kg"));
     }, "Should throw for unknown substance in setStream");
   }
@@ -310,7 +310,7 @@ public class StreamKeeperTest {
     Scope unknownScope = new Scope("test stanza", "unknown app", "unknown substance");
 
     assertThrows(IllegalStateException.class, () -> {
-      keeper.getStream(unknownScope, "manufacture");
+      keeper.getStream(unknownScope, "domestic");
     }, "Should throw for unknown substance in getStream");
   }
 
@@ -373,18 +373,18 @@ public class StreamKeeperTest {
     keeper.ensureSubstance(testScope);
 
     // Enable the manufacture stream first
-    keeper.markStreamAsEnabled(testScope, "manufacture");
+    keeper.markStreamAsEnabled(testScope, "domestic");
 
     // Set initial charge of 2 kg/unit for manufacture stream
-    keeper.setInitialCharge(testScope, "manufacture",
+    keeper.setInitialCharge(testScope, "domestic",
                            new EngineNumber(new BigDecimal("2.0"), "kg / unit"));
 
     // Set manufacture to 10 units - this should trigger setStreamForSalesWithUnits
-    keeper.setStream(testScope, "manufacture",
+    keeper.setStream(testScope, "domestic",
                     new EngineNumber(new BigDecimal("10"), "units"));
 
     // Get the stream value back - should be converted to kg (10 units * 2 kg/unit = 20 kg)
-    EngineNumber result = keeper.getStream(testScope, "manufacture");
+    EngineNumber result = keeper.getStream(testScope, "domestic");
 
     // The result should be in kg and the value should be 20
     assertEquals("kg", result.getUnits(), "Should convert units to kg");
@@ -402,12 +402,12 @@ public class StreamKeeperTest {
     keeper.ensureSubstance(testScope);
 
     // Set initial charge to zero
-    keeper.setInitialCharge(testScope, "manufacture",
+    keeper.setInitialCharge(testScope, "domestic",
                            new EngineNumber(BigDecimal.ZERO, "kg / unit"));
 
     // Attempting to set units should throw an exception
     assertThrows(RuntimeException.class, () -> {
-      keeper.setStream(testScope, "manufacture",
+      keeper.setStream(testScope, "domestic",
                       new EngineNumber(new BigDecimal("10"), "units"));
     }, "Should throw exception when initial charge is zero");
   }
@@ -422,12 +422,12 @@ public class StreamKeeperTest {
     keeper.ensureSubstance(testScope);
 
     // Set non-zero initial charge so the setStream won't fail for that reason
-    keeper.setInitialCharge(testScope, "manufacture",
+    keeper.setInitialCharge(testScope, "domestic",
                            new EngineNumber(new BigDecimal("2.0"), "kg / unit"));
 
     // Don't enable the stream - this should cause the assertion to fail
     assertThrows(RuntimeException.class, () -> {
-      keeper.setStream(testScope, "manufacture",
+      keeper.setStream(testScope, "domestic",
                       new EngineNumber(new BigDecimal("10"), "kg"));
     }, "Should throw exception when stream is not enabled and value is non-zero");
   }
@@ -442,11 +442,11 @@ public class StreamKeeperTest {
     keeper.ensureSubstance(testScope);
 
     // Don't enable the stream but try to set it to zero - this should work
-    keeper.setStream(testScope, "manufacture",
+    keeper.setStream(testScope, "domestic",
                     new EngineNumber(BigDecimal.ZERO, "kg"));
 
     // Verify the value was set to zero
-    EngineNumber result = keeper.getStream(testScope, "manufacture");
+    EngineNumber result = keeper.getStream(testScope, "domestic");
     assertEquals(BigDecimal.ZERO, result.getValue(),
                 "Should allow setting zero value on unenabled stream");
   }
@@ -461,14 +461,14 @@ public class StreamKeeperTest {
     keeper.ensureSubstance(testScope);
 
     // Enable the stream first
-    keeper.markStreamAsEnabled(testScope, "manufacture");
+    keeper.markStreamAsEnabled(testScope, "domestic");
 
     // Set non-zero value - this should work
-    keeper.setStream(testScope, "manufacture",
+    keeper.setStream(testScope, "domestic",
                     new EngineNumber(new BigDecimal("10"), "kg"));
 
     // Verify the value was set correctly
-    EngineNumber result = keeper.getStream(testScope, "manufacture");
+    EngineNumber result = keeper.getStream(testScope, "domestic");
     assertEquals(new BigDecimal("10"), result.getValue(),
                 "Should allow setting non-zero value on enabled stream");
   }
@@ -615,7 +615,7 @@ public class StreamKeeperTest {
 
     // Set value for scope1
     EngineNumber value = new EngineNumber(new BigDecimal("100"), "kg");
-    keeper.setLastSpecifiedValue(scope1, "manufacture", value);
+    keeper.setLastSpecifiedValue(scope1, "domestic", value);
 
     // Check flags
     assertTrue(keeper.isSalesIntentFreshlySet(scope1),

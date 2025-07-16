@@ -3,10 +3,10 @@ start default
   define application "test"
 
     uses substance "test"
-      enable manufacture
-      initial charge with 1 kg / unit for manufacture
+      enable domestic
+      initial charge with 1 kg / unit for domestic
       define testVar as 5
-      set manufacture to 100 if testVar > 10 else 50 endif mt
+      set domestic to 100 if testVar > 10 else 50 endif mt
       equals 5 tCO2e / mt
     end substance
 

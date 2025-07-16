@@ -181,24 +181,24 @@ public class RecycleRecoverLiveTests {
     // Based on debug output, the actual displacement behavior distributes proportionally
     // Original: 100 kg manufacture + 50 kg import = 150 kg total
     // After displacement: the total should be reduced by the displacement amount
-    double manufacture = recordSubA.getManufacture().getValue().doubleValue();
+    double domestic = recordSubA.getDomestic().getValue().doubleValue();
     double importValue = recordSubA.getImport().getValue().doubleValue();
     double recycled = recordSubA.getRecycleConsumption().getValue().doubleValue();
 
-    double totalSales = manufacture + importValue;
+    double totalSales = domestic + importValue;
 
     // The displacement should reduce virgin sales proportionally
-    // Manufacture: 100 * (130/150) = 86.67 kg
+    // Domestic: 100 * (130/150) = 86.67 kg
     // Import: 50 * (130/150) = 43.33 kg
     // Total: 130 kg virgin + recycled amount
     assertTrue(totalSales > 0, "Virgin sales should be positive");
     assertTrue(recycled > 0, "Recycled content should be positive");
 
-    // Check that manufacture and import are proportionally reduced
-    double manufactureRatio = manufacture / (manufacture + importValue);
-    double expectedManufactureRatio = 100.0 / 150.0; // Original ratio
-    assertEquals(expectedManufactureRatio, manufactureRatio, 0.01,
-        "Manufacture ratio should be maintained after displacement");
+    // Check that domestic and import are proportionally reduced
+    double domesticRatio = domestic / (domestic + importValue);
+    double expectedDomesticRatio = 100.0 / 150.0; // Original ratio
+    assertEquals(expectedDomesticRatio, domesticRatio, 0.01,
+        "Domestic ratio should be maintained after displacement");
   }
 
   /**
@@ -262,9 +262,9 @@ public class RecycleRecoverLiveTests {
     assertNotNull(recordSubB, "Should have result for test/sub_b in year 1");
 
     // Check that sub_b sales were displaced (reduced by 30 kg)
-    // Original: 200 kg manufacture + 100 kg import = 300 kg sales
+    // Original: 200 kg domestic + 100 kg import = 300 kg sales
     // After 30 kg displacement: 300 - 30 = 270 kg total
-    double totalSales = recordSubB.getManufacture().getValue().doubleValue()
+    double totalSales = recordSubB.getDomestic().getValue().doubleValue()
                        + recordSubB.getImport().getValue().doubleValue();
     assertEquals(270.0, totalSales, 0.0001,
         "Sub_b total sales should be reduced by 30 kg due to displacement from sub_a recovery");
@@ -294,23 +294,23 @@ public class RecycleRecoverLiveTests {
     // Check that import displacement works with uniform logic
     // Based on actual implementation, the displacement affects the whole system
     double importSales = recordSubA.getImport().getValue().doubleValue();
-    double manufactureSales = recordSubA.getManufacture().getValue().doubleValue();
+    double domesticSales = recordSubA.getDomestic().getValue().doubleValue();
     double recycledContent = recordSubA.getRecycleConsumption().getValue().doubleValue();
 
     // The import should be reduced from original 50 kg
     assertTrue(importSales < 50.0,
         "Import should be reduced due to displacement");
 
-    // The manufacture should also be affected due to the uniform displacement logic
-    assertTrue(manufactureSales < 100.0,
-        "Manufacture should be reduced due to uniform displacement logic");
+    // The domestic should also be affected due to the uniform displacement logic
+    assertTrue(domesticSales < 100.0,
+        "Domestic should be reduced due to uniform displacement logic");
 
     // Check recycled content is positive
     assertTrue(recycledContent > 0,
         "Recycled content should be positive");
 
     // Total should be less than original 150 kg
-    double totalSales = importSales + manufactureSales;
+    double totalSales = importSales + domesticSales;
     assertTrue(totalSales < 150.0,
         "Total sales should be reduced due to displacement");
   }
