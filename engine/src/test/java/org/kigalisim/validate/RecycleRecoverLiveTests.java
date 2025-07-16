@@ -727,4 +727,54 @@ public class RecycleRecoverLiveTests {
         "Recycled consumption units should be tCO2e in year 2");
   }
 
+  /**
+   * Test that retire commands work correctly after recycle at EOL and apply recycling 
+   * through existing recalculation logic.
+   */
+  @Test
+  public void testRetireAfterRecycleAtEol() throws IOException {
+    // Load and parse the QTA file
+    String qtaPath = "../examples/test_retire_after_recycle_eol.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    // Run the scenario using KigaliSimFacade
+    String scenarioName = "business as usual";
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
+    List<EngineResult> resultsList = results.collect(Collectors.toList());
+
+    // Check year 1 - no recycling or special retire yet
+    EngineResult resultYear1 = LiveTestsUtil.getResult(resultsList.stream(), 1, "test", "test");
+    assertNotNull(resultYear1, "Should have result for test/test in year 1");
+
+    // Initial: 100 units * 2 kg/unit = 200 kg
+    // Retire 20% each year: 200 * 0.20 = 40 kg
+    // Remaining: 200 - 40 = 160 kg = 80 units
+    assertEquals(80.0, resultYear1.getPopulation().getValue().doubleValue(), 0.0001,
+        "Equipment should be 80 units after 20% retire in year 1");
+
+    // Check year 2 - recycling at EOL active
+    EngineResult resultYear2 = LiveTestsUtil.getResult(resultsList.stream(), 2, "test", "test");
+    assertNotNull(resultYear2, "Should have result for test/test in year 2");
+
+    // Year 2 should show recycling effects from retired equipment from year 1
+    assertTrue(resultYear2.getRecycleConsumption().getValue().doubleValue() > 0,
+        "Should have recycling consumption in year 2 from EOL recycling");
+
+    // Check year 3 - additional retire command applied
+    EngineResult resultYear3 = LiveTestsUtil.getResult(resultsList.stream(), 3, "test", "test");
+    assertNotNull(resultYear3, "Should have result for test/test in year 3");
+
+    // Year 3 should show the effect of retire command after recycle at EOL
+    // The retire command should apply recycling since retire would have been zero previously
+    // Additional retire: 20 kg on top of the 20% retire
+    // The retire command should be additive and trigger recalculation
+    assertTrue(resultYear3.getRecycleConsumption().getValue().doubleValue() > 0,
+        "Should still have recycling consumption in year 3");
+
+    // The population should be reduced by both the percentage retire and the kg retire
+    assertTrue(resultYear3.getPopulation().getValue().doubleValue() < resultYear2.getPopulation().getValue().doubleValue(),
+        "Population in year 3 should be less than year 2 due to additional retire command");
+  }
+
 }
