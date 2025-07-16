@@ -3037,8 +3037,8 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
         const targetChild = ctx.getChild(i + 1);
         if (targetChild) {
           const displacementTarget = targetChild.getText();
-          return displacementTarget && displacementTarget.startsWith('"') ?
-            displacementTarget.slice(1, -1) : displacementTarget;
+          const isQuoted = displacementTarget && displacementTarget.startsWith('"');
+          return isQuoted ? displacementTarget.slice(1, -1) : displacementTarget;
         }
       }
     }
