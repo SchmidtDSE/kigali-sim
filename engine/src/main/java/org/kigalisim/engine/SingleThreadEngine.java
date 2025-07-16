@@ -36,6 +36,7 @@ import org.kigalisim.engine.state.YearMatcher;
 import org.kigalisim.engine.support.DivisionHelper;
 import org.kigalisim.engine.support.ExceptionsGenerator;
 import org.kigalisim.engine.support.RechargeVolumeCalculator;
+import org.kigalisim.lang.operation.RecoverOperation.RecoveryStage;
 
 /**
  * Single-threaded implementation of the Engine interface.
@@ -640,13 +641,13 @@ public class SingleThreadEngine implements Engine {
 
   @Override
   public void recycle(EngineNumber recoveryWithUnits, EngineNumber yieldWithUnits,
-      YearMatcher yearMatcher) {
+      YearMatcher yearMatcher, RecoveryStage stage) {
     if (!getIsInRange(yearMatcher)) {
       return;
     }
 
-    streamKeeper.setRecoveryRate(scope, recoveryWithUnits);
-    streamKeeper.setYieldRate(scope, yieldWithUnits);
+    streamKeeper.setRecoveryRate(scope, recoveryWithUnits, stage);
+    streamKeeper.setYieldRate(scope, yieldWithUnits, stage);
 
     RecalcOperation operation = new RecalcOperationBuilder()
         .setRecalcKit(createRecalcKit())
@@ -659,13 +660,13 @@ public class SingleThreadEngine implements Engine {
 
   @Override
   public void recycle(EngineNumber recoveryWithUnits, EngineNumber yieldWithUnits,
-      YearMatcher yearMatcher, String displacementTarget) {
+      YearMatcher yearMatcher, String displacementTarget, RecoveryStage stage) {
     if (!getIsInRange(yearMatcher)) {
       return;
     }
 
-    streamKeeper.setRecoveryRate(scope, recoveryWithUnits);
-    streamKeeper.setYieldRate(scope, yieldWithUnits);
+    streamKeeper.setRecoveryRate(scope, recoveryWithUnits, stage);
+    streamKeeper.setYieldRate(scope, yieldWithUnits, stage);
 
     // Apply the recovery through normal recycle operation
     RecalcOperation operation = new RecalcOperationBuilder()
@@ -1189,6 +1190,7 @@ public class SingleThreadEngine implements Engine {
    * Calculate the available recycling volume for the current timestep.
    * This method replicates the recycling calculation logic to determine
    * how much recycling material is available to avoid double counting.
+   * Now supports both EOL and recharge recycling stages.
    *
    * @param scope the scope to calculate recycling for
    * @return the amount of recycling available in kg
@@ -1203,8 +1205,7 @@ public class SingleThreadEngine implements Engine {
 
       // Get rates from parameterization
       EngineNumber retirementRate = streamKeeper.getRetirementRate(scope);
-      EngineNumber recoveryRate = streamKeeper.getRecoveryRate(scope);
-      EngineNumber yieldRate = streamKeeper.getYieldRate(scope);
+      EngineNumber rechargePopulation = streamKeeper.getRechargePopulation(scope);
       EngineNumber displacementRate = streamKeeper.getDisplacementRate(scope);
 
       // Convert everything to proper units
@@ -1213,13 +1214,51 @@ public class SingleThreadEngine implements Engine {
 
       // Calculate rates as decimals
       BigDecimal retirementRateDecimal = retirementRate.getValue().divide(BigDecimal.valueOf(100));
-      BigDecimal recoveryRateDecimal = recoveryRate.getValue().divide(BigDecimal.valueOf(100));
-      BigDecimal yieldRateDecimal = yieldRate.getValue().divide(BigDecimal.valueOf(100));
+      BigDecimal rechargePopulationDecimal = rechargePopulation.getValue().divide(BigDecimal.valueOf(100));
       BigDecimal displacementRateDecimal = displacementRate.getValue().divide(BigDecimal.valueOf(100));
 
-      // Calculate recycling chain
+      // Calculate EOL recycling (after retirement)
       BigDecimal retiredUnits = priorPopulation.getValue().multiply(retirementRateDecimal);
-      BigDecimal recoveredUnits = retiredUnits.multiply(recoveryRateDecimal);
+      BigDecimal eolRecycling = calculateRecyclingForStage(scope, retiredUnits, RecoveryStage.EOL, unitConverter);
+
+      // Calculate recharge recycling (after recharge population)
+      BigDecimal rechargedUnits = priorPopulation.getValue().multiply(rechargePopulationDecimal);
+      BigDecimal rechargeRecycling = calculateRecyclingForStage(scope, rechargedUnits, RecoveryStage.RECHARGE, unitConverter);
+
+      // Combine both recycling amounts
+      BigDecimal totalRecycling = eolRecycling.add(rechargeRecycling);
+
+      // Apply displacement rate
+      BigDecimal recyclingAvailable = totalRecycling.multiply(displacementRateDecimal);
+
+      return recyclingAvailable;
+    } catch (Exception e) {
+      // If any error occurs, return 0 to avoid breaking the flow
+      return BigDecimal.ZERO;
+    }
+  }
+
+  /**
+   * Calculate recycling for a specific stage (EOL or RECHARGE).
+   *
+   * @param scope the scope to calculate recycling for
+   * @param availableUnits the units available for recycling at this stage
+   * @param stage the recovery stage (EOL or RECHARGE)
+   * @param unitConverter the unit converter to use
+   * @return the amount of recycling available in kg for this stage
+   */
+  private BigDecimal calculateRecyclingForStage(UseKey scope, BigDecimal availableUnits, RecoveryStage stage, UnitConverter unitConverter) {
+    try {
+      // Get stage-specific rates
+      EngineNumber recoveryRate = streamKeeper.getRecoveryRate(scope, stage);
+      EngineNumber yieldRate = streamKeeper.getYieldRate(scope, stage);
+
+      // Calculate rates as decimals
+      BigDecimal recoveryRateDecimal = recoveryRate.getValue().divide(BigDecimal.valueOf(100));
+      BigDecimal yieldRateDecimal = yieldRate.getValue().divide(BigDecimal.valueOf(100));
+
+      // Calculate recycling chain for this stage
+      BigDecimal recoveredUnits = availableUnits.multiply(recoveryRateDecimal);
       BigDecimal recycledUnits = recoveredUnits.multiply(yieldRateDecimal);
 
       // Convert to kg
@@ -1227,10 +1266,7 @@ public class SingleThreadEngine implements Engine {
       EngineNumber initialChargeKg = unitConverter.convert(initialCharge, "kg / unit");
       BigDecimal recycledKg = recycledUnits.multiply(initialChargeKg.getValue());
 
-      // Apply displacement rate
-      BigDecimal recyclingAvailable = recycledKg.multiply(displacementRateDecimal);
-
-      return recyclingAvailable;
+      return recycledKg;
     } catch (Exception e) {
       // If any error occurs, return 0 to avoid breaking the flow
       return BigDecimal.ZERO;

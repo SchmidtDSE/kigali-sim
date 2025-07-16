@@ -58,6 +58,8 @@ public final class EngineConstants {
     units.put("sales", "kg");
     units.put("energy", "kwh");
     units.put("recycle", "kg");
+    units.put("recycleRecharge", "kg");
+    units.put("recycleEol", "kg");
     units.put("consumption", "tCO2e");
     units.put("rechargeEmissions", "tCO2e");
     units.put("eolEmissions", "tCO2e");

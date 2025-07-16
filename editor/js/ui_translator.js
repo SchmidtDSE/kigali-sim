@@ -2158,13 +2158,15 @@ class RecycleCommand {
    * @param {EngineNumber} value - Reuse amount and units.
    * @param {YearMatcher} duration - Duration of recovery.
    * @param {string} displacing - Stream or substance being displaced.
+   * @param {string} stage - Recycling stage ("eol" or "recharge").
    */
-  constructor(target, value, duration, displacing) {
+  constructor(target, value, duration, displacing, stage) {
     const self = this;
     self._target = target;
     self._value = value;
     self._duration = duration;
     self._displacing = displacing;
+    self._stage = stage;
   }
 
   /**
@@ -2215,6 +2217,16 @@ class RecycleCommand {
   getDisplacing() {
     const self = this;
     return self._displacing;
+  }
+
+  /**
+   * Get the recycling stage for this recycle command.
+   *
+   * @returns {string} The recycling stage ("eol" or "recharge").
+   */
+  getStage() {
+    const self = this;
+    return self._stage;
   }
 
   /**
@@ -2993,9 +3005,9 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
    */
   visitRecoverAllYears(ctx) {
     const self = this;
-    const volumeFuture = (ctx) => ctx.volume.accept(self);
-    const yieldFuture = (ctx) => ctx.yieldVal.accept(self);
-    return self._buildOperation(ctx, "recycle", null, volumeFuture, yieldFuture);
+    const volume = ctx.volume.accept(self);
+    const yieldVal = ctx.yieldVal.accept(self);
+    return new RecycleCommand(volume, yieldVal, null, null, "recharge");
   }
 
   /**
@@ -3006,10 +3018,10 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
    */
   visitRecoverDuration(ctx) {
     const self = this;
-    const volumeFuture = (ctx) => ctx.volume.accept(self);
-    const yieldFuture = (ctx) => ctx.yieldVal.accept(self);
+    const volume = ctx.volume.accept(self);
+    const yieldVal = ctx.yieldVal.accept(self);
     const duration = ctx.duration.accept(self);
-    return self._buildOperation(ctx, "recycle", duration, volumeFuture, yieldFuture);
+    return new RecycleCommand(volume, yieldVal, duration, null, "recharge");
   }
 
   /**
@@ -3046,7 +3058,7 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
 
     const cleanTarget = displacementTarget && displacementTarget.startsWith('"') ?
       displacementTarget.slice(1, -1) : displacementTarget;
-    return new RecycleCommand(volume, yieldVal, null, cleanTarget);
+    return new RecycleCommand(volume, yieldVal, null, cleanTarget, "recharge");
   }
 
   /**
@@ -3075,7 +3087,98 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
     const cleanTarget = displacementTarget && displacementTarget.startsWith('"') ?
       displacementTarget.slice(1, -1) : displacementTarget;
     const duration = ctx.duration.accept(self);
-    return new RecycleCommand(volume, yieldVal, duration, cleanTarget);
+    return new RecycleCommand(volume, yieldVal, duration, cleanTarget, "recharge");
+  }
+
+  /**
+   * Visit a recover command with stage and all years duration node.
+   *
+   * @param {Object} ctx - The parse tree node context.
+   * @returns {RecycleCommand} New recycle command with stage.
+   */
+  visitRecoverStageAllYears(ctx) {
+    const self = this;
+    const volume = ctx.volume.accept(self);
+    const yieldVal = ctx.yieldVal.accept(self);
+    const stage = ctx.stage.getText();
+    return new RecycleCommand(volume, yieldVal, null, null, stage);
+  }
+
+  /**
+   * Visit a recover command with stage and duration node.
+   *
+   * @param {Object} ctx - The parse tree node context.
+   * @returns {RecycleCommand} New recycle command with stage and duration.
+   */
+  visitRecoverStageDuration(ctx) {
+    const self = this;
+    const volume = ctx.volume.accept(self);
+    const yieldVal = ctx.yieldVal.accept(self);
+    const stage = ctx.stage.getText();
+    const duration = ctx.duration.accept(self);
+    return new RecycleCommand(volume, yieldVal, duration, null, stage);
+  }
+
+  /**
+   * Visit a recover command with stage, displacement and all years duration node.
+   *
+   * @param {Object} ctx - The parse tree node context.
+   * @returns {RecycleCommand} New recycle command with stage and displacement.
+   */
+  visitRecoverStageDisplacementAllYears(ctx) {
+    const self = this;
+    const volume = ctx.volume.accept(self);
+    const yieldVal = ctx.yieldVal.accept(self);
+    const stage = ctx.stage.getText();
+
+    // Find the displacement target - it's after "displacing"
+    // Grammar: RECOVER_ volume WITH_ yieldVal REUSE_ AT_ stage DISPLACING_ (string | stream)
+    let displacementTarget = null;
+    for (let i = 0; i < ctx.getChildCount(); i++) {
+      const child = ctx.getChild(i);
+      if (child && child.getText() === "displacing" && i + 1 < ctx.getChildCount()) {
+        const targetChild = ctx.getChild(i + 1);
+        if (targetChild) {
+          displacementTarget = targetChild.getText();
+        }
+        break;
+      }
+    }
+
+    const cleanTarget = displacementTarget && displacementTarget.startsWith('"') ?
+      displacementTarget.slice(1, -1) : displacementTarget;
+    return new RecycleCommand(volume, yieldVal, null, cleanTarget, stage);
+  }
+
+  /**
+   * Visit a recover command with stage, displacement and duration node.
+   *
+   * @param {Object} ctx - The parse tree node context.
+   * @returns {RecycleCommand} New recycle command with stage, displacement and duration.
+   */
+  visitRecoverStageDisplacementDuration(ctx) {
+    const self = this;
+    const volume = ctx.volume.accept(self);
+    const yieldVal = ctx.yieldVal.accept(self);
+    const stage = ctx.stage.getText();
+
+    // Find the displacement target - it's after "displacing"
+    // Grammar: RECOVER_ volume WITH_ yieldVal REUSE_ AT_ stage DISPLACING_ (string | stream)
+    // duration
+    let displacementTarget = null;
+    for (let i = 0; i < ctx.getChildCount(); i++) {
+      const child = ctx.getChild(i);
+      if (child.getText() === "displacing" && i + 1 < ctx.getChildCount()) {
+        const targetChild = ctx.getChild(i + 1);
+        displacementTarget = targetChild.getText();
+        break;
+      }
+    }
+
+    const cleanTarget = displacementTarget && displacementTarget.startsWith('"') ?
+      displacementTarget.slice(1, -1) : displacementTarget;
+    const duration = ctx.duration.accept(self);
+    return new RecycleCommand(volume, yieldVal, duration, cleanTarget, stage);
   }
 
   /**

@@ -15,6 +15,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import org.kigalisim.engine.number.EngineNumber;
+import org.kigalisim.lang.operation.RecoverOperation.RecoveryStage;
 
 /**
  * Class for managing stream-specific parameters and settings.
@@ -29,8 +30,10 @@ public class StreamParameterization {
   private final Map<String, EngineNumber> initialCharge;
   private EngineNumber rechargePopulation;
   private EngineNumber rechargeIntensity;
-  private EngineNumber recoveryRate;
-  private EngineNumber yieldRate;
+  private EngineNumber recoveryRateRecharge;
+  private EngineNumber yieldRateRecharge;
+  private EngineNumber recoveryRateEol;
+  private EngineNumber yieldRateEol;
   private EngineNumber retirementRate;
   private EngineNumber displacementRate;
   private final Map<String, EngineNumber> lastSpecifiedValue;
@@ -55,8 +58,10 @@ public class StreamParameterization {
 
     rechargePopulation = new EngineNumber(BigDecimal.ZERO, "%");
     rechargeIntensity = new EngineNumber(BigDecimal.ZERO, "kg / unit");
-    recoveryRate = new EngineNumber(BigDecimal.ZERO, "%");
-    yieldRate = new EngineNumber(BigDecimal.ZERO, "%");
+    recoveryRateRecharge = new EngineNumber(BigDecimal.ZERO, "%");
+    yieldRateRecharge = new EngineNumber(BigDecimal.ZERO, "%");
+    recoveryRateEol = new EngineNumber(BigDecimal.ZERO, "%");
+    yieldRateEol = new EngineNumber(BigDecimal.ZERO, "%");
     retirementRate = new EngineNumber(BigDecimal.ZERO, "%");
     displacementRate = new EngineNumber(new BigDecimal("100"), "%");
   }
@@ -162,7 +167,21 @@ public class StreamParameterization {
    * @param newValue The new recovery rate value
    */
   public void setRecoveryRate(EngineNumber newValue) {
-    recoveryRate = newValue;
+    recoveryRateRecharge = newValue;
+  }
+
+  /**
+   * Set the recovery rate percentage for a specific stage.
+   *
+   * @param newValue The new recovery rate value
+   * @param stage The recovery stage (EOL or RECHARGE)
+   */
+  public void setRecoveryRate(EngineNumber newValue, RecoveryStage stage) {
+    if (stage == RecoveryStage.EOL) {
+      recoveryRateEol = newValue;
+    } else {
+      recoveryRateRecharge = newValue;
+    }
   }
 
   /**
@@ -171,7 +190,21 @@ public class StreamParameterization {
    * @return The current recovery rate value
    */
   public EngineNumber getRecoveryRate() {
-    return recoveryRate;
+    return recoveryRateRecharge;
+  }
+
+  /**
+   * Get the recovery rate percentage for a specific stage.
+   *
+   * @param stage The recovery stage (EOL or RECHARGE)
+   * @return The current recovery rate value
+   */
+  public EngineNumber getRecoveryRate(RecoveryStage stage) {
+    if (stage == RecoveryStage.EOL) {
+      return recoveryRateEol;
+    } else {
+      return recoveryRateRecharge;
+    }
   }
 
   /**
@@ -180,7 +213,21 @@ public class StreamParameterization {
    * @param newValue The new yield rate value
    */
   public void setYieldRate(EngineNumber newValue) {
-    yieldRate = newValue;
+    yieldRateRecharge = newValue;
+  }
+
+  /**
+   * Set the yield rate percentage for recycling for a specific stage.
+   *
+   * @param newValue The new yield rate value
+   * @param stage The recovery stage (EOL or RECHARGE)
+   */
+  public void setYieldRate(EngineNumber newValue, RecoveryStage stage) {
+    if (stage == RecoveryStage.EOL) {
+      yieldRateEol = newValue;
+    } else {
+      yieldRateRecharge = newValue;
+    }
   }
 
   /**
@@ -189,7 +236,21 @@ public class StreamParameterization {
    * @return The current yield rate value
    */
   public EngineNumber getYieldRate() {
-    return yieldRate;
+    return yieldRateRecharge;
+  }
+
+  /**
+   * Get the yield rate percentage for recycling for a specific stage.
+   *
+   * @param stage The recovery stage (EOL or RECHARGE)
+   * @return The current yield rate value
+   */
+  public EngineNumber getYieldRate(RecoveryStage stage) {
+    if (stage == RecoveryStage.EOL) {
+      return yieldRateEol;
+    } else {
+      return yieldRateRecharge;
+    }
   }
 
   /**
@@ -316,7 +377,8 @@ public class StreamParameterization {
    */
   public void resetStateAtTimestep() {
     // Reset recovery to 0% between years since recycling programs may cease
-    recoveryRate = new EngineNumber(BigDecimal.ZERO, "%");
+    recoveryRateRecharge = new EngineNumber(BigDecimal.ZERO, "%");
+    recoveryRateEol = new EngineNumber(BigDecimal.ZERO, "%");
   }
 
   /**
@@ -326,7 +388,8 @@ public class StreamParameterization {
    * @throws IllegalArgumentException If the stream name is not a sales substream
    */
   private void ensureSalesStreamAllowed(String name) {
-    if (!"domestic".equals(name) && !"import".equals(name) && !"export".equals(name) && !"recycle".equals(name)) {
+    if (!"domestic".equals(name) && !"import".equals(name) && !"export".equals(name)
+        && !"recycle".equals(name) && !"recycleRecharge".equals(name) && !"recycleEol".equals(name)) {
       throw new IllegalArgumentException("Must address a sales substream.");
     }
   }
