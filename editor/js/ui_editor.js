@@ -12,6 +12,7 @@ import {
   DefinitionalStanza,
   LimitCommand,
   Program,
+  RechargeCommand,
   RecycleCommand,
   ReplaceCommand,
   SimulationScenario,
@@ -988,22 +989,6 @@ class ConsumptionListPresenter {
       (x) => x.getRetire() ? x.getRetire().getValue() : null,
     );
 
-    setEngineNumberValue(
-      self._dialog.querySelector(".edit-consumption-recharge-population-input"),
-      self._dialog.querySelector(".recharge-population-units-input"),
-      objToShow,
-      new EngineNumber(5, "% each year"),
-      (x) => x.getRecharge() ? x.getRecharge().getTarget() : null,
-    );
-
-    setEngineNumberValue(
-      self._dialog.querySelector(".edit-consumption-recharge-volume-input"),
-      self._dialog.querySelector(".recharge-volume-units-input"),
-      objToShow,
-      new EngineNumber(1, "kg / unit"),
-      (x) => x.getRecharge() ? x.getRecharge().getValue() : null,
-    );
-
     const removeCallback = () => self._updateCounts();
 
     setListInput(
@@ -1037,6 +1022,14 @@ class ConsumptionListPresenter {
         "consumption",
         self._streamUpdater,
       ),
+      removeCallback,
+    );
+
+    setListInput(
+      self._dialog.querySelector(".recharge-list"),
+      document.getElementById("recharge-command-template").innerHTML,
+      objToShow === null ? [] : objToShow.getRecharges(),
+      (item, root) => initRechargeCommandUi(item, root, self._getCodeObj()),
       removeCallback,
     );
 
@@ -1330,18 +1323,6 @@ class ConsumptionListPresenter {
     const retireCommand = new Command("retire", null, retirement, null);
     substanceBuilder.addCommand(retireCommand);
 
-    const rechargePopulation = getEngineNumberValue(
-      self._dialog.querySelector(".edit-consumption-recharge-population-input"),
-      self._dialog.querySelector(".recharge-population-units-input"),
-    );
-
-    const rechargeVolume = getEngineNumberValue(
-      self._dialog.querySelector(".edit-consumption-recharge-volume-input"),
-      self._dialog.querySelector(".recharge-volume-units-input"),
-    );
-
-    const rechargeCommand = new Command("recharge", rechargePopulation, rechargeVolume, null);
-    substanceBuilder.addCommand(rechargeCommand);
 
     const levels = getListInput(self._dialog.querySelector(".level-list"), readSetCommandUi);
     levels.forEach((x) => substanceBuilder.addCommand(x));
@@ -1601,12 +1582,6 @@ class PolicyListPresenter {
         initLimitCommandUi(item, root, self._getCodeObj(), context, self._streamUpdater);
       },
       "policy",
-    );
-
-    const addRechargeButton = self._root.querySelector(".add-recharge-button");
-    const rechargeList = self._root.querySelector(".recharge-list");
-    setupListButton(addRechargeButton, rechargeList, "recharge-command-template", (item, root) =>
-      initRechargeCommandUi(item, root, self._getCodeObj()),
     );
 
     setupDialogInternalLinks(self._root, self._tabs);
@@ -2650,11 +2625,35 @@ function readLimitCommandUi(root) {
  * @param {Object} codeObj - The code object for context.
  */
 function initRechargeCommandUi(itemObj, root, codeObj) {
-  // Set default values for new recharge commands
-  const populationGetter = (x) => x.getPopulation();
-  const populationUnitsGetter = (x) => x.getPopulationUnits();
-  const volumeGetter = (x) => x.getVolume();
-  const volumeUnitsGetter = (x) => x.getVolumeUnits();
+  // Handle both RechargeCommand objects and generic Command objects
+  const populationGetter = (x) => {
+    if (x.getPopulation) {
+      return x.getPopulation();
+    } else {
+      return x.getTarget().getValue();
+    }
+  };
+  const populationUnitsGetter = (x) => {
+    if (x.getPopulationUnits) {
+      return x.getPopulationUnits();
+    } else {
+      return x.getTarget().getUnits();
+    }
+  };
+  const volumeGetter = (x) => {
+    if (x.getVolume) {
+      return x.getVolume();
+    } else {
+      return x.getValue().getValue();
+    }
+  };
+  const volumeUnitsGetter = (x) => {
+    if (x.getVolumeUnits) {
+      return x.getVolumeUnits();
+    } else {
+      return x.getValue().getUnits();
+    }
+  };
 
   setFieldValue(
     root.querySelector(".recharge-population-input"),
@@ -2681,45 +2680,8 @@ function initRechargeCommandUi(itemObj, root, codeObj) {
     volumeUnitsGetter,
   );
 
-  // Set up duration section
-  const hasDurationCheckbox = root.querySelector(".recharge-has-duration");
-  const durationInputs = root.querySelector(".recharge-duration-inputs");
-  const durationTypeSelect = root.querySelector(".recharge-duration-type");
-  const yearStartInput = root.querySelector(".recharge-year-start");
-  const yearEndInput = root.querySelector(".recharge-year-end");
-  const yearToSpan = root.querySelector(".recharge-year-to");
-  const onwardsSpan = root.querySelector(".recharge-onwards");
-
-  // Set initial duration values
-  const hasDuration = itemObj && itemObj.getDurationType() !== null;
-  hasDurationCheckbox.checked = hasDuration;
-  durationInputs.style.display = hasDuration ? "inline" : "none";
-
-  if (hasDuration) {
-    setFieldValue(durationTypeSelect, itemObj, "year", (x) => x.getDurationType());
-    setFieldValue(yearStartInput, itemObj, "2027", (x) => x.getYearStart());
-    setFieldValue(yearEndInput, itemObj, "2030", (x) => x.getYearEnd());
-  }
-
-  // Duration toggle logic
-  hasDurationCheckbox.addEventListener("change", () => {
-    durationInputs.style.display = hasDurationCheckbox.checked ? "inline" : "none";
-  });
-
-  // Duration type change logic
-  durationTypeSelect.addEventListener("change", () => {
-    const durationType = durationTypeSelect.value;
-    const needsEndYear = durationType === "years-range" ||
-      durationType === "years-beginning";
-    const showOnwards = durationType === "years-onwards";
-
-    yearToSpan.style.display = needsEndYear ? "inline" : "none";
-    yearEndInput.style.display = needsEndYear ? "inline" : "none";
-    onwardsSpan.style.display = showOnwards ? "inline" : "none";
-  });
-
-  // Trigger duration type change to set initial visibility
-  durationTypeSelect.dispatchEvent(new Event("change"));
+  // Set up duration using standard pattern
+  setDuring(root.querySelector(".duration-subcomponent"), itemObj, new YearMatcher(1, 1), true);
 }
 
 /**
@@ -2738,13 +2700,14 @@ function readRechargeCommandUi(root) {
     root.querySelector(".recharge-volume-units-input"),
   );
 
-  const hasDuration = root.querySelector(".recharge-has-duration").checked;
-  const durationType = hasDuration ?
-    getFieldValue(root.querySelector(".recharge-duration-type")) : null;
-  const yearStart = hasDuration ?
-    getFieldValue(root.querySelector(".recharge-year-start")) : null;
-  const yearEnd = hasDuration ?
-    getFieldValue(root.querySelector(".recharge-year-end")) : null;
+  // Read duration using standard pattern
+  const duration = readDurationUi(root.querySelector(".duration-subcomponent"));
+
+  // Convert YearMatcher duration to RechargeCommand parameters
+  const durationTypeInput = root.querySelector(".duration-type-input");
+  const durationType = durationTypeInput.value;
+  const yearStart = duration.getStart();
+  const yearEnd = duration.getEnd();
 
   return new RechargeCommand(
     population,

@@ -2108,10 +2108,10 @@ class RechargeCommand {
 
     if (self._durationType) {
       switch (self._durationType) {
-      case "year":
+      case "during year":
         command += ` during year ${self._yearStart}`;
         break;
-      case "years-range":
+      case "during years":
         command += ` during years ${self._yearStart} to ${self._yearEnd}`;
         break;
       case "years-onwards":
@@ -2124,6 +2124,16 @@ class RechargeCommand {
     }
 
     return command;
+  }
+
+  /**
+   * Get the type name of this command.
+   *
+   * @returns {string} The command type name.
+   */
+  getTypeName() {
+    const self = this;
+    return "recharge";
   }
 
   /**
@@ -3569,6 +3579,7 @@ export {
   DefinitionalStanza,
   LimitCommand,
   Program,
+  RechargeCommand,
   RecycleCommand,
   ReplaceCommand,
   SimulationScenario,

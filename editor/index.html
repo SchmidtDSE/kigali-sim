@@ -286,6 +286,11 @@
                           <li><a data-tabby-default href="#consumption-general">General</a></li>
                           <li><a href="#consumption-equipment">Equipment</a></li>
                           <li>
+                            <a href="#consumption-servicing"
+                              >Servicing (<span id="consumption-servicing-count">0</span>)</a
+                            >
+                          </li>
+                          <li>
                             <a href="#consumption-start"
                               >Set (<span id="consumption-set-count">0</span>)</a
                             >
@@ -298,11 +303,6 @@
                           <li>
                             <a href="#consumption-limit"
                               >Limit (<span id="consumption-limit-count">0</span>)</a
-                            >
-                          </li>
-                          <li>
-                            <a href="#consumption-servicing"
-                              >Servicing (<span id="consumption-servicing-count">0</span>)</a
                             >
                           </li>
                         </ul>
@@ -333,18 +333,6 @@
                                   class="edit-consumption-application-input application-select"
                                 ></select>
                               </span>
-                            </div>
-                          </div>
-                          <div class="form-group">
-                            <div>
-                              <label for="edit-consumption-equipment">Equipment type / model (optional):</label>
-                            </div>
-                            <div>
-                              <input
-                                type="text"
-                                name="edit-consumption-equipment"
-                                class="edit-consumption-equipment-input long"
-                              />
                             </div>
                           </div>
                           <div class="form-group">
@@ -418,6 +406,18 @@
                               <span class="reminder-app"></span>.
                               <a href="#edit" class="edit-reminder-link">Change</a>
                             </span>
+                          </div>
+                          <div class="form-group">
+                            <div>
+                              <label for="edit-consumption-equipment">Equipment type / model (optional):</label>
+                            </div>
+                            <div>
+                              <input
+                                type="text"
+                                name="edit-consumption-equipment"
+                                class="edit-consumption-equipment-input long"
+                              />
+                            </div>
                           </div>
                           <div
                             class="form-group edit-consumption-initial-charge-domestic-input-outer"
@@ -565,78 +565,6 @@
                                   name="retirement-units"
                                   class="retirement-units-input"
                                   aria-label="Units of equipment annual retirement"
-                                >
-                                  <option value="kg">kg</option>
-                                  <option value="mt">mt</option>
-                                  <option value="tCO2e">tCO2e</option>
-                                  <option value="units">units</option>
-                                  <option value="kg each year">kg each year</option>
-                                  <option value="mt each year">mt each year</option>
-                                  <option value="tCO2e each year">tCO2e each year</option>
-                                  <option value="units each year">units each year</option>
-                                  <option value="kg / unit">kg / unit</option>
-                                  <option value="mt / unit">mt / unit</option>
-                                  <option value="tCO2e / unit">tCO2e / unit</option>
-                                  <option value="tCO2e / kg">tCO2e / kg</option>
-                                  <option value="tCO2e / mt">tCO2e / mt</option>
-                                  <option value="%">%</option>
-                                  <option value="% each year">% each year</option>
-                                </select>
-                              </span>
-                            </div>
-                          </div>
-                          <div class="form-group">
-                            <div>
-                              <label for="edit-consumption-recharge-population"
-                                >Amount of equipment recharged annually:</label
-                              >
-                            </div>
-                            <div>
-                              <input
-                                type="text"
-                                name="edit-consumption-recharge-population"
-                                class="edit-consumption-recharge-population-input mid"
-                              />
-                              <span class="sel mid">
-                                <select
-                                  name="recharge-population-units"
-                                  class="recharge-population-units-input"
-                                  aria-label="Units of equipment recharge frequency"
-                                >
-                                  <option value="kg">kg</option>
-                                  <option value="mt">mt</option>
-                                  <option value="tCO2e">tCO2e</option>
-                                  <option value="units">units</option>
-                                  <option value="kg each year">kg each year</option>
-                                  <option value="mt each year">mt each year</option>
-                                  <option value="tCO2e each year">tCO2e each year</option>
-                                  <option value="units each year">units each year</option>
-                                  <option value="kg / unit">kg / unit</option>
-                                  <option value="mt / unit">mt / unit</option>
-                                  <option value="tCO2e / unit">tCO2e / unit</option>
-                                  <option value="tCO2e / kg">tCO2e / kg</option>
-                                  <option value="tCO2e / mt">tCO2e / mt</option>
-                                  <option value="%">%</option>
-                                  <option value="% each year">% each year</option>
-                                </select>
-                              </span>
-                            </div>
-                          </div>
-                          <div class="form-group">
-                            <div>
-                              <label for="edit-consumption-recharge-volume">Recharge volume:</label>
-                            </div>
-                            <div>
-                              <input
-                                type="text"
-                                name="edit-consumption-recharge-volume"
-                                class="edit-consumption-recharge-volume-input mid"
-                              />
-                              <span class="sel mid">
-                                <select
-                                  name="recharge-volume-units"
-                                  class="recharge-volume-units-input"
-                                  aria-label="Units of equipment recharge frequency"
                                 >
                                   <option value="kg">kg</option>
                                   <option value="mt">mt</option>
@@ -1700,22 +1628,19 @@
             <option value="kwh / unit">kwh / unit</option>
           </select>
         </span>
-        <span class="recharge-duration-section">
-          <label><input type="checkbox" class="recharge-has-duration"> during</label>
-          <span class="recharge-duration-inputs" style="display: none;">
-            <span class="sel mid">
-              <select class="recharge-duration-type" aria-label="Duration type">
-                <option value="year">year</option>
-                <option value="years-range">years range</option>
-                <option value="years-onwards">years onwards</option>
-                <option value="years-beginning">years beginning</option>
-              </select>
-            </span>
-            <input type="text" class="recharge-year-start short" placeholder="2027" aria-label="Start year">
-            <span class="recharge-year-to" style="display: none;">to</span>
-            <input type="text" class="recharge-year-end short" placeholder="2030" style="display: none;" aria-label="End year">
-            <span class="recharge-onwards" style="display: none;">onwards</span>
+        <span class="duration-subcomponent">
+          <span class="sel mid">
+            <select class="duration-type-input" aria-label="Duration type for command">
+              <option value="in year">in year</option>
+              <option value="during all years">during all years</option>
+              <option value="starting in year">starting in year</option>
+              <option value="ending in year">ending in year</option>
+              <option value="during years">during years</option>
+            </select>
           </span>
+          <input type="text" class="duration-start short" aria-label="Start year of recharge">
+          <span class="duration-to">to</span>
+          <input type="text" class="duration-end short" aria-label="End year of recharge"> .
         </span>
         - <a href="#" class="delete-command-link">delete</a>
       </div>
