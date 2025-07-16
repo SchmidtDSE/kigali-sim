@@ -1196,48 +1196,43 @@ public class SingleThreadEngine implements Engine {
    * @return the amount of recycling available in kg
    */
   private BigDecimal calculateAvailableRecycling(UseKey scope) {
-    try {
-      // Get current prior population
-      EngineNumber priorPopulationRaw = streamKeeper.getStream(scope, "priorEquipment");
-      if (priorPopulationRaw == null) {
-        return BigDecimal.ZERO;
-      }
-
-      // Get rates from parameterization
-      EngineNumber retirementRate = streamKeeper.getRetirementRate(scope);
-      EngineNumber rechargePopulation = streamKeeper.getRechargePopulation(scope);
-      EngineNumber displacementRate = streamKeeper.getDisplacementRate(scope);
-
-      // Convert everything to proper units
-      UnitConverter unitConverter = createUnitConverterWithTotal("sales");
-      EngineNumber priorPopulation = unitConverter.convert(priorPopulationRaw, "units");
-
-      // Calculate rates as decimals
-      BigDecimal retirementRateDecimal = retirementRate.getValue().divide(BigDecimal.valueOf(100));
-      BigDecimal rechargePopulationDecimal = rechargePopulation.getValue().divide(BigDecimal.valueOf(100));
-      BigDecimal displacementRateDecimal = displacementRate.getValue().divide(BigDecimal.valueOf(100));
-
-      // Calculate EOL recycling (from actual retired equipment)
-      EngineNumber retiredPopulationRaw = streamKeeper.getStream(scope, "retired");
-      EngineNumber retiredPopulation = unitConverter.convert(retiredPopulationRaw, "units");
-      BigDecimal retiredUnits = retiredPopulation.getValue();
-      BigDecimal eolRecycling = calculateRecyclingForStage(scope, retiredUnits, RecoveryStage.EOL, unitConverter);
-
-      // Calculate recharge recycling (after recharge population)
-      BigDecimal rechargedUnits = priorPopulation.getValue().multiply(rechargePopulationDecimal);
-      BigDecimal rechargeRecycling = calculateRecyclingForStage(scope, rechargedUnits, RecoveryStage.RECHARGE, unitConverter);
-
-      // Combine both recycling amounts
-      BigDecimal totalRecycling = eolRecycling.add(rechargeRecycling);
-
-      // Apply displacement rate
-      BigDecimal recyclingAvailable = totalRecycling.multiply(displacementRateDecimal);
-
-      return recyclingAvailable;
-    } catch (Exception e) {
-      // If any error occurs, return 0 to avoid breaking the flow
+    // Get current prior population
+    EngineNumber priorPopulationRaw = streamKeeper.getStream(scope, "priorEquipment");
+    if (priorPopulationRaw == null) {
       return BigDecimal.ZERO;
     }
+
+    // Get rates from parameterization
+    EngineNumber retirementRate = streamKeeper.getRetirementRate(scope);
+    EngineNumber rechargePopulation = streamKeeper.getRechargePopulation(scope);
+    EngineNumber displacementRate = streamKeeper.getDisplacementRate(scope);
+
+    // Convert everything to proper units
+    UnitConverter unitConverter = createUnitConverterWithTotal("sales");
+    EngineNumber priorPopulation = unitConverter.convert(priorPopulationRaw, "units");
+
+    // Calculate rates as decimals
+    BigDecimal retirementRateDecimal = retirementRate.getValue().divide(BigDecimal.valueOf(100));
+    BigDecimal rechargePopulationDecimal = rechargePopulation.getValue().divide(BigDecimal.valueOf(100));
+    BigDecimal displacementRateDecimal = displacementRate.getValue().divide(BigDecimal.valueOf(100));
+
+    // Calculate EOL recycling (from actual retired equipment)
+    EngineNumber retiredPopulationRaw = streamKeeper.getStream(scope, "retired");
+    EngineNumber retiredPopulation = unitConverter.convert(retiredPopulationRaw, "units");
+    BigDecimal retiredUnits = retiredPopulation.getValue();
+    BigDecimal eolRecycling = calculateRecyclingForStage(scope, retiredUnits, RecoveryStage.EOL, unitConverter);
+
+    // Calculate recharge recycling (after recharge population)
+    BigDecimal rechargedUnits = priorPopulation.getValue().multiply(rechargePopulationDecimal);
+    BigDecimal rechargeRecycling = calculateRecyclingForStage(scope, rechargedUnits, RecoveryStage.RECHARGE, unitConverter);
+
+    // Combine both recycling amounts
+    BigDecimal totalRecycling = eolRecycling.add(rechargeRecycling);
+
+    // Apply displacement rate
+    BigDecimal recyclingAvailable = totalRecycling.multiply(displacementRateDecimal);
+
+    return recyclingAvailable;
   }
 
   /**
@@ -1250,29 +1245,24 @@ public class SingleThreadEngine implements Engine {
    * @return the amount of recycling available in kg for this stage
    */
   private BigDecimal calculateRecyclingForStage(UseKey scope, BigDecimal availableUnits, RecoveryStage stage, UnitConverter unitConverter) {
-    try {
-      // Get stage-specific rates
-      EngineNumber recoveryRate = streamKeeper.getRecoveryRate(scope, stage);
-      EngineNumber yieldRate = streamKeeper.getYieldRate(scope, stage);
+    // Get stage-specific rates
+    EngineNumber recoveryRate = streamKeeper.getRecoveryRate(scope, stage);
+    EngineNumber yieldRate = streamKeeper.getYieldRate(scope, stage);
 
-      // Calculate rates as decimals
-      BigDecimal recoveryRateDecimal = recoveryRate.getValue().divide(BigDecimal.valueOf(100));
-      BigDecimal yieldRateDecimal = yieldRate.getValue().divide(BigDecimal.valueOf(100));
+    // Calculate rates as decimals
+    BigDecimal recoveryRateDecimal = recoveryRate.getValue().divide(BigDecimal.valueOf(100));
+    BigDecimal yieldRateDecimal = yieldRate.getValue().divide(BigDecimal.valueOf(100));
 
-      // Calculate recycling chain for this stage
-      BigDecimal recoveredUnits = availableUnits.multiply(recoveryRateDecimal);
-      BigDecimal recycledUnits = recoveredUnits.multiply(yieldRateDecimal);
+    // Calculate recycling chain for this stage
+    BigDecimal recoveredUnits = availableUnits.multiply(recoveryRateDecimal);
+    BigDecimal recycledUnits = recoveredUnits.multiply(yieldRateDecimal);
 
-      // Convert to kg
-      EngineNumber initialCharge = streamKeeper.getInitialCharge(scope, "import");
-      EngineNumber initialChargeKg = unitConverter.convert(initialCharge, "kg / unit");
-      BigDecimal recycledKg = recycledUnits.multiply(initialChargeKg.getValue());
+    // Convert to kg
+    EngineNumber initialCharge = streamKeeper.getInitialCharge(scope, "import");
+    EngineNumber initialChargeKg = unitConverter.convert(initialCharge, "kg / unit");
+    BigDecimal recycledKg = recycledUnits.multiply(initialChargeKg.getValue());
 
-      return recycledKg;
-    } catch (Exception e) {
-      // If any error occurs, return 0 to avoid breaking the flow
-      return BigDecimal.ZERO;
-    }
+    return recycledKg;
   }
 
 }

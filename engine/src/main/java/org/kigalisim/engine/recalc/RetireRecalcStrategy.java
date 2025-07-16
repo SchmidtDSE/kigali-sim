@@ -80,7 +80,7 @@ public class RetireRecalcStrategy implements RecalcStrategy {
     // Update equipment streams
     streamKeeper.setStream(scopeEffective, "priorEquipment", newPrior);
     streamKeeper.setStream(scopeEffective, "equipment", newEquipment);
-    
+
     // Update retired stream with the amount retired this year
     EngineNumber currentRetiredRaw = streamKeeper.getStream(scopeEffective, "retired");
     EngineNumber currentRetired = unitConverter.convert(currentRetiredRaw, "units");

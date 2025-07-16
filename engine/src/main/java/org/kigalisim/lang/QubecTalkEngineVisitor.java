@@ -1072,13 +1072,10 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
    */
   private RecoveryStage parseRecoveryStage(Token stageToken) {
     String stageText = stageToken.getText();
-    if ("eol".equals(stageText)) {
-      return RecoveryStage.EOL;
-    } else if ("recharge".equals(stageText)) {
-      return RecoveryStage.RECHARGE;
-    } else {
-      // Default to RECHARGE for backward compatibility
-      return RecoveryStage.RECHARGE;
-    }
+    return switch (stageText) {
+      case "eol" -> RecoveryStage.EOL;
+      case "recharge" -> RecoveryStage.RECHARGE;
+      default -> throw new IllegalArgumentException("Invalid recovery stage: " + stageText);
+    };
   }
 }

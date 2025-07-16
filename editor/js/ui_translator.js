@@ -3025,6 +3025,27 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
   }
 
   /**
+   * Helper method to find and clean displacement target from context.
+   *
+   * @param {Object} ctx - The parse tree node context.
+   * @returns {string|null} The cleaned displacement target.
+   */
+  _findDisplacementTarget(ctx) {
+    for (let i = 0; i < ctx.getChildCount(); i++) {
+      const child = ctx.getChild(i);
+      if (child && child.getText() === "displacing" && i + 1 < ctx.getChildCount()) {
+        const targetChild = ctx.getChild(i + 1);
+        if (targetChild) {
+          const displacementTarget = targetChild.getText();
+          return displacementTarget && displacementTarget.startsWith('"') ?
+            displacementTarget.slice(1, -1) : displacementTarget;
+        }
+      }
+    }
+    return null;
+  }
+
+  /**
    * Visit a recover command with displacement and all years duration node.
    *
    * @param {Object} ctx - The parse tree node context.
@@ -3041,23 +3062,7 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
 
     const volume = ctx.volume.accept(self);
     const yieldVal = ctx.yieldVal.accept(self);
-
-    // Find the displacement target - it's after "displacing"
-    // Grammar: RECOVER_ volume WITH_ yieldVal REUSE_ DISPLACING_ (string | stream)
-    let displacementTarget = null;
-    for (let i = 0; i < ctx.getChildCount(); i++) {
-      const child = ctx.getChild(i);
-      if (child && child.getText() === "displacing" && i + 1 < ctx.getChildCount()) {
-        const targetChild = ctx.getChild(i + 1);
-        if (targetChild) {
-          displacementTarget = targetChild.getText();
-        }
-        break;
-      }
-    }
-
-    const cleanTarget = displacementTarget && displacementTarget.startsWith('"') ?
-      displacementTarget.slice(1, -1) : displacementTarget;
+    const cleanTarget = self._findDisplacementTarget(ctx);
     return new RecycleCommand(volume, yieldVal, null, cleanTarget, "recharge");
   }
 
@@ -3071,21 +3076,7 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
     const self = this;
     const volume = ctx.volume.accept(self);
     const yieldVal = ctx.yieldVal.accept(self);
-
-    // Find the displacement target - it's after "displacing"
-    // Grammar: RECOVER_ volume WITH_ yieldVal REUSE_ DISPLACING_ (string | stream) duration
-    let displacementTarget = null;
-    for (let i = 0; i < ctx.getChildCount(); i++) {
-      const child = ctx.getChild(i);
-      if (child.getText() === "displacing" && i + 1 < ctx.getChildCount()) {
-        const targetChild = ctx.getChild(i + 1);
-        displacementTarget = targetChild.getText();
-        break;
-      }
-    }
-
-    const cleanTarget = displacementTarget && displacementTarget.startsWith('"') ?
-      displacementTarget.slice(1, -1) : displacementTarget;
+    const cleanTarget = self._findDisplacementTarget(ctx);
     const duration = ctx.duration.accept(self);
     return new RecycleCommand(volume, yieldVal, duration, cleanTarget, "recharge");
   }
@@ -3130,23 +3121,7 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
     const volume = ctx.volume.accept(self);
     const yieldVal = ctx.yieldVal.accept(self);
     const stage = ctx.stage.getText();
-
-    // Find the displacement target - it's after "displacing"
-    // Grammar: RECOVER_ volume WITH_ yieldVal REUSE_ AT_ stage DISPLACING_ (string | stream)
-    let displacementTarget = null;
-    for (let i = 0; i < ctx.getChildCount(); i++) {
-      const child = ctx.getChild(i);
-      if (child && child.getText() === "displacing" && i + 1 < ctx.getChildCount()) {
-        const targetChild = ctx.getChild(i + 1);
-        if (targetChild) {
-          displacementTarget = targetChild.getText();
-        }
-        break;
-      }
-    }
-
-    const cleanTarget = displacementTarget && displacementTarget.startsWith('"') ?
-      displacementTarget.slice(1, -1) : displacementTarget;
+    const cleanTarget = self._findDisplacementTarget(ctx);
     return new RecycleCommand(volume, yieldVal, null, cleanTarget, stage);
   }
 
@@ -3161,22 +3136,7 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
     const volume = ctx.volume.accept(self);
     const yieldVal = ctx.yieldVal.accept(self);
     const stage = ctx.stage.getText();
-
-    // Find the displacement target - it's after "displacing"
-    // Grammar: RECOVER_ volume WITH_ yieldVal REUSE_ AT_ stage DISPLACING_ (string | stream)
-    // duration
-    let displacementTarget = null;
-    for (let i = 0; i < ctx.getChildCount(); i++) {
-      const child = ctx.getChild(i);
-      if (child.getText() === "displacing" && i + 1 < ctx.getChildCount()) {
-        const targetChild = ctx.getChild(i + 1);
-        displacementTarget = targetChild.getText();
-        break;
-      }
-    }
-
-    const cleanTarget = displacementTarget && displacementTarget.startsWith('"') ?
-      displacementTarget.slice(1, -1) : displacementTarget;
+    const cleanTarget = self._findDisplacementTarget(ctx);
     const duration = ctx.duration.accept(self);
     return new RecycleCommand(volume, yieldVal, duration, cleanTarget, stage);
   }
