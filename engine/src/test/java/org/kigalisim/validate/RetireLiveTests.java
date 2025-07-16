@@ -136,15 +136,17 @@ public class RetireLiveTests {
     assertEquals("units", resultYear1.getPopulation().getUnits(),
         "Equipment units should be units");
 
-    // Check year 2 - retire commands should continue to be additive
+    // Check year 2 - retire commands should continue to be additive with sales carryover
     EngineResult resultYear2 = LiveTestsUtil.getResult(resultsList.stream(), 2, "test", "test");
     assertNotNull(resultYear2, "Should have result for test/test in year 2");
     
-    // Year 2: Starting with 92.5 units from year 1
-    // Retire another 15 kg (7.5 units)
-    // Expected remaining: 92.5 - 7.5 = 85 units
-    assertEquals(85.0, resultYear2.getPopulation().getValue().doubleValue(), 0.0001,
-        "Equipment should be 85 units in year 2 after continued additive retire");
+    // Year 2: Starting with 92.5 units from year 1 (185 kg)
+    // New sales: 100 units (200 kg) added in year 2
+    // Total before retire: 185 + 200 = 385 kg
+    // Retire commands apply again: 15 kg total (5 kg + 10 kg)
+    // Expected remaining: 385 - 15 = 370 kg = 185 units
+    assertEquals(185.0, resultYear2.getPopulation().getValue().doubleValue(), 0.0001,
+        "Equipment should be 185 units in year 2 (92.5 from year 1 + 100 new sales - 7.5 retired)");
     assertEquals("units", resultYear2.getPopulation().getUnits(),
         "Equipment units should be units");
   }
