@@ -14,6 +14,7 @@
 class LocalStorageKeeper {
   static SOURCE_KEY = "source";
   static HIDE_INTRODUCTION_KEY = "hideIntroduction";
+  static SHOW_TOOLTIPS_KEY = "showTooltips";
 
   /**
    * Get the user's saved source code from local storage.
@@ -57,12 +58,35 @@ class LocalStorageKeeper {
   }
 
   /**
+   * Get the user's tooltip display preference from local storage.
+   *
+   * @returns {boolean|null} True if tooltips should be shown, null if not set
+   */
+  getShowTooltips() {
+    const self = this;
+    const stored = localStorage.getItem(LocalStorageKeeper.SHOW_TOOLTIPS_KEY);
+    return stored === null ? null : stored === "true";
+  }
+
+  /**
+   * Set the user's tooltip display preference in local storage.
+   *
+   * @param {boolean} show - Whether to show tooltips
+   */
+  setShowTooltips(show) {
+    const self = this;
+    const value = Boolean(show).toString();
+    localStorage.setItem(LocalStorageKeeper.SHOW_TOOLTIPS_KEY, value);
+  }
+
+  /**
    * Clear all local storage data.
    */
   clear() {
     const self = this;
     localStorage.removeItem(LocalStorageKeeper.SOURCE_KEY);
     localStorage.removeItem(LocalStorageKeeper.HIDE_INTRODUCTION_KEY);
+    localStorage.removeItem(LocalStorageKeeper.SHOW_TOOLTIPS_KEY);
   }
 }
 
