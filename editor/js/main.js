@@ -109,22 +109,18 @@ class TooltipPresenter {
 
     // Welcome screen checkbox
     self._welcomeCheckbox = document.getElementById("tooltip-preference-check");
-    if (self._welcomeCheckbox) {
-      self._welcomeCheckbox.checked = self._enabled;
-      self._welcomeCheckbox.addEventListener("change", function (event) {
-        self.setEnabled(event.target.checked);
-      });
-    }
+    self._welcomeCheckbox.checked = self._enabled;
+    self._welcomeCheckbox.addEventListener("change", function (event) {
+      self.setEnabled(event.target.checked);
+    });
 
     // Footer toggle button
     self._footerButton = document.getElementById("tooltip-toggle-button");
-    if (self._footerButton) {
-      self._updateControls();
-      self._footerButton.addEventListener("click", function (event) {
-        event.preventDefault();
-        self.setEnabled(!self._enabled);
-      });
-    }
+    self._updateControls();
+    self._footerButton.addEventListener("click", function (event) {
+      event.preventDefault();
+      self.setEnabled(!self._enabled);
+    });
   }
 
   /**
@@ -135,14 +131,9 @@ class TooltipPresenter {
   _updateControls() {
     const self = this;
 
-    if (self._welcomeCheckbox) {
-      self._welcomeCheckbox.checked = self._enabled;
-    }
-
-    if (self._footerButton) {
-      self._footerButton.textContent = self._enabled ?
-        "Disable Help Tooltips" : "Enable Help Tooltips";
-    }
+    self._welcomeCheckbox.checked = self._enabled;
+    self._footerButton.textContent = self._enabled ?
+      "Disable Help Tooltips" : "Enable Help Tooltips";
   }
 
   /**
@@ -258,23 +249,10 @@ class TooltipPresenter {
     tooltipData.forEach(function (tooltip) {
       const elements = document.querySelectorAll(tooltip.selector);
       elements.forEach(function (element) {
-        if (!self._tooltipInstances.has(element)) {
-          const instance = tippy(element, {
-            content: tooltip.content,
-            placement: "bottom",
-            arrow: true,
-            delay: [200, 0],
-            duration: [200, 150],
-            interactive: false,
-            theme: "kigali-sim",
-            maxWidth: 350,
-            // Accessibility
-            role: "tooltip",
-            allowHTML: false,
-            appendTo: document.body,
-          });
-          self._tooltipInstances.set(element, instance);
-        }
+        const instance = tippy(element, {
+          content: tooltip.content,
+        });
+        self._tooltipInstances.set(element, instance);
       });
     });
   }
