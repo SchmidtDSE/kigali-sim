@@ -68,7 +68,7 @@ The about stanza is optional.
 #### Policy Interventions
 - `cap|floor stream to {amount} <displacing> <during>` - Manufacturing/import restrictions and minimums
 - `replace {amount} of {stream} with "substance" <during>` - Substance transitions
-- `recover {amount} with {amount} reuse <displacing> <during>` - Recycling with optional displacement
+- `recover {amount} with {amount} reuse <at {stage}> <displacing> <during>` - Recycling with optional stage (eol or recharge), displacement, and duration
 
 **Note**: When using units (of equipment) in cap, floor, and set commands, those limits apply after recharge calculations. So a cap of 100 units means 100 units on top of recharge for prior equipment.
 
@@ -91,6 +91,8 @@ Simulations may be run with years as the time unit where each time unit is a sin
 To specify when a command should run, during may be appended like `cap equipment to 0 units during year|years 1 to 5` or `cap equipment to 0 units during year|years 2028 to 2033`. This may also be an individual time like `during year 2028`.
 
 Keywords `beginning` and `onwards` are available. For a simulation running from years 2025 to 2030, the following is valid: `during year|years 2025|beginning to 2030|onwards`.
+
+Keywords `at` and `eol` are available for recycling commands. Use `at recharge` for recycling at service time and `at eol` for recycling at equipment retirement.
 
 No duration means runs each year though `each year` may also be optionally written to apply to all years.
 
@@ -146,6 +148,19 @@ Changes in one substance can be offset by changes in another. For example:
 
 This is available for `cap`, `floor`, and `recover`.
 
+### Recycling Stages
+The `recover` command supports specifying when recycling occurs:
+- `recover {amount} with {amount} reuse` - Defaults to recycling at recharge (service) time
+- `recover {amount} with {amount} reuse at recharge` - Explicitly specifies recycling at service time
+- `recover {amount} with {amount} reuse at eol` - Specifies recycling at end-of-life (retirement)
+
+Examples:
+```
+recover 20 % with 80 % reuse at recharge
+recover 15 % with 75 % reuse at eol displacing import
+recover 10 % with 90 % reuse at eol during years 3 to 5
+```
+
 ## Example QubecTalk Program
 
 ```
@@ -181,6 +196,7 @@ start policy "HFC Phasedown"
     modify substance "HFC-134a"
       cap manufacture to 85% during years 3 to 5
       cap import to 85% during years 3 to 5
+      recover 20 % with 80 % reuse at eol during years 4 to 10
       replace 50% of manufacture with "R-600a" during years 6 to onwards
     end substance
     

@@ -10,6 +10,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import org.antlr.v4.runtime.Token;
 import org.kigalisim.engine.number.EngineNumber;
 import org.kigalisim.lang.fragment.AboutStanzaFragment;
 import org.kigalisim.lang.fragment.ApplicationFragment;
@@ -43,6 +44,7 @@ import org.kigalisim.lang.operation.Operation;
 import org.kigalisim.lang.operation.PreCalculatedOperation;
 import org.kigalisim.lang.operation.RechargeOperation;
 import org.kigalisim.lang.operation.RecoverOperation;
+import org.kigalisim.lang.operation.RecoverOperation.RecoveryStage;
 import org.kigalisim.lang.operation.ReplaceOperation;
 import org.kigalisim.lang.operation.RetireOperation;
 import org.kigalisim.lang.operation.SetOperation;
@@ -777,6 +779,73 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
    * {@inheritDoc}
    */
   @Override
+  public Fragment visitRecoverStageAllYears(QubecTalkParser.RecoverStageAllYearsContext ctx) {
+    Operation volumeOperation = visit(ctx.volume).getOperation();
+    Operation yieldOperation = visit(ctx.yieldVal).getOperation();
+    RecoveryStage stage = parseRecoveryStage(ctx.stage);
+    Operation operation = new RecoverOperation(volumeOperation, yieldOperation, stage);
+    return new OperationFragment(operation);
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public Fragment visitRecoverStageDuration(QubecTalkParser.RecoverStageDurationContext ctx) {
+    Operation volumeOperation = visit(ctx.volume).getOperation();
+    Operation yieldOperation = visit(ctx.yieldVal).getOperation();
+    ParsedDuring during = visit(ctx.duration).getDuring();
+    RecoveryStage stage = parseRecoveryStage(ctx.stage);
+    Operation operation = new RecoverOperation(volumeOperation, yieldOperation, during, stage);
+    return new OperationFragment(operation);
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public Fragment visitRecoverStageDisplacementAllYears(QubecTalkParser.RecoverStageDisplacementAllYearsContext ctx) {
+    Operation volumeOperation = visit(ctx.volume).getOperation();
+    Operation yieldOperation = visit(ctx.yieldVal).getOperation();
+    RecoveryStage stage = parseRecoveryStage(ctx.stage);
+
+    String displaceTarget;
+    if (ctx.string() != null) {
+      displaceTarget = visit(ctx.string()).getString();
+    } else {
+      displaceTarget = ctx.stream().getText();
+    }
+
+    Operation operation = new RecoverOperation(volumeOperation, yieldOperation, displaceTarget, stage);
+    return new OperationFragment(operation);
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public Fragment visitRecoverStageDisplacementDuration(QubecTalkParser.RecoverStageDisplacementDurationContext ctx) {
+    Operation volumeOperation = visit(ctx.volume).getOperation();
+    Operation yieldOperation = visit(ctx.yieldVal).getOperation();
+    ParsedDuring during = visit(ctx.duration).getDuring();
+    RecoveryStage stage = parseRecoveryStage(ctx.stage);
+
+    String displaceTarget;
+    if (ctx.string() != null) {
+      displaceTarget = visit(ctx.string()).getString();
+    } else {
+      displaceTarget = ctx.stream().getText();
+    }
+
+    Operation operation = new RecoverOperation(volumeOperation, yieldOperation, displaceTarget, during, stage);
+    return new OperationFragment(operation);
+  }
+
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
   public Fragment visitReplaceAllYears(QubecTalkParser.ReplaceAllYearsContext ctx) {
     Operation volumeOperation = visit(ctx.volume).getOperation();
     String stream = ctx.target.getText();
@@ -996,5 +1065,17 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
 
     ParsedProgram program = new ParsedProgram(policies, scenarios);
     return new ProgramFragment(program);
+  }
+
+  /**
+   * Parse recovery stage from context token.
+   */
+  private RecoveryStage parseRecoveryStage(Token stageToken) {
+    String stageText = stageToken.getText();
+    return switch (stageText) {
+      case "eol" -> RecoveryStage.EOL;
+      case "recharge" -> RecoveryStage.RECHARGE;
+      default -> throw new IllegalArgumentException("Invalid recovery stage: " + stageText);
+    };
   }
 }

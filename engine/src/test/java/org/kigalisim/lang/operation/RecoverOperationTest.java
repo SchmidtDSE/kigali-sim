@@ -23,6 +23,7 @@ import org.kigalisim.engine.number.EngineNumber;
 import org.kigalisim.engine.state.YearMatcher;
 import org.kigalisim.lang.machine.PushDownMachine;
 import org.kigalisim.lang.machine.SingleThreadPushDownMachine;
+import org.kigalisim.lang.operation.RecoverOperation.RecoveryStage;
 import org.kigalisim.lang.time.CalculatedTimePointFuture;
 import org.kigalisim.lang.time.ParsedDuring;
 import org.kigalisim.lang.time.TimePointFuture;
@@ -109,7 +110,7 @@ public class RecoverOperationTest {
     operation.execute(mockMachine);
 
     // Verify the recycle method was called with the correct parameters
-    verify(mockEngine).recycle(eq(volume), eq(yield), any(YearMatcher.class));
+    verify(mockEngine).recycle(eq(volume), eq(yield), any(YearMatcher.class), eq(RecoveryStage.RECHARGE));
   }
 
   /**
@@ -172,7 +173,7 @@ public class RecoverOperationTest {
     operation.execute(mockMachine);
 
     // Verify the recycle method was called with the correct parameters
-    verify(mockEngine).recycle(eq(volume), eq(yield), any(YearMatcher.class));
+    verify(mockEngine).recycle(eq(volume), eq(yield), any(YearMatcher.class), eq(RecoveryStage.RECHARGE));
   }
 
   /**
@@ -234,7 +235,7 @@ public class RecoverOperationTest {
     operation.execute(mockMachine);
 
     // Verify the recycle method was called with displacement parameter
-    verify(mockEngine).recycle(eq(volume), eq(yield), any(YearMatcher.class), eq(displaceTarget));
+    verify(mockEngine).recycle(eq(volume), eq(yield), any(YearMatcher.class), eq(displaceTarget), eq(RecoveryStage.RECHARGE));
   }
 
   /**
@@ -263,7 +264,7 @@ public class RecoverOperationTest {
     operation.execute(mockMachine);
 
     // Verify the recycle method was called with displacement parameter
-    verify(mockEngine).recycle(eq(volume), eq(yield), any(YearMatcher.class), eq(displaceTarget));
+    verify(mockEngine).recycle(eq(volume), eq(yield), any(YearMatcher.class), eq(displaceTarget), eq(RecoveryStage.RECHARGE));
   }
 
   /**
