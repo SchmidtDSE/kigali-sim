@@ -195,6 +195,10 @@
               <input type="checkbox" id="save-preferences-checkbox" checked>
               💾 Save preferences and simulation locally
             </label>
+            <label>
+              <input type="checkbox" id="tooltip-preference-check" checked>
+              ℹ️ Show help tooltips
+            </label>
           </div>
         </p>
 
@@ -273,7 +277,7 @@
                     <h3>Consumption</h3>
                     <ul class="item-list"></ul>
                     <div class="add-link-pane bold-buttons">
-                      <a href="#add-consumption" class="add-link secondary">Add consumption</a>
+                      <a href="#add-consumption" class="add-link secondary">Add Consumption</a>
                     </div>
                     <dialog class="dialog">
                       <h2><span class="action-title"></span> Consumption</h2>
@@ -689,11 +693,6 @@
                             >
                           </li>
                           <li>
-                            <a href="#policy-salvage"
-                              >Savlage (<span id="policy-recycle-count">0</span>)</a
-                            >
-                          </li>
-                          <li>
                             <a href="#policy-replace"
                               >Replace (<span id="policy-replace-count">0</span>)</a
                             >
@@ -764,18 +763,6 @@
                           <div class="dialog-sub-buttons bold-buttons">
                             <a href="#" class="add-recycling-button secondary">Add Recycling</a>
                           </div>
-                          <div class="scope-reminder detached">
-                            Your policy will recycle <span class="reminder-substance"></span> used
-                            for <span class="reminder-app"></span>.
-                            <a href="#edit" class="edit-reminder-link">Change</a>
-                          </div>
-                        </div>
-                        <div id="policy-salvage">
-                          <div class="instructions">
-                            Define a recycling program in which substance is recovered at end of
-                            life. There may be yield loss in processing substances prior to reuse.
-                          </div>
-                          <div>This policy is coming soon</div>
                           <div class="scope-reminder detached">
                             Your policy will recycle <span class="reminder-substance"></span> used
                             for <span class="reminder-app"></span>.
@@ -1254,6 +1241,7 @@
           >Open Source</a
         >
         <a href="#" id="clear-data-button" class="secondary">Clear Data</a>
+        <a href="#" id="tooltip-toggle-button" class="secondary">Enable Help Tooltips</a>
       </div>
     </footer>
 
@@ -1662,6 +1650,8 @@
     <script type="text/javascript" src="/third_party/chart.min.js"></script>
     <script type="text/javascript" src="/third_party/d3.min.js"></script>
     <script type="text/javascript" src="/third_party/tabby.min.js"></script>
+    <script type="text/javascript" src="/third_party/popper.min.js"></script>
+    <script type="text/javascript" src="/third_party/tippy-bundle.umd.min.js"></script>
 
     <script type="text/javascript" src="/intermediate/static/qubectalk.js?v=EPOCH"></script>
 

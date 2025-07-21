@@ -25,6 +25,276 @@ const CLEAR_ALL_DATA_MESSAGE = [
 ].join(" ");
 
 /**
+ * Manages tooltip display and user preferences for help tooltips.
+ *
+ * Handles initialization, user preference storage, and tooltip lifecycle
+ * management using Tippy.js for accessible tooltip display.
+ */
+class TooltipPresenter {
+  /**
+   * Create a new tooltip presenter.
+   *
+   * @param {LocalStorageKeeper} storageKeeper - Storage manager for user preferences
+   */
+  constructor(storageKeeper) {
+    const self = this;
+    self._storageKeeper = storageKeeper;
+    self._tooltipInstances = new Map();
+    self._enabled = self._loadPreference();
+    self._welcomeCheckbox = null;
+    self._footerButton = null;
+  }
+
+  /**
+   * Initialize the tooltip system.
+   *
+   * Sets up preference controls and creates tooltips if enabled.
+   */
+  initialize() {
+    const self = this;
+    self._setupPreferenceControls();
+    if (self._enabled) {
+      self._createTooltips();
+    }
+  }
+
+  /**
+   * Toggle tooltip visibility.
+   *
+   * @param {boolean} enabled - Whether tooltips should be shown
+   */
+  setEnabled(enabled) {
+    const self = this;
+    self._enabled = enabled;
+    self._storageKeeper.setShowTooltips(enabled);
+
+    if (enabled) {
+      self._createTooltips();
+    } else {
+      self._destroyTooltips();
+    }
+
+    self._updateControls();
+  }
+
+  /**
+   * Get current tooltip enabled state.
+   *
+   * @returns {boolean} Whether tooltips are currently enabled
+   */
+  isEnabled() {
+    const self = this;
+    return self._enabled;
+  }
+
+  /**
+   * Load tooltip preference from storage.
+   *
+   * @returns {boolean} Tooltip preference (defaults to true)
+   * @private
+   */
+  _loadPreference() {
+    const self = this;
+    const stored = self._storageKeeper.getShowTooltips();
+    return stored !== null ? stored : true; // Default to enabled
+  }
+
+  /**
+   * Setup preference control elements and event handlers.
+   *
+   * @private
+   */
+  _setupPreferenceControls() {
+    const self = this;
+
+    // Welcome screen checkbox
+    self._welcomeCheckbox = document.getElementById("tooltip-preference-check");
+    if (self._welcomeCheckbox) {
+      self._welcomeCheckbox.checked = self._enabled;
+      self._welcomeCheckbox.addEventListener("change", function (event) {
+        self.setEnabled(event.target.checked);
+      });
+    }
+
+    // Footer toggle button
+    self._footerButton = document.getElementById("tooltip-toggle-button");
+    if (self._footerButton) {
+      self._updateControls();
+      self._footerButton.addEventListener("click", function (event) {
+        event.preventDefault();
+        self.setEnabled(!self._enabled);
+      });
+    }
+  }
+
+  /**
+   * Update control elements to reflect current state.
+   *
+   * @private
+   */
+  _updateControls() {
+    const self = this;
+
+    if (self._welcomeCheckbox) {
+      self._welcomeCheckbox.checked = self._enabled;
+    }
+
+    if (self._footerButton) {
+      self._footerButton.textContent = self._enabled ?
+        "Disable Help Tooltips" : "Enable Help Tooltips";
+    }
+  }
+
+  /**
+   * Create tooltips for all target elements.
+   *
+   * @private
+   */
+  _createTooltips() {
+    const self = this;
+
+    // Tooltip definitions from requirements
+    const tooltipData = [
+      {
+        selector: "a[href=\"#add-application\"].add-link.secondary",
+        content: "Add a new application where substances are consumed like " +
+          "commercial refrigeration. You may include sub-applications to indicate " +
+          "specific sectors.",
+      },
+      {
+        selector: "a[href=\"#add-consumption\"].add-link.secondary",
+        content: "Add a new substance which is consumed within one of your " +
+          "applications. You may also include specific equipment models. One record " +
+          "per substance / application pair.",
+      },
+      {
+        selector: "a[href=\"#add-policy\"].add-link.secondary",
+        content: "Model a potential policy intervention which can be examined on its " +
+          "own or in combination with others. May also be used to create a set of " +
+          "expectations like an SSP scenario.",
+      },
+      {
+        selector: "a[href=\"#add-simulation\"].add-link.secondary",
+        content: "Add a new simulation which combines zero or more policies as " +
+          "stacked on top of the business as usual / baseline scenario.",
+      },
+      {
+        selector: "#consumption-tabs a[href=\"#consumption-general\"]",
+        content: "Information about the substance being consumed including if it is " +
+          "imported, exported, and / or domestically manufactured.",
+      },
+      {
+        selector: "#consumption-tabs a[href=\"#consumption-equipment\"]",
+        content: "Information about equipment using the substance including charge " +
+          "levels and optional equipment model information.",
+      },
+      {
+        selector: "#consumption-tabs a[href=\"#consumption-servicing\"]",
+        content: "Information about servicing schedules including top up and repair, " +
+          "both of which may change over time.",
+      },
+      {
+        selector: "#consumption-tabs a[href=\"#consumption-set\"]",
+        content: "Set points for sales / consumption values. May be used to specify " +
+          "historic or actual observed values.",
+      },
+      {
+        selector: "#consumption-tabs a[href=\"#consumption-change\"]",
+        content: "Information about how sales / consumption change over time. May be " +
+          "used to specify expectations based on surveys or socioeconomic projections.",
+      },
+      {
+        selector: "#consumption-tabs a[href=\"#consumption-limit\"]",
+        content: "Information about either minimum or maximum sales / consumption " +
+          "levels, possibly through time.",
+      },
+      {
+        selector: "#policy-tabs a[href=\"#policy-general\"]",
+        content: "Information about the policy (or scenario) like name and impacted " +
+          "substance / application. For multi-substance policies, please use " +
+          "code-based editor.",
+      },
+      {
+        selector: "#policy-tabs a[href=\"#policy-recycle\"]",
+        content: "Describe recycling or salvage programs which collect substance " +
+          "either during servicing or top up.",
+      },
+      {
+        selector: "#policy-tabs a[href=\"#policy-replace\"]",
+        content: "Describe programs which replace one substance, application, or " +
+          "sales stream with an another. This can trade off between substances or " +
+          "sales channels such as trading imports for domestic manufacturing.",
+      },
+      {
+        selector: "#policy-tabs a[href=\"#policy-set\"]",
+        content: "Indicate values for sales or consumption at specific moments in " +
+          "time expected under this policy or scenario.",
+      },
+      {
+        selector: "#policy-tabs a[href=\"#policy-change\"]",
+        content: "Provide expectations for how sales or consumption are expected to " +
+          "change under the given policy or scenario, possibly moving consumption " +
+          "between policies or streams.",
+      },
+      {
+        selector: "#policy-tabs a[href=\"#policy-limit\"]",
+        content: "Specify minimum or maximum values for this substance / application " +
+          "pair. This can either draw on or send consumption to other sales streams, " +
+          "substances, or applications.",
+      },
+      {
+        selector: "#editor-tabs a[href=\"#ui-editor\"]",
+        content: "Develop your model through a \"user interface\" or, in other words, " +
+          "clicking buttons and filling out forms and wizards.",
+      },
+      {
+        selector: "#editor-tabs a[href=\"#code-editor\"], .advanced-editor-link",
+        content: "Develop your model through code using the bespoke and easy to use " +
+          "QubecTalk programming language designed just for Kigali Sim.",
+      },
+    ];
+
+    // Create tooltips for each element
+    tooltipData.forEach(function (tooltip) {
+      const elements = document.querySelectorAll(tooltip.selector);
+      elements.forEach(function (element) {
+        if (!self._tooltipInstances.has(element)) {
+          const instance = tippy(element, {
+            content: tooltip.content,
+            placement: "bottom",
+            arrow: true,
+            delay: [200, 0],
+            duration: [200, 150],
+            interactive: false,
+            theme: "kigali-sim",
+            maxWidth: 350,
+            // Accessibility
+            role: "tooltip",
+            allowHTML: false,
+            appendTo: document.body,
+          });
+          self._tooltipInstances.set(element, instance);
+        }
+      });
+    });
+  }
+
+  /**
+   * Destroy all tooltip instances.
+   *
+   * @private
+   */
+  _destroyTooltips() {
+    const self = this;
+
+    self._tooltipInstances.forEach(function (instance) {
+      instance.destroy();
+    });
+    self._tooltipInstances.clear();
+  }
+}
+
+/**
  * Manages the running indicator and progress bar display.
  */
 class RunningIndicatorPresenter {
@@ -210,6 +480,10 @@ class MainPresenter {
     self._onCodeChange();
     self._setupFileButtons();
     self._setupStorageControls();
+
+    // Initialize tooltip presenter for help tooltips
+    self._tooltipPresenter = new TooltipPresenter(self._localStorageKeeper);
+    self._tooltipPresenter.initialize();
 
     // Initialize update utility and check for updates (fails silently if offline)
     self._updateUtil = new UpdateUtil();
