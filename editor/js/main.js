@@ -148,7 +148,7 @@ class TooltipPresenter {
     const elements = document.querySelectorAll("[data-tippy-content]");
     elements.forEach(function (element) {
       const instance = tippy(element, {
-        appendTo: "parent"
+        appendTo: "parent",
       });
       self._tooltipInstances.set(element, instance);
     });
