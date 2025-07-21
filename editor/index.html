@@ -182,25 +182,23 @@
           ⚠️ Note: this prototype is outdated. We will be releasing the beta version shortly.
         </p>
 
-        <p id="welcome-preferences">
-          <div class="privacy-preferences">
-            <label>
-              <input type="checkbox" id="privacy-confirmation-check" checked />
-              🔒 Data not shared or remotely stored
-            </label>
-          </div>
-          
-          <div class="storage-preferences">
-            <label>
-              <input type="checkbox" id="save-preferences-checkbox" checked>
-              💾 Save preferences and simulation locally
-            </label>
-            <label>
-              <input type="checkbox" id="tooltip-preference-check" checked>
-              ℹ️ Show help tooltips
-            </label>
-          </div>
-        </p>
+        <div class="privacy-preferences">
+          <label>
+            <input type="checkbox" id="privacy-confirmation-check" checked>
+            🔒 Data not shared or remotely stored
+          </label>
+        </div>
+
+        <div class="storage-preferences">
+          <label>
+            <input type="checkbox" id="save-preferences-checkbox" checked>
+            💾 Save preferences and simulation locally
+          </label>
+          <label>
+            <input type="checkbox" id="tooltip-preference-check" checked>
+            ℹ️ Show help tooltips
+          </label>
+        </div>
 
         <div id="initial-loading-indicator">
           <img src="/style/90-ring.svg" alt="Loading indicator" /> Loading please wait...
@@ -389,13 +387,13 @@
                             <div><label>Enabled Streams:</label></div>
                             <div class="checkbox-list">
                               <div>
-                                <label><input type="checkbox" name="enable-import" class="enable-import-checkbox" /> Import</label>
+                                <label><input type="checkbox" name="enable-import" class="enable-import-checkbox" data-tippy-content="Substance and / or equipment imported from outside the country." /> Import</label>
                               </div>
                               <div>
-                                <label><input type="checkbox" name="enable-domestic" class="enable-domestic-checkbox" /> Domestic</label>
+                                <label><input type="checkbox" name="enable-domestic" class="enable-domestic-checkbox" data-tippy-content="Substance and / or equipment produced and consumed entirely within the country." /> Domestic</label>
                               </div>
                               <div>
-                                <label><input type="checkbox" name="enable-export" class="enable-export-checkbox" /> Export</label>
+                                <label><input type="checkbox" name="enable-export" class="enable-export-checkbox" data-tippy-content="Substance and / or equipment produced within the country but then exported." /> Export</label>
                               </div>
                             </div>
                           </div>

@@ -855,11 +855,13 @@ select option[disabled] {
   color: #666;
 }
 
-/* Storage preferences styling for tooltip checkbox */
+/* Unified preferences styling for all preference checkboxes */
+.privacy-preferences,
 .storage-preferences {
   margin: 10px 0;
 }
 
+.privacy-preferences label,
 .storage-preferences label {
   display: block;
   margin: 5px 0;
@@ -867,6 +869,8 @@ select option[disabled] {
   cursor: pointer;
 }
 
+.privacy-preferences input[type="checkbox"],
 .storage-preferences input[type="checkbox"] {
   margin-right: 8px;
 }
+

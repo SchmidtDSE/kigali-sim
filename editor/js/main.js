@@ -147,7 +147,9 @@ class TooltipPresenter {
     // Initialize tooltips on all elements with data-tippy-content
     const elements = document.querySelectorAll("[data-tippy-content]");
     elements.forEach(function (element) {
-      const instance = tippy(element);
+      const instance = tippy(element, {
+        appendTo: "parent"
+      });
       self._tooltipInstances.set(element, instance);
     });
   }
