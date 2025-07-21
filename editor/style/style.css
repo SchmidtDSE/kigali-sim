@@ -856,21 +856,23 @@ select option[disabled] {
 }
 
 /* Unified preferences styling for all preference checkboxes */
-.privacy-preferences,
-.storage-preferences {
+.check-preferences {
   margin: 10px 0;
 }
 
-.privacy-preferences label,
-.storage-preferences label {
+.check-preferences label {
   display: block;
   margin: 5px 0;
   font-size: 14px;
   cursor: pointer;
 }
 
-.privacy-preferences input[type="checkbox"],
-.storage-preferences input[type="checkbox"] {
+.check-preferences input[type="checkbox"] {
   margin-right: 8px;
+}
+
+/* Override dialog label bold styling for checkbox lists */
+dialog .checkbox-list label {
+  font-weight: normal;
 }
 
