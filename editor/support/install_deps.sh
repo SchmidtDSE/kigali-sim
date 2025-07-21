@@ -28,3 +28,5 @@ fi
 [ ! -e third_party/prism-tomorrow.min.css ] && wget https://cdnjs.cloudflare.com/ajax/libs/prism/1.30.0/themes/prism-tomorrow.min.css -O third_party/prism-tomorrow.min.css
 [ ! -e third_party/prism-core.min.js ] && wget https://cdnjs.cloudflare.com/ajax/libs/prism/1.30.0/components/prism-core.min.js -O third_party/prism-core.min.js
 [ ! -e third_party/prism-autoloader.min.js ] && wget https://cdnjs.cloudflare.com/ajax/libs/prism/1.30.0/plugins/autoloader/prism-autoloader.min.js -O third_party/prism-autoloader.min.js
+[ ! -e third_party/popper.min.js ] && wget https://unpkg.com/@popperjs/core@2.11.8/dist/umd/popper.min.js -O third_party/popper.min.js
+[ ! -e third_party/tippy-bundle.umd.min.js ] && wget https://unpkg.com/tippy.js@6.3.7/dist/tippy-bundle.umd.min.js -O third_party/tippy-bundle.umd.min.js

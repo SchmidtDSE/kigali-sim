@@ -25,6 +25,151 @@ const CLEAR_ALL_DATA_MESSAGE = [
 ].join(" ");
 
 /**
+ * Manages tooltip display and user preferences for help tooltips.
+ *
+ * Handles initialization, user preference storage, and tooltip lifecycle
+ * management using Tippy.js for accessible tooltip display.
+ */
+class TooltipPresenter {
+  /**
+   * Create a new tooltip presenter.
+   *
+   * @param {LocalStorageKeeper} storageKeeper - Storage manager for user preferences
+   */
+  constructor(storageKeeper) {
+    const self = this;
+    self._storageKeeper = storageKeeper;
+    self._tooltipInstances = new Map();
+    self._enabled = self._loadPreference();
+    self._welcomeCheckbox = null;
+    self._footerButton = null;
+  }
+
+  /**
+   * Initialize the tooltip system.
+   *
+   * Sets up preference controls and creates tooltips if enabled.
+   */
+  initialize() {
+    const self = this;
+    self._setupPreferenceControls();
+    if (self._enabled) {
+      self._createTooltips();
+    }
+  }
+
+  /**
+   * Toggle tooltip visibility.
+   *
+   * @param {boolean} enabled - Whether tooltips should be shown
+   */
+  setEnabled(enabled) {
+    const self = this;
+    self._enabled = enabled;
+    self._storageKeeper.setShowTooltips(enabled);
+
+    if (enabled) {
+      self._createTooltips();
+    } else {
+      self._destroyTooltips();
+    }
+
+    self._updateControls();
+  }
+
+  /**
+   * Get current tooltip enabled state.
+   *
+   * @returns {boolean} Whether tooltips are currently enabled
+   */
+  isEnabled() {
+    const self = this;
+    return self._enabled;
+  }
+
+  /**
+   * Load tooltip preference from storage.
+   *
+   * @returns {boolean} Tooltip preference (defaults to true)
+   * @private
+   */
+  _loadPreference() {
+    const self = this;
+    const stored = self._storageKeeper.getShowTooltips();
+    return stored !== null ? stored : true; // Default to enabled
+  }
+
+  /**
+   * Setup preference control elements and event handlers.
+   *
+   * @private
+   */
+  _setupPreferenceControls() {
+    const self = this;
+
+    // Welcome screen checkbox
+    self._welcomeCheckbox = document.getElementById("tooltip-preference-check");
+    self._welcomeCheckbox.checked = self._enabled;
+    self._welcomeCheckbox.addEventListener("change", function (event) {
+      self.setEnabled(event.target.checked);
+    });
+
+    // Footer toggle button
+    self._footerButton = document.getElementById("tooltip-toggle-button");
+    self._updateControls();
+    self._footerButton.addEventListener("click", function (event) {
+      event.preventDefault();
+      self.setEnabled(!self._enabled);
+    });
+  }
+
+  /**
+   * Update control elements to reflect current state.
+   *
+   * @private
+   */
+  _updateControls() {
+    const self = this;
+
+    self._welcomeCheckbox.checked = self._enabled;
+    self._footerButton.textContent = self._enabled ?
+      "Disable Help Tooltips" : "Enable Help Tooltips";
+  }
+
+  /**
+   * Create tooltips for all target elements.
+   *
+   * @private
+   */
+  _createTooltips() {
+    const self = this;
+
+    // Initialize tooltips on all elements with data-tippy-content
+    const elements = document.querySelectorAll("[data-tippy-content]");
+    elements.forEach(function (element) {
+      const instance = tippy(element, {
+        appendTo: "parent",
+      });
+      self._tooltipInstances.set(element, instance);
+    });
+  }
+
+  /**
+   * Destroy all tooltip instances.
+   *
+   * @private
+   */
+  _destroyTooltips() {
+    const self = this;
+
+    self._tooltipInstances.forEach(function (instance) {
+      instance.destroy();
+    });
+    self._tooltipInstances.clear();
+  }
+}
+
+/**
  * Manages the running indicator and progress bar display.
  */
 class RunningIndicatorPresenter {
@@ -210,6 +355,10 @@ class MainPresenter {
     self._onCodeChange();
     self._setupFileButtons();
     self._setupStorageControls();
+
+    // Initialize tooltip presenter for help tooltips
+    self._tooltipPresenter = new TooltipPresenter(self._localStorageKeeper);
+    self._tooltipPresenter.initialize();
 
     // Initialize update utility and check for updates (fails silently if offline)
     self._updateUtil = new UpdateUtil();
