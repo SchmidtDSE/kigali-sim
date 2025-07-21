@@ -1780,12 +1780,6 @@ class PolicyListPresenter {
     const limits = getListInput(self._dialog.querySelector(".limit-list"), readLimitCommandUi);
     limits.forEach((command) => builder.addCommand(command));
 
-    const recharges = getListInput(
-      self._dialog.querySelector(".recharge-list"),
-      readRechargeCommandUi,
-    );
-    recharges.forEach((command) => builder.addCommand(command));
-
     const substance = builder.build(true);
     const application = new Application(applicationName, [substance], true, true);
     const policy = new DefinitionalStanza(policyName, [application], true, true);
@@ -2751,6 +2745,9 @@ function initRecycleCommandUi(itemObj, root, codeObj, context, streamUpdater) {
   setFieldValue(root.querySelector(".displacing-input"), itemObj, "", (x) =>
     x && x.getDisplacing ? (x.getDisplacing() === null ? "" : x.getDisplacing()) : "",
   );
+  setFieldValue(root.querySelector(".recycle-stage-input"), itemObj, "recharge", (x) =>
+    x && x.getStage ? x.getStage() : "recharge",
+  );
   setDuring(root.querySelector(".duration-subcomponent"), itemObj, new YearMatcher(2, 10), true);
 }
 
@@ -2771,8 +2768,9 @@ function readRecycleCommandUi(root) {
   );
   const displacingRaw = getFieldValue(root.querySelector(".displacing-input"));
   const displacing = displacingRaw === "" ? null : displacingRaw;
+  const stage = getFieldValue(root.querySelector(".recycle-stage-input"));
   const duration = readDurationUi(root.querySelector(".duration-subcomponent"));
-  return new RecycleCommand(collection, reuse, duration, displacing);
+  return new RecycleCommand(collection, reuse, duration, displacing, stage);
 }
 
 /**

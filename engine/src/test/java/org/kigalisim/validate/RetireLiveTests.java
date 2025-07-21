@@ -106,4 +106,48 @@ public class RetireLiveTests {
     assertEquals("units", resultYear1.getPopulation().getUnits(),
         "Equipment units should be units");
   }
+
+  /**
+   * Test that multiple retire commands are additive and properly trigger recalculation.
+   */
+  @Test
+  public void testAdditiveRetire() throws IOException {
+    // Load and parse the QTA file
+    String qtaPath = "../examples/test_additive_retire.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    // Run the scenario using KigaliSimFacade
+    String scenarioName = "business as usual";
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
+
+    List<EngineResult> resultsList = results.collect(Collectors.toList());
+
+    // Check year 1 equipment (population) value
+    EngineResult resultYear1 = LiveTestsUtil.getResult(resultsList.stream(), 1, "test", "test");
+    assertNotNull(resultYear1, "Should have result for test/test in year 1");
+    
+    // Initial: 100 units * 2 kg/unit = 200 kg
+    // Retire: 5 kg + 10 kg = 15 kg total
+    // Expected remaining: 200 - 15 = 185 kg
+    // In units: 185 kg / 2 kg/unit = 92.5 units
+    assertEquals(92.5, resultYear1.getPopulation().getValue().doubleValue(), 0.0001,
+        "Equipment should be 92.5 units after additive retire commands (15 kg total)");
+    assertEquals("units", resultYear1.getPopulation().getUnits(),
+        "Equipment units should be units");
+
+    // Check year 2 - retire commands should continue to be additive with sales carryover
+    EngineResult resultYear2 = LiveTestsUtil.getResult(resultsList.stream(), 2, "test", "test");
+    assertNotNull(resultYear2, "Should have result for test/test in year 2");
+    
+    // Year 2: Starting with 92.5 units from year 1 (185 kg)
+    // New sales: 100 units (200 kg) added in year 2
+    // Total before retire: 185 + 200 = 385 kg
+    // Retire commands apply again: 15 kg total (5 kg + 10 kg)
+    // Expected remaining: 385 - 15 = 370 kg = 185 units
+    assertEquals(185.0, resultYear2.getPopulation().getValue().doubleValue(), 0.0001,
+        "Equipment should be 185 units in year 2 (92.5 from year 1 + 100 new sales - 7.5 retired)");
+    assertEquals("units", resultYear2.getPopulation().getUnits(),
+        "Equipment units should be units");
+  }
 }
