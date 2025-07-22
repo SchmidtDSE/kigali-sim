@@ -2101,6 +2101,19 @@ class RechargeCommand {
   }
 
   /**
+   * Get the duration for which this recharge command applies.
+   *
+   * @returns {YearMatcher} The duration specification, or null for all years.
+   */
+  getDuration() {
+    const self = this;
+    if (self._durationType === null) {
+      return null;
+    }
+    return new YearMatcher(self._yearStart, self._yearEnd);
+  }
+
+  /**
    * Build the command string for this recharge.
    *
    * @param {string} substance - The substance name (unused but kept for consistency).
@@ -2382,7 +2395,8 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
     const raw = ctx.getText();
     const signMultiplier = raw.includes("-") ? -1 : 1;
     const bodyRawText = ctx.getChild(ctx.getChildCount() - 1).getText();
-    const bodyParsed = signMultiplier * parseFloat(bodyRawText);
+    const cleanedText = bodyRawText.replace(/,/g, "");
+    const bodyParsed = signMultiplier * parseFloat(cleanedText);
 
     return bodyParsed;
   }
