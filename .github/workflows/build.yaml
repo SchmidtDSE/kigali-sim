@@ -53,7 +53,7 @@ jobs:
       - name: Copy guide
         run: cp -r ./docs/guide ./editor/deploy/guide
       - name: Update cache busters
-        run: bash ./support/update_cache_busters.sh
+        run: bash ./support/update_version.sh
         working-directory: ./editor
   buildEngine:
     environment: Build
@@ -262,7 +262,7 @@ jobs:
       - name: Copy WASM files
         run: cp -r ./editor/wasm ./editor/deploy/wasm
       - name: Update cache busters
-        run: bash ./support/update_cache_busters.sh
+        run: bash ./support/update_version.sh
         working-directory: ./editor
       - name: Upload deploy artifact
         uses: actions/upload-artifact@v4
