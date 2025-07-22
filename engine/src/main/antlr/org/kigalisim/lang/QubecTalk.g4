@@ -262,6 +262,10 @@ YEAR_: 'year';
 
 YEARS_: 'years';
 
+YR_: 'yr';
+
+YRS_: 'yrs';
+
 /**
  * -----------
  * -- Other --
@@ -284,7 +288,7 @@ volumeUnit: (KG_ | MT_ | TCO2E_ | KWH_ | UNIT_ | UNITS_);
 
 relativeUnit: (PERCENT_);
 
-temporalUnit: (YEAR_ | YEARS_| MONTH_ | MONTHS_ | DAY_ | DAYS_);
+temporalUnit: (YEAR_ | YEARS_ | YR_ | YRS_ | MONTH_ | MONTHS_ | DAY_ | DAYS_);
 
 unit: (volumeUnit | relativeUnit | temporalUnit);
 

@@ -28,7 +28,7 @@ ace.define("ace/mode/qubectalk", [
 
     // Units
     const units = "annually|beginning|day|days|each|kg|kwh|month|months|mt|onwards|percent|" +
-      "tCO2e|unit|units|year|years";
+      "tCO2e|unit|units|year|years|yr|yrs";
 
     // Special keywords
     const specialKeywords = "equals|displacing";
