@@ -130,7 +130,7 @@ public class UnitConverter {
       case "unit", "units" -> toUnits(input);
       case "tCO2e" -> toGhgConsumption(input);
       case "kwh" -> toEnergyConsumption(input);
-      case "year", "years" -> toYears(input);
+      case "year", "years", "yr", "yrs" -> toYears(input);
       case "%" -> toPercent(input);
       default -> throw new IllegalArgumentException(
           "Unsupported destination numerator units: " + destinationUnits);
@@ -151,7 +151,7 @@ public class UnitConverter {
       case "unit", "units" -> convert(stateGetter.getPopulation(), destinationUnits);
       case "tCO2e" -> convert(stateGetter.getGhgConsumption(), "tCO2e");
       case "kwh" -> convert(stateGetter.getEnergyConsumption(), "kwh");
-      case "year", "years" -> convert(stateGetter.getYearsElapsed(), destinationUnits);
+      case "year", "years", "yr", "yrs" -> convert(stateGetter.getYearsElapsed(), destinationUnits);
       case "" -> new EngineNumber(BigDecimal.ONE, "");
       default -> throw new IllegalArgumentException(
           "Unsupported destination denominator units: " + destinationUnits);
@@ -193,7 +193,21 @@ public class UnitConverter {
 
     Map<String, BigDecimal> yearScales = new HashMap<>();
     yearScales.put("years", BigDecimal.ONE);
+    yearScales.put("yr", BigDecimal.ONE);
+    yearScales.put("yrs", BigDecimal.ONE);
     scaleMap.put("year", yearScales);
+
+    Map<String, BigDecimal> yrScales = new HashMap<>();
+    yrScales.put("year", BigDecimal.ONE);
+    yrScales.put("years", BigDecimal.ONE);
+    yrScales.put("yrs", BigDecimal.ONE);
+    scaleMap.put("yr", yrScales);
+
+    Map<String, BigDecimal> yrsScales = new HashMap<>();
+    yrsScales.put("year", BigDecimal.ONE);
+    yrsScales.put("years", BigDecimal.ONE);
+    yrsScales.put("yr", BigDecimal.ONE);
+    scaleMap.put("yrs", yrsScales);
 
     Map<String, BigDecimal> sourceScales = scaleMap.get(source);
     if (sourceScales != null) {
@@ -425,7 +439,9 @@ public class UnitConverter {
 
     if ("years".equals(currentUnits)) {
       return target;
-    } else if ("year".equals(currentUnits)) {
+    } else if ("year".equals(currentUnits) || "yr".equals(currentUnits)) {
+      return new EngineNumber(target.getValue(), "years");
+    } else if ("yrs".equals(currentUnits)) {
       return new EngineNumber(target.getValue(), "years");
     } else if ("tCO2e".equals(currentUnits)) {
       BigDecimal perYearConsumptionValue = stateGetter.getGhgConsumption().getValue();
@@ -472,7 +488,7 @@ public class UnitConverter {
 
     if ("%".equals(currentUnits)) {
       return target;
-    } else if ("years".equals(currentUnits) || "year".equals(currentUnits)) {
+    } else if ("years".equals(currentUnits) || "year".equals(currentUnits) || "yr".equals(currentUnits) || "yrs".equals(currentUnits)) {
       total = stateGetter.getYearsElapsed();
     } else if ("tCO2e".equals(currentUnits)) {
       total = stateGetter.getGhgConsumption();
@@ -543,7 +559,10 @@ public class UnitConverter {
     String currentUnits = target.getUnits();
     String normalizedCurrentUnits = normalizeUnitString(currentUnits);
 
-    if (!normalizedCurrentUnits.endsWith("/year")) {
+    boolean isPerYear = normalizedCurrentUnits.endsWith("/year");
+    boolean isPerYr = normalizedCurrentUnits.endsWith("/yr");
+    boolean isPerYrs = normalizedCurrentUnits.endsWith("/yrs");
+    if (!isPerYear && !isPerYr && !isPerYrs) {
       return target;
     }
 
