@@ -108,4 +108,32 @@ public class QubecTalkParserTest {
     assertFalse(result.hasErrors(), "Parse result should not have errors for enable with set statements");
     assertTrue(result.getProgram().isPresent(), "Parse result should have a program");
   }
+
+  /**
+   * Test that parsing numbers with commas works correctly.
+   */
+  @Test
+  public void testParseNumbersWithCommas() {
+    String code = """
+        start default
+
+        define application "Test"
+
+          uses substance "TestSub"
+            enable domestic
+            set domestic to 1,000 kg
+            set import to 12,34.5,6 kg
+            recharge 1,5 % each year with ,123 kg / unit
+          end substance
+
+        end application
+
+        end default
+        """;
+    ParseResult result = parser.parse(code);
+
+    assertNotNull(result, "Parse result should not be null");
+    assertFalse(result.hasErrors(), "Parse result should not have errors for comma numbers");
+    assertTrue(result.getProgram().isPresent(), "Parse result should have a program");
+  }
 }
