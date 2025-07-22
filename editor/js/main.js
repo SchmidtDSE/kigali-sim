@@ -666,7 +666,10 @@ class MainPresenter {
     try {
       const updateAvailable = await self._updateUtil.checkForUpdates();
       if (updateAvailable) {
-        await self._updateUtil.showUpdateDialog();
+        // Wait for service worker to cache new files before offering reload
+        setTimeout(() => {
+          self._updateUtil.showUpdateDialog();
+        }, 5000);
       }
     } catch (error) {
       // Fail silently - likely due to offline
