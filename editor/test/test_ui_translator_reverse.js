@@ -338,18 +338,18 @@ function buildUiTranslatorReverseTests() {
 
     QUnit.test("allows multiple change statements", function (assert) {
       const commands = [
-        new Command("change", "domestic", new EngineNumber("+1", "mt each year"), null),
-        new Command("change", "import", new EngineNumber("+2", "mt each year"), null),
-        new Command("change", "sales", new EngineNumber("+3", "mt each year"), null),
+        new Command("change", "domestic", new EngineNumber("+1", "mt / yr"), null),
+        new Command("change", "import", new EngineNumber("+2", "mt / yr"), null),
+        new Command("change", "sales", new EngineNumber("+3", "mt / yr"), null),
       ];
       const substance = createWithCommands("test", false, commands);
       assert.ok(substance.getIsCompatible());
 
       if (substance.getIsCompatible()) {
         const code = substance.toCode(0);
-        assert.notEqual(code.indexOf("change domestic by +1 mt each year"), -1);
-        assert.notEqual(code.indexOf("change import by +2 mt each year"), -1);
-        assert.notEqual(code.indexOf("change sales by +3 mt each year"), -1);
+        assert.notEqual(code.indexOf("change domestic by +1 mt / yr"), -1);
+        assert.notEqual(code.indexOf("change import by +2 mt / yr"), -1);
+        assert.notEqual(code.indexOf("change sales by +3 mt / yr"), -1);
       }
     });
 

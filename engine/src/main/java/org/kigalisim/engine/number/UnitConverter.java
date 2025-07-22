@@ -211,10 +211,10 @@ public class UnitConverter {
   private EngineNumber toKg(EngineNumber target) {
     EngineNumber asVolume = toVolume(target);
     String currentUnits = asVolume.getUnits();
-    if ("mt".equals(currentUnits)) {
+    if ("mt".equals(currentUnits) || "mteachyear".equals(currentUnits)) {
       return new EngineNumber(asVolume.getValue().multiply(KG_TO_MT_FACTOR), "kg");
-    } else if ("kg".equals(currentUnits)) {
-      return asVolume;
+    } else if ("kg".equals(currentUnits) || "kgeachyear".equals(currentUnits)) {
+      return new EngineNumber(asVolume.getValue(), "kg");
     } else {
       throw new IllegalArgumentException("Unexpected units " + currentUnits);
     }
@@ -229,10 +229,10 @@ public class UnitConverter {
   private EngineNumber toMt(EngineNumber target) {
     EngineNumber asVolume = toVolume(target);
     String currentUnits = asVolume.getUnits();
-    if ("kg".equals(currentUnits)) {
+    if ("kg".equals(currentUnits) || "kgeachyear".equals(currentUnits)) {
       return new EngineNumber(asVolume.getValue().divide(KG_TO_MT_FACTOR, MATH_CONTEXT), "mt");
-    } else if ("mt".equals(currentUnits)) {
-      return asVolume;
+    } else if ("mt".equals(currentUnits) || "mteachyear".equals(currentUnits)) {
+      return new EngineNumber(asVolume.getValue(), "mt");
     } else {
       throw new IllegalArgumentException("Unexpected units " + currentUnits);
     }
