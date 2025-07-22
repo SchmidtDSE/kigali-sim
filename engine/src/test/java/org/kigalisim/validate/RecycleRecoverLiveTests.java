@@ -728,7 +728,7 @@ public class RecycleRecoverLiveTests {
   }
 
   /**
-   * Test that retire commands work correctly after recycle at EOL and apply recycling 
+   * Test that retire commands work correctly after recycle at EOL and apply recycling
    * through existing recalculation logic.
    */
   @Test
@@ -748,7 +748,7 @@ public class RecycleRecoverLiveTests {
     // Check year 1 - retire command should be working
     EngineResult bauYear1 = LiveTestsUtil.getResult(bauResultsList.stream(), 1, "test", "test");
     EngineResult policyYear1 = LiveTestsUtil.getResult(policyResultsList.stream(), 1, "test", "test");
-    
+
     assertNotNull(bauYear1, "Should have BAU result for year 1");
     assertNotNull(policyYear1, "Should have policy result for year 1");
 
@@ -758,14 +758,14 @@ public class RecycleRecoverLiveTests {
         "Equipment should be 50 units after 20% retire in year 1");
 
     // Year 1 should be the same for both scenarios (no policy differences yet)
-    assertEquals(bauYear1.getPopulation().getValue().doubleValue(), 
+    assertEquals(bauYear1.getPopulation().getValue().doubleValue(),
                 policyYear1.getPopulation().getValue().doubleValue(), 0.0001,
                 "Year 1 population should be the same for both scenarios");
 
     // Check year 2 - recycling at EOL active in policy scenario
     EngineResult bauYear2 = LiveTestsUtil.getResult(bauResultsList.stream(), 2, "test", "test");
     EngineResult policyYear2 = LiveTestsUtil.getResult(policyResultsList.stream(), 2, "test", "test");
-    
+
     assertNotNull(bauYear2, "Should have BAU result for year 2");
     assertNotNull(policyYear2, "Should have policy result for year 2");
 
@@ -776,7 +776,7 @@ public class RecycleRecoverLiveTests {
     // Check year 3 - additional retire command applied in policy scenario
     EngineResult bauYear3 = LiveTestsUtil.getResult(bauResultsList.stream(), 3, "test", "test");
     EngineResult policyYear3 = LiveTestsUtil.getResult(policyResultsList.stream(), 3, "test", "test");
-    
+
     assertNotNull(bauYear3, "Should have BAU result for year 3");
     assertNotNull(policyYear3, "Should have policy result for year 3");
 
@@ -784,7 +784,7 @@ public class RecycleRecoverLiveTests {
     // The retire command should apply recycling since retire would have been zero previously
     double bauPopulation3 = bauYear3.getPopulation().getValue().doubleValue();
     double policyPopulation3 = policyYear3.getPopulation().getValue().doubleValue();
-    
+
     assertTrue(policyPopulation3 < bauPopulation3,
         String.format("Policy population in year 3 (%.2f) should be less than BAU (%.2f) due to additional retire command",
                       policyPopulation3, bauPopulation3));

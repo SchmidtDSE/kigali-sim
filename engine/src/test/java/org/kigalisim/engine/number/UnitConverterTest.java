@@ -539,26 +539,117 @@ public class UnitConverterTest {
   public void testMtEachYearConversion() {
     StateGetter mockStateGetter = createMockStateGetter();
     lenient().when(mockStateGetter.getVolume()).thenReturn(new EngineNumber(1000, "kg"));
-    
+
     // Test that "mteachyear" (spaces removed from "mt each year") is handled
     EngineNumber source = new EngineNumber(new BigDecimal("2"), "mteachyear");
     EngineNumber result = convertUnits(source, "kg", mockStateGetter);
-    
+
     // Should convert 2 mt to 2000 kg
     assertCloseTo(2000, result.getValue(), 0.001);
     assertEquals("kg", result.getUnits());
   }
-  
+
   @Test
   public void testMtEachYearToMt() {
     StateGetter mockStateGetter = createMockStateGetter();
-    
+
     // Test conversion from mteachyear to mt
     EngineNumber source = new EngineNumber(new BigDecimal("3"), "mteachyear");
     EngineNumber result = convertUnits(source, "mt", mockStateGetter);
-    
+
     // Should convert directly (mteachyear treated as mt)
     assertCloseTo(3, result.getValue(), 0.001);
     assertEquals("mt", result.getUnits());
+  }
+
+  @Test
+  public void testYrToYears() {
+    EngineNumber result = convertUnits(
+        new EngineNumber(5, "yr"), "years", createMockStateGetter());
+
+    assertCloseTo(5, result.getValue(), 0.001);
+    assertEquals("years", result.getUnits());
+  }
+
+  @Test
+  public void testYrsToYear() {
+    EngineNumber result = convertUnits(
+        new EngineNumber(3, "yrs"), "year", createMockStateGetter());
+
+    assertCloseTo(3, result.getValue(), 0.001);
+    assertEquals("year", result.getUnits());
+  }
+
+  @Test
+  public void testYearToYr() {
+    EngineNumber result = convertUnits(
+        new EngineNumber(4, "year"), "yr", createMockStateGetter());
+
+    assertCloseTo(4, result.getValue(), 0.001);
+    assertEquals("yr", result.getUnits());
+  }
+
+  @Test
+  public void testYearsToYrs() {
+    EngineNumber result = convertUnits(
+        new EngineNumber(7, "years"), "yrs", createMockStateGetter());
+
+    assertCloseTo(7, result.getValue(), 0.001);
+    assertEquals("yrs", result.getUnits());
+  }
+
+  @Test
+  public void testCompoundUnitsWithYr() {
+    StateGetter mockStateGetter = createMockStateGetter();
+    lenient().when(mockStateGetter.getYearsElapsed()).thenReturn(new EngineNumber(2, "years"));
+
+    EngineNumber result = convertUnits(new EngineNumber(20, "kg / yr"), "kg", mockStateGetter);
+
+    assertCloseTo(40, result.getValue(), 0.001);
+    assertEquals("kg", result.getUnits());
+  }
+
+  @Test
+  public void testCompoundUnitsWithYrs() {
+    StateGetter mockStateGetter = createMockStateGetter();
+    lenient().when(mockStateGetter.getYearsElapsed()).thenReturn(new EngineNumber(3, "years"));
+
+    EngineNumber result = convertUnits(new EngineNumber(15, "units / yrs"), "units", mockStateGetter);
+
+    assertCloseTo(45, result.getValue(), 0.001);
+    assertEquals("units", result.getUnits());
+  }
+
+  @Test
+  public void testPercentPerYr() {
+    StateGetter mockStateGetter = createMockStateGetter();
+    lenient().when(mockStateGetter.getYearsElapsed()).thenReturn(new EngineNumber(2, "years"));
+
+    EngineNumber result = convertUnits(new EngineNumber(25, "% / yr"), "%", mockStateGetter);
+
+    assertCloseTo(50, result.getValue(), 0.001);
+    assertEquals("%", result.getUnits());
+  }
+
+  @Test
+  public void testGhgConsumptionToYr() {
+    StateGetter mockStateGetter = createMockStateGetter();
+    lenient().when(mockStateGetter.getGhgConsumption()).thenReturn(new EngineNumber(5, "tCO2e"));
+
+    EngineNumber result = convertUnits(new EngineNumber(10, "tCO2e"), "yr", mockStateGetter);
+
+    assertCloseTo(2, result.getValue(), 0.001);
+    assertEquals("yr", result.getUnits());
+  }
+
+  @Test
+  public void testEnergyConsumptionToYrs() {
+    StateGetter mockStateGetter = createMockStateGetter();
+    lenient().when(mockStateGetter.getEnergyConsumption()).thenReturn(new EngineNumber(8, "kwh"));
+
+    EngineNumber result = convertUnits(new EngineNumber(16, "kwh"), "yrs", mockStateGetter);
+
+    assertCloseTo(2, result.getValue(), 0.001);
+    assertEquals("yrs", result.getUnits());
   }
 }
