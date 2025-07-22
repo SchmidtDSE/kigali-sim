@@ -2395,7 +2395,8 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
     const raw = ctx.getText();
     const signMultiplier = raw.includes("-") ? -1 : 1;
     const bodyRawText = ctx.getChild(ctx.getChildCount() - 1).getText();
-    const bodyParsed = signMultiplier * parseFloat(bodyRawText);
+    const cleanedText = bodyRawText.replace(/,/g, "");
+    const bodyParsed = signMultiplier * parseFloat(cleanedText);
 
     return bodyParsed;
   }

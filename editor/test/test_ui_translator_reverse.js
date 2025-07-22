@@ -378,6 +378,23 @@ function buildUiTranslatorReverseTests() {
       const substance = createWithCommands("test", false, commands);
       assert.ok(!substance.getIsCompatible());
     });
+
+    QUnit.test("handles numbers with commas correctly", function (assert) {
+      const commands = [
+        new Command("setVal", "domestic", new EngineNumber("1,000", "kg"), null),
+        new Command("setVal", "import", new EngineNumber("12,34.5,6", "mt"), null),
+        new Command("change", "sales", new EngineNumber(",123", "kg"), null),
+      ];
+      const substance = createWithCommands("test", false, commands);
+      assert.ok(substance.getIsCompatible());
+
+      if (substance.getIsCompatible()) {
+        const code = substance.toCode(0);
+        assert.notEqual(code.indexOf("set domestic to 1,000 kg"), -1);
+        assert.notEqual(code.indexOf("set import to 12,34.5,6 mt"), -1);
+        assert.notEqual(code.indexOf("change sales by ,123 kg"), -1);
+      }
+    });
   });
 }
 

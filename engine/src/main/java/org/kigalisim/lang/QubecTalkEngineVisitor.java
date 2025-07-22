@@ -76,7 +76,8 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
    */
   @Override public Fragment visitNumber(QubecTalkParser.NumberContext ctx) {
     String rawText = ctx.getText();
-    BigDecimal numberRaw = new BigDecimal(rawText);
+    String cleanedText = rawText.replace(",", "");
+    BigDecimal numberRaw = new BigDecimal(cleanedText);
     EngineNumber number = new EngineNumber(numberRaw, "");
     Operation calculation = new PreCalculatedOperation(number);
     return new OperationFragment(calculation);
