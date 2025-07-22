@@ -539,24 +539,24 @@ public class UnitConverterTest {
   public void testMtEachYearConversion() {
     StateGetter mockStateGetter = createMockStateGetter();
     lenient().when(mockStateGetter.getVolume()).thenReturn(new EngineNumber(1000, "kg"));
-    
+
     // Test that "mteachyear" (spaces removed from "mt each year") is handled
     EngineNumber source = new EngineNumber(new BigDecimal("2"), "mteachyear");
     EngineNumber result = convertUnits(source, "kg", mockStateGetter);
-    
+
     // Should convert 2 mt to 2000 kg
     assertCloseTo(2000, result.getValue(), 0.001);
     assertEquals("kg", result.getUnits());
   }
-  
+
   @Test
   public void testMtEachYearToMt() {
     StateGetter mockStateGetter = createMockStateGetter();
-    
+
     // Test conversion from mteachyear to mt
     EngineNumber source = new EngineNumber(new BigDecimal("3"), "mteachyear");
     EngineNumber result = convertUnits(source, "mt", mockStateGetter);
-    
+
     // Should convert directly (mteachyear treated as mt)
     assertCloseTo(3, result.getValue(), 0.001);
     assertEquals("mt", result.getUnits());

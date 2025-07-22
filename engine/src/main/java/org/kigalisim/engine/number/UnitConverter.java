@@ -63,9 +63,23 @@ public class UnitConverter {
    * @param unitString The unit string to check
    * @return True if the unit represents years, false otherwise
    */
-  private static boolean isYearsUnitStr(String unitString) {
-    return "year".equals(unitString) || "years".equals(unitString) ||
-           "yr".equals(unitString) || "yrs".equals(unitString);
+  private boolean isYearsUnitStr(String unitString) {
+    return switch (unitString) {
+      case "year", "years", "yr", "yrs" -> true;
+      default -> false;
+    };
+  }
+
+  /**
+   * Check if a normalized unit string ends with a per-year denominator.
+   *
+   * @param normalizedUnits The normalized unit string to check
+   * @return True if the unit ends with per-year denominator, false otherwise
+   */
+  private boolean getEndsWithPerYear(String normalizedUnits) {
+    return normalizedUnits.endsWith("/year")
+        || normalizedUnits.endsWith("/yr")
+        || normalizedUnits.endsWith("/yrs");
   }
 
   /**
@@ -568,10 +582,7 @@ public class UnitConverter {
     String currentUnits = target.getUnits();
     String normalizedCurrentUnits = normalizeUnitString(currentUnits);
 
-    boolean isPerYear = normalizedCurrentUnits.endsWith("/year");
-    boolean isPerYr = normalizedCurrentUnits.endsWith("/yr");
-    boolean isPerYrs = normalizedCurrentUnits.endsWith("/yrs");
-    if (!isPerYear && !isPerYr && !isPerYrs) {
+    if (!getEndsWithPerYear(normalizedCurrentUnits)) {
       return target;
     }
 
