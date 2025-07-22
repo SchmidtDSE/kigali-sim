@@ -666,7 +666,8 @@ class MainPresenter {
     try {
       const updateAvailable = await self._updateUtil.checkForUpdates();
       if (updateAvailable) {
-        // Wait for service worker to cache new files before offering reload
+        // Wait for service worker to cache new files before offering reload.
+        // Also avoids access issue with disorientation.
         setTimeout(() => {
           self._updateUtil.showUpdateDialog();
         }, 5000);
