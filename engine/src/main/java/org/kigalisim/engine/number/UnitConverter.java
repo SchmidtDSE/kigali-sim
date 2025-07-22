@@ -58,6 +58,17 @@ public class UnitConverter {
   }
 
   /**
+   * Check if a unit string represents a years unit.
+   *
+   * @param unitString The unit string to check
+   * @return True if the unit represents years, false otherwise
+   */
+  private static boolean isYearsUnitStr(String unitString) {
+    return "year".equals(unitString) || "years".equals(unitString) ||
+           "yr".equals(unitString) || "yrs".equals(unitString);
+  }
+
+  /**
    * Convert a number to new units.
    *
    * @param source The EngineNumber to convert
@@ -439,9 +450,7 @@ public class UnitConverter {
 
     if ("years".equals(currentUnits)) {
       return target;
-    } else if ("year".equals(currentUnits) || "yr".equals(currentUnits)) {
-      return new EngineNumber(target.getValue(), "years");
-    } else if ("yrs".equals(currentUnits)) {
+    } else if (isYearsUnitStr(currentUnits)) {
       return new EngineNumber(target.getValue(), "years");
     } else if ("tCO2e".equals(currentUnits)) {
       BigDecimal perYearConsumptionValue = stateGetter.getGhgConsumption().getValue();
@@ -488,7 +497,7 @@ public class UnitConverter {
 
     if ("%".equals(currentUnits)) {
       return target;
-    } else if ("years".equals(currentUnits) || "year".equals(currentUnits) || "yr".equals(currentUnits) || "yrs".equals(currentUnits)) {
+    } else if (isYearsUnitStr(currentUnits)) {
       total = stateGetter.getYearsElapsed();
     } else if ("tCO2e".equals(currentUnits)) {
       total = stateGetter.getGhgConsumption();
