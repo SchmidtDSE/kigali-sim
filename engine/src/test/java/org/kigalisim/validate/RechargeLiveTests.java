@@ -417,17 +417,44 @@ public class RechargeLiveTests {
     assertEquals("kg", bauR600a2035.getDomestic().getUnits(), "R-600a sales should be in kg");
 
     // Print debug information
-    System.out.println("BAU HFC sales 2035: " + bauHfcSales2035);
-    System.out.println("Policy HFC sales 2035: " + policyHfcSales2035);
-    System.out.println("HFC drop: " + hfcDropRelativeToBau);
-    System.out.println("BAU R-600a sales 2035: " + bauR600aSales2035);
-    System.out.println("Policy R-600a sales 2035: " + policyR600aSales2035);
-    System.out.println("R-600a increase: " + r600aIncreaseRelativeToBau);
+    System.out.println("=== SALES COMPARISON ===");
+    System.out.println("BAU HFC sales 2035: " + bauHfcSales2035 + " kg");
+    System.out.println("Policy HFC sales 2035: " + policyHfcSales2035 + " kg");
+    System.out.println("HFC drop: " + hfcDropRelativeToBau + " kg");
+    System.out.println("BAU R-600a sales 2035: " + bauR600aSales2035 + " kg");
+    System.out.println("Policy R-600a sales 2035: " + policyR600aSales2035 + " kg");
+    System.out.println("R-600a increase: " + r600aIncreaseRelativeToBau + " kg");
+    
+    // Print equipment populations
+    System.out.println("\n=== EQUIPMENT POPULATIONS ===");
+    System.out.println("BAU HFC equipment 2035: " + bauHfc2035.getPopulation().getValue() + " " + bauHfc2035.getPopulation().getUnits());
+    System.out.println("Policy HFC equipment 2035: " + policyHfc2035.getPopulation().getValue() + " " + policyHfc2035.getPopulation().getUnits());
+    System.out.println("BAU R-600a equipment 2035: " + bauR600a2035.getPopulation().getValue() + " " + bauR600a2035.getPopulation().getUnits());
+    System.out.println("Policy R-600a equipment 2035: " + policyR600a2035.getPopulation().getValue() + " " + policyR600a2035.getPopulation().getUnits());
+    
+    // Print recharge emissions
+    System.out.println("\n=== RECHARGE EMISSIONS ===");
+    System.out.println("BAU HFC recharge emissions 2035: " + bauHfc2035.getRechargeEmissions().getValue() + " " + bauHfc2035.getRechargeEmissions().getUnits());
+    System.out.println("Policy HFC recharge emissions 2035: " + policyHfc2035.getRechargeEmissions().getValue() + " " + policyHfc2035.getRechargeEmissions().getUnits());
+    System.out.println("BAU R-600a recharge emissions 2035: " + bauR600a2035.getRechargeEmissions().getValue() + " " + bauR600a2035.getRechargeEmissions().getUnits());
+    System.out.println("Policy R-600a recharge emissions 2035: " + policyR600a2035.getRechargeEmissions().getValue() + " " + policyR600a2035.getRechargeEmissions().getUnits());
+    
+    // Calculate expected vs actual R-600a recharge emissions
+    double policyR600aEquipment = policyR600a2035.getPopulation().getValue().doubleValue();
+    double expectedR600aRechargeKg = policyR600aEquipment * 0.10 * 0.07; // 10% recharge rate * 0.07 kg/unit
+    double expectedR600aRechargeEmissions = expectedR600aRechargeKg * 3; // 3 tCO2e/kg
+    double actualR600aRechargeEmissions = policyR600a2035.getRechargeEmissions().getValue().doubleValue();
 
     // The displacement should be 1:1 - the drop in HFC-134a should equal the increase in R-600a
     assertEquals(hfcDropRelativeToBau, r600aIncreaseRelativeToBau, 1.0, 
         "Drop in HFC-134a (" + hfcDropRelativeToBau + " kg) should equal increase in R-600a (" + 
         r600aIncreaseRelativeToBau + " kg) relative to BAU values");
+
+    // BUG: Recharge emissions should be reasonable, not massively inflated due to displacement
+    // This assertion will FAIL until the displacement/recharge interaction bug is fixed
+    assertEquals(expectedR600aRechargeEmissions, actualR600aRechargeEmissions, expectedR600aRechargeEmissions * 0.1,
+        "R-600a recharge emissions are massively inflated due to displacement bug. Expected: " + 
+        expectedR600aRechargeEmissions + " tCO2e, but got: " + actualR600aRechargeEmissions + " tCO2e");
   }
 
 
