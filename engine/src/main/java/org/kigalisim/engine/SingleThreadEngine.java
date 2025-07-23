@@ -1013,7 +1013,7 @@ public class SingleThreadEngine implements Engine {
 
   /**
    * Change a stream value with proper displacement context for correct GWP calculations.
-   * 
+   *
    * <p>This method creates a custom recalc kit that uses the destination substance's
    * properties (GWP, initial charge, energy intensity) to ensure correct emissions
    * calculations during displacement operations.</p>
@@ -1026,44 +1026,44 @@ public class SingleThreadEngine implements Engine {
     // Get current value and calculate new value
     EngineNumber currentValue = getStream(stream, Optional.of(destinationScope), Optional.empty());
     UnitConverter unitConverter = createUnitConverterWithTotal(stream);
-    
+
     EngineNumber convertedDelta = unitConverter.convert(amount, currentValue.getUnits());
     BigDecimal newAmount = currentValue.getValue().add(convertedDelta.getValue());
     BigDecimal newAmountBound = newAmount.max(BigDecimal.ZERO);
-    
+
     // Warn when negative values are clamped to zero
     if (newAmount.compareTo(BigDecimal.ZERO) < 0) {
       System.err.println("WARNING: Negative stream value clamped to zero for stream " + stream);
     }
-    
+
     EngineNumber outputWithUnits = new EngineNumber(newAmountBound, currentValue.getUnits());
-    
+
     // Set the stream value without triggering standard recalc to avoid double calculation
     setStreamFor(stream, outputWithUnits, Optional.empty(), Optional.of(destinationScope), false, Optional.empty());
-    
+
     // Create custom recalc kit with destination substance's properties for correct GWP
     if ("sales".equals(stream) || "domestic".equals(stream) || "import".equals(stream)) {
       // Create overriding state getter with destination substance's properties
       OverridingConverterStateGetter customStateGetter = new OverridingConverterStateGetter(stateGetter);
-      
+
       // Override substance-specific properties to destination substance's values
       EngineNumber destGwp = streamKeeper.getGhgIntensity(destinationScope);
       // Use "domestic" for initial charge as it's a valid sales substream
       String chargeStream = "sales".equals(stream) ? "domestic" : stream;
       EngineNumber destInitialCharge = streamKeeper.getInitialCharge(destinationScope, chargeStream);
       EngineNumber destEnergyIntensity = streamKeeper.getEnergyIntensity(destinationScope);
-      
+
       customStateGetter.setSubstanceConsumption(destGwp);
       customStateGetter.setAmortizedUnitVolume(destInitialCharge);
       customStateGetter.setEnergyIntensity(destEnergyIntensity);
-      
+
       // Create custom recalc kit with the overriding state getter for displacement context
       RecalcKit customRecalcKit = new RecalcKitBuilder()
           .setStreamKeeper(streamKeeper)
           .setUnitConverter(new UnitConverter(customStateGetter))
           .setStateGetter(customStateGetter) // Use custom state getter for displacement context
           .build();
-      
+
       // Use implicit recharge only if we added recharge (units were used)
       boolean useImplicitRecharge = false; // Displacement operations don't add recharge
       RecalcOperationBuilder builder = new RecalcOperationBuilder()
@@ -1072,11 +1072,11 @@ public class SingleThreadEngine implements Engine {
           .setRecalcKit(customRecalcKit)
           .recalcPopulationChange()
           .thenPropagateToConsumption();
-      
+
       if (!OPTIMIZE_RECALCS) {
         builder = builder.thenPropagateToSales();
       }
-      
+
       RecalcOperation operation = builder.build();
       operation.execute(this);
     }
