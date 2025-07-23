@@ -359,6 +359,7 @@ public class RechargeLiveTests {
    */
   @Test
   public void testDisplaceDisproportionate() throws IOException {
+    System.out.println("=== Starting testDisplaceDisproportionate ===");
     String qtaPath = "../examples/displace_disproportionate.qta";
     ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
     assertNotNull(program, "Program should not be null");
@@ -425,25 +426,59 @@ public class RechargeLiveTests {
     System.out.println("Policy R-600a sales 2035: " + policyR600aSales2035 + " kg");
     System.out.println("R-600a increase: " + r600aIncreaseRelativeToBau + " kg");
     
-    // Print equipment populations
+    // Print equipment populations with changes
     System.out.println("\n=== EQUIPMENT POPULATIONS ===");
-    System.out.println("BAU HFC equipment 2035: " + bauHfc2035.getPopulation().getValue() + " " + bauHfc2035.getPopulation().getUnits());
-    System.out.println("Policy HFC equipment 2035: " + policyHfc2035.getPopulation().getValue() + " " + policyHfc2035.getPopulation().getUnits());
-    System.out.println("BAU R-600a equipment 2035: " + bauR600a2035.getPopulation().getValue() + " " + bauR600a2035.getPopulation().getUnits());
-    System.out.println("Policy R-600a equipment 2035: " + policyR600a2035.getPopulation().getValue() + " " + policyR600a2035.getPopulation().getUnits());
-    
-    // Print recharge emissions
-    System.out.println("\n=== RECHARGE EMISSIONS ===");
-    System.out.println("BAU HFC recharge emissions 2035: " + bauHfc2035.getRechargeEmissions().getValue() + " " + bauHfc2035.getRechargeEmissions().getUnits());
-    System.out.println("Policy HFC recharge emissions 2035: " + policyHfc2035.getRechargeEmissions().getValue() + " " + policyHfc2035.getRechargeEmissions().getUnits());
-    System.out.println("BAU R-600a recharge emissions 2035: " + bauR600a2035.getRechargeEmissions().getValue() + " " + bauR600a2035.getRechargeEmissions().getUnits());
-    System.out.println("Policy R-600a recharge emissions 2035: " + policyR600a2035.getRechargeEmissions().getValue() + " " + policyR600a2035.getRechargeEmissions().getUnits());
-    
-    // Calculate expected vs actual R-600a recharge emissions
+    double bauHfcEquipment = bauHfc2035.getPopulation().getValue().doubleValue();
+    double policyHfcEquipment = policyHfc2035.getPopulation().getValue().doubleValue();
+    double bauR600aEquipment = bauR600a2035.getPopulation().getValue().doubleValue();
     double policyR600aEquipment = policyR600a2035.getPopulation().getValue().doubleValue();
-    double expectedR600aRechargeKg = policyR600aEquipment * 0.10 * 0.07; // 10% recharge rate * 0.07 kg/unit
-    double expectedR600aRechargeEmissions = expectedR600aRechargeKg * 3; // 3 tCO2e/kg
-    double actualR600aRechargeEmissions = policyR600a2035.getRechargeEmissions().getValue().doubleValue();
+    
+    System.out.println("BAU HFC equipment 2035: " + bauHfcEquipment + " units");
+    System.out.println("Policy HFC equipment 2035: " + policyHfcEquipment + " units");
+    System.out.println("HFC equipment change: " + (policyHfcEquipment - bauHfcEquipment) + " units");
+    
+    System.out.println("BAU R-600a equipment 2035: " + bauR600aEquipment + " units");
+    System.out.println("Policy R-600a equipment 2035: " + policyR600aEquipment + " units");
+    System.out.println("R-600a equipment change: " + (policyR600aEquipment - bauR600aEquipment) + " units");
+    
+    // Calculate units from displaced volume
+    double hfcInitialCharge = 0.15; // kg/unit from QTA file
+    double r600aInitialCharge = 0.07; // kg/unit from QTA file
+    double displacedUnitsHfc = hfcDropRelativeToBau / hfcInitialCharge;
+    double expectedUnitsR600a = hfcDropRelativeToBau / r600aInitialCharge;
+    System.out.println("Displaced volume: " + hfcDropRelativeToBau + " kg = " + displacedUnitsHfc + " HFC units = " + expectedUnitsR600a + " R-600a units");
+    
+    // Print recharge emissions with GWP analysis
+    System.out.println("\n=== RECHARGE EMISSIONS ===");
+    double bauHfcRecharge = bauHfc2035.getRechargeEmissions().getValue().doubleValue();
+    double policyHfcRecharge = policyHfc2035.getRechargeEmissions().getValue().doubleValue();
+    double bauR600aRecharge = bauR600a2035.getRechargeEmissions().getValue().doubleValue();
+    double policyR600aRecharge = policyR600a2035.getRechargeEmissions().getValue().doubleValue();
+    
+    System.out.println("BAU HFC recharge emissions 2035: " + bauHfcRecharge + " tCO2e");
+    System.out.println("Policy HFC recharge emissions 2035: " + policyHfcRecharge + " tCO2e");
+    System.out.println("BAU R-600a recharge emissions 2035: " + bauR600aRecharge + " tCO2e");
+    System.out.println("Policy R-600a recharge emissions 2035: " + policyR600aRecharge + " tCO2e");
+    
+    // GWP analysis
+    double hfcGwp = 1430; // tCO2e/kg from QTA file
+    double r600aGwp = 3; // tCO2e/kg from QTA file
+    
+    // Calculate recharge amounts in kg
+    double policyR600aRechargeKg = policyR600aEquipment * 0.10 * r600aInitialCharge; // 10% recharge * 0.07 kg/unit
+    double expectedR600aEmissionsFromRecharge = policyR600aRechargeKg * r600aGwp;
+    double actualR600aEmissionsFromRecharge = policyR600aRecharge;
+    
+    System.out.println("\n=== GWP ANALYSIS ===");
+    System.out.println("HFC-134a GWP: " + hfcGwp + " tCO2e/kg");
+    System.out.println("R-600a GWP: " + r600aGwp + " tCO2e/kg");
+    System.out.println("Policy R-600a recharge volume: " + policyR600aRechargeKg + " kg");
+    System.out.println("Expected R-600a recharge emissions: " + expectedR600aEmissionsFromRecharge + " tCO2e");
+    System.out.println("Actual R-600a recharge emissions: " + actualR600aEmissionsFromRecharge + " tCO2e");
+    System.out.println("Amplification factor: " + (actualR600aEmissionsFromRecharge / expectedR600aEmissionsFromRecharge));
+    
+    // Use the values calculated above
+    double actualR600aRechargeEmissions = policyR600aRecharge;
 
     // The displacement should be 1:1 - the drop in HFC-134a should equal the increase in R-600a
     assertEquals(hfcDropRelativeToBau, r600aIncreaseRelativeToBau, 1.0, 
@@ -452,9 +487,9 @@ public class RechargeLiveTests {
 
     // BUG: Recharge emissions should be reasonable, not massively inflated due to displacement
     // This assertion will FAIL until the displacement/recharge interaction bug is fixed
-    assertEquals(expectedR600aRechargeEmissions, actualR600aRechargeEmissions, expectedR600aRechargeEmissions * 0.1,
+    assertEquals(expectedR600aEmissionsFromRecharge, actualR600aRechargeEmissions, expectedR600aEmissionsFromRecharge * 0.1,
         "R-600a recharge emissions are massively inflated due to displacement bug. Expected: " + 
-        expectedR600aRechargeEmissions + " tCO2e, but got: " + actualR600aRechargeEmissions + " tCO2e");
+        expectedR600aEmissionsFromRecharge + " tCO2e, but got: " + actualR600aRechargeEmissions + " tCO2e");
   }
 
 
