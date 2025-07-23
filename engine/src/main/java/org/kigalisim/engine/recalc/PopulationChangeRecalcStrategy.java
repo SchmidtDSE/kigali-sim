@@ -16,6 +16,7 @@ import org.kigalisim.engine.number.EngineNumber;
 import org.kigalisim.engine.number.UnitConverter;
 import org.kigalisim.engine.state.ConverterStateGetter;
 import org.kigalisim.engine.state.OverridingConverterStateGetter;
+import org.kigalisim.engine.state.StateGetter;
 import org.kigalisim.engine.state.UseKey;
 import org.kigalisim.engine.support.DivisionHelper;
 import org.kigalisim.engine.support.ExceptionsGenerator;
@@ -43,7 +44,7 @@ public class PopulationChangeRecalcStrategy implements RecalcStrategy {
 
   @Override
   public void execute(Engine target, RecalcKit kit) {
-    ConverterStateGetter baseStateGetter = kit.getStateGetter();
+    StateGetter baseStateGetter = kit.getStateGetter();
     OverridingConverterStateGetter stateGetter =
         new OverridingConverterStateGetter(baseStateGetter);
     UnitConverter unitConverter = new UnitConverter(stateGetter);

@@ -35,14 +35,26 @@ public class RechargeEmissionsRecalcStrategy implements RecalcStrategy {
   @Override
   public void execute(Engine target, RecalcKit kit) {
     UseKey scopeEffective = scope.orElse(target.getScope());
+    System.out.println("=== RECHARGE EMISSIONS DEBUG ===");
+    System.out.println("Scope effective: " + scopeEffective);
+    
     EngineNumber rechargeVolume = RechargeVolumeCalculator.calculateRechargeVolume(
         scopeEffective,
         kit.getStateGetter(),
         kit.getStreamKeeper(),
         target
     );
+    System.out.println("Calculated recharge volume: " + rechargeVolume);
+    
     UnitConverter unitConverter = kit.getUnitConverter();
+    System.out.println("StateGetter substance consumption (GWP): " + kit.getStateGetter().getSubstanceConsumption());
+    System.out.println("StateGetter amortized unit volume: " + kit.getStateGetter().getAmortizedUnitVolume());
+    
     EngineNumber rechargeGhg = unitConverter.convert(rechargeVolume, "tCO2e");
+    System.out.println("Converted to tCO2e: " + rechargeGhg);
+    
     target.setStreamFor("rechargeEmissions", rechargeGhg, Optional.empty(), Optional.of(scopeEffective), false, Optional.empty());
+    System.out.println("Set rechargeEmissions to: " + rechargeGhg);
+    System.out.println("=== END RECHARGE EMISSIONS DEBUG ===\n");
   }
 }
