@@ -11,7 +11,7 @@ package org.kigalisim.engine.recalc;
 
 import java.util.Optional;
 import org.kigalisim.engine.number.UnitConverter;
-import org.kigalisim.engine.state.ConverterStateGetter;
+import org.kigalisim.engine.state.StateGetter;
 import org.kigalisim.engine.state.StreamKeeper;
 
 /**
@@ -21,7 +21,7 @@ public class RecalcKitBuilder {
 
   private Optional<StreamKeeper> streamKeeper;
   private Optional<UnitConverter> unitConverter;
-  private Optional<ConverterStateGetter> stateGetter;
+  private Optional<StateGetter> stateGetter;
 
   /**
    * Create a new RecalcKitBuilder.
@@ -60,7 +60,7 @@ public class RecalcKitBuilder {
    * @param stateGetter The state getter to set
    * @return This builder for chaining
    */
-  public RecalcKitBuilder setStateGetter(ConverterStateGetter stateGetter) {
+  public RecalcKitBuilder setStateGetter(StateGetter stateGetter) {
     this.stateGetter = Optional.of(stateGetter);
     return this;
   }
@@ -79,7 +79,7 @@ public class RecalcKitBuilder {
       throw new IllegalStateException("UnitConverter is required");
     }
     if (stateGetter.isEmpty()) {
-      throw new IllegalStateException("ConverterStateGetter is required");
+      throw new IllegalStateException("StateGetter is required");
     }
     return new RecalcKit(streamKeeper.get(), unitConverter.get(), stateGetter.get());
   }

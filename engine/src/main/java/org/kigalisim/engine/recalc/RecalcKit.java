@@ -10,7 +10,7 @@
 package org.kigalisim.engine.recalc;
 
 import org.kigalisim.engine.number.UnitConverter;
-import org.kigalisim.engine.state.ConverterStateGetter;
+import org.kigalisim.engine.state.StateGetter;
 import org.kigalisim.engine.state.StreamKeeper;
 
 /**
@@ -20,7 +20,7 @@ public class RecalcKit {
 
   private final StreamKeeper streamKeeper;
   private final UnitConverter unitConverter;
-  private final ConverterStateGetter stateGetter;
+  private final StateGetter stateGetter;
 
   /**
    * Create a new RecalcKit.
@@ -30,7 +30,7 @@ public class RecalcKit {
    * @param stateGetter The state getter instance (required)
    */
   public RecalcKit(StreamKeeper streamKeeper, UnitConverter unitConverter,
-      ConverterStateGetter stateGetter) {
+      StateGetter stateGetter) {
     this.streamKeeper = streamKeeper;
     this.unitConverter = unitConverter;
     this.stateGetter = stateGetter;
@@ -59,7 +59,7 @@ public class RecalcKit {
    *
    * @return The state getter
    */
-  public ConverterStateGetter getStateGetter() {
+  public StateGetter getStateGetter() {
     return stateGetter;
   }
 }
