@@ -359,7 +359,6 @@ public class RechargeLiveTests {
    */
   @Test
   public void testDisplaceDisproportionate() throws IOException {
-    System.out.println("=== Starting testDisplaceDisproportionate ===");
     String qtaPath = "../examples/displace_disproportionate.qta";
     ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
     assertNotNull(program, "Program should not be null");

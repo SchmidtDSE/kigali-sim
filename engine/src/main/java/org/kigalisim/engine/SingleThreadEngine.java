@@ -1023,20 +1023,13 @@ public class SingleThreadEngine implements Engine {
    * @param destinationScope The scope for the destination substance
    */
   private void changeStreamWithDisplacementContext(String stream, EngineNumber amount, Scope destinationScope) {
-    System.out.println("=== DISPLACEMENT DEBUG: changeStreamWithDisplacementContext ===");
-    System.out.println("Stream: " + stream + ", Amount: " + amount + ", Destination: " + destinationScope);
-    
     // Get current value and calculate new value
     EngineNumber currentValue = getStream(stream, Optional.of(destinationScope), Optional.empty());
     UnitConverter unitConverter = createUnitConverterWithTotal(stream);
     
-    System.out.println("Current value: " + currentValue);
-    
     EngineNumber convertedDelta = unitConverter.convert(amount, currentValue.getUnits());
     BigDecimal newAmount = currentValue.getValue().add(convertedDelta.getValue());
     BigDecimal newAmountBound = newAmount.max(BigDecimal.ZERO);
-    
-    System.out.println("Converted delta: " + convertedDelta + ", New amount: " + newAmount);
     
     // Warn when negative values are clamped to zero
     if (newAmount.compareTo(BigDecimal.ZERO) < 0) {
@@ -1048,12 +1041,8 @@ public class SingleThreadEngine implements Engine {
     // Set the stream value without triggering standard recalc to avoid double calculation
     setStreamFor(stream, outputWithUnits, Optional.empty(), Optional.of(destinationScope), false, Optional.empty());
     
-    System.out.println("Set stream " + stream + " to: " + outputWithUnits);
-    
     // Create custom recalc kit with destination substance's properties for correct GWP
     if ("sales".equals(stream) || "domestic".equals(stream) || "import".equals(stream)) {
-      System.out.println("--- Creating custom recalc kit for sales-related stream ---");
-      
       // Create overriding state getter with destination substance's properties
       OverridingConverterStateGetter customStateGetter = new OverridingConverterStateGetter(stateGetter);
       
@@ -1063,16 +1052,6 @@ public class SingleThreadEngine implements Engine {
       String chargeStream = "sales".equals(stream) ? "domestic" : stream;
       EngineNumber destInitialCharge = streamKeeper.getInitialCharge(destinationScope, chargeStream);
       EngineNumber destEnergyIntensity = streamKeeper.getEnergyIntensity(destinationScope);
-      
-      System.out.println("Destination GWP: " + destGwp);
-      System.out.println("Destination initial charge (" + chargeStream + "): " + destInitialCharge);
-      System.out.println("Destination energy intensity: " + destEnergyIntensity);
-      
-      // Get current equipment population for debugging
-      EngineNumber currentEquipment = getStream("equipment", Optional.of(destinationScope), Optional.empty());
-      EngineNumber priorEquipment = getStream("priorEquipment", Optional.of(destinationScope), Optional.empty());
-      System.out.println("Current equipment: " + currentEquipment);
-      System.out.println("Prior equipment: " + priorEquipment);
       
       customStateGetter.setSubstanceConsumption(destGwp);
       customStateGetter.setAmortizedUnitVolume(destInitialCharge);
@@ -1098,21 +1077,9 @@ public class SingleThreadEngine implements Engine {
         builder = builder.thenPropagateToSales();
       }
       
-      System.out.println("Executing recalc operation with scope: " + destinationScope);
-      System.out.println("Use explicit recharge: " + !useImplicitRecharge);
-      
       RecalcOperation operation = builder.build();
       operation.execute(this);
-      
-      // Show results after recalc
-      EngineNumber newEquipment = getStream("equipment", Optional.of(destinationScope), Optional.empty());
-      EngineNumber newRechargeEmissions = getStream("rechargeEmissions", Optional.of(destinationScope), Optional.empty());
-      EngineNumber newConsumption = getStream("consumption", Optional.of(destinationScope), Optional.empty());
-      System.out.println("After recalc - Equipment: " + newEquipment);
-      System.out.println("After recalc - Recharge emissions: " + newRechargeEmissions);
-      System.out.println("After recalc - Consumption: " + newConsumption);
     }
-    System.out.println("=== END DISPLACEMENT DEBUG ===\n");
   }
 
   /**
