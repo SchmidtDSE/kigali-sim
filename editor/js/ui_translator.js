@@ -2426,11 +2426,8 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
       const numerator = ctx.getChild(0).getText();
       const denominator = ctx.getChild(2).getText();
 
-      if (denominator.startsWith("year")) {
-        return numerator + " each " + denominator;
-      } else {
-        return numerator + " / " + denominator;
-      }
+      // Always use "/" format for consistency
+      return numerator + " / " + denominator;
     }
   }
 

@@ -1,6 +1,7 @@
 import {WasmBackend, WasmLayer} from "wasm_backend";
-import {ReportDataWrapper} from "report_data";
+import {ReportDataWrapper, MetricStrategyBuilder} from "report_data";
 import {FilterSet} from "user_config";
+import {EngineNumber} from "engine_number";
 
 function loadRemote(path) {
   return fetch(path).then((response) => response.text());
@@ -501,6 +502,52 @@ function buildReportDataTests() {
         assert.deepEqual(totalPopulation.getUnits(), "units");
       },
     ]);
+
+    QUnit.test("strategy builder supports dual year format registration", (assert) => {
+      const builder = new MetricStrategyBuilder({});
+
+      // Set up a test strategy with "/ yr" units
+      builder.setMetric("sales");
+      builder.setSubmetric("domestic");
+      builder.setUnits("mt / yr");
+      builder.setStrategy(() => new EngineNumber(100, "mt"));
+      builder.setTransformation((val) => val);
+      builder.add();
+
+      const strategies = builder.build();
+
+      // Both "/ yr" and "/ year" variants should exist
+      assert.ok(strategies["sales:domestic:mt / yr"], "Original '/ yr' strategy should exist");
+      assert.ok(strategies["sales:domestic:mt / year"], "Dual '/ year' strategy should exist");
+
+      // Both should reference the same function
+      assert.strictEqual(
+        strategies["sales:domestic:mt / yr"],
+        strategies["sales:domestic:mt / year"],
+        "Both variants should reference the same strategy function",
+      );
+    });
+
+    QUnit.test("strategy builder only creates dual registration for year units", (assert) => {
+      const builder = new MetricStrategyBuilder({});
+
+      // Set up a test strategy with non-year units
+      builder.setMetric("sales");
+      builder.setSubmetric("domestic");
+      builder.setUnits("mt / unit");
+      builder.setStrategy(() => new EngineNumber(100, "mt"));
+      builder.setTransformation((val) => val);
+      builder.add();
+
+      const strategies = builder.build();
+
+      // Only original strategy should exist, no dual registration
+      assert.ok(strategies["sales:domestic:mt / unit"], "Original strategy should exist");
+      assert.notOk(
+        strategies["sales:domestic:mt / year"],
+        "No dual registration for non-year units",
+      );
+    });
   });
 }
 

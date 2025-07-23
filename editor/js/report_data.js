@@ -108,6 +108,12 @@ class MetricStrategyBuilder {
     };
 
     self._strategies[fullName] = execute;
+
+    // Also register "/ year" variant if "/ yr" key exists
+    if (fullName.includes("/ yr")) {
+      const yearVariant = fullName.replace("/ yr", "/ year");
+      self._strategies[yearVariant] = execute;
+    }
   }
 
   /**
@@ -890,4 +896,4 @@ class ReportDataWrapper {
   }
 }
 
-export {ReportDataWrapper};
+export {ReportDataWrapper, MetricStrategyBuilder};
