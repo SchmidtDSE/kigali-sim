@@ -352,5 +352,83 @@ public class RechargeLiveTests {
         "Equipment should be 23200 units in year 2028 with initial charge during 2025");
   }
 
+  /**
+   * Test for disproportionate displacement issue where cap with displacement
+   * results in larger increases in the displaced substance than expected.
+   * This test verifies that the drop in HFC-134a equals the increase in R-600a.
+   */
+  @Test
+  public void testDisplaceDisproportionate() throws IOException {
+    String qtaPath = "../examples/displace_disproportionate.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    // Run BAU scenario
+    String bauScenario = "BAU";
+    Stream<EngineResult> bauResults = KigaliSimFacade.runScenario(program, bauScenario, progress -> {});
+    List<EngineResult> bauResultsList = bauResults.collect(Collectors.toList());
+
+    // Run policy scenario
+    String policyScenario = "Permit";
+    Stream<EngineResult> policyResults = KigaliSimFacade.runScenario(program, policyScenario, progress -> {});
+    List<EngineResult> policyResultsList = policyResults.collect(Collectors.toList());
+
+    // Get 2034 and 2035 results for both scenarios
+    EngineResult bauHfc2034 = LiveTestsUtil.getResult(bauResultsList.stream(), 2034, "Domestic Refrigeration", "HFC-134a");
+    EngineResult bauHfc2035 = LiveTestsUtil.getResult(bauResultsList.stream(), 2035, "Domestic Refrigeration", "HFC-134a");
+    EngineResult bauR600a2034 = LiveTestsUtil.getResult(bauResultsList.stream(), 2034, "Domestic Refrigeration", "R-600a");
+    EngineResult bauR600a2035 = LiveTestsUtil.getResult(bauResultsList.stream(), 2035, "Domestic Refrigeration", "R-600a");
+
+    EngineResult policyHfc2034 = LiveTestsUtil.getResult(policyResultsList.stream(), 2034, "Domestic Refrigeration", "HFC-134a");
+    EngineResult policyHfc2035 = LiveTestsUtil.getResult(policyResultsList.stream(), 2035, "Domestic Refrigeration", "HFC-134a");
+    EngineResult policyR600a2034 = LiveTestsUtil.getResult(policyResultsList.stream(), 2034, "Domestic Refrigeration", "R-600a");
+    EngineResult policyR600a2035 = LiveTestsUtil.getResult(policyResultsList.stream(), 2035, "Domestic Refrigeration", "R-600a");
+
+    assertNotNull(bauHfc2034, "Should have BAU HFC-134a result for 2034");
+    assertNotNull(bauHfc2035, "Should have BAU HFC-134a result for 2035");
+    assertNotNull(bauR600a2034, "Should have BAU R-600a result for 2034");
+    assertNotNull(bauR600a2035, "Should have BAU R-600a result for 2035");
+    assertNotNull(policyHfc2034, "Should have policy HFC-134a result for 2034");
+    assertNotNull(policyHfc2035, "Should have policy HFC-134a result for 2035");
+    assertNotNull(policyR600a2034, "Should have policy R-600a result for 2034");
+    assertNotNull(policyR600a2035, "Should have policy R-600a result for 2035");
+
+    // Calculate the change in HFC-134a sales from 2034 to 2035 in the policy scenario
+    // Sales = domestic + import
+    double bauHfcSales2034 = (bauHfc2034.getDomestic().getValue().doubleValue() + bauHfc2034.getImport().getValue().doubleValue());
+    double bauHfcSales2035 = (bauHfc2035.getDomestic().getValue().doubleValue() + bauHfc2035.getImport().getValue().doubleValue());
+    double policyHfcSales2034 = (policyHfc2034.getDomestic().getValue().doubleValue() + policyHfc2034.getImport().getValue().doubleValue());
+    double policyHfcSales2035 = (policyHfc2035.getDomestic().getValue().doubleValue() + policyHfc2035.getImport().getValue().doubleValue());
+
+    // Calculate the change in R-600a sales from 2034 to 2035 in the policy scenario
+    double bauR600aSales2034 = (bauR600a2034.getDomestic().getValue().doubleValue() + bauR600a2034.getImport().getValue().doubleValue());
+    double bauR600aSales2035 = (bauR600a2035.getDomestic().getValue().doubleValue() + bauR600a2035.getImport().getValue().doubleValue());
+    double policyR600aSales2034 = (policyR600a2034.getDomestic().getValue().doubleValue() + policyR600a2034.getImport().getValue().doubleValue());
+    double policyR600aSales2035 = (policyR600a2035.getDomestic().getValue().doubleValue() + policyR600a2035.getImport().getValue().doubleValue());
+
+    // Calculate the drop in HFC-134a relative to BAU
+    double hfcDropRelativeToBau = (bauHfcSales2035 - policyHfcSales2035);
+    
+    // Calculate the increase in R-600a relative to BAU
+    double r600aIncreaseRelativeToBau = (policyR600aSales2035 - bauR600aSales2035);
+
+    // Convert to same units if needed (both should be in kg)
+    assertEquals("kg", bauHfc2035.getDomestic().getUnits(), "HFC-134a sales should be in kg");
+    assertEquals("kg", bauR600a2035.getDomestic().getUnits(), "R-600a sales should be in kg");
+
+    // Print debug information
+    System.out.println("BAU HFC sales 2035: " + bauHfcSales2035);
+    System.out.println("Policy HFC sales 2035: " + policyHfcSales2035);
+    System.out.println("HFC drop: " + hfcDropRelativeToBau);
+    System.out.println("BAU R-600a sales 2035: " + bauR600aSales2035);
+    System.out.println("Policy R-600a sales 2035: " + policyR600aSales2035);
+    System.out.println("R-600a increase: " + r600aIncreaseRelativeToBau);
+
+    // The displacement should be 1:1 - the drop in HFC-134a should equal the increase in R-600a
+    assertEquals(hfcDropRelativeToBau, r600aIncreaseRelativeToBau, 1.0, 
+        "Drop in HFC-134a (" + hfcDropRelativeToBau + " kg) should equal increase in R-600a (" + 
+        r600aIncreaseRelativeToBau + " kg) relative to BAU values");
+  }
+
 
 }
