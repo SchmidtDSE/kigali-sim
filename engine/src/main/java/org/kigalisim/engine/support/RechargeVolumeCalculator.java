@@ -12,7 +12,6 @@ package org.kigalisim.engine.support;
 import java.util.Optional;
 import org.kigalisim.engine.number.EngineNumber;
 import org.kigalisim.engine.number.UnitConverter;
-import org.kigalisim.engine.state.ConverterStateGetter;
 import org.kigalisim.engine.state.OverridingConverterStateGetter;
 import org.kigalisim.engine.state.StateGetter;
 import org.kigalisim.engine.state.StreamKeeper;
@@ -63,7 +62,6 @@ public class RechargeVolumeCalculator {
 
     // Return to prior population
     overridingStateGetter.setPopulation(priorPopulation);
-
     return rechargeVolume;
   }
 }
