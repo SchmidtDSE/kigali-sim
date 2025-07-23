@@ -548,6 +548,188 @@ function buildReportDataTests() {
         "No dual registration for non-year units",
       );
     });
+
+    QUnit.test("transformation functions handle both year formats", (assert) => {
+      const builder = new MetricStrategyBuilder({});
+
+      // Test emissions transformation with "/ year" format
+      builder.setMetric("emissions");
+      builder.setSubmetric("test");
+      builder.setUnits("MtCO2e / yr");
+      builder.setStrategy(() => new EngineNumber(1000000, "tCO2e / year"));
+      builder.setTransformation((val) => {
+        const normalizedUnits = val.getUnits().replace(" / year", "").replace(" / yr", "");
+        if (normalizedUnits !== "tCO2e") {
+          throw "Unexpected emissions source units: " + val.getUnits();
+        }
+        return new EngineNumber(val.getValue() / 1000000, "MtCO2e / yr");
+      });
+      builder.add();
+
+      const strategies = builder.build();
+      const filterSet = {};
+
+      // Should not throw an error
+      const result = strategies["emissions:test:MtCO2e / yr"](filterSet);
+      assert.ok(result, "Strategy should execute successfully with / year format");
+      assert.strictEqual(result.getValue(), 1, "Should convert correctly");
+      assert.strictEqual(result.getUnits(), "MtCO2e / yr", "Should have correct output units");
+    });
+
+    QUnit.test("sales transformation functions handle both year formats", (assert) => {
+      const builder = new MetricStrategyBuilder({});
+
+      // Test sales transformation with "/ year" format
+      builder.setMetric("sales");
+      builder.setSubmetric("test");
+      builder.setUnits("mt / yr");
+      builder.setStrategy(() => new EngineNumber(2000, "kg / year"));
+      builder.setTransformation((value) => {
+        const normalizedUnits = value.getUnits().replace(" / year", "").replace(" / yr", "");
+        if (normalizedUnits !== "kg") {
+          throw "Unexpected sales units: " + value.getUnits();
+        }
+        return new EngineNumber(value.getValue() / 1000, "mt / yr");
+      });
+      builder.add();
+
+      const strategies = builder.build();
+      const filterSet = {};
+
+      // Should not throw an error
+      const result = strategies["sales:test:mt / yr"](filterSet);
+      assert.ok(result, "Strategy should execute successfully with / year format");
+      assert.strictEqual(result.getValue(), 2, "Should convert correctly");
+      assert.strictEqual(result.getUnits(), "mt / yr", "Should have correct output units");
+    });
+
+    QUnit.test("custom emissions strategy works with MtCO2e / year units", (assert) => {
+      const mockReportData = {
+        getRechargeEmissions: () => new EngineNumber(500000, "tCO2e"),
+        getEolEmissions: () => new EngineNumber(300000, "tCO2e"),
+        getExportEmissions: () => new EngineNumber(200000, "tCO2e"),
+      };
+
+      const builder = new MetricStrategyBuilder({});
+      builder.setMetric("emissions");
+      builder.setSubmetric("custom");
+      builder.setUnits("MtCO2e / yr");
+      builder.setStrategy((filterSet) => {
+        const customDef = filterSet.getCustomDefinition("emissions");
+        if (!customDef || customDef.length === 0) return null;
+
+        const emissionMethods = {
+          "recharge": (x) => mockReportData.getRechargeEmissions(x),
+          "eol": (x) => mockReportData.getEolEmissions(x),
+          "export": (x) => mockReportData.getExportEmissions(x),
+        };
+
+        const results = customDef.map((submetric) => {
+          const method = emissionMethods[submetric];
+          return method ? method(filterSet) : null;
+        }).filter((result) => result !== null);
+
+        if (results.length === 0) return null;
+
+        return results.reduce((a, b) => {
+          if (!a) return b;
+          if (!b) return a;
+          if (a.getUnits() !== b.getUnits()) {
+            throw new Error(
+              `Cannot combine incompatible units: ${a.getUnits()} and ${b.getUnits()}`,
+            );
+          }
+          return new EngineNumber(a.getValue() + b.getValue(), a.getUnits());
+        });
+      });
+      builder.setTransformation((val) => {
+        const normalizedUnits = val.getUnits().replace(" / year", "").replace(" / yr", "");
+        if (normalizedUnits !== "tCO2e") {
+          throw "Unexpected emissions source units: " + val.getUnits();
+        }
+        return new EngineNumber(val.getValue() / 1000000, "MtCO2e / yr");
+      });
+      builder.add();
+
+      const strategies = builder.build();
+      const mockFilterSet = {
+        getCustomDefinition: (metric) => metric === "emissions" ? ["recharge", "eol"] : null,
+      };
+
+      const result = strategies["emissions:custom:MtCO2e / yr"](mockFilterSet);
+      assert.ok(result, "Custom emissions strategy should execute successfully");
+      assert.strictEqual(
+        result.getValue(),
+        0.8,
+        "Should aggregate and convert correctly (800k tCO2e -> 0.8 MtCO2e)",
+      );
+      assert.strictEqual(result.getUnits(), "MtCO2e / yr", "Should have correct output units");
+    });
+
+    QUnit.test("custom sales strategy works with mt / year units", (assert) => {
+      const mockReportData = {
+        getDomestic: () => new EngineNumber(150000, "kg"),
+        getImport: () => new EngineNumber(50000, "kg"),
+        getExport: () => new EngineNumber(25000, "kg"),
+        getRecycle: () => new EngineNumber(75000, "kg"),
+      };
+
+      const builder = new MetricStrategyBuilder({});
+      builder.setMetric("sales");
+      builder.setSubmetric("custom");
+      builder.setUnits("mt / yr");
+      builder.setStrategy((filterSet) => {
+        const customDef = filterSet.getCustomDefinition("sales");
+        if (!customDef || customDef.length === 0) return null;
+
+        const salesMethods = {
+          "domestic": (x) => mockReportData.getDomestic(x),
+          "import": (x) => mockReportData.getImport(x),
+          "export": (x) => mockReportData.getExport(x),
+          "recycle": (x) => mockReportData.getRecycle(x),
+        };
+
+        const results = customDef.map((submetric) => {
+          const method = salesMethods[submetric];
+          return method ? method(filterSet) : null;
+        }).filter((result) => result !== null);
+
+        if (results.length === 0) return null;
+
+        return results.reduce((a, b) => {
+          if (!a) return b;
+          if (!b) return a;
+          if (a.getUnits() !== b.getUnits()) {
+            throw new Error(
+              `Cannot combine incompatible units: ${a.getUnits()} and ${b.getUnits()}`,
+            );
+          }
+          return new EngineNumber(a.getValue() + b.getValue(), a.getUnits());
+        });
+      });
+      builder.setTransformation((value) => {
+        const normalizedUnits = value.getUnits().replace(" / year", "").replace(" / yr", "");
+        if (normalizedUnits !== "kg") {
+          throw "Unexpected sales units: " + value.getUnits();
+        }
+        return new EngineNumber(value.getValue() / 1000, "mt / yr");
+      });
+      builder.add();
+
+      const strategies = builder.build();
+      const mockFilterSet = {
+        getCustomDefinition: (metric) => metric === "sales" ? ["domestic", "import"] : null,
+      };
+
+      const result = strategies["sales:custom:mt / yr"](mockFilterSet);
+      assert.ok(result, "Custom sales strategy should execute successfully");
+      assert.strictEqual(
+        result.getValue(),
+        200,
+        "Should aggregate and convert correctly (200k kg -> 200 mt)",
+      );
+      assert.strictEqual(result.getUnits(), "mt / yr", "Should have correct output units");
+    });
   });
 }
 
