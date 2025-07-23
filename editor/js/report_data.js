@@ -167,32 +167,34 @@ class ReportDataWrapper {
     const strategyBuilder = new MetricStrategyBuilder();
 
     const addEmissionsConversion = (strategyBuilder) => {
-      strategyBuilder.setUnits("tCO2e / yr");
-      strategyBuilder.setTransformation((val) => {
-        if (val.getUnits() !== "tCO2e") {
+      const normalizeEmissionsUnits = (units) => {
+        return units.replace(" / year", "").replace(" / yr", "");
+      };
+
+      const validateEmissionsUnits = (val) => {
+        const normalizedUnits = normalizeEmissionsUnits(val.getUnits());
+        if (normalizedUnits !== "tCO2e") {
           throw "Unexpected emissions source units: " + val.getUnits();
         }
+      };
 
+      strategyBuilder.setUnits("tCO2e / yr");
+      strategyBuilder.setTransformation((val) => {
+        validateEmissionsUnits(val);
         return new EngineNumber(val.getValue(), "tCO2e / yr");
       });
       strategyBuilder.add();
 
       strategyBuilder.setUnits("ktCO2e / yr");
       strategyBuilder.setTransformation((val) => {
-        if (val.getUnits() !== "tCO2e") {
-          throw "Unexpected emissions source units: " + val.getUnits();
-        }
-
+        validateEmissionsUnits(val);
         return new EngineNumber(val.getValue() / 1000, "ktCO2e / yr");
       });
       strategyBuilder.add();
 
       strategyBuilder.setUnits("MtCO2e / yr");
       strategyBuilder.setTransformation((val) => {
-        if (val.getUnits() !== "tCO2e") {
-          throw "Unexpected emissions source units: " + val.getUnits();
-        }
-
+        validateEmissionsUnits(val);
         return new EngineNumber(val.getValue() / 1000000, "MtCO2e / yr");
       });
       strategyBuilder.add();
@@ -218,12 +220,19 @@ class ReportDataWrapper {
         const customDef = filterSet.getCustomDefinition("emissions");
         if (!customDef || customDef.length === 0) return null;
 
+        // Map submetrics to their raw emission methods
+        const emissionMethods = {
+          "recharge": (x) => self.getRechargeEmissions(x),
+          "eol": (x) => self.getEolEmissions(x),
+          "export": (x) => self.getExportEmissions(x),
+        };
+
         const results = customDef.map((submetric) => {
-          const tempFilter = filterSet.getWithMetric(
-            `emissions:${submetric}:${filterSet.getUnits()}`,
-          );
-          return self.getMetric(tempFilter);
-        });
+          const method = emissionMethods[submetric];
+          return method ? method(filterSet) : null;
+        }).filter((result) => result !== null);
+
+        if (results.length === 0) return null;
 
         return results.reduce((a, b) => {
           if (!a) return b;
@@ -243,30 +252,40 @@ class ReportDataWrapper {
       strategyBuilder.setMetric("sales");
 
       const makeForKgAndMt = (strategyBuilder) => {
-        strategyBuilder.setUnits("mt / yr");
-        strategyBuilder.setTransformation((value) => {
-          if (value.getUnits() !== "kg") {
+        const normalizeSalesUnits = (units) => {
+          return units.replace(" / year", "").replace(" / yr", "");
+        };
+
+        const validateSalesUnits = (value) => {
+          const normalizedUnits = normalizeSalesUnits(value.getUnits());
+          if (normalizedUnits !== "kg") {
             throw "Unexpected sales units: " + value.getUnits();
           }
+        };
 
+        strategyBuilder.setUnits("mt / yr");
+        strategyBuilder.setTransformation((value) => {
+          validateSalesUnits(value);
           return new EngineNumber(value.getValue() / 1000, "mt / yr");
         });
         strategyBuilder.add();
 
         strategyBuilder.setUnits("kg / yr");
         strategyBuilder.setTransformation((value) => {
-          if (value.getUnits() !== "kg") {
-            throw "Unexpected sales units: " + value.getUnits();
-          }
-
+          validateSalesUnits(value);
           return new EngineNumber(value.getValue(), "kg / yr");
         });
         strategyBuilder.add();
 
         strategyBuilder.setStrategy((x) => self.getEnergyConsumption(x));
 
+        const normalizeEnergyUnits = (units) => {
+          return units.replace(" / year", "").replace(" / yr", "");
+        };
+
         const getKwhYr = (value) => {
-          if (value.getUnits() !== "kwh") {
+          const normalizedUnits = normalizeEnergyUnits(value.getUnits());
+          if (normalizedUnits !== "kwh") {
             throw "Unexpected energy units: " + value.getUnits();
           }
           return new EngineNumber(value.getValue(), "kwh / yr");
@@ -312,12 +331,20 @@ class ReportDataWrapper {
         const customDef = filterSet.getCustomDefinition("sales");
         if (!customDef || customDef.length === 0) return null;
 
+        // Map submetrics to their raw sales methods
+        const salesMethods = {
+          "domestic": (x) => self.getDomestic(x),
+          "import": (x) => self.getImport(x),
+          "export": (x) => self.getExport(x),
+          "recycle": (x) => self.getRecycle(x),
+        };
+
         const results = customDef.map((submetric) => {
-          const tempFilter = filterSet.getWithMetric(
-            `sales:${submetric}:${filterSet.getUnits()}`,
-          );
-          return self.getMetric(tempFilter);
-        });
+          const method = salesMethods[submetric];
+          return method ? method(filterSet) : null;
+        }).filter((result) => result !== null);
+
+        if (results.length === 0) return null;
 
         return results.reduce((a, b) => {
           if (!a) return b;

@@ -349,11 +349,13 @@ class ScorecardPresenter {
       "custom-emissions-dialog",
       ["recharge", "eol", "export"],
       (selection) => self._onCustomMetricChanged("emissions", selection),
+      ".emissions-submetric",
     );
     self._customPresenters.sales = new CustomMetricPresenter(
       "custom-sales-dialog",
       ["manufacture", "import", "export", "recycle"],
       (selection) => self._onCustomMetricChanged("sales", selection),
+      ".sales-submetric",
     );
 
     self._registerEventListeners();
@@ -433,6 +435,11 @@ class ScorecardPresenter {
    */
   _onCustomMetricChanged(metricFamily, selection) {
     const self = this;
+
+    // Update the corresponding dropdown to "custom"
+    const presenter = self._customPresenters[metricFamily];
+    const dropdown = self._root.querySelector(presenter._dropdownSelector);
+    dropdown.value = "custom";
 
     // Update custom definition in filter set
     const newFilterSet = self._filterSet.getWithCustomDefinition(metricFamily, selection);
@@ -1166,12 +1173,14 @@ class CustomMetricPresenter {
    * @param {string} dialogId - ID of the configuration dialog element.
    * @param {Array<string>} availableOptions - Array of available submetric options.
    * @param {Function} onSelectionChanged - Callback when custom definition changes.
+   * @param {string} dropdownSelector - CSS selector for the submetric dropdown to update.
    */
-  constructor(dialogId, availableOptions, onSelectionChanged) {
+  constructor(dialogId, availableOptions, onSelectionChanged, dropdownSelector) {
     const self = this;
     self._dialog = document.getElementById(dialogId);
     self._availableOptions = availableOptions;
     self._onSelectionChanged = onSelectionChanged;
+    self._dropdownSelector = dropdownSelector;
 
     if (!self._dialog) {
       throw new Error(`Dialog with id '${dialogId}' not found`);
