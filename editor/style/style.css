@@ -533,7 +533,7 @@ select option[disabled] {
 }
 
 .dialog-list {
-  height: 250px;
+  height: 270px;
   overflow-y: auto;
 }
 
