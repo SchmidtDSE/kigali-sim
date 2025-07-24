@@ -748,7 +748,7 @@ public class RecycleRecoverLiveTests {
     assertNotNull(r600aResult2035, "Should have result for Domestic Refrigeration/R-600a in year 2035");
 
     double r600aPopulation2035 = r600aResult2035.getPopulation().getValue().doubleValue();
-    
+
     // Assert that R-600a has more than 0.4 million units in 2035
     assertTrue(r600aPopulation2035 > 400000.0,
         String.format("R-600a equipment population in 2035 (%.0f units) should be more than 400,000 units", r600aPopulation2035));

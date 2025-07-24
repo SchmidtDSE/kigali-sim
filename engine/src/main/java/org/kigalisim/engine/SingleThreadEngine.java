@@ -1023,65 +1023,55 @@ public class SingleThreadEngine implements Engine {
    * @param destinationScope The scope for the destination substance
    */
   private void changeStreamWithDisplacementContext(String stream, EngineNumber amount, Scope destinationScope) {
-    // Get current value and calculate new value
-    EngineNumber currentValue = getStream(stream, Optional.of(destinationScope), Optional.empty());
-    UnitConverter unitConverter = createUnitConverterWithTotal(stream);
+    // Store original scope
+    Scope originalScope = scope;
 
-    EngineNumber convertedDelta = unitConverter.convert(amount, currentValue.getUnits());
-    BigDecimal newAmount = currentValue.getValue().add(convertedDelta.getValue());
-    BigDecimal newAmountBound = newAmount.max(BigDecimal.ZERO);
+    try {
+      // Temporarily switch engine scope to destination substance
+      scope = destinationScope;
 
-    // Warn when negative values are clamped to zero
-    if (newAmount.compareTo(BigDecimal.ZERO) < 0) {
-      System.err.println("WARNING: Negative stream value clamped to zero for stream " + stream);
+      // Get current value and calculate new value (now using correct scope)
+      EngineNumber currentValue = getStream(stream);
+      UnitConverter unitConverter = createUnitConverterWithTotal(stream);
+
+      EngineNumber convertedDelta = unitConverter.convert(amount, currentValue.getUnits());
+      BigDecimal newAmount = currentValue.getValue().add(convertedDelta.getValue());
+      BigDecimal newAmountBound = newAmount.max(BigDecimal.ZERO);
+
+      // Warn when negative values are clamped to zero
+      if (newAmount.compareTo(BigDecimal.ZERO) < 0) {
+        System.err.println("WARNING: Negative stream value clamped to zero for stream " + stream);
+      }
+
+      EngineNumber outputWithUnits = new EngineNumber(newAmountBound, currentValue.getUnits());
+
+      // Set the stream value without triggering standard recalc to avoid double calculation
+      setStreamFor(stream, outputWithUnits, Optional.empty(), Optional.empty(), false, Optional.empty());
+
+      // Only recalculate for streams that affect equipment populations
+      if (!isSalesStream(stream, false)) {
+        return;
+      }
+
+      // Create standard recalc operation - engine scope is now correctly set to destination
+      boolean useImplicitRecharge = false; // Displacement operations don't add recharge
+      RecalcOperationBuilder builder = new RecalcOperationBuilder()
+          .setRecalcKit(createRecalcKit()) // Use standard recalc kit - scope is correct now
+          .setUseExplicitRecharge(!useImplicitRecharge)
+          .recalcPopulationChange()
+          .thenPropagateToConsumption();
+
+      if (!OPTIMIZE_RECALCS) {
+        builder = builder.thenPropagateToSales();
+      }
+
+      RecalcOperation operation = builder.build();
+      operation.execute(this);
+
+    } finally {
+      // Always restore original scope
+      scope = originalScope;
     }
-
-    EngineNumber outputWithUnits = new EngineNumber(newAmountBound, currentValue.getUnits());
-
-    // Set the stream value without triggering standard recalc to avoid double calculation
-    setStreamFor(stream, outputWithUnits, Optional.empty(), Optional.of(destinationScope), false, Optional.empty());
-
-    // Only create custom recalc kit for streams that affect equipment populations  
-    if (!isSalesStream(stream, false)) {
-      return;
-    }
-
-    // Create overriding state getter with destination substance's properties
-    OverridingConverterStateGetter customStateGetter = new OverridingConverterStateGetter(stateGetter);
-
-    // Override substance-specific properties to destination substance's values
-    EngineNumber destGwp = streamKeeper.getGhgIntensity(destinationScope);
-    // Use "domestic" for initial charge as it's a valid sales substream
-    String chargeStream = "sales".equals(stream) ? "domestic" : stream;
-    EngineNumber destInitialCharge = streamKeeper.getInitialCharge(destinationScope, chargeStream);
-    EngineNumber destEnergyIntensity = streamKeeper.getEnergyIntensity(destinationScope);
-
-    customStateGetter.setSubstanceConsumption(destGwp);
-    customStateGetter.setAmortizedUnitVolume(destInitialCharge);
-    customStateGetter.setEnergyIntensity(destEnergyIntensity);
-
-    // Create custom recalc kit with the overriding state getter for displacement context
-    RecalcKit customRecalcKit = new RecalcKitBuilder()
-        .setStreamKeeper(streamKeeper)
-        .setUnitConverter(new UnitConverter(customStateGetter))
-        .setStateGetter(customStateGetter) // Use custom state getter for displacement context
-        .build();
-
-    // Use implicit recharge only if we added recharge (units were used)
-    boolean useImplicitRecharge = false; // Displacement operations don't add recharge
-    RecalcOperationBuilder builder = new RecalcOperationBuilder()
-        .setScopeEffective(destinationScope)
-        .setUseExplicitRecharge(!useImplicitRecharge)
-        .setRecalcKit(customRecalcKit)
-        .recalcPopulationChange()
-        .thenPropagateToConsumption();
-
-    if (!OPTIMIZE_RECALCS) {
-      builder = builder.thenPropagateToSales();
-    }
-
-    RecalcOperation operation = builder.build();
-    operation.execute(this);
   }
 
   /**
