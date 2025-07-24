@@ -1041,45 +1041,47 @@ public class SingleThreadEngine implements Engine {
     // Set the stream value without triggering standard recalc to avoid double calculation
     setStreamFor(stream, outputWithUnits, Optional.empty(), Optional.of(destinationScope), false, Optional.empty());
 
-    // Create custom recalc kit with destination substance's properties for correct GWP
-    if ("sales".equals(stream) || "domestic".equals(stream) || "import".equals(stream)) {
-      // Create overriding state getter with destination substance's properties
-      OverridingConverterStateGetter customStateGetter = new OverridingConverterStateGetter(stateGetter);
-
-      // Override substance-specific properties to destination substance's values
-      EngineNumber destGwp = streamKeeper.getGhgIntensity(destinationScope);
-      // Use "domestic" for initial charge as it's a valid sales substream
-      String chargeStream = "sales".equals(stream) ? "domestic" : stream;
-      EngineNumber destInitialCharge = streamKeeper.getInitialCharge(destinationScope, chargeStream);
-      EngineNumber destEnergyIntensity = streamKeeper.getEnergyIntensity(destinationScope);
-
-      customStateGetter.setSubstanceConsumption(destGwp);
-      customStateGetter.setAmortizedUnitVolume(destInitialCharge);
-      customStateGetter.setEnergyIntensity(destEnergyIntensity);
-
-      // Create custom recalc kit with the overriding state getter for displacement context
-      RecalcKit customRecalcKit = new RecalcKitBuilder()
-          .setStreamKeeper(streamKeeper)
-          .setUnitConverter(new UnitConverter(customStateGetter))
-          .setStateGetter(customStateGetter) // Use custom state getter for displacement context
-          .build();
-
-      // Use implicit recharge only if we added recharge (units were used)
-      boolean useImplicitRecharge = false; // Displacement operations don't add recharge
-      RecalcOperationBuilder builder = new RecalcOperationBuilder()
-          .setScopeEffective(destinationScope)
-          .setUseExplicitRecharge(!useImplicitRecharge)
-          .setRecalcKit(customRecalcKit)
-          .recalcPopulationChange()
-          .thenPropagateToConsumption();
-
-      if (!OPTIMIZE_RECALCS) {
-        builder = builder.thenPropagateToSales();
-      }
-
-      RecalcOperation operation = builder.build();
-      operation.execute(this);
+    // Only create custom recalc kit for streams that affect equipment populations  
+    if (!isSalesStream(stream, false)) {
+      return;
     }
+
+    // Create overriding state getter with destination substance's properties
+    OverridingConverterStateGetter customStateGetter = new OverridingConverterStateGetter(stateGetter);
+
+    // Override substance-specific properties to destination substance's values
+    EngineNumber destGwp = streamKeeper.getGhgIntensity(destinationScope);
+    // Use "domestic" for initial charge as it's a valid sales substream
+    String chargeStream = "sales".equals(stream) ? "domestic" : stream;
+    EngineNumber destInitialCharge = streamKeeper.getInitialCharge(destinationScope, chargeStream);
+    EngineNumber destEnergyIntensity = streamKeeper.getEnergyIntensity(destinationScope);
+
+    customStateGetter.setSubstanceConsumption(destGwp);
+    customStateGetter.setAmortizedUnitVolume(destInitialCharge);
+    customStateGetter.setEnergyIntensity(destEnergyIntensity);
+
+    // Create custom recalc kit with the overriding state getter for displacement context
+    RecalcKit customRecalcKit = new RecalcKitBuilder()
+        .setStreamKeeper(streamKeeper)
+        .setUnitConverter(new UnitConverter(customStateGetter))
+        .setStateGetter(customStateGetter) // Use custom state getter for displacement context
+        .build();
+
+    // Use implicit recharge only if we added recharge (units were used)
+    boolean useImplicitRecharge = false; // Displacement operations don't add recharge
+    RecalcOperationBuilder builder = new RecalcOperationBuilder()
+        .setScopeEffective(destinationScope)
+        .setUseExplicitRecharge(!useImplicitRecharge)
+        .setRecalcKit(customRecalcKit)
+        .recalcPopulationChange()
+        .thenPropagateToConsumption();
+
+    if (!OPTIMIZE_RECALCS) {
+      builder = builder.thenPropagateToSales();
+    }
+
+    RecalcOperation operation = builder.build();
+    operation.execute(this);
   }
 
   /**
@@ -1089,7 +1091,19 @@ public class SingleThreadEngine implements Engine {
    * @return true if the stream is sales, manufacture, import, or export
    */
   private boolean isSalesStream(String stream) {
-    return "sales".equals(stream) || "domestic".equals(stream) || "import".equals(stream) || "export".equals(stream);
+    return isSalesStream(stream, true);
+  }
+
+  /**
+   * Check if a stream is a sales-related stream.
+   *
+   * @param stream The stream name to check
+   * @param includeExports Whether to include exports in the sales streams
+   * @return true if the stream matches the sales-related criteria
+   */
+  private boolean isSalesStream(String stream, boolean includeExports) {
+    boolean isCoreStream = "sales".equals(stream) || "domestic".equals(stream) || "import".equals(stream);
+    return isCoreStream || (includeExports && "export".equals(stream));
   }
 
   /**
