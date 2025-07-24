@@ -113,6 +113,103 @@ public class RecycleRecoverLiveTests {
   }
 
   /**
+   * Test recycle_by_kg_loss.qta produces expected values with 90% reuse efficiency.
+   */
+  @Test
+  public void testRecycleByKgLoss() throws IOException {
+    // Load and parse the QTA file
+    String qtaPath = "../examples/recycle_by_kg_loss.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    // Run the scenario using KigaliSimFacade
+    String scenarioName = "result";
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
+
+    // Convert to list for multiple access
+    List<EngineResult> resultsList = results.collect(Collectors.toList());
+
+    // Check year 1 - no recycling yet
+    EngineResult recordYear1 = LiveTestsUtil.getResult(resultsList.stream(), 1, "test", "test");
+    assertNotNull(recordYear1, "Should have result for test/test in year 1");
+    assertEquals(500.0, recordYear1.getGhgConsumption().getValue().doubleValue(), 0.0001,
+        "GHG consumption should be 500 tCO2e in year 1");
+    assertEquals("tCO2e", recordYear1.getGhgConsumption().getUnits(),
+        "GHG consumption units should be tCO2e in year 1");
+
+    // Check year 2 - recycling active with 90% reuse efficiency
+    EngineResult recordYear2 = LiveTestsUtil.getResult(resultsList.stream(), 2, "test", "test");
+    assertNotNull(recordYear2, "Should have result for test/test in year 2");
+
+    // With 90% reuse efficiency, recycled material should be 25 kg * 0.9 = 22.5 kg
+    // Virgin material displacement: 22.5 kg * 5 tCO2e/mt = 22.5 kg * 5 tCO2e/(1000 kg) = 0.1125 tCO2e
+    // Total consumption: 500 - 0.1125 = 499.8875 tCO2e
+    double expectedTotalConsumption = 499.8875;
+    assertEquals(expectedTotalConsumption, recordYear2.getGhgConsumption().getValue().doubleValue(), 0.0001,
+        "GHG consumption should be reduced to 499.8875 tCO2e in year 2 due to recycling with 90% reuse");
+    assertEquals("tCO2e", recordYear2.getGhgConsumption().getUnits(),
+        "GHG consumption units should be tCO2e in year 2");
+
+    // Check recycled consumption in year 2
+    // 22.5 kg * 5 tCO2e/mt = 22.5 kg * 5 tCO2e/(1000 kg) = 0.1125 tCO2e
+    assertEquals(0.1125, recordYear2.getRecycleConsumption().getValue().doubleValue(), 0.0001,
+        "Recycled consumption should be 0.1125 tCO2e in year 2 (90% of 25 kg)");
+    assertEquals("tCO2e", recordYear2.getRecycleConsumption().getUnits(),
+        "Recycled consumption units should be tCO2e in year 2");
+  }
+
+  /**
+   * Test that BAU and result scenarios in recycle_by_kg_loss.qta have appropriate equipment 
+   * and sales differences in year 2.
+   */
+  @Test
+  public void testRecycleByKgLossComparison() throws IOException {
+    // Load and parse the QTA file
+    String qtaPath = "../examples/recycle_by_kg_loss.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    // Run BAU scenario
+    Stream<EngineResult> bauResults = KigaliSimFacade.runScenario(program, "BAU", progress -> {});
+    List<EngineResult> bauResultsList = bauResults.collect(Collectors.toList());
+
+    // Run result scenario
+    Stream<EngineResult> resultResults = KigaliSimFacade.runScenario(program, "result", progress -> {});
+    List<EngineResult> resultResultsList = resultResults.collect(Collectors.toList());
+
+    // Check year 2 results for both scenarios
+    EngineResult bauYear2 = LiveTestsUtil.getResult(bauResultsList.stream(), 2, "test", "test");
+    EngineResult resultYear2 = LiveTestsUtil.getResult(resultResultsList.stream(), 2, "test", "test");
+
+    assertNotNull(bauYear2, "Should have BAU result for test/test in year 2");
+    assertNotNull(resultYear2, "Should have result result for test/test in year 2");
+
+    // Check that total equipment is the same between BAU and result scenarios
+    double bauEquipment = bauYear2.getPopulation().getValue().doubleValue();
+    double resultEquipment = resultYear2.getPopulation().getValue().doubleValue();
+    assertEquals(bauEquipment, resultEquipment, 0.0001,
+        "Equipment population should be the same in year 2 between BAU (" + bauEquipment 
+        + ") and result (" + resultEquipment + ") scenarios");
+
+    // Check that total sales (domestic + import) are the same between scenarios
+    double bauSales = bauYear2.getDomestic().getValue().doubleValue() + bauYear2.getImport().getValue().doubleValue();
+    double resultSales = resultYear2.getDomestic().getValue().doubleValue() + resultYear2.getImport().getValue().doubleValue();
+    
+    // Note: Total sales should be different because recycling displaces virgin material
+    // BAU should have higher virgin sales since no recycling
+    assertTrue(bauSales > resultSales,
+        "BAU sales (" + bauSales + ") should be higher than result sales (" + resultSales 
+        + ") because recycling displaces virgin material");
+
+    // Check that result scenario has recycling consumption while BAU does not
+    double bauRecycled = bauYear2.getRecycleConsumption().getValue().doubleValue();
+    double resultRecycled = resultYear2.getRecycleConsumption().getValue().doubleValue();
+    
+    assertEquals(0.0, bauRecycled, 0.0001, "BAU should have no recycled consumption");
+    assertEquals(0.1125, resultRecycled, 0.0001, "Result should have 0.1125 tCO2e recycled consumption");
+  }
+
+  /**
    * Test recycle_by_units.qta produces expected values.
    */
   @Test
