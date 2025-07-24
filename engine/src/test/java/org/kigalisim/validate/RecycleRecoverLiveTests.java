@@ -728,6 +728,33 @@ public class RecycleRecoverLiveTests {
   }
 
   /**
+   * Test displacement then recycling scenario to verify R-600a equipment population.
+   * Tests that when displacement (Sales Permit) is applied before recycling (Domestic Recycling),
+   * R-600a should have more than 0.4 million units in 2035.
+   */
+  @Test
+  public void testDisplaceThenRecycle() throws IOException {
+    // Load and parse the QTA file
+    String qtaPath = "../examples/displace_then_recycle.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    // Run the Combined scenario (Sales Permit then Domestic Recycling)
+    Stream<EngineResult> combinedResults = KigaliSimFacade.runScenario(program, "Combined", progress -> {});
+    List<EngineResult> combinedResultsList = combinedResults.collect(Collectors.toList());
+
+    // Check R-600a equipment population in 2035
+    EngineResult r600aResult2035 = LiveTestsUtil.getResult(combinedResultsList.stream(), 2035, "Domestic Refrigeration", "R-600a");
+    assertNotNull(r600aResult2035, "Should have result for Domestic Refrigeration/R-600a in year 2035");
+
+    double r600aPopulation2035 = r600aResult2035.getPopulation().getValue().doubleValue();
+    
+    // Assert that R-600a has more than 0.4 million units in 2035
+    assertTrue(r600aPopulation2035 > 400000.0,
+        String.format("R-600a equipment population in 2035 (%.0f units) should be more than 400,000 units", r600aPopulation2035));
+  }
+
+  /**
    * Test that retire commands work correctly after recycle at EOL and apply recycling
    * through existing recalculation logic.
    */
