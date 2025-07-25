@@ -1,0 +1,169 @@
+<html>
+  <head>
+    <title>Tutorial 3: Multiple Applications and Substances</title>
+    <link href="/guide/guide.css?v=EPOCH" rel="stylesheet" type="text/css" />
+  </head>
+  <body>
+    <a href="#main" class="skip-link">Skip to main content</a>
+    <header>
+      This tutorial is part of the <a href="/guide">guide</a> for the
+      <a href="/">Kigali Sim</a>.
+    </header>
+    <main id="main">
+      <h1>Tutorial 3: Multiple Applications and Substances</h1>
+
+      Expanding to multiple sectors and refrigerants.
+
+      <details>
+        <summary>Contents</summary>
+        <ul>
+          <li><a href="#motivation">Motivation</a></li>
+          <li><a href="#adding-new-applications-and-substances">Adding New Applications and Substances</a></li>
+          <li><a href="#interpreting-multi-application-results">Interpreting Multi-Application Results</a></li>
+          <li><a href="#conclusion">Conclusion</a></li>
+          <li><a href="#next-steps">Next Steps</a></li>
+        </ul>
+      </details>
+
+      <section id="motivation">
+        <h2>Motivation</h2>
+
+        <p>
+          In ABC, we have more than just domestic refrigeration! In this tutorial, we'll expand our model to capture more of the broader national profile, helping us understand where policy may put its focus. Specifically, this tutorial builds directly on our Tutorial 2 Domestic Refrigeration model, adding Domestic AC. We'll also introduce multiple refrigerant substances with different Global Warming Potentials (GWPs), demonstrating how volume and climate impact interact.
+        </p>
+      </section>
+
+      <section id="adding-new-applications-and-substances">
+        <h2>Adding New Applications and Substances</h2>
+
+        <p>
+          Use the same procedures from Tutorial 2, let's add additional applications and substances. Remember to have recharge in all years. However, the set points for prior equipment and domestic manufacture should be on 2025 only. Also, while we will look at trade in the next tutorial, <strong>enable domestic manufacture</strong> for all substances. Here's the configuration data:
+        </p>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Property</th>
+              <th>HFC-134a</th>
+              <th>R-600a</th>
+              <th>HFC-32</th>
+              <th>R-410A</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Application</strong></td>
+              <td>Domestic Refrigeration</td>
+              <td>Domestic Refrigeration</td>
+              <td>Domestic AC</td>
+              <td>Domestic AC</td>
+            </tr>
+            <tr>
+              <td><strong>GWP (tCO2e/kg)</strong></td>
+              <td>1430</td>
+              <td>3</td>
+              <td>675</td>
+              <td>2088</td>
+            </tr>
+            <tr>
+              <td><strong>Initial Charge (kg/unit)</strong></td>
+              <td>0.15</td>
+              <td>0.07</td>
+              <td>0.85</td>
+              <td>1.00</td>
+            </tr>
+            <tr>
+              <td><strong>Retirement (%/year)</strong></td>
+              <td>5%</td>
+              <td>5%</td>
+              <td>7%</td>
+              <td>7%</td>
+            </tr>
+            <tr>
+              <td><strong>Recharge (% @ kg/unit)</strong></td>
+              <td>10% @ 0.15</td>
+              <td>10% @ 0.07</td>
+              <td>15% @ 0.85</td>
+              <td>15% @ 1.00</td>
+            </tr>
+            <tr>
+              <td><strong>Prior Equipment (units)</strong></td>
+              <td>1,000,000</td>
+              <td>100,000</td>
+              <td>40,000</td>
+              <td>20,000</td>
+            </tr>
+            <tr>
+              <td><strong>Domestic Manufacture (mt/yr)</strong></td>
+              <td>25</td>
+              <td>2</td>
+              <td>15</td>
+              <td>5</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <p>We will add in socioeconomic projections soon but, for now, consumption volumes will continue unchanged into the future.</p>
+      </section>
+
+      <section id="interpreting-multi-application-results">
+        <h2>Interpreting Multi-Application Results</h2>
+
+        <p>As you work, the simulation will update automatically.</p>
+
+        <p>
+          Examine the results to understand how multiple applications and substances add together. You can do this by looking at results by selecting the <strong>Application</strong> or <strong>Substances</strong> radio buttons. To get a complete picture with the <strong>Emissions</strong> radio button, try clicking <strong>"configure custom"</strong> under emissions and combining both end-of-life and recharge emissions. This represents the total leakage throughout the equipment lifetime.
+        </p>
+
+        <p id="tutorial-gif-3-1" class="tutorial-gif-holder">
+          <img
+            src="/guide/img/tutorial03_01.gif"
+            alt="Animated GIF showing the use of the configure custom metric feature"
+          />
+        </p>
+
+        <p>
+          Before concluding, let's also pause to understand if these results make sense. First, the custom emissions which combines both end of life and recharge emissions is higher than either alone. Second, consider that the HFCs have both higher volume and higher GWP. Therefore, focusing on HFC-32, we notice that these two factors intersect through a larger gap in emissions relative to consumption when we have selected the <strong>Substances</strong> radio button.
+        </p>
+
+        <p id="tutorial-gif-3-2" class="tutorial-gif-holder">
+          <img
+            src="/guide/img/tutorial03_02.gif"
+            alt="Animated GIF showing the comparison of emissions and consumption with substances selected"
+          />
+        </p>
+      </section>
+
+      <section id="conclusion">
+        <h2>Conclusion</h2>
+
+        <p>You've successfully expanded ABC Country's model to include multiple applications and substances. Together, we considered:</p>
+
+        <ul>
+          <li><strong>Multi-application modeling</strong>: Different sectors with distinct equipment characteristics and service patterns</li>
+          <li><strong>Multi-substance analysis</strong>: Comparing different refrigerants within and across applications</li>
+          <li><strong>GWP diversity</strong>: Understanding how different substances have varying climate impacts</li>
+          <li><strong>Equipment population dynamics</strong>: How different applications scale and behave over time</li>
+        </ul>
+
+        <p>The model now provides a foundation for understanding how substance choice and application type interact to determine overall consumption and climate impact patterns.</p>
+      </section>
+
+      <section id="next-steps">
+        <h2>Next Steps</h2>
+
+        <p>
+          <strong><a href="/guide/tutorial_04.html">Tutorial 4</a></strong> will add economic growth projections and business-as-usual forecasting to your multi-application model. You'll learn to model how economic expansion drives consumption changes over time, creating realistic baseline scenarios for policy comparison.
+        </p>
+
+        <p>
+          <a href="/guide/tutorial_02.html">← Previous: Tutorial 2</a> | 
+          <a href="/guide/tutorial_04.html">Next: Tutorial 4 →</a>
+        </p>
+      </section>
+
+      <hr />
+      <p><em>This tutorial is part of the ABC Country case study series demonstrating progressive HFC policy analysis using Kigali Sim.</em></p>
+    </main>
+  </body>
+</html>

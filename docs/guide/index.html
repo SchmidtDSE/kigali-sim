@@ -4,9 +4,7 @@
     <link href="/guide/guide.css?v=EPOCH" rel="stylesheet" type="text/css" />
   </head>
   <body>
-    <div class="skip-link">
-      <a href="#main">Skip to content</a>
-    </div>
+    <a href="#main" class="skip-link">Skip to main content</a>
     <header>
       This page provides documentation on how to use the open source Kigali Sim.
       <a href="/">Return to tool</a>.
@@ -14,36 +12,53 @@
     <main id="main">
       <h1>Kigali Sim Guide</h1>
 
-      Hello! This website provides a series of tutorials intended to help you get started with the
-      <a href="/">Kigali Sim</a>. If you are new, consider starting with the
-      <a href="/guide/modeling_single.html">first tutorial</a>.
+      <p>
+        Hello! This website provides a series of tutorials intended to help you get started with the
+        <a href="/">Kigali Sim</a>. If you are new, consider starting with the
+        <a href="/guide/tutorial_01.html">first tutorial</a>.
+      </p>
+
+      <p>
+        This tutorial series follows a progressive learning path using ABC Country, a hypothetical medium-sized nation where we build up an increasingly sophisticated model together. You'll learn both point-and-click interface techniques and QubecTalk programming to master comprehensive HFC phase-down analysis.
+      </p>
 
       <section id="tutorials">
         <h2>Tutorials</h2>
 
-        This guide has the following tutorials each with their own bite-sized activity:
+        <section id="introduction">
+          <h3>Introduction</h3>
+          <ul>
+            <li><a href="/guide/tutorial_01.html"><strong>Tutorial 1:</strong> Introduction to Kigali Sim</a> - Understanding HFCs and how Kigali Sim can help</li>
+          </ul>
+        </section>
 
-        <ul>
-          <li><a href="/guide/modeling_single.html">Model a single substance</a></li>
-          <li><a href="/guide/policy_single.html">Model a single policy</a></li>
-          <li>
-            <a href="/guide/modeling_multiple.html">Expand to multiple substances</a>
-          </li>
-          <li><a href="/guide/permits.html">Build a permit system</a></li>
-          <li>
-            <a href="/guide/programming_reveal.html"> You have been programming all along </a>
-          </li>
-          <li><a href="/guide/programming.html">Grow the simulation</a></li>
-          <li><a href="/guide/interpreting_results.html">Interpret results</a></li>
-          <li><a href="/guide/case_study.html">ABC case study</a></li>
-        </ul>
+        <section id="ui-based-authoring">
+          <h3>UI-based Authoring</h3>
+          <ul>
+            <li><a href="/guide/tutorial_02.html"><strong>Tutorial 2:</strong> Single Application and Substance</a> - Start with the basic building blocks of a simulation</li>
+            <li><a href="/guide/tutorial_03.html"><strong>Tutorial 3:</strong> Multiple Applications and Substances</a> - Expanding to multiple sectors and refrigerants</li>
+            <li><a href="/guide/tutorial_04.html"><strong>Tutorial 4:</strong> Growth and Trade</a> - Adding economic growth projections and import flows</li>
+            <li><a href="/guide/tutorial_05.html"><strong>Tutorial 5:</strong> Business-as-Usual Projections</a> - Creating comprehensive baseline scenarios</li>
+            <li><a href="/guide/tutorial_06.html"><strong>Tutorial 6:</strong> Policy Interventions</a> - Implementing and comparing policy scenarios</li>
+          </ul>
+        </section>
 
-        All numbers are intentionally fake and used only for demonstrative purposes. Please keep in
-        mind that this software is still under development. We encourage your ideas as our living
-        software continues to grow based on your feedback. However, please note that things may also
-        change and this guide may be refined.
-        
-        <p><strong>Note:</strong> We are currently in the process of updating the supporting animated images throughout the guide to reflect recent improvements to the interface and functionality.</p>
+        <section id="code-based-authoring">
+          <h3>Code-based Authoring</h3>
+          <ul>
+            <li><a href="/guide/tutorial_07.html"><strong>Tutorial 7:</strong> First Code</a> - Discovering QubecTalk and implementing multi-substance recycling policies</li>
+            <li><a href="/guide/tutorial_08.html"><strong>Tutorial 8:</strong> Equipment Units and Alternative Data</a> - Unit-based modeling as an alternative to volume-based consumption</li>
+            <li><a href="/guide/tutorial_09.html"><strong>Tutorial 9:</strong> Command Line and Monte Carlo Analysis</a> - Advanced uncertainty analysis using probabilistic programming</li>
+            <li><a href="/guide/tutorial_10.html"><strong>Tutorial 10:</strong> Custom Policies with Code</a> - Advanced policy modeling with induced demand (under construction)</li>
+          </ul>
+        </section>
+
+        <p>
+          All numbers are intentionally fake and used only for demonstrative purposes. Please keep in
+          mind that this software is still under development. We encourage your ideas as our living
+          software continues to grow based on your feedback. However, please note that things may also
+          change and this guide may be refined.
+        </p>
       </section>
 
       <section>
