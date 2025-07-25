@@ -1,0 +1,116 @@
+<html>
+  <head>
+    <title>Tutorial 6: Recycling</title>
+    <link href="/guide/guide.css?v=EPOCH" rel="stylesheet" type="text/css" />
+  </head>
+  <body>
+    <a href="#main" class="skip-link">Skip to main content</a>
+    <header>
+      This tutorial is part of the <a href="/guide">guide</a> for the
+      <a href="/">Kigali Sim</a>.
+    </header>
+    <main id="main">
+      <h1>Tutorial 6: Recycling</h1>
+
+      Exploring secondary material through recycling programs.
+
+      <details>
+        <summary>Contents</summary>
+        <ul>
+          <li><a href="#motivation">Motivation</a></li>
+          <li><a href="#adding-the-recycling-policy">Adding the Recycling Policy</a></li>
+          <li><a href="#add-simulations">Add Simulations</a></li>
+          <li><a href="#results">Results</a></li>
+          <li><a href="#conclusion">Conclusion</a></li>
+          <li><a href="#next-steps">Next Steps</a></li>
+        </ul>
+      </details>
+
+      <section id="motivation">
+        <h2>Motivation</h2>
+
+        <p>
+          Building on ABC Country's sales permitting system from Tutorial 5, we'll now add a recovery and recycling program targeting the same HFC-134a domestic refrigeration sector. This demonstrates how recycling policies work and explores the introduction of secondary substance in addition to the virgin substance we've been manipulating so far.
+        </p>
+      </section>
+
+      <section id="adding-the-recycling-policy">
+        <h2>Adding the Recycling Policy</h2>
+
+        <p>Let's create ABC's recovery program:</p>
+
+        <ul>
+          <li>Click <strong>Add Policy</strong> and name it "Domestic Recycling"</li>
+          <li>Select <strong>Domestic Refrigeration</strong> as the application and <strong>HFC-134a</strong> as the substance</li>
+          <li>Go to the <strong>Recycle</strong> tab and click <strong>Add Recycling</strong></li>
+          <li>Set <strong>20% recovery with 90% reuse</strong>.</li>
+          <li>Let's have this start at <strong>recharge</strong> (at the point of servicing).</li>
+          <li>Start in <strong>year 2027</strong>.</li>
+          <li>Click <strong>Save</strong></li>
+        </ul>
+
+        <p id="tutorial-gif-6-1" class="tutorial-gif-holder">
+          <img
+            src="/guide/img/tutorial06_01.gif"
+            alt="Animated gif showing how to add the recycling policy"
+          />
+        </p>
+      </section>
+
+      <section id="add-simulations">
+        <h2>Add Simulations</h2>
+
+        <p>
+          Add both a Recycling simulation with just Domestic Recycling selected. Then, add a combined simulation with both Sales Permit and Domestic Recycling included. Again, use years 2025 to 2035.
+        </p>
+
+        <p id="tutorial-gif-6-2" class="tutorial-gif-holder">
+          <img
+            src="/guide/img/tutorial06_02.gif"
+            alt="Animated gif showing how to add recycling simulations"
+          />
+        </p>
+      </section>
+
+      <section id="results">
+        <h2>Results</h2>
+
+        <p>
+          Piecing together what is going on with multiple policies can take a little work but let's dig in. For this, go ahead and enable <strong>Attribute initial charge to importer</strong> just to make it easier to reason about how volumes are shifting.
+        </p>
+
+        <p>
+          First, using the <strong>Consumption</strong> radio button, recycling certainly cuts down on overall virgin substance, either imported or domestic. This is unlike the caps we introduced previously which simply move that consumption between substances. Even so, the combined policies encounter a small snag: moving more substance to R-600a means there's less HFC-134a to recycle late in the simulation. In a later tutorial, we will address this by adding a R-600a recycling program!
+        </p>
+
+        <p>
+          Next, the <strong>Emissions</strong> radio button tells a more interesting story where recycling from servicing fails to keep up with demand so, eventually, BAU and the recycling scenario trend together. This is where the combination of policies may be effective. Once we add in the cap as well, the two complement each other to achieve a higher impact than either on their own.
+        </p>
+      </section>
+
+      <section id="conclusion">
+        <h2>Conclusion</h2>
+
+        <p>
+          You've successfully implemented ABC Country's comprehensive HFC-134a strategy combining permitting and recycling policies. This tutorial demonstrated how recycling appears as an alternative supply source and complements demand-side restrictions for maximum policy effectiveness.
+        </p>
+      </section>
+
+      <section id="next-steps">
+        <h2>Next Steps</h2>
+
+        <p>
+          <a href="/guide/tutorial_07.html">Tutorial 7</a> will transition from the UI-based interface to direct QubecTalk programming. You'll discover that you've been programming all along and learn to implement advanced multi-substance policies only possible through direct coding. QubecTalk also makes it easier to modify simulations faster. For example, this can help with switching from tonnes of substance to equipment unit counts. While technically possible in the UI, we will find in Tutorial 8 that those kinds of changes may be much more efficient through code.
+        </p>
+
+        <p>
+          <a href="/guide/tutorial_05.html">Previous: Tutorial 5</a> | 
+          <a href="/guide/tutorial_07.html">Next: Tutorial 7</a>
+        </p>
+      </section>
+
+      <hr />
+      <p><em>This tutorial is part of the ABC Country case study series demonstrating progressive HFC policy analysis using Kigali Sim.</em></p>
+    </main>
+  </body>
+</html>
