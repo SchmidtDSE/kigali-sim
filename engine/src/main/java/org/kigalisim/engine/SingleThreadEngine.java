@@ -11,7 +11,6 @@
 package org.kigalisim.engine;
 
 import java.math.BigDecimal;
-import java.math.MathContext;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -23,6 +22,7 @@ import org.kigalisim.engine.recalc.RecalcKit;
 import org.kigalisim.engine.recalc.RecalcKitBuilder;
 import org.kigalisim.engine.recalc.RecalcOperation;
 import org.kigalisim.engine.recalc.RecalcOperationBuilder;
+import org.kigalisim.engine.recalc.SalesStreamDistribution;
 import org.kigalisim.engine.serializer.EngineResult;
 import org.kigalisim.engine.serializer.EngineResultSerializer;
 import org.kigalisim.engine.state.ConverterStateGetter;
@@ -33,7 +33,6 @@ import org.kigalisim.engine.state.StreamKeeper;
 import org.kigalisim.engine.state.SubstanceInApplicationId;
 import org.kigalisim.engine.state.UseKey;
 import org.kigalisim.engine.state.YearMatcher;
-import org.kigalisim.engine.support.DivisionHelper;
 import org.kigalisim.engine.support.ExceptionsGenerator;
 import org.kigalisim.engine.support.RechargeVolumeCalculator;
 import org.kigalisim.lang.operation.RecoverOperation.RecoveryStage;
@@ -405,77 +404,31 @@ public class SingleThreadEngine implements Engine {
     scope.setVariable(name, value);
   }
 
-  // Placeholder implementations for remaining methods - to be completed
   @Override
   public EngineNumber getInitialCharge(String stream) {
     if ("sales".equals(stream)) {
+      try {
+        // Use SalesStreamDistributionBuilder to get the correct weights for enabled streams
+        SalesStreamDistribution distribution = streamKeeper.getDistribution(scope, false);
 
-      // Get manufacture and import values
-      EngineNumber manufactureRaw = getStream("domestic");
-      EngineNumber manufactureValue = unitConverter.convert(manufactureRaw, "kg");
+        BigDecimal domesticWeight = distribution.getPercentDomestic();
+        BigDecimal importWeight = distribution.getPercentImport();
 
-      if (manufactureValue.getValue().compareTo(BigDecimal.ZERO) == 0) {
-        return getRawInitialChargeFor(scope, "import");
-      }
+        // Get raw initial charges for each stream
+        EngineNumber domesticInitialChargeRaw = getRawInitialChargeFor(scope, "domestic");
+        EngineNumber domesticInitialCharge = unitConverter.convert(domesticInitialChargeRaw, "kg / unit");
 
-      EngineNumber importRaw = getStream("import");
-      EngineNumber importValue = unitConverter.convert(importRaw, "kg");
+        EngineNumber importInitialChargeRaw = getRawInitialChargeFor(scope, "import");
+        EngineNumber importInitialCharge = unitConverter.convert(importInitialChargeRaw, "kg / unit");
 
-      if (importValue.getValue().compareTo(BigDecimal.ZERO) == 0) {
-        return getRawInitialChargeFor(scope, "domestic");
-      }
+        // Calculate weighted average of initial charges using distribution percentages
+        BigDecimal weightedSum = domesticInitialCharge.getValue().multiply(domesticWeight)
+            .add(importInitialCharge.getValue().multiply(importWeight));
 
-      // Determine total
-      boolean emptyStreams = isEmptyStreams(manufactureValue, importValue);
-
-      // Get initial charges
-      EngineNumber manufactureInitialChargeRaw = getRawInitialChargeFor(scope, "domestic");
-      EngineNumber manufactureChargeUnbound = unitConverter.convert(
-          manufactureInitialChargeRaw, "kg / unit");
-
-      EngineNumber importInitialChargeRaw = getRawInitialChargeFor(scope, "import");
-      EngineNumber importChargeUnbound = unitConverter.convert(
-          importInitialChargeRaw, "kg / unit");
-
-      // Get bounded values
-      EngineNumber manufactureCharge = useIfZeroOrElse(
-          manufactureChargeUnbound,
-          importChargeUnbound,
-          manufactureChargeUnbound
-      );
-      EngineNumber importInitialCharge = useIfZeroOrElse(
-          importChargeUnbound,
-          manufactureChargeUnbound,
-          importChargeUnbound
-      );
-
-      // Calculate units
-      BigDecimal manufactureKg = emptyStreams ? BigDecimal.ONE : manufactureValue.getValue();
-      BigDecimal importKg = emptyStreams ? BigDecimal.ONE : importValue.getValue();
-      BigDecimal manufactureKgUnit = manufactureCharge.getValue();
-      BigDecimal importKgUnit = importInitialCharge.getValue();
-
-      BigDecimal manufactureUnits = DivisionHelper.divideWithZero(
-          manufactureKg,
-          manufactureKgUnit
-      );
-
-      BigDecimal importUnits = DivisionHelper.divideWithZero(
-          importKg,
-          importKgUnit
-      );
-
-      boolean emptyPopulation = manufactureUnits.compareTo(BigDecimal.ZERO) == 0
-          && importUnits.compareTo(BigDecimal.ZERO) == 0;
-
-      if (emptyPopulation) {
+        return new EngineNumber(weightedSum, "kg / unit");
+      } catch (IllegalStateException e) {
+        // Fallback: if no streams are enabled, return zero
         return new EngineNumber(BigDecimal.ZERO, "kg / unit");
-      } else {
-        BigDecimal newSumWeighted = manufactureKgUnit.multiply(manufactureUnits)
-            .add(importKgUnit.multiply(importUnits));
-        BigDecimal newSumWeight = manufactureUnits.add(importUnits);
-        BigDecimal pooledKgUnit = newSumWeighted.divide(newSumWeight, MathContext.DECIMAL128);
-        return new EngineNumber(pooledKgUnit, "kg / unit");
       }
     } else {
       return getRawInitialChargeFor(scope, stream);

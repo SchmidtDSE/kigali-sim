@@ -573,4 +573,28 @@ public class BasicLiveTests {
     assertEquals("units", resultYear2028.getPopulation().getUnits(),
         "Equipment units should be units");
   }
+
+  /**
+   * Test zero_pop_infer.qta to reproduce division by zero error.
+   * This test is expected to fail with a division by zero error.
+   */
+  @Test
+  public void testZeroPopulationInfer() throws IOException {
+    // Load and parse the QTA file
+    String qtaPath = "../examples/zero_pop_infer.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    // Run the scenario using KigaliSimFacade
+    String scenarioName = "Business as Usual";
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
+
+    List<EngineResult> resultsList = results.collect(Collectors.toList());
+    EngineResult result = LiveTestsUtil.getResult(resultsList.stream(), 2025, "Domestic Refrigeration", "HFC-134a");
+    assertNotNull(result, "Should have result for Domestic Refrigeration/HFC-134a in year 2025");
+
+    // Check that we can get results without division by zero error
+    assertTrue(result.getPopulation().getValue().doubleValue() > 0,
+        "Equipment population should be positive");
+  }
 }
