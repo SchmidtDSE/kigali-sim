@@ -1,0 +1,208 @@
+<html>
+  <head>
+    <title>QubecTalk Reference: Commands</title>
+    <link href="/guide/guide.css?v=EPOCH" rel="stylesheet" type="text/css" />
+    <link href="/third_party/prism-tomorrow.min.css" rel="stylesheet" type="text/css" />
+  </head>
+  <body>
+    <a href="#main" class="skip-link">Skip to main content</a>
+    <header>
+      This reference is part of the <a href="/guide">guide</a> for the
+      <a href="/">Kigali Sim</a>.
+    </header>
+    <main id="main">
+      <h1>QubecTalk Reference: Commands</h1>
+
+      <p>
+        Commands are the executable statements within QubecTalk stanzas that define substance properties, set values, and configure policies.
+      </p>
+
+      <details>
+        <summary>Contents</summary>
+        <ul>
+          <li><a href="#enable">Enable</a></li>
+          <li><a href="#initial-charge">Initial Charge</a></li>
+          <li><a href="#set">Set</a></li>
+          <li><a href="#equals">Equals (GWP)</a></li>
+          <li><a href="#recharge">Recharge</a></li>
+          <li><a href="#retire">Retire</a></li>
+          <li><a href="#change">Change</a></li>
+          <li><a href="#cap">Cap</a></li>
+          <li><a href="#floor">Floor</a></li>
+          <li><a href="#recover">Recover</a></li>
+          <li><a href="#replace">Replace</a></li>
+          <li><a href="#define">Define</a></li>
+        </ul>
+      </details>
+
+      <section id="enable">
+        <h2>Enable</h2>
+
+        <p><strong>Purpose:</strong> Activates specific supply streams for a substance.</p>
+
+        <p><strong>Syntax:</strong> <code>enable streamName</code></p>
+
+        <p><strong>Available Streams:</strong> domestic, import, export</p>
+
+        <p><strong>Examples:</strong></p>
+        <pre><code class="language-qubectalk">enable domestic
+enable import
+enable export</code></pre>
+      </section>
+
+      <section id="initial-charge">
+        <h2>Initial Charge</h2>
+
+        <p><strong>Purpose:</strong> Specifies the amount of substance in new equipment per unit.</p>
+
+        <p><strong>Syntax:</strong> <code>initial charge with amount unit / unit for streamName</code></p>
+
+        <p><strong>Examples:</strong></p>
+        <pre><code class="language-qubectalk">initial charge with 0.15 kg / unit for domestic
+initial charge with 0.20 kg / unit for import
+initial charge with 1.5 kg / unit for domestic</code></pre>
+      </section>
+
+      <section id="set">
+        <h2>Set</h2>
+
+        <p><strong>Purpose:</strong> Sets consumption volumes or equipment units for specific streams and time periods.</p>
+
+        <p><strong>Syntax:</strong> <code>set streamName to amount unit during year year</code></p>
+
+        <p><strong>Examples:</strong></p>
+        <pre><code class="language-qubectalk">set domestic to 25 mt during year 2025
+set import to 15000 units during year 2025
+set priorEquipment to 1000000 units during year 2025</code></pre>
+      </section>
+
+      <section id="equals">
+        <h2>Equals (GWP)</h2>
+
+        <p><strong>Purpose:</strong> Defines the Global Warming Potential and energy consumption for a substance.</p>
+
+        <p><strong>Syntax:</strong> <code>equals gwpValue tCO2e / unit [energyValue kwh / unit]</code></p>
+
+        <p><strong>Examples:</strong></p>
+        <pre><code class="language-qubectalk">equals 1430 tCO2e / mt
+equals 675 tCO2e / mt 100 kwh / unit
+equals 3 tCO2e / mt</code></pre>
+      </section>
+
+      <section id="recharge">
+        <h2>Recharge</h2>
+
+        <p><strong>Purpose:</strong> Specifies servicing patterns for existing equipment including frequency and amount.</p>
+
+        <p><strong>Syntax:</strong> <code>recharge percentage % with amount unit / unit</code></p>
+
+        <p><strong>Examples:</strong></p>
+        <pre><code class="language-qubectalk">recharge 10% with 0.15 kg / unit
+recharge 15% with 0.85 kg / unit during years 2025 to 2030
+recharge 5% with 1.0 kg / unit in all years</code></pre>
+      </section>
+
+      <section id="retire">
+        <h2>Retire</h2>
+
+        <p><strong>Purpose:</strong> Sets equipment retirement rates determining equipment lifespan.</p>
+
+        <p><strong>Syntax:</strong> <code>retire percentage % each year</code></p>
+
+        <p><strong>Examples:</strong></p>
+        <pre><code class="language-qubectalk">retire 5% each year
+retire 7% each year during years 2025 to 2030
+retire 10% each year</code></pre>
+      </section>
+
+      <section id="change">
+        <h2>Change</h2>
+
+        <p><strong>Purpose:</strong> Applies growth or decline rates to consumption over time.</p>
+
+        <p><strong>Syntax:</strong> <code>change streamName by percentage % / year during years startYear to endYear</code></p>
+
+        <p><strong>Examples:</strong></p>
+        <pre><code class="language-qubectalk">change sales by 6% / year during years 2025 to 2030
+change domestic by -3% / year during years 2031 to 2035
+change import by 5% / year during years 2025 to onwards</code></pre>
+      </section>
+
+      <section id="cap">
+        <h2>Cap</h2>
+
+        <p><strong>Purpose:</strong> Limits consumption to specified levels, optionally with displacement to alternative substances.</p>
+
+        <p><strong>Syntax:</strong> <code>cap streamName to amount [displacing "substanceName"] during years startYear to endYear</code></p>
+
+        <p><strong>Examples:</strong></p>
+        <pre><code class="language-qubectalk">cap sales to 80% during years 2027 to 2030
+cap domestic to 0 mt displacing "R-600a" during years 2031 to onwards
+cap import to 50% during years 2028 to 2032</code></pre>
+      </section>
+
+      <section id="floor">
+        <h2>Floor</h2>
+
+        <p><strong>Purpose:</strong> Sets minimum consumption levels to prevent unrealistic reductions.</p>
+
+        <p><strong>Syntax:</strong> <code>floor streamName to amount during years startYear to endYear</code></p>
+
+        <p><strong>Examples:</strong></p>
+        <pre><code class="language-qubectalk">floor sales to 10% during years 2030 to onwards
+floor domestic to 5 mt during years 2025 to 2035</code></pre>
+      </section>
+
+      <section id="recover">
+        <h2>Recover</h2>
+
+        <p><strong>Purpose:</strong> Implements recycling programs that recover and reuse substances from end-of-life equipment.</p>
+
+        <p><strong>Syntax:</strong> <code>recover percentage % with reuse_percentage % reuse during years startYear to endYear</code></p>
+
+        <p><strong>Examples:</strong></p>
+        <pre><code class="language-qubectalk">recover 30% with 90% reuse during years 2027 to onwards
+recover 50% with 80% reuse during years 2030 to 2035
+recover 25% with 100% reuse at eol during years 2028 to onwards</code></pre>
+      </section>
+
+      <section id="replace">
+        <h2>Replace</h2>
+
+        <p><strong>Purpose:</strong> Substitutes one substance with another in new equipment over specified time periods.</p>
+
+        <p><strong>Syntax:</strong> <code>replace with "newSubstanceName" during years startYear to endYear</code></p>
+
+        <p><strong>Examples:</strong></p>
+        <pre><code class="language-qubectalk">replace with "R-600a" during years 2027 to 2030
+replace with "HFC-32" during years 2025 to onwards</code></pre>
+      </section>
+
+      <section id="define">
+        <h2>Define</h2>
+
+        <p><strong>Purpose:</strong> Creates variables for use in calculations and conditional statements.</p>
+
+        <p><strong>Syntax:</strong> <code>define variableName as value</code></p>
+
+        <p><strong>Examples:</strong></p>
+        <pre><code class="language-qubectalk">define baseGrowthRate as 5
+define phaseOutYear as 2030
+define targetReduction as 80</code></pre>
+      </section>
+
+      <section id="navigation">
+        <h2>See Also</h2>
+        <ul>
+          <li><a href="/guide/qubectalk_stanzas.html">QubecTalk Stanzas Reference</a></li>
+          <li><a href="/guide/qubectalk_language_features.html">QubecTalk Language Features Reference</a></li>
+          <li><a href="/guide">Return to Guide Index</a></li>
+        </ul>
+      </section>
+    </main>
+
+    <script src="/third_party/prism-core.min.js"></script>
+    <script src="/third_party/prism-autoloader.min.js"></script>
+    <script src="/guide/qubectalk-prism.js"></script>
+  </body>
+</html>
