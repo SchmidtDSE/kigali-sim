@@ -1,0 +1,167 @@
+<html>
+  <head>
+    <title>Tutorial 8: Equipment Units-Based Modeling</title>
+    <link href="/guide/guide.css?v=EPOCH" rel="stylesheet" type="text/css" />
+    <link href="/third_party/prism-tomorrow.min.css" rel="stylesheet" type="text/css" />
+  </head>
+  <body>
+    <a href="#main" class="skip-link">Skip to main content</a>
+    <header>
+      This tutorial is part of the <a href="/guide">guide</a> for the
+      <a href="/">Kigali Sim</a>.
+    </header>
+    <main id="main">
+      <h1>Tutorial 8: Equipment Units-Based Modeling</h1>
+
+      Alternative consumption specification using equipment sales data.
+
+      <details>
+        <summary>Contents</summary>
+        <ul>
+          <li><a href="#motivation">Motivation</a></li>
+          <li><a href="#understanding-unit-based-vs-volume-based-modeling">Understanding Unit-Based vs. Volume-Based Modeling</a></li>
+          <li><a href="#converting-to-unit-based-specification">Converting to Unit-Based Specification</a></li>
+          <li><a href="#updating-policy-to-use-units">Updating Policy to Use Units</a></li>
+          <li><a href="#observing-the-results">Observing the Results</a></li>
+          <li><a href="#conclusion">Conclusion</a></li>
+          <li><a href="#next-steps">Next Steps</a></li>
+        </ul>
+      </details>
+
+      <section id="motivation">
+        <h2>Motivation</h2>
+
+        <p>
+          Let's say ABC Country's equipment manufacturers have provided direct sales data in units rather than refrigerant volumes. In this tutorial, we'll demonstrate how to model consumption based on equipment sales, which automatically calculates refrigerant consumption (both for new equipment and servicing) based on populations.
+        </p>
+      </section>
+
+      <section id="understanding-unit-based-vs-volume-based-modeling">
+        <h2>Understanding Unit-Based vs. Volume-Based Modeling</h2>
+
+        <p>
+          Up to this point, we've been specifying consumption in mass (mt/year or kg/year). However, sometimes we may have equipment sales data in units/year instead where one unit refers to a single refrigerator or AC unit. QubecTalk supports both approaches:
+        </p>
+
+        <ul>
+          <li><strong>Volume-based</strong>: <code>set domestic to 13 mt during year 2025</code></li>
+          <li><strong>Unit-based</strong>: <code>set domestic to 80000 units during year 2025</code></li>
+        </ul>
+      </section>
+
+      <section id="converting-to-unit-based-specification">
+        <h2>Converting to Unit-Based Specification</h2>
+
+        <p>
+          Let's modify our ABC Country model to use unit sales for HFC-134a and R-600a in domestic refrigeration. In the <strong>Editor</strong> tab, find the domestic refrigeration substances and update their initial conditions:
+        </p>
+
+        <p>For <strong>HFC-134a</strong> (0.15 kg/unit domestic, 0.2 kg/unit import initial charge):</p>
+
+        <ul>
+          <li>Change <code>set domestic to 13 mt / year during year 2025</code> to <code>set domestic to 87,000 units during year 2025</code></li>
+          <li>Change <code>set import to 11 mt / year during year 2025</code> to <code>set import to 55,000 units during year 2025</code></li>
+        </ul>
+
+        <p>For <strong>R-600a</strong> (0.07 kg/unit initial charge):</p>
+
+        <ul>
+          <li>Change <code>set domestic to 1 mt during year 2025</code> to <code>set domestic to 14,000 units during year 2025</code></li>
+          <li>Change <code>set import to 1 mt during year 2025</code> to <code>set import to 14,000 units during year 2025</code></li>
+        </ul>
+
+        <p>Your code should now look like this:</p>
+
+        <pre><code class="language-qubectalk">define application "Domestic Refrigeration"
+  uses substance "HFC-134a"
+    # ... other configuration ...
+    set domestic to 87,000 units during year 2025
+    set import to 55,000 units during year 2025
+    # ... rest of substance definition ...
+  end substance
+  
+  uses substance "R-600a"
+    # ... other configuration ...
+    set domestic to 14,000 units during year 2025
+    set import to 14,000 units during year 2025
+    # ... rest of substance definition ...
+  end substance
+end application</code></pre>
+
+        <p>You may also use <code>units / year</code>.</p>
+      </section>
+
+      <section id="updating-policy-to-use-units">
+        <h2>Updating Policy to Use Units</h2>
+
+        <p>Since we're now thinking in terms of equipment units, let's also update our Sales Permit policy to use unit-based caps:</p>
+
+        <pre><code class="language-qubectalk">start policy "Sales Permit"
+  modify application "Domestic Refrigeration"
+    modify substance "HFC-134a"
+      cap sales to 80 % displacing "R-600a" during years 2027 to 2034
+      cap sales to 0 units displacing "R-600a" during years 2035 to onwards
+    end substance
+  end application
+end policy</code></pre>
+
+        <p>Note that we changed from <code>0 kg</code> to <code>0 units</code> for the final phase-out.</p>
+      </section>
+
+      <section id="observing-the-results">
+        <h2>Observing the Results</h2>
+
+        <p>
+          After making these changes, examine the simulation results with <strong>Attribute initial charge to importer</strong> checked and compare the unit-based model to your previous volume-based approach.
+        </p>
+
+        <p>
+          First, you may notice that switching to units slightly increased overall consumption. This happens because we're setting new equipment sales to specific numbers of units so additional consumption is then needed for recharging existing equipment. In other words, when using unit-based modeling, servicing consumption is added on top of whatever is needed to support the specified equipment sales numbers.
+        </p>
+
+        <p>
+          Second, let's look closer at HFC-134a under the Permit scenario with the <strong>Substances</strong> and <strong>Consumption</strong> radio buttons selected. The combined import and domestic consumption doesn't go to 0 mt. That's because we specified a cap of 0 new units sold but we still have servicing. Try setting the consumption cap back to 0 mt and it will drop all the way.
+        </p>
+      </section>
+
+      <section id="conclusion">
+        <h2>Conclusion</h2>
+
+        <p>You've successfully demonstrated equipment unit-based modeling as an alternative to volume specification. This tutorial showed how:</p>
+
+        <ul>
+          <li><strong>Equipment sales data</strong> can drive consumption calculations automatically.</li>
+          <li><strong>Unit specification</strong> affects total consumption by adding servicing on top of sales needs.</li>
+          <li><strong>Policy design</strong> must consider whether targets are equipment sales or total substance consumption.</li>
+          <li><strong>Modeling approach selection</strong> can adapt to data availability and policy objectives.</li>
+        </ul>
+
+        <p>The choice between unit-based and volume-based approaches depends on your data sources and policy questions, with each offering distinct advantages for different analytical needs.</p>
+
+        <p>
+          Before we finish up, note that QubecTalk allows flexibility to mix units. Specifically, our simulation now uses both unit-based and volume-based specifications simultaneously. We can do the same even within the same substance! For example, this may be helpful when specifying domestic manufacturing in units but imports in mass terms based on your available data.
+        </p>
+      </section>
+
+      <section id="next-steps">
+        <h2>Next Steps</h2>
+
+        <p>
+          <strong><a href="/guide/tutorial_09.html">Tutorial 9</a></strong> will introduce command line tools and Monte Carlo simulation for advanced uncertainty analysis. You'll learn to test model sensitivity to key assumptions and develop robust policy recommendations under uncertainty using probabilistic QubecTalk programming.
+        </p>
+
+        <p>
+          <a href="/guide/tutorial_07.html">← Previous: Tutorial 7</a> | 
+          <a href="/guide/tutorial_09.html">Next: Tutorial 9 →</a>
+        </p>
+      </section>
+
+      <hr />
+      <p><em>This tutorial is part of the ABC Country case study series demonstrating progressive HFC policy analysis using Kigali Sim.</em></p>
+    </main>
+
+    <script src="/third_party/prism-core.min.js"></script>
+    <script src="/third_party/prism-autoloader.min.js"></script>
+    <script src="/guide/qubectalk-prism.js"></script>
+  </body>
+</html>

@@ -1,0 +1,185 @@
+<html>
+  <head>
+    <title>Tutorial 7: First Code</title>
+    <link href="/guide/guide.css?v=EPOCH" rel="stylesheet" type="text/css" />
+    <link href="/third_party/prism-tomorrow.min.css" rel="stylesheet" type="text/css" />
+  </head>
+  <body>
+    <a href="#main" class="skip-link">Skip to main content</a>
+    <header>
+      This tutorial is part of the <a href="/guide">guide</a> for the
+      <a href="/">Kigali Sim</a>.
+    </header>
+    <main id="main">
+      <h1>Tutorial 7: First Code</h1>
+
+      Discovering QubecTalk and implementing multi-substance recycling policies.
+
+      <details>
+        <summary>Contents</summary>
+        <ul>
+          <li><a href="#motivation">Motivation</a></li>
+          <li><a href="#the-programming-revelation">The Programming Revelation</a></li>
+          <li><a href="#editing-code-directly">Editing Code Directly</a></li>
+          <li><a href="#implementing-r-600a-recycling">Implementing R-600a Recycling</a></li>
+          <li><a href="#results">Results</a></li>
+          <li><a href="#conclusion">Conclusion</a></li>
+          <li><a href="#next-steps">Next Steps</a></li>
+        </ul>
+      </details>
+
+      <section id="motivation">
+        <h2>Motivation</h2>
+
+        <p>
+          Though it may not seem like it at first, you have actually been programming all this time! In this tutorial, we'll reveal the QubecTalk code underlying your UI-based modeling and use this new understanding to implement a multi-substance recycling program that covers both HFC-134a and R-600a in domestic refrigeration.
+        </p>
+      </section>
+
+      <section id="the-programming-revelation">
+        <h2>The Programming Revelation</h2>
+
+        <p>Let's discover the code you've already written:</p>
+
+        <ul>
+          <li>Click the <strong>Editor</strong> tab to reveal your QubecTalk program</li>
+          <li>Review the code structure: <code>start default</code>, <code>define application</code>, <code>uses substance</code></li>
+          <li>Notice how your UI actions automatically generated this code.</li>
+        </ul>
+
+        <p>
+          You'll see that all your work from Tutorials 2-6 has been translated into QubecTalk, a domain-specific language designed specifically for Kigali Sim. We call the following <strong>stanzas</strong>:
+        </p>
+
+        <ul>
+          <li><strong>Applications</strong>: <code>define application "Domestic Refrigeration"</code> and <code>"Domestic AC"</code></li>
+          <li><strong>Substances</strong>: <code>uses substance "HFC-134a"</code>, <code>"R-600a"</code>, <code>"HFC-32"</code>, <code>"R-410A"</code></li>
+          <li><strong>Policies</strong>: <code>start policy "Sales Permit"</code> and <code>"Domestic Recycling"</code></li>
+          <li><strong>Simulations</strong>: <code>start simulations</code> with BAU, Permit, Recycling, and Combined scenarios</li>
+        </ul>
+
+        <p>Within each stanza, there are <strong>commands</strong> like <code>initial charge with 0.07 kg / unit for domestic</code>.</p>
+      </section>
+
+      <section id="editing-code-directly">
+        <h2>Editing Code Directly</h2>
+
+        <p>Let's make a simple change to get comfortable with code editing:</p>
+
+        <ul>
+          <li>In the Editor tab, find the HFC-134a recharge line: <code>recharge 10 % with 0.15 kg / unit</code></li>
+          <li>Change it to: <code>recharge 10 % with 0.14 kg / unit</code></li>
+          <li>Return to the <strong>Design</strong> tab and verify the change appears in the UI by clicking <strong>edit</strong> for HFC-134a</li>
+        </ul>
+
+        <p>This demonstrates the two-way connection between UI and code - changes in either location update the model.</p>
+
+        <p id="tutorial-gif-7-1" class="tutorial-gif-holder">
+          <img
+            src="/guide/img/tutorial07_01.gif"
+            alt="Animated GIF showing how to edit the code directly and see the results updated in the UI"
+          />
+        </p>
+      </section>
+
+      <section id="implementing-r-600a-recycling">
+        <h2>Implementing R-600a Recycling</h2>
+
+        <p>
+          Now let's use QubecTalk to implement a recycling program for R-600a. The UI cannot handle multi-substance policies within the same application but code makes this straightforward.
+        </p>
+
+        <p>Let's update your recycling policy like so:</p>
+
+        <pre><code class="language-qubectalk">start policy "Domestic Recycling"
+
+  modify application "Domestic Refrigeration"
+
+    # Make recycling program for HFC-134a
+    modify substance "HFC-134a"
+      recover 20 % with 90 % reuse during years 2027 to onwards
+    end substance
+
+    # Make recycling program for R-600a
+    modify substance "R-600a"
+      recover 20 % with 90 % reuse during years 2027 to onwards
+    end substance
+  
+  end application
+
+end policy</code></pre>
+
+        <p>
+          The existing simulations should update shortly after you finish. Note that indentation and extra spaces do not change the function of the code but they can help others more easily read the code later. Also, <code>#</code> denotes a comment which allows you to leave notes for yourself or other humans who might read your code. However, Kigali Sim ignores everything after <code>#</code> on the same line.
+        </p>
+      </section>
+
+      <section id="results">
+        <h2>Results</h2>
+
+        <p>
+          Recall that, in the prior tutorial where we didn't have a recycling program for R-600a so there was less HFC-134a to recycle late in the simulation.
+        </p>
+
+        <p>
+          With <strong>Attribute initial charge to importer</strong> checked, Let's compare these two outcomes by first commenting like the following (adding the leading <code>#</code>) while having the <strong>Consumption</strong> radio button selected.
+        </p>
+
+        <pre><code class="language-qubectalk">    modify substance "R-600a"
+      # recover 20 % with 90 % reuse during years 2027 to onwards
+    end substance</code></pre>
+
+        <p>
+          In 2035, combined import and domestic for the combined policy case is higher without the R-600a recycling program. However, let's remove that <code>#</code> again:
+        </p>
+
+        <pre><code class="language-qubectalk">    modify substance "R-600a"
+      recover 20 % with 90 % reuse during years 2027 to onwards
+    end substance</code></pre>
+
+        <p>
+          Now, the combined version sees lower consumption than recycling alone because the demand "displaced" from HFC-134a to R-600a now has a pathway to reuse.
+        </p>
+
+        <p id="tutorial-gif-7-2" class="tutorial-gif-holder">
+          <img
+            src="/guide/img/tutorial07_02.gif"
+            alt="Animated GIF showing how the policy change impacts overall consumption"
+          />
+        </p>
+      </section>
+
+      <section id="conclusion">
+        <h2>Conclusion</h2>
+
+        <p>
+          You've successfully transitioned from UI-based to code-based modeling while implementing a comprehensive multi-substance recycling strategy. This tutorial revealed that you've been programming: all UI actions generate QubecTalk code automatically. However, we also saw that code enables complexity like, for example, multi-substance policies.
+        </p>
+
+        <p>
+          QubecTalk provides the foundation for advanced analysis techniques we'll explore in later tutorials, including uncertainty assessment and complex policy interactions.
+        </p>
+      </section>
+
+      <section id="next-steps">
+        <h2>Next Steps</h2>
+
+        <p>
+          <strong><a href="/guide/tutorial_08.html">Tutorial 8</a></strong> will demonstrate equipment unit-based modeling as an alternative to volume-based consumption specification. You'll learn when to use unit sales data versus volume data and how QubecTalk handles both approaches seamlessly.
+        </p>
+
+        <p>
+          <a href="/guide/tutorial_06.html">← Previous: Tutorial 6</a> | 
+          <a href="/guide/tutorial_08.html">Next: Tutorial 8 →</a>
+        </p>
+      </section>
+
+      <hr />
+      <p><em>This tutorial is part of the ABC Country case study series demonstrating progressive HFC policy analysis using Kigali Sim.</em></p>
+    </main>
+
+    <script src="/third_party/prism-core.min.js"></script>
+    <script src="/third_party/prism-autoloader.min.js"></script>
+    <script src="/guide/qubectalk-prism.js"></script>
+  </body>
+</html>
