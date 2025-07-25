@@ -86,7 +86,7 @@
         <h2>Implementing R-600a Recycling</h2>
 
         <p>
-          Now let's use QubecTalk to implement a recycling program for R-600a. The UI cannot handle multi-substance policies within the same application but code makes this straightforward.
+          Now let's use QubecTalk to implement a recycling program for R-600a. The UI cannot handle multi-substance policies so we would have to make one policy record per substance / application pair. However, code makes it straightforward to combine both into one.
         </p>
 
         <p>Let's update your recycling policy like so:</p>
@@ -102,7 +102,7 @@
 
     # Make recycling program for R-600a
     modify substance "R-600a"
-      recover 20 % with 90 % reuse during years 2027 to onwards
+      recover 30 % with 90 % reuse during years 2027 to onwards
     end substance
   
   end application
@@ -126,7 +126,7 @@ end policy</code></pre>
         </p>
 
         <pre><code class="language-qubectalk">    modify substance "R-600a"
-      # recover 20 % with 90 % reuse during years 2027 to onwards
+      # recover 30 % with 90 % reuse during years 2027 to onwards
     end substance</code></pre>
 
         <p>
@@ -134,11 +134,11 @@ end policy</code></pre>
         </p>
 
         <pre><code class="language-qubectalk">    modify substance "R-600a"
-      recover 20 % with 90 % reuse during years 2027 to onwards
+      recover 30 % with 90 % reuse during years 2027 to onwards
     end substance</code></pre>
 
         <p>
-          Now, the combined version sees lower consumption than recycling alone because the demand "displaced" from HFC-134a to R-600a now has a pathway to reuse.
+          Now, the combined version sees closer consumption to recycling alone because the demand "displaced" from HFC-134a to R-600a now has a pathway to reuse.
         </p>
 
         <p id="tutorial-gif-7-2" class="tutorial-gif-holder">
