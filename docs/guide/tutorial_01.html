@@ -1,0 +1,121 @@
+<html>
+  <head>
+    <title>Tutorial 1: Introduction to Kigali Sim</title>
+    <link href="/guide/guide.css?v=EPOCH" rel="stylesheet" type="text/css" />
+  </head>
+  <body>
+    <a href="#main" class="skip-link">Skip to main content</a>
+    <header>
+      This tutorial is part of the <a href="/guide">guide</a> for the
+      <a href="/">Kigali Sim</a>.
+    </header>
+    <main id="main">
+      <h1>Tutorial 1: Introduction to Kigali Sim</h1>
+
+      Understanding HFCs and how Kigali Sim can help.
+
+      <details>
+        <summary>Contents</summary>
+        <ul>
+          <li><a href="#motivation">Motivation</a></li>
+          <li><a href="#background">Background</a></li>
+          <li><a href="#kigali-sim">Kigali Sim</a></li>
+          <li><a href="#guide">Guide</a></li>
+          <li><a href="#get-started">Get Started</a></li>
+          <li><a href="#next-steps">Next Steps</a></li>
+          <li><a href="#works-cited">Works Cited</a></li>
+        </ul>
+      </details>
+
+      <section id="motivation">
+        <h2>Motivation</h2>
+
+        <p>
+          Welcome! In this introductory tutorial, we will explore how Kigali Sim can help in an HFC phase-down context and why models made within the tool may be valuable for countries as they analyze different policy ideas. This will set the groundwork for the rest of the tutorial series which builds up a sophisticated case study as we tour multiple features of the platform.
+        </p>
+      </section>
+
+      <section id="background">
+        <h2>Background</h2>
+
+        <p>
+          HFCs are potent greenhouse gases used in air conditioners, refrigerators, aerosols, foams, and other products. While they offer important improvements over the <a href="https://www.unep.org/ozonaction/who-we-are/about-montreal-protocol">CFCs and HCFCs</a> which came before, these HFCs can be hundreds or thousands of times more potent than CO2 in terms of climate warming impact. For example, <a href="https://www.infraserv.com/en/services/facility-management/expertise/f-gas/gwp-calculator/">HFC-134a has a global warming potential of 1,430</a>, meaning that one kilogram of HFC-134a contributes 1,430 times as much to the greenhouse effect as one kilogram of CO₂ over a 100-year period.
+        </p>
+
+        <p>
+          <a href="https://www.epa.gov/ozone-layer-protection/recent-international-developments-under-montreal-protocol">In 2016, 197 countries adopted the Kigali Amendment</a> to the Montreal Protocol in Rwanda to phase down HFCs. Under the agreement, countries committed to cut the production and consumption of HFCs by more than 80 percent over the next 30 years, aiming to <a href="https://www.epa.gov/ozone-layer-protection/recent-international-developments-under-montreal-protocol">avoid more than 80 billion metric tons of carbon dioxide equivalent emissions by 2050</a>. This would avoid up to 0.5° Celsius warming by the end of the century.
+        </p>
+
+        <p>
+          <a href="https://www.multilateralfund.org/news/kigali-amendment">In 2023, 24 Kigali HFC Implementation Plans (KIPs) were approved</a>, mobilizing more than 53 million USD to foster the shift towards eco-friendly alternatives. Kigali Sim enters this picture because countries developing Implementation Plans (KIPs) need to understand complex policy trade-offs and interactions. Therefore, simulation tools like Kigali Sim help policymakers explore KIP scenarios to inform decisions at each step of the way.
+        </p>
+      </section>
+
+      <section id="kigali-sim">
+        <h2>Kigali Sim</h2>
+
+        <p>
+          Kigali Sim uses an stock-flow modeling approach that tracks HFC consumption through manufacturing, trade, servicing, and end of life. This method provides realistic projections by accounting for equipment lifecycles, retirement patterns, and the distinction between new equipment sales and maintenance based on existing equipment populations.
+        </p>
+
+        <p>
+          The tool operates by establishing business-as-usual baselines and then "stacking" policy interventions on top to compare scenarios. This allows testing individual policies or combinations against the same baseline. This approach can also evaluate different assumptions like under different climate change (SSP) scenarios.
+        </p>
+
+        <p>
+          Finally, Kigali Sim uniquely allows specification of the system either where equipment population data is provided or where substance sales (or even tCO2e estimates) seed the model. This allows for flexibility in which users can provide the data they have and the system will try to fill in the gaps as best it can until more specific data become available later.
+        </p>
+      </section>
+
+      <section id="guide">
+        <h2>Guide</h2>
+
+        <p>
+          This tutorial series follows a progressive learning path using ABC Country. For this hypothetical medium-sized nation, we build up an increasingly sophisticated model together. This is not necessarily meant to be entirely realistic but it will help us experiment with many of the available Kigali Sim features.
+        </p>
+
+        <p>
+          We will start with Kigali Sim's point-and-click interface which doesn't require code to build up sophisticated simulations. Though we will start with single substance modeling using basic equipment data, we will quickly expand into multi-sector, multi-substance national inventories with economic growth and business-as-usual projections. We will also consider supply chain analysis distinguishing manufacturing from imports before simulating policy interventions and impact assessment.
+        </p>
+
+        <p>
+          Finally, after you are comfortable with the basics, we will transition to QubecTalk. This bespoke programming language built just for Kigali Sim affords additional flexibility in defining models. We will use it to introduce advanced techniques for complex policies and probabilistic projection. No worries if you have limited programming experience. This is writing short commands similar in complexity to formulas in spreadsheet software.
+        </p>
+
+        <p>
+          Altogether, this progression mirrors real-world modeling we hope Kigali Sim provides: you can start simple with available data before adding sophistication as questions become more complex and additional data becomes available.
+        </p>
+      </section>
+
+      <section id="get-started">
+        <h2>Get Started</h2>
+
+        <p>
+          Kigali Sim is available as a free, open-source web application at <a href="https://kigalisim.org">https://kigalisim.org</a>. No installation is required! It runs entirely in your web browser with a privacy-respecting design that does not share your simulations and data with others. Everything is saved and runs on your own machine. However, you can save and load files to send your work to colleagues and partners.
+        </p>
+      </section>
+
+      <section id="next-steps">
+        <h2>Next Steps</h2>
+
+        <p>
+          <strong><a href="/guide/tutorial_02.html">Tutorial 2</a></strong> will begin hands-on modeling by creating ABC Country's first simulation focusing on domestic refrigeration. You'll learn how to set up equipment populations, configure consumption patterns, run simulations, and interpret results, building the foundation for comprehensive HFC phase-down analysis.
+        </p>
+      </section>
+
+      <section id="works-cited">
+        <h2>Works Cited</h2>
+
+        <ol>
+          <li>United States Environmental Protection Agency. "Recent International Developments under the Montreal Protocol." Accessed July 21, 2025. https://www.epa.gov/ozone-layer-protection/recent-international-developments-under-montreal-protocol</li>
+          <li>United Nations Environment Programme. "About Montreal Protocol." Accessed July 21, 2025. https://www.unep.org/ozonaction/who-we-are/about-montreal-protocol</li>
+          <li>Multilateral Fund for the Implementation of the Montreal Protocol. "The Kigali Amendment." Accessed July 21, 2025. https://www.multilateralfund.org/news/kigali-amendment</li>
+          <li>International Institute of Refrigeration. "Global warming potential (GWP) of HFC refrigerants." September 15, 2023. https://iifiir.org/en/encyclopedia-of-refrigeration/global-warming-potential-gwp-of-hfc-refrigerants</li>
+          <li>Infraserv. "GWP calculator." Accessed July 21, 2025. https://www.infraserv.com/en/services/facility-management/expertise/f-gas/gwp-calculator/</li>
+        </ol>
+
+        <p><em>This tutorial is part of the ABC Country case study series demonstrating progressive HFC policy analysis using Kigali Sim.</em></p>
+      </section>
+    </main>
+  </body>
+</html>
