@@ -11,7 +11,6 @@
 package org.kigalisim.engine;
 
 import java.math.BigDecimal;
-import java.math.MathContext;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -34,7 +33,6 @@ import org.kigalisim.engine.state.StreamKeeper;
 import org.kigalisim.engine.state.SubstanceInApplicationId;
 import org.kigalisim.engine.state.UseKey;
 import org.kigalisim.engine.state.YearMatcher;
-import org.kigalisim.engine.support.DivisionHelper;
 import org.kigalisim.engine.support.ExceptionsGenerator;
 import org.kigalisim.engine.support.RechargeVolumeCalculator;
 import org.kigalisim.lang.operation.RecoverOperation.RecoveryStage;
@@ -409,24 +407,29 @@ public class SingleThreadEngine implements Engine {
   @Override
   public EngineNumber getInitialCharge(String stream) {
     if ("sales".equals(stream)) {
-      // Use SalesStreamDistributionBuilder to get the correct weights for enabled streams
-      SalesStreamDistribution distribution = streamKeeper.getDistribution(scope, false);
-      
-      BigDecimal domesticWeight = distribution.getPercentDomestic();
-      BigDecimal importWeight = distribution.getPercentImport();
-      
-      // Get raw initial charges for each stream
-      EngineNumber domesticInitialChargeRaw = getRawInitialChargeFor(scope, "domestic");
-      EngineNumber domesticInitialCharge = unitConverter.convert(domesticInitialChargeRaw, "kg / unit");
-      
-      EngineNumber importInitialChargeRaw = getRawInitialChargeFor(scope, "import");
-      EngineNumber importInitialCharge = unitConverter.convert(importInitialChargeRaw, "kg / unit");
-      
-      // Calculate weighted average of initial charges using distribution percentages
-      BigDecimal weightedSum = domesticInitialCharge.getValue().multiply(domesticWeight)
-          .add(importInitialCharge.getValue().multiply(importWeight));
-      
-      return new EngineNumber(weightedSum, "kg / unit");
+      try {
+        // Use SalesStreamDistributionBuilder to get the correct weights for enabled streams
+        SalesStreamDistribution distribution = streamKeeper.getDistribution(scope, false);
+
+        BigDecimal domesticWeight = distribution.getPercentDomestic();
+        BigDecimal importWeight = distribution.getPercentImport();
+
+        // Get raw initial charges for each stream
+        EngineNumber domesticInitialChargeRaw = getRawInitialChargeFor(scope, "domestic");
+        EngineNumber domesticInitialCharge = unitConverter.convert(domesticInitialChargeRaw, "kg / unit");
+
+        EngineNumber importInitialChargeRaw = getRawInitialChargeFor(scope, "import");
+        EngineNumber importInitialCharge = unitConverter.convert(importInitialChargeRaw, "kg / unit");
+
+        // Calculate weighted average of initial charges using distribution percentages
+        BigDecimal weightedSum = domesticInitialCharge.getValue().multiply(domesticWeight)
+            .add(importInitialCharge.getValue().multiply(importWeight));
+
+        return new EngineNumber(weightedSum, "kg / unit");
+      } catch (IllegalStateException e) {
+        // Fallback: if no streams are enabled, return zero (original behavior for empty population case)
+        return new EngineNumber(BigDecimal.ZERO, "kg / unit");
+      }
     } else {
       return getRawInitialChargeFor(scope, stream);
     }
