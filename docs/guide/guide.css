@@ -95,6 +95,7 @@ section {
 
 section.no-border {
   border-top: none;
+  margin-top: 0;
 }
 
 .aside {

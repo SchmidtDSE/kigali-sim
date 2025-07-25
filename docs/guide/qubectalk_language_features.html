@@ -20,15 +20,61 @@
       <details>
         <summary>Contents</summary>
         <ul>
+          <li><a href="#comments">Comments</a></li>
+          <li><a href="#comparison-operators">Comparison Operators</a></li>
           <li><a href="#conditional-statements">Conditional Statements</a></li>
           <li><a href="#logical-operators">Logical Operators</a></li>
-          <li><a href="#comparison-operators">Comparison Operators</a></li>
           <li><a href="#mathematical-operations">Mathematical Operations</a></li>
           <li><a href="#probabilistic-sampling">Probabilistic Sampling</a></li>
-          <li><a href="#comments">Comments</a></li>
           <li><a href="#units-and-measurements">Units and Measurements</a></li>
         </ul>
       </details>
+
+      <section id="comments">
+        <h2>Comments</h2>
+
+        <p><strong>Purpose:</strong> Add explanatory text that is ignored by the interpreter.</p>
+
+        <p><strong>Syntax:</strong> <code># Comment text</code></p>
+
+        <p><strong>Examples:</strong></p>
+        <pre><code class="language-qubectalk"># This is a full line comment
+set domestic to 25 mt during year 2025  # This is an end-of-line comment
+
+# Multi-line comments require # on each line
+# This explains the following complex calculation
+# that implements economic growth projections
+change sales by 6% / year during years 2025 to 2030</code></pre>
+      </section>
+
+      <section id="comparison-operators">
+        <h2>Comparison Operators</h2>
+
+        <p><strong>Purpose:</strong> Compare values to create conditions for logical operations.</p>
+
+        <p><strong>Available Operators:</strong></p>
+        <ul>
+          <li><code>==</code> - Equal to</li>
+          <li><code>!=</code> - Not equal to</li>
+          <li><code>&gt;</code> - Greater than</li>
+          <li><code>&gt;=</code> - Greater than or equal to</li>
+          <li><code>&lt;</code> - Less than</li>
+          <li><code>&lt;=</code> - Less than or equal to</li>
+        </ul>
+
+        <p><strong>Examples:</strong></p>
+        <pre><code class="language-qubectalk">define currentYear as 2025
+define targetYear as 2030
+
+set import to 100 if currentYear == targetYear else 75 endif mt
+set export to 50 if currentYear >= targetYear else 25 endif mt
+set domestic to 200 if currentYear < targetYear else 150 endif mt
+
+# Mixed comparison and logical operators
+define testA as 1
+define testB as 0
+set domestic to 90 if testA > 0 and testB == 0 else 55 endif mt during year 6</code></pre>
+      </section>
 
       <section id="conditional-statements">
         <h2>Conditional Statements</h2>
@@ -80,35 +126,6 @@ set domestic to 60 if testA xor testC else 40 endif mt during year 3
 set domestic to 70 if (testA or testB) and testC else 35 endif mt during year 4</code></pre>
       </section>
 
-      <section id="comparison-operators">
-        <h2>Comparison Operators</h2>
-
-        <p><strong>Purpose:</strong> Compare values to create conditions for logical operations.</p>
-
-        <p><strong>Available Operators:</strong></p>
-        <ul>
-          <li><code>==</code> - Equal to</li>
-          <li><code>!=</code> - Not equal to</li>
-          <li><code>&gt;</code> - Greater than</li>
-          <li><code>&gt;=</code> - Greater than or equal to</li>
-          <li><code>&lt;</code> - Less than</li>
-          <li><code>&lt;=</code> - Less than or equal to</li>
-        </ul>
-
-        <p><strong>Examples:</strong></p>
-        <pre><code class="language-qubectalk">define currentYear as 2025
-define targetYear as 2030
-
-set import to 100 if currentYear == targetYear else 75 endif mt
-set export to 50 if currentYear >= targetYear else 25 endif mt
-set domestic to 200 if currentYear < targetYear else 150 endif mt
-
-# Mixed comparison and logical operators
-define testA as 1
-define testB as 0
-set domestic to 90 if testA > 0 and testB == 0 else 55 endif mt during year 6</code></pre>
-      </section>
-
       <section id="mathematical-operations">
         <h2>Mathematical Operations</h2>
 
@@ -158,23 +175,6 @@ set priorEquipment to sample normally from mean of 1000000 std of 100000 units d
 
 # Uniform distribution for policy effectiveness
 recover sample uniformly from 20% to 40% with 90% reuse during years 2027 to onwards</code></pre>
-      </section>
-
-      <section id="comments">
-        <h2>Comments</h2>
-
-        <p><strong>Purpose:</strong> Add explanatory text that is ignored by the interpreter.</p>
-
-        <p><strong>Syntax:</strong> <code># Comment text</code></p>
-
-        <p><strong>Examples:</strong></p>
-        <pre><code class="language-qubectalk"># This is a full line comment
-set domestic to 25 mt during year 2025  # This is an end-of-line comment
-
-# Multi-line comments require # on each line
-# This explains the following complex calculation
-# that implements economic growth projections
-change sales by 6% / year during years 2025 to 2030</code></pre>
       </section>
 
       <section id="units-and-measurements">
