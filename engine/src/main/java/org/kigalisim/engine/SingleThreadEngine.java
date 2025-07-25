@@ -427,7 +427,7 @@ public class SingleThreadEngine implements Engine {
 
         return new EngineNumber(weightedSum, "kg / unit");
       } catch (IllegalStateException e) {
-        // Fallback: if no streams are enabled, return zero (original behavior for empty population case)
+        // Fallback: if no streams are enabled, return zero
         return new EngineNumber(BigDecimal.ZERO, "kg / unit");
       }
     } else {
