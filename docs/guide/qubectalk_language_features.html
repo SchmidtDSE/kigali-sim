@@ -1,0 +1,236 @@
+<html>
+  <head>
+    <title>QubecTalk Reference: Language Features</title>
+    <link href="/guide/guide.css?v=EPOCH" rel="stylesheet" type="text/css" />
+    <link href="/third_party/prism-tomorrow.min.css" rel="stylesheet" type="text/css" />
+  </head>
+  <body>
+    <a href="#main" class="skip-link">Skip to main content</a>
+    <header>
+      This reference is part of the <a href="/guide">guide</a> for the
+      <a href="/">Kigali Sim</a>.
+    </header>
+    <main id="main">
+      <h1>QubecTalk Reference: Language Features</h1>
+
+      <p>
+        QubecTalk includes advanced language features for conditional logic, probabilistic modeling, and mathematical operations.
+      </p>
+
+      <details>
+        <summary>Contents</summary>
+        <ul>
+          <li><a href="#conditional-statements">Conditional Statements</a></li>
+          <li><a href="#logical-operators">Logical Operators</a></li>
+          <li><a href="#comparison-operators">Comparison Operators</a></li>
+          <li><a href="#mathematical-operations">Mathematical Operations</a></li>
+          <li><a href="#probabilistic-sampling">Probabilistic Sampling</a></li>
+          <li><a href="#comments">Comments</a></li>
+          <li><a href="#units-and-measurements">Units and Measurements</a></li>
+        </ul>
+      </details>
+
+      <section id="conditional-statements">
+        <h2>Conditional Statements</h2>
+
+        <p><strong>Purpose:</strong> Execute different actions based on conditions using if-else logic.</p>
+
+        <p><strong>Syntax:</strong> <code>value if condition else alternative endif</code></p>
+
+        <p><strong>Examples:</strong></p>
+        <pre><code class="language-qubectalk">set domestic to 100 if testVar > 10 else 50 endif mt
+
+# Complex nested conditions
+set import to 75 if economicGrowth > 5 else 
+              50 if economicGrowth > 2 else 
+              25 endif endif mt
+
+# With variable definitions
+define testVar as 5
+set domestic to 100 if testVar > 10 else 50 endif mt during year 2025</code></pre>
+      </section>
+
+      <section id="logical-operators">
+        <h2>Logical Operators</h2>
+
+        <p><strong>Purpose:</strong> Combine multiple conditions using logical operations.</p>
+
+        <p><strong>Available Operators:</strong></p>
+        <ul>
+          <li><code>and</code> - Both conditions must be true</li>
+          <li><code>or</code> - At least one condition must be true</li>
+          <li><code>xor</code> - Exactly one condition must be true (exclusive or)</li>
+        </ul>
+
+        <p><strong>Examples:</strong></p>
+        <pre><code class="language-qubectalk">define testA as 1
+define testB as 0
+define testC as 2
+
+# AND operation: 1 and 0 = false, uses else branch (30)
+set domestic to 100 if testA and testB else 30 endif mt during year 1
+
+# OR operation: 1 or 0 = true, uses if branch (50)
+set domestic to 50 if testA or testB else 20 endif mt during year 2
+
+# XOR operation: 1 xor 2 = false (both truthy), uses else branch (40)
+set domestic to 60 if testA xor testC else 40 endif mt during year 3
+
+# Complex with parentheses
+set domestic to 70 if (testA or testB) and testC else 35 endif mt during year 4</code></pre>
+      </section>
+
+      <section id="comparison-operators">
+        <h2>Comparison Operators</h2>
+
+        <p><strong>Purpose:</strong> Compare values to create conditions for logical operations.</p>
+
+        <p><strong>Available Operators:</strong></p>
+        <ul>
+          <li><code>==</code> - Equal to</li>
+          <li><code>!=</code> - Not equal to</li>
+          <li><code>&gt;</code> - Greater than</li>
+          <li><code>&gt;=</code> - Greater than or equal to</li>
+          <li><code>&lt;</code> - Less than</li>
+          <li><code>&lt;=</code> - Less than or equal to</li>
+        </ul>
+
+        <p><strong>Examples:</strong></p>
+        <pre><code class="language-qubectalk">define currentYear as 2025
+define targetYear as 2030
+
+set import to 100 if currentYear == targetYear else 75 endif mt
+set export to 50 if currentYear >= targetYear else 25 endif mt
+set domestic to 200 if currentYear < targetYear else 150 endif mt
+
+# Mixed comparison and logical operators
+define testA as 1
+define testB as 0
+set domestic to 90 if testA > 0 and testB == 0 else 55 endif mt during year 6</code></pre>
+      </section>
+
+      <section id="mathematical-operations">
+        <h2>Mathematical Operations</h2>
+
+        <p><strong>Purpose:</strong> Perform arithmetic calculations within expressions.</p>
+
+        <p><strong>Available Operators:</strong></p>
+        <ul>
+          <li><code>+</code> - Addition</li>
+          <li><code>-</code> - Subtraction</li>
+          <li><code>*</code> - Multiplication</li>
+          <li><code>/</code> - Division</li>
+          <li><code>^</code> - Exponentiation</li>
+          <li><code>()</code> - Parentheses for precedence</li>
+        </ul>
+
+        <p><strong>Examples:</strong></p>
+        <pre><code class="language-qubectalk"># Basic arithmetic
+set domestic to (100 + 50) mt during year 2025
+set import to (200 * 0.15) mt during year 2025
+
+# Standard deviation calculation
+set priorEquipment to sample normally from mean of 100000 std of (100000 * 0.1) units
+
+# Complex calculations
+define baselineConsumption as 100
+define growthRate as 5
+set domestic to (baselineConsumption * (1 + growthRate / 100)) mt during year 2026</code></pre>
+      </section>
+
+      <section id="probabilistic-sampling">
+        <h2>Probabilistic Sampling</h2>
+
+        <p><strong>Purpose:</strong> Introduce uncertainty into models using probability distributions for Monte Carlo analysis.</p>
+
+        <p><strong>Available Distributions:</strong></p>
+        <ul>
+          <li><code>sample normally from mean of X std of Y</code> - Normal distribution</li>
+          <li><code>sample uniformly from X to Y</code> - Uniform distribution</li>
+        </ul>
+
+        <p><strong>Examples:</strong></p>
+        <pre><code class="language-qubectalk"># Normal distribution for growth rates
+change sales by sample normally from mean of 5% std of 1% / year during years 2025 to 2030
+
+# Normal distribution for equipment populations
+set priorEquipment to sample normally from mean of 1000000 std of 100000 units during year 2025
+
+# Uniform distribution for policy effectiveness
+recover sample uniformly from 20% to 40% with 90% reuse during years 2027 to onwards</code></pre>
+      </section>
+
+      <section id="comments">
+        <h2>Comments</h2>
+
+        <p><strong>Purpose:</strong> Add explanatory text that is ignored by the interpreter.</p>
+
+        <p><strong>Syntax:</strong> <code># Comment text</code></p>
+
+        <p><strong>Examples:</strong></p>
+        <pre><code class="language-qubectalk"># This is a full line comment
+set domestic to 25 mt during year 2025  # This is an end-of-line comment
+
+# Multi-line comments require # on each line
+# This explains the following complex calculation
+# that implements economic growth projections
+change sales by 6% / year during years 2025 to 2030</code></pre>
+      </section>
+
+      <section id="units-and-measurements">
+        <h2>Units and Measurements</h2>
+
+        <p><strong>Purpose:</strong> Specify quantities with proper units for consumption, time, and other measurements.</p>
+
+        <p><strong>Volume Units:</strong></p>
+        <ul>
+          <li><code>kg</code> - Kilograms</li>
+          <li><code>mt</code> - Metric tons</li>
+          <li><code>unit</code> / <code>units</code> - Equipment units</li>
+          <li><code>tCO2e</code> - Tons of CO₂ equivalent</li>
+          <li><code>kwh</code> - Kilowatt hours</li>
+        </ul>
+
+        <p><strong>Time Units:</strong></p>
+        <ul>
+          <li><code>year</code> / <code>years</code> / <code>yr</code> / <code>yrs</code> - Years</li>
+          <li><code>month</code> / <code>months</code> - Months</li>
+          <li><code>day</code> / <code>days</code> - Days</li>
+        </ul>
+
+        <p><strong>Other Units:</strong></p>
+        <ul>
+          <li><code>%</code> - Percentage</li>
+          <li><code>each</code> - Per unit (e.g., "% each year")</li>
+        </ul>
+
+        <p><strong>Examples:</strong></p>
+        <pre><code class="language-qubectalk"># Volume specifications
+set domestic to 25 mt during year 2025
+set import to 15000 units during year 2025
+initial charge with 0.15 kg / unit for domestic
+
+# GWP and energy
+equals 1430 tCO2e / mt 100 kwh / unit
+
+# Time specifications
+change sales by 5% / year during years 2025 to 2030
+retire 5% each year
+recharge 10% with 0.15 kg / unit in all years</code></pre>
+      </section>
+
+      <section id="navigation">
+        <h2>See Also</h2>
+        <ul>
+          <li><a href="/guide/qubectalk_stanzas.html">QubecTalk Stanzas Reference</a></li>
+          <li><a href="/guide/qubectalk_commands.html">QubecTalk Commands Reference</a></li>
+          <li><a href="/guide">Return to Guide Index</a></li>
+        </ul>
+      </section>
+    </main>
+
+    <script src="/third_party/prism-core.min.js"></script>
+    <script src="/third_party/prism-autoloader.min.js"></script>
+    <script src="/guide/qubectalk-prism.js"></script>
+  </body>
+</html>
