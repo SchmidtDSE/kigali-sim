@@ -122,25 +122,20 @@ public class EngineResultSerializer {
     }
     BigDecimal percentImport = BigDecimal.ONE.subtract(percentManufacture);
 
-    // Offset sales
-    EngineNumber manufactureValueOffset = new EngineNumber(
-        manufactureKg.subtract(recycleKg.multiply(percentManufacture)), "kg");
-    builder.setDomesticValue(manufactureValueOffset);
-
-    EngineNumber importValueOffset = new EngineNumber(
-        importKg.subtract(recycleKg.multiply(percentImport)), "kg");
-    builder.setImportValue(importValueOffset);
+    // Use values directly - recycling already handled at stream level
+    builder.setDomesticValue(manufactureValue);
+    builder.setImportValue(importValue);
 
     // Get consumption
     EngineNumber consumptionByVolume = getConsumptionByVolume(
         useKey, unitConverter);
 
     EngineNumber domesticConsumptionValue = getConsumptionForVolume(
-        manufactureValueOffset, consumptionByVolume, stateGetter, unitConverter);
+        manufactureValue, consumptionByVolume, stateGetter, unitConverter);
     builder.setDomesticConsumptionValue(domesticConsumptionValue);
 
     EngineNumber importConsumptionValue = getConsumptionForVolume(
-        importValueOffset, consumptionByVolume, stateGetter, unitConverter);
+        importValue, consumptionByVolume, stateGetter, unitConverter);
     builder.setImportConsumptionValue(importConsumptionValue);
 
     // Set export values (exports don't affect equipment population, just track volume and consumption)
