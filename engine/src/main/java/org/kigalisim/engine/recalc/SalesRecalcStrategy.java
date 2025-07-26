@@ -164,12 +164,9 @@ public class SalesRecalcStrategy implements RecalcStrategy {
     // Subtract what we can fulfill from other sources:
     // - implicitRechargeKg: recharge that was already added when units were specified
     // - recycledDisplacedKg: material available from recycling
-    BigDecimal requiredKgUnbound = totalDemand
+    BigDecimal requiredKg = totalDemand
         .subtract(implicitRechargeKg)
         .subtract(recycledDisplacedKg);
-
-    boolean requiredKgNegative = requiredKgUnbound.compareTo(BigDecimal.ZERO) < 0;
-    BigDecimal requiredKg = requiredKgNegative ? BigDecimal.ZERO : requiredKgUnbound;
 
     BigDecimal newDomesticKg = percentDomestic.multiply(requiredKg);
     BigDecimal newImportKg = percentImport.multiply(requiredKg);

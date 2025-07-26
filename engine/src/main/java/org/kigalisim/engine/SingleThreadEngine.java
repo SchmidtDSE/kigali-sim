@@ -257,11 +257,21 @@ public class SingleThreadEngine implements Engine {
           this
       );
 
-      BigDecimal totalWithRecharge = valueInKg.getValue().add(rechargeVolume.getValue());
-      valueToSet = new EngineNumber(totalWithRecharge, "kg");
-
-      // Set implicit recharge to indicate we've added recharge automatically
+      // Set implicit recharge BEFORE distribution (always full amount)
       streamKeeper.setStream(keyEffective, "implicitRecharge", rechargeVolume);
+
+      // Only distribute recharge when called from recalc strategies (propagateChanges=false)
+      BigDecimal rechargeToAdd;
+      if (!propagateChanges && ("domestic".equals(name) || "import".equals(name))) {
+        // Called from SalesRecalcStrategy - use distributed recharge
+        rechargeToAdd = getDistributedRecharge(name, rechargeVolume, keyEffective);
+      } else {
+        // Direct user call or sales stream - use full recharge
+        rechargeToAdd = rechargeVolume.getValue();
+      }
+      
+      BigDecimal totalWithRecharge = valueInKg.getValue().add(rechargeToAdd);
+      valueToSet = new EngineNumber(totalWithRecharge, "kg");
     } else if (isSales) {
       // Sales stream without units - clear implicit recharge
       streamKeeper.setStream(keyEffective, "implicitRecharge", new EngineNumber(BigDecimal.ZERO, "kg"));
@@ -1047,6 +1057,32 @@ public class SingleThreadEngine implements Engine {
   private boolean isSalesStream(String stream, boolean includeExports) {
     boolean isCoreStream = "sales".equals(stream) || "domestic".equals(stream) || "import".equals(stream);
     return isCoreStream || (includeExports && "export".equals(stream));
+  }
+
+  /**
+   * Gets the distributed recharge amount for a specific stream.
+   *
+   * @param streamName The name of the stream
+   * @param totalRecharge The total recharge amount
+   * @param keyEffective The effective use key
+   * @return The distributed recharge amount based on stream percentages
+   */
+  private BigDecimal getDistributedRecharge(String streamName, EngineNumber totalRecharge, UseKey keyEffective) {
+    if ("sales".equals(streamName)) {
+      // Sales stream gets 100% - setStreamForSales will distribute it
+      return totalRecharge.getValue();
+    }
+    
+    if ("domestic".equals(streamName) || "import".equals(streamName)) {
+      SalesStreamDistribution distribution = streamKeeper.getDistribution(keyEffective);
+      BigDecimal percentage = "domestic".equals(streamName) 
+          ? distribution.getPercentDomestic() 
+          : distribution.getPercentImport();
+      return totalRecharge.getValue().multiply(percentage);
+    }
+    
+    // Export and other streams get no recharge
+    return BigDecimal.ZERO;
   }
 
   /**
