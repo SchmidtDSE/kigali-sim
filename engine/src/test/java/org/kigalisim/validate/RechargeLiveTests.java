@@ -2,6 +2,7 @@ package org.kigalisim.validate;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.util.List;
@@ -400,6 +401,13 @@ public class RechargeLiveTests {
     assertEquals(true, combinedTotalConsumption <= recyclingTotalConsumption,
         "Combined scenario consumption (" + combinedTotalConsumption + ") should be <= recycling scenario consumption (" 
         + recyclingTotalConsumption + ") in 2035");
+
+    // Assert that HFC-134a consumption in kg is more than 0 in 2035 under the combined policy
+    double combinedHfcDomestic = combinedHfc2035.getDomestic().getValue().doubleValue();
+    double combinedHfcImport = combinedHfc2035.getImport().getValue().doubleValue();
+    double combinedHfc134aConsumption = combinedHfcDomestic + combinedHfcImport;
+    assertTrue(combinedHfc134aConsumption > 0, 
+        "HFC-134a consumption should be more than 0 in 2035 under combined policy, but was " + combinedHfc134aConsumption);
   }
 
   /**
@@ -450,6 +458,127 @@ public class RechargeLiveTests {
     assertEquals(true, combinedTotalConsumption <= recyclingTotalConsumption,
         "Combined scenario consumption (" + combinedTotalConsumption + ") should be <= recycling scenario consumption (" 
         + recyclingTotalConsumption + ") in 2035 with reordered policies");
+
+    // Assert that HFC-134a consumption in kg is more than 0 in 2035 under the combined policy
+    double combinedHfcDomestic = combinedHfc2035.getDomestic().getValue().doubleValue();
+    double combinedHfcImport = combinedHfc2035.getImport().getValue().doubleValue();
+    double combinedHfc134aConsumption = combinedHfcDomestic + combinedHfcImport;
+    assertTrue(combinedHfc134aConsumption > 0, 
+        "HFC-134a consumption should be more than 0 in 2035 under combined policy with reordered policies, but was " + combinedHfc134aConsumption);
+  }
+
+  /**
+   * Test for combined policies with recharge where Sales Permit is applied first, then Domestic Recycling.
+   * Uses volume-based units (mt) as mentioned in tutorial_3.md and tutorial_4.md.
+   * This verifies that HFC-134a consumption in kg is 0 under the combined policy in 2035.
+   */
+  @Test
+  public void testCombinedPoliciesRechargeMt() throws IOException {
+    String qtaPath = "../examples/combined_policies_recharge_mt.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    // Run recycling scenario
+    String recyclingScenario = "Recycling";
+    Stream<EngineResult> recyclingResults = KigaliSimFacade.runScenario(program, recyclingScenario, progress -> {});
+    List<EngineResult> recyclingResultsList = recyclingResults.collect(Collectors.toList());
+
+    // Run combined scenario
+    String combinedScenario = "Combined";
+    Stream<EngineResult> combinedResults = KigaliSimFacade.runScenario(program, combinedScenario, progress -> {});
+    List<EngineResult> combinedResultsList = combinedResults.collect(Collectors.toList());
+
+    // Get 2035 results for both scenarios for HFC-134a
+    EngineResult recyclingHfc2035 = LiveTestsUtil.getResult(recyclingResultsList.stream(), 2035, "Domestic Refrigeration", "HFC-134a");
+    EngineResult combinedHfc2035 = LiveTestsUtil.getResult(combinedResultsList.stream(), 2035, "Domestic Refrigeration", "HFC-134a");
+
+    // Get 2035 results for both scenarios for R-600a
+    EngineResult recyclingR600a2035 = LiveTestsUtil.getResult(recyclingResultsList.stream(), 2035, "Domestic Refrigeration", "R-600a");
+    EngineResult combinedR600a2035 = LiveTestsUtil.getResult(combinedResultsList.stream(), 2035, "Domestic Refrigeration", "R-600a");
+
+    assertNotNull(recyclingHfc2035, "Should have recycling HFC-134a result for 2035");
+    assertNotNull(combinedHfc2035, "Should have combined HFC-134a result for 2035");
+    assertNotNull(recyclingR600a2035, "Should have recycling R-600a result for 2035");
+    assertNotNull(combinedR600a2035, "Should have combined R-600a result for 2035");
+
+    // Calculate total consumption (imports + domestic) for recycling scenario
+    double recyclingTotalConsumption = 
+        (recyclingHfc2035.getDomestic().getValue().doubleValue() + recyclingHfc2035.getImport().getValue().doubleValue()) +
+        (recyclingR600a2035.getDomestic().getValue().doubleValue() + recyclingR600a2035.getImport().getValue().doubleValue());
+
+    // Calculate total consumption (imports + domestic) for combined scenario  
+    double combinedTotalConsumption = 
+        (combinedHfc2035.getDomestic().getValue().doubleValue() + combinedHfc2035.getImport().getValue().doubleValue()) +
+        (combinedR600a2035.getDomestic().getValue().doubleValue() + combinedR600a2035.getImport().getValue().doubleValue());
+
+    // Assert that combined scenario consumption is less than or equal to recycling scenario consumption
+    assertEquals(true, combinedTotalConsumption <= recyclingTotalConsumption,
+        "Combined scenario consumption (" + combinedTotalConsumption + ") should be <= recycling scenario consumption (" 
+        + recyclingTotalConsumption + ") in 2035");
+
+    // Assert that HFC-134a consumption in kg is 0 under the combined policy
+    double combinedHfcDomestic = combinedHfc2035.getDomestic().getValue().doubleValue();
+    double combinedHfcImport = combinedHfc2035.getImport().getValue().doubleValue();
+    double combinedHfc134aConsumption = combinedHfcDomestic + combinedHfcImport;
+    assertEquals(0.0, combinedHfc134aConsumption, 0.0001, 
+        "HFC-134a consumption should be 0 in 2035 under combined policy, but was " + combinedHfc134aConsumption);
+  }
+
+  /**
+   * Test for combined policies with recharge where Domestic Recycling is applied first, then Sales Permit.
+   * Uses volume-based units (mt) as mentioned in tutorial_3.md and tutorial_4.md.
+   * This verifies that HFC-134a consumption in kg is 0 under the combined policy in 2035.
+   */
+  @Test
+  public void testCombinedPoliciesRechargeReorderMt() throws IOException {
+    String qtaPath = "../examples/combined_policies_recharge_reorder_mt.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    // Run recycling scenario
+    String recyclingScenario = "Recycling";
+    Stream<EngineResult> recyclingResults = KigaliSimFacade.runScenario(program, recyclingScenario, progress -> {});
+    List<EngineResult> recyclingResultsList = recyclingResults.collect(Collectors.toList());
+
+    // Run combined scenario
+    String combinedScenario = "Combined";
+    Stream<EngineResult> combinedResults = KigaliSimFacade.runScenario(program, combinedScenario, progress -> {});
+    List<EngineResult> combinedResultsList = combinedResults.collect(Collectors.toList());
+
+    // Get 2035 results for both scenarios for HFC-134a
+    EngineResult recyclingHfc2035 = LiveTestsUtil.getResult(recyclingResultsList.stream(), 2035, "Domestic Refrigeration", "HFC-134a");
+    EngineResult combinedHfc2035 = LiveTestsUtil.getResult(combinedResultsList.stream(), 2035, "Domestic Refrigeration", "HFC-134a");
+
+    // Get 2035 results for both scenarios for R-600a
+    EngineResult recyclingR600a2035 = LiveTestsUtil.getResult(recyclingResultsList.stream(), 2035, "Domestic Refrigeration", "R-600a");
+    EngineResult combinedR600a2035 = LiveTestsUtil.getResult(combinedResultsList.stream(), 2035, "Domestic Refrigeration", "R-600a");
+
+    assertNotNull(recyclingHfc2035, "Should have recycling HFC-134a result for 2035");
+    assertNotNull(combinedHfc2035, "Should have combined HFC-134a result for 2035");
+    assertNotNull(recyclingR600a2035, "Should have recycling R-600a result for 2035");
+    assertNotNull(combinedR600a2035, "Should have combined R-600a result for 2035");
+
+    // Calculate total consumption (imports + domestic) for recycling scenario
+    double recyclingTotalConsumption = 
+        (recyclingHfc2035.getDomestic().getValue().doubleValue() + recyclingHfc2035.getImport().getValue().doubleValue()) +
+        (recyclingR600a2035.getDomestic().getValue().doubleValue() + recyclingR600a2035.getImport().getValue().doubleValue());
+
+    // Calculate total consumption (imports + domestic) for combined scenario  
+    double combinedTotalConsumption = 
+        (combinedHfc2035.getDomestic().getValue().doubleValue() + combinedHfc2035.getImport().getValue().doubleValue()) +
+        (combinedR600a2035.getDomestic().getValue().doubleValue() + combinedR600a2035.getImport().getValue().doubleValue());
+
+    // Assert that combined scenario consumption is less than or equal to recycling scenario consumption
+    assertEquals(true, combinedTotalConsumption <= recyclingTotalConsumption,
+        "Combined scenario consumption (" + combinedTotalConsumption + ") should be <= recycling scenario consumption (" 
+        + recyclingTotalConsumption + ") in 2035 with reordered policies");
+
+    // Assert that HFC-134a consumption in kg is 0 under the combined policy
+    double combinedHfcDomestic = combinedHfc2035.getDomestic().getValue().doubleValue();
+    double combinedHfcImport = combinedHfc2035.getImport().getValue().doubleValue();
+    double combinedHfc134aConsumption = combinedHfcDomestic + combinedHfcImport;
+    assertEquals(0.0, combinedHfc134aConsumption, 0.0001, 
+        "HFC-134a consumption should be 0 in 2035 under combined policy with reordered policies, but was " + combinedHfc134aConsumption);
   }
 
   /**
