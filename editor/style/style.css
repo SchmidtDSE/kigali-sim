@@ -813,6 +813,7 @@ select option[disabled] {
   a:link[role="tab"][aria-selected="true"],
   a:visited[role="tab"][aria-selected="true"] {
     color: #202070;
+    background-color: #F5F5F5;
   }
 
   /* Auto-run checkbox grid layout for wider screens */
