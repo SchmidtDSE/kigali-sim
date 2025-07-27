@@ -1166,11 +1166,11 @@ public class SingleThreadEngine implements Engine {
     StreamUpdateBuilder builder = new StreamUpdateBuilder()
         .setName(stream)
         .setValue(outputWithUnits);
-    
+
     if (scope != null) {
       builder.setKey(scope);
     }
-    
+
     StreamUpdate update = builder.build();
     executeStreamUpdate(update);
   }

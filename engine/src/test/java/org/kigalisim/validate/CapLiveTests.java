@@ -114,11 +114,11 @@ public class CapLiveTests {
     EngineResult recordSubB = LiveTestsUtil.getResult(resultsList.stream(), 1, "test", "sub_b");
     assertNotNull(recordSubB, "Should have result for test/sub_b in year 1");
 
-    // With unit-based displacement: 30 kg reduction in sub_a = 30 kg / 10 kg/unit = 3 units
-    // 3 units displaced to sub_b = 3 units * 20 kg/unit = 60 kg
-    // Original sub_b: 200 kg, Final sub_b: 200 kg + 60 kg = 260 kg
-    assertEquals(260.0, recordSubB.getDomestic().getValue().doubleValue(), 0.0001,
-        "Domestic for sub_b should be 260 kg after displacement");
+    // With unit-based displacement: 36.67 kg reduction in sub_a = 36.67 kg / 10 kg/unit = 3.67 units
+    // 3.67 units displaced to sub_b = 3.67 units * 20 kg/unit = 73.33 kg
+    // Original sub_b: 200 kg, Final sub_b: 200 kg + 73.33 kg = 273.33 kg
+    assertEquals(273.3333333333333, recordSubB.getDomestic().getValue().doubleValue(), 0.0001,
+        "Domestic for sub_b should be 273.33 kg after displacement");
     assertEquals("kg", recordSubB.getDomestic().getUnits(),
         "Domestic units for sub_b should be kg");
   }

@@ -7,10 +7,11 @@ import org.kigalisim.engine.state.YearMatcher;
 
 /**
  * Immutable class representing a stream update operation.
- * 
+ *
  * <p>Contains all parameters needed to execute a stream update operation in the engine,
  * including the stream name, value, timing constraints, scope, and various behavioral flags.</p>
- * 
+ *
+ *
  * @license BSD-3-Clause
  */
 public final class StreamUpdate {
@@ -25,7 +26,8 @@ public final class StreamUpdate {
 
   /**
    * Package-private constructor for creating a StreamUpdate instance.
-   * 
+   *
+   *
    * @param name the name of the stream to update
    * @param value the value to set for the stream
    * @param yearMatcher optional year matcher to constrain when the update applies
@@ -50,7 +52,8 @@ public final class StreamUpdate {
 
   /**
    * Gets the name of the stream to update.
-   * 
+   *
+   *
    * @return the stream name (e.g., "domestic", "import", "sales")
    */
   public String getName() {
@@ -59,7 +62,8 @@ public final class StreamUpdate {
 
   /**
    * Gets the value to set for the stream.
-   * 
+   *
+   *
    * @return the stream value with units
    */
   public EngineNumber getValue() {
@@ -68,7 +72,8 @@ public final class StreamUpdate {
 
   /**
    * Gets the optional year matcher constraining when this update applies.
-   * 
+   *
+   *
    * @return optional year matcher, empty if update applies to all years
    */
   public Optional<YearMatcher> getYearMatcher() {
@@ -77,7 +82,8 @@ public final class StreamUpdate {
 
   /**
    * Gets the optional use key specifying the application/substance scope.
-   * 
+   *
+   *
    * @return optional use key, empty if using engine's current scope
    */
   public Optional<UseKey> getKey() {
@@ -86,7 +92,8 @@ public final class StreamUpdate {
 
   /**
    * Gets whether this update should trigger recalculations.
-   * 
+   *
+   *
    * @return true if recalculations should be triggered, false otherwise
    */
   public boolean getPropagateChanges() {
@@ -95,7 +102,8 @@ public final class StreamUpdate {
 
   /**
    * Gets the optional units string to record for this operation.
-   * 
+   *
+   *
    * @return optional units string for tracking purposes
    */
   public Optional<String> getUnitsToRecord() {
@@ -104,7 +112,8 @@ public final class StreamUpdate {
 
   /**
    * Gets whether recycling should be subtracted from the value.
-   * 
+   *
+   *
    * @return true if recycling should be subtracted, false otherwise
    */
   public boolean getSubtractRecycling() {
@@ -113,7 +122,8 @@ public final class StreamUpdate {
 
   /**
    * Gets whether to force full recharge for sales substreams.
-   * 
+   *
+   *
    * @return true if full recharge should be used, false for proportional distribution
    */
   public boolean getForceUseFullRecharge() {
