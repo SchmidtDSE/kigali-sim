@@ -229,6 +229,13 @@ public class SingleThreadEngine implements Engine {
   @Override
   public void setStreamFor(String name, EngineNumber value, Optional<YearMatcher> yearMatcher, Optional<UseKey> key,
                            boolean propagateChanges, Optional<String> unitsToRecord) {
+    // Default behavior: apply recycling logic (backwards compatibility)
+    setStreamFor(name, value, yearMatcher, key, propagateChanges, unitsToRecord, true);
+  }
+
+  @Override
+  public void setStreamFor(String name, EngineNumber value, Optional<YearMatcher> yearMatcher, Optional<UseKey> key,
+                           boolean propagateChanges, Optional<String> unitsToRecord, boolean subtractRecycling) {
     if (!getIsInRange(yearMatcher.orElse(null))) {
       return;
     }
@@ -258,7 +265,7 @@ public class SingleThreadEngine implements Engine {
       );
 
       // Set implicit recharge BEFORE distribution (always full amount)
-      streamKeeper.setStream(keyEffective, "implicitRecharge", rechargeVolume);
+      streamKeeper.setStream(keyEffective, "implicitRecharge", rechargeVolume, true);
 
       // Only distribute recharge when called from recalc strategies (propagateChanges=false)
       BigDecimal rechargeToAdd;
@@ -274,10 +281,11 @@ public class SingleThreadEngine implements Engine {
       valueToSet = new EngineNumber(totalWithRecharge, "kg");
     } else if (isSales) {
       // Sales stream without units - clear implicit recharge
-      streamKeeper.setStream(keyEffective, "implicitRecharge", new EngineNumber(BigDecimal.ZERO, "kg"));
+      streamKeeper.setStream(keyEffective, "implicitRecharge", new EngineNumber(BigDecimal.ZERO, "kg"), true);
     }
 
-    streamKeeper.setStream(keyEffective, name, valueToSet);
+    // Use the subtractRecycling parameter when setting the stream
+    streamKeeper.setStream(keyEffective, name, valueToSet, subtractRecycling);
 
     // Track the units last used to specify this stream (only for user-initiated calls)
     if (!propagateChanges) {
@@ -347,7 +355,9 @@ public class SingleThreadEngine implements Engine {
 
   @Override
   public void setStream(String name, EngineNumber value, Optional<YearMatcher> yearMatcher) {
-    setStreamFor(name, value, yearMatcher, Optional.empty(), true, Optional.empty());
+    // For direct stream setting (like from SetOperation), domestic/import should not subtract recycling
+    boolean subtractRecycling = !("domestic".equals(name) || "import".equals(name));
+    setStreamFor(name, value, yearMatcher, Optional.empty(), true, Optional.empty(), subtractRecycling);
   }
 
   @Override
