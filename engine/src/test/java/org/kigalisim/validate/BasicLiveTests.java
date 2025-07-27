@@ -513,14 +513,16 @@ public class BasicLiveTests {
     EngineResult recordSubA = LiveTestsUtil.getResult(resultsList.stream(), 1, "test", "sub_a");
     assertNotNull(recordSubA, "Should have result for test/sub_a in year 1");
 
-    // When setting to 5 units, should we get:
-    // Option A: Just 50 kg (5 units * 10 kg/unit)
-    // Option B: 70 kg (50 kg + 20 kg recharge for 20 units * 10% * 10 kg/unit)
+    // When setting to 5 units with proportional recharge distribution:
+    // Base amount: 5 units * 10 kg/unit = 50 kg
+    // Total recharge: 20 units * 10% * 10 kg/unit = 20 kg
+    // Sales distribution: domestic=100kg (66.67%), import=50kg (33.33%)
+    // Domestic recharge: 20 kg * 66.67% = 13.33 kg
+    // Total domestic: 50 kg + 13.33 kg = 63.33 kg
     double domesticValue = recordSubA.getDomestic().getValue().doubleValue();
 
-    // Let's see what actually happens
-    assertEquals(70.0, domesticValue, 0.0001,
-        "Domestic for sub_a should be 70 kg (50 + 20 recharge) when set to 5 units");
+    assertEquals(63.333333333333336, domesticValue, 0.0001,
+        "Domestic for sub_a should be 63.33 kg (50 + 13.33 proportional recharge) when set to 5 units");
   }
 
   /**

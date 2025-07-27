@@ -1,0 +1,100 @@
+start default
+
+  define application "Domestic Refrigeration"
+  
+    uses substance "HFC-134a"
+      enable domestic
+      enable import
+      initial charge with 0.15 kg / unit for domestic
+      initial charge with 0.12 kg / unit for import
+      initial charge with 0 kg / unit for export
+      equals 1430 tCO2e / kg
+      equals 1 kwh / unit
+      set priorEquipment to 1000000 units during year 2025
+      set domestic to 87,000 units during year 2025
+      set import to 55,000 units during year 2025
+      change sales by 6 % / year during years 2025 to 2030
+      change sales by 4 % / year during years 2031 to 2035
+      retire 5 % / year
+      recharge 10 % with 0.14 kg / unit
+    end substance
+
+
+    uses substance "R-600a"
+      enable domestic
+      enable import
+      initial charge with 0.07 kg / unit for domestic
+      initial charge with 0.07 kg / unit for import
+      initial charge with 0 kg / unit for export
+      equals 3 tCO2e / kg
+      equals 1 kwh / kg
+      set priorEquipment to 100000 units during year 2025
+      set domestic to 14,000 units during year 2025
+      set import to 14,000 units during year 2025
+      change sales by 5 % / year during years 2025 to 2030
+      change sales by 3 % / year during years 2031 to 2035
+      retire 5 % / year
+      recharge 10 % with 0.07 kg / unit
+    end substance
+  
+  end application
+
+end default
+
+
+start policy "Sales Permit"
+
+  modify application "Domestic Refrigeration"
+  
+    modify substance "HFC-134a"
+      cap sales to 85 % displacing "R-600a" during years 2029 to 2034
+      cap sales to 0 units displacing "R-600a" during years 2035 to onwards
+    end substance
+  
+  end application
+
+end policy
+
+
+
+start policy "Domestic Recycling"
+
+  modify application "Domestic Refrigeration"
+
+    # Make recycling program for HFC-134a
+    modify substance "HFC-134a"
+      recover 20 % with 90 % reuse during years 2027 to onwards
+    end substance
+
+    # Make recycling program for R-600a
+    modify substance "R-600a"
+      recover 20 % with 90 % reuse during years 2027 to onwards
+    end substance
+  
+  end application
+
+end policy
+
+
+start simulations
+
+  simulate "BAU"
+  from years 2025 to 2035
+
+
+  simulate "Permit"
+    using "Sales Permit"
+  from years 2025 to 2035
+
+
+  simulate "Recycling"
+    using "Domestic Recycling"
+  from years 2025 to 2035
+
+
+  simulate "Combined"
+    using "Domestic Recycling"
+    then "Sales Permit"
+  from years 2025 to 2035
+
+end simulations

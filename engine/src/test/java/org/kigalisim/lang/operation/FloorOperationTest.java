@@ -236,14 +236,14 @@ public class FloorOperationTest {
 
     // Verify the source stream was floored
     EngineNumber sourceResult = engine.getStream("domestic");
-    assertEquals(BigDecimal.valueOf(42), sourceResult.getValue(), "Source stream should be floored to 42");
+    assertEquals(0, BigDecimal.valueOf(42).compareTo(sourceResult.getValue()), "Source stream should be floored to 42");
     assertEquals("kg", sourceResult.getUnits(), "Source stream units should remain kg");
 
     // Verify the displacement effect on the target stream
     // The floor operation adds 22 kg to the source stream, and the displacement
     // subtracts the same amount from the target stream
     EngineNumber targetResult = engine.getStream("import");
-    assertEquals(BigDecimal.valueOf(28), targetResult.getValue(), "Target stream should be 50 - 22 = 28");
+    assertEquals(0, BigDecimal.valueOf(28).compareTo(targetResult.getValue()), "Target stream should be 50 - 22 = 28");
     assertEquals("kg", targetResult.getUnits(), "Target stream units should be kg");
   }
 }

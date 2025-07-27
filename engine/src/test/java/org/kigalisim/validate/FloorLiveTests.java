@@ -103,9 +103,14 @@ public class FloorLiveTests {
     EngineResult resultA = LiveTestsUtil.getResult(resultsList.stream(), 1, "test", "sub_a");
     assertNotNull(resultA, "Should have result for test/sub_a in year 1");
 
-    // Floor at 10 units (10 units * 10 kg/unit = 100 kg) plus recharge (20 units * 10 kg/unit * 0.1 = 20 kg)
-    assertEquals(120.0, resultA.getDomestic().getValue().doubleValue(), 0.0001,
-        "Domestic for sub_a should be 120 kg");
+    // Floor at 10 units with proportional recharge distribution:
+    // Base amount: 10 units * 10 kg/unit = 100 kg
+    // Total recharge: 20 units * 10% * 10 kg/unit = 20 kg
+    // Sales distribution: domestic=10kg (66.67%), import=5kg (33.33%)
+    // Domestic recharge: 20 kg * 66.67% = 13.33 kg
+    // Total domestic: 100 kg + 13.33 kg = 113.33 kg
+    assertEquals(113.33333333333333, resultA.getDomestic().getValue().doubleValue(), 0.0001,
+        "Domestic for sub_a should be 113.33 kg (100 + 13.33 proportional recharge)");
     assertEquals("kg", resultA.getDomestic().getUnits(),
         "Domestic units for sub_a should be kg");
 
