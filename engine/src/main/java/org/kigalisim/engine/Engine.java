@@ -144,6 +144,20 @@ public interface Engine {
                     boolean propagateChanges, Optional<String> unitsToRecord);
 
   /**
+   * Set the value of a stream with control over recycling subtraction.
+   *
+   * @param name The name of the stream to set
+   * @param value The value to set for the stream  
+   * @param yearMatcher The year matcher object or empty
+   * @param key The optional UseKey for the stream
+   * @param propagateChanges Specifies if changes should propagate to other components
+   * @param unitsToRecord Optional units to record instead of using value.getUnits()
+   * @param subtractRecycling Whether to apply recycling logic (false for direct setting)
+   */
+  void setStreamFor(String name, EngineNumber value, Optional<YearMatcher> yearMatcher, Optional<UseKey> key,
+                    boolean propagateChanges, Optional<String> unitsToRecord, boolean subtractRecycling);
+
+  /**
    * Set the value of a stream with default parameters.
    *
    * @param name The name of the stream to set
