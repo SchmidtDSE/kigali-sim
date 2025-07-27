@@ -238,7 +238,6 @@ public class SingleThreadEngine implements Engine {
     final boolean propagateChanges = update.getPropagateChanges();
     final Optional<String> unitsToRecord = update.getUnitsToRecord();
     final boolean subtractRecycling = update.getSubtractRecycling();
-    final boolean forceUseFullRecharge = update.getForceUseFullRecharge();
 
     if (!getIsInRange(yearMatcher.orElse(null))) {
       return;
@@ -275,13 +274,8 @@ public class SingleThreadEngine implements Engine {
       // Distribute recharge proportionally for domestic/import streams
       BigDecimal rechargeToAdd;
       if (isSalesSubstream) {
-        if (forceUseFullRecharge) {
-          // Use full recharge for individual substreams when forced
-          rechargeToAdd = rechargeVolume.getValue();
-        } else {
-          // Use distributed recharge for individual substreams
-          rechargeToAdd = getDistributedRecharge(name, rechargeVolume, keyEffective);
-        }
+        // Use distributed recharge for individual substreams
+        rechargeToAdd = getDistributedRecharge(name, rechargeVolume, keyEffective);
       } else {
         // Sales stream gets full recharge
         rechargeToAdd = rechargeVolume.getValue();
@@ -368,15 +362,11 @@ public class SingleThreadEngine implements Engine {
     // For direct stream setting (like from SetOperation), domestic/import should not subtract recycling
     boolean subtractRecycling = !getIsSalesSubstream(name);
 
-    // Force full recharge for sales substreams with units
-    boolean forceUseFullRecharge = getIsSalesSubstream(name) && value.hasEquipmentUnits();
-
     StreamUpdate update = new StreamUpdateBuilder()
         .setName(name)
         .setValue(value)
         .setYearMatcher(yearMatcher)
         .setSubtractRecycling(subtractRecycling)
-        .setForceUseFullRecharge(forceUseFullRecharge)
         .build();
 
     executeStreamUpdate(update);
@@ -594,7 +584,7 @@ public class SingleThreadEngine implements Engine {
       StreamUpdate update = new StreamUpdateBuilder()
           .setName("sales")
           .setValue(lastSalesValue)
-          .setKey(Optional.of(scope))
+          .setKey(scope)
           .build();
       executeStreamUpdate(update);
       return; // Skip normal recalc to avoid accumulation
@@ -759,8 +749,8 @@ public class SingleThreadEngine implements Engine {
     StreamUpdate update = new StreamUpdateBuilder()
         .setName(stream)
         .setValue(outputWithUnits)
-        .setKey(Optional.of(useKeyEffective))
-        .setUnitsToRecord(Optional.of(amount.getUnits()))
+        .setKey(useKeyEffective)
+        .setUnitsToRecord(amount.getUnits())
         .build();
     executeStreamUpdate(update);
   }
@@ -1129,9 +1119,7 @@ public class SingleThreadEngine implements Engine {
     if ("sales".equals(streamName)) {
       // Sales stream gets 100% - setStreamForSales will distribute it
       return totalRecharge.getValue();
-    }
-
-    if (getIsSalesSubstream(streamName)) {
+    } else if (getIsSalesSubstream(streamName)) {
       SalesStreamDistribution distribution = streamKeeper.getDistribution(keyEffective);
       BigDecimal percentage;
       if ("domestic".equals(streamName)) {
@@ -1175,11 +1163,15 @@ public class SingleThreadEngine implements Engine {
     EngineNumber outputWithUnits = new EngineNumber(newAmountBound, currentValue.getUnits());
 
     // Allow propagation but don't track units (since units tracking was handled by the caller)
-    StreamUpdate update = new StreamUpdateBuilder()
+    StreamUpdateBuilder builder = new StreamUpdateBuilder()
         .setName(stream)
-        .setValue(outputWithUnits)
-        .setKey(Optional.ofNullable(scope))
-        .build();
+        .setValue(outputWithUnits);
+    
+    if (scope != null) {
+      builder.setKey(scope);
+    }
+    
+    StreamUpdate update = builder.build();
     executeStreamUpdate(update);
   }
 

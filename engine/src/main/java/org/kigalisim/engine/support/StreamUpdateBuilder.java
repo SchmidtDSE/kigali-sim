@@ -63,6 +63,27 @@ public final class StreamUpdateBuilder {
   }
 
   /**
+   * Sets the use key.
+   *
+   * @param key the use key
+   * @return this builder
+   */
+  public StreamUpdateBuilder setKey(UseKey key) {
+    this.key = Optional.of(key);
+    return this;
+  }
+
+  /**
+   * Clears the use key.
+   *
+   * @return this builder
+   */
+  public StreamUpdateBuilder clearKey() {
+    this.key = Optional.empty();
+    return this;
+  }
+
+  /**
    * Sets whether changes should propagate.
    *
    * @param propagateChanges whether to propagate changes
@@ -81,6 +102,27 @@ public final class StreamUpdateBuilder {
    */
   public StreamUpdateBuilder setUnitsToRecord(Optional<String> unitsToRecord) {
     this.unitsToRecord = unitsToRecord;
+    return this;
+  }
+
+  /**
+   * Sets the units to record.
+   *
+   * @param unitsToRecord the units to record
+   * @return this builder
+   */
+  public StreamUpdateBuilder setUnitsToRecord(String unitsToRecord) {
+    this.unitsToRecord = Optional.of(unitsToRecord);
+    return this;
+  }
+
+  /**
+   * Clears the units to record.
+   *
+   * @return this builder
+   */
+  public StreamUpdateBuilder clearUnitsToRecord() {
+    this.unitsToRecord = Optional.empty();
     return this;
   }
 
@@ -116,7 +158,15 @@ public final class StreamUpdateBuilder {
     if (name == null || value == null) {
       throw new IllegalStateException("Name and value are required");
     }
-    return new StreamUpdate(name, value, yearMatcher, key, propagateChanges,
-                           unitsToRecord, subtractRecycling, forceUseFullRecharge);
+    return new StreamUpdate(
+        name,
+        value,
+        yearMatcher,
+        key,
+        propagateChanges,
+        unitsToRecord,
+        subtractRecycling,
+        forceUseFullRecharge
+    );
   }
 }
