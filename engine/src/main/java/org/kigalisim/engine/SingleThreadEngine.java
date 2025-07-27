@@ -776,7 +776,7 @@ public class SingleThreadEngine implements Engine {
 
       if (changeAmount.compareTo(BigDecimal.ZERO) < 0) {
         EngineNumber changeWithUnits = new EngineNumber(changeAmount, "kg");
-        changeStreamWithoutReportingUnits(stream, changeWithUnits, null, null);
+        changeStreamWithoutReportingUnits(stream, changeWithUnits, Optional.empty(), Optional.empty());
         handleDisplacement(stream, amount, changeAmount, displaceTarget);
       }
     } else {
@@ -823,7 +823,7 @@ public class SingleThreadEngine implements Engine {
 
       if (changeAmount.compareTo(BigDecimal.ZERO) > 0) {
         EngineNumber changeWithUnits = new EngineNumber(changeAmount, "kg");
-        changeStreamWithoutReportingUnits(stream, changeWithUnits, null, null);
+        changeStreamWithoutReportingUnits(stream, changeWithUnits, Optional.empty(), Optional.empty());
         handleDisplacement(stream, amount, changeAmount, displaceTarget);
       }
     } else {
@@ -884,7 +884,7 @@ public class SingleThreadEngine implements Engine {
           sourceVolumeChange.getValue().negate(),
           sourceVolumeChange.getUnits()
       );
-      changeStreamWithoutReportingUnits(stream, sourceAmountNegative, null, null);
+      changeStreamWithoutReportingUnits(stream, sourceAmountNegative, Optional.empty(), Optional.empty());
 
       // Add to destination substance using destination's initial charge
       Scope destinationScope = scope.getWithSubstance(destinationSubstance);
@@ -894,17 +894,17 @@ public class SingleThreadEngine implements Engine {
       scope = originalScope;
 
       EngineNumber destinationVolumeChange = destinationUnitConverter.convert(unitsToReplace, "kg");
-      changeStreamWithoutReportingUnits(stream, destinationVolumeChange, null, destinationScope);
+      changeStreamWithoutReportingUnits(stream, destinationVolumeChange, Optional.empty(), Optional.of(destinationScope));
     } else {
       // For volume units, use the original logic
       UnitConverter unitConverter = createUnitConverterWithTotal(stream);
       EngineNumber amount = unitConverter.convert(amountRaw, "kg");
 
       EngineNumber amountNegative = new EngineNumber(amount.getValue().negate(), amount.getUnits());
-      changeStreamWithoutReportingUnits(stream, amountNegative, null, null);
+      changeStreamWithoutReportingUnits(stream, amountNegative, Optional.empty(), Optional.empty());
 
       Scope destinationScope = scope.getWithSubstance(destinationSubstance);
-      changeStreamWithoutReportingUnits(stream, amount, null, destinationScope);
+      changeStreamWithoutReportingUnits(stream, amount, Optional.empty(), Optional.of(destinationScope));
     }
   }
 
@@ -956,7 +956,7 @@ public class SingleThreadEngine implements Engine {
     if (displacementAutomatic) {
       // Add recycled material back to sales to maintain total material balance
       EngineNumber recycledAddition = new EngineNumber(changeAmount, "kg");
-      changeStreamWithoutReportingUnits(RECYCLE_RECOVER_STREAM, recycledAddition, null, null);
+      changeStreamWithoutReportingUnits(RECYCLE_RECOVER_STREAM, recycledAddition, Optional.empty(), Optional.empty());
     }
 
     EngineNumber displaceChange;
@@ -973,7 +973,7 @@ public class SingleThreadEngine implements Engine {
         // Same substance, same stream - use volume displacement
         displaceChange = new EngineNumber(changeAmount.negate(), "kg");
 
-        changeStreamWithoutReportingUnits(displaceTarget, displaceChange, null, null);
+        changeStreamWithoutReportingUnits(displaceTarget, displaceChange, Optional.empty(), Optional.empty());
       } else {
         // Different substance - apply the same number of units to the destination substance
         Scope destinationScope = scope.getWithSubstance(displaceTarget);
@@ -998,7 +998,7 @@ public class SingleThreadEngine implements Engine {
       displaceChange = new EngineNumber(changeAmount.negate(), "kg");
 
       if (isStream) {
-        changeStreamWithoutReportingUnits(displaceTarget, displaceChange, null, null);
+        changeStreamWithoutReportingUnits(displaceTarget, displaceChange, Optional.empty(), Optional.empty());
       } else {
         Scope destinationScope = scope.getWithSubstance(displaceTarget);
         // Use custom recalc kit with destination substance's properties for correct GWP calculation
@@ -1145,12 +1145,12 @@ public class SingleThreadEngine implements Engine {
    * @param scope The scope in which to make the change
    */
   private void changeStreamWithoutReportingUnits(String stream, EngineNumber amount,
-      YearMatcher yearMatcher, Scope scope) {
-    if (!getIsInRange(yearMatcher)) {
+      Optional<YearMatcher> yearMatcher, Optional<UseKey> scope) {
+    if (!getIsInRange(yearMatcher.orElse(null))) {
       return;
     }
 
-    EngineNumber currentValue = getStream(stream, Optional.ofNullable(scope), Optional.empty());
+    EngineNumber currentValue = getStream(stream, scope, Optional.empty());
     UnitConverter unitConverter = createUnitConverterWithTotal(stream);
 
     EngineNumber convertedDelta = unitConverter.convert(amount, currentValue.getUnits());
@@ -1169,8 +1169,8 @@ public class SingleThreadEngine implements Engine {
         .setName(stream)
         .setValue(outputWithUnits);
 
-    if (scope != null) {
-      builder.setKey(scope);
+    if (scope.isPresent()) {
+      builder.setKey(scope.get());
     }
 
     StreamUpdate update = builder.build();
