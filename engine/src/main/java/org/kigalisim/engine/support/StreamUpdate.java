@@ -19,8 +19,8 @@ public final class StreamUpdate {
   private final boolean subtractRecycling;
   private final boolean forceUseFullRecharge;
 
-  StreamUpdate(String name, EngineNumber value, Optional<YearMatcher> yearMatcher, 
-               Optional<UseKey> key, boolean propagateChanges, Optional<String> unitsToRecord, 
+  StreamUpdate(String name, EngineNumber value, Optional<YearMatcher> yearMatcher,
+               Optional<UseKey> key, boolean propagateChanges, Optional<String> unitsToRecord,
                boolean subtractRecycling, boolean forceUseFullRecharge) {
     this.name = name;
     this.value = value;

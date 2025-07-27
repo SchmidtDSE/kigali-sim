@@ -310,8 +310,8 @@ public class StreamKeeper {
    * @return True if any of domestic, import, or export streams are enabled
    */
   public boolean hasStreamsEnabled(UseKey useKey) {
-    return hasStreamBeenEnabled(useKey, "domestic") 
-        || hasStreamBeenEnabled(useKey, "import") 
+    return hasStreamBeenEnabled(useKey, "domestic")
+        || hasStreamBeenEnabled(useKey, "import")
         || hasStreamBeenEnabled(useKey, "export");
   }
 
@@ -917,19 +917,19 @@ public class StreamKeeper {
   private void setSalesSubstream(UseKey useKey, String streamName, EngineNumber value) {
     EngineNumber valueConverted = unitConverter.convert(value, "kg");
     BigDecimal amountKg = valueConverted.getValue();
-    
+
     // Check if any streams are enabled for distribution calculation
     if (!hasStreamsEnabled(useKey)) {
       throw new IllegalStateException("Cannot set sales substream: no streams have been enabled. "
           + "Use 'set " + streamName + "' or other stream statements to enable streams before "
           + "operations that require sales recalculation.");
     }
-    
+
     // Get current recycling amount
     EngineNumber recycleAmountRaw = getStream(useKey, "recycle");
     EngineNumber recycleAmount = unitConverter.convert(recycleAmountRaw, "kg");
     BigDecimal recycleKg = recycleAmount != null ? recycleAmount.getValue() : BigDecimal.ZERO;
-    
+
     // Get distribution to determine this substream's share of recycling
     SalesStreamDistribution distribution = getDistribution(useKey);
     BigDecimal substreamPercent;
@@ -938,16 +938,16 @@ public class StreamKeeper {
     } else {
       substreamPercent = distribution.getPercentImport();
     }
-    
+
     // Calculate proportional recycling for this substream
     BigDecimal substreamRecycling = recycleKg.multiply(substreamPercent);
-    
+
     // Subtract proportional recycling to get virgin material amount
     BigDecimal netAmount = amountKg.subtract(substreamRecycling);
     if (netAmount.compareTo(BigDecimal.ZERO) < 0) {
       netAmount = BigDecimal.ZERO;
     }
-    
+
     // Set the net amount directly
     EngineNumber netAmountToSet = new EngineNumber(netAmount, "kg");
     setSimpleStream(useKey, streamName, netAmountToSet);

@@ -119,7 +119,7 @@ public class PopulationChangeRecalcStrategy implements RecalcStrategy {
         .setPropagateChanges(false)
         .build();
     target.executeStreamUpdate(equipmentUpdate);
-    
+
     StreamUpdate newEquipmentUpdate = new StreamUpdateBuilder()
         .setName("newEquipment")
         .setValue(newUnitsMarginal)
