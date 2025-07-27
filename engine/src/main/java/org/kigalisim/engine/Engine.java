@@ -18,6 +18,7 @@ import org.kigalisim.engine.serializer.EngineResult;
 import org.kigalisim.engine.state.Scope;
 import org.kigalisim.engine.state.UseKey;
 import org.kigalisim.engine.state.YearMatcher;
+import org.kigalisim.engine.support.StreamUpdate;
 import org.kigalisim.lang.operation.RecoverOperation.RecoveryStage;
 
 /**
@@ -127,35 +128,13 @@ public interface Engine {
    */
   boolean getIsDone();
 
-  /**
-   * Set the value of a stream.
-   *
-   * @param name The name of the stream to set
-   * @param value The value to set for the stream
-   * @param yearMatcher The year matcher object to determine if setting the stream applies to the
-   *     current year, or empty. No-op if the year matcher is not satisfied.
-   * @param key The scope in which the stream is being set. Uses default scope if empty.
-   * @param propagateChanges Specifies if changes should propagate to other components.
-   *     Defaults to true.
-   * @param unitsToRecord Optional units to record instead of using value.getUnits().
-   *     Used when the original user-specified units differ from the converted units being set.
-   */
-  void setStreamFor(String name, EngineNumber value, Optional<YearMatcher> yearMatcher, Optional<UseKey> key,
-                    boolean propagateChanges, Optional<String> unitsToRecord);
 
   /**
-   * Set the value of a stream with control over recycling subtraction.
+   * Execute a stream update operation using a StreamUpdate object.
    *
-   * @param name The name of the stream to set
-   * @param value The value to set for the stream  
-   * @param yearMatcher The year matcher object or empty
-   * @param key The optional UseKey for the stream
-   * @param propagateChanges Specifies if changes should propagate to other components
-   * @param unitsToRecord Optional units to record instead of using value.getUnits()
-   * @param subtractRecycling Whether to apply recycling logic (false for direct setting)
+   * @param update The StreamUpdate containing all parameters for the operation
    */
-  void setStreamFor(String name, EngineNumber value, Optional<YearMatcher> yearMatcher, Optional<UseKey> key,
-                    boolean propagateChanges, Optional<String> unitsToRecord, boolean subtractRecycling);
+  void executeStreamUpdate(StreamUpdate update);
 
   /**
    * Set the value of a stream with default parameters.

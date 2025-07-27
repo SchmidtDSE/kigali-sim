@@ -19,6 +19,8 @@ import org.kigalisim.engine.state.OverridingConverterStateGetter;
 import org.kigalisim.engine.state.StreamKeeper;
 import org.kigalisim.engine.state.UseKey;
 import org.kigalisim.engine.support.ExceptionsGenerator;
+import org.kigalisim.engine.support.StreamUpdate;
+import org.kigalisim.engine.support.StreamUpdateBuilder;
 import org.kigalisim.lang.operation.RecoverOperation.RecoveryStage;
 
 /**
@@ -183,15 +185,25 @@ public class SalesRecalcStrategy implements RecalcStrategy {
       if (percentDomestic.compareTo(BigDecimal.ZERO) > 0) {
         EngineNumber newDomesticUnits = unitConverter.convert(
             new EngineNumber(newDomesticKg, "kg"), "units");
-        target.setStreamFor("domestic", newDomesticUnits, Optional.empty(),
-            Optional.of(scopeEffective), false, Optional.empty());
+        StreamUpdate domesticUpdate = new StreamUpdateBuilder()
+            .setName("domestic")
+            .setValue(newDomesticUnits)
+            .setKey(Optional.of(scopeEffective))
+            .setPropagateChanges(false)
+            .build();
+        target.executeStreamUpdate(domesticUpdate);
       }
 
       if (percentImport.compareTo(BigDecimal.ZERO) > 0) {
         EngineNumber newImportUnits = unitConverter.convert(
             new EngineNumber(newImportKg, "kg"), "units");
-        target.setStreamFor("import", newImportUnits, Optional.empty(),
-            Optional.of(scopeEffective), false, Optional.empty());
+        StreamUpdate importUpdate = new StreamUpdateBuilder()
+            .setName("import")
+            .setValue(newImportUnits)
+            .setKey(Optional.of(scopeEffective))
+            .setPropagateChanges(false)
+            .build();
+        target.executeStreamUpdate(importUpdate);
       }
 
       // Clear the state after conversion
@@ -201,14 +213,24 @@ public class SalesRecalcStrategy implements RecalcStrategy {
       // Only set streams that have non-zero allocations (i.e., are enabled)
       if (percentDomestic.compareTo(BigDecimal.ZERO) > 0) {
         EngineNumber newDomestic = new EngineNumber(newDomesticKg, "kg");
-        target.setStreamFor("domestic", newDomestic, Optional.empty(),
-            Optional.of(scopeEffective), false, Optional.empty());
+        StreamUpdate domesticUpdate = new StreamUpdateBuilder()
+            .setName("domestic")
+            .setValue(newDomestic)
+            .setKey(Optional.of(scopeEffective))
+            .setPropagateChanges(false)
+            .build();
+        target.executeStreamUpdate(domesticUpdate);
       }
 
       if (percentImport.compareTo(BigDecimal.ZERO) > 0) {
         EngineNumber newImport = new EngineNumber(newImportKg, "kg");
-        target.setStreamFor("import", newImport, Optional.empty(),
-            Optional.of(scopeEffective), false, Optional.empty());
+        StreamUpdate importUpdate = new StreamUpdateBuilder()
+            .setName("import")
+            .setValue(newImport)
+            .setKey(Optional.of(scopeEffective))
+            .setPropagateChanges(false)
+            .build();
+        target.executeStreamUpdate(importUpdate);
       }
     }
   }

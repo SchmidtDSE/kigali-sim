@@ -490,7 +490,7 @@ public class RechargeLiveTests {
     EngineResult recyclingHfc2035 = LiveTestsUtil.getResult(recyclingResultsList.stream(), 2035, "Domestic Refrigeration", "HFC-134a");
     EngineResult recyclingR600a2035 = LiveTestsUtil.getResult(recyclingResultsList.stream(), 2035, "Domestic Refrigeration", "R-600a");
     EngineResult combinedHfc2035 = LiveTestsUtil.getResult(combinedResultsList.stream(), 2035, "Domestic Refrigeration", "HFC-134a");
-    EngineResult combinedR600a2035 = LiveTestsUtil.getResult(combinedResultsList.stream(), 2035, "Domestic Refrigeration", "R-600a");
+    final EngineResult combinedR600a2035 = LiveTestsUtil.getResult(combinedResultsList.stream(), 2035, "Domestic Refrigeration", "R-600a");
 
     assertNotNull(recyclingHfc2035, "Should have recycling HFC-134a result for 2035");
     assertNotNull(recyclingR600a2035, "Should have recycling R-600a result for 2035");
