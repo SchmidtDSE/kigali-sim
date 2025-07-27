@@ -932,9 +932,12 @@ public class StreamKeeper {
     
     // Get distribution to determine this substream's share of recycling
     SalesStreamDistribution distribution = getDistribution(useKey);
-    BigDecimal substreamPercent = "domestic".equals(streamName) 
-        ? distribution.getPercentDomestic() 
-        : distribution.getPercentImport();
+    BigDecimal substreamPercent;
+    if ("domestic".equals(streamName)) {
+      substreamPercent = distribution.getPercentDomestic();
+    } else {
+      substreamPercent = distribution.getPercentImport();
+    }
     
     // Calculate proportional recycling for this substream
     BigDecimal substreamRecycling = recycleKg.multiply(substreamPercent);

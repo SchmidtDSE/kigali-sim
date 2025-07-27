@@ -20,6 +20,8 @@ import org.kigalisim.engine.state.UseKey;
 import org.kigalisim.engine.support.DivisionHelper;
 import org.kigalisim.engine.support.ExceptionsGenerator;
 import org.kigalisim.engine.support.RechargeVolumeCalculator;
+import org.kigalisim.engine.support.StreamUpdate;
+import org.kigalisim.engine.support.StreamUpdateBuilder;
 
 /**
  * Strategy for recalculating population changes.
@@ -110,8 +112,21 @@ public class PopulationChangeRecalcStrategy implements RecalcStrategy {
     EngineNumber newUnitsEffective = new EngineNumber(newUnitsAllowed, "units");
 
     // Save
-    target.setStreamFor("equipment", newUnitsEffective, Optional.empty(), Optional.of(scopeEffective), false, Optional.empty());
-    target.setStreamFor("newEquipment", newUnitsMarginal, Optional.empty(), Optional.of(scopeEffective), false, Optional.empty());
+    StreamUpdate equipmentUpdate = new StreamUpdateBuilder()
+        .setName("equipment")
+        .setValue(newUnitsEffective)
+        .setKey(Optional.of(scopeEffective))
+        .setPropagateChanges(false)
+        .build();
+    target.executeStreamUpdate(equipmentUpdate);
+    
+    StreamUpdate newEquipmentUpdate = new StreamUpdateBuilder()
+        .setName("newEquipment")
+        .setValue(newUnitsMarginal)
+        .setKey(Optional.of(scopeEffective))
+        .setPropagateChanges(false)
+        .build();
+    target.executeStreamUpdate(newEquipmentUpdate);
 
     // Recalc recharge emissions - need to create a new operation
     RechargeEmissionsRecalcStrategy rechargeStrategy = new RechargeEmissionsRecalcStrategy(

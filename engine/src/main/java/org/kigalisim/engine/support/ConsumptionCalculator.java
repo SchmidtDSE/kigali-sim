@@ -98,7 +98,13 @@ public class ConsumptionCalculator {
     }
 
     // Save
-    engine.setStreamFor(streamName.get(), consumptionAllowed, Optional.empty(), Optional.of(scopeEffective), false, Optional.empty());
+    StreamUpdate update = new StreamUpdateBuilder()
+        .setName(streamName.get())
+        .setValue(consumptionAllowed)
+        .setKey(Optional.of(scopeEffective))
+        .setPropagateChanges(false)
+        .build();
+    engine.executeStreamUpdate(update);
   }
 
   /**

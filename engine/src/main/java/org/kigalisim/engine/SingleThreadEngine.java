@@ -35,6 +35,8 @@ import org.kigalisim.engine.state.UseKey;
 import org.kigalisim.engine.state.YearMatcher;
 import org.kigalisim.engine.support.ExceptionsGenerator;
 import org.kigalisim.engine.support.RechargeVolumeCalculator;
+import org.kigalisim.engine.support.StreamUpdate;
+import org.kigalisim.engine.support.StreamUpdateBuilder;
 import org.kigalisim.lang.operation.RecoverOperation.RecoveryStage;
 
 /**
@@ -226,15 +228,7 @@ public class SingleThreadEngine implements Engine {
     return currentYear > endYear;
   }
 
-  @Override
-  public void setStreamFor(String name, EngineNumber value, Optional<YearMatcher> yearMatcher, Optional<UseKey> key,
-                           boolean propagateChanges, Optional<String> unitsToRecord) {
-    // Default behavior: apply recycling logic (backwards compatibility)
-    setStreamFor(name, value, yearMatcher, key, propagateChanges, unitsToRecord, true);
-  }
-
-  @Override
-  public void setStreamFor(String name, EngineNumber value, Optional<YearMatcher> yearMatcher, Optional<UseKey> key,
+  private void setStreamForInternal(String name, EngineNumber value, Optional<YearMatcher> yearMatcher, Optional<UseKey> key,
                            boolean propagateChanges, Optional<String> unitsToRecord, boolean subtractRecycling) {
     if (!getIsInRange(yearMatcher.orElse(null))) {
       return;
@@ -251,6 +245,7 @@ public class SingleThreadEngine implements Engine {
     // Check if this is a sales stream with units - if so, add recharge on top
     boolean isSales = isSalesStream(name);
     boolean isUnits = value.hasEquipmentUnits();
+    boolean isSalesSubstream = "domestic".equals(name) || "import".equals(name);
 
     EngineNumber valueToSet = value;
     if (isSales && isUnits) {
@@ -267,13 +262,13 @@ public class SingleThreadEngine implements Engine {
       // Set implicit recharge BEFORE distribution (always full amount)
       streamKeeper.setStream(keyEffective, "implicitRecharge", rechargeVolume, true);
 
-      // Only distribute recharge when called from recalc strategies (propagateChanges=false)
+      // Distribute recharge proportionally for domestic/import streams
       BigDecimal rechargeToAdd;
-      if (!propagateChanges && ("domestic".equals(name) || "import".equals(name))) {
-        // Called from SalesRecalcStrategy - use distributed recharge
+      if (isSalesSubstream) {
+        // Use distributed recharge for individual substreams
         rechargeToAdd = getDistributedRecharge(name, rechargeVolume, keyEffective);
       } else {
-        // Direct user call or sales stream - use full recharge
+        // Sales stream gets full recharge
         rechargeToAdd = rechargeVolume.getValue();
       }
       
@@ -354,10 +349,25 @@ public class SingleThreadEngine implements Engine {
   }
 
   @Override
+  public void executeStreamUpdate(StreamUpdate update) {
+    setStreamForInternal(update.getName(), update.getValue(), update.getYearMatcher(), update.getKey(),
+                 update.getPropagateChanges(), update.getUnitsToRecord(), update.getSubtractRecycling());
+  }
+
+  @Override
   public void setStream(String name, EngineNumber value, Optional<YearMatcher> yearMatcher) {
     // For direct stream setting (like from SetOperation), domestic/import should not subtract recycling
-    boolean subtractRecycling = !("domestic".equals(name) || "import".equals(name));
-    setStreamFor(name, value, yearMatcher, Optional.empty(), true, Optional.empty(), subtractRecycling);
+    boolean isSalesSubstream = "domestic".equals(name) || "import".equals(name);
+    boolean subtractRecycling = !isSalesSubstream;
+    
+    StreamUpdate update = new StreamUpdateBuilder()
+        .setName(name)
+        .setValue(value)
+        .setYearMatcher(yearMatcher)
+        .setSubtractRecycling(subtractRecycling)
+        .build();
+    
+    executeStreamUpdate(update);
   }
 
   @Override
@@ -567,9 +577,14 @@ public class SingleThreadEngine implements Engine {
 
     if (isCarryOver) {
       // Preserve user's original unit-based intent
-      // Use setStreamFor with the original value - this will automatically add recharge on top
+      // Use executeStreamUpdate with the original value - this will automatically add recharge on top
       EngineNumber lastSalesValue = streamKeeper.getLastSpecifiedValue(scope, "sales");
-      setStreamFor("sales", lastSalesValue, Optional.empty(), Optional.of(scope), true, Optional.empty());
+      StreamUpdate update = new StreamUpdateBuilder()
+          .setName("sales")
+          .setValue(lastSalesValue)
+          .setKey(Optional.of(scope))
+          .build();
+      executeStreamUpdate(update);
       return; // Skip normal recalc to avoid accumulation
     } else {
       // Fall back to kg-based or untracked values
@@ -729,7 +744,13 @@ public class SingleThreadEngine implements Engine {
     EngineNumber outputWithUnits = new EngineNumber(newAmount, currentValue.getUnits());
 
     // Need to convert UseKey to Scope for setStream call since setStream requires scope for variable management
-    setStreamFor(stream, outputWithUnits, Optional.empty(), Optional.of(useKeyEffective), true, Optional.of(amount.getUnits()));
+    StreamUpdate update = new StreamUpdateBuilder()
+        .setName(stream)
+        .setValue(outputWithUnits)
+        .setKey(Optional.of(useKeyEffective))
+        .setUnitsToRecord(Optional.of(amount.getUnits()))
+        .build();
+    executeStreamUpdate(update);
   }
 
   @Override
@@ -1019,7 +1040,12 @@ public class SingleThreadEngine implements Engine {
       EngineNumber outputWithUnits = new EngineNumber(newAmountBound, currentValue.getUnits());
 
       // Set the stream value without triggering standard recalc to avoid double calculation
-      setStreamFor(stream, outputWithUnits, Optional.empty(), Optional.empty(), false, Optional.empty());
+      StreamUpdate update = new StreamUpdateBuilder()
+          .setName(stream)
+          .setValue(outputWithUnits)
+          .setPropagateChanges(false)
+          .build();
+      executeStreamUpdate(update);
 
       // Only recalculate for streams that affect equipment populations
       if (!isSalesStream(stream, false)) {
@@ -1085,14 +1111,17 @@ public class SingleThreadEngine implements Engine {
     
     if ("domestic".equals(streamName) || "import".equals(streamName)) {
       SalesStreamDistribution distribution = streamKeeper.getDistribution(keyEffective);
-      BigDecimal percentage = "domestic".equals(streamName) 
-          ? distribution.getPercentDomestic() 
-          : distribution.getPercentImport();
+      BigDecimal percentage;
+      if ("domestic".equals(streamName)) {
+        percentage = distribution.getPercentDomestic();
+      } else {
+        percentage = distribution.getPercentImport();
+      }
       return totalRecharge.getValue().multiply(percentage);
+    } else {
+      // Export and other streams get no recharge
+      return BigDecimal.ZERO;
     }
-    
-    // Export and other streams get no recharge
-    return BigDecimal.ZERO;
   }
 
   /**
@@ -1124,7 +1153,12 @@ public class SingleThreadEngine implements Engine {
     EngineNumber outputWithUnits = new EngineNumber(newAmountBound, currentValue.getUnits());
 
     // Allow propagation but don't track units (since units tracking was handled by the caller)
-    setStreamFor(stream, outputWithUnits, Optional.empty(), Optional.ofNullable(scope), true, Optional.empty());
+    StreamUpdate update = new StreamUpdateBuilder()
+        .setName(stream)
+        .setValue(outputWithUnits)
+        .setKey(Optional.ofNullable(scope))
+        .build();
+    executeStreamUpdate(update);
   }
 
   /**
