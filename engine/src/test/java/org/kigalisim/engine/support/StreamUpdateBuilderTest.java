@@ -17,7 +17,7 @@ public class StreamUpdateBuilderTest {
   @Test
   public void testBuilderRequiredFields() {
     EngineNumber value = new EngineNumber(BigDecimal.valueOf(100), "kg");
-    
+
     StreamUpdate update = new StreamUpdateBuilder()
         .setName("import")
         .setValue(value)
@@ -30,10 +30,10 @@ public class StreamUpdateBuilderTest {
   @Test
   public void testBuilderMissingName() {
     EngineNumber value = new EngineNumber(BigDecimal.valueOf(100), "kg");
-    
+
     StreamUpdateBuilder builder = new StreamUpdateBuilder()
         .setValue(value);
-    
+
     assertThrows(IllegalStateException.class, builder::build);
   }
 
@@ -41,7 +41,7 @@ public class StreamUpdateBuilderTest {
   public void testBuilderMissingValue() {
     StreamUpdateBuilder builder = new StreamUpdateBuilder()
         .setName("export");
-    
+
     assertThrows(IllegalStateException.class, builder::build);
   }
 
@@ -49,7 +49,7 @@ public class StreamUpdateBuilderTest {
   public void testBuilderAllFields() {
     EngineNumber value = new EngineNumber(BigDecimal.valueOf(200), "units");
     SimpleUseKey key = new SimpleUseKey("test", "substance");
-    
+
     StreamUpdate update = new StreamUpdateBuilder()
         .setName("equipment")
         .setValue(value)
@@ -62,15 +62,15 @@ public class StreamUpdateBuilderTest {
     assertEquals("equipment", update.getName());
     assertEquals(value, update.getValue());
     assertEquals(Optional.of(key), update.getKey());
-    assertEquals(false, update.isPropagateChanges());
-    assertEquals(false, update.isSubtractRecycling());
+    assertEquals(false, update.getPropagateChanges());
+    assertEquals(false, update.getSubtractRecycling());
     assertEquals(Optional.of("units"), update.getUnitsToRecord());
   }
 
   @Test
   public void testBuilderChaining() {
     EngineNumber value = new EngineNumber(BigDecimal.valueOf(300), "mt");
-    
+
     StreamUpdateBuilder builder = new StreamUpdateBuilder();
     StreamUpdate update = builder
         .setName("manufacture")
@@ -81,7 +81,7 @@ public class StreamUpdateBuilderTest {
 
     assertEquals("manufacture", update.getName());
     assertEquals(value, update.getValue());
-    assertEquals(true, update.isPropagateChanges());
-    assertEquals(true, update.isSubtractRecycling());
+    assertEquals(true, update.getPropagateChanges());
+    assertEquals(true, update.getSubtractRecycling());
   }
 }

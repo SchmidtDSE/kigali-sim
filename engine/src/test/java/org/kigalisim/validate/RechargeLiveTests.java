@@ -498,12 +498,12 @@ public class RechargeLiveTests {
     assertNotNull(combinedR600a2035, "Should have combined R-600a result for 2035");
 
     // Calculate total consumption (imports + domestic) for recycling scenario
-    double recyclingTotalConsumption = 
+    double recyclingTotalConsumption =
         (recyclingHfc2035.getDomestic().getValue().doubleValue() + recyclingHfc2035.getImport().getValue().doubleValue())
         + (recyclingR600a2035.getDomestic().getValue().doubleValue() + recyclingR600a2035.getImport().getValue().doubleValue());
 
-    // Calculate total consumption (imports + domestic) for combined scenario  
-    double combinedTotalConsumption = 
+    // Calculate total consumption (imports + domestic) for combined scenario
+    double combinedTotalConsumption =
         (combinedHfc2035.getDomestic().getValue().doubleValue() + combinedHfc2035.getImport().getValue().doubleValue())
         + (combinedR600a2035.getDomestic().getValue().doubleValue() + combinedR600a2035.getImport().getValue().doubleValue());
 

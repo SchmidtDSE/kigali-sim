@@ -19,7 +19,7 @@ public class StreamUpdateTest {
   public void testStreamUpdateGetters() {
     EngineNumber value = new EngineNumber(BigDecimal.valueOf(100), "kg");
     SimpleUseKey key = new SimpleUseKey("app", "sub");
-    
+
     StreamUpdate update = new StreamUpdateBuilder()
         .setName("domestic")
         .setValue(value)
@@ -32,8 +32,8 @@ public class StreamUpdateTest {
     assertEquals("domestic", update.getName());
     assertEquals(value, update.getValue());
     assertEquals(Optional.of(key), update.getKey());
-    assertFalse(update.isPropagateChanges());
-    assertFalse(update.isSubtractRecycling());
+    assertFalse(update.getPropagateChanges());
+    assertFalse(update.getSubtractRecycling());
     assertEquals(Optional.of("kg"), update.getUnitsToRecord());
     assertTrue(update.getYearMatcher().isEmpty());
   }
@@ -41,7 +41,7 @@ public class StreamUpdateTest {
   @Test
   public void testStreamUpdateDefaults() {
     EngineNumber value = new EngineNumber(BigDecimal.valueOf(50), "mt");
-    
+
     StreamUpdate update = new StreamUpdateBuilder()
         .setName("sales")
         .setValue(value)
@@ -50,8 +50,8 @@ public class StreamUpdateTest {
     assertEquals("sales", update.getName());
     assertEquals(value, update.getValue());
     assertTrue(update.getKey().isEmpty());
-    assertTrue(update.isPropagateChanges());
-    assertTrue(update.isSubtractRecycling());
+    assertTrue(update.getPropagateChanges());
+    assertTrue(update.getSubtractRecycling());
     assertTrue(update.getUnitsToRecord().isEmpty());
     assertTrue(update.getYearMatcher().isEmpty());
   }

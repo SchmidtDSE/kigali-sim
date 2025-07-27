@@ -228,8 +228,18 @@ public class SingleThreadEngine implements Engine {
     return currentYear > endYear;
   }
 
-  private void setStreamForInternal(String name, EngineNumber value, Optional<YearMatcher> yearMatcher, Optional<UseKey> key,
-                           boolean propagateChanges, Optional<String> unitsToRecord, boolean subtractRecycling) {
+
+  @Override
+  public void executeStreamUpdate(StreamUpdate update) {
+    final String name = update.getName();
+    final EngineNumber value = update.getValue();
+    final Optional<YearMatcher> yearMatcher = update.getYearMatcher();
+    final Optional<UseKey> key = update.getKey();
+    final boolean propagateChanges = update.getPropagateChanges();
+    final Optional<String> unitsToRecord = update.getUnitsToRecord();
+    final boolean subtractRecycling = update.getSubtractRecycling();
+    final boolean forceUseFullRecharge = update.getForceUseFullRecharge();
+
     if (!getIsInRange(yearMatcher.orElse(null))) {
       return;
     }
@@ -245,7 +255,7 @@ public class SingleThreadEngine implements Engine {
     // Check if this is a sales stream with units - if so, add recharge on top
     boolean isSales = isSalesStream(name);
     boolean isUnits = value.hasEquipmentUnits();
-    boolean isSalesSubstream = "domestic".equals(name) || "import".equals(name);
+    boolean isSalesSubstream = getIsSalesSubstream(name);
 
     EngineNumber valueToSet = value;
     if (isSales && isUnits) {
@@ -265,13 +275,18 @@ public class SingleThreadEngine implements Engine {
       // Distribute recharge proportionally for domestic/import streams
       BigDecimal rechargeToAdd;
       if (isSalesSubstream) {
-        // Use distributed recharge for individual substreams
-        rechargeToAdd = getDistributedRecharge(name, rechargeVolume, keyEffective);
+        if (forceUseFullRecharge) {
+          // Use full recharge for individual substreams when forced
+          rechargeToAdd = rechargeVolume.getValue();
+        } else {
+          // Use distributed recharge for individual substreams
+          rechargeToAdd = getDistributedRecharge(name, rechargeVolume, keyEffective);
+        }
       } else {
         // Sales stream gets full recharge
         rechargeToAdd = rechargeVolume.getValue();
       }
-      
+
       BigDecimal totalWithRecharge = valueInKg.getValue().add(rechargeToAdd);
       valueToSet = new EngineNumber(totalWithRecharge, "kg");
     } else if (isSales) {
@@ -296,7 +311,7 @@ public class SingleThreadEngine implements Engine {
       updateSalesCarryOver(keyEffective, name, value);
     }
 
-    if ("sales".equals(name) || "domestic".equals(name) || "import".equals(name)) {
+    if ("sales".equals(name) || getIsSalesSubstream(name)) {
       // Use implicit recharge only if we added recharge (units were used)
       boolean useImplicitRecharge = isSales && isUnits;
       RecalcOperationBuilder builder = new RecalcOperationBuilder()
@@ -349,24 +364,21 @@ public class SingleThreadEngine implements Engine {
   }
 
   @Override
-  public void executeStreamUpdate(StreamUpdate update) {
-    setStreamForInternal(update.getName(), update.getValue(), update.getYearMatcher(), update.getKey(),
-                 update.getPropagateChanges(), update.getUnitsToRecord(), update.getSubtractRecycling());
-  }
-
-  @Override
   public void setStream(String name, EngineNumber value, Optional<YearMatcher> yearMatcher) {
     // For direct stream setting (like from SetOperation), domestic/import should not subtract recycling
-    boolean isSalesSubstream = "domestic".equals(name) || "import".equals(name);
-    boolean subtractRecycling = !isSalesSubstream;
-    
+    boolean subtractRecycling = !getIsSalesSubstream(name);
+
+    // Force full recharge for sales substreams with units
+    boolean forceUseFullRecharge = getIsSalesSubstream(name) && value.hasEquipmentUnits();
+
     StreamUpdate update = new StreamUpdateBuilder()
         .setName(name)
         .setValue(value)
         .setYearMatcher(yearMatcher)
         .setSubtractRecycling(subtractRecycling)
+        .setForceUseFullRecharge(forceUseFullRecharge)
         .build();
-    
+
     executeStreamUpdate(update);
   }
 
@@ -1091,8 +1103,18 @@ public class SingleThreadEngine implements Engine {
    * @return true if the stream matches the sales-related criteria
    */
   private boolean isSalesStream(String stream, boolean includeExports) {
-    boolean isCoreStream = "sales".equals(stream) || "domestic".equals(stream) || "import".equals(stream);
+    boolean isCoreStream = "sales".equals(stream) || getIsSalesSubstream(stream);
     return isCoreStream || (includeExports && "export".equals(stream));
+  }
+
+  /**
+   * Check if a stream name represents a sales substream (domestic or import).
+   *
+   * @param name The stream name to check
+   * @return true if the stream is domestic or import
+   */
+  private boolean getIsSalesSubstream(String name) {
+    return "domestic".equals(name) || "import".equals(name);
   }
 
   /**
@@ -1108,8 +1130,8 @@ public class SingleThreadEngine implements Engine {
       // Sales stream gets 100% - setStreamForSales will distribute it
       return totalRecharge.getValue();
     }
-    
-    if ("domestic".equals(streamName) || "import".equals(streamName)) {
+
+    if (getIsSalesSubstream(streamName)) {
       SalesStreamDistribution distribution = streamKeeper.getDistribution(keyEffective);
       BigDecimal percentage;
       if ("domestic".equals(streamName)) {
@@ -1175,8 +1197,7 @@ public class SingleThreadEngine implements Engine {
     EngineNumber currentValue = getStream(stream);
     stateGetter.setTotal(stream, currentValue);
 
-    boolean isSalesSubstream = "domestic".equals(stream) || "import".equals(stream);
-    if (isSalesSubstream) {
+    if (getIsSalesSubstream(stream)) {
       EngineNumber initialCharge = getInitialCharge(stream);
       stateGetter.setAmortizedUnitVolume(initialCharge);
     }
@@ -1256,7 +1277,7 @@ public class SingleThreadEngine implements Engine {
     }
 
     // Only handle manufacture and import streams for combination
-    if (!"domestic".equals(streamName) && !"import".equals(streamName)) {
+    if (!getIsSalesSubstream(streamName)) {
       return;
     }
 

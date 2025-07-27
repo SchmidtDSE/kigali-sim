@@ -468,7 +468,7 @@ public class KigaliSimFacadeTest {
     assertTrue(policyEquipmentYear5 < bauEquipmentYear5,
         String.format("Equipment population with recycling policy (%.0f) should be lower than BAU (%.0f) due to reduced virgin material demand",
                       policyEquipmentYear5, bauEquipmentYear5));
-    
+
     // Verify the reduction is reasonable (should be between 5-15% for this recycling scenario)
     double reductionPercent = ((bauEquipmentYear5 - policyEquipmentYear5) / bauEquipmentYear5) * 100;
     assertTrue(reductionPercent >= 5.0 && reductionPercent <= 15.0,

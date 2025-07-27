@@ -116,7 +116,7 @@ public final class StreamUpdateBuilder {
     if (name == null || value == null) {
       throw new IllegalStateException("Name and value are required");
     }
-    return new StreamUpdate(name, value, yearMatcher, key, propagateChanges, 
+    return new StreamUpdate(name, value, yearMatcher, key, propagateChanges,
                            unitsToRecord, subtractRecycling, forceUseFullRecharge);
   }
 }
