@@ -101,7 +101,7 @@ public class ConsumptionCalculator {
     StreamUpdate update = new StreamUpdateBuilder()
         .setName(streamName.get())
         .setValue(consumptionAllowed)
-        .setKey(Optional.of(scopeEffective))
+        .setKey(scopeEffective)
         .setPropagateChanges(false)
         .build();
     engine.executeStreamUpdate(update);

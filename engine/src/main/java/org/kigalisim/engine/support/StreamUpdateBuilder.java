@@ -51,16 +51,6 @@ public final class StreamUpdateBuilder {
     return this;
   }
 
-  /**
-   * Sets the use key.
-   *
-   * @param key the use key
-   * @return this builder
-   */
-  public StreamUpdateBuilder setKey(Optional<UseKey> key) {
-    this.key = key;
-    return this;
-  }
 
   /**
    * Sets the use key.
@@ -94,16 +84,6 @@ public final class StreamUpdateBuilder {
     return this;
   }
 
-  /**
-   * Sets the units to record.
-   *
-   * @param unitsToRecord the units to record
-   * @return this builder
-   */
-  public StreamUpdateBuilder setUnitsToRecord(Optional<String> unitsToRecord) {
-    this.unitsToRecord = unitsToRecord;
-    return this;
-  }
 
   /**
    * Sets the units to record.

@@ -48,7 +48,7 @@ public class RechargeEmissionsRecalcStrategy implements RecalcStrategy {
     StreamUpdate update = new StreamUpdateBuilder()
         .setName("rechargeEmissions")
         .setValue(rechargeGhg)
-        .setKey(Optional.of(scopeEffective))
+        .setKey(scopeEffective)
         .setPropagateChanges(false)
         .build();
     target.executeStreamUpdate(update);

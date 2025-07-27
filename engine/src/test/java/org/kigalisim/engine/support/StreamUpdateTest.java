@@ -23,10 +23,10 @@ public class StreamUpdateTest {
     StreamUpdate update = new StreamUpdateBuilder()
         .setName("domestic")
         .setValue(value)
-        .setKey(Optional.of(key))
+        .setKey(key)
         .setPropagateChanges(false)
         .setSubtractRecycling(false)
-        .setUnitsToRecord(Optional.of("kg"))
+        .setUnitsToRecord("kg")
         .build();
 
     assertEquals("domestic", update.getName());
