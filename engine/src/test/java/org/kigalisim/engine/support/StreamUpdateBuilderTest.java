@@ -53,10 +53,10 @@ public class StreamUpdateBuilderTest {
     StreamUpdate update = new StreamUpdateBuilder()
         .setName("equipment")
         .setValue(value)
-        .setKey(Optional.of(key))
+        .setKey(key)
         .setPropagateChanges(false)
         .setSubtractRecycling(false)
-        .setUnitsToRecord(Optional.of("units"))
+        .setUnitsToRecord("units")
         .build();
 
     assertEquals("equipment", update.getName());

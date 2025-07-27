@@ -1124,8 +1124,10 @@ public class SingleThreadEngine implements Engine {
       BigDecimal percentage;
       if ("domestic".equals(streamName)) {
         percentage = distribution.getPercentDomestic();
-      } else {
+      } else if ("import".equals(streamName)) {
         percentage = distribution.getPercentImport();
+      } else {
+        throw new IllegalArgumentException("Unknown sales substream: " + streamName);
       }
       return totalRecharge.getValue().multiply(percentage);
     } else {

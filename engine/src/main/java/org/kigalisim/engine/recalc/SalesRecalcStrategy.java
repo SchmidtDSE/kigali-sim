@@ -188,7 +188,7 @@ public class SalesRecalcStrategy implements RecalcStrategy {
         StreamUpdate domesticUpdate = new StreamUpdateBuilder()
             .setName("domestic")
             .setValue(newDomesticUnits)
-            .setKey(Optional.of(scopeEffective))
+            .setKey(scopeEffective)
             .setPropagateChanges(false)
             .build();
         target.executeStreamUpdate(domesticUpdate);
@@ -200,7 +200,7 @@ public class SalesRecalcStrategy implements RecalcStrategy {
         StreamUpdate importUpdate = new StreamUpdateBuilder()
             .setName("import")
             .setValue(newImportUnits)
-            .setKey(Optional.of(scopeEffective))
+            .setKey(scopeEffective)
             .setPropagateChanges(false)
             .build();
         target.executeStreamUpdate(importUpdate);
@@ -216,7 +216,7 @@ public class SalesRecalcStrategy implements RecalcStrategy {
         StreamUpdate domesticUpdate = new StreamUpdateBuilder()
             .setName("domestic")
             .setValue(newDomestic)
-            .setKey(Optional.of(scopeEffective))
+            .setKey(scopeEffective)
             .setPropagateChanges(false)
             .build();
         target.executeStreamUpdate(domesticUpdate);
@@ -227,7 +227,7 @@ public class SalesRecalcStrategy implements RecalcStrategy {
         StreamUpdate importUpdate = new StreamUpdateBuilder()
             .setName("import")
             .setValue(newImport)
-            .setKey(Optional.of(scopeEffective))
+            .setKey(scopeEffective)
             .setPropagateChanges(false)
             .build();
         target.executeStreamUpdate(importUpdate);
