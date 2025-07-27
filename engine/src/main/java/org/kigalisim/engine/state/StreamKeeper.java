@@ -132,6 +132,19 @@ public class StreamKeeper {
    * @param value The value to set
    */
   public void setStream(UseKey useKey, String name, EngineNumber value) {
+    // Default behavior: apply recycling logic (backwards compatibility)
+    setStream(useKey, name, value, true);
+  }
+
+  /**
+   * Set the value of a stream with control over recycling subtraction.
+   *
+   * @param useKey The key containing application and substance
+   * @param name The stream name
+   * @param value The value to set
+   * @param subtractRecycling Whether to apply recycling logic (false for direct setting)
+   */
+  public void setStream(UseKey useKey, String name, EngineNumber value, boolean subtractRecycling) {
     String key = getKey(useKey);
     ensureSubstanceOrThrow(key, "setStream");
     ensureStreamKnown(name);
@@ -150,14 +163,23 @@ public class StreamKeeper {
       throw new RuntimeException("Encountered NaN to be set for: " + pieces);
     }
 
-    if (getIsSettingVolumeByUnits(name, value)) {
-      setStreamForSalesWithUnits(useKey, name, value);
-    } else if ("sales".equals(name)) {
-      setStreamForSales(useKey, name, value);
-    } else if ("recycle".equals(name)) {
-      setStreamForRecycle(useKey, name, value);
-    } else {
+    // Apply routing logic based on subtractRecycling parameter
+    if (!subtractRecycling && ("domestic".equals(name) || "import".equals(name))) {
+      // Direct setting - bypass recycling logic
       setSimpleStream(useKey, name, value);
+    } else {
+      // Normal routing with recycling logic
+      if (getIsSettingVolumeByUnits(name, value)) {
+        setStreamForSalesWithUnits(useKey, name, value);
+      } else if ("sales".equals(name)) {
+        setStreamForSales(useKey, name, value);
+      } else if ("domestic".equals(name) || "import".equals(name)) {
+        setSalesSubstream(useKey, name, value);
+      } else if ("recycle".equals(name)) {
+        setStreamForRecycle(useKey, name, value);
+      } else {
+        setSimpleStream(useKey, name, value);
+      }
     }
   }
 
@@ -279,6 +301,18 @@ public class StreamKeeper {
         .setExportEnabled(exportEnabled)
         .setIncludeExports(includeExports)
         .build();
+  }
+
+  /**
+   * Check if any sales streams have been enabled for the given substance/application.
+   *
+   * @param useKey The key containing application and substance
+   * @return True if any of domestic, import, or export streams are enabled
+   */
+  public boolean hasStreamsEnabled(UseKey useKey) {
+    return hasStreamBeenEnabled(useKey, "domestic")
+        || hasStreamBeenEnabled(useKey, "import")
+        || hasStreamBeenEnabled(useKey, "export");
   }
 
   /**
@@ -869,6 +903,56 @@ public class StreamKeeper {
 
     setSimpleStream(useKey, "domestic", domesticAmountToSet);
     setSimpleStream(useKey, "import", importAmountToSet);
+  }
+
+  /**
+   * Sets individual sales substreams (domestic/import) with recycling awareness.
+   * Unlike setStreamForSales, this method handles individual substreams without
+   * distribution logic but still accounts for proportional recycling.
+   *
+   * @param useKey The key containing application and substance
+   * @param streamName The stream name ("domestic" or "import")
+   * @param value The total value for this specific substream
+   */
+  private void setSalesSubstream(UseKey useKey, String streamName, EngineNumber value) {
+    EngineNumber valueConverted = unitConverter.convert(value, "kg");
+    BigDecimal amountKg = valueConverted.getValue();
+
+    // Check if any streams are enabled for distribution calculation
+    if (!hasStreamsEnabled(useKey)) {
+      throw new IllegalStateException("Cannot set sales substream: no streams have been enabled. "
+          + "Use 'set " + streamName + "' or other stream statements to enable streams before "
+          + "operations that require sales recalculation.");
+    }
+
+    // Get current recycling amount
+    EngineNumber recycleAmountRaw = getStream(useKey, "recycle");
+    EngineNumber recycleAmount = unitConverter.convert(recycleAmountRaw, "kg");
+    BigDecimal recycleKg = recycleAmount != null ? recycleAmount.getValue() : BigDecimal.ZERO;
+
+    // Get distribution to determine this substream's share of recycling
+    SalesStreamDistribution distribution = getDistribution(useKey);
+    BigDecimal substreamPercent;
+    if ("domestic".equals(streamName)) {
+      substreamPercent = distribution.getPercentDomestic();
+    } else if ("import".equals(streamName)) {
+      substreamPercent = distribution.getPercentImport();
+    } else {
+      throw new IllegalArgumentException("Unknown sales substream: " + streamName);
+    }
+
+    // Calculate proportional recycling for this substream
+    BigDecimal substreamRecycling = recycleKg.multiply(substreamPercent);
+
+    // Subtract proportional recycling to get virgin material amount
+    BigDecimal netAmount = amountKg.subtract(substreamRecycling);
+    if (netAmount.compareTo(BigDecimal.ZERO) < 0) {
+      netAmount = BigDecimal.ZERO;
+    }
+
+    // Set the net amount directly
+    EngineNumber netAmountToSet = new EngineNumber(netAmount, "kg");
+    setSimpleStream(useKey, streamName, netAmountToSet);
   }
 
   /**

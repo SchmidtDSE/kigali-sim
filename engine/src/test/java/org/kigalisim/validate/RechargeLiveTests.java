@@ -469,5 +469,90 @@ public class RechargeLiveTests {
         + "Actual: " + actualR600aRechargeEmissions + " tCO2e, Calculated: " + consistencyCheck + " tCO2e");
   }
 
+  /**
+   * Test combined policies (Sales Permit + Domestic Recycling) to verify correct interaction.
+   * Combined policy should consume more than recycling alone due to equipment displacement cascades.
+   */
+  @Test
+  public void testCombinedPoliciesRecharge() throws IOException {
+    String qtaPath = "../examples/combined_policies_recharge.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+
+    // Run recycling scenario (recycling policy only)
+    Stream<EngineResult> recyclingStream = KigaliSimFacade.runScenario(program, "Recycling", progress -> {});
+    List<EngineResult> recyclingResultsList = recyclingStream.collect(Collectors.toList());
+
+    // Run combined scenario (both policies)
+    Stream<EngineResult> combinedStream = KigaliSimFacade.runScenario(program, "Combined", progress -> {});
+    List<EngineResult> combinedResultsList = combinedStream.collect(Collectors.toList());
+
+    // Get 2035 results for both HFC-134a and R-600a
+    EngineResult recyclingHfc2035 = LiveTestsUtil.getResult(recyclingResultsList.stream(), 2035, "Domestic Refrigeration", "HFC-134a");
+    EngineResult recyclingR600a2035 = LiveTestsUtil.getResult(recyclingResultsList.stream(), 2035, "Domestic Refrigeration", "R-600a");
+    EngineResult combinedHfc2035 = LiveTestsUtil.getResult(combinedResultsList.stream(), 2035, "Domestic Refrigeration", "HFC-134a");
+    final EngineResult combinedR600a2035 = LiveTestsUtil.getResult(combinedResultsList.stream(), 2035, "Domestic Refrigeration", "R-600a");
+
+    assertNotNull(recyclingHfc2035, "Should have recycling HFC-134a result for 2035");
+    assertNotNull(recyclingR600a2035, "Should have recycling R-600a result for 2035");
+    assertNotNull(combinedHfc2035, "Should have combined HFC-134a result for 2035");
+    assertNotNull(combinedR600a2035, "Should have combined R-600a result for 2035");
+
+    // Calculate total consumption (imports + domestic) for recycling scenario
+    double recyclingTotalConsumption =
+        (recyclingHfc2035.getDomestic().getValue().doubleValue() + recyclingHfc2035.getImport().getValue().doubleValue())
+        + (recyclingR600a2035.getDomestic().getValue().doubleValue() + recyclingR600a2035.getImport().getValue().doubleValue());
+
+    // Calculate total consumption (imports + domestic) for combined scenario
+    double combinedTotalConsumption =
+        (combinedHfc2035.getDomestic().getValue().doubleValue() + combinedHfc2035.getImport().getValue().doubleValue())
+        + (combinedR600a2035.getDomestic().getValue().doubleValue() + combinedR600a2035.getImport().getValue().doubleValue());
+
+    // Expected: Combined policies consume MORE than recycling alone due to displacement cascade effects
+    // HFC-134a ban forces massive R-600a adoption that overwhelms recycling benefits
+    assertEquals(6830.0, recyclingTotalConsumption, 1.0, "Recycling scenario total consumption should be ~6,830 kg");
+    assertEquals(11540.0, combinedTotalConsumption, 1.0, "Combined scenario total consumption should be ~11,540 kg");
+  }
+
+  /**
+   * Test combined policies with MT-based caps for proper material consumption calculation.
+   */
+  @Test
+  public void testCombinedPoliciesRechargeMt() throws IOException {
+    String qtaPath = "../examples/combined_policies_recharge_mt.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+
+    // Run combined scenario
+    Stream<EngineResult> combinedStream = KigaliSimFacade.runScenario(program, "Combined", progress -> {});
+    List<EngineResult> combinedResultsList = combinedStream.collect(Collectors.toList());
+
+    // Get 2035 results for HFC-134a
+    EngineResult combinedHfc2035 = LiveTestsUtil.getResult(combinedResultsList.stream(), 2035, "Domestic Refrigeration", "HFC-134a");
+    assertNotNull(combinedHfc2035, "Should have combined HFC-134a result for 2035");
+
+    // With MT-based caps, expect zero consumption due to material limits
+    double hfcConsumption = combinedHfc2035.getDomestic().getValue().doubleValue() + combinedHfc2035.getImport().getValue().doubleValue();
+    assertEquals(0.0, hfcConsumption, 1.0, "HFC-134a consumption should be 0 kg with MT-based cap to 0");
+  }
+
+  /**
+   * Test combined policies reorder with MT-based caps.
+   */
+  @Test
+  public void testCombinedPoliciesRechargeReorder() throws IOException {
+    String qtaPath = "../examples/combined_policies_recharge_reorder.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+
+    // Run combined scenario
+    Stream<EngineResult> combinedStream = KigaliSimFacade.runScenario(program, "Combined", progress -> {});
+    List<EngineResult> combinedResultsList = combinedStream.collect(Collectors.toList());
+
+    // Get 2035 results for HFC-134a
+    EngineResult combinedHfc2035 = LiveTestsUtil.getResult(combinedResultsList.stream(), 2035, "Domestic Refrigeration", "HFC-134a");
+    assertNotNull(combinedHfc2035, "Should have combined HFC-134a result for 2035");
+
+    // With combined policies reorder, expect consumption due to policy interaction effects
+    double hfcConsumption = combinedHfc2035.getDomestic().getValue().doubleValue() + combinedHfc2035.getImport().getValue().doubleValue();
+    assertEquals(6384.0, hfcConsumption, 1.0, "HFC-134a consumption should be ~6,384 kg due to policy interaction effects");
+  }
 
 }

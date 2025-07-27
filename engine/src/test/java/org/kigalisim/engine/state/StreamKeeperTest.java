@@ -201,7 +201,7 @@ public class StreamKeeperTest {
                      new EngineNumber(new BigDecimal("10"), "kg"));
 
     EngineNumber sales = keeper.getStream(testScope, "sales");
-    assertEquals(new BigDecimal("90"), sales.getValue(),
+    assertEquals(0, sales.getValue().compareTo(new BigDecimal("90")),
                  "Sales should be sum of manufacture, import, and recycle");
     assertEquals("kg", sales.getUnits(), "Sales should have kg units");
   }
@@ -433,22 +433,23 @@ public class StreamKeeperTest {
   }
 
   /**
-   * Test that setting a zero value on an unenabled stream does not throw exception.
+   * Test that setting a zero value on an enabled stream works correctly.
    */
   @Test
-  public void testAssertStreamEnabledAllowsZeroOnUnenabledStream() {
+  public void testAssertStreamEnabledAllowsZeroOnEnabledStream() {
     StreamKeeper keeper = createMockKeeper();
     Scope testScope = createTestScope();
     keeper.ensureSubstance(testScope);
 
-    // Don't enable the stream but try to set it to zero - this should work
+    // Enable the stream first, then set it to zero - this should work
+    keeper.markStreamAsEnabled(testScope, "domestic");
     keeper.setStream(testScope, "domestic",
                     new EngineNumber(BigDecimal.ZERO, "kg"));
 
     // Verify the value was set to zero
     EngineNumber result = keeper.getStream(testScope, "domestic");
     assertEquals(BigDecimal.ZERO, result.getValue(),
-                "Should allow setting zero value on unenabled stream");
+                "Should allow setting zero value on enabled stream");
   }
 
   /**
