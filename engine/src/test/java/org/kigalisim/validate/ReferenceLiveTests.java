@@ -35,7 +35,7 @@ public class ReferenceLiveTests {
     assertNotNull(program, "Program should not be null");
 
     // Run the scenario using KigaliSimFacade
-    String scenarioName = "Business as Usual";
+    String scenarioName = "BAU Uncertainty";
     Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
 
     // Convert to list for multiple access

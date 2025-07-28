@@ -1,0 +1,21 @@
+start default
+
+  define application "test"
+
+    uses substance "test"
+      enable domestic
+      initial charge with 5 kg / unit for domestic
+      set domestic to sample normally from mean of 100 std of 10 mt
+      equals 5 tCO2e / mt
+    end substance
+
+  end application
+
+end default
+
+
+start simulations
+
+  simulate "monte carlo test" from years 1 to 2 across 10 trials
+
+end simulations

@@ -153,4 +153,29 @@ public class ChangeLiveTests {
     assertEquals("kg", result.getDomestic().getUnits(),
         "Domestic units should be kg");
   }
+
+  /**
+   * Test Monte Carlo syntax in change statements - currently fails but documents the issue.
+   * This test is expected to fail until the grammar properly supports Monte Carlo in change statements.
+   */
+  @Test
+  public void testChangeMonteCarloSyntax() throws IOException {
+    // This test documents the current limitation with Monte Carlo syntax in change statements
+    // The QTA file ../examples/test_change_monte_carlo.qta contains:
+    // change equipment by sample normally from mean of 6 % std of 1 % / year during years 2025 to 2030
+    
+    String qtaPath = "../examples/test_change_monte_carlo.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    
+    // If we reach here, the syntax is now supported
+    assertNotNull(program, "Program should not be null if syntax is supported");
+    
+    // Run a basic validation
+    String scenarioName = "test";
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
+    List<EngineResult> resultsList = results.collect(Collectors.toList());
+    
+    // Should have 10 trials * 2 years = 20 results
+    assertEquals(20, resultsList.size(), "Should have 20 results (10 trials * 2 years)");
+  }
 }

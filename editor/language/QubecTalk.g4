@@ -50,13 +50,9 @@ SUB_: '-';
 
 AND_: 'and';
 
-AT_: 'at';
-
 ENDIF_: 'endif';
 
 ELSE_: 'else';
-
-EOL_: 'eol';
 
 EQEQ_: '==';
 
@@ -144,6 +140,8 @@ ACROSS_: 'across';
 
 AS_: 'as';
 
+AT_: 'at';
+
 BY_: 'by';
 
 CAP_: 'cap';
@@ -157,6 +155,8 @@ DISPLACING_ : 'displacing';
 DURING_: 'during';
 
 ENABLE_: 'enable';
+
+EOL_: 'eol';
 
 CONSUME_: 'equals';
 
@@ -441,4 +441,3 @@ substanceStatement: (capStatement | changeStatement | enableStatement | equalsSt
  **/
 
 program: stanza* EOF;
-

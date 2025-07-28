@@ -61,7 +61,8 @@ public class KigaliWasmSimFacade {
       ParseResult parseResult = KigaliSimFacade.parse(code);
 
       if (parseResult.hasErrors()) {
-        return "Error: Parse errors detected\n\n";
+        String detailedError = KigaliSimFacade.getDetailedErrorMessage(parseResult);
+        return "Error: " + detailedError + "\n\n";
       }
 
       // Interpret the parsed code
