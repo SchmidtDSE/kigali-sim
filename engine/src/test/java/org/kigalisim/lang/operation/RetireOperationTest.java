@@ -79,7 +79,7 @@ public class RetireOperationTest {
   public void testExecuteNoDuring() {
     // Enable import stream to enable sales distribution calculation (BEFORE priorEquipment)
     engine.enable("import", Optional.ofNullable(allYearsMatcher));
-    
+
     // Set up prior equipment population
     EngineNumber priorEquipment = new EngineNumber(BigDecimal.valueOf(1000), "units");
     engine.setStream("priorEquipment", priorEquipment, Optional.ofNullable(allYearsMatcher));
@@ -104,7 +104,7 @@ public class RetireOperationTest {
   public void testExecuteWithDuring() {
     // Enable import stream to enable sales distribution calculation (BEFORE priorEquipment)
     engine.enable("import", Optional.ofNullable(allYearsMatcher));
-    
+
     // Set up prior equipment population
     EngineNumber priorEquipment = new EngineNumber(BigDecimal.valueOf(1000), "units");
     engine.setStream("priorEquipment", priorEquipment, Optional.ofNullable(allYearsMatcher));
@@ -135,7 +135,7 @@ public class RetireOperationTest {
   public void testExecuteWithDuringNotApplying() {
     // Enable import stream to enable sales distribution calculation (BEFORE priorEquipment)
     engine.enable("import", Optional.ofNullable(allYearsMatcher));
-    
+
     // Set up prior equipment population
     EngineNumber priorEquipment = new EngineNumber(BigDecimal.valueOf(1000), "units");
     engine.setStream("priorEquipment", priorEquipment, Optional.ofNullable(allYearsMatcher));
@@ -171,7 +171,7 @@ public class RetireOperationTest {
   public void testExecuteWithComplexValueOperation() {
     // Enable import stream to enable sales distribution calculation (BEFORE priorEquipment)
     engine.enable("import", Optional.ofNullable(allYearsMatcher));
-    
+
     // Set up prior equipment population
     EngineNumber priorEquipment = new EngineNumber(BigDecimal.valueOf(1000), "units");
     engine.setStream("priorEquipment", priorEquipment, Optional.ofNullable(allYearsMatcher));

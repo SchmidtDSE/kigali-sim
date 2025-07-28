@@ -14,12 +14,14 @@ import java.util.Optional;
 import org.kigalisim.engine.Engine;
 import org.kigalisim.engine.number.EngineNumber;
 import org.kigalisim.engine.number.UnitConverter;
-import org.kigalisim.engine.state.ConverterStateGetter;
 import org.kigalisim.engine.state.OverridingConverterStateGetter;
+import org.kigalisim.engine.state.StateGetter;
 import org.kigalisim.engine.state.UseKey;
 import org.kigalisim.engine.support.DivisionHelper;
 import org.kigalisim.engine.support.ExceptionsGenerator;
 import org.kigalisim.engine.support.RechargeVolumeCalculator;
+import org.kigalisim.engine.support.StreamUpdate;
+import org.kigalisim.engine.support.StreamUpdateBuilder;
 
 /**
  * Strategy for recalculating population changes.
@@ -38,12 +40,12 @@ public class PopulationChangeRecalcStrategy implements RecalcStrategy {
   public PopulationChangeRecalcStrategy(Optional<UseKey> scope, Optional<Boolean> useExplicitRecharge) {
     this.scope = scope;
     this.useExplicitRecharge = useExplicitRecharge;
-    
+
   }
 
   @Override
   public void execute(Engine target, RecalcKit kit) {
-    ConverterStateGetter baseStateGetter = kit.getStateGetter();
+    StateGetter baseStateGetter = kit.getStateGetter();
     OverridingConverterStateGetter stateGetter =
         new OverridingConverterStateGetter(baseStateGetter);
     UnitConverter unitConverter = new UnitConverter(stateGetter);
@@ -110,8 +112,21 @@ public class PopulationChangeRecalcStrategy implements RecalcStrategy {
     EngineNumber newUnitsEffective = new EngineNumber(newUnitsAllowed, "units");
 
     // Save
-    target.setStreamFor("equipment", newUnitsEffective, Optional.empty(), Optional.of(scopeEffective), false, Optional.empty());
-    target.setStreamFor("newEquipment", newUnitsMarginal, Optional.empty(), Optional.of(scopeEffective), false, Optional.empty());
+    StreamUpdate equipmentUpdate = new StreamUpdateBuilder()
+        .setName("equipment")
+        .setValue(newUnitsEffective)
+        .setKey(scopeEffective)
+        .setPropagateChanges(false)
+        .build();
+    target.executeStreamUpdate(equipmentUpdate);
+
+    StreamUpdate newEquipmentUpdate = new StreamUpdateBuilder()
+        .setName("newEquipment")
+        .setValue(newUnitsMarginal)
+        .setKey(scopeEffective)
+        .setPropagateChanges(false)
+        .build();
+    target.executeStreamUpdate(newEquipmentUpdate);
 
     // Recalc recharge emissions - need to create a new operation
     RechargeEmissionsRecalcStrategy rechargeStrategy = new RechargeEmissionsRecalcStrategy(

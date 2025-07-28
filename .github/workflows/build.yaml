@@ -9,7 +9,7 @@ jobs:
   lintJs:
     environment: build
     runs-on: ubuntu-latest
-    name: Run JS Linter
+    name: JS Lint
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -27,7 +27,7 @@ jobs:
   checkCacheBusters:
     environment: build
     runs-on: ubuntu-latest
-    name: Check Cache Busters
+    name: Cache Busters Check
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -53,12 +53,12 @@ jobs:
       - name: Copy guide
         run: cp -r ./docs/guide ./editor/deploy/guide
       - name: Update cache busters
-        run: bash ./support/update_cache_busters.sh
+        run: bash ./support/update_version.sh
         working-directory: ./editor
   buildEngine:
     environment: Build
     runs-on: ubuntu-latest
-    name: Build Fat Jar
+    name: JVM Engine Build
     defaults:
       run:
         shell: bash
@@ -105,7 +105,7 @@ jobs:
     needs: buildEngine
     environment: Build
     runs-on: ubuntu-latest
-    name: Run Engine Tests
+    name: Engine Tests
     defaults:
       run:
         shell: bash
@@ -161,7 +161,7 @@ jobs:
     environment: Build
     needs: [ checkEngine, buildEngine, testEngine, runEngineLocal ]
     runs-on: ubuntu-latest
-    name: Build WASM Engine
+    name: WASM Engine Build
     defaults:
       run:
         shell: bash
@@ -184,7 +184,7 @@ jobs:
   unitTestsBrowser:
     environment: build
     runs-on: ubuntu-latest
-    name: Run Web Tests
+    name: Web Tests
     needs: [ buildWasm ]
     steps:
       - name: Checkout
@@ -221,7 +221,7 @@ jobs:
   deploy-prep:
     environment: build
     runs-on: ubuntu-latest
-    name: Deploy Preparation
+    name: Deploy Prep
     needs: [ lintJs, unitTestsBrowser, checkCacheBusters, buildWasm ]
     steps:
       - name: Checkout
@@ -237,6 +237,11 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: war
+          path: ./
+      - name: Download fat JAR
+        uses: actions/download-artifact@v4
+        with:
+          name: fatJar
           path: ./
       - name: Extract WASM files to wasm directory
         run: bash ./support/update_wasm_from_war.sh ../KigaliSim.war
@@ -257,12 +262,12 @@ jobs:
         run: cp -r ./docs/guide ./editor/deploy/guide
       - name: Copy case study QTA file to guide
         run: cp ./examples/case_study.qta ./editor/deploy/guide/case_study.qta
-      - name: Copy subdivided case study QTA file to guide
-        run: cp ./examples/case_study_subdivided.qta ./editor/deploy/guide/case_study_subdivided.qta
       - name: Copy WASM files
         run: cp -r ./editor/wasm ./editor/deploy/wasm
+      - name: Copy fat JAR
+        run: cp ./kigalisim-fat.jar ./editor/deploy/kigalisim-fat.jar
       - name: Update cache busters
-        run: bash ./support/update_cache_busters.sh
+        run: bash ./support/update_version.sh
         working-directory: ./editor
       - name: Upload deploy artifact
         uses: actions/upload-artifact@v4
@@ -274,7 +279,7 @@ jobs:
     environment: deploy
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
-    name: Deploy
+    name: Preview Deploy
     needs: [deploy-prep]
     steps:
       - name: Download deploy artifact
@@ -295,7 +300,7 @@ jobs:
     environment: deploy
     if: github.ref == 'refs/heads/deploy'
     runs-on: ubuntu-latest
-    name: Deploy
+    name: Production Deploy
     needs: [deploy-prep]
     steps:
       - name: Download deploy artifact

@@ -1,0 +1,129 @@
+start about
+  # Name: "ABC Country HFC Strategy"
+  # Description: "HFC phase-down analysis for ABC Country including multiple substances, applications, and policy scenarios"
+end about
+
+start default
+
+  define application "Domestic Refrigeration"
+
+    uses substance "HFC-134a"
+      enable domestic
+      enable import
+      initial charge with 0.07 kg / unit for domestic
+      initial charge with 0.14 kg / unit for import
+      initial charge with 0 kg / unit for export
+      equals 1430 tCO2e / kg
+      equals 1 kwh / unit
+      set priorEquipment to 1000000 units during year 2025
+      set domestic to 87,000 units / year during year 2025
+      set import to 55,000 units / year during year 2025
+      change sales by sample normally from mean of 6 std of 1 % / year during years 2025 to 2030
+      change sales by sample normally from mean of 4 std of 1 % / year during years 2031 to 2035
+      retire 5 % / year
+      recharge 10 % with 0.14 kg / unit
+    end substance
+
+    uses substance "R-600a"
+      enable domestic
+      enable import
+      initial charge with 0.035 kg / unit for domestic
+      initial charge with 0.07 kg / unit for import
+      initial charge with 0 kg / unit for export
+      equals 6 tCO2e / kg
+      equals 1 kwh / kg
+      set priorEquipment to 100000 units during year 2025
+      set domestic to 14,000 units / year during year 2025
+      set import to 14,000 units / year during year 2025
+      change sales by sample normally from mean of 5 std of 1 % / year during years 2025 to 2030
+      change sales by sample normally from mean of 3 std of 1 % / year during years 2031 to 2035
+      retire 5 % / year
+      recharge 10 % with 0.07 kg / unit
+    end substance
+
+  end application
+
+  define application "Domestic AC"
+
+    uses substance "HFC-32"
+      enable domestic
+      initial charge with 0.85 kg / unit for domestic
+      initial charge with 0 kg / unit for import
+      initial charge with 0 kg / unit for export
+      equals 675 tCO2e / kg
+      equals 1 kwh / kg
+      set priorEquipment to 40000 units during year 2025
+      set domestic to 15 mt / year during year 2025
+      change domestic by sample normally from mean of 10 std of 1 % / year during years 2025 to 2035
+      retire 7 % / year
+      recharge 15 % with 0.85 kg / unit
+    end substance
+
+    uses substance "R-410A"
+      enable domestic
+      initial charge with 1 kg / unit for domestic
+      initial charge with 0 kg / unit for import
+      initial charge with 0 kg / unit for export
+      equals 2088 tCO2e / kg
+      equals 1 kwh / unit
+      set priorEquipment to 20000 units during year 2025
+      set domestic to 5 mt / year during year 2025
+      change domestic by sample normally from mean of 6 std of 1 % / year during years 2025 to 2035
+      retire 7 % / year
+      recharge 7 % with 1 kg / unit
+    end substance
+
+  end application
+
+end default
+
+start policy "Sales Permit"
+
+  modify application "Domestic Refrigeration"
+    modify substance "HFC-134a"
+      cap sales to 85 % during years 2026 to 2030
+      cap sales to 70 % during years 2031 to 2035
+    end substance
+  end application
+
+end policy
+
+start policy "Domestic Recycling"
+
+  modify application "Domestic Refrigeration"
+    modify substance "HFC-134a"
+      recover 20 % with 80 % reuse at eol during years 2026 to 2035
+    end substance
+  end application
+
+  modify application "Domestic AC"
+    modify substance "R-410A"
+      recover 15 % with 85 % reuse at eol during years 2026 to 2035
+    end substance
+  end application
+
+end policy
+
+start simulations
+
+  simulate "BAU Uncertainty"
+  from years 2025 to 2035
+  across 5 trials
+
+  simulate "Permit Uncertainty"
+    using "Sales Permit"
+  from years 2025 to 2035
+  across 5 trials
+
+  simulate "Combined Uncertainty"
+    using "Sales Permit"
+    then "Domestic Recycling"
+  from years 2025 to 2035
+  across 5 trials
+
+  simulate "Recycling Uncertainty"
+    using "Domestic Recycling"
+  from years 2025 to 2035
+  across 5 trials
+
+end simulations

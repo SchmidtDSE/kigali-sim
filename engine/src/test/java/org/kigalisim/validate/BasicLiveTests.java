@@ -25,6 +25,36 @@ import org.kigalisim.lang.program.ParsedProgram;
 public class BasicLiveTests {
 
   /**
+   * Test basic Monte Carlo functionality with trials.
+   */
+  @Test
+  public void testBasicMonteCarlo() throws IOException {
+    // Load and parse the QTA file
+    String qtaPath = "../examples/basic_monte_carlo.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    // Run the scenario using KigaliSimFacade
+    String scenarioName = "monte carlo test";
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
+
+    List<EngineResult> resultsList = results.collect(Collectors.toList());
+    
+    // Should have 10 trials * 2 years = 20 results
+    assertEquals(20, resultsList.size(), "Should have 20 results (10 trials * 2 years)");
+    
+    // Check that we have results for trials 1-10
+    for (int trial = 1; trial <= 10; trial++) {
+      EngineResult result = LiveTestsUtil.getResultWithTrial(resultsList.stream(), trial, 1, "test", "test");
+      assertNotNull(result, "Should have result for trial " + trial + " year 1");
+      
+      // Equipment should be 2000 units (100 mt * 20 units/mt)  
+      assertEquals(2000.0, result.getPopulation().getValue().doubleValue(), 0.0001,
+          "Equipment should be 2000 units for trial " + trial);
+    }
+  }
+
+  /**
    * Test basic.qta produces expected values.
    */
   @Test
@@ -54,11 +84,11 @@ public class BasicLiveTests {
     assertEquals("tCO2e", result.getGhgConsumption().getUnits(),
         "Consumption units should be tCO2e");
 
-    // Check manufacture value - should be 100 mt = 100000 kg
-    assertEquals(100000.0, result.getManufacture().getValue().doubleValue(), 0.0001,
-        "Manufacture should be 100000 kg");
-    assertEquals("kg", result.getManufacture().getUnits(),
-        "Manufacture units should be kg");
+    // Check domestic value - should be 100 mt = 100000 kg
+    assertEquals(100000.0, result.getDomestic().getValue().doubleValue(), 0.0001,
+        "Domestic should be 100000 kg");
+    assertEquals("kg", result.getDomestic().getUnits(),
+        "Domestic units should be kg");
   }
 
   /**
@@ -79,11 +109,11 @@ public class BasicLiveTests {
     EngineResult result = LiveTestsUtil.getResult(resultsList.stream(), 1, "test", "test");
     assertNotNull(result, "Should have result for test/test in year 1");
 
-    // Check manufacture value - should be 100 mt = 100000 kg
-    assertEquals(100000.0, result.getManufacture().getValue().doubleValue(), 0.0001,
-        "Manufacture should be 100000 kg");
-    assertEquals("kg", result.getManufacture().getUnits(),
-        "Manufacture units should be kg");
+    // Check domestic value - should be 100 mt = 100000 kg
+    assertEquals(100000.0, result.getDomestic().getValue().doubleValue(), 0.0001,
+        "Domestic should be 100000 kg");
+    assertEquals("kg", result.getDomestic().getUnits(),
+        "Domestic units should be kg");
 
     // Check energy consumption
     assertEquals(500.0, result.getEnergyConsumption().getValue().doubleValue(), 0.0001,
@@ -116,11 +146,11 @@ public class BasicLiveTests {
     assertEquals("units", result.getPopulation().getUnits(),
         "Equipment units should be units");
 
-    // Check manufacture value - should be 100 mt = 100000 kg
-    assertEquals(100000.0, result.getManufacture().getValue().doubleValue(), 0.0001,
-        "Manufacture should be 100000 kg");
-    assertEquals("kg", result.getManufacture().getUnits(),
-        "Manufacture units should be kg");
+    // Check domestic value - should be 100 mt = 100000 kg
+    assertEquals(100000.0, result.getDomestic().getValue().doubleValue(), 0.0001,
+        "Domestic should be 100000 kg");
+    assertEquals("kg", result.getDomestic().getUnits(),
+        "Domestic units should be kg");
   }
 
   /**
@@ -141,11 +171,11 @@ public class BasicLiveTests {
     EngineResult result = LiveTestsUtil.getResult(resultsList.stream(), 1, "test", "test");
     assertNotNull(result, "Should have result for test/test in year 1");
 
-    // Check manufacture value - should be 1 mt = 1000 kg
-    assertEquals(1000.0, result.getManufacture().getValue().doubleValue(), 0.0001,
-        "Manufacture should be 1000 kg");
-    assertEquals("kg", result.getManufacture().getUnits(),
-        "Manufacture units should be kg");
+    // Check domestic value - should be 1 mt = 1000 kg
+    assertEquals(1000.0, result.getDomestic().getValue().doubleValue(), 0.0001,
+        "Domestic should be 1000 kg");
+    assertEquals("kg", result.getDomestic().getUnits(),
+        "Domestic units should be kg");
   }
 
   /**
@@ -166,11 +196,11 @@ public class BasicLiveTests {
     EngineResult result = LiveTestsUtil.getResult(resultsList.stream(), 1, "test", "test");
     assertNotNull(result, "Should have result for test/test in year 1");
 
-    // Check manufacture value - should be 1 mt = 1000 kg
-    assertEquals(1000.0, result.getManufacture().getValue().doubleValue(), 0.0001,
-        "Manufacture should be 1000 kg");
-    assertEquals("kg", result.getManufacture().getUnits(),
-        "Manufacture units should be kg");
+    // Check domestic value - should be 1 mt = 1000 kg
+    assertEquals(1000.0, result.getDomestic().getValue().doubleValue(), 0.0001,
+        "Domestic should be 1000 kg");
+    assertEquals("kg", result.getDomestic().getUnits(),
+        "Domestic units should be kg");
   }
 
   /**
@@ -428,15 +458,15 @@ public class BasicLiveTests {
     Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
 
     List<EngineResult> resultsList = results.collect(Collectors.toList());
-    EngineResult result = LiveTestsUtil.getResult(resultsList.stream(), 1, 
+    EngineResult result = LiveTestsUtil.getResult(resultsList.stream(), 1,
         "commercial refrigeration", "HFC-134a");
     assertNotNull(result, "Should have result for commercial refrigeration/HFC-134a in year 1");
 
-    // Check manufacture value - should be 1600 mt = 1600000 kg
-    assertEquals(1600000.0, result.getManufacture().getValue().doubleValue(), 0.0001,
-        "Manufacture should be 1600000 kg");
-    assertEquals("kg", result.getManufacture().getUnits(),
-        "Manufacture units should be kg");
+    // Check domestic value - should be 1600 mt = 1600000 kg
+    assertEquals(1600000.0, result.getDomestic().getValue().doubleValue(), 0.0001,
+        "Domestic should be 1600000 kg");
+    assertEquals("kg", result.getDomestic().getUnits(),
+        "Domestic units should be kg");
 
     // Check import value - should be 400 mt = 400000 kg
     assertEquals(400000.0, result.getImport().getValue().doubleValue(), 0.0001,
@@ -509,18 +539,20 @@ public class BasicLiveTests {
 
     List<EngineResult> resultsList = results.collect(Collectors.toList());
 
-    // Check that sub_a manufacture is set with recharge
+    // Check that sub_a domestic is set with recharge
     EngineResult recordSubA = LiveTestsUtil.getResult(resultsList.stream(), 1, "test", "sub_a");
     assertNotNull(recordSubA, "Should have result for test/sub_a in year 1");
 
-    // When setting to 5 units, should we get:
-    // Option A: Just 50 kg (5 units * 10 kg/unit)
-    // Option B: 70 kg (50 kg + 20 kg recharge for 20 units * 10% * 10 kg/unit)
-    double manufactureValue = recordSubA.getManufacture().getValue().doubleValue();
-    
-    // Let's see what actually happens
-    assertEquals(70.0, manufactureValue, 0.0001,
-        "Manufacture for sub_a should be 70 kg (50 + 20 recharge) when set to 5 units");
+    // When setting to 5 units with proportional recharge distribution:
+    // Base amount: 5 units * 10 kg/unit = 50 kg
+    // Total recharge: 20 units * 10% * 10 kg/unit = 20 kg
+    // Sales distribution: domestic=100kg (66.67%), import=50kg (33.33%)
+    // Domestic recharge: 20 kg * 66.67% = 13.33 kg
+    // Total domestic: 50 kg + 13.33 kg = 63.33 kg
+    double domesticValue = recordSubA.getDomestic().getValue().doubleValue();
+
+    assertEquals(63.333333333333336, domesticValue, 0.0001,
+        "Domestic for sub_a should be 63.33 kg (50 + 13.33 proportional recharge) when set to 5 units");
   }
 
   /**
@@ -532,11 +564,11 @@ public class BasicLiveTests {
     String qtaPath = "../examples/basic_carry_over.qta";
     ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
     assertNotNull(program, "Program should not be null");
-    
+
     String scenarioName = "BAU";
     Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
     List<EngineResult> resultsList = results.collect(Collectors.toList());
-    
+
     // Check year 2025 equipment (population) value
     // Should be 20800 units (20000 prior + 800 import)
     EngineResult resultYear2025 = LiveTestsUtil.getResult(resultsList.stream(), 2025, "Domestic AC", "HFC-32");
@@ -563,7 +595,7 @@ public class BasicLiveTests {
         "Equipment should be 21600 units in year 2027 (carried over from 2026)");
     assertEquals("units", resultYear2027.getPopulation().getUnits(),
         "Equipment units should be units");
-    
+
     // Check year 2028 equipment (population) value
     // Should still be 21600 units (carried over)
     EngineResult resultYear2028 = LiveTestsUtil.getResult(resultsList.stream(), 2028, "Domestic AC", "HFC-32");
@@ -572,5 +604,29 @@ public class BasicLiveTests {
         "Equipment should be 21600 units in year 2028 (carried over from 2026)");
     assertEquals("units", resultYear2028.getPopulation().getUnits(),
         "Equipment units should be units");
+  }
+
+  /**
+   * Test zero_pop_infer.qta to reproduce division by zero error.
+   * This test is expected to fail with a division by zero error.
+   */
+  @Test
+  public void testZeroPopulationInfer() throws IOException {
+    // Load and parse the QTA file
+    String qtaPath = "../examples/zero_pop_infer.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    // Run the scenario using KigaliSimFacade
+    String scenarioName = "Business as Usual";
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
+
+    List<EngineResult> resultsList = results.collect(Collectors.toList());
+    EngineResult result = LiveTestsUtil.getResult(resultsList.stream(), 2025, "Domestic Refrigeration", "HFC-134a");
+    assertNotNull(result, "Should have result for Domestic Refrigeration/HFC-134a in year 2025");
+
+    // Check that we can get results without division by zero error
+    assertTrue(result.getPopulation().getValue().doubleValue() > 0,
+        "Equipment population should be positive");
   }
 }

@@ -24,7 +24,7 @@ public class SalesStreamDistributionTest {
 
     SalesStreamDistribution distribution = new SalesStreamDistribution(percentManufacture, percentImport);
 
-    assertEquals(percentManufacture, distribution.getPercentManufacture(),
+    assertEquals(percentManufacture, distribution.getPercentDomestic(),
         "Manufacture percentage should match constructor argument");
     assertEquals(percentImport, distribution.getPercentImport(),
         "Import percentage should match constructor argument");
@@ -37,7 +37,7 @@ public class SalesStreamDistributionTest {
 
     SalesStreamDistribution distribution = new SalesStreamDistribution(fifty, fifty);
 
-    assertEquals(fifty, distribution.getPercentManufacture(),
+    assertEquals(fifty, distribution.getPercentDomestic(),
         "Manufacture percentage should be 0.5");
     assertEquals(fifty, distribution.getPercentImport(),
         "Import percentage should be 0.5");
@@ -48,7 +48,7 @@ public class SalesStreamDistributionTest {
     // Test 100% manufacture case
     SalesStreamDistribution distribution = new SalesStreamDistribution(BigDecimal.ONE, BigDecimal.ZERO);
 
-    assertEquals(BigDecimal.ONE, distribution.getPercentManufacture(),
+    assertEquals(BigDecimal.ONE, distribution.getPercentDomestic(),
         "Manufacture percentage should be 1.0");
     assertEquals(BigDecimal.ZERO, distribution.getPercentImport(),
         "Import percentage should be 0.0");
@@ -59,7 +59,7 @@ public class SalesStreamDistributionTest {
     // Test 100% import case
     SalesStreamDistribution distribution = new SalesStreamDistribution(BigDecimal.ZERO, BigDecimal.ONE);
 
-    assertEquals(BigDecimal.ZERO, distribution.getPercentManufacture(),
+    assertEquals(BigDecimal.ZERO, distribution.getPercentDomestic(),
         "Manufacture percentage should be 0.0");
     assertEquals(BigDecimal.ONE, distribution.getPercentImport(),
         "Import percentage should be 1.0");

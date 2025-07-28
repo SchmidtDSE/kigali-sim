@@ -33,4 +33,26 @@ public class LiveTestsUtil {
         .findFirst()
         .orElse(null);
   }
+
+  /**
+   * Utility function to get a result for a specific trial, year, application, and substance.
+   * Used for Monte Carlo tests with multiple trials.
+   *
+   * @param results Stream of engine results from running a scenario
+   * @param trial The trial number to find results for
+   * @param year The year to find results for
+   * @param application The application name
+   * @param substance The substance name
+   * @return The matching EngineResult or null if not found
+   */
+  public static EngineResult getResultWithTrial(Stream<EngineResult> results, int trial, int year,
+      String application, String substance) {
+    return results
+        .filter(r -> r.getTrialNumber() == trial)
+        .filter(r -> r.getYear() == year)
+        .filter(r -> r.getApplication().equals(application))
+        .filter(r -> r.getSubstance().equals(substance))
+        .findFirst()
+        .orElse(null);
+  }
 }

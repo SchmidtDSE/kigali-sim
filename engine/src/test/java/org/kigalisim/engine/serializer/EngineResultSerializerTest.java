@@ -51,14 +51,14 @@ public class EngineResultSerializerTest {
     }
 
     /**
-     * Test that serializer gets manufacture value correctly.
+     * Test that serializer gets domestic value correctly.
      */
     @Test
-    public void testGetsManufactureValue() {
-      // Expected: 1600 mt - (10 mt * (1600/(1600+400))) = 1600 - 8 = 1592 mt = 1,592,000 kg
-      assertEquals(0, result.getManufacture().getValue().compareTo(BigDecimal.valueOf(1592000)),
-          "Manufacture value should be 1,592,000 kg");
-      assertEquals("kg", result.getManufacture().getUnits(), "Manufacture units should be kg");
+    public void testGetsDomesticValue() {
+      // Expected: 1600 mt = 1,600,000 kg (recycling now handled at stream level)
+      assertEquals(0, result.getDomestic().getValue().compareTo(BigDecimal.valueOf(1600000)),
+          "Domestic value should be 1,600,000 kg");
+      assertEquals("kg", result.getDomestic().getUnits(), "Domestic units should be kg");
     }
 
     /**
@@ -66,9 +66,9 @@ public class EngineResultSerializerTest {
      */
     @Test
     public void testGetsImportValue() {
-      // Expected: 400 mt - (10 mt * (400/(1600+400))) = 400 - 2 = 398 mt = 398,000 kg
-      assertEquals(0, result.getImport().getValue().compareTo(BigDecimal.valueOf(398000)),
-          "Import value should be 398,000 kg");
+      // Expected: 400 mt = 400,000 kg (recycling now handled at stream level)
+      assertEquals(0, result.getImport().getValue().compareTo(BigDecimal.valueOf(400000)),
+          "Import value should be 400,000 kg");
       assertEquals("kg", result.getImport().getUnits(), "Import units should be kg");
     }
 
@@ -88,10 +88,10 @@ public class EngineResultSerializerTest {
      */
     @Test
     public void testGetsDomesticConsumption() {
-      // Expected: 1,592,000 kg * 500 tCO2e / mt * (1mt/1,000kg) = 796,000 tCO2e
+      // Expected: 1,600,000 kg * 500 tCO2e / mt * (1mt/1,000kg) = 800,000 tCO2e
       assertEquals(0, result.getDomesticConsumption().getValue()
-          .compareTo(BigDecimal.valueOf(796000)),
-          "Domestic consumption should be 796,000 tCO2e");
+          .compareTo(BigDecimal.valueOf(800000)),
+          "Domestic consumption should be 800,000 tCO2e");
       assertEquals("tCO2e", result.getDomesticConsumption().getUnits(),
           "Domestic consumption units should be tCO2e");
     }
@@ -101,10 +101,10 @@ public class EngineResultSerializerTest {
      */
     @Test
     public void testGetsImportConsumption() {
-      // Expected: 398,000 kg * 500 tCO2e / mt * (1mt/1,000kg) = 199,000 tCO2e
+      // Expected: 400,000 kg * 500 tCO2e / mt * (1mt/1,000kg) = 200,000 tCO2e
       assertEquals(0, result.getImportConsumption().getValue()
-          .compareTo(BigDecimal.valueOf(199000)),
-          "Import consumption should be 199,000 tCO2e");
+          .compareTo(BigDecimal.valueOf(200000)),
+          "Import consumption should be 200,000 tCO2e");
       assertEquals("tCO2e", result.getImportConsumption().getUnits(),
           "Import consumption units should be tCO2e");
     }
@@ -280,7 +280,7 @@ public class EngineResultSerializerTest {
       if ("commercialRefrigeration".equals(useKey.getApplication())
           && "HFC-134a".equals(useKey.getSubstance())) {
         switch (stream) {
-          case "manufacture": return manufacture;
+          case "domestic": return manufacture;
           case "import": return importMt;
           case "export": return exportMt;
           case "recycle": return recycling;
@@ -323,7 +323,7 @@ public class EngineResultSerializerTest {
           && "HFC-134a".equals(useKey.getSubstance())) {
         switch (stream) {
           case "import": return initialChargeImport;
-          case "manufacture": return initialChargeDomestic;
+          case "domestic": return initialChargeDomestic;
           default: return null;
         }
       }
@@ -375,7 +375,7 @@ public class EngineResultSerializerTest {
       if ("commercialRefrigeration".equals(useKey.getApplication())
           && "HFC-134a".equals(useKey.getSubstance())) {
         switch (stream) {
-          case "manufacture": return manufacture;
+          case "domestic": return manufacture;
           case "import": return importMt;
           case "export": return exportMt;
           case "recycle": return recycling;
@@ -418,7 +418,7 @@ public class EngineResultSerializerTest {
           && "HFC-134a".equals(useKey.getSubstance())) {
         switch (stream) {
           case "import": return initialChargeImport;
-          case "manufacture": return initialChargeDomestic;
+          case "domestic": return initialChargeDomestic;
           default: return null;
         }
       }

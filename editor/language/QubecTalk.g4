@@ -18,9 +18,9 @@ WHITE_SPACE: [ \u000B\t\r\n] -> channel(HIDDEN);
 
 COMMENT: '#' ~[\r\n]* -> channel(HIDDEN);
 
-FLOAT_: [0-9]* '.' [0-9]+;
+FLOAT_: [0-9,]* '.' [0-9,]+;
 
-INTEGER_: [0-9]+;
+INTEGER_: [0-9,]+;
 
 /**
  * ----------------------------------
@@ -140,6 +140,8 @@ ACROSS_: 'across';
 
 AS_: 'as';
 
+AT_: 'at';
+
 BY_: 'by';
 
 CAP_: 'cap';
@@ -153,6 +155,8 @@ DISPLACING_ : 'displacing';
 DURING_: 'during';
 
 ENABLE_: 'enable';
+
+EOL_: 'eol';
 
 CONSUME_: 'equals';
 
@@ -210,7 +214,7 @@ EXPORT_: 'export';
 
 IMPORT_: 'import';
 
-MANUFACTURE_: 'manufacture';
+DOMESTIC_: 'domestic';
 
 SALES_: 'sales';
 
@@ -254,6 +258,10 @@ YEAR_: 'year';
 
 YEARS_: 'years';
 
+YR_: 'yr';
+
+YRS_: 'yrs';
+
 /**
  * -----------
  * -- Other --
@@ -276,7 +284,7 @@ volumeUnit: (KG_ | MT_ | TCO2E_ | KWH_ | UNIT_ | UNITS_);
 
 relativeUnit: (PERCENT_);
 
-temporalUnit: (YEAR_ | YEARS_| MONTH_ | MONTHS_ | DAY_ | DAYS_);
+temporalUnit: (YEAR_ | YEARS_ | YR_ | YRS_ | MONTH_ | MONTHS_ | DAY_ | DAYS_);
 
 unit: (volumeUnit | relativeUnit | temporalUnit);
 
@@ -316,7 +324,7 @@ expression: number  # simpleExpression
  * -----------------
  **/
 
-stream: (PRIOR_EQUIPMENT_ | EQUIPMENT_ | EXPORT_ | IMPORT_ | MANUFACTURE_ | SALES_);
+stream: (PRIOR_EQUIPMENT_ | EQUIPMENT_ | EXPORT_ | IMPORT_ | DOMESTIC_ | SALES_);
 
 identifier: IDENTIFIER_  # identifierAsVar;
 
@@ -388,6 +396,10 @@ recycleStatement: RECOVER_ volume=unitValue WITH_ yieldVal=unitValue REUSE_  # r
   | RECOVER_ volume=unitValue WITH_ yieldVal=unitValue REUSE_ duration=during  # recoverDuration
   | RECOVER_ volume=unitValue WITH_ yieldVal=unitValue REUSE_ DISPLACING_ (string | stream)  # recoverDisplacementAllYears
   | RECOVER_ volume=unitValue WITH_ yieldVal=unitValue REUSE_ DISPLACING_ (string | stream) duration=during  # recoverDisplacementDuration
+  | RECOVER_ volume=unitValue WITH_ yieldVal=unitValue REUSE_ AT_ stage=(EOL_ | RECHARGE_)  # recoverStageAllYears
+  | RECOVER_ volume=unitValue WITH_ yieldVal=unitValue REUSE_ AT_ stage=(EOL_ | RECHARGE_) duration=during  # recoverStageDuration
+  | RECOVER_ volume=unitValue WITH_ yieldVal=unitValue REUSE_ AT_ stage=(EOL_ | RECHARGE_) DISPLACING_ (string | stream)  # recoverStageDisplacementAllYears
+  | RECOVER_ volume=unitValue WITH_ yieldVal=unitValue REUSE_ AT_ stage=(EOL_ | RECHARGE_) DISPLACING_ (string | stream) duration=during  # recoverStageDisplacementDuration
   ;
 
 replaceStatement: REPLACE_ volume=unitValue OF_ target=stream WITH_ destination=string  # replaceAllYears
@@ -429,4 +441,3 @@ substanceStatement: (capStatement | changeStatement | enableStatement | equalsSt
  **/
 
 program: stanza* EOF;
-

@@ -3,24 +3,24 @@ start default
   define application "test"
 
     uses substance "sub_a"
-      enable manufacture
+      enable domestic
       enable import
-      initial charge with 10 kg / unit for manufacture
+      initial charge with 10 kg / unit for domestic
       initial charge with 10 kg / unit for import
       recharge 10% each year with 10 kg / unit
-      set manufacture to 10 kg during year 1
+      set domestic to 10 kg during year 1
       set import to 5 kg during year 1
       set priorEquipment to 20 units during year 1
       equals 5 tCO2e / mt
     end substance
 
     uses substance "sub_b"
-      enable manufacture
+      enable domestic
       enable import
-      initial charge with 20 kg / unit for manufacture
+      initial charge with 20 kg / unit for domestic
       initial charge with 20 kg / unit for import
       recharge 10% each year with 20 kg / unit
-      set manufacture to 100 kg during year 1
+      set domestic to 100 kg during year 1
       set import to 50 kg during year 1
       equals 10 tCO2e / mt
     end substance
@@ -35,7 +35,7 @@ start policy "test_floor_displace"
   modify application "test"
     
     modify substance "sub_a"
-      floor manufacture to 10 units displacing "sub_b" during year 1
+      floor domestic to 10 units displacing "sub_b" during year 1
     end substance
 
   end application

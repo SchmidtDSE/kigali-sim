@@ -3,12 +3,12 @@ start default
   define application "test"
 
     uses substance "test"
-      enable manufacture
-      initial charge with 1 kg / unit for manufacture
+      enable domestic
+      initial charge with 1 kg / unit for domestic
       define testA as 1
       define testB as 0
-      # Simple AND test: 1 and 0 = false, so manufacture = 30
-      set manufacture to 100 if testA and testB else 30 endif mt
+      # Simple AND test: 1 and 0 = false, so domestic = 30
+      set domestic to 100 if testA and testB else 30 endif mt
       equals 1 tCO2e / mt
     end substance
 

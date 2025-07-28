@@ -15,6 +15,8 @@ import org.kigalisim.engine.number.EngineNumber;
 import org.kigalisim.engine.number.UnitConverter;
 import org.kigalisim.engine.state.UseKey;
 import org.kigalisim.engine.support.RechargeVolumeCalculator;
+import org.kigalisim.engine.support.StreamUpdate;
+import org.kigalisim.engine.support.StreamUpdateBuilder;
 
 /**
  * Strategy for recalculating recharge emissions.
@@ -43,6 +45,12 @@ public class RechargeEmissionsRecalcStrategy implements RecalcStrategy {
     );
     UnitConverter unitConverter = kit.getUnitConverter();
     EngineNumber rechargeGhg = unitConverter.convert(rechargeVolume, "tCO2e");
-    target.setStreamFor("rechargeEmissions", rechargeGhg, Optional.empty(), Optional.of(scopeEffective), false, Optional.empty());
+    StreamUpdate update = new StreamUpdateBuilder()
+        .setName("rechargeEmissions")
+        .setValue(rechargeGhg)
+        .setKey(scopeEffective)
+        .setPropagateChanges(false)
+        .build();
+    target.executeStreamUpdate(update);
   }
 }

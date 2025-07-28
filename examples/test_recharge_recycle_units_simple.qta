@@ -4,14 +4,14 @@ start default
 
     uses substance "TestSubstance"
       enable import
-      enable manufacture
+      enable domestic
       initial charge with 1.0 kg / unit for import
-      initial charge with 1.0 kg / unit for manufacture
+      initial charge with 1.0 kg / unit for domestic
       recharge 20% each year with 0.2 kg / unit
       retire 10% each year
       set priorEquipment to 0 units during year beginning
       set import to 100 units / year during year beginning
-      set manufacture to 0 units / year during year beginning
+      set domestic to 0 units / year during year beginning
       equals 1 tCO2e / kg
     end substance
 

@@ -70,6 +70,48 @@ function getWithMetaApplications(applicationNamesRaw) {
 }
 
 /**
+ * Adds equipment model meta-options to application names.
+ *
+ * Creates "Application - All" options for applications that have
+ * equipment models, similar to how getWithMetaApplications works for subapplications.
+ *
+ * @param {Array} applicationNamesRaw - Iterable of string application names.
+ */
+function getWithMetaEquipment(applicationNamesRaw) {
+  const applicationNames = Array.of(...applicationNamesRaw);
+  const withEquipment = applicationNames.filter((x) => {
+    const parts = x.split(" - ");
+    return parts.length >= 2 && !parts[1].startsWith("All");
+  });
+  const baseApplications = withEquipment.map((x) => x.split(" - ")[0]);
+  const uniqueApplications = Array.of(...new Set(baseApplications));
+  const equipmentAllOptions = uniqueApplications.map((x) => x + " - All");
+  const newEquipmentOptions = equipmentAllOptions.filter((x) => applicationNames.indexOf(x) == -1);
+  return newEquipmentOptions.concat(applicationNames);
+}
+
+/**
+ * Adds equipment model meta-options to substance names.
+ *
+ * Creates "Substance - All" options for substances that have
+ * equipment models, similar to how getWithMetaApplications works for subapplications.
+ *
+ * @param {Array} substanceNamesRaw - Iterable of string substance names.
+ */
+function getWithMetaSubstanceEquipment(substanceNamesRaw) {
+  const substanceNames = Array.of(...substanceNamesRaw);
+  const withEquipment = substanceNames.filter((x) => {
+    const parts = x.split(" - ");
+    return parts.length >= 2 && !parts[1].startsWith("All");
+  });
+  const baseSubstances = withEquipment.map((x) => x.split(" - ")[0]);
+  const uniqueSubstances = Array.of(...new Set(baseSubstances));
+  const allOptions = uniqueSubstances.map((x) => x + " - All");
+  const newAllOptions = allOptions.filter((x) => substanceNames.indexOf(x) == -1);
+  return newAllOptions.concat(substanceNames);
+}
+
+/**
  * Main presenter class for displaying simulation results.
  */
 class ResultsPresenter {
@@ -307,11 +349,13 @@ class ScorecardPresenter {
       "custom-emissions-dialog",
       ["recharge", "eol", "export"],
       (selection) => self._onCustomMetricChanged("emissions", selection),
+      ".emissions-submetric",
     );
     self._customPresenters.sales = new CustomMetricPresenter(
       "custom-sales-dialog",
       ["manufacture", "import", "export", "recycle"],
       (selection) => self._onCustomMetricChanged("sales", selection),
+      ".sales-submetric",
     );
 
     self._registerEventListeners();
@@ -391,6 +435,11 @@ class ScorecardPresenter {
    */
   _onCustomMetricChanged(metricFamily, selection) {
     const self = this;
+
+    // Update the corresponding dropdown to "custom"
+    const presenter = self._customPresenters[metricFamily];
+    const dropdown = self._root.querySelector(presenter._dropdownSelector);
+    dropdown.value = "custom";
 
     // Update custom definition in filter set
     const newFilterSet = self._filterSet.getWithCustomDefinition(metricFamily, selection);
@@ -598,7 +647,9 @@ class DimensionCardPresenter {
     self._updateCard(
       "app",
       applicationsCard,
-      getWithMetaApplications(results.getApplications(self._filterSet.getWithApplication(null))),
+      getWithMetaEquipment(
+        getWithMetaApplications(results.getApplications(self._filterSet.getWithApplication(null))),
+      ),
       applicationsSelected,
       self._filterSet.getApplication(),
       (x) => self._filterSet.getWithApplication(x),
@@ -611,7 +662,7 @@ class DimensionCardPresenter {
     self._updateCard(
       "sub",
       substancesCard,
-      results.getSubstances(self._filterSet.getWithSubstance(null)),
+      getWithMetaSubstanceEquipment(results.getSubstances(self._filterSet.getWithSubstance(null))),
       substancesSelected,
       self._filterSet.getSubstance(),
       (x) => self._filterSet.getWithSubstance(x),
@@ -852,7 +903,7 @@ class CenterChartPresenter {
       const dimensionValuesRaw = Array.of(...results.getDimensionValues(filterSet));
 
       if (filterSet.getDimension() === "applications") {
-        return getWithMetaApplications(dimensionValuesRaw);
+        return getWithMetaEquipment(getWithMetaApplications(dimensionValuesRaw));
       } else {
         return dimensionValuesRaw;
       }
@@ -1009,14 +1060,16 @@ class SelectorTitlePresenter {
     const applications = results.getApplications(self._filterSet.getWithApplication(null));
     self._updateDynamicDropdown(
       applicationDropdown,
-      getWithMetaApplications(applications),
+      getWithMetaEquipment(getWithMetaApplications(applications)),
       applicationSelected,
       "All Applications",
     );
 
     const substanceDropdown = self._selection.querySelector(".substance-select");
     const substanceSelected = self._filterSet.getSubstance();
-    const substances = results.getSubstances(self._filterSet.getWithSubstance(null));
+    const substances = getWithMetaSubstanceEquipment(
+      results.getSubstances(self._filterSet.getWithSubstance(null)),
+    );
     self._updateDynamicDropdown(substanceDropdown, substances, substanceSelected, "All Substances");
   }
 
@@ -1120,12 +1173,14 @@ class CustomMetricPresenter {
    * @param {string} dialogId - ID of the configuration dialog element.
    * @param {Array<string>} availableOptions - Array of available submetric options.
    * @param {Function} onSelectionChanged - Callback when custom definition changes.
+   * @param {string} dropdownSelector - CSS selector for the submetric dropdown to update.
    */
-  constructor(dialogId, availableOptions, onSelectionChanged) {
+  constructor(dialogId, availableOptions, onSelectionChanged, dropdownSelector) {
     const self = this;
     self._dialog = document.getElementById(dialogId);
     self._availableOptions = availableOptions;
     self._onSelectionChanged = onSelectionChanged;
+    self._dropdownSelector = dropdownSelector;
 
     if (!self._dialog) {
       throw new Error(`Dialog with id '${dialogId}' not found`);

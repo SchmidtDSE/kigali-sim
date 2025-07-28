@@ -1,0 +1,188 @@
+<html>
+  <head>
+    <title>Tutorial 5: Simple Policies</title>
+    <link href="/guide/guide.css?v=EPOCH" rel="stylesheet" type="text/css" />
+  </head>
+  <body>
+    <a href="#main" class="skip-link">Skip to main content</a>
+    <header>
+      This tutorial is part of the <a href="/guide">guide</a> for the
+      <a href="/">Kigali Sim</a>.
+    </header>
+    <main id="main">
+      <h1>Tutorial 5: Simple Policies</h1>
+
+      ABC Country's first policy intervention using a sales permitting system.
+
+      <details>
+        <summary>Contents</summary>
+        <ul>
+          <li><a href="#motivation">Motivation</a></li>
+          <li><a href="#adding-r-600a-imports">Adding R-600a Imports</a></li>
+          <li><a href="#adding-the-sales-permitting-policy">Adding the Sales Permitting Policy</a></li>
+          <li><a href="#creating-the-permit-simulation">Creating the Permit Simulation</a></li>
+          <li><a href="#results">Results</a></li>
+          <li><a href="#conclusion">Conclusion</a></li>
+          <li><a href="#next-steps">Next Steps</a></li>
+        </ul>
+      </details>
+
+      <section id="motivation">
+        <h2>Motivation</h2>
+
+        <p>
+          Now that ABC Country has a solid business-as-usual baseline, let's explore policy interventions. In this tutorial, we'll add a sales permitting system that progressively reduces HFC-134a consumption in domestic refrigeration. However, that demand will not go away but, instead, will shift to the lower-GWP R-600a alternative.
+        </p>
+      </section>
+
+      <section id="adding-r-600a-imports">
+        <h2>Adding R-600a Imports</h2>
+
+        <p>
+          Before implementing our policy, let's first add import flows for R-600a to match the supply chain pattern we established for HFC-134a in Tutorial 4.
+        </p>
+
+        <p>For <strong>Domestic Refrigeration</strong>, modify your <strong>R-600a</strong> consumption record:</p>
+
+        <ul>
+          <li><strong>General</strong> tab: <strong>Enable "Import"</strong> (in addition to existing manufacture)</li>
+          <li><strong>Equipment</strong> tab: Add <strong>0.07 kg/unit for import</strong> (same as manufacture)</li>
+          <li><strong>Set</strong> tab: Split your existing 2 mt by reducing <strong>domestic</strong> to 1 mt in year 2025 and adding <strong>import</strong> of 1 mt in year 2025.</li>
+          <li><strong>Change</strong> tab: Ensure your selection uses <strong>all sales</strong> which, as a reminder, refers to all consumption (in our case, both domestic and imports).</li>
+        </ul>
+
+        <p>This gives R-600a a similar import/domestic split as HFC-134a, making the displacement mechanism clearer when we implement the policy.</p>
+
+        <p id="tutorial-gif-5-1" class="tutorial-gif-holder">
+          <img
+            src="/guide/img/tutorial05_01.gif"
+            alt="Animated gif showing updates to R-600a"
+          />
+        </p>
+      </section>
+
+      <section id="adding-the-sales-permitting-policy">
+        <h2>Adding the Sales Permitting Policy</h2>
+
+        <p>Now let's create ABC's permitting system that targets HFC-134a in domestic refrigeration, where displaced demand will shift to R-600a.</p>
+
+        <ul>
+          <li>Click <strong>Add Policy</strong>. Name it "Sales Permit". Then, select <strong>Domestic Refrigeration</strong> as the application and <strong>HFC-134a</strong> as the substance.</li>
+          <li>Go to the <strong>Limit</strong> tab within your HFC-134a policy configuration and click <strong>Add Limit</strong>. Then, <strong>Cap</strong> all sales to 85% during <strong>years 2029 to 2034</strong>.</li>
+          <li><strong>Displacing</strong> means that the demand lost from HFC-134a is then sent to another stream or substance. In this case, let's have it go to <strong>R-600a</strong> instead.</li>
+          <li>Click <strong>Add Limit</strong> again. Set <strong>Cap</strong> on sales to 0 kg displacing R-600a during <strong>years 2035 to onwards</strong>. This will conclude the phase-out.</li>
+          <li>Click <strong>Save</strong> to finish the policy</li>
+        </ul>
+
+        <p id="tutorial-gif-5-2" class="tutorial-gif-holder">
+          <img
+            src="/guide/img/tutorial05_02.gif"
+            alt="Animated gif showing how to add a sales permit policy"
+          />
+        </p>
+      </section>
+
+      <section id="creating-the-permit-simulation">
+        <h2>Creating the Permit Simulation</h2>
+
+        <p>Now let's create a simulation to see how the permitting policy compares to business-as-usual.</p>
+
+        <ul>
+          <li>Click <strong>Add Simulation</strong>.</li>
+          <li>Name it "Permit"</li>
+          <li>Check the <strong>Sales Permit</strong> policy checkbox</li>
+          <li>Set duration from <strong>years 2025 to 2035</strong></li>
+          <li>Click <strong>Save</strong></li>
+        </ul>
+
+        <p>The simulation will now show both your original <strong>BAU</strong> and new <strong>Permit</strong> scenarios side by side.</p>
+
+        <p id="tutorial-gif-5-3" class="tutorial-gif-holder">
+          <img
+            src="/guide/img/tutorial05_03.gif"
+            alt="Animated gif showing how to add a sales permit simulation"
+          />
+        </p>
+      </section>
+
+      <section id="results">
+        <h2>Results</h2>
+
+        <p>Let's observe how:</p>
+
+        <ul>
+          <li><strong>HFC-134a consumption</strong> starts dropping in 2027 and goes to zero in 2035</li>
+          <li><strong>R-600a consumption</strong> increases to compensate for the HFC-134a reduction</li>
+          <li><strong>Emissions</strong> see a drop or a leveling off.</li>
+        </ul>
+
+        <p>
+          Specifically, under the <strong>Substances</strong> view with Permit selected under the <strong>Simulations</strong> radio button, you can see how displacement works: as HFC-134a is restricted, R-600a scales up proportionally. Since R-600a now has both domestic and import sources, the displaced demand gets distributed across both supply chains.
+        </p>
+
+        <p id="tutorial-gif-5-4" class="tutorial-gif-holder">
+          <img
+            src="/guide/img/tutorial05_04.gif"
+            alt="Animated gif showing visualization configuration to observe HFC-134a and R-600a"
+          />
+        </p>
+
+        <p>
+          All that said, remember that without <strong>Attribute initial charge to importer</strong> checked, the visualizations show only the substance flows for servicing imported equipment, not their initial charge. Before finishing up, let's just quickly check that box once more and:
+        </p>
+
+        <ul>
+          <li>Select the <strong>Simulations</strong> radio button</li>
+          <li>Select All simulations</li>
+          <li>Select the <strong>Consumption</strong> radio button</li>
+          <li>Use the <strong>configure custom</strong> link to combine imports and domestic production.</li>
+        </ul>
+
+        <p>
+          The lines almost perfectly overlap when <strong>Attribute initial charge to importer</strong> is checked but are a little further off without it, especially in 2035. This is because, as the import / domestic ratios (and their growth rates) are slightly different for R-600a and HFC-134a, the trade attribution causes the numbers to shift around a bit even though the total global-level picture is essentially balanced. That said, in any case, there are very minor differences expected due to servicing differences between equipment.
+        </p>
+
+        <p id="tutorial-gif-5-5" class="tutorial-gif-holder">
+          <img
+            src="/guide/img/tutorial05_05.gif"
+            alt="Animated gif showing visualization configuration to observe alternative trade attribution."
+          />
+        </p>
+      </section>
+
+      <section id="conclusion">
+        <h2>Conclusion</h2>
+
+        <p>You've successfully implemented ABC Country's first policy intervention! The sales permitting system demonstrates:</p>
+
+        <ul>
+          <li><strong>Targeted approach</strong>: Here we focused on the highest-impact substance (HFC-134a) first.</li>
+          <li><strong>Progressive reduction</strong>: Gradual reduction then complete phase-out.</li>
+          <li><strong>Market mechanisms</strong>: Displacement ensures demand shifts to R-600a rather than disappearing</li>
+          <li><strong>Supply chain realism</strong>: R-600a displacement works across both domestic and import channels</li>
+          <li><strong>Climate benefits</strong>: Emissions reduction through GWP-focused targeting (1,430 to 3 tCO2e/kg)</li>
+        </ul>
+
+        <p>
+          The permitting system shows how a relatively simple policy can achieve significant impacts. This is also a very simple model but we are already incorporating socioeconomic projections and substance interactions.
+        </p>
+      </section>
+
+      <section id="next-steps">
+        <h2>Next Steps</h2>
+
+        <p>
+          <a href="/guide/tutorial_06.html">Tutorial 6</a> will add a recovery and recycling program targeting the same HFC-134a domestic refrigeration sector. You'll learn how recycling policies complement demand-side restrictions by providing alternative supply sources, and explore how multiple policies work together to achieve comprehensive overall outcomes.
+        </p>
+
+        <p>
+          <a href="/guide/tutorial_04.html">Previous: Tutorial 4</a> | 
+          <a href="/guide/tutorial_06.html">Next: Tutorial 6</a>
+        </p>
+      </section>
+
+      <hr />
+      <p><em>This tutorial is part of the ABC Country case study series demonstrating progressive HFC policy analysis using Kigali Sim.</em></p>
+    </main>
+  </body>
+</html>

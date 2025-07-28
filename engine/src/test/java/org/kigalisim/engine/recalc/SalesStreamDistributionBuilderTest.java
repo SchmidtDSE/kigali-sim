@@ -27,16 +27,16 @@ public class SalesStreamDistributionBuilderTest {
     EngineNumber exportSales = new EngineNumber(BigDecimal.ZERO, "kg");
 
     SalesStreamDistribution distribution = new SalesStreamDistributionBuilder()
-        .setManufactureSales(manufactureSales)
+        .setDomesticSales(manufactureSales)
         .setImportSales(importSales)
         .setExportSales(exportSales)
-        .setManufactureEnabled(true)
+        .setDomesticEnabled(true)
         .setImportEnabled(true)
         .setExportEnabled(false)
         .setIncludeExports(false)
         .build();
 
-    assertEquals(new BigDecimal("0.6"), distribution.getPercentManufacture(),
+    assertEquals(new BigDecimal("0.6"), distribution.getPercentDomestic(),
         "Manufacture percentage should be 0.6 (60/100)");
     assertEquals(new BigDecimal("0.4"), distribution.getPercentImport(),
         "Import percentage should be 0.4 (40/100)");
@@ -50,16 +50,16 @@ public class SalesStreamDistributionBuilderTest {
     EngineNumber exportSales = new EngineNumber(BigDecimal.ZERO, "kg");
 
     SalesStreamDistribution distribution = new SalesStreamDistributionBuilder()
-        .setManufactureSales(manufactureSales)
+        .setDomesticSales(manufactureSales)
         .setImportSales(importSales)
         .setExportSales(exportSales)
-        .setManufactureEnabled(true)
+        .setDomesticEnabled(true)
         .setImportEnabled(false)
         .setExportEnabled(false)
         .setIncludeExports(false)
         .build();
 
-    assertEquals(BigDecimal.ONE, distribution.getPercentManufacture(),
+    assertEquals(BigDecimal.ONE, distribution.getPercentDomestic(),
         "Manufacture percentage should be 1.0 when only manufacture enabled");
     assertEquals(BigDecimal.ZERO, distribution.getPercentImport(),
         "Import percentage should be 0.0 when only manufacture enabled");
@@ -73,16 +73,16 @@ public class SalesStreamDistributionBuilderTest {
     EngineNumber exportSales = new EngineNumber(BigDecimal.ZERO, "kg");
 
     SalesStreamDistribution distribution = new SalesStreamDistributionBuilder()
-        .setManufactureSales(manufactureSales)
+        .setDomesticSales(manufactureSales)
         .setImportSales(importSales)
         .setExportSales(exportSales)
-        .setManufactureEnabled(false)
+        .setDomesticEnabled(false)
         .setImportEnabled(true)
         .setExportEnabled(false)
         .setIncludeExports(false)
         .build();
 
-    assertEquals(BigDecimal.ZERO, distribution.getPercentManufacture(),
+    assertEquals(BigDecimal.ZERO, distribution.getPercentDomestic(),
         "Manufacture percentage should be 0.0 when only import enabled");
     assertEquals(BigDecimal.ONE, distribution.getPercentImport(),
         "Import percentage should be 1.0 when only import enabled");
@@ -96,16 +96,16 @@ public class SalesStreamDistributionBuilderTest {
     EngineNumber exportSales = new EngineNumber(BigDecimal.ZERO, "kg");
 
     SalesStreamDistribution distribution = new SalesStreamDistributionBuilder()
-        .setManufactureSales(manufactureSales)
+        .setDomesticSales(manufactureSales)
         .setImportSales(importSales)
         .setExportSales(exportSales)
-        .setManufactureEnabled(true)
+        .setDomesticEnabled(true)
         .setImportEnabled(true)
         .setExportEnabled(false)
         .setIncludeExports(false)
         .build();
 
-    assertEquals(new BigDecimal("0.5"), distribution.getPercentManufacture(),
+    assertEquals(new BigDecimal("0.5"), distribution.getPercentDomestic(),
         "Manufacture percentage should be 0.5 when both enabled with zero values");
     assertEquals(new BigDecimal("0.5"), distribution.getPercentImport(),
         "Import percentage should be 0.5 when both enabled with zero values");
@@ -119,18 +119,18 @@ public class SalesStreamDistributionBuilderTest {
     EngineNumber exportSales = new EngineNumber(BigDecimal.ZERO, "kg");
 
     SalesStreamDistributionBuilder builder = new SalesStreamDistributionBuilder()
-        .setManufactureSales(manufactureSales)
+        .setDomesticSales(manufactureSales)
         .setImportSales(importSales)
         .setExportSales(exportSales)
-        .setManufactureEnabled(false)
+        .setDomesticEnabled(false)
         .setImportEnabled(false)
         .setExportEnabled(false)
         .setIncludeExports(false);
 
-    IllegalStateException exception = assertThrows(IllegalStateException.class, 
-        builder::build, 
+    IllegalStateException exception = assertThrows(IllegalStateException.class,
+        builder::build,
         "Should throw exception when no streams are enabled");
-    
+
     assertTrue(exception.getMessage().contains("no streams have been enabled"),
         "Exception message should mention no streams enabled");
   }
@@ -145,16 +145,16 @@ public class SalesStreamDistributionBuilderTest {
     // Even though only manufacture is enabled, proportional split should be used
     EngineNumber exportSales = new EngineNumber(BigDecimal.ZERO, "kg");
     SalesStreamDistribution distribution = new SalesStreamDistributionBuilder()
-        .setManufactureSales(manufactureSales)
+        .setDomesticSales(manufactureSales)
         .setImportSales(importSales)
         .setExportSales(exportSales)
-        .setManufactureEnabled(true)
+        .setDomesticEnabled(true)
         .setImportEnabled(false)
         .setExportEnabled(false)
         .setIncludeExports(false)
         .build();
 
-    assertEquals(new BigDecimal("0.3"), distribution.getPercentManufacture(),
+    assertEquals(new BigDecimal("0.3"), distribution.getPercentDomestic(),
         "Manufacture percentage should be 0.3 (30/100)");
     assertEquals(new BigDecimal("0.7"), distribution.getPercentImport(),
         "Import percentage should be 0.7 (70/100)");
@@ -168,22 +168,22 @@ public class SalesStreamDistributionBuilderTest {
 
     EngineNumber exportSales = new EngineNumber(BigDecimal.ZERO, "kg");
     SalesStreamDistribution distribution = new SalesStreamDistributionBuilder()
-        .setManufactureSales(manufactureSales)
+        .setDomesticSales(manufactureSales)
         .setImportSales(importSales)
         .setExportSales(exportSales)
-        .setManufactureEnabled(true)
+        .setDomesticEnabled(true)
         .setImportEnabled(true)
         .setExportEnabled(false)
         .setIncludeExports(false)
         .build();
 
     // 1/3 and 2/3 split
-    BigDecimal expectedManufacture = new BigDecimal("1").divide(new BigDecimal("3"), 
+    BigDecimal expectedManufacture = new BigDecimal("1").divide(new BigDecimal("3"),
         java.math.MathContext.DECIMAL128);
-    BigDecimal expectedImport = new BigDecimal("2").divide(new BigDecimal("3"), 
+    BigDecimal expectedImport = new BigDecimal("2").divide(new BigDecimal("3"),
         java.math.MathContext.DECIMAL128);
 
-    assertEquals(expectedManufacture, distribution.getPercentManufacture(),
+    assertEquals(expectedManufacture, distribution.getPercentDomestic(),
         "Manufacture percentage should be 1/3");
     assertEquals(expectedImport, distribution.getPercentImport(),
         "Import percentage should be 2/3");

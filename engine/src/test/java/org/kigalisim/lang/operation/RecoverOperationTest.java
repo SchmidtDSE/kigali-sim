@@ -23,6 +23,7 @@ import org.kigalisim.engine.number.EngineNumber;
 import org.kigalisim.engine.state.YearMatcher;
 import org.kigalisim.lang.machine.PushDownMachine;
 import org.kigalisim.lang.machine.SingleThreadPushDownMachine;
+import org.kigalisim.lang.operation.RecoverOperation.RecoveryStage;
 import org.kigalisim.lang.time.CalculatedTimePointFuture;
 import org.kigalisim.lang.time.ParsedDuring;
 import org.kigalisim.lang.time.TimePointFuture;
@@ -109,7 +110,7 @@ public class RecoverOperationTest {
     operation.execute(mockMachine);
 
     // Verify the recycle method was called with the correct parameters
-    verify(mockEngine).recycle(eq(volume), eq(yield), any(YearMatcher.class));
+    verify(mockEngine).recycle(eq(volume), eq(yield), any(YearMatcher.class), eq(RecoveryStage.RECHARGE));
   }
 
   /**
@@ -119,7 +120,7 @@ public class RecoverOperationTest {
   public void testExecuteWithDuringNoDisplacement() {
     // Enable import stream to enable sales distribution calculation
     engine.enable("import", Optional.empty());
-    
+
     // Set up recovery volume and yield
     EngineNumber volume = new EngineNumber(BigDecimal.valueOf(100), "kg");
     Operation volumeOperation = new PreCalculatedOperation(volume);
@@ -172,7 +173,7 @@ public class RecoverOperationTest {
     operation.execute(mockMachine);
 
     // Verify the recycle method was called with the correct parameters
-    verify(mockEngine).recycle(eq(volume), eq(yield), any(YearMatcher.class));
+    verify(mockEngine).recycle(eq(volume), eq(yield), any(YearMatcher.class), eq(RecoveryStage.RECHARGE));
   }
 
   /**
@@ -234,7 +235,7 @@ public class RecoverOperationTest {
     operation.execute(mockMachine);
 
     // Verify the recycle method was called with displacement parameter
-    verify(mockEngine).recycle(eq(volume), eq(yield), any(YearMatcher.class), eq(displaceTarget));
+    verify(mockEngine).recycle(eq(volume), eq(yield), any(YearMatcher.class), eq(displaceTarget), eq(RecoveryStage.RECHARGE));
   }
 
   /**
@@ -263,7 +264,7 @@ public class RecoverOperationTest {
     operation.execute(mockMachine);
 
     // Verify the recycle method was called with displacement parameter
-    verify(mockEngine).recycle(eq(volume), eq(yield), any(YearMatcher.class), eq(displaceTarget));
+    verify(mockEngine).recycle(eq(volume), eq(yield), any(YearMatcher.class), eq(displaceTarget), eq(RecoveryStage.RECHARGE));
   }
 
   /**
@@ -273,7 +274,7 @@ public class RecoverOperationTest {
   public void testExecuteWithDisplacementAndDuring() {
     // Enable import stream to enable sales distribution calculation
     engine.enable("import", Optional.empty());
-    
+
     // Set up recovery volume and yield using real engine (simpler approach)
     EngineNumber volume = new EngineNumber(BigDecimal.valueOf(25), "kg");
     Operation volumeOperation = new PreCalculatedOperation(volume);
@@ -284,7 +285,7 @@ public class RecoverOperationTest {
     // Set up during with no specific time constraints for simplicity
     ParsedDuring during = new ParsedDuring(Optional.empty(), Optional.empty());
 
-    String displaceTarget = "manufacture";
+    String displaceTarget = "domestic";
     RecoverOperation operation = new RecoverOperation(volumeOperation, yieldOperation, displaceTarget, during);
 
     // Execute with real machine - just verify it doesn't throw an exception

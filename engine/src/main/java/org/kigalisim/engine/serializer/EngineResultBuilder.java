@@ -24,7 +24,7 @@ public class EngineResultBuilder {
   private Optional<Integer> year;
   private Optional<String> scenarioName;
   private Optional<Integer> trialNumber;
-  private Optional<EngineNumber> manufactureValue;
+  private Optional<EngineNumber> domesticValue;
   private Optional<EngineNumber> importValue;
   private Optional<EngineNumber> recycleValue;
   private Optional<EngineNumber> domesticConsumptionValue;
@@ -48,7 +48,7 @@ public class EngineResultBuilder {
     year = Optional.empty();
     scenarioName = Optional.empty();
     trialNumber = Optional.empty();
-    manufactureValue = Optional.empty();
+    domesticValue = Optional.empty();
     importValue = Optional.empty();
     recycleValue = Optional.empty();
     domesticConsumptionValue = Optional.empty();
@@ -120,13 +120,13 @@ public class EngineResultBuilder {
   }
 
   /**
-   * Set the manufacture value.
+   * Set the domestic value.
    *
-   * @param manufactureValue The value associated with manufacturing in volume like kg
+   * @param domesticValue The value associated with domestic production in volume like kg
    * @return This builder for method chaining
    */
-  public EngineResultBuilder setManufactureValue(EngineNumber manufactureValue) {
-    this.manufactureValue = Optional.of(manufactureValue);
+  public EngineResultBuilder setDomesticValue(EngineNumber domesticValue) {
+    this.domesticValue = Optional.of(domesticValue);
     return this;
   }
 
@@ -288,7 +288,7 @@ public class EngineResultBuilder {
         year.get(),
         scenarioName.get(),
         trialNumber.get(),
-        manufactureValue.get(),
+        domesticValue.get(),
         importValue.get(),
         recycleValue.get(),
         domesticConsumptionValue.get(),
@@ -316,7 +316,7 @@ public class EngineResultBuilder {
     checkValid(year, "year");
     checkValid(scenarioName, "scenarioName");
     checkValid(trialNumber, "trialNumber");
-    checkValid(manufactureValue, "manufactureValue");
+    checkValid(domesticValue, "domesticValue");
     checkValid(importValue, "importValue");
     checkValid(recycleValue, "recycleValue");
     checkValid(domesticConsumptionValue, "domesticConsumptionValue");

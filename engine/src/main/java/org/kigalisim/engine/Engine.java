@@ -18,6 +18,8 @@ import org.kigalisim.engine.serializer.EngineResult;
 import org.kigalisim.engine.state.Scope;
 import org.kigalisim.engine.state.UseKey;
 import org.kigalisim.engine.state.YearMatcher;
+import org.kigalisim.engine.support.StreamUpdate;
+import org.kigalisim.lang.operation.RecoverOperation.RecoveryStage;
 
 /**
  * Interface defining the contract for the Montreal Protocol simulation engine.
@@ -126,21 +128,13 @@ public interface Engine {
    */
   boolean getIsDone();
 
+
   /**
-   * Set the value of a stream.
+   * Execute a stream update operation using a StreamUpdate object.
    *
-   * @param name The name of the stream to set
-   * @param value The value to set for the stream
-   * @param yearMatcher The year matcher object to determine if setting the stream applies to the
-   *     current year, or empty. No-op if the year matcher is not satisfied.
-   * @param key The scope in which the stream is being set. Uses default scope if empty.
-   * @param propagateChanges Specifies if changes should propagate to other components.
-   *     Defaults to true.
-   * @param unitsToRecord Optional units to record instead of using value.getUnits().
-   *     Used when the original user-specified units differ from the converted units being set.
+   * @param update The StreamUpdate containing all parameters for the operation
    */
-  void setStreamFor(String name, EngineNumber value, Optional<YearMatcher> yearMatcher, Optional<UseKey> key,
-                    boolean propagateChanges, Optional<String> unitsToRecord);
+  void executeStreamUpdate(StreamUpdate update);
 
   /**
    * Set the value of a stream with default parameters.
@@ -287,9 +281,10 @@ public interface Engine {
    * @param recoveryWithUnits The recovery rate
    * @param yieldWithUnits The yield rate
    * @param yearMatcher Matcher to determine if the change applies to current year
+   * @param stage The recovery stage (EOL or RECHARGE)
    */
   void recycle(EngineNumber recoveryWithUnits, EngineNumber yieldWithUnits,
-      YearMatcher yearMatcher);
+      YearMatcher yearMatcher, RecoveryStage stage);
 
   /**
    * Recycle or recover a substance with displacement to another stream.
@@ -298,9 +293,10 @@ public interface Engine {
    * @param yieldWithUnits The yield rate
    * @param yearMatcher Matcher to determine if the change applies to current year
    * @param displacementTarget The stream or substance to displace (reduce)
+   * @param stage The recovery stage (EOL or RECHARGE)
    */
   void recycle(EngineNumber recoveryWithUnits, EngineNumber yieldWithUnits,
-      YearMatcher yearMatcher, String displacementTarget);
+      YearMatcher yearMatcher, String displacementTarget, RecoveryStage stage);
 
   /**
    * Set GHG equivalency for the current application and substance.

@@ -1,0 +1,202 @@
+<html>
+  <head>
+    <title>Tutorial 9: Command Line and Monte Carlo Analysis</title>
+    <link href="/guide/guide.css?v=EPOCH" rel="stylesheet" type="text/css" />
+    <link href="/third_party/prism-tomorrow.min.css" rel="stylesheet" type="text/css" />
+  </head>
+  <body>
+    <a href="#main" class="skip-link">Skip to main content</a>
+    <header>
+      This tutorial is part of the <a href="/guide">guide</a> for the
+      <a href="/">Kigali Sim</a>.
+    </header>
+    <main id="main">
+      <h1>Tutorial 9: Command Line and Monte Carlo Analysis</h1>
+
+      Advanced uncertainty analysis using probabilistic QubecTalk programming.
+
+      <details>
+        <summary>Contents</summary>
+        <ul>
+          <li><a href="#motivation">Motivation</a></li>
+          <li><a href="#setting-up-command-line-tools">Setting Up Command Line Tools</a></li>
+          <li><a href="#running-command-line-analysis">Running Command Line Analysis</a></li>
+          <li><a href="#understanding-uncertainty-in-our-model">Understanding Uncertainty in Our Model</a></li>
+          <li><a href="#adding-growth-rate-uncertainty">Adding Growth Rate Uncertainty</a></li>
+          <li><a href="#adding-equipment-population-uncertainty">Adding Equipment Population Uncertainty</a></li>
+          <li><a href="#configuring-monte-carlo-simulation">Configuring Monte Carlo Simulation</a></li>
+          <li><a href="#interpreting-uncertainty-results">Interpreting Uncertainty Results</a></li>
+          <li><a href="#conclusion">Conclusion</a></li>
+          <li><a href="#next-steps">Next Steps</a></li>
+        </ul>
+      </details>
+
+      <section id="motivation">
+        <h2>Motivation</h2>
+
+        <p>
+          Let's say ABC Country's policymakers want to understand how uncertainty may change simulation outocmes. This requires advanced analysis capabilities beyond the web interface using Monte Carlo, a technique that can allow us to provide ranges of numbers instead of discrete estimates for our model parameters.
+        </p>
+
+        <p>
+          In this tutorial, we'll transition from the web interface to command line tools and implement probabilistic modeling using QubecTalk's uncertainty features. This allows us to test thousands of scenarios automatically and understand the range of possible outcomes for our policy interventions.
+        </p>
+      </section>
+
+      <section id="setting-up-command-line-tools">
+        <h2>Setting Up Command Line Tools</h2>
+
+        <p>First, we need to download and set up the Kigali Sim command line interface:</p>
+
+        <ul>
+          <li>Scroll to the bottom of the Kigali Sim web page</li>
+          <li>Click the <strong>Download JAR</strong> button to get the command line version</li>
+          <li><strong>Download the complete case study</strong>: <a href="case_study.qta">case_study.qta</a> - this contains the full ABC Country model with Monte Carlo uncertainty analysis</li>
+          <li>Save your current QubecTalk model by copying it from the Editor tab to a text file (e.g., <code>abc_country.qta</code>)</li>
+        </ul>
+
+        <p>
+          The JAR file enables batch processing, automation, and Monte Carlo simulation that aren't available in the web interface. This is particularly valuable for uncertainty analysis where we need to run hundreds or thousands of model iterations.
+        </p>
+      </section>
+
+      <section id="running-command-line-analysis">
+        <h2>Running Command Line Analysis</h2>
+
+        <p>In this tutorial, we will assume you know how to use the command line. Save your updated QubecTalk model and validate it.</p>
+
+        <pre><code class="language-bash">java -jar kigalisim-fat.jar validate script.qta</code></pre>
+
+        <p>Then, run it using the following command:</p>
+
+        <pre><code class="language-bash">java -jar kigalisim-fat.jar run -o output.csv script.qta</code></pre>
+
+        <p>Note that you will need to use the name of the file where you saved your results. This will execute your simulation and put the results in the specified CSV file.</p>
+      </section>
+
+      <section id="understanding-uncertainty-in-our-model">
+        <h2>Understanding Uncertainty in Our Model</h2>
+
+        <p>Looking at our current ABC Country model, we have several sources of uncertainty:</p>
+
+        <ul>
+          <li><strong>Economic growth rates</strong>: Our projections assume specific growth percentages, but actual economic performance varies</li>
+          <li><strong>Equipment populations</strong>: Prior equipment estimates are based on surveys and may have measurement uncertainty</li>
+          <li><strong>Policy implementation</strong>: Real-world policy effectiveness can vary from planned targets</li>
+        </ul>
+
+        <p>Let's focus on the first source.</p>
+      </section>
+
+      <section id="adding-growth-rate-uncertainty">
+        <h2>Adding Growth Rate Uncertainty</h2>
+
+        <p>Economic growth projections inherently contain uncertainty. Let's modify our model to reflect this by adding probabilistic elements to our growth rates.</p>
+
+        <p>In your QubecTalk code, we'll replace fixed growth rates with probability distributions. For example, instead of:</p>
+
+        <pre><code class="language-qubectalk">change sales by 5 % / year during years 2025 to 2030</code></pre>
+
+        <p>We'll use:</p>
+
+        <pre><code class="language-qubectalk">change sales by sample normally from mean of 5 std of 1 % / year during years 2025 to 2030</code></pre>
+
+        <p>Update all growth rates in your model with this approach:</p>
+
+        <p><strong>For R-600a in Domestic Refrigeration:</strong></p>
+
+        <pre><code class="language-qubectalk">change sales by sample normally from mean of 5 std of 1 % / year during years 2025 to 2030
+change sales by sample normally from mean of 3 std of 1 % / year during years 2031 to 2035</code></pre>
+
+        <p><strong>For HFC-134a in Domestic Refrigeration:</strong></p>
+
+        <pre><code class="language-qubectalk">change sales by sample normally from mean of 6 std of 1 % / year during years 2025 to 2030
+change sales by sample normally from mean of 4 std of 1 % / year during years 2031 to 2035</code></pre>
+
+        <p><strong>For HFC-32 in Domestic AC:</strong></p>
+
+        <pre><code class="language-qubectalk">change domestic by sample normally from mean of 10 std of 1 % / year during years 2025 to 2035</code></pre>
+
+        <p><strong>For R-410A in Domestic AC:</strong></p>
+
+        <pre><code class="language-qubectalk">change domestic by sample normally from mean of 6 std of 1 % / year during years 2025 to 2035</code></pre>
+      </section>
+
+      <section id="configuring-monte-carlo-simulation">
+        <h2>Configuring Monte Carlo Simulation</h2>
+
+        <p>Now we need to configure our simulations to run multiple trials. Update the simulations section to include Monte Carlo analysis:</p>
+
+        <pre><code class="language-qubectalk">start simulations
+
+  simulate "BAU Uncertainty"
+  from years 2025 to 2035
+  across 100 trials
+
+  simulate "Permit Uncertainty"
+    using "Sales Permit"
+  from years 2025 to 2035
+  across 100 trials
+
+  simulate "Combined Uncertainty"
+    using "Sales Permit"
+    then "Domestic Recycling"
+  from years 2025 to 2035
+  across 100 trials
+
+  simulate "Recycling Uncertainty"
+    using "Domestic Recycling"
+  from years 2025 to 2035
+  across 100 trials
+
+end simulations</code></pre>
+
+        <p>The <code>across 100 trials</code> specification tells Kigali Sim to run 100 different scenarios, each time sampling new values from the probability distributions we defined.</p>
+      </section>
+
+      <section id="interpreting-uncertainty-results">
+        <h2>Interpreting Uncertainty Results</h2>
+
+        <p>Go ahead and give this another run. When you open up the resulting CSV file, notice individual trial results as denoted by the trial column. You can use this to run sensitivity analysis or plug into other tools like spreadsheet software, R, or Python.</p>
+      </section>
+
+      <section id="conclusion">
+        <h2>Conclusion</h2>
+
+        <p>You've successfully implemented Monte Carlo uncertainty analysis for ABC Country's HFC strategy. This kind of simulation provides policymakers with confidence intervals and risk assessments that support more informed decision-making under uncertainty. Rather than single projections, they now have probability distributions that show both best-case and worst-case scenarios.
+        </p>
+      </section>
+
+      <section id="next-steps">
+        <h2>Next Steps</h2>
+
+        <p>This concludes our ABC Country tutorial series! You now have comprehensive skills in:</p>
+
+        <ul>
+          <li>Equipment-based HFC modeling</li>
+          <li>Multi-sector, multi-substance analysis</li>
+          <li>Economic growth and trade flow modeling</li>
+          <li>Policy intervention design and evaluation</li>
+          <li>QubecTalk programming</li>
+          <li>Uncertainty quantification and Monte Carlo analysis</li>
+        </ul>
+
+        <p>
+          These tools provide a complete foundation for supporting Kigali Amendment Implementation Plans and HFC phase-down policy analysis. The combination of deterministic modeling and probabilistic analysis enables robust policy recommendations that account for real-world uncertainty and implementation challenges.
+        </p>
+
+        <p>
+          <a href="/guide/tutorial_08.html">Previous: Tutorial 8</a> | 
+          <a href="/guide/tutorial_10.html">Next: Tutorial 10</a>
+        </p>
+      </section>
+
+      <hr />
+      <p><em>This tutorial completes the ABC Country case study series demonstrating progressive HFC policy analysis using Kigali Sim for now. Additional tutorials will be added later.</em></p>
+    </main>
+
+    <script src="/third_party/prism-core.min.js"></script>
+    <script src="/third_party/prism-autoloader.min.js"></script>
+    <script src="/guide/qubectalk-prism.js"></script>
+  </body>
+</html>

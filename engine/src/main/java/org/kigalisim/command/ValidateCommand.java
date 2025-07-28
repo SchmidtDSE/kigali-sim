@@ -10,8 +10,11 @@
 package org.kigalisim.command;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.util.concurrent.Callable;
 import org.kigalisim.KigaliSimFacade;
+import org.kigalisim.lang.parse.ParseResult;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Parameters;
 
@@ -39,14 +42,35 @@ public class ValidateCommand implements Callable<Integer> {
       return FILE_NOT_FOUND_ERROR;
     }
 
-    boolean isValid = KigaliSimFacade.validate(file.getPath());
+    try {
+      // Read the file content
+      String code = new String(Files.readAllBytes(file.toPath()));
 
-    if (isValid) {
-      System.out.println("Validated QubecTalk code at " + file);
-      return 0;
-    } else {
-      System.err.println("Validation failed for QubecTalk code at " + file);
-      return VALIDATION_ERROR;
+      // Parse the code to get detailed error information
+      ParseResult parseResult = KigaliSimFacade.parse(code);
+
+      if (parseResult.hasErrors()) {
+        String detailedError = KigaliSimFacade.getDetailedErrorMessage(parseResult);
+        System.err.println("Validation failed for QubecTalk code at " + file);
+        System.err.println(detailedError);
+        return VALIDATION_ERROR;
+      }
+
+      // If parsing succeeded, try to interpret
+      try {
+        KigaliSimFacade.interpret(parseResult);
+        System.out.println("Validated QubecTalk code at " + file);
+        return 0;
+      } catch (Exception e) {
+        System.err.println("Validation failed for QubecTalk code at " + file);
+        System.err.println("Interpretation error: " + e.getMessage());
+        return VALIDATION_ERROR;
+      }
+
+    } catch (IOException e) {
+      System.err.println("Could not read file: " + file);
+      System.err.println("Error: " + e.getMessage());
+      return FILE_NOT_FOUND_ERROR;
     }
   }
 }

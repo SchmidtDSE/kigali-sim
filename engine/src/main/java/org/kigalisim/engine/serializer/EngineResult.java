@@ -24,7 +24,7 @@ public class EngineResult {
   private final int year;
   private final String scenarioName;
   private final int trialNumber;
-  private final EngineNumber manufactureValue;
+  private final EngineNumber domesticValue;
   private final EngineNumber importValue;
   private final EngineNumber recycleValue;
   private final EngineNumber domesticConsumptionValue;
@@ -47,7 +47,7 @@ public class EngineResult {
    * @param year The year for which the engine result is relevant
    * @param scenarioName The name of the scenario being run
    * @param trialNumber The trial number of the current run
-   * @param manufactureValue The value associated with manufacturing in volume like kg
+   * @param domesticValue The value associated with domestic production in volume like kg
    * @param importValue The value related to imports like in volume like kg
    * @param recycleValue The value denoting recycled materials in volume like kg
    * @param domesticConsumptionValue The domestic consumption value in tCO2e or equivalent
@@ -63,7 +63,7 @@ public class EngineResult {
    * @param tradeSupplement The supplemental trade data needed for attribution
    */
   public EngineResult(String application, String substance, int year, String scenarioName, int trialNumber,
-                     EngineNumber manufactureValue, EngineNumber importValue,
+                     EngineNumber domesticValue, EngineNumber importValue,
                      EngineNumber recycleValue, EngineNumber domesticConsumptionValue,
                      EngineNumber importConsumptionValue, EngineNumber recycleConsumptionValue,
                      EngineNumber populationValue, EngineNumber populationNew,
@@ -75,7 +75,7 @@ public class EngineResult {
     this.year = year;
     this.scenarioName = scenarioName;
     this.trialNumber = trialNumber;
-    this.manufactureValue = manufactureValue;
+    this.domesticValue = domesticValue;
     this.importValue = importValue;
     this.recycleValue = recycleValue;
     this.domesticConsumptionValue = domesticConsumptionValue;
@@ -119,12 +119,12 @@ public class EngineResult {
   }
 
   /**
-   * Get the manufacture value.
+   * Get the domestic value.
    *
-   * @return The manufacture value in volume like kg
+   * @return The domestic value in volume like kg
    */
-  public EngineNumber getManufacture() {
-    return manufactureValue;
+  public EngineNumber getDomestic() {
+    return domesticValue;
   }
 
   /**

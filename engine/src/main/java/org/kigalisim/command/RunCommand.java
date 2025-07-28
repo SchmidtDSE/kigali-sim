@@ -11,12 +11,15 @@ package org.kigalisim.command;
 
 import java.io.File;
 import java.io.FileWriter;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.stream.Stream;
 import org.kigalisim.KigaliSimFacade;
 import org.kigalisim.ProgressReportCallback;
 import org.kigalisim.engine.serializer.EngineResult;
+import org.kigalisim.lang.parse.ParseResult;
 import org.kigalisim.lang.program.ParsedProgram;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
@@ -52,8 +55,28 @@ public class RunCommand implements Callable<Integer> {
     }
 
     try {
-      // Parse and interpret the file
-      ParsedProgram program = KigaliSimFacade.parseAndInterpret(file.getPath());
+      // Read the file content
+      String code = new String(Files.readAllBytes(file.toPath()));
+
+      // Parse the code to get detailed error information
+      ParseResult parseResult = KigaliSimFacade.parse(code);
+
+      if (parseResult.hasErrors()) {
+        String detailedError = KigaliSimFacade.getDetailedErrorMessage(parseResult);
+        System.err.println("Failed to parse QubecTalk code at " + file);
+        System.err.println(detailedError);
+        return PARSE_ERROR;
+      }
+
+      // Interpret the parsed code
+      ParsedProgram program;
+      try {
+        program = KigaliSimFacade.interpret(parseResult);
+      } catch (Exception e) {
+        System.err.println("Failed to interpret QubecTalk code at " + file);
+        System.err.println("Interpretation error: " + e.getMessage());
+        return PARSE_ERROR;
+      }
 
       // Create progress callback that prints to stdout
       ProgressReportCallback progressCallback = progress -> {
@@ -68,7 +91,7 @@ public class RunCommand implements Callable<Integer> {
 
       // Collect to a list to see how many results we have
       List<EngineResult> resultsList = allResults.collect(java.util.stream.Collectors.toList());
-      
+
       // Print a newline after progress is complete
       System.out.println();
 
@@ -76,16 +99,23 @@ public class RunCommand implements Callable<Integer> {
       String csvContent = KigaliSimFacade.convertResultsToCsv(resultsList);
       try (FileWriter writer = new FileWriter(csvOutputFile)) {
         writer.write(csvContent);
+      } catch (IOException e) {
+        System.err.println("Failed to write CSV output to " + csvOutputFile);
+        System.err.println("Error: " + e.getMessage());
+        return CSV_WRITE_ERROR;
       }
 
       System.out.println("Successfully ran all simulations and wrote results to " + csvOutputFile);
       return 0;
+    } catch (IOException e) {
+      System.err.println("Could not read file: " + file);
+      System.err.println("Error: " + e.getMessage());
+      return FILE_NOT_FOUND_ERROR;
     } catch (Exception e) {
       System.err.println("Error running simulation: " + e.getClass().getSimpleName() + ": " + e.getMessage());
       if (e.getCause() != null) {
         System.err.println("Caused by: " + e.getCause().getClass().getSimpleName() + ": " + e.getCause().getMessage());
       }
-      e.printStackTrace();
       return EXECUTION_ERROR;
     }
   }

@@ -52,18 +52,21 @@ public final class EngineConstants {
    */
   private static Map<String, String> createStreamBaseUnits() {
     Map<String, String> units = new HashMap<>();
-    units.put("manufacture", "kg");
+    units.put("domestic", "kg");
     units.put("import", "kg");
     units.put("export", "kg");
     units.put("sales", "kg");
     units.put("energy", "kwh");
     units.put("recycle", "kg");
+    units.put("recycleRecharge", "kg");
+    units.put("recycleEol", "kg");
     units.put("consumption", "tCO2e");
     units.put("rechargeEmissions", "tCO2e");
     units.put("eolEmissions", "tCO2e");
     units.put("equipment", "units");
     units.put("priorEquipment", "units");
     units.put("newEquipment", "units");
+    units.put("retired", "units");
     units.put("implicitRecharge", "kg");
     return units;
   }

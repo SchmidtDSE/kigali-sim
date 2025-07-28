@@ -3,13 +3,13 @@ start default
   define application "commercial refrigeration"
 
     uses substance "HFC-134a"
-      enable manufacture
+      enable domestic
       enable import
       enable export
-      initial charge with 200 kg / unit for manufacture
+      initial charge with 200 kg / unit for domestic
       initial charge with 200 kg / unit for import
       initial charge with 200 kg / unit for export
-      set manufacture to 1600 mt
+      set domestic to 1600 mt
       set import to 400 mt
       set export to 200 mt
       equals 500 tCO2e / mt

@@ -111,6 +111,14 @@ main {
   padding-bottom: 30px;
 }
 
+option[disabled] {
+  color: #555555;
+}
+
+select option[disabled] {
+  background-color: #F0F0F0;
+}
+
 #code-editor .error-display {
   padding: 10px;
   border-radius: 5px;
@@ -158,6 +166,7 @@ main {
 
 #initial-loading-indicator {
   font-size: 20px;
+  padding-top: 20px;
 }
 
 #main-holder {
@@ -524,7 +533,7 @@ main {
 }
 
 .dialog-list {
-  height: 250px;
+  height: 270px;
   overflow-y: auto;
 }
 
@@ -804,6 +813,7 @@ main {
   a:link[role="tab"][aria-selected="true"],
   a:visited[role="tab"][aria-selected="true"] {
     color: #202070;
+    background-color: #F5F5F5;
   }
 
   /* Auto-run checkbox grid layout for wider screens */
@@ -845,3 +855,25 @@ main {
   margin: 0;
   color: #666;
 }
+
+/* Unified preferences styling for all preference checkboxes */
+.check-preferences {
+  margin: 10px 0;
+}
+
+.check-preferences label {
+  display: block;
+  margin: 5px 0;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.check-preferences input[type="checkbox"] {
+  margin-right: 8px;
+}
+
+/* Override dialog label bold styling for checkbox lists */
+dialog .checkbox-list label {
+  font-weight: normal;
+}
+

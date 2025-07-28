@@ -26,7 +26,7 @@ public class CapLiveTests {
 
   /**
    * Test cap_kg.qta produces expected values.
-   * This tests capping manufacture to a specific weight in kg.
+   * This tests capping domestic to a specific weight in kg.
    */
   @Test
   public void testCapKg() throws IOException {
@@ -43,16 +43,16 @@ public class CapLiveTests {
     EngineResult result = LiveTestsUtil.getResult(resultsList.stream(), 1, "test", "test");
     assertNotNull(result, "Should have result for test/test in year 1");
 
-    // Check manufacture value - should be capped at 50 kg
-    assertEquals(50.0, result.getManufacture().getValue().doubleValue(), 0.0001,
-        "Manufacture should be capped at 50 kg");
-    assertEquals("kg", result.getManufacture().getUnits(),
-        "Manufacture units should be kg");
+    // Check domestic value - should be capped at 50 kg
+    assertEquals(50.0, result.getDomestic().getValue().doubleValue(), 0.0001,
+        "Domestic should be capped at 50 kg");
+    assertEquals("kg", result.getDomestic().getUnits(),
+        "Domestic units should be kg");
   }
 
   /**
    * Test cap_units.qta produces expected values.
-   * This tests capping manufacture to a specific number of units.
+   * This tests capping domestic to a specific number of units.
    */
   @Test
   public void testCapUnits() throws IOException {
@@ -69,18 +69,18 @@ public class CapLiveTests {
     EngineResult result = LiveTestsUtil.getResult(resultsList.stream(), 1, "test", "test");
     assertNotNull(result, "Should have result for test/test in year 1");
 
-    // Check manufacture value
+    // Check domestic value
     // With recharge on top: 50 units * 2 kg/unit + (20 units * 10% * 1 kg/unit) = 102 kg
     // Since original value is 100 kg and cap should be 102 kg, no change expected
-    assertEquals(100.0, result.getManufacture().getValue().doubleValue(), 0.0001,
-        "Manufacture should be 100 kg");
-    assertEquals("kg", result.getManufacture().getUnits(),
-        "Manufacture units should be kg");
+    assertEquals(100.0, result.getDomestic().getValue().doubleValue(), 0.0001,
+        "Domestic should be 100 kg");
+    assertEquals("kg", result.getDomestic().getUnits(),
+        "Domestic units should be kg");
   }
 
   /**
    * Test cap_displace_units.qta produces expected values.
-   * This tests capping manufacture with displacement to another substance.
+   * This tests capping domestic with displacement to another substance.
    */
   @Test
   public void testCapDisplaceUnits() throws IOException {
@@ -95,28 +95,32 @@ public class CapLiveTests {
 
     List<EngineResult> resultsList = results.collect(Collectors.toList());
 
-    // Check that sub_a manufacture was capped
+    // Check that sub_a domestic was capped
     EngineResult recordSubA = LiveTestsUtil.getResult(resultsList.stream(), 1, "test", "sub_a");
     assertNotNull(recordSubA, "Should have result for test/sub_a in year 1");
 
-    // Cap is 5 units, with recharge: 5 units * 10 kg/unit + (20 units * 10% * 10 kg/unit) = 50 + 20 = 70 kg
-    // Original was 100 kg, so should be capped to 70 kg
-    assertEquals(70.0, recordSubA.getManufacture().getValue().doubleValue(), 0.0001,
-        "Manufacture for sub_a should be capped at 70 kg");
-    assertEquals("kg", recordSubA.getManufacture().getUnits(),
-        "Manufacture units for sub_a should be kg");
+    // Cap is 5 units with proportional recharge distribution:
+    // Base amount: 5 units * 10 kg/unit = 50 kg
+    // Total recharge: 20 units * 10% * 10 kg/unit = 20 kg
+    // Sales distribution: domestic=100kg (66.67%), import=50kg (33.33%)
+    // Domestic recharge: 20 kg * 66.67% = 13.33 kg
+    // Total domestic: 50 kg + 13.33 kg = 63.33 kg
+    assertEquals(63.333333333333336, recordSubA.getDomestic().getValue().doubleValue(), 0.0001,
+        "Domestic for sub_a should be capped at 63.33 kg (50 + 13.33 proportional recharge)");
+    assertEquals("kg", recordSubA.getDomestic().getUnits(),
+        "Domestic units for sub_a should be kg");
 
     // Check displacement to sub_b
     EngineResult recordSubB = LiveTestsUtil.getResult(resultsList.stream(), 1, "test", "sub_b");
     assertNotNull(recordSubB, "Should have result for test/sub_b in year 1");
 
-    // With unit-based displacement: 30 kg reduction in sub_a = 30 kg / 10 kg/unit = 3 units
-    // 3 units displaced to sub_b = 3 units * 20 kg/unit = 60 kg
-    // Original sub_b: 200 kg, Final sub_b: 200 kg + 60 kg = 260 kg
-    assertEquals(260.0, recordSubB.getManufacture().getValue().doubleValue(), 0.0001,
-        "Manufacture for sub_b should be 260 kg after displacement");
-    assertEquals("kg", recordSubB.getManufacture().getUnits(),
-        "Manufacture units for sub_b should be kg");
+    // With unit-based displacement: 36.67 kg reduction in sub_a = 36.67 kg / 10 kg/unit = 3.67 units
+    // 3.67 units displaced to sub_b = 3.67 units * 20 kg/unit = 73.33 kg
+    // Original sub_b: 200 kg, Final sub_b: 200 kg + 73.33 kg = 273.33 kg
+    assertEquals(273.3333333333333, recordSubB.getDomestic().getValue().doubleValue(), 0.0001,
+        "Domestic for sub_b should be 273.33 kg after displacement");
+    assertEquals("kg", recordSubB.getDomestic().getUnits(),
+        "Domestic units for sub_b should be kg");
   }
 
   /**
@@ -136,17 +140,17 @@ public class CapLiveTests {
 
     List<EngineResult> resultsList = results.collect(Collectors.toList());
 
-    // Check that sub_a manufacture was capped
+    // Check that sub_a domestic was capped
     EngineResult recordSubA = LiveTestsUtil.getResult(resultsList.stream(), 1, "test", "sub_a");
     assertNotNull(recordSubA, "Should have result for test/sub_a in year 1");
 
     // Cap is 5 units, with recharge: 5 units * 10 kg/unit + (20 units * 10% * 10 kg/unit) = 50 + 20 = 70 kg
     // Original was 30 units * 10 kg/unit = 300 kg, so should be capped to 70 kg
     // Reduction: 300 - 70 = 230 kg
-    assertEquals(70.0, recordSubA.getManufacture().getValue().doubleValue(), 0.0001,
-        "Manufacture for sub_a should be capped at 70 kg");
-    assertEquals("kg", recordSubA.getManufacture().getUnits(),
-        "Manufacture units for sub_a should be kg");
+    assertEquals(70.0, recordSubA.getDomestic().getValue().doubleValue(), 0.0001,
+        "Domestic for sub_a should be capped at 70 kg");
+    assertEquals("kg", recordSubA.getDomestic().getUnits(),
+        "Domestic units for sub_a should be kg");
 
     // Check displacement to sub_b
     EngineResult recordSubB = LiveTestsUtil.getResult(resultsList.stream(), 1, "test", "sub_b");
@@ -157,10 +161,10 @@ public class CapLiveTests {
     // 23 units displaced to sub_b = 23 units * 20 kg/unit = 460 kg
     // Original sub_b: 10 units * 20 kg/unit = 200 kg
     // Final sub_b: 200 kg + 460 kg = 660 kg
-    assertEquals(660.0, recordSubB.getManufacture().getValue().doubleValue(), 0.0001,
-        "Manufacture for sub_b should be 660 kg after displacement");
-    assertEquals("kg", recordSubB.getManufacture().getUnits(),
-        "Manufacture units for sub_b should be kg");
+    assertEquals(660.0, recordSubB.getDomestic().getValue().doubleValue(), 0.0001,
+        "Domestic for sub_b should be 660 kg after displacement");
+    assertEquals("kg", recordSubB.getDomestic().getUnits(),
+        "Domestic units for sub_b should be kg");
   }
 
   /**
@@ -181,7 +185,7 @@ public class CapLiveTests {
     List<EngineResult> resultsList = results.collect(Collectors.toList());
 
     // Check HFC-134a new equipment is zero in 2030
-    EngineResult recordHfc2030 = LiveTestsUtil.getResult(resultsList.stream(), 2030, 
+    EngineResult recordHfc2030 = LiveTestsUtil.getResult(resultsList.stream(), 2030,
         "Commercial Refrigeration", "HFC-134a");
     assertNotNull(recordHfc2030, "Should have result for Commercial Refrigeration/HFC-134a in year 2030");
 
@@ -245,7 +249,7 @@ public class CapLiveTests {
     EngineResult recordR404A2035 = LiveTestsUtil.getResult(resultsList.stream(), 2035,
         "Commercial Refrigeration", "R-404A");
     assertNotNull(recordR404A2035, "Should have result for Commercial Refrigeration/R-404A in year 2035");
-    
+
     // Should have new equipment due to displacement
     double newEquipmentR404A = recordR404A2035.getPopulationNew().getValue().doubleValue();
     assertTrue(
@@ -291,7 +295,7 @@ public class CapLiveTests {
     EngineResult recordR404A2035 = LiveTestsUtil.getResult(resultsList.stream(), 2035,
         "Commercial Refrigeration", "R-404A");
     assertNotNull(recordR404A2035, "Should have result for Commercial Refrigeration/R-404A in year 2035");
-    
+
     // Should have new equipment due to displacement
     double newEquipmentR404A = recordR404A2035.getPopulationNew().getValue().doubleValue();
     assertTrue(
@@ -302,11 +306,11 @@ public class CapLiveTests {
 
   /**
    * Test cap scenario without change statements to isolate the issue.
-   * 
+   *
    * <p>This test caps import to 0 units. Since there are no change statements and no retire
    * statement, we expect 0 new equipment. The cap should allow enough import to satisfy
    * recharge needs (10% of existing equipment at 0.1 kg/unit) but no more.</p>
-   * 
+   *
    * <p>Expected: PopulationNew = 0.0 (no new equipment when import is capped to 0 units)
    * Actual: PopulationNew = -267.3 (negative equipment, indicating a bug)</p>
    */

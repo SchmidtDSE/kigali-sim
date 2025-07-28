@@ -11,7 +11,6 @@ package org.kigalisim.engine.recalc;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
-import java.math.RoundingMode;
 import java.util.Optional;
 import org.kigalisim.engine.Engine;
 import org.kigalisim.engine.number.EngineNumber;
@@ -19,8 +18,10 @@ import org.kigalisim.engine.number.UnitConverter;
 import org.kigalisim.engine.state.OverridingConverterStateGetter;
 import org.kigalisim.engine.state.StreamKeeper;
 import org.kigalisim.engine.state.UseKey;
-import org.kigalisim.engine.support.DivisionHelper;
 import org.kigalisim.engine.support.ExceptionsGenerator;
+import org.kigalisim.engine.support.StreamUpdate;
+import org.kigalisim.engine.support.StreamUpdateBuilder;
+import org.kigalisim.lang.operation.RecoverOperation.RecoveryStage;
 
 /**
  * Strategy for recalculating sales.
@@ -70,20 +71,33 @@ public class SalesRecalcStrategy implements RecalcStrategy {
     EngineNumber initialChargeRaw = target.getInitialCharge("sales");
     EngineNumber initialCharge = unitConverter.convert(initialChargeRaw, "kg / unit");
 
-    // Get recycling volume
-    stateGetter.setVolume(rechargeVolume);
-    EngineNumber recoveryVolumeRaw = streamKeeper.getRecoveryRate(scopeEffective);
-    EngineNumber recoveryVolume = unitConverter.convert(recoveryVolumeRaw, "kg");
-    stateGetter.clearVolume();
+    // Calculate EOL recycling (from actual retired equipment)
+    EngineNumber retiredPopulationRaw = streamKeeper.getStream(scopeEffective, "retired");
+    EngineNumber retiredPopulation = unitConverter.convert(retiredPopulationRaw, "units");
 
-    // Get recycling amount
-    stateGetter.setVolume(recoveryVolume);
-    EngineNumber recycledVolumeRaw = streamKeeper.getYieldRate(scopeEffective);
-    EngineNumber recycledVolume = unitConverter.convert(recycledVolumeRaw, "kg");
-    stateGetter.clearVolume();
+    // Calculate EOL volume from retired equipment
+    stateGetter.setPopulation(retiredPopulation);
+    EngineNumber eolVolumeRaw = streamKeeper.getStream(scopeEffective, "retired");
+    EngineNumber eolVolume = unitConverter.convert(eolVolumeRaw, "kg");
+    // Convert from units to kg using initial charge
+    BigDecimal eolVolumeKg = retiredPopulation.getValue().multiply(initialCharge.getValue());
+    EngineNumber eolVolumeConverted = new EngineNumber(eolVolumeKg, "kg");
+    stateGetter.clearPopulation();
+
+    BigDecimal eolRecycledKg = calculateRecyclingForStage(
+        streamKeeper, stateGetter, unitConverter, scopeEffective,
+        eolVolumeConverted, RecoveryStage.EOL);
+
+    // Calculate recharge recycling (from recharge population)
+    BigDecimal rechargeRecycledKg = calculateRecyclingForStage(
+        streamKeeper, stateGetter, unitConverter, scopeEffective,
+        rechargeVolume, RecoveryStage.RECHARGE);
+
+    // Combine both recycling amounts
+    BigDecimal totalRecycledKg = eolRecycledKg.add(rechargeRecycledKg);
 
     // Get recycling displaced
-    BigDecimal recycledKg = recycledVolume.getValue();
+    BigDecimal recycledKg = totalRecycledKg;
 
     EngineNumber displacementRateRaw = streamKeeper.getDisplacementRate(scopeEffective);
     EngineNumber displacementRate = unitConverter.convert(displacementRateRaw, "%");
@@ -119,21 +133,21 @@ public class SalesRecalcStrategy implements RecalcStrategy {
     stateGetter.clearVolume();
 
     // Determine how much to offset domestic and imports
-    EngineNumber manufactureRaw = target.getStream("manufacture", Optional.of(scopeEffective), Optional.empty());
+    EngineNumber domesticRaw = target.getStream("domestic", Optional.of(scopeEffective), Optional.empty());
     EngineNumber importRaw = target.getStream("import", Optional.of(scopeEffective), Optional.empty());
     EngineNumber priorRecycleRaw = target.getStream("recycle", Optional.of(scopeEffective), Optional.empty());
 
-    EngineNumber manufactureSalesConverted = unitConverter.convert(manufactureRaw, "kg");
+    EngineNumber domesticSalesConverted = unitConverter.convert(domesticRaw, "kg");
     EngineNumber importSalesConverted = unitConverter.convert(importRaw, "kg");
 
-    BigDecimal manufactureSalesKg = manufactureSalesConverted.getValue();
+    BigDecimal domesticSalesKg = domesticSalesConverted.getValue();
     BigDecimal importSalesKg = importSalesConverted.getValue();
-    BigDecimal totalNonRecycleKg = manufactureSalesKg.add(importSalesKg);
+    BigDecimal totalNonRecycleKg = domesticSalesKg.add(importSalesKg);
 
     // Get distribution using centralized method
     SalesStreamDistribution distribution = streamKeeper.getDistribution(scopeEffective);
 
-    BigDecimal percentManufacture = distribution.getPercentManufacture();
+    BigDecimal percentDomestic = distribution.getPercentDomestic();
     BigDecimal percentImport = distribution.getPercentImport();
 
     // Recycle
@@ -144,66 +158,83 @@ public class SalesRecalcStrategy implements RecalcStrategy {
     EngineNumber implicitRechargeRaw = target.getStream("implicitRecharge", Optional.of(scopeEffective), Optional.empty());
     EngineNumber implicitRecharge = unitConverter.convert(implicitRechargeRaw, "kg");
     BigDecimal implicitRechargeKg = implicitRecharge.getValue();
-    
+
     // Deal with implicit recharge and recycling
     // Total demand is recharge + new equipment needs
     BigDecimal totalDemand = kgForRecharge.add(kgForNew);
-    
+
     // Subtract what we can fulfill from other sources:
     // - implicitRechargeKg: recharge that was already added when units were specified
     // - recycledDisplacedKg: material available from recycling
-    BigDecimal requiredKgUnbound = totalDemand
+    BigDecimal requiredKg = totalDemand
         .subtract(implicitRechargeKg)
         .subtract(recycledDisplacedKg);
-    
-    boolean requiredKgNegative = requiredKgUnbound.compareTo(BigDecimal.ZERO) < 0;
-    BigDecimal requiredKg = requiredKgNegative ? BigDecimal.ZERO : requiredKgUnbound;
-    
-    BigDecimal newManufactureKg = percentManufacture.multiply(requiredKg);
+
+    BigDecimal newDomesticKg = percentDomestic.multiply(requiredKg);
     BigDecimal newImportKg = percentImport.multiply(requiredKg);
-    
+
     boolean hasUnitBasedSpecs = getHasUnitBasedSpecs(streamKeeper, scopeEffective, implicitRechargeKg);
-    
+
     if (hasUnitBasedSpecs) {
       // Convert back to units to preserve user intent
       // This ensures that unit-based specifications are maintained through recycling operations
       // Need to set up the converter state for proper unit conversion
       stateGetter.setAmortizedUnitVolume(initialCharge);
-      
+
       // Only set streams that have non-zero allocations (i.e., are enabled)
-      if (percentManufacture.compareTo(BigDecimal.ZERO) > 0) {
-        EngineNumber newManufactureUnits = unitConverter.convert(
-            new EngineNumber(newManufactureKg, "kg"), "units");
-        target.setStreamFor("manufacture", newManufactureUnits, Optional.empty(), 
-            Optional.of(scopeEffective), false, Optional.empty());
+      if (percentDomestic.compareTo(BigDecimal.ZERO) > 0) {
+        EngineNumber newDomesticUnits = unitConverter.convert(
+            new EngineNumber(newDomesticKg, "kg"), "units");
+        StreamUpdate domesticUpdate = new StreamUpdateBuilder()
+            .setName("domestic")
+            .setValue(newDomesticUnits)
+            .setKey(scopeEffective)
+            .setPropagateChanges(false)
+            .build();
+        target.executeStreamUpdate(domesticUpdate);
       }
-      
+
       if (percentImport.compareTo(BigDecimal.ZERO) > 0) {
         EngineNumber newImportUnits = unitConverter.convert(
             new EngineNumber(newImportKg, "kg"), "units");
-        target.setStreamFor("import", newImportUnits, Optional.empty(), 
-            Optional.of(scopeEffective), false, Optional.empty());
+        StreamUpdate importUpdate = new StreamUpdateBuilder()
+            .setName("import")
+            .setValue(newImportUnits)
+            .setKey(scopeEffective)
+            .setPropagateChanges(false)
+            .build();
+        target.executeStreamUpdate(importUpdate);
       }
-      
+
       // Clear the state after conversion
       stateGetter.clearAmortizedUnitVolume();
     } else {
       // Normal kg-based setting for non-unit specifications
       // Only set streams that have non-zero allocations (i.e., are enabled)
-      if (percentManufacture.compareTo(BigDecimal.ZERO) > 0) {
-        EngineNumber newManufacture = new EngineNumber(newManufactureKg, "kg");
-        target.setStreamFor("manufacture", newManufacture, Optional.empty(), 
-            Optional.of(scopeEffective), false, Optional.empty());
+      if (percentDomestic.compareTo(BigDecimal.ZERO) > 0) {
+        EngineNumber newDomestic = new EngineNumber(newDomesticKg, "kg");
+        StreamUpdate domesticUpdate = new StreamUpdateBuilder()
+            .setName("domestic")
+            .setValue(newDomestic)
+            .setKey(scopeEffective)
+            .setPropagateChanges(false)
+            .build();
+        target.executeStreamUpdate(domesticUpdate);
       }
-      
+
       if (percentImport.compareTo(BigDecimal.ZERO) > 0) {
         EngineNumber newImport = new EngineNumber(newImportKg, "kg");
-        target.setStreamFor("import", newImport, Optional.empty(), 
-            Optional.of(scopeEffective), false, Optional.empty());
+        StreamUpdate importUpdate = new StreamUpdateBuilder()
+            .setName("import")
+            .setValue(newImport)
+            .setKey(scopeEffective)
+            .setPropagateChanges(false)
+            .build();
+        target.executeStreamUpdate(importUpdate);
       }
     }
   }
-  
+
   /**
    * Determines if unit-based specifications should be preserved.
    *
@@ -216,19 +247,53 @@ public class SalesRecalcStrategy implements RecalcStrategy {
     // Check if we had unit-based specifications that need to be preserved
     boolean hasUnitBasedSpecs = streamKeeper.hasLastSpecifiedValue(scopeEffective, "sales")
         && streamKeeper.getLastSpecifiedValue(scopeEffective, "sales").hasEquipmentUnits();
-    
+
     if (hasUnitBasedSpecs) {
       // Check if the current values indicate a unit-based operation
       // If implicit recharge is present, we know units were used in the current operation
       // TODO: Consider making this explicit rather than using implicit recharge as a heuristic
       boolean currentOperationIsUnitBased = implicitRechargeKg.compareTo(BigDecimal.ZERO) > 0;
-      
+
       if (!currentOperationIsUnitBased) {
         // Current operation is kg-based (like displacement), don't preserve units
         hasUnitBasedSpecs = false;
       }
     }
-    
+
     return hasUnitBasedSpecs;
+  }
+
+  /**
+   * Calculate recycling for a specific stage (EOL or RECHARGE).
+   *
+   * @param streamKeeper the stream keeper to use for getting rates
+   * @param stateGetter the state getter for volume calculations
+   * @param unitConverter the unit converter to use
+   * @param scopeEffective the scope to calculate for
+   * @param baseVolume the base volume to use for calculations
+   * @param stage the recovery stage (EOL or RECHARGE)
+   * @return the recycled amount in kg for this stage
+   */
+  private BigDecimal calculateRecyclingForStage(
+      StreamKeeper streamKeeper,
+      OverridingConverterStateGetter stateGetter,
+      UnitConverter unitConverter,
+      UseKey scopeEffective,
+      EngineNumber baseVolume,
+      RecoveryStage stage) {
+
+    // Get recycling volume (recovery rate) for this stage
+    stateGetter.setVolume(baseVolume);
+    EngineNumber recoveryVolumeRaw = streamKeeper.getRecoveryRate(scopeEffective, stage);
+    EngineNumber recoveryVolume = unitConverter.convert(recoveryVolumeRaw, "kg");
+    stateGetter.clearVolume();
+
+    // Get recycling amount (yield rate) for this stage
+    stateGetter.setVolume(recoveryVolume);
+    EngineNumber recycledVolumeRaw = streamKeeper.getYieldRate(scopeEffective, stage);
+    EngineNumber recycledVolume = unitConverter.convert(recycledVolumeRaw, "kg");
+    stateGetter.clearVolume();
+
+    return recycledVolume.getValue();
   }
 }
