@@ -19,6 +19,7 @@ import org.kigalisim.lang.interpret.QubecTalkInterpreter;
 import org.kigalisim.lang.machine.PushDownMachine;
 import org.kigalisim.lang.machine.SingleThreadPushDownMachine;
 import org.kigalisim.lang.operation.Operation;
+import org.kigalisim.lang.parse.ParseError;
 import org.kigalisim.lang.parse.ParseResult;
 import org.kigalisim.lang.parse.QubecTalkParser;
 import org.kigalisim.lang.program.ParsedApplication;
@@ -136,6 +137,38 @@ public class KigaliSimFacade {
       }
     }
     return results;
+  }
+
+  /**
+   * Get a formatted error message from a ParseResult.
+   *
+   * <p>Extracts detailed error information from a ParseResult and formats it
+   * for display to the user, including line numbers and error messages.</p>
+   *
+   * @param parseResult The ParseResult containing errors.
+   * @return A formatted string with detailed error information, or null if no errors.
+   */
+  public static String getDetailedErrorMessage(ParseResult parseResult) {
+    if (!parseResult.hasErrors()) {
+      return null;
+    }
+
+    List<ParseError> errors = parseResult.getErrors();
+    if (errors.isEmpty()) {
+      return "Unknown parsing error occurred";
+    }
+
+    // Get the first error for detailed reporting
+    ParseError firstError = errors.get(0);
+    StringBuilder errorMessage = new StringBuilder();
+    errorMessage.append("Syntax error at line ").append(firstError.getLine());
+    errorMessage.append(": ").append(firstError.getMessage());
+
+    if (errors.size() > 1) {
+      errorMessage.append(" (and ").append(errors.size() - 1).append(" more error(s))");
+    }
+
+    return errorMessage.toString();
   }
 
   /**
