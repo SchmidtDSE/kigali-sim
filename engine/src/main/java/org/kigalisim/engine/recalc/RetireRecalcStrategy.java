@@ -81,6 +81,13 @@ public class RetireRecalcStrategy implements RecalcStrategy {
     streamKeeper.setStream(scopeEffective, "priorEquipment", newPrior);
     streamKeeper.setStream(scopeEffective, "equipment", newEquipment);
 
+    // Update retired stream with the amount retired this year
+    EngineNumber currentRetiredRaw = streamKeeper.getStream(scopeEffective, "retired");
+    EngineNumber currentRetired = unitConverter.convert(currentRetiredRaw, "units");
+    BigDecimal newRetiredValue = currentRetired.getValue().add(amount.getValue());
+    EngineNumber newRetired = new EngineNumber(newRetiredValue, "units");
+    streamKeeper.setStream(scopeEffective, "retired", newRetired);
+
     // Update GHG accounting
     EolEmissionsRecalcStrategy eolStrategy = new EolEmissionsRecalcStrategy(Optional.of(scopeEffective));
     eolStrategy.execute(target, kit);

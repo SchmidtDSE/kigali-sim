@@ -93,6 +93,11 @@ section {
   padding-top: 30px;
 }
 
+section.no-border {
+  border-top: none;
+  margin-top: 0;
+}
+
 .aside {
   background-color: #F0F0F0;
   border: 1px solid #E0E0E0;

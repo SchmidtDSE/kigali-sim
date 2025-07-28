@@ -2,7 +2,7 @@
  * Builder for creating sales stream distribution percentages.
  *
  * <p>This class implements the logic for determining the appropriate percentage
- * split between import, domestic manufacture, and export based on which streams have been
+ * split between import, domestic, and export based on which streams have been
  * explicitly enabled and their current values.</p>
  *
  * @license BSD-3-Clause
@@ -19,15 +19,15 @@ import org.kigalisim.engine.number.EngineNumber;
  * Builder for creating sales stream distribution percentages.
  *
  * <p>This class implements the logic for determining the appropriate percentage
- * split between import, domestic manufacture, and export based on which streams have been
+ * split between import, domestic, and export based on which streams have been
  * explicitly enabled and their current values.</p>
  */
 public class SalesStreamDistributionBuilder {
 
-  private Optional<EngineNumber> manufactureSales;
+  private Optional<EngineNumber> domesticSales;
   private Optional<EngineNumber> importSales;
   private Optional<EngineNumber> exportSales;
-  private Optional<Boolean> manufactureEnabled;
+  private Optional<Boolean> domesticEnabled;
   private Optional<Boolean> importEnabled;
   private Optional<Boolean> exportEnabled;
   private Optional<Boolean> includeExports;
@@ -36,23 +36,23 @@ public class SalesStreamDistributionBuilder {
    * Create builder without any values initialized.
    */
   public SalesStreamDistributionBuilder() {
-    manufactureSales = Optional.empty();
+    domesticSales = Optional.empty();
     importSales = Optional.empty();
     exportSales = Optional.empty();
-    manufactureEnabled = Optional.empty();
+    domesticEnabled = Optional.empty();
     importEnabled = Optional.empty();
     exportEnabled = Optional.empty();
     includeExports = Optional.empty();
   }
 
   /**
-   * Set the manufacture sales value.
+   * Set the domestic sales value.
    *
-   * @param manufactureSales Current manufacture sales value
+   * @param domesticSales Current domestic sales value
    * @return This builder for method chaining
    */
-  public SalesStreamDistributionBuilder setManufactureSales(EngineNumber manufactureSales) {
-    this.manufactureSales = Optional.of(manufactureSales);
+  public SalesStreamDistributionBuilder setDomesticSales(EngineNumber domesticSales) {
+    this.domesticSales = Optional.of(domesticSales);
     return this;
   }
 
@@ -68,13 +68,13 @@ public class SalesStreamDistributionBuilder {
   }
 
   /**
-   * Set whether manufacture stream is enabled.
+   * Set whether domestic stream is enabled.
    *
-   * @param manufactureEnabled true if manufacture stream has ever been enabled
+   * @param domesticEnabled true if domestic stream has ever been enabled
    * @return This builder for method chaining
    */
-  public SalesStreamDistributionBuilder setManufactureEnabled(boolean manufactureEnabled) {
-    this.manufactureEnabled = Optional.of(manufactureEnabled);
+  public SalesStreamDistributionBuilder setDomesticEnabled(boolean domesticEnabled) {
+    this.domesticEnabled = Optional.of(domesticEnabled);
     return this;
   }
 
@@ -127,8 +127,8 @@ public class SalesStreamDistributionBuilder {
    *
    * <p>Distribution logic:
    * <ul>
-   * <li>If exports are excluded: 100% split between import and manufacture only</li>
-   * <li>If exports are included: proportional split between import, manufacture, and export</li>
+   * <li>If exports are excluded: 100% split between import and domestic only</li>
+   * <li>If exports are included: proportional split between import, domestic, and export</li>
    * <li>Proportional split based on current values if streams have sales</li>
    * <li>Equal split among enabled streams if no current sales</li>
    * </ul>
@@ -138,29 +138,29 @@ public class SalesStreamDistributionBuilder {
    */
   public SalesStreamDistribution build() {
     checkReadyToConstruct();
-    
-    BigDecimal manufactureSalesKg = manufactureSales.get().getValue();
+
+    BigDecimal domesticSalesKg = domesticSales.get().getValue();
     BigDecimal importSalesKg = importSales.get().getValue();
     BigDecimal exportSalesKg = exportSales.get().getValue();
-    
+
     boolean includeExportsFlag = includeExports.get();
-    
+
     if (!includeExportsFlag) {
-      // Legacy behavior: only import and manufacture, export is always 0%
-      BigDecimal totalSalesKg = manufactureSalesKg.add(importSalesKg);
-      
+      // Legacy behavior: only import and domestic, export is always 0%
+      BigDecimal totalSalesKg = domesticSalesKg.add(importSalesKg);
+
       if (totalSalesKg.compareTo(BigDecimal.ZERO) > 0) {
-        BigDecimal percentManufacture = manufactureSalesKg.divide(totalSalesKg, MathContext.DECIMAL128);
+        BigDecimal percentDomestic = domesticSalesKg.divide(totalSalesKg, MathContext.DECIMAL128);
         BigDecimal percentImport = importSalesKg.divide(totalSalesKg, MathContext.DECIMAL128);
-        return new SalesStreamDistribution(percentManufacture, percentImport, BigDecimal.ZERO);
+        return new SalesStreamDistribution(percentDomestic, percentImport, BigDecimal.ZERO);
       }
-      
+
       // When both are zero, use enabled status to determine allocation
-      if (manufactureEnabled.get() && !importEnabled.get()) {
+      if (domesticEnabled.get() && !importEnabled.get()) {
         return new SalesStreamDistribution(BigDecimal.ONE, BigDecimal.ZERO, BigDecimal.ZERO);
-      } else if (importEnabled.get() && !manufactureEnabled.get()) {
+      } else if (importEnabled.get() && !domesticEnabled.get()) {
         return new SalesStreamDistribution(BigDecimal.ZERO, BigDecimal.ONE, BigDecimal.ZERO);
-      } else if (manufactureEnabled.get() && importEnabled.get()) {
+      } else if (domesticEnabled.get() && importEnabled.get()) {
         // Both enabled - use 50/50 split
         return new SalesStreamDistribution(
             new BigDecimal("0.5"),
@@ -171,23 +171,23 @@ public class SalesStreamDistributionBuilder {
         // Both disabled - this is an error condition
         throw new IllegalStateException(
             "Cannot calculate sales distribution: no streams have been enabled. "
-            + "Use 'set import' or 'set manufacture' statements to enable streams before operations like 'recharge' that require sales recalculation."
+            + "Use 'set import' or 'set domestic' statements to enable streams before operations like 'recharge' that require sales recalculation."
         );
       }
     } else {
       // Include exports in distribution
-      BigDecimal totalSalesKg = manufactureSalesKg.add(importSalesKg).add(exportSalesKg);
-      
+      BigDecimal totalSalesKg = domesticSalesKg.add(importSalesKg).add(exportSalesKg);
+
       if (totalSalesKg.compareTo(BigDecimal.ZERO) > 0) {
-        BigDecimal percentManufacture = manufactureSalesKg.divide(totalSalesKg, MathContext.DECIMAL128);
+        BigDecimal percentDomestic = domesticSalesKg.divide(totalSalesKg, MathContext.DECIMAL128);
         BigDecimal percentImport = importSalesKg.divide(totalSalesKg, MathContext.DECIMAL128);
         BigDecimal percentExport = exportSalesKg.divide(totalSalesKg, MathContext.DECIMAL128);
-        return new SalesStreamDistribution(percentManufacture, percentImport, percentExport);
+        return new SalesStreamDistribution(percentDomestic, percentImport, percentExport);
       }
-      
+
       // When all are zero, use enabled status to determine allocation
       int enabledCount = 0;
-      if (manufactureEnabled.get()) {
+      if (domesticEnabled.get()) {
         enabledCount++;
       }
       if (importEnabled.get()) {
@@ -196,17 +196,17 @@ public class SalesStreamDistributionBuilder {
       if (exportEnabled.get()) {
         enabledCount++;
       }
-      
+
       if (enabledCount == 0) {
         // None enabled - this is an error condition
         throw new IllegalStateException(
             "Cannot calculate sales distribution: no streams have been enabled. "
-            + "Use 'set import', 'set manufacture', or 'set export' statements to enable streams before operations like 'recharge' that require sales recalculation."
+            + "Use 'set import', 'set domestic', or 'set export' statements to enable streams before operations like 'recharge' that require sales recalculation."
         );
       } else {
         BigDecimal equalShare = BigDecimal.ONE.divide(BigDecimal.valueOf(enabledCount), MathContext.DECIMAL128);
         return new SalesStreamDistribution(
-            manufactureEnabled.get() ? equalShare : BigDecimal.ZERO,
+            domesticEnabled.get() ? equalShare : BigDecimal.ZERO,
             importEnabled.get() ? equalShare : BigDecimal.ZERO,
             exportEnabled.get() ? equalShare : BigDecimal.ZERO
         );
@@ -220,10 +220,10 @@ public class SalesStreamDistributionBuilder {
    * @throws IllegalStateException if any required field is missing
    */
   private void checkReadyToConstruct() {
-    checkValid(manufactureSales, "manufactureSales");
+    checkValid(domesticSales, "domesticSales");
     checkValid(importSales, "importSales");
     checkValid(exportSales, "exportSales");
-    checkValid(manufactureEnabled, "manufactureEnabled");
+    checkValid(domesticEnabled, "domesticEnabled");
     checkValid(importEnabled, "importEnabled");
     checkValid(exportEnabled, "exportEnabled");
     checkValid(includeExports, "includeExports");

@@ -975,7 +975,7 @@ class SubstanceBuilder {
     self._changes = [];
     self._equalsGhg = null;
     self._equalsKwh = null;
-    self._recharge = null;
+    self._recharges = [];
     self._recycles = [];
     self._replaces = [];
     self._retire = null;
@@ -998,7 +998,8 @@ class SubstanceBuilder {
       self._limits,
       self._recycles,
       self._replaces,
-      [self._equalsGhg, self._equalsKwh, self._recharge, self._retire],
+      [self._equalsGhg, self._equalsKwh, self._retire],
+      self._recharges,
       self._changes,
       self._setVals,
     ].flat();
@@ -1020,7 +1021,7 @@ class SubstanceBuilder {
       self._changes,
       self._equalsGhg,
       self._equalsKwh,
-      self._recharge,
+      self._recharges,
       self._recycles,
       self._replaces,
       self._retire,
@@ -1059,7 +1060,7 @@ class SubstanceBuilder {
       "retire": (x) => self.setRetire(x),
       "setVal": (x) => self.addSetVal(x),
       "initial charge": (x) => self.addInitialCharge(x),
-      "recharge": (x) => self.setRecharge(x),
+      "recharge": (x) => self.addRecharge(x),
       "equals": (x) => {
         const units = x.getValue().getUnits();
         if (units.includes("kwh")) {
@@ -1145,13 +1146,13 @@ class SubstanceBuilder {
   }
 
   /**
-   * Set the recharge command.
+   * Add a recharge command.
    *
-   * @param {Command} newVal - Recharge command to set.
-   * @returns {Command|IncompatibleCommand} The command or incompatibility marker. */
-  setRecharge(newVal) {
+   * @param {Command} newVal - Recharge command to add.
+   */
+  addRecharge(newVal) {
     const self = this;
-    self._recharge = self._checkDuplicate(self._recharge, newVal);
+    self._recharges.push(newVal);
   }
 
   /**
@@ -1245,7 +1246,7 @@ class Substance {
    * @param {LimitCommand[]} limits - Limit commands.
    * @param {Command[]} changes - Change commands.
    * @param {Command} equals - Equals command.
-   * @param {Command} recharge - Recharge command.
+   * @param {Command[]} recharges - Recharge commands.
    * @param {Command[]} recycles - Recycle commands.
    * @param {ReplaceCommand[]} replaces - Replace commands.
    * @param {Command} retire - Retire command.
@@ -1261,7 +1262,7 @@ class Substance {
     changes,
     equalsGhg,
     equalsKwh,
-    recharge,
+    recharges,
     recycles,
     replaces,
     retire,
@@ -1277,7 +1278,7 @@ class Substance {
     self._changes = changes;
     self._equalsGhg = equalsGhg;
     self._equalsKwh = equalsKwh;
-    self._recharge = recharge;
+    self._recharges = recharges;
     self._recycles = recycles;
     self._replaces = replaces;
     self._retire = retire;
@@ -1360,13 +1361,13 @@ class Substance {
   }
 
   /**
-   * Get the recharge command for this substance.
+   * Get all recharge commands for this substance.
    *
-   * @returns {Command|null} The recharge command or null if not set.
+   * @returns {Command[]} Array of recharge commands.
    */
-  getRecharge() {
+  getRecharges() {
     const self = this;
-    return self._recharge;
+    return self._recharges;
   }
 
   /**
@@ -1479,7 +1480,7 @@ class Substance {
     addAllIfGiven(self._getChangesCode());
     addIfGiven(self._getRetireCode());
     addAllIfGiven(self._getLimitCode());
-    addIfGiven(self._getRechargeCode());
+    addAllIfGiven(self._getRechargeCode());
     addAllIfGiven(self._getRecycleCode());
     addAllIfGiven(self._getReplaceCode());
 
@@ -1671,28 +1672,35 @@ class Substance {
   }
 
   /**
-   * Generate code for the recharge command.
+   * Generate code for recharge commands.
    *
-   * @returns {string|null} Code string or null if no recharge command.
+   * @returns {string[]|null} Array of code strings or null if no recharge commands.
    * @private
    */
   _getRechargeCode() {
     const self = this;
-    if (self._recharge === null) {
+    if (self._recharges.length == 0) {
       return null;
     }
 
-    const pieces = [
-      "recharge",
-      self._recharge.getTarget().getValue(),
-      self._recharge.getTarget().getUnits(),
-      "with",
-      self._recharge.getValue().getValue(),
-      self._recharge.getValue().getUnits(),
-    ];
-    self._addDuration(pieces, self._recharge);
-
-    return self._finalizeStatement(pieces);
+    return self._recharges.map((recharge) => {
+      if (recharge.buildCommand) {
+        // New RechargeCommand objects with buildCommand method
+        return self._finalizeStatement([recharge.buildCommand()]);
+      } else {
+        // Legacy Command objects
+        const pieces = [
+          "recharge",
+          recharge.getTarget().getValue(),
+          recharge.getTarget().getUnits(),
+          "with",
+          recharge.getValue().getValue(),
+          recharge.getValue().getUnits(),
+        ];
+        self._addDuration(pieces, recharge);
+        return self._finalizeStatement(pieces);
+      }
+    });
   }
 
   /**
@@ -1721,16 +1729,22 @@ class Substance {
       const displacing = recycle.getDisplacing ? recycle.getDisplacing() : null;
       if (displacing !== null && displacing !== undefined && displacing !== "") {
         pieces.push("displacing");
-        // Stream names (manufacture, import, sales, etc.) don't need quotes
+        // Stream names (domestic, import, sales, etc.) don't need quotes
         // Substance names need quotes
         const streamNames = [
-          "manufacture", "import", "sales", "equipment", "priorEquipment", "export",
+          "domestic", "import", "sales", "equipment", "priorEquipment", "export",
         ];
         if (streamNames.includes(displacing)) {
           pieces.push(displacing);
         } else {
           pieces.push('"' + displacing + '"');
         }
+      }
+
+      const stage = recycle.getStage ? recycle.getStage() : "recharge";
+      if (stage !== "recharge") {
+        pieces.push("at");
+        pieces.push(stage);
       }
 
       self._addDuration(pieces, recycle);
@@ -1869,7 +1883,7 @@ class Command {
   /**
    * Get the target of this command.
    *
-   * @returns {string} The target name (e.g. "manufacture", "import", etc).
+   * @returns {string} The target name (e.g. "domestic", "import", etc).
    */
   getTarget() {
     const self = this;
@@ -1942,7 +1956,7 @@ class LimitCommand {
   /**
    * Get the target of this limit command.
    *
-   * @returns {string} The target name (e.g. "manufacture", "import", etc).
+   * @returns {string} The target name (e.g. "domestic", "import", etc).
    */
   getTarget() {
     const self = this;
@@ -1991,6 +2005,168 @@ class LimitCommand {
 }
 
 /**
+ * Recharge command with duration capability.
+ */
+class RechargeCommand {
+  /**
+   * Create a new RechargeCommand.
+   *
+   * @param {string} population - Population to recharge (e.g. "5").
+   * @param {string} populationUnits - Population units (e.g. "%", "% each year", "units").
+   * @param {string} volume - Volume per unit (e.g. "0.85").
+   * @param {string} volumeUnits - Volume units (e.g. "kg / unit", "mt / unit").
+   * @param {string|null} durationType - Duration type ("year", "years-range", etc.) or null.
+   * @param {string|null} yearStart - Start year for duration or null.
+   * @param {string|null} yearEnd - End year for duration or null.
+   */
+  constructor(population, populationUnits, volume, volumeUnits, durationType, yearStart, yearEnd) {
+    const self = this;
+    self._population = population;
+    self._populationUnits = populationUnits;
+    self._volume = volume;
+    self._volumeUnits = volumeUnits;
+    self._durationType = durationType;
+    self._yearStart = yearStart;
+    self._yearEnd = yearEnd;
+  }
+
+  /**
+   * Get the population to recharge.
+   *
+   * @returns {string} The population value.
+   */
+  getPopulation() {
+    const self = this;
+    return self._population;
+  }
+
+  /**
+   * Get the population units.
+   *
+   * @returns {string} The population units.
+   */
+  getPopulationUnits() {
+    const self = this;
+    return self._populationUnits;
+  }
+
+  /**
+   * Get the volume per unit.
+   *
+   * @returns {string} The volume value.
+   */
+  getVolume() {
+    const self = this;
+    return self._volume;
+  }
+
+  /**
+   * Get the volume units.
+   *
+   * @returns {string} The volume units.
+   */
+  getVolumeUnits() {
+    const self = this;
+    return self._volumeUnits;
+  }
+
+  /**
+   * Get the duration type.
+   *
+   * @returns {string|null} The duration type or null for all years.
+   */
+  getDurationType() {
+    const self = this;
+    return self._durationType;
+  }
+
+  /**
+   * Get the start year.
+   *
+   * @returns {string|null} The start year or null.
+   */
+  getYearStart() {
+    const self = this;
+    return self._yearStart;
+  }
+
+  /**
+   * Get the end year.
+   *
+   * @returns {string|null} The end year or null.
+   */
+  getYearEnd() {
+    const self = this;
+    return self._yearEnd;
+  }
+
+  /**
+   * Get the duration for which this recharge command applies.
+   *
+   * @returns {YearMatcher} The duration specification, or null for all years.
+   */
+  getDuration() {
+    const self = this;
+    if (self._durationType === null) {
+      return null;
+    }
+    return new YearMatcher(self._yearStart, self._yearEnd);
+  }
+
+  /**
+   * Build the command string for this recharge.
+   *
+   * @param {string} substance - The substance name (unused but kept for consistency).
+   * @returns {string} The generated recharge command.
+   */
+  buildCommand(substance) {
+    const self = this;
+    const baseCommand = `recharge ${self._population} ${self._populationUnits}` +
+      ` with ${self._volume} ${self._volumeUnits}`;
+    let command = baseCommand;
+
+    if (self._durationType) {
+      switch (self._durationType) {
+      case "during year":
+        command += ` during year ${self._yearStart}`;
+        break;
+      case "during years":
+        command += ` during years ${self._yearStart} to ${self._yearEnd}`;
+        break;
+      case "years-onwards":
+        command += ` during years ${self._yearStart} to onwards`;
+        break;
+      case "years-beginning":
+        command += ` during years beginning to ${self._yearEnd}`;
+        break;
+      }
+    }
+
+    return command;
+  }
+
+  /**
+   * Get the type name of this command.
+   *
+   * @returns {string} The command type name.
+   */
+  getTypeName() {
+    const self = this;
+    return "recharge";
+  }
+
+  /**
+   * Check if this recharge command is compatible with UI editing.
+   *
+   * @returns {boolean} Always returns true as recharge commands are UI-compatible.
+   */
+  getIsCompatible() {
+    const self = this;
+    return true;
+  }
+}
+
+/**
  * Recycle command with displacement capability.
  */
 class RecycleCommand {
@@ -2001,13 +2177,15 @@ class RecycleCommand {
    * @param {EngineNumber} value - Reuse amount and units.
    * @param {YearMatcher} duration - Duration of recovery.
    * @param {string} displacing - Stream or substance being displaced.
+   * @param {string} stage - Recycling stage ("eol" or "recharge").
    */
-  constructor(target, value, duration, displacing) {
+  constructor(target, value, duration, displacing, stage) {
     const self = this;
     self._target = target;
     self._value = value;
     self._duration = duration;
     self._displacing = displacing;
+    self._stage = stage;
   }
 
   /**
@@ -2058,6 +2236,16 @@ class RecycleCommand {
   getDisplacing() {
     const self = this;
     return self._displacing;
+  }
+
+  /**
+   * Get the recycling stage for this recycle command.
+   *
+   * @returns {string} The recycling stage ("eol" or "recharge").
+   */
+  getStage() {
+    const self = this;
+    return self._stage;
   }
 
   /**
@@ -2207,7 +2395,8 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
     const raw = ctx.getText();
     const signMultiplier = raw.includes("-") ? -1 : 1;
     const bodyRawText = ctx.getChild(ctx.getChildCount() - 1).getText();
-    const bodyParsed = signMultiplier * parseFloat(bodyRawText);
+    const cleanedText = bodyRawText.replace(/,/g, "");
+    const bodyParsed = signMultiplier * parseFloat(cleanedText);
 
     return bodyParsed;
   }
@@ -2237,11 +2426,8 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
       const numerator = ctx.getChild(0).getText();
       const denominator = ctx.getChild(2).getText();
 
-      if (denominator.startsWith("year")) {
-        return numerator + " each " + denominator;
-      } else {
-        return numerator + " / " + denominator;
-      }
+      // Always use "/" format for consistency
+      return numerator + " / " + denominator;
     }
   }
 
@@ -2836,9 +3022,9 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
    */
   visitRecoverAllYears(ctx) {
     const self = this;
-    const volumeFuture = (ctx) => ctx.volume.accept(self);
-    const yieldFuture = (ctx) => ctx.yieldVal.accept(self);
-    return self._buildOperation(ctx, "recycle", null, volumeFuture, yieldFuture);
+    const volume = ctx.volume.accept(self);
+    const yieldVal = ctx.yieldVal.accept(self);
+    return new RecycleCommand(volume, yieldVal, null, null, "recharge");
   }
 
   /**
@@ -2849,10 +3035,31 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
    */
   visitRecoverDuration(ctx) {
     const self = this;
-    const volumeFuture = (ctx) => ctx.volume.accept(self);
-    const yieldFuture = (ctx) => ctx.yieldVal.accept(self);
+    const volume = ctx.volume.accept(self);
+    const yieldVal = ctx.yieldVal.accept(self);
     const duration = ctx.duration.accept(self);
-    return self._buildOperation(ctx, "recycle", duration, volumeFuture, yieldFuture);
+    return new RecycleCommand(volume, yieldVal, duration, null, "recharge");
+  }
+
+  /**
+   * Helper method to find and clean displacement target from context.
+   *
+   * @param {Object} ctx - The parse tree node context.
+   * @returns {string|null} The cleaned displacement target.
+   */
+  _findDisplacementTarget(ctx) {
+    for (let i = 0; i < ctx.getChildCount(); i++) {
+      const child = ctx.getChild(i);
+      if (child && child.getText() === "displacing" && i + 1 < ctx.getChildCount()) {
+        const targetChild = ctx.getChild(i + 1);
+        if (targetChild) {
+          const displacementTarget = targetChild.getText();
+          const isQuoted = displacementTarget && displacementTarget.startsWith('"');
+          return isQuoted ? displacementTarget.slice(1, -1) : displacementTarget;
+        }
+      }
+    }
+    return null;
   }
 
   /**
@@ -2872,24 +3079,8 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
 
     const volume = ctx.volume.accept(self);
     const yieldVal = ctx.yieldVal.accept(self);
-
-    // Find the displacement target - it's after "displacing"
-    // Grammar: RECOVER_ volume WITH_ yieldVal REUSE_ DISPLACING_ (string | stream)
-    let displacementTarget = null;
-    for (let i = 0; i < ctx.getChildCount(); i++) {
-      const child = ctx.getChild(i);
-      if (child && child.getText() === "displacing" && i + 1 < ctx.getChildCount()) {
-        const targetChild = ctx.getChild(i + 1);
-        if (targetChild) {
-          displacementTarget = targetChild.getText();
-        }
-        break;
-      }
-    }
-
-    const cleanTarget = displacementTarget && displacementTarget.startsWith('"') ?
-      displacementTarget.slice(1, -1) : displacementTarget;
-    return new RecycleCommand(volume, yieldVal, null, cleanTarget);
+    const cleanTarget = self._findDisplacementTarget(ctx);
+    return new RecycleCommand(volume, yieldVal, null, cleanTarget, "recharge");
   }
 
   /**
@@ -2902,23 +3093,69 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
     const self = this;
     const volume = ctx.volume.accept(self);
     const yieldVal = ctx.yieldVal.accept(self);
-
-    // Find the displacement target - it's after "displacing"
-    // Grammar: RECOVER_ volume WITH_ yieldVal REUSE_ DISPLACING_ (string | stream) duration
-    let displacementTarget = null;
-    for (let i = 0; i < ctx.getChildCount(); i++) {
-      const child = ctx.getChild(i);
-      if (child.getText() === "displacing" && i + 1 < ctx.getChildCount()) {
-        const targetChild = ctx.getChild(i + 1);
-        displacementTarget = targetChild.getText();
-        break;
-      }
-    }
-
-    const cleanTarget = displacementTarget && displacementTarget.startsWith('"') ?
-      displacementTarget.slice(1, -1) : displacementTarget;
+    const cleanTarget = self._findDisplacementTarget(ctx);
     const duration = ctx.duration.accept(self);
-    return new RecycleCommand(volume, yieldVal, duration, cleanTarget);
+    return new RecycleCommand(volume, yieldVal, duration, cleanTarget, "recharge");
+  }
+
+  /**
+   * Visit a recover command with stage and all years duration node.
+   *
+   * @param {Object} ctx - The parse tree node context.
+   * @returns {RecycleCommand} New recycle command with stage.
+   */
+  visitRecoverStageAllYears(ctx) {
+    const self = this;
+    const volume = ctx.volume.accept(self);
+    const yieldVal = ctx.yieldVal.accept(self);
+    const stage = ctx.stage.text;
+    return new RecycleCommand(volume, yieldVal, null, null, stage);
+  }
+
+  /**
+   * Visit a recover command with stage and duration node.
+   *
+   * @param {Object} ctx - The parse tree node context.
+   * @returns {RecycleCommand} New recycle command with stage and duration.
+   */
+  visitRecoverStageDuration(ctx) {
+    const self = this;
+    const volume = ctx.volume.accept(self);
+    const yieldVal = ctx.yieldVal.accept(self);
+    const stage = ctx.stage.text;
+    const duration = ctx.duration.accept(self);
+    return new RecycleCommand(volume, yieldVal, duration, null, stage);
+  }
+
+  /**
+   * Visit a recover command with stage, displacement and all years duration node.
+   *
+   * @param {Object} ctx - The parse tree node context.
+   * @returns {RecycleCommand} New recycle command with stage and displacement.
+   */
+  visitRecoverStageDisplacementAllYears(ctx) {
+    const self = this;
+    const volume = ctx.volume.accept(self);
+    const yieldVal = ctx.yieldVal.accept(self);
+    const stage = ctx.stage.text;
+    const cleanTarget = self._findDisplacementTarget(ctx);
+    return new RecycleCommand(volume, yieldVal, null, cleanTarget, stage);
+  }
+
+  /**
+   * Visit a recover command with stage, displacement and duration node.
+   *
+   * @param {Object} ctx - The parse tree node context.
+   * @returns {RecycleCommand} New recycle command with stage, displacement and duration.
+   */
+  visitRecoverStageDisplacementDuration(ctx) {
+    const self = this;
+    const volume = ctx.volume.accept(self);
+    const yieldVal = ctx.yieldVal.accept(self);
+    const stage = ctx.stage.text;
+    const cleanTarget = self._findDisplacementTarget(ctx);
+    const duration = ctx.duration.accept(self);
+    return new RecycleCommand(volume, yieldVal, duration, cleanTarget, stage);
   }
 
   /**
@@ -3422,6 +3659,7 @@ export {
   DefinitionalStanza,
   LimitCommand,
   Program,
+  RechargeCommand,
   RecycleCommand,
   ReplaceCommand,
   SimulationScenario,

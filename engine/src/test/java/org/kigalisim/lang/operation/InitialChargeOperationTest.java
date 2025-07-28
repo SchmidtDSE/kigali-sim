@@ -52,7 +52,7 @@ public class InitialChargeOperationTest {
   public void testInitializesNoDuring() {
     EngineNumber number = new EngineNumber(BigDecimal.valueOf(5), "kg / unit");
     Operation valueOperation = new PreCalculatedOperation(number);
-    InitialChargeOperation operation = new InitialChargeOperation("manufacture", valueOperation);
+    InitialChargeOperation operation = new InitialChargeOperation("domestic", valueOperation);
     assertNotNull(operation, "InitialChargeOperation should be constructable without during");
   }
 
@@ -64,7 +64,7 @@ public class InitialChargeOperationTest {
     EngineNumber number = new EngineNumber(BigDecimal.valueOf(5), "kg / unit");
     Operation valueOperation = new PreCalculatedOperation(number);
     ParsedDuring during = new ParsedDuring(Optional.empty(), Optional.empty());
-    InitialChargeOperation operation = new InitialChargeOperation("manufacture", valueOperation, during);
+    InitialChargeOperation operation = new InitialChargeOperation("domestic", valueOperation, during);
     assertNotNull(operation, "InitialChargeOperation should be constructable with during");
   }
 
@@ -75,12 +75,12 @@ public class InitialChargeOperationTest {
   public void testExecuteNoDuring() {
     EngineNumber number = new EngineNumber(BigDecimal.valueOf(5), "kg / unit");
     Operation valueOperation = new PreCalculatedOperation(number);
-    InitialChargeOperation operation = new InitialChargeOperation("manufacture", valueOperation);
+    InitialChargeOperation operation = new InitialChargeOperation("domestic", valueOperation);
 
     operation.execute(machine);
 
     // Verify the initial charge was set in the engine
-    EngineNumber result = engine.getInitialCharge("manufacture");
+    EngineNumber result = engine.getInitialCharge("domestic");
     assertEquals(BigDecimal.valueOf(5), result.getValue(), "Initial charge should be set correctly");
     assertEquals("kg / unit", result.getUnits(), "Initial charge units should be set correctly");
   }
@@ -99,12 +99,12 @@ public class InitialChargeOperationTest {
     TimePointFuture start = new CalculatedTimePointFuture(yearOperation);
     ParsedDuring during = new ParsedDuring(Optional.of(start), Optional.empty());
 
-    InitialChargeOperation operation = new InitialChargeOperation("manufacture", valueOperation, during);
+    InitialChargeOperation operation = new InitialChargeOperation("domestic", valueOperation, during);
 
     operation.execute(machine);
 
     // Verify the initial charge was set in the engine
-    EngineNumber result = engine.getInitialCharge("manufacture");
+    EngineNumber result = engine.getInitialCharge("domestic");
     assertEquals(BigDecimal.valueOf(5), result.getValue(), "Initial charge should be set correctly");
     assertEquals("kg / unit", result.getUnits(), "Initial charge units should be set correctly");
   }
@@ -117,7 +117,7 @@ public class InitialChargeOperationTest {
     // Setup the original value
     machine.getEngine().setInitialCharge(
         new EngineNumber(BigDecimal.ZERO, "kg / unit"),
-        "manufacture",
+        "domestic",
         new YearMatcher(Optional.empty(), Optional.empty())
     );
 
@@ -131,12 +131,12 @@ public class InitialChargeOperationTest {
     TimePointFuture start = new CalculatedTimePointFuture(yearOperation);
     ParsedDuring during = new ParsedDuring(Optional.of(start), Optional.empty());
 
-    InitialChargeOperation operation = new InitialChargeOperation("manufacture", valueOperation, during);
+    InitialChargeOperation operation = new InitialChargeOperation("domestic", valueOperation, during);
 
     operation.execute(machine);
 
     // Verify the initial charge was not set in the engine (should be 0)
-    EngineNumber result = engine.getInitialCharge("manufacture");
+    EngineNumber result = engine.getInitialCharge("domestic");
     assertEquals(BigDecimal.ZERO, result.getValue(),
         "Initial charge should not be set when during doesn't apply");
   }
@@ -150,12 +150,12 @@ public class InitialChargeOperationTest {
     Operation right = new PreCalculatedOperation(new EngineNumber(BigDecimal.valueOf(2), "kg / unit"));
     Operation valueOperation = new AdditionOperation(left, right); // 3 + 2 = 5
 
-    InitialChargeOperation operation = new InitialChargeOperation("manufacture", valueOperation);
+    InitialChargeOperation operation = new InitialChargeOperation("domestic", valueOperation);
 
     operation.execute(machine);
 
     // Verify the initial charge was set in the engine
-    EngineNumber result = engine.getInitialCharge("manufacture");
+    EngineNumber result = engine.getInitialCharge("domestic");
     assertEquals(BigDecimal.valueOf(5), result.getValue(),
         "Initial charge should be calculated and set correctly");
     assertEquals("kg / unit", result.getUnits(), "Initial charge units should be set correctly");

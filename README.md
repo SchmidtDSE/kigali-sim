@@ -148,18 +148,20 @@ python -m http.server
 ## Open Source
 We thank the following Open Source libraries:
 
+- [ACE Editor](https://ace.c9.io/) for the code editing interface under [BSD-3](https://github.com/ajaxorg/ace/blob/master/LICENSE).
 - [ANTLR4](https://www.antlr.org/) for parsing the QubecTalk domain-specific language under [BSD-3](https://www.antlr.org/license.html).
 - [Apache Commons CSV](https://commons.apache.org/proper/commons-csv/) for CSV file processing under [Apache-2.0](https://github.com/apache/commons-csv/blob/master/LICENSE.txt).
-- [D3](https://d3js.org/) for data visualization under [ISC](https://github.com/d3/d3/blob/main/LICENSE).
 - [Chart.js](https://www.chartjs.org/) for rendering some charts and graphs under [MIT](https://github.com/chartjs/Chart.js/blob/master/LICENSE.md).
-- [ACE Editor](https://ace.c9.io/) for the code editing interface under [BSD-3](https://github.com/ajaxorg/ace/blob/master/LICENSE).
-- [Prism.js](https://prismjs.com/) for syntax highlighting under [MIT](https://github.com/PrismJS/prism/blob/v2/LICENSE).
-- [QUnit](https://qunitjs.com/) for unit testing under [MIT](https://github.com/qunitjs/qunit/blob/main/LICENSE.txt).
-- [Webpack](https://webpack.js.org/) for bundling JavaScript modules under [MIT](https://github.com/webpack/webpack/blob/main/LICENSE).
+- [D3](https://d3js.org/) for data visualization under [ISC](https://github.com/d3/d3/blob/main/LICENSE).
 - [ESLint]((https://eslint.org/)) for code style enforcement under [MIT](https://github.com/eslint/eslint/blob/main/LICENSE).
+- [Popper](https://popper.js.org/) under the [MIT License](https://github.com/floating-ui/floating-ui/blob/master/LICENSE).
+- [Prism.js](https://prismjs.com/) for syntax highlighting under [MIT](https://github.com/PrismJS/prism/blob/v2/LICENSE).
 - [Public Sans](https://public-sans.digital.gov/) font under [OFL-1.1](https://github.com/uswds/public-sans/blob/master/LICENSE.md).
+- [QUnit](https://qunitjs.com/) for unit testing under [MIT](https://github.com/qunitjs/qunit/blob/main/LICENSE.txt).
 - [SVG Spinners](https://github.com/n3r4zzurr0/svg-spinners?tab=readme-ov-file) under [MIT](https://github.com/n3r4zzurr0/svg-spinners?tab=readme-ov-file)
 - [Tabby](https://github.com/cferdinandi/tabby) for tab interface management under [MIT](https://github.com/cferdinandi/tabby/blob/master/LICENSE.md).
+- [Tippy](https://atomiks.github.io/tippyjs/) under the [MIT License](https://github.com/atomiks/tippyjs/blob/master/LICENSE).
+- [Webpack](https://webpack.js.org/) for bundling JavaScript modules under [MIT](https://github.com/webpack/webpack/blob/main/LICENSE).
 - [Global Plastics AI Policy Tool](https://global-plastics-tool.org/) under [BSD-3-Clause](https://github.com/SchmidtDSE/plastics-prototype/blob/main/LICENSE.md).
 - [Josh](https://joshsim.org/) under [BSD-3-Clause](https://github.com/SchmidtDSE/josh/blob/main/LICENSE.md).
 

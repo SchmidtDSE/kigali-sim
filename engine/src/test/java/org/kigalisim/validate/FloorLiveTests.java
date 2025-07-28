@@ -46,10 +46,10 @@ public class FloorLiveTests {
     assertNotNull(result, "Should have result for test/test in year 1");
 
     // Since original value is 10 kg and floor should be 102 kg, should increase to 102 kg
-    assertEquals(102.0, result.getManufacture().getValue().doubleValue(), 0.0001,
-        "Manufacture should be 102 kg");
-    assertEquals("kg", result.getManufacture().getUnits(),
-        "Manufacture units should be kg");
+    assertEquals(102.0, result.getDomestic().getValue().doubleValue(), 0.0001,
+        "Domestic should be 102 kg");
+    assertEquals("kg", result.getDomestic().getUnits(),
+        "Domestic units should be kg");
   }
 
   /**
@@ -75,10 +75,10 @@ public class FloorLiveTests {
     assertNotNull(result, "Should have result for test/test in year 1");
 
     // Floor at 50 kg should increase from 10 kg to 50 kg
-    assertEquals(50.0, result.getManufacture().getValue().doubleValue(), 0.0001,
-        "Manufacture should be 50 kg");
-    assertEquals("kg", result.getManufacture().getUnits(),
-        "Manufacture units should be kg");
+    assertEquals(50.0, result.getDomestic().getValue().doubleValue(), 0.0001,
+        "Domestic should be 50 kg");
+    assertEquals("kg", result.getDomestic().getUnits(),
+        "Domestic units should be kg");
   }
 
   /**
@@ -103,20 +103,25 @@ public class FloorLiveTests {
     EngineResult resultA = LiveTestsUtil.getResult(resultsList.stream(), 1, "test", "sub_a");
     assertNotNull(resultA, "Should have result for test/sub_a in year 1");
 
-    // Floor at 10 units (10 units * 10 kg/unit = 100 kg) plus recharge (20 units * 10 kg/unit * 0.1 = 20 kg)
-    assertEquals(120.0, resultA.getManufacture().getValue().doubleValue(), 0.0001,
-        "Manufacture for sub_a should be 120 kg");
-    assertEquals("kg", resultA.getManufacture().getUnits(),
-        "Manufacture units for sub_a should be kg");
+    // Floor at 10 units with proportional recharge distribution:
+    // Base amount: 10 units * 10 kg/unit = 100 kg
+    // Total recharge: 20 units * 10% * 10 kg/unit = 20 kg
+    // Sales distribution: domestic=10kg (66.67%), import=5kg (33.33%)
+    // Domestic recharge: 20 kg * 66.67% = 13.33 kg
+    // Total domestic: 100 kg + 13.33 kg = 113.33 kg
+    assertEquals(113.33333333333333, resultA.getDomestic().getValue().doubleValue(), 0.0001,
+        "Domestic for sub_a should be 113.33 kg (100 + 13.33 proportional recharge)");
+    assertEquals("kg", resultA.getDomestic().getUnits(),
+        "Domestic units for sub_a should be kg");
 
     // Check year 1 values for sub_b (displacement target)
     EngineResult resultB = LiveTestsUtil.getResult(resultsList.stream(), 1, "test", "sub_b");
     assertNotNull(resultB, "Should have result for test/sub_b in year 1");
 
     // The actual value from the test is 320 kg
-    assertEquals(0., resultB.getManufacture().getValue().doubleValue(), 0.0001,
-        "Manufacture for sub_b should be zero");
-    assertEquals("kg", resultB.getManufacture().getUnits(),
-        "Manufacture units for sub_b should be kg");
+    assertEquals(0., resultB.getDomestic().getValue().doubleValue(), 0.0001,
+        "Domestic for sub_b should be zero");
+    assertEquals("kg", resultB.getDomestic().getUnits(),
+        "Domestic units for sub_b should be kg");
   }
 }

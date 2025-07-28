@@ -7,6 +7,7 @@ import {
   DefinitionalStanza,
   LimitCommand,
   Program,
+  RechargeCommand,
   ReplaceCommand,
   SimulationScenario,
   SimulationStanza,
@@ -29,7 +30,7 @@ function createWithCommand(name, isModification, command) {
 }
 
 function buildTestApplication(isMod) {
-  const command = new Command("setVal", "manufacture", new EngineNumber(5, "kg / unit"), null);
+  const command = new Command("setVal", "domestic", new EngineNumber(5, "kg / unit"), null);
   const substance = createWithCommand("sub", isMod, command);
   const application = new Application("app", [substance], isMod, true);
   return application;
@@ -61,33 +62,49 @@ function buildUiTranslatorReverseTests() {
     QUnit.test("initial charges substances", function (assert) {
       const command = new Command(
         "initial charge",
-        "manufacture",
+        "domestic",
         new EngineNumber(5, "kg / unit"),
         null,
       );
       const substance = createWithCommand("test", false, command);
       const code = substance.toCode(0);
       assert.notEqual(code.indexOf('uses substance "test"'), -1);
-      assert.notEqual(code.indexOf("initial charge with 5 kg / unit for manufacture"), -1);
+      assert.notEqual(code.indexOf("initial charge with 5 kg / unit for domestic"), -1);
     });
 
     QUnit.test("caps substances", function (assert) {
-      const command = new LimitCommand("cap", "manufacture", new EngineNumber(5, "mt"), null, null);
+      const command = new LimitCommand("cap", "domestic", new EngineNumber(5, "mt"), null, null);
       const substance = createWithCommand("test", true, command);
       const code = substance.toCode(0);
-      assert.notEqual(code.indexOf("cap manufacture to 5 mt"), -1);
+      assert.notEqual(code.indexOf("cap domestic to 5 mt"), -1);
+    });
+    QUnit.test("recharges substances", function (assert) {
+      const command = new RechargeCommand("10", "%", "0.12", "kg / unit", null, null, null);
+      const substance = createWithCommand("test", false, command);
+      const code = substance.toCode(0);
+      assert.notEqual(code.indexOf("recharge 10 % with 0.12 kg / unit"), -1);
+    });
+    QUnit.test("recharges substances with duration", function (assert) {
+      const yearMatcher = new YearMatcher(2025, 2030);
+      const command = new RechargeCommand(
+        "5", "% / year", "0.85", "kg / unit", "during years", 2025, 2030,
+      );
+      const substance = createWithCommand("test", false, command);
+      const code = substance.toCode(0);
+      const expectedText = "recharge 5 % / year with 0.85 kg / unit during years 2025 to 2030";
+      assert.notEqual(code.indexOf(expectedText), -1);
     });
 
     QUnit.test("changes substances", function (assert) {
       const command = new Command(
         "change",
-        "manufacture",
-        new EngineNumber("+5", "% each year"),
+        "domestic",
+        new EngineNumber("+5", "% / year"),
         null,
       );
       const substance = createWithCommand("test", true, command);
       const code = substance.toCode(0);
-      assert.notEqual(code.indexOf("change manufacture by +5 % each year"), -1);
+      assert.notEqual(code.indexOf("change domestic by +5 % / year"), -1);
     });
 
     QUnit.test("equalss from substances", function (assert) {
@@ -100,13 +117,13 @@ function buildUiTranslatorReverseTests() {
     QUnit.test("recharges substances", function (assert) {
       const command = new Command(
         "recharge",
-        new EngineNumber("10", "% each year"),
+        new EngineNumber("10", "% / year"),
         new EngineNumber("5", "kg / unit"),
         null,
       );
       const substance = createWithCommand("test", false, command);
       const code = substance.toCode(0);
-      assert.notEqual(code.indexOf("recharge 10 % each year with 5 kg / unit"), -1);
+      assert.notEqual(code.indexOf("recharge 10 % / year with 5 kg / unit"), -1);
     });
 
     QUnit.test("recycles substances", function (assert) {
@@ -122,10 +139,10 @@ function buildUiTranslatorReverseTests() {
     });
 
     QUnit.test("replaces substances", function (assert) {
-      const command = new ReplaceCommand(new EngineNumber("10", "%"), "manufacture", "other", null);
+      const command = new ReplaceCommand(new EngineNumber("10", "%"), "domestic", "other", null);
       const substance = createWithCommand("test", true, command);
       const code = substance.toCode(0);
-      assert.notEqual(code.indexOf('replace 10 % of manufacture with "other"'), -1);
+      assert.notEqual(code.indexOf('replace 10 % of domestic with "other"'), -1);
     });
 
     QUnit.test("retires substances", function (assert) {
@@ -136,22 +153,22 @@ function buildUiTranslatorReverseTests() {
     });
 
     QUnit.test("sets values in substances", function (assert) {
-      const command = new Command("setVal", "manufacture", new EngineNumber("10", "mt"), null);
+      const command = new Command("setVal", "domestic", new EngineNumber("10", "mt"), null);
       const substance = createWithCommand("test", true, command);
       const code = substance.toCode(0);
-      assert.notEqual(code.indexOf("set manufacture to 10 mt"), -1);
+      assert.notEqual(code.indexOf("set domestic to 10 mt"), -1);
     });
 
     QUnit.test("supports duration single year", function (assert) {
       const command = new Command(
         "setVal",
-        "manufacture",
+        "domestic",
         new EngineNumber("10", "mt"),
         new YearMatcher(1, 1),
       );
       const substance = createWithCommand("test", true, command);
       const code = substance.toCode(0);
-      assert.notEqual(code.indexOf("set manufacture to 10 mt during year 1"), -1);
+      assert.notEqual(code.indexOf("set domestic to 10 mt during year 1"), -1);
     });
 
     QUnit.test("supports duration multiple years", function (assert) {
@@ -181,14 +198,14 @@ function buildUiTranslatorReverseTests() {
     QUnit.test("supports duration with min year", function (assert) {
       const command = new ReplaceCommand(
         new EngineNumber("10", "%"),
-        "manufacture",
+        "domestic",
         "other",
         new YearMatcher(2, null),
       );
       const substance = createWithCommand("test", true, command);
       const code = substance.toCode(0);
       assert.notEqual(
-        code.indexOf('replace 10 % of manufacture with "other" during years 2 to onwards'),
+        code.indexOf('replace 10 % of domestic with "other" during years 2 to onwards'),
         -1,
       );
     });
@@ -211,13 +228,13 @@ function buildUiTranslatorReverseTests() {
     QUnit.test("supports complex substances", function (assert) {
       const setVal = new Command(
         "setVal",
-        "manufacture",
+        "domestic",
         new EngineNumber(5, "kg / unit"),
         new YearMatcher(1, 1),
       );
       const cap = new LimitCommand(
         "cap",
-        "manufacture",
+        "domestic",
         new EngineNumber(5, "mt"),
         new YearMatcher(3, 4),
         "import",
@@ -225,9 +242,9 @@ function buildUiTranslatorReverseTests() {
       const substance = createWithCommands("test", true, [setVal, cap]);
       const code = substance.toCode(0);
       assert.notEqual(code.indexOf('modify substance "test"'), -1);
-      assert.notEqual(code.indexOf("set manufacture to 5 kg / unit during year 1"), -1);
+      assert.notEqual(code.indexOf("set domestic to 5 kg / unit during year 1"), -1);
       assert.notEqual(
-        code.indexOf('cap manufacture to 5 mt displacing "import" during years 3 to 4'),
+        code.indexOf('cap domestic to 5 mt displacing "import" during years 3 to 4'),
         -1,
       );
     });
@@ -304,7 +321,7 @@ function buildUiTranslatorReverseTests() {
 
     QUnit.test("allows multiple set statements", function (assert) {
       const commands = [
-        new Command("setVal", "manufacture", new EngineNumber("1", "mt"), null),
+        new Command("setVal", "domestic", new EngineNumber("1", "mt"), null),
         new Command("setVal", "import", new EngineNumber("2", "mt"), null),
         new Command("setVal", "sales", new EngineNumber("3", "mt"), null),
       ];
@@ -313,7 +330,7 @@ function buildUiTranslatorReverseTests() {
 
       if (substance.getIsCompatible()) {
         const code = substance.toCode(0);
-        assert.notEqual(code.indexOf("set manufacture to 1 mt"), -1);
+        assert.notEqual(code.indexOf("set domestic to 1 mt"), -1);
         assert.notEqual(code.indexOf("set import to 2 mt"), -1);
         assert.notEqual(code.indexOf("set sales to 3 mt"), -1);
       }
@@ -321,24 +338,24 @@ function buildUiTranslatorReverseTests() {
 
     QUnit.test("allows multiple change statements", function (assert) {
       const commands = [
-        new Command("change", "manufacture", new EngineNumber("+1", "mt each year"), null),
-        new Command("change", "import", new EngineNumber("+2", "mt each year"), null),
-        new Command("change", "sales", new EngineNumber("+3", "mt each year"), null),
+        new Command("change", "domestic", new EngineNumber("+1", "mt / yr"), null),
+        new Command("change", "import", new EngineNumber("+2", "mt / yr"), null),
+        new Command("change", "sales", new EngineNumber("+3", "mt / yr"), null),
       ];
       const substance = createWithCommands("test", false, commands);
       assert.ok(substance.getIsCompatible());
 
       if (substance.getIsCompatible()) {
         const code = substance.toCode(0);
-        assert.notEqual(code.indexOf("change manufacture by +1 mt each year"), -1);
-        assert.notEqual(code.indexOf("change import by +2 mt each year"), -1);
-        assert.notEqual(code.indexOf("change sales by +3 mt each year"), -1);
+        assert.notEqual(code.indexOf("change domestic by +1 mt / yr"), -1);
+        assert.notEqual(code.indexOf("change import by +2 mt / yr"), -1);
+        assert.notEqual(code.indexOf("change sales by +3 mt / yr"), -1);
       }
     });
 
     QUnit.test("allows multiple initial charge statements", function (assert) {
       const commands = [
-        new Command("initial charge", "manufacture", new EngineNumber(1, "kg / unit"), null),
+        new Command("initial charge", "domestic", new EngineNumber(1, "kg / unit"), null),
         new Command("initial charge", "import", new EngineNumber(2, "kg / unit"), null),
         new Command("initial charge", "sales", new EngineNumber(3, "kg / unit"), null),
       ];
@@ -347,7 +364,7 @@ function buildUiTranslatorReverseTests() {
 
       if (substance.getIsCompatible()) {
         const code = substance.toCode(0);
-        assert.notEqual(code.indexOf("initial charge with 1 kg / unit for manufacture"), -1);
+        assert.notEqual(code.indexOf("initial charge with 1 kg / unit for domestic"), -1);
         assert.notEqual(code.indexOf("initial charge with 2 kg / unit for import"), -1);
         assert.notEqual(code.indexOf("initial charge with 3 kg / unit for sales"), -1);
       }
@@ -355,11 +372,28 @@ function buildUiTranslatorReverseTests() {
 
     QUnit.test("prohibits overlapping initial charge statements", function (assert) {
       const commands = [
-        new Command("initial charge", "manufacture", new EngineNumber(1, "kg / unit"), null),
-        new Command("initial charge", "manufacture", new EngineNumber(2, "kg / unit"), null),
+        new Command("initial charge", "domestic", new EngineNumber(1, "kg / unit"), null),
+        new Command("initial charge", "domestic", new EngineNumber(2, "kg / unit"), null),
       ];
       const substance = createWithCommands("test", false, commands);
       assert.ok(!substance.getIsCompatible());
+    });
+
+    QUnit.test("handles numbers with commas correctly", function (assert) {
+      const commands = [
+        new Command("setVal", "domestic", new EngineNumber("1,000", "kg"), null),
+        new Command("setVal", "import", new EngineNumber("12,34.5,6", "mt"), null),
+        new Command("change", "sales", new EngineNumber(",123", "kg"), null),
+      ];
+      const substance = createWithCommands("test", false, commands);
+      assert.ok(substance.getIsCompatible());
+
+      if (substance.getIsCompatible()) {
+        const code = substance.toCode(0);
+        assert.notEqual(code.indexOf("set domestic to 1,000 kg"), -1);
+        assert.notEqual(code.indexOf("set import to 12,34.5,6 mt"), -1);
+        assert.notEqual(code.indexOf("change sales by ,123 kg"), -1);
+      }
     });
   });
 }

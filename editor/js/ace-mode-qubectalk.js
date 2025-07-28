@@ -13,9 +13,9 @@ ace.define("ace/mode/qubectalk", [
       "substance|uses|variables";
 
     // Keywords from QubecTalk.g4 grammar - command keywords
-    const commandKeywords = "across|as|by|cap|change|charge|during|enable|floor|for|from|get|in|" +
-      "initial|modify|of|recharge|recover|replace|retire|reuse|set|simulate|then|to|trials|" +
-      "using|with";
+    const commandKeywords = "across|as|at|by|cap|change|charge|during|enable|eol|floor|for|" +
+      "from|get|in|initial|modify|of|recharge|recover|replace|retire|reuse|set|simulate|then|" +
+      "to|trials|using|with";
 
     // Keywords from QubecTalk.g4 grammar - conditional and logical
     const conditionalKeywords = "and|else|endif|if|or|xor";
@@ -24,11 +24,11 @@ ace.define("ace/mode/qubectalk", [
     const samplingKeywords = "mean|normally|sample|std|uniformly|limit";
 
     // Built-in streams
-    const streams = "priorEquipment|equipment|export|import|manufacture|sales";
+    const streams = "priorEquipment|equipment|export|import|domestic|sales";
 
     // Units
     const units = "annually|beginning|day|days|each|kg|kwh|month|months|mt|onwards|percent|" +
-      "tCO2e|unit|units|year|years";
+      "tCO2e|unit|units|year|years|yr|yrs";
 
     // Special keywords
     const specialKeywords = "equals|displacing";

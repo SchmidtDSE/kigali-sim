@@ -16,7 +16,6 @@ import org.kigalisim.engine.number.EngineNumber;
 import org.kigalisim.engine.number.UnitConverter;
 import org.kigalisim.engine.state.ConverterStateGetter;
 import org.kigalisim.engine.state.OverridingConverterStateGetter;
-import org.kigalisim.engine.state.SimpleUseKey;
 import org.kigalisim.engine.state.UseKey;
 
 /**
@@ -101,7 +100,7 @@ public class EngineResultSerializer {
     builder.setEolEmissions(eolEmissions);
 
     // Get sales for offset calculation
-    EngineNumber manufactureRaw = engine.getStreamFor(useKey, "manufacture");
+    EngineNumber manufactureRaw = engine.getStreamFor(useKey, "domestic");
     EngineNumber importRaw = engine.getStreamFor(useKey, "import");
 
     // Convert sales values for offset calculation
@@ -123,25 +122,20 @@ public class EngineResultSerializer {
     }
     BigDecimal percentImport = BigDecimal.ONE.subtract(percentManufacture);
 
-    // Offset sales
-    EngineNumber manufactureValueOffset = new EngineNumber(
-        manufactureKg.subtract(recycleKg.multiply(percentManufacture)), "kg");
-    builder.setManufactureValue(manufactureValueOffset);
-
-    EngineNumber importValueOffset = new EngineNumber(
-        importKg.subtract(recycleKg.multiply(percentImport)), "kg");
-    builder.setImportValue(importValueOffset);
+    // Use values directly - recycling already handled at stream level
+    builder.setDomesticValue(manufactureValue);
+    builder.setImportValue(importValue);
 
     // Get consumption
     EngineNumber consumptionByVolume = getConsumptionByVolume(
         useKey, unitConverter);
 
     EngineNumber domesticConsumptionValue = getConsumptionForVolume(
-        manufactureValueOffset, consumptionByVolume, stateGetter, unitConverter);
+        manufactureValue, consumptionByVolume, stateGetter, unitConverter);
     builder.setDomesticConsumptionValue(domesticConsumptionValue);
 
     EngineNumber importConsumptionValue = getConsumptionForVolume(
-        importValueOffset, consumptionByVolume, stateGetter, unitConverter);
+        importValue, consumptionByVolume, stateGetter, unitConverter);
     builder.setImportConsumptionValue(importConsumptionValue);
 
     // Set export values (exports don't affect equipment population, just track volume and consumption)
@@ -240,7 +234,7 @@ public class EngineResultSerializer {
 
     // Determine import value without recharge
     EngineNumber totalImportValue = engine.getStreamFor(useKey, "import");
-    EngineNumber totalDomesticValue = engine.getStreamFor(useKey, "manufacture");
+    EngineNumber totalDomesticValue = engine.getStreamFor(useKey, "domestic");
     EngineNumber totalRechargeEmissions = engine.getStreamFor(
         useKey, "rechargeEmissions");
 

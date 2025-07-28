@@ -61,17 +61,17 @@ public class QubecTalkParserTest {
   public void testParseEnableStatements() {
     String code = """
         start default
-        
+
         define application "Test"
-        
+
           uses substance "TestSub"
-            enable manufacture
+            enable domestic
             enable import during year 2020
             enable export during years 2020 to 2025
           end substance
-          
+
         end application
-        
+
         end default
         """;
     ParseResult result = parser.parse(code);
@@ -88,24 +88,52 @@ public class QubecTalkParserTest {
   public void testParseEnableWithSetStatements() {
     String code = """
         start default
-        
+
         define application "Test"
-        
+
           uses substance "TestSub"
-            enable manufacture
-            set manufacture to 100 kg
+            enable domestic
+            set domestic to 100 kg
             enable import
             recharge 5 % each year with 1 kg / unit
           end substance
-          
+
         end application
-        
+
         end default
         """;
     ParseResult result = parser.parse(code);
 
     assertNotNull(result, "Parse result should not be null");
     assertFalse(result.hasErrors(), "Parse result should not have errors for enable with set statements");
+    assertTrue(result.getProgram().isPresent(), "Parse result should have a program");
+  }
+
+  /**
+   * Test that parsing numbers with commas works correctly.
+   */
+  @Test
+  public void testParseNumbersWithCommas() {
+    String code = """
+        start default
+
+        define application "Test"
+
+          uses substance "TestSub"
+            enable domestic
+            set domestic to 1,000 kg
+            set import to 12,34.5,6 kg
+            recharge 1,5 % each year with ,123 kg / unit
+          end substance
+
+        end application
+
+        end default
+        """;
+    ParseResult result = parser.parse(code);
+
+    assertNotNull(result, "Parse result should not be null");
+    assertFalse(result.hasErrors(), "Parse result should not have errors for comma numbers");
     assertTrue(result.getProgram().isPresent(), "Parse result should have a program");
   }
 }

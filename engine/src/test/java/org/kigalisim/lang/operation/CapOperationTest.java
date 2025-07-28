@@ -51,7 +51,7 @@ public class CapOperationTest {
   public void testInitializesNoDuringNoDisplacement() {
     EngineNumber number = new EngineNumber(BigDecimal.valueOf(42), "kg");
     Operation valueOperation = new PreCalculatedOperation(number);
-    CapOperation operation = new CapOperation("manufacture", valueOperation);
+    CapOperation operation = new CapOperation("domestic", valueOperation);
     assertNotNull(operation, "CapOperation should be constructable without during and displacement");
   }
 
@@ -63,7 +63,7 @@ public class CapOperationTest {
     EngineNumber number = new EngineNumber(BigDecimal.valueOf(42), "kg");
     Operation valueOperation = new PreCalculatedOperation(number);
     ParsedDuring during = new ParsedDuring(Optional.empty(), Optional.empty());
-    CapOperation operation = new CapOperation("manufacture", valueOperation, during);
+    CapOperation operation = new CapOperation("domestic", valueOperation, during);
     assertNotNull(operation, "CapOperation should be constructable with during but no displacement");
   }
 
@@ -74,7 +74,7 @@ public class CapOperationTest {
   public void testInitializesWithDisplacementNoDuring() {
     EngineNumber number = new EngineNumber(BigDecimal.valueOf(42), "kg");
     Operation valueOperation = new PreCalculatedOperation(number);
-    CapOperation operation = new CapOperation("manufacture", valueOperation, "other_stream");
+    CapOperation operation = new CapOperation("domestic", valueOperation, "other_stream");
     assertNotNull(operation, "CapOperation should be constructable with displacement but no during");
   }
 
@@ -86,7 +86,7 @@ public class CapOperationTest {
     EngineNumber number = new EngineNumber(BigDecimal.valueOf(42), "kg");
     Operation valueOperation = new PreCalculatedOperation(number);
     ParsedDuring during = new ParsedDuring(Optional.empty(), Optional.empty());
-    CapOperation operation = new CapOperation("manufacture", valueOperation, "other_stream", during);
+    CapOperation operation = new CapOperation("domestic", valueOperation, "other_stream", during);
     assertNotNull(operation, "CapOperation should be constructable with both during and displacement");
   }
 
@@ -96,18 +96,18 @@ public class CapOperationTest {
   @Test
   public void testExecuteNoDuringNoDisplacementWithCapping() {
     // Set up a stream with a value higher than the cap
-    engine.enable("manufacture", Optional.empty());
-    engine.setStream("manufacture", new EngineNumber(BigDecimal.valueOf(100), "kg"), Optional.empty());
+    engine.enable("domestic", Optional.empty());
+    engine.setStream("domestic", new EngineNumber(BigDecimal.valueOf(100), "kg"), Optional.empty());
 
     // Create a cap operation with a lower value
     EngineNumber number = new EngineNumber(BigDecimal.valueOf(42), "kg");
     Operation valueOperation = new PreCalculatedOperation(number);
-    CapOperation operation = new CapOperation("manufacture", valueOperation);
+    CapOperation operation = new CapOperation("domestic", valueOperation);
 
     operation.execute(machine);
 
     // Verify the stream was capped in the engine
-    EngineNumber result = engine.getStream("manufacture");
+    EngineNumber result = engine.getStream("domestic");
     assertEquals(BigDecimal.valueOf(42), result.getValue(), "Stream value should be capped to 42");
     assertEquals("kg", result.getUnits(), "Stream units should remain kg");
   }
@@ -118,18 +118,18 @@ public class CapOperationTest {
   @Test
   public void testExecuteNoDuringNoDisplacementWithoutCapping() {
     // Set up a stream with a value lower than the cap
-    engine.enable("manufacture", Optional.empty());
-    engine.setStream("manufacture", new EngineNumber(BigDecimal.valueOf(20), "kg"), Optional.empty());
+    engine.enable("domestic", Optional.empty());
+    engine.setStream("domestic", new EngineNumber(BigDecimal.valueOf(20), "kg"), Optional.empty());
 
     // Create a cap operation with a higher value
     EngineNumber number = new EngineNumber(BigDecimal.valueOf(42), "kg");
     Operation valueOperation = new PreCalculatedOperation(number);
-    CapOperation operation = new CapOperation("manufacture", valueOperation);
+    CapOperation operation = new CapOperation("domestic", valueOperation);
 
     operation.execute(machine);
 
     // Verify the stream was not changed
-    EngineNumber result = engine.getStream("manufacture");
+    EngineNumber result = engine.getStream("domestic");
     assertEquals(BigDecimal.valueOf(20), result.getValue(), "Stream value should remain 20");
     assertEquals("kg", result.getUnits(), "Stream units should remain kg");
   }
@@ -140,8 +140,8 @@ public class CapOperationTest {
   @Test
   public void testExecuteWithDuringApplying() {
     // Set up a stream with a value higher than the cap
-    engine.enable("manufacture", Optional.empty());
-    engine.setStream("manufacture", new EngineNumber(BigDecimal.valueOf(100), "kg"), Optional.empty());
+    engine.enable("domestic", Optional.empty());
+    engine.setStream("domestic", new EngineNumber(BigDecimal.valueOf(100), "kg"), Optional.empty());
 
     // Create a cap operation with a lower value and a during that applies to the current year
     EngineNumber number = new EngineNumber(BigDecimal.valueOf(42), "kg");
@@ -152,12 +152,12 @@ public class CapOperationTest {
     TimePointFuture start = new CalculatedTimePointFuture(yearOperation);
     ParsedDuring during = new ParsedDuring(Optional.of(start), Optional.empty());
 
-    CapOperation operation = new CapOperation("manufacture", valueOperation, during);
+    CapOperation operation = new CapOperation("domestic", valueOperation, during);
 
     operation.execute(machine);
 
     // Verify the stream was capped
-    EngineNumber result = engine.getStream("manufacture");
+    EngineNumber result = engine.getStream("domestic");
     assertEquals(BigDecimal.valueOf(42), result.getValue(), "Stream value should be capped to 42");
     assertEquals("kg", result.getUnits(), "Stream units should remain kg");
   }
@@ -168,8 +168,8 @@ public class CapOperationTest {
   @Test
   public void testExecuteWithDuringNotApplying() {
     // Set up a stream with a value higher than the cap
-    engine.enable("manufacture", Optional.empty());
-    engine.setStream("manufacture", new EngineNumber(BigDecimal.valueOf(100), "kg"), Optional.empty());
+    engine.enable("domestic", Optional.empty());
+    engine.setStream("domestic", new EngineNumber(BigDecimal.valueOf(100), "kg"), Optional.empty());
 
     // Create a cap operation with a lower value and a during that applies to a future year
     EngineNumber number = new EngineNumber(BigDecimal.valueOf(42), "kg");
@@ -180,12 +180,12 @@ public class CapOperationTest {
     TimePointFuture start = new CalculatedTimePointFuture(yearOperation);
     ParsedDuring during = new ParsedDuring(Optional.of(start), Optional.empty());
 
-    CapOperation operation = new CapOperation("manufacture", valueOperation, during);
+    CapOperation operation = new CapOperation("domestic", valueOperation, during);
 
     operation.execute(machine);
 
     // Verify the stream was not capped
-    EngineNumber result = engine.getStream("manufacture");
+    EngineNumber result = engine.getStream("domestic");
     assertEquals(BigDecimal.valueOf(100), result.getValue(), "Stream value should remain 100");
     assertEquals("kg", result.getUnits(), "Stream units should remain kg");
   }
@@ -196,20 +196,20 @@ public class CapOperationTest {
   @Test
   public void testExecuteWithComplexValueOperation() {
     // Set up a stream with a value higher than the cap
-    engine.enable("manufacture", Optional.empty());
-    engine.setStream("manufacture", new EngineNumber(BigDecimal.valueOf(100), "kg"), Optional.empty());
+    engine.enable("domestic", Optional.empty());
+    engine.setStream("domestic", new EngineNumber(BigDecimal.valueOf(100), "kg"), Optional.empty());
 
     // Create a cap operation with a complex value operation
     Operation left = new PreCalculatedOperation(new EngineNumber(BigDecimal.valueOf(30), "kg"));
     Operation right = new PreCalculatedOperation(new EngineNumber(BigDecimal.valueOf(12), "kg"));
     Operation valueOperation = new AdditionOperation(left, right); // 30 + 12 = 42
 
-    CapOperation operation = new CapOperation("manufacture", valueOperation);
+    CapOperation operation = new CapOperation("domestic", valueOperation);
 
     operation.execute(machine);
 
     // Verify the stream was capped
-    EngineNumber result = engine.getStream("manufacture");
+    EngineNumber result = engine.getStream("domestic");
     assertEquals(BigDecimal.valueOf(42), result.getValue(), "Stream value should be capped to 42");
     assertEquals("kg", result.getUnits(), "Stream units should remain kg");
   }
@@ -220,8 +220,8 @@ public class CapOperationTest {
   @Test
   public void testExecuteWithDisplacement() {
     // Set up the source stream with a value higher than the cap
-    engine.enable("manufacture", Optional.empty());
-    engine.setStream("manufacture", new EngineNumber(BigDecimal.valueOf(100), "kg"), Optional.empty());
+    engine.enable("domestic", Optional.empty());
+    engine.setStream("domestic", new EngineNumber(BigDecimal.valueOf(100), "kg"), Optional.empty());
 
     // Set up the target stream for displacement
     engine.enable("import", Optional.empty());
@@ -230,12 +230,12 @@ public class CapOperationTest {
     // Create a cap operation with displacement
     EngineNumber number = new EngineNumber(BigDecimal.valueOf(42), "kg");
     Operation valueOperation = new PreCalculatedOperation(number);
-    CapOperation operation = new CapOperation("manufacture", valueOperation, "import");
+    CapOperation operation = new CapOperation("domestic", valueOperation, "import");
 
     operation.execute(machine);
 
     // Verify the source stream was capped
-    EngineNumber sourceResult = engine.getStream("manufacture");
+    EngineNumber sourceResult = engine.getStream("domestic");
     assertEquals(BigDecimal.valueOf(42), sourceResult.getValue(), "Source stream should be capped to 42");
     assertEquals("kg", sourceResult.getUnits(), "Source stream units should remain kg");
 

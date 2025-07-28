@@ -1,0 +1,174 @@
+<html>
+  <head>
+    <title>Tutorial 4: Growth and Trade</title>
+    <link href="/guide/guide.css?v=EPOCH" rel="stylesheet" type="text/css" />
+  </head>
+  <body>
+    <a href="#main" class="skip-link">Skip to main content</a>
+    <header>
+      This tutorial is part of the <a href="/guide">guide</a> for the
+      <a href="/">Kigali Sim</a>.
+    </header>
+    <main id="main">
+      <h1>Tutorial 4: Growth and Trade</h1>
+
+      Adding economic growth projections and import flows to create more nuanced business-as-usual scenarios.
+
+      <details>
+        <summary>Contents</summary>
+        <ul>
+          <li><a href="#motivation">Motivation</a></li>
+          <li><a href="#adding-imports-for-hfc-134a">Adding Imports for HFC-134a</a></li>
+          <li><a href="#first-economic-growth">First Economic Growth</a></li>
+          <li><a href="#expanding-the-growth">Expanding the Growth</a></li>
+          <li><a href="#results">Results</a></li>
+          <li><a href="#conclusion">Conclusion</a></li>
+          <li><a href="#next-steps">Next Steps</a></li>
+        </ul>
+      </details>
+
+      <section id="motivation">
+        <h2>Motivation</h2>
+
+        <p>
+          Let's say ABC has economic growth forecasts and data on equipment imports. In this tutorial, we will add growth patterns and import flows to our multi-application model from Tutorial 3, creating a more nuanced business-as-usual baseline to help aid policy analysis. In addition to adding more sophistication to our model, this also demonstrates use of multiple sales streams.
+        </p>
+      </section>
+
+      <section id="adding-imports-for-hfc-134a">
+        <h2>Adding Imports for HFC-134a</h2>
+
+        <p>
+          Before we add in growth rates, let's consider trade. Specifically, for brevity, let's have just one substance with imports.
+        </p>
+
+        <p>
+          Let's say that ABC imports some but not all of their HFC-134a. Therefore, for <strong>Domestic Refrigeration</strong>, modify your <strong>HFC-134a</strong> consumption record:
+        </p>
+
+        <ul>
+          <li><strong>General</strong> tab: <strong>Enable "Import"</strong> (in addition to existing manufacture)</li>
+          <li><strong>Equipment</strong> tab: Add <strong>0.20 kg/unit for import</strong>.</li>
+          <li><strong>Set</strong> tab: Change your existing 25 mt by reducing <strong>domestic</strong> to 13 mt in year 2025 and adding <strong>import</strong> of 11 mt in year 2025</li>
+        </ul>
+
+        <p>Our tutorial later will expand this further but this gives us a good starting point.</p>
+
+        <p id="tutorial-gif-4-1" class="tutorial-gif-holder">
+          <img
+            src="/guide/img/tutorial04_01.gif"
+            alt="Animated gif showing the addition of imports to HFC-134a"
+          />
+        </p>
+      </section>
+
+      <section id="first-economic-growth">
+        <h2>First Economic Growth</h2>
+
+        <p>
+          In addition to trade, let's also add in economic growth. For example, these projections might come from industry surveys or from outside modeling efforts. Let's start with HFC-134a:
+        </p>
+
+        <ul>
+          <li>Click <strong>edit</strong> for HFC-134a</li>
+          <li>Go to <strong>Change</strong> tab, add a change record of +6% from 2025 - 2030 for all sales as this will apply to both imports and domestic manufacturing.</li>
+          <li>Add a change record of +4% from 2031 - 2035 for all sales.</li>
+        </ul>
+
+        <p id="tutorial-gif-4-2" class="tutorial-gif-holder">
+          <img
+            src="/guide/img/tutorial04_02.gif"
+            alt="Animated gif showing the addition of change commands in HFC-134a"
+          />
+        </p>
+      </section>
+
+      <section id="expanding-the-growth">
+        <h2>Expanding the Growth</h2>
+
+        <p>
+          Let's continue by applying these growth rates using the <strong>Change</strong> tab for the consumption records. Below is a table of everything that should be present after you are done. However, remember that you already did HFC-134a!
+        </p>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Application</th>
+              <th>Substance</th>
+              <th>Domestic Growth</th>
+              <th>Import Growth</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Domestic Refrigeration</td>
+              <td>HFC-134a</td>
+              <td>+6% (2025-2030), +4% (2031-2035)</td>
+              <td>+6% (2025-2030), +4% (2031-2035)</td>
+            </tr>
+            <tr>
+              <td>Domestic Refrigeration</td>
+              <td>R-600a</td>
+              <td>+5% (2025-2030), +3% (2031-2035)</td>
+              <td>N/A (domestic only)</td>
+            </tr>
+            <tr>
+              <td>Domestic AC</td>
+              <td>HFC-32</td>
+              <td>+10% (2025-2035)</td>
+              <td>N/A (domestic only)</td>
+            </tr>
+            <tr>
+              <td>Domestic AC</td>
+              <td>R-410A</td>
+              <td>+6% (2025-2035)</td>
+              <td>N/A (domestic only)</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <p>You can go to <strong>Change</strong> tab and add changes for domestic manufacture stream or all sales, both have the same effect in this case.</p>
+      </section>
+
+      <section id="results">
+        <h2>Results</h2>
+
+        <p>
+          Note that the drop down menu under the Consumption radio button which can flip between domestic and imports. Just as we did with the custom metric under emissions before, we can click configure custom to combine imports and domestic together.
+        </p>
+
+        <p>
+          Does the imports part of HFC-134a seem small? It's important to note that, by default, initial charge for new equipment is attributed to the exporting country. We can temporarily change this behavior to get a fuller picture of our global consumption by checking <strong>Attribute initial charge to importer</strong>. However, to stay consistent with Montreal Protocol standards, it is best to leave this off in most cases.
+        </p>
+
+        <p>
+          Zooming out, we should see the acceleration in HFC-134a and HFC-32. With the <strong>Emissions</strong> radio button, things still remain quite dominated by HFC-134a. In contrast, the two are closer when selecting the <strong>Consumption</strong> radio button as that 10% increase compounds over time for HFC-32.
+        </p>
+      </section>
+
+      <section id="conclusion">
+        <h2>Conclusion</h2>
+
+        <p>
+          You now have ABC Country's realistic business-as-usual scenario incorporating economic growth, trade flows, and technology transitions. This foundation shows how consumption evolves without intervention. Later, we will try out different policies on this of this baseline.
+        </p>
+      </section>
+
+      <section id="next-steps">
+        <h2>Next Steps</h2>
+
+        <p>
+          <a href="/guide/tutorial_05.html">Tutorial 5</a> will start to add new sophistication by modeling policies. You'll learn to create sales permitting systems that progressively reduce HFC consumption while managing market displacement to lower-GWP alternatives.
+        </p>
+
+        <p>
+          <a href="/guide/tutorial_03.html">Previous: Tutorial 3</a> | 
+          <a href="/guide/tutorial_05.html">Next: Tutorial 5</a>
+        </p>
+      </section>
+
+      <hr />
+      <p><em>This tutorial is part of the ABC Country case study series demonstrating progressive HFC policy analysis using Kigali Sim.</em></p>
+    </main>
+  </body>
+</html>

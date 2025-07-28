@@ -3,10 +3,10 @@ start default
   define application "test"
 
     uses substance "test"
-      enable manufacture
-      initial charge with 2 kg / unit for manufacture
+      enable domestic
+      initial charge with 2 kg / unit for domestic
       recharge 10% each year with 1 kg / unit
-      set manufacture to 10 kg
+      set domestic to 10 kg
       set priorEquipment to 20 units
       equals 5 tCO2e / mt
     end substance
@@ -21,7 +21,7 @@ start policy "intervention"
   modify application "test"
     
     modify substance "test"
-      floor manufacture to 50 units
+      floor domestic to 50 units
     end substance
 
   end application

@@ -5,11 +5,169 @@
  */
 
 import {CodeEditorPresenter} from "code_editor";
+import {LocalStorageKeeper} from "local_storage_keeper";
+import {EphemeralStorageKeeper} from "storage_keeper";
 import {ReportDataWrapper} from "report_data";
 import {ResultsPresenter} from "results";
 import {UiEditorPresenter} from "ui_editor";
 import {UiTranslatorCompiler} from "ui_translator";
+import {UpdateUtil} from "updates";
 import {WasmBackend, WasmLayer, BackendResult} from "wasm_backend";
+
+const INCOGNITO_MESSAGE = [
+  "This will clear your preferences and prior simulations upon closing this tab. Your preferences",
+  "and actions during this session will also be deleted when you close the tab. Do you want to",
+  "continue?",
+].join(" ");
+const CLEAR_ALL_DATA_MESSAGE = [
+  "This will clear all saved preferences and the current model you are working on in the designer",
+  "and editor. Do you want to continue?",
+].join(" ");
+
+/**
+ * Manages tooltip display and user preferences for help tooltips.
+ *
+ * Handles initialization, user preference storage, and tooltip lifecycle
+ * management using Tippy.js for accessible tooltip display.
+ */
+class TooltipPresenter {
+  /**
+   * Create a new tooltip presenter.
+   *
+   * @param {LocalStorageKeeper} storageKeeper - Storage manager for user preferences
+   */
+  constructor(storageKeeper) {
+    const self = this;
+    self._storageKeeper = storageKeeper;
+    self._tooltipInstances = new Map();
+    self._enabled = self._loadPreference();
+    self._welcomeCheckbox = null;
+    self._footerButton = null;
+  }
+
+  /**
+   * Initialize the tooltip system.
+   *
+   * Sets up preference controls and creates tooltips if enabled.
+   */
+  initialize() {
+    const self = this;
+    self._setupPreferenceControls();
+    if (self._enabled) {
+      self._createTooltips();
+    }
+  }
+
+  /**
+   * Toggle tooltip visibility.
+   *
+   * @param {boolean} enabled - Whether tooltips should be shown
+   */
+  setEnabled(enabled) {
+    const self = this;
+    self._enabled = enabled;
+    self._storageKeeper.setShowTooltips(enabled);
+
+    if (enabled) {
+      self._createTooltips();
+    } else {
+      self._destroyTooltips();
+    }
+
+    self._updateControls();
+  }
+
+  /**
+   * Get current tooltip enabled state.
+   *
+   * @returns {boolean} Whether tooltips are currently enabled
+   */
+  isEnabled() {
+    const self = this;
+    return self._enabled;
+  }
+
+  /**
+   * Load tooltip preference from storage.
+   *
+   * @returns {boolean} Tooltip preference (defaults to true)
+   * @private
+   */
+  _loadPreference() {
+    const self = this;
+    const stored = self._storageKeeper.getShowTooltips();
+    return stored !== null ? stored : true; // Default to enabled
+  }
+
+  /**
+   * Setup preference control elements and event handlers.
+   *
+   * @private
+   */
+  _setupPreferenceControls() {
+    const self = this;
+
+    // Welcome screen checkbox
+    self._welcomeCheckbox = document.getElementById("tooltip-preference-check");
+    self._welcomeCheckbox.checked = self._enabled;
+    self._welcomeCheckbox.addEventListener("change", function (event) {
+      self.setEnabled(event.target.checked);
+    });
+
+    // Footer toggle button
+    self._footerButton = document.getElementById("tooltip-toggle-button");
+    self._updateControls();
+    self._footerButton.addEventListener("click", function (event) {
+      event.preventDefault();
+      self.setEnabled(!self._enabled);
+    });
+  }
+
+  /**
+   * Update control elements to reflect current state.
+   *
+   * @private
+   */
+  _updateControls() {
+    const self = this;
+
+    self._welcomeCheckbox.checked = self._enabled;
+    self._footerButton.textContent = self._enabled ?
+      "Disable Help Tooltips" : "Enable Help Tooltips";
+  }
+
+  /**
+   * Create tooltips for all target elements.
+   *
+   * @private
+   */
+  _createTooltips() {
+    const self = this;
+
+    // Initialize tooltips on all elements with data-tippy-content
+    const elements = document.querySelectorAll("[data-tippy-content]");
+    elements.forEach(function (element) {
+      const instance = tippy(element, {
+        appendTo: "parent",
+      });
+      self._tooltipInstances.set(element, instance);
+    });
+  }
+
+  /**
+   * Destroy all tooltip instances.
+   *
+   * @private
+   */
+  _destroyTooltips() {
+    const self = this;
+
+    self._tooltipInstances.forEach(function (instance) {
+      instance.destroy();
+    });
+    self._tooltipInstances.clear();
+  }
+}
 
 /**
  * Manages the running indicator and progress bar display.
@@ -59,7 +217,6 @@ class RunningIndicatorPresenter {
 }
 
 const HELP_TEXT = "Would you like our help in resolving this issue?";
-const INTRODUCTION_PREFERENCE_KEY = "hideIntroduction";
 
 const WHITESPACE_REGEX = new RegExp("^\\s*$");
 const NEW_FILE_MSG = [
@@ -150,6 +307,10 @@ class MainPresenter {
     // Initialize the running indicator presenter
     self._runningIndicatorPresenter = new RunningIndicatorPresenter();
 
+    // Initialize the storage keeper based on save preferences checkbox
+    const savePreferencesCheckbox = document.getElementById("save-preferences-checkbox");
+    const shouldSave = savePreferencesCheckbox.checked;
+    self._localStorageKeeper = shouldSave ? new LocalStorageKeeper() : new EphemeralStorageKeeper();
     // Create progress callback
     const progressCallback = (progress) => {
       const percentage = Math.round(progress * 100);
@@ -180,7 +341,7 @@ class MainPresenter {
       () => self._codeEditorPresenter.forceUpdate(),
     );
 
-    const source = localStorage.getItem("source");
+    const source = self._localStorageKeeper.getSource();
     if (source) {
       self._codeEditorPresenter.setCode(source);
       const results = self._getCodeAsObj();
@@ -193,6 +354,15 @@ class MainPresenter {
 
     self._onCodeChange();
     self._setupFileButtons();
+    self._setupStorageControls();
+
+    // Initialize tooltip presenter for help tooltips
+    self._tooltipPresenter = new TooltipPresenter(self._localStorageKeeper);
+    self._tooltipPresenter.initialize();
+
+    // Initialize update utility and check for updates (fails silently if offline)
+    self._updateUtil = new UpdateUtil();
+    self._checkForUpdates();
   }
 
   /**
@@ -210,7 +380,7 @@ class MainPresenter {
       self._buttonPanelPresenter.showScriptButtons();
       self._onBuild(false, false, false);
     }
-    localStorage.setItem("source", code);
+    self._localStorageKeeper.setSource(code);
 
     const encodedValue = encodeURI("data:text/qubectalk;charset=utf-8," + code);
     const saveButton = document.getElementById("save-file-button");
@@ -484,6 +654,31 @@ class MainPresenter {
   }
 
   /**
+   * Checks for application updates and shows dialog if available.
+   *
+   * This method fails silently on all errors to support offline usage.
+   * Only checks for updates in WASM builds, not during engine development.
+   *
+   * @private
+   */
+  async _checkForUpdates() {
+    const self = this;
+    try {
+      const updateAvailable = await self._updateUtil.checkForUpdates();
+      if (updateAvailable) {
+        // Wait for service worker to cache new files before offering reload.
+        // Also avoids access issue with disorientation.
+        setTimeout(() => {
+          self._updateUtil.showUpdateDialog();
+        }, 5000);
+      }
+    } catch (error) {
+      // Fail silently - likely due to offline
+      console.debug("Update check did not respond, possibly offline:", error);
+    }
+  }
+
+  /**
    * Sets up file-related button handlers.
    *
    * @private
@@ -536,14 +731,173 @@ class MainPresenter {
       }
     });
   }
+
+  /**
+   * Sets up storage control event handlers for checkbox and clear button.
+   * @private
+   */
+  _setupStorageControls() {
+    const self = this;
+
+    // Set up the save preferences checkbox
+    const savePreferencesCheckbox = document.getElementById("save-preferences-checkbox");
+    savePreferencesCheckbox.addEventListener("change", (event) => {
+      self._handleSavePreferencesChange(event.target.checked);
+    });
+
+    // Set up the clear data button
+    const clearDataButton = document.getElementById("clear-data-button");
+    clearDataButton.addEventListener("click", (event) => {
+      event.preventDefault();
+      self._handleClearDataClick();
+    });
+  }
+
+  /**
+   * Handles changes to the save preferences checkbox.
+   * @param {boolean} savePreferences - Whether to save preferences
+   * @private
+   */
+  _handleSavePreferencesChange(savePreferences) {
+    const self = this;
+
+    // Get current code before switching storage keepers
+    const currentCode = self._codeEditorPresenter.getCode();
+
+    // Switch to appropriate storage keeper
+    if (savePreferences) {
+      self._localStorageKeeper = new LocalStorageKeeper();
+      // Save current code to new storage keeper
+      if (currentCode) {
+        self._localStorageKeeper.setSource(currentCode);
+      }
+    } else {
+      // Ask for confirmation before clearing data
+      const confirmed = window.confirm(INCOGNITO_MESSAGE);
+      if (confirmed) {
+        // Clear the current storage keeper before switching
+        self._localStorageKeeper.clear();
+        self._localStorageKeeper = new EphemeralStorageKeeper();
+      } else {
+        // Re-check the checkbox if user cancels
+        const savePreferencesCheckbox = document.getElementById("save-preferences-checkbox");
+        savePreferencesCheckbox.checked = true;
+      }
+    }
+  }
+
+  /**
+   * Handles the clear data button click with confirmation.
+   * @private
+   */
+  _handleClearDataClick() {
+    const self = this;
+
+    const confirmed = window.confirm(CLEAR_ALL_DATA_MESSAGE);
+
+    if (confirmed) {
+      self._localStorageKeeper.clear();
+      self._resetApplicationState();
+      window.location.reload();
+    }
+  }
+
+  /**
+   * Resets application state after clearing data.
+   * @private
+   */
+  _resetApplicationState() {
+    const self = this;
+
+    // Clear the code editor
+    self._codeEditorPresenter.setCode("");
+
+    // Reset UI editor
+    self._uiEditorPresenter.refresh(null);
+
+    // Clear any results
+    self._resultsPresenter.clear();
+
+    // Hide results section
+    const resultsSection = document.getElementById("results");
+    resultsSection.style.display = "none";
+
+    // Update file save button
+    const saveButton = document.getElementById("save-file-button");
+    saveButton.href = "data:text/qubectalk;charset=utf-8,";
+  }
+}
+
+/**
+ * Presenter for managing the privacy confirmation checkbox and dialog.
+ */
+class PrivacyConfirmationPresenter {
+  constructor() {
+    const self = this;
+    self._checkbox = document.getElementById("privacy-confirmation-check");
+    self._dialog = document.getElementById("privacy-confirmation-dialog");
+    self._closeButton = self._dialog.querySelector(".close-button");
+
+    self._setupEventListeners();
+  }
+
+  /**
+   * Set up event listeners for checkbox and dialog interactions.
+   */
+  _setupEventListeners() {
+    const self = this;
+
+    // Listen for checkbox changes
+    self._checkbox.addEventListener("change", (event) => {
+      if (!event.target.checked) {
+        self._showDialog();
+      }
+    });
+
+    // Listen for dialog close button
+    self._closeButton.addEventListener("click", (event) => {
+      event.preventDefault();
+      self._hideDialog();
+    });
+
+    // Listen for dialog close via ESC key or backdrop click
+    self._dialog.addEventListener("close", () => {
+      self._onDialogClose();
+    });
+  }
+
+  /**
+   * Show the privacy confirmation dialog.
+   */
+  _showDialog() {
+    const self = this;
+    self._dialog.showModal();
+  }
+
+  /**
+   * Hide the privacy confirmation dialog.
+   */
+  _hideDialog() {
+    const self = this;
+    self._dialog.close();
+  }
+
+  /**
+   * Handle dialog close event - re-check the checkbox.
+   */
+  _onDialogClose() {
+    const self = this;
+    self._checkbox.checked = true;
+  }
 }
 
 /**
  * Presenter for managing the introduction sequence.
  */
 class IntroductionPresenter {
-  constructor() {
+  constructor(localStorageKeeper) {
     const self = this;
+    self._localStorageKeeper = localStorageKeeper;
     self._loadingPanel = document.getElementById("loading");
     self._mainHolder = document.getElementById("main-holder");
   }
@@ -554,7 +908,7 @@ class IntroductionPresenter {
    */
   async initialize() {
     const self = this;
-    const hideIntroduction = localStorage.getItem(INTRODUCTION_PREFERENCE_KEY) === "true";
+    const hideIntroduction = self._localStorageKeeper.getHideIntroduction();
 
     if (hideIntroduction) {
       return Promise.resolve();
@@ -585,7 +939,7 @@ class IntroductionPresenter {
 
     dontShowAgainButton.onclick = (e) => {
       e.preventDefault();
-      localStorage.setItem(INTRODUCTION_PREFERENCE_KEY, "true");
+      self._localStorageKeeper.setHideIntroduction(true);
       loadingIndicator.style.display = "block";
       buttonPanel.style.display = "none";
       resolve();
@@ -609,15 +963,15 @@ class IntroductionPresenter {
  * Main entry point for the application.
  */
 function main() {
-  const introPresenter = new IntroductionPresenter();
-
-  const showApp = async () => {
-    await introPresenter.initialize();
-    introPresenter._showMainContent();
-  };
-
   const onLoad = () => {
     const mainPresenter = new MainPresenter();
+    const privacyPresenter = new PrivacyConfirmationPresenter();
+    const introPresenter = new IntroductionPresenter(mainPresenter._localStorageKeeper);
+
+    const showApp = async () => {
+      await introPresenter.initialize();
+      introPresenter._showMainContent();
+    };
     setTimeout(showApp, 500);
   };
 
@@ -646,4 +1000,11 @@ function captureSentryMessage(message, level) {
   console.log("Sentry message not sent.", message, level);
 }
 
-export {main};
+export {
+  main,
+  IntroductionPresenter,
+  RunningIndicatorPresenter,
+  ButtonPanelPresenter,
+  MainPresenter,
+  PrivacyConfirmationPresenter,
+};

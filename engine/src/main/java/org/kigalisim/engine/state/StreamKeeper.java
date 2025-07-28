@@ -18,6 +18,7 @@ import org.kigalisim.engine.number.EngineNumber;
 import org.kigalisim.engine.number.UnitConverter;
 import org.kigalisim.engine.recalc.SalesStreamDistribution;
 import org.kigalisim.engine.recalc.SalesStreamDistributionBuilder;
+import org.kigalisim.lang.operation.RecoverOperation.RecoveryStage;
 
 /**
  * Class responsible for managing / tracking substance streams.
@@ -79,22 +80,24 @@ public class StreamKeeper {
    */
   public void ensureSubstance(UseKey useKey) {
     String key = getKey(useKey);
-    
+
     if (substances.containsKey(key)) {
       return;
     }
 
     substances.put(key, new StreamParameterization());
 
-    // Sales: manufacture, import, export, recycle
-    String manufactureKey = getKey(useKey, "manufacture");
-    streams.put(manufactureKey, new EngineNumber(BigDecimal.ZERO, "kg"));
+    // Sales: domestic, import, export, recycle (split into recycleRecharge and recycleEol)
+    String domesticKey = getKey(useKey, "domestic");
+    streams.put(domesticKey, new EngineNumber(BigDecimal.ZERO, "kg"));
     String importKey = getKey(useKey, "import");
     streams.put(importKey, new EngineNumber(BigDecimal.ZERO, "kg"));
     String exportKey = getKey(useKey, "export");
     streams.put(exportKey, new EngineNumber(BigDecimal.ZERO, "kg"));
-    String recycleKey = getKey(useKey, "recycle");
-    streams.put(recycleKey, new EngineNumber(BigDecimal.ZERO, "kg"));
+    String recycleRechargeKey = getKey(useKey, "recycleRecharge");
+    streams.put(recycleRechargeKey, new EngineNumber(BigDecimal.ZERO, "kg"));
+    String recycleEolKey = getKey(useKey, "recycleEol");
+    streams.put(recycleEolKey, new EngineNumber(BigDecimal.ZERO, "kg"));
 
     // Consumption: count, conversion
     String consumptionKey = getKey(useKey, "consumption");
@@ -107,6 +110,8 @@ public class StreamKeeper {
     streams.put(priorEquipmentKey, new EngineNumber(BigDecimal.ZERO, "units"));
     String newEquipmentKey = getKey(useKey, "newEquipment");
     streams.put(newEquipmentKey, new EngineNumber(BigDecimal.ZERO, "units"));
+    String retiredKey = getKey(useKey, "retired");
+    streams.put(retiredKey, new EngineNumber(BigDecimal.ZERO, "units"));
 
     // Emissions
     String rechargeEmissionsKey = getKey(useKey, "rechargeEmissions");
@@ -127,6 +132,19 @@ public class StreamKeeper {
    * @param value The value to set
    */
   public void setStream(UseKey useKey, String name, EngineNumber value) {
+    // Default behavior: apply recycling logic (backwards compatibility)
+    setStream(useKey, name, value, true);
+  }
+
+  /**
+   * Set the value of a stream with control over recycling subtraction.
+   *
+   * @param useKey The key containing application and substance
+   * @param name The stream name
+   * @param value The value to set
+   * @param subtractRecycling Whether to apply recycling logic (false for direct setting)
+   */
+  public void setStream(UseKey useKey, String name, EngineNumber value, boolean subtractRecycling) {
     String key = getKey(useKey);
     ensureSubstanceOrThrow(key, "setStream");
     ensureStreamKnown(name);
@@ -145,12 +163,23 @@ public class StreamKeeper {
       throw new RuntimeException("Encountered NaN to be set for: " + pieces);
     }
 
-    if (getIsSettingVolumeByUnits(name, value)) {
-      setStreamForSalesWithUnits(useKey, name, value);
-    } else if ("sales".equals(name)) {
-      setStreamForSales(useKey, name, value);
-    } else {
+    // Apply routing logic based on subtractRecycling parameter
+    if (!subtractRecycling && ("domestic".equals(name) || "import".equals(name))) {
+      // Direct setting - bypass recycling logic
       setSimpleStream(useKey, name, value);
+    } else {
+      // Normal routing with recycling logic
+      if (getIsSettingVolumeByUnits(name, value)) {
+        setStreamForSalesWithUnits(useKey, name, value);
+      } else if ("sales".equals(name)) {
+        setStreamForSales(useKey, name, value);
+      } else if ("domestic".equals(name) || "import".equals(name)) {
+        setSalesSubstream(useKey, name, value);
+      } else if ("recycle".equals(name)) {
+        setStreamForRecycle(useKey, name, value);
+      } else {
+        setSimpleStream(useKey, name, value);
+      }
     }
   }
 
@@ -163,23 +192,36 @@ public class StreamKeeper {
    */
   public EngineNumber getStream(UseKey useKey, String name) {
     String key = getKey(useKey);
-    
+
     ensureStreamKnown(name);
 
     if ("sales".equals(name)) {
-      EngineNumber manufactureAmountRaw = getStream(useKey, "manufacture");
+      EngineNumber domesticAmountRaw = getStream(useKey, "domestic");
       EngineNumber importAmountRaw = getStream(useKey, "import");
       EngineNumber recycleAmountRaw = getStream(useKey, "recycle");
 
-      EngineNumber manufactureAmount = unitConverter.convert(manufactureAmountRaw, "kg");
+      EngineNumber domesticAmount = unitConverter.convert(domesticAmountRaw, "kg");
       EngineNumber importAmount = unitConverter.convert(importAmountRaw, "kg");
       EngineNumber recycleAmount = unitConverter.convert(recycleAmountRaw, "kg");
 
-      BigDecimal manufactureAmountValue = manufactureAmount.getValue();
+      BigDecimal domesticAmountValue = domesticAmount.getValue();
       BigDecimal importAmountValue = importAmount.getValue();
       BigDecimal recycleAmountValue = recycleAmount.getValue();
 
-      BigDecimal newTotal = manufactureAmountValue.add(importAmountValue).add(recycleAmountValue);
+      BigDecimal newTotal = domesticAmountValue.add(importAmountValue).add(recycleAmountValue);
+
+      return new EngineNumber(newTotal, "kg");
+    } else if ("recycle".equals(name)) {
+      EngineNumber recycleRechargeAmountRaw = getStream(useKey, "recycleRecharge");
+      EngineNumber recycleEolAmountRaw = getStream(useKey, "recycleEol");
+
+      EngineNumber recycleRechargeAmount = unitConverter.convert(recycleRechargeAmountRaw, "kg");
+      EngineNumber recycleEolAmount = unitConverter.convert(recycleEolAmountRaw, "kg");
+
+      BigDecimal recycleRechargeAmountValue = recycleRechargeAmount.getValue();
+      BigDecimal recycleEolAmountValue = recycleEolAmount.getValue();
+
+      BigDecimal newTotal = recycleRechargeAmountValue.add(recycleEolAmountValue);
 
       return new EngineNumber(newTotal, "kg");
     } else {
@@ -210,7 +252,7 @@ public class StreamKeeper {
    * Get a sales stream distribution for the given substance/application.
    *
    * <p>This method centralizes the logic for creating sales distributions by getting
-   * the current manufacture and import values, determining their enabled status,
+   * the current domestic and import values, determining their enabled status,
    * and building an appropriate distribution using the builder pattern.
    * Exports are excluded for backward compatibility.</p>
    *
@@ -225,7 +267,7 @@ public class StreamKeeper {
    * Get a sales stream distribution for the given substance/application.
    *
    * <p>This method centralizes the logic for creating sales distributions by getting
-   * the current manufacture, import, and optionally export values, determining their enabled status,
+   * the current domestic, import, and optionally export values, determining their enabled status,
    * and building an appropriate distribution using the builder pattern.</p>
    *
    * @param useKey The key containing application and substance
@@ -233,11 +275,11 @@ public class StreamKeeper {
    * @return A SalesStreamDistribution with appropriate percentages
    */
   public SalesStreamDistribution getDistribution(UseKey useKey, boolean includeExports) {
-    EngineNumber manufactureValueRaw = getStream(useKey, "manufacture");
+    EngineNumber domesticValueRaw = getStream(useKey, "domestic");
     EngineNumber importValueRaw = getStream(useKey, "import");
     EngineNumber exportValueRaw = getStream(useKey, "export");
 
-    EngineNumber manufactureValue = unitConverter.convert(manufactureValueRaw, "kg");
+    EngineNumber domesticValue = unitConverter.convert(domesticValueRaw, "kg");
     EngineNumber importValue = unitConverter.convert(importValueRaw, "kg");
     EngineNumber exportValue;
     if (exportValueRaw == null) {
@@ -246,19 +288,31 @@ public class StreamKeeper {
       exportValue = unitConverter.convert(exportValueRaw, "kg");
     }
 
-    boolean manufactureEnabled = hasStreamBeenEnabled(useKey, "manufacture");
+    boolean domesticEnabled = hasStreamBeenEnabled(useKey, "domestic");
     boolean importEnabled = hasStreamBeenEnabled(useKey, "import");
     boolean exportEnabled = hasStreamBeenEnabled(useKey, "export");
 
     return new SalesStreamDistributionBuilder()
-        .setManufactureSales(manufactureValue)
+        .setDomesticSales(domesticValue)
         .setImportSales(importValue)
         .setExportSales(exportValue)
-        .setManufactureEnabled(manufactureEnabled)
+        .setDomesticEnabled(domesticEnabled)
         .setImportEnabled(importEnabled)
         .setExportEnabled(exportEnabled)
         .setIncludeExports(includeExports)
         .build();
+  }
+
+  /**
+   * Check if any sales streams have been enabled for the given substance/application.
+   *
+   * @param useKey The key containing application and substance
+   * @return True if any of domestic, import, or export streams are enabled
+   */
+  public boolean hasStreamsEnabled(UseKey useKey) {
+    return hasStreamBeenEnabled(useKey, "domestic")
+        || hasStreamBeenEnabled(useKey, "import")
+        || hasStreamBeenEnabled(useKey, "export");
   }
 
   /**
@@ -346,7 +400,7 @@ public class StreamKeeper {
    * Set the initial charge for a key's stream.
    *
    * @param useKey The key containing application and substance
-   * @param substream The stream identifier ('manufacture' or 'import')
+   * @param substream The stream identifier ('domestic' or 'import')
    * @param newValue The new initial charge value
    */
   public void setInitialCharge(UseKey useKey, String substream, EngineNumber newValue) {
@@ -421,24 +475,54 @@ public class StreamKeeper {
    */
   public void setRecoveryRate(UseKey useKey, EngineNumber newValue) {
     StreamParameterization parameterization = getParameterization(useKey);
-    
+
     // Get existing recovery rate
     EngineNumber existingRecovery = parameterization.getRecoveryRate();
-    
+
     // If existing recovery rate is non-zero, implement additive recycling
     if (existingRecovery.getValue().compareTo(BigDecimal.ZERO) > 0) {
       // Convert both rates to the same units (percentage)
       EngineNumber existingRecoveryPercent = unitConverter.convert(existingRecovery, "%");
       EngineNumber newRecoveryPercent = unitConverter.convert(newValue, "%");
-      
+
       // Add recovery rates
       BigDecimal combinedRecovery = existingRecoveryPercent.getValue().add(newRecoveryPercent.getValue());
-      
+
       // Set the combined recovery rate
       parameterization.setRecoveryRate(new EngineNumber(combinedRecovery, "%"));
     } else {
       // First recovery rate, set normally
       parameterization.setRecoveryRate(newValue);
+    }
+  }
+
+  /**
+   * Set the recovery rate percentage for a key with a specific stage.
+   *
+   * @param useKey The key containing application and substance
+   * @param newValue The new recovery rate value
+   * @param stage The recovery stage (EOL or RECHARGE)
+   */
+  public void setRecoveryRate(UseKey useKey, EngineNumber newValue, RecoveryStage stage) {
+    StreamParameterization parameterization = getParameterization(useKey);
+
+    // Get existing recovery rate for this stage
+    EngineNumber existingRecovery = parameterization.getRecoveryRate(stage);
+
+    // If existing recovery rate is non-zero, implement additive recycling
+    if (existingRecovery.getValue().compareTo(BigDecimal.ZERO) > 0) {
+      // Convert both rates to the same units (percentage)
+      EngineNumber existingRecoveryPercent = unitConverter.convert(existingRecovery, "%");
+      EngineNumber newRecoveryPercent = unitConverter.convert(newValue, "%");
+
+      // Add recovery rates
+      BigDecimal combinedRecovery = existingRecoveryPercent.getValue().add(newRecoveryPercent.getValue());
+
+      // Set the combined recovery rate
+      parameterization.setRecoveryRate(new EngineNumber(combinedRecovery, "%"), stage);
+    } else {
+      // First recovery rate, set normally
+      parameterization.setRecoveryRate(newValue, stage);
     }
   }
 
@@ -451,6 +535,18 @@ public class StreamKeeper {
   public EngineNumber getRecoveryRate(UseKey useKey) {
     StreamParameterization parameterization = getParameterization(useKey);
     return parameterization.getRecoveryRate();
+  }
+
+  /**
+   * Get the recovery rate percentage for a key with a specific stage.
+   *
+   * @param useKey The key containing application and substance
+   * @param stage The recovery stage (EOL or RECHARGE)
+   * @return The current recovery rate value
+   */
+  public EngineNumber getRecoveryRate(UseKey useKey, RecoveryStage stage) {
+    StreamParameterization parameterization = getParameterization(useKey);
+    return parameterization.getRecoveryRate(stage);
   }
 
   /**
@@ -478,7 +574,7 @@ public class StreamKeeper {
   /**
    * Set the yield rate percentage for recycling for a key.
    *
-   * <p>If a yield rate is already set and recovery rate is non-zero, this method implements 
+   * <p>If a yield rate is already set and recovery rate is non-zero, this method implements
    * weighted average yield calculation based on recovery rates.</p>
    *
    * @param useKey The key containing application and substance
@@ -486,33 +582,67 @@ public class StreamKeeper {
    */
   public void setYieldRate(UseKey useKey, EngineNumber newValue) {
     StreamParameterization parameterization = getParameterization(useKey);
-    
+
     // Get existing yield and recovery rates
     EngineNumber existingYield = parameterization.getYieldRate();
     EngineNumber existingRecovery = parameterization.getRecoveryRate();
-    
+
     // If existing yield is non-zero and recovery rate is non-zero, calculate weighted average
-    if (existingYield.getValue().compareTo(BigDecimal.ZERO) > 0 
+    if (existingYield.getValue().compareTo(BigDecimal.ZERO) > 0
         && existingRecovery.getValue().compareTo(BigDecimal.ZERO) > 0) {
-      
+
       // For weighted average, we need to know the recovery rate components
       // Since recovery rates were already combined in setRecoveryRate, we need to estimate
       // the new recovery rate component from the context
-      
+
       // Convert yield rates to the same units (percentage)
       EngineNumber existingYieldPercent = unitConverter.convert(existingYield, "%");
       EngineNumber newYieldPercent = unitConverter.convert(newValue, "%");
-      
+
       // For simplicity, assume equal weighting if we can't determine recovery components
       // This is a reasonable approximation for the weighted average
       BigDecimal combinedYield = existingYieldPercent.getValue().add(newYieldPercent.getValue()).divide(
           BigDecimal.valueOf(2), java.math.MathContext.DECIMAL128);
-      
+
       // Set the combined yield rate
       parameterization.setYieldRate(new EngineNumber(combinedYield, "%"));
     } else {
       // First yield rate or no existing recovery, set normally
       parameterization.setYieldRate(newValue);
+    }
+  }
+
+  /**
+   * Set the yield rate percentage for recycling for a key with a specific stage.
+   *
+   * @param useKey The key containing application and substance
+   * @param newValue The new yield rate value
+   * @param stage The recovery stage (EOL or RECHARGE)
+   */
+  public void setYieldRate(UseKey useKey, EngineNumber newValue, RecoveryStage stage) {
+    StreamParameterization parameterization = getParameterization(useKey);
+
+    // Get existing yield and recovery rates for this stage
+    EngineNumber existingYield = parameterization.getYieldRate(stage);
+    EngineNumber existingRecovery = parameterization.getRecoveryRate(stage);
+
+    // If existing yield rate is non-zero, implement additive recycling
+    if (existingYield.getValue().compareTo(BigDecimal.ZERO) > 0) {
+      // Convert both rates to the same units (percentage)
+      EngineNumber existingYieldPercent = unitConverter.convert(existingYield, "%");
+      EngineNumber newYieldPercent = unitConverter.convert(newValue, "%");
+
+      // For yield rates, we need to handle combining them properly
+      // Since they represent efficiency rates, we'll use a weighted average approach
+      // This is a reasonable approximation for the weighted average
+      BigDecimal combinedYield = existingYieldPercent.getValue().add(newYieldPercent.getValue()).divide(
+          BigDecimal.valueOf(2), java.math.MathContext.DECIMAL128);
+
+      // Set the combined yield rate
+      parameterization.setYieldRate(new EngineNumber(combinedYield, "%"), stage);
+    } else {
+      // First yield rate or no existing recovery, set normally
+      parameterization.setYieldRate(newValue, stage);
     }
   }
 
@@ -525,6 +655,18 @@ public class StreamKeeper {
   public EngineNumber getYieldRate(UseKey useKey) {
     StreamParameterization parameterization = getParameterization(useKey);
     return parameterization.getYieldRate();
+  }
+
+  /**
+   * Get the yield rate percentage for recycling for a key with a specific stage.
+   *
+   * @param useKey The key containing application and substance
+   * @param stage The recovery stage (EOL or RECHARGE)
+   * @return The current yield rate value
+   */
+  public EngineNumber getYieldRate(UseKey useKey, RecoveryStage stage) {
+    StreamParameterization parameterization = getParameterization(useKey);
+    return parameterization.getYieldRate(stage);
   }
 
   /**
@@ -739,28 +881,127 @@ public class StreamKeeper {
     EngineNumber recycleAmountRaw = getStream(useKey, "recycle");
     EngineNumber recycleAmount = unitConverter.convert(recycleAmountRaw, "kg");
     BigDecimal recycleKg = recycleAmount != null ? recycleAmount.getValue() : BigDecimal.ZERO;
-    
+
     // Calculate virgin material needed (sales - recycling)
     BigDecimal virginMaterialKg = amountKg.subtract(recycleKg);
     if (virginMaterialKg.compareTo(BigDecimal.ZERO) < 0) {
       virginMaterialKg = BigDecimal.ZERO;
     }
-    
+
     // Get distribution using centralized method
     SalesStreamDistribution distribution = getDistribution(useKey);
 
-    BigDecimal manufacturePercent = distribution.getPercentManufacture();
+    BigDecimal domesticPercent = distribution.getPercentDomestic();
     BigDecimal importPercent = distribution.getPercentImport();
 
-    // Distribute only the virgin material between manufacture and import
-    BigDecimal newManufactureAmount = virginMaterialKg.multiply(manufacturePercent);
+    // Distribute only the virgin material between domestic and import
+    BigDecimal newDomesticAmount = virginMaterialKg.multiply(domesticPercent);
     BigDecimal newImportAmount = virginMaterialKg.multiply(importPercent);
 
-    EngineNumber manufactureAmountToSet = new EngineNumber(newManufactureAmount, "kg");
+    EngineNumber domesticAmountToSet = new EngineNumber(newDomesticAmount, "kg");
     EngineNumber importAmountToSet = new EngineNumber(newImportAmount, "kg");
 
-    setSimpleStream(useKey, "manufacture", manufactureAmountToSet);
+    setSimpleStream(useKey, "domestic", domesticAmountToSet);
     setSimpleStream(useKey, "import", importAmountToSet);
+  }
+
+  /**
+   * Sets individual sales substreams (domestic/import) with recycling awareness.
+   * Unlike setStreamForSales, this method handles individual substreams without
+   * distribution logic but still accounts for proportional recycling.
+   *
+   * @param useKey The key containing application and substance
+   * @param streamName The stream name ("domestic" or "import")
+   * @param value The total value for this specific substream
+   */
+  private void setSalesSubstream(UseKey useKey, String streamName, EngineNumber value) {
+    EngineNumber valueConverted = unitConverter.convert(value, "kg");
+    BigDecimal amountKg = valueConverted.getValue();
+
+    // Check if any streams are enabled for distribution calculation
+    if (!hasStreamsEnabled(useKey)) {
+      throw new IllegalStateException("Cannot set sales substream: no streams have been enabled. "
+          + "Use 'set " + streamName + "' or other stream statements to enable streams before "
+          + "operations that require sales recalculation.");
+    }
+
+    // Get current recycling amount
+    EngineNumber recycleAmountRaw = getStream(useKey, "recycle");
+    EngineNumber recycleAmount = unitConverter.convert(recycleAmountRaw, "kg");
+    BigDecimal recycleKg = recycleAmount != null ? recycleAmount.getValue() : BigDecimal.ZERO;
+
+    // Get distribution to determine this substream's share of recycling
+    SalesStreamDistribution distribution = getDistribution(useKey);
+    BigDecimal substreamPercent;
+    if ("domestic".equals(streamName)) {
+      substreamPercent = distribution.getPercentDomestic();
+    } else if ("import".equals(streamName)) {
+      substreamPercent = distribution.getPercentImport();
+    } else {
+      throw new IllegalArgumentException("Unknown sales substream: " + streamName);
+    }
+
+    // Calculate proportional recycling for this substream
+    BigDecimal substreamRecycling = recycleKg.multiply(substreamPercent);
+
+    // Subtract proportional recycling to get virgin material amount
+    BigDecimal netAmount = amountKg.subtract(substreamRecycling);
+    if (netAmount.compareTo(BigDecimal.ZERO) < 0) {
+      netAmount = BigDecimal.ZERO;
+    }
+
+    // Set the net amount directly
+    EngineNumber netAmountToSet = new EngineNumber(netAmount, "kg");
+    setSimpleStream(useKey, streamName, netAmountToSet);
+  }
+
+  /**
+   * Sets the recycle stream by distributing the value proportionally between recycleRecharge and recycleEol.
+   * Similar to sales distribution, this method uses the prior sizes of recycleRecharge and recycleEol
+   * to determine the proportional distribution.
+   *
+   * @param useKey The key containing application and substance
+   * @param name The stream name (should be "recycle")
+   * @param value The total recycle value to be distributed
+   */
+  private void setStreamForRecycle(UseKey useKey, String name, EngineNumber value) {
+    EngineNumber valueConverted = unitConverter.convert(value, "kg");
+    BigDecimal totalRecycleKg = valueConverted.getValue();
+
+    // Get current recycle amounts to determine proportional distribution
+    EngineNumber recycleRechargeAmountRaw = getStream(useKey, "recycleRecharge");
+    EngineNumber recycleEolAmountRaw = getStream(useKey, "recycleEol");
+
+    EngineNumber recycleRechargeAmount = unitConverter.convert(recycleRechargeAmountRaw, "kg");
+    EngineNumber recycleEolAmount = unitConverter.convert(recycleEolAmountRaw, "kg");
+
+    BigDecimal recycleRechargeKg = recycleRechargeAmount != null ? recycleRechargeAmount.getValue() : BigDecimal.ZERO;
+    BigDecimal recycleEolKg = recycleEolAmount != null ? recycleEolAmount.getValue() : BigDecimal.ZERO;
+
+    BigDecimal totalExistingRecycle = recycleRechargeKg.add(recycleEolKg);
+
+    // Calculate proportional distribution
+    BigDecimal newRecycleRechargeAmount;
+    BigDecimal newRecycleEolAmount;
+
+    if (totalExistingRecycle.compareTo(BigDecimal.ZERO) == 0) {
+      // If no existing recycle, split equally
+      newRecycleRechargeAmount = totalRecycleKg.divide(new BigDecimal("2"));
+      newRecycleEolAmount = totalRecycleKg.divide(new BigDecimal("2"));
+    } else {
+      // Distribute proportionally based on existing amounts
+      BigDecimal rechargePercent = recycleRechargeKg.divide(totalExistingRecycle, 10, BigDecimal.ROUND_HALF_UP);
+      BigDecimal eolPercent = recycleEolKg.divide(totalExistingRecycle, 10, BigDecimal.ROUND_HALF_UP);
+
+      newRecycleRechargeAmount = totalRecycleKg.multiply(rechargePercent);
+      newRecycleEolAmount = totalRecycleKg.multiply(eolPercent);
+    }
+
+    EngineNumber recycleRechargeAmountToSet = new EngineNumber(newRecycleRechargeAmount, "kg");
+    EngineNumber recycleEolAmountToSet = new EngineNumber(newRecycleEolAmount, "kg");
+
+    setSimpleStream(useKey, "recycleRecharge", recycleRechargeAmountToSet);
+    setSimpleStream(useKey, "recycleEol", recycleEolAmountToSet);
   }
 
   /**
@@ -846,7 +1087,7 @@ public class StreamKeeper {
 
   /**
    * Assert that a stream has been enabled for the given use key.
-   * Only checks manufacture, import, and export streams.
+   * Only checks domestic, import, and export streams.
    *
    * @param useKey The key containing application and substance
    * @param streamName The name of the stream to check
@@ -855,19 +1096,19 @@ public class StreamKeeper {
    */
   private void assertStreamEnabled(UseKey useKey, String streamName, EngineNumber value) {
     // Only check enabling for sales streams that require explicit enabling
-    if (!"manufacture".equals(streamName) && !"import".equals(streamName) && !"export".equals(streamName)) {
+    if (!"domestic".equals(streamName) && !"import".equals(streamName) && !"export".equals(streamName)) {
       return;
     }
-    
+
     // Don't require enabling if setting to zero
     if (value.getValue().compareTo(BigDecimal.ZERO) == 0) {
       return;
     }
-    
+
     StreamParameterization parameterization = getParameterization(useKey);
     if (!parameterization.hasStreamBeenEnabled(streamName)) {
-      throw new RuntimeException("Stream '" + streamName + "' has not been enabled for " 
-          + useKey.getApplication() + "/" + useKey.getSubstance() 
+      throw new RuntimeException("Stream '" + streamName + "' has not been enabled for "
+          + useKey.getApplication() + "/" + useKey.getSubstance()
           + ". Use 'enable " + streamName + "' statement before setting this stream.");
     }
   }
@@ -884,14 +1125,14 @@ public class StreamKeeper {
   }
 
   /**
-   * Determine if the user is setting a sales component (manufacture / import / sales) by units.
+   * Determine if the user is setting a sales component (domestic / import / sales) by units.
    *
    * @param name The stream name
    * @param value The value to set
    * @return true if the user is setting a sales component by units and false otherwise
    */
   private boolean getIsSettingVolumeByUnits(String name, EngineNumber value) {
-    boolean isSalesComponent = "manufacture".equals(name) || "import".equals(name)
+    boolean isSalesComponent = "domestic".equals(name) || "import".equals(name)
                                || "sales".equals(name);
     boolean isUnits = value.getUnits().startsWith("unit");
     return isSalesComponent && isUnits;
@@ -913,11 +1154,11 @@ public class StreamKeeper {
         return BigDecimal.ZERO;
       }
       EngineNumber priorPopulation = unitConverter.convert(priorPopulationRaw, "units");
-      
+
       // Get retirement rate
       StreamParameterization parameterization = getParameterization(useKey);
       EngineNumber retirementRate = parameterization.getRetirementRate();
-      
+
       // Handle different retirement rate units
       BigDecimal retirementRateRatio;
       if (retirementRate.getUnits().contains("%")) {
@@ -927,10 +1168,10 @@ public class StreamKeeper {
         // If units are not percentage, assume it's already a ratio
         retirementRateRatio = retirementRate.getValue();
       }
-      
+
       // Calculate retired units
       BigDecimal retiredUnits = priorPopulation.getValue().multiply(retirementRateRatio);
-      
+
       // Get recovery rate
       EngineNumber recoveryRate = parameterization.getRecoveryRate();
       BigDecimal recoveryRateRatio;
@@ -940,10 +1181,10 @@ public class StreamKeeper {
       } else {
         recoveryRateRatio = recoveryRate.getValue();
       }
-      
+
       // Calculate recovered units
       BigDecimal recoveredUnits = retiredUnits.multiply(recoveryRateRatio);
-      
+
       // Get yield rate
       EngineNumber yieldRate = parameterization.getYieldRate();
       BigDecimal yieldRateRatio;
@@ -953,15 +1194,15 @@ public class StreamKeeper {
       } else {
         yieldRateRatio = yieldRate.getValue();
       }
-      
+
       // Calculate recycled material volume
       BigDecimal recycledUnits = recoveredUnits.multiply(yieldRateRatio);
-      
+
       // Convert to kg using initial charge
       EngineNumber initialCharge = parameterization.getInitialCharge("import");
       EngineNumber initialChargeConverted = unitConverter.convert(initialCharge, "kg / unit");
       BigDecimal recycledKg = recycledUnits.multiply(initialChargeConverted.getValue());
-      
+
       // Apply displacement rate
       EngineNumber displacementRate = parameterization.getDisplacementRate();
       BigDecimal displacementRateRatio;
@@ -971,9 +1212,9 @@ public class StreamKeeper {
       } else {
         displacementRateRatio = displacementRate.getValue();
       }
-      
+
       BigDecimal recycledDisplacedKg = recycledKg.multiply(displacementRateRatio);
-      
+
       return recycledDisplacedKg;
     } catch (Exception e) {
       // If any error occurs in recycling calculation, return 0 to avoid breaking the flow

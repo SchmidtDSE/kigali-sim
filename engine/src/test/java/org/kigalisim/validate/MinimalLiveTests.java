@@ -45,11 +45,11 @@ public class MinimalLiveTests {
       EngineResult result = LiveTestsUtil.getResult(resultsList.stream(), year, "testApp", "testSubstance");
       assertNotNull(result, "Should have result for testApp/testSubstance in year " + year);
 
-      // Check manufacture value - should be 100 mt = 100000 kg
-      assertEquals(100000.0, result.getManufacture().getValue().doubleValue(), 0.0001,
-          "Manufacture should be 100000 kg in year " + year);
-      assertEquals("kg", result.getManufacture().getUnits(),
-          "Manufacture units should be kg in year " + year);
+      // Check domestic value - should be 100 mt = 100000 kg
+      assertEquals(100000.0, result.getDomestic().getValue().doubleValue(), 0.0001,
+          "Domestic should be 100000 kg in year " + year);
+      assertEquals("kg", result.getDomestic().getUnits(),
+          "Domestic units should be kg in year " + year);
     }
   }
 

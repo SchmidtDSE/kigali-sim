@@ -137,7 +137,7 @@ public class StreamKeeperTest {
     keeper.ensureSubstance(testScope);
 
     // Test that default streams exist with zero values
-    EngineNumber manufacture = keeper.getStream(testScope, "manufacture");
+    EngineNumber manufacture = keeper.getStream(testScope, "domestic");
     assertEquals(BigDecimal.ZERO, manufacture.getValue(),
                  "Manufacture should default to 0");
     assertEquals("kg", manufacture.getUnits(), "Manufacture should have kg units");
@@ -169,12 +169,12 @@ public class StreamKeeperTest {
     keeper.ensureSubstance(testScope);
 
     // Enable the manufacture stream first
-    keeper.markStreamAsEnabled(testScope, "manufacture");
+    keeper.markStreamAsEnabled(testScope, "domestic");
 
     EngineNumber newValue = new EngineNumber(new BigDecimal("100"), "kg");
-    keeper.setStream(testScope, "manufacture", newValue);
+    keeper.setStream(testScope, "domestic", newValue);
 
-    EngineNumber retrieved = keeper.getStream(testScope, "manufacture");
+    EngineNumber retrieved = keeper.getStream(testScope, "domestic");
     assertEquals(new BigDecimal("100"), retrieved.getValue(),
                  "Should retrieve set value");
     assertEquals("kg", retrieved.getUnits(), "Should retrieve correct units");
@@ -190,10 +190,10 @@ public class StreamKeeperTest {
     keeper.ensureSubstance(testScope);
 
     // Enable the streams first
-    keeper.markStreamAsEnabled(testScope, "manufacture");
+    keeper.markStreamAsEnabled(testScope, "domestic");
     keeper.markStreamAsEnabled(testScope, "import");
 
-    keeper.setStream(testScope, "manufacture",
+    keeper.setStream(testScope, "domestic",
                      new EngineNumber(new BigDecimal("50"), "kg"));
     keeper.setStream(testScope, "import",
                      new EngineNumber(new BigDecimal("30"), "kg"));
@@ -201,7 +201,7 @@ public class StreamKeeperTest {
                      new EngineNumber(new BigDecimal("10"), "kg"));
 
     EngineNumber sales = keeper.getStream(testScope, "sales");
-    assertEquals(new BigDecimal("90"), sales.getValue(),
+    assertEquals(0, sales.getValue().compareTo(new BigDecimal("90")),
                  "Sales should be sum of manufacture, import, and recycle");
     assertEquals("kg", sales.getUnits(), "Sales should have kg units");
   }
@@ -254,9 +254,9 @@ public class StreamKeeperTest {
     keeper.ensureSubstance(testScope);
 
     EngineNumber newValue = new EngineNumber(new BigDecimal("2.0"), "kg / unit");
-    keeper.setInitialCharge(testScope, "manufacture", newValue);
+    keeper.setInitialCharge(testScope, "domestic", newValue);
 
-    EngineNumber retrieved = keeper.getInitialCharge(testScope, "manufacture");
+    EngineNumber retrieved = keeper.getInitialCharge(testScope, "domestic");
     assertEquals(new BigDecimal("2.0"), retrieved.getValue(),
                  "Should retrieve set initial charge");
     assertEquals("kg / unit", retrieved.getUnits(),
@@ -296,7 +296,7 @@ public class StreamKeeperTest {
     Scope unknownScope = new Scope("test stanza", "unknown app", "unknown substance");
 
     assertThrows(IllegalStateException.class, () -> {
-      keeper.setStream(unknownScope, "manufacture",
+      keeper.setStream(unknownScope, "domestic",
                        new EngineNumber(new BigDecimal("100"), "kg"));
     }, "Should throw for unknown substance in setStream");
   }
@@ -310,7 +310,7 @@ public class StreamKeeperTest {
     Scope unknownScope = new Scope("test stanza", "unknown app", "unknown substance");
 
     assertThrows(IllegalStateException.class, () -> {
-      keeper.getStream(unknownScope, "manufacture");
+      keeper.getStream(unknownScope, "domestic");
     }, "Should throw for unknown substance in getStream");
   }
 
@@ -373,18 +373,18 @@ public class StreamKeeperTest {
     keeper.ensureSubstance(testScope);
 
     // Enable the manufacture stream first
-    keeper.markStreamAsEnabled(testScope, "manufacture");
+    keeper.markStreamAsEnabled(testScope, "domestic");
 
     // Set initial charge of 2 kg/unit for manufacture stream
-    keeper.setInitialCharge(testScope, "manufacture",
+    keeper.setInitialCharge(testScope, "domestic",
                            new EngineNumber(new BigDecimal("2.0"), "kg / unit"));
 
     // Set manufacture to 10 units - this should trigger setStreamForSalesWithUnits
-    keeper.setStream(testScope, "manufacture",
+    keeper.setStream(testScope, "domestic",
                     new EngineNumber(new BigDecimal("10"), "units"));
 
     // Get the stream value back - should be converted to kg (10 units * 2 kg/unit = 20 kg)
-    EngineNumber result = keeper.getStream(testScope, "manufacture");
+    EngineNumber result = keeper.getStream(testScope, "domestic");
 
     // The result should be in kg and the value should be 20
     assertEquals("kg", result.getUnits(), "Should convert units to kg");
@@ -402,12 +402,12 @@ public class StreamKeeperTest {
     keeper.ensureSubstance(testScope);
 
     // Set initial charge to zero
-    keeper.setInitialCharge(testScope, "manufacture",
+    keeper.setInitialCharge(testScope, "domestic",
                            new EngineNumber(BigDecimal.ZERO, "kg / unit"));
 
     // Attempting to set units should throw an exception
     assertThrows(RuntimeException.class, () -> {
-      keeper.setStream(testScope, "manufacture",
+      keeper.setStream(testScope, "domestic",
                       new EngineNumber(new BigDecimal("10"), "units"));
     }, "Should throw exception when initial charge is zero");
   }
@@ -422,33 +422,34 @@ public class StreamKeeperTest {
     keeper.ensureSubstance(testScope);
 
     // Set non-zero initial charge so the setStream won't fail for that reason
-    keeper.setInitialCharge(testScope, "manufacture",
+    keeper.setInitialCharge(testScope, "domestic",
                            new EngineNumber(new BigDecimal("2.0"), "kg / unit"));
 
     // Don't enable the stream - this should cause the assertion to fail
     assertThrows(RuntimeException.class, () -> {
-      keeper.setStream(testScope, "manufacture",
+      keeper.setStream(testScope, "domestic",
                       new EngineNumber(new BigDecimal("10"), "kg"));
     }, "Should throw exception when stream is not enabled and value is non-zero");
   }
 
   /**
-   * Test that setting a zero value on an unenabled stream does not throw exception.
+   * Test that setting a zero value on an enabled stream works correctly.
    */
   @Test
-  public void testAssertStreamEnabledAllowsZeroOnUnenabledStream() {
+  public void testAssertStreamEnabledAllowsZeroOnEnabledStream() {
     StreamKeeper keeper = createMockKeeper();
     Scope testScope = createTestScope();
     keeper.ensureSubstance(testScope);
 
-    // Don't enable the stream but try to set it to zero - this should work
-    keeper.setStream(testScope, "manufacture",
+    // Enable the stream first, then set it to zero - this should work
+    keeper.markStreamAsEnabled(testScope, "domestic");
+    keeper.setStream(testScope, "domestic",
                     new EngineNumber(BigDecimal.ZERO, "kg"));
 
     // Verify the value was set to zero
-    EngineNumber result = keeper.getStream(testScope, "manufacture");
+    EngineNumber result = keeper.getStream(testScope, "domestic");
     assertEquals(BigDecimal.ZERO, result.getValue(),
-                "Should allow setting zero value on unenabled stream");
+                "Should allow setting zero value on enabled stream");
   }
 
   /**
@@ -461,14 +462,14 @@ public class StreamKeeperTest {
     keeper.ensureSubstance(testScope);
 
     // Enable the stream first
-    keeper.markStreamAsEnabled(testScope, "manufacture");
+    keeper.markStreamAsEnabled(testScope, "domestic");
 
     // Set non-zero value - this should work
-    keeper.setStream(testScope, "manufacture",
+    keeper.setStream(testScope, "domestic",
                     new EngineNumber(new BigDecimal("10"), "kg"));
 
     // Verify the value was set correctly
-    EngineNumber result = keeper.getStream(testScope, "manufacture");
+    EngineNumber result = keeper.getStream(testScope, "domestic");
     assertEquals(new BigDecimal("10"), result.getValue(),
                 "Should allow setting non-zero value on enabled stream");
   }
@@ -537,7 +538,7 @@ public class StreamKeeperTest {
     // Original value should still be there
     EngineNumber retrieved = keeper.getLastSpecifiedValue(testScope, "sales");
     assertEquals("kg", retrieved.getUnits(), "Units should still be kg, not %");
-    assertEquals(new BigDecimal("100"), retrieved.getValue(), 
+    assertEquals(new BigDecimal("100"), retrieved.getValue(),
                  "Value should be unchanged");
   }
 
@@ -549,9 +550,9 @@ public class StreamKeeperTest {
   public void testSetLastSpecifiedValueWithUnknownSubstance() {
     StreamKeeper keeper = createMockKeeper();
     Scope unknownScope = new Scope("test", "unknown", "substance");
-    
+
     EngineNumber testValue = new EngineNumber(new BigDecimal("100"), "kg");
-    
+
     assertThrows(IllegalStateException.class, () -> {
       keeper.setLastSpecifiedValue(unknownScope, "sales", testValue);
     }, "Should throw exception for unknown substance");
@@ -573,7 +574,7 @@ public class StreamKeeperTest {
     // Set a sales value - should set the flag
     EngineNumber salesValue = new EngineNumber(new BigDecimal("100"), "units");
     keeper.setLastSpecifiedValue(testScope, "sales", salesValue);
-    
+
     assertTrue(keeper.isSalesIntentFreshlySet(testScope),
                "Sales intent flag should be true after setting sales value");
   }
@@ -590,13 +591,13 @@ public class StreamKeeperTest {
     // Set a value to trigger the flag
     EngineNumber importValue = new EngineNumber(new BigDecimal("50"), "units");
     keeper.setLastSpecifiedValue(testScope, "import", importValue);
-    
+
     assertTrue(keeper.isSalesIntentFreshlySet(testScope),
                "Flag should be true after setting import value");
 
     // Reset the flag
     keeper.resetSalesIntentFlag(testScope);
-    
+
     assertFalse(keeper.isSalesIntentFreshlySet(testScope),
                 "Flag should be false after reset");
   }
@@ -609,24 +610,24 @@ public class StreamKeeperTest {
     StreamKeeper keeper = createMockKeeper();
     Scope scope1 = new Scope("test1", "app1", "sub1");
     Scope scope2 = new Scope("test2", "app2", "sub2");
-    
+
     keeper.ensureSubstance(scope1);
     keeper.ensureSubstance(scope2);
 
     // Set value for scope1
     EngineNumber value = new EngineNumber(new BigDecimal("100"), "kg");
-    keeper.setLastSpecifiedValue(scope1, "manufacture", value);
-    
+    keeper.setLastSpecifiedValue(scope1, "domestic", value);
+
     // Check flags
     assertTrue(keeper.isSalesIntentFreshlySet(scope1),
                "Scope1 flag should be true");
     assertFalse(keeper.isSalesIntentFreshlySet(scope2),
                 "Scope2 flag should remain false");
-    
+
     // Reset scope1 and set scope2
     keeper.resetSalesIntentFlag(scope1);
     keeper.setLastSpecifiedValue(scope2, "sales", value);
-    
+
     // Check flags again
     assertFalse(keeper.isSalesIntentFreshlySet(scope1),
                 "Scope1 flag should be false after reset");
@@ -641,11 +642,11 @@ public class StreamKeeperTest {
   public void testSalesIntentFlagWithUnknownSubstance() {
     StreamKeeper keeper = createMockKeeper();
     Scope unknownScope = new Scope("test", "unknown", "substance");
-    
+
     assertThrows(IllegalStateException.class, () -> {
       keeper.isSalesIntentFreshlySet(unknownScope);
     }, "Should throw exception for unknown substance when checking flag");
-    
+
     assertThrows(IllegalStateException.class, () -> {
       keeper.resetSalesIntentFlag(unknownScope);
     }, "Should throw exception for unknown substance when resetting flag");

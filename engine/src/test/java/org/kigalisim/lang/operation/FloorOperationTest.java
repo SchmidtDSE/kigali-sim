@@ -51,7 +51,7 @@ public class FloorOperationTest {
   public void testInitializesNoDuringNoDisplacement() {
     EngineNumber number = new EngineNumber(BigDecimal.valueOf(42), "kg");
     Operation valueOperation = new PreCalculatedOperation(number);
-    FloorOperation operation = new FloorOperation("manufacture", valueOperation);
+    FloorOperation operation = new FloorOperation("domestic", valueOperation);
     assertNotNull(operation, "FloorOperation should be constructable without during and displacement");
   }
 
@@ -63,7 +63,7 @@ public class FloorOperationTest {
     EngineNumber number = new EngineNumber(BigDecimal.valueOf(42), "kg");
     Operation valueOperation = new PreCalculatedOperation(number);
     ParsedDuring during = new ParsedDuring(Optional.empty(), Optional.empty());
-    FloorOperation operation = new FloorOperation("manufacture", valueOperation, during);
+    FloorOperation operation = new FloorOperation("domestic", valueOperation, during);
     assertNotNull(operation, "FloorOperation should be constructable with during but no displacement");
   }
 
@@ -74,7 +74,7 @@ public class FloorOperationTest {
   public void testInitializesWithDisplacementNoDuring() {
     EngineNumber number = new EngineNumber(BigDecimal.valueOf(42), "kg");
     Operation valueOperation = new PreCalculatedOperation(number);
-    FloorOperation operation = new FloorOperation("manufacture", valueOperation, "import");
+    FloorOperation operation = new FloorOperation("domestic", valueOperation, "import");
     assertNotNull(operation, "FloorOperation should be constructable with displacement but no during");
   }
 
@@ -86,7 +86,7 @@ public class FloorOperationTest {
     EngineNumber number = new EngineNumber(BigDecimal.valueOf(42), "kg");
     Operation valueOperation = new PreCalculatedOperation(number);
     ParsedDuring during = new ParsedDuring(Optional.empty(), Optional.empty());
-    FloorOperation operation = new FloorOperation("manufacture", valueOperation, "import", during);
+    FloorOperation operation = new FloorOperation("domestic", valueOperation, "import", during);
     assertNotNull(operation, "FloorOperation should be constructable with both during and displacement");
   }
 
@@ -96,18 +96,18 @@ public class FloorOperationTest {
   @Test
   public void testExecuteNoDuringNoDisplacementWithFlooring() {
     // Set up a stream with a value lower than the floor
-    engine.enable("manufacture", Optional.empty());
-    engine.setStream("manufacture", new EngineNumber(BigDecimal.valueOf(20), "kg"), Optional.empty());
+    engine.enable("domestic", Optional.empty());
+    engine.setStream("domestic", new EngineNumber(BigDecimal.valueOf(20), "kg"), Optional.empty());
 
     // Create a floor operation with a higher value
     EngineNumber number = new EngineNumber(BigDecimal.valueOf(42), "kg");
     Operation valueOperation = new PreCalculatedOperation(number);
-    FloorOperation operation = new FloorOperation("manufacture", valueOperation);
+    FloorOperation operation = new FloorOperation("domestic", valueOperation);
 
     operation.execute(machine);
 
     // Verify the stream was floored in the engine
-    EngineNumber result = engine.getStream("manufacture");
+    EngineNumber result = engine.getStream("domestic");
     assertEquals(BigDecimal.valueOf(42), result.getValue(), "Stream value should be floored to 42");
     assertEquals("kg", result.getUnits(), "Stream units should remain kg");
   }
@@ -118,18 +118,18 @@ public class FloorOperationTest {
   @Test
   public void testExecuteNoDuringNoDisplacementWithoutFlooring() {
     // Set up a stream with a value higher than the floor
-    engine.enable("manufacture", Optional.empty());
-    engine.setStream("manufacture", new EngineNumber(BigDecimal.valueOf(100), "kg"), Optional.empty());
+    engine.enable("domestic", Optional.empty());
+    engine.setStream("domestic", new EngineNumber(BigDecimal.valueOf(100), "kg"), Optional.empty());
 
     // Create a floor operation with a lower value
     EngineNumber number = new EngineNumber(BigDecimal.valueOf(42), "kg");
     Operation valueOperation = new PreCalculatedOperation(number);
-    FloorOperation operation = new FloorOperation("manufacture", valueOperation);
+    FloorOperation operation = new FloorOperation("domestic", valueOperation);
 
     operation.execute(machine);
 
     // Verify the stream was not changed
-    EngineNumber result = engine.getStream("manufacture");
+    EngineNumber result = engine.getStream("domestic");
     assertEquals(BigDecimal.valueOf(100), result.getValue(), "Stream value should remain 100");
     assertEquals("kg", result.getUnits(), "Stream units should remain kg");
   }
@@ -140,8 +140,8 @@ public class FloorOperationTest {
   @Test
   public void testExecuteWithDuringApplying() {
     // Set up a stream with a value lower than the floor
-    engine.enable("manufacture", Optional.empty());
-    engine.setStream("manufacture", new EngineNumber(BigDecimal.valueOf(20), "kg"), Optional.empty());
+    engine.enable("domestic", Optional.empty());
+    engine.setStream("domestic", new EngineNumber(BigDecimal.valueOf(20), "kg"), Optional.empty());
 
     // Create a floor operation with a higher value and a during that applies to the current year
     EngineNumber number = new EngineNumber(BigDecimal.valueOf(42), "kg");
@@ -152,12 +152,12 @@ public class FloorOperationTest {
     TimePointFuture start = new CalculatedTimePointFuture(yearOperation);
     ParsedDuring during = new ParsedDuring(Optional.of(start), Optional.empty());
 
-    FloorOperation operation = new FloorOperation("manufacture", valueOperation, during);
+    FloorOperation operation = new FloorOperation("domestic", valueOperation, during);
 
     operation.execute(machine);
 
     // Verify the stream was floored
-    EngineNumber result = engine.getStream("manufacture");
+    EngineNumber result = engine.getStream("domestic");
     assertEquals(BigDecimal.valueOf(42), result.getValue(), "Stream value should be floored to 42");
     assertEquals("kg", result.getUnits(), "Stream units should remain kg");
   }
@@ -168,8 +168,8 @@ public class FloorOperationTest {
   @Test
   public void testExecuteWithDuringNotApplying() {
     // Set up a stream with a value lower than the floor
-    engine.enable("manufacture", Optional.empty());
-    engine.setStream("manufacture", new EngineNumber(BigDecimal.valueOf(20), "kg"), Optional.empty());
+    engine.enable("domestic", Optional.empty());
+    engine.setStream("domestic", new EngineNumber(BigDecimal.valueOf(20), "kg"), Optional.empty());
 
     // Create a floor operation with a higher value and a during that applies to a future year
     EngineNumber number = new EngineNumber(BigDecimal.valueOf(42), "kg");
@@ -180,12 +180,12 @@ public class FloorOperationTest {
     TimePointFuture start = new CalculatedTimePointFuture(yearOperation);
     ParsedDuring during = new ParsedDuring(Optional.of(start), Optional.empty());
 
-    FloorOperation operation = new FloorOperation("manufacture", valueOperation, during);
+    FloorOperation operation = new FloorOperation("domestic", valueOperation, during);
 
     operation.execute(machine);
 
     // Verify the stream was not floored
-    EngineNumber result = engine.getStream("manufacture");
+    EngineNumber result = engine.getStream("domestic");
     assertEquals(BigDecimal.valueOf(20), result.getValue(), "Stream value should remain 20");
     assertEquals("kg", result.getUnits(), "Stream units should remain kg");
   }
@@ -196,20 +196,20 @@ public class FloorOperationTest {
   @Test
   public void testExecuteWithComplexValueOperation() {
     // Set up a stream with a value lower than the floor
-    engine.enable("manufacture", Optional.empty());
-    engine.setStream("manufacture", new EngineNumber(BigDecimal.valueOf(20), "kg"), Optional.empty());
+    engine.enable("domestic", Optional.empty());
+    engine.setStream("domestic", new EngineNumber(BigDecimal.valueOf(20), "kg"), Optional.empty());
 
     // Create a floor operation with a complex value operation
     Operation left = new PreCalculatedOperation(new EngineNumber(BigDecimal.valueOf(30), "kg"));
     Operation right = new PreCalculatedOperation(new EngineNumber(BigDecimal.valueOf(12), "kg"));
     Operation valueOperation = new AdditionOperation(left, right); // 30 + 12 = 42
 
-    FloorOperation operation = new FloorOperation("manufacture", valueOperation);
+    FloorOperation operation = new FloorOperation("domestic", valueOperation);
 
     operation.execute(machine);
 
     // Verify the stream was floored
-    EngineNumber result = engine.getStream("manufacture");
+    EngineNumber result = engine.getStream("domestic");
     assertEquals(BigDecimal.valueOf(42), result.getValue(), "Stream value should be floored to 42");
     assertEquals("kg", result.getUnits(), "Stream units should remain kg");
   }
@@ -220,8 +220,8 @@ public class FloorOperationTest {
   @Test
   public void testExecuteWithDisplacement() {
     // Set up the source stream with a value lower than the floor
-    engine.enable("manufacture", Optional.empty());
-    engine.setStream("manufacture", new EngineNumber(BigDecimal.valueOf(20), "kg"), Optional.empty());
+    engine.enable("domestic", Optional.empty());
+    engine.setStream("domestic", new EngineNumber(BigDecimal.valueOf(20), "kg"), Optional.empty());
 
     // Set up the target stream for displacement with an initial value
     engine.enable("import", Optional.empty());
@@ -230,20 +230,20 @@ public class FloorOperationTest {
     // Create a floor operation with displacement
     EngineNumber number = new EngineNumber(BigDecimal.valueOf(42), "kg");
     Operation valueOperation = new PreCalculatedOperation(number);
-    FloorOperation operation = new FloorOperation("manufacture", valueOperation, "import");
+    FloorOperation operation = new FloorOperation("domestic", valueOperation, "import");
 
     operation.execute(machine);
 
     // Verify the source stream was floored
-    EngineNumber sourceResult = engine.getStream("manufacture");
-    assertEquals(BigDecimal.valueOf(42), sourceResult.getValue(), "Source stream should be floored to 42");
+    EngineNumber sourceResult = engine.getStream("domestic");
+    assertEquals(0, BigDecimal.valueOf(42).compareTo(sourceResult.getValue()), "Source stream should be floored to 42");
     assertEquals("kg", sourceResult.getUnits(), "Source stream units should remain kg");
 
     // Verify the displacement effect on the target stream
     // The floor operation adds 22 kg to the source stream, and the displacement
     // subtracts the same amount from the target stream
     EngineNumber targetResult = engine.getStream("import");
-    assertEquals(BigDecimal.valueOf(28), targetResult.getValue(), "Target stream should be 50 - 22 = 28");
+    assertEquals(0, BigDecimal.valueOf(28).compareTo(targetResult.getValue()), "Target stream should be 50 - 22 = 28");
     assertEquals("kg", targetResult.getUnits(), "Target stream units should be kg");
   }
 }

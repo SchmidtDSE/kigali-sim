@@ -48,7 +48,7 @@ public class RecalcOperation {
     for (RecalcStrategy strategy : strategies) {
       strategy.execute(target, recalcKit);
     }
-    
+
     // Reset sales intent flag if this operation modified sales
     if (shouldResetSalesIntent && target instanceof SingleThreadEngine) {
       SingleThreadEngine singleThreadEngine = (SingleThreadEngine) target;
