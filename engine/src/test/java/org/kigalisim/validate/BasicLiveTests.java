@@ -25,6 +25,36 @@ import org.kigalisim.lang.program.ParsedProgram;
 public class BasicLiveTests {
 
   /**
+   * Test basic Monte Carlo functionality with trials.
+   */
+  @Test
+  public void testBasicMonteCarlo() throws IOException {
+    // Load and parse the QTA file
+    String qtaPath = "../examples/basic_monte_carlo.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    // Run the scenario using KigaliSimFacade
+    String scenarioName = "monte carlo test";
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
+
+    List<EngineResult> resultsList = results.collect(Collectors.toList());
+    
+    // Should have 10 trials * 2 years = 20 results
+    assertEquals(20, resultsList.size(), "Should have 20 results (10 trials * 2 years)");
+    
+    // Check that we have results for trials 1-10
+    for (int trial = 1; trial <= 10; trial++) {
+      EngineResult result = LiveTestsUtil.getResultWithTrial(resultsList.stream(), trial, 1, "test", "test");
+      assertNotNull(result, "Should have result for trial " + trial + " year 1");
+      
+      // Equipment should be 2000 units (100 mt * 20 units/mt)  
+      assertEquals(2000.0, result.getPopulation().getValue().doubleValue(), 0.0001,
+          "Equipment should be 2000 units for trial " + trial);
+    }
+  }
+
+  /**
    * Test basic.qta produces expected values.
    */
   @Test
