@@ -821,4 +821,59 @@ public class RecycleRecoverLiveTests {
         "Policy scenario should still have recycling consumption in year 3");
   }
 
+  /**
+   * Test for import initial charge to exporter issue with total recovery policy.
+   * This test reproduces the user's QubecTalk script and verifies that import 
+   * with attribute "initial charge to exporter" should be 0 kg before year 9,
+   * as it should subtract importInitialChargeValue from TradeSupplement.
+   * Currently this test captures the unexpected behavior - it's expected to fail.
+   */
+  @Test
+  public void testFullRecycling() throws IOException {
+    // Load and parse the QTA file
+    String qtaPath = "../examples/full_recycling.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    // Run the recycling scenario
+    String scenarioName = "Recycling";
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
+    List<EngineResult> resultsList = results.collect(Collectors.toList());
+
+    // Check that we have results for all years 1-10
+    assertNotNull(resultsList, "Results list should not be null");
+    assertTrue(resultsList.size() > 0, "Should have simulation results");
+
+    // Test years 1-8 (before year 9) - import initial charge to exporter should be 0 kg
+    for (int year = 1; year <= 8; year++) {
+      EngineResult result = LiveTestsUtil.getResult(resultsList.stream(), year, "Test", "HFC-134a");
+      assertNotNull(result, "Should have result for Test/HFC-134a in year " + year);
+      
+      // Access TradeSupplement to check import initial charge to exporter
+      // The key assertion: import initial charge to exporter should be 0 kg
+      // This represents the expected behavior - subtracting importInitialChargeValue from TradeSupplement
+      double importInitialChargeValue = result.getTradeSupplement().getImportInitialChargeValue().getValue().doubleValue();
+      
+      // According to user expectation: import initial charge to exporter should be 0 kg before year 9
+      // This assertion will likely fail, capturing the bug
+      assertEquals(0.0, importInitialChargeValue, 0.001, 
+          "Import initial charge to exporter should be 0 kg in year " + year + 
+          " when total recovery policy is applied, but got: " + importInitialChargeValue + " kg");
+    }
+
+    // Check year 9 to see if behavior changes
+    EngineResult resultYear9 = LiveTestsUtil.getResult(resultsList.stream(), 9, "Test", "HFC-134a");
+    if (resultYear9 != null) {
+      double importInitialChargeYear9 = resultYear9.getTradeSupplement().getImportInitialChargeValue().getValue().doubleValue();
+      System.out.println("Year 9 ImportInitialChargeValue: " + importInitialChargeYear9 + " kg");
+    }
+
+    // Check year 10 as well
+    EngineResult resultYear10 = LiveTestsUtil.getResult(resultsList.stream(), 10, "Test", "HFC-134a");
+    if (resultYear10 != null) {
+      double importInitialChargeYear10 = resultYear10.getTradeSupplement().getImportInitialChargeValue().getValue().doubleValue();
+      System.out.println("Year 10 ImportInitialChargeValue: " + importInitialChargeYear10 + " kg");
+    }
+  }
+
 }
