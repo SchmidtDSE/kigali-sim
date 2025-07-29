@@ -823,14 +823,12 @@ public class RecycleRecoverLiveTests {
 
   /**
    * Test for import attribution issue with 100% recovery policy.
-   * 
-   * With 100% recovery and 100% reuse at recharge, all recharge needs should be 
+   *
+   * <p>With 100% recovery and 100% reuse at recharge, all recharge needs should be 
    * satisfied by recycled material. Since initial charge is attributed to the exporter,
    * the import attributed to importer should be 0 kg (no virgin imports needed).
-   * 
-   * Import attributed to importer = Total imports - Import initial charge to exporter
-   * 
-   * Currently this test captures the unexpected behavior - it's expected to fail.
+   *
+   * <p>Import attributed to importer = Total imports - Import initial charge to exporter
    */
   @Test
   public void testFullRecycling() throws IOException {
@@ -862,11 +860,11 @@ public class RecycleRecoverLiveTests {
       // With 100% recovery and 100% reuse at recharge, all recharge needs are met by recycling
       // Initial charge is attributed to exporter, so import attributed to importer should be 0 kg
       assertEquals(0.0, importAttributedToImporter, 0.001, 
-          "Import attributed to importer should be 0 kg in year " + year + 
-          " when 100% recycling at recharge satisfies all recharge needs. " +
-          "Total imports: " + totalImports + " kg, " +
-          "Import initial charge to exporter: " + importInitialChargeToExporter + " kg, " +
-          "Import attributed to importer: " + importAttributedToImporter + " kg");
+          "Import attributed to importer should be 0 kg in year " + year 
+          + " when 100% recycling at recharge satisfies all recharge needs. "
+          + "Total imports: " + totalImports + " kg, "
+          + "Import initial charge to exporter: " + importInitialChargeToExporter + " kg, "
+          + "Import attributed to importer: " + importAttributedToImporter + " kg");
     }
   }
 

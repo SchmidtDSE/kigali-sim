@@ -257,7 +257,7 @@ public class EngineResultSerializer {
     // Calculate virgin recharge demand (total recharge minus recycling)
     BigDecimal virginRechargeKg = totalRechargeKg.subtract(recycleRechargeKg);
     if (virginRechargeKg.compareTo(BigDecimal.ZERO) < 0) {
-        virginRechargeKg = BigDecimal.ZERO;
+      virginRechargeKg = BigDecimal.ZERO;
     }
 
     BigDecimal importRechargeKg = proportionImport.multiply(virginRechargeKg);
