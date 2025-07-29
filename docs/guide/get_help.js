@@ -5,7 +5,7 @@
  */
 
 const POST_URL = "https://uyppqr75wwrl3uejzvbm5c3qh40aoncr.lambda-url.us-east-2.on.aws/";
-const FAIL_MESSAGE = "Sorry we ran into an issue. Please email hello@mlf-policy-explorer.org.";
+const FAIL_MESSAGE = "Sorry we ran into an issue. Please email hello@kigalisim.org.";
 
 /**
  * Check if a given string is empty.
