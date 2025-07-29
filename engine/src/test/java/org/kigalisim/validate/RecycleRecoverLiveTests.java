@@ -822,10 +822,14 @@ public class RecycleRecoverLiveTests {
   }
 
   /**
-   * Test for import initial charge to exporter issue with total recovery policy.
-   * This test reproduces the user's QubecTalk script and verifies that import 
-   * with attribute "initial charge to exporter" should be 0 kg before year 9,
-   * as it should subtract importInitialChargeValue from TradeSupplement.
+   * Test for import attribution issue with 100% recovery policy.
+   * 
+   * With 100% recovery and 100% reuse at recharge, all recharge needs should be 
+   * satisfied by recycled material. Since initial charge is attributed to the exporter,
+   * the import attributed to importer should be 0 kg (no virgin imports needed).
+   * 
+   * Import attributed to importer = Total imports - Import initial charge to exporter
+   * 
    * Currently this test captures the unexpected behavior - it's expected to fail.
    */
   @Test
@@ -844,35 +848,25 @@ public class RecycleRecoverLiveTests {
     assertNotNull(resultsList, "Results list should not be null");
     assertTrue(resultsList.size() > 0, "Should have simulation results");
 
-    // Test years 1-8 (before year 9) - import initial charge to exporter should be 0 kg
-    for (int year = 1; year <= 8; year++) {
+    // Test all years - import attributed to importer should be 0 kg with 100% recycling
+    for (int year = 1; year <= 10; year++) {
       EngineResult result = LiveTestsUtil.getResult(resultsList.stream(), year, "Test", "HFC-134a");
       assertNotNull(result, "Should have result for Test/HFC-134a in year " + year);
       
-      // Access TradeSupplement to check import initial charge to exporter
-      // The key assertion: import initial charge to exporter should be 0 kg
-      // This represents the expected behavior - subtracting importInitialChargeValue from TradeSupplement
-      double importInitialChargeValue = result.getTradeSupplement().getImportInitialChargeValue().getValue().doubleValue();
+      // Calculate import attributed to importer (from importer's perspective):
+      // Import attributed to importer = Total imports - Import initial charge to exporter
+      double totalImports = result.getImport().getValue().doubleValue();
+      double importInitialChargeToExporter = result.getTradeSupplement().getImportInitialChargeValue().getValue().doubleValue();
+      double importAttributedToImporter = totalImports - importInitialChargeToExporter;
       
-      // According to user expectation: import initial charge to exporter should be 0 kg before year 9
-      // This assertion will likely fail, capturing the bug
-      assertEquals(0.0, importInitialChargeValue, 0.001, 
-          "Import initial charge to exporter should be 0 kg in year " + year + 
-          " when total recovery policy is applied, but got: " + importInitialChargeValue + " kg");
-    }
-
-    // Check year 9 to see if behavior changes
-    EngineResult resultYear9 = LiveTestsUtil.getResult(resultsList.stream(), 9, "Test", "HFC-134a");
-    if (resultYear9 != null) {
-      double importInitialChargeYear9 = resultYear9.getTradeSupplement().getImportInitialChargeValue().getValue().doubleValue();
-      System.out.println("Year 9 ImportInitialChargeValue: " + importInitialChargeYear9 + " kg");
-    }
-
-    // Check year 10 as well
-    EngineResult resultYear10 = LiveTestsUtil.getResult(resultsList.stream(), 10, "Test", "HFC-134a");
-    if (resultYear10 != null) {
-      double importInitialChargeYear10 = resultYear10.getTradeSupplement().getImportInitialChargeValue().getValue().doubleValue();
-      System.out.println("Year 10 ImportInitialChargeValue: " + importInitialChargeYear10 + " kg");
+      // With 100% recovery and 100% reuse at recharge, all recharge needs are met by recycling
+      // Initial charge is attributed to exporter, so import attributed to importer should be 0 kg
+      assertEquals(0.0, importAttributedToImporter, 0.001, 
+          "Import attributed to importer should be 0 kg in year " + year + 
+          " when 100% recycling at recharge satisfies all recharge needs. " +
+          "Total imports: " + totalImports + " kg, " +
+          "Import initial charge to exporter: " + importInitialChargeToExporter + " kg, " +
+          "Import attributed to importer: " + importAttributedToImporter + " kg");
     }
   }
 
