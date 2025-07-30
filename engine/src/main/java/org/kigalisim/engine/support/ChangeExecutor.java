@@ -12,7 +12,6 @@ package org.kigalisim.engine.support;
 
 import java.math.BigDecimal;
 import java.util.Optional;
-import org.kigalisim.engine.EngineSupportUtils;
 import org.kigalisim.engine.SingleThreadEngine;
 import org.kigalisim.engine.number.EngineNumber;
 import org.kigalisim.engine.number.UnitConverter;
@@ -50,16 +49,32 @@ public class ChangeExecutor {
    */
   public void executeChange(String stream, EngineNumber amount, YearMatcher yearMatcher,
       UseKey useKeyEffective) {
-    if (!EngineSupportUtils.isInRange(yearMatcher, engine.getYear())) {
+    ChangeExecutorConfig config = new ChangeExecutorConfigBuilder()
+        .setStream(stream)
+        .setAmount(amount)
+        .setYearMatcher(yearMatcher)
+        .setUseKeyEffective(useKeyEffective)
+        .build();
+    executeChange(config);
+  }
+
+  /**
+   * Execute a change operation using configuration object.
+   *
+   * @param config The configuration containing all parameters for the change operation
+   */
+  public void executeChange(ChangeExecutorConfig config) {
+    if (!EngineSupportUtils.isInRange(config.getYearMatcher(), engine.getYear())) {
       return;
     }
 
+    String stream = config.getStream();
     if ("sales".equals(stream)) {
-      handleSalesChange(stream, amount, yearMatcher, useKeyEffective);
+      handleSalesChange(config);
     } else if (EngineSupportUtils.isSalesSubstream(stream) || "export".equals(stream)) {
-      handleComponentStream(stream, amount, yearMatcher, useKeyEffective);
+      handleComponentStream(config);
     } else {
-      handleDerivedStream(stream, amount, yearMatcher, useKeyEffective);
+      handleDerivedStream(config);
     }
   }
 
@@ -67,32 +82,29 @@ public class ChangeExecutor {
    * Handle component stream changes (domestic, import, export).
    * Routes to specific handlers based on the units of the amount.
    *
-   * @param stream The stream identifier to modify
-   * @param amount The change amount (percentage, units, or kg)
-   * @param yearMatcher Matcher to determine if the change applies to current year
-   * @param useKeyEffective The effective UseKey for the operation
+   * @param config The configuration containing all parameters for the change operation
    */
-  private void handleComponentStream(String stream, EngineNumber amount, YearMatcher yearMatcher,
-      UseKey useKeyEffective) {
+  private void handleComponentStream(ChangeExecutorConfig config) {
+    EngineNumber amount = config.getAmount();
     if (amount.getUnits() != null && amount.getUnits().contains("%")) {
-      handlePercentageChange(stream, amount, yearMatcher, useKeyEffective);
+      handlePercentageChange(config);
     } else if ("units".equals(amount.getUnits())) {
-      handleUnitsChange(stream, amount, yearMatcher, useKeyEffective);
+      handleUnitsChange(config);
     } else {
-      handleVolumeChange(stream, amount, yearMatcher, useKeyEffective);
+      handleVolumeChange(config);
     }
   }
 
   /**
    * Handle derived stream changes (equipment, priorEquipment, etc.).
    *
-   * @param stream The stream identifier to modify
-   * @param amount The change amount (percentage, units, or kg)
-   * @param yearMatcher Matcher to determine if the change applies to current year
-   * @param useKeyEffective The effective UseKey for the operation
+   * @param config The configuration containing all parameters for the change operation
    */
-  private void handleDerivedStream(String stream, EngineNumber amount, YearMatcher yearMatcher,
-      UseKey useKeyEffective) {
+  private void handleDerivedStream(ChangeExecutorConfig config) {
+    String stream = config.getStream();
+    EngineNumber amount = config.getAmount();
+    UseKey useKeyEffective = config.getUseKeyEffective();
+
     // Use original changeStream logic to preserve displacement
     EngineNumber currentValue = engine.getStream(stream, Optional.of(useKeyEffective), Optional.empty());
     UnitConverter unitConverter = EngineSupportUtils.createUnitConverterWithTotal(engine, stream);
@@ -114,13 +126,14 @@ public class ChangeExecutor {
    * Handle percentage-based change operations.
    * SIMPLIFIED VERSION: Apply percentage directly to lastSpecifiedValue and let setStream handle recharge.
    *
-   * @param stream The stream identifier to modify
-   * @param amount The percentage amount (e.g., "5%")
-   * @param yearMatcher Matcher to determine if the change applies to current year
-   * @param useKeyEffective The effective UseKey for the operation
+   * @param config The configuration containing all parameters for the change operation
    */
-  private void handlePercentageChange(String stream, EngineNumber amount, YearMatcher yearMatcher,
-      UseKey useKeyEffective) {
+  private void handlePercentageChange(ChangeExecutorConfig config) {
+    String stream = config.getStream();
+    EngineNumber amount = config.getAmount();
+    YearMatcher yearMatcher = config.getYearMatcher();
+    UseKey useKeyEffective = config.getUseKeyEffective();
+
     StreamKeeper streamKeeper = engine.getStreamKeeper();
     EngineNumber lastSpecified = streamKeeper.getLastSpecifiedValue(useKeyEffective, stream);
     if (lastSpecified == null) {
@@ -142,13 +155,13 @@ public class ChangeExecutor {
    * Handle sales stream changes by distributing proportionally to domestic and import.
    * This avoids double recharge by letting each component stream handle its own recharge.
    *
-   * @param stream The stream identifier (should be "sales")
-   * @param amount The change amount (percentage, units, or kg)
-   * @param yearMatcher Matcher to determine if the change applies to current year
-   * @param useKeyEffective The effective UseKey for the operation
+   * @param config The configuration containing all parameters for the change operation
    */
-  private void handleSalesChange(String stream, EngineNumber amount, YearMatcher yearMatcher,
-      UseKey useKeyEffective) {
+  private void handleSalesChange(ChangeExecutorConfig config) {
+    EngineNumber amount = config.getAmount();
+    YearMatcher yearMatcher = config.getYearMatcher();
+    UseKey useKeyEffective = config.getUseKeyEffective();
+
     // Get the distribution ratios for domestic and import
     StreamKeeper streamKeeper = engine.getStreamKeeper();
     SalesStreamDistribution distribution = streamKeeper.getDistribution(useKeyEffective);
@@ -178,13 +191,14 @@ public class ChangeExecutor {
    * Handle units-based change operations.
    * SIMPLIFIED VERSION: Apply change to lastSpecifiedValue and let setStream handle recharge.
    *
-   * @param stream The stream identifier to modify
-   * @param amount The units amount (e.g., "25 units")
-   * @param yearMatcher Matcher to determine if the change applies to current year
-   * @param useKeyEffective The effective UseKey for the operation
+   * @param config The configuration containing all parameters for the change operation
    */
-  private void handleUnitsChange(String stream, EngineNumber amount, YearMatcher yearMatcher,
-      UseKey useKeyEffective) {
+  private void handleUnitsChange(ChangeExecutorConfig config) {
+    String stream = config.getStream();
+    EngineNumber amount = config.getAmount();
+    YearMatcher yearMatcher = config.getYearMatcher();
+    UseKey useKeyEffective = config.getUseKeyEffective();
+
     StreamKeeper streamKeeper = engine.getStreamKeeper();
     EngineNumber lastSpecified = streamKeeper.getLastSpecifiedValue(useKeyEffective, stream);
     if (lastSpecified == null) {
@@ -210,13 +224,14 @@ public class ChangeExecutor {
    * Handle volume-based change operations (kg, mt, etc.).
    * Uses existing logic but ensures lastSpecifiedValue is updated.
    *
-   * @param stream The stream identifier to modify
-   * @param amount The volume amount (e.g., "50 kg")
-   * @param yearMatcher Matcher to determine if the change applies to current year
-   * @param useKeyEffective The effective UseKey for the operation
+   * @param config The configuration containing all parameters for the change operation
    */
-  private void handleVolumeChange(String stream, EngineNumber amount, YearMatcher yearMatcher,
-      UseKey useKeyEffective) {
+  private void handleVolumeChange(ChangeExecutorConfig config) {
+    String stream = config.getStream();
+    EngineNumber amount = config.getAmount();
+    YearMatcher yearMatcher = config.getYearMatcher();
+    UseKey useKeyEffective = config.getUseKeyEffective();
+
     // Get current stream value and apply change, calling setStream with kg
     EngineNumber currentValue = engine.getStream(stream, Optional.of(useKeyEffective), Optional.empty());
     UnitConverter unitConverter = EngineSupportUtils.createUnitConverterWithTotal(engine, stream);

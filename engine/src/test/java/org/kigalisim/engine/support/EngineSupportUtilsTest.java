@@ -6,7 +6,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import org.junit.jupiter.api.Test;
-import org.kigalisim.engine.EngineSupportUtils;
 import org.kigalisim.engine.state.YearMatcher;
 
 /**
