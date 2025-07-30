@@ -86,10 +86,13 @@ class UpdateUtil {
    * Displays a modal dialog informing the user that an update is available
    * and offering options to reload now or continue with current version.
    *
+   * @param {Function} [saveCallback] - Optional callback to explicitly save
+   *     current state before reload
    * @returns {Promise<string>} Promise that resolves to 'reload' if user
-   *     chooses to reload, 'continue' if user chooses to continue. Never rejects.
+   *     chooses to reload, 'continue' if user chooses to continue, or 'save_failed'
+   *     if save callback fails. Never rejects.
    */
-  async showUpdateDialog() {
+  async showUpdateDialog(saveCallback = null) {
     const self = this;
     return new Promise((resolve) => {
       const dialog = document.getElementById("update-notice-dialog");
@@ -101,6 +104,22 @@ class UpdateUtil {
       const handleReload = (event) => {
         event.preventDefault();
         dialog.close();
+
+        // Explicitly save current state before reloading if callback provided
+        if (saveCallback && typeof saveCallback === "function") {
+          try {
+            saveCallback();
+          } catch (error) {
+            // Show alert if save fails and don't reload
+            const message = "Failed to save your current work. " +
+              "Please try again or save manually before updating.";
+            alert(message);
+            console.error("Save callback failed, aborting reload:", error);
+            resolve("save_failed");
+            return;
+          }
+        }
+
         window.location.reload();
         resolve("reload");
       };
