@@ -55,10 +55,10 @@ public class RecycleRecoverLiveTests {
 
     // With recycling, virgin material should be reduced
     double expectedTotalConsumption = 437.5; // Reduced due to recycling displacing virgin material
-    assertEquals(expectedTotalConsumption, recordYear2.getGhgConsumption().getValue().doubleValue(), 0.0001,
-        "GHG consumption should be reduced to 437.5 tCO2e in year 2 due to recycling");
-    assertEquals("tCO2e", recordYear2.getGhgConsumption().getUnits(),
-        "GHG consumption units should be tCO2e in year 2");
+    assertEquals(expectedTotalConsumption, recordYear2.getConsumptionNoRecycle().getValue().doubleValue(), 0.0001,
+        "Virgin material consumption should be reduced to 437.5 tCO2e in year 2 due to recycling");
+    assertEquals("tCO2e", recordYear2.getConsumptionNoRecycle().getUnits(),
+        "Virgin material consumption units should be tCO2e in year 2");
 
     // Check recycled consumption in year 2
     double expectedRecycledConsumption = 62.5; // 500 - 437.5
@@ -99,10 +99,10 @@ public class RecycleRecoverLiveTests {
 
     // With recycling, virgin material should be reduced
     double expectedTotalConsumption = 499.875; // Reduced due to recycling displacing virgin material
-    assertEquals(expectedTotalConsumption, recordYear2.getGhgConsumption().getValue().doubleValue(), 0.0001,
-        "GHG consumption should be reduced to 499.875 tCO2e in year 2 due to recycling");
-    assertEquals("tCO2e", recordYear2.getGhgConsumption().getUnits(),
-        "GHG consumption units should be tCO2e in year 2");
+    assertEquals(expectedTotalConsumption, recordYear2.getConsumptionNoRecycle().getValue().doubleValue(), 0.0001,
+        "Virgin material consumption should be reduced to 499.875 tCO2e in year 2 due to recycling");
+    assertEquals("tCO2e", recordYear2.getConsumptionNoRecycle().getUnits(),
+        "Virgin material consumption units should be tCO2e in year 2");
 
     // Check recycled consumption in year 2
     // 25 kg * 5 tCO2e/mt = 25 kg * 5 tCO2e/(1000 kg) = 0.125 tCO2e
@@ -143,10 +143,10 @@ public class RecycleRecoverLiveTests {
 
     // With recycling, virgin material should be reduced
     double expectedTotalConsumption = 490.0; // Reduced due to recycling displacing virgin material
-    assertEquals(expectedTotalConsumption, recordYear2.getGhgConsumption().getValue().doubleValue(), 0.0001,
-        "GHG consumption should be reduced to 490.0 tCO2e in year 2 due to recycling");
-    assertEquals("tCO2e", recordYear2.getGhgConsumption().getUnits(),
-        "GHG consumption units should be tCO2e in year 2");
+    assertEquals(expectedTotalConsumption, recordYear2.getConsumptionNoRecycle().getValue().doubleValue(), 0.0001,
+        "Virgin material consumption should be reduced to 490.0 tCO2e in year 2 due to recycling");
+    assertEquals("tCO2e", recordYear2.getConsumptionNoRecycle().getUnits(),
+        "Virgin material consumption units should be tCO2e in year 2");
 
     // Check recycled consumption in year 2
     // 1000 units * 2 kg/unit = 2000 kg, 2000 kg * 5 tCO2e/(1000 kg) = 10 tCO2e
@@ -464,10 +464,10 @@ public class RecycleRecoverLiveTests {
     // The behavior should be identical to the original recycling.qta test
     // since "at recharge" is the default behavior for recycling
     double expectedTotalConsumption = 437.5; // Same as original recycling test
-    assertEquals(expectedTotalConsumption, recordYear2.getGhgConsumption().getValue().doubleValue(), 0.0001,
-        "GHG consumption should be reduced to 437.5 tCO2e in year 2 due to recycling at recharge");
-    assertEquals("tCO2e", recordYear2.getGhgConsumption().getUnits(),
-        "GHG consumption units should be tCO2e in year 2");
+    assertEquals(expectedTotalConsumption, recordYear2.getConsumptionNoRecycle().getValue().doubleValue(), 0.0001,
+        "Virgin material consumption should be reduced to 437.5 tCO2e in year 2 due to recycling at recharge");
+    assertEquals("tCO2e", recordYear2.getConsumptionNoRecycle().getUnits(),
+        "Virgin material consumption units should be tCO2e in year 2");
 
     // Check recycled consumption in year 2
     // Should match the original recycling test: 500 - 437.5 = 62.5
@@ -591,10 +591,10 @@ public class RecycleRecoverLiveTests {
     // Virgin material needed: 100 kg - 5 kg = 95 kg
     // Total GHG: 95 kg * 5 tCO2e/kg = 475 tCO2e
     double expectedTotalConsumption = 475.0;
-    assertEquals(expectedTotalConsumption, recordYear2.getGhgConsumption().getValue().doubleValue(), 0.0001,
-        "GHG consumption should be reduced to 475.0 tCO2e in year 2 due to recycling at EOL");
-    assertEquals("tCO2e", recordYear2.getGhgConsumption().getUnits(),
-        "GHG consumption units should be tCO2e in year 2");
+    assertEquals(expectedTotalConsumption, recordYear2.getConsumptionNoRecycle().getValue().doubleValue(), 0.0001,
+        "Virgin material consumption should be reduced to 475.0 tCO2e in year 2 due to recycling at EOL");
+    assertEquals("tCO2e", recordYear2.getConsumptionNoRecycle().getUnits(),
+        "Virgin material consumption units should be tCO2e in year 2");
 
     // Check recycled consumption in year 2
     // Recycled content: 5 kg * 5 tCO2e/kg = 25 tCO2e
@@ -714,10 +714,10 @@ public class RecycleRecoverLiveTests {
 
     // With combined recycling, both EOL and recharge recycling should contribute
     double expectedTotalConsumption = 449.775;
-    assertEquals(expectedTotalConsumption, recordYear2.getGhgConsumption().getValue().doubleValue(), 0.001,
-        "GHG consumption should be reduced to 449.775 tCO2e in year 2 due to combined EOL and recharge recycling");
-    assertEquals("tCO2e", recordYear2.getGhgConsumption().getUnits(),
-        "GHG consumption units should be tCO2e in year 2");
+    assertEquals(expectedTotalConsumption, recordYear2.getConsumptionNoRecycle().getValue().doubleValue(), 0.001,
+        "Virgin material consumption should be reduced to 449.775 tCO2e in year 2 due to combined EOL and recharge recycling");
+    assertEquals("tCO2e", recordYear2.getConsumptionNoRecycle().getUnits(),
+        "Virgin material consumption units should be tCO2e in year 2");
 
     // Check recycled consumption in year 2
     double expectedRecycledConsumption = 34.225;

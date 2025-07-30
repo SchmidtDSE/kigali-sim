@@ -79,6 +79,8 @@ public class EngineResultSerializer {
     // Get sales
     EngineNumber recycleRaw = engine.getStreamFor(useKey, "recycle");
     EngineNumber recycleValue = unitConverter.convert(recycleRaw, "kg");
+    System.out.println("[EngineResultSerializer] Got recycle stream: " + (recycleRaw != null ? recycleRaw.getValue() + " " + recycleRaw.getUnits() : "null"));
+    System.out.println("[EngineResultSerializer] Converted recycle value: " + recycleValue.getValue() + " " + recycleValue.getUnits());
     builder.setRecycleValue(recycleValue);
 
     // Get total energy consumption
@@ -153,6 +155,9 @@ public class EngineResultSerializer {
 
     EngineNumber recycleConsumptionValue = getConsumptionForVolume(
         recycleValue, consumptionByVolume, stateGetter, unitConverter);
+    System.out.println("[EngineResultSerializer] recycleConsumptionValue: " + recycleConsumptionValue.getValue() + " " + recycleConsumptionValue.getUnits());
+    System.out.println("[EngineResultSerializer] domesticConsumptionValue: " + domesticConsumptionValue.getValue() + " " + domesticConsumptionValue.getUnits());
+    System.out.println("[EngineResultSerializer] importConsumptionValue: " + importConsumptionValue.getValue() + " " + importConsumptionValue.getUnits());
     builder.setRecycleConsumptionValue(recycleConsumptionValue);
 
     // Offset recharge emissions

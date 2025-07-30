@@ -76,6 +76,7 @@ test {
   testLogging {
     events "skipped", "failed"
     exceptionFormat = "full"
+    showStandardStreams = true
   }
 }
 

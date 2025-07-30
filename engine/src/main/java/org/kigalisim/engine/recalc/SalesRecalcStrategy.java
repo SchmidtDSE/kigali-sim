@@ -156,6 +156,7 @@ public class SalesRecalcStrategy implements RecalcStrategy {
     
     // Also set total recycle stream for backward compatibility
     EngineNumber newRecycleValue = new EngineNumber(recycledDisplacedKg, "kg");
+    System.out.println("[SalesRecalc] Setting combined recycle stream: " + recycledDisplacedKg + " kg");
     streamKeeper.setStream(scopeEffective, "recycle", newRecycleValue);
 
     // Get implicit recharge to avoid double-counting
