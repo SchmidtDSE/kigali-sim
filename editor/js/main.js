@@ -669,7 +669,11 @@ class MainPresenter {
         // Wait for service worker to cache new files before offering reload.
         // Also avoids access issue with disorientation.
         setTimeout(() => {
-          self._updateUtil.showUpdateDialog();
+          // Pass a save callback to ensure current work is saved before reload
+          self._updateUtil.showUpdateDialog(() => {
+            const currentCode = self._codeEditorPresenter.getCode();
+            self._localStorageKeeper.setSource(currentCode);
+          });
         }, 5000);
       }
     } catch (error) {

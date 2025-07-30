@@ -215,11 +215,12 @@ public class EngineResultSerializerTest {
 
       // Calculate: total import (400 mt = 400,000 kg) - import recharge portion
       // Import proportion: 400,000 / (1,600,000 + 400,000) = 0.2
-      // Import recharge: 0.2 * 1,000,000 kg = 200,000 kg
-      // Import for initial charge: 400,000 - 200,000 = 200,000 kg
+      // Virgin recharge needed: 1,000,000 - 5,000 (recycling) = 995,000 kg
+      // Import recharge: 0.2 * 995,000 kg = 199,000 kg
+      // Import for initial charge: 400,000 - 199,000 = 201,000 kg
       assertEquals(0, tradeSupplement.getImportInitialChargeValue().getValue()
-          .compareTo(BigDecimal.valueOf(200000)),
-          "Import supplement value should be 200,000 kg");
+          .compareTo(BigDecimal.valueOf(201000)),
+          "Import supplement value should be 201,000 kg");
       assertEquals("kg", tradeSupplement.getImportInitialChargeValue().getUnits(),
           "Import supplement value units should be kg");
     }
@@ -229,10 +230,10 @@ public class EngineResultSerializerTest {
      */
     @Test
     public void testGeneratesTradeSupplementConsumption() {
-      // 200,000 kg * 500 tCO2e/mt * (1 mt/1000 kg) = 100,000 tCO2e
+      // 201,000 kg * 500 tCO2e/mt * (1 mt/1000 kg) = 100,500 tCO2e
       assertEquals(0, tradeSupplement.getImportInitialChargeConsumption().getValue()
-          .compareTo(BigDecimal.valueOf(100000)),
-          "Import supplement consumption should be 100,000 tCO2e");
+          .compareTo(BigDecimal.valueOf(100500)),
+          "Import supplement consumption should be 100,500 tCO2e");
       assertEquals("tCO2e", tradeSupplement.getImportInitialChargeConsumption().getUnits(),
           "Import supplement consumption units should be tCO2e");
     }
@@ -242,10 +243,10 @@ public class EngineResultSerializerTest {
      */
     @Test
     public void testGeneratesTradeSupplementUnits() {
-      // 200,000 kg / 200 kg/unit = 1,000 units
+      // 201,000 kg / 200 kg/unit = 1,005 units
       assertEquals(0, tradeSupplement.getImportPopulation().getValue()
-          .compareTo(BigDecimal.valueOf(1000)),
-          "Import supplement units should be 1,000 units");
+          .compareTo(BigDecimal.valueOf(1005)),
+          "Import supplement units should be 1,005 units");
       assertEquals("units", tradeSupplement.getImportPopulation().getUnits(),
           "Import supplement units should be units");
     }
@@ -284,6 +285,8 @@ public class EngineResultSerializerTest {
           case "import": return importMt;
           case "export": return exportMt;
           case "recycle": return recycling;
+          case "recycleRecharge": return new EngineNumber(5, "mt"); // Half of total recycling
+          case "recycleEol": return new EngineNumber(5, "mt"); // Half of total recycling
           case "energy": return energyIntensity;
           case "equipment": return priorEquipment;
           case "newEquipment": return priorEquipment;
@@ -379,6 +382,8 @@ public class EngineResultSerializerTest {
           case "import": return importMt;
           case "export": return exportMt;
           case "recycle": return recycling;
+          case "recycleRecharge": return new EngineNumber(5, "mt"); // Half of total recycling
+          case "recycleEol": return new EngineNumber(5, "mt"); // Half of total recycling
           case "energy": return energyIntensity;
           case "equipment": return priorEquipment;
           case "newEquipment": return priorEquipment;

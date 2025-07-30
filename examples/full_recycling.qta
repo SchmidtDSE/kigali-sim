@@ -1,0 +1,41 @@
+start default
+
+  define application "Test"
+  
+    uses substance "HFC-134a"
+      enable import
+      initial charge with 0 kg / unit for domestic
+      initial charge with 1 kg / unit for import
+      initial charge with 0 kg / unit for export
+      equals 1 tCO2e / kg
+      equals 1 kwh / kg
+      set sales to 1 mt during year 1
+      retire 5 % / year
+      recharge 5 % with 0.85 kg / unit
+    end substance
+  
+  end application
+
+end default
+
+
+start policy "Total Recovery"
+
+  modify application "Test"
+  
+    modify substance "HFC-134a"
+      recover 100 % with 100 % reuse at recharge during years 1 to 10
+    end substance
+  
+  end application
+
+end policy
+
+
+start simulations
+
+  simulate "Recycling"
+    using "Total Recovery"
+  from years 1 to 10
+
+end simulations
