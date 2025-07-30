@@ -1415,7 +1415,6 @@ public class SingleThreadEngine implements Engine {
 
   /**
    * Handle derived stream changes (equipment, priorEquipment, etc.).
-   * Uses original logic to preserve displacement functionality.
    *
    * @param stream The stream identifier to modify
    * @param amount The change amount (percentage, units, or kg)
