@@ -249,11 +249,11 @@ public class EngineResultSerializer {
       proportionImport = totalImportValueKg.divide(totalKg, MathContext.DECIMAL128);
     }
     BigDecimal totalRechargeKg = unitConverter.convert(totalRechargeEmissions, "kg").getValue();
-    
+
     // Get recycling that satisfies recharge demand
     EngineNumber recycleRecharge = engine.getStreamFor(useKey, "recycleRecharge");
     BigDecimal recycleRechargeKg = unitConverter.convert(recycleRecharge, "kg").getValue();
-    
+
     // Calculate virgin recharge demand (total recharge minus recycling)
     BigDecimal virginRechargeKg = totalRechargeKg.subtract(recycleRechargeKg);
     if (virginRechargeKg.compareTo(BigDecimal.ZERO) < 0) {

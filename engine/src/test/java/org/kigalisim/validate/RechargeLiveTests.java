@@ -510,10 +510,10 @@ public class RechargeLiveTests {
 
     // Expected: Recycling scenario produces consistent consumption
     assertEquals(32853.44, recyclingTotalConsumption, 1.0, "Recycling scenario total consumption should be ~32,853 kg");
-    
+
     // Expected: Combined policies (recycling + cap) should consume LESS than recycling alone
     // Cap policies should reduce overall consumption when applied on top of recycling
-    assertTrue(combinedTotalConsumption < recyclingTotalConsumption, 
+    assertTrue(combinedTotalConsumption < recyclingTotalConsumption,
         "Combined scenario should consume less than recycling alone (combined: " + combinedTotalConsumption
         + " kg, recycling: " + recyclingTotalConsumption + " kg)");
   }
@@ -547,7 +547,7 @@ public class RechargeLiveTests {
     String qtaPath = "../examples/combined_policies_recharge_reorder.qta";
     ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
 
-    // Run recycling scenario (recycling policy only) 
+    // Run recycling scenario (recycling policy only)
     Stream<EngineResult> recyclingStream = KigaliSimFacade.runScenario(program, "Recycling", progress -> {});
     List<EngineResult> recyclingResultsList = recyclingStream.collect(Collectors.toList());
 
@@ -576,12 +576,12 @@ public class RechargeLiveTests {
         (combinedHfc2035.getDomestic().getValue().doubleValue() + combinedHfc2035.getImport().getValue().doubleValue())
         + (combinedR600a2035.getDomestic().getValue().doubleValue() + combinedR600a2035.getImport().getValue().doubleValue());
 
-    // Expected: Recycling scenario produces consistent consumption  
+    // Expected: Recycling scenario produces consistent consumption
     assertEquals(32853.44, recyclingTotalConsumption, 1.0, "Recycling scenario total consumption should be ~32,853 kg");
-    
+
     // Expected: Combined policies (recycling + cap) should consume LESS than recycling alone
     // Cap policies should reduce overall consumption when applied on top of recycling
-    assertTrue(combinedTotalConsumption < recyclingTotalConsumption, 
+    assertTrue(combinedTotalConsumption < recyclingTotalConsumption,
         "Combined scenario should consume less than recycling alone (combined: " + combinedTotalConsumption
         + " kg, recycling: " + recyclingTotalConsumption + " kg)");
   }

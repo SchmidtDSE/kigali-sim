@@ -841,7 +841,7 @@ public class RecycleRecoverLiveTests {
   /**
    * Test for import attribution issue with 100% recovery policy.
    *
-   * <p>With 100% recovery and 100% reuse at recharge, all recharge needs should be 
+   * <p>With 100% recovery and 100% reuse at recharge, all recharge needs should be
    * satisfied by recycled material. Since initial charge is attributed to the exporter,
    * the import attributed to importer should be 0 kg (no virgin imports needed).
    *
@@ -867,17 +867,17 @@ public class RecycleRecoverLiveTests {
     for (int year = 1; year <= 10; year++) {
       EngineResult result = LiveTestsUtil.getResult(resultsList.stream(), year, "Test", "HFC-134a");
       assertNotNull(result, "Should have result for Test/HFC-134a in year " + year);
-      
+
       // Calculate import attributed to importer (from importer's perspective):
       // Import attributed to importer = Total imports - Import initial charge to exporter
       double totalImports = result.getImport().getValue().doubleValue();
       double importInitialChargeToExporter = result.getTradeSupplement().getImportInitialChargeValue().getValue().doubleValue();
       double importAttributedToImporter = totalImports - importInitialChargeToExporter;
-      
+
       // With 100% recovery and 100% reuse at recharge, all recharge needs are met by recycling
       // Initial charge is attributed to exporter, so import attributed to importer should be 0 kg
-      assertEquals(0.0, importAttributedToImporter, 0.001, 
-          "Import attributed to importer should be 0 kg in year " + year 
+      assertEquals(0.0, importAttributedToImporter, 0.001,
+          "Import attributed to importer should be 0 kg in year " + year
           + " when 100% recycling at recharge satisfies all recharge needs. "
           + "Total imports: " + totalImports + " kg, "
           + "Import initial charge to exporter: " + importInitialChargeToExporter + " kg, "

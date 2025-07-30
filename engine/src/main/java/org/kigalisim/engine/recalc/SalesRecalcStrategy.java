@@ -100,7 +100,7 @@ public class SalesRecalcStrategy implements RecalcStrategy {
         BigDecimal.valueOf(100),
         MathContext.DECIMAL128
     );
-    
+
     final BigDecimal eolRecycledDisplacedKg = eolRecycledKg.multiply(displacementRateRatio);
     final BigDecimal rechargeRecycledDisplacedKg = rechargeRecycledKg.multiply(displacementRateRatio);
     final BigDecimal recycledDisplacedKg = eolRecycledDisplacedKg.add(rechargeRecycledDisplacedKg);
@@ -153,7 +153,7 @@ public class SalesRecalcStrategy implements RecalcStrategy {
     EngineNumber newRecycleRechargeValue = new EngineNumber(rechargeRecycledDisplacedKg, "kg");
     streamKeeper.setStream(scopeEffective, "recycleEol", newRecycleEolValue);
     streamKeeper.setStream(scopeEffective, "recycleRecharge", newRecycleRechargeValue);
-    
+
     // Also set total recycle stream for backward compatibility
     EngineNumber newRecycleValue = new EngineNumber(recycledDisplacedKg, "kg");
     streamKeeper.setStream(scopeEffective, "recycle", newRecycleValue);
