@@ -746,18 +746,15 @@ public class SingleThreadEngine implements Engine {
 
     UseKey useKeyEffective = useKey == null ? scope : useKey;
 
-    // Special handling for sales stream - distribute to components
+    // Route based on stream type
     if ("sales".equals(stream)) {
       handleSalesChange(stream, amount, yearMatcher, useKeyEffective);
-      return;
-    }
-
-    if (amount.getUnits() != null && amount.getUnits().contains("%")) {
-      handlePercentageChange(stream, amount, yearMatcher, useKeyEffective);
-    } else if ("units".equals(amount.getUnits())) {
-      handleUnitsChange(stream, amount, yearMatcher, useKeyEffective);
+    } else if (getIsSalesSubstream(stream) || "export".equals(stream)) {
+      // Component streams (domestic, import, export): Use our new logic for percentage bug fix
+      handleComponentStream(stream, amount, yearMatcher, useKeyEffective);
     } else {
-      handleVolumeChange(stream, amount, yearMatcher, useKeyEffective);
+      // Derived streams (equipment, priorEquipment, etc.): Use original logic to preserve displacement
+      handleDerivedStream(stream, amount, yearMatcher, useKeyEffective);
     }
   }
 
@@ -1394,6 +1391,54 @@ public class SingleThreadEngine implements Engine {
     BigDecimal recycledKg = recycledUnits.multiply(initialChargeKg.getValue());
 
     return recycledKg;
+  }
+
+  /**
+   * Handle component stream changes (domestic, import, export).
+   * Uses our new logic with recharge subtraction for percentage bug fix.
+   *
+   * @param stream The stream identifier to modify
+   * @param amount The change amount (percentage, units, or kg)
+   * @param yearMatcher Matcher to determine if the change applies to current year
+   * @param useKeyEffective The effective UseKey for the operation
+   */
+  private void handleComponentStream(String stream, EngineNumber amount, YearMatcher yearMatcher,
+      UseKey useKeyEffective) {
+    if (amount.getUnits() != null && amount.getUnits().contains("%")) {
+      handlePercentageChange(stream, amount, yearMatcher, useKeyEffective);
+    } else if ("units".equals(amount.getUnits())) {
+      handleUnitsChange(stream, amount, yearMatcher, useKeyEffective);
+    } else {
+      handleVolumeChange(stream, amount, yearMatcher, useKeyEffective);
+    }
+  }
+
+  /**
+   * Handle derived stream changes (equipment, priorEquipment, etc.).
+   * Uses original logic to preserve displacement functionality.
+   *
+   * @param stream The stream identifier to modify
+   * @param amount The change amount (percentage, units, or kg)
+   * @param yearMatcher Matcher to determine if the change applies to current year
+   * @param useKeyEffective The effective UseKey for the operation
+   */
+  private void handleDerivedStream(String stream, EngineNumber amount, YearMatcher yearMatcher,
+      UseKey useKeyEffective) {
+    // Use original changeStream logic to preserve displacement
+    EngineNumber currentValue = getStream(stream, Optional.of(useKeyEffective), Optional.empty());
+    UnitConverter unitConverter = createUnitConverterWithTotal(stream);
+    
+    EngineNumber convertedDelta = unitConverter.convert(amount, currentValue.getUnits());
+    BigDecimal newAmount = currentValue.getValue().add(convertedDelta.getValue());
+    EngineNumber outputWithUnits = new EngineNumber(newAmount, currentValue.getUnits());
+    
+    StreamUpdate update = new StreamUpdateBuilder()
+        .setName(stream)
+        .setValue(outputWithUnits)
+        .setKey(useKeyEffective)
+        .setUnitsToRecord(amount.getUnits())
+        .build();
+    executeStreamUpdate(update);
   }
 
   /**
