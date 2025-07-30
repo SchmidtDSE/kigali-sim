@@ -163,19 +163,67 @@ public class ChangeLiveTests {
     // This test documents the current limitation with Monte Carlo syntax in change statements
     // The QTA file ../examples/test_change_monte_carlo.qta contains:
     // change equipment by sample normally from mean of 6 % std of 1 % / year during years 2025 to 2030
-    
+
     String qtaPath = "../examples/test_change_monte_carlo.qta";
     ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
-    
+
     // If we reach here, the syntax is now supported
     assertNotNull(program, "Program should not be null if syntax is supported");
-    
+
     // Run a basic validation
     String scenarioName = "test";
     Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
     List<EngineResult> resultsList = results.collect(Collectors.toList());
-    
+
     // Should have 10 trials * 2 years = 20 results
     assertEquals(20, resultsList.size(), "Should have 20 results (10 trials * 2 years)");
+  }
+
+  /**
+   * Test that change operations properly respect units when last specified value was in units.
+   * This tests the bug where recharge causes change operations to use kg instead of units.
+   */
+  @Test
+  public void testChangeRechargeUnitsRespected() throws IOException {
+    // Load and parse the QTA file
+    String qtaPath = "../examples/change_recharge_units_bug.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    // Run the scenario using KigaliSimFacade
+    String scenarioName = "S1";
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
+
+    List<EngineResult> resultsList = results.collect(Collectors.toList());
+
+    // Expected values: 500, 525, 551.25, 578.8125, 607.753125 (5% each year)
+    // Actual problematic values: 500, 604.8, 750.8, 946.5, 1204.0
+
+    // Check year 2 import value - should be 525 units, not 604.8
+    EngineResult year2Result = LiveTestsUtil.getResult(resultsList.stream(), 2, "RAC1 - Resac1", "R-410A");
+    assertNotNull(year2Result, "Should have result for RAC1 - Resac1/R-410A in year 2");
+
+    // Check equipment values against expected progression with 5% retirement and 5% import growth
+    // Expected: 1450, 1903, 2359, 2820, 3286 units (with rounding)
+    final EngineResult year1Result = LiveTestsUtil.getResult(resultsList.stream(), 1, "RAC1 - Resac1", "R-410A");
+
+    final EngineResult year3Result = LiveTestsUtil.getResult(resultsList.stream(), 3, "RAC1 - Resac1", "R-410A");
+    final EngineResult year4Result = LiveTestsUtil.getResult(resultsList.stream(), 4, "RAC1 - Resac1", "R-410A");
+    final EngineResult year5Result = LiveTestsUtil.getResult(resultsList.stream(), 5, "RAC1 - Resac1", "R-410A");
+
+    assertEquals(1450.0, year1Result.getPopulation().getValue().doubleValue(), 5.0,
+        "Year 1 equipment should be ~1450 units");
+
+    assertEquals(1903.0, year2Result.getPopulation().getValue().doubleValue(), 5.0,
+        "Year 2 equipment should be ~1903 units");
+
+    assertEquals(2359.0, year3Result.getPopulation().getValue().doubleValue(), 5.0,
+        "Year 3 equipment should be ~2359 units");
+
+    assertEquals(2820.0, year4Result.getPopulation().getValue().doubleValue(), 5.0,
+        "Year 4 equipment should be ~2820 units");
+
+    assertEquals(3286.0, year5Result.getPopulation().getValue().doubleValue(), 5.0,
+        "Year 5 equipment should be ~3286 units");
   }
 }
