@@ -2,7 +2,7 @@
 
 Hello! Thank you for your help in refining Kigali Sim. During the beta testing period, we will be making changes in response to user and partner feedback.
 
-**About this document:** This document tracks modifications which are expected to concern a majority or substantial minority of beta testers. However, the [GitHub commit log](https://github.com/SchmidtDSE/kigali-sim/commits) provides further public detail on all changes no matter how small.
+**About this document:** This document tracks modifications which are expected to concern a majority or substantial minority of beta testers. Note that the [GitHub commit log](https://github.com/SchmidtDSE/kigali-sim/commits) provides further public detail on all changes no matter how small.
 
 **Scope:** Note that this concerns both those using the UI-based designer which does not require use of any code as well those making sophisticated simulations using the editor tab where custom code written in [QubecTalk](https://kigalisim.org/guide/tutorial_07.html) is to be used.
 
