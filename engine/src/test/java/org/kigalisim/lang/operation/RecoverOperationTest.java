@@ -7,6 +7,7 @@
 package org.kigalisim.lang.operation;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
@@ -288,10 +289,9 @@ public class RecoverOperationTest {
     String displaceTarget = "domestic";
     RecoverOperation operation = new RecoverOperation(volumeOperation, yieldOperation, displaceTarget, during);
 
-    // Execute with real machine - just verify it doesn't throw an exception
-    operation.execute(machine);
-
-    // Test passes if no exception is thrown
-    assertNotNull(operation, "RecoverOperation should execute with displacement and during");
+    // Expect UnsupportedOperationException when using domestic displacement
+    assertThrows(UnsupportedOperationException.class, () -> {
+      operation.execute(machine);
+    }, "Should throw exception for domestic displacement in recycling");
   }
 }

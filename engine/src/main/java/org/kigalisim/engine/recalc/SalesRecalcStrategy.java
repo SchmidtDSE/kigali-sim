@@ -93,19 +93,17 @@ public class SalesRecalcStrategy implements RecalcStrategy {
         streamKeeper, stateGetter, unitConverter, scopeEffective,
         rechargeVolume, RecoveryStage.RECHARGE);
 
-    // Combine both recycling amounts
-    BigDecimal totalRecycledKg = eolRecycledKg.add(rechargeRecycledKg);
-
-    // Get recycling displaced
-    BigDecimal recycledKg = totalRecycledKg;
-
+    // Apply displacement rates separately for each stage
     EngineNumber displacementRateRaw = streamKeeper.getDisplacementRate(scopeEffective);
     EngineNumber displacementRate = unitConverter.convert(displacementRateRaw, "%");
     BigDecimal displacementRateRatio = displacementRate.getValue().divide(
         BigDecimal.valueOf(100),
         MathContext.DECIMAL128
     );
-    final BigDecimal recycledDisplacedKg = recycledKg.multiply(displacementRateRatio);
+
+    final BigDecimal eolRecycledDisplacedKg = eolRecycledKg.multiply(displacementRateRatio);
+    final BigDecimal rechargeRecycledDisplacedKg = rechargeRecycledKg.multiply(displacementRateRatio);
+    final BigDecimal recycledDisplacedKg = eolRecycledDisplacedKg.add(rechargeRecycledDisplacedKg);
 
     // Switch out of recharge population
     stateGetter.clearPopulation();
@@ -150,7 +148,13 @@ public class SalesRecalcStrategy implements RecalcStrategy {
     BigDecimal percentDomestic = distribution.getPercentDomestic();
     BigDecimal percentImport = distribution.getPercentImport();
 
-    // Recycle
+    // Set individual recycling streams
+    EngineNumber newRecycleEolValue = new EngineNumber(eolRecycledDisplacedKg, "kg");
+    EngineNumber newRecycleRechargeValue = new EngineNumber(rechargeRecycledDisplacedKg, "kg");
+    streamKeeper.setStream(scopeEffective, "recycleEol", newRecycleEolValue);
+    streamKeeper.setStream(scopeEffective, "recycleRecharge", newRecycleRechargeValue);
+
+    // Also set total recycle stream for backward compatibility
     EngineNumber newRecycleValue = new EngineNumber(recycledDisplacedKg, "kg");
     streamKeeper.setStream(scopeEffective, "recycle", newRecycleValue);
 
@@ -165,10 +169,8 @@ public class SalesRecalcStrategy implements RecalcStrategy {
 
     // Subtract what we can fulfill from other sources:
     // - implicitRechargeKg: recharge that was already added when units were specified
-    // - recycledDisplacedKg: material available from recycling
     BigDecimal requiredKg = totalDemand
-        .subtract(implicitRechargeKg)
-        .subtract(recycledDisplacedKg);
+        .subtract(implicitRechargeKg);
 
     BigDecimal newDomesticKg = percentDomestic.multiply(requiredKg);
     BigDecimal newImportKg = percentImport.multiply(requiredKg);
