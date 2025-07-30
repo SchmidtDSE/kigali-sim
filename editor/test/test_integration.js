@@ -1156,8 +1156,8 @@ function buildIntegrationTests() {
           assert.ok(false, "Expected UnsupportedOperationException for substance displacement");
         } catch (e) {
           // Check that the error message contains our expected displacement blocking message
-          const expectedMessage = "Displacement target 'sub_b' is not currently supported in " +
-            "recycling operations";
+          const expectedMessage = "Displacement target 'sub_b' is not currently " +
+            "supported in recycling operations";
           assert.ok(e.message.includes(expectedMessage),
             "Should throw exception for substance displacement: " + e.message);
         }
