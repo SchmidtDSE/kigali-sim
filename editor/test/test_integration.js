@@ -324,8 +324,8 @@ function buildIntegrationTests() {
       (result, assert) => {
         const record = getResult(result, "result", 2, 0, "test", "test");
         const consumption = record.getGhgConsumption();
-        // With recycling, virgin material should be reduced
-        assert.closeTo(consumption.getValue(), 437.5, 0.0001);
+        // With recycling but no displacement, virgin material stays the same
+        assert.closeTo(consumption.getValue(), 500, 0.0001);
         assert.deepEqual(consumption.getUnits(), "tCO2e");
       },
       (result, assert) => {
@@ -346,8 +346,8 @@ function buildIntegrationTests() {
       (result, assert) => {
         const record = getResult(result, "result", 2, 0, "test", "test");
         const consumption = record.getGhgConsumption();
-        // With recycling, virgin material should be reduced
-        assert.closeTo(consumption.getValue(), 499.875, 0.0001);
+        // With recycling but no displacement, virgin material stays the same
+        assert.closeTo(consumption.getValue(), 500, 0.0001);
         assert.deepEqual(consumption.getUnits(), "tCO2e");
       },
       (result, assert) => {
@@ -369,8 +369,8 @@ function buildIntegrationTests() {
       (result, assert) => {
         const record = getResult(result, "result", 2, 0, "test", "test");
         const consumption = record.getGhgConsumption();
-        // With recycling, virgin material should be reduced
-        assert.closeTo(consumption.getValue(), 490, 0.0001);
+        // With recycling but no displacement, virgin material stays the same
+        assert.closeTo(consumption.getValue(), 500, 0.0001);
         assert.deepEqual(consumption.getUnits(), "tCO2e");
       },
       (result, assert) => {
@@ -1138,28 +1138,32 @@ function buildIntegrationTests() {
           const totalSales = domesticSubA.getValue() + importSubA.getValue();
 
           // Original sales: 150 kg (100 domestic + 50 import)
-          // After 20 kg displacement and recycling precision adjustment:
+          // After 20 kg displacement with sales targeting (still allowed):
           // Actual result with current calculation precision
-          assert.closeTo(totalSales, 108.55855855855856, 0.0001);
+          assert.closeTo(totalSales, 129.34959349593495, 0.0001);
         },
       ]);
 
-    buildTest("tests recover with substance displacement",
-      "/examples/recover_displace_substance.qta", [
-        (result, assert) => {
-        // Check that sub_b sales were displaced (reduced)
-          const recordSubB = getResult(result, "result", 1, 0, "test", "sub_b");
-          const domesticSubB = recordSubB.getDomestic();
-          const importSubB = recordSubB.getImport();
+    // Test that substance displacement now throws an exception
+    QUnit.test("tests recover with substance displacement", (assert) => {
+      const done = assert.async();
+      loadRemote("/examples/recover_displace_substance.qta").then(async (content) => {
+        assert.ok(content.length > 0);
 
-          // Calculate total sales (domestic + import)
-          const totalSales = domesticSubB.getValue() + importSubB.getValue();
+        try {
+          const backendResult = await wasmBackend.execute(content);
+          // If we get here, the execution didn't throw an exception as expected
+          assert.ok(false, "Expected UnsupportedOperationException for substance displacement");
+        } catch (e) {
+          // Check that the error message contains our expected displacement blocking message
+          const expectedMessage = "Displacement target 'sub_b' is not currently supported in recycling operations";
+          assert.ok(e.message.includes(expectedMessage), 
+            "Should throw exception for substance displacement: " + e.message);
+        }
 
-          // Original sales for sub_b: 300 kg (200 domestic + 100 import)
-          // After 30 kg displacement: 300 - 30 = 270 kg
-          assert.closeTo(totalSales, 270, 0.0001);
-        },
-      ]);
+        done();
+      });
+    });
 
     buildTest("tests imports with recharge attribution", "/examples/import_recharge_test.qta", [
       (result, assert) => {
