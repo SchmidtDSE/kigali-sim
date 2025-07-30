@@ -655,6 +655,13 @@ public class SingleThreadEngine implements Engine {
       return;
     }
 
+    // Block displacement except for sales
+    if (displacementTarget != null && !displacementTarget.equals("sales")) {
+      throw new UnsupportedOperationException(
+        "Displacement target '" + displacementTarget + "' is not currently supported in recycling operations. "
+        + "Only 'sales' displacement or no displacement is allowed.");
+    }
+
     streamKeeper.setRecoveryRate(scope, recoveryWithUnits, stage);
     streamKeeper.setYieldRate(scope, yieldWithUnits, stage);
 

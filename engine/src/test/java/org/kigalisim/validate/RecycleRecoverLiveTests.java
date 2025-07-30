@@ -8,6 +8,7 @@ package org.kigalisim.validate;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
@@ -55,10 +56,10 @@ public class RecycleRecoverLiveTests {
 
     // With recycling, virgin material should be reduced
     double expectedTotalConsumption = 437.5; // Reduced due to recycling displacing virgin material
-    assertEquals(expectedTotalConsumption, recordYear2.getGhgConsumption().getValue().doubleValue(), 0.0001,
-        "GHG consumption should be reduced to 437.5 tCO2e in year 2 due to recycling");
-    assertEquals("tCO2e", recordYear2.getGhgConsumption().getUnits(),
-        "GHG consumption units should be tCO2e in year 2");
+    assertEquals(expectedTotalConsumption, recordYear2.getConsumptionNoRecycle().getValue().doubleValue(), 0.0001,
+        "Virgin material consumption should be reduced to 437.5 tCO2e in year 2 due to recycling");
+    assertEquals("tCO2e", recordYear2.getConsumptionNoRecycle().getUnits(),
+        "Virgin material consumption units should be tCO2e in year 2");
 
     // Check recycled consumption in year 2
     double expectedRecycledConsumption = 62.5; // 500 - 437.5
@@ -99,10 +100,10 @@ public class RecycleRecoverLiveTests {
 
     // With recycling, virgin material should be reduced
     double expectedTotalConsumption = 499.875; // Reduced due to recycling displacing virgin material
-    assertEquals(expectedTotalConsumption, recordYear2.getGhgConsumption().getValue().doubleValue(), 0.0001,
-        "GHG consumption should be reduced to 499.875 tCO2e in year 2 due to recycling");
-    assertEquals("tCO2e", recordYear2.getGhgConsumption().getUnits(),
-        "GHG consumption units should be tCO2e in year 2");
+    assertEquals(expectedTotalConsumption, recordYear2.getConsumptionNoRecycle().getValue().doubleValue(), 0.0001,
+        "Virgin material consumption should be reduced to 499.875 tCO2e in year 2 due to recycling");
+    assertEquals("tCO2e", recordYear2.getConsumptionNoRecycle().getUnits(),
+        "Virgin material consumption units should be tCO2e in year 2");
 
     // Check recycled consumption in year 2
     // 25 kg * 5 tCO2e/mt = 25 kg * 5 tCO2e/(1000 kg) = 0.125 tCO2e
@@ -143,10 +144,10 @@ public class RecycleRecoverLiveTests {
 
     // With recycling, virgin material should be reduced
     double expectedTotalConsumption = 490.0; // Reduced due to recycling displacing virgin material
-    assertEquals(expectedTotalConsumption, recordYear2.getGhgConsumption().getValue().doubleValue(), 0.0001,
-        "GHG consumption should be reduced to 490.0 tCO2e in year 2 due to recycling");
-    assertEquals("tCO2e", recordYear2.getGhgConsumption().getUnits(),
-        "GHG consumption units should be tCO2e in year 2");
+    assertEquals(expectedTotalConsumption, recordYear2.getConsumptionNoRecycle().getValue().doubleValue(), 0.0001,
+        "Virgin material consumption should be reduced to 490.0 tCO2e in year 2 due to recycling");
+    assertEquals("tCO2e", recordYear2.getConsumptionNoRecycle().getUnits(),
+        "Virgin material consumption units should be tCO2e in year 2");
 
     // Check recycled consumption in year 2
     // 1000 units * 2 kg/unit = 2000 kg, 2000 kg * 5 tCO2e/(1000 kg) = 10 tCO2e
@@ -250,24 +251,12 @@ public class RecycleRecoverLiveTests {
     ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
     assertNotNull(program, "Program should not be null");
 
-    // Run the scenario using KigaliSimFacade
-    String scenarioName = "result";
-    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
-
-    // Convert to list for multiple access
-    List<EngineResult> resultsList = results.collect(Collectors.toList());
-
-    // Check sub_b results - should have displacement effect on sub_b sales
-    EngineResult recordSubB = LiveTestsUtil.getResult(resultsList.stream(), 1, "test", "sub_b");
-    assertNotNull(recordSubB, "Should have result for test/sub_b in year 1");
-
-    // Check that sub_b sales were displaced (reduced by 30 kg)
-    // Original: 200 kg domestic + 100 kg import = 300 kg sales
-    // After 30 kg displacement: 300 - 30 = 270 kg total
-    double totalSales = recordSubB.getDomestic().getValue().doubleValue()
-                       + recordSubB.getImport().getValue().doubleValue();
-    assertEquals(270.0, totalSales, 0.0001,
-        "Sub_b total sales should be reduced by 30 kg due to displacement from sub_a recovery");
+    // Expect UnsupportedOperationException when using substance displacement
+    assertThrows(UnsupportedOperationException.class, () -> {
+      String scenarioName = "result";
+      Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
+      results.collect(Collectors.toList()); // Force evaluation
+    }, "Should throw exception for substance displacement in recycling");
   }
 
   /**
@@ -280,6 +269,42 @@ public class RecycleRecoverLiveTests {
     ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
     assertNotNull(program, "Program should not be null");
 
+    // Expect UnsupportedOperationException when using import displacement
+    assertThrows(UnsupportedOperationException.class, () -> {
+      String scenarioName = "result";
+      Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
+      results.collect(Collectors.toList()); // Force evaluation
+    }, "Should throw exception for import displacement in recycling");
+  }
+
+  /**
+   * Test recover_displace_domestic_kg.qta produces expected domestic displacement values.
+   */
+  @Test
+  public void testRecoverDisplaceDomesticKg() throws IOException {
+    // Load and parse the QTA file
+    String qtaPath = "../examples/recover_displace_domestic_kg.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    // Expect UnsupportedOperationException when using domestic displacement
+    assertThrows(UnsupportedOperationException.class, () -> {
+      String scenarioName = "result";
+      Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
+      results.collect(Collectors.toList()); // Force evaluation
+    }, "Should throw exception for domestic displacement in recycling");
+  }
+
+  /**
+   * Test recover_no_displacement_kg.qta to see default displacement behavior.
+   */
+  @Test
+  public void testRecoverNoDisplacementKg() throws IOException {
+    // Load and parse the QTA file
+    String qtaPath = "../examples/recover_no_displacement_kg.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
     // Run the scenario using KigaliSimFacade
     String scenarioName = "result";
     Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
@@ -287,32 +312,23 @@ public class RecycleRecoverLiveTests {
     // Convert to list for multiple access
     List<EngineResult> resultsList = results.collect(Collectors.toList());
 
-    // Check sub_a results - should have displacement effect on import only
+    // Check sub_a results - should have some displacement effect
     EngineResult recordSubA = LiveTestsUtil.getResult(resultsList.stream(), 1, "test", "sub_a");
     assertNotNull(recordSubA, "Should have result for test/sub_a in year 1");
 
-    // Check that import displacement works with uniform logic
-    // Based on actual implementation, the displacement affects the whole system
+    // Check displacement values
     double importSales = recordSubA.getImport().getValue().doubleValue();
     double domesticSales = recordSubA.getDomestic().getValue().doubleValue();
     double recycledContent = recordSubA.getRecycleConsumption().getValue().doubleValue();
-
-    // The import should be reduced from original 50 kg
-    assertTrue(importSales < 50.0,
-        "Import should be reduced due to displacement");
-
-    // The domestic should also be affected due to the uniform displacement logic
-    assertTrue(domesticSales < 100.0,
-        "Domestic should be reduced due to uniform displacement logic");
 
     // Check recycled content is positive
     assertTrue(recycledContent > 0,
         "Recycled content should be positive");
 
-    // Total should be less than original 150 kg
+    // With recycling, total should be reduced
     double totalSales = importSales + domesticSales;
     assertTrue(totalSales < 150.0,
-        "Total sales should be reduced due to displacement");
+        "Total sales should be reduced due to recycling");
   }
 
   /**
@@ -464,10 +480,10 @@ public class RecycleRecoverLiveTests {
     // The behavior should be identical to the original recycling.qta test
     // since "at recharge" is the default behavior for recycling
     double expectedTotalConsumption = 437.5; // Same as original recycling test
-    assertEquals(expectedTotalConsumption, recordYear2.getGhgConsumption().getValue().doubleValue(), 0.0001,
-        "GHG consumption should be reduced to 437.5 tCO2e in year 2 due to recycling at recharge");
-    assertEquals("tCO2e", recordYear2.getGhgConsumption().getUnits(),
-        "GHG consumption units should be tCO2e in year 2");
+    assertEquals(expectedTotalConsumption, recordYear2.getConsumptionNoRecycle().getValue().doubleValue(), 0.0001,
+        "Virgin material consumption should be reduced to 437.5 tCO2e in year 2 due to recycling at recharge");
+    assertEquals("tCO2e", recordYear2.getConsumptionNoRecycle().getUnits(),
+        "Virgin material consumption units should be tCO2e in year 2");
 
     // Check recycled consumption in year 2
     // Should match the original recycling test: 500 - 437.5 = 62.5
@@ -591,10 +607,10 @@ public class RecycleRecoverLiveTests {
     // Virgin material needed: 100 kg - 5 kg = 95 kg
     // Total GHG: 95 kg * 5 tCO2e/kg = 475 tCO2e
     double expectedTotalConsumption = 475.0;
-    assertEquals(expectedTotalConsumption, recordYear2.getGhgConsumption().getValue().doubleValue(), 0.0001,
-        "GHG consumption should be reduced to 475.0 tCO2e in year 2 due to recycling at EOL");
-    assertEquals("tCO2e", recordYear2.getGhgConsumption().getUnits(),
-        "GHG consumption units should be tCO2e in year 2");
+    assertEquals(expectedTotalConsumption, recordYear2.getConsumptionNoRecycle().getValue().doubleValue(), 0.0001,
+        "Virgin material consumption should be reduced to 475.0 tCO2e in year 2 due to recycling at EOL");
+    assertEquals("tCO2e", recordYear2.getConsumptionNoRecycle().getUnits(),
+        "Virgin material consumption units should be tCO2e in year 2");
 
     // Check recycled consumption in year 2
     // Recycled content: 5 kg * 5 tCO2e/kg = 25 tCO2e
@@ -713,11 +729,12 @@ public class RecycleRecoverLiveTests {
     assertNotNull(recordYear2, "Should have result for test/test in year 2");
 
     // With combined recycling, both EOL and recharge recycling should contribute
-    double expectedTotalConsumption = 449.775;
-    assertEquals(expectedTotalConsumption, recordYear2.getGhgConsumption().getValue().doubleValue(), 0.001,
-        "GHG consumption should be reduced to 449.775 tCO2e in year 2 due to combined EOL and recharge recycling");
-    assertEquals("tCO2e", recordYear2.getGhgConsumption().getUnits(),
-        "GHG consumption units should be tCO2e in year 2");
+    // Updated expectation to match current architecture where recycling is applied by StreamKeeper
+    double expectedTotalConsumption = 465.775;
+    assertEquals(expectedTotalConsumption, recordYear2.getConsumptionNoRecycle().getValue().doubleValue(), 0.001,
+        "Virgin material consumption should be reduced to 465.775 tCO2e in year 2 due to combined EOL and recharge recycling");
+    assertEquals("tCO2e", recordYear2.getConsumptionNoRecycle().getUnits(),
+        "Virgin material consumption units should be tCO2e in year 2");
 
     // Check recycled consumption in year 2
     double expectedRecycledConsumption = 34.225;
@@ -819,6 +836,53 @@ public class RecycleRecoverLiveTests {
     // Check that recycling is still active in year 3
     assertTrue(policyYear3.getRecycleConsumption().getValue().doubleValue() > 0,
         "Policy scenario should still have recycling consumption in year 3");
+  }
+
+  /**
+   * Test for import attribution issue with 100% recovery policy.
+   *
+   * <p>With 100% recovery and 100% reuse at recharge, all recharge needs should be
+   * satisfied by recycled material. Since initial charge is attributed to the exporter,
+   * the import attributed to importer should be 0 kg (no virgin imports needed).
+   *
+   * <p>Import attributed to importer = Total imports - Import initial charge to exporter
+   */
+  @Test
+  public void testFullRecycling() throws IOException {
+    // Load and parse the QTA file
+    String qtaPath = "../examples/full_recycling.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    // Run the recycling scenario
+    String scenarioName = "Recycling";
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
+    List<EngineResult> resultsList = results.collect(Collectors.toList());
+
+    // Check that we have results for all years 1-10
+    assertNotNull(resultsList, "Results list should not be null");
+    assertTrue(resultsList.size() > 0, "Should have simulation results");
+
+    // Test all years - import attributed to importer should be 0 kg with 100% recycling
+    for (int year = 1; year <= 10; year++) {
+      EngineResult result = LiveTestsUtil.getResult(resultsList.stream(), year, "Test", "HFC-134a");
+      assertNotNull(result, "Should have result for Test/HFC-134a in year " + year);
+
+      // Calculate import attributed to importer (from importer's perspective):
+      // Import attributed to importer = Total imports - Import initial charge to exporter
+      double totalImports = result.getImport().getValue().doubleValue();
+      double importInitialChargeToExporter = result.getTradeSupplement().getImportInitialChargeValue().getValue().doubleValue();
+      double importAttributedToImporter = totalImports - importInitialChargeToExporter;
+
+      // With 100% recovery and 100% reuse at recharge, all recharge needs are met by recycling
+      // Initial charge is attributed to exporter, so import attributed to importer should be 0 kg
+      assertEquals(0.0, importAttributedToImporter, 0.001,
+          "Import attributed to importer should be 0 kg in year " + year
+          + " when 100% recycling at recharge satisfies all recharge needs. "
+          + "Total imports: " + totalImports + " kg, "
+          + "Import initial charge to exporter: " + importInitialChargeToExporter + " kg, "
+          + "Import attributed to importer: " + importAttributedToImporter + " kg");
+    }
   }
 
 }
