@@ -206,21 +206,23 @@ public class ChangeLiveTests {
     // Check equipment values against expected progression with 5% retirement and 5% import growth
     // Expected: 1450, 1903, 2359, 2820, 3286 units (with rounding)
     final EngineResult year1Result = LiveTestsUtil.getResult(resultsList.stream(), 1, "RAC1 - Resac1", "R-410A");
+    
+    final EngineResult year3Result = LiveTestsUtil.getResult(resultsList.stream(), 3, "RAC1 - Resac1", "R-410A");
+    final EngineResult year4Result = LiveTestsUtil.getResult(resultsList.stream(), 4, "RAC1 - Resac1", "R-410A");
+    final EngineResult year5Result = LiveTestsUtil.getResult(resultsList.stream(), 5, "RAC1 - Resac1", "R-410A");
+    
     assertEquals(1450.0, year1Result.getPopulation().getValue().doubleValue(), 5.0,
         "Year 1 equipment should be ~1450 units");
 
     assertEquals(1903.0, year2Result.getPopulation().getValue().doubleValue(), 5.0,
         "Year 2 equipment should be ~1903 units");
 
-    final EngineResult year3Result = LiveTestsUtil.getResult(resultsList.stream(), 3, "RAC1 - Resac1", "R-410A");
     assertEquals(2359.0, year3Result.getPopulation().getValue().doubleValue(), 5.0,
         "Year 3 equipment should be ~2359 units");
 
-    final EngineResult year4Result = LiveTestsUtil.getResult(resultsList.stream(), 4, "RAC1 - Resac1", "R-410A");
     assertEquals(2820.0, year4Result.getPopulation().getValue().doubleValue(), 5.0,
         "Year 4 equipment should be ~2820 units");
 
-    final EngineResult year5Result = LiveTestsUtil.getResult(resultsList.stream(), 5, "RAC1 - Resac1", "R-410A");
     assertEquals(3286.0, year5Result.getPopulation().getValue().doubleValue(), 5.0,
         "Year 5 equipment should be ~3286 units");
   }

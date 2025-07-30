@@ -1443,7 +1443,7 @@ public class SingleThreadEngine implements Engine {
 
   /**
    * Handle percentage-based change operations.
-   * Applies percentage to the lastSpecifiedValue and recurses with concrete amount.
+   * SIMPLIFIED VERSION: Apply percentage directly to lastSpecifiedValue and let setStream handle recharge.
    *
    * @param stream The stream identifier to modify
    * @param amount The percentage amount (e.g., "5%")
@@ -1457,46 +1457,15 @@ public class SingleThreadEngine implements Engine {
       return; // No base value, no change
     }
 
+    // Apply percentage directly to lastSpecified value (user intent)
     BigDecimal percentageValue = amount.getValue();
+    BigDecimal changeAmount = lastSpecified.getValue().multiply(percentageValue).divide(new BigDecimal("100"));
+    BigDecimal newTotalValue = lastSpecified.getValue().add(changeAmount);
+    EngineNumber newTotal = new EngineNumber(newTotalValue, lastSpecified.getUnits());
 
-    if ("units".equals(lastSpecified.getUnits()) && !"sales".equals(stream)) {
-      // Stream-specific recharge subtraction approach for units (but not for sales stream)
-      // Sales is a calculated stream (domestic + import) and doesn't have independent recharge
-      
-      // Get current stream volume (includes recharge)
-      EngineNumber currentStreamValue = getStream(stream, Optional.of(useKeyEffective), Optional.empty());
-
-      // Calculate stream-specific recharge
-      EngineNumber rechargeVolume = RechargeVolumeCalculator.calculateRechargeVolume(
-          useKeyEffective, stateGetter, streamKeeper, this);
-
-      // Subtract recharge to get net new equipment volume
-      UnitConverter unitConverter = createUnitConverterWithTotal(stream);
-      EngineNumber currentValueKg = unitConverter.convert(currentStreamValue, "kg");
-      EngineNumber netEquipmentKg = new EngineNumber(
-          currentValueKg.getValue().subtract(rechargeVolume.getValue()), "kg");
-
-      // Convert to units
-      EngineNumber netEquipmentUnits = unitConverter.convert(netEquipmentKg, "units");
-
-      // Apply percentage change to original user intent (lastSpecifiedValue)
-      BigDecimal changeAmount = lastSpecified.getValue().multiply(percentageValue).divide(new BigDecimal("100"));
-      BigDecimal newTotalUnits = lastSpecified.getValue().add(changeAmount);
-      EngineNumber newTotal = new EngineNumber(newTotalUnits, "units");
-
-      // Call setStream directly with new total (don't recurse through changeStream)
-      setStream(stream, newTotal, Optional.ofNullable(yearMatcher));
-      return;
-    } else {
-      // If last specified value was volume OR if this is the sales stream:
-      // Apply percentage directly to the lastSpecified value
-      BigDecimal changeAmount = lastSpecified.getValue().multiply(percentageValue).divide(new BigDecimal("100"));
-      BigDecimal newTotalValue = lastSpecified.getValue().add(changeAmount);
-      EngineNumber newTotal = new EngineNumber(newTotalValue, lastSpecified.getUnits());
-
-      // Call setStream directly with new total (don't recurse through changeStream)
-      setStream(stream, newTotal, Optional.ofNullable(yearMatcher));
-    }
+    // Let setStream handle unit conversion and recharge addition properly
+    // This eliminates double counting - recharge calculated only in setStream
+    setStream(stream, newTotal, Optional.ofNullable(yearMatcher));
   }
 
   /**
@@ -1536,7 +1505,7 @@ public class SingleThreadEngine implements Engine {
 
   /**
    * Handle units-based change operations.
-   * Subtracts recharge, works in clean units, then uses setStream to properly convert back.
+   * SIMPLIFIED VERSION: Apply change to lastSpecifiedValue and let setStream handle recharge.
    *
    * @param stream The stream identifier to modify
    * @param amount The units amount (e.g., "25 units")
@@ -1545,27 +1514,24 @@ public class SingleThreadEngine implements Engine {
    */
   private void handleUnitsChange(String stream, EngineNumber amount, YearMatcher yearMatcher,
       UseKey useKeyEffective) {
-    // Stream-specific recharge subtraction approach for units
-    // Get current stream volume (includes recharge)
-    EngineNumber currentStreamValue = getStream(stream, Optional.of(useKeyEffective), Optional.empty());
+    EngineNumber lastSpecified = streamKeeper.getLastSpecifiedValue(useKeyEffective, stream);
+    if (lastSpecified == null) {
+      // Fallback: apply change to current stream value
+      EngineNumber currentValue = getStream(stream, Optional.of(useKeyEffective), Optional.empty());
+      UnitConverter unitConverter = createUnitConverterWithTotal(stream);
+      EngineNumber currentInUnits = unitConverter.convert(currentValue, "units");
+      BigDecimal newUnits = currentInUnits.getValue().add(amount.getValue());
+      EngineNumber newTotal = new EngineNumber(newUnits, "units");
+      setStream(stream, newTotal, Optional.ofNullable(yearMatcher));
+      return;
+    }
 
-    // Calculate stream-specific recharge
-    EngineNumber rechargeVolume = RechargeVolumeCalculator.calculateRechargeVolume(
-        useKeyEffective, stateGetter, streamKeeper, this);
+    // Apply units change to lastSpecified value
+    BigDecimal newTotalValue = lastSpecified.getValue().add(amount.getValue());
+    EngineNumber newTotal = new EngineNumber(newTotalValue, lastSpecified.getUnits());
 
-    // Subtract recharge to get net new equipment volume
-    UnitConverter unitConverter = createUnitConverterWithTotal(stream);
-    EngineNumber currentValueKg = unitConverter.convert(currentStreamValue, "kg");
-    EngineNumber netEquipmentKg = new EngineNumber(
-        currentValueKg.getValue().subtract(rechargeVolume.getValue()), "kg");
-
-    // Apply change to net equipment units (recharge will be re-added by setStream)
-    EngineNumber netEquipmentUnits = unitConverter.convert(netEquipmentKg, "units");
-    BigDecimal newNetUnits = netEquipmentUnits.getValue().add(amount.getValue());
-    EngineNumber newUnitsValue = new EngineNumber(newNetUnits, "units");
-
-    // Use setStream to handle units → kg conversion + recharge addition
-    setStream(stream, newUnitsValue, Optional.ofNullable(yearMatcher));
+    // Let setStream handle unit conversion and recharge addition properly
+    setStream(stream, newTotal, Optional.ofNullable(yearMatcher));
   }
 
   /**

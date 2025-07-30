@@ -73,10 +73,6 @@ application {
 // JUnit target for all tests.
 test {
   useJUnitPlatform()
-  testLogging {
-    events "skipped", "failed"
-    exceptionFormat = "full"
-  }
 }
 
 // JUnit resource assets for tests.
