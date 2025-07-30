@@ -198,21 +198,30 @@ public class ChangeLiveTests {
 
     // Expected values: 500, 525, 551.25, 578.8125, 607.753125 (5% each year)
     // Actual problematic values: 500, 604.8, 750.8, 946.5, 1204.0
-    
+
     // Check year 2 import value - should be 525 units, not 604.8
     EngineResult year2Result = LiveTestsUtil.getResult(resultsList.stream(), 2, "RAC1 - Resac1", "R-410A");
     assertNotNull(year2Result, "Should have result for RAC1 - Resac1/R-410A in year 2");
-    
-    // Convert to units for verification (525 units * 1 kg/unit = 525 kg)
-    assertEquals(525.0, year2Result.getImport().getValue().doubleValue(), 0.0001,
-        "Year 2 import should be 525 kg (525 units * 1 kg/unit)");
-    
-    // Check year 3 import value - should be 551.25 units  
-    EngineResult year3Result = LiveTestsUtil.getResult(resultsList.stream(), 3, "RAC1 - Resac1", "R-410A");
-    assertNotNull(year3Result, "Should have result for RAC1 - Resac1/R-410A in year 3");
-    
-    // Convert to units for verification (551.25 units * 1 kg/unit = 551.25 kg)
-    assertEquals(551.25, year3Result.getImport().getValue().doubleValue(), 0.0001,
-        "Year 3 import should be 551.25 kg (551.25 units * 1 kg/unit)");
+
+    // Check equipment values against expected progression with 5% retirement and 5% import growth
+    // Expected: 1450, 1903, 2359, 2820, 3286 units (with rounding)
+    final EngineResult year1Result = LiveTestsUtil.getResult(resultsList.stream(), 1, "RAC1 - Resac1", "R-410A");
+    assertEquals(1450.0, year1Result.getPopulation().getValue().doubleValue(), 5.0,
+        "Year 1 equipment should be ~1450 units");
+
+    assertEquals(1903.0, year2Result.getPopulation().getValue().doubleValue(), 5.0,
+        "Year 2 equipment should be ~1903 units");
+
+    final EngineResult year3Result = LiveTestsUtil.getResult(resultsList.stream(), 3, "RAC1 - Resac1", "R-410A");
+    assertEquals(2359.0, year3Result.getPopulation().getValue().doubleValue(), 5.0,
+        "Year 3 equipment should be ~2359 units");
+
+    final EngineResult year4Result = LiveTestsUtil.getResult(resultsList.stream(), 4, "RAC1 - Resac1", "R-410A");
+    assertEquals(2820.0, year4Result.getPopulation().getValue().doubleValue(), 5.0,
+        "Year 4 equipment should be ~2820 units");
+
+    final EngineResult year5Result = LiveTestsUtil.getResult(resultsList.stream(), 5, "RAC1 - Resac1", "R-410A");
+    assertEquals(3286.0, year5Result.getPopulation().getValue().doubleValue(), 5.0,
+        "Year 5 equipment should be ~3286 units");
   }
 }

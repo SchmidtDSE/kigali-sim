@@ -745,21 +745,14 @@ public class SingleThreadEngine implements Engine {
     }
 
     UseKey useKeyEffective = useKey == null ? scope : useKey;
-    EngineNumber currentValue = getStream(stream, Optional.of(useKeyEffective), Optional.empty());
-    UnitConverter unitConverter = createUnitConverterWithTotal(stream);
 
-    EngineNumber convertedDelta = unitConverter.convert(amount, currentValue.getUnits());
-    BigDecimal newAmount = currentValue.getValue().add(convertedDelta.getValue());
-    EngineNumber outputWithUnits = new EngineNumber(newAmount, currentValue.getUnits());
-
-    // Need to convert UseKey to Scope for setStream call since setStream requires scope for variable management
-    StreamUpdate update = new StreamUpdateBuilder()
-        .setName(stream)
-        .setValue(outputWithUnits)
-        .setKey(useKeyEffective)
-        .setUnitsToRecord(amount.getUnits())
-        .build();
-    executeStreamUpdate(update);
+    if (amount.getUnits() != null && amount.getUnits().contains("%")) {
+      handlePercentageChange(stream, amount, yearMatcher, useKeyEffective);
+    } else if ("units".equals(amount.getUnits())) {
+      handleUnitsChange(stream, amount, yearMatcher, useKeyEffective);
+    } else {
+      handleVolumeChange(stream, amount, yearMatcher, useKeyEffective);
+    }
   }
 
   @Override
@@ -1395,6 +1388,118 @@ public class SingleThreadEngine implements Engine {
     BigDecimal recycledKg = recycledUnits.multiply(initialChargeKg.getValue());
 
     return recycledKg;
+  }
+
+  /**
+   * Handle percentage-based change operations.
+   * Applies percentage to the lastSpecifiedValue and recurses with concrete amount.
+   *
+   * @param stream The stream identifier to modify
+   * @param amount The percentage amount (e.g., "5%")
+   * @param yearMatcher Matcher to determine if the change applies to current year
+   * @param useKeyEffective The effective UseKey for the operation
+   */
+  private void handlePercentageChange(String stream, EngineNumber amount, YearMatcher yearMatcher,
+      UseKey useKeyEffective) {
+    EngineNumber lastSpecified = streamKeeper.getLastSpecifiedValue(useKeyEffective, stream);
+    if (lastSpecified == null) {
+      return; // No base value, no change
+    }
+
+    BigDecimal percentageValue = amount.getValue();
+    EngineNumber concreteChange;
+
+    if ("units".equals(lastSpecified.getUnits())) {
+      // Stream-specific recharge subtraction approach for units
+      // Get current stream volume (includes recharge)
+      EngineNumber currentStreamValue = getStream(stream, Optional.of(useKeyEffective), Optional.empty());
+
+      // Calculate stream-specific recharge
+      EngineNumber rechargeVolume = RechargeVolumeCalculator.calculateRechargeVolume(
+          useKeyEffective, stateGetter, streamKeeper, this);
+
+      // Subtract recharge to get net new equipment volume
+      UnitConverter unitConverter = createUnitConverterWithTotal(stream);
+      EngineNumber currentValueKg = unitConverter.convert(currentStreamValue, "kg");
+      EngineNumber netEquipmentKg = new EngineNumber(
+          currentValueKg.getValue().subtract(rechargeVolume.getValue()), "kg");
+
+      // Convert to units
+      EngineNumber netEquipmentUnits = unitConverter.convert(netEquipmentKg, "units");
+
+      // Apply percentage change to original user intent (lastSpecifiedValue)
+      BigDecimal changeAmount = lastSpecified.getValue().multiply(percentageValue).divide(new BigDecimal("100"));
+      BigDecimal newTotalUnits = lastSpecified.getValue().add(changeAmount);
+      EngineNumber newTotal = new EngineNumber(newTotalUnits, "units");
+
+      // Call setStream directly with new total (don't recurse through changeStream)
+      setStream(stream, newTotal, Optional.ofNullable(yearMatcher));
+      return;
+    } else {
+      // If last specified value was volume: Multiply the stream value by percent
+      EngineNumber currentStream = getStream(stream, Optional.of(useKeyEffective), Optional.empty());
+      BigDecimal changeAmount = currentStream.getValue().multiply(percentageValue).divide(new BigDecimal("100"));
+      concreteChange = new EngineNumber(changeAmount, currentStream.getUnits());
+    }
+
+    // Recursively call with concrete amount
+    changeStream(stream, concreteChange, yearMatcher, useKeyEffective);
+  }
+
+  /**
+   * Handle units-based change operations.
+   * Subtracts recharge, works in clean units, then uses setStream to properly convert back.
+   *
+   * @param stream The stream identifier to modify
+   * @param amount The units amount (e.g., "25 units")
+   * @param yearMatcher Matcher to determine if the change applies to current year
+   * @param useKeyEffective The effective UseKey for the operation
+   */
+  private void handleUnitsChange(String stream, EngineNumber amount, YearMatcher yearMatcher,
+      UseKey useKeyEffective) {
+    // Stream-specific recharge subtraction approach for units
+    // Get current stream volume (includes recharge)
+    EngineNumber currentStreamValue = getStream(stream, Optional.of(useKeyEffective), Optional.empty());
+
+    // Calculate stream-specific recharge
+    EngineNumber rechargeVolume = RechargeVolumeCalculator.calculateRechargeVolume(
+        useKeyEffective, stateGetter, streamKeeper, this);
+
+    // Subtract recharge to get net new equipment volume
+    UnitConverter unitConverter = createUnitConverterWithTotal(stream);
+    EngineNumber currentValueKg = unitConverter.convert(currentStreamValue, "kg");
+    EngineNumber netEquipmentKg = new EngineNumber(
+        currentValueKg.getValue().subtract(rechargeVolume.getValue()), "kg");
+
+    // Apply change to net equipment units (recharge will be re-added by setStream)
+    EngineNumber netEquipmentUnits = unitConverter.convert(netEquipmentKg, "units");
+    BigDecimal newNetUnits = netEquipmentUnits.getValue().add(amount.getValue());
+    EngineNumber newUnitsValue = new EngineNumber(newNetUnits, "units");
+
+    // Use setStream to handle units → kg conversion + recharge addition
+    setStream(stream, newUnitsValue, Optional.ofNullable(yearMatcher));
+  }
+
+  /**
+   * Handle volume-based change operations (kg, mt, etc.).
+   * Uses existing logic but ensures lastSpecifiedValue is updated.
+   *
+   * @param stream The stream identifier to modify
+   * @param amount The volume amount (e.g., "50 kg")
+   * @param yearMatcher Matcher to determine if the change applies to current year
+   * @param useKeyEffective The effective UseKey for the operation
+   */
+  private void handleVolumeChange(String stream, EngineNumber amount, YearMatcher yearMatcher,
+      UseKey useKeyEffective) {
+    // Get current stream value and apply change, calling setStream with kg
+    EngineNumber currentValue = getStream(stream, Optional.of(useKeyEffective), Optional.empty());
+    UnitConverter unitConverter = createUnitConverterWithTotal(stream);
+    EngineNumber convertedDelta = unitConverter.convert(amount, "kg");
+    BigDecimal newAmount = currentValue.getValue().add(convertedDelta.getValue());
+    EngineNumber newTotal = new EngineNumber(newAmount, "kg");
+
+    // Use setStream to handle the change and update lastSpecifiedValue
+    setStream(stream, newTotal, Optional.ofNullable(yearMatcher));
   }
 
 }
