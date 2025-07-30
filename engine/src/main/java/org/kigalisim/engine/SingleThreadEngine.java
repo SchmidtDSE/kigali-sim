@@ -750,10 +750,8 @@ public class SingleThreadEngine implements Engine {
     if ("sales".equals(stream)) {
       handleSalesChange(stream, amount, yearMatcher, useKeyEffective);
     } else if (getIsSalesSubstream(stream) || "export".equals(stream)) {
-      // Component streams (domestic, import, export): Use our new logic for percentage bug fix
       handleComponentStream(stream, amount, yearMatcher, useKeyEffective);
     } else {
-      // Derived streams (equipment, priorEquipment, etc.): Use original logic to preserve displacement
       handleDerivedStream(stream, amount, yearMatcher, useKeyEffective);
     }
   }
