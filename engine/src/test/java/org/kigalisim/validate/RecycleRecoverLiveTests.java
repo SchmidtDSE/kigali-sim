@@ -8,6 +8,7 @@ package org.kigalisim.validate;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
@@ -250,24 +251,12 @@ public class RecycleRecoverLiveTests {
     ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
     assertNotNull(program, "Program should not be null");
 
-    // Run the scenario using KigaliSimFacade
-    String scenarioName = "result";
-    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
-
-    // Convert to list for multiple access
-    List<EngineResult> resultsList = results.collect(Collectors.toList());
-
-    // Check sub_b results - should have displacement effect on sub_b sales
-    EngineResult recordSubB = LiveTestsUtil.getResult(resultsList.stream(), 1, "test", "sub_b");
-    assertNotNull(recordSubB, "Should have result for test/sub_b in year 1");
-
-    // Check that sub_b sales were displaced (reduced by 30 kg)
-    // Original: 200 kg domestic + 100 kg import = 300 kg sales
-    // After 30 kg displacement: 300 - 30 = 270 kg total
-    double totalSales = recordSubB.getDomestic().getValue().doubleValue()
-                       + recordSubB.getImport().getValue().doubleValue();
-    assertEquals(270.0, totalSales, 0.0001,
-        "Sub_b total sales should be reduced by 30 kg due to displacement from sub_a recovery");
+    // Expect UnsupportedOperationException when using substance displacement
+    assertThrows(UnsupportedOperationException.class, () -> {
+      String scenarioName = "result";
+      Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
+      results.collect(Collectors.toList()); // Force evaluation
+    }, "Should throw exception for substance displacement in recycling");
   }
 
   /**
@@ -280,39 +269,12 @@ public class RecycleRecoverLiveTests {
     ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
     assertNotNull(program, "Program should not be null");
 
-    // Run the scenario using KigaliSimFacade
-    String scenarioName = "result";
-    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
-
-    // Convert to list for multiple access
-    List<EngineResult> resultsList = results.collect(Collectors.toList());
-
-    // Check sub_a results - should have displacement effect on import only
-    EngineResult recordSubA = LiveTestsUtil.getResult(resultsList.stream(), 1, "test", "sub_a");
-    assertNotNull(recordSubA, "Should have result for test/sub_a in year 1");
-
-    // Check that import displacement works correctly - should only affect import, not domestic
-    double importSales = recordSubA.getImport().getValue().doubleValue();
-    double domesticSales = recordSubA.getDomestic().getValue().doubleValue();
-    double recycledContent = recordSubA.getRecycleConsumption().getValue().doubleValue();
-
-
-    // The import should be reduced from original 50 kg (targeted displacement)
-    assertTrue(importSales < 50.0,
-        "Import should be reduced due to import displacement");
-
-    // The domestic should NOT be affected (displacement targets import only)
-    assertEquals(100.0, domesticSales, 0.1,
-        "Domestic should NOT be reduced when displacing import only");
-
-    // Check recycled content is positive
-    assertTrue(recycledContent > 0,
-        "Recycled content should be positive");
-
-    // Total should be less than original 150 kg (only import reduced)
-    double totalSales = importSales + domesticSales;
-    assertTrue(totalSales < 150.0,
-        "Total sales should be reduced due to import displacement");
+    // Expect UnsupportedOperationException when using import displacement
+    assertThrows(UnsupportedOperationException.class, () -> {
+      String scenarioName = "result";
+      Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
+      results.collect(Collectors.toList()); // Force evaluation
+    }, "Should throw exception for import displacement in recycling");
   }
 
   /**
@@ -325,39 +287,12 @@ public class RecycleRecoverLiveTests {
     ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
     assertNotNull(program, "Program should not be null");
 
-    // Run the scenario using KigaliSimFacade
-    String scenarioName = "result";
-    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
-
-    // Convert to list for multiple access
-    List<EngineResult> resultsList = results.collect(Collectors.toList());
-
-    // Check sub_a results - should have displacement effect on domestic only
-    EngineResult recordSubA = LiveTestsUtil.getResult(resultsList.stream(), 1, "test", "sub_a");
-    assertNotNull(recordSubA, "Should have result for test/sub_a in year 1");
-
-    // Check displacement values
-    double importSales = recordSubA.getImport().getValue().doubleValue();
-    double domesticSales = recordSubA.getDomestic().getValue().doubleValue();
-    double recycledContent = recordSubA.getRecycleConsumption().getValue().doubleValue();
-
-
-    // The import should NOT be affected (displacing domestic, not import)
-    assertEquals(50.0, importSales, 0.1,
-        "Import should NOT be reduced when displacing domestic");
-
-    // The domestic should be reduced due to displacement
-    assertTrue(domesticSales < 100.0,
-        "Domestic should be reduced due to domestic displacement");
-
-    // Check recycled content is positive
-    assertTrue(recycledContent > 0,
-        "Recycled content should be positive");
-
-    // Total should be less than original 150 kg
-    double totalSales = importSales + domesticSales;
-    assertTrue(totalSales < 150.0,
-        "Total sales should be reduced due to displacement");
+    // Expect UnsupportedOperationException when using domestic displacement
+    assertThrows(UnsupportedOperationException.class, () -> {
+      String scenarioName = "result";
+      Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
+      results.collect(Collectors.toList()); // Force evaluation
+    }, "Should throw exception for domestic displacement in recycling");
   }
 
   /**
