@@ -33,6 +33,8 @@ import org.kigalisim.engine.state.StreamKeeper;
 import org.kigalisim.engine.state.SubstanceInApplicationId;
 import org.kigalisim.engine.state.UseKey;
 import org.kigalisim.engine.state.YearMatcher;
+import org.kigalisim.engine.support.ChangeExecutor;
+import org.kigalisim.engine.support.EngineSupportUtils;
 import org.kigalisim.engine.support.ExceptionsGenerator;
 import org.kigalisim.engine.support.RechargeVolumeCalculator;
 import org.kigalisim.engine.support.StreamUpdate;
@@ -73,6 +75,7 @@ public class SingleThreadEngine implements Engine {
   private final ConverterStateGetter stateGetter;
   private final UnitConverter unitConverter;
   private final StreamKeeper streamKeeper;
+  private final ChangeExecutor changeExecutor;
   private Scope scope;
 
   /**
@@ -96,6 +99,7 @@ public class SingleThreadEngine implements Engine {
     unitConverter = new UnitConverter(stateGetter);
     this.streamKeeper = new StreamKeeper(
         new OverridingConverterStateGetter(stateGetter), unitConverter);
+    this.changeExecutor = new ChangeExecutor(this);
     scope = new Scope(null, null, null);
   }
 
@@ -259,7 +263,7 @@ public class SingleThreadEngine implements Engine {
     EngineNumber valueToSet = value;
     if (isSales && isUnits) {
       // Convert to kg and add recharge on top
-      UnitConverter unitConverter = createUnitConverterWithTotal(name);
+      UnitConverter unitConverter = EngineSupportUtils.createUnitConverterWithTotal(this, name);
       EngineNumber valueInKg = unitConverter.convert(value, "kg");
       EngineNumber rechargeVolume = RechargeVolumeCalculator.calculateRechargeVolume(
           keyEffective,
@@ -675,7 +679,7 @@ public class SingleThreadEngine implements Engine {
     operation.execute(this);
 
     // Handle displacement using the existing displacement logic
-    UnitConverter unitConverter = createUnitConverterWithTotal(RECYCLE_RECOVER_STREAM);
+    UnitConverter unitConverter = EngineSupportUtils.createUnitConverterWithTotal(this, RECYCLE_RECOVER_STREAM);
     EngineNumber recoveryInKg = unitConverter.convert(recoveryWithUnits, "kg");
     handleDisplacement(RECYCLE_RECOVER_STREAM, recoveryWithUnits, recoveryInKg.getValue(), displacementTarget);
   }
@@ -740,26 +744,8 @@ public class SingleThreadEngine implements Engine {
   @Override
   public void changeStream(String stream, EngineNumber amount, YearMatcher yearMatcher,
       UseKey useKey) {
-    if (!getIsInRange(yearMatcher)) {
-      return;
-    }
-
     UseKey useKeyEffective = useKey == null ? scope : useKey;
-    EngineNumber currentValue = getStream(stream, Optional.of(useKeyEffective), Optional.empty());
-    UnitConverter unitConverter = createUnitConverterWithTotal(stream);
-
-    EngineNumber convertedDelta = unitConverter.convert(amount, currentValue.getUnits());
-    BigDecimal newAmount = currentValue.getValue().add(convertedDelta.getValue());
-    EngineNumber outputWithUnits = new EngineNumber(newAmount, currentValue.getUnits());
-
-    // Need to convert UseKey to Scope for setStream call since setStream requires scope for variable management
-    StreamUpdate update = new StreamUpdateBuilder()
-        .setName(stream)
-        .setValue(outputWithUnits)
-        .setKey(useKeyEffective)
-        .setUnitsToRecord(amount.getUnits())
-        .build();
-    executeStreamUpdate(update);
+    changeExecutor.executeChange(stream, amount, yearMatcher, useKeyEffective);
   }
 
   @Override
@@ -769,7 +755,7 @@ public class SingleThreadEngine implements Engine {
       return;
     }
 
-    UnitConverter unitConverter = createUnitConverterWithTotal(stream);
+    UnitConverter unitConverter = EngineSupportUtils.createUnitConverterWithTotal(this, stream);
     EngineNumber currentValueRaw = getStream(stream);
     EngineNumber currentValue = unitConverter.convert(currentValueRaw, "kg");
 
@@ -816,7 +802,7 @@ public class SingleThreadEngine implements Engine {
       return;
     }
 
-    UnitConverter unitConverter = createUnitConverterWithTotal(stream);
+    UnitConverter unitConverter = EngineSupportUtils.createUnitConverterWithTotal(this, stream);
     EngineNumber currentValueRaw = getStream(stream);
     EngineNumber currentValue = unitConverter.convert(currentValueRaw, "kg");
 
@@ -882,7 +868,7 @@ public class SingleThreadEngine implements Engine {
 
     if (amountRaw.hasEquipmentUnits()) {
       // For equipment units, convert to units first, then handle each substance separately
-      UnitConverter sourceUnitConverter = createUnitConverterWithTotal(stream);
+      UnitConverter sourceUnitConverter = EngineSupportUtils.createUnitConverterWithTotal(this, stream);
       EngineNumber unitsToReplace = sourceUnitConverter.convert(amountRaw, "units");
 
       // Remove from source substance using source's initial charge
@@ -897,14 +883,14 @@ public class SingleThreadEngine implements Engine {
       Scope destinationScope = scope.getWithSubstance(destinationSubstance);
       Scope originalScope = scope;
       scope = destinationScope;
-      UnitConverter destinationUnitConverter = createUnitConverterWithTotal(stream);
+      UnitConverter destinationUnitConverter = EngineSupportUtils.createUnitConverterWithTotal(this, stream);
       scope = originalScope;
 
       EngineNumber destinationVolumeChange = destinationUnitConverter.convert(unitsToReplace, "kg");
       changeStreamWithoutReportingUnits(stream, destinationVolumeChange, Optional.empty(), Optional.of(destinationScope));
     } else {
       // For volume units, use the original logic
-      UnitConverter unitConverter = createUnitConverterWithTotal(stream);
+      UnitConverter unitConverter = EngineSupportUtils.createUnitConverterWithTotal(this, stream);
       EngineNumber amount = unitConverter.convert(amountRaw, "kg");
 
       EngineNumber amountNegative = new EngineNumber(amount.getValue().negate(), amount.getUnits());
@@ -937,7 +923,7 @@ public class SingleThreadEngine implements Engine {
    * @return True if in range or no matcher provided
    */
   private boolean getIsInRange(YearMatcher yearMatcher) {
-    return yearMatcher == null || yearMatcher.getInRange(currentYear);
+    return EngineSupportUtils.isInRange(yearMatcher, currentYear);
   }
 
   /**
@@ -970,7 +956,7 @@ public class SingleThreadEngine implements Engine {
 
     if (amount.hasEquipmentUnits()) {
       // For equipment units, displacement should be unit-based, not volume-based
-      UnitConverter currentUnitConverter = createUnitConverterWithTotal(stream);
+      UnitConverter currentUnitConverter = EngineSupportUtils.createUnitConverterWithTotal(this, stream);
 
       // Convert the volume change back to units in the original substance
       EngineNumber volumeChangeFlip = new EngineNumber(changeAmount.negate(), "kg");
@@ -988,7 +974,7 @@ public class SingleThreadEngine implements Engine {
         // Temporarily change scope to destination for unit conversion
         final Scope originalScope = scope;
         scope = destinationScope;
-        UnitConverter destinationUnitConverter = createUnitConverterWithTotal(stream);
+        UnitConverter destinationUnitConverter = EngineSupportUtils.createUnitConverterWithTotal(this, stream);
 
         // Convert units to destination substance volume using destination's initial charge
         EngineNumber destinationVolumeChange = destinationUnitConverter.convert(unitsChanged, "kg");
@@ -1035,7 +1021,7 @@ public class SingleThreadEngine implements Engine {
 
       // Get current value and calculate new value (now using correct scope)
       EngineNumber currentValue = getStream(stream);
-      UnitConverter unitConverter = createUnitConverterWithTotal(stream);
+      UnitConverter unitConverter = EngineSupportUtils.createUnitConverterWithTotal(this, stream);
 
       EngineNumber convertedDelta = unitConverter.convert(amount, currentValue.getUnits());
       BigDecimal newAmount = currentValue.getValue().add(convertedDelta.getValue());
@@ -1111,7 +1097,7 @@ public class SingleThreadEngine implements Engine {
    * @return true if the stream is domestic or import
    */
   private boolean getIsSalesSubstream(String name) {
-    return "domestic".equals(name) || "import".equals(name);
+    return EngineSupportUtils.isSalesSubstream(name);
   }
 
   /**
@@ -1158,7 +1144,7 @@ public class SingleThreadEngine implements Engine {
     }
 
     EngineNumber currentValue = getStream(stream, scope, Optional.empty());
-    UnitConverter unitConverter = createUnitConverterWithTotal(stream);
+    UnitConverter unitConverter = EngineSupportUtils.createUnitConverterWithTotal(this, stream);
 
     EngineNumber convertedDelta = unitConverter.convert(amount, currentValue.getUnits());
     BigDecimal newAmount = currentValue.getValue().add(convertedDelta.getValue());
@@ -1184,27 +1170,6 @@ public class SingleThreadEngine implements Engine {
     executeStreamUpdate(update);
   }
 
-  /**
-   * Creates a unit converter with total values initialized.
-   *
-   * @param stream The stream identifier to create converter for
-   * @return A configured unit converter instance
-   */
-  private UnitConverter createUnitConverterWithTotal(String stream) {
-    OverridingConverterStateGetter stateGetter =
-        new OverridingConverterStateGetter(this.stateGetter);
-    UnitConverter unitConverter = new UnitConverter(stateGetter);
-
-    EngineNumber currentValue = getStream(stream);
-    stateGetter.setTotal(stream, currentValue);
-
-    if (getIsSalesSubstream(stream)) {
-      EngineNumber initialCharge = getInitialCharge(stream);
-      stateGetter.setAmortizedUnitVolume(initialCharge);
-    }
-
-    return unitConverter;
-  }
 
   /**
    * Helper method to raise exception for missing application or substance.
@@ -1290,7 +1255,7 @@ public class SingleThreadEngine implements Engine {
       // Both streams have unit-based values - combine them
       // Convert both to the same units (prefer the current stream's units)
       String targetUnits = value.getUnits();
-      UnitConverter converter = createUnitConverterWithTotal(streamName);
+      UnitConverter converter = EngineSupportUtils.createUnitConverterWithTotal(this, streamName);
       EngineNumber otherConverted = converter.convert(otherValue, targetUnits);
 
       // Create combined sales value
@@ -1340,7 +1305,7 @@ public class SingleThreadEngine implements Engine {
     EngineNumber displacementRate = streamKeeper.getDisplacementRate(scope);
 
     // Convert everything to proper units
-    UnitConverter unitConverter = createUnitConverterWithTotal("sales");
+    UnitConverter unitConverter = EngineSupportUtils.createUnitConverterWithTotal(this, "sales");
     EngineNumber priorPopulation = unitConverter.convert(priorPopulationRaw, "units");
 
     // Calculate rates as decimals
@@ -1396,5 +1361,4 @@ public class SingleThreadEngine implements Engine {
 
     return recycledKg;
   }
-
 }

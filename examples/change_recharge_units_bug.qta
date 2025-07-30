@@ -1,0 +1,29 @@
+start default
+
+  define application "RAC1 - Resac1"
+  
+    uses substance "R-410A"
+      enable import
+      initial charge with 0 kg / unit for domestic
+      initial charge with 1 kg / unit for import
+      initial charge with 0 kg / unit for export
+      equals 2082 tCO2e / kg
+      equals 1500 kwh / unit
+      set import to 500 units during year 1
+      set priorEquipment to 1000 units during year 1
+      change import by 5 % during years 2 to 10
+      retire 5 % / year
+      recharge 8 % / year with 1 kg / unit
+    end substance
+  
+  end application
+
+end default
+
+
+start simulations
+
+  simulate "S1"
+  from years 1 to 5
+
+end simulations
