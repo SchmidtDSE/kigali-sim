@@ -746,6 +746,12 @@ public class SingleThreadEngine implements Engine {
 
     UseKey useKeyEffective = useKey == null ? scope : useKey;
 
+    // Special handling for sales stream - distribute to components
+    if ("sales".equals(stream)) {
+      handleSalesChange(stream, amount, yearMatcher, useKeyEffective);
+      return;
+    }
+
     if (amount.getUnits() != null && amount.getUnits().contains("%")) {
       handlePercentageChange(stream, amount, yearMatcher, useKeyEffective);
     } else if ("units".equals(amount.getUnits())) {
@@ -1407,10 +1413,11 @@ public class SingleThreadEngine implements Engine {
     }
 
     BigDecimal percentageValue = amount.getValue();
-    EngineNumber concreteChange;
 
-    if ("units".equals(lastSpecified.getUnits())) {
-      // Stream-specific recharge subtraction approach for units
+    if ("units".equals(lastSpecified.getUnits()) && !"sales".equals(stream)) {
+      // Stream-specific recharge subtraction approach for units (but not for sales stream)
+      // Sales is a calculated stream (domestic + import) and doesn't have independent recharge
+      
       // Get current stream volume (includes recharge)
       EngineNumber currentStreamValue = getStream(stream, Optional.of(useKeyEffective), Optional.empty());
 
@@ -1436,14 +1443,50 @@ public class SingleThreadEngine implements Engine {
       setStream(stream, newTotal, Optional.ofNullable(yearMatcher));
       return;
     } else {
-      // If last specified value was volume: Multiply the stream value by percent
-      EngineNumber currentStream = getStream(stream, Optional.of(useKeyEffective), Optional.empty());
-      BigDecimal changeAmount = currentStream.getValue().multiply(percentageValue).divide(new BigDecimal("100"));
-      concreteChange = new EngineNumber(changeAmount, currentStream.getUnits());
-    }
+      // If last specified value was volume OR if this is the sales stream:
+      // Apply percentage directly to the lastSpecified value
+      BigDecimal changeAmount = lastSpecified.getValue().multiply(percentageValue).divide(new BigDecimal("100"));
+      BigDecimal newTotalValue = lastSpecified.getValue().add(changeAmount);
+      EngineNumber newTotal = new EngineNumber(newTotalValue, lastSpecified.getUnits());
 
-    // Recursively call with concrete amount
-    changeStream(stream, concreteChange, yearMatcher, useKeyEffective);
+      // Call setStream directly with new total (don't recurse through changeStream)
+      setStream(stream, newTotal, Optional.ofNullable(yearMatcher));
+    }
+  }
+
+  /**
+   * Handle sales stream changes by distributing proportionally to domestic and import.
+   * This avoids double recharge by letting each component stream handle its own recharge.
+   *
+   * @param stream The stream identifier (should be "sales")
+   * @param amount The change amount (percentage, units, or kg)
+   * @param yearMatcher Matcher to determine if the change applies to current year
+   * @param useKeyEffective The effective UseKey for the operation
+   */
+  private void handleSalesChange(String stream, EngineNumber amount, YearMatcher yearMatcher,
+      UseKey useKeyEffective) {
+    // Get the distribution ratios for domestic and import
+    SalesStreamDistribution distribution = streamKeeper.getDistribution(useKeyEffective);
+    BigDecimal percentDomestic = distribution.getPercentDomestic();
+    BigDecimal percentImport = distribution.getPercentImport();
+
+    // Calculate proportional amounts for each component
+    if (amount.getUnits() != null && amount.getUnits().contains("%")) {
+      // Percentage changes: apply same percentage to both components
+      // This ensures that 5% to sales means both domestic and import grow by 5%
+      changeStream("domestic", amount, yearMatcher, useKeyEffective);
+      changeStream("import", amount, yearMatcher, useKeyEffective);
+    } else {
+      // Units or kg changes: distribute proportionally
+      BigDecimal domesticAmount = amount.getValue().multiply(percentDomestic);
+      BigDecimal importAmount = amount.getValue().multiply(percentImport);
+      
+      EngineNumber domesticChange = new EngineNumber(domesticAmount, amount.getUnits());
+      EngineNumber importChange = new EngineNumber(importAmount, amount.getUnits());
+      
+      changeStream("domestic", domesticChange, yearMatcher, useKeyEffective);
+      changeStream("import", importChange, yearMatcher, useKeyEffective);
+    }
   }
 
   /**
