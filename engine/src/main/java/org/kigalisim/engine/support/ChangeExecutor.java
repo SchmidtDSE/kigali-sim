@@ -124,7 +124,8 @@ public class ChangeExecutor {
 
   /**
    * Handle percentage-based change operations.
-   * SIMPLIFIED VERSION: Apply percentage directly to lastSpecifiedValue and let setStream handle recharge.
+   * 
+   * <p>Apply percentage directly to lastSpecifiedValue and let setStream handle recharge.</p>
    *
    * @param config The configuration containing all parameters for the change operation
    */
@@ -189,7 +190,8 @@ public class ChangeExecutor {
 
   /**
    * Handle units-based change operations.
-   * SIMPLIFIED VERSION: Apply change to lastSpecifiedValue and let setStream handle recharge.
+   * 
+   * <p>Apply change to lastSpecifiedValue and let setStream handle recharge.</p>
    *
    * @param config The configuration containing all parameters for the change operation
    */
