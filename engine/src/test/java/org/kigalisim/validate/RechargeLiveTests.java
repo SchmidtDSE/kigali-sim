@@ -509,8 +509,9 @@ public class RechargeLiveTests {
         + (combinedR600a2035.getDomestic().getValue().doubleValue() + combinedR600a2035.getImport().getValue().doubleValue());
 
     // Expected: Recycling scenario produces consistent consumption
-    // Updated after fixing sales percentage change bug - was 32,853 kg with buggy behavior
-    assertEquals(69978.42, recyclingTotalConsumption, 1.0, "Recycling scenario total consumption should be ~69,978 kg");
+    // Updated after removing try-catch from calculateCurrentRecyclingAmount - improved recycling accuracy
+    // Previous value 69,978.42 kg was based on less accurate recycling calculations
+    assertEquals(62592.77, recyclingTotalConsumption, 1.0, "Recycling scenario total consumption should be ~62,593 kg");
 
     // Expected: Combined policies (recycling + cap) should consume LESS than recycling alone
     // Cap policies should reduce overall consumption when applied on top of recycling
@@ -578,8 +579,9 @@ public class RechargeLiveTests {
         + (combinedR600a2035.getDomestic().getValue().doubleValue() + combinedR600a2035.getImport().getValue().doubleValue());
 
     // Expected: Recycling scenario produces consistent consumption
-    // Updated after fixing sales percentage change bug - was 32,853 kg with buggy behavior
-    assertEquals(69978.42, recyclingTotalConsumption, 1.0, "Recycling scenario total consumption should be ~69,978 kg");
+    // Updated after removing try-catch from calculateCurrentRecyclingAmount - improved recycling accuracy
+    // Previous value 69,978.42 kg was based on less accurate recycling calculations
+    assertEquals(62592.77, recyclingTotalConsumption, 1.0, "Recycling scenario total consumption should be ~62,593 kg");
 
     // Expected: Combined policies (recycling + cap) should consume LESS than recycling alone
     // Cap policies should reduce overall consumption when applied on top of recycling

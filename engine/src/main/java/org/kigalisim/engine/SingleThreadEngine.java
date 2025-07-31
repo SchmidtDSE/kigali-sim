@@ -187,27 +187,21 @@ public class SingleThreadEngine implements Engine {
   }
 
   /**
-   * Get the state getter used by this engine instance.
-   *
-   * @return The ConverterStateGetter instance
+   * {@inheritDoc}
    */
   public ConverterStateGetter getStateGetter() {
     return stateGetter;
   }
 
   /**
-   * Get the unit converter instance.
-   *
-   * @return The unit converter
+   * {@inheritDoc}
    */
   public UnitConverter getUnitConverter() {
     return unitConverter;
   }
 
   /**
-   * Get the stream keeper instance.
-   *
-   * @return The stream keeper
+   * {@inheritDoc}
    */
   public StreamKeeper getStreamKeeper() {
     return streamKeeper;
@@ -364,8 +358,20 @@ public class SingleThreadEngine implements Engine {
   @Override
   public void setStream(String name, EngineNumber value, Optional<YearMatcher> yearMatcher) {
     // For direct stream setting (like from SetOperation), domestic/import should not subtract recycling
-    boolean subtractRecycling = !getIsSalesSubstream(name);
+    // EXCEPT when the operation is units-based, which should account for recycling
+    boolean subtractRecycling = !getIsSalesSubstream(name) || "units".equals(value.getUnits());
+    setStream(name, value, yearMatcher, subtractRecycling);
+  }
 
+  /**
+   * Set a stream with explicit control over recycling behavior.
+   *
+   * @param name The stream name
+   * @param value The value to set
+   * @param yearMatcher Optional year matcher for conditional setting
+   * @param subtractRecycling Whether to apply recycling logic during stream setting
+   */
+  public void setStream(String name, EngineNumber value, Optional<YearMatcher> yearMatcher, boolean subtractRecycling) {
     StreamUpdate update = new StreamUpdateBuilder()
         .setName(name)
         .setValue(value)
@@ -650,6 +656,9 @@ public class SingleThreadEngine implements Engine {
         .thenPropagateToConsumption()
         .build();
     operation.execute(this);
+
+    // Update lastSpecifiedValue after recycling for volume-based specs
+    updateLastSpecifiedValueAfterRecycling();
   }
 
   @Override
@@ -677,6 +686,9 @@ public class SingleThreadEngine implements Engine {
         .thenPropagateToConsumption()
         .build();
     operation.execute(this);
+
+    // Update lastSpecifiedValue after recycling for volume-based specs
+    updateLastSpecifiedValueAfterRecycling();
 
     // Handle displacement using the existing displacement logic
     UnitConverter unitConverter = EngineSupportUtils.createUnitConverterWithTotal(this, RECYCLE_RECOVER_STREAM);
@@ -759,18 +771,46 @@ public class SingleThreadEngine implements Engine {
     EngineNumber currentValueRaw = getStream(stream);
     EngineNumber currentValue = unitConverter.convert(currentValueRaw, "kg");
 
-    // Handle percentage caps differently - use change approach
+    // Handle percentage caps differently - use lastSpecifiedValue for compounding
     if ("%".equals(amount.getUnits())) {
-      // Convert percentage to kg
-      EngineNumber convertedMax = unitConverter.convert(amount, "kg");
+      // Use lastSpecifiedValue (like change operations) for compounding effect
+      StreamKeeper streamKeeper = getStreamKeeper();
+      EngineNumber lastSpecified = streamKeeper.getLastSpecifiedValue(scope, stream);
 
-      BigDecimal changeAmountRaw = convertedMax.getValue().subtract(currentValue.getValue());
-      BigDecimal changeAmount = changeAmountRaw.min(BigDecimal.ZERO);
+      if (lastSpecified != null) {
+        // Calculate new cap value based on lastSpecified (enables compounding)
+        BigDecimal capValue = lastSpecified.getValue().multiply(amount.getValue()).divide(new BigDecimal("100"));
+        EngineNumber newCappedValue = new EngineNumber(capValue, lastSpecified.getUnits()); // Preserve original units
 
-      if (changeAmount.compareTo(BigDecimal.ZERO) < 0) {
-        EngineNumber changeWithUnits = new EngineNumber(changeAmount, "kg");
-        changeStreamWithoutReportingUnits(stream, changeWithUnits, Optional.empty(), Optional.empty());
-        handleDisplacement(stream, amount, changeAmount, displaceTarget);
+        // Convert both values to kg for comparison
+        EngineNumber currentInKg = unitConverter.convert(currentValueRaw, "kg");
+        EngineNumber newCappedInKg = unitConverter.convert(newCappedValue, "kg");
+
+        // Only apply cap if current value exceeds the cap
+        if (currentInKg.getValue().compareTo(newCappedInKg.getValue()) > 0) {
+          // Set the new capped value (this updates lastSpecifiedValue automatically)
+          setStream(stream, newCappedValue, Optional.empty());
+
+          // Calculate displacement based on actual change
+          if (displaceTarget != null) {
+            EngineNumber finalInKg = getStream(stream);
+            BigDecimal changeInKg = finalInKg.getValue().subtract(currentInKg.getValue());
+            handleDisplacement(stream, amount, changeInKg, displaceTarget);
+          }
+        }
+        // If cap is not active (current <= cap), lastSpecifiedValue remains unchanged
+      } else {
+        // Fallback: use current approach if no lastSpecifiedValue
+        EngineNumber convertedMax = unitConverter.convert(amount, "kg");
+
+        BigDecimal changeAmountRaw = convertedMax.getValue().subtract(currentValue.getValue());
+        BigDecimal changeAmount = changeAmountRaw.min(BigDecimal.ZERO);
+
+        if (changeAmount.compareTo(BigDecimal.ZERO) < 0) {
+          EngineNumber changeWithUnits = new EngineNumber(changeAmount, "kg");
+          changeStreamWithoutReportingUnits(stream, changeWithUnits, Optional.empty(), Optional.empty());
+          handleDisplacement(stream, amount, changeAmount, displaceTarget);
+        }
       }
     } else {
       // For non-percentage caps, use setStream approach
@@ -806,18 +846,46 @@ public class SingleThreadEngine implements Engine {
     EngineNumber currentValueRaw = getStream(stream);
     EngineNumber currentValue = unitConverter.convert(currentValueRaw, "kg");
 
-    // Handle percentage floors differently - use change approach
+    // Handle percentage floors differently - use lastSpecifiedValue for compounding
     if ("%".equals(amount.getUnits())) {
-      // Convert percentage to kg
-      EngineNumber convertedMin = unitConverter.convert(amount, "kg");
+      // Use lastSpecifiedValue (like change operations) for compounding effect
+      StreamKeeper streamKeeper = getStreamKeeper();
+      EngineNumber lastSpecified = streamKeeper.getLastSpecifiedValue(scope, stream);
 
-      BigDecimal changeAmountRaw = convertedMin.getValue().subtract(currentValue.getValue());
-      BigDecimal changeAmount = changeAmountRaw.max(BigDecimal.ZERO);
+      if (lastSpecified != null) {
+        // Calculate new floor value based on lastSpecified (enables compounding)
+        BigDecimal floorValue = lastSpecified.getValue().multiply(amount.getValue()).divide(new BigDecimal("100"));
+        EngineNumber newFloorValue = new EngineNumber(floorValue, lastSpecified.getUnits()); // Preserve original units
 
-      if (changeAmount.compareTo(BigDecimal.ZERO) > 0) {
-        EngineNumber changeWithUnits = new EngineNumber(changeAmount, "kg");
-        changeStreamWithoutReportingUnits(stream, changeWithUnits, Optional.empty(), Optional.empty());
-        handleDisplacement(stream, amount, changeAmount, displaceTarget);
+        // Convert both values to kg for comparison
+        EngineNumber currentInKg = unitConverter.convert(currentValueRaw, "kg");
+        EngineNumber newFloorInKg = unitConverter.convert(newFloorValue, "kg");
+
+        // Only apply floor if current value is below the floor
+        if (currentInKg.getValue().compareTo(newFloorInKg.getValue()) < 0) {
+          // Set the new floor value (this updates lastSpecifiedValue automatically)
+          setStream(stream, newFloorValue, Optional.empty());
+
+          // Calculate displacement based on actual change
+          if (displaceTarget != null) {
+            EngineNumber finalInKg = getStream(stream);
+            BigDecimal changeInKg = finalInKg.getValue().subtract(currentInKg.getValue());
+            handleDisplacement(stream, amount, changeInKg, displaceTarget);
+          }
+        }
+        // If floor is not active (current >= floor), lastSpecifiedValue remains unchanged
+      } else {
+        // Fallback: use current approach if no lastSpecifiedValue
+        EngineNumber convertedMin = unitConverter.convert(amount, "kg");
+
+        BigDecimal changeAmountRaw = convertedMin.getValue().subtract(currentValue.getValue());
+        BigDecimal changeAmount = changeAmountRaw.max(BigDecimal.ZERO);
+
+        if (changeAmount.compareTo(BigDecimal.ZERO) > 0) {
+          EngineNumber changeWithUnits = new EngineNumber(changeAmount, "kg");
+          changeStreamWithoutReportingUnits(stream, changeWithUnits, Optional.empty(), Optional.empty());
+          handleDisplacement(stream, amount, changeAmount, displaceTarget);
+        }
       }
     } else {
       // For non-percentage floors, use setStream approach
@@ -1360,5 +1428,53 @@ public class SingleThreadEngine implements Engine {
     BigDecimal recycledKg = recycledUnits.multiply(initialChargeKg.getValue());
 
     return recycledKg;
+  }
+
+  /**
+   * Updates lastSpecifiedValue for domestic and import streams after recycling.
+   * This ensures that subsequent change operations use the recycling-adjusted values as their base.
+   * Only applies to volume-based (mt/kg) specifications, not units-based ones.
+   */
+  private void updateLastSpecifiedValueAfterRecycling() {
+    // Only update for volume-based specifications
+    EngineNumber lastDomestic = streamKeeper.getLastSpecifiedValue(scope, "domestic");
+    EngineNumber lastImport = streamKeeper.getLastSpecifiedValue(scope, "import");
+
+    // Check if we have volume-based lastSpecifiedValues
+    boolean hasVolumeDomestic = lastDomestic != null && !lastDomestic.hasEquipmentUnits();
+    boolean hasVolumeImport = lastImport != null && !lastImport.hasEquipmentUnits();
+
+    // If neither stream has volume-based specs, nothing to update
+    if (!hasVolumeDomestic && !hasVolumeImport) {
+      return;
+    }
+
+    // Get current recycling amount
+    EngineNumber recycleAmount = getStream("recycle");
+    if (recycleAmount == null || recycleAmount.getValue().compareTo(BigDecimal.ZERO) == 0) {
+      return; // No recycling occurred
+    }
+
+    // Update domestic lastSpecifiedValue if it's volume-based
+    if (hasVolumeDomestic) {
+      EngineNumber currentDomestic = getStream("domestic");
+      if (currentDomestic != null) {
+        // Convert current value to the original units of lastSpecifiedValue
+        UnitConverter unitConverter = EngineSupportUtils.createUnitConverterWithTotal(this, "domestic");
+        EngineNumber domesticInOriginalUnits = unitConverter.convert(currentDomestic, lastDomestic.getUnits());
+        streamKeeper.setLastSpecifiedValue(scope, "domestic", domesticInOriginalUnits);
+      }
+    }
+
+    // Update import lastSpecifiedValue if it's volume-based
+    if (hasVolumeImport) {
+      EngineNumber currentImport = getStream("import");
+      if (currentImport != null) {
+        // Convert current value to the original units of lastSpecifiedValue
+        UnitConverter unitConverter = EngineSupportUtils.createUnitConverterWithTotal(this, "import");
+        EngineNumber importInOriginalUnits = unitConverter.convert(currentImport, lastImport.getUnits());
+        streamKeeper.setLastSpecifiedValue(scope, "import", importInOriginalUnits);
+      }
+    }
   }
 }

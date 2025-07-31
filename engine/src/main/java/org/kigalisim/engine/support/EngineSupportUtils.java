@@ -9,7 +9,7 @@
 
 package org.kigalisim.engine.support;
 
-import org.kigalisim.engine.SingleThreadEngine;
+import org.kigalisim.engine.Engine;
 import org.kigalisim.engine.number.EngineNumber;
 import org.kigalisim.engine.number.UnitConverter;
 import org.kigalisim.engine.state.ConverterStateGetter;
@@ -73,11 +73,11 @@ public final class EngineSupportUtils {
   /**
    * Creates a unit converter with total values initialized (convenience method).
    *
-   * @param engine The SingleThreadEngine instance to get state from
+   * @param engine The Engine instance to get state from
    * @param stream The stream identifier to create converter for
    * @return A configured unit converter instance
    */
-  public static UnitConverter createUnitConverterWithTotal(SingleThreadEngine engine, String stream) {
+  public static UnitConverter createUnitConverterWithTotal(Engine engine, String stream) {
     EngineNumber currentValue = engine.getStream(stream);
     EngineNumber initialCharge = null;
 

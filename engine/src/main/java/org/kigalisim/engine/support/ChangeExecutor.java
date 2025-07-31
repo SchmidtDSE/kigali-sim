@@ -1,7 +1,7 @@
 /**
  * Utility class for executing change operations on streams.
  *
- * <p>This class extracts the change operation logic from SingleThreadEngine
+ * <p>This class provides change operation logic for Engine implementations
  * to provide better separation of concerns and testability. It handles routing
  * of different change types (percentage, units, volume) to appropriate handlers.</p>
  *
@@ -12,7 +12,7 @@ package org.kigalisim.engine.support;
 
 import java.math.BigDecimal;
 import java.util.Optional;
-import org.kigalisim.engine.SingleThreadEngine;
+import org.kigalisim.engine.Engine;
 import org.kigalisim.engine.number.EngineNumber;
 import org.kigalisim.engine.number.UnitConverter;
 import org.kigalisim.engine.recalc.SalesStreamDistribution;
@@ -28,14 +28,14 @@ import org.kigalisim.engine.state.YearMatcher;
  */
 public class ChangeExecutor {
 
-  private final SingleThreadEngine engine;
+  private final Engine engine;
 
   /**
    * Creates a new ChangeExecutor for the given engine.
    *
-   * @param engine The SingleThreadEngine instance to operate on
+   * @param engine The Engine instance to operate on
    */
-  public ChangeExecutor(SingleThreadEngine engine) {
+  public ChangeExecutor(Engine engine) {
     this.engine = engine;
   }
 
@@ -124,7 +124,8 @@ public class ChangeExecutor {
 
   /**
    * Handle percentage-based change operations.
-   * SIMPLIFIED VERSION: Apply percentage directly to lastSpecifiedValue and let setStream handle recharge.
+   *
+   * <p>Apply percentage directly to lastSpecifiedValue and let setStream handle recharge.</p>
    *
    * @param config The configuration containing all parameters for the change operation
    */
@@ -148,7 +149,9 @@ public class ChangeExecutor {
 
     // Let setStream handle unit conversion and recharge addition properly
     // This eliminates double counting - recharge calculated only in setStream
-    engine.setStream(stream, newTotal, Optional.ofNullable(yearMatcher));
+    // For units-based specifications, enable recycling logic
+    boolean subtractRecycling = "units".equals(lastSpecified.getUnits());
+    engine.setStream(stream, newTotal, Optional.ofNullable(yearMatcher), subtractRecycling);
   }
 
   /**
@@ -189,7 +192,8 @@ public class ChangeExecutor {
 
   /**
    * Handle units-based change operations.
-   * SIMPLIFIED VERSION: Apply change to lastSpecifiedValue and let setStream handle recharge.
+   *
+   * <p>Apply change to lastSpecifiedValue and let setStream handle recharge.</p>
    *
    * @param config The configuration containing all parameters for the change operation
    */
@@ -208,7 +212,8 @@ public class ChangeExecutor {
       EngineNumber currentInUnits = unitConverter.convert(currentValue, "units");
       BigDecimal newUnits = currentInUnits.getValue().add(amount.getValue());
       EngineNumber newTotal = new EngineNumber(newUnits, "units");
-      engine.setStream(stream, newTotal, Optional.ofNullable(yearMatcher));
+      // Units-based change should use recycling logic
+      engine.setStream(stream, newTotal, Optional.ofNullable(yearMatcher), true);
       return;
     }
 
@@ -217,7 +222,9 @@ public class ChangeExecutor {
     EngineNumber newTotal = new EngineNumber(newTotalValue, lastSpecified.getUnits());
 
     // Let setStream handle unit conversion and recharge addition properly
-    engine.setStream(stream, newTotal, Optional.ofNullable(yearMatcher));
+    // For units-based specifications, enable recycling logic
+    boolean subtractRecycling = "units".equals(lastSpecified.getUnits());
+    engine.setStream(stream, newTotal, Optional.ofNullable(yearMatcher), subtractRecycling);
   }
 
   /**
@@ -240,6 +247,7 @@ public class ChangeExecutor {
     EngineNumber newTotal = new EngineNumber(newAmount, "kg");
 
     // Use setStream to handle the change and update lastSpecifiedValue
+    // Volume-based changes use the default recycling behavior
     engine.setStream(stream, newTotal, Optional.ofNullable(yearMatcher));
   }
 }
