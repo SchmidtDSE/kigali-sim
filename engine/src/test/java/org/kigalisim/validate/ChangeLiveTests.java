@@ -268,16 +268,16 @@ public class ChangeLiveTests {
     double permitSales2030 = permit2030.getDomestic().getValue().doubleValue() + permit2030.getImport().getValue().doubleValue();
     double bauSales2031 = bau2031.getDomestic().getValue().doubleValue() + bau2031.getImport().getValue().doubleValue();
     double permitSales2031 = permit2031.getDomestic().getValue().doubleValue() + permit2031.getImport().getValue().doubleValue();
-    
+
     double diff2029 = (bauSales2029 - permitSales2029) / bauSales2029;
     double diff2030 = (bauSales2030 - permitSales2030) / bauSales2030;
     double diff2031 = (bauSales2031 - permitSales2031) / bauSales2031;
 
     // Assert that the cap is creating a compounding effect (difference increases each year)
     // Should see 15% reduction compounding year over year while policy is active
-    assertTrue(diff2030 > diff2029 + 0.05, 
+    assertTrue(diff2030 > diff2029 + 0.05,
         "2030 gap should be more than 5% larger than 2029 gap (compounding effect)");
-    assertTrue(diff2031 > diff2030 + 0.05, 
+    assertTrue(diff2031 > diff2030 + 0.05,
         "2031 gap should be more than 5% larger than 2030 gap (compounding effect)");
   }
 
@@ -315,19 +315,19 @@ public class ChangeLiveTests {
     assertNotNull(recycling2028, "Should have Recycling result for 2028");
 
     // Calculate percentage differences (BAU - Recycling) / BAU for total GHG consumption
-    double diff2026 = (bau2026.getGhgConsumption().getValue().doubleValue() - recycling2026.getGhgConsumption().getValue().doubleValue()) 
+    double diff2026 = (bau2026.getGhgConsumption().getValue().doubleValue() - recycling2026.getGhgConsumption().getValue().doubleValue())
         / bau2026.getGhgConsumption().getValue().doubleValue();
-    double diff2027 = (bau2027.getGhgConsumption().getValue().doubleValue() - recycling2027.getGhgConsumption().getValue().doubleValue()) 
+    double diff2027 = (bau2027.getGhgConsumption().getValue().doubleValue() - recycling2027.getGhgConsumption().getValue().doubleValue())
         / bau2027.getGhgConsumption().getValue().doubleValue();
-    double diff2028 = (bau2028.getGhgConsumption().getValue().doubleValue() - recycling2028.getGhgConsumption().getValue().doubleValue()) 
+    double diff2028 = (bau2028.getGhgConsumption().getValue().doubleValue() - recycling2028.getGhgConsumption().getValue().doubleValue())
         / bau2028.getGhgConsumption().getValue().doubleValue();
 
     // Assert that recycling effect is sustained and grows (or stays constant) over time
     // 2027 should show larger gap than 2026 (recycling starts in 2027)
-    assertTrue(diff2027 > diff2026, 
+    assertTrue(diff2027 > diff2026,
         "2027 gap should be larger than 2026 gap (recycling starts in 2027)");
     // 2028 gap should be larger than or equal to 2027 gap (recycling should persist/grow)
-    assertTrue(diff2028 >= diff2027, 
+    assertTrue(diff2028 >= diff2027,
         "2028 gap should be larger than or equal to 2027 gap (recycling should persist)");
   }
 }

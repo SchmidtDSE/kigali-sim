@@ -759,18 +759,46 @@ public class SingleThreadEngine implements Engine {
     EngineNumber currentValueRaw = getStream(stream);
     EngineNumber currentValue = unitConverter.convert(currentValueRaw, "kg");
 
-    // Handle percentage caps differently - use change approach
+    // Handle percentage caps differently - use lastSpecifiedValue for compounding
     if ("%".equals(amount.getUnits())) {
-      // Convert percentage to kg
-      EngineNumber convertedMax = unitConverter.convert(amount, "kg");
+      // Use lastSpecifiedValue (like change operations) for compounding effect
+      StreamKeeper streamKeeper = getStreamKeeper();
+      EngineNumber lastSpecified = streamKeeper.getLastSpecifiedValue(scope, stream);
 
-      BigDecimal changeAmountRaw = convertedMax.getValue().subtract(currentValue.getValue());
-      BigDecimal changeAmount = changeAmountRaw.min(BigDecimal.ZERO);
+      if (lastSpecified != null) {
+        // Calculate new cap value based on lastSpecified (enables compounding)
+        BigDecimal capValue = lastSpecified.getValue().multiply(amount.getValue()).divide(new BigDecimal("100"));
+        EngineNumber newCappedValue = new EngineNumber(capValue, lastSpecified.getUnits()); // Preserve original units
 
-      if (changeAmount.compareTo(BigDecimal.ZERO) < 0) {
-        EngineNumber changeWithUnits = new EngineNumber(changeAmount, "kg");
-        changeStreamWithoutReportingUnits(stream, changeWithUnits, Optional.empty(), Optional.empty());
-        handleDisplacement(stream, amount, changeAmount, displaceTarget);
+        // Convert both values to kg for comparison
+        EngineNumber currentInKg = unitConverter.convert(currentValueRaw, "kg");
+        EngineNumber newCappedInKg = unitConverter.convert(newCappedValue, "kg");
+
+        // Only apply cap if current value exceeds the cap
+        if (currentInKg.getValue().compareTo(newCappedInKg.getValue()) > 0) {
+          // Set the new capped value (this updates lastSpecifiedValue automatically)
+          setStream(stream, newCappedValue, Optional.empty());
+
+          // Calculate displacement based on actual change
+          if (displaceTarget != null) {
+            EngineNumber finalInKg = getStream(stream);
+            BigDecimal changeInKg = finalInKg.getValue().subtract(currentInKg.getValue());
+            handleDisplacement(stream, amount, changeInKg, displaceTarget);
+          }
+        }
+        // If cap is not active (current <= cap), lastSpecifiedValue remains unchanged
+      } else {
+        // Fallback: use current approach if no lastSpecifiedValue
+        EngineNumber convertedMax = unitConverter.convert(amount, "kg");
+
+        BigDecimal changeAmountRaw = convertedMax.getValue().subtract(currentValue.getValue());
+        BigDecimal changeAmount = changeAmountRaw.min(BigDecimal.ZERO);
+
+        if (changeAmount.compareTo(BigDecimal.ZERO) < 0) {
+          EngineNumber changeWithUnits = new EngineNumber(changeAmount, "kg");
+          changeStreamWithoutReportingUnits(stream, changeWithUnits, Optional.empty(), Optional.empty());
+          handleDisplacement(stream, amount, changeAmount, displaceTarget);
+        }
       }
     } else {
       // For non-percentage caps, use setStream approach
@@ -806,18 +834,46 @@ public class SingleThreadEngine implements Engine {
     EngineNumber currentValueRaw = getStream(stream);
     EngineNumber currentValue = unitConverter.convert(currentValueRaw, "kg");
 
-    // Handle percentage floors differently - use change approach
+    // Handle percentage floors differently - use lastSpecifiedValue for compounding
     if ("%".equals(amount.getUnits())) {
-      // Convert percentage to kg
-      EngineNumber convertedMin = unitConverter.convert(amount, "kg");
+      // Use lastSpecifiedValue (like change operations) for compounding effect
+      StreamKeeper streamKeeper = getStreamKeeper();
+      EngineNumber lastSpecified = streamKeeper.getLastSpecifiedValue(scope, stream);
 
-      BigDecimal changeAmountRaw = convertedMin.getValue().subtract(currentValue.getValue());
-      BigDecimal changeAmount = changeAmountRaw.max(BigDecimal.ZERO);
+      if (lastSpecified != null) {
+        // Calculate new floor value based on lastSpecified (enables compounding)
+        BigDecimal floorValue = lastSpecified.getValue().multiply(amount.getValue()).divide(new BigDecimal("100"));
+        EngineNumber newFloorValue = new EngineNumber(floorValue, lastSpecified.getUnits()); // Preserve original units
 
-      if (changeAmount.compareTo(BigDecimal.ZERO) > 0) {
-        EngineNumber changeWithUnits = new EngineNumber(changeAmount, "kg");
-        changeStreamWithoutReportingUnits(stream, changeWithUnits, Optional.empty(), Optional.empty());
-        handleDisplacement(stream, amount, changeAmount, displaceTarget);
+        // Convert both values to kg for comparison
+        EngineNumber currentInKg = unitConverter.convert(currentValueRaw, "kg");
+        EngineNumber newFloorInKg = unitConverter.convert(newFloorValue, "kg");
+
+        // Only apply floor if current value is below the floor
+        if (currentInKg.getValue().compareTo(newFloorInKg.getValue()) < 0) {
+          // Set the new floor value (this updates lastSpecifiedValue automatically)
+          setStream(stream, newFloorValue, Optional.empty());
+
+          // Calculate displacement based on actual change
+          if (displaceTarget != null) {
+            EngineNumber finalInKg = getStream(stream);
+            BigDecimal changeInKg = finalInKg.getValue().subtract(currentInKg.getValue());
+            handleDisplacement(stream, amount, changeInKg, displaceTarget);
+          }
+        }
+        // If floor is not active (current >= floor), lastSpecifiedValue remains unchanged
+      } else {
+        // Fallback: use current approach if no lastSpecifiedValue
+        EngineNumber convertedMin = unitConverter.convert(amount, "kg");
+
+        BigDecimal changeAmountRaw = convertedMin.getValue().subtract(currentValue.getValue());
+        BigDecimal changeAmount = changeAmountRaw.max(BigDecimal.ZERO);
+
+        if (changeAmount.compareTo(BigDecimal.ZERO) > 0) {
+          EngineNumber changeWithUnits = new EngineNumber(changeAmount, "kg");
+          changeStreamWithoutReportingUnits(stream, changeWithUnits, Optional.empty(), Optional.empty());
+          handleDisplacement(stream, amount, changeAmount, displaceTarget);
+        }
       }
     } else {
       // For non-percentage floors, use setStream approach
