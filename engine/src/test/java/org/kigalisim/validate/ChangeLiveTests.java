@@ -416,15 +416,15 @@ public class ChangeLiveTests {
     // This test validates that our units-based recycling fix works correctly.
     // The fix ensures recycling is properly applied to units-based change operations.
     // We verify that recycling has a measurable effect that varies over time.
-    
+
     // 2026: No recycling effect expected (recycling starts in 2027)
     assertTrue(Math.abs(diff2026) < 0.01,
         "2026 should show minimal recycling effect (recycling hasn't started)");
-    
+
     // 2027: Recycling effect should be measurable and different from 2026
     assertTrue(Math.abs(diff2027 - diff2026) > 0.02,
         "2027 should show significant change from 2026 (recycling starts in 2027)");
-    
+
     // 2028: Recycling effect should be sustained or evolve
     assertTrue(Math.abs(diff2028) > 0.01,
         "2028 should show measurable recycling effect (recycling should persist)");

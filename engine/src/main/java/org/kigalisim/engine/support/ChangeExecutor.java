@@ -1,7 +1,7 @@
 /**
  * Utility class for executing change operations on streams.
  *
- * <p>This class extracts the change operation logic from SingleThreadEngine
+ * <p>This class provides change operation logic for Engine implementations
  * to provide better separation of concerns and testability. It handles routing
  * of different change types (percentage, units, volume) to appropriate handlers.</p>
  *
@@ -12,7 +12,7 @@ package org.kigalisim.engine.support;
 
 import java.math.BigDecimal;
 import java.util.Optional;
-import org.kigalisim.engine.SingleThreadEngine;
+import org.kigalisim.engine.Engine;
 import org.kigalisim.engine.number.EngineNumber;
 import org.kigalisim.engine.number.UnitConverter;
 import org.kigalisim.engine.recalc.SalesStreamDistribution;
@@ -28,14 +28,14 @@ import org.kigalisim.engine.state.YearMatcher;
  */
 public class ChangeExecutor {
 
-  private final SingleThreadEngine engine;
+  private final Engine engine;
 
   /**
    * Creates a new ChangeExecutor for the given engine.
    *
-   * @param engine The SingleThreadEngine instance to operate on
+   * @param engine The Engine instance to operate on
    */
-  public ChangeExecutor(SingleThreadEngine engine) {
+  public ChangeExecutor(Engine engine) {
     this.engine = engine;
   }
 
