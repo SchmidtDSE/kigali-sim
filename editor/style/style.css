@@ -395,6 +395,12 @@ select option[disabled] {
   padding-bottom: 5px;
 }
 
+#update-loading-indicator {
+  display: none;
+  text-align: center;
+  margin: 20px 0;
+}
+
 .advanced-link-pane {
   margin-top: 10px;
   border-top: 1px dotted #C0C0C0;
