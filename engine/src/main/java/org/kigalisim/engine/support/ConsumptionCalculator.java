@@ -1,7 +1,7 @@
 /**
  * Calculator class for consumption stream calculations.
  *
- * <p>This class replaces the BiConsumer logic previously used in SingleThreadEngine
+ * <p>This class provides consumption calculation functionality for Engine implementations
  * for calculating and saving consumption streams. It encapsulates the logic for
  * converting consumption values to appropriate units and ensuring values are within
  * valid ranges before saving them to the engine.</p>
@@ -14,7 +14,6 @@ package org.kigalisim.engine.support;
 import java.math.BigDecimal;
 import java.util.Optional;
 import org.kigalisim.engine.Engine;
-import org.kigalisim.engine.SingleThreadEngine;
 import org.kigalisim.engine.number.EngineNumber;
 import org.kigalisim.engine.number.UnitConverter;
 import org.kigalisim.engine.state.OverridingConverterStateGetter;
@@ -59,23 +58,16 @@ public class ConsumptionCalculator {
    *
    * @param engine The engine instance to use for calculation context and to save the result to
    * @throws IllegalStateException if required properties are not set
-   * @throws IllegalArgumentException if the engine is not a SingleThreadEngine
    */
   public void execute(Engine engine) {
     validateState();
 
-    if (!(engine instanceof SingleThreadEngine)) {
-      throw new IllegalArgumentException("ConsumptionCalculator requires a SingleThreadEngine");
-    }
-
-    SingleThreadEngine singleThreadEngine = (SingleThreadEngine) engine;
-
     // Get current scope
-    Scope scopeEffective = singleThreadEngine.getScope();
+    Scope scopeEffective = engine.getScope();
 
     // Set up converters
     OverridingConverterStateGetter stateGetter =
-        new OverridingConverterStateGetter(singleThreadEngine.getStateGetter());
+        new OverridingConverterStateGetter(engine.getStateGetter());
     UnitConverter unitConverter = new UnitConverter(stateGetter);
 
     // Get sales for conversion context

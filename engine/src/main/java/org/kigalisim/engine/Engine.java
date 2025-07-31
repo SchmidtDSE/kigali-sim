@@ -110,6 +110,27 @@ public interface Engine {
   Scope getScope();
 
   /**
+   * Get the state getter for converter operations.
+   *
+   * @return ConverterStateGetter instance
+   */
+  org.kigalisim.engine.state.ConverterStateGetter getStateGetter();
+
+  /**
+   * Get the unit converter for this engine.
+   *
+   * @return UnitConverter instance
+   */
+  org.kigalisim.engine.number.UnitConverter getUnitConverter();
+
+  /**
+   * Get the stream keeper for this engine.
+   *
+   * @return StreamKeeper instance
+   */
+  org.kigalisim.engine.state.StreamKeeper getStreamKeeper();
+
+  /**
    * Increment the engine to simulate the next year.
    */
   void incrementYear();
