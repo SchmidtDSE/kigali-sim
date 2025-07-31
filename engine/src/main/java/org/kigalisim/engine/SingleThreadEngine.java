@@ -187,27 +187,21 @@ public class SingleThreadEngine implements Engine {
   }
 
   /**
-   * Get the state getter used by this engine instance.
-   *
-   * @return The ConverterStateGetter instance
+   * {@inheritDoc}
    */
   public ConverterStateGetter getStateGetter() {
     return stateGetter;
   }
 
   /**
-   * Get the unit converter instance.
-   *
-   * @return The unit converter
+   * {@inheritDoc}
    */
   public UnitConverter getUnitConverter() {
     return unitConverter;
   }
 
   /**
-   * Get the stream keeper instance.
-   *
-   * @return The stream keeper
+   * {@inheritDoc}
    */
   public StreamKeeper getStreamKeeper() {
     return streamKeeper;
@@ -663,7 +657,7 @@ public class SingleThreadEngine implements Engine {
         .build();
     operation.execute(this);
 
-    // EXPERIMENTAL: Update lastSpecifiedValue after recycling for volume-based specs
+    // Update lastSpecifiedValue after recycling for volume-based specs
     updateLastSpecifiedValueAfterRecycling();
   }
 
@@ -693,7 +687,7 @@ public class SingleThreadEngine implements Engine {
         .build();
     operation.execute(this);
 
-    // EXPERIMENTAL: Update lastSpecifiedValue after recycling for volume-based specs
+    // Update lastSpecifiedValue after recycling for volume-based specs
     updateLastSpecifiedValueAfterRecycling();
 
     // Handle displacement using the existing displacement logic
@@ -1437,7 +1431,7 @@ public class SingleThreadEngine implements Engine {
   }
 
   /**
-   * EXPERIMENTAL: Updates lastSpecifiedValue for domestic and import streams after recycling.
+   * Updates lastSpecifiedValue for domestic and import streams after recycling.
    * This ensures that subsequent change operations use the recycling-adjusted values as their base.
    * Only applies to volume-based (mt/kg) specifications, not units-based ones.
    */
