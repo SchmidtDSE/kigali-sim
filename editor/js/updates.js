@@ -103,7 +103,12 @@ class UpdateUtil {
 
       const handleReload = (event) => {
         event.preventDefault();
-        dialog.close();
+
+        // Show loading indicator and hide buttons
+        const loadingIndicator = dialog.querySelector("#update-loading-indicator");
+        const buttonPanel = dialog.querySelector(".dialog-buttons");
+        loadingIndicator.style.display = "block";
+        buttonPanel.style.display = "none";
 
         // Explicitly save current state before reloading if callback provided
         if (saveCallback && typeof saveCallback === "function") {
@@ -115,13 +120,53 @@ class UpdateUtil {
               "Please try again or save manually before updating.";
             alert(message);
             console.error("Save callback failed, aborting reload:", error);
+
+            // Restore UI state
+            loadingIndicator.style.display = "none";
+            buttonPanel.style.display = "block";
             resolve("save_failed");
             return;
           }
         }
 
-        window.location.reload();
-        resolve("reload");
+        // Perform hard refresh operations
+        const promises = [];
+
+        // Clear all browser caches if supported
+        if ("caches" in window) {
+          const cachesClearPromise = caches.keys().then((names) => {
+            return Promise.all(names.map((name) => caches.delete(name)));
+          });
+          promises.push(cachesClearPromise);
+        } else {
+          promises.push(Promise.resolve());
+        }
+
+        // Update service worker if supported
+        if ("serviceWorker" in navigator) {
+          const serviceWorkerUpdatePromise = navigator.serviceWorker.getRegistrations()
+            .then((registrations) => {
+              return Promise.all(registrations.map((registration) => registration.update()));
+            });
+          promises.push(serviceWorkerUpdatePromise);
+        } else {
+          promises.push(Promise.resolve());
+        }
+
+        // Wait for both operations to complete, then reload after 1 second delay
+        Promise.all(promises).then(() => {
+          setTimeout(() => {
+            window.location.reload();
+            resolve("reload");
+          }, 1000);
+        }).catch((error) => {
+          console.warn("Error during cache/service worker operations:", error);
+          // Still reload even if cache operations fail
+          setTimeout(() => {
+            window.location.reload();
+            resolve("reload");
+          }, 1000);
+        });
       };
 
       const handleContinue = (event) => {
