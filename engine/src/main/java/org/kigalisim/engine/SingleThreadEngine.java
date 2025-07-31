@@ -364,8 +364,20 @@ public class SingleThreadEngine implements Engine {
   @Override
   public void setStream(String name, EngineNumber value, Optional<YearMatcher> yearMatcher) {
     // For direct stream setting (like from SetOperation), domestic/import should not subtract recycling
-    boolean subtractRecycling = !getIsSalesSubstream(name);
+    // EXCEPT when the operation is units-based, which should account for recycling
+    boolean subtractRecycling = !getIsSalesSubstream(name) || "units".equals(value.getUnits());
+    setStream(name, value, yearMatcher, subtractRecycling);
+  }
 
+  /**
+   * Set a stream with explicit control over recycling behavior.
+   *
+   * @param name The stream name
+   * @param value The value to set
+   * @param yearMatcher Optional year matcher for conditional setting
+   * @param subtractRecycling Whether to apply recycling logic during stream setting
+   */
+  public void setStream(String name, EngineNumber value, Optional<YearMatcher> yearMatcher, boolean subtractRecycling) {
     StreamUpdate update = new StreamUpdateBuilder()
         .setName(name)
         .setValue(value)
@@ -650,7 +662,7 @@ public class SingleThreadEngine implements Engine {
         .thenPropagateToConsumption()
         .build();
     operation.execute(this);
-    
+
     // EXPERIMENTAL: Update lastSpecifiedValue after recycling for volume-based specs
     updateLastSpecifiedValueAfterRecycling();
   }
@@ -680,7 +692,7 @@ public class SingleThreadEngine implements Engine {
         .thenPropagateToConsumption()
         .build();
     operation.execute(this);
-    
+
     // EXPERIMENTAL: Update lastSpecifiedValue after recycling for volume-based specs
     updateLastSpecifiedValueAfterRecycling();
 
@@ -1423,7 +1435,7 @@ public class SingleThreadEngine implements Engine {
 
     return recycledKg;
   }
-  
+
   /**
    * EXPERIMENTAL: Updates lastSpecifiedValue for domestic and import streams after recycling.
    * This ensures that subsequent change operations use the recycling-adjusted values as their base.
@@ -1433,22 +1445,22 @@ public class SingleThreadEngine implements Engine {
     // Only update for volume-based specifications
     EngineNumber lastDomestic = streamKeeper.getLastSpecifiedValue(scope, "domestic");
     EngineNumber lastImport = streamKeeper.getLastSpecifiedValue(scope, "import");
-    
+
     // Check if we have volume-based lastSpecifiedValues
     boolean hasVolumeDomestic = lastDomestic != null && !lastDomestic.hasEquipmentUnits();
     boolean hasVolumeImport = lastImport != null && !lastImport.hasEquipmentUnits();
-    
+
     // If neither stream has volume-based specs, nothing to update
     if (!hasVolumeDomestic && !hasVolumeImport) {
       return;
     }
-    
+
     // Get current recycling amount
     EngineNumber recycleAmount = getStream("recycle");
     if (recycleAmount == null || recycleAmount.getValue().compareTo(BigDecimal.ZERO) == 0) {
       return; // No recycling occurred
     }
-    
+
     // Update domestic lastSpecifiedValue if it's volume-based
     if (hasVolumeDomestic) {
       EngineNumber currentDomestic = getStream("domestic");
@@ -1459,7 +1471,7 @@ public class SingleThreadEngine implements Engine {
         streamKeeper.setLastSpecifiedValue(scope, "domestic", domesticInOriginalUnits);
       }
     }
-    
+
     // Update import lastSpecifiedValue if it's volume-based
     if (hasVolumeImport) {
       EngineNumber currentImport = getStream("import");

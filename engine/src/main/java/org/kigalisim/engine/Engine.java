@@ -146,6 +146,16 @@ public interface Engine {
   void setStream(String name, EngineNumber value, Optional<YearMatcher> yearMatcher);
 
   /**
+   * Set a stream with explicit control over recycling behavior.
+   *
+   * @param name The stream name
+   * @param value The value to set
+   * @param yearMatcher Optional year matcher for conditional setting
+   * @param subtractRecycling Whether to apply recycling logic during stream setting
+   */
+  void setStream(String name, EngineNumber value, Optional<YearMatcher> yearMatcher, boolean subtractRecycling);
+
+  /**
    * Enable a stream without setting its value.
    *
    * <p>This method marks a stream as enabled, allowing it to be included in distribution

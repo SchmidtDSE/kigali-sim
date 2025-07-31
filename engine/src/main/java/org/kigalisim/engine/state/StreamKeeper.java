@@ -169,14 +169,15 @@ public class StreamKeeper {
       setSimpleStream(useKey, name, value);
     } else {
       // Normal routing with recycling logic
-      if (getIsSettingVolumeByUnits(name, value)) {
-        setStreamForSalesWithUnits(useKey, name, value);
-      } else if ("sales".equals(name)) {
+      if ("sales".equals(name)) {
         setStreamForSales(useKey, name, value);
       } else if ("domestic".equals(name) || "import".equals(name)) {
+        // Always use setSalesSubstream for sales substreams to ensure recycling is applied
         setSalesSubstream(useKey, name, value);
       } else if ("recycle".equals(name)) {
         setStreamForRecycle(useKey, name, value);
+      } else if (getIsSettingVolumeByUnits(name, value)) {
+        setStreamForSalesWithUnits(useKey, name, value);
       } else {
         setSimpleStream(useKey, name, value);
       }
@@ -1030,10 +1031,12 @@ public class StreamKeeper {
 
     EngineNumber valueUnitsPlain = unitConverter.convert(value, "units");
     EngineNumber valueConverted = unitConverter.convert(valueUnitsPlain, "kg");
+    BigDecimal amountKg = valueConverted.getValue();
 
-    // Set the stream directly to avoid recursion
+    // Set the amount directly - recycling should already be handled by setSalesSubstream
     String streamKey = getKey(useKey, name);
-    streams.put(streamKey, valueConverted);
+    EngineNumber amountToSet = new EngineNumber(amountKg, "kg");
+    streams.put(streamKey, amountToSet);
   }
 
   /**
