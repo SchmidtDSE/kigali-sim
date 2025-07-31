@@ -1150,79 +1150,74 @@ public class StreamKeeper {
    * @return The amount of recycling available in kg
    */
   private BigDecimal calculateCurrentRecyclingAmount(UseKey useKey) {
-    try {
-      // Get current prior population (this is the population available for recycling)
-      EngineNumber priorPopulationRaw = getStream(useKey, "priorEquipment");
-      if (priorPopulationRaw == null) {
-        return BigDecimal.ZERO;
-      }
-      EngineNumber priorPopulation = unitConverter.convert(priorPopulationRaw, "units");
-
-      // Get retirement rate
-      StreamParameterization parameterization = getParameterization(useKey);
-      EngineNumber retirementRate = parameterization.getRetirementRate();
-
-      // Handle different retirement rate units
-      BigDecimal retirementRateRatio;
-      if (retirementRate.getUnits().contains("%")) {
-        retirementRateRatio = retirementRate.getValue().divide(
-            BigDecimal.valueOf(100), java.math.MathContext.DECIMAL128);
-      } else {
-        // If units are not percentage, assume it's already a ratio
-        retirementRateRatio = retirementRate.getValue();
-      }
-
-      // Calculate retired units
-      BigDecimal retiredUnits = priorPopulation.getValue().multiply(retirementRateRatio);
-
-      // Get recovery rate
-      EngineNumber recoveryRate = parameterization.getRecoveryRate();
-      BigDecimal recoveryRateRatio;
-      if (recoveryRate.getUnits().contains("%")) {
-        recoveryRateRatio = recoveryRate.getValue().divide(
-            BigDecimal.valueOf(100), java.math.MathContext.DECIMAL128);
-      } else {
-        recoveryRateRatio = recoveryRate.getValue();
-      }
-
-      // Calculate recovered units
-      BigDecimal recoveredUnits = retiredUnits.multiply(recoveryRateRatio);
-
-      // Get yield rate
-      EngineNumber yieldRate = parameterization.getYieldRate();
-      BigDecimal yieldRateRatio;
-      if (yieldRate.getUnits().contains("%")) {
-        yieldRateRatio = yieldRate.getValue().divide(
-            BigDecimal.valueOf(100), java.math.MathContext.DECIMAL128);
-      } else {
-        yieldRateRatio = yieldRate.getValue();
-      }
-
-      // Calculate recycled material volume
-      BigDecimal recycledUnits = recoveredUnits.multiply(yieldRateRatio);
-
-      // Convert to kg using initial charge
-      EngineNumber initialCharge = parameterization.getInitialCharge("import");
-      EngineNumber initialChargeConverted = unitConverter.convert(initialCharge, "kg / unit");
-      BigDecimal recycledKg = recycledUnits.multiply(initialChargeConverted.getValue());
-
-      // Apply displacement rate
-      EngineNumber displacementRate = parameterization.getDisplacementRate();
-      BigDecimal displacementRateRatio;
-      if (displacementRate.getUnits().contains("%")) {
-        displacementRateRatio = displacementRate.getValue().divide(
-            BigDecimal.valueOf(100), java.math.MathContext.DECIMAL128);
-      } else {
-        displacementRateRatio = displacementRate.getValue();
-      }
-
-      BigDecimal recycledDisplacedKg = recycledKg.multiply(displacementRateRatio);
-
-      return recycledDisplacedKg;
-    } catch (Exception e) {
-      // If any error occurs in recycling calculation, return 0 to avoid breaking the flow
+    // Get current prior population (this is the population available for recycling)
+    EngineNumber priorPopulationRaw = getStream(useKey, "priorEquipment");
+    if (priorPopulationRaw == null) {
       return BigDecimal.ZERO;
     }
+    EngineNumber priorPopulation = unitConverter.convert(priorPopulationRaw, "units");
+
+    // Get retirement rate
+    StreamParameterization parameterization = getParameterization(useKey);
+    EngineNumber retirementRate = parameterization.getRetirementRate();
+
+    // Handle different retirement rate units
+    BigDecimal retirementRateRatio;
+    if (retirementRate.getUnits().contains("%")) {
+      retirementRateRatio = retirementRate.getValue().divide(
+          BigDecimal.valueOf(100), java.math.MathContext.DECIMAL128);
+    } else {
+      // If units are not percentage, assume it's already a ratio
+      retirementRateRatio = retirementRate.getValue();
+    }
+
+    // Calculate retired units
+    BigDecimal retiredUnits = priorPopulation.getValue().multiply(retirementRateRatio);
+
+    // Get recovery rate
+    EngineNumber recoveryRate = parameterization.getRecoveryRate();
+    BigDecimal recoveryRateRatio;
+    if (recoveryRate.getUnits().contains("%")) {
+      recoveryRateRatio = recoveryRate.getValue().divide(
+          BigDecimal.valueOf(100), java.math.MathContext.DECIMAL128);
+    } else {
+      recoveryRateRatio = recoveryRate.getValue();
+    }
+
+    // Calculate recovered units
+    BigDecimal recoveredUnits = retiredUnits.multiply(recoveryRateRatio);
+
+    // Get yield rate
+    EngineNumber yieldRate = parameterization.getYieldRate();
+    BigDecimal yieldRateRatio;
+    if (yieldRate.getUnits().contains("%")) {
+      yieldRateRatio = yieldRate.getValue().divide(
+          BigDecimal.valueOf(100), java.math.MathContext.DECIMAL128);
+    } else {
+      yieldRateRatio = yieldRate.getValue();
+    }
+
+    // Calculate recycled material volume
+    BigDecimal recycledUnits = recoveredUnits.multiply(yieldRateRatio);
+
+    // Convert to kg using initial charge
+    EngineNumber initialCharge = parameterization.getInitialCharge("import");
+    EngineNumber initialChargeConverted = unitConverter.convert(initialCharge, "kg / unit");
+    BigDecimal recycledKg = recycledUnits.multiply(initialChargeConverted.getValue());
+
+    // Apply displacement rate
+    EngineNumber displacementRate = parameterization.getDisplacementRate();
+    BigDecimal displacementRateRatio;
+    if (displacementRate.getUnits().contains("%")) {
+      displacementRateRatio = displacementRate.getValue().divide(
+          BigDecimal.valueOf(100), java.math.MathContext.DECIMAL128);
+    } else {
+      displacementRateRatio = displacementRate.getValue();
+    }
+
+    BigDecimal recycledDisplacedKg = recycledKg.multiply(displacementRateRatio);
+
+    return recycledDisplacedKg;
   }
 
 }
