@@ -32,13 +32,13 @@ The following changes have been adopted and released.
 
 ### Percent change with units fix
 
-**Status:** Released July 30, 2025
+**Status:** Released July 31, 2025
 
 **Classification:** Bug
 
 As part of changes ahead of the open beta, we clarified that specifying volumes in units indicates that the simulation should treat that as number of new units sold such that recharge is automatically added on top of whatever initial charge is required for those new unit sales. More information about specifying sales in units can be found at https://kigalisim.org/guide/tutorial_08.html. This caused some complications with the expended recycling functionality added after [OEWG](https://ozone.unep.org/meetings/47th-meeting-open-ended-working-group-parties) but prior to the open beta starting including a bug where percent change was being applied to both initial charge as well as recharge when it should have only applied to the former (new equipment sales).
 
-See [#468](https://github.com/SchmidtDSE/kigali-sim/pull/468) for more details. **We apologize for this issue** and the tool has been updated to have the intended behavior.
+See [#468](https://github.com/SchmidtDSE/kigali-sim/pull/468) and [#474](https://github.com/SchmidtDSE/kigali-sim/pull/474) for more details. **We apologize for this issue** and the tool has been updated to have the intended behavior.
 
 ### Recycle time displacement
 

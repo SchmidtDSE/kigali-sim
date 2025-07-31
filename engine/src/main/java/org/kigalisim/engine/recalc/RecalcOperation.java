@@ -12,7 +12,6 @@ package org.kigalisim.engine.recalc;
 
 import java.util.List;
 import org.kigalisim.engine.Engine;
-import org.kigalisim.engine.SingleThreadEngine;
 
 /**
  * Operation that executes a sequence of recalculation strategies.
@@ -50,9 +49,8 @@ public class RecalcOperation {
     }
 
     // Reset sales intent flag if this operation modified sales
-    if (shouldResetSalesIntent && target instanceof SingleThreadEngine) {
-      SingleThreadEngine singleThreadEngine = (SingleThreadEngine) target;
-      singleThreadEngine.getStreamKeeper().resetSalesIntentFlag(target.getScope());
+    if (shouldResetSalesIntent) {
+      target.getStreamKeeper().resetSalesIntentFlag(target.getScope());
     }
   }
 }
