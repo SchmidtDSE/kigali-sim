@@ -650,6 +650,9 @@ public class SingleThreadEngine implements Engine {
         .thenPropagateToConsumption()
         .build();
     operation.execute(this);
+    
+    // EXPERIMENTAL: Update lastSpecifiedValue after recycling for volume-based specs
+    updateLastSpecifiedValueAfterRecycling();
   }
 
   @Override
@@ -677,6 +680,9 @@ public class SingleThreadEngine implements Engine {
         .thenPropagateToConsumption()
         .build();
     operation.execute(this);
+    
+    // EXPERIMENTAL: Update lastSpecifiedValue after recycling for volume-based specs
+    updateLastSpecifiedValueAfterRecycling();
 
     // Handle displacement using the existing displacement logic
     UnitConverter unitConverter = EngineSupportUtils.createUnitConverterWithTotal(this, RECYCLE_RECOVER_STREAM);
@@ -1416,5 +1422,53 @@ public class SingleThreadEngine implements Engine {
     BigDecimal recycledKg = recycledUnits.multiply(initialChargeKg.getValue());
 
     return recycledKg;
+  }
+  
+  /**
+   * EXPERIMENTAL: Updates lastSpecifiedValue for domestic and import streams after recycling.
+   * This ensures that subsequent change operations use the recycling-adjusted values as their base.
+   * Only applies to volume-based (mt/kg) specifications, not units-based ones.
+   */
+  private void updateLastSpecifiedValueAfterRecycling() {
+    // Only update for volume-based specifications
+    EngineNumber lastDomestic = streamKeeper.getLastSpecifiedValue(scope, "domestic");
+    EngineNumber lastImport = streamKeeper.getLastSpecifiedValue(scope, "import");
+    
+    // Check if we have volume-based lastSpecifiedValues
+    boolean hasVolumeDomestic = lastDomestic != null && !lastDomestic.hasEquipmentUnits();
+    boolean hasVolumeImport = lastImport != null && !lastImport.hasEquipmentUnits();
+    
+    // If neither stream has volume-based specs, nothing to update
+    if (!hasVolumeDomestic && !hasVolumeImport) {
+      return;
+    }
+    
+    // Get current recycling amount
+    EngineNumber recycleAmount = getStream("recycle");
+    if (recycleAmount == null || recycleAmount.getValue().compareTo(BigDecimal.ZERO) == 0) {
+      return; // No recycling occurred
+    }
+    
+    // Update domestic lastSpecifiedValue if it's volume-based
+    if (hasVolumeDomestic) {
+      EngineNumber currentDomestic = getStream("domestic");
+      if (currentDomestic != null) {
+        // Convert current value to the original units of lastSpecifiedValue
+        UnitConverter unitConverter = EngineSupportUtils.createUnitConverterWithTotal(this, "domestic");
+        EngineNumber domesticInOriginalUnits = unitConverter.convert(currentDomestic, lastDomestic.getUnits());
+        streamKeeper.setLastSpecifiedValue(scope, "domestic", domesticInOriginalUnits);
+      }
+    }
+    
+    // Update import lastSpecifiedValue if it's volume-based
+    if (hasVolumeImport) {
+      EngineNumber currentImport = getStream("import");
+      if (currentImport != null) {
+        // Convert current value to the original units of lastSpecifiedValue
+        UnitConverter unitConverter = EngineSupportUtils.createUnitConverterWithTotal(this, "import");
+        EngineNumber importInOriginalUnits = unitConverter.convert(currentImport, lastImport.getUnits());
+        streamKeeper.setLastSpecifiedValue(scope, "import", importInOriginalUnits);
+      }
+    }
   }
 }
