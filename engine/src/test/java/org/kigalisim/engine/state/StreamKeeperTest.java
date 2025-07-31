@@ -386,6 +386,9 @@ public class StreamKeeperTest {
     // Get the stream value back - should be converted to kg (10 units * 2 kg/unit = 20 kg)
     EngineNumber result = keeper.getStream(testScope, "domestic");
 
+    // Debug: Print actual value
+    System.out.println("DEBUG: Expected 20.0, got " + result.getValue());
+
     // The result should be in kg and the value should be 20
     assertEquals("kg", result.getUnits(), "Should convert units to kg");
     assertEquals(0, new BigDecimal("20.0").compareTo(result.getValue()),
