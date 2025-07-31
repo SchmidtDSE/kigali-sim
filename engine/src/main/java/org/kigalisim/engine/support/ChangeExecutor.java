@@ -124,7 +124,7 @@ public class ChangeExecutor {
 
   /**
    * Handle percentage-based change operations.
-   * 
+   *
    * <p>Apply percentage directly to lastSpecifiedValue and let setStream handle recharge.</p>
    *
    * @param config The configuration containing all parameters for the change operation
@@ -149,7 +149,9 @@ public class ChangeExecutor {
 
     // Let setStream handle unit conversion and recharge addition properly
     // This eliminates double counting - recharge calculated only in setStream
-    engine.setStream(stream, newTotal, Optional.ofNullable(yearMatcher));
+    // For units-based specifications, enable recycling logic
+    boolean subtractRecycling = "units".equals(lastSpecified.getUnits());
+    engine.setStream(stream, newTotal, Optional.ofNullable(yearMatcher), subtractRecycling);
   }
 
   /**
@@ -190,7 +192,7 @@ public class ChangeExecutor {
 
   /**
    * Handle units-based change operations.
-   * 
+   *
    * <p>Apply change to lastSpecifiedValue and let setStream handle recharge.</p>
    *
    * @param config The configuration containing all parameters for the change operation
@@ -210,7 +212,8 @@ public class ChangeExecutor {
       EngineNumber currentInUnits = unitConverter.convert(currentValue, "units");
       BigDecimal newUnits = currentInUnits.getValue().add(amount.getValue());
       EngineNumber newTotal = new EngineNumber(newUnits, "units");
-      engine.setStream(stream, newTotal, Optional.ofNullable(yearMatcher));
+      // Units-based change should use recycling logic
+      engine.setStream(stream, newTotal, Optional.ofNullable(yearMatcher), true);
       return;
     }
 
@@ -219,7 +222,9 @@ public class ChangeExecutor {
     EngineNumber newTotal = new EngineNumber(newTotalValue, lastSpecified.getUnits());
 
     // Let setStream handle unit conversion and recharge addition properly
-    engine.setStream(stream, newTotal, Optional.ofNullable(yearMatcher));
+    // For units-based specifications, enable recycling logic
+    boolean subtractRecycling = "units".equals(lastSpecified.getUnits());
+    engine.setStream(stream, newTotal, Optional.ofNullable(yearMatcher), subtractRecycling);
   }
 
   /**
@@ -242,6 +247,7 @@ public class ChangeExecutor {
     EngineNumber newTotal = new EngineNumber(newAmount, "kg");
 
     // Use setStream to handle the change and update lastSpecifiedValue
+    // Volume-based changes use the default recycling behavior
     engine.setStream(stream, newTotal, Optional.ofNullable(yearMatcher));
   }
 }
