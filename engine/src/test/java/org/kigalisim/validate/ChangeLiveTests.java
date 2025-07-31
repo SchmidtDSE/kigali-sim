@@ -8,6 +8,7 @@ package org.kigalisim.validate;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.util.List;
@@ -225,5 +226,108 @@ public class ChangeLiveTests {
 
     assertEquals(3286.0, year5Result.getPopulation().getValue().doubleValue(), 5.0,
         "Year 5 equipment should be ~3286 units");
+  }
+
+  /**
+   * Test sales cap with change statements to verify compounding percentage decreases.
+   * Tests the issue where sales cap may not properly interact with change statements.
+   */
+  @Test
+  public void testChangeCap() throws IOException {
+    // Load and parse the QTA file
+    String qtaPath = "../examples/change_cap.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    // Run both scenarios
+    Stream<EngineResult> bauResults = KigaliSimFacade.runScenario(program, "BAU", progress -> {});
+    Stream<EngineResult> permitResults = KigaliSimFacade.runScenario(program, "Permit", progress -> {});
+
+    List<EngineResult> bauList = bauResults.collect(Collectors.toList());
+    List<EngineResult> permitList = permitResults.collect(Collectors.toList());
+
+    // Get HFC-134a consumption (sales) for key years 2029, 2030, 2031
+    final EngineResult bau2029 = LiveTestsUtil.getResult(bauList.stream(), 2029, "Domestic Refrigeration", "HFC-134a");
+    final EngineResult permit2029 = LiveTestsUtil.getResult(permitList.stream(), 2029, "Domestic Refrigeration", "HFC-134a");
+    final EngineResult bau2030 = LiveTestsUtil.getResult(bauList.stream(), 2030, "Domestic Refrigeration", "HFC-134a");
+    final EngineResult permit2030 = LiveTestsUtil.getResult(permitList.stream(), 2030, "Domestic Refrigeration", "HFC-134a");
+    final EngineResult bau2031 = LiveTestsUtil.getResult(bauList.stream(), 2031, "Domestic Refrigeration", "HFC-134a");
+    final EngineResult permit2031 = LiveTestsUtil.getResult(permitList.stream(), 2031, "Domestic Refrigeration", "HFC-134a");
+
+    assertNotNull(bau2029, "Should have BAU result for 2029");
+    assertNotNull(permit2029, "Should have Permit result for 2029");
+    assertNotNull(bau2030, "Should have BAU result for 2030");
+    assertNotNull(permit2030, "Should have Permit result for 2030");
+    assertNotNull(bau2031, "Should have BAU result for 2031");
+    assertNotNull(permit2031, "Should have Permit result for 2031");
+
+    // Calculate percentage differences (BAU - Permit) / BAU for sales (domestic + import)
+    double bauSales2029 = bau2029.getDomestic().getValue().doubleValue() + bau2029.getImport().getValue().doubleValue();
+    double permitSales2029 = permit2029.getDomestic().getValue().doubleValue() + permit2029.getImport().getValue().doubleValue();
+    double bauSales2030 = bau2030.getDomestic().getValue().doubleValue() + bau2030.getImport().getValue().doubleValue();
+    double permitSales2030 = permit2030.getDomestic().getValue().doubleValue() + permit2030.getImport().getValue().doubleValue();
+    double bauSales2031 = bau2031.getDomestic().getValue().doubleValue() + bau2031.getImport().getValue().doubleValue();
+    double permitSales2031 = permit2031.getDomestic().getValue().doubleValue() + permit2031.getImport().getValue().doubleValue();
+    
+    double diff2029 = (bauSales2029 - permitSales2029) / bauSales2029;
+    double diff2030 = (bauSales2030 - permitSales2030) / bauSales2030;
+    double diff2031 = (bauSales2031 - permitSales2031) / bauSales2031;
+
+    // Assert that the cap is creating a compounding effect (difference increases each year)
+    // Should see 15% reduction compounding year over year while policy is active
+    assertTrue(diff2030 > diff2029 + 0.05, 
+        "2030 gap should be more than 5% larger than 2029 gap (compounding effect)");
+    assertTrue(diff2031 > diff2030 + 0.05, 
+        "2031 gap should be more than 5% larger than 2030 gap (compounding effect)");
+  }
+
+  /**
+   * Test recycling with change statements to verify proper interaction.
+   * Tests the issue where recycling may not properly persist its effect with change statements.
+   */
+  @Test
+  public void testChangeRecycle() throws IOException {
+    // Load and parse the QTA file
+    String qtaPath = "../examples/change_recycle.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    // Run both scenarios
+    Stream<EngineResult> bauResults = KigaliSimFacade.runScenario(program, "BAU", progress -> {});
+    Stream<EngineResult> recyclingResults = KigaliSimFacade.runScenario(program, "Recycling", progress -> {});
+
+    List<EngineResult> bauList = bauResults.collect(Collectors.toList());
+    List<EngineResult> recyclingList = recyclingResults.collect(Collectors.toList());
+
+    // Get HFC-134a consumption for key years 2026, 2027, 2028
+    final EngineResult bau2026 = LiveTestsUtil.getResult(bauList.stream(), 2026, "Domestic Refrigeration", "HFC-134a");
+    final EngineResult recycling2026 = LiveTestsUtil.getResult(recyclingList.stream(), 2026, "Domestic Refrigeration", "HFC-134a");
+    final EngineResult bau2027 = LiveTestsUtil.getResult(bauList.stream(), 2027, "Domestic Refrigeration", "HFC-134a");
+    final EngineResult recycling2027 = LiveTestsUtil.getResult(recyclingList.stream(), 2027, "Domestic Refrigeration", "HFC-134a");
+    final EngineResult bau2028 = LiveTestsUtil.getResult(bauList.stream(), 2028, "Domestic Refrigeration", "HFC-134a");
+    final EngineResult recycling2028 = LiveTestsUtil.getResult(recyclingList.stream(), 2028, "Domestic Refrigeration", "HFC-134a");
+
+    assertNotNull(bau2026, "Should have BAU result for 2026");
+    assertNotNull(recycling2026, "Should have Recycling result for 2026");
+    assertNotNull(bau2027, "Should have BAU result for 2027");
+    assertNotNull(recycling2027, "Should have Recycling result for 2027");
+    assertNotNull(bau2028, "Should have BAU result for 2028");
+    assertNotNull(recycling2028, "Should have Recycling result for 2028");
+
+    // Calculate percentage differences (BAU - Recycling) / BAU for total GHG consumption
+    double diff2026 = (bau2026.getGhgConsumption().getValue().doubleValue() - recycling2026.getGhgConsumption().getValue().doubleValue()) 
+        / bau2026.getGhgConsumption().getValue().doubleValue();
+    double diff2027 = (bau2027.getGhgConsumption().getValue().doubleValue() - recycling2027.getGhgConsumption().getValue().doubleValue()) 
+        / bau2027.getGhgConsumption().getValue().doubleValue();
+    double diff2028 = (bau2028.getGhgConsumption().getValue().doubleValue() - recycling2028.getGhgConsumption().getValue().doubleValue()) 
+        / bau2028.getGhgConsumption().getValue().doubleValue();
+
+    // Assert that recycling effect is sustained and grows (or stays constant) over time
+    // 2027 should show larger gap than 2026 (recycling starts in 2027)
+    assertTrue(diff2027 > diff2026, 
+        "2027 gap should be larger than 2026 gap (recycling starts in 2027)");
+    // 2028 gap should be larger than or equal to 2027 gap (recycling should persist/grow)
+    assertTrue(diff2028 >= diff2027, 
+        "2028 gap should be larger than or equal to 2027 gap (recycling should persist)");
   }
 }
