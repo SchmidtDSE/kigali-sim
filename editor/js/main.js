@@ -674,7 +674,7 @@ class MainPresenter {
             const currentCode = self._codeEditorPresenter.getCode();
             self._localStorageKeeper.setSource(currentCode);
           });
-        }, 10000);
+        }, 1000);
       }
     } catch (error) {
       // Fail silently - likely due to offline
