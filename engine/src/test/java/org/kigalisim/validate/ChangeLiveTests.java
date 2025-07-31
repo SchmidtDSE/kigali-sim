@@ -427,4 +427,66 @@ public class ChangeLiveTests {
     assertTrue(diff2028 > 0,
         "2028 should show positive reduction (recycling should reduce consumption)");
   }
+
+  /**
+   * Test recycling with units-based specifications WITHOUT change statements.
+   * This helps isolate whether the issue is with change/recycling interaction or recycling itself.
+   */
+  @Test
+  public void testRecycleUnitsNoChange() throws IOException {
+    // Load and parse the QTA file
+    String qtaPath = "../examples/change_recycle_units_no_change_test.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    // Run both scenarios
+    Stream<EngineResult> bauResults = KigaliSimFacade.runScenario(program, "BAU", progress -> {});
+    Stream<EngineResult> recyclingResults = KigaliSimFacade.runScenario(program, "Recycling", progress -> {});
+
+    List<EngineResult> bauList = bauResults.collect(Collectors.toList());
+    List<EngineResult> recyclingList = recyclingResults.collect(Collectors.toList());
+
+    // Get HFC-134a results for key years 2026, 2027, 2028
+    final EngineResult bau2026 = LiveTestsUtil.getResult(bauList.stream(), 2026, "Domestic Refrigeration", "HFC-134a");
+    final EngineResult recycling2026 = LiveTestsUtil.getResult(recyclingList.stream(), 2026, "Domestic Refrigeration", "HFC-134a");
+    final EngineResult bau2027 = LiveTestsUtil.getResult(bauList.stream(), 2027, "Domestic Refrigeration", "HFC-134a");
+    final EngineResult recycling2027 = LiveTestsUtil.getResult(recyclingList.stream(), 2027, "Domestic Refrigeration", "HFC-134a");
+    final EngineResult bau2028 = LiveTestsUtil.getResult(bauList.stream(), 2028, "Domestic Refrigeration", "HFC-134a");
+    final EngineResult recycling2028 = LiveTestsUtil.getResult(recyclingList.stream(), 2028, "Domestic Refrigeration", "HFC-134a");
+
+    assertNotNull(bau2026, "Should have BAU result for 2026");
+    assertNotNull(recycling2026, "Should have Recycling result for 2026");
+    assertNotNull(bau2027, "Should have BAU result for 2027");
+    assertNotNull(recycling2027, "Should have Recycling result for 2027");
+    assertNotNull(bau2028, "Should have BAU result for 2028");
+    assertNotNull(recycling2028, "Should have Recycling result for 2028");
+
+    // Calculate total sales by adding domestic + import explicitly
+    double bauSales2026 = bau2026.getDomestic().getValue().doubleValue() + bau2026.getImport().getValue().doubleValue();
+    double recyclingSales2026 = recycling2026.getDomestic().getValue().doubleValue() + recycling2026.getImport().getValue().doubleValue();
+    double bauSales2027 = bau2027.getDomestic().getValue().doubleValue() + bau2027.getImport().getValue().doubleValue();
+    double recyclingSales2027 = recycling2027.getDomestic().getValue().doubleValue() + recycling2027.getImport().getValue().doubleValue();
+    double bauSales2028 = bau2028.getDomestic().getValue().doubleValue() + bau2028.getImport().getValue().doubleValue();
+    double recyclingSales2028 = recycling2028.getDomestic().getValue().doubleValue() + recycling2028.getImport().getValue().doubleValue();
+
+    // Calculate sales differences between BAU and Recycling
+    double salesDiff2026 = Math.abs(bauSales2026 - recyclingSales2026) / bauSales2026;
+    double salesDiff2027 = (bauSales2027 - recyclingSales2027) / bauSales2027;
+    double salesDiff2028 = (bauSales2028 - recyclingSales2028) / bauSales2028;
+
+    // Print debug information
+    System.out.printf("\nUnits-based test WITHOUT change statements:\n");
+    System.out.printf("2026: BAU Sales=%.2f kg, Recycling Sales=%.2f kg, Diff=%.2f%%\n", 
+                     bauSales2026, recyclingSales2026, salesDiff2026 * 100);
+    System.out.printf("2027: BAU Sales=%.2f kg, Recycling Sales=%.2f kg, Diff=%.2f%%\n", 
+                     bauSales2027, recyclingSales2027, salesDiff2027 * 100);
+    System.out.printf("2028: BAU Sales=%.2f kg, Recycling Sales=%.2f kg, Diff=%.2f%%\n", 
+                     bauSales2028, recyclingSales2028, salesDiff2028 * 100);
+
+    // Without change statements, recycling should have a clear, persistent effect
+    assertTrue(salesDiff2027 > 0.05,
+        "2027 should show significant recycling effect (>5% reduction)");
+    assertTrue(salesDiff2028 > 0.05,
+        "2028 should maintain recycling effect (>5% reduction)");
+  }
 }
