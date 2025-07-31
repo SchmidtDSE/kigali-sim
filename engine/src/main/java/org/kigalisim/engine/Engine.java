@@ -110,6 +110,27 @@ public interface Engine {
   Scope getScope();
 
   /**
+   * Get the state getter for converter operations.
+   *
+   * @return ConverterStateGetter instance
+   */
+  org.kigalisim.engine.state.ConverterStateGetter getStateGetter();
+
+  /**
+   * Get the unit converter for this engine.
+   *
+   * @return UnitConverter instance
+   */
+  org.kigalisim.engine.number.UnitConverter getUnitConverter();
+
+  /**
+   * Get the stream keeper for this engine.
+   *
+   * @return StreamKeeper instance
+   */
+  org.kigalisim.engine.state.StreamKeeper getStreamKeeper();
+
+  /**
    * Increment the engine to simulate the next year.
    */
   void incrementYear();
@@ -144,6 +165,16 @@ public interface Engine {
    * @param yearMatcher The year matcher object or empty
    */
   void setStream(String name, EngineNumber value, Optional<YearMatcher> yearMatcher);
+
+  /**
+   * Set a stream with explicit control over recycling behavior.
+   *
+   * @param name The stream name
+   * @param value The value to set
+   * @param yearMatcher Optional year matcher for conditional setting
+   * @param subtractRecycling Whether to apply recycling logic during stream setting
+   */
+  void setStream(String name, EngineNumber value, Optional<YearMatcher> yearMatcher, boolean subtractRecycling);
 
   /**
    * Enable a stream without setting its value.
