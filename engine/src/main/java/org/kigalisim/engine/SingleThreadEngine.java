@@ -653,10 +653,6 @@ public class SingleThreadEngine implements Engine {
       return;
     }
 
-    // DEBUG: Log recycling operation
-    System.out.printf("[DEBUG recycle] Substance: %s, Year: %d, Recovery: %.2f%%, Yield: %.2f%%, Stage: %s%n",
-        scope.getSubstance(), currentYear, recoveryWithUnits.getValue().doubleValue(), 
-        yieldWithUnits.getValue().doubleValue(), stage);
 
     streamKeeper.setRecoveryRate(scope, recoveryWithUnits, stage);
     streamKeeper.setYieldRate(scope, yieldWithUnits, stage);
@@ -899,7 +895,7 @@ public class SingleThreadEngine implements Engine {
     }
 
     // DEBUG: Log displacement entry
-    System.out.printf("[DEBUG handleDisplacement] Stream: %s, Amount: %.2f kg, Target: %s, Year: %d, Source: %s%n",
+    System.out.printf("[DEBUG handleDisplacement] Stream: %s, Amount: %.2f kg, Target: %s, Year: %d, Source: %s\n",
         stream, changeAmount.doubleValue(), displaceTarget, currentYear, scope.getSubstance());
 
     // Check if this is a stream-based displacement (moved to top to avoid duplication)
@@ -978,7 +974,7 @@ public class SingleThreadEngine implements Engine {
     Scope originalScope = scope;
     
     // DEBUG: Log displacement context switch 
-    System.out.printf("[DEBUG changeStreamWithDisplacementContext] %s→%s Year:%d - Adding %.2f kg to %s stream%n",
+    System.out.printf("[DEBUG changeStreamWithDisplacementContext] %s→%s Year:%d - Adding %.2f kg to %s stream\n",
         originalScope.getSubstance(), destinationScope.getSubstance(), currentYear, 
         amount.getValue().doubleValue(), stream);
 

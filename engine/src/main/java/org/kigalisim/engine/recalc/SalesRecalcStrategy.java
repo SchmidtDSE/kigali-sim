@@ -99,7 +99,7 @@ public class SalesRecalcStrategy implements RecalcStrategy {
     final BigDecimal recycledKg = eolRecycledKg.add(rechargeRecycledKg);
 
     // DEBUG: Log recycling calculations  
-    System.out.printf("[DEBUG SalesRecalc] %s Year:%d - Recycled: EOL=%.2f kg, Recharge=%.2f kg, Total=%.2f kg%n",
+    System.out.printf("[DEBUG SalesRecalc] %s Year:%d - Recycled: EOL=%.2f kg, Recharge=%.2f kg, Total=%.2f kg\n",
         scopeEffective.getSubstance(), target.getYear(), 
         eolRecycledKg.doubleValue(), rechargeRecycledKg.doubleValue(), recycledKg.doubleValue());
 
