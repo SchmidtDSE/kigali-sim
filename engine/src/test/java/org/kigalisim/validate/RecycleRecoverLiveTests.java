@@ -840,12 +840,12 @@ public class RecycleRecoverLiveTests {
 
   /**
    * Test accidental displacement during recycling order sensitivity.
-   * 
-   * This test checks if the order of policies (Sales Permit then Domestic Recycling vs 
+   *
+   * <p>This test checks if the order of policies (Sales Permit then Domestic Recycling vs 
    * Domestic Recycling then Sales Permit) affects R-600a growth when displacement occurs 
    * before recycling vs recycling before displacement.
-   * 
-   * The issue is that when displacement (cap sales displacing "R-600a") comes before 
+   *
+   * <p>The issue is that when displacement (cap sales displacing "R-600a") comes before 
    * recycling, the R-600a doesn't grow as expected, potentially due to displacement 
    * logic being accidentally triggered during recycling operations.
    */
@@ -886,8 +886,8 @@ public class RecycleRecoverLiveTests {
     // Assert that the difference should be no more than 10%
     // This test is expected to fail initially, confirming the displacement issue during recycling
     assertTrue(percentageDifference <= 10.0,
-        String.format("R-600a domestic + import in 2035 should be within 10%% between Combined (%.2f kg) and Combined Reverse (%.2f kg) scenarios. " +
-                     "Actual difference: %.2f%%. This suggests displacement logic is incorrectly triggered during recycling operations.",
+        String.format("R-600a domestic + import in 2035 should be within 10%% between Combined (%.2f kg) and Combined Reverse (%.2f kg) scenarios. "
+                     + "Actual difference: %.2f%%. This suggests displacement logic is incorrectly triggered during recycling operations.",
                      combinedTotal, combinedReverseTotal, percentageDifference));
   }
 
