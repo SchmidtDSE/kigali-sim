@@ -653,7 +653,6 @@ public class SingleThreadEngine implements Engine {
       return;
     }
 
-
     streamKeeper.setRecoveryRate(scope, recoveryWithUnits, stage);
     streamKeeper.setYieldRate(scope, yieldWithUnits, stage);
 
