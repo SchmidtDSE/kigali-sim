@@ -73,6 +73,13 @@ application {
 // JUnit target for all tests.
 test {
   useJUnitPlatform()
+  
+  // Enable test output for debugging
+  testLogging {
+    showStandardStreams = true
+    exceptionFormat = "full"
+    events "passed", "failed", "skipped", "standardOut", "standardError"
+  }
 }
 
 // JUnit resource assets for tests.
