@@ -205,6 +205,7 @@ public class ChangeExecutor {
 
     StreamKeeper streamKeeper = engine.getStreamKeeper();
     EngineNumber lastSpecified = streamKeeper.getLastSpecifiedValue(useKeyEffective, stream);
+    
     if (lastSpecified == null) {
       // Fallback: apply change to current stream value
       EngineNumber currentValue = engine.getStream(stream, Optional.of(useKeyEffective), Optional.empty());
@@ -214,17 +215,16 @@ public class ChangeExecutor {
       EngineNumber newTotal = new EngineNumber(newUnits, "units");
       // Units-based change should use recycling logic
       engine.setStream(stream, newTotal, Optional.ofNullable(yearMatcher), true);
-      return;
+    } else {
+      // Apply units change to lastSpecified value
+      BigDecimal newTotalValue = lastSpecified.getValue().add(amount.getValue());
+      EngineNumber newTotal = new EngineNumber(newTotalValue, lastSpecified.getUnits());
+
+      // Let setStream handle unit conversion and recharge addition properly
+      // For units-based specifications, enable recycling logic
+      boolean subtractRecycling = "units".equals(lastSpecified.getUnits());
+      engine.setStream(stream, newTotal, Optional.ofNullable(yearMatcher), subtractRecycling);
     }
-
-    // Apply units change to lastSpecified value
-    BigDecimal newTotalValue = lastSpecified.getValue().add(amount.getValue());
-    EngineNumber newTotal = new EngineNumber(newTotalValue, lastSpecified.getUnits());
-
-    // Let setStream handle unit conversion and recharge addition properly
-    // For units-based specifications, enable recycling logic
-    boolean subtractRecycling = "units".equals(lastSpecified.getUnits());
-    engine.setStream(stream, newTotal, Optional.ofNullable(yearMatcher), subtractRecycling);
   }
 
   /**

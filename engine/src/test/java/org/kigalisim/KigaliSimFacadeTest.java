@@ -463,12 +463,12 @@ public class KigaliSimFacadeTest {
     double policyEquipmentYear5 = policyYear5.getPopulation().getValue().doubleValue();
 
 
-    // Expectation: Equipment population should be the same for both scenarios
-    // Recycling reduces virgin material needs but doesn't change equipment requirements
-    // since imports are set directly (100,000 kg) and recycling happens on top of existing flows
-    assertEquals(bauEquipmentYear5, policyEquipmentYear5, 1.0,
-        String.format("Equipment population should be the same: BAU (%.0f) vs Recycling (%.0f). Recycling reduces virgin material demand but not equipment needs.",
-                      bauEquipmentYear5, policyEquipmentYear5));
+    // Expectation: Equipment population should be DIFFERENT for the two scenarios
+    // Since imports are set by kg (not units) and recycling reduces import needs,
+    // equipment population should be lower with recycling (fewer imports = fewer units needed)
+    assertTrue(policyEquipmentYear5 < bauEquipmentYear5,
+        String.format("Equipment population with recycling (%.0f) should be less than BAU (%.0f) since recycling reduces kg-based import needs.",
+                      policyEquipmentYear5, bauEquipmentYear5));
 
   }
 }
