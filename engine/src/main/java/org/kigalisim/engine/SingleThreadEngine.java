@@ -627,10 +627,17 @@ public class SingleThreadEngine implements Engine {
       return;
     }
     streamKeeper.setRetirementRate(scope, amount);
-    RecalcOperation operation = new RecalcOperationBuilder()
+    
+    RecalcOperationBuilder builder = new RecalcOperationBuilder()
         .setRecalcKit(createRecalcKit())
-        .recalcRetire()
-        .build();
+        .recalcRetire();
+    
+    // Add sales recalc if streams were specified in units (recharge needs updating)
+    if (hasUnitBasedSalesSpecifications()) {
+      builder = builder.thenPropagateToSales();
+    }
+    
+    RecalcOperation operation = builder.build();
     operation.execute(this);
   }
 
@@ -1347,8 +1354,18 @@ public class SingleThreadEngine implements Engine {
   private boolean isCarryOver(UseKey scope) {
     // Check if we have a previous unit-based sales specification and no fresh input this year
     return !streamKeeper.isSalesIntentFreshlySet(scope)
-           && streamKeeper.hasLastSpecifiedValue(scope, "sales")
-           && streamKeeper.getLastSpecifiedValue(scope, "sales").hasEquipmentUnits();
+           && EngineSupportUtils.hasUnitBasedSalesSpecifications(streamKeeper, scope);
+  }
+
+  /**
+   * Check if sales streams were specified in equipment units.
+   * When streams are specified in units, retirement changes population which changes
+   * recharge requirements, so sales recalc is needed to update implicitRecharge.
+   *
+   * @return true if sales streams were specified in units
+   */
+  private boolean hasUnitBasedSalesSpecifications() {
+    return EngineSupportUtils.hasUnitBasedSalesSpecifications(streamKeeper, scope);
   }
 
   /**

@@ -18,6 +18,7 @@ import org.kigalisim.engine.number.UnitConverter;
 import org.kigalisim.engine.state.OverridingConverterStateGetter;
 import org.kigalisim.engine.state.StreamKeeper;
 import org.kigalisim.engine.state.UseKey;
+import org.kigalisim.engine.support.EngineSupportUtils;
 import org.kigalisim.engine.support.ExceptionsGenerator;
 import org.kigalisim.engine.support.StreamUpdate;
 import org.kigalisim.engine.support.StreamUpdateBuilder;
@@ -247,8 +248,7 @@ public class SalesRecalcStrategy implements RecalcStrategy {
    */
   private boolean getHasUnitBasedSpecs(StreamKeeper streamKeeper, UseKey scopeEffective, BigDecimal implicitRechargeKg) {
     // Check if we had unit-based specifications that need to be preserved
-    boolean hasUnitBasedSpecs = streamKeeper.hasLastSpecifiedValue(scopeEffective, "sales")
-        && streamKeeper.getLastSpecifiedValue(scopeEffective, "sales").hasEquipmentUnits();
+    boolean hasUnitBasedSpecs = EngineSupportUtils.hasUnitBasedSalesSpecifications(streamKeeper, scopeEffective);
 
     if (hasUnitBasedSpecs) {
       // Check if the current values indicate a unit-based operation
