@@ -92,12 +92,6 @@ public class StreamParameterizationTest {
                  "Retirement rate should default to 0");
     assertEquals("%", retirementRate.getUnits(), "Retirement rate should have correct units");
 
-    // Test displacement rate default
-    EngineNumber displacementRate = parameterization.getDisplacementRate();
-    assertEquals(new BigDecimal("100"), displacementRate.getValue(),
-                 "Displacement rate should default to 100");
-    assertEquals("%", displacementRate.getUnits(),
-                 "Displacement rate should have correct units");
   }
 
   /**
@@ -250,21 +244,6 @@ public class StreamParameterizationTest {
     assertEquals("%", retrieved.getUnits(), "Should retrieve correct yield rate units");
   }
 
-  /**
-   * Test displacement rate getter and setter.
-   */
-  @Test
-  public void testDisplacementRateGetterAndSetter() {
-    StreamParameterization parameterization = new StreamParameterization();
-    EngineNumber newValue = new EngineNumber(new BigDecimal("75.0"), "%");
-
-    parameterization.setDisplacementRate(newValue);
-    EngineNumber retrieved = parameterization.getDisplacementRate();
-
-    assertEquals(new BigDecimal("75.0"), retrieved.getValue(),
-                 "Should retrieve set displacement rate value");
-    assertEquals("%", retrieved.getUnits(), "Should retrieve correct displacement rate units");
-  }
 
   /**
    * Test retirement rate getter and setter.

@@ -35,7 +35,6 @@ public class StreamParameterization {
   private EngineNumber recoveryRateEol;
   private EngineNumber yieldRateEol;
   private EngineNumber retirementRate;
-  private EngineNumber displacementRate;
   private final Map<String, EngineNumber> lastSpecifiedValue;
   private final Set<String> enabledStreams;
   private boolean salesIntentFreshlySet;
@@ -63,7 +62,6 @@ public class StreamParameterization {
     recoveryRateEol = new EngineNumber(BigDecimal.ZERO, "%");
     yieldRateEol = new EngineNumber(BigDecimal.ZERO, "%");
     retirementRate = new EngineNumber(BigDecimal.ZERO, "%");
-    displacementRate = new EngineNumber(new BigDecimal("100"), "%");
   }
 
 
@@ -251,23 +249,6 @@ public class StreamParameterization {
     };
   }
 
-  /**
-   * Set the displacement rate percentage.
-   *
-   * @param newValue The new displacement rate value
-   */
-  public void setDisplacementRate(EngineNumber newValue) {
-    displacementRate = newValue;
-  }
-
-  /**
-   * Get the displacement rate percentage.
-   *
-   * @return The current displacement rate value
-   */
-  public EngineNumber getDisplacementRate() {
-    return displacementRate;
-  }
 
   /**
    * Set the retirement rate percentage.

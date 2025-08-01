@@ -18,6 +18,7 @@ import org.kigalisim.engine.number.UnitConverter;
 import org.kigalisim.engine.state.OverridingConverterStateGetter;
 import org.kigalisim.engine.state.StreamKeeper;
 import org.kigalisim.engine.state.UseKey;
+import org.kigalisim.engine.support.EngineSupportUtils;
 import org.kigalisim.engine.support.ExceptionsGenerator;
 import org.kigalisim.engine.support.StreamUpdate;
 import org.kigalisim.engine.support.StreamUpdateBuilder;
@@ -93,17 +94,10 @@ public class SalesRecalcStrategy implements RecalcStrategy {
         streamKeeper, stateGetter, unitConverter, scopeEffective,
         rechargeVolume, RecoveryStage.RECHARGE);
 
-    // Apply displacement rates separately for each stage
-    EngineNumber displacementRateRaw = streamKeeper.getDisplacementRate(scopeEffective);
-    EngineNumber displacementRate = unitConverter.convert(displacementRateRaw, "%");
-    BigDecimal displacementRateRatio = displacementRate.getValue().divide(
-        BigDecimal.valueOf(100),
-        MathContext.DECIMAL128
-    );
+    // Recycling does not apply cross-substance displacement
+    // Only within-substance displacement (recycled material displaces virgin material of same substance)
+    final BigDecimal recycledKg = eolRecycledKg.add(rechargeRecycledKg);
 
-    final BigDecimal eolRecycledDisplacedKg = eolRecycledKg.multiply(displacementRateRatio);
-    final BigDecimal rechargeRecycledDisplacedKg = rechargeRecycledKg.multiply(displacementRateRatio);
-    final BigDecimal recycledDisplacedKg = eolRecycledDisplacedKg.add(rechargeRecycledDisplacedKg);
 
     // Switch out of recharge population
     stateGetter.clearPopulation();
@@ -130,17 +124,6 @@ public class SalesRecalcStrategy implements RecalcStrategy {
     // Return original
     stateGetter.clearVolume();
 
-    // Determine how much to offset domestic and imports
-    EngineNumber domesticRaw = target.getStream("domestic", Optional.of(scopeEffective), Optional.empty());
-    EngineNumber importRaw = target.getStream("import", Optional.of(scopeEffective), Optional.empty());
-    EngineNumber priorRecycleRaw = target.getStream("recycle", Optional.of(scopeEffective), Optional.empty());
-
-    EngineNumber domesticSalesConverted = unitConverter.convert(domesticRaw, "kg");
-    EngineNumber importSalesConverted = unitConverter.convert(importRaw, "kg");
-
-    BigDecimal domesticSalesKg = domesticSalesConverted.getValue();
-    BigDecimal importSalesKg = importSalesConverted.getValue();
-    BigDecimal totalNonRecycleKg = domesticSalesKg.add(importSalesKg);
 
     // Get distribution using centralized method
     SalesStreamDistribution distribution = streamKeeper.getDistribution(scopeEffective);
@@ -149,13 +132,13 @@ public class SalesRecalcStrategy implements RecalcStrategy {
     BigDecimal percentImport = distribution.getPercentImport();
 
     // Set individual recycling streams
-    EngineNumber newRecycleEolValue = new EngineNumber(eolRecycledDisplacedKg, "kg");
-    EngineNumber newRecycleRechargeValue = new EngineNumber(rechargeRecycledDisplacedKg, "kg");
+    EngineNumber newRecycleEolValue = new EngineNumber(eolRecycledKg, "kg");
+    EngineNumber newRecycleRechargeValue = new EngineNumber(rechargeRecycledKg, "kg");
     streamKeeper.setStream(scopeEffective, "recycleEol", newRecycleEolValue);
     streamKeeper.setStream(scopeEffective, "recycleRecharge", newRecycleRechargeValue);
 
     // Also set total recycle stream for backward compatibility
-    EngineNumber newRecycleValue = new EngineNumber(recycledDisplacedKg, "kg");
+    EngineNumber newRecycleValue = new EngineNumber(recycledKg, "kg");
     streamKeeper.setStream(scopeEffective, "recycle", newRecycleValue);
 
     // Get implicit recharge to avoid double-counting
@@ -247,8 +230,7 @@ public class SalesRecalcStrategy implements RecalcStrategy {
    */
   private boolean getHasUnitBasedSpecs(StreamKeeper streamKeeper, UseKey scopeEffective, BigDecimal implicitRechargeKg) {
     // Check if we had unit-based specifications that need to be preserved
-    boolean hasUnitBasedSpecs = streamKeeper.hasLastSpecifiedValue(scopeEffective, "sales")
-        && streamKeeper.getLastSpecifiedValue(scopeEffective, "sales").hasEquipmentUnits();
+    boolean hasUnitBasedSpecs = EngineSupportUtils.hasUnitBasedSalesSpecifications(streamKeeper, scopeEffective);
 
     if (hasUnitBasedSpecs) {
       // Check if the current values indicate a unit-based operation
