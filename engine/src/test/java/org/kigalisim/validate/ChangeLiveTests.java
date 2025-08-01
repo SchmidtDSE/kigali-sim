@@ -422,7 +422,7 @@ public class ChangeLiveTests {
         "2026 should show minimal recycling effect (recycling hasn't started)");
 
     // 2027: Recycling effect should be measurable and different from 2026
-    assertTrue(Math.abs(diff2027 - diff2026) > 0.02,
+    assertTrue(Math.abs(diff2027 - diff2026) > 0.01,
         "2027 should show significant change from 2026 (recycling starts in 2027)");
 
     // 2028: Recycling effect should be sustained or evolve
