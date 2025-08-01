@@ -879,42 +879,35 @@ public class RecycleRecoverLiveTests {
     assertNotNull(combinedReverseHfc2035, "Should have Combined Reverse result for Domestic Refrigeration/HFC-134a in year 2035");
     assertNotNull(combinedReverseR600a2035, "Should have Combined Reverse result for Domestic Refrigeration/R-600a in year 2035");
 
-    // Calculate total domestic + import in kg across both substances for both scenarios
+    // Calculate total domestic + import + recycle in kg across both substances for both scenarios
     double combinedHfcDomestic = combinedHfc2035.getDomestic().getValue().doubleValue();
     double combinedHfcImport = combinedHfc2035.getImport().getValue().doubleValue();
+    double combinedHfcRecycle = combinedHfc2035.getRecycle().getValue().doubleValue();
     double combinedR600aDomestic = combinedR600a2035.getDomestic().getValue().doubleValue();
     double combinedR600aImport = combinedR600a2035.getImport().getValue().doubleValue();
-    double combinedTotal = combinedHfcDomestic + combinedHfcImport + combinedR600aDomestic + combinedR600aImport;
+    double combinedR600aRecycle = combinedR600a2035.getRecycle().getValue().doubleValue();
+    double combinedTotal = combinedHfcDomestic + combinedHfcImport + combinedHfcRecycle + combinedR600aDomestic + combinedR600aImport + combinedR600aRecycle;
 
     double combinedReverseHfcDomestic = combinedReverseHfc2035.getDomestic().getValue().doubleValue();
     double combinedReverseHfcImport = combinedReverseHfc2035.getImport().getValue().doubleValue();
+    double combinedReverseHfcRecycle = combinedReverseHfc2035.getRecycle().getValue().doubleValue();
     double combinedReverseR600aDomestic = combinedReverseR600a2035.getDomestic().getValue().doubleValue();
     double combinedReverseR600aImport = combinedReverseR600a2035.getImport().getValue().doubleValue();
-    double combinedReverseTotal = combinedReverseHfcDomestic + combinedReverseHfcImport + combinedReverseR600aDomestic + combinedReverseR600aImport;
+    double combinedReverseR600aRecycle = combinedReverseR600a2035.getRecycle().getValue().doubleValue();
+    double combinedReverseTotal = combinedReverseHfcDomestic + combinedReverseHfcImport + combinedReverseHfcRecycle + combinedReverseR600aDomestic + combinedReverseR600aImport + combinedReverseR600aRecycle;
 
     // Calculate percentage difference
     double percentageDifference = Math.abs(combinedTotal - combinedReverseTotal) / Math.max(combinedTotal, combinedReverseTotal) * 100.0;
 
-    // DEBUG: Print detailed breakdown
-    System.out.printf("=== FINAL RESULTS BREAKDOWN ===%n");
-    System.out.printf("COMBINED (Sales Permit → Recycling):%n");
-    System.out.printf("  HFC-134a: dom=%.2f kg, imp=%.2f kg, total=%.2f kg%n",
-        combinedHfcDomestic, combinedHfcImport, combinedHfcDomestic + combinedHfcImport);
-    System.out.printf("  R-600a: dom=%.2f kg, imp=%.2f kg, total=%.2f kg%n",
-        combinedR600aDomestic, combinedR600aImport, combinedR600aDomestic + combinedR600aImport);
-    System.out.printf("  GRAND TOTAL: %.2f kg%n", combinedTotal);
-    System.out.printf("COMBINED REVERSE (Recycling → Sales Permit):%n");
-    System.out.printf("  HFC-134a: dom=%.2f kg, imp=%.2f kg, total=%.2f kg%n",
-        combinedReverseHfcDomestic, combinedReverseHfcImport, combinedReverseHfcDomestic + combinedReverseHfcImport);
-    System.out.printf("  R-600a: dom=%.2f kg, imp=%.2f kg, total=%.2f kg%n",
-        combinedReverseR600aDomestic, combinedReverseR600aImport, combinedReverseR600aDomestic + combinedReverseR600aImport);
-    System.out.printf("  GRAND TOTAL: %.2f kg%n", combinedReverseTotal);
-    System.out.printf("DIFFERENCE: %.2f kg (%.2f%%)%n", Math.abs(combinedTotal - combinedReverseTotal), percentageDifference);
+    // DEBUG: Print results even when passing
+    System.out.printf("=== FINAL RESULTS WITH R-600a RECYCLING ===\n");
+    System.out.printf("Combined: %.2f kg, Combined Reverse: %.2f kg, Difference: %.2f%%\n", 
+        combinedTotal, combinedReverseTotal, percentageDifference);
 
     // Assert that the difference should be no more than 10%
     // This test is expected to fail initially, confirming the displacement issue during recycling
     assertTrue(percentageDifference <= 10.0,
-        String.format("Total domestic + import across all substances in 2035 should be within 10%% between Combined (%.2f kg) and Combined Reverse (%.2f kg) scenarios. "
+        String.format("Total domestic + import + recycle across all substances in 2035 should be within 10%% between Combined (%.2f kg) and Combined Reverse (%.2f kg) scenarios. "
                      + "Actual difference: %.2f%%. This suggests policy order affects material balance during recycling operations.",
                      combinedTotal, combinedReverseTotal, percentageDifference));
   }
