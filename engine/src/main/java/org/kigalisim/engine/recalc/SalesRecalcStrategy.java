@@ -98,10 +98,6 @@ public class SalesRecalcStrategy implements RecalcStrategy {
     // Only within-substance displacement (recycled material displaces virgin material of same substance)
     final BigDecimal recycledKg = eolRecycledKg.add(rechargeRecycledKg);
 
-    // DEBUG: Log recycling calculations  
-    System.out.printf("[DEBUG SalesRecalc] %s Year:%d - Recycled: EOL=%.2f kg, Recharge=%.2f kg, Total=%.2f kg\n",
-        scopeEffective.getSubstance(), target.getYear(), 
-        eolRecycledKg.doubleValue(), rechargeRecycledKg.doubleValue(), recycledKg.doubleValue());
 
     // Switch out of recharge population
     stateGetter.clearPopulation();

@@ -205,7 +205,7 @@ public class ChangeExecutor {
 
     StreamKeeper streamKeeper = engine.getStreamKeeper();
     EngineNumber lastSpecified = streamKeeper.getLastSpecifiedValue(useKeyEffective, stream);
-    
+
     if (lastSpecified == null) {
       // Fallback: apply change to current stream value
       EngineNumber currentValue = engine.getStream(stream, Optional.of(useKeyEffective), Optional.empty());

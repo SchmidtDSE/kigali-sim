@@ -627,16 +627,16 @@ public class SingleThreadEngine implements Engine {
       return;
     }
     streamKeeper.setRetirementRate(scope, amount);
-    
+
     RecalcOperationBuilder builder = new RecalcOperationBuilder()
         .setRecalcKit(createRecalcKit())
         .recalcRetire();
-    
+
     // Add sales recalc if streams were specified in units (recharge needs updating)
     if (hasUnitBasedSalesSpecifications()) {
       builder = builder.thenPropagateToSales();
     }
-    
+
     RecalcOperation operation = builder.build();
     operation.execute(this);
   }
@@ -893,9 +893,6 @@ public class SingleThreadEngine implements Engine {
       return;
     }
 
-    // DEBUG: Log displacement entry
-    System.out.printf("[DEBUG handleDisplacement] Stream: %s, Amount: %.2f kg, Target: %s, Year: %d, Source: %s\n",
-        stream, changeAmount.doubleValue(), displaceTarget, currentYear, scope.getSubstance());
 
     // Check if this is a stream-based displacement (moved to top to avoid duplication)
     boolean isStream = STREAM_NAMES.contains(displaceTarget);
@@ -971,11 +968,6 @@ public class SingleThreadEngine implements Engine {
   private void changeStreamWithDisplacementContext(String stream, EngineNumber amount, Scope destinationScope) {
     // Store original scope
     Scope originalScope = scope;
-    
-    // DEBUG: Log displacement context switch 
-    System.out.printf("[DEBUG changeStreamWithDisplacementContext] %s→%s Year:%d - Adding %.2f kg to %s stream\n",
-        originalScope.getSubstance(), destinationScope.getSubstance(), currentYear, 
-        amount.getValue().doubleValue(), stream);
 
     try {
       // Temporarily switch engine scope to destination substance
