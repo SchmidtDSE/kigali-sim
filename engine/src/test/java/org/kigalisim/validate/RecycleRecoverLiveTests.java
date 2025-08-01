@@ -839,6 +839,59 @@ public class RecycleRecoverLiveTests {
   }
 
   /**
+   * Test accidental displacement during recycling order sensitivity.
+   * 
+   * This test checks if the order of policies (Sales Permit then Domestic Recycling vs 
+   * Domestic Recycling then Sales Permit) affects R-600a growth when displacement occurs 
+   * before recycling vs recycling before displacement.
+   * 
+   * The issue is that when displacement (cap sales displacing "R-600a") comes before 
+   * recycling, the R-600a doesn't grow as expected, potentially due to displacement 
+   * logic being accidentally triggered during recycling operations.
+   */
+  @Test
+  public void testAccidentalDisplaceCheck() throws IOException {
+    // Load and parse the QTA file
+    String qtaPath = "../examples/accidential_displace_check.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    // Run Combined scenario (Sales Permit then Domestic Recycling)
+    Stream<EngineResult> combinedResults = KigaliSimFacade.runScenario(program, "Combined", progress -> {});
+    List<EngineResult> combinedResultsList = combinedResults.collect(Collectors.toList());
+
+    // Run Combined Reverse scenario (Domestic Recycling then Sales Permit)
+    Stream<EngineResult> combinedReverseResults = KigaliSimFacade.runScenario(program, "Combined Reverse", progress -> {});
+    List<EngineResult> combinedReverseResultsList = combinedReverseResults.collect(Collectors.toList());
+
+    // Check R-600a results in 2035 for both scenarios
+    EngineResult combinedR600a2035 = LiveTestsUtil.getResult(combinedResultsList.stream(), 2035, "Domestic Refrigeration", "R-600a");
+    EngineResult combinedReverseR600a2035 = LiveTestsUtil.getResult(combinedReverseResultsList.stream(), 2035, "Domestic Refrigeration", "R-600a");
+
+    assertNotNull(combinedR600a2035, "Should have Combined result for Domestic Refrigeration/R-600a in year 2035");
+    assertNotNull(combinedReverseR600a2035, "Should have Combined Reverse result for Domestic Refrigeration/R-600a in year 2035");
+
+    // Calculate domestic + import in kg for both scenarios
+    double combinedDomestic = combinedR600a2035.getDomestic().getValue().doubleValue();
+    double combinedImport = combinedR600a2035.getImport().getValue().doubleValue();
+    double combinedTotal = combinedDomestic + combinedImport;
+
+    double combinedReverseDomestic = combinedReverseR600a2035.getDomestic().getValue().doubleValue();
+    double combinedReverseImport = combinedReverseR600a2035.getImport().getValue().doubleValue();
+    double combinedReverseTotal = combinedReverseDomestic + combinedReverseImport;
+
+    // Calculate percentage difference
+    double percentageDifference = Math.abs(combinedTotal - combinedReverseTotal) / Math.max(combinedTotal, combinedReverseTotal) * 100.0;
+
+    // Assert that the difference should be no more than 10%
+    // This test is expected to fail initially, confirming the displacement issue during recycling
+    assertTrue(percentageDifference <= 10.0,
+        String.format("R-600a domestic + import in 2035 should be within 10%% between Combined (%.2f kg) and Combined Reverse (%.2f kg) scenarios. " +
+                     "Actual difference: %.2f%%. This suggests displacement logic is incorrectly triggered during recycling operations.",
+                     combinedTotal, combinedReverseTotal, percentageDifference));
+  }
+
+  /**
    * Test for import attribution issue with 100% recovery policy.
    *
    * <p>With 100% recovery and 100% reuse at recharge, all recharge needs should be
