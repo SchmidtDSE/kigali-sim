@@ -1370,6 +1370,13 @@ public class SingleThreadEngine implements Engine {
     }
   }
 
+  /**
+   * Apply percentage-based cap operation using lastSpecifiedValue for compounding effect.
+   *
+   * @param stream the stream name to cap
+   * @param amount the percentage cap amount
+   * @param displaceTarget the target substance for displacement, or null if no displacement
+   */
   private void capWithPercent(String stream, EngineNumber amount, String displaceTarget) {
     UnitConverter unitConverter = EngineSupportUtils.createUnitConverterWithTotal(this, stream);
     EngineNumber currentValueRaw = getStream(stream);
@@ -1407,6 +1414,13 @@ public class SingleThreadEngine implements Engine {
     }
   }
 
+  /**
+   * Apply absolute value-based cap operation.
+   *
+   * @param stream the stream name to cap
+   * @param amount the absolute cap amount
+   * @param displaceTarget the target substance for displacement, or null if no displacement
+   */
   private void capWithValue(String stream, EngineNumber amount, String displaceTarget) {
     UnitConverter unitConverter = EngineSupportUtils.createUnitConverterWithTotal(this, stream);
     EngineNumber currentValueRaw = getStream(stream);
@@ -1424,6 +1438,13 @@ public class SingleThreadEngine implements Engine {
     }
   }
 
+  /**
+   * Apply percentage-based floor operation using lastSpecifiedValue for compounding effect.
+   *
+   * @param stream the stream name to floor
+   * @param amount the percentage floor amount
+   * @param displaceTarget the target substance for displacement, or null if no displacement
+   */
   private void floorWithPercent(String stream, EngineNumber amount, String displaceTarget) {
     UnitConverter unitConverter = EngineSupportUtils.createUnitConverterWithTotal(this, stream);
     EngineNumber currentValueRaw = getStream(stream);
@@ -1461,6 +1482,13 @@ public class SingleThreadEngine implements Engine {
     }
   }
 
+  /**
+   * Apply absolute value-based floor operation.
+   *
+   * @param stream the stream name to floor
+   * @param amount the absolute floor amount
+   * @param displaceTarget the target substance for displacement, or null if no displacement
+   */
   private void floorWithValue(String stream, EngineNumber amount, String displaceTarget) {
     UnitConverter unitConverter = EngineSupportUtils.createUnitConverterWithTotal(this, stream);
     EngineNumber currentValueRaw = getStream(stream);
