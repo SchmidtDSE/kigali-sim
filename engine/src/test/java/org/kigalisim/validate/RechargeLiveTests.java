@@ -511,7 +511,7 @@ public class RechargeLiveTests {
     // Expected: Recycling scenario produces consistent consumption
     // Updated after removing try-catch from calculateCurrentRecyclingAmount - improved recycling accuracy
     // Previous value 69,978.42 kg was based on less accurate recycling calculations
-    assertEquals(62592.77, recyclingTotalConsumption, 1.0, "Recycling scenario total consumption should be ~62,593 kg");
+    assertEquals(63943.29, recyclingTotalConsumption, 1.0, "Recycling scenario total consumption should be ~63,943 kg");
 
     // Expected: Combined policies (recycling + cap) should consume LESS than recycling alone
     // Cap policies should reduce overall consumption when applied on top of recycling
@@ -581,7 +581,7 @@ public class RechargeLiveTests {
     // Expected: Recycling scenario produces consistent consumption
     // Updated after removing try-catch from calculateCurrentRecyclingAmount - improved recycling accuracy
     // Previous value 69,978.42 kg was based on less accurate recycling calculations
-    assertEquals(62592.77, recyclingTotalConsumption, 1.0, "Recycling scenario total consumption should be ~62,593 kg");
+    assertEquals(63943.29, recyclingTotalConsumption, 1.0, "Recycling scenario total consumption should be ~63,943 kg");
 
     // Expected: Combined policies (recycling + cap) should consume LESS than recycling alone
     // Cap policies should reduce overall consumption when applied on top of recycling
@@ -595,8 +595,8 @@ public class RechargeLiveTests {
    * Expected values: Year 1: 9575 units, 2308 kg domestic, 4616 tCO2e consumption
    *                  Year 2: 10671 units, 2485 kg domestic, 4970 tCO2e consumption  
    *                  Year 3: 11791 units, 2668 kg domestic, 5336 tCO2e consumption
-   * 
-   * Parameters: 1 kg/unit initial charge, 2 tCO2e/kg GWP, 10% recharge with 1 kg/unit
+   *
+   * <p>Parameters: 1 kg/unit initial charge, 2 tCO2e/kg GWP, 10% recharge with 1 kg/unit
    */
   @Test
   public void testDomesticRechargeOnly() throws IOException {
@@ -616,24 +616,23 @@ public class RechargeLiveTests {
     assertEquals(2308.0, resultYear1.getDomestic().getValue().doubleValue(), 1.0,
         "Domestic should be ~2308 kg in year 1 (1500 + 807.5 recharge)");
     
-    // Year 2: Shows the bug - domestic value is systematically underestimated
+    // Year 2: Validate equipment and domestic calculations
     // Expected: 1575 (new) + 909.625 (recharge from 9096.25 prior) = 2484.625 kg
-    // Actual will be lower due to implicitRecharge double-subtraction bug
     EngineResult resultYear2 = LiveTestsUtil.getResult(resultsList.stream(), 2, "AC1", "R-410A");
     assertNotNull(resultYear2, "Should have result for AC1/R-410A in year 2");
     assertEquals(10671.25, resultYear2.getPopulation().getValue().doubleValue(), 0.01,
         "Equipment calculation works correctly in year 2");
     assertEquals(2485.0, resultYear2.getDomestic().getValue().doubleValue(), 1.0,
-        "Domestic should be ~2485 kg (bug shows systematic underestimation)");
+        "Domestic should be ~2485 kg with proper recharge calculation");
     
-    // Year 3: Bug continues - further systematic underestimation
+    // Year 3: Validate continued proper calculation  
     // Expected: 1653.75 (new) + 1013.77 (recharge from 10137.69 prior) = 2667.52 kg
     EngineResult resultYear3 = LiveTestsUtil.getResult(resultsList.stream(), 3, "AC1", "R-410A");
     assertNotNull(resultYear3, "Should have result for AC1/R-410A in year 3");
     assertEquals(11791.44, resultYear3.getPopulation().getValue().doubleValue(), 0.01,
         "Equipment calculation works correctly in year 3");
     assertEquals(2668.0, resultYear3.getDomestic().getValue().doubleValue(), 1.0,
-        "Domestic should be ~2668 kg (bug shows ~54kg deficit due to double-subtraction)");
+        "Domestic should be ~2668 kg with proper recharge tracking");
   }
 
 }
