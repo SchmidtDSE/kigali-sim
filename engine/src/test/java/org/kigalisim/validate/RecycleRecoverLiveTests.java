@@ -857,12 +857,16 @@ public class RecycleRecoverLiveTests {
     assertNotNull(program, "Program should not be null");
 
     // Run Combined scenario (Sales Permit then Domestic Recycling)
+    System.out.println("=== STARTING COMBINED SCENARIO (Sales Permit → Domestic Recycling) ===");
     Stream<EngineResult> combinedResults = KigaliSimFacade.runScenario(program, "Combined", progress -> {});
     List<EngineResult> combinedResultsList = combinedResults.collect(Collectors.toList());
+    System.out.println("=== COMPLETED COMBINED SCENARIO ===");
 
     // Run Combined Reverse scenario (Domestic Recycling then Sales Permit)
+    System.out.println("=== STARTING COMBINED REVERSE SCENARIO (Domestic Recycling → Sales Permit) ===");
     Stream<EngineResult> combinedReverseResults = KigaliSimFacade.runScenario(program, "Combined Reverse", progress -> {});
     List<EngineResult> combinedReverseResultsList = combinedReverseResults.collect(Collectors.toList());
+    System.out.println("=== COMPLETED COMBINED REVERSE SCENARIO ===");
 
     // Check results for both substances in 2035 for both scenarios
     EngineResult combinedHfc2035 = LiveTestsUtil.getResult(combinedResultsList.stream(), 2035, "Domestic Refrigeration", "HFC-134a");
@@ -890,6 +894,22 @@ public class RecycleRecoverLiveTests {
 
     // Calculate percentage difference
     double percentageDifference = Math.abs(combinedTotal - combinedReverseTotal) / Math.max(combinedTotal, combinedReverseTotal) * 100.0;
+
+    // DEBUG: Print detailed breakdown
+    System.out.printf("=== FINAL RESULTS BREAKDOWN ===%n");
+    System.out.printf("COMBINED (Sales Permit → Recycling):%n");
+    System.out.printf("  HFC-134a: dom=%.2f kg, imp=%.2f kg, total=%.2f kg%n",
+        combinedHfcDomestic, combinedHfcImport, combinedHfcDomestic + combinedHfcImport);
+    System.out.printf("  R-600a: dom=%.2f kg, imp=%.2f kg, total=%.2f kg%n",
+        combinedR600aDomestic, combinedR600aImport, combinedR600aDomestic + combinedR600aImport);
+    System.out.printf("  GRAND TOTAL: %.2f kg%n", combinedTotal);
+    System.out.printf("COMBINED REVERSE (Recycling → Sales Permit):%n");
+    System.out.printf("  HFC-134a: dom=%.2f kg, imp=%.2f kg, total=%.2f kg%n",
+        combinedReverseHfcDomestic, combinedReverseHfcImport, combinedReverseHfcDomestic + combinedReverseHfcImport);
+    System.out.printf("  R-600a: dom=%.2f kg, imp=%.2f kg, total=%.2f kg%n",
+        combinedReverseR600aDomestic, combinedReverseR600aImport, combinedReverseR600aDomestic + combinedReverseR600aImport);
+    System.out.printf("  GRAND TOTAL: %.2f kg%n", combinedReverseTotal);
+    System.out.printf("DIFFERENCE: %.2f kg (%.2f%%)%n", Math.abs(combinedTotal - combinedReverseTotal), percentageDifference);
 
     // Assert that the difference should be no more than 10%
     // This test is expected to fail initially, confirming the displacement issue during recycling

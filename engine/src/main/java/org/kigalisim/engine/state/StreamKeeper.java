@@ -550,27 +550,6 @@ public class StreamKeeper {
     return parameterization.getRecoveryRate(stage);
   }
 
-  /**
-   * Set the displacement rate percentage for a substance in an application.
-   *
-   * @param key The key containing application and substance for which displacement rate is to be set
-   * @param newValue The new displacement rate value
-   */
-  public void setDisplacementRate(UseKey key, EngineNumber newValue) {
-    StreamParameterization parameterization = getParameterization(key);
-    parameterization.setDisplacementRate(newValue);
-  }
-
-  /**
-   * Get the displacement rate percentage for a substance in an application.
-   *
-   * @param key The key containing application and substance for which displacement rate is to be retrieved
-   * @return The current displacement rate value
-   */
-  public EngineNumber getDisplacementRate(UseKey key) {
-    StreamParameterization parameterization = getParameterization(key);
-    return parameterization.getDisplacementRate();
-  }
 
   /**
    * Set the yield rate percentage for recycling for a key.
@@ -1205,19 +1184,8 @@ public class StreamKeeper {
     EngineNumber initialChargeConverted = unitConverter.convert(initialCharge, "kg / unit");
     BigDecimal recycledKg = recycledUnits.multiply(initialChargeConverted.getValue());
 
-    // Apply displacement rate
-    EngineNumber displacementRate = parameterization.getDisplacementRate();
-    BigDecimal displacementRateRatio;
-    if (displacementRate.getUnits().contains("%")) {
-      displacementRateRatio = displacementRate.getValue().divide(
-          BigDecimal.valueOf(100), java.math.MathContext.DECIMAL128);
-    } else {
-      displacementRateRatio = displacementRate.getValue();
-    }
-
-    BigDecimal recycledDisplacedKg = recycledKg.multiply(displacementRateRatio);
-
-    return recycledDisplacedKg;
+    // Recycling does not apply cross-substance displacement
+    return recycledKg;
   }
 
 }

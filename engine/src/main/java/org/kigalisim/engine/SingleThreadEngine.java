@@ -653,6 +653,11 @@ public class SingleThreadEngine implements Engine {
       return;
     }
 
+    // DEBUG: Log recycling operation
+    System.out.printf("[DEBUG recycle] Substance: %s, Year: %d, Recovery: %.2f%%, Yield: %.2f%%, Stage: %s%n",
+        scope.getSubstance(), currentYear, recoveryWithUnits.getValue().doubleValue(), 
+        yieldWithUnits.getValue().doubleValue(), stage);
+
     streamKeeper.setRecoveryRate(scope, recoveryWithUnits, stage);
     streamKeeper.setYieldRate(scope, yieldWithUnits, stage);
 
@@ -1015,6 +1020,10 @@ public class SingleThreadEngine implements Engine {
       return;
     }
 
+    // DEBUG: Log displacement entry
+    System.out.printf("[DEBUG handleDisplacement] Stream: %s, Amount: %.2f kg, Target: %s, Year: %d, Source: %s%n",
+        stream, changeAmount.doubleValue(), displaceTarget, currentYear, scope.getSubstance());
+
     // Check if this is a stream-based displacement (moved to top to avoid duplication)
     boolean isStream = STREAM_NAMES.contains(displaceTarget);
 
@@ -1089,6 +1098,11 @@ public class SingleThreadEngine implements Engine {
   private void changeStreamWithDisplacementContext(String stream, EngineNumber amount, Scope destinationScope) {
     // Store original scope
     Scope originalScope = scope;
+    
+    // DEBUG: Log displacement context switch 
+    System.out.printf("[DEBUG changeStreamWithDisplacementContext] %s→%s Year:%d - Adding %.2f kg to %s stream%n",
+        originalScope.getSubstance(), destinationScope.getSubstance(), currentYear, 
+        amount.getValue().doubleValue(), stream);
 
     try {
       // Temporarily switch engine scope to destination substance
@@ -1387,7 +1401,6 @@ public class SingleThreadEngine implements Engine {
     // Get rates from parameterization
     EngineNumber retirementRate = streamKeeper.getRetirementRate(scope);
     EngineNumber rechargePopulation = streamKeeper.getRechargePopulation(scope);
-    EngineNumber displacementRate = streamKeeper.getDisplacementRate(scope);
 
     // Convert everything to proper units
     UnitConverter unitConverter = EngineSupportUtils.createUnitConverterWithTotal(this, "sales");
@@ -1396,7 +1409,6 @@ public class SingleThreadEngine implements Engine {
     // Calculate rates as decimals
     BigDecimal retirementRateDecimal = retirementRate.getValue().divide(BigDecimal.valueOf(100));
     BigDecimal rechargePopulationDecimal = rechargePopulation.getValue().divide(BigDecimal.valueOf(100));
-    BigDecimal displacementRateDecimal = displacementRate.getValue().divide(BigDecimal.valueOf(100));
 
     // Calculate EOL recycling (from actual retired equipment)
     EngineNumber retiredPopulationRaw = streamKeeper.getStream(scope, "retired");
@@ -1411,10 +1423,8 @@ public class SingleThreadEngine implements Engine {
     // Combine both recycling amounts
     BigDecimal totalRecycling = eolRecycling.add(rechargeRecycling);
 
-    // Apply displacement rate
-    BigDecimal recyclingAvailable = totalRecycling.multiply(displacementRateDecimal);
-
-    return recyclingAvailable;
+    // Recycling does not apply cross-substance displacement
+    return totalRecycling;
   }
 
   /**
