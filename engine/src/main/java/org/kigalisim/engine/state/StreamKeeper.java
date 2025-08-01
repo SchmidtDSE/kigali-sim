@@ -335,6 +335,19 @@ public class StreamKeeper {
     for (StreamParameterization parameterization : substances.values()) {
       parameterization.resetStateAtTimestep();
     }
+
+    // Reset recycling streams at year boundary to prevent stale values
+    // from affecting subsequent cap operations
+    for (String key : substances.keySet()) {
+      String[] keyPieces = key.split("\t");
+      String application = keyPieces[0];
+      String substance = keyPieces[1];
+
+      SimpleUseKey useKey = new SimpleUseKey(application, substance);
+      setStream(useKey, "recycleRecharge", new EngineNumber(BigDecimal.ZERO, "kg"));
+      setStream(useKey, "recycleEol", new EngineNumber(BigDecimal.ZERO, "kg"));
+    }
+
   }
 
   /**

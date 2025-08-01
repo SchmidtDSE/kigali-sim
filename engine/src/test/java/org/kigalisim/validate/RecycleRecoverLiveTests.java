@@ -833,9 +833,9 @@ public class RecycleRecoverLiveTests {
         String.format("Policy population in year 3 (%.2f) should be less than BAU (%.2f) due to additional retire command",
                       policyPopulation3, bauPopulation3));
 
-    // Check that recycling is still active in year 3
-    assertTrue(policyYear3.getRecycleConsumption().getValue().doubleValue() > 0,
-        "Policy scenario should still have recycling consumption in year 3");
+    // Check that recycling is NOT active in year 3 (recovery only specified for year 2)
+    assertEquals(0.0, policyYear3.getRecycleConsumption().getValue().doubleValue(), 0.1,
+        "Policy scenario should have zero recycling consumption in year 3 since recovery only specified for year 2");
   }
 
   /**
