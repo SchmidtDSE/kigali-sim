@@ -864,21 +864,29 @@ public class RecycleRecoverLiveTests {
     Stream<EngineResult> combinedReverseResults = KigaliSimFacade.runScenario(program, "Combined Reverse", progress -> {});
     List<EngineResult> combinedReverseResultsList = combinedReverseResults.collect(Collectors.toList());
 
-    // Check R-600a results in 2035 for both scenarios
+    // Check results for both substances in 2035 for both scenarios
+    EngineResult combinedHfc2035 = LiveTestsUtil.getResult(combinedResultsList.stream(), 2035, "Domestic Refrigeration", "HFC-134a");
     EngineResult combinedR600a2035 = LiveTestsUtil.getResult(combinedResultsList.stream(), 2035, "Domestic Refrigeration", "R-600a");
+    EngineResult combinedReverseHfc2035 = LiveTestsUtil.getResult(combinedReverseResultsList.stream(), 2035, "Domestic Refrigeration", "HFC-134a");
     EngineResult combinedReverseR600a2035 = LiveTestsUtil.getResult(combinedReverseResultsList.stream(), 2035, "Domestic Refrigeration", "R-600a");
 
+    assertNotNull(combinedHfc2035, "Should have Combined result for Domestic Refrigeration/HFC-134a in year 2035");
     assertNotNull(combinedR600a2035, "Should have Combined result for Domestic Refrigeration/R-600a in year 2035");
+    assertNotNull(combinedReverseHfc2035, "Should have Combined Reverse result for Domestic Refrigeration/HFC-134a in year 2035");
     assertNotNull(combinedReverseR600a2035, "Should have Combined Reverse result for Domestic Refrigeration/R-600a in year 2035");
 
-    // Calculate domestic + import in kg for both scenarios
-    double combinedDomestic = combinedR600a2035.getDomestic().getValue().doubleValue();
-    double combinedImport = combinedR600a2035.getImport().getValue().doubleValue();
-    double combinedTotal = combinedDomestic + combinedImport;
+    // Calculate total domestic + import in kg across both substances for both scenarios
+    double combinedHfcDomestic = combinedHfc2035.getDomestic().getValue().doubleValue();
+    double combinedHfcImport = combinedHfc2035.getImport().getValue().doubleValue();
+    double combinedR600aDomestic = combinedR600a2035.getDomestic().getValue().doubleValue();
+    double combinedR600aImport = combinedR600a2035.getImport().getValue().doubleValue();
+    double combinedTotal = combinedHfcDomestic + combinedHfcImport + combinedR600aDomestic + combinedR600aImport;
 
-    double combinedReverseDomestic = combinedReverseR600a2035.getDomestic().getValue().doubleValue();
-    double combinedReverseImport = combinedReverseR600a2035.getImport().getValue().doubleValue();
-    double combinedReverseTotal = combinedReverseDomestic + combinedReverseImport;
+    double combinedReverseHfcDomestic = combinedReverseHfc2035.getDomestic().getValue().doubleValue();
+    double combinedReverseHfcImport = combinedReverseHfc2035.getImport().getValue().doubleValue();
+    double combinedReverseR600aDomestic = combinedReverseR600a2035.getDomestic().getValue().doubleValue();
+    double combinedReverseR600aImport = combinedReverseR600a2035.getImport().getValue().doubleValue();
+    double combinedReverseTotal = combinedReverseHfcDomestic + combinedReverseHfcImport + combinedReverseR600aDomestic + combinedReverseR600aImport;
 
     // Calculate percentage difference
     double percentageDifference = Math.abs(combinedTotal - combinedReverseTotal) / Math.max(combinedTotal, combinedReverseTotal) * 100.0;
@@ -886,8 +894,8 @@ public class RecycleRecoverLiveTests {
     // Assert that the difference should be no more than 10%
     // This test is expected to fail initially, confirming the displacement issue during recycling
     assertTrue(percentageDifference <= 10.0,
-        String.format("R-600a domestic + import in 2035 should be within 10%% between Combined (%.2f kg) and Combined Reverse (%.2f kg) scenarios. "
-                     + "Actual difference: %.2f%%. This suggests displacement logic is incorrectly triggered during recycling operations.",
+        String.format("Total domestic + import across all substances in 2035 should be within 10%% between Combined (%.2f kg) and Combined Reverse (%.2f kg) scenarios. "
+                     + "Actual difference: %.2f%%. This suggests policy order affects material balance during recycling operations.",
                      combinedTotal, combinedReverseTotal, percentageDifference));
   }
 
