@@ -73,6 +73,11 @@ application {
 // JUnit target for all tests.
 test {
   useJUnitPlatform()
+
+  testLogging {
+    exceptionFormat = "full"
+    events "failed"
+  }
 }
 
 // JUnit resource assets for tests.
@@ -95,8 +100,8 @@ task fatJar(type: Jar) {
   archiveClassifier = "fat"
 
   // Include all dependencies
-  from { 
-    configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) } 
+  from {
+    configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
   }
 
   // Exclude duplicates
