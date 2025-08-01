@@ -1354,8 +1354,7 @@ public class SingleThreadEngine implements Engine {
   private boolean isCarryOver(UseKey scope) {
     // Check if we have a previous unit-based sales specification and no fresh input this year
     return !streamKeeper.isSalesIntentFreshlySet(scope)
-           && streamKeeper.hasLastSpecifiedValue(scope, "sales")
-           && streamKeeper.getLastSpecifiedValue(scope, "sales").hasEquipmentUnits();
+           && EngineSupportUtils.hasUnitBasedSalesSpecifications(streamKeeper, scope);
   }
 
   /**
@@ -1366,8 +1365,7 @@ public class SingleThreadEngine implements Engine {
    * @return true if sales streams were specified in units
    */
   private boolean hasUnitBasedSalesSpecifications() {
-    return streamKeeper.hasLastSpecifiedValue(scope, "sales")
-        && streamKeeper.getLastSpecifiedValue(scope, "sales").hasEquipmentUnits();
+    return EngineSupportUtils.hasUnitBasedSalesSpecifications(streamKeeper, scope);
   }
 
   /**
