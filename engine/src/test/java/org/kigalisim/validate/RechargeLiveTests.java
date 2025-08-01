@@ -607,29 +607,6 @@ public class RechargeLiveTests {
     String scenarioName = "S1";
     Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
     List<EngineResult> resultsList = results.collect(Collectors.toList());
-
-    // Collect actual values for analysis
-    for (int year = 1; year <= 3; year++) {
-      EngineResult result = LiveTestsUtil.getResult(resultsList.stream(), year, "AC1", "R-410A");
-      assertNotNull(result, "Should have result for AC1/R-410A in year " + year);
-      
-      double equipment = result.getPopulation().getValue().doubleValue();
-      double domestic = result.getDomestic().getValue().doubleValue();
-      double consumption = result.getGhgConsumption().getValue().doubleValue();
-      double domesticConsumption = result.getDomesticConsumption().getValue().doubleValue();
-      double rechargeEmissions = result.getRechargeEmissions().getValue().doubleValue();
-      
-      System.out.println("Year " + year + ":");
-      System.out.println("  Equipment: " + equipment + " " + result.getPopulation().getUnits());
-      System.out.println("  Domestic: " + domestic + " " + result.getDomestic().getUnits());
-      System.out.println("  Total Consumption: " + consumption + " " + result.getGhgConsumption().getUnits());
-      System.out.println("  Domestic Consumption: " + domesticConsumption + " " + result.getDomesticConsumption().getUnits());
-      System.out.println("  Recharge Emissions: " + rechargeEmissions + " " + result.getRechargeEmissions().getUnits());
-      System.out.println("");
-    }
-    
-    // Add assertions for all 3 years to demonstrate the domestic recharge bug
-    // Manual calculations based on QTA parameters show expected values vs actual buggy behavior
     
     // Year 1: Equipment calculation works correctly
     EngineResult resultYear1 = LiveTestsUtil.getResult(resultsList.stream(), 1, "AC1", "R-410A");
