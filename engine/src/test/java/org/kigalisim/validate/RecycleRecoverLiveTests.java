@@ -841,12 +841,12 @@ public class RecycleRecoverLiveTests {
   /**
    * Test accidental displacement during recycling order sensitivity.
    *
-   * <p>This test checks if the order of policies (Sales Permit then Domestic Recycling vs 
-   * Domestic Recycling then Sales Permit) affects R-600a growth when displacement occurs 
+   * <p>This test checks if the order of policies (Sales Permit then Domestic Recycling vs
+   * Domestic Recycling then Sales Permit) affects R-600a growth when displacement occurs
    * before recycling vs recycling before displacement.
    *
-   * <p>The issue is that when displacement (cap sales displacing "R-600a") comes before 
-   * recycling, the R-600a doesn't grow as expected, potentially due to displacement 
+   * <p>The issue is that when displacement (cap sales displacing "R-600a") comes before
+   * recycling, the R-600a doesn't grow as expected, potentially due to displacement
    * logic being accidentally triggered during recycling operations.
    */
   @Test
@@ -899,9 +899,8 @@ public class RecycleRecoverLiveTests {
     // Calculate percentage difference
     double percentageDifference = Math.abs(combinedTotal - combinedReverseTotal) / Math.max(combinedTotal, combinedReverseTotal) * 100.0;
 
-    // DEBUG: Print results even when passing
     System.out.printf("=== FINAL RESULTS WITH R-600a RECYCLING ===\n");
-    System.out.printf("Combined: %.2f kg, Combined Reverse: %.2f kg, Difference: %.2f%%\n", 
+    System.out.printf("Combined: %.2f kg, Combined Reverse: %.2f kg, Difference: %.2f%%\n",
         combinedTotal, combinedReverseTotal, percentageDifference);
 
     // Assert that the difference should be no more than 10%

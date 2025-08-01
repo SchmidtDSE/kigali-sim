@@ -73,12 +73,10 @@ application {
 // JUnit target for all tests.
 test {
   useJUnitPlatform()
-  
-  // Enable test output for debugging
+
   testLogging {
-    showStandardStreams = true
     exceptionFormat = "full"
-    events "passed", "failed", "skipped", "standardOut", "standardError"
+    events "failed"
   }
 }
 
@@ -102,8 +100,8 @@ task fatJar(type: Jar) {
   archiveClassifier = "fat"
 
   // Include all dependencies
-  from { 
-    configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) } 
+  from {
+    configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
   }
 
   // Exclude duplicates
