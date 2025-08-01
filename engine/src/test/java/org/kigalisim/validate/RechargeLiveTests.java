@@ -590,4 +590,73 @@ public class RechargeLiveTests {
         + " kg, recycling: " + recyclingTotalConsumption + " kg)");
   }
 
+  /**
+   * Test domestic recharge only scenario where only domestic stream is enabled.
+   * Expected values: Year 1: 9575 units, 2308 kg domestic, 4616 tCO2e consumption
+   *                  Year 2: 10671 units, 2485 kg domestic, 4970 tCO2e consumption  
+   *                  Year 3: 11791 units, 2668 kg domestic, 5336 tCO2e consumption
+   * 
+   * Parameters: 1 kg/unit initial charge, 2 tCO2e/kg GWP, 10% recharge with 1 kg/unit
+   */
+  @Test
+  public void testDomesticRechargeOnly() throws IOException {
+    String qtaPath = "../examples/domestic_recharge_only.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    String scenarioName = "S1";
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
+    List<EngineResult> resultsList = results.collect(Collectors.toList());
+
+    // Collect actual values for analysis
+    for (int year = 1; year <= 3; year++) {
+      EngineResult result = LiveTestsUtil.getResult(resultsList.stream(), year, "AC1", "R-410A");
+      assertNotNull(result, "Should have result for AC1/R-410A in year " + year);
+      
+      double equipment = result.getPopulation().getValue().doubleValue();
+      double domestic = result.getDomestic().getValue().doubleValue();
+      double consumption = result.getGhgConsumption().getValue().doubleValue();
+      double domesticConsumption = result.getDomesticConsumption().getValue().doubleValue();
+      double rechargeEmissions = result.getRechargeEmissions().getValue().doubleValue();
+      
+      System.out.println("Year " + year + ":");
+      System.out.println("  Equipment: " + equipment + " " + result.getPopulation().getUnits());
+      System.out.println("  Domestic: " + domestic + " " + result.getDomestic().getUnits());
+      System.out.println("  Total Consumption: " + consumption + " " + result.getGhgConsumption().getUnits());
+      System.out.println("  Domestic Consumption: " + domesticConsumption + " " + result.getDomesticConsumption().getUnits());
+      System.out.println("  Recharge Emissions: " + rechargeEmissions + " " + result.getRechargeEmissions().getUnits());
+      System.out.println("");
+    }
+    
+    // Add assertions for all 3 years to demonstrate the domestic recharge bug
+    // Manual calculations based on QTA parameters show expected values vs actual buggy behavior
+    
+    // Year 1: Equipment calculation works correctly
+    EngineResult resultYear1 = LiveTestsUtil.getResult(resultsList.stream(), 1, "AC1", "R-410A");
+    assertNotNull(resultYear1, "Should have result for AC1/R-410A in year 1");
+    assertEquals(9575.0, resultYear1.getPopulation().getValue().doubleValue(), 0.01, 
+        "Equipment should be 9575 units in year 1");
+    assertEquals(2308.0, resultYear1.getDomestic().getValue().doubleValue(), 1.0,
+        "Domestic should be ~2308 kg in year 1 (1500 + 807.5 recharge)");
+    
+    // Year 2: Shows the bug - domestic value is systematically underestimated
+    // Expected: 1575 (new) + 909.625 (recharge from 9096.25 prior) = 2484.625 kg
+    // Actual will be lower due to implicitRecharge double-subtraction bug
+    EngineResult resultYear2 = LiveTestsUtil.getResult(resultsList.stream(), 2, "AC1", "R-410A");
+    assertNotNull(resultYear2, "Should have result for AC1/R-410A in year 2");
+    assertEquals(10671.25, resultYear2.getPopulation().getValue().doubleValue(), 0.01,
+        "Equipment calculation works correctly in year 2");
+    assertEquals(2485.0, resultYear2.getDomestic().getValue().doubleValue(), 1.0,
+        "Domestic should be ~2485 kg (bug shows systematic underestimation)");
+    
+    // Year 3: Bug continues - further systematic underestimation
+    // Expected: 1653.75 (new) + 1013.77 (recharge from 10137.69 prior) = 2667.52 kg
+    EngineResult resultYear3 = LiveTestsUtil.getResult(resultsList.stream(), 3, "AC1", "R-410A");
+    assertNotNull(resultYear3, "Should have result for AC1/R-410A in year 3");
+    assertEquals(11791.44, resultYear3.getPopulation().getValue().doubleValue(), 0.01,
+        "Equipment calculation works correctly in year 3");
+    assertEquals(2668.0, resultYear3.getDomestic().getValue().doubleValue(), 1.0,
+        "Domestic should be ~2668 kg (bug shows ~54kg deficit due to double-subtraction)");
+  }
+
 }
