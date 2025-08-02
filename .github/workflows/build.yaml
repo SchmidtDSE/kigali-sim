@@ -262,6 +262,14 @@ jobs:
         run: cp -r ./docs/guide ./editor/deploy/guide
       - name: Copy case study QTA file to guide
         run: cp ./examples/case_study.qta ./editor/deploy/guide/case_study.qta
+      - name: Copy tutorial QTA files to guide
+        run: |
+          cp ./examples/tutorial_02.qta ./editor/deploy/guide/tutorial_02.qta
+          cp ./examples/tutorial_03.qta ./editor/deploy/guide/tutorial_03.qta
+          cp ./examples/tutorial_04.qta ./editor/deploy/guide/tutorial_04.qta
+          cp ./examples/tutorial_05.qta ./editor/deploy/guide/tutorial_05.qta
+          cp ./examples/tutorial_06.qta ./editor/deploy/guide/tutorial_06.qta
+          cp ./examples/tutorial_07.qta ./editor/deploy/guide/tutorial_07.qta
       - name: Copy WASM files
         run: cp -r ./editor/wasm ./editor/deploy/wasm
       - name: Copy fat JAR
