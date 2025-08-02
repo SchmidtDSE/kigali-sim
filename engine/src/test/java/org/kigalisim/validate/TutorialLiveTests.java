@@ -61,7 +61,7 @@ public class TutorialLiveTests {
         "Domestic Refrigeration", "HFC-134a");
     EngineResult result2034 = LiveTestsUtil.getResult(resultsList.stream(), 2034,
         "Domestic Refrigeration", "HFC-134a");
-    EngineResult result2035 = LiveTestsUtil.getResult(resultsList.stream(), 2035,
+    final EngineResult result2035 = LiveTestsUtil.getResult(resultsList.stream(), 2035,
         "Domestic Refrigeration", "HFC-134a");
 
     assertNotNull(result2025, "Should have result for 2025");
@@ -186,22 +186,22 @@ public class TutorialLiveTests {
       assertNotNull(hfc32Result, "Should have HFC-32 result for " + year);
 
       // Calculate total kg (domestic + import) for HFC-134a
-      double hfc134aTotalKg = hfc134aResult.getDomestic().getValue().doubleValue() +
-                              hfc134aResult.getImport().getValue().doubleValue();
+      double hfc134aTotalKg = hfc134aResult.getDomestic().getValue().doubleValue()
+                              + hfc134aResult.getImport().getValue().doubleValue();
       double hfc32TotalKg = hfc32Result.getDomestic().getValue().doubleValue();
 
       double hfc134aTotalTco2e = hfc134aResult.getGhgConsumption().getValue().doubleValue();
       double hfc32TotalTco2e = hfc32Result.getGhgConsumption().getValue().doubleValue();
 
       // Calculate percentage differences
-      double kgPercentDiff = Math.abs(hfc32TotalKg - hfc134aTotalKg) /
-                           Math.max(hfc32TotalKg, hfc134aTotalKg) * 100;
-      double tco2ePercentDiff = Math.abs(hfc32TotalTco2e - hfc134aTotalTco2e) /
-                              Math.max(hfc32TotalTco2e, hfc134aTotalTco2e) * 100;
+      double kgPercentDiff = Math.abs(hfc32TotalKg - hfc134aTotalKg)
+                           / Math.max(hfc32TotalKg, hfc134aTotalKg) * 100;
+      double tco2ePercentDiff = Math.abs(hfc32TotalTco2e - hfc134aTotalTco2e)
+                              / Math.max(hfc32TotalTco2e, hfc134aTotalTco2e) * 100;
 
       assertTrue(kgPercentDiff < tco2ePercentDiff,
-          "Percentage difference in kg (" + kgPercentDiff + "%) should be smaller than " +
-          "percentage difference in tCO2e (" + tco2ePercentDiff + "%) in year " + year);
+          "Percentage difference in kg (" + kgPercentDiff + "%) should be smaller than "
+          + "percentage difference in tCO2e (" + tco2ePercentDiff + "%) in year " + year);
     }
   }
 
@@ -238,7 +238,7 @@ public class TutorialLiveTests {
       // Get Permit results
       EngineResult permitHfc134a = LiveTestsUtil.getResult(permitResultsList.stream(), year,
           "Domestic Refrigeration", "HFC-134a");
-      EngineResult permitR600a = LiveTestsUtil.getResult(permitResultsList.stream(), year,
+      final EngineResult permitR600a = LiveTestsUtil.getResult(permitResultsList.stream(), year,
           "Domestic Refrigeration", "R-600a");
 
       assertNotNull(bauHfc134a, "Should have BAU HFC-134a result for " + year);
@@ -247,16 +247,16 @@ public class TutorialLiveTests {
       assertNotNull(permitR600a, "Should have Permit R-600a result for " + year);
 
       // Calculate differences (Permit - BAU) for total consumption (domestic + import)
-      double hfc134aBauTotal = bauHfc134a.getDomestic().getValue().doubleValue() +
-                               bauHfc134a.getImport().getValue().doubleValue();
-      double hfc134aPermitTotal = permitHfc134a.getDomestic().getValue().doubleValue() +
-                                  permitHfc134a.getImport().getValue().doubleValue();
+      double hfc134aBauTotal = bauHfc134a.getDomestic().getValue().doubleValue()
+                               + bauHfc134a.getImport().getValue().doubleValue();
+      double hfc134aPermitTotal = permitHfc134a.getDomestic().getValue().doubleValue()
+                                  + permitHfc134a.getImport().getValue().doubleValue();
       double hfc134aDiff = hfc134aPermitTotal - hfc134aBauTotal;
 
-      double r600aBauTotal = bauR600a.getDomestic().getValue().doubleValue() +
-                             bauR600a.getImport().getValue().doubleValue();
-      double r600aPermitTotal = permitR600a.getDomestic().getValue().doubleValue() +
-                                permitR600a.getImport().getValue().doubleValue();
+      double r600aBauTotal = bauR600a.getDomestic().getValue().doubleValue()
+                             + bauR600a.getImport().getValue().doubleValue();
+      double r600aPermitTotal = permitR600a.getDomestic().getValue().doubleValue()
+                                + permitR600a.getImport().getValue().doubleValue();
       double r600aDiff = r600aPermitTotal - r600aBauTotal;
 
       // The differences should be approximately opposite (within 10% tolerance)
@@ -264,8 +264,8 @@ public class TutorialLiveTests {
       double tolerance = Math.abs(expectedOpposite) * 0.1; // 10% tolerance
 
       assertTrue(Math.abs(r600aDiff - expectedOpposite) <= tolerance,
-          "R-600a difference (" + r600aDiff + ") should be approximately opposite of HFC-134a difference (" +
-          hfc134aDiff + ") in year " + year + ". Expected: " + expectedOpposite + " ± " + tolerance);
+          "R-600a difference (" + r600aDiff + ") should be approximately opposite of HFC-134a difference ("
+          + hfc134aDiff + ") in year " + year + ". Expected: " + expectedOpposite + " ± " + tolerance);
     }
   }
 
@@ -302,14 +302,14 @@ public class TutorialLiveTests {
       assertNotNull(bauResult, "Should have BAU result for " + year);
       assertNotNull(recyclingResult, "Should have Recycling result for " + year);
 
-      double bauTotal = bauResult.getDomestic().getValue().doubleValue() +
-                        bauResult.getImport().getValue().doubleValue();
-      double recyclingTotal = recyclingResult.getDomestic().getValue().doubleValue() +
-                              recyclingResult.getImport().getValue().doubleValue();
+      double bauTotal = bauResult.getDomestic().getValue().doubleValue()
+                        + bauResult.getImport().getValue().doubleValue();
+      double recyclingTotal = recyclingResult.getDomestic().getValue().doubleValue()
+                              + recyclingResult.getImport().getValue().doubleValue();
 
       assertTrue(recyclingTotal < bauTotal,
-          "Recycling total (" + recyclingTotal + ") should be lower than BAU total (" +
-          bauTotal + ") in year " + year);
+          "Recycling total (" + recyclingTotal + ") should be lower than BAU total ("
+          + bauTotal + ") in year " + year);
     }
 
     // Test 2: Combined policy is more effective (<=) than recycling from 2030 onwards
@@ -322,14 +322,14 @@ public class TutorialLiveTests {
       assertNotNull(recyclingResult, "Should have Recycling result for " + year);
       assertNotNull(combinedResult, "Should have Combined result for " + year);
 
-      double recyclingTotal = recyclingResult.getDomestic().getValue().doubleValue() +
-                              recyclingResult.getImport().getValue().doubleValue();
-      double combinedTotal = combinedResult.getDomestic().getValue().doubleValue() +
-                             combinedResult.getImport().getValue().doubleValue();
+      double recyclingTotal = recyclingResult.getDomestic().getValue().doubleValue()
+                              + recyclingResult.getImport().getValue().doubleValue();
+      double combinedTotal = combinedResult.getDomestic().getValue().doubleValue()
+                             + combinedResult.getImport().getValue().doubleValue();
 
       assertTrue(combinedTotal <= recyclingTotal,
-          "Combined total (" + combinedTotal + ") should be less than or equal to Recycling total (" +
-          recyclingTotal + ") in year " + year + " since combined policies are more effective");
+          "Combined total (" + combinedTotal + ") should be less than or equal to Recycling total ("
+          + recyclingTotal + ") in year " + year + " since combined policies are more effective");
     }
   }
 
@@ -364,7 +364,7 @@ public class TutorialLiveTests {
         "Domestic Refrigeration", "R-600a");
     EngineResult recycling7Hfc = LiveTestsUtil.getResult(recycling7ResultsList.stream(), 2035,
         "Domestic Refrigeration", "HFC-134a");
-    EngineResult recycling7R600a = LiveTestsUtil.getResult(recycling7ResultsList.stream(), 2035,
+    final EngineResult recycling7R600a = LiveTestsUtil.getResult(recycling7ResultsList.stream(), 2035,
         "Domestic Refrigeration", "R-600a");
 
     assertNotNull(recycling6Hfc, "Should have Tutorial 6 HFC-134a result for 2035");
@@ -373,18 +373,18 @@ public class TutorialLiveTests {
     assertNotNull(recycling7R600a, "Should have Tutorial 7 R-600a result for 2035");
 
     // Calculate total consumption (domestic + import) across all substances for both tutorials
-    double recycling6Total = (recycling6Hfc.getDomestic().getValue().doubleValue() +
-                             recycling6Hfc.getImport().getValue().doubleValue()) +
-                             (recycling6R600a.getDomestic().getValue().doubleValue() +
-                             recycling6R600a.getImport().getValue().doubleValue());
-    double recycling7Total = (recycling7Hfc.getDomestic().getValue().doubleValue() +
-                             recycling7Hfc.getImport().getValue().doubleValue()) +
-                             (recycling7R600a.getDomestic().getValue().doubleValue() +
-                             recycling7R600a.getImport().getValue().doubleValue());
+    double recycling6Total = (recycling6Hfc.getDomestic().getValue().doubleValue()
+                             + recycling6Hfc.getImport().getValue().doubleValue())
+                             + (recycling6R600a.getDomestic().getValue().doubleValue()
+                             + recycling6R600a.getImport().getValue().doubleValue());
+    double recycling7Total = (recycling7Hfc.getDomestic().getValue().doubleValue()
+                             + recycling7Hfc.getImport().getValue().doubleValue())
+                             + (recycling7R600a.getDomestic().getValue().doubleValue()
+                             + recycling7R600a.getImport().getValue().doubleValue());
 
     // Tutorial 7 should have lower consumption than Tutorial 6 (due to enhanced recycling in Tutorial 7)
     assertTrue(recycling7Total < recycling6Total,
-        "Tutorial 7 recycling total (" + recycling7Total + ") should be lower than Tutorial 6 recycling total (" +
-        recycling6Total + ") in 2035 due to enhanced R-600a recycling program in Tutorial 7");
+        "Tutorial 7 recycling total (" + recycling7Total + ") should be lower than Tutorial 6 recycling total ("
+        + recycling6Total + ") in 2035 due to enhanced R-600a recycling program in Tutorial 7");
   }
 }
