@@ -10,7 +10,6 @@
 package org.kigalisim.engine.recalc;
 
 import java.math.BigDecimal;
-import java.math.MathContext;
 import java.util.Optional;
 import org.kigalisim.engine.Engine;
 import org.kigalisim.engine.number.EngineNumber;

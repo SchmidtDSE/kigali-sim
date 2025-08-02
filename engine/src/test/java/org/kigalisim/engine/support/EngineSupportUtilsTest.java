@@ -71,7 +71,7 @@ class EngineSupportUtilsTest {
     StreamKeeper mockStreamKeeper = mock(StreamKeeper.class);
     UseKey mockScope = mock(UseKey.class);
     EngineNumber mockEngineNumber = mock(EngineNumber.class);
-    
+
     when(mockStreamKeeper.hasLastSpecifiedValue(mockScope, "sales")).thenReturn(true);
     when(mockStreamKeeper.getLastSpecifiedValue(mockScope, "sales")).thenReturn(mockEngineNumber);
     when(mockEngineNumber.hasEquipmentUnits()).thenReturn(true);
@@ -86,7 +86,7 @@ class EngineSupportUtilsTest {
     StreamKeeper mockStreamKeeper = mock(StreamKeeper.class);
     UseKey mockScope = mock(UseKey.class);
     EngineNumber mockEngineNumber = mock(EngineNumber.class);
-    
+
     when(mockStreamKeeper.hasLastSpecifiedValue(mockScope, "sales")).thenReturn(true);
     when(mockStreamKeeper.getLastSpecifiedValue(mockScope, "sales")).thenReturn(mockEngineNumber);
     when(mockEngineNumber.hasEquipmentUnits()).thenReturn(false);
@@ -100,7 +100,7 @@ class EngineSupportUtilsTest {
     // Arrange
     StreamKeeper mockStreamKeeper = mock(StreamKeeper.class);
     UseKey mockScope = mock(UseKey.class);
-    
+
     when(mockStreamKeeper.hasLastSpecifiedValue(mockScope, "sales")).thenReturn(false);
 
     // Act & Assert
@@ -112,7 +112,7 @@ class EngineSupportUtilsTest {
     // Arrange
     StreamKeeper mockStreamKeeper = mock(StreamKeeper.class);
     UseKey mockScope = mock(UseKey.class);
-    
+
     when(mockStreamKeeper.hasLastSpecifiedValue(mockScope, "sales")).thenReturn(true);
     when(mockStreamKeeper.getLastSpecifiedValue(mockScope, "sales")).thenReturn(null);
 
