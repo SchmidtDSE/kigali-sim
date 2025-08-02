@@ -30,6 +30,14 @@ This is being discussed in [#469](https://github.com/SchmidtDSE/kigali-sim/issue
 
 The following changes have been adopted and released.
 
+### Tutorial Downloads
+
+**Status:** Released August 1, 2025
+
+**Classification:** Enhancement
+
+We added download links to the guide so that users may get the qta files showing the completed work for each tutorial. These files are also automatically tested (run and results rechecked) ahead of every software update. See [#482](https://github.com/SchmidtDSE/kigali-sim/issues/482).
+
 ### Percent change with units fix
 
 **Status:** Released August 1, 2025
@@ -49,3 +57,11 @@ Note that a prior report on July 31 was modified after the issue was better unde
 **Classification:** Clarification
 
 We added end of life recycling after the [OEWG](https://ozone.unep.org/meetings/47th-meeting-open-ended-working-group-parties) demonstration based on user feedback. However, this introduced some complexities around time displacement, specifically if recycled material should be immediately available or if there is some delay between recycling collection and its actual re-use. We have simplified our original logic to have recycled material be available in the same year it is collected. While we recognize that both approaches may be valid and this may be an over-simplification for end of life recycling, its impact on policy evaluation is minimal because over the full multi-year duration of a simulation, the results are generally the same or show negligible differences. Therefore, the benefits of the simplification were deemed to outweigh the costs.
+
+### Shading on tabs
+
+**Status:** Released July 29, 2025
+
+**Classification:** Enhancement
+
+Note that this was queued to go to deployment so the release date may be approximate. To improve accessibility shading and a non-color (outline) indicator are both used to show which tab is currently active. This was done for usability and accessibility.
