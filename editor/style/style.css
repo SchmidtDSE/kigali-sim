@@ -883,3 +883,8 @@ dialog .checkbox-list label {
   font-weight: normal;
 }
 
+/* Hide up-to-date message by default in update dialog */
+#up-to-date-message {
+  display: none;
+}
+

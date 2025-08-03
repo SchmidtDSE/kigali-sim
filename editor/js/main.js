@@ -132,8 +132,8 @@ class TooltipPresenter {
     const self = this;
 
     self._welcomeCheckbox.checked = self._enabled;
-    self._footerButton.textContent = self._enabled ?
-      "Disable Tooltips" : "Enable Tooltips";
+    const footerText = self._enabled ? "Disable Tooltips" : "Enable Tooltips";
+    self._footerButton.textContent = footerText;
   }
 
   /**
@@ -852,16 +852,17 @@ class MainPresenter {
             const currentCode = self._codeEditorPresenter.getCode();
             self._localStorageKeeper.setSource(currentCode);
           },
-          !updateAvailable, // isUpToDate = true when no update available
+          !updateAvailable,
         );
       } catch (error) {
-        // Show dialog anyway on error, assuming up to date
+        // Show dialog anyway on error, assuming not up to date
+        console.log("Error checking for updates:", error);
         await self._updateUtil.showUpdateDialog(
           () => {
             const currentCode = self._codeEditorPresenter.getCode();
             self._localStorageKeeper.setSource(currentCode);
           },
-          true, // isUpToDate = true on error
+          false,
         );
       }
     });
