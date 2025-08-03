@@ -88,14 +88,21 @@ class UpdateUtil {
    *
    * @param {Function} [saveCallback] - Optional callback to explicitly save
    *     current state before reload
+   * @param {boolean} [isUpToDate] - Whether the user is already up to date
    * @returns {Promise<string>} Promise that resolves to 'reload' if user
    *     chooses to reload, 'continue' if user chooses to continue, or 'save_failed'
    *     if save callback fails. Never rejects.
    */
-  async showUpdateDialog(saveCallback = null) {
+  async showUpdateDialog(saveCallback = null, isUpToDate = false) {
     const self = this;
     return new Promise((resolve) => {
       const dialog = document.getElementById("update-notice-dialog");
+
+      // Show/hide up-to-date message based on update status
+      const upToDateMessage = dialog.querySelector("#up-to-date-message");
+      if (upToDateMessage) {
+        upToDateMessage.style.display = isUpToDate ? "block" : "none";
+      }
 
       // Set up event handlers
       const reloadButton = dialog.querySelector(".reload-button");
