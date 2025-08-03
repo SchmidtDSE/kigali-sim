@@ -133,7 +133,7 @@ class TooltipPresenter {
 
     self._welcomeCheckbox.checked = self._enabled;
     self._footerButton.textContent = self._enabled ?
-      "Disable Help Tooltips" : "Enable Help Tooltips";
+      "Disable Tooltips" : "Enable Tooltips";
   }
 
   /**
@@ -355,6 +355,7 @@ class MainPresenter {
     self._onCodeChange();
     self._setupFileButtons();
     self._setupStorageControls();
+    self._setupForceUpdateButton();
 
     // Initialize tooltip presenter for help tooltips
     self._tooltipPresenter = new TooltipPresenter(self._localStorageKeeper);
@@ -829,6 +830,41 @@ class MainPresenter {
     // Update file save button
     const saveButton = document.getElementById("save-file-button");
     saveButton.href = "data:text/qubectalk;charset=utf-8,";
+  }
+
+  /**
+   * Sets up the force update button event handler.
+   * @private
+   */
+  _setupForceUpdateButton() {
+    const self = this;
+    const forceUpdateButton = document.getElementById("force-update-button");
+
+    forceUpdateButton.addEventListener("click", async (event) => {
+      event.preventDefault();
+
+      try {
+        const updateAvailable = await self._updateUtil.checkForUpdates();
+
+        // Pass save callback and up-to-date status
+        await self._updateUtil.showUpdateDialog(
+          () => {
+            const currentCode = self._codeEditorPresenter.getCode();
+            self._localStorageKeeper.setSource(currentCode);
+          },
+          !updateAvailable, // isUpToDate = true when no update available
+        );
+      } catch (error) {
+        // Show dialog anyway on error, assuming up to date
+        await self._updateUtil.showUpdateDialog(
+          () => {
+            const currentCode = self._codeEditorPresenter.getCode();
+            self._localStorageKeeper.setSource(currentCode);
+          },
+          true, // isUpToDate = true on error
+        );
+      }
+    });
   }
 }
 
