@@ -34,6 +34,7 @@ public class EngineResultBuilder {
   private Optional<EngineNumber> populationNew;
   private Optional<EngineNumber> rechargeEmissions;
   private Optional<EngineNumber> eolEmissions;
+  private Optional<EngineNumber> initialChargeEmissions;
   private Optional<EngineNumber> energyConsumption;
   private Optional<EngineNumber> exportValue;
   private Optional<EngineNumber> exportConsumptionValue;
@@ -58,6 +59,7 @@ public class EngineResultBuilder {
     populationNew = Optional.empty();
     rechargeEmissions = Optional.empty();
     eolEmissions = Optional.empty();
+    initialChargeEmissions = Optional.empty();
     energyConsumption = Optional.empty();
     exportValue = Optional.empty();
     exportConsumptionValue = Optional.empty();
@@ -231,6 +233,17 @@ public class EngineResultBuilder {
   }
 
   /**
+   * Set the initial charge emissions value.
+   *
+   * @param initialChargeEmissions The greenhouse gas emissions from initial charge activities
+   * @return This builder for method chaining
+   */
+  public EngineResultBuilder setInitialChargeEmissions(EngineNumber initialChargeEmissions) {
+    this.initialChargeEmissions = Optional.of(initialChargeEmissions);
+    return this;
+  }
+
+  /**
    * Set the energy consumption value.
    *
    * @param energyConsumption The energy consumption value
@@ -298,6 +311,7 @@ public class EngineResultBuilder {
         populationNew.get(),
         rechargeEmissions.get(),
         eolEmissions.get(),
+        initialChargeEmissions.get(),
         energyConsumption.get(),
         exportValue.get(),
         exportConsumptionValue.get(),
@@ -326,6 +340,7 @@ public class EngineResultBuilder {
     checkValid(populationNew, "populationNew");
     checkValid(rechargeEmissions, "rechargeEmissions");
     checkValid(eolEmissions, "eolEmissions");
+    checkValid(initialChargeEmissions, "initialChargeEmissions");
     checkValid(energyConsumption, "energyConsumption");
     checkValid(exportValue, "exportValue");
     checkValid(exportConsumptionValue, "exportConsumptionValue");

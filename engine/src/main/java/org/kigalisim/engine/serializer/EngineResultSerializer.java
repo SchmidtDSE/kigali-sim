@@ -99,6 +99,10 @@ public class EngineResultSerializer {
     EngineNumber eolEmissions = engine.getStreamFor(useKey, "eolEmissions");
     builder.setEolEmissions(eolEmissions);
 
+    // Calculate initial charge emissions
+    EngineNumber initialChargeEmissions = calculateInitialChargeEmissions(useKey, unitConverter);
+    builder.setInitialChargeEmissions(initialChargeEmissions);
+
     // Get sales for offset calculation
     EngineNumber manufactureRaw = engine.getStreamFor(useKey, "domestic");
     EngineNumber importRaw = engine.getStreamFor(useKey, "import");
@@ -274,5 +278,75 @@ public class EngineResultSerializer {
     EngineNumber zeroConsumption = new EngineNumber(BigDecimal.ZERO, "tCO2e");
     TradeSupplement tradeSupplement = new TradeSupplement(value, consumption, population, zeroValue, zeroConsumption);
     builder.setTradeSupplement(tradeSupplement);
+  }
+
+  /**
+   * Calculate initial charge emissions for a given use key.
+   *
+   *
+   * <p>Initial charge emissions represent the GHG emissions associated with the
+   * initial substance charge in equipment when put into service, excluding
+   * recharge/servicing emissions. The calculation is:</p>
+   *
+   * <p>(domestic + import + export) - recharge, converted to tCO2e</p>
+   *
+   * @param useKey The UseKey containing application and substance information
+   * @param unitConverter The unit converter for calculations
+   * @return The initial charge emissions in tCO2e
+   */
+  private EngineNumber calculateInitialChargeEmissions(UseKey useKey, UnitConverter unitConverter) {
+    try {
+      // Get volume data from existing streams
+      EngineNumber domestic = engine.getStreamFor(useKey, "domestic");
+      EngineNumber importValue = engine.getStreamFor(useKey, "import");
+      EngineNumber exportValue = engine.getStreamFor(useKey, "export");
+      EngineNumber rechargeEmissions = engine.getStreamFor(useKey, "rechargeEmissions");
+
+      // Handle null values - return zero emissions if core data is missing
+      if (domestic == null || importValue == null || rechargeEmissions == null) {
+        return new EngineNumber(BigDecimal.ZERO, "tCO2e");
+      }
+
+      // Convert all values to kg for calculation
+      EngineNumber domesticKg = unitConverter.convert(domestic, "kg");
+      EngineNumber importKg = unitConverter.convert(importValue, "kg");
+
+      // Handle export - may be null if not defined
+      EngineNumber exportKg;
+      if (exportValue == null) {
+        exportKg = new EngineNumber(BigDecimal.ZERO, "kg");
+      } else {
+        exportKg = unitConverter.convert(exportValue, "kg");
+      }
+
+      // Convert recharge emissions back to kg to get volume
+      EngineNumber rechargeKg = unitConverter.convert(rechargeEmissions, "kg");
+
+      // Calculate initial charge volume: (domestic + import + export) - recharge
+      BigDecimal totalSales = domesticKg.getValue()
+          .add(importKg.getValue())
+          .add(exportKg.getValue());
+      BigDecimal initialChargeVolume = totalSales.subtract(rechargeKg.getValue());
+
+      // Ensure non-negative (if recharge > total sales, initial charge = 0)
+      if (initialChargeVolume.compareTo(BigDecimal.ZERO) < 0) {
+        initialChargeVolume = BigDecimal.ZERO;
+      }
+
+      // Convert to emissions using GHG intensity
+      EngineNumber volumeNumber = new EngineNumber(initialChargeVolume, "kg");
+
+      // Use existing consumption calculation logic
+      OverridingConverterStateGetter stateGetter =
+          new OverridingConverterStateGetter(this.stateGetter);
+      stateGetter.setVolume(volumeNumber);
+      UnitConverter emissionsConverter = new UnitConverter(stateGetter);
+
+      EngineNumber ghgIntensity = engine.getGhgIntensity(useKey);
+      return emissionsConverter.convert(ghgIntensity, "tCO2e");
+    } catch (Exception e) {
+      // If any calculation fails (e.g., missing substance/application), return zero
+      return new EngineNumber(BigDecimal.ZERO, "tCO2e");
+    }
   }
 }
