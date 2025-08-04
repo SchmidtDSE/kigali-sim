@@ -47,6 +47,9 @@ class EngineResult {
    *     from recharge activities.
    * @param {EngineNumber} eolEmissions - The greenhouse gas emissions from
    *     end-of-life equipment.
+   * @param {EngineNumber} initialChargeEmissions - The greenhouse gas emissions
+   *     from initial charge activities.
+   * @param {EngineNumber} energyConsumption - The energy consumption value.
    * @param {TradeSupplement} tradeSupplement - The supplemental trade data
    *     needed for attribution.
    */
@@ -68,6 +71,7 @@ class EngineResult {
     populationNew,
     rechargeEmissions,
     eolEmissions,
+    initialChargeEmissions,
     energyConsumption,
     tradeSupplement,
   ) {
@@ -89,6 +93,7 @@ class EngineResult {
     self._populationNew = populationNew;
     self._rechargeEmissions = rechargeEmissions;
     self._eolEmissions = eolEmissions;
+    self._initialChargeEmissions = initialChargeEmissions;
     self._energyConsumption = energyConsumption;
     self._tradeSupplement = tradeSupplement;
   }
@@ -279,6 +284,20 @@ class EngineResult {
   getEolEmissions() {
     const self = this;
     return self._eolEmissions;
+  }
+
+  /**
+   * Get the greenhouse gas emissions from initial charge activities.
+   *
+   * This is an informational metric representing the GHG potential of substance
+   * initially charged into equipment. Actual emissions occur later during recharge
+   * (leakage between servicings) or at end-of-life disposal.
+   *
+   * @returns {EngineNumber} The initial charge emissions value with units.
+   */
+  getInitialChargeEmissions() {
+    const self = this;
+    return self._initialChargeEmissions;
   }
 
   /**
@@ -526,6 +545,20 @@ class AttributeToExporterResult {
   getEolEmissions() {
     const self = this;
     return self._inner.getEolEmissions();
+  }
+
+  /**
+   * Get the greenhouse gas emissions from initial charge activities.
+   *
+   * This is an informational metric representing the GHG potential of substance
+   * initially charged into equipment. Actual emissions occur later during recharge
+   * (leakage between servicings) or at end-of-life disposal.
+   *
+   * @returns {EngineNumber} The initial charge emissions value in tCO2e or similar.
+   */
+  getInitialChargeEmissions() {
+    const self = this;
+    return self._inner.getInitialChargeEmissions();
   }
 
   /**
@@ -1042,6 +1075,8 @@ class AggregatedResult {
    *     activities.
    * @param {EngineNumber} eolEmissions - Emissions resulting from end-of-life
    *     equipment.
+   * @param {EngineNumber} initialChargeEmissions - Emissions resulting from
+   *     initial charge activities.
    * @param {EngineNumber} energyConsumtion - Equivalent energy consumption for
    *     activity specified.
    */
@@ -1058,6 +1093,7 @@ class AggregatedResult {
     populationNew,
     rechargeEmissions,
     eolEmissions,
+    initialChargeEmissions,
     energyConsumption,
   ) {
     const self = this;
@@ -1073,6 +1109,7 @@ class AggregatedResult {
     self._populationNew = populationNew;
     self._rechargeEmissions = rechargeEmissions;
     self._eolEmissions = eolEmissions;
+    self._initialChargeEmissions = initialChargeEmissions;
     self._energyConsumption = energyConsumption;
   }
 
@@ -1240,6 +1277,21 @@ class AggregatedResult {
   }
 
   /**
+   * Get the greenhouse gas emissions from initial charge activities.
+   *
+   * This is an informational metric representing the GHG potential of substance
+   * initially charged into equipment. Actual emissions occur later during recharge
+   * (leakage between servicings) or at end-of-life disposal.
+   *
+   * @returns {EngineNumber} The initial charge emissions value with units like
+   *     tCO2e.
+   */
+  getInitialChargeEmissions() {
+    const self = this;
+    return self._initialChargeEmissions;
+  }
+
+  /**
    * Get the total greenhouse gas emissions combining recharge and end-of-life emissions.
    *
    * @returns {EngineNumber} The combined emissions value with units like tCO2e.
@@ -1289,6 +1341,10 @@ class AggregatedResult {
       other.getRechargeEmissions(),
     );
     const eolEmissions = self._combineUnitValue(self.getEolEmissions(), other.getEolEmissions());
+    const initialChargeEmissions = self._combineUnitValue(
+      self.getInitialChargeEmissions(),
+      other.getInitialChargeEmissions(),
+    );
     const energyConsumption = self._combineUnitValue(
       self.getEnergyConsumption(),
       other.getEnergyConsumption(),
@@ -1307,6 +1363,7 @@ class AggregatedResult {
       populationNew,
       rechargeEmissions,
       eolEmissions,
+      initialChargeEmissions,
       energyConsumption,
     );
   }

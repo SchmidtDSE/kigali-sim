@@ -34,6 +34,7 @@ public class EngineResult {
   private final EngineNumber populationNew;
   private final EngineNumber rechargeEmissions;
   private final EngineNumber eolEmissions;
+  private final EngineNumber initialChargeEmissions;
   private final EngineNumber energyConsumption;
   private final EngineNumber exportValue;
   private final EngineNumber exportConsumptionValue;
@@ -57,6 +58,7 @@ public class EngineResult {
    * @param populationNew The amount of new equipment added this year
    * @param rechargeEmissions The greenhouse gas emissions from recharge activities
    * @param eolEmissions The greenhouse gas emissions from end-of-life equipment
+   * @param initialChargeEmissions The greenhouse gas emissions from initial charge activities
    * @param energyConsumption The energy consumption value
    * @param exportValue The value related to exports in volume like kg
    * @param exportConsumptionValue The export consumption value in tCO2e or equivalent
@@ -68,8 +70,9 @@ public class EngineResult {
                      EngineNumber importConsumptionValue, EngineNumber recycleConsumptionValue,
                      EngineNumber populationValue, EngineNumber populationNew,
                      EngineNumber rechargeEmissions, EngineNumber eolEmissions,
-                     EngineNumber energyConsumption, EngineNumber exportValue,
-                     EngineNumber exportConsumptionValue, TradeSupplement tradeSupplement) {
+                     EngineNumber initialChargeEmissions, EngineNumber energyConsumption,
+                     EngineNumber exportValue, EngineNumber exportConsumptionValue,
+                     TradeSupplement tradeSupplement) {
     this.application = application;
     this.substance = substance;
     this.year = year;
@@ -85,6 +88,7 @@ public class EngineResult {
     this.populationNew = populationNew;
     this.rechargeEmissions = rechargeEmissions;
     this.eolEmissions = eolEmissions;
+    this.initialChargeEmissions = initialChargeEmissions;
     this.energyConsumption = energyConsumption;
     this.exportValue = exportValue;
     this.exportConsumptionValue = exportConsumptionValue;
@@ -226,6 +230,19 @@ public class EngineResult {
    */
   public EngineNumber getEolEmissions() {
     return eolEmissions;
+  }
+
+  /**
+   * Get the greenhouse gas emissions from initial charge activities.
+   * 
+   * <p>This is an informational metric representing the GHG potential of substance
+   * initially charged into equipment. Actual emissions occur later during recharge
+   * (leakage between servicings) or at end-of-life disposal.</p>
+   *
+   * @return The initial charge emissions value with units
+   */
+  public EngineNumber getInitialChargeEmissions() {
+    return initialChargeEmissions;
   }
 
   /**

@@ -347,7 +347,7 @@ class ScorecardPresenter {
     self._customPresenters = {};
     self._customPresenters.emissions = new CustomMetricPresenter(
       "custom-emissions-dialog",
-      ["recharge", "eol", "export"],
+      ["recharge", "eol", "export", "initial charge"],
       (selection) => self._onCustomMetricChanged("emissions", selection),
       ".emissions-submetric",
     );
