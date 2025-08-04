@@ -36,7 +36,7 @@ The following changes have been adopted and released.
 
 **Classification:** Enhancement
 
-Enhanced the update functionality to give users more control over updates. The "Update" button in the footer now allows users to manually check for updates and force an update even when they're already running the latest version. The dialog now shows different messaging based on whether updates are available or if the user is already up to date. This provides users with more control over their update experience while maintaining the existing automatic update detection. See [#484](https://github.com/SchmidtDSE/kigali-sim/issues/484).
+Enhanced the update functionality to give users more control over updates. The "Update" button in the footer now allows users to manually check for updates and force an update even when they're already running the latest version. The dialog now shows different messaging based on whether updates are available or if the user is already up to date. See [#484](https://github.com/SchmidtDSE/kigali-sim/issues/484).
 
 ### Tutorial Downloads
 
