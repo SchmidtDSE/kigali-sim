@@ -33,17 +33,17 @@ function buildEngineStructTests() {
         1,
         new EngineNumber(100, "kg"),
         new EngineNumber(50, "kg"),
-        new EngineNumber(30, "kg"), // export value
+        new EngineNumber(30, "kg"),
         new EngineNumber(25, "kg"),
         new EngineNumber(200, "tCO2e"),
         new EngineNumber(100, "tCO2e"),
-        new EngineNumber(60, "tCO2e"), // export consumption
+        new EngineNumber(60, "tCO2e"),
         new EngineNumber(50, "tCO2e"),
         new EngineNumber(1000, "units"),
         new EngineNumber(100, "units"),
         new EngineNumber(300, "tCO2e"),
         new EngineNumber(150, "tCO2e"),
-        new EngineNumber(200, "tCO2e"), // initialChargeEmissions
+        new EngineNumber(200, "tCO2e"),
         new EngineNumber(500, "kWh"),
         tradeSupplement,
       );
