@@ -501,6 +501,7 @@ function buildEngineStructTests() {
         new EngineNumber(100, "units"), // populationNew
         new EngineNumber(300, "tCO2e"), // rechargeEmissions
         new EngineNumber(150, "tCO2e"), // eolEmissions
+        new EngineNumber(200, "tCO2e"), // initialChargeEmissions
         new EngineNumber(500, "kWh"), // energyConsumption
       );
     };
@@ -623,6 +624,7 @@ function buildEngineStructTests() {
         new EngineNumber(50, "units"), // populationNew
         new EngineNumber(150, "tCO2e"), // rechargeEmissions
         new EngineNumber(75, "tCO2e"), // eolEmissions
+        new EngineNumber(100, "tCO2e"), // initialChargeEmissions
         new EngineNumber(250, "kWh"), // energyConsumption
       );
 
