@@ -234,6 +234,10 @@ public class EngineResultBuilder {
 
   /**
    * Set the initial charge emissions value.
+   * 
+   * <p>This is an informational metric representing the GHG potential of substance
+   * initially charged into equipment. Actual emissions occur later during recharge
+   * (leakage between servicings) or at end-of-life disposal.
    *
    * @param initialChargeEmissions The greenhouse gas emissions from initial charge activities
    * @return This builder for method chaining
