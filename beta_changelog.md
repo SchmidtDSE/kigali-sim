@@ -26,6 +26,14 @@ Some prior modeling efforts outside of Kigali Sim would apply servicing (top up 
 
 This is being discussed in [#469](https://github.com/SchmidtDSE/kigali-sim/issues/469) and we welcome feedback. Note that the default behavior of Kigali Sim is to retire old equipment and then recharge from the remaining population but this can be modified through [QubecTalk](https://kigalisim.org/guide/tutorial_07.html) code (see the editor tab for advanced capabilities).
 
+### Initial charge / recharge consumption options
+
+**Status:** In discussion
+
+In addition to the emissions radio button, there is discussion of adding initial charge and recharge options under consumption. In some ways these are redundant to the emissions optinos but with more unit conversions though it causes potential confusion when setting custom metrics and in understanding trade attribution.
+
+This is being discussed in [#490](https://github.com/SchmidtDSE/kigali-sim/issues/490). Please let us know what you think!
+
 ## Completed
 
 The following changes have been adopted and released.
@@ -36,7 +44,7 @@ The following changes have been adopted and released.
 
 **Classification:** Feature
 
-Added option to select initial charge on emissions. This is technically future emissions as the substance will later appear in recharge and end of life (or recycling), options which are already available. However, this was user-requested and may help validate some calculations and help in some policy making contexts. See [#486](https://github.com/SchmidtDSE/kigali-sim/issues/486).
+Added option to select initial charge on emissions. This is technically future emissions as the substance will later appear in recharge and end of life (or recycling), options which are already available. However, this was user-requested and may help validate some calculations and help in some policy making contexts. See [#486](https://github.com/SchmidtDSE/kigali-sim/issues/486). Some smaller changes linked from that issue.
 
 ### Force Update Functionality
 
