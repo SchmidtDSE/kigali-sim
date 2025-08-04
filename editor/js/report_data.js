@@ -703,6 +703,10 @@ class ReportDataWrapper {
   /**
    * Get initial charge emissions value matching a given filter set.
    *
+   * This is an informational metric representing the GHG potential of substance
+   * initially charged into equipment. Actual emissions occur later during recharge
+   * (leakage between servicings) or at end-of-life disposal.
+   *
    * @param {FilterSet} filterSet - The filter criteria to apply.
    * @returns {EngineNumber|null} The initial charge emissions value, or null if no matching
    *     results.

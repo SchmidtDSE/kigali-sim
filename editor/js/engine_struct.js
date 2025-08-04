@@ -289,6 +289,10 @@ class EngineResult {
   /**
    * Get the greenhouse gas emissions from initial charge activities.
    *
+   * This is an informational metric representing the GHG potential of substance
+   * initially charged into equipment. Actual emissions occur later during recharge
+   * (leakage between servicings) or at end-of-life disposal.
+   *
    * @returns {EngineNumber} The initial charge emissions value with units.
    */
   getInitialChargeEmissions() {
@@ -545,6 +549,10 @@ class AttributeToExporterResult {
 
   /**
    * Get the greenhouse gas emissions from initial charge activities.
+   *
+   * This is an informational metric representing the GHG potential of substance
+   * initially charged into equipment. Actual emissions occur later during recharge
+   * (leakage between servicings) or at end-of-life disposal.
    *
    * @returns {EngineNumber} The initial charge emissions value in tCO2e or similar.
    */
@@ -1270,6 +1278,10 @@ class AggregatedResult {
 
   /**
    * Get the greenhouse gas emissions from initial charge activities.
+   *
+   * This is an informational metric representing the GHG potential of substance
+   * initially charged into equipment. Actual emissions occur later during recharge
+   * (leakage between servicings) or at end-of-life disposal.
    *
    * @returns {EngineNumber} The initial charge emissions value with units like
    *     tCO2e.
