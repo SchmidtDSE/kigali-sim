@@ -135,6 +135,7 @@ class ReportDataParser {
     const populationNew = parseEngineNumber(row["populationNew"], "units");
     const rechargeEmissions = parseEngineNumber(row["rechargeEmissions"], "tCO2e");
     const eolEmissions = parseEngineNumber(row["eolEmissions"], "tCO2e");
+    const initialChargeEmissions = parseEngineNumber(row["initialChargeEmissions"], "tCO2e");
     const energyConsumption = parseEngineNumber(row["energyConsumption"], "kwh");
 
     // Handle TradeSupplement fields from Java CSV
@@ -183,6 +184,7 @@ class ReportDataParser {
       populationNew,
       rechargeEmissions,
       eolEmissions,
+      initialChargeEmissions,
       energyConsumption,
       tradeSupplement,
     );
