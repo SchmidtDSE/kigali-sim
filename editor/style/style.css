@@ -82,11 +82,14 @@ dialog .instructions {
   font-size: 12px;
 }
 
+dialog .checkbox-list .future {
+  display: none;
+}
+
 dialog .contents .instructions {
   border-bottom: 1px dotted #C0C0C0;
   margin-top: 10px;
 }
-
 
 footer {
   margin-bottom: 20px;
