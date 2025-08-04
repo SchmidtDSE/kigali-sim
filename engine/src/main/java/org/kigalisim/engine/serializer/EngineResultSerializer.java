@@ -16,6 +16,7 @@ import org.kigalisim.engine.number.EngineNumber;
 import org.kigalisim.engine.number.UnitConverter;
 import org.kigalisim.engine.state.ConverterStateGetter;
 import org.kigalisim.engine.state.OverridingConverterStateGetter;
+import org.kigalisim.engine.state.StateGetter;
 import org.kigalisim.engine.state.UseKey;
 
 /**
@@ -281,39 +282,44 @@ public class EngineResultSerializer {
   }
 
   /**
-   * Calculate initial charge emissions for a given use key.
+   * Get stream value converted to kg, returning zero if stream is null.
    *
    * @param useKey The UseKey containing application and substance information
+   * @param streamName The name of the stream to retrieve
+   * @param unitConverter The unit converter for calculations
+   * @return The stream value in kg, or zero if null
+   */
+  private EngineNumber getInKg(UseKey useKey, String streamName, UnitConverter unitConverter) {
+    EngineNumber value = engine.getStreamFor(useKey, streamName);
+    if (value == null) {
+      return new EngineNumber(BigDecimal.ZERO, "kg");
+    }
+    return unitConverter.convert(value, "kg");
+  }
+
+  /**
+   * Calculate initial charge emissions for a given use key.
+   *
+   * @param useKey The UseKey containing application and substance information  
    * @param unitConverter The unit converter for calculations
    * @return The initial charge emissions in tCO2e
    */
   private EngineNumber calculateInitialChargeEmissions(UseKey useKey, UnitConverter unitConverter) {
     try {
-      // Get volume data from existing streams
-      EngineNumber domestic = engine.getStreamFor(useKey, "domestic");
-      EngineNumber importValue = engine.getStreamFor(useKey, "import");
-      EngineNumber exportValue = engine.getStreamFor(useKey, "export");
+      EngineNumber domesticKg = getInKg(useKey, "domestic", unitConverter);
+      EngineNumber importKg = getInKg(useKey, "import", unitConverter);
+      EngineNumber exportKg = getInKg(useKey, "export", unitConverter);
+
+      // Get recharge emissions (already in tCO2e) and convert to kg using clear converter
       EngineNumber rechargeEmissions = engine.getStreamFor(useKey, "rechargeEmissions");
-
-      // Handle null values - return zero emissions if core data is missing
-      if (domestic == null || importValue == null || rechargeEmissions == null) {
-        return new EngineNumber(BigDecimal.ZERO, "tCO2e");
-      }
-
-      // Convert all values to kg for calculation
-      EngineNumber domesticKg = unitConverter.convert(domestic, "kg");
-      EngineNumber importKg = unitConverter.convert(importValue, "kg");
-
-      // Handle export - may be null if not defined
-      EngineNumber exportKg;
-      if (exportValue == null) {
-        exportKg = new EngineNumber(BigDecimal.ZERO, "kg");
+      EngineNumber rechargeKg;
+      if (rechargeEmissions == null) {
+        rechargeKg = new EngineNumber(BigDecimal.ZERO, "kg");
       } else {
-        exportKg = unitConverter.convert(exportValue, "kg");
+        OverridingConverterStateGetter clearStateGetter = new OverridingConverterStateGetter(this.stateGetter);
+        UnitConverter clearUnitConverter = new UnitConverter(clearStateGetter);
+        rechargeKg = clearUnitConverter.convert(rechargeEmissions, "kg");
       }
-
-      // Convert recharge emissions back to kg to get volume
-      EngineNumber rechargeKg = unitConverter.convert(rechargeEmissions, "kg");
 
       // Calculate initial charge volume: (domestic + import + export) - recharge
       BigDecimal totalSales = domesticKg.getValue()
@@ -328,18 +334,18 @@ public class EngineResultSerializer {
 
       // Convert to emissions using GHG intensity
       EngineNumber volumeNumber = new EngineNumber(initialChargeVolume, "kg");
-
-      // Use existing consumption calculation logic
-      OverridingConverterStateGetter stateGetter =
-          new OverridingConverterStateGetter(this.stateGetter);
-      stateGetter.setVolume(volumeNumber);
+      StateGetter stateGetter = new OverridingConverterStateGetter(this.stateGetter);
+      ((OverridingConverterStateGetter) stateGetter).setVolume(volumeNumber);
       UnitConverter emissionsConverter = new UnitConverter(stateGetter);
 
       EngineNumber ghgIntensity = engine.getGhgIntensity(useKey);
       return emissionsConverter.convert(ghgIntensity, "tCO2e");
-    } catch (Exception e) {
-      // If any calculation fails (e.g., missing substance/application), return zero
-      return new EngineNumber(BigDecimal.ZERO, "tCO2e");
+    } catch (IllegalStateException e) {
+      // Return zero emissions for invalid application-substance pairs
+      if (e.getMessage() != null && e.getMessage().contains("Not a known application substance pair")) {
+        return new EngineNumber(BigDecimal.ZERO, "tCO2e");
+      }
+      throw e;
     }
   }
 }
