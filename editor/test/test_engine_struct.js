@@ -43,6 +43,7 @@ function buildEngineStructTests() {
         new EngineNumber(100, "units"),
         new EngineNumber(300, "tCO2e"),
         new EngineNumber(150, "tCO2e"),
+        new EngineNumber(200, "tCO2e"), // initialChargeEmissions
         new EngineNumber(500, "kWh"),
         tradeSupplement,
       );
@@ -152,6 +153,13 @@ function buildEngineStructTests() {
       assert.deepEqual(emissions.getUnits(), "tCO2e");
     });
 
+    QUnit.test("getInitialChargeEmissions", function (assert) {
+      const result = makeExample();
+      const emissions = result.getInitialChargeEmissions();
+      assert.closeTo(emissions.getValue(), 200, 0.0001);
+      assert.deepEqual(emissions.getUnits(), "tCO2e");
+    });
+
     QUnit.test("getEnergyConsumption", function (assert) {
       const result = makeExample();
       const energy = result.getEnergyConsumption();
@@ -205,6 +213,7 @@ function buildEngineStructTests() {
         new EngineNumber(100, "units"),
         new EngineNumber(300, "tCO2e"),
         new EngineNumber(150, "tCO2e"),
+        new EngineNumber(200, "tCO2e"), // initialChargeEmissions
         new EngineNumber(500, "kWh"),
         tradeSupplement,
       );

@@ -1067,7 +1067,7 @@ class AggregatedResult {
    *     activities.
    * @param {EngineNumber} eolEmissions - Emissions resulting from end-of-life
    *     equipment.
-   * @param {EngineNumber} initialChargeEmissions - Emissions resulting from 
+   * @param {EngineNumber} initialChargeEmissions - Emissions resulting from
    *     initial charge activities.
    * @param {EngineNumber} energyConsumtion - Equivalent energy consumption for
    *     activity specified.
