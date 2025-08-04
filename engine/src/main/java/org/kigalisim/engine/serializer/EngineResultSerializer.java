@@ -283,13 +283,6 @@ public class EngineResultSerializer {
   /**
    * Calculate initial charge emissions for a given use key.
    *
-   *
-   * <p>Initial charge emissions represent the GHG emissions associated with the
-   * initial substance charge in equipment when put into service, excluding
-   * recharge/servicing emissions. The calculation is:</p>
-   *
-   * <p>(domestic + import + export) - recharge, converted to tCO2e</p>
-   *
    * @param useKey The UseKey containing application and substance information
    * @param unitConverter The unit converter for calculations
    * @return The initial charge emissions in tCO2e
