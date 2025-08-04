@@ -100,7 +100,7 @@ public class EngineResultSerializer {
     builder.setEolEmissions(eolEmissions);
 
     // Calculate initial charge emissions
-    EngineNumber initialChargeEmissions = calculateInitialChargeEmissions(useKey, unitConverter);
+    EngineNumber initialChargeEmissions = calculateInitialChargeEmissions(useKey);
     builder.setInitialChargeEmissions(initialChargeEmissions);
 
     // Get sales for offset calculation
@@ -300,10 +300,9 @@ public class EngineResultSerializer {
    * Calculate initial charge emissions for a given use key.
    *
    * @param useKey The UseKey containing application and substance information  
-   * @param unitConverter The unit converter for calculations (unused - we create our own)
    * @return The initial charge emissions in tCO2e
    */
-  private EngineNumber calculateInitialChargeEmissions(UseKey useKey, UnitConverter unitConverter) {
+  private EngineNumber calculateInitialChargeEmissions(UseKey useKey) {
     // Create a properly-scoped unit converter for this specific UseKey
     OverridingConverterStateGetter scopedStateGetter = new OverridingConverterStateGetter(this.stateGetter);
     EngineNumber ghgIntensity = engine.getGhgIntensity(useKey);
