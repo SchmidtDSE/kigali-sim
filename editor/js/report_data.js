@@ -215,6 +215,10 @@ class ReportDataWrapper {
       strategyBuilder.setStrategy((x) => self.getExportEmissions(x));
       addEmissionsConversion(strategyBuilder);
 
+      strategyBuilder.setSubmetric("initial charge");
+      strategyBuilder.setStrategy((x) => self.getInitialChargeEmissions(x));
+      addEmissionsConversion(strategyBuilder);
+
       strategyBuilder.setSubmetric("custom");
       strategyBuilder.setStrategy((filterSet) => {
         const customDef = filterSet.getCustomDefinition("emissions");
@@ -225,6 +229,7 @@ class ReportDataWrapper {
           "recharge": (x) => self.getRechargeEmissions(x),
           "eol": (x) => self.getEolEmissions(x),
           "export": (x) => self.getExportEmissions(x),
+          "initial charge": (x) => self.getInitialChargeEmissions(x),
         };
 
         const results = customDef.map((submetric) => {
@@ -696,6 +701,23 @@ class ReportDataWrapper {
   }
 
   /**
+   * Get initial charge emissions value matching a given filter set.
+   *
+   * This is an informational metric representing the GHG potential of substance
+   * initially charged into equipment. Actual emissions occur later during recharge
+   * (leakage between servicings) or at end-of-life disposal.
+   *
+   * @param {FilterSet} filterSet - The filter criteria to apply.
+   * @returns {EngineNumber|null} The initial charge emissions value, or null if no matching
+   *     results.
+   */
+  getInitialChargeEmissions(filterSet) {
+    const self = this;
+    const aggregated = self._getAggregatedAfterFilter(filterSet);
+    return aggregated === null ? null : aggregated.getInitialChargeEmissions();
+  }
+
+  /**
    * Get sales value matching a given filter set.
    *
    * @param {FilterSet} filterSet - The filter criteria to apply.
@@ -839,6 +861,7 @@ class ReportDataWrapper {
           x.getPopulationNew(),
           x.getRechargeEmissions(),
           x.getEolEmissions(),
+          x.getInitialChargeEmissions(),
           x.getEnergyConsumption(),
         ),
     );

@@ -13,6 +13,7 @@ import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import org.kigalisim.engine.number.EngineNumber;
 import org.kigalisim.engine.number.UnitConverter;
@@ -57,8 +58,21 @@ public class StreamKeeper {
     return substances.keySet().stream()
         .map(key -> {
           String[] keyComponents = key.split("\t");
+          boolean correctKeyLength = keyComponents.length == 2;
+          if (!correctKeyLength) {
+            return null;
+          }
+
+          boolean firstKeyOk = keyComponents[0] != null && !keyComponents[0].trim().isEmpty();
+          boolean secondKeyOk = keyComponents[1] != null && !keyComponents[1].trim().isEmpty();
+          boolean bothKeysOk = firstKeyOk && secondKeyOk;
+          if (!bothKeysOk) {
+            return null;
+          }
+
           return new SubstanceInApplicationId(keyComponents[0], keyComponents[1]);
         })
+        .filter(Objects::nonNull)
         .collect(Collectors.toList());
   }
 

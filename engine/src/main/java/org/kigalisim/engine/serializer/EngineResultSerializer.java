@@ -99,6 +99,10 @@ public class EngineResultSerializer {
     EngineNumber eolEmissions = engine.getStreamFor(useKey, "eolEmissions");
     builder.setEolEmissions(eolEmissions);
 
+    // Calculate initial charge emissions
+    EngineNumber initialChargeEmissions = calculateInitialChargeEmissions(useKey);
+    builder.setInitialChargeEmissions(initialChargeEmissions);
+
     // Get sales for offset calculation
     EngineNumber manufactureRaw = engine.getStreamFor(useKey, "domestic");
     EngineNumber importRaw = engine.getStreamFor(useKey, "import");
@@ -274,5 +278,60 @@ public class EngineResultSerializer {
     EngineNumber zeroConsumption = new EngineNumber(BigDecimal.ZERO, "tCO2e");
     TradeSupplement tradeSupplement = new TradeSupplement(value, consumption, population, zeroValue, zeroConsumption);
     builder.setTradeSupplement(tradeSupplement);
+  }
+
+  /**
+   * Get stream value converted to kg, returning zero if stream is null.
+   *
+   * @param useKey The UseKey containing application and substance information
+   * @param streamName The name of the stream to retrieve
+   * @param unitConverter The unit converter for calculations
+   * @return The stream value in kg, or zero if null
+   */
+  private EngineNumber getInKg(UseKey useKey, String streamName, UnitConverter unitConverter) {
+    EngineNumber value = engine.getStreamFor(useKey, streamName);
+    if (value == null) {
+      return new EngineNumber(BigDecimal.ZERO, "kg");
+    }
+    return unitConverter.convert(value, "kg");
+  }
+
+  /**
+   * Calculate initial charge emissions for a given use key.
+   *
+   * @param useKey The UseKey containing application and substance information  
+   * @return The initial charge emissions in tCO2e
+   */
+  private EngineNumber calculateInitialChargeEmissions(UseKey useKey) {
+    // Create a properly-scoped unit converter for this specific UseKey
+    OverridingConverterStateGetter scopedStateGetter = new OverridingConverterStateGetter(this.stateGetter);
+    EngineNumber ghgIntensity = engine.getGhgIntensity(useKey);
+    scopedStateGetter.setSubstanceConsumption(ghgIntensity);
+    UnitConverter scopedConverter = new UnitConverter(scopedStateGetter);
+
+    EngineNumber domesticKg = getInKg(useKey, "domestic", scopedConverter);
+    EngineNumber importKg = getInKg(useKey, "import", scopedConverter);
+    EngineNumber exportKg = getInKg(useKey, "export", scopedConverter);
+    EngineNumber rechargeKg = getInKg(useKey, "rechargeEmissions", scopedConverter);
+
+    // Calculate initial charge volume: (domestic + import + export) - recharge
+    BigDecimal totalSales = domesticKg.getValue()
+        .add(importKg.getValue())
+        .add(exportKg.getValue());
+    BigDecimal initialChargeVolume = totalSales.subtract(rechargeKg.getValue());
+
+    // Ensure non-negative (if recharge > total sales, initial charge = 0)
+    if (initialChargeVolume.compareTo(BigDecimal.ZERO) < 0) {
+      initialChargeVolume = BigDecimal.ZERO;
+    }
+
+    // Convert to emissions using GHG intensity
+    EngineNumber volumeNumber = new EngineNumber(initialChargeVolume, "kg");
+    OverridingConverterStateGetter emissionsStateGetter = new OverridingConverterStateGetter(this.stateGetter);
+    emissionsStateGetter.setVolume(volumeNumber);
+    emissionsStateGetter.setSubstanceConsumption(ghgIntensity);
+    UnitConverter emissionsConverter = new UnitConverter(emissionsStateGetter);
+
+    return emissionsConverter.convert(ghgIntensity, "tCO2e");
   }
 }

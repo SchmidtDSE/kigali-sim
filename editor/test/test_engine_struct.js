@@ -33,16 +33,17 @@ function buildEngineStructTests() {
         1,
         new EngineNumber(100, "kg"),
         new EngineNumber(50, "kg"),
-        new EngineNumber(30, "kg"), // export value
+        new EngineNumber(30, "kg"),
         new EngineNumber(25, "kg"),
         new EngineNumber(200, "tCO2e"),
         new EngineNumber(100, "tCO2e"),
-        new EngineNumber(60, "tCO2e"), // export consumption
+        new EngineNumber(60, "tCO2e"),
         new EngineNumber(50, "tCO2e"),
         new EngineNumber(1000, "units"),
         new EngineNumber(100, "units"),
         new EngineNumber(300, "tCO2e"),
         new EngineNumber(150, "tCO2e"),
+        new EngineNumber(200, "tCO2e"),
         new EngineNumber(500, "kWh"),
         tradeSupplement,
       );
@@ -152,6 +153,13 @@ function buildEngineStructTests() {
       assert.deepEqual(emissions.getUnits(), "tCO2e");
     });
 
+    QUnit.test("getInitialChargeEmissions", function (assert) {
+      const result = makeExample();
+      const emissions = result.getInitialChargeEmissions();
+      assert.closeTo(emissions.getValue(), 200, 0.0001);
+      assert.deepEqual(emissions.getUnits(), "tCO2e");
+    });
+
     QUnit.test("getEnergyConsumption", function (assert) {
       const result = makeExample();
       const energy = result.getEnergyConsumption();
@@ -195,16 +203,17 @@ function buildEngineStructTests() {
         1,
         new EngineNumber(100, "kg"),
         new EngineNumber(50, "kg"),
-        new EngineNumber(30, "kg"), // export value
+        new EngineNumber(30, "kg"),
         new EngineNumber(25, "kg"),
         new EngineNumber(200, "tCO2e"),
         new EngineNumber(100, "tCO2e"),
-        new EngineNumber(60, "tCO2e"), // export consumption
+        new EngineNumber(60, "tCO2e"),
         new EngineNumber(50, "tCO2e"),
         new EngineNumber(1000, "units"),
         new EngineNumber(100, "units"),
         new EngineNumber(300, "tCO2e"),
         new EngineNumber(150, "tCO2e"),
+        new EngineNumber(200, "tCO2e"),
         new EngineNumber(500, "kWh"),
         tradeSupplement,
       );
@@ -501,6 +510,7 @@ function buildEngineStructTests() {
         new EngineNumber(100, "units"), // populationNew
         new EngineNumber(300, "tCO2e"), // rechargeEmissions
         new EngineNumber(150, "tCO2e"), // eolEmissions
+        new EngineNumber(200, "tCO2e"), // initialChargeEmissions
         new EngineNumber(500, "kWh"), // energyConsumption
       );
     };
@@ -623,6 +633,7 @@ function buildEngineStructTests() {
         new EngineNumber(50, "units"), // populationNew
         new EngineNumber(150, "tCO2e"), // rechargeEmissions
         new EngineNumber(75, "tCO2e"), // eolEmissions
+        new EngineNumber(100, "tCO2e"), // initialChargeEmissions
         new EngineNumber(250, "kWh"), // energyConsumption
       );
 
