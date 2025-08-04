@@ -30,6 +30,14 @@ This is being discussed in [#469](https://github.com/SchmidtDSE/kigali-sim/issue
 
 The following changes have been adopted and released.
 
+### Initial Charge Emissions Calculation
+
+**Status:** Released August 4, 2025
+
+**Classification:** Feature
+
+Added option to select initial charge on emissions. This is technically future emissions as the substance will later appear in recharge and end of life (or recycling), options which are already available. However, this was user-requested and may help validate some calculations and help in some policy making contexts. See [#486](https://github.com/SchmidtDSE/kigali-sim/issues/486).
+
 ### Force Update Functionality
 
 **Status:** Released August 3, 2025
