@@ -976,7 +976,6 @@
                       type="radio"
                       name="metric"
                       value="emissions"
-                      checked="checked"
                     />
                     Emissions</label
                   >
@@ -1024,6 +1023,7 @@
                       type="radio"
                       name="metric"
                       value="sales"
+                      checked="checked"
                     />
                     Consumption</label
                   >
@@ -1227,7 +1227,7 @@
                 name="importer-assignment-check"
                 id="importer-assignment-check"
               />
-              <label for="importer-assignment-check">Attribute initial charge to importer</label>
+              <label for="importer-assignment-check" data-tippy-content="Attribute the initial charge consumption volume to the importer if checked (useful for some policy / modeling contexts) and exporter if unchecked (typical Montreal Protocol accounting). Emissions are always shown as total (both importer and exporter together).">Attribute initial charge consumption to importer</label>
             </div>
 
             <div class="buttons-panel" ="export-panel">
