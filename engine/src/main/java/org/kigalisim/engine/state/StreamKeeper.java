@@ -58,12 +58,19 @@ public class StreamKeeper {
     return substances.keySet().stream()
         .map(key -> {
           String[] keyComponents = key.split("\t");
-          if (keyComponents.length == 2 
-              && keyComponents[0] != null && !keyComponents[0].trim().isEmpty()
-              && keyComponents[1] != null && !keyComponents[1].trim().isEmpty()) {
-            return new SubstanceInApplicationId(keyComponents[0], keyComponents[1]);
+          boolean correctKeyLength = keyComponents.length == 2;
+          if (!correctKeyLength) {
+            return null;
           }
-          return null;
+
+          boolean firstKeyOk = keyComponents[0] != null && !keyComponents[0].trim().isEmpty();
+          boolean secondKeyOk = keyComponents[1] != null && !keyComponents[1].trim().isEmpty();
+          boolean bothKeysOk = firstKeyOk && secondKeyOk;
+          if (!bothKeysOk) {
+            return null;
+          }
+
+          return new SubstanceInApplicationId(keyComponents[0], keyComponents[1]);
         })
         .filter(Objects::nonNull)
         .collect(Collectors.toList());
