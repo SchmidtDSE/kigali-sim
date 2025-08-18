@@ -285,12 +285,8 @@ class ResultsPresenter {
     self._filterSet = self._filterSet.getWithYear(Math.max(...years));
 
     // Update dimension labels based on current filter settings
-    const isEquipmentSelected = self._filterSet.getMetric() === "population";
-    if (isEquipmentSelected) {
-      self._dimensionManager.setSustancesLabel("Equipment Models");
-    } else {
-      self._dimensionManager.setSustancesLabel("Substances");
-    }
+    const labelText = self._dimensionManager._getSubstancesLabelForMetric(self._filterSet);
+    self._dimensionManager.setSustancesLabel(labelText);
 
     self._scorecardPresenter.showResults(self._results, self._filterSet);
     self._dimensionPresenter.showResults(self._results, self._filterSet);
@@ -388,7 +384,7 @@ class ScorecardPresenter {
 
       const emissionsScorecard = self._root.querySelector("#emissions-scorecard");
       const salesScorecard = self._root.querySelector("#sales-scorecard");
-      const equipmentScorecard = self._root.querySelector("#equipment-scorecard");
+      const equipmentScorecard = self._root.querySelector("#population-scorecard");
 
       const emissionsValue = results.getTotalEmissions(filterSet);
       const salesValue = results.getSales(filterSet);
@@ -521,7 +517,7 @@ class ScorecardPresenter {
 
     const emissionsScorecard = self._root.querySelector("#emissions-scorecard");
     const salesScorecard = self._root.querySelector("#sales-scorecard");
-    const equipmentScorecard = self._root.querySelector("#equipment-scorecard");
+    const equipmentScorecard = self._root.querySelector("#population-scorecard");
 
     const registerListener = (scorecard, family) => {
       const subMetricDropdown = scorecard.querySelector(".submetric-input");
