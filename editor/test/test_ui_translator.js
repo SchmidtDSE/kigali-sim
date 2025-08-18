@@ -289,39 +289,126 @@ function buildUiTranslatorTests() {
       },
     ]);
 
-    buildTest("renames application in policies successfully", "/examples/ui/policy_rename_test.qta", [
+    buildTest("renames application in policies successfully",
+      "/examples/ui/policy_rename_test.qta", [
+        (result, assert) => {
+          // Verify initial compilation succeeds
+          assert.ok(result.getIsCompatible());
+        },
+        (result, assert) => {
+          // Verify initial state - application exists in both main and policy
+          const mainApp = result.getApplication("original_app");
+          const policies = result.getPolicies();
+          const policyApp = policies[0].getApplications()[0];
+          assert.ok(mainApp !== null);
+          assert.equal(mainApp.getName(), "original_app");
+          assert.equal(policyApp.getName(), "original_app");
+        },
+        (result, assert) => {
+          // Perform rename and verify main application updated
+          result.renameApplication("original_app", "renamed_app");
+          const oldApp = result.getApplication("original_app");
+          const newApp = result.getApplication("renamed_app");
+          assert.ok(oldApp === null);
+          assert.ok(newApp !== null);
+          assert.equal(newApp.getName(), "renamed_app");
+        },
+        (result, assert) => {
+          // Verify policy application was also updated and code generation works
+          const policies = result.getPolicies();
+          const policyApp = policies[0].getApplications()[0];
+          assert.equal(policyApp.getName(), "renamed_app");
+
+          const code = result.toCode(0);
+          assert.ok(code.includes('define application "renamed_app"'));
+          assert.ok(code.includes('modify application "renamed_app"'));
+          assert.ok(!code.includes('application "original_app"'));
+        },
+      ]);
+
+    buildTest("renames substance in application successfully", "/examples/ui/policy_rename_test.qta", [
       (result, assert) => {
         // Verify initial compilation succeeds
         assert.ok(result.getIsCompatible());
       },
       (result, assert) => {
-        // Verify initial state - application exists in both main and policy
-        const mainApp = result.getApplication("original_app");
+        // Verify initial state
+        const app = result.getApplication("original_app");
+        const substance = app.getSubstance("test_substance");
+        assert.ok(substance !== null);
+        assert.equal(substance.getName(), "test_substance");
+        
         const policies = result.getPolicies();
         const policyApp = policies[0].getApplications()[0];
-        assert.ok(mainApp !== null);
-        assert.equal(mainApp.getName(), "original_app");
-        assert.equal(policyApp.getName(), "original_app");
+        const policySubstance = policyApp.getSubstance("test_substance");
+        assert.ok(policySubstance !== null);
       },
       (result, assert) => {
-        // Perform rename and verify main application updated
-        result.renameApplication("original_app", "renamed_app");
-        const oldApp = result.getApplication("original_app");
-        const newApp = result.getApplication("renamed_app");
-        assert.ok(oldApp === null);
-        assert.ok(newApp !== null);
-        assert.equal(newApp.getName(), "renamed_app");
+        // Perform rename and verify results
+        result.renameSubstanceInApplication("original_app", "test_substance", "renamed_substance");
+        
+        const app = result.getApplication("original_app");
+        const oldSubstance = app.getSubstance("test_substance");
+        const newSubstance = app.getSubstance("renamed_substance");
+        assert.ok(oldSubstance === null);
+        assert.ok(newSubstance !== null);
+        assert.equal(newSubstance.getName(), "renamed_substance");
       },
       (result, assert) => {
-        // Verify policy application was also updated and code generation works
+        // Verify policy was updated and code generation works
         const policies = result.getPolicies();
         const policyApp = policies[0].getApplications()[0];
-        assert.equal(policyApp.getName(), "renamed_app");
+        const policySubstance = policyApp.getSubstance("renamed_substance");
+        assert.ok(policySubstance !== null);
+        assert.equal(policySubstance.getName(), "renamed_substance");
         
         const code = result.toCode(0);
-        assert.ok(code.includes('define application "renamed_app"'));
-        assert.ok(code.includes('modify application "renamed_app"'));
-        assert.ok(!code.includes('application "original_app"'));
+        assert.ok(code.includes('uses substance "renamed_substance"'));
+        assert.ok(code.includes('modify substance "renamed_substance"'));
+        assert.ok(!code.includes('substance "test_substance"'));
+      },
+    ]);
+
+    buildTest("renames substance with equipment model successfully", "/examples/ui/substance_equipment_rename_test.qta", [
+      (result, assert) => {
+        // Verify initial compilation succeeds
+        assert.ok(result.getIsCompatible());
+      },
+      (result, assert) => {
+        // Verify initial state with equipment model
+        const app = result.getApplication("test_app");
+        const substance = app.getSubstance("HFC-134a - Refrigerator");
+        assert.ok(substance !== null);
+        assert.equal(substance.getName(), "HFC-134a - Refrigerator");
+        
+        const policies = result.getPolicies();
+        const policyApp = policies[0].getApplications()[0];
+        const policySubstance = policyApp.getSubstance("HFC-134a - Refrigerator");
+        assert.ok(policySubstance !== null);
+      },
+      (result, assert) => {
+        // Perform rename with equipment model and verify results
+        result.renameSubstanceInApplication("test_app", "HFC-134a - Refrigerator", "R-134a - Refrigerator");
+        
+        const app = result.getApplication("test_app");
+        const oldSubstance = app.getSubstance("HFC-134a - Refrigerator");
+        const newSubstance = app.getSubstance("R-134a - Refrigerator");
+        assert.ok(oldSubstance === null);
+        assert.ok(newSubstance !== null);
+        assert.equal(newSubstance.getName(), "R-134a - Refrigerator");
+      },
+      (result, assert) => {
+        // Verify policy was updated and code generation works with equipment model
+        const policies = result.getPolicies();
+        const policyApp = policies[0].getApplications()[0];
+        const policySubstance = policyApp.getSubstance("R-134a - Refrigerator");
+        assert.ok(policySubstance !== null);
+        assert.equal(policySubstance.getName(), "R-134a - Refrigerator");
+        
+        const code = result.toCode(0);
+        assert.ok(code.includes('uses substance "R-134a - Refrigerator"'));
+        assert.ok(code.includes('modify substance "R-134a - Refrigerator"'));
+        assert.ok(!code.includes('substance "HFC-134a - Refrigerator"'));
       },
     ]);
   });
