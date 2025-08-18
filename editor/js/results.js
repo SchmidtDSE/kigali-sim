@@ -143,11 +143,22 @@ class ResultsPresenter {
   }
 
   /**
+   * Set the filter set and update all UI components.
+   *
+   * @param {FilterSet} filterSet - The FilterSet to apply.
+   */
+  setFilter(filterSet) {
+    const self = this;
+    self._filterSet = filterSet;
+    self._onUpdateFilterSet(self._filterSet);
+  }
+
+  /**
    * Reset the filters active in the results section.
    */
   resetFilter() {
     const self = this;
-    self._filterSet = new FilterSet(
+    const defaultFilterSet = new FilterSet(
       null,
       null,
       null,
@@ -158,6 +169,7 @@ class ResultsPresenter {
       false,
       null,
     );
+    self.setFilter(defaultFilterSet);
   }
 
   /**
