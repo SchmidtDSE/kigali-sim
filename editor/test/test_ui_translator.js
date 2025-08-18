@@ -255,6 +255,39 @@ function buildUiTranslatorTests() {
         assert.equal(recycle.getDisplacing(), "sales");
       },
     ]);
+
+    buildTest("renames application successfully", "/examples/ui/rename_test.qta", [
+      (result, assert) => {
+        // Verify initial compilation succeeds
+        assert.ok(result.getIsCompatible());
+      },
+      (result, assert) => {
+        // Verify initial state
+        const app = result.getApplication("original_app");
+        assert.ok(app !== null);
+        assert.equal(app.getName(), "original_app");
+      },
+      (result, assert) => {
+        // Perform rename and verify results
+        result.renameApplication("original_app", "renamed_app");
+        const oldApp = result.getApplication("original_app");
+        const newApp = result.getApplication("renamed_app");
+        assert.ok(oldApp === null);
+        assert.ok(newApp !== null);
+        assert.equal(newApp.getName(), "renamed_app");
+      },
+      (result, assert) => {
+        // Verify substance preservation and code generation
+        const app = result.getApplication("renamed_app");
+        const substances = app.getSubstances();
+        assert.equal(substances.length, 1);
+        assert.equal(substances[0].getName(), "test_substance");
+        
+        const code = result.toCode(0);
+        assert.ok(code.includes('define application "renamed_app"'));
+        assert.ok(!code.includes('define application "original_app"'));
+      }
+    ]);
   });
 }
 
