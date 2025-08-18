@@ -81,20 +81,32 @@ public class EngineResultSerializer {
     EngineNumber recycleValue = unitConverter.convert(recycleRaw, "kg");
     builder.setRecycleValue(recycleValue);
 
-    // Get total energy consumption - energy stream no longer calculated, default to 0 kwh
+    // Calculate energy consumption from equipment population
     EngineNumber energyConsumptionValue;
     try {
-      energyConsumptionValue = engine.getStreamFor(useKey, "energy");
-      if (energyConsumptionValue == null) {
+      // Get equipment population
+      EngineNumber populationValue = engine.getStreamFor(useKey, "equipment");
+      // Get energy intensity
+      EngineNumber energyIntensity = engine.getEqualsEnergyIntensityFor(useKey);
+      
+      if (populationValue != null && energyIntensity != null) {
+        // Set up UnitConverter with energy intensity for conversion
+        OverridingConverterStateGetter energyStateGetter = new OverridingConverterStateGetter(stateGetter);
+        energyStateGetter.setEnergyIntensity(energyIntensity);
+        UnitConverter energyUnitConverter = new UnitConverter(energyStateGetter);
+        
+        // Convert population to energy consumption
+        energyConsumptionValue = energyUnitConverter.convert(populationValue, "kwh");
+      } else {
         energyConsumptionValue = new EngineNumber(BigDecimal.ZERO, "kwh");
       }
-    } catch (IllegalStateException e) {
-      // Energy stream not found - this is expected after removing energy stream calculation
+    } catch (Exception e) {
+      // Handle any conversion errors by defaulting to 0 kwh
       energyConsumptionValue = new EngineNumber(BigDecimal.ZERO, "kwh");
     }
     builder.setEnergyConsumption(energyConsumptionValue);
 
-    // Get emissions
+    // Get population metrics
     EngineNumber populationValue = engine.getStreamFor(useKey, "equipment");
     builder.setPopulationValue(populationValue);
 

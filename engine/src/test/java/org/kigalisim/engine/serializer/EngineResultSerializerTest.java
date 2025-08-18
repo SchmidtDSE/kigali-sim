@@ -173,9 +173,9 @@ public class EngineResultSerializerTest {
      */
     @Test
     public void testGetsEnergyConsumption() {
-      // Expected: 0 kwh when energy stream is null (no energy calculation)
-      assertEquals(0, result.getEnergyConsumption().getValue().compareTo(BigDecimal.valueOf(0)),
-          "Energy consumption should be 0 kwh when energy stream is absent");
+      // Expected: 1000 units * 5 kwh/unit = 5000 kwh (population * energy intensity)
+      assertEquals(0, result.getEnergyConsumption().getValue().compareTo(BigDecimal.valueOf(5000)),
+          "Energy consumption should be 5000 kwh (1000 units * 5 kwh/unit)");
       assertEquals("kwh", result.getEnergyConsumption().getUnits(),
           "Energy consumption units should be kwh");
     }
@@ -269,7 +269,7 @@ public class EngineResultSerializerTest {
     EngineNumber initialChargeImport = new EngineNumber(200, "kg / unit");
     EngineNumber initialChargeDomestic = new EngineNumber(150, "kg / unit");
     EngineNumber recycling = new EngineNumber(10, "mt");
-    EngineNumber energyIntensity = new EngineNumber(5, "kwh / kg");
+    EngineNumber energyIntensity = new EngineNumber(5, "kwh / unit");
     EngineNumber priorEquipment = new EngineNumber(1000, "units");
     EngineNumber eolEmissions = new EngineNumber(100, "tCO2e");
 
@@ -341,6 +341,14 @@ public class EngineResultSerializerTest {
 
     // Configure energy intensity
     when(engine.getEqualsEnergyIntensity()).thenReturn(energyIntensity);
+    when(engine.getEqualsEnergyIntensityFor(any(UseKey.class))).thenAnswer(invocation -> {
+      UseKey useKey = invocation.getArgument(0);
+      if ("commercialRefrigeration".equals(useKey.getApplication())
+          && "HFC-134a".equals(useKey.getSubstance())) {
+        return energyIntensity;
+      }
+      return null;
+    });
 
     // Configure scenario name and trial number
     when(engine.getScenarioName()).thenReturn("Test Scenario");
@@ -366,7 +374,7 @@ public class EngineResultSerializerTest {
     EngineNumber initialChargeImport = new EngineNumber(200, "kg / unit");
     EngineNumber initialChargeDomestic = new EngineNumber(150, "kg / unit");
     EngineNumber recycling = new EngineNumber(10, "mt");
-    EngineNumber energyIntensity = new EngineNumber(5, "kwh / kg");
+    EngineNumber energyIntensity = new EngineNumber(5, "kwh / unit");
     EngineNumber priorEquipment = new EngineNumber(1000, "units");
     EngineNumber eolEmissions = new EngineNumber(100, "tCO2e");
 
@@ -438,6 +446,14 @@ public class EngineResultSerializerTest {
 
     // Configure energy intensity
     when(engine.getEqualsEnergyIntensity()).thenReturn(energyIntensity);
+    when(engine.getEqualsEnergyIntensityFor(any(UseKey.class))).thenAnswer(invocation -> {
+      UseKey useKey = invocation.getArgument(0);
+      if ("commercialRefrigeration".equals(useKey.getApplication())
+          && "HFC-134a".equals(useKey.getSubstance())) {
+        return energyIntensity;
+      }
+      return null;
+    });
 
     // Configure scenario name and trial number
     when(engine.getScenarioName()).thenReturn("Test Scenario");
