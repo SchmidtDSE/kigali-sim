@@ -56,11 +56,5 @@ public class ConsumptionRecalcStrategy implements RecalcStrategy {
     calculator.setStreamName("consumption");
     calculator.execute(target);
 
-    // Get energy intensity and calculate energy
-    calculator = new ConsumptionCalculator();
-    EngineNumber energyIntensity = streamKeeper.getEnergyIntensity(scopeEffective);
-    calculator.setConsumptionRaw(energyIntensity);
-    calculator.setStreamName("energy");
-    calculator.execute(target);
   }
 }

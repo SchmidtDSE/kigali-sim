@@ -81,10 +81,15 @@ public class EngineResultSerializer {
     EngineNumber recycleValue = unitConverter.convert(recycleRaw, "kg");
     builder.setRecycleValue(recycleValue);
 
-    // Get total energy consumption
-    EngineNumber energyConsumptionValue = engine.getStreamFor(useKey, "energy");
-    // Default to 0 kwh if energy stream is not calculated (consistent with JS version)
-    if (energyConsumptionValue == null) {
+    // Get total energy consumption - energy stream no longer calculated, default to 0 kwh
+    EngineNumber energyConsumptionValue;
+    try {
+      energyConsumptionValue = engine.getStreamFor(useKey, "energy");
+      if (energyConsumptionValue == null) {
+        energyConsumptionValue = new EngineNumber(BigDecimal.ZERO, "kwh");
+      }
+    } catch (IllegalStateException e) {
+      // Energy stream not found - this is expected after removing energy stream calculation
       energyConsumptionValue = new EngineNumber(BigDecimal.ZERO, "kwh");
     }
     builder.setEnergyConsumption(energyConsumptionValue);

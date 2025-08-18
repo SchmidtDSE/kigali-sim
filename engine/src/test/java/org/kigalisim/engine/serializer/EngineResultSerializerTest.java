@@ -173,11 +173,11 @@ public class EngineResultSerializerTest {
      */
     @Test
     public void testGetsEnergyConsumption() {
-      // Expected: 5 kwh / kg
-      assertEquals(0, result.getEnergyConsumption().getValue().compareTo(BigDecimal.valueOf(5)),
-          "Energy consumption should be 5 kwh / kg");
-      assertEquals("kwh / kg", result.getEnergyConsumption().getUnits(),
-          "Energy consumption units should be kwh / kg");
+      // Expected: 0 kwh when energy stream is null (no energy calculation)
+      assertEquals(0, result.getEnergyConsumption().getValue().compareTo(BigDecimal.valueOf(0)),
+          "Energy consumption should be 0 kwh when energy stream is absent");
+      assertEquals("kwh", result.getEnergyConsumption().getUnits(),
+          "Energy consumption units should be kwh");
     }
   }
 
@@ -287,7 +287,7 @@ public class EngineResultSerializerTest {
           case "recycle": return recycling;
           case "recycleRecharge": return new EngineNumber(5, "mt"); // Half of total recycling
           case "recycleEol": return new EngineNumber(5, "mt"); // Half of total recycling
-          case "energy": return energyIntensity;
+          case "energy": return null;
           case "equipment": return priorEquipment;
           case "newEquipment": return priorEquipment;
           case "rechargeEmissions": return recharge;
@@ -384,7 +384,7 @@ public class EngineResultSerializerTest {
           case "recycle": return recycling;
           case "recycleRecharge": return new EngineNumber(5, "mt"); // Half of total recycling
           case "recycleEol": return new EngineNumber(5, "mt"); // Half of total recycling
-          case "energy": return energyIntensity;
+          case "energy": return null;
           case "equipment": return priorEquipment;
           case "newEquipment": return priorEquipment;
           case "rechargeEmissions": return recharge;
