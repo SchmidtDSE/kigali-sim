@@ -282,11 +282,47 @@ function buildUiTranslatorTests() {
         const substances = app.getSubstances();
         assert.equal(substances.length, 1);
         assert.equal(substances[0].getName(), "test_substance");
-        
+
         const code = result.toCode(0);
         assert.ok(code.includes('define application "renamed_app"'));
         assert.ok(!code.includes('define application "original_app"'));
-      }
+      },
+    ]);
+
+    buildTest("renames application in policies successfully", "/examples/ui/policy_rename_test.qta", [
+      (result, assert) => {
+        // Verify initial compilation succeeds
+        assert.ok(result.getIsCompatible());
+      },
+      (result, assert) => {
+        // Verify initial state - application exists in both main and policy
+        const mainApp = result.getApplication("original_app");
+        const policies = result.getPolicies();
+        const policyApp = policies[0].getApplications()[0];
+        assert.ok(mainApp !== null);
+        assert.equal(mainApp.getName(), "original_app");
+        assert.equal(policyApp.getName(), "original_app");
+      },
+      (result, assert) => {
+        // Perform rename and verify main application updated
+        result.renameApplication("original_app", "renamed_app");
+        const oldApp = result.getApplication("original_app");
+        const newApp = result.getApplication("renamed_app");
+        assert.ok(oldApp === null);
+        assert.ok(newApp !== null);
+        assert.equal(newApp.getName(), "renamed_app");
+      },
+      (result, assert) => {
+        // Verify policy application was also updated and code generation works
+        const policies = result.getPolicies();
+        const policyApp = policies[0].getApplications()[0];
+        assert.equal(policyApp.getName(), "renamed_app");
+        
+        const code = result.toCode(0);
+        assert.ok(code.includes('define application "renamed_app"'));
+        assert.ok(code.includes('modify application "renamed_app"'));
+        assert.ok(!code.includes('application "original_app"'));
+      },
     ]);
   });
 }

@@ -233,6 +233,12 @@ class Program {
     const self = this;
     const priorApplications = self._applications.filter((x) => x.getName() === oldName);
     priorApplications.forEach((x) => x.rename(newName));
+
+    // Update applications within policies
+    self._policies.forEach((policy) => {
+      const policyApplications = policy.getApplications().filter((x) => x.getName() === oldName);
+      policyApplications.forEach((x) => x.rename(newName));
+    });
   }
 
   /**
