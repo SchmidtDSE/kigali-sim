@@ -89,13 +89,13 @@ public class EngineResultSerializer {
     try {
       // Get energy intensity
       EngineNumber energyIntensity = engine.getEqualsEnergyIntensityFor(useKey);
-      
+
       if (populationValue != null && energyIntensity != null) {
         // Set up UnitConverter with energy intensity for conversion
         OverridingConverterStateGetter energyStateGetter = new OverridingConverterStateGetter(stateGetter);
         energyStateGetter.setEnergyIntensity(energyIntensity);
         UnitConverter energyUnitConverter = new UnitConverter(energyStateGetter);
-        
+
         // Convert population to energy consumption
         energyConsumptionValue = energyUnitConverter.convert(populationValue, "kwh");
       } else {
@@ -315,7 +315,7 @@ public class EngineResultSerializer {
   /**
    * Calculate initial charge emissions for a given use key.
    *
-   * @param useKey The UseKey containing application and substance information  
+   * @param useKey The UseKey containing application and substance information
    * @return The initial charge emissions in tCO2e
    */
   private EngineNumber calculateInitialChargeEmissions(UseKey useKey) {
