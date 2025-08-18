@@ -80,7 +80,7 @@ public class EnergyLiveTests {
     // Assert second derivative is negative (rate of increase is slowing)
     // The year 9-10 difference should be smaller than year 1-2 difference
     assertTrue(differenceYear9To10 < differenceYear1To2,
-        "Rate of energy consumption increase should be slowing (second derivative negative). " +
-        "Year 1-2 difference: " + differenceYear1To2 + ", Year 9-10 difference: " + differenceYear9To10);
+        "Rate of energy consumption increase should be slowing (second derivative negative). "
+        + "Year 1-2 difference: " + differenceYear1To2 + ", Year 9-10 difference: " + differenceYear9To10);
   }
 }
