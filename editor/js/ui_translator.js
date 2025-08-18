@@ -250,17 +250,21 @@ class Program {
    */
   renameSubstanceInApplication(applicationName, oldSubstanceName, newSubstanceName) {
     const self = this;
-    
+
     // Update substances in main applications
-    const targetApplications = self._applications.filter((x) => x.getName() === applicationName);
+    const targetApplications = self._applications.filter(
+      (x) => x.getName() === applicationName,
+    );
     targetApplications.forEach((app) => {
       const substances = app.getSubstances().filter((x) => x.getName() === oldSubstanceName);
       substances.forEach((x) => x.rename(newSubstanceName));
     });
-    
+
     // Update substances within policies for the same application
     self._policies.forEach((policy) => {
-      const policyApplications = policy.getApplications().filter((x) => x.getName() === applicationName);
+      const policyApplications = policy.getApplications().filter(
+        (x) => x.getName() === applicationName,
+      );
       policyApplications.forEach((app) => {
         const substances = app.getSubstances().filter((x) => x.getName() === oldSubstanceName);
         substances.forEach((x) => x.rename(newSubstanceName));
