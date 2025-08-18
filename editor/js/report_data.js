@@ -416,15 +416,51 @@ class ReportDataWrapper {
         strategyBuilder.add();
       };
 
+      const makeForEnergyUnits = (strategyBuilder) => {
+        strategyBuilder.setStrategy((x) => self.getEnergyConsumption(x));
+
+        const normalizeEnergyUnits = (units) => {
+          return units.replace(" / year", "").replace(" / yr", "");
+        };
+
+        const getKwhYr = (value) => {
+          const normalizedUnits = normalizeEnergyUnits(value.getUnits());
+          if (normalizedUnits !== "kwh") {
+            throw "Unexpected energy units: " + value.getUnits();
+          }
+          return new EngineNumber(value.getValue(), "kwh / yr");
+        };
+
+        strategyBuilder.setUnits("kwh / year");
+        strategyBuilder.setTransformation(getKwhYr);
+        strategyBuilder.add();
+
+        strategyBuilder.setUnits("mwh / year");
+        strategyBuilder.setTransformation((value) => {
+          const kwhValue = getKwhYr(value);
+          return new EngineNumber(kwhValue.getValue() / 1000, "mwh / yr");
+        });
+        strategyBuilder.add();
+
+        strategyBuilder.setUnits("gwh / year");
+        strategyBuilder.setTransformation((value) => {
+          const kwhValue = getKwhYr(value);
+          return new EngineNumber(kwhValue.getValue() / 1000000, "gwh / yr");
+        });
+        strategyBuilder.add();
+      };
+
       strategyBuilder.setMetric("population");
 
       strategyBuilder.setSubmetric("all");
       strategyBuilder.setStrategy((x) => self.getPopulation(x));
       makeForThousandAndMillion(strategyBuilder);
+      makeForEnergyUnits(strategyBuilder);
 
       strategyBuilder.setSubmetric("new");
       strategyBuilder.setStrategy((x) => self.getPopulationNew(x));
       makeForThousandAndMillion(strategyBuilder);
+      makeForEnergyUnits(strategyBuilder);
     };
 
     addEmissionsStrategies(strategyBuilder);

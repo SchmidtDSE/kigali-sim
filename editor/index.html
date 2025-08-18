@@ -1066,7 +1066,7 @@
 
               <div class="scorecard inactive" id="equipment-scorecard">
                 <div class="label">
-                  <label for="population-radio" tabindex="0" data-tippy-content="Population information for all equipment in service within the simulated country."
+                  <label for="population-radio" tabindex="0" data-tippy-content="Population and energy consumption for all equipment in service within the simulated country."
                     ><input
                       id="population-radio"
                       class="metric-radio"
@@ -1093,11 +1093,14 @@
                     <select
                       name="sales-units"
                       class="sales-units units-input"
-                      aria-label="Units to use in display of sales / consumption"
+                      aria-label="Units to use in display of equipment population or energy consumption"
                     >
                       <option value="units">units</option>
                       <option value="thousand units">thousand units</option>
                       <option value="million units" selected>million units</option>
+                      <option value="kwh / year">kWh / year</option>
+                      <option value="mwh / year">MWh / year</option>
+                      <option value="gwh / year">GWh / year</option>
                     </select>
                   </div>
                 </div>
