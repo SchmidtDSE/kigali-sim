@@ -416,6 +416,28 @@ class ScorecardPresenter {
       self._updateCard(salesScorecard, salesMt, currentYear, salesSelected, hideVal);
       self._updateCard(equipmentScorecard, millionEqipment, currentYear,
         equipmentSelected, hideVal);
+
+      // Update dropdown values to match FilterSet
+      const metricFamily = self._filterSet.getMetric();
+      const subMetric = self._filterSet.getSubMetric();
+      const units = self._filterSet.getUnits();
+
+      if (metricFamily === "emissions") {
+        const emissionsSubmetricDropdown = emissionsScorecard.querySelector(".emissions-submetric");
+        const emissionsUnitsDropdown = emissionsScorecard.querySelector(".emissions-units");
+        if (emissionsSubmetricDropdown && subMetric) emissionsSubmetricDropdown.value = subMetric;
+        if (emissionsUnitsDropdown && units) emissionsUnitsDropdown.value = units;
+      } else if (metricFamily === "sales") {
+        const salesSubmetricDropdown = salesScorecard.querySelector(".sales-submetric");
+        const salesUnitsDropdown = salesScorecard.querySelector(".sales-units");
+        if (salesSubmetricDropdown && subMetric) salesSubmetricDropdown.value = subMetric;
+        if (salesUnitsDropdown && units) salesUnitsDropdown.value = units;
+      } else if (metricFamily === "population") {
+        const equipmentSubmetricDropdown = equipmentScorecard.querySelector(".equipment-submetric");
+        const equipmentUnitsDropdown = equipmentScorecard.querySelector(".equipment-units");
+        if (equipmentSubmetricDropdown && subMetric) equipmentSubmetricDropdown.value = subMetric;
+        if (equipmentUnitsDropdown && units) equipmentUnitsDropdown.value = units;
+      }
     };
 
     // Execute with a catch for invalid user selections.
