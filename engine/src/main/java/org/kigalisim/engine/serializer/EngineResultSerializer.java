@@ -81,11 +81,12 @@ public class EngineResultSerializer {
     EngineNumber recycleValue = unitConverter.convert(recycleRaw, "kg");
     builder.setRecycleValue(recycleValue);
 
+    // Get population metrics
+    EngineNumber populationValue = engine.getStreamFor(useKey, "equipment");
+
     // Calculate energy consumption from equipment population
     EngineNumber energyConsumptionValue;
     try {
-      // Get equipment population
-      EngineNumber populationValue = engine.getStreamFor(useKey, "equipment");
       // Get energy intensity
       EngineNumber energyIntensity = engine.getEqualsEnergyIntensityFor(useKey);
       
@@ -106,8 +107,6 @@ public class EngineResultSerializer {
     }
     builder.setEnergyConsumption(energyConsumptionValue);
 
-    // Get population metrics
-    EngineNumber populationValue = engine.getStreamFor(useKey, "equipment");
     builder.setPopulationValue(populationValue);
 
     EngineNumber populationNew = engine.getStreamFor(useKey, "newEquipment");

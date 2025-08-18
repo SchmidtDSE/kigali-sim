@@ -115,13 +115,11 @@ public class BasicLiveTests {
     assertEquals("kg", result.getDomestic().getUnits(),
         "Domestic units should be kg");
 
-    // TODO: Re-enable energy consumption test after Component 2 implementation
-    // Component 1 removed energy stream calculation, Component 2 will implement new approach
     // Check energy consumption
-    // assertEquals(500.0, result.getEnergyConsumption().getValue().doubleValue(), 0.0001,
-    //     "Energy consumption should be 500 kwh");
-    // assertEquals("kwh", result.getEnergyConsumption().getUnits(),
-    //     "Energy consumption units should be kwh");
+    assertEquals(500.0, result.getEnergyConsumption().getValue().doubleValue(), 0.0001,
+        "Energy consumption should be 500 kwh");
+    assertEquals("kwh", result.getEnergyConsumption().getUnits(),
+        "Energy consumption units should be kwh");
   }
 
   /**
@@ -375,13 +373,11 @@ public class BasicLiveTests {
     EngineResult result = LiveTestsUtil.getResult(resultsList.stream(), 1, "test", "test");
     assertNotNull(result, "Should have result for test/test in year 1");
 
-    // TODO: Re-enable energy consumption test after Component 2 implementation
-    // Component 1 removed energy stream calculation, Component 2 will implement new approach
     // Check energy consumption
-    // assertEquals(500.0, result.getEnergyConsumption().getValue().doubleValue(), 0.0001,
-    //     "Energy consumption should be 500 kwh");
-    // assertEquals("kwh", result.getEnergyConsumption().getUnits(),
-    //     "Energy consumption units should be kwh");
+    assertEquals(500.0, result.getEnergyConsumption().getValue().doubleValue(), 0.0001,
+        "Energy consumption should be 500 kwh");
+    assertEquals("kwh", result.getEnergyConsumption().getUnits(),
+        "Energy consumption units should be kwh");
   }
 
   /**
