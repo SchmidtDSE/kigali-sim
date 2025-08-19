@@ -350,6 +350,9 @@ public class StreamKeeper {
       parameterization.resetStateAtTimestep();
     }
 
+    // Redistribute recycling back to sales streams before clearing to prevent cross-year deficit
+    redistributeRecyclingToSales();
+
     // Reset recycling streams at year boundary to prevent stale values
     // from affecting subsequent cap operations
     for (String key : substances.keySet()) {
@@ -1214,6 +1217,81 @@ public class StreamKeeper {
 
     // Recycling does not apply cross-substance displacement
     return recycledKg;
+  }
+
+  /**
+   * Redistribute recycling amounts back to sales streams before year transition.
+   *
+   * <p>This method addresses the cross-year state carryover issue where recycling
+   * correctly displaces virgin material in Year N, but the reduced virgin sales
+   * baseline incorrectly carries forward to Year N+1, creating cumulative deficit.</p>
+   *
+   * <p>This fix is only applied to volume-based sales scenarios (where "sales" was set directly)
+   * rather than stream-specific scenarios (where "import" or "domestic" were set individually).
+   * Stream-specific scenarios should maintain their existing behavior where recycling reduces
+   * equipment needs.</p>
+   */
+  private void redistributeRecyclingToSales() {
+    for (String key : substances.keySet()) {
+      String[] keyPieces = key.split("\t");
+      String application = keyPieces[0];
+      String substance = keyPieces[1];
+
+      SimpleUseKey useKey = new SimpleUseKey(application, substance);
+
+      // Skip if no streams are enabled (nothing to redistribute to)
+      if (!hasStreamsEnabled(useKey)) {
+        continue;
+      }
+
+      // Only apply redistribution for pure volume-based sales scenarios
+      // Check if individual streams (domestic/import) were set, which indicates stream-specific approach
+      StreamParameterization parameterization = getParameterization(useKey);
+      boolean domesticWasSet = parameterization.hasLastSpecifiedValue("domestic");
+      boolean importWasSet = parameterization.hasLastSpecifiedValue("import");
+      boolean salesWasSet = parameterization.hasLastSpecifiedValue("sales");
+      
+      // Skip scenarios where individual streams were set (even if sales was also used for growth)
+      // This preserves the existing behavior for stream-specific scenarios
+      if (domesticWasSet || importWasSet) {
+        continue;
+      }
+      
+      // Only apply to pure volume-based scenarios where only "sales" was set
+      if (!salesWasSet) {
+        continue;
+      }
+
+      // Get total recycling amount for this substance/application
+      EngineNumber totalRecycling = getStream(useKey, "recycle");
+      EngineNumber recyclingKg = unitConverter.convert(totalRecycling, "kg");
+
+      // Skip if no recycling to redistribute
+      if (recyclingKg.getValue().compareTo(BigDecimal.ZERO) <= 0) {
+        continue;
+      }
+
+      // Get current sales distribution for proportional allocation
+      SalesStreamDistribution distribution = getDistribution(useKey, false); // Exclude exports for compatibility
+
+      // Calculate redistribution amounts
+      BigDecimal domesticAdd = recyclingKg.getValue().multiply(distribution.getPercentDomestic());
+      BigDecimal importAdd = recyclingKg.getValue().multiply(distribution.getPercentImport());
+
+      // Add recycling back to sales streams (preserve baseline for next year)
+      EngineNumber currentDomestic = getStream(useKey, "domestic");
+      EngineNumber currentImport = getStream(useKey, "import");
+
+      EngineNumber domesticConverted = unitConverter.convert(currentDomestic, "kg");
+      EngineNumber importConverted = unitConverter.convert(currentImport, "kg");
+
+      BigDecimal newDomestic = domesticConverted.getValue().add(domesticAdd);
+      BigDecimal newImport = importConverted.getValue().add(importAdd);
+
+      // Set new amounts directly (bypass recycling logic to avoid recursion)
+      setStream(useKey, "domestic", new EngineNumber(newDomestic, "kg"), false);
+      setStream(useKey, "import", new EngineNumber(newImport, "kg"), false);
+    }
   }
 
 }

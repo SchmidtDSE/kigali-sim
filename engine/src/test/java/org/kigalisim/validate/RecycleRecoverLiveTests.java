@@ -981,7 +981,8 @@ public class RecycleRecoverLiveTests {
     List<EngineResult> recycleResultsList = recycleResults.collect(Collectors.toList());
 
     // Test multiple years to show the problem increases over time
-    int[] yearsToCheck = {1, 3, 5, 7, 10};
+    // Include year 2 when recycling policy starts
+    int[] yearsToCheck = {1, 2, 3, 5, 7, 10};
     for (int year : yearsToCheck) {
       EngineResult bauResult = LiveTestsUtil.getResult(bauResultsList.stream(), year, "App1", "SubA");
       EngineResult recycleResult = LiveTestsUtil.getResult(recycleResultsList.stream(), year, "App1", "SubA");
@@ -1000,16 +1001,21 @@ public class RecycleRecoverLiveTests {
           + ") should equal Recycle equipment population (" + recycleEquipment
           + ") in volume-based sales with recycling. Recycling should not decrease equipment population.");
 
-      // Additional debugging information
-      if (year > 1) {
-        double bauImport = bauResult.getImport().getValue().doubleValue();
-        double recycleImport = recycleResult.getImport().getValue().doubleValue();
-        double recycleRecycled = recycleResult.getRecycleConsumption().getValue().doubleValue();
-        
-        System.out.printf("Year %d: BAU import=%.3f kg, equipment=%.1f units; "
-            + "Recycle import=%.3f kg, recycled=%.3f tCO2e, equipment=%.1f units%n",
-            year, bauImport, bauEquipment, recycleImport, recycleRecycled, recycleEquipment);
-      }
+      // Additional debugging information for all years
+      double bauImport = bauResult.getImport().getValue().doubleValue();
+      double bauDomestic = bauResult.getDomestic().getValue().doubleValue();
+      double recycleImport = recycleResult.getImport().getValue().doubleValue();
+      double recycleDomestic = recycleResult.getDomestic().getValue().doubleValue();
+      double recycleRecycled = recycleResult.getRecycleConsumption().getValue().doubleValue();
+      double bauSales = bauDomestic + bauImport;
+      double recycleSales = recycleDomestic + recycleImport;
+      
+      System.out.printf("Year %d: BAU sales=%.1f kg (domestic=%.1f, import=%.1f), equipment=%.1f units%n", 
+          year, bauSales, bauDomestic, bauImport, bauEquipment);
+      System.out.printf("        Recycle sales=%.1f kg (domestic=%.1f, import=%.1f), recycled=%.1f kg, equipment=%.1f units%n", 
+          recycleSales, recycleDomestic, recycleImport, recycleRecycled, recycleEquipment);
+      System.out.printf("        Difference: sales=%.1f kg, equipment=%.1f units%n", 
+          recycleSales - bauSales, recycleEquipment - bauEquipment);
     }
   }
 
