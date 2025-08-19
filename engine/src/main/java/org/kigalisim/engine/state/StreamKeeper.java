@@ -1226,10 +1226,16 @@ public class StreamKeeper {
    * correctly displaces virgin material in Year N, but the reduced virgin sales
    * baseline incorrectly carries forward to Year N+1, creating cumulative deficit.</p>
    *
-   * <p>This fix is only applied to volume-based sales scenarios (where "sales" was set directly)
-   * rather than stream-specific scenarios (where "import" or "domestic" were set individually).
-   * Stream-specific scenarios should maintain their existing behavior where recycling reduces
-   * equipment needs.</p>
+   * <p>This fix is applied to all scenarios with configured sales streams including:</p>
+   * <ul>
+   * <li>"set sales to X [units]" - Total sales specified</li>
+   * <li>"set import to X [units]" - Import volume specified</li>
+   * <li>"set domestic to X [units]" - Domestic volume specified</li>
+   * </ul>
+   *
+   * <p>The redistribution preserves user expectations that loss of recycling will be
+   * back-filled by virgin material to maintain total available material, regardless
+   * of whether the original specification was in mass units (kg, mt) or equipment units.</p>
    */
   private void redistributeRecyclingToSales() {
     for (String key : substances.keySet()) {
@@ -1244,21 +1250,15 @@ public class StreamKeeper {
         continue;
       }
 
-      // Only apply redistribution for pure volume-based sales scenarios
-      // Check if individual streams (domestic/import) were set, which indicates stream-specific approach
+      // Apply redistribution to all scenarios with configured sales streams
+      // When recycling is lost, back-fill with virgin material regardless of units
       StreamParameterization parameterization = getParameterization(useKey);
+      boolean salesWasSet = parameterization.hasLastSpecifiedValue("sales");
       boolean domesticWasSet = parameterization.hasLastSpecifiedValue("domestic");
       boolean importWasSet = parameterization.hasLastSpecifiedValue("import");
-      boolean salesWasSet = parameterization.hasLastSpecifiedValue("sales");
-      
-      // Skip scenarios where individual streams were set (even if sales was also used for growth)
-      // This preserves the existing behavior for stream-specific scenarios
-      if (domesticWasSet || importWasSet) {
-        continue;
-      }
-      
-      // Only apply to pure volume-based scenarios where only "sales" was set
-      if (!salesWasSet) {
+
+      // Skip if no sales streams were configured (nothing to redistribute to)
+      if (!salesWasSet && !domesticWasSet && !importWasSet) {
         continue;
       }
 
@@ -1287,6 +1287,7 @@ public class StreamKeeper {
 
       BigDecimal newDomestic = domesticConverted.getValue().add(domesticAdd);
       BigDecimal newImport = importConverted.getValue().add(importAdd);
+
 
       // Set new amounts directly (bypass recycling logic to avoid recursion)
       setStream(useKey, "domestic", new EngineNumber(newDomestic, "kg"), false);

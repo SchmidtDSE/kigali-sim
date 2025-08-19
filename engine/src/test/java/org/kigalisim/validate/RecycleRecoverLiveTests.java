@@ -1002,7 +1002,48 @@ public class RecycleRecoverLiveTests {
       double recycleRecycled = recycleResult.getRecycleConsumption().getValue().doubleValue();
       double bauSales = bauDomestic + bauImport;
       double recycleSales = recycleDomestic + recycleImport;
-      
+
+    }
+  }
+
+  /**
+   * Test that single stream volume-based scenarios also get recycling redistribution.
+   * This tests "set import to X mt" scenarios where recycling should not create
+   * permanent equipment population deficit when policies expire.
+   */
+  @Test
+  public void testSingleStreamRecyclingEquipmentLeaking() throws IOException {
+    // Load and parse the test QTA file
+    String qtaPath = "../examples/test_single_stream.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    // Run BAU scenario
+    Stream<EngineResult> bauResults = KigaliSimFacade.runScenario(program, "BAU", progress -> {});
+    List<EngineResult> bauResultsList = bauResults.collect(Collectors.toList());
+
+    // Run Recycle scenario
+    Stream<EngineResult> recycleResults = KigaliSimFacade.runScenario(program, "Recycle", progress -> {});
+    List<EngineResult> recycleResultsList = recycleResults.collect(Collectors.toList());
+
+    // Test years 1 (before policy), 2-3 (during policy), 4-5 (after policy expires)
+    int[] yearsToCheck = {1, 2, 3, 4, 5};
+    for (int year : yearsToCheck) {
+      EngineResult bauResult = LiveTestsUtil.getResult(bauResultsList.stream(), year, "App1", "SubA");
+      EngineResult recycleResult = LiveTestsUtil.getResult(recycleResultsList.stream(), year, "App1", "SubA");
+
+      assertNotNull(bauResult, "Should have BAU result for App1/SubA in year " + year);
+      assertNotNull(recycleResult, "Should have Recycle result for App1/SubA in year " + year);
+
+      double bauEquipment = bauResult.getPopulation().getValue().doubleValue();
+      double recycleEquipment = recycleResult.getPopulation().getValue().doubleValue();
+
+      // Equipment population should be the same between scenarios
+      // This tests that single-stream scenarios (set import to X mt) also get redistribution fix
+      assertEquals(bauEquipment, recycleEquipment, 0.0001,
+          "Year " + year + ": BAU equipment population (" + bauEquipment
+          + ") should equal Recycle equipment population (" + recycleEquipment
+          + ") in single-stream volume-based scenario. Loss of recycling should be back-filled by virgin material.");
     }
   }
 
