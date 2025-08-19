@@ -143,11 +143,22 @@ class ResultsPresenter {
   }
 
   /**
+   * Set the filter set and update all UI components.
+   *
+   * @param {FilterSet} filterSet - The FilterSet to apply.
+   */
+  setFilter(filterSet) {
+    const self = this;
+    self._filterSet = filterSet;
+    self._onUpdateFilterSet(self._filterSet);
+  }
+
+  /**
    * Reset the filters active in the results section.
    */
   resetFilter() {
     const self = this;
-    self._filterSet = new FilterSet(
+    const defaultFilterSet = new FilterSet(
       null,
       null,
       null,
@@ -158,6 +169,7 @@ class ResultsPresenter {
       false,
       null,
     );
+    self.setFilter(defaultFilterSet);
   }
 
   /**
@@ -404,6 +416,28 @@ class ScorecardPresenter {
       self._updateCard(salesScorecard, salesMt, currentYear, salesSelected, hideVal);
       self._updateCard(equipmentScorecard, millionEqipment, currentYear,
         equipmentSelected, hideVal);
+
+      // Update dropdown values to match FilterSet
+      const metricFamily = self._filterSet.getMetric();
+      const subMetric = self._filterSet.getSubMetric();
+      const units = self._filterSet.getUnits();
+
+      if (metricFamily === "emissions") {
+        const emissionsSubmetricDropdown = emissionsScorecard.querySelector(".emissions-submetric");
+        const emissionsUnitsDropdown = emissionsScorecard.querySelector(".emissions-units");
+        emissionsSubmetricDropdown.value = subMetric || "recharge";
+        emissionsUnitsDropdown.value = units || "MtCO2e / year";
+      } else if (metricFamily === "sales") {
+        const salesSubmetricDropdown = salesScorecard.querySelector(".sales-submetric");
+        const salesUnitsDropdown = salesScorecard.querySelector(".sales-units");
+        salesSubmetricDropdown.value = subMetric || "domestic";
+        salesUnitsDropdown.value = units || "mt / year";
+      } else if (metricFamily === "population") {
+        const equipmentSubmetricDropdown = equipmentScorecard.querySelector(".equipment-submetric");
+        const equipmentUnitsDropdown = equipmentScorecard.querySelector(".equipment-units");
+        equipmentSubmetricDropdown.value = subMetric || "all";
+        equipmentUnitsDropdown.value = units || "million units";
+      }
     };
 
     // Execute with a catch for invalid user selections.
