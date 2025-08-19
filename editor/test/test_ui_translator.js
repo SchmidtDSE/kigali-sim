@@ -416,6 +416,73 @@ function buildUiTranslatorTests() {
         },
       ]);
   });
+
+  buildTest("UI substance rename updates policies", "/examples/ui/policy_rename_test.qta", [
+    (result, assert) => {
+      // Verify initial compilation succeeds
+      assert.ok(result.getIsCompatible(), "Initial compilation should succeed");
+    },
+    (result, assert) => {
+      // Get the original substance and application
+      const app = result.getApplication("original_app");
+      const originalSubstance = app.getSubstance("test_substance");
+      assert.ok(originalSubstance !== null, "Original substance should exist");
+
+      // Create a new substance with different name but same essential properties
+      const renamedSubstance = new SubstanceBuilder("renamed_test_substance", false);
+      
+      // Copy essential commands from original substance
+      renamedSubstance.addCommand(new Command(
+        "equals",
+        null,
+        new EngineNumber(1430, "tCO2e / mt"),
+        null,
+      ));
+      renamedSubstance.addCommand(new Command(
+        "initial charge",
+        "domestic",
+        new EngineNumber(0.12, "kg / unit"),
+        null,
+      ));
+      renamedSubstance.addCommand(new Command(
+        "set",
+        "domestic",
+        new EngineNumber(350, "mt"),
+        null,
+      ));
+      
+      const newSubstanceObj = renamedSubstance.build(true);
+
+      // Simulate the UI save operation - this should trigger the rename logic
+      result.insertSubstance(
+        "original_app",
+        "original_app",
+        "test_substance",
+        newSubstanceObj,
+      );
+
+      // Verify policy was updated to reference the new substance name
+      const code = result.toCode(0);
+      assert.ok(
+        code.includes('modify substance "renamed_test_substance"'),
+        "Policy should reference renamed substance",
+      );
+      assert.ok(
+        !code.includes('modify substance "test_substance"'),
+        "Policy should not reference old substance name",
+      );
+
+      // Verify the main substance definition was also updated
+      assert.ok(
+        code.includes('uses substance "renamed_test_substance"'),
+        "Main definition should use new substance name",
+      );
+      assert.ok(
+        !code.includes('uses substance "test_substance"'),
+        "Main definition should not use old substance name",
+      );
+    },
+  ]);
 }
 
 export {buildUiTranslatorTests};
