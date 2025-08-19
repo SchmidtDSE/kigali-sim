@@ -38,6 +38,38 @@ This is being discussed in [#490](https://github.com/SchmidtDSE/kigali-sim/issue
 
 The following changes have been adopted and released.
 
+### Policy Auto-Update on Name Changes
+
+**Status:** Released August 19, 2025
+
+**Classification:** Enhancement
+
+Added automatic policy code updates when application or substance names are changed through the UI-based designer. Previously, it was preferred that users explicitly indicate how prior entries should be updated. However, this could generate error messages that could be confusing for new users. The system now automatically propagates name changes across all relevant policies, allowing users to rename definitions without encountering errors or needing to manually update code in the editor tab. This enhancement improves the user experience for those using the UI-based designer, though this issue was infrequently encountered. See [#498](https://github.com/SchmidtDSE/kigali-sim/issues/498).
+
+### Improved Error Messages for Disabled Streams
+
+**Status:** Released August 19, 2025
+
+**Classification:** Enhancement
+
+Enhanced error messaging when users interact with disabled streams. While streams must still be enabled before use (via enable commands and checkboxes like enable-import), the previous error messages could be confusing to users. The system now provides more informative and user-friendly error text to help guide users toward updating outdated commands when attempting to use streams that haven't been enabled yet. See [#496](https://github.com/SchmidtDSE/kigali-sim/issues/496).
+
+### Filter UI Reset on File Load
+
+**Status:** Released August 19, 2025
+
+**Classification:** Bug
+
+Fixed a minor issue where the filter UI state was not properly reset when loading simulation files. While the underlying filter logic was correctly reset to avoid programming errors when substances or simulations were not found, the UI elements themselves remained in their previous state. This could lead to user confusion. See [#494](https://github.com/SchmidtDSE/kigali-sim/issues/494).
+
+### Equipment Energy Efficiency Calculation Update
+
+**Status:** Released August 19, 2025
+
+**Classification:** Clarification
+
+Modified energy efficiency calculations to be based on the full equipment population rather than broken out by sales streams. Previously, energy consumption was attributed to trade sources through stream attribution, which could lead to confusion since energy consumption typically occurs across a single unified grid. The system now converts directly from total equipment population to energy consumption (kWh), simplifying the model to more closely align with majority user expectation. However, stream-level tracking can still be achieved through equipment model naming if preferred. This change moves energy options from the sales/consumption section to the equipment section in the UI, reflecting the equipment-based calculation. See [#493](https://github.com/SchmidtDSE/kigali-sim/issues/493).
+
 ### Initial Charge Emissions Calculation
 
 **Status:** Released August 4, 2025
