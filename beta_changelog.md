@@ -42,9 +42,9 @@ The following changes have been adopted and released.
 
 **Status:** Released August 19, 2025
 
-**Classification:** Clarification
+**Classification:** Clarification / Bug
 
-Clarified that, when recycling reduces virgin material demand in volume-based sales scenarios, any loss of recycling availability in subsequent years will be back-filled by virgin material to maintain total demand. Previously, in volume-based scenarios (using `set sales to X mt`), recycling would correctly displace virgin material in the year it was active. However, at year boundaries, virgin material would not go up in response to lost recycling volumes. This makes sense for induced demand but, as most users are not modeling that complex logic, this version is more appropriate for majority of users. See [#506](https://github.com/SchmidtDSE/kigali-sim/issues/506).
+Clarified that, when recycling reduces virgin material demand in volume-based sales scenarios, any loss of recycling availability in subsequent years will be immediately back-filled by virgin material to maintain total demand. Previously, in volume-based scenarios (using `set sales to X mt`), recycling would correctly displace virgin material in the year it was active. However, at year boundaries, virgin material would not go up in response to lost recycling volumes. This makes sense for induced demand but, as most users are not modeling that complex logic, this version is more appropriate for majority of users. See [#506](https://github.com/SchmidtDSE/kigali-sim/issues/506). We apologize for the inconvenience.
 
 ### Policy Auto-Update on Name Changes
 
