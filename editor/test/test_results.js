@@ -138,26 +138,28 @@ function buildResultsTests() {
     QUnit.test("_updateInternally handles null results safely", (assert) => {
       // Test the specific fix for the original bug: _updateInternally with null results
       // This validates the null check we added to prevent the getYears() error
-      
+
       // Create a minimal ResultsPresenter-like object to test _updateInternally directly
       const mockPresenter = {
-        _results: null,  // This is the key condition that caused the original bug
-        _filterSet: new FilterSet(null, null, null, null, "sales:domestic:mt / year", "simulations", null, false, null),
+        _results: null, // This is the key condition that caused the original bug
+        _filterSet: new FilterSet(
+          null, null, null, null, "sales:domestic:mt / year", "simulations", null, false, null),
         _dimensionManager: {
-          updateSubstancesLabel: function() {} // Mock method
+          updateSubstancesLabel: function () {}, // Mock method
         },
-        _scorecardPresenter: { showResults: function() {} },
-        _dimensionPresenter: { showResults: function() {} },
-        _centerChartPresenter: { showResults: function() {} },
-        _titlePreseter: { showResults: function() {} },
-        _exportPresenter: { showResults: function() {} },
-        _optionsPresenter: { showResults: function() {} }
+        _scorecardPresenter: {showResults: function () {}},
+        _dimensionPresenter: {showResults: function () {}},
+        _centerChartPresenter: {showResults: function () {}},
+        _titlePreseter: {showResults: function () {}},
+        _exportPresenter: {showResults: function () {}},
+        _optionsPresenter: {showResults: function () {}},
       };
-      
+
       // Apply the _updateInternally method to our mock object
       const updateInternally = ResultsPresenter.prototype._updateInternally.bind(mockPresenter);
-      
-      // This should not throw the original error: "Cannot read properties of null (reading 'getYears')"
+
+      // This should not throw the original error:
+      // "Cannot read properties of null (reading 'getYears')"
       try {
         updateInternally();
         assert.ok(true, "_updateInternally should handle null results without error");
