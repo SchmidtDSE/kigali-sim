@@ -425,18 +425,18 @@ class ScorecardPresenter {
       if (metricFamily === "emissions") {
         const emissionsSubmetricDropdown = emissionsScorecard.querySelector(".emissions-submetric");
         const emissionsUnitsDropdown = emissionsScorecard.querySelector(".emissions-units");
-        if (emissionsSubmetricDropdown && subMetric) emissionsSubmetricDropdown.value = subMetric;
-        if (emissionsUnitsDropdown && units) emissionsUnitsDropdown.value = units;
+        emissionsSubmetricDropdown.value = subMetric || "recharge";
+        emissionsUnitsDropdown.value = units || "MtCO2e / year";
       } else if (metricFamily === "sales") {
         const salesSubmetricDropdown = salesScorecard.querySelector(".sales-submetric");
         const salesUnitsDropdown = salesScorecard.querySelector(".sales-units");
-        if (salesSubmetricDropdown && subMetric) salesSubmetricDropdown.value = subMetric;
-        if (salesUnitsDropdown && units) salesUnitsDropdown.value = units;
+        salesSubmetricDropdown.value = subMetric || "domestic";
+        salesUnitsDropdown.value = units || "mt / year";
       } else if (metricFamily === "population") {
         const equipmentSubmetricDropdown = equipmentScorecard.querySelector(".equipment-submetric");
         const equipmentUnitsDropdown = equipmentScorecard.querySelector(".equipment-units");
-        if (equipmentSubmetricDropdown && subMetric) equipmentSubmetricDropdown.value = subMetric;
-        if (equipmentUnitsDropdown && units) equipmentUnitsDropdown.value = units;
+        equipmentSubmetricDropdown.value = subMetric || "all";
+        equipmentUnitsDropdown.value = units || "million units";
       }
     };
 
