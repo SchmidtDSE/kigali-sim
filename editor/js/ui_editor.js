@@ -948,7 +948,7 @@ class ConsumptionListPresenter {
       self._dialog.querySelector(".edit-consumption-energy-input"),
       self._dialog.querySelector(".edit-consumption-energy-units-input"),
       objToShow,
-      new EngineNumber(1, "kwh / kg"),
+      new EngineNumber(1, "kwh / unit"),
       (x) => (x.getEqualsKwh() ? x.getEqualsKwh().getValue() : null),
     );
 
