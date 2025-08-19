@@ -1214,12 +1214,40 @@ class ConsumptionListPresenter {
     } else {
       const objIdentifierRegex = /\"([^\"]+)\" for \"([^\"]+)\"/;
       const match = self._editingName.match(objIdentifierRegex);
-      const substanceName = match[1];
-      const applicationName = match[2];
+      const oldSubstanceName = match[1];
+      const oldApplicationName = match[2];
       const newApplicationName = getFieldValue(
         self._dialog.querySelector(".edit-consumption-application-input"),
       );
-      codeObj.insertSubstance(applicationName, newApplicationName, substanceName, substance);
+      const newSubstanceName = substance.getName();
+
+      // Check if we need to rename substance in policies
+      const appNameSame = oldApplicationName === newApplicationName;
+      const substanceNameChanged = oldSubstanceName !== newSubstanceName;
+
+      if (appNameSame && substanceNameChanged) {
+        // Substance name changed within same application - update policies
+        codeObj.renameSubstanceInApplication(
+          oldApplicationName,
+          oldSubstanceName,
+          newSubstanceName,
+        );
+        // Still need to update the substance definition itself
+        codeObj.insertSubstance(
+          oldApplicationName,
+          newApplicationName,
+          newSubstanceName,
+          substance,
+        );
+      } else {
+        // Application changed or no substance name change - use standard insert
+        codeObj.insertSubstance(
+          oldApplicationName,
+          newApplicationName,
+          oldSubstanceName,
+          substance,
+        );
+      }
     }
 
     self._onCodeObjUpdate(codeObj);
