@@ -293,15 +293,13 @@ class ResultsPresenter {
   _updateInternally() {
     const self = this;
 
-    // Don't update if no results are available yet
-    if (self._results === null) {
+    if (!self._getResultsAvailable()) {
       return;
     }
 
     const years = self._results.getYears(self._filterSet.getWithYear(null));
     self._filterSet = self._filterSet.getWithYear(Math.max(...years));
 
-    // Update dimension labels based on current filter settings
     self._dimensionManager.updateSubstancesLabel(self._filterSet);
 
     self._scorecardPresenter.showResults(self._results, self._filterSet);
@@ -310,6 +308,15 @@ class ResultsPresenter {
     self._titlePreseter.showResults(self._results, self._filterSet);
     self._exportPresenter.showResults(self._results, self._filterSet, self._backendResult);
     self._optionsPresenter.showResults(self._results, self._filterSet);
+  }
+
+  /**
+   * Determine if results are available to display.
+   *
+   * @returns {boolean} True if results are available and false otherwise.
+  _getResultsAvailable() {
+    const self = this;
+    return self._results !== null;
   }
 }
 
