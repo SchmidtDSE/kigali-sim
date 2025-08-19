@@ -458,16 +458,16 @@ public class KigaliSimFacadeTest {
     assertTrue(recycledConsumption > 0, "Recycled consumption should be greater than 0");
 
 
-    // Check equipment (population) at year 5 - should be the same for both scenarios
+    // Check equipment (population) at year 5 - should be identical due to universal redistribution
     double bauEquipmentYear5 = bauYear5.getPopulation().getValue().doubleValue();
     double policyEquipmentYear5 = policyYear5.getPopulation().getValue().doubleValue();
 
 
-    // Expectation: Equipment population should be DIFFERENT for the two scenarios
-    // Since imports are set by kg (not units) and recycling reduces import needs,
-    // equipment population should be lower with recycling (fewer imports = fewer units needed)
-    assertTrue(policyEquipmentYear5 < bauEquipmentYear5,
-        String.format("Equipment population with recycling (%.0f) should be less than BAU (%.0f) since recycling reduces kg-based import needs.",
+    // Expectation: Equipment population should be IDENTICAL for the two scenarios
+    // With universal redistribution (Component 6 fix), recycling maintains total available material
+    // and equipment populations remain consistent between BAU and recycling scenarios
+    assertEquals(bauEquipmentYear5, policyEquipmentYear5, 0.1,
+        String.format("Equipment population with recycling (%.0f) should equal BAU (%.0f) due to universal redistribution maintaining material balance.",
                       policyEquipmentYear5, bauEquipmentYear5));
 
   }

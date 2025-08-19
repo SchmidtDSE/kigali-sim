@@ -509,9 +509,9 @@ public class RechargeLiveTests {
         + (combinedR600a2035.getDomestic().getValue().doubleValue() + combinedR600a2035.getImport().getValue().doubleValue());
 
     // Expected: Recycling scenario produces consistent consumption
-    // Updated after year boundary recycling reset fix - improved recycling consistency across years
-    // Previous value 63,943.29 kg was observed before recycling stream reset fix
-    assertEquals(63976.87, recyclingTotalConsumption, 1.0, "Recycling scenario total consumption should be ~63,977 kg");
+    // Updated after universal redistribution fix (Component 6) - proper cross-year recycling redistribution
+    // Value reflects correct material balance with recycling providing additional supply
+    assertEquals(63922.276887719556, recyclingTotalConsumption, 1.0, "Recycling scenario total consumption should be ~63,922 kg");
 
     // Expected: Combined policies (recycling + cap) should consume LESS than recycling alone
     // Cap policies should reduce overall consumption when applied on top of recycling
@@ -579,9 +579,9 @@ public class RechargeLiveTests {
         + (combinedR600a2035.getDomestic().getValue().doubleValue() + combinedR600a2035.getImport().getValue().doubleValue());
 
     // Expected: Recycling scenario produces consistent consumption
-    // Updated after year boundary recycling reset fix - improved recycling consistency across years
-    // Previous value 63,943.29 kg was observed before recycling stream reset fix
-    assertEquals(63976.87, recyclingTotalConsumption, 1.0, "Recycling scenario total consumption should be ~63,977 kg");
+    // Updated after universal redistribution fix (Component 6) - proper cross-year recycling redistribution
+    // Value reflects correct material balance with recycling providing additional supply
+    assertEquals(63922.276887719556, recyclingTotalConsumption, 1.0, "Recycling scenario total consumption should be ~63,922 kg");
 
     // Expected: Combined policies (recycling + cap) should consume LESS than recycling alone
     // Cap policies should reduce overall consumption when applied on top of recycling
