@@ -384,7 +384,7 @@
                                 >
                                   <option value="kwh / unit">kWh / unit</option>
                                   <option value="kwh / kg">kWh / kg</option>
-                                  <option value="kwh / kg">kWh / mt</option>
+                                  <option value="kwh / mt">kWh / mt</option>
                                 </select>
                               </span>
                             </div>
@@ -1016,7 +1016,7 @@
 
               <div class="scorecard inactive" id="sales-scorecard">
                 <div class="label">
-                  <label for="sales-radio" tabindex="0" data-tippy-content="Consumption in sales or servicing: kg / mt, tCO2e, or kWh. Follows configured trade attribution rules."
+                  <label for="sales-radio" tabindex="0" data-tippy-content="Consumption in sales or servicing: kg / mt or tCO2e. Follows configured trade attribution rules."
                     ><input
                       id="sales-radio"
                       class="metric-radio"
@@ -1054,9 +1054,6 @@
                       <option value="tCO2e / year">tCO2e / year</option>
                       <option value="ktCO2e / year">ktCO2e / year</option>
                       <option value="MtCO2e / year">MtCO2e / year</option>
-                      <option value="kwh / year">kWh / year</option>
-                      <option value="mwh / year">MWh / year</option>
-                      <option value="gwh / year">GWh / year</option>
                     </select>
                   </div>
                 </div>
@@ -1067,9 +1064,9 @@
 
               <div></div>
 
-              <div class="scorecard inactive" id="equipment-scorecard">
+              <div class="scorecard inactive" id="population-scorecard">
                 <div class="label">
-                  <label for="population-radio" tabindex="0" data-tippy-content="Population information for all equipment in service within the simulated country."
+                  <label for="population-radio" tabindex="0" data-tippy-content="Population and energy consumption for all equipment in service within the simulated country."
                     ><input
                       id="population-radio"
                       class="metric-radio"
@@ -1077,7 +1074,7 @@
                       name="metric"
                       value="population"
                     />
-                    Equipment</label
+                     Population</label
                   >
                 </div>
                 <div class="value"></div>
@@ -1101,6 +1098,9 @@
                       <option value="units">units</option>
                       <option value="thousand units">thousand units</option>
                       <option value="million units" selected>million units</option>
+                      <option value="kwh / year">kWh / year</option>
+                      <option value="mwh / year">MWh / year</option>
+                      <option value="gwh / year">GWh / year</option>
                     </select>
                   </div>
                 </div>
@@ -1154,7 +1154,7 @@
                       value="simulations"
                       checked="checked"
                     />
-                    Simulations</label
+                    <span class="dimension-label">Simulations</span></label
                   >
                 </div>
                 <div class="list"></div>
@@ -1180,7 +1180,7 @@
                       name="dimension"
                       value="applications"
                     />
-                    Applications</label
+                    <span class="dimension-label">Applications</span></label
                   >
                 </div>
                 <div class="list"></div>
@@ -1206,7 +1206,7 @@
                       name="dimension"
                       value="substances"
                     />
-                    Substances</label
+                    <span class="dimension-label">Substances</span></label
                   >
                 </div>
                 <div class="list"></div>

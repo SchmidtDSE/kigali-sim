@@ -134,6 +134,7 @@ class ResultsPresenter {
     const onUpdateFilterSet = (x) => self._onUpdateFilterSet(x);
     self._scorecardPresenter = new ScorecardPresenter(scorecardContainer, onUpdateFilterSet);
     self._dimensionPresenter = new DimensionCardPresenter(dimensionsContainer, onUpdateFilterSet);
+    self._dimensionManager = new DimensionPresenter(self._dimensionPresenter);
     self._centerChartPresenter = new CenterChartPresenter(centerChartContainer);
     self._titlePreseter = new SelectorTitlePresenter(centerChartHolderContainer, onUpdateFilterSet);
     self._exportPresenter = new ExportPresenter(self._root);
@@ -295,6 +296,9 @@ class ResultsPresenter {
     const years = self._results.getYears(self._filterSet.getWithYear(null));
     self._filterSet = self._filterSet.getWithYear(Math.max(...years));
 
+    // Update dimension labels based on current filter settings
+    self._dimensionManager.updateSubstancesLabel(self._filterSet);
+
     self._scorecardPresenter.showResults(self._results, self._filterSet);
     self._dimensionPresenter.showResults(self._results, self._filterSet);
     self._centerChartPresenter.showResults(self._results, self._filterSet);
@@ -391,7 +395,7 @@ class ScorecardPresenter {
 
       const emissionsScorecard = self._root.querySelector("#emissions-scorecard");
       const salesScorecard = self._root.querySelector("#sales-scorecard");
-      const equipmentScorecard = self._root.querySelector("#equipment-scorecard");
+      const equipmentScorecard = self._root.querySelector("#population-scorecard");
 
       const emissionsValue = results.getTotalEmissions(filterSet);
       const salesValue = results.getSales(filterSet);
@@ -546,7 +550,7 @@ class ScorecardPresenter {
 
     const emissionsScorecard = self._root.querySelector("#emissions-scorecard");
     const salesScorecard = self._root.querySelector("#sales-scorecard");
-    const equipmentScorecard = self._root.querySelector("#equipment-scorecard");
+    const equipmentScorecard = self._root.querySelector("#population-scorecard");
 
     const registerListener = (scorecard, family) => {
       const subMetricDropdown = scorecard.querySelector(".submetric-input");
@@ -847,6 +851,20 @@ class DimensionCardPresenter {
     registerListener(simulationsCard, "simulations");
     registerListener(applicationsCard, "applications");
     registerListener(substancesCard, "substances");
+  }
+
+  /**
+   * Set the label text for a specific dimension.
+   *
+   * @param {string} dimensionType - The dimension type ("simulations",
+   *     "applications", "substances").
+   * @param {string} labelText - The text to use for the label.
+   */
+  setLabel(dimensionType, labelText) {
+    const self = this;
+    const dimensionCard = self._root.querySelector(`#${dimensionType}-dimension`);
+    const labelSpan = dimensionCard.querySelector(".dimension-label");
+    labelSpan.textContent = labelText;
   }
 }
 
@@ -1333,6 +1351,48 @@ class CustomMetricPresenter {
 
     // Initialize validation state
     self._validateSelection();
+  }
+}
+
+/**
+ * Presenter for managing dimension labels based on filter context.
+ *
+ * Handles dynamic label updates for dimension radio buttons based on
+ * the current metric selection (e.g., changing "Substances" to "Equipment Models"
+ * when viewing equipment/population data).
+ */
+class DimensionPresenter {
+  /**
+   * Create a new DimensionPresenter.
+   *
+   * @param {DimensionCardPresenter} dimensionCardPresenter - The dimension
+   *     card presenter to coordinate with.
+   */
+  constructor(dimensionCardPresenter) {
+    const self = this;
+    self._dimensionCardPresenter = dimensionCardPresenter;
+  }
+
+  /**
+   * Set the label for the substances dimension.
+   *
+   * @param {string} labelText - The text to use for the substances label.
+   */
+  setSustancesLabel(labelText) {
+    const self = this;
+    self._dimensionCardPresenter.setLabel("substances", labelText);
+  }
+
+  /**
+   * Update the substances label based on the current filter state.
+   *
+   * @param {FilterSet} filterSet - Current filter settings.
+   */
+  updateSubstancesLabel(filterSet) {
+    const self = this;
+    const isPopulation = filterSet.getMetric() === "population";
+    const labelText = isPopulation ? "Equipment Models" : "Substances";
+    self.setSustancesLabel(labelText);
   }
 }
 
