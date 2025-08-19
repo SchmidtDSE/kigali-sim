@@ -173,11 +173,31 @@ public class EngineResultSerializerTest {
      */
     @Test
     public void testGetsEnergyConsumption() {
-      // Expected: 5 kwh / kg
-      assertEquals(0, result.getEnergyConsumption().getValue().compareTo(BigDecimal.valueOf(5)),
-          "Energy consumption should be 5 kwh / kg");
-      assertEquals("kwh / kg", result.getEnergyConsumption().getUnits(),
-          "Energy consumption units should be kwh / kg");
+      // Expected: 1000 units * 5 kwh/unit = 5000 kwh (population * energy intensity)
+      assertEquals(0, result.getEnergyConsumption().getValue().compareTo(BigDecimal.valueOf(5000)),
+          "Energy consumption should be 5000 kwh (1000 units * 5 kwh/unit)");
+      assertEquals("kwh", result.getEnergyConsumption().getUnits(),
+          "Energy consumption units should be kwh");
+    }
+
+    /**
+     * Test that serializer handles null energy intensity gracefully.
+     */
+    @Test
+    public void testGetsEnergyConsumptionWithNullIntensity() {
+      // Create mock engine without energy intensity
+      Engine nullEnergyEngine = mock(Engine.class);
+      configureCommonMockEngine(nullEnergyEngine, false);
+      ConverterStateGetter nullStateGetter = new ConverterStateGetter(nullEnergyEngine);
+      EngineResultSerializer nullSerializer = new EngineResultSerializer(nullEnergyEngine, nullStateGetter);
+      EngineResult nullResult = nullSerializer.getResult(
+          new SimpleUseKey("commercialRefrigeration", "HFC-134a"), 1);
+
+      // Expected: 0 kwh when energy intensity is null
+      assertEquals(0, nullResult.getEnergyConsumption().getValue().compareTo(BigDecimal.ZERO),
+          "Energy consumption should be 0 kwh when energy intensity is null");
+      assertEquals("kwh", nullResult.getEnergyConsumption().getUnits(),
+          "Energy consumption units should be kwh even when intensity is null");
     }
   }
 
@@ -259,93 +279,7 @@ public class EngineResultSerializerTest {
    */
   private static Engine createMockEngine() {
     Engine engine = mock(Engine.class);
-
-    // Test data matching JavaScript tests
-    EngineNumber manufacture = new EngineNumber(1600, "mt");
-    EngineNumber importMt = new EngineNumber(400, "mt");
-    EngineNumber exportMt = new EngineNumber(200, "mt");
-    EngineNumber recharge = new EngineNumber(1000, "mt");
-    EngineNumber valueToConsumption = new EngineNumber(500, "tCO2e / mt");
-    EngineNumber initialChargeImport = new EngineNumber(200, "kg / unit");
-    EngineNumber initialChargeDomestic = new EngineNumber(150, "kg / unit");
-    EngineNumber recycling = new EngineNumber(10, "mt");
-    EngineNumber energyIntensity = new EngineNumber(5, "kwh / kg");
-    EngineNumber priorEquipment = new EngineNumber(1000, "units");
-    EngineNumber eolEmissions = new EngineNumber(100, "tCO2e");
-
-    // Configure mock responses for getStreamRaw with UseKey
-    when(engine.getStreamFor(any(UseKey.class), any(String.class))).thenAnswer(invocation -> {
-      UseKey useKey = invocation.getArgument(0);
-      String stream = invocation.getArgument(1);
-
-      if ("commercialRefrigeration".equals(useKey.getApplication())
-          && "HFC-134a".equals(useKey.getSubstance())) {
-        switch (stream) {
-          case "domestic": return manufacture;
-          case "import": return importMt;
-          case "export": return exportMt;
-          case "recycle": return recycling;
-          case "recycleRecharge": return new EngineNumber(5, "mt"); // Half of total recycling
-          case "recycleEol": return new EngineNumber(5, "mt"); // Half of total recycling
-          case "energy": return energyIntensity;
-          case "equipment": return priorEquipment;
-          case "newEquipment": return priorEquipment;
-          case "rechargeEmissions": return recharge;
-          case "eolEmissions": return eolEmissions;
-          default: return null;
-        }
-      }
-      return null;
-    });
-
-    // Configure GHG intensity methods
-    when(engine.getGhgIntensity(any(UseKey.class))).thenAnswer(invocation -> {
-      UseKey useKey = invocation.getArgument(0);
-      if ("commercialRefrigeration".equals(useKey.getApplication())
-          && "HFC-134a".equals(useKey.getSubstance())) {
-        return valueToConsumption;
-      }
-      return null;
-    });
-    when(engine.getEqualsGhgIntensityFor(any(UseKey.class))).thenAnswer(invocation -> {
-      UseKey useKey = invocation.getArgument(0);
-      if ("commercialRefrigeration".equals(useKey.getApplication())
-          && "HFC-134a".equals(useKey.getSubstance())) {
-        return valueToConsumption;
-      }
-      return null;
-    });
-    when(engine.getEqualsGhgIntensity()).thenReturn(valueToConsumption);
-
-    // Configure initial charge methods
-    when(engine.getRawInitialChargeFor(any(UseKey.class), any(String.class))).thenAnswer(invocation -> {
-      UseKey useKey = invocation.getArgument(0);
-      String stream = invocation.getArgument(1);
-
-      if ("commercialRefrigeration".equals(useKey.getApplication())
-          && "HFC-134a".equals(useKey.getSubstance())) {
-        switch (stream) {
-          case "import": return initialChargeImport;
-          case "domestic": return initialChargeDomestic;
-          default: return null;
-        }
-      }
-      return null;
-    });
-    when(engine.getInitialCharge("sales")).thenReturn(initialChargeImport);
-
-    // Configure stream methods that ConverterStateGetter might call
-    when(engine.getStream("equipment")).thenReturn(priorEquipment);
-    when(engine.getStream("consumption")).thenReturn(valueToConsumption);
-    when(engine.getStream("energy")).thenReturn(energyIntensity);
-
-    // Configure energy intensity
-    when(engine.getEqualsEnergyIntensity()).thenReturn(energyIntensity);
-
-    // Configure scenario name and trial number
-    when(engine.getScenarioName()).thenReturn("Test Scenario");
-    when(engine.getTrialNumber()).thenReturn(1);
-
+    configureCommonMockEngine(engine, true);
     return engine;
   }
 
@@ -356,8 +290,18 @@ public class EngineResultSerializerTest {
    */
   private static Engine createMockEngineForTradeSupplement() {
     Engine engine = mock(Engine.class);
+    configureCommonMockEngine(engine, true);
+    return engine;
+  }
 
-    // Test data for import supplement tests - use the same data as main tests
+  /**
+   * Common configuration for mock engines to eliminate duplication.
+   *
+   * @param engine Mock engine to configure
+   * @param hasEnergyIntensity Whether to return energy intensity (true) or null (false)
+   */
+  private static void configureCommonMockEngine(Engine engine, boolean hasEnergyIntensity) {
+    // Test data matching JavaScript tests
     EngineNumber manufacture = new EngineNumber(1600, "mt");
     EngineNumber importMt = new EngineNumber(400, "mt");
     EngineNumber exportMt = new EngineNumber(200, "mt");
@@ -366,11 +310,11 @@ public class EngineResultSerializerTest {
     EngineNumber initialChargeImport = new EngineNumber(200, "kg / unit");
     EngineNumber initialChargeDomestic = new EngineNumber(150, "kg / unit");
     EngineNumber recycling = new EngineNumber(10, "mt");
-    EngineNumber energyIntensity = new EngineNumber(5, "kwh / kg");
+    EngineNumber energyIntensity = hasEnergyIntensity ? new EngineNumber(5, "kwh / unit") : null;
     EngineNumber priorEquipment = new EngineNumber(1000, "units");
     EngineNumber eolEmissions = new EngineNumber(100, "tCO2e");
 
-    // Configure mock responses for getStreamRaw with UseKey
+    // Configure mock responses for getStreamFor with UseKey
     when(engine.getStreamFor(any(UseKey.class), any(String.class))).thenAnswer(invocation -> {
       UseKey useKey = invocation.getArgument(0);
       String stream = invocation.getArgument(1);
@@ -384,7 +328,6 @@ public class EngineResultSerializerTest {
           case "recycle": return recycling;
           case "recycleRecharge": return new EngineNumber(5, "mt"); // Half of total recycling
           case "recycleEol": return new EngineNumber(5, "mt"); // Half of total recycling
-          case "energy": return energyIntensity;
           case "equipment": return priorEquipment;
           case "newEquipment": return priorEquipment;
           case "rechargeEmissions": return recharge;
@@ -438,11 +381,17 @@ public class EngineResultSerializerTest {
 
     // Configure energy intensity
     when(engine.getEqualsEnergyIntensity()).thenReturn(energyIntensity);
+    when(engine.getEqualsEnergyIntensityFor(any(UseKey.class))).thenAnswer(invocation -> {
+      UseKey useKey = invocation.getArgument(0);
+      if ("commercialRefrigeration".equals(useKey.getApplication())
+          && "HFC-134a".equals(useKey.getSubstance())) {
+        return energyIntensity;
+      }
+      return null;
+    });
 
     // Configure scenario name and trial number
     when(engine.getScenarioName()).thenReturn("Test Scenario");
     when(engine.getTrialNumber()).thenReturn(1);
-
-    return engine;
   }
 }

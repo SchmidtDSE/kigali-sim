@@ -368,6 +368,14 @@ public interface Engine {
   EngineNumber getEqualsEnergyIntensity();
 
   /**
+   * Retrieve the energy intensity for the given UseKey.
+   *
+   * @param useKey The UseKey containing application and substance information
+   * @return The energy intensity value with volume normalized energy
+   */
+  EngineNumber getEqualsEnergyIntensityFor(UseKey useKey);
+
+  /**
    * Change a stream value by a delta amount.
    *
    * @param stream The stream identifier to modify

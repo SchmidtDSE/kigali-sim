@@ -167,12 +167,8 @@ class ReportDataWrapper {
     const strategyBuilder = new MetricStrategyBuilder();
 
     const addEmissionsConversion = (strategyBuilder) => {
-      const normalizeEmissionsUnits = (units) => {
-        return units.replace(" / year", "").replace(" / yr", "");
-      };
-
       const validateEmissionsUnits = (val) => {
-        const normalizedUnits = normalizeEmissionsUnits(val.getUnits());
+        const normalizedUnits = self._normalizeTimeUnits(val.getUnits());
         if (normalizedUnits !== "tCO2e") {
           throw "Unexpected emissions source units: " + val.getUnits();
         }
@@ -257,12 +253,8 @@ class ReportDataWrapper {
       strategyBuilder.setMetric("sales");
 
       const makeForKgAndMt = (strategyBuilder) => {
-        const normalizeSalesUnits = (units) => {
-          return units.replace(" / year", "").replace(" / yr", "");
-        };
-
         const validateSalesUnits = (value) => {
-          const normalizedUnits = normalizeSalesUnits(value.getUnits());
+          const normalizedUnits = self._normalizeTimeUnits(value.getUnits());
           if (normalizedUnits !== "kg") {
             throw "Unexpected sales units: " + value.getUnits();
           }
@@ -279,38 +271,6 @@ class ReportDataWrapper {
         strategyBuilder.setTransformation((value) => {
           validateSalesUnits(value);
           return new EngineNumber(value.getValue(), "kg / yr");
-        });
-        strategyBuilder.add();
-
-        strategyBuilder.setStrategy((x) => self.getEnergyConsumption(x));
-
-        const normalizeEnergyUnits = (units) => {
-          return units.replace(" / year", "").replace(" / yr", "");
-        };
-
-        const getKwhYr = (value) => {
-          const normalizedUnits = normalizeEnergyUnits(value.getUnits());
-          if (normalizedUnits !== "kwh") {
-            throw "Unexpected energy units: " + value.getUnits();
-          }
-          return new EngineNumber(value.getValue(), "kwh / yr");
-        };
-
-        strategyBuilder.setUnits("kwh / yr");
-        strategyBuilder.setTransformation(getKwhYr);
-        strategyBuilder.add();
-
-        strategyBuilder.setUnits("mwh / yr");
-        strategyBuilder.setTransformation((value) => {
-          const kwhValue = getKwhYr(value);
-          return new EngineNumber(kwhValue.getValue() / 1000, "mwh");
-        });
-        strategyBuilder.add();
-
-        strategyBuilder.setUnits("gwh / yr");
-        strategyBuilder.setTransformation((value) => {
-          const kwhValue = getKwhYr(value);
-          return new EngineNumber(kwhValue.getValue() / 1000000, "gwh");
         });
         strategyBuilder.add();
       };
@@ -448,15 +408,47 @@ class ReportDataWrapper {
         strategyBuilder.add();
       };
 
+      const makeForEnergyUnits = (strategyBuilder) => {
+        strategyBuilder.setStrategy((x) => self.getEnergyConsumption(x));
+
+        const getKwhYr = (value) => {
+          const normalizedUnits = self._normalizeTimeUnits(value.getUnits());
+          if (normalizedUnits !== "kwh") {
+            throw "Unexpected energy units: " + value.getUnits();
+          }
+          return new EngineNumber(value.getValue(), "kwh / yr");
+        };
+
+        strategyBuilder.setUnits("kwh / year");
+        strategyBuilder.setTransformation(getKwhYr);
+        strategyBuilder.add();
+
+        strategyBuilder.setUnits("mwh / year");
+        strategyBuilder.setTransformation((value) => {
+          const kwhValue = getKwhYr(value);
+          return new EngineNumber(kwhValue.getValue() / 1000, "mwh / yr");
+        });
+        strategyBuilder.add();
+
+        strategyBuilder.setUnits("gwh / year");
+        strategyBuilder.setTransformation((value) => {
+          const kwhValue = getKwhYr(value);
+          return new EngineNumber(kwhValue.getValue() / 1000000, "gwh / yr");
+        });
+        strategyBuilder.add();
+      };
+
       strategyBuilder.setMetric("population");
 
       strategyBuilder.setSubmetric("all");
       strategyBuilder.setStrategy((x) => self.getPopulation(x));
       makeForThousandAndMillion(strategyBuilder);
+      makeForEnergyUnits(strategyBuilder);
 
       strategyBuilder.setSubmetric("new");
       strategyBuilder.setStrategy((x) => self.getPopulationNew(x));
       makeForThousandAndMillion(strategyBuilder);
+      makeForEnergyUnits(strategyBuilder);
     };
 
     addEmissionsStrategies(strategyBuilder);
@@ -819,6 +811,18 @@ class ReportDataWrapper {
     const self = this;
     const aggregated = self._getAggregatedAfterFilter(filterSet);
     return aggregated === null ? null : aggregated.getEnergyConsumption();
+  }
+
+  /**
+   * Normalize time units by removing " / year" and " / yr" suffixes.
+   *
+   * @private
+   * @param {string} units - The units string to normalize.
+   * @returns {string} The normalized units string without time suffixes.
+   */
+  _normalizeTimeUnits(units) {
+    const self = this;
+    return units.replace(" / year", "").replace(" / yr", "");
   }
 
   /**
