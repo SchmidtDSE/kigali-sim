@@ -1118,7 +1118,8 @@ public class StreamKeeper {
     if (!parameterization.hasStreamBeenEnabled(streamName)) {
       throw new RuntimeException("Stream '" + streamName + "' has not been enabled for "
           + useKey.getApplication() + "/" + useKey.getSubstance()
-          + ". Use 'enable " + streamName + "' statement before setting this stream.");
+          + ". Check if you still have a command on this stream which may be erroneous or "
+          + "enable the stream.");
     }
   }
 
