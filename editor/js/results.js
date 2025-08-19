@@ -426,21 +426,32 @@ class ScorecardPresenter {
       const subMetric = self._filterSet.getSubMetric();
       const units = self._filterSet.getUnits();
 
-      if (metricFamily === "emissions") {
-        const emissionsSubmetricDropdown = emissionsScorecard.querySelector(".emissions-submetric");
-        const emissionsUnitsDropdown = emissionsScorecard.querySelector(".emissions-units");
-        emissionsSubmetricDropdown.value = subMetric || "recharge";
-        emissionsUnitsDropdown.value = units || "MtCO2e / year";
-      } else if (metricFamily === "sales") {
-        const salesSubmetricDropdown = salesScorecard.querySelector(".sales-submetric");
-        const salesUnitsDropdown = salesScorecard.querySelector(".sales-units");
-        salesSubmetricDropdown.value = subMetric || "domestic";
-        salesUnitsDropdown.value = units || "mt / year";
-      } else if (metricFamily === "population") {
-        const equipmentSubmetricDropdown = equipmentScorecard.querySelector(".equipment-submetric");
-        const equipmentUnitsDropdown = equipmentScorecard.querySelector(".equipment-units");
-        equipmentSubmetricDropdown.value = subMetric || "all";
-        equipmentUnitsDropdown.value = units || "million units";
+      const metricStrategies = {
+        "emissions": () => {
+          const emissionsSubmetricDropdown = emissionsScorecard.querySelector(
+            ".emissions-submetric");
+          const emissionsUnitsDropdown = emissionsScorecard.querySelector(".emissions-units");
+          emissionsSubmetricDropdown.value = subMetric;
+          emissionsUnitsDropdown.value = units;
+        },
+        "sales": () => {
+          const salesSubmetricDropdown = salesScorecard.querySelector(".sales-submetric");
+          const salesUnitsDropdown = salesScorecard.querySelector(".sales-units");
+          salesSubmetricDropdown.value = subMetric;
+          salesUnitsDropdown.value = units;
+        },
+        "population": () => {
+          const equipmentSubmetricDropdown = equipmentScorecard.querySelector(
+            ".equipment-submetric");
+          const equipmentUnitsDropdown = equipmentScorecard.querySelector(".equipment-units");
+          equipmentSubmetricDropdown.value = subMetric;
+          equipmentUnitsDropdown.value = units;
+        },
+      };
+
+      const strategy = metricStrategies[metricFamily];
+      if (strategy) {
+        strategy();
       }
     };
 
@@ -862,7 +873,8 @@ class DimensionCardPresenter {
    */
   setLabel(dimensionType, labelText) {
     const self = this;
-    const dimensionCard = self._root.querySelector(`#${dimensionType}-dimension`);
+    const selector = `#${dimensionType}-dimension`;
+    const dimensionCard = self._root.querySelector(selector);
     const labelSpan = dimensionCard.querySelector(".dimension-label");
     labelSpan.textContent = labelText;
   }
