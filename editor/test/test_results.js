@@ -131,8 +131,8 @@ function buildResultsTests() {
         "Emissions scorecard should exist");
       assert.ok(document.getElementById("sales-scorecard"),
         "Sales scorecard should exist");
-      assert.ok(document.getElementById("equipment-scorecard"),
-        "Equipment scorecard should exist");
+      assert.ok(document.getElementById("population-scorecard"),
+        "Population scorecard should exist");
 
       assert.ok(document.getElementById("simulations-dimension"),
         "Simulations dimension should exist");
@@ -158,7 +158,7 @@ function buildResultsTests() {
       assert.ok(salesScorecard.querySelector(".units-input"),
         "Sales scorecard should have units dropdown");
 
-      const equipmentScorecard = document.getElementById("equipment-scorecard");
+      const equipmentScorecard = document.getElementById("population-scorecard");
       assert.ok(equipmentScorecard.querySelector(".metric-radio"),
         "Equipment scorecard should have metric radio");
       assert.ok(equipmentScorecard.querySelector(".submetric-input"),
