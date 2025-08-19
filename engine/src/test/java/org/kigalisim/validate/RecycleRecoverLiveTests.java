@@ -960,7 +960,7 @@ public class RecycleRecoverLiveTests {
   }
 
   /**
-   * Test that recycling equipment leaking issue where recycling decreases equipment population.
+   * Test for recycling equipment leaking issue where recycling decreases equipment population.
    * This test demonstrates the bug where volume-based sales with recycling results in lower
    * equipment population compared to BAU scenario, when it should be the same.
    * This test is expected to fail initially to confirm the bug exists.
