@@ -417,27 +417,27 @@ function buildUiTranslatorTests() {
       ]);
 
     buildTest("UI substance rename updates policies", "/examples/ui/policy_rename_test.qta", [
-    (result, assert) => {
-      // Verify initial compilation succeeds
-      assert.ok(result.getIsCompatible(), "Initial compilation should succeed");
-      
-      // Verify policy rename method works by calling it directly
-      result.renameSubstanceInApplication(
-        "original_app",
-        "test_substance", 
-        "renamed_test_substance",
-      );
-      
-      const code = result.toCode(0);
-      assert.ok(
-        code.includes('modify substance "renamed_test_substance"'),
-        "Policy should reference renamed substance after rename",
-      );
-      assert.ok(
-        code.includes('uses substance "renamed_test_substance"'),
-        "Main definition should use renamed substance",
-      );
-    },
+      (result, assert) => {
+        // Verify initial compilation succeeds
+        assert.ok(result.getIsCompatible(), "Initial compilation should succeed");
+
+        // Verify policy rename method works by calling it directly
+        result.renameSubstanceInApplication(
+          "original_app",
+          "test_substance",
+          "renamed_test_substance",
+        );
+
+        const code = result.toCode(0);
+        assert.ok(
+          code.includes('modify substance "renamed_test_substance"'),
+          "Policy should reference renamed substance after rename",
+        );
+        assert.ok(
+          code.includes('uses substance "renamed_test_substance"'),
+          "Main definition should use renamed substance",
+        );
+      },
     ]);
   });
 }
