@@ -314,6 +314,7 @@ class ResultsPresenter {
    * Determine if results are available to display.
    *
    * @returns {boolean} True if results are available and false otherwise.
+   */
   _getResultsAvailable() {
     const self = this;
     return self._results !== null;
