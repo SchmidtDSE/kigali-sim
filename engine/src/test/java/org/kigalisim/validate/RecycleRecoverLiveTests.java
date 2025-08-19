@@ -959,4 +959,58 @@ public class RecycleRecoverLiveTests {
     }
   }
 
+  /**
+   * Test that recycling equipment leaking issue where recycling decreases equipment population.
+   * This test demonstrates the bug where volume-based sales with recycling results in lower
+   * equipment population compared to BAU scenario, when it should be the same.
+   * This test is expected to fail initially to confirm the bug exists.
+   */
+  @Test
+  public void testRecyclingEquipmentLeaking() throws IOException {
+    // Load and parse the QTA file
+    String qtaPath = "../examples/recycling_equipment_leaking.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    // Run BAU scenario
+    Stream<EngineResult> bauResults = KigaliSimFacade.runScenario(program, "BAU", progress -> {});
+    List<EngineResult> bauResultsList = bauResults.collect(Collectors.toList());
+
+    // Run Recycle scenario
+    Stream<EngineResult> recycleResults = KigaliSimFacade.runScenario(program, "Recycle", progress -> {});
+    List<EngineResult> recycleResultsList = recycleResults.collect(Collectors.toList());
+
+    // Test multiple years to show the problem increases over time
+    int[] yearsToCheck = {1, 3, 5, 7, 10};
+    for (int year : yearsToCheck) {
+      EngineResult bauResult = LiveTestsUtil.getResult(bauResultsList.stream(), year, "App1", "SubA");
+      EngineResult recycleResult = LiveTestsUtil.getResult(recycleResultsList.stream(), year, "App1", "SubA");
+
+      assertNotNull(bauResult, "Should have BAU result for App1/SubA in year " + year);
+      assertNotNull(recycleResult, "Should have Recycle result for App1/SubA in year " + year);
+
+      double bauEquipment = bauResult.getPopulation().getValue().doubleValue();
+      double recycleEquipment = recycleResult.getPopulation().getValue().doubleValue();
+
+      // This assertion should fail initially, demonstrating the bug
+      // Equipment population should be the same between scenarios since recycling
+      // should not decrease the total amount of substance available for new equipment
+      assertEquals(bauEquipment, recycleEquipment, 0.0001,
+          "Year " + year + ": BAU equipment population (" + bauEquipment
+          + ") should equal Recycle equipment population (" + recycleEquipment
+          + ") in volume-based sales with recycling. Recycling should not decrease equipment population.");
+
+      // Additional debugging information
+      if (year > 1) {
+        double bauImport = bauResult.getImport().getValue().doubleValue();
+        double recycleImport = recycleResult.getImport().getValue().doubleValue();
+        double recycleRecycled = recycleResult.getRecycleConsumption().getValue().doubleValue();
+        
+        System.out.printf("Year %d: BAU import=%.3f kg, equipment=%.1f units; "
+            + "Recycle import=%.3f kg, recycled=%.3f tCO2e, equipment=%.1f units%n",
+            year, bauImport, bauEquipment, recycleImport, recycleRecycled, recycleEquipment);
+      }
+    }
+  }
+
 }
