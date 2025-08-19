@@ -43,7 +43,7 @@ public class ConsumptionCalculator {
   /**
    * Set the stream name for the calculation.
    *
-   * @param streamName The name of the stream ("consumption" or "energy")
+   * @param streamName The name of the stream ("consumption")
    */
   public void setStreamName(String streamName) {
     this.streamName = Optional.ofNullable(streamName);
