@@ -34,9 +34,9 @@ In addition to the emissions radio button, there is discussion of adding initial
 
 This is being discussed in [#490](https://github.com/SchmidtDSE/kigali-sim/issues/490). Please let us know what you think!
 
-## Completed
+## Pending
 
-The following changes have been adopted and released.
+The following are to be released shortly.
 
 ### Policy Auto-Update on Name Changes
 
@@ -69,6 +69,10 @@ Fixed a minor issue where the filter UI state was not properly reset when loadin
 **Classification:** Clarification
 
 Modified energy efficiency calculations to be based on the full equipment population rather than broken out by sales streams. Previously, energy consumption was attributed to trade sources through stream attribution, which could lead to confusion since energy consumption typically occurs across a single unified grid. The system now converts directly from total equipment population to energy consumption (kWh), simplifying the model to more closely align with majority user expectation. However, stream-level tracking can still be achieved through equipment model naming if preferred. This change moves energy options from the sales/consumption section to the equipment section in the UI, reflecting the equipment-based calculation. See [#493](https://github.com/SchmidtDSE/kigali-sim/issues/493).
+
+## Completed
+
+The following changes have been adopted and released.
 
 ### Initial Charge Emissions Calculation
 
