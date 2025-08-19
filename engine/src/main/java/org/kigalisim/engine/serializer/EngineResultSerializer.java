@@ -81,16 +81,27 @@ public class EngineResultSerializer {
     EngineNumber recycleValue = unitConverter.convert(recycleRaw, "kg");
     builder.setRecycleValue(recycleValue);
 
-    // Get total energy consumption
-    EngineNumber energyConsumptionValue = engine.getStreamFor(useKey, "energy");
-    // Default to 0 kwh if energy stream is not calculated (consistent with JS version)
-    if (energyConsumptionValue == null) {
+    // Get population metrics
+    EngineNumber populationValue = engine.getStreamFor(useKey, "equipment");
+
+    // Calculate energy consumption from equipment population
+    EngineNumber energyIntensity = engine.getEqualsEnergyIntensityFor(useKey);
+    boolean hasDataForEnergy = populationValue != null && energyIntensity != null;
+    
+    EngineNumber energyConsumptionValue;
+    if (hasDataForEnergy) {
+      // Set up UnitConverter with energy intensity for conversion
+      OverridingConverterStateGetter energyStateGetter = new OverridingConverterStateGetter(stateGetter);
+      energyStateGetter.setEnergyIntensity(energyIntensity);
+      UnitConverter energyUnitConverter = new UnitConverter(energyStateGetter);
+
+      // Convert population to energy consumption
+      energyConsumptionValue = energyUnitConverter.convert(populationValue, "kwh");
+    } else {
       energyConsumptionValue = new EngineNumber(BigDecimal.ZERO, "kwh");
     }
     builder.setEnergyConsumption(energyConsumptionValue);
 
-    // Get emissions
-    EngineNumber populationValue = engine.getStreamFor(useKey, "equipment");
     builder.setPopulationValue(populationValue);
 
     EngineNumber populationNew = engine.getStreamFor(useKey, "newEquipment");
@@ -299,7 +310,7 @@ public class EngineResultSerializer {
   /**
    * Calculate initial charge emissions for a given use key.
    *
-   * @param useKey The UseKey containing application and substance information  
+   * @param useKey The UseKey containing application and substance information
    * @return The initial charge emissions in tCO2e
    */
   private EngineNumber calculateInitialChargeEmissions(UseKey useKey) {
