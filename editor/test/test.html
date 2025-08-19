@@ -34,18 +34,18 @@
       <div id="scorecards">
         <div id="emissions-scorecard">
           <input type="radio" class="metric-radio" />
-          <select class="submetric-input"></select>
-          <select class="units-input"></select>
+          <select class="emissions-submetric submetric-input"></select>
+          <select class="emissions-units units-input"></select>
         </div>
         <div id="sales-scorecard">
           <input type="radio" class="metric-radio" />
-          <select class="submetric-input"></select>
-          <select class="units-input"></select>
+          <select class="sales-submetric submetric-input"></select>
+          <select class="sales-units units-input"></select>
         </div>
         <div id="equipment-scorecard">
           <input type="radio" class="metric-radio" />
-          <select class="submetric-input"></select>
-          <select class="units-input"></select>
+          <select class="equipment-submetric submetric-input"></select>
+          <select class="equipment-units units-input"></select>
         </div>
       </div>
       <div id="dimensions">
@@ -110,6 +110,7 @@
                 "test_local_storage_keeper": "./test_local_storage_keeper.js?v=EPOCH",
                 "test_main": "./test_main.js?v=EPOCH",
                 "test_report_data": "./test_report_data.js?v=EPOCH",
+                "test_results": "./test_results.js?v=EPOCH",
                 "test_ui_translator": "./test_ui_translator.js?v=EPOCH",
                 "test_ui_translator_reverse": "./test_ui_translator_reverse.js?v=EPOCH",
                 "test_update": "./test_update.js?v=EPOCH",
@@ -161,6 +162,7 @@
         import {buildLocalStorageKeeperTests} from "test_local_storage_keeper";
         import {buildMainTests} from "test_main";
         import {buildReportDataTests} from "test_report_data";
+        import {buildResultsTests} from "test_results";
         import {buildUiTranslatorTests} from "test_ui_translator";
         import {buildUiTranslatorReverseTests} from "test_ui_translator_reverse";
         import {buildUpdateTests} from "test_update";
@@ -171,6 +173,7 @@
         buildEngineNumberTests();
         buildEngineStructTests();
         buildReportDataTests();
+        buildResultsTests();
         buildUiTranslatorTests();
         buildUiTranslatorReverseTests();
         buildMainTests();
