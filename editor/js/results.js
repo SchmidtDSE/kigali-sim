@@ -450,9 +450,10 @@ class ScorecardPresenter {
       };
 
       const strategy = metricStrategies[metricFamily];
-      if (strategy) {
-        strategy();
+      if (!strategy) {
+        throw new Error(`Unknown metric family: ${metricFamily}`);
       }
+      strategy();
     };
 
     // Execute with a catch for invalid user selections.

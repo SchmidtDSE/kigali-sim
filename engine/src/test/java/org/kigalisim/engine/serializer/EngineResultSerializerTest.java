@@ -328,7 +328,6 @@ public class EngineResultSerializerTest {
           case "recycle": return recycling;
           case "recycleRecharge": return new EngineNumber(5, "mt"); // Half of total recycling
           case "recycleEol": return new EngineNumber(5, "mt"); // Half of total recycling
-          case "energy": return null; // Energy stream is no longer used
           case "equipment": return priorEquipment;
           case "newEquipment": return priorEquipment;
           case "rechargeEmissions": return recharge;
