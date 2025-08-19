@@ -38,6 +38,14 @@ This is being discussed in [#490](https://github.com/SchmidtDSE/kigali-sim/issue
 
 The following are to be released shortly.
 
+### Volume-Based Sales Recycling Material Balance
+
+**Status:** Released August 19, 2025
+
+**Classification:** Clarification
+
+Clarified that when recycling reduces virgin material demand in volume-based sales scenarios, any loss of recycling availability in subsequent years will be back-filled by virgin material to maintain total demand. Previously, in volume-based scenarios (using `set sales to X mt`), recycling would correctly displace virgin material in the year it was active, but if recycling amounts decreased or policies expired, the reduced virgin material baseline would persist, creating a cumulative material deficit and incorrectly decreasing equipment population over time. The system now ensures that volume-based sales maintain consistent total material availability (virgin + recycled = original demand) across all years, with recycling providing alternative supply rather than reducing total demand. This preserves the intended behavior that recycling should not affect equipment population in volume-based scenarios while maintaining existing behavior for stream-specific scenarios.
+
 ### Policy Auto-Update on Name Changes
 
 **Status:** Released August 19, 2025
