@@ -101,8 +101,8 @@ public class EngineResultSerializer {
       } else {
         energyConsumptionValue = new EngineNumber(BigDecimal.ZERO, "kwh");
       }
-    } catch (Exception e) {
-      // Handle any conversion errors by defaulting to 0 kwh
+    } catch (RuntimeException e) {
+      // Handle conversion errors (invalid units, missing substance, or conversion failures) by defaulting to 0 kwh
       energyConsumptionValue = new EngineNumber(BigDecimal.ZERO, "kwh");
     }
     builder.setEnergyConsumption(energyConsumptionValue);

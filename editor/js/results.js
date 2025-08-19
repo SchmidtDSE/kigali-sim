@@ -285,8 +285,7 @@ class ResultsPresenter {
     self._filterSet = self._filterSet.getWithYear(Math.max(...years));
 
     // Update dimension labels based on current filter settings
-    const labelText = self._dimensionManager._getSubstancesLabelForMetric(self._filterSet);
-    self._dimensionManager.setSustancesLabel(labelText);
+    self._dimensionManager.updateSubstancesLabel(self._filterSet);
 
     self._scorecardPresenter.showResults(self._results, self._filterSet);
     self._dimensionPresenter.showResults(self._results, self._filterSet);
@@ -830,12 +829,8 @@ class DimensionCardPresenter {
   setLabel(dimensionType, labelText) {
     const self = this;
     const dimensionCard = self._root.querySelector(`#${dimensionType}-dimension`);
-    if (dimensionCard) {
-      const labelSpan = dimensionCard.querySelector(".dimension-label");
-      if (labelSpan) {
-        labelSpan.textContent = labelText;
-      }
-    }
+    const labelSpan = dimensionCard.querySelector(".dimension-label");
+    labelSpan.textContent = labelText;
   }
 }
 
@@ -1355,17 +1350,15 @@ class DimensionPresenter {
   }
 
   /**
-   * Get the appropriate substances label based on the current metric.
+   * Update the substances label based on the current filter state.
    *
    * @param {FilterSet} filterSet - Current filter settings.
-   * @returns {string} The label text to use for substances.
-   * @private
    */
-  _getSubstancesLabelForMetric(filterSet) {
-    if (filterSet.getMetric() === "population") {
-      return "Equipment Models";
-    }
-    return "Substances";
+  updateSubstancesLabel(filterSet) {
+    const self = this;
+    const isPopulation = filterSet.getMetric() === "population";
+    const labelText = isPopulation ? "Equipment Models" : "Substances";
+    self.setSustancesLabel(labelText);
   }
 }
 
