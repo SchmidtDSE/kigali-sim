@@ -293,6 +293,11 @@ class ResultsPresenter {
   _updateInternally() {
     const self = this;
 
+    // Don't update if no results are available yet
+    if (self._results === null) {
+      return;
+    }
+
     const years = self._results.getYears(self._filterSet.getWithYear(null));
     self._filterSet = self._filterSet.getWithYear(Math.max(...years));
 
