@@ -821,6 +821,7 @@ class ReportDataWrapper {
    * @returns {string} The normalized units string without time suffixes.
    */
   _normalizeTimeUnits(units) {
+    const self = this;
     return units.replace(" / year", "").replace(" / yr", "");
   }
 
