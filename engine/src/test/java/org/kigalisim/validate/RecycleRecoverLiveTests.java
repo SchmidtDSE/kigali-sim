@@ -857,16 +857,12 @@ public class RecycleRecoverLiveTests {
     assertNotNull(program, "Program should not be null");
 
     // Run Combined scenario (Sales Permit then Domestic Recycling)
-    System.out.println("=== STARTING COMBINED SCENARIO (Sales Permit → Domestic Recycling) ===");
     Stream<EngineResult> combinedResults = KigaliSimFacade.runScenario(program, "Combined", progress -> {});
     List<EngineResult> combinedResultsList = combinedResults.collect(Collectors.toList());
-    System.out.println("=== COMPLETED COMBINED SCENARIO ===");
 
     // Run Combined Reverse scenario (Domestic Recycling then Sales Permit)
-    System.out.println("=== STARTING COMBINED REVERSE SCENARIO (Domestic Recycling → Sales Permit) ===");
     Stream<EngineResult> combinedReverseResults = KigaliSimFacade.runScenario(program, "Combined Reverse", progress -> {});
     List<EngineResult> combinedReverseResultsList = combinedReverseResults.collect(Collectors.toList());
-    System.out.println("=== COMPLETED COMBINED REVERSE SCENARIO ===");
 
     // Check results for both substances in 2035 for both scenarios
     EngineResult combinedHfc2035 = LiveTestsUtil.getResult(combinedResultsList.stream(), 2035, "Domestic Refrigeration", "HFC-134a");
@@ -900,9 +896,6 @@ public class RecycleRecoverLiveTests {
     // Calculate percentage difference
     double percentageDifference = Math.abs(combinedTotal - combinedReverseTotal) / Math.max(combinedTotal, combinedReverseTotal) * 100.0;
 
-    System.out.printf("=== FINAL RESULTS WITH R-600a RECYCLING ===\n");
-    System.out.printf("Combined: %.2f kg, Combined Reverse: %.2f kg, Difference: %.2f%%\n",
-        combinedTotal, combinedReverseTotal, percentageDifference);
 
     // Assert that the difference should be no more than 10%
     // This test is expected to fail initially, confirming the displacement issue during recycling
@@ -956,6 +949,101 @@ public class RecycleRecoverLiveTests {
           + "Total imports: " + totalImports + " kg, "
           + "Import initial charge to exporter: " + importInitialChargeToExporter + " kg, "
           + "Import attributed to importer: " + importAttributedToImporter + " kg");
+    }
+  }
+
+  /**
+   * Test for recycling equipment leaking issue where recycling decreases equipment population.
+   * This test demonstrates the bug where volume-based sales with recycling results in lower
+   * equipment population compared to BAU scenario, when it should be the same.
+   * This test is expected to fail initially to confirm the bug exists.
+   */
+  @Test
+  public void testRecyclingEquipmentLeaking() throws IOException {
+    // Load and parse the QTA file
+    String qtaPath = "../examples/recycling_equipment_leaking.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    // Run BAU scenario
+    Stream<EngineResult> bauResults = KigaliSimFacade.runScenario(program, "BAU", progress -> {});
+    List<EngineResult> bauResultsList = bauResults.collect(Collectors.toList());
+
+    // Run Recycle scenario
+    Stream<EngineResult> recycleResults = KigaliSimFacade.runScenario(program, "Recycle", progress -> {});
+    List<EngineResult> recycleResultsList = recycleResults.collect(Collectors.toList());
+
+    // Test multiple years to show the problem increases over time
+    // Include year 2 when recycling policy starts
+    int[] yearsToCheck = {1, 2, 3, 5, 7, 10};
+    for (int year : yearsToCheck) {
+      EngineResult bauResult = LiveTestsUtil.getResult(bauResultsList.stream(), year, "App1", "SubA");
+      EngineResult recycleResult = LiveTestsUtil.getResult(recycleResultsList.stream(), year, "App1", "SubA");
+
+      assertNotNull(bauResult, "Should have BAU result for App1/SubA in year " + year);
+      assertNotNull(recycleResult, "Should have Recycle result for App1/SubA in year " + year);
+
+      double bauEquipment = bauResult.getPopulation().getValue().doubleValue();
+      double recycleEquipment = recycleResult.getPopulation().getValue().doubleValue();
+
+      // This assertion should fail initially, demonstrating the bug
+      // Equipment population should be the same between scenarios since recycling
+      // should not decrease the total amount of substance available for new equipment
+      assertEquals(bauEquipment, recycleEquipment, 0.0001,
+          "Year " + year + ": BAU equipment population (" + bauEquipment
+          + ") should equal Recycle equipment population (" + recycleEquipment
+          + ") in volume-based sales with recycling. Recycling should not decrease equipment population.");
+
+      // Additional debugging information for all years
+      double bauImport = bauResult.getImport().getValue().doubleValue();
+      double bauDomestic = bauResult.getDomestic().getValue().doubleValue();
+      double recycleImport = recycleResult.getImport().getValue().doubleValue();
+      double recycleDomestic = recycleResult.getDomestic().getValue().doubleValue();
+      double recycleRecycled = recycleResult.getRecycleConsumption().getValue().doubleValue();
+      double bauSales = bauDomestic + bauImport;
+      double recycleSales = recycleDomestic + recycleImport;
+
+    }
+  }
+
+  /**
+   * Test that single stream volume-based scenarios also get recycling redistribution.
+   * This tests "set import to X mt" scenarios where recycling should not create
+   * permanent equipment population deficit when policies expire.
+   */
+  @Test
+  public void testSingleStreamRecyclingEquipmentLeaking() throws IOException {
+    // Load and parse the test QTA file
+    String qtaPath = "../examples/test_single_stream.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    // Run BAU scenario
+    Stream<EngineResult> bauResults = KigaliSimFacade.runScenario(program, "BAU", progress -> {});
+    List<EngineResult> bauResultsList = bauResults.collect(Collectors.toList());
+
+    // Run Recycle scenario
+    Stream<EngineResult> recycleResults = KigaliSimFacade.runScenario(program, "Recycle", progress -> {});
+    List<EngineResult> recycleResultsList = recycleResults.collect(Collectors.toList());
+
+    // Test years 1 (before policy), 2-3 (during policy), 4-5 (after policy expires)
+    int[] yearsToCheck = {1, 2, 3, 4, 5};
+    for (int year : yearsToCheck) {
+      EngineResult bauResult = LiveTestsUtil.getResult(bauResultsList.stream(), year, "App1", "SubA");
+      EngineResult recycleResult = LiveTestsUtil.getResult(recycleResultsList.stream(), year, "App1", "SubA");
+
+      assertNotNull(bauResult, "Should have BAU result for App1/SubA in year " + year);
+      assertNotNull(recycleResult, "Should have Recycle result for App1/SubA in year " + year);
+
+      double bauEquipment = bauResult.getPopulation().getValue().doubleValue();
+      double recycleEquipment = recycleResult.getPopulation().getValue().doubleValue();
+
+      // Equipment population should be the same between scenarios
+      // This tests that single-stream scenarios (set import to X mt) also get redistribution fix
+      assertEquals(bauEquipment, recycleEquipment, 0.0001,
+          "Year " + year + ": BAU equipment population (" + bauEquipment
+          + ") should equal Recycle equipment population (" + recycleEquipment
+          + ") in single-stream volume-based scenario. Loss of recycling should be back-filled by virgin material.");
     }
   }
 

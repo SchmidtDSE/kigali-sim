@@ -1,0 +1,40 @@
+start default
+
+  define application "App1"
+  
+    uses substance "SubA"
+      enable import
+      initial charge with 1 kg / unit for import
+      set import to 1 mt during year 1
+      retire 5 % / year
+      recharge 5 % with 0.85 kg / unit
+    end substance
+  
+  end application
+
+end default
+
+
+start policy "Recycle"
+
+  modify application "App1"
+  
+    modify substance "SubA"
+      recover 50 % with 100 % reuse during years 2 to 3
+    end substance
+  
+  end application
+
+end policy
+
+
+start simulations
+
+  simulate "BAU"
+  from years 1 to 5
+
+  simulate "Recycle"
+    using "Recycle"
+  from years 1 to 5
+
+end simulations
