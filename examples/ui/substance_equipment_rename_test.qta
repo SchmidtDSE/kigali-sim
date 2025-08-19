@@ -1,0 +1,30 @@
+start default
+
+  define application "test_app"
+
+    uses substance "HFC-134a - Refrigerator"
+      initial charge with 0.12 kg / unit for domestic
+      set domestic to 350 mt
+      equals 1430 tCO2e / mt
+    end substance
+
+  end application
+
+end default
+
+start policy "test_policy"
+
+  modify application "test_app"
+    modify substance "HFC-134a - Refrigerator"
+      cap domestic to 200 mt during years 2 to 4
+    end substance
+  end application
+
+end policy
+
+start simulations
+
+  simulate "business as usual" from years 1 to 5
+  simulate "with policy" using "test_policy" from years 1 to 5
+
+end simulations
