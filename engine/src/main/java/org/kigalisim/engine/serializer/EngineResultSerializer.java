@@ -87,7 +87,7 @@ public class EngineResultSerializer {
     // Calculate energy consumption from equipment population
     EngineNumber energyIntensity = engine.getEqualsEnergyIntensityFor(useKey);
     boolean hasDataForEnergy = populationValue != null && energyIntensity != null;
-    
+
     EngineNumber energyConsumptionValue;
     if (hasDataForEnergy) {
       // Set up UnitConverter with energy intensity for conversion
