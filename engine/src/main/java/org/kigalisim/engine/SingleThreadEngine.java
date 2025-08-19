@@ -756,6 +756,11 @@ public class SingleThreadEngine implements Engine {
   }
 
   @Override
+  public EngineNumber getEqualsEnergyIntensityFor(UseKey useKey) {
+    return streamKeeper.getEnergyIntensity(useKey);
+  }
+
+  @Override
   public void changeStream(String stream, EngineNumber amount, YearMatcher yearMatcher) {
     changeStream(stream, amount, yearMatcher, null);
   }
