@@ -167,12 +167,8 @@ class ReportDataWrapper {
     const strategyBuilder = new MetricStrategyBuilder();
 
     const addEmissionsConversion = (strategyBuilder) => {
-      const normalizeEmissionsUnits = (units) => {
-        return units.replace(" / year", "").replace(" / yr", "");
-      };
-
       const validateEmissionsUnits = (val) => {
-        const normalizedUnits = normalizeEmissionsUnits(val.getUnits());
+        const normalizedUnits = self._normalizeTimeUnits(val.getUnits());
         if (normalizedUnits !== "tCO2e") {
           throw "Unexpected emissions source units: " + val.getUnits();
         }
@@ -257,12 +253,8 @@ class ReportDataWrapper {
       strategyBuilder.setMetric("sales");
 
       const makeForKgAndMt = (strategyBuilder) => {
-        const normalizeSalesUnits = (units) => {
-          return units.replace(" / year", "").replace(" / yr", "");
-        };
-
         const validateSalesUnits = (value) => {
-          const normalizedUnits = normalizeSalesUnits(value.getUnits());
+          const normalizedUnits = self._normalizeTimeUnits(value.getUnits());
           if (normalizedUnits !== "kg") {
             throw "Unexpected sales units: " + value.getUnits();
           }
@@ -419,12 +411,8 @@ class ReportDataWrapper {
       const makeForEnergyUnits = (strategyBuilder) => {
         strategyBuilder.setStrategy((x) => self.getEnergyConsumption(x));
 
-        const normalizeEnergyUnits = (units) => {
-          return units.replace(" / year", "").replace(" / yr", "");
-        };
-
         const getKwhYr = (value) => {
-          const normalizedUnits = normalizeEnergyUnits(value.getUnits());
+          const normalizedUnits = self._normalizeTimeUnits(value.getUnits());
           if (normalizedUnits !== "kwh") {
             throw "Unexpected energy units: " + value.getUnits();
           }
@@ -823,6 +811,17 @@ class ReportDataWrapper {
     const self = this;
     const aggregated = self._getAggregatedAfterFilter(filterSet);
     return aggregated === null ? null : aggregated.getEnergyConsumption();
+  }
+
+  /**
+   * Normalize time units by removing " / year" and " / yr" suffixes.
+   *
+   * @private
+   * @param {string} units - The units string to normalize.
+   * @returns {string} The normalized units string without time suffixes.
+   */
+  _normalizeTimeUnits(units) {
+    return units.replace(" / year", "").replace(" / yr", "");
   }
 
   /**
