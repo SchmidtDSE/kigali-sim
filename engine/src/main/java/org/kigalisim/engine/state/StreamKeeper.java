@@ -1288,7 +1288,6 @@ public class StreamKeeper {
       BigDecimal newDomestic = domesticConverted.getValue().add(domesticAdd);
       BigDecimal newImport = importConverted.getValue().add(importAdd);
 
-
       // Set new amounts directly (bypass recycling logic to avoid recursion)
       setStream(useKey, "domestic", new EngineNumber(newDomestic, "kg"), false);
       setStream(useKey, "import", new EngineNumber(newImport, "kg"), false);
