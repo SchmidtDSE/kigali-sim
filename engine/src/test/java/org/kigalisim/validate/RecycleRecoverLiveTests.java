@@ -857,16 +857,12 @@ public class RecycleRecoverLiveTests {
     assertNotNull(program, "Program should not be null");
 
     // Run Combined scenario (Sales Permit then Domestic Recycling)
-    System.out.println("=== STARTING COMBINED SCENARIO (Sales Permit → Domestic Recycling) ===");
     Stream<EngineResult> combinedResults = KigaliSimFacade.runScenario(program, "Combined", progress -> {});
     List<EngineResult> combinedResultsList = combinedResults.collect(Collectors.toList());
-    System.out.println("=== COMPLETED COMBINED SCENARIO ===");
 
     // Run Combined Reverse scenario (Domestic Recycling then Sales Permit)
-    System.out.println("=== STARTING COMBINED REVERSE SCENARIO (Domestic Recycling → Sales Permit) ===");
     Stream<EngineResult> combinedReverseResults = KigaliSimFacade.runScenario(program, "Combined Reverse", progress -> {});
     List<EngineResult> combinedReverseResultsList = combinedReverseResults.collect(Collectors.toList());
-    System.out.println("=== COMPLETED COMBINED REVERSE SCENARIO ===");
 
     // Check results for both substances in 2035 for both scenarios
     EngineResult combinedHfc2035 = LiveTestsUtil.getResult(combinedResultsList.stream(), 2035, "Domestic Refrigeration", "HFC-134a");
@@ -900,9 +896,6 @@ public class RecycleRecoverLiveTests {
     // Calculate percentage difference
     double percentageDifference = Math.abs(combinedTotal - combinedReverseTotal) / Math.max(combinedTotal, combinedReverseTotal) * 100.0;
 
-    System.out.printf("=== FINAL RESULTS WITH R-600a RECYCLING ===\n");
-    System.out.printf("Combined: %.2f kg, Combined Reverse: %.2f kg, Difference: %.2f%%\n",
-        combinedTotal, combinedReverseTotal, percentageDifference);
 
     // Assert that the difference should be no more than 10%
     // This test is expected to fail initially, confirming the displacement issue during recycling
@@ -1010,12 +1003,6 @@ public class RecycleRecoverLiveTests {
       double bauSales = bauDomestic + bauImport;
       double recycleSales = recycleDomestic + recycleImport;
       
-      System.out.printf("Year %d: BAU sales=%.1f kg (domestic=%.1f, import=%.1f), equipment=%.1f units%n", 
-          year, bauSales, bauDomestic, bauImport, bauEquipment);
-      System.out.printf("        Recycle sales=%.1f kg (domestic=%.1f, import=%.1f), recycled=%.1f kg, equipment=%.1f units%n", 
-          recycleSales, recycleDomestic, recycleImport, recycleRecycled, recycleEquipment);
-      System.out.printf("        Difference: sales=%.1f kg, equipment=%.1f units%n", 
-          recycleSales - bauSales, recycleEquipment - bauEquipment);
     }
   }
 
