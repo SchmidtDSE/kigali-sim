@@ -1,0 +1,61 @@
+start about
+  # Name: "Tutorial 12: Equipment Energy Efficiency Comparison"
+  # Description: "Demonstrating energy consumption reduction through equipment efficiency improvements"
+  # Author: "Kigali Sim Tutorial Series"
+end about
+
+start default
+
+  define application "Domestic Refrigeration"
+
+    uses substance "HFC-134a High Energy"
+      enable domestic
+      equals 1430 tCO2e / kg
+      equals 500 kwh / unit
+      
+      initial charge with 0.15 kg / unit for domestic
+      set priorEquipment to 1000000 units during year 2025
+      set domestic to 20 mt during year 2025
+      
+      retire 5 % each year
+      recharge 10 % each year with 0.15 kg / unit
+    end substance
+
+    uses substance "HFC-134a Low Energy"
+      enable domestic
+      equals 1430 tCO2e / kg
+      equals 350 kwh / unit
+      
+      initial charge with 0.15 kg / unit for domestic
+      set priorEquipment to 50000 units during year 2025
+      set domestic to 1 mt during year 2025
+      
+      retire 5 % each year
+      recharge 10 % each year with 0.15 kg / unit
+    end substance
+
+  end application
+
+end default
+
+start policy "Energy Efficiency"
+
+  modify application "Domestic Refrigeration"
+
+    modify substance "HFC-134a High Energy"
+      replace 10 % of sales with "HFC-134a Low Energy" during years 2028 to onwards
+    end substance
+
+  end application
+
+end policy
+
+start simulations
+
+  simulate "BAU" from years 2025 to 2035
+
+  simulate "Efficiency Policy" 
+    using "Energy Efficiency"
+  from years 2025 to 2035
+
+end simulations
