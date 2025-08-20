@@ -882,8 +882,8 @@ class PrivacyConfirmationPresenter {
     self._privacyDetailsButton = document.getElementById("privacy-details-button");
 
     self._setupEventListeners();
-    self._setupPrivacyTermsButton();
-    self._setupPrivacyDetailsButton();
+    self._setupPrivacyButton(self._privacyTermsButton);
+    self._setupPrivacyButton(self._privacyDetailsButton);
   }
 
   /**
@@ -912,27 +912,16 @@ class PrivacyConfirmationPresenter {
   }
 
   /**
-   * Set up event listener for the privacy terms button in the footer.
+   * Set up event listener for a privacy button.
+   *
+   * @param {HTMLElement} button - The button element to set up event listeners for
+   * @private
    */
-  _setupPrivacyTermsButton() {
+  _setupPrivacyButton(button) {
     const self = this;
 
-    if (self._privacyTermsButton) {
-      self._privacyTermsButton.addEventListener("click", (event) => {
-        event.preventDefault();
-        self._showDialog();
-      });
-    }
-  }
-
-  /**
-   * Set up event listener for the privacy details button in the introduction panel.
-   */
-  _setupPrivacyDetailsButton() {
-    const self = this;
-
-    if (self._privacyDetailsButton) {
-      self._privacyDetailsButton.addEventListener("click", (event) => {
+    if (button) {
+      button.addEventListener("click", (event) => {
         event.preventDefault();
         self._showDialog();
       });
