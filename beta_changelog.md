@@ -38,13 +38,13 @@ This is being discussed in [#490](https://github.com/SchmidtDSE/kigali-sim/issue
 
 The following changes have been adopted and released.
 
-### Privacy clarification
+### Privacy Brief Dialog
 
 **Status:** Released August 19, 2025
 
 **Classification:** Documentation
 
-We have clarified in the privacy dialog box that data are not sent to us unless the user provides the QTA file to us directly or uses the Get Help feature. See [#508](https://github.com/SchmidtDSE/kigali-sim/issues/508).
+The privacy brief is now shown prior to accessing the full privacy details. Users can access privacy information through a confirmation dialog from multiple interface locations, providing better visibility of privacy practices before viewing the complete privacy policy. See [#508](https://github.com/SchmidtDSE/kigali-sim/issues/508).
 
 ### Volume-Based Sales Recycling Material Balance
 
