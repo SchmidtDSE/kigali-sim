@@ -920,12 +920,10 @@ class PrivacyConfirmationPresenter {
   _setupPrivacyButton(button) {
     const self = this;
 
-    if (button) {
-      button.addEventListener("click", (event) => {
-        event.preventDefault();
-        self._showDialog();
-      });
-    }
+    button.addEventListener("click", (event) => {
+      event.preventDefault();
+      self._showDialog();
+    });
   }
 
   /**
