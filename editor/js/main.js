@@ -879,9 +879,11 @@ class PrivacyConfirmationPresenter {
     self._dialog = document.getElementById("privacy-confirmation-dialog");
     self._closeButton = self._dialog.querySelector(".close-button");
     self._privacyTermsButton = document.getElementById("privacy-terms-button");
+    self._privacyDetailsButton = document.getElementById("privacy-details-button");
 
     self._setupEventListeners();
     self._setupPrivacyTermsButton();
+    self._setupPrivacyDetailsButton();
   }
 
   /**
@@ -917,6 +919,20 @@ class PrivacyConfirmationPresenter {
 
     if (self._privacyTermsButton) {
       self._privacyTermsButton.addEventListener("click", (event) => {
+        event.preventDefault();
+        self._showDialog();
+      });
+    }
+  }
+
+  /**
+   * Set up event listener for the privacy details button in the introduction panel.
+   */
+  _setupPrivacyDetailsButton() {
+    const self = this;
+
+    if (self._privacyDetailsButton) {
+      self._privacyDetailsButton.addEventListener("click", (event) => {
         event.preventDefault();
         self._showDialog();
       });
