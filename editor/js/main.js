@@ -878,8 +878,12 @@ class PrivacyConfirmationPresenter {
     self._checkbox = document.getElementById("privacy-confirmation-check");
     self._dialog = document.getElementById("privacy-confirmation-dialog");
     self._closeButton = self._dialog.querySelector(".close-button");
+    self._privacyTermsButton = document.getElementById("privacy-terms-button");
+    self._privacyDetailsButton = document.getElementById("privacy-details-button");
 
     self._setupEventListeners();
+    self._setupPrivacyButton(self._privacyTermsButton);
+    self._setupPrivacyButton(self._privacyDetailsButton);
   }
 
   /**
@@ -904,6 +908,21 @@ class PrivacyConfirmationPresenter {
     // Listen for dialog close via ESC key or backdrop click
     self._dialog.addEventListener("close", () => {
       self._onDialogClose();
+    });
+  }
+
+  /**
+   * Set up event listener for a privacy button.
+   *
+   * @param {HTMLElement} button - The button element to set up event listeners for
+   * @private
+   */
+  _setupPrivacyButton(button) {
+    const self = this;
+
+    button.addEventListener("click", (event) => {
+      event.preventDefault();
+      self._showDialog();
     });
   }
 

@@ -1417,7 +1417,7 @@ class DimensionPresenter {
   updateSubstancesLabel(filterSet) {
     const self = this;
     const isPopulation = filterSet.getMetric() === "population";
-    const labelText = isPopulation ? "Equipment Models" : "Substances";
+    const labelText = isPopulation ? "Equipment" : "Substances";
     self.setSustancesLabel(labelText);
   }
 }
