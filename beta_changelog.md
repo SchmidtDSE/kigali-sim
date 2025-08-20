@@ -40,7 +40,7 @@ The following changes have been adopted and released.
 
 ### Privacy Brief Dialog
 
-**Status:** Released August 19, 2025
+**Status:** Released August 20, 2025
 
 **Classification:** Documentation
 
