@@ -38,6 +38,14 @@ This is being discussed in [#490](https://github.com/SchmidtDSE/kigali-sim/issue
 
 The following changes have been adopted and released.
 
+### Feature-Specific Tutorials
+
+**Status:** Released August 19, 2025
+
+**Classification:** Documentation
+
+Added two new feature-specific tutorials to the guide demonstrating Montreal Protocol policy modeling capabilities. Tutorial 11 focuses on Global Warming Potential (GWP) comparison between HFC-134a and R-600a refrigerants, showing how refrigerant substitution policies can reduce climate impact. Tutorial 12 demonstrates equipment energy efficiency improvements, comparing high-energy and low-energy equipment models to illustrate how efficiency policies can reduce overall energy consumption. Both tutorials use UI-based instructions and progressive policy implementation patterns.
+
 ### Privacy clarification
 
 **Status:** Released August 19, 2025
