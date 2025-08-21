@@ -1,0 +1,233 @@
+<html>
+  <head>
+    <title>Tutorial 12: Equipment Energy Efficiency</title>
+    <link href="/guide/guide.css?v=EPOCH" rel="stylesheet" type="text/css" />
+  </head>
+  <body>
+    <a href="#main" class="skip-link">Skip to main content</a>
+    <header>
+      This tutorial is part of the <a href="/guide">guide</a> for the
+      <a href="/">Kigali Sim</a>.
+    </header>
+    <main id="main">
+      <h1>Tutorial 12: Equipment Energy Efficiency Comparison</h1>
+
+      Demonstrating energy consumption reduction through equipment efficiency improvements.
+
+      <details>
+        <summary>Contents</summary>
+        <ul>
+          <li><a href="#motivation">Motivation</a></li>
+          <li><a href="#setup-business-as-usual">Setting Up the Business-as-Usual Scenario</a></li>
+          <li><a href="#adding-efficiency-policy">Adding the Energy Efficiency Policy</a></li>
+          <li><a href="#creating-the-simulation">Creating the Simulation</a></li>
+          <li><a href="#results">Results</a></li>
+          <li><a href="#conclusion">Conclusion</a></li>
+          <li><a href="#next-steps">Next Steps</a></li>
+        </ul>
+      </details>
+
+      <section id="motivation">
+        <h2>Motivation</h2>
+
+        <p>
+          Beyond refrigerant choice, equipment energy efficiency plays a crucial role in the overall environmental impact of cooling systems. Energy-efficient equipment consumes less electricity, reducing both operational costs and indirect emissions from power generation. In this tutorial, we'll model an energy efficiency policy that gradually replaces high-energy equipment with low-energy alternatives. To narrow our focus to these effects, we'll examine how this transition can significantly reduce overall energy consumption (measured in kWh) while maintaining the same refrigerant type and cooling capacity.
+        </p>
+      </section>
+
+      <section id="setup-business-as-usual">
+        <h2>Setting Up the Business-as-Usual Scenario</h2>
+
+        <p>
+          Let's create our baseline scenario with both high-energy and low-energy models of the same HFC-134a refrigeration equipment. We'll start with high-energy models dominating the market and minimal low-energy model adoption.
+        </p>
+
+        <p><strong>Step 1: Create the Domestic Refrigeration application</strong></p>
+        <ul>
+          <li>Click <strong>Add Application</strong></li>
+          <li>Name it "Domestic Refrigeration"</li>
+          <li>Click <strong>Save</strong></li>
+        </ul>
+
+        <p><strong>Step 2: Add HFC-134a High Energy equipment model</strong></p>
+        <ul>
+          <li>Click <strong>Add Consumption</strong></li>
+          <li>Name it "HFC-134a" and use "Domestic Refrigeration"</li>
+          <li>On the <strong>General</strong> tab:
+            <ul>
+              <li>Enable <strong>domestic</strong> manufacture</li>
+              <li>Set <strong>GWP to 1430 tCO2e/kg</strong></li>
+              <li>Set <strong>annual energy consumption</strong> to 500 kwh/unit</li>
+            </ul>
+          </li>
+          <li>On the <strong>Equipment</strong> tab:
+            <ul>
+              <li>Set <strong>equipment type</strong> as "high energy"</li>
+              <li>Set <strong>initial charge</strong> to 0.15 kg/unit for domestic manufacture</li>
+              <li>Set <strong>annual retirement</strong> to 5% each year</li>
+            </ul>
+          </li>
+          <li>On the <strong>Servicing</strong> tab:
+            <ul>
+              <li>Set <strong>recharge</strong> to 10% with 0.15 kg/unit during all years</li>
+            </ul>
+          </li>
+          <li>On the <strong>Set</strong> tab:
+            <ul>
+              <li>Set <strong>prior equipment</strong> to 1,000,000 units in year 2025</li>
+              <li>Set <strong>domestic</strong> manufacture to 20 mt in year 2025</li>
+            </ul>
+          </li>
+          <li>Click <strong>Save</strong></li>
+        </ul>
+
+        <p><strong>Step 3: Add HFC-134a Low Energy equipment model</strong></p>
+        <ul>
+          <li>Click <strong>Add Consumption</strong></li>
+          <li>Name it "HFC-134a" and use "Domestic Refrigeration"</li>
+          <li>On the <strong>General</strong> tab:
+            <ul>
+              <li>Enable <strong>domestic</strong> manufacture</li>
+              <li>Set <strong>GWP</strong> to 1430 tCO2e/kg</li>
+              <li>Set <strong>annual energy consumption</strong> to 350 kwh/unit</li>
+            </ul>
+          </li>
+          <li>On the <strong>Equipment</strong> tab:
+            <ul>
+              <li>Set <strong>equipment type</strong> as "low energy"</li>
+              <li>Set <strong>initial charge</strong> to 0.15 kg/unit for domestic manufacture</li>
+              <li>Set <strong>annual retirement</strong> to 5% each year</li>
+            </ul>
+          </li>
+          <li>On the <strong>Servicing</strong> tab:
+            <ul>
+              <li>Set <strong>recharge</strong> to 10% with 0.15 kg/unit during all years</li>
+            </ul>
+          </li>
+          <li>On the <strong>Set</strong> tab:
+            <ul>
+              <li>Set <strong>prior equipment</strong> to 1,000 units in year 2025</li>
+              <li>Set <strong>domestic</strong> manufacture to 10 mt in year 2025</li>
+            </ul>
+          </li>
+          <li>Click <strong>Save</strong></li>
+        </ul>
+
+        <p><strong>Step 4: Create baseline simulation</strong></p>
+        <ul>
+          <li>Click <strong>Add Simulation</strong></li>
+          <li>Name it "BAU"</li>
+          <li>Set duration from <strong>years 2025 to 2035</strong></li>
+          <li>Leave all policies unchecked (this is our business-as-usual baseline)</li>
+          <li>Click <strong>Save</strong></li>
+        </ul>
+
+        <p>You should now see your baseline simulation running, showing the high-energy model as the dominant equipment with much higher consumption volumes than the low-energy alternative.</p>
+      </section>
+
+      <section id="adding-efficiency-policy">
+        <h2>Adding the Energy Efficiency Policy</h2>
+
+        <p>
+          Now let's create a policy that gradually replaces high-energy equipment consumption with low-energy models. This will demonstrate how an equipment efficiency policy can reduce overall energy consumption without changing refrigerant type.
+        </p>
+
+        <p><strong>Step 1: Create the efficiency policy</strong></p>
+        <ul>
+          <li>Click <strong>Add Policy</strong></li>
+          <li>Name it "Energy Efficiency"</li>
+          <li>Select <strong>Domestic Refrigeration</strong> as the application</li>
+          <li>Select <strong>HFC-134a  - high energy</strong> as the substance</li>
+        </ul>
+
+        <p><strong>Step 2: Configure the replacement mechanism</strong></p>
+        <ul>
+          <li>Go to the <strong>Replace</strong> tab within your HFC-134a High Energy policy configuration</li>
+          <li>Click <strong>Add Replace</strong></li>
+          <li>Set to replace 10% of sales with <strong>HFC-134a - low energy</strong></li>
+          <li>Set timing to <strong>each year during years 2028 to onwards</strong></li>
+          <li>Click <strong>Save</strong> to finish the policy</li>
+        </ul>
+
+        <p>
+          This policy will progressively reduce high-energy equipment consumption by 10% each year starting in 2028, with that demand being met by low-energy equipment instead. Over time, this creates a significant shift toward more efficient equipment while maintaining the same refrigerant (HFC-134a) and overall cooling capacity.
+        </p>
+      </section>
+
+      <section id="creating-the-simulation">
+        <h2>Creating the Simulation</h2>
+
+        <p>Now let's create a simulation to compare the policy scenario with our business-as-usual baseline.</p>
+
+        <ul>
+          <li>Click <strong>Add Simulation</strong></li>
+          <li>Name it "Efficiency Policy"</li>
+          <li>Check the <strong>Energy Efficiency</strong> policy checkbox</li>
+          <li>Set duration from <strong>years 2025 to 2035</strong></li>
+          <li>Click <strong>Save</strong></li>
+        </ul>
+
+        <p>You should now see both your <strong>BAU</strong> and <strong>Efficiency Policy</strong> scenarios displayed side by side in the results panel.</p>
+      </section>
+
+      <section id="results">
+        <h2>Results</h2>
+
+        <p>Let's examine how the efficiency policy affects both equipment adoption and energy consumption:</p>
+
+        <p><strong>Energy Consumption Comparison</strong></p>
+        <ul>
+          <li>Select the <strong>Population</strong> radio button and examine the energy consumption charts</li>
+          <li>Compare the <strong>BAU</strong> and <strong>Efficiency Policy</strong> simulations</li>
+          <li>Notice how overall energy consumption decreases under the policy scenario</li>
+        </ul>
+
+        <p>
+          The energy benefits become apparent immediately: even though total equipment population and refrigerant consumption stay roughly constant, the overall kWh consumption drops substantially. This is because we're replacing equipment that consumes 500 kWh/year with units that consume only 350 kWh/year - a 30% efficiency improvement.
+        </p>
+      </section>
+
+      <section id="conclusion">
+        <h2>Conclusion</h2>
+
+        <p>You've successfully modeled an equipment energy efficiency policy! This tutorial demonstrated:</p>
+
+        <ul>
+          <li><strong>Equipment differentiation</strong>: How the same refrigerant can have different environmental impacts based on equipment efficiency</li>
+          <li><strong>Energy-focused policies</strong>: Using "replace X% of sales with substance" to model efficiency transitions</li>
+          <li><strong>Indirect impact reduction</strong>: How energy efficiency reduces environmental impact beyond direct refrigerant emissions</li>
+          <li><strong>Market transformation</strong>: Modeling progressive adoption of efficient technologies</li>
+          <li><strong>Comprehensive assessment</strong>: Evaluating both direct and indirect environmental benefits</li>
+        </ul>
+
+        <p>
+          The energy efficiency policy shows how focusing on equipment characteristics alongside refrigerant choice can maximize co-benefits. This approach is particularly relevant for comprehensive climate policies that address both direct emissions from refrigerants and indirect emissions from energy consumption.
+        </p>
+
+        <p>
+          <strong>Download the completed tutorial</strong>: <a href="tutorial_12.qta" download>tutorial_12.qta</a> - this contains the complete energy efficiency comparison model with equipment transition policy
+        </p>
+      </section>
+
+      <section id="next-steps">
+        <h2>Next Steps</h2>
+
+        <p>
+          You've now completed both Feature-Specific tutorials! You've learned how to model GWP-focused refrigerant substitution (Tutorial 11) and energy efficiency equipment transitions (Tutorial 12). These tutorials complement each other to provide a comprehensive understanding of environmental impact assessment in cooling systems.
+        </p>
+
+        <p>
+          For more complex scenarios, consider combining both approaches: policies that simultaneously transition to lower-GWP refrigerants AND more energy-efficient equipment. Return to the <a href="/guide/">guide index</a> to explore other tutorials or the QubecTalk reference for advanced modeling techniques.
+        </p>
+
+        <p>
+          <a href="/guide/tutorial_11.html">Previous: Tutorial 11</a> | 
+          <a href="/guide/">Guide Index</a>
+        </p>
+      </section>
+
+      <hr />
+      <p><em>This tutorial is part of the Feature-Specific series demonstrating specialized aspects of Montreal Protocol policy modeling using Kigali Sim.</em></p>
+    </main>
+  </body>
+</html>
