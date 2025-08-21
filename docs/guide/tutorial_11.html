@@ -1,6 +1,6 @@
 <html>
   <head>
-    <title>Tutorial 11: Global Warming Potential Refrigerant Comparison</title>
+    <title>Tutorial 11: Global Warming Potential</title>
     <link href="/guide/guide.css?v=EPOCH" rel="stylesheet" type="text/css" />
   </head>
   <body>
@@ -31,11 +31,14 @@
         <h2>Motivation</h2>
 
         <p>
-          Global Warming Potential (GWP) values represent how much a substance contributes to climate change compared to CO2. Different refrigerants have vastly different climate impacts - for example, HFC-134a has a GWP of 1,430 while R-600a (isobutane) has a GWP of only 3. This means that each kilogram of HFC-134a has the same climate impact as 477 kilograms of R-600a!
+          Global Warming Potential (GWP) values represent how much a substance contributes to climate change compared to CO2. Previous tutorials included investigation of these options but this section takes a closer look at specifying tCO2e for substances and putting policies on top.
+        </p>
+        <p>
+          More specifically, different refrigerants have vastly different climate impacts. For this tutorial, consider HFC-134a with a GWP of 1,430 versus R-600a (isobutane), which has a GWP of only 3. This means that each kilogram of HFC-134a has the same climate impact as 477 kilograms of R-600a!
         </p>
 
         <p>
-          In this tutorial, we'll model a refrigerant substitution policy that gradually replaces HFC-134a with R-600a in domestic refrigeration. You'll see how this transition can dramatically reduce overall climate impact (measured in tCO2e) even when total refrigerant consumption remains similar.
+          In this exercise, we'll model a refrigerant substitution policy that gradually replaces HFC-134a with R-600a in domestic refrigeration. This simulation can track this transition as it dramatically reduces overall climate impact (measured in tCO2e) even when total refrigerant consumption remains similar.
         </p>
       </section>
 
@@ -55,25 +58,29 @@
 
         <p><strong>Step 2: Add HFC-134a substance</strong></p>
         <ul>
-          <li>In your Domestic Refrigeration application, click <strong>Add Substance</strong></li>
-          <li>Name it "HFC-134a"</li>
+          <li>In your Domestic Refrigeration application, click <strong>Add Consumption</strong></li>
           <li>On the <strong>General</strong> tab:
             <ul>
-              <li><strong>Enable "Domestic Manufacture"</strong></li>
-              <li>Set <strong>GWP to 1430 tCO2e/kg</strong></li>
+              <li>Name the substance "HFC-134a"</li>
+              <li>Enable <strong>domestic</strong> manufacture</li>
+              <li>Set <strong>GHG equivalency</strong> to 1430 tCO2e/kg</li>
             </ul>
           </li>
           <li>On the <strong>Equipment</strong> tab:
             <ul>
-              <li>Set <strong>Initial charge to 0.15 kg/unit for Domestic Manufacture</strong></li>
-              <li>Set <strong>Retirement rate to 5% each year</strong></li>
-              <li>Set <strong>Recharge to 10% with 0.15 kg/unit each year</strong></li>
+              <li>Set <strong>initial charge</strong> to 0.15 kg/unit for domestic</li>
+              <li>Set <strong>annual retirement</strong> rate to 5% each year</li>
+            </ul>
+          </li>
+          <li>On the <strong>Servicing</strong> tab:
+            <ul>
+              <li>Set <strong>recharge</strong> to 10% with 0.15 kg/unit in all years</li>
             </ul>
           </li>
           <li>On the <strong>Set</strong> tab:
             <ul>
-              <li>Set <strong>Prior equipment to 1,000,000 units in year 2025</strong></li>
-              <li>Set <strong>Domestic Manufacture to 20 mt in year 2025</strong></li>
+              <li>Set <strong>prior equipment</strong> to 1,000,000 units in year 2025</li>
+              <li>Set <strong>domestic</strong> manufacture to 20 mt in year 2025</li>
             </ul>
           </li>
           <li>Click <strong>Save</strong></li>
@@ -81,25 +88,28 @@
 
         <p><strong>Step 3: Add R-600a substance</strong></p>
         <ul>
-          <li>Still in your Domestic Refrigeration application, click <strong>Add Substance</strong></li>
-          <li>Name it "R-600a"</li>
+          <li>Again in the Domestic Refrigeration application, <strong>Add Consumption</strong> for R-600a with similar equipment properties except different GWP.</li>
           <li>On the <strong>General</strong> tab:
             <ul>
-              <li><strong>Enable "Domestic Manufacture"</strong></li>
-              <li>Set <strong>GWP to 3 tCO2e/kg</strong></li>
+              <li>Set <strong>GHG equivalency</strong> to 3 tCO2e/kg</li>
+              <li>Enable <strong>domestic</strong> manufacture</li>
             </ul>
           </li>
           <li>On the <strong>Equipment</strong> tab:
             <ul>
-              <li>Set <strong>Initial charge to 0.07 kg/unit for Domestic Manufacture</strong></li>
-              <li>Set <strong>Retirement rate to 5% each year</strong></li>
-              <li>Set <strong>Recharge to 10% with 0.07 kg/unit each year</strong></li>
+              <li>Set <strong>initial charge</strong> to 0.15 kg/unit for domestic</li>
+              <li>Set <strong>annual retirement</strong> rate to 5% each year</li>
+            </ul>
+          </li>
+          <li>On the <strong>Servicing</strong> tab:
+            <ul>
+              <li>Set <strong>recharge</strong> to 10% with 0.15 kg/unit in all years</li>
             </ul>
           </li>
           <li>On the <strong>Set</strong> tab:
             <ul>
-              <li>Set <strong>Prior equipment to 50,000 units in year 2025</strong></li>
-              <li>Set <strong>Domestic Manufacture to 1 mt in year 2025</strong></li>
+              <li>Set <strong>prior equipment</strong> to 50,000 units in year 2025</li>
+              <li>Set <strong>domestic</strong> manufacture to 1 mt in year 2025</li>
             </ul>
           </li>
           <li>Click <strong>Save</strong></li>
@@ -127,16 +137,16 @@
         <p><strong>Step 1: Create the substitution policy</strong></p>
         <ul>
           <li>Click <strong>Add Policy</strong></li>
-          <li>Name it "GWP Reduction"</li>
+          <li>Name it "Replacement"</li>
           <li>Select <strong>Domestic Refrigeration</strong> as the application</li>
           <li>Select <strong>HFC-134a</strong> as the substance</li>
         </ul>
 
         <p><strong>Step 2: Configure the replacement mechanism</strong></p>
         <ul>
-          <li>Go to the <strong>Replace</strong> tab within your HFC-134a policy configuration</li>
-          <li>Click <strong>Add Replace</strong></li>
-          <li>Set <strong>Replace 10% of sales with R-600a</strong></li>
+          <li>Go to the <strong>Replace</strong> tab</li>
+          <li>Target Domestic Refrigeration and HFC-134a</li>
+          <li><strong>Add Replacement</strong> of 10% of sales with R-600a</li>
           <li>Set timing to <strong>each year during years 2028 to onwards</strong></li>
           <li>Click <strong>Save</strong> to finish the policy</li>
         </ul>
@@ -153,13 +163,13 @@
 
         <ul>
           <li>Click <strong>Add Simulation</strong></li>
-          <li>Name it "GWP Policy"</li>
-          <li>Check the <strong>GWP Reduction</strong> policy checkbox</li>
+          <li>Name it "Replacement"</li>
+          <li>Check the <strong>Replacement</strong> policy checkbox</li>
           <li>Set duration from <strong>years 2025 to 2035</strong></li>
           <li>Click <strong>Save</strong></li>
         </ul>
 
-        <p>You should now see both your <strong>BAU</strong> and <strong>GWP Policy</strong> scenarios displayed side by side in the results panel.</p>
+        <p>You should now see both your <strong>BAU</strong> and <strong>Replacement</strong> scenarios displayed side by side in the results panel.</p>
       </section>
 
       <section id="results">
@@ -169,27 +179,12 @@
 
         <p><strong>Substance Consumption Changes</strong></p>
         <ul>
-          <li>Select the <strong>Substances</strong> radio button to view individual refrigerant consumption</li>
           <li>Select the <strong>Consumption</strong> radio button to see total consumption volumes</li>
-          <li>Compare the <strong>BAU</strong> and <strong>GWP Policy</strong> simulations</li>
+          <li>Select <strong>domestic</strong> in the dropdown menu</li>
+          <li>Select <strong>kg / year</strong> first to see that the amount of substance consumed is the same</li>
+          <li>Change to <strong>tCO2e / year</strong> to see that, despite the same amount of substance, the tCO2e is much lower in the policy case</li>
         </ul>
 
-        <p>
-          You'll observe that starting in 2028, HFC-134a consumption begins declining while R-600a consumption increases correspondingly. The total refrigerant volume (when combined) remains similar between scenarios, but the mix shifts dramatically toward the lower-GWP alternative.
-        </p>
-
-        <p><strong>Climate Impact Comparison</strong></p>
-        <ul>
-          <li>Select the <strong>Emissions</strong> radio button to view climate impact in tCO2e</li>
-          <li>Compare the <strong>BAU</strong> and <strong>GWP Policy</strong> simulations</li>
-          <li>Notice how overall emissions decrease significantly under the policy scenario</li>
-        </ul>
-
-        <p>
-          The climate benefits become apparent immediately: even though total refrigerant consumption stays roughly constant, the overall tCO2e emissions drop substantially. This is because we're replacing a high-GWP substance (1,430 tCO2e/kg) with a very low-GWP alternative (3 tCO2e/kg).
-        </p>
-
-        <p><strong>Understanding the GWP Impact</strong></p>
         <p>
           The dramatic emissions reduction demonstrates the power of GWP-focused policies. Each kilogram of HFC-134a replaced with R-600a eliminates approximately 1,427 kg of CO2-equivalent emissions (1,430 - 3 = 1,427). This shows how substance choice can be far more impactful for climate than overall consumption volume reductions.
         </p>
@@ -209,7 +204,7 @@
         </ul>
 
         <p>
-          The GWP reduction policy shows how focusing on substance characteristics rather than just consumption volumes can maximize climate benefits. This approach is particularly relevant for Montreal Protocol and Kigali Amendment implementation.
+          The GWP reduction policy shows how focusing on substance characteristics rather than just consumption volumes can maximize co-benefits.
         </p>
 
         <p>
