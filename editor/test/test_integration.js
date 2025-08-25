@@ -1245,6 +1245,94 @@ function buildIntegrationTests() {
         );
       },
     ]);
+
+    // kgCO2e integration tests
+    buildTest("validates kgCO2e grammar parsing", "/examples/kgco2e_validation.qta", [
+      (result, assert) => {
+        // Test that kgCO2e units parse successfully without execution errors
+        const record = getResult(result, "grammar_validation_test", 1, 0,
+          "kgco2e_test", "test_substance");
+
+        // Basic validation that the simulation produced results
+        assert.ok(record, "Should have simulation result for kgCO2e grammar test");
+        // Validate domestic calculation
+        const domestic = record.getDomestic();
+        assert.closeTo(domestic.getValue(), 100, 0.001);
+        assert.deepEqual(domestic.getUnits(), "kg");
+      },
+      (result, assert) => {
+        // Test GHG consumption calculation
+        const record = getResult(result, "grammar_validation_test", 1, 0,
+          "kgco2e_test", "test_substance");
+        const consumption = record.getGhgConsumption();
+        // 100 kg * 1430 kgCO2e/kg = 143,000 kgCO2e = 143 tCO2e
+        assert.closeTo(consumption.getValue(), 143, 0.1);
+        assert.deepEqual(consumption.getUnits(), "tCO2e");
+      },
+    ]);
+
+    buildTest("validates kgCO2e units end-to-end", "/examples/kgco2e_engine_test.qta", [
+      (result, assert) => {
+        // Test year 1 - initial setup with kgCO2e units
+        const record = getResult(result, "kgco2e_test", 1, 0,
+          "kgco2e_engine_test", "test_substance_kgco2e");
+        const consumption = record.getGhgConsumption();
+        // Validate GHG consumption calculation with kgCO2e input
+        // 100 kg domestic * 1430 kgCO2e/kg = 143,000 kgCO2e = 143 tCO2e (internal)
+        assert.closeTo(consumption.getValue(), 143, 0.1);
+        assert.deepEqual(consumption.getUnits(), "tCO2e");
+      },
+      (result, assert) => {
+        // Test year 1 - domestic consumption validation
+        const record = getResult(result, "kgco2e_test", 1, 0,
+          "kgco2e_engine_test", "test_substance_kgco2e");
+        const domestic = record.getDomestic();
+        // Validate domestic volume is correctly processed
+        assert.closeTo(domestic.getValue(), 100, 0.001);
+        assert.deepEqual(domestic.getUnits(), "kg");
+      },
+      (result, assert) => {
+        // Test year 2 - validate recharge calculations with kgCO2e
+        const record = getResult(result, "kgco2e_test", 2, 0,
+          "kgco2e_engine_test", "test_substance_kgco2e");
+        const rechargeEmissions = record.getRechargeEmissions();
+        // Validate recharge emissions are calculated correctly
+        // With 10% recharge: additional emissions should be non-zero
+        assert.ok(rechargeEmissions.getValue() > 0, "Recharge emissions should be greater than 0");
+        assert.deepEqual(rechargeEmissions.getUnits(), "tCO2e");
+      },
+      (result, assert) => {
+        // Test year 3 - validate multi-year consistency
+        const record = getResult(result, "kgco2e_test", 3, 0,
+          "kgco2e_engine_test", "test_substance_kgco2e");
+        const consumption = record.getGhgConsumption();
+        // Consumption should remain consistent with kgCO2e calculations
+        assert.closeTo(consumption.getValue(), 143, 0.1);
+        assert.deepEqual(consumption.getUnits(), "tCO2e");
+      },
+      (result, assert) => {
+        // Test population calculation consistency
+        const record = getResult(result, "kgco2e_test", 1, 0,
+          "kgco2e_engine_test", "test_substance_kgco2e");
+        const equipment = record.getPopulation();
+        // Validate equipment population calculation is unaffected by kgCO2e units
+        assert.ok(equipment.getValue() > 0, "Equipment population should be greater than 0");
+        assert.deepEqual(equipment.getUnits(), "units");
+      },
+    ]);
+
+    buildTest("validates kgCO2e to tCO2e conversion accuracy", "/examples/kgco2e_engine_test.qta", [
+      (result, assert) => {
+        // Test conversion accuracy: 1430 kgCO2e/kg should equal 1.43 tCO2e/kg internally
+        const record = getResult(result, "kgco2e_test", 1, 0,
+          "kgco2e_engine_test", "test_substance_kgco2e");
+        const consumption = record.getGhgConsumption();
+        // Precise validation of conversion calculation
+        // 100 kg * 1430 kgCO2e/kg = 143,000 kgCO2e = 143.0 tCO2e exactly
+        assert.closeTo(consumption.getValue(), 143.0, 0.0001);
+        assert.deepEqual(consumption.getUnits(), "tCO2e");
+      },
+    ]);
   });
 }
 
