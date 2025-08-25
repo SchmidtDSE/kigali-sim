@@ -434,8 +434,8 @@ public class RechargeLiveTests {
     double policyR600aRecharge = policyR600a2035.getRechargeEmissions().getValue().doubleValue();
 
     // GWP analysis
-    double hfcGwp = 1430; // tCO2e/kg from QTA file
-    double r600aGwp = 3; // tCO2e/kg from QTA file
+    double hfcGwp = 1430; // kgCO2e/kg from QTA file
+    double r600aGwp = 3; // kgCO2e/kg from QTA file
 
     // Calculate expected recharge amounts based on different approaches
     double simplifiedR600aRechargeKg = policyR600aEquipment * 0.10 * r600aInitialCharge;
@@ -460,7 +460,7 @@ public class RechargeLiveTests {
 
     // Test that the GWP being used is correct (validates our main fix)
     assertEquals(r600aGwp, calculatedGwpFromEmissions, 0.01,
-        "GWP calculation should use R-600a's GWP (3 tCO2e/kg), not HFC-134a's (1430 tCO2e/kg). "
+        "GWP calculation should use R-600a's GWP (3 kgCO2e/kg), not HFC-134a's (1430 kgCO2e/kg). "
         + "Calculated GWP: " + calculatedGwpFromEmissions + ", Expected: " + r600aGwp);
 
     // Verify internal consistency of recharge calculation

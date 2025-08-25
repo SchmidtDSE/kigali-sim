@@ -26,7 +26,7 @@ Next, let's add our refrigerant substance:
 
 - Click **Add Consumption**.
 - Enter **HFC-134a** for the substance name.
-- Set the Global Warming Potential to **1430 tCO2e/kg**.
+- Set the Global Warming Potential to **1430 kgCO2e/kg** (you can also use tCO2e/kg units - the tool supports both kgCO2e and tCO2e units for flexibility).
 - Leave energy consumption at **1 kWh/unit** for now.
 - **Enable the domestic manufacture checkbox** (domestic production stream).
 - **Leave import and export unchecked** as ABC Country doesn't trade HFC-134a for domestic refrigeration.
@@ -34,6 +34,14 @@ Next, let's add our refrigerant substance:
 Don't click save yet! We need to configure equipment properties first.
 
 (tutorial02_step02.gif - alt: animated gif showing how to add a new substance)
+
+### Understanding GHG Units
+
+KigaliSim supports two unit types for Global Warming Potential:
+- **kgCO2e/kg**: Kilograms of CO2 equivalent per kilogram of substance
+- **tCO2e/kg**: Metric tonnes of CO2 equivalent per kilogram of substance (1 tCO2e = 1,000 kgCO2e)
+
+For HFC-134a, the GWP is 1430 kgCO2e/kg (equivalent to 1.43 tCO2e/kg). We use kgCO2e/kg in this tutorial as it avoids decimal values and is commonly used in the industry.
 
 ## Equipment Properties
 
