@@ -154,7 +154,7 @@ public class UnitConverter {
       case "kg" -> toKg(input);
       case "mt" -> toMt(input);
       case "unit", "units" -> toUnits(input);
-      case "tCO2e" -> toGhgConsumption(input);
+      case "tCO2e" -> toTonnesCo2eConsumption(input);
       case "kgCO2e" -> toKgCo2eConsumption(input);
       case "kwh" -> toEnergyConsumption(input);
       case "year", "years", "yr", "yrs" -> toYears(input);
@@ -386,7 +386,7 @@ public class UnitConverter {
    * @param target The EngineNumber to convert
    * @return Target converted to consumption as tCO2e
    */
-  private EngineNumber toGhgConsumption(EngineNumber target) {
+  private EngineNumber toTonnesCo2eConsumption(EngineNumber target) {
     target = normalize(target);
     String currentUnits = target.getUnits();
 

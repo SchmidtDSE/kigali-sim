@@ -51,8 +51,8 @@ The about stanza is optional.
 #### Applications and Substances
 - `define application "name"` - Creates equipment/application type
 - `uses substance "name"` - Associates substance with application
-- `equals X tCO2e / mt` - Sets Global Warming Potential
-- `equals X kgCO2e / kg` - Sets Global Warming Potential in kgCO2e units
+- `equals X tCO2e / mt` - Sets Global Warming Potential in tCO2e units (t is tonnes)
+- `equals X kgCO2e / kg` - Sets Global Warming Potential in kgCO2e units (kg is kilograms)
 - `equals X kwh / unit` - Sets energy consumption per unit
 
 #### Manufacturing and Trade

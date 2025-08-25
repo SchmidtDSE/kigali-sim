@@ -620,6 +620,43 @@ public class RechargeLiveTests {
   }
 
   /**
+   * Test for tCO2e unit conversion functionality.
+   * Validates that tCO2e units work correctly with recharge calculations
+   * and are properly handled internally. This test mirrors testKgCo2eUnitConversion
+   * to demonstrate equivalent functionality between unit types.
+   */
+  @Test
+  public void testTco2eUnitConversion() throws IOException {
+    String qtaPath = "../examples/tco2e_engine_test.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    String scenarioName = "tco2e_test";
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
+    List<EngineResult> resultsList = results.collect(Collectors.toList());
+
+    // Check year 2 results (recharge occurs on existing equipment)
+    EngineResult resultYear2 = LiveTestsUtil.getResult(resultsList.stream(), 2,
+        "tco2e_engine_test", "test_substance_tco2e");
+    assertNotNull(resultYear2, "Should have result for test application in year 2");
+
+    // Verify recharge emissions are calculated correctly with tCO2e units
+    // Year 2: 20 units from year 1 * 10% recharge * 5 kg/unit * 1.43 tCO2e/kg = 14.3 tCO2e
+    // This should produce identical results to the kgCO2e test (1430 kgCO2e/kg = 1.43 tCO2e/kg)
+    double expectedEmissions = 14.3; // tCO2e (internal representation)
+    assertEquals(expectedEmissions, resultYear2.getRechargeEmissions().getValue().doubleValue(), 0.1,
+        "Recharge emissions should be calculated correctly with tCO2e input units");
+    assertEquals("tCO2e", resultYear2.getRechargeEmissions().getUnits(),
+        "Recharge emissions should be in tCO2e units internally");
+
+    // Verify domestic volume is correctly processed (should match kgCO2e test)
+    assertEquals(100.0, resultYear2.getDomestic().getValue().doubleValue(), 0.001,
+        "Domestic volume should be processed correctly regardless of GWP units");
+    assertEquals("kg", resultYear2.getDomestic().getUnits(),
+        "Domestic units should remain in kg");
+  }
+
+  /**
    * Test domestic recharge only scenario where only domestic stream is enabled.
    * Expected values: Year 1: 9575 units, 2308 kg domestic, 4616 tCO2e consumption
    *                  Year 2: 10671 units, 2485 kg domestic, 4970 tCO2e consumption

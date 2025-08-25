@@ -174,6 +174,7 @@ class ReportDataWrapper {
         }
       };
 
+      // tCO2e scale conversions
       strategyBuilder.setUnits("tCO2e / yr");
       strategyBuilder.setTransformation((val) => {
         validateEmissionsUnits(val);
@@ -194,27 +195,12 @@ class ReportDataWrapper {
         return new EngineNumber(val.getValue() / 1000000, "MtCO2e / yr");
       });
       strategyBuilder.add();
-    };
 
-    const addKgCO2eEmissionsConversion = (strategyBuilder) => {
-      const validateEmissionsUnits = (val) => {
-        const normalizedUnits = self._normalizeTimeUnits(val.getUnits());
-        if (normalizedUnits !== "tCO2e") {
-          throw "Unexpected emissions source units: " + val.getUnits();
-        }
-      };
-
+      // kgCO2e scale conversions
       strategyBuilder.setUnits("kgCO2e / yr");
       strategyBuilder.setTransformation((val) => {
         validateEmissionsUnits(val);
         return new EngineNumber(val.getValue() * 1000, "kgCO2e / yr");
-      });
-      strategyBuilder.add();
-
-      strategyBuilder.setUnits("MkgCO2e / yr");
-      strategyBuilder.setTransformation((val) => {
-        validateEmissionsUnits(val);
-        return new EngineNumber(val.getValue(), "MkgCO2e / yr");
       });
       strategyBuilder.add();
     };
@@ -225,22 +211,18 @@ class ReportDataWrapper {
       strategyBuilder.setSubmetric("recharge");
       strategyBuilder.setStrategy((x) => self.getRechargeEmissions(x));
       addEmissionsConversion(strategyBuilder);
-      addKgCO2eEmissionsConversion(strategyBuilder);
 
       strategyBuilder.setSubmetric("eol");
       strategyBuilder.setStrategy((x) => self.getEolEmissions(x));
       addEmissionsConversion(strategyBuilder);
-      addKgCO2eEmissionsConversion(strategyBuilder);
 
       strategyBuilder.setSubmetric("export");
       strategyBuilder.setStrategy((x) => self.getExportEmissions(x));
       addEmissionsConversion(strategyBuilder);
-      addKgCO2eEmissionsConversion(strategyBuilder);
 
       strategyBuilder.setSubmetric("initial charge");
       strategyBuilder.setStrategy((x) => self.getInitialChargeEmissions(x));
       addEmissionsConversion(strategyBuilder);
-      addKgCO2eEmissionsConversion(strategyBuilder);
 
       strategyBuilder.setSubmetric("custom");
       strategyBuilder.setStrategy((filterSet) => {
@@ -274,7 +256,6 @@ class ReportDataWrapper {
         });
       });
       addEmissionsConversion(strategyBuilder);
-      addKgCO2eEmissionsConversion(strategyBuilder);
     };
 
     const addSalesStrategies = (strategyBuilder) => {
@@ -359,22 +340,18 @@ class ReportDataWrapper {
       strategyBuilder.setSubmetric("import");
       strategyBuilder.setStrategy((x) => self.getImportConsumption(x));
       addEmissionsConversion(strategyBuilder);
-      addKgCO2eEmissionsConversion(strategyBuilder);
 
       strategyBuilder.setSubmetric("domestic");
       strategyBuilder.setStrategy((x) => self.getDomesticConsumption(x));
       addEmissionsConversion(strategyBuilder);
-      addKgCO2eEmissionsConversion(strategyBuilder);
 
       strategyBuilder.setSubmetric("recycle");
       strategyBuilder.setStrategy((x) => self.getRecycleConsumption(x));
       addEmissionsConversion(strategyBuilder);
-      addKgCO2eEmissionsConversion(strategyBuilder);
 
       strategyBuilder.setSubmetric("export");
       strategyBuilder.setStrategy((x) => self.getExportConsumption(x));
       addEmissionsConversion(strategyBuilder);
-      addKgCO2eEmissionsConversion(strategyBuilder);
 
       strategyBuilder.setSubmetric("custom");
       strategyBuilder.setStrategy((filterSet) => {
@@ -408,7 +385,6 @@ class ReportDataWrapper {
         });
       });
       addEmissionsConversion(strategyBuilder);
-      addKgCO2eEmissionsConversion(strategyBuilder);
     };
 
     const addPopulationStrategies = (strategyBuilder) => {
