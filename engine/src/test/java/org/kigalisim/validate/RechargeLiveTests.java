@@ -606,10 +606,10 @@ public class RechargeLiveTests {
     List<EngineResult> resultsList = results.collect(Collectors.toList());
 
     // Check year 2 results (recharge occurs on existing equipment)
-    EngineResult resultYear2 = LiveTestsUtil.getResult(resultsList.stream(), 2, 
+    EngineResult resultYear2 = LiveTestsUtil.getResult(resultsList.stream(), 2,
         "kgco2e_engine_test", "test_substance_kgco2e");
     assertNotNull(resultYear2, "Should have result for test application in year 2");
-    
+
     // Verify recharge emissions are calculated correctly with kgCO2e units
     // Year 2: 20 units from year 1 * 10% recharge * 5 kg/unit * 1430 kgCO2e/kg = 14,300 kgCO2e = 14.3 tCO2e
     double expectedEmissions = 14.3; // tCO2e (internal representation)
@@ -625,7 +625,7 @@ public class RechargeLiveTests {
    *                  Year 2: 10671 units, 2485 kg domestic, 4970 tCO2e consumption
    *                  Year 3: 11791 units, 2668 kg domestic, 5336 tCO2e consumption
    *
-   * <p>Parameters: 1 kg/unit initial charge, 2 tCO2e/kg GWP, 10% recharge with 1 kg/unit
+   * <p>Parameters: 1 kg/unit initial charge, 2 kgCO2e/kg GWP, 10% recharge with 1 kg/unit
    */
   @Test
   public void testDomesticRechargeOnly() throws IOException {

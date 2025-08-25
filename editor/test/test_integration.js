@@ -488,7 +488,7 @@ function buildIntegrationTests() {
         // Check year 1 consumption
         const recordAYear1 = getResult(result, "Sim", 1, 0, "Test", "Sub A");
         const consumptionAYear1 = recordAYear1.getGhgConsumption();
-        assert.closeTo(consumptionAYear1.getValue(), 10000000, 0.0001);
+        assert.closeTo(consumptionAYear1.getValue(), 10000, 0.0001);
         assert.deepEqual(consumptionAYear1.getUnits(), "tCO2e");
 
         const recordBYear1 = getResult(result, "Sim", 1, 0, "Test", "Sub B");
@@ -504,7 +504,7 @@ function buildIntegrationTests() {
 
         const recordBYear10 = getResult(result, "Sim", 10, 0, "Test", "Sub B");
         const consumptionBYear10 = recordBYear10.getGhgConsumption();
-        assert.closeTo(consumptionBYear10.getValue(), 1000000, 0.0001);
+        assert.closeTo(consumptionBYear10.getValue(), 1000, 0.0001);
         assert.deepEqual(consumptionBYear10.getUnits(), "tCO2e");
       },
     ]);
