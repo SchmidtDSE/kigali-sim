@@ -21,7 +21,7 @@ import org.kigalisim.engine.state.StateGetter;
  *
  * <p>This class handles unit conversions within the engine, supporting conversions
  * between volume units (kg, mt), population units (unit, units), consumption units
- * (tCO2e, kwh), time units (year, years), and percentage units (%).</p>
+ * (tCO2e, kgCO2e, kwh), time units (year, years), and percentage units (%).</p>
  */
 public class UnitConverter {
 
@@ -35,6 +35,7 @@ public class UnitConverter {
   // Conversion factors
   private static final BigDecimal KG_TO_MT_FACTOR = new BigDecimal("1000");
   private static final BigDecimal PERCENT_FACTOR = new BigDecimal("100");
+  private static final BigDecimal TCO2E_TO_KGCO2E_FACTOR = new BigDecimal("1000");
 
   private final StateGetter stateGetter;
 
@@ -154,6 +155,7 @@ public class UnitConverter {
       case "mt" -> toMt(input);
       case "unit", "units" -> toUnits(input);
       case "tCO2e" -> toGhgConsumption(input);
+      case "kgCO2e" -> toKgCo2eConsumption(input);
       case "kwh" -> toEnergyConsumption(input);
       case "year", "years", "yr", "yrs" -> toYears(input);
       case "%" -> toPercent(input);
@@ -175,6 +177,7 @@ public class UnitConverter {
       case "mt" -> convert(stateGetter.getVolume(), "mt");
       case "unit", "units" -> convert(stateGetter.getPopulation(), destinationUnits);
       case "tCO2e" -> convert(stateGetter.getGhgConsumption(), "tCO2e");
+      case "kgCO2e" -> convert(stateGetter.getGhgConsumption(), "kgCO2e");
       case "kwh" -> convert(stateGetter.getEnergyConsumption(), "kwh");
       case "year", "years", "yr", "yrs" -> convert(stateGetter.getYearsElapsed(), destinationUnits);
       case "" -> new EngineNumber(BigDecimal.ONE, "");
@@ -301,6 +304,12 @@ public class UnitConverter {
       String newUnits = conversionUnitPieces[1];
       BigDecimal newValue = originalValue.divide(conversionValue, MATH_CONTEXT);
       return new EngineNumber(newValue, newUnits);
+    } else if ("kgCO2e".equals(currentUnits)) {
+      // Convert kgCO2e to tCO2e first, then to volume
+      BigDecimal kgco2eValue = target.getValue();
+      BigDecimal tco2eValue = kgco2eValue.divide(TCO2E_TO_KGCO2E_FACTOR, MATH_CONTEXT);
+      EngineNumber tco2eTarget = new EngineNumber(tco2eValue, "tCO2e");
+      return toVolume(tco2eTarget);
     } else if ("unit".equals(currentUnits) || "units".equals(currentUnits) || "unitseachyear".equals(currentUnits)) {
       BigDecimal originalValue = target.getValue();
       EngineNumber conversion = stateGetter.getAmortizedUnitVolume();
@@ -354,6 +363,12 @@ public class UnitConverter {
       BigDecimal conversionValue = conversion.getValue();
       BigDecimal newValue = originalValue.divide(conversionValue, MATH_CONTEXT);
       return new EngineNumber(newValue, "units");
+    } else if ("kgCO2e".equals(currentUnits)) {
+      // Convert kgCO2e to tCO2e first, then to units
+      BigDecimal kgco2eValue = target.getValue();
+      BigDecimal tco2eValue = kgco2eValue.divide(TCO2E_TO_KGCO2E_FACTOR, MATH_CONTEXT);
+      EngineNumber tco2eTarget = new EngineNumber(tco2eValue, "tCO2e");
+      return toUnits(tco2eTarget);
     } else if ("%".equals(currentUnits) || "%eachyear".equals(currentUnits)) {
       BigDecimal originalValue = target.getValue();
       BigDecimal asRatio = originalValue.divide(PERCENT_FACTOR, MATH_CONTEXT);
@@ -383,6 +398,11 @@ public class UnitConverter {
 
     if (alreadyCorrect) {
       return target;
+    } else if ("kgCO2e".equals(currentUnits)) {
+      // Convert kgCO2e to tCO2e
+      BigDecimal kgco2eValue = target.getValue();
+      BigDecimal tco2eValue = kgco2eValue.divide(TCO2E_TO_KGCO2E_FACTOR, MATH_CONTEXT);
+      return new EngineNumber(tco2eValue, "tCO2e");
     } else if (currentInfer) {
       EngineNumber conversion = stateGetter.getSubstanceConsumption();
       BigDecimal conversionValue = conversion.getValue();
@@ -393,8 +413,13 @@ public class UnitConverter {
       EngineNumber targetConverted = convert(target, expectedUnits);
       BigDecimal originalValue = targetConverted.getValue();
       BigDecimal newValue = originalValue.multiply(conversionValue);
-      if (!"tCO2e".equals(newUnits)) {
+      if (!"tCO2e".equals(newUnits) && !"kgCO2e".equals(newUnits)) {
         throw new IllegalArgumentException("Unexpected units " + newUnits);
+      }
+      // Convert to tCO2e if result is in kgCO2e
+      if ("kgCO2e".equals(newUnits)) {
+        newValue = newValue.divide(TCO2E_TO_KGCO2E_FACTOR, MATH_CONTEXT);
+        newUnits = "tCO2e";
       }
       return new EngineNumber(newValue, newUnits);
     } else if ("%".equals(currentUnits)) {
@@ -405,6 +430,60 @@ public class UnitConverter {
       return new EngineNumber(newValue, "tCO2e");
     } else {
       throw new IllegalArgumentException("Unable to convert to consumption: " + currentUnits);
+    }
+  }
+
+  /**
+   * Convert a number to consumption as kgCO2e.
+   *
+   * @param target The EngineNumber to convert
+   * @return Target converted to consumption as kgCO2e
+   */
+  private EngineNumber toKgCo2eConsumption(EngineNumber target) {
+    target = normalize(target);
+    String currentUnits = target.getUnits();
+
+    boolean alreadyCorrect = "kgCO2e".equals(currentUnits) || "kgCO2eeachyear".equals(currentUnits);
+
+    boolean currentVolume = "kg".equals(currentUnits) || "mt".equals(currentUnits);
+    boolean currentPop = "unit".equals(currentUnits) || "units".equals(currentUnits);
+    boolean currentInfer = currentVolume || currentPop;
+
+    if (alreadyCorrect) {
+      return target;
+    } else if ("tCO2e".equals(currentUnits)) {
+      // Convert tCO2e to kgCO2e
+      BigDecimal tco2eValue = target.getValue();
+      BigDecimal kgco2eValue = tco2eValue.multiply(TCO2E_TO_KGCO2E_FACTOR);
+      return new EngineNumber(kgco2eValue, "kgCO2e");
+    } else if (currentInfer) {
+      EngineNumber conversion = stateGetter.getSubstanceConsumption();
+      BigDecimal conversionValue = conversion.getValue();
+      String normalizedUnits = normalizeUnitString(conversion.getUnits());
+      String[] conversionUnitPieces = normalizedUnits.split("/");
+      String newUnits = conversionUnitPieces[0];
+      String expectedUnits = conversionUnitPieces[1];
+      EngineNumber targetConverted = convert(target, expectedUnits);
+      BigDecimal originalValue = targetConverted.getValue();
+      BigDecimal newValue = originalValue.multiply(conversionValue);
+      if (!"tCO2e".equals(newUnits) && !"kgCO2e".equals(newUnits)) {
+        throw new IllegalArgumentException("Unexpected units " + newUnits);
+      }
+      // Convert to kgCO2e if result is in tCO2e
+      if ("tCO2e".equals(newUnits)) {
+        newValue = newValue.multiply(TCO2E_TO_KGCO2E_FACTOR);
+        newUnits = "kgCO2e";
+      }
+      return new EngineNumber(newValue, newUnits);
+    } else if ("%".equals(currentUnits)) {
+      BigDecimal originalValue = target.getValue();
+      BigDecimal asRatio = originalValue.divide(PERCENT_FACTOR, MATH_CONTEXT);
+      EngineNumber total = stateGetter.getGhgConsumption();
+      BigDecimal kgco2eTotal = total.getValue().multiply(TCO2E_TO_KGCO2E_FACTOR);
+      BigDecimal newValue = kgco2eTotal.multiply(asRatio);
+      return new EngineNumber(newValue, "kgCO2e");
+    } else {
+      throw new IllegalArgumentException("Unable to convert to kgCO2e consumption: " + currentUnits);
     }
   }
 
@@ -470,6 +549,13 @@ public class UnitConverter {
       BigDecimal perYearConsumptionValue = stateGetter.getGhgConsumption().getValue();
       BigDecimal newYears = target.getValue().divide(perYearConsumptionValue, MATH_CONTEXT);
       return new EngineNumber(newYears, "years");
+    } else if ("kgCO2e".equals(currentUnits)) {
+      // Convert kgCO2e to tCO2e first, then calculate years
+      BigDecimal kgco2eValue = target.getValue();
+      BigDecimal tco2eValue = kgco2eValue.divide(TCO2E_TO_KGCO2E_FACTOR, MATH_CONTEXT);
+      BigDecimal perYearConsumptionValue = stateGetter.getGhgConsumption().getValue();
+      BigDecimal newYears = tco2eValue.divide(perYearConsumptionValue, MATH_CONTEXT);
+      return new EngineNumber(newYears, "years");
     } else if ("kwh".equals(currentUnits)) {
       BigDecimal perYearConsumptionValue = stateGetter.getEnergyConsumption().getValue();
       BigDecimal newYears = target.getValue().divide(perYearConsumptionValue, MATH_CONTEXT);
@@ -515,6 +601,11 @@ public class UnitConverter {
       total = stateGetter.getYearsElapsed();
     } else if ("tCO2e".equals(currentUnits)) {
       total = stateGetter.getGhgConsumption();
+    } else if ("kgCO2e".equals(currentUnits)) {
+      // Convert kgCO2e to tCO2e first, then calculate percentage
+      EngineNumber tco2eTotal = stateGetter.getGhgConsumption();
+      BigDecimal kgco2eTotal = tco2eTotal.getValue().multiply(TCO2E_TO_KGCO2E_FACTOR);
+      total = new EngineNumber(kgco2eTotal, "kgCO2e");
     } else if ("kg".equals(currentUnits) || "mt".equals(currentUnits)) {
       EngineNumber volume = stateGetter.getVolume();
       total = convert(volume, currentUnits);
@@ -607,14 +698,20 @@ public class UnitConverter {
     String normalizedCurrentUnits = normalizeUnitString(currentUnits);
 
     boolean isCo2 = normalizedCurrentUnits.endsWith("/tCO2e");
+    boolean isKgCo2 = normalizedCurrentUnits.endsWith("/kgCO2e");
     boolean isKwh = normalizedCurrentUnits.endsWith("/kwh");
-    if (!isCo2 && !isKwh) {
+    if (!isCo2 && !isKgCo2 && !isKwh) {
       return target;
     }
 
     EngineNumber targetConsumption;
     if (isCo2) {
       targetConsumption = stateGetter.getGhgConsumption();
+    } else if (isKgCo2) {
+      // Get tCO2e consumption and convert to kgCO2e
+      EngineNumber tco2eConsumption = stateGetter.getGhgConsumption();
+      BigDecimal kgco2eValue = tco2eConsumption.getValue().multiply(TCO2E_TO_KGCO2E_FACTOR);
+      targetConsumption = new EngineNumber(kgco2eValue, "kgCO2e");
     } else {
       targetConsumption = stateGetter.getEnergyConsumption();
     }

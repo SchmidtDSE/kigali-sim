@@ -710,7 +710,7 @@ public class SingleThreadEngine implements Engine {
     }
 
     String units = amount.getUnits();
-    boolean isGhg = units.startsWith("tCO2e");
+    boolean isGhg = units.startsWith("tCO2e") || units.startsWith("kgCO2e");
     boolean isKwh = units.startsWith("kwh");
 
     if (isGhg) {
