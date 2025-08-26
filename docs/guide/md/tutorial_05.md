@@ -78,7 +78,7 @@ You've successfully implemented ABC Country's first policy intervention! The sal
 - **Progressive reduction** then complete phase-out.
 - **Market mechanisms**: Displacement ensures demand shifts to R-600a rather than disappearing
 - **Supply chain realism**: R-600a displacement works across both domestic and import channels
-- **Climate benefits**: Emissions reduction through GWP-focused targeting (1,430 → 3 tCO2e/kg)
+- **Climate benefits**: Emissions reduction through GWP-focused targeting (1,430 → 3 kgCO2e/kg)
 
 The permitting system shows how a relatively simple policy can achieve significant impacts. This is also a very simple model but we are already incorporating socioeconomic projections and substance interactions.
 

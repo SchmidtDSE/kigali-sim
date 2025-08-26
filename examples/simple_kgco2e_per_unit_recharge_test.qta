@@ -1,0 +1,14 @@
+start default
+  define application "simple_test"
+    uses substance "test_substance"
+      enable domestic
+      set domestic to 100 units during year 1
+      recharge 10 % with 0.15 kg / unit
+      equals 1430 kgCO2e / unit
+    end substance
+  end application
+end default
+
+start simulations
+  simulate "simple_test" from years 1 to 3
+end simulations

@@ -1,0 +1,15 @@
+start default
+  define application "tco2e_per_unit_test"
+    uses substance "test_substance_tco2e_unit"
+      enable domestic
+      initial charge with 0.15 kg / unit for domestic
+      equals 1.43 tCO2e / unit
+      set domestic to 100 kg during year 1
+      recharge 10 % with 0.15 kg / unit
+    end substance
+  end application
+end default
+
+start simulations
+  simulate "tco2e_per_unit_test" from years 1 to 3
+end simulations

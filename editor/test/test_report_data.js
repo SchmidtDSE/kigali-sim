@@ -730,6 +730,84 @@ function buildReportDataTests() {
       );
       assert.strictEqual(result.getUnits(), "mt / yr", "Should have correct output units");
     });
+
+    QUnit.test("kgCO2e emissions conversion works correctly", (assert) => {
+      const builder = new MetricStrategyBuilder({});
+      // Test kgCO2e / yr conversion
+      builder.setMetric("emissions");
+      builder.setSubmetric("recharge");
+      builder.setUnits("kgCO2e / yr");
+      builder.setStrategy(() => new EngineNumber(1.5, "tCO2e"));
+      builder.setTransformation((val) => {
+        const normalizedUnits = val.getUnits().replace(" / year", "").replace(" / yr", "");
+        if (normalizedUnits !== "tCO2e") {
+          throw "Unexpected emissions source units: " + val.getUnits();
+        }
+        return new EngineNumber(val.getValue() * 1000, "kgCO2e / yr");
+      });
+      builder.add();
+
+      const strategies = builder.build();
+      const filterSet = {};
+
+      const result = strategies["emissions:recharge:kgCO2e / yr"](filterSet);
+      assert.ok(result, "kgCO2e strategy should execute successfully");
+      assert.strictEqual(result.getValue(), 1500,
+        "Should convert tCO2e to kgCO2e correctly (1.5 * 1000)");
+      assert.strictEqual(result.getUnits(), "kgCO2e / yr", "Should have correct output units");
+    });
+
+    QUnit.test("tCO2e emissions conversion works correctly", (assert) => {
+      const builder = new MetricStrategyBuilder({});
+      // Test tCO2e / yr conversion (baseline emission units)
+      builder.setMetric("emissions");
+      builder.setSubmetric("recharge");
+      builder.setUnits("tCO2e / yr");
+      builder.setStrategy(() => new EngineNumber(1.5, "tCO2e"));
+      builder.setTransformation((val) => {
+        const normalizedUnits = val.getUnits().replace(" / year", "").replace(" / yr", "");
+        if (normalizedUnits !== "tCO2e") {
+          throw "Unexpected emissions source units: " + val.getUnits();
+        }
+        return new EngineNumber(val.getValue(), "tCO2e / yr");
+      });
+      builder.add();
+
+      const strategies = builder.build();
+      const filterSet = {};
+
+      const result = strategies["emissions:recharge:tCO2e / yr"](filterSet);
+      assert.ok(result, "tCO2e strategy should execute successfully");
+      assert.strictEqual(result.getValue(), 1.5,
+        "Should keep same value for tCO2e (baseline emission units)");
+      assert.strictEqual(result.getUnits(), "tCO2e / yr", "Should have correct output units");
+    });
+
+    QUnit.test("MkgCO2e emissions conversion works correctly", (assert) => {
+      const builder = new MetricStrategyBuilder({});
+      // Test MkgCO2e / yr conversion (should be equivalent to tCO2e)
+      builder.setMetric("emissions");
+      builder.setSubmetric("recharge");
+      builder.setUnits("MkgCO2e / yr");
+      builder.setStrategy(() => new EngineNumber(1.5, "tCO2e"));
+      builder.setTransformation((val) => {
+        const normalizedUnits = val.getUnits().replace(" / year", "").replace(" / yr", "");
+        if (normalizedUnits !== "tCO2e") {
+          throw "Unexpected emissions source units: " + val.getUnits();
+        }
+        return new EngineNumber(val.getValue(), "MkgCO2e / yr");
+      });
+      builder.add();
+
+      const strategies = builder.build();
+      const filterSet = {};
+
+      const result = strategies["emissions:recharge:MkgCO2e / yr"](filterSet);
+      assert.ok(result, "MkgCO2e strategy should execute successfully");
+      assert.strictEqual(result.getValue(), 1.5,
+        "Should keep same value for MkgCO2e (equivalent to tCO2e)");
+      assert.strictEqual(result.getUnits(), "MkgCO2e / yr", "Should have correct output units");
+    });
   });
 }
 

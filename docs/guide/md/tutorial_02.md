@@ -26,7 +26,7 @@ Next, let's add our refrigerant substance:
 
 - Click **Add Consumption**.
 - Enter **HFC-134a** for the substance name.
-- Set the Global Warming Potential to **1430 tCO2e/kg**.
+- Set the Global Warming Potential to **1430 kgCO2e/kg**. This means 1430 kg of CO2 equivalent per kilogram of substance. You can also use other units like 1.43 tCO2e/kg.
 - Leave energy consumption at **1 kWh/unit** for now.
 - **Enable the domestic manufacture checkbox** (domestic production stream).
 - **Leave import and export unchecked** as ABC Country doesn't trade HFC-134a for domestic refrigeration.

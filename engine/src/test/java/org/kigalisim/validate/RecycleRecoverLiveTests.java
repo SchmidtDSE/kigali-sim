@@ -593,7 +593,7 @@ public class RecycleRecoverLiveTests {
     EngineResult recordYear1 = LiveTestsUtil.getResult(resultsList.stream(), 1, "test", "test");
     assertNotNull(recordYear1, "Should have result for test/test in year 1");
     assertEquals(500.0, recordYear1.getGhgConsumption().getValue().doubleValue(), 0.0001,
-        "GHG consumption should be 500 tCO2e in year 1 (100 kg * 5 tCO2e/kg)");
+        "GHG consumption should be 500 tCO2e in year 1 (100 kg * 5 kgCO2e/kg)");
     assertEquals("tCO2e", recordYear1.getGhgConsumption().getUnits(),
         "GHG consumption units should be tCO2e in year 1");
 
@@ -605,7 +605,7 @@ public class RecycleRecoverLiveTests {
     // Year 1 retired: 100 kg * 10% = 10 kg
     // Recovered: 10 kg * 50% = 5 kg
     // Virgin material needed: 100 kg - 5 kg = 95 kg
-    // Total GHG: 95 kg * 5 tCO2e/kg = 475 tCO2e
+    // Total GHG: 95 kg * 5 kgCO2e/kg = 475 tCO2e
     double expectedTotalConsumption = 475.0;
     assertEquals(expectedTotalConsumption, recordYear2.getConsumptionNoRecycle().getValue().doubleValue(), 0.0001,
         "Virgin material consumption should be reduced to 475.0 tCO2e in year 2 due to recycling at EOL");
@@ -613,7 +613,7 @@ public class RecycleRecoverLiveTests {
         "Virgin material consumption units should be tCO2e in year 2");
 
     // Check recycled consumption in year 2
-    // Recycled content: 5 kg * 5 tCO2e/kg = 25 tCO2e
+    // Recycled content: 5 kg * 5 kgCO2e/kg = 25 tCO2e
     double expectedRecycledConsumption = 25.0;
     assertEquals(expectedRecycledConsumption, recordYear2.getRecycleConsumption().getValue().doubleValue(), 0.0001,
         "Recycled consumption should be 25.0 tCO2e in year 2");
@@ -720,7 +720,7 @@ public class RecycleRecoverLiveTests {
     EngineResult recordYear1 = LiveTestsUtil.getResult(resultsList.stream(), 1, "test", "test");
     assertNotNull(recordYear1, "Should have result for test/test in year 1");
     assertEquals(500.0, recordYear1.getGhgConsumption().getValue().doubleValue(), 0.0001,
-        "GHG consumption should be 500 tCO2e in year 1 (100 kg * 5 tCO2e/kg)");
+        "GHG consumption should be 500 tCO2e in year 1 (100 kg * 5 kgCO2e/kg)");
     assertEquals("tCO2e", recordYear1.getGhgConsumption().getUnits(),
         "GHG consumption units should be tCO2e in year 1");
 

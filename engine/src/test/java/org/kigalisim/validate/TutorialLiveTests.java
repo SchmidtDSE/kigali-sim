@@ -139,7 +139,7 @@ public class TutorialLiveTests {
     double tco2eRatio = hfc134aTco2e / r600aTco2e;
 
     // The relative difference between HFC-134a and R-600a should be higher when looking at tCO2e than kg
-    // due to the significant GWP difference (1430 vs 3 tCO2e/kg)
+    // due to the significant GWP difference (1430 vs 3 kgCO2e/kg)
     assertTrue(tco2eRatio > kgRatio,
         "Ratio of HFC-134a to R-600a in tCO2e (" + tco2eRatio + ") should be higher than their ratio in kg (" + kgRatio + ") due to GWP differences");
   }

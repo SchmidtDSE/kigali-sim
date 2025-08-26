@@ -174,6 +174,7 @@ class ReportDataWrapper {
         }
       };
 
+      // tCO2e scale conversions
       strategyBuilder.setUnits("tCO2e / yr");
       strategyBuilder.setTransformation((val) => {
         validateEmissionsUnits(val);
@@ -192,6 +193,14 @@ class ReportDataWrapper {
       strategyBuilder.setTransformation((val) => {
         validateEmissionsUnits(val);
         return new EngineNumber(val.getValue() / 1000000, "MtCO2e / yr");
+      });
+      strategyBuilder.add();
+
+      // kgCO2e scale conversions
+      strategyBuilder.setUnits("kgCO2e / yr");
+      strategyBuilder.setTransformation((val) => {
+        validateEmissionsUnits(val);
+        return new EngineNumber(val.getValue() * 1000, "kgCO2e / yr");
       });
       strategyBuilder.add();
     };

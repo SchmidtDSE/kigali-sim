@@ -32,7 +32,7 @@ public class EngineUnitStateTest {
   @Test
   public void testConverterStateGetterGetSubstanceConsumption() {
     Engine engine = mock(Engine.class);
-    EngineNumber expected = new EngineNumber(new BigDecimal("2.5"), "tCO2e / kg");
+    EngineNumber expected = new EngineNumber(new BigDecimal("2.5"), "kgCO2e / kg");
     when(engine.getEqualsGhgIntensity()).thenReturn(expected);
 
     ConverterStateGetter stateGetter = new ConverterStateGetter(engine);
@@ -141,7 +141,7 @@ public class EngineUnitStateTest {
   @Test
   public void testOverridingGetSubstanceConsumptionUsesInnerWhenNotOverridden() {
     StateGetter inner = mock(StateGetter.class);
-    EngineNumber expected = new EngineNumber(new BigDecimal("3"), "tCO2e / kg");
+    EngineNumber expected = new EngineNumber(new BigDecimal("3"), "kgCO2e / kg");
     when(inner.getSubstanceConsumption()).thenReturn(expected);
 
     OverridingConverterStateGetter overriding = new OverridingConverterStateGetter(inner);
@@ -149,22 +149,22 @@ public class EngineUnitStateTest {
     EngineNumber result = overriding.getSubstanceConsumption();
 
     assertEquals(0, new BigDecimal("3").compareTo(result.getValue()));
-    assertEquals("tCO2e / kg", result.getUnits());
+    assertEquals("kgCO2e / kg", result.getUnits());
   }
 
   @Test
   public void testOverridingConverterStateGetterSetSubstanceConsumptionOverridesInnerValue() {
     StateGetter inner = mock(StateGetter.class);
-    EngineNumber innerValue = new EngineNumber(new BigDecimal("3"), "tCO2e / kg");
+    EngineNumber innerValue = new EngineNumber(new BigDecimal("3"), "kgCO2e / kg");
     when(inner.getSubstanceConsumption()).thenReturn(innerValue);
 
     OverridingConverterStateGetter overriding = new OverridingConverterStateGetter(inner);
 
-    overriding.setSubstanceConsumption(new EngineNumber(new BigDecimal("5"), "tCO2e / kg"));
+    overriding.setSubstanceConsumption(new EngineNumber(new BigDecimal("5"), "kgCO2e / kg"));
     EngineNumber result = overriding.getSubstanceConsumption();
 
     assertEquals(0, new BigDecimal("5").compareTo(result.getValue()));
-    assertEquals("tCO2e / kg", result.getUnits());
+    assertEquals("kgCO2e / kg", result.getUnits());
   }
 
   @Test

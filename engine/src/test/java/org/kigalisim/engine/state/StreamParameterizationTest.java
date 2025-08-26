@@ -100,14 +100,14 @@ public class StreamParameterizationTest {
   @Test
   public void testGhgIntensityGetterAndSetter() {
     StreamParameterization parameterization = new StreamParameterization();
-    EngineNumber newValue = new EngineNumber(new BigDecimal("2.5"), "tCO2e / kg");
+    EngineNumber newValue = new EngineNumber(new BigDecimal("2.5"), "kgCO2e / kg");
 
     parameterization.setGhgIntensity(newValue);
     EngineNumber retrieved = parameterization.getGhgIntensity();
 
     assertEquals(new BigDecimal("2.5"), retrieved.getValue(),
                  "Should retrieve set GHG intensity value");
-    assertEquals("tCO2e / kg", retrieved.getUnits(),
+    assertEquals("kgCO2e / kg", retrieved.getUnits(),
                  "Should retrieve correct GHG intensity units");
   }
 
