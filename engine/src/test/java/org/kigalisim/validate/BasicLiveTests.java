@@ -225,8 +225,8 @@ public class BasicLiveTests {
     EngineResult recordYear1A = LiveTestsUtil.getResult(resultsList.stream(), 1, "Test", "Sub A");
     assertNotNull(recordYear1A, "Should have result for Test/Sub A in year 1");
 
-    assertEquals(10000000.0, recordYear1A.getGhgConsumption().getValue().doubleValue(), 0.0001,
-        "Sub A GHG consumption should be 10000000 tCO2e in year 1");
+    assertEquals(10000.0, recordYear1A.getGhgConsumption().getValue().doubleValue(), 0.0001,
+        "Sub A GHG consumption should be 10000 tCO2e in year 1");
     assertEquals("tCO2e", recordYear1A.getGhgConsumption().getUnits(),
         "Sub A GHG consumption units should be tCO2e in year 1");
 
@@ -247,8 +247,8 @@ public class BasicLiveTests {
 
     EngineResult recordYear10B = LiveTestsUtil.getResult(resultsList.stream(), 10, "Test", "Sub B");
     assertNotNull(recordYear10B, "Should have result for Test/Sub B in year 10");
-    assertEquals(1000000.0, recordYear10B.getGhgConsumption().getValue().doubleValue(), 0.0001,
-        "Sub B GHG consumption should be 1000000 tCO2e in year 10");
+    assertEquals(1000.0, recordYear10B.getGhgConsumption().getValue().doubleValue(), 0.0001,
+        "Sub B GHG consumption should be 1000 tCO2e in year 10");
     assertEquals("tCO2e", recordYear10B.getGhgConsumption().getUnits(),
         "Sub B GHG consumption units should be tCO2e in year 10");
   }

@@ -10,7 +10,7 @@ start default
 
     uses substance "HFC-134a"
       enable domestic
-      equals 1430 tCO2e / kg
+      equals 1430 kgCO2e / kg
       
       initial charge with 0.15 kg / unit for domestic
       set priorEquipment to 1000000 units during year 2025
@@ -22,7 +22,7 @@ start default
 
     uses substance "R-600a"
       enable domestic
-      equals 3 tCO2e / kg
+      equals 3 kgCO2e / kg
       
       initial charge with 0.07 kg / unit for domestic
       set priorEquipment to 50000 units during year 2025

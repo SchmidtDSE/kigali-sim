@@ -9,7 +9,7 @@ start default
       retire 5 % each year
       recharge 20 % each year with 1.00 kg / unit
       set domestic to (10000 * (500000 / 750000)) units / year during year beginning
-      equals 1430 tCO2e / kg
+      equals 1430 kgCO2e / kg
     end substance
 
   end application

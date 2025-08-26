@@ -7,7 +7,7 @@ start default
       initial charge with 0.15 kg / unit for domestic
       initial charge with 0 kg / unit for import
       initial charge with 0 kg / unit for export
-      equals 1430 tCO2e / kg
+      equals 1430 kgCO2e / kg
       equals 500 kwh / unit
       set priorEquipment to 1000000 units during year 2025
       set domestic to 20 mt during year 2025
@@ -21,7 +21,7 @@ start default
       initial charge with 0.15 kg / unit for domestic
       initial charge with 0 kg / unit for import
       initial charge with 0 kg / unit for export
-      equals 1430 tCO2e / kg
+      equals 1430 kgCO2e / kg
       equals 350 kwh / unit
       set priorEquipment to 1000 units during year 2025
       set domestic to 10 mt during year 2025

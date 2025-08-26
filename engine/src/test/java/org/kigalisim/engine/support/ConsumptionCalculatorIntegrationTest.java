@@ -45,7 +45,7 @@ public class ConsumptionCalculatorIntegrationTest {
     SingleThreadEngine engine = new SingleThreadEngine(2020, 2030);
 
     // Configure calculator without streamName
-    EngineNumber ghgIntensity = new EngineNumber(BigDecimal.valueOf(2.5), "tCO2e/kg");
+    EngineNumber ghgIntensity = new EngineNumber(BigDecimal.valueOf(2.5), "kgCO2e/kg");
     calculator.setConsumptionRaw(ghgIntensity);
 
     // Execute and verify exception
