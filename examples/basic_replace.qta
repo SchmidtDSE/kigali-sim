@@ -6,7 +6,7 @@ start default
       enable domestic
       initial charge with 1 kg / unit for domestic
       initial charge with 2 kg / unit for import
-      equals 100 tCO2e / kg
+      equals 100 tCO2e / mt
       equals 1 kwh / kg
       set domestic to 100 mt during year 1
       retire 5 % each year
@@ -18,7 +18,7 @@ start default
       enable domestic
       initial charge with 1 kg / unit for domestic
       initial charge with 2 kg / unit for import
-      equals 10 tCO2e / kg
+      equals 10 kgCO2e / kg
       equals 1 kwh / kg
       retire 5 % each year
       recharge 5 % each year with 1 kg / unit

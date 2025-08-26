@@ -13,7 +13,7 @@ Use the same procedures from Tutorial 2, let's add additional applications and s
 | Property                         | HFC-134a               | R-600a                 | HFC-32      | R-410A      |
 | -------------------------------- | ---------------------- | ---------------------- | ----------- | ----------- |
 | **Application**                  | Domestic Refrigeration | Domestic Refrigeration | Domestic AC | Domestic AC |
-| **GWP (tCO2e/kg)**               | 1430                   | 3                      | 675         | 2088        |
+| **GWP (kgCO2e/kg)**              | 1430                   | 3                      | 675         | 2088        |
 | **Initial Charge (kg/unit)**     | 0.15                   | 0.07                   | 0.85        | 1.00        |
 | **Retirement (%/year)**          | 5%                     | 5%                     | 7%          | 7%          |
 | **Recharge (% @ kg/unit)**       | 10% @ 0.15             | 10% @ 0.07             | 15% @ 0.85  | 15% @ 1.00  |

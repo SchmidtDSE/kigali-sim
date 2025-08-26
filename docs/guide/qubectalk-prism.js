@@ -26,7 +26,7 @@ Prism.languages.qubectalk = {
       "xor", "if", "else", "endif", "normally", "sample", "std",
       "uniformly", "limit", "annually", "beginning", "day", "days",
       "each", "month", "months", "onwards", "year", "years", "yr", "yrs", "unit",
-      "units", "kg", "mt", "tCO2e", "kwh", "priorEquipment", "equipment",
+      "units", "kg", "mt", "tCO2e", "kgCO2e", "kwh", "priorEquipment", "equipment",
       "export", "import", "domestic", "sales", "mean",
     ].join("|") + ")\\b"),
     greedy: true,
