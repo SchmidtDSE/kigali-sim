@@ -46,6 +46,14 @@ The following changes have been adopted and released.
 
 Added support for kgCO2e siimlar to tCO2e. This is across the engine for those using QubecTalk as well as those in the UI-based edtior. There were also some documentation updates. See [#513](https://github.com/SchmidtDSE/kigali-sim/issues/513).
 
+### Show "-all" in charts
+
+**Status**: Released August 25, 2025
+
+**Classification**: Bug
+
+Very minor bug where the "- All" option for equipment subtypes was not being displayed in the visualizations.
+
 ### Feature-Specific Tutorials
 
 **Status:** Released August 20, 2025
