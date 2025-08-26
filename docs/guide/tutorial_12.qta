@@ -10,7 +10,7 @@ start default
 
     uses substance "HFC-134a High Energy"
       enable domestic
-      equals 1430 tCO2e / kg
+      equals 1430 kgCO2e / kg
       equals 500 kwh / unit
       
       initial charge with 0.15 kg / unit for domestic
@@ -23,7 +23,7 @@ start default
 
     uses substance "HFC-134a Low Energy"
       enable domestic
-      equals 1430 tCO2e / kg
+      equals 1430 kgCO2e / kg
       equals 350 kwh / unit
       
       initial charge with 0.15 kg / unit for domestic

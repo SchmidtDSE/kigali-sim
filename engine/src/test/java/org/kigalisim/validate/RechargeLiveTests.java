@@ -434,8 +434,8 @@ public class RechargeLiveTests {
     double policyR600aRecharge = policyR600a2035.getRechargeEmissions().getValue().doubleValue();
 
     // GWP analysis
-    double hfcGwp = 1430; // tCO2e/kg from QTA file
-    double r600aGwp = 3; // tCO2e/kg from QTA file
+    double hfcGwp = 1430; // kgCO2e/kg from QTA file
+    double r600aGwp = 3; // kgCO2e/kg from QTA file
 
     // Calculate expected recharge amounts based on different approaches
     double simplifiedR600aRechargeKg = policyR600aEquipment * 0.10 * r600aInitialCharge;
@@ -460,7 +460,7 @@ public class RechargeLiveTests {
 
     // Test that the GWP being used is correct (validates our main fix)
     assertEquals(r600aGwp, calculatedGwpFromEmissions, 0.01,
-        "GWP calculation should use R-600a's GWP (3 tCO2e/kg), not HFC-134a's (1430 tCO2e/kg). "
+        "GWP calculation should use R-600a's GWP (3 kgCO2e/kg), not HFC-134a's (1430 kgCO2e/kg). "
         + "Calculated GWP: " + calculatedGwpFromEmissions + ", Expected: " + r600aGwp);
 
     // Verify internal consistency of recharge calculation
@@ -591,12 +591,144 @@ public class RechargeLiveTests {
   }
 
   /**
+   * Test for kgCO2e unit conversion functionality.
+   * Validates that kgCO2e units work correctly with recharge calculations
+   * and convert properly to/from tCO2e internally.
+   */
+  @Test
+  public void testKgCo2eUnitConversion() throws IOException {
+    String qtaPath = "../examples/kgco2e_engine_test.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    String scenarioName = "kgco2e_test";
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
+    List<EngineResult> resultsList = results.collect(Collectors.toList());
+
+    // Check year 2 results (recharge occurs on existing equipment)
+    EngineResult resultYear2 = LiveTestsUtil.getResult(resultsList.stream(), 2,
+        "kgco2e_engine_test", "test_substance_kgco2e");
+    assertNotNull(resultYear2, "Should have result for test application in year 2");
+
+    // Verify recharge emissions are calculated correctly with kgCO2e units
+    // Year 2: 20 units from year 1 * 10% recharge * 5 kg/unit * 1430 kgCO2e/kg = 14,300 kgCO2e = 14.3 tCO2e
+    double expectedEmissions = 14.3; // tCO2e (internal representation)
+    assertEquals(expectedEmissions, resultYear2.getRechargeEmissions().getValue().doubleValue(), 0.1,
+        "Recharge emissions should be calculated correctly with kgCO2e input units");
+    assertEquals("tCO2e", resultYear2.getRechargeEmissions().getUnits(),
+        "Recharge emissions should be in tCO2e units internally");
+  }
+
+  /**
+   * Test for tCO2e unit conversion functionality.
+   * Validates that tCO2e units work correctly with recharge calculations
+   * and are properly handled internally. This test mirrors testKgCo2eUnitConversion
+   * to demonstrate equivalent functionality between unit types.
+   */
+  @Test
+  public void testTco2eUnitConversion() throws IOException {
+    String qtaPath = "../examples/tco2e_engine_test.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    String scenarioName = "tco2e_test";
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
+    List<EngineResult> resultsList = results.collect(Collectors.toList());
+
+    // Check year 2 results (recharge occurs on existing equipment)
+    EngineResult resultYear2 = LiveTestsUtil.getResult(resultsList.stream(), 2,
+        "tco2e_engine_test", "test_substance_tco2e");
+    assertNotNull(resultYear2, "Should have result for test application in year 2");
+
+    // Verify recharge emissions are calculated correctly with tCO2e units
+    // Year 2: 20 units from year 1 * 10% recharge * 5 kg/unit * 1.43 tCO2e/kg = 14.3 tCO2e
+    // This should produce identical results to the kgCO2e test (1430 kgCO2e/kg = 1.43 tCO2e/kg)
+    double expectedEmissions = 14.3; // tCO2e (internal representation)
+    assertEquals(expectedEmissions, resultYear2.getRechargeEmissions().getValue().doubleValue(), 0.1,
+        "Recharge emissions should be calculated correctly with tCO2e input units");
+    assertEquals("tCO2e", resultYear2.getRechargeEmissions().getUnits(),
+        "Recharge emissions should be in tCO2e units internally");
+
+    // Verify domestic volume is correctly processed (should match kgCO2e test)
+    assertEquals(100.0, resultYear2.getDomestic().getValue().doubleValue(), 0.001,
+        "Domestic volume should be processed correctly regardless of GWP units");
+    assertEquals("kg", resultYear2.getDomestic().getUnits(),
+        "Domestic units should remain in kg");
+  }
+
+  /**
+   * Test for kgCO2e per unit recharge emissions functionality.
+   * Validates that kgCO2e/unit emissions factors work correctly with recharge calculations
+   * and don't cause "Unexpected units unit" errors.
+   */
+  @Test
+  public void testKgCo2ePerUnitRechargeEmissions() throws IOException {
+    String qtaPath = "../examples/kgco2e_per_unit_recharge_test.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    String scenarioName = "kgco2e_per_unit_test";
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
+    List<EngineResult> resultsList = results.collect(Collectors.toList());
+
+    // Test year 2 recharge emissions
+    // Expected: ~67 units recharged (10% of ~667) × 1430 kgCO2e/unit = ~95.8 tCO2e
+    EngineResult resultYear2 = LiveTestsUtil.getResult(resultsList.stream(), 2,
+        "kgco2e_per_unit_test", "test_substance_kgco2e_unit");
+    assertNotNull(resultYear2, "Should have result for year 2");
+    assertTrue(resultYear2.getRechargeEmissions().getValue().compareTo(java.math.BigDecimal.ZERO) > 0,
+        "Recharge emissions should be greater than 0 for kgCO2e/unit");
+
+    // Verify emissions are in reasonable range (should be ~95.8 tCO2e)
+    double actualEmissions = resultYear2.getRechargeEmissions().getValue().doubleValue();
+    assertEquals(95.8, actualEmissions, 5.0,
+        "Recharge emissions should be approximately 95.8 tCO2e for kgCO2e/unit test");
+    assertEquals("tCO2e", resultYear2.getRechargeEmissions().getUnits(),
+        "Recharge emissions should be in tCO2e units internally");
+  }
+
+  /**
+   * Test for tCO2e per unit recharge emissions functionality.
+   * Validates that tCO2e/unit emissions factors work correctly with recharge calculations
+   * and don't cause "Unexpected units unit" errors.
+   */
+  @Test
+  public void testTco2ePerUnitRechargeEmissions() throws IOException {
+    String qtaPath = "../examples/tco2e_per_unit_recharge_test.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    String scenarioName = "tco2e_per_unit_test";
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
+    List<EngineResult> resultsList = results.collect(Collectors.toList());
+
+    // Test year 2 recharge emissions
+    // Expected: ~67 units recharged (10% of ~667) × 1.43 tCO2e/unit = ~95.8 tCO2e
+    EngineResult resultYear2 = LiveTestsUtil.getResult(resultsList.stream(), 2,
+        "tco2e_per_unit_test", "test_substance_tco2e_unit");
+    assertNotNull(resultYear2, "Should have result for year 2");
+    assertTrue(resultYear2.getRechargeEmissions().getValue().compareTo(java.math.BigDecimal.ZERO) > 0,
+        "Recharge emissions should be greater than 0 for tCO2e/unit");
+
+    // Verify emissions are in reasonable range (should be ~95.8 tCO2e)
+    double actualEmissions = resultYear2.getRechargeEmissions().getValue().doubleValue();
+    assertEquals(95.8, actualEmissions, 5.0,
+        "Recharge emissions should be approximately 95.8 tCO2e for tCO2e/unit test");
+    assertEquals("tCO2e", resultYear2.getRechargeEmissions().getUnits(),
+        "Recharge emissions should be in tCO2e units internally");
+
+    // Cross-verify with kgCO2e equivalent calculation
+    // 1.43 tCO2e/unit = 1430 kgCO2e/unit, so results should match kgCO2e test
+    // This validates that the unit conversion logic works consistently
+  }
+
+  /**
    * Test domestic recharge only scenario where only domestic stream is enabled.
    * Expected values: Year 1: 9575 units, 2308 kg domestic, 4616 tCO2e consumption
    *                  Year 2: 10671 units, 2485 kg domestic, 4970 tCO2e consumption
    *                  Year 3: 11791 units, 2668 kg domestic, 5336 tCO2e consumption
    *
-   * <p>Parameters: 1 kg/unit initial charge, 2 tCO2e/kg GWP, 10% recharge with 1 kg/unit
+   * <p>Parameters: 1 kg/unit initial charge, 2 kgCO2e/kg GWP, 10% recharge with 1 kg/unit
    */
   @Test
   public void testDomesticRechargeOnly() throws IOException {

@@ -54,7 +54,7 @@ function buildStorageKeeperTests() {
       enable manufacture
       initial charge with 0.15 kg / unit for manufacture
       set manufacture to 500 mt during year 1
-      equals 1430 tCO2e / mt
+      equals 1430 kgCO2e / kg
     end substance
   end application
 end default`;
@@ -142,7 +142,7 @@ end default`;
       enable manufacture
       # Comment with special chars: @#$%^&*()
       set manufacture to 50 mt during year 1
-      equals 100 tCO2e / mt
+      equals 100 kgCO2e / kg
     end substance
   end application
 end default`;

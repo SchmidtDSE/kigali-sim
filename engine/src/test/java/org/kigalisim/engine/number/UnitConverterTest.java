@@ -28,7 +28,7 @@ public class UnitConverterTest {
   private StateGetter createMockStateGetter() {
     StateGetter mock = mock(StateGetter.class);
     // Use lenient stubbing for common default values
-    lenient().when(mock.getSubstanceConsumption()).thenReturn(new EngineNumber(0, "tCO2e / kg"));
+    lenient().when(mock.getSubstanceConsumption()).thenReturn(new EngineNumber(0, "kgCO2e / kg"));
     lenient().when(mock.getEnergyIntensity()).thenReturn(new EngineNumber(0, "kwh / kg"));
     lenient().when(mock.getAmortizedUnitVolume()).thenReturn(new EngineNumber(0, "kg / unit"));
     lenient().when(mock.getPopulation()).thenReturn(new EngineNumber(0, "units"));
@@ -140,9 +140,9 @@ public class UnitConverterTest {
     StateGetter mockStateGetter = createMockStateGetter();
     lenient().when(mockStateGetter.getGhgConsumption()).thenReturn(new EngineNumber(10, "tCO2e"));
 
-    EngineNumber result = convertUnits(new EngineNumber(20, "kg / tCO2e"), "kg", mockStateGetter);
+    EngineNumber result = convertUnits(new EngineNumber(20, "kg / kgCO2e"), "kg", mockStateGetter);
 
-    assertCloseTo(200, result.getValue(), 0.001);
+    assertCloseTo(200000, result.getValue(), 0.001);
     assertEquals("kg", result.getUnits());
   }
 
@@ -273,11 +273,11 @@ public class UnitConverterTest {
   public void testVolumeToConsumptionForGhg() {
     StateGetter mockStateGetter = createMockStateGetter();
     lenient().when(mockStateGetter.getSubstanceConsumption())
-        .thenReturn(new EngineNumber(5, "tCO2e / kg"));
+        .thenReturn(new EngineNumber(5, "kgCO2e / kg"));
 
     EngineNumber result = convertUnits(new EngineNumber(10, "kg"), "tCO2e", mockStateGetter);
 
-    assertCloseTo(50, result.getValue(), 0.001);
+    assertCloseTo(0.05, result.getValue(), 0.001);
     assertEquals("tCO2e", result.getUnits());
   }
 
@@ -311,9 +311,9 @@ public class UnitConverterTest {
     lenient().when(mockStateGetter.getVolume()).thenReturn(new EngineNumber(5, "kg"));
 
     EngineNumber result = convertUnits(
-        new EngineNumber(2, "tCO2e / kg"), "tCO2e", mockStateGetter);
+        new EngineNumber(2, "kgCO2e / kg"), "tCO2e", mockStateGetter);
 
-    assertCloseTo(10, result.getValue(), 0.001);
+    assertCloseTo(0.01, result.getValue(), 0.001);
     assertEquals("tCO2e", result.getUnits());
   }
 

@@ -1,0 +1,20 @@
+start default
+
+  define application "kgco2e_test"
+
+    uses substance "test_substance"
+      enable domestic
+      initial charge with 5 kg / unit for domestic
+      set domestic to 100 kg
+      equals 1430 kgCO2e / kg
+    end substance
+
+  end application
+
+end default
+
+start simulations
+
+  simulate "grammar_validation_test" from years 1 to 1
+
+end simulations

@@ -43,7 +43,7 @@ public class StreamKeeperTest {
   private StreamKeeper createMockKeeper() {
     StateGetter stateGetter = mock(StateGetter.class);
     when(stateGetter.getSubstanceConsumption())
-        .thenReturn(new EngineNumber(BigDecimal.ONE, "tCO2e / kg"));
+        .thenReturn(new EngineNumber(BigDecimal.ONE, "kgCO2e / kg"));
     when(stateGetter.getEnergyIntensity())
         .thenReturn(new EngineNumber(BigDecimal.ONE, "kwh / kg"));
     when(stateGetter.getAmortizedUnitVolume())
@@ -69,7 +69,7 @@ public class StreamKeeperTest {
     OverridingConverterStateGetter mockOverridingStateGetter =
         mock(OverridingConverterStateGetter.class);
     when(mockOverridingStateGetter.getSubstanceConsumption())
-        .thenReturn(new EngineNumber(BigDecimal.ONE, "tCO2e / kg"));
+        .thenReturn(new EngineNumber(BigDecimal.ONE, "kgCO2e / kg"));
     when(mockOverridingStateGetter.getEnergyIntensity())
         .thenReturn(new EngineNumber(BigDecimal.ONE, "kwh / kg"));
     when(mockOverridingStateGetter.getAmortizedUnitVolume())
@@ -215,13 +215,13 @@ public class StreamKeeperTest {
     Scope testScope = createTestScope();
     keeper.ensureSubstance(testScope);
 
-    EngineNumber newValue = new EngineNumber(new BigDecimal("2.5"), "tCO2e / kg");
+    EngineNumber newValue = new EngineNumber(new BigDecimal("2.5"), "kgCO2e / kg");
     keeper.setGhgIntensity(testScope, newValue);
 
     EngineNumber retrieved = keeper.getGhgIntensity(testScope);
     assertEquals(new BigDecimal("2.5"), retrieved.getValue(),
                  "Should retrieve set GHG intensity");
-    assertEquals("tCO2e / kg", retrieved.getUnits(),
+    assertEquals("kgCO2e / kg", retrieved.getUnits(),
                  "Should retrieve correct GHG intensity units");
   }
 

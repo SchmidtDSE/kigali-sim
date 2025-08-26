@@ -7,26 +7,17 @@ start default
       initial charge with 0.15 kg / unit for domestic
       initial charge with 0 kg / unit for import
       initial charge with 0 kg / unit for export
-      equals 1430 kgCO2e / kg
+      equals 1430 kgCO2e / unit
       equals 1 kwh / unit
-      set priorEquipment to 1000000 mt during year 2025
+      set priorEquipment to 1000000 units during year 2025
       set domestic to 25 mt / year during year 2025
       retire 5 % / year
-      recharge 10 % with 0.15 kg / unit
     end substance
   
   end application
 
-
-  define application "Domestic AC"
-  end application
-
 end default
 
-
 start simulations
-
-  simulate "Business as Usual"
-  from years 2025 to 2035
-
+  simulate "BAU" from years 2025 to 2026
 end simulations
