@@ -982,6 +982,8 @@ class CenterChartPresenter {
 
       if (filterSet.getDimension() === "applications") {
         return getWithMetaEquipment(getWithMetaApplications(dimensionValuesRaw));
+      } else if (filterSet.getDimension() === "substances") {
+        return getWithMetaSubstanceEquipment(dimensionValuesRaw);
       } else {
         return dimensionValuesRaw;
       }
