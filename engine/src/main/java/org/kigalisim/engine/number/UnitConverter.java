@@ -410,6 +410,37 @@ public class UnitConverter {
       String[] conversionUnitPieces = normalizedUnits.split("/");
       String newUnits = conversionUnitPieces[0];
       String expectedUnits = conversionUnitPieces[1];
+      
+      // NEW: Handle /unit emissions factors specially
+      if ("unit".equals(expectedUnits) || "units".equals(expectedUnits)) {
+        // For /unit factors, determine if target is volume or already population
+        String targetUnits = target.getUnits();
+        BigDecimal populationValue;
+        
+        if ("unit".equals(targetUnits) || "units".equals(targetUnits)) {
+          // Target is already in population units
+          populationValue = target.getValue();
+        } else {
+          // Target is in volume units, convert to population using amortized unit volume
+          EngineNumber amortizedVolume = stateGetter.getAmortizedUnitVolume();
+          BigDecimal volumePerUnit = amortizedVolume.getValue();
+          BigDecimal targetVolume = target.getValue();
+          populationValue = targetVolume.divide(volumePerUnit, MATH_CONTEXT);
+        }
+        
+        if ("tCO2e".equals(newUnits)) {
+          BigDecimal emissionsValue = populationValue.multiply(conversionValue);
+          return new EngineNumber(emissionsValue, "tCO2e");
+        } else if ("kgCO2e".equals(newUnits)) {
+          BigDecimal kgco2eValue = populationValue.multiply(conversionValue);
+          BigDecimal tco2eValue = kgco2eValue.divide(TCO2E_TO_KGCO2E_FACTOR, MATH_CONTEXT);
+          return new EngineNumber(tco2eValue, "tCO2e");
+        } else {
+          throw new IllegalArgumentException("Unsupported per-unit emissions type: " + newUnits);
+        }
+      }
+      
+      // EXISTING: Handle /kg, /mt cases (unchanged)
       EngineNumber targetConverted = convert(target, expectedUnits);
       BigDecimal originalValue = targetConverted.getValue();
       BigDecimal newValue = originalValue.multiply(conversionValue);
@@ -463,6 +494,37 @@ public class UnitConverter {
       String[] conversionUnitPieces = normalizedUnits.split("/");
       String newUnits = conversionUnitPieces[0];
       String expectedUnits = conversionUnitPieces[1];
+      
+      // NEW: Handle /unit emissions factors specially
+      if ("unit".equals(expectedUnits) || "units".equals(expectedUnits)) {
+        // For /unit factors, determine if target is volume or already population
+        String targetUnits = target.getUnits();
+        BigDecimal populationValue;
+        
+        if ("unit".equals(targetUnits) || "units".equals(targetUnits)) {
+          // Target is already in population units
+          populationValue = target.getValue();
+        } else {
+          // Target is in volume units, convert to population using amortized unit volume
+          EngineNumber amortizedVolume = stateGetter.getAmortizedUnitVolume();
+          BigDecimal volumePerUnit = amortizedVolume.getValue();
+          BigDecimal targetVolume = target.getValue();
+          populationValue = targetVolume.divide(volumePerUnit, MATH_CONTEXT);
+        }
+        
+        if ("kgCO2e".equals(newUnits)) {
+          BigDecimal emissionsValue = populationValue.multiply(conversionValue);
+          return new EngineNumber(emissionsValue, "kgCO2e");
+        } else if ("tCO2e".equals(newUnits)) {
+          BigDecimal tco2eValue = populationValue.multiply(conversionValue);
+          BigDecimal kgco2eValue = tco2eValue.multiply(TCO2E_TO_KGCO2E_FACTOR);
+          return new EngineNumber(kgco2eValue, "kgCO2e");
+        } else {
+          throw new IllegalArgumentException("Unsupported per-unit emissions type: " + newUnits);
+        }
+      }
+      
+      // EXISTING: Handle /kg, /mt cases (unchanged)
       EngineNumber targetConverted = convert(target, expectedUnits);
       BigDecimal originalValue = targetConverted.getValue();
       BigDecimal newValue = originalValue.multiply(conversionValue);
