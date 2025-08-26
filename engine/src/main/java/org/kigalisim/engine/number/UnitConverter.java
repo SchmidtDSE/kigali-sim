@@ -763,11 +763,8 @@ public class UnitConverter {
    * @param isKgCo2eOutput Whether the final output should be in kgCO2e (true) or tCO2e (false)
    * @return The converted EngineNumber in the appropriate CO2e units
    */
-  private EngineNumber handlePerUnitConversion(EngineNumber target,
-                                             EngineNumber conversion,
-                                             String newUnits,
-                                             String targetUnits,
-                                             boolean isKgCo2eOutput) {
+  private EngineNumber handlePerUnitConversion(EngineNumber target, EngineNumber conversion,
+      String newUnits, String targetUnits, boolean isKgCo2eOutput) {
     // For /unit factors, determine if target is volume or already population
     BigDecimal populationValue;
 
@@ -824,11 +821,8 @@ public class UnitConverter {
    * @param isKgCo2eOutput Whether the final output should be in kgCO2e (true) or tCO2e (false)
    * @return The converted EngineNumber in the appropriate CO2e units
    */
-  private EngineNumber handlePerVolumeConversion(EngineNumber target,
-                                               EngineNumber conversion,
-                                               String newUnits,
-                                               String expectedUnits,
-                                               boolean isKgCo2eOutput) {
+  private EngineNumber handlePerVolumeConversion(EngineNumber target, EngineNumber conversion,
+      String newUnits, String expectedUnits, boolean isKgCo2eOutput) {
     EngineNumber targetConverted = convert(target, expectedUnits);
     BigDecimal originalValue = targetConverted.getValue();
     BigDecimal conversionValue = conversion.getValue();
