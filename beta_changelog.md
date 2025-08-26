@@ -38,6 +38,14 @@ This is being discussed in [#490](https://github.com/SchmidtDSE/kigali-sim/issue
 
 The following changes have been adopted and released.
 
+### Add kgCO2e Option
+
+**Status**: Released August 25, 2025
+
+**Classification**: Enhancement
+
+Added support for kgCO2e siimlar to tCO2e. This is across the engine for those using QubecTalk as well as those in the UI-based edtior. There were also some documentation updates. See [#513](https://github.com/SchmidtDSE/kigali-sim/issues/513).
+
 ### Feature-Specific Tutorials
 
 **Status:** Released August 20, 2025
