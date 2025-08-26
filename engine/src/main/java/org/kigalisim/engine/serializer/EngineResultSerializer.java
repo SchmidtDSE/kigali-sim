@@ -251,7 +251,7 @@ public class EngineResultSerializer {
     String normalizedUnits = ghgIntensity.getUnits().replaceAll("\\s+", "");
     String[] unitPieces = normalizedUnits.split("/");
     boolean isPerUnit = unitPieces.length > 1 && ("unit".equals(unitPieces[1]) || "units".equals(unitPieces[1]));
-    
+
     if (isPerUnit) {
       // For per-unit emissions factors, trade supplement calculations don't apply
       // Set all trade-related values to zero since the calculations are equipment-based, not volume-based
@@ -348,7 +348,7 @@ public class EngineResultSerializer {
       if (newPopulation == null) {
         return new EngineNumber(BigDecimal.ZERO, "tCO2e");
       }
-      
+
       // Convert to units if needed and multiply by per-unit factor
       EngineNumber populationInUnits = scopedConverter.convert(newPopulation, "units");
       OverridingConverterStateGetter emissionsStateGetter = new OverridingConverterStateGetter(this.stateGetter);

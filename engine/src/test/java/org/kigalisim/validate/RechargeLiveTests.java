@@ -666,11 +666,11 @@ public class RechargeLiveTests {
     String qtaPath = "../examples/kgco2e_per_unit_recharge_test.qta";
     ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
     assertNotNull(program, "Program should not be null");
-    
+
     String scenarioName = "kgco2e_per_unit_test";
     Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
     List<EngineResult> resultsList = results.collect(Collectors.toList());
-    
+
     // Test year 2 recharge emissions
     // Expected: ~67 units recharged (10% of ~667) × 1430 kgCO2e/unit = ~95.8 tCO2e
     EngineResult resultYear2 = LiveTestsUtil.getResult(resultsList.stream(), 2,
@@ -678,7 +678,7 @@ public class RechargeLiveTests {
     assertNotNull(resultYear2, "Should have result for year 2");
     assertTrue(resultYear2.getRechargeEmissions().getValue().compareTo(java.math.BigDecimal.ZERO) > 0,
         "Recharge emissions should be greater than 0 for kgCO2e/unit");
-    
+
     // Verify emissions are in reasonable range (should be ~95.8 tCO2e)
     double actualEmissions = resultYear2.getRechargeEmissions().getValue().doubleValue();
     assertEquals(95.8, actualEmissions, 5.0,
@@ -697,11 +697,11 @@ public class RechargeLiveTests {
     String qtaPath = "../examples/tco2e_per_unit_recharge_test.qta";
     ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
     assertNotNull(program, "Program should not be null");
-    
+
     String scenarioName = "tco2e_per_unit_test";
     Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
     List<EngineResult> resultsList = results.collect(Collectors.toList());
-    
+
     // Test year 2 recharge emissions
     // Expected: ~67 units recharged (10% of ~667) × 1.43 tCO2e/unit = ~95.8 tCO2e
     EngineResult resultYear2 = LiveTestsUtil.getResult(resultsList.stream(), 2,
@@ -709,14 +709,14 @@ public class RechargeLiveTests {
     assertNotNull(resultYear2, "Should have result for year 2");
     assertTrue(resultYear2.getRechargeEmissions().getValue().compareTo(java.math.BigDecimal.ZERO) > 0,
         "Recharge emissions should be greater than 0 for tCO2e/unit");
-    
+
     // Verify emissions are in reasonable range (should be ~95.8 tCO2e)
     double actualEmissions = resultYear2.getRechargeEmissions().getValue().doubleValue();
     assertEquals(95.8, actualEmissions, 5.0,
         "Recharge emissions should be approximately 95.8 tCO2e for tCO2e/unit test");
     assertEquals("tCO2e", resultYear2.getRechargeEmissions().getUnits(),
         "Recharge emissions should be in tCO2e units internally");
-    
+
     // Cross-verify with kgCO2e equivalent calculation
     // 1.43 tCO2e/unit = 1430 kgCO2e/unit, so results should match kgCO2e test
     // This validates that the unit conversion logic works consistently

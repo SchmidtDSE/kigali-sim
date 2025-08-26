@@ -410,13 +410,13 @@ public class UnitConverter {
       String[] conversionUnitPieces = normalizedUnits.split("/");
       String newUnits = conversionUnitPieces[0];
       String expectedUnits = conversionUnitPieces[1];
-      
+
       // NEW: Handle /unit emissions factors specially
       if ("unit".equals(expectedUnits) || "units".equals(expectedUnits)) {
         // For /unit factors, determine if target is volume or already population
         String targetUnits = target.getUnits();
         BigDecimal populationValue;
-        
+
         if ("unit".equals(targetUnits) || "units".equals(targetUnits)) {
           // Target is already in population units
           populationValue = target.getValue();
@@ -427,7 +427,7 @@ public class UnitConverter {
           BigDecimal targetVolume = target.getValue();
           populationValue = targetVolume.divide(volumePerUnit, MATH_CONTEXT);
         }
-        
+
         if ("tCO2e".equals(newUnits)) {
           BigDecimal emissionsValue = populationValue.multiply(conversionValue);
           return new EngineNumber(emissionsValue, "tCO2e");
@@ -439,7 +439,7 @@ public class UnitConverter {
           throw new IllegalArgumentException("Unsupported per-unit emissions type: " + newUnits);
         }
       }
-      
+
       // EXISTING: Handle /kg, /mt cases (unchanged)
       EngineNumber targetConverted = convert(target, expectedUnits);
       BigDecimal originalValue = targetConverted.getValue();
@@ -494,13 +494,13 @@ public class UnitConverter {
       String[] conversionUnitPieces = normalizedUnits.split("/");
       String newUnits = conversionUnitPieces[0];
       String expectedUnits = conversionUnitPieces[1];
-      
+
       // NEW: Handle /unit emissions factors specially
       if ("unit".equals(expectedUnits) || "units".equals(expectedUnits)) {
         // For /unit factors, determine if target is volume or already population
         String targetUnits = target.getUnits();
         BigDecimal populationValue;
-        
+
         if ("unit".equals(targetUnits) || "units".equals(targetUnits)) {
           // Target is already in population units
           populationValue = target.getValue();
@@ -511,7 +511,7 @@ public class UnitConverter {
           BigDecimal targetVolume = target.getValue();
           populationValue = targetVolume.divide(volumePerUnit, MATH_CONTEXT);
         }
-        
+
         if ("kgCO2e".equals(newUnits)) {
           BigDecimal emissionsValue = populationValue.multiply(conversionValue);
           return new EngineNumber(emissionsValue, "kgCO2e");
@@ -523,7 +523,7 @@ public class UnitConverter {
           throw new IllegalArgumentException("Unsupported per-unit emissions type: " + newUnits);
         }
       }
-      
+
       // EXISTING: Handle /kg, /mt cases (unchanged)
       EngineNumber targetConverted = convert(target, expectedUnits);
       BigDecimal originalValue = targetConverted.getValue();
