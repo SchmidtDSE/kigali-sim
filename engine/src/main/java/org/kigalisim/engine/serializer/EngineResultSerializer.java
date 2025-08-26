@@ -217,10 +217,10 @@ public class EngineResultSerializer {
                                              UnitConverter unitConverter) {
     if (volume.getValue().compareTo(BigDecimal.ZERO) == 0) {
       return new EngineNumber(BigDecimal.ZERO, "tCO2e");
+    } else {
+      stateGetter.setVolume(volume);
+      return unitConverter.convert(consumptionByVolume, "tCO2e");
     }
-
-    stateGetter.setVolume(volume);
-    return unitConverter.convert(consumptionByVolume, "tCO2e");
   }
 
   /**
@@ -238,7 +238,7 @@ public class EngineResultSerializer {
     // Prepare units
     OverridingConverterStateGetter stateGetter =
         new OverridingConverterStateGetter(this.stateGetter);
-    UnitConverter unitConverter = new UnitConverter(stateGetter);
+    final UnitConverter unitConverter = new UnitConverter(stateGetter);
 
     EngineNumber ghgIntensity = engine.getEqualsGhgIntensityFor(useKey);
     stateGetter.setSubstanceConsumption(ghgIntensity);
@@ -246,6 +246,12 @@ public class EngineResultSerializer {
     EngineNumber importInitialChargeUnit = engine.getRawInitialChargeFor(
         useKey, "import");
     stateGetter.setAmortizedUnitVolume(importInitialChargeUnit);
+
+    // Check if this is a per-unit emissions factor
+    if (isPerUnit(ghgIntensity)) {
+      handlePerUnitTradeSupplement(builder);
+      return;
+    }
 
     // Determine import value without recharge
     EngineNumber totalImportValue = engine.getStreamFor(useKey, "import");
@@ -303,8 +309,9 @@ public class EngineResultSerializer {
     EngineNumber value = engine.getStreamFor(useKey, streamName);
     if (value == null) {
       return new EngineNumber(BigDecimal.ZERO, "kg");
+    } else {
+      return unitConverter.convert(value, "kg");
     }
-    return unitConverter.convert(value, "kg");
   }
 
   /**
@@ -320,6 +327,54 @@ public class EngineResultSerializer {
     scopedStateGetter.setSubstanceConsumption(ghgIntensity);
     UnitConverter scopedConverter = new UnitConverter(scopedStateGetter);
 
+    if (isPerUnit(ghgIntensity)) {
+      return calculatePerUnitInitialChargeEmissions(useKey, ghgIntensity, scopedConverter);
+    } else {
+      return calculatePerVolumeInitialChargeEmissions(useKey, ghgIntensity, scopedConverter);
+    }
+  }
+
+  /**
+   * Calculate initial charge emissions for per-unit emissions factors.
+   *
+   * <p>For per-unit emissions factors, initial charge emissions are calculated
+   * based on new equipment population multiplied by the per-unit emissions factor.</p>
+   *
+   * @param useKey The UseKey containing application and substance information
+   * @param ghgIntensity The GHG intensity (per-unit emissions factor)
+   * @param scopedConverter The unit converter with appropriate scope
+   * @return The calculated initial charge emissions in tCO2e
+   */
+  private EngineNumber calculatePerUnitInitialChargeEmissions(UseKey useKey, EngineNumber ghgIntensity, UnitConverter scopedConverter) {
+    // Initial charge emissions = new equipment population * per-unit emissions factor
+    EngineNumber newPopulation = engine.getStreamFor(useKey, "newEquipment");
+    if (newPopulation == null) {
+      return new EngineNumber(BigDecimal.ZERO, "tCO2e");
+    } else {
+      // Convert to units if needed and multiply by per-unit factor
+      EngineNumber populationInUnits = scopedConverter.convert(newPopulation, "units");
+      OverridingConverterStateGetter emissionsStateGetter = new OverridingConverterStateGetter(this.stateGetter);
+      emissionsStateGetter.setPopulation(populationInUnits);
+      emissionsStateGetter.setSubstanceConsumption(ghgIntensity);
+      UnitConverter emissionsConverter = new UnitConverter(emissionsStateGetter);
+      return emissionsConverter.convert(ghgIntensity, "tCO2e");
+    }
+  }
+
+  /**
+   * Calculate initial charge emissions for per-volume emissions factors.
+   *
+   * <p>For per-volume emissions factors (per kg or per mt), initial charge emissions
+   * are calculated based on the volume difference between total sales and recharge,
+   * multiplied by the per-volume emissions factor.</p>
+   *
+   * @param useKey The UseKey containing application and substance information
+   * @param ghgIntensity The GHG intensity (per-volume emissions factor)
+   * @param scopedConverter The unit converter with appropriate scope
+   * @return The calculated initial charge emissions in tCO2e
+   */
+  private EngineNumber calculatePerVolumeInitialChargeEmissions(UseKey useKey, EngineNumber ghgIntensity, UnitConverter scopedConverter) {
+    // Get all volume streams in kg
     EngineNumber domesticKg = getInKg(useKey, "domestic", scopedConverter);
     EngineNumber importKg = getInKg(useKey, "import", scopedConverter);
     EngineNumber exportKg = getInKg(useKey, "export", scopedConverter);
@@ -344,5 +399,34 @@ public class EngineResultSerializer {
     UnitConverter emissionsConverter = new UnitConverter(emissionsStateGetter);
 
     return emissionsConverter.convert(ghgIntensity, "tCO2e");
+  }
+
+  /**
+   * Handle trade supplement calculation for per-unit emissions factors.
+   *
+   * <p>For per-unit emissions factors, trade supplement calculations don't apply
+   * since the calculations are equipment-based rather than volume-based.</p>
+   *
+   * @param builder The builder into which parsed values should be registered
+   */
+  private void handlePerUnitTradeSupplement(EngineResultBuilder builder) {
+    // Set all trade-related values to zero since calculations are equipment-based
+    EngineNumber zeroValue = new EngineNumber(BigDecimal.ZERO, "kg");
+    EngineNumber zeroConsumption = new EngineNumber(BigDecimal.ZERO, "tCO2e");
+    EngineNumber zeroPopulation = new EngineNumber(BigDecimal.ZERO, "units");
+    TradeSupplement tradeSupplement = new TradeSupplement(zeroValue, zeroConsumption, zeroPopulation, zeroValue, zeroConsumption);
+    builder.setTradeSupplement(tradeSupplement);
+  }
+
+  /**
+   * Check if the GHG intensity represents per-unit emissions factors.
+   *
+   * @param ghgIntensity The GHG intensity EngineNumber to check
+   * @return True if the units are per-unit (unit or units), false otherwise
+   */
+  private boolean isPerUnit(EngineNumber ghgIntensity) {
+    String normalizedUnits = ghgIntensity.getUnits().replaceAll("\\s+", "");
+    String[] unitPieces = normalizedUnits.split("/");
+    return unitPieces.length > 1 && ("unit".equals(unitPieces[1]) || "units".equals(unitPieces[1]));
   }
 }

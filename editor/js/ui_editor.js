@@ -940,7 +940,7 @@ class ConsumptionListPresenter {
       self._dialog.querySelector(".edit-consumption-ghg-input"),
       self._dialog.querySelector(".edit-consumption-ghg-units-input"),
       objToShow,
-      new EngineNumber(1, "tCO2e / kg"),
+      new EngineNumber(1, "kgCO2e / kg"),
       (x) => (x.getEqualsGhg() ? x.getEqualsGhg().getValue() : null),
     );
 
