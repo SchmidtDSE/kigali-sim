@@ -7,7 +7,8 @@
  * @license BSD, see LICENSE.md
  */
 
-import {SubstanceMetadata, SubstanceMetadataBuilder} from "ui_translator";
+import {SubstanceMetadata, SubstanceMetadataBuilder, Program, Application, Substance, SubstanceBuilder, Command} from "ui_translator";
+import {EngineNumber} from "engine_number";
 
 /**
  * Serializer for converting SubstanceMetadata objects to CSV format.
@@ -327,6 +328,232 @@ class MetaSerializer {
   }
 }
 
+/**
+ * Applier for inserting substances from metadata into a Program.
+ *
+ * This class handles the insertion of new substances into a Program based on
+ * SubstanceMetadata objects. It ensures applications exist, creates substances
+ * with metadata-derived commands, and handles the integration with existing 
+ * program structure. Name conflicts are ignored for now (Component 6 scope).
+ */
+class MetaChangeApplier {
+  /**
+   * Create a new MetaChangeApplier instance.
+   *
+   * @param {Program} program - The Program instance to modify in-place
+   */
+  constructor(program) {
+    const self = this;
+    
+    if (!program || typeof program.getApplications !== "function") {
+      throw new Error("MetaChangeApplier requires a valid Program instance");
+    }
+    
+    self._program = program;
+  }
+
+  /**
+   * Insert substances from metadata array into the program.
+   *
+   * This method processes an array of SubstanceMetadata objects, ensures
+   * required applications exist, creates substances from metadata, and
+   * adds them to the appropriate applications. Name conflicts are ignored
+   * (substances with existing substance/application pairs are skipped).
+   *
+   * @param {SubstanceMetadata[]} metadataArray - Array of metadata objects
+   * @returns {Program} The modified program instance (for chaining)
+   */
+  upsertMetadata(metadataArray) {
+    const self = this;
+    
+    // Validate input
+    if (!metadataArray || !Array.isArray(metadataArray)) {
+      throw new Error("upsertMetadata requires an array of SubstanceMetadata objects");
+    }
+    
+    // Process each metadata object
+    for (const metadata of metadataArray) {
+      if (!metadata || typeof metadata.getSubstance !== "function") {
+        throw new Error("Array must contain valid SubstanceMetadata instances");
+      }
+      
+      try {
+        // Skip if required fields are empty
+        if (!metadata.getSubstance().trim() || !metadata.getApplication().trim()) {
+          continue;
+        }
+        
+        // Ensure application exists
+        self._ensureApplicationExists(metadata.getApplication());
+        
+        // Check for name conflict and skip if exists (Component 5 scope)
+        const app = self._program.getApplication(metadata.getApplication());
+        const existingSubstances = app.getSubstances().filter(s => 
+          s.getName() === metadata.getName()
+        );
+        if (existingSubstances.length > 0) {
+          // Skip this substance due to conflict
+          continue;
+        }
+        
+        // Create substance from metadata
+        const substance = self._createSubstanceFromMetadata(metadata);
+        
+        // Add substance to application
+        self._addSubstanceToApplication(substance, metadata.getApplication());
+        
+      } catch (error) {
+        // Log warning but continue processing other substances
+        console.warn(`Failed to process substance ${metadata.getSubstance()}: ${error.message}`);
+      }
+    }
+    
+    return self._program;
+  }
+
+  /**
+   * Ensure an application exists in the program, creating it if missing.
+   *
+   * @param {string} applicationName - Name of the application to ensure exists
+   * @private
+   */
+  _ensureApplicationExists(applicationName) {
+    const self = this;
+    
+    const existingApp = self._program.getApplication(applicationName);
+    if (existingApp === null) {
+      // Create new application with empty substances array
+      const newApplication = new Application(
+        applicationName,   // name
+        [],              // substances (empty)
+        false,           // isModification
+        true             // isCompatible
+      );
+      
+      self._program.addApplication(newApplication);
+    }
+  }
+
+  /**
+   * Create a Substance object from SubstanceMetadata.
+   *
+   * This method converts metadata fields to appropriate Command objects
+   * and uses SubstanceBuilder to create the substance definition.
+   *
+   * @param {SubstanceMetadata} metadata - Metadata to convert to substance
+   * @returns {Substance} Created substance object
+   * @private
+   */
+  _createSubstanceFromMetadata(metadata) {
+    const self = this;
+    
+    const substanceName = metadata.getName();
+    const builder = new SubstanceBuilder(substanceName, false); // Not a modification
+    
+    // Helper function to parse unit values from metadata strings
+    const parseUnitValue = (valueString) => {
+      if (!valueString || typeof valueString !== "string" || !valueString.trim()) {
+        return null;
+      }
+      
+      // Find the first space after the numeric value to separate value from units
+      const trimmed = valueString.trim();
+      // Match number (with optional commas, decimals, and %) followed by units
+      const match = trimmed.match(/^([+-]?[\d,]+(?:\.\d+)?%?)\s+(.+)$/);
+      
+      if (!match) {
+        return null; // Need both value and units in the format "number units"
+      }
+      
+      const valueString_clean = match[1];
+      const unitsString = match[2];
+      
+      // Remove commas and percentage signs from value, then parse the numeric value
+      const cleanedValue = valueString_clean.replace(/[,%]/g, "");
+      const numericValue = parseFloat(cleanedValue);
+      
+      if (isNaN(numericValue)) {
+        return null;
+      }
+      
+      // If the original value had a %, include it in the units
+      const finalUnits = valueString_clean.includes('%') ? '% ' + unitsString : unitsString;
+      
+      return new EngineNumber(numericValue, finalUnits);
+    };
+    
+    // Add GHG equals command if present
+    const ghgValue = parseUnitValue(metadata.getGhg());
+    if (ghgValue) {
+      // For GHG commands, we need to ensure the routing works correctly by using specific target
+      builder.setEqualsGhg(new Command("equals", null, ghgValue, null));
+    }
+    
+    // Add energy equals command if present  
+    const energyValue = parseUnitValue(metadata.getEnergy());
+    if (energyValue) {
+      // For energy commands, we need to ensure the routing works correctly by using specific target
+      builder.setEqualsKwh(new Command("equals", null, energyValue, null));
+    }
+    
+    // Add enable commands based on stream flags
+    if (metadata.getHasDomestic()) {
+      builder.addCommand(new Command("enable", "domestic", null, null));
+    }
+    if (metadata.getHasImport()) {
+      builder.addCommand(new Command("enable", "import", null, null));
+    }
+    if (metadata.getHasExport()) {
+      builder.addCommand(new Command("enable", "export", null, null));
+    }
+    
+    // Add initial charge commands for each stream (skip zero values)
+    const domesticCharge = parseUnitValue(metadata.getInitialChargeDomestic());
+    if (domesticCharge && domesticCharge.getValue() > 0) {
+      builder.addCommand(new Command("initial charge", "domestic", domesticCharge, null));
+    }
+    
+    const importCharge = parseUnitValue(metadata.getInitialChargeImport());
+    if (importCharge && importCharge.getValue() > 0) {
+      builder.addCommand(new Command("initial charge", "import", importCharge, null));
+    }
+    
+    const exportCharge = parseUnitValue(metadata.getInitialChargeExport());
+    if (exportCharge && exportCharge.getValue() > 0) {
+      builder.addCommand(new Command("initial charge", "export", exportCharge, null));
+    }
+    
+    // Add retirement command if present
+    const retirementValue = parseUnitValue(metadata.getRetirement());
+    if (retirementValue) {
+      builder.addCommand(new Command("retire", null, retirementValue, null));
+    }
+    
+    // Build the substance (compatible with UI editing)
+    return builder.build(true);
+  }
+
+  /**
+   * Add a substance to an application.
+   *
+   * @param {Substance} substance - Substance to add
+   * @param {string} applicationName - Name of application to add substance to
+   * @private
+   */
+  _addSubstanceToApplication(substance, applicationName) {
+    const self = this;
+    
+    const application = self._program.getApplication(applicationName);
+    if (application === null) {
+      throw new Error(`Application ${applicationName} not found`);
+    }
+    
+    // Use insertSubstance method (null means no prior substance to replace)
+    application.insertSubstance(null, substance);
+  }
+}
+
 export {
   MetaSerializer,
+  MetaChangeApplier,
 };
