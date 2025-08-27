@@ -1345,7 +1345,124 @@ class Substance {
    */
   rename(newName) {
     const self = this;
-    self._name = newName;
+    // Use updateMetadata for consistency
+    const currentMeta = self.getMeta("");
+    const newMeta = new SubstanceMetadata(
+      newName.indexOf(" - ") > 0 ? newName.substring(0, newName.indexOf(" - ")) : newName,
+      newName.indexOf(" - ") > 0 ? newName.substring(newName.indexOf(" - ") + 3) : "",
+      currentMeta.getApplication(),
+      currentMeta.getGhg(),
+      currentMeta.getHasDomestic(),
+      currentMeta.getHasImport(),
+      currentMeta.getHasExport(),
+      currentMeta.getEnergy(),
+      currentMeta.getInitialChargeDomestic(),
+      currentMeta.getInitialChargeImport(),
+      currentMeta.getInitialChargeExport(),
+      currentMeta.getRetirement()
+    );
+    self.updateMetadata(newMeta, currentMeta.getApplication());
+  }
+
+  /**
+   * Update all metadata for this substance using a SubstanceMetadata object.
+   *
+   * @param {SubstanceMetadata} newMetadata - New metadata to apply to this substance.
+   * @param {string} applicationName - Name of the application this substance belongs to.
+   */
+  updateMetadata(newMetadata, applicationName) {
+    const self = this;
+    
+    // Validate input
+    if (!newMetadata || !(newMetadata instanceof SubstanceMetadata)) {
+      throw new Error("newMetadata must be a SubstanceMetadata instance");
+    }
+    
+    // Helper function to parse unit value strings like "5 kgCO2e / kg" into EngineNumber
+    const parseUnitValue = (unitValueString) => {
+      if (!unitValueString || unitValueString.trim() === "") {
+        return null;
+      }
+      
+      const trimmed = unitValueString.trim();
+      
+      // Find the first space to separate value from units
+      const firstSpaceIndex = trimmed.indexOf(" ");
+      if (firstSpaceIndex === -1) {
+        throw new Error(`Invalid unit value format: ${unitValueString}`);
+      }
+      
+      const valueString = trimmed.substring(0, firstSpaceIndex);
+      const unitsString = trimmed.substring(firstSpaceIndex + 1);
+      
+      // Parse numeric value (removing commas and handling signs)
+      const cleanedValue = valueString.replace(/,/g, "");
+      const numericValue = parseFloat(cleanedValue);
+      
+      if (isNaN(numericValue)) {
+        throw new Error(`Invalid numeric value: ${valueString}`);
+      }
+      
+      return new EngineNumber(numericValue, unitsString);
+    };
+
+    // Update name
+    const fullName = newMetadata.getName();
+    self._name = fullName;
+    
+    // Update GHG equals command
+    const ghgValue = parseUnitValue(newMetadata.getGhg());
+    if (ghgValue) {
+      self._equalsGhg = new Command("equals", null, ghgValue, null);
+    } else {
+      self._equalsGhg = null;
+    }
+    
+    // Update energy equals command
+    const energyValue = parseUnitValue(newMetadata.getEnergy());
+    if (energyValue) {
+      self._equalsKwh = new Command("equals", null, energyValue, null);
+    } else {
+      self._equalsKwh = null;
+    }
+    
+    // Update enabled streams
+    self._enables = [];
+    if (newMetadata.getHasDomestic()) {
+      self._enables.push(new Command("enable", "domestic", null, null));
+    }
+    if (newMetadata.getHasImport()) {
+      self._enables.push(new Command("enable", "import", null, null));
+    }
+    if (newMetadata.getHasExport()) {
+      self._enables.push(new Command("enable", "export", null, null));
+    }
+    
+    // Update initial charges
+    self._initialCharges = [];
+    
+    const domesticCharge = parseUnitValue(newMetadata.getInitialChargeDomestic());
+    if (domesticCharge) {
+      self._initialCharges.push(new Command("initial charge", "domestic", domesticCharge, null));
+    }
+    
+    const importCharge = parseUnitValue(newMetadata.getInitialChargeImport());
+    if (importCharge) {
+      self._initialCharges.push(new Command("initial charge", "import", importCharge, null));
+    }
+    
+    const exportCharge = parseUnitValue(newMetadata.getInitialChargeExport());
+    if (exportCharge) {
+      self._initialCharges.push(new Command("initial charge", "export", exportCharge, null));
+    }
+    
+    // Update retirement command
+    const retirementValue = parseUnitValue(newMetadata.getRetirement());
+    if (retirementValue) {
+      self._retire = new Command("retire", null, retirementValue, null);
+    } else {
+      self._retire = null;
+    }
   }
 
   /**
