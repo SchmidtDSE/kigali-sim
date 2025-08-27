@@ -217,14 +217,14 @@ class MetaSerializer {
   }
 
   /**
-   * Convert CSV string to array of SubstanceMetadata for import.
+   * Convert CSV string to array of SubstanceMetadataUpdate for import.
    *
    * Uses Papa Parse to parse CSV string with headers into objects,
-   * then converts to SubstanceMetadata instances. Handles parsing errors
-   * and validates CSV structure.
+   * then converts to SubstanceMetadataUpdate instances. The CSV key column
+   * is used as the oldName to identify existing substances for updates.
    *
    * @param {string} csvString - CSV content string with headers
-   * @returns {SubstanceMetadata[]} Array of SubstanceMetadata instances
+   * @returns {SubstanceMetadataUpdate[]} Array of SubstanceMetadataUpdate instances
    */
   deserializeMetaFromCsvString(csvString) {
     const self = this;
@@ -278,27 +278,33 @@ class MetaSerializer {
         }
       }
 
-      // Convert parsed data to Maps
-      const arrayOfMaps = parseResult.data.map(rowData => {
+      // Convert parsed data to SubstanceMetadataUpdate objects
+      return parseResult.data.map(rowData => {
+        // Extract key column for oldName (used for updates)
+        const oldName = rowData["key"] || "";
+        
+        // Create Map for SubstanceMetadata creation
         const rowMap = new Map();
         
-        // Set all expected columns
+        // Set all expected columns (excluding key since that's used for oldName)
         const expectedColumns = [
           "substance", "equipment", "application", "ghg",
           "hasDomestic", "hasImport", "hasExport", "energy",
           "initialChargeDomestic", "initialChargeImport", "initialChargeExport",
-          "retirement", "key"
+          "retirement"
         ];
 
         for (const column of expectedColumns) {
           rowMap.set(column, rowData[column] || "");
         }
 
-        return rowMap;
+        // Convert Map to SubstanceMetadata using existing deserialize method
+        const metadataArray = self.deserialize([rowMap]);
+        const newMetadata = metadataArray[0];
+        
+        // Create and return SubstanceMetadataUpdate with oldName and newMetadata
+        return new SubstanceMetadataUpdate(oldName, newMetadata);
       });
-
-      // Convert Maps to SubstanceMetadata using existing deserialize method
-      return self.deserialize(arrayOfMaps);
 
     } catch (error) {
       if (error.message.includes("CSV parsing failed") || error.message.includes("Failed to deserialize")) {
@@ -353,58 +359,72 @@ class MetaChangeApplier {
   }
 
   /**
-   * Insert substances from metadata array into the program.
+   * Insert or update substances from metadata update array into the program.
    *
-   * This method processes an array of SubstanceMetadata objects, ensures
-   * required applications exist, creates substances from metadata, and
-   * adds them to the appropriate applications. Name conflicts are ignored
-   * (substances with existing substance/application pairs are skipped).
+   * This method processes an array of SubstanceMetadataUpdate objects, ensures
+   * required applications exist, and either updates existing substances or
+   * creates new ones based on the oldName field. If oldName matches an existing
+   * substance, it will be updated; otherwise a new substance is created.
    *
-   * @param {SubstanceMetadata[]} metadataArray - Array of metadata objects
+   * @param {SubstanceMetadataUpdate[]} updateArray - Array of metadata update objects
    * @returns {Program} The modified program instance (for chaining)
    */
-  upsertMetadata(metadataArray) {
+  upsertMetadata(updateArray) {
     const self = this;
     
     // Validate input
-    if (!metadataArray || !Array.isArray(metadataArray)) {
-      throw new Error("upsertMetadata requires an array of SubstanceMetadata objects");
+    if (!updateArray || !Array.isArray(updateArray)) {
+      throw new Error("upsertMetadata requires an array of SubstanceMetadataUpdate objects");
     }
     
-    // Process each metadata object
-    for (const metadata of metadataArray) {
-      if (!metadata || typeof metadata.getSubstance !== "function") {
-        throw new Error("Array must contain valid SubstanceMetadata instances");
+    // Process each update object
+    for (const update of updateArray) {
+      if (!update || typeof update.getOldName !== "function" || typeof update.getNewMetadata !== "function") {
+        throw new Error("Array must contain valid SubstanceMetadataUpdate instances");
       }
       
       try {
+        const oldName = update.getOldName();
+        const newMetadata = update.getNewMetadata();
+        
         // Skip if required fields are empty
-        if (!metadata.getSubstance().trim() || !metadata.getApplication().trim()) {
+        if (!newMetadata.getSubstance().trim() || !newMetadata.getApplication().trim()) {
           continue;
         }
         
         // Ensure application exists
-        self._ensureApplicationExists(metadata.getApplication());
+        self._ensureApplicationExists(newMetadata.getApplication());
+        const app = self._program.getApplication(newMetadata.getApplication());
         
-        // Check for name conflict and skip if exists (Component 5 scope)
-        const app = self._program.getApplication(metadata.getApplication());
-        const existingSubstances = app.getSubstances().filter(s => 
-          s.getName() === metadata.getName()
-        );
-        if (existingSubstances.length > 0) {
-          // Skip this substance due to conflict
+        if (oldName && oldName.trim()) {
+          // UPDATE CASE: Find and update existing substance
+          const existingSubstance = app.getSubstances().find(s => s.getName() === oldName.trim());
+          if (existingSubstance) {
+            existingSubstance.updateMetadata(newMetadata, newMetadata.getApplication());
+            continue;
+          } else {
+            console.warn(`No existing substance found for key "${oldName}". Creating new substance instead.`);
+            // Fall through to INSERT CASE
+          }
+        }
+        
+        // INSERT CASE: Create new substance
+        // Check for naming conflicts with new substance name
+        const newName = newMetadata.getName();
+        const conflictingSubstance = app.getSubstances().find(s => s.getName() === newName);
+        if (conflictingSubstance) {
+          console.warn(`Substance "${newName}" already exists. Skipping insertion.`);
           continue;
         }
         
-        // Create substance from metadata
-        const substance = self._createSubstanceFromMetadata(metadata);
-        
-        // Add substance to application
-        self._addSubstanceToApplication(substance, metadata.getApplication());
+        // Create and insert new substance (existing logic)
+        const substance = self._createSubstanceFromMetadata(newMetadata);
+        self._addSubstanceToApplication(substance, newMetadata.getApplication());
         
       } catch (error) {
         // Log warning but continue processing other substances
-        console.warn(`Failed to process substance ${metadata.getSubstance()}: ${error.message}`);
+        const substanceName = update.getNewMetadata() ? update.getNewMetadata().getSubstance() : "unknown";
+        console.warn(`Failed to process substance ${substanceName}: ${error.message}`);
       }
     }
     
@@ -553,7 +573,53 @@ class MetaChangeApplier {
   }
 }
 
+/**
+ * Container for substance metadata updates with old and new information.
+ * 
+ * Used to distinguish between inserting new substances and updating existing ones.
+ * The oldName corresponds to the key column in CSV files and identifies which
+ * existing substance should be updated.
+ */
+class SubstanceMetadataUpdate {
+  /**
+   * Create a new SubstanceMetadataUpdate instance.
+   *
+   * @param {string} oldName - The name of the existing substance to update (from CSV key column)
+   * @param {SubstanceMetadata} newMetadata - The new metadata to apply
+   */
+  constructor(oldName, newMetadata) {
+    const self = this;
+    
+    // Validate inputs
+    if (newMetadata && !(newMetadata instanceof SubstanceMetadata)) {
+      throw new Error("newMetadata must be a SubstanceMetadata instance");
+    }
+    
+    self._oldName = oldName || "";
+    self._newMetadata = newMetadata;
+  }
+
+  /**
+   * Get the old name (key) that identifies which existing substance to update.
+   *
+   * @returns {string} The old name from CSV key column
+   */
+  getOldName() {
+    return this._oldName;
+  }
+
+  /**
+   * Get the new metadata to apply to the substance.
+   *
+   * @returns {SubstanceMetadata} The new metadata object
+   */
+  getNewMetadata() {
+    return this._newMetadata;
+  }
+}
+
 export {
   MetaSerializer,
   MetaChangeApplier,
+  SubstanceMetadataUpdate,
 };

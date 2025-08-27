@@ -1,4 +1,4 @@
-import {MetaSerializer, MetaChangeApplier} from "meta_serialization";
+import {MetaSerializer, MetaChangeApplier, SubstanceMetadataUpdate} from "meta_serialization";
 import {SubstanceMetadata, Program, Application, Substance, SubstanceBuilder} from "ui_translator";
 
 function buildMetaSerializationTests() {
@@ -575,8 +575,12 @@ HFC-134a,High Energy,Domestic Refrigeration,1430 kgCO2e / kg,true,false,false,50
         const result = serializer.deserializeMetaFromCsvString(csvString);
         
         assert.equal(result.length, 1);
-        const metadata = result[0];
+        const update = result[0];
         
+        assert.ok(update instanceof SubstanceMetadataUpdate);
+        assert.equal(update.getOldName(), ""); // Empty key column
+        
+        const metadata = update.getNewMetadata();
         assert.equal(metadata.getSubstance(), "HFC-134a");
         assert.equal(metadata.getEquipment(), "High Energy");
         assert.equal(metadata.getApplication(), "Domestic Refrigeration");
@@ -595,7 +599,7 @@ HFC-134a,High Energy,Domestic Refrigeration,1430 kgCO2e / kg,true,false,false,50
         const serializer = new MetaSerializer();
         const csvString = `substance,equipment,application,ghg,hasDomestic,hasImport,hasExport,energy,initialChargeDomestic,initialChargeImport,initialChargeExport,retirement,key
 HFC-134a,High Energy,Domestic Refrigeration,1430 kgCO2e / kg,true,false,false,500 kwh / unit,0.15 kg / unit,0 kg / unit,0 kg / unit,10% / year,""
-R-404A,,Commercial Refrigeration,3922 kgCO2e / kg,false,true,false,800 kwh / unit,0 kg / unit,0.25 kg / unit,0 kg / unit,8% / year,""`;
+R-404A,,Commercial Refrigeration,3922 kgCO2e / kg,false,true,false,800 kwh / unit,0 kg / unit,0.25 kg / unit,0 kg / unit,8% / year,"R-404A"`;
 
         // Skip test if Papa Parse is not available
         if (typeof Papa === "undefined") {
@@ -607,20 +611,26 @@ R-404A,,Commercial Refrigeration,3922 kgCO2e / kg,false,true,false,800 kwh / uni
         
         assert.equal(result.length, 2);
         
-        assert.equal(result[0].getSubstance(), "HFC-134a");
-        assert.equal(result[0].getEquipment(), "High Energy");
-        assert.equal(result[0].getHasDomestic(), true);
+        const update1 = result[0];
+        assert.ok(update1 instanceof SubstanceMetadataUpdate);
+        assert.equal(update1.getOldName(), "");
+        assert.equal(update1.getNewMetadata().getSubstance(), "HFC-134a");
+        assert.equal(update1.getNewMetadata().getEquipment(), "High Energy");
+        assert.equal(update1.getNewMetadata().getHasDomestic(), true);
         
-        assert.equal(result[1].getSubstance(), "R-404A");
-        assert.equal(result[1].getEquipment(), "");
-        assert.equal(result[1].getHasImport(), true);
+        const update2 = result[1];
+        assert.ok(update2 instanceof SubstanceMetadataUpdate);
+        assert.equal(update2.getOldName(), "R-404A");
+        assert.equal(update2.getNewMetadata().getSubstance(), "R-404A");
+        assert.equal(update2.getNewMetadata().getEquipment(), "");
+        assert.equal(update2.getNewMetadata().getHasImport(), true);
       });
 
       QUnit.test("handles CSV with special characters", function (assert) {
         const serializer = new MetaSerializer();
         const csvString = `substance,equipment,application,ghg,hasDomestic,hasImport,hasExport,energy,initialChargeDomestic,initialChargeImport,initialChargeExport,retirement,key
 "Test,Substance","Equip""ment","App
-Name",1430 kgCO2e / kg,true,false,false,500 kwh / unit,0.15 kg / unit,0 kg / unit,0 kg / unit,10% / year,""`;
+Name",1430 kgCO2e / kg,true,false,false,500 kwh / unit,0.15 kg / unit,0 kg / unit,0 kg / unit,10% / year,"Test,Key"`;
 
         // Skip test if Papa Parse is not available
         if (typeof Papa === "undefined") {
@@ -631,8 +641,12 @@ Name",1430 kgCO2e / kg,true,false,false,500 kwh / unit,0.15 kg / unit,0 kg / uni
         const result = serializer.deserializeMetaFromCsvString(csvString);
         
         assert.equal(result.length, 1);
-        const metadata = result[0];
+        const update = result[0];
         
+        assert.ok(update instanceof SubstanceMetadataUpdate);
+        assert.equal(update.getOldName(), "Test,Key");
+        
+        const metadata = update.getNewMetadata();
         assert.equal(metadata.getSubstance(), "Test,Substance");
         assert.equal(metadata.getEquipment(), 'Equip"ment');
         assert.equal(metadata.getApplication(), "App\nName");
@@ -673,11 +687,18 @@ High Energy,1430 kgCO2e / kg,true`;
         const csvUri = serializer.renderMetaToCsvUri([originalMetadata]);
         const csvContent = decodeURIComponent(csvUri.replace("data:text/csv;charset=utf-8,", ""));
 
-        // Deserialize back to metadata
-        const deserializedMetadata = serializer.deserializeMetaFromCsvString(csvContent);
+        // Deserialize back to SubstanceMetadataUpdate objects
+        const deserializedUpdates = serializer.deserializeMetaFromCsvString(csvContent);
 
-        assert.equal(deserializedMetadata.length, 1);
-        const roundTripMetadata = deserializedMetadata[0];
+        assert.equal(deserializedUpdates.length, 1);
+        const roundTripUpdate = deserializedUpdates[0];
+
+        assert.ok(roundTripUpdate instanceof SubstanceMetadataUpdate);
+        
+        // Key should match original metadata's key (generated by getKey())
+        assert.equal(roundTripUpdate.getOldName(), originalMetadata.getKey());
+        
+        const roundTripMetadata = roundTripUpdate.getNewMetadata();
 
         // Verify all fields match
         assert.equal(roundTripMetadata.getSubstance(), originalMetadata.getSubstance());
@@ -732,6 +753,67 @@ High Energy,1430 kgCO2e / kg,true`;
     });
   });
 
+  QUnit.module("SubstanceMetadataUpdate", function () {
+    QUnit.test("constructor validates inputs", function (assert) {
+      assert.throws(() => {
+        new SubstanceMetadataUpdate("key", "not a SubstanceMetadata");
+      }, Error, "Should throw error for invalid newMetadata");
+
+      assert.throws(() => {
+        new SubstanceMetadataUpdate("key", {invalid: "object"});
+      }, Error, "Should throw error for object that's not SubstanceMetadata");
+    });
+
+    QUnit.test("constructor accepts valid inputs", function (assert) {
+      const metadata = new SubstanceMetadata(
+        "HFC-134a", "High Energy", "Domestic Refrigeration", "1430 kgCO2e / kg",
+        true, false, false, "500 kwh / unit", "0.15 kg / unit", "0 kg / unit", "0 kg / unit", "10% / year"
+      );
+
+      const update = new SubstanceMetadataUpdate("old-key", metadata);
+      
+      assert.ok(update instanceof SubstanceMetadataUpdate);
+      assert.equal(update.getOldName(), "old-key");
+      assert.equal(update.getNewMetadata(), metadata);
+    });
+
+    QUnit.test("handles empty oldName", function (assert) {
+      const metadata = new SubstanceMetadata(
+        "HFC-134a", "High Energy", "Domestic Refrigeration", "1430 kgCO2e / kg",
+        true, false, false, "500 kwh / unit", "0.15 kg / unit", "0 kg / unit", "0 kg / unit", "10% / year"
+      );
+
+      const update1 = new SubstanceMetadataUpdate("", metadata);
+      const update2 = new SubstanceMetadataUpdate(null, metadata);
+      const update3 = new SubstanceMetadataUpdate(undefined, metadata);
+      
+      assert.equal(update1.getOldName(), "");
+      assert.equal(update2.getOldName(), "");
+      assert.equal(update3.getOldName(), "");
+    });
+
+    QUnit.test("getters work correctly", function (assert) {
+      const metadata = new SubstanceMetadata(
+        "HFC-134a", "High Energy", "Domestic Refrigeration", "1430 kgCO2e / kg",
+        true, false, false, "500 kwh / unit", "0.15 kg / unit", "0 kg / unit", "0 kg / unit", "10% / year"
+      );
+
+      const update = new SubstanceMetadataUpdate("test-key", metadata);
+      
+      assert.equal(update.getOldName(), "test-key");
+      assert.equal(update.getNewMetadata(), metadata);
+      assert.equal(update.getNewMetadata().getSubstance(), "HFC-134a");
+      assert.equal(update.getNewMetadata().getApplication(), "Domestic Refrigeration");
+    });
+
+    QUnit.test("handles null metadata", function (assert) {
+      const update = new SubstanceMetadataUpdate("key", null);
+      
+      assert.equal(update.getOldName(), "key");
+      assert.equal(update.getNewMetadata(), null);
+    });
+  });
+
   QUnit.module("MetaChangeApplier", function () {
     QUnit.test("constructor validates Program instance", function (assert) {
       assert.throws(() => {
@@ -769,7 +851,7 @@ High Energy,1430 kgCO2e / kg,true`;
 
         assert.throws(() => {
           applier.upsertMetadata([{invalid: "object"}]);
-        }, Error, "Should throw error for invalid metadata objects");
+        }, Error, "Should throw error for invalid update objects");
       });
 
       QUnit.test("handles empty array", function (assert) {
@@ -791,7 +873,9 @@ High Energy,1430 kgCO2e / kg,true`;
           true, false, false, "500 kwh / unit", "0.15 kg / unit", "0 kg / unit", "0 kg / unit", "10% / year"
         );
 
-        applier.upsertMetadata([metadata]);
+        const update = new SubstanceMetadataUpdate("", metadata);
+
+        applier.upsertMetadata([update]);
 
         assert.equal(program.getApplications().length, 1, "Should create one application");
         const app = program.getApplication("Domestic Refrigeration");
@@ -809,7 +893,9 @@ High Energy,1430 kgCO2e / kg,true`;
           true, false, false, "500 kwh / unit", "0.15 kg / unit", "0 kg / unit", "0 kg / unit", "10% / year"
         );
 
-        applier.upsertMetadata([metadata]);
+        const update = new SubstanceMetadataUpdate("", metadata);
+
+        applier.upsertMetadata([update]);
 
         assert.equal(program.getApplications().length, 2, "Should have both existing and new applications");
         assert.ok(program.getApplication("Existing App") !== null, "Existing application should remain");
@@ -825,7 +911,9 @@ High Energy,1430 kgCO2e / kg,true`;
           true, false, false, "500 kwh / unit", "0.15 kg / unit", "0 kg / unit", "0 kg / unit", "10% / year"
         );
 
-        applier.upsertMetadata([metadata]);
+        const update = new SubstanceMetadataUpdate("", metadata);
+
+        applier.upsertMetadata([update]);
 
         const app = program.getApplication("Domestic Refrigeration");
         const substances = app.getSubstances();
@@ -849,7 +937,10 @@ High Energy,1430 kgCO2e / kg,true`;
           false, true, false, "800 kwh / unit", "0 kg / unit", "0.25 kg / unit", "0 kg / unit", "8% / year"
         );
 
-        applier.upsertMetadata([metadata1, metadata2]);
+        const update1 = new SubstanceMetadataUpdate("", metadata1);
+        const update2 = new SubstanceMetadataUpdate("", metadata2);
+
+        applier.upsertMetadata([update1, update2]);
 
         assert.equal(program.getApplications().length, 2, "Should create two applications");
         
@@ -882,7 +973,11 @@ High Energy,1430 kgCO2e / kg,true`;
           false, true, false, "800 kwh / unit", "0 kg / unit", "0.25 kg / unit", "0 kg / unit", "8% / year"
         );
 
-        applier.upsertMetadata([metadata1, metadata2, metadata3]);
+        const update1 = new SubstanceMetadataUpdate("", metadata1);
+        const update2 = new SubstanceMetadataUpdate("", metadata2);
+        const update3 = new SubstanceMetadataUpdate("", metadata3);
+
+        applier.upsertMetadata([update1, update2, update3]);
 
         // Only metadata3 should be processed since metadata1 has empty substance and metadata2 has empty application
         assert.equal(program.getApplications().length, 1, "Should only create one application");
@@ -892,7 +987,7 @@ High Energy,1430 kgCO2e / kg,true`;
         assert.equal(commercialApp.getSubstances().length, 1, "Should have one valid substance");
       });
 
-      QUnit.test("skips substances with name conflicts", function (assert) {
+      QUnit.test("skips substances with name conflicts during insert", function (assert) {
         const existingBuilder = new SubstanceBuilder("HFC-134a - High Energy", false);
         const existingSubstance = existingBuilder.build(true);
         const existingApp = new Application("Domestic Refrigeration", [existingSubstance], false, true);
@@ -904,7 +999,9 @@ High Energy,1430 kgCO2e / kg,true`;
           true, false, false, "500 kwh / unit", "0.15 kg / unit", "0 kg / unit", "0 kg / unit", "10% / year"
         );
 
-        applier.upsertMetadata([metadata]);
+        const update = new SubstanceMetadataUpdate("", metadata); // Empty oldName = insert
+
+        applier.upsertMetadata([update]);
 
         const app = program.getApplication("Domestic Refrigeration");
         const substances = app.getSubstances();
@@ -929,7 +1026,10 @@ High Energy,1430 kgCO2e / kg,true`;
           false, true, false, "800 kwh / unit", "0 kg / unit", "0.25 kg / unit", "0 kg / unit", "8% / year"
         );
 
-        applier.upsertMetadata([conflictingMetadata, newMetadata]);
+        const conflictingUpdate = new SubstanceMetadataUpdate("", conflictingMetadata);
+        const newUpdate = new SubstanceMetadataUpdate("", newMetadata);
+
+        applier.upsertMetadata([conflictingUpdate, newUpdate]);
 
         assert.equal(program.getApplications().length, 2, "Should have both applications");
         
@@ -949,7 +1049,9 @@ High Energy,1430 kgCO2e / kg,true`;
           true, false, false, "500 kwh / unit", "0.15 kg / unit", "0 kg / unit", "0 kg / unit", "10% / year"
         );
 
-        applier.upsertMetadata([metadata]);
+        const update = new SubstanceMetadataUpdate("", metadata);
+
+        applier.upsertMetadata([update]);
 
         const app = program.getApplication("Domestic Refrigeration");
         const substance = app.getSubstances()[0];
@@ -993,7 +1095,8 @@ High Energy,1430 kgCO2e / kg,true`;
           true, true, true, "800 kwh / unit", "0.10 kg / unit", "0.25 kg / unit", "0.30 kg / unit", "8% / year"
         );
 
-        applier.upsertMetadata([metadata]);
+        const update = new SubstanceMetadataUpdate("", metadata);
+        applier.upsertMetadata([update]);
 
         const app = program.getApplication("Commercial Refrigeration");
         const substance = app.getSubstances()[0];
@@ -1030,7 +1133,8 @@ High Energy,1430 kgCO2e / kg,true`;
           false, false, false, "", "", "", "", ""
         );
 
-        applier.upsertMetadata([metadata]);
+        const update = new SubstanceMetadataUpdate("", metadata);
+        applier.upsertMetadata([update]);
 
         const app = program.getApplication("Domestic Refrigeration");
         const substance = app.getSubstances()[0];
@@ -1054,9 +1158,115 @@ High Energy,1430 kgCO2e / kg,true`;
           true, false, false, "500 kwh / unit", "0.15 kg / unit", "0 kg / unit", "0 kg / unit", "10% / year"
         );
 
-        const result = applier.upsertMetadata([metadata]);
+        const update = new SubstanceMetadataUpdate("", metadata);
+        const result = applier.upsertMetadata([update]);
         
         assert.equal(result, program, "Should return the same program instance for chaining");
+      });
+
+      QUnit.test("updates existing substances when oldName matches", function (assert) {
+        // Create existing substance
+        const existingBuilder = new SubstanceBuilder("HFC-134a - High Energy", false);
+        const existingSubstance = existingBuilder.build(true);
+        const existingApp = new Application("Domestic Refrigeration", [existingSubstance], false, true);
+        const program = new Program([existingApp], [], [], true);
+        const applier = new MetaChangeApplier(program);
+
+        // Create update with matching oldName
+        const newMetadata = new SubstanceMetadata(
+          "HFC-134a", "High Energy", "Domestic Refrigeration", "1500 kgCO2e / kg", // Changed GWP
+          true, false, false, "600 kwh / unit", // Changed energy
+          "0.20 kg / unit", "0 kg / unit", "0 kg / unit", "12% / year" // Changed values
+        );
+
+        const update = new SubstanceMetadataUpdate("HFC-134a - High Energy", newMetadata);
+
+        applier.upsertMetadata([update]);
+
+        const app = program.getApplication("Domestic Refrigeration");
+        const substances = app.getSubstances();
+        assert.equal(substances.length, 1, "Should still have only one substance");
+        assert.equal(substances[0], existingSubstance, "Should be the same substance instance (updated, not replaced)");
+
+        // Verify the substance was updated with new values
+        const substance = substances[0];
+        assert.equal(substance.getName(), "HFC-134a - High Energy", "Name should remain the same");
+        
+        // Check updated commands
+        const ghgCommand = substance.getEqualsGhg();
+        assert.ok(ghgCommand !== null, "Should have GHG command");
+        assert.equal(ghgCommand.getValue().getValue(), 1500, "GHG should be updated to 1500");
+        
+        const energyCommand = substance.getEqualsKwh();
+        assert.ok(energyCommand !== null, "Should have energy command");
+        assert.equal(energyCommand.getValue().getValue(), 600, "Energy should be updated to 600");
+      });
+
+      QUnit.test("falls back to insert when oldName doesn't match", function (assert) {
+        // Create existing substance
+        const existingBuilder = new SubstanceBuilder("R-404A", false);
+        const existingSubstance = existingBuilder.build(true);
+        const existingApp = new Application("Commercial Refrigeration", [existingSubstance], false, true);
+        const program = new Program([existingApp], [], [], true);
+        const applier = new MetaChangeApplier(program);
+
+        // Create update with non-matching oldName
+        const newMetadata = new SubstanceMetadata(
+          "HFC-134a", "High Energy", "Commercial Refrigeration", "1430 kgCO2e / kg",
+          true, false, false, "500 kwh / unit", "0.15 kg / unit", "0 kg / unit", "0 kg / unit", "10% / year"
+        );
+
+        const update = new SubstanceMetadataUpdate("Non-Existent Substance", newMetadata);
+
+        applier.upsertMetadata([update]);
+
+        const app = program.getApplication("Commercial Refrigeration");
+        const substances = app.getSubstances();
+        assert.equal(substances.length, 2, "Should have two substances (existing + new)");
+        
+        // Find the new substance
+        const newSubstance = substances.find(s => s.getName() === "HFC-134a - High Energy");
+        assert.ok(newSubstance !== null, "New substance should be created");
+        assert.notEqual(newSubstance, existingSubstance, "Should be a different substance instance");
+      });
+
+      QUnit.test("mixed updates and inserts in single batch", function (assert) {
+        // Create existing substance
+        const existingBuilder = new SubstanceBuilder("HFC-134a - High Energy", false);
+        const existingSubstance = existingBuilder.build(true);
+        const existingApp = new Application("Domestic Refrigeration", [existingSubstance], false, true);
+        const program = new Program([existingApp], [], [], true);
+        const applier = new MetaChangeApplier(program);
+
+        // Create mixed batch: one update, one insert
+        const updateMetadata = new SubstanceMetadata(
+          "HFC-134a", "High Energy", "Domestic Refrigeration", "1500 kgCO2e / kg",
+          true, false, false, "600 kwh / unit", "0.20 kg / unit", "0 kg / unit", "0 kg / unit", "12% / year"
+        );
+        
+        const insertMetadata = new SubstanceMetadata(
+          "R-404A", "", "Domestic Refrigeration", "3922 kgCO2e / kg",
+          false, true, false, "800 kwh / unit", "0 kg / unit", "0.25 kg / unit", "0 kg / unit", "8% / year"
+        );
+
+        const updateObj = new SubstanceMetadataUpdate("HFC-134a - High Energy", updateMetadata);
+        const insertObj = new SubstanceMetadataUpdate("", insertMetadata);
+
+        applier.upsertMetadata([updateObj, insertObj]);
+
+        const app = program.getApplication("Domestic Refrigeration");
+        const substances = app.getSubstances();
+        assert.equal(substances.length, 2, "Should have two substances");
+        
+        // Check that existing substance was updated
+        const updatedSubstance = substances.find(s => s.getName() === "HFC-134a - High Energy");
+        assert.ok(updatedSubstance !== null, "Updated substance should exist");
+        assert.equal(updatedSubstance, existingSubstance, "Should be the same instance (updated)");
+        
+        // Check that new substance was inserted
+        const insertedSubstance = substances.find(s => s.getName() === "R-404A");
+        assert.ok(insertedSubstance !== null, "New substance should be inserted");
+        assert.notEqual(insertedSubstance, existingSubstance, "Should be different instance");
       });
     });
 
@@ -1098,7 +1308,8 @@ High Energy,1430 kgCO2e / kg,true`;
 
         for (let i = 0; i < testCases.length; i++) {
           const testCase = testCases[i];
-          applier.upsertMetadata([testCase.metadata]);
+          const update = new SubstanceMetadataUpdate("", testCase.metadata);
+          applier.upsertMetadata([update]);
 
           const app = program.getApplication(`Test App ${i+1}`);
           const substances = app.getSubstances();
@@ -1137,7 +1348,8 @@ High Energy,1430 kgCO2e / kg,true`;
         );
 
         // Should not throw error, just skip creating commands for malformed values
-        applier.upsertMetadata([metadata]);
+        const update = new SubstanceMetadataUpdate("", metadata);
+        applier.upsertMetadata([update]);
 
         const app = program.getApplication("Test App");
         const substance = app.getSubstances()[0];
@@ -1156,7 +1368,8 @@ High Energy,1430 kgCO2e / kg,true`;
           true, true, true, "", "0.15 kg / unit", "0.25 kg / unit", "0.35 kg / unit", ""
         );
 
-        applier.upsertMetadata([metadata]);
+        const update = new SubstanceMetadataUpdate("", metadata);
+        applier.upsertMetadata([update]);
 
         const app = program.getApplication("Test App");
         const substance = app.getSubstances()[0];
