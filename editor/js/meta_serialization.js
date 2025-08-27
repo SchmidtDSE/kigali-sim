@@ -7,6 +7,8 @@
  * @license BSD, see LICENSE.md
  */
 
+import {SubstanceMetadata, SubstanceMetadataBuilder} from "ui_translator";
+
 /**
  * Serializer for converting SubstanceMetadata objects to CSV format.
  *
@@ -163,6 +165,165 @@ class MetaSerializer {
     }
 
     return stringValue;
+  }
+
+  /**
+   * Convert array of Maps to array of SubstanceMetadata for CSV import.
+   *
+   * Each Map represents a CSV row with column names as keys and string values.
+   * Boolean fields are converted from string representation to boolean values.
+   * Empty or missing values are handled gracefully with defaults.
+   *
+   * @param {Map<string, string>[]} arrayOfMaps - Array of Maps with CSV data
+   * @returns {SubstanceMetadata[]} Array of SubstanceMetadata instances
+   */
+  deserialize(arrayOfMaps) {
+    const self = this;
+
+    // Validate input
+    if (!arrayOfMaps || !Array.isArray(arrayOfMaps)) {
+      throw new Error("Input must be an array of Map objects");
+    }
+
+    // Convert each Map to a SubstanceMetadata object
+    return arrayOfMaps.map((rowMap, index) => {
+      if (!rowMap || typeof rowMap.get !== "function") {
+        throw new Error(`Row ${index} must be a Map instance`);
+      }
+
+      try {
+        const builder = new SubstanceMetadataBuilder();
+
+        // Extract values from Map with defaults
+        builder.setSubstance(rowMap.get("substance") || "")
+               .setEquipment(rowMap.get("equipment") || "")
+               .setApplication(rowMap.get("application") || "")
+               .setGhg(rowMap.get("ghg") || "")
+               .setHasDomestic(self._parseBoolean(rowMap.get("hasDomestic")))
+               .setHasImport(self._parseBoolean(rowMap.get("hasImport")))
+               .setHasExport(self._parseBoolean(rowMap.get("hasExport")))
+               .setEnergy(rowMap.get("energy") || "")
+               .setInitialChargeDomestic(rowMap.get("initialChargeDomestic") || "")
+               .setInitialChargeImport(rowMap.get("initialChargeImport") || "")
+               .setInitialChargeExport(rowMap.get("initialChargeExport") || "")
+               .setRetirement(rowMap.get("retirement") || "");
+
+        return builder.build();
+      } catch (error) {
+        throw new Error(`Failed to deserialize row ${index}: ${error.message}`);
+      }
+    });
+  }
+
+  /**
+   * Convert CSV string to array of SubstanceMetadata for import.
+   *
+   * Uses Papa Parse to parse CSV string with headers into objects,
+   * then converts to SubstanceMetadata instances. Handles parsing errors
+   * and validates CSV structure.
+   *
+   * @param {string} csvString - CSV content string with headers
+   * @returns {SubstanceMetadata[]} Array of SubstanceMetadata instances
+   */
+  deserializeMetaFromCsvString(csvString) {
+    const self = this;
+
+    // Validate input
+    if (typeof csvString !== "string") {
+      throw new Error("Input must be a CSV string");
+    }
+
+    if (!csvString.trim()) {
+      return []; // Empty CSV returns empty array
+    }
+
+    // Check if Papa Parse is available
+    if (typeof Papa === "undefined") {
+      throw new Error("Papa Parse library is not available. Please ensure papaparse.min.js is loaded.");
+    }
+
+    try {
+      // Parse CSV using Papa Parse
+      const parseResult = Papa.parse(csvString, {
+        header: true,           // Use first row as column names
+        dynamicTyping: false,   // Keep values as strings for manual conversion
+        skipEmptyLines: true,   // Ignore blank lines
+        delimiter: ",",         // Standard CSV delimiter
+        quoteChar: "\"",        // Standard CSV quote character
+        escapeChar: "\""        // RFC 4180 quote escaping
+      });
+
+      // Check for parsing errors
+      if (parseResult.errors && parseResult.errors.length > 0) {
+        const errorMessages = parseResult.errors.map(error => 
+          `Row ${error.row}: ${error.message}`
+        ).join("; ");
+        throw new Error(`CSV parsing failed: ${errorMessages}`);
+      }
+
+      // Validate that we have data
+      if (!parseResult.data || !Array.isArray(parseResult.data)) {
+        throw new Error("CSV parsing returned invalid data structure");
+      }
+
+      // Validate required columns are present
+      if (parseResult.data.length > 0) {
+        const firstRow = parseResult.data[0];
+        const requiredColumns = ["substance", "application"];
+        for (const column of requiredColumns) {
+          if (!(column in firstRow)) {
+            throw new Error(`Missing required column: ${column}`);
+          }
+        }
+      }
+
+      // Convert parsed data to Maps
+      const arrayOfMaps = parseResult.data.map(rowData => {
+        const rowMap = new Map();
+        
+        // Set all expected columns
+        const expectedColumns = [
+          "substance", "equipment", "application", "ghg",
+          "hasDomestic", "hasImport", "hasExport", "energy",
+          "initialChargeDomestic", "initialChargeImport", "initialChargeExport",
+          "retirement", "key"
+        ];
+
+        for (const column of expectedColumns) {
+          rowMap.set(column, rowData[column] || "");
+        }
+
+        return rowMap;
+      });
+
+      // Convert Maps to SubstanceMetadata using existing deserialize method
+      return self.deserialize(arrayOfMaps);
+
+    } catch (error) {
+      if (error.message.includes("CSV parsing failed") || error.message.includes("Failed to deserialize")) {
+        throw error; // Re-throw our custom errors
+      }
+      throw new Error(`CSV deserialization failed: ${error.message}`);
+    }
+  }
+
+  /**
+   * Parse a string value to boolean.
+   *
+   * Handles case-insensitive "true"/"false" strings and provides
+   * sensible defaults for invalid or empty values.
+   *
+   * @param {string} value - String value to parse as boolean
+   * @returns {boolean} Parsed boolean value
+   * @private
+   */
+  _parseBoolean(value) {
+    if (!value || typeof value !== "string") {
+      return false;
+    }
+
+    const trimmed = value.trim().toLowerCase();
+    return trimmed === "true" || trimmed === "1";
   }
 }
 
