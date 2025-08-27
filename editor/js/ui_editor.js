@@ -5,7 +5,7 @@
  */
 import {EngineNumber} from "engine_number";
 import {YearMatcher} from "year_matcher";
-import {MetaSerializer} from "meta_serialization";
+import {MetaSerializer, MetaChangeApplier} from "meta_serialization";
 
 import {
   Application,
@@ -2145,6 +2145,25 @@ class SubstanceTablePresenter {
       event.preventDefault();
       self._dialog.close();
     });
+
+    // Upload button - triggers hidden file input
+    const uploadButton = self._dialog.querySelector(".upload-button");
+    uploadButton.addEventListener("click", (event) => {
+      event.preventDefault();
+      const fileInput = document.getElementById("substances-upload-file");
+      fileInput.click();
+    });
+
+    // File input change handler - processes uploaded CSV
+    const fileInput = document.getElementById("substances-upload-file");
+    fileInput.addEventListener("change", (event) => {
+      const file = event.target.files[0];
+      if (file) {
+        self._processUploadedFile(file);
+        // Clear input for next upload
+        event.target.value = "";
+      }
+    });
   }
 
   /**
@@ -2167,19 +2186,18 @@ class SubstanceTablePresenter {
    */
   _updateDownloadButton(substances) {
     const self = this;
-    
+
     try {
       // Generate CSV data URI using MetaSerializer
       const csvUri = self._metaSerializer.renderMetaToCsvUri(substances);
-      
+
       // Update download button
       const downloadButton = self._dialog.querySelector(".download-button");
       downloadButton.href = csvUri;
-      downloadButton.download = `substances_${new Date().toISOString().split('T')[0]}.csv`;
-      
+      downloadButton.download = `substances_${new Date().toISOString().split("T")[0]}.csv`;
     } catch (error) {
       console.error("Failed to generate CSV for download:", error);
-      
+
       // Fallback: disable download button
       const downloadButton = self._dialog.querySelector(".download-button");
       downloadButton.href = "#";
@@ -2196,37 +2214,112 @@ class SubstanceTablePresenter {
    */
   _getActiveSubstances(codeObj) {
     const self = this;
-    
+
     if (!codeObj) {
       return [];
     }
-    
+
     const substances = [];
-    
+
     try {
       // Iterate through all applications
       const applications = codeObj.getApplications();
-      
+
       for (const application of applications) {
         const appName = application.getName();
         const appSubstances = application.getSubstances();
-        
+
         // Extract metadata from each substance in this application
         for (const substance of appSubstances) {
           try {
             const metadata = substance.getMeta(appName);
             substances.push(metadata);
           } catch (error) {
-            console.warn(`Failed to extract metadata from substance ${substance.getName()} in ${appName}:`, error);
+            console.warn(
+              `Failed to extract metadata from substance ${substance.getName()} in ${appName}:`,
+              error,
+            );
           }
         }
       }
-      
     } catch (error) {
       console.error("Failed to extract substances from code object:", error);
     }
-    
+
     return substances;
+  }
+
+  /**
+   * Processes an uploaded CSV file and applies substance updates.
+   *
+   * @param {File} file - The uploaded CSV file
+   * @private
+   */
+  _processUploadedFile(file) {
+    const self = this;
+    const reader = new FileReader();
+
+    reader.onload = (event) => {
+      try {
+        const csvContent = event.target.result;
+        const updates = self._metaSerializer.deserializeMetaFromCsvString(csvContent);
+        self._applyUpdatesToCodeObject(updates);
+      } catch (error) {
+        self._showError(`Failed to parse CSV: ${error.message}`);
+      }
+    };
+
+    reader.onerror = () => {
+      self._showError("Failed to read file. Please try again.");
+    };
+
+    reader.readAsText(file, "UTF-8");
+  }
+
+  /**
+   * Applies substance metadata updates to the code object.
+   *
+   * @param {SubstanceMetadataUpdate[]} updates - Array of substance metadata updates
+   * @private
+   */
+  _applyUpdatesToCodeObject(updates) {
+    const self = this;
+    try {
+      const codeObj = self._getCodeObj();
+      const applier = new MetaChangeApplier(codeObj);
+      applier.upsertMetadata(updates);
+
+      // Propagate changes through system
+      self._onCodeObjUpdate(codeObj);
+
+      // Update dialog display
+      self.refresh(codeObj);
+
+      // Provide success feedback
+      self._showSuccess(`Successfully processed ${updates.length} substance records.`);
+    } catch (error) {
+      self._showError(`Failed to apply changes: ${error.message}`);
+    }
+  }
+
+  /**
+   * Shows an error message to the user.
+   *
+   * @param {string} message - Error message to display
+   * @private
+   */
+  _showError(message) {
+    alert(`Upload Error: ${message}`);
+  }
+
+  /**
+   * Shows a success message to the user.
+   *
+   * @param {string} message - Success message to display
+   * @private
+   */
+  _showSuccess(message) {
+    alert(`Upload Success: ${message}`);
   }
 }
 
