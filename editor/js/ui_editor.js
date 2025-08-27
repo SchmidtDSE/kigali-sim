@@ -5,6 +5,7 @@
  */
 import {EngineNumber} from "engine_number";
 import {YearMatcher} from "year_matcher";
+import {MetaSerializer} from "meta_serialization";
 
 import {
   Application,
@@ -2088,6 +2089,148 @@ class SimulationListPresenter {
 }
 
 /**
+ * Manages substance table download/upload functionality.
+ *
+ * This presenter handles the substances table dialog which allows users to
+ * download CSV files containing substance metadata and upload modifications.
+ * Uses MetaSerializer to convert substances to/from CSV format.
+ */
+class SubstanceTablePresenter {
+  /**
+   * Creates a new SubstanceTablePresenter.
+   *
+   * @param {Function} getCodeObj - Callback to get the current code object.
+   * @param {Function} onCodeObjUpdate - Callback when code object is updated.
+   */
+  constructor(getCodeObj, onCodeObjUpdate) {
+    const self = this;
+    self._getCodeObj = getCodeObj;
+    self._onCodeObjUpdate = onCodeObjUpdate;
+    self._dialog = document.getElementById("substances-table-dialog");
+    self._metaSerializer = new MetaSerializer();
+    self._setupDialog();
+  }
+
+  /**
+   * Refreshes the substance count and download data.
+   *
+   * @param {Object} codeObj - Current code object.
+   */
+  refresh(codeObj) {
+    const self = this;
+    const activeSubstances = self._getActiveSubstances(codeObj);
+    self._updateSubstanceCount(activeSubstances.length);
+    self._updateDownloadButton(activeSubstances);
+  }
+
+  /**
+   * Sets up dialog event handlers.
+   *
+   * @private
+   */
+  _setupDialog() {
+    const self = this;
+
+    // Link to open dialog
+    const tableLink = document.querySelector(".substances-table-link");
+    tableLink.addEventListener("click", (event) => {
+      event.preventDefault();
+      self.refresh(self._getCodeObj()); // Refresh content
+      self._dialog.showModal();
+    });
+
+    // Close button
+    const closeButton = self._dialog.querySelector(".close-button");
+    closeButton.addEventListener("click", (event) => {
+      event.preventDefault();
+      self._dialog.close();
+    });
+  }
+
+  /**
+   * Updates the substance count display.
+   *
+   * @param {number} count - Number of active substances
+   * @private
+   */
+  _updateSubstanceCount(count) {
+    const self = this;
+    const countElement = self._dialog.querySelector(".substance-count");
+    countElement.textContent = count.toString();
+  }
+
+  /**
+   * Updates the download button with current CSV data.
+   *
+   * @param {SubstanceMetadata[]} substances - Array of substance metadata
+   * @private
+   */
+  _updateDownloadButton(substances) {
+    const self = this;
+    
+    try {
+      // Generate CSV data URI using MetaSerializer
+      const csvUri = self._metaSerializer.renderMetaToCsvUri(substances);
+      
+      // Update download button
+      const downloadButton = self._dialog.querySelector(".download-button");
+      downloadButton.href = csvUri;
+      downloadButton.download = `substances_${new Date().toISOString().split('T')[0]}.csv`;
+      
+    } catch (error) {
+      console.error("Failed to generate CSV for download:", error);
+      
+      // Fallback: disable download button
+      const downloadButton = self._dialog.querySelector(".download-button");
+      downloadButton.href = "#";
+      downloadButton.removeAttribute("download");
+    }
+  }
+
+  /**
+   * Extracts all active substances from the current program.
+   *
+   * @param {Object} codeObj - Current code object
+   * @returns {SubstanceMetadata[]} Array of substance metadata
+   * @private
+   */
+  _getActiveSubstances(codeObj) {
+    const self = this;
+    
+    if (!codeObj) {
+      return [];
+    }
+    
+    const substances = [];
+    
+    try {
+      // Iterate through all applications
+      const applications = codeObj.getApplications();
+      
+      for (const application of applications) {
+        const appName = application.getName();
+        const appSubstances = application.getSubstances();
+        
+        // Extract metadata from each substance in this application
+        for (const substance of appSubstances) {
+          try {
+            const metadata = substance.getMeta(appName);
+            substances.push(metadata);
+          } catch (error) {
+            console.warn(`Failed to extract metadata from substance ${substance.getName()} in ${appName}:`, error);
+          }
+        }
+      }
+      
+    } catch (error) {
+      console.error("Failed to extract substances from code object:", error);
+    }
+    
+    return substances;
+  }
+}
+
+/**
  * Manages the UI editor interface.
  *
  * Central presenter which coordinates between code editing and visual editing
@@ -2145,6 +2288,11 @@ class UiEditorPresenter {
       (codeObj) => self._onCodeObjUpdate(codeObj),
     );
 
+    self._substanceTable = new SubstanceTablePresenter(
+      () => self._getCodeAsObj(),
+      (codeObj) => self._onCodeObjUpdate(codeObj),
+    );
+
     self._setupAdvancedLinks();
 
     if (startOnCode) {
@@ -2189,6 +2337,7 @@ class UiEditorPresenter {
       self._consumptionList.refresh(codeObj);
       self._policyList.refresh(codeObj);
       self._simulationList.refresh(codeObj);
+      self._substanceTable.refresh(codeObj);
       self._enableBasicPanel();
     } else {
       self._disableBasicPanel();
