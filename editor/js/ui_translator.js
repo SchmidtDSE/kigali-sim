@@ -1491,6 +1491,95 @@ class Substance {
   }
 
   /**
+   * Get metadata representation of this substance for CSV export/import.
+   *
+   * This method extracts metadata from the current substance structure and
+   * creates a SubstanceMetadata instance. The application name is provided
+   * as a parameter since it's not stored within the substance itself.
+   *
+   * @param {string} applicationName - Name of the application this substance belongs to.
+   * @returns {SubstanceMetadata} Metadata representation of the substance.
+   */
+  getMeta(applicationName) {
+    const self = this;
+
+    // Extract substance name and equipment type
+    const fullName = self._name;
+    let substance = fullName;
+    let equipment = "";
+
+    // Check if name contains equipment type (format: "substance - equipment")
+    const dashIndex = fullName.indexOf(" - ");
+    if (dashIndex > 0) {
+      substance = fullName.substring(0, dashIndex);
+      equipment = fullName.substring(dashIndex + 3);
+    }
+
+    // Extract GHG value
+    let ghg = "";
+    if (self._equalsGhg) {
+      const ghgValue = self._equalsGhg.getValue();
+      ghg = ghgValue.getValue() + " " + ghgValue.getUnits();
+    }
+
+    // Extract energy value
+    let energy = "";
+    if (self._equalsKwh) {
+      const energyValue = self._equalsKwh.getValue();
+      energy = energyValue.getValue() + " " + energyValue.getUnits();
+    }
+
+    // Extract enabled streams
+    let hasDomestic = false;
+    let hasImport = false;
+    let hasExport = false;
+
+    self._enables.forEach((enable) => {
+      const target = enable.getTarget();
+      if (target === "domestic") hasDomestic = true;
+      else if (target === "import") hasImport = true;
+      else if (target === "export") hasExport = true;
+    });
+
+    // Extract initial charges
+    let initialChargeDomestic = "";
+    let initialChargeImport = "";
+    let initialChargeExport = "";
+
+    self._initialCharges.forEach((charge) => {
+      const target = charge.getTarget();
+      const chargeValue = charge.getValue();
+      const chargeString = chargeValue.getValue() + " " + chargeValue.getUnits();
+
+      if (target === "domestic") initialChargeDomestic = chargeString;
+      else if (target === "import") initialChargeImport = chargeString;
+      else if (target === "export") initialChargeExport = chargeString;
+    });
+
+    // Extract retirement rate
+    let retirement = "";
+    if (self._retire) {
+      const retireValue = self._retire.getValue();
+      retirement = retireValue.getValue() + " " + retireValue.getUnits();
+    }
+
+    return new SubstanceMetadata(
+      substance,
+      equipment,
+      applicationName || "",
+      ghg,
+      hasDomestic,
+      hasImport,
+      hasExport,
+      energy,
+      initialChargeDomestic,
+      initialChargeImport,
+      initialChargeExport,
+      retirement,
+    );
+  }
+
+  /**
    * Generate the code representation of the substance.
    *
    * Translate the substance's properties and commands into their code
@@ -1894,6 +1983,402 @@ class Substance {
   _finalizeStatement(pieces) {
     const self = this;
     return pieces.map((x) => x + "").join(" ");
+  }
+}
+
+/**
+ * Metadata container for substance properties that can be exported to CSV.
+ *
+ * This class centralizes all CSV-mappable attributes for a substance, providing
+ * a clean interface for metadata manipulation and export/import operations.
+ */
+class SubstanceMetadata {
+  /**
+   * Create a new SubstanceMetadata instance.
+   *
+   * @param {string} substance - Name of the substance without equipment type
+   * @param {string} equipment - Optional equipment type (added with " - " separator)
+   * @param {string} application - Name of the application that consumes this substance
+   * @param {string} ghg - GWP conversion value (e.g., "1430 kgCO2e / kg")
+   * @param {boolean} hasDomestic - Whether domestic stream is enabled
+   * @param {boolean} hasImport - Whether import stream is enabled
+   * @param {boolean} hasExport - Whether export stream is enabled
+   * @param {string} energy - Annual energy consumption (e.g., "500 kwh / unit")
+   * @param {string} initialChargeDomestic - Initial charge for domestic stream
+   * @param {string} initialChargeImport - Initial charge for import stream
+   * @param {string} initialChargeExport - Initial charge for export stream
+   * @param {string} retirement - Retirement rate (e.g., "10% / year")
+   */
+  constructor(
+    substance,
+    equipment,
+    application,
+    ghg,
+    hasDomestic,
+    hasImport,
+    hasExport,
+    energy,
+    initialChargeDomestic,
+    initialChargeImport,
+    initialChargeExport,
+    retirement,
+  ) {
+    const self = this;
+    self._substance = substance || "";
+    self._equipment = equipment || "";
+    self._application = application || "";
+    self._ghg = ghg || "";
+    self._hasDomestic = hasDomestic || false;
+    self._hasImport = hasImport || false;
+    self._hasExport = hasExport || false;
+    self._energy = energy || "";
+    self._initialChargeDomestic = initialChargeDomestic || "";
+    self._initialChargeImport = initialChargeImport || "";
+    self._initialChargeExport = initialChargeExport || "";
+    self._retirement = retirement || "";
+  }
+
+  /**
+   * Get the substance name (without equipment type).
+   *
+   * @returns {string} The substance name.
+   */
+  getSubstance() {
+    const self = this;
+    return self._substance;
+  }
+
+  /**
+   * Get the equipment type.
+   *
+   * @returns {string} The equipment type.
+   */
+  getEquipment() {
+    const self = this;
+    return self._equipment;
+  }
+
+  /**
+   * Get the effective name combining substance and equipment type.
+   *
+   * Handles concatenation logic similar to getEffectiveName in ui_editor.js.
+   * If equipment type is empty, returns just the substance name.
+   * Otherwise, returns "substance - equipment".
+   *
+   * @returns {string} The effective name for the substance.
+   */
+  getName() {
+    const self = this;
+    if (!self._equipment || self._equipment.trim() === "") {
+      return self._substance;
+    } else {
+      return self._substance + " - " + self._equipment;
+    }
+  }
+
+  /**
+   * Get the CSV key format used by ConsumptionListPresenter.
+   *
+   * Returns the format: "substanceName" for "applicationName"
+   *
+   * @returns {string} The key format for CSV operations.
+   */
+  getKey() {
+    const self = this;
+    return '"' + self.getName() + '" for "' + self._application + '"';
+  }
+
+  /**
+   * Get the application name.
+   *
+   * @returns {string} The application name.
+   */
+  getApplication() {
+    const self = this;
+    return self._application;
+  }
+
+  /**
+   * Get the GHG equivalency value.
+   *
+   * @returns {string} The GHG value.
+   */
+  getGhg() {
+    const self = this;
+    return self._ghg;
+  }
+
+  /**
+   * Check if domestic stream is enabled.
+   *
+   * @returns {boolean} True if domestic stream is enabled.
+   */
+  getHasDomestic() {
+    const self = this;
+    return self._hasDomestic;
+  }
+
+  /**
+   * Check if import stream is enabled.
+   *
+   * @returns {boolean} True if import stream is enabled.
+   */
+  getHasImport() {
+    const self = this;
+    return self._hasImport;
+  }
+
+  /**
+   * Check if export stream is enabled.
+   *
+   * @returns {boolean} True if export stream is enabled.
+   */
+  getHasExport() {
+    const self = this;
+    return self._hasExport;
+  }
+
+  /**
+   * Get the energy consumption value.
+   *
+   * @returns {string} The energy consumption value.
+   */
+  getEnergy() {
+    const self = this;
+    return self._energy;
+  }
+
+  /**
+   * Get the initial charge for domestic stream.
+   *
+   * @returns {string} The initial charge value.
+   */
+  getInitialChargeDomestic() {
+    const self = this;
+    return self._initialChargeDomestic;
+  }
+
+  /**
+   * Get the initial charge for import stream.
+   *
+   * @returns {string} The initial charge value.
+   */
+  getInitialChargeImport() {
+    const self = this;
+    return self._initialChargeImport;
+  }
+
+  /**
+   * Get the initial charge for export stream.
+   *
+   * @returns {string} The initial charge value.
+   */
+  getInitialChargeExport() {
+    const self = this;
+    return self._initialChargeExport;
+  }
+
+  /**
+   * Get the retirement rate.
+   *
+   * @returns {string} The retirement rate.
+   */
+  getRetirement() {
+    const self = this;
+    return self._retirement;
+  }
+}
+
+/**
+ * Builder for constructing SubstanceMetadata instances with fluent interface.
+ *
+ * Provides method chaining for easy construction of metadata objects.
+ */
+class SubstanceMetadataBuilder {
+  /**
+   * Create a new SubstanceMetadataBuilder.
+   */
+  constructor() {
+    const self = this;
+    self._substance = "";
+    self._equipment = "";
+    self._application = "";
+    self._ghg = "";
+    self._hasDomestic = false;
+    self._hasImport = false;
+    self._hasExport = false;
+    self._energy = "";
+    self._initialChargeDomestic = "";
+    self._initialChargeImport = "";
+    self._initialChargeExport = "";
+    self._retirement = "";
+  }
+
+  /**
+   * Set the substance name.
+   *
+   * @param {string} substance - The substance name.
+   * @returns {SubstanceMetadataBuilder} This builder instance for method chaining.
+   */
+  setSubstance(substance) {
+    const self = this;
+    self._substance = substance || "";
+    return self;
+  }
+
+  /**
+   * Set the equipment type.
+   *
+   * @param {string} equipment - The equipment type.
+   * @returns {SubstanceMetadataBuilder} This builder instance for method chaining.
+   */
+  setEquipment(equipment) {
+    const self = this;
+    self._equipment = equipment || "";
+    return self;
+  }
+
+  /**
+   * Set the application name.
+   *
+   * @param {string} application - The application name.
+   * @returns {SubstanceMetadataBuilder} This builder instance for method chaining.
+   */
+  setApplication(application) {
+    const self = this;
+    self._application = application || "";
+    return self;
+  }
+
+  /**
+   * Set the GHG equivalency value.
+   *
+   * @param {string} ghg - The GHG value.
+   * @returns {SubstanceMetadataBuilder} This builder instance for method chaining.
+   */
+  setGhg(ghg) {
+    const self = this;
+    self._ghg = ghg || "";
+    return self;
+  }
+
+  /**
+   * Set whether domestic stream is enabled.
+   *
+   * @param {boolean} hasDomestic - True if domestic stream is enabled.
+   * @returns {SubstanceMetadataBuilder} This builder instance for method chaining.
+   */
+  setHasDomestic(hasDomestic) {
+    const self = this;
+    self._hasDomestic = hasDomestic || false;
+    return self;
+  }
+
+  /**
+   * Set whether import stream is enabled.
+   *
+   * @param {boolean} hasImport - True if import stream is enabled.
+   * @returns {SubstanceMetadataBuilder} This builder instance for method chaining.
+   */
+  setHasImport(hasImport) {
+    const self = this;
+    self._hasImport = hasImport || false;
+    return self;
+  }
+
+  /**
+   * Set whether export stream is enabled.
+   *
+   * @param {boolean} hasExport - True if export stream is enabled.
+   * @returns {SubstanceMetadataBuilder} This builder instance for method chaining.
+   */
+  setHasExport(hasExport) {
+    const self = this;
+    self._hasExport = hasExport || false;
+    return self;
+  }
+
+  /**
+   * Set the energy consumption value.
+   *
+   * @param {string} energy - The energy consumption value.
+   * @returns {SubstanceMetadataBuilder} This builder instance for method chaining.
+   */
+  setEnergy(energy) {
+    const self = this;
+    self._energy = energy || "";
+    return self;
+  }
+
+  /**
+   * Set the initial charge for domestic stream.
+   *
+   * @param {string} initialChargeDomestic - The initial charge value.
+   * @returns {SubstanceMetadataBuilder} This builder instance for method chaining.
+   */
+  setInitialChargeDomestic(initialChargeDomestic) {
+    const self = this;
+    self._initialChargeDomestic = initialChargeDomestic || "";
+    return self;
+  }
+
+  /**
+   * Set the initial charge for import stream.
+   *
+   * @param {string} initialChargeImport - The initial charge value.
+   * @returns {SubstanceMetadataBuilder} This builder instance for method chaining.
+   */
+  setInitialChargeImport(initialChargeImport) {
+    const self = this;
+    self._initialChargeImport = initialChargeImport || "";
+    return self;
+  }
+
+  /**
+   * Set the initial charge for export stream.
+   *
+   * @param {string} initialChargeExport - The initial charge value.
+   * @returns {SubstanceMetadataBuilder} This builder instance for method chaining.
+   */
+  setInitialChargeExport(initialChargeExport) {
+    const self = this;
+    self._initialChargeExport = initialChargeExport || "";
+    return self;
+  }
+
+  /**
+   * Set the retirement rate.
+   *
+   * @param {string} retirement - The retirement rate.
+   * @returns {SubstanceMetadataBuilder} This builder instance for method chaining.
+   */
+  setRetirement(retirement) {
+    const self = this;
+    self._retirement = retirement || "";
+    return self;
+  }
+
+  /**
+   * Build a SubstanceMetadata instance from current builder state.
+   *
+   * @returns {SubstanceMetadata} The constructed metadata instance.
+   */
+  build() {
+    const self = this;
+    return new SubstanceMetadata(
+      self._substance,
+      self._equipment,
+      self._application,
+      self._ghg,
+      self._hasDomestic,
+      self._hasImport,
+      self._hasExport,
+      self._energy,
+      self._initialChargeDomestic,
+      self._initialChargeImport,
+      self._initialChargeExport,
+      self._retirement,
+    );
   }
 }
 
@@ -3716,6 +4201,8 @@ export {
   SimulationStanza,
   Substance,
   SubstanceBuilder,
+  SubstanceMetadata,
+  SubstanceMetadataBuilder,
   UiTranslatorCompiler,
   buildAddCode,
   finalizeCodePieces,

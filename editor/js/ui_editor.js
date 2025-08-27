@@ -1187,8 +1187,8 @@ class ConsumptionListPresenter {
       const appName = x.getName();
       const substances = x.getSubstances();
       return substances.map((substance) => {
-        const substanceName = substance.getName();
-        return '"' + substanceName + '" for "' + appName + '"';
+        const metadata = substance.getMeta(appName);
+        return metadata.getKey();
       });
     });
     const consumptions = consumptionsNested.flat();
