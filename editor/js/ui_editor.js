@@ -2089,6 +2089,49 @@ class SimulationListPresenter {
 }
 
 /**
+ * Result container for active substance extraction with error reporting.
+ */
+class ActiveSubstancesResult {
+  /**
+   * Creates a new ActiveSubstancesResult.
+   *
+   * @param {SubstanceMetadata[]} substances - Array of substance metadata
+   * @param {string|null} error - Error message or null if no error
+   */
+  constructor(substances, error = null) {
+    this._substances = substances || [];
+    this._error = error;
+  }
+
+  /**
+   * Gets the array of substance metadata.
+   *
+   * @returns {SubstanceMetadata[]} Array of substance metadata
+   */
+  getSubstances() {
+    return this._substances;
+  }
+
+  /**
+   * Gets the error message if any.
+   *
+   * @returns {string|null} Error message or null if no error
+   */
+  getError() {
+    return this._error;
+  }
+
+  /**
+   * Checks if there was an error.
+   *
+   * @returns {boolean} True if there was an error
+   */
+  hasError() {
+    return this._error !== null;
+  }
+}
+
+/**
  * Manages substance table download/upload functionality.
  *
  * This presenter handles the substances table dialog which allows users to
@@ -2118,9 +2161,9 @@ class SubstanceTablePresenter {
    */
   refresh(codeObj) {
     const self = this;
-    const activeSubstances = self._getActiveSubstances(codeObj);
-    self._updateSubstanceCount(activeSubstances.length);
-    self._updateDownloadButton(activeSubstances);
+    const result = self._getActiveSubstances(codeObj);
+    self._updateSubstanceCount(result.getSubstances().length);
+    self._updateDownloadButton(result.getSubstances(), result.getError());
   }
 
   /**
@@ -2192,26 +2235,41 @@ class SubstanceTablePresenter {
    * Updates the download button with current CSV data.
    *
    * @param {SubstanceMetadata[]} substances - Array of substance metadata
+   * @param {string|null} extractionError - Error from substance extraction
    * @private
    */
-  _updateDownloadButton(substances) {
+  _updateDownloadButton(substances, extractionError) {
     const self = this;
+    const downloadButton = self._dialog.querySelector(".download-button");
+
+    // Remove any existing click handler
+    const newDownloadButton = downloadButton.cloneNode(true);
+    downloadButton.parentNode.replaceChild(newDownloadButton, downloadButton);
 
     try {
       // Generate CSV data URI using MetaSerializer
       const csvUri = self._metaSerializer.renderMetaToCsvUri(substances);
 
       // Update download button
-      const downloadButton = self._dialog.querySelector(".download-button");
-      downloadButton.href = csvUri;
-      downloadButton.download = `substances_${new Date().toISOString().split("T")[0]}.csv`;
+      newDownloadButton.href = csvUri;
+      newDownloadButton.download = `substances_${new Date().toISOString().split("T")[0]}.csv`;
     } catch (error) {
       console.error("Failed to generate CSV for download:", error);
 
-      // Fallback: disable download button
-      const downloadButton = self._dialog.querySelector(".download-button");
-      downloadButton.href = "#";
-      downloadButton.removeAttribute("download");
+      // Fallback: show alert with error details when clicked
+      newDownloadButton.href = "#";
+      newDownloadButton.removeAttribute("download");
+      newDownloadButton.addEventListener("click", (event) => {
+        event.preventDefault();
+        let errorMessage = "A download could not be generated.";
+        if (extractionError) {
+          errorMessage += ` Extraction error: ${extractionError}`;
+        }
+        if (error && error.message) {
+          errorMessage += ` CSV generation error: ${error.message}`;
+        }
+        alert(errorMessage);
+      });
     }
   }
 
@@ -2219,17 +2277,18 @@ class SubstanceTablePresenter {
    * Extracts all active substances from the current program.
    *
    * @param {Object} codeObj - Current code object
-   * @returns {SubstanceMetadata[]} Array of substance metadata
+   * @returns {ActiveSubstancesResult} Result with substances array and error info
    * @private
    */
   _getActiveSubstances(codeObj) {
     const self = this;
 
     if (!codeObj) {
-      return [];
+      return new ActiveSubstancesResult([], "Unknown internal error: no code object");
     }
 
     const substances = [];
+    const errors = [];
 
     try {
       // Iterate through all applications
@@ -2245,18 +2304,20 @@ class SubstanceTablePresenter {
             const metadata = substance.getMeta(appName);
             substances.push(metadata);
           } catch (error) {
-            console.warn(
-              `Failed to extract metadata from substance ${substance.getName()} in ${appName}:`,
-              error,
-            );
+            const errorMsg = `Failed to extract metadata from substance ${substance.getName()} in ${appName}: ${error.message || error}`;
+            console.warn(errorMsg);
+            errors.push(errorMsg);
           }
         }
       }
     } catch (error) {
-      console.error("Failed to extract substances from code object:", error);
+      const errorMsg = `Failed to extract substances from code object: ${error.message || error}`;
+      console.error(errorMsg);
+      return new ActiveSubstancesResult(substances, errorMsg);
     }
 
-    return substances;
+    const aggregatedError = errors.length > 0 ? errors.join("; ") : null;
+    return new ActiveSubstancesResult(substances, aggregatedError);
   }
 
   /**
@@ -2305,8 +2366,7 @@ class SubstanceTablePresenter {
       // Update dialog display
       self.refresh(codeObj);
 
-      // Provide success feedback
-      self._showSuccess(`Successfully processed ${updates.length} substance records.`);
+      // Success feedback removed per feedback requirements
     } catch (error) {
       self._showError(`Failed to apply changes: ${error.message}`);
     }
@@ -2322,15 +2382,6 @@ class SubstanceTablePresenter {
     alert(`Upload Error: ${message}`);
   }
 
-  /**
-   * Shows a success message to the user.
-   *
-   * @param {string} message - Success message to display
-   * @private
-   */
-  _showSuccess(message) {
-    alert(`Upload Success: ${message}`);
-  }
 
   /**
    * Shows the upload pane and hides the dialog buttons.
