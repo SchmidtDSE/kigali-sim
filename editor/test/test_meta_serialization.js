@@ -1,4 +1,4 @@
-import {MetaSerializer, MetaChangeApplier, SubstanceMetadataUpdate} from "meta_serialization";
+import {MetaSerializer, MetaChangeApplier, SubstanceMetadataUpdate, SubstanceMetadataError, SubstanceMetadataParseResult} from "meta_serialization";
 import {SubstanceMetadata, Program, Application, Substance, SubstanceBuilder} from "ui_translator";
 
 function buildMetaSerializationTests() {
@@ -344,32 +344,45 @@ function buildMetaSerializationTests() {
         const serializer = new MetaSerializer();
         const result = serializer.deserialize([]);
 
-        assert.ok(Array.isArray(result));
-        assert.equal(result.length, 0);
+        assert.ok(result instanceof SubstanceMetadataParseResult);
+        assert.ok(!result.hasErrors());
+        assert.equal(result.getUpdates().length, 0);
       });
 
-      QUnit.test("throws error for null input", function (assert) {
+      QUnit.test("returns error for null input", function (assert) {
         const serializer = new MetaSerializer();
 
-        assert.throws(() => {
-          serializer.deserialize(null);
-        }, Error, "Should throw error for null input");
+        const result = serializer.deserialize(null);
+        
+        assert.ok(result instanceof SubstanceMetadataParseResult);
+        assert.ok(result.hasErrors());
+        assert.ok(result.hasSystemErrors());
+        assert.equal(result.getUpdates().length, 0);
+        assert.ok(result.getErrorSummary().includes("Input must be an array"));
       });
 
-      QUnit.test("throws error for non-array input", function (assert) {
+      QUnit.test("returns error for non-array input", function (assert) {
         const serializer = new MetaSerializer();
 
-        assert.throws(() => {
-          serializer.deserialize("not an array");
-        }, Error, "Should throw error for non-array input");
+        const result = serializer.deserialize("not an array");
+        
+        assert.ok(result instanceof SubstanceMetadataParseResult);
+        assert.ok(result.hasErrors());
+        assert.ok(result.hasSystemErrors());
+        assert.equal(result.getUpdates().length, 0);
+        assert.ok(result.getErrorSummary().includes("Input must be an array"));
       });
 
-      QUnit.test("throws error for invalid Map object", function (assert) {
+      QUnit.test("returns error for invalid Map object", function (assert) {
         const serializer = new MetaSerializer();
 
-        assert.throws(() => {
-          serializer.deserialize([{invalid: "object"}]);
-        }, Error, "Should throw error for invalid Map object");
+        const result = serializer.deserialize([{invalid: "object"}]);
+        
+        assert.ok(result instanceof SubstanceMetadataParseResult);
+        assert.ok(result.hasErrors());
+        assert.ok(result.hasSystemErrors());
+        assert.equal(result.getUpdates().length, 0);
+        assert.ok(result.getErrorSummary().includes("Row data must be a Map object"));
       });
 
       QUnit.test("deserializes single Map to SubstanceMetadata", function (assert) {
@@ -391,9 +404,13 @@ function buildMetaSerializationTests() {
 
         const result = serializer.deserialize([testMap]);
 
-        assert.equal(result.length, 1);
+        assert.ok(result instanceof SubstanceMetadataParseResult);
+        assert.ok(!result.hasErrors());
+        assert.equal(result.getUpdates().length, 1);
         
-        const metadata = result[0];
+        const update = result.getUpdates()[0];
+        assert.ok(update instanceof SubstanceMetadataUpdate);
+        const metadata = update.getNewMetadata();
         assert.ok(metadata instanceof SubstanceMetadata);
         assert.equal(metadata.getSubstance(), "HFC-134a");
         assert.equal(metadata.getEquipment(), "High Energy");
@@ -430,15 +447,20 @@ function buildMetaSerializationTests() {
 
         const result = serializer.deserialize([testMap1, testMap2]);
 
-        assert.equal(result.length, 2);
+        assert.ok(result instanceof SubstanceMetadataParseResult);
+        assert.ok(!result.hasErrors());
+        assert.equal(result.getUpdates().length, 2);
         
-        assert.equal(result[0].getSubstance(), "HFC-134a");
-        assert.equal(result[0].getEquipment(), "High Energy");
-        assert.equal(result[0].getHasDomestic(), true);
+        const metadata1 = result.getUpdates()[0].getNewMetadata();
+        const metadata2 = result.getUpdates()[1].getNewMetadata();
         
-        assert.equal(result[1].getSubstance(), "R-404A");
-        assert.equal(result[1].getEquipment(), "");
-        assert.equal(result[1].getHasImport(), true);
+        assert.equal(metadata1.getSubstance(), "HFC-134a");
+        assert.equal(metadata1.getEquipment(), "High Energy");
+        assert.equal(metadata1.getHasDomestic(), true);
+        
+        assert.equal(metadata2.getSubstance(), "R-404A");
+        assert.equal(metadata2.getEquipment(), "");
+        assert.equal(metadata2.getHasImport(), true);
       });
 
       QUnit.test("handles missing Map values with defaults", function (assert) {
@@ -449,7 +471,12 @@ function buildMetaSerializationTests() {
         // Intentionally leave out other fields
 
         const result = serializer.deserialize([testMap]);
-        const metadata = result[0];
+        
+        assert.ok(result instanceof SubstanceMetadataParseResult);
+        assert.ok(!result.hasErrors());
+        assert.equal(result.getUpdates().length, 1);
+        
+        const metadata = result.getUpdates()[0].getNewMetadata();
 
         assert.equal(metadata.getSubstance(), "HFC-134a");
         assert.equal(metadata.getEquipment(), "");
@@ -475,7 +502,12 @@ function buildMetaSerializationTests() {
         testMap.set("hasExport", "false");
 
         const result = serializer.deserialize([testMap]);
-        const metadata = result[0];
+        
+        assert.ok(result instanceof SubstanceMetadataParseResult);
+        assert.ok(!result.hasErrors());
+        assert.equal(result.getUpdates().length, 1);
+        
+        const metadata = result.getUpdates()[0].getNewMetadata();
 
         assert.equal(metadata.getHasDomestic(), true);
         assert.equal(metadata.getHasImport(), true); // Case insensitive
@@ -492,7 +524,12 @@ function buildMetaSerializationTests() {
         testMap.set("hasExport", "");
 
         const result = serializer.deserialize([testMap]);
-        const metadata = result[0];
+        
+        assert.ok(result instanceof SubstanceMetadataParseResult);
+        assert.ok(!result.hasErrors());
+        assert.equal(result.getUpdates().length, 1);
+        
+        const metadata = result.getUpdates()[0].getNewMetadata();
 
         assert.equal(metadata.getHasDomestic(), true); // "1" should be true
         assert.equal(metadata.getHasImport(), false); // "0" should be false
@@ -505,20 +542,25 @@ function buildMetaSerializationTests() {
         const serializer = new MetaSerializer();
         const result = serializer.deserializeMetaFromCsvString("");
 
-        assert.ok(Array.isArray(result));
-        assert.equal(result.length, 0);
+        assert.ok(result instanceof SubstanceMetadataParseResult);
+        assert.ok(!result.hasErrors());
+        assert.equal(result.getUpdates().length, 0);
       });
 
-      QUnit.test("throws error for non-string input", function (assert) {
+      QUnit.test("returns error for non-string input", function (assert) {
         const serializer = new MetaSerializer();
 
-        assert.throws(() => {
-          serializer.deserializeMetaFromCsvString(null);
-        }, Error, "Should throw error for non-string input");
+        const result1 = serializer.deserializeMetaFromCsvString(null);
+        assert.ok(result1 instanceof SubstanceMetadataParseResult);
+        assert.ok(result1.hasErrors());
+        assert.ok(result1.hasUserErrors());
+        assert.ok(result1.getErrorSummary().includes("CSV input must be a string"));
 
-        assert.throws(() => {
-          serializer.deserializeMetaFromCsvString(123);
-        }, Error, "Should throw error for numeric input");
+        const result2 = serializer.deserializeMetaFromCsvString(123);
+        assert.ok(result2 instanceof SubstanceMetadataParseResult);
+        assert.ok(result2.hasErrors());
+        assert.ok(result2.hasUserErrors());
+        assert.ok(result2.getErrorSummary().includes("CSV input must be a string"));
       });
 
       // Note: These tests will only work if Papa Parse is loaded
@@ -533,7 +575,9 @@ function buildMetaSerializationTests() {
         }
 
         const result = serializer.deserializeMetaFromCsvString(csvString);
-        assert.equal(result.length, 0);
+        assert.ok(result instanceof SubstanceMetadataParseResult);
+        assert.ok(!result.hasErrors());
+        assert.equal(result.getUpdates().length, 0);
       });
 
       QUnit.test("parses single row CSV correctly", function (assert) {
@@ -549,8 +593,10 @@ HFC-134a,High Energy,Domestic Refrigeration,1430 kgCO2e / kg,true,false,false,50
 
         const result = serializer.deserializeMetaFromCsvString(csvString);
         
-        assert.equal(result.length, 1);
-        const update = result[0];
+        assert.ok(result instanceof SubstanceMetadataParseResult);
+        assert.ok(!result.hasErrors());
+        assert.equal(result.getUpdates().length, 1);
+        const update = result.getUpdates()[0];
         
         assert.ok(update instanceof SubstanceMetadataUpdate);
         assert.equal(update.getOldName(), ""); // Empty key column
@@ -627,7 +673,7 @@ Name",1430 kgCO2e / kg,true,false,false,500 kwh / unit,0.15 kg / unit,0 kg / uni
         assert.equal(metadata.getApplication(), "App\nName");
       });
 
-      QUnit.test("throws error for missing required columns", function (assert) {
+      QUnit.test("returns error for missing required columns", function (assert) {
         const serializer = new MetaSerializer();
         const csvString = `equipment,ghg,hasDomestic
 High Energy,1430 kgCO2e / kg,true`;
@@ -638,9 +684,13 @@ High Energy,1430 kgCO2e / kg,true`;
           return;
         }
 
-        assert.throws(() => {
-          serializer.deserializeMetaFromCsvString(csvString);
-        }, Error, "Should throw error for missing required columns");
+        const result = serializer.deserializeMetaFromCsvString(csvString);
+        
+        assert.ok(result instanceof SubstanceMetadataParseResult);
+        assert.ok(result.hasErrors());
+        assert.ok(result.hasUserErrors());
+        assert.ok(result.getErrorSummary().includes("Missing required columns"));
+        assert.equal(result.getUpdates().length, 0);
       });
 
       QUnit.test("round-trip compatibility", function (assert) {
@@ -663,10 +713,12 @@ High Energy,1430 kgCO2e / kg,true`;
         const csvContent = decodeURIComponent(csvUri.replace("data:text/csv;charset=utf-8,", ""));
 
         // Deserialize back to SubstanceMetadataUpdate objects
-        const deserializedUpdates = serializer.deserializeMetaFromCsvString(csvContent);
+        const deserializedResult = serializer.deserializeMetaFromCsvString(csvContent);
 
-        assert.equal(deserializedUpdates.length, 1);
-        const roundTripUpdate = deserializedUpdates[0];
+        assert.ok(deserializedResult instanceof SubstanceMetadataParseResult);
+        assert.ok(!deserializedResult.hasErrors());
+        assert.equal(deserializedResult.getUpdates().length, 1);
+        const roundTripUpdate = deserializedResult.getUpdates()[0];
 
         assert.ok(roundTripUpdate instanceof SubstanceMetadataUpdate);
         
@@ -705,7 +757,7 @@ High Energy,1430 kgCO2e / kg,true`;
           testMap.set("hasDomestic", testValue);
           
           const result = serializer.deserialize([testMap]);
-          assert.equal(result[0].getHasDomestic(), true, `"${testValue}" should parse to true`);
+          assert.equal(result.getUpdates()[0].getNewMetadata().getHasDomestic(), true, `"${testValue}" should parse to true`);
         }
       });
 
@@ -722,19 +774,25 @@ High Energy,1430 kgCO2e / kg,true`;
           testMap.set("hasDomestic", testValue);
           
           const result = serializer.deserialize([testMap]);
-          assert.equal(result[0].getHasDomestic(), false, `"${testValue}" should parse to false`);
+          assert.equal(result.getUpdates()[0].getNewMetadata().getHasDomestic(), false, `"${testValue}" should parse to false`);
         }
         
-        // Test that invalid values throw exceptions
+        // Test that invalid values generate errors
         const invalidValues = ["invalid", "maybe", "xyz"];
         for (const testValue of invalidValues) {
-          assert.throws(() => {
-            const testMap = new Map();
-            testMap.set("substance", "Test");
-            testMap.set("application", "Test App");
-            testMap.set("hasDomestic", testValue);
-            serializer.deserialize([testMap]);
-          }, Error, `"${testValue}" should throw exception`);
+          const testMap = new Map();
+          testMap.set("substance", "Test");
+          testMap.set("application", "Test App");
+          testMap.set("hasDomestic", testValue);
+          
+          const result = serializer.deserialize([testMap]);
+          assert.ok(result.hasErrors(), `"${testValue}" should generate errors`);
+          assert.ok(result.hasUserErrors(), `"${testValue}" should generate user errors`);
+          assert.ok(result.getErrorSummary().includes("Invalid boolean value"), `"${testValue}" should have boolean error message`);
+          
+          // Should still create an update with default value
+          assert.equal(result.getUpdates().length, 1);
+          assert.equal(result.getUpdates()[0].getNewMetadata().getHasDomestic(), false, `"${testValue}" should default to false`);
         }
         
         // Test empty/null values return false
@@ -746,7 +804,7 @@ High Energy,1430 kgCO2e / kg,true`;
           testMap.set("hasDomestic", testValue);
           
           const result = serializer.deserialize([testMap]);
-          assert.equal(result[0].getHasDomestic(), false, `"${testValue}" should parse to false`);
+          assert.equal(result.getUpdates()[0].getNewMetadata().getHasDomestic(), false, `"${testValue}" should parse to false`);
         }
       });
     });
@@ -1391,6 +1449,80 @@ High Energy,1430 kgCO2e / kg,true`;
       });
     });
   });
+
+  // Tests for new error handling classes
+  QUnit.module("SubstanceMetadataError", function () {
+    QUnit.test("constructor and getters", function (assert) {
+      const error = new SubstanceMetadataError(5, 'substance', 'Empty substance name', 'USER');
+      
+      assert.equal(error.getRowNumber(), 5);
+      assert.equal(error.getColumn(), 'substance');
+      assert.equal(error.getMessage(), 'Empty substance name');
+      assert.equal(error.getErrorType(), 'USER');
+      assert.ok(error.isUserError());
+      assert.notOk(error.isSystemError());
+    });
+
+    QUnit.test("toString formatting", function (assert) {
+      const headerError = new SubstanceMetadataError(0, 'columns', 'Missing columns', 'USER');
+      const rowError = new SubstanceMetadataError(3, 'substance', 'Invalid value', 'USER');
+      
+      assert.equal(headerError.toString(), "Header error in column 'columns': Missing columns");
+      assert.equal(rowError.toString(), "Row 3, column 'substance': Invalid value");
+    });
+
+    QUnit.test("system error type", function (assert) {
+      const systemError = new SubstanceMetadataError(1, 'input', 'Unexpected error', 'SYSTEM');
+      
+      assert.ok(systemError.isSystemError());
+      assert.notOk(systemError.isUserError());
+      assert.equal(systemError.getErrorType(), 'SYSTEM');
+    });
+  });
+
+  QUnit.module("SubstanceMetadataParseResult", function () {
+    QUnit.test("tracks updates and errors", function (assert) {
+      const result = new SubstanceMetadataParseResult();
+      const userError = new SubstanceMetadataError(1, 'test', 'Test error', 'USER');
+      const systemError = new SubstanceMetadataError(2, 'test', 'System error', 'SYSTEM');
+      
+      result.addError(userError);
+      result.addError(systemError);
+      
+      assert.ok(result.hasErrors());
+      assert.ok(result.hasUserErrors());
+      assert.ok(result.hasSystemErrors());
+      assert.notOk(result.isSuccess());
+      assert.equal(result.getUserErrors().length, 1);
+      assert.equal(result.getSystemErrors().length, 1);
+    });
+
+    QUnit.test("success state", function (assert) {
+      const result = new SubstanceMetadataParseResult();
+      const update = new SubstanceMetadataUpdate('', new SubstanceMetadata());
+      
+      result.addUpdate(update);
+      
+      assert.notOk(result.hasErrors());
+      assert.ok(result.isSuccess());
+      assert.equal(result.getUpdates().length, 1);
+      assert.equal(result.getErrorSummary(), 'No errors');
+    });
+
+    QUnit.test("error summary formatting", function (assert) {
+      const result = new SubstanceMetadataParseResult();
+      const error1 = new SubstanceMetadataError(1, 'test', 'First error', 'USER');
+      const error2 = new SubstanceMetadataError(2, 'test', 'Second error', 'USER');
+      
+      result.addError(error1);
+      result.addError(error2);
+      
+      const summary = result.getErrorSummary();
+      assert.ok(summary.includes('Row 1, column \'test\': First error'));
+      assert.ok(summary.includes('Row 2, column \'test\': Second error'));
+    });
+  });
+
 }
 
 export {

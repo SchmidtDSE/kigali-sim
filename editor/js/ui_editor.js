@@ -2304,7 +2304,8 @@ class SubstanceTablePresenter {
             const metadata = substance.getMeta(appName);
             substances.push(metadata);
           } catch (error) {
-            const errorMsg = `Failed to extract metadata from substance ${substance.getName()} in ${appName}: ${error.message || error}`;
+            const errorMsg = `Failed to extract metadata from substance ${substance.getName()} ` +
+              `in ${appName}: ${error.message || error}`;
             console.warn(errorMsg);
             errors.push(errorMsg);
           }
@@ -2333,10 +2334,32 @@ class SubstanceTablePresenter {
     reader.onload = (event) => {
       try {
         const csvContent = event.target.result;
-        const updates = self._metaSerializer.deserializeMetaFromCsvString(csvContent);
-        self._applyUpdatesToCodeObject(updates);
+        const parseResult = self._metaSerializer.deserializeMetaFromCsvString(csvContent);
+
+        if (parseResult.hasErrors()) {
+          if (parseResult.hasUserErrors()) {
+            // Show user-friendly error messages for data issues
+            self._showError("Please fix the following issues in your CSV:\n" +
+              parseResult.getErrorSummary());
+          }
+          if (parseResult.hasSystemErrors()) {
+            // Log system errors for debugging
+            console.error("System errors occurred:", parseResult.getSystemErrors());
+            self._showError("An unexpected error occurred while processing the CSV. " +
+              "Please contact support.");
+          }
+          return;
+        }
+
+        if (parseResult.getUpdates().length > 0) {
+          self._applyUpdatesToCodeObject(parseResult.getUpdates());
+        } else {
+          self._showError("No valid data found in the CSV file.");
+        }
       } catch (error) {
-        self._showError(`Failed to parse CSV: ${error.message}`);
+        // Handle any remaining unexpected errors
+        console.error("Unexpected error in CSV processing:", error);
+        self._showError(`Failed to process CSV: ${error.message}`);
       }
     };
 
@@ -2385,28 +2408,28 @@ class SubstanceTablePresenter {
 
   /**
    * Shows the upload pane and hides the dialog buttons.
-   * 
+   *
    * @private
    */
   _showUploadPane() {
     const self = this;
     const uploadPane = self._dialog.querySelector(".upload-pane");
     const dialogButtons = self._dialog.querySelector(".dialog-buttons");
-    
+
     uploadPane.style.display = "block";
     dialogButtons.style.display = "none";
   }
 
   /**
    * Hides the upload pane and shows the dialog buttons.
-   * 
+   *
    * @private
    */
   _hideUploadPane() {
     const self = this;
     const uploadPane = self._dialog.querySelector(".upload-pane");
     const dialogButtons = self._dialog.querySelector(".dialog-buttons");
-    
+
     uploadPane.style.display = "none";
     dialogButtons.style.display = "block";
   }

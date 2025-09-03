@@ -45,7 +45,7 @@ const META_COLUMNS = [
  */
 const BOOLEAN_VALUES = new Map([
   ["t", true],
-  ["1", true], 
+  ["1", true],
   ["y", true],
   ["true", true],
   ["yes", true],
@@ -57,6 +57,237 @@ const BOOLEAN_VALUES = new Map([
 ]);
 
 /**
+ * Error information for substance metadata parsing issues.
+ *
+ * Provides structured error information that distinguishes between user data errors
+ * (invalid CSV content) and system programming errors. Includes row and column
+ * information to help users locate and fix issues in their data.
+ */
+class SubstanceMetadataError {
+  /**
+   * Create a new SubstanceMetadataError.
+   *
+   * @param {number} rowNumber - Row number where error occurred
+   *   (0 for header, 1-based for data rows)
+   * @param {string} column - Column name where error occurred
+   * @param {string} message - Human-readable error description
+   * @param {string} errorType - 'USER' for data errors or 'SYSTEM' for programming errors
+   */
+  constructor(rowNumber, column, message, errorType = "USER") {
+    const self = this;
+    self._rowNumber = rowNumber;
+    self._column = column;
+    self._message = message;
+    self._errorType = errorType;
+  }
+
+  /**
+   * Get the row number where the error occurred.
+   *
+   * @returns {number} Row number (0 for header, 1-based for data rows)
+   */
+  getRowNumber() {
+    const self = this;
+    return self._rowNumber;
+  }
+
+  /**
+   * Get the column name where the error occurred.
+   *
+   * @returns {string} Column name
+   */
+  getColumn() {
+    const self = this;
+    return self._column;
+  }
+
+  /**
+   * Get the human-readable error message.
+   *
+   * @returns {string} Error message
+   */
+  getMessage() {
+    const self = this;
+    return self._message;
+  }
+
+  /**
+   * Get the error type.
+   *
+   * @returns {string} 'USER' or 'SYSTEM'
+   */
+  getErrorType() {
+    const self = this;
+    return self._errorType;
+  }
+
+  /**
+   * Check if this is a user data error.
+   *
+   * @returns {boolean} True if this is a user error
+   */
+  isUserError() {
+    const self = this;
+    return self._errorType === "USER";
+  }
+
+  /**
+   * Check if this is a system programming error.
+   *
+   * @returns {boolean} True if this is a system error
+   */
+  isSystemError() {
+    const self = this;
+    return self._errorType === "SYSTEM";
+  }
+
+  /**
+   * Convert error to human-readable string.
+   *
+   * @returns {string} Formatted error description
+   */
+  toString() {
+    const self = this;
+    if (self._rowNumber === 0) {
+      return `Header error in column '${self._column}': ${self._message}`;
+    }
+    return `Row ${self._rowNumber}, column '${self._column}': ${self._message}`;
+  }
+}
+
+/**
+ * Result container for substance metadata parsing operations.
+ *
+ * Contains successfully parsed metadata updates and any errors that occurred
+ * during parsing. Provides methods to check for different types of errors
+ * and access parsed results.
+ */
+class SubstanceMetadataParseResult {
+  /**
+   * Create a new SubstanceMetadataParseResult.
+   *
+   * @param {SubstanceMetadataUpdate[]} updates - Array of successfully parsed updates
+   * @param {SubstanceMetadataError[]} errors - Array of parsing errors
+   */
+  constructor(updates = [], errors = []) {
+    const self = this;
+    self._updates = updates;
+    self._errors = errors;
+  }
+
+  /**
+   * Get the successfully parsed metadata updates.
+   *
+   * @returns {SubstanceMetadataUpdate[]} Array of parsed updates
+   */
+  getUpdates() {
+    const self = this;
+    return self._updates;
+  }
+
+  /**
+   * Get all parsing errors.
+   *
+   * @returns {SubstanceMetadataError[]} Array of errors
+   */
+  getErrors() {
+    const self = this;
+    return self._errors;
+  }
+
+  /**
+   * Check if any errors occurred during parsing.
+   *
+   * @returns {boolean} True if errors exist
+   */
+  hasErrors() {
+    const self = this;
+    return self._errors.length > 0;
+  }
+
+  /**
+   * Check if any user data errors occurred.
+   *
+   * @returns {boolean} True if user errors exist
+   */
+  hasUserErrors() {
+    const self = this;
+    return self._errors.some((e) => e.isUserError());
+  }
+
+  /**
+   * Check if any system errors occurred.
+   *
+   * @returns {boolean} True if system errors exist
+   */
+  hasSystemErrors() {
+    const self = this;
+    return self._errors.some((e) => e.isSystemError());
+  }
+
+  /**
+   * Check if parsing was completely successful.
+   *
+   * @returns {boolean} True if no errors occurred
+   */
+  isSuccess() {
+    const self = this;
+    return self._errors.length === 0;
+  }
+
+  /**
+   * Get only user data errors.
+   *
+   * @returns {SubstanceMetadataError[]} Array of user errors
+   */
+  getUserErrors() {
+    const self = this;
+    return self._errors.filter((e) => e.isUserError());
+  }
+
+  /**
+   * Get only system programming errors.
+   *
+   * @returns {SubstanceMetadataError[]} Array of system errors
+   */
+  getSystemErrors() {
+    const self = this;
+    return self._errors.filter((e) => e.isSystemError());
+  }
+
+  /**
+   * Add a successfully parsed metadata update.
+   *
+   * @param {SubstanceMetadataUpdate} update - Update to add
+   */
+  addUpdate(update) {
+    const self = this;
+    self._updates.push(update);
+  }
+
+  /**
+   * Add a parsing error.
+   *
+   * @param {SubstanceMetadataError} error - Error to add
+   */
+  addError(error) {
+    const self = this;
+    self._errors.push(error);
+  }
+
+  /**
+   * Get a summary of all errors as a formatted string.
+   *
+   * @returns {string} Multi-line error summary
+   */
+  getErrorSummary() {
+    const self = this;
+    if (self._errors.length === 0) return "No errors";
+    return self._errors.map((e) => e.toString()).join("\n");
+  }
+}
+
+/**
  * Serializer for converting SubstanceMetadata objects to CSV format.
  *
  * This class handles the conversion of SubstanceMetadata arrays to CSV-compatible
@@ -64,10 +295,9 @@ const BOOLEAN_VALUES = new Map([
  * specification defined in the import_export_meta task.
  */
 class MetaSerializer {
-
   /**
    * Helper function to get value or return empty string.
-   * 
+   *
    * @param {*} value - The value to check
    * @returns {string} The value or empty string if falsy
    * @private
@@ -173,7 +403,7 @@ class MetaSerializer {
    */
   _escapeCsvValue(value) {
     const self = this;
-    
+
     if (!value) {
       return "";
     }
@@ -189,89 +419,123 @@ class MetaSerializer {
   }
 
   /**
-   * Convert array of Maps to array of SubstanceMetadata for CSV import.
+   * Convert array of Maps to structured result with SubstanceMetadata for CSV import.
    *
    * Each Map represents a CSV row with column names as keys and string values.
    * Boolean fields are converted from string representation to boolean values.
-   * Empty or missing values are handled gracefully with defaults.
+   * Empty or missing values are handled gracefully with defaults. Parsing errors
+   * are collected and returned in the result rather than throwing exceptions.
    *
    * @param {Map<string, string>[]} arrayOfMaps - Array of Maps with CSV data
-   * @returns {SubstanceMetadata[]} Array of SubstanceMetadata instances
+   * @returns {SubstanceMetadataParseResult} Result containing parsed metadata and errors
    */
   deserialize(arrayOfMaps) {
     const self = this;
+    const result = new SubstanceMetadataParseResult();
 
-    // Convert each Map to a SubstanceMetadata object
-    return arrayOfMaps.map((rowMap) => {
-      const builder = new SubstanceMetadataBuilder();
+    if (!Array.isArray(arrayOfMaps)) {
+      result.addError(new SubstanceMetadataError(0, "input", "Input must be an array", "SYSTEM"));
+      return result;
+    }
 
-      // Extract values from Map with defaults using _getOrEmpty
-      builder.setSubstance(self._getOrEmpty(rowMap.get("substance")))
-        .setEquipment(self._getOrEmpty(rowMap.get("equipment")))
-        .setApplication(self._getOrEmpty(rowMap.get("application")))
-        .setGhg(self._getOrEmpty(rowMap.get("ghg")))
-        .setHasDomestic(self._parseBoolean(rowMap.get("hasDomestic")))
-        .setHasImport(self._parseBoolean(rowMap.get("hasImport")))
-        .setHasExport(self._parseBoolean(rowMap.get("hasExport")))
-        .setEnergy(self._getOrEmpty(rowMap.get("energy")))
-        .setInitialChargeDomestic(self._getOrEmpty(rowMap.get("initialChargeDomestic")))
-        .setInitialChargeImport(self._getOrEmpty(rowMap.get("initialChargeImport")))
-        .setInitialChargeExport(self._getOrEmpty(rowMap.get("initialChargeExport")))
-        .setRetirement(self._getOrEmpty(rowMap.get("retirement")));
+    for (let i = 0; i < arrayOfMaps.length; i++) {
+      const rowMap = arrayOfMaps[i];
+      const rowNumber = i + 1; // 1-based for user display
 
-      return builder.build();
-    });
+      try {
+        if (!(rowMap instanceof Map)) {
+          result.addError(new SubstanceMetadataError(rowNumber, "input",
+            "Row data must be a Map object", "SYSTEM"));
+          continue;
+        }
+
+        const metadata = self._parseRowToMetadata(rowMap, rowNumber, result);
+        if (metadata) {
+          result.addUpdate(new SubstanceMetadataUpdate("", metadata));
+        }
+      } catch (systemError) {
+        // Unexpected system errors that shouldn't happen in normal operation
+        result.addError(new SubstanceMetadataError(rowNumber, "system",
+          `Unexpected error: ${systemError.message}`, "SYSTEM"));
+      }
+    }
+
+    return result;
   }
 
   /**
-   * Convert CSV string to array of SubstanceMetadataUpdate for import.
+   * Convert CSV string to structured result with SubstanceMetadataUpdate for import.
    *
    * Uses Papa Parse to parse CSV string with headers into objects,
    * then converts to SubstanceMetadataUpdate instances. The CSV key column
    * is used as the oldName to identify existing substances for updates.
+   * Parsing errors are collected and returned in the result rather than throwing exceptions.
    *
    * @param {string} csvString - CSV content string with headers
-   * @returns {SubstanceMetadataUpdate[]} Array of SubstanceMetadataUpdate instances
+   * @returns {SubstanceMetadataParseResult} Result containing parsed updates and errors
    */
   deserializeMetaFromCsvString(csvString) {
     const self = this;
+    const result = new SubstanceMetadataParseResult();
 
-    if (!csvString.trim()) {
-      return [];
+    if (typeof csvString !== "string") {
+      result.addError(new SubstanceMetadataError(0, "input", "CSV input must be a string", "USER"));
+      return result;
     }
 
-    // Parse CSV using Papa Parse with minimal config
+    if (!csvString.trim()) {
+      return result; // Empty string is valid, just return empty result
+    }
+
+    // Parse CSV using Papa Parse
     const parseResult = Papa.parse(csvString, {
       header: true,
       dynamicTyping: false,
       skipEmptyLines: true,
     });
 
-    // Check for parsing errors
+    // Check for Papa Parse errors (user data issues)
     if (parseResult.errors && parseResult.errors.length > 0) {
-      const errorMessages = parseResult.errors.map((error) =>
-        `Row ${error.row}: ${error.message}`,
-      ).join("; ");
-      throw new Error(`CSV parsing failed: ${errorMessages}`);
+      for (const error of parseResult.errors) {
+        const rowNum = error.row ? error.row + 1 : 0; // Papa Parse uses 0-based rows
+        result.addError(new SubstanceMetadataError(rowNum, "parsing", error.message, "USER"));
+      }
     }
 
-    // Convert parsed data to SubstanceMetadataUpdate objects
-    return parseResult.data.map((rowData) => {
-      const oldName = self._getOrEmpty(rowData["key"]);
-
-      // Create Map for SubstanceMetadata creation using META_COLUMNS
-      const rowMap = new Map();
-      const metadataColumns = META_COLUMNS.filter(col => col !== "key");
-
-      for (const column of metadataColumns) {
-        rowMap.set(column, self._getOrEmpty(rowData[column]));
+    // Validate required columns exist
+    if (parseResult.data.length > 0) {
+      const firstRow = parseResult.data[0];
+      const missingColumns = META_COLUMNS.filter((col) => !(col in firstRow));
+      if (missingColumns.length > 0) {
+        result.addError(new SubstanceMetadataError(0, "columns",
+          `Missing required columns: ${missingColumns.join(", ")}`, "USER"));
+        return result; // Can't continue without required columns
       }
+    }
 
-      const metadataArray = self.deserialize([rowMap]);
-      const newMetadata = metadataArray[0];
+    // Process each data row
+    for (let i = 0; i < parseResult.data.length; i++) {
+      const rowData = parseResult.data[i];
+      // +2 because Papa Parse excludes header, and we want 1-based counting
+      const rowNumber = i + 2;
 
-      return new SubstanceMetadataUpdate(oldName, newMetadata);
-    });
+      try {
+        const oldName = self._getOrEmpty(rowData["key"]);
+        const rowMap = self._createRowMapFromCsvData(rowData, rowNumber, result);
+
+        if (rowMap) {
+          const metadataResult = self._parseRowToMetadata(rowMap, rowNumber, result);
+          if (metadataResult) {
+            result.addUpdate(new SubstanceMetadataUpdate(oldName, metadataResult));
+          }
+        }
+      } catch (systemError) {
+        result.addError(new SubstanceMetadataError(rowNumber, "system",
+          `Unexpected error processing row: ${systemError.message}`, "SYSTEM"));
+      }
+    }
+
+    return result;
   }
 
   /**
@@ -285,18 +549,97 @@ class MetaSerializer {
    */
   _parseBoolean(value) {
     const self = this;
-    
+
     if (!value || typeof value !== "string") {
       return false;
     }
 
     const trimmed = value.trim().toLowerCase();
-    
+
     if (BOOLEAN_VALUES.has(trimmed)) {
       return BOOLEAN_VALUES.get(trimmed);
     }
-    
-    throw new Error(`Invalid boolean value: ${value}. Expected one of: ${Array.from(BOOLEAN_VALUES.keys()).join(", ")}`);
+
+    const validValues = Array.from(BOOLEAN_VALUES.keys()).join(", ");
+    throw new Error(`Invalid boolean value: ${value}. Expected one of: ${validValues}`);
+  }
+
+  /**
+   * Parse a single row Map to SubstanceMetadata object with error handling.
+   *
+   * Validates and parses boolean fields, collects any parsing errors, and builds
+   * a SubstanceMetadata object using default values for invalid fields.
+   *
+   * @param {Map<string, string>} rowMap - Map containing row data
+   * @param {number} rowNumber - Row number for error reporting
+   * @param {SubstanceMetadataParseResult} result - Result object to collect errors
+   * @returns {SubstanceMetadata|null} Parsed metadata or null if critical errors
+   * @private
+   */
+  _parseRowToMetadata(rowMap, rowNumber, result) {
+    const self = this;
+    let hasErrors = false;
+
+    // Validate and parse boolean fields
+    const booleanFields = ["hasDomestic", "hasImport", "hasExport"];
+    const parsedBooleans = {};
+
+    for (const field of booleanFields) {
+      try {
+        parsedBooleans[field] = self._parseBoolean(rowMap.get(field));
+      } catch (error) {
+        result.addError(new SubstanceMetadataError(rowNumber, field, error.message, "USER"));
+        parsedBooleans[field] = false; // Default value
+        hasErrors = true;
+      }
+    }
+
+    // Build metadata object with error handling
+    const builder = new SubstanceMetadataBuilder();
+    builder.setSubstance(self._getOrEmpty(rowMap.get("substance")))
+      .setEquipment(self._getOrEmpty(rowMap.get("equipment")))
+      .setApplication(self._getOrEmpty(rowMap.get("application")))
+      .setGhg(self._getOrEmpty(rowMap.get("ghg")))
+      .setHasDomestic(parsedBooleans.hasDomestic)
+      .setHasImport(parsedBooleans.hasImport)
+      .setHasExport(parsedBooleans.hasExport)
+      .setEnergy(self._getOrEmpty(rowMap.get("energy")))
+      .setInitialChargeDomestic(self._getOrEmpty(rowMap.get("initialChargeDomestic")))
+      .setInitialChargeImport(self._getOrEmpty(rowMap.get("initialChargeImport")))
+      .setInitialChargeExport(self._getOrEmpty(rowMap.get("initialChargeExport")))
+      .setRetirement(self._getOrEmpty(rowMap.get("retirement")));
+
+    return builder.build();
+  }
+
+  /**
+   * Create a row Map from CSV data object for processing.
+   *
+   * Filters out the key column and creates a Map with metadata columns only.
+   * Reports any missing column data as user errors.
+   *
+   * @param {Object} rowData - Parsed CSV row data object
+   * @param {number} rowNumber - Row number for error reporting
+   * @param {SubstanceMetadataParseResult} result - Result object to collect errors
+   * @returns {Map<string, string>|null} Row Map or null if critical errors
+   * @private
+   */
+  _createRowMapFromCsvData(rowData, rowNumber, result) {
+    const self = this;
+    const rowMap = new Map();
+    const metadataColumns = META_COLUMNS.filter((col) => col !== "key");
+
+    for (const column of metadataColumns) {
+      if (column in rowData) {
+        rowMap.set(column, self._getOrEmpty(rowData[column]));
+      } else {
+        // Column missing - this would be caught earlier in header validation
+        result.addError(new SubstanceMetadataError(rowNumber, column,
+          "Missing column data", "USER"));
+      }
+    }
+
+    return rowMap;
   }
 }
 
@@ -392,7 +735,7 @@ class MetaChangeApplier {
     if (existingApp !== null) {
       return;
     }
-    
+
     // Create new application with empty substances array
     const newApplication = new Application(
       applicationName, // name
@@ -602,5 +945,7 @@ export {
   MetaSerializer,
   MetaChangeApplier,
   SubstanceMetadataUpdate,
+  SubstanceMetadataError,
+  SubstanceMetadataParseResult,
   parseUnitValue,
 };
