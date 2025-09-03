@@ -644,6 +644,420 @@ class MetaSerializer {
 }
 
 /**
+ * Result container for metadata validation operations.
+ *
+ * Tracks validation state and collects validation errors for reporting.
+ * Provides methods to check success state and combine multiple validation results.
+ */
+class ValidationResult {
+  /**
+   * Create a new ValidationResult.
+   *
+   * @param {boolean} isValid - Whether validation passed
+   * @param {string[]} errors - Array of validation error messages
+   */
+  constructor(isValid = true, errors = []) {
+    const self = this;
+    self._isValid = isValid;
+    self._errors = errors;
+  }
+
+  /**
+   * Check if validation was successful.
+   *
+   * @returns {boolean} True if validation passed
+   */
+  isValid() {
+    const self = this;
+    return self._isValid;
+  }
+
+  /**
+   * Get all validation error messages.
+   *
+   * @returns {string[]} Array of error messages
+   */
+  getErrors() {
+    const self = this;
+    return self._errors;
+  }
+
+  /**
+   * Check if validation failed.
+   *
+   * @returns {boolean} True if validation failed
+   */
+  hasErrors() {
+    const self = this;
+    return !self._isValid;
+  }
+
+  /**
+   * Create a successful validation result.
+   *
+   * @returns {ValidationResult} Success result
+   */
+  static success() {
+    return new ValidationResult(true, []);
+  }
+
+  /**
+   * Create a failed validation result.
+   *
+   * @param {string[]} errors - Array of error messages
+   * @returns {ValidationResult} Failure result
+   */
+  static failure(errors) {
+    return new ValidationResult(false, errors);
+  }
+
+  /**
+   * Add an error message to this result.
+   *
+   * @param {string} message - Error message to add
+   */
+  addError(message) {
+    const self = this;
+    self._errors.push(message);
+    self._isValid = false;
+  }
+
+  /**
+   * Combine this result with another validation result.
+   *
+   * @param {ValidationResult} other - Other result to combine
+   * @returns {ValidationResult} Combined result
+   */
+  combine(other) {
+    const self = this;
+    const combinedErrors = [...self._errors, ...other.getErrors()];
+    const combinedValid = self._isValid && other.isValid();
+    return new ValidationResult(combinedValid, combinedErrors);
+  }
+
+  /**
+   * Get formatted error summary.
+   *
+   * @returns {string} Formatted error messages joined by newlines
+   */
+  getErrorSummary() {
+    const self = this;
+    return self._errors.join("\n");
+  }
+}
+
+/**
+ * Validator for SubstanceMetadata objects.
+ *
+ * Provides comprehensive validation for required fields and optional field formats.
+ * Validates individual metadata objects and batches of metadata objects.
+ */
+class MetadataValidator {
+  /**
+   * Create a new MetadataValidator.
+   */
+  constructor() {
+    const self = this;
+
+    // Define required fields and their validation rules
+    self._requiredFields = new Map([
+      ["substance", self._validateSubstanceName.bind(self)],
+      ["application", self._validateApplicationName.bind(self)],
+    ]);
+
+    // Define optional field validators
+    self._optionalFieldValidators = new Map([
+      ["ghg", self._validateGhgValue.bind(self)],
+      ["energy", self._validateEnergyValue.bind(self)],
+      ["retirement", self._validateRetirementValue.bind(self)],
+      ["initialChargeDomestic", self._validateChargeValue.bind(self)],
+      ["initialChargeImport", self._validateChargeValue.bind(self)],
+      ["initialChargeExport", self._validateChargeValue.bind(self)],
+    ]);
+  }
+
+  /**
+   * Validate a single SubstanceMetadata object.
+   *
+   * @param {SubstanceMetadata} metadata - Metadata object to validate
+   * @param {number} index - Index of this metadata in a batch (for error reporting)
+   * @returns {ValidationResult} Validation result
+   */
+  validateSingle(metadata, index = 0) {
+    const self = this;
+    const result = new ValidationResult();
+
+    // Validate required fields
+    for (const [fieldName, validator] of self._requiredFields) {
+      const fieldValue = self._getFieldValue(metadata, fieldName);
+      const fieldResult = validator(fieldValue, fieldName, index);
+      if (!fieldResult.isValid()) {
+        result.addError(`Row ${index + 1}: ${fieldResult.getErrorSummary()}`);
+      }
+    }
+
+    // Validate optional fields if they have values
+    for (const [fieldName, validator] of self._optionalFieldValidators) {
+      const fieldValue = self._getFieldValue(metadata, fieldName);
+      if (fieldValue && fieldValue.trim()) {
+        const fieldResult = validator(fieldValue, fieldName, index);
+        if (!fieldResult.isValid()) {
+          result.addError(`Row ${index + 1}: ${fieldResult.getErrorSummary()}`);
+        }
+      }
+    }
+
+    return result;
+  }
+
+  /**
+   * Validate a batch of SubstanceMetadata objects.
+   *
+   * @param {SubstanceMetadata[]} metadataArray - Array of metadata objects to validate
+   * @returns {ValidationResult} Overall validation result
+   */
+  validateBatch(metadataArray) {
+    const self = this;
+    let overallResult = ValidationResult.success();
+
+    // Validate each metadata object individually
+    for (let i = 0; i < metadataArray.length; i++) {
+      const singleResult = self.validateSingle(metadataArray[i], i);
+      overallResult = overallResult.combine(singleResult);
+    }
+
+    // Check for duplicate substance names within batch
+    const duplicateResult = self._validateNoDuplicateNames(metadataArray);
+    overallResult = overallResult.combine(duplicateResult);
+
+    return overallResult;
+  }
+
+  /**
+   * Get field value from metadata object using appropriate getter method.
+   *
+   * @param {SubstanceMetadata} metadata - Metadata object
+   * @param {string} fieldName - Name of field to get
+   * @returns {string} Field value or empty string
+   * @private
+   */
+  _getFieldValue(metadata, fieldName) {
+    const self = this;
+    const getterMap = {
+      "substance": () => metadata.getSubstance(),
+      "application": () => metadata.getApplication(),
+      "ghg": () => metadata.getGhg(),
+      "energy": () => metadata.getEnergy(),
+      "retirement": () => metadata.getRetirement(),
+      "initialChargeDomestic": () => metadata.getInitialChargeDomestic(),
+      "initialChargeImport": () => metadata.getInitialChargeImport(),
+      "initialChargeExport": () => metadata.getInitialChargeExport(),
+    };
+
+    const getter = getterMap[fieldName];
+    return getter ? getter() : "";
+  }
+
+  /**
+   * Validate substance name field.
+   *
+   * @param {string} value - Field value
+   * @param {string} fieldName - Field name
+   * @param {number} index - Row index
+   * @returns {ValidationResult} Validation result
+   * @private
+   */
+  _validateSubstanceName(value, fieldName, index) {
+    const self = this;
+
+    if (!value || !value.trim()) {
+      return ValidationResult.failure(["Substance name is required"]);
+    }
+
+    if (value.trim().length < 2) {
+      return ValidationResult.failure(["Substance name must be at least 2 characters long"]);
+    }
+
+    // Check for invalid characters based on QubecTalk grammar
+    if (value.includes("\"") || value.includes("\n") || value.includes("\r")) {
+      return ValidationResult.failure(["Substance name cannot contain quotes or newlines"]);
+    }
+
+    return ValidationResult.success();
+  }
+
+  /**
+   * Validate application name field.
+   *
+   * @param {string} value - Field value
+   * @param {string} fieldName - Field name
+   * @param {number} index - Row index
+   * @returns {ValidationResult} Validation result
+   * @private
+   */
+  _validateApplicationName(value, fieldName, index) {
+    const self = this;
+
+    if (!value || !value.trim()) {
+      return ValidationResult.failure(["Application name is required"]);
+    }
+
+    if (value.trim().length < 2) {
+      return ValidationResult.failure(["Application name must be at least 2 characters long"]);
+    }
+
+    return ValidationResult.success();
+  }
+
+  /**
+   * Validate GHG value format.
+   *
+   * @param {string} value - Field value
+   * @param {string} fieldName - Field name
+   * @param {number} index - Row index
+   * @returns {ValidationResult} Validation result
+   * @private
+   */
+  _validateGhgValue(value, fieldName, index) {
+    const self = this;
+
+    if (!parseUnitValue(value)) {
+      return ValidationResult.failure([
+        "GHG value must be in format \"number unit\" (e.g., \"1430 kgCO2e / kg\")",
+      ]);
+    }
+    return ValidationResult.success();
+  }
+
+  /**
+   * Validate energy value format.
+   *
+   * @param {string} value - Field value
+   * @param {string} fieldName - Field name
+   * @param {number} index - Row index
+   * @returns {ValidationResult} Validation result
+   * @private
+   */
+  _validateEnergyValue(value, fieldName, index) {
+    const self = this;
+
+    if (!parseUnitValue(value)) {
+      return ValidationResult.failure([
+        "Energy value must be in format \"number unit\" (e.g., \"500 kwh / unit\")",
+      ]);
+    }
+    return ValidationResult.success();
+  }
+
+  /**
+   * Validate retirement value format.
+   *
+   * @param {string} value - Field value
+   * @param {string} fieldName - Field name
+   * @param {number} index - Row index
+   * @returns {ValidationResult} Validation result
+   * @private
+   */
+  _validateRetirementValue(value, fieldName, index) {
+    const self = this;
+
+    if (!parseUnitValue(value)) {
+      return ValidationResult.failure([
+        "Retirement value must be in format \"number unit\" (e.g., \"10% / year\")",
+      ]);
+    }
+    return ValidationResult.success();
+  }
+
+  /**
+   * Validate charge value format.
+   *
+   * @param {string} value - Field value
+   * @param {string} fieldName - Field name
+   * @param {number} index - Row index
+   * @returns {ValidationResult} Validation result
+   * @private
+   */
+  _validateChargeValue(value, fieldName, index) {
+    const self = this;
+
+    if (!parseUnitValue(value)) {
+      return ValidationResult.failure([
+        "Charge value must be in format \"number unit\" (e.g., \"0.15 kg / unit\")",
+      ]);
+    }
+    return ValidationResult.success();
+  }
+
+  /**
+   * Validate no duplicate names in metadata batch.
+   *
+   * @param {SubstanceMetadata[]} metadataArray - Array of metadata objects
+   * @returns {ValidationResult} Validation result
+   * @private
+   */
+  _validateNoDuplicateNames(metadataArray) {
+    const self = this;
+    const names = new Map(); // name -> first occurrence index
+    const errors = [];
+
+    for (let i = 0; i < metadataArray.length; i++) {
+      const metadata = metadataArray[i];
+      const name = metadata.getName(); // This combines substance and equipment
+
+      if (names.has(name)) {
+        const firstIndex = names.get(name);
+        errors.push(`Duplicate substance "${name}" found at rows ${firstIndex + 1} and ${i + 1}`);
+      } else {
+        names.set(name, i);
+      }
+    }
+
+    return errors.length > 0 ? ValidationResult.failure(errors) : ValidationResult.success();
+  }
+}
+
+/**
+ * Custom error class for validation failures.
+ *
+ * Extends the standard Error class with validation-specific functionality.
+ * Always indicates user-correctable errors rather than system errors.
+ */
+class ValidationError extends Error {
+  /**
+   * Create a new ValidationError.
+   *
+   * @param {string} message - Error message
+   * @param {string[]} validationErrors - Array of detailed validation error messages
+   */
+  constructor(message, validationErrors = []) {
+    super(message);
+    const self = this;
+    self.name = "ValidationError";
+    self._validationErrors = validationErrors;
+  }
+
+  /**
+   * Get detailed validation error messages.
+   *
+   * @returns {string[]} Array of validation error messages
+   */
+  getValidationErrors() {
+    const self = this;
+    return self._validationErrors;
+  }
+
+  /**
+   * Check if this is a user-correctable error.
+   *
+   * @returns {boolean} Always true for validation errors
+   */
+  isUserError() {
+    return true; // Validation errors are always user-fixable
+  }
+}
+
+/**
  * Applier for inserting substances from metadata into a Program.
  *
  * This class handles the insertion of new substances into a Program based on
@@ -660,6 +1074,7 @@ class MetaChangeApplier {
   constructor(program) {
     const self = this;
     self._program = program;
+    self._validator = new MetadataValidator(); // Add validator
   }
 
   /**
@@ -670,18 +1085,48 @@ class MetaChangeApplier {
    * creates new ones based on the oldName field. If oldName matches an existing
    * substance, it will be updated; otherwise a new substance is created.
    *
+   * All metadata is validated before any changes are applied to prevent partial updates.
+   *
    * @param {SubstanceMetadataUpdate[]} updateArray - Array of metadata update objects
    * @returns {Program} The modified program instance (for chaining)
+   * @throws {ValidationError} If validation fails for any metadata
+   * @throws {Error} If input is invalid
    */
   upsertMetadata(updateArray) {
     const self = this;
 
-    // Process each update object
+    // Input validation
+    if (!Array.isArray(updateArray)) {
+      throw new Error("Input must be an array of SubstanceMetadataUpdate objects");
+    }
+
+    if (updateArray.length === 0) {
+      return self._program; // No work to do
+    }
+
+    // Extract metadata for validation
+    const metadataArray = updateArray.map((update) => {
+      if (!(update instanceof SubstanceMetadataUpdate)) {
+        throw new Error("All items must be SubstanceMetadataUpdate instances");
+      }
+      return update.getNewMetadata();
+    });
+
+    // Pre-validate all metadata before making any changes
+    const validationResult = self._validator.validateBatch(metadataArray);
+
+    if (!validationResult.isValid()) {
+      const errorMessage =
+        "Validation failed for metadata updates:\n" + validationResult.getErrorSummary();
+      throw new ValidationError(errorMessage, validationResult.getErrors());
+    }
+
+    // All validation passed - proceed with updates
     for (const update of updateArray) {
       const oldName = update.getOldName();
       const newMetadata = update.getNewMetadata();
 
-      // Skip if required fields are empty
+      // Skip empty metadata (this is now redundant due to validation)
       if (!newMetadata.getSubstance().trim() || !newMetadata.getApplication().trim()) {
         continue;
       }
@@ -947,5 +1392,8 @@ export {
   SubstanceMetadataUpdate,
   SubstanceMetadataError,
   SubstanceMetadataParseResult,
+  ValidationResult,
+  MetadataValidator,
+  ValidationError,
   parseUnitValue,
 };
