@@ -7,7 +7,15 @@
  * @license BSD, see LICENSE.md
  */
 
-import {SubstanceMetadata, SubstanceMetadataBuilder, Program, Application, Substance, SubstanceBuilder, Command} from "ui_translator";
+import {
+  SubstanceMetadata,
+  SubstanceMetadataBuilder,
+  Program,
+  Application,
+  Substance,
+  SubstanceBuilder,
+  Command,
+} from "ui_translator";
 import {EngineNumber} from "engine_number";
 
 /**
@@ -197,17 +205,17 @@ class MetaSerializer {
 
         // Extract values from Map with defaults
         builder.setSubstance(rowMap.get("substance") || "")
-               .setEquipment(rowMap.get("equipment") || "")
-               .setApplication(rowMap.get("application") || "")
-               .setGhg(rowMap.get("ghg") || "")
-               .setHasDomestic(self._parseBoolean(rowMap.get("hasDomestic")))
-               .setHasImport(self._parseBoolean(rowMap.get("hasImport")))
-               .setHasExport(self._parseBoolean(rowMap.get("hasExport")))
-               .setEnergy(rowMap.get("energy") || "")
-               .setInitialChargeDomestic(rowMap.get("initialChargeDomestic") || "")
-               .setInitialChargeImport(rowMap.get("initialChargeImport") || "")
-               .setInitialChargeExport(rowMap.get("initialChargeExport") || "")
-               .setRetirement(rowMap.get("retirement") || "");
+          .setEquipment(rowMap.get("equipment") || "")
+          .setApplication(rowMap.get("application") || "")
+          .setGhg(rowMap.get("ghg") || "")
+          .setHasDomestic(self._parseBoolean(rowMap.get("hasDomestic")))
+          .setHasImport(self._parseBoolean(rowMap.get("hasImport")))
+          .setHasExport(self._parseBoolean(rowMap.get("hasExport")))
+          .setEnergy(rowMap.get("energy") || "")
+          .setInitialChargeDomestic(rowMap.get("initialChargeDomestic") || "")
+          .setInitialChargeImport(rowMap.get("initialChargeImport") || "")
+          .setInitialChargeExport(rowMap.get("initialChargeExport") || "")
+          .setRetirement(rowMap.get("retirement") || "");
 
         return builder.build();
       } catch (error) {
@@ -240,24 +248,27 @@ class MetaSerializer {
 
     // Check if Papa Parse is available
     if (typeof Papa === "undefined") {
-      throw new Error("Papa Parse library is not available. Please ensure papaparse.min.js is loaded.");
+      throw new Error(
+        "Papa Parse library is not available. " +
+        "Please ensure papaparse.min.js is loaded.",
+      );
     }
 
     try {
       // Parse CSV using Papa Parse
       const parseResult = Papa.parse(csvString, {
-        header: true,           // Use first row as column names
-        dynamicTyping: false,   // Keep values as strings for manual conversion
-        skipEmptyLines: true,   // Ignore blank lines
-        delimiter: ",",         // Standard CSV delimiter
-        quoteChar: "\"",        // Standard CSV quote character
-        escapeChar: "\""        // RFC 4180 quote escaping
+        header: true, // Use first row as column names
+        dynamicTyping: false, // Keep values as strings for manual conversion
+        skipEmptyLines: true, // Ignore blank lines
+        delimiter: ",", // Standard CSV delimiter
+        quoteChar: "\"", // Standard CSV quote character
+        escapeChar: "\"", // RFC 4180 quote escaping
       });
 
       // Check for parsing errors
       if (parseResult.errors && parseResult.errors.length > 0) {
-        const errorMessages = parseResult.errors.map(error => 
-          `Row ${error.row}: ${error.message}`
+        const errorMessages = parseResult.errors.map((error) =>
+          `Row ${error.row}: ${error.message}`,
         ).join("; ");
         throw new Error(`CSV parsing failed: ${errorMessages}`);
       }
@@ -279,19 +290,19 @@ class MetaSerializer {
       }
 
       // Convert parsed data to SubstanceMetadataUpdate objects
-      return parseResult.data.map(rowData => {
+      return parseResult.data.map((rowData) => {
         // Extract key column for oldName (used for updates)
         const oldName = rowData["key"] || "";
-        
+
         // Create Map for SubstanceMetadata creation
         const rowMap = new Map();
-        
+
         // Set all expected columns (excluding key since that's used for oldName)
         const expectedColumns = [
           "substance", "equipment", "application", "ghg",
           "hasDomestic", "hasImport", "hasExport", "energy",
           "initialChargeDomestic", "initialChargeImport", "initialChargeExport",
-          "retirement"
+          "retirement",
         ];
 
         for (const column of expectedColumns) {
@@ -301,13 +312,13 @@ class MetaSerializer {
         // Convert Map to SubstanceMetadata using existing deserialize method
         const metadataArray = self.deserialize([rowMap]);
         const newMetadata = metadataArray[0];
-        
+
         // Create and return SubstanceMetadataUpdate with oldName and newMetadata
         return new SubstanceMetadataUpdate(oldName, newMetadata);
       });
-
     } catch (error) {
-      if (error.message.includes("CSV parsing failed") || error.message.includes("Failed to deserialize")) {
+      if (error.message.includes("CSV parsing failed") ||
+          error.message.includes("Failed to deserialize")) {
         throw error; // Re-throw our custom errors
       }
       throw new Error(`CSV deserialization failed: ${error.message}`);
@@ -339,7 +350,7 @@ class MetaSerializer {
  *
  * This class handles the insertion of new substances into a Program based on
  * SubstanceMetadata objects. It ensures applications exist, creates substances
- * with metadata-derived commands, and handles the integration with existing 
+ * with metadata-derived commands, and handles the integration with existing
  * program structure. Name conflicts are ignored for now (Component 6 scope).
  */
 class MetaChangeApplier {
@@ -350,11 +361,11 @@ class MetaChangeApplier {
    */
   constructor(program) {
     const self = this;
-    
+
     if (!program || typeof program.getApplications !== "function") {
       throw new Error("MetaChangeApplier requires a valid Program instance");
     }
-    
+
     self._program = program;
   }
 
@@ -371,63 +382,67 @@ class MetaChangeApplier {
    */
   upsertMetadata(updateArray) {
     const self = this;
-    
+
     // Validate input
     if (!updateArray || !Array.isArray(updateArray)) {
       throw new Error("upsertMetadata requires an array of SubstanceMetadataUpdate objects");
     }
-    
+
     // Process each update object
     for (const update of updateArray) {
-      if (!update || typeof update.getOldName !== "function" || typeof update.getNewMetadata !== "function") {
+      if (!update || typeof update.getOldName !== "function" ||
+          typeof update.getNewMetadata !== "function") {
         throw new Error("Array must contain valid SubstanceMetadataUpdate instances");
       }
-      
+
       try {
         const oldName = update.getOldName();
         const newMetadata = update.getNewMetadata();
-        
+
         // Skip if required fields are empty
         if (!newMetadata.getSubstance().trim() || !newMetadata.getApplication().trim()) {
           continue;
         }
-        
+
         // Ensure application exists
         self._ensureApplicationExists(newMetadata.getApplication());
         const app = self._program.getApplication(newMetadata.getApplication());
-        
+
         if (oldName && oldName.trim()) {
           // UPDATE CASE: Find and update existing substance
-          const existingSubstance = app.getSubstances().find(s => s.getName() === oldName.trim());
+          const existingSubstance = app.getSubstances().find((s) => s.getName() === oldName.trim());
           if (existingSubstance) {
             existingSubstance.updateMetadata(newMetadata, newMetadata.getApplication());
             continue;
           } else {
-            console.warn(`No existing substance found for key "${oldName}". Creating new substance instead.`);
+            console.warn(
+              `No existing substance found for key "${oldName}". ` +
+              "Creating new substance instead.",
+            );
             // Fall through to INSERT CASE
           }
         }
-        
+
         // INSERT CASE: Create new substance
         // Check for naming conflicts with new substance name
         const newName = newMetadata.getName();
-        const conflictingSubstance = app.getSubstances().find(s => s.getName() === newName);
+        const conflictingSubstance = app.getSubstances().find((s) => s.getName() === newName);
         if (conflictingSubstance) {
           console.warn(`Substance "${newName}" already exists. Skipping insertion.`);
           continue;
         }
-        
+
         // Create and insert new substance (existing logic)
         const substance = self._createSubstanceFromMetadata(newMetadata);
         self._addSubstanceToApplication(substance, newMetadata.getApplication());
-        
       } catch (error) {
         // Log warning but continue processing other substances
-        const substanceName = update.getNewMetadata() ? update.getNewMetadata().getSubstance() : "unknown";
+        const substanceName = update.getNewMetadata() ?
+          update.getNewMetadata().getSubstance() : "unknown";
         console.warn(`Failed to process substance ${substanceName}: ${error.message}`);
       }
     }
-    
+
     return self._program;
   }
 
@@ -439,17 +454,17 @@ class MetaChangeApplier {
    */
   _ensureApplicationExists(applicationName) {
     const self = this;
-    
+
     const existingApp = self._program.getApplication(applicationName);
     if (existingApp === null) {
       // Create new application with empty substances array
       const newApplication = new Application(
-        applicationName,   // name
-        [],              // substances (empty)
-        false,           // isModification
-        true             // isCompatible
+        applicationName, // name
+        [], // substances (empty)
+        false, // isModification
+        true, // isCompatible
       );
-      
+
       self._program.addApplication(newApplication);
     }
   }
@@ -466,56 +481,57 @@ class MetaChangeApplier {
    */
   _createSubstanceFromMetadata(metadata) {
     const self = this;
-    
+
     const substanceName = metadata.getName();
     const builder = new SubstanceBuilder(substanceName, false); // Not a modification
-    
+
     // Helper function to parse unit values from metadata strings
     const parseUnitValue = (valueString) => {
       if (!valueString || typeof valueString !== "string" || !valueString.trim()) {
         return null;
       }
-      
+
       // Find the first space after the numeric value to separate value from units
       const trimmed = valueString.trim();
       // Match number (with optional commas, decimals, and %) followed by units
       const match = trimmed.match(/^([+-]?[\d,]+(?:\.\d+)?%?)\s+(.+)$/);
-      
+
       if (!match) {
         return null; // Need both value and units in the format "number units"
       }
-      
-      const valueString_clean = match[1];
+
+      const valueStringClean = match[1];
       const unitsString = match[2];
-      
+
       // Remove commas and percentage signs from value, then parse the numeric value
-      const cleanedValue = valueString_clean.replace(/[,%]/g, "");
+      const cleanedValue = valueStringClean.replace(/[,%]/g, "");
       const numericValue = parseFloat(cleanedValue);
-      
+
       if (isNaN(numericValue)) {
         return null;
       }
-      
+
       // If the original value had a %, include it in the units
-      const finalUnits = valueString_clean.includes('%') ? '% ' + unitsString : unitsString;
-      
+      const finalUnits = valueStringClean.includes("%") ?
+        "% " + unitsString : unitsString;
+
       return new EngineNumber(numericValue, finalUnits);
     };
-    
+
     // Add GHG equals command if present
     const ghgValue = parseUnitValue(metadata.getGhg());
     if (ghgValue) {
       // For GHG commands, we need to ensure the routing works correctly by using specific target
       builder.setEqualsGhg(new Command("equals", null, ghgValue, null));
     }
-    
-    // Add energy equals command if present  
+
+    // Add energy equals command if present
     const energyValue = parseUnitValue(metadata.getEnergy());
     if (energyValue) {
       // For energy commands, we need to ensure the routing works correctly by using specific target
       builder.setEqualsKwh(new Command("equals", null, energyValue, null));
     }
-    
+
     // Add enable commands based on stream flags
     if (metadata.getHasDomestic()) {
       builder.addCommand(new Command("enable", "domestic", null, null));
@@ -526,29 +542,29 @@ class MetaChangeApplier {
     if (metadata.getHasExport()) {
       builder.addCommand(new Command("enable", "export", null, null));
     }
-    
+
     // Add initial charge commands for each stream (skip zero values)
     const domesticCharge = parseUnitValue(metadata.getInitialChargeDomestic());
     if (domesticCharge && domesticCharge.getValue() > 0) {
       builder.addCommand(new Command("initial charge", "domestic", domesticCharge, null));
     }
-    
+
     const importCharge = parseUnitValue(metadata.getInitialChargeImport());
     if (importCharge && importCharge.getValue() > 0) {
       builder.addCommand(new Command("initial charge", "import", importCharge, null));
     }
-    
+
     const exportCharge = parseUnitValue(metadata.getInitialChargeExport());
     if (exportCharge && exportCharge.getValue() > 0) {
       builder.addCommand(new Command("initial charge", "export", exportCharge, null));
     }
-    
+
     // Add retirement command if present
     const retirementValue = parseUnitValue(metadata.getRetirement());
     if (retirementValue) {
       builder.addCommand(new Command("retire", null, retirementValue, null));
     }
-    
+
     // Build the substance (compatible with UI editing)
     return builder.build(true);
   }
@@ -562,12 +578,12 @@ class MetaChangeApplier {
    */
   _addSubstanceToApplication(substance, applicationName) {
     const self = this;
-    
+
     const application = self._program.getApplication(applicationName);
     if (application === null) {
       throw new Error(`Application ${applicationName} not found`);
     }
-    
+
     // Use insertSubstance method (null means no prior substance to replace)
     application.insertSubstance(null, substance);
   }
@@ -575,7 +591,7 @@ class MetaChangeApplier {
 
 /**
  * Container for substance metadata updates with old and new information.
- * 
+ *
  * Used to distinguish between inserting new substances and updating existing ones.
  * The oldName corresponds to the key column in CSV files and identifies which
  * existing substance should be updated.
@@ -589,12 +605,12 @@ class SubstanceMetadataUpdate {
    */
   constructor(oldName, newMetadata) {
     const self = this;
-    
+
     // Validate inputs
     if (newMetadata && !(newMetadata instanceof SubstanceMetadata)) {
       throw new Error("newMetadata must be a SubstanceMetadata instance");
     }
-    
+
     self._oldName = oldName || "";
     self._newMetadata = newMetadata;
   }
