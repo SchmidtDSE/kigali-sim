@@ -19,6 +19,44 @@ import {
 import {EngineNumber} from "engine_number";
 
 /**
+ * Standard CSV column order for substance metadata export/import.
+ * Used consistently across serialization and deserialization operations.
+ */
+const META_COLUMNS = [
+  "substance",
+  "equipment",
+  "application",
+  "ghg",
+  "hasDomestic",
+  "hasImport",
+  "hasExport",
+  "energy",
+  "initialChargeDomestic",
+  "initialChargeImport",
+  "initialChargeExport",
+  "retirement",
+  "key",
+];
+
+/**
+ * Boolean value mapping for CSV parsing.
+ * Maps various string representations to boolean values.
+ * Throws exception if value not found in either true or false sets.
+ */
+const BOOLEAN_VALUES = new Map([
+  ["t", true],
+  ["1", true], 
+  ["y", true],
+  ["true", true],
+  ["yes", true],
+  ["f", false],
+  ["0", false],
+  ["n", false],
+  ["false", false],
+  ["no", false],
+]);
+
+/**
  * Serializer for converting SubstanceMetadata objects to CSV format.
  *
  * This class handles the conversion of SubstanceMetadata arrays to CSV-compatible
@@ -26,11 +64,17 @@ import {EngineNumber} from "engine_number";
  * specification defined in the import_export_meta task.
  */
 class MetaSerializer {
+
   /**
-   * Create a new MetaSerializer instance.
+   * Helper function to get value or return empty string.
+   * 
+   * @param {*} value - The value to check
+   * @returns {string} The value or empty string if falsy
+   * @private
    */
-  constructor() {
-    // No initialization needed
+  _getOrEmpty(value) {
+    const self = this;
+    return value || "";
   }
 
   /**
@@ -47,33 +91,24 @@ class MetaSerializer {
   serialize(metadataArray) {
     const self = this;
 
-    // Validate input
-    if (!metadataArray || !Array.isArray(metadataArray)) {
-      throw new Error("Input must be an array of SubstanceMetadata objects");
-    }
-
     // Convert each metadata object to a Map
     return metadataArray.map((metadata) => {
-      if (!metadata || typeof metadata.getSubstance !== "function") {
-        throw new Error("Array must contain valid SubstanceMetadata instances");
-      }
-
       const rowMap = new Map();
 
       // Set columns in the exact order specified in task
-      rowMap.set("substance", metadata.getSubstance() || "");
-      rowMap.set("equipment", metadata.getEquipment() || "");
-      rowMap.set("application", metadata.getApplication() || "");
-      rowMap.set("ghg", metadata.getGhg() || "");
+      rowMap.set("substance", self._getOrEmpty(metadata.getSubstance()));
+      rowMap.set("equipment", self._getOrEmpty(metadata.getEquipment()));
+      rowMap.set("application", self._getOrEmpty(metadata.getApplication()));
+      rowMap.set("ghg", self._getOrEmpty(metadata.getGhg()));
       rowMap.set("hasDomestic", metadata.getHasDomestic().toString());
       rowMap.set("hasImport", metadata.getHasImport().toString());
       rowMap.set("hasExport", metadata.getHasExport().toString());
-      rowMap.set("energy", metadata.getEnergy() || "");
-      rowMap.set("initialChargeDomestic", metadata.getInitialChargeDomestic() || "");
-      rowMap.set("initialChargeImport", metadata.getInitialChargeImport() || "");
-      rowMap.set("initialChargeExport", metadata.getInitialChargeExport() || "");
-      rowMap.set("retirement", metadata.getRetirement() || "");
-      rowMap.set("key", metadata.getKey() || "");
+      rowMap.set("energy", self._getOrEmpty(metadata.getEnergy()));
+      rowMap.set("initialChargeDomestic", self._getOrEmpty(metadata.getInitialChargeDomestic()));
+      rowMap.set("initialChargeImport", self._getOrEmpty(metadata.getInitialChargeImport()));
+      rowMap.set("initialChargeExport", self._getOrEmpty(metadata.getInitialChargeExport()));
+      rowMap.set("retirement", self._getOrEmpty(metadata.getRetirement()));
+      rowMap.set("key", self._getOrEmpty(metadata.getKey()));
 
       return rowMap;
     });
@@ -92,13 +127,8 @@ class MetaSerializer {
   renderMetaToCsvUri(metadataArray) {
     const self = this;
 
-    // Get serialized data
     const serializedMaps = self.serialize(metadataArray);
-
-    // Generate CSV content
     const csvContent = self._generateCsvString(serializedMaps);
-
-    // Create and return data URI
     return "data:text/csv;charset=utf-8," + encodeURIComponent(csvContent);
   }
 
@@ -115,36 +145,17 @@ class MetaSerializer {
   _generateCsvString(serializedMaps) {
     const self = this;
 
-    // Define column order as specified in task
-    const columns = [
-      "substance",
-      "equipment",
-      "application",
-      "ghg",
-      "hasDomestic",
-      "hasImport",
-      "hasExport",
-      "energy",
-      "initialChargeDomestic",
-      "initialChargeImport",
-      "initialChargeExport",
-      "retirement",
-      "key",
+    // Generate all rows using flatMap and unshift for header
+    const csvRows = [
+      META_COLUMNS.join(","),
+      ...serializedMaps.flatMap((rowMap) => {
+        const rowValues = META_COLUMNS.map((column) => {
+          const value = rowMap.get(column) || "";
+          return self._escapeCsvValue(value);
+        });
+        return rowValues.join(",");
+      }),
     ];
-
-    const csvRows = [];
-
-    // Add header row
-    csvRows.push(columns.join(","));
-
-    // Add data rows
-    for (const rowMap of serializedMaps) {
-      const rowValues = columns.map((column) => {
-        const value = rowMap.get(column) || "";
-        return self._escapeCsvValue(value);
-      });
-      csvRows.push(rowValues.join(","));
-    }
 
     return csvRows.join("\n");
   }
@@ -152,25 +163,26 @@ class MetaSerializer {
   /**
    * Escape a CSV value according to RFC 4180 specification.
    *
-   * Values containing commas, quotes, or newlines are wrapped in quotes.
-   * Internal quotes are escaped by doubling them.
+   * Based on ANTLR grammar analysis, strings are defined as '"' ~["',]* '"' which means
+   * they cannot contain quotes or commas, so most escaping is unnecessary for our use case.
+   * However, we maintain basic comma escaping for compatibility.
    *
    * @param {string} value - The value to escape
    * @returns {string} Escaped CSV value
    * @private
    */
   _escapeCsvValue(value) {
+    const self = this;
+    
     if (!value) {
       return "";
     }
 
     const stringValue = String(value);
 
-    // Check if escaping is needed
-    if (stringValue.includes("\"") || stringValue.includes(",") ||
-        stringValue.includes("\n") || stringValue.includes("\r")) {
-      // Escape internal quotes by doubling them and wrap in quotes
-      return "\"" + stringValue.replace(/"/g, "\"\"") + "\"";
+    // Based on grammar limitations, only escape commas as they're the main CSV delimiter issue
+    if (stringValue.includes(",")) {
+      return "\"" + stringValue + "\"";
     }
 
     return stringValue;
@@ -189,38 +201,25 @@ class MetaSerializer {
   deserialize(arrayOfMaps) {
     const self = this;
 
-    // Validate input
-    if (!arrayOfMaps || !Array.isArray(arrayOfMaps)) {
-      throw new Error("Input must be an array of Map objects");
-    }
-
     // Convert each Map to a SubstanceMetadata object
-    return arrayOfMaps.map((rowMap, index) => {
-      if (!rowMap || typeof rowMap.get !== "function") {
-        throw new Error(`Row ${index} must be a Map instance`);
-      }
+    return arrayOfMaps.map((rowMap) => {
+      const builder = new SubstanceMetadataBuilder();
 
-      try {
-        const builder = new SubstanceMetadataBuilder();
+      // Extract values from Map with defaults using _getOrEmpty
+      builder.setSubstance(self._getOrEmpty(rowMap.get("substance")))
+        .setEquipment(self._getOrEmpty(rowMap.get("equipment")))
+        .setApplication(self._getOrEmpty(rowMap.get("application")))
+        .setGhg(self._getOrEmpty(rowMap.get("ghg")))
+        .setHasDomestic(self._parseBoolean(rowMap.get("hasDomestic")))
+        .setHasImport(self._parseBoolean(rowMap.get("hasImport")))
+        .setHasExport(self._parseBoolean(rowMap.get("hasExport")))
+        .setEnergy(self._getOrEmpty(rowMap.get("energy")))
+        .setInitialChargeDomestic(self._getOrEmpty(rowMap.get("initialChargeDomestic")))
+        .setInitialChargeImport(self._getOrEmpty(rowMap.get("initialChargeImport")))
+        .setInitialChargeExport(self._getOrEmpty(rowMap.get("initialChargeExport")))
+        .setRetirement(self._getOrEmpty(rowMap.get("retirement")));
 
-        // Extract values from Map with defaults
-        builder.setSubstance(rowMap.get("substance") || "")
-          .setEquipment(rowMap.get("equipment") || "")
-          .setApplication(rowMap.get("application") || "")
-          .setGhg(rowMap.get("ghg") || "")
-          .setHasDomestic(self._parseBoolean(rowMap.get("hasDomestic")))
-          .setHasImport(self._parseBoolean(rowMap.get("hasImport")))
-          .setHasExport(self._parseBoolean(rowMap.get("hasExport")))
-          .setEnergy(rowMap.get("energy") || "")
-          .setInitialChargeDomestic(rowMap.get("initialChargeDomestic") || "")
-          .setInitialChargeImport(rowMap.get("initialChargeImport") || "")
-          .setInitialChargeExport(rowMap.get("initialChargeExport") || "")
-          .setRetirement(rowMap.get("retirement") || "");
-
-        return builder.build();
-      } catch (error) {
-        throw new Error(`Failed to deserialize row ${index}: ${error.message}`);
-      }
+      return builder.build();
     });
   }
 
@@ -237,111 +236,67 @@ class MetaSerializer {
   deserializeMetaFromCsvString(csvString) {
     const self = this;
 
-    // Validate input
-    if (typeof csvString !== "string") {
-      throw new Error("Input must be a CSV string");
-    }
-
     if (!csvString.trim()) {
-      return []; // Empty CSV returns empty array
+      return [];
     }
 
-    // Check if Papa Parse is available
-    if (typeof Papa === "undefined") {
-      throw new Error(
-        "Papa Parse library is not available. " +
-        "Please ensure papaparse.min.js is loaded.",
-      );
+    // Parse CSV using Papa Parse with minimal config
+    const parseResult = Papa.parse(csvString, {
+      header: true,
+      dynamicTyping: false,
+      skipEmptyLines: true,
+    });
+
+    // Check for parsing errors
+    if (parseResult.errors && parseResult.errors.length > 0) {
+      const errorMessages = parseResult.errors.map((error) =>
+        `Row ${error.row}: ${error.message}`,
+      ).join("; ");
+      throw new Error(`CSV parsing failed: ${errorMessages}`);
     }
 
-    try {
-      // Parse CSV using Papa Parse
-      const parseResult = Papa.parse(csvString, {
-        header: true, // Use first row as column names
-        dynamicTyping: false, // Keep values as strings for manual conversion
-        skipEmptyLines: true, // Ignore blank lines
-        delimiter: ",", // Standard CSV delimiter
-        quoteChar: "\"", // Standard CSV quote character
-        escapeChar: "\"", // RFC 4180 quote escaping
-      });
+    // Convert parsed data to SubstanceMetadataUpdate objects
+    return parseResult.data.map((rowData) => {
+      const oldName = self._getOrEmpty(rowData["key"]);
 
-      // Check for parsing errors
-      if (parseResult.errors && parseResult.errors.length > 0) {
-        const errorMessages = parseResult.errors.map((error) =>
-          `Row ${error.row}: ${error.message}`,
-        ).join("; ");
-        throw new Error(`CSV parsing failed: ${errorMessages}`);
+      // Create Map for SubstanceMetadata creation using META_COLUMNS
+      const rowMap = new Map();
+      const metadataColumns = META_COLUMNS.filter(col => col !== "key");
+
+      for (const column of metadataColumns) {
+        rowMap.set(column, self._getOrEmpty(rowData[column]));
       }
 
-      // Validate that we have data
-      if (!parseResult.data || !Array.isArray(parseResult.data)) {
-        throw new Error("CSV parsing returned invalid data structure");
-      }
+      const metadataArray = self.deserialize([rowMap]);
+      const newMetadata = metadataArray[0];
 
-      // Validate required columns are present
-      if (parseResult.data.length > 0) {
-        const firstRow = parseResult.data[0];
-        const requiredColumns = ["substance", "application"];
-        for (const column of requiredColumns) {
-          if (!(column in firstRow)) {
-            throw new Error(`Missing required column: ${column}`);
-          }
-        }
-      }
-
-      // Convert parsed data to SubstanceMetadataUpdate objects
-      return parseResult.data.map((rowData) => {
-        // Extract key column for oldName (used for updates)
-        const oldName = rowData["key"] || "";
-
-        // Create Map for SubstanceMetadata creation
-        const rowMap = new Map();
-
-        // Set all expected columns (excluding key since that's used for oldName)
-        const expectedColumns = [
-          "substance", "equipment", "application", "ghg",
-          "hasDomestic", "hasImport", "hasExport", "energy",
-          "initialChargeDomestic", "initialChargeImport", "initialChargeExport",
-          "retirement",
-        ];
-
-        for (const column of expectedColumns) {
-          rowMap.set(column, rowData[column] || "");
-        }
-
-        // Convert Map to SubstanceMetadata using existing deserialize method
-        const metadataArray = self.deserialize([rowMap]);
-        const newMetadata = metadataArray[0];
-
-        // Create and return SubstanceMetadataUpdate with oldName and newMetadata
-        return new SubstanceMetadataUpdate(oldName, newMetadata);
-      });
-    } catch (error) {
-      if (error.message.includes("CSV parsing failed") ||
-          error.message.includes("Failed to deserialize")) {
-        throw error; // Re-throw our custom errors
-      }
-      throw new Error(`CSV deserialization failed: ${error.message}`);
-    }
+      return new SubstanceMetadataUpdate(oldName, newMetadata);
+    });
   }
 
   /**
-   * Parse a string value to boolean.
+   * Parse a string value to boolean using BOOLEAN_VALUES map.
    *
-   * Handles case-insensitive "true"/"false" strings and provides
-   * sensible defaults for invalid or empty values.
+   * Handles various string representations and throws exception for invalid values.
    *
    * @param {string} value - String value to parse as boolean
    * @returns {boolean} Parsed boolean value
    * @private
    */
   _parseBoolean(value) {
+    const self = this;
+    
     if (!value || typeof value !== "string") {
       return false;
     }
 
     const trimmed = value.trim().toLowerCase();
-    return trimmed === "true" || trimmed === "1";
+    
+    if (BOOLEAN_VALUES.has(trimmed)) {
+      return BOOLEAN_VALUES.get(trimmed);
+    }
+    
+    throw new Error(`Invalid boolean value: ${value}. Expected one of: ${Array.from(BOOLEAN_VALUES.keys()).join(", ")}`);
   }
 }
 
@@ -361,11 +316,6 @@ class MetaChangeApplier {
    */
   constructor(program) {
     const self = this;
-
-    if (!program || typeof program.getApplications !== "function") {
-      throw new Error("MetaChangeApplier requires a valid Program instance");
-    }
-
     self._program = program;
   }
 
@@ -383,64 +333,47 @@ class MetaChangeApplier {
   upsertMetadata(updateArray) {
     const self = this;
 
-    // Validate input
-    if (!updateArray || !Array.isArray(updateArray)) {
-      throw new Error("upsertMetadata requires an array of SubstanceMetadataUpdate objects");
-    }
-
     // Process each update object
     for (const update of updateArray) {
-      if (!update || typeof update.getOldName !== "function" ||
-          typeof update.getNewMetadata !== "function") {
-        throw new Error("Array must contain valid SubstanceMetadataUpdate instances");
+      const oldName = update.getOldName();
+      const newMetadata = update.getNewMetadata();
+
+      // Skip if required fields are empty
+      if (!newMetadata.getSubstance().trim() || !newMetadata.getApplication().trim()) {
+        continue;
       }
 
-      try {
-        const oldName = update.getOldName();
-        const newMetadata = update.getNewMetadata();
+      // Ensure application exists
+      self._ensureApplicationExists(newMetadata.getApplication());
+      const app = self._program.getApplication(newMetadata.getApplication());
 
-        // Skip if required fields are empty
-        if (!newMetadata.getSubstance().trim() || !newMetadata.getApplication().trim()) {
+      if (oldName && oldName.trim()) {
+        // UPDATE CASE: Find and update existing substance
+        const existingSubstance = app.getSubstances().find((s) => s.getName() === oldName.trim());
+        if (existingSubstance) {
+          existingSubstance.updateMetadata(newMetadata, newMetadata.getApplication());
           continue;
+        } else {
+          console.warn(
+            `No existing substance found for key "${oldName}". ` +
+            "Creating new substance instead.",
+          );
+          // Fall through to INSERT CASE
         }
-
-        // Ensure application exists
-        self._ensureApplicationExists(newMetadata.getApplication());
-        const app = self._program.getApplication(newMetadata.getApplication());
-
-        if (oldName && oldName.trim()) {
-          // UPDATE CASE: Find and update existing substance
-          const existingSubstance = app.getSubstances().find((s) => s.getName() === oldName.trim());
-          if (existingSubstance) {
-            existingSubstance.updateMetadata(newMetadata, newMetadata.getApplication());
-            continue;
-          } else {
-            console.warn(
-              `No existing substance found for key "${oldName}". ` +
-              "Creating new substance instead.",
-            );
-            // Fall through to INSERT CASE
-          }
-        }
-
-        // INSERT CASE: Create new substance
-        // Check for naming conflicts with new substance name
-        const newName = newMetadata.getName();
-        const conflictingSubstance = app.getSubstances().find((s) => s.getName() === newName);
-        if (conflictingSubstance) {
-          console.warn(`Substance "${newName}" already exists. Skipping insertion.`);
-          continue;
-        }
-
-        // Create and insert new substance (existing logic)
-        const substance = self._createSubstanceFromMetadata(newMetadata);
-        self._addSubstanceToApplication(substance, newMetadata.getApplication());
-      } catch (error) {
-        // Log warning but continue processing other substances
-        const substanceName = update.getNewMetadata() ?
-          update.getNewMetadata().getSubstance() : "unknown";
-        console.warn(`Failed to process substance ${substanceName}: ${error.message}`);
       }
+
+      // INSERT CASE: Create new substance
+      // Check for naming conflicts with new substance name
+      const newName = newMetadata.getName();
+      const conflictingSubstance = app.getSubstances().find((s) => s.getName() === newName);
+      if (conflictingSubstance) {
+        console.warn(`Substance "${newName}" already exists. Skipping insertion.`);
+        continue;
+      }
+
+      // Create and insert new substance (existing logic)
+      const substance = self._createSubstanceFromMetadata(newMetadata);
+      self._addSubstanceToApplication(substance, newMetadata.getApplication());
     }
 
     return self._program;
@@ -456,17 +389,19 @@ class MetaChangeApplier {
     const self = this;
 
     const existingApp = self._program.getApplication(applicationName);
-    if (existingApp === null) {
-      // Create new application with empty substances array
-      const newApplication = new Application(
-        applicationName, // name
-        [], // substances (empty)
-        false, // isModification
-        true, // isCompatible
-      );
-
-      self._program.addApplication(newApplication);
+    if (existingApp !== null) {
+      return;
     }
+    
+    // Create new application with empty substances array
+    const newApplication = new Application(
+      applicationName, // name
+      [], // substances (empty)
+      false, // isModification
+      true, // isCompatible
+    );
+
+    self._program.addApplication(newApplication);
   }
 
   /**
@@ -574,12 +509,6 @@ class SubstanceMetadataUpdate {
    */
   constructor(oldName, newMetadata) {
     const self = this;
-
-    // Validate inputs
-    if (newMetadata && !(newMetadata instanceof SubstanceMetadata)) {
-      throw new Error("newMetadata must be a SubstanceMetadata instance");
-    }
-
     self._oldName = oldName || "";
     self._newMetadata = newMetadata;
   }
@@ -590,7 +519,8 @@ class SubstanceMetadataUpdate {
    * @returns {string} The old name from CSV key column
    */
   getOldName() {
-    return this._oldName;
+    const self = this;
+    return self._oldName;
   }
 
   /**
@@ -599,7 +529,8 @@ class SubstanceMetadataUpdate {
    * @returns {SubstanceMetadata} The new metadata object
    */
   getNewMetadata() {
-    return this._newMetadata;
+    const self = this;
+    return self._newMetadata;
   }
 }
 
