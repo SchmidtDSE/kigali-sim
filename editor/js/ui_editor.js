@@ -2146,23 +2146,33 @@ class SubstanceTablePresenter {
       self._dialog.close();
     });
 
-    // Upload button - triggers hidden file input
+    // Upload button - shows upload pane
     const uploadButton = self._dialog.querySelector(".upload-button");
     uploadButton.addEventListener("click", (event) => {
       event.preventDefault();
-      const fileInput = document.getElementById("substances-upload-file");
-      fileInput.click();
+      self._showUploadPane();
     });
 
-    // File input change handler - processes uploaded CSV
-    const fileInput = document.getElementById("substances-upload-file");
-    fileInput.addEventListener("change", (event) => {
-      const file = event.target.files[0];
+    // Upload confirm button - processes uploaded CSV and closes dialog
+    const uploadConfirmButton = self._dialog.querySelector(".upload-confirm-button");
+    uploadConfirmButton.addEventListener("click", (event) => {
+      event.preventDefault();
+      const fileInput = document.getElementById("substances-upload-file");
+      const file = fileInput.files[0];
       if (file) {
         self._processUploadedFile(file);
         // Clear input for next upload
-        event.target.value = "";
+        fileInput.value = "";
+        self._dialog.close();
       }
+      self._hideUploadPane();
+    });
+
+    // Upload cancel button - hides upload pane
+    const uploadCancelButton = self._dialog.querySelector(".upload-cancel-button");
+    uploadCancelButton.addEventListener("click", (event) => {
+      event.preventDefault();
+      self._hideUploadPane();
     });
   }
 
@@ -2320,6 +2330,34 @@ class SubstanceTablePresenter {
    */
   _showSuccess(message) {
     alert(`Upload Success: ${message}`);
+  }
+
+  /**
+   * Shows the upload pane and hides the dialog buttons.
+   * 
+   * @private
+   */
+  _showUploadPane() {
+    const self = this;
+    const uploadPane = self._dialog.querySelector(".upload-pane");
+    const dialogButtons = self._dialog.querySelector(".dialog-buttons");
+    
+    uploadPane.style.display = "block";
+    dialogButtons.style.display = "none";
+  }
+
+  /**
+   * Hides the upload pane and shows the dialog buttons.
+   * 
+   * @private
+   */
+  _hideUploadPane() {
+    const self = this;
+    const uploadPane = self._dialog.querySelector(".upload-pane");
+    const dialogButtons = self._dialog.querySelector(".dialog-buttons");
+    
+    uploadPane.style.display = "none";
+    dialogButtons.style.display = "block";
   }
 }
 

@@ -936,18 +936,17 @@
                 <dialog id="substances-table-dialog" class="dialog">
                   <h2>Substances Table</h2>
                   <div class="instructions">
-                    Download and upload spreadsheet software-compatible CSV files that contain tables 
-                    describing all substances in your applications. This can be used to bulk import 
-                    substance information into simulations or summarize substances tracked inside a 
-                    simulation into a standard table. We recommend that you download the current file, 
-                    modify it, and re-upload to make changes. The key column is used to indicate which 
-                    existing substance to modify but can be left blank if it is a new substance.
+                    Download spreadsheet software-compatible files that contain tables describing all substances and applications in your simulation. Alternatively, bulk import spreadsheets with substance information. We recommend that you download the current file, modify it, and re-upload to make changes. Please use the widely-supported CSV file format. Note: the key column is used to indicate which existing substance to modify with updated information but can be left blank if it is a new substance.
                   </div>
                   <div class="contents">
-                    <p>Active substances: <span class="substance-count">0</span></p>
+                    <p>Substances: <span class="substance-count">0</span></p>
                   </div>
-                  <input type="file" id="substances-upload-file" style="display: none;" 
-                         accept=".csv,text/csv" title="Upload CSV file with substance metadata" />
+                  <div class="upload-pane">
+                    <input type="file" id="substances-upload-file" 
+                           accept=".csv,text/csv" title="Upload CSV file with substance metadata" />
+                    <a href="#" class="upload-confirm-button primary">Confirm Upload</a>
+                    <a href="#" class="upload-cancel-button destructive">Cancel</a>
+                  </div>
                   <div class="dialog-buttons bold-buttons">
                     <a href="#" class="download-button primary">Download Current</a>
                     <a href="#" class="upload-button primary">Upload New</a>
