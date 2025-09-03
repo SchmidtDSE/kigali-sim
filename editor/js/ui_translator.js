@@ -9,6 +9,7 @@
 
 import {EngineNumber} from "engine_number";
 import {YearMatcher} from "year_matcher";
+import {parseUnitValue} from "meta_serialization";
 
 /**
  * Command compatibility mapping to compatibility modes:
@@ -1345,23 +1346,8 @@ class Substance {
    */
   rename(newName) {
     const self = this;
-    // Use updateMetadata for consistency
-    const currentMeta = self.getMeta("");
-    const newMeta = new SubstanceMetadata(
-      newName.indexOf(" - ") > 0 ? newName.substring(0, newName.indexOf(" - ")) : newName,
-      newName.indexOf(" - ") > 0 ? newName.substring(newName.indexOf(" - ") + 3) : "",
-      currentMeta.getApplication(),
-      currentMeta.getGhg(),
-      currentMeta.getHasDomestic(),
-      currentMeta.getHasImport(),
-      currentMeta.getHasExport(),
-      currentMeta.getEnergy(),
-      currentMeta.getInitialChargeDomestic(),
-      currentMeta.getInitialChargeImport(),
-      currentMeta.getInitialChargeExport(),
-      currentMeta.getRetirement()
-    );
-    self.updateMetadata(newMeta, currentMeta.getApplication());
+    // Simply update the name directly for rename operation
+    self._name = newName;
   }
 
   /**
@@ -1372,60 +1358,34 @@ class Substance {
    */
   updateMetadata(newMetadata, applicationName) {
     const self = this;
-    
+
     // Validate input
     if (!newMetadata || !(newMetadata instanceof SubstanceMetadata)) {
       throw new Error("newMetadata must be a SubstanceMetadata instance");
     }
-    
-    // Helper function to parse unit value strings like "5 kgCO2e / kg" into EngineNumber
-    const parseUnitValue = (unitValueString) => {
-      if (!unitValueString || unitValueString.trim() === "") {
-        return null;
-      }
-      
-      const trimmed = unitValueString.trim();
-      
-      // Find the first space to separate value from units
-      const firstSpaceIndex = trimmed.indexOf(" ");
-      if (firstSpaceIndex === -1) {
-        throw new Error(`Invalid unit value format: ${unitValueString}`);
-      }
-      
-      const valueString = trimmed.substring(0, firstSpaceIndex);
-      const unitsString = trimmed.substring(firstSpaceIndex + 1);
-      
-      // Parse numeric value (removing commas and handling signs)
-      const cleanedValue = valueString.replace(/,/g, "");
-      const numericValue = parseFloat(cleanedValue);
-      
-      if (isNaN(numericValue)) {
-        throw new Error(`Invalid numeric value: ${valueString}`);
-      }
-      
-      return new EngineNumber(numericValue, unitsString);
-    };
+
+    // Use imported parseUnitValue function from meta_serialization module
 
     // Update name
     const fullName = newMetadata.getName();
     self._name = fullName;
-    
+
     // Update GHG equals command
-    const ghgValue = parseUnitValue(newMetadata.getGhg());
+    const ghgValue = parseUnitValue(newMetadata.getGhg(), true);
     if (ghgValue) {
       self._equalsGhg = new Command("equals", null, ghgValue, null);
     } else {
       self._equalsGhg = null;
     }
-    
+
     // Update energy equals command
-    const energyValue = parseUnitValue(newMetadata.getEnergy());
+    const energyValue = parseUnitValue(newMetadata.getEnergy(), true);
     if (energyValue) {
       self._equalsKwh = new Command("equals", null, energyValue, null);
     } else {
       self._equalsKwh = null;
     }
-    
+
     // Update enabled streams
     self._enables = [];
     if (newMetadata.getHasDomestic()) {
@@ -1437,27 +1397,27 @@ class Substance {
     if (newMetadata.getHasExport()) {
       self._enables.push(new Command("enable", "export", null, null));
     }
-    
+
     // Update initial charges
     self._initialCharges = [];
-    
-    const domesticCharge = parseUnitValue(newMetadata.getInitialChargeDomestic());
+
+    const domesticCharge = parseUnitValue(newMetadata.getInitialChargeDomestic(), true);
     if (domesticCharge) {
       self._initialCharges.push(new Command("initial charge", "domestic", domesticCharge, null));
     }
-    
-    const importCharge = parseUnitValue(newMetadata.getInitialChargeImport());
+
+    const importCharge = parseUnitValue(newMetadata.getInitialChargeImport(), true);
     if (importCharge) {
       self._initialCharges.push(new Command("initial charge", "import", importCharge, null));
     }
-    
-    const exportCharge = parseUnitValue(newMetadata.getInitialChargeExport());
+
+    const exportCharge = parseUnitValue(newMetadata.getInitialChargeExport(), true);
     if (exportCharge) {
       self._initialCharges.push(new Command("initial charge", "export", exportCharge, null));
     }
-    
+
     // Update retirement command
-    const retirementValue = parseUnitValue(newMetadata.getRetirement());
+    const retirementValue = parseUnitValue(newMetadata.getRetirement(), true);
     if (retirementValue) {
       self._retire = new Command("retire", null, retirementValue, null);
     } else {
@@ -1620,6 +1580,11 @@ class Substance {
   getMeta(applicationName) {
     const self = this;
 
+    // Assert that applicationName is provided and non-empty
+    if (!applicationName || applicationName.trim() === "") {
+      throw new Error("applicationName must be provided and non-empty");
+    }
+
     // Extract substance name and equipment type
     const fullName = self._name;
     let substance = fullName;
@@ -1653,9 +1618,13 @@ class Substance {
 
     self._enables.forEach((enable) => {
       const target = enable.getTarget();
-      if (target === "domestic") hasDomestic = true;
-      else if (target === "import") hasImport = true;
-      else if (target === "export") hasExport = true;
+      if (target === "domestic") {
+        hasDomestic = true;
+      } else if (target === "import") {
+        hasImport = true;
+      } else if (target === "export") {
+        hasExport = true;
+      }
     });
 
     // Extract initial charges
@@ -1668,9 +1637,13 @@ class Substance {
       const chargeValue = charge.getValue();
       const chargeString = chargeValue.getValue() + " " + chargeValue.getUnits();
 
-      if (target === "domestic") initialChargeDomestic = chargeString;
-      else if (target === "import") initialChargeImport = chargeString;
-      else if (target === "export") initialChargeExport = chargeString;
+      if (target === "domestic") {
+        initialChargeDomestic = chargeString;
+      } else if (target === "import") {
+        initialChargeImport = chargeString;
+      } else if (target === "export") {
+        initialChargeExport = chargeString;
+      }
     });
 
     // Extract retirement rate
@@ -1683,7 +1656,7 @@ class Substance {
     return new SubstanceMetadata(
       substance,
       equipment,
-      applicationName || "",
+      applicationName,
       ghg,
       hasDomestic,
       hasImport,
@@ -2317,18 +2290,18 @@ class SubstanceMetadataBuilder {
    */
   constructor() {
     const self = this;
-    self._substance = "";
-    self._equipment = "";
-    self._application = "";
-    self._ghg = "";
+    self._substance = null;
+    self._equipment = null;
+    self._application = null;
+    self._ghg = null;
     self._hasDomestic = false;
     self._hasImport = false;
     self._hasExport = false;
-    self._energy = "";
-    self._initialChargeDomestic = "";
-    self._initialChargeImport = "";
-    self._initialChargeExport = "";
-    self._retirement = "";
+    self._energy = null;
+    self._initialChargeDomestic = null;
+    self._initialChargeImport = null;
+    self._initialChargeExport = null;
+    self._retirement = null;
   }
 
   /**
@@ -2339,7 +2312,7 @@ class SubstanceMetadataBuilder {
    */
   setSubstance(substance) {
     const self = this;
-    self._substance = substance || "";
+    self._substance = substance;
     return self;
   }
 
@@ -2351,7 +2324,7 @@ class SubstanceMetadataBuilder {
    */
   setEquipment(equipment) {
     const self = this;
-    self._equipment = equipment || "";
+    self._equipment = equipment;
     return self;
   }
 
@@ -2363,7 +2336,7 @@ class SubstanceMetadataBuilder {
    */
   setApplication(application) {
     const self = this;
-    self._application = application || "";
+    self._application = application;
     return self;
   }
 
@@ -2375,7 +2348,7 @@ class SubstanceMetadataBuilder {
    */
   setGhg(ghg) {
     const self = this;
-    self._ghg = ghg || "";
+    self._ghg = ghg;
     return self;
   }
 
@@ -2423,7 +2396,7 @@ class SubstanceMetadataBuilder {
    */
   setEnergy(energy) {
     const self = this;
-    self._energy = energy || "";
+    self._energy = energy;
     return self;
   }
 
@@ -2435,7 +2408,7 @@ class SubstanceMetadataBuilder {
    */
   setInitialChargeDomestic(initialChargeDomestic) {
     const self = this;
-    self._initialChargeDomestic = initialChargeDomestic || "";
+    self._initialChargeDomestic = initialChargeDomestic;
     return self;
   }
 
@@ -2447,7 +2420,7 @@ class SubstanceMetadataBuilder {
    */
   setInitialChargeImport(initialChargeImport) {
     const self = this;
-    self._initialChargeImport = initialChargeImport || "";
+    self._initialChargeImport = initialChargeImport;
     return self;
   }
 
@@ -2459,7 +2432,7 @@ class SubstanceMetadataBuilder {
    */
   setInitialChargeExport(initialChargeExport) {
     const self = this;
-    self._initialChargeExport = initialChargeExport || "";
+    self._initialChargeExport = initialChargeExport;
     return self;
   }
 
@@ -2471,7 +2444,7 @@ class SubstanceMetadataBuilder {
    */
   setRetirement(retirement) {
     const self = this;
-    self._retirement = retirement || "";
+    self._retirement = retirement;
     return self;
   }
 
@@ -2479,22 +2452,33 @@ class SubstanceMetadataBuilder {
    * Build a SubstanceMetadata instance from current builder state.
    *
    * @returns {SubstanceMetadata} The constructed metadata instance.
+   * @throws {Error} If required fields are null or empty.
    */
   build() {
     const self = this;
+
+    // Validate required fields are non-null
+    if (self._substance === null || self._substance === undefined) {
+      throw new Error("Substance name is required");
+    }
+    if (self._application === null || self._application === undefined) {
+      throw new Error("Application name is required");
+    }
+
+    // Convert null values to empty strings for optional fields to maintain compatibility
     return new SubstanceMetadata(
       self._substance,
-      self._equipment,
+      self._equipment || "",
       self._application,
-      self._ghg,
+      self._ghg || "",
       self._hasDomestic,
       self._hasImport,
       self._hasExport,
-      self._energy,
-      self._initialChargeDomestic,
-      self._initialChargeImport,
-      self._initialChargeExport,
-      self._retirement,
+      self._energy || "",
+      self._initialChargeDomestic || "",
+      self._initialChargeImport || "",
+      self._initialChargeExport || "",
+      self._retirement || "",
     );
   }
 }

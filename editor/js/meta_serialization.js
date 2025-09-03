@@ -485,38 +485,7 @@ class MetaChangeApplier {
     const substanceName = metadata.getName();
     const builder = new SubstanceBuilder(substanceName, false); // Not a modification
 
-    // Helper function to parse unit values from metadata strings
-    const parseUnitValue = (valueString) => {
-      if (!valueString || typeof valueString !== "string" || !valueString.trim()) {
-        return null;
-      }
-
-      // Find the first space after the numeric value to separate value from units
-      const trimmed = valueString.trim();
-      // Match number (with optional commas, decimals, and %) followed by units
-      const match = trimmed.match(/^([+-]?[\d,]+(?:\.\d+)?%?)\s+(.+)$/);
-
-      if (!match) {
-        return null; // Need both value and units in the format "number units"
-      }
-
-      const valueStringClean = match[1];
-      const unitsString = match[2];
-
-      // Remove commas and percentage signs from value, then parse the numeric value
-      const cleanedValue = valueStringClean.replace(/[,%]/g, "");
-      const numericValue = parseFloat(cleanedValue);
-
-      if (isNaN(numericValue)) {
-        return null;
-      }
-
-      // If the original value had a %, include it in the units
-      const finalUnits = valueStringClean.includes("%") ?
-        "% " + unitsString : unitsString;
-
-      return new EngineNumber(numericValue, finalUnits);
-    };
+    // Use the exported parseUnitValue function for consistent parsing
 
     // Add GHG equals command if present
     const ghgValue = parseUnitValue(metadata.getGhg());
@@ -634,8 +603,73 @@ class SubstanceMetadataUpdate {
   }
 }
 
+/**
+ * Parse unit value strings like "5 kgCO2e / kg" into EngineNumber instances.
+ * Handles numeric values with optional commas, decimals, and percentage signs.
+ *
+ * @param {string} valueString - String containing numeric value and units
+   *   (e.g., "1430 kgCO2e / kg", "10% / year")
+ * @param {boolean} throwOnError - Whether to throw errors for invalid formats (default: false)
+ * @returns {EngineNumber|null} Parsed EngineNumber instance, or null if invalid/empty
+ */
+function parseUnitValue(valueString, throwOnError = false) {
+  if (!valueString || typeof valueString !== "string" || !valueString.trim()) {
+    return null;
+  }
+
+  const trimmed = valueString.trim();
+
+  // For backward compatibility with original ui_translator behavior
+  if (throwOnError) {
+    // Find the first space to separate value from units
+    const firstSpaceIndex = trimmed.indexOf(" ");
+    if (firstSpaceIndex === -1) {
+      throw new Error(`Invalid unit value format: ${valueString}`);
+    }
+
+    const valueStringLocal = trimmed.substring(0, firstSpaceIndex);
+    const unitsString = trimmed.substring(firstSpaceIndex + 1);
+
+    // Parse numeric value (removing commas and handling signs)
+    const cleanedValue = valueStringLocal.replace(/,/g, "");
+    const numericValue = parseFloat(cleanedValue);
+
+    if (isNaN(numericValue)) {
+      throw new Error(`Invalid numeric value: ${valueStringLocal}`);
+    }
+
+    return new EngineNumber(numericValue, unitsString);
+  }
+
+  // Enhanced regex-based parsing for better handling of percentages and complex formats
+  // Match number (with optional commas, decimals, and %) followed by units
+  const match = trimmed.match(/^([+-]?[\d,]+(?:\.\d+)?%?)\s+(.+)$/);
+
+  if (!match) {
+    return null; // Need both value and units in the format "number units"
+  }
+
+  const valueStringClean = match[1];
+  const unitsString = match[2];
+
+  // Remove commas and percentage signs from value, then parse the numeric value
+  const cleanedValue = valueStringClean.replace(/[,%]/g, "");
+  const numericValue = parseFloat(cleanedValue);
+
+  if (isNaN(numericValue)) {
+    return null;
+  }
+
+  // If the original value had a %, include it in the units
+  const finalUnits = valueStringClean.includes("%") ?
+    "% " + unitsString : unitsString;
+
+  return new EngineNumber(numericValue, finalUnits);
+}
+
 export {
   MetaSerializer,
   MetaChangeApplier,
   SubstanceMetadataUpdate,
+  parseUnitValue,
 };

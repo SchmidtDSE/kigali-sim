@@ -124,13 +124,15 @@ function buildSubstanceMetadataTests() {
   });
 
   QUnit.module("SubstanceMetadataBuilder", function () {
-    QUnit.test("creates with default values", function (assert) {
+    QUnit.test("creates with required values", function (assert) {
       const builder = new SubstanceMetadataBuilder();
+      builder.setSubstance("TestSubstance");
+      builder.setApplication("TestApp");
       const metadata = builder.build();
 
-      assert.equal(metadata.getSubstance(), "", "substance should default to empty");
+      assert.equal(metadata.getSubstance(), "TestSubstance", "substance should match");
       assert.equal(metadata.getEquipment(), "", "equipment should default to empty");
-      assert.equal(metadata.getApplication(), "", "application should default to empty");
+      assert.equal(metadata.getApplication(), "TestApp", "application should match");
       assert.equal(metadata.getGhg(), "", "GHG should default to empty");
       assert.equal(metadata.getHasDomestic(), false, "domestic should default to false");
       assert.equal(metadata.getHasImport(), false, "import should default to false");
@@ -187,11 +189,20 @@ function buildSubstanceMetadataTests() {
       assert.equal(metadata.getRetirement(), "10% / year");
     });
 
-    QUnit.test("handles null and undefined values gracefully", function (assert) {
+    QUnit.test("validates required fields and handles optional nulls", function (assert) {
+      // Test that required fields validation works
+      try {
+        new SubstanceMetadataBuilder().build();
+        assert.ok(false, "Should have thrown error for missing required fields");
+      } catch (e) {
+        assert.ok(e.message.includes("Substance name is required"), "Should throw substance error");
+      }
+
+      // Test with valid required fields but null optional fields
       const metadata = new SubstanceMetadataBuilder()
-        .setSubstance(null)
+        .setSubstance("TestSub")
         .setEquipment(undefined)
-        .setApplication("")
+        .setApplication("TestApp")
         .setGhg(null)
         .setHasDomestic(null)
         .setHasImport(undefined)
@@ -203,9 +214,9 @@ function buildSubstanceMetadataTests() {
         .setRetirement(undefined)
         .build();
 
-      assert.equal(metadata.getSubstance(), "", "null substance should become empty string");
+      assert.equal(metadata.getSubstance(), "TestSub", "substance should be preserved");
       assert.equal(metadata.getEquipment(), "", "undefined equipment should become empty string");
-      assert.equal(metadata.getApplication(), "", "empty application should remain empty string");
+      assert.equal(metadata.getApplication(), "TestApp", "application should be preserved");
       assert.equal(metadata.getGhg(), "", "null GHG should become empty string");
       assert.equal(metadata.getHasDomestic(), false, "null domestic should become false");
       assert.equal(metadata.getHasImport(), false, "undefined import should become false");
@@ -252,7 +263,8 @@ function buildSubstanceMetadataTests() {
 
     QUnit.test("builder modifications affect subsequent builds", function (assert) {
       const builder = new SubstanceMetadataBuilder()
-        .setSubstance("HFC-134a");
+        .setSubstance("HFC-134a")
+        .setApplication("TestApp");
 
       const metadata1 = builder.build();
 
