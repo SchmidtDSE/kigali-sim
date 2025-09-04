@@ -1188,43 +1188,96 @@ class MetaChangeApplier {
 
     // All validation passed - proceed with updates
     for (const update of updateArray) {
-      const oldName = update.getOldName();
-      const newMetadata = update.getNewMetadata();
-
-      // Ensure application exists
-      self._ensureApplicationExists(newMetadata.getApplication());
-      const app = self._program.getApplication(newMetadata.getApplication());
-
-      if (oldName && oldName.trim()) {
-        // UPDATE CASE: Find and update existing substance
-        const existingSubstance = app.getSubstances().find((s) => s.getName() === oldName.trim());
-        if (existingSubstance) {
-          existingSubstance.updateMetadata(newMetadata, newMetadata.getApplication());
-          continue;
-        } else {
-          console.warn(
-            `No existing substance found for key "${oldName}". ` +
-            "Creating new substance instead.",
-          );
-          // Fall through to INSERT CASE
-        }
-      }
-
-      // INSERT CASE: Create new substance
-      // Check for naming conflicts with new substance name
-      const newName = newMetadata.getName();
-      const conflictingSubstance = app.getSubstances().find((s) => s.getName() === newName);
-      if (conflictingSubstance) {
-        console.warn(`Substance "${newName}" already exists. Skipping insertion.`);
-        continue;
-      }
-
-      // Create and insert new substance (existing logic)
-      const substance = self._createSubstanceFromMetadata(newMetadata);
-      self._addSubstanceToApplication(substance, newMetadata.getApplication());
+      self._upsertMetadataSingle(update);
     }
 
     return self._program;
+  }
+
+  /**
+   * Process a single metadata update (insert or update).
+   *
+   * @param {SubstanceMetadataUpdate} update - Single update to process
+   * @private
+   */
+  _upsertMetadataSingle(update) {
+    const self = this;
+    const oldName = update.getOldName();
+    const newMetadata = update.getNewMetadata();
+
+    // Ensure application exists
+    self._ensureApplicationExists(newMetadata.getApplication());
+
+    const oldNameGiven = oldName && oldName.trim();
+    const existingSubstance = oldNameGiven &&
+      self._getSubstanceExists(oldName, newMetadata.getApplication());
+
+    if (existingSubstance) {
+      self._updateMetadataSingle(newMetadata, existingSubstance);
+    } else {
+      // If oldName was given but no substance found, warn the user
+      if (oldNameGiven) {
+        console.warn(
+          `No existing substance found for key "${oldName}". ` +
+          "Creating new substance instead.",
+        );
+      }
+      self._insertMetadataSingle(newMetadata);
+    }
+  }
+
+  /**
+   * Update an existing substance with new metadata.
+   *
+   * @param {SubstanceMetadata} metadata - New metadata to apply
+   * @param {Substance} existingSubstance - Existing substance to update
+   * @private
+   */
+  _updateMetadataSingle(metadata, existingSubstance) {
+    const self = this;
+    // Call existing updateMetadata method on substance
+    existingSubstance.updateMetadata(metadata, metadata.getApplication());
+  }
+
+  /**
+   * Insert a new substance from metadata.
+   *
+   * @param {SubstanceMetadata} metadata - Metadata for new substance
+   * @private
+   */
+  _insertMetadataSingle(metadata) {
+    const self = this;
+    // Check for naming conflicts
+    const newName = metadata.getName();
+    const application = self._program.getApplication(metadata.getApplication());
+    const conflictingSubstance = application.getSubstances()
+      .find((s) => s.getName() === newName);
+
+    if (conflictingSubstance) {
+      console.warn(`Substance "${newName}" already exists. Skipping insertion.`);
+      return;
+    }
+
+    // Create and insert new substance
+    const substance = self._createSubstanceFromMetadata(metadata);
+    self._addSubstanceToApplication(substance, metadata.getApplication());
+  }
+
+  /**
+   * Check if a substance exists by name in an application.
+   *
+   * @param {string} substanceName - Name to search for
+   * @param {string} applicationName - Application to search in
+   * @returns {Substance|null} Found substance or null
+   * @private
+   */
+  _getSubstanceExists(substanceName, applicationName) {
+    const self = this;
+    const application = self._program.getApplication(applicationName);
+    if (!application) return null;
+
+    return application.getSubstances()
+      .find((s) => s.getName() === substanceName.trim()) || null;
   }
 
   /**
