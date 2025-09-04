@@ -1445,6 +1445,97 @@ High Energy,1430 kgCO2e / kg,true`;
         assert.ok(exportCharge !== null, "Should have export charge");
         assert.equal(exportCharge.getValue().getValue(), 0.35, "Export charge value should be 0.35");
       });
+
+      QUnit.test("provides detailed error messages for missing required fields", function (assert) {
+        const program = new Program([], [], [], true);
+        const applier = new MetaChangeApplier(program);
+
+        // Test empty substance name
+        const emptySubstance = new SubstanceMetadata("", "", "App1", "", true, false, false, "", "", "", "", "");
+        const update1 = new SubstanceMetadataUpdate("", emptySubstance);
+
+        try {
+          applier.upsertMetadata([update1]);
+          assert.ok(false, "Should have thrown ValidationError for empty substance name");
+        } catch (error) {
+          assert.ok(error instanceof ValidationError, "Should throw ValidationError");
+          assert.ok(error.getValidationErrors().length > 0, "Should have validation errors");
+          assert.ok(error.getValidationErrors()[0].includes("Substance name is required"), "Should have specific substance error message");
+          assert.ok(error.getValidationErrors()[0].includes("Row 1"), "Should include row number");
+        }
+
+        // Test empty application name
+        const emptyApplication = new SubstanceMetadata("HFC-134a", "", "", "", true, false, false, "", "", "", "", "");
+        const update2 = new SubstanceMetadataUpdate("", emptyApplication);
+
+        try {
+          applier.upsertMetadata([update2]);
+          assert.ok(false, "Should have thrown ValidationError for empty application name");
+        } catch (error) {
+          assert.ok(error instanceof ValidationError, "Should throw ValidationError");
+          assert.ok(error.getValidationErrors()[0].includes("Application name is required"), "Should have specific application error message");
+          assert.ok(error.getValidationErrors()[0].includes("Row 1"), "Should include row number");
+        }
+      });
+
+      QUnit.test("provides detailed error messages for multiple validation failures", function (assert) {
+        const program = new Program([], [], [], true);
+        const applier = new MetaChangeApplier(program);
+
+        // Create batch with multiple validation failures
+        const emptySubstance = new SubstanceMetadata("", "", "App1", "", true, false, false, "", "", "", "", "");
+        const emptyApplication = new SubstanceMetadata("HFC-134a", "", "", "", true, false, false, "", "", "", "", "");
+        const shortSubstance = new SubstanceMetadata("A", "", "App3", "", true, false, false, "", "", "", "", "");
+        const shortApplication = new SubstanceMetadata("HFC-134a", "", "B", "", true, false, false, "", "", "", "", "");
+
+        const updates = [
+          new SubstanceMetadataUpdate("", emptySubstance),
+          new SubstanceMetadataUpdate("", emptyApplication), 
+          new SubstanceMetadataUpdate("", shortSubstance),
+          new SubstanceMetadataUpdate("", shortApplication)
+        ];
+
+        try {
+          applier.upsertMetadata(updates);
+          assert.ok(false, "Should have thrown ValidationError for multiple failures");
+        } catch (error) {
+          assert.ok(error instanceof ValidationError, "Should throw ValidationError");
+          const errors = error.getValidationErrors();
+          assert.ok(errors.length >= 4, "Should have at least 4 validation errors");
+          
+          // Check that errors contain specific row information
+          assert.ok(errors.some(e => e.includes("Row 1") && e.includes("Substance name is required")), "Should have Row 1 substance error");
+          assert.ok(errors.some(e => e.includes("Row 2") && e.includes("Application name is required")), "Should have Row 2 application error");
+          assert.ok(errors.some(e => e.includes("Row 3") && e.includes("Substance name must be at least 2 characters")), "Should have Row 3 substance length error");
+          assert.ok(errors.some(e => e.includes("Row 4") && e.includes("Application name must be at least 2 characters")), "Should have Row 4 application length error");
+        }
+
+        // Verify no partial updates occurred
+        assert.equal(program.getApplications().length, 0, "No applications should be created due to validation failure");
+      });
+
+      QUnit.test("validates required fields before any processing", function (assert) {
+        const program = new Program([], [], [], true);
+        const applier = new MetaChangeApplier(program);
+
+        // Create batch with valid substance first, then invalid
+        const validMetadata = new SubstanceMetadata("Valid-Substance", "", "Valid-App", "", true, false, false, "", "", "", "", "");
+        const invalidMetadata = new SubstanceMetadata("", "", "Invalid-App", "", true, false, false, "", "", "", "", "");
+
+        const updates = [
+          new SubstanceMetadataUpdate("", validMetadata),
+          new SubstanceMetadataUpdate("", invalidMetadata)
+        ];
+
+        try {
+          applier.upsertMetadata(updates);
+          assert.ok(false, "Should have thrown ValidationError");
+        } catch (error) {
+          assert.ok(error instanceof ValidationError, "Should throw ValidationError");
+          // Most importantly - verify no partial updates occurred
+          assert.equal(program.getApplications().length, 0, "No applications should be created - validation should prevent all processing");
+        }
+      });
     });
   });
 

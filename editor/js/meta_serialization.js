@@ -1078,6 +1078,66 @@ class MetaChangeApplier {
   }
 
   /**
+   * Enhanced validation method with detailed field checking.
+   * Validates all updates comprehensively before any processing begins.
+   *
+   * @param {SubstanceMetadataUpdate[]} updateArray - Array of updates to validate
+   * @throws {ValidationError} If any validation fails with detailed field information
+   * @private
+   */
+  _validateUpdatesComprehensive(updateArray) {
+    const self = this;
+    const allErrors = [];
+
+    for (let i = 0; i < updateArray.length; i++) {
+      const update = updateArray[i];
+      const metadata = update.getNewMetadata();
+
+      // Get field-specific validation errors
+      const fieldErrors = self._validateRequiredFields(metadata, i);
+      allErrors.push(...fieldErrors);
+    }
+
+    if (allErrors.length > 0) {
+      const errorMessage = "Validation failed for metadata updates. " +
+        "Please correct the following issues:\n" + allErrors.join("\n");
+      throw new ValidationError(errorMessage, allErrors);
+    }
+  }
+
+  /**
+   * Check if a metadata object has all required fields populated.
+   *
+   * @param {SubstanceMetadata} metadata - Metadata to validate
+   * @param {number} index - Index in batch for error reporting
+   * @returns {string[]} Array of validation error messages (empty if valid)
+   * @private
+   */
+  _validateRequiredFields(metadata, index) {
+    const self = this;
+    const errors = [];
+    const rowNumber = index + 1;
+
+    // Check substance name
+    const substanceName = metadata.getSubstance();
+    if (!substanceName || !substanceName.trim()) {
+      errors.push(`Row ${rowNumber}: Substance name is required and cannot be empty`);
+    } else if (substanceName.trim().length < 2) {
+      errors.push(`Row ${rowNumber}: Substance name must be at least 2 characters long`);
+    }
+
+    // Check application name
+    const applicationName = metadata.getApplication();
+    if (!applicationName || !applicationName.trim()) {
+      errors.push(`Row ${rowNumber}: Application name is required and cannot be empty`);
+    } else if (applicationName.trim().length < 2) {
+      errors.push(`Row ${rowNumber}: Application name must be at least 2 characters long`);
+    }
+
+    return errors;
+  }
+
+  /**
    * Insert or update substances from metadata update array into the program.
    *
    * This method processes an array of SubstanceMetadataUpdate objects, ensures
@@ -1104,15 +1164,20 @@ class MetaChangeApplier {
       return self._program; // No work to do
     }
 
-    // Extract metadata for validation
-    const metadataArray = updateArray.map((update) => {
+    // Validate instance types
+    for (const update of updateArray) {
       if (!(update instanceof SubstanceMetadataUpdate)) {
         throw new Error("All items must be SubstanceMetadataUpdate instances");
       }
-      return update.getNewMetadata();
-    });
+    }
 
-    // Pre-validate all metadata before making any changes
+    // Enhanced comprehensive validation - checks required fields upfront
+    self._validateUpdatesComprehensive(updateArray);
+
+    // Extract metadata for additional validation
+    const metadataArray = updateArray.map((update) => update.getNewMetadata());
+
+    // Pre-validate all metadata before making any changes (optional field validation)
     const validationResult = self._validator.validateBatch(metadataArray);
 
     if (!validationResult.isValid()) {
@@ -1125,11 +1190,6 @@ class MetaChangeApplier {
     for (const update of updateArray) {
       const oldName = update.getOldName();
       const newMetadata = update.getNewMetadata();
-
-      // Skip empty metadata (this is now redundant due to validation)
-      if (!newMetadata.getSubstance().trim() || !newMetadata.getApplication().trim()) {
-        continue;
-      }
 
       // Ensure application exists
       self._ensureApplicationExists(newMetadata.getApplication());
