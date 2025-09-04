@@ -1321,17 +1321,17 @@ class MetaChangeApplier {
     const substanceName = metadata.getName();
     const builder = new SubstanceBuilder(substanceName, false); // Not a modification
 
-    // Use the exported parseUnitValue function for consistent parsing
+    // Use the enhanced _parseUnitValue method for consistent and robust parsing
 
     // Add GHG equals command if present
-    const ghgValue = parseUnitValue(metadata.getGhg());
+    const ghgValue = self._parseUnitValue(metadata.getGhg());
     if (ghgValue) {
       // For GHG commands, we need to ensure the routing works correctly by using specific target
       builder.setEqualsGhg(new Command("equals", null, ghgValue, null));
     }
 
     // Add energy equals command if present
-    const energyValue = parseUnitValue(metadata.getEnergy());
+    const energyValue = self._parseUnitValue(metadata.getEnergy());
     if (energyValue) {
       // For energy commands, we need to ensure the routing works correctly by using specific target
       builder.setEqualsKwh(new Command("equals", null, energyValue, null));
@@ -1349,23 +1349,23 @@ class MetaChangeApplier {
     }
 
     // Add initial charge commands for each stream (skip zero values)
-    const domesticCharge = parseUnitValue(metadata.getInitialChargeDomestic());
+    const domesticCharge = self._parseUnitValue(metadata.getInitialChargeDomestic());
     if (domesticCharge && domesticCharge.getValue() > 0) {
       builder.addCommand(new Command("initial charge", "domestic", domesticCharge, null));
     }
 
-    const importCharge = parseUnitValue(metadata.getInitialChargeImport());
+    const importCharge = self._parseUnitValue(metadata.getInitialChargeImport());
     if (importCharge && importCharge.getValue() > 0) {
       builder.addCommand(new Command("initial charge", "import", importCharge, null));
     }
 
-    const exportCharge = parseUnitValue(metadata.getInitialChargeExport());
+    const exportCharge = self._parseUnitValue(metadata.getInitialChargeExport());
     if (exportCharge && exportCharge.getValue() > 0) {
       builder.addCommand(new Command("initial charge", "export", exportCharge, null));
     }
 
     // Add retirement command if present
-    const retirementValue = parseUnitValue(metadata.getRetirement());
+    const retirementValue = self._parseUnitValue(metadata.getRetirement());
     if (retirementValue) {
       builder.addCommand(new Command("retire", null, retirementValue, null));
     }
@@ -1391,6 +1391,196 @@ class MetaChangeApplier {
 
     // Use insertSubstance method (null means no prior substance to replace)
     application.insertSubstance(null, substance);
+  }
+
+  /**
+   * Parse unit value strings with comprehensive validation and error handling.
+   *
+   * This method provides enhanced parsing capabilities for unit value strings
+   * commonly used in substance metadata. It supports various numeric formats
+   * including integers, decimals, negative numbers, comma separators, and
+   * percentages. The method is designed to be more robust and maintainable
+   * than the global parseUnitValue function.
+   *
+   * Supported formats include:
+   * - "1430 kgCO2e / kg" (GHG values)
+   * - "10% / year" (percentage values)
+   * - "0.15 kg / unit" (charge values)
+   * - "500 kwh / unit" (energy values)
+   * - "-5.5 mt / year" (negative values)
+   * - "1,500.25 units" (comma-separated values)
+   *
+   * @param {string} valueString - String containing numeric value and units
+   *   Must be in format "number units" where number can include decimals,
+   *   commas, signs, and optional percentage symbol
+   * @param {boolean} throwOnError - Whether to throw errors for invalid formats.
+   *   When false, returns null for invalid inputs. When true, throws detailed
+   *   error messages for debugging and validation purposes.
+   * @returns {EngineNumber|null} Parsed EngineNumber instance with numeric value
+   *   and units string, or null if invalid/empty and throwOnError is false
+   * @throws {Error} If throwOnError is true and parsing fails. Error messages
+   *   include specific details about what was invalid for user feedback.
+   * @private
+   */
+  _parseUnitValue(valueString, throwOnError = false) {
+    const self = this;
+
+    // Input validation - check for null, undefined, and non-string types
+    if (valueString === null || valueString === undefined) {
+      if (throwOnError) {
+        const actualType = valueString === null ? "null" : "undefined";
+        throw new Error(`Value string must be a non-empty string, got: ${actualType}`);
+      }
+      return null;
+    }
+
+    if (typeof valueString !== "string") {
+      if (throwOnError) {
+        throw new Error(`Value string must be a non-empty string, got: ${typeof valueString}`);
+      }
+      return null;
+    }
+
+    const trimmed = valueString.trim();
+    if (!trimmed) {
+      if (throwOnError) {
+        throw new Error("Value string cannot be empty or whitespace-only");
+      }
+      return null;
+    }
+
+    // Enhanced regex-based parsing with better error detection
+    // Matches: optional sign, digits with optional commas, optional decimal,
+    // optional %, space, non-whitespace units
+    // Examples: "+1,500.25% kwh / unit", "-42.5 kgCO2e / kg", "10% / year"
+    const match = trimmed.match(/^([+-]?[\d,]+(?:\.\d+)?%?)\s+(\S.*)$/);
+
+    if (!match) {
+      if (throwOnError) {
+        // Provide specific guidance based on common error patterns
+        // Order matters: check more specific patterns first
+        if (/^(Infinity|-?Infinity)\s+/.test(trimmed)) {
+          // Special case for Infinity values - check this first
+          throw new Error(
+            `Invalid numeric value: "${trimmed.split(/\s+/)[0]}" in "${valueString}". ` +
+            "Number must be finite (not infinite or NaN).",
+          );
+        } else if (/^\d+\s*$/.test(trimmed)) {
+          // Special case for numbers with trailing space but no units
+          throw new Error(
+            `Invalid unit value format: "${valueString}". ` +
+            "Units portion cannot be empty. " +
+            "Example: \"1430 kgCO2e / kg\"",
+          );
+        } else if (/\d+\.\d+\.\d+/.test(trimmed)) {
+          // Special case for malformed decimals like "12.34.56"
+          const parts = trimmed.split(/\s+/);
+          if (parts.length >= 2) {
+            throw new Error(
+              `Invalid numeric value: "${parts[0]}" in "${valueString}". ` +
+              "Must be a valid number (integer or decimal). " +
+              "Examples: \"1430\", \"10.5\", \"-42\", \"1,500.25\"",
+            );
+          }
+        } else if (!trimmed.includes(" ")) {
+          throw new Error(
+            `Invalid unit value format: "${valueString}". ` +
+            "Expected format: \"number units\" with a space between number and units. " +
+            "Example: \"1430 kgCO2e / kg\"",
+          );
+        } else if (/^\s*[^\d+-]/.test(trimmed)) {
+          throw new Error(
+            `Invalid unit value format: "${valueString}". ` +
+            "Must start with a number (optionally signed). " +
+            "Example: \"10% / year\" or \"-5.5 mt / year\"",
+          );
+        } else {
+          throw new Error(
+            `Invalid unit value format: "${valueString}". ` +
+            "Expected format: \"number units\". " +
+            "Examples: \"1430 kgCO2e / kg\", \"10% / year\", \"0.15 kg / unit\"",
+          );
+        }
+      }
+      return null;
+    }
+
+    const [, valueStr, unitsStr] = match;
+
+    // Validate units string is not empty
+    if (!unitsStr || !unitsStr.trim()) {
+      if (throwOnError) {
+        throw new Error(
+          `Invalid unit value format: "${valueString}". ` +
+          "Units portion cannot be empty. " +
+          "Example: \"1430 kgCO2e / kg\"",
+        );
+      }
+      return null;
+    }
+
+    // Parse numeric value with enhanced validation
+    const cleanedValue = valueStr.replace(/[,%]/g, "");
+
+    // Special check for Infinity before parsing
+    if (cleanedValue.toLowerCase() === "infinity" || cleanedValue.toLowerCase() === "-infinity") {
+      if (throwOnError) {
+        throw new Error(
+          `Invalid numeric value: "${valueStr}" in "${valueString}". ` +
+          "Number must be finite (not infinite or NaN).",
+        );
+      }
+      return null;
+    }
+
+    const numericValue = parseFloat(cleanedValue);
+
+    if (isNaN(numericValue)) {
+      if (throwOnError) {
+        throw new Error(
+          `Invalid numeric value: "${valueStr}" in "${valueString}". ` +
+          "Must be a valid number (integer or decimal). " +
+          "Examples: \"1430\", \"10.5\", \"-42\", \"1,500.25\"",
+        );
+      }
+      return null;
+    }
+
+    // Additional numeric validation for edge cases
+    if (!isFinite(numericValue)) {
+      if (throwOnError) {
+        throw new Error(
+          `Invalid numeric value: "${valueStr}" in "${valueString}". ` +
+          "Number must be finite (not infinite or NaN).",
+        );
+      }
+      return null;
+    }
+
+    // Handle percentage units - if original value had %, include it in units
+    const finalUnits = valueStr.includes("%") ? `% ${unitsStr.trim()}` : unitsStr.trim();
+
+    // Validate final units string format
+    if (!finalUnits) {
+      if (throwOnError) {
+        throw new Error(
+          `Invalid units: "${unitsStr}" in "${valueString}". ` +
+          "Units cannot be empty after processing.",
+        );
+      }
+      return null;
+    }
+
+    try {
+      return new EngineNumber(numericValue, finalUnits);
+    } catch (engineError) {
+      if (throwOnError) {
+        throw new Error(
+          `Failed to create EngineNumber from "${valueString}": ${engineError.message}`,
+        );
+      }
+      return null;
+    }
   }
 }
 

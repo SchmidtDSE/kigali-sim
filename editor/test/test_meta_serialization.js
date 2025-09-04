@@ -1,4 +1,4 @@
-import {MetaSerializer, MetaChangeApplier, SubstanceMetadataUpdate, SubstanceMetadataError, SubstanceMetadataParseResult, ValidationResult, MetadataValidator, ValidationError} from "meta_serialization";
+import {MetaSerializer, MetaChangeApplier, SubstanceMetadataUpdate, SubstanceMetadataError, SubstanceMetadataParseResult, ValidationResult, MetadataValidator, ValidationError, parseUnitValue} from "meta_serialization";
 import {SubstanceMetadata, Program, Application, Substance, SubstanceBuilder} from "ui_translator";
 
 function buildMetaSerializationTests() {
@@ -1923,6 +1923,287 @@ High Energy,1430 kgCO2e / kg,true`;
         assert.ok(errorMessage.includes("Energy value must be in format"), "Should validate energy format");
         assert.ok(errorMessage.includes("Retirement value must be in format"), "Should validate retirement format");
       }
+    });
+  });
+
+  QUnit.module("MetaChangeApplier._parseUnitValue", function () {
+    QUnit.test("handles valid unit value formats correctly", function (assert) {
+      const program = new Program([], [], [], true);
+      const applier = new MetaChangeApplier(program);
+
+      // Test standard GHG values
+      let result = applier._parseUnitValue("1430 kgCO2e / kg");
+      assert.ok(result !== null, "Should parse GHG value");
+      assert.equal(result.getValue(), 1430, "Should extract numeric value correctly");
+      assert.equal(result.getUnits(), "kgCO2e / kg", "Should preserve units correctly");
+
+      // Test energy values
+      result = applier._parseUnitValue("500 kwh / unit");
+      assert.ok(result !== null, "Should parse energy value");
+      assert.equal(result.getValue(), 500, "Should extract numeric value correctly");
+      assert.equal(result.getUnits(), "kwh / unit", "Should preserve units correctly");
+
+      // Test percentage values
+      result = applier._parseUnitValue("10% / year");
+      assert.ok(result !== null, "Should parse percentage value");
+      assert.equal(result.getValue(), 10, "Should extract numeric value correctly");
+      assert.equal(result.getUnits(), "% / year", "Should include percentage in units");
+
+      // Test charge values with decimals
+      result = applier._parseUnitValue("0.15 kg / unit");
+      assert.ok(result !== null, "Should parse decimal value");
+      assert.equal(result.getValue(), 0.15, "Should extract decimal value correctly");
+      assert.equal(result.getUnits(), "kg / unit", "Should preserve units correctly");
+    });
+
+    QUnit.test("handles edge cases and complex numeric formats", function (assert) {
+      const program = new Program([], [], [], true);
+      const applier = new MetaChangeApplier(program);
+
+      // Test negative numbers
+      let result = applier._parseUnitValue("-5.5 mt / year");
+      assert.ok(result !== null, "Should parse negative value");
+      assert.equal(result.getValue(), -5.5, "Should extract negative value correctly");
+      assert.equal(result.getUnits(), "mt / year", "Should preserve units correctly");
+
+      // Test positive sign
+      result = applier._parseUnitValue("+42.75 units");
+      assert.ok(result !== null, "Should parse positive sign");
+      assert.equal(result.getValue(), 42.75, "Should extract positive value correctly");
+      assert.equal(result.getUnits(), "units", "Should preserve units correctly");
+
+      // Test comma-separated values
+      result = applier._parseUnitValue("1,500.25 kwh / unit");
+      assert.ok(result !== null, "Should parse comma-separated value");
+      assert.equal(result.getValue(), 1500.25, "Should extract value ignoring commas");
+      assert.equal(result.getUnits(), "kwh / unit", "Should preserve units correctly");
+
+      // Test integer values
+      result = applier._parseUnitValue("42 units");
+      assert.ok(result !== null, "Should parse integer value");
+      assert.equal(result.getValue(), 42, "Should extract integer value correctly");
+      assert.equal(result.getUnits(), "units", "Should preserve units correctly");
+
+      // Test zero values
+      result = applier._parseUnitValue("0 kg / unit");
+      assert.ok(result !== null, "Should parse zero value");
+      assert.equal(result.getValue(), 0, "Should extract zero value correctly");
+      assert.equal(result.getUnits(), "kg / unit", "Should preserve units correctly");
+
+      // Test complex percentage with commas
+      result = applier._parseUnitValue("1,500.25% per year");
+      assert.ok(result !== null, "Should parse complex percentage");
+      assert.equal(result.getValue(), 1500.25, "Should extract percentage value correctly");
+      assert.equal(result.getUnits(), "% per year", "Should include percentage in units");
+    });
+
+    QUnit.test("handles whitespace variations gracefully", function (assert) {
+      const program = new Program([], [], [], true);
+      const applier = new MetaChangeApplier(program);
+
+      // Test leading/trailing whitespace
+      let result = applier._parseUnitValue("  1430 kgCO2e / kg  ");
+      assert.ok(result !== null, "Should handle surrounding whitespace");
+      assert.equal(result.getValue(), 1430, "Should extract value correctly");
+      assert.equal(result.getUnits(), "kgCO2e / kg", "Should trim units correctly");
+
+      // Test multiple spaces between number and units
+      result = applier._parseUnitValue("42.5    kwh / unit");
+      assert.ok(result !== null, "Should handle multiple spaces");
+      assert.equal(result.getValue(), 42.5, "Should extract value correctly");
+      assert.equal(result.getUnits(), "kwh / unit", "Should preserve units correctly");
+
+      // Test tabs and spaces mixed
+      result = applier._parseUnitValue("100\t kg / unit");
+      assert.ok(result !== null, "Should handle tabs");
+      assert.equal(result.getValue(), 100, "Should extract value correctly");
+      assert.equal(result.getUnits(), "kg / unit", "Should preserve units correctly");
+    });
+
+    QUnit.test("returns null for invalid formats when throwOnError is false", function (assert) {
+      const program = new Program([], [], [], true);
+      const applier = new MetaChangeApplier(program);
+
+      // Test null/undefined inputs
+      assert.equal(applier._parseUnitValue(null), null, "Should return null for null input");
+      assert.equal(applier._parseUnitValue(undefined), null, "Should return null for undefined input");
+      assert.equal(applier._parseUnitValue(""), null, "Should return null for empty string");
+      assert.equal(applier._parseUnitValue("   "), null, "Should return null for whitespace-only");
+
+      // Test non-string inputs
+      assert.equal(applier._parseUnitValue(123), null, "Should return null for number input");
+      assert.equal(applier._parseUnitValue({}), null, "Should return null for object input");
+      assert.equal(applier._parseUnitValue([]), null, "Should return null for array input");
+
+      // Test invalid formats
+      assert.equal(applier._parseUnitValue("no-number-here"), null, "Should return null for no numeric value");
+      assert.equal(applier._parseUnitValue("123"), null, "Should return null for number without units");
+      assert.equal(applier._parseUnitValue("abc 123 def"), null, "Should return null for invalid numeric portion");
+      assert.equal(applier._parseUnitValue("123.45.67 units"), null, "Should return null for malformed decimal");
+
+      // Test missing units
+      assert.equal(applier._parseUnitValue("123 "), null, "Should return null for empty units");
+      assert.equal(applier._parseUnitValue("123   "), null, "Should return null for whitespace-only units");
+    });
+
+    QUnit.test("throws detailed errors when throwOnError is true", function (assert) {
+      const program = new Program([], [], [], true);
+      const applier = new MetaChangeApplier(program);
+
+      // Test null input
+      assert.throws(() => {
+        applier._parseUnitValue(null, true);
+      }, /Value string must be a non-empty string, got: null/, "Should throw detailed error for null");
+
+      // Test undefined input
+      assert.throws(() => {
+        applier._parseUnitValue(undefined, true);
+      }, /Value string must be a non-empty string, got: undefined/, "Should throw detailed error for undefined");
+
+      // Test non-string input
+      assert.throws(() => {
+        applier._parseUnitValue(123, true);
+      }, /Value string must be a non-empty string, got: number/, "Should throw detailed error for number");
+
+      // Test empty string
+      assert.throws(() => {
+        applier._parseUnitValue("", true);
+      }, /Value string cannot be empty or whitespace-only/, "Should throw error for empty string");
+
+      // Test whitespace-only string
+      assert.throws(() => {
+        applier._parseUnitValue("   ", true);
+      }, /Value string cannot be empty or whitespace-only/, "Should throw error for whitespace-only");
+
+      // Test missing space between number and units
+      assert.throws(() => {
+        applier._parseUnitValue("123units", true);
+      }, /Invalid unit value format.*Expected format.*space between number and units/, "Should guide about missing space");
+
+      // Test non-numeric start
+      assert.throws(() => {
+        applier._parseUnitValue("abc 123", true);
+      }, /Must start with a number.*optionally signed/, "Should guide about numeric start requirement");
+
+      // Test invalid numeric format
+      assert.throws(() => {
+        applier._parseUnitValue("12.34.56 units", true);
+      }, /Invalid numeric value.*Must be a valid number/, "Should identify invalid numeric format");
+
+      // Test empty units
+      assert.throws(() => {
+        applier._parseUnitValue("123 ", true);
+      }, /Units portion cannot be empty/, "Should identify empty units");
+
+      // Test infinite values
+      assert.throws(() => {
+        applier._parseUnitValue("Infinity units", true);
+      }, /Number must be finite/, "Should reject infinite values");
+    });
+
+    QUnit.test("validates numeric value edge cases", function (assert) {
+      const program = new Program([], [], [], true);
+      const applier = new MetaChangeApplier(program);
+
+      // Test very large numbers
+      let result = applier._parseUnitValue("999999999.99 units");
+      assert.ok(result !== null, "Should handle large numbers");
+      assert.equal(result.getValue(), 999999999.99, "Should preserve large numeric value");
+
+      // Test very small numbers
+      result = applier._parseUnitValue("0.00001 units");
+      assert.ok(result !== null, "Should handle small numbers");
+      assert.equal(result.getValue(), 0.00001, "Should preserve small numeric value");
+
+      // Test scientific notation - should not be supported
+      result = applier._parseUnitValue("1e10 units");
+      assert.equal(result, null, "Should not parse scientific notation");
+
+      // Test hexadecimal - should not be supported
+      result = applier._parseUnitValue("0xFF units");
+      assert.equal(result, null, "Should not parse hexadecimal");
+    });
+
+    QUnit.test("handles complex unit strings correctly", function (assert) {
+      const program = new Program([], [], [], true);
+      const applier = new MetaChangeApplier(program);
+
+      // Test complex unit strings with special characters
+      let result = applier._parseUnitValue("1430 kgCO2e / kg / year");
+      assert.ok(result !== null, "Should parse complex units");
+      assert.equal(result.getValue(), 1430, "Should extract value correctly");
+      assert.equal(result.getUnits(), "kgCO2e / kg / year", "Should preserve complex units");
+
+      // Test units with parentheses
+      result = applier._parseUnitValue("42.5 kwh / (unit * year)");
+      assert.ok(result !== null, "Should parse units with parentheses");
+      assert.equal(result.getValue(), 42.5, "Should extract value correctly");
+      assert.equal(result.getUnits(), "kwh / (unit * year)", "Should preserve units with parentheses");
+
+      // Test units with numbers
+      result = applier._parseUnitValue("10 CO2e-100yr");
+      assert.ok(result !== null, "Should parse units with numbers");
+      assert.equal(result.getValue(), 10, "Should extract value correctly");
+      assert.equal(result.getUnits(), "CO2e-100yr", "Should preserve units with numbers");
+
+      // Test very long unit strings
+      result = applier._parseUnitValue("5.5 very long unit string with many words and characters");
+      assert.ok(result !== null, "Should parse long unit strings");
+      assert.equal(result.getValue(), 5.5, "Should extract value correctly");
+      assert.equal(result.getUnits(), "very long unit string with many words and characters", "Should preserve long units");
+    });
+
+    QUnit.test("preserves backward compatibility with parseUnitValue function", function (assert) {
+      const program = new Program([], [], [], true);
+      const applier = new MetaChangeApplier(program);
+
+      const testCases = [
+        "1430 kgCO2e / kg",
+        "10% / year", 
+        "0.15 kg / unit",
+        "500 kwh / unit",
+        "1,500.25 units"
+      ];
+
+      // Compare results with global parseUnitValue function for backward compatibility
+      for (const testCase of testCases) {
+        const globalResult = parseUnitValue(testCase);
+        const methodResult = applier._parseUnitValue(testCase);
+        
+        if (globalResult === null) {
+          assert.equal(methodResult, null, `Both should return null for: ${testCase}`);
+        } else {
+          assert.ok(methodResult !== null, `Method should not return null for valid case: ${testCase}`);
+          assert.equal(methodResult.getValue(), globalResult.getValue(), 
+                      `Values should match for: ${testCase}`);
+          assert.equal(methodResult.getUnits(), globalResult.getUnits(), 
+                      `Units should match for: ${testCase}`);
+        }
+      }
+    });
+
+    QUnit.test("integrates properly with EngineNumber creation", function (assert) {
+      const program = new Program([], [], [], true);
+      const applier = new MetaChangeApplier(program);
+
+      // Test that created EngineNumber objects work correctly
+      const result = applier._parseUnitValue("1430.5 kgCO2e / kg");
+      assert.ok(result !== null, "Should create EngineNumber");
+      
+      // Test EngineNumber methods are available
+      assert.ok(typeof result.getValue === "function", "Should have getValue method");
+      assert.ok(typeof result.getUnits === "function", "Should have getUnits method");
+      assert.ok(typeof result.hasEquipmentUnits === "function", "Should have hasEquipmentUnits method");
+      
+      // Test EngineNumber functionality
+      assert.equal(result.getValue(), 1430.5, "EngineNumber getValue should work");
+      assert.equal(result.getUnits(), "kgCO2e / kg", "EngineNumber getUnits should work");
+      assert.equal(result.hasEquipmentUnits(), false, "Should detect non-equipment units");
+      
+      // Test equipment units detection (units must start with "unit")
+      const equipResult = applier._parseUnitValue("1.5 unit");
+      assert.ok(equipResult !== null, "Should create EngineNumber for equipment units");
+      assert.equal(equipResult.hasEquipmentUnits(), true, "Should detect equipment units");
     });
   });
 }
