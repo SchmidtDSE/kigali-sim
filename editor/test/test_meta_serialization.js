@@ -1,3 +1,4 @@
+/* eslint-disable max-len */
 import {MetaSerializer, MetaChangeApplier, SubstanceMetadataUpdate, SubstanceMetadataError, SubstanceMetadataParseResult, ValidationResult, MetadataValidator, ValidationError, parseUnitValue} from "meta_serialization";
 import {SubstanceMetadata, Program, Application, Substance, SubstanceBuilder} from "ui_translator";
 
@@ -1490,9 +1491,9 @@ High Energy,1430 kgCO2e / kg,true`;
 
         const updates = [
           new SubstanceMetadataUpdate("", emptySubstance),
-          new SubstanceMetadataUpdate("", emptyApplication), 
+          new SubstanceMetadataUpdate("", emptyApplication),
           new SubstanceMetadataUpdate("", shortSubstance),
-          new SubstanceMetadataUpdate("", shortApplication)
+          new SubstanceMetadataUpdate("", shortApplication),
         ];
 
         try {
@@ -1502,12 +1503,12 @@ High Energy,1430 kgCO2e / kg,true`;
           assert.ok(error instanceof ValidationError, "Should throw ValidationError");
           const errors = error.getValidationErrors();
           assert.ok(errors.length >= 4, "Should have at least 4 validation errors");
-          
+
           // Check that errors contain specific row information
-          assert.ok(errors.some(e => e.includes("Row 1") && e.includes("Substance name is required")), "Should have Row 1 substance error");
-          assert.ok(errors.some(e => e.includes("Row 2") && e.includes("Application name is required")), "Should have Row 2 application error");
-          assert.ok(errors.some(e => e.includes("Row 3") && e.includes("Substance name must be at least 2 characters")), "Should have Row 3 substance length error");
-          assert.ok(errors.some(e => e.includes("Row 4") && e.includes("Application name must be at least 2 characters")), "Should have Row 4 application length error");
+          assert.ok(errors.some((e) => e.includes("Row 1") && e.includes("Substance name is required")), "Should have Row 1 substance error");
+          assert.ok(errors.some((e) => e.includes("Row 2") && e.includes("Application name is required")), "Should have Row 2 application error");
+          assert.ok(errors.some((e) => e.includes("Row 3") && e.includes("Substance name must be at least 2 characters")), "Should have Row 3 substance length error");
+          assert.ok(errors.some((e) => e.includes("Row 4") && e.includes("Application name must be at least 2 characters")), "Should have Row 4 application length error");
         }
 
         // Verify no partial updates occurred
@@ -1524,7 +1525,7 @@ High Energy,1430 kgCO2e / kg,true`;
 
         const updates = [
           new SubstanceMetadataUpdate("", validMetadata),
-          new SubstanceMetadataUpdate("", invalidMetadata)
+          new SubstanceMetadataUpdate("", invalidMetadata),
         ];
 
         try {
@@ -2159,25 +2160,25 @@ High Energy,1430 kgCO2e / kg,true`;
 
       const testCases = [
         "1430 kgCO2e / kg",
-        "10% / year", 
+        "10% / year",
         "0.15 kg / unit",
         "500 kwh / unit",
-        "1,500.25 units"
+        "1,500.25 units",
       ];
 
       // Compare results with global parseUnitValue function for backward compatibility
       for (const testCase of testCases) {
         const globalResult = parseUnitValue(testCase);
         const methodResult = applier._parseUnitValue(testCase);
-        
+
         if (globalResult === null) {
           assert.equal(methodResult, null, `Both should return null for: ${testCase}`);
         } else {
           assert.ok(methodResult !== null, `Method should not return null for valid case: ${testCase}`);
-          assert.equal(methodResult.getValue(), globalResult.getValue(), 
-                      `Values should match for: ${testCase}`);
-          assert.equal(methodResult.getUnits(), globalResult.getUnits(), 
-                      `Units should match for: ${testCase}`);
+          assert.equal(methodResult.getValue(), globalResult.getValue(),
+            `Values should match for: ${testCase}`);
+          assert.equal(methodResult.getUnits(), globalResult.getUnits(),
+            `Units should match for: ${testCase}`);
         }
       }
     });
@@ -2189,17 +2190,17 @@ High Energy,1430 kgCO2e / kg,true`;
       // Test that created EngineNumber objects work correctly
       const result = applier._parseUnitValue("1430.5 kgCO2e / kg");
       assert.ok(result !== null, "Should create EngineNumber");
-      
+
       // Test EngineNumber methods are available
       assert.ok(typeof result.getValue === "function", "Should have getValue method");
       assert.ok(typeof result.getUnits === "function", "Should have getUnits method");
       assert.ok(typeof result.hasEquipmentUnits === "function", "Should have hasEquipmentUnits method");
-      
+
       // Test EngineNumber functionality
       assert.equal(result.getValue(), 1430.5, "EngineNumber getValue should work");
       assert.equal(result.getUnits(), "kgCO2e / kg", "EngineNumber getUnits should work");
       assert.equal(result.hasEquipmentUnits(), false, "Should detect non-equipment units");
-      
+
       // Test equipment units detection (units must start with "unit")
       const equipResult = applier._parseUnitValue("1.5 unit");
       assert.ok(equipResult !== null, "Should create EngineNumber for equipment units");
