@@ -933,6 +933,32 @@
                     </dialog>
                   </div>
                 </div>
+                <dialog id="substances-table-dialog" class="dialog">
+                  <h2>Substances Table</h2>
+                  <div class="instructions">
+                    Download spreadsheet software-compatible files that contain tables describing all substances and applications in your simulation. Alternatively, bulk import spreadsheets with substance information. We recommend that you download the current file, modify it, and re-upload to make changes. Please use the widely-supported CSV file format. Note: the key column is used to indicate which existing substance to modify with updated information but can be left blank if it is a new substance.
+                  </div>
+                  <div class="contents">
+                    <p>Substances: <span class="substance-count">0</span></p>
+                  </div>
+                  <div class="upload-pane">
+                    <input type="file" id="substances-upload-file" 
+                           accept=".csv,text/csv" title="Upload CSV file with substance metadata" />
+                    <a href="#" class="upload-confirm-button primary">Confirm Upload</a>
+                    <a href="#" class="upload-cancel-button destructive">Cancel</a>
+                  </div>
+                  <div class="dialog-buttons bold-buttons">
+                    <a href="#" class="download-button primary">Download Current</a>
+                    <a href="#" class="upload-button primary">Upload New</a>
+                    <a href="#" class="close-button destructive">Close</a>
+                  </div>
+                </dialog>
+                <div class="substances-table-link-pane" style="text-align: center; margin-bottom: 1em;">
+                  <a href="#substances-table" class="primary substances-table-link" 
+                     data-tippy-content="Download and upload CSV files containing substance metadata for bulk editing">
+                    Substance Table
+                  </a>
+                </div>
                 <div class="advanced-link-pane">
                   Need more control? Switch to the
                   <a class="advanced-editor-link" href="#code-editor-pane" data-tippy-content="Develop your model through code using the bespoke and easy to use QubecTalk programming language designed just for Kigali Sim."
@@ -1720,6 +1746,7 @@
     <script type="text/javascript" src="/third_party/tabby.min.js"></script>
     <script type="text/javascript" src="/third_party/popper.min.js"></script>
     <script type="text/javascript" src="/third_party/tippy-bundle.umd.min.js"></script>
+    <script type="text/javascript" src="/third_party/papaparse.min.js"></script>
 
     <script type="text/javascript" src="/intermediate/static/qubectalk.js?v=EPOCH"></script>
 
@@ -1737,6 +1764,7 @@
           "storage_keeper": "./js/storage_keeper.js?v=EPOCH",
           "ui_editor": "./js/ui_editor.js?v=EPOCH",
           "ui_translator": "./js/ui_translator.js?v=EPOCH",
+          "meta_serialization": "./js/meta_serialization.js?v=EPOCH",
           "updates": "./js/updates.js?v=EPOCH",
           "user_config": "./js/user_config.js?v=EPOCH",
           "wasm_backend": "./js/wasm_backend.js?v=EPOCH",
