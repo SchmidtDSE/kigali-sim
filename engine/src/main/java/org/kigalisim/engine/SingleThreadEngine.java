@@ -845,7 +845,7 @@ public class SingleThreadEngine implements Engine {
       scope = originalScope;
 
       EngineNumber destinationVolumeChange = destinationUnitConverter.convert(unitsToReplace, "kg");
-      changeStreamWithoutReportingUnits(stream, destinationVolumeChange, Optional.empty(), Optional.of(destinationScope));
+      changeStreamWithDisplacementContext(stream, destinationVolumeChange, destinationScope);
     } else {
       // For volume units, use the original logic
       UnitConverter unitConverter = EngineSupportUtils.createUnitConverterWithTotal(this, stream);
@@ -855,7 +855,7 @@ public class SingleThreadEngine implements Engine {
       changeStreamWithoutReportingUnits(stream, amountNegative, Optional.empty(), Optional.empty());
 
       Scope destinationScope = scope.getWithSubstance(destinationSubstance);
-      changeStreamWithoutReportingUnits(stream, amount, Optional.empty(), Optional.of(destinationScope));
+      changeStreamWithDisplacementContext(stream, amount, destinationScope);
     }
   }
 
