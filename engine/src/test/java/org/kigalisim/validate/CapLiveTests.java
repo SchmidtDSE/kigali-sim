@@ -399,4 +399,52 @@ public class CapLiveTests {
     assertEquals("units", recordR404A2030.getPopulationNew().getUnits(),
         "R-404A new equipment units should be units");
   }
+
+  /**
+   * Test cap with displacement to another substance preserves prior equipment.
+   * This tests that when capping one substance and displacing to another,
+   * the destination substance's prior equipment is properly maintained.
+   */
+  @Test
+  public void testCapDisplacePreservesPriorEquipment() throws IOException {
+    // Load and parse the QTA file
+    String qtaPath = "../examples/cap_displace_prior_equipment.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    // Run BAU scenario
+    Stream<EngineResult> bauResults = KigaliSimFacade.runScenario(program, "BAU", progress -> {});
+    List<EngineResult> bauResultsList = bauResults.collect(Collectors.toList());
+
+    // Run Cap with Displacement scenario
+    Stream<EngineResult> capResults = KigaliSimFacade.runScenario(program, "Cap with Displacement", progress -> {});
+    List<EngineResult> capResultsList = capResults.collect(Collectors.toList());
+
+    // Get year 2030 results
+    int targetYear = 2030;
+    
+    // BAU results for 2030
+    EngineResult bauHighGwp = LiveTestsUtil.getResult(bauResultsList.stream(), targetYear, "Test App", "High-GWP");
+    EngineResult bauLowGwp = LiveTestsUtil.getResult(bauResultsList.stream(), targetYear, "Test App", "Low-GWP");
+    
+    // Cap displacement results for 2030
+    EngineResult capHighGwp = LiveTestsUtil.getResult(capResultsList.stream(), targetYear, "Test App", "High-GWP");
+    final EngineResult capLowGwp = LiveTestsUtil.getResult(capResultsList.stream(), targetYear, "Test App", "Low-GWP");
+
+    assertNotNull(bauHighGwp, "Should have BAU result for High-GWP in 2030");
+    assertNotNull(bauLowGwp, "Should have BAU result for Low-GWP in 2030");
+    assertNotNull(capHighGwp, "Should have Cap result for High-GWP in 2030");
+    assertNotNull(capLowGwp, "Should have Cap result for Low-GWP in 2030");
+
+    // Test that Low-GWP population is NOT zero in the cap scenario
+    // If the bug exists (like with replace), Low-GWP would lose its prior equipment
+    assertTrue(capLowGwp.getPopulation().getValue().doubleValue() > 0,
+        "Low-GWP should maintain equipment population in cap displacement scenario");
+    
+    // Test that Low-GWP maintains at least some of its initial prior equipment
+    // Initial was 50000, after 5 years with 5% retirement, should have at least 38000
+    assertTrue(capLowGwp.getPopulation().getValue().doubleValue() > 38000,
+        String.format("Low-GWP population (%.2f) should be above 38000 units", 
+            capLowGwp.getPopulation().getValue().doubleValue()));
+  }
 }
