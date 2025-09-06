@@ -14,7 +14,15 @@ Finally, we want to again express our gratitude for your feedback and time.
 
 The following changes have been adopted and released.
 
-### Fix replace for mid-year equipment calcualtion
+### Metadata import / export
+
+**Status**: Released September 6, 2025
+
+**Classification**: Enhancement
+
+By popular demand, we now support using spreadsheets to export data on substances and applications registered in simulations as well as using spreadsheets to import similar metadata. This makes it easier to register substances and applications in bulk. See [#518](https://github.com/SchmidtDSE/kigali-sim/issues/518).
+
+### Fix replace for mid-year equipment calculation
 
 **Status**: Released September 5, 2025
 

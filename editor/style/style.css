@@ -891,3 +891,15 @@ dialog .checkbox-list label {
   display: none;
 }
 
+/* Hide upload pane by default in substances table dialog */
+.upload-pane {
+  display: none;
+  padding-bottom: 10px;
+  margin-bottom: 10px;
+}
+
+.upload-pane input[type="file"] {
+  margin-bottom: 10px;
+  width: 100%;
+}
+
