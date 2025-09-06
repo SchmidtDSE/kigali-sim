@@ -998,18 +998,20 @@ class MetadataValidator {
    */
   _validateNoDuplicateNames(metadataArray) {
     const self = this;
-    const names = new Map(); // name -> first occurrence index
+    const keys = new Map(); // key -> first occurrence index
     const errors = [];
 
     for (let i = 0; i < metadataArray.length; i++) {
       const metadata = metadataArray[i];
-      const name = metadata.getName(); // This combines substance and equipment
+      const key = metadata.getKey(); // Use getKey() instead of getName()
 
-      if (names.has(name)) {
-        const firstIndex = names.get(name);
-        errors.push(`Duplicate substance "${name}" found at rows ${firstIndex + 1} and ${i + 1}`);
+      if (keys.has(key)) {
+        const firstIndex = keys.get(key);
+        errors.push(
+          `Duplicate substance key "${key}" found at rows ${firstIndex + 1} and ${i + 1}`,
+        );
       } else {
-        names.set(name, i);
+        keys.set(key, i);
       }
     }
 
@@ -1208,15 +1210,30 @@ class MetaChangeApplier {
     // Ensure application exists
     self._ensureApplicationExists(newMetadata.getApplication());
 
-    const oldNameGiven = oldName && oldName.trim();
-    const existingSubstance = oldNameGiven &&
-      self._getSubstanceExists(oldName, newMetadata.getApplication());
+    let existingSubstance = null;
+    if (oldName && oldName.trim()) {
+      // Parse the key field to get substance name and application
+      const parsed = self._parseKeyField(oldName);
+      if (parsed) {
+        // Use parsed substance name to find existing substance
+        existingSubstance = self._getSubstanceExists(
+          parsed.substanceName,
+          parsed.applicationName,
+        );
+      } else {
+        // Fallback: treat oldName as direct substance name
+        existingSubstance = self._getSubstanceExists(
+          oldName,
+          newMetadata.getApplication(),
+        );
+      }
+    }
 
     if (existingSubstance) {
       self._updateMetadataSingle(newMetadata, existingSubstance);
     } else {
       // If oldName was given but no substance found, warn the user
-      if (oldNameGiven) {
+      if (oldName && oldName.trim()) {
         console.warn(
           `No existing substance found for key "${oldName}". ` +
           "Creating new substance instead.",
@@ -1261,6 +1278,24 @@ class MetaChangeApplier {
     // Create and insert new substance
     const substance = self._createSubstanceFromMetadata(metadata);
     self._addSubstanceToApplication(substance, metadata.getApplication());
+  }
+
+  /**
+   * Parse a CSV key field to extract substance name and application.
+   * Format: "substance name" for "application name"
+   * @param {string} key - The key field value
+   * @returns {{substanceName: string, applicationName: string}|null} Parsed values or null
+   * @private
+   */
+  _parseKeyField(key) {
+    if (!key || typeof key !== "string") return null;
+    // Match pattern: "substance" for "application"
+    const match = key.match(/^"([^"]+)"\s+for\s+"([^"]+)"$/);
+    if (!match) return null;
+    return {
+      substanceName: match[1],
+      applicationName: match[2],
+    };
   }
 
   /**
