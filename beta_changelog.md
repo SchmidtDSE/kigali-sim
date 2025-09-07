@@ -24,7 +24,7 @@ By popular demand, we now support using spreadsheets to export data on substance
 
 ### Fix replace for mid-year equipment calculation
 
-**Status**: Released September 5, 2025
+**Status**: Released September 5, 2025 (preview) and September 6, 2025 (all users)
 
 **Classification**: Bug
 
