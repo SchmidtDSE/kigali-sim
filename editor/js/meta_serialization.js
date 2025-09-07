@@ -299,12 +299,13 @@ class MetaSerializer {
    * Helper function to get value or return empty string.
    *
    * @param {*} value - The value to check
-   * @returns {string} The value or empty string if falsy
+   * @returns {string} The value or empty string if null/undefined
    * @private
    */
   _getOrEmpty(value) {
     const self = this;
-    return value || "";
+    // Return empty string only for null/undefined, preserve "0" and other falsy values
+    return value === null || value === undefined ? "" : String(value);
   }
 
   /**
@@ -393,9 +394,9 @@ class MetaSerializer {
   /**
    * Escape a CSV value according to RFC 4180 specification.
    *
-   * Based on ANTLR grammar analysis, strings are defined as '"' ~["',]* '"' which means
-   * they cannot contain quotes or commas, so most escaping is unnecessary for our use case.
-   * However, we maintain basic comma escaping for compatibility.
+   * RFC 4180 requires that fields containing commas, quotes, or newlines must be
+   * enclosed in double quotes. Additionally, any double quotes within the field
+   * must be escaped by doubling them (e.g., " becomes "").
    *
    * @param {string} value - The value to escape
    * @returns {string} Escaped CSV value
@@ -410,9 +411,12 @@ class MetaSerializer {
 
     const stringValue = String(value);
 
-    // Based on grammar limitations, only escape commas as they're the main CSV delimiter issue
-    if (stringValue.includes(",")) {
-      return "\"" + stringValue + "\"";
+    // Check if escaping is needed (contains comma, quote, or newline)
+    if (stringValue.includes(",") || stringValue.includes('"') || stringValue.includes("\n")) {
+      // Escape quotes by doubling them
+      const escaped = stringValue.replace(/"/g, '""');
+      // Wrap in quotes
+      return '"' + escaped + '"';
     }
 
     return stringValue;
@@ -521,6 +525,17 @@ class MetaSerializer {
 
       try {
         const oldName = self._getOrEmpty(rowData["key"]);
+
+        // Validate key format if present
+        if (oldName && !self._isValidKeyFormat(oldName)) {
+          result.addError(new SubstanceMetadataError(
+            rowNumber,
+            "key",
+            `Invalid key format. Expected: "substance" for "application", got: ${oldName}`,
+            "USER",
+          ));
+        }
+
         const rowMap = self._createRowMapFromCsvData(rowData, rowNumber, result);
 
         if (rowMap) {
@@ -562,6 +577,26 @@ class MetaSerializer {
 
     const validValues = Array.from(BOOLEAN_VALUES.keys()).join(", ");
     throw new Error(`Invalid boolean value: ${value}. Expected one of: ${validValues}`);
+  }
+
+  /**
+   * Validate that a key field follows the expected format.
+   *
+   * The expected format is: "substance name" for "application name"
+   * Empty keys are considered valid as they indicate new substances.
+   *
+   * @param {string} key - The key field value to validate
+   * @returns {boolean} True if the key format is valid or empty
+   * @private
+   */
+  _isValidKeyFormat(key) {
+    const self = this;
+
+    if (!key) return true; // Empty keys are allowed for new substances
+
+    // Check for proper format: "substance" for "application"
+    const match = key.match(/^"([^"]+)"\s+for\s+"([^"]+)"$/);
+    return match !== null;
   }
 
   /**
