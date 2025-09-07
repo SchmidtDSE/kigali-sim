@@ -35,7 +35,9 @@ KigaliSim is organized into three main components:
 
 ## Development Environment Setup
 
-### Option 1: Using Dev Container (Recommended)
+Both dev containers and local setup are supported, per developer preference.
+
+### Option 1: Using Dev Container
 
 The project includes a complete dev container configuration for VS Code and GitHub Codespaces.
 
@@ -117,7 +119,7 @@ From the `editor/` directory:
 # Install dependencies (if not already done)
 npm install
 
-# Build the QubecTalk parser and webpack bundle
+# Build the QubecTalk parser and webpack bundle (recommended)
 bash ./support/make.sh
 
 # Or build webpack directly
@@ -361,6 +363,9 @@ Ensure Java 19+ is installed and active:
 java -version
 # Should show version 19 or higher
 ```
+
+#### 7. No printf debugging
+Please review `build.gradle` for information about output being suppressed during tests.
 
 ### Getting Help
 
