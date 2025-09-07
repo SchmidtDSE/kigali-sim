@@ -998,18 +998,20 @@ class MetadataValidator {
    */
   _validateNoDuplicateNames(metadataArray) {
     const self = this;
-    const names = new Map(); // name -> first occurrence index
+    const keys = new Map(); // key -> first occurrence index
     const errors = [];
 
     for (let i = 0; i < metadataArray.length; i++) {
       const metadata = metadataArray[i];
-      const name = metadata.getName(); // This combines substance and equipment
+      const key = metadata.getKey(); // Use getKey() instead of getName()
 
-      if (names.has(name)) {
-        const firstIndex = names.get(name);
-        errors.push(`Duplicate substance "${name}" found at rows ${firstIndex + 1} and ${i + 1}`);
+      if (keys.has(key)) {
+        const firstIndex = keys.get(key);
+        errors.push(
+          `Duplicate substance key "${key}" found at rows ${firstIndex + 1} and ${i + 1}`,
+        );
       } else {
-        names.set(name, i);
+        keys.set(key, i);
       }
     }
 
@@ -1208,15 +1210,13 @@ class MetaChangeApplier {
     // Ensure application exists
     self._ensureApplicationExists(newMetadata.getApplication());
 
-    const oldNameGiven = oldName && oldName.trim();
-    const existingSubstance = oldNameGiven &&
-      self._getSubstanceExists(oldName, newMetadata.getApplication());
+    const existingSubstance = self._getSubstanceByKey(oldName, newMetadata.getApplication());
 
     if (existingSubstance) {
       self._updateMetadataSingle(newMetadata, existingSubstance);
     } else {
       // If oldName was given but no substance found, warn the user
-      if (oldNameGiven) {
+      if (oldName && oldName.trim()) {
         console.warn(
           `No existing substance found for key "${oldName}". ` +
           "Creating new substance instead.",
@@ -1264,6 +1264,47 @@ class MetaChangeApplier {
   }
 
   /**
+   * Parse a CSV key field to extract substance name and application.
+   * Format: "substance name" for "application name"
+   * @param {string} key - The key field value
+   * @returns {{substanceName: string, applicationName: string}|null} Parsed values or null
+   * @private
+   */
+  _parseKeyField(key) {
+    if (!key || typeof key !== "string") return null;
+    // Match pattern: "substance" for "application"
+    const match = key.match(/^"([^"]+)"\s+for\s+"([^"]+)"$/);
+    if (!match) return null;
+    return {
+      substanceName: match[1],
+      applicationName: match[2],
+    };
+  }
+
+  /**
+   * Get a substance by key field or name.
+   * Tries to parse the key as a CSV key field first, then falls back to treating it as a name.
+   *
+   * @param {string} key - The key or name to search for
+   * @param {string} defaultApplication - Default application if key doesn't specify one
+   * @returns {Substance|null} Found substance or null
+   * @private
+   */
+  _getSubstanceByKey(key, defaultApplication) {
+    const self = this;
+    if (!key || !key.trim()) return null;
+
+    // Try to parse as a CSV key field
+    const parsed = self._parseKeyField(key);
+    if (parsed) {
+      return self._getSubstanceByName(parsed.substanceName, parsed.applicationName);
+    } else {
+      // Fallback: treat as direct substance name
+      return self._getSubstanceByName(key, defaultApplication);
+    }
+  }
+
+  /**
    * Check if a substance exists by name in an application.
    *
    * @param {string} substanceName - Name to search for
@@ -1271,7 +1312,7 @@ class MetaChangeApplier {
    * @returns {Substance|null} Found substance or null
    * @private
    */
-  _getSubstanceExists(substanceName, applicationName) {
+  _getSubstanceByName(substanceName, applicationName) {
     const self = this;
     const application = self._program.getApplication(applicationName);
     if (!application) return null;
