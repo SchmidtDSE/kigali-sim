@@ -2413,8 +2413,8 @@ class SubstanceTablePresenter {
    */
   _showUploadPane() {
     const self = this;
-    const uploadPane = self._dialog.querySelector(".upload-pane");
-    const dialogButtons = self._dialog.querySelector(".dialog-buttons");
+    const uploadPane = self._dialog.querySelector("#substances-upload-pane");
+    const dialogButtons = self._dialog.querySelector("#substances-main-buttons");
 
     uploadPane.style.display = "block";
     dialogButtons.style.display = "none";
@@ -2427,8 +2427,8 @@ class SubstanceTablePresenter {
    */
   _hideUploadPane() {
     const self = this;
-    const uploadPane = self._dialog.querySelector(".upload-pane");
-    const dialogButtons = self._dialog.querySelector(".dialog-buttons");
+    const uploadPane = self._dialog.querySelector("#substances-upload-pane");
+    const dialogButtons = self._dialog.querySelector("#substances-main-buttons");
 
     uploadPane.style.display = "none";
     dialogButtons.style.display = "block";
