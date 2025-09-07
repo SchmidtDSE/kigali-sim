@@ -1210,24 +1210,7 @@ class MetaChangeApplier {
     // Ensure application exists
     self._ensureApplicationExists(newMetadata.getApplication());
 
-    let existingSubstance = null;
-    if (oldName && oldName.trim()) {
-      // Parse the key field to get substance name and application
-      const parsed = self._parseKeyField(oldName);
-      if (parsed) {
-        // Use parsed substance name to find existing substance
-        existingSubstance = self._getSubstanceExists(
-          parsed.substanceName,
-          parsed.applicationName,
-        );
-      } else {
-        // Fallback: treat oldName as direct substance name
-        existingSubstance = self._getSubstanceExists(
-          oldName,
-          newMetadata.getApplication(),
-        );
-      }
-    }
+    const existingSubstance = self._getSubstanceByKey(oldName, newMetadata.getApplication());
 
     if (existingSubstance) {
       self._updateMetadataSingle(newMetadata, existingSubstance);
@@ -1299,6 +1282,29 @@ class MetaChangeApplier {
   }
 
   /**
+   * Get a substance by key field or name.
+   * Tries to parse the key as a CSV key field first, then falls back to treating it as a name.
+   *
+   * @param {string} key - The key or name to search for
+   * @param {string} defaultApplication - Default application if key doesn't specify one
+   * @returns {Substance|null} Found substance or null
+   * @private
+   */
+  _getSubstanceByKey(key, defaultApplication) {
+    const self = this;
+    if (!key || !key.trim()) return null;
+
+    // Try to parse as a CSV key field
+    const parsed = self._parseKeyField(key);
+    if (parsed) {
+      return self._getSubstanceByName(parsed.substanceName, parsed.applicationName);
+    } else {
+      // Fallback: treat as direct substance name
+      return self._getSubstanceByName(key, defaultApplication);
+    }
+  }
+
+  /**
    * Check if a substance exists by name in an application.
    *
    * @param {string} substanceName - Name to search for
@@ -1306,7 +1312,7 @@ class MetaChangeApplier {
    * @returns {Substance|null} Found substance or null
    * @private
    */
-  _getSubstanceExists(substanceName, applicationName) {
+  _getSubstanceByName(substanceName, applicationName) {
     const self = this;
     const application = self._program.getApplication(applicationName);
     if (!application) return null;

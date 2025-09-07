@@ -582,6 +582,10 @@ select option[disabled] {
   border-top: 1px dotted #C0C0C0;
 }
 
+.options-panel.buttons-panel {
+  margin-bottom: 1em;
+}
+
 .policy-sim-list label {
   font-weight: normal;
 }
