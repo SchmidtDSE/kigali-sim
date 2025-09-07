@@ -163,6 +163,21 @@
             <a href="#" class="close-button primary">Close</a>
           </div>
         </dialog>
+        <dialog id="ai-assistant-dialog">
+          <h2>AI Assistant</h2>
+          <p>Any AI assistant can be used for QubecTalk development. We use <a href="https://claude.ai/" target="_blank">Claude</a> as an example.</p>
+          <p>To get started with AI assistance:</p>
+          <ul>
+            <li>Direct your AI assistant to read our comprehensive documentation: <a href="https://kigalisim.org/llms.txt" target="_blank">https://kigalisim.org/llms.txt</a></li>
+            <li>AI assistants can help modify simulations by reading and writing QubecTalk code</li>
+            <li>Provide your current code from the editor to the AI assistant</li>
+            <li>Request the AI assistant to provide code that can be pasted back into the code editor</li>
+          </ul>
+          <p><strong>Important:</strong> Use of AI assistants is subject to their respective terms of use and privacy policies.</p>
+          <div class="dialog-buttons bold-buttons">
+            <a href="#" class="close-button primary">Close</a>
+          </div>
+        </dialog>
       </div>
     </header>
 
@@ -982,6 +997,7 @@
               <div id="code-buttons-panel" class="buttons-panel code-buttons-grid">
                 <div id="available-panel">
                   <a class="primary" id="run-button" href="#loading">Run</a>
+                  <a class="secondary" id="ai-assistant-button" href="#ai-dialog">AI</a>
                 </div>
                 <div id="auto-run-panel">
                   <label for="auto-run-check">Automatically re-run when code is changed</label>
