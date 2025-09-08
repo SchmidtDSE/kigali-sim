@@ -14,6 +14,14 @@ Finally, we want to again express our gratitude for your feedback and time.
 
 The following changes have been adopted and released.
 
+### AI assistant support
+
+**Status**: Released September 6, 2025
+
+**Classification**: Enhancement
+
+Added buttons which offer instruction for using AI assistants via llms.txt through QubecTalk. See [#520](https://github.com/SchmidtDSE/kigali-sim/issues/520).
+
 ### Metadata import / export
 
 **Status**: Released September 6, 2025

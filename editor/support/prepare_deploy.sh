@@ -10,6 +10,7 @@ cp privacy.html deploy/privacy.html
 cp manifest.json deploy/manifest.json
 cp service_worker.js deploy/service_worker.js
 cp ../llms.txt deploy/llms.txt
+cp ../llms-full.txt deploy/llms-full.txt
 
 # Keep only the specific font file needed
 find deploy/third_party/publicsans -type f ! -path "*/fonts/otf/PublicSans-Regular.otf" -delete

@@ -164,6 +164,26 @@
             <a href="#" class="close-button primary">Close</a>
           </div>
         </dialog>
+        <dialog id="ai-assistant-dialog">
+          <h2>AI Assistant</h2>
+          <p>Any AI assistant can be optionally used for building simulations in Kigali Sim by directing them to read and write QubecTalk code. For example, we use <a href="https://claude.ai/" target="_blank">Claude</a>.</p>
+          <p>To get started, direct your AI assistant to read <a href="https://kigalisim.org/llms.txt" target="_blank">https://kigalisim.org/llms.txt</a> and <a href="https://kigalisim.org/llms-full.txt" target="_blank">https://kigalisim.org/llms-full.txt</a>. This is provided using the llms.txt standard to teach the AI about how to use our tool.</p>
+          <p>Afterwards, prompt the AI assistant to help. They can help modify simulations by reading and writing QubecTalk code. Therefore, simply provide your current code from the editor to the AI assistant. Then, request that assistant provide code that can be pasted back into the code editor.</p>
+          <p><strong>Remember:</strong> Use of AI assistants is subject to their respective terms of use and privacy policies. Use of AI agents is entirelly optional.</p>
+          <div class="dialog-buttons bold-buttons">
+            <a href="#" class="close-button primary">Close</a>
+          </div>
+        </dialog>
+
+        <dialog id="ai-designer-dialog">
+          <h2>AI Assistant</h2>
+          <p>Any AI assistant can optionally be used for building simulations in Kigali Sim. For example, we use <a href="https://claude.ai/" target="_blank">Claude</a>.</p>
+          <p>AI assistants can modify simulations by reading and writing QubecTalk code. Learn about the code-based interface in <a href="/guide/tutorial_07.html" target="_blank">Tutorial 7</a>.</p>
+          <p>When you are ready, switch to the <strong>Editor</strong> tab to access the code-based interface and click the <strong>AI</strong> button at the bottom of the editor for detailed instructions.</p>
+          <div class="dialog-buttons bold-buttons">
+            <a href="#" class="close-button primary">Close</a>
+          </div>
+        </dialog>
       </div>
     </header>
 
@@ -955,10 +975,14 @@
                     <a href="#" class="close-button destructive">Close</a>
                   </div>
                 </dialog>
-                <div class="options-panel buttons-panel">
+                <div class="options-panel buttons-panel designer-buttons-layout">
                   <a href="#substances-table" class="secondary substances-table-link" 
                      data-tippy-content="Download and upload CSV files containing substance metadata for import/export operations">
                     Import / Export Substances
+                  </a>
+                  <a href="#ai-designer-dialog" class="secondary ai-designer-button" 
+                     data-tippy-content="Learn how to use AI assistants with KigaliSim simulations">
+                    AI
                   </a>
                 </div>
                 <div class="advanced-link-pane">
@@ -984,6 +1008,7 @@
               <div id="code-buttons-panel" class="buttons-panel code-buttons-grid">
                 <div id="available-panel">
                   <a class="primary" id="run-button" href="#loading">Run</a>
+                  <a class="secondary" id="ai-assistant-button" href="#ai-dialog">AI</a>
                 </div>
                 <div id="auto-run-panel">
                   <label for="auto-run-check">Automatically re-run when code is changed</label>

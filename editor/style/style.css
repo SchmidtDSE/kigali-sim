@@ -586,6 +586,30 @@ select option[disabled] {
   margin-bottom: 1em;
 }
 
+.designer-buttons-layout {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+
+.designer-buttons-layout .secondary {
+  flex: 0 1 auto;
+}
+
+/* Ensure buttons work well on smaller screens */
+@media (max-width: 30em) {
+  .designer-buttons-layout {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .designer-buttons-layout .secondary {
+    width: 100%;
+    text-align: center;
+  }
+}
+
 .policy-sim-list label {
   font-weight: normal;
 }
