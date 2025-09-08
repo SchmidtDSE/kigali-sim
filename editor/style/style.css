@@ -582,6 +582,34 @@ select option[disabled] {
   border-top: 1px dotted #C0C0C0;
 }
 
+.options-panel.buttons-panel {
+  margin-bottom: 1em;
+}
+
+.designer-buttons-layout {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+
+.designer-buttons-layout .secondary {
+  flex: 0 1 auto;
+}
+
+/* Ensure buttons work well on smaller screens */
+@media (max-width: 30em) {
+  .designer-buttons-layout {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .designer-buttons-layout .secondary {
+    width: 100%;
+    text-align: center;
+  }
+}
+
 .policy-sim-list label {
   font-weight: normal;
 }
@@ -889,5 +917,28 @@ dialog .checkbox-list label {
 /* Hide up-to-date message by default in update dialog */
 #up-to-date-message {
   display: none;
+}
+
+/* Hide upload pane by default in substances table dialog */
+.upload-pane {
+  display: none;
+  padding-bottom: 10px;
+  margin-bottom: 10px;
+}
+
+.upload-pane input[type="file"] {
+  margin-bottom: 10px;
+  width: 100%;
+}
+
+.lookup-link {
+  margin-left: 8px;
+  font-size: 0.9em;
+  color: #0066cc;
+  text-decoration: none;
+}
+
+.lookup-link:hover {
+  text-decoration: underline;
 }
 

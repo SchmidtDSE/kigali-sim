@@ -30,3 +30,4 @@ fi
 [ ! -e third_party/prism-autoloader.min.js ] && wget https://cdnjs.cloudflare.com/ajax/libs/prism/1.30.0/plugins/autoloader/prism-autoloader.min.js -O third_party/prism-autoloader.min.js
 [ ! -e third_party/popper.min.js ] && wget https://unpkg.com/@popperjs/core@2.11.8/dist/umd/popper.min.js -O third_party/popper.min.js
 [ ! -e third_party/tippy-bundle.umd.min.js ] && wget https://unpkg.com/tippy.js@6.3.7/dist/tippy-bundle.umd.min.js -O third_party/tippy-bundle.umd.min.js
+[ ! -e third_party/papaparse.min.js ] && wget https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js -O third_party/papaparse.min.js

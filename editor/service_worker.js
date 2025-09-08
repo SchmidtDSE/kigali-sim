@@ -85,6 +85,9 @@ const ESSENTIAL_FILES = [
     "/third_party/publicsans/fonts/webfonts/PublicSans-Medium.woff2",
     "/third_party/publicsans/fonts/webfonts/PublicSans-Light.woff2",
     
+    // JSON data files
+    "/json/known_gwp.json",
+    
     // Example files (workshop sample)
     "/examples/workshop.qta",
     "/examples/basic.qta",

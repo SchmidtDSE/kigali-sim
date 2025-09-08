@@ -154,6 +154,7 @@ We thank the following Open Source libraries:
 - [Chart.js](https://www.chartjs.org/) for rendering some charts and graphs under [MIT](https://github.com/chartjs/Chart.js/blob/master/LICENSE.md).
 - [D3](https://d3js.org/) for data visualization under [ISC](https://github.com/d3/d3/blob/main/LICENSE).
 - [ESLint]((https://eslint.org/)) for code style enforcement under [MIT](https://github.com/eslint/eslint/blob/main/LICENSE).
+- [Papa Parse](https://www.papaparse.com/) for CSV file parsing under [MIT](https://github.com/mholt/PapaParse/blob/master/LICENSE).
 - [Popper](https://popper.js.org/) under the [MIT License](https://github.com/floating-ui/floating-ui/blob/master/LICENSE).
 - [Prism.js](https://prismjs.com/) for syntax highlighting under [MIT](https://github.com/PrismJS/prism/blob/v2/LICENSE).
 - [Public Sans](https://public-sans.digital.gov/) font under [OFL-1.1](https://github.com/uswds/public-sans/blob/master/LICENSE.md).

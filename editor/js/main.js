@@ -952,6 +952,130 @@ class PrivacyConfirmationPresenter {
 }
 
 /**
+ * Presenter for managing the AI assistant dialog.
+ */
+class AIAssistantPresenter {
+  constructor() {
+    const self = this;
+    self._dialog = document.getElementById("ai-assistant-dialog");
+    self._closeButton = self._dialog.querySelector(".close-button");
+    self._aiButton = document.getElementById("ai-assistant-button");
+    self._setupEventListeners();
+  }
+
+  /**
+   * Set up event listeners for AI button and dialog interactions.
+   */
+  _setupEventListeners() {
+    const self = this;
+
+    // AI button click handler
+    self._aiButton.addEventListener("click", (event) => {
+      event.preventDefault();
+      self._showDialog();
+    });
+
+    // Close button handler
+    self._closeButton.addEventListener("click", (event) => {
+      event.preventDefault();
+      self._hideDialog();
+    });
+
+    // ESC key and backdrop click handler
+    self._dialog.addEventListener("close", () => {
+      self._onDialogClose();
+    });
+  }
+
+  /**
+   * Show the AI assistant dialog.
+   */
+  _showDialog() {
+    const self = this;
+    self._dialog.showModal();
+  }
+
+  /**
+   * Hide the AI assistant dialog.
+   */
+  _hideDialog() {
+    const self = this;
+    self._dialog.close();
+  }
+
+  /**
+   * Handle dialog close event.
+   */
+  _onDialogClose() {
+    // Handle any cleanup needed when dialog closes
+  }
+}
+
+/**
+ * Presenter for managing the AI designer dialog.
+ */
+class AIDesignerPresenter {
+  constructor() {
+    const self = this;
+    self._dialog = document.getElementById("ai-designer-dialog");
+    self._closeButton = self._dialog?.querySelector(".close-button");
+    self._aiButton = document.getElementById("ai-designer-button");
+
+    // Check if elements exist before setting up listeners
+    if (self._dialog && self._closeButton && self._aiButton) {
+      self._setupEventListeners();
+    }
+  }
+
+  /**
+   * Set up event listeners for AI button and dialog interactions.
+   */
+  _setupEventListeners() {
+    const self = this;
+
+    // AI button click handler
+    self._aiButton.addEventListener("click", (event) => {
+      event.preventDefault();
+      self._showDialog();
+    });
+
+    // Close button handler
+    self._closeButton.addEventListener("click", (event) => {
+      event.preventDefault();
+      self._hideDialog();
+    });
+
+    // ESC key and backdrop click handler
+    self._dialog.addEventListener("close", () => {
+      self._onDialogClose();
+    });
+  }
+
+  /**
+   * Show the AI designer dialog.
+   */
+  _showDialog() {
+    const self = this;
+    self._dialog.showModal();
+  }
+
+  /**
+   * Hide the AI designer dialog.
+   */
+  _hideDialog() {
+    const self = this;
+    self._dialog.close();
+  }
+
+  /**
+   * Handle dialog close event.
+   */
+  _onDialogClose() {
+    // Handle any cleanup needed when dialog closes
+  }
+}
+
+/**
  * Presenter for managing the introduction sequence.
  */
 class IntroductionPresenter {
@@ -1026,6 +1150,8 @@ function main() {
   const onLoad = () => {
     const mainPresenter = new MainPresenter();
     const privacyPresenter = new PrivacyConfirmationPresenter();
+    const aiAssistantPresenter = new AIAssistantPresenter();
+    const aiDesignerPresenter = new AIDesignerPresenter();
     const introPresenter = new IntroductionPresenter(mainPresenter._localStorageKeeper);
 
     const showApp = async () => {
@@ -1067,4 +1193,6 @@ export {
   ButtonPanelPresenter,
   MainPresenter,
   PrivacyConfirmationPresenter,
+  AIAssistantPresenter,
+  AIDesignerPresenter,
 };
