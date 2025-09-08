@@ -907,3 +907,14 @@ dialog .checkbox-list label {
   width: 100%;
 }
 
+.lookup-link {
+  margin-left: 8px;
+  font-size: 0.9em;
+  color: #0066cc;
+  text-decoration: none;
+}
+
+.lookup-link:hover {
+  text-decoration: underline;
+}
+

@@ -1,6 +1,7 @@
 mkdir deploy
 cp -r intermediate deploy/intermediate
 cp -r js deploy/js
+cp -r json deploy/json
 cp -r style deploy/style
 cp -r third_party deploy/third_party
 cp -r wasm deploy/wasm
