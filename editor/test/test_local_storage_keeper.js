@@ -15,9 +15,9 @@ function buildLocalStorageKeeperTests() {
       const testCode = `start default
   define application "refrigeration"
     uses substance "HFC-134a"
-      enable manufacture
-      initial charge with 0.15 kg / unit for manufacture
-      set manufacture to 500 mt during year 1
+      enable domestic
+      initial charge with 0.15 kg / unit for domestic
+      set domestic to 500 mt during year 1
       equals 1430 kgCO2e / kg
     end substance
   end application
