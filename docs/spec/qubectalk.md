@@ -96,19 +96,19 @@ end application
 Note that the same substances may be included across multiple applications. Furthermore, these may be imported or built domestically. When defining these substances, an initial charge should be provided:
 
 ```
-initial charge with 0.12 kg / unit for manufacture
+initial charge with 0.12 kg / unit for domestic
 initial charge with 0.30 kg / unit for import
 ```
 
 If this is omitted and the substance has sales, an error message may be shown. Note that the initial charge statement would appear where it says `# Logic for a substance` along with other logic for that substance.
 
 ### Sales
-The sale of substances typically defines the equipment population. QubecTalk considers sales to fit into two groups: `manufacture` and `import`. Though not currently used, `export` is reserved for future use.
+The sale of substances typically defines the equipment population. QubecTalk considers sales to fit into two groups: `domestic` and `import`. Though not currently used, `export` is reserved for future use.
 
-**Enable Statement**: Before setting sales values, streams must be explicitly enabled using the `enable` command. This command indicates which streams (manufacture, import, export) will be used for a substance:
+**Enable Statement**: Before setting sales values, streams must be explicitly enabled using the `enable` command. This command indicates which streams (domestic, import, export) will be used for a substance:
 
 ```
-enable manufacture
+enable domestic
 enable import
 enable export
 ```
@@ -124,7 +124,7 @@ By convention, enable statements should be placed at the top of substance defini
 This can be established through the following example statements:
 
 ```
-set manufacture to 350000 mt during year 1
+set domestic to 350000 mt during year 1
 change sales by +5 % each year during years beginning to 6
 change import by +3 % each year during years 6 to onwards
 ```
@@ -142,7 +142,7 @@ These are specified using the same statements but indication that the sales flow
 ```
 set sales to 90000 mt during year 1
 change import by +5 % each year
-change manufacture by +3 % each year during years 6 to 9
+change domestic by +3 % each year during years 6 to 9
 ```
 
 Exports are reserved for future use. Again, if no stream is specified, it will apply proportionally across sub-streams (domestic manufacturing and imports).
@@ -218,7 +218,7 @@ cap sales to 75 %
 cap import to 750 mt during years 4 to 5
 ```
 
-Note that sales are the only type which can currently accept the cap. If specifying an aggregate stream, it will be applied proportionally. For example, for sales, the effect will be split proportionally between manufacture and imports.
+Note that sales are the only type which can currently accept the cap. If specifying an aggregate stream, it will be applied proportionally. For example, for sales, the effect will be split proportionally between domestic and imports.
 
 ### Recycling
 Recycling programs are defined as percent refrigerant recovery and loss rate for reuse
@@ -318,7 +318,7 @@ Developers can manually set a value of a stream:
 ```
 set import to 1 mt in year 2
 set sales of "HFC-134a" to 1 mt
-set manufacture of "HFC-134a" to 1 mt during year 2
+set domestic of "HFC-134a" to 1 mt during year 2
 ```
 
 If year is not specified, it is applied in all years. Values can also be used in expressions.
@@ -385,7 +385,7 @@ While the system can operate with constraints through `cap`, updates are applied
 
 | **Trigger**                 | **Sales**                                       | **Consumption**                        | **Population**                                                                                  |
 | ------------------------------------------------------ | ----------------------------------------------- | ------------------------------------ | ----------------------------------------------------------------------------------------------- |
-| Sales (manufacture, import) | Changed directly                                | Recalc using equals value              | Recalc new and total equip after subtract recharge and recycle, retiring at recharge if needed. |
+| Sales (domestic, import) | Changed directly                                | Recalc using equals value              | Recalc new and total equip after subtract recharge and recycle, retiring at recharge if needed. |
 | Consumption                   | Recalc after add recharge and subtract recycle. | Changed directly                     | Recalc new and total equip after subtract recharge and recycle, retiring at recharge if needed. |
 | Population (equipment)      | Recalc after add recharge and subtract recycle. | Recalc after sales update using equals | New equip and total current equip changes but prior equip untouched.                            |
 | Population (priorEquipment) | No change                                       | No change                            | Change prior equip. New and total equipment recalculated.                                       |
@@ -426,7 +426,7 @@ Recalculating consumption largely relies on manufacturing numbers and applies to
  - Convert to consumption.
  - Set negative total consumption to zero (treat net negative consumption as credit taken elsewhere).
 
-Note that consumption are applied to point of manufacture (exporter not importer).
+Note that consumption are applied to point of domestic (exporter not importer).
 
 ## Sales response
 Sales updating to changes in other variables scales imports and manufacturing proportionally as to meet the requirements of recharge and sales.
@@ -448,16 +448,16 @@ start default
   define application "dom refrig"
 
     uses substance "HFC-134a"
-      enable manufacture
+      enable domestic
       enable import
       equals 1430 tCO2e / mt
       equals 100 kwh / unit
 
       # Domestic production
-      initial charge with 0.12 kg / unit for manufacture
-      set manufacture to 350000 kg during year 1
-      change manufacture by +5 % each year during years 1 to 5
-      change manufacture by +3 % each year during years 6 to 9
+      initial charge with 0.12 kg / unit for domestic
+      set domestic to 350000 kg during year 1
+      change domestic by +5 % each year during years 1 to 5
+      change domestic by +3 % each year during years 6 to 9
 
       # Trade
       initial charge with 0.30 kg / unit for import
@@ -474,15 +474,15 @@ start default
     end substance
 
     uses substance "R-600a"
-      enable manufacture
+      enable domestic
       enable import
       equals 6 tCO2e / mt
       equals 80 kwh / unit
 
       # Domestic production
-      initial charge with 0.05 kg / unit for manufacture
-      set manufacture to 200000 kg during year 1
-      change manufacture by +8 % each year
+      initial charge with 0.05 kg / unit for domestic
+      set domestic to 200000 kg during year 1
+      change domestic by +8 % each year
 
       # Trade
       initial charge with 0.05 kg / unit for import
@@ -506,10 +506,10 @@ start default
       equals 100 kwh / unit
 
       # Domestic production
-      initial charge with 0.30 kg / unit for manufacture
-      set manufacture to 90000 kg during year 1
-      change manufacture by +5 % each year during years 1 to 5
-      change manufacture by +3 % each year during years 6 to 9
+      initial charge with 0.30 kg / unit for domestic
+      set domestic to 90000 kg during year 1
+      change domestic by +5 % each year during years 1 to 5
+      change domestic by +3 % each year during years 6 to 9
 
       # Trade
       initial charge with 0.30 kg / unit for import
@@ -530,9 +530,9 @@ start default
       equals 80 kwh / unit
 
       # Domestic production
-      initial charge with 0.12 kg / unit for manufacture
-      set manufacture to 10000 kg during year 1
-      change manufacture by +8 % each year
+      initial charge with 0.12 kg / unit for domestic
+      set domestic to 10000 kg during year 1
+      change domestic by +8 % each year
 
       # Trade
       initial charge with 0.12 kg / unit for import
@@ -552,9 +552,9 @@ start default
       equals 100 kwh / unit
 
       # Domestic production
-      initial charge with 0.30 kg / unit for manufacture
-      set manufacture to 30000 kg during year 1
-      change manufacture by +5 % each year
+      initial charge with 0.30 kg / unit for domestic
+      set domestic to 30000 kg during year 1
+      change domestic by +5 % each year
 
       # Trade
       initial charge with 0.30 kg / unit for import
@@ -578,10 +578,10 @@ start default
       equals 80 kwh / unit
 
       # Domestic production
-      initial charge with 0.90 kg / unit for manufacture
-      set manufacture to 175000 kg during year 1
-      change manufacture by +5 % each year during years 1 to 5
-      change manufacture by +3 % each year during years 6 to 9
+      initial charge with 0.90 kg / unit for domestic
+      set domestic to 175000 kg during year 1
+      change domestic by +5 % each year during years 1 to 5
+      change domestic by +3 % each year during years 6 to 9
 
       # Trade
       initial charge with 0.90 kg / unit for import
@@ -602,9 +602,9 @@ start default
       equals 100 kwh / unit
 
       # Domestic production
-      initial charge with 0.68 kg / unit for manufacture
-      set manufacture to 85000 kg during year 1
-      change manufacture by +8 % each year
+      initial charge with 0.68 kg / unit for domestic
+      set domestic to 85000 kg during year 1
+      change domestic by +8 % each year
 
       # Trade
       initial charge with 0.68 kg / unit for import
@@ -624,9 +624,9 @@ start default
       equals 80 kwh / unit
 
       # Domestic production
-      initial charge with 0.68 kg / unit for manufacture
-      set manufacture to 10000 kg during year 1
-      change manufacture by +5 % each year
+      initial charge with 0.68 kg / unit for domestic
+      set domestic to 10000 kg during year 1
+      change domestic by +5 % each year
 
       # Trade
       initial charge with 0.68 kg / unit for import
@@ -650,10 +650,10 @@ start default
       equals 100 kwh / unit
 
       # Domestic production
-      initial charge with 0.90 kg / unit for manufacture
-      set manufacture to 175000 kg during year 1
-      change manufacture by +5 % each year during years 1 to 5
-      change manufacture by +3 % each year during years 6 to 9
+      initial charge with 0.90 kg / unit for domestic
+      set domestic to 175000 kg during year 1
+      change domestic by +5 % each year during years 1 to 5
+      change domestic by +3 % each year during years 6 to 9
 
       # Trade
       initial charge with 0.90 kg / unit for import
@@ -674,9 +674,9 @@ start default
       equals 80 kwh / unit
 
       # Domestic production
-      initial charge with 0.90 kg / unit for manufacture
-      set manufacture to 85000 kg during year 1
-      change manufacture by +8 % each year
+      initial charge with 0.90 kg / unit for domestic
+      set domestic to 85000 kg during year 1
+      change domestic by +8 % each year
 
       # Trade
       initial charge with 0.90 kg / unit for import
@@ -717,7 +717,7 @@ start policy "dom refrig low-GWP"
 
     modify substance "HFC-134a"
       define level as limit (yearAbsolute - 2) * 20 to [0, 100]
-      replace level % of manufacture with "R-600a" during years 3 to onwards
+      replace level % of domestic with "R-600a" during years 3 to onwards
       replace level % of import with "R-600a" during years 3 to onwards
     end substance
 
@@ -753,13 +753,13 @@ start policy "com refrig low-GWP"
 
     modify substance "HFC-134a"
       define level as limit (yearAbsolute - 2) * 20 to [0, 100]
-      replace level % of manufacture with "R-600a" during years 3 to onwards
+      replace level % of domestic with "R-600a" during years 3 to onwards
       replace level % of import with "R-600a" during years 3 to onwards
     end substance
 
     modify substance "R-404A"
       define level as limit (yearAbsolute - 2) * 20 to [0, 100]
-      replace level % of manufacture with "R-600a" during years 3 to onwards
+      replace level % of domestic with "R-600a" during years 3 to onwards
       replace level % of import with "R-600a" during years 3 to onwards
     end substance
 
@@ -795,13 +795,13 @@ start policy "res AC low-GWP"
 
     modify substance "R-410A"
       define level as limit (yearAbsolute - 2) * 20 to [0, 100]
-      replace level % of manufacture with "R-290" during years 3 to onwards
+      replace level % of domestic with "R-290" during years 3 to onwards
       replace level % of import with "R-290" during years 3 to onwards
     end substance
 
     modify substance "HFC-32"
       define level as limit (yearAbsolute - 2) * 20 to [0, 100]
-      replace level % of manufacture with "R-290" during years 3 to onwards
+      replace level % of domestic with "R-290" during years 3 to onwards
       replace level % of import with "R-290" during years 3 to onwards
     end substance
 
@@ -837,7 +837,7 @@ start policy "mobile AC low-GWP"
 
     modify substance "HFC-134a"
       define level as limit (yearAbsolute - 2) * 20 to [0, 100]
-      replace level % of manufacture with "R-1234yf" during years 3 to onwards
+      replace level % of domestic with "R-1234yf" during years 3 to onwards
       replace level % of import with "R-1234yf" during years 3 to onwards
     end substance
 
