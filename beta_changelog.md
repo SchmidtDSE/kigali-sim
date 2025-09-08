@@ -16,7 +16,7 @@ The following changes have been adopted and released.
 
 ### GWP lookup
 
-**Status**: Released September 6, 2025
+**Status**: Released September 7, 2025
 
 **Classification**: Enhancement
 
@@ -24,7 +24,7 @@ Added a lookup button to see if a given substance is a known substance and it ca
 
 ### AI assistant support
 
-**Status**: Released September 6, 2025
+**Status**: Released September 7, 2025
 
 **Classification**: Enhancement
 
@@ -32,7 +32,7 @@ Added buttons which offer instruction for using AI assistants via llms.txt throu
 
 ### Metadata import / export
 
-**Status**: Released September 6, 2025
+**Status**: Released September 7, 2025
 
 **Classification**: Enhancement
 
@@ -40,7 +40,7 @@ By popular demand, we now support using spreadsheets to export data on substance
 
 ### Fix replace for mid-year equipment calculation
 
-**Status**: Released September 5, 2025 (preview) and September 6, 2025 (all users)
+**Status**: Released September 5, 2025 (preview) and September 7, 2025 (all users)
 
 **Classification**: Bug
 
