@@ -6,6 +6,7 @@
 import {EngineNumber} from "engine_number";
 import {YearMatcher} from "year_matcher";
 import {MetaSerializer, MetaChangeApplier} from "meta_serialization";
+import {GwpLookupPresenter} from "known_substance";
 
 import {
   Application,
@@ -838,6 +839,22 @@ class ConsumptionListPresenter {
     );
 
     setupDialogInternalLinks(self._root, self._tabs);
+
+    // Initialize GWP lookup functionality
+    const lookupLink = self._root.querySelector("#lookup-gwp");
+    const substanceInput = self._dialog.querySelector(".edit-consumption-substance-input");
+    const ghgInput = self._dialog.querySelector(".edit-consumption-ghg-input");
+    const ghgUnitsInput = self._dialog.querySelector(".edit-consumption-ghg-units-input");
+    const gwpPathInput = document.getElementById("known-gwp-path");
+    const jsonPath = gwpPathInput ? gwpPathInput.value : "json/known_gwp.json";
+
+    self._gwpLookupPresenter = new GwpLookupPresenter(
+      lookupLink,
+      substanceInput,
+      ghgInput,
+      ghgUnitsInput,
+      jsonPath,
+    );
 
     const enableImport = self._dialog.querySelector(".enable-import-checkbox");
     const enableDomestic = self._dialog.querySelector(".enable-domestic-checkbox");
