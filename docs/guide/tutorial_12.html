@@ -31,12 +31,14 @@
         <h2>Motivation</h2>
 
         <p>
-          Beyond refrigerant choice, equipment energy efficiency plays a crucial role in the overall environmental impact of cooling systems. Energy-efficient equipment consumes less electricity, reducing both operational costs and indirect emissions from power generation. In this tutorial, we'll model an energy efficiency policy that gradually replaces high-energy equipment with low-energy alternatives. To narrow our focus to these effects, we'll examine how this transition can significantly reduce overall energy consumption (measured in kWh) while maintaining the same refrigerant type and cooling capacity.
+          In the <a href="/guide/tutorial_11.html">previous tutorial</a>, we explored GWP but equipment energy efficiency also plays a crucial role in environmental impact. Energy-efficient equipment consumes less electricity, reducing both operational costs and indirect emissions from power generation. In this tutorial, we'll model an energy efficiency policy that gradually replaces high-energy equipment with low-energy alternatives. To narrow our focus to these effects, we'll examine how this transition can significantly reduce overall energy consumption (measured in kWh) while maintaining the same refrigerant type and cooling capacity. However, in practice, you can model both changes in substance and changes in equipment simultaneously.
         </p>
       </section>
 
       <section id="setup-business-as-usual">
         <h2>Setting Up the Business-as-Usual Scenario</h2>
+        
+        <p><strong>Note:</strong> In these feature specific tutorials, we will start from scratch each time. Click <strong>Save File</strong> to save your current work and then click <strong>New File</strong> to start a simulation.</p>
 
         <p>
           Let's create our baseline scenario with both high-energy and low-energy models of the same HFC-134a refrigeration equipment. We'll start with high-energy models dominating the market and minimal low-energy model adoption.
@@ -44,38 +46,39 @@
 
         <p><strong>Step 1: Create the Domestic Refrigeration application</strong></p>
         <ul>
-          <li>Click <strong>Add Application</strong></li>
-          <li>Name it "Domestic Refrigeration"</li>
-          <li>Click <strong>Save</strong></li>
+          <li>Click <strong>Add Application</strong>.</li>
+          <li>Name it "Domestic Refrigeration" without quotes.</li>
+          <li>Click <strong>Save</strong>.</li>
         </ul>
 
         <p><strong>Step 2: Add HFC-134a High Energy equipment model</strong></p>
         <ul>
-          <li>Click <strong>Add Consumption</strong></li>
-          <li>Name it "HFC-134a" and use "Domestic Refrigeration"</li>
+          <li>Click <strong>Add Consumption</strong>.</li>
           <li>On the <strong>General</strong> tab:
             <ul>
-              <li>Set <strong>GWP</strong> to 1430 kgCO2e/kg</li>
-              <li>Enable <strong>domestic</strong> manufacture</li>
-              <li>Set <strong>annual energy consumption</strong> to 500 kwh/unit, referring to annual amortized consumption</li>
+              <li>Name it "HFC-134a" and use "Domestic Refrigeration" without quotes.</li>
+              <li>Select Domestic Refrigeration as the <strong>Application</strong>.</li>
+              <li>Set <strong>GWP</strong> to 1430 kgCO2e/kg.</li>
+              <li>Set <strong>annual energy consumption</strong> to 500 kwh/unit, referring to annual amortized consumption.</li>
+              <li>Enable <strong>domestic</strong> manufacture.</li>
             </ul>
           </li>
           <li>On the <strong>Equipment</strong> tab:
             <ul>
-              <li>Set <strong>equipment type</strong> as "high energy"</li>
-              <li>Set <strong>initial charge</strong> to 0.15 kg/unit for domestic manufacture</li>
-              <li>Set <strong>annual retirement</strong> to 5% each year</li>
+              <li>Set <strong>equipment type</strong> as "high energy" without quotes.</li>
+              <li>Set <strong>initial charge</strong> to 0.15 kg/unit for domestic manufacture.</li>
+              <li>Set <strong>annual retirement</strong> to 5% each year.</li>
             </ul>
           </li>
           <li>On the <strong>Servicing</strong> tab:
             <ul>
-              <li>Set <strong>recharge</strong> to 10% with 0.15 kg/unit during all years</li>
+              <li>Set <strong>recharge</strong> to 10% with 0.15 kg/unit during all years.</li>
             </ul>
           </li>
           <li>On the <strong>Set</strong> tab:
             <ul>
-              <li>Set <strong>prior equipment</strong> to 1,000,000 units in year 2025</li>
-              <li>Set <strong>domestic</strong> manufacture to 20 mt in year 2025</li>
+              <li>Set <strong>prior equipment</strong> to 1,000,000 units in year 2025.</li>
+              <li>Set <strong>domestic</strong> manufacture to 20 mt in year 2025.</li>
             </ul>
           </li>
           <li>Click <strong>Save</strong></li>
@@ -84,30 +87,30 @@
         <p><strong>Step 3: Add HFC-134a Low Energy equipment model</strong></p>
         <ul>
           <li>Click <strong>Add Consumption</strong></li>
-          <li>Name it "HFC-134a" and use "Domestic Refrigeration"</li>
           <li>On the <strong>General</strong> tab:
             <ul>
-              <li>Set <strong>GWP</strong> to 1430 kgCO2e/kg</li>
-              <li>Set <strong>annual energy consumption</strong> to 350 kwh/unit, referring to annual amortized consumption</li>
-              <li>Enable <strong>domestic</strong> manufacture</li>
+              <li>Name it "HFC-134a" and use "Domestic Refrigeration" without quotes.</li>
+              <li>Set <strong>GWP</strong> to 1430 kgCO2e/kg.</li>
+              <li>Set <strong>annual energy consumption</strong> to 350 kwh/unit, referring to annual amortized consumption.</li>
+              <li>Enable <strong>domestic</strong> manufacture.</li>
             </ul>
           </li>
           <li>On the <strong>Equipment</strong> tab:
             <ul>
-              <li>Set <strong>equipment type</strong> as "low energy"</li>
-              <li>Set <strong>initial charge</strong> to 0.15 kg/unit for domestic manufacture</li>
-              <li>Set <strong>annual retirement</strong> to 5% each year</li>
+              <li>Set <strong>equipment type</strong> as "low energy" without quotes.</li>
+              <li>Set <strong>initial charge</strong> to 0.15 kg/unit for domestic manufacture.</li>
+              <li>Set <strong>annual retirement</strong> to 5% each year.</li>
             </ul>
           </li>
           <li>On the <strong>Servicing</strong> tab:
             <ul>
-              <li>Set <strong>recharge</strong> to 10% with 0.15 kg/unit during all years</li>
+              <li>Set <strong>recharge</strong> to 10% with 0.15 kg/unit during all years.</li>
             </ul>
           </li>
           <li>On the <strong>Set</strong> tab:
             <ul>
-              <li>Set <strong>prior equipment</strong> to 1,000 units in year 2025</li>
-              <li>Set <strong>domestic</strong> manufacture to 10 mt in year 2025</li>
+              <li>Set <strong>prior equipment</strong> to 1,000 units in year 2025.</li>
+              <li>Set <strong>domestic</strong> manufacture to 10 mt in year 2025.</li>
             </ul>
           </li>
           <li>Click <strong>Save</strong></li>
@@ -115,13 +118,13 @@
 
         <p><strong>Step 4: Create baseline simulation</strong></p>
         <ul>
-          <li>Click <strong>Add Simulation</strong></li>
-          <li>Name it "BAU"</li>
-          <li>Set duration from <strong>years 2025 to 2035</strong></li>
-          <li>Click <strong>Save</strong></li>
+          <li>Click <strong>Add Simulation</strong>.</li>
+          <li>Name it "BAU" without quotes.</li>
+          <li>Set duration from <strong>years 2025 to 2035</strong>.</li>
+          <li>Click <strong>Save</strong>.</li>
         </ul>
 
-        <p>You should now see your baseline simulation running, showing the high-energy model as the dominant equipment with much higher consumption volumes than the low-energy alternative. To see this, select the <strong>Population</strong> and <strong>Equipment</strong> radio buttons. With the specifics of the values we entered in given the production numbers and recharge demands, there is very slight decrease in high energy equipment over time and a gradual increase in low energy. However, overall population is increasing.</p>
+        <p>You should now see your baseline simulation running. We expect that the high-energy model is the dominant equipment with much higher consumption volumes than the low-energy alternative. To see this, select the <strong>Population</strong> and <strong>Equipment</strong> radio buttons (make sure <strong>All</strong> is selected in the equipment panel). With the specifics of the values we entered in given the production numbers and recharge demands, there is very slight decrease in high energy equipment over time and a gradual increase in low energy. However, overall population is increasing.</p>
       </section>
 
       <section id="adding-efficiency-policy">
@@ -133,35 +136,35 @@
 
         <p><strong>Step 1: Create the efficiency policy</strong></p>
         <ul>
-          <li>Click <strong>Add Policy</strong></li>
-          <li>Name it "Energy Efficiency"</li>
-          <li>Select <strong>Domestic Refrigeration</strong> as the application</li>
-          <li>Select <strong>HFC-134a  - high energy</strong> as the substance</li>
+          <li>Click <strong>Add Policy</strong>.</li>
+          <li>Name it "Energy Efficiency" without quotes.</li>
+          <li>Select <strong>Domestic Refrigeration</strong> as the application.</li>
+          <li>Select <strong>HFC-134a  - high energy</strong> as the substance.</li>
         </ul>
 
         <p><strong>Step 2: Configure the replacement mechanism</strong></p>
         <ul>
-          <li>Go to the <strong>Replace</strong> tab within your HFC-134a High Energy policy configuration</li>
-          <li>Click <strong>Add Replace</strong></li>
-          <li>Set to replace 20% of sales</li>
+          <li>Go to the <strong>Replace</strong> tab within your HFC-134a High Energy policy configuration.</li>
+          <li>Click <strong>Add Replacement</strong>.</li>
+          <li>Set to replace 20% of <strong>all sales</strong>.</li>
           <li>Indiciate that it is to be replaced with <strong>HFC-134a - low energy</strong></li>
           <li>Set timing to <strong>starting in 2028 to onwards</strong></li>
           <li>Click <strong>Save</strong> to finish the policy</li>
         </ul>
 
         <p>
-          This policy will progressively reduce high-energy equipment consumption relative to the BAU. Specifically, we change 10% of high energy sales each year starting in 2028 with that demand being met by low-energy equipment instead. This accelerates that change we saw earlier. However, before we can see the effects, we need to make an additional simulation.
+          This policy will progressively reduce high-energy equipment consumption relative to the BAU. Specifically, we change 20% of high energy sales each year starting in 2028 with that demand being met by low-energy equipment instead. This accelerates that change we saw earlier. However, before we can see the effects, we need to make an additional simulation.
         </p>
       </section>
 
       <section id="creating-the-simulation">
         <h2>Creating the Simulation</h2>
 
-        <p>Now let's create a simulation to compare the policy scenario with our business-as-usual baseline.</p>
+        <p>Next, let's create a simulation to compare the policy scenario with our business-as-usual baseline.</p>
 
         <ul>
-          <li>Click <strong>Add Simulation</strong></li>
-          <li>Name it "Efficiency Policy"</li>
+          <li>Click <strong>Add Simulation</strong>.</li>
+          <li>Name it "Efficiency Policy" without quotes.</li>
           <li>Check the <strong>Energy Efficiency</strong> policy checkbox</li>
           <li>Set duration from <strong>years 2025 to 2035</strong></li>
           <li>Click <strong>Save</strong></li>
@@ -183,18 +186,18 @@
           <li>Select <strong>All</strong> under the simulations list</li>
         </ul>
 
-        <p>Compare the <strong>BAU</strong> and <strong>Efficiency Policy</strong> simulations and notice how overall number of units of equipment remains effectively the same. Next, let's consider the energy consumption</p>
+        <p>Compare the <strong>BAU</strong> and <strong>Efficiency Policy</strong> simulations and notice how overall number of units of equipment remains effectively the same. Next, let's consider the energy consumption.</p>
 
         <p><strong>Energy Comparison</strong></p>
         <ul>
           <li>Keep <strong>Population</strong> selected with <strong>total</strong></li>
           <li>Select <strong>GWh / year</strong> instead of units of equipment</li>
           <li>Ensure <strong>Simulations</strong> is selected with <strong>All</strong> to compare the two scenarios</li>
-          <li>To better see the results, change <strong>Abslute Value</strong> to <strong>Relative to BAU</strong></li>
+          <li>To better see the results, change <strong>Absolute Value</strong> to <strong>Relative to BAU</strong></li>
         </ul>
 
         <p>
-          Taken together, even though total equipment population and refrigerant consumption stay roughly constant, the overall kWh consumption drops substantially. This is because we're replacing equipment that consumes 500 kWh/year with units that consume only 350 kWh/year - a 30% efficiency improvement.
+          Taken together, even though total equipment population and refrigerant consumption stay roughly constant, the overall kWh consumption drops substantially. This is because we're replacing equipment that consumes 500 kWh/year with units that consume only 350 kWh/year, a 30% efficiency improvement.
         </p>
       </section>
 
@@ -209,6 +212,8 @@
           <li><strong>Indirect impact reduction</strong>: How energy efficiency reduces environmental impact beyond direct refrigerant emissions</li>
           <li><strong>Market transformation</strong>: Modeling progressive adoption of efficient technologies relative to BAU</li>
         </ul>
+        
+        <p><strong>Note:</strong> Kigali Sim only models energy consumption and direct emissions from covered substances. However, you can use the <strong>Export Spreadsheet</strong> button to model with the country's energy mix to further explore impacts.</p>
 
         <p>
           <strong>Download the completed tutorial</strong>: <a href="tutorial_12.qta" download>tutorial_12.qta</a> - this contains the complete energy efficiency comparison model with equipment transition policy
@@ -220,10 +225,6 @@
 
         <p>
           You've now completed both Feature-Specific tutorials! You've learned how to model GWP-focused refrigerant substitution (Tutorial 11) and energy efficiency equipment transitions (Tutorial 12). These tutorials complement each other to provide a comprehensive understanding of environmental impact assessment in cooling systems.
-        </p>
-
-        <p>
-          For more complex scenarios, consider combining both approaches: policies that simultaneously transition to lower-GWP refrigerants AND more energy-efficient equipment. Return to the <a href="/guide/">guide index</a> to explore other tutorials or the QubecTalk reference for advanced modeling techniques.
         </p>
 
         <p>
