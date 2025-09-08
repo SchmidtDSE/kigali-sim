@@ -68,7 +68,7 @@ class SubstanceLibraryKeeper {
    */
   getSubstance(name) {
     const self = this;
-    if (!name || typeof name !== "string") {
+    if (!name) {
       return null;
     }
 
@@ -113,11 +113,9 @@ class GwpLookupPresenter {
     self._libraryKeeper = null;
 
     // Set up click handler
-    if (self._lookupLink) {
-      self._lookupLink.addEventListener("click", (event) => {
-        self._onLookupClick(event);
-      });
-    }
+    self._lookupLink.addEventListener("click", (event) => {
+      self._onLookupClick(event);
+    });
   }
 
   /**
@@ -142,7 +140,7 @@ class GwpLookupPresenter {
     event.preventDefault();
 
     try {
-      const substanceName = self._substanceInput ? self._substanceInput.value.trim() : "";
+      const substanceName = self._substanceInput.value.trim();
 
       if (!substanceName) {
         self._showAlert("Please enter a substance name before looking up GWP values.");
@@ -158,14 +156,10 @@ class GwpLookupPresenter {
 
       if (substance) {
         // Update the GHG input with the found value
-        if (self._ghgInput) {
-          self._ghgInput.value = substance.getGwp().toString();
-        }
+        self._ghgInput.value = substance.getGwp().toString();
 
         // Ensure units are set to kgCO2e / kg (which matches our data)
-        if (self._ghgUnitsInput) {
-          self._ghgUnitsInput.value = "kgCO2e / kg";
-        }
+        self._ghgUnitsInput.value = "kgCO2e / kg";
 
         self._showAlert(
           `Found GWP value for ${substance.getName()}: ${substance.getGwp()} kgCO2e/kg. ` +

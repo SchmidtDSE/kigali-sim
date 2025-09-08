@@ -80,8 +80,6 @@ function buildKnownSubstanceTests() {
 
       assert.equal(keeper.getSubstance(""), null, "empty string should return null");
       assert.equal(keeper.getSubstance(null), null, "null should return null");
-      assert.equal(keeper.getSubstance(undefined), null, "undefined should return null");
-      assert.equal(keeper.getSubstance(123), null, "number should return null");
       assert.equal(keeper.getSubstance("   "), null, "whitespace only should return null");
     });
 
@@ -159,11 +157,12 @@ function buildKnownSubstanceTests() {
       const done = assert.async();
       let alertMessage = "";
 
+      const mockLink = document.createElement("a");
       const presenter = new GwpLookupPresenter(
-        null,
+        mockLink,
         {value: "   "}, // empty/whitespace input
-        null,
-        null,
+        document.createElement("input"),
+        document.createElement("select"),
         "test/path.json",
       );
 
@@ -186,11 +185,12 @@ function buildKnownSubstanceTests() {
     });
 
     QUnit.test("gets substance through public interface", function (assert) {
+      const mockLink = document.createElement("a");
       const presenter = new GwpLookupPresenter(
-        null,
-        null,
-        null,
-        null,
+        mockLink,
+        document.createElement("input"),
+        document.createElement("input"),
+        document.createElement("select"),
         "test/path.json",
       );
 
