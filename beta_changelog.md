@@ -14,9 +14,33 @@ Finally, we want to again express our gratitude for your feedback and time.
 
 The following changes have been adopted and released.
 
-### Fix replace for mid-year equipment calcualtion
+### GWP lookup
 
-**Status**: Released September 5, 2025
+**Status**: Released September 6, 2025
+
+**Classification**: Enhancement
+
+Added a lookup button to see if a given substance is a known substance and it can autofill the GHG equivalency. See [#519](https://github.com/SchmidtDSE/kigali-sim/issues/519).
+
+### AI assistant support
+
+**Status**: Released September 6, 2025
+
+**Classification**: Enhancement
+
+Added buttons which offer instruction for using AI assistants via llms.txt through QubecTalk. See [#520](https://github.com/SchmidtDSE/kigali-sim/issues/520).
+
+### Metadata import / export
+
+**Status**: Released September 6, 2025
+
+**Classification**: Enhancement
+
+By popular demand, we now support using spreadsheets to export data on substances and applications registered in simulations as well as using spreadsheets to import similar metadata. This makes it easier to register substances and applications in bulk. See [#518](https://github.com/SchmidtDSE/kigali-sim/issues/518).
+
+### Fix replace for mid-year equipment calculation
+
+**Status**: Released September 5, 2025 (preview) and September 6, 2025 (all users)
 
 **Classification**: Bug
 

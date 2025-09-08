@@ -40,6 +40,7 @@
 
   <body>
     <input type="hidden" id="app-version" value="EPOCH" />
+    <input type="hidden" id="known-gwp-path" value="json/known_gwp.json?v=EPOCH" />
     <a href="#kigali-sim-app" class="skip-link">Skip to main content</a>
     <header>
       <div class="beta-warning">
@@ -159,6 +160,36 @@
 			(like by email), we do not have visibility into your data or simulations. For more
 			details, see our <a href="/privacy.html" target="_blank">Privacy Policy</a>.
           </p>
+          <div class="dialog-buttons bold-buttons">
+            <a href="#" class="close-button primary">Close</a>
+          </div>
+        </dialog>
+        <dialog id="ai-assistant-dialog">
+          <h2>AI Assistant</h2>
+          <p>AI assistants can help you build Kigali Sim simulations by reading and writing QubecTalk code. You can use any AI assistant. For example, we use <a href="https://claude.ai/" target="_blank">Claude</a>.</p>
+          <p><strong>Getting Started:</strong></p>
+          <ul>
+            <li>Direct your AI assistant to read our documentation at <a href="https://kigalisim.org/llms.txt" target="_blank">https://kigalisim.org/llms.txt</a> and <a href="https://kigalisim.org/llms-full.txt" target="_blank">https://kigalisim.org/llms-full.txt</a>.</li>
+            <li>Copy your QubecTalk code from the editor and provide it to the AI.</li>
+            <li>Ask the AI to help modify or enhance your simulation.</li>
+            <li>Copy the AI's code suggestions back into the editor. We recommend asking it to provide the complete updated code for the simulation.</li>
+          </ul>
+          <p><strong>Note:</strong> Using AI assistants is entirely optional. Their use is subject to their respective terms of service and privacy policies.</p>
+          <div class="dialog-buttons bold-buttons">
+            <a href="#" class="close-button primary">Close</a>
+          </div>
+        </dialog>
+
+        <dialog id="ai-designer-dialog">
+          <h2>AI Assistant</h2>
+          <p>AI assistants can help you build more sophisticated Kigali Sim simulations by working with QubecTalk code. You can use any AI assistant. For example, we use <a href="https://claude.ai/" target="_blank">Claude</a>.</p>
+          <p><strong>To use AI assistance:</strong></p>
+          <ol>
+            <li>Learn about the code-based interface in <a href="/guide/tutorial_07.html" target="_blank">Tutorial 7</a></li>
+            <li>Switch to the <strong>Editor</strong> tab above to access the code interface</li>
+            <li>Click the <strong>AI Assistant</strong> button at the bottom of the editor for detailed instructions</li>
+          </ol>
+          <p>The code-based interface allows AI assistants to help you create complex scenarios, implement policies, and perform advanced analysis that goes beyond the visual designer.</p>
           <div class="dialog-buttons bold-buttons">
             <a href="#" class="close-button primary">Close</a>
           </div>
@@ -368,6 +399,7 @@
                                   <option value="tCO2e / mt">tCO2e / mt</option>
                                 </select>
                               </span>
+                              <a href="#" id="lookup-gwp" class="lookup-link" aria-label="Look up GWP value for the provided substance name">lookup</a>
                             </div>
                           </div>
                           <div class="form-group">
@@ -933,6 +965,36 @@
                     </dialog>
                   </div>
                 </div>
+                <dialog id="substances-table-dialog" class="dialog">
+                  <h2>Substances Table</h2>
+                  <div class="instructions">
+                    Download spreadsheet software-compatible files that contain tables describing all substances and applications in your simulation. Alternatively, bulk import spreadsheets with substance information. We recommend that you download the current file, modify it, and re-upload to make changes. Please use the widely-supported CSV file format. Note: the key column is used to indicate which existing substance to modify with updated information but can be left blank if it is a new substance.
+                  </div>
+                  <div class="contents">
+                    <p>Substances: <span class="substance-count">0</span></p>
+                  </div>
+                  <div id="substances-upload-pane" class="upload-pane dialog-buttons bold-buttons">
+                    <input type="file" id="substances-upload-file" 
+                           accept=".csv,text/csv" title="Upload CSV file with substance metadata" />
+                    <a href="#" class="upload-confirm-button primary">Confirm Upload</a>
+                    <a href="#" class="upload-cancel-button destructive">Cancel</a>
+                  </div>
+                  <div id="substances-main-buttons" class="dialog-buttons bold-buttons">
+                    <a href="#" class="download-button primary">Download Current</a>
+                    <a href="#" class="upload-button primary">Upload New</a>
+                    <a href="#" class="close-button destructive">Close</a>
+                  </div>
+                </dialog>
+                <div class="options-panel buttons-panel designer-buttons-layout">
+                  <a href="#substances-table" class="secondary substances-table-link" 
+                     data-tippy-content="Download and upload CSV files containing substance metadata for import/export operations">
+                    Import / Export Substances
+                  </a>
+                  <a href="#ai-designer-dialog" id="ai-designer-button" class="secondary" 
+                     data-tippy-content="Learn how to use AI assistants with KigaliSim simulations">
+                    AI Assistant
+                  </a>
+                </div>
                 <div class="advanced-link-pane">
                   Need more control? Switch to the
                   <a class="advanced-editor-link" href="#code-editor-pane" data-tippy-content="Develop your model through code using the bespoke and easy to use QubecTalk programming language designed just for Kigali Sim."
@@ -956,6 +1018,7 @@
               <div id="code-buttons-panel" class="buttons-panel code-buttons-grid">
                 <div id="available-panel">
                   <a class="primary" id="run-button" href="#loading">Run</a>
+                  <a class="secondary" id="ai-assistant-button" href="#ai-dialog">AI Assistant</a>
                 </div>
                 <div id="auto-run-panel">
                   <label for="auto-run-check">Automatically re-run when code is changed</label>
@@ -1720,6 +1783,7 @@
     <script type="text/javascript" src="/third_party/tabby.min.js"></script>
     <script type="text/javascript" src="/third_party/popper.min.js"></script>
     <script type="text/javascript" src="/third_party/tippy-bundle.umd.min.js"></script>
+    <script type="text/javascript" src="/third_party/papaparse.min.js"></script>
 
     <script type="text/javascript" src="/intermediate/static/qubectalk.js?v=EPOCH"></script>
 
@@ -1730,6 +1794,7 @@
           "engine_const": "./js/engine_const.js?v=EPOCH",
           "engine_number": "./js/engine_number.js?v=EPOCH",
           "engine_struct": "./js/engine_struct.js?v=EPOCH",
+          "known_substance": "./js/known_substance.js?v=EPOCH",
           "local_storage_keeper": "./js/local_storage_keeper.js?v=EPOCH",
           "main": "./js/main.js?v=EPOCH",
           "report_data": "./js/report_data.js?v=EPOCH",
@@ -1737,6 +1802,7 @@
           "storage_keeper": "./js/storage_keeper.js?v=EPOCH",
           "ui_editor": "./js/ui_editor.js?v=EPOCH",
           "ui_translator": "./js/ui_translator.js?v=EPOCH",
+          "meta_serialization": "./js/meta_serialization.js?v=EPOCH",
           "updates": "./js/updates.js?v=EPOCH",
           "user_config": "./js/user_config.js?v=EPOCH",
           "wasm_backend": "./js/wasm_backend.js?v=EPOCH",
