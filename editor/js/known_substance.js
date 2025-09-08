@@ -15,8 +15,9 @@ class KnownSubstance {
    * @param {number} gwp - The GWP value as a number.
    */
   constructor(name, gwp) {
-    this._name = name;
-    this._gwp = gwp;
+    const self = this;
+    self._name = name;
+    self._gwp = gwp;
   }
 
   /**
