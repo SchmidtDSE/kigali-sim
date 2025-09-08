@@ -25,7 +25,8 @@ class KnownSubstance {
    * @returns {string} The substance name.
    */
   getName() {
-    return this._name;
+    const self = this;
+    return self._name;
   }
 
   /**
@@ -34,7 +35,8 @@ class KnownSubstance {
    * @returns {number} The GWP value as a number.
    */
   getGwp() {
-    return this._gwp;
+    const self = this;
+    return self._gwp;
   }
 }
 
@@ -48,13 +50,30 @@ class SubstanceLibraryKeeper {
    * @param {Object} jsonData - JSON object mapping substance names to GWP values.
    */
   constructor(jsonData) {
-    this._substanceMap = new Map();
+    const self = this;
+    self._substanceMap = new Map();
 
     // Initialize the map with normalized keys
     for (const [name, gwp] of Object.entries(jsonData)) {
-      const normalizedKey = this._getSubstanceKey(name);
-      this._substanceMap.set(normalizedKey, new KnownSubstance(name, gwp));
+      const normalizedKey = self._getSubstanceKey(name);
+      self._substanceMap.set(normalizedKey, new KnownSubstance(name, gwp));
     }
+  }
+
+  /**
+   * Gets a substance by name using flexible matching.
+   *
+   * @param {string} name - The substance name to look up.
+   * @returns {KnownSubstance|null} The substance if found, null otherwise.
+   */
+  getSubstance(name) {
+    const self = this;
+    if (!name || typeof name !== "string") {
+      return null;
+    }
+
+    const normalizedKey = self._getSubstanceKey(name.trim());
+    return self._substanceMap.get(normalizedKey) || null;
   }
 
   /**
@@ -66,22 +85,8 @@ class SubstanceLibraryKeeper {
    * @private
    */
   _getSubstanceKey(name) {
+    const self = this;
     return name.toLowerCase().replace(/[\s\-_\.,\(\)\[\]]/g, "");
-  }
-
-  /**
-   * Gets a substance by name using flexible matching.
-   *
-   * @param {string} name - The substance name to look up.
-   * @returns {KnownSubstance|null} The substance if found, null otherwise.
-   */
-  getSubstance(name) {
-    if (!name || typeof name !== "string") {
-      return null;
-    }
-
-    const normalizedKey = this._getSubstanceKey(name.trim());
-    return this._substanceMap.get(normalizedKey) || null;
   }
 }
 
@@ -99,19 +104,31 @@ class GwpLookupPresenter {
    * @param {string} jsonPath - Path to the JSON data file.
    */
   constructor(lookupLink, substanceInput, ghgInput, ghgUnitsInput, jsonPath) {
-    this._lookupLink = lookupLink;
-    this._substanceInput = substanceInput;
-    this._ghgInput = ghgInput;
-    this._ghgUnitsInput = ghgUnitsInput;
-    this._jsonPath = jsonPath;
-    this._libraryKeeper = null;
+    const self = this;
+    self._lookupLink = lookupLink;
+    self._substanceInput = substanceInput;
+    self._ghgInput = ghgInput;
+    self._ghgUnitsInput = ghgUnitsInput;
+    self._jsonPath = jsonPath;
+    self._libraryKeeper = null;
 
     // Set up click handler
-    if (this._lookupLink) {
-      this._lookupLink.addEventListener("click", (event) => {
-        this._onLookupClick(event);
+    if (self._lookupLink) {
+      self._lookupLink.addEventListener("click", (event) => {
+        self._onLookupClick(event);
       });
     }
+  }
+
+  /**
+   * Gets a substance by name (public interface for testing).
+   *
+   * @param {string} name - The substance name to look up.
+   * @returns {KnownSubstance|null} The substance if found and library is loaded.
+   */
+  getSubstance(name) {
+    const self = this;
+    return self._libraryKeeper ? self._libraryKeeper.getSubstance(name) : null;
   }
 
   /**
@@ -121,47 +138,48 @@ class GwpLookupPresenter {
    * @private
    */
   async _onLookupClick(event) {
+    const self = this;
     event.preventDefault();
 
     try {
-      const substanceName = this._substanceInput ? this._substanceInput.value.trim() : "";
+      const substanceName = self._substanceInput ? self._substanceInput.value.trim() : "";
 
       if (!substanceName) {
-        this._showAlert("Please enter a substance name before looking up GWP values.");
+        self._showAlert("Please enter a substance name before looking up GWP values.");
         return Promise.resolve();
       }
 
       // Load library if not already loaded
-      if (!this._libraryKeeper) {
-        await this._loadLibrary();
+      if (!self._libraryKeeper) {
+        await self._loadLibrary();
       }
 
-      const substance = this._libraryKeeper.getSubstance(substanceName);
+      const substance = self._libraryKeeper.getSubstance(substanceName);
 
       if (substance) {
         // Update the GHG input with the found value
-        if (this._ghgInput) {
-          this._ghgInput.value = substance.getGwp().toString();
+        if (self._ghgInput) {
+          self._ghgInput.value = substance.getGwp().toString();
         }
 
         // Ensure units are set to kgCO2e / kg (which matches our data)
-        if (this._ghgUnitsInput) {
-          this._ghgUnitsInput.value = "kgCO2e / kg";
+        if (self._ghgUnitsInput) {
+          self._ghgUnitsInput.value = "kgCO2e / kg";
         }
 
-        this._showAlert(
+        self._showAlert(
           `Found GWP value for ${substance.getName()}: ${substance.getGwp()} kgCO2e/kg. ` +
           "Please confirm this value is correct and current for your specific simulation.",
         );
       } else {
-        this._showAlert(
+        self._showAlert(
           `No GWP value found for '${substanceName}'. Please enter the value manually ` +
           "or check the substance name spelling.",
         );
       }
     } catch (error) {
       console.error("Error during GWP lookup:", error);
-      this._showAlert(
+      self._showAlert(
         "Error loading substance database. Please try again or enter the value manually.",
       );
     }
@@ -174,13 +192,14 @@ class GwpLookupPresenter {
    * @private
    */
   async _loadLibrary() {
-    const response = await fetch(this._jsonPath);
+    const self = this;
+    const response = await fetch(self._jsonPath);
     if (!response.ok) {
       throw new Error(`Failed to load substance data: ${response.status}`);
     }
 
     const jsonData = await response.json();
-    this._libraryKeeper = new SubstanceLibraryKeeper(jsonData);
+    self._libraryKeeper = new SubstanceLibraryKeeper(jsonData);
   }
 
   /**
@@ -190,17 +209,8 @@ class GwpLookupPresenter {
    * @private
    */
   _showAlert(message) {
+    const self = this;
     alert(message);
-  }
-
-  /**
-   * Gets a substance by name (public interface for testing).
-   *
-   * @param {string} name - The substance name to look up.
-   * @returns {KnownSubstance|null} The substance if found and library is loaded.
-   */
-  getSubstance(name) {
-    return this._libraryKeeper ? this._libraryKeeper.getSubstance(name) : null;
   }
 }
 
