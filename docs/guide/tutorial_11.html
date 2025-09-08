@@ -31,14 +31,10 @@
         <h2>Motivation</h2>
 
         <p>
-          Global Warming Potential (GWP) values represent how much a substance contributes to climate change compared to CO2. Previous tutorials included investigation of these options but this section takes a closer look at specifying tCO2e for substances and putting policies on top.
+          Global Warming Potential (GWP) values represent how much a substance contributes to climate change compared to CO2. For example, consider HFC-134a with a GWP of 1,430 kgCO2e / kg versus R-600a (isobutane) which has only 3. This means that each kilogram of HFC-134a has the same climate impact as 477 kilograms of R-600a.
         </p>
         <p>
-          More specifically, different refrigerants have vastly different climate impacts. For this tutorial, consider HFC-134a with a GWP of 1,430 versus R-600a (isobutane), which has a GWP of only 3. This means that each kilogram of HFC-134a has the same climate impact as 477 kilograms of R-600a!
-        </p>
-
-        <p>
-          In this exercise, we'll model a refrigerant substitution policy that gradually replaces HFC-134a with R-600a in domestic refrigeration. This simulation can track this transition as it dramatically reduces overall climate impact (measured in tCO2e) even when total refrigerant consumption remains similar.
+          Previous tutorials included investigation of modeling these values but this section takes a closer look at specifying tCO2e for substances, modeling both with and without different policies. More specifically, we'll look at a refrigerant substitution policy that gradually replaces HFC-134a with R-600a in domestic refrigeration. This simulation can track this transition as it dramatically reduces overall climate impact (measured in tCO2e) even when total refrigerant consumption remains similar.
         </p>
       </section>
 
@@ -48,6 +44,8 @@
         <p>
           First, let's create our baseline scenario with both HFC-134a and R-600a refrigerants in domestic refrigeration. We'll start with HFC-134a as the dominant refrigerant and minimal R-600a consumption.
         </p>
+        
+        <p><strong>Note:</strong>In these feature specific tutorials, we will start from scratch each time. Click <strong>Save File</strong> to save your current work and then click <strong>New File</strong> to start a simulation.</p>
 
         <p><strong>Step 1: Create the Domestic Refrigeration application</strong></p>
         <ul>
@@ -61,15 +59,18 @@
           <li>In your Domestic Refrigeration application, click <strong>Add Consumption</strong></li>
           <li>On the <strong>General</strong> tab:
             <ul>
-              <li>Name the substance "HFC-134a"</li>
-              <li>Enable <strong>domestic</strong> manufacture</li>
-              <li>Set <strong>GHG equivalency</strong> to 1430 kgCO2e/kg</li>
+              <li>Name the substance "HFC-134a" without quotes.</li>
+              <li>Use Domestic Refrigeration as the <strong>Application</strong>.</li>
+              <li>Set <strong>GHG equivalency</strong> to 1430 kgCO2e/kg.</li>
+              <li>Leave <strong>Annual energy consumption</strong> alone for now.</li>
+              <li>Enable <strong>domestic</strong> manufacture.</li>
             </ul>
           </li>
           <li>On the <strong>Equipment</strong> tab:
             <ul>
-              <li>Set <strong>initial charge</strong> to 0.15 kg/unit for domestic</li>
-              <li>Set <strong>annual retirement</strong> rate to 5% each year</li>
+              <li>We will leave <strong>Equipment type</strong> alone for now.</li>
+              <li>Set <strong>initial charge</strong> to 0.15 kg/unit for domestic.</li>
+              <li>Set <strong>annual retirement</strong> rate to 5% each year.</li>
             </ul>
           </li>
           <li>On the <strong>Servicing</strong> tab:
@@ -79,8 +80,8 @@
           </li>
           <li>On the <strong>Set</strong> tab:
             <ul>
-              <li>Set <strong>prior equipment</strong> to 1,000,000 units in year 2025</li>
-              <li>Set <strong>domestic</strong> manufacture to 20 mt in year 2025</li>
+              <li>Set <strong>prior equipment</strong> to 1,000,000 units in year 2025.</li>
+              <li>Set <strong>domestic</strong> manufacture to 20 mt in year 2025.</li>
             </ul>
           </li>
           <li>Click <strong>Save</strong></li>
@@ -91,25 +92,29 @@
           <li>Again in the Domestic Refrigeration application, <strong>Add Consumption</strong> for R-600a with similar equipment properties except different GWP.</li>
           <li>On the <strong>General</strong> tab:
             <ul>
-              <li>Set <strong>GHG equivalency</strong> to 3 kgCO2e/kg</li>
-              <li>Enable <strong>domestic</strong> manufacture</li>
+              <li>Name the substance "R-600a" without quotes.</li>
+              <li>Use Domestic Refrigeration as the <strong>Application</strong>.</li>
+              <li>Set <strong>GHG equivalency</strong> to 3 kgCO2e/kg.</li>
+              <li>Leave <strong>Annual energy consumption</strong> alone for now.</li>
+              <li>Enable <strong>domestic</strong> manufacture.</li>
             </ul>
           </li>
           <li>On the <strong>Equipment</strong> tab:
             <ul>
-              <li>Set <strong>initial charge</strong> to 0.15 kg/unit for domestic</li>
-              <li>Set <strong>annual retirement</strong> rate to 5% each year</li>
+              <li>We will leave <strong>Equipment type</strong> alone for now.</li>
+              <li>Set <strong>initial charge</strong> to 0.15 kg/unit for domestic.</li>
+              <li>Set <strong>annual retirement</strong> rate to 5% each year.</li>
             </ul>
           </li>
           <li>On the <strong>Servicing</strong> tab:
             <ul>
-              <li>Set <strong>recharge</strong> to 10% with 0.15 kg/unit in all years</li>
+              <li>Set <strong>recharge</strong> to 10% with 0.15 kg/unit in all years.</li>
             </ul>
           </li>
           <li>On the <strong>Set</strong> tab:
             <ul>
-              <li>Set <strong>prior equipment</strong> to 50,000 units in year 2025</li>
-              <li>Set <strong>domestic</strong> manufacture to 1 mt in year 2025</li>
+              <li>Set <strong>prior equipment</strong> to 50,000 units in year 2025.</li>
+              <li>Set <strong>domestic</strong> manufacture to 1 mt in year 2025.</li>
             </ul>
           </li>
           <li>Click <strong>Save</strong></li>
@@ -117,14 +122,23 @@
 
         <p><strong>Step 4: Create baseline simulation</strong></p>
         <ul>
-          <li>Click <strong>Add Simulation</strong></li>
-          <li>Name it "BAU"</li>
-          <li>Set duration from <strong>years 2025 to 2035</strong></li>
-          <li>Leave all policies unchecked (this is our business-as-usual baseline)</li>
+          <li>Click <strong>Add Simulation</strong>.</li>
+          <li>Name it "BAU" without quotes.</li>
+          <li>Set duration from <strong>years 2025 to 2035</strong>.</li>
           <li>Click <strong>Save</strong></li>
         </ul>
 
-        <p>You should now see your baseline simulation running, showing HFC-134a as the dominant refrigerant with much higher consumption volumes than R-600a.</p>
+        <p>You should now see your baseline simulation running.</p>
+     
+        <p><strong>Step 5: review business as usual</strong></p>
+        <ul>
+          <li>Select <strong>Population</strong>.</li>
+          <li>Ensure <strong>total</strong> and <strong>million units</strong> are selected.</li>
+          <li>Select <strong>Equipment</strong>.</li>
+          <li>Ensure <strong>All</strong> is selected.</li>
+        </ul>
+        
+        <p>This view shows HFC-134a as the dominant refrigerant.</p>
       </section>
 
       <section id="adding-substitution-policy">
@@ -136,19 +150,19 @@
 
         <p><strong>Step 1: Create the substitution policy</strong></p>
         <ul>
-          <li>Click <strong>Add Policy</strong></li>
-          <li>Name it "Replacement"</li>
-          <li>Select <strong>Domestic Refrigeration</strong> as the application</li>
-          <li>Select <strong>HFC-134a</strong> as the substance</li>
+          <li>Click <strong>Add Policy</strong>.</li>
+          <li>Name it "Replacement" without quotes.</li>
+          <li>Select <strong>Domestic Refrigeration</strong> as the application.</li>
+          <li>Select <strong>HFC-134a</strong> as the substance.</li>
         </ul>
 
         <p><strong>Step 2: Configure the replacement mechanism</strong></p>
         <ul>
-          <li>Go to the <strong>Replace</strong> tab</li>
-          <li>Target Domestic Refrigeration and HFC-134a</li>
-          <li><strong>Add Replacement</strong> of 10% of sales with R-600a</li>
-          <li>Set timing to <strong>each year during years 2028 to onwards</strong></li>
-          <li>Click <strong>Save</strong> to finish the policy</li>
+          <li>Go to the <strong>Replace</strong> tab.</li>
+          <li><strong>Add Replacement</strong> of 10% of sales.</li>
+          <li>Indicate that it should be <strong>replaced with</strong> R-600a.</li>
+          <li>Set timing to <strong>2028 to onwards.</strong></li>
+          <li>Click <strong>Save</strong> to finish the policy.</li>
         </ul>
 
         <p>
@@ -162,11 +176,11 @@
         <p>Now let's create a simulation to compare the policy scenario with our business-as-usual baseline.</p>
 
         <ul>
-          <li>Click <strong>Add Simulation</strong></li>
-          <li>Name it "Replacement"</li>
-          <li>Check the <strong>Replacement</strong> policy checkbox</li>
-          <li>Set duration from <strong>years 2025 to 2035</strong></li>
-          <li>Click <strong>Save</strong></li>
+          <li>Click <strong>Add Simulation</strong>.</li>
+          <li>Name it "Replacement" without quotes.</li>
+          <li>Check the <strong>Replacement</strong> policy checkbox.</li>
+          <li>Set duration from <strong>years 2025 to 2035</strong>.</li>
+          <li>Click <strong>Save</strong>.</li>
         </ul>
 
         <p>You should now see both your <strong>BAU</strong> and <strong>Replacement</strong> scenarios displayed side by side in the results panel.</p>
@@ -177,17 +191,27 @@
 
         <p>Let's examine how the substitution policy affects both substance consumption and climate emissions:</p>
 
-        <p><strong>Substance Consumption Changes</strong></p>
+        <p><strong>Emissions Changes</strong></p>
         <ul>
-          <li>Select the <strong>Consumption</strong> radio button to see total consumption volumes</li>
-          <li>Select <strong>domestic</strong> in the dropdown menu</li>
-          <li>Select <strong>kg / year</strong> first to see that the amount of substance consumed is the same</li>
-          <li>Change to <strong>tCO2e / year</strong> to see that, despite the same amount of substance, the tCO2e is much lower in the policy case</li>
+          <li>Compare simulations by selecting <strong>Simulations</strong> and then selecting <strong>All</strong> in the simulations panel.
+          <li>Select the <strong>Emissions</strong> radio button</li>.
+          <li>Click <strong>configure custom</strong> and combine <strong>recharge</strong> and <strong>end of life</strong>.</li>
         </ul>
 
         <p>
-          The dramatic emissions reduction demonstrates the power of GWP-focused policies. Each kilogram of HFC-134a replaced with R-600a eliminates approximately 1,427 kg of CO2-equivalent emissions (1,430 - 3 = 1,427). This shows how substance choice can be far more impactful for climate than overall consumption volume reductions.
+          The dramatic emissions reduction demonstrates the power of GWP-focused policies. Each kilogram of HFC-134a replaced with R-600a eliminates approximately 1,427 kg of CO2-equivalent emissions. This shows how substance choice can be impactful for climate. However, before concluding, let's also confirm that, despite this drop in GWP, the overall amount of sbustance consumed is the same.
         </p>
+        
+        <p><strong>Consumption Changes</strong></p>
+        
+        <ul>
+          <li>Ensure you are comparing simulations by selecting <strong>Simulations</strong> and then selecting <strong>All</strong> in the simulations panel.
+          <li>Select the <strong>Consumption</strong> radio button.</li>
+          <li>Select <strong>domestic</strong> (both substances are domestic only).</li>
+          <li>Ensure <strong>mt/ year</strong> is selected.</li>
+        </ul>
+        
+        <p>Indeed, despite the reduction in GWP, the overall consumption remains unchanged.</p>
       </section>
 
       <section id="conclusion">
@@ -196,11 +220,10 @@
         <p>You've successfully modeled a Global Warming Potential-focused refrigerant substitution policy! This tutorial demonstrated:</p>
 
         <ul>
-          <li><strong>GWP significance</strong>: How refrigerant choice dramatically affects climate impact independent of consumption volumes</li>
-          <li><strong>Substitution policies</strong>: Using "replace X% of sales with substance" to model gradual market transitions</li>
-          <li><strong>Climate effectiveness</strong>: How targeting high-GWP substances can achieve large emissions reductions</li>
-          <li><strong>Market realism</strong>: Modeling progressive adoption rather than immediate switching</li>
-          <li><strong>Comparative analysis</strong>: Evaluating policy impacts against business-as-usual baselines</li>
+          <li><strong>GWP significance</strong>: How refrigerant choice dramatically affects climate impact independent of consumption volumes.</li>
+          <li><strong>Substitution policies</strong>: Using "replace X% of sales with substance" to model market transitions.</li>
+          <li><strong>Climate effectiveness</strong>: How targeting high-GWP substances can achieve large emissions reductions.</li>
+          <li><strong>Comparative analysis</strong>: Evaluating policy impacts against business-as-usual baselines.</li>
         </ul>
 
         <p>
