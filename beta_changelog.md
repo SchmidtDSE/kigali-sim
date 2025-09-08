@@ -14,6 +14,14 @@ Finally, we want to again express our gratitude for your feedback and time.
 
 The following changes have been adopted and released.
 
+### GWP lookup
+
+**Status**: Released September 6, 2025
+
+**Classification**: Enhancement
+
+Added a lookup button to see if a given substance is a known substance and it can autofill the GHG equivalency. See [#519](https://github.com/SchmidtDSE/kigali-sim/issues/519).
+
 ### AI assistant support
 
 **Status**: Released September 6, 2025
