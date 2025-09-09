@@ -4258,6 +4258,15 @@ class UiTranslatorCompiler {
         const result = `(line ${line}, col ${column}): ${msg}`;
         errors.push(result);
       },
+      reportAmbiguity: (recognizer, dfa, startIndex, stopIndex, exact, ambigAlts, configs) => {
+        errors.push(`Ambiguity detected at position ${startIndex}-${stopIndex}`);
+      },
+      reportAttemptingFullContext: (recognizer, dfa, startIndex, stopIndex, conflictingAlts, configs) => {
+        errors.push(`Attempting full context at position ${startIndex}-${stopIndex}`);
+      },
+      reportContextSensitivity: (recognizer, dfa, startIndex, stopIndex, prediction, configs) => {
+        errors.push(`Context sensitivity at position ${startIndex}-${stopIndex}`);
+      },
     });
 
     const tokens = new toolkit.antlr4.CommonTokenStream(lexer);
@@ -4270,6 +4279,15 @@ class UiTranslatorCompiler {
       syntaxError: (recognizer, offendingSymbol, line, column, msg, err) => {
         const result = `(line ${line}, col ${column}): ${msg}`;
         errors.push(result);
+      },
+      reportAmbiguity: (recognizer, dfa, startIndex, stopIndex, exact, ambigAlts, configs) => {
+        errors.push(`Parser ambiguity at position ${startIndex}-${stopIndex}`);
+      },
+      reportAttemptingFullContext: (recognizer, dfa, startIndex, stopIndex, conflictingAlts, configs) => {
+        errors.push(`Parser attempting full context at position ${startIndex}-${stopIndex}`);
+      },
+      reportContextSensitivity: (recognizer, dfa, startIndex, stopIndex, prediction, configs) => {
+        errors.push(`Parser context sensitivity at position ${startIndex}-${stopIndex}`);
       },
     });
 
