@@ -30,11 +30,11 @@ function buildUiTranslatorTests() {
           }
 
           assert.ok(compilerResult !== null, "Compiler result should not be null");
-          
+
           if (compilerResult.getErrors().length > 0) {
             console.log("Compilation errors for " + name + ":", compilerResult.getErrors());
           }
-          
+
           assert.equal(compilerResult.getErrors().length, 0, "Should have no compilation errors");
 
           const programResult = compilerResult.getProgram();

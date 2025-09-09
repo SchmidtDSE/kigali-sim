@@ -4261,7 +4261,8 @@ class UiTranslatorCompiler {
       reportAmbiguity: (recognizer, dfa, startIndex, stopIndex, exact, ambigAlts, configs) => {
         errors.push(`Ambiguity detected at position ${startIndex}-${stopIndex}`);
       },
-      reportAttemptingFullContext: (recognizer, dfa, startIndex, stopIndex, conflictingAlts, configs) => {
+      reportAttemptingFullContext: (recognizer, dfa, startIndex, stopIndex,
+        conflictingAlts, configs) => {
         errors.push(`Attempting full context at position ${startIndex}-${stopIndex}`);
       },
       reportContextSensitivity: (recognizer, dfa, startIndex, stopIndex, prediction, configs) => {
@@ -4283,7 +4284,8 @@ class UiTranslatorCompiler {
       reportAmbiguity: (recognizer, dfa, startIndex, stopIndex, exact, ambigAlts, configs) => {
         errors.push(`Parser ambiguity at position ${startIndex}-${stopIndex}`);
       },
-      reportAttemptingFullContext: (recognizer, dfa, startIndex, stopIndex, conflictingAlts, configs) => {
+      reportAttemptingFullContext: (recognizer, dfa, startIndex, stopIndex,
+        conflictingAlts, configs) => {
         errors.push(`Parser attempting full context at position ${startIndex}-${stopIndex}`);
       },
       reportContextSensitivity: (recognizer, dfa, startIndex, stopIndex, prediction, configs) => {
