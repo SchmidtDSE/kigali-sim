@@ -1421,6 +1421,29 @@ function buildIntegrationTests() {
         assert.deepEqual(consumption.getUnits(), "tCO2e");
       },
     ]);
+
+    buildTest("supports optional each year syntax",
+      "/examples/each_year_syntax_test.qta", [
+        (result, assert) => {
+          const record = getResult(result, "Each Year Test", 2025, 0,
+            "domestic equipment", "HFC-134a");
+          assert.ok(record, "Should parse and execute program with 'each year' syntax");
+
+          const equipment = record.getPopulation();
+          assert.ok(equipment.getValue() > 0, "Equipment population should be positive");
+          assert.deepEqual(equipment.getUnits(), "units", "Equipment units should be 'units'");
+        },
+        (result, assert) => {
+        // Test that recharge calculations work correctly with "each year" syntax
+          const record2026 = getResult(result, "Each Year Test", 2026, 0,
+            "domestic equipment", "HFC-134a");
+          const rechargeEmissions = record2026.getRechargeEmissions();
+          assert.ok(rechargeEmissions.getValue() > 0,
+            "Recharge emissions should be positive");
+          assert.deepEqual(rechargeEmissions.getUnits(), "tCO2e",
+            "Recharge emissions should be in tCO2e");
+        },
+      ]);
   });
 }
 

@@ -296,7 +296,7 @@ unit: (volumeUnit | relativeUnit | temporalUnit);
 
 unitValue: expression unitOrRatio;
 
-unitOrRatio: (unit | unit DIV_ unit | unit EACH_ unit);
+unitOrRatio: (unit | unit DIV_ unit | unit EACH_ unit) (EACH_ YEAR_)?;
 
 /**
  * -----------------

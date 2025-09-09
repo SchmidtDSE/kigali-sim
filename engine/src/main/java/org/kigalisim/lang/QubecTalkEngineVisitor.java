@@ -108,6 +108,9 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
   @Override
   public Fragment visitUnitOrRatio(QubecTalkParser.UnitOrRatioContext ctx) {
     String unit = ctx.getText();
+    // Remove "eachyear" suffix if present (ctx.getText() doesn't include spaces)
+    unit = unit.replaceAll("(?i)eachyear$", "");
+    // Apply existing "each" to "/" conversion for compatibility
     return new UnitFragment(unit.replaceAll(" each ", " / "));
   }
 

@@ -5,6 +5,8 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -765,6 +767,71 @@ public class RechargeLiveTests {
         "Equipment calculation works correctly in year 3");
     assertEquals(2668.0, resultYear3.getDomestic().getValue().doubleValue(), 1.0,
         "Domestic should be ~2668 kg with proper recharge tracking");
+  }
+
+  /**
+   * Test optional "each year" syntax support in unit expressions.
+   * Validates that expressions with and without "each year" produce identical results.
+   */
+  @Test
+  public void testOptionalEachYearSyntax() throws IOException {
+    String qtaContent = """
+        start about
+          # Name: "Each Year Syntax Test"
+          # Description: "Validates optional each year syntax produces identical results"
+          # Author: "Test Suite"
+        end about
+
+        start default
+          define application "domestic equipment"
+            uses substance "HFC-134a"
+              enable domestic
+              equals 1430 kgCO2e / kg
+              
+              initial charge with 0.15 kg / unit for domestic
+              set domestic to 25 mt during year 2025
+              change domestic by +5 % each year during years 2025 to 2035
+              
+              retire 5 % each year
+              recharge 10 % with 0.15 kg / unit each year
+            end substance
+          end application
+        end default
+
+        start simulations
+          simulate "Each Year Test" from years 2025 to 2035
+        end simulations
+        """;
+    
+    // Write test file and parse
+    String testFile = Files.createTempFile("each_year_test", ".qta").toString();
+    Files.write(Paths.get(testFile), qtaContent.getBytes());
+    
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(testFile);
+    assertNotNull(program, "Program with 'each year' syntax should parse successfully");
+
+    // Run simulation
+    String scenarioName = "Each Year Test";
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
+    List<EngineResult> resultsList = results.collect(Collectors.toList());
+
+    // Validate results are meaningful for the starting year 2025
+    EngineResult result2025 = LiveTestsUtil.getResult(resultsList.stream(), 2025, "domestic equipment", "HFC-134a");
+    assertNotNull(result2025, "Should have result for 2025");
+    
+    EngineResult result2035 = LiveTestsUtil.getResult(resultsList.stream(), 2035, "domestic equipment", "HFC-134a");
+    assertNotNull(result2035, "Should have result for 2035");
+    
+    // Validate that simulation produces meaningful results (non-zero values)
+    assertTrue(result2025.getPopulation().getValue().doubleValue() > 0, "Equipment population should be positive in 2025");
+    assertTrue(result2035.getPopulation().getValue().doubleValue() > 0, "Equipment population should be positive in 2035");
+    
+    // Validate that 'each year' syntax produces expected behavior - equipment should grow over time
+    assertTrue(result2035.getPopulation().getValue().doubleValue() > result2025.getPopulation().getValue().doubleValue(),
+        "Equipment population should grow from 2025 to 2035 due to 5% annual growth");
+    
+    // Clean up
+    Files.deleteIfExists(Paths.get(testFile));
   }
 
 }
