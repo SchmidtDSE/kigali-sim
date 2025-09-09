@@ -125,8 +125,21 @@ function isCacheable(request) {
 async function cacheFirstWithRefresh(request) {
     const url = new URL(request.url);
     const currentHost = self.location.hostname;
+    
+    // Check if this is a WASM file that needs aggressive no-cache headers for Safari
+    const isWasmFile = url.pathname.endsWith('.wasm') || 
+                       url.pathname.endsWith('.wasm-runtime.js') || 
+                       (url.pathname.includes('/wasm/') && url.pathname.endsWith('.js'));
 
-    const fetchResponsePromise = fetch(request).then(async (networkResponse) => {
+    const fetchOptions = isWasmFile ? {
+        cache: "no-store",
+        headers: {
+            "Cache-Control": "no-cache, no-store, must-revalidate",
+            "Pragma": "no-cache"
+        }
+    } : {};
+
+    const fetchResponsePromise = fetch(request, fetchOptions).then(async (networkResponse) => {
         if (url.hostname === currentHost && networkResponse.ok && request.method === "GET") {
             const cache = await caches.open(CACHE_NAME);
             cache.put(url.pathname, networkResponse.clone());

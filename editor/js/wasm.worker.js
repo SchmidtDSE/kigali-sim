@@ -32,10 +32,28 @@ async function initializeWasm() {
 
   try {
     // Import TeaVM-compiled JavaScript version first (for fallback)
-    importScripts("/wasm/KigaliSim.js?v=EPOCH");
-    importScripts("/wasm/KigaliSim.wasm-runtime.js?v=EPOCH");
+    // Use fetch with no-cache headers for Safari compatibility
+    const jsResponse = await fetch("/wasm/KigaliSim.js?v=EPOCH", {
+      cache: "no-store",
+      headers: {
+        "Cache-Control": "no-cache, no-store, must-revalidate",
+        "Pragma": "no-cache",
+      },
+    });
+    const jsCode = await jsResponse.text();
+    eval(jsCode);
 
-    // Try to load WASM
+    const runtimeResponse = await fetch("/wasm/KigaliSim.wasm-runtime.js?v=EPOCH", {
+      cache: "no-store",
+      headers: {
+        "Cache-Control": "no-cache, no-store, must-revalidate",
+        "Pragma": "no-cache",
+      },
+    });
+    const runtimeCode = await runtimeResponse.text();
+    eval(runtimeCode);
+
+    // Try to load WASM - TeaVM handles fetching internally
     wasmLayer = await TeaVM.wasmGC.load("/wasm/KigaliSim.wasm?v=EPOCH");
     console.log("WASM backend initialized successfully");
   } catch (error) {

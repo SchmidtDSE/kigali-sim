@@ -163,14 +163,14 @@ class UpdateUtil {
         // Wait for both operations to complete, then reload after 1 second delay
         Promise.all(promises).then(() => {
           setTimeout(() => {
-            window.location.reload();
+            window.location.replace(window.location.href + "?t=" + Date.now());
             resolve("reload");
           }, 1000);
         }).catch((error) => {
           console.warn("Error during cache/service worker operations:", error);
           // Still reload even if cache operations fail
           setTimeout(() => {
-            window.location.reload();
+            window.location.replace(window.location.href + "?t=" + Date.now());
             resolve("reload");
           }, 1000);
         });

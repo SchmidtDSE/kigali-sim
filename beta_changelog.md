@@ -14,6 +14,14 @@ Finally, we want to again express our gratitude for your feedback and time.
 
 The following changes have been adopted and released.
 
+### Safari WASM Update Fix
+
+**Status**: Released September 9, 2025
+
+**Classification**: Enhancement
+
+Fixed mobile Safari WASM resource update issues where updated files weren't properly refreshed due to aggressive caching. Enhanced cache invalidation and reload mechanisms for better cross-browser compatibility.
+
 ### GWP lookup
 
 **Status**: Released September 7, 2025
