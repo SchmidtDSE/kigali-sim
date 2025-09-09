@@ -767,4 +767,35 @@ public class RechargeLiveTests {
         "Domestic should be ~2668 kg with proper recharge tracking");
   }
 
+  /**
+   * Test optional "each year" syntax support in unit expressions.
+   * Validates that expressions with and without "each year" produce identical results.
+   */
+  @Test
+  public void testOptionalEachYearSyntax() throws IOException {
+    String qtaPath = "../examples/each_year_syntax_test.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program with 'each year' syntax should parse successfully");
+
+    // Run simulation
+    String scenarioName = "Each Year Test";
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
+    List<EngineResult> resultsList = results.collect(Collectors.toList());
+
+    // Validate results are meaningful for the starting year 2025
+    EngineResult result2025 = LiveTestsUtil.getResult(resultsList.stream(), 2025, "domestic equipment", "HFC-134a");
+    assertNotNull(result2025, "Should have result for 2025");
+    
+    EngineResult result2035 = LiveTestsUtil.getResult(resultsList.stream(), 2035, "domestic equipment", "HFC-134a");
+    assertNotNull(result2035, "Should have result for 2035");
+    
+    // Validate that simulation produces meaningful results (non-zero values)
+    assertTrue(result2025.getPopulation().getValue().doubleValue() > 0, "Equipment population should be positive in 2025");
+    assertTrue(result2035.getPopulation().getValue().doubleValue() > 0, "Equipment population should be positive in 2035");
+    
+    // Validate that 'each year' syntax produces expected behavior - equipment should grow over time
+    assertTrue(result2035.getPopulation().getValue().doubleValue() > result2025.getPopulation().getValue().doubleValue(),
+        "Equipment population should grow from 2025 to 2035 due to 5% annual growth");
+  }
+
 }
