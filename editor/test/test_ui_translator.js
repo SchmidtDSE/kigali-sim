@@ -24,9 +24,12 @@ function buildUiTranslatorTests() {
             compilerResult = compiler.compile(content);
           } catch (e) {
             console.log(e);
-            assert.ok(false);
+            assert.ok(false, `Compilation failed: ${e.message}`);
+            done();
+            return;
           }
 
+          assert.ok(compilerResult !== null, "Compiler result should not be null");
           assert.equal(compilerResult.getErrors().length, 0);
 
           const programResult = compilerResult.getProgram();
