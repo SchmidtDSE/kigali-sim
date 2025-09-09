@@ -138,7 +138,7 @@ You've now completed both Feature-Specific tutorials! You've learned how to mode
 
 For more complex scenarios, consider combining both approaches: policies that simultaneously transition to lower-GWP refrigerants AND more energy-efficient equipment. Return to the [guide index](/guide/) to explore other tutorials or the QubecTalk reference for advanced modeling techniques.
 
-[Previous: Tutorial 11](/guide/tutorial_11.html) | [Guide Index](/guide/)
+[Previous: Tutorial 11](/guide/tutorial_11.html) | [Next: Tutorial 13](/guide/tutorial_13.html) | [Guide Index](/guide/)
 
 ---
 
