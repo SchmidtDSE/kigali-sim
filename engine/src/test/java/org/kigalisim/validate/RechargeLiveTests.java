@@ -5,8 +5,6 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -775,39 +773,8 @@ public class RechargeLiveTests {
    */
   @Test
   public void testOptionalEachYearSyntax() throws IOException {
-    String qtaContent = """
-        start about
-          # Name: "Each Year Syntax Test"
-          # Description: "Validates optional each year syntax produces identical results"
-          # Author: "Test Suite"
-        end about
-
-        start default
-          define application "domestic equipment"
-            uses substance "HFC-134a"
-              enable domestic
-              equals 1430 kgCO2e / kg
-              
-              initial charge with 0.15 kg / unit for domestic
-              set domestic to 25 mt during year 2025
-              change domestic by +5 % each year during years 2025 to 2035
-              
-              retire 5 % each year
-              recharge 10 % with 0.15 kg / unit each year
-            end substance
-          end application
-        end default
-
-        start simulations
-          simulate "Each Year Test" from years 2025 to 2035
-        end simulations
-        """;
-    
-    // Write test file and parse
-    String testFile = Files.createTempFile("each_year_test", ".qta").toString();
-    Files.write(Paths.get(testFile), qtaContent.getBytes());
-    
-    ParsedProgram program = KigaliSimFacade.parseAndInterpret(testFile);
+    String qtaPath = "../examples/optional_each_year_syntax.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
     assertNotNull(program, "Program with 'each year' syntax should parse successfully");
 
     // Run simulation
@@ -829,9 +796,6 @@ public class RechargeLiveTests {
     // Validate that 'each year' syntax produces expected behavior - equipment should grow over time
     assertTrue(result2035.getPopulation().getValue().doubleValue() > result2025.getPopulation().getValue().doubleValue(),
         "Equipment population should grow from 2025 to 2035 due to 5% annual growth");
-    
-    // Clean up
-    Files.deleteIfExists(Paths.get(testFile));
   }
 
 }
