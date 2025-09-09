@@ -773,7 +773,7 @@ public class RechargeLiveTests {
    */
   @Test
   public void testOptionalEachYearSyntax() throws IOException {
-    String qtaPath = "../examples/optional_each_year_syntax.qta";
+    String qtaPath = "../examples/each_year_syntax_test.qta";
     ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
     assertNotNull(program, "Program with 'each year' syntax should parse successfully");
 
