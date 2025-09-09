@@ -31,6 +31,7 @@ All numbers are intentionally fake and used only for demonstrative purposes. Ple
 
 - [**Tutorial 11:** Global Warming Potential](tutorial_11.md) - Demonstrating GWP impact reduction with a sample substitution policy
 - [**Tutorial 12:** Equipment Energy Efficiency](tutorial_12.md) - Exploring energy consumption with equipment model
+- [**Tutorial 13:** AI Assistants](tutorial_13.md) - Using AI assistants to help build or modify simulations
 
 ## QubecTalk Reference
 
