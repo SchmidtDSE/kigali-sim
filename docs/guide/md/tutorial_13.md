@@ -25,10 +25,12 @@ We assume that you have access to an AI assistant and we have tested this tutori
 At minimum, you should tell your AI to read [kigalisim.org/llms.txt](https://kigalisim.org/llms.txt) but we find that providing both `llms.txt` and `llms-full.txt` is helpful. Here is how you might want to start.
 
 ```
-Hello! Please review https://kigalisim.org/llms.txt?v=20250909 and https://preview.kigalisim.org/llms-full.txt?v=20250909. Then, we will build a simulation together.
+Hello! Please review https://kigalisim.org/llms.txt?v=20250910 and https://preview.kigalisim.org/llms-full.txt?v=20250910. Then, we will build a simulation together.
 ```
 
 The use of the version is optional but we recommend it to ensure you have the latest copy.
+
+**Tip:** For LLMs which cannot access the internet, you can [download llms-full.txt](/llms-full.txt) and provide it as an attachment to your AI assistant.
 
 ## Building the basic simulation
 

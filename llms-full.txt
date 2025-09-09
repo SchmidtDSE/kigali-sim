@@ -1,4 +1,5 @@
 # KigaliSim - Montreal Protocol Policy Simulation Tool
+v=20250910
 
 KigaliSim is an open source web-based simulation engine for modeling substances, applications, and policies related to the Montreal Protocol and Kigali Amendment. It can model high global warming potential greenhouse gases such as HFCs and supports business-as-usual scenarios as well as policy interventions.
 
@@ -56,7 +57,7 @@ The about stanza is optional.
 - `equals X kwh / unit` - Sets energy consumption per unit
 
 #### Manufacturing and Trade
-- `initial charge with {amount} <for {stream}>` - Sets substance per unit where amount is typically X kg / unit
+- `initial charge with {amount} for {stream}` - Sets substance per unit where amount is typically X kg / unit
 - `enable {stream}` - Explicitly marks a stream as enabled without setting values (required before operations like recharge that need sales recalculation). By convention, enable statements should be placed at the top of substance definitions within application definitions, though this is not enforced by the language.
 - `set {stream} to {amount} <during>` - Sets flow volumes
 - `change {stream} by {amount} <during>` - Growth or decay rates where amount is often +X %
