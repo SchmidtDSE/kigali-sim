@@ -13,6 +13,7 @@ Open source web-based simulation engine for Montreal Protocol policy modeling. I
 - [Policy Modeling](guide/md/tutorial_07.md) - Advanced policy intervention techniques using code-based interface
 - [Energy Analysis](guide/md/tutorial_12.md) - Equipment energy efficiency modeling and analysis
 - [GWP Analysis](guide/md/tutorial_11.md) - Global warming potential refrigerant comparison analysis
+- [AI Assistants](guide/md/tutorial_13.md) - Using AI assistants for simulation development
 - [Getting Help](guide/md/get_help.md) - Support resources and troubleshooting guides
 
 ## Tutorial Series Overview
@@ -32,10 +33,11 @@ Open source web-based simulation engine for Montreal Protocol policy modeling. I
 - [Tutorial 8](guide/md/tutorial_08.md) - Policy interventions and regulatory scenarios
 - [Tutorial 9](guide/md/tutorial_09.md) - Command line usage and probabilistic simulations
 
-**Specialized Tutorials (10-12):** Advanced topics and specific analysis types
+**Specialized Tutorials (10-13):** Advanced topics and specific analysis types
 - [Tutorial 10](guide/md/tutorial_10.md) - Recycling and end-of-life substance recovery
 - [Tutorial 11](guide/md/tutorial_11.md) - GWP analysis comparing refrigerant alternatives
 - [Tutorial 12](guide/md/tutorial_12.md) - Energy efficiency analysis and electricity consumption modeling
+- [Tutorial 13](guide/md/tutorial_13.md) - AI assistants for simulation development
 
 ## Key Capabilities
 

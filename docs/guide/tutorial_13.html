@@ -1,0 +1,123 @@
+<html>
+  <head>
+    <title>Tutorial 13: AI Assistants</title>
+    <link href="/guide/guide.css?v=EPOCH" rel="stylesheet" type="text/css" />
+  </head>
+  <body>
+    <a href="#main" class="skip-link">Skip to main content</a>
+    <header>
+      This tutorial is part of the <a href="/guide">guide</a> for the
+      <a href="/">Kigali Sim</a>.
+    </header>
+    <main id="main">
+      <h1>Tutorial 13: AI Assistants</h1>
+
+      If you have access to an AI assistant, you can use them to help build or modify simulations.
+
+      <details>
+        <summary>Contents</summary>
+        <ul>
+          <li><a href="#motivation">Motivation</a></li>
+          <li><a href="#giving-ai-information">Giving the AI information</a></li>
+          <li><a href="#building-basic-simulation">Building the basic simulation</a></li>
+          <li><a href="#adding-recycling-program">Adding a recycling program</a></li>
+          <li><a href="#results">Results</a></li>
+          <li><a href="#conclusion">Conclusion</a></li>
+          <li><a href="#next-steps">Next Steps</a></li>
+        </ul>
+      </details>
+
+      <section id="motivation">
+        <h2>Motivation</h2>
+
+        <p>
+          If you recall <a href="/guide/tutorial_07.html">Tutorial 7</a>, we revealed that you are actually writing computer code when you use the UI-based editor. Kigali Sim uses a programming language built just for Montreal Protocol models called QubecTalk. In addition to allowing you to make more sophisticated simulations, this programming option also allows you to use AI (LLM) assistants. This includes many different options like <a href="https://chatgpt.com/" target="_blank">ChatGPT</a> or, for example, we use <a href="https://claude.ai/" target="_blank">Claude</a>.
+        </p>
+
+        <p>
+          More precisely, we use a protocol called <a href="https://llmstxt.org/" target="_blank">llms.txt</a> which allows you to use your own assistant. This frees you and your organization to choose the right option given different needs, terms of service, and privacy options. After you have selected the AI that you want to use, you can use natural language to work on simulations. This tutorial walks through how to build up a simulation using an AI assistant.
+        </p>
+
+        <p>
+          We assume that you have access to an AI assistant and we have tested this tutorial with multiple products. If you do not have access to an LLM, we observe that <a href="https://chatgpt.com/" target="_blank">ChatGPT</a> has a free offering. However, we caution that you should be sure to read the privacy policy and terms of service for any AI you choose as, unlike Kigali Sim, these options may involve sending your simulations and data to servers controlled by other organizations. All that in mind, we use <a href="https://claude.ai/" target="_blank">Claude</a> due to its terms of use and strong performance.
+        </p>
+      </section>
+
+      <section id="giving-ai-information">
+        <h2>Giving the AI information</h2>
+
+        <p>
+          At minimum, you should tell your AI to read <a href="https://kigalisim.org/llms.txt" target="_blank">kigalisim.org/llms.txt</a> but we find that providing both <code>llms.txt</code> and <code>llms-full.txt</code> is helpful. Here is how you might want to start.
+        </p>
+
+        <pre class="prompt-code"><code>Hello! Please review https://kigalisim.org/llms.txt?v=20250909 and https://preview.kigalisim.org/llms-full.txt?v=20250909. Then, we will build a simulation together.</code></pre>
+
+        <p>
+          The use of the version is optional but we recommend it to ensure you have the latest copy.
+        </p>
+      </section>
+
+      <section id="building-basic-simulation">
+        <h2>Building the basic simulation</h2>
+
+        <p>
+          Next, let's instruct the AI to make a simulation called Business as Usual with HFC-134a with the similar information to <a href="/guide/tutorial_02.html">Tutorial 2</a>.
+        </p>
+
+        <pre class="prompt-code"><code>Thanks! Please make a simulation without any policies called Business as Usual which runs from 2025 to 2035. Please have this include HFC-134a with a GWP of 1430 kgCO2e / kg that is both domestically produced and consumed. Please initial charge with 0.15 kg / unit and have 5% of the equipment retire each year. Furthermore, please recharge 10% of equipment during all years with 0.15 kg / unit. Finally, please have there be sales of 25 mt in 2025 but have those sales increase 5% each year.
+
+Please write the QubecTalk code for this simulation and then pause.</code></pre>
+
+        <p>
+          Once your assistant has produced the code, please paste it into the <strong>Editor</strong> tab. This is also a good moment to remember to double check the work of an AI by reading through the code.
+        </p>
+      </section>
+
+      <section id="adding-recycling-program">
+        <h2>Adding a recycling program</h2>
+
+        <p>
+          Now that we have a simple simulation to start with, let's ask the AI assistant to add a recycling program and a new simulation.
+        </p>
+
+        <pre class="prompt-code"><code>Fantastic! Please next add a recycling program which happens at the time of servicing. We should capture 20% and have a yield loss of 50%. Let's have this start in 2028. Please add the recycling policy and an additional simulation alongside Business as Usual so we can compare.</code></pre>
+
+        <p>
+          You may need to ask the assistant to provide the entire updated code.
+        </p>
+      </section>
+
+      <section id="results">
+        <h2>Results</h2>
+
+        <p>
+          Select the <strong>Consumption</strong> radio button with <strong>domestic</strong> and <strong>mt / year</strong>. Then, click the <strong>Simulations</strong> radio button and ensure the <strong>All</strong> radio button is selected. You should see a delta between the two scenarios based on the new recycling policy and simulation added by the AI!
+        </p>
+      </section>
+
+      <section id="conclusion">
+        <h2>Conclusion</h2>
+
+        <p>
+          This tutorial demonstrated the use of AI assistants to build models in Kigali Sim. You are now ready to use LLMs to explore other functionality of Kigali Sim and move faster in prototyping new simulations. Remember, you can also use <a href="https://preview.kigalisim.org/guide/tutorial_09.html" target="_blank">Kigali Sim on the command line</a>. In addition to taking advantage of version control and automation, this can also enable use of tools like <a href="https://www.anthropic.com/claude-code" target="_blank">Claude Code</a>.
+        </p>
+      </section>
+
+      <section id="next-steps">
+        <h2>Next Steps</h2>
+
+        <p>
+          This tutorial completes the specialized topic series! You've learned how to leverage AI assistants to accelerate your simulation development workflow. For next steps, consider exploring the other tutorials in the series or dive deeper into the QubecTalk programming language using the command line interface from <a href="/guide/tutorial_09.html">Tutorial 9</a>.
+        </p>
+
+        <p>
+          <a href="/guide/tutorial_12.html">Previous: Tutorial 12</a> | 
+          <a href="/guide/">Guide Index</a>
+        </p>
+      </section>
+
+      <hr />
+      <p><em>This tutorial is part of the Feature-Specific series demonstrating specialized aspects of Montreal Protocol policy modeling using Kigali Sim.</em></p>
+    </main>
+  </body>
+</html>
