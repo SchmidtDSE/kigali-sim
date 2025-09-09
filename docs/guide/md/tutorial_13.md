@@ -30,6 +30,8 @@ Hello! Please review https://kigalisim.org/llms.txt?v=20250909 and https://previ
 
 The use of the version is optional but we recommend it to ensure you have the latest copy.
 
+**Tip:** For LLMs which cannot access the internet, you can [download llms-full.txt](/llms-full.txt) and provide it as an attachment to your AI assistant.
+
 ## Building the basic simulation
 
 Next, let's instruct the AI to make a simulation called Business as Usual with HFC-134a with the similar information to [Tutorial 2](https://kigalisim.org/guide/tutorial_02.html).
