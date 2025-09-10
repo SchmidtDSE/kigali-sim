@@ -497,8 +497,34 @@ class ReportDataWrapper {
     const self = this;
     const metric = filterSet.getFullMetricName();
     const metricStrategy = self._metricStrategies[metric];
-    const value = metricStrategy(filterSet);
-    return value;
+
+    // Check if metricStrategy exists and is a function
+    if (typeof metricStrategy !== "function") {
+      console.warn("MetricStrategy is not a function for metric:", metric);
+      // Trigger global error recovery if available
+      if (window.kigaliApp && typeof window.kigaliApp.resetVisualizationState === "function") {
+        window.kigaliApp.resetVisualizationState();
+      }
+      return null;
+    }
+
+    try {
+      const value = metricStrategy(filterSet);
+      return value;
+    } catch (error) {
+      // Handle "metricStrategy is not a function" and other strategy execution errors
+      if (error.message && error.message.includes("not a function")) {
+        console.warn("MetricStrategy execution failed - not a function:", error.message);
+        // Trigger global error recovery if available
+        if (window.kigaliApp && typeof window.kigaliApp.resetVisualizationState === "function") {
+          window.kigaliApp.resetVisualizationState();
+        }
+        return null;
+      } else {
+        // Re-throw other errors as they may be legitimate validation errors
+        throw error;
+      }
+    }
   }
 
   /**
