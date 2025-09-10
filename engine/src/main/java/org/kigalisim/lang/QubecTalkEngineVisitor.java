@@ -108,14 +108,14 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
   @Override
   public Fragment visitUnitOrRatio(QubecTalkParser.UnitOrRatioContext ctx) {
     String unit = ctx.getText();
-    
+
     // Strip "eachyear" or "eachyears" at the end as it's optional sugar
     // Note: ctx.getText() doesn't include spaces between tokens
-    unit = unit.replaceAll("(?i)each(year|years)$", "");
-    
+    unit = unit.replaceAll("(?i)each(year|years?)$", "");
+
     // Convert remaining "each" to "/" for unit ratios
     unit = unit.replaceAll(" each ", " / ");
-    
+
     return new UnitFragment(unit);
   }
 
@@ -868,6 +868,20 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
    */
   @Override
   public Fragment visitReplaceDuration(QubecTalkParser.ReplaceDurationContext ctx) {
+    Operation volumeOperation = visit(ctx.volume).getOperation();
+    String stream = ctx.target.getText();
+    String destinationSubstance = visit(ctx.destination).getString();
+    ParsedDuring during = visit(ctx.duration).getDuring();
+    Operation operation = new ReplaceOperation(volumeOperation, stream, destinationSubstance, during);
+    return new OperationFragment(operation);
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public Fragment visitReplaceEachYearDuration(QubecTalkParser.ReplaceEachYearDurationContext ctx) {
+    // "each year" is syntactic sugar - delegate to existing replaceDuration logic
     Operation volumeOperation = visit(ctx.volume).getOperation();
     String stream = ctx.target.getText();
     String destinationSubstance = visit(ctx.destination).getString();

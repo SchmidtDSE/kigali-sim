@@ -406,6 +406,7 @@ recycleStatement: RECOVER_ volume=unitValue WITH_ yieldVal=unitValue REUSE_  # r
 
 replaceStatement: REPLACE_ volume=unitValue OF_ target=stream WITH_ destination=string  # replaceAllYears
   | REPLACE_ volume=unitValue OF_ target=stream WITH_ destination=string duration=during  # replaceDuration
+  | REPLACE_ volume=unitValue OF_ target=stream WITH_ destination=string EACH_ YEAR_ duration=during  # replaceEachYearDuration
   ;
 
 retireStatement: RETIRE_ volume=unitValue  # retireAllYears
