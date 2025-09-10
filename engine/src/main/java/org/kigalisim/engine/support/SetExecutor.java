@@ -58,22 +58,23 @@ public class SetExecutor {
 
     // Get distribution ratios like SalesRecalcStrategy does
     StreamKeeper streamKeeper = engine.getStreamKeeper();
+    streamKeeper.setLastSpecifiedValue(useKey, "sales", value);
     SalesStreamDistribution distribution = streamKeeper.getDistribution(useKey);
     
     // Calculate component amounts based on distribution percentages
     BigDecimal domesticAmount = value.getValue().multiply(distribution.getPercentDomestic());
     BigDecimal importAmount = value.getValue().multiply(distribution.getPercentImport());
     
-    // Set component streams, letting SingleThreadEngine handle lastSpecifiedValue
+    // Set component streams using internal method to avoid SetExecutor recursion
     // Only set streams that have non-zero allocations (are enabled)
     if (distribution.getPercentDomestic().compareTo(BigDecimal.ZERO) > 0) {
       EngineNumber domesticValue = new EngineNumber(domesticAmount, value.getUnits());
-      engine.setStream("domestic", domesticValue, yearMatcher);
+      engine.setStreamInternal("domestic", domesticValue, yearMatcher);
     }
     
     if (distribution.getPercentImport().compareTo(BigDecimal.ZERO) > 0) {
       EngineNumber importValue = new EngineNumber(importAmount, value.getUnits());
-      engine.setStream("import", importValue, yearMatcher);
+      engine.setStreamInternal("import", importValue, yearMatcher);
     }
   }
 }

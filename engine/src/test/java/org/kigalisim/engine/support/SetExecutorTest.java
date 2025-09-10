@@ -67,7 +67,7 @@ class SetExecutorTest {
     ArgumentCaptor<EngineNumber> valueCaptor = ArgumentCaptor.forClass(EngineNumber.class);
     ArgumentCaptor<Optional> matcherCaptor = ArgumentCaptor.forClass(Optional.class);
     
-    verify(mockEngine, times(2)).setStream(streamCaptor.capture(), valueCaptor.capture(), matcherCaptor.capture());
+    verify(mockEngine, times(2)).setStreamInternal(streamCaptor.capture(), valueCaptor.capture(), matcherCaptor.capture());
     
     // Check domestic call
     assertEquals("domestic", streamCaptor.getAllValues().get(0));
@@ -98,7 +98,7 @@ class SetExecutorTest {
     ArgumentCaptor<String> streamCaptor = ArgumentCaptor.forClass(String.class);
     ArgumentCaptor<EngineNumber> valueCaptor = ArgumentCaptor.forClass(EngineNumber.class);
     
-    verify(mockEngine, times(1)).setStream(streamCaptor.capture(), valueCaptor.capture(), any());
+    verify(mockEngine, times(1)).setStreamInternal(streamCaptor.capture(), valueCaptor.capture(), any());
     
     assertEquals("domestic", streamCaptor.getValue());
     assertEquals(new BigDecimal("20.0"), valueCaptor.getValue().getValue());
@@ -123,7 +123,7 @@ class SetExecutorTest {
     ArgumentCaptor<String> streamCaptor = ArgumentCaptor.forClass(String.class);
     ArgumentCaptor<EngineNumber> valueCaptor = ArgumentCaptor.forClass(EngineNumber.class);
     
-    verify(mockEngine, times(2)).setStream(streamCaptor.capture(), valueCaptor.capture(), any());
+    verify(mockEngine, times(2)).setStreamInternal(streamCaptor.capture(), valueCaptor.capture(), any());
     
     // Check domestic call (70% of 1000 = 700)
     assertEquals("domestic", streamCaptor.getAllValues().get(0));
@@ -152,7 +152,7 @@ class SetExecutorTest {
     setExecutor.handleSalesSet(mockUseKey, "sales", value, Optional.of(mockYearMatcher));
 
     // Assert - no setStream calls should be made when out of range
-    verify(mockEngine, never()).setStream(any(), any(), any());
+    verify(mockEngine, never()).setStreamInternal(any(), any(), any());
   }
 
   @Test
@@ -170,8 +170,8 @@ class SetExecutorTest {
     setExecutor.handleSalesSet(mockUseKey, "sales", value, Optional.empty());
 
     // Assert - only domestic should be set, no import call
-    verify(mockEngine, times(1)).setStream(eq("domestic"), any(), any());
-    verify(mockEngine, never()).setStream(eq("import"), any(), any());
+    verify(mockEngine, times(1)).setStreamInternal(eq("domestic"), any(), any());
+    verify(mockEngine, never()).setStreamInternal(eq("import"), any(), any());
   }
 
   @Test
@@ -189,8 +189,8 @@ class SetExecutorTest {
     setExecutor.handleSalesSet(mockUseKey, "sales", value, Optional.empty());
 
     // Assert - only import should be set, no domestic call
-    verify(mockEngine, times(1)).setStream(eq("import"), any(), any());
-    verify(mockEngine, never()).setStream(eq("domestic"), any(), any());
+    verify(mockEngine, times(1)).setStreamInternal(eq("import"), any(), any());
+    verify(mockEngine, never()).setStreamInternal(eq("domestic"), any(), any());
   }
 
   @Test
@@ -211,7 +211,7 @@ class SetExecutorTest {
     ArgumentCaptor<String> streamCaptor = ArgumentCaptor.forClass(String.class);
     ArgumentCaptor<EngineNumber> valueCaptor = ArgumentCaptor.forClass(EngineNumber.class);
     
-    verify(mockEngine, times(2)).setStream(streamCaptor.capture(), valueCaptor.capture(), any());
+    verify(mockEngine, times(2)).setStreamInternal(streamCaptor.capture(), valueCaptor.capture(), any());
     
     // Check domestic call (25% of 100 = 25)
     assertEquals("domestic", streamCaptor.getAllValues().get(0));
@@ -242,7 +242,7 @@ class SetExecutorTest {
     ArgumentCaptor<String> streamCaptor = ArgumentCaptor.forClass(String.class);
     ArgumentCaptor<EngineNumber> valueCaptor = ArgumentCaptor.forClass(EngineNumber.class);
     
-    verify(mockEngine, times(2)).setStream(streamCaptor.capture(), valueCaptor.capture(), any());
+    verify(mockEngine, times(2)).setStreamInternal(streamCaptor.capture(), valueCaptor.capture(), any());
     
     // Check domestic call (60% of 50 = 30)
     assertEquals("domestic", streamCaptor.getAllValues().get(0));
@@ -273,7 +273,7 @@ class SetExecutorTest {
     ArgumentCaptor<String> streamCaptor = ArgumentCaptor.forClass(String.class);
     ArgumentCaptor<EngineNumber> valueCaptor = ArgumentCaptor.forClass(EngineNumber.class);
     
-    verify(mockEngine, times(2)).setStream(streamCaptor.capture(), valueCaptor.capture(), any());
+    verify(mockEngine, times(2)).setStreamInternal(streamCaptor.capture(), valueCaptor.capture(), any());
     
     // Check domestic call (33% of 1 = 0.33)
     assertEquals("domestic", streamCaptor.getAllValues().get(0));
@@ -301,7 +301,7 @@ class SetExecutorTest {
     setExecutor.handleSalesSet(mockUseKey, "sales", value, Optional.empty());
 
     // Assert - no setStream calls should be made
-    verify(mockEngine, never()).setStream(any(), any(), any());
+    verify(mockEngine, never()).setStreamInternal(any(), any(), any());
   }
 
   @Test
