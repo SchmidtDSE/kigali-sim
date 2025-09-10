@@ -416,7 +416,7 @@
                               <input
                                 type="text"
                                 name="edit-consumption-ghg"
-                                class="edit-consumption-ghg-input mid"
+                                class="edit-consumption-ghg-input mid numeric-input"
                               />
                               <span class="sel mid">
                                 <select
@@ -445,7 +445,7 @@
                               <input
                                 type="text"
                                 name="edit-consumption-energy"
-                                class="edit-consumption-energy-input mid"
+                                class="edit-consumption-energy-input mid numeric-input"
                               />
                               <span class="sel mid">
                                 <select
@@ -510,7 +510,7 @@
                               <input
                                 type="text"
                                 name="edit-consumption-initial-charge-domestic"
-                                class="edit-consumption-initial-charge-domestic-input mid"
+                                class="edit-consumption-initial-charge-domestic-input mid numeric-input"
                                 data-lpignore="true"
                                 data-protonpass-ignore="true"
                                 data-1p-ignore
@@ -557,7 +557,7 @@
                               <input
                                 type="text"
                                 name="edit-consumption-initial-charge-import"
-                                class="edit-consumption-initial-charge-import-input mid"
+                                class="edit-consumption-initial-charge-import-input mid numeric-input"
                                 data-lpignore="true"
                                 data-protonpass-ignore="true"
                                 data-1p-ignore
@@ -604,7 +604,7 @@
                               <input
                                 type="text"
                                 name="edit-consumption-initial-charge-export"
-                                class="edit-consumption-initial-charge-export-input mid"
+                                class="edit-consumption-initial-charge-export-input mid numeric-input"
                                 data-lpignore="true"
                                 data-protonpass-ignore="true"
                                 data-1p-ignore
@@ -649,7 +649,7 @@
                               <input
                                 type="text"
                                 name="edit-consumption-retirement"
-                                class="edit-consumption-retirement-input mid"
+                                class="edit-consumption-retirement-input mid numeric-input"
                                 data-lpignore="true"
                                 data-protonpass-ignore="true"
                                 data-1p-ignore
@@ -972,7 +972,7 @@
                             <input
                               type="text"
                               name="edit-simulation-start"
-                              class="edit-simulation-start-input long"
+                              class="edit-simulation-start-input long numeric-input"
                             />
                           </div>
                         </div>
@@ -982,7 +982,7 @@
                             <input
                               type="text"
                               name="edit-simulation-end"
-                              class="edit-simulation-end-input long"
+                              class="edit-simulation-end-input long numeric-input"
                             />
                           </div>
                         </div>
@@ -1399,7 +1399,7 @@
           (<span class="embed-app-label"></span>)
         </span>
         to
-        <input type="text" class="set-amount-input short" aria-label="Amount for set command">
+        <input type="text" class="set-amount-input short numeric-input" aria-label="Amount for set command">
         <span class="sel mid">
           <select class="set-units-input" aria-label="Units for set command">
             <option value="kg">kg</option>
@@ -1434,9 +1434,9 @@
               <option value="during years">during years</option>
             </select>
           </span>
-          <input type="text" class="duration-start short" aria-label="Start year of substance import">
+          <input type="text" class="duration-start short numeric-input" aria-label="Start year of substance import">
           <span class="duration-to">to</span>
-          <input type="text" class="duration-end short" aria-label="End year of substance import"> .
+          <input type="text" class="duration-end short numeric-input" aria-label="End year of substance import"> .
         </span>
         - <a href="#" class="delete-command-link">delete</a>
       </div>
@@ -1469,7 +1469,7 @@
             <option value="-">-</option>
           </select>
         </span>
-        <input type="text" class="change-amount-input short" aria-label="Change amount">
+        <input type="text" class="change-amount-input short numeric-input" aria-label="Change amount">
         <span class="sel mid">
           <select class="change-units-input" aria-label="Units of change">
             <option value="kg">kg</option>
@@ -1504,9 +1504,9 @@
               <option value="during years">during years</option>
             </select>
           </span>
-          <input type="text" class="duration-start short" aria-label="Start year of substance import">
+          <input type="text" class="duration-start short numeric-input" aria-label="Start year of substance import">
           <span class="duration-to">to</span>
-          <input type="text" class="duration-end short" aria-label="End year of substance import"> .
+          <input type="text" class="duration-end short numeric-input" aria-label="End year of substance import"> .
         </span>
         - <a href="#" class="delete-command-link">delete</a>
       </div>
@@ -1536,7 +1536,7 @@
           (<span class="embed-app-label"></span>)
         </span>
         at
-        <input type="text" class="limit-amount-input short" aria-label="Amount of limit">
+        <input type="text" class="limit-amount-input short numeric-input" aria-label="Amount of limit">
         <span class="sel mid">
           <select class="limit-units-input" aria-label="Units of limit">
             <option value="kg">kg</option>
@@ -1589,9 +1589,9 @@
               <option value="during years">during years</option>
             </select>
           </span>
-          <input type="text" class="duration-start short" aria-label="Start year of substance import">
+          <input type="text" class="duration-start short numeric-input" aria-label="Start year of substance import">
           <span class="duration-to">to</span>
-          <input type="text" class="duration-end short" aria-label="End year of substance import"> .
+          <input type="text" class="duration-end short numeric-input" aria-label="End year of substance import"> .
         </span>
         - <a href="#" class="delete-command-link">delete</a>
       </div>
@@ -1600,7 +1600,7 @@
     <script type="text/template" id="recycle-command-template">
       <div class="recycle-command form-group">
         Recover
-        <input type="text" class="recycle-amount-input short" aria-label="Amount for recycle command">
+        <input type="text" class="recycle-amount-input short numeric-input" aria-label="Amount for recycle command">
         <span class="sel mid">
           <select class="recycle-units-input" aria-label="Units for recycle command">
             <option value="kg">kg</option>
@@ -1631,7 +1631,7 @@
           (<span class="embed-app-label"></span>)
         </span>
         with
-        <input type="text" class="recycle-reuse-amount-input short" aria-label="Reuse level after yield loss for recycle command">
+        <input type="text" class="recycle-reuse-amount-input short numeric-input" aria-label="Reuse level after yield loss for recycle command">
         <span class="sel mid">
           <select class="recycle-reuse-units-input" aria-label="Units for reuse level after yield loss">
             <option value="kg">kg</option>
@@ -1693,9 +1693,9 @@
               <option value="during years">during years</option>
             </select>
           </span>
-          <input type="text" class="duration-start short" aria-label="Start year of substance import">
+          <input type="text" class="duration-start short numeric-input" aria-label="Start year of substance import">
           <span class="duration-to">to</span>
-          <input type="text" class="duration-end short" aria-label="End year of substance import"> .
+          <input type="text" class="duration-end short numeric-input" aria-label="End year of substance import"> .
         </span>
         - <a href="#" class="delete-command-link">delete</a>
       </div>
@@ -1704,7 +1704,7 @@
     <script type="text/template" id="replace-command-template">
       <div class="replace-command form-group">
         Replace
-        <input type="text" class="replace-amount-input short" aria-label="Amount for replace command">
+        <input type="text" class="replace-amount-input short numeric-input" aria-label="Amount for replace command">
         <span class="sel mid">
           <select class="replace-units-input" aria-label="Units for replace command">
             <option value="kg">kg</option>
@@ -1759,9 +1759,9 @@
               <option value="during years">during years</option>
             </select>
           </span>
-          <input type="text" class="duration-start short" aria-label="Start year of substance import">
+          <input type="text" class="duration-start short numeric-input" aria-label="Start year of substance import">
           <span class="duration-to">to</span>
-          <input type="text" class="duration-end short" aria-label="End year of substance import"> .
+          <input type="text" class="duration-end short numeric-input" aria-label="End year of substance import"> .
         </span>
         - <a href="#" class="delete-command-link">delete</a>
       </div>
@@ -1770,7 +1770,7 @@
     <script type="text/template" id="recharge-command-template">
       <div class="recharge-command form-group">
         Recharge
-        <input type="text" class="recharge-population-input short" placeholder="5" aria-label="Population to recharge">
+        <input type="text" class="recharge-population-input short numeric-input" placeholder="5" aria-label="Population to recharge">
         <span class="sel mid">
           <select class="recharge-population-units-input" aria-label="Population units">
             <option value="%">%</option>
@@ -1780,7 +1780,7 @@
           </select>
         </span>
         with
-        <input type="text" class="recharge-volume-input short" placeholder="0.85" aria-label="Recharge volume">
+        <input type="text" class="recharge-volume-input short numeric-input" placeholder="0.85" aria-label="Recharge volume">
         <span class="sel mid">
           <select class="recharge-volume-units-input" aria-label="Volume units">
             <option value="kg / unit">kg / unit</option>
@@ -1800,9 +1800,9 @@
               <option value="during years">during years</option>
             </select>
           </span>
-          <input type="text" class="duration-start short" aria-label="Start year of recharge">
+          <input type="text" class="duration-start short numeric-input" aria-label="Start year of recharge">
           <span class="duration-to">to</span>
-          <input type="text" class="duration-end short" aria-label="End year of recharge"> .
+          <input type="text" class="duration-end short numeric-input" aria-label="End year of recharge"> .
         </span>
         - <a href="#" class="delete-command-link">delete</a>
       </div>

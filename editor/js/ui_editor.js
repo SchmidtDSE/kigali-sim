@@ -249,6 +249,139 @@ function getEngineNumberValue(valSelection, unitsSelection) {
 }
 
 /**
+ * Validates numeric inputs within a dialog and prompts user for potentially
+ * invalid values.
+ *
+ * @param {HTMLElement} dialog - The dialog element containing numeric inputs
+ * @param {string} dialogType - Type of dialog for error message context
+ *     ("substance", "policy", "simulation")
+ * @returns {boolean} True if user confirms to proceed, false if user cancels
+ */
+function validateNumericInputs(dialog, dialogType) {
+  const numericInputs = dialog.querySelectorAll(".numeric-input");
+  const potentiallyInvalid = [];
+
+  // Define patterns for obviously invalid values
+  const invalidPatterns = [
+    /^\s*$/, // Empty or whitespace only
+    /[a-zA-Z].*[a-zA-Z]/, // Multiple letters (likely text, not equations)
+    /\s{2,}/, // Multiple consecutive spaces
+    /[^\d\s\+\-\*\/\.\,\(\)%]/, // Characters not typical in numbers or equations
+  ];
+
+  // Check each numeric input
+  numericInputs.forEach((input) => {
+    const value = input.value.trim();
+    if (value === "") return; // Skip empty values (may be optional)
+
+    // Check against invalid patterns
+    const isLikelyInvalid = invalidPatterns.some((pattern) => pattern.test(value));
+
+    // Additional check: pure text with no numbers
+    const hasNumbers = /\d/.test(value);
+    const isAllLetters = /^[a-zA-Z\s]+$/.test(value);
+
+    if (isLikelyInvalid || (isAllLetters && !hasNumbers)) {
+      // Get a user-friendly field description
+      const fieldDescription = getFieldDescription(input);
+      potentiallyInvalid.push({
+        element: input,
+        value: value,
+        description: fieldDescription,
+      });
+    }
+  });
+
+  // If no potentially invalid values found, proceed
+  if (potentiallyInvalid.length === 0) {
+    return true;
+  }
+
+  // Build user-friendly error message
+  const fieldList = potentiallyInvalid.map((item) =>
+    `• ${item.description}: "${item.value}"`,
+  ).join("\n");
+
+  const message = "The following numeric fields contain potentially " +
+    `invalid values:\n\n${fieldList}\n\n` +
+    "These values may cause simulation errors. You can:\n" +
+    "• Click \"Continue\" if these are intentional (equations, etc.)\n" +
+    "• Click \"Cancel\" to review and correct the values";
+
+  // Prompt user for confirmation
+  return confirm(message);
+}
+
+/**
+ * Get user-friendly description for a numeric input field.
+ *
+ * @param {HTMLElement} input - The input element
+ * @returns {string} User-friendly field description
+ */
+function getFieldDescription(input) {
+  // Try to find associated label
+  const label = input.closest(".form-group")?.querySelector("label") ||
+                input.closest(".form-section")?.querySelector("label") ||
+                document.querySelector(`label[for="${input.id}"]`);
+
+  if (label) {
+    return label.textContent.replace(":", "").trim();
+  }
+
+  // Fallback to aria-label
+  if (input.getAttribute("aria-label")) {
+    return input.getAttribute("aria-label");
+  }
+
+  // Fallback to placeholder
+  if (input.placeholder) {
+    return `Field with placeholder "${input.placeholder}"`;
+  }
+
+  // Fallback to class-based description
+  if (input.classList.contains("edit-consumption-ghg-input")) {
+    return "GHG Equivalency";
+  }
+  if (input.classList.contains("edit-consumption-energy-input")) {
+    return "Energy Consumption";
+  }
+  if (input.classList.contains("edit-consumption-initial-charge-domestic-input")) {
+    return "Initial Charge (Domestic)";
+  }
+  if (input.classList.contains("edit-consumption-initial-charge-import-input")) {
+    return "Initial Charge (Import)";
+  }
+  if (input.classList.contains("edit-consumption-initial-charge-export-input")) {
+    return "Initial Charge (Export)";
+  }
+  if (input.classList.contains("edit-consumption-retirement-input")) {
+    return "Retirement Rate";
+  }
+  if (input.classList.contains("edit-simulation-start-input")) {
+    return "Simulation Start Year";
+  }
+  if (input.classList.contains("edit-simulation-end-input")) {
+    return "Simulation End Year";
+  }
+  if (input.classList.contains("set-amount-input")) return "Set Amount";
+  if (input.classList.contains("change-amount-input")) return "Change Amount";
+  if (input.classList.contains("limit-amount-input")) return "Limit Amount";
+  if (input.classList.contains("recycle-amount-input")) return "Recycle Amount";
+  if (input.classList.contains("recycle-reuse-amount-input")) {
+    return "Recycle Reuse Amount";
+  }
+  if (input.classList.contains("replace-amount-input")) return "Replace Amount";
+  if (input.classList.contains("recharge-population-input")) {
+    return "Recharge Population";
+  }
+  if (input.classList.contains("recharge-volume-input")) return "Recharge Volume";
+  if (input.classList.contains("duration-start")) return "Start Year";
+  if (input.classList.contains("duration-end")) return "End Year";
+
+  return "Numeric field";
+}
+
+/**
  * Sets the state of a duration selection UI widget.
  *
  * Set the duration for shown within a duration selection UI widget to match
@@ -1234,6 +1367,11 @@ class ConsumptionListPresenter {
    */
   _save() {
     const self = this;
+
+    // Validate numeric inputs and get user confirmation for potentially invalid values
+    if (!validateNumericInputs(self._dialog, "substance")) {
+      return; // User cancelled, stop save operation
+    }
     let substance = self._parseObj();
 
     const codeObj = self._getCodeObj();
@@ -1887,6 +2025,11 @@ class PolicyListPresenter {
    */
   _save() {
     const self = this;
+
+    // Validate numeric inputs and get user confirmation for potentially invalid values
+    if (!validateNumericInputs(self._dialog, "policy")) {
+      return; // User cancelled, stop save operation
+    }
     let policy = self._parseObj();
 
     // Handle duplicate name resolution for new policies
@@ -2140,6 +2283,11 @@ class SimulationListPresenter {
    */
   _save() {
     const self = this;
+
+    // Validate numeric inputs and get user confirmation for potentially invalid values
+    if (!validateNumericInputs(self._dialog, "simulation")) {
+      return; // User cancelled, stop save operation
+    }
     let scenario = self._parseObj();
 
     // Handle duplicate name resolution for new simulations
