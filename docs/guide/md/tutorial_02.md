@@ -1,5 +1,7 @@
 # Tutorial 2: Single Application and Substance
 
+This tutorial covers the basic building blocks of a simulation: applications and substances. You can follow along with this written guide or watch the [video version](https://vimeo.com/1116227339) for a visual walkthrough of the same concepts.
+
 We start with the basic building blocks of a simulation: applications and substances.
 
 ## Motivation
