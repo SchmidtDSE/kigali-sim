@@ -476,13 +476,27 @@ class ApplicationsListPresenter {
       };
 
       const effectiveName = getEffectiveName();
-      const newName = effectiveName === "" ? "Unnamed" : effectiveName;
+      const baseName = effectiveName === "" ? "Unnamed" : effectiveName;
 
       const priorNames = new Set(self._getAppNames());
-      const nameIsDuplicate = priorNames.has(newName);
-      if (nameIsDuplicate) {
-        alert("Whoops! An application by that name already exists.");
-        return;
+      const newName = resolveNameConflict(baseName, priorNames);
+
+      // Update the input field to show the resolved name if it was changed
+      if (newName !== baseName) {
+        // If the resolved name differs from the effective name, update the main name input
+        // We need to handle the case where there's a subname
+        if (subnameEmpty) {
+          nameInput.value = newName;
+        } else {
+          // For compound names with subnames, we need to update the main part
+          const nameParts = newName.split(" - ");
+          if (nameParts.length > 1) {
+            nameInput.value = nameParts[0];
+            // The subname part should remain as-is since conflict resolution affects the whole name
+          } else {
+            nameInput.value = newName;
+          }
+        }
       }
 
       if (self._editingName === null) {
@@ -1220,7 +1234,7 @@ class ConsumptionListPresenter {
    */
   _save() {
     const self = this;
-    const substance = self._parseObj();
+    let substance = self._parseObj();
 
     const codeObj = self._getCodeObj();
 
@@ -1228,6 +1242,39 @@ class ConsumptionListPresenter {
       const applicationName = getFieldValue(
         self._dialog.querySelector(".edit-consumption-application-input"),
       );
+
+      // Handle duplicate substance name resolution for new substances
+      const baseName = substance.getName();
+      const priorNames = new Set(self._getConsumptionNames());
+      const fullBaseName = `"${baseName}" for "${applicationName}"`;
+      const resolvedFullName = resolveSubstanceNameConflict(fullBaseName, priorNames);
+
+      // If the name was changed, update the substance input field and re-parse
+      if (resolvedFullName !== fullBaseName) {
+        // Extract the resolved substance name from the full name
+        const substanceNameMatch = resolvedFullName.match(/^"([^"]+)"/);
+        if (substanceNameMatch) {
+          const resolvedSubstanceName = substanceNameMatch[1];
+
+          // Update the substance input field - need to handle compound names properly
+          const substanceInput = self._dialog.querySelector(".edit-consumption-substance-input");
+          const equipmentInput = self._dialog.querySelector(".edit-consumption-equipment-input");
+
+          // Check if the resolved name has equipment model part
+          const equipmentModel = getFieldValue(equipmentInput);
+          if (equipmentModel && equipmentModel.trim() !== "") {
+            // For compound names, update the base substance part
+            const baseResolved = resolvedSubstanceName.replace(` - ${equipmentModel.trim()}`, "");
+            substanceInput.value = baseResolved;
+          } else {
+            substanceInput.value = resolvedSubstanceName;
+          }
+
+          // Re-parse with the updated name
+          substance = self._parseObj();
+        }
+      }
+
       codeObj.insertSubstance(null, applicationName, null, substance);
     } else {
       const objIdentifierRegex = /\"([^\"]+)\" for \"([^\"]+)\"/;
@@ -1840,7 +1887,24 @@ class PolicyListPresenter {
    */
   _save() {
     const self = this;
-    const policy = self._parseObj();
+    let policy = self._parseObj();
+
+    // Handle duplicate name resolution for new policies
+    if (self._editingName === null) {
+      const baseName = policy.getName();
+      const priorNames = new Set(self._getPolicyNames());
+      const resolvedName = resolveNameConflict(baseName, priorNames);
+
+      // Update the input field if the name was changed
+      if (resolvedName !== baseName) {
+        const nameInput = self._dialog.querySelector(".edit-policy-name-input");
+        nameInput.value = resolvedName;
+
+        // Need to re-parse with the updated name
+        policy = self._parseObj();
+      }
+    }
+
     const codeObj = self._getCodeObj();
     codeObj.insertPolicy(self._editingName, policy);
     self._onCodeObjUpdate(codeObj);
@@ -2076,7 +2140,24 @@ class SimulationListPresenter {
    */
   _save() {
     const self = this;
-    const scenario = self._parseObj();
+    let scenario = self._parseObj();
+
+    // Handle duplicate name resolution for new simulations
+    if (self._editingName === null) {
+      const baseName = scenario.getName();
+      const priorNames = new Set(self._getSimulationNames());
+      const resolvedName = resolveNameConflict(baseName, priorNames);
+
+      // Update the input field if the name was changed
+      if (resolvedName !== baseName) {
+        const nameInput = self._dialog.querySelector(".edit-simulation-name-input");
+        nameInput.value = resolvedName;
+
+        // Need to re-parse with the updated name
+        scenario = self._parseObj();
+      }
+    }
+
     const codeObj = self._getCodeObj();
     codeObj.insertScenario(self._editingName, scenario);
     self._onCodeObjUpdate(codeObj);
@@ -3273,6 +3354,41 @@ function readDurationUi(root) {
   const minYear = getYearValue(targets["min"]);
   const maxYear = getYearValue(targets["max"]);
   return new YearMatcher(minYear, maxYear);
+}
+
+/**
+ * Resolves name conflicts by appending incrementing numbers until finding a unique name.
+ *
+ * @param {string} baseName - The initial desired name.
+ * @param {Set<string>} existingNames - Set of existing names to avoid conflicts with.
+ * @returns {string} A unique name that doesn't conflict with existing names.
+ */
+function resolveNameConflict(baseName, existingNames) {
+  if (!existingNames.has(baseName)) {
+    return baseName;
+  }
+
+  let counter = 1;
+  let candidate = `${baseName} (${counter})`;
+
+  while (existingNames.has(candidate)) {
+    counter++;
+    candidate = `${baseName} (${counter})`;
+  }
+
+  return candidate;
+}
+
+/**
+ * Resolves substance name conflicts with special handling for effective substance names.
+ * This function handles the combination of substance and equipment model names.
+ *
+ * @param {string} baseName - The initial desired substance name.
+ * @param {Set<string>} existingNames - Set of existing substance names to avoid conflicts with.
+ * @returns {string} A unique substance name that doesn't conflict with existing names.
+ */
+function resolveSubstanceNameConflict(baseName, existingNames) {
+  return resolveNameConflict(baseName, existingNames);
 }
 
 export {UiEditorPresenter};
