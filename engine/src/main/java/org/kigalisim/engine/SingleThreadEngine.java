@@ -37,6 +37,7 @@ import org.kigalisim.engine.support.ChangeExecutor;
 import org.kigalisim.engine.support.EngineSupportUtils;
 import org.kigalisim.engine.support.ExceptionsGenerator;
 import org.kigalisim.engine.support.RechargeVolumeCalculator;
+import org.kigalisim.engine.support.SetExecutor;
 import org.kigalisim.engine.support.StreamUpdate;
 import org.kigalisim.engine.support.StreamUpdateBuilder;
 import org.kigalisim.lang.operation.RecoverOperation.RecoveryStage;
@@ -380,6 +381,27 @@ public class SingleThreadEngine implements Engine {
         .build();
 
     executeStreamUpdate(update);
+  }
+
+  @Override
+  public void setStreamInternal(String name, EngineNumber value, Optional<YearMatcher> yearMatcher) {
+    // Internal operations bypass user-level processing - use 4-parameter method directly
+    boolean subtractRecycling = !getIsSalesSubstream(name) || "units".equals(value.getUnits());
+    setStream(name, value, yearMatcher, subtractRecycling);
+  }
+
+  @Override
+  public void setStreamExplicit(String name, EngineNumber value, Optional<YearMatcher> yearMatcher) {
+    // Delegate sales streams to SetExecutor for proper component distribution
+    if ("sales".equals(name)) {
+      SetExecutor setExecutor = new SetExecutor(this);
+      setExecutor.handleSalesSet(scope, name, value, yearMatcher);
+      return;
+    }
+    
+    // For non-sales streams, use standard processing
+    boolean subtractRecycling = !getIsSalesSubstream(name) || "units".equals(value.getUnits());
+    setStream(name, value, yearMatcher, subtractRecycling);
   }
 
   @Override
@@ -1398,7 +1420,7 @@ public class SingleThreadEngine implements Engine {
       EngineNumber newCappedInKg = unitConverter.convert(newCappedValue, "kg");
 
       if (currentInKg.getValue().compareTo(newCappedInKg.getValue()) > 0) {
-        setStream(stream, newCappedValue, Optional.empty());
+        setStreamInternal(stream, newCappedValue, Optional.empty());
 
         if (displaceTarget != null) {
           EngineNumber finalInKg = getStream(stream);
@@ -1433,7 +1455,7 @@ public class SingleThreadEngine implements Engine {
 
     if (currentValueInAmountUnits.getValue().compareTo(amount.getValue()) > 0) {
       EngineNumber currentInKg = unitConverter.convert(currentValueRaw, "kg");
-      setStream(stream, amount, Optional.empty());
+      setStreamInternal(stream, amount, Optional.empty());
 
       if (displaceTarget != null) {
         EngineNumber cappedInKg = getStream(stream);
@@ -1466,7 +1488,7 @@ public class SingleThreadEngine implements Engine {
       EngineNumber newFloorInKg = unitConverter.convert(newFloorValue, "kg");
 
       if (currentInKg.getValue().compareTo(newFloorInKg.getValue()) < 0) {
-        setStream(stream, newFloorValue, Optional.empty());
+        setStreamInternal(stream, newFloorValue, Optional.empty());
 
         if (displaceTarget != null) {
           EngineNumber finalInKg = getStream(stream);
@@ -1501,7 +1523,7 @@ public class SingleThreadEngine implements Engine {
 
     if (currentValueInAmountUnits.getValue().compareTo(amount.getValue()) < 0) {
       EngineNumber currentInKg = unitConverter.convert(currentValueRaw, "kg");
-      setStream(stream, amount, Optional.empty());
+      setStreamInternal(stream, amount, Optional.empty());
 
       if (displaceTarget != null) {
         EngineNumber newInKg = getStream(stream);

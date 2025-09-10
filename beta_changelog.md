@@ -14,6 +14,14 @@ Finally, we want to again express our gratitude for your feedback and time.
 
 The following changes have been adopted and released.
 
+### Clarify inferred stream for change in sales
+
+**Status**: Released September 10, 2025
+
+**Classification**: Bug
+
+If one enables streams and then sets all sales and then specifies a percent change in domestic only (as opposed to all sales), the percentage did not get calculated correctly. Fixed - see [#539](https://github.com/SchmidtDSE/kigali-sim/pull/539).
+
 ### GWP lookup
 
 **Status**: Released September 7, 2025
