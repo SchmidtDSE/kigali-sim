@@ -11,6 +11,7 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
+import org.kigalisim.lang.validation.DuplicateValidator;
 
 /**
  * Record of an application parsed from the source of a QubecTalk program.
@@ -30,8 +31,10 @@ public class ParsedApplication {
    */
   public ParsedApplication(String name, Iterable<ParsedSubstance> substances) {
     this.name = name;
-    this.substances = StreamSupport.stream(substances.spliterator(), false)
-        .collect(Collectors.toMap(ParsedSubstance::getName, Function.identity()));
+    this.substances = DuplicateValidator.validateUniqueNames(
+        substances, ParsedSubstance::getName, "substance", "application '" + name + "'");
+    // Additional validation for substance+equipment combinations
+    DuplicateValidator.validateUniqueSubstanceEquipmentCombinations(substances, name);
   }
 
   /**
