@@ -196,6 +196,37 @@
             <a href="#" class="close-button primary">Close</a>
           </div>
         </dialog>
+
+        <dialog id="duplicate-entity-dialog">
+          <h2>Duplicate Entity</h2>
+          <p>Create a copy of an existing entity with a new name.</p>
+          
+          <div class="form-section">
+            <label for="duplicate-entity-type-input">Entity Type:</label>
+            <select id="duplicate-entity-type-input" class="duplicate-entity-type-input">
+              <option value="application" selected>Application</option>
+              <option value="policy">Policy</option>
+              <option value="simulation">Simulation</option>
+            </select>
+          </div>
+          
+          <div class="form-section">
+            <label for="duplicate-source-entity-input">Source Entity:</label>
+            <select id="duplicate-source-entity-input" class="duplicate-source-entity-input">
+              <!-- Options populated dynamically -->
+            </select>
+          </div>
+          
+          <div class="form-section">
+            <label for="duplicate-new-name-input">New Name:</label>
+            <input type="text" id="duplicate-new-name-input" class="duplicate-new-name-input" placeholder="Enter new name" />
+          </div>
+          
+          <div class="dialog-buttons bold-buttons">
+            <a href="#ui-editor-sections" class="save-button primary">Finish</a>
+            <a href="#" class="cancel-button destructive">Cancel</a>
+          </div>
+        </dialog>
       </div>
     </header>
 
@@ -991,6 +1022,10 @@
                   <a href="#substances-table" class="secondary substances-table-link" 
                      data-tippy-content="Download and upload CSV files containing substance metadata for import/export operations">
                     Import / Export Substances
+                  </a>
+                  <a href="#duplicate-entity-dialog" class="secondary duplicate-entity-link" 
+                     data-tippy-content="Create a copy of an existing application, policy, or simulation with a new name">
+                    Duplicate
                   </a>
                   <a href="#ai-designer-dialog" id="ai-designer-button" class="secondary" 
                      data-tippy-content="Learn how to use AI assistants with KigaliSim simulations">

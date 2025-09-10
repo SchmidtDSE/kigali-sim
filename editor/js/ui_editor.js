@@ -2534,6 +2534,443 @@ class SubstanceTablePresenter {
 }
 
 /**
+ * Manages the UI for duplicating entities (applications, policies, simulations).
+ * Provides a dialog for selecting entity type, source entity, and new name.
+ */
+class DuplicateEntityPresenter {
+  /**
+   * Creates a new DuplicateEntityPresenter.
+   *
+   * @param {Function} getCodeObj - Callback to get the current code object.
+   * @param {Function} onCodeObjUpdate - Callback when code object is updated.
+   */
+  constructor(getCodeObj, onCodeObjUpdate) {
+    const self = this;
+    self._getCodeObj = getCodeObj;
+    self._onCodeObjUpdate = onCodeObjUpdate;
+    self._dialog = document.getElementById("duplicate-entity-dialog");
+    self._setupDialog();
+  }
+
+  /**
+   * Set up dialog event handlers and dynamic behavior.
+   * @private
+   */
+  _setupDialog() {
+    const self = this;
+
+    // Link to open dialog
+    const duplicateLink = document.querySelector(".duplicate-entity-link");
+    duplicateLink.addEventListener("click", (event) => {
+      event.preventDefault();
+      self._refreshEntityDropdown();
+      self._dialog.showModal();
+    });
+
+    // Entity type change handler - update source entity dropdown
+    const entityTypeInput = self._dialog.querySelector(".duplicate-entity-type-input");
+    entityTypeInput.addEventListener("change", () => {
+      self._refreshEntityDropdown();
+      self._updateNewNameSuggestion();
+    });
+
+    // Source entity change handler - suggest new name
+    const sourceEntityInput = self._dialog.querySelector(".duplicate-source-entity-input");
+    sourceEntityInput.addEventListener("change", () => {
+      self._updateNewNameSuggestion();
+    });
+
+    // Save button handler
+    const saveButton = self._dialog.querySelector(".save-button");
+    saveButton.addEventListener("click", (event) => {
+      event.preventDefault();
+      self._duplicateEntity();
+    });
+
+    // Cancel button handler
+    const cancelButton = self._dialog.querySelector(".cancel-button");
+    cancelButton.addEventListener("click", (event) => {
+      event.preventDefault();
+      self._dialog.close();
+    });
+  }
+
+  /**
+   * Refresh the source entity dropdown based on selected entity type.
+   * @private
+   */
+  _refreshEntityDropdown() {
+    const self = this;
+    const entityType = self._dialog.querySelector(".duplicate-entity-type-input").value;
+    const sourceDropdown = self._dialog.querySelector(".duplicate-source-entity-input");
+    const codeObj = self._getCodeObj();
+
+    // Clear existing options
+    sourceDropdown.innerHTML = "";
+
+    let entities = [];
+    switch (entityType) {
+    case "application":
+      entities = codeObj.getApplications().map((app) => ({
+        name: app.getName(),
+        value: app.getName(),
+      }));
+      break;
+    case "policy":
+      entities = codeObj.getPolicies().map((policy) => ({
+        name: policy.getName(),
+        value: policy.getName(),
+      }));
+      break;
+    case "simulation":
+      entities = codeObj.getScenarios().map((scenario) => ({
+        name: scenario.getName(),
+        value: scenario.getName(),
+      }));
+      break;
+    }
+
+    // Add options to dropdown
+    if (entities.length === 0) {
+      const option = document.createElement("option");
+      option.value = "";
+      option.textContent = `No ${entityType}s available`;
+      option.disabled = true;
+      sourceDropdown.appendChild(option);
+    } else {
+      entities.forEach((entity) => {
+        const option = document.createElement("option");
+        option.value = entity.value;
+        option.textContent = entity.name;
+        sourceDropdown.appendChild(option);
+      });
+    }
+  }
+
+  /**
+   * Update the new name suggestion based on selected source entity.
+   * @private
+   */
+  _updateNewNameSuggestion() {
+    const self = this;
+    const sourceEntity = self._dialog.querySelector(".duplicate-source-entity-input").value;
+    const newNameInput = self._dialog.querySelector(".duplicate-new-name-input");
+
+    if (sourceEntity && sourceEntity !== "") {
+      newNameInput.value = `${sourceEntity} Copy`;
+    }
+  }
+
+  /**
+   * Execute the entity duplication operation.
+   * @private
+   */
+  _duplicateEntity() {
+    const self = this;
+    const entityType = self._dialog.querySelector(".duplicate-entity-type-input").value;
+    const sourceEntityName = self._dialog.querySelector(".duplicate-source-entity-input").value;
+    const newName = self._dialog.querySelector(".duplicate-new-name-input").value.trim();
+
+    // Validation
+    if (!sourceEntityName) {
+      alert("Please select a source entity to duplicate.");
+      return;
+    }
+
+    if (!newName) {
+      alert("Please enter a name for the new entity.");
+      return;
+    }
+
+    const codeObj = self._getCodeObj();
+
+    try {
+      switch (entityType) {
+      case "application":
+        self._duplicateApplication(codeObj, sourceEntityName, newName);
+        break;
+      case "policy":
+        self._duplicatePolicy(codeObj, sourceEntityName, newName);
+        break;
+      case "simulation":
+        self._duplicateSimulation(codeObj, sourceEntityName, newName);
+        break;
+      default:
+        throw new Error(`Unknown entity type: ${entityType}`);
+      }
+
+      self._onCodeObjUpdate(codeObj);
+      self._dialog.close();
+    } catch (error) {
+      console.error("Error duplicating entity:", error);
+      alert(`Error duplicating ${entityType}: ${error.message}`);
+    }
+  }
+
+  /**
+   * Duplicate an application with deep copy of all substances and commands.
+   * @param {Program} codeObj - The program object to modify
+   * @param {string} sourceAppName - Name of source application
+   * @param {string} newName - Name for the duplicated application
+   * @private
+   */
+  _duplicateApplication(codeObj, sourceAppName, newName) {
+    const self = this;
+    const sourceApp = codeObj.getApplication(sourceAppName);
+
+    if (!sourceApp) {
+      throw new Error(`Application "${sourceAppName}" not found`);
+    }
+
+    // Deep copy substances with all their commands
+    const duplicatedSubstances = sourceApp.getSubstances().map((substance) => {
+      return self._deepCopySubstance(substance);
+    });
+
+    // Create new application with copied substances
+    const newApplication = new Application(
+      newName,
+      duplicatedSubstances,
+      sourceApp._isModification,
+      sourceApp._isCompatible,
+    );
+
+    codeObj.addApplication(newApplication);
+  }
+
+  /**
+   * Duplicate a policy with deep copy of all applications and commands.
+   * @param {Program} codeObj - The program object to modify
+   * @param {string} sourcePolicyName - Name of source policy
+   * @param {string} newName - Name for the duplicated policy
+   * @private
+   */
+  _duplicatePolicy(codeObj, sourcePolicyName, newName) {
+    const self = this;
+    const sourcePolicy = codeObj.getPolicy(sourcePolicyName);
+
+    if (!sourcePolicy) {
+      throw new Error(`Policy "${sourcePolicyName}" not found`);
+    }
+
+    // Deep copy applications within the policy
+    const duplicatedApplications = sourcePolicy.getApplications().map((app) => {
+      const duplicatedSubstances = app.getSubstances().map((substance) => {
+        return self._deepCopySubstance(substance);
+      });
+
+      return new Application(
+        app.getName(), // Keep same application name (policy context)
+        duplicatedSubstances,
+        app._isModification,
+        app._isCompatible,
+      );
+    });
+
+    // Create new policy stanza
+    const newPolicy = new DefinitionalStanza(
+      newName,
+      duplicatedApplications,
+      sourcePolicy._isCompatible,
+    );
+
+    codeObj.insertPolicy(null, newPolicy);
+  }
+
+  /**
+   * Duplicate a simulation scenario.
+   * @param {Program} codeObj - The program object to modify
+   * @param {string} sourceSimName - Name of source simulation
+   * @param {string} newName - Name for the duplicated simulation
+   * @private
+   */
+  _duplicateSimulation(codeObj, sourceSimName, newName) {
+    const sourceSimulation = codeObj.getScenario(sourceSimName);
+
+    if (!sourceSimulation) {
+      throw new Error(`Simulation "${sourceSimName}" not found`);
+    }
+
+    // Create new simulation scenario with same parameters
+    const newSimulation = new SimulationScenario(
+      newName,
+      [...sourceSimulation.getPolicyNames()], // Copy policy array
+      sourceSimulation.getYearStart(),
+      sourceSimulation.getYearEnd(),
+      sourceSimulation._isCompatible,
+    );
+
+    codeObj.insertScenario(null, newSimulation);
+  }
+
+  /**
+   * Deep copy a substance with all its commands and properties.
+   * @param {Substance} sourceSubstance - The substance to copy
+   * @returns {Substance} Deep copied substance
+   * @private
+   */
+  _deepCopySubstance(sourceSubstance) {
+    const self = this;
+
+    // Deep copy all command arrays
+    const copiedCharges = sourceSubstance.getCharges().map((cmd) => self._deepCopyCommand(cmd));
+    const copiedEnables = sourceSubstance.getEnables().map((cmd) => self._deepCopyCommand(cmd));
+    const copiedEquals = sourceSubstance.getEquals().map((cmd) => self._deepCopyCommand(cmd));
+    const copiedSetVals = sourceSubstance.getSetVals().map((cmd) => self._deepCopyCommand(cmd));
+    const copiedChanges = sourceSubstance.getChanges().map((cmd) => self._deepCopyCommand(cmd));
+    const copiedLimits = sourceSubstance.getLimits().map((cmd) => self._deepCopyLimitCommand(cmd));
+    const copiedRecharges = sourceSubstance.getRecharges().map((cmd) => {
+      return self._deepCopyRechargeCommand(cmd);
+    });
+    const copiedRecycles = sourceSubstance.getRecycles().map((cmd) => {
+      return self._deepCopyRecycleCommand(cmd);
+    });
+    const copiedReplaces = sourceSubstance.getReplaces().map((cmd) => {
+      return self._deepCopyReplaceCommand(cmd);
+    });
+
+    // Create new substance with copied commands
+    return new Substance(
+      sourceSubstance.getName(),
+      copiedCharges,
+      copiedEnables,
+      copiedEquals,
+      copiedSetVals,
+      copiedChanges,
+      copiedLimits,
+      copiedRecharges,
+      copiedRecycles,
+      copiedReplaces,
+      sourceSubstance._isModification,
+      sourceSubstance._isCompatible,
+    );
+  }
+
+  /**
+   * Deep copy a basic command.
+   * @param {Command} sourceCommand - The command to copy
+   * @returns {Command} Deep copied command
+   * @private
+   */
+  _deepCopyCommand(sourceCommand) {
+    const self = this;
+    const value = sourceCommand.getValue();
+    const engineNumber = value ? new EngineNumber(value.getValue(), value.getUnits()) : null;
+    const duration = sourceCommand.getDuration();
+    const yearMatcher = duration ? self._deepCopyYearMatcher(duration) : null;
+
+    return new Command(
+      sourceCommand.getTypeName(),
+      sourceCommand.getTarget(),
+      engineNumber,
+      yearMatcher,
+    );
+  }
+
+  /**
+   * Deep copy a limit command.
+   * @param {LimitCommand} sourceLimitCommand - The limit command to copy
+   * @returns {LimitCommand} Deep copied limit command
+   * @private
+   */
+  _deepCopyLimitCommand(sourceLimitCommand) {
+    const self = this;
+    const value = sourceLimitCommand.getValue();
+    const engineNumber = value ? new EngineNumber(value.getValue(), value.getUnits()) : null;
+    const duration = sourceLimitCommand.getDuration();
+    const yearMatcher = duration ? self._deepCopyYearMatcher(duration) : null;
+
+    return new LimitCommand(
+      sourceLimitCommand.getTypeName(),
+      sourceLimitCommand.getTarget(),
+      engineNumber,
+      yearMatcher,
+      sourceLimitCommand.getDisplacing(),
+    );
+  }
+
+  /**
+   * Deep copy a recharge command.
+   * @param {RechargeCommand} sourceRechargeCommand - The recharge command to copy
+   * @returns {RechargeCommand} Deep copied recharge command
+   * @private
+   */
+  _deepCopyRechargeCommand(sourceRechargeCommand) {
+    const self = this;
+    const value = sourceRechargeCommand.getValue();
+    const engineNumber = value ? new EngineNumber(value.getValue(), value.getUnits()) : null;
+    const duration = sourceRechargeCommand.getDuration();
+    const yearMatcher = duration ? self._deepCopyYearMatcher(duration) : null;
+
+    return new RechargeCommand(
+      sourceRechargeCommand.getPopulation(),
+      sourceRechargeCommand.getPopulationUnits(),
+      engineNumber,
+      yearMatcher,
+    );
+  }
+
+  /**
+   * Deep copy a recycle command.
+   * @param {RecycleCommand} sourceRecycleCommand - The recycle command to copy
+   * @returns {RecycleCommand} Deep copied recycle command
+   * @private
+   */
+  _deepCopyRecycleCommand(sourceRecycleCommand) {
+    const self = this;
+    const target = sourceRecycleCommand.getTarget();
+    const targetNumber = target ? new EngineNumber(target.getValue(), target.getUnits()) : null;
+    const value = sourceRecycleCommand.getValue();
+    const valueNumber = value ? new EngineNumber(value.getValue(), value.getUnits()) : null;
+    const duration = sourceRecycleCommand.getDuration();
+    const yearMatcher = duration ? self._deepCopyYearMatcher(duration) : null;
+
+    return new RecycleCommand(
+      targetNumber,
+      valueNumber,
+      yearMatcher,
+      sourceRecycleCommand.getDisplacing(),
+    );
+  }
+
+  /**
+   * Deep copy a replace command.
+   * @param {ReplaceCommand} sourceReplaceCommand - The replace command to copy
+   * @returns {ReplaceCommand} Deep copied replace command
+   * @private
+   */
+  _deepCopyReplaceCommand(sourceReplaceCommand) {
+    const self = this;
+    const volume = sourceReplaceCommand.getVolume();
+    const volumeNumber = volume ? new EngineNumber(volume.getValue(), volume.getUnits()) : null;
+    const duration = sourceReplaceCommand.getDuration();
+    const yearMatcher = duration ? self._deepCopyYearMatcher(duration) : null;
+
+    return new ReplaceCommand(
+      volumeNumber,
+      sourceReplaceCommand.getSource(),
+      sourceReplaceCommand.getDestination(),
+      yearMatcher,
+    );
+  }
+
+  /**
+   * Deep copy a YearMatcher duration object.
+   * @param {YearMatcher} sourceYearMatcher - The year matcher to copy
+   * @returns {YearMatcher} Deep copied year matcher
+   * @private
+   */
+  _deepCopyYearMatcher(sourceYearMatcher) {
+    // YearMatcher constructor takes start, end, and duration type parameters
+    return new YearMatcher(
+      sourceYearMatcher.getStart(),
+      sourceYearMatcher.getEnd(),
+      sourceYearMatcher.getDurationType(),
+    );
+  }
+}
+
+/**
  * Manages the UI editor interface.
  *
  * Central presenter which coordinates between code editing and visual editing
@@ -2592,6 +3029,11 @@ class UiEditorPresenter {
     );
 
     self._substanceTable = new SubstanceTablePresenter(
+      () => self._getCodeAsObj(),
+      (codeObj) => self._onCodeObjUpdate(codeObj),
+    );
+
+    self._duplicateEntityPresenter = new DuplicateEntityPresenter(
       () => self._getCodeAsObj(),
       (codeObj) => self._onCodeObjUpdate(codeObj),
     );
