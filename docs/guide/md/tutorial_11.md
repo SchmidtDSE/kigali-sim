@@ -27,7 +27,7 @@ First, let's create our baseline scenario with both HFC-134a and R-600a refriger
 **Step 1: Create the Domestic Refrigeration application**
 - Click **Add Application**
 - Name it "Domestic Refrigeration"
-- Click **Save**
+- Click **Finish**
 
 **Step 2: Add HFC-134a substance**
 - In your Domestic Refrigeration application, click **Add Consumption**
@@ -43,7 +43,7 @@ First, let's create our baseline scenario with both HFC-134a and R-600a refriger
 - On the **Set** tab:
   - Set **prior equipment** to 1,000,000 units in year 2025
   - Set **domestic** manufacture to 20 mt in year 2025
-- Click **Save**
+- Click **Finish**
 
 **Step 3: Add R-600a substance**
 - Again in the Domestic Refrigeration application, **Add Consumption** for R-600a with similar equipment properties except different GWP.
@@ -58,14 +58,14 @@ First, let's create our baseline scenario with both HFC-134a and R-600a refriger
 - On the **Set** tab:
   - Set **prior equipment** to 50,000 units in year 2025
   - Set **domestic** manufacture to 1 mt in year 2025
-- Click **Save**
+- Click **Finish**
 
 **Step 4: Create baseline simulation**
 - Click **Add Simulation**
 - Name it "BAU"
 - Set duration from **years 2025 to 2035**
 - Leave all policies unchecked (this is our business-as-usual baseline)
-- Click **Save**
+- Click **Finish**
 
 You should now see your baseline simulation running, showing HFC-134a as the dominant refrigerant with much higher consumption volumes than R-600a.
 
@@ -84,7 +84,7 @@ Now let's create a policy that gradually replaces HFC-134a consumption with R-60
 - Target Domestic Refrigeration and HFC-134a
 - **Add Replacement** of 10% of sales with R-600a
 - Set timing to **each year during years 2028 to onwards**
-- Click **Save** to finish the policy
+- Click **Finish** to finish the policy
 
 This policy will progressively reduce HFC-134a consumption by 10% each year starting in 2028, with that demand being met by R-600a instead. Over time, this creates a significant shift in the refrigerant mix while maintaining overall service levels.
 
@@ -96,7 +96,7 @@ Now let's create a simulation to compare the policy scenario with our business-a
 - Name it "Replacement"
 - Check the **Replacement** policy checkbox
 - Set duration from **years 2025 to 2035**
-- Click **Save**
+- Click **Finish**
 
 You should now see both your **BAU** and **Replacement** scenarios displayed side by side in the results panel.
 

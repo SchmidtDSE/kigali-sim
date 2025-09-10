@@ -14,7 +14,7 @@ Let's start by creating a new simulation for ABC:
 
 - Click **Add Application** and enter "Domestic Refrigeration" without quotes.
 - Leave Subapplication empty for now
-- Click **Save**
+- Click **Finish**
 
 You won't see results yet because we haven't added any substances or equipment data.
 
@@ -81,7 +81,7 @@ Now let's see our model in action. After clicking save for our consumption recor
 - Create a "Business as Usual" simulation (call it **BAU**).
 - Set no policies (we'll add those later).
 - Indicate a duration from **2025 to 2035**
-- Click **Save**
+- Click **Finish**
 
 (tutorial02_step06.gif - alt: animated gif showing how to create a simulation)
 
