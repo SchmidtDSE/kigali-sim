@@ -336,12 +336,12 @@ identifier: IDENTIFIER_  # identifierAsVar;
  * ---------------
  **/
 
-during: DURING_ YEAR_ target=expression  # duringSingleYear
-  | DURING_ granularity=temporalUnit BEGINNING_  # duringStart
-  | DURING_ granularity=temporalUnit lower=expression TO_ upper=expression  # duringRange
-  | DURING_ granularity=temporalUnit lower=expression TO_ ONWARDS_  # duringWithMin
-  | DURING_ granularity=temporalUnit BEGINNING_ TO_ upper=expression  # duringWithMax
-  | DURING_ granularity=temporalUnit BEGINNING_ TO_ ONWARDS_  # duringAll
+during: (EACH_ YEAR_)? DURING_ YEAR_ target=expression  # duringSingleYear
+  | (EACH_ YEAR_)? DURING_ granularity=temporalUnit BEGINNING_  # duringStart
+  | (EACH_ YEAR_)? DURING_ granularity=temporalUnit lower=expression TO_ upper=expression  # duringRange
+  | (EACH_ YEAR_)? DURING_ granularity=temporalUnit lower=expression TO_ ONWARDS_  # duringWithMin
+  | (EACH_ YEAR_)? DURING_ granularity=temporalUnit BEGINNING_ TO_ upper=expression  # duringWithMax
+  | (EACH_ YEAR_)? DURING_ granularity=temporalUnit BEGINNING_ TO_ ONWARDS_  # duringAll
   ;
 
 /**

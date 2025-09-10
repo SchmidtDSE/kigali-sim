@@ -876,19 +876,6 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
     return new OperationFragment(operation);
   }
 
-  /**
-   * {@inheritDoc}
-   */
-  @Override
-  public Fragment visitReplaceEachYearDuration(QubecTalkParser.ReplaceEachYearDurationContext ctx) {
-    // "each year" is syntactic sugar - delegate to existing replaceDuration logic
-    Operation volumeOperation = visit(ctx.volume).getOperation();
-    String stream = ctx.target.getText();
-    String destinationSubstance = visit(ctx.destination).getString();
-    ParsedDuring during = visit(ctx.duration).getDuring();
-    Operation operation = new ReplaceOperation(volumeOperation, stream, destinationSubstance, during);
-    return new OperationFragment(operation);
-  }
 
   /**
    * {@inheritDoc}

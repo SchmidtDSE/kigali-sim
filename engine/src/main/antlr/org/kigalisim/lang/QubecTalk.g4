@@ -340,12 +340,12 @@ identifier: IDENTIFIER_  # identifierAsVar;
  * ---------------
  **/
 
-during: DURING_ YEAR_ target=expression  # duringSingleYear
-  | DURING_ granularity=temporalUnit BEGINNING_  # duringStart
-  | DURING_ granularity=temporalUnit lower=expression TO_ upper=expression  # duringRange
-  | DURING_ granularity=temporalUnit lower=expression TO_ ONWARDS_  # duringWithMin
-  | DURING_ granularity=temporalUnit BEGINNING_ TO_ upper=expression  # duringWithMax
-  | DURING_ granularity=temporalUnit BEGINNING_ TO_ ONWARDS_  # duringAll
+during: (EACH_ YEAR_)? DURING_ YEAR_ target=expression  # duringSingleYear
+  | (EACH_ YEAR_)? DURING_ granularity=temporalUnit BEGINNING_  # duringStart
+  | (EACH_ YEAR_)? DURING_ granularity=temporalUnit lower=expression TO_ upper=expression  # duringRange
+  | (EACH_ YEAR_)? DURING_ granularity=temporalUnit lower=expression TO_ ONWARDS_  # duringWithMin
+  | (EACH_ YEAR_)? DURING_ granularity=temporalUnit BEGINNING_ TO_ upper=expression  # duringWithMax
+  | (EACH_ YEAR_)? DURING_ granularity=temporalUnit BEGINNING_ TO_ ONWARDS_  # duringAll
   ;
 
 /**
@@ -410,7 +410,6 @@ recycleStatement: RECOVER_ volume=unitValue WITH_ yieldVal=unitValue REUSE_  # r
 
 replaceStatement: REPLACE_ volume=unitValue OF_ target=stream WITH_ destination=string  # replaceAllYears
   | REPLACE_ volume=unitValue OF_ target=stream WITH_ destination=string duration=during  # replaceDuration
-  | REPLACE_ volume=unitValue OF_ target=stream WITH_ destination=string EACH_ YEAR_ duration=during  # replaceEachYearDuration
   ;
 
 retireStatement: RETIRE_ volume=unitValue  # retireAllYears
