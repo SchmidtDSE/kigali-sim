@@ -37,6 +37,7 @@ import org.kigalisim.engine.support.ChangeExecutor;
 import org.kigalisim.engine.support.EngineSupportUtils;
 import org.kigalisim.engine.support.ExceptionsGenerator;
 import org.kigalisim.engine.support.RechargeVolumeCalculator;
+import org.kigalisim.engine.support.SetExecutor;
 import org.kigalisim.engine.support.StreamUpdate;
 import org.kigalisim.engine.support.StreamUpdateBuilder;
 import org.kigalisim.lang.operation.RecoverOperation.RecoveryStage;
@@ -357,6 +358,13 @@ public class SingleThreadEngine implements Engine {
 
   @Override
   public void setStream(String name, EngineNumber value, Optional<YearMatcher> yearMatcher) {
+    // Delegate sales streams to SetExecutor for proper component distribution
+    if ("sales".equals(name)) {
+      SetExecutor setExecutor = new SetExecutor(this);
+      setExecutor.handleSalesSet(scope, name, value, yearMatcher);
+      return;
+    }
+    
     // For direct stream setting (like from SetOperation), domestic/import should not subtract recycling
     // EXCEPT when the operation is units-based, which should account for recycling
     boolean subtractRecycling = !getIsSalesSubstream(name) || "units".equals(value.getUnits());
