@@ -74,9 +74,9 @@ public class OnlyPeriodsParseStrategy implements NumberParseUtilStrategy {
           // Truly ambiguous case - could be 123.456 (thousands) or 123.456 (decimal)
           return new FlexibleNumberParseResult(String.format(
               "Ambiguous number format: '%s'. Cannot determine if '%s' is a thousands "
-              + "separator or decimal separator. Suggestions: Use '%s.0' for thousands "
-              + "separator or change format to disambiguate.",
-              numberStr, separator, numberStr
+              + "separator or decimal separator. Suggestions: Use '%s,0' if thousands separator "
+              + "or '%s0' if decimal part separator. Please change format to disambiguate.",
+              numberStr, separator, numberStr, numberStr
           ));
         }
       } else {
@@ -102,16 +102,8 @@ public class OnlyPeriodsParseStrategy implements NumberParseUtilStrategy {
       return false;
     }
 
-    // Common thousands patterns: 1.000  10.000  100.000 etc.
-    if (digitsBefore >= 1 && digitsBefore <= 3) {
-      String afterSeparator = numberStr.substring(separatorIndex + 1);
-      // Check for common thousands patterns like 1.000 or 10.000
-      if ("000".equals(afterSeparator)) {
-        return true;
-      }
-    }
-
-    // If we have 4 or more digits before the separator, it's likely thousands
+    // Don't make assumptions about N.000 patterns - treat them as ambiguous
+    // Only consider thousands separator if we have 4 or more digits before the separator
     return digitsBefore >= 4;
   }
 

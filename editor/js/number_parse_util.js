@@ -306,21 +306,66 @@ class NumberParseUtil {
 
     // Exactly 3 digits after separator - check for likely thousands patterns
     if (digitsAfter === 3) {
-      // Check for likely thousands patterns: 4+ digits or common patterns like 1,000 and 10,000
-      if (digitsBefore >= 4 || digitsBefore <= 2) {
-        const cleaned = numberPart.replace(separator, "");
-        const result = parseFloat(cleaned);
-        if (isNaN(result)) {
-          return NumberParseResult.error(`Invalid number format: '${originalString}'`);
+      // Special case: if number starts with separator, it's always a decimal separator
+      if (digitsBefore === 0) {
+        if (separator === ",") {
+          // European decimal format
+          const result = parseFloat(numberPart.replace(",", "."));
+          if (isNaN(result)) {
+            return NumberParseResult.error(`Invalid number format: '${originalString}'`);
+          }
+          return NumberParseResult.success(result);
+        } else {
+          // US decimal format
+          const result = parseFloat(numberPart);
+          if (isNaN(result)) {
+            return NumberParseResult.error(`Invalid number format: '${originalString}'`);
+          }
+          return NumberParseResult.success(result);
         }
-        return NumberParseResult.success(result);
+      }
+
+      // Check if digits before are 4 or more like 1234.5, treat as decimal separator
+      if (digitsBefore >= 4) {
+        if (separator === ",") {
+          // European decimal format
+          const result = parseFloat(numberPart.replace(",", "."));
+          if (isNaN(result)) {
+            return NumberParseResult.error(`Invalid number format: '${originalString}'`);
+          }
+          return NumberParseResult.success(result);
+        } else {
+          // US decimal format
+          const result = parseFloat(numberPart);
+          if (isNaN(result)) {
+            return NumberParseResult.error(`Invalid number format: '${originalString}'`);
+          }
+          return NumberParseResult.success(result);
+        }
+      } else if (numberPart.startsWith("0" + separator)) {
+        // Numbers starting with 0, are clearly decimals (like 0,035)
+        if (separator === ",") {
+          const result = parseFloat(numberPart.replace(",", "."));
+          if (isNaN(result)) {
+            return NumberParseResult.error(`Invalid number format: '${originalString}'`);
+          }
+          return NumberParseResult.success(result);
+        } else {
+          const result = parseFloat(numberPart);
+          if (isNaN(result)) {
+            return NumberParseResult.error(`Invalid number format: '${originalString}'`);
+          }
+          return NumberParseResult.success(result);
+        }
       } else {
-        // Truly ambiguous case
+        // Truly ambiguous case - could be 123,456 (thousands) or 123,456 (decimal)
+        const thousandsDecimalSep = separator === "," ? ".0" : ",0";
         return NumberParseResult.error(
           `Ambiguous number format: '${originalString}'. Cannot determine if '${separator}' ` +
             "is a thousands separator or decimal separator. Suggestions: " +
-            `Use '${originalString}.0' ` +
-            "for thousands separator or change format to disambiguate.",
+            `Use '${originalString}${thousandsDecimalSep}' if thousands separator ` +
+            `or '${originalString}0' if decimal part separator. ` +
+            "Please change format to disambiguate.",
         );
       }
     }
