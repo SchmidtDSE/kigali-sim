@@ -10,6 +10,7 @@
 import {EngineNumber} from "engine_number";
 import {YearMatcher} from "year_matcher";
 import {parseUnitValue} from "meta_serialization";
+import {NumberParseUtil} from "number_parse_util";
 
 /**
  * Command compatibility mapping to compatibility modes:
@@ -3020,6 +3021,14 @@ class IncompatibleCommand {
  */
 class TranslatorVisitor extends toolkit.QubecTalkVisitor {
   /**
+   * Create a new TranslatorVisitor with number parsing utilities.
+   */
+  constructor() {
+    super();
+    this.numberParser = new NumberParseUtil();
+  }
+
+  /**
    * Visit a number node and converts it to a numeric value.
    *
    * @param {Object} ctx - The parse tree node context.
@@ -3031,10 +3040,12 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
     const raw = ctx.getText();
     const signMultiplier = raw.includes("-") ? -1 : 1;
     const bodyRawText = ctx.getChild(ctx.getChildCount() - 1).getText();
-    const cleanedText = bodyRawText.replace(/,/g, "");
-    const bodyParsed = signMultiplier * parseFloat(cleanedText);
 
-    return bodyParsed;
+    const result = self.numberParser.parseFlexibleNumber(bodyRawText);
+    if (!result.isSuccess()) {
+      throw new Error(`Failed to parse number in QubecTalk expression: ${result.getError()}`);
+    }
+    return signMultiplier * result.getNumber();
   }
 
   /**
