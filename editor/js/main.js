@@ -917,7 +917,7 @@ class MainPresenter {
     const self = this;
 
     // Try to use existing error display mechanisms first
-    if (type === "error" && self._codeEditorPresenter) {
+    if (type === "error" && self._isOnCodeEditorTab()) {
       self._codeEditorPresenter.showError(message);
       return;
     }
