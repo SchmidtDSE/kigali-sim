@@ -533,7 +533,6 @@ public class StreamKeeper {
    * @param useKey The key containing application and substance
    * @param newValue The new recovery rate value
    * @param stage The recovery stage (EOL or RECHARGE)
-   * @throws IllegalStateException if a non-zero recovery rate is already set for this stage
    */
   public void setRecoveryRate(UseKey useKey, EngineNumber newValue, RecoveryStage stage) {
     StreamParameterization parameterization = getParameterization(useKey);
@@ -541,19 +540,16 @@ public class StreamKeeper {
     // Get existing recovery rate for this stage
     EngineNumber existingRecovery = parameterization.getRecoveryRate(stage);
 
-    // Check if recovery rate is already set - but allow additive behavior for now
-    // TODO: Implement proper multiple recover validation that distinguishes between
-    // same simulation timestep vs different simulations
+    // Check if recovery rate is already set - use additive behavior for multiple recover commands
     if (existingRecovery.getValue().compareTo(BigDecimal.ZERO) > 0) {
-      // For now, allow the additive behavior to maintain compatibility
-      // Add the new recovery rate to the existing one (previous behavior)
+      // Add the new recovery rate to the existing one (additive behavior)
       BigDecimal newRate = existingRecovery.getValue().add(newValue.getValue());
       EngineNumber combinedRate = new EngineNumber(newRate, "%");
       parameterization.setRecoveryRate(combinedRate, stage);
       return; // Early return to avoid setting the rate again below
     }
 
-    // Set the recovery rate (first and only one for this timestep)
+    // Set the recovery rate (first one for this timestep)
     parameterization.setRecoveryRate(newValue, stage);
   }
 

@@ -770,8 +770,8 @@ public class RechargeLiveTests {
   /**
    * Test optional "each year" syntax support in unit expressions.
    * Validates that expressions with and without "each year" produce identical results.
-   * 
-   * TODO: Temporarily disabled due to unit parsing issue: "kg/uniteachyear"
+   *
+   * <p>TODO: Temporarily disabled due to unit parsing issue: "kg/uniteachyear"
    * The UnitConverter is not properly handling "each year" suffix in unit expressions.
    */
   // @Test

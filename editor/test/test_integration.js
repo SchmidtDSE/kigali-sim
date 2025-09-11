@@ -1448,6 +1448,25 @@ end simulations
         },
       ]);
 
+    buildTest(
+      "tests each year syntax preprocessing",
+      "/examples/each_year_syntax_test.qta",
+      [
+        (result, assert) => {
+          // Test that the file with "each year" syntax compiles and runs successfully
+          assert.ok(result.length > 0, "Each year syntax should produce simulation results");
+
+          // Test specific functionality - should have results for the test simulation
+          const record = getResult(result, "Each Year Test", 2025, 0,
+            "domestic equipment", "HFC-134a");
+          assert.ok(record, "Should find simulation results for 'Each Year Test'");
+
+          const domestic = record.getDomestic();
+          assert.ok(domestic.getValue() > 0, "Domestic value should be positive");
+          assert.deepEqual(domestic.getUnits(), "kg", "Domestic units should be kg");
+        },
+      ],
+    );
   });
 }
 

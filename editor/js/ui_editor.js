@@ -7,6 +7,7 @@ import {EngineNumber} from "engine_number";
 import {YearMatcher} from "year_matcher";
 import {MetaSerializer, MetaChangeApplier} from "meta_serialization";
 import {GwpLookupPresenter} from "known_substance";
+import {NumberParseUtil} from "number_parse_util";
 
 import {
   Application,
@@ -266,6 +267,7 @@ function getEngineNumberValue(valSelection, unitsSelection) {
 function validateNumericInputs(dialog, dialogType) {
   const numericInputs = dialog.querySelectorAll(".numeric-input");
   const potentiallyInvalid = [];
+  const numberParser = new NumberParseUtil();
 
   // Define patterns for potentially invalid values
   const invalidPatterns = [
@@ -285,13 +287,25 @@ function validateNumericInputs(dialog, dialogType) {
     // Check against invalid patterns
     const isLikelyInvalid = invalidPatterns.some((pattern) => pattern.test(value));
 
-    if (isLikelyInvalid) {
+    // Check for ambiguous number formats
+    const isAmbiguous = numberParser.isAmbiguous(value);
+
+    if (isLikelyInvalid || isAmbiguous) {
       // Get field description from aria-label
       const fieldDescription = input.getAttribute("aria-label") || "Unknown field";
+
+      let itemDescription = fieldDescription;
+      let suggestion = "";
+
+      if (isAmbiguous) {
+        itemDescription = `${fieldDescription} (ambiguous number format)`;
+        suggestion = numberParser.getDisambiguationSuggestion(value);
+      }
       potentiallyInvalid.push({
         element: input,
         value: value,
-        description: fieldDescription,
+        description: itemDescription,
+        suggestion: suggestion,
       });
     }
   });
@@ -302,9 +316,13 @@ function validateNumericInputs(dialog, dialogType) {
   }
 
   // Build user-friendly error message
-  const fieldList = potentiallyInvalid.map((item) =>
-    `• ${item.description}: "${item.value}"`,
-  ).join("\n");
+  const fieldList = potentiallyInvalid.map((item) => {
+    if (item.suggestion) {
+      return `• ${item.description}: "${item.value}"\n  Suggestion: ${item.suggestion}`;
+    } else {
+      return `• ${item.description}: "${item.value}"`;
+    }
+  }).join("\n\n");
 
   const message = "The following numeric fields contain potentially " +
     `invalid values:\n\n${fieldList}\n\n` +
@@ -563,7 +581,6 @@ class ApplicationsListPresenter {
 
     const saveButton = self._root.querySelector(".save-button");
     saveButton.addEventListener("click", (event) => {
-      self._dialog.close();
       event.preventDefault();
 
       const cleanName = (x) => x.replaceAll('"', "").replaceAll(",", "").trim();
@@ -588,12 +605,12 @@ class ApplicationsListPresenter {
 
       const priorNames = new Set(self._getAppNames());
       const resolution = resolveNameConflict(baseName, priorNames);
+      const newName = resolution.getNewName();
 
       // Update the input field to show the resolved name if it was changed
       if (resolution.getNameChanged()) {
         // If the resolved name differs from the effective name, update the main name input
         // We need to handle the case where there's a subname
-        const newName = resolution.getNewName();
         if (subnameEmpty) {
           nameInput.value = newName;
         } else {
@@ -618,6 +635,8 @@ class ApplicationsListPresenter {
         codeObj.renameApplication(self._editingName, newName);
         self._onCodeObjUpdate(codeObj);
       }
+
+      self._dialog.close();
     });
   }
 
@@ -896,9 +915,10 @@ class ConsumptionListPresenter {
 
     const saveButton = self._root.querySelector(".save-button");
     saveButton.addEventListener("click", (event) => {
-      self._save();
-      self._dialog.close();
       event.preventDefault();
+      if (self._save()) {
+        self._dialog.close();
+      }
     });
 
     const updateHints = () => {
@@ -1346,7 +1366,7 @@ class ConsumptionListPresenter {
 
     // Validate numeric inputs and get user confirmation for potentially invalid values
     if (!validateNumericInputs(self._dialog, "substance")) {
-      return; // User cancelled, stop save operation
+      return false; // User cancelled, stop save operation
     }
     let substance = self._parseObj();
 
@@ -1431,6 +1451,7 @@ class ConsumptionListPresenter {
     }
 
     self._onCodeObjUpdate(codeObj);
+    return true;
   }
 
   /**
@@ -1708,9 +1729,10 @@ class PolicyListPresenter {
 
     const saveButton = self._root.querySelector(".save-button");
     saveButton.addEventListener("click", (event) => {
-      self._save();
-      self._dialog.close();
       event.preventDefault();
+      if (self._save()) {
+        self._dialog.close();
+      }
     });
 
     const updateHints = () => {
@@ -2005,7 +2027,7 @@ class PolicyListPresenter {
 
     // Validate numeric inputs and get user confirmation for potentially invalid values
     if (!validateNumericInputs(self._dialog, "policy")) {
-      return; // User cancelled, stop save operation
+      return false; // User cancelled, stop save operation
     }
     let policy = self._parseObj();
 
@@ -2028,6 +2050,7 @@ class PolicyListPresenter {
     const codeObj = self._getCodeObj();
     codeObj.insertPolicy(self._editingName, policy);
     self._onCodeObjUpdate(codeObj);
+    return true;
   }
 
   /**
@@ -2174,9 +2197,10 @@ class SimulationListPresenter {
 
     const saveButton = self._root.querySelector(".save-button");
     saveButton.addEventListener("click", (event) => {
-      self._dialog.close();
-      self._save();
       event.preventDefault();
+      if (self._save()) {
+        self._dialog.close();
+      }
     });
   }
 
@@ -2263,12 +2287,12 @@ class SimulationListPresenter {
 
     // Validate numeric inputs and get user confirmation for potentially invalid values
     if (!validateNumericInputs(self._dialog, "simulation")) {
-      return; // User cancelled, stop save operation
+      return false; // User cancelled, stop save operation
     }
 
     // Validate simulation duration and warn about very long simulations
     if (!validateSimulationDuration(self._dialog)) {
-      return; // User cancelled, stop save operation
+      return false; // User cancelled, stop save operation
     }
     let scenario = self._parseObj();
 
@@ -2291,6 +2315,7 @@ class SimulationListPresenter {
     const codeObj = self._getCodeObj();
     codeObj.insertScenario(self._editingName, scenario);
     self._onCodeObjUpdate(codeObj);
+    return true;
   }
 
   /**
@@ -3138,8 +3163,13 @@ function initChangeCommandUi(itemObj, root, codeObj, context, streamUpdater) {
 function readChangeCommandUi(root) {
   const target = getFieldValue(root.querySelector(".change-target-input"));
   const invert = getFieldValue(root.querySelector(".change-sign-input")) === "-";
-  const amountRaw = parseFloat(getFieldValue(root.querySelector(".change-amount-input")));
-  const amount = amountRaw * (invert ? -1 : 1);
+  const numberParser = new NumberParseUtil();
+  const amountInput = getFieldValue(root.querySelector(".change-amount-input"));
+  const result = numberParser.parseFlexibleNumber(amountInput);
+  if (!result.isSuccess()) {
+    throw new Error(`Invalid amount format: ${result.getError()}`);
+  }
+  const amount = result.getNumber() * (invert ? -1 : 1);
   const units = getFieldValue(root.querySelector(".change-units-input"));
   const amountWithUnits = new EngineNumber(amount, units);
   const duration = readDurationUi(root.querySelector(".duration-subcomponent"));

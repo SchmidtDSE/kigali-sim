@@ -24,6 +24,8 @@ import org.kigalisim.lang.fragment.ScenariosFragment;
 import org.kigalisim.lang.fragment.StringFragment;
 import org.kigalisim.lang.fragment.SubstanceFragment;
 import org.kigalisim.lang.fragment.UnitFragment;
+import org.kigalisim.lang.localization.FlexibleNumberParseResult;
+import org.kigalisim.lang.localization.NumberParseUtil;
 import org.kigalisim.lang.operation.AdditionOperation;
 import org.kigalisim.lang.operation.CapOperation;
 import org.kigalisim.lang.operation.ChangeOperation;
@@ -71,13 +73,19 @@ import org.kigalisim.lang.time.TimePointFuture;
 @SuppressWarnings("CheckReturnValue")
 public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
 
+  /** Number parser for handling flexible thousands and decimal separators. */
+  private final NumberParseUtil numberParser = new NumberParseUtil();
+
   /**
    * {@inheritDoc}
    */
   @Override public Fragment visitNumber(QubecTalkParser.NumberContext ctx) {
     String rawText = ctx.getText();
-    String cleanedText = rawText.replace(",", "");
-    BigDecimal numberRaw = new BigDecimal(cleanedText);
+    FlexibleNumberParseResult parseResult = numberParser.parseFlexibleNumber(rawText);
+    if (parseResult.isError()) {
+      throw new RuntimeException("Failed to parse number in QubecTalk expression: " + parseResult.getError().get());
+    }
+    BigDecimal numberRaw = parseResult.getParsedNumber().get();
     EngineNumber number = new EngineNumber(numberRaw, "");
     Operation calculation = new PreCalculatedOperation(number);
     return new OperationFragment(calculation);
@@ -109,11 +117,7 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
   public Fragment visitUnitOrRatio(QubecTalkParser.UnitOrRatioContext ctx) {
     String unit = ctx.getText();
 
-    // Strip "eachyear" or "eachyears" at the end as it's optional sugar
-    // Note: ctx.getText() doesn't include spaces between tokens
-    unit = unit.replaceAll("(?i) each(year|years?)$", "");
-
-    // Convert remaining "each" to "/" for unit ratios
+    // Convert "each" to "/" for unit ratios
     unit = unit.replaceAll(" each ", " / ");
 
     return new UnitFragment(unit);
