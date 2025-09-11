@@ -238,7 +238,13 @@ function getListInput(selection, itemReadStrategy) {
 function setEngineNumberValue(valSelection, unitsSelection, source, defaultValue, strategy) {
   const newValue = source === null ? null : strategy(source);
   const valueOrDefault = newValue === null ? defaultValue : newValue;
-  valSelection.value = valueOrDefault.getValue();
+
+  // Use original string for value field if available, otherwise use numeric value
+  if (valueOrDefault.hasOriginalString()) {
+    valSelection.value = valueOrDefault.getOriginalString();
+  } else {
+    valSelection.value = valueOrDefault.getValue();
+  }
   unitsSelection.value = valueOrDefault.getUnits();
 }
 
@@ -250,9 +256,32 @@ function setEngineNumberValue(valSelection, unitsSelection, source, defaultValue
  * @returns {EngineNumber} Combined engine number object.
  */
 function getEngineNumberValue(valSelection, unitsSelection) {
-  const value = valSelection.value;
+  const valueString = valSelection.value;
   const units = unitsSelection.value;
-  return new EngineNumber(value, units);
+
+  // Parse the value to get the numeric value, but preserve original string formatting
+  const numericValue = parseFloat(valueString);
+  return new EngineNumber(numericValue, units, valueString.trim());
+}
+
+/**
+ * Inverts the sign of a number string while preserving formatting.
+ *
+ * @param {string} numberString - The number string to invert
+ * @returns {string} The number string with inverted sign
+ */
+function invertNumberString(numberString) {
+  const trimmed = numberString.trim();
+  if (trimmed.startsWith("-")) {
+    // Remove the minus sign (or replace with plus for explicit positive)
+    return "+" + trimmed.substring(1);
+  } else if (trimmed.startsWith("+")) {
+    // Replace plus with minus
+    return "-" + trimmed.substring(1);
+  } else {
+    // No sign present, add minus
+    return "-" + trimmed;
+  }
 }
 
 /**
@@ -272,6 +301,7 @@ function validateNumericInputs(dialog, dialogType) {
   // Define patterns for potentially invalid values
   const invalidPatterns = [
     /[a-zA-Z\s]/, // Alphabetical characters or spaces
+    /[^\d\s\-+.,]/, // Non-numeric symbols except digits, spaces, signs, periods, and commas
   ];
 
   // Check each numeric input
@@ -3169,7 +3199,9 @@ function readChangeCommandUi(root) {
   }
   const amount = result.getNumber() * (invert ? -1 : 1);
   const units = getFieldValue(root.querySelector(".change-units-input"));
-  const amountWithUnits = new EngineNumber(amount, units);
+  // Preserve original string format, applying sign inversion if needed
+  const originalString = invert ? invertNumberString(amountInput) : amountInput.trim();
+  const amountWithUnits = new EngineNumber(amount, units, originalString);
   const duration = readDurationUi(root.querySelector(".duration-subcomponent"));
   return new Command("change", target, amountWithUnits, duration);
 }
@@ -3442,7 +3474,7 @@ function readRecycleCommandUi(root) {
     // Parse as percentage
     const inductionValue = parseFloat(inductionRaw);
     if (!isNaN(inductionValue) && inductionValue >= 0 && inductionValue <= 100) {
-      induction = new EngineNumber(inductionValue, "%");
+      induction = new EngineNumber(inductionValue, "%", inductionRaw.trim());
     } else {
       // Invalid input - show warning and use default
       console.warn(`Invalid induction rate: ${inductionRaw}. Using default instead.`);

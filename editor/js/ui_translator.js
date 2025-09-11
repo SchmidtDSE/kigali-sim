@@ -13,6 +13,20 @@ import {parseUnitValue} from "meta_serialization";
 import {NumberParseUtil} from "number_parse_util";
 
 /**
+ * Formats an EngineNumber for code generation, preserving original string when available.
+ *
+ * @param {EngineNumber} engineNumber - The EngineNumber to format.
+ * @returns {string} Formatted string with value and units.
+ */
+function formatEngineNumber(engineNumber) {
+  if (engineNumber.hasOriginalString()) {
+    return engineNumber.getOriginalString() + " " + engineNumber.getUnits();
+  } else {
+    return engineNumber.getValue() + " " + engineNumber.getUnits();
+  }
+}
+
+/**
  * Command compatibility mapping to compatibility modes:
  *
  * - "any": Compatible with both policy and definition contexts
@@ -1602,14 +1616,14 @@ class Substance {
     let ghg = "";
     if (self._equalsGhg) {
       const ghgValue = self._equalsGhg.getValue();
-      ghg = ghgValue.getValue() + " " + ghgValue.getUnits();
+      ghg = formatEngineNumber(ghgValue);
     }
 
     // Extract energy value
     let energy = "";
     if (self._equalsKwh) {
       const energyValue = self._equalsKwh.getValue();
-      energy = energyValue.getValue() + " " + energyValue.getUnits();
+      energy = formatEngineNumber(energyValue);
     }
 
     // Extract enabled streams
@@ -1636,7 +1650,7 @@ class Substance {
     self._initialCharges.forEach((charge) => {
       const target = charge.getTarget();
       const chargeValue = charge.getValue();
-      const chargeString = chargeValue.getValue() + " " + chargeValue.getUnits();
+      const chargeString = formatEngineNumber(chargeValue);
 
       if (target === "domestic") {
         initialChargeDomestic = chargeString;
@@ -1651,7 +1665,7 @@ class Substance {
     let retirement = "";
     if (self._retire) {
       const retireValue = self._retire.getValue();
-      retirement = retireValue.getValue() + " " + retireValue.getUnits();
+      retirement = formatEngineNumber(retireValue);
     }
 
     return new SubstanceMetadata(
@@ -1755,10 +1769,10 @@ class Substance {
     }
 
     const buildInitialCharge = (initialCharge) => {
+      const engineNumber = initialCharge.getValue();
       const pieces = [
         "initial charge with",
-        initialCharge.getValue().getValue(),
-        initialCharge.getValue().getUnits(),
+        formatEngineNumber(engineNumber),
         "for",
         initialCharge.getTarget(),
       ];
@@ -1781,10 +1795,10 @@ class Substance {
       return null;
     }
 
+    const engineNumber = equalsCommand.getValue();
     const pieces = [
       "equals",
-      equalsCommand.getValue().getValue(),
-      equalsCommand.getValue().getUnits(),
+      formatEngineNumber(engineNumber),
     ];
     self._addDuration(pieces, equalsCommand);
 
@@ -1804,12 +1818,12 @@ class Substance {
     }
 
     const buildSetVal = (setVal) => {
+      const engineNumber = setVal.getValue();
       const pieces = [
         "set",
         setVal.getTarget(),
         "to",
-        setVal.getValue().getValue(),
-        setVal.getValue().getUnits(),
+        formatEngineNumber(engineNumber),
       ];
       self._addDuration(pieces, setVal);
       return self._finalizeStatement(pieces);
@@ -1831,12 +1845,12 @@ class Substance {
     }
 
     const buildChange = (change) => {
+      const engineNumber = change.getValue();
       const pieces = [
         "change",
         change.getTarget(),
         "by",
-        change.getValue().getValue(),
-        change.getValue().getUnits(),
+        formatEngineNumber(engineNumber),
       ];
       self._addDuration(pieces, change);
       return self._finalizeStatement(pieces);
@@ -1857,10 +1871,10 @@ class Substance {
       return null;
     }
 
+    const engineNumber = self._retire.getValue();
     const pieces = [
       "retire",
-      self._retire.getValue().getValue(),
-      self._retire.getValue().getUnits(),
+      formatEngineNumber(engineNumber),
     ];
     self._addDuration(pieces, self._retire);
 
@@ -1880,12 +1894,12 @@ class Substance {
     }
 
     const buildLimit = (limit) => {
+      const engineNumber = limit.getValue();
       const pieces = [
         limit.getTypeName(),
         limit.getTarget(),
         "to",
-        limit.getValue().getValue(),
-        limit.getValue().getUnits(),
+        formatEngineNumber(engineNumber),
       ];
 
       const displacing = limit.getDisplacing();
@@ -1919,13 +1933,13 @@ class Substance {
         return self._finalizeStatement([recharge.buildCommand()]);
       } else {
         // Legacy Command objects
+        const targetEngineNumber = recharge.getTarget();
+        const valueEngineNumber = recharge.getValue();
         const pieces = [
           "recharge",
-          recharge.getTarget().getValue(),
-          recharge.getTarget().getUnits(),
+          formatEngineNumber(targetEngineNumber),
           "with",
-          recharge.getValue().getValue(),
-          recharge.getValue().getUnits(),
+          formatEngineNumber(valueEngineNumber),
         ];
         self._addDuration(pieces, recharge);
         return self._finalizeStatement(pieces);
@@ -1946,13 +1960,13 @@ class Substance {
     }
 
     const buildRecycle = (recycle) => {
+      const targetEngineNumber = recycle.getTarget();
+      const valueEngineNumber = recycle.getValue();
       const pieces = [
         "recover",
-        recycle.getTarget().getValue(),
-        recycle.getTarget().getUnits(),
+        formatEngineNumber(targetEngineNumber),
         "with",
-        recycle.getValue().getValue(),
-        recycle.getValue().getUnits(),
+        formatEngineNumber(valueEngineNumber),
         "reuse",
       ];
 

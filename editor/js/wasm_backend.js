@@ -104,14 +104,16 @@ class ReportDataParser {
       }
       const parts = valueStr.trim().split(/\s+/);
       if (parts.length >= 2) {
-        // Format: "value units"
+        // Format: "value units" - preserve original value string
         const value = parseFloat(parts[0]) || 0;
         const units = parts.slice(1).join(" "); // Handle multi-word units
-        return new EngineNumber(value, units);
+        const originalValueString = parts[0]; // Preserve original formatting
+        return new EngineNumber(value, units, originalValueString);
       } else {
-        // Only value, use default units
+        // Only value, use default units - preserve original value string
         const value = parseFloat(parts[0]) || 0;
-        return new EngineNumber(value, defaultUnits);
+        const originalValueString = parts[0]; // Preserve original formatting
+        return new EngineNumber(value, defaultUnits, originalValueString);
       }
     };
 
