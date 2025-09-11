@@ -7,6 +7,7 @@ import {EngineNumber} from "engine_number";
 import {YearMatcher} from "year_matcher";
 import {MetaSerializer, MetaChangeApplier} from "meta_serialization";
 import {GwpLookupPresenter} from "known_substance";
+import {NumberParseUtil} from "number_parse_util";
 
 import {
   Application,
@@ -266,6 +267,7 @@ function getEngineNumberValue(valSelection, unitsSelection) {
 function validateNumericInputs(dialog, dialogType) {
   const numericInputs = dialog.querySelectorAll(".numeric-input");
   const potentiallyInvalid = [];
+  const numberParser = new NumberParseUtil();
 
   // Define patterns for potentially invalid values
   const invalidPatterns = [
@@ -280,13 +282,25 @@ function validateNumericInputs(dialog, dialogType) {
     // Check against invalid patterns
     const isLikelyInvalid = invalidPatterns.some((pattern) => pattern.test(value));
 
-    if (isLikelyInvalid) {
+    // Check for ambiguous number formats
+    const isAmbiguous = numberParser.isAmbiguous(value);
+
+    if (isLikelyInvalid || isAmbiguous) {
       // Get field description from aria-label
       const fieldDescription = input.getAttribute("aria-label") || "Unknown field";
+
+      let itemDescription = fieldDescription;
+      let suggestion = "";
+
+      if (isAmbiguous) {
+        itemDescription = `${fieldDescription} (ambiguous number format)`;
+        suggestion = numberParser.getDisambiguationSuggestion(value);
+      }
       potentiallyInvalid.push({
         element: input,
         value: value,
-        description: fieldDescription,
+        description: itemDescription,
+        suggestion: suggestion,
       });
     }
   });
@@ -297,9 +311,13 @@ function validateNumericInputs(dialog, dialogType) {
   }
 
   // Build user-friendly error message
-  const fieldList = potentiallyInvalid.map((item) =>
-    `• ${item.description}: "${item.value}"`,
-  ).join("\n");
+  const fieldList = potentiallyInvalid.map((item) => {
+    if (item.suggestion) {
+      return `• ${item.description}: "${item.value}"\n  Suggestion: ${item.suggestion}`;
+    } else {
+      return `• ${item.description}: "${item.value}"`;
+    }
+  }).join("\n\n");
 
   const message = "The following numeric fields contain potentially " +
     `invalid values:\n\n${fieldList}\n\n` +
@@ -3133,7 +3151,9 @@ function initChangeCommandUi(itemObj, root, codeObj, context, streamUpdater) {
 function readChangeCommandUi(root) {
   const target = getFieldValue(root.querySelector(".change-target-input"));
   const invert = getFieldValue(root.querySelector(".change-sign-input")) === "-";
-  const amountRaw = parseFloat(getFieldValue(root.querySelector(".change-amount-input")));
+  const numberParser = new NumberParseUtil();
+  const amountInput = getFieldValue(root.querySelector(".change-amount-input"));
+  const amountRaw = numberParser.parseFlexibleNumber(amountInput);
   const amount = amountRaw * (invert ? -1 : 1);
   const units = getFieldValue(root.querySelector(".change-units-input"));
   const amountWithUnits = new EngineNumber(amount, units);
