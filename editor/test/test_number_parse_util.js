@@ -1,5 +1,5 @@
 /* eslint-disable max-len */
-import {NumberParseUtil} from "number_parse_util";
+import {NumberParseUtil, NumberParseResult} from "number_parse_util";
 
 /**
  * Comprehensive unit tests for NumberParseUtil class.
@@ -22,96 +22,132 @@ function buildNumberParseUtilTests() {
 
     // Test valid number formats
     QUnit.test("parses valid US format numbers", function (assert) {
-      assert.equal(numberParser.parseFlexibleNumber("123,456.78"), 123456.78, "US format with thousands and decimal");
-      assert.equal(numberParser.parseFlexibleNumber("1,234"), 1234, "US format thousands separator");
-      assert.equal(numberParser.parseFlexibleNumber("12,345,678.90"), 12345678.90, "US format with multiple thousands");
-      assert.equal(numberParser.parseFlexibleNumber("123.45"), 123.45, "Simple decimal number");
+      let result = numberParser.parseFlexibleNumber("123,456.78");
+      assert.ok(result.isSuccess(), "US format with thousands and decimal should succeed");
+      assert.equal(result.getNumber(), 123456.78, "US format with thousands and decimal");
+
+      result = numberParser.parseFlexibleNumber("1,234");
+      assert.ok(result.isSuccess(), "US format thousands separator should succeed");
+      assert.equal(result.getNumber(), 1234, "US format thousands separator");
+
+      result = numberParser.parseFlexibleNumber("12,345,678.90");
+      assert.ok(result.isSuccess(), "US format with multiple thousands should succeed");
+      assert.equal(result.getNumber(), 12345678.90, "US format with multiple thousands");
+
+      result = numberParser.parseFlexibleNumber("123.45");
+      assert.ok(result.isSuccess(), "Simple decimal number should succeed");
+      assert.equal(result.getNumber(), 123.45, "Simple decimal number");
     });
 
     QUnit.test("parses valid European format numbers", function (assert) {
-      assert.equal(numberParser.parseFlexibleNumber("123.456,78"), 123456.78, "European format with thousands and decimal");
-      assert.equal(numberParser.parseFlexibleNumber("1.234.567,89"), 1234567.89, "European format with multiple thousands");
-      assert.equal(numberParser.parseFlexibleNumber("123,45"), 123.45, "European decimal separator");
+      let result = numberParser.parseFlexibleNumber("123.456,78");
+      assert.ok(result.isSuccess(), "European format with thousands and decimal should succeed");
+      assert.equal(result.getNumber(), 123456.78, "European format with thousands and decimal");
+
+      result = numberParser.parseFlexibleNumber("1.234.567,89");
+      assert.ok(result.isSuccess(), "European format with multiple thousands should succeed");
+      assert.equal(result.getNumber(), 1234567.89, "European format with multiple thousands");
+
+      result = numberParser.parseFlexibleNumber("123,45");
+      assert.ok(result.isSuccess(), "European decimal separator should succeed");
+      assert.equal(result.getNumber(), 123.45, "European decimal separator");
     });
 
     QUnit.test("parses numbers without separators", function (assert) {
-      assert.equal(numberParser.parseFlexibleNumber("123456"), 123456, "Integer without separators");
-      assert.equal(numberParser.parseFlexibleNumber("123456.78"), 123456.78, "Decimal without thousands separator");
-      assert.equal(numberParser.parseFlexibleNumber("1000"), 1000, "Round thousand without separator");
+      let result = numberParser.parseFlexibleNumber("123456");
+      assert.ok(result.isSuccess(), "Integer without separators should succeed");
+      assert.equal(result.getNumber(), 123456, "Integer without separators");
+
+      result = numberParser.parseFlexibleNumber("123456.78");
+      assert.ok(result.isSuccess(), "Decimal without thousands separator should succeed");
+      assert.equal(result.getNumber(), 123456.78, "Decimal without thousands separator");
+
+      result = numberParser.parseFlexibleNumber("1000");
+      assert.ok(result.isSuccess(), "Round thousand without separator should succeed");
+      assert.equal(result.getNumber(), 1000, "Round thousand without separator");
     });
 
     QUnit.test("handles negative numbers correctly", function (assert) {
-      assert.equal(numberParser.parseFlexibleNumber("-123,456.78"), -123456.78, "Negative US format");
-      assert.equal(numberParser.parseFlexibleNumber("-123.456,78"), -123456.78, "Negative European format");
-      assert.equal(numberParser.parseFlexibleNumber("-123456"), -123456, "Negative integer");
-      assert.equal(numberParser.parseFlexibleNumber("-1,234"), -1234, "Negative thousands");
+      let result = numberParser.parseFlexibleNumber("-123,456.78");
+      assert.ok(result.isSuccess(), "Negative US format should succeed");
+      assert.equal(result.getNumber(), -123456.78, "Negative US format");
+
+      result = numberParser.parseFlexibleNumber("-123.456,78");
+      assert.ok(result.isSuccess(), "Negative European format should succeed");
+      assert.equal(result.getNumber(), -123456.78, "Negative European format");
+
+      result = numberParser.parseFlexibleNumber("-123456");
+      assert.ok(result.isSuccess(), "Negative integer should succeed");
+      assert.equal(result.getNumber(), -123456, "Negative integer");
+
+      result = numberParser.parseFlexibleNumber("-1,234");
+      assert.ok(result.isSuccess(), "Negative thousands should succeed");
+      assert.equal(result.getNumber(), -1234, "Negative thousands");
     });
 
     QUnit.test("handles positive sign numbers correctly", function (assert) {
-      assert.equal(numberParser.parseFlexibleNumber("+123,456.78"), 123456.78, "Positive US format");
-      assert.equal(numberParser.parseFlexibleNumber("+123.456,78"), 123456.78, "Positive European format");
-      assert.equal(numberParser.parseFlexibleNumber("+123456"), 123456, "Positive integer");
+      let result = numberParser.parseFlexibleNumber("+123,456.78");
+      assert.ok(result.isSuccess(), "Positive US format should succeed");
+      assert.equal(result.getNumber(), 123456.78, "Positive US format");
+
+      result = numberParser.parseFlexibleNumber("+123.456,78");
+      assert.ok(result.isSuccess(), "Positive European format should succeed");
+      assert.equal(result.getNumber(), 123456.78, "Positive European format");
+
+      result = numberParser.parseFlexibleNumber("+123456");
+      assert.ok(result.isSuccess(), "Positive integer should succeed");
+      assert.equal(result.getNumber(), 123456, "Positive integer");
     });
 
     QUnit.test("handles likely thousands separator patterns", function (assert) {
-      assert.equal(numberParser.parseFlexibleNumber("1,000"), 1000, "Classic thousands: 1,000");
-      assert.equal(numberParser.parseFlexibleNumber("10,000"), 10000, "Classic thousands: 10,000");
-      assert.equal(numberParser.parseFlexibleNumber("1000,000"), 1000000, "Large thousands pattern");
-      assert.equal(numberParser.parseFlexibleNumber("1.000"), 1000, "European thousands: 1.000");
-      assert.equal(numberParser.parseFlexibleNumber("10.000"), 10000, "European thousands: 10.000");
+      let result = numberParser.parseFlexibleNumber("1,000");
+      assert.ok(result.isSuccess(), "Classic thousands: 1,000 should succeed");
+      assert.equal(result.getNumber(), 1000, "Classic thousands: 1,000");
+
+      result = numberParser.parseFlexibleNumber("10,000");
+      assert.ok(result.isSuccess(), "Classic thousands: 10,000 should succeed");
+      assert.equal(result.getNumber(), 10000, "Classic thousands: 10,000");
+
+      result = numberParser.parseFlexibleNumber("1000,000");
+      assert.ok(result.isSuccess(), "Large thousands pattern should succeed");
+      assert.equal(result.getNumber(), 1000000, "Large thousands pattern");
+
+      result = numberParser.parseFlexibleNumber("1.000");
+      assert.ok(result.isSuccess(), "European thousands: 1.000 should succeed");
+      assert.equal(result.getNumber(), 1000, "European thousands: 1.000");
+
+      result = numberParser.parseFlexibleNumber("10.000");
+      assert.ok(result.isSuccess(), "European thousands: 10.000 should succeed");
+      assert.equal(result.getNumber(), 10000, "European thousands: 10.000");
     });
 
-    QUnit.test("throws errors for ambiguous cases", function (assert) {
+    QUnit.test("returns errors for ambiguous cases", function (assert) {
       // These cases are truly ambiguous - could be thousands or decimal
-      assert.throws(
-        function () {
-          numberParser.parseFlexibleNumber("123,456");
-        },
-        /Ambiguous number format/,
-        "Should throw for ambiguous comma case: 123,456",
-      );
+      let result = numberParser.parseFlexibleNumber("123,456");
+      assert.ok(!result.isSuccess(), "Should fail for ambiguous comma case: 123,456");
+      assert.ok(result.getError().includes("Ambiguous number format"), "Should return ambiguous error for comma case");
 
-      assert.throws(
-        function () {
-          numberParser.parseFlexibleNumber("123.456");
-        },
-        /Ambiguous number format/,
-        "Should throw for ambiguous period case: 123.456",
-      );
+      result = numberParser.parseFlexibleNumber("123.456");
+      assert.ok(!result.isSuccess(), "Should fail for ambiguous period case: 123.456");
+      assert.ok(result.getError().includes("Ambiguous number format"), "Should return ambiguous error for period case");
     });
 
-    QUnit.test("throws errors for invalid formats", function (assert) {
-      assert.throws(
-        function () {
-          numberParser.parseFlexibleNumber("");
-        },
-        /empty/,
-        "Should throw for empty string",
-      );
+    QUnit.test("returns errors for invalid formats", function (assert) {
+      let result = numberParser.parseFlexibleNumber("");
+      assert.ok(!result.isSuccess(), "Should fail for empty string");
+      assert.ok(result.getError().includes("empty"), "Should return empty error");
 
-      assert.throws(
-        function () {
-          numberParser.parseFlexibleNumber(null);
-        },
-        /null/,
-        "Should throw for null input",
-      );
+      result = numberParser.parseFlexibleNumber(null);
+      assert.ok(!result.isSuccess(), "Should fail for null input");
+      assert.ok(result.getError().includes("null"), "Should return null error");
 
-      assert.throws(
-        function () {
-          numberParser.parseFlexibleNumber("abc");
-        },
-        /Invalid number format/,
-        "Should throw for non-numeric string",
-      );
+      result = numberParser.parseFlexibleNumber("abc");
+      assert.ok(!result.isSuccess(), "Should fail for non-numeric string");
+      assert.ok(result.getError().includes("Invalid number format"), "Should return invalid format error");
 
-      assert.throws(
-        function () {
-          numberParser.parseFlexibleNumber("12,34.56,78");
-        },
-        /number format/,
-        "Should throw for malformed mixed separators",
-      );
+      result = numberParser.parseFlexibleNumber("12,34.56,78");
+      assert.ok(!result.isSuccess(), "Should fail for malformed mixed separators");
+      assert.ok(result.getError().includes("number format"), "Should return format error");
     });
 
     QUnit.test("isAmbiguous correctly identifies ambiguous numbers", function (assert) {
@@ -124,7 +160,8 @@ function buildNumberParseUtilTests() {
       assert.notOk(numberParser.isAmbiguous("123.456,78"), "123.456,78 should not be ambiguous");
       assert.notOk(numberParser.isAmbiguous("123456"), "123456 should not be ambiguous");
       assert.notOk(numberParser.isAmbiguous("123.45"), "123.45 should not be ambiguous");
-      assert.notOk(numberParser.isAmbiguous("1,234"), "1,234 should not be ambiguous (likely thousands)");
+      assert.notOk(numberParser.isAmbiguous("1,234"), "1,234 should not be ambiguous (common thousands pattern)");
+      assert.ok(numberParser.isAmbiguous("123,456"), "123,456 should be ambiguous");
       assert.notOk(numberParser.isAmbiguous("10,000"), "10,000 should not be ambiguous (clear thousands)");
       assert.notOk(numberParser.isAmbiguous(""), "Empty string should not be ambiguous");
       assert.notOk(numberParser.isAmbiguous(null), "Null should not be ambiguous");
@@ -132,12 +169,12 @@ function buildNumberParseUtilTests() {
 
     QUnit.test("getDisambiguationSuggestion provides helpful suggestions", function (assert) {
       const suggestion1 = numberParser.getDisambiguationSuggestion("123,456");
-      assert.ok(suggestion1.includes("123,456.0"), "Should suggest adding .0 for comma case");
-      assert.ok(suggestion1.includes("thousands separator"), "Should mention thousands separator");
+      assert.ok(suggestion1.includes("123,456,0") || suggestion1.includes("123,456.0"), "Should suggest adding ,0 or .0 for comma case");
+      assert.ok(suggestion1.includes("disambiguate"), "Should mention disambiguate");
 
       const suggestion2 = numberParser.getDisambiguationSuggestion("123.456");
-      assert.ok(suggestion2.includes("123.456.0"), "Should suggest adding .0 for period case");
-      assert.ok(suggestion2.includes("thousands separator"), "Should mention thousands separator");
+      assert.ok(suggestion2.includes("123.456.0") || suggestion2.includes("123.456,0"), "Should suggest adding .0 or ,0 for period case");
+      assert.ok(suggestion2.includes("disambiguate"), "Should mention disambiguate");
 
       const suggestion3 = numberParser.getDisambiguationSuggestion("123,456.78");
       assert.ok(suggestion3.includes("not ambiguous"), "Should indicate non-ambiguous numbers");
@@ -145,46 +182,64 @@ function buildNumberParseUtilTests() {
 
     QUnit.test("handles edge cases correctly", function (assert) {
       // Single digits
-      assert.equal(numberParser.parseFlexibleNumber("5"), 5, "Single digit");
-      assert.equal(numberParser.parseFlexibleNumber("0"), 0, "Zero");
+      let result = numberParser.parseFlexibleNumber("5");
+      assert.ok(result.isSuccess(), "Single digit should succeed");
+      assert.equal(result.getNumber(), 5, "Single digit");
+
+      result = numberParser.parseFlexibleNumber("0");
+      assert.ok(result.isSuccess(), "Zero should succeed");
+      assert.equal(result.getNumber(), 0, "Zero");
 
       // Decimal edge cases
-      assert.equal(numberParser.parseFlexibleNumber("0.5"), 0.5, "Decimal less than one");
-      assert.equal(numberParser.parseFlexibleNumber("0,5"), 0.5, "European decimal less than one");
+      result = numberParser.parseFlexibleNumber("0.5");
+      assert.ok(result.isSuccess(), "Decimal less than one should succeed");
+      assert.equal(result.getNumber(), 0.5, "Decimal less than one");
+
+      result = numberParser.parseFlexibleNumber("0,5");
+      assert.ok(result.isSuccess(), "European decimal less than one should succeed");
+      assert.equal(result.getNumber(), 0.5, "European decimal less than one");
 
       // Large numbers
-      assert.equal(numberParser.parseFlexibleNumber("1,000,000,000"), 1000000000, "Billion with commas");
-      assert.equal(numberParser.parseFlexibleNumber("1.000.000.000"), 1000000000, "Billion with periods");
+      result = numberParser.parseFlexibleNumber("1,000,000,000");
+      assert.ok(result.isSuccess(), "Billion with commas should succeed");
+      assert.equal(result.getNumber(), 1000000000, "Billion with commas");
+
+      result = numberParser.parseFlexibleNumber("1.000.000.000");
+      assert.ok(result.isSuccess(), "Billion with periods should succeed");
+      assert.equal(result.getNumber(), 1000000000, "Billion with periods");
     });
 
     QUnit.test("handles whitespace correctly", function (assert) {
-      assert.equal(numberParser.parseFlexibleNumber("  123,456.78  "), 123456.78, "Whitespace should be trimmed");
-      assert.equal(numberParser.parseFlexibleNumber("\t123456\t"), 123456, "Tabs should be trimmed");
+      let result = numberParser.parseFlexibleNumber("  123,456.78  ");
+      assert.ok(result.isSuccess(), "Whitespace should be trimmed and succeed");
+      assert.equal(result.getNumber(), 123456.78, "Whitespace should be trimmed");
+
+      result = numberParser.parseFlexibleNumber("\t123456\t");
+      assert.ok(result.isSuccess(), "Tabs should be trimmed and succeed");
+      assert.equal(result.getNumber(), 123456, "Tabs should be trimmed");
     });
 
     QUnit.test("error messages contain original string", function (assert) {
-      try {
-        numberParser.parseFlexibleNumber("123,456");
-        assert.ok(false, "Should have thrown an error");
-      } catch (error) {
-        assert.ok(error.message.includes("123,456"), "Error message should contain original string");
-        assert.ok(error.message.includes("Ambiguous"), "Error message should indicate ambiguity");
-      }
+      const result = numberParser.parseFlexibleNumber("123,456");
+      assert.ok(!result.isSuccess(), "Should fail for ambiguous input");
+      assert.ok(result.getError().includes("123,456"), "Error message should contain original string");
+      assert.ok(result.getError().includes("Ambiguous"), "Error message should indicate ambiguity");
 
-      try {
-        numberParser.parseFlexibleNumber("invalid");
-        assert.ok(false, "Should have thrown an error");
-      } catch (error) {
-        assert.ok(error.message.includes("invalid"), "Error message should contain original invalid string");
-      }
+      const result2 = numberParser.parseFlexibleNumber("invalid");
+      assert.ok(!result2.isSuccess(), "Should fail for invalid input");
+      assert.ok(result2.getError().includes("invalid"), "Error message should contain original invalid string");
     });
 
     QUnit.test("mixed separator precedence rules", function (assert) {
       // Valid US format: comma as thousands, period as decimal
-      assert.equal(numberParser.parseFlexibleNumber("1,234.56"), 1234.56, "US format: comma thousands, period decimal");
+      let result = numberParser.parseFlexibleNumber("1,234.56");
+      assert.ok(result.isSuccess(), "US format: comma thousands, period decimal should succeed");
+      assert.equal(result.getNumber(), 1234.56, "US format: comma thousands, period decimal");
 
       // Valid European format: period as thousands, comma as decimal
-      assert.equal(numberParser.parseFlexibleNumber("1.234,56"), 1234.56, "European format: period thousands, comma decimal");
+      result = numberParser.parseFlexibleNumber("1.234,56");
+      assert.ok(result.isSuccess(), "European format: period thousands, comma decimal should succeed");
+      assert.equal(result.getNumber(), 1234.56, "European format: period thousands, comma decimal");
     });
 
     QUnit.test("performance with various input sizes", function (assert) {
@@ -205,12 +260,12 @@ function buildNumberParseUtilTests() {
       ];
 
       testInputs.forEach((input) => {
-        try {
-          const result = numberParser.parseFlexibleNumber(input);
-          assert.ok(typeof result === "number", `Should parse ${input} to a number`);
-        } catch (error) {
-          // Some inputs may legitimately throw errors (like malformed ones)
-          assert.ok(error.message.length > 0, `Error message should not be empty for input: ${input}`);
+        const result = numberParser.parseFlexibleNumber(input);
+        if (result.isSuccess()) {
+          assert.ok(typeof result.getNumber() === "number", `Should parse ${input} to a number`);
+        } else {
+          // Some inputs may legitimately fail (like malformed ones)
+          assert.ok(result.getError().length > 0, `Error message should not be empty for input: ${input}`);
         }
       });
     });

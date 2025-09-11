@@ -1,5 +1,5 @@
 /**
- * JavaScript utility class for parsing numbers with flexible thousands and decimal separators.
+ * Utility class for parsing numbers with flexible thousands and decimal separators.
  * Mirrors the Java NumberParseUtil implementation to ensure consistency
  * between front-end and back-end.
  *
@@ -9,22 +9,85 @@
  * - Mixed formats with proper precedence rules
  * - Detection of ambiguous formats like "123,456" vs "123.456"
  */
-export class NumberParseUtil {
+
+/**
+ * Result class for number parsing operations that can succeed or fail.
+ */
+class NumberParseResult {
+  /**
+   * Create a NumberParseResult.
+   *
+   * @param {number|null} number - The parsed number, or null if parsing failed
+   * @param {string|null} error - The error message, or null if parsing succeeded
+   */
+  constructor(number, error) {
+    this._number = number;
+    this._error = error;
+  }
+
+  /**
+   * Get the parsed number.
+   *
+   * @returns {number|null} The parsed number, or null if parsing failed
+   */
+  getNumber() {
+    return this._number;
+  }
+
+  /**
+   * Get the error message.
+   *
+   * @returns {string|null} The error message, or null if parsing succeeded
+   */
+  getError() {
+    return this._error;
+  }
+
+  /**
+   * Check if parsing was successful.
+   *
+   * @returns {boolean} True if parsing succeeded, false otherwise
+   */
+  isSuccess() {
+    return this._error === null;
+  }
+
+  /**
+   * Create a successful result.
+   *
+   * @param {number} number - The parsed number
+   * @returns {NumberParseResult} A successful result
+   */
+  static success(number) {
+    return new NumberParseResult(number, null);
+  }
+
+  /**
+   * Create a failed result.
+   *
+   * @param {string} error - The error message
+   * @returns {NumberParseResult} A failed result
+   */
+  static error(error) {
+    return new NumberParseResult(null, error);
+  }
+}
+class NumberParseUtil {
   /**
    * Parse a number string with flexible thousands/decimal separator handling.
    *
    * @param {string} numberString - The number string to parse
-   * @returns {number} The parsed number
-   * @throws {Error} For ambiguous or invalid number formats
+   * @returns {NumberParseResult} The parsing result containing the number or error
    */
   parseFlexibleNumber(numberString) {
+    const self = this;
     if (!numberString || typeof numberString !== "string") {
-      throw new Error("Number string cannot be null or empty");
+      return NumberParseResult.error("Number string cannot be null or empty");
     }
 
     const trimmed = numberString.trim();
     if (trimmed === "") {
-      throw new Error("Number string cannot be empty");
+      return NumberParseResult.error("Number string cannot be empty");
     }
 
     // Handle sign
@@ -33,17 +96,22 @@ export class NumberParseUtil {
     const numberPart = isNegative || isPositive ? trimmed.substring(1) : trimmed;
 
     // If no separators, parse directly
-    if (!numberPart.includes(",") && !numberPart.includes(".")) {
+    const fullyNumeric = !numberPart.includes(",") && !numberPart.includes(".");
+    if (fullyNumeric) {
       const result = parseFloat(numberPart);
       if (isNaN(result)) {
-        throw new Error(`Invalid number format: '${numberString}'`);
+        return NumberParseResult.error(`Invalid number format: '${numberString}'`);
       }
-      return isNegative ? -result : result;
+      return NumberParseResult.success(isNegative ? -result : result);
     }
 
     // Handle cases with separators
-    const result = this._parseWithSeparators(numberPart, numberString);
-    return isNegative ? -result : result;
+    const separatorResult = self._parseWithSeparators(numberPart, numberString);
+    if (!separatorResult.isSuccess()) {
+      return separatorResult;
+    }
+    const finalNumber = isNegative ? -separatorResult.getNumber() : separatorResult.getNumber();
+    return NumberParseResult.success(finalNumber);
   }
 
   /**
@@ -53,16 +121,16 @@ export class NumberParseUtil {
    * @returns {boolean} True if the number format is ambiguous
    */
   isAmbiguous(numberString) {
+    const self = this;
     if (!numberString || typeof numberString !== "string") {
       return false;
     }
 
-    try {
-      this.parseFlexibleNumber(numberString);
+    const result = self.parseFlexibleNumber(numberString);
+    if (result.isSuccess()) {
       return false;
-    } catch (error) {
-      return error.message.includes("Ambiguous number format");
     }
+    return result.getError().includes("Ambiguous number format");
   }
 
   /**
@@ -72,14 +140,16 @@ export class NumberParseUtil {
    * @returns {string} Suggestion message for resolving ambiguity
    */
   getDisambiguationSuggestion(numberString) {
-    if (!this.isAmbiguous(numberString)) {
+    const self = this;
+    if (!self.isAmbiguous(numberString)) {
       return "Number format is not ambiguous";
     }
 
     const trimmed = numberString.trim();
     const separator = trimmed.includes(",") ? "," : ".";
+    const other = separator === "," ? "." : ",";
 
-    return `Use '${trimmed}.0' for thousands separator or change format to disambiguate`;
+    return `Use '${trimmed}${separator}0' or '${trimmed}${other}0' to disambiguate`;
   }
 
   /**
@@ -87,30 +157,27 @@ export class NumberParseUtil {
    *
    * @param {string} numberPart - Number part without sign
    * @param {string} originalString - Original string for error messages
-   * @returns {number} Parsed number
+   * @returns {NumberParseResult} Parsed number result
    * @private
    */
   _parseWithSeparators(numberPart, originalString) {
-    const commaCount = this._countOccurrences(numberPart, ",");
-    const periodCount = this._countOccurrences(numberPart, ".");
+    const self = this;
+    const commaCount = self._countOccurrences(numberPart, ",");
+    const periodCount = self._countOccurrences(numberPart, ".");
 
     // Both separators present - apply precedence rules
     if (commaCount > 0 && periodCount > 0) {
-      return this._parseMixedSeparators(numberPart, originalString);
+      return self._parseMixedSeparators(numberPart, originalString);
+    } else if (commaCount > 0) {
+      // Only comma present
+      return self._parseSingleSeparatorType(numberPart, ",", originalString);
+    } else if (periodCount > 0) {
+      // Only period present
+      return self._parseSingleSeparatorType(numberPart, ".", originalString);
+    } else {
+      // Shouldn't reach here based on calling conditions
+      return NumberParseResult.error(`Unexpected parsing state for: '${originalString}'`);
     }
-
-    // Only comma present
-    if (commaCount > 0) {
-      return this._parseSingleSeparatorType(numberPart, ",", originalString);
-    }
-
-    // Only period present
-    if (periodCount > 0) {
-      return this._parseSingleSeparatorType(numberPart, ".", originalString);
-    }
-
-    // Shouldn't reach here based on calling conditions
-    throw new Error(`Unexpected parsing state for: '${originalString}'`);
   }
 
   /**
@@ -118,12 +185,13 @@ export class NumberParseUtil {
    *
    * @param {string} numberPart - Number part to parse
    * @param {string} originalString - Original string for error messages
-   * @returns {number} Parsed number
+   * @returns {NumberParseResult} Parsed number result
    * @private
    */
   _parseMixedSeparators(numberPart, originalString) {
-    const commaCount = this._countOccurrences(numberPart, ",");
-    const periodCount = this._countOccurrences(numberPart, ".");
+    const self = this;
+    const commaCount = self._countOccurrences(numberPart, ",");
+    const periodCount = self._countOccurrences(numberPart, ".");
     const lastComma = numberPart.lastIndexOf(",");
     const lastPeriod = numberPart.lastIndexOf(".");
 
@@ -138,7 +206,7 @@ export class NumberParseUtil {
     if (lastPeriod > lastComma) {
       // Validate US format: comma(s) for thousands, period for decimal
       if (periodCount !== 1) {
-        throw new Error(
+        return NumberParseResult.error(
           `Invalid number format: '${originalString}' - multiple decimal separators not allowed`,
         );
       }
@@ -146,7 +214,7 @@ export class NumberParseUtil {
       // Check if there are any periods before the last comma (invalid in US format)
       const firstPeriod = numberPart.indexOf(".");
       if (firstPeriod < lastComma) {
-        throw new Error(
+        return NumberParseResult.error(
           `Invalid number format: '${originalString}' - periods cannot ` +
             "appear before commas in US format",
         );
@@ -156,13 +224,13 @@ export class NumberParseUtil {
       const withoutThousands = numberPart.replace(/,/g, "");
       const result = parseFloat(withoutThousands);
       if (isNaN(result)) {
-        throw new Error(`Invalid number format: '${originalString}'`);
+        return NumberParseResult.error(`Invalid number format: '${originalString}'`);
       }
-      return result;
+      return NumberParseResult.success(result);
     } else {
       // Comma comes after period - European format (comma as decimal)
       if (commaCount !== 1) {
-        throw new Error(
+        return NumberParseResult.error(
           `Invalid number format: '${originalString}' - multiple decimal separators not allowed`,
         );
       }
@@ -170,7 +238,7 @@ export class NumberParseUtil {
       // Check if there are any commas before the last period (invalid in European format)
       const firstComma = numberPart.indexOf(",");
       if (firstComma < lastPeriod) {
-        throw new Error(
+        return NumberParseResult.error(
           `Invalid number format: '${originalString}' - commas cannot ` +
             "appear before periods in European format",
         );
@@ -180,9 +248,9 @@ export class NumberParseUtil {
       const withoutThousands = numberPart.replace(/\./g, "");
       const result = parseFloat(withoutThousands.replace(",", "."));
       if (isNaN(result)) {
-        throw new Error(`Invalid number format: '${originalString}'`);
+        return NumberParseResult.error(`Invalid number format: '${originalString}'`);
       }
-      return result;
+      return NumberParseResult.success(result);
     }
   }
 
@@ -192,20 +260,21 @@ export class NumberParseUtil {
    * @param {string} numberPart - Number part to parse
    * @param {string} separator - The separator character (',' or '.')
    * @param {string} originalString - Original string for error messages
-   * @returns {number} Parsed number
+   * @returns {NumberParseResult} Parsed number result
    * @private
    */
   _parseSingleSeparatorType(numberPart, separator, originalString) {
-    const separatorCount = this._countOccurrences(numberPart, separator);
+    const self = this;
+    const separatorCount = self._countOccurrences(numberPart, separator);
 
     // Multiple occurrences - definitely thousands separator
     if (separatorCount > 1) {
       const cleaned = numberPart.replace(new RegExp(`\\${separator}`, "g"), "");
       const result = parseFloat(cleaned);
       if (isNaN(result)) {
-        throw new Error(`Invalid number format: '${originalString}'`);
+        return NumberParseResult.error(`Invalid number format: '${originalString}'`);
       }
-      return result;
+      return NumberParseResult.success(result);
     }
 
     // Single occurrence - need to determine if thousands or decimal
@@ -219,35 +288,32 @@ export class NumberParseUtil {
         // European decimal format
         const result = parseFloat(numberPart.replace(",", "."));
         if (isNaN(result)) {
-          throw new Error(`Invalid number format: '${originalString}'`);
+          return NumberParseResult.error(`Invalid number format: '${originalString}'`);
         }
-        return result;
+        return NumberParseResult.success(result);
       } else {
         // US decimal format
         const result = parseFloat(numberPart);
         if (isNaN(result)) {
-          throw new Error(`Invalid number format: '${originalString}'`);
+          return NumberParseResult.error(`Invalid number format: '${originalString}'`);
         }
-        return result;
+        return NumberParseResult.success(result);
       }
     }
 
     // Exactly 3 digits after separator - check for likely thousands patterns
     if (digitsAfter === 3) {
-      // If we have >= 4 digits before separator, likely thousands
-      if (
-        digitsBefore >= 4 ||
-        this._isLikelyThousandsSeparator(numberPart, separatorIndex)
-      ) {
+      // Check for likely thousands patterns: 4+ digits or common patterns like 1,000 and 10,000
+      if (digitsBefore >= 4 || digitsBefore <= 2) {
         const cleaned = numberPart.replace(separator, "");
         const result = parseFloat(cleaned);
         if (isNaN(result)) {
-          throw new Error(`Invalid number format: '${originalString}'`);
+          return NumberParseResult.error(`Invalid number format: '${originalString}'`);
         }
-        return result;
+        return NumberParseResult.success(result);
       } else {
         // Truly ambiguous case
-        throw new Error(
+        return NumberParseResult.error(
           `Ambiguous number format: '${originalString}'. Cannot determine if '${separator}' ` +
             "is a thousands separator or decimal separator. Suggestions: " +
             `Use '${originalString}.0' ` +
@@ -257,7 +323,7 @@ export class NumberParseUtil {
     }
 
     // Fallback - shouldn't reach here
-    throw new Error(`Unable to parse number format: '${originalString}'`);
+    return NumberParseResult.error(`Unable to parse number format: '${originalString}'`);
   }
 
   /**
@@ -269,19 +335,11 @@ export class NumberParseUtil {
    * @private
    */
   _isLikelyThousandsSeparator(numberStr, separatorIndex) {
+    const self = this;
     const beforeSeparator = numberStr.substring(0, separatorIndex);
 
-    // Common thousands patterns: 1,000 or 10,000 or similar
-    if (beforeSeparator === "1" || beforeSeparator === "10") {
-      return true;
-    }
-
-    // If the number before separator ends with patterns like x,xxx
-    if (beforeSeparator.length >= 4) {
-      return true;
-    }
-
-    return false;
+    // Use length-based check as suggested in feedback, but adjusted to handle common cases
+    return beforeSeparator.length >= 1;
   }
 
   /**
@@ -293,7 +351,9 @@ export class NumberParseUtil {
    * @private
    */
   _countOccurrences(str, char) {
-    return (str.match(new RegExp(`\\${char}`, "g")) || []).length;
+    const self = this;
+    return str.length - str.replaceAll(char, "").length;
   }
 }
 
+export {NumberParseUtil, NumberParseResult};

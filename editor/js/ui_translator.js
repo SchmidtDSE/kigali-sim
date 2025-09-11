@@ -3041,12 +3041,11 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
     const signMultiplier = raw.includes("-") ? -1 : 1;
     const bodyRawText = ctx.getChild(ctx.getChildCount() - 1).getText();
 
-    try {
-      const bodyParsed = self.numberParser.parseFlexibleNumber(bodyRawText);
-      return signMultiplier * bodyParsed;
-    } catch (error) {
-      throw new Error(`Failed to parse number in QubecTalk expression: ${error.message}`);
+    const result = self.numberParser.parseFlexibleNumber(bodyRawText);
+    if (!result.isSuccess()) {
+      throw new Error(`Failed to parse number in QubecTalk expression: ${result.getError()}`);
     }
+    return signMultiplier * result.getNumber();
   }
 
   /**

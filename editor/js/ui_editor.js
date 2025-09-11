@@ -3153,8 +3153,11 @@ function readChangeCommandUi(root) {
   const invert = getFieldValue(root.querySelector(".change-sign-input")) === "-";
   const numberParser = new NumberParseUtil();
   const amountInput = getFieldValue(root.querySelector(".change-amount-input"));
-  const amountRaw = numberParser.parseFlexibleNumber(amountInput);
-  const amount = amountRaw * (invert ? -1 : 1);
+  const result = numberParser.parseFlexibleNumber(amountInput);
+  if (!result.isSuccess()) {
+    throw new Error(`Invalid amount format: ${result.getError()}`);
+  }
+  const amount = result.getNumber() * (invert ? -1 : 1);
   const units = getFieldValue(root.querySelector(".change-units-input"));
   const amountWithUnits = new EngineNumber(amount, units);
   const duration = readDurationUi(root.querySelector(".duration-subcomponent"));

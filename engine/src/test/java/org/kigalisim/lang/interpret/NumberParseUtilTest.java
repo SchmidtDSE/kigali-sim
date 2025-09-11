@@ -8,12 +8,13 @@ package org.kigalisim.lang.interpret;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.math.BigDecimal;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.kigalisim.lang.localization.FlexibleNumberParseResult;
+import org.kigalisim.lang.localization.NumberParseUtil;
 
 /**
  * Tests for the NumberParseUtil class.
@@ -31,6 +32,24 @@ public class NumberParseUtilTest {
   }
 
   /**
+   * Helper method to assert successful parsing result.
+   */
+  private void assertParseEquals(BigDecimal expected, String input) {
+    FlexibleNumberParseResult result = numberParser.parseFlexibleNumber(input);
+    assertTrue(result.isSuccess(), "Parsing should succeed for input: " + input + ". Error: "
+        + (result.isError() ? result.getError().get() : "N/A"));
+    assertEquals(expected, result.getParsedNumber().get());
+  }
+
+  /**
+   * Helper method to assert parsing fails.
+   */
+  private void assertParseFails(String input) {
+    FlexibleNumberParseResult result = numberParser.parseFlexibleNumber(input);
+    assertTrue(result.isError(), "Parsing should fail for input: " + input);
+  }
+
+  /**
    * Test that NumberParseUtil can be initialized.
    */
   @Test
@@ -43,9 +62,9 @@ public class NumberParseUtilTest {
    */
   @Test
   public void testParseSimpleNumbers() {
-    assertEquals(new BigDecimal("123"), numberParser.parseFlexibleNumber("123"));
-    assertEquals(new BigDecimal("0"), numberParser.parseFlexibleNumber("0"));
-    assertEquals(new BigDecimal("999999"), numberParser.parseFlexibleNumber("999999"));
+    assertParseEquals(new BigDecimal("123"), "123");
+    assertParseEquals(new BigDecimal("0"), "0");
+    assertParseEquals(new BigDecimal("999999"), "999999");
   }
 
   /**
@@ -53,9 +72,9 @@ public class NumberParseUtilTest {
    */
   @Test
   public void testParseNegativeNumbers() {
-    assertEquals(new BigDecimal("-123"), numberParser.parseFlexibleNumber("-123"));
-    assertEquals(new BigDecimal("-123.45"), numberParser.parseFlexibleNumber("-123.45"));
-    assertEquals(new BigDecimal("-1000"), numberParser.parseFlexibleNumber("-1,000"));
+    assertParseEquals(new BigDecimal("-123"), "-123");
+    assertParseEquals(new BigDecimal("-123.45"), "-123.45");
+    assertParseEquals(new BigDecimal("-1000"), "-1,000");
   }
 
   /**
@@ -63,8 +82,8 @@ public class NumberParseUtilTest {
    */
   @Test
   public void testParsePositiveNumbers() {
-    assertEquals(new BigDecimal("123"), numberParser.parseFlexibleNumber("+123"));
-    assertEquals(new BigDecimal("123.45"), numberParser.parseFlexibleNumber("+123.45"));
+    assertParseEquals(new BigDecimal("123"), "+123");
+    assertParseEquals(new BigDecimal("123.45"), "+123.45");
   }
 
   /**
@@ -72,12 +91,9 @@ public class NumberParseUtilTest {
    */
   @Test
   public void testParseUsFormat() {
-    assertEquals(new BigDecimal("123456.789"),
-        numberParser.parseFlexibleNumber("123,456.789"));
-    assertEquals(new BigDecimal("1234567"),
-        numberParser.parseFlexibleNumber("1,234,567"));
-    assertEquals(new BigDecimal("1000"),
-        numberParser.parseFlexibleNumber("1,000"));
+    assertParseEquals(new BigDecimal("123456.789"), "123,456.789");
+    assertParseEquals(new BigDecimal("1234567"), "1,234,567");
+    assertParseEquals(new BigDecimal("1000"), "1,000");
   }
 
   /**
@@ -85,12 +101,9 @@ public class NumberParseUtilTest {
    */
   @Test
   public void testParseEuropeanFormat() {
-    assertEquals(new BigDecimal("123456.789"),
-        numberParser.parseFlexibleNumber("123.456,789"));
-    assertEquals(new BigDecimal("1234567.89"),
-        numberParser.parseFlexibleNumber("1.234.567,89"));
-    assertEquals(new BigDecimal("1000"),
-        numberParser.parseFlexibleNumber("1.000"));
+    assertParseEquals(new BigDecimal("123456.789"), "123.456,789");
+    assertParseEquals(new BigDecimal("1234567.89"), "1.234.567,89");
+    assertParseEquals(new BigDecimal("1000"), "1.000");
   }
 
   /**
@@ -98,9 +111,9 @@ public class NumberParseUtilTest {
    */
   @Test
   public void testParseSingleDecimalPeriod() {
-    assertEquals(new BigDecimal("123.45"), numberParser.parseFlexibleNumber("123.45"));
-    assertEquals(new BigDecimal("0.5"), numberParser.parseFlexibleNumber("0.5"));
-    assertEquals(new BigDecimal("123.4567"), numberParser.parseFlexibleNumber("123.4567"));
+    assertParseEquals(new BigDecimal("123.45"), "123.45");
+    assertParseEquals(new BigDecimal("0.5"), "0.5");
+    assertParseEquals(new BigDecimal("123.4567"), "123.4567");
   }
 
   /**
@@ -108,9 +121,9 @@ public class NumberParseUtilTest {
    */
   @Test
   public void testParseSingleDecimalComma() {
-    assertEquals(new BigDecimal("123.45"), numberParser.parseFlexibleNumber("123,45"));
-    assertEquals(new BigDecimal("0.5"), numberParser.parseFlexibleNumber("0,5"));
-    assertEquals(new BigDecimal("123.4567"), numberParser.parseFlexibleNumber("123,4567"));
+    assertParseEquals(new BigDecimal("123.45"), "123,45");
+    assertParseEquals(new BigDecimal("0.5"), "0,5");
+    assertParseEquals(new BigDecimal("123.4567"), "123,4567");
   }
 
   /**
@@ -118,10 +131,9 @@ public class NumberParseUtilTest {
    */
   @Test
   public void testParseMultipleThousandsCommas() {
-    assertEquals(new BigDecimal("1234567"), numberParser.parseFlexibleNumber("1,234,567"));
-    assertEquals(new BigDecimal("12345678"), numberParser.parseFlexibleNumber("12,345,678"));
-    assertEquals(new BigDecimal("1234567890"),
-        numberParser.parseFlexibleNumber("1,234,567,890"));
+    assertParseEquals(new BigDecimal("1234567"), "1,234,567");
+    assertParseEquals(new BigDecimal("12345678"), "12,345,678");
+    assertParseEquals(new BigDecimal("1234567890"), "1,234,567,890");
   }
 
   /**
@@ -129,46 +141,42 @@ public class NumberParseUtilTest {
    */
   @Test
   public void testParseMultipleThousandsPeriods() {
-    assertEquals(new BigDecimal("1234567"), numberParser.parseFlexibleNumber("1.234.567"));
-    assertEquals(new BigDecimal("12345678"), numberParser.parseFlexibleNumber("12.345.678"));
-    assertEquals(new BigDecimal("1234567890"),
-        numberParser.parseFlexibleNumber("1.234.567.890"));
+    assertParseEquals(new BigDecimal("1234567"), "1.234.567");
+    assertParseEquals(new BigDecimal("12345678"), "12.345.678");
+    assertParseEquals(new BigDecimal("1234567890"), "1.234.567.890");
   }
 
   /**
-   * Test ambiguous cases should throw exceptions.
+   * Test ambiguous cases should return errors.
    */
   @Test
-  public void testAmbiguousCasesThrowExceptions() {
+  public void testAmbiguousCasesReturnErrors() {
     // Single comma with exactly 3 digits after - ambiguous
-    NumberFormatException exception1 = assertThrows(NumberFormatException.class, () ->
-        numberParser.parseFlexibleNumber("123,456"));
-    assertTrue(exception1.getMessage().contains("Ambiguous number format"));
-    assertTrue(exception1.getMessage().contains("123,456"));
+    FlexibleNumberParseResult result1 = numberParser.parseFlexibleNumber("123,456");
+    assertTrue(result1.isError());
+    assertTrue(result1.getError().get().contains("Ambiguous number format"));
+    assertTrue(result1.getError().get().contains("123,456"));
 
     // Single period with exactly 3 digits after - ambiguous
-    NumberFormatException exception2 = assertThrows(NumberFormatException.class, () ->
-        numberParser.parseFlexibleNumber("123.456"));
-    assertTrue(exception2.getMessage().contains("Ambiguous number format"));
-    assertTrue(exception2.getMessage().contains("123.456"));
+    FlexibleNumberParseResult result2 = numberParser.parseFlexibleNumber("123.456");
+    assertTrue(result2.isError());
+    assertTrue(result2.getError().get().contains("Ambiguous number format"));
+    assertTrue(result2.getError().get().contains("123.456"));
   }
 
   /**
    * Test invalid input cases.
    */
   @Test
-  public void testInvalidInputThrowsExceptions() {
+  public void testInvalidInputReturnsErrors() {
     // Null input
-    assertThrows(NumberFormatException.class, () ->
-        numberParser.parseFlexibleNumber(null));
+    assertParseFails(null);
 
     // Empty string
-    assertThrows(NumberFormatException.class, () ->
-        numberParser.parseFlexibleNumber(""));
+    assertParseFails("");
 
     // Whitespace only
-    assertThrows(NumberFormatException.class, () ->
-        numberParser.parseFlexibleNumber("   "));
+    assertParseFails("   ");
   }
 
   /**
@@ -177,24 +185,19 @@ public class NumberParseUtilTest {
   @Test
   public void testInvalidNumberFormats() {
     // Multiple decimal separators
-    assertThrows(NumberFormatException.class, () ->
-        numberParser.parseFlexibleNumber("12.34.56,78"));
+    assertParseFails("12.34.56,78");
 
     // Invalid thousands separator positioning
-    assertThrows(NumberFormatException.class, () ->
-        numberParser.parseFlexibleNumber("1,23,456"));
+    assertParseFails("1,23,456");
 
     // Non-numeric characters
-    assertThrows(NumberFormatException.class, () ->
-        numberParser.parseFlexibleNumber("123abc"));
+    assertParseFails("123abc");
 
-    // Separator at start
-    assertThrows(NumberFormatException.class, () ->
-        numberParser.parseFlexibleNumber(",123"));
+    // Separator at start (comma)
+    assertParseFails(",123");
 
     // Separator at end
-    assertThrows(NumberFormatException.class, () ->
-        numberParser.parseFlexibleNumber("123,"));
+    assertParseFails("123,");
   }
 
   /**
@@ -202,9 +205,9 @@ public class NumberParseUtilTest {
    */
   @Test
   public void testWhitespaceHandling() {
-    assertEquals(new BigDecimal("123.45"), numberParser.parseFlexibleNumber("  123.45  "));
-    assertEquals(new BigDecimal("1000"), numberParser.parseFlexibleNumber("  1,000  "));
-    assertEquals(new BigDecimal("-123.45"), numberParser.parseFlexibleNumber("  -123.45  "));
+    assertParseEquals(new BigDecimal("123.45"), "  123.45  ");
+    assertParseEquals(new BigDecimal("1000"), "  1,000  ");
+    assertParseEquals(new BigDecimal("-123.45"), "  -123.45  ");
   }
 
   /**
@@ -212,12 +215,9 @@ public class NumberParseUtilTest {
    */
   @Test
   public void testLargeNumbers() {
-    assertEquals(new BigDecimal("123456789012345"),
-        numberParser.parseFlexibleNumber("123,456,789,012,345"));
-    assertEquals(new BigDecimal("123456789012345.67"),
-        numberParser.parseFlexibleNumber("123,456,789,012,345.67"));
-    assertEquals(new BigDecimal("123456789012345.67"),
-        numberParser.parseFlexibleNumber("123.456.789.012.345,67"));
+    assertParseEquals(new BigDecimal("123456789012345"), "123,456,789,012,345");
+    assertParseEquals(new BigDecimal("123456789012345.67"), "123,456,789,012,345.67");
+    assertParseEquals(new BigDecimal("123456789012345.67"), "123.456.789.012.345,67");
   }
 
   /**
@@ -225,10 +225,10 @@ public class NumberParseUtilTest {
    */
   @Test
   public void testSingleDigitCases() {
-    assertEquals(new BigDecimal("1"), numberParser.parseFlexibleNumber("1"));
-    assertEquals(new BigDecimal("-1"), numberParser.parseFlexibleNumber("-1"));
-    assertEquals(new BigDecimal("0.1"), numberParser.parseFlexibleNumber("0.1"));
-    assertEquals(new BigDecimal("0.1"), numberParser.parseFlexibleNumber("0,1"));
+    assertParseEquals(new BigDecimal("1"), "1");
+    assertParseEquals(new BigDecimal("-1"), "-1");
+    assertParseEquals(new BigDecimal("0.1"), "0.1");
+    assertParseEquals(new BigDecimal("0.1"), "0,1");
   }
 
   /**
@@ -237,16 +237,13 @@ public class NumberParseUtilTest {
   @Test
   public void testThousandsSeparatorValidation() {
     // Valid positioning
-    assertEquals(new BigDecimal("1234567"),
-        numberParser.parseFlexibleNumber("1,234,567"));
+    assertParseEquals(new BigDecimal("1234567"), "1,234,567");
 
     // Invalid positioning - wrong number of digits between separators
-    assertThrows(NumberFormatException.class, () ->
-        numberParser.parseFlexibleNumber("12,3456,789"));
+    assertParseFails("12,3456,789");
 
     // Invalid positioning - first group too long
-    assertThrows(NumberFormatException.class, () ->
-        numberParser.parseFlexibleNumber("1234,567,890"));
+    assertParseFails("1234,567,890");
   }
 
   /**
@@ -255,20 +252,16 @@ public class NumberParseUtilTest {
   @Test
   public void testMixedSeparatorPrecedence() {
     // Comma before period: comma = thousands, period = decimal
-    assertEquals(new BigDecimal("123456.789"),
-        numberParser.parseFlexibleNumber("123,456.789"));
+    assertParseEquals(new BigDecimal("123456.789"), "123,456.789");
 
     // Period before comma: period = thousands, comma = decimal
-    assertEquals(new BigDecimal("123456.789"),
-        numberParser.parseFlexibleNumber("123.456,789"));
+    assertParseEquals(new BigDecimal("123456.789"), "123.456,789");
 
     // Multiple periods, then comma
-    assertEquals(new BigDecimal("1234567.89"),
-        numberParser.parseFlexibleNumber("1.234.567,89"));
+    assertParseEquals(new BigDecimal("1234567.89"), "1.234.567,89");
 
     // Multiple commas, then period
-    assertEquals(new BigDecimal("1234567.89"),
-        numberParser.parseFlexibleNumber("1,234,567.89"));
+    assertParseEquals(new BigDecimal("1234567.89"), "1,234,567.89");
   }
 
   /**
@@ -276,10 +269,10 @@ public class NumberParseUtilTest {
    */
   @Test
   public void testZeroCases() {
-    assertEquals(new BigDecimal("0"), numberParser.parseFlexibleNumber("0"));
-    assertEquals(new BigDecimal("0.0"), numberParser.parseFlexibleNumber("0.0"));
-    assertEquals(new BigDecimal("0.0"), numberParser.parseFlexibleNumber("0,0"));
-    assertEquals(new BigDecimal("0"), numberParser.parseFlexibleNumber("0000"));
+    assertParseEquals(new BigDecimal("0"), "0");
+    assertParseEquals(new BigDecimal("0.0"), "0.0");
+    assertParseEquals(new BigDecimal("0.0"), "0,0");
+    assertParseEquals(new BigDecimal("0"), "0000");
   }
 
   /**
@@ -287,9 +280,9 @@ public class NumberParseUtilTest {
    */
   @Test
   public void testNumbersStartingWithDecimal() {
-    assertEquals(new BigDecimal("0.5"), numberParser.parseFlexibleNumber(".5"));
-    assertEquals(new BigDecimal("-0.5"), numberParser.parseFlexibleNumber("-.5"));
-    assertEquals(new BigDecimal("0.123"), numberParser.parseFlexibleNumber(".123"));
-    assertEquals(new BigDecimal("0.999"), numberParser.parseFlexibleNumber(".999"));
+    assertParseEquals(new BigDecimal("0.5"), ".5");
+    assertParseEquals(new BigDecimal("-0.5"), "-.5");
+    assertParseEquals(new BigDecimal("0.123"), ".123");
+    assertParseEquals(new BigDecimal("0.999"), ".999");
   }
 }
