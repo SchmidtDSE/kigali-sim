@@ -293,15 +293,13 @@ class DuplicateEntityPresenter {
   _validateBeforeUpdate(entityType) {
     const self = this;
 
-    // Import validation functions from ui_editor.js global scope
-    if (typeof validateNumericInputs === 'function') {
-      if (!validateNumericInputs(self._dialog, entityType)) {
-        return false; // User cancelled numeric input validation
-      }
+    // Validate numeric inputs and get user confirmation for potentially invalid values
+    if (!validateNumericInputs(self._dialog, entityType)) {
+      return false; // User cancelled numeric input validation
     }
 
     // For simulations, also check duration
-    if (entityType === 'simulation' && typeof validateSimulationDuration === 'function') {
+    if (entityType === "simulation") {
       if (!validateSimulationDuration(self._dialog)) {
         return false; // User cancelled simulation duration validation
       }
@@ -492,11 +490,19 @@ class DuplicateEntityPresenter {
     const self = this;
 
     // Deep copy all command arrays
-    const copiedCharges = sourceSubstance.getInitialCharges().map((cmd) => self._deepCopyCommand(cmd));
-    const copiedLimits = sourceSubstance.getLimits().map((cmd) => self._deepCopyLimitCommand(cmd));
-    const copiedChanges = sourceSubstance.getChanges().map((cmd) => self._deepCopyCommand(cmd));
-    const copiedEqualsGhg = sourceSubstance.getEqualsGhg() ? self._deepCopyCommand(sourceSubstance.getEqualsGhg()) : null;
-    const copiedEqualsKwh = sourceSubstance.getEqualsKwh() ? self._deepCopyCommand(sourceSubstance.getEqualsKwh()) : null;
+    const copiedCharges = sourceSubstance.getInitialCharges().map((cmd) =>
+      self._deepCopyCommand(cmd),
+    );
+    const copiedLimits = sourceSubstance.getLimits().map((cmd) =>
+      self._deepCopyLimitCommand(cmd),
+    );
+    const copiedChanges = sourceSubstance.getChanges().map((cmd) =>
+      self._deepCopyCommand(cmd),
+    );
+    const copiedEqualsGhg = sourceSubstance.getEqualsGhg() ?
+      self._deepCopyCommand(sourceSubstance.getEqualsGhg()) : null;
+    const copiedEqualsKwh = sourceSubstance.getEqualsKwh() ?
+      self._deepCopyCommand(sourceSubstance.getEqualsKwh()) : null;
     const copiedRecharges = sourceSubstance.getRecharges().map((cmd) => {
       return self._deepCopyRechargeCommand(cmd);
     });
@@ -506,9 +512,14 @@ class DuplicateEntityPresenter {
     const copiedReplaces = sourceSubstance.getReplaces().map((cmd) => {
       return self._deepCopyReplaceCommand(cmd);
     });
-    const copiedRetire = sourceSubstance.getRetire() ? self._deepCopyCommand(sourceSubstance.getRetire()) : null;
-    const copiedSetVals = sourceSubstance.getSetVals().map((cmd) => self._deepCopyCommand(cmd));
-    const copiedEnables = sourceSubstance.getEnables().map((cmd) => self._deepCopyCommand(cmd));
+    const copiedRetire = sourceSubstance.getRetire() ?
+      self._deepCopyCommand(sourceSubstance.getRetire()) : null;
+    const copiedSetVals = sourceSubstance.getSetVals().map((cmd) =>
+      self._deepCopyCommand(cmd),
+    );
+    const copiedEnables = sourceSubstance.getEnables().map((cmd) =>
+      self._deepCopyCommand(cmd),
+    );
 
     // Create new substance with copied commands (matching constructor parameter order)
     return new Substance(
