@@ -67,7 +67,7 @@ function resolveNameConflict(baseName, existingNames) {
     return new NameConflictResolution(baseName, baseName);
   }
 
-  let counter = 0;
+  let counter = 1;
   let candidate = `${baseName} (${counter})`;
 
   while (existingNames.has(candidate)) {

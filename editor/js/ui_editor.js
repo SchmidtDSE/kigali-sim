@@ -2277,10 +2277,12 @@ class SimulationListPresenter {
     if (self._editingName === null) {
       const baseName = scenario.getName();
       const priorNames = new Set(self._getSimulationNames());
+      console.log(`Checking duplicates for simulation "${baseName}". Existing names:`, Array.from(priorNames));
       const resolution = resolveNameConflict(baseName, priorNames);
 
       // Update the input field if the name was changed
       if (resolution.getNameChanged()) {
+        console.log(`Name conflict resolved: "${baseName}" -> "${resolution.getNewName()}"`);
         const nameInput = self._dialog.querySelector(".edit-simulation-name-input");
         nameInput.value = resolution.getNewName();
 
