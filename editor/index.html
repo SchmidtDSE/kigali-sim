@@ -207,7 +207,7 @@
               <option value="application" selected>Application</option>
               <option value="policy">Policy</option>
               <option value="simulation">Simulation</option>
-              <option value="substance">Substance</option>
+              <option value="substance">Consumption</option>
             </select>
           </div>
           
@@ -227,7 +227,7 @@
             <label for="duplicate-equipment-model-input">Equipment Model (optional):</label>
             <input type="text" id="duplicate-equipment-model-input" class="duplicate-equipment-model-input" 
                    placeholder="e.g., High Efficiency, Commercial Grade" />
-            <small class="field-help">Leave empty for simple substance name, or specify to create compound name (e.g., 'R-134a - High Efficiency')</small>
+            <small class="field-help">Optional model equipment / type which may be left empty</small>
           </div>
           
           <div class="dialog-buttons bold-buttons">
@@ -425,6 +425,7 @@
                                 type="text"
                                 name="edit-consumption-ghg"
                                 class="edit-consumption-ghg-input mid numeric-input"
+                                aria-label="GHG Equivalency"
                               />
                               <span class="sel mid">
                                 <select
@@ -454,6 +455,7 @@
                                 type="text"
                                 name="edit-consumption-energy"
                                 class="edit-consumption-energy-input mid numeric-input"
+                                aria-label="Energy Consumption"
                               />
                               <span class="sel mid">
                                 <select
@@ -519,6 +521,7 @@
                                 type="text"
                                 name="edit-consumption-initial-charge-domestic"
                                 class="edit-consumption-initial-charge-domestic-input mid numeric-input"
+                                aria-label="Initial Charge (Domestic)"
                                 data-lpignore="true"
                                 data-protonpass-ignore="true"
                                 data-1p-ignore
@@ -566,6 +569,7 @@
                                 type="text"
                                 name="edit-consumption-initial-charge-import"
                                 class="edit-consumption-initial-charge-import-input mid numeric-input"
+                                aria-label="Initial Charge (Import)"
                                 data-lpignore="true"
                                 data-protonpass-ignore="true"
                                 data-1p-ignore
@@ -613,6 +617,7 @@
                                 type="text"
                                 name="edit-consumption-initial-charge-export"
                                 class="edit-consumption-initial-charge-export-input mid numeric-input"
+                                aria-label="Initial Charge (Export)"
                                 data-lpignore="true"
                                 data-protonpass-ignore="true"
                                 data-1p-ignore
@@ -658,6 +663,7 @@
                                 type="text"
                                 name="edit-consumption-retirement"
                                 class="edit-consumption-retirement-input mid numeric-input"
+                                aria-label="Retirement Rate"
                                 data-lpignore="true"
                                 data-protonpass-ignore="true"
                                 data-1p-ignore
@@ -981,6 +987,7 @@
                               type="text"
                               name="edit-simulation-start"
                               class="edit-simulation-start-input long numeric-input"
+                              aria-label="Simulation Start Year"
                             />
                           </div>
                         </div>
@@ -991,6 +998,7 @@
                               type="text"
                               name="edit-simulation-end"
                               class="edit-simulation-end-input long numeric-input"
+                              aria-label="Simulation End Year"
                             />
                           </div>
                         </div>
@@ -1836,6 +1844,7 @@
       {
         "imports": {
           "code_editor": "./js/code_editor.js?v=EPOCH",
+          "duplicate_util": "./js/duplicate_util.js?v=EPOCH",
           "engine_const": "./js/engine_const.js?v=EPOCH",
           "engine_number": "./js/engine_number.js?v=EPOCH",
           "engine_struct": "./js/engine_struct.js?v=EPOCH",

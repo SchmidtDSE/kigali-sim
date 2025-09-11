@@ -20,6 +20,7 @@ import {
   SimulationScenario,
   SubstanceBuilder,
 } from "ui_translator";
+import {NameConflictResolution, resolveNameConflict, resolveSubstanceNameConflict} from "duplicate_util";
 
 /**
  * Stream target selectors used throughout the application for updating dropdown states.
@@ -261,12 +262,9 @@ function validateNumericInputs(dialog, dialogType) {
   const numericInputs = dialog.querySelectorAll(".numeric-input");
   const potentiallyInvalid = [];
 
-  // Define patterns for obviously invalid values
+  // Define patterns for potentially invalid values
   const invalidPatterns = [
-    /^\s*$/, // Empty or whitespace only
-    /[a-zA-Z].*[a-zA-Z]/, // Multiple letters (likely text, not equations)
-    /\s{2,}/, // Multiple consecutive spaces
-    /[^\d\s\+\-\*\/\.\,\(\)%]/, // Characters not typical in numbers or equations
+    /[a-zA-Z\s]/, // Alphabetical characters or spaces
   ];
 
   // Check each numeric input
@@ -277,13 +275,9 @@ function validateNumericInputs(dialog, dialogType) {
     // Check against invalid patterns
     const isLikelyInvalid = invalidPatterns.some((pattern) => pattern.test(value));
 
-    // Additional check: pure text with no numbers
-    const hasNumbers = /\d/.test(value);
-    const isAllLetters = /^[a-zA-Z\s]+$/.test(value);
-
-    if (isLikelyInvalid || (isAllLetters && !hasNumbers)) {
-      // Get a user-friendly field description
-      const fieldDescription = getFieldDescription(input);
+    if (isLikelyInvalid) {
+      // Get field description from aria-label
+      const fieldDescription = input.getAttribute("aria-label") || "Unknown field";
       potentiallyInvalid.push({
         element: input,
         value: value,
@@ -312,74 +306,6 @@ function validateNumericInputs(dialog, dialogType) {
   return confirm(message);
 }
 
-/**
- * Get user-friendly description for a numeric input field.
- *
- * @param {HTMLElement} input - The input element
- * @returns {string} User-friendly field description
- */
-function getFieldDescription(input) {
-  // Try to find associated label
-  const label = input.closest(".form-group")?.querySelector("label") ||
-                input.closest(".form-section")?.querySelector("label") ||
-                document.querySelector(`label[for="${input.id}"]`);
-
-  if (label) {
-    return label.textContent.replace(":", "").trim();
-  }
-
-  // Fallback to aria-label
-  if (input.getAttribute("aria-label")) {
-    return input.getAttribute("aria-label");
-  }
-
-  // Fallback to placeholder
-  if (input.placeholder) {
-    return `Field with placeholder "${input.placeholder}"`;
-  }
-
-  // Fallback to class-based description
-  if (input.classList.contains("edit-consumption-ghg-input")) {
-    return "GHG Equivalency";
-  }
-  if (input.classList.contains("edit-consumption-energy-input")) {
-    return "Energy Consumption";
-  }
-  if (input.classList.contains("edit-consumption-initial-charge-domestic-input")) {
-    return "Initial Charge (Domestic)";
-  }
-  if (input.classList.contains("edit-consumption-initial-charge-import-input")) {
-    return "Initial Charge (Import)";
-  }
-  if (input.classList.contains("edit-consumption-initial-charge-export-input")) {
-    return "Initial Charge (Export)";
-  }
-  if (input.classList.contains("edit-consumption-retirement-input")) {
-    return "Retirement Rate";
-  }
-  if (input.classList.contains("edit-simulation-start-input")) {
-    return "Simulation Start Year";
-  }
-  if (input.classList.contains("edit-simulation-end-input")) {
-    return "Simulation End Year";
-  }
-  if (input.classList.contains("set-amount-input")) return "Set Amount";
-  if (input.classList.contains("change-amount-input")) return "Change Amount";
-  if (input.classList.contains("limit-amount-input")) return "Limit Amount";
-  if (input.classList.contains("recycle-amount-input")) return "Recycle Amount";
-  if (input.classList.contains("recycle-reuse-amount-input")) {
-    return "Recycle Reuse Amount";
-  }
-  if (input.classList.contains("replace-amount-input")) return "Replace Amount";
-  if (input.classList.contains("recharge-population-input")) {
-    return "Recharge Population";
-  }
-  if (input.classList.contains("recharge-volume-input")) return "Recharge Volume";
-  if (input.classList.contains("duration-start")) return "Start Year";
-  if (input.classList.contains("duration-end")) return "End Year";
-
-  return "Numeric field";
-}
 
 /**
  * Sets the state of a duration selection UI widget.
@@ -612,12 +538,13 @@ class ApplicationsListPresenter {
       const baseName = effectiveName === "" ? "Unnamed" : effectiveName;
 
       const priorNames = new Set(self._getAppNames());
-      const newName = resolveNameConflict(baseName, priorNames);
+      const resolution = resolveNameConflict(baseName, priorNames);
 
       // Update the input field to show the resolved name if it was changed
-      if (newName !== baseName) {
+      if (resolution.getNameChanged()) {
         // If the resolved name differs from the effective name, update the main name input
         // We need to handle the case where there's a subname
+        const newName = resolution.getNewName();
         if (subnameEmpty) {
           nameInput.value = newName;
         } else {
@@ -1385,11 +1312,12 @@ class ConsumptionListPresenter {
       const baseName = substance.getName();
       const priorNames = new Set(self._getConsumptionNames());
       const fullBaseName = `"${baseName}" for "${applicationName}"`;
-      const resolvedFullName = resolveSubstanceNameConflict(fullBaseName, priorNames);
+      const resolution = resolveSubstanceNameConflict(fullBaseName, priorNames);
 
       // If the name was changed, update the substance input field and re-parse
-      if (resolvedFullName !== fullBaseName) {
+      if (resolution.getNameChanged()) {
         // Extract the resolved substance name from the full name
+        const resolvedFullName = resolution.getNewName();
         const substanceNameMatch = resolvedFullName.match(/^"([^"]+)"/);
         if (substanceNameMatch) {
           const resolvedSubstanceName = substanceNameMatch[1];
@@ -2036,12 +1964,12 @@ class PolicyListPresenter {
     if (self._editingName === null) {
       const baseName = policy.getName();
       const priorNames = new Set(self._getPolicyNames());
-      const resolvedName = resolveNameConflict(baseName, priorNames);
+      const resolution = resolveNameConflict(baseName, priorNames);
 
       // Update the input field if the name was changed
-      if (resolvedName !== baseName) {
+      if (resolution.getNameChanged()) {
         const nameInput = self._dialog.querySelector(".edit-policy-name-input");
-        nameInput.value = resolvedName;
+        nameInput.value = resolution.getNewName();
 
         // Need to re-parse with the updated name
         policy = self._parseObj();
@@ -2294,12 +2222,12 @@ class SimulationListPresenter {
     if (self._editingName === null) {
       const baseName = scenario.getName();
       const priorNames = new Set(self._getSimulationNames());
-      const resolvedName = resolveNameConflict(baseName, priorNames);
+      const resolution = resolveNameConflict(baseName, priorNames);
 
       // Update the input field if the name was changed
-      if (resolvedName !== baseName) {
+      if (resolution.getNameChanged()) {
         const nameInput = self._dialog.querySelector(".edit-simulation-name-input");
-        nameInput.value = resolvedName;
+        nameInput.value = resolution.getNewName();
 
         // Need to re-parse with the updated name
         scenario = self._parseObj();
@@ -2763,34 +2691,28 @@ class DuplicateEntityPresenter {
     // Clear existing options
     sourceDropdown.innerHTML = "";
 
-    let entities = [];
-    switch (entityType) {
-    case "application":
-      entities = codeObj.getApplications().map((app) => ({
+    const entityMappers = {
+      application: () => codeObj.getApplications().map((app) => ({
         name: app.getName(),
         value: app.getName(),
-      }));
-      break;
-    case "policy":
-      entities = codeObj.getPolicies().map((policy) => ({
+      })),
+      policy: () => codeObj.getPolicies().map((policy) => ({
         name: policy.getName(),
         value: policy.getName(),
-      }));
-      break;
-    case "simulation":
-      entities = codeObj.getScenarios().map((scenario) => ({
+      })),
+      simulation: () => codeObj.getScenarios().map((scenario) => ({
         name: scenario.getName(),
         value: scenario.getName(),
-      }));
-      break;
-    case "substance":
-      entities = codeObj.getSubstances().map((substance) => ({
+      })),
+      substance: () => codeObj.getSubstances().map((substance) => ({
         name: substance.getName(),
         value: substance.getName(),
         application: self._findSubstanceApplication(codeObj, substance.getName()),
-      }));
-      break;
-    }
+      })),
+    };
+
+    const mapper = entityMappers[entityType];
+    const entities = mapper ? mapper() : [];
 
     // Add options to dropdown
     if (entities.length === 0) {
@@ -2854,22 +2776,18 @@ class DuplicateEntityPresenter {
     const codeObj = self._getCodeObj();
 
     try {
-      switch (entityType) {
-      case "application":
-        self._duplicateApplication(codeObj, sourceEntityName, newName);
-        break;
-      case "policy":
-        self._duplicatePolicy(codeObj, sourceEntityName, newName);
-        break;
-      case "simulation":
-        self._duplicateSimulation(codeObj, sourceEntityName, newName);
-        break;
-      case "substance":
-        self._duplicateSubstance(codeObj, sourceEntityName, newName);
-        break;
-      default:
+      const duplicators = {
+        application: () => self._duplicateApplication(codeObj, sourceEntityName, newName),
+        policy: () => self._duplicatePolicy(codeObj, sourceEntityName, newName),
+        simulation: () => self._duplicateSimulation(codeObj, sourceEntityName, newName),
+        substance: () => self._duplicateSubstance(codeObj, sourceEntityName, newName),
+      };
+
+      const duplicator = duplicators[entityType];
+      if (!duplicator) {
         throw new Error(`Unknown entity type: ${entityType}`);
       }
+      duplicator();
 
       self._onCodeObjUpdate(codeObj);
       self._dialog.close();
@@ -4046,39 +3964,5 @@ function readDurationUi(root) {
   return new YearMatcher(minYear, maxYear);
 }
 
-/**
- * Resolves name conflicts by appending incrementing numbers until finding a unique name.
- *
- * @param {string} baseName - The initial desired name.
- * @param {Set<string>} existingNames - Set of existing names to avoid conflicts with.
- * @returns {string} A unique name that doesn't conflict with existing names.
- */
-function resolveNameConflict(baseName, existingNames) {
-  if (!existingNames.has(baseName)) {
-    return baseName;
-  }
-
-  let counter = 1;
-  let candidate = `${baseName} (${counter})`;
-
-  while (existingNames.has(candidate)) {
-    counter++;
-    candidate = `${baseName} (${counter})`;
-  }
-
-  return candidate;
-}
-
-/**
- * Resolves substance name conflicts with special handling for effective substance names.
- * This function handles the combination of substance and equipment model names.
- *
- * @param {string} baseName - The initial desired substance name.
- * @param {Set<string>} existingNames - Set of existing substance names to avoid conflicts with.
- * @returns {string} A unique substance name that doesn't conflict with existing names.
- */
-function resolveSubstanceNameConflict(baseName, existingNames) {
-  return resolveNameConflict(baseName, existingNames);
-}
 
 export {UiEditorPresenter};

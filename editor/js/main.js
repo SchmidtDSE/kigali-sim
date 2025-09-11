@@ -873,6 +873,7 @@ class MainPresenter {
 
   /**
    * Sets up global error recovery mechanism for visualization errors.
+   * This is a backstop and not expected during normal operation.
    * @private
    */
   _setupGlobalErrorRecovery() {

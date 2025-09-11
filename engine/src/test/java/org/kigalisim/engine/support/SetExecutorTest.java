@@ -56,7 +56,7 @@ class SetExecutorTest {
     );
     when(mockStreamKeeper.getDistribution(mockUseKey)).thenReturn(distribution);
     when(mockYearMatcher.getInRange(2025)).thenReturn(true);
-    
+
     EngineNumber value = new EngineNumber(new BigDecimal("10"), "mt");
 
     // Act
@@ -66,21 +66,21 @@ class SetExecutorTest {
     ArgumentCaptor<String> streamCaptor = ArgumentCaptor.forClass(String.class);
     ArgumentCaptor<EngineNumber> valueCaptor = ArgumentCaptor.forClass(EngineNumber.class);
     ArgumentCaptor<Optional> matcherCaptor = ArgumentCaptor.forClass(Optional.class);
-    
+
     verify(mockEngine, times(2)).setStreamInternal(streamCaptor.capture(), valueCaptor.capture(), matcherCaptor.capture());
-    
+
     // Check domestic call
     assertEquals("domestic", streamCaptor.getAllValues().get(0));
     assertEquals(new BigDecimal("5.0"), valueCaptor.getAllValues().get(0).getValue());
     assertEquals("mt", valueCaptor.getAllValues().get(0).getUnits());
-    
+
     // Check import call
     assertEquals("import", streamCaptor.getAllValues().get(1));
     assertEquals(new BigDecimal("5.0"), valueCaptor.getAllValues().get(1).getValue());
     assertEquals("mt", valueCaptor.getAllValues().get(1).getUnits());
   }
 
-  @Test  
+  @Test
   void testHandleSalesSetWithDomesticOnly() {
     // Arrange
     SalesStreamDistribution distribution = new SalesStreamDistribution(
@@ -88,7 +88,7 @@ class SetExecutorTest {
         new BigDecimal("0.0")  // 0% import
     );
     when(mockStreamKeeper.getDistribution(mockUseKey)).thenReturn(distribution);
-    
+
     EngineNumber value = new EngineNumber(new BigDecimal("20"), "kg");
 
     // Act
@@ -97,9 +97,9 @@ class SetExecutorTest {
     // Assert - only domestic should be called
     ArgumentCaptor<String> streamCaptor = ArgumentCaptor.forClass(String.class);
     ArgumentCaptor<EngineNumber> valueCaptor = ArgumentCaptor.forClass(EngineNumber.class);
-    
+
     verify(mockEngine, times(1)).setStreamInternal(streamCaptor.capture(), valueCaptor.capture(), any());
-    
+
     assertEquals("domestic", streamCaptor.getValue());
     assertEquals(new BigDecimal("20.0"), valueCaptor.getValue().getValue());
     assertEquals("kg", valueCaptor.getValue().getUnits());
@@ -113,7 +113,7 @@ class SetExecutorTest {
         new BigDecimal("0.3")  // 30% import
     );
     when(mockStreamKeeper.getDistribution(mockUseKey)).thenReturn(distribution);
-    
+
     EngineNumber value = new EngineNumber(new BigDecimal("1000"), "units");
 
     // Act
@@ -122,14 +122,14 @@ class SetExecutorTest {
     // Assert
     ArgumentCaptor<String> streamCaptor = ArgumentCaptor.forClass(String.class);
     ArgumentCaptor<EngineNumber> valueCaptor = ArgumentCaptor.forClass(EngineNumber.class);
-    
+
     verify(mockEngine, times(2)).setStreamInternal(streamCaptor.capture(), valueCaptor.capture(), any());
-    
+
     // Check domestic call (70% of 1000 = 700)
     assertEquals("domestic", streamCaptor.getAllValues().get(0));
     assertEquals(new BigDecimal("700.0"), valueCaptor.getAllValues().get(0).getValue());
     assertEquals("units", valueCaptor.getAllValues().get(0).getUnits());
-    
+
     // Check import call (30% of 1000 = 300)
     assertEquals("import", streamCaptor.getAllValues().get(1));
     assertEquals(new BigDecimal("300.0"), valueCaptor.getAllValues().get(1).getValue());
@@ -141,11 +141,11 @@ class SetExecutorTest {
     // Arrange
     when(mockYearMatcher.getInRange(2025)).thenReturn(false);
     SalesStreamDistribution distribution = new SalesStreamDistribution(
-        new BigDecimal("0.5"), 
+        new BigDecimal("0.5"),
         new BigDecimal("0.5")
     );
     when(mockStreamKeeper.getDistribution(mockUseKey)).thenReturn(distribution);
-    
+
     EngineNumber value = new EngineNumber(new BigDecimal("10"), "mt");
 
     // Act
@@ -163,7 +163,7 @@ class SetExecutorTest {
         new BigDecimal("0.0")  // 0% import (disabled)
     );
     when(mockStreamKeeper.getDistribution(mockUseKey)).thenReturn(distribution);
-    
+
     EngineNumber value = new EngineNumber(new BigDecimal("5.5"), "mt");
 
     // Act
@@ -182,7 +182,7 @@ class SetExecutorTest {
         new BigDecimal("1.0")  // 100% import
     );
     when(mockStreamKeeper.getDistribution(mockUseKey)).thenReturn(distribution);
-    
+
     EngineNumber value = new EngineNumber(new BigDecimal("15"), "kg");
 
     // Act
@@ -197,11 +197,11 @@ class SetExecutorTest {
   void testHandleSalesSetWithAsymmetricDistribution() {
     // Arrange - test realistic asymmetric distribution
     SalesStreamDistribution distribution = new SalesStreamDistribution(
-        new BigDecimal("0.25"), // 25% domestic  
+        new BigDecimal("0.25"), // 25% domestic
         new BigDecimal("0.75")  // 75% import
     );
     when(mockStreamKeeper.getDistribution(mockUseKey)).thenReturn(distribution);
-    
+
     EngineNumber value = new EngineNumber(new BigDecimal("100"), "kg");
 
     // Act
@@ -210,14 +210,14 @@ class SetExecutorTest {
     // Assert
     ArgumentCaptor<String> streamCaptor = ArgumentCaptor.forClass(String.class);
     ArgumentCaptor<EngineNumber> valueCaptor = ArgumentCaptor.forClass(EngineNumber.class);
-    
+
     verify(mockEngine, times(2)).setStreamInternal(streamCaptor.capture(), valueCaptor.capture(), any());
-    
+
     // Check domestic call (25% of 100 = 25)
     assertEquals("domestic", streamCaptor.getAllValues().get(0));
     assertEquals(new BigDecimal("25.00"), valueCaptor.getAllValues().get(0).getValue());
     assertEquals("kg", valueCaptor.getAllValues().get(0).getUnits());
-    
+
     // Check import call (75% of 100 = 75)
     assertEquals("import", streamCaptor.getAllValues().get(1));
     assertEquals(new BigDecimal("75.00"), valueCaptor.getAllValues().get(1).getValue());
@@ -232,7 +232,7 @@ class SetExecutorTest {
         new BigDecimal("0.4")  // 40% import
     );
     when(mockStreamKeeper.getDistribution(mockUseKey)).thenReturn(distribution);
-    
+
     EngineNumber value = new EngineNumber(new BigDecimal("50"), "mt");
 
     // Act
@@ -241,14 +241,14 @@ class SetExecutorTest {
     // Assert
     ArgumentCaptor<String> streamCaptor = ArgumentCaptor.forClass(String.class);
     ArgumentCaptor<EngineNumber> valueCaptor = ArgumentCaptor.forClass(EngineNumber.class);
-    
+
     verify(mockEngine, times(2)).setStreamInternal(streamCaptor.capture(), valueCaptor.capture(), any());
-    
+
     // Check domestic call (60% of 50 = 30)
     assertEquals("domestic", streamCaptor.getAllValues().get(0));
     assertEquals(new BigDecimal("30.0"), valueCaptor.getAllValues().get(0).getValue());
     assertEquals("mt", valueCaptor.getAllValues().get(0).getUnits());
-    
+
     // Check import call (40% of 50 = 20)
     assertEquals("import", streamCaptor.getAllValues().get(1));
     assertEquals(new BigDecimal("20.0"), valueCaptor.getAllValues().get(1).getValue());
@@ -260,10 +260,10 @@ class SetExecutorTest {
     // Arrange - test with decimal values to ensure precision
     SalesStreamDistribution distribution = new SalesStreamDistribution(
         new BigDecimal("0.33"), // 33% domestic
-        new BigDecimal("0.67")  // 67% import  
+        new BigDecimal("0.67")  // 67% import
     );
     when(mockStreamKeeper.getDistribution(mockUseKey)).thenReturn(distribution);
-    
+
     EngineNumber value = new EngineNumber(new BigDecimal("1"), "kg");
 
     // Act
@@ -272,14 +272,14 @@ class SetExecutorTest {
     // Assert
     ArgumentCaptor<String> streamCaptor = ArgumentCaptor.forClass(String.class);
     ArgumentCaptor<EngineNumber> valueCaptor = ArgumentCaptor.forClass(EngineNumber.class);
-    
+
     verify(mockEngine, times(2)).setStreamInternal(streamCaptor.capture(), valueCaptor.capture(), any());
-    
+
     // Check domestic call (33% of 1 = 0.33)
     assertEquals("domestic", streamCaptor.getAllValues().get(0));
     assertEquals(new BigDecimal("0.33"), valueCaptor.getAllValues().get(0).getValue());
     assertEquals("kg", valueCaptor.getAllValues().get(0).getUnits());
-    
+
     // Check import call (67% of 1 = 0.67)
     assertEquals("import", streamCaptor.getAllValues().get(1));
     assertEquals(new BigDecimal("0.67"), valueCaptor.getAllValues().get(1).getValue());
@@ -294,7 +294,7 @@ class SetExecutorTest {
         new BigDecimal("0.0")  // 0% import
     );
     when(mockStreamKeeper.getDistribution(mockUseKey)).thenReturn(distribution);
-    
+
     EngineNumber value = new EngineNumber(new BigDecimal("10"), "mt");
 
     // Act

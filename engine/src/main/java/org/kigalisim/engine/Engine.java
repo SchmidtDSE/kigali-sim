@@ -180,7 +180,7 @@ public interface Engine {
    * Set a stream for internal engine operations (bypasses user-level processing like SetExecutor).
    *
    * @param name The stream name
-   * @param value The value to set for the stream  
+   * @param value The value to set for the stream
    * @param yearMatcher Optional year matcher for conditional setting
    */
   void setStreamInternal(String name, EngineNumber value, Optional<YearMatcher> yearMatcher);
@@ -190,7 +190,7 @@ public interface Engine {
    *
    * @param name The stream name
    * @param value The value to set for the stream
-   * @param yearMatcher Optional year matcher for conditional setting  
+   * @param yearMatcher Optional year matcher for conditional setting
    */
   void setStreamExplicit(String name, EngineNumber value, Optional<YearMatcher> yearMatcher);
 

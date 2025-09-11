@@ -40,7 +40,7 @@ public class DuplicateValidationException extends RuntimeException {
    * @param context The context where the duplication occurred
    * @param message Custom error message
    */
-  public DuplicateValidationException(String duplicateType, String duplicateName, 
+  public DuplicateValidationException(String duplicateType, String duplicateName,
       String context, String message) {
     super(message);
     this.duplicateType = duplicateType;

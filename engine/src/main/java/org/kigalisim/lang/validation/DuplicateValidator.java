@@ -39,9 +39,9 @@ public class DuplicateValidator {
       Function<T, String> nameExtractor,
       String itemType,
       String context) {
-    
+
     Map<String, T> result = new HashMap<>();
-    
+
     for (T item : items) {
       String name = nameExtractor.apply(item);
       if (result.containsKey(name)) {
@@ -49,7 +49,7 @@ public class DuplicateValidator {
       }
       result.put(name, item);
     }
-    
+
     return result;
   }
 
@@ -63,20 +63,20 @@ public class DuplicateValidator {
   public static void validateUniqueSubstanceEquipmentCombinations(
       Iterable<ParsedSubstance> substances,
       String applicationName) {
-    
+
     // Track combinations of substance name + equipment type
     Set<String> seenCombinations = new HashSet<>();
-    
+
     for (ParsedSubstance substance : substances) {
       String substanceName = substance.getName();
       Set<String> equipmentTypes = getEnabledEquipmentTypes(substance);
-      
+
       for (String equipmentType : equipmentTypes) {
         String combination = substanceName + "+" + equipmentType;
         if (seenCombinations.contains(combination)) {
           String context = "application '" + applicationName + "'";
           String message = String.format(
-              "Duplicate substance '%s' with equipment type '%s' found in %s. " 
+              "Duplicate substance '%s' with equipment type '%s' found in %s. "
               + "Each substance+equipment combination must be unique.",
               substanceName, equipmentType, context);
           throw new DuplicateValidationException("substance+equipment", combination, context, message);
@@ -94,7 +94,7 @@ public class DuplicateValidator {
    */
   private static Set<String> getEnabledEquipmentTypes(ParsedSubstance substance) {
     Set<String> equipmentTypes = new HashSet<>();
-    
+
     for (Operation operation : substance.getOperations()) {
       if (operation instanceof EnableOperation) {
         EnableOperation enableOp = (EnableOperation) operation;
@@ -102,7 +102,7 @@ public class DuplicateValidator {
         equipmentTypes.add(streamName);
       }
     }
-    
+
     return equipmentTypes;
   }
 }
