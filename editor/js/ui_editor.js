@@ -279,11 +279,6 @@ function validateNumericInputs(dialog, dialogType) {
     const value = input.value.trim();
     if (value === "") return; // Skip empty values (may be optional)
 
-    // Skip induction amount inputs - they allow "default" keyword
-    if (input.classList.contains("recycle-induction-amount-input")) {
-      return;
-    }
-
     // Check against invalid patterns
     const isLikelyInvalid = invalidPatterns.some((pattern) => pattern.test(value));
 
