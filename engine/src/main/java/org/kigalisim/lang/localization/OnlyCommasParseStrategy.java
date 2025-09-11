@@ -67,6 +67,9 @@ public class OnlyCommasParseStrategy implements NumberParseUtilStrategy {
           return new FlexibleNumberParseResult(new BigDecimal(numberStr.replace(",", ".")));
         } else if (isLikelyThousandsSeparator(numberStr, separatorIndex)) {
           return new FlexibleNumberParseResult(new BigDecimal(numberStr.replace(String.valueOf(separator), "")));
+        } else if (numberStr.startsWith("0,")) {
+          // Numbers starting with 0, are clearly decimals (like 0,035)
+          return new FlexibleNumberParseResult(new BigDecimal(numberStr.replace(",", ".")));
         } else {
           // Truly ambiguous case - could be 123,456 (thousands) or 123,456 (decimal)
           return new FlexibleNumberParseResult(String.format(
@@ -93,6 +96,11 @@ public class OnlyCommasParseStrategy implements NumberParseUtilStrategy {
    */
   private boolean isLikelyThousandsSeparator(String numberStr, int separatorIndex) {
     int digitsBefore = separatorIndex;
+
+    // If number starts with 0 (like 0,035), it's clearly a decimal
+    if (numberStr.startsWith("0,")) {
+      return false;
+    }
 
     // Common thousands patterns: 1,000  10,000  100,000 etc.
     if (digitsBefore >= 1 && digitsBefore <= 3) {
