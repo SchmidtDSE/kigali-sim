@@ -4224,6 +4224,25 @@ class TranslationResult {
 }
 
 /**
+ * Preprocesses QubecTalk input to handle "each year" syntax sugar.
+ *
+ * Removes standalone "each year" or "each years" at the end of lines to prevent
+ * parser ambiguity while preserving them within "during" clauses.
+ *
+ * @param {string} input - The raw QubecTalk code
+ * @returns {string} The preprocessed QubecTalk code
+ */
+function preprocessEachYearSyntax(input) {
+  // Remove "each year" or "each years" at end of lines, but preserve in "during" clauses
+  // Handles cases like:
+  //   "retire 5 % each year" → "retire 5 %"
+  //   "recharge 10 % with 0.15 kg / unit each year" → "recharge 10 % with 0.15 kg / unit"
+  // But preserves:
+  //   "change domestic by +5 % each year during years 2025 to 2035" (unchanged)
+  return input.replace(/\s+each\s+years?\s*$/gm, "");
+}
+
+/**
  * Compiler that translates QubecTalk code into object representation.
  *
  * Facade which parses QubecTalk scripts and converts them into objects which
@@ -4250,7 +4269,7 @@ class UiTranslatorCompiler {
 
     const errors = [];
 
-    const chars = new toolkit.antlr4.InputStream(input);
+    const chars = new toolkit.antlr4.InputStream(preprocessEachYearSyntax(input));
     const lexer = new toolkit.QubecTalkLexer(chars);
     lexer.removeErrorListeners();
     lexer.addErrorListener({
@@ -4328,4 +4347,5 @@ export {
   buildAddCode,
   finalizeCodePieces,
   indent,
+  preprocessEachYearSyntax,
 };

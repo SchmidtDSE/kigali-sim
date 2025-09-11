@@ -1,5 +1,5 @@
 /* eslint-disable max-len */
-import {UiTranslatorCompiler, SubstanceMetadata} from "ui_translator";
+import {UiTranslatorCompiler, SubstanceMetadata, preprocessEachYearSyntax} from "ui_translator";
 
 function buildUiTranslatorTests() {
   QUnit.module("UiTranslatorCompiler", function () {
@@ -702,6 +702,120 @@ function buildUiTranslatorTests() {
         assert.ok(!code.includes('uses substance "sub1"'));
       },
     ]);
+
+    QUnit.test("preprocessEachYearSyntax - removes end-of-line each year", function (assert) {
+      // Test basic removal cases
+      const input1 = "retire 5 % each year";
+      const expected1 = "retire 5 %";
+      assert.equal(preprocessEachYearSyntax(input1), expected1, "Should remove 'each year' at end of line");
+
+      const input2 = "recharge 10 % with 0.15 kg / unit each year";
+      const expected2 = "recharge 10 % with 0.15 kg / unit";
+      assert.equal(preprocessEachYearSyntax(input2), expected2, "Should remove 'each year' from recharge statement");
+
+      // Test plural form
+      const input3 = "retire 5 % each years";
+      const expected3 = "retire 5 %";
+      assert.equal(preprocessEachYearSyntax(input3), expected3, "Should handle plural 'each years'");
+    });
+
+    QUnit.test("preprocessEachYearSyntax - preserves during clauses", function (assert) {
+      // Test preservation of during clauses
+      const input1 = "change domestic by +5 % each year during years 2025 to 2035";
+      const expected1 = "change domestic by +5 % each year during years 2025 to 2035";
+      assert.equal(preprocessEachYearSyntax(input1), expected1, "Should preserve 'each year' in during clauses");
+
+      const input2 = "set values during each year of simulation";
+      const expected2 = "set values during each year of simulation";
+      assert.equal(preprocessEachYearSyntax(input2), expected2, "Should preserve 'each year' when not at end of line");
+    });
+
+    QUnit.test("preprocessEachYearSyntax - handles whitespace variations", function (assert) {
+      // Test various whitespace patterns
+      const input1 = "retire 5 %  each year   ";
+      const expected1 = "retire 5 %";
+      assert.equal(preprocessEachYearSyntax(input1), expected1, "Should handle extra whitespace");
+
+      const input2 = "retire 5 %\teach year\t";
+      const expected2 = "retire 5 %";
+      assert.equal(preprocessEachYearSyntax(input2), expected2, "Should handle tabs");
+
+      const input3 = "retire 5 %   each   year   ";
+      const expected3 = "retire 5 %";
+      assert.equal(preprocessEachYearSyntax(input3), expected3, "Should handle whitespace between each and year");
+    });
+
+    QUnit.test("preprocessEachYearSyntax - handles multiline input", function (assert) {
+      // Test multiline processing
+      const input = `start default
+  define application "test"
+    uses substance "HFC-134a"
+      retire 5 % each year
+      recharge 10 % with 0.15 kg / unit each year
+      change domestic by +5 % each year during years 2025 to 2035
+    end substance
+  end application
+end default`;
+
+      const expected = `start default
+  define application "test"
+    uses substance "HFC-134a"
+      retire 5 %
+      recharge 10 % with 0.15 kg / unit
+      change domestic by +5 % each year during years 2025 to 2035
+    end substance
+  end application
+end default`;
+
+      assert.equal(preprocessEachYearSyntax(input), expected, "Should process multiple lines correctly");
+    });
+
+    QUnit.test("preprocessEachYearSyntax - does not affect other text", function (assert) {
+      // Test that other text is not affected
+      const input1 = "some other statement with no each year syntax";
+      const expected1 = "some other statement with no each year syntax";
+      assert.equal(preprocessEachYearSyntax(input1), expected1, "Should leave unrelated text unchanged");
+
+      const input2 = "each year at beginning of line";
+      const expected2 = "each year at beginning of line";
+      assert.equal(preprocessEachYearSyntax(input2), expected2, "Should not remove 'each year' at beginning of line");
+
+      const input3 = "middle each year text";
+      const expected3 = "middle each year text";
+      assert.equal(preprocessEachYearSyntax(input3), expected3, "Should not remove 'each year' in middle of line");
+    });
+
+    QUnit.test("integration test - problematic each year syntax now compiles", function (assert) {
+      const problematicCode = `start about
+  # Name: "Each Year Syntax Test"
+  # Description: "Test case that previously caused parser errors"
+end about
+
+start default
+  define application "test equipment"
+    uses substance "HFC-134a"
+      enable domestic
+      equals 1430 kgCO2e / kg
+      
+      initial charge with 0.15 kg / unit for domestic
+      set domestic to 25 mt during year 2025
+      
+      retire 5 % each year
+      recharge 10 % with 0.15 kg / unit each year
+    end substance
+  end application
+end default
+
+start simulations
+  simulate "Test" from years 2025 to 2035
+end simulations`;
+
+      const compiler = new UiTranslatorCompiler();
+      const result = compiler.compile(problematicCode);
+
+      assert.equal(result.getErrors().length, 0, "Should compile without errors: " + result.getErrors().join(", "));
+      assert.ok(result.getProgram() !== null, "Should produce a valid program");
+    });
   });
 }
 
