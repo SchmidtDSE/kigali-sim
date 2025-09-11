@@ -201,32 +201,44 @@
           <h2>Duplicate Entity</h2>
           <p>Create a copy of an existing entity with a new name.</p>
           
-          <div class="form-section">
-            <label for="duplicate-entity-type-input">Entity Type:</label>
-            <select id="duplicate-entity-type-input" class="duplicate-entity-type-input">
-              <option value="application" selected>Application</option>
-              <option value="policy">Policy</option>
-              <option value="simulation">Simulation</option>
-              <option value="substance">Consumption</option>
-            </select>
+          <div class="form-group">
+            <div><label for="duplicate-entity-type-input">Entity Type:</label></div>
+            <div>
+              <span class="sel long">
+                <select id="duplicate-entity-type-input" class="duplicate-entity-type-input">
+                  <option value="application" selected>Application</option>
+                  <option value="policy">Policy</option>
+                  <option value="simulation">Simulation</option>
+                  <option value="substance">Consumption</option>
+                </select>
+              </span>
+            </div>
           </div>
           
-          <div class="form-section">
-            <label for="duplicate-source-entity-input">Source Entity:</label>
-            <select id="duplicate-source-entity-input" class="duplicate-source-entity-input">
-              <!-- Options populated dynamically -->
-            </select>
+          <div class="form-group">
+            <div><label for="duplicate-source-entity-input">Source Entity:</label></div>
+            <div>
+              <span class="sel long">
+                <select id="duplicate-source-entity-input" class="duplicate-source-entity-input">
+                  <!-- Options populated dynamically -->
+                </select>
+              </span>
+            </div>
           </div>
           
-          <div class="form-section">
-            <label for="duplicate-new-name-input">New Name:</label>
-            <input type="text" id="duplicate-new-name-input" class="duplicate-new-name-input" placeholder="Enter new name" />
+          <div class="form-group">
+            <div><label for="duplicate-new-name-input">New Name:</label></div>
+            <div>
+              <input type="text" id="duplicate-new-name-input" class="duplicate-new-name-input" placeholder="Enter new name" />
+            </div>
           </div>
           
-          <div class="form-section equipment-model-section" style="display: none;">
-            <label for="duplicate-equipment-model-input">Equipment Model (optional):</label>
-            <input type="text" id="duplicate-equipment-model-input" class="duplicate-equipment-model-input" />
-            <small class="field-help">Optional model equipment / type which may be left empty</small>
+          <div class="form-group equipment-model-section" style="display: none;">
+            <div><label for="duplicate-equipment-model-input">Equipment Model (optional):</label></div>
+            <div>
+              <input type="text" id="duplicate-equipment-model-input" class="duplicate-equipment-model-input" />
+              <small class="field-help">Optional model equipment / type which may be left empty</small>
+            </div>
           </div>
           
           <div class="dialog-buttons bold-buttons">
