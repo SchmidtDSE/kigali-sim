@@ -97,32 +97,12 @@ public class DuplicateValidator {
     
     for (Operation operation : substance.getOperations()) {
       if (operation instanceof EnableOperation) {
-        // Use reflection to access the private stream field
-        String streamName = getStreamFromEnableOperation((EnableOperation) operation);
-        if (streamName != null) {
-          equipmentTypes.add(streamName);
-        }
+        EnableOperation enableOp = (EnableOperation) operation;
+        String streamName = enableOp.getStream();
+        equipmentTypes.add(streamName);
       }
     }
     
     return equipmentTypes;
-  }
-
-  /**
-   * Extract the stream name from an EnableOperation using reflection.
-   *
-   * @param enableOp The EnableOperation to extract the stream name from
-   * @return The stream name, or null if extraction fails
-   */
-  private static String getStreamFromEnableOperation(EnableOperation enableOp) {
-    try {
-      java.lang.reflect.Field streamField = EnableOperation.class.getDeclaredField("stream");
-      streamField.setAccessible(true);
-      return (String) streamField.get(enableOp);
-    } catch (Exception e) {
-      // If reflection fails, we can't validate this combination
-      // This is not ideal, but we'll continue without validation for this case
-      return null;
-    }
   }
 }
