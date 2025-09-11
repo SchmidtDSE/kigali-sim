@@ -1376,25 +1376,18 @@ class ConsumptionListPresenter {
       const baseName = substance.getName();
       const priorNames = new Set(self._getConsumptionNames());
       const fullBaseName = `"${baseName}" for "${applicationName}"`;
-      console.log("Consumption name resolution debug:", {
-        baseName,
-        applicationName, 
-        fullBaseName,
-        priorNames: Array.from(priorNames)
-      });
       const resolution = resolveSubstanceNameConflict(fullBaseName, priorNames);
-      console.log("Resolution result:", {
-        nameChanged: resolution.getNameChanged(),
-        newName: resolution.getNewName()
-      });
 
       // If the name was changed, update the substance input field and re-parse
       if (resolution.getNameChanged()) {
         // Extract the resolved substance name from the full name
         const resolvedFullName = resolution.getNewName();
-        const substanceNameMatch = resolvedFullName.match(/^"([^"]+)"/);
-        if (substanceNameMatch) {
-          const resolvedSubstanceName = substanceNameMatch[1];
+        // Handle format like: "SubA" for "Test" (1) -> should extract "SubA (1)"
+        const fullNameMatch = resolvedFullName.match(/^"([^"]+)" for "[^"]+"(\s*\([^)]+\))?$/);
+        if (fullNameMatch) {
+          const baseSubstanceName = fullNameMatch[1];
+          const suffix = fullNameMatch[2] || "";
+          const resolvedSubstanceName = baseSubstanceName + suffix;
 
           // Update the substance input field - need to handle compound names properly
           const substanceInput = self._dialog.querySelector(".edit-consumption-substance-input");
