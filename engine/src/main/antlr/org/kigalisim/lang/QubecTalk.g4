@@ -174,6 +174,8 @@ GET_: 'get';
 
 IN_: 'in';
 
+INDUCTION_: 'induction';
+
 INITIAL_: 'initial';
 
 MODIFY_: 'modify';
@@ -398,14 +400,18 @@ rechargeStatement: RECHARGE_ population=unitValue WITH_ volume=unitValue  # rech
   | RECHARGE_ population=unitValue WITH_ volume=unitValue duration=during  # rechargeDuration
   ;
 
-recycleStatement: RECOVER_ volume=unitValue WITH_ yieldVal=unitValue REUSE_  # recoverAllYears
-  | RECOVER_ volume=unitValue WITH_ yieldVal=unitValue REUSE_ duration=during  # recoverDuration
-  | RECOVER_ volume=unitValue WITH_ yieldVal=unitValue REUSE_ DISPLACING_ (string | stream)  # recoverDisplacementAllYears
-  | RECOVER_ volume=unitValue WITH_ yieldVal=unitValue REUSE_ DISPLACING_ (string | stream) duration=during  # recoverDisplacementDuration
-  | RECOVER_ volume=unitValue WITH_ yieldVal=unitValue REUSE_ AT_ stage=(EOL_ | RECHARGE_)  # recoverStageAllYears
-  | RECOVER_ volume=unitValue WITH_ yieldVal=unitValue REUSE_ AT_ stage=(EOL_ | RECHARGE_) duration=during  # recoverStageDuration
-  | RECOVER_ volume=unitValue WITH_ yieldVal=unitValue REUSE_ AT_ stage=(EOL_ | RECHARGE_) DISPLACING_ (string | stream)  # recoverStageDisplacementAllYears
-  | RECOVER_ volume=unitValue WITH_ yieldVal=unitValue REUSE_ AT_ stage=(EOL_ | RECHARGE_) DISPLACING_ (string | stream) duration=during  # recoverStageDisplacementDuration
+recycleStatement: RECOVER_ volume=unitValue WITH_ yieldVal=unitValue REUSE_                                                        # recoverAllYears
+  | RECOVER_ volume=unitValue WITH_ yieldVal=unitValue REUSE_ duration=during                                       # recoverDuration
+  | RECOVER_ volume=unitValue WITH_ yieldVal=unitValue REUSE_ AT_ stage=(EOL_ | RECHARGE_)                         # recoverStageAllYears
+  | RECOVER_ volume=unitValue WITH_ yieldVal=unitValue REUSE_ AT_ stage=(EOL_ | RECHARGE_) duration=during         # recoverStageDuration
+  | RECOVER_ volume=unitValue WITH_ yieldVal=unitValue REUSE_ WITH_ inductionVal=unitValue INDUCTION_                                                   # recoverInductionAllYears
+  | RECOVER_ volume=unitValue WITH_ yieldVal=unitValue REUSE_ WITH_ inductionVal=unitValue INDUCTION_ duration=during                                  # recoverInductionDuration
+  | RECOVER_ volume=unitValue WITH_ yieldVal=unitValue REUSE_ WITH_ inductionVal=unitValue INDUCTION_ AT_ stage=(EOL_ | RECHARGE_)                    # recoverInductionStageAllYears
+  | RECOVER_ volume=unitValue WITH_ yieldVal=unitValue REUSE_ WITH_ inductionVal=unitValue INDUCTION_ AT_ stage=(EOL_ | RECHARGE_) duration=during    # recoverInductionStageDuration
+  | RECOVER_ volume=unitValue WITH_ yieldVal=unitValue REUSE_ WITH_ DEFAULT_ INDUCTION_                                                                 # recoverDefaultInductionAllYears
+  | RECOVER_ volume=unitValue WITH_ yieldVal=unitValue REUSE_ WITH_ DEFAULT_ INDUCTION_ duration=during                                                # recoverDefaultInductionDuration
+  | RECOVER_ volume=unitValue WITH_ yieldVal=unitValue REUSE_ WITH_ DEFAULT_ INDUCTION_ AT_ stage=(EOL_ | RECHARGE_)                                   # recoverDefaultInductionStageAllYears
+  | RECOVER_ volume=unitValue WITH_ yieldVal=unitValue REUSE_ WITH_ DEFAULT_ INDUCTION_ AT_ stage=(EOL_ | RECHARGE_) duration=during                   # recoverDefaultInductionStageDuration
   ;
 
 replaceStatement: REPLACE_ volume=unitValue OF_ target=stream WITH_ destination=string  # replaceAllYears

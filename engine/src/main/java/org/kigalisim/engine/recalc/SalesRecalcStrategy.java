@@ -116,6 +116,7 @@ public class SalesRecalcStrategy implements RecalcStrategy {
     // Determine sales prior to recycling
     final BigDecimal kgForRecharge = rechargeVolume.getValue();
     final BigDecimal kgForNew = volumeForNew.getValue();
+    
 
     // Return to original initial charge
     stateGetter.clearAmortizedUnitVolume();
@@ -127,8 +128,8 @@ public class SalesRecalcStrategy implements RecalcStrategy {
     // Get distribution using centralized method
     SalesStreamDistribution distribution = streamKeeper.getDistribution(scopeEffective);
 
-    BigDecimal percentDomestic = distribution.getPercentDomestic();
-    BigDecimal percentImport = distribution.getPercentImport();
+    final BigDecimal percentDomestic = distribution.getPercentDomestic();
+    final BigDecimal percentImport = distribution.getPercentImport();
 
     // Set individual recycling streams
     EngineNumber newRecycleEolValue = new EngineNumber(eolRecycledKg, "kg");
@@ -154,10 +155,56 @@ public class SalesRecalcStrategy implements RecalcStrategy {
     BigDecimal requiredKg = totalDemand
         .subtract(implicitRechargeKg);
 
-    BigDecimal newDomesticKg = percentDomestic.multiply(requiredKg);
-    BigDecimal newImportKg = percentImport.multiply(requiredKg);
-
+    // Calculate induced demand based on induction rate for unit-based specifications
+    BigDecimal inducedDemandKg = BigDecimal.ZERO;
     boolean hasUnitBasedSpecs = getHasUnitBasedSpecs(streamKeeper, scopeEffective, implicitRechargeKg);
+
+    if (hasUnitBasedSpecs) {
+      // Get effective induction rate (default is 0% for displacement behavior in unit-based specs)
+      BigDecimal inductionRatioEol = getEffectiveInductionRate(streamKeeper, scopeEffective, RecoveryStage.EOL, hasUnitBasedSpecs);
+      BigDecimal inductionRatioRecharge = getEffectiveInductionRate(streamKeeper, scopeEffective, RecoveryStage.RECHARGE, hasUnitBasedSpecs);
+
+      // Calculate induced demand for each stage
+      BigDecimal eolInducedKg = eolRecycledKg.multiply(inductionRatioEol);
+      BigDecimal rechargeInducedKg = rechargeRecycledKg.multiply(inductionRatioRecharge);
+
+      // Total induced demand
+      inducedDemandKg = eolInducedKg.add(rechargeInducedKg);
+    }
+
+    // Calculate displacement based on induction rate for non-units specifications
+    BigDecimal displacedDemandKg = BigDecimal.ZERO;
+    if (!hasUnitBasedSpecs) {
+      // Get effective induction rate (default is 100% for induced demand behavior in non-unit specs)
+      BigDecimal inductionRatioEol = getEffectiveInductionRate(streamKeeper, scopeEffective, RecoveryStage.EOL, hasUnitBasedSpecs);
+      BigDecimal inductionRatioRecharge = getEffectiveInductionRate(streamKeeper, scopeEffective, RecoveryStage.RECHARGE, hasUnitBasedSpecs);
+
+      // Calculate displacement: (1 - inductionRate) * recycledAmount
+      // Higher induction rate = less displacement, lower induction rate = more displacement
+      BigDecimal eolDisplacementRatio = BigDecimal.ONE.subtract(inductionRatioEol);
+      BigDecimal rechargeDisplacementRatio = BigDecimal.ONE.subtract(inductionRatioRecharge);
+      
+      BigDecimal eolDisplacedKg = eolRecycledKg.multiply(eolDisplacementRatio);
+      BigDecimal rechargeDisplacedKg = rechargeRecycledKg.multiply(rechargeDisplacementRatio);
+      
+      // Total displacement to subtract from sales
+      displacedDemandKg = eolDisplacedKg.add(rechargeDisplacedKg);
+    }
+
+    // Apply different logic for unit-based vs non-unit specifications
+    BigDecimal totalRequiredKg;
+    if (hasUnitBasedSpecs) {
+      // Unit-based: Add induced demand to required kg
+      totalRequiredKg = requiredKg.add(inducedDemandKg);
+    } else {
+      // Non-unit based: Subtract displaced demand from required kg
+      totalRequiredKg = requiredKg.subtract(displacedDemandKg);
+      // Ensure sales don't go negative due to displacement
+      totalRequiredKg = totalRequiredKg.max(BigDecimal.ZERO);
+    }
+
+    BigDecimal newDomesticKg = percentDomestic.multiply(totalRequiredKg);
+    BigDecimal newImportKg = percentImport.multiply(totalRequiredKg);
 
     if (hasUnitBasedSpecs) {
       // Convert back to units to preserve user intent
@@ -278,5 +325,35 @@ public class SalesRecalcStrategy implements RecalcStrategy {
     stateGetter.clearVolume();
 
     return recycledVolume.getValue();
+  }
+
+  /**
+   * Get the effective induction rate with appropriate defaults based on specification type.
+   *
+   * @param streamKeeper the stream keeper to get induction rate from
+   * @param scopeEffective the scope to get induction rate for
+   * @param stage the recovery stage (EOL or RECHARGE)
+   * @param hasUnitBasedSpecs whether the specification is unit-based
+   * @return the effective induction rate as a ratio (0.0 to 1.0)
+   */
+  private BigDecimal getEffectiveInductionRate(StreamKeeper streamKeeper, UseKey scopeEffective, RecoveryStage stage, boolean hasUnitBasedSpecs) {
+    EngineNumber inductionRate = streamKeeper.getInductionRate(scopeEffective, stage);
+    
+    // Check if induction rate was explicitly set (not null and non-zero value)
+    boolean wasExplicitlySet = inductionRate != null && inductionRate.getValue().compareTo(BigDecimal.ZERO) != 0;
+    
+    if (wasExplicitlySet) {
+      // Use the explicitly set value
+      return inductionRate.getValue().divide(BigDecimal.valueOf(100), java.math.MathContext.DECIMAL128);
+    } else {
+      // Apply default behavior based on specification type
+      if (hasUnitBasedSpecs) {
+        // Units-based specs: default is 0% induction (displacement behavior)
+        return BigDecimal.ZERO;
+      } else {
+        // Non-units specs: default is 100% induction (induced demand behavior)
+        return BigDecimal.ONE;
+      }
+    }
   }
 }

@@ -770,6 +770,8 @@ public class RechargeLiveTests {
   /**
    * Test optional "each year" syntax support in unit expressions.
    * Validates that expressions with and without "each year" produce identical results.
+   *
+   * <p>Re-enabled: The unit parsing issue with "each year" syntax appears to be resolved.
    */
   @Test
   public void testOptionalEachYearSyntax() throws IOException {

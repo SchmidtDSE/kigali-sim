@@ -3387,6 +3387,27 @@ function initRecycleCommandUi(itemObj, root, codeObj, context, streamUpdater) {
   setFieldValue(root.querySelector(".displacing-input"), itemObj, "", (x) =>
     x && x.getDisplacing ? (x.getDisplacing() === null ? "" : x.getDisplacing()) : "",
   );
+  setFieldValue(
+    root.querySelector(".recycle-induction-amount-input"),
+    itemObj,
+    "default",
+    (x) => {
+      if (x && x.getInduction) {
+        const induction = x.getInduction();
+        if (induction === null) {
+          return "default";
+        } else if (induction === "default") {
+          return "default";
+        } else if (induction instanceof EngineNumber) {
+          return induction.getValue().toString();
+        } else {
+          return induction.toString();
+        }
+      } else {
+        return "default";
+      }
+    },
+  );
   setFieldValue(root.querySelector(".recycle-stage-input"), itemObj, "recharge", (x) =>
     x && x.getStage ? x.getStage() : "recharge",
   );
@@ -3408,11 +3429,29 @@ function readRecycleCommandUi(root) {
     root.querySelector(".recycle-reuse-amount-input"),
     root.querySelector(".recycle-reuse-units-input"),
   );
-  const displacingRaw = getFieldValue(root.querySelector(".displacing-input"));
-  const displacing = displacingRaw === "" ? null : displacingRaw;
+
+  // Add induction handling
+  const inductionRaw = getFieldValue(root.querySelector(".recycle-induction-amount-input"));
+  let induction = null;
+  if (inductionRaw === "" || inductionRaw === "default") {
+    induction = "default";
+  } else {
+    // Parse as percentage
+    const inductionValue = parseFloat(inductionRaw);
+    if (!isNaN(inductionValue) && inductionValue >= 0 && inductionValue <= 100) {
+      induction = new EngineNumber(inductionValue, "%");
+    } else {
+      // Invalid input - show warning and use default
+      console.warn(`Invalid induction rate: ${inductionRaw}. Using default instead.`);
+      induction = "default";
+    }
+  }
+
   const stage = getFieldValue(root.querySelector(".recycle-stage-input"));
   const duration = readDurationUi(root.querySelector(".duration-subcomponent"));
-  return new RecycleCommand(collection, reuse, duration, displacing, stage);
+
+  // RecycleCommand constructor: (target, value, duration, stage, induction)
+  return new RecycleCommand(collection, reuse, duration, stage, induction);
 }
 
 /**

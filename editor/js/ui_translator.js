@@ -1956,19 +1956,21 @@ class Substance {
         "reuse",
       ];
 
-      const displacing = recycle.getDisplacing ? recycle.getDisplacing() : null;
-      if (displacing !== null && displacing !== undefined && displacing !== "") {
-        pieces.push("displacing");
-        // Stream names (domestic, import, sales, etc.) don't need quotes
-        // Substance names need quotes
-        const streamNames = [
-          "domestic", "import", "sales", "equipment", "priorEquipment", "export",
-        ];
-        if (streamNames.includes(displacing)) {
-          pieces.push(displacing);
+      // Add induction clause if specified
+      const induction = recycle.getInduction ? recycle.getInduction() : null;
+      if (induction !== null) {
+        pieces.push("with");
+        if (induction === "default") {
+          pieces.push("default");
+        } else if (induction instanceof EngineNumber) {
+          pieces.push(induction.getValue());
+          pieces.push(induction.getUnits());
         } else {
-          pieces.push('"' + displacing + '"');
+          // Handle string numbers or other formats
+          pieces.push(induction.toString());
+          pieces.push("%");
         }
+        pieces.push("induction");
       }
 
       const stage = recycle.getStage ? recycle.getStage() : "recharge";
@@ -2804,7 +2806,7 @@ class RechargeCommand {
 }
 
 /**
- * Recycle command with displacement capability.
+ * Recycle command for substance recovery.
  */
 class RecycleCommand {
   /**
@@ -2813,16 +2815,17 @@ class RecycleCommand {
    * @param {EngineNumber} target - Recovery amount and units.
    * @param {EngineNumber} value - Reuse amount and units.
    * @param {YearMatcher} duration - Duration of recovery.
-   * @param {string} displacing - Stream or substance being displaced.
    * @param {string} stage - Recycling stage ("eol" or "recharge").
+   * @param {EngineNumber|string|null} induction - Induction amount, "default", or null for
+   *   backward compatibility.
    */
-  constructor(target, value, duration, displacing, stage) {
+  constructor(target, value, duration, stage, induction = null) {
     const self = this;
     self._target = target;
     self._value = value;
     self._duration = duration;
-    self._displacing = displacing;
     self._stage = stage;
+    self._induction = induction;
   }
 
   /**
@@ -2865,15 +2868,6 @@ class RecycleCommand {
     return self._duration;
   }
 
-  /**
-   * Get the stream or substance being displaced by this recycle.
-   *
-   * @returns {string|null} Name of stream or substance being displaced, or null if none.
-   */
-  getDisplacing() {
-    const self = this;
-    return self._displacing;
-  }
 
   /**
    * Get the recycling stage for this recycle command.
@@ -2883,6 +2877,16 @@ class RecycleCommand {
   getStage() {
     const self = this;
     return self._stage;
+  }
+
+  /**
+   * Get the induction rate for this recycle command.
+   *
+   * @returns {EngineNumber|string|null} The induction amount, "default", or null if not specified.
+   */
+  getInduction() {
+    const self = this;
+    return self._induction;
   }
 
   /**
@@ -3671,7 +3675,7 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
     const self = this;
     const volume = ctx.volume.accept(self);
     const yieldVal = ctx.yieldVal.accept(self);
-    return new RecycleCommand(volume, yieldVal, null, null, "recharge");
+    return new RecycleCommand(volume, yieldVal, null, "recharge");
   }
 
   /**
@@ -3685,65 +3689,9 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
     const volume = ctx.volume.accept(self);
     const yieldVal = ctx.yieldVal.accept(self);
     const duration = ctx.duration.accept(self);
-    return new RecycleCommand(volume, yieldVal, duration, null, "recharge");
+    return new RecycleCommand(volume, yieldVal, duration, "recharge");
   }
 
-  /**
-   * Helper method to find and clean displacement target from context.
-   *
-   * @param {Object} ctx - The parse tree node context.
-   * @returns {string|null} The cleaned displacement target.
-   */
-  _findDisplacementTarget(ctx) {
-    for (let i = 0; i < ctx.getChildCount(); i++) {
-      const child = ctx.getChild(i);
-      if (child && child.getText() === "displacing" && i + 1 < ctx.getChildCount()) {
-        const targetChild = ctx.getChild(i + 1);
-        if (targetChild) {
-          const displacementTarget = targetChild.getText();
-          const isQuoted = displacementTarget && displacementTarget.startsWith('"');
-          return isQuoted ? displacementTarget.slice(1, -1) : displacementTarget;
-        }
-      }
-    }
-    return null;
-  }
-
-  /**
-   * Visit a recover command with displacement and all years duration node.
-   *
-   * @param {Object} ctx - The parse tree node context.
-   * @returns {RecycleCommand} New recycle command with displacement.
-   */
-  visitRecoverDisplacementAllYears(ctx) {
-    const self = this;
-
-    // Check if required properties exist
-    if (!ctx.volume || !ctx.yieldVal) {
-      console.error("Missing volume or yieldVal in displacement context:", ctx);
-      return new IncompatibleCommand("recover with displace - missing parameters");
-    }
-
-    const volume = ctx.volume.accept(self);
-    const yieldVal = ctx.yieldVal.accept(self);
-    const cleanTarget = self._findDisplacementTarget(ctx);
-    return new RecycleCommand(volume, yieldVal, null, cleanTarget, "recharge");
-  }
-
-  /**
-   * Visit a recover command with displacement and duration node.
-   *
-   * @param {Object} ctx - The parse tree node context.
-   * @returns {RecycleCommand} New recycle command with displacement and duration.
-   */
-  visitRecoverDisplacementDuration(ctx) {
-    const self = this;
-    const volume = ctx.volume.accept(self);
-    const yieldVal = ctx.yieldVal.accept(self);
-    const cleanTarget = self._findDisplacementTarget(ctx);
-    const duration = ctx.duration.accept(self);
-    return new RecycleCommand(volume, yieldVal, duration, cleanTarget, "recharge");
-  }
 
   /**
    * Visit a recover command with stage and all years duration node.
@@ -3756,7 +3704,7 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
     const volume = ctx.volume.accept(self);
     const yieldVal = ctx.yieldVal.accept(self);
     const stage = ctx.stage.text;
-    return new RecycleCommand(volume, yieldVal, null, null, stage);
+    return new RecycleCommand(volume, yieldVal, null, stage);
   }
 
   /**
@@ -3771,38 +3719,123 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
     const yieldVal = ctx.yieldVal.accept(self);
     const stage = ctx.stage.text;
     const duration = ctx.duration.accept(self);
-    return new RecycleCommand(volume, yieldVal, duration, null, stage);
+    return new RecycleCommand(volume, yieldVal, duration, stage);
   }
 
   /**
-   * Visit a recover command with stage, displacement and all years duration node.
+   * Visit a recover command with explicit induction and all years duration node.
    *
    * @param {Object} ctx - The parse tree node context.
-   * @returns {RecycleCommand} New recycle command with stage and displacement.
+   * @returns {RecycleCommand} New recycle command with induction.
    */
-  visitRecoverStageDisplacementAllYears(ctx) {
+  visitRecoverInductionAllYears(ctx) {
     const self = this;
     const volume = ctx.volume.accept(self);
     const yieldVal = ctx.yieldVal.accept(self);
-    const stage = ctx.stage.text;
-    const cleanTarget = self._findDisplacementTarget(ctx);
-    return new RecycleCommand(volume, yieldVal, null, cleanTarget, stage);
+    const inductionVal = ctx.inductionVal.accept(self);
+    return new RecycleCommand(volume, yieldVal, null, "recharge", inductionVal);
   }
 
   /**
-   * Visit a recover command with stage, displacement and duration node.
+   * Visit a recover command with explicit induction and duration node.
    *
    * @param {Object} ctx - The parse tree node context.
-   * @returns {RecycleCommand} New recycle command with stage, displacement and duration.
+   * @returns {RecycleCommand} New recycle command with induction and duration.
    */
-  visitRecoverStageDisplacementDuration(ctx) {
+  visitRecoverInductionDuration(ctx) {
     const self = this;
     const volume = ctx.volume.accept(self);
     const yieldVal = ctx.yieldVal.accept(self);
-    const stage = ctx.stage.text;
-    const cleanTarget = self._findDisplacementTarget(ctx);
+    const inductionVal = ctx.inductionVal.accept(self);
     const duration = ctx.duration.accept(self);
-    return new RecycleCommand(volume, yieldVal, duration, cleanTarget, stage);
+    return new RecycleCommand(volume, yieldVal, duration, "recharge", inductionVal);
+  }
+
+  /**
+   * Visit a recover command with explicit induction, stage and all years duration node.
+   *
+   * @param {Object} ctx - The parse tree node context.
+   * @returns {RecycleCommand} New recycle command with induction and stage.
+   */
+  visitRecoverInductionStageAllYears(ctx) {
+    const self = this;
+    const volume = ctx.volume.accept(self);
+    const yieldVal = ctx.yieldVal.accept(self);
+    const inductionVal = ctx.inductionVal.accept(self);
+    const stage = ctx.stage.text;
+    return new RecycleCommand(volume, yieldVal, null, stage, inductionVal);
+  }
+
+  /**
+   * Visit a recover command with explicit induction, stage and duration node.
+   *
+   * @param {Object} ctx - The parse tree node context.
+   * @returns {RecycleCommand} New recycle command with induction, stage and duration.
+   */
+  visitRecoverInductionStageDuration(ctx) {
+    const self = this;
+    const volume = ctx.volume.accept(self);
+    const yieldVal = ctx.yieldVal.accept(self);
+    const inductionVal = ctx.inductionVal.accept(self);
+    const stage = ctx.stage.text;
+    const duration = ctx.duration.accept(self);
+    return new RecycleCommand(volume, yieldVal, duration, stage, inductionVal);
+  }
+
+  /**
+   * Visit a recover command with default induction and all years duration node.
+   *
+   * @param {Object} ctx - The parse tree node context.
+   * @returns {RecycleCommand} New recycle command with default induction.
+   */
+  visitRecoverDefaultInductionAllYears(ctx) {
+    const self = this;
+    const volume = ctx.volume.accept(self);
+    const yieldVal = ctx.yieldVal.accept(self);
+    return new RecycleCommand(volume, yieldVal, null, "recharge", "default");
+  }
+
+  /**
+   * Visit a recover command with default induction and duration node.
+   *
+   * @param {Object} ctx - The parse tree node context.
+   * @returns {RecycleCommand} New recycle command with default induction and duration.
+   */
+  visitRecoverDefaultInductionDuration(ctx) {
+    const self = this;
+    const volume = ctx.volume.accept(self);
+    const yieldVal = ctx.yieldVal.accept(self);
+    const duration = ctx.duration.accept(self);
+    return new RecycleCommand(volume, yieldVal, duration, "recharge", "default");
+  }
+
+  /**
+   * Visit a recover command with default induction, stage and all years duration node.
+   *
+   * @param {Object} ctx - The parse tree node context.
+   * @returns {RecycleCommand} New recycle command with default induction and stage.
+   */
+  visitRecoverDefaultInductionStageAllYears(ctx) {
+    const self = this;
+    const volume = ctx.volume.accept(self);
+    const yieldVal = ctx.yieldVal.accept(self);
+    const stage = ctx.stage.text;
+    return new RecycleCommand(volume, yieldVal, null, stage, "default");
+  }
+
+  /**
+   * Visit a recover command with default induction, stage and duration node.
+   *
+   * @param {Object} ctx - The parse tree node context.
+   * @returns {RecycleCommand} New recycle command with default induction, stage and duration.
+   */
+  visitRecoverDefaultInductionStageDuration(ctx) {
+    const self = this;
+    const volume = ctx.volume.accept(self);
+    const yieldVal = ctx.yieldVal.accept(self);
+    const stage = ctx.stage.text;
+    const duration = ctx.duration.accept(self);
+    return new RecycleCommand(volume, yieldVal, duration, stage, "default");
   }
 
   /**

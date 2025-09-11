@@ -1689,7 +1689,17 @@
             <option value="% / year">% / year</option>
           </select>
         </span>
-        reuse at
+        reuse with
+        <input type="text" class="recycle-induction-amount-input short" aria-label="Induction rate for recycling command" placeholder="default">
+        <span class="sel mid">
+          <select class="recycle-induction-units-input" aria-label="Units for induction rate">
+            <option value="%" selected>%</option>
+          </select>
+        </span>
+        <span class="induction-help-text" title="Percent of recycled material that induces additional demand rather than displacing virgin production">
+          induced demand
+        </span>
+        at
         <span class="sel mid">
           <select class="recycle-stage-input" aria-label="Stage for recycle command">
             <option value="recharge">recharge (servicing)</option>

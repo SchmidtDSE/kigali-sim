@@ -336,16 +336,12 @@ public interface Engine {
       YearMatcher yearMatcher, RecoveryStage stage);
 
   /**
-   * Recycle or recover a substance with displacement to another stream.
+   * Set the induction rate for recycling operations.
    *
-   * @param recoveryWithUnits The recovery rate
-   * @param yieldWithUnits The yield rate
-   * @param yearMatcher Matcher to determine if the change applies to current year
-   * @param displacementTarget The stream or substance to displace (reduce)
-   * @param stage The recovery stage (EOL or RECHARGE)
+   * @param inductionRate The induction rate as a percentage in decimal form (0.0-1.0),
+   *                      or Optional.empty() for default behavior
    */
-  void recycle(EngineNumber recoveryWithUnits, EngineNumber yieldWithUnits,
-      YearMatcher yearMatcher, String displacementTarget, RecoveryStage stage);
+  void setInductionRate(Optional<Double> inductionRate);
 
   /**
    * Set GHG equivalency for the current application and substance.

@@ -1124,47 +1124,6 @@ function buildIntegrationTests() {
         },
       ]);
 
-    buildTest(
-      "tests recover with sales displacement",
-      "/examples/recover_displace_sales_kg.qta",
-      [
-        (result, assert) => {
-        // Check that sales were displaced (reduced) for the same substance
-          const recordSubA = getResult(result, "result", 1, 0, "test", "sub_a");
-          const domesticSubA = recordSubA.getDomestic();
-          const importSubA = recordSubA.getImport();
-
-          // Calculate total sales (domestic + import)
-          const totalSales = domesticSubA.getValue() + importSubA.getValue();
-
-          // Original sales: 150 kg (100 domestic + 50 import)
-          // After 20 kg displacement with sales targeting (still allowed):
-          // Actual result with current calculation precision
-          assert.closeTo(totalSales, 129.34959349593495, 0.0001);
-        },
-      ]);
-
-    // Test that substance displacement now throws an exception
-    QUnit.test("tests recover with substance displacement", (assert) => {
-      const done = assert.async();
-      loadRemote("/examples/recover_displace_substance.qta").then(async (content) => {
-        assert.ok(content.length > 0);
-
-        try {
-          const backendResult = await wasmBackend.execute(content);
-          // If we get here, the execution didn't throw an exception as expected
-          assert.ok(false, "Expected UnsupportedOperationException for substance displacement");
-        } catch (e) {
-          // Check that the error message contains our expected displacement blocking message
-          const expectedMessage = "Displacement target 'sub_b' is not currently " +
-            "supported in recycling operations";
-          assert.ok(e.message.includes(expectedMessage),
-            "Should throw exception for substance displacement: " + e.message);
-        }
-
-        done();
-      });
-    });
 
     buildTest("tests imports with recharge attribution", "/examples/import_recharge_test.qta", [
       (result, assert) => {
@@ -1422,6 +1381,7 @@ function buildIntegrationTests() {
       },
     ]);
 
+    // Re-enabled: unit parsing issue with "each year" syntax appears to be resolved
     buildTest("supports optional each year syntax",
       "/examples/each_year_syntax_test.qta", [
         (result, assert) => {
@@ -1442,6 +1402,21 @@ function buildIntegrationTests() {
             "Recharge emissions should be positive");
           assert.deepEqual(rechargeEmissions.getUnits(), "tCO2e",
             "Recharge emissions should be in tCO2e");
+        },
+      ]);
+
+    buildTest("tests recover with induction parsing", "/examples/recover_induction_parsing.qta", [
+      (result, assert) => {
+        // Just verify parsing succeeds - not testing values at this stage
+        assert.ok(result.length > 0, "Should parse recover statement with induction");
+      },
+    ]);
+
+    buildTest("tests recover with default induction parsing",
+      "/examples/recover_default_induction_parsing.qta", [
+        (result, assert) => {
+          // Just verify parsing succeeds - not testing values at this stage
+          assert.ok(result.length > 0, "Should parse recover statement with default induction");
         },
       ]);
 

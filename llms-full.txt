@@ -70,7 +70,7 @@ The about stanza is optional.
 #### Policy Interventions
 - `cap|floor stream to {amount} <displacing> <during>` - Manufacturing/import restrictions and minimums
 - `replace {amount} of {stream} with "substance" <during>` - Substance transitions
-- `recover {amount} with {amount} reuse <at {stage}> <displacing> <during>` - Recycling with optional stage (eol or recharge), displacement, and duration
+- `recover {amount} with {amount} reuse <at {stage}> <during>` - Recycling with optional stage (eol or recharge) and duration
 
 **Note**: When using units (of equipment) in cap, floor, and set commands, those limits apply after recharge calculations. So a cap of 100 units means 100 units on top of recharge for prior equipment.
 
@@ -150,17 +150,24 @@ Changes in one substance can be offset by changes in another. For example:
 
 This is available for `cap`, `floor`, and `recover`.
 
-### Recycling Stages
-The `recover` command supports specifying when recycling occurs:
-- `recover {amount} with {amount} reuse` - Defaults to recycling at recharge (service) time
+### Recycling Stages and Induction
+The `recover` command supports specifying when recycling occurs and how much induced demand it creates:
+- `recover {amount} with {amount} reuse` - Defaults to recycling at recharge (service) time with default induction
+- `recover {amount} with {amount} reuse with {amount} induction` - Explicit induction percentage (0-100%)
+- `recover {amount} with {amount} reuse with default induction` - Uses default behavior
 - `recover {amount} with {amount} reuse at recharge` - Explicitly specifies recycling at service time
 - `recover {amount} with {amount} reuse at eol` - Specifies recycling at end-of-life (retirement)
+
+**Induction Control**: Induction determines how much recycled material adds to the market versus displaces virgin production:
+- **Units-based specs**: Default 0% induction (displacement behavior) - recycling reduces virgin sales to maintain steady population
+- **Non-units specs (kg/mt)**: Default 100% induction (induced demand behavior) - recycling adds on top of existing demand
 
 Examples:
 ```
 recover 20 % with 80 % reuse at recharge
-recover 15 % with 75 % reuse at eol displacing import
-recover 10 % with 90 % reuse at eol during years 3 to 5
+recover 15 % with 75 % reuse with 50 % induction at eol
+recover 10 % with 90 % reuse with default induction during years 3 to 5
+recover 25 % with 85 % reuse with 0 % induction during year 2027 to onwards
 ```
 
 ## Example QubecTalk Program
@@ -198,7 +205,7 @@ start policy "HFC Phasedown"
     modify substance "HFC-134a"
       cap domestic to 85% during years 3 to 5
       cap import to 85% during years 3 to 5
-      recover 20 % with 80 % reuse at eol during years 4 to 10
+      recover 20 % with 80 % reuse with 25 % induction at eol during years 4 to 10
       replace 50% of domestic with "R-600a" during years 6 to onwards
     end substance
     
