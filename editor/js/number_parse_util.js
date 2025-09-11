@@ -21,8 +21,9 @@ class NumberParseResult {
    * @param {string|null} error - The error message, or null if parsing succeeded
    */
   constructor(number, error) {
-    this._number = number;
-    this._error = error;
+    const self = this;
+    self._number = number;
+    self._error = error;
   }
 
   /**
@@ -31,7 +32,8 @@ class NumberParseResult {
    * @returns {number|null} The parsed number, or null if parsing failed
    */
   getNumber() {
-    return this._number;
+    const self = this;
+    return self._number;
   }
 
   /**
@@ -40,7 +42,8 @@ class NumberParseResult {
    * @returns {string|null} The error message, or null if parsing succeeded
    */
   getError() {
-    return this._error;
+    const self = this;
+    return self._error;
   }
 
   /**
@@ -49,7 +52,8 @@ class NumberParseResult {
    * @returns {boolean} True if parsing succeeded, false otherwise
    */
   isSuccess() {
-    return this._error === null;
+    const self = this;
+    return self._error === null;
   }
 
   /**
@@ -183,6 +187,12 @@ class NumberParseUtil {
   /**
    * Handle numbers with both comma and period separators.
    *
+   * Validates that we have a valid mixed separator pattern:
+   * - US format: One or more commas as thousands, one period as decimal
+   *   (period must be last)
+   * - European format: One or more periods as thousands, one comma as decimal
+   *   (comma must be last)
+   *
    * @param {string} numberPart - Number part to parse
    * @param {string} originalString - Original string for error messages
    * @returns {NumberParseResult} Parsed number result
@@ -194,13 +204,6 @@ class NumberParseUtil {
     const periodCount = self._countOccurrences(numberPart, ".");
     const lastComma = numberPart.lastIndexOf(",");
     const lastPeriod = numberPart.lastIndexOf(".");
-
-    // Validate that we have a valid mixed separator pattern
-    // Valid patterns:
-    // - US format: One or more commas as thousands, one period as decimal
-    //   (period must be last)
-    // - European format: One or more periods as thousands, one comma as decimal
-    //   (comma must be last)
 
     // Period comes after comma - US format (period as decimal)
     if (lastPeriod > lastComma) {
