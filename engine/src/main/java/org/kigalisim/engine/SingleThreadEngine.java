@@ -690,40 +690,6 @@ public class SingleThreadEngine implements Engine {
     updateLastSpecifiedValueAfterRecycling();
   }
 
-  @Override
-  public void recycle(EngineNumber recoveryWithUnits, EngineNumber yieldWithUnits,
-      YearMatcher yearMatcher, String displacementTarget, RecoveryStage stage) {
-    if (!getIsInRange(yearMatcher)) {
-      return;
-    }
-
-    // Block displacement except for sales
-    if (displacementTarget != null && !displacementTarget.equals("sales")) {
-      throw new UnsupportedOperationException(
-        "Displacement target '" + displacementTarget + "' is not currently supported in recycling operations. "
-        + "Only 'sales' displacement or no displacement is allowed.");
-    }
-
-    streamKeeper.setRecoveryRate(scope, recoveryWithUnits, stage);
-    streamKeeper.setYieldRate(scope, yieldWithUnits, stage);
-
-    // Apply the recovery through normal recycle operation
-    RecalcOperation operation = new RecalcOperationBuilder()
-        .setRecalcKit(createRecalcKit())
-        .recalcSales()
-        .thenPropagateToPopulationChange()
-        .thenPropagateToConsumption()
-        .build();
-    operation.execute(this);
-
-    // Update lastSpecifiedValue after recycling for volume-based specs
-    updateLastSpecifiedValueAfterRecycling();
-
-    // Handle displacement using the existing displacement logic
-    UnitConverter unitConverter = EngineSupportUtils.createUnitConverterWithTotal(this, RECYCLE_RECOVER_STREAM);
-    EngineNumber recoveryInKg = unitConverter.convert(recoveryWithUnits, "kg");
-    handleDisplacement(RECYCLE_RECOVER_STREAM, recoveryWithUnits, recoveryInKg.getValue(), displacementTarget);
-  }
 
   @Override
   public void equals(EngineNumber amount, YearMatcher yearMatcher) {

@@ -396,12 +396,8 @@ rechargeStatement: RECHARGE_ population=unitValue WITH_ volume=unitValue  # rech
 
 recycleStatement: RECOVER_ volume=unitValue WITH_ yieldVal=unitValue REUSE_  # recoverAllYears
   | RECOVER_ volume=unitValue WITH_ yieldVal=unitValue REUSE_ duration=during  # recoverDuration
-  | RECOVER_ volume=unitValue WITH_ yieldVal=unitValue REUSE_ DISPLACING_ (string | stream)  # recoverDisplacementAllYears
-  | RECOVER_ volume=unitValue WITH_ yieldVal=unitValue REUSE_ DISPLACING_ (string | stream) duration=during  # recoverDisplacementDuration
   | RECOVER_ volume=unitValue WITH_ yieldVal=unitValue REUSE_ AT_ stage=(EOL_ | RECHARGE_)  # recoverStageAllYears
   | RECOVER_ volume=unitValue WITH_ yieldVal=unitValue REUSE_ AT_ stage=(EOL_ | RECHARGE_) duration=during  # recoverStageDuration
-  | RECOVER_ volume=unitValue WITH_ yieldVal=unitValue REUSE_ AT_ stage=(EOL_ | RECHARGE_) DISPLACING_ (string | stream)  # recoverStageDisplacementAllYears
-  | RECOVER_ volume=unitValue WITH_ yieldVal=unitValue REUSE_ AT_ stage=(EOL_ | RECHARGE_) DISPLACING_ (string | stream) duration=during  # recoverStageDisplacementDuration
   ;
 
 replaceStatement: REPLACE_ volume=unitValue OF_ target=stream WITH_ destination=string  # replaceAllYears

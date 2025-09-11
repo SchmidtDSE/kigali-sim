@@ -157,50 +157,6 @@ public class RecycleRecoverLiveTests {
         "Recycled consumption units should be tCO2e in year 2");
   }
 
-  /**
-   * Test recover_displace_sales_kg.qta produces expected displacement values.
-   */
-  @Test
-  public void testRecoverDisplaceSalesKg() throws IOException {
-    // Load and parse the QTA file
-    String qtaPath = "../examples/recover_displace_sales_kg.qta";
-    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
-    assertNotNull(program, "Program should not be null");
-
-    // Run the scenario using KigaliSimFacade
-    String scenarioName = "result";
-    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
-
-    // Convert to list for multiple access
-    List<EngineResult> resultsList = results.collect(Collectors.toList());
-
-    // Check sub_a results - should have displacement effect
-    EngineResult recordSubA = LiveTestsUtil.getResult(resultsList.stream(), 1, "test", "sub_a");
-    assertNotNull(recordSubA, "Should have result for test/sub_a in year 1");
-
-    // Check that sales displacement works with uniform logic
-    // Based on debug output, the actual displacement behavior distributes proportionally
-    // Original: 100 kg manufacture + 50 kg import = 150 kg total
-    // After displacement: the total should be reduced by the displacement amount
-    double domestic = recordSubA.getDomestic().getValue().doubleValue();
-    double importValue = recordSubA.getImport().getValue().doubleValue();
-    double recycled = recordSubA.getRecycleConsumption().getValue().doubleValue();
-
-    double totalSales = domestic + importValue;
-
-    // The displacement should reduce virgin sales proportionally
-    // Domestic: 100 * (130/150) = 86.67 kg
-    // Import: 50 * (130/150) = 43.33 kg
-    // Total: 130 kg virgin + recycled amount
-    assertTrue(totalSales > 0, "Virgin sales should be positive");
-    assertTrue(recycled > 0, "Recycled content should be positive");
-
-    // Check that domestic and import are proportionally reduced
-    double domesticRatio = domestic / (domestic + importValue);
-    double expectedDomesticRatio = 100.0 / 150.0; // Original ratio
-    assertEquals(expectedDomesticRatio, domesticRatio, 0.01,
-        "Domestic ratio should be maintained after displacement");
-  }
 
   /**
    * Test multiple recycles with additive recycling behavior.
@@ -239,60 +195,6 @@ public class RecycleRecoverLiveTests {
                       policyImports, bauImports));
     assertTrue(policyRecycled > 0,
         String.format("Policy should have recycled content (%.2f)", policyRecycled));
-  }
-
-  /**
-   * Test recover_displace_substance.qta produces expected displacement values.
-   */
-  @Test
-  public void testRecoverDisplaceSubstance() throws IOException {
-    // Load and parse the QTA file
-    String qtaPath = "../examples/recover_displace_substance.qta";
-    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
-    assertNotNull(program, "Program should not be null");
-
-    // Expect UnsupportedOperationException when using substance displacement
-    assertThrows(UnsupportedOperationException.class, () -> {
-      String scenarioName = "result";
-      Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
-      results.collect(Collectors.toList()); // Force evaluation
-    }, "Should throw exception for substance displacement in recycling");
-  }
-
-  /**
-   * Test recover_displace_import_kg.qta produces expected import displacement values.
-   */
-  @Test
-  public void testRecoverDisplaceImportKg() throws IOException {
-    // Load and parse the QTA file
-    String qtaPath = "../examples/recover_displace_import_kg.qta";
-    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
-    assertNotNull(program, "Program should not be null");
-
-    // Expect UnsupportedOperationException when using import displacement
-    assertThrows(UnsupportedOperationException.class, () -> {
-      String scenarioName = "result";
-      Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
-      results.collect(Collectors.toList()); // Force evaluation
-    }, "Should throw exception for import displacement in recycling");
-  }
-
-  /**
-   * Test recover_displace_domestic_kg.qta produces expected domestic displacement values.
-   */
-  @Test
-  public void testRecoverDisplaceDomesticKg() throws IOException {
-    // Load and parse the QTA file
-    String qtaPath = "../examples/recover_displace_domestic_kg.qta";
-    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
-    assertNotNull(program, "Program should not be null");
-
-    // Expect UnsupportedOperationException when using domestic displacement
-    assertThrows(UnsupportedOperationException.class, () -> {
-      String scenarioName = "result";
-      Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
-      results.collect(Collectors.toList()); // Force evaluation
-    }, "Should throw exception for domestic displacement in recycling");
   }
 
   /**

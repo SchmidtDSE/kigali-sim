@@ -335,17 +335,6 @@ public interface Engine {
   void recycle(EngineNumber recoveryWithUnits, EngineNumber yieldWithUnits,
       YearMatcher yearMatcher, RecoveryStage stage);
 
-  /**
-   * Recycle or recover a substance with displacement to another stream.
-   *
-   * @param recoveryWithUnits The recovery rate
-   * @param yieldWithUnits The yield rate
-   * @param yearMatcher Matcher to determine if the change applies to current year
-   * @param displacementTarget The stream or substance to displace (reduce)
-   * @param stage The recovery stage (EOL or RECHARGE)
-   */
-  void recycle(EngineNumber recoveryWithUnits, EngineNumber yieldWithUnits,
-      YearMatcher yearMatcher, String displacementTarget, RecoveryStage stage);
 
   /**
    * Set GHG equivalency for the current application and substance.
