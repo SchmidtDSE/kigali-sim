@@ -68,7 +68,7 @@ We're almost ready to run our first simulation! We just need initial conditions.
 Head to the **Set tab** to specify ABC Country's starting conditions:
 
 - Click **Add Setpoint**
-- Set **prior equipment** to **1,000,000 units** in year 2025
+- Set **prior equipment** to **1,000,000.0 units** in year 2025
 - Set **domestic** manufacture to **25 mt / yr** in year 2025
 
 This 25 mt/year gives us a good demonstrative curve showing how consumption patterns evolve. However, until we specify changes in later tutorials, this production rate will remain steady based on tonnage. It will be used both for initial charge and recharge.
