@@ -113,6 +113,130 @@ function buildReportDataTests() {
       assert.deepEqual(updatedFilterSet.getCustomDefinition("sales"), ["domestic", "import"]);
     });
 
+    QUnit.test("handles null metric strategy gracefully", (assert) => {
+      // Create a mock ReportDataWrapper with empty data
+      const emptyData = [];
+      const wrapper = new ReportDataWrapper(emptyData);
+
+      const filterSet = new FilterSet(
+        null,
+        null,
+        null,
+        null,
+        "nonexistent:metric:units",
+        null,
+        null,
+        false,
+      );
+
+      // Test that getMetric returns null for non-existent strategy
+      const result = wrapper.getMetric(filterSet);
+      assert.strictEqual(result, null, "getMetric should return null for invalid metric strategy");
+    });
+
+    QUnit.test("handles broken metric strategy gracefully", (assert) => {
+      // Create a wrapper and manually break a strategy
+      const emptyData = [];
+      const wrapper = new ReportDataWrapper(emptyData);
+
+      // Mock window.kigaliApp for testing
+      const originalKigaliApp = window.kigaliApp;
+      let resetCalled = false;
+      window.kigaliApp = {
+        resetVisualizationState: () => {
+          resetCalled = true;
+        },
+      };
+
+      // Break a metric strategy by setting it to null
+      wrapper._metricStrategies["sales:domestic:mt / yr"] = null;
+
+      const filterSet = new FilterSet(
+        null,
+        null,
+        null,
+        null,
+        "sales:domestic:mt / yr",
+        null,
+        null,
+        false,
+      );
+
+      // Test that getMetric handles broken strategy gracefully
+      const result = wrapper.getMetric(filterSet);
+      assert.strictEqual(result, null, "getMetric should return null for null strategy");
+      assert.ok(resetCalled, "resetVisualizationState should be called when strategy is null");
+
+      // Restore original kigaliApp
+      window.kigaliApp = originalKigaliApp;
+    });
+
+    QUnit.test("handles metric strategy execution error gracefully", (assert) => {
+      // Create a wrapper with a strategy that throws an error
+      const emptyData = [];
+      const wrapper = new ReportDataWrapper(emptyData);
+
+      // Mock window.kigaliApp for testing
+      const originalKigaliApp = window.kigaliApp;
+      let resetCalled = false;
+      window.kigaliApp = {
+        resetVisualizationState: () => {
+          resetCalled = true;
+        },
+      };
+
+      // Create a strategy that throws a "not a function" error
+      wrapper._metricStrategies["sales:domestic:mt / yr"] = () => {
+        throw new Error("metricStrategy is not a function");
+      };
+
+      const filterSet = new FilterSet(
+        null,
+        null,
+        null,
+        null,
+        "sales:domestic:mt / yr",
+        null,
+        null,
+        false,
+      );
+
+      // Test that getMetric handles execution error gracefully
+      const result = wrapper.getMetric(filterSet);
+      assert.strictEqual(result, null, "getMetric should return null for strategy execution error");
+      assert.ok(resetCalled, "resetVisualizationState should be called when strategy throws error");
+
+      // Restore original kigaliApp
+      window.kigaliApp = originalKigaliApp;
+    });
+
+    QUnit.test("re-throws non-function errors", (assert) => {
+      // Create a wrapper with a strategy that throws a non-function error
+      const emptyData = [];
+      const wrapper = new ReportDataWrapper(emptyData);
+
+      // Create a strategy that throws a different kind of error
+      wrapper._metricStrategies["sales:domestic:mt / yr"] = () => {
+        throw new Error("Some other validation error");
+      };
+
+      const filterSet = new FilterSet(
+        null,
+        null,
+        null,
+        null,
+        "sales:domestic:mt / yr",
+        null,
+        null,
+        false,
+      );
+
+      // Test that getMetric re-throws non-function errors
+      assert.throws(() => {
+        wrapper.getMetric(filterSet);
+      }, /Some other validation error/, "Should re-throw non-function errors");
+    });
+
     buildTest("runs the base script", "/examples/multiple_with_policies.qta", [
       (result, assert) => {
         assert.notDeepEqual(result, null);

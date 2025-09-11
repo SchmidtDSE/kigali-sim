@@ -8,9 +8,7 @@ package org.kigalisim.lang.program;
 
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
+import org.kigalisim.lang.validation.DuplicateValidator;
 
 /**
  * Record of scenarios parsed from the source of a QubecTalk program.
@@ -27,8 +25,8 @@ public class ParsedScenarios {
    * @param scenarios The scenarios defined in the simulations stanza.
    */
   public ParsedScenarios(Iterable<ParsedScenario> scenarios) {
-    this.scenarios = StreamSupport.stream(scenarios.spliterator(), false)
-        .collect(Collectors.toMap(ParsedScenario::getName, Function.identity()));
+    this.scenarios = DuplicateValidator.validateUniqueNames(
+        scenarios, ParsedScenario::getName, "scenario", "simulations stanza");
   }
 
   /**

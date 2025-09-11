@@ -2,7 +2,7 @@
  * Utility class for executing set operations on sales streams.
  *
  * <p>This class provides set operation logic for Engine implementations
- * to provide better separation of concerns and testability. It handles 
+ * to provide better separation of concerns and testability. It handles
  * distribution of sales values to component streams (domestic/import) while
  * preserving lastSpecifiedValue for subsequent change operations.</p>
  *
@@ -44,11 +44,11 @@ public class SetExecutor {
    * Handle sales stream setting by distributing to component streams.
    *
    * @param useKey The use key for the operation scope
-   * @param stream The stream identifier (should be "sales")  
+   * @param stream The stream identifier (should be "sales")
    * @param value The value to set
    * @param yearMatcher Optional year matcher for conditional setting
    */
-  public void handleSalesSet(UseKey useKey, String stream, EngineNumber value, 
+  public void handleSalesSet(UseKey useKey, String stream, EngineNumber value,
                              Optional<YearMatcher> yearMatcher) {
     // Check if this operation should apply to current year
     if (yearMatcher.isPresent()
@@ -60,18 +60,18 @@ public class SetExecutor {
     StreamKeeper streamKeeper = engine.getStreamKeeper();
     streamKeeper.setLastSpecifiedValue(useKey, "sales", value);
     SalesStreamDistribution distribution = streamKeeper.getDistribution(useKey);
-    
+
     // Calculate component amounts based on distribution percentages
     BigDecimal domesticAmount = value.getValue().multiply(distribution.getPercentDomestic());
     BigDecimal importAmount = value.getValue().multiply(distribution.getPercentImport());
-    
+
     // Set component streams using internal method to avoid SetExecutor recursion
     // Only set streams that have non-zero allocations (are enabled)
     if (distribution.getPercentDomestic().compareTo(BigDecimal.ZERO) > 0) {
       EngineNumber domesticValue = new EngineNumber(domesticAmount, value.getUnits());
       engine.setStreamInternal("domestic", domesticValue, yearMatcher);
     }
-    
+
     if (distribution.getPercentImport().compareTo(BigDecimal.ZERO) > 0) {
       EngineNumber importValue = new EngineNumber(importAmount, value.getUnits());
       engine.setStreamInternal("import", importValue, yearMatcher);

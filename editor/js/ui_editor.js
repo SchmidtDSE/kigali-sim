@@ -20,6 +20,12 @@ import {
   SimulationScenario,
   SubstanceBuilder,
 } from "ui_translator";
+import {
+  NameConflictResolution,
+  resolveNameConflict,
+  resolveSubstanceNameConflict,
+  DuplicateEntityPresenter,
+} from "duplicate_util";
 
 /**
  * Stream target selectors used throughout the application for updating dropdown states.
@@ -246,6 +252,103 @@ function getEngineNumberValue(valSelection, unitsSelection) {
   const value = valSelection.value;
   const units = unitsSelection.value;
   return new EngineNumber(value, units);
+}
+
+/**
+ * Validates numeric inputs within a dialog and prompts user for potentially
+ * invalid values.
+ *
+ * @param {HTMLElement} dialog - The dialog element containing numeric inputs
+ * @param {string} dialogType - Type of dialog for error message context
+ *     ("substance", "policy", "simulation")
+ * @returns {boolean} True if user confirms to proceed, false if user cancels
+ */
+function validateNumericInputs(dialog, dialogType) {
+  const numericInputs = dialog.querySelectorAll(".numeric-input");
+  const potentiallyInvalid = [];
+
+  // Define patterns for potentially invalid values
+  const invalidPatterns = [
+    /[a-zA-Z\s]/, // Alphabetical characters or spaces
+  ];
+
+  // Check each numeric input
+  numericInputs.forEach((input) => {
+    const value = input.value.trim();
+    if (value === "") return; // Skip empty values (may be optional)
+
+    // Check against invalid patterns
+    const isLikelyInvalid = invalidPatterns.some((pattern) => pattern.test(value));
+
+    if (isLikelyInvalid) {
+      // Get field description from aria-label
+      const fieldDescription = input.getAttribute("aria-label") || "Unknown field";
+      potentiallyInvalid.push({
+        element: input,
+        value: value,
+        description: fieldDescription,
+      });
+    }
+  });
+
+  // If no potentially invalid values found, proceed
+  if (potentiallyInvalid.length === 0) {
+    return true;
+  }
+
+  // Build user-friendly error message
+  const fieldList = potentiallyInvalid.map((item) =>
+    `• ${item.description}: "${item.value}"`,
+  ).join("\n");
+
+  const message = "The following numeric fields contain potentially " +
+    `invalid values:\n\n${fieldList}\n\n` +
+    "These values may cause simulation errors. You can:\n" +
+    "• Click \"Continue\" if these are intentional (equations, etc.)\n" +
+    "• Click \"Cancel\" to review and correct the values";
+
+  // Prompt user for confirmation
+  return confirm(message);
+}
+
+/**
+ * Validates simulation duration to warn about very long simulations.
+ *
+ * @param {HTMLElement} dialog - Dialog element containing start and end inputs.
+ * @returns {boolean} True if user confirms or duration is reasonable, false if cancelled.
+ * @private
+ */
+function validateSimulationDuration(dialog) {
+  const startInput = dialog.querySelector(".edit-simulation-start-input");
+  const endInput = dialog.querySelector(".edit-simulation-end-input");
+
+  if (!startInput || !endInput) {
+    return true; // If inputs not found, proceed
+  }
+
+  const startValue = startInput.value.trim();
+  const endValue = endInput.value.trim();
+
+  // Only check if both values are simple integers (no equations, etc.)
+  const isSimpleInteger = (value) => /^\d+$/.test(value);
+
+  if (!isSimpleInteger(startValue) || !isSimpleInteger(endValue)) {
+    return true; // Skip validation for non-simple integers
+  }
+
+  const startYear = parseInt(startValue, 10);
+  const endYear = parseInt(endValue, 10);
+  const duration = endYear - startYear;
+
+  if (duration > 1000) {
+    const message = `This simulation spans ${duration} years (${startYear} to ${endYear}), ` +
+      "which is over 1000 years.\n\n" +
+      "Do you want to continue with this duration?";
+
+    return confirm(message);
+  }
+
+  return true;
 }
 
 /**
@@ -476,13 +579,28 @@ class ApplicationsListPresenter {
       };
 
       const effectiveName = getEffectiveName();
-      const newName = effectiveName === "" ? "Unnamed" : effectiveName;
+      const baseName = effectiveName === "" ? "Unnamed" : effectiveName;
 
       const priorNames = new Set(self._getAppNames());
-      const nameIsDuplicate = priorNames.has(newName);
-      if (nameIsDuplicate) {
-        alert("Whoops! An application by that name already exists.");
-        return;
+      const resolution = resolveNameConflict(baseName, priorNames);
+
+      // Update the input field to show the resolved name if it was changed
+      if (resolution.getNameChanged()) {
+        // If the resolved name differs from the effective name, update the main name input
+        // We need to handle the case where there's a subname
+        const newName = resolution.getNewName();
+        if (subnameEmpty) {
+          nameInput.value = newName;
+        } else {
+          // For compound names with subnames, we need to update the main part
+          const nameParts = newName.split(" - ");
+          if (nameParts.length > 1) {
+            nameInput.value = nameParts[0];
+            // The subname part should remain as-is since conflict resolution affects the whole name
+          } else {
+            nameInput.value = newName;
+          }
+        }
       }
 
       if (self._editingName === null) {
@@ -1220,7 +1338,12 @@ class ConsumptionListPresenter {
    */
   _save() {
     const self = this;
-    const substance = self._parseObj();
+
+    // Validate numeric inputs and get user confirmation for potentially invalid values
+    if (!validateNumericInputs(self._dialog, "substance")) {
+      return; // User cancelled, stop save operation
+    }
+    let substance = self._parseObj();
 
     const codeObj = self._getCodeObj();
 
@@ -1228,6 +1351,40 @@ class ConsumptionListPresenter {
       const applicationName = getFieldValue(
         self._dialog.querySelector(".edit-consumption-application-input"),
       );
+
+      // Handle duplicate substance name resolution for new substances
+      const baseName = substance.getName();
+      const priorNames = new Set(self._getConsumptionNames());
+      const fullBaseName = `"${baseName}" for "${applicationName}"`;
+      const resolution = resolveSubstanceNameConflict(fullBaseName, priorNames);
+
+      // If the name was changed, update the substance input field and re-parse
+      if (resolution.getNameChanged()) {
+        // Extract the resolved substance name from the full name
+        const resolvedFullName = resolution.getNewName();
+        const substanceNameMatch = resolvedFullName.match(/^"([^"]+)"/);
+        if (substanceNameMatch) {
+          const resolvedSubstanceName = substanceNameMatch[1];
+
+          // Update the substance input field - need to handle compound names properly
+          const substanceInput = self._dialog.querySelector(".edit-consumption-substance-input");
+          const equipmentInput = self._dialog.querySelector(".edit-consumption-equipment-input");
+
+          // Check if the resolved name has equipment model part
+          const equipmentModel = getFieldValue(equipmentInput);
+          if (equipmentModel && equipmentModel.trim() !== "") {
+            // For compound names, update the base substance part
+            const baseResolved = resolvedSubstanceName.replace(` - ${equipmentModel.trim()}`, "");
+            substanceInput.value = baseResolved;
+          } else {
+            substanceInput.value = resolvedSubstanceName;
+          }
+
+          // Re-parse with the updated name
+          substance = self._parseObj();
+        }
+      }
+
       codeObj.insertSubstance(null, applicationName, null, substance);
     } else {
       const objIdentifierRegex = /\"([^\"]+)\" for \"([^\"]+)\"/;
@@ -1840,7 +1997,29 @@ class PolicyListPresenter {
    */
   _save() {
     const self = this;
-    const policy = self._parseObj();
+
+    // Validate numeric inputs and get user confirmation for potentially invalid values
+    if (!validateNumericInputs(self._dialog, "policy")) {
+      return; // User cancelled, stop save operation
+    }
+    let policy = self._parseObj();
+
+    // Handle duplicate name resolution for new policies
+    if (self._editingName === null) {
+      const baseName = policy.getName();
+      const priorNames = new Set(self._getPolicyNames());
+      const resolution = resolveNameConflict(baseName, priorNames);
+
+      // Update the input field if the name was changed
+      if (resolution.getNameChanged()) {
+        const nameInput = self._dialog.querySelector(".edit-policy-name-input");
+        nameInput.value = resolution.getNewName();
+
+        // Need to re-parse with the updated name
+        policy = self._parseObj();
+      }
+    }
+
     const codeObj = self._getCodeObj();
     codeObj.insertPolicy(self._editingName, policy);
     self._onCodeObjUpdate(codeObj);
@@ -2076,7 +2255,34 @@ class SimulationListPresenter {
    */
   _save() {
     const self = this;
-    const scenario = self._parseObj();
+
+    // Validate numeric inputs and get user confirmation for potentially invalid values
+    if (!validateNumericInputs(self._dialog, "simulation")) {
+      return; // User cancelled, stop save operation
+    }
+
+    // Validate simulation duration and warn about very long simulations
+    if (!validateSimulationDuration(self._dialog)) {
+      return; // User cancelled, stop save operation
+    }
+    let scenario = self._parseObj();
+
+    // Handle duplicate name resolution for new simulations
+    if (self._editingName === null) {
+      const baseName = scenario.getName();
+      const priorNames = new Set(self._getSimulationNames());
+      const resolution = resolveNameConflict(baseName, priorNames);
+
+      // Update the input field if the name was changed
+      if (resolution.getNameChanged()) {
+        const nameInput = self._dialog.querySelector(".edit-simulation-name-input");
+        nameInput.value = resolution.getNewName();
+
+        // Need to re-parse with the updated name
+        scenario = self._parseObj();
+      }
+    }
+
     const codeObj = self._getCodeObj();
     codeObj.insertScenario(self._editingName, scenario);
     self._onCodeObjUpdate(codeObj);
@@ -2452,6 +2658,8 @@ class SubstanceTablePresenter {
   }
 }
 
+// DuplicateEntityPresenter has been moved to duplicate_util.js
+
 /**
  * Manages the UI editor interface.
  *
@@ -2511,6 +2719,11 @@ class UiEditorPresenter {
     );
 
     self._substanceTable = new SubstanceTablePresenter(
+      () => self._getCodeAsObj(),
+      (codeObj) => self._onCodeObjUpdate(codeObj),
+    );
+
+    self._duplicateEntityPresenter = new DuplicateEntityPresenter(
       () => self._getCodeAsObj(),
       (codeObj) => self._onCodeObjUpdate(codeObj),
     );
@@ -3274,5 +3487,6 @@ function readDurationUi(root) {
   const maxYear = getYearValue(targets["max"]);
   return new YearMatcher(minYear, maxYear);
 }
+
 
 export {UiEditorPresenter};

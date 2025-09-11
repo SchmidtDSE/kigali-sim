@@ -1,0 +1,24 @@
+start default
+  define application "Commercial Refrigeration"
+    uses substance "HFC-134a"
+      enable domestic
+      enable import
+      initial charge with 1 kg / unit for domestic
+      initial charge with 1 kg / unit for import
+      equals 1 kgCO2e / kg
+      retire 5 % / year
+    end substance
+    
+    uses substance "HFC-32"
+      enable domestic  # Same equipment type as HFC-134a - this should be valid
+      initial charge with 2 kg / unit for domestic
+      equals 2 kgCO2e / kg
+      retire 10 % / year
+    end substance
+  end application
+end default
+
+start simulations
+  simulate "BAU"
+  from years 1 to 10
+end simulations
