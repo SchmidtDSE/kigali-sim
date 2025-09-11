@@ -558,7 +558,6 @@ class ApplicationsListPresenter {
 
     const saveButton = self._root.querySelector(".save-button");
     saveButton.addEventListener("click", (event) => {
-      self._dialog.close();
       event.preventDefault();
 
       const cleanName = (x) => x.replaceAll('"', "").replaceAll(",", "").trim();
@@ -613,6 +612,8 @@ class ApplicationsListPresenter {
         codeObj.renameApplication(self._editingName, newName);
         self._onCodeObjUpdate(codeObj);
       }
+
+      self._dialog.close();
     });
   }
 
@@ -891,9 +892,10 @@ class ConsumptionListPresenter {
 
     const saveButton = self._root.querySelector(".save-button");
     saveButton.addEventListener("click", (event) => {
-      self._save();
-      self._dialog.close();
       event.preventDefault();
+      if (self._save()) {
+        self._dialog.close();
+      }
     });
 
     const updateHints = () => {
@@ -1341,7 +1343,7 @@ class ConsumptionListPresenter {
 
     // Validate numeric inputs and get user confirmation for potentially invalid values
     if (!validateNumericInputs(self._dialog, "substance")) {
-      return; // User cancelled, stop save operation
+      return false; // User cancelled, stop save operation
     }
     let substance = self._parseObj();
 
@@ -1426,6 +1428,7 @@ class ConsumptionListPresenter {
     }
 
     self._onCodeObjUpdate(codeObj);
+    return true;
   }
 
   /**
@@ -1703,9 +1706,10 @@ class PolicyListPresenter {
 
     const saveButton = self._root.querySelector(".save-button");
     saveButton.addEventListener("click", (event) => {
-      self._save();
-      self._dialog.close();
       event.preventDefault();
+      if (self._save()) {
+        self._dialog.close();
+      }
     });
 
     const updateHints = () => {
@@ -2000,7 +2004,7 @@ class PolicyListPresenter {
 
     // Validate numeric inputs and get user confirmation for potentially invalid values
     if (!validateNumericInputs(self._dialog, "policy")) {
-      return; // User cancelled, stop save operation
+      return false; // User cancelled, stop save operation
     }
     let policy = self._parseObj();
 
@@ -2023,6 +2027,7 @@ class PolicyListPresenter {
     const codeObj = self._getCodeObj();
     codeObj.insertPolicy(self._editingName, policy);
     self._onCodeObjUpdate(codeObj);
+    return true;
   }
 
   /**
@@ -2169,9 +2174,10 @@ class SimulationListPresenter {
 
     const saveButton = self._root.querySelector(".save-button");
     saveButton.addEventListener("click", (event) => {
-      self._dialog.close();
-      self._save();
       event.preventDefault();
+      if (self._save()) {
+        self._dialog.close();
+      }
     });
   }
 
@@ -2258,12 +2264,12 @@ class SimulationListPresenter {
 
     // Validate numeric inputs and get user confirmation for potentially invalid values
     if (!validateNumericInputs(self._dialog, "simulation")) {
-      return; // User cancelled, stop save operation
+      return false; // User cancelled, stop save operation
     }
 
     // Validate simulation duration and warn about very long simulations
     if (!validateSimulationDuration(self._dialog)) {
-      return; // User cancelled, stop save operation
+      return false; // User cancelled, stop save operation
     }
     let scenario = self._parseObj();
 
@@ -2286,6 +2292,7 @@ class SimulationListPresenter {
     const codeObj = self._getCodeObj();
     codeObj.insertScenario(self._editingName, scenario);
     self._onCodeObjUpdate(codeObj);
+    return true;
   }
 
   /**
