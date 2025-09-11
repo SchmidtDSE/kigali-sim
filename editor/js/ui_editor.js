@@ -310,6 +310,45 @@ function validateNumericInputs(dialog, dialogType) {
   return confirm(message);
 }
 
+/**
+ * Validates simulation duration to warn about very long simulations.
+ *
+ * @param {HTMLElement} dialog - Dialog element containing start and end inputs.
+ * @returns {boolean} True if user confirms or duration is reasonable, false if cancelled.
+ * @private
+ */
+function validateSimulationDuration(dialog) {
+  const startInput = dialog.querySelector(".edit-simulation-start-input");
+  const endInput = dialog.querySelector(".edit-simulation-end-input");
+
+  if (!startInput || !endInput) {
+    return true; // If inputs not found, proceed
+  }
+
+  const startValue = startInput.value.trim();
+  const endValue = endInput.value.trim();
+
+  // Only check if both values are simple integers (no equations, etc.)
+  const isSimpleInteger = (value) => /^\d+$/.test(value);
+
+  if (!isSimpleInteger(startValue) || !isSimpleInteger(endValue)) {
+    return true; // Skip validation for non-simple integers
+  }
+
+  const startYear = parseInt(startValue, 10);
+  const endYear = parseInt(endValue, 10);
+  const duration = endYear - startYear;
+
+  if (duration > 1000) {
+    const message = `This simulation spans ${duration} years (${startYear} to ${endYear}), ` +
+      "which is over 1000 years.\n\n" +
+      "Do you want to continue with this duration?";
+
+    return confirm(message);
+  }
+
+  return true;
+}
 
 /**
  * Sets the state of a duration selection UI widget.
@@ -2218,6 +2257,11 @@ class SimulationListPresenter {
 
     // Validate numeric inputs and get user confirmation for potentially invalid values
     if (!validateNumericInputs(self._dialog, "simulation")) {
+      return; // User cancelled, stop save operation
+    }
+
+    // Validate simulation duration and warn about very long simulations
+    if (!validateSimulationDuration(self._dialog)) {
       return; // User cancelled, stop save operation
     }
     let scenario = self._parseObj();
