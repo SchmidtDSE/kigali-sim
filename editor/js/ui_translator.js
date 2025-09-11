@@ -3063,7 +3063,7 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
     if (!result.isSuccess()) {
       throw new Error(`Failed to parse number in QubecTalk expression: ${result.getError()}`);
     }
-    
+
     // Return an object with both the numeric value and original string
     // Use the full raw text which already includes the sign if present
     return {
@@ -3116,7 +3116,11 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
 
     // Handle the case where expressionContent might be an object with value and originalString
     if (typeof expressionContent === "object" && expressionContent.value !== undefined) {
-      return new EngineNumber(expressionContent.value, unitString, expressionContent.originalString);
+      return new EngineNumber(
+        expressionContent.value,
+        unitString,
+        expressionContent.originalString,
+      );
     } else {
       return new EngineNumber(expressionContent, unitString);
     }

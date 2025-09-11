@@ -1462,42 +1462,47 @@ function buildIntegrationTests() {
           const QubecTalkLexer = toolkit.QubecTalkLexer;
           const QubecTalkParser = toolkit.QubecTalkParser;
           const QubecTalkVisitor = toolkit.QubecTalkVisitor;
-          
+
           // Parse just the number part using the visitor approach
           const numberOnly = testCase.input; // Just the number part
           const chars = new antlr4.InputStream(numberOnly);
           const lexer = new QubecTalkLexer(chars);
           const tokens = new antlr4.CommonTokenStream(lexer);
           const parser = new QubecTalkParser(tokens);
-          
+
           // Parse as a number expression
           const numberCtx = parser.number();
-          
+
           // Create a visitor to extract the parsed result
           const visitor = new TranslatorVisitor();
           // Note: TranslatorVisitor already initializes with NumberParseUtil in constructor
-          
+
           // Visit the parsed tree
           const numberResult = numberCtx.accept(visitor);
-          
+
           // Check if we got the result in our new format (with originalString)
           if (typeof numberResult === "object" && numberResult.originalString !== undefined) {
             assert.strictEqual(
               numberResult.originalString,
               testCase.input,
-              `Round-trip should preserve formatting for ${testCase.description}: expected ${testCase.input}, got ${numberResult.originalString}`,
+              `Round-trip should preserve formatting for ${testCase.description}: ` +
+                `expected ${testCase.input}, got ${numberResult.originalString}`,
             );
           } else {
             // Fallback: at least check that numeric value is correct
             const expectedValue = parseFloat(testCase.input.replace(/[,+]/g, ""));
-            const actualValue = typeof numberResult === "object" ? numberResult.value : numberResult;
+            const actualValue = typeof numberResult === "object" ?
+              numberResult.value : numberResult;
             assert.closeTo(
               actualValue,
               expectedValue,
               0.0001,
               `At minimum, numeric value should be correct for ${testCase.description}`,
             );
-            console.warn(`Original string not preserved for ${testCase.description}, got:`, numberResult);
+            console.warn(
+              `Original string not preserved for ${testCase.description}, got:`,
+              numberResult,
+            );
           }
         } catch (error) {
           assert.ok(false, `Round-trip test failed for ${testCase.description}: ${error.message}`);
