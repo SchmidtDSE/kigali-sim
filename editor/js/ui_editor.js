@@ -2715,16 +2715,23 @@ class DuplicateEntityPresenter {
       self._dialog.showModal();
     });
 
-    // Entity type change handler - update source entity dropdown
+    // Entity type change handler - update source entity dropdown and equipment field visibility
     const entityTypeInput = self._dialog.querySelector(".duplicate-entity-type-input");
     entityTypeInput.addEventListener("change", () => {
       self._refreshEntityDropdown();
       self._updateNewNameSuggestion();
+      self._toggleEquipmentModelField();
     });
 
     // Source entity change handler - suggest new name
     const sourceEntityInput = self._dialog.querySelector(".duplicate-source-entity-input");
     sourceEntityInput.addEventListener("change", () => {
+      self._updateNewNameSuggestion();
+    });
+
+    // Equipment model change handler - update name suggestion
+    const equipmentModelInput = self._dialog.querySelector(".duplicate-equipment-model-input");
+    equipmentModelInput.addEventListener("input", () => {
       self._updateNewNameSuggestion();
     });
 
@@ -2776,6 +2783,13 @@ class DuplicateEntityPresenter {
         value: scenario.getName(),
       }));
       break;
+    case "substance":
+      entities = codeObj.getSubstances().map((substance) => ({
+        name: substance.getName(),
+        value: substance.getName(),
+        application: self._findSubstanceApplication(codeObj, substance.getName()),
+      }));
+      break;
     }
 
     // Add options to dropdown
@@ -2801,11 +2815,18 @@ class DuplicateEntityPresenter {
    */
   _updateNewNameSuggestion() {
     const self = this;
+    const entityType = self._dialog.querySelector(".duplicate-entity-type-input").value;
     const sourceEntity = self._dialog.querySelector(".duplicate-source-entity-input").value;
     const newNameInput = self._dialog.querySelector(".duplicate-new-name-input");
+    const equipmentModel = self._dialog.querySelector(".duplicate-equipment-model-input").value;
 
     if (sourceEntity && sourceEntity !== "") {
-      newNameInput.value = `${sourceEntity} Copy`;
+      if (entityType === "substance" && equipmentModel && equipmentModel.trim() !== "") {
+        // Generate compound name suggestion
+        newNameInput.value = `${sourceEntity} - ${equipmentModel.trim()}`;
+      } else {
+        newNameInput.value = `${sourceEntity} Copy`;
+      }
     }
   }
 
@@ -2842,6 +2863,9 @@ class DuplicateEntityPresenter {
         break;
       case "simulation":
         self._duplicateSimulation(codeObj, sourceEntityName, newName);
+        break;
+      case "substance":
+        self._duplicateSubstance(codeObj, sourceEntityName, newName);
         break;
       default:
         throw new Error(`Unknown entity type: ${entityType}`);
@@ -2949,6 +2973,82 @@ class DuplicateEntityPresenter {
     );
 
     codeObj.insertScenario(null, newSimulation);
+  }
+
+  /**
+   * Show/hide equipment model field based on entity type selection.
+   * @private
+   */
+  _toggleEquipmentModelField() {
+    const self = this;
+    const entityType = self._dialog.querySelector(".duplicate-entity-type-input").value;
+    const equipmentSection = self._dialog.querySelector(".equipment-model-section");
+
+    if (entityType === "substance") {
+      equipmentSection.style.display = "block";
+    } else {
+      equipmentSection.style.display = "none";
+      // Clear equipment model when not substance
+      self._dialog.querySelector(".duplicate-equipment-model-input").value = "";
+    }
+  }
+
+  /**
+   * Find which application contains a specific substance.
+   * @param {Program} codeObj - The program object
+   * @param {string} substanceName - Name of substance to find
+   * @returns {string} Application name containing the substance
+   * @private
+   */
+  _findSubstanceApplication(codeObj, substanceName) {
+    const applications = codeObj.getApplications();
+    for (const app of applications) {
+      if (app.getSubstances().some((sub) => sub.getName() === substanceName)) {
+        return app.getName();
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Duplicate a substance with optional equipment model for compound naming.
+   * @param {Program} codeObj - The program object to modify
+   * @param {string} sourceSubstanceName - Name of source substance
+   * @param {string} newName - Name for the duplicated substance (may be compound)
+   * @private
+   */
+  _duplicateSubstance(codeObj, sourceSubstanceName, newName) {
+    const self = this;
+
+    // Find the source substance across all applications
+    let sourceSubstance = null;
+    let sourceApplication = null;
+
+    for (const app of codeObj.getApplications()) {
+      const substance = app.getSubstances().find((sub) => sub.getName() === sourceSubstanceName);
+      if (substance) {
+        sourceSubstance = substance;
+        sourceApplication = app;
+        break;
+      }
+    }
+
+    if (!sourceSubstance || !sourceApplication) {
+      throw new Error(`Substance "${sourceSubstanceName}" not found`);
+    }
+
+    // Check for duplicate names
+    const existingSubstances = codeObj.getSubstances();
+    if (existingSubstances.some((sub) => sub.getName() === newName)) {
+      throw new Error(`Substance "${newName}" already exists`);
+    }
+
+    // Deep copy the substance with new name
+    const duplicatedSubstance = self._deepCopySubstance(sourceSubstance);
+    duplicatedSubstance._name = newName;
+
+    // Add to the same application as the source substance
+    sourceApplication.insertSubstance(null, duplicatedSubstance);
   }
 
   /**

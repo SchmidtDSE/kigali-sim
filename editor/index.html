@@ -207,6 +207,7 @@
               <option value="application" selected>Application</option>
               <option value="policy">Policy</option>
               <option value="simulation">Simulation</option>
+              <option value="substance">Substance</option>
             </select>
           </div>
           
@@ -220,6 +221,13 @@
           <div class="form-section">
             <label for="duplicate-new-name-input">New Name:</label>
             <input type="text" id="duplicate-new-name-input" class="duplicate-new-name-input" placeholder="Enter new name" />
+          </div>
+          
+          <div class="form-section equipment-model-section" style="display: none;">
+            <label for="duplicate-equipment-model-input">Equipment Model (optional):</label>
+            <input type="text" id="duplicate-equipment-model-input" class="duplicate-equipment-model-input" 
+                   placeholder="e.g., High Efficiency, Commercial Grade" />
+            <small class="field-help">Leave empty for simple substance name, or specify to create compound name (e.g., 'R-134a - High Efficiency')</small>
           </div>
           
           <div class="dialog-buttons bold-buttons">
@@ -1024,7 +1032,7 @@
                     Import / Export Substances
                   </a>
                   <a href="#duplicate-entity-dialog" class="secondary duplicate-entity-link" 
-                     data-tippy-content="Create a copy of an existing application, policy, or simulation with a new name">
+                     data-tippy-content="Create a copy of an existing application, policy, simulation, or substance with a new name">
                     Duplicate
                   </a>
                   <a href="#ai-designer-dialog" id="ai-designer-button" class="secondary" 
