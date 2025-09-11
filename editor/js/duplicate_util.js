@@ -575,7 +575,8 @@ class DuplicateEntityPresenter {
       targetNumber,
       valueNumber,
       yearMatcher,
-      sourceRecycleCommand.getDisplacing(),
+      sourceRecycleCommand.getStage(),
+      sourceRecycleCommand.getInduction(),
     );
   }
 

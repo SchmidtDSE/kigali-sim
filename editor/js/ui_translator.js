@@ -1955,6 +1955,22 @@ class Substance {
         "reuse",
       ];
 
+      // Add induction clause if specified
+      const induction = recycle.getInduction ? recycle.getInduction() : null;
+      if (induction !== null) {
+        pieces.push("with");
+        if (induction === "default") {
+          pieces.push("default");
+        } else if (induction instanceof EngineNumber) {
+          pieces.push(induction.getValue());
+          pieces.push(induction.getUnits());
+        } else {
+          // Handle string numbers or other formats
+          pieces.push(induction.toString());
+          pieces.push("%");
+        }
+        pieces.push("induction");
+      }
 
       const stage = recycle.getStage ? recycle.getStage() : "recharge";
       if (stage !== "recharge") {
