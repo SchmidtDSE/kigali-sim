@@ -26,9 +26,9 @@ function buildNumberParseUtilTests() {
       assert.ok(result.isSuccess(), "US format with thousands and decimal should succeed");
       assert.equal(result.getNumber(), 123456.78, "US format with thousands and decimal");
 
-      result = numberParser.parseFlexibleNumber("1,234");
-      assert.ok(result.isSuccess(), "US format thousands separator should succeed");
-      assert.equal(result.getNumber(), 1234, "US format thousands separator");
+      result = numberParser.parseFlexibleNumber("1,234.0");
+      assert.ok(result.isSuccess(), "US format thousands separator with .0 should succeed");
+      assert.equal(result.getNumber(), 1234.0, "US format thousands separator with .0");
 
       result = numberParser.parseFlexibleNumber("12,345,678.90");
       assert.ok(result.isSuccess(), "US format with multiple thousands should succeed");
@@ -80,9 +80,9 @@ function buildNumberParseUtilTests() {
       assert.ok(result.isSuccess(), "Negative integer should succeed");
       assert.equal(result.getNumber(), -123456, "Negative integer");
 
-      result = numberParser.parseFlexibleNumber("-1,234");
-      assert.ok(result.isSuccess(), "Negative thousands should succeed");
-      assert.equal(result.getNumber(), -1234, "Negative thousands");
+      result = numberParser.parseFlexibleNumber("-1,234.0");
+      assert.ok(result.isSuccess(), "Negative thousands with .0 should succeed");
+      assert.equal(result.getNumber(), -1234.0, "Negative thousands with .0");
     });
 
     QUnit.test("handles positive sign numbers correctly", function (assert) {
@@ -99,26 +99,27 @@ function buildNumberParseUtilTests() {
       assert.equal(result.getNumber(), 123456, "Positive integer");
     });
 
-    QUnit.test("handles likely thousands separator patterns", function (assert) {
+    QUnit.test("returns errors for more ambiguous cases", function (assert) {
+      // These cases are now treated as ambiguous following stricter parsing rules
       let result = numberParser.parseFlexibleNumber("1,000");
-      assert.ok(result.isSuccess(), "Classic thousands: 1,000 should succeed");
-      assert.equal(result.getNumber(), 1000, "Classic thousands: 1,000");
+      assert.ok(!result.isSuccess(), "Should fail for ambiguous case: 1,000");
+      assert.ok(result.getError().includes("Ambiguous number format"), "Should return ambiguous error for 1,000");
 
       result = numberParser.parseFlexibleNumber("10,000");
-      assert.ok(result.isSuccess(), "Classic thousands: 10,000 should succeed");
-      assert.equal(result.getNumber(), 10000, "Classic thousands: 10,000");
+      assert.ok(!result.isSuccess(), "Should fail for ambiguous case: 10,000");
+      assert.ok(result.getError().includes("Ambiguous number format"), "Should return ambiguous error for 10,000");
 
-      result = numberParser.parseFlexibleNumber("1000,000");
-      assert.ok(result.isSuccess(), "Large thousands pattern should succeed");
-      assert.equal(result.getNumber(), 1000000, "Large thousands pattern");
+      result = numberParser.parseFlexibleNumber("25,000");
+      assert.ok(!result.isSuccess(), "Should fail for ambiguous case: 25,000");
+      assert.ok(result.getError().includes("Ambiguous number format"), "Should return ambiguous error for 25,000");
 
       result = numberParser.parseFlexibleNumber("1.000");
-      assert.ok(result.isSuccess(), "European thousands: 1.000 should succeed");
-      assert.equal(result.getNumber(), 1000, "European thousands: 1.000");
+      assert.ok(!result.isSuccess(), "Should fail for ambiguous European case: 1.000");
+      assert.ok(result.getError().includes("Ambiguous number format"), "Should return ambiguous error for 1.000");
 
       result = numberParser.parseFlexibleNumber("10.000");
-      assert.ok(result.isSuccess(), "European thousands: 10.000 should succeed");
-      assert.equal(result.getNumber(), 10000, "European thousands: 10.000");
+      assert.ok(!result.isSuccess(), "Should fail for ambiguous European case: 10.000");
+      assert.ok(result.getError().includes("Ambiguous number format"), "Should return ambiguous error for 10.000");
     });
 
     QUnit.test("returns errors for ambiguous cases", function (assert) {
@@ -160,9 +161,9 @@ function buildNumberParseUtilTests() {
       assert.notOk(numberParser.isAmbiguous("123.456,78"), "123.456,78 should not be ambiguous");
       assert.notOk(numberParser.isAmbiguous("123456"), "123456 should not be ambiguous");
       assert.notOk(numberParser.isAmbiguous("123.45"), "123.45 should not be ambiguous");
-      assert.notOk(numberParser.isAmbiguous("1,234"), "1,234 should not be ambiguous (common thousands pattern)");
+      assert.ok(numberParser.isAmbiguous("1,234"), "1,234 should be ambiguous");
       assert.ok(numberParser.isAmbiguous("123,456"), "123,456 should be ambiguous");
-      assert.notOk(numberParser.isAmbiguous("10,000"), "10,000 should not be ambiguous (clear thousands)");
+      assert.ok(numberParser.isAmbiguous("10,000"), "10,000 should be ambiguous");
       assert.notOk(numberParser.isAmbiguous(""), "Empty string should not be ambiguous");
       assert.notOk(numberParser.isAmbiguous(null), "Null should not be ambiguous");
     });

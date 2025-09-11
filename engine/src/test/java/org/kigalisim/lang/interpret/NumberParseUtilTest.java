@@ -74,7 +74,7 @@ public class NumberParseUtilTest {
   public void testParseNegativeNumbers() {
     assertParseEquals(new BigDecimal("-123"), "-123");
     assertParseEquals(new BigDecimal("-123.45"), "-123.45");
-    assertParseEquals(new BigDecimal("-1000"), "-1,000");
+    assertParseEquals(new BigDecimal("-1000.0"), "-1,000.0");
   }
 
   /**
@@ -93,7 +93,7 @@ public class NumberParseUtilTest {
   public void testParseUsFormat() {
     assertParseEquals(new BigDecimal("123456.789"), "123,456.789");
     assertParseEquals(new BigDecimal("1234567"), "1,234,567");
-    assertParseEquals(new BigDecimal("1000"), "1,000");
+    assertParseEquals(new BigDecimal("1000.0"), "1,000.0");
   }
 
   /**
@@ -103,7 +103,7 @@ public class NumberParseUtilTest {
   public void testParseEuropeanFormat() {
     assertParseEquals(new BigDecimal("123456.789"), "123.456,789");
     assertParseEquals(new BigDecimal("1234567.89"), "1.234.567,89");
-    assertParseEquals(new BigDecimal("1000"), "1.000");
+    assertParseEquals(new BigDecimal("1000.0"), "1.000,0");
   }
 
   /**
@@ -206,8 +206,22 @@ public class NumberParseUtilTest {
   @Test
   public void testWhitespaceHandling() {
     assertParseEquals(new BigDecimal("123.45"), "  123.45  ");
-    assertParseEquals(new BigDecimal("1000"), "  1,000  ");
+    assertParseEquals(new BigDecimal("1000.0"), "  1,000.0  ");
     assertParseEquals(new BigDecimal("-123.45"), "  -123.45  ");
+  }
+
+  /**
+   * Test that ambiguous number formats trigger appropriate errors.
+   */
+  @Test
+  public void testAmbiguousNumberFormats() {
+    // These patterns are ambiguous and should trigger errors
+    assertParseFails("1,000");     // Could be 1000 or 1.000
+    assertParseFails("25,000");    // Could be 25000 or 25.000
+    assertParseFails("1.000");     // Could be 1000 or 1.000 decimal
+    assertParseFails("25.000");    // Could be 25000 or 25.000 decimal
+    assertParseFails("123,456");   // Could be 123456 or 123.456
+    assertParseFails("123.456");   // Could be 123456 or 123.456 decimal
   }
 
   /**
