@@ -772,8 +772,109 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
     return new OperationFragment(operation);
   }
 
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public Fragment visitRecoverInductionAllYears(QubecTalkParser.RecoverInductionAllYearsContext ctx) {
+    Operation volumeOperation = visit(ctx.volume).getOperation();
+    Operation yieldOperation = visit(ctx.yieldVal).getOperation();
+    Operation inductionOperation = visit(ctx.inductionVal).getOperation();
+    Operation operation = new RecoverOperation(volumeOperation, yieldOperation, Optional.of(inductionOperation));
+    return new OperationFragment(operation);
+  }
 
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public Fragment visitRecoverInductionDuration(QubecTalkParser.RecoverInductionDurationContext ctx) {
+    Operation volumeOperation = visit(ctx.volume).getOperation();
+    Operation yieldOperation = visit(ctx.yieldVal).getOperation();
+    Operation inductionOperation = visit(ctx.inductionVal).getOperation();
+    ParsedDuring during = visit(ctx.duration).getDuring();
+    Operation operation = new RecoverOperation(volumeOperation, yieldOperation, during, Optional.of(inductionOperation));
+    return new OperationFragment(operation);
+  }
 
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public Fragment visitRecoverInductionStageAllYears(QubecTalkParser.RecoverInductionStageAllYearsContext ctx) {
+    Operation volumeOperation = visit(ctx.volume).getOperation();
+    Operation yieldOperation = visit(ctx.yieldVal).getOperation();
+    Operation inductionOperation = visit(ctx.inductionVal).getOperation();
+    RecoveryStage stage = parseRecoveryStage(ctx.stage);
+    Operation operation = new RecoverOperation(volumeOperation, yieldOperation, stage, Optional.of(inductionOperation));
+    return new OperationFragment(operation);
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public Fragment visitRecoverInductionStageDuration(QubecTalkParser.RecoverInductionStageDurationContext ctx) {
+    Operation volumeOperation = visit(ctx.volume).getOperation();
+    Operation yieldOperation = visit(ctx.yieldVal).getOperation();
+    Operation inductionOperation = visit(ctx.inductionVal).getOperation();
+    ParsedDuring during = visit(ctx.duration).getDuring();
+    RecoveryStage stage = parseRecoveryStage(ctx.stage);
+    Operation operation = new RecoverOperation(volumeOperation, yieldOperation, during, stage, Optional.of(inductionOperation));
+    return new OperationFragment(operation);
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public Fragment visitRecoverDefaultInductionAllYears(QubecTalkParser.RecoverDefaultInductionAllYearsContext ctx) {
+    Operation volumeOperation = visit(ctx.volume).getOperation();
+    Operation yieldOperation = visit(ctx.yieldVal).getOperation();
+    // Use Optional.empty() for default induction behavior
+    Operation operation = new RecoverOperation(volumeOperation, yieldOperation, Optional.empty());
+    return new OperationFragment(operation);
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public Fragment visitRecoverDefaultInductionDuration(QubecTalkParser.RecoverDefaultInductionDurationContext ctx) {
+    Operation volumeOperation = visit(ctx.volume).getOperation();
+    Operation yieldOperation = visit(ctx.yieldVal).getOperation();
+    ParsedDuring during = visit(ctx.duration).getDuring();
+    // Use Optional.empty() for default induction behavior
+    Operation operation = new RecoverOperation(volumeOperation, yieldOperation, during, Optional.empty());
+    return new OperationFragment(operation);
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public Fragment visitRecoverDefaultInductionStageAllYears(QubecTalkParser.RecoverDefaultInductionStageAllYearsContext ctx) {
+    Operation volumeOperation = visit(ctx.volume).getOperation();
+    Operation yieldOperation = visit(ctx.yieldVal).getOperation();
+    RecoveryStage stage = parseRecoveryStage(ctx.stage);
+    // Use Optional.empty() for default induction behavior
+    Operation operation = new RecoverOperation(volumeOperation, yieldOperation, stage, Optional.empty());
+    return new OperationFragment(operation);
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public Fragment visitRecoverDefaultInductionStageDuration(QubecTalkParser.RecoverDefaultInductionStageDurationContext ctx) {
+    Operation volumeOperation = visit(ctx.volume).getOperation();
+    Operation yieldOperation = visit(ctx.yieldVal).getOperation();
+    ParsedDuring during = visit(ctx.duration).getDuring();
+    RecoveryStage stage = parseRecoveryStage(ctx.stage);
+    // Use Optional.empty() for default induction behavior
+    Operation operation = new RecoverOperation(volumeOperation, yieldOperation, during, stage, Optional.empty());
+    return new OperationFragment(operation);
+  }
 
   /**
    * {@inheritDoc}

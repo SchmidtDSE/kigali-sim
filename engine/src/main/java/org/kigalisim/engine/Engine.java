@@ -335,6 +335,13 @@ public interface Engine {
   void recycle(EngineNumber recoveryWithUnits, EngineNumber yieldWithUnits,
       YearMatcher yearMatcher, RecoveryStage stage);
 
+  /**
+   * Set the induction rate for recycling operations.
+   *
+   * @param inductionRate The induction rate as a percentage in decimal form (0.0-1.0),
+   *                      or Optional.empty() for default behavior
+   */
+  void setInductionRate(Optional<Double> inductionRate);
 
   /**
    * Set GHG equivalency for the current application and substance.

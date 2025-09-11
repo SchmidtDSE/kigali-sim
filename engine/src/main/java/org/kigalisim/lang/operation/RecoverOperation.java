@@ -38,6 +38,7 @@ public class RecoverOperation implements Operation {
   private final Operation yieldOperation;
   private final Optional<ParsedDuring> duringMaybe;
   private final RecoveryStage stage;
+  private final Optional<Operation> inductionOperation;
 
   /**
    * Create a new RecoverOperation that applies to all years.
@@ -50,6 +51,7 @@ public class RecoverOperation implements Operation {
     this.yieldOperation = yieldOperation;
     this.duringMaybe = Optional.empty();
     this.stage = RecoveryStage.RECHARGE;
+    this.inductionOperation = Optional.empty();
   }
 
   /**
@@ -64,6 +66,7 @@ public class RecoverOperation implements Operation {
     this.yieldOperation = yieldOperation;
     this.duringMaybe = Optional.empty();
     this.stage = stage;
+    this.inductionOperation = Optional.empty();
   }
 
 
@@ -80,6 +83,7 @@ public class RecoverOperation implements Operation {
     this.yieldOperation = yieldOperation;
     this.duringMaybe = Optional.of(during);
     this.stage = RecoveryStage.RECHARGE;
+    this.inductionOperation = Optional.empty();
   }
 
   /**
@@ -95,9 +99,72 @@ public class RecoverOperation implements Operation {
     this.yieldOperation = yieldOperation;
     this.duringMaybe = Optional.of(during);
     this.stage = stage;
+    this.inductionOperation = Optional.empty();
   }
 
+  /**
+   * Create a new RecoverOperation that applies to all years with induction.
+   *
+   * @param volumeOperation The operation that calculates the recovery amount.
+   * @param yieldOperation The operation that calculates the yield rate.
+   * @param inductionOperation The operation that calculates the induction rate (Optional.empty() for default).
+   */
+  public RecoverOperation(Operation volumeOperation, Operation yieldOperation, Optional<Operation> inductionOperation) {
+    this.volumeOperation = volumeOperation;
+    this.yieldOperation = yieldOperation;
+    this.duringMaybe = Optional.empty();
+    this.stage = RecoveryStage.RECHARGE;
+    this.inductionOperation = inductionOperation;
+  }
 
+  /**
+   * Create a new RecoverOperation that applies to all years with stage and induction.
+   *
+   * @param volumeOperation The operation that calculates the recovery amount.
+   * @param yieldOperation The operation that calculates the yield rate.
+   * @param stage The recovery stage (EOL or RECHARGE).
+   * @param inductionOperation The operation that calculates the induction rate (Optional.empty() for default).
+   */
+  public RecoverOperation(Operation volumeOperation, Operation yieldOperation, RecoveryStage stage, Optional<Operation> inductionOperation) {
+    this.volumeOperation = volumeOperation;
+    this.yieldOperation = yieldOperation;
+    this.duringMaybe = Optional.empty();
+    this.stage = stage;
+    this.inductionOperation = inductionOperation;
+  }
+
+  /**
+   * Create a new RecoverOperation that applies to a specific time period with induction.
+   *
+   * @param volumeOperation The operation that calculates the recovery amount.
+   * @param yieldOperation The operation that calculates the yield rate.
+   * @param during The time period during which this operation applies.
+   * @param inductionOperation The operation that calculates the induction rate (Optional.empty() for default).
+   */
+  public RecoverOperation(Operation volumeOperation, Operation yieldOperation, ParsedDuring during, Optional<Operation> inductionOperation) {
+    this.volumeOperation = volumeOperation;
+    this.yieldOperation = yieldOperation;
+    this.duringMaybe = Optional.of(during);
+    this.stage = RecoveryStage.RECHARGE;
+    this.inductionOperation = inductionOperation;
+  }
+
+  /**
+   * Create a new RecoverOperation that applies to a specific time period with stage and induction.
+   *
+   * @param volumeOperation The operation that calculates the recovery amount.
+   * @param yieldOperation The operation that calculates the yield rate.
+   * @param during The time period during which this operation applies.
+   * @param stage The recovery stage (EOL or RECHARGE).
+   * @param inductionOperation The operation that calculates the induction rate (Optional.empty() for default).
+   */
+  public RecoverOperation(Operation volumeOperation, Operation yieldOperation, ParsedDuring during, RecoveryStage stage, Optional<Operation> inductionOperation) {
+    this.volumeOperation = volumeOperation;
+    this.yieldOperation = yieldOperation;
+    this.duringMaybe = Optional.of(during);
+    this.stage = stage;
+    this.inductionOperation = inductionOperation;
+  }
 
   /**
    * Get the recovery stage.
@@ -112,11 +179,24 @@ public class RecoverOperation implements Operation {
   public void execute(PushDownMachine machine) {
     // Execute the volume operation to get the recovery amount
     volumeOperation.execute(machine);
-    EngineNumber recoveryAmount = machine.getResult();
+    final EngineNumber recoveryAmount = machine.getResult();
 
     // Execute the yield operation to get the yield rate
     yieldOperation.execute(machine);
-    EngineNumber yieldRate = machine.getResult();
+    final EngineNumber yieldRate = machine.getResult();
+
+    // Execute the induction operation if present
+    Optional<Double> inductionRate = Optional.empty();
+    if (inductionOperation.isPresent()) {
+      inductionOperation.get().execute(machine);
+      EngineNumber inductionValue = machine.getResult();
+      // Validate that the induction value is a percentage (0-100%)
+      double induction = inductionValue.getValue().doubleValue();
+      if (induction < 0 || induction > 100) {
+        throw new IllegalArgumentException("Induction rate must be between 0% and 100%, got: " + induction + "%");
+      }
+      inductionRate = Optional.of(induction / 100.0); // Convert percentage to decimal
+    }
 
     // Build the year matcher
     ParsedDuring parsedDuring = duringMaybe.orElseGet(
@@ -124,8 +204,11 @@ public class RecoverOperation implements Operation {
     );
     YearMatcher yearMatcher = parsedDuring.buildYearMatcher(machine);
 
-    // Call the recycle method on the engine
+    // Get the engine and set the induction rate
     Engine engine = machine.getEngine();
+    engine.setInductionRate(inductionRate);
+
+    // Call the recycle method on the engine
     engine.recycle(recoveryAmount, yieldRate, yearMatcher, stage);
   }
 }

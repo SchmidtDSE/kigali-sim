@@ -8,7 +8,6 @@ package org.kigalisim.validate;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
@@ -947,6 +946,77 @@ public class RecycleRecoverLiveTests {
           + ") should equal Recycle equipment population (" + recycleEquipment
           + ") in single-stream volume-based scenario. Loss of recycling should be back-filled by virgin material.");
     }
+  }
+
+  /**
+   * Test parsing of recover statements with induction rates - parsing only, not values.
+   * Following the pattern of existing parsing tests for recover statements.
+   */
+  @Test
+  public void testRecoverInductionParsing() throws IOException {
+    // Test explicit percentage induction
+    String qtaCode = """
+        start default
+          define application "test"
+            uses substance "test"
+              enable domestic
+              set domestic to 100 kg
+              recover 50 % with 90 % reuse with 25 % induction during year 2
+            end substance
+          end application
+        end default
+        start simulations
+          simulate "result" using "default" from years 1 to 2
+        end simulations
+        """;
+
+    // Parse the program - should succeed without throwing exceptions
+    var parseResult = KigaliSimFacade.parse(qtaCode);
+    assertNotNull(parseResult, "Parse result should not be null");
+    ParsedProgram program = KigaliSimFacade.interpret(parseResult);
+    assertNotNull(program, "Program with explicit induction should parse successfully");
+
+    // Test default induction
+    String qtaCodeDefault = """
+        start default
+          define application "test"
+            uses substance "test"
+              enable domestic
+              set domestic to 100 kg
+              recover 50 % with 90 % reuse with default induction during year 2
+            end substance
+          end application
+        end default
+        start simulations
+          simulate "result" using "default" from years 1 to 2
+        end simulations
+        """;
+
+    var parseResultDefault = KigaliSimFacade.parse(qtaCodeDefault);
+    assertNotNull(parseResultDefault, "Parse result should not be null");
+    ParsedProgram programDefault = KigaliSimFacade.interpret(parseResultDefault);
+    assertNotNull(programDefault, "Program with default induction should parse successfully");
+
+    // Test backward compatibility - no induction clause
+    String qtaCodeCompat = """
+        start default
+          define application "test"
+            uses substance "test"
+              enable domestic
+              set domestic to 100 kg
+              recover 50 % with 90 % reuse during year 2
+            end substance
+          end application
+        end default
+        start simulations
+          simulate "result" using "default" from years 1 to 2
+        end simulations
+        """;
+
+    var parseResultCompat = KigaliSimFacade.parse(qtaCodeCompat);
+    assertNotNull(parseResultCompat, "Parse result should not be null");
+    ParsedProgram programCompat = KigaliSimFacade.interpret(parseResultCompat);
+    assertNotNull(programCompat, "Program without induction should parse successfully (backward compatibility)");
   }
 
 }

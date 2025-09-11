@@ -690,6 +690,22 @@ public class SingleThreadEngine implements Engine {
     updateLastSpecifiedValueAfterRecycling();
   }
 
+  @Override
+  public void setInductionRate(Optional<Double> inductionRate) {
+    // For now, this is a placeholder implementation
+    // The actual induction logic will be implemented in Components 3-4
+    // This method just stores the induction rate for future use
+    if (inductionRate.isPresent()) {
+      // Validate the induction rate is between 0 and 1
+      double rate = inductionRate.get();
+      if (rate < 0.0 || rate > 1.0) {
+        throw new IllegalArgumentException("Induction rate must be between 0.0 and 1.0, got: " + rate);
+      }
+    }
+    // TODO: Store induction rate in appropriate state for later use by recalculation strategies
+    // This will be implemented in Components 3-4 when the actual induction logic is added
+  }
+
 
   @Override
   public void equals(EngineNumber amount, YearMatcher yearMatcher) {

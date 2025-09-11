@@ -2799,13 +2799,16 @@ class RecycleCommand {
    * @param {EngineNumber} value - Reuse amount and units.
    * @param {YearMatcher} duration - Duration of recovery.
    * @param {string} stage - Recycling stage ("eol" or "recharge").
+   * @param {EngineNumber|string|null} induction - Induction amount, "default", or null for
+   *   backward compatibility.
    */
-  constructor(target, value, duration, stage) {
+  constructor(target, value, duration, stage, induction = null) {
     const self = this;
     self._target = target;
     self._value = value;
     self._duration = duration;
     self._stage = stage;
+    self._induction = induction;
   }
 
   /**
@@ -2857,6 +2860,16 @@ class RecycleCommand {
   getStage() {
     const self = this;
     return self._stage;
+  }
+
+  /**
+   * Get the induction rate for this recycle command.
+   *
+   * @returns {EngineNumber|string|null} The induction amount, "default", or null if not specified.
+   */
+  getInduction() {
+    const self = this;
+    return self._induction;
   }
 
   /**
@@ -3682,6 +3695,121 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
     return new RecycleCommand(volume, yieldVal, duration, stage);
   }
 
+  /**
+   * Visit a recover command with explicit induction and all years duration node.
+   *
+   * @param {Object} ctx - The parse tree node context.
+   * @returns {RecycleCommand} New recycle command with induction.
+   */
+  visitRecoverInductionAllYears(ctx) {
+    const self = this;
+    const volume = ctx.volume.accept(self);
+    const yieldVal = ctx.yieldVal.accept(self);
+    const inductionVal = ctx.inductionVal.accept(self);
+    return new RecycleCommand(volume, yieldVal, null, "recharge", inductionVal);
+  }
+
+  /**
+   * Visit a recover command with explicit induction and duration node.
+   *
+   * @param {Object} ctx - The parse tree node context.
+   * @returns {RecycleCommand} New recycle command with induction and duration.
+   */
+  visitRecoverInductionDuration(ctx) {
+    const self = this;
+    const volume = ctx.volume.accept(self);
+    const yieldVal = ctx.yieldVal.accept(self);
+    const inductionVal = ctx.inductionVal.accept(self);
+    const duration = ctx.duration.accept(self);
+    return new RecycleCommand(volume, yieldVal, duration, "recharge", inductionVal);
+  }
+
+  /**
+   * Visit a recover command with explicit induction, stage and all years duration node.
+   *
+   * @param {Object} ctx - The parse tree node context.
+   * @returns {RecycleCommand} New recycle command with induction and stage.
+   */
+  visitRecoverInductionStageAllYears(ctx) {
+    const self = this;
+    const volume = ctx.volume.accept(self);
+    const yieldVal = ctx.yieldVal.accept(self);
+    const inductionVal = ctx.inductionVal.accept(self);
+    const stage = ctx.stage.text;
+    return new RecycleCommand(volume, yieldVal, null, stage, inductionVal);
+  }
+
+  /**
+   * Visit a recover command with explicit induction, stage and duration node.
+   *
+   * @param {Object} ctx - The parse tree node context.
+   * @returns {RecycleCommand} New recycle command with induction, stage and duration.
+   */
+  visitRecoverInductionStageDuration(ctx) {
+    const self = this;
+    const volume = ctx.volume.accept(self);
+    const yieldVal = ctx.yieldVal.accept(self);
+    const inductionVal = ctx.inductionVal.accept(self);
+    const stage = ctx.stage.text;
+    const duration = ctx.duration.accept(self);
+    return new RecycleCommand(volume, yieldVal, duration, stage, inductionVal);
+  }
+
+  /**
+   * Visit a recover command with default induction and all years duration node.
+   *
+   * @param {Object} ctx - The parse tree node context.
+   * @returns {RecycleCommand} New recycle command with default induction.
+   */
+  visitRecoverDefaultInductionAllYears(ctx) {
+    const self = this;
+    const volume = ctx.volume.accept(self);
+    const yieldVal = ctx.yieldVal.accept(self);
+    return new RecycleCommand(volume, yieldVal, null, "recharge", "default");
+  }
+
+  /**
+   * Visit a recover command with default induction and duration node.
+   *
+   * @param {Object} ctx - The parse tree node context.
+   * @returns {RecycleCommand} New recycle command with default induction and duration.
+   */
+  visitRecoverDefaultInductionDuration(ctx) {
+    const self = this;
+    const volume = ctx.volume.accept(self);
+    const yieldVal = ctx.yieldVal.accept(self);
+    const duration = ctx.duration.accept(self);
+    return new RecycleCommand(volume, yieldVal, duration, "recharge", "default");
+  }
+
+  /**
+   * Visit a recover command with default induction, stage and all years duration node.
+   *
+   * @param {Object} ctx - The parse tree node context.
+   * @returns {RecycleCommand} New recycle command with default induction and stage.
+   */
+  visitRecoverDefaultInductionStageAllYears(ctx) {
+    const self = this;
+    const volume = ctx.volume.accept(self);
+    const yieldVal = ctx.yieldVal.accept(self);
+    const stage = ctx.stage.text;
+    return new RecycleCommand(volume, yieldVal, null, stage, "default");
+  }
+
+  /**
+   * Visit a recover command with default induction, stage and duration node.
+   *
+   * @param {Object} ctx - The parse tree node context.
+   * @returns {RecycleCommand} New recycle command with default induction, stage and duration.
+   */
+  visitRecoverDefaultInductionStageDuration(ctx) {
+    const self = this;
+    const volume = ctx.volume.accept(self);
+    const yieldVal = ctx.yieldVal.accept(self);
+    const stage = ctx.stage.text;
+    const duration = ctx.duration.accept(self);
+    return new RecycleCommand(volume, yieldVal, duration, stage, "default");
+  }
 
   /**
    * Visit a replace command with all years duration node.

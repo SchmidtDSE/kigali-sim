@@ -1403,6 +1403,48 @@ function buildIntegrationTests() {
             "Recharge emissions should be in tCO2e");
         },
       ]);
+
+    buildTest("tests recover with induction parsing",
+      "data:text/plain;charset=utf-8," + encodeURIComponent(`
+start default
+  define application "test"
+    uses substance "test"
+      enable domestic
+      set domestic to 100 kg
+      recover 50 % with 90 % reuse with 25 % induction during year 2
+    end substance
+  end application
+end default
+start simulations
+  simulate "result" using "default" from years 1 to 2
+end simulations
+`), [
+        (result, assert) => {
+        // Just verify parsing succeeds - not testing values at this stage
+          assert.ok(result.length > 0, "Should parse recover statement with induction");
+        },
+      ]);
+
+    buildTest("tests recover with default induction parsing",
+      "data:text/plain;charset=utf-8," + encodeURIComponent(`
+start default
+  define application "test"
+    uses substance "test"
+      enable domestic
+      set domestic to 100 kg
+      recover 50 % with 90 % reuse with default induction during year 2
+    end substance
+  end application
+end default
+start simulations
+  simulate "result" using "default" from years 1 to 2
+end simulations
+`), [
+        (result, assert) => {
+        // Just verify parsing succeeds - not testing values at this stage
+          assert.ok(result.length > 0, "Should parse recover statement with default induction");
+        },
+      ]);
   });
 }
 
