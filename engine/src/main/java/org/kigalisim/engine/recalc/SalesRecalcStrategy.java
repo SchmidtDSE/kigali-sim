@@ -127,8 +127,8 @@ public class SalesRecalcStrategy implements RecalcStrategy {
     // Get distribution using centralized method
     SalesStreamDistribution distribution = streamKeeper.getDistribution(scopeEffective);
 
-    BigDecimal percentDomestic = distribution.getPercentDomestic();
-    BigDecimal percentImport = distribution.getPercentImport();
+    final BigDecimal percentDomestic = distribution.getPercentDomestic();
+    final BigDecimal percentImport = distribution.getPercentImport();
 
     // Set individual recycling streams
     EngineNumber newRecycleEolValue = new EngineNumber(eolRecycledKg, "kg");
@@ -154,10 +154,34 @@ public class SalesRecalcStrategy implements RecalcStrategy {
     BigDecimal requiredKg = totalDemand
         .subtract(implicitRechargeKg);
 
-    BigDecimal newDomesticKg = percentDomestic.multiply(requiredKg);
-    BigDecimal newImportKg = percentImport.multiply(requiredKg);
-
+    // Calculate induced demand based on induction rate for unit-based specifications
+    BigDecimal inducedDemandKg = BigDecimal.ZERO;
     boolean hasUnitBasedSpecs = getHasUnitBasedSpecs(streamKeeper, scopeEffective, implicitRechargeKg);
+
+    if (hasUnitBasedSpecs) {
+      // Get induction rate (default is 0% for displacement behavior)
+      EngineNumber inductionRateEol = streamKeeper.getInductionRate(scopeEffective, RecoveryStage.EOL);
+      EngineNumber inductionRateRecharge = streamKeeper.getInductionRate(scopeEffective, RecoveryStage.RECHARGE);
+
+      // Convert induction rates to ratios
+      BigDecimal inductionRatioEol = inductionRateEol.getValue().divide(
+          BigDecimal.valueOf(100), java.math.MathContext.DECIMAL128);
+      BigDecimal inductionRatioRecharge = inductionRateRecharge.getValue().divide(
+          BigDecimal.valueOf(100), java.math.MathContext.DECIMAL128);
+
+      // Calculate induced demand for each stage
+      BigDecimal eolInducedKg = eolRecycledKg.multiply(inductionRatioEol);
+      BigDecimal rechargeInducedKg = rechargeRecycledKg.multiply(inductionRatioRecharge);
+
+      // Total induced demand
+      inducedDemandKg = eolInducedKg.add(rechargeInducedKg);
+    }
+
+    // Add induced demand to required kg for unit-based specifications
+    BigDecimal totalRequiredKg = requiredKg.add(inducedDemandKg);
+
+    BigDecimal newDomesticKg = percentDomestic.multiply(totalRequiredKg);
+    BigDecimal newImportKg = percentImport.multiply(totalRequiredKg);
 
     if (hasUnitBasedSpecs) {
       // Convert back to units to preserve user intent
