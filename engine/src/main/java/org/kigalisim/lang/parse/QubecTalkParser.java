@@ -26,13 +26,39 @@ import org.kigalisim.lang.QubecTalkParser.ProgramContext;
 public class QubecTalkParser {
 
   /**
+   * Preprocesses QubecTalk input to handle "each year" syntax sugar.
+   * 
+   * <p>Removes standalone "each year" or "each years" at the end of lines to prevent
+   * parser ambiguity while preserving them within "during" clauses.</p>
+   *
+   * <p>Handles cases like:</p>
+   * <ul>
+   *   <li>"retire 5 % each year" → "retire 5 %"</li>
+   *   <li>"recharge 10 % with 0.15 kg / unit each year" → "recharge 10 % with 0.15 kg / unit"</li>
+   * </ul>
+   *
+   * <p>But preserves:</p>
+   * <ul>
+   *   <li>"change domestic by +5 % each year during years 2025 to 2035" (unchanged)</li>
+   * </ul>
+   *
+   * @param input The raw QubecTalk code
+   * @return The preprocessed QubecTalk code
+   */
+  private String preprocessInput(String input) {
+    // Remove "each year" or "each years" at end of lines, but preserve in "during" clauses
+    // Uses multiline mode (?m) to match end-of-line anchors correctly
+    return input.replaceAll("(?m)\\s+each\\s+years?\\s*$", "");
+  }
+
+  /**
    * Attempt to parse a QubecTalk source.
    *
    * @param inputCode The code to parse.
    * @return a parse result which may contain error information.
    */
   public ParseResult parse(String inputCode) {
-    CharStream input = CharStreams.fromString(inputCode);
+    CharStream input = CharStreams.fromString(preprocessInput(inputCode));
     QubecTalkLexer lexer = new QubecTalkLexer(input);
     // Remove default error listeners that print to console
     lexer.removeErrorListeners();

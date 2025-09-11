@@ -682,4 +682,43 @@ public class BasicLiveTests {
     assertTrue(policyException.getMessage().contains("found in program"),
         "Policy error message should include context");
   }
+
+  /**
+   * Test that "each year" syntax preprocessing works correctly with a complete QTA file.
+   * 
+   * <p>This test validates that the preprocessing solution correctly handles standalone 
+   * "each year" syntax at the end of statements while preserving valid "during each year" 
+   * clauses within temporal ranges.</p>
+   */
+  @Test
+  public void testEachYearSyntaxPreprocessing() throws IOException {
+    // Load and parse the QTA file that contains "each year" syntax
+    String qtaPath = "../examples/each_year_syntax_test.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null for each year syntax");
+
+    // Run the scenario using KigaliSimFacade
+    String scenarioName = "Each Year Test";
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
+    List<EngineResult> resultsList = results.collect(Collectors.toList());
+
+    // Test that simulation completed successfully
+    assertTrue(resultsList.size() > 0, "Should have simulation results");
+
+    // Test specific functionality - validate that retire and recharge commands work
+    EngineResult result2025 = LiveTestsUtil.getResult(resultsList.stream(), 2025, "domestic equipment", "HFC-134a");
+    assertNotNull(result2025, "Should find result for 2025");
+    
+    // Check that domestic value is reasonable (should be 25000 kg as set in the QTA file)  
+    assertTrue(result2025.getDomestic().getValue().compareTo(new java.math.BigDecimal("20000")) > 0, 
+        "Domestic should be greater than 20000 kg");
+    assertTrue(result2025.getDomestic().getValue().compareTo(new java.math.BigDecimal("30000")) < 0, 
+        "Domestic should be less than 30000 kg");
+    assertEquals("kg", result2025.getDomestic().getUnits(), "Domestic units should be kg");
+
+    // Test that population tracking works (indicating retire command processed correctly)
+    assertTrue(result2025.getPopulation().getValue().compareTo(java.math.BigDecimal.ZERO) > 0, 
+        "Population should be positive");
+    assertEquals("units", result2025.getPopulation().getUnits(), "Population units should be units");
+  }
 }
