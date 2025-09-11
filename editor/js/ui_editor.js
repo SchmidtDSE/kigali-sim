@@ -3394,12 +3394,18 @@ function initRecycleCommandUi(itemObj, root, codeObj, context, streamUpdater) {
     (x) => {
       if (x && x.getInduction) {
         const induction = x.getInduction();
-        if (induction === null) return "default";
-        if (induction === "default") return "default";
-        if (induction instanceof EngineNumber) return induction.getValue().toString();
-        return induction.toString();
+        if (induction === null) {
+          return "default";
+        } else if (induction === "default") {
+          return "default";
+        } else if (induction instanceof EngineNumber) {
+          return induction.getValue().toString();
+        } else {
+          return induction.toString();
+        }
+      } else {
+        return "default";
       }
-      return "default";
     },
   );
   setFieldValue(root.querySelector(".recycle-stage-input"), itemObj, "recharge", (x) =>

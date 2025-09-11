@@ -1381,9 +1381,8 @@ function buildIntegrationTests() {
       },
     ]);
 
-    // TODO: Temporarily disabled due to unit parsing issue with "each year" syntax
-    // The UnitConverter cannot handle "kg/uniteachyear" - same issue as Java test
-    /* buildTest("supports optional each year syntax",
+    // Re-enabled: unit parsing issue with "each year" syntax appears to be resolved
+    buildTest("supports optional each year syntax",
       "/examples/each_year_syntax_test.qta", [
         (result, assert) => {
           const record = getResult(result, "Each Year Test", 2025, 0,
@@ -1404,44 +1403,16 @@ function buildIntegrationTests() {
           assert.deepEqual(rechargeEmissions.getUnits(), "tCO2e",
             "Recharge emissions should be in tCO2e");
         },
-      ]); */
+      ]);
 
-    buildTest("tests recover with induction parsing",
-      "data:text/plain;charset=utf-8," + encodeURIComponent(`
-start default
-  define application "test"
-    uses substance "test"
-      enable domestic
-      set domestic to 100 kg
-      recover 50 % with 90 % reuse with 25 % induction during year 2
-    end substance
-  end application
-end default
-start simulations
-  simulate "result" using "default" from years 1 to 2
-end simulations
-`), [
+    buildTest("tests recover with induction parsing", "/examples/recover_induction_parsing.qta", [
         (result, assert) => {
         // Just verify parsing succeeds - not testing values at this stage
           assert.ok(result.length > 0, "Should parse recover statement with induction");
         },
       ]);
 
-    buildTest("tests recover with default induction parsing",
-      "data:text/plain;charset=utf-8," + encodeURIComponent(`
-start default
-  define application "test"
-    uses substance "test"
-      enable domestic
-      set domestic to 100 kg
-      recover 50 % with 90 % reuse with default induction during year 2
-    end substance
-  end application
-end default
-start simulations
-  simulate "result" using "default" from years 1 to 2
-end simulations
-`), [
+    buildTest("tests recover with default induction parsing", "/examples/recover_default_induction_parsing.qta", [
         (result, assert) => {
         // Just verify parsing succeeds - not testing values at this stage
           assert.ok(result.length > 0, "Should parse recover statement with default induction");
