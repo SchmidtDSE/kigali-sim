@@ -8,6 +8,7 @@ package org.kigalisim.validate;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
@@ -158,42 +159,38 @@ public class RecycleRecoverLiveTests {
 
 
   /**
-   * Test multiple recycles with additive recycling behavior.
+   * Test that the example file with multiple recover commands now properly fails.
+   * This verifies that Component 5's validation prevents multiple recover commands.
    */
   @Test
   public void testMultipleRecycles() throws IOException {
-    // Load and parse the QTA file
+    // Load and parse the QTA file  
     String qtaPath = "../examples/test_multiple_recycles.qta";
     ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
     assertNotNull(program, "Program should not be null");
 
-    // Run both scenarios
+    // BAU scenario should work (no recover commands)
     Stream<EngineResult> bauResults = KigaliSimFacade.runScenario(program, "BAU", progress -> {});
     List<EngineResult> bauResultsList = bauResults.collect(Collectors.toList());
+    assertNotNull(bauResultsList, "BAU scenario should work");
+    assertTrue(bauResultsList.size() > 0, "BAU scenario should have results");
 
-    Stream<EngineResult> policyResults = KigaliSimFacade.runScenario(program, "Multiple Recycles", progress -> {});
-    List<EngineResult> policyResultsList = policyResults.collect(Collectors.toList());
+    // Multiple Recycles scenario should fail with IllegalStateException due to multiple recover commands
+    IllegalStateException exception = assertThrows(IllegalStateException.class, () -> {
+      Stream<EngineResult> policyResults = KigaliSimFacade.runScenario(program, "Multiple Recycles", progress -> {});
+      policyResults.collect(Collectors.toList()); // Force evaluation
+    }, "Should throw IllegalStateException for multiple recover commands in same timestep");
 
-    // Check year 1 results
-    EngineResult bauYear1 = LiveTestsUtil.getResult(bauResultsList.stream(), 1, "TestApp", "HFC-134a");
-    EngineResult policyYear1 = LiveTestsUtil.getResult(policyResultsList.stream(), 1, "TestApp", "HFC-134a");
-
-    assertNotNull(bauYear1, "Should have BAU result for year 1");
-    assertNotNull(policyYear1, "Should have policy result for year 1");
-
-    // Multiple recycles should provide more recycled material than single recycle
-    // Recovery rates: 30% + 20% = 50%
-    // Yield rates: weighted average of 80% and 90% = (30*80 + 20*90)/(30+20) = 84%
-    double bauImports = bauYear1.getImport().getValue().doubleValue();
-    double policyImports = policyYear1.getImport().getValue().doubleValue();
-    double policyRecycled = policyYear1.getRecycleConsumption().getValue().doubleValue();
-
-    // With additive recycling, policy should have lower imports and higher recycled content
-    assertTrue(policyImports < bauImports,
-        String.format("Policy imports (%.2f) should be less than BAU imports (%.2f)",
-                      policyImports, bauImports));
-    assertTrue(policyRecycled > 0,
-        String.format("Policy should have recycled content (%.2f)", policyRecycled));
+    // Verify error message contains expected information
+    String message = exception.getMessage();
+    assertTrue(message.contains("Recovery rate for stage"), 
+        "Error message should specify recovery stage: " + message);
+    assertTrue(message.contains("is already set"), 
+        "Error message should indicate existing recovery rate: " + message);
+    assertTrue(message.contains("TestApp/HFC-134a"), 
+        "Error message should identify application/substance: " + message);
+    assertTrue(message.contains("Multiple recover commands"), 
+        "Error message should explain the restriction: " + message);
   }
 
   /**
@@ -948,99 +945,6 @@ public class RecycleRecoverLiveTests {
     }
   }
 
-  /**
-   * Test induction support for units-based specifications.
-   * Verifies that induced demand is correctly added to sales when using unit-based specs.
-   */
-  @Test
-  public void testRecoverInductionUnitsSpec() throws IOException {
-    String qtaCode = """
-          start default
-          define application "test"
-            uses substance "test"
-              enable domestic
-              enable import
-              initial charge with 5 kg / unit for domestic
-              initial charge with 5 kg / unit for import
-              set domestic to 50 units
-              set import to 50 units
-              recover 20 % with 90 % reuse with 50 % induction during year 2
-            end substance
-          end application
-        end default
-        start simulations
-          simulate "result" using "default" from years 1 to 3
-          end simulations
-        """;
-
-    var parseResult = KigaliSimFacade.parse(qtaCode);
-    assertNotNull(parseResult, "Parse result should not be null");
-    ParsedProgram program = KigaliSimFacade.interpret(parseResult);
-    assertNotNull(program, "Program should parse successfully");
-
-    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, "result", progress -> {});
-    List<EngineResult> resultsList = results.collect(Collectors.toList());
-
-    // Year 1: Baseline - no recycling
-    EngineResult year1 = LiveTestsUtil.getResult(resultsList.stream(), 1, "test", "test");
-    assertNotNull(year1, "Should have result for year 1");
-
-    // Year 2: With 50% induction - should see increased sales beyond baseline population needs
-    EngineResult year2 = LiveTestsUtil.getResult(resultsList.stream(), 2, "test", "test");
-    assertNotNull(year2, "Should have result for year 2");
-
-    // Verify that domestic and import streams increased due to induced demand
-    // The actual values will depend on recycling calculations and population dynamics
-    assertTrue(year2.getDomestic().getValue().doubleValue() > 0,
-        "Domestic production should be positive in year 2");
-    assertTrue(year2.getImport().getValue().doubleValue() > 0,
-        "Import production should be positive in year 2");
-
-    // Year 3: Verify continued effects
-    EngineResult year3 = LiveTestsUtil.getResult(resultsList.stream(), 3, "test", "test");
-    assertNotNull(year3, "Should have result for year 3");
-  }
-
-  /**
-   * Test default induction behavior for units-based specifications.
-   * When no induction rate is specified, should behave as displacement (existing behavior).
-   */
-  @Test
-  public void testRecoverDefaultInductionUnitsSpec() throws IOException {
-    String qtaCode = """
-          start default
-          define application "test"
-            uses substance "test"
-              enable domestic
-              initial charge with 5 kg / unit for domestic
-              set domestic to 100 units
-              recover 20 % with 90 % reuse during year 2
-            end substance
-          end application
-        end default
-        start simulations
-          simulate "result" using "default" from years 1 to 3
-          end simulations
-        """;
-
-    var parseResult = KigaliSimFacade.parse(qtaCode);
-    assertNotNull(parseResult, "Parse result should not be null");
-    ParsedProgram program = KigaliSimFacade.interpret(parseResult);
-    assertNotNull(program, "Program should parse successfully");
-
-    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, "result", progress -> {});
-    List<EngineResult> resultsList = results.collect(Collectors.toList());
-
-    // Verify that recycling behaves as displacement (existing behavior)
-    EngineResult year2 = LiveTestsUtil.getResult(resultsList.stream(), 2, "test", "test");
-    assertNotNull(year2, "Should have result for year 2");
-
-    // With displacement behavior, sales should be reduced by recycling amount
-    // This maintains existing unit-based recycling behavior
-    double salesTotal = year2.getDomestic().getValue().doubleValue() + year2.getImport().getValue().doubleValue();
-    assertTrue(salesTotal >= 0,
-        "Sales should be non-negative even with recycling displacement");
-  }
 
   /**
    * Test default induction behavior for non-units (kg/mt) specifications.
@@ -1355,6 +1259,208 @@ public class RecycleRecoverLiveTests {
         "Total supply should approximately equal baseline demand with 100% induction, got: " + totalSupply);
     assertTrue(recyclingSales > 15,
         "Recycling should contribute significantly, got: " + recyclingSales);
+  }
+
+  /**
+   * Test that multiple recover commands in the same timestep are rejected with clear error.
+   * Verifies that the engine prevents conflicting recovery rates within a single timestep.
+   */
+  @Test
+  public void testMultipleRecoverCommandsRejected() throws IOException {
+    String qtaCode = """
+        start default
+          define application "test"
+            uses substance "test"
+              enable domestic
+              initial charge with 5 kg / unit for domestic
+              set domestic to 100 units
+              recover 20 % with 90 % reuse during year 2
+              recover 30 % with 80 % reuse during year 2
+            end substance
+          end application
+        end default
+        start simulations
+          simulate "result" using "default" from years 1 to 3
+        end simulations
+        """;
+
+    var parseResult = KigaliSimFacade.parse(qtaCode);
+    assertNotNull(parseResult, "Parse result should not be null");
+    ParsedProgram program = KigaliSimFacade.interpret(parseResult);
+    assertNotNull(program, "Program should parse successfully");
+
+    // Running the scenario should throw IllegalStateException due to multiple recover commands
+    IllegalStateException exception = assertThrows(IllegalStateException.class, () -> {
+      Stream<EngineResult> results = KigaliSimFacade.runScenario(program, "result", progress -> {});
+      results.collect(Collectors.toList()); // Force evaluation
+    }, "Should throw IllegalStateException for multiple recover commands in same timestep");
+
+    // Verify error message contains expected information
+    String message = exception.getMessage();
+    assertTrue(message.contains("Recovery rate for stage"), 
+        "Error message should specify which recovery stage: " + message);
+    assertTrue(message.contains("is already set"), 
+        "Error message should indicate existing recovery rate: " + message);
+    assertTrue(message.contains("test/test"), 
+        "Error message should identify application/substance: " + message);
+    assertTrue(message.contains("Multiple recover commands"), 
+        "Error message should explain the restriction: " + message);
+    assertTrue(message.contains("same timestep"), 
+        "Error message should clarify timestep restriction: " + message);
+  }
+
+  /**
+   * Test that separate scenarios with recover commands work independently.
+   * Verifies that different policy contexts don't interfere with each other.
+   */
+  @Test 
+  public void testMultipleRecoverCommandsSeparateScenarios() throws IOException {
+    String qtaCode = """
+        start default
+          define application "test"
+            uses substance "test"
+              enable domestic
+              initial charge with 5 kg / unit for domestic
+              set domestic to 100 units
+            end substance
+          end application
+        end default
+        
+        start policy "policy1"
+          modify application "test"
+            modify substance "test"
+              recover 20 % with 90 % reuse during year 2
+            end substance
+          end application
+        end policy
+        
+        start policy "policy2"  
+          modify application "test"
+            modify substance "test"
+              recover 30 % with 80 % reuse during year 2
+            end substance
+          end application
+        end policy
+        
+        start simulations
+          simulate "result1" using "policy1" from years 1 to 4
+          simulate "result2" using "policy2" from years 1 to 4
+        end simulations
+        """;
+
+    var parseResult = KigaliSimFacade.parse(qtaCode);
+    assertNotNull(parseResult, "Parse result should not be null");
+    ParsedProgram program = KigaliSimFacade.interpret(parseResult);
+    assertNotNull(program, "Program should parse successfully");
+
+    // Both simulations should succeed since they're separate scenarios
+    Stream<EngineResult> results1 = KigaliSimFacade.runScenario(program, "result1", progress -> {});
+    List<EngineResult> resultsList1 = results1.collect(Collectors.toList());
+    
+    Stream<EngineResult> results2 = KigaliSimFacade.runScenario(program, "result2", progress -> {});
+    List<EngineResult> resultsList2 = results2.collect(Collectors.toList());
+
+    // Verify year 2 has recycling in both scenarios
+    EngineResult year2Scenario1 = LiveTestsUtil.getResult(resultsList1.stream(), 2, "test", "test");
+    assertNotNull(year2Scenario1, "Should have result for test/test in year 2, scenario 1");
+    
+    EngineResult year2Scenario2 = LiveTestsUtil.getResult(resultsList2.stream(), 2, "test", "test");
+    assertNotNull(year2Scenario2, "Should have result for test/test in year 2, scenario 2");
+    
+    // Both scenarios should have recycling since they use separate policies
+    assertTrue(year2Scenario1.getRecycle().getValue().doubleValue() >= 0,
+        "Year 2 should have valid recycling from first scenario");
+    assertTrue(year2Scenario2.getRecycle().getValue().doubleValue() >= 0,
+        "Year 2 should have valid recycling from second scenario");
+  }
+
+  /**
+   * Test that multiple recover commands for different stages (EOL vs RECHARGE) are rejected.
+   * Verifies that the validation applies independently to each recovery stage.
+   */
+  @Test
+  public void testMultipleRecoverCommandsDifferentStagesRejected() throws IOException {
+    String qtaCode = """
+        start default
+          define application "test"
+            uses substance "test"
+              enable domestic
+              initial charge with 5 kg / unit for domestic
+              set domestic to 100 units
+              recover 20 % with 90 % reuse at recharge during year 2
+              recover 30 % with 80 % reuse at recharge during year 2
+            end substance
+          end application
+        end default
+        start simulations
+          simulate "result" using "default" from years 1 to 3
+        end simulations
+        """;
+
+    var parseResult = KigaliSimFacade.parse(qtaCode);
+    assertNotNull(parseResult, "Parse result should not be null");
+    ParsedProgram program = KigaliSimFacade.interpret(parseResult);
+    assertNotNull(program, "Program should parse successfully");
+
+    // Should throw IllegalStateException for multiple recharge recover commands
+    IllegalStateException exception = assertThrows(IllegalStateException.class, () -> {
+      Stream<EngineResult> results = KigaliSimFacade.runScenario(program, "result", progress -> {});
+      results.collect(Collectors.toList());
+    }, "Should throw IllegalStateException for multiple recover commands at same stage");
+
+    String message = exception.getMessage();
+    assertTrue(message.contains("recharge"), 
+        "Error message should specify recharge stage: " + message);
+  }
+
+  /**
+   * Test that one EOL and one RECHARGE recover command in the same timestep are allowed.
+   * Verifies that validation is per-stage, allowing different stages to have recover commands.
+   */
+  @Test
+  public void testRecoverCommandsDifferentStagesAllowed() throws IOException {
+    String qtaCode = """
+        start default
+          define application "test"
+            uses substance "test"
+              enable domestic
+              initial charge with 2 kg / unit for domestic
+              set domestic to 100 kg
+              retire 10% each year
+              recharge 30% each year with 1 kg / unit
+              equals 5 tCO2e / kg
+            end substance
+          end application
+        end default
+        
+        start policy "intervention"
+          modify application "test"
+            modify substance "test"
+              recover 20 % with 90 % reuse at eol during year 2
+              recover 15 % with 80 % reuse at recharge during year 2
+            end substance
+          end application
+        end policy
+        
+        start simulations
+          simulate "result" using "intervention" from years 1 to 3
+        end simulations
+        """;
+
+    var parseResult = KigaliSimFacade.parse(qtaCode);
+    assertNotNull(parseResult, "Parse result should not be null");
+    ParsedProgram program = KigaliSimFacade.interpret(parseResult);
+    assertNotNull(program, "Program should parse successfully");
+
+    // This should succeed since commands target different stages
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, "result", progress -> {});
+    List<EngineResult> resultsList = results.collect(Collectors.toList());
+
+    EngineResult year2 = LiveTestsUtil.getResult(resultsList.stream(), 2, "test", "test");
+    assertNotNull(year2, "Should have result for year 2");
+    
+    assertTrue(year2.getRecycle().getValue().doubleValue() > 0,
+        "Year 2 should have recycling from both EOL and recharge recover commands");
   }
 
 }

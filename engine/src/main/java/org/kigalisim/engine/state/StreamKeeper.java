@@ -533,6 +533,7 @@ public class StreamKeeper {
    * @param useKey The key containing application and substance
    * @param newValue The new recovery rate value
    * @param stage The recovery stage (EOL or RECHARGE)
+   * @throws IllegalStateException if a non-zero recovery rate is already set for this stage
    */
   public void setRecoveryRate(UseKey useKey, EngineNumber newValue, RecoveryStage stage) {
     StreamParameterization parameterization = getParameterization(useKey);
@@ -540,21 +541,21 @@ public class StreamKeeper {
     // Get existing recovery rate for this stage
     EngineNumber existingRecovery = parameterization.getRecoveryRate(stage);
 
-    // If existing recovery rate is non-zero, implement additive recycling
+    // Validate that recovery rate is zero (no previous recover command this timestep)
     if (existingRecovery.getValue().compareTo(BigDecimal.ZERO) > 0) {
-      // Convert both rates to the same units (percentage)
-      EngineNumber existingRecoveryPercent = unitConverter.convert(existingRecovery, "%");
-      EngineNumber newRecoveryPercent = unitConverter.convert(newValue, "%");
-
-      // Add recovery rates
-      BigDecimal combinedRecovery = existingRecoveryPercent.getValue().add(newRecoveryPercent.getValue());
-
-      // Set the combined recovery rate
-      parameterization.setRecoveryRate(new EngineNumber(combinedRecovery, "%"), stage);
-    } else {
-      // First recovery rate, set normally
-      parameterization.setRecoveryRate(newValue, stage);
+      String stageText = (stage == RecoveryStage.EOL) ? "EOL" : "recharge";
+      throw new IllegalStateException(
+          String.format("Recovery rate for stage %s is already set to %s%% for %s/%s. "
+                        + "Multiple recover commands in the same timestep are not allowed. "
+                        + "Recovery rates are reset at each timestep.",
+                        stageText,
+                        existingRecovery.getValue(),
+                        useKey.getApplication(),
+                        useKey.getSubstance()));
     }
+
+    // Set the recovery rate (first and only one for this timestep)
+    parameterization.setRecoveryRate(newValue, stage);
   }
 
   /**
