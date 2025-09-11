@@ -1406,15 +1406,16 @@ function buildIntegrationTests() {
       ]);
 
     buildTest("tests recover with induction parsing", "/examples/recover_induction_parsing.qta", [
-        (result, assert) => {
+      (result, assert) => {
         // Just verify parsing succeeds - not testing values at this stage
-          assert.ok(result.length > 0, "Should parse recover statement with induction");
-        },
-      ]);
+        assert.ok(result.length > 0, "Should parse recover statement with induction");
+      },
+    ]);
 
-    buildTest("tests recover with default induction parsing", "/examples/recover_default_induction_parsing.qta", [
+    buildTest("tests recover with default induction parsing",
+      "/examples/recover_default_induction_parsing.qta", [
         (result, assert) => {
-        // Just verify parsing succeeds - not testing values at this stage
+          // Just verify parsing succeeds - not testing values at this stage
           assert.ok(result.length > 0, "Should parse recover statement with default induction");
         },
       ]);
