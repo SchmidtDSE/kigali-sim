@@ -583,12 +583,12 @@ class ApplicationsListPresenter {
 
       const priorNames = new Set(self._getAppNames());
       const resolution = resolveNameConflict(baseName, priorNames);
+      const newName = resolution.getNewName();
 
       // Update the input field to show the resolved name if it was changed
       if (resolution.getNameChanged()) {
         // If the resolved name differs from the effective name, update the main name input
         // We need to handle the case where there's a subname
-        const newName = resolution.getNewName();
         if (subnameEmpty) {
           nameInput.value = newName;
         } else {
