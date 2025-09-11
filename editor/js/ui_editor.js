@@ -1376,7 +1376,17 @@ class ConsumptionListPresenter {
       const baseName = substance.getName();
       const priorNames = new Set(self._getConsumptionNames());
       const fullBaseName = `"${baseName}" for "${applicationName}"`;
+      console.log("Consumption name resolution debug:", {
+        baseName,
+        applicationName, 
+        fullBaseName,
+        priorNames: Array.from(priorNames)
+      });
       const resolution = resolveSubstanceNameConflict(fullBaseName, priorNames);
+      console.log("Resolution result:", {
+        nameChanged: resolution.getNameChanged(),
+        newName: resolution.getNewName()
+      });
 
       // If the name was changed, update the substance input field and re-parse
       if (resolution.getNameChanged()) {
