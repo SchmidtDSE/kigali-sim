@@ -503,7 +503,8 @@ class ReportDataWrapper {
       console.warn("MetricStrategy is not a function for metric:", metric);
       // Trigger global error recovery if available
       const kigaliAppFound = window.kigaliApp;
-      const resetAvailable = kigaliAppFound && typeof kigaliAppFound.resetVisualizationState === "function";
+      const resetAvailable = kigaliAppFound &&
+        typeof kigaliAppFound.resetVisualizationState === "function";
       if (resetAvailable) {
         kigaliAppFound.resetVisualizationState();
       }
@@ -519,7 +520,8 @@ class ReportDataWrapper {
         console.warn("MetricStrategy execution failed - not a function:", error.message);
         // Trigger global error recovery if available
         const kigaliAppFound = window.kigaliApp;
-        const resetAvailable = kigaliAppFound && typeof kigaliAppFound.resetVisualizationState === "function";
+        const resetAvailable = kigaliAppFound &&
+          typeof kigaliAppFound.resetVisualizationState === "function";
         if (resetAvailable) {
           kigaliAppFound.resetVisualizationState();
         }
@@ -997,19 +999,19 @@ class ReportDataWrapper {
    */
   _isMetricStrategyError(error) {
     const self = this;
-    
+
     if (!error.message) {
       return false;
     }
-    
+
     if (!error.message.includes("not a function")) {
       return false;
     }
-    
+
     if (!error.message.includes("MetricStrategy")) {
       return false;
     }
-    
+
     return true;
   }
 }

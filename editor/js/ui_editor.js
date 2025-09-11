@@ -20,7 +20,11 @@ import {
   SimulationScenario,
   SubstanceBuilder,
 } from "ui_translator";
-import {NameConflictResolution, resolveNameConflict, resolveSubstanceNameConflict} from "duplicate_util";
+import {
+  NameConflictResolution,
+  resolveNameConflict,
+  resolveSubstanceNameConflict,
+} from "duplicate_util";
 
 /**
  * Stream target selectors used throughout the application for updating dropdown states.
