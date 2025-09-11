@@ -59,15 +59,15 @@
         <p>For <strong>HFC-134a</strong> (0.15 kg/unit domestic, 0.2 kg/unit import initial charge):</p>
 
         <ul>
-          <li>Change <code>set domestic to 13 mt / year during year 2025</code> to <code>set domestic to 87,000 units during year 2025</code></li>
-          <li>Change <code>set import to 11 mt / year during year 2025</code> to <code>set import to 55,000 units during year 2025</code></li>
+          <li>Change <code>set domestic to 13 mt / year during year 2025</code> to <code>set domestic to 87,000.0 units during year 2025</code></li>
+          <li>Change <code>set import to 11 mt / year during year 2025</code> to <code>set import to 55,000.0 units during year 2025</code></li>
         </ul>
 
         <p>For <strong>R-600a</strong> (0.07 kg/unit initial charge):</p>
 
         <ul>
-          <li>Change <code>set domestic to 1 mt during year 2025</code> to <code>set domestic to 14,000 units during year 2025</code></li>
-          <li>Change <code>set import to 1 mt during year 2025</code> to <code>set import to 14,000 units during year 2025</code></li>
+          <li>Change <code>set domestic to 1 mt during year 2025</code> to <code>set domestic to 14,000.0 units during year 2025</code></li>
+          <li>Change <code>set import to 1 mt during year 2025</code> to <code>set import to 14,000.0 units during year 2025</code></li>
         </ul>
 
         <p>Your code should now look like this:</p>
@@ -75,15 +75,15 @@
         <pre><code class="language-qubectalk">define application "Domestic Refrigeration"
   uses substance "HFC-134a"
     # ... other configuration ...
-    set domestic to 87,000 units during year 2025
-    set import to 55,000 units during year 2025
+    set domestic to 87,000.0 units during year 2025
+    set import to 55,000.0 units during year 2025
     # ... rest of substance definition ...
   end substance
   
   uses substance "R-600a"
     # ... other configuration ...
-    set domestic to 14,000 units during year 2025
-    set import to 14,000 units during year 2025
+    set domestic to 14,000.0 units during year 2025
+    set import to 14,000.0 units during year 2025
     # ... rest of substance definition ...
   end substance
 end application</code></pre>

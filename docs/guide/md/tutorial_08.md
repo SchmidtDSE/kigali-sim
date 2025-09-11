@@ -19,13 +19,13 @@ Let's modify our ABC Country model to use unit sales for HFC-134a and R-600a in 
 
 For **HFC-134a** (0.15 kg/unit domestic, 0.2 kg/unit import initial charge):
 
-- Change `set domestic to 13 mt / year during year 2025` to `set domestic to 87,000 units during year 2025`
-- Change `set import to 11 mt / year during year 2025` to `set import to 55,000 units during year 2025`
+- Change `set domestic to 13 mt / year during year 2025` to `set domestic to 87,000.0 units during year 2025`
+- Change `set import to 11 mt / year during year 2025` to `set import to 55,000.0 units during year 2025`
 
 For **R-600a** (0.07 kg/unit initial charge):
 
-- Change `set domestic to 1 mt during year 2025` to `set domestic to 14,000 units during year 2025`
-- Change `set import to 1 mt during year 2025` to `set import to 14,000 units during year 2025`
+- Change `set domestic to 1 mt during year 2025` to `set domestic to 14,000.0 units during year 2025`
+- Change `set import to 1 mt during year 2025` to `set import to 14,000.0 units during year 2025`
 
 Your code should now look like this:
 
@@ -33,15 +33,15 @@ Your code should now look like this:
 define application "Domestic Refrigeration"
   uses substance "HFC-134a"
     # ... other configuration ...
-    set domestic to 87,000 units during year 2025
-    set import to 55,000 units during year 2025
+    set domestic to 87,000.0 units during year 2025
+    set import to 55,000.0 units during year 2025
     # ... rest of substance definition ...
   end substance
   
   uses substance "R-600a"
     # ... other configuration ...
-    set domestic to 14,000 units during year 2025
-    set import to 14,000 units during year 2025
+    set domestic to 14,000.0 units during year 2025
+    set import to 14,000.0 units during year 2025
     # ... rest of substance definition ...
   end substance
 end application

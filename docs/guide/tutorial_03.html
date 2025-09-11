@@ -88,10 +88,10 @@
             </tr>
             <tr>
               <td><strong>Prior Equipment (units)</strong></td>
-              <td>1,000,000</td>
-              <td>100,000</td>
-              <td>40,000</td>
-              <td>20,000</td>
+              <td>1,000,000.0</td>
+              <td>100,000.0</td>
+              <td>40,000.0</td>
+              <td>20,000.0</td>
             </tr>
             <tr>
               <td><strong>Domestic Manufacture (mt/yr)</strong></td>
@@ -104,6 +104,8 @@
         </table>
 
         <p>We will add in socioeconomic projections soon but, for now, consumption volumes will continue unchanged into the future.</p>
+        
+        <p><strong>Note</strong>: Kigali Sim supports both comma and period decimal notations (e.g., <code>123,456.7</code> or <code>123.456,7</code>). However, ambiguous formats like <code>40,000</code> will error since this could mean forty thousand or forty depending on regional notation. Adding <code>.0</code> at the end (e.g., <code>40,000.0</code>) disambiguates the format without quotes.</p>
       </section>
 
       <section id="interpreting-multi-application-results">

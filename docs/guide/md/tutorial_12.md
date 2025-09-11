@@ -39,7 +39,7 @@ Let's create our baseline scenario with both high-energy and low-energy models o
 - On the **Servicing** tab:
   - Set **recharge** to 10% with 0.15 kg/unit during all years
 - On the **Set** tab:
-  - Set **prior equipment** to 1,000,000 units in year 2025
+  - Set **prior equipment** to 1,000,000.0 units in year 2025
   - Set **domestic** manufacture to 20 mt in year 2025
 - Click **Finish**
 
@@ -57,7 +57,7 @@ Let's create our baseline scenario with both high-energy and low-energy models o
 - On the **Servicing** tab:
   - Set **recharge** to 10% with 0.15 kg/unit during all years
 - On the **Set** tab:
-  - Set **prior equipment** to 1,000 units in year 2025
+  - Set **prior equipment** to 1,000.0 units in year 2025
   - Set **domestic** manufacture to 10 mt in year 2025
 - Click **Finish**
 

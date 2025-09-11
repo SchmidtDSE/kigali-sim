@@ -41,7 +41,7 @@ First, let's create our baseline scenario with both HFC-134a and R-600a refriger
 - On the **Servicing** tab:
   - Set **recharge** to 10% with 0.15 kg/unit in all years
 - On the **Set** tab:
-  - Set **prior equipment** to 1,000,000 units in year 2025
+  - Set **prior equipment** to 1,000,000.0 units in year 2025
   - Set **domestic** manufacture to 20 mt in year 2025
 - Click **Finish**
 
@@ -56,7 +56,7 @@ First, let's create our baseline scenario with both HFC-134a and R-600a refriger
 - On the **Servicing** tab:
   - Set **recharge** to 10% with 0.15 kg/unit in all years
 - On the **Set** tab:
-  - Set **prior equipment** to 50,000 units in year 2025
+  - Set **prior equipment** to 50,000.0 units in year 2025
   - Set **domestic** manufacture to 1 mt in year 2025
 - Click **Finish**
 
