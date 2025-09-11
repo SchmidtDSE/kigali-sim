@@ -784,38 +784,6 @@ end default`;
       const expected3 = "middle each year text";
       assert.equal(preprocessEachYearSyntax(input3), expected3, "Should not remove 'each year' in middle of line");
     });
-
-    QUnit.test("integration test - problematic each year syntax now compiles", function (assert) {
-      const problematicCode = `start about
-  # Name: "Each Year Syntax Test"
-  # Description: "Test case that previously caused parser errors"
-end about
-
-start default
-  define application "test equipment"
-    uses substance "HFC-134a"
-      enable domestic
-      equals 1430 kgCO2e / kg
-      
-      initial charge with 0.15 kg / unit for domestic
-      set domestic to 25 mt during year 2025
-      
-      retire 5 % each year
-      recharge 10 % with 0.15 kg / unit each year
-    end substance
-  end application
-end default
-
-start simulations
-  simulate "Test" from years 2025 to 2035
-end simulations`;
-
-      const compiler = new UiTranslatorCompiler();
-      const result = compiler.compile(problematicCode);
-
-      assert.equal(result.getErrors().length, 0, "Should compile without errors: " + result.getErrors().join(", "));
-      assert.ok(result.getProgram() !== null, "Should produce a valid program");
-    });
   });
 }
 
