@@ -4,7 +4,7 @@
  * @license BSD-3-Clause
  */
 
-import {EngineNumber} from "engine_number";
+import {EngineNumber, makeNumberUnambiguousString} from "engine_number";
 
 /**
  * Result of an engine execution for a substance for an application and year.
@@ -427,7 +427,7 @@ class AttributeToExporterResult {
     const importInitialChargeValue = importInitialCharge.getValue();
     const effectiveInitialCharge = importInitialChargeValue > 0 ? importInitialChargeValue : 0;
     const innerNumber = totalImport.getValue() - effectiveInitialCharge;
-    return new EngineNumber(innerNumber, totalUnits);
+    return new EngineNumber(innerNumber, totalUnits, makeNumberUnambiguousString(innerNumber));
   }
 
   /**
@@ -494,7 +494,7 @@ class AttributeToExporterResult {
     const importInitialChargeValue = importInitialCharge.getValue();
     const effectiveInitialCharge = importInitialChargeValue > 0 ? importInitialChargeValue : 0;
     const innerNumber = totalImport.getValue() - effectiveInitialCharge;
-    return new EngineNumber(innerNumber, totalUnits);
+    return new EngineNumber(innerNumber, totalUnits, makeNumberUnambiguousString(innerNumber));
   }
 
   /**
@@ -624,7 +624,7 @@ class AttributeToExporterResult {
     const exportInitialChargeValue = exportInitialCharge.getValue();
     const effectiveInitialCharge = exportInitialChargeValue > 0 ? exportInitialChargeValue : 0;
     const innerNumber = totalExport.getValue() + effectiveInitialCharge;
-    return new EngineNumber(innerNumber, totalUnits);
+    return new EngineNumber(innerNumber, totalUnits, makeNumberUnambiguousString(innerNumber));
   }
 
   /**
@@ -649,7 +649,7 @@ class AttributeToExporterResult {
     const exportInitialChargeValue = exportInitialCharge.getValue();
     const effectiveInitialCharge = exportInitialChargeValue > 0 ? exportInitialChargeValue : 0;
     const innerNumber = totalExport.getValue() + effectiveInitialCharge;
-    return new EngineNumber(innerNumber, totalUnits);
+    return new EngineNumber(innerNumber, totalUnits, makeNumberUnambiguousString(innerNumber));
   }
 }
 
@@ -1382,7 +1382,8 @@ class AggregatedResult {
     if (a.getUnits() !== b.getUnits()) {
       throw "Encountered different units during aggregation.";
     }
-    return new EngineNumber(a.getValue() + b.getValue(), a.getUnits());
+    const result = a.getValue() + b.getValue();
+    return new EngineNumber(result, a.getUnits(), makeNumberUnambiguousString(result));
   }
 }
 
