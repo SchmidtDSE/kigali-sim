@@ -3063,7 +3063,13 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
     if (!result.isSuccess()) {
       throw new Error(`Failed to parse number in QubecTalk expression: ${result.getError()}`);
     }
-    return signMultiplier * result.getNumber();
+    
+    // Return an object with both the numeric value and original string
+    // Use the full raw text which already includes the sign if present
+    return {
+      value: signMultiplier * result.getNumber(),
+      originalString: raw,
+    };
   }
 
   /**
@@ -3108,7 +3114,12 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
     const unitString = ctx.getChild(1).accept(self);
     const expressionContent = ctx.getChild(0).accept(self);
 
-    return new EngineNumber(expressionContent, unitString);
+    // Handle the case where expressionContent might be an object with value and originalString
+    if (typeof expressionContent === "object" && expressionContent.value !== undefined) {
+      return new EngineNumber(expressionContent.value, unitString, expressionContent.originalString);
+    } else {
+      return new EngineNumber(expressionContent, unitString);
+    }
   }
 
   /**
@@ -4403,6 +4414,7 @@ export {
   SubstanceBuilder,
   SubstanceMetadata,
   SubstanceMetadataBuilder,
+  TranslatorVisitor,
   UiTranslatorCompiler,
   buildAddCode,
   finalizeCodePieces,
