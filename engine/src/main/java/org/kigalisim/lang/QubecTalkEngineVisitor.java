@@ -111,7 +111,7 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
 
     // Strip "eachyear" or "eachyears" at the end as it's optional sugar
     // Note: ctx.getText() doesn't include spaces between tokens
-    unit = unit.replaceAll("(?i) each(year|years?)$", "");
+    unit = unit.replaceAll("(?i)each(year|years?)$", "");
 
     // Convert remaining "each" to "/" for unit ratios
     unit = unit.replaceAll(" each ", " / ");
