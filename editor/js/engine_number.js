@@ -13,11 +13,13 @@ class EngineNumber {
    *
    * @param value - The numeric value (float, or int).
    * @param units - The units to associate with this value like kg.
+   * @param originalString - Optional original string format to preserve user formatting.
    */
-  constructor(value, units) {
+  constructor(value, units, originalString) {
     const self = this;
     self._value = value;
     self._units = units;
+    self._originalString = originalString;
   }
 
   /**
@@ -48,6 +50,26 @@ class EngineNumber {
   hasEquipmentUnits() {
     const self = this;
     return self._units.startsWith("unit");
+  }
+
+  /**
+   * Get the original string format if available.
+   *
+   * @returns {string|null} The original string format, or null if not available.
+   */
+  getOriginalString() {
+    const self = this;
+    return self._originalString || null;
+  }
+
+  /**
+   * Check if this number has an original string format preserved.
+   *
+   * @returns {boolean} True if original string format is available.
+   */
+  hasOriginalString() {
+    const self = this;
+    return self._originalString !== undefined && self._originalString !== null;
   }
 }
 
