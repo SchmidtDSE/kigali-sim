@@ -398,7 +398,7 @@ public class SingleThreadEngine implements Engine {
       setExecutor.handleSalesSet(scope, name, value, yearMatcher);
       return;
     }
-    
+
     // For non-sales streams, use standard processing
     boolean subtractRecycling = !getIsSalesSubstream(name) || "units".equals(value.getUnits());
     setStream(name, value, yearMatcher, subtractRecycling);

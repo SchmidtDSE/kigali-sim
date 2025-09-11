@@ -8,6 +8,7 @@ package org.kigalisim.validate;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
@@ -18,6 +19,7 @@ import org.junit.jupiter.api.Test;
 import org.kigalisim.KigaliSimFacade;
 import org.kigalisim.engine.serializer.EngineResult;
 import org.kigalisim.lang.program.ParsedProgram;
+import org.kigalisim.lang.validation.DuplicateValidationException;
 
 /**
  * Tests that validate basic QTA files against expected behavior.
@@ -628,5 +630,56 @@ public class BasicLiveTests {
     // Check that we can get results without division by zero error
     assertTrue(result.getPopulation().getValue().doubleValue() > 0,
         "Equipment population should be positive");
+  }
+
+  /**
+   * Test that KigaliSimFacade.parseAndInterpret throws meaningful exceptions
+   * for each type of duplication with descriptive error messages.
+   */
+  @Test
+  public void testInformativeDuplicateErrorMessages() {
+    // Test duplicate scenario names
+    DuplicateValidationException scenarioException = assertThrows(
+        DuplicateValidationException.class,
+        () -> KigaliSimFacade.parseAndInterpret("../examples/duplicate_scenarios.qta"),
+        "Should throw DuplicateValidationException for duplicate scenarios"
+    );
+    assertTrue(scenarioException.getMessage().contains("Duplicate scenario name 'BAU'"),
+        "Scenario error message should be informative");
+    assertTrue(scenarioException.getMessage().contains("found in simulations stanza"),
+        "Scenario error message should include context");
+
+    // Test duplicate application names
+    DuplicateValidationException applicationException = assertThrows(
+        DuplicateValidationException.class,
+        () -> KigaliSimFacade.parseAndInterpret("../examples/duplicate_applications.qta"),
+        "Should throw DuplicateValidationException for duplicate applications"
+    );
+    assertTrue(applicationException.getMessage().contains("Duplicate application name 'Test'"),
+        "Application error message should be informative");
+    assertTrue(applicationException.getMessage().contains("found in policy 'default'"),
+        "Application error message should include policy context");
+
+    // Test duplicate substance names
+    DuplicateValidationException substanceException = assertThrows(
+        DuplicateValidationException.class,
+        () -> KigaliSimFacade.parseAndInterpret("../examples/duplicate_substances.qta"),
+        "Should throw DuplicateValidationException for duplicate substances"
+    );
+    assertTrue(substanceException.getMessage().contains("Duplicate substance name 'HFC-134a'"),
+        "Substance error message should be informative");
+    assertTrue(substanceException.getMessage().contains("found in application 'Test'"),
+        "Substance error message should include application context");
+
+    // Test duplicate policy names
+    DuplicateValidationException policyException = assertThrows(
+        DuplicateValidationException.class,
+        () -> KigaliSimFacade.parseAndInterpret("../examples/duplicate_policies.qta"),
+        "Should throw DuplicateValidationException for duplicate policies"
+    );
+    assertTrue(policyException.getMessage().contains("Duplicate policy name 'default'"),
+        "Policy error message should be informative");
+    assertTrue(policyException.getMessage().contains("found in program"),
+        "Policy error message should include context");
   }
 }

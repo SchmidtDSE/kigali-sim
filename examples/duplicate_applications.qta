@@ -1,0 +1,24 @@
+start default
+  define application "Test"
+    uses substance "SubA"
+      enable domestic
+      initial charge with 1 kg / unit for domestic
+      equals 1 kgCO2e / kg
+      retire 5 % / year
+    end substance
+  end application
+  
+  define application "Test"  # Duplicate application name
+    uses substance "SubB"
+      enable domestic
+      initial charge with 2 kg / unit for domestic
+      equals 2 kgCO2e / kg
+      retire 5 % / year
+    end substance
+  end application
+end default
+
+start simulations
+  simulate "BAU"
+  from years 1 to 10
+end simulations

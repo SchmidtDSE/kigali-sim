@@ -497,8 +497,40 @@ class ReportDataWrapper {
     const self = this;
     const metric = filterSet.getFullMetricName();
     const metricStrategy = self._metricStrategies[metric];
-    const value = metricStrategy(filterSet);
-    return value;
+
+    // Check if metricStrategy exists and is a function
+    if (typeof metricStrategy !== "function") {
+      console.warn("MetricStrategy is not a function for metric:", metric);
+      // Trigger global error recovery if available
+      const kigaliAppFound = window.kigaliApp;
+      const resetAvailable = kigaliAppFound &&
+        typeof kigaliAppFound.resetVisualizationState === "function";
+      if (resetAvailable) {
+        kigaliAppFound.resetVisualizationState();
+      }
+      return null;
+    }
+
+    try {
+      const value = metricStrategy(filterSet);
+      return value;
+    } catch (error) {
+      // Handle "metricStrategy is not a function" and other strategy execution errors
+      if (self._isMetricStrategyError(error)) {
+        console.warn("MetricStrategy execution failed - not a function:", error.message);
+        // Trigger global error recovery if available
+        const kigaliAppFound = window.kigaliApp;
+        const resetAvailable = kigaliAppFound &&
+          typeof kigaliAppFound.resetVisualizationState === "function";
+        if (resetAvailable) {
+          kigaliAppFound.resetVisualizationState();
+        }
+        return null;
+      } else {
+        // Re-throw other errors as they may be legitimate validation errors
+        throw error;
+      }
+    }
   }
 
   /**
@@ -956,6 +988,31 @@ class ReportDataWrapper {
   _buildExporterAttributed(rawResults) {
     const self = this;
     return rawResults.map((x) => new AttributeToExporterResult(x));
+  }
+
+  /**
+   * Check if an error is related to metricStrategy function issues.
+   *
+   * @private
+   * @param {Error} error - The error to check.
+   * @returns {boolean} True if this is a metricStrategy error that should trigger reset.
+   */
+  _isMetricStrategyError(error) {
+    const self = this;
+
+    if (!error.message) {
+      return false;
+    }
+
+    if (!error.message.includes("not a function")) {
+      return false;
+    }
+
+    if (!error.message.includes("MetricStrategy")) {
+      return false;
+    }
+
+    return true;
   }
 }
 

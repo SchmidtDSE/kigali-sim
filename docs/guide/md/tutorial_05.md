@@ -29,7 +29,7 @@ Now let's create ABC's permitting system that targets HFC-134a in domestic refri
 - Go to the **Limit** tab within your HFC-134a policy configuration and click **Add Limit**. Then, **Cap** all sales to 85% during **years 2029 to 2034**.
 - **Displacing** means that the demand lost from HFC-134a is then sent to another stream or substance. In this case, let's have it go to **R-600a** instead.
 - Click **Add Limit** again. Set **Cap** on sales to 0 kg displacing R-600a during **years 2035 to onwards**. This will conclude the phase-out.
-- Click **Save** to finish the policy
+- Click **Finish** to finish the policy
 
 (tutorial05_02.gif, alt text: Animated gif showing how to add a sales permit policy)
 
@@ -41,7 +41,7 @@ Now let's create a simulation to see how the permitting policy compares to busin
 - Name it "Permit"
 - Check the **Sales Permit** policy checkbox
 - Set duration from **years 2025 to 2035**
-- Click **Save**
+- Click **Finish**
 
 The simulation will now show both your original **BAU** and new **Permit** scenarios side by side.
 

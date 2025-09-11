@@ -16,7 +16,7 @@ Let's create ABC's recovery program:
 - Set **20% recovery with 90% reuse**.
 - Let's have this start at **recharge** (at the point of servicing).
 - Start in **year 2027**.
-- Click **Save**
+- Click **Finish**
 
 (tutorial06_01.gif, alt text: animated gif showing how to add the recycling policy)
 

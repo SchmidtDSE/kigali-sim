@@ -364,6 +364,9 @@ class MainPresenter {
     // Initialize update utility and check for updates (fails silently if offline)
     self._updateUtil = new UpdateUtil();
     self._checkForUpdates();
+
+    // Set up global error recovery mechanism
+    self._setupGlobalErrorRecovery();
   }
 
   /**
@@ -866,6 +869,67 @@ class MainPresenter {
         );
       }
     });
+  }
+
+  /**
+   * Sets up global error recovery mechanism for visualization errors.
+   * This is a backstop and not expected during normal operation.
+   * @private
+   */
+  _setupGlobalErrorRecovery() {
+    const self = this;
+
+    // Create global recovery function accessible from anywhere in the app
+    if (!window.kigaliApp) {
+      window.kigaliApp = {};
+    }
+
+    window.kigaliApp.resetVisualizationState = () => {
+      try {
+        console.info("Resetting visualization state due to metric strategy error");
+
+        // Show user-friendly notification instead of technical error
+        self._showUserNotification(
+          "Visualization settings have been reset to resolve a display issue. " +
+          "Your simulation data is safe.",
+          "info",
+        );
+
+        // Reset the results presenter filter to default state
+        if (self._resultsPresenter) {
+          self._resultsPresenter.resetFilter();
+        }
+      } catch (error) {
+        console.error("Error during visualization state reset:", error);
+        // Fallback: show basic alert if custom notification fails
+        alert("Visualization has been reset due to a display issue. Your data is safe.");
+      }
+    };
+  }
+
+  /**
+   * Show user-friendly notification message.
+   * @param {string} message - The message to display to the user
+   * @param {string} type - The type of notification ('info', 'warning', 'error')
+   * @private
+   */
+  _showUserNotification(message, type = "info") {
+    const self = this;
+
+    // Try to use existing error display mechanisms first
+    if (type === "error" && self._isOnCodeEditorTab()) {
+      self._codeEditorPresenter.showError(message);
+      return;
+    }
+
+    // Fallback to console and alert for now
+    // This could be enhanced later with a proper notification system
+    console.log(`[${type.toUpperCase()}] ${message}`);
+
+    // For critical messages, show alert as last resort
+    if (type === "error" || type === "warning") {
+      alert(message);
+    }
   }
 }
 
