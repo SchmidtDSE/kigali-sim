@@ -691,39 +691,24 @@ public class SingleThreadEngine implements Engine {
   }
 
   @Override
-  public void recycle(EngineNumber recoveryWithUnits, EngineNumber yieldWithUnits,
-      YearMatcher yearMatcher, String displacementTarget, RecoveryStage stage) {
-    if (!getIsInRange(yearMatcher)) {
-      return;
+  public void setInductionRate(Optional<Double> inductionRate) {
+    if (inductionRate.isPresent()) {
+      // Validate the induction rate is between 0 and 1
+      double rate = inductionRate.get();
+      if (rate < 0.0 || rate > 1.0) {
+        throw new IllegalArgumentException("Induction rate must be between 0.0 and 1.0, got: " + rate);
+      }
+      // Convert to EngineNumber with percentage units
+      EngineNumber inductionRateEngineNumber = new EngineNumber(
+          BigDecimal.valueOf(rate * 100), "%");
+      streamKeeper.setInductionRate(scope, inductionRateEngineNumber);
+    } else {
+      // Default behavior - set to 0% (displacement behavior)
+      EngineNumber defaultInductionRate = new EngineNumber(BigDecimal.ZERO, "%");
+      streamKeeper.setInductionRate(scope, defaultInductionRate);
     }
-
-    // Block displacement except for sales
-    if (displacementTarget != null && !displacementTarget.equals("sales")) {
-      throw new UnsupportedOperationException(
-        "Displacement target '" + displacementTarget + "' is not currently supported in recycling operations. "
-        + "Only 'sales' displacement or no displacement is allowed.");
-    }
-
-    streamKeeper.setRecoveryRate(scope, recoveryWithUnits, stage);
-    streamKeeper.setYieldRate(scope, yieldWithUnits, stage);
-
-    // Apply the recovery through normal recycle operation
-    RecalcOperation operation = new RecalcOperationBuilder()
-        .setRecalcKit(createRecalcKit())
-        .recalcSales()
-        .thenPropagateToPopulationChange()
-        .thenPropagateToConsumption()
-        .build();
-    operation.execute(this);
-
-    // Update lastSpecifiedValue after recycling for volume-based specs
-    updateLastSpecifiedValueAfterRecycling();
-
-    // Handle displacement using the existing displacement logic
-    UnitConverter unitConverter = EngineSupportUtils.createUnitConverterWithTotal(this, RECYCLE_RECOVER_STREAM);
-    EngineNumber recoveryInKg = unitConverter.convert(recoveryWithUnits, "kg");
-    handleDisplacement(RECYCLE_RECOVER_STREAM, recoveryWithUnits, recoveryInKg.getValue(), displacementTarget);
   }
+
 
   @Override
   public void equals(EngineNumber amount, YearMatcher yearMatcher) {
