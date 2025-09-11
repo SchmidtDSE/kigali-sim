@@ -1008,7 +1008,7 @@ class ReportDataWrapper {
       return false;
     }
 
-    if (!error.message.includes("MetricStrategy")) {
+    if (!error.message.toLowerCase().includes("metricstrategy")) {
       return false;
     }
 
