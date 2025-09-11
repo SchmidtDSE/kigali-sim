@@ -4,7 +4,7 @@
  * @license BSD, see LICENSE.md.
  */
 
-import {EngineNumber} from "engine_number";
+import {EngineNumber, makeNumberUnambiguousString} from "engine_number";
 import {AggregatedResult, AttributeToExporterResult} from "engine_struct";
 
 /**
@@ -178,21 +178,29 @@ class ReportDataWrapper {
       strategyBuilder.setUnits("tCO2e / yr");
       strategyBuilder.setTransformation((val) => {
         validateEmissionsUnits(val);
-        return new EngineNumber(val.getValue(), "tCO2e / yr");
+        return new EngineNumber(
+          val.getValue(), "tCO2e / yr", makeNumberUnambiguousString(val.getValue()),
+        );
       });
       strategyBuilder.add();
 
       strategyBuilder.setUnits("ktCO2e / yr");
       strategyBuilder.setTransformation((val) => {
         validateEmissionsUnits(val);
-        return new EngineNumber(val.getValue() / 1000, "ktCO2e / yr");
+        const convertedValue = val.getValue() / 1000;
+        return new EngineNumber(
+          convertedValue, "ktCO2e / yr", makeNumberUnambiguousString(convertedValue),
+        );
       });
       strategyBuilder.add();
 
       strategyBuilder.setUnits("MtCO2e / yr");
       strategyBuilder.setTransformation((val) => {
         validateEmissionsUnits(val);
-        return new EngineNumber(val.getValue() / 1000000, "MtCO2e / yr");
+        const convertedValue = val.getValue() / 1000000;
+        return new EngineNumber(
+          convertedValue, "MtCO2e / yr", makeNumberUnambiguousString(convertedValue),
+        );
       });
       strategyBuilder.add();
 
@@ -200,7 +208,10 @@ class ReportDataWrapper {
       strategyBuilder.setUnits("kgCO2e / yr");
       strategyBuilder.setTransformation((val) => {
         validateEmissionsUnits(val);
-        return new EngineNumber(val.getValue() * 1000, "kgCO2e / yr");
+        const convertedValue = val.getValue() * 1000;
+        return new EngineNumber(
+          convertedValue, "kgCO2e / yr", makeNumberUnambiguousString(convertedValue),
+        );
       });
       strategyBuilder.add();
     };
@@ -252,7 +263,8 @@ class ReportDataWrapper {
               `Cannot combine incompatible units: ${a.getUnits()} and ${b.getUnits()}`,
             );
           }
-          return new EngineNumber(a.getValue() + b.getValue(), a.getUnits());
+          const result = a.getValue() + b.getValue();
+          return new EngineNumber(result, a.getUnits(), makeNumberUnambiguousString(result));
         });
       });
       addEmissionsConversion(strategyBuilder);
@@ -272,14 +284,19 @@ class ReportDataWrapper {
         strategyBuilder.setUnits("mt / yr");
         strategyBuilder.setTransformation((value) => {
           validateSalesUnits(value);
-          return new EngineNumber(value.getValue() / 1000, "mt / yr");
+          const convertedValue = value.getValue() / 1000;
+          return new EngineNumber(
+            convertedValue, "mt / yr", makeNumberUnambiguousString(convertedValue),
+          );
         });
         strategyBuilder.add();
 
         strategyBuilder.setUnits("kg / yr");
         strategyBuilder.setTransformation((value) => {
           validateSalesUnits(value);
-          return new EngineNumber(value.getValue(), "kg / yr");
+          return new EngineNumber(
+            value.getValue(), "kg / yr", makeNumberUnambiguousString(value.getValue()),
+          );
         });
         strategyBuilder.add();
       };
@@ -328,7 +345,8 @@ class ReportDataWrapper {
               `Cannot combine incompatible units: ${a.getUnits()} and ${b.getUnits()}`,
             );
           }
-          return new EngineNumber(a.getValue() + b.getValue(), a.getUnits());
+          const result = a.getValue() + b.getValue();
+          return new EngineNumber(result, a.getUnits(), makeNumberUnambiguousString(result));
         });
       });
       makeForKgAndMt(strategyBuilder);
@@ -381,7 +399,8 @@ class ReportDataWrapper {
               `Cannot combine incompatible units: ${a.getUnits()} and ${b.getUnits()}`,
             );
           }
-          return new EngineNumber(a.getValue() + b.getValue(), a.getUnits());
+          const result = a.getValue() + b.getValue();
+          return new EngineNumber(result, a.getUnits(), makeNumberUnambiguousString(result));
         });
       });
       addEmissionsConversion(strategyBuilder);
@@ -403,7 +422,10 @@ class ReportDataWrapper {
           if (value.getUnits() !== "units") {
             throw "Unexpected population units: " + value.getUnits();
           }
-          return new EngineNumber(value.getValue() / 1000, "thousands of units");
+          const convertedValue = value.getValue() / 1000;
+          return new EngineNumber(
+            convertedValue, "thousands of units", makeNumberUnambiguousString(convertedValue),
+          );
         });
         strategyBuilder.add();
 
@@ -412,7 +434,10 @@ class ReportDataWrapper {
           if (value.getUnits() !== "units") {
             throw "Unexpected population units: " + value.getUnits();
           }
-          return new EngineNumber(value.getValue() / 1000000, "millions of units");
+          const convertedValue = value.getValue() / 1000000;
+          return new EngineNumber(
+            convertedValue, "millions of units", makeNumberUnambiguousString(convertedValue),
+          );
         });
         strategyBuilder.add();
       };
@@ -425,7 +450,9 @@ class ReportDataWrapper {
           if (normalizedUnits !== "kwh") {
             throw "Unexpected energy units: " + value.getUnits();
           }
-          return new EngineNumber(value.getValue(), "kwh / yr");
+          return new EngineNumber(
+            value.getValue(), "kwh / yr", makeNumberUnambiguousString(value.getValue()),
+          );
         };
 
         strategyBuilder.setUnits("kwh / year");
@@ -435,14 +462,20 @@ class ReportDataWrapper {
         strategyBuilder.setUnits("mwh / year");
         strategyBuilder.setTransformation((value) => {
           const kwhValue = getKwhYr(value);
-          return new EngineNumber(kwhValue.getValue() / 1000, "mwh / yr");
+          const convertedValue = kwhValue.getValue() / 1000;
+          return new EngineNumber(
+            convertedValue, "mwh / yr", makeNumberUnambiguousString(convertedValue),
+          );
         });
         strategyBuilder.add();
 
         strategyBuilder.setUnits("gwh / year");
         strategyBuilder.setTransformation((value) => {
           const kwhValue = getKwhYr(value);
-          return new EngineNumber(kwhValue.getValue() / 1000000, "gwh / yr");
+          const convertedValue = kwhValue.getValue() / 1000000;
+          return new EngineNumber(
+            convertedValue, "gwh / yr", makeNumberUnambiguousString(convertedValue),
+          );
         });
         strategyBuilder.add();
       };
