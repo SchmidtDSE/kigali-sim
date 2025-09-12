@@ -234,7 +234,6 @@ function buildDurationTests() {
         assert.strictEqual(year1.equals(year2), true);
       });
     });
-
   });
 
   QUnit.module("YearMatcher", function () {
