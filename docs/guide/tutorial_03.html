@@ -105,7 +105,7 @@
 
         <p>We will add in socioeconomic projections soon but, for now, consumption volumes will continue unchanged into the future.</p>
         
-        <p><strong>Note</strong>: Kigali Sim requires UK-style number formatting (comma for thousands separator, period for decimal point, e.g., <code>123,456.7</code> or <code>40,000.0</code>). If you use European formatting (e.g., <code>123.456,7</code>), Kigali Sim will display an error with a suggestion for the equivalent UK format. Both formatting conventions are internationally valid, but Kigali Sim uses the UK format for consistency with the technologies it leverages. Numbers like <code>40,000</code> are interpreted directly as UK format without ambiguity errors.</p>
+        <p><strong>Note</strong>: Kigali Sim requires DecimalFormat number formatting (comma for thousands separator, period for decimal point, e.g., <code>123,456.7</code> or <code>40,000.0</code>). If you use alternative formatting (e.g., <code>123.456,7</code>), Kigali Sim will display a message with a suggestion for the equivalent supported format. Both formatting conventions are internationally valid, but Kigali Sim uses the DecimalFormat format for consistency with the technologies it leverages. This means <code>40,000</code> is interpreted as forty thousand.</p>
       </section>
 
       <section id="interpreting-multi-application-results">
