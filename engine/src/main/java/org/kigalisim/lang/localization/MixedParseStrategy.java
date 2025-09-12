@@ -62,7 +62,7 @@ public class MixedParseStrategy implements NumberParseUtilStrategy {
       String suggestion = convertEuropeanToUk(numberStr);
       return new FlexibleNumberParseResult(
           String.format(
-              "Unsupported number format detected: '%s'. Please use UK format: '%s'. "
+              "Unsupported number format detected: '%s'. Please use format: '%s'. "
               + "Kigali Sim requires comma for thousands and period for decimal.",
               numberStr,
               suggestion
