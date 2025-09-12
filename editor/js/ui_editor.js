@@ -53,6 +53,12 @@ const ENABLEABLE_STREAMS = ["domestic", "import", "export"];
 const ALWAYS_ON_STREAMS = ["sales", "equipment", "priorEquipment"];
 
 /**
+ * Valid QubecTalk year keywords that should not trigger validation warnings.
+ * @constant {Array<string>}
+ */
+const VALID_YEAR_KEYWORDS = ["beginning", "onwards"];
+
+/**
  * Updates the visibility of selector elements based on selected duration type.
  *
  * @param {HTMLElement} dateSelector - The date selector element to update.
@@ -316,6 +322,15 @@ function validateNumericInputs(dialog, dialogType) {
     const value = input.value.trim();
     if (value === "") return; // Skip empty values (may be optional)
 
+    // Allow valid QubecTalk year keywords for duration fields
+    const isDurationField = input.classList.contains("duration-start") ||
+                           input.classList.contains("duration-end");
+    const isValidYearKeyword = isDurationField && VALID_YEAR_KEYWORDS.includes(value.toLowerCase());
+
+    if (isValidYearKeyword) {
+      return; // Skip validation for valid year keywords
+    }
+
     // Check against invalid patterns
     const isLikelyInvalid = invalidPatterns.some((pattern) => pattern.test(value));
 
@@ -435,21 +450,32 @@ function setDuring(selection, command, defaultVal, initListeners) {
     const durationEnd = effectiveVal.getEnd();
     const noEnd = durationEnd === null;
 
+    // Helper function to safely set year values, preserving original user input
+    const setYearValue = (input, yearValue) => {
+      if (yearValue === null || yearValue === undefined) {
+        input.value = "";
+      } else {
+        // Always show the original string - no need to parse or check for NaN
+        // since the string will work correctly when converted to code
+        input.value = String(yearValue);
+      }
+    };
+
     if (noStart && noEnd) {
       durationTypeInput.value = "during all years";
     } else if (noStart) {
       durationTypeInput.value = "ending in year";
-      durationEndInput.value = durationEnd;
+      setYearValue(durationEndInput, durationEnd);
     } else if (noEnd) {
       durationTypeInput.value = "starting in year";
-      durationStartInput.value = durationStart;
+      setYearValue(durationStartInput, durationStart);
     } else if (durationStart == durationEnd) {
       durationTypeInput.value = "in year";
-      durationStartInput.value = durationStart;
+      setYearValue(durationStartInput, durationStart);
     } else {
       durationTypeInput.value = "during years";
-      durationStartInput.value = durationStart;
-      durationEndInput.value = durationEnd;
+      setYearValue(durationStartInput, durationStart);
+      setYearValue(durationEndInput, durationEnd);
     }
   };
 
