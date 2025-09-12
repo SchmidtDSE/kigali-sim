@@ -57,20 +57,14 @@ public class MixedParseStrategy implements NumberParseUtilStrategy {
       }
       return new FlexibleNumberParseResult(new BigDecimal(withoutThousands));
     } else {
-      // Period comes before comma: period = thousands, comma = decimal (European format)
-      // Example: 123.456,789
-      String withoutThousands = numberStr.replace(".", "");
-      FlexibleNumberParseResult decimalValidation = validateSingleDecimalSeparator(withoutThousands, ',');
-      if (decimalValidation.isError()) {
-        return decimalValidation;
-      }
-      // Validate thousands separator positioning for periods
-      FlexibleNumberParseResult thousandsValidation = validateThousandsSeparatorPositions(numberStr.substring(0, lastCommaIndex), '.');
-      if (thousandsValidation.isError()) {
-        return thousandsValidation;
-      }
-      // Convert comma decimal to period decimal
-      return new FlexibleNumberParseResult(new BigDecimal(withoutThousands.replace(",", ".")));
+      // Period comes before comma: European format - reject with UK suggestion
+      // Example: 123.456,789 → suggest 123,456.789
+      String suggestion = convertEuropeanToUk(numberStr);
+      return new FlexibleNumberParseResult(String.format(
+          "European number format detected: '%s'. Please use UK format: '%s'. "
+          + "Kigali Sim requires UK-style numbers (comma for thousands, period for decimal).",
+          numberStr, suggestion
+      ));
     }
   }
 
@@ -137,5 +131,31 @@ public class MixedParseStrategy implements NumberParseUtilStrategy {
     int originalLength = str.length();
     int lengthWithoutTarget = str.replaceAll(Pattern.quote(target), "").length();
     return originalLength - lengthWithoutTarget;
+  }
+
+  /**
+   * Convert European mixed format to UK format.
+   *
+   * @param europeanNumber The European format number (e.g., "1.234,56")
+   * @return UK format suggestion (e.g., "1,234.56")
+   */
+  private String convertEuropeanToUk(String europeanNumber) {
+    // Convert European mixed format to UK format
+    // European: 1.234.567,89 (periods for thousands, comma for decimal)
+    // UK:       1,234,567.89 (commas for thousands, period for decimal)
+    
+    int lastCommaIndex = europeanNumber.lastIndexOf(',');
+    if (lastCommaIndex == -1) {
+      // No comma, just convert periods to commas
+      return europeanNumber.replace(".", ",");
+    }
+    
+    // Split at last comma (decimal separator in European format)
+    String thousandsPart = europeanNumber.substring(0, lastCommaIndex);
+    String decimalPart = europeanNumber.substring(lastCommaIndex + 1);
+    
+    // Convert periods in thousands part to commas, and use period for decimal
+    String ukThousands = thousandsPart.replace(".", ",");
+    return ukThousands + "." + decimalPart;
   }
 }

@@ -42,7 +42,16 @@ public class OnlyPeriodsParseStrategy implements NumberParseUtilStrategy {
    */
   private FlexibleNumberParseResult handleSingleSeparatorType(String numberStr, char separator, int count) {
     if (count > 1) {
-      // Multiple occurrences = thousands separator
+      // Multiple occurrences could be European thousands separators - reject with suggestion
+      if (isEuropeanThousandsPattern(numberStr)) {
+        String suggestion = generateUkFormatSuggestion(numberStr);
+        return new FlexibleNumberParseResult(String.format(
+            "European number format detected: '%s'. Please use UK format: '%s'. "
+            + "Kigali Sim requires UK-style numbers (comma for thousands, period for decimal).",
+            numberStr, suggestion
+        ));
+      }
+      // Multiple occurrences = thousands separator (should not happen in UK format)
       FlexibleNumberParseResult validationResult = validateThousandsSeparatorPositions(numberStr, separator);
       if (validationResult.isError()) {
         return validationResult;
@@ -71,13 +80,8 @@ public class OnlyPeriodsParseStrategy implements NumberParseUtilStrategy {
           // Numbers starting with 0. are clearly decimals (like 0.035)
           return new FlexibleNumberParseResult(new BigDecimal(numberStr));
         } else {
-          // Truly ambiguous case - could be 123.456 (thousands) or 123.456 (decimal)
-          return new FlexibleNumberParseResult(String.format(
-              "Ambiguous number format: '%s'. Cannot determine if '%s' is a thousands "
-              + "separator or decimal separator. Suggestions: Use '%s,0' if thousands separator "
-              + "or '%s0' if decimal part separator. Please change format to disambiguate.",
-              numberStr, separator, numberStr, numberStr
-          ));
+          // Previously ambiguous case - now interpret as UK format (decimal separator)
+          return new FlexibleNumberParseResult(new BigDecimal(numberStr));
         }
       } else {
         // Not exactly 3 digits after = decimal separator
@@ -140,5 +144,43 @@ public class OnlyPeriodsParseStrategy implements NumberParseUtilStrategy {
     }
     
     return new FlexibleNumberParseResult(new BigDecimal("0")); // Success case
+  }
+
+  /**
+   * Detect if the pattern represents European thousands separator format (periods as thousands separators).
+   *
+   * @param numberStr The number string
+   * @return true if this appears to be European thousands separator format
+   */
+  private boolean isEuropeanThousandsPattern(String numberStr) {
+    // European pattern: multiple periods like "1.234.567"
+    // This is always European thousands separator format in our context
+    return numberStr.contains(".") && countOccurrences(numberStr, '.') > 1;
+  }
+
+  /**
+   * Generate UK format suggestion for European thousands separator input.
+   *
+   * @param europeanInput The European format input with period thousands separators
+   * @return UK format suggestion
+   */
+  private String generateUkFormatSuggestion(String europeanInput) {
+    // Convert European thousands separator format to UK format
+    // Example: "1.234.567" → "1,234,567"
+    return europeanInput.replace(".", ",");
+  }
+
+  /**
+   * Count occurrences of a character in a string.
+   *
+   * @param str The string to search
+   * @param ch The character to count
+   * @return Number of occurrences
+   */
+  private int countOccurrences(String str, char ch) {
+    String target = String.valueOf(ch);
+    int originalLength = str.length();
+    int lengthWithoutTarget = str.replaceAll(java.util.regex.Pattern.quote(target), "").length();
+    return originalLength - lengthWithoutTarget;
   }
 }

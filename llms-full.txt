@@ -78,7 +78,7 @@ The about stanza is optional.
 Supports automatic unit conversion: kg, mt (metric tons), tCO2e (tons CO2 equivalent), kwh (kilowatt hours), units (equipment), years/months/days (time), % (percentages)
 
 #### Number formatting
-Both comma and period decimal separators are accepted (e.g., `123,456.7` or `123.456,7`). Ambiguous formats like `123.456` or `123,456` will error - specify as `123.4560`/`123.456,0` or `123,4560`/`123,456.0` respectively.
+Kigali Sim requires UK-style number formatting (comma for thousands, period for decimal). Both formatting conventions are internationally valid, but Kigali Sim uses the UK format for consistency with the technologies it leverages. European format numbers like `123.456,7` will generate an error with a suggestion for the equivalent UK format `123,456.7`. Ambiguous formats like `123,456` or `123.456` are interpreted as UK format without error.
 
 #### Advanced Features
 - **Variables**: `define identifier as expression` and `get identifier` (scoped to enclosing start/end block)

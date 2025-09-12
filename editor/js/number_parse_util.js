@@ -231,29 +231,13 @@ class NumberParseUtil {
       }
       return NumberParseResult.success(result);
     } else {
-      // Comma comes after period - European format (comma as decimal)
-      if (commaCount !== 1) {
-        return NumberParseResult.error(
-          `Invalid number format: '${originalString}' - multiple decimal separators not allowed`,
-        );
-      }
-
-      // Check if there are any commas before the last period (invalid in European format)
-      const firstComma = numberPart.indexOf(",");
-      if (firstComma < lastPeriod) {
-        return NumberParseResult.error(
-          `Invalid number format: '${originalString}' - commas cannot ` +
-            "appear before periods in European format",
-        );
-      }
-
-      // Format: 123.456,78 - period is thousands, comma is decimal
-      const withoutThousands = numberPart.replace(/\./g, "");
-      const result = parseFloat(withoutThousands.replace(",", "."));
-      if (isNaN(result)) {
-        return NumberParseResult.error(`Invalid number format: '${originalString}'`);
-      }
-      return NumberParseResult.success(result);
+      // Comma comes after period - European format → ERROR
+      const ukSuggestion = self._convertEuropeanToUkFormat(numberPart);
+      return NumberParseResult.error(
+        `European number format detected: '${originalString}'. ` +
+        `Please use UK format: '${ukSuggestion}'. ` +
+        "Kigali Sim requires UK-style numbers (comma for thousands, period for decimal).",
+      );
     }
   }
 
@@ -270,14 +254,23 @@ class NumberParseUtil {
     const self = this;
     const separatorCount = self._countOccurrences(numberPart, separator);
 
-    // Multiple occurrences - definitely thousands separator
+    // Multiple occurrences
     if (separatorCount > 1) {
-      const cleaned = numberPart.replace(new RegExp(`\\${separator}`, "g"), "");
-      const result = parseFloat(cleaned);
-      if (isNaN(result)) {
-        return NumberParseResult.error(`Invalid number format: '${originalString}'`);
+      if (separator === ".") {
+        // Multiple periods = European thousands separators → ERROR
+        const ukSuggestion = numberPart.replace(/\./g, ",");
+        return NumberParseResult.error(
+          self._generateEuropeanFormatError(originalString, ukSuggestion),
+        );
+      } else {
+        // Multiple commas = UK thousands separators → OK
+        const cleaned = numberPart.replace(new RegExp(`\\${separator}`, "g"), "");
+        const result = parseFloat(cleaned);
+        if (isNaN(result)) {
+          return NumberParseResult.error(`Invalid number format: '${originalString}'`);
+        }
+        return NumberParseResult.success(result);
       }
-      return NumberParseResult.success(result);
     }
 
     // Single occurrence - need to determine if thousands or decimal
@@ -285,17 +278,25 @@ class NumberParseUtil {
     const digitsBefore = separatorIndex;
     const digitsAfter = numberPart.length - separatorIndex - 1;
 
-    // If not exactly 3 digits after, treat as decimal separator
+    // If not exactly 3 digits after, determine UK vs European format
     if (digitsAfter !== 3) {
       if (separator === ",") {
-        // European decimal format
-        const result = parseFloat(numberPart.replace(",", "."));
-        if (isNaN(result)) {
-          return NumberParseResult.error(`Invalid number format: '${originalString}'`);
+        // Check if this looks like European decimal usage (1-2 digits after comma)
+        if (digitsAfter <= 2 && digitsBefore > 0) {
+          const ukSuggestion = numberPart.replace(",", ".");
+          return NumberParseResult.error(
+            self._generateEuropeanFormatError(originalString, ukSuggestion),
+          );
+        } else {
+          // Treat comma as thousands separator (UK format)
+          const result = parseFloat(numberPart.replace(/,/g, ""));
+          if (isNaN(result)) {
+            return NumberParseResult.error(`Invalid number format: '${originalString}'`);
+          }
+          return NumberParseResult.success(result);
         }
-        return NumberParseResult.success(result);
       } else {
-        // US decimal format
+        // Period separator - treat as UK decimal format
         const result = parseFloat(numberPart);
         if (isNaN(result)) {
           return NumberParseResult.error(`Invalid number format: '${originalString}'`);
@@ -309,14 +310,13 @@ class NumberParseUtil {
       // Special case: if number starts with separator, it's always a decimal separator
       if (digitsBefore === 0) {
         if (separator === ",") {
-          // European decimal format
-          const result = parseFloat(numberPart.replace(",", "."));
-          if (isNaN(result)) {
-            return NumberParseResult.error(`Invalid number format: '${originalString}'`);
-          }
-          return NumberParseResult.success(result);
+          // European decimal format - reject with UK suggestion
+          const ukSuggestion = numberPart.replace(",", ".");
+          return NumberParseResult.error(
+            self._generateEuropeanFormatError(originalString, ukSuggestion),
+          );
         } else {
-          // US decimal format
+          // UK decimal format
           const result = parseFloat(numberPart);
           if (isNaN(result)) {
             return NumberParseResult.error(`Invalid number format: '${originalString}'`);
@@ -328,14 +328,13 @@ class NumberParseUtil {
       // Check if digits before are 4 or more like 1234.5, treat as decimal separator
       if (digitsBefore >= 4) {
         if (separator === ",") {
-          // European decimal format
-          const result = parseFloat(numberPart.replace(",", "."));
-          if (isNaN(result)) {
-            return NumberParseResult.error(`Invalid number format: '${originalString}'`);
-          }
-          return NumberParseResult.success(result);
+          // European decimal format - reject with UK suggestion
+          const ukSuggestion = numberPart.replace(",", ".");
+          return NumberParseResult.error(
+            self._generateEuropeanFormatError(originalString, ukSuggestion),
+          );
         } else {
-          // US decimal format
+          // UK decimal format
           const result = parseFloat(numberPart);
           if (isNaN(result)) {
             return NumberParseResult.error(`Invalid number format: '${originalString}'`);
@@ -345,12 +344,13 @@ class NumberParseUtil {
       } else if (numberPart.startsWith("0" + separator)) {
         // Numbers starting with 0, are clearly decimals (like 0,035)
         if (separator === ",") {
-          const result = parseFloat(numberPart.replace(",", "."));
-          if (isNaN(result)) {
-            return NumberParseResult.error(`Invalid number format: '${originalString}'`);
-          }
-          return NumberParseResult.success(result);
+          // European decimal format - reject with UK suggestion
+          const ukSuggestion = numberPart.replace(",", ".");
+          return NumberParseResult.error(
+            self._generateEuropeanFormatError(originalString, ukSuggestion),
+          );
         } else {
+          // UK decimal format
           const result = parseFloat(numberPart);
           if (isNaN(result)) {
             return NumberParseResult.error(`Invalid number format: '${originalString}'`);
@@ -358,15 +358,22 @@ class NumberParseUtil {
           return NumberParseResult.success(result);
         }
       } else {
-        // Truly ambiguous case - could be 123,456 (thousands) or 123,456 (decimal)
-        const thousandsDecimalSep = separator === "," ? ".0" : ",0";
-        return NumberParseResult.error(
-          `Ambiguous number format: '${originalString}'. Cannot determine if '${separator}' ` +
-            "is a thousands separator or decimal separator. Suggestions: " +
-            `Use '${originalString}${thousandsDecimalSep}' if thousands separator ` +
-            `or '${originalString}0' if decimal part separator. ` +
-            "Please change format to disambiguate.",
-        );
+        // Previously ambiguous case - now interpret as UK format (no error)
+        if (separator === ",") {
+          // Treat comma as thousands separator (UK format)
+          const result = parseFloat(numberPart.replace(/,/g, ""));
+          if (isNaN(result)) {
+            return NumberParseResult.error(`Invalid number format: '${originalString}'`);
+          }
+          return NumberParseResult.success(result);
+        } else {
+          // Period separator - treat as UK decimal format
+          const result = parseFloat(numberPart);
+          if (isNaN(result)) {
+            return NumberParseResult.error(`Invalid number format: '${originalString}'`);
+          }
+          return NumberParseResult.success(result);
+        }
       }
     }
 
@@ -401,6 +408,47 @@ class NumberParseUtil {
   _countOccurrences(str, char) {
     const self = this;
     return str.length - str.replaceAll(char, "").length;
+  }
+
+  /**
+   * Convert European format number to UK format suggestion.
+   *
+   * @param {string} numberPart - European format number part
+   * @returns {string} UK format equivalent
+   * @private
+   */
+  _convertEuropeanToUkFormat(numberPart) {
+    // Handle different European patterns:
+    // "1.234,56" → "1,234.56"
+    // "123,45" → "123.45"
+    // "1.234.567,89" → "1,234,567.89"
+
+    const lastCommaIndex = numberPart.lastIndexOf(",");
+    const lastPeriodIndex = numberPart.lastIndexOf(".");
+
+    if (lastCommaIndex > lastPeriodIndex && lastCommaIndex !== -1) {
+      // European mixed format: periods for thousands, comma for decimal
+      return numberPart.replace(/\./g, ",").replace(/,([^,]*)$/, ".$1");
+    } else if (lastCommaIndex !== -1 && lastPeriodIndex === -1) {
+      // Single comma as European decimal
+      return numberPart.replace(",", ".");
+    }
+
+    return numberPart; // Fallback
+  }
+
+  /**
+   * Generate standardized error message for European format detection.
+   *
+   * @param {string} originalInput - The original user input
+   * @param {string} ukSuggestion - The UK format suggestion
+   * @returns {string} Formatted error message
+   * @private
+   */
+  _generateEuropeanFormatError(originalInput, ukSuggestion) {
+    return `European number format detected: '${originalInput}'. ` +
+           `Please use UK format: '${ukSuggestion}'. ` +
+           "Kigali Sim requires UK-style numbers (comma for thousands, period for decimal).";
   }
 }
 

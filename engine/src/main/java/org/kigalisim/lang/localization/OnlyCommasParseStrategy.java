@@ -71,17 +71,20 @@ public class OnlyCommasParseStrategy implements NumberParseUtilStrategy {
           // Numbers starting with 0, are clearly decimals (like 0,035)
           return new FlexibleNumberParseResult(new BigDecimal(numberStr.replace(",", ".")));
         } else {
-          // Truly ambiguous case - could be 123,456 (thousands) or 123,456 (decimal)
-          return new FlexibleNumberParseResult(String.format(
-              "Ambiguous number format: '%s'. Cannot determine if '%s' is a thousands "
-              + "separator or decimal separator. Suggestions: Use '%s.0' if thousands separator "
-              + "or '%s0' if decimal part separator. Please change format to disambiguate.",
-              numberStr, separator, numberStr, numberStr
-          ));
+          // Previously ambiguous case - now interpret as UK format (thousands separator)
+          return new FlexibleNumberParseResult(new BigDecimal(numberStr.replace(String.valueOf(separator), "")));
         }
       } else {
-        // Not exactly 3 digits after = decimal separator
-        // Convert comma decimal to period decimal
+        // Not exactly 3 digits after - check if it's European decimal format
+        if (isEuropeanDecimalPattern(numberStr, separatorIndex)) {
+          String suggestion = generateUkFormatSuggestion(numberStr);
+          return new FlexibleNumberParseResult(String.format(
+              "European number format detected: '%s'. Please use UK format: '%s'. "
+              + "Kigali Sim requires UK-style numbers (comma for thousands, period for decimal).",
+              numberStr, suggestion
+          ));
+        }
+        // Convert comma decimal to period decimal (UK format)
         return new FlexibleNumberParseResult(new BigDecimal(numberStr.replace(",", ".")));
       }
     }
@@ -140,5 +143,35 @@ public class OnlyCommasParseStrategy implements NumberParseUtilStrategy {
     }
     
     return new FlexibleNumberParseResult(new BigDecimal("0")); // Success case
+  }
+
+  /**
+   * Detect if the pattern represents European decimal format (comma as decimal separator).
+   *
+   * @param numberStr The number string
+   * @param separatorIndex The index of the comma separator
+   * @return true if this appears to be European decimal format
+   */
+  private boolean isEuropeanDecimalPattern(String numberStr, int separatorIndex) {
+    // For the OnlyCommas strategy, single comma patterns are ambiguous
+    // and should be interpreted as UK decimal format according to requirements
+    // The main European format detection (like 1.234,56) happens in MixedParseStrategy
+    // We only reject clear European-specific patterns here, which are rare with only commas
+    
+    // For now, be conservative and don't reject single comma patterns
+    // They will be converted to UK decimal format (comma -> period)
+    return false;
+  }
+
+  /**
+   * Generate UK format suggestion for European decimal input.
+   *
+   * @param europeanInput The European format input
+   * @return UK format suggestion
+   */
+  private String generateUkFormatSuggestion(String europeanInput) {
+    // Convert European decimal format to UK format
+    // Example: "123,45" → "123.45"
+    return europeanInput.replace(",", ".");
   }
 }
