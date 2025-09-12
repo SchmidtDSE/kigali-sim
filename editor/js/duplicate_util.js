@@ -594,38 +594,20 @@ class DuplicateEntityPresenter {
   _deepCopyRechargeCommand(sourceRechargeCommand) {
     const self = this;
 
-    // Handle both new EngineNumber-based and legacy RechargeCommand formats
-    let populationEngineNumber;
-    let volumeEngineNumber;
+    // All RechargeCommand objects use EngineNumber format
+    const srcPopulation = sourceRechargeCommand.getPopulationEngineNumber();
+    const srcVolume = sourceRechargeCommand.getVolumeEngineNumber();
 
-    if (sourceRechargeCommand.getPopulationEngineNumber) {
-      // New format with EngineNumber objects
-      const srcPopulation = sourceRechargeCommand.getPopulationEngineNumber();
-      const srcVolume = sourceRechargeCommand.getVolumeEngineNumber();
-
-      populationEngineNumber = new EngineNumber(
-        srcPopulation.getValue(),
-        srcPopulation.getUnits(),
-        srcPopulation.getOriginalString(),
-      );
-      volumeEngineNumber = new EngineNumber(
-        srcVolume.getValue(),
-        srcVolume.getUnits(),
-        srcVolume.getOriginalString(),
-      );
-    } else {
-      // Legacy format with separate population/volume strings
-      populationEngineNumber = new EngineNumber(
-        sourceRechargeCommand.getPopulation(),
-        sourceRechargeCommand.getPopulationUnits(),
-        sourceRechargeCommand.getPopulation(),
-      );
-      volumeEngineNumber = new EngineNumber(
-        sourceRechargeCommand.getVolume(),
-        sourceRechargeCommand.getVolumeUnits(),
-        sourceRechargeCommand.getVolume(),
-      );
-    }
+    const populationEngineNumber = new EngineNumber(
+      srcPopulation.getValue(),
+      srcPopulation.getUnits(),
+      srcPopulation.getOriginalString(),
+    );
+    const volumeEngineNumber = new EngineNumber(
+      srcVolume.getValue(),
+      srcVolume.getUnits(),
+      srcVolume.getOriginalString(),
+    );
 
     const duration = sourceRechargeCommand.getDuration();
     const yearMatcher = duration ? self._deepCopyYearMatcher(duration) : null;

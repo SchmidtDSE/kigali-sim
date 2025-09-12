@@ -2693,45 +2693,6 @@ class RechargeCommand {
     return self._volumeEngineNumber;
   }
 
-  /**
-   * Legacy method: Get the population value as string.
-   *
-   * @returns {string} The population value.
-   */
-  getPopulation() {
-    const self = this;
-    return String(self._populationEngineNumber.getValue());
-  }
-
-  /**
-   * Legacy method: Get the population units as string.
-   *
-   * @returns {string} The population units.
-   */
-  getPopulationUnits() {
-    const self = this;
-    return self._populationEngineNumber.getUnits();
-  }
-
-  /**
-   * Legacy method: Get the volume value as string.
-   *
-   * @returns {string} The volume value.
-   */
-  getVolume() {
-    const self = this;
-    return String(self._volumeEngineNumber.getValue());
-  }
-
-  /**
-   * Legacy method: Get the volume units as string.
-   *
-   * @returns {string} The volume units.
-   */
-  getVolumeUnits() {
-    const self = this;
-    return self._volumeEngineNumber.getUnits();
-  }
 
   /**
    * Get the duration for which this recharge command applies.

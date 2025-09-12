@@ -3303,44 +3303,40 @@ function readLimitCommandUi(root) {
  * @param {Object} codeObj - The code object for context.
  */
 function initRechargeCommandUi(itemObj, root, codeObj) {
-  // Handle both RechargeCommand objects and generic Command objects
+  // Handle RechargeCommand objects (all use EngineNumber) and generic Command objects
   const populationGetter = (x) => {
     if (x.getPopulationEngineNumber) {
-      // New EngineNumber-based RechargeCommand - use original string if available
+      // EngineNumber-based RechargeCommand - use original string if available
       const engineNumber = x.getPopulationEngineNumber();
       return engineNumber.getOriginalString() || String(engineNumber.getValue());
-    } else if (x.getPopulation) {
-      return x.getPopulation();
     } else {
+      // Generic Command object
       return x.getTarget().getValue();
     }
   };
   const populationUnitsGetter = (x) => {
     if (x.getPopulationEngineNumber) {
       return x.getPopulationEngineNumber().getUnits();
-    } else if (x.getPopulationUnits) {
-      return x.getPopulationUnits();
     } else {
+      // Generic Command object
       return x.getTarget().getUnits();
     }
   };
   const volumeGetter = (x) => {
     if (x.getVolumeEngineNumber) {
-      // New EngineNumber-based RechargeCommand - use original string if available
+      // EngineNumber-based RechargeCommand - use original string if available
       const engineNumber = x.getVolumeEngineNumber();
       return engineNumber.getOriginalString() || String(engineNumber.getValue());
-    } else if (x.getVolume) {
-      return x.getVolume();
     } else {
+      // Generic Command object
       return x.getValue().getValue();
     }
   };
   const volumeUnitsGetter = (x) => {
     if (x.getVolumeEngineNumber) {
       return x.getVolumeEngineNumber().getUnits();
-    } else if (x.getVolumeUnits) {
-      return x.getVolumeUnits();
     } else {
+      // Generic Command object
       return x.getValue().getUnits();
     }
   };
