@@ -78,11 +78,14 @@ public class OnlyCommasParseStrategy implements NumberParseUtilStrategy {
         // Not exactly 3 digits after - check if it's European decimal format
         if (isEuropeanDecimalPattern(numberStr, separatorIndex)) {
           String suggestion = generateUkFormatSuggestion(numberStr);
-          return new FlexibleNumberParseResult(String.format(
-              "European number format detected: '%s'. Please use UK format: '%s'. "
-              + "Kigali Sim requires UK-style numbers (comma for thousands, period for decimal).",
-              numberStr, suggestion
-          ));
+          return new FlexibleNumberParseResult(
+              String.format(
+                  "Unsupported number format detected: '%s'. Please use format: '%s'. "
+                  + "Kigali Sim requires comma for thousands and period for decimal.",
+                  numberStr,
+                  suggestion
+              )
+          );
         }
         // Convert comma decimal to period decimal (UK format)
         return new FlexibleNumberParseResult(new BigDecimal(numberStr.replace(",", ".")));
