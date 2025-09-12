@@ -594,7 +594,6 @@ class DuplicateEntityPresenter {
   _deepCopyRechargeCommand(sourceRechargeCommand) {
     const self = this;
 
-    // All RechargeCommand objects use EngineNumber format
     const srcPopulation = sourceRechargeCommand.getPopulationEngineNumber();
     const srcVolume = sourceRechargeCommand.getVolumeEngineNumber();
 
