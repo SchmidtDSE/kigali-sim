@@ -4,7 +4,7 @@
  * @license BSD, see LICENSE.md.
  */
 import {EngineNumber} from "engine_number";
-import {YearMatcher} from "year_matcher";
+import {YearMatcher, ParsedYear} from "duration";
 import {MetaSerializer, MetaChangeApplier} from "meta_serialization";
 import {GwpLookupPresenter} from "known_substance";
 import {NumberParseUtil} from "number_parse_util";
@@ -455,9 +455,8 @@ function setDuring(selection, command, defaultVal, initListeners) {
       if (yearValue === null || yearValue === undefined) {
         input.value = "";
       } else {
-        // Always show the original string - no need to parse or check for NaN
-        // since the string will work correctly when converted to code
-        input.value = String(yearValue);
+        // Use ParsedYear's getYearStr() method for proper display
+        input.value = yearValue.getYearStr();
       }
     };
 
@@ -469,7 +468,7 @@ function setDuring(selection, command, defaultVal, initListeners) {
     } else if (noEnd) {
       durationTypeInput.value = "starting in year";
       setYearValue(durationStartInput, durationStart);
-    } else if (durationStart == durationEnd) {
+    } else if (durationStart && durationEnd && durationStart.equals(durationEnd)) {
       durationTypeInput.value = "in year";
       setYearValue(durationStartInput, durationStart);
     } else {
@@ -3159,7 +3158,12 @@ function initSetCommandUi(itemObj, root, codeObj, context, streamUpdater) {
     new EngineNumber(1, "mt"),
     (x) => x.getValue(),
   );
-  setDuring(root.querySelector(".duration-subcomponent"), itemObj, new YearMatcher(1, 1), true);
+  setDuring(
+    root.querySelector(".duration-subcomponent"),
+    itemObj,
+    new YearMatcher(new ParsedYear(1), new ParsedYear(1)),
+    true,
+  );
 }
 
 /**
@@ -3212,7 +3216,12 @@ function initChangeCommandUi(itemObj, root, codeObj, context, streamUpdater) {
     }
     return x.getValue().getUnits();
   });
-  setDuring(root.querySelector(".duration-subcomponent"), itemObj, new YearMatcher(2, 10), true);
+  setDuring(
+    root.querySelector(".duration-subcomponent"),
+    itemObj,
+    new YearMatcher(new ParsedYear(2), new ParsedYear(10)),
+    true,
+  );
 }
 
 /**
@@ -3273,7 +3282,12 @@ function initLimitCommandUi(itemObj, root, codeObj, context, streamUpdater) {
   setFieldValue(root.querySelector(".displacing-input"), itemObj, "", (x) =>
     x && x.getDisplacing ? (x.getDisplacing() === null ? "" : x.getDisplacing()) : "",
   );
-  setDuring(root.querySelector(".duration-subcomponent"), itemObj, new YearMatcher(2, 10), true);
+  setDuring(
+    root.querySelector(".duration-subcomponent"),
+    itemObj,
+    new YearMatcher(new ParsedYear(2), new ParsedYear(10)),
+    true,
+  );
 
   // Add event listener to update options when substance changes
   const substanceSelectElement = root.querySelector(".substances-select");
@@ -3371,7 +3385,12 @@ function initRechargeCommandUi(itemObj, root, codeObj) {
   );
 
   // Set up duration using standard pattern
-  setDuring(root.querySelector(".duration-subcomponent"), itemObj, new YearMatcher(1, 1), true);
+  setDuring(
+    root.querySelector(".duration-subcomponent"),
+    itemObj,
+    new YearMatcher(new ParsedYear(1), new ParsedYear(1)),
+    true,
+  );
 }
 
 /**
@@ -3459,7 +3478,12 @@ function initRecycleCommandUi(itemObj, root, codeObj, context, streamUpdater) {
   setFieldValue(root.querySelector(".recycle-stage-input"), itemObj, "recharge", (x) =>
     x && x.getStage ? x.getStage() : "recharge",
   );
-  setDuring(root.querySelector(".duration-subcomponent"), itemObj, new YearMatcher(2, 10), true);
+  setDuring(
+    root.querySelector(".duration-subcomponent"),
+    itemObj,
+    new YearMatcher(new ParsedYear(2), new ParsedYear(10)),
+    true,
+  );
 }
 
 /**
@@ -3559,7 +3583,12 @@ function initReplaceCommandUi(itemObj, root, codeObj, context, streamUpdater) {
     x.getDestination(),
   );
 
-  setDuring(root.querySelector(".duration-subcomponent"), itemObj, new YearMatcher(2, 10), true);
+  setDuring(
+    root.querySelector(".duration-subcomponent"),
+    itemObj,
+    new YearMatcher(new ParsedYear(2), new ParsedYear(10)),
+    true,
+  );
 
   // Initial update of stream options
   updateReplaceTargetOptions();
@@ -3602,7 +3631,10 @@ function readDurationUi(root) {
   const getYearValue = (x) => (x === null ? null : root.querySelector("." + x).value);
   const minYear = getYearValue(targets["min"]);
   const maxYear = getYearValue(targets["max"]);
-  return new YearMatcher(minYear, maxYear);
+  return new YearMatcher(
+    minYear ? new ParsedYear(minYear) : null,
+    maxYear ? new ParsedYear(maxYear) : null,
+  );
 }
 
 

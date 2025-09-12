@@ -38,7 +38,7 @@ const ESSENTIAL_FILES = [
     "/js/user_config.js",
     "/js/wasm.worker.js",
     "/js/wasm_backend.js",
-    "/js/year_matcher.js",
+    "/js/duration.js",
     
     // Intermediate files (generated language files)
     "/intermediate/index.js",

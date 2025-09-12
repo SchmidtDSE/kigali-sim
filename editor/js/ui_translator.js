@@ -8,7 +8,7 @@
  */
 
 import {EngineNumber} from "engine_number";
-import {YearMatcher} from "year_matcher";
+import {YearMatcher, ParsedYear} from "duration";
 import {parseUnitValue} from "meta_serialization";
 import {NumberParseUtil} from "number_parse_util";
 
@@ -2050,24 +2050,26 @@ class Substance {
       return;
     }
 
-    if (startYear == endYear) {
-      pieces.push("during year " + startYear);
+    if (startYear && endYear && startYear.equals(endYear)) {
+      pieces.push("during year " + startYear.getYearStr());
       return;
     }
 
     const processUnbounded = () => {
       const noStart = startYear === null;
-      const startYearRealized = noStart ? "beginning" : startYear;
+      const startYearRealized = noStart ? "beginning" : startYear.getYearStr();
 
       const noEnd = endYear === null;
-      const endYearRealized = noEnd ? "onwards" : endYear;
+      const endYearRealized = noEnd ? "onwards" : endYear.getYearStr();
 
       pieces.push("during years " + startYearRealized + " to " + endYearRealized);
     };
 
     const processBounded = () => {
-      const startYearRearrange = Math.min(startYear, endYear);
-      const endYearRearrange = Math.max(startYear, endYear);
+      const startYearValue = startYear.getNumericYear();
+      const endYearValue = endYear.getNumericYear();
+      const startYearRearrange = Math.min(startYearValue, endYearValue);
+      const endYearRearrange = Math.max(startYearValue, endYearValue);
       pieces.push("during years " + startYearRearrange + " to " + endYearRearrange);
     };
 
@@ -2742,15 +2744,15 @@ class RechargeCommand {
       const end = self._duration.getEnd();
 
       if (start !== null && end !== null) {
-        if (start === end) {
-          command += ` during year ${start}`;
+        if (start.equals(end)) {
+          command += ` during year ${start.getYearStr()}`;
         } else {
-          command += ` during years ${start} to ${end}`;
+          command += ` during years ${start.getYearStr()} to ${end.getYearStr()}`;
         }
       } else if (start !== null) {
-        command += ` during years ${start} to onwards`;
+        command += ` during years ${start.getYearStr()} to onwards`;
       } else if (end !== null) {
-        command += ` during years beginning to ${end}`;
+        command += ` during years beginning to ${end.getYearStr()}`;
       }
     }
 
@@ -3324,7 +3326,11 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
    */
   buildDuring(minYear, maxYear) {
     const self = this;
-    return new YearMatcher(minYear, maxYear);
+    const minParsed = minYear instanceof ParsedYear ?
+      minYear : (minYear ? ParsedYear.fromLegacyValue(minYear) : null);
+    const maxParsed = maxYear instanceof ParsedYear ?
+      maxYear : (maxYear ? ParsedYear.fromLegacyValue(maxYear) : null);
+    return new YearMatcher(minParsed, maxParsed);
   }
 
   /**
@@ -3347,7 +3353,7 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
    */
   visitDuringStart(ctx) {
     const self = this;
-    const startYear = "beginning";
+    const startYear = new ParsedYear("beginning");
     return self.buildDuring(startYear, startYear);
   }
 

@@ -129,7 +129,9 @@
                 "updates": "../js/updates.js?v=EPOCH",
                 "user_config": "../js/user_config.js?v=EPOCH",
                 "wasm_backend": "../js/wasm_backend.js?v=EPOCH",
-                "year_matcher": "../js/year_matcher.js?v=EPOCH"
+                "year_matcher": "../js/duration.js?v=EPOCH",
+                "duration": "../js/duration.js?v=EPOCH",
+                "test_duration": "./test_duration.js?v=EPOCH"
             }
         }
     </script>
@@ -181,6 +183,7 @@
         import {buildUiTranslatorReverseTests} from "test_ui_translator_reverse";
         import {buildUpdateTests} from "test_update";
         import {buildWasmBackendTests} from "test_wasm_backend";
+        import {buildDurationTests} from "test_duration";
 
         buildIntegrationTests();
         buildLocalStorageKeeperTests();
@@ -197,5 +200,6 @@
         buildMainTests();
         buildUpdateTests();
         buildWasmBackendTests();
+        buildDurationTests();
     </script>
 </body>
