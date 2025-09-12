@@ -39,18 +39,23 @@ function buildNumberParseUtilTests() {
       assert.equal(result.getNumber(), 123.45, "Simple decimal number");
     });
 
-    QUnit.test("parses valid European format numbers", function (assert) {
+    QUnit.test("rejects previously supported European formats", function (assert) {
+      // These should now fail instead of succeeding
       let result = numberParser.parseFlexibleNumber("123.456,78");
-      assert.ok(result.isSuccess(), "European format with thousands and decimal should succeed");
-      assert.equal(result.getNumber(), 123456.78, "European format with thousands and decimal");
+      assert.ok(!result.isSuccess(), "European format should now fail");
+      assert.ok(result.getError().includes("Unsupported number format"), "Should detect unsupported format");
+      assert.ok(result.getError().includes("123,456.78"), "Should suggest UK equivalent");
 
       result = numberParser.parseFlexibleNumber("1.234.567,89");
-      assert.ok(result.isSuccess(), "European format with multiple thousands should succeed");
-      assert.equal(result.getNumber(), 1234567.89, "European format with multiple thousands");
+      assert.ok(!result.isSuccess(), "European format with multiple thousands should now fail");
+      assert.ok(result.getError().includes("Unsupported number format"), "Should detect unsupported format");
+      assert.ok(result.getError().includes("1,234,567.89"), "Should suggest UK equivalent");
 
+      // Note: Single comma decimals like "123,45" are European format and should be rejected
       result = numberParser.parseFlexibleNumber("123,45");
-      assert.ok(result.isSuccess(), "European decimal separator should succeed");
-      assert.equal(result.getNumber(), 123.45, "European decimal separator");
+      assert.ok(!result.isSuccess(), "Single comma decimal should be rejected as European format");
+      assert.ok(result.getError().includes("Unsupported number format"), "Should detect unsupported format");
+      assert.ok(result.getError().includes("123.45"), "Should suggest UK equivalent");
     });
 
     QUnit.test("parses numbers without separators", function (assert) {
@@ -69,12 +74,12 @@ function buildNumberParseUtilTests() {
 
     QUnit.test("handles negative numbers correctly", function (assert) {
       let result = numberParser.parseFlexibleNumber("-123,456.78");
-      assert.ok(result.isSuccess(), "Negative US format should succeed");
-      assert.equal(result.getNumber(), -123456.78, "Negative US format");
+      assert.ok(result.isSuccess(), "Negative UK format should succeed");
+      assert.equal(result.getNumber(), -123456.78, "Negative UK format");
 
       result = numberParser.parseFlexibleNumber("-123.456,78");
-      assert.ok(result.isSuccess(), "Negative European format should succeed");
-      assert.equal(result.getNumber(), -123456.78, "Negative European format");
+      assert.ok(!result.isSuccess(), "Negative European format should now fail");
+      assert.ok(result.getError().includes("Unsupported number format"), "Should detect unsupported format");
 
       result = numberParser.parseFlexibleNumber("-123456");
       assert.ok(result.isSuccess(), "Negative integer should succeed");
@@ -87,50 +92,65 @@ function buildNumberParseUtilTests() {
 
     QUnit.test("handles positive sign numbers correctly", function (assert) {
       let result = numberParser.parseFlexibleNumber("+123,456.78");
-      assert.ok(result.isSuccess(), "Positive US format should succeed");
-      assert.equal(result.getNumber(), 123456.78, "Positive US format");
+      assert.ok(result.isSuccess(), "Positive UK format should succeed");
+      assert.equal(result.getNumber(), 123456.78, "Positive UK format");
 
       result = numberParser.parseFlexibleNumber("+123.456,78");
-      assert.ok(result.isSuccess(), "Positive European format should succeed");
-      assert.equal(result.getNumber(), 123456.78, "Positive European format");
+      assert.ok(!result.isSuccess(), "Positive European format should now fail");
+      assert.ok(result.getError().includes("Unsupported number format"), "Should detect unsupported format");
 
       result = numberParser.parseFlexibleNumber("+123456");
       assert.ok(result.isSuccess(), "Positive integer should succeed");
       assert.equal(result.getNumber(), 123456, "Positive integer");
     });
 
-    QUnit.test("returns errors for more ambiguous cases", function (assert) {
-      // These cases are now treated as ambiguous following stricter parsing rules
-      let result = numberParser.parseFlexibleNumber("1,000");
-      assert.ok(!result.isSuccess(), "Should fail for ambiguous case: 1,000");
-      assert.ok(result.getError().includes("Ambiguous number format"), "Should return ambiguous error for 1,000");
+    QUnit.test("rejects European format with UK suggestions", function (assert) {
+      // European mixed format should now error
+      let result = numberParser.parseFlexibleNumber("1.234,56");
+      assert.ok(!result.isSuccess(), "European mixed format should fail");
+      assert.ok(result.getError().includes("Unsupported number format"), "Should detect unsupported format");
+      assert.ok(result.getError().includes("1,234.56"), "Should suggest UK equivalent");
 
-      result = numberParser.parseFlexibleNumber("10,000");
-      assert.ok(!result.isSuccess(), "Should fail for ambiguous case: 10,000");
-      assert.ok(result.getError().includes("Ambiguous number format"), "Should return ambiguous error for 10,000");
+      // European decimal comma should error
+      result = numberParser.parseFlexibleNumber("123,45");
+      assert.ok(!result.isSuccess(), "European decimal comma should fail");
+      assert.ok(result.getError().includes("Unsupported number format"), "Should detect unsupported format");
+      assert.ok(result.getError().includes("123.45"), "Should suggest UK decimal equivalent");
 
-      result = numberParser.parseFlexibleNumber("25,000");
-      assert.ok(!result.isSuccess(), "Should fail for ambiguous case: 25,000");
-      assert.ok(result.getError().includes("Ambiguous number format"), "Should return ambiguous error for 25,000");
-
-      result = numberParser.parseFlexibleNumber("1.000");
-      assert.ok(!result.isSuccess(), "Should fail for ambiguous European case: 1.000");
-      assert.ok(result.getError().includes("Ambiguous number format"), "Should return ambiguous error for 1.000");
-
-      result = numberParser.parseFlexibleNumber("10.000");
-      assert.ok(!result.isSuccess(), "Should fail for ambiguous European case: 10.000");
-      assert.ok(result.getError().includes("Ambiguous number format"), "Should return ambiguous error for 10.000");
+      // Multiple periods as thousands should error
+      result = numberParser.parseFlexibleNumber("1.234.567");
+      assert.ok(!result.isSuccess(), "European thousands periods should fail");
+      assert.ok(result.getError().includes("Unsupported number format"), "Should detect unsupported format");
+      assert.ok(result.getError().includes("1,234,567"), "Should suggest UK thousands equivalent");
     });
 
-    QUnit.test("returns errors for ambiguous cases", function (assert) {
-      // These cases are truly ambiguous - could be thousands or decimal
+    QUnit.test("previously ambiguous cases now work as UK format", function (assert) {
+      // These should now parse successfully as UK format (no ambiguity errors)
       let result = numberParser.parseFlexibleNumber("123,456");
-      assert.ok(!result.isSuccess(), "Should fail for ambiguous comma case: 123,456");
-      assert.ok(result.getError().includes("Ambiguous number format"), "Should return ambiguous error for comma case");
+      assert.ok(result.isSuccess(), "123,456 should now parse as UK thousands separator");
+      assert.equal(result.getNumber(), 123456, "123,456 should equal 123456");
 
       result = numberParser.parseFlexibleNumber("123.456");
-      assert.ok(!result.isSuccess(), "Should fail for ambiguous period case: 123.456");
-      assert.ok(result.getError().includes("Ambiguous number format"), "Should return ambiguous error for period case");
+      assert.ok(result.isSuccess(), "123.456 should now parse as UK decimal");
+      assert.equal(result.getNumber(), 123.456, "123.456 should equal 123.456");
+
+      result = numberParser.parseFlexibleNumber("1,000");
+      assert.ok(result.isSuccess(), "1,000 should now parse as UK thousands");
+      assert.equal(result.getNumber(), 1000, "1,000 should equal 1000");
+
+      result = numberParser.parseFlexibleNumber("25,000");
+      assert.ok(result.isSuccess(), "25,000 should now parse as UK thousands");
+      assert.equal(result.getNumber(), 25000, "25,000 should equal 25000");
+    });
+
+    QUnit.test("error messages follow consistent format", function (assert) {
+      const result = numberParser.parseFlexibleNumber("1.234,56");
+      assert.ok(!result.isSuccess(), "European format should fail");
+
+      const error = result.getError();
+      assert.ok(error.includes("Unsupported number format: '1.234,56'"), "Should include detected format");
+      assert.ok(error.includes("Please use: '1,234.56'"), "Should include suggestion");
+      assert.ok(error.includes("Kigali Sim requires comma for thousands separator and period for decimal point"), "Should include explanation");
     });
 
     QUnit.test("returns errors for invalid formats", function (assert) {
@@ -151,34 +171,34 @@ function buildNumberParseUtilTests() {
       assert.ok(result.getError().includes("number format"), "Should return format error");
     });
 
-    QUnit.test("isAmbiguous correctly identifies ambiguous numbers", function (assert) {
-      // These should be identified as ambiguous
-      assert.ok(numberParser.isAmbiguous("123,456"), "123,456 should be ambiguous");
-      assert.ok(numberParser.isAmbiguous("123.456"), "123.456 should be ambiguous");
+    QUnit.test("isAmbiguous reflects new UK-only behavior", function (assert) {
+      // These should NO LONGER be identified as ambiguous
+      assert.notOk(numberParser.isAmbiguous("123,456"), "123,456 should not be ambiguous in UK-only mode");
+      assert.notOk(numberParser.isAmbiguous("123.456"), "123.456 should not be ambiguous in UK-only mode");
+      assert.notOk(numberParser.isAmbiguous("1,234"), "1,234 should not be ambiguous in UK-only mode");
+      assert.notOk(numberParser.isAmbiguous("10,000"), "10,000 should not be ambiguous in UK-only mode");
 
-      // These should NOT be ambiguous
-      assert.notOk(numberParser.isAmbiguous("123,456.78"), "123,456.78 should not be ambiguous");
-      assert.notOk(numberParser.isAmbiguous("123.456,78"), "123.456,78 should not be ambiguous");
-      assert.notOk(numberParser.isAmbiguous("123456"), "123456 should not be ambiguous");
-      assert.notOk(numberParser.isAmbiguous("123.45"), "123.45 should not be ambiguous");
-      assert.ok(numberParser.isAmbiguous("1,234"), "1,234 should be ambiguous");
-      assert.ok(numberParser.isAmbiguous("123,456"), "123,456 should be ambiguous");
-      assert.ok(numberParser.isAmbiguous("10,000"), "10,000 should be ambiguous");
+      // These should still work (non-ambiguous UK formats)
+      assert.notOk(numberParser.isAmbiguous("123,456.78"), "UK mixed format should not be ambiguous");
+      assert.notOk(numberParser.isAmbiguous("123456"), "Integer should not be ambiguous");
+      assert.notOk(numberParser.isAmbiguous("123.45"), "UK decimal should not be ambiguous");
+
+      // European formats should now fail (not be ambiguous, but give errors)
+      assert.notOk(numberParser.isAmbiguous("123.456,78"), "European format should not be ambiguous (should error instead)");
       assert.notOk(numberParser.isAmbiguous(""), "Empty string should not be ambiguous");
       assert.notOk(numberParser.isAmbiguous(null), "Null should not be ambiguous");
     });
 
-    QUnit.test("getDisambiguationSuggestion provides helpful suggestions", function (assert) {
+    QUnit.test("getDisambiguationSuggestion reflects UK-only behavior", function (assert) {
+      // Previously ambiguous numbers are no longer ambiguous in UK-only mode
       const suggestion1 = numberParser.getDisambiguationSuggestion("123,456");
-      assert.ok(suggestion1.includes("123,456,0") || suggestion1.includes("123,456.0"), "Should suggest adding ,0 or .0 for comma case");
-      assert.ok(suggestion1.includes("disambiguate"), "Should mention disambiguate");
+      assert.ok(suggestion1.includes("not ambiguous"), "123,456 should not be ambiguous in UK-only mode");
 
       const suggestion2 = numberParser.getDisambiguationSuggestion("123.456");
-      assert.ok(suggestion2.includes("123.456.0") || suggestion2.includes("123.456,0"), "Should suggest adding .0 or ,0 for period case");
-      assert.ok(suggestion2.includes("disambiguate"), "Should mention disambiguate");
+      assert.ok(suggestion2.includes("not ambiguous"), "123.456 should not be ambiguous in UK-only mode");
 
       const suggestion3 = numberParser.getDisambiguationSuggestion("123,456.78");
-      assert.ok(suggestion3.includes("not ambiguous"), "Should indicate non-ambiguous numbers");
+      assert.ok(suggestion3.includes("not ambiguous"), "UK mixed format should not be ambiguous");
     });
 
     QUnit.test("handles edge cases correctly", function (assert) {
@@ -197,8 +217,8 @@ function buildNumberParseUtilTests() {
       assert.equal(result.getNumber(), 0.5, "Decimal less than one");
 
       result = numberParser.parseFlexibleNumber("0,5");
-      assert.ok(result.isSuccess(), "European decimal less than one should succeed");
-      assert.equal(result.getNumber(), 0.5, "European decimal less than one");
+      assert.ok(!result.isSuccess(), "European decimal comma should now fail");
+      assert.ok(result.getError().includes("Unsupported number format"), "Should detect unsupported format");
 
       // Large numbers
       result = numberParser.parseFlexibleNumber("1,000,000,000");
@@ -206,8 +226,8 @@ function buildNumberParseUtilTests() {
       assert.equal(result.getNumber(), 1000000000, "Billion with commas");
 
       result = numberParser.parseFlexibleNumber("1.000.000.000");
-      assert.ok(result.isSuccess(), "Billion with periods should succeed");
-      assert.equal(result.getNumber(), 1000000000, "Billion with periods");
+      assert.ok(!result.isSuccess(), "European thousands with periods should now fail");
+      assert.ok(result.getError().includes("Unsupported number format"), "Should detect unsupported format");
     });
 
     QUnit.test("handles whitespace correctly", function (assert) {
@@ -221,26 +241,27 @@ function buildNumberParseUtilTests() {
     });
 
     QUnit.test("error messages contain original string", function (assert) {
-      const result = numberParser.parseFlexibleNumber("123,456");
-      assert.ok(!result.isSuccess(), "Should fail for ambiguous input");
-      assert.ok(result.getError().includes("123,456"), "Error message should contain original string");
-      assert.ok(result.getError().includes("Ambiguous"), "Error message should indicate ambiguity");
+      const result = numberParser.parseFlexibleNumber("123,45");
+      assert.ok(!result.isSuccess(), "Should fail for European format input");
+      assert.ok(result.getError().includes("123,45"), "Error message should contain original string");
+      assert.ok(result.getError().includes("Unsupported number format"), "Error message should indicate unsupported format");
 
       const result2 = numberParser.parseFlexibleNumber("invalid");
       assert.ok(!result2.isSuccess(), "Should fail for invalid input");
       assert.ok(result2.getError().includes("invalid"), "Error message should contain original invalid string");
     });
 
-    QUnit.test("mixed separator precedence rules", function (assert) {
-      // Valid US format: comma as thousands, period as decimal
+    QUnit.test("mixed separator precedence rules - UK only", function (assert) {
+      // Valid UK format: comma as thousands, period as decimal
       let result = numberParser.parseFlexibleNumber("1,234.56");
-      assert.ok(result.isSuccess(), "US format: comma thousands, period decimal should succeed");
-      assert.equal(result.getNumber(), 1234.56, "US format: comma thousands, period decimal");
+      assert.ok(result.isSuccess(), "UK format: comma thousands, period decimal should succeed");
+      assert.equal(result.getNumber(), 1234.56, "UK format: comma thousands, period decimal");
 
-      // Valid European format: period as thousands, comma as decimal
+      // European format should now fail
       result = numberParser.parseFlexibleNumber("1.234,56");
-      assert.ok(result.isSuccess(), "European format: period thousands, comma decimal should succeed");
-      assert.equal(result.getNumber(), 1234.56, "European format: period thousands, comma decimal");
+      assert.ok(!result.isSuccess(), "European format should now fail");
+      assert.ok(result.getError().includes("Unsupported number format"), "Should detect unsupported format");
+      assert.ok(result.getError().includes("1,234.56"), "Should suggest UK equivalent");
     });
 
     QUnit.test("performance with various input sizes", function (assert) {
