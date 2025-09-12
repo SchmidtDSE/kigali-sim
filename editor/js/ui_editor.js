@@ -243,7 +243,9 @@ function setEngineNumberValue(valSelection, unitsSelection, source, defaultValue
   if (valueOrDefault.hasOriginalString()) {
     valSelection.value = valueOrDefault.getOriginalString();
   } else {
-    valSelection.value = valueOrDefault.getValue();
+    const numericValue = valueOrDefault.getValue();
+    // Display empty string instead of NaN
+    valSelection.value = isNaN(numericValue) ? "" : numericValue;
   }
   unitsSelection.value = valueOrDefault.getUnits();
 }
@@ -261,7 +263,12 @@ function getEngineNumberValue(valSelection, unitsSelection) {
 
   // Parse the value to get the numeric value, but preserve original string formatting
   const numericValue = parseFloat(valueString);
-  return new EngineNumber(numericValue, units, valueString.trim());
+
+  // If parsing results in NaN, default to 0 but preserve original string if not empty
+  const finalValue = isNaN(numericValue) ? 0 : numericValue;
+  const originalString = valueString.trim() === "" ? null : valueString.trim();
+
+  return new EngineNumber(finalValue, units, originalString);
 }
 
 /**
@@ -3296,34 +3303,20 @@ function readLimitCommandUi(root) {
  * @param {Object} codeObj - The code object for context.
  */
 function initRechargeCommandUi(itemObj, root, codeObj) {
-  // Handle both RechargeCommand objects and generic Command objects
+  // All recharge objects are now RechargeCommand instances
   const populationGetter = (x) => {
-    if (x.getPopulation) {
-      return x.getPopulation();
-    } else {
-      return x.getTarget().getValue();
-    }
+    const engineNumber = x.getPopulationEngineNumber();
+    return engineNumber.getOriginalString() || String(engineNumber.getValue());
   };
   const populationUnitsGetter = (x) => {
-    if (x.getPopulationUnits) {
-      return x.getPopulationUnits();
-    } else {
-      return x.getTarget().getUnits();
-    }
+    return x.getPopulationEngineNumber().getUnits();
   };
   const volumeGetter = (x) => {
-    if (x.getVolume) {
-      return x.getVolume();
-    } else {
-      return x.getValue().getValue();
-    }
+    const engineNumber = x.getVolumeEngineNumber();
+    return engineNumber.getOriginalString() || String(engineNumber.getValue());
   };
   const volumeUnitsGetter = (x) => {
-    if (x.getVolumeUnits) {
-      return x.getVolumeUnits();
-    } else {
-      return x.getValue().getUnits();
-    }
+    return x.getVolumeEngineNumber().getUnits();
   };
 
   setFieldValue(
@@ -3374,20 +3367,14 @@ function readRechargeCommandUi(root) {
   // Read duration using standard pattern
   const duration = readDurationUi(root.querySelector(".duration-subcomponent"));
 
-  // Convert YearMatcher duration to RechargeCommand parameters
-  const durationTypeInput = root.querySelector(".duration-type-input");
-  const durationType = durationTypeInput.value;
-  const yearStart = duration.getStart();
-  const yearEnd = duration.getEnd();
+  // Create EngineNumber objects with original string preservation
+  const populationEngineNumber = new EngineNumber(population, populationUnits, population);
+  const volumeEngineNumber = new EngineNumber(volume, volumeUnits, volume);
 
   return new RechargeCommand(
-    population,
-    populationUnits,
-    volume,
-    volumeUnits,
-    durationType,
-    yearStart,
-    yearEnd,
+    populationEngineNumber,
+    volumeEngineNumber,
+    duration,
   );
 }
 
