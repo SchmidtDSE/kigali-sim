@@ -118,12 +118,9 @@ function buildUiTranslatorReverseTests() {
     });
 
     QUnit.test("recharges substances", function (assert) {
-      const command = new Command(
-        "recharge",
-        new EngineNumber("10", "% / year"),
-        new EngineNumber("5", "kg / unit"),
-        null,
-      );
+      const populationEngineNumber = new EngineNumber("10", "% / year", "10");
+      const volumeEngineNumber = new EngineNumber("5", "kg / unit", "5");
+      const command = new RechargeCommand(populationEngineNumber, volumeEngineNumber, null);
       const substance = createWithCommand("test", false, command);
       const code = substance.toCode(0);
       assert.notEqual(code.indexOf("recharge 10 % / year with 5 kg / unit"), -1);

@@ -2695,6 +2695,26 @@ class RechargeCommand {
 
 
   /**
+   * Get the target for this recharge command (population - Command interface compatibility).
+   *
+   * @returns {EngineNumber} The population EngineNumber.
+   */
+  getTarget() {
+    const self = this;
+    return self._populationEngineNumber;
+  }
+
+  /**
+   * Get the value for this recharge command (volume - Command interface compatibility).
+   *
+   * @returns {EngineNumber} The volume EngineNumber.
+   */
+  getValue() {
+    const self = this;
+    return self._volumeEngineNumber;
+  }
+
+  /**
    * Get the duration for which this recharge command applies.
    *
    * @returns {YearMatcher|null} The duration specification, or null for all years.
@@ -3610,27 +3630,27 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
    * Visit a recharge command with all years duration node.
    *
    * @param {Object} ctx - The parse tree node context.
-   * @returns {Command} New recharge command instance.
+   * @returns {RechargeCommand} New recharge command instance.
    */
   visitRechargeAllYears(ctx) {
     const self = this;
-    const populationFuture = (ctx) => ctx.population.accept(self);
-    const volumeFuture = (ctx) => ctx.volume.accept(self);
-    return self._buildOperation(ctx, "recharge", null, populationFuture, volumeFuture);
+    const population = ctx.population.accept(self);
+    const volume = ctx.volume.accept(self);
+    return new RechargeCommand(population, volume, null);
   }
 
   /**
    * Visit a recharge command with duration node.
    *
    * @param {Object} ctx - The parse tree node context.
-   * @returns {Command} New recharge command instance.
+   * @returns {RechargeCommand} New recharge command instance.
    */
   visitRechargeDuration(ctx) {
     const self = this;
-    const populationFuture = (ctx) => ctx.population.accept(self);
-    const volumeFuture = (ctx) => ctx.volume.accept(self);
+    const population = ctx.population.accept(self);
+    const volume = ctx.volume.accept(self);
     const duration = ctx.duration.accept(self);
-    return self._buildOperation(ctx, "recharge", duration, populationFuture, volumeFuture);
+    return new RechargeCommand(population, volume, duration);
   }
 
   /**
