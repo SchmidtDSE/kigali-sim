@@ -593,16 +593,27 @@ class DuplicateEntityPresenter {
    */
   _deepCopyRechargeCommand(sourceRechargeCommand) {
     const self = this;
-    const value = sourceRechargeCommand.getValue();
-    const engineNumber = value ?
-      new EngineNumber(value.getValue(), value.getUnits(), value.getOriginalString()) : null;
+
+    const srcPopulation = sourceRechargeCommand.getPopulationEngineNumber();
+    const srcVolume = sourceRechargeCommand.getVolumeEngineNumber();
+
+    const populationEngineNumber = new EngineNumber(
+      srcPopulation.getValue(),
+      srcPopulation.getUnits(),
+      srcPopulation.getOriginalString(),
+    );
+    const volumeEngineNumber = new EngineNumber(
+      srcVolume.getValue(),
+      srcVolume.getUnits(),
+      srcVolume.getOriginalString(),
+    );
+
     const duration = sourceRechargeCommand.getDuration();
     const yearMatcher = duration ? self._deepCopyYearMatcher(duration) : null;
 
     return new RechargeCommand(
-      sourceRechargeCommand.getPopulation(),
-      sourceRechargeCommand.getPopulationUnits(),
-      engineNumber,
+      populationEngineNumber,
+      volumeEngineNumber,
       yearMatcher,
     );
   }

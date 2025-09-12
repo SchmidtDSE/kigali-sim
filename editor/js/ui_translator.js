@@ -1977,8 +1977,7 @@ class Substance {
         if (induction === "default") {
           pieces.push("default");
         } else if (induction instanceof EngineNumber) {
-          pieces.push(induction.getValue());
-          pieces.push(induction.getUnits());
+          pieces.push(formatEngineNumber(induction));
         } else {
           // Handle string numbers or other formats
           pieces.push(induction.toString());
@@ -2016,8 +2015,7 @@ class Substance {
     const buildReplace = (replace) => {
       const pieces = [
         "replace",
-        replace.getVolume().getValue(),
-        replace.getVolume().getUnits(),
+        formatEngineNumber(replace.getVolume()),
         "of",
         replace.getSource(),
         "with",
@@ -2664,134 +2662,95 @@ class RechargeCommand {
   /**
    * Create a new RechargeCommand.
    *
-   * @param {string} population - Population to recharge (e.g. "5").
-   * @param {string} populationUnits - Population units (e.g. "%", "% each year", "units").
-   * @param {string} volume - Volume per unit (e.g. "0.85").
-   * @param {string} volumeUnits - Volume units (e.g. "kg / unit", "mt / unit").
-   * @param {string|null} durationType - Duration type ("year", "years-range", etc.) or null.
-   * @param {string|null} yearStart - Start year for duration or null.
-   * @param {string|null} yearEnd - End year for duration or null.
+   * @param {EngineNumber} populationEngineNumber - Population amount and units to recharge.
+   * @param {EngineNumber} volumeEngineNumber - Volume per unit amount and units.
+   * @param {YearMatcher|null} duration - Duration specification or null for all years.
    */
-  constructor(population, populationUnits, volume, volumeUnits, durationType, yearStart, yearEnd) {
+  constructor(populationEngineNumber, volumeEngineNumber, duration) {
     const self = this;
-    self._population = population;
-    self._populationUnits = populationUnits;
-    self._volume = volume;
-    self._volumeUnits = volumeUnits;
-    self._durationType = durationType;
-    self._yearStart = yearStart;
-    self._yearEnd = yearEnd;
+    self._populationEngineNumber = populationEngineNumber;
+    self._volumeEngineNumber = volumeEngineNumber;
+    self._duration = duration;
   }
 
   /**
-   * Get the population to recharge.
+   * Get the population EngineNumber.
    *
-   * @returns {string} The population value.
+   * @returns {EngineNumber} The population amount and units.
    */
-  getPopulation() {
+  getPopulationEngineNumber() {
     const self = this;
-    return self._population;
+    return self._populationEngineNumber;
   }
 
   /**
-   * Get the population units.
+   * Get the volume EngineNumber.
    *
-   * @returns {string} The population units.
+   * @returns {EngineNumber} The volume per unit amount and units.
    */
-  getPopulationUnits() {
+  getVolumeEngineNumber() {
     const self = this;
-    return self._populationUnits;
+    return self._volumeEngineNumber;
+  }
+
+
+  /**
+   * Get the target for this recharge command (population - Command interface compatibility).
+   *
+   * @returns {EngineNumber} The population EngineNumber.
+   */
+  getTarget() {
+    const self = this;
+    return self._populationEngineNumber;
   }
 
   /**
-   * Get the volume per unit.
+   * Get the value for this recharge command (volume - Command interface compatibility).
    *
-   * @returns {string} The volume value.
+   * @returns {EngineNumber} The volume EngineNumber.
    */
-  getVolume() {
+  getValue() {
     const self = this;
-    return self._volume;
-  }
-
-  /**
-   * Get the volume units.
-   *
-   * @returns {string} The volume units.
-   */
-  getVolumeUnits() {
-    const self = this;
-    return self._volumeUnits;
-  }
-
-  /**
-   * Get the duration type.
-   *
-   * @returns {string|null} The duration type or null for all years.
-   */
-  getDurationType() {
-    const self = this;
-    return self._durationType;
-  }
-
-  /**
-   * Get the start year.
-   *
-   * @returns {string|null} The start year or null.
-   */
-  getYearStart() {
-    const self = this;
-    return self._yearStart;
-  }
-
-  /**
-   * Get the end year.
-   *
-   * @returns {string|null} The end year or null.
-   */
-  getYearEnd() {
-    const self = this;
-    return self._yearEnd;
+    return self._volumeEngineNumber;
   }
 
   /**
    * Get the duration for which this recharge command applies.
    *
-   * @returns {YearMatcher} The duration specification, or null for all years.
+   * @returns {YearMatcher|null} The duration specification, or null for all years.
    */
   getDuration() {
     const self = this;
-    if (self._durationType === null) {
-      return null;
-    }
-    return new YearMatcher(self._yearStart, self._yearEnd);
+    return self._duration;
   }
 
   /**
-   * Build the command string for this recharge.
+   * Build the command string for this recharge with original number formatting preserved.
    *
    * @param {string} substance - The substance name (unused but kept for consistency).
    * @returns {string} The generated recharge command.
    */
   buildCommand(substance) {
     const self = this;
-    const baseCommand = `recharge ${self._population} ${self._populationUnits}` +
-      ` with ${self._volume} ${self._volumeUnits}`;
+    const populationStr = formatEngineNumber(self._populationEngineNumber);
+    const volumeStr = formatEngineNumber(self._volumeEngineNumber);
+    const baseCommand = `recharge ${populationStr} with ${volumeStr}`;
     let command = baseCommand;
 
-    if (self._durationType) {
-      switch (self._durationType) {
-      case "during year":
-        command += ` during year ${self._yearStart}`;
-        break;
-      case "during years":
-        command += ` during years ${self._yearStart} to ${self._yearEnd}`;
-        break;
-      case "years-onwards":
-        command += ` during years ${self._yearStart} to onwards`;
-        break;
-      case "years-beginning":
-        command += ` during years beginning to ${self._yearEnd}`;
-        break;
+    if (self._duration) {
+      const start = self._duration.getStart();
+      const end = self._duration.getEnd();
+
+      if (start !== null && end !== null) {
+        if (start === end) {
+          command += ` during year ${start}`;
+        } else {
+          command += ` during years ${start} to ${end}`;
+        }
+      } else if (start !== null) {
+        command += ` during years ${start} to onwards`;
+      } else if (end !== null) {
+        command += ` during years beginning to ${end}`;
       }
     }
 
@@ -3671,27 +3630,27 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
    * Visit a recharge command with all years duration node.
    *
    * @param {Object} ctx - The parse tree node context.
-   * @returns {Command} New recharge command instance.
+   * @returns {RechargeCommand} New recharge command instance.
    */
   visitRechargeAllYears(ctx) {
     const self = this;
-    const populationFuture = (ctx) => ctx.population.accept(self);
-    const volumeFuture = (ctx) => ctx.volume.accept(self);
-    return self._buildOperation(ctx, "recharge", null, populationFuture, volumeFuture);
+    const population = ctx.population.accept(self);
+    const volume = ctx.volume.accept(self);
+    return new RechargeCommand(population, volume, null);
   }
 
   /**
    * Visit a recharge command with duration node.
    *
    * @param {Object} ctx - The parse tree node context.
-   * @returns {Command} New recharge command instance.
+   * @returns {RechargeCommand} New recharge command instance.
    */
   visitRechargeDuration(ctx) {
     const self = this;
-    const populationFuture = (ctx) => ctx.population.accept(self);
-    const volumeFuture = (ctx) => ctx.volume.accept(self);
+    const population = ctx.population.accept(self);
+    const volume = ctx.volume.accept(self);
     const duration = ctx.duration.accept(self);
-    return self._buildOperation(ctx, "recharge", duration, populationFuture, volumeFuture);
+    return new RechargeCommand(population, volume, duration);
   }
 
   /**
