@@ -1,5 +1,5 @@
 import {EngineNumber} from "engine_number";
-import {YearMatcher} from "year_matcher";
+import {YearMatcher, ParsedYear} from "duration";
 import {
   AboutStanza,
   Application,
@@ -8,6 +8,7 @@ import {
   LimitCommand,
   Program,
   RechargeCommand,
+  RecycleCommand,
   ReplaceCommand,
   SimulationScenario,
   SimulationStanza,
@@ -79,16 +80,18 @@ function buildUiTranslatorReverseTests() {
       assert.notEqual(code.indexOf("cap domestic to 5 mt"), -1);
     });
     QUnit.test("recharges substances", function (assert) {
-      const command = new RechargeCommand("10", "%", "0.12", "kg / unit", null, null, null);
+      const populationEngineNumber = new EngineNumber("10", "%", "10");
+      const volumeEngineNumber = new EngineNumber("0.12", "kg / unit", "0.12");
+      const command = new RechargeCommand(populationEngineNumber, volumeEngineNumber, null);
       const substance = createWithCommand("test", false, command);
       const code = substance.toCode(0);
       assert.notEqual(code.indexOf("recharge 10 % with 0.12 kg / unit"), -1);
     });
     QUnit.test("recharges substances with duration", function (assert) {
-      const yearMatcher = new YearMatcher(2025, 2030);
-      const command = new RechargeCommand(
-        "5", "% / year", "0.85", "kg / unit", "during years", 2025, 2030,
-      );
+      const yearMatcher = new YearMatcher(new ParsedYear(2025), new ParsedYear(2030));
+      const populationEngineNumber = new EngineNumber("5", "% / year", "5");
+      const volumeEngineNumber = new EngineNumber("0.85", "kg / unit", "0.85");
+      const command = new RechargeCommand(populationEngineNumber, volumeEngineNumber, yearMatcher);
       const substance = createWithCommand("test", false, command);
       const code = substance.toCode(0);
       const expectedText = "recharge 5 % / year with 0.85 kg / unit during years 2025 to 2030";
@@ -115,12 +118,9 @@ function buildUiTranslatorReverseTests() {
     });
 
     QUnit.test("recharges substances", function (assert) {
-      const command = new Command(
-        "recharge",
-        new EngineNumber("10", "% / year"),
-        new EngineNumber("5", "kg / unit"),
-        null,
-      );
+      const populationEngineNumber = new EngineNumber("10", "% / year", "10");
+      const volumeEngineNumber = new EngineNumber("5", "kg / unit", "5");
+      const command = new RechargeCommand(populationEngineNumber, volumeEngineNumber, null);
       const substance = createWithCommand("test", false, command);
       const code = substance.toCode(0);
       assert.notEqual(code.indexOf("recharge 10 % / year with 5 kg / unit"), -1);
@@ -164,7 +164,7 @@ function buildUiTranslatorReverseTests() {
         "setVal",
         "domestic",
         new EngineNumber("10", "mt"),
-        new YearMatcher(1, 1),
+        new YearMatcher(new ParsedYear(1), new ParsedYear(1)),
       );
       const substance = createWithCommand("test", true, command);
       const code = substance.toCode(0);
@@ -176,7 +176,7 @@ function buildUiTranslatorReverseTests() {
         "retire",
         null,
         new EngineNumber("10", "%"),
-        new YearMatcher(2, 5),
+        new YearMatcher(new ParsedYear(2), new ParsedYear(5)),
       );
       const substance = createWithCommand("test", false, command);
       const code = substance.toCode(0);
@@ -188,7 +188,7 @@ function buildUiTranslatorReverseTests() {
         "retire",
         null,
         new EngineNumber("10", "%"),
-        new YearMatcher(5, 2),
+        new YearMatcher(new ParsedYear(5), new ParsedYear(2)),
       );
       const substance = createWithCommand("test", false, command);
       const code = substance.toCode(0);
@@ -200,7 +200,7 @@ function buildUiTranslatorReverseTests() {
         new EngineNumber("10", "%"),
         "domestic",
         "other",
-        new YearMatcher(2, null),
+        new YearMatcher(new ParsedYear(2), null),
       );
       const substance = createWithCommand("test", true, command);
       const code = substance.toCode(0);
@@ -215,7 +215,7 @@ function buildUiTranslatorReverseTests() {
         "recycle",
         new EngineNumber("10", "%"),
         new EngineNumber("100", "%"),
-        new YearMatcher(null, 5),
+        new YearMatcher(null, new ParsedYear(5)),
       );
       const substance = createWithCommand("test", true, command);
       const code = substance.toCode(0);
@@ -230,13 +230,13 @@ function buildUiTranslatorReverseTests() {
         "setVal",
         "domestic",
         new EngineNumber(5, "kg / unit"),
-        new YearMatcher(1, 1),
+        new YearMatcher(new ParsedYear(1), new ParsedYear(1)),
       );
       const cap = new LimitCommand(
         "cap",
         "domestic",
         new EngineNumber(5, "mt"),
-        new YearMatcher(3, 4),
+        new YearMatcher(new ParsedYear(3), new ParsedYear(4)),
         "import",
       );
       const substance = createWithCommands("test", true, [setVal, cap]);
@@ -394,6 +394,67 @@ function buildUiTranslatorReverseTests() {
         assert.notEqual(code.indexOf("set import to 12,34.5,6 mt"), -1);
         assert.notEqual(code.indexOf("change sales by ,123 kg"), -1);
       }
+    });
+
+    QUnit.test("recharge commands preserve number formatting", function (assert) {
+      // Test that RechargeCommand preserves original number formatting like 1.2340
+      const populationEngineNumber = new EngineNumber("1.2340", "%", "1.2340");
+      const volumeEngineNumber = new EngineNumber("0.8500", "kg / unit", "0.8500");
+      const command = new RechargeCommand(populationEngineNumber, volumeEngineNumber, null);
+      const substance = createWithCommand("test", false, command);
+      const code = substance.toCode(0);
+
+      // Verify original formatting is preserved in generated code
+      assert.notEqual(code.indexOf("recharge 1.2340 % with 0.8500 kg / unit"), -1,
+        "RechargeCommand should preserve original number formatting");
+
+      // Test with thousands separator formatting
+      const populationEngineNumber2 = new EngineNumber("1,234.0", "%", "1,234.0");
+      const volumeEngineNumber2 = new EngineNumber("2.5000", "mt / unit", "2.5000");
+      const command2 = new RechargeCommand(populationEngineNumber2, volumeEngineNumber2, null);
+      const substance2 = createWithCommand("test2", false, command2);
+      const code2 = substance2.toCode(0);
+
+      assert.notEqual(code2.indexOf("recharge 1,234.0 % with 2.5000 mt / unit"), -1,
+        "RechargeCommand should preserve thousands separator formatting");
+    });
+
+    QUnit.test("recycle commands preserve number formatting", function (assert) {
+      // Test that RecycleCommand preserves original number formatting
+      const targetEngineNumber = new EngineNumber("1.2340", "%", "1.2340");
+      const valueEngineNumber = new EngineNumber("0.8500", "%", "0.8500");
+      const inductionEngineNumber = new EngineNumber("2.5000", "%", "2.5000");
+      const command = new RecycleCommand(
+        targetEngineNumber,
+        valueEngineNumber,
+        null,
+        "recharge",
+        inductionEngineNumber,
+      );
+      const substance = createWithCommand("test", true, command);
+      const code = substance.toCode(0);
+
+      // Verify original formatting is preserved in generated code
+      assert.notEqual(
+        code.indexOf("recover 1.2340 % with 0.8500 % reuse with 2.5000 % induction"),
+        -1,
+        "RecycleCommand should preserve original number formatting",
+      );
+    });
+
+    QUnit.test("replace commands preserve number formatting", function (assert) {
+      // Test that ReplaceCommand preserves original number formatting
+      const volumeEngineNumber = new EngineNumber("1.2340", "%", "1.2340");
+      const command = new ReplaceCommand(volumeEngineNumber, "domestic", "replacement", null);
+      const substance = createWithCommand("test", true, command);
+      const code = substance.toCode(0);
+
+      // Verify original formatting is preserved in generated code
+      assert.notEqual(
+        code.indexOf('replace 1.2340 % of domestic with "replacement"'),
+        -1,
+        "ReplaceCommand should preserve original number formatting",
+      );
     });
   });
 }

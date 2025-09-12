@@ -540,21 +540,17 @@ public class StreamKeeper {
     // Get existing recovery rate for this stage
     EngineNumber existingRecovery = parameterization.getRecoveryRate(stage);
 
-    // If existing recovery rate is non-zero, implement additive recycling
+    // Check if recovery rate is already set - use additive behavior for multiple recover commands
     if (existingRecovery.getValue().compareTo(BigDecimal.ZERO) > 0) {
-      // Convert both rates to the same units (percentage)
-      EngineNumber existingRecoveryPercent = unitConverter.convert(existingRecovery, "%");
-      EngineNumber newRecoveryPercent = unitConverter.convert(newValue, "%");
-
-      // Add recovery rates
-      BigDecimal combinedRecovery = existingRecoveryPercent.getValue().add(newRecoveryPercent.getValue());
-
-      // Set the combined recovery rate
-      parameterization.setRecoveryRate(new EngineNumber(combinedRecovery, "%"), stage);
-    } else {
-      // First recovery rate, set normally
-      parameterization.setRecoveryRate(newValue, stage);
+      // Add the new recovery rate to the existing one (additive behavior)
+      BigDecimal newRate = existingRecovery.getValue().add(newValue.getValue());
+      EngineNumber combinedRate = new EngineNumber(newRate, "%");
+      parameterization.setRecoveryRate(combinedRate, stage);
+      return; // Early return to avoid setting the rate again below
     }
+
+    // Set the recovery rate (first one for this timestep)
+    parameterization.setRecoveryRate(newValue, stage);
   }
 
   /**
@@ -677,6 +673,52 @@ public class StreamKeeper {
   public EngineNumber getYieldRate(UseKey useKey, RecoveryStage stage) {
     StreamParameterization parameterization = getParameterization(useKey);
     return parameterization.getYieldRate(stage);
+  }
+
+  /**
+   * Set the induction rate percentage for recycling for a key.
+   *
+   * @param useKey The key containing application and substance
+   * @param newValue The new induction rate value
+   */
+  public void setInductionRate(UseKey useKey, EngineNumber newValue) {
+    StreamParameterization parameterization = getParameterization(useKey);
+    parameterization.setInductionRate(newValue);
+  }
+
+  /**
+   * Set the induction rate percentage for recycling for a key with a specific stage.
+   *
+   * @param useKey The key containing application and substance
+   * @param newValue The new induction rate value
+   * @param stage The recovery stage (EOL or RECHARGE)
+   */
+  public void setInductionRate(UseKey useKey, EngineNumber newValue, RecoveryStage stage) {
+    StreamParameterization parameterization = getParameterization(useKey);
+    parameterization.setInductionRate(newValue, stage);
+  }
+
+  /**
+   * Get the induction rate percentage for recycling for a key.
+   *
+   * @param useKey The key containing application and substance
+   * @return The current induction rate value
+   */
+  public EngineNumber getInductionRate(UseKey useKey) {
+    StreamParameterization parameterization = getParameterization(useKey);
+    return parameterization.getInductionRate();
+  }
+
+  /**
+   * Get the induction rate percentage for recycling for a key with a specific stage.
+   *
+   * @param useKey The key containing application and substance
+   * @param stage The recovery stage (EOL or RECHARGE)
+   * @return The current induction rate value
+   */
+  public EngineNumber getInductionRate(UseKey useKey, RecoveryStage stage) {
+    StreamParameterization parameterization = getParameterization(useKey);
+    return parameterization.getInductionRate(stage);
   }
 
   /**

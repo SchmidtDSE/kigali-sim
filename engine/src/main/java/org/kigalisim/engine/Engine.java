@@ -177,6 +177,24 @@ public interface Engine {
   void setStream(String name, EngineNumber value, Optional<YearMatcher> yearMatcher, boolean subtractRecycling);
 
   /**
+   * Set a stream for internal engine operations (bypasses user-level processing like SetExecutor).
+   *
+   * @param name The stream name
+   * @param value The value to set for the stream
+   * @param yearMatcher Optional year matcher for conditional setting
+   */
+  void setStreamInternal(String name, EngineNumber value, Optional<YearMatcher> yearMatcher);
+
+  /**
+   * Set a stream for explicit user operations (applies user-level processing like SetExecutor).
+   *
+   * @param name The stream name
+   * @param value The value to set for the stream
+   * @param yearMatcher Optional year matcher for conditional setting
+   */
+  void setStreamExplicit(String name, EngineNumber value, Optional<YearMatcher> yearMatcher);
+
+  /**
    * Enable a stream without setting its value.
    *
    * <p>This method marks a stream as enabled, allowing it to be included in distribution
@@ -318,16 +336,12 @@ public interface Engine {
       YearMatcher yearMatcher, RecoveryStage stage);
 
   /**
-   * Recycle or recover a substance with displacement to another stream.
+   * Set the induction rate for recycling operations.
    *
-   * @param recoveryWithUnits The recovery rate
-   * @param yieldWithUnits The yield rate
-   * @param yearMatcher Matcher to determine if the change applies to current year
-   * @param displacementTarget The stream or substance to displace (reduce)
-   * @param stage The recovery stage (EOL or RECHARGE)
+   * @param inductionRate The induction rate as a percentage in decimal form (0.0-1.0),
+   *                      or Optional.empty() for default behavior
    */
-  void recycle(EngineNumber recoveryWithUnits, EngineNumber yieldWithUnits,
-      YearMatcher yearMatcher, String displacementTarget, RecoveryStage stage);
+  void setInductionRate(Optional<Double> inductionRate);
 
   /**
    * Set GHG equivalency for the current application and substance.

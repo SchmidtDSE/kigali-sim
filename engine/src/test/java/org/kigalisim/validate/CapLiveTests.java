@@ -422,11 +422,11 @@ public class CapLiveTests {
 
     // Get year 2030 results
     int targetYear = 2030;
-    
+
     // BAU results for 2030
     EngineResult bauHighGwp = LiveTestsUtil.getResult(bauResultsList.stream(), targetYear, "Test App", "High-GWP");
     EngineResult bauLowGwp = LiveTestsUtil.getResult(bauResultsList.stream(), targetYear, "Test App", "Low-GWP");
-    
+
     // Cap displacement results for 2030
     EngineResult capHighGwp = LiveTestsUtil.getResult(capResultsList.stream(), targetYear, "Test App", "High-GWP");
     final EngineResult capLowGwp = LiveTestsUtil.getResult(capResultsList.stream(), targetYear, "Test App", "Low-GWP");
@@ -440,11 +440,11 @@ public class CapLiveTests {
     // If the bug exists (like with replace), Low-GWP would lose its prior equipment
     assertTrue(capLowGwp.getPopulation().getValue().doubleValue() > 0,
         "Low-GWP should maintain equipment population in cap displacement scenario");
-    
+
     // Test that Low-GWP maintains at least some of its initial prior equipment
     // Initial was 50000, after 5 years with 5% retirement, should have at least 38000
     assertTrue(capLowGwp.getPopulation().getValue().doubleValue() > 38000,
-        String.format("Low-GWP population (%.2f) should be above 38000 units", 
+        String.format("Low-GWP population (%.2f) should be above 38000 units",
             capLowGwp.getPopulation().getValue().doubleValue()));
   }
 }

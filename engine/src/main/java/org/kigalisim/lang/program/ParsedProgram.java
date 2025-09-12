@@ -8,9 +8,7 @@ package org.kigalisim.lang.program;
 
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
+import org.kigalisim.lang.validation.DuplicateValidator;
 
 
 /**
@@ -31,10 +29,10 @@ public class ParsedProgram {
    * @param scenarios The scenarios parsed from the source of this program.
    */
   public ParsedProgram(Iterable<ParsedPolicy> policies, Iterable<ParsedScenario> scenarios) {
-    this.policies = StreamSupport.stream(policies.spliterator(), false)
-        .collect(Collectors.toMap(ParsedPolicy::getName, Function.identity()));
-    this.scenarios = StreamSupport.stream(scenarios.spliterator(), false)
-        .collect(Collectors.toMap(ParsedScenario::getName, Function.identity()));
+    this.policies = DuplicateValidator.validateUniqueNames(
+        policies, ParsedPolicy::getName, "policy", "program");
+    this.scenarios = DuplicateValidator.validateUniqueNames(
+        scenarios, ParsedScenario::getName, "scenario", "program");
   }
 
   /**

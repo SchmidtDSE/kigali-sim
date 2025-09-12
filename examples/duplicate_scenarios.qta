@@ -1,0 +1,21 @@
+start default
+  define application "Test"
+    uses substance "SubA"
+      enable domestic
+      initial charge with 1 kg / unit for domestic
+      initial charge with 0 kg / unit for import
+      initial charge with 0 kg / unit for export
+      equals 1 kgCO2e / kg
+      equals 1 kwh / unit
+      retire 5 % / year
+    end substance
+  end application
+end default
+
+start simulations
+  simulate "BAU"
+  from years 1 to 10
+  
+  simulate "BAU"  # Duplicate scenario name
+  from years 1 to 10
+end simulations

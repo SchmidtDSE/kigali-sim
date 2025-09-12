@@ -136,4 +136,5 @@ public class QubecTalkParserTest {
     assertFalse(result.hasErrors(), "Parse result should not have errors for comma numbers");
     assertTrue(result.getProgram().isPresent(), "Parse result should have a program");
   }
+
 }

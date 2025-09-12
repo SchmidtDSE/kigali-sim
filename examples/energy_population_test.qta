@@ -9,7 +9,7 @@ start default
       initial charge with 0 kg / unit for export
       equals 1 tCO2e / kg
       equals 2 kwh / unit
-      set sales to 1,000,000 units during year 1
+      set sales to 1,000,000.0 units during year 1
       recharge 5 % with 0.85 kg / unit
     end substance
   

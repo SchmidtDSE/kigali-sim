@@ -24,6 +24,8 @@ import org.kigalisim.lang.fragment.ScenariosFragment;
 import org.kigalisim.lang.fragment.StringFragment;
 import org.kigalisim.lang.fragment.SubstanceFragment;
 import org.kigalisim.lang.fragment.UnitFragment;
+import org.kigalisim.lang.localization.FlexibleNumberParseResult;
+import org.kigalisim.lang.localization.NumberParseUtil;
 import org.kigalisim.lang.operation.AdditionOperation;
 import org.kigalisim.lang.operation.CapOperation;
 import org.kigalisim.lang.operation.ChangeOperation;
@@ -71,13 +73,19 @@ import org.kigalisim.lang.time.TimePointFuture;
 @SuppressWarnings("CheckReturnValue")
 public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
 
+  /** Number parser for handling flexible thousands and decimal separators. */
+  private final NumberParseUtil numberParser = new NumberParseUtil();
+
   /**
    * {@inheritDoc}
    */
   @Override public Fragment visitNumber(QubecTalkParser.NumberContext ctx) {
     String rawText = ctx.getText();
-    String cleanedText = rawText.replace(",", "");
-    BigDecimal numberRaw = new BigDecimal(cleanedText);
+    FlexibleNumberParseResult parseResult = numberParser.parseFlexibleNumber(rawText);
+    if (parseResult.isError()) {
+      throw new RuntimeException("Failed to parse number in QubecTalk expression: " + parseResult.getError().get());
+    }
+    BigDecimal numberRaw = parseResult.getParsedNumber().get();
     EngineNumber number = new EngineNumber(numberRaw, "");
     Operation calculation = new PreCalculatedOperation(number);
     return new OperationFragment(calculation);
@@ -108,14 +116,10 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
   @Override
   public Fragment visitUnitOrRatio(QubecTalkParser.UnitOrRatioContext ctx) {
     String unit = ctx.getText();
-    
-    // Strip "eachyear" or "eachyears" at the end as it's optional sugar
-    // Note: ctx.getText() doesn't include spaces between tokens
-    unit = unit.replaceAll("(?i)each(year|years)$", "");
-    
-    // Convert remaining "each" to "/" for unit ratios
+
+    // Convert "each" to "/" for unit ratios
     unit = unit.replaceAll(" each ", " / ");
-    
+
     return new UnitFragment(unit);
   }
 
@@ -745,44 +749,7 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
     return new OperationFragment(operation);
   }
 
-  /**
-   * {@inheritDoc}
-   */
-  @Override
-  public Fragment visitRecoverDisplacementAllYears(QubecTalkParser.RecoverDisplacementAllYearsContext ctx) {
-    Operation volumeOperation = visit(ctx.volume).getOperation();
-    Operation yieldOperation = visit(ctx.yieldVal).getOperation();
 
-    String displaceTarget;
-    if (ctx.string() != null) {
-      displaceTarget = visit(ctx.string()).getString();
-    } else {
-      displaceTarget = ctx.stream().getText();
-    }
-
-    Operation operation = new RecoverOperation(volumeOperation, yieldOperation, displaceTarget);
-    return new OperationFragment(operation);
-  }
-
-  /**
-   * {@inheritDoc}
-   */
-  @Override
-  public Fragment visitRecoverDisplacementDuration(QubecTalkParser.RecoverDisplacementDurationContext ctx) {
-    Operation volumeOperation = visit(ctx.volume).getOperation();
-    Operation yieldOperation = visit(ctx.yieldVal).getOperation();
-    ParsedDuring during = visit(ctx.duration).getDuring();
-
-    String displaceTarget;
-    if (ctx.string() != null) {
-      displaceTarget = visit(ctx.string()).getString();
-    } else {
-      displaceTarget = ctx.stream().getText();
-    }
-
-    Operation operation = new RecoverOperation(volumeOperation, yieldOperation, displaceTarget, during);
-    return new OperationFragment(operation);
-  }
 
   /**
    * {@inheritDoc}
@@ -813,19 +780,11 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
    * {@inheritDoc}
    */
   @Override
-  public Fragment visitRecoverStageDisplacementAllYears(QubecTalkParser.RecoverStageDisplacementAllYearsContext ctx) {
+  public Fragment visitRecoverInductionAllYears(QubecTalkParser.RecoverInductionAllYearsContext ctx) {
     Operation volumeOperation = visit(ctx.volume).getOperation();
     Operation yieldOperation = visit(ctx.yieldVal).getOperation();
-    RecoveryStage stage = parseRecoveryStage(ctx.stage);
-
-    String displaceTarget;
-    if (ctx.string() != null) {
-      displaceTarget = visit(ctx.string()).getString();
-    } else {
-      displaceTarget = ctx.stream().getText();
-    }
-
-    Operation operation = new RecoverOperation(volumeOperation, yieldOperation, displaceTarget, stage);
+    Operation inductionOperation = visit(ctx.inductionVal).getOperation();
+    Operation operation = new RecoverOperation(volumeOperation, yieldOperation, Optional.of(inductionOperation));
     return new OperationFragment(operation);
   }
 
@@ -833,23 +792,93 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
    * {@inheritDoc}
    */
   @Override
-  public Fragment visitRecoverStageDisplacementDuration(QubecTalkParser.RecoverStageDisplacementDurationContext ctx) {
+  public Fragment visitRecoverInductionDuration(QubecTalkParser.RecoverInductionDurationContext ctx) {
+    Operation volumeOperation = visit(ctx.volume).getOperation();
+    Operation yieldOperation = visit(ctx.yieldVal).getOperation();
+    Operation inductionOperation = visit(ctx.inductionVal).getOperation();
+    ParsedDuring during = visit(ctx.duration).getDuring();
+    Operation operation = new RecoverOperation(volumeOperation, yieldOperation, during, Optional.of(inductionOperation));
+    return new OperationFragment(operation);
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public Fragment visitRecoverInductionStageAllYears(QubecTalkParser.RecoverInductionStageAllYearsContext ctx) {
+    Operation volumeOperation = visit(ctx.volume).getOperation();
+    Operation yieldOperation = visit(ctx.yieldVal).getOperation();
+    Operation inductionOperation = visit(ctx.inductionVal).getOperation();
+    RecoveryStage stage = parseRecoveryStage(ctx.stage);
+    Operation operation = new RecoverOperation(volumeOperation, yieldOperation, stage, Optional.of(inductionOperation));
+    return new OperationFragment(operation);
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public Fragment visitRecoverInductionStageDuration(QubecTalkParser.RecoverInductionStageDurationContext ctx) {
+    Operation volumeOperation = visit(ctx.volume).getOperation();
+    Operation yieldOperation = visit(ctx.yieldVal).getOperation();
+    Operation inductionOperation = visit(ctx.inductionVal).getOperation();
+    ParsedDuring during = visit(ctx.duration).getDuring();
+    RecoveryStage stage = parseRecoveryStage(ctx.stage);
+    Operation operation = new RecoverOperation(volumeOperation, yieldOperation, during, stage, Optional.of(inductionOperation));
+    return new OperationFragment(operation);
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public Fragment visitRecoverDefaultInductionAllYears(QubecTalkParser.RecoverDefaultInductionAllYearsContext ctx) {
+    Operation volumeOperation = visit(ctx.volume).getOperation();
+    Operation yieldOperation = visit(ctx.yieldVal).getOperation();
+    // Use Optional.empty() for default induction behavior
+    Operation operation = new RecoverOperation(volumeOperation, yieldOperation, Optional.empty());
+    return new OperationFragment(operation);
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public Fragment visitRecoverDefaultInductionDuration(QubecTalkParser.RecoverDefaultInductionDurationContext ctx) {
+    Operation volumeOperation = visit(ctx.volume).getOperation();
+    Operation yieldOperation = visit(ctx.yieldVal).getOperation();
+    ParsedDuring during = visit(ctx.duration).getDuring();
+    // Use Optional.empty() for default induction behavior
+    Operation operation = new RecoverOperation(volumeOperation, yieldOperation, during, Optional.empty());
+    return new OperationFragment(operation);
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public Fragment visitRecoverDefaultInductionStageAllYears(QubecTalkParser.RecoverDefaultInductionStageAllYearsContext ctx) {
+    Operation volumeOperation = visit(ctx.volume).getOperation();
+    Operation yieldOperation = visit(ctx.yieldVal).getOperation();
+    RecoveryStage stage = parseRecoveryStage(ctx.stage);
+    // Use Optional.empty() for default induction behavior
+    Operation operation = new RecoverOperation(volumeOperation, yieldOperation, stage, Optional.empty());
+    return new OperationFragment(operation);
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public Fragment visitRecoverDefaultInductionStageDuration(QubecTalkParser.RecoverDefaultInductionStageDurationContext ctx) {
     Operation volumeOperation = visit(ctx.volume).getOperation();
     Operation yieldOperation = visit(ctx.yieldVal).getOperation();
     ParsedDuring during = visit(ctx.duration).getDuring();
     RecoveryStage stage = parseRecoveryStage(ctx.stage);
-
-    String displaceTarget;
-    if (ctx.string() != null) {
-      displaceTarget = visit(ctx.string()).getString();
-    } else {
-      displaceTarget = ctx.stream().getText();
-    }
-
-    Operation operation = new RecoverOperation(volumeOperation, yieldOperation, displaceTarget, during, stage);
+    // Use Optional.empty() for default induction behavior
+    Operation operation = new RecoverOperation(volumeOperation, yieldOperation, during, stage, Optional.empty());
     return new OperationFragment(operation);
   }
-
 
   /**
    * {@inheritDoc}
@@ -875,6 +904,7 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
     Operation operation = new ReplaceOperation(volumeOperation, stream, destinationSubstance, during);
     return new OperationFragment(operation);
   }
+
 
   /**
    * {@inheritDoc}

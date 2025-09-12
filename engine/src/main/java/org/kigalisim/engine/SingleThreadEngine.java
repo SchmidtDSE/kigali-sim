@@ -37,6 +37,7 @@ import org.kigalisim.engine.support.ChangeExecutor;
 import org.kigalisim.engine.support.EngineSupportUtils;
 import org.kigalisim.engine.support.ExceptionsGenerator;
 import org.kigalisim.engine.support.RechargeVolumeCalculator;
+import org.kigalisim.engine.support.SetExecutor;
 import org.kigalisim.engine.support.StreamUpdate;
 import org.kigalisim.engine.support.StreamUpdateBuilder;
 import org.kigalisim.lang.operation.RecoverOperation.RecoveryStage;
@@ -383,6 +384,27 @@ public class SingleThreadEngine implements Engine {
   }
 
   @Override
+  public void setStreamInternal(String name, EngineNumber value, Optional<YearMatcher> yearMatcher) {
+    // Internal operations bypass user-level processing - use 4-parameter method directly
+    boolean subtractRecycling = !getIsSalesSubstream(name) || "units".equals(value.getUnits());
+    setStream(name, value, yearMatcher, subtractRecycling);
+  }
+
+  @Override
+  public void setStreamExplicit(String name, EngineNumber value, Optional<YearMatcher> yearMatcher) {
+    // Delegate sales streams to SetExecutor for proper component distribution
+    if ("sales".equals(name)) {
+      SetExecutor setExecutor = new SetExecutor(this);
+      setExecutor.handleSalesSet(scope, name, value, yearMatcher);
+      return;
+    }
+
+    // For non-sales streams, use standard processing
+    boolean subtractRecycling = !getIsSalesSubstream(name) || "units".equals(value.getUnits());
+    setStream(name, value, yearMatcher, subtractRecycling);
+  }
+
+  @Override
   public void enable(String name, Optional<YearMatcher> yearMatcher) {
     if (!getIsInRange(yearMatcher.orElse(null))) {
       return;
@@ -669,39 +691,24 @@ public class SingleThreadEngine implements Engine {
   }
 
   @Override
-  public void recycle(EngineNumber recoveryWithUnits, EngineNumber yieldWithUnits,
-      YearMatcher yearMatcher, String displacementTarget, RecoveryStage stage) {
-    if (!getIsInRange(yearMatcher)) {
-      return;
+  public void setInductionRate(Optional<Double> inductionRate) {
+    if (inductionRate.isPresent()) {
+      // Validate the induction rate is between 0 and 1
+      double rate = inductionRate.get();
+      if (rate < 0.0 || rate > 1.0) {
+        throw new IllegalArgumentException("Induction rate must be between 0.0 and 1.0, got: " + rate);
+      }
+      // Convert to EngineNumber with percentage units
+      EngineNumber inductionRateEngineNumber = new EngineNumber(
+          BigDecimal.valueOf(rate * 100), "%");
+      streamKeeper.setInductionRate(scope, inductionRateEngineNumber);
+    } else {
+      // Default behavior - set to 0% (displacement behavior)
+      EngineNumber defaultInductionRate = new EngineNumber(BigDecimal.ZERO, "%");
+      streamKeeper.setInductionRate(scope, defaultInductionRate);
     }
-
-    // Block displacement except for sales
-    if (displacementTarget != null && !displacementTarget.equals("sales")) {
-      throw new UnsupportedOperationException(
-        "Displacement target '" + displacementTarget + "' is not currently supported in recycling operations. "
-        + "Only 'sales' displacement or no displacement is allowed.");
-    }
-
-    streamKeeper.setRecoveryRate(scope, recoveryWithUnits, stage);
-    streamKeeper.setYieldRate(scope, yieldWithUnits, stage);
-
-    // Apply the recovery through normal recycle operation
-    RecalcOperation operation = new RecalcOperationBuilder()
-        .setRecalcKit(createRecalcKit())
-        .recalcSales()
-        .thenPropagateToPopulationChange()
-        .thenPropagateToConsumption()
-        .build();
-    operation.execute(this);
-
-    // Update lastSpecifiedValue after recycling for volume-based specs
-    updateLastSpecifiedValueAfterRecycling();
-
-    // Handle displacement using the existing displacement logic
-    UnitConverter unitConverter = EngineSupportUtils.createUnitConverterWithTotal(this, RECYCLE_RECOVER_STREAM);
-    EngineNumber recoveryInKg = unitConverter.convert(recoveryWithUnits, "kg");
-    handleDisplacement(RECYCLE_RECOVER_STREAM, recoveryWithUnits, recoveryInKg.getValue(), displacementTarget);
   }
+
 
   @Override
   public void equals(EngineNumber amount, YearMatcher yearMatcher) {
@@ -1398,7 +1405,7 @@ public class SingleThreadEngine implements Engine {
       EngineNumber newCappedInKg = unitConverter.convert(newCappedValue, "kg");
 
       if (currentInKg.getValue().compareTo(newCappedInKg.getValue()) > 0) {
-        setStream(stream, newCappedValue, Optional.empty());
+        setStreamInternal(stream, newCappedValue, Optional.empty());
 
         if (displaceTarget != null) {
           EngineNumber finalInKg = getStream(stream);
@@ -1433,7 +1440,7 @@ public class SingleThreadEngine implements Engine {
 
     if (currentValueInAmountUnits.getValue().compareTo(amount.getValue()) > 0) {
       EngineNumber currentInKg = unitConverter.convert(currentValueRaw, "kg");
-      setStream(stream, amount, Optional.empty());
+      setStreamInternal(stream, amount, Optional.empty());
 
       if (displaceTarget != null) {
         EngineNumber cappedInKg = getStream(stream);
@@ -1466,7 +1473,7 @@ public class SingleThreadEngine implements Engine {
       EngineNumber newFloorInKg = unitConverter.convert(newFloorValue, "kg");
 
       if (currentInKg.getValue().compareTo(newFloorInKg.getValue()) < 0) {
-        setStream(stream, newFloorValue, Optional.empty());
+        setStreamInternal(stream, newFloorValue, Optional.empty());
 
         if (displaceTarget != null) {
           EngineNumber finalInKg = getStream(stream);
@@ -1501,7 +1508,7 @@ public class SingleThreadEngine implements Engine {
 
     if (currentValueInAmountUnits.getValue().compareTo(amount.getValue()) < 0) {
       EngineNumber currentInKg = unitConverter.convert(currentValueRaw, "kg");
-      setStream(stream, amount, Optional.empty());
+      setStreamInternal(stream, amount, Optional.empty());
 
       if (displaceTarget != null) {
         EngineNumber newInKg = getStream(stream);

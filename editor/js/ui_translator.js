@@ -8,8 +8,23 @@
  */
 
 import {EngineNumber} from "engine_number";
-import {YearMatcher} from "year_matcher";
+import {YearMatcher, ParsedYear} from "duration";
 import {parseUnitValue} from "meta_serialization";
+import {NumberParseUtil} from "number_parse_util";
+
+/**
+ * Formats an EngineNumber for code generation, preserving original string when available.
+ *
+ * @param {EngineNumber} engineNumber - The EngineNumber to format.
+ * @returns {string} Formatted string with value and units.
+ */
+function formatEngineNumber(engineNumber) {
+  if (engineNumber.hasOriginalString()) {
+    return engineNumber.getOriginalString() + " " + engineNumber.getUnits();
+  } else {
+    return engineNumber.getValue() + " " + engineNumber.getUnits();
+  }
+}
 
 /**
  * Command compatibility mapping to compatibility modes:
@@ -1601,14 +1616,14 @@ class Substance {
     let ghg = "";
     if (self._equalsGhg) {
       const ghgValue = self._equalsGhg.getValue();
-      ghg = ghgValue.getValue() + " " + ghgValue.getUnits();
+      ghg = formatEngineNumber(ghgValue);
     }
 
     // Extract energy value
     let energy = "";
     if (self._equalsKwh) {
       const energyValue = self._equalsKwh.getValue();
-      energy = energyValue.getValue() + " " + energyValue.getUnits();
+      energy = formatEngineNumber(energyValue);
     }
 
     // Extract enabled streams
@@ -1635,7 +1650,7 @@ class Substance {
     self._initialCharges.forEach((charge) => {
       const target = charge.getTarget();
       const chargeValue = charge.getValue();
-      const chargeString = chargeValue.getValue() + " " + chargeValue.getUnits();
+      const chargeString = formatEngineNumber(chargeValue);
 
       if (target === "domestic") {
         initialChargeDomestic = chargeString;
@@ -1650,7 +1665,7 @@ class Substance {
     let retirement = "";
     if (self._retire) {
       const retireValue = self._retire.getValue();
-      retirement = retireValue.getValue() + " " + retireValue.getUnits();
+      retirement = formatEngineNumber(retireValue);
     }
 
     return new SubstanceMetadata(
@@ -1754,10 +1769,10 @@ class Substance {
     }
 
     const buildInitialCharge = (initialCharge) => {
+      const engineNumber = initialCharge.getValue();
       const pieces = [
         "initial charge with",
-        initialCharge.getValue().getValue(),
-        initialCharge.getValue().getUnits(),
+        formatEngineNumber(engineNumber),
         "for",
         initialCharge.getTarget(),
       ];
@@ -1780,10 +1795,10 @@ class Substance {
       return null;
     }
 
+    const engineNumber = equalsCommand.getValue();
     const pieces = [
       "equals",
-      equalsCommand.getValue().getValue(),
-      equalsCommand.getValue().getUnits(),
+      formatEngineNumber(engineNumber),
     ];
     self._addDuration(pieces, equalsCommand);
 
@@ -1803,12 +1818,12 @@ class Substance {
     }
 
     const buildSetVal = (setVal) => {
+      const engineNumber = setVal.getValue();
       const pieces = [
         "set",
         setVal.getTarget(),
         "to",
-        setVal.getValue().getValue(),
-        setVal.getValue().getUnits(),
+        formatEngineNumber(engineNumber),
       ];
       self._addDuration(pieces, setVal);
       return self._finalizeStatement(pieces);
@@ -1830,12 +1845,12 @@ class Substance {
     }
 
     const buildChange = (change) => {
+      const engineNumber = change.getValue();
       const pieces = [
         "change",
         change.getTarget(),
         "by",
-        change.getValue().getValue(),
-        change.getValue().getUnits(),
+        formatEngineNumber(engineNumber),
       ];
       self._addDuration(pieces, change);
       return self._finalizeStatement(pieces);
@@ -1856,10 +1871,10 @@ class Substance {
       return null;
     }
 
+    const engineNumber = self._retire.getValue();
     const pieces = [
       "retire",
-      self._retire.getValue().getValue(),
-      self._retire.getValue().getUnits(),
+      formatEngineNumber(engineNumber),
     ];
     self._addDuration(pieces, self._retire);
 
@@ -1879,12 +1894,12 @@ class Substance {
     }
 
     const buildLimit = (limit) => {
+      const engineNumber = limit.getValue();
       const pieces = [
         limit.getTypeName(),
         limit.getTarget(),
         "to",
-        limit.getValue().getValue(),
-        limit.getValue().getUnits(),
+        formatEngineNumber(engineNumber),
       ];
 
       const displacing = limit.getDisplacing();
@@ -1918,13 +1933,13 @@ class Substance {
         return self._finalizeStatement([recharge.buildCommand()]);
       } else {
         // Legacy Command objects
+        const targetEngineNumber = recharge.getTarget();
+        const valueEngineNumber = recharge.getValue();
         const pieces = [
           "recharge",
-          recharge.getTarget().getValue(),
-          recharge.getTarget().getUnits(),
+          formatEngineNumber(targetEngineNumber),
           "with",
-          recharge.getValue().getValue(),
-          recharge.getValue().getUnits(),
+          formatEngineNumber(valueEngineNumber),
         ];
         self._addDuration(pieces, recharge);
         return self._finalizeStatement(pieces);
@@ -1945,29 +1960,30 @@ class Substance {
     }
 
     const buildRecycle = (recycle) => {
+      const targetEngineNumber = recycle.getTarget();
+      const valueEngineNumber = recycle.getValue();
       const pieces = [
         "recover",
-        recycle.getTarget().getValue(),
-        recycle.getTarget().getUnits(),
+        formatEngineNumber(targetEngineNumber),
         "with",
-        recycle.getValue().getValue(),
-        recycle.getValue().getUnits(),
+        formatEngineNumber(valueEngineNumber),
         "reuse",
       ];
 
-      const displacing = recycle.getDisplacing ? recycle.getDisplacing() : null;
-      if (displacing !== null && displacing !== undefined && displacing !== "") {
-        pieces.push("displacing");
-        // Stream names (domestic, import, sales, etc.) don't need quotes
-        // Substance names need quotes
-        const streamNames = [
-          "domestic", "import", "sales", "equipment", "priorEquipment", "export",
-        ];
-        if (streamNames.includes(displacing)) {
-          pieces.push(displacing);
+      // Add induction clause if specified
+      const induction = recycle.getInduction ? recycle.getInduction() : null;
+      if (induction !== null) {
+        pieces.push("with");
+        if (induction === "default") {
+          pieces.push("default");
+        } else if (induction instanceof EngineNumber) {
+          pieces.push(formatEngineNumber(induction));
         } else {
-          pieces.push('"' + displacing + '"');
+          // Handle string numbers or other formats
+          pieces.push(induction.toString());
+          pieces.push("%");
         }
+        pieces.push("induction");
       }
 
       const stage = recycle.getStage ? recycle.getStage() : "recharge";
@@ -1999,8 +2015,7 @@ class Substance {
     const buildReplace = (replace) => {
       const pieces = [
         "replace",
-        replace.getVolume().getValue(),
-        replace.getVolume().getUnits(),
+        formatEngineNumber(replace.getVolume()),
         "of",
         replace.getSource(),
         "with",
@@ -2035,24 +2050,26 @@ class Substance {
       return;
     }
 
-    if (startYear == endYear) {
-      pieces.push("during year " + startYear);
+    if (startYear && endYear && startYear.equals(endYear)) {
+      pieces.push("during year " + startYear.getYearStr());
       return;
     }
 
     const processUnbounded = () => {
       const noStart = startYear === null;
-      const startYearRealized = noStart ? "beginning" : startYear;
+      const startYearRealized = noStart ? "beginning" : startYear.getYearStr();
 
       const noEnd = endYear === null;
-      const endYearRealized = noEnd ? "onwards" : endYear;
+      const endYearRealized = noEnd ? "onwards" : endYear.getYearStr();
 
       pieces.push("during years " + startYearRealized + " to " + endYearRealized);
     };
 
     const processBounded = () => {
-      const startYearRearrange = Math.min(startYear, endYear);
-      const endYearRearrange = Math.max(startYear, endYear);
+      const startYearValue = startYear.getNumericYear();
+      const endYearValue = endYear.getNumericYear();
+      const startYearRearrange = Math.min(startYearValue, endYearValue);
+      const endYearRearrange = Math.max(startYearValue, endYearValue);
       pieces.push("during years " + startYearRearrange + " to " + endYearRearrange);
     };
 
@@ -2647,134 +2664,95 @@ class RechargeCommand {
   /**
    * Create a new RechargeCommand.
    *
-   * @param {string} population - Population to recharge (e.g. "5").
-   * @param {string} populationUnits - Population units (e.g. "%", "% each year", "units").
-   * @param {string} volume - Volume per unit (e.g. "0.85").
-   * @param {string} volumeUnits - Volume units (e.g. "kg / unit", "mt / unit").
-   * @param {string|null} durationType - Duration type ("year", "years-range", etc.) or null.
-   * @param {string|null} yearStart - Start year for duration or null.
-   * @param {string|null} yearEnd - End year for duration or null.
+   * @param {EngineNumber} populationEngineNumber - Population amount and units to recharge.
+   * @param {EngineNumber} volumeEngineNumber - Volume per unit amount and units.
+   * @param {YearMatcher|null} duration - Duration specification or null for all years.
    */
-  constructor(population, populationUnits, volume, volumeUnits, durationType, yearStart, yearEnd) {
+  constructor(populationEngineNumber, volumeEngineNumber, duration) {
     const self = this;
-    self._population = population;
-    self._populationUnits = populationUnits;
-    self._volume = volume;
-    self._volumeUnits = volumeUnits;
-    self._durationType = durationType;
-    self._yearStart = yearStart;
-    self._yearEnd = yearEnd;
+    self._populationEngineNumber = populationEngineNumber;
+    self._volumeEngineNumber = volumeEngineNumber;
+    self._duration = duration;
   }
 
   /**
-   * Get the population to recharge.
+   * Get the population EngineNumber.
    *
-   * @returns {string} The population value.
+   * @returns {EngineNumber} The population amount and units.
    */
-  getPopulation() {
+  getPopulationEngineNumber() {
     const self = this;
-    return self._population;
+    return self._populationEngineNumber;
   }
 
   /**
-   * Get the population units.
+   * Get the volume EngineNumber.
    *
-   * @returns {string} The population units.
+   * @returns {EngineNumber} The volume per unit amount and units.
    */
-  getPopulationUnits() {
+  getVolumeEngineNumber() {
     const self = this;
-    return self._populationUnits;
+    return self._volumeEngineNumber;
+  }
+
+
+  /**
+   * Get the target for this recharge command (population - Command interface compatibility).
+   *
+   * @returns {EngineNumber} The population EngineNumber.
+   */
+  getTarget() {
+    const self = this;
+    return self._populationEngineNumber;
   }
 
   /**
-   * Get the volume per unit.
+   * Get the value for this recharge command (volume - Command interface compatibility).
    *
-   * @returns {string} The volume value.
+   * @returns {EngineNumber} The volume EngineNumber.
    */
-  getVolume() {
+  getValue() {
     const self = this;
-    return self._volume;
-  }
-
-  /**
-   * Get the volume units.
-   *
-   * @returns {string} The volume units.
-   */
-  getVolumeUnits() {
-    const self = this;
-    return self._volumeUnits;
-  }
-
-  /**
-   * Get the duration type.
-   *
-   * @returns {string|null} The duration type or null for all years.
-   */
-  getDurationType() {
-    const self = this;
-    return self._durationType;
-  }
-
-  /**
-   * Get the start year.
-   *
-   * @returns {string|null} The start year or null.
-   */
-  getYearStart() {
-    const self = this;
-    return self._yearStart;
-  }
-
-  /**
-   * Get the end year.
-   *
-   * @returns {string|null} The end year or null.
-   */
-  getYearEnd() {
-    const self = this;
-    return self._yearEnd;
+    return self._volumeEngineNumber;
   }
 
   /**
    * Get the duration for which this recharge command applies.
    *
-   * @returns {YearMatcher} The duration specification, or null for all years.
+   * @returns {YearMatcher|null} The duration specification, or null for all years.
    */
   getDuration() {
     const self = this;
-    if (self._durationType === null) {
-      return null;
-    }
-    return new YearMatcher(self._yearStart, self._yearEnd);
+    return self._duration;
   }
 
   /**
-   * Build the command string for this recharge.
+   * Build the command string for this recharge with original number formatting preserved.
    *
    * @param {string} substance - The substance name (unused but kept for consistency).
    * @returns {string} The generated recharge command.
    */
   buildCommand(substance) {
     const self = this;
-    const baseCommand = `recharge ${self._population} ${self._populationUnits}` +
-      ` with ${self._volume} ${self._volumeUnits}`;
+    const populationStr = formatEngineNumber(self._populationEngineNumber);
+    const volumeStr = formatEngineNumber(self._volumeEngineNumber);
+    const baseCommand = `recharge ${populationStr} with ${volumeStr}`;
     let command = baseCommand;
 
-    if (self._durationType) {
-      switch (self._durationType) {
-      case "during year":
-        command += ` during year ${self._yearStart}`;
-        break;
-      case "during years":
-        command += ` during years ${self._yearStart} to ${self._yearEnd}`;
-        break;
-      case "years-onwards":
-        command += ` during years ${self._yearStart} to onwards`;
-        break;
-      case "years-beginning":
-        command += ` during years beginning to ${self._yearEnd}`;
-        break;
+    if (self._duration) {
+      const start = self._duration.getStart();
+      const end = self._duration.getEnd();
+
+      if (start !== null && end !== null) {
+        if (start.equals(end)) {
+          command += ` during year ${start.getYearStr()}`;
+        } else {
+          command += ` during years ${start.getYearStr()} to ${end.getYearStr()}`;
+        }
+      } else if (start !== null) {
+        command += ` during years ${start.getYearStr()} to onwards`;
+      } else if (end !== null) {
+        command += ` during years beginning to ${end.getYearStr()}`;
       }
     }
 
@@ -2803,7 +2781,7 @@ class RechargeCommand {
 }
 
 /**
- * Recycle command with displacement capability.
+ * Recycle command for substance recovery.
  */
 class RecycleCommand {
   /**
@@ -2812,16 +2790,17 @@ class RecycleCommand {
    * @param {EngineNumber} target - Recovery amount and units.
    * @param {EngineNumber} value - Reuse amount and units.
    * @param {YearMatcher} duration - Duration of recovery.
-   * @param {string} displacing - Stream or substance being displaced.
    * @param {string} stage - Recycling stage ("eol" or "recharge").
+   * @param {EngineNumber|string|null} induction - Induction amount, "default", or null for
+   *   backward compatibility.
    */
-  constructor(target, value, duration, displacing, stage) {
+  constructor(target, value, duration, stage, induction = null) {
     const self = this;
     self._target = target;
     self._value = value;
     self._duration = duration;
-    self._displacing = displacing;
     self._stage = stage;
+    self._induction = induction;
   }
 
   /**
@@ -2864,15 +2843,6 @@ class RecycleCommand {
     return self._duration;
   }
 
-  /**
-   * Get the stream or substance being displaced by this recycle.
-   *
-   * @returns {string|null} Name of stream or substance being displaced, or null if none.
-   */
-  getDisplacing() {
-    const self = this;
-    return self._displacing;
-  }
 
   /**
    * Get the recycling stage for this recycle command.
@@ -2882,6 +2852,16 @@ class RecycleCommand {
   getStage() {
     const self = this;
     return self._stage;
+  }
+
+  /**
+   * Get the induction rate for this recycle command.
+   *
+   * @returns {EngineNumber|string|null} The induction amount, "default", or null if not specified.
+   */
+  getInduction() {
+    const self = this;
+    return self._induction;
   }
 
   /**
@@ -3020,6 +3000,14 @@ class IncompatibleCommand {
  */
 class TranslatorVisitor extends toolkit.QubecTalkVisitor {
   /**
+   * Create a new TranslatorVisitor with number parsing utilities.
+   */
+  constructor() {
+    super();
+    this.numberParser = new NumberParseUtil();
+  }
+
+  /**
    * Visit a number node and converts it to a numeric value.
    *
    * @param {Object} ctx - The parse tree node context.
@@ -3031,10 +3019,18 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
     const raw = ctx.getText();
     const signMultiplier = raw.includes("-") ? -1 : 1;
     const bodyRawText = ctx.getChild(ctx.getChildCount() - 1).getText();
-    const cleanedText = bodyRawText.replace(/,/g, "");
-    const bodyParsed = signMultiplier * parseFloat(cleanedText);
 
-    return bodyParsed;
+    const result = self.numberParser.parseFlexibleNumber(bodyRawText);
+    if (!result.isSuccess()) {
+      throw new Error(`Failed to parse number in QubecTalk expression: ${result.getError()}`);
+    }
+
+    // Return an object with both the numeric value and original string
+    // Use the full raw text which already includes the sign if present
+    return {
+      value: signMultiplier * result.getNumber(),
+      originalString: raw,
+    };
   }
 
   /**
@@ -3079,7 +3075,16 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
     const unitString = ctx.getChild(1).accept(self);
     const expressionContent = ctx.getChild(0).accept(self);
 
-    return new EngineNumber(expressionContent, unitString);
+    // Handle the case where expressionContent might be an object with value and originalString
+    if (typeof expressionContent === "object" && expressionContent.value !== undefined) {
+      return new EngineNumber(
+        expressionContent.value,
+        unitString,
+        expressionContent.originalString,
+      );
+    } else {
+      return new EngineNumber(expressionContent, unitString);
+    }
   }
 
   /**
@@ -3315,8 +3320,8 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
   /**
    * Build a YearMatcher for a duration.
    *
-   * @param {number|null} minYear - Start year or null for unbounded
-   * @param {number|null} maxYear - End year or null for unbounded
+   * @param {ParsedYear|null} minYear - Start year or null for unbounded
+   * @param {ParsedYear|null} maxYear - End year or null for unbounded
    * @returns {YearMatcher} The year matcher object
    */
   buildDuring(minYear, maxYear) {
@@ -3332,8 +3337,9 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
    */
   visitDuringSingleYear(ctx) {
     const self = this;
-    const year = ctx.target.accept(self);
-    return self.buildDuring(year, year);
+    const yearObj = ctx.target.accept(self);
+    const parsedYear = new ParsedYear(yearObj.value, yearObj.originalString);
+    return self.buildDuring(parsedYear, parsedYear);
   }
 
   /**
@@ -3344,7 +3350,7 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
    */
   visitDuringStart(ctx) {
     const self = this;
-    const startYear = "beginning";
+    const startYear = new ParsedYear("beginning");
     return self.buildDuring(startYear, startYear);
   }
 
@@ -3356,9 +3362,11 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
    */
   visitDuringRange(ctx) {
     const self = this;
-    const lower = ctx.lower.accept(self);
-    const upper = ctx.upper.accept(self);
-    return self.buildDuring(lower, upper);
+    const lowerObj = ctx.lower.accept(self);
+    const upperObj = ctx.upper.accept(self);
+    const parsedLower = new ParsedYear(lowerObj.value, lowerObj.originalString);
+    const parsedUpper = new ParsedYear(upperObj.value, upperObj.originalString);
+    return self.buildDuring(parsedLower, parsedUpper);
   }
 
   /**
@@ -3369,9 +3377,9 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
    */
   visitDuringWithMin(ctx) {
     const self = this;
-    const lower = ctx.lower.accept(self);
-    const upper = null;
-    return self.buildDuring(lower, upper);
+    const lowerObj = ctx.lower.accept(self);
+    const parsedLower = new ParsedYear(lowerObj.value, lowerObj.originalString);
+    return self.buildDuring(parsedLower, null);
   }
 
   /**
@@ -3382,9 +3390,9 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
    */
   visitDuringWithMax(ctx) {
     const self = this;
-    const lower = null;
-    const upper = ctx.upper.accept(self);
-    return self.buildDuring(lower, upper);
+    const upperObj = ctx.upper.accept(self);
+    const parsedUpper = new ParsedYear(upperObj.value, upperObj.originalString);
+    return self.buildDuring(null, parsedUpper);
   }
 
   /**
@@ -3627,27 +3635,27 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
    * Visit a recharge command with all years duration node.
    *
    * @param {Object} ctx - The parse tree node context.
-   * @returns {Command} New recharge command instance.
+   * @returns {RechargeCommand} New recharge command instance.
    */
   visitRechargeAllYears(ctx) {
     const self = this;
-    const populationFuture = (ctx) => ctx.population.accept(self);
-    const volumeFuture = (ctx) => ctx.volume.accept(self);
-    return self._buildOperation(ctx, "recharge", null, populationFuture, volumeFuture);
+    const population = ctx.population.accept(self);
+    const volume = ctx.volume.accept(self);
+    return new RechargeCommand(population, volume, null);
   }
 
   /**
    * Visit a recharge command with duration node.
    *
    * @param {Object} ctx - The parse tree node context.
-   * @returns {Command} New recharge command instance.
+   * @returns {RechargeCommand} New recharge command instance.
    */
   visitRechargeDuration(ctx) {
     const self = this;
-    const populationFuture = (ctx) => ctx.population.accept(self);
-    const volumeFuture = (ctx) => ctx.volume.accept(self);
+    const population = ctx.population.accept(self);
+    const volume = ctx.volume.accept(self);
     const duration = ctx.duration.accept(self);
-    return self._buildOperation(ctx, "recharge", duration, populationFuture, volumeFuture);
+    return new RechargeCommand(population, volume, duration);
   }
 
   /**
@@ -3660,7 +3668,7 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
     const self = this;
     const volume = ctx.volume.accept(self);
     const yieldVal = ctx.yieldVal.accept(self);
-    return new RecycleCommand(volume, yieldVal, null, null, "recharge");
+    return new RecycleCommand(volume, yieldVal, null, "recharge");
   }
 
   /**
@@ -3674,65 +3682,9 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
     const volume = ctx.volume.accept(self);
     const yieldVal = ctx.yieldVal.accept(self);
     const duration = ctx.duration.accept(self);
-    return new RecycleCommand(volume, yieldVal, duration, null, "recharge");
+    return new RecycleCommand(volume, yieldVal, duration, "recharge");
   }
 
-  /**
-   * Helper method to find and clean displacement target from context.
-   *
-   * @param {Object} ctx - The parse tree node context.
-   * @returns {string|null} The cleaned displacement target.
-   */
-  _findDisplacementTarget(ctx) {
-    for (let i = 0; i < ctx.getChildCount(); i++) {
-      const child = ctx.getChild(i);
-      if (child && child.getText() === "displacing" && i + 1 < ctx.getChildCount()) {
-        const targetChild = ctx.getChild(i + 1);
-        if (targetChild) {
-          const displacementTarget = targetChild.getText();
-          const isQuoted = displacementTarget && displacementTarget.startsWith('"');
-          return isQuoted ? displacementTarget.slice(1, -1) : displacementTarget;
-        }
-      }
-    }
-    return null;
-  }
-
-  /**
-   * Visit a recover command with displacement and all years duration node.
-   *
-   * @param {Object} ctx - The parse tree node context.
-   * @returns {RecycleCommand} New recycle command with displacement.
-   */
-  visitRecoverDisplacementAllYears(ctx) {
-    const self = this;
-
-    // Check if required properties exist
-    if (!ctx.volume || !ctx.yieldVal) {
-      console.error("Missing volume or yieldVal in displacement context:", ctx);
-      return new IncompatibleCommand("recover with displace - missing parameters");
-    }
-
-    const volume = ctx.volume.accept(self);
-    const yieldVal = ctx.yieldVal.accept(self);
-    const cleanTarget = self._findDisplacementTarget(ctx);
-    return new RecycleCommand(volume, yieldVal, null, cleanTarget, "recharge");
-  }
-
-  /**
-   * Visit a recover command with displacement and duration node.
-   *
-   * @param {Object} ctx - The parse tree node context.
-   * @returns {RecycleCommand} New recycle command with displacement and duration.
-   */
-  visitRecoverDisplacementDuration(ctx) {
-    const self = this;
-    const volume = ctx.volume.accept(self);
-    const yieldVal = ctx.yieldVal.accept(self);
-    const cleanTarget = self._findDisplacementTarget(ctx);
-    const duration = ctx.duration.accept(self);
-    return new RecycleCommand(volume, yieldVal, duration, cleanTarget, "recharge");
-  }
 
   /**
    * Visit a recover command with stage and all years duration node.
@@ -3745,7 +3697,7 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
     const volume = ctx.volume.accept(self);
     const yieldVal = ctx.yieldVal.accept(self);
     const stage = ctx.stage.text;
-    return new RecycleCommand(volume, yieldVal, null, null, stage);
+    return new RecycleCommand(volume, yieldVal, null, stage);
   }
 
   /**
@@ -3760,38 +3712,123 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
     const yieldVal = ctx.yieldVal.accept(self);
     const stage = ctx.stage.text;
     const duration = ctx.duration.accept(self);
-    return new RecycleCommand(volume, yieldVal, duration, null, stage);
+    return new RecycleCommand(volume, yieldVal, duration, stage);
   }
 
   /**
-   * Visit a recover command with stage, displacement and all years duration node.
+   * Visit a recover command with explicit induction and all years duration node.
    *
    * @param {Object} ctx - The parse tree node context.
-   * @returns {RecycleCommand} New recycle command with stage and displacement.
+   * @returns {RecycleCommand} New recycle command with induction.
    */
-  visitRecoverStageDisplacementAllYears(ctx) {
+  visitRecoverInductionAllYears(ctx) {
     const self = this;
     const volume = ctx.volume.accept(self);
     const yieldVal = ctx.yieldVal.accept(self);
-    const stage = ctx.stage.text;
-    const cleanTarget = self._findDisplacementTarget(ctx);
-    return new RecycleCommand(volume, yieldVal, null, cleanTarget, stage);
+    const inductionVal = ctx.inductionVal.accept(self);
+    return new RecycleCommand(volume, yieldVal, null, "recharge", inductionVal);
   }
 
   /**
-   * Visit a recover command with stage, displacement and duration node.
+   * Visit a recover command with explicit induction and duration node.
    *
    * @param {Object} ctx - The parse tree node context.
-   * @returns {RecycleCommand} New recycle command with stage, displacement and duration.
+   * @returns {RecycleCommand} New recycle command with induction and duration.
    */
-  visitRecoverStageDisplacementDuration(ctx) {
+  visitRecoverInductionDuration(ctx) {
     const self = this;
     const volume = ctx.volume.accept(self);
     const yieldVal = ctx.yieldVal.accept(self);
-    const stage = ctx.stage.text;
-    const cleanTarget = self._findDisplacementTarget(ctx);
+    const inductionVal = ctx.inductionVal.accept(self);
     const duration = ctx.duration.accept(self);
-    return new RecycleCommand(volume, yieldVal, duration, cleanTarget, stage);
+    return new RecycleCommand(volume, yieldVal, duration, "recharge", inductionVal);
+  }
+
+  /**
+   * Visit a recover command with explicit induction, stage and all years duration node.
+   *
+   * @param {Object} ctx - The parse tree node context.
+   * @returns {RecycleCommand} New recycle command with induction and stage.
+   */
+  visitRecoverInductionStageAllYears(ctx) {
+    const self = this;
+    const volume = ctx.volume.accept(self);
+    const yieldVal = ctx.yieldVal.accept(self);
+    const inductionVal = ctx.inductionVal.accept(self);
+    const stage = ctx.stage.text;
+    return new RecycleCommand(volume, yieldVal, null, stage, inductionVal);
+  }
+
+  /**
+   * Visit a recover command with explicit induction, stage and duration node.
+   *
+   * @param {Object} ctx - The parse tree node context.
+   * @returns {RecycleCommand} New recycle command with induction, stage and duration.
+   */
+  visitRecoverInductionStageDuration(ctx) {
+    const self = this;
+    const volume = ctx.volume.accept(self);
+    const yieldVal = ctx.yieldVal.accept(self);
+    const inductionVal = ctx.inductionVal.accept(self);
+    const stage = ctx.stage.text;
+    const duration = ctx.duration.accept(self);
+    return new RecycleCommand(volume, yieldVal, duration, stage, inductionVal);
+  }
+
+  /**
+   * Visit a recover command with default induction and all years duration node.
+   *
+   * @param {Object} ctx - The parse tree node context.
+   * @returns {RecycleCommand} New recycle command with default induction.
+   */
+  visitRecoverDefaultInductionAllYears(ctx) {
+    const self = this;
+    const volume = ctx.volume.accept(self);
+    const yieldVal = ctx.yieldVal.accept(self);
+    return new RecycleCommand(volume, yieldVal, null, "recharge", "default");
+  }
+
+  /**
+   * Visit a recover command with default induction and duration node.
+   *
+   * @param {Object} ctx - The parse tree node context.
+   * @returns {RecycleCommand} New recycle command with default induction and duration.
+   */
+  visitRecoverDefaultInductionDuration(ctx) {
+    const self = this;
+    const volume = ctx.volume.accept(self);
+    const yieldVal = ctx.yieldVal.accept(self);
+    const duration = ctx.duration.accept(self);
+    return new RecycleCommand(volume, yieldVal, duration, "recharge", "default");
+  }
+
+  /**
+   * Visit a recover command with default induction, stage and all years duration node.
+   *
+   * @param {Object} ctx - The parse tree node context.
+   * @returns {RecycleCommand} New recycle command with default induction and stage.
+   */
+  visitRecoverDefaultInductionStageAllYears(ctx) {
+    const self = this;
+    const volume = ctx.volume.accept(self);
+    const yieldVal = ctx.yieldVal.accept(self);
+    const stage = ctx.stage.text;
+    return new RecycleCommand(volume, yieldVal, null, stage, "default");
+  }
+
+  /**
+   * Visit a recover command with default induction, stage and duration node.
+   *
+   * @param {Object} ctx - The parse tree node context.
+   * @returns {RecycleCommand} New recycle command with default induction, stage and duration.
+   */
+  visitRecoverDefaultInductionStageDuration(ctx) {
+    const self = this;
+    const volume = ctx.volume.accept(self);
+    const yieldVal = ctx.yieldVal.accept(self);
+    const stage = ctx.stage.text;
+    const duration = ctx.duration.accept(self);
+    return new RecycleCommand(volume, yieldVal, duration, stage, "default");
   }
 
   /**
@@ -4224,6 +4261,26 @@ class TranslationResult {
 }
 
 /**
+ * Preprocesses QubecTalk input to handle "each year" syntax sugar.
+ *
+ * Removes standalone "each year" or "each years" at the end of lines to prevent
+ * parser ambiguity while preserving them within "during" clauses.
+ *
+ * Handles cases like:
+ * - "retire 5 % each year" → "retire 5 %"
+ * - "recharge 10 % with 0.15 kg / unit each year" → "recharge 10 % with 0.15 kg / unit"
+ *
+ * But preserves:
+ * - "change domestic by +5 % each year during years 2025 to 2035" (unchanged)
+ *
+ * @param {string} input - The raw QubecTalk code
+ * @returns {string} The preprocessed QubecTalk code
+ */
+function preprocessEachYearSyntax(input) {
+  return input.replace(/\s+each\s+years?\s*$/gm, "");
+}
+
+/**
  * Compiler that translates QubecTalk code into object representation.
  *
  * Facade which parses QubecTalk scripts and converts them into objects which
@@ -4250,7 +4307,8 @@ class UiTranslatorCompiler {
 
     const errors = [];
 
-    const chars = new toolkit.antlr4.InputStream(input);
+    const preprocessedCode = preprocessEachYearSyntax(input);
+    const chars = new toolkit.antlr4.InputStream(preprocessedCode);
     const lexer = new toolkit.QubecTalkLexer(chars);
     lexer.removeErrorListeners();
     lexer.addErrorListener({
@@ -4324,8 +4382,10 @@ export {
   SubstanceBuilder,
   SubstanceMetadata,
   SubstanceMetadataBuilder,
+  TranslatorVisitor,
   UiTranslatorCompiler,
   buildAddCode,
   finalizeCodePieces,
   indent,
+  preprocessEachYearSyntax,
 };
