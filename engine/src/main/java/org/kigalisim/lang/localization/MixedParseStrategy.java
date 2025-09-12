@@ -60,10 +60,13 @@ public class MixedParseStrategy implements NumberParseUtilStrategy {
       // Period comes before comma: European format - reject with UK suggestion
       // Example: 123.456,789 → suggest 123,456.789
       String suggestion = convertEuropeanToUk(numberStr);
-      return new FlexibleNumberParseResult(String.format(
-          "European number format detected: '%s'. Please use UK format: '%s'. "
-          + "Kigali Sim requires UK-style numbers (comma for thousands, period for decimal).",
-          numberStr, suggestion
+      return new FlexibleNumberParseResult(
+          String.format(
+              "Unsupported number format detected: '%s'. Please use UK format: '%s'. "
+              + "Kigali Sim requires comma for thousands and period for decimal.",
+              numberStr,
+              suggestion
+          )
       ));
     }
   }
