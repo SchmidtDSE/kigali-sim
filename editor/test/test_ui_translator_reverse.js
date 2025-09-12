@@ -1,5 +1,5 @@
 import {EngineNumber} from "engine_number";
-import {YearMatcher} from "year_matcher";
+import {YearMatcher, ParsedYear} from "duration";
 import {
   AboutStanza,
   Application,
@@ -88,7 +88,7 @@ function buildUiTranslatorReverseTests() {
       assert.notEqual(code.indexOf("recharge 10 % with 0.12 kg / unit"), -1);
     });
     QUnit.test("recharges substances with duration", function (assert) {
-      const yearMatcher = new YearMatcher(2025, 2030);
+      const yearMatcher = new YearMatcher(new ParsedYear(2025), new ParsedYear(2030));
       const populationEngineNumber = new EngineNumber("5", "% / year", "5");
       const volumeEngineNumber = new EngineNumber("0.85", "kg / unit", "0.85");
       const command = new RechargeCommand(populationEngineNumber, volumeEngineNumber, yearMatcher);
@@ -164,7 +164,7 @@ function buildUiTranslatorReverseTests() {
         "setVal",
         "domestic",
         new EngineNumber("10", "mt"),
-        new YearMatcher(1, 1),
+        new YearMatcher(new ParsedYear(1), new ParsedYear(1)),
       );
       const substance = createWithCommand("test", true, command);
       const code = substance.toCode(0);
@@ -176,7 +176,7 @@ function buildUiTranslatorReverseTests() {
         "retire",
         null,
         new EngineNumber("10", "%"),
-        new YearMatcher(2, 5),
+        new YearMatcher(new ParsedYear(2), new ParsedYear(5)),
       );
       const substance = createWithCommand("test", false, command);
       const code = substance.toCode(0);
@@ -188,7 +188,7 @@ function buildUiTranslatorReverseTests() {
         "retire",
         null,
         new EngineNumber("10", "%"),
-        new YearMatcher(5, 2),
+        new YearMatcher(new ParsedYear(5), new ParsedYear(2)),
       );
       const substance = createWithCommand("test", false, command);
       const code = substance.toCode(0);
@@ -200,7 +200,7 @@ function buildUiTranslatorReverseTests() {
         new EngineNumber("10", "%"),
         "domestic",
         "other",
-        new YearMatcher(2, null),
+        new YearMatcher(new ParsedYear(2), null),
       );
       const substance = createWithCommand("test", true, command);
       const code = substance.toCode(0);
@@ -215,7 +215,7 @@ function buildUiTranslatorReverseTests() {
         "recycle",
         new EngineNumber("10", "%"),
         new EngineNumber("100", "%"),
-        new YearMatcher(null, 5),
+        new YearMatcher(null, new ParsedYear(5)),
       );
       const substance = createWithCommand("test", true, command);
       const code = substance.toCode(0);
@@ -230,13 +230,13 @@ function buildUiTranslatorReverseTests() {
         "setVal",
         "domestic",
         new EngineNumber(5, "kg / unit"),
-        new YearMatcher(1, 1),
+        new YearMatcher(new ParsedYear(1), new ParsedYear(1)),
       );
       const cap = new LimitCommand(
         "cap",
         "domestic",
         new EngineNumber(5, "mt"),
-        new YearMatcher(3, 4),
+        new YearMatcher(new ParsedYear(3), new ParsedYear(4)),
         "import",
       );
       const substance = createWithCommands("test", true, [setVal, cap]);

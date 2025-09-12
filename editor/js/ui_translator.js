@@ -8,7 +8,7 @@
  */
 
 import {EngineNumber} from "engine_number";
-import {YearMatcher} from "year_matcher";
+import {YearMatcher, ParsedYear} from "duration";
 import {parseUnitValue} from "meta_serialization";
 import {NumberParseUtil} from "number_parse_util";
 
@@ -2050,24 +2050,26 @@ class Substance {
       return;
     }
 
-    if (startYear == endYear) {
-      pieces.push("during year " + startYear);
+    if (startYear && endYear && startYear.equals(endYear)) {
+      pieces.push("during year " + startYear.getYearStr());
       return;
     }
 
     const processUnbounded = () => {
       const noStart = startYear === null;
-      const startYearRealized = noStart ? "beginning" : startYear;
+      const startYearRealized = noStart ? "beginning" : startYear.getYearStr();
 
       const noEnd = endYear === null;
-      const endYearRealized = noEnd ? "onwards" : endYear;
+      const endYearRealized = noEnd ? "onwards" : endYear.getYearStr();
 
       pieces.push("during years " + startYearRealized + " to " + endYearRealized);
     };
 
     const processBounded = () => {
-      const startYearRearrange = Math.min(startYear, endYear);
-      const endYearRearrange = Math.max(startYear, endYear);
+      const startYearValue = startYear.getNumericYear();
+      const endYearValue = endYear.getNumericYear();
+      const startYearRearrange = Math.min(startYearValue, endYearValue);
+      const endYearRearrange = Math.max(startYearValue, endYearValue);
       pieces.push("during years " + startYearRearrange + " to " + endYearRearrange);
     };
 
@@ -2742,15 +2744,15 @@ class RechargeCommand {
       const end = self._duration.getEnd();
 
       if (start !== null && end !== null) {
-        if (start === end) {
-          command += ` during year ${start}`;
+        if (start.equals(end)) {
+          command += ` during year ${start.getYearStr()}`;
         } else {
-          command += ` during years ${start} to ${end}`;
+          command += ` during years ${start.getYearStr()} to ${end.getYearStr()}`;
         }
       } else if (start !== null) {
-        command += ` during years ${start} to onwards`;
+        command += ` during years ${start.getYearStr()} to onwards`;
       } else if (end !== null) {
-        command += ` during years beginning to ${end}`;
+        command += ` during years beginning to ${end.getYearStr()}`;
       }
     }
 
@@ -3318,8 +3320,8 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
   /**
    * Build a YearMatcher for a duration.
    *
-   * @param {number|null} minYear - Start year or null for unbounded
-   * @param {number|null} maxYear - End year or null for unbounded
+   * @param {ParsedYear|null} minYear - Start year or null for unbounded
+   * @param {ParsedYear|null} maxYear - End year or null for unbounded
    * @returns {YearMatcher} The year matcher object
    */
   buildDuring(minYear, maxYear) {
@@ -3335,8 +3337,9 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
    */
   visitDuringSingleYear(ctx) {
     const self = this;
-    const year = ctx.target.accept(self);
-    return self.buildDuring(year, year);
+    const yearObj = ctx.target.accept(self);
+    const parsedYear = new ParsedYear(yearObj.value, yearObj.originalString);
+    return self.buildDuring(parsedYear, parsedYear);
   }
 
   /**
@@ -3347,7 +3350,7 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
    */
   visitDuringStart(ctx) {
     const self = this;
-    const startYear = "beginning";
+    const startYear = new ParsedYear("beginning");
     return self.buildDuring(startYear, startYear);
   }
 
@@ -3359,9 +3362,11 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
    */
   visitDuringRange(ctx) {
     const self = this;
-    const lower = ctx.lower.accept(self);
-    const upper = ctx.upper.accept(self);
-    return self.buildDuring(lower, upper);
+    const lowerObj = ctx.lower.accept(self);
+    const upperObj = ctx.upper.accept(self);
+    const parsedLower = new ParsedYear(lowerObj.value, lowerObj.originalString);
+    const parsedUpper = new ParsedYear(upperObj.value, upperObj.originalString);
+    return self.buildDuring(parsedLower, parsedUpper);
   }
 
   /**
@@ -3372,9 +3377,9 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
    */
   visitDuringWithMin(ctx) {
     const self = this;
-    const lower = ctx.lower.accept(self);
-    const upper = null;
-    return self.buildDuring(lower, upper);
+    const lowerObj = ctx.lower.accept(self);
+    const parsedLower = new ParsedYear(lowerObj.value, lowerObj.originalString);
+    return self.buildDuring(parsedLower, null);
   }
 
   /**
@@ -3385,9 +3390,9 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
    */
   visitDuringWithMax(ctx) {
     const self = this;
-    const lower = null;
-    const upper = ctx.upper.accept(self);
-    return self.buildDuring(lower, upper);
+    const upperObj = ctx.upper.accept(self);
+    const parsedUpper = new ParsedYear(upperObj.value, upperObj.originalString);
+    return self.buildDuring(null, parsedUpper);
   }
 
   /**
