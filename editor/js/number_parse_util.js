@@ -234,9 +234,9 @@ class NumberParseUtil {
       // Comma comes after period - European format → ERROR
       const ukSuggestion = self._convertEuropeanToUkFormat(numberPart);
       return NumberParseResult.error(
-        `Unsupported number format detected: '${originalString}'. ` +
-        `Please use the format: '${ukSuggestion}'. ` +
-        "Kigali Sim requires comma for thousands and period for decimal.",
+        `Unsupported number format: '${originalString}'. ` +
+        `Please use: '${ukSuggestion}'. ` +
+        "Kigali Sim requires comma for thousands separator and period for decimal point.",
       );
     }
   }
@@ -446,9 +446,9 @@ class NumberParseUtil {
    * @private
    */
   _generateEuropeanFormatError(originalInput, ukSuggestion) {
-    return `Unsupported format detected: '${originalInput}'. ` +
-           `Please use format: '${ukSuggestion}'. ` +
-           "Kigali Sim requires comma for thousands and period for decimal.";
+    return `Unsupported number format: '${originalInput}'. ` +
+           `Please use: '${ukSuggestion}'. ` +
+           "Kigali Sim requires comma for thousands separator and period for decimal point.";
   }
 }
 

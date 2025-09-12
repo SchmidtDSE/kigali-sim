@@ -62,12 +62,12 @@ public class MixedParseStrategy implements NumberParseUtilStrategy {
       String suggestion = convertEuropeanToUk(numberStr);
       return new FlexibleNumberParseResult(
           String.format(
-              "Unsupported number format detected: '%s'. Please use format: '%s'. "
-              + "Kigali Sim requires comma for thousands and period for decimal.",
+              "Unsupported number format: '%s'. Please use: '%s'. "
+              + "Kigali Sim requires comma for thousands separator and period for decimal point.",
               numberStr,
               suggestion
           )
-      ));
+      );
     }
   }
 

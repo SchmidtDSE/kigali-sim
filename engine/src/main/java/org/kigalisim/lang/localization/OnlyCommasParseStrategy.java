@@ -54,41 +54,59 @@ public class OnlyCommasParseStrategy implements NumberParseUtilStrategy {
       int digitsAfter = numberStr.length() - separatorIndex - 1;
       int digitsBefore = separatorIndex;
 
-      // Special case: if number starts with separator, it's always a decimal separator
+      // Special case: if number starts with separator, it's European decimal format
       if (digitsBefore == 0) {
-        // Convert comma decimal to period decimal
-        return new FlexibleNumberParseResult(new BigDecimal(numberStr.replace(",", ".")));
+        String suggestion = generateUkFormatSuggestion(numberStr);
+        return new FlexibleNumberParseResult(
+            String.format(
+                "Unsupported number format: '%s'. Please use: '%s'. "
+                + "Kigali Sim requires comma for thousands separator and period for decimal point.",
+                numberStr,
+                suggestion
+            )
+        );
       }
 
       if (digitsAfter == 3) {
-        // If digits before are 4 or more like 1234,5, treat as decimal separator
+        // If digits before are 4 or more like 1234,5, it could be European decimal - reject
         if (digitsBefore >= 4) {
-          // Convert comma decimal to period decimal
-          return new FlexibleNumberParseResult(new BigDecimal(numberStr.replace(",", ".")));
-        } else if (isLikelyThousandsSeparator(numberStr, separatorIndex)) {
-          return new FlexibleNumberParseResult(new BigDecimal(numberStr.replace(String.valueOf(separator), "")));
-        } else if (numberStr.startsWith("0,")) {
-          // Numbers starting with 0, are clearly decimals (like 0,035)
-          return new FlexibleNumberParseResult(new BigDecimal(numberStr.replace(",", ".")));
-        } else {
-          // Previously ambiguous case - now interpret as UK format (thousands separator)
-          return new FlexibleNumberParseResult(new BigDecimal(numberStr.replace(String.valueOf(separator), "")));
-        }
-      } else {
-        // Not exactly 3 digits after - check if it's European decimal format
-        if (isEuropeanDecimalPattern(numberStr, separatorIndex)) {
           String suggestion = generateUkFormatSuggestion(numberStr);
           return new FlexibleNumberParseResult(
               String.format(
-                  "Unsupported number format detected: '%s'. Please use format: '%s'. "
+                  "Unsupported format detected: '%s'. Please use format: '%s'. "
                   + "Kigali Sim requires comma for thousands and period for decimal.",
                   numberStr,
                   suggestion
               )
           );
+        } else if (isLikelyThousandsSeparator(numberStr, separatorIndex)) {
+          return new FlexibleNumberParseResult(new BigDecimal(numberStr.replace(String.valueOf(separator), "")));
+        } else if (numberStr.startsWith("0,")) {
+          // Numbers starting with 0, are European decimals (like 0,035) - reject
+          String suggestion = generateUkFormatSuggestion(numberStr);
+          return new FlexibleNumberParseResult(
+              String.format(
+                  "Unsupported format detected: '%s'. Please use format: '%s'. "
+                  + "Kigali Sim requires comma for thousands and period for decimal.",
+                  numberStr,
+                  suggestion
+              )
+          );
+        } else {
+          // Previously ambiguous case - now interpret as UK format (thousands separator)
+          return new FlexibleNumberParseResult(new BigDecimal(numberStr.replace(String.valueOf(separator), "")));
         }
-        // Convert comma decimal to period decimal (UK format)
-        return new FlexibleNumberParseResult(new BigDecimal(numberStr.replace(",", ".")));
+      } else {
+        // Not exactly 3 digits after - this is European decimal format, reject with UK suggestion
+        String suggestion = generateUkFormatSuggestion(numberStr);
+        return new FlexibleNumberParseResult(
+            String.format(
+                "Unsupported number format: '%s'. Please use: '%s'. "
+                + "Kigali Sim requires comma for thousands separator and period for decimal point.",
+                numberStr,
+                suggestion
+            )
+        );
       }
     }
   }

@@ -46,8 +46,8 @@ public class OnlyPeriodsParseStrategy implements NumberParseUtilStrategy {
       if (isEuropeanThousandsPattern(numberStr)) {
         String suggestion = generateUkFormatSuggestion(numberStr);
         return new FlexibleNumberParseResult(String.format(
-            "European number format detected: '%s'. Please use UK format: '%s'. "
-            + "Kigali Sim requires UK-style numbers (comma for thousands, period for decimal).",
+            "Unsupported number format: '%s'. Please use: '%s'. "
+            + "Kigali Sim requires comma for thousands separator and period for decimal point.",
             numberStr, suggestion
         ));
       }
@@ -180,7 +180,7 @@ public class OnlyPeriodsParseStrategy implements NumberParseUtilStrategy {
   private int countOccurrences(String str, char ch) {
     String target = String.valueOf(ch);
     int originalLength = str.length();
-    int lengthWithoutTarget = str.replaceAll(java.util.regex.Pattern.quote(target), "").length();
+    int lengthWithoutTarget = str.replaceAll(Pattern.quote(target), "").length();
     return originalLength - lengthWithoutTarget;
   }
 }
