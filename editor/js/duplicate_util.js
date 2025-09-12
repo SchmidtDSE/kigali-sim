@@ -4,8 +4,8 @@
  * @license BSD, see LICENSE.md.
  */
 
+import {ParsedYear, YearMatcher} from "duration";
 import {EngineNumber} from "engine_number";
-import {YearMatcher} from "year_matcher";
 import {
   Application,
   Command,
@@ -673,11 +673,10 @@ class DuplicateEntityPresenter {
    * @private
    */
   _deepCopyYearMatcher(sourceYearMatcher) {
-    // YearMatcher constructor takes start, end, and duration type parameters
+    // YearMatcher constructor takes start and end ParsedYear parameters
     return new YearMatcher(
       sourceYearMatcher.getStart(),
       sourceYearMatcher.getEnd(),
-      sourceYearMatcher.getDurationType(),
     );
   }
 }
