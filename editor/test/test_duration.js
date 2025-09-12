@@ -79,6 +79,21 @@ function buildDurationTests() {
         const parsedYear = new ParsedYear(-Infinity);
         assert.strictEqual(parsedYear.hasFiniteNumericYear(), false);
       });
+
+      QUnit.test("returns true for numeric strings", function (assert) {
+        const parsedYear = new ParsedYear("2029");
+        assert.strictEqual(parsedYear.hasFiniteNumericYear(), true);
+      });
+
+      QUnit.test("should handle numeric strings as numeric years", function (assert) {
+        // This test verifies the fix: numeric strings should be treated as numbers
+        const parsedYear = new ParsedYear("2029");
+
+        // After fix - these should pass:
+        assert.strictEqual(parsedYear.hasFiniteNumericYear(), true);
+        assert.strictEqual(parsedYear.getNumericYear(), 2029);
+        assert.strictEqual(parsedYear.getYearStr(), "2029");
+      });
     });
 
     QUnit.module("getNumericYear", function () {
@@ -450,6 +465,58 @@ function buildDurationTests() {
       QUnit.test("returns zero end value", function (assert) {
         const yearMatcher = new YearMatcher(new ParsedYear(-5), new ParsedYear(0));
         assert.strictEqual(yearMatcher.getEnd().getNumericYear(), 0);
+      });
+    });
+
+    QUnit.module("numeric string handling bug", function () {
+      QUnit.test("verifies fix for numeric string years from UI", function (assert) {
+        // This verifies the fix for the UI bug where "2029" and "2034" from HTML inputs
+        // now work properly with YearMatcher
+        const startYear = new ParsedYear("2029"); // From HTML input .value
+        const endYear = new ParsedYear("2034"); // From HTML input .value
+        const yearMatcher = new YearMatcher(startYear, endYear);
+
+        // After fix - these should work correctly
+        const start = yearMatcher.getStart();
+        const end = yearMatcher.getEnd();
+
+        // Now properly returns numeric values for processing
+        assert.strictEqual(start.getNumericYear(), 2029, "Start year now correctly parsed as 2029");
+        assert.strictEqual(end.getNumericYear(), 2034, "End year now correctly parsed as 2034");
+
+        // String representations should still work
+        assert.strictEqual(start.getYearStr(), "2029", "String representation should still work");
+        assert.strictEqual(end.getYearStr(), "2034", "String representation should still work");
+      });
+
+      QUnit.test("preserves special string keywords", function (assert) {
+        // Verify that special QubecTalk keywords are not converted to numbers
+        const beginningYear = new ParsedYear("beginning");
+        const onwardsYear = new ParsedYear("onwards");
+
+        // Special strings should not be treated as numeric
+        assert.strictEqual(beginningYear.hasFiniteNumericYear(), false);
+        assert.strictEqual(beginningYear.getNumericYear(), null);
+        assert.strictEqual(beginningYear.getYearStr(), "beginning");
+
+        assert.strictEqual(onwardsYear.hasFiniteNumericYear(), false);
+        assert.strictEqual(onwardsYear.getNumericYear(), null);
+        assert.strictEqual(onwardsYear.getYearStr(), "onwards");
+      });
+
+      QUnit.test("handles edge cases of numeric strings", function (assert) {
+        // Test various numeric string formats
+        const decimalYear = new ParsedYear("2029.5");
+        assert.strictEqual(decimalYear.hasFiniteNumericYear(), true);
+        assert.strictEqual(decimalYear.getNumericYear(), 2029.5);
+
+        const negativeYear = new ParsedYear("-100");
+        assert.strictEqual(negativeYear.hasFiniteNumericYear(), true);
+        assert.strictEqual(negativeYear.getNumericYear(), -100);
+
+        const zeroYear = new ParsedYear("0");
+        assert.strictEqual(zeroYear.hasFiniteNumericYear(), true);
+        assert.strictEqual(zeroYear.getNumericYear(), 0);
       });
     });
   });

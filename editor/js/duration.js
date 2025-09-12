@@ -21,7 +21,20 @@ class ParsedYear {
    */
   constructor(year, originalString) {
     const self = this;
-    self._year = year;
+
+    // Convert numeric strings to numbers for proper handling
+    // while preserving special strings like "beginning" and "onwards"
+    if (typeof year === "string" && year !== "beginning" && year !== "onwards") {
+      const numericValue = parseFloat(year);
+      if (!isNaN(numericValue) && isFinite(numericValue)) {
+        self._year = numericValue;
+      } else {
+        self._year = year;
+      }
+    } else {
+      self._year = year;
+    }
+
     self._originalString = originalString || (year !== null ? String(year) : null);
   }
 
