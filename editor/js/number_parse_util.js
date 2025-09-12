@@ -234,9 +234,9 @@ class NumberParseUtil {
       // Comma comes after period - European format → ERROR
       const ukSuggestion = self._convertEuropeanToUkFormat(numberPart);
       return NumberParseResult.error(
-        `European number format detected: '${originalString}'. ` +
-        `Please use UK format: '${ukSuggestion}'. ` +
-        "Kigali Sim requires UK-style numbers (comma for thousands, period for decimal).",
+        `Unsupported number format detected: '${originalString}'. ` +
+        `Please use the format: '${ukSuggestion}'. ` +
+        "Kigali Sim requires comma for thousands and period for decimal.",
       );
     }
   }
