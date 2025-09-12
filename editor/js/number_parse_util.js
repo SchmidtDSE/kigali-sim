@@ -446,9 +446,9 @@ class NumberParseUtil {
    * @private
    */
   _generateEuropeanFormatError(originalInput, ukSuggestion) {
-    return `European number format detected: '${originalInput}'. ` +
-           `Please use UK format: '${ukSuggestion}'. ` +
-           "Kigali Sim requires UK-style numbers (comma for thousands, period for decimal).";
+    return `Unsupported format detected: '${originalInput}'. ` +
+           `Please use format: '${ukSuggestion}'. ` +
+           "Kigali Sim requires comma for thousands and period for decimal.";
   }
 }
 
