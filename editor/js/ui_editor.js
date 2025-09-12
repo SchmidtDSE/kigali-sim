@@ -3,8 +3,8 @@
  *
  * @license BSD, see LICENSE.md.
  */
+import {ParsedYear, YearMatcher} from "duration";
 import {EngineNumber} from "engine_number";
-import {YearMatcher, ParsedYear} from "duration";
 import {MetaSerializer, MetaChangeApplier} from "meta_serialization";
 import {GwpLookupPresenter} from "known_substance";
 import {NumberParseUtil} from "number_parse_util";

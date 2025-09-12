@@ -4,8 +4,8 @@
  * @license BSD, see LICENSE.md.
  */
 
+import {ParsedYear, YearMatcher} from "duration";
 import {EngineNumber} from "engine_number";
-import {YearMatcher, ParsedYear} from "duration";
 import {
   Application,
   Command,

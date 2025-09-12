@@ -84,31 +84,6 @@ class ParsedYear {
     // Otherwise, compare string representations
     return self.getYearStr() === otherParsedYear.getYearStr();
   }
-
-  /**
-   * Create a ParsedYear from a legacy value that might be either a primitive
-   * value or an object with {value, originalString} format from visitNumber.
-   * This is a migration helper to handle the mixed types in the codebase.
-   *
-   * @param {number|string|null|Object} value - The legacy value which can be:
-   *   - A primitive number, string, or null
-   *   - An object with {value, originalString} format from visitNumber
-   * @returns {ParsedYear} A new ParsedYear instance.
-   */
-  static fromLegacyValue(value) {
-    // Handle null or undefined
-    if (value === null || value === undefined) {
-      return new ParsedYear(null);
-    }
-
-    // Handle objects with {value, originalString} format from visitNumber
-    if (typeof value === "object" && value.value !== undefined) {
-      return new ParsedYear(value.value, value.originalString);
-    }
-
-    // Handle primitive values (numbers, strings)
-    return new ParsedYear(value);
-  }
 }
 
 /**

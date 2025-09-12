@@ -3320,17 +3320,13 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
   /**
    * Build a YearMatcher for a duration.
    *
-   * @param {number|null} minYear - Start year or null for unbounded
-   * @param {number|null} maxYear - End year or null for unbounded
+   * @param {ParsedYear|null} minYear - Start year or null for unbounded
+   * @param {ParsedYear|null} maxYear - End year or null for unbounded
    * @returns {YearMatcher} The year matcher object
    */
   buildDuring(minYear, maxYear) {
     const self = this;
-    const minParsed = minYear instanceof ParsedYear ?
-      minYear : (minYear ? ParsedYear.fromLegacyValue(minYear) : null);
-    const maxParsed = maxYear instanceof ParsedYear ?
-      maxYear : (maxYear ? ParsedYear.fromLegacyValue(maxYear) : null);
-    return new YearMatcher(minParsed, maxParsed);
+    return new YearMatcher(minYear, maxYear);
   }
 
   /**
@@ -3341,8 +3337,9 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
    */
   visitDuringSingleYear(ctx) {
     const self = this;
-    const year = ctx.target.accept(self);
-    return self.buildDuring(year, year);
+    const yearObj = ctx.target.accept(self);
+    const parsedYear = new ParsedYear(yearObj.value, yearObj.originalString);
+    return self.buildDuring(parsedYear, parsedYear);
   }
 
   /**
@@ -3365,9 +3362,11 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
    */
   visitDuringRange(ctx) {
     const self = this;
-    const lower = ctx.lower.accept(self);
-    const upper = ctx.upper.accept(self);
-    return self.buildDuring(lower, upper);
+    const lowerObj = ctx.lower.accept(self);
+    const upperObj = ctx.upper.accept(self);
+    const parsedLower = new ParsedYear(lowerObj.value, lowerObj.originalString);
+    const parsedUpper = new ParsedYear(upperObj.value, upperObj.originalString);
+    return self.buildDuring(parsedLower, parsedUpper);
   }
 
   /**
@@ -3378,9 +3377,9 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
    */
   visitDuringWithMin(ctx) {
     const self = this;
-    const lower = ctx.lower.accept(self);
-    const upper = null;
-    return self.buildDuring(lower, upper);
+    const lowerObj = ctx.lower.accept(self);
+    const parsedLower = new ParsedYear(lowerObj.value, lowerObj.originalString);
+    return self.buildDuring(parsedLower, null);
   }
 
   /**
@@ -3391,9 +3390,9 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
    */
   visitDuringWithMax(ctx) {
     const self = this;
-    const lower = null;
-    const upper = ctx.upper.accept(self);
-    return self.buildDuring(lower, upper);
+    const upperObj = ctx.upper.accept(self);
+    const parsedUpper = new ParsedYear(upperObj.value, upperObj.originalString);
+    return self.buildDuring(null, parsedUpper);
   }
 
   /**
