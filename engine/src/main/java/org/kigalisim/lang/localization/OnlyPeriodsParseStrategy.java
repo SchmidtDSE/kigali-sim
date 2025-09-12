@@ -45,11 +45,14 @@ public class OnlyPeriodsParseStrategy implements NumberParseUtilStrategy {
       // Multiple occurrences could be European thousands separators - reject with suggestion
       if (isEuropeanThousandsPattern(numberStr)) {
         String suggestion = generateUkFormatSuggestion(numberStr);
-        return new FlexibleNumberParseResult(String.format(
-            "European number format detected: '%s'. Please use UK format: '%s'. "
-            + "Kigali Sim requires UK-style numbers (comma for thousands, period for decimal).",
-            numberStr, suggestion
-        ));
+        return new FlexibleNumberParseResult(
+            String.format(
+                "European number format detected: '%s'. Please use UK format: '%s'. "
+                + "Kigali Sim requires UK-style numbers (comma for thousands, period for decimal).",
+                numberStr,
+                suggestion
+            )
+        );
       }
       // Multiple occurrences = thousands separator (should not happen in UK format)
       FlexibleNumberParseResult validationResult = validateThousandsSeparatorPositions(numberStr, separator);
