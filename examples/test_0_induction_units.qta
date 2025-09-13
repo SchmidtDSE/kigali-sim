@@ -1,0 +1,27 @@
+start default
+  define application "TestApp"
+    uses substance "TestSub"
+      enable import
+      initial charge with 2.0 kg / unit for import
+      set priorEquipment to 1000 units during year beginning
+      retire 10 % each year
+      recharge 20 % each year with 1.0 kg / unit
+      set import to 500 units / year during year beginning
+      equals 1000 kgCO2e / kg
+    end substance
+  end application
+end default
+
+start policy "Zero Induction Policy"
+  modify application "TestApp"
+    modify substance "TestSub"
+      recover 30 % with 90 % reuse with 0 % induction during year 2
+      recover 25 % with 85 % reuse with 0 % induction during year 3
+    end substance
+  end application
+end policy
+
+start simulations
+  simulate "BAU" from years 1 to 5
+  simulate "Recycling" using "Zero Induction Policy" from years 1 to 5
+end simulations

@@ -1466,6 +1466,226 @@ public class RecycleRecoverLiveTests {
   }
 
   /**
+   * Test 0% induction units-based recycling scenario.
+   * Validates that BAU and Recycling scenarios have identical equipment populations
+   * when induction rate is 0%, confirming proper displacement behavior.
+   */
+  @Test
+  public void testZeroInductionUnits() throws IOException {
+    // Load and parse QTA file
+    String qtaPath = "../examples/test_0_induction_units.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    // Run both scenarios
+    Stream<EngineResult> bauResults = KigaliSimFacade.runScenario(program, "BAU", progress -> {});
+    List<EngineResult> bauResultsList = bauResults.collect(Collectors.toList());
+
+    Stream<EngineResult> recyclingResults = KigaliSimFacade.runScenario(program, "Recycling", progress -> {});
+    List<EngineResult> recyclingResultsList = recyclingResults.collect(Collectors.toList());
+
+    // Test multiple years for consistency
+    int[] yearsToCheck = {1, 2, 3, 4, 5};
+    for (int year : yearsToCheck) {
+      // Get results for both scenarios
+      EngineResult bauResult = LiveTestsUtil.getResult(bauResultsList.stream(), year, "TestApp", "TestSub");
+      EngineResult recyclingResult = LiveTestsUtil.getResult(recyclingResultsList.stream(), year, "TestApp", "TestSub");
+
+      assertNotNull(bauResult, "Should have BAU result for TestApp/TestSub in year " + year);
+      assertNotNull(recyclingResult, "Should have Recycling result for TestApp/TestSub in year " + year);
+
+      // Core validation: populations should be identical with 0% induction
+      double bauPopulation = bauResult.getPopulation().getValue().doubleValue();
+      double recyclingPopulation = recyclingResult.getPopulation().getValue().doubleValue();
+
+      assertEquals(bauPopulation, recyclingPopulation, 1.0,
+          String.format("Year %d: BAU population (%.2f) should equal Recycling population (%.2f) with 0%% induction",
+                       year, bauPopulation, recyclingPopulation));
+
+      // Material balance validation for recycling years (only years 2 and 3 have recovery policies)
+      if (year == 2 || year == 3) {
+        double recycledAmount = recyclingResult.getRecycleConsumption().getValue().doubleValue();
+        assertTrue(recycledAmount > 0,
+            String.format("Year %d: Should have positive recycling amount", year));
+
+        // Virgin material reduction should equal recycled material addition (0% induction = full displacement)
+        double bauVirginTotal = bauResult.getDomestic().getValue().doubleValue() + bauResult.getImport().getValue().doubleValue();
+        double recyclingVirginTotal = recyclingResult.getDomestic().getValue().doubleValue() + recyclingResult.getImport().getValue().doubleValue();
+        double virginReduction = bauVirginTotal - recyclingVirginTotal;
+
+        assertEquals(recycledAmount, virginReduction, 1.0,
+            String.format("Year %d: Recycled amount (%.2f) should equal virgin material reduction (%.2f) with 0%% induction",
+                         year, recycledAmount, virginReduction));
+      }
+    }
+  }
+
+  /**
+   * Test 0% induction volume-based recycling scenario.
+   * Validates that BAU and Recycling scenarios have identical equipment populations
+   * when induction rate is 0%, confirming proper displacement behavior for kg-based specs.
+   */
+  @Test
+  public void testZeroInductionVolume() throws IOException {
+    // Load and parse QTA file
+    String qtaPath = "../examples/test_0_induction_volume.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    // Run both scenarios
+    Stream<EngineResult> bauResults = KigaliSimFacade.runScenario(program, "BAU", progress -> {});
+    List<EngineResult> bauResultsList = bauResults.collect(Collectors.toList());
+
+    Stream<EngineResult> recyclingResults = KigaliSimFacade.runScenario(program, "Recycling", progress -> {});
+    List<EngineResult> recyclingResultsList = recyclingResults.collect(Collectors.toList());
+
+    // Test multiple years for consistency
+    int[] yearsToCheck = {1, 2, 3, 4, 5};
+    for (int year : yearsToCheck) {
+      // Get results for both scenarios
+      EngineResult bauResult = LiveTestsUtil.getResult(bauResultsList.stream(), year, "TestApp", "TestSub");
+      EngineResult recyclingResult = LiveTestsUtil.getResult(recyclingResultsList.stream(), year, "TestApp", "TestSub");
+
+      assertNotNull(bauResult, "Should have BAU result for TestApp/TestSub in year " + year);
+      assertNotNull(recyclingResult, "Should have Recycling result for TestApp/TestSub in year " + year);
+
+      // Core validation: populations should be identical with 0% induction
+      double bauPopulation = bauResult.getPopulation().getValue().doubleValue();
+      double recyclingPopulation = recyclingResult.getPopulation().getValue().doubleValue();
+
+      assertEquals(bauPopulation, recyclingPopulation, 1.0,
+          String.format("Year %d: BAU population (%.2f) should equal Recycling population (%.2f) with 0%% induction",
+                       year, bauPopulation, recyclingPopulation));
+
+      // Material balance validation for recycling years (only years 2 and 3 have recovery policies)
+      if (year == 2 || year == 3) {
+        double recycledAmount = recyclingResult.getRecycleConsumption().getValue().doubleValue();
+        assertTrue(recycledAmount > 0,
+            String.format("Year %d: Should have positive recycling amount", year));
+
+        // Virgin material reduction should equal recycled material addition (0% induction = full displacement)
+        double bauVirginTotal = bauResult.getDomestic().getValue().doubleValue() + bauResult.getImport().getValue().doubleValue();
+        double recyclingVirginTotal = recyclingResult.getDomestic().getValue().doubleValue() + recyclingResult.getImport().getValue().doubleValue();
+        double virginReduction = bauVirginTotal - recyclingVirginTotal;
+
+        assertEquals(recycledAmount, virginReduction, 1.0,
+            String.format("Year %d: Recycled amount (%.2f) should equal virgin material reduction (%.2f) with 0%% induction",
+                         year, recycledAmount, virginReduction));
+      }
+    }
+  }
+
+  /**
+   * Test 0% induction units-based recycling scenario with recalc idempotence.
+   * Validates that multiple policy changes maintain population equality and that
+   * recalculation operations are idempotent.
+   */
+  @Test
+  public void testZeroInductionUnitsRecalcIdempotence() throws IOException {
+    // Load and parse QTA file
+    String qtaPath = "../examples/test_0_induction_units_recalc.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    // Run both scenarios
+    Stream<EngineResult> bauResults = KigaliSimFacade.runScenario(program, "BAU", progress -> {});
+    List<EngineResult> bauResultsList = bauResults.collect(Collectors.toList());
+
+    Stream<EngineResult> recyclingResults = KigaliSimFacade.runScenario(program, "Recycling", progress -> {});
+    List<EngineResult> recyclingResultsList = recyclingResults.collect(Collectors.toList());
+
+    // Test multiple years for consistency, especially years around policy changes
+    int[] yearsToCheck = {1, 2, 3, 4, 5};
+    for (int year : yearsToCheck) {
+      // Get results for both scenarios
+      EngineResult bauResult = LiveTestsUtil.getResult(bauResultsList.stream(), year, "TestApp", "TestSub");
+      EngineResult recyclingResult = LiveTestsUtil.getResult(recyclingResultsList.stream(), year, "TestApp", "TestSub");
+
+      assertNotNull(bauResult, "Should have BAU result for TestApp/TestSub in year " + year);
+      assertNotNull(recyclingResult, "Should have Recycling result for TestApp/TestSub in year " + year);
+
+      // Core validation: populations should be identical with 0% induction after all recalculations
+      double bauPopulation = bauResult.getPopulation().getValue().doubleValue();
+      double recyclingPopulation = recyclingResult.getPopulation().getValue().doubleValue();
+
+      assertEquals(bauPopulation, recyclingPopulation, 1.0,
+          String.format("Year %d: BAU population (%.2f) should equal Recycling population (%.2f) with 0%% induction after recalc",
+                       year, bauPopulation, recyclingPopulation));
+
+      // Material balance validation for recycling years (years 2, 3, and 4 have recycling)
+      if (year == 2 || year == 3 || year == 4) {
+        double recycledAmount = recyclingResult.getRecycleConsumption().getValue().doubleValue();
+        assertTrue(recycledAmount > 0,
+            String.format("Year %d: Should have positive recycling amount", year));
+
+        // Virgin material reduction should equal recycled material addition
+        double bauVirginTotal = bauResult.getDomestic().getValue().doubleValue() + bauResult.getImport().getValue().doubleValue();
+        double recyclingVirginTotal = recyclingResult.getDomestic().getValue().doubleValue() + recyclingResult.getImport().getValue().doubleValue();
+        double virginReduction = bauVirginTotal - recyclingVirginTotal;
+
+        assertEquals(recycledAmount, virginReduction, 1.0,
+            String.format("Year %d: Recycled amount (%.2f) should equal virgin material reduction (%.2f) with 0%% induction",
+                         year, recycledAmount, virginReduction));
+      }
+    }
+  }
+
+  /**
+   * Test 0% induction volume-based recycling scenario with recalc idempotence.
+   * Validates that multiple policy changes maintain population equality and that
+   * recalculation operations are idempotent for kg-based specifications.
+   */
+  @Test
+  public void testZeroInductionVolumeRecalcIdempotence() throws IOException {
+    // Load and parse QTA file
+    String qtaPath = "../examples/test_0_induction_volume_recalc.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    // Run both scenarios
+    Stream<EngineResult> bauResults = KigaliSimFacade.runScenario(program, "BAU", progress -> {});
+    List<EngineResult> bauResultsList = bauResults.collect(Collectors.toList());
+
+    Stream<EngineResult> recyclingResults = KigaliSimFacade.runScenario(program, "Recycling", progress -> {});
+    List<EngineResult> recyclingResultsList = recyclingResults.collect(Collectors.toList());
+
+    // Test multiple years for consistency, especially years around policy changes
+    int[] yearsToCheck = {1, 2, 3, 4, 5};
+    for (int year : yearsToCheck) {
+      // Get results for both scenarios
+      EngineResult bauResult = LiveTestsUtil.getResult(bauResultsList.stream(), year, "TestApp", "TestSub");
+      EngineResult recyclingResult = LiveTestsUtil.getResult(recyclingResultsList.stream(), year, "TestApp", "TestSub");
+
+      assertNotNull(bauResult, "Should have BAU result for TestApp/TestSub in year " + year);
+      assertNotNull(recyclingResult, "Should have Recycling result for TestApp/TestSub in year " + year);
+
+      // Core validation: populations should be identical with 0% induction after all recalculations
+      double bauPopulation = bauResult.getPopulation().getValue().doubleValue();
+      double recyclingPopulation = recyclingResult.getPopulation().getValue().doubleValue();
+
+      assertEquals(bauPopulation, recyclingPopulation, 1.0,
+          String.format("Year %d: BAU population (%.2f) should equal Recycling population (%.2f) with 0%% induction after recalc",
+                       year, bauPopulation, recyclingPopulation));
+
+      // Material balance validation for recycling years (years 2, 3, and 4 have recycling)
+      if (year == 2 || year == 3 || year == 4) {
+        double recycledAmount = recyclingResult.getRecycleConsumption().getValue().doubleValue();
+        assertTrue(recycledAmount > 0,
+            String.format("Year %d: Should have positive recycling amount", year));
+
+        // Virgin material reduction should equal recycled material addition
+        double bauVirginTotal = bauResult.getDomestic().getValue().doubleValue() + bauResult.getImport().getValue().doubleValue();
+        double recyclingVirginTotal = recyclingResult.getDomestic().getValue().doubleValue() + recyclingResult.getImport().getValue().doubleValue();
+        double virginReduction = bauVirginTotal - recyclingVirginTotal;
+
+        assertEquals(recycledAmount, virginReduction, 1.0,
+            String.format("Year %d: Recycled amount (%.2f) should equal virgin material reduction (%.2f) with 0%% induction",
+                         year, recycledAmount, virginReduction));
+      }
+    }
+  }
+
+  /**
    * Test that 100% induction works correctly with volume-based specifications.
    * Validates that recycled material adds to total supply rather than displacing virgin material,
    * resulting in higher equipment populations when induction is 100%.
