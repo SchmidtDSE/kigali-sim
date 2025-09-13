@@ -1466,4 +1466,75 @@ public class RecycleRecoverLiveTests {
         "Year 2 should have recycling from both EOL and recharge recover commands");
   }
 
+  /**
+   * Test that 100% induction works correctly with volume-based specifications.
+   * Validates that recycled material adds to total supply rather than displacing virgin material,
+   * resulting in higher equipment populations when induction is 100%.
+   * This test validates that the circular dependency fix from Components 2-3 correctly
+   * handles induced demand scenarios.
+   */
+  @Test
+  public void testPopulationIssueWithFullInduction() throws IOException {
+    // Load and parse the QTA file
+    String qtaPath = "../examples/test_100_induction_volume.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    // Run BAU scenario
+    Stream<EngineResult> bauResults = KigaliSimFacade.runScenario(program, "BAU", progress -> {});
+    List<EngineResult> bauResultsList = bauResults.collect(Collectors.toList());
+
+    // Run Recycling scenario with 100% induction
+    Stream<EngineResult> recyclingResults = KigaliSimFacade.runScenario(program, "Recycling", progress -> {});
+    List<EngineResult> recyclingResultsList = recyclingResults.collect(Collectors.toList());
+
+    // Test multiple years to verify behavior persists and compounds correctly
+    int[] yearsToCheck = {2, 3, 4, 5};
+    for (int year : yearsToCheck) {
+      EngineResult bauResult = LiveTestsUtil.getResult(bauResultsList.stream(), year, "TestApp", "TestSub");
+      EngineResult recyclingResult = LiveTestsUtil.getResult(recyclingResultsList.stream(), year, "TestApp", "TestSub");
+
+      assertNotNull(bauResult, "Should have BAU result for TestApp/TestSub in year " + year);
+      assertNotNull(recyclingResult, "Should have Recycling result for TestApp/TestSub in year " + year);
+
+      double bauPopulation = bauResult.getPopulation().getValue().doubleValue();
+      double recyclingPopulation = recyclingResult.getPopulation().getValue().doubleValue();
+
+      // With 100% induction, recycling population should be higher than BAU
+      // This demonstrates that recycled material is additive, not displacing virgin material
+      assertTrue(recyclingPopulation > bauPopulation,
+          String.format("Year %d: Recycling population (%.2f) should be higher than BAU population (%.2f) "
+                       + "with 100%% induction. Recycled material should add to total supply.",
+                       year, recyclingPopulation, bauPopulation));
+
+      // Validate recycling stream values
+      double recyclingAmount = recyclingResult.getRecycle().getValue().doubleValue();
+      assertTrue(recyclingAmount > 0,
+          "Year " + year + ": Should have positive recycling amount");
+
+      // With 100% induction, virgin material should NOT be reduced
+      // Total supply = Virgin supply + Recycled supply (additive behavior)
+      double bauDomestic = bauResult.getDomestic().getValue().doubleValue();
+      double bauImport = bauResult.getImport().getValue().doubleValue();
+      double bauTotal = bauDomestic + bauImport;
+
+      double recyclingDomestic = recyclingResult.getDomestic().getValue().doubleValue();
+      double recyclingImport = recyclingResult.getImport().getValue().doubleValue();
+      double recyclingVirgin = recyclingDomestic + recyclingImport;
+      double recyclingTotal = recyclingVirgin + recyclingAmount;
+
+      // Virgin supply should be approximately the same (not displaced)
+      assertTrue(Math.abs(recyclingVirgin - bauTotal) < bauTotal * 0.1,
+          String.format("Year %d: Virgin supply with recycling (%.2f) should be approximately equal to BAU (%.2f) "
+                       + "with 100%% induction, difference should be < 10%%",
+                       year, recyclingVirgin, bauTotal));
+
+      // Total supply should be higher (virgin + recycled)
+      assertTrue(recyclingTotal > bauTotal * 1.05,
+          String.format("Year %d: Total supply with recycling (%.2f) should be at least 5%% higher than BAU (%.2f) "
+                       + "with 100%% induction due to additive recycling",
+                       year, recyclingTotal, bauTotal));
+    }
+  }
+
 }
