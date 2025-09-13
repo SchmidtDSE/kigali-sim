@@ -709,6 +709,25 @@ public class SingleThreadEngine implements Engine {
     }
   }
 
+  @Override
+  public void setInductionRate(Optional<Double> inductionRate, RecoveryStage stage) {
+    if (inductionRate.isPresent()) {
+      // Validate the induction rate is between 0 and 1
+      double rate = inductionRate.get();
+      if (rate < 0.0 || rate > 1.0) {
+        throw new IllegalArgumentException("Induction rate must be between 0.0 and 1.0, got: " + rate);
+      }
+      // Convert to EngineNumber with percentage units
+      EngineNumber inductionRateEngineNumber = new EngineNumber(
+          BigDecimal.valueOf(rate * 100), "%");
+      streamKeeper.setInductionRate(scope, inductionRateEngineNumber, stage);
+    } else {
+      // Default behavior - set to 0% (displacement behavior)
+      EngineNumber defaultInductionRate = new EngineNumber(BigDecimal.ZERO, "%");
+      streamKeeper.setInductionRate(scope, defaultInductionRate, stage);
+    }
+  }
+
 
   @Override
   public void equals(EngineNumber amount, YearMatcher yearMatcher) {

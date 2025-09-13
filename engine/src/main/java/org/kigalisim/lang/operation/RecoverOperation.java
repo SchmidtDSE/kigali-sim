@@ -206,7 +206,7 @@ public class RecoverOperation implements Operation {
 
     // Get the engine and set the induction rate
     Engine engine = machine.getEngine();
-    engine.setInductionRate(inductionRate);
+    engine.setInductionRate(inductionRate, stage);
 
     // Call the recycle method on the engine
     engine.recycle(recoveryAmount, yieldRate, yearMatcher, stage);

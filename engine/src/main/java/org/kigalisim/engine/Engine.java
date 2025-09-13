@@ -344,6 +344,18 @@ public interface Engine {
   void setInductionRate(Optional<Double> inductionRate);
 
   /**
+   * Set the induction rate for recycling operations for a specific recovery stage.
+   *
+   * @param inductionRate The induction rate as a percentage in decimal form (0.0-1.0),
+   *                      or Optional.empty() for default behavior
+   * @param stage The recovery stage (EOL or RECHARGE)
+   */
+  default void setInductionRate(Optional<Double> inductionRate, RecoveryStage stage) {
+    // Default implementation delegates to generic method for backward compatibility
+    setInductionRate(inductionRate);
+  }
+
+  /**
    * Set GHG equivalency for the current application and substance.
    *
    * @param amount The GHG intensity value to set
