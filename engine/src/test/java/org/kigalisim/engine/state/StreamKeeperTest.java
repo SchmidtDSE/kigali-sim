@@ -20,6 +20,7 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.kigalisim.engine.number.EngineNumber;
 import org.kigalisim.engine.number.UnitConverter;
+import org.kigalisim.engine.recalc.SalesStreamDistribution;
 
 /**
  * Tests for the StreamKeeper class.
@@ -652,5 +653,339 @@ public class StreamKeeperTest {
     assertThrows(IllegalStateException.class, () -> {
       keeper.resetSalesIntentFlag(unknownScope);
     }, "Should throw exception for unknown substance when resetting flag");
+  }
+
+  /**
+   * Test setBothSalesSubstreams with pre-calculated distribution and recycling subtraction.
+   */
+  @Test
+  public void testSetBothSalesSubstreamsWithDistributionAndRecycling() {
+    StreamKeeper keeper = createMockKeeper();
+    Scope testScope = createTestScope();
+    keeper.ensureSubstance(testScope);
+
+    // Enable streams first
+    keeper.markStreamAsEnabled(testScope, "domestic");
+    keeper.markStreamAsEnabled(testScope, "import");
+    keeper.setStream(testScope, "domestic", new EngineNumber(new BigDecimal("100"), "kg"));
+    keeper.setStream(testScope, "import", new EngineNumber(new BigDecimal("50"), "kg"));
+
+    // Set up recycling
+    keeper.setStream(testScope, "recycleRecharge", new EngineNumber(new BigDecimal("30"), "kg"));
+    keeper.setStream(testScope, "recycleEol", new EngineNumber(new BigDecimal("20"), "kg"));
+
+    // Create distribution (60% domestic, 40% import)
+    SalesStreamDistribution distribution = new SalesStreamDistribution(
+        new BigDecimal("0.6"), new BigDecimal("0.4"));
+
+    // Set both substreams with recycling enabled
+    EngineNumber domesticValue = new EngineNumber(new BigDecimal("200"), "kg");
+    EngineNumber importValue = new EngineNumber(new BigDecimal("100"), "kg");
+
+    keeper.setBothSalesSubstreams(testScope, domesticValue, importValue, distribution, true);
+
+    // Verify recycling displacement was applied
+    // Total recycling = 30 + 20 = 50 kg
+    // Domestic should get 60% of recycling displaced: 200 - (50 * 0.6) = 170 kg
+    // Import should get 40% of recycling displaced: 100 - (50 * 0.4) = 80 kg
+    EngineNumber finalDomestic = keeper.getStream(testScope, "domestic");
+    EngineNumber finalImport = keeper.getStream(testScope, "import");
+
+    assertEquals(0, new BigDecimal("170").compareTo(finalDomestic.getValue()),
+        "Domestic should have recycling displaced");
+    assertEquals(0, new BigDecimal("80").compareTo(finalImport.getValue()),
+        "Import should have recycling displaced");
+  }
+
+  /**
+   * Test setBothSalesSubstreams without recycling subtraction.
+   */
+  @Test
+  public void testSetBothSalesSubstreamsWithoutRecycling() {
+    StreamKeeper keeper = createMockKeeper();
+    Scope testScope = createTestScope();
+    keeper.ensureSubstance(testScope);
+
+    // Enable streams first
+    keeper.markStreamAsEnabled(testScope, "domestic");
+    keeper.markStreamAsEnabled(testScope, "import");
+    keeper.setStream(testScope, "domestic", new EngineNumber(new BigDecimal("100"), "kg"));
+    keeper.setStream(testScope, "import", new EngineNumber(new BigDecimal("50"), "kg"));
+
+    // Set up recycling
+    keeper.setStream(testScope, "recycleRecharge", new EngineNumber(new BigDecimal("30"), "kg"));
+    keeper.setStream(testScope, "recycleEol", new EngineNumber(new BigDecimal("20"), "kg"));
+
+    // Create distribution
+    SalesStreamDistribution distribution = new SalesStreamDistribution(
+        new BigDecimal("0.6"), new BigDecimal("0.4"));
+
+    // Set both substreams with recycling disabled
+    EngineNumber domesticValue = new EngineNumber(new BigDecimal("200"), "kg");
+    EngineNumber importValue = new EngineNumber(new BigDecimal("100"), "kg");
+
+    keeper.setBothSalesSubstreams(testScope, domesticValue, importValue, distribution, false);
+
+    // Verify no recycling displacement was applied
+    EngineNumber finalDomestic = keeper.getStream(testScope, "domestic");
+    EngineNumber finalImport = keeper.getStream(testScope, "import");
+
+    assertEquals(new BigDecimal("200"), finalDomestic.getValue(),
+        "Domestic should be set directly without recycling displacement");
+    assertEquals(new BigDecimal("100"), finalImport.getValue(),
+        "Import should be set directly without recycling displacement");
+  }
+
+  /**
+   * Test setSalesSubstream with pre-calculated distribution and recycling control.
+   */
+  @Test
+  public void testSetSalesSubstreamWithDistributionAndRecycling() {
+    StreamKeeper keeper = createMockKeeper();
+    Scope testScope = createTestScope();
+    keeper.ensureSubstance(testScope);
+
+    // Enable streams first
+    keeper.markStreamAsEnabled(testScope, "domestic");
+    keeper.markStreamAsEnabled(testScope, "import");
+    keeper.setStream(testScope, "domestic", new EngineNumber(new BigDecimal("100"), "kg"));
+    keeper.setStream(testScope, "import", new EngineNumber(new BigDecimal("50"), "kg"));
+
+    // Set up recycling
+    keeper.setStream(testScope, "recycleRecharge", new EngineNumber(new BigDecimal("40"), "kg"));
+    keeper.setStream(testScope, "recycleEol", new EngineNumber(new BigDecimal("10"), "kg"));
+
+    // Create distribution (70% domestic, 30% import)
+    SalesStreamDistribution distribution = new SalesStreamDistribution(
+        new BigDecimal("0.7"), new BigDecimal("0.3"));
+
+    // Set domestic substream with recycling enabled
+    EngineNumber domesticValue = new EngineNumber(new BigDecimal("150"), "kg");
+    keeper.setSalesSubstream(testScope, "domestic", domesticValue, distribution, true);
+
+    // Verify recycling displacement was applied to domestic only
+    // Total recycling = 40 + 10 = 50 kg
+    // Domestic gets 70% of recycling displaced: 150 - (50 * 0.7) = 115 kg
+    EngineNumber finalDomestic = keeper.getStream(testScope, "domestic");
+    assertEquals(0, new BigDecimal("115").compareTo(finalDomestic.getValue()),
+        "Domestic should have recycling displaced");
+  }
+
+  /**
+   * Test setSalesSubstream without recycling control.
+   */
+  @Test
+  public void testSetSalesSubstreamWithoutRecycling() {
+    StreamKeeper keeper = createMockKeeper();
+    Scope testScope = createTestScope();
+    keeper.ensureSubstance(testScope);
+
+    // Enable streams first
+    keeper.markStreamAsEnabled(testScope, "domestic");
+    keeper.setStream(testScope, "domestic", new EngineNumber(new BigDecimal("100"), "kg"));
+
+    // Set up recycling
+    keeper.setStream(testScope, "recycleRecharge", new EngineNumber(new BigDecimal("40"), "kg"));
+
+    // Create distribution
+    SalesStreamDistribution distribution = new SalesStreamDistribution(
+        new BigDecimal("0.8"), new BigDecimal("0.2"));
+
+    // Set domestic substream with recycling disabled
+    EngineNumber domesticValue = new EngineNumber(new BigDecimal("150"), "kg");
+    keeper.setSalesSubstream(testScope, "domestic", domesticValue, distribution, false);
+
+    // Verify no recycling displacement was applied
+    EngineNumber finalDomestic = keeper.getStream(testScope, "domestic");
+    assertEquals(new BigDecimal("150"), finalDomestic.getValue(),
+        "Domestic should be set directly without recycling displacement");
+  }
+
+  /**
+   * Test setSalesSubstream convenience method (defaults to recycling enabled).
+   */
+  @Test
+  public void testSetSalesSubstreamConvenienceMethod() {
+    StreamKeeper keeper = createMockKeeper();
+    Scope testScope = createTestScope();
+    keeper.ensureSubstance(testScope);
+
+    // Enable streams first
+    keeper.markStreamAsEnabled(testScope, "import");
+    keeper.setStream(testScope, "import", new EngineNumber(new BigDecimal("50"), "kg"));
+
+    // Set up recycling
+    keeper.setStream(testScope, "recycleRecharge", new EngineNumber(new BigDecimal("20"), "kg"));
+    keeper.setStream(testScope, "recycleEol", new EngineNumber(new BigDecimal("30"), "kg"));
+
+    // Create distribution (40% domestic, 60% import)
+    SalesStreamDistribution distribution = new SalesStreamDistribution(
+        new BigDecimal("0.4"), new BigDecimal("0.6"));
+
+    // Set import substream using convenience method (should default to recycling enabled)
+    EngineNumber importValue = new EngineNumber(new BigDecimal("120"), "kg");
+    keeper.setSalesSubstream(testScope, "import", importValue, distribution);
+
+    // Verify recycling displacement was applied
+    // Total recycling = 20 + 30 = 50 kg
+    // Import gets 60% of recycling displaced: 120 - (50 * 0.6) = 90 kg
+    EngineNumber finalImport = keeper.getStream(testScope, "import");
+    assertEquals(0, new BigDecimal("90").compareTo(finalImport.getValue()),
+        "Import should have recycling displaced (convenience method defaults to recycling enabled)");
+  }
+
+  /**
+   * Test setSalesSubstream with negative net amount (should be clamped to zero).
+   */
+  @Test
+  public void testSetSalesSubstreamWithNegativeNetAmount() {
+    StreamKeeper keeper = createMockKeeper();
+    Scope testScope = createTestScope();
+    keeper.ensureSubstance(testScope);
+
+    // Enable streams first
+    keeper.markStreamAsEnabled(testScope, "domestic");
+    keeper.setStream(testScope, "domestic", new EngineNumber(new BigDecimal("100"), "kg"));
+
+    // Set up high recycling
+    keeper.setStream(testScope, "recycleRecharge", new EngineNumber(new BigDecimal("100"), "kg"));
+    keeper.setStream(testScope, "recycleEol", new EngineNumber(new BigDecimal("50"), "kg"));
+
+    // Create distribution (100% domestic)
+    SalesStreamDistribution distribution = new SalesStreamDistribution(
+        new BigDecimal("1.0"), new BigDecimal("0.0"));
+
+    // Set domestic substream to a value less than recycling
+    EngineNumber domesticValue = new EngineNumber(new BigDecimal("50"), "kg");
+    keeper.setSalesSubstream(testScope, "domestic", domesticValue, distribution, true);
+
+    // Verify net amount was clamped to zero
+    // Total recycling = 100 + 50 = 150 kg
+    // Net amount = 50 - 150 = -100, clamped to 0
+    EngineNumber finalDomestic = keeper.getStream(testScope, "domestic");
+    assertEquals(new BigDecimal("0"), finalDomestic.getValue(),
+        "Negative net amount should be clamped to zero");
+  }
+
+  /**
+   * Test setSalesSubstream with invalid stream name.
+   */
+  @Test
+  public void testSetSalesSubstreamWithInvalidStreamName() {
+    StreamKeeper keeper = createMockKeeper();
+    Scope testScope = createTestScope();
+    keeper.ensureSubstance(testScope);
+
+    // Enable streams first
+    keeper.markStreamAsEnabled(testScope, "domestic");
+    keeper.setStream(testScope, "domestic", new EngineNumber(new BigDecimal("100"), "kg"));
+
+    // Create distribution
+    SalesStreamDistribution distribution = new SalesStreamDistribution(
+        new BigDecimal("0.5"), new BigDecimal("0.5"));
+
+    // Try to set invalid stream name
+    EngineNumber value = new EngineNumber(new BigDecimal("100"), "kg");
+
+    assertThrows(IllegalArgumentException.class, () -> {
+      keeper.setSalesSubstream(testScope, "invalid", value, distribution, true);
+    }, "Should throw exception for invalid stream name");
+  }
+
+  /**
+   * Test setSalesSubstream when no streams are enabled.
+   */
+  @Test
+  public void testSetSalesSubstreamWithNoStreamsEnabled() {
+    StreamKeeper keeper = createMockKeeper();
+    Scope testScope = createTestScope();
+    keeper.ensureSubstance(testScope);
+
+    // Don't enable any streams
+
+    // Create distribution
+    SalesStreamDistribution distribution = new SalesStreamDistribution(
+        new BigDecimal("0.5"), new BigDecimal("0.5"));
+
+    // Try to set substream when no streams are enabled
+    EngineNumber value = new EngineNumber(new BigDecimal("100"), "kg");
+
+    assertThrows(IllegalStateException.class, () -> {
+      keeper.setSalesSubstream(testScope, "domestic", value, distribution, true);
+    }, "Should throw exception when no streams are enabled");
+  }
+
+  /**
+   * Test that new methods preserve material balance.
+   */
+  @Test
+  public void testMaterialBalancePreservation() {
+    StreamKeeper keeper = createMockKeeper();
+    Scope testScope = createTestScope();
+    keeper.ensureSubstance(testScope);
+
+    // Enable streams first
+    keeper.markStreamAsEnabled(testScope, "domestic");
+    keeper.markStreamAsEnabled(testScope, "import");
+    keeper.setStream(testScope, "domestic", new EngineNumber(new BigDecimal("100"), "kg"));
+    keeper.setStream(testScope, "import", new EngineNumber(new BigDecimal("50"), "kg"));
+
+    // Set up recycling
+    keeper.setStream(testScope, "recycleRecharge", new EngineNumber(new BigDecimal("30"), "kg"));
+    keeper.setStream(testScope, "recycleEol", new EngineNumber(new BigDecimal("20"), "kg"));
+
+    // Create distribution (60% domestic, 40% import)
+    SalesStreamDistribution distribution = new SalesStreamDistribution(
+        new BigDecimal("0.6"), new BigDecimal("0.4"));
+
+    // Set both substreams
+    EngineNumber domesticValue = new EngineNumber(new BigDecimal("200"), "kg");
+    EngineNumber importValue = new EngineNumber(new BigDecimal("100"), "kg");
+
+    keeper.setBothSalesSubstreams(testScope, domesticValue, importValue, distribution, true);
+
+    // Verify material balance: virgin + recycled = total sales specified
+    EngineNumber finalDomestic = keeper.getStream(testScope, "domestic");
+    EngineNumber finalImport = keeper.getStream(testScope, "import");
+    EngineNumber totalRecycling = keeper.getStream(testScope, "recycle");
+    EngineNumber totalSales = keeper.getStream(testScope, "sales");
+
+    BigDecimal virginMaterial = finalDomestic.getValue().add(finalImport.getValue());
+    BigDecimal expectedTotal = domesticValue.getValue().add(importValue.getValue());
+    BigDecimal actualTotal = virginMaterial.add(totalRecycling.getValue());
+
+    assertEquals(0, expectedTotal.compareTo(actualTotal),
+        "Total material (virgin + recycled) should equal specified sales");
+  }
+
+  /**
+   * Test new methods work with unit conversion.
+   */
+  @Test
+  public void testNewMethodsWithUnitConversion() {
+    StreamKeeper keeper = createMockKeeper();
+    Scope testScope = createTestScope();
+    keeper.ensureSubstance(testScope);
+
+    // Enable streams first
+    keeper.markStreamAsEnabled(testScope, "domestic");
+    keeper.markStreamAsEnabled(testScope, "import");
+    keeper.setStream(testScope, "domestic", new EngineNumber(new BigDecimal("1000"), "kg"));
+    keeper.setStream(testScope, "import", new EngineNumber(new BigDecimal("500"), "kg"));
+
+    // Create distribution
+    SalesStreamDistribution distribution = new SalesStreamDistribution(
+        new BigDecimal("0.7"), new BigDecimal("0.3"));
+
+    // Set substream using kg units (testing that units are handled properly)
+    EngineNumber domesticValue = new EngineNumber(new BigDecimal("2000"), "kg");
+    keeper.setSalesSubstream(testScope, "domestic", domesticValue, distribution, false);
+
+    // Verify conversion occurred correctly (should remain in kg)
+    EngineNumber finalDomestic = keeper.getStream(testScope, "domestic");
+    assertEquals("kg", finalDomestic.getUnits(),
+        "Result should be in base units (kg)");
+    assertEquals(0, new BigDecimal("2000").compareTo(finalDomestic.getValue()),
+        "Value should be set correctly in kg");
   }
 }

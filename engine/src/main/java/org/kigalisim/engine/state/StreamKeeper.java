@@ -199,6 +199,152 @@ public class StreamKeeper {
   }
 
   /**
+   * Set both domestic and import sales substreams using pre-calculated distribution.
+   *
+   * <p>This method enables atomic updates of both domestic and import streams while using
+   * a pre-calculated distribution to avoid circular dependencies in recycling calculation.
+   * The distribution parameter contains the exact percentages to use for material allocation.</p>
+   *
+   * @param useKey The key containing application and substance
+   * @param domesticValue The total value for the domestic substream
+   * @param importValue The total value for the import substream
+   * @param distribution Pre-calculated distribution percentages
+   * @param subtractRecycling Whether to apply recycling displacement logic
+   */
+  public void setBothSalesSubstreams(UseKey useKey, EngineNumber domesticValue, EngineNumber importValue,
+      SalesStreamDistribution distribution, boolean subtractRecycling) {
+    setSalesSubstream(useKey, "domestic", domesticValue, distribution, subtractRecycling);
+    setSalesSubstream(useKey, "import", importValue, distribution, subtractRecycling);
+  }
+
+  /**
+   * Set a sales substream using pre-calculated distribution with recycling control.
+   *
+   * <p>This method allows setting individual sales substreams (domestic/import) while using
+   * a pre-calculated distribution to determine recycling allocation. This avoids circular
+   * dependencies when the distribution calculation itself depends on recycling streams.</p>
+   *
+   * @param useKey The key containing application and substance
+   * @param streamName The stream name ("domestic" or "import")
+   * @param value The total value for this specific substream
+   * @param distribution Pre-calculated distribution percentages
+   * @param subtractRecycling Whether to apply recycling displacement logic
+   */
+  public void setSalesSubstream(UseKey useKey, String streamName, EngineNumber value,
+      SalesStreamDistribution distribution, boolean subtractRecycling) {
+    EngineNumber valueConverted = unitConverter.convert(value, "kg");
+
+    if (!subtractRecycling) {
+      // Direct setting - bypass recycling logic
+      setSimpleStream(useKey, streamName, valueConverted);
+      return;
+    }
+
+    // Apply recycling displacement logic using pre-calculated distribution
+
+    // Check if any streams are enabled for distribution calculation
+    if (!hasStreamsEnabled(useKey)) {
+      throw new IllegalStateException("Cannot set sales substream: no streams have been enabled. "
+          + "Use 'set " + streamName + "' or other stream statements to enable streams before "
+          + "operations that require sales recalculation.");
+    }
+
+    // Get current recycling amount
+    EngineNumber recycleAmountRaw = getStream(useKey, "recycle");
+    EngineNumber recycleAmount = unitConverter.convert(recycleAmountRaw, "kg");
+    BigDecimal recycleKg = recycleAmount != null ? recycleAmount.getValue() : BigDecimal.ZERO;
+
+    // Use pre-calculated distribution to determine this substream's share of recycling
+    BigDecimal substreamPercent;
+    if ("domestic".equals(streamName)) {
+      substreamPercent = distribution.getPercentDomestic();
+    } else if ("import".equals(streamName)) {
+      substreamPercent = distribution.getPercentImport();
+    } else {
+      throw new IllegalArgumentException("Unknown sales substream: " + streamName);
+    }
+
+    // Calculate proportional recycling for this substream
+    BigDecimal substreamRecycling = recycleKg.multiply(substreamPercent);
+
+    // Subtract proportional recycling to get virgin material amount
+    final BigDecimal amountKg = valueConverted.getValue();
+    BigDecimal netAmount = amountKg.subtract(substreamRecycling);
+    if (netAmount.compareTo(BigDecimal.ZERO) < 0) {
+      netAmount = BigDecimal.ZERO;
+    }
+
+    // Set the net amount directly
+    EngineNumber netAmountToSet = new EngineNumber(netAmount, "kg");
+    setSimpleStream(useKey, streamName, netAmountToSet);
+  }
+
+  /**
+   * Set a sales substream using pre-calculated distribution (convenience method).
+   *
+   * <p>This is a convenience method that defaults to applying recycling displacement logic.
+   * It's equivalent to calling setSalesSubstream(useKey, streamName, value, distribution, true).</p>
+   *
+   * @param useKey The key containing application and substance
+   * @param streamName The stream name ("domestic" or "import")
+   * @param value The total value for this specific substream
+   * @param distribution Pre-calculated distribution percentages
+   */
+  public void setSalesSubstream(UseKey useKey, String streamName, EngineNumber value,
+      SalesStreamDistribution distribution) {
+    setSalesSubstream(useKey, streamName, value, distribution, true);
+  }
+
+  /**
+   * Set a sales substream for a specific stream name using existing
+   * distribution logic but still accounts for proportional recycling.
+   *
+   * @param useKey The key containing application and substance
+   * @param streamName The stream name ("domestic" or "import")
+   * @param value The total value for this specific substream
+   */
+  private void setSalesSubstream(UseKey useKey, String streamName, EngineNumber value) {
+    EngineNumber valueConverted = unitConverter.convert(value, "kg");
+    final BigDecimal amountKg = valueConverted.getValue();
+
+    // Check if any streams are enabled for distribution calculation
+    if (!hasStreamsEnabled(useKey)) {
+      throw new IllegalStateException("Cannot set sales substream: no streams have been enabled. "
+          + "Use 'set " + streamName + "' or other stream statements to enable streams before "
+          + "operations that require sales recalculation.");
+    }
+
+    // Get current recycling amount
+    EngineNumber recycleAmountRaw = getStream(useKey, "recycle");
+    EngineNumber recycleAmount = unitConverter.convert(recycleAmountRaw, "kg");
+    BigDecimal recycleKg = recycleAmount != null ? recycleAmount.getValue() : BigDecimal.ZERO;
+
+    // Get distribution to determine this substream's share of recycling
+    SalesStreamDistribution distribution = getDistribution(useKey);
+    BigDecimal substreamPercent;
+    if ("domestic".equals(streamName)) {
+      substreamPercent = distribution.getPercentDomestic();
+    } else if ("import".equals(streamName)) {
+      substreamPercent = distribution.getPercentImport();
+    } else {
+      throw new IllegalArgumentException("Unknown sales substream: " + streamName);
+    }
+
+    // Calculate proportional recycling for this substream
+    BigDecimal substreamRecycling = recycleKg.multiply(substreamPercent);
+
+    // Subtract proportional recycling to get virgin material amount
+    BigDecimal netAmount = amountKg.subtract(substreamRecycling);
+    if (netAmount.compareTo(BigDecimal.ZERO) < 0) {
+      netAmount = BigDecimal.ZERO;
+    }
+
+    // Set the net amount directly
+    EngineNumber netAmountToSet = new EngineNumber(netAmount, "kg");
+    setSimpleStream(useKey, streamName, netAmountToSet);
+  }
+
+  /**
    * Get the value of a specific stream using key.
    *
    * @param useKey The key containing application and substance
@@ -955,56 +1101,6 @@ public class StreamKeeper {
 
     setSimpleStream(useKey, "domestic", domesticAmountToSet);
     setSimpleStream(useKey, "import", importAmountToSet);
-  }
-
-  /**
-   * Sets individual sales substreams (domestic/import) with recycling awareness.
-   * Unlike setStreamForSales, this method handles individual substreams without
-   * distribution logic but still accounts for proportional recycling.
-   *
-   * @param useKey The key containing application and substance
-   * @param streamName The stream name ("domestic" or "import")
-   * @param value The total value for this specific substream
-   */
-  private void setSalesSubstream(UseKey useKey, String streamName, EngineNumber value) {
-    EngineNumber valueConverted = unitConverter.convert(value, "kg");
-    BigDecimal amountKg = valueConverted.getValue();
-
-    // Check if any streams are enabled for distribution calculation
-    if (!hasStreamsEnabled(useKey)) {
-      throw new IllegalStateException("Cannot set sales substream: no streams have been enabled. "
-          + "Use 'set " + streamName + "' or other stream statements to enable streams before "
-          + "operations that require sales recalculation.");
-    }
-
-    // Get current recycling amount
-    EngineNumber recycleAmountRaw = getStream(useKey, "recycle");
-    EngineNumber recycleAmount = unitConverter.convert(recycleAmountRaw, "kg");
-    BigDecimal recycleKg = recycleAmount != null ? recycleAmount.getValue() : BigDecimal.ZERO;
-
-    // Get distribution to determine this substream's share of recycling
-    SalesStreamDistribution distribution = getDistribution(useKey);
-    BigDecimal substreamPercent;
-    if ("domestic".equals(streamName)) {
-      substreamPercent = distribution.getPercentDomestic();
-    } else if ("import".equals(streamName)) {
-      substreamPercent = distribution.getPercentImport();
-    } else {
-      throw new IllegalArgumentException("Unknown sales substream: " + streamName);
-    }
-
-    // Calculate proportional recycling for this substream
-    BigDecimal substreamRecycling = recycleKg.multiply(substreamPercent);
-
-    // Subtract proportional recycling to get virgin material amount
-    BigDecimal netAmount = amountKg.subtract(substreamRecycling);
-    if (netAmount.compareTo(BigDecimal.ZERO) < 0) {
-      netAmount = BigDecimal.ZERO;
-    }
-
-    // Set the net amount directly
-    EngineNumber netAmountToSet = new EngineNumber(netAmount, "kg");
-    setSimpleStream(useKey, streamName, netAmountToSet);
   }
 
   /**
