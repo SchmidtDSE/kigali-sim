@@ -656,7 +656,7 @@ public class StreamKeeperTest {
   }
 
   /**
-   * Test setBothSalesSubstreams with pre-calculated distribution and recycling subtraction.
+   * Test setBothSalesStreams with pre-calculated distribution and recycling subtraction.
    */
   @Test
   public void testSetBothSalesSubstreamsWithDistributionAndRecycling() {
@@ -682,7 +682,7 @@ public class StreamKeeperTest {
     EngineNumber domesticValue = new EngineNumber(new BigDecimal("200"), "kg");
     EngineNumber importValue = new EngineNumber(new BigDecimal("100"), "kg");
 
-    keeper.setBothSalesSubstreams(testScope, domesticValue, importValue, distribution, true);
+    keeper.setBothSalesStreams(testScope, domesticValue, importValue, distribution, true);
 
     // Verify recycling displacement was applied
     // Total recycling = 30 + 20 = 50 kg
@@ -698,7 +698,7 @@ public class StreamKeeperTest {
   }
 
   /**
-   * Test setBothSalesSubstreams without recycling subtraction.
+   * Test setBothSalesStreams without recycling subtraction.
    */
   @Test
   public void testSetBothSalesSubstreamsWithoutRecycling() {
@@ -724,7 +724,7 @@ public class StreamKeeperTest {
     EngineNumber domesticValue = new EngineNumber(new BigDecimal("200"), "kg");
     EngineNumber importValue = new EngineNumber(new BigDecimal("100"), "kg");
 
-    keeper.setBothSalesSubstreams(testScope, domesticValue, importValue, distribution, false);
+    keeper.setBothSalesStreams(testScope, domesticValue, importValue, distribution, false);
 
     // Verify no recycling displacement was applied
     EngineNumber finalDomestic = keeper.getStream(testScope, "domestic");
@@ -737,7 +737,7 @@ public class StreamKeeperTest {
   }
 
   /**
-   * Test setSalesSubstream with pre-calculated distribution and recycling control.
+   * Test setSalesStream with pre-calculated distribution and recycling control.
    */
   @Test
   public void testSetSalesSubstreamWithDistributionAndRecycling() {
@@ -761,7 +761,7 @@ public class StreamKeeperTest {
 
     // Set domestic substream with recycling enabled
     EngineNumber domesticValue = new EngineNumber(new BigDecimal("150"), "kg");
-    keeper.setSalesSubstream(testScope, "domestic", domesticValue, distribution, true);
+    keeper.setSalesStream(testScope, "domestic", domesticValue, distribution, true);
 
     // Verify recycling displacement was applied to domestic only
     // Total recycling = 40 + 10 = 50 kg
@@ -772,7 +772,7 @@ public class StreamKeeperTest {
   }
 
   /**
-   * Test setSalesSubstream without recycling control.
+   * Test setSalesStream without recycling control.
    */
   @Test
   public void testSetSalesSubstreamWithoutRecycling() {
@@ -793,7 +793,7 @@ public class StreamKeeperTest {
 
     // Set domestic substream with recycling disabled
     EngineNumber domesticValue = new EngineNumber(new BigDecimal("150"), "kg");
-    keeper.setSalesSubstream(testScope, "domestic", domesticValue, distribution, false);
+    keeper.setSalesStream(testScope, "domestic", domesticValue, distribution, false);
 
     // Verify no recycling displacement was applied
     EngineNumber finalDomestic = keeper.getStream(testScope, "domestic");
@@ -802,7 +802,7 @@ public class StreamKeeperTest {
   }
 
   /**
-   * Test setSalesSubstream convenience method (defaults to recycling enabled).
+   * Test setSalesStream convenience method (defaults to recycling enabled).
    */
   @Test
   public void testSetSalesSubstreamConvenienceMethod() {
@@ -824,7 +824,7 @@ public class StreamKeeperTest {
 
     // Set import substream using convenience method (should default to recycling enabled)
     EngineNumber importValue = new EngineNumber(new BigDecimal("120"), "kg");
-    keeper.setSalesSubstream(testScope, "import", importValue, distribution);
+    keeper.setSalesStream(testScope, "import", importValue, distribution);
 
     // Verify recycling displacement was applied
     // Total recycling = 20 + 30 = 50 kg
@@ -835,7 +835,7 @@ public class StreamKeeperTest {
   }
 
   /**
-   * Test setSalesSubstream with negative net amount (should be clamped to zero).
+   * Test setSalesStream with negative net amount (should be clamped to zero).
    */
   @Test
   public void testSetSalesSubstreamWithNegativeNetAmount() {
@@ -857,7 +857,7 @@ public class StreamKeeperTest {
 
     // Set domestic substream to a value less than recycling
     EngineNumber domesticValue = new EngineNumber(new BigDecimal("50"), "kg");
-    keeper.setSalesSubstream(testScope, "domestic", domesticValue, distribution, true);
+    keeper.setSalesStream(testScope, "domestic", domesticValue, distribution, true);
 
     // Verify net amount was clamped to zero
     // Total recycling = 100 + 50 = 150 kg
@@ -868,7 +868,7 @@ public class StreamKeeperTest {
   }
 
   /**
-   * Test setSalesSubstream with invalid stream name.
+   * Test setSalesStream with invalid stream name.
    */
   @Test
   public void testSetSalesSubstreamWithInvalidStreamName() {
@@ -888,12 +888,12 @@ public class StreamKeeperTest {
     EngineNumber value = new EngineNumber(new BigDecimal("100"), "kg");
 
     assertThrows(IllegalArgumentException.class, () -> {
-      keeper.setSalesSubstream(testScope, "invalid", value, distribution, true);
+      keeper.setSalesStream(testScope, "invalid", value, distribution, true);
     }, "Should throw exception for invalid stream name");
   }
 
   /**
-   * Test setSalesSubstream when no streams are enabled.
+   * Test setSalesStream when no streams are enabled.
    */
   @Test
   public void testSetSalesSubstreamWithNoStreamsEnabled() {
@@ -911,7 +911,7 @@ public class StreamKeeperTest {
     EngineNumber value = new EngineNumber(new BigDecimal("100"), "kg");
 
     assertThrows(IllegalStateException.class, () -> {
-      keeper.setSalesSubstream(testScope, "domestic", value, distribution, true);
+      keeper.setSalesStream(testScope, "domestic", value, distribution, true);
     }, "Should throw exception when no streams are enabled");
   }
 
@@ -942,7 +942,7 @@ public class StreamKeeperTest {
     EngineNumber domesticValue = new EngineNumber(new BigDecimal("200"), "kg");
     EngineNumber importValue = new EngineNumber(new BigDecimal("100"), "kg");
 
-    keeper.setBothSalesSubstreams(testScope, domesticValue, importValue, distribution, true);
+    keeper.setBothSalesStreams(testScope, domesticValue, importValue, distribution, true);
 
     // Verify material balance: virgin + recycled = total sales specified
     EngineNumber finalDomestic = keeper.getStream(testScope, "domestic");
@@ -979,7 +979,7 @@ public class StreamKeeperTest {
 
     // Set substream using kg units (testing that units are handled properly)
     EngineNumber domesticValue = new EngineNumber(new BigDecimal("2000"), "kg");
-    keeper.setSalesSubstream(testScope, "domestic", domesticValue, distribution, false);
+    keeper.setSalesStream(testScope, "domestic", domesticValue, distribution, false);
 
     // Verify conversion occurred correctly (should remain in kg)
     EngineNumber finalDomestic = keeper.getStream(testScope, "domestic");

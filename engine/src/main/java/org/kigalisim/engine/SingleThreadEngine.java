@@ -268,7 +268,7 @@ public class SingleThreadEngine implements Engine {
       );
 
       // Set implicit recharge BEFORE distribution (always full amount)
-      streamKeeper.setStream(keyEffective, "implicitRecharge", rechargeVolume, true);
+      streamKeeper.setOutcomeStream(keyEffective, "implicitRecharge", rechargeVolume);
 
       // Distribute recharge proportionally for domestic/import streams
       BigDecimal rechargeToAdd;
@@ -284,7 +284,7 @@ public class SingleThreadEngine implements Engine {
       valueToSet = new EngineNumber(totalWithRecharge, "kg");
     } else if (isSales) {
       // Sales stream without units - clear implicit recharge
-      streamKeeper.setStream(keyEffective, "implicitRecharge", new EngineNumber(BigDecimal.ZERO, "kg"), true);
+      streamKeeper.setOutcomeStream(keyEffective, "implicitRecharge", new EngineNumber(BigDecimal.ZERO, "kg"));
     }
 
     // Use the subtractRecycling parameter when setting the stream
@@ -638,7 +638,7 @@ public class SingleThreadEngine implements Engine {
       // Only clear implicit recharge if NOT using explicit recharge (i.e., when units were used)
       // This ensures implicit recharge persists for carried-over values
       if (useExplicitRecharge) {
-        streamKeeper.setStream(scope, "implicitRecharge", new EngineNumber(BigDecimal.ZERO, "kg"));
+        streamKeeper.setOutcomeStream(scope, "implicitRecharge", new EngineNumber(BigDecimal.ZERO, "kg"));
       }
     }
   }

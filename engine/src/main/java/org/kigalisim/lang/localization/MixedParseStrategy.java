@@ -11,7 +11,6 @@ package org.kigalisim.lang.localization;
 
 import java.math.BigDecimal;
 import java.util.regex.Pattern;
-import org.kigalisim.lang.localization.FlexibleNumberParseResult;
 
 /**
  * Parse strategy for numbers with both comma and period separators.
@@ -102,7 +101,7 @@ public class MixedParseStrategy implements NumberParseUtilStrategy {
         return new FlexibleNumberParseResult("Invalid thousands separator format: '" + numberStr + "'");
       }
     }
-    
+
     return new FlexibleNumberParseResult(new BigDecimal("0")); // Success case
   }
 
@@ -146,17 +145,17 @@ public class MixedParseStrategy implements NumberParseUtilStrategy {
     // Convert European mixed format to UK format
     // European: 1.234.567,89 (periods for thousands, comma for decimal)
     // UK:       1,234,567.89 (commas for thousands, period for decimal)
-    
+
     int lastCommaIndex = europeanNumber.lastIndexOf(',');
     if (lastCommaIndex == -1) {
       // No comma, just convert periods to commas
       return europeanNumber.replace(".", ",");
     }
-    
+
     // Split at last comma (decimal separator in European format)
     String thousandsPart = europeanNumber.substring(0, lastCommaIndex);
     String decimalPart = europeanNumber.substring(lastCommaIndex + 1);
-    
+
     // Convert periods in thousands part to commas, and use period for decimal
     String ukThousands = thousandsPart.replace(".", ",");
     return ukThousands + "." + decimalPart;

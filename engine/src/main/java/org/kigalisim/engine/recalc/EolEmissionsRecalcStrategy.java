@@ -59,6 +59,6 @@ public class EolEmissionsRecalcStrategy implements RecalcStrategy {
 
     // Update GHG accounting
     EngineNumber eolGhg = unitConverter.convert(amount, "tCO2e");
-    streamKeeper.setStream(scopeEffective, "eolEmissions", eolGhg);
+    streamKeeper.setOutcomeStream(scopeEffective, "eolEmissions", eolGhg);
   }
 }

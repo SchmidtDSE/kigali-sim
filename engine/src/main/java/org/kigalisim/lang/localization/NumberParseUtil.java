@@ -15,7 +15,6 @@ import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Pattern;
-import org.kigalisim.lang.localization.FlexibleNumberParseResult;
 
 /**
  * Utility for parsing numbers with flexible thousands and decimal separators.

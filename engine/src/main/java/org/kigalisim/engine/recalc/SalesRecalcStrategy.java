@@ -116,7 +116,7 @@ public class SalesRecalcStrategy implements RecalcStrategy {
     // Determine sales prior to recycling
     final BigDecimal kgForRecharge = rechargeVolume.getValue();
     final BigDecimal kgForNew = volumeForNew.getValue();
-    
+
 
     // Return to original initial charge
     stateGetter.clearAmortizedUnitVolume();
@@ -134,12 +134,12 @@ public class SalesRecalcStrategy implements RecalcStrategy {
     // Set individual recycling streams
     EngineNumber newRecycleEolValue = new EngineNumber(eolRecycledKg, "kg");
     EngineNumber newRecycleRechargeValue = new EngineNumber(rechargeRecycledKg, "kg");
-    streamKeeper.setStream(scopeEffective, "recycleEol", newRecycleEolValue);
-    streamKeeper.setStream(scopeEffective, "recycleRecharge", newRecycleRechargeValue);
+    streamKeeper.setOutcomeStream(scopeEffective, "recycleEol", newRecycleEolValue);
+    streamKeeper.setOutcomeStream(scopeEffective, "recycleRecharge", newRecycleRechargeValue);
 
     // Also set total recycle stream for backward compatibility
     EngineNumber newRecycleValue = new EngineNumber(recycledKg, "kg");
-    streamKeeper.setStream(scopeEffective, "recycle", newRecycleValue);
+    streamKeeper.setOutcomeStream(scopeEffective, "recycle", newRecycleValue);
 
     // Get implicit recharge to avoid double-counting
     EngineNumber implicitRechargeRaw = target.getStream("implicitRecharge", Optional.of(scopeEffective), Optional.empty());
@@ -183,10 +183,10 @@ public class SalesRecalcStrategy implements RecalcStrategy {
       // Higher induction rate = less displacement, lower induction rate = more displacement
       BigDecimal eolDisplacementRatio = BigDecimal.ONE.subtract(inductionRatioEol);
       BigDecimal rechargeDisplacementRatio = BigDecimal.ONE.subtract(inductionRatioRecharge);
-      
+
       BigDecimal eolDisplacedKg = eolRecycledKg.multiply(eolDisplacementRatio);
       BigDecimal rechargeDisplacedKg = rechargeRecycledKg.multiply(rechargeDisplacementRatio);
-      
+
       // Total displacement to subtract from sales
       displacedDemandKg = eolDisplacedKg.add(rechargeDisplacedKg);
     }
@@ -338,10 +338,10 @@ public class SalesRecalcStrategy implements RecalcStrategy {
    */
   private BigDecimal getEffectiveInductionRate(StreamKeeper streamKeeper, UseKey scopeEffective, RecoveryStage stage, boolean hasUnitBasedSpecs) {
     EngineNumber inductionRate = streamKeeper.getInductionRate(scopeEffective, stage);
-    
+
     // Check if induction rate was explicitly set (not null and non-zero value)
     boolean wasExplicitlySet = inductionRate != null && inductionRate.getValue().compareTo(BigDecimal.ZERO) != 0;
-    
+
     if (wasExplicitlySet) {
       // Use the explicitly set value
       return inductionRate.getValue().divide(BigDecimal.valueOf(100), java.math.MathContext.DECIMAL128);

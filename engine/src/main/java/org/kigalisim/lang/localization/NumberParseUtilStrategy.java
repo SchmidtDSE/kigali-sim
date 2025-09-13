@@ -9,7 +9,6 @@
 
 package org.kigalisim.lang.localization;
 
-import org.kigalisim.lang.localization.FlexibleNumberParseResult;
 
 /**
  * Strategy for parsing numbers with specific separator patterns.
