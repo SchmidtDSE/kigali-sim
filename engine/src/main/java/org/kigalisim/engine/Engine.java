@@ -339,7 +339,7 @@ public interface Engine {
    * Set the induction rate for recycling operations.
    *
    * @param inductionRate The induction rate as an EngineNumber with percentage units,
-   *                      or null for default behavior (0% displacement)
+   *                      or null for default behavior (100% induced demand)
    * @param stage The recovery stage (EOL or RECHARGE) to set the induction rate for
    */
   void setInductionRate(EngineNumber inductionRate, RecoveryStage stage);

@@ -97,12 +97,12 @@ start policy "Domestic Recycling"
 
     # Make recycling program for HFC-134a
     modify substance "HFC-134a"
-      recover 20 % with 90 % reuse during years 2027 to onwards
+      recover 20 % with 90 % reuse with 0 % induction during years 2027 to onwards
     end substance
 
     # Make recycling program for R-600a
     modify substance "R-600a"
-      recover 30 % with 90 % reuse during years 2027 to onwards
+      recover 30 % with 90 % reuse with 0 % induction during years 2027 to onwards
     end substance
   
   end application

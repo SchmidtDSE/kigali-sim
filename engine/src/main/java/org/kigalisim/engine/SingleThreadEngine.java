@@ -703,8 +703,8 @@ public class SingleThreadEngine implements Engine {
       }
       streamKeeper.setInductionRate(scope, inductionRate, stage);
     } else {
-      // Default behavior - set to 0% (displacement behavior)
-      EngineNumber defaultInductionRate = new EngineNumber(BigDecimal.ZERO, "%");
+      // Default behavior - set to 100% (induced demand behavior)
+      EngineNumber defaultInductionRate = new EngineNumber(new BigDecimal("100"), "%");
       streamKeeper.setInductionRate(scope, defaultInductionRate, stage);
     }
   }

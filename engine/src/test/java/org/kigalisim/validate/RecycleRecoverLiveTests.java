@@ -1003,17 +1003,16 @@ public class RecycleRecoverLiveTests {
     assertTrue(year2.getRecycle().getValue().doubleValue() > 0,
         "Recycling production should be positive in year 2");
 
-    // With default 100% induction for non-units, total supply should meet baseline demand
-    // Recycling is "induced demand" - it doesn't create additional demand but meets existing demand
+    // With default 100% induction for non-units, total supply should exceed baseline demand
+    // Recycling is "induced demand" - it adds to total supply on top of existing demand
     double domesticSales = year2.getDomestic().getValue().doubleValue();
     double importSales = year2.getImport().getValue().doubleValue();
     double recyclingSales = year2.getRecycle().getValue().doubleValue();
     double totalSupply = domesticSales + importSales + recyclingSales;
 
-
-    // With 100% induction, total supply should approximately equal baseline demand
-    assertTrue(totalSupply >= 95 && totalSupply <= 105,
-        "Total supply should approximately equal baseline demand with 100% induction, got: " + totalSupply);
+    // With default 100% induction: 100kg baseline (50+50) + recycled material = total supply exceeds baseline
+    assertTrue(totalSupply >= 130 && totalSupply <= 140,
+        "Total supply should exceed baseline demand with default 100% induction, got: " + totalSupply);
 
     // Recycling should contribute meaningfully to meeting demand
     assertTrue(recyclingSales > 15,
@@ -1062,13 +1061,14 @@ public class RecycleRecoverLiveTests {
     EngineResult year2 = LiveTestsUtil.getResult(resultsList.stream(), 2, "test", "test");
     assertNotNull(year2, "Should have result for year 2");
 
-    // With default 100% induction behavior, total supply should meet baseline demand
+    // With default 100% induction behavior, total supply should exceed baseline demand (induced demand)
     double domesticSales = year2.getDomestic().getValue().doubleValue();
     double recyclingSales = year2.getRecycle().getValue().doubleValue();
     double totalSupply = domesticSales + recyclingSales;
 
-    assertTrue(totalSupply >= 95 && totalSupply <= 105,
-        "Total supply should approximately equal baseline demand with 100% induction, got: " + totalSupply);
+    // With default 100% induction: 100kg baseline + recycled material = total supply exceeds baseline
+    assertTrue(totalSupply >= 130 && totalSupply <= 140,
+        "Total supply should exceed baseline demand with default 100% induction, got: " + totalSupply);
     assertTrue(recyclingSales > 0,
         "Recycling should be positive, got: " + recyclingSales);
   }
@@ -1093,7 +1093,7 @@ public class RecycleRecoverLiveTests {
       start policy "intervention"
         modify application "test"
           modify substance "test"
-            recover 20 kg with 90 % reuse during year 2
+            recover 20 kg with 90 % reuse with 0 % induction during year 2
           end substance
         end application
       end policy
@@ -1115,13 +1115,13 @@ public class RecycleRecoverLiveTests {
     EngineResult year2 = LiveTestsUtil.getResult(resultsList.stream(), 2, "test", "test");
     assertNotNull(year2, "Should have result for year 2");
 
-    // With default 100% induction rate, total supply should meet baseline demand
+    // With explicit 0% induction, total supply should equal baseline demand (displacement behavior)
     double domesticSales = year2.getDomestic().getValue().doubleValue();
     double recyclingSales = year2.getRecycle().getValue().doubleValue();
     double totalSupply = domesticSales + recyclingSales;
 
     assertTrue(totalSupply >= 95 && totalSupply <= 105,
-        "Total supply should approximately equal baseline demand with 100% induction, got: " + totalSupply);
+        "Total supply should approximately equal baseline demand with 0% induction, got: " + totalSupply);
     assertTrue(recyclingSales > 15,
         "Recycling should contribute significantly, got: " + recyclingSales);
   }
@@ -1211,7 +1211,7 @@ public class RecycleRecoverLiveTests {
       start policy "intervention"
         modify application "test"
           modify substance "test"
-            recover 20 kg with 90 % reuse during year 2
+            recover 20 kg with 90 % reuse with 100 % induction during year 2
           end substance
         end application
       end policy
@@ -1233,13 +1233,14 @@ public class RecycleRecoverLiveTests {
     EngineResult year2 = LiveTestsUtil.getResult(resultsList.stream(), 2, "test", "test");
     assertNotNull(year2, "Should have result for year 2");
 
-    // With default 100% induction rate, total supply should meet baseline demand
+    // With explicit 100% induction rate, total supply should exceed baseline demand (induced demand behavior)
     double domesticSales = year2.getDomestic().getValue().doubleValue();
     double recyclingSales = year2.getRecycle().getValue().doubleValue();
     double totalSupply = domesticSales + recyclingSales;
 
-    assertTrue(totalSupply >= 95 && totalSupply <= 105,
-        "Total supply should approximately equal baseline demand with 100% induction, got: " + totalSupply);
+    // With 100% induction: 100kg baseline + recycled material = total supply exceeds baseline
+    assertTrue(totalSupply >= 130 && totalSupply <= 140,
+        "Total supply should exceed baseline demand with 100% induction, got: " + totalSupply);
     assertTrue(recyclingSales > 15,
         "Recycling should contribute significantly, got: " + recyclingSales);
   }

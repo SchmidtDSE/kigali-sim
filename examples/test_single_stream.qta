@@ -20,7 +20,7 @@ start policy "Recycle"
   modify application "App1"
   
     modify substance "SubA"
-      recover 50 % with 100 % reuse during years 2 to 3
+      recover 50 % with 100 % reuse with 0 % induction during years 2 to 3
     end substance
   
   end application
