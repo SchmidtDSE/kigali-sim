@@ -9,18 +9,7 @@
 
 package org.kigalisim.validate;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.io.IOException;
-import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-import org.junit.jupiter.api.Test;
-import org.kigalisim.KigaliSimFacade;
-import org.kigalisim.engine.serializer.EngineResult;
-import org.kigalisim.lang.program.ParsedProgram;
 
 /**
  * Test class for induction rate functionality in recycling scenarios.

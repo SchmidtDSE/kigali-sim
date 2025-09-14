@@ -444,8 +444,8 @@ public class KigaliSimFacadeTest {
     double policyImports = policyYear3.getImport().getValue().doubleValue();
 
     // Get total GHG consumption (virgin + recycled)
-    double bauTotalConsumption = bauYear3.getGhgConsumption().getValue().doubleValue();
-    double policyTotalConsumption = policyYear3.getGhgConsumption().getValue().doubleValue();
+    double bauTotalConsumption = bauYear3.getConsumption().getValue().doubleValue();
+    double policyTotalConsumption = policyYear3.getConsumption().getValue().doubleValue();
 
 
     // With recycling always reducing virgin material demand, imports should be lower with recycling

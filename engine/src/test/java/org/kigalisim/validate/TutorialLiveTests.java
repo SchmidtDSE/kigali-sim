@@ -132,8 +132,8 @@ public class TutorialLiveTests {
     // This means the relative difference should be greater when looking at tCO2e due to GWP differences
     double hfc134aKg = hfc134aResult.getDomestic().getValue().doubleValue();
     double r600aKg = r600aResult.getDomestic().getValue().doubleValue();
-    double hfc134aTco2e = hfc134aResult.getGhgConsumption().getValue().doubleValue();
-    double r600aTco2e = r600aResult.getGhgConsumption().getValue().doubleValue();
+    double hfc134aTco2e = hfc134aResult.getConsumption().getValue().doubleValue();
+    double r600aTco2e = r600aResult.getConsumption().getValue().doubleValue();
 
     double kgRatio = hfc134aKg / r600aKg;
     double tco2eRatio = hfc134aTco2e / r600aTco2e;
@@ -190,8 +190,8 @@ public class TutorialLiveTests {
                               + hfc134aResult.getImport().getValue().doubleValue();
       double hfc32TotalKg = hfc32Result.getDomestic().getValue().doubleValue();
 
-      double hfc134aTotalTco2e = hfc134aResult.getGhgConsumption().getValue().doubleValue();
-      double hfc32TotalTco2e = hfc32Result.getGhgConsumption().getValue().doubleValue();
+      double hfc134aTotalTco2e = hfc134aResult.getConsumption().getValue().doubleValue();
+      double hfc32TotalTco2e = hfc32Result.getConsumption().getValue().doubleValue();
 
       // Calculate percentage differences
       double kgPercentDiff = Math.abs(hfc32TotalKg - hfc134aTotalKg)

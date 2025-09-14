@@ -44,9 +44,9 @@ public class RecycleRecoverLiveTests {
     // Check year 1 - no recycling yet
     EngineResult recordYear1 = LiveTestsUtil.getResult(resultsList.stream(), 1, "test", "test");
     assertNotNull(recordYear1, "Should have result for test/test in year 1");
-    assertEquals(500.0, recordYear1.getGhgConsumption().getValue().doubleValue(), 0.0001,
+    assertEquals(500.0, recordYear1.getConsumption().getValue().doubleValue(), 0.0001,
         "GHG consumption should be 500 tCO2e in year 1");
-    assertEquals("tCO2e", recordYear1.getGhgConsumption().getUnits(),
+    assertEquals("tCO2e", recordYear1.getConsumption().getUnits(),
         "GHG consumption units should be tCO2e in year 1");
 
     // Check year 2 - recycling active
@@ -55,9 +55,9 @@ public class RecycleRecoverLiveTests {
 
     // With recycling, virgin material should be reduced
     double expectedTotalConsumption = 437.5; // Reduced due to recycling displacing virgin material
-    assertEquals(expectedTotalConsumption, recordYear2.getConsumptionNoRecycle().getValue().doubleValue(), 0.0001,
+    assertEquals(expectedTotalConsumption, recordYear2.getConsumption().getValue().doubleValue(), 0.0001,
         "Virgin material consumption should be reduced to 437.5 tCO2e in year 2 due to recycling");
-    assertEquals("tCO2e", recordYear2.getConsumptionNoRecycle().getUnits(),
+    assertEquals("tCO2e", recordYear2.getConsumption().getUnits(),
         "Virgin material consumption units should be tCO2e in year 2");
 
     // Check recycled consumption in year 2
@@ -88,9 +88,9 @@ public class RecycleRecoverLiveTests {
     // Check year 1 - no recycling yet
     EngineResult recordYear1 = LiveTestsUtil.getResult(resultsList.stream(), 1, "test", "test");
     assertNotNull(recordYear1, "Should have result for test/test in year 1");
-    assertEquals(500.0, recordYear1.getGhgConsumption().getValue().doubleValue(), 0.0001,
+    assertEquals(500.0, recordYear1.getConsumption().getValue().doubleValue(), 0.0001,
         "GHG consumption should be 500 tCO2e in year 1");
-    assertEquals("tCO2e", recordYear1.getGhgConsumption().getUnits(),
+    assertEquals("tCO2e", recordYear1.getConsumption().getUnits(),
         "GHG consumption units should be tCO2e in year 1");
 
     // Check year 2 - recycling active
@@ -99,9 +99,9 @@ public class RecycleRecoverLiveTests {
 
     // With recycling, virgin material should be reduced
     double expectedTotalConsumption = 499.875; // Reduced due to recycling displacing virgin material
-    assertEquals(expectedTotalConsumption, recordYear2.getConsumptionNoRecycle().getValue().doubleValue(), 0.0001,
+    assertEquals(expectedTotalConsumption, recordYear2.getConsumption().getValue().doubleValue(), 0.0001,
         "Virgin material consumption should be reduced to 499.875 tCO2e in year 2 due to recycling");
-    assertEquals("tCO2e", recordYear2.getConsumptionNoRecycle().getUnits(),
+    assertEquals("tCO2e", recordYear2.getConsumption().getUnits(),
         "Virgin material consumption units should be tCO2e in year 2");
 
     // Check recycled consumption in year 2
@@ -132,9 +132,9 @@ public class RecycleRecoverLiveTests {
     // Check year 1 - no recycling yet
     EngineResult recordYear1 = LiveTestsUtil.getResult(resultsList.stream(), 1, "test", "test");
     assertNotNull(recordYear1, "Should have result for test/test in year 1");
-    assertEquals(500.0, recordYear1.getGhgConsumption().getValue().doubleValue(), 0.0001,
+    assertEquals(500.0, recordYear1.getConsumption().getValue().doubleValue(), 0.0001,
         "GHG consumption should be 500 tCO2e in year 1");
-    assertEquals("tCO2e", recordYear1.getGhgConsumption().getUnits(),
+    assertEquals("tCO2e", recordYear1.getConsumption().getUnits(),
         "GHG consumption units should be tCO2e in year 1");
 
     // Check year 2 - recycling active
@@ -143,9 +143,9 @@ public class RecycleRecoverLiveTests {
 
     // With recycling, virgin material should be reduced
     double expectedTotalConsumption = 490.0; // Reduced due to recycling displacing virgin material
-    assertEquals(expectedTotalConsumption, recordYear2.getConsumptionNoRecycle().getValue().doubleValue(), 0.0001,
+    assertEquals(expectedTotalConsumption, recordYear2.getConsumption().getValue().doubleValue(), 0.0001,
         "Virgin material consumption should be reduced to 490.0 tCO2e in year 2 due to recycling");
-    assertEquals("tCO2e", recordYear2.getConsumptionNoRecycle().getUnits(),
+    assertEquals("tCO2e", recordYear2.getConsumption().getUnits(),
         "Virgin material consumption units should be tCO2e in year 2");
 
     // Check recycled consumption in year 2
@@ -361,9 +361,9 @@ public class RecycleRecoverLiveTests {
     // Check year 1 - no recycling yet
     EngineResult recordYear1 = LiveTestsUtil.getResult(resultsList.stream(), 1, "test", "test");
     assertNotNull(recordYear1, "Should have result for test/test in year 1");
-    assertEquals(500.0, recordYear1.getGhgConsumption().getValue().doubleValue(), 0.0001,
+    assertEquals(500.0, recordYear1.getConsumption().getValue().doubleValue(), 0.0001,
         "GHG consumption should be 500 tCO2e in year 1");
-    assertEquals("tCO2e", recordYear1.getGhgConsumption().getUnits(),
+    assertEquals("tCO2e", recordYear1.getConsumption().getUnits(),
         "GHG consumption units should be tCO2e in year 1");
 
     // Check year 2 - recycling at recharge active
@@ -374,9 +374,9 @@ public class RecycleRecoverLiveTests {
     // The behavior should be identical to the original recycling.qta test
     // since "at recharge" is the default behavior for recycling
     double expectedTotalConsumption = 437.5; // Same as original recycling test
-    assertEquals(expectedTotalConsumption, recordYear2.getConsumptionNoRecycle().getValue().doubleValue(), 0.0001,
+    assertEquals(expectedTotalConsumption, recordYear2.getConsumption().getValue().doubleValue(), 0.0001,
         "Virgin material consumption should be reduced to 437.5 tCO2e in year 2 due to recycling at recharge");
-    assertEquals("tCO2e", recordYear2.getConsumptionNoRecycle().getUnits(),
+    assertEquals("tCO2e", recordYear2.getConsumption().getUnits(),
         "Virgin material consumption units should be tCO2e in year 2");
 
     // Check recycled consumption in year 2
@@ -486,9 +486,9 @@ public class RecycleRecoverLiveTests {
     // Check year 1 - no recycling policy yet
     EngineResult recordYear1 = LiveTestsUtil.getResult(resultsList.stream(), 1, "test", "test");
     assertNotNull(recordYear1, "Should have result for test/test in year 1");
-    assertEquals(500.0, recordYear1.getGhgConsumption().getValue().doubleValue(), 0.0001,
+    assertEquals(500.0, recordYear1.getConsumption().getValue().doubleValue(), 0.0001,
         "GHG consumption should be 500 tCO2e in year 1 (100 kg * 5 kgCO2e/kg)");
-    assertEquals("tCO2e", recordYear1.getGhgConsumption().getUnits(),
+    assertEquals("tCO2e", recordYear1.getConsumption().getUnits(),
         "GHG consumption units should be tCO2e in year 1");
 
     // Check year 2 - recycling at EOL active
@@ -501,9 +501,9 @@ public class RecycleRecoverLiveTests {
     // Virgin material needed: 100 kg - 5 kg = 95 kg
     // Total GHG: 95 kg * 5 kgCO2e/kg = 475 tCO2e
     double expectedTotalConsumption = 475.0;
-    assertEquals(expectedTotalConsumption, recordYear2.getConsumptionNoRecycle().getValue().doubleValue(), 0.0001,
+    assertEquals(expectedTotalConsumption, recordYear2.getConsumption().getValue().doubleValue(), 0.0001,
         "Virgin material consumption should be reduced to 475.0 tCO2e in year 2 due to recycling at EOL");
-    assertEquals("tCO2e", recordYear2.getConsumptionNoRecycle().getUnits(),
+    assertEquals("tCO2e", recordYear2.getConsumption().getUnits(),
         "Virgin material consumption units should be tCO2e in year 2");
 
     // Check recycled consumption in year 2
@@ -613,9 +613,9 @@ public class RecycleRecoverLiveTests {
     // Check year 1 - no recycling policy yet
     EngineResult recordYear1 = LiveTestsUtil.getResult(resultsList.stream(), 1, "test", "test");
     assertNotNull(recordYear1, "Should have result for test/test in year 1");
-    assertEquals(500.0, recordYear1.getGhgConsumption().getValue().doubleValue(), 0.0001,
+    assertEquals(500.0, recordYear1.getConsumption().getValue().doubleValue(), 0.0001,
         "GHG consumption should be 500 tCO2e in year 1 (100 kg * 5 kgCO2e/kg)");
-    assertEquals("tCO2e", recordYear1.getGhgConsumption().getUnits(),
+    assertEquals("tCO2e", recordYear1.getConsumption().getUnits(),
         "GHG consumption units should be tCO2e in year 1");
 
     // Check year 2 - both EOL and recharge recycling active
@@ -625,9 +625,9 @@ public class RecycleRecoverLiveTests {
     // With combined recycling, both EOL and recharge recycling should contribute
     // Updated expectation to match current architecture where recycling is applied by StreamKeeper
     double expectedTotalConsumption = 465.775;
-    assertEquals(expectedTotalConsumption, recordYear2.getConsumptionNoRecycle().getValue().doubleValue(), 0.001,
+    assertEquals(expectedTotalConsumption, recordYear2.getConsumption().getValue().doubleValue(), 0.001,
         "Virgin material consumption should be reduced to 465.775 tCO2e in year 2 due to combined EOL and recharge recycling");
-    assertEquals("tCO2e", recordYear2.getConsumptionNoRecycle().getUnits(),
+    assertEquals("tCO2e", recordYear2.getConsumption().getUnits(),
         "Virgin material consumption units should be tCO2e in year 2");
 
     // Check recycled consumption in year 2
@@ -1010,12 +1010,6 @@ public class RecycleRecoverLiveTests {
     double recyclingSales = year2.getRecycle().getValue().doubleValue();
     double totalSupply = domesticSales + importSales + recyclingSales;
 
-    // Debug output
-    System.out.println("Domestic: " + domesticSales + " kg");
-    System.out.println("Import: " + importSales + " kg");
-    System.out.println("Recycling: " + recyclingSales + " kg");
-    System.out.println("Total supply: " + totalSupply + " kg");
-    System.out.println("Expected total supply: ~100 kg (baseline demand)");
 
     // With 100% induction, total supply should approximately equal baseline demand
     assertTrue(totalSupply >= 95 && totalSupply <= 105,
@@ -1180,13 +1174,6 @@ public class RecycleRecoverLiveTests {
     double totalVirginSales = domesticSales + importSales;
     double actualTotalSupply = totalVirginSales + recyclingSales;
 
-    // Debug output
-    System.out.println("0% induction (full displacement) test:");
-    System.out.println("Domestic sales: " + domesticSales + " kg");
-    System.out.println("Import sales: " + importSales + " kg");
-    System.out.println("Recycling sales: " + recyclingSales + " kg");
-    System.out.println("Virgin sales: " + totalVirginSales + " kg");
-    System.out.println("Total supply: " + actualTotalSupply + " kg");
 
     // With 0% induction (full displacement):
     // - Baseline demand: 100kg
@@ -1863,12 +1850,6 @@ public class RecycleRecoverLiveTests {
     double bauPopulation = bauResult.getPopulation().getValue().doubleValue();
     double recyclingPopulation = recyclingResult.getPopulation().getValue().doubleValue();
 
-    // DEBUG: Print detailed analysis for yield loss investigation
-    System.out.printf("=== YIELD LOSS ANALYSIS (Year %d) ===\n", finalYear);
-    System.out.printf("BAU Population: %.4f\n", bauPopulation);
-    System.out.printf("Recycling Population: %.4f\n", recyclingPopulation);
-    System.out.printf("Population Difference: %.4f\n", recyclingPopulation - bauPopulation);
-
     // Virgin material analysis
     double bauVirgin = bauResult.getDomestic().getValue().doubleValue() + bauResult.getImport().getValue().doubleValue();
     double recyclingVirgin = recyclingResult.getDomestic().getValue().doubleValue() + recyclingResult.getImport().getValue().doubleValue();
@@ -1877,29 +1858,13 @@ public class RecycleRecoverLiveTests {
     // Recycling amounts
     double recycledAmount = recyclingResult.getRecycle().getValue().doubleValue();
 
-    System.out.printf("BAU Virgin Supply: %.4f kg\n", bauVirgin);
-    System.out.printf("Recycling Virgin Supply: %.4f kg\n", recyclingVirgin);
-    System.out.printf("Virgin Reduction: %.4f kg\n", virginReduction);
-    System.out.printf("Recycled Amount (post-yield): %.4f kg\n", recycledAmount);
-
     // Calculate what pre-yield recovery amount would be
     // 50% recovery rate, 90% reuse rate means: pre-yield = post-yield / 0.9
     double estimatedPreYield = recycledAmount / 0.9;
-    System.out.printf("Estimated Pre-yield Recovery: %.4f kg (calculated as post-yield / 0.9)\n", estimatedPreYield);
 
     // Check which amount virgin reduction matches
     double diffFromPostYield = Math.abs(virginReduction - recycledAmount);
     double diffFromPreYield = Math.abs(virginReduction - estimatedPreYield);
-
-    System.out.printf("Virgin reduction difference from post-yield: %.4f kg\n", diffFromPostYield);
-    System.out.printf("Virgin reduction difference from pre-yield: %.4f kg\n", diffFromPreYield);
-
-    if (diffFromPostYield < diffFromPreYield) {
-      System.out.println("Virgin reduction MATCHES post-yield recycled amount");
-    } else {
-      System.out.println("Virgin reduction MATCHES pre-yield recovery amount");
-    }
-    System.out.println("=======================================");
 
     // With 0% induction, populations should be identical (displacement behavior)
     assertEquals(bauPopulation, recyclingPopulation, 0.01,
