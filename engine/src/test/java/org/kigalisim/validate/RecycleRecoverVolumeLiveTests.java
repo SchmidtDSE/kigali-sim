@@ -309,12 +309,13 @@ public class RecycleRecoverVolumeLiveTests {
     // Also check consumption
     double bauConsumption = bauYear3.getImportConsumption().getValue().doubleValue();
     double policyConsumption = policyYear3.getImportConsumption().getValue().doubleValue();
-    // Check equipment (population) at year 5 - policy should be lower due to retirement
+    // Check equipment (population) at year 5 - should be identical with 0% induction
     double bauEquipmentYear5 = bauYear5.getPopulation().getValue().doubleValue();
     double policyEquipmentYear5 = policyYear5.getPopulation().getValue().doubleValue();
-    // Policy includes 10% retirement per year, so population should be lower
-    assertTrue(policyEquipmentYear5 < bauEquipmentYear5,
-        String.format("Policy equipment population (%.2f) should be lower than BAU (%.2f) due to retirement",
+
+    // With 0% induction, equipment populations should be identical due to universal redistribution
+    assertEquals(bauEquipmentYear5, policyEquipmentYear5, 0.1,
+        String.format("Policy equipment population (%.2f) should equal BAU (%.2f) with 0%% induction due to universal redistribution",
                       policyEquipmentYear5, bauEquipmentYear5));
   }
 }
