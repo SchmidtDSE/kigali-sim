@@ -155,7 +155,7 @@ public class SalesRecalcStrategy implements RecalcStrategy {
     BigDecimal requiredKg = totalDemand
         .subtract(implicitRechargeKg);
 
-    // Calculate induced demand based on induction rate for unit-based specifications
+    // Calculate induced demand based on induction rate using unified logic for all specifications
     BigDecimal inducedDemandKg = BigDecimal.ZERO;
     boolean hasUnitBasedSpecs = getHasUnitBasedSpecs(streamKeeper, scopeEffective, implicitRechargeKg);
 
@@ -172,24 +172,6 @@ public class SalesRecalcStrategy implements RecalcStrategy {
       inducedDemandKg = eolInducedKg.add(rechargeInducedKg);
     }
 
-    // Calculate displacement based on induction rate for non-units specifications
-    BigDecimal displacedDemandKg = BigDecimal.ZERO;
-    if (!hasUnitBasedSpecs) {
-      // Get effective induction rate (default is 100% for induced demand behavior in non-unit specs)
-      BigDecimal inductionRatioEol = getEffectiveInductionRate(streamKeeper, scopeEffective, RecoveryStage.EOL, hasUnitBasedSpecs);
-      BigDecimal inductionRatioRecharge = getEffectiveInductionRate(streamKeeper, scopeEffective, RecoveryStage.RECHARGE, hasUnitBasedSpecs);
-
-      // Calculate displacement: (1 - inductionRate) * recycledAmount
-      // Higher induction rate = less displacement, lower induction rate = more displacement
-      BigDecimal eolDisplacementRatio = BigDecimal.ONE.subtract(inductionRatioEol);
-      BigDecimal rechargeDisplacementRatio = BigDecimal.ONE.subtract(inductionRatioRecharge);
-
-      BigDecimal eolDisplacedKg = eolRecycledKg.multiply(eolDisplacementRatio);
-      BigDecimal rechargeDisplacedKg = rechargeRecycledKg.multiply(rechargeDisplacementRatio);
-
-      // Total displacement to subtract from sales
-      displacedDemandKg = eolDisplacedKg.add(rechargeDisplacedKg);
-    }
 
     // Apply different logic for unit-based vs non-unit specifications
     BigDecimal totalRequiredKg;
@@ -197,8 +179,26 @@ public class SalesRecalcStrategy implements RecalcStrategy {
       // Unit-based: Add induced demand to required kg
       totalRequiredKg = requiredKg.add(inducedDemandKg);
     } else {
-      // Non-unit based: Subtract displaced demand from required kg
-      totalRequiredKg = requiredKg.subtract(displacedDemandKg);
+      // Non-unit based: For consistency, induction behavior is inverse of units-based
+      // When induction = 0%: full displacement (subtract all recycling)
+      // When induction = 100%: full induction (add all recycling) - THIS WILL BE FIXED IN COMPONENT 5
+
+      // Get effective induction rates for non-units specifications
+      BigDecimal inductionRatioEol = getEffectiveInductionRate(streamKeeper, scopeEffective, RecoveryStage.EOL, hasUnitBasedSpecs);
+      BigDecimal inductionRatioRecharge = getEffectiveInductionRate(streamKeeper, scopeEffective, RecoveryStage.RECHARGE, hasUnitBasedSpecs);
+
+      // Calculate displacement as (1 - induction) * recycled
+      BigDecimal eolDisplacementRatio = BigDecimal.ONE.subtract(inductionRatioEol);
+      BigDecimal rechargeDisplacementRatio = BigDecimal.ONE.subtract(inductionRatioRecharge);
+
+      BigDecimal eolDisplacedKg = eolRecycledKg.multiply(eolDisplacementRatio);
+      BigDecimal rechargeDisplacedKg = rechargeRecycledKg.multiply(rechargeDisplacementRatio);
+
+      BigDecimal totalDisplacedKg = eolDisplacedKg.add(rechargeDisplacedKg);
+
+      // Apply displacement (subtract from required kg)
+      totalRequiredKg = requiredKg.subtract(totalDisplacedKg);
+
       // Ensure sales don't go negative due to displacement
       totalRequiredKg = totalRequiredKg.max(BigDecimal.ZERO);
     }
