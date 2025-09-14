@@ -146,6 +146,23 @@ public class SalesRecalcStrategy implements RecalcStrategy {
     EngineNumber implicitRecharge = unitConverter.convert(implicitRechargeRaw, "kg");
     BigDecimal implicitRechargeKg = implicitRecharge.getValue();
 
+    // Determine specification type early
+    boolean hasUnitBasedSpecsEarly = getHasUnitBasedSpecs(streamKeeper, scopeEffective, implicitRechargeKg);
+
+    // Component 2: Infrastructure for induction stream tracking (implementation in Component 5)
+    // For now, just set up induction streams without modifying existing behavior
+
+    // STEP A: Track induction amounts for future use (Component 5 will use this)
+    BigDecimal inductionRatioEolTracking = getEffectiveInductionRate(streamKeeper, scopeEffective, RecoveryStage.EOL, hasUnitBasedSpecsEarly);
+    BigDecimal inductionRatioServicingTracking = getEffectiveInductionRate(streamKeeper, scopeEffective, RecoveryStage.RECHARGE, hasUnitBasedSpecsEarly);
+
+    BigDecimal newInductionEol = eolRecycledKg.multiply(inductionRatioEolTracking);
+    BigDecimal newInductionServicing = rechargeRecycledKg.multiply(inductionRatioServicingTracking);
+
+    // Track induction streams without modifying sales logic (for Component 5)
+    streamKeeper.setInductionStream(scopeEffective, RecoveryStage.EOL, new EngineNumber(newInductionEol, "kg"));
+    streamKeeper.setInductionStream(scopeEffective, RecoveryStage.RECHARGE, new EngineNumber(newInductionServicing, "kg"));
+
     // Deal with implicit recharge and recycling
     // Total demand is recharge + new equipment needs
     BigDecimal totalDemand = kgForRecharge.add(kgForNew);
@@ -360,4 +377,6 @@ public class SalesRecalcStrategy implements RecalcStrategy {
       }
     }
   }
+
+  // NOTE: Helper methods for induction stream management will be added in Component 5
 }
