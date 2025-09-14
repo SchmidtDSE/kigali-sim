@@ -159,7 +159,7 @@ public class RecycleRecoverLiveTests {
 
   /**
    * Test that the example file with multiple recover commands now properly fails.
-   * This verifies that Component 5's validation prevents multiple recover commands.
+   * This verifies that validation prevents multiple recover commands.
    */
   @Test
   public void testMultipleRecycles() throws IOException {
@@ -1513,7 +1513,7 @@ public class RecycleRecoverLiveTests {
    * Validates that BAU and Recycling scenarios have identical equipment populations
    * when induction rate is 0%, confirming proper displacement behavior for kg-based specs.
    */
-  // @Test  // Component 3: Commented out due to year boundary induction processing - will be fixed in Component 5
+  // @Test  // Disabled due to year boundary induction processing issues
   public void testZeroInductionVolume() throws IOException {
     // Load and parse QTA file
     String qtaPath = "../examples/test_0_induction_volume.qta";
@@ -1623,7 +1623,7 @@ public class RecycleRecoverLiveTests {
    * Validates that multiple policy changes maintain population equality and that
    * recalculation operations are idempotent for kg-based specifications.
    */
-  // @Test  // Component 3: Commented out due to year boundary induction processing - will be fixed in Component 5
+  // @Test  // Disabled due to year boundary induction processing issues
   public void testZeroInductionVolumeRecalcIdempotence() throws IOException {
     // Load and parse QTA file
     String qtaPath = "../examples/test_0_induction_volume_recalc.qta";
@@ -1680,7 +1680,7 @@ public class RecycleRecoverLiveTests {
    * This test validates that the circular dependency fix from Components 2-3 correctly
    * handles induced demand scenarios.
    *
-   * <p>TEMPORARILY DISABLED: Testing Component 5 implementation for 100% induction behavior.</p>
+   * <p>TEMPORARILY DISABLED: Testing 100% induction behavior implementation.</p>
    */
   // @Test - TEMPORARILY DISABLED during induction implementation
   public void testPopulationIssueWithFullInduction() throws IOException {

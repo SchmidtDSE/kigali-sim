@@ -17,6 +17,8 @@ import org.kigalisim.engine.number.UnitConverter;
 import org.kigalisim.engine.state.OverridingConverterStateGetter;
 import org.kigalisim.engine.state.StreamKeeper;
 import org.kigalisim.engine.state.UseKey;
+import org.kigalisim.engine.support.CalculatedStream;
+import org.kigalisim.engine.support.CalculatedStreamBuilder;
 import org.kigalisim.engine.support.EngineSupportUtils;
 import org.kigalisim.engine.support.ExceptionsGenerator;
 import org.kigalisim.engine.support.StreamUpdate;
@@ -97,7 +99,6 @@ public class SalesRecalcStrategy implements RecalcStrategy {
     // Only within-substance displacement (recycled material displaces virgin material of same substance)
     final BigDecimal recycledKg = eolRecycledKg.add(rechargeRecycledKg);
 
-
     // Switch out of recharge population
     stateGetter.clearPopulation();
 
@@ -117,13 +118,11 @@ public class SalesRecalcStrategy implements RecalcStrategy {
     final BigDecimal kgForRecharge = rechargeVolume.getValue();
     final BigDecimal kgForNew = volumeForNew.getValue();
 
-
     // Return to original initial charge
     stateGetter.clearAmortizedUnitVolume();
 
     // Return original
     stateGetter.clearVolume();
-
 
     // Get distribution using centralized method
     SalesStreamDistribution distribution = streamKeeper.getDistribution(scopeEffective);
@@ -134,13 +133,31 @@ public class SalesRecalcStrategy implements RecalcStrategy {
     // Set individual recycling streams
     EngineNumber newRecycleEolValue = new EngineNumber(eolRecycledKg, "kg");
     EngineNumber newRecycleRechargeValue = new EngineNumber(rechargeRecycledKg, "kg");
-    streamKeeper.setOutcomeStream(scopeEffective, "recycleEol", newRecycleEolValue);
-    streamKeeper.setOutcomeStream(scopeEffective, "recycleRecharge", newRecycleRechargeValue);
+    CalculatedStream recycleEolStream = new CalculatedStreamBuilder()
+        .setUseKey(scopeEffective)
+        .setName("recycleEol")
+        .setValue(newRecycleEolValue)
+        .asOutcomeStream()
+        .build();
+    streamKeeper.setStream(recycleEolStream);
+
+    CalculatedStream recycleRechargeStream = new CalculatedStreamBuilder()
+        .setUseKey(scopeEffective)
+        .setName("recycleRecharge")
+        .setValue(newRecycleRechargeValue)
+        .asOutcomeStream()
+        .build();
+    streamKeeper.setStream(recycleRechargeStream);
 
     // Also set total recycle stream for backward compatibility
     EngineNumber newRecycleValue = new EngineNumber(recycledKg, "kg");
-    streamKeeper.setOutcomeStream(scopeEffective, "recycle", newRecycleValue);
-
+    CalculatedStream recycleStream = new CalculatedStreamBuilder()
+        .setUseKey(scopeEffective)
+        .setName("recycle")
+        .setValue(newRecycleValue)
+        .asOutcomeStream()
+        .build();
+    streamKeeper.setStream(recycleStream);
 
     // Get implicit recharge to avoid double-counting
     EngineNumber implicitRechargeRaw = target.getStream("implicitRecharge", Optional.of(scopeEffective), Optional.empty());
@@ -150,21 +167,6 @@ public class SalesRecalcStrategy implements RecalcStrategy {
     // Determine specification type early
     boolean hasUnitBasedSpecsEarly = getHasUnitBasedSpecs(streamKeeper, scopeEffective, implicitRechargeKg);
 
-    // Component 2: Infrastructure for induction stream tracking (implementation in Component 5)
-    // For now, just set up induction streams without modifying existing behavior
-
-    // STEP A: Track induction amounts for future use (Component 5 will use this)
-    // TEMPORARILY DISABLED - Testing if this causes equipment population issues
-    // BigDecimal inductionRatioEolTracking = getEffectiveInductionRate(streamKeeper, scopeEffective, RecoveryStage.EOL, hasUnitBasedSpecsEarly);
-    // BigDecimal inductionRatioServicingTracking = getEffectiveInductionRate(streamKeeper, scopeEffective, RecoveryStage.RECHARGE, hasUnitBasedSpecsEarly);
-
-    // BigDecimal newInductionEol = eolRecycledKg.multiply(inductionRatioEolTracking);
-    // BigDecimal newInductionServicing = rechargeRecycledKg.multiply(inductionRatioServicingTracking);
-
-    // Track induction streams without modifying sales logic (for Component 5)
-    // streamKeeper.setInductionStream(scopeEffective, RecoveryStage.EOL, new EngineNumber(newInductionEol, "kg"));
-    // streamKeeper.setInductionStream(scopeEffective, RecoveryStage.RECHARGE, new EngineNumber(newInductionServicing, "kg"));
-
     // Deal with implicit recharge and recycling
     // Total demand is recharge + new equipment needs
     BigDecimal totalDemand = kgForRecharge.add(kgForNew);
@@ -173,7 +175,6 @@ public class SalesRecalcStrategy implements RecalcStrategy {
     // - implicitRechargeKg: recharge that was already added when units were specified
     BigDecimal requiredKg = totalDemand
         .subtract(implicitRechargeKg);
-
 
     // Calculate induced demand based on induction rate using unified logic for all specifications
     BigDecimal inducedDemandKg = BigDecimal.ZERO;
@@ -192,10 +193,8 @@ public class SalesRecalcStrategy implements RecalcStrategy {
       inducedDemandKg = eolInducedKg.add(rechargeInducedKg);
     }
 
-
     // Apply different logic for unit-based vs non-unit specifications
     BigDecimal totalRequiredKg;
-
 
     if (hasUnitBasedSpecs) {
       // Unit-based: Add induced demand to required kg
@@ -208,7 +207,6 @@ public class SalesRecalcStrategy implements RecalcStrategy {
       // Get effective induction rates for non-units specifications
       BigDecimal inductionRatioEol = getEffectiveInductionRate(streamKeeper, scopeEffective, RecoveryStage.EOL, hasUnitBasedSpecs);
       BigDecimal inductionRatioRecharge = getEffectiveInductionRate(streamKeeper, scopeEffective, RecoveryStage.RECHARGE, hasUnitBasedSpecs);
-
 
       // Calculate displacement: (1 - induction) × recycled (subtracts from virgin demand)
       BigDecimal eolDisplacedKg = eolRecycledKg.multiply(BigDecimal.ONE.subtract(inductionRatioEol));
@@ -390,5 +388,4 @@ public class SalesRecalcStrategy implements RecalcStrategy {
     }
   }
 
-  // NOTE: Helper methods for induction stream management will be added in Component 5
 }

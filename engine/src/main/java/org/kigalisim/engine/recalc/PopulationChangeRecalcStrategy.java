@@ -40,7 +40,6 @@ public class PopulationChangeRecalcStrategy implements RecalcStrategy {
   public PopulationChangeRecalcStrategy(Optional<UseKey> scope, Optional<Boolean> useExplicitRecharge) {
     this.scope = scope;
     this.useExplicitRecharge = useExplicitRecharge;
-
   }
 
   @Override
@@ -66,7 +65,6 @@ public class PopulationChangeRecalcStrategy implements RecalcStrategy {
     // Get substance sales (includes domestic + import + recycle)
     EngineNumber substanceSalesRaw = target.getStream("sales", Optional.of(scopeEffective), Optional.empty());
     EngineNumber substanceSales = unitConverter.convert(substanceSalesRaw, "kg");
-
 
     // Get explicit recharge volume using the calculator
     EngineNumber explicitRechargeVolume = RechargeVolumeCalculator.calculateRechargeVolume(
@@ -111,7 +109,6 @@ public class PopulationChangeRecalcStrategy implements RecalcStrategy {
     boolean newUnitsNegative = newUnits.compareTo(BigDecimal.ZERO) < 0;
     BigDecimal newUnitsAllowed = newUnitsNegative ? BigDecimal.ZERO : newUnits;
     EngineNumber newUnitsEffective = new EngineNumber(newUnitsAllowed, "units");
-
 
     // Save
     StreamUpdate equipmentUpdate = new StreamUpdateBuilder()

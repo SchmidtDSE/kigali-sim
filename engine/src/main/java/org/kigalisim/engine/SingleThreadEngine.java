@@ -33,6 +33,8 @@ import org.kigalisim.engine.state.StreamKeeper;
 import org.kigalisim.engine.state.SubstanceInApplicationId;
 import org.kigalisim.engine.state.UseKey;
 import org.kigalisim.engine.state.YearMatcher;
+import org.kigalisim.engine.support.CalculatedStream;
+import org.kigalisim.engine.support.CalculatedStreamBuilder;
 import org.kigalisim.engine.support.ChangeExecutor;
 import org.kigalisim.engine.support.EngineSupportUtils;
 import org.kigalisim.engine.support.ExceptionsGenerator;
@@ -227,7 +229,6 @@ public class SingleThreadEngine implements Engine {
     return currentYear > endYear;
   }
 
-
   @Override
   public void executeStreamUpdate(StreamUpdate update) {
     final String name = update.getName();
@@ -268,7 +269,13 @@ public class SingleThreadEngine implements Engine {
       );
 
       // Set implicit recharge BEFORE distribution (always full amount)
-      streamKeeper.setOutcomeStream(keyEffective, "implicitRecharge", rechargeVolume);
+      CalculatedStream implicitRechargeStream = new CalculatedStreamBuilder()
+          .setUseKey(keyEffective)
+          .setName("implicitRecharge")
+          .setValue(rechargeVolume)
+          .asOutcomeStream()
+          .build();
+      streamKeeper.setStream(implicitRechargeStream);
 
       // Distribute recharge proportionally for domestic/import streams
       BigDecimal rechargeToAdd;
@@ -284,11 +291,25 @@ public class SingleThreadEngine implements Engine {
       valueToSet = new EngineNumber(totalWithRecharge, "kg");
     } else if (isSales) {
       // Sales stream without units - clear implicit recharge
-      streamKeeper.setOutcomeStream(keyEffective, "implicitRecharge", new EngineNumber(BigDecimal.ZERO, "kg"));
+      CalculatedStream clearImplicitRechargeStream = new CalculatedStreamBuilder()
+          .setUseKey(keyEffective)
+          .setName("implicitRecharge")
+          .setValue(new EngineNumber(BigDecimal.ZERO, "kg"))
+          .asOutcomeStream()
+          .build();
+      streamKeeper.setStream(clearImplicitRechargeStream);
     }
 
     // Use the subtractRecycling parameter when setting the stream
-    streamKeeper.setStream(keyEffective, name, valueToSet, subtractRecycling, update.getDistribution());
+    CalculatedStream calculatedStream = new CalculatedStreamBuilder()
+        .setUseKey(keyEffective)
+        .setName(name)
+        .setValue(valueToSet)
+        .setSubtractRecycling(subtractRecycling)
+        .setDistribution(update.getDistribution().orElse(null))
+        .setSalesDistributionRequired(isSalesStream(name))
+        .build();
+    streamKeeper.setStream(calculatedStream);
 
     // Track the units last used to specify this stream (only for user-initiated calls)
     if (!propagateChanges) {
@@ -638,7 +659,13 @@ public class SingleThreadEngine implements Engine {
       // Only clear implicit recharge if NOT using explicit recharge (i.e., when units were used)
       // This ensures implicit recharge persists for carried-over values
       if (useExplicitRecharge) {
-        streamKeeper.setOutcomeStream(scope, "implicitRecharge", new EngineNumber(BigDecimal.ZERO, "kg"));
+        CalculatedStream clearImplicitRechargeStream = new CalculatedStreamBuilder()
+            .setUseKey(scope)
+            .setName("implicitRecharge")
+            .setValue(new EngineNumber(BigDecimal.ZERO, "kg"))
+            .asOutcomeStream()
+            .build();
+        streamKeeper.setStream(clearImplicitRechargeStream);
       }
     }
   }
@@ -708,8 +735,6 @@ public class SingleThreadEngine implements Engine {
       streamKeeper.setInductionRate(scope, defaultInductionRate, stage);
     }
   }
-
-
 
   @Override
   public void equals(EngineNumber amount, YearMatcher yearMatcher) {
@@ -1518,4 +1543,5 @@ public class SingleThreadEngine implements Engine {
       }
     }
   }
+
 }

@@ -20,6 +20,7 @@ import org.kigalisim.engine.number.EngineNumber;
 import org.kigalisim.engine.number.UnitConverter;
 import org.kigalisim.engine.recalc.SalesStreamDistribution;
 import org.kigalisim.engine.recalc.SalesStreamDistributionBuilder;
+import org.kigalisim.engine.support.CalculatedStream;
 import org.kigalisim.lang.operation.RecoverOperation.RecoveryStage;
 
 /**
@@ -245,7 +246,72 @@ public class StreamKeeper {
     setStream(useKey, name, value, subtractRecycling, Optional.empty());
   }
 
+  /**
+   * Set a stream using pre-calculated stream data.
+   *
+   * <p>This method replaces setStream, setOutcomeStream, and setSalesStream
+   * with a unified interface that accepts pre-calculated stream values.
+   * The CalculatedStream object encapsulates all necessary parameters
+   * including distribution logic and recycling behavior.</p>
+   *
+   * <p>This method provides clear architectural separation between calculation
+   * instructions (StreamUpdate) and pre-computed results (CalculatedStream).</p>
+   *
+   * @param calculatedStream Pre-calculated stream data with all parameters
+   */
+  public void setStream(CalculatedStream calculatedStream) {
+    UseKey useKey = calculatedStream.getUseKey();
+    String name = calculatedStream.getName();
+    EngineNumber value = calculatedStream.getValue();
 
+    String key = getKey(useKey);
+    ensureSubstanceOrThrow(key, "setStream(CalculatedStream)");
+    ensureStreamKnown(name);
+
+    // Check if stream needs to be enabled before setting
+    assertStreamEnabled(useKey, name, value);
+
+    if (CHECK_NAN_STATE && value.getValue().toString().equals("NaN")) {
+      String[] keyPieces = key.split("\t");
+      String application = keyPieces.length > 0 ? keyPieces[0] : "";
+      String substance = keyPieces.length > 1 ? keyPieces[1] : "";
+      String pieces = String.join(" > ",
+          "-".equals(application) ? "null" : application,
+          "-".equals(substance) ? "null" : substance,
+          name);
+      throw new RuntimeException("Encountered NaN to be set for: " + pieces);
+    }
+
+    // Extract routing parameters when needed
+    final boolean subtractRecycling = calculatedStream.getSubtractRecycling();
+    final Optional<SalesStreamDistribution> distribution = calculatedStream.getDistribution();
+
+    // Route to appropriate internal method based on stream characteristics and subtractRecycling
+    if (!subtractRecycling && ("domestic".equals(name) || "import".equals(name))) {
+      // Direct setting for sales streams - bypass recycling logic
+      setSimpleStream(useKey, name, value);
+    } else {
+      // Route based on stream type using the same logic as original setStream method
+      if ("sales".equals(name)) {
+        setStreamForSales(useKey, name, value);
+      } else if ("domestic".equals(name) || "import".equals(name)) {
+        // Sales streams - use distribution-aware method if available
+        if (distribution.isPresent()) {
+          setSalesStream(useKey, name, value, distribution.get(), subtractRecycling);
+        } else {
+          // Fall back to private method that calls getDistribution() (potential circular dependency)
+          setSalesStream(useKey, name, value);
+        }
+      } else if ("recycle".equals(name)) {
+        setStreamForRecycle(useKey, name, value);
+      } else if (getIsSettingVolumeByUnits(name, value)) {
+        setStreamForSalesWithUnits(useKey, name, value);
+      } else {
+        // Outcome streams - use type-safe method
+        setOutcomeStream(useKey, name, value);
+      }
+    }
+  }
 
   /**
    * Set a sales stream using pre-calculated distribution with recycling control (internal method).
@@ -597,7 +663,7 @@ public class StreamKeeper {
     // Redistribute recycling back to sales streams before clearing to prevent cross-year deficit
     redistributeRecyclingToSales();
 
-    // Component 3: Subtract induction from virgin streams before year transition
+    // Subtract induction from virgin streams before year transition
     redistributeInductionFromSales();
 
     // Reset recycling streams at year boundary to prevent stale values

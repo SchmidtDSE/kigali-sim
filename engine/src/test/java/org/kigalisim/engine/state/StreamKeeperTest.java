@@ -21,6 +21,8 @@ import org.junit.jupiter.api.Test;
 import org.kigalisim.engine.number.EngineNumber;
 import org.kigalisim.engine.number.UnitConverter;
 import org.kigalisim.engine.recalc.SalesStreamDistribution;
+import org.kigalisim.engine.support.CalculatedStream;
+import org.kigalisim.engine.support.CalculatedStreamBuilder;
 
 /**
  * Tests for the StreamKeeper class.
@@ -173,7 +175,13 @@ public class StreamKeeperTest {
     keeper.markStreamAsEnabled(testScope, "domestic");
 
     EngineNumber newValue = new EngineNumber(new BigDecimal("100"), "kg");
-    keeper.setStream(testScope, "domestic", newValue);
+    CalculatedStream domesticStream = new CalculatedStreamBuilder()
+        .setUseKey(testScope)
+        .setName("domestic")
+        .setValue(newValue)
+        .asSalesStream()
+        .build();
+    keeper.setStream(domesticStream);
 
     EngineNumber retrieved = keeper.getStream(testScope, "domestic");
     assertEquals(new BigDecimal("100"), retrieved.getValue(),

@@ -16,6 +16,8 @@ import org.kigalisim.engine.number.EngineNumber;
 import org.kigalisim.engine.number.UnitConverter;
 import org.kigalisim.engine.state.OverridingConverterStateGetter;
 import org.kigalisim.engine.state.UseKey;
+import org.kigalisim.engine.support.CalculatedStream;
+import org.kigalisim.engine.support.CalculatedStreamBuilder;
 import org.kigalisim.engine.support.ExceptionsGenerator;
 
 /**
@@ -78,15 +80,34 @@ public class RetireRecalcStrategy implements RecalcStrategy {
     EngineNumber newEquipment = new EngineNumber(newEquipmentValue, "units");
 
     // Update equipment streams
-    streamKeeper.setOutcomeStream(scopeEffective, "priorEquipment", newPrior);
-    streamKeeper.setOutcomeStream(scopeEffective, "equipment", newEquipment);
+    CalculatedStream priorEquipmentStream = new CalculatedStreamBuilder()
+        .setUseKey(scopeEffective)
+        .setName("priorEquipment")
+        .setValue(newPrior)
+        .asOutcomeStream()
+        .build();
+    streamKeeper.setStream(priorEquipmentStream);
+
+    CalculatedStream equipmentStream = new CalculatedStreamBuilder()
+        .setUseKey(scopeEffective)
+        .setName("equipment")
+        .setValue(newEquipment)
+        .asOutcomeStream()
+        .build();
+    streamKeeper.setStream(equipmentStream);
 
     // Update retired stream with the amount retired this year
     EngineNumber currentRetiredRaw = streamKeeper.getStream(scopeEffective, "retired");
     EngineNumber currentRetired = unitConverter.convert(currentRetiredRaw, "units");
     BigDecimal newRetiredValue = currentRetired.getValue().add(amount.getValue());
     EngineNumber newRetired = new EngineNumber(newRetiredValue, "units");
-    streamKeeper.setOutcomeStream(scopeEffective, "retired", newRetired);
+    CalculatedStream retiredStream = new CalculatedStreamBuilder()
+        .setUseKey(scopeEffective)
+        .setName("retired")
+        .setValue(newRetired)
+        .asOutcomeStream()
+        .build();
+    streamKeeper.setStream(retiredStream);
 
     // Update GHG accounting
     EolEmissionsRecalcStrategy eolStrategy = new EolEmissionsRecalcStrategy(Optional.of(scopeEffective));
