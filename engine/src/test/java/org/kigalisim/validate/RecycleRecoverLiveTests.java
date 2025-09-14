@@ -1681,7 +1681,7 @@ public class RecycleRecoverLiveTests {
    *
    * <p>TEMPORARILY DISABLED: Testing Component 5 implementation for 100% induction behavior.</p>
    */
-  // @Test - TEMPORARILY DISABLED for circular dependency fix
+  @Test
   public void testPopulationIssueWithFullInduction() throws IOException {
     // Load and parse the QTA file
     String qtaPath = "../examples/test_100_induction_volume.qta";
@@ -1753,7 +1753,7 @@ public class RecycleRecoverLiveTests {
    * With 90% recovery rate and 100% reuse rate, all captured material should be
    * recycled and should create induced demand in virgin production.</p>
    */
-  // @Test - TEMPORARILY DISABLED for circular dependency fix
+  @Test
   public void testNinetyPercentServicingFullInduction() throws IOException {
     // Load and parse the QTA file
     String qtaPath = "../examples/test_90_servicing_100_induction.qta";
@@ -1871,6 +1871,70 @@ public class RecycleRecoverLiveTests {
         String.format("Year %d: BAU population (%.4f) should equal Recycling population (%.4f) "
                      + "with 0%% induction (full displacement)",
                      finalYear, bauPopulation, recyclingPopulation));
+  }
+
+  /**
+   * Test units-based 100% induction behavior to compare with non-units behavior.
+   *
+   * <p>This test uses units-based specifications (set domestic/import to X units) with
+   * 100% induction to verify that induced demand is properly added on top of baseline
+   * demand for equipment-based specifications.</p>
+   */
+  @Test
+  public void testUnitsBasedFullInduction() throws IOException {
+    // Load and parse the QTA file
+    String qtaPath = "../examples/test_100_induction_units.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    // Run BAU scenario
+    Stream<EngineResult> bauResults = KigaliSimFacade.runScenario(program, "BAU", progress -> {});
+    List<EngineResult> bauResultsList = bauResults.collect(Collectors.toList());
+
+    // Run Recycling scenario with units-based 100% induction
+    Stream<EngineResult> recyclingResults = KigaliSimFacade.runScenario(program, "Recycling", progress -> {});
+    List<EngineResult> recyclingResultsList = recyclingResults.collect(Collectors.toList());
+
+    // Test multiple years to verify behavior persists and compounds correctly
+    int[] yearsToCheck = {2, 3, 4, 5};
+    for (int year : yearsToCheck) {
+      EngineResult bauResult = LiveTestsUtil.getResult(bauResultsList.stream(), year, "TestApp", "TestSub");
+      EngineResult recyclingResult = LiveTestsUtil.getResult(recyclingResultsList.stream(), year, "TestApp", "TestSub");
+
+      assertNotNull(bauResult, "Should have BAU result for TestApp/TestSub in year " + year);
+      assertNotNull(recyclingResult, "Should have Recycling result for TestApp/TestSub in year " + year);
+
+      double bauPopulation = bauResult.getPopulation().getValue().doubleValue();
+      double recyclingPopulation = recyclingResult.getPopulation().getValue().doubleValue();
+
+      // With units-based specs and 100% induction, recycling population should be higher than BAU
+      // This demonstrates that recycled material adds to total supply (induced demand behavior)
+      assertTrue(recyclingPopulation > bauPopulation,
+          String.format("Year %d: Units-based recycling population (%.2f) should be higher than BAU population (%.2f) "
+                       + "with 100%% induction. Recycled material should create induced demand.",
+                       year, recyclingPopulation, bauPopulation));
+
+      // Validate recycling stream values
+      double recyclingAmount = recyclingResult.getRecycle().getValue().doubleValue();
+      assertTrue(recyclingAmount > 0,
+          "Year " + year + ": Should have positive recycling amount");
+
+      // With 100% induction, total supply should be higher than baseline
+      double bauDomestic = bauResult.getDomestic().getValue().doubleValue();
+      double bauImport = bauResult.getImport().getValue().doubleValue();
+      double bauTotal = bauDomestic + bauImport;
+
+      double recyclingDomestic = recyclingResult.getDomestic().getValue().doubleValue();
+      double recyclingImport = recyclingResult.getImport().getValue().doubleValue();
+      double recyclingVirgin = recyclingDomestic + recyclingImport;
+      double recyclingTotal = recyclingVirgin + recyclingAmount;
+
+      // For units-based specs with 100% induction, total supply should be higher
+      assertTrue(recyclingTotal > bauTotal,
+          String.format("Year %d: Total supply with units-based recycling (%.2f) should be higher than BAU (%.2f) "
+                       + "with 100%% induction due to induced demand being added on top",
+                       year, recyclingTotal, bauTotal));
+    }
   }
 
 }
