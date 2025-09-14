@@ -288,7 +288,7 @@ public class SingleThreadEngine implements Engine {
     }
 
     // Use the subtractRecycling parameter when setting the stream
-    streamKeeper.setStream(keyEffective, name, valueToSet, subtractRecycling);
+    streamKeeper.setStream(keyEffective, name, valueToSet, subtractRecycling, update.getDistribution());
 
     // Track the units last used to specify this stream (only for user-initiated calls)
     if (!propagateChanges) {

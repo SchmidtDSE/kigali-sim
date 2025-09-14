@@ -221,6 +221,7 @@ public class SalesRecalcStrategy implements RecalcStrategy {
             .setValue(newDomesticUnits)
             .setKey(scopeEffective)
             .setPropagateChanges(false)
+            .setDistribution(distribution)
             .build();
         target.executeStreamUpdate(domesticUpdate);
       }
@@ -233,6 +234,7 @@ public class SalesRecalcStrategy implements RecalcStrategy {
             .setValue(newImportUnits)
             .setKey(scopeEffective)
             .setPropagateChanges(false)
+            .setDistribution(distribution)
             .build();
         target.executeStreamUpdate(importUpdate);
       }
@@ -249,6 +251,7 @@ public class SalesRecalcStrategy implements RecalcStrategy {
             .setValue(newDomestic)
             .setKey(scopeEffective)
             .setPropagateChanges(false)
+            .setDistribution(distribution)
             .build();
         target.executeStreamUpdate(domesticUpdate);
       }
@@ -260,6 +263,7 @@ public class SalesRecalcStrategy implements RecalcStrategy {
             .setValue(newImport)
             .setKey(scopeEffective)
             .setPropagateChanges(false)
+            .setDistribution(distribution)
             .build();
         target.executeStreamUpdate(importUpdate);
       }

@@ -14,6 +14,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import org.kigalisim.engine.number.EngineNumber;
 import org.kigalisim.engine.number.UnitConverter;
@@ -160,23 +161,20 @@ public class StreamKeeper {
   }
 
   /**
-   * Set the value of a stream with control over recycling subtraction.
+   * Set the value of a stream with control over recycling subtraction and optional distribution.
    *
-   * <p><strong>DEPRECATED:</strong> This method is deprecated and will be removed in the future.
-   * Use specific type-safe methods instead:</p>
-   * <ul>
-   * <li>For sales streams (domestic/import): Use setSalesStream() methods</li>
-   * <li>For outcome streams (recycle, implicitRecharge, etc.): Use setOutcomeStream()</li>
-   * </ul>
+   * <p>This method provides support for pre-calculated distributions to avoid circular dependencies
+   * in recycling displacement calculations. When distribution is provided, it will be used instead
+   * of calling getDistribution() for sales streams.</p>
    *
    * @param useKey The key containing application and substance
    * @param name The stream name
    * @param value The value to set
    * @param subtractRecycling Whether to apply recycling logic (false for direct setting)
-   * @deprecated Use setSalesStream() or setOutcomeStream() instead
+   * @param distribution Optional pre-calculated distribution for sales streams
    */
-  @Deprecated
-  public void setStream(UseKey useKey, String name, EngineNumber value, boolean subtractRecycling) {
+  public void setStream(UseKey useKey, String name, EngineNumber value, boolean subtractRecycling,
+      Optional<SalesStreamDistribution> distribution) {
     String key = getKey(useKey);
     ensureSubstanceOrThrow(key, "setStream");
     ensureStreamKnown(name);
@@ -204,9 +202,13 @@ public class StreamKeeper {
       if ("sales".equals(name)) {
         setStreamForSales(useKey, name, value);
       } else if ("domestic".equals(name) || "import".equals(name)) {
-        // Sales streams - use private method that calls getDistribution() (potential circular dependency)
-        // This preserves existing behavior but should be migrated to setSalesStream() with distribution
-        setSalesStream(useKey, name, value);
+        // Sales streams - use distribution-aware method if available
+        if (distribution.isPresent()) {
+          setSalesStream(useKey, name, value, distribution.get(), true);
+        } else {
+          // Fall back to private method that calls getDistribution() (potential circular dependency)
+          setSalesStream(useKey, name, value);
+        }
       } else if ("recycle".equals(name)) {
         setStreamForRecycle(useKey, name, value);
       } else if (getIsSettingVolumeByUnits(name, value)) {
@@ -219,26 +221,30 @@ public class StreamKeeper {
   }
 
   /**
-   * Set both domestic and import sales streams using pre-calculated distribution.
+   * Set the value of a stream with control over recycling subtraction.
    *
-   * <p>This method enables atomic updates of both domestic and import streams while using
-   * a pre-calculated distribution to avoid circular dependencies in recycling calculation.
-   * The distribution parameter contains the exact percentages to use for material allocation.</p>
+   * <p><strong>DEPRECATED:</strong> This method is deprecated and will be removed in the future.
+   * Use specific type-safe methods instead:</p>
+   * <ul>
+   * <li>For sales streams (domestic/import): Use setSalesStream() methods</li>
+   * <li>For outcome streams (recycle, implicitRecharge, etc.): Use setOutcomeStream()</li>
+   * </ul>
    *
    * @param useKey The key containing application and substance
-   * @param domesticValue The total value for the domestic sales stream
-   * @param importValue The total value for the import sales stream
-   * @param distribution Pre-calculated distribution percentages
-   * @param subtractRecycling Whether to apply recycling displacement logic
+   * @param name The stream name
+   * @param value The value to set
+   * @param subtractRecycling Whether to apply recycling logic (false for direct setting)
+   * @deprecated Use setSalesStream() or setOutcomeStream() instead
    */
-  public void setBothSalesStreams(UseKey useKey, EngineNumber domesticValue, EngineNumber importValue,
-      SalesStreamDistribution distribution, boolean subtractRecycling) {
-    setSalesStream(useKey, "domestic", domesticValue, distribution, subtractRecycling);
-    setSalesStream(useKey, "import", importValue, distribution, subtractRecycling);
+  @Deprecated
+  public void setStream(UseKey useKey, String name, EngineNumber value, boolean subtractRecycling) {
+    setStream(useKey, name, value, subtractRecycling, Optional.empty());
   }
 
+
+
   /**
-   * Set a sales stream using pre-calculated distribution with recycling control.
+   * Set a sales stream using pre-calculated distribution with recycling control (internal method).
    *
    * <p>This method allows setting individual sales streams (domestic/import) while using
    * a pre-calculated distribution to determine recycling allocation. This avoids circular
@@ -250,7 +256,7 @@ public class StreamKeeper {
    * @param distribution Pre-calculated distribution percentages
    * @param subtractRecycling Whether to apply recycling displacement logic
    */
-  public void setSalesStream(UseKey useKey, String streamName, EngineNumber value,
+  private void setSalesStream(UseKey useKey, String streamName, EngineNumber value,
       SalesStreamDistribution distribution, boolean subtractRecycling) {
     EngineNumber valueConverted = unitConverter.convert(value, "kg");
 
@@ -299,21 +305,6 @@ public class StreamKeeper {
     setSimpleStream(useKey, streamName, netAmountToSet);
   }
 
-  /**
-   * Set a sales stream using pre-calculated distribution (convenience method).
-   *
-   * <p>This is a convenience method that defaults to applying recycling displacement logic.
-   * It's equivalent to calling setSalesStream(useKey, streamName, value, distribution, true).</p>
-   *
-   * @param useKey The key containing application and substance
-   * @param streamName The stream name ("domestic" or "import")
-   * @param value The total value for this specific sales stream
-   * @param distribution Pre-calculated distribution percentages
-   */
-  public void setSalesStream(UseKey useKey, String streamName, EngineNumber value,
-      SalesStreamDistribution distribution) {
-    setSalesStream(useKey, streamName, value, distribution, true);
-  }
 
   /**
    * Set a sales stream for a specific stream name using existing
@@ -355,6 +346,7 @@ public class StreamKeeper {
 
     // Subtract proportional recycling to get virgin material amount
     BigDecimal netAmount = amountKg.subtract(substreamRecycling);
+
     if (netAmount.compareTo(BigDecimal.ZERO) < 0) {
       netAmount = BigDecimal.ZERO;
     }
@@ -1128,6 +1120,7 @@ public class StreamKeeper {
 
     // Calculate virgin material needed (sales - recycling)
     BigDecimal virginMaterialKg = amountKg.subtract(recycleKg);
+
     if (virginMaterialKg.compareTo(BigDecimal.ZERO) < 0) {
       virginMaterialKg = BigDecimal.ZERO;
     }
@@ -1472,10 +1465,10 @@ public class StreamKeeper {
       BigDecimal newDomestic = domesticConverted.getValue().add(domesticAdd);
       BigDecimal newImport = importConverted.getValue().add(importAdd);
 
-      // Set new amounts using the new setSalesStream method with pre-calculated distribution
-      // Use subtractRecycling=false to bypass recycling logic (avoid recursion)
-      setSalesStream(useKey, "domestic", new EngineNumber(newDomestic, "kg"), distribution, false);
-      setSalesStream(useKey, "import", new EngineNumber(newImport, "kg"), distribution, false);
+      // Set new amounts using direct stream setting to avoid circular dependency
+      // Use setSimpleStream since this is internal redistribution logic
+      setSimpleStream(useKey, "domestic", new EngineNumber(newDomestic, "kg"));
+      setSimpleStream(useKey, "import", new EngineNumber(newImport, "kg"));
     }
   }
 
