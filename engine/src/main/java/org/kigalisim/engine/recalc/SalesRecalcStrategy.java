@@ -141,6 +141,7 @@ public class SalesRecalcStrategy implements RecalcStrategy {
     EngineNumber newRecycleValue = new EngineNumber(recycledKg, "kg");
     streamKeeper.setOutcomeStream(scopeEffective, "recycle", newRecycleValue);
 
+
     // Get implicit recharge to avoid double-counting
     EngineNumber implicitRechargeRaw = target.getStream("implicitRecharge", Optional.of(scopeEffective), Optional.empty());
     EngineNumber implicitRecharge = unitConverter.convert(implicitRechargeRaw, "kg");
@@ -173,6 +174,7 @@ public class SalesRecalcStrategy implements RecalcStrategy {
     BigDecimal requiredKg = totalDemand
         .subtract(implicitRechargeKg);
 
+
     // Calculate induced demand based on induction rate using unified logic for all specifications
     BigDecimal inducedDemandKg = BigDecimal.ZERO;
     boolean hasUnitBasedSpecs = getHasUnitBasedSpecs(streamKeeper, scopeEffective, implicitRechargeKg);
@@ -194,31 +196,19 @@ public class SalesRecalcStrategy implements RecalcStrategy {
     // Apply different logic for unit-based vs non-unit specifications
     BigDecimal totalRequiredKg;
 
-    // DEBUG: Print key values for 0% induction debugging
-    System.out.println("=== INDUCTION DEBUG ===");
-    System.out.println("hasUnitBasedSpecs: " + hasUnitBasedSpecs);
-    System.out.println("eolRecycledKg: " + eolRecycledKg);
-    System.out.println("rechargeRecycledKg: " + rechargeRecycledKg);
-    System.out.println("requiredKg: " + requiredKg);
 
     if (hasUnitBasedSpecs) {
       // Unit-based: Add induced demand to required kg
-      System.out.println("UNITS-BASED PATH");
-      System.out.println("inducedDemandKg: " + inducedDemandKg);
       totalRequiredKg = requiredKg.add(inducedDemandKg);
-      System.out.println("UNITS: totalRequiredKg = " + requiredKg + " + " + inducedDemandKg + " = " + totalRequiredKg);
     } else {
       // Non-unit based: Apply both displacement and induction effects
       // When induction = 0%: full displacement (subtract all recycling), no induction
       // When induction = 100%: no displacement, full induction (add all recycling)
-      System.out.println("NON-UNITS (VOLUME) PATH");
 
       // Get effective induction rates for non-units specifications
       BigDecimal inductionRatioEol = getEffectiveInductionRate(streamKeeper, scopeEffective, RecoveryStage.EOL, hasUnitBasedSpecs);
       BigDecimal inductionRatioRecharge = getEffectiveInductionRate(streamKeeper, scopeEffective, RecoveryStage.RECHARGE, hasUnitBasedSpecs);
 
-      System.out.println("inductionRatioEol: " + inductionRatioEol);
-      System.out.println("inductionRatioRecharge: " + inductionRatioRecharge);
 
       // Calculate displacement: (1 - induction) × recycled (subtracts from virgin demand)
       BigDecimal eolDisplacedKg = eolRecycledKg.multiply(BigDecimal.ONE.subtract(inductionRatioEol));
@@ -230,32 +220,16 @@ public class SalesRecalcStrategy implements RecalcStrategy {
       BigDecimal rechargeInducedKg = rechargeRecycledKg.multiply(inductionRatioRecharge);
       BigDecimal totalInducedKg = eolInducedKg.add(rechargeInducedKg);
 
-      System.out.println("totalDisplacedKg: " + totalDisplacedKg);
-      System.out.println("totalInducedKg: " + totalInducedKg);
-
-      // ===== COMPARISON WITH OLD LOGIC =====
-      BigDecimal oldLogicResult = requiredKg.subtract(totalDisplacedKg);
-      BigDecimal newLogicResult = requiredKg.subtract(totalDisplacedKg).add(totalInducedKg);
-
-      System.out.println("OLD LOGIC (displacement only): " + requiredKg + " - " + totalDisplacedKg + " = " + oldLogicResult);
-      System.out.println("NEW LOGIC (displacement + induction): " + requiredKg + " - " + totalDisplacedKg + " + " + totalInducedKg + " = " + newLogicResult);
-      System.out.println("DIFFERENCE: " + newLogicResult.subtract(oldLogicResult));
-      System.out.println("Are they equal? " + oldLogicResult.equals(newLogicResult));
-
       // Apply both effects: subtract displacement, add induction
-      totalRequiredKg = newLogicResult;
+      totalRequiredKg = requiredKg.subtract(totalDisplacedKg).add(totalInducedKg);
 
       // Ensure sales don't go negative
       totalRequiredKg = totalRequiredKg.max(BigDecimal.ZERO);
-
-      if (totalRequiredKg.compareTo(requiredKg.subtract(totalDisplacedKg).add(totalInducedKg)) != 0) {
-        System.out.println("WARNING: totalRequiredKg was clamped to zero!");
-      }
     }
-    System.out.println("========================");
 
     BigDecimal newDomesticKg = percentDomestic.multiply(totalRequiredKg);
     BigDecimal newImportKg = percentImport.multiply(totalRequiredKg);
+
 
     if (hasUnitBasedSpecs) {
       // Convert back to units to preserve user intent
@@ -272,6 +246,7 @@ public class SalesRecalcStrategy implements RecalcStrategy {
             .setValue(newDomesticUnits)
             .setKey(scopeEffective)
             .setPropagateChanges(false)
+            .setSubtractRecycling(hasUnitBasedSpecs)
             .setDistribution(distribution)
             .build();
         target.executeStreamUpdate(domesticUpdate);
@@ -285,6 +260,7 @@ public class SalesRecalcStrategy implements RecalcStrategy {
             .setValue(newImportUnits)
             .setKey(scopeEffective)
             .setPropagateChanges(false)
+            .setSubtractRecycling(hasUnitBasedSpecs)
             .setDistribution(distribution)
             .build();
         target.executeStreamUpdate(importUpdate);
@@ -302,6 +278,7 @@ public class SalesRecalcStrategy implements RecalcStrategy {
             .setValue(newDomestic)
             .setKey(scopeEffective)
             .setPropagateChanges(false)
+            .setSubtractRecycling(hasUnitBasedSpecs)
             .setDistribution(distribution)
             .build();
         target.executeStreamUpdate(domesticUpdate);
@@ -314,6 +291,7 @@ public class SalesRecalcStrategy implements RecalcStrategy {
             .setValue(newImport)
             .setKey(scopeEffective)
             .setPropagateChanges(false)
+            .setSubtractRecycling(hasUnitBasedSpecs)
             .setDistribution(distribution)
             .build();
         target.executeStreamUpdate(importUpdate);

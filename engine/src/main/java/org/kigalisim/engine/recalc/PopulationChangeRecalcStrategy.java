@@ -63,9 +63,10 @@ public class PopulationChangeRecalcStrategy implements RecalcStrategy {
     EngineNumber priorPopulation = unitConverter.convert(priorPopulationRaw, "units");
     stateGetter.setPopulation(priorPopulation);
 
-    // Get substance sales
+    // Get substance sales (includes domestic + import + recycle)
     EngineNumber substanceSalesRaw = target.getStream("sales", Optional.of(scopeEffective), Optional.empty());
     EngineNumber substanceSales = unitConverter.convert(substanceSalesRaw, "kg");
+
 
     // Get explicit recharge volume using the calculator
     EngineNumber explicitRechargeVolume = RechargeVolumeCalculator.calculateRechargeVolume(
@@ -110,6 +111,7 @@ public class PopulationChangeRecalcStrategy implements RecalcStrategy {
     boolean newUnitsNegative = newUnits.compareTo(BigDecimal.ZERO) < 0;
     BigDecimal newUnitsAllowed = newUnitsNegative ? BigDecimal.ZERO : newUnits;
     EngineNumber newUnitsEffective = new EngineNumber(newUnitsAllowed, "units");
+
 
     // Save
     StreamUpdate equipmentUpdate = new StreamUpdateBuilder()
