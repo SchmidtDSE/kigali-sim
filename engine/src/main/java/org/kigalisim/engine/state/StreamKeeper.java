@@ -597,8 +597,8 @@ public class StreamKeeper {
     // Redistribute recycling back to sales streams before clearing to prevent cross-year deficit
     redistributeRecyclingToSales();
 
-    // Component 2: Induction redistribution will be implemented in Component 5
-    // redistributeInductionFromSales();
+    // Component 3: Subtract induction from virgin streams before year transition
+    redistributeInductionFromSales();
 
     // Reset recycling streams at year boundary to prevent stale values
     // from affecting subsequent cap operations

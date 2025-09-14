@@ -153,15 +153,16 @@ public class SalesRecalcStrategy implements RecalcStrategy {
     // For now, just set up induction streams without modifying existing behavior
 
     // STEP A: Track induction amounts for future use (Component 5 will use this)
-    BigDecimal inductionRatioEolTracking = getEffectiveInductionRate(streamKeeper, scopeEffective, RecoveryStage.EOL, hasUnitBasedSpecsEarly);
-    BigDecimal inductionRatioServicingTracking = getEffectiveInductionRate(streamKeeper, scopeEffective, RecoveryStage.RECHARGE, hasUnitBasedSpecsEarly);
+    // TEMPORARILY DISABLED - Testing if this causes equipment population issues
+    // BigDecimal inductionRatioEolTracking = getEffectiveInductionRate(streamKeeper, scopeEffective, RecoveryStage.EOL, hasUnitBasedSpecsEarly);
+    // BigDecimal inductionRatioServicingTracking = getEffectiveInductionRate(streamKeeper, scopeEffective, RecoveryStage.RECHARGE, hasUnitBasedSpecsEarly);
 
-    BigDecimal newInductionEol = eolRecycledKg.multiply(inductionRatioEolTracking);
-    BigDecimal newInductionServicing = rechargeRecycledKg.multiply(inductionRatioServicingTracking);
+    // BigDecimal newInductionEol = eolRecycledKg.multiply(inductionRatioEolTracking);
+    // BigDecimal newInductionServicing = rechargeRecycledKg.multiply(inductionRatioServicingTracking);
 
     // Track induction streams without modifying sales logic (for Component 5)
-    streamKeeper.setInductionStream(scopeEffective, RecoveryStage.EOL, new EngineNumber(newInductionEol, "kg"));
-    streamKeeper.setInductionStream(scopeEffective, RecoveryStage.RECHARGE, new EngineNumber(newInductionServicing, "kg"));
+    // streamKeeper.setInductionStream(scopeEffective, RecoveryStage.EOL, new EngineNumber(newInductionEol, "kg"));
+    // streamKeeper.setInductionStream(scopeEffective, RecoveryStage.RECHARGE, new EngineNumber(newInductionServicing, "kg"));
 
     // Deal with implicit recharge and recycling
     // Total demand is recharge + new equipment needs
@@ -192,33 +193,66 @@ public class SalesRecalcStrategy implements RecalcStrategy {
 
     // Apply different logic for unit-based vs non-unit specifications
     BigDecimal totalRequiredKg;
+
+    // DEBUG: Print key values for 0% induction debugging
+    System.out.println("=== INDUCTION DEBUG ===");
+    System.out.println("hasUnitBasedSpecs: " + hasUnitBasedSpecs);
+    System.out.println("eolRecycledKg: " + eolRecycledKg);
+    System.out.println("rechargeRecycledKg: " + rechargeRecycledKg);
+    System.out.println("requiredKg: " + requiredKg);
+
     if (hasUnitBasedSpecs) {
       // Unit-based: Add induced demand to required kg
+      System.out.println("UNITS-BASED PATH");
+      System.out.println("inducedDemandKg: " + inducedDemandKg);
       totalRequiredKg = requiredKg.add(inducedDemandKg);
+      System.out.println("UNITS: totalRequiredKg = " + requiredKg + " + " + inducedDemandKg + " = " + totalRequiredKg);
     } else {
-      // Non-unit based: For consistency, induction behavior is inverse of units-based
-      // When induction = 0%: full displacement (subtract all recycling)
-      // When induction = 100%: full induction (add all recycling) - THIS WILL BE FIXED IN COMPONENT 5
+      // Non-unit based: Apply both displacement and induction effects
+      // When induction = 0%: full displacement (subtract all recycling), no induction
+      // When induction = 100%: no displacement, full induction (add all recycling)
+      System.out.println("NON-UNITS (VOLUME) PATH");
 
       // Get effective induction rates for non-units specifications
       BigDecimal inductionRatioEol = getEffectiveInductionRate(streamKeeper, scopeEffective, RecoveryStage.EOL, hasUnitBasedSpecs);
       BigDecimal inductionRatioRecharge = getEffectiveInductionRate(streamKeeper, scopeEffective, RecoveryStage.RECHARGE, hasUnitBasedSpecs);
 
-      // Calculate displacement as (1 - induction) * recycled
-      BigDecimal eolDisplacementRatio = BigDecimal.ONE.subtract(inductionRatioEol);
-      BigDecimal rechargeDisplacementRatio = BigDecimal.ONE.subtract(inductionRatioRecharge);
+      System.out.println("inductionRatioEol: " + inductionRatioEol);
+      System.out.println("inductionRatioRecharge: " + inductionRatioRecharge);
 
-      BigDecimal eolDisplacedKg = eolRecycledKg.multiply(eolDisplacementRatio);
-      BigDecimal rechargeDisplacedKg = rechargeRecycledKg.multiply(rechargeDisplacementRatio);
-
+      // Calculate displacement: (1 - induction) × recycled (subtracts from virgin demand)
+      BigDecimal eolDisplacedKg = eolRecycledKg.multiply(BigDecimal.ONE.subtract(inductionRatioEol));
+      BigDecimal rechargeDisplacedKg = rechargeRecycledKg.multiply(BigDecimal.ONE.subtract(inductionRatioRecharge));
       BigDecimal totalDisplacedKg = eolDisplacedKg.add(rechargeDisplacedKg);
 
-      // Apply displacement (subtract from required kg)
-      totalRequiredKg = requiredKg.subtract(totalDisplacedKg);
+      // Calculate induction: induction × recycled (adds to virgin demand)
+      BigDecimal eolInducedKg = eolRecycledKg.multiply(inductionRatioEol);
+      BigDecimal rechargeInducedKg = rechargeRecycledKg.multiply(inductionRatioRecharge);
+      BigDecimal totalInducedKg = eolInducedKg.add(rechargeInducedKg);
 
-      // Ensure sales don't go negative due to displacement
+      System.out.println("totalDisplacedKg: " + totalDisplacedKg);
+      System.out.println("totalInducedKg: " + totalInducedKg);
+
+      // ===== COMPARISON WITH OLD LOGIC =====
+      BigDecimal oldLogicResult = requiredKg.subtract(totalDisplacedKg);
+      BigDecimal newLogicResult = requiredKg.subtract(totalDisplacedKg).add(totalInducedKg);
+
+      System.out.println("OLD LOGIC (displacement only): " + requiredKg + " - " + totalDisplacedKg + " = " + oldLogicResult);
+      System.out.println("NEW LOGIC (displacement + induction): " + requiredKg + " - " + totalDisplacedKg + " + " + totalInducedKg + " = " + newLogicResult);
+      System.out.println("DIFFERENCE: " + newLogicResult.subtract(oldLogicResult));
+      System.out.println("Are they equal? " + oldLogicResult.equals(newLogicResult));
+
+      // Apply both effects: subtract displacement, add induction
+      totalRequiredKg = newLogicResult;
+
+      // Ensure sales don't go negative
       totalRequiredKg = totalRequiredKg.max(BigDecimal.ZERO);
+
+      if (totalRequiredKg.compareTo(requiredKg.subtract(totalDisplacedKg).add(totalInducedKg)) != 0) {
+        System.out.println("WARNING: totalRequiredKg was clamped to zero!");
+      }
     }
+    System.out.println("========================");
 
     BigDecimal newDomesticKg = percentDomestic.multiply(totalRequiredKg);
     BigDecimal newImportKg = percentImport.multiply(totalRequiredKg);
@@ -360,8 +394,8 @@ public class SalesRecalcStrategy implements RecalcStrategy {
   private BigDecimal getEffectiveInductionRate(StreamKeeper streamKeeper, UseKey scopeEffective, RecoveryStage stage, boolean hasUnitBasedSpecs) {
     EngineNumber inductionRate = streamKeeper.getInductionRate(scopeEffective, stage);
 
-    // Check if induction rate was explicitly set (not null and non-zero value)
-    boolean wasExplicitlySet = inductionRate != null && inductionRate.getValue().compareTo(BigDecimal.ZERO) != 0;
+    // Check if induction rate was explicitly set (not null)
+    boolean wasExplicitlySet = inductionRate != null;
 
     if (wasExplicitlySet) {
       // Use the explicitly set value
