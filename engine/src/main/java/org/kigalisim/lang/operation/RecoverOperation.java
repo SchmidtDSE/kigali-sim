@@ -186,16 +186,16 @@ public class RecoverOperation implements Operation {
     final EngineNumber yieldRate = machine.getResult();
 
     // Execute the induction operation if present
-    Optional<Double> inductionRate = Optional.empty();
+    EngineNumber inductionRate = null;
     if (inductionOperation.isPresent()) {
       inductionOperation.get().execute(machine);
-      EngineNumber inductionValue = machine.getResult();
+      inductionRate = machine.getResult();
       // Validate that the induction value is a percentage (0-100%)
-      double induction = inductionValue.getValue().doubleValue();
+      double induction = inductionRate.getValue().doubleValue();
       if (induction < 0 || induction > 100) {
         throw new IllegalArgumentException("Induction rate must be between 0% and 100%, got: " + induction + "%");
       }
-      inductionRate = Optional.of(induction / 100.0); // Convert percentage to decimal
+      // No need to convert - use the EngineNumber directly with percentage units
     }
 
     // Build the year matcher

@@ -18,7 +18,14 @@ public final class StreamUpdateBuilder {
   private Optional<String> unitsToRecord = Optional.empty();
   private boolean subtractRecycling = true;
   private boolean forceUseFullRecharge = false;
-  private Optional<SalesStreamDistribution> distribution = Optional.empty();
+  private Optional<SalesStreamDistribution> distribution;
+
+  /**
+   * Creates a new StreamUpdateBuilder with default values.
+   */
+  public StreamUpdateBuilder() {
+    this.distribution = Optional.empty();
+  }
 
   /**
    * Sets the stream name.

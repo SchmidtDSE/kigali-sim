@@ -691,42 +691,24 @@ public class SingleThreadEngine implements Engine {
   }
 
   @Override
-  public void setInductionRate(Optional<Double> inductionRate) {
-    if (inductionRate.isPresent()) {
-      // Validate the induction rate is between 0 and 1
-      double rate = inductionRate.get();
-      if (rate < 0.0 || rate > 1.0) {
-        throw new IllegalArgumentException("Induction rate must be between 0.0 and 1.0, got: " + rate);
+  public void setInductionRate(EngineNumber inductionRate, RecoveryStage stage) {
+    if (inductionRate != null) {
+      // Validate the induction rate is a percentage between 0 and 100
+      if (!"%".equals(inductionRate.getUnits())) {
+        throw new IllegalArgumentException("Induction rate must have percentage units, got: " + inductionRate.getUnits());
       }
-      // Convert to EngineNumber with percentage units
-      EngineNumber inductionRateEngineNumber = new EngineNumber(
-          BigDecimal.valueOf(rate * 100), "%");
-      streamKeeper.setInductionRate(scope, inductionRateEngineNumber);
-    } else {
-      // Default behavior - set to 0% (displacement behavior)
-      EngineNumber defaultInductionRate = new EngineNumber(BigDecimal.ZERO, "%");
-      streamKeeper.setInductionRate(scope, defaultInductionRate);
-    }
-  }
-
-  @Override
-  public void setInductionRate(Optional<Double> inductionRate, RecoveryStage stage) {
-    if (inductionRate.isPresent()) {
-      // Validate the induction rate is between 0 and 1
-      double rate = inductionRate.get();
-      if (rate < 0.0 || rate > 1.0) {
-        throw new IllegalArgumentException("Induction rate must be between 0.0 and 1.0, got: " + rate);
+      double ratePercent = inductionRate.getValue().doubleValue();
+      if (ratePercent < 0.0 || ratePercent > 100.0) {
+        throw new IllegalArgumentException("Induction rate must be between 0% and 100%, got: " + ratePercent + "%");
       }
-      // Convert to EngineNumber with percentage units
-      EngineNumber inductionRateEngineNumber = new EngineNumber(
-          BigDecimal.valueOf(rate * 100), "%");
-      streamKeeper.setInductionRate(scope, inductionRateEngineNumber, stage);
+      streamKeeper.setInductionRate(scope, inductionRate, stage);
     } else {
       // Default behavior - set to 0% (displacement behavior)
       EngineNumber defaultInductionRate = new EngineNumber(BigDecimal.ZERO, "%");
       streamKeeper.setInductionRate(scope, defaultInductionRate, stage);
     }
   }
+
 
 
   @Override

@@ -3488,25 +3488,26 @@ function initRecycleCommandUi(itemObj, root, codeObj, context, streamUpdater) {
 
 /**
  * Validates and normalizes induction input values.
+ *
  * @param {string} rawValue - The raw input value
  * @returns {string|EngineNumber} Normalized induction value
  */
 function validateInductionInput(rawValue) {
-  if (rawValue === "" || rawValue === "default" || rawValue === "100") {
+  if (rawValue === "") {
+    throw new Error("Induction rate is required. Please enter a value between 0-100.");
+  }
+
+  if (rawValue === "default") {
     return "default";
   }
 
   const numValue = parseFloat(rawValue);
   if (isNaN(numValue)) {
-    console.warn(`Invalid induction rate: "${rawValue}". Must be a number ` +
-                 "between 0-100. Using default (100%).");
-    return "default";
+    throw new Error(`Invalid induction rate: "${rawValue}". Must be a number between 0-100.`);
   }
 
   if (numValue < 0 || numValue > 100) {
-    console.warn(`Induction rate ${numValue}% is out of range. Must be ` +
-                 "between 0-100%. Using default (100%).");
-    return "default";
+    throw new Error(`Induction rate ${numValue}% is out of range. Must be between 0-100%.`);
   }
 
   return new EngineNumber(numValue, "%", rawValue.trim());
