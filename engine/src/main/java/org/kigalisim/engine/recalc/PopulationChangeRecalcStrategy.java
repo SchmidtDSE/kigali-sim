@@ -20,8 +20,8 @@ import org.kigalisim.engine.state.UseKey;
 import org.kigalisim.engine.support.DivisionHelper;
 import org.kigalisim.engine.support.ExceptionsGenerator;
 import org.kigalisim.engine.support.RechargeVolumeCalculator;
-import org.kigalisim.engine.support.StreamUpdate;
-import org.kigalisim.engine.support.StreamUpdateBuilder;
+import org.kigalisim.engine.recalc.StreamUpdate;
+import org.kigalisim.engine.recalc.StreamUpdateBuilder;
 
 /**
  * Strategy for recalculating population changes.

@@ -21,8 +21,8 @@ import org.junit.jupiter.api.Test;
 import org.kigalisim.engine.number.EngineNumber;
 import org.kigalisim.engine.number.UnitConverter;
 import org.kigalisim.engine.recalc.SalesStreamDistribution;
-import org.kigalisim.engine.support.SimulationStateUpdate;
-import org.kigalisim.engine.support.SimulationStateUpdateBuilder;
+import org.kigalisim.engine.state.SimulationStateUpdate;
+import org.kigalisim.engine.state.SimulationStateUpdateBuilder;
 
 /**
  * Tests for the SimulationState class.

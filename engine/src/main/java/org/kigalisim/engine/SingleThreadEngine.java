@@ -38,10 +38,10 @@ import org.kigalisim.engine.support.EngineSupportUtils;
 import org.kigalisim.engine.support.ExceptionsGenerator;
 import org.kigalisim.engine.support.RechargeVolumeCalculator;
 import org.kigalisim.engine.support.SetExecutor;
-import org.kigalisim.engine.support.SimulationStateUpdate;
-import org.kigalisim.engine.support.SimulationStateUpdateBuilder;
-import org.kigalisim.engine.support.StreamUpdate;
-import org.kigalisim.engine.support.StreamUpdateBuilder;
+import org.kigalisim.engine.state.SimulationStateUpdate;
+import org.kigalisim.engine.state.SimulationStateUpdateBuilder;
+import org.kigalisim.engine.recalc.StreamUpdate;
+import org.kigalisim.engine.recalc.StreamUpdateBuilder;
 import org.kigalisim.lang.operation.RecoverOperation.RecoveryStage;
 
 /**

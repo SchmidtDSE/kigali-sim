@@ -13,6 +13,8 @@ package org.kigalisim.engine.support;
 
 import java.math.BigDecimal;
 import java.util.Optional;
+import org.kigalisim.engine.recalc.StreamUpdate;
+import org.kigalisim.engine.recalc.StreamUpdateBuilder;
 import org.kigalisim.engine.Engine;
 import org.kigalisim.engine.number.EngineNumber;
 import org.kigalisim.engine.recalc.SalesStreamDistribution;
