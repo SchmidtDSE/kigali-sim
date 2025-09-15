@@ -17,10 +17,10 @@ import org.junit.jupiter.api.Test;
 import org.kigalisim.engine.Engine;
 import org.kigalisim.engine.number.EngineNumber;
 import org.kigalisim.engine.recalc.SalesStreamDistribution;
+import org.kigalisim.engine.recalc.StreamUpdate;
 import org.kigalisim.engine.state.SimulationState;
 import org.kigalisim.engine.state.UseKey;
 import org.kigalisim.engine.state.YearMatcher;
-import org.kigalisim.engine.recalc.StreamUpdate;
 import org.mockito.ArgumentCaptor;
 
 /**

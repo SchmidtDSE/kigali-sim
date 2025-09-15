@@ -14,10 +14,10 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.kigalisim.engine.SingleThreadEngine;
 import org.kigalisim.engine.number.EngineNumber;
-import org.kigalisim.engine.state.Scope;
-import org.kigalisim.engine.state.YearMatcher;
 import org.kigalisim.engine.recalc.StreamUpdate;
 import org.kigalisim.engine.recalc.StreamUpdateBuilder;
+import org.kigalisim.engine.state.Scope;
+import org.kigalisim.engine.state.YearMatcher;
 
 /**
  * Integration test demonstrating the RecalcOperationBuilder pattern usage.

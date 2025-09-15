@@ -13,10 +13,10 @@ import java.util.Optional;
 import org.kigalisim.engine.Engine;
 import org.kigalisim.engine.number.EngineNumber;
 import org.kigalisim.engine.number.UnitConverter;
-import org.kigalisim.engine.state.UseKey;
-import org.kigalisim.engine.support.RechargeVolumeCalculator;
 import org.kigalisim.engine.recalc.StreamUpdate;
 import org.kigalisim.engine.recalc.StreamUpdateBuilder;
+import org.kigalisim.engine.state.UseKey;
+import org.kigalisim.engine.support.RechargeVolumeCalculator;
 
 /**
  * Strategy for recalculating recharge emissions.

@@ -23,6 +23,8 @@ import org.kigalisim.engine.recalc.RecalcKitBuilder;
 import org.kigalisim.engine.recalc.RecalcOperation;
 import org.kigalisim.engine.recalc.RecalcOperationBuilder;
 import org.kigalisim.engine.recalc.SalesStreamDistribution;
+import org.kigalisim.engine.recalc.StreamUpdate;
+import org.kigalisim.engine.recalc.StreamUpdateBuilder;
 import org.kigalisim.engine.serializer.EngineResult;
 import org.kigalisim.engine.serializer.EngineResultSerializer;
 import org.kigalisim.engine.state.ConverterStateGetter;
@@ -30,6 +32,8 @@ import org.kigalisim.engine.state.OverridingConverterStateGetter;
 import org.kigalisim.engine.state.Scope;
 import org.kigalisim.engine.state.SimpleUseKey;
 import org.kigalisim.engine.state.SimulationState;
+import org.kigalisim.engine.state.SimulationStateUpdate;
+import org.kigalisim.engine.state.SimulationStateUpdateBuilder;
 import org.kigalisim.engine.state.SubstanceInApplicationId;
 import org.kigalisim.engine.state.UseKey;
 import org.kigalisim.engine.state.YearMatcher;
@@ -38,10 +42,6 @@ import org.kigalisim.engine.support.EngineSupportUtils;
 import org.kigalisim.engine.support.ExceptionsGenerator;
 import org.kigalisim.engine.support.RechargeVolumeCalculator;
 import org.kigalisim.engine.support.SetExecutor;
-import org.kigalisim.engine.state.SimulationStateUpdate;
-import org.kigalisim.engine.state.SimulationStateUpdateBuilder;
-import org.kigalisim.engine.recalc.StreamUpdate;
-import org.kigalisim.engine.recalc.StreamUpdateBuilder;
 import org.kigalisim.lang.operation.RecoverOperation.RecoveryStage;
 
 /**

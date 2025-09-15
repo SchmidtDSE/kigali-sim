@@ -15,10 +15,10 @@ import org.kigalisim.engine.Engine;
 import org.kigalisim.engine.number.EngineNumber;
 import org.kigalisim.engine.number.UnitConverter;
 import org.kigalisim.engine.state.OverridingConverterStateGetter;
-import org.kigalisim.engine.state.UseKey;
-import org.kigalisim.engine.support.ExceptionsGenerator;
 import org.kigalisim.engine.state.SimulationStateUpdate;
 import org.kigalisim.engine.state.SimulationStateUpdateBuilder;
+import org.kigalisim.engine.state.UseKey;
+import org.kigalisim.engine.support.ExceptionsGenerator;
 
 /**
  * Strategy for recalculating retirement.
