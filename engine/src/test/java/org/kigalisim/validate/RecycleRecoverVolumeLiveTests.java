@@ -420,6 +420,86 @@ public class RecycleRecoverVolumeLiveTests {
   }
 
   /**
+   * Test 100% induction volume-based recycling scenario with recalc idempotence.
+   * This test validates that the circular dependency fix from Components 2-3 correctly
+   * handles induced demand scenarios and that recalculations (triggered by +0% sales changes)
+   * maintain consistent behavior.
+   */
+  @Test
+  public void testPopulationIssueWithFullInductionRecalcIdempotence() throws IOException {
+    // Load and parse the QTA file
+    String qtaPath = "../examples/test_100_induction_volume_recalc.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    // Run BAU scenario
+    Stream<EngineResult> bauResults = KigaliSimFacade.runScenario(program, "BAU", progress -> {});
+    List<EngineResult> bauResultsList = bauResults.collect(Collectors.toList());
+
+    // Run Recycling scenario with 100% induction and recalc
+    Stream<EngineResult> recyclingResults = KigaliSimFacade.runScenario(program, "Recycling", progress -> {});
+    List<EngineResult> recyclingResultsList = recyclingResults.collect(Collectors.toList());
+
+    // Test multiple years to verify behavior persists and compounds correctly after recalc
+    int[] yearsToCheck = {2, 3, 4, 5};
+    for (int year : yearsToCheck) {
+      EngineResult bauResult = LiveTestsUtil.getResult(bauResultsList.stream(), year, "TestApp", "TestSub");
+      EngineResult recyclingResult = LiveTestsUtil.getResult(recyclingResultsList.stream(), year, "TestApp", "TestSub");
+
+      assertNotNull(bauResult, "Should have BAU result for TestApp/TestSub in year " + year);
+      assertNotNull(recyclingResult, "Should have Recycling result for TestApp/TestSub in year " + year);
+
+      double bauPopulation = bauResult.getPopulation().getValue().doubleValue();
+      double recyclingPopulation = recyclingResult.getPopulation().getValue().doubleValue();
+
+      // With 100% induction, recycling population should be higher than BAU
+      // This should remain true even after +0% sales change triggers recalculation
+      assertTrue(recyclingPopulation > bauPopulation,
+          String.format("Year %d: Recycling population (%.2f) should be higher than BAU population (%.2f) "
+                       + "with 100%% induction after recalc. Recycled material should add to total supply.",
+                       year, recyclingPopulation, bauPopulation));
+
+      // Validate recycling stream values
+      double recyclingAmount = recyclingResult.getRecycle().getValue().doubleValue();
+      assertTrue(recyclingAmount > 0,
+          "Year " + year + ": Should have positive recycling amount after recalc");
+
+      // With 100% induction, virgin material should NOT be reduced
+      // Total supply = Virgin supply + Recycled supply (additive behavior)
+      double bauDomestic = bauResult.getDomestic().getValue().doubleValue();
+      double bauImport = bauResult.getImport().getValue().doubleValue();
+      double bauTotal = bauDomestic + bauImport;
+
+      double recyclingDomestic = recyclingResult.getDomestic().getValue().doubleValue();
+      double recyclingImport = recyclingResult.getImport().getValue().doubleValue();
+      double recyclingVirgin = recyclingDomestic + recyclingImport;
+      double recyclingTotal = recyclingVirgin + recyclingAmount;
+
+      // Virgin supply should be approximately the same (not displaced) after recalc
+      // With 100% induction, displaced material should be backfilled by induced demand
+      double percentDiffYear = Math.abs(recyclingVirgin - bauTotal) / bauTotal * 100;
+      assertTrue(percentDiffYear < 0.1,
+          String.format("Year %d: Virgin supply difference (%.2f%%) should be < 0.1%% with 100%% induction after recalc. "
+                       + "BAU=%.2f, Recycling=%.2f. Induced demand should backfill displaced material.",
+                       year, percentDiffYear, bauTotal, recyclingVirgin));
+
+      // Total supply should be higher (virgin + recycled) after recalc
+      assertTrue(recyclingTotal > bauTotal * 1.01,
+          String.format("Year %d: Total supply with recycling (%.2f) should be at least 1%% higher than BAU (%.2f) "
+                       + "with 100%% induction after recalc due to additive recycling",
+                       year, recyclingTotal, bauTotal));
+
+      // Special validation for year 3 (the recalc year) - ensure consistent behavior
+      if (year == 3) {
+        assertTrue(recyclingPopulation > bauPopulation,
+            String.format("Year 3 (recalc year): Recycling population (%.2f) should be higher than BAU (%.2f) "
+                         + "to confirm +0%% sales change doesn't interfere with induction behavior",
+                         recyclingPopulation, bauPopulation));
+      }
+    }
+  }
+
+  /**
    * Test recharge with recycling interaction for kg-based imports.
    * This test verifies that the existing behavior is preserved when using kg-based import policies.
    */
