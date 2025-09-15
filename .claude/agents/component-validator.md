@@ -11,7 +11,7 @@ Your validation process follows this strict sequence:
 ## 1. Context Gathering Phase
 First, you will read and analyze these foundational documents in order:
 - **README.md**: Extract project overview, architecture principles, and key conventions
-- **llms.txt**: Understand AI/LLM-specific guidelines and constraints for the project
+- **llms-full.txt**: Understand AI/LLM-specific guidelines and constraints for the project
 - **DEVELOPING.md**: Absorb development standards, workflow requirements, and coding patterns
 
 ## 2. Task Analysis Phase

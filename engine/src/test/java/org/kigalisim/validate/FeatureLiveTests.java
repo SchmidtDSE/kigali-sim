@@ -37,9 +37,9 @@ public class FeatureLiveTests {
     assertNotNull(result, "Should have result for test/test in year 1");
 
     // Check consumption value - should be 125 tCO2e (25% of original 500 tCO2e)
-    assertEquals(125.0, result.getGhgConsumption().getValue().doubleValue(), 0.0001,
+    assertEquals(125.0, result.getConsumption().getValue().doubleValue(), 0.0001,
         "Consumption should be 125 tCO2e");
-    assertEquals("tCO2e", result.getGhgConsumption().getUnits(),
+    assertEquals("tCO2e", result.getConsumption().getUnits(),
         "Consumption units should be tCO2e");
   }
 
@@ -62,9 +62,9 @@ public class FeatureLiveTests {
     assertNotNull(result, "Should have result for test/test in year 1");
 
     // Check consumption value - should be 250 tCO2e (50 mt * 5 tCO2e/mt)
-    assertEquals(250.0, result.getGhgConsumption().getValue().doubleValue(), 0.0001,
+    assertEquals(250.0, result.getConsumption().getValue().doubleValue(), 0.0001,
         "Consumption should be 250 tCO2e");
-    assertEquals("tCO2e", result.getGhgConsumption().getUnits(),
+    assertEquals("tCO2e", result.getConsumption().getUnits(),
         "Consumption units should be tCO2e");
   }
 
@@ -128,34 +128,34 @@ public class FeatureLiveTests {
     // Test AND: 1 and 0 = false, so manufacture should be 30 (else branch)
     EngineResult result1 = LiveTestsUtil.getResult(resultsList.stream(), 1, "test", "test");
     assertNotNull(result1, "Should have result for test/test in year 1");
-    assertEquals(30.0, result1.getGhgConsumption().getValue().doubleValue(), 0.0001,
+    assertEquals(30.0, result1.getConsumption().getValue().doubleValue(), 0.0001,
         "Consumption should be 30 tCO2e in year 1");
-    assertEquals("tCO2e", result1.getGhgConsumption().getUnits(),
+    assertEquals("tCO2e", result1.getConsumption().getUnits(),
         "Consumption units should be tCO2e");
 
     // Test OR: 1 or 0 = true, so manufacture should be 50 (if branch)
     EngineResult result2 = LiveTestsUtil.getResult(resultsList.stream(), 2, "test", "test");
     assertNotNull(result2, "Should have result for test/test in year 2");
-    assertEquals(50.0, result2.getGhgConsumption().getValue().doubleValue(), 0.0001,
+    assertEquals(50.0, result2.getConsumption().getValue().doubleValue(), 0.0001,
         "Consumption should be 50 tCO2e in year 2");
-    assertEquals("tCO2e", result2.getGhgConsumption().getUnits(),
+    assertEquals("tCO2e", result2.getConsumption().getUnits(),
         "Consumption units should be tCO2e");
 
     // Test XOR: 1 xor 2 = false (both are truthy), so manufacture should be 40 (else branch)
     EngineResult result3 = LiveTestsUtil.getResult(resultsList.stream(), 3, "test", "test");
     assertNotNull(result3, "Should have result for test/test in year 3");
-    assertEquals(40.0, result3.getGhgConsumption().getValue().doubleValue(), 0.0001,
+    assertEquals(40.0, result3.getConsumption().getValue().doubleValue(), 0.0001,
         "Consumption should be 40 tCO2e in year 3");
-    assertEquals("tCO2e", result3.getGhgConsumption().getUnits(),
+    assertEquals("tCO2e", result3.getConsumption().getUnits(),
         "Consumption units should be tCO2e");
 
     // Test precedence with parentheses: (testA or testB) and testC = (1 or 0) and 2 =
     // 1 and 2 = true, so manufacture should be 70 (if branch)
     EngineResult result4 = LiveTestsUtil.getResult(resultsList.stream(), 4, "test", "test");
     assertNotNull(result4, "Should have result for test/test in year 4");
-    assertEquals(70.0, result4.getGhgConsumption().getValue().doubleValue(), 0.0001,
+    assertEquals(70.0, result4.getConsumption().getValue().doubleValue(), 0.0001,
         "Consumption should be 70 tCO2e in year 4");
-    assertEquals("tCO2e", result4.getGhgConsumption().getUnits(),
+    assertEquals("tCO2e", result4.getConsumption().getUnits(),
         "Consumption units should be tCO2e");
 
     // Test precedence without parentheses: testA or testB and testC =
@@ -163,18 +163,18 @@ public class FeatureLiveTests {
     // so manufacture should be 80 (if branch)
     EngineResult result5 = LiveTestsUtil.getResult(resultsList.stream(), 5, "test", "test");
     assertNotNull(result5, "Should have result for test/test in year 5");
-    assertEquals(80.0, result5.getGhgConsumption().getValue().doubleValue(), 0.0001,
+    assertEquals(80.0, result5.getConsumption().getValue().doubleValue(), 0.0001,
         "Consumption should be 80 tCO2e in year 5");
-    assertEquals("tCO2e", result5.getGhgConsumption().getUnits(),
+    assertEquals("tCO2e", result5.getConsumption().getUnits(),
         "Consumption units should be tCO2e");
 
     // Test mixed comparison and logical: testA > 0 and testB == 0 =
     // 1 > 0 and 0 == 0 = true and true = true, so manufacture should be 90 (if branch)
     EngineResult result6 = LiveTestsUtil.getResult(resultsList.stream(), 6, "test", "test");
     assertNotNull(result6, "Should have result for test/test in year 6");
-    assertEquals(90.0, result6.getGhgConsumption().getValue().doubleValue(), 0.0001,
+    assertEquals(90.0, result6.getConsumption().getValue().doubleValue(), 0.0001,
         "Consumption should be 90 tCO2e in year 6");
-    assertEquals("tCO2e", result6.getGhgConsumption().getUnits(),
+    assertEquals("tCO2e", result6.getConsumption().getUnits(),
         "Consumption units should be tCO2e");
 
     // Test complex parentheses: (testA > 0 or testB > 0) and (testC == 2) =
@@ -182,9 +182,9 @@ public class FeatureLiveTests {
     // so manufacture should be 100 (if branch)
     EngineResult result7 = LiveTestsUtil.getResult(resultsList.stream(), 7, "test", "test");
     assertNotNull(result7, "Should have result for test/test in year 7");
-    assertEquals(100.0, result7.getGhgConsumption().getValue().doubleValue(), 0.0001,
+    assertEquals(100.0, result7.getConsumption().getValue().doubleValue(), 0.0001,
         "Consumption should be 100 tCO2e in year 7");
-    assertEquals("tCO2e", result7.getGhgConsumption().getUnits(),
+    assertEquals("tCO2e", result7.getConsumption().getUnits(),
         "Consumption units should be tCO2e");
   }
 
@@ -275,9 +275,9 @@ public class FeatureLiveTests {
     for (int year = 1; year <= 3; year++) {
       EngineResult result = LiveTestsUtil.getResult(resultsList.stream(), year, "App", "Sub1");
       assertNotNull(result, "Should have result for App/Sub1 in year " + year);
-      assertEquals(1000000.0, result.getGhgConsumption().getValue().doubleValue(), 0.0001,
+      assertEquals(1000000.0, result.getConsumption().getValue().doubleValue(), 0.0001,
           "Consumption should be 1000000 tCO2e in year " + year);
-      assertEquals("tCO2e", result.getGhgConsumption().getUnits(),
+      assertEquals("tCO2e", result.getConsumption().getUnits(),
           "Consumption units should be tCO2e");
     }
 
@@ -285,9 +285,9 @@ public class FeatureLiveTests {
     for (int year = 1; year <= 3; year++) {
       EngineResult result = LiveTestsUtil.getResult(resultsList.stream(), year, "App", "Sub2");
       assertNotNull(result, "Should have result for App/Sub2 in year " + year);
-      assertEquals(1000000.0, result.getGhgConsumption().getValue().doubleValue(), 0.0001,
+      assertEquals(1000000.0, result.getConsumption().getValue().doubleValue(), 0.0001,
           "Consumption should be 1000000 tCO2e in year " + year);
-      assertEquals("tCO2e", result.getGhgConsumption().getUnits(),
+      assertEquals("tCO2e", result.getConsumption().getUnits(),
           "Consumption units should be tCO2e");
     }
 
@@ -295,9 +295,9 @@ public class FeatureLiveTests {
     for (int year = 1; year <= 3; year++) {
       EngineResult result = LiveTestsUtil.getResult(resultsList.stream(), year, "App", "Sub3");
       assertNotNull(result, "Should have result for App/Sub3 in year " + year);
-      assertEquals(1000000.0, result.getGhgConsumption().getValue().doubleValue(), 0.0001,
+      assertEquals(1000000.0, result.getConsumption().getValue().doubleValue(), 0.0001,
           "Consumption should be 1000000 tCO2e in year " + year);
-      assertEquals("tCO2e", result.getGhgConsumption().getUnits(),
+      assertEquals("tCO2e", result.getConsumption().getUnits(),
           "Consumption units should be tCO2e");
     }
   }
@@ -409,9 +409,9 @@ public class FeatureLiveTests {
     assertNotNull(result, "Should have result for test/test in year 1");
 
     // Check consumption value - should be 250 tCO2e (50% of original 500 tCO2e)
-    assertEquals(250.0, result.getGhgConsumption().getValue().doubleValue(), 0.0001,
+    assertEquals(250.0, result.getConsumption().getValue().doubleValue(), 0.0001,
         "Consumption should be 250 tCO2e");
-    assertEquals("tCO2e", result.getGhgConsumption().getUnits(),
+    assertEquals("tCO2e", result.getConsumption().getUnits(),
         "Consumption units should be tCO2e");
   }
 
@@ -440,9 +440,9 @@ public class FeatureLiveTests {
         "Domestic units should be kg");
 
     // Check consumption value - should be 550 tCO2e (110 mt * 5 tCO2e/mt)
-    assertEquals(550.0, result.getGhgConsumption().getValue().doubleValue(), 0.0001,
+    assertEquals(550.0, result.getConsumption().getValue().doubleValue(), 0.0001,
         "Consumption should be 550 tCO2e");
-    assertEquals("tCO2e", result.getGhgConsumption().getUnits(),
+    assertEquals("tCO2e", result.getConsumption().getUnits(),
         "Consumption units should be tCO2e");
   }
 
@@ -465,9 +465,9 @@ public class FeatureLiveTests {
     assertNotNull(result, "Should have result for test/test in year 1");
 
     // Check consumption value - should be 30 tCO2e (30 mt * 1 tCO2e/mt)
-    assertEquals(30.0, result.getGhgConsumption().getValue().doubleValue(), 0.0001,
+    assertEquals(30.0, result.getConsumption().getValue().doubleValue(), 0.0001,
         "Consumption should be 30 tCO2e");
-    assertEquals("tCO2e", result.getGhgConsumption().getUnits(),
+    assertEquals("tCO2e", result.getConsumption().getUnits(),
         "Consumption units should be tCO2e");
   }
 
@@ -499,10 +499,10 @@ public class FeatureLiveTests {
 
     // Check consumption values - should be between 300 and 700 tCO2e
     for (EngineResult result : testResults) {
-      double consumption = result.getGhgConsumption().getValue().doubleValue();
+      double consumption = result.getConsumption().getValue().doubleValue();
       assertTrue(consumption >= 300.0 && consumption <= 700.0,
           "Consumption should be between 300 and 700 tCO2e");
-      assertEquals("tCO2e", result.getGhgConsumption().getUnits(),
+      assertEquals("tCO2e", result.getConsumption().getUnits(),
           "Consumption units should be tCO2e");
     }
   }

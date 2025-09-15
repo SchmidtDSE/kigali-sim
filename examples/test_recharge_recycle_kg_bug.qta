@@ -22,7 +22,7 @@ start policy "RecyclePolicy"
   modify application "TestApp"
     
     modify substance "HFC-134a"
-      recover 50 % with 90 % reuse during years 1 to onwards
+      recover 50 % with 90 % reuse with 0 % induction during years 1 to onwards
     end substance
 
   end application

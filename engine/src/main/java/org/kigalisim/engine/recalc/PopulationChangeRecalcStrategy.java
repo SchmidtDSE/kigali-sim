@@ -40,7 +40,6 @@ public class PopulationChangeRecalcStrategy implements RecalcStrategy {
   public PopulationChangeRecalcStrategy(Optional<UseKey> scope, Optional<Boolean> useExplicitRecharge) {
     this.scope = scope;
     this.useExplicitRecharge = useExplicitRecharge;
-
   }
 
   @Override
@@ -63,7 +62,7 @@ public class PopulationChangeRecalcStrategy implements RecalcStrategy {
     EngineNumber priorPopulation = unitConverter.convert(priorPopulationRaw, "units");
     stateGetter.setPopulation(priorPopulation);
 
-    // Get substance sales
+    // Get substance sales (includes domestic + import + recycle)
     EngineNumber substanceSalesRaw = target.getStream("sales", Optional.of(scopeEffective), Optional.empty());
     EngineNumber substanceSales = unitConverter.convert(substanceSalesRaw, "kg");
 

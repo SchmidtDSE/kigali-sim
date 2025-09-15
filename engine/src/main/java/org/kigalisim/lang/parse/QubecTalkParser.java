@@ -27,7 +27,7 @@ public class QubecTalkParser {
 
   /**
    * Preprocesses QubecTalk input to handle "each year" syntax sugar.
-   * 
+   *
    * <p>Removes standalone "each year" or "each years" at the end of lines to prevent
    * parser ambiguity while preserving them within "during" clauses.</p>
    *

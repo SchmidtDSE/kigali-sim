@@ -49,7 +49,7 @@ public class ReferenceLiveTests {
         "Domestic Refrigeration", "HFC-134a");
     assertNotNull(record, "Should have result for Domestic Refrigeration/HFC-134a in 2030");
 
-    assertTrue(record.getGhgConsumption().getValue().doubleValue() > 0,
+    assertTrue(record.getConsumption().getValue().doubleValue() > 0,
         "Should have non-zero consumption for Domestic Refrigeration HFC-134a in 2030");
   }
 

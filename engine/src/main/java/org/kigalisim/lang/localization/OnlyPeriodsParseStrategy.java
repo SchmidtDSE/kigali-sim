@@ -11,7 +11,6 @@ package org.kigalisim.lang.localization;
 
 import java.math.BigDecimal;
 import java.util.regex.Pattern;
-import org.kigalisim.lang.localization.FlexibleNumberParseResult;
 
 /**
  * Parse strategy for numbers with only period separators.
@@ -142,7 +141,7 @@ public class OnlyPeriodsParseStrategy implements NumberParseUtilStrategy {
         return new FlexibleNumberParseResult("Invalid thousands separator format: '" + numberStr + "'");
       }
     }
-    
+
     return new FlexibleNumberParseResult(new BigDecimal("0")); // Success case
   }
 

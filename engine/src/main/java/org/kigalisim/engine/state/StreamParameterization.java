@@ -64,8 +64,8 @@ public class StreamParameterization {
     recoveryRateEol = new EngineNumber(BigDecimal.ZERO, "%");
     yieldRateEol = new EngineNumber(BigDecimal.ZERO, "%");
     retirementRate = new EngineNumber(BigDecimal.ZERO, "%");
-    inductionRateRecharge = new EngineNumber(BigDecimal.ZERO, "%");
-    inductionRateEol = new EngineNumber(BigDecimal.ZERO, "%");
+    inductionRateRecharge = new EngineNumber(new BigDecimal("100"), "%");
+    inductionRateEol = new EngineNumber(new BigDecimal("100"), "%");
   }
 
 
@@ -400,15 +400,17 @@ public class StreamParameterization {
   /**
    * Reset state at the beginning of a timestep.
    *
-   * <p>This method resets recovery rate and induction rate to 0% between years since recycling
-   * programs may cease and should not be expected to continue unchanged.</p>
+   * <p>This method resets recovery rate to 0% and induction rate to 100% between years since
+   * recycling programs may cease and should not be expected to continue unchanged, but
+   * default induction behavior should return to induced demand (100%).</p>
    */
   public void resetStateAtTimestep() {
-    // Reset recovery and induction to 0% between years since recycling programs may cease
+    // Reset recovery to 0% between years since recycling programs may cease
     recoveryRateRecharge = new EngineNumber(BigDecimal.ZERO, "%");
     recoveryRateEol = new EngineNumber(BigDecimal.ZERO, "%");
-    inductionRateRecharge = new EngineNumber(BigDecimal.ZERO, "%");
-    inductionRateEol = new EngineNumber(BigDecimal.ZERO, "%");
+    // Reset induction to 100% (default induced demand behavior)
+    inductionRateRecharge = new EngineNumber(new BigDecimal("100"), "%");
+    inductionRateEol = new EngineNumber(new BigDecimal("100"), "%");
   }
 
   /**

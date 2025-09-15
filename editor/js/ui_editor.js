@@ -3457,21 +3457,21 @@ function initRecycleCommandUi(itemObj, root, codeObj, context, streamUpdater) {
   setFieldValue(
     root.querySelector(".recycle-induction-amount-input"),
     itemObj,
-    "default",
+    "100",
     (x) => {
       if (x && x.getInduction) {
         const induction = x.getInduction();
         if (induction === null) {
-          return "default";
+          return "100";
         } else if (induction === "default") {
-          return "default";
+          return "100";
         } else if (induction instanceof EngineNumber) {
           return induction.getValue().toString();
         } else {
           return induction.toString();
         }
       } else {
-        return "default";
+        return "100";
       }
     },
   );
@@ -3484,6 +3484,33 @@ function initRecycleCommandUi(itemObj, root, codeObj, context, streamUpdater) {
     new YearMatcher(new ParsedYear(2), new ParsedYear(10)),
     true,
   );
+}
+
+/**
+ * Validates and normalizes induction input values.
+ *
+ * @param {string} rawValue - The raw input value
+ * @returns {string|EngineNumber} Normalized induction value
+ */
+function validateInductionInput(rawValue) {
+  if (rawValue === "") {
+    throw new Error("Induction rate is required. Please enter a value between 0-100.");
+  }
+
+  if (rawValue === "default") {
+    return "default";
+  }
+
+  const numValue = parseFloat(rawValue);
+  if (isNaN(numValue)) {
+    throw new Error(`Invalid induction rate: "${rawValue}". Must be a number between 0-100.`);
+  }
+
+  if (numValue < 0 || numValue > 100) {
+    throw new Error(`Induction rate ${numValue}% is out of range. Must be between 0-100%.`);
+  }
+
+  return new EngineNumber(numValue, "%", rawValue.trim());
 }
 
 /**
@@ -3502,22 +3529,11 @@ function readRecycleCommandUi(root) {
     root.querySelector(".recycle-reuse-units-input"),
   );
 
-  // Add induction handling
-  const inductionRaw = getFieldValue(root.querySelector(".recycle-induction-amount-input"));
-  let induction = null;
-  if (inductionRaw === "" || inductionRaw === "default") {
-    induction = "default";
-  } else {
-    // Parse as percentage
-    const inductionValue = parseFloat(inductionRaw);
-    if (!isNaN(inductionValue) && inductionValue >= 0 && inductionValue <= 100) {
-      induction = new EngineNumber(inductionValue, "%", inductionRaw.trim());
-    } else {
-      // Invalid input - show warning and use default
-      console.warn(`Invalid induction rate: ${inductionRaw}. Using default instead.`);
-      induction = "default";
-    }
-  }
+  // Add induction handling with validation
+  const inductionRaw = getFieldValue(
+    root.querySelector(".recycle-induction-amount-input"),
+  );
+  const induction = validateInductionInput(inductionRaw);
 
   const stage = getFieldValue(root.querySelector(".recycle-stage-input"));
   const duration = readDurationUi(root.querySelector(".duration-subcomponent"));

@@ -155,23 +155,30 @@ This is available for `cap`, `floor`, and `recover`.
 
 ### Recycling Stages and Induction
 The `recover` command supports specifying when recycling occurs and how much induced demand it creates:
-- `recover {amount} with {amount} reuse` - Defaults to recycling at recharge (service) time with default induction
+- `recover {amount} with {amount} reuse` - Defaults to recycling at recharge (service) time with 100% induction (induced demand behavior)
 - `recover {amount} with {amount} reuse with {amount} induction` - Explicit induction percentage (0-100%)
-- `recover {amount} with {amount} reuse with default induction` - Uses default behavior
+- `recover {amount} with {amount} reuse with default induction` - Uses 100% induction (induced demand behavior)
 - `recover {amount} with {amount} reuse at recharge` - Explicitly specifies recycling at service time
 - `recover {amount} with {amount} reuse at eol` - Specifies recycling at end-of-life (retirement)
 
 **Induction Control**: Induction determines how much recycled material adds to the market versus displaces virgin production:
 - **Units-based specs**: Default 0% induction (displacement behavior) - recycling reduces virgin sales to maintain steady population
 - **Non-units specs (kg/mt)**: Default 100% induction (induced demand behavior) - recycling adds on top of existing demand
+- **Explicit specification**: Users can override defaults by specifying exact percentages (0-100%)
 
 Examples:
 ```
-recover 20 % with 80 % reuse at recharge
-recover 15 % with 75 % reuse with 50 % induction at eol
-recover 10 % with 90 % reuse with default induction during years 3 to 5
-recover 25 % with 85 % reuse with 0 % induction during year 2027 to onwards
+recover 20 % with 80 % reuse at recharge              # Uses default: 0% for units, 100% for volume
+recover 15 % with 75 % reuse with 50 % induction at eol   # Explicit 50% induction
+recover 10 % with 90 % reuse with default induction during years 3 to 5   # Uses default behavior
+recover 25 % with 85 % reuse with 0 % induction during year 2027 to onwards   # Full displacement
+recover 30 % with 95 % reuse with 100 % induction at eol  # Full induced demand
 ```
+
+**Behavioral Differences**:
+- **0% Induction (Displacement)**: Recycled material reduces virgin material demand. Total equipment population stays constant.
+- **100% Induction (Induced Demand)**: Recycled material adds to total supply. Equipment population increases due to additional material availability.
+- **Partial Induction (Mixed)**: Combines both behaviors proportionally.
 
 ## Example QubecTalk Program
 

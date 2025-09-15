@@ -102,21 +102,21 @@ public class NumberParseUtilTest {
   @Test
   public void testEuropeanFormatRejection() {
     // Test European format detection and error messages
-    
+
     // Mixed European format (periods for thousands, comma for decimal)
     FlexibleNumberParseResult result1 = numberParser.parseFlexibleNumber("123.456,789");
     assertTrue(result1.isError());
     assertTrue(result1.getError().get().contains("Unsupported number format"));
     assertTrue(result1.getError().get().contains("123,456.789"));
-    
+
     FlexibleNumberParseResult result2 = numberParser.parseFlexibleNumber("1.234.567,89");
     assertTrue(result2.isError());
     assertTrue(result2.getError().get().contains("Unsupported number format"));
     assertTrue(result2.getError().get().contains("1,234,567.89"));
-    
+
     // Note: Single comma decimals like "123,45" are now accepted as UK format
     // The main European format patterns we reject are mixed formats and multiple periods
-    
+
     // European thousands separators (multiple periods)
     FlexibleNumberParseResult result3 = numberParser.parseFlexibleNumber("1.234.567");
     assertTrue(result3.isError());
@@ -175,7 +175,7 @@ public class NumberParseUtilTest {
     FlexibleNumberParseResult result1 = numberParser.parseFlexibleNumber("1.234.567");
     assertTrue(result1.isError());
     assertTrue(result1.getError().get().contains("Unsupported number format"));
-    
+
     FlexibleNumberParseResult result2 = numberParser.parseFlexibleNumber("12.345.678");
     assertTrue(result2.isError());
     assertTrue(result2.getError().get().contains("Unsupported number format"));
@@ -191,7 +191,7 @@ public class NumberParseUtilTest {
     assertTrue(result1.isError());
     assertTrue(result1.getError().get().contains("Unsupported number format"));
     assertTrue(result1.getError().get().contains("1,234.56"));
-    
+
     FlexibleNumberParseResult result2 = numberParser.parseFlexibleNumber("123.456,789");
     assertTrue(result2.isError());
     assertTrue(result2.getError().get().contains("Unsupported number format"));
@@ -267,7 +267,7 @@ public class NumberParseUtilTest {
     // UK format should work
     assertParseEquals(new BigDecimal("123456789012345"), "123,456,789,012,345");
     assertParseEquals(new BigDecimal("123456789012345.67"), "123,456,789,012,345.67");
-    
+
     // European format should be rejected
     FlexibleNumberParseResult result = numberParser.parseFlexibleNumber("123.456.789.012.345,67");
     assertTrue(result.isError());
@@ -282,7 +282,7 @@ public class NumberParseUtilTest {
     assertParseEquals(new BigDecimal("1"), "1");
     assertParseEquals(new BigDecimal("-1"), "-1");
     assertParseEquals(new BigDecimal("0.1"), "0.1");
-    
+
     // Single digit comma decimals should be rejected as European format
     FlexibleNumberParseResult result = numberParser.parseFlexibleNumber("0,1");
     assertTrue(result.isError());
@@ -335,7 +335,7 @@ public class NumberParseUtilTest {
     assertParseEquals(new BigDecimal("0"), "0");
     assertParseEquals(new BigDecimal("0.0"), "0.0");
     assertParseEquals(new BigDecimal("0"), "0000");
-    
+
     // Zero with comma decimal should be rejected as European format
     FlexibleNumberParseResult result = numberParser.parseFlexibleNumber("0,0");
     assertTrue(result.isError());

@@ -20,7 +20,7 @@ start policy "intervention"
   modify application "test"
     
     modify substance "test"
-      recover 1000 units with 100 % reuse during year 2
+      recover 1000 units with 100 % reuse with 0 % induction during year 2
     end substance
 
   end application

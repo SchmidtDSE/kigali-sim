@@ -12,7 +12,7 @@ You will be provided with a path to a markdown file that describes a specific co
 
 1. **Initial Context Review**: First, thoroughly review the following project documentation in this order:
    - README.md - to understand the project's overall structure and purpose
-   - llms.txt - to understand any LLM-specific conventions or guidelines
+   - llms-full.txt - to understand any LLM-specific conventions or guidelines
    - DEVELOPING.md - to understand development practices and contribution guidelines
 
 2. **Specification Analysis**: Carefully review the provided markdown specification file and:

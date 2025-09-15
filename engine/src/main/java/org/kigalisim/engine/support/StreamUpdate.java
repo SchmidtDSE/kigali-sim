@@ -2,15 +2,20 @@ package org.kigalisim.engine.support;
 
 import java.util.Optional;
 import org.kigalisim.engine.number.EngineNumber;
+import org.kigalisim.engine.recalc.SalesStreamDistribution;
 import org.kigalisim.engine.state.UseKey;
 import org.kigalisim.engine.state.YearMatcher;
 
 /**
- * Immutable class representing a stream update operation.
+ * Immutable class representing stream calculation instructions.
  *
- * <p>Contains all parameters needed to execute a stream update operation in the engine,
- * including the stream name, value, timing constraints, scope, and various behavioral flags.</p>
+ * <p>Contains parameters needed to execute a stream calculation operation in the engine,
+ * including timing constraints, scope, and behavioral flags. This class provides the
+ * "instructions" for how to calculate stream values, while CalculatedStream contains
+ * the pre-computed "results" ready for storage.</p>
  *
+ * <p>Use StreamUpdate for operations that need calculation logic (set, change, cap, floor).
+ * Use CalculatedStream for setting pre-calculated values (recalc strategies, emissions).</p>
  *
  * @license BSD-3-Clause
  */
@@ -23,6 +28,7 @@ public final class StreamUpdate {
   private final Optional<String> unitsToRecord;
   private final boolean subtractRecycling;
   private final boolean forceUseFullRecharge;
+  private final Optional<SalesStreamDistribution> distribution;
 
   /**
    * Package-private constructor for creating a StreamUpdate instance.
@@ -36,10 +42,12 @@ public final class StreamUpdate {
    * @param unitsToRecord optional units string to record for this operation
    * @param subtractRecycling whether recycling should be subtracted from the value
    * @param forceUseFullRecharge whether to force full recharge for sales substreams
+   * @param distribution optional pre-calculated distribution for sales streams
    */
   StreamUpdate(String name, EngineNumber value, Optional<YearMatcher> yearMatcher,
                Optional<UseKey> key, boolean propagateChanges, Optional<String> unitsToRecord,
-               boolean subtractRecycling, boolean forceUseFullRecharge) {
+               boolean subtractRecycling, boolean forceUseFullRecharge,
+               Optional<SalesStreamDistribution> distribution) {
     this.name = name;
     this.value = value;
     this.yearMatcher = yearMatcher;
@@ -48,6 +56,7 @@ public final class StreamUpdate {
     this.unitsToRecord = unitsToRecord;
     this.subtractRecycling = subtractRecycling;
     this.forceUseFullRecharge = forceUseFullRecharge;
+    this.distribution = distribution;
   }
 
   /**
@@ -128,5 +137,15 @@ public final class StreamUpdate {
    */
   public boolean getForceUseFullRecharge() {
     return forceUseFullRecharge;
+  }
+
+  /**
+   * Gets the optional pre-calculated distribution for sales streams.
+   *
+   *
+   * @return optional sales stream distribution, empty if none specified
+   */
+  public Optional<SalesStreamDistribution> getDistribution() {
+    return distribution;
   }
 }
