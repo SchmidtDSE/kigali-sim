@@ -84,7 +84,7 @@ public class RetireRecalcStrategy implements RecalcStrategy {
         .setUseKey(scopeEffective)
         .setName("priorEquipment")
         .setValue(newPrior)
-        .asOutcomeStream()
+        .setSubtractRecycling(false)
         .build();
     streamKeeper.update(priorEquipmentStream);
 
@@ -92,7 +92,7 @@ public class RetireRecalcStrategy implements RecalcStrategy {
         .setUseKey(scopeEffective)
         .setName("equipment")
         .setValue(newEquipment)
-        .asOutcomeStream()
+        .setSubtractRecycling(false)
         .build();
     streamKeeper.update(equipmentStream);
 
@@ -105,7 +105,7 @@ public class RetireRecalcStrategy implements RecalcStrategy {
         .setUseKey(scopeEffective)
         .setName("retired")
         .setValue(newRetired)
-        .asOutcomeStream()
+        .setSubtractRecycling(false)
         .build();
     streamKeeper.update(retiredStream);
 

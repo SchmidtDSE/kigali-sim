@@ -179,7 +179,7 @@ public class SimulationStateTest {
         .setUseKey(testScope)
         .setName("domestic")
         .setValue(newValue)
-        .asSalesStream()
+        .setSubtractRecycling(true)
         .build();
     keeper.update(domesticStream);
 
@@ -207,7 +207,7 @@ public class SimulationStateTest {
         .setUseKey(testScope)
         .setName("domestic")
         .setValue(new EngineNumber(new BigDecimal("50"), "kg"))
-        .asOutcomeStream()
+        .setSubtractRecycling(false)
         .build();
     keeper.update(domesticStream);
 
@@ -215,7 +215,7 @@ public class SimulationStateTest {
         .setUseKey(testScope)
         .setName("import")
         .setValue(new EngineNumber(new BigDecimal("30"), "kg"))
-        .asOutcomeStream()
+        .setSubtractRecycling(false)
         .build();
     keeper.update(importStream);
 
@@ -223,7 +223,7 @@ public class SimulationStateTest {
         .setUseKey(testScope)
         .setName("recycle")
         .setValue(new EngineNumber(new BigDecimal("10"), "kg"))
-        .asOutcomeStream()
+        .setSubtractRecycling(false)
         .build();
     keeper.update(recycleStream);
 
@@ -304,7 +304,7 @@ public class SimulationStateTest {
         .setUseKey(testScope)
         .setName("equipment")
         .setValue(new EngineNumber(new BigDecimal("150"), "units"))
-        .asOutcomeStream()
+        .setSubtractRecycling(false)
         .build();
     keeper.update(equipmentStream);
 
@@ -332,7 +332,7 @@ public class SimulationStateTest {
           .setUseKey(unknownScope)
           .setName("domestic")
           .setValue(new EngineNumber(new BigDecimal("100"), "kg"))
-          .asOutcomeStream()
+          .setSubtractRecycling(false)
           .build();
       keeper.update(testStream);
     }, "Should throw for unknown substance in setStream");
@@ -365,7 +365,7 @@ public class SimulationStateTest {
           .setUseKey(testScope)
           .setName("unknown_stream")
           .setValue(new EngineNumber(new BigDecimal("100"), "kg"))
-          .asOutcomeStream()
+          .setSubtractRecycling(false)
           .build();
       keeper.update(testStream);
     }, "Should throw for unknown stream in setStream");
@@ -426,7 +426,7 @@ public class SimulationStateTest {
         .setUseKey(testScope)
         .setName("domestic")
         .setValue(new EngineNumber(new BigDecimal("10"), "units"))
-        .asSalesStream()
+        .setSubtractRecycling(true)
         .build();
     keeper.update(domesticUnitsStream);
 
@@ -460,7 +460,7 @@ public class SimulationStateTest {
           .setUseKey(testScope)
           .setName("domestic")
           .setValue(new EngineNumber(new BigDecimal("10"), "units"))
-          .asSalesStream()
+          .setSubtractRecycling(true)
           .build();
       keeper.update(testStream);
     }, "Should throw exception when initial charge is zero");
@@ -485,7 +485,7 @@ public class SimulationStateTest {
           .setUseKey(testScope)
           .setName("domestic")
           .setValue(new EngineNumber(new BigDecimal("10"), "kg"))
-          .asSalesStream()
+          .setSubtractRecycling(true)
           .build();
       keeper.update(testStream);
     }, "Should throw exception when stream is not enabled and value is non-zero");
@@ -506,7 +506,7 @@ public class SimulationStateTest {
         .setUseKey(testScope)
         .setName("domestic")
         .setValue(new EngineNumber(BigDecimal.ZERO, "kg"))
-        .asSalesStream()
+        .setSubtractRecycling(true)
         .build();
     keeper.update(zeroStream);
 
@@ -533,7 +533,7 @@ public class SimulationStateTest {
         .setUseKey(testScope)
         .setName("domestic")
         .setValue(new EngineNumber(new BigDecimal("10"), "kg"))
-        .asSalesStream()
+        .setSubtractRecycling(true)
         .build();
     keeper.update(nonZeroStream);
 
@@ -740,7 +740,7 @@ public class SimulationStateTest {
         .setUseKey(testScope)
         .setName("domestic")
         .setValue(new EngineNumber(new BigDecimal("100"), "kg"))
-        .asOutcomeStream()
+        .setSubtractRecycling(false)
         .build();
     keeper.update(domesticInitialStream);
 
@@ -748,7 +748,7 @@ public class SimulationStateTest {
         .setUseKey(testScope)
         .setName("import")
         .setValue(new EngineNumber(new BigDecimal("50"), "kg"))
-        .asOutcomeStream()
+        .setSubtractRecycling(false)
         .build();
     keeper.update(importInitialStream);
 
@@ -757,7 +757,7 @@ public class SimulationStateTest {
         .setUseKey(testScope)
         .setName("recycleRecharge")
         .setValue(new EngineNumber(new BigDecimal("40"), "kg"))
-        .asOutcomeStream()
+        .setSubtractRecycling(false)
         .build();
     keeper.update(recycleRechargeStream);
 
@@ -765,7 +765,7 @@ public class SimulationStateTest {
         .setUseKey(testScope)
         .setName("recycleEol")
         .setValue(new EngineNumber(new BigDecimal("10"), "kg"))
-        .asOutcomeStream()
+        .setSubtractRecycling(false)
         .build();
     keeper.update(recycleEolStream);
 
@@ -781,7 +781,6 @@ public class SimulationStateTest {
         .setValue(domesticValue)
         .setSubtractRecycling(true)
         .setDistribution(distribution)
-        .setSalesDistributionRequired(true)
         .build();
 
     keeper.update(calculatedStream);
@@ -822,7 +821,7 @@ public class SimulationStateTest {
   }
 
   /**
-   * Test setStream with SimulationStateUpdate using asOutcomeStream convenience method.
+   * Test setStream with SimulationStateUpdate using explicit setSubtractRecycling(false).
    */
   @Test
   public void testSetStreamWithSimulationStateUpdateAsOutcomeStream() {
@@ -836,7 +835,7 @@ public class SimulationStateTest {
         .setUseKey(testScope)
         .setName("consumption")
         .setValue(value)
-        .asOutcomeStream()
+        .setSubtractRecycling(false)
         .build();
 
     keeper.update(outcomeStream);
@@ -848,7 +847,7 @@ public class SimulationStateTest {
   }
 
   /**
-   * Test setStream with SimulationStateUpdate using asSalesStream convenience method.
+   * Test setStream with SimulationStateUpdate using explicit setSubtractRecycling(true).
    */
   @Test
   public void testSetStreamWithSimulationStateUpdateAsSalesStream() {
@@ -865,7 +864,7 @@ public class SimulationStateTest {
         .setUseKey(testScope)
         .setName("import")
         .setValue(value)
-        .asSalesStream()
+        .setSubtractRecycling(true)
         .build();
 
     keeper.update(salesStream);
@@ -897,14 +896,14 @@ public class SimulationStateTest {
         .setUseKey(testScope)
         .setName("domestic")
         .setValue(domesticValue)
-        .asOutcomeStream()
+        .setSubtractRecycling(false)
         .build();
 
     SimulationStateUpdate importStream = new SimulationStateUpdateBuilder()
         .setUseKey(testScope)
         .setName("import")
         .setValue(importValue)
-        .asOutcomeStream()
+        .setSubtractRecycling(false)
         .build();
 
     keeper.update(domesticStream);
@@ -938,7 +937,7 @@ public class SimulationStateTest {
         .setUseKey(testScope)
         .setName("domestic")
         .setValue(unitsValue)
-        .asOutcomeStream()
+        .setSubtractRecycling(false)
         .build();
 
     keeper.update(calculatedStream);

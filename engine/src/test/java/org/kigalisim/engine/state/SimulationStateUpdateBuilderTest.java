@@ -43,13 +43,13 @@ public class SimulationStateUpdateBuilderTest {
 
     SimulationStateUpdate stream = new SimulationStateUpdateBuilder()
         .setUseKey(useKey)
-        .setName("domestic")
+        .setName("equipment")
         .setValue(value)
         .build();
 
     assertNotNull(stream, "Built stream should not be null");
     assertEquals(useKey, stream.getUseKey(), "UseKey should match");
-    assertEquals("domestic", stream.getName(), "Name should match");
+    assertEquals("equipment", stream.getName(), "Name should match");
     assertEquals(value, stream.getValue(), "Value should match");
     assertTrue(stream.getSubtractRecycling(), "Should default to recycling subtraction enabled");
     assertEquals(Optional.empty(), stream.getDistribution(), "Should default to empty distribution");
@@ -95,28 +95,45 @@ public class SimulationStateUpdateBuilderTest {
   }
 
   /**
-   * Test building a stream with sales distribution required.
+   * Test automatic inference of sales distribution for sales streams.
    */
   @Test
-  public void testBuildWithSalesDistributionRequired() {
+  public void testAutomaticSalesDistributionInference() {
     Scope useKey = new Scope("test", "app", "substance");
-    EngineNumber value = new EngineNumber(new BigDecimal("25"), "units");
+    EngineNumber value = new EngineNumber(new BigDecimal("25"), "kg");
 
-    SimulationStateUpdate stream = new SimulationStateUpdateBuilder()
-        .setUseKey(useKey)
-        .setName("equipment")
-        .setValue(value)
-        .setSalesDistributionRequired(true)
-        .build();
+    // Test sales stream names
+    String[] salesStreams = {"sales", "domestic", "import", "export"};
+    for (String streamName : salesStreams) {
+      SimulationStateUpdate stream = new SimulationStateUpdateBuilder()
+          .setUseKey(useKey)
+          .setName(streamName)
+          .setValue(value)
+          .build();
 
-    assertTrue(stream.isSalesDistributionRequired(), "Should require sales distribution");
+      assertTrue(stream.isSalesDistributionRequired(),
+          "Stream '" + streamName + "' should require sales distribution");
+    }
+
+    // Test non-sales stream names
+    String[] nonSalesStreams = {"equipment", "consumption", "recycle", "eolEmissions"};
+    for (String streamName : nonSalesStreams) {
+      SimulationStateUpdate stream = new SimulationStateUpdateBuilder()
+          .setUseKey(useKey)
+          .setName(streamName)
+          .setValue(value)
+          .build();
+
+      assertFalse(stream.isSalesDistributionRequired(),
+          "Stream '" + streamName + "' should not require sales distribution");
+    }
   }
 
   /**
-   * Test the asOutcomeStream convenience method.
+   * Test explicit setSubtractRecycling method for outcome streams.
    */
   @Test
-  public void testAsOutcomeStream() {
+  public void testExplicitOutcomeStream() {
     Scope useKey = new Scope("test", "app", "substance");
     EngineNumber value = new EngineNumber(new BigDecimal("30"), "tCO2e");
 
@@ -124,7 +141,8 @@ public class SimulationStateUpdateBuilderTest {
         .setUseKey(useKey)
         .setName("consumption")
         .setValue(value)
-        .asOutcomeStream()
+        .setSubtractRecycling(false)
+        .clearDistribution()
         .build();
 
     assertFalse(stream.getSubtractRecycling(), "Outcome stream should not subtract recycling");
@@ -133,10 +151,10 @@ public class SimulationStateUpdateBuilderTest {
   }
 
   /**
-   * Test the asSalesStream convenience method.
+   * Test explicit setSubtractRecycling method for sales streams.
    */
   @Test
-  public void testAsSalesStream() {
+  public void testExplicitSalesStream() {
     Scope useKey = new Scope("test", "app", "substance");
     EngineNumber value = new EngineNumber(new BigDecimal("80"), "kg");
 
@@ -144,11 +162,11 @@ public class SimulationStateUpdateBuilderTest {
         .setUseKey(useKey)
         .setName("domestic")
         .setValue(value)
-        .asSalesStream()
+        .setSubtractRecycling(true)
         .build();
 
     assertTrue(stream.getSubtractRecycling(), "Sales stream should subtract recycling");
-    assertTrue(stream.isSalesDistributionRequired(), "Sales stream should require distribution");
+    assertTrue(stream.isSalesDistributionRequired(), "Sales stream should require distribution (auto-inferred)");
   }
 
   /**
@@ -213,7 +231,6 @@ public class SimulationStateUpdateBuilderTest {
         .setValue(value)
         .setSubtractRecycling(true)
         .setDistribution(distribution)
-        .setSalesDistributionRequired(true)
         .build();
 
     assertEquals(useKey, stream.getUseKey(), "All chained values should be set");

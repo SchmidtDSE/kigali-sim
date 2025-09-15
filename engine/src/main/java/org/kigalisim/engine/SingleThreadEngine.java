@@ -271,7 +271,7 @@ public class SingleThreadEngine implements Engine {
           .setUseKey(keyEffective)
           .setName("implicitRecharge")
           .setValue(rechargeVolume)
-          .asOutcomeStream()
+          .setSubtractRecycling(false)
           .build();
       streamKeeper.update(implicitRechargeStream);
 
@@ -293,7 +293,7 @@ public class SingleThreadEngine implements Engine {
           .setUseKey(keyEffective)
           .setName("implicitRecharge")
           .setValue(new EngineNumber(BigDecimal.ZERO, "kg"))
-          .asOutcomeStream()
+          .setSubtractRecycling(false)
           .build();
       streamKeeper.update(clearImplicitRechargeStream);
     }
@@ -305,7 +305,6 @@ public class SingleThreadEngine implements Engine {
         .setValue(valueToSet)
         .setSubtractRecycling(subtractRecycling)
         .setDistribution(update.getDistribution().orElse(null))
-        .setSalesDistributionRequired(isSalesStream(name))
         .build();
     streamKeeper.update(calculatedStream);
 
@@ -633,7 +632,7 @@ public class SingleThreadEngine implements Engine {
             .setUseKey(scope)
             .setName("implicitRecharge")
             .setValue(new EngineNumber(BigDecimal.ZERO, "kg"))
-            .asOutcomeStream()
+            .setSubtractRecycling(false)
             .build();
         streamKeeper.update(clearImplicitRechargeStream);
       }

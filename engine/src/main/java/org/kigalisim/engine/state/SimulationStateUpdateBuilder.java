@@ -3,7 +3,6 @@ package org.kigalisim.engine.state;
 import java.util.Optional;
 import org.kigalisim.engine.number.EngineNumber;
 import org.kigalisim.engine.recalc.SalesStreamDistribution;
-import org.kigalisim.engine.state.UseKey;
 
 /**
  * Builder for creating SimulationStateUpdate instances.
@@ -17,7 +16,6 @@ public final class SimulationStateUpdateBuilder {
   private EngineNumber value;
   private boolean subtractRecycling = true;  // Default to recycling logic for backward compatibility
   private Optional<SalesStreamDistribution> distribution = Optional.empty();
-  private boolean salesDistributionRequired = false;  // Default for outcome streams
 
   /**
    * Creates a new SimulationStateUpdateBuilder with default values.
@@ -92,42 +90,21 @@ public final class SimulationStateUpdateBuilder {
   }
 
   /**
-   * Sets whether this stream requires sales distribution logic.
+   * Determines if a stream name requires sales distribution logic.
    *
-   * @param salesDistributionRequired whether sales distribution is required
-   * @return this builder
+   * <p>Sales streams include: "sales", "domestic", "import", "export"</p>
+   *
+   * @param streamName the name of the stream
+   * @return true if the stream requires sales distribution logic
    */
-  public SimulationStateUpdateBuilder setSalesDistributionRequired(boolean salesDistributionRequired) {
-    this.salesDistributionRequired = salesDistributionRequired;
-    return this;
-  }
-
-  /**
-   * Convenience method to configure this as an outcome stream.
-   *
-   * <p>Outcome streams don't require sales distribution logic and typically
-   * don't use recycling subtraction.</p>
-   *
-   * @return this builder
-   */
-  public SimulationStateUpdateBuilder asOutcomeStream() {
-    this.subtractRecycling = false;
-    this.salesDistributionRequired = false;
-    this.distribution = Optional.empty();
-    return this;
-  }
-
-  /**
-   * Convenience method to configure this as a sales stream.
-   *
-   * <p>Sales streams require distribution logic and typically use recycling subtraction.</p>
-   *
-   * @return this builder
-   */
-  public SimulationStateUpdateBuilder asSalesStream() {
-    this.subtractRecycling = true;
-    this.salesDistributionRequired = true;
-    return this;
+  private static boolean inferSalesDistributionRequired(String streamName) {
+    if (streamName == null) {
+      return false;
+    }
+    return "sales".equals(streamName)
+        || "domestic".equals(streamName)
+        || "import".equals(streamName)
+        || "export".equals(streamName);
   }
 
   /**
@@ -153,7 +130,7 @@ public final class SimulationStateUpdateBuilder {
         value,
         subtractRecycling,
         distribution,
-        salesDistributionRequired
+        inferSalesDistributionRequired(name)
     );
   }
 }

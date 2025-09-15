@@ -65,7 +65,7 @@ public class EolEmissionsRecalcStrategy implements RecalcStrategy {
         .setUseKey(scopeEffective)
         .setName("eolEmissions")
         .setValue(eolGhg)
-        .asOutcomeStream()
+        .setSubtractRecycling(false)
         .build();
     streamKeeper.update(eolEmissionsStream);
   }

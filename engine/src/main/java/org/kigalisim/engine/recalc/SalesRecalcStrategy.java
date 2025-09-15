@@ -137,7 +137,7 @@ public class SalesRecalcStrategy implements RecalcStrategy {
         .setUseKey(scopeEffective)
         .setName("recycleEol")
         .setValue(newRecycleEolValue)
-        .asOutcomeStream()
+        .setSubtractRecycling(false)
         .build();
     streamKeeper.update(recycleEolStream);
 
@@ -145,7 +145,7 @@ public class SalesRecalcStrategy implements RecalcStrategy {
         .setUseKey(scopeEffective)
         .setName("recycleRecharge")
         .setValue(newRecycleRechargeValue)
-        .asOutcomeStream()
+        .setSubtractRecycling(false)
         .build();
     streamKeeper.update(recycleRechargeStream);
 
@@ -155,7 +155,7 @@ public class SalesRecalcStrategy implements RecalcStrategy {
         .setUseKey(scopeEffective)
         .setName("recycle")
         .setValue(newRecycleValue)
-        .asOutcomeStream()
+        .setSubtractRecycling(false)
         .build();
     streamKeeper.update(recycleStream);
 
