@@ -16,6 +16,8 @@ import org.junit.jupiter.api.Test;
 import org.kigalisim.engine.Engine;
 import org.kigalisim.engine.SingleThreadEngine;
 import org.kigalisim.engine.number.EngineNumber;
+import org.kigalisim.engine.support.StreamUpdate;
+import org.kigalisim.engine.support.StreamUpdateBuilder;
 import org.kigalisim.lang.machine.PushDownMachine;
 import org.kigalisim.lang.machine.SingleThreadPushDownMachine;
 import org.kigalisim.lang.time.CalculatedTimePointFuture;
@@ -97,7 +99,13 @@ public class FloorOperationTest {
   public void testExecuteNoDuringNoDisplacementWithFlooring() {
     // Set up a stream with a value lower than the floor
     engine.enable("domestic", Optional.empty());
-    engine.setStream("domestic", new EngineNumber(BigDecimal.valueOf(20), "kg"), Optional.empty());
+    StreamUpdate update = new StreamUpdateBuilder()
+        .setName("domestic")
+        .setValue(new EngineNumber(BigDecimal.valueOf(20), "kg"))
+        .setYearMatcher(Optional.empty())
+        .inferSubtractRecycling()
+        .build();
+    engine.executeStreamUpdate(update);
 
     // Create a floor operation with a higher value
     EngineNumber number = new EngineNumber(BigDecimal.valueOf(42), "kg");
@@ -119,7 +127,13 @@ public class FloorOperationTest {
   public void testExecuteNoDuringNoDisplacementWithoutFlooring() {
     // Set up a stream with a value higher than the floor
     engine.enable("domestic", Optional.empty());
-    engine.setStream("domestic", new EngineNumber(BigDecimal.valueOf(100), "kg"), Optional.empty());
+    StreamUpdate update2 = new StreamUpdateBuilder()
+        .setName("domestic")
+        .setValue(new EngineNumber(BigDecimal.valueOf(100), "kg"))
+        .setYearMatcher(Optional.empty())
+        .inferSubtractRecycling()
+        .build();
+    engine.executeStreamUpdate(update2);
 
     // Create a floor operation with a lower value
     EngineNumber number = new EngineNumber(BigDecimal.valueOf(42), "kg");
@@ -141,7 +155,13 @@ public class FloorOperationTest {
   public void testExecuteWithDuringApplying() {
     // Set up a stream with a value lower than the floor
     engine.enable("domestic", Optional.empty());
-    engine.setStream("domestic", new EngineNumber(BigDecimal.valueOf(20), "kg"), Optional.empty());
+    StreamUpdate update = new StreamUpdateBuilder()
+        .setName("domestic")
+        .setValue(new EngineNumber(BigDecimal.valueOf(20), "kg"))
+        .setYearMatcher(Optional.empty())
+        .inferSubtractRecycling()
+        .build();
+    engine.executeStreamUpdate(update);
 
     // Create a floor operation with a higher value and a during that applies to the current year
     EngineNumber number = new EngineNumber(BigDecimal.valueOf(42), "kg");
@@ -169,7 +189,13 @@ public class FloorOperationTest {
   public void testExecuteWithDuringNotApplying() {
     // Set up a stream with a value lower than the floor
     engine.enable("domestic", Optional.empty());
-    engine.setStream("domestic", new EngineNumber(BigDecimal.valueOf(20), "kg"), Optional.empty());
+    StreamUpdate update = new StreamUpdateBuilder()
+        .setName("domestic")
+        .setValue(new EngineNumber(BigDecimal.valueOf(20), "kg"))
+        .setYearMatcher(Optional.empty())
+        .inferSubtractRecycling()
+        .build();
+    engine.executeStreamUpdate(update);
 
     // Create a floor operation with a higher value and a during that applies to a future year
     EngineNumber number = new EngineNumber(BigDecimal.valueOf(42), "kg");
@@ -197,7 +223,13 @@ public class FloorOperationTest {
   public void testExecuteWithComplexValueOperation() {
     // Set up a stream with a value lower than the floor
     engine.enable("domestic", Optional.empty());
-    engine.setStream("domestic", new EngineNumber(BigDecimal.valueOf(20), "kg"), Optional.empty());
+    StreamUpdate update = new StreamUpdateBuilder()
+        .setName("domestic")
+        .setValue(new EngineNumber(BigDecimal.valueOf(20), "kg"))
+        .setYearMatcher(Optional.empty())
+        .inferSubtractRecycling()
+        .build();
+    engine.executeStreamUpdate(update);
 
     // Create a floor operation with a complex value operation
     Operation left = new PreCalculatedOperation(new EngineNumber(BigDecimal.valueOf(30), "kg"));
@@ -221,11 +253,23 @@ public class FloorOperationTest {
   public void testExecuteWithDisplacement() {
     // Set up the source stream with a value lower than the floor
     engine.enable("domestic", Optional.empty());
-    engine.setStream("domestic", new EngineNumber(BigDecimal.valueOf(20), "kg"), Optional.empty());
+    StreamUpdate update = new StreamUpdateBuilder()
+        .setName("domestic")
+        .setValue(new EngineNumber(BigDecimal.valueOf(20), "kg"))
+        .setYearMatcher(Optional.empty())
+        .inferSubtractRecycling()
+        .build();
+    engine.executeStreamUpdate(update);
 
     // Set up the target stream for displacement with an initial value
     engine.enable("import", Optional.empty());
-    engine.setStream("import", new EngineNumber(BigDecimal.valueOf(50), "kg"), Optional.empty());
+    StreamUpdate importUpdate = new StreamUpdateBuilder()
+        .setName("import")
+        .setValue(new EngineNumber(BigDecimal.valueOf(50), "kg"))
+        .setYearMatcher(Optional.empty())
+        .inferSubtractRecycling()
+        .build();
+    engine.executeStreamUpdate(importUpdate);
 
     // Create a floor operation with displacement
     EngineNumber number = new EngineNumber(BigDecimal.valueOf(42), "kg");

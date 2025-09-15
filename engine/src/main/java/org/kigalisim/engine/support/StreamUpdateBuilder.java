@@ -159,6 +159,21 @@ public final class StreamUpdateBuilder {
   }
 
   /**
+   * Infers the subtractRecycling flag based on stream name and value units.
+   *
+   * @return this builder with subtractRecycling set appropriately
+   * @throws RuntimeException if name or value is null or invalid
+   */
+  public StreamUpdateBuilder inferSubtractRecycling() {
+    if (this.name == null || this.value == null) {
+      throw new RuntimeException("Name and value must be set before calling inferSubtractRecycling");
+    }
+    boolean subtractRecycling = !EngineSupportUtils.isSalesSubstream(this.name)
+        || "units".equals(this.value.getUnits());
+    return setSubtractRecycling(subtractRecycling);
+  }
+
+  /**
    * Builds the StreamUpdate.
    *
    * @return the built StreamUpdate

@@ -17,6 +17,8 @@ import org.kigalisim.engine.Engine;
 import org.kigalisim.engine.SingleThreadEngine;
 import org.kigalisim.engine.number.EngineNumber;
 import org.kigalisim.engine.state.YearMatcher;
+import org.kigalisim.engine.support.StreamUpdate;
+import org.kigalisim.engine.support.StreamUpdateBuilder;
 import org.kigalisim.lang.machine.PushDownMachine;
 import org.kigalisim.lang.machine.SingleThreadPushDownMachine;
 import org.kigalisim.lang.time.CalculatedTimePointFuture;
@@ -82,7 +84,13 @@ public class RetireOperationTest {
 
     // Set up prior equipment population
     EngineNumber priorEquipment = new EngineNumber(BigDecimal.valueOf(1000), "units");
-    engine.setStream("priorEquipment", priorEquipment, Optional.ofNullable(allYearsMatcher));
+    StreamUpdate update = new StreamUpdateBuilder()
+        .setName("priorEquipment")
+        .setValue(priorEquipment)
+        .setYearMatcher(Optional.ofNullable(allYearsMatcher))
+        .inferSubtractRecycling()
+        .build();
+    engine.executeStreamUpdate(update);
 
     // Set up retirement rate
     EngineNumber rate = new EngineNumber(BigDecimal.valueOf(10), "%");
@@ -107,7 +115,13 @@ public class RetireOperationTest {
 
     // Set up prior equipment population
     EngineNumber priorEquipment = new EngineNumber(BigDecimal.valueOf(1000), "units");
-    engine.setStream("priorEquipment", priorEquipment, Optional.ofNullable(allYearsMatcher));
+    StreamUpdate update = new StreamUpdateBuilder()
+        .setName("priorEquipment")
+        .setValue(priorEquipment)
+        .setYearMatcher(Optional.ofNullable(allYearsMatcher))
+        .inferSubtractRecycling()
+        .build();
+    engine.executeStreamUpdate(update);
 
     // Set up retirement rate with a during that applies to the current year (2020)
     EngineNumber rate = new EngineNumber(BigDecimal.valueOf(10), "%");
@@ -138,7 +152,13 @@ public class RetireOperationTest {
 
     // Set up prior equipment population
     EngineNumber priorEquipment = new EngineNumber(BigDecimal.valueOf(1000), "units");
-    engine.setStream("priorEquipment", priorEquipment, Optional.ofNullable(allYearsMatcher));
+    StreamUpdate update = new StreamUpdateBuilder()
+        .setName("priorEquipment")
+        .setValue(priorEquipment)
+        .setYearMatcher(Optional.ofNullable(allYearsMatcher))
+        .inferSubtractRecycling()
+        .build();
+    engine.executeStreamUpdate(update);
 
     // Set initial retirement rate
     EngineNumber initialRate = new EngineNumber(BigDecimal.valueOf(5), "%");
@@ -174,7 +194,13 @@ public class RetireOperationTest {
 
     // Set up prior equipment population
     EngineNumber priorEquipment = new EngineNumber(BigDecimal.valueOf(1000), "units");
-    engine.setStream("priorEquipment", priorEquipment, Optional.ofNullable(allYearsMatcher));
+    StreamUpdate update = new StreamUpdateBuilder()
+        .setName("priorEquipment")
+        .setValue(priorEquipment)
+        .setYearMatcher(Optional.ofNullable(allYearsMatcher))
+        .inferSubtractRecycling()
+        .build();
+    engine.executeStreamUpdate(update);
 
     // Set up retirement rate with a complex operation
     Operation left = new PreCalculatedOperation(new EngineNumber(BigDecimal.valueOf(6), "%"));

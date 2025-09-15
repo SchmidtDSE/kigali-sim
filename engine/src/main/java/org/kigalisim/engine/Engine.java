@@ -157,33 +157,6 @@ public interface Engine {
    */
   void executeStreamUpdate(StreamUpdate update);
 
-  /**
-   * Set the value of a stream with default parameters.
-   *
-   * @param name The name of the stream to set
-   * @param value The value to set for the stream
-   * @param yearMatcher The year matcher object or empty
-   */
-  void setStream(String name, EngineNumber value, Optional<YearMatcher> yearMatcher);
-
-  /**
-   * Set a stream with explicit control over recycling behavior.
-   *
-   * @param name The stream name
-   * @param value The value to set
-   * @param yearMatcher Optional year matcher for conditional setting
-   * @param subtractRecycling Whether to apply recycling logic during stream setting
-   */
-  void setStream(String name, EngineNumber value, Optional<YearMatcher> yearMatcher, boolean subtractRecycling);
-
-  /**
-   * Set a stream for internal engine operations (bypasses user-level processing like SetExecutor).
-   *
-   * @param name The stream name
-   * @param value The value to set for the stream
-   * @param yearMatcher Optional year matcher for conditional setting
-   */
-  void setStreamInternal(String name, EngineNumber value, Optional<YearMatcher> yearMatcher);
 
   /**
    * Set a stream for explicit user operations (applies user-level processing like SetExecutor).
@@ -192,7 +165,7 @@ public interface Engine {
    * @param value The value to set for the stream
    * @param yearMatcher Optional year matcher for conditional setting
    */
-  void setStreamExplicit(String name, EngineNumber value, Optional<YearMatcher> yearMatcher);
+  void fulfillSetCommand(String name, EngineNumber value, Optional<YearMatcher> yearMatcher);
 
   /**
    * Enable a stream without setting its value.

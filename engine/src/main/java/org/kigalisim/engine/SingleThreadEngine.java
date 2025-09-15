@@ -377,42 +377,9 @@ public class SingleThreadEngine implements Engine {
     }
   }
 
-  @Override
-  public void setStream(String name, EngineNumber value, Optional<YearMatcher> yearMatcher) {
-    // For direct stream setting (like from SetOperation), domestic/import should not subtract recycling
-    // EXCEPT when the operation is units-based, which should account for recycling
-    boolean subtractRecycling = !getIsSalesSubstream(name) || "units".equals(value.getUnits());
-    setStream(name, value, yearMatcher, subtractRecycling);
-  }
-
-  /**
-   * Set a stream with explicit control over recycling behavior.
-   *
-   * @param name The stream name
-   * @param value The value to set
-   * @param yearMatcher Optional year matcher for conditional setting
-   * @param subtractRecycling Whether to apply recycling logic during stream setting
-   */
-  public void setStream(String name, EngineNumber value, Optional<YearMatcher> yearMatcher, boolean subtractRecycling) {
-    StreamUpdate update = new StreamUpdateBuilder()
-        .setName(name)
-        .setValue(value)
-        .setYearMatcher(yearMatcher)
-        .setSubtractRecycling(subtractRecycling)
-        .build();
-
-    executeStreamUpdate(update);
-  }
 
   @Override
-  public void setStreamInternal(String name, EngineNumber value, Optional<YearMatcher> yearMatcher) {
-    // Internal operations bypass user-level processing - use 4-parameter method directly
-    boolean subtractRecycling = !getIsSalesSubstream(name) || "units".equals(value.getUnits());
-    setStream(name, value, yearMatcher, subtractRecycling);
-  }
-
-  @Override
-  public void setStreamExplicit(String name, EngineNumber value, Optional<YearMatcher> yearMatcher) {
+  public void fulfillSetCommand(String name, EngineNumber value, Optional<YearMatcher> yearMatcher) {
     // Delegate sales streams to SetExecutor for proper component distribution
     if ("sales".equals(name)) {
       SetExecutor setExecutor = new SetExecutor(this);
@@ -420,9 +387,14 @@ public class SingleThreadEngine implements Engine {
       return;
     }
 
-    // For non-sales streams, use standard processing
-    boolean subtractRecycling = !getIsSalesSubstream(name) || "units".equals(value.getUnits());
-    setStream(name, value, yearMatcher, subtractRecycling);
+    // For non-sales streams, use executeStreamUpdate with builder
+    StreamUpdate update = new StreamUpdateBuilder()
+        .setName(name)
+        .setValue(value)
+        .setYearMatcher(yearMatcher)
+        .inferSubtractRecycling()
+        .build();
+    executeStreamUpdate(update);
   }
 
   @Override
@@ -1431,7 +1403,13 @@ public class SingleThreadEngine implements Engine {
       EngineNumber newCappedInKg = unitConverter.convert(newCappedValue, "kg");
 
       if (currentInKg.getValue().compareTo(newCappedInKg.getValue()) > 0) {
-        setStreamInternal(stream, newCappedValue, Optional.empty());
+        StreamUpdate update = new StreamUpdateBuilder()
+            .setName(stream)
+            .setValue(newCappedValue)
+            .setYearMatcher(Optional.empty())
+            .inferSubtractRecycling()
+            .build();
+        executeStreamUpdate(update);
 
         if (displaceTarget != null) {
           EngineNumber finalInKg = getStream(stream);
@@ -1466,7 +1444,13 @@ public class SingleThreadEngine implements Engine {
 
     if (currentValueInAmountUnits.getValue().compareTo(amount.getValue()) > 0) {
       EngineNumber currentInKg = unitConverter.convert(currentValueRaw, "kg");
-      setStreamInternal(stream, amount, Optional.empty());
+      StreamUpdate update = new StreamUpdateBuilder()
+          .setName(stream)
+          .setValue(amount)
+          .setYearMatcher(Optional.empty())
+          .inferSubtractRecycling()
+          .build();
+      executeStreamUpdate(update);
 
       if (displaceTarget != null) {
         EngineNumber cappedInKg = getStream(stream);
@@ -1499,7 +1483,13 @@ public class SingleThreadEngine implements Engine {
       EngineNumber newFloorInKg = unitConverter.convert(newFloorValue, "kg");
 
       if (currentInKg.getValue().compareTo(newFloorInKg.getValue()) < 0) {
-        setStreamInternal(stream, newFloorValue, Optional.empty());
+        StreamUpdate update = new StreamUpdateBuilder()
+            .setName(stream)
+            .setValue(newFloorValue)
+            .setYearMatcher(Optional.empty())
+            .inferSubtractRecycling()
+            .build();
+        executeStreamUpdate(update);
 
         if (displaceTarget != null) {
           EngineNumber finalInKg = getStream(stream);
@@ -1534,7 +1524,13 @@ public class SingleThreadEngine implements Engine {
 
     if (currentValueInAmountUnits.getValue().compareTo(amount.getValue()) < 0) {
       EngineNumber currentInKg = unitConverter.convert(currentValueRaw, "kg");
-      setStreamInternal(stream, amount, Optional.empty());
+      StreamUpdate update = new StreamUpdateBuilder()
+          .setName(stream)
+          .setValue(amount)
+          .setYearMatcher(Optional.empty())
+          .inferSubtractRecycling()
+          .build();
+      executeStreamUpdate(update);
 
       if (displaceTarget != null) {
         EngineNumber newInKg = getStream(stream);

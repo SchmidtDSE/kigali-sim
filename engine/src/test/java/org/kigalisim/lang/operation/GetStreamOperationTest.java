@@ -18,6 +18,8 @@ import org.junit.jupiter.api.Test;
 import org.kigalisim.engine.Engine;
 import org.kigalisim.engine.SingleThreadEngine;
 import org.kigalisim.engine.number.EngineNumber;
+import org.kigalisim.engine.support.StreamUpdate;
+import org.kigalisim.engine.support.StreamUpdateBuilder;
 import org.kigalisim.lang.machine.PushDownMachine;
 import org.kigalisim.lang.machine.SingleThreadPushDownMachine;
 
@@ -69,7 +71,13 @@ public class GetStreamOperationTest {
     // Set a stream value in the engine
     EngineNumber number = new EngineNumber(BigDecimal.valueOf(42), "kg");
     engine.enable("domestic", Optional.empty());
-    engine.setStream("domestic", number, Optional.empty());
+    StreamUpdate update = new StreamUpdateBuilder()
+        .setName("domestic")
+        .setValue(number)
+        .setYearMatcher(Optional.empty())
+        .inferSubtractRecycling()
+        .build();
+    engine.executeStreamUpdate(update);
 
     // Create and execute the operation
     GetStreamOperation operation = new GetStreamOperation("domestic");
@@ -89,7 +97,13 @@ public class GetStreamOperationTest {
     // Set a stream value in the engine
     EngineNumber number = new EngineNumber(BigDecimal.valueOf(1), "kg");
     engine.enable("domestic", Optional.empty());
-    engine.setStream("domestic", number, Optional.empty());
+    StreamUpdate update = new StreamUpdateBuilder()
+        .setName("domestic")
+        .setValue(number)
+        .setYearMatcher(Optional.empty())
+        .inferSubtractRecycling()
+        .build();
+    engine.executeStreamUpdate(update);
 
     // Create and execute the operation with unit conversion
     GetStreamOperation operation = new GetStreamOperation("domestic", "mt");
