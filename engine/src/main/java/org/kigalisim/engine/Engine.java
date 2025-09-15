@@ -338,10 +338,12 @@ public interface Engine {
   /**
    * Set the induction rate for recycling operations.
    *
-   * @param inductionRate The induction rate as a percentage in decimal form (0.0-1.0),
-   *                      or Optional.empty() for default behavior
+   * @param inductionRate The induction rate as an EngineNumber with percentage units,
+   *                      or null for default behavior (100% induced demand)
+   * @param stage The recovery stage (EOL or RECHARGE) to set the induction rate for
    */
-  void setInductionRate(Optional<Double> inductionRate);
+  void setInductionRate(EngineNumber inductionRate, RecoveryStage stage);
+
 
   /**
    * Set GHG equivalency for the current application and substance.

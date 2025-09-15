@@ -46,9 +46,9 @@ public class ReplaceLiveTests {
     assertNotNull(resultA, "Should have result for test/a in year 1");
 
     // Calculation: Original 50 mt - replaced 50% = 25 mt remaining × 10 tCO2e/mt = 250 tCO2e
-    assertEquals(250.0, resultA.getGhgConsumption().getValue().doubleValue(), 0.0001,
+    assertEquals(250.0, resultA.getConsumption().getValue().doubleValue(), 0.0001,
         "Consumption for substance a should be 250 tCO2e");
-    assertEquals("tCO2e", resultA.getGhgConsumption().getUnits(),
+    assertEquals("tCO2e", resultA.getConsumption().getUnits(),
         "Consumption units should be tCO2e");
 
     // Check substance "b" consumption
@@ -56,9 +56,9 @@ public class ReplaceLiveTests {
     assertNotNull(resultB, "Should have result for test/b in year 1");
 
     // Calculation: Original 50 mt + added 25 mt = 75 mt total × 5 tCO2e/mt = 375 tCO2e
-    assertEquals(375.0, resultB.getGhgConsumption().getValue().doubleValue(), 0.0001,
+    assertEquals(375.0, resultB.getConsumption().getValue().doubleValue(), 0.0001,
         "Consumption for substance b should be 375 tCO2e");
-    assertEquals("tCO2e", resultB.getGhgConsumption().getUnits(),
+    assertEquals("tCO2e", resultB.getConsumption().getUnits(),
         "Consumption units should be tCO2e");
   }
 
@@ -84,9 +84,9 @@ public class ReplaceLiveTests {
     assertNotNull(resultA, "Should have result for test/a in year 1");
 
     // Calculation: Original 50 mt - replaced 25 kg = 25 mt remaining × 10 tCO2e/mt = 250 tCO2e
-    assertEquals(250.0, resultA.getGhgConsumption().getValue().doubleValue(), 0.0001,
+    assertEquals(250.0, resultA.getConsumption().getValue().doubleValue(), 0.0001,
         "Consumption for substance a should be 250 tCO2e");
-    assertEquals("tCO2e", resultA.getGhgConsumption().getUnits(),
+    assertEquals("tCO2e", resultA.getConsumption().getUnits(),
         "Consumption units should be tCO2e");
 
     // Check substance "b" consumption
@@ -94,9 +94,9 @@ public class ReplaceLiveTests {
     assertNotNull(resultB, "Should have result for test/b in year 1");
 
     // Calculation: Original 50 mt + added 25 kg = 75 mt total × 5 tCO2e/mt = 375 tCO2e
-    assertEquals(375.0, resultB.getGhgConsumption().getValue().doubleValue(), 0.0001,
+    assertEquals(375.0, resultB.getConsumption().getValue().doubleValue(), 0.0001,
         "Consumption for substance b should be 375 tCO2e");
-    assertEquals("tCO2e", resultB.getGhgConsumption().getUnits(),
+    assertEquals("tCO2e", resultB.getConsumption().getUnits(),
         "Consumption units should be tCO2e");
   }
 
@@ -122,9 +122,9 @@ public class ReplaceLiveTests {
     assertNotNull(resultA, "Should have result for test/a in year 1");
 
     // Calculation: Original 50 mt - replaced 25000 units = 25 mt remaining × 10 tCO2e/mt = 250 tCO2e
-    assertEquals(250.0, resultA.getGhgConsumption().getValue().doubleValue(), 0.0001,
+    assertEquals(250.0, resultA.getConsumption().getValue().doubleValue(), 0.0001,
         "Consumption for substance a should be 250 tCO2e");
-    assertEquals("tCO2e", resultA.getGhgConsumption().getUnits(),
+    assertEquals("tCO2e", resultA.getConsumption().getUnits(),
         "Consumption units should be tCO2e");
 
     // Check substance "b" consumption
@@ -132,9 +132,9 @@ public class ReplaceLiveTests {
     assertNotNull(resultB, "Should have result for test/b in year 1");
 
     // Calculation: Original 50 mt + added 25000 units = 75 mt total × 5 tCO2e/mt = 375 tCO2e
-    assertEquals(375.0, resultB.getGhgConsumption().getValue().doubleValue(), 0.0001,
+    assertEquals(375.0, resultB.getConsumption().getValue().doubleValue(), 0.0001,
         "Consumption for substance b should be 375 tCO2e");
-    assertEquals("tCO2e", resultB.getGhgConsumption().getUnits(),
+    assertEquals("tCO2e", resultB.getConsumption().getUnits(),
         "Consumption units should be tCO2e");
   }
 

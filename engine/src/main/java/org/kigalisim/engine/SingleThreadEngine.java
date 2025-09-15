@@ -33,6 +33,8 @@ import org.kigalisim.engine.state.StreamKeeper;
 import org.kigalisim.engine.state.SubstanceInApplicationId;
 import org.kigalisim.engine.state.UseKey;
 import org.kigalisim.engine.state.YearMatcher;
+import org.kigalisim.engine.support.CalculatedStream;
+import org.kigalisim.engine.support.CalculatedStreamBuilder;
 import org.kigalisim.engine.support.ChangeExecutor;
 import org.kigalisim.engine.support.EngineSupportUtils;
 import org.kigalisim.engine.support.ExceptionsGenerator;
@@ -227,7 +229,6 @@ public class SingleThreadEngine implements Engine {
     return currentYear > endYear;
   }
 
-
   @Override
   public void executeStreamUpdate(StreamUpdate update) {
     final String name = update.getName();
@@ -268,7 +269,13 @@ public class SingleThreadEngine implements Engine {
       );
 
       // Set implicit recharge BEFORE distribution (always full amount)
-      streamKeeper.setStream(keyEffective, "implicitRecharge", rechargeVolume, true);
+      CalculatedStream implicitRechargeStream = new CalculatedStreamBuilder()
+          .setUseKey(keyEffective)
+          .setName("implicitRecharge")
+          .setValue(rechargeVolume)
+          .asOutcomeStream()
+          .build();
+      streamKeeper.setStream(implicitRechargeStream);
 
       // Distribute recharge proportionally for domestic/import streams
       BigDecimal rechargeToAdd;
@@ -284,11 +291,25 @@ public class SingleThreadEngine implements Engine {
       valueToSet = new EngineNumber(totalWithRecharge, "kg");
     } else if (isSales) {
       // Sales stream without units - clear implicit recharge
-      streamKeeper.setStream(keyEffective, "implicitRecharge", new EngineNumber(BigDecimal.ZERO, "kg"), true);
+      CalculatedStream clearImplicitRechargeStream = new CalculatedStreamBuilder()
+          .setUseKey(keyEffective)
+          .setName("implicitRecharge")
+          .setValue(new EngineNumber(BigDecimal.ZERO, "kg"))
+          .asOutcomeStream()
+          .build();
+      streamKeeper.setStream(clearImplicitRechargeStream);
     }
 
     // Use the subtractRecycling parameter when setting the stream
-    streamKeeper.setStream(keyEffective, name, valueToSet, subtractRecycling);
+    CalculatedStream calculatedStream = new CalculatedStreamBuilder()
+        .setUseKey(keyEffective)
+        .setName(name)
+        .setValue(valueToSet)
+        .setSubtractRecycling(subtractRecycling)
+        .setDistribution(update.getDistribution().orElse(null))
+        .setSalesDistributionRequired(isSalesStream(name))
+        .build();
+    streamKeeper.setStream(calculatedStream);
 
     // Track the units last used to specify this stream (only for user-initiated calls)
     if (!propagateChanges) {
@@ -638,7 +659,13 @@ public class SingleThreadEngine implements Engine {
       // Only clear implicit recharge if NOT using explicit recharge (i.e., when units were used)
       // This ensures implicit recharge persists for carried-over values
       if (useExplicitRecharge) {
-        streamKeeper.setStream(scope, "implicitRecharge", new EngineNumber(BigDecimal.ZERO, "kg"));
+        CalculatedStream clearImplicitRechargeStream = new CalculatedStreamBuilder()
+            .setUseKey(scope)
+            .setName("implicitRecharge")
+            .setValue(new EngineNumber(BigDecimal.ZERO, "kg"))
+            .asOutcomeStream()
+            .build();
+        streamKeeper.setStream(clearImplicitRechargeStream);
       }
     }
   }
@@ -691,24 +718,23 @@ public class SingleThreadEngine implements Engine {
   }
 
   @Override
-  public void setInductionRate(Optional<Double> inductionRate) {
-    if (inductionRate.isPresent()) {
-      // Validate the induction rate is between 0 and 1
-      double rate = inductionRate.get();
-      if (rate < 0.0 || rate > 1.0) {
-        throw new IllegalArgumentException("Induction rate must be between 0.0 and 1.0, got: " + rate);
+  public void setInductionRate(EngineNumber inductionRate, RecoveryStage stage) {
+    if (inductionRate != null) {
+      // Validate the induction rate is a percentage between 0 and 100
+      if (!"%".equals(inductionRate.getUnits())) {
+        throw new IllegalArgumentException("Induction rate must have percentage units, got: " + inductionRate.getUnits());
       }
-      // Convert to EngineNumber with percentage units
-      EngineNumber inductionRateEngineNumber = new EngineNumber(
-          BigDecimal.valueOf(rate * 100), "%");
-      streamKeeper.setInductionRate(scope, inductionRateEngineNumber);
+      double ratePercent = inductionRate.getValue().doubleValue();
+      if (ratePercent < 0.0 || ratePercent > 100.0) {
+        throw new IllegalArgumentException("Induction rate must be between 0% and 100%, got: " + ratePercent + "%");
+      }
+      streamKeeper.setInductionRate(scope, inductionRate, stage);
     } else {
-      // Default behavior - set to 0% (displacement behavior)
-      EngineNumber defaultInductionRate = new EngineNumber(BigDecimal.ZERO, "%");
-      streamKeeper.setInductionRate(scope, defaultInductionRate);
+      // Default behavior - set to 100% (induced demand behavior)
+      EngineNumber defaultInductionRate = new EngineNumber(new BigDecimal("100"), "%");
+      streamKeeper.setInductionRate(scope, defaultInductionRate, stage);
     }
   }
-
 
   @Override
   public void equals(EngineNumber amount, YearMatcher yearMatcher) {
@@ -1517,4 +1543,5 @@ public class SingleThreadEngine implements Engine {
       }
     }
   }
+
 }

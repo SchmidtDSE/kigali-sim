@@ -11,7 +11,6 @@ package org.kigalisim.lang.localization;
 
 import java.math.BigDecimal;
 import java.util.regex.Pattern;
-import org.kigalisim.lang.localization.FlexibleNumberParseResult;
 
 /**
  * Parse strategy for numbers with only comma separators.
@@ -162,7 +161,7 @@ public class OnlyCommasParseStrategy implements NumberParseUtilStrategy {
         return new FlexibleNumberParseResult("Invalid thousands separator format: '" + numberStr + "'");
       }
     }
-    
+
     return new FlexibleNumberParseResult(new BigDecimal("0")); // Success case
   }
 
@@ -178,7 +177,7 @@ public class OnlyCommasParseStrategy implements NumberParseUtilStrategy {
     // and should be interpreted as UK decimal format according to requirements
     // The main European format detection (like 1.234,56) happens in MixedParseStrategy
     // We only reject clear European-specific patterns here, which are rare with only commas
-    
+
     // For now, be conservative and don't reject single comma patterns
     // They will be converted to UK decimal format (comma -> period)
     return false;
