@@ -144,107 +144,8 @@ public class StreamKeeper {
     streams.put(implicitRechargeKey, new EngineNumber(BigDecimal.ZERO, "kg"));
   }
 
-  /**
-   * Set the value for a specific stream using key.
-   *
-   * <p><strong>DEPRECATED:</strong> This method is deprecated and will be removed in the future.
-   * Use specific type-safe methods instead:</p>
-   * <ul>
-   * <li>For sales streams (domestic/import): Use setSalesStream() methods</li>
-   * <li>For outcome streams (recycle, implicitRecharge, etc.): Use setOutcomeStream()</li>
-   * </ul>
-   *
-   * @param useKey The key containing application and substance
-   * @param name The stream name
-   * @param value The value to set
-   * @deprecated Use setSalesStream() or setOutcomeStream() instead
-   */
-  @Deprecated
-  public void setStream(UseKey useKey, String name, EngineNumber value) {
-    // Default behavior: apply recycling logic (backwards compatibility)
-    setStream(useKey, name, value, true);
-  }
 
-  /**
-   * Set the value of a stream with control over recycling subtraction and optional distribution.
-   *
-   * <p>This method provides support for pre-calculated distributions to avoid circular dependencies
-   * in recycling displacement calculations. When distribution is provided, it will be used instead
-   * of calling getDistribution() for sales streams.</p>
-   *
-   * @param useKey The key containing application and substance
-   * @param name The stream name
-   * @param value The value to set
-   * @param subtractRecycling Whether to apply recycling logic (false for direct setting)
-   * @param distribution Optional pre-calculated distribution for sales streams
-   */
-  public void setStream(UseKey useKey, String name, EngineNumber value, boolean subtractRecycling,
-      Optional<SalesStreamDistribution> distribution) {
-    String key = getKey(useKey);
-    ensureSubstanceOrThrow(key, "setStream");
-    ensureStreamKnown(name);
 
-    // Check if stream needs to be enabled before setting
-    assertStreamEnabled(useKey, name, value);
-
-    if (CHECK_NAN_STATE && value.getValue().toString().equals("NaN")) {
-      String[] keyPieces = key.split("\t");
-      String application = keyPieces.length > 0 ? keyPieces[0] : "";
-      String substance = keyPieces.length > 1 ? keyPieces[1] : "";
-      String pieces = String.join(" > ",
-          "-".equals(application) ? "null" : application,
-          "-".equals(substance) ? "null" : substance,
-          name);
-      throw new RuntimeException("Encountered NaN to be set for: " + pieces);
-    }
-
-    // Apply routing logic based on subtractRecycling parameter
-    if (!subtractRecycling && ("domestic".equals(name) || "import".equals(name))) {
-      // Direct setting for sales streams - bypass recycling logic
-      setSimpleStream(useKey, name, value);
-    } else {
-      // Route to appropriate type-safe method based on stream type
-      if ("sales".equals(name)) {
-        setStreamForSales(useKey, name, value);
-      } else if ("domestic".equals(name) || "import".equals(name)) {
-        // Sales streams - use distribution-aware method if available
-        if (distribution.isPresent()) {
-          setSalesStream(useKey, name, value, distribution.get(), true);
-        } else {
-          // Fall back to private method that calls getDistribution() (potential circular dependency)
-          setSalesStream(useKey, name, value);
-        }
-      } else if ("recycle".equals(name)) {
-        setStreamForRecycle(useKey, name, value);
-      } else if (getIsSettingVolumeByUnits(name, value)) {
-        setStreamForSalesWithUnits(useKey, name, value);
-      } else {
-        // Outcome streams - use type-safe method
-        setOutcomeStream(useKey, name, value);
-      }
-    }
-  }
-
-  /**
-   * Set the value of a stream with control over recycling subtraction.
-   *
-   * <p><strong>DEPRECATED:</strong> This method is deprecated and will be removed in the future.
-   * Use specific type-safe methods instead:</p>
-   * <ul>
-   * <li>For sales streams (domestic/import): Use setSalesStream() methods</li>
-   * <li>For outcome streams (recycle, implicitRecharge, etc.): Use setOutcomeStream()</li>
-   * </ul>
-   *
-   * @param useKey The key containing application and substance
-   * @param name The stream name
-   * @param value The value to set
-   * @param subtractRecycling Whether to apply recycling logic (false for direct setting)
-   * @deprecated Use setSalesStream() or setOutcomeStream() instead
-   */
-  @Deprecated
-  public void setStream(UseKey useKey, String name, EngineNumber value, boolean subtractRecycling) {
-    setStream(useKey, name, value, subtractRecycling, Optional.empty());
-  }
 
   /**
    * Set a stream using pre-calculated stream data.
@@ -295,20 +196,57 @@ public class StreamKeeper {
       if ("sales".equals(name)) {
         setStreamForSales(useKey, name, value);
       } else if ("domestic".equals(name) || "import".equals(name)) {
-        // Sales streams - use distribution-aware method if available
-        if (distribution.isPresent()) {
-          setSalesStream(useKey, name, value, distribution.get(), subtractRecycling);
-        } else {
-          // Fall back to private method that calls getDistribution() (potential circular dependency)
-          setSalesStream(useKey, name, value);
+        // Sales streams - inline sales stream logic
+        EngineNumber valueConverted = unitConverter.convert(value, "kg");
+        final BigDecimal amountKg = valueConverted.getValue();
+
+        // Check if any streams are enabled for distribution calculation
+        if (!hasStreamsEnabled(useKey)) {
+          throw new IllegalStateException("Cannot set sales stream: no streams have been enabled. "
+              + "Use 'set " + name + "' or other stream statements to enable streams before "
+              + "operations that require sales recalculation.");
         }
+
+        // Get current recycling amount
+        EngineNumber recycleAmountRaw = getStream(useKey, "recycle");
+        EngineNumber recycleAmount = unitConverter.convert(recycleAmountRaw, "kg");
+        BigDecimal recycleKg = recycleAmount != null ? recycleAmount.getValue() : BigDecimal.ZERO;
+
+        // Determine distribution to use
+        SalesStreamDistribution streamDistribution;
+        if (distribution.isPresent()) {
+          streamDistribution = distribution.get();
+        } else {
+          streamDistribution = getDistribution(useKey);
+        }
+
+        // Use distribution to determine this sales stream's share of recycling
+        BigDecimal substreamPercent;
+        if ("domestic".equals(name)) {
+          substreamPercent = streamDistribution.getPercentDomestic();
+        } else {
+          substreamPercent = streamDistribution.getPercentImport();
+        }
+
+        // Calculate proportional recycling for this sales stream
+        BigDecimal substreamRecycling = recycleKg.multiply(substreamPercent);
+
+        // Subtract proportional recycling to get virgin material amount
+        BigDecimal netAmount = amountKg.subtract(substreamRecycling);
+        if (netAmount.compareTo(BigDecimal.ZERO) < 0) {
+          netAmount = BigDecimal.ZERO;
+        }
+
+        // Set the net amount directly
+        EngineNumber netAmountToSet = new EngineNumber(netAmount, "kg");
+        setSimpleStream(useKey, name, netAmountToSet);
       } else if ("recycle".equals(name)) {
         setStreamForRecycle(useKey, name, value);
       } else if (getIsSettingVolumeByUnits(name, value)) {
         setStreamForSalesWithUnits(useKey, name, value);
       } else {
-        // Outcome streams - use type-safe method
-        setOutcomeStream(useKey, name, value);
+        // Outcome streams - inline outcome stream logic (direct setting)
+        setSimpleStream(useKey, name, value);
       }
     }
   }
@@ -376,81 +314,7 @@ public class StreamKeeper {
   }
 
 
-  /**
-   * Set a sales stream for a specific stream name using existing
-   * distribution logic but still accounts for proportional recycling.
-   *
-   * @param useKey The key containing application and substance
-   * @param streamName The stream name ("domestic" or "import")
-   * @param value The total value for this specific sales stream
-   */
-  private void setSalesStream(UseKey useKey, String streamName, EngineNumber value) {
-    EngineNumber valueConverted = unitConverter.convert(value, "kg");
-    final BigDecimal amountKg = valueConverted.getValue();
 
-    // Check if any streams are enabled for distribution calculation
-    if (!hasStreamsEnabled(useKey)) {
-      throw new IllegalStateException("Cannot set sales stream: no streams have been enabled. "
-          + "Use 'set " + streamName + "' or other stream statements to enable streams before "
-          + "operations that require sales recalculation.");
-    }
-
-    // Get current recycling amount
-    EngineNumber recycleAmountRaw = getStream(useKey, "recycle");
-    EngineNumber recycleAmount = unitConverter.convert(recycleAmountRaw, "kg");
-    BigDecimal recycleKg = recycleAmount != null ? recycleAmount.getValue() : BigDecimal.ZERO;
-
-    // Get distribution to determine this sales stream's share of recycling
-    SalesStreamDistribution distribution = getDistribution(useKey);
-    BigDecimal substreamPercent;
-    if ("domestic".equals(streamName)) {
-      substreamPercent = distribution.getPercentDomestic();
-    } else if ("import".equals(streamName)) {
-      substreamPercent = distribution.getPercentImport();
-    } else {
-      throw new IllegalArgumentException("Unknown sales stream: " + streamName);
-    }
-
-    // Calculate proportional recycling for this sales stream
-    BigDecimal substreamRecycling = recycleKg.multiply(substreamPercent);
-
-    // Subtract proportional recycling to get virgin material amount
-    BigDecimal netAmount = amountKg.subtract(substreamRecycling);
-
-    if (netAmount.compareTo(BigDecimal.ZERO) < 0) {
-      netAmount = BigDecimal.ZERO;
-    }
-
-    // Set the net amount directly
-    EngineNumber netAmountToSet = new EngineNumber(netAmount, "kg");
-    setSimpleStream(useKey, streamName, netAmountToSet);
-  }
-
-  /**
-   * Set the value of an outcome stream (non-sales stream) that doesn't require distribution.
-   *
-   * <p>This method is for setting derived/calculated streams like recycling outputs, emissions,
-   * or implicit recharge that don't need distribution calculations or recycling displacement logic.
-   * These streams are direct outputs of calculations rather than user inputs that drive the simulation.</p>
-   *
-   * <p>Examples of outcome streams include: recycle, recycleEol, recycleRecharge, implicitRecharge,
-   * eolEmissions, rechargeEmissions, consumption, equipment, etc.</p>
-   *
-   * @param useKey The key containing application and substance
-   * @param name The stream name (should be an outcome/derived stream)
-   * @param value The value to set
-   */
-  public void setOutcomeStream(UseKey useKey, String name, EngineNumber value) {
-    String key = getKey(useKey);
-    ensureSubstanceOrThrow(key, "setOutcomeStream");
-    ensureStreamKnown(name);
-
-    // Check if stream needs to be enabled before setting
-    assertStreamEnabled(useKey, name, value);
-
-    // Direct setting for outcome streams - no distribution or recycling logic needed
-    setSimpleStream(useKey, name, value);
-  }
 
   /**
    * Get the value of a specific stream using key.
@@ -540,7 +404,11 @@ public class StreamKeeper {
    */
   public void setInductionStream(UseKey useKey, RecoveryStage stage, EngineNumber value) {
     String streamName = getInductionStreamName(stage);
-    setOutcomeStream(useKey, streamName, value);
+    String key = getKey(useKey);
+    ensureSubstanceOrThrow(key, "setInductionStream");
+    ensureStreamKnown(streamName);
+    assertStreamEnabled(useKey, streamName, value);
+    setSimpleStream(useKey, streamName, value);
   }
 
   /**
@@ -652,7 +520,7 @@ public class StreamKeeper {
 
       SimpleUseKey useKey = new SimpleUseKey(application, substance);
       EngineNumber equipment = getStream(useKey, "equipment");
-      setOutcomeStream(useKey, "priorEquipment", equipment);
+      setSimpleStream(useKey, "priorEquipment", equipment);
     }
 
     // Reset state at timestep for all parameterizations
@@ -674,11 +542,11 @@ public class StreamKeeper {
       String substance = keyPieces[1];
 
       SimpleUseKey useKey = new SimpleUseKey(application, substance);
-      setOutcomeStream(useKey, "recycleRecharge", new EngineNumber(BigDecimal.ZERO, "kg"));
-      setOutcomeStream(useKey, "recycleEol", new EngineNumber(BigDecimal.ZERO, "kg"));
+      setSimpleStream(useKey, "recycleRecharge", new EngineNumber(BigDecimal.ZERO, "kg"));
+      setSimpleStream(useKey, "recycleEol", new EngineNumber(BigDecimal.ZERO, "kg"));
       // Reset induction streams at year boundary to prevent cross-year accumulation
-      setOutcomeStream(useKey, "inductionEol", new EngineNumber(BigDecimal.ZERO, "kg"));
-      setOutcomeStream(useKey, "inductionServicing", new EngineNumber(BigDecimal.ZERO, "kg"));
+      setSimpleStream(useKey, "inductionEol", new EngineNumber(BigDecimal.ZERO, "kg"));
+      setSimpleStream(useKey, "inductionServicing", new EngineNumber(BigDecimal.ZERO, "kg"));
     }
 
   }

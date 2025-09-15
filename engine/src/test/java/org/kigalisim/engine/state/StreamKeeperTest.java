@@ -202,12 +202,30 @@ public class StreamKeeperTest {
     keeper.markStreamAsEnabled(testScope, "domestic");
     keeper.markStreamAsEnabled(testScope, "import");
 
-    keeper.setStream(testScope, "domestic",
-                     new EngineNumber(new BigDecimal("50"), "kg"));
-    keeper.setStream(testScope, "import",
-                     new EngineNumber(new BigDecimal("30"), "kg"));
-    keeper.setStream(testScope, "recycle",
-                     new EngineNumber(new BigDecimal("10"), "kg"));
+    // Set streams using CalculatedStream architecture
+    CalculatedStream domesticStream = new CalculatedStreamBuilder()
+        .setUseKey(testScope)
+        .setName("domestic")
+        .setValue(new EngineNumber(new BigDecimal("50"), "kg"))
+        .asOutcomeStream()
+        .build();
+    keeper.setStream(domesticStream);
+
+    CalculatedStream importStream = new CalculatedStreamBuilder()
+        .setUseKey(testScope)
+        .setName("import")
+        .setValue(new EngineNumber(new BigDecimal("30"), "kg"))
+        .asOutcomeStream()
+        .build();
+    keeper.setStream(importStream);
+
+    CalculatedStream recycleStream = new CalculatedStreamBuilder()
+        .setUseKey(testScope)
+        .setName("recycle")
+        .setValue(new EngineNumber(new BigDecimal("10"), "kg"))
+        .asOutcomeStream()
+        .build();
+    keeper.setStream(recycleStream);
 
     EngineNumber sales = keeper.getStream(testScope, "sales");
     assertEquals(0, sales.getValue().compareTo(new BigDecimal("90")),
@@ -281,9 +299,14 @@ public class StreamKeeperTest {
     Scope testScope = createTestScope();
     keeper.ensureSubstance(testScope);
 
-    // Set equipment value
-    keeper.setStream(testScope, "equipment",
-                     new EngineNumber(new BigDecimal("150"), "units"));
+    // Set equipment value using CalculatedStream
+    CalculatedStream equipmentStream = new CalculatedStreamBuilder()
+        .setUseKey(testScope)
+        .setName("equipment")
+        .setValue(new EngineNumber(new BigDecimal("150"), "units"))
+        .asOutcomeStream()
+        .build();
+    keeper.setStream(equipmentStream);
 
     // Increment year
     keeper.incrementYear();
@@ -305,8 +328,13 @@ public class StreamKeeperTest {
     Scope unknownScope = new Scope("test stanza", "unknown app", "unknown substance");
 
     assertThrows(IllegalStateException.class, () -> {
-      keeper.setStream(unknownScope, "domestic",
-                       new EngineNumber(new BigDecimal("100"), "kg"));
+      CalculatedStream testStream = new CalculatedStreamBuilder()
+          .setUseKey(unknownScope)
+          .setName("domestic")
+          .setValue(new EngineNumber(new BigDecimal("100"), "kg"))
+          .asOutcomeStream()
+          .build();
+      keeper.setStream(testStream);
     }, "Should throw for unknown substance in setStream");
   }
 
@@ -333,8 +361,13 @@ public class StreamKeeperTest {
     keeper.ensureSubstance(testScope);
 
     assertThrows(IllegalArgumentException.class, () -> {
-      keeper.setStream(testScope, "unknown_stream",
-                       new EngineNumber(new BigDecimal("100"), "kg"));
+      CalculatedStream testStream = new CalculatedStreamBuilder()
+          .setUseKey(testScope)
+          .setName("unknown_stream")
+          .setValue(new EngineNumber(new BigDecimal("100"), "kg"))
+          .asOutcomeStream()
+          .build();
+      keeper.setStream(testStream);
     }, "Should throw for unknown stream in setStream");
 
     assertThrows(IllegalArgumentException.class, () -> {
@@ -388,9 +421,14 @@ public class StreamKeeperTest {
     keeper.setInitialCharge(testScope, "domestic",
                            new EngineNumber(new BigDecimal("2.0"), "kg / unit"));
 
-    // Set manufacture to 10 units - this should trigger setStreamForSalesWithUnits
-    keeper.setStream(testScope, "domestic",
-                    new EngineNumber(new BigDecimal("10"), "units"));
+    // Set manufacture to 10 units using CalculatedStream - this should trigger setStreamForSalesWithUnits
+    CalculatedStream domesticUnitsStream = new CalculatedStreamBuilder()
+        .setUseKey(testScope)
+        .setName("domestic")
+        .setValue(new EngineNumber(new BigDecimal("10"), "units"))
+        .asSalesStream()
+        .build();
+    keeper.setStream(domesticUnitsStream);
 
     // Get the stream value back - should be converted to kg (10 units * 2 kg/unit = 20 kg)
     EngineNumber result = keeper.getStream(testScope, "domestic");
@@ -418,8 +456,13 @@ public class StreamKeeperTest {
 
     // Attempting to set units should throw an exception
     assertThrows(RuntimeException.class, () -> {
-      keeper.setStream(testScope, "domestic",
-                      new EngineNumber(new BigDecimal("10"), "units"));
+      CalculatedStream testStream = new CalculatedStreamBuilder()
+          .setUseKey(testScope)
+          .setName("domestic")
+          .setValue(new EngineNumber(new BigDecimal("10"), "units"))
+          .asSalesStream()
+          .build();
+      keeper.setStream(testStream);
     }, "Should throw exception when initial charge is zero");
   }
 
@@ -438,8 +481,13 @@ public class StreamKeeperTest {
 
     // Don't enable the stream - this should cause the assertion to fail
     assertThrows(RuntimeException.class, () -> {
-      keeper.setStream(testScope, "domestic",
-                      new EngineNumber(new BigDecimal("10"), "kg"));
+      CalculatedStream testStream = new CalculatedStreamBuilder()
+          .setUseKey(testScope)
+          .setName("domestic")
+          .setValue(new EngineNumber(new BigDecimal("10"), "kg"))
+          .asSalesStream()
+          .build();
+      keeper.setStream(testStream);
     }, "Should throw exception when stream is not enabled and value is non-zero");
   }
 
@@ -452,10 +500,15 @@ public class StreamKeeperTest {
     Scope testScope = createTestScope();
     keeper.ensureSubstance(testScope);
 
-    // Enable the stream first, then set it to zero - this should work
+    // Enable the stream first, then set it to zero using CalculatedStream - this should work
     keeper.markStreamAsEnabled(testScope, "domestic");
-    keeper.setStream(testScope, "domestic",
-                    new EngineNumber(BigDecimal.ZERO, "kg"));
+    CalculatedStream zeroStream = new CalculatedStreamBuilder()
+        .setUseKey(testScope)
+        .setName("domestic")
+        .setValue(new EngineNumber(BigDecimal.ZERO, "kg"))
+        .asSalesStream()
+        .build();
+    keeper.setStream(zeroStream);
 
     // Verify the value was set to zero
     EngineNumber result = keeper.getStream(testScope, "domestic");
@@ -475,9 +528,14 @@ public class StreamKeeperTest {
     // Enable the stream first
     keeper.markStreamAsEnabled(testScope, "domestic");
 
-    // Set non-zero value - this should work
-    keeper.setStream(testScope, "domestic",
-                    new EngineNumber(new BigDecimal("10"), "kg"));
+    // Set non-zero value using CalculatedStream - this should work
+    CalculatedStream nonZeroStream = new CalculatedStreamBuilder()
+        .setUseKey(testScope)
+        .setName("domestic")
+        .setValue(new EngineNumber(new BigDecimal("10"), "kg"))
+        .asSalesStream()
+        .build();
+    keeper.setStream(nonZeroStream);
 
     // Verify the value was set correctly
     EngineNumber result = keeper.getStream(testScope, "domestic");
@@ -677,13 +735,39 @@ public class StreamKeeperTest {
     keeper.markStreamAsEnabled(testScope, "domestic");
     keeper.markStreamAsEnabled(testScope, "import");
 
-    // Set up initial values
-    keeper.setStream(testScope, "domestic", new EngineNumber(new BigDecimal("100"), "kg"));
-    keeper.setStream(testScope, "import", new EngineNumber(new BigDecimal("50"), "kg"));
+    // Set up initial values using CalculatedStream
+    CalculatedStream domesticInitialStream = new CalculatedStreamBuilder()
+        .setUseKey(testScope)
+        .setName("domestic")
+        .setValue(new EngineNumber(new BigDecimal("100"), "kg"))
+        .asOutcomeStream()
+        .build();
+    keeper.setStream(domesticInitialStream);
 
-    // Set up recycling
-    keeper.setStream(testScope, "recycleRecharge", new EngineNumber(new BigDecimal("40"), "kg"));
-    keeper.setStream(testScope, "recycleEol", new EngineNumber(new BigDecimal("10"), "kg"));
+    CalculatedStream importInitialStream = new CalculatedStreamBuilder()
+        .setUseKey(testScope)
+        .setName("import")
+        .setValue(new EngineNumber(new BigDecimal("50"), "kg"))
+        .asOutcomeStream()
+        .build();
+    keeper.setStream(importInitialStream);
+
+    // Set up recycling using CalculatedStream
+    CalculatedStream recycleRechargeStream = new CalculatedStreamBuilder()
+        .setUseKey(testScope)
+        .setName("recycleRecharge")
+        .setValue(new EngineNumber(new BigDecimal("40"), "kg"))
+        .asOutcomeStream()
+        .build();
+    keeper.setStream(recycleRechargeStream);
+
+    CalculatedStream recycleEolStream = new CalculatedStreamBuilder()
+        .setUseKey(testScope)
+        .setName("recycleEol")
+        .setValue(new EngineNumber(new BigDecimal("10"), "kg"))
+        .asOutcomeStream()
+        .build();
+    keeper.setStream(recycleEolStream);
 
     // Create distribution (70% domestic, 30% import)
     SalesStreamDistribution distribution = new SalesStreamDistribution(
