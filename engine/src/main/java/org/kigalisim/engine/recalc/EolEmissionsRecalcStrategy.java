@@ -16,9 +16,9 @@ import org.kigalisim.engine.number.UnitConverter;
 import org.kigalisim.engine.state.OverridingConverterStateGetter;
 import org.kigalisim.engine.state.SimulationState;
 import org.kigalisim.engine.state.UseKey;
+import org.kigalisim.engine.support.ExceptionsGenerator;
 import org.kigalisim.engine.support.SimulationStateUpdate;
 import org.kigalisim.engine.support.SimulationStateUpdateBuilder;
-import org.kigalisim.engine.support.ExceptionsGenerator;
 
 /**
  * Strategy for recalculating end-of-life emissions.

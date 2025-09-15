@@ -11,8 +11,8 @@ package org.kigalisim.engine.recalc;
 
 import java.util.Optional;
 import org.kigalisim.engine.number.UnitConverter;
-import org.kigalisim.engine.state.StateGetter;
 import org.kigalisim.engine.state.SimulationState;
+import org.kigalisim.engine.state.StateGetter;
 
 /**
  * Builder for creating RecalcKit instances.

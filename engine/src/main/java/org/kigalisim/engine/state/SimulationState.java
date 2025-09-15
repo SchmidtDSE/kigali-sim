@@ -372,12 +372,12 @@ public class SimulationState {
    */
   public EngineNumber getTotalInductionStream(UseKey useKey) {
     EngineNumber inductionEol = getInductionStream(useKey, RecoveryStage.EOL);
-    EngineNumber inductionServicing = getInductionStream(useKey, RecoveryStage.RECHARGE);
+    EngineNumber inductionRecharge = getInductionStream(useKey, RecoveryStage.RECHARGE);
 
     EngineNumber eolConverted = unitConverter.convert(inductionEol, "kg");
-    EngineNumber servicingConverted = unitConverter.convert(inductionServicing, "kg");
+    EngineNumber rechargeConverted = unitConverter.convert(inductionRecharge, "kg");
 
-    BigDecimal total = eolConverted.getValue().add(servicingConverted.getValue());
+    BigDecimal total = eolConverted.getValue().add(rechargeConverted.getValue());
     return new EngineNumber(total, "kg");
   }
 

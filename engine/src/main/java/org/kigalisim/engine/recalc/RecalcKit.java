@@ -10,8 +10,8 @@
 package org.kigalisim.engine.recalc;
 
 import org.kigalisim.engine.number.UnitConverter;
-import org.kigalisim.engine.state.StateGetter;
 import org.kigalisim.engine.state.SimulationState;
+import org.kigalisim.engine.state.StateGetter;
 
 /**
  * Container for dependencies needed by recalculation strategies.
