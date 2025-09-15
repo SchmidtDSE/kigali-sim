@@ -29,12 +29,12 @@ import org.kigalisim.engine.state.ConverterStateGetter;
 import org.kigalisim.engine.state.OverridingConverterStateGetter;
 import org.kigalisim.engine.state.Scope;
 import org.kigalisim.engine.state.SimpleUseKey;
-import org.kigalisim.engine.state.StreamKeeper;
+import org.kigalisim.engine.state.SimulationState;
 import org.kigalisim.engine.state.SubstanceInApplicationId;
 import org.kigalisim.engine.state.UseKey;
 import org.kigalisim.engine.state.YearMatcher;
-import org.kigalisim.engine.support.CalculatedStream;
-import org.kigalisim.engine.support.CalculatedStreamBuilder;
+import org.kigalisim.engine.support.SimulationStateUpdate;
+import org.kigalisim.engine.support.SimulationStateUpdateBuilder;
 import org.kigalisim.engine.support.ChangeExecutor;
 import org.kigalisim.engine.support.EngineSupportUtils;
 import org.kigalisim.engine.support.ExceptionsGenerator;
@@ -71,13 +71,12 @@ public class SingleThreadEngine implements Engine {
 
   private final int startYear;
   private final int endYear;
-  private int currentYear;
   private String scenarioName;
   private int trialNumber;
 
   private final ConverterStateGetter stateGetter;
   private final UnitConverter unitConverter;
-  private final StreamKeeper streamKeeper;
+  private final SimulationState streamKeeper;
   private final ChangeExecutor changeExecutor;
   private Scope scope;
 
@@ -94,14 +93,14 @@ public class SingleThreadEngine implements Engine {
 
     this.startYear = startYearRearrange;
     this.endYear = endYearRearrange;
-    currentYear = startYear;
     this.scenarioName = "";
     this.trialNumber = 0;
 
     stateGetter = new ConverterStateGetter(this);
     unitConverter = new UnitConverter(stateGetter);
-    this.streamKeeper = new StreamKeeper(
+    this.streamKeeper = new SimulationState(
         new OverridingConverterStateGetter(stateGetter), unitConverter);
+    this.streamKeeper.setCurrentYear(startYear);
     this.changeExecutor = new ChangeExecutor(this);
     scope = new Scope(null, null, null);
   }
@@ -206,7 +205,7 @@ public class SingleThreadEngine implements Engine {
   /**
    * {@inheritDoc}
    */
-  public StreamKeeper getStreamKeeper() {
+  public SimulationState getStreamKeeper() {
     return streamKeeper;
   }
 
@@ -215,18 +214,17 @@ public class SingleThreadEngine implements Engine {
     if (getIsDone()) {
       throw new RuntimeException("Already completed.");
     }
-    currentYear += 1;
     streamKeeper.incrementYear();
   }
 
   @Override
   public int getYear() {
-    return currentYear;
+    return streamKeeper.getCurrentYear();
   }
 
   @Override
   public boolean getIsDone() {
-    return currentYear > endYear;
+    return streamKeeper.getCurrentYear() > endYear;
   }
 
   @Override
@@ -269,13 +267,13 @@ public class SingleThreadEngine implements Engine {
       );
 
       // Set implicit recharge BEFORE distribution (always full amount)
-      CalculatedStream implicitRechargeStream = new CalculatedStreamBuilder()
+      SimulationStateUpdate implicitRechargeStream = new SimulationStateUpdateBuilder()
           .setUseKey(keyEffective)
           .setName("implicitRecharge")
           .setValue(rechargeVolume)
           .asOutcomeStream()
           .build();
-      streamKeeper.setStream(implicitRechargeStream);
+      streamKeeper.update(implicitRechargeStream);
 
       // Distribute recharge proportionally for domestic/import streams
       BigDecimal rechargeToAdd;
@@ -291,17 +289,17 @@ public class SingleThreadEngine implements Engine {
       valueToSet = new EngineNumber(totalWithRecharge, "kg");
     } else if (isSales) {
       // Sales stream without units - clear implicit recharge
-      CalculatedStream clearImplicitRechargeStream = new CalculatedStreamBuilder()
+      SimulationStateUpdate clearImplicitRechargeStream = new SimulationStateUpdateBuilder()
           .setUseKey(keyEffective)
           .setName("implicitRecharge")
           .setValue(new EngineNumber(BigDecimal.ZERO, "kg"))
           .asOutcomeStream()
           .build();
-      streamKeeper.setStream(clearImplicitRechargeStream);
+      streamKeeper.update(clearImplicitRechargeStream);
     }
 
     // Use the subtractRecycling parameter when setting the stream
-    CalculatedStream calculatedStream = new CalculatedStreamBuilder()
+    SimulationStateUpdate calculatedStream = new SimulationStateUpdateBuilder()
         .setUseKey(keyEffective)
         .setName(name)
         .setValue(valueToSet)
@@ -309,7 +307,7 @@ public class SingleThreadEngine implements Engine {
         .setDistribution(update.getDistribution().orElse(null))
         .setSalesDistributionRequired(isSalesStream(name))
         .build();
-    streamKeeper.setStream(calculatedStream);
+    streamKeeper.update(calculatedStream);
 
     // Track the units last used to specify this stream (only for user-initiated calls)
     if (!propagateChanges) {
@@ -445,9 +443,9 @@ public class SingleThreadEngine implements Engine {
   @Override
   public EngineNumber getVariable(String name) {
     if ("yearsElapsed".equals(name)) {
-      return new EngineNumber(BigDecimal.valueOf(currentYear - startYear), "years");
+      return new EngineNumber(BigDecimal.valueOf(streamKeeper.getCurrentYear() - startYear), "years");
     } else if ("yearAbsolute".equals(name)) {
-      return new EngineNumber(BigDecimal.valueOf(currentYear), "year");
+      return new EngineNumber(BigDecimal.valueOf(streamKeeper.getCurrentYear()), "year");
     } else {
       return scope.getVariable(name);
     }
@@ -631,13 +629,13 @@ public class SingleThreadEngine implements Engine {
       // Only clear implicit recharge if NOT using explicit recharge (i.e., when units were used)
       // This ensures implicit recharge persists for carried-over values
       if (useExplicitRecharge) {
-        CalculatedStream clearImplicitRechargeStream = new CalculatedStreamBuilder()
+        SimulationStateUpdate clearImplicitRechargeStream = new SimulationStateUpdateBuilder()
             .setUseKey(scope)
             .setName("implicitRecharge")
             .setValue(new EngineNumber(BigDecimal.ZERO, "kg"))
             .asOutcomeStream()
             .build();
-        streamKeeper.setStream(clearImplicitRechargeStream);
+        streamKeeper.update(clearImplicitRechargeStream);
       }
     }
   }
@@ -873,7 +871,7 @@ public class SingleThreadEngine implements Engine {
         .map(substanceId -> {
           String application = substanceId.getApplication();
           String substance = substanceId.getSubstance();
-          int year = currentYear;
+          int year = streamKeeper.getCurrentYear();
           return serializer.getResult(new SimpleUseKey(application, substance), year);
         })
         .collect(Collectors.toList());
@@ -886,7 +884,7 @@ public class SingleThreadEngine implements Engine {
    * @return True if in range or no matcher provided
    */
   private boolean getIsInRange(YearMatcher yearMatcher) {
-    return EngineSupportUtils.isInRange(yearMatcher, currentYear);
+    return EngineSupportUtils.isInRange(yearMatcher, streamKeeper.getCurrentYear());
   }
 
   /**
@@ -1392,7 +1390,7 @@ public class SingleThreadEngine implements Engine {
     EngineNumber currentValueRaw = getStream(stream);
     EngineNumber currentValue = unitConverter.convert(currentValueRaw, "kg");
 
-    StreamKeeper streamKeeper = getStreamKeeper();
+    SimulationState streamKeeper = getStreamKeeper();
     EngineNumber lastSpecified = streamKeeper.getLastSpecifiedValue(scope, stream);
 
     if (lastSpecified != null) {
@@ -1472,7 +1470,7 @@ public class SingleThreadEngine implements Engine {
     EngineNumber currentValueRaw = getStream(stream);
     EngineNumber currentValue = unitConverter.convert(currentValueRaw, "kg");
 
-    StreamKeeper streamKeeper = getStreamKeeper();
+    SimulationState streamKeeper = getStreamKeeper();
     EngineNumber lastSpecified = streamKeeper.getLastSpecifiedValue(scope, stream);
 
     if (lastSpecified != null) {

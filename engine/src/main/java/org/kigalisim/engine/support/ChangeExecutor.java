@@ -16,7 +16,7 @@ import org.kigalisim.engine.Engine;
 import org.kigalisim.engine.number.EngineNumber;
 import org.kigalisim.engine.number.UnitConverter;
 import org.kigalisim.engine.recalc.SalesStreamDistribution;
-import org.kigalisim.engine.state.StreamKeeper;
+import org.kigalisim.engine.state.SimulationState;
 import org.kigalisim.engine.state.UseKey;
 import org.kigalisim.engine.state.YearMatcher;
 
@@ -135,7 +135,7 @@ public class ChangeExecutor {
     YearMatcher yearMatcher = config.getYearMatcher();
     UseKey useKeyEffective = config.getUseKeyEffective();
 
-    StreamKeeper streamKeeper = engine.getStreamKeeper();
+    SimulationState streamKeeper = engine.getStreamKeeper();
     EngineNumber lastSpecified = streamKeeper.getLastSpecifiedValue(useKeyEffective, stream);
     if (lastSpecified == null) {
       return; // No base value, no change
@@ -172,7 +172,7 @@ public class ChangeExecutor {
     UseKey useKeyEffective = config.getUseKeyEffective();
 
     // Get the distribution ratios for domestic and import
-    StreamKeeper streamKeeper = engine.getStreamKeeper();
+    SimulationState streamKeeper = engine.getStreamKeeper();
     SalesStreamDistribution distribution = streamKeeper.getDistribution(useKeyEffective);
     BigDecimal percentDomestic = distribution.getPercentDomestic();
     BigDecimal percentImport = distribution.getPercentImport();
@@ -209,7 +209,7 @@ public class ChangeExecutor {
     YearMatcher yearMatcher = config.getYearMatcher();
     UseKey useKeyEffective = config.getUseKeyEffective();
 
-    StreamKeeper streamKeeper = engine.getStreamKeeper();
+    SimulationState streamKeeper = engine.getStreamKeeper();
     EngineNumber lastSpecified = streamKeeper.getLastSpecifiedValue(useKeyEffective, stream);
 
     if (lastSpecified == null) {

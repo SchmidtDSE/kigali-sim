@@ -1,5 +1,5 @@
 /**
- * Unit tests for the CalculatedStreamBuilder class.
+ * Unit tests for the SimulationStateUpdateBuilder class.
  *
  * @license BSD-3-Clause
  */
@@ -20,17 +20,17 @@ import org.kigalisim.engine.recalc.SalesStreamDistribution;
 import org.kigalisim.engine.state.Scope;
 
 /**
- * Tests for the CalculatedStreamBuilder class.
+ * Tests for the SimulationStateUpdateBuilder class.
  */
-public class CalculatedStreamBuilderTest {
+public class SimulationStateUpdateBuilderTest {
 
   /**
-   * Test that CalculatedStreamBuilder can be created.
+   * Test that SimulationStateUpdateBuilder can be created.
    */
   @Test
   public void testInitializes() {
-    CalculatedStreamBuilder builder = new CalculatedStreamBuilder();
-    assertNotNull(builder, "CalculatedStreamBuilder should be constructable");
+    SimulationStateUpdateBuilder builder = new SimulationStateUpdateBuilder();
+    assertNotNull(builder, "SimulationStateUpdateBuilder should be constructable");
   }
 
   /**
@@ -41,7 +41,7 @@ public class CalculatedStreamBuilderTest {
     Scope useKey = new Scope("test", "app", "substance");
     EngineNumber value = new EngineNumber(new BigDecimal("100"), "kg");
 
-    CalculatedStream stream = new CalculatedStreamBuilder()
+    SimulationStateUpdate stream = new SimulationStateUpdateBuilder()
         .setUseKey(useKey)
         .setName("domestic")
         .setValue(value)
@@ -64,7 +64,7 @@ public class CalculatedStreamBuilderTest {
     Scope useKey = new Scope("test", "app", "substance");
     EngineNumber value = new EngineNumber(new BigDecimal("50"), "kg");
 
-    CalculatedStream stream = new CalculatedStreamBuilder()
+    SimulationStateUpdate stream = new SimulationStateUpdateBuilder()
         .setUseKey(useKey)
         .setName("import")
         .setValue(value)
@@ -84,7 +84,7 @@ public class CalculatedStreamBuilderTest {
     SalesStreamDistribution distribution = new SalesStreamDistribution(
         new BigDecimal("0.6"), new BigDecimal("0.4"));
 
-    CalculatedStream stream = new CalculatedStreamBuilder()
+    SimulationStateUpdate stream = new SimulationStateUpdateBuilder()
         .setUseKey(useKey)
         .setName("domestic")
         .setValue(value)
@@ -102,7 +102,7 @@ public class CalculatedStreamBuilderTest {
     Scope useKey = new Scope("test", "app", "substance");
     EngineNumber value = new EngineNumber(new BigDecimal("25"), "units");
 
-    CalculatedStream stream = new CalculatedStreamBuilder()
+    SimulationStateUpdate stream = new SimulationStateUpdateBuilder()
         .setUseKey(useKey)
         .setName("equipment")
         .setValue(value)
@@ -120,7 +120,7 @@ public class CalculatedStreamBuilderTest {
     Scope useKey = new Scope("test", "app", "substance");
     EngineNumber value = new EngineNumber(new BigDecimal("30"), "tCO2e");
 
-    CalculatedStream stream = new CalculatedStreamBuilder()
+    SimulationStateUpdate stream = new SimulationStateUpdateBuilder()
         .setUseKey(useKey)
         .setName("consumption")
         .setValue(value)
@@ -140,7 +140,7 @@ public class CalculatedStreamBuilderTest {
     Scope useKey = new Scope("test", "app", "substance");
     EngineNumber value = new EngineNumber(new BigDecimal("80"), "kg");
 
-    CalculatedStream stream = new CalculatedStreamBuilder()
+    SimulationStateUpdate stream = new SimulationStateUpdateBuilder()
         .setUseKey(useKey)
         .setName("domestic")
         .setValue(value)
@@ -159,7 +159,7 @@ public class CalculatedStreamBuilderTest {
     EngineNumber value = new EngineNumber(new BigDecimal("100"), "kg");
 
     assertThrows(IllegalStateException.class, () -> {
-      new CalculatedStreamBuilder()
+      new SimulationStateUpdateBuilder()
           .setName("domestic")
           .setValue(value)
           .build();
@@ -175,7 +175,7 @@ public class CalculatedStreamBuilderTest {
     EngineNumber value = new EngineNumber(new BigDecimal("100"), "kg");
 
     assertThrows(IllegalStateException.class, () -> {
-      new CalculatedStreamBuilder()
+      new SimulationStateUpdateBuilder()
           .setUseKey(useKey)
           .setValue(value)
           .build();
@@ -190,7 +190,7 @@ public class CalculatedStreamBuilderTest {
     Scope useKey = new Scope("test", "app", "substance");
 
     assertThrows(IllegalStateException.class, () -> {
-      new CalculatedStreamBuilder()
+      new SimulationStateUpdateBuilder()
           .setUseKey(useKey)
           .setName("domestic")
           .build();
@@ -207,7 +207,7 @@ public class CalculatedStreamBuilderTest {
     SalesStreamDistribution distribution = new SalesStreamDistribution(
         new BigDecimal("0.5"), new BigDecimal("0.5"));
 
-    CalculatedStream stream = new CalculatedStreamBuilder()
+    SimulationStateUpdate stream = new SimulationStateUpdateBuilder()
         .setUseKey(useKey)
         .setName("import")
         .setValue(value)
@@ -233,15 +233,15 @@ public class CalculatedStreamBuilderTest {
     EngineNumber value1 = new EngineNumber(new BigDecimal("10"), "kg");
     EngineNumber value2 = new EngineNumber(new BigDecimal("20"), "kg");
 
-    CalculatedStreamBuilder builder = new CalculatedStreamBuilder()
+    SimulationStateUpdateBuilder builder = new SimulationStateUpdateBuilder()
         .setUseKey(useKey)
         .setName("domestic");
 
-    CalculatedStream stream1 = builder
+    SimulationStateUpdate stream1 = builder
         .setValue(value1)
         .build();
 
-    CalculatedStream stream2 = builder
+    SimulationStateUpdate stream2 = builder
         .setValue(value2)
         .build();
 

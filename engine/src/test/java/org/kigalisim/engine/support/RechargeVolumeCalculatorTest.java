@@ -16,7 +16,7 @@ import org.junit.jupiter.api.Test;
 import org.kigalisim.engine.number.EngineNumber;
 import org.kigalisim.engine.state.ConverterStateGetter;
 import org.kigalisim.engine.state.Scope;
-import org.kigalisim.engine.state.StreamKeeper;
+import org.kigalisim.engine.state.SimulationState;
 import org.kigalisim.engine.state.UseKey;
 
 /**
@@ -29,7 +29,7 @@ public class RechargeVolumeCalculatorTest {
     // Setup mocks
     UseKey scope = mock(UseKey.class);
     ConverterStateGetter stateGetter = mock(ConverterStateGetter.class);
-    StreamKeeper streamKeeper = mock(StreamKeeper.class);
+    SimulationState streamKeeper = mock(SimulationState.class);
     org.kigalisim.engine.Engine engine = mock(org.kigalisim.engine.Engine.class);
 
     when(scope.getApplication()).thenReturn("testApp");
@@ -58,7 +58,7 @@ public class RechargeVolumeCalculatorTest {
     // Setup mocks
     UseKey scope = mock(UseKey.class);
     ConverterStateGetter stateGetter = mock(ConverterStateGetter.class);
-    StreamKeeper streamKeeper = mock(StreamKeeper.class);
+    SimulationState streamKeeper = mock(SimulationState.class);
     org.kigalisim.engine.Engine engine = mock(org.kigalisim.engine.Engine.class);
 
     when(scope.getApplication()).thenReturn("testApp");
@@ -92,7 +92,7 @@ public class RechargeVolumeCalculatorTest {
     // Setup mocks
     Scope scope = mock(Scope.class);
     ConverterStateGetter stateGetter = mock(ConverterStateGetter.class);
-    StreamKeeper streamKeeper = mock(StreamKeeper.class);
+    SimulationState streamKeeper = mock(SimulationState.class);
     org.kigalisim.engine.Engine engine = mock(org.kigalisim.engine.Engine.class);
 
     // Return null for application or substance to trigger exception

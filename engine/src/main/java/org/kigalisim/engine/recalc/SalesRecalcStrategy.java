@@ -15,10 +15,10 @@ import org.kigalisim.engine.Engine;
 import org.kigalisim.engine.number.EngineNumber;
 import org.kigalisim.engine.number.UnitConverter;
 import org.kigalisim.engine.state.OverridingConverterStateGetter;
-import org.kigalisim.engine.state.StreamKeeper;
+import org.kigalisim.engine.state.SimulationState;
 import org.kigalisim.engine.state.UseKey;
-import org.kigalisim.engine.support.CalculatedStream;
-import org.kigalisim.engine.support.CalculatedStreamBuilder;
+import org.kigalisim.engine.support.SimulationStateUpdate;
+import org.kigalisim.engine.support.SimulationStateUpdateBuilder;
 import org.kigalisim.engine.support.EngineSupportUtils;
 import org.kigalisim.engine.support.ExceptionsGenerator;
 import org.kigalisim.engine.support.StreamUpdate;
@@ -53,7 +53,7 @@ public class SalesRecalcStrategy implements RecalcStrategy {
       ExceptionsGenerator.raiseNoAppOrSubstance("recalculating sales", "");
     }
 
-    StreamKeeper streamKeeper = kit.getStreamKeeper();
+    SimulationState streamKeeper = kit.getStreamKeeper();
 
     // Get recharge population
     EngineNumber basePopulation = target.getStream("priorEquipment", Optional.of(scopeEffective), Optional.empty());
@@ -133,31 +133,31 @@ public class SalesRecalcStrategy implements RecalcStrategy {
     // Set individual recycling streams
     EngineNumber newRecycleEolValue = new EngineNumber(eolRecycledKg, "kg");
     EngineNumber newRecycleRechargeValue = new EngineNumber(rechargeRecycledKg, "kg");
-    CalculatedStream recycleEolStream = new CalculatedStreamBuilder()
+    SimulationStateUpdate recycleEolStream = new SimulationStateUpdateBuilder()
         .setUseKey(scopeEffective)
         .setName("recycleEol")
         .setValue(newRecycleEolValue)
         .asOutcomeStream()
         .build();
-    streamKeeper.setStream(recycleEolStream);
+    streamKeeper.update(recycleEolStream);
 
-    CalculatedStream recycleRechargeStream = new CalculatedStreamBuilder()
+    SimulationStateUpdate recycleRechargeStream = new SimulationStateUpdateBuilder()
         .setUseKey(scopeEffective)
         .setName("recycleRecharge")
         .setValue(newRecycleRechargeValue)
         .asOutcomeStream()
         .build();
-    streamKeeper.setStream(recycleRechargeStream);
+    streamKeeper.update(recycleRechargeStream);
 
     // Also set total recycle stream for backward compatibility
     EngineNumber newRecycleValue = new EngineNumber(recycledKg, "kg");
-    CalculatedStream recycleStream = new CalculatedStreamBuilder()
+    SimulationStateUpdate recycleStream = new SimulationStateUpdateBuilder()
         .setUseKey(scopeEffective)
         .setName("recycle")
         .setValue(newRecycleValue)
         .asOutcomeStream()
         .build();
-    streamKeeper.setStream(recycleStream);
+    streamKeeper.update(recycleStream);
 
     // Get implicit recharge to avoid double-counting
     EngineNumber implicitRechargeRaw = target.getStream("implicitRecharge", Optional.of(scopeEffective), Optional.empty());
@@ -302,7 +302,7 @@ public class SalesRecalcStrategy implements RecalcStrategy {
    * @param implicitRechargeKg the implicit recharge amount in kg
    * @return true if unit-based specifications should be preserved
    */
-  private boolean getHasUnitBasedSpecs(StreamKeeper streamKeeper, UseKey scopeEffective, BigDecimal implicitRechargeKg) {
+  private boolean getHasUnitBasedSpecs(SimulationState streamKeeper, UseKey scopeEffective, BigDecimal implicitRechargeKg) {
     // Check if we had unit-based specifications that need to be preserved
     boolean hasUnitBasedSpecs = EngineSupportUtils.hasUnitBasedSalesSpecifications(streamKeeper, scopeEffective);
 
@@ -333,7 +333,7 @@ public class SalesRecalcStrategy implements RecalcStrategy {
    * @return the recycled amount in kg for this stage
    */
   private BigDecimal calculateRecyclingForStage(
-      StreamKeeper streamKeeper,
+      SimulationState streamKeeper,
       OverridingConverterStateGetter stateGetter,
       UnitConverter unitConverter,
       UseKey scopeEffective,
@@ -364,7 +364,7 @@ public class SalesRecalcStrategy implements RecalcStrategy {
    * @param hasUnitBasedSpecs whether the specification is unit-based
    * @return the effective induction rate as a ratio (0.0 to 1.0)
    */
-  private BigDecimal getEffectiveInductionRate(StreamKeeper streamKeeper, UseKey scopeEffective, RecoveryStage stage, boolean hasUnitBasedSpecs) {
+  private BigDecimal getEffectiveInductionRate(SimulationState streamKeeper, UseKey scopeEffective, RecoveryStage stage, boolean hasUnitBasedSpecs) {
     EngineNumber inductionRate = streamKeeper.getInductionRate(scopeEffective, stage);
 
     // Check if induction rate was explicitly set (not null)

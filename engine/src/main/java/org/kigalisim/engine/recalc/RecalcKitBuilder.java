@@ -12,14 +12,14 @@ package org.kigalisim.engine.recalc;
 import java.util.Optional;
 import org.kigalisim.engine.number.UnitConverter;
 import org.kigalisim.engine.state.StateGetter;
-import org.kigalisim.engine.state.StreamKeeper;
+import org.kigalisim.engine.state.SimulationState;
 
 /**
  * Builder for creating RecalcKit instances.
  */
 public class RecalcKitBuilder {
 
-  private Optional<StreamKeeper> streamKeeper;
+  private Optional<SimulationState> streamKeeper;
   private Optional<UnitConverter> unitConverter;
   private Optional<StateGetter> stateGetter;
 
@@ -38,7 +38,7 @@ public class RecalcKitBuilder {
    * @param streamKeeper The stream keeper to set
    * @return This builder for chaining
    */
-  public RecalcKitBuilder setStreamKeeper(StreamKeeper streamKeeper) {
+  public RecalcKitBuilder setStreamKeeper(SimulationState streamKeeper) {
     this.streamKeeper = Optional.of(streamKeeper);
     return this;
   }
@@ -73,7 +73,7 @@ public class RecalcKitBuilder {
    */
   public RecalcKit build() {
     if (streamKeeper.isEmpty()) {
-      throw new IllegalStateException("StreamKeeper is required");
+      throw new IllegalStateException("SimulationState is required");
     }
     if (unitConverter.isEmpty()) {
       throw new IllegalStateException("UnitConverter is required");

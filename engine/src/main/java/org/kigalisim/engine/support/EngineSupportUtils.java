@@ -14,7 +14,7 @@ import org.kigalisim.engine.number.EngineNumber;
 import org.kigalisim.engine.number.UnitConverter;
 import org.kigalisim.engine.state.ConverterStateGetter;
 import org.kigalisim.engine.state.OverridingConverterStateGetter;
-import org.kigalisim.engine.state.StreamKeeper;
+import org.kigalisim.engine.state.SimulationState;
 import org.kigalisim.engine.state.UseKey;
 import org.kigalisim.engine.state.YearMatcher;
 
@@ -95,11 +95,11 @@ public final class EngineSupportUtils {
    * When streams are specified in units, certain operations need different handling
    * (e.g., retirement affects recharge calculations, carry-over logic differs).
    *
-   * @param streamKeeper the StreamKeeper instance to query
+   * @param streamKeeper the SimulationState instance to query
    * @param scope the scope to check
    * @return true if sales streams were specified in units
    */
-  public static boolean hasUnitBasedSalesSpecifications(StreamKeeper streamKeeper, UseKey scope) {
+  public static boolean hasUnitBasedSalesSpecifications(SimulationState streamKeeper, UseKey scope) {
     if (!streamKeeper.hasLastSpecifiedValue(scope, "sales")) {
       return false;
     }

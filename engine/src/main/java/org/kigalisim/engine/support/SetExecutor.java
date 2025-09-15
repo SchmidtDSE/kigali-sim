@@ -16,7 +16,7 @@ import java.util.Optional;
 import org.kigalisim.engine.Engine;
 import org.kigalisim.engine.number.EngineNumber;
 import org.kigalisim.engine.recalc.SalesStreamDistribution;
-import org.kigalisim.engine.state.StreamKeeper;
+import org.kigalisim.engine.state.SimulationState;
 import org.kigalisim.engine.state.UseKey;
 import org.kigalisim.engine.state.YearMatcher;
 
@@ -57,7 +57,7 @@ public class SetExecutor {
     }
 
     // Get distribution ratios like SalesRecalcStrategy does
-    StreamKeeper streamKeeper = engine.getStreamKeeper();
+    SimulationState streamKeeper = engine.getStreamKeeper();
     streamKeeper.setLastSpecifiedValue(useKey, "sales", value);
     SalesStreamDistribution distribution = streamKeeper.getDistribution(useKey);
 

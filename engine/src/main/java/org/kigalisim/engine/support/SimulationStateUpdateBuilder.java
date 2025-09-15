@@ -6,12 +6,12 @@ import org.kigalisim.engine.recalc.SalesStreamDistribution;
 import org.kigalisim.engine.state.UseKey;
 
 /**
- * Builder for creating CalculatedStream instances.
+ * Builder for creating SimulationStateUpdate instances.
  *
- * <p>Provides a fluent interface for constructing CalculatedStream objects
+ * <p>Provides a fluent interface for constructing SimulationStateUpdate objects
  * with validation and sensible defaults.</p>
  */
-public final class CalculatedStreamBuilder {
+public final class SimulationStateUpdateBuilder {
   private UseKey useKey;
   private String name;
   private EngineNumber value;
@@ -20,9 +20,9 @@ public final class CalculatedStreamBuilder {
   private boolean salesDistributionRequired = false;  // Default for outcome streams
 
   /**
-   * Creates a new CalculatedStreamBuilder with default values.
+   * Creates a new SimulationStateUpdateBuilder with default values.
    */
-  public CalculatedStreamBuilder() {
+  public SimulationStateUpdateBuilder() {
     // Default values are set in field declarations
   }
 
@@ -32,7 +32,7 @@ public final class CalculatedStreamBuilder {
    * @param useKey the use key
    * @return this builder
    */
-  public CalculatedStreamBuilder setUseKey(UseKey useKey) {
+  public SimulationStateUpdateBuilder setUseKey(UseKey useKey) {
     this.useKey = useKey;
     return this;
   }
@@ -43,7 +43,7 @@ public final class CalculatedStreamBuilder {
    * @param name the stream name
    * @return this builder
    */
-  public CalculatedStreamBuilder setName(String name) {
+  public SimulationStateUpdateBuilder setName(String name) {
     this.name = name;
     return this;
   }
@@ -54,7 +54,7 @@ public final class CalculatedStreamBuilder {
    * @param value the stream value
    * @return this builder
    */
-  public CalculatedStreamBuilder setValue(EngineNumber value) {
+  public SimulationStateUpdateBuilder setValue(EngineNumber value) {
     this.value = value;
     return this;
   }
@@ -65,7 +65,7 @@ public final class CalculatedStreamBuilder {
    * @param subtractRecycling whether to subtract recycling
    * @return this builder
    */
-  public CalculatedStreamBuilder setSubtractRecycling(boolean subtractRecycling) {
+  public SimulationStateUpdateBuilder setSubtractRecycling(boolean subtractRecycling) {
     this.subtractRecycling = subtractRecycling;
     return this;
   }
@@ -76,7 +76,7 @@ public final class CalculatedStreamBuilder {
    * @param distribution the sales stream distribution
    * @return this builder
    */
-  public CalculatedStreamBuilder setDistribution(SalesStreamDistribution distribution) {
+  public SimulationStateUpdateBuilder setDistribution(SalesStreamDistribution distribution) {
     this.distribution = Optional.ofNullable(distribution);
     return this;
   }
@@ -86,7 +86,7 @@ public final class CalculatedStreamBuilder {
    *
    * @return this builder
    */
-  public CalculatedStreamBuilder clearDistribution() {
+  public SimulationStateUpdateBuilder clearDistribution() {
     this.distribution = Optional.empty();
     return this;
   }
@@ -97,7 +97,7 @@ public final class CalculatedStreamBuilder {
    * @param salesDistributionRequired whether sales distribution is required
    * @return this builder
    */
-  public CalculatedStreamBuilder setSalesDistributionRequired(boolean salesDistributionRequired) {
+  public SimulationStateUpdateBuilder setSalesDistributionRequired(boolean salesDistributionRequired) {
     this.salesDistributionRequired = salesDistributionRequired;
     return this;
   }
@@ -110,7 +110,7 @@ public final class CalculatedStreamBuilder {
    *
    * @return this builder
    */
-  public CalculatedStreamBuilder asOutcomeStream() {
+  public SimulationStateUpdateBuilder asOutcomeStream() {
     this.subtractRecycling = false;
     this.salesDistributionRequired = false;
     this.distribution = Optional.empty();
@@ -124,19 +124,19 @@ public final class CalculatedStreamBuilder {
    *
    * @return this builder
    */
-  public CalculatedStreamBuilder asSalesStream() {
+  public SimulationStateUpdateBuilder asSalesStream() {
     this.subtractRecycling = true;
     this.salesDistributionRequired = true;
     return this;
   }
 
   /**
-   * Builds the CalculatedStream.
+   * Builds the SimulationStateUpdate.
    *
-   * @return the built CalculatedStream
+   * @return the built SimulationStateUpdate
    * @throws IllegalStateException if required fields are not set
    */
-  public CalculatedStream build() {
+  public SimulationStateUpdate build() {
     if (useKey == null) {
       throw new IllegalStateException("UseKey is required");
     }
@@ -147,7 +147,7 @@ public final class CalculatedStreamBuilder {
       throw new IllegalStateException("Value is required");
     }
 
-    return new CalculatedStream(
+    return new SimulationStateUpdate(
         useKey,
         name,
         value,

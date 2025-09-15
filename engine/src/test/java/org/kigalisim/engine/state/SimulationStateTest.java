@@ -1,5 +1,5 @@
 /**
- * Unit tests for the StreamKeeper class.
+ * Unit tests for the SimulationState class.
  *
  * @license BSD-3-Clause
  */
@@ -21,13 +21,13 @@ import org.junit.jupiter.api.Test;
 import org.kigalisim.engine.number.EngineNumber;
 import org.kigalisim.engine.number.UnitConverter;
 import org.kigalisim.engine.recalc.SalesStreamDistribution;
-import org.kigalisim.engine.support.CalculatedStream;
-import org.kigalisim.engine.support.CalculatedStreamBuilder;
+import org.kigalisim.engine.support.SimulationStateUpdate;
+import org.kigalisim.engine.support.SimulationStateUpdateBuilder;
 
 /**
- * Tests for the StreamKeeper class.
+ * Tests for the SimulationState class.
  */
-public class StreamKeeperTest {
+public class SimulationStateTest {
 
   /**
    * Create a test scope for testing.
@@ -39,11 +39,11 @@ public class StreamKeeperTest {
   }
 
   /**
-   * Create a mock StreamKeeper for testing.
+   * Create a mock SimulationState for testing.
    *
-   * @return A new StreamKeeper with mock dependencies
+   * @return A new SimulationState with mock dependencies
    */
-  private StreamKeeper createMockKeeper() {
+  private SimulationState createMockKeeper() {
     StateGetter stateGetter = mock(StateGetter.class);
     when(stateGetter.getSubstanceConsumption())
         .thenReturn(new EngineNumber(BigDecimal.ONE, "kgCO2e / kg"));
@@ -68,7 +68,7 @@ public class StreamKeeperTest {
 
     final UnitConverter unitConverter = new UnitConverter(stateGetter);
 
-    // Create a mock OverridingConverterStateGetter for StreamKeeper
+    // Create a mock OverridingConverterStateGetter for SimulationState
     OverridingConverterStateGetter mockOverridingStateGetter =
         mock(OverridingConverterStateGetter.class);
     when(mockOverridingStateGetter.getSubstanceConsumption())
@@ -92,16 +92,16 @@ public class StreamKeeperTest {
     when(mockOverridingStateGetter.getPopulationChange(any(UnitConverter.class)))
         .thenReturn(new EngineNumber(new BigDecimal("10"), "units"));
 
-    return new StreamKeeper(mockOverridingStateGetter, unitConverter);
+    return new SimulationState(mockOverridingStateGetter, unitConverter);
   }
 
   /**
-   * Test that StreamKeeper can be initialized.
+   * Test that SimulationState can be initialized.
    */
   @Test
   public void testInitializes() {
-    StreamKeeper keeper = createMockKeeper();
-    assertNotNull(keeper, "StreamKeeper should be constructable");
+    SimulationState keeper = createMockKeeper();
+    assertNotNull(keeper, "SimulationState should be constructable");
   }
 
   /**
@@ -109,7 +109,7 @@ public class StreamKeeperTest {
    */
   @Test
   public void testHasSubstanceReturnsFalseForUnknownSubstance() {
-    StreamKeeper keeper = createMockKeeper();
+    SimulationState keeper = createMockKeeper();
     Scope testScope = createTestScope();
     assertFalse(keeper.hasSubstance(testScope),
                 "Should return false for unknown substance");
@@ -120,7 +120,7 @@ public class StreamKeeperTest {
    */
   @Test
   public void testEnsureSubstanceCreatesNewSubstance() {
-    StreamKeeper keeper = createMockKeeper();
+    SimulationState keeper = createMockKeeper();
     Scope testScope = createTestScope();
 
     keeper.ensureSubstance(testScope);
@@ -134,7 +134,7 @@ public class StreamKeeperTest {
    */
   @Test
   public void testEnsureSubstanceCreatesDefaultStreams() {
-    StreamKeeper keeper = createMockKeeper();
+    SimulationState keeper = createMockKeeper();
     Scope testScope = createTestScope();
 
     keeper.ensureSubstance(testScope);
@@ -167,7 +167,7 @@ public class StreamKeeperTest {
    */
   @Test
   public void testSetStreamAndGetStreamWorkForSimpleStreams() {
-    StreamKeeper keeper = createMockKeeper();
+    SimulationState keeper = createMockKeeper();
     Scope testScope = createTestScope();
     keeper.ensureSubstance(testScope);
 
@@ -175,13 +175,13 @@ public class StreamKeeperTest {
     keeper.markStreamAsEnabled(testScope, "domestic");
 
     EngineNumber newValue = new EngineNumber(new BigDecimal("100"), "kg");
-    CalculatedStream domesticStream = new CalculatedStreamBuilder()
+    SimulationStateUpdate domesticStream = new SimulationStateUpdateBuilder()
         .setUseKey(testScope)
         .setName("domestic")
         .setValue(newValue)
         .asSalesStream()
         .build();
-    keeper.setStream(domesticStream);
+    keeper.update(domesticStream);
 
     EngineNumber retrieved = keeper.getStream(testScope, "domestic");
     assertEquals(new BigDecimal("100"), retrieved.getValue(),
@@ -194,7 +194,7 @@ public class StreamKeeperTest {
    */
   @Test
   public void testSalesStreamReturnsSumOfManufactureAndImportAndRecycle() {
-    StreamKeeper keeper = createMockKeeper();
+    SimulationState keeper = createMockKeeper();
     Scope testScope = createTestScope();
     keeper.ensureSubstance(testScope);
 
@@ -202,30 +202,30 @@ public class StreamKeeperTest {
     keeper.markStreamAsEnabled(testScope, "domestic");
     keeper.markStreamAsEnabled(testScope, "import");
 
-    // Set streams using CalculatedStream architecture
-    CalculatedStream domesticStream = new CalculatedStreamBuilder()
+    // Set streams using SimulationStateUpdate architecture
+    SimulationStateUpdate domesticStream = new SimulationStateUpdateBuilder()
         .setUseKey(testScope)
         .setName("domestic")
         .setValue(new EngineNumber(new BigDecimal("50"), "kg"))
         .asOutcomeStream()
         .build();
-    keeper.setStream(domesticStream);
+    keeper.update(domesticStream);
 
-    CalculatedStream importStream = new CalculatedStreamBuilder()
+    SimulationStateUpdate importStream = new SimulationStateUpdateBuilder()
         .setUseKey(testScope)
         .setName("import")
         .setValue(new EngineNumber(new BigDecimal("30"), "kg"))
         .asOutcomeStream()
         .build();
-    keeper.setStream(importStream);
+    keeper.update(importStream);
 
-    CalculatedStream recycleStream = new CalculatedStreamBuilder()
+    SimulationStateUpdate recycleStream = new SimulationStateUpdateBuilder()
         .setUseKey(testScope)
         .setName("recycle")
         .setValue(new EngineNumber(new BigDecimal("10"), "kg"))
         .asOutcomeStream()
         .build();
-    keeper.setStream(recycleStream);
+    keeper.update(recycleStream);
 
     EngineNumber sales = keeper.getStream(testScope, "sales");
     assertEquals(0, sales.getValue().compareTo(new BigDecimal("90")),
@@ -238,7 +238,7 @@ public class StreamKeeperTest {
    */
   @Test
   public void testGhgIntensityGetterAndSetterDelegateToParameterization() {
-    StreamKeeper keeper = createMockKeeper();
+    SimulationState keeper = createMockKeeper();
     Scope testScope = createTestScope();
     keeper.ensureSubstance(testScope);
 
@@ -257,7 +257,7 @@ public class StreamKeeperTest {
    */
   @Test
   public void testEnergyIntensityGetterAndSetterDelegateToParameterization() {
-    StreamKeeper keeper = createMockKeeper();
+    SimulationState keeper = createMockKeeper();
     Scope testScope = createTestScope();
     keeper.ensureSubstance(testScope);
 
@@ -276,7 +276,7 @@ public class StreamKeeperTest {
    */
   @Test
   public void testInitialChargeGetterAndSetterDelegateToParameterization() {
-    StreamKeeper keeper = createMockKeeper();
+    SimulationState keeper = createMockKeeper();
     Scope testScope = createTestScope();
     keeper.ensureSubstance(testScope);
 
@@ -295,18 +295,18 @@ public class StreamKeeperTest {
    */
   @Test
   public void testIncrementYearMovesEquipmentToPriorEquipment() {
-    StreamKeeper keeper = createMockKeeper();
+    SimulationState keeper = createMockKeeper();
     Scope testScope = createTestScope();
     keeper.ensureSubstance(testScope);
 
-    // Set equipment value using CalculatedStream
-    CalculatedStream equipmentStream = new CalculatedStreamBuilder()
+    // Set equipment value using SimulationStateUpdate
+    SimulationStateUpdate equipmentStream = new SimulationStateUpdateBuilder()
         .setUseKey(testScope)
         .setName("equipment")
         .setValue(new EngineNumber(new BigDecimal("150"), "units"))
         .asOutcomeStream()
         .build();
-    keeper.setStream(equipmentStream);
+    keeper.update(equipmentStream);
 
     // Increment year
     keeper.incrementYear();
@@ -324,17 +324,17 @@ public class StreamKeeperTest {
    */
   @Test
   public void testThrowsErrorForUnknownSubstanceInSetStream() {
-    StreamKeeper keeper = createMockKeeper();
+    SimulationState keeper = createMockKeeper();
     Scope unknownScope = new Scope("test stanza", "unknown app", "unknown substance");
 
     assertThrows(IllegalStateException.class, () -> {
-      CalculatedStream testStream = new CalculatedStreamBuilder()
+      SimulationStateUpdate testStream = new SimulationStateUpdateBuilder()
           .setUseKey(unknownScope)
           .setName("domestic")
           .setValue(new EngineNumber(new BigDecimal("100"), "kg"))
           .asOutcomeStream()
           .build();
-      keeper.setStream(testStream);
+      keeper.update(testStream);
     }, "Should throw for unknown substance in setStream");
   }
 
@@ -343,7 +343,7 @@ public class StreamKeeperTest {
    */
   @Test
   public void testThrowsErrorForUnknownSubstanceInGetStream() {
-    StreamKeeper keeper = createMockKeeper();
+    SimulationState keeper = createMockKeeper();
     Scope unknownScope = new Scope("test stanza", "unknown app", "unknown substance");
 
     assertThrows(IllegalStateException.class, () -> {
@@ -356,18 +356,18 @@ public class StreamKeeperTest {
    */
   @Test
   public void testThrowsErrorForUnknownStream() {
-    StreamKeeper keeper = createMockKeeper();
+    SimulationState keeper = createMockKeeper();
     Scope testScope = createTestScope();
     keeper.ensureSubstance(testScope);
 
     assertThrows(IllegalArgumentException.class, () -> {
-      CalculatedStream testStream = new CalculatedStreamBuilder()
+      SimulationStateUpdate testStream = new SimulationStateUpdateBuilder()
           .setUseKey(testScope)
           .setName("unknown_stream")
           .setValue(new EngineNumber(new BigDecimal("100"), "kg"))
           .asOutcomeStream()
           .build();
-      keeper.setStream(testStream);
+      keeper.update(testStream);
     }, "Should throw for unknown stream in setStream");
 
     assertThrows(IllegalArgumentException.class, () -> {
@@ -380,7 +380,7 @@ public class StreamKeeperTest {
    */
   @Test
   public void testGetRegisteredSubstancesReturnsSubstanceList() {
-    StreamKeeper keeper = createMockKeeper();
+    SimulationState keeper = createMockKeeper();
     Scope scope1 = new Scope("test stanza", "app1", "substance1");
     Scope scope2 = new Scope("test stanza", "app2", "substance2");
     keeper.ensureSubstance(scope1);
@@ -410,7 +410,7 @@ public class StreamKeeperTest {
    */
   @Test
   public void testSetStreamForSalesWithUnits() {
-    StreamKeeper keeper = createMockKeeper();
+    SimulationState keeper = createMockKeeper();
     Scope testScope = createTestScope();
     keeper.ensureSubstance(testScope);
 
@@ -421,14 +421,14 @@ public class StreamKeeperTest {
     keeper.setInitialCharge(testScope, "domestic",
                            new EngineNumber(new BigDecimal("2.0"), "kg / unit"));
 
-    // Set manufacture to 10 units using CalculatedStream - this should trigger setStreamForSalesWithUnits
-    CalculatedStream domesticUnitsStream = new CalculatedStreamBuilder()
+    // Set manufacture to 10 units using SimulationStateUpdate - this should trigger setStreamForSalesWithUnits
+    SimulationStateUpdate domesticUnitsStream = new SimulationStateUpdateBuilder()
         .setUseKey(testScope)
         .setName("domestic")
         .setValue(new EngineNumber(new BigDecimal("10"), "units"))
         .asSalesStream()
         .build();
-    keeper.setStream(domesticUnitsStream);
+    keeper.update(domesticUnitsStream);
 
     // Get the stream value back - should be converted to kg (10 units * 2 kg/unit = 20 kg)
     EngineNumber result = keeper.getStream(testScope, "domestic");
@@ -446,7 +446,7 @@ public class StreamKeeperTest {
    */
   @Test
   public void testSetStreamForSalesWithUnitsZeroInitialCharge() {
-    StreamKeeper keeper = createMockKeeper();
+    SimulationState keeper = createMockKeeper();
     Scope testScope = createTestScope();
     keeper.ensureSubstance(testScope);
 
@@ -456,13 +456,13 @@ public class StreamKeeperTest {
 
     // Attempting to set units should throw an exception
     assertThrows(RuntimeException.class, () -> {
-      CalculatedStream testStream = new CalculatedStreamBuilder()
+      SimulationStateUpdate testStream = new SimulationStateUpdateBuilder()
           .setUseKey(testScope)
           .setName("domestic")
           .setValue(new EngineNumber(new BigDecimal("10"), "units"))
           .asSalesStream()
           .build();
-      keeper.setStream(testStream);
+      keeper.update(testStream);
     }, "Should throw exception when initial charge is zero");
   }
 
@@ -471,7 +471,7 @@ public class StreamKeeperTest {
    */
   @Test
   public void testAssertStreamEnabledThrowsForNonZeroOnUnenabledStream() {
-    StreamKeeper keeper = createMockKeeper();
+    SimulationState keeper = createMockKeeper();
     Scope testScope = createTestScope();
     keeper.ensureSubstance(testScope);
 
@@ -481,13 +481,13 @@ public class StreamKeeperTest {
 
     // Don't enable the stream - this should cause the assertion to fail
     assertThrows(RuntimeException.class, () -> {
-      CalculatedStream testStream = new CalculatedStreamBuilder()
+      SimulationStateUpdate testStream = new SimulationStateUpdateBuilder()
           .setUseKey(testScope)
           .setName("domestic")
           .setValue(new EngineNumber(new BigDecimal("10"), "kg"))
           .asSalesStream()
           .build();
-      keeper.setStream(testStream);
+      keeper.update(testStream);
     }, "Should throw exception when stream is not enabled and value is non-zero");
   }
 
@@ -496,19 +496,19 @@ public class StreamKeeperTest {
    */
   @Test
   public void testAssertStreamEnabledAllowsZeroOnEnabledStream() {
-    StreamKeeper keeper = createMockKeeper();
+    SimulationState keeper = createMockKeeper();
     Scope testScope = createTestScope();
     keeper.ensureSubstance(testScope);
 
-    // Enable the stream first, then set it to zero using CalculatedStream - this should work
+    // Enable the stream first, then set it to zero using SimulationStateUpdate - this should work
     keeper.markStreamAsEnabled(testScope, "domestic");
-    CalculatedStream zeroStream = new CalculatedStreamBuilder()
+    SimulationStateUpdate zeroStream = new SimulationStateUpdateBuilder()
         .setUseKey(testScope)
         .setName("domestic")
         .setValue(new EngineNumber(BigDecimal.ZERO, "kg"))
         .asSalesStream()
         .build();
-    keeper.setStream(zeroStream);
+    keeper.update(zeroStream);
 
     // Verify the value was set to zero
     EngineNumber result = keeper.getStream(testScope, "domestic");
@@ -521,21 +521,21 @@ public class StreamKeeperTest {
    */
   @Test
   public void testAssertStreamEnabledAllowsNonZeroOnEnabledStream() {
-    StreamKeeper keeper = createMockKeeper();
+    SimulationState keeper = createMockKeeper();
     Scope testScope = createTestScope();
     keeper.ensureSubstance(testScope);
 
     // Enable the stream first
     keeper.markStreamAsEnabled(testScope, "domestic");
 
-    // Set non-zero value using CalculatedStream - this should work
-    CalculatedStream nonZeroStream = new CalculatedStreamBuilder()
+    // Set non-zero value using SimulationStateUpdate - this should work
+    SimulationStateUpdate nonZeroStream = new SimulationStateUpdateBuilder()
         .setUseKey(testScope)
         .setName("domestic")
         .setValue(new EngineNumber(new BigDecimal("10"), "kg"))
         .asSalesStream()
         .build();
-    keeper.setStream(nonZeroStream);
+    keeper.update(nonZeroStream);
 
     // Verify the value was set correctly
     EngineNumber result = keeper.getStream(testScope, "domestic");
@@ -548,7 +548,7 @@ public class StreamKeeperTest {
    */
   @Test
   public void testSetAndGetLastSpecifiedValue() {
-    StreamKeeper keeper = createMockKeeper();
+    SimulationState keeper = createMockKeeper();
     Scope testScope = createTestScope();
     keeper.ensureSubstance(testScope);
 
@@ -568,7 +568,7 @@ public class StreamKeeperTest {
    */
   @Test
   public void testHasLastSpecifiedValue() {
-    StreamKeeper keeper = createMockKeeper();
+    SimulationState keeper = createMockKeeper();
     Scope testScope = createTestScope();
     keeper.ensureSubstance(testScope);
 
@@ -592,7 +592,7 @@ public class StreamKeeperTest {
    */
   @Test
   public void testSetLastSpecifiedValueIgnoresPercentages() {
-    StreamKeeper keeper = createMockKeeper();
+    SimulationState keeper = createMockKeeper();
     Scope testScope = createTestScope();
     keeper.ensureSubstance(testScope);
 
@@ -617,7 +617,7 @@ public class StreamKeeperTest {
    */
   @Test
   public void testSetLastSpecifiedValueWithUnknownSubstance() {
-    StreamKeeper keeper = createMockKeeper();
+    SimulationState keeper = createMockKeeper();
     Scope unknownScope = new Scope("test", "unknown", "substance");
 
     EngineNumber testValue = new EngineNumber(new BigDecimal("100"), "kg");
@@ -632,7 +632,7 @@ public class StreamKeeperTest {
    */
   @Test
   public void testIsSalesIntentFreshlySet() {
-    StreamKeeper keeper = createMockKeeper();
+    SimulationState keeper = createMockKeeper();
     Scope testScope = createTestScope();
     keeper.ensureSubstance(testScope);
 
@@ -653,7 +653,7 @@ public class StreamKeeperTest {
    */
   @Test
   public void testResetSalesIntentFlag() {
-    StreamKeeper keeper = createMockKeeper();
+    SimulationState keeper = createMockKeeper();
     Scope testScope = createTestScope();
     keeper.ensureSubstance(testScope);
 
@@ -676,7 +676,7 @@ public class StreamKeeperTest {
    */
   @Test
   public void testSalesIntentFlagIndependentPerScope() {
-    StreamKeeper keeper = createMockKeeper();
+    SimulationState keeper = createMockKeeper();
     Scope scope1 = new Scope("test1", "app1", "sub1");
     Scope scope2 = new Scope("test2", "app2", "sub2");
 
@@ -709,7 +709,7 @@ public class StreamKeeperTest {
    */
   @Test
   public void testSalesIntentFlagWithUnknownSubstance() {
-    StreamKeeper keeper = createMockKeeper();
+    SimulationState keeper = createMockKeeper();
     Scope unknownScope = new Scope("test", "unknown", "substance");
 
     assertThrows(IllegalStateException.class, () -> {
@@ -723,11 +723,11 @@ public class StreamKeeperTest {
 
 
   /**
-   * Test setStream with CalculatedStream using distribution and recycling subtraction.
+   * Test setStream with SimulationStateUpdate using distribution and recycling subtraction.
    */
   @Test
-  public void testSetStreamWithCalculatedStreamDistributionAndRecycling() {
-    StreamKeeper keeper = createMockKeeper();
+  public void testSetStreamWithSimulationStateUpdateDistributionAndRecycling() {
+    SimulationState keeper = createMockKeeper();
     Scope testScope = createTestScope();
     keeper.ensureSubstance(testScope);
 
@@ -735,47 +735,47 @@ public class StreamKeeperTest {
     keeper.markStreamAsEnabled(testScope, "domestic");
     keeper.markStreamAsEnabled(testScope, "import");
 
-    // Set up initial values using CalculatedStream
-    CalculatedStream domesticInitialStream = new CalculatedStreamBuilder()
+    // Set up initial values using SimulationStateUpdate
+    SimulationStateUpdate domesticInitialStream = new SimulationStateUpdateBuilder()
         .setUseKey(testScope)
         .setName("domestic")
         .setValue(new EngineNumber(new BigDecimal("100"), "kg"))
         .asOutcomeStream()
         .build();
-    keeper.setStream(domesticInitialStream);
+    keeper.update(domesticInitialStream);
 
-    CalculatedStream importInitialStream = new CalculatedStreamBuilder()
+    SimulationStateUpdate importInitialStream = new SimulationStateUpdateBuilder()
         .setUseKey(testScope)
         .setName("import")
         .setValue(new EngineNumber(new BigDecimal("50"), "kg"))
         .asOutcomeStream()
         .build();
-    keeper.setStream(importInitialStream);
+    keeper.update(importInitialStream);
 
-    // Set up recycling using CalculatedStream
-    CalculatedStream recycleRechargeStream = new CalculatedStreamBuilder()
+    // Set up recycling using SimulationStateUpdate
+    SimulationStateUpdate recycleRechargeStream = new SimulationStateUpdateBuilder()
         .setUseKey(testScope)
         .setName("recycleRecharge")
         .setValue(new EngineNumber(new BigDecimal("40"), "kg"))
         .asOutcomeStream()
         .build();
-    keeper.setStream(recycleRechargeStream);
+    keeper.update(recycleRechargeStream);
 
-    CalculatedStream recycleEolStream = new CalculatedStreamBuilder()
+    SimulationStateUpdate recycleEolStream = new SimulationStateUpdateBuilder()
         .setUseKey(testScope)
         .setName("recycleEol")
         .setValue(new EngineNumber(new BigDecimal("10"), "kg"))
         .asOutcomeStream()
         .build();
-    keeper.setStream(recycleEolStream);
+    keeper.update(recycleEolStream);
 
     // Create distribution (70% domestic, 30% import)
     SalesStreamDistribution distribution = new SalesStreamDistribution(
         new BigDecimal("0.7"), new BigDecimal("0.3"));
 
-    // Set domestic stream with recycling subtraction enabled using CalculatedStream
+    // Set domestic stream with recycling subtraction enabled using SimulationStateUpdate
     EngineNumber domesticValue = new EngineNumber(new BigDecimal("150"), "kg");
-    CalculatedStream calculatedStream = new CalculatedStreamBuilder()
+    SimulationStateUpdate calculatedStream = new SimulationStateUpdateBuilder()
         .setUseKey(testScope)
         .setName("domestic")
         .setValue(domesticValue)
@@ -784,7 +784,7 @@ public class StreamKeeperTest {
         .setSalesDistributionRequired(true)
         .build();
 
-    keeper.setStream(calculatedStream);
+    keeper.update(calculatedStream);
 
     // Verify the stream was set (exact behavior depends on internal recycling logic)
     EngineNumber result = keeper.getStream(testScope, "domestic");
@@ -793,27 +793,27 @@ public class StreamKeeperTest {
   }
 
   /**
-   * Test setStream with CalculatedStream without recycling subtraction.
+   * Test setStream with SimulationStateUpdate without recycling subtraction.
    */
   @Test
-  public void testSetStreamWithCalculatedStreamWithoutRecycling() {
-    StreamKeeper keeper = createMockKeeper();
+  public void testSetStreamWithSimulationStateUpdateWithoutRecycling() {
+    SimulationState keeper = createMockKeeper();
     Scope testScope = createTestScope();
     keeper.ensureSubstance(testScope);
 
     // Enable stream first
     keeper.markStreamAsEnabled(testScope, "domestic");
 
-    // Create CalculatedStream without recycling subtraction
+    // Create SimulationStateUpdate without recycling subtraction
     EngineNumber value = new EngineNumber(new BigDecimal("150"), "kg");
-    CalculatedStream calculatedStream = new CalculatedStreamBuilder()
+    SimulationStateUpdate calculatedStream = new SimulationStateUpdateBuilder()
         .setUseKey(testScope)
         .setName("domestic")
         .setValue(value)
         .setSubtractRecycling(false)
         .build();
 
-    keeper.setStream(calculatedStream);
+    keeper.update(calculatedStream);
 
     // Verify the stream was set directly without recycling effects
     EngineNumber result = keeper.getStream(testScope, "domestic");
@@ -822,24 +822,24 @@ public class StreamKeeperTest {
   }
 
   /**
-   * Test setStream with CalculatedStream using asOutcomeStream convenience method.
+   * Test setStream with SimulationStateUpdate using asOutcomeStream convenience method.
    */
   @Test
-  public void testSetStreamWithCalculatedStreamAsOutcomeStream() {
-    StreamKeeper keeper = createMockKeeper();
+  public void testSetStreamWithSimulationStateUpdateAsOutcomeStream() {
+    SimulationState keeper = createMockKeeper();
     Scope testScope = createTestScope();
     keeper.ensureSubstance(testScope);
 
     // Create outcome stream (no recycling, no distribution)
     EngineNumber value = new EngineNumber(new BigDecimal("75"), "tCO2e");
-    CalculatedStream outcomeStream = new CalculatedStreamBuilder()
+    SimulationStateUpdate outcomeStream = new SimulationStateUpdateBuilder()
         .setUseKey(testScope)
         .setName("consumption")
         .setValue(value)
         .asOutcomeStream()
         .build();
 
-    keeper.setStream(outcomeStream);
+    keeper.update(outcomeStream);
 
     // Verify the outcome stream was set
     EngineNumber result = keeper.getStream(testScope, "consumption");
@@ -848,11 +848,11 @@ public class StreamKeeperTest {
   }
 
   /**
-   * Test setStream with CalculatedStream using asSalesStream convenience method.
+   * Test setStream with SimulationStateUpdate using asSalesStream convenience method.
    */
   @Test
-  public void testSetStreamWithCalculatedStreamAsSalesStream() {
-    StreamKeeper keeper = createMockKeeper();
+  public void testSetStreamWithSimulationStateUpdateAsSalesStream() {
+    SimulationState keeper = createMockKeeper();
     Scope testScope = createTestScope();
     keeper.ensureSubstance(testScope);
 
@@ -861,14 +861,14 @@ public class StreamKeeperTest {
 
     // Create sales stream (with recycling and distribution requirements)
     EngineNumber value = new EngineNumber(new BigDecimal("120"), "kg");
-    CalculatedStream salesStream = new CalculatedStreamBuilder()
+    SimulationStateUpdate salesStream = new SimulationStateUpdateBuilder()
         .setUseKey(testScope)
         .setName("import")
         .setValue(value)
         .asSalesStream()
         .build();
 
-    keeper.setStream(salesStream);
+    keeper.update(salesStream);
 
     // Verify the sales stream was set
     EngineNumber result = keeper.getStream(testScope, "import");
@@ -877,11 +877,11 @@ public class StreamKeeperTest {
   }
 
   /**
-   * Test material balance preservation with multiple CalculatedStream operations.
+   * Test material balance preservation with multiple SimulationStateUpdate operations.
    */
   @Test
-  public void testMaterialBalanceWithCalculatedStreams() {
-    StreamKeeper keeper = createMockKeeper();
+  public void testMaterialBalanceWithSimulationStateUpdates() {
+    SimulationState keeper = createMockKeeper();
     Scope testScope = createTestScope();
     keeper.ensureSubstance(testScope);
 
@@ -889,26 +889,26 @@ public class StreamKeeperTest {
     keeper.markStreamAsEnabled(testScope, "domestic");
     keeper.markStreamAsEnabled(testScope, "import");
 
-    // Set both streams using CalculatedStream
+    // Set both streams using SimulationStateUpdate
     EngineNumber domesticValue = new EngineNumber(new BigDecimal("80"), "kg");
     EngineNumber importValue = new EngineNumber(new BigDecimal("40"), "kg");
 
-    CalculatedStream domesticStream = new CalculatedStreamBuilder()
+    SimulationStateUpdate domesticStream = new SimulationStateUpdateBuilder()
         .setUseKey(testScope)
         .setName("domestic")
         .setValue(domesticValue)
         .asOutcomeStream()
         .build();
 
-    CalculatedStream importStream = new CalculatedStreamBuilder()
+    SimulationStateUpdate importStream = new SimulationStateUpdateBuilder()
         .setUseKey(testScope)
         .setName("import")
         .setValue(importValue)
         .asOutcomeStream()
         .build();
 
-    keeper.setStream(domesticStream);
-    keeper.setStream(importStream);
+    keeper.update(domesticStream);
+    keeper.update(importStream);
 
     // Verify material balance in sales stream
     EngineNumber sales = keeper.getStream(testScope, "sales");
@@ -917,11 +917,11 @@ public class StreamKeeperTest {
   }
 
   /**
-   * Test CalculatedStream with unit conversion.
+   * Test SimulationStateUpdate with unit conversion.
    */
   @Test
-  public void testCalculatedStreamWithUnitConversion() {
-    StreamKeeper keeper = createMockKeeper();
+  public void testSimulationStateUpdateWithUnitConversion() {
+    SimulationState keeper = createMockKeeper();
     Scope testScope = createTestScope();
     keeper.ensureSubstance(testScope);
 
@@ -934,14 +934,14 @@ public class StreamKeeperTest {
 
     // Create stream with units that need conversion
     EngineNumber unitsValue = new EngineNumber(new BigDecimal("25"), "units");
-    CalculatedStream calculatedStream = new CalculatedStreamBuilder()
+    SimulationStateUpdate calculatedStream = new SimulationStateUpdateBuilder()
         .setUseKey(testScope)
         .setName("domestic")
         .setValue(unitsValue)
         .asOutcomeStream()
         .build();
 
-    keeper.setStream(calculatedStream);
+    keeper.update(calculatedStream);
 
     // Verify conversion occurred (25 units * 2 kg/unit = some result after recycling logic)
     EngineNumber result = keeper.getStream(testScope, "domestic");
@@ -950,43 +950,43 @@ public class StreamKeeperTest {
   }
 
   /**
-   * Test error handling with CalculatedStream for unknown substance.
+   * Test error handling with SimulationStateUpdate for unknown substance.
    */
   @Test
-  public void testCalculatedStreamErrorHandlingUnknownSubstance() {
-    StreamKeeper keeper = createMockKeeper();
+  public void testSimulationStateUpdateErrorHandlingUnknownSubstance() {
+    SimulationState keeper = createMockKeeper();
     Scope unknownScope = new Scope("test", "unknown", "substance");
 
     EngineNumber value = new EngineNumber(new BigDecimal("100"), "kg");
-    CalculatedStream calculatedStream = new CalculatedStreamBuilder()
+    SimulationStateUpdate calculatedStream = new SimulationStateUpdateBuilder()
         .setUseKey(unknownScope)
         .setName("domestic")
         .setValue(value)
         .build();
 
     assertThrows(IllegalStateException.class, () -> {
-      keeper.setStream(calculatedStream);
+      keeper.update(calculatedStream);
     }, "Should throw exception for unknown substance");
   }
 
   /**
-   * Test error handling with CalculatedStream for invalid stream name.
+   * Test error handling with SimulationStateUpdate for invalid stream name.
    */
   @Test
-  public void testCalculatedStreamErrorHandlingInvalidStreamName() {
-    StreamKeeper keeper = createMockKeeper();
+  public void testSimulationStateUpdateErrorHandlingInvalidStreamName() {
+    SimulationState keeper = createMockKeeper();
     Scope testScope = createTestScope();
     keeper.ensureSubstance(testScope);
 
     EngineNumber value = new EngineNumber(new BigDecimal("100"), "kg");
-    CalculatedStream calculatedStream = new CalculatedStreamBuilder()
+    SimulationStateUpdate calculatedStream = new SimulationStateUpdateBuilder()
         .setUseKey(testScope)
         .setName("invalid_stream")
         .setValue(value)
         .build();
 
     assertThrows(IllegalArgumentException.class, () -> {
-      keeper.setStream(calculatedStream);
+      keeper.update(calculatedStream);
     }, "Should throw exception for invalid stream name");
   }
 }

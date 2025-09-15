@@ -126,9 +126,9 @@ public interface Engine {
   /**
    * Get the stream keeper for this engine.
    *
-   * @return StreamKeeper instance
+   * @return SimulationState instance
    */
-  org.kigalisim.engine.state.StreamKeeper getStreamKeeper();
+  org.kigalisim.engine.state.SimulationState getStreamKeeper();
 
   /**
    * Increment the engine to simulate the next year.

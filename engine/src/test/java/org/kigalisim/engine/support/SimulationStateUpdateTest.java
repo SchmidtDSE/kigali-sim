@@ -1,5 +1,5 @@
 /**
- * Unit tests for the CalculatedStream class.
+ * Unit tests for the SimulationStateUpdate class.
  *
  * @license BSD-3-Clause
  */
@@ -19,12 +19,12 @@ import org.kigalisim.engine.recalc.SalesStreamDistribution;
 import org.kigalisim.engine.state.Scope;
 
 /**
- * Tests for the CalculatedStream class.
+ * Tests for the SimulationStateUpdate class.
  */
-public class CalculatedStreamTest {
+public class SimulationStateUpdateTest {
 
   /**
-   * Test that CalculatedStream can be created with all parameters.
+   * Test that SimulationStateUpdate can be created with all parameters.
    */
   @Test
   public void testCreatesWithAllParameters() {
@@ -33,10 +33,10 @@ public class CalculatedStreamTest {
     SalesStreamDistribution distribution = new SalesStreamDistribution(
         new BigDecimal("0.7"), new BigDecimal("0.3"));
 
-    CalculatedStream stream = new CalculatedStream(
+    SimulationStateUpdate stream = new SimulationStateUpdate(
         useKey, "domestic", value, true, Optional.of(distribution), true);
 
-    assertNotNull(stream, "CalculatedStream should be constructable");
+    assertNotNull(stream, "SimulationStateUpdate should be constructable");
     assertEquals(useKey, stream.getUseKey(), "UseKey should match");
     assertEquals("domestic", stream.getName(), "Name should match");
     assertEquals(value, stream.getValue(), "Value should match");
@@ -46,14 +46,14 @@ public class CalculatedStreamTest {
   }
 
   /**
-   * Test that CalculatedStream works with null distribution.
+   * Test that SimulationStateUpdate works with null distribution.
    */
   @Test
   public void testWorksWithNullDistribution() {
     Scope useKey = new Scope("test", "app", "substance");
     EngineNumber value = new EngineNumber(new BigDecimal("50"), "units");
 
-    CalculatedStream stream = new CalculatedStream(
+    SimulationStateUpdate stream = new SimulationStateUpdate(
         useKey, "equipment", value, false, Optional.empty(), false);
 
     assertEquals(useKey, stream.getUseKey(), "UseKey should match");
@@ -65,14 +65,14 @@ public class CalculatedStreamTest {
   }
 
   /**
-   * Test that CalculatedStream preserves EngineNumber immutability.
+   * Test that SimulationStateUpdate preserves EngineNumber immutability.
    */
   @Test
   public void testPreservesEngineNumberImmutability() {
     Scope useKey = new Scope("test", "app", "substance");
     EngineNumber originalValue = new EngineNumber(new BigDecimal("75"), "tCO2e");
 
-    CalculatedStream stream = new CalculatedStream(
+    SimulationStateUpdate stream = new SimulationStateUpdate(
         useKey, "consumption", originalValue, false, null, false);
 
     EngineNumber retrievedValue = stream.getValue();
@@ -81,7 +81,7 @@ public class CalculatedStreamTest {
   }
 
   /**
-   * Test that CalculatedStream works with different stream types.
+   * Test that SimulationStateUpdate works with different stream types.
    */
   @Test
   public void testWorksWithDifferentStreamTypes() {
@@ -89,7 +89,7 @@ public class CalculatedStreamTest {
 
     // Test outcome stream
     EngineNumber outcomeValue = new EngineNumber(new BigDecimal("200"), "kg");
-    CalculatedStream outcomeStream = new CalculatedStream(
+    SimulationStateUpdate outcomeStream = new SimulationStateUpdate(
         useKey, "recycle", outcomeValue, false, Optional.empty(), false);
     assertEquals("recycle", outcomeStream.getName(), "Outcome stream name should match");
 
@@ -97,7 +97,7 @@ public class CalculatedStreamTest {
     EngineNumber salesValue = new EngineNumber(new BigDecimal("150"), "kg");
     SalesStreamDistribution dist = new SalesStreamDistribution(
         new BigDecimal("0.8"), new BigDecimal("0.2"));
-    CalculatedStream salesStream = new CalculatedStream(
+    SimulationStateUpdate salesStream = new SimulationStateUpdate(
         useKey, "import", salesValue, true, Optional.of(dist), true);
     assertEquals("import", salesStream.getName(), "Sales stream name should match");
     assertTrue(salesStream.isSalesDistributionRequired(), "Sales stream should require distribution");

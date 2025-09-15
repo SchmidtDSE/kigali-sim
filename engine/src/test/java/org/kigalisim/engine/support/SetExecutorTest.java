@@ -17,7 +17,7 @@ import org.junit.jupiter.api.Test;
 import org.kigalisim.engine.Engine;
 import org.kigalisim.engine.number.EngineNumber;
 import org.kigalisim.engine.recalc.SalesStreamDistribution;
-import org.kigalisim.engine.state.StreamKeeper;
+import org.kigalisim.engine.state.SimulationState;
 import org.kigalisim.engine.state.UseKey;
 import org.kigalisim.engine.state.YearMatcher;
 import org.kigalisim.engine.support.StreamUpdate;
@@ -31,7 +31,7 @@ import org.mockito.ArgumentCaptor;
 class SetExecutorTest {
 
   private Engine mockEngine;
-  private StreamKeeper mockStreamKeeper;
+  private SimulationState mockSimulationState;
   private UseKey mockUseKey;
   private YearMatcher mockYearMatcher;
   private SetExecutor setExecutor;
@@ -39,11 +39,11 @@ class SetExecutorTest {
   @BeforeEach
   void setUp() {
     mockEngine = mock(Engine.class);
-    mockStreamKeeper = mock(StreamKeeper.class);
+    mockSimulationState = mock(SimulationState.class);
     mockUseKey = mock(UseKey.class);
     mockYearMatcher = mock(YearMatcher.class);
 
-    when(mockEngine.getStreamKeeper()).thenReturn(mockStreamKeeper);
+    when(mockEngine.getStreamKeeper()).thenReturn(mockSimulationState);
     when(mockEngine.getYear()).thenReturn(2025);
 
     setExecutor = new SetExecutor(mockEngine);
@@ -56,7 +56,7 @@ class SetExecutorTest {
         new BigDecimal("0.5"), // 50% domestic
         new BigDecimal("0.5")  // 50% import
     );
-    when(mockStreamKeeper.getDistribution(mockUseKey)).thenReturn(distribution);
+    when(mockSimulationState.getDistribution(mockUseKey)).thenReturn(distribution);
     when(mockYearMatcher.getInRange(2025)).thenReturn(true);
 
     EngineNumber value = new EngineNumber(new BigDecimal("10"), "mt");
@@ -89,7 +89,7 @@ class SetExecutorTest {
         new BigDecimal("1.0"), // 100% domestic
         new BigDecimal("0.0")  // 0% import
     );
-    when(mockStreamKeeper.getDistribution(mockUseKey)).thenReturn(distribution);
+    when(mockSimulationState.getDistribution(mockUseKey)).thenReturn(distribution);
 
     EngineNumber value = new EngineNumber(new BigDecimal("20"), "kg");
 
@@ -115,7 +115,7 @@ class SetExecutorTest {
         new BigDecimal("0.7"), // 70% domestic
         new BigDecimal("0.3")  // 30% import
     );
-    when(mockStreamKeeper.getDistribution(mockUseKey)).thenReturn(distribution);
+    when(mockSimulationState.getDistribution(mockUseKey)).thenReturn(distribution);
 
     EngineNumber value = new EngineNumber(new BigDecimal("1000"), "units");
 
@@ -148,7 +148,7 @@ class SetExecutorTest {
         new BigDecimal("0.5"),
         new BigDecimal("0.5")
     );
-    when(mockStreamKeeper.getDistribution(mockUseKey)).thenReturn(distribution);
+    when(mockSimulationState.getDistribution(mockUseKey)).thenReturn(distribution);
 
     EngineNumber value = new EngineNumber(new BigDecimal("10"), "mt");
 
@@ -166,7 +166,7 @@ class SetExecutorTest {
         new BigDecimal("1.0"), // 100% domestic
         new BigDecimal("0.0")  // 0% import (disabled)
     );
-    when(mockStreamKeeper.getDistribution(mockUseKey)).thenReturn(distribution);
+    when(mockSimulationState.getDistribution(mockUseKey)).thenReturn(distribution);
 
     EngineNumber value = new EngineNumber(new BigDecimal("5.5"), "mt");
 
@@ -185,7 +185,7 @@ class SetExecutorTest {
         new BigDecimal("0.0"), // 0% domestic (disabled)
         new BigDecimal("1.0")  // 100% import
     );
-    when(mockStreamKeeper.getDistribution(mockUseKey)).thenReturn(distribution);
+    when(mockSimulationState.getDistribution(mockUseKey)).thenReturn(distribution);
 
     EngineNumber value = new EngineNumber(new BigDecimal("15"), "kg");
 
@@ -204,7 +204,7 @@ class SetExecutorTest {
         new BigDecimal("0.25"), // 25% domestic
         new BigDecimal("0.75")  // 75% import
     );
-    when(mockStreamKeeper.getDistribution(mockUseKey)).thenReturn(distribution);
+    when(mockSimulationState.getDistribution(mockUseKey)).thenReturn(distribution);
 
     EngineNumber value = new EngineNumber(new BigDecimal("100"), "kg");
 
@@ -236,7 +236,7 @@ class SetExecutorTest {
         new BigDecimal("0.6"), // 60% domestic
         new BigDecimal("0.4")  // 40% import
     );
-    when(mockStreamKeeper.getDistribution(mockUseKey)).thenReturn(distribution);
+    when(mockSimulationState.getDistribution(mockUseKey)).thenReturn(distribution);
 
     EngineNumber value = new EngineNumber(new BigDecimal("50"), "mt");
 
@@ -268,7 +268,7 @@ class SetExecutorTest {
         new BigDecimal("0.33"), // 33% domestic
         new BigDecimal("0.67")  // 67% import
     );
-    when(mockStreamKeeper.getDistribution(mockUseKey)).thenReturn(distribution);
+    when(mockSimulationState.getDistribution(mockUseKey)).thenReturn(distribution);
 
     EngineNumber value = new EngineNumber(new BigDecimal("1"), "kg");
 
@@ -300,7 +300,7 @@ class SetExecutorTest {
         new BigDecimal("0.0"), // 0% domestic
         new BigDecimal("0.0")  // 0% import
     );
-    when(mockStreamKeeper.getDistribution(mockUseKey)).thenReturn(distribution);
+    when(mockSimulationState.getDistribution(mockUseKey)).thenReturn(distribution);
 
     EngineNumber value = new EngineNumber(new BigDecimal("10"), "mt");
 

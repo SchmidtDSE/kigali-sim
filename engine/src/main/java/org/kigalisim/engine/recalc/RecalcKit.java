@@ -11,14 +11,14 @@ package org.kigalisim.engine.recalc;
 
 import org.kigalisim.engine.number.UnitConverter;
 import org.kigalisim.engine.state.StateGetter;
-import org.kigalisim.engine.state.StreamKeeper;
+import org.kigalisim.engine.state.SimulationState;
 
 /**
  * Container for dependencies needed by recalculation strategies.
  */
 public class RecalcKit {
 
-  private final StreamKeeper streamKeeper;
+  private final SimulationState streamKeeper;
   private final UnitConverter unitConverter;
   private final StateGetter stateGetter;
 
@@ -29,7 +29,7 @@ public class RecalcKit {
    * @param unitConverter The unit converter instance (required)
    * @param stateGetter The state getter instance (required)
    */
-  public RecalcKit(StreamKeeper streamKeeper, UnitConverter unitConverter,
+  public RecalcKit(SimulationState streamKeeper, UnitConverter unitConverter,
       StateGetter stateGetter) {
     this.streamKeeper = streamKeeper;
     this.unitConverter = unitConverter;
@@ -41,7 +41,7 @@ public class RecalcKit {
    *
    * @return The stream keeper
    */
-  public StreamKeeper getStreamKeeper() {
+  public SimulationState getStreamKeeper() {
     return streamKeeper;
   }
 

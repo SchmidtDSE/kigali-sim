@@ -623,7 +623,7 @@ public class RecycleRecoverLiveTests {
     assertNotNull(recordYear2, "Should have result for test/test in year 2");
 
     // With combined recycling, both EOL and recharge recycling should contribute
-    // Updated expectation to match current architecture where recycling is applied by StreamKeeper
+    // Updated expectation to match current architecture where recycling is applied by SimulationState
     double expectedTotalConsumption = 465.775;
     assertEquals(expectedTotalConsumption, recordYear2.getConsumption().getValue().doubleValue(), 0.001,
         "Virgin material consumption should be reduced to 465.775 tCO2e in year 2 due to combined EOL and recharge recycling");

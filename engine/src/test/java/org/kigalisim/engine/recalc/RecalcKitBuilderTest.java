@@ -14,7 +14,7 @@ import static org.mockito.Mockito.mock;
 import org.junit.jupiter.api.Test;
 import org.kigalisim.engine.number.UnitConverter;
 import org.kigalisim.engine.state.ConverterStateGetter;
-import org.kigalisim.engine.state.StreamKeeper;
+import org.kigalisim.engine.state.SimulationState;
 
 /**
  * Tests for RecalcKitBuilder.
@@ -30,7 +30,7 @@ public class RecalcKitBuilderTest {
 
   @Test
   public void testBuilderWithAllValues() {
-    StreamKeeper streamKeeper = mock(StreamKeeper.class);
+    SimulationState streamKeeper = mock(SimulationState.class);
     UnitConverter unitConverter = mock(UnitConverter.class);
     ConverterStateGetter stateGetter = mock(ConverterStateGetter.class);
 
@@ -50,7 +50,7 @@ public class RecalcKitBuilderTest {
   }
 
   @Test
-  public void testBuilderWithMissingStreamKeeper() {
+  public void testBuilderWithMissingSimulationState() {
     UnitConverter unitConverter = mock(UnitConverter.class);
     ConverterStateGetter stateGetter = mock(ConverterStateGetter.class);
 
@@ -63,7 +63,7 @@ public class RecalcKitBuilderTest {
 
   @Test
   public void testBuilderWithMissingUnitConverter() {
-    StreamKeeper streamKeeper = mock(StreamKeeper.class);
+    SimulationState streamKeeper = mock(SimulationState.class);
     ConverterStateGetter stateGetter = mock(ConverterStateGetter.class);
 
     RecalcKitBuilder builder = new RecalcKitBuilder();
@@ -75,7 +75,7 @@ public class RecalcKitBuilderTest {
 
   @Test
   public void testBuilderWithMissingStateGetter() {
-    StreamKeeper streamKeeper = mock(StreamKeeper.class);
+    SimulationState streamKeeper = mock(SimulationState.class);
     UnitConverter unitConverter = mock(UnitConverter.class);
 
     RecalcKitBuilder builder = new RecalcKitBuilder();
@@ -87,7 +87,7 @@ public class RecalcKitBuilderTest {
 
   @Test
   public void testBuilderChaining() {
-    StreamKeeper streamKeeper = mock(StreamKeeper.class);
+    SimulationState streamKeeper = mock(SimulationState.class);
     UnitConverter unitConverter = mock(UnitConverter.class);
     ConverterStateGetter stateGetter = mock(ConverterStateGetter.class);
 

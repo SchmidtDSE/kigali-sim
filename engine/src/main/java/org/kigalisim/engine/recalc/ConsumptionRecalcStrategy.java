@@ -12,7 +12,7 @@ package org.kigalisim.engine.recalc;
 import java.util.Optional;
 import org.kigalisim.engine.Engine;
 import org.kigalisim.engine.number.EngineNumber;
-import org.kigalisim.engine.state.StreamKeeper;
+import org.kigalisim.engine.state.SimulationState;
 import org.kigalisim.engine.state.UseKey;
 import org.kigalisim.engine.support.ConsumptionCalculator;
 import org.kigalisim.engine.support.ExceptionsGenerator;
@@ -48,7 +48,7 @@ public class ConsumptionRecalcStrategy implements RecalcStrategy {
     ConsumptionCalculator calculator = new ConsumptionCalculator();
 
     // Get stream keeper from kit
-    StreamKeeper streamKeeper = kit.getStreamKeeper();
+    SimulationState streamKeeper = kit.getStreamKeeper();
 
     // Get GHG intensity and calculate consumption
     EngineNumber ghgIntensity = streamKeeper.getGhgIntensity(scopeEffective);
