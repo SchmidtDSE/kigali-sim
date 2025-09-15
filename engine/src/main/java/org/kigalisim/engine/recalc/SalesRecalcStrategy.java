@@ -208,18 +208,15 @@ public class SalesRecalcStrategy implements RecalcStrategy {
       BigDecimal inductionRatioEol = getEffectiveInductionRate(streamKeeper, scopeEffective, RecoveryStage.EOL, hasUnitBasedSpecs);
       BigDecimal inductionRatioRecharge = getEffectiveInductionRate(streamKeeper, scopeEffective, RecoveryStage.RECHARGE, hasUnitBasedSpecs);
 
-      // Calculate displacement: (1 - induction) × recycled (subtracts from virgin demand)
-      BigDecimal eolDisplacedKg = eolRecycledKg.multiply(BigDecimal.ONE.subtract(inductionRatioEol));
-      BigDecimal rechargeDisplacedKg = rechargeRecycledKg.multiply(BigDecimal.ONE.subtract(inductionRatioRecharge));
-      BigDecimal totalDisplacedKg = eolDisplacedKg.add(rechargeDisplacedKg);
+      // Step 1: Always subtract baseline recycling displacement (recycling always displaces virgin material)
+      BigDecimal totalRecycledKg = eolRecycledKg.add(rechargeRecycledKg);
+      totalRequiredKg = requiredKg.subtract(totalRecycledKg);
 
-      // Calculate induction: induction × recycled (adds to virgin demand)
+      // Step 2: Add back induced demand based on induction rates
       BigDecimal eolInducedKg = eolRecycledKg.multiply(inductionRatioEol);
       BigDecimal rechargeInducedKg = rechargeRecycledKg.multiply(inductionRatioRecharge);
       BigDecimal totalInducedKg = eolInducedKg.add(rechargeInducedKg);
-
-      // Apply both effects: subtract displacement, add induction
-      totalRequiredKg = requiredKg.subtract(totalDisplacedKg).add(totalInducedKg);
+      totalRequiredKg = totalRequiredKg.add(totalInducedKg);
 
       // Ensure sales don't go negative
       totalRequiredKg = totalRequiredKg.max(BigDecimal.ZERO);
