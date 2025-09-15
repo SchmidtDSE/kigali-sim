@@ -330,17 +330,17 @@ public class RecycleRecoverVolumeLiveTests {
   }
 
   /**
-   * Test 90% recovery at servicing with 100% reuse and 100% induction.
+   * Test 90% recovery at recharge with 100% reuse and 100% induction.
    *
-   * <p>This test validates that with 100% induction at the servicing (recharge) stage,
+   * <p>This test validates that with 100% induction at the recharge stage,
    * recycled material adds to total supply rather than displacing virgin material.
    * With 90% recovery rate and 100% reuse rate, all captured material should be
    * recycled and should create induced demand in virgin production.</p>
    */
   @Test
-  public void testNinetyPercentServicingFullInduction() throws IOException {
+  public void testNinetyPercentRechargeFullInduction() throws IOException {
     // Load and parse the QTA file
-    String qtaPath = "../examples/test_90_servicing_100_induction.qta";
+    String qtaPath = "../examples/test_90_recharge_100_induction.qta";
     ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
     assertNotNull(program, "Program should not be null");
 
@@ -348,7 +348,7 @@ public class RecycleRecoverVolumeLiveTests {
     Stream<EngineResult> bauResults = KigaliSimFacade.runScenario(program, "BAU", progress -> {});
     List<EngineResult> bauResultsList = bauResults.collect(Collectors.toList());
 
-    // Run Recycling scenario with 90% recovery at servicing, 100% reuse, 100% induction
+    // Run Recycling scenario with 90% recovery at recharge, 100% reuse, 100% induction
     Stream<EngineResult> recyclingResults = KigaliSimFacade.runScenario(program, "Recycling", progress -> {});
     List<EngineResult> recyclingResultsList = recyclingResults.collect(Collectors.toList());
 
@@ -402,17 +402,17 @@ public class RecycleRecoverVolumeLiveTests {
       double bauPopulation = bauResult.getPopulation().getValue().doubleValue();
       double recyclingPopulation = recyclingResult.getPopulation().getValue().doubleValue();
 
-      // With 100% induction at servicing, recycling population should be higher than BAU
-      // This demonstrates that recycled material from servicing adds to total supply
+      // With 100% induction at recharge, recycling population should be higher than BAU
+      // This demonstrates that recycled material from recharge adds to total supply
       assertTrue(recyclingPopulation > bauPopulation,
           String.format("Year %d: Recycling population (%.2f) should be higher than BAU population (%.2f) "
-                       + "with 100%% induction at servicing. Recycled material should create induced demand.",
+                       + "with 100%% induction at recharge. Recycled material should create induced demand.",
                        year, recyclingPopulation, bauPopulation));
 
-      // Validate recycling stream values - should have servicing/recharge recycling
+      // Validate recycling stream values - should have recharge recycling
       double recyclingAmount = recyclingResult.getRecycle().getValue().doubleValue();
       assertTrue(recyclingAmount > 0,
-          "Year " + year + ": Should have positive recycling amount from servicing");
+          "Year " + year + ": Should have positive recycling amount from recharge");
 
       // For later years, we expect compounding effects - just check that populations increase
       // We'll investigate the virgin supply calculation separately
