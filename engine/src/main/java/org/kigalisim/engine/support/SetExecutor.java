@@ -59,9 +59,9 @@ public class SetExecutor {
     }
 
     // Get distribution ratios like SalesRecalcStrategy does
-    SimulationState streamKeeper = engine.getStreamKeeper();
-    streamKeeper.setLastSpecifiedValue(useKey, "sales", value);
-    SalesStreamDistribution distribution = streamKeeper.getDistribution(useKey);
+    SimulationState simulationState = engine.getStreamKeeper();
+    simulationState.setLastSpecifiedValue(useKey, "sales", value);
+    SalesStreamDistribution distribution = simulationState.getDistribution(useKey);
 
     // Calculate component amounts based on distribution percentages
     BigDecimal domesticAmount = value.getValue().multiply(distribution.getPercentDomestic());

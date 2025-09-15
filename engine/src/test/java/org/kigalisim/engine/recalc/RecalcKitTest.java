@@ -22,12 +22,12 @@ public class RecalcKitTest {
 
   @Test
   public void testConstructorWithAllValues() {
-    SimulationState streamKeeper = mock(SimulationState.class);
+    SimulationState simulationState = mock(SimulationState.class);
     UnitConverter unitConverter = mock(UnitConverter.class);
     ConverterStateGetter stateGetter = mock(ConverterStateGetter.class);
 
     RecalcKit kit = new RecalcKit(
-        streamKeeper,
+        simulationState,
         unitConverter,
         stateGetter
     );
@@ -35,7 +35,7 @@ public class RecalcKitTest {
     assertNotNull(kit.getStreamKeeper());
     assertNotNull(kit.getUnitConverter());
     assertNotNull(kit.getStateGetter());
-    assertEquals(streamKeeper, kit.getStreamKeeper());
+    assertEquals(simulationState, kit.getStreamKeeper());
     assertEquals(unitConverter, kit.getUnitConverter());
     assertEquals(stateGetter, kit.getStateGetter());
   }

@@ -137,8 +137,8 @@ public class ChangeExecutor {
     YearMatcher yearMatcher = config.getYearMatcher();
     UseKey useKeyEffective = config.getUseKeyEffective();
 
-    SimulationState streamKeeper = engine.getStreamKeeper();
-    EngineNumber lastSpecified = streamKeeper.getLastSpecifiedValue(useKeyEffective, stream);
+    SimulationState simulationState = engine.getStreamKeeper();
+    EngineNumber lastSpecified = simulationState.getLastSpecifiedValue(useKeyEffective, stream);
     if (lastSpecified == null) {
       return; // No base value, no change
     }
@@ -174,8 +174,8 @@ public class ChangeExecutor {
     UseKey useKeyEffective = config.getUseKeyEffective();
 
     // Get the distribution ratios for domestic and import
-    SimulationState streamKeeper = engine.getStreamKeeper();
-    SalesStreamDistribution distribution = streamKeeper.getDistribution(useKeyEffective);
+    SimulationState simulationState = engine.getStreamKeeper();
+    SalesStreamDistribution distribution = simulationState.getDistribution(useKeyEffective);
     BigDecimal percentDomestic = distribution.getPercentDomestic();
     BigDecimal percentImport = distribution.getPercentImport();
 
@@ -211,8 +211,8 @@ public class ChangeExecutor {
     YearMatcher yearMatcher = config.getYearMatcher();
     UseKey useKeyEffective = config.getUseKeyEffective();
 
-    SimulationState streamKeeper = engine.getStreamKeeper();
-    EngineNumber lastSpecified = streamKeeper.getLastSpecifiedValue(useKeyEffective, stream);
+    SimulationState simulationState = engine.getStreamKeeper();
+    EngineNumber lastSpecified = simulationState.getLastSpecifiedValue(useKeyEffective, stream);
 
     if (lastSpecified == null) {
       // Fallback: apply change to current stream value

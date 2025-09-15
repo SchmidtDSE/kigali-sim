@@ -47,11 +47,11 @@ public class ConsumptionRecalcStrategy implements RecalcStrategy {
     // Update streams using ConsumptionCalculator
     ConsumptionCalculator calculator = new ConsumptionCalculator();
 
-    // Get stream keeper from kit
-    SimulationState streamKeeper = kit.getStreamKeeper();
+    // Get simulation state from kit
+    SimulationState simulationState = kit.getStreamKeeper();
 
     // Get GHG intensity and calculate consumption
-    EngineNumber ghgIntensity = streamKeeper.getGhgIntensity(scopeEffective);
+    EngineNumber ghgIntensity = simulationState.getGhgIntensity(scopeEffective);
     calculator.setConsumptionRaw(ghgIntensity);
     calculator.setStreamName("consumption");
     calculator.execute(target);

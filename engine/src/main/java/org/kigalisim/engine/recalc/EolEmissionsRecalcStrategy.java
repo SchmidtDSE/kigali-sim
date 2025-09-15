@@ -54,8 +54,8 @@ public class EolEmissionsRecalcStrategy implements RecalcStrategy {
     EngineNumber currentPrior = unitConverter.convert(currentPriorRaw, "units");
 
     stateGetter.setPopulation(currentPrior);
-    SimulationState streamKeeper = kit.getStreamKeeper();
-    EngineNumber amountRaw = streamKeeper.getRetirementRate(scopeEffective);
+    SimulationState simulationState = kit.getStreamKeeper();
+    EngineNumber amountRaw = simulationState.getRetirementRate(scopeEffective);
     EngineNumber amount = unitConverter.convert(amountRaw, "units");
     stateGetter.clearPopulation();
 
@@ -67,6 +67,6 @@ public class EolEmissionsRecalcStrategy implements RecalcStrategy {
         .setValue(eolGhg)
         .setSubtractRecycling(false)
         .build();
-    streamKeeper.update(eolEmissionsStream);
+    simulationState.update(eolEmissionsStream);
   }
 }

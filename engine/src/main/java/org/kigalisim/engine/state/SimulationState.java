@@ -149,17 +149,17 @@ public class SimulationState {
 
 
   /**
-   * Set a stream using pre-calculated stream data.
+   * Set a stream using pre-computed stream data.
    *
    * <p>This method replaces setStream, setOutcomeStream, and setSalesStream
-   * with a unified interface that accepts pre-calculated stream values.
+   * with a unified interface that accepts pre-computed stream values.
    * The SimulationStateUpdate object encapsulates all necessary parameters
    * including distribution logic and recycling behavior.</p>
    *
    * <p>This method provides clear architectural separation between calculation
    * instructions (StreamUpdate) and pre-computed results (SimulationStateUpdate).</p>
    *
-   * @param stateUpdate Pre-calculated stream data with all parameters
+   * @param stateUpdate Pre-computed stream data with all parameters
    */
   public void update(SimulationStateUpdate stateUpdate) {
     UseKey useKey = stateUpdate.getUseKey();

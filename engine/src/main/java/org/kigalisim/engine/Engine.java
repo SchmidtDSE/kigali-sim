@@ -124,7 +124,7 @@ public interface Engine {
   org.kigalisim.engine.number.UnitConverter getUnitConverter();
 
   /**
-   * Get the stream keeper for this engine.
+   * Get the simulation state for this engine.
    *
    * @return SimulationState instance
    */

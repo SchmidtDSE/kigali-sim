@@ -18,31 +18,31 @@ import org.kigalisim.engine.state.StateGetter;
  */
 public class RecalcKit {
 
-  private final SimulationState streamKeeper;
+  private final SimulationState simulationState;
   private final UnitConverter unitConverter;
   private final StateGetter stateGetter;
 
   /**
    * Create a new RecalcKit.
    *
-   * @param streamKeeper The stream keeper instance (required)
+   * @param simulationState The simulation state instance (required)
    * @param unitConverter The unit converter instance (required)
    * @param stateGetter The state getter instance (required)
    */
-  public RecalcKit(SimulationState streamKeeper, UnitConverter unitConverter,
+  public RecalcKit(SimulationState simulationState, UnitConverter unitConverter,
       StateGetter stateGetter) {
-    this.streamKeeper = streamKeeper;
+    this.simulationState = simulationState;
     this.unitConverter = unitConverter;
     this.stateGetter = stateGetter;
   }
 
   /**
-   * Get the stream keeper.
+   * Get the simulation state.
    *
-   * @return The stream keeper
+   * @return The simulation state
    */
   public SimulationState getStreamKeeper() {
-    return streamKeeper;
+    return simulationState;
   }
 
   /**

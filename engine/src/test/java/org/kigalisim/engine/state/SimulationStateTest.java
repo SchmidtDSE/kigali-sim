@@ -775,7 +775,7 @@ public class SimulationStateTest {
 
     // Set domestic stream with recycling subtraction enabled using SimulationStateUpdate
     EngineNumber domesticValue = new EngineNumber(new BigDecimal("150"), "kg");
-    SimulationStateUpdate calculatedStream = new SimulationStateUpdateBuilder()
+    SimulationStateUpdate simulationStateUpdate = new SimulationStateUpdateBuilder()
         .setUseKey(testScope)
         .setName("domestic")
         .setValue(domesticValue)
@@ -783,7 +783,7 @@ public class SimulationStateTest {
         .setDistribution(distribution)
         .build();
 
-    keeper.update(calculatedStream);
+    keeper.update(simulationStateUpdate);
 
     // Verify the stream was set (exact behavior depends on internal recycling logic)
     EngineNumber result = keeper.getStream(testScope, "domestic");
@@ -805,14 +805,14 @@ public class SimulationStateTest {
 
     // Create SimulationStateUpdate without recycling subtraction
     EngineNumber value = new EngineNumber(new BigDecimal("150"), "kg");
-    SimulationStateUpdate calculatedStream = new SimulationStateUpdateBuilder()
+    SimulationStateUpdate simulationStateUpdate = new SimulationStateUpdateBuilder()
         .setUseKey(testScope)
         .setName("domestic")
         .setValue(value)
         .setSubtractRecycling(false)
         .build();
 
-    keeper.update(calculatedStream);
+    keeper.update(simulationStateUpdate);
 
     // Verify the stream was set directly without recycling effects
     EngineNumber result = keeper.getStream(testScope, "domestic");
@@ -933,14 +933,14 @@ public class SimulationStateTest {
 
     // Create stream with units that need conversion
     EngineNumber unitsValue = new EngineNumber(new BigDecimal("25"), "units");
-    SimulationStateUpdate calculatedStream = new SimulationStateUpdateBuilder()
+    SimulationStateUpdate simulationStateUpdate = new SimulationStateUpdateBuilder()
         .setUseKey(testScope)
         .setName("domestic")
         .setValue(unitsValue)
         .setSubtractRecycling(false)
         .build();
 
-    keeper.update(calculatedStream);
+    keeper.update(simulationStateUpdate);
 
     // Verify conversion occurred (25 units * 2 kg/unit = some result after recycling logic)
     EngineNumber result = keeper.getStream(testScope, "domestic");
@@ -957,14 +957,14 @@ public class SimulationStateTest {
     Scope unknownScope = new Scope("test", "unknown", "substance");
 
     EngineNumber value = new EngineNumber(new BigDecimal("100"), "kg");
-    SimulationStateUpdate calculatedStream = new SimulationStateUpdateBuilder()
+    SimulationStateUpdate simulationStateUpdate = new SimulationStateUpdateBuilder()
         .setUseKey(unknownScope)
         .setName("domestic")
         .setValue(value)
         .build();
 
     assertThrows(IllegalStateException.class, () -> {
-      keeper.update(calculatedStream);
+      keeper.update(simulationStateUpdate);
     }, "Should throw exception for unknown substance");
   }
 
@@ -978,14 +978,14 @@ public class SimulationStateTest {
     keeper.ensureSubstance(testScope);
 
     EngineNumber value = new EngineNumber(new BigDecimal("100"), "kg");
-    SimulationStateUpdate calculatedStream = new SimulationStateUpdateBuilder()
+    SimulationStateUpdate simulationStateUpdate = new SimulationStateUpdateBuilder()
         .setUseKey(testScope)
         .setName("invalid_stream")
         .setValue(value)
         .build();
 
     assertThrows(IllegalArgumentException.class, () -> {
-      keeper.update(calculatedStream);
+      keeper.update(simulationStateUpdate);
     }, "Should throw exception for invalid stream name");
   }
 }

@@ -36,11 +36,11 @@ public class RecalcStrategyTest {
     testScope = new Scope("test", "testApp", "testSubstance");
 
     // Create a mock RecalcKit for testing
-    SimulationState streamKeeper = mock(SimulationState.class);
+    SimulationState simulationState = mock(SimulationState.class);
     UnitConverter unitConverter = mock(UnitConverter.class);
     ConverterStateGetter stateGetter = mock(ConverterStateGetter.class);
 
-    testKit = new RecalcKit(streamKeeper, unitConverter, stateGetter);
+    testKit = new RecalcKit(simulationState, unitConverter, stateGetter);
   }
 
   @Test

@@ -52,23 +52,23 @@ public class RetireRecalcStrategy implements RecalcStrategy {
     }
 
     // Get SimulationState from kit
-    var streamKeeper = kit.getStreamKeeper();
+    var simulationState = kit.getStreamKeeper();
 
     // Calculate change
-    EngineNumber currentPriorRaw = streamKeeper.getStream(
+    EngineNumber currentPriorRaw = simulationState.getStream(
         scopeEffective,
         "priorEquipment"
     );
     EngineNumber currentPrior = unitConverter.convert(currentPriorRaw, "units");
 
-    EngineNumber currentEquipmentRaw = streamKeeper.getStream(
+    EngineNumber currentEquipmentRaw = simulationState.getStream(
         scopeEffective,
         "equipment"
     );
     final EngineNumber currentEquipment = unitConverter.convert(currentEquipmentRaw, "units");
 
     stateGetter.setPopulation(currentPrior);
-    EngineNumber amountRaw = streamKeeper.getRetirementRate(scopeEffective);
+    EngineNumber amountRaw = simulationState.getRetirementRate(scopeEffective);
     EngineNumber amount = unitConverter.convert(amountRaw, "units");
     stateGetter.clearPopulation();
 
@@ -86,7 +86,7 @@ public class RetireRecalcStrategy implements RecalcStrategy {
         .setValue(newPrior)
         .setSubtractRecycling(false)
         .build();
-    streamKeeper.update(priorEquipmentStream);
+    simulationState.update(priorEquipmentStream);
 
     SimulationStateUpdate equipmentStream = new SimulationStateUpdateBuilder()
         .setUseKey(scopeEffective)
@@ -94,10 +94,10 @@ public class RetireRecalcStrategy implements RecalcStrategy {
         .setValue(newEquipment)
         .setSubtractRecycling(false)
         .build();
-    streamKeeper.update(equipmentStream);
+    simulationState.update(equipmentStream);
 
     // Update retired stream with the amount retired this year
-    EngineNumber currentRetiredRaw = streamKeeper.getStream(scopeEffective, "retired");
+    EngineNumber currentRetiredRaw = simulationState.getStream(scopeEffective, "retired");
     EngineNumber currentRetired = unitConverter.convert(currentRetiredRaw, "units");
     BigDecimal newRetiredValue = currentRetired.getValue().add(amount.getValue());
     EngineNumber newRetired = new EngineNumber(newRetiredValue, "units");
@@ -107,7 +107,7 @@ public class RetireRecalcStrategy implements RecalcStrategy {
         .setValue(newRetired)
         .setSubtractRecycling(false)
         .build();
-    streamKeeper.update(retiredStream);
+    simulationState.update(retiredStream);
 
     // Update GHG accounting
     EolEmissionsRecalcStrategy eolStrategy = new EolEmissionsRecalcStrategy(Optional.of(scopeEffective));

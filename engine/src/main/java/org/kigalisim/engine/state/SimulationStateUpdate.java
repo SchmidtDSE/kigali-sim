@@ -6,7 +6,7 @@ import org.kigalisim.engine.recalc.SalesStreamDistribution;
 import org.kigalisim.engine.state.UseKey;
 
 /**
- * Immutable class representing a calculated stream value ready to be set.
+ * Immutable class representing a simulation state update value ready to be set.
  *
  * <p>This class encapsulates the result of stream calculations and contains all
  * parameters needed to update simulation state. Unlike StreamUpdate
@@ -14,7 +14,7 @@ import org.kigalisim.engine.state.UseKey;
  * results ready for storage.</p>
  *
  * <p>Use StreamUpdate for operations that need calculation logic (set, change, cap, floor).
- * Use SimulationStateUpdate for setting pre-calculated values (recalc strategies, emissions).</p>
+ * Use SimulationStateUpdate for setting pre-computed values (recalc strategies, emissions).</p>
  *
  * @license BSD-3-Clause
  */

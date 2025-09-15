@@ -47,7 +47,7 @@ public final class SimulationStateUpdateBuilder {
   }
 
   /**
-   * Sets the pre-calculated stream value.
+   * Sets the pre-computed stream value.
    *
    * @param value the stream value
    * @return this builder
