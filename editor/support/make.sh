@@ -5,4 +5,4 @@ fi
 java -jar antlr-4.13.0-complete.jar -Dlanguage=JavaScript QubecTalk.g4 -visitor -o ../intermediate
 cd ..
 
-npm run build
+pnpm run build
