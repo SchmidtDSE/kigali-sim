@@ -35,6 +35,8 @@ public class StreamParameterization {
   private EngineNumber recoveryRateEol;
   private EngineNumber yieldRateEol;
   private EngineNumber retirementRate;
+  private EngineNumber inductionRateRecharge;
+  private EngineNumber inductionRateEol;
   private final Map<String, EngineNumber> lastSpecifiedValue;
   private final Set<String> enabledStreams;
   private boolean salesIntentFreshlySet;
@@ -62,6 +64,8 @@ public class StreamParameterization {
     recoveryRateEol = new EngineNumber(BigDecimal.ZERO, "%");
     yieldRateEol = new EngineNumber(BigDecimal.ZERO, "%");
     retirementRate = new EngineNumber(BigDecimal.ZERO, "%");
+    inductionRateRecharge = new EngineNumber(new BigDecimal("100"), "%");
+    inductionRateEol = new EngineNumber(new BigDecimal("100"), "%");
   }
 
 
@@ -249,6 +253,51 @@ public class StreamParameterization {
     };
   }
 
+  /**
+   * Set the induction rate percentage for recycling.
+   *
+   * @param newValue The new induction rate value
+   */
+  public void setInductionRate(EngineNumber newValue) {
+    inductionRateRecharge = newValue;
+  }
+
+  /**
+   * Set the induction rate percentage for recycling for a specific stage.
+   *
+   * @param newValue The new induction rate value
+   * @param stage The recovery stage (EOL or RECHARGE)
+   */
+  public void setInductionRate(EngineNumber newValue, RecoveryStage stage) {
+    switch (stage) {
+      case EOL -> inductionRateEol = newValue;
+      case RECHARGE -> inductionRateRecharge = newValue;
+      default -> throw new IllegalArgumentException("Unknown recovery stage: " + stage);
+    }
+  }
+
+  /**
+   * Get the induction rate percentage for recycling.
+   *
+   * @return The current induction rate value
+   */
+  public EngineNumber getInductionRate() {
+    return inductionRateRecharge;
+  }
+
+  /**
+   * Get the induction rate percentage for recycling for a specific stage.
+   *
+   * @param stage The recovery stage (EOL or RECHARGE)
+   * @return The current induction rate value
+   */
+  public EngineNumber getInductionRate(RecoveryStage stage) {
+    return switch (stage) {
+      case EOL -> inductionRateEol;
+      case RECHARGE -> inductionRateRecharge;
+    };
+  }
+
 
   /**
    * Set the retirement rate percentage.
@@ -351,13 +400,17 @@ public class StreamParameterization {
   /**
    * Reset state at the beginning of a timestep.
    *
-   * <p>This method resets recovery rate to 0% between years since recycling
-   * programs may cease and should not be expected to continue unchanged.</p>
+   * <p>This method resets recovery rate to 0% and induction rate to 100% between years since
+   * recycling programs may cease and should not be expected to continue unchanged, but
+   * default induction behavior should return to induced demand (100%).</p>
    */
   public void resetStateAtTimestep() {
     // Reset recovery to 0% between years since recycling programs may cease
     recoveryRateRecharge = new EngineNumber(BigDecimal.ZERO, "%");
     recoveryRateEol = new EngineNumber(BigDecimal.ZERO, "%");
+    // Reset induction to 100% (default induced demand behavior)
+    inductionRateRecharge = new EngineNumber(new BigDecimal("100"), "%");
+    inductionRateEol = new EngineNumber(new BigDecimal("100"), "%");
   }
 
   /**

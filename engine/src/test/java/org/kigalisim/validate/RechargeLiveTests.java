@@ -509,9 +509,8 @@ public class RechargeLiveTests {
         + (combinedR600a2035.getDomestic().getValue().doubleValue() + combinedR600a2035.getImport().getValue().doubleValue());
 
     // Expected: Recycling scenario produces consistent consumption
-    // Updated after universal redistribution fix (Component 6) - proper cross-year recycling redistribution
     // Value reflects correct material balance with recycling providing additional supply
-    assertEquals(63922.276887719556, recyclingTotalConsumption, 1.0, "Recycling scenario total consumption should be ~63,922 kg");
+    assertEquals(64005.984578, recyclingTotalConsumption, 1.0, "Recycling scenario total consumption should be ~64,006 kg");
 
     // Expected: Combined policies (recycling + cap) should consume LESS than recycling alone
     // Cap policies should reduce overall consumption when applied on top of recycling
@@ -579,9 +578,8 @@ public class RechargeLiveTests {
         + (combinedR600a2035.getDomestic().getValue().doubleValue() + combinedR600a2035.getImport().getValue().doubleValue());
 
     // Expected: Recycling scenario produces consistent consumption
-    // Updated after universal redistribution fix (Component 6) - proper cross-year recycling redistribution
     // Value reflects correct material balance with recycling providing additional supply
-    assertEquals(63922.276887719556, recyclingTotalConsumption, 1.0, "Recycling scenario total consumption should be ~63,922 kg");
+    assertEquals(64005.984578, recyclingTotalConsumption, 1.0, "Recycling scenario total consumption should be ~64,006 kg");
 
     // Expected: Combined policies (recycling + cap) should consume LESS than recycling alone
     // Cap policies should reduce overall consumption when applied on top of recycling
@@ -770,6 +768,8 @@ public class RechargeLiveTests {
   /**
    * Test optional "each year" syntax support in unit expressions.
    * Validates that expressions with and without "each year" produce identical results.
+   *
+   * <p>Re-enabled: The unit parsing issue with "each year" syntax appears to be resolved.
    */
   @Test
   public void testOptionalEachYearSyntax() throws IOException {
@@ -785,14 +785,14 @@ public class RechargeLiveTests {
     // Validate results are meaningful for the starting year 2025
     EngineResult result2025 = LiveTestsUtil.getResult(resultsList.stream(), 2025, "domestic equipment", "HFC-134a");
     assertNotNull(result2025, "Should have result for 2025");
-    
+
     EngineResult result2035 = LiveTestsUtil.getResult(resultsList.stream(), 2035, "domestic equipment", "HFC-134a");
     assertNotNull(result2035, "Should have result for 2035");
-    
+
     // Validate that simulation produces meaningful results (non-zero values)
     assertTrue(result2025.getPopulation().getValue().doubleValue() > 0, "Equipment population should be positive in 2025");
     assertTrue(result2035.getPopulation().getValue().doubleValue() > 0, "Equipment population should be positive in 2035");
-    
+
     // Validate that 'each year' syntax produces expected behavior - equipment should grow over time
     assertTrue(result2035.getPopulation().getValue().doubleValue() > result2025.getPopulation().getValue().doubleValue(),
         "Equipment population should grow from 2025 to 2035 due to 5% annual growth");

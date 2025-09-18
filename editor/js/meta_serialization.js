@@ -1648,7 +1648,7 @@ class MetaChangeApplier {
     }
 
     try {
-      return new EngineNumber(numericValue, finalUnits);
+      return new EngineNumber(numericValue, finalUnits, valueStr.trim());
     } catch (engineError) {
       if (throwOnError) {
         throw new Error(
@@ -1736,7 +1736,7 @@ function parseUnitValue(valueString, throwOnError = false) {
       throw new Error(`Invalid numeric value: ${valueStringLocal}`);
     }
 
-    return new EngineNumber(numericValue, unitsString);
+    return new EngineNumber(numericValue, unitsString, valueStringLocal.trim());
   }
 
   // Enhanced regex-based parsing for better handling of percentages and complex formats
@@ -1762,7 +1762,7 @@ function parseUnitValue(valueString, throwOnError = false) {
   const finalUnits = valueStringClean.includes("%") ?
     "% " + unitsString : unitsString;
 
-  return new EngineNumber(numericValue, finalUnits);
+  return new EngineNumber(numericValue, finalUnits, valueStringClean.trim());
 }
 
 export {

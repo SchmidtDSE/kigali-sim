@@ -25,7 +25,7 @@ start policy "test_recover_no_displacement"
   modify application "test"
     
     modify substance "sub_a"
-      recover 20 kg with 100% reuse during year 1
+      recover 20 kg with 100% reuse with 0 % induction during year 1
     end substance
 
   end application

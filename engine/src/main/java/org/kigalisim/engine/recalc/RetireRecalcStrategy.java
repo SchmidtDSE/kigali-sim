@@ -15,6 +15,8 @@ import org.kigalisim.engine.Engine;
 import org.kigalisim.engine.number.EngineNumber;
 import org.kigalisim.engine.number.UnitConverter;
 import org.kigalisim.engine.state.OverridingConverterStateGetter;
+import org.kigalisim.engine.state.SimulationStateUpdate;
+import org.kigalisim.engine.state.SimulationStateUpdateBuilder;
 import org.kigalisim.engine.state.UseKey;
 import org.kigalisim.engine.support.ExceptionsGenerator;
 
@@ -49,24 +51,24 @@ public class RetireRecalcStrategy implements RecalcStrategy {
       ExceptionsGenerator.raiseNoAppOrSubstance("recalculating population change", "");
     }
 
-    // Get StreamKeeper from kit
-    var streamKeeper = kit.getStreamKeeper();
+    // Get SimulationState from kit
+    var simulationState = kit.getStreamKeeper();
 
     // Calculate change
-    EngineNumber currentPriorRaw = streamKeeper.getStream(
+    EngineNumber currentPriorRaw = simulationState.getStream(
         scopeEffective,
         "priorEquipment"
     );
     EngineNumber currentPrior = unitConverter.convert(currentPriorRaw, "units");
 
-    EngineNumber currentEquipmentRaw = streamKeeper.getStream(
+    EngineNumber currentEquipmentRaw = simulationState.getStream(
         scopeEffective,
         "equipment"
     );
     final EngineNumber currentEquipment = unitConverter.convert(currentEquipmentRaw, "units");
 
     stateGetter.setPopulation(currentPrior);
-    EngineNumber amountRaw = streamKeeper.getRetirementRate(scopeEffective);
+    EngineNumber amountRaw = simulationState.getRetirementRate(scopeEffective);
     EngineNumber amount = unitConverter.convert(amountRaw, "units");
     stateGetter.clearPopulation();
 
@@ -78,15 +80,34 @@ public class RetireRecalcStrategy implements RecalcStrategy {
     EngineNumber newEquipment = new EngineNumber(newEquipmentValue, "units");
 
     // Update equipment streams
-    streamKeeper.setStream(scopeEffective, "priorEquipment", newPrior);
-    streamKeeper.setStream(scopeEffective, "equipment", newEquipment);
+    SimulationStateUpdate priorEquipmentStream = new SimulationStateUpdateBuilder()
+        .setUseKey(scopeEffective)
+        .setName("priorEquipment")
+        .setValue(newPrior)
+        .setSubtractRecycling(false)
+        .build();
+    simulationState.update(priorEquipmentStream);
+
+    SimulationStateUpdate equipmentStream = new SimulationStateUpdateBuilder()
+        .setUseKey(scopeEffective)
+        .setName("equipment")
+        .setValue(newEquipment)
+        .setSubtractRecycling(false)
+        .build();
+    simulationState.update(equipmentStream);
 
     // Update retired stream with the amount retired this year
-    EngineNumber currentRetiredRaw = streamKeeper.getStream(scopeEffective, "retired");
+    EngineNumber currentRetiredRaw = simulationState.getStream(scopeEffective, "retired");
     EngineNumber currentRetired = unitConverter.convert(currentRetiredRaw, "units");
     BigDecimal newRetiredValue = currentRetired.getValue().add(amount.getValue());
     EngineNumber newRetired = new EngineNumber(newRetiredValue, "units");
-    streamKeeper.setStream(scopeEffective, "retired", newRetired);
+    SimulationStateUpdate retiredStream = new SimulationStateUpdateBuilder()
+        .setUseKey(scopeEffective)
+        .setName("retired")
+        .setValue(newRetired)
+        .setSubtractRecycling(false)
+        .build();
+    simulationState.update(retiredStream);
 
     // Update GHG accounting
     EolEmissionsRecalcStrategy eolStrategy = new EolEmissionsRecalcStrategy(Optional.of(scopeEffective));

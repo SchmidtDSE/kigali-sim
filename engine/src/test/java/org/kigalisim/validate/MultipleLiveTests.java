@@ -44,9 +44,9 @@ public class MultipleLiveTests {
     assertNotNull(resultA, "Should have result for test/a in year 1");
 
     // Check consumption value for substance "a"
-    assertEquals(500.0, resultA.getGhgConsumption().getValue().doubleValue(), 0.0001,
+    assertEquals(500.0, resultA.getConsumption().getValue().doubleValue(), 0.0001,
         "Consumption for substance a should be 500 tCO2e");
-    assertEquals("tCO2e", resultA.getGhgConsumption().getUnits(),
+    assertEquals("tCO2e", resultA.getConsumption().getUnits(),
         "Consumption units for substance a should be tCO2e");
 
     // Check domestic value for substance "a" - should be 100 mt = 100000 kg
@@ -60,9 +60,9 @@ public class MultipleLiveTests {
     assertNotNull(resultB, "Should have result for test/b in year 1");
 
     // Check consumption value for substance "b"
-    assertEquals(1000.0, resultB.getGhgConsumption().getValue().doubleValue(), 0.0001,
+    assertEquals(1000.0, resultB.getConsumption().getValue().doubleValue(), 0.0001,
         "Consumption for substance b should be 1000 tCO2e");
-    assertEquals("tCO2e", resultB.getGhgConsumption().getUnits(),
+    assertEquals("tCO2e", resultB.getConsumption().getUnits(),
         "Consumption units for substance b should be tCO2e");
 
     // Check domestic value for substance "b" - should be 100 mt = 100000 kg

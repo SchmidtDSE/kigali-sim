@@ -3,10 +3,11 @@
  *
  * @license BSD, see LICENSE.md.
  */
+import {ParsedYear, YearMatcher} from "duration";
 import {EngineNumber} from "engine_number";
-import {YearMatcher} from "year_matcher";
 import {MetaSerializer, MetaChangeApplier} from "meta_serialization";
 import {GwpLookupPresenter} from "known_substance";
+import {NumberParseUtil} from "number_parse_util";
 
 import {
   Application,
@@ -20,6 +21,12 @@ import {
   SimulationScenario,
   SubstanceBuilder,
 } from "ui_translator";
+import {
+  NameConflictResolution,
+  resolveNameConflict,
+  resolveSubstanceNameConflict,
+  DuplicateEntityPresenter,
+} from "duplicate_util";
 
 /**
  * Stream target selectors used throughout the application for updating dropdown states.
@@ -44,6 +51,12 @@ const ENABLEABLE_STREAMS = ["domestic", "import", "export"];
  * @constant {Array<string>}
  */
 const ALWAYS_ON_STREAMS = ["sales", "equipment", "priorEquipment"];
+
+/**
+ * Valid QubecTalk year keywords that should not trigger validation warnings.
+ * @constant {Array<string>}
+ */
+const VALID_YEAR_KEYWORDS = ["beginning", "onwards"];
 
 /**
  * Updates the visibility of selector elements based on selected duration type.
@@ -231,7 +244,15 @@ function getListInput(selection, itemReadStrategy) {
 function setEngineNumberValue(valSelection, unitsSelection, source, defaultValue, strategy) {
   const newValue = source === null ? null : strategy(source);
   const valueOrDefault = newValue === null ? defaultValue : newValue;
-  valSelection.value = valueOrDefault.getValue();
+
+  // Use original string for value field if available, otherwise use numeric value
+  if (valueOrDefault.hasOriginalString()) {
+    valSelection.value = valueOrDefault.getOriginalString();
+  } else {
+    const numericValue = valueOrDefault.getValue();
+    // Display empty string instead of NaN
+    valSelection.value = isNaN(numericValue) ? "" : numericValue;
+  }
   unitsSelection.value = valueOrDefault.getUnits();
 }
 
@@ -243,9 +264,176 @@ function setEngineNumberValue(valSelection, unitsSelection, source, defaultValue
  * @returns {EngineNumber} Combined engine number object.
  */
 function getEngineNumberValue(valSelection, unitsSelection) {
-  const value = valSelection.value;
+  const valueString = valSelection.value;
   const units = unitsSelection.value;
-  return new EngineNumber(value, units);
+
+  // Parse the value to get the numeric value, but preserve original string formatting
+  const numericValue = parseFloat(valueString);
+
+  // If parsing results in NaN, default to 0 but preserve original string if not empty
+  const finalValue = isNaN(numericValue) ? 0 : numericValue;
+  const originalString = valueString.trim() === "" ? null : valueString.trim();
+
+  return new EngineNumber(finalValue, units, originalString);
+}
+
+/**
+ * Inverts the sign of a number string while preserving formatting.
+ *
+ * @param {string} numberString - The number string to invert
+ * @returns {string} The number string with inverted sign
+ */
+function invertNumberString(numberString) {
+  const trimmed = numberString.trim();
+  if (trimmed.startsWith("-")) {
+    // Remove the minus sign (or replace with plus for explicit positive)
+    return "+" + trimmed.substring(1);
+  } else if (trimmed.startsWith("+")) {
+    // Replace plus with minus
+    return "-" + trimmed.substring(1);
+  } else {
+    // No sign present, add minus
+    return "-" + trimmed;
+  }
+}
+
+/**
+ * Validates numeric inputs within a dialog and prompts user for potentially
+ * invalid values.
+ *
+ * @param {HTMLElement} dialog - The dialog element containing numeric inputs
+ * @param {string} dialogType - Type of dialog for error message context
+ *     ("substance", "policy", "simulation")
+ * @returns {boolean} True if user confirms to proceed, false if user cancels
+ */
+function validateNumericInputs(dialog, dialogType) {
+  const numericInputs = dialog.querySelectorAll(".numeric-input");
+  const potentiallyInvalid = [];
+  const numberParser = new NumberParseUtil();
+
+  // Define patterns for potentially invalid values
+  const invalidPatterns = [
+    /[a-zA-Z\s]/, // Alphabetical characters or spaces
+    /[^\d\s\-+.,]/, // Non-numeric symbols except digits, spaces, signs, periods, and commas
+  ];
+
+  // Check each numeric input
+  numericInputs.forEach((input) => {
+    const value = input.value.trim();
+    if (value === "") return; // Skip empty values (may be optional)
+
+    // Allow valid QubecTalk year keywords for duration fields
+    const isDurationField = input.classList.contains("duration-start") ||
+                           input.classList.contains("duration-end");
+    const isValidYearKeyword = isDurationField && VALID_YEAR_KEYWORDS.includes(value.toLowerCase());
+
+    if (isValidYearKeyword) {
+      return; // Skip validation for valid year keywords
+    }
+
+    // Check against invalid patterns
+    const isLikelyInvalid = invalidPatterns.some((pattern) => pattern.test(value));
+
+    // Check for ambiguous number formats
+    const isAmbiguous = numberParser.isAmbiguous(value);
+
+    // Check if the number fails to parse (e.g., European format)
+    const parseResult = numberParser.parseFlexibleNumber(value);
+    const isParseError = !parseResult.isSuccess();
+
+    if (isLikelyInvalid || isAmbiguous || isParseError) {
+      // Get field description from aria-label
+      const fieldDescription = input.getAttribute("aria-label") || "Unknown field";
+
+      let itemDescription = fieldDescription;
+      let suggestion = "";
+
+      if (isAmbiguous) {
+        itemDescription = `${fieldDescription} (ambiguous number format)`;
+        suggestion = numberParser.getDisambiguationSuggestion(value);
+      } else if (isParseError) {
+        const errorMessage = parseResult.getError();
+        // Extract suggestion from error message if it contains "Please use:"
+        if (errorMessage.includes("Please use:")) {
+          const match = errorMessage.match(/Please use: '([^']+)'/);
+          if (match) {
+            suggestion = `Use '${match[1]}' instead (comma for thousands, period for decimal)`;
+          }
+        }
+        itemDescription = `${fieldDescription} (unsupported number format)`;
+      }
+
+      potentiallyInvalid.push({
+        element: input,
+        value: value,
+        description: itemDescription,
+        suggestion: suggestion,
+      });
+    }
+  });
+
+  // If no potentially invalid values found, proceed
+  if (potentiallyInvalid.length === 0) {
+    return true;
+  }
+
+  // Build user-friendly error message
+  const fieldList = potentiallyInvalid.map((item) => {
+    if (item.suggestion) {
+      return `• ${item.description}: "${item.value}"\n  Suggestion: ${item.suggestion}`;
+    } else {
+      return `• ${item.description}: "${item.value}"`;
+    }
+  }).join("\n\n");
+
+  const message = "The following numeric fields contain potentially " +
+    `invalid values:\n\n${fieldList}\n\n` +
+    "These values may cause simulation errors. You can:\n" +
+    "• Click \"Continue\" if these are intentional (equations, etc.)\n" +
+    "• Click \"Cancel\" to review and correct the values";
+
+  // Prompt user for confirmation
+  return confirm(message);
+}
+
+/**
+ * Validates simulation duration to warn about very long simulations.
+ *
+ * @param {HTMLElement} dialog - Dialog element containing start and end inputs.
+ * @returns {boolean} True if user confirms or duration is reasonable, false if cancelled.
+ * @private
+ */
+function validateSimulationDuration(dialog) {
+  const startInput = dialog.querySelector(".edit-simulation-start-input");
+  const endInput = dialog.querySelector(".edit-simulation-end-input");
+
+  if (!startInput || !endInput) {
+    return true; // If inputs not found, proceed
+  }
+
+  const startValue = startInput.value.trim();
+  const endValue = endInput.value.trim();
+
+  // Only check if both values are simple integers (no equations, etc.)
+  const isSimpleInteger = (value) => /^\d+$/.test(value);
+
+  if (!isSimpleInteger(startValue) || !isSimpleInteger(endValue)) {
+    return true; // Skip validation for non-simple integers
+  }
+
+  const startYear = parseInt(startValue, 10);
+  const endYear = parseInt(endValue, 10);
+  const duration = endYear - startYear;
+
+  if (duration > 1000) {
+    const message = `This simulation spans ${duration} years (${startYear} to ${endYear}), ` +
+      "which is over 1000 years.\n\n" +
+      "Do you want to continue with this duration?";
+
+    return confirm(message);
+  }
+
+  return true;
 }
 
 /**
@@ -277,21 +465,31 @@ function setDuring(selection, command, defaultVal, initListeners) {
     const durationEnd = effectiveVal.getEnd();
     const noEnd = durationEnd === null;
 
+    // Helper function to safely set year values, preserving original user input
+    const setYearValue = (input, yearValue) => {
+      if (yearValue === null || yearValue === undefined) {
+        input.value = "";
+      } else {
+        // Use ParsedYear's getYearStr() method for proper display
+        input.value = yearValue.getYearStr();
+      }
+    };
+
     if (noStart && noEnd) {
       durationTypeInput.value = "during all years";
     } else if (noStart) {
       durationTypeInput.value = "ending in year";
-      durationEndInput.value = durationEnd;
+      setYearValue(durationEndInput, durationEnd);
     } else if (noEnd) {
       durationTypeInput.value = "starting in year";
-      durationStartInput.value = durationStart;
-    } else if (durationStart == durationEnd) {
+      setYearValue(durationStartInput, durationStart);
+    } else if (durationStart && durationEnd && durationStart.equals(durationEnd)) {
       durationTypeInput.value = "in year";
-      durationStartInput.value = durationStart;
+      setYearValue(durationStartInput, durationStart);
     } else {
       durationTypeInput.value = "during years";
-      durationStartInput.value = durationStart;
-      durationEndInput.value = durationEnd;
+      setYearValue(durationStartInput, durationStart);
+      setYearValue(durationEndInput, durationEnd);
     }
   };
 
@@ -455,7 +653,6 @@ class ApplicationsListPresenter {
 
     const saveButton = self._root.querySelector(".save-button");
     saveButton.addEventListener("click", (event) => {
-      self._dialog.close();
       event.preventDefault();
 
       const cleanName = (x) => x.replaceAll('"', "").replaceAll(",", "").trim();
@@ -476,13 +673,28 @@ class ApplicationsListPresenter {
       };
 
       const effectiveName = getEffectiveName();
-      const newName = effectiveName === "" ? "Unnamed" : effectiveName;
+      const baseName = effectiveName === "" ? "Unnamed" : effectiveName;
 
       const priorNames = new Set(self._getAppNames());
-      const nameIsDuplicate = priorNames.has(newName);
-      if (nameIsDuplicate) {
-        alert("Whoops! An application by that name already exists.");
-        return;
+      const resolution = resolveNameConflict(baseName, priorNames);
+      const newName = resolution.getNewName();
+
+      // Update the input field to show the resolved name if it was changed
+      if (resolution.getNameChanged()) {
+        // If the resolved name differs from the effective name, update the main name input
+        // We need to handle the case where there's a subname
+        if (subnameEmpty) {
+          nameInput.value = newName;
+        } else {
+          // For compound names with subnames, we need to update the main part
+          const nameParts = newName.split(" - ");
+          if (nameParts.length > 1) {
+            nameInput.value = nameParts[0];
+            // The subname part should remain as-is since conflict resolution affects the whole name
+          } else {
+            nameInput.value = newName;
+          }
+        }
       }
 
       if (self._editingName === null) {
@@ -495,6 +707,8 @@ class ApplicationsListPresenter {
         codeObj.renameApplication(self._editingName, newName);
         self._onCodeObjUpdate(codeObj);
       }
+
+      self._dialog.close();
     });
   }
 
@@ -773,9 +987,10 @@ class ConsumptionListPresenter {
 
     const saveButton = self._root.querySelector(".save-button");
     saveButton.addEventListener("click", (event) => {
-      self._save();
-      self._dialog.close();
       event.preventDefault();
+      if (self._save()) {
+        self._dialog.close();
+      }
     });
 
     const updateHints = () => {
@@ -1220,7 +1435,12 @@ class ConsumptionListPresenter {
    */
   _save() {
     const self = this;
-    const substance = self._parseObj();
+
+    // Validate numeric inputs and get user confirmation for potentially invalid values
+    if (!validateNumericInputs(self._dialog, "substance")) {
+      return false; // User cancelled, stop save operation
+    }
+    let substance = self._parseObj();
 
     const codeObj = self._getCodeObj();
 
@@ -1228,6 +1448,43 @@ class ConsumptionListPresenter {
       const applicationName = getFieldValue(
         self._dialog.querySelector(".edit-consumption-application-input"),
       );
+
+      // Handle duplicate substance name resolution for new substances
+      const baseName = substance.getName();
+      const priorNames = new Set(self._getConsumptionNames());
+      const fullBaseName = `"${baseName}" for "${applicationName}"`;
+      const resolution = resolveSubstanceNameConflict(fullBaseName, priorNames);
+
+      // If the name was changed, update the substance input field and re-parse
+      if (resolution.getNameChanged()) {
+        // Extract the resolved substance name from the full name
+        const resolvedFullName = resolution.getNewName();
+        // Handle format like: "SubA" for "Test" (1) -> should extract "SubA (1)"
+        const fullNameMatch = resolvedFullName.match(/^"([^"]+)" for "[^"]+"(\s*\([^)]+\))?$/);
+        if (fullNameMatch) {
+          const baseSubstanceName = fullNameMatch[1];
+          const suffix = fullNameMatch[2] || "";
+          const resolvedSubstanceName = baseSubstanceName + suffix;
+
+          // Update the substance input field - need to handle compound names properly
+          const substanceInput = self._dialog.querySelector(".edit-consumption-substance-input");
+          const equipmentInput = self._dialog.querySelector(".edit-consumption-equipment-input");
+
+          // Check if the resolved name has equipment model part
+          const equipmentModel = getFieldValue(equipmentInput);
+          if (equipmentModel && equipmentModel.trim() !== "") {
+            // For compound names, update the base substance part
+            const baseResolved = resolvedSubstanceName.replace(` - ${equipmentModel.trim()}`, "");
+            substanceInput.value = baseResolved;
+          } else {
+            substanceInput.value = resolvedSubstanceName;
+          }
+
+          // Re-parse with the updated name
+          substance = self._parseObj();
+        }
+      }
+
       codeObj.insertSubstance(null, applicationName, null, substance);
     } else {
       const objIdentifierRegex = /\"([^\"]+)\" for \"([^\"]+)\"/;
@@ -1269,6 +1526,7 @@ class ConsumptionListPresenter {
     }
 
     self._onCodeObjUpdate(codeObj);
+    return true;
   }
 
   /**
@@ -1546,9 +1804,10 @@ class PolicyListPresenter {
 
     const saveButton = self._root.querySelector(".save-button");
     saveButton.addEventListener("click", (event) => {
-      self._save();
-      self._dialog.close();
       event.preventDefault();
+      if (self._save()) {
+        self._dialog.close();
+      }
     });
 
     const updateHints = () => {
@@ -1840,10 +2099,33 @@ class PolicyListPresenter {
    */
   _save() {
     const self = this;
-    const policy = self._parseObj();
+
+    // Validate numeric inputs and get user confirmation for potentially invalid values
+    if (!validateNumericInputs(self._dialog, "policy")) {
+      return false; // User cancelled, stop save operation
+    }
+    let policy = self._parseObj();
+
+    // Handle duplicate name resolution for new policies
+    if (self._editingName === null) {
+      const baseName = policy.getName();
+      const priorNames = new Set(self._getPolicyNames());
+      const resolution = resolveNameConflict(baseName, priorNames);
+
+      // Update the input field if the name was changed
+      if (resolution.getNameChanged()) {
+        const nameInput = self._dialog.querySelector(".edit-policy-name-input");
+        nameInput.value = resolution.getNewName();
+
+        // Need to re-parse with the updated name
+        policy = self._parseObj();
+      }
+    }
+
     const codeObj = self._getCodeObj();
     codeObj.insertPolicy(self._editingName, policy);
     self._onCodeObjUpdate(codeObj);
+    return true;
   }
 
   /**
@@ -1990,9 +2272,10 @@ class SimulationListPresenter {
 
     const saveButton = self._root.querySelector(".save-button");
     saveButton.addEventListener("click", (event) => {
-      self._dialog.close();
-      self._save();
       event.preventDefault();
+      if (self._save()) {
+        self._dialog.close();
+      }
     });
   }
 
@@ -2076,10 +2359,38 @@ class SimulationListPresenter {
    */
   _save() {
     const self = this;
-    const scenario = self._parseObj();
+
+    // Validate numeric inputs and get user confirmation for potentially invalid values
+    if (!validateNumericInputs(self._dialog, "simulation")) {
+      return false; // User cancelled, stop save operation
+    }
+
+    // Validate simulation duration and warn about very long simulations
+    if (!validateSimulationDuration(self._dialog)) {
+      return false; // User cancelled, stop save operation
+    }
+    let scenario = self._parseObj();
+
+    // Handle duplicate name resolution for new simulations
+    if (self._editingName === null) {
+      const baseName = scenario.getName();
+      const priorNames = new Set(self._getSimulationNames());
+      const resolution = resolveNameConflict(baseName, priorNames);
+
+      // Update the input field if the name was changed
+      if (resolution.getNameChanged()) {
+        const nameInput = self._dialog.querySelector(".edit-simulation-name-input");
+        nameInput.value = resolution.getNewName();
+
+        // Need to re-parse with the updated name
+        scenario = self._parseObj();
+      }
+    }
+
     const codeObj = self._getCodeObj();
     codeObj.insertScenario(self._editingName, scenario);
     self._onCodeObjUpdate(codeObj);
+    return true;
   }
 
   /**
@@ -2452,6 +2763,8 @@ class SubstanceTablePresenter {
   }
 }
 
+// DuplicateEntityPresenter has been moved to duplicate_util.js
+
 /**
  * Manages the UI editor interface.
  *
@@ -2511,6 +2824,11 @@ class UiEditorPresenter {
     );
 
     self._substanceTable = new SubstanceTablePresenter(
+      () => self._getCodeAsObj(),
+      (codeObj) => self._onCodeObjUpdate(codeObj),
+    );
+
+    self._duplicateEntityPresenter = new DuplicateEntityPresenter(
       () => self._getCodeAsObj(),
       (codeObj) => self._onCodeObjUpdate(codeObj),
     );
@@ -2855,7 +3173,12 @@ function initSetCommandUi(itemObj, root, codeObj, context, streamUpdater) {
     new EngineNumber(1, "mt"),
     (x) => x.getValue(),
   );
-  setDuring(root.querySelector(".duration-subcomponent"), itemObj, new YearMatcher(1, 1), true);
+  setDuring(
+    root.querySelector(".duration-subcomponent"),
+    itemObj,
+    new YearMatcher(new ParsedYear(1), new ParsedYear(1)),
+    true,
+  );
 }
 
 /**
@@ -2908,7 +3231,12 @@ function initChangeCommandUi(itemObj, root, codeObj, context, streamUpdater) {
     }
     return x.getValue().getUnits();
   });
-  setDuring(root.querySelector(".duration-subcomponent"), itemObj, new YearMatcher(2, 10), true);
+  setDuring(
+    root.querySelector(".duration-subcomponent"),
+    itemObj,
+    new YearMatcher(new ParsedYear(2), new ParsedYear(10)),
+    true,
+  );
 }
 
 /**
@@ -2920,10 +3248,17 @@ function initChangeCommandUi(itemObj, root, codeObj, context, streamUpdater) {
 function readChangeCommandUi(root) {
   const target = getFieldValue(root.querySelector(".change-target-input"));
   const invert = getFieldValue(root.querySelector(".change-sign-input")) === "-";
-  const amountRaw = parseFloat(getFieldValue(root.querySelector(".change-amount-input")));
-  const amount = amountRaw * (invert ? -1 : 1);
+  const numberParser = new NumberParseUtil();
+  const amountInput = getFieldValue(root.querySelector(".change-amount-input"));
+  const result = numberParser.parseFlexibleNumber(amountInput);
+  if (!result.isSuccess()) {
+    throw new Error(`Invalid amount format: ${result.getError()}`);
+  }
+  const amount = result.getNumber() * (invert ? -1 : 1);
   const units = getFieldValue(root.querySelector(".change-units-input"));
-  const amountWithUnits = new EngineNumber(amount, units);
+  // Preserve original string format, applying sign inversion if needed
+  const originalString = invert ? invertNumberString(amountInput) : amountInput.trim();
+  const amountWithUnits = new EngineNumber(amount, units, originalString);
   const duration = readDurationUi(root.querySelector(".duration-subcomponent"));
   return new Command("change", target, amountWithUnits, duration);
 }
@@ -2962,7 +3297,12 @@ function initLimitCommandUi(itemObj, root, codeObj, context, streamUpdater) {
   setFieldValue(root.querySelector(".displacing-input"), itemObj, "", (x) =>
     x && x.getDisplacing ? (x.getDisplacing() === null ? "" : x.getDisplacing()) : "",
   );
-  setDuring(root.querySelector(".duration-subcomponent"), itemObj, new YearMatcher(2, 10), true);
+  setDuring(
+    root.querySelector(".duration-subcomponent"),
+    itemObj,
+    new YearMatcher(new ParsedYear(2), new ParsedYear(10)),
+    true,
+  );
 
   // Add event listener to update options when substance changes
   const substanceSelectElement = root.querySelector(".substances-select");
@@ -3018,34 +3358,20 @@ function readLimitCommandUi(root) {
  * @param {Object} codeObj - The code object for context.
  */
 function initRechargeCommandUi(itemObj, root, codeObj) {
-  // Handle both RechargeCommand objects and generic Command objects
+  // All recharge objects are now RechargeCommand instances
   const populationGetter = (x) => {
-    if (x.getPopulation) {
-      return x.getPopulation();
-    } else {
-      return x.getTarget().getValue();
-    }
+    const engineNumber = x.getPopulationEngineNumber();
+    return engineNumber.getOriginalString() || String(engineNumber.getValue());
   };
   const populationUnitsGetter = (x) => {
-    if (x.getPopulationUnits) {
-      return x.getPopulationUnits();
-    } else {
-      return x.getTarget().getUnits();
-    }
+    return x.getPopulationEngineNumber().getUnits();
   };
   const volumeGetter = (x) => {
-    if (x.getVolume) {
-      return x.getVolume();
-    } else {
-      return x.getValue().getValue();
-    }
+    const engineNumber = x.getVolumeEngineNumber();
+    return engineNumber.getOriginalString() || String(engineNumber.getValue());
   };
   const volumeUnitsGetter = (x) => {
-    if (x.getVolumeUnits) {
-      return x.getVolumeUnits();
-    } else {
-      return x.getValue().getUnits();
-    }
+    return x.getVolumeEngineNumber().getUnits();
   };
 
   setFieldValue(
@@ -3074,7 +3400,12 @@ function initRechargeCommandUi(itemObj, root, codeObj) {
   );
 
   // Set up duration using standard pattern
-  setDuring(root.querySelector(".duration-subcomponent"), itemObj, new YearMatcher(1, 1), true);
+  setDuring(
+    root.querySelector(".duration-subcomponent"),
+    itemObj,
+    new YearMatcher(new ParsedYear(1), new ParsedYear(1)),
+    true,
+  );
 }
 
 /**
@@ -3096,20 +3427,14 @@ function readRechargeCommandUi(root) {
   // Read duration using standard pattern
   const duration = readDurationUi(root.querySelector(".duration-subcomponent"));
 
-  // Convert YearMatcher duration to RechargeCommand parameters
-  const durationTypeInput = root.querySelector(".duration-type-input");
-  const durationType = durationTypeInput.value;
-  const yearStart = duration.getStart();
-  const yearEnd = duration.getEnd();
+  // Create EngineNumber objects with original string preservation
+  const populationEngineNumber = new EngineNumber(population, populationUnits, population);
+  const volumeEngineNumber = new EngineNumber(volume, volumeUnits, volume);
 
   return new RechargeCommand(
-    population,
-    populationUnits,
-    volume,
-    volumeUnits,
-    durationType,
-    yearStart,
-    yearEnd,
+    populationEngineNumber,
+    volumeEngineNumber,
+    duration,
   );
 }
 
@@ -3144,10 +3469,63 @@ function initRecycleCommandUi(itemObj, root, codeObj, context, streamUpdater) {
   setFieldValue(root.querySelector(".displacing-input"), itemObj, "", (x) =>
     x && x.getDisplacing ? (x.getDisplacing() === null ? "" : x.getDisplacing()) : "",
   );
+  setFieldValue(
+    root.querySelector(".recycle-induction-amount-input"),
+    itemObj,
+    "100",
+    (x) => {
+      if (x && x.getInduction) {
+        const induction = x.getInduction();
+        if (induction === null) {
+          return "100";
+        } else if (induction === "default") {
+          return "100";
+        } else if (induction instanceof EngineNumber) {
+          return induction.getValue().toString();
+        } else {
+          return induction.toString();
+        }
+      } else {
+        return "100";
+      }
+    },
+  );
   setFieldValue(root.querySelector(".recycle-stage-input"), itemObj, "recharge", (x) =>
     x && x.getStage ? x.getStage() : "recharge",
   );
-  setDuring(root.querySelector(".duration-subcomponent"), itemObj, new YearMatcher(2, 10), true);
+  setDuring(
+    root.querySelector(".duration-subcomponent"),
+    itemObj,
+    new YearMatcher(new ParsedYear(2), new ParsedYear(10)),
+    true,
+  );
+}
+
+/**
+ * Validates and normalizes induction input values.
+ *
+ * @param {string} rawValue - The raw input value
+ * @returns {string|EngineNumber} Normalized induction value
+ */
+function validateInductionInput(rawValue) {
+  if (rawValue === "") {
+    throw new Error("Induction rate is required. Please enter a value between 0-100.");
+  }
+
+  if (rawValue === "default") {
+    return "default";
+  }
+
+  const numValue = parseFloat(rawValue);
+  if (isNaN(numValue)) {
+    throw new Error(`Invalid induction rate: "${rawValue}". Must be a number between 0-100.`);
+  }
+
+  if (numValue < 0 || numValue > 100) {
+    throw new Error(`Induction rate ${numValue}% is out of range. Must be between 0-100%.`);
+  }
+
+  return new EngineNumber(numValue, "%", rawValue.trim());
 }
 
 /**
@@ -3165,11 +3543,18 @@ function readRecycleCommandUi(root) {
     root.querySelector(".recycle-reuse-amount-input"),
     root.querySelector(".recycle-reuse-units-input"),
   );
-  const displacingRaw = getFieldValue(root.querySelector(".displacing-input"));
-  const displacing = displacingRaw === "" ? null : displacingRaw;
+
+  // Add induction handling with validation
+  const inductionRaw = getFieldValue(
+    root.querySelector(".recycle-induction-amount-input"),
+  );
+  const induction = validateInductionInput(inductionRaw);
+
   const stage = getFieldValue(root.querySelector(".recycle-stage-input"));
   const duration = readDurationUi(root.querySelector(".duration-subcomponent"));
-  return new RecycleCommand(collection, reuse, duration, displacing, stage);
+
+  // RecycleCommand constructor: (target, value, duration, stage, induction)
+  return new RecycleCommand(collection, reuse, duration, stage, induction);
 }
 
 /**
@@ -3229,7 +3614,12 @@ function initReplaceCommandUi(itemObj, root, codeObj, context, streamUpdater) {
     x.getDestination(),
   );
 
-  setDuring(root.querySelector(".duration-subcomponent"), itemObj, new YearMatcher(2, 10), true);
+  setDuring(
+    root.querySelector(".duration-subcomponent"),
+    itemObj,
+    new YearMatcher(new ParsedYear(2), new ParsedYear(10)),
+    true,
+  );
 
   // Initial update of stream options
   updateReplaceTargetOptions();
@@ -3272,7 +3662,11 @@ function readDurationUi(root) {
   const getYearValue = (x) => (x === null ? null : root.querySelector("." + x).value);
   const minYear = getYearValue(targets["min"]);
   const maxYear = getYearValue(targets["max"]);
-  return new YearMatcher(minYear, maxYear);
+  return new YearMatcher(
+    minYear ? new ParsedYear(minYear) : null,
+    maxYear ? new ParsedYear(maxYear) : null,
+  );
 }
+
 
 export {UiEditorPresenter};

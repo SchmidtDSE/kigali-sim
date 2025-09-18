@@ -196,6 +196,64 @@
             <a href="#" class="close-button primary">Close</a>
           </div>
         </dialog>
+
+        <dialog id="duplicate-entity-dialog">
+          <h2>Duplicate Entity</h2>
+          <p>Create a copy of an existing entity with a new name.</p>
+          
+          <div class="form-group">
+            <div><label for="duplicate-entity-type-input">Entity Type:</label></div>
+            <div>
+              <span class="sel long">
+                <select
+                  id="duplicate-entity-type-input"
+                  name="duplicate-entity-type-input"
+                  class="duplicate-entity-type-input"
+                >
+                  <option value="application" selected>Application</option>
+                  <option value="policy">Policy</option>
+                  <option value="simulation">Simulation</option>
+                  <option value="substance">Consumption</option>
+                </select>
+              </span>
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <div><label for="duplicate-source-entity-input">Source Entity:</label></div>
+            <div>
+              <span class="sel long">
+                <select
+                  id="duplicate-source-entity-input"
+                  name="duplicate-source-entity-input"
+                  class="duplicate-source-entity-input"
+                ></select>
+              </span>
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <div><label for="duplicate-new-name-input">New Name:</label></div>
+            <div>
+              <input type="text" id="duplicate-new-name-input" class="duplicate-new-name-input" placeholder="Enter new name" />
+            </div>
+          </div>
+          
+          <div class="form-group equipment-model-section" style="display: none;">
+            <div><label for="duplicate-equipment-model-input">Equipment Model (optional):</label></div>
+            <div>
+              <input type="text" id="duplicate-equipment-model-input" class="duplicate-equipment-model-input" />
+            </div>
+            <div>
+              <small class="field-help">Optional model equipment / type which may be left empty</small>
+            </div>
+          </div>
+          
+          <div class="dialog-buttons bold-buttons">
+            <a href="#ui-editor-sections" class="save-button primary">Finish</a>
+            <a href="#" class="cancel-button destructive">Cancel</a>
+          </div>
+        </dialog>
       </div>
     </header>
 
@@ -305,7 +363,7 @@
                         </div>
                       </div>
                       <div class="dialog-buttons bold-buttons">
-                        <a href="#ui-editor-sections" class="save-button primary">Save</a>
+                        <a href="#ui-editor-sections" class="save-button primary">Finish</a>
                         <a href="#ui-editor-sections" class="cancel-button destructive">Cancel</a>
                       </div>
                     </dialog>
@@ -385,7 +443,8 @@
                               <input
                                 type="text"
                                 name="edit-consumption-ghg"
-                                class="edit-consumption-ghg-input mid"
+                                class="edit-consumption-ghg-input mid numeric-input"
+                                aria-label="GHG Equivalency"
                               />
                               <span class="sel mid">
                                 <select
@@ -414,7 +473,8 @@
                               <input
                                 type="text"
                                 name="edit-consumption-energy"
-                                class="edit-consumption-energy-input mid"
+                                class="edit-consumption-energy-input mid numeric-input"
+                                aria-label="Energy Consumption"
                               />
                               <span class="sel mid">
                                 <select
@@ -479,7 +539,8 @@
                               <input
                                 type="text"
                                 name="edit-consumption-initial-charge-domestic"
-                                class="edit-consumption-initial-charge-domestic-input mid"
+                                class="edit-consumption-initial-charge-domestic-input mid numeric-input"
+                                aria-label="Initial Charge (Domestic)"
                                 data-lpignore="true"
                                 data-protonpass-ignore="true"
                                 data-1p-ignore
@@ -526,7 +587,8 @@
                               <input
                                 type="text"
                                 name="edit-consumption-initial-charge-import"
-                                class="edit-consumption-initial-charge-import-input mid"
+                                class="edit-consumption-initial-charge-import-input mid numeric-input"
+                                aria-label="Initial Charge (Import)"
                                 data-lpignore="true"
                                 data-protonpass-ignore="true"
                                 data-1p-ignore
@@ -573,7 +635,8 @@
                               <input
                                 type="text"
                                 name="edit-consumption-initial-charge-export"
-                                class="edit-consumption-initial-charge-export-input mid"
+                                class="edit-consumption-initial-charge-export-input mid numeric-input"
+                                aria-label="Initial Charge (Export)"
                                 data-lpignore="true"
                                 data-protonpass-ignore="true"
                                 data-1p-ignore
@@ -618,7 +681,8 @@
                               <input
                                 type="text"
                                 name="edit-consumption-retirement"
-                                class="edit-consumption-retirement-input mid"
+                                class="edit-consumption-retirement-input mid numeric-input"
+                                aria-label="Retirement Rate"
                                 data-lpignore="true"
                                 data-protonpass-ignore="true"
                                 data-1p-ignore
@@ -730,7 +794,7 @@
                         </div>
                       </div>
                       <div class="dialog-buttons bold-buttons">
-                        <a href="#ui-editor-sections" class="save-button primary">Save</a>
+                        <a href="#ui-editor-sections" class="save-button primary">Finish</a>
                         <a href="#ui-editor-sections" class="cancel-button destructive">Cancel</a>
                       </div>
                     </dialog>
@@ -903,7 +967,7 @@
                         </div>
                       </div>
                       <div class="dialog-buttons bold-buttons">
-                        <a href="#ui-editor-sections" class="save-button primary">Save</a>
+                        <a href="#ui-editor-sections" class="save-button primary">Finish</a>
                         <a href="#ui-editor-sections" class="cancel-button destructive">Cancel</a>
                       </div>
                     </dialog>
@@ -941,7 +1005,8 @@
                             <input
                               type="text"
                               name="edit-simulation-start"
-                              class="edit-simulation-start-input long"
+                              class="edit-simulation-start-input long numeric-input"
+                              aria-label="Simulation Start Year"
                             />
                           </div>
                         </div>
@@ -951,7 +1016,8 @@
                             <input
                               type="text"
                               name="edit-simulation-end"
-                              class="edit-simulation-end-input long"
+                              class="edit-simulation-end-input long numeric-input"
+                              aria-label="Simulation End Year"
                             />
                           </div>
                         </div>
@@ -960,7 +1026,7 @@
                           <div class="dialog-list policy-sim-list small"></div>
                         </div>
                         <div class="dialog-buttons bold-buttons">
-                          <a href="#ui-editor-sections" class="save-button primary">Save</a>
+                          <a href="#ui-editor-sections" class="save-button primary">Finish</a>
                           <a href="#ui-editor-sections" class="cancel-button destructive">Cancel</a>
                         </div>
                       </div>
@@ -991,6 +1057,10 @@
                   <a href="#substances-table" class="secondary substances-table-link" 
                      data-tippy-content="Download and upload CSV files containing substance metadata for import/export operations">
                     Import / Export Substances
+                  </a>
+                  <a href="#duplicate-entity-dialog" class="secondary duplicate-entity-link" 
+                     data-tippy-content="Create a copy of an existing application, policy, simulation, or substance with a new name">
+                    Duplicate
                   </a>
                   <a href="#ai-designer-dialog" id="ai-designer-button" class="secondary" 
                      data-tippy-content="Learn how to use AI assistants with KigaliSim simulations">
@@ -1128,7 +1198,7 @@
                       class="sales-submetric submetric-input"
                       aria-label="Type of sales / consumption to display"
                     >
-                      <option value="domestic" selected>domestic</option>
+                      <option value="domestic" selected>domestic (virgin)</option>
                       <option value="import">imports</option>
                       <option value="export">exports</option>
                       <option value="recycle">recycle</option>
@@ -1351,7 +1421,7 @@
         <span class="sel long">
           <select class="set-target-input" aria-label="Target for set command">
             <option value="sales">all sales</option>
-            <option value="domestic">domestic</option>
+            <option value="domestic">domestic (virgin)</option>
             <option value="import">import</option>
             <option value="export">export</option>
             <option value="equipment">equipment</option>
@@ -1364,7 +1434,7 @@
           (<span class="embed-app-label"></span>)
         </span>
         to
-        <input type="text" class="set-amount-input short" aria-label="Amount for set command">
+        <input type="text" class="set-amount-input short numeric-input" aria-label="Amount for set command">
         <span class="sel mid">
           <select class="set-units-input" aria-label="Units for set command">
             <option value="kg">kg</option>
@@ -1399,9 +1469,9 @@
               <option value="during years">during years</option>
             </select>
           </span>
-          <input type="text" class="duration-start short" aria-label="Start year of substance import">
+          <input type="text" class="duration-start short numeric-input" aria-label="Start year of substance import">
           <span class="duration-to">to</span>
-          <input type="text" class="duration-end short" aria-label="End year of substance import"> .
+          <input type="text" class="duration-end short numeric-input" aria-label="End year of substance import"> .
         </span>
         - <a href="#" class="delete-command-link">delete</a>
       </div>
@@ -1414,7 +1484,7 @@
             <span class="sel long">
               <select class="change-target-input" aria-label="Target for change command">
                 <option value="sales">all sales</option>
-                <option value="domestic">domestic</option>
+                <option value="domestic">domestic (virgin)</option>
                 <option value="import">import</option>
                 <option value="export">export</option>
                 <option value="equipment">equipment</option>
@@ -1434,7 +1504,7 @@
             <option value="-">-</option>
           </select>
         </span>
-        <input type="text" class="change-amount-input short" aria-label="Change amount">
+        <input type="text" class="change-amount-input short numeric-input" aria-label="Change amount">
         <span class="sel mid">
           <select class="change-units-input" aria-label="Units of change">
             <option value="kg">kg</option>
@@ -1469,9 +1539,9 @@
               <option value="during years">during years</option>
             </select>
           </span>
-          <input type="text" class="duration-start short" aria-label="Start year of substance import">
+          <input type="text" class="duration-start short numeric-input" aria-label="Start year of substance import">
           <span class="duration-to">to</span>
-          <input type="text" class="duration-end short" aria-label="End year of substance import"> .
+          <input type="text" class="duration-end short numeric-input" aria-label="End year of substance import"> .
         </span>
         - <a href="#" class="delete-command-link">delete</a>
       </div>
@@ -1488,7 +1558,7 @@
         <span class="sel long">
           <select class="limit-target-input" aria-label="Target for limit command">
             <option value="sales">all sales</option>
-            <option value="domestic">domestic</option>
+            <option value="domestic">domestic (virgin)</option>
             <option value="import">import</option>
             <option value="export">export</option>
             <option value="equipment">equipment</option>
@@ -1501,7 +1571,7 @@
           (<span class="embed-app-label"></span>)
         </span>
         at
-        <input type="text" class="limit-amount-input short" aria-label="Amount of limit">
+        <input type="text" class="limit-amount-input short numeric-input" aria-label="Amount of limit">
         <span class="sel mid">
           <select class="limit-units-input" aria-label="Units of limit">
             <option value="kg">kg</option>
@@ -1534,7 +1604,7 @@
             </optgroup>
             <optgroup label="Streams">
               <option value="sales">all sales</option>
-              <option value="domestic">domestic</option>
+              <option value="domestic">domestic (virgin)</option>
               <option value="import">import</option>
               <option value="export">export</option>
               <option value="equipment">equipment</option>
@@ -1554,9 +1624,9 @@
               <option value="during years">during years</option>
             </select>
           </span>
-          <input type="text" class="duration-start short" aria-label="Start year of substance import">
+          <input type="text" class="duration-start short numeric-input" aria-label="Start year of substance import">
           <span class="duration-to">to</span>
-          <input type="text" class="duration-end short" aria-label="End year of substance import"> .
+          <input type="text" class="duration-end short numeric-input" aria-label="End year of substance import"> .
         </span>
         - <a href="#" class="delete-command-link">delete</a>
       </div>
@@ -1565,7 +1635,7 @@
     <script type="text/template" id="recycle-command-template">
       <div class="recycle-command form-group">
         Recover
-        <input type="text" class="recycle-amount-input short" aria-label="Amount for recycle command">
+        <input type="text" class="recycle-amount-input short numeric-input" aria-label="Amount for recycle command">
         <span class="sel mid">
           <select class="recycle-units-input" aria-label="Units for recycle command">
             <option value="kg">kg</option>
@@ -1596,7 +1666,7 @@
           (<span class="embed-app-label"></span>)
         </span>
         with
-        <input type="text" class="recycle-reuse-amount-input short" aria-label="Reuse level after yield loss for recycle command">
+        <input type="text" class="recycle-reuse-amount-input short numeric-input" aria-label="Reuse level after yield loss for recycle command">
         <span class="sel mid">
           <select class="recycle-reuse-units-input" aria-label="Units for reuse level after yield loss">
             <option value="kg">kg</option>
@@ -1621,7 +1691,17 @@
             <option value="% / year">% / year</option>
           </select>
         </span>
-        reuse at
+        reuse with
+        <input type="text" class="recycle-induction-amount-input short" aria-label="Induction rate for recycling command" placeholder="100">
+        <span class="sel mid">
+          <select class="recycle-induction-units-input" aria-label="Units for induction rate">
+            <option value="%" selected>%</option>
+          </select>
+        </span>
+        <span class="induction-help-text" title="Percent of recycled material that induces additional demand rather than displacing virgin production. Default is 100% (full induced demand).">
+          induced demand
+        </span>
+        at
         <span class="sel mid">
           <select class="recycle-stage-input" aria-label="Stage for recycle command">
             <option value="recharge">recharge (servicing)</option>
@@ -1637,7 +1717,7 @@
               </optgroup>
               <optgroup label="Streams">
                 <option value="sales">all sales</option>
-                <option value="domestic">domestic</option>
+                <option value="domestic">domestic (virgin)</option>
                 <option value="import">import</option>
                 <option value="export">export</option>
                 <option value="equipment">equipment</option>
@@ -1658,9 +1738,9 @@
               <option value="during years">during years</option>
             </select>
           </span>
-          <input type="text" class="duration-start short" aria-label="Start year of substance import">
+          <input type="text" class="duration-start short numeric-input" aria-label="Start year of substance import">
           <span class="duration-to">to</span>
-          <input type="text" class="duration-end short" aria-label="End year of substance import"> .
+          <input type="text" class="duration-end short numeric-input" aria-label="End year of substance import"> .
         </span>
         - <a href="#" class="delete-command-link">delete</a>
       </div>
@@ -1669,7 +1749,7 @@
     <script type="text/template" id="replace-command-template">
       <div class="replace-command form-group">
         Replace
-        <input type="text" class="replace-amount-input short" aria-label="Amount for replace command">
+        <input type="text" class="replace-amount-input short numeric-input" aria-label="Amount for replace command">
         <span class="sel mid">
           <select class="replace-units-input" aria-label="Units for replace command">
             <option value="kg">kg</option>
@@ -1702,7 +1782,7 @@
         <span class="sel long">
           <select class="replace-target-input" aria-label="Target for replace command">
             <option value="sales">all sales</option>
-            <option value="domestic">domestic</option>
+            <option value="domestic">domestic (virgin)</option>
             <option value="import">import</option>
             <option value="export">export</option>
             <option value="equipment">equipment</option>
@@ -1724,9 +1804,9 @@
               <option value="during years">during years</option>
             </select>
           </span>
-          <input type="text" class="duration-start short" aria-label="Start year of substance import">
+          <input type="text" class="duration-start short numeric-input" aria-label="Start year of substance import">
           <span class="duration-to">to</span>
-          <input type="text" class="duration-end short" aria-label="End year of substance import"> .
+          <input type="text" class="duration-end short numeric-input" aria-label="End year of substance import"> .
         </span>
         - <a href="#" class="delete-command-link">delete</a>
       </div>
@@ -1735,7 +1815,7 @@
     <script type="text/template" id="recharge-command-template">
       <div class="recharge-command form-group">
         Recharge
-        <input type="text" class="recharge-population-input short" placeholder="5" aria-label="Population to recharge">
+        <input type="text" class="recharge-population-input short numeric-input" placeholder="5" aria-label="Population to recharge">
         <span class="sel mid">
           <select class="recharge-population-units-input" aria-label="Population units">
             <option value="%">%</option>
@@ -1745,7 +1825,7 @@
           </select>
         </span>
         with
-        <input type="text" class="recharge-volume-input short" placeholder="0.85" aria-label="Recharge volume">
+        <input type="text" class="recharge-volume-input short numeric-input" placeholder="0.85" aria-label="Recharge volume">
         <span class="sel mid">
           <select class="recharge-volume-units-input" aria-label="Volume units">
             <option value="kg / unit">kg / unit</option>
@@ -1765,9 +1845,9 @@
               <option value="during years">during years</option>
             </select>
           </span>
-          <input type="text" class="duration-start short" aria-label="Start year of recharge">
+          <input type="text" class="duration-start short numeric-input" aria-label="Start year of recharge">
           <span class="duration-to">to</span>
-          <input type="text" class="duration-end short" aria-label="End year of recharge"> .
+          <input type="text" class="duration-end short numeric-input" aria-label="End year of recharge"> .
         </span>
         - <a href="#" class="delete-command-link">delete</a>
       </div>
@@ -1793,22 +1873,25 @@
       {
         "imports": {
           "code_editor": "./js/code_editor.js?v=EPOCH",
+          "duplicate_util": "./js/duplicate_util.js?v=EPOCH",
+          "duration": "./js/duration.js?v=EPOCH",
           "engine_const": "./js/engine_const.js?v=EPOCH",
           "engine_number": "./js/engine_number.js?v=EPOCH",
           "engine_struct": "./js/engine_struct.js?v=EPOCH",
           "known_substance": "./js/known_substance.js?v=EPOCH",
           "local_storage_keeper": "./js/local_storage_keeper.js?v=EPOCH",
           "main": "./js/main.js?v=EPOCH",
+          "meta_serialization": "./js/meta_serialization.js?v=EPOCH",
+          "number_parse_util": "./js/number_parse_util.js?v=EPOCH",
           "report_data": "./js/report_data.js?v=EPOCH",
           "results": "./js/results.js?v=EPOCH",
           "storage_keeper": "./js/storage_keeper.js?v=EPOCH",
           "ui_editor": "./js/ui_editor.js?v=EPOCH",
           "ui_translator": "./js/ui_translator.js?v=EPOCH",
-          "meta_serialization": "./js/meta_serialization.js?v=EPOCH",
           "updates": "./js/updates.js?v=EPOCH",
           "user_config": "./js/user_config.js?v=EPOCH",
           "wasm_backend": "./js/wasm_backend.js?v=EPOCH",
-          "year_matcher": "./js/year_matcher.js?v=EPOCH"
+          "year_matcher": "./js/duration.js?v=EPOCH"
         }
       }
     </script>

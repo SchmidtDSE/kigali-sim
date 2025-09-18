@@ -14,12 +14,14 @@ RUN apt-get update && apt-get install -y \
     ca-certificates \
     sudo \
     nodejs \
-    npm \
     && rm -rf /var/lib/apt/lists/* \
     && update-ca-certificates
 
+# Install pnpm globally
+RUN npm install -g pnpm@8
+
 # Verify installations
-RUN java -version && node --version && npm --version
+RUN java -version && node --version && pnpm --version
 
 # Create a non-root user for development
 RUN useradd -m -s /bin/bash devuser && \

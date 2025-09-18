@@ -23,13 +23,17 @@ import org.kigalisim.engine.recalc.RecalcKitBuilder;
 import org.kigalisim.engine.recalc.RecalcOperation;
 import org.kigalisim.engine.recalc.RecalcOperationBuilder;
 import org.kigalisim.engine.recalc.SalesStreamDistribution;
+import org.kigalisim.engine.recalc.StreamUpdate;
+import org.kigalisim.engine.recalc.StreamUpdateBuilder;
 import org.kigalisim.engine.serializer.EngineResult;
 import org.kigalisim.engine.serializer.EngineResultSerializer;
 import org.kigalisim.engine.state.ConverterStateGetter;
 import org.kigalisim.engine.state.OverridingConverterStateGetter;
 import org.kigalisim.engine.state.Scope;
 import org.kigalisim.engine.state.SimpleUseKey;
-import org.kigalisim.engine.state.StreamKeeper;
+import org.kigalisim.engine.state.SimulationState;
+import org.kigalisim.engine.state.SimulationStateUpdate;
+import org.kigalisim.engine.state.SimulationStateUpdateBuilder;
 import org.kigalisim.engine.state.SubstanceInApplicationId;
 import org.kigalisim.engine.state.UseKey;
 import org.kigalisim.engine.state.YearMatcher;
@@ -37,8 +41,7 @@ import org.kigalisim.engine.support.ChangeExecutor;
 import org.kigalisim.engine.support.EngineSupportUtils;
 import org.kigalisim.engine.support.ExceptionsGenerator;
 import org.kigalisim.engine.support.RechargeVolumeCalculator;
-import org.kigalisim.engine.support.StreamUpdate;
-import org.kigalisim.engine.support.StreamUpdateBuilder;
+import org.kigalisim.engine.support.SetExecutor;
 import org.kigalisim.lang.operation.RecoverOperation.RecoveryStage;
 
 /**
@@ -68,13 +71,12 @@ public class SingleThreadEngine implements Engine {
 
   private final int startYear;
   private final int endYear;
-  private int currentYear;
   private String scenarioName;
   private int trialNumber;
 
   private final ConverterStateGetter stateGetter;
   private final UnitConverter unitConverter;
-  private final StreamKeeper streamKeeper;
+  private final SimulationState simulationState;
   private final ChangeExecutor changeExecutor;
   private Scope scope;
 
@@ -91,14 +93,14 @@ public class SingleThreadEngine implements Engine {
 
     this.startYear = startYearRearrange;
     this.endYear = endYearRearrange;
-    currentYear = startYear;
     this.scenarioName = "";
     this.trialNumber = 0;
 
     stateGetter = new ConverterStateGetter(this);
     unitConverter = new UnitConverter(stateGetter);
-    this.streamKeeper = new StreamKeeper(
+    this.simulationState = new SimulationState(
         new OverridingConverterStateGetter(stateGetter), unitConverter);
+    this.simulationState.setCurrentYear(startYear);
     this.changeExecutor = new ChangeExecutor(this);
     scope = new Scope(null, null, null);
   }
@@ -166,13 +168,13 @@ public class SingleThreadEngine implements Engine {
     boolean checkValidEffective = checkValid != null && checkValid;
 
     if (checkValidEffective) {
-      boolean knownSubstance = streamKeeper.hasSubstance(scope);
+      boolean knownSubstance = simulationState.hasSubstance(scope);
       if (!knownSubstance) {
         throw new RuntimeException("Tried accessing unknown app / substance pair: "
             + scope.getApplication() + ", " + newSubstance);
       }
     } else {
-      streamKeeper.ensureSubstance(scope);
+      simulationState.ensureSubstance(scope);
     }
   }
 
@@ -203,8 +205,8 @@ public class SingleThreadEngine implements Engine {
   /**
    * {@inheritDoc}
    */
-  public StreamKeeper getStreamKeeper() {
-    return streamKeeper;
+  public SimulationState getStreamKeeper() {
+    return simulationState;
   }
 
   @Override
@@ -212,20 +214,18 @@ public class SingleThreadEngine implements Engine {
     if (getIsDone()) {
       throw new RuntimeException("Already completed.");
     }
-    currentYear += 1;
-    streamKeeper.incrementYear();
+    simulationState.incrementYear();
   }
 
   @Override
   public int getYear() {
-    return currentYear;
+    return simulationState.getCurrentYear();
   }
 
   @Override
   public boolean getIsDone() {
-    return currentYear > endYear;
+    return simulationState.getCurrentYear() > endYear;
   }
-
 
   @Override
   public void executeStreamUpdate(StreamUpdate update) {
@@ -262,12 +262,18 @@ public class SingleThreadEngine implements Engine {
       EngineNumber rechargeVolume = RechargeVolumeCalculator.calculateRechargeVolume(
           keyEffective,
           stateGetter,
-          streamKeeper,
+          simulationState,
           this
       );
 
       // Set implicit recharge BEFORE distribution (always full amount)
-      streamKeeper.setStream(keyEffective, "implicitRecharge", rechargeVolume, true);
+      SimulationStateUpdate implicitRechargeStream = new SimulationStateUpdateBuilder()
+          .setUseKey(keyEffective)
+          .setName("implicitRecharge")
+          .setValue(rechargeVolume)
+          .setSubtractRecycling(false)
+          .build();
+      simulationState.update(implicitRechargeStream);
 
       // Distribute recharge proportionally for domestic/import streams
       BigDecimal rechargeToAdd;
@@ -283,11 +289,24 @@ public class SingleThreadEngine implements Engine {
       valueToSet = new EngineNumber(totalWithRecharge, "kg");
     } else if (isSales) {
       // Sales stream without units - clear implicit recharge
-      streamKeeper.setStream(keyEffective, "implicitRecharge", new EngineNumber(BigDecimal.ZERO, "kg"), true);
+      SimulationStateUpdate clearImplicitRechargeStream = new SimulationStateUpdateBuilder()
+          .setUseKey(keyEffective)
+          .setName("implicitRecharge")
+          .setValue(new EngineNumber(BigDecimal.ZERO, "kg"))
+          .setSubtractRecycling(false)
+          .build();
+      simulationState.update(clearImplicitRechargeStream);
     }
 
     // Use the subtractRecycling parameter when setting the stream
-    streamKeeper.setStream(keyEffective, name, valueToSet, subtractRecycling);
+    SimulationStateUpdate simulationStateUpdate = new SimulationStateUpdateBuilder()
+        .setUseKey(keyEffective)
+        .setName(name)
+        .setValue(valueToSet)
+        .setSubtractRecycling(subtractRecycling)
+        .setDistribution(update.getDistribution().orElse(null))
+        .build();
+    simulationState.update(simulationStateUpdate);
 
     // Track the units last used to specify this stream (only for user-initiated calls)
     if (!propagateChanges) {
@@ -297,7 +316,7 @@ public class SingleThreadEngine implements Engine {
     if (isSales) {
       // Track the last specified value for sales-related streams
       // This preserves user intent across carry-over years
-      streamKeeper.setLastSpecifiedValue(keyEffective, name, value);
+      simulationState.setLastSpecifiedValue(keyEffective, name, value);
 
       // Handle stream combinations for unit preservation
       updateSalesCarryOver(keyEffective, name, value);
@@ -355,30 +374,23 @@ public class SingleThreadEngine implements Engine {
     }
   }
 
-  @Override
-  public void setStream(String name, EngineNumber value, Optional<YearMatcher> yearMatcher) {
-    // For direct stream setting (like from SetOperation), domestic/import should not subtract recycling
-    // EXCEPT when the operation is units-based, which should account for recycling
-    boolean subtractRecycling = !getIsSalesSubstream(name) || "units".equals(value.getUnits());
-    setStream(name, value, yearMatcher, subtractRecycling);
-  }
 
-  /**
-   * Set a stream with explicit control over recycling behavior.
-   *
-   * @param name The stream name
-   * @param value The value to set
-   * @param yearMatcher Optional year matcher for conditional setting
-   * @param subtractRecycling Whether to apply recycling logic during stream setting
-   */
-  public void setStream(String name, EngineNumber value, Optional<YearMatcher> yearMatcher, boolean subtractRecycling) {
+  @Override
+  public void fulfillSetCommand(String name, EngineNumber value, Optional<YearMatcher> yearMatcher) {
+    // Delegate sales streams to SetExecutor for proper component distribution
+    if ("sales".equals(name)) {
+      SetExecutor setExecutor = new SetExecutor(this);
+      setExecutor.handleSalesSet(scope, name, value, yearMatcher);
+      return;
+    }
+
+    // For non-sales streams, use executeStreamUpdate with builder
     StreamUpdate update = new StreamUpdateBuilder()
         .setName(name)
         .setValue(value)
         .setYearMatcher(yearMatcher)
-        .setSubtractRecycling(subtractRecycling)
+        .inferSubtractRecycling()
         .build();
-
     executeStreamUpdate(update);
   }
 
@@ -398,14 +410,14 @@ public class SingleThreadEngine implements Engine {
 
     // Only allow enabling of manufacture, import, and export streams
     if ("domestic".equals(name) || "import".equals(name) || "export".equals(name)) {
-      streamKeeper.markStreamAsEnabled(keyEffective, name);
+      simulationState.markStreamAsEnabled(keyEffective, name);
     }
   }
 
   @Override
   public EngineNumber getStream(String name, Optional<UseKey> useKey, Optional<String> conversion) {
     UseKey effectiveKey = useKey.orElse(scope);
-    EngineNumber value = streamKeeper.getStream(effectiveKey, name);
+    EngineNumber value = simulationState.getStream(effectiveKey, name);
     return conversion.map(conv -> unitConverter.convert(value, conv)).orElse(value);
   }
 
@@ -416,7 +428,7 @@ public class SingleThreadEngine implements Engine {
 
   @Override
   public EngineNumber getStreamFor(UseKey key, String stream) {
-    return streamKeeper.getStream(key, stream);
+    return simulationState.getStream(key, stream);
   }
 
   @Override
@@ -430,9 +442,9 @@ public class SingleThreadEngine implements Engine {
   @Override
   public EngineNumber getVariable(String name) {
     if ("yearsElapsed".equals(name)) {
-      return new EngineNumber(BigDecimal.valueOf(currentYear - startYear), "years");
+      return new EngineNumber(BigDecimal.valueOf(simulationState.getCurrentYear() - startYear), "years");
     } else if ("yearAbsolute".equals(name)) {
-      return new EngineNumber(BigDecimal.valueOf(currentYear), "year");
+      return new EngineNumber(BigDecimal.valueOf(simulationState.getCurrentYear()), "year");
     } else {
       return scope.getVariable(name);
     }
@@ -451,7 +463,7 @@ public class SingleThreadEngine implements Engine {
     if ("sales".equals(stream)) {
       try {
         // Use SalesStreamDistributionBuilder to get the correct weights for enabled streams
-        SalesStreamDistribution distribution = streamKeeper.getDistribution(scope, false);
+        SalesStreamDistribution distribution = simulationState.getDistribution(scope, false);
 
         BigDecimal domesticWeight = distribution.getPercentDomestic();
         BigDecimal importWeight = distribution.getPercentImport();
@@ -496,7 +508,7 @@ public class SingleThreadEngine implements Engine {
 
   @Override
   public EngineNumber getRawInitialChargeFor(UseKey useKey, String stream) {
-    return streamKeeper.getInitialCharge(useKey, stream);
+    return simulationState.getInitialCharge(useKey, stream);
   }
 
   @Override
@@ -507,10 +519,10 @@ public class SingleThreadEngine implements Engine {
 
     if ("sales".equals(stream)) {
       // For sales, set both manufacture and import but don't recalculate yet
-      streamKeeper.setInitialCharge(scope, "domestic", value);
-      streamKeeper.setInitialCharge(scope, "import", value);
+      simulationState.setInitialCharge(scope, "domestic", value);
+      simulationState.setInitialCharge(scope, "import", value);
     } else {
-      streamKeeper.setInitialCharge(scope, stream, value);
+      simulationState.setInitialCharge(scope, stream, value);
     }
 
     boolean useExplicitRecharge = getShouldUseExplicitRecharge(stream);
@@ -529,7 +541,7 @@ public class SingleThreadEngine implements Engine {
    * @return Optional containing the units string, or empty if not found
    */
   private Optional<String> getLastSalesUnits(UseKey useKey) {
-    EngineNumber lastValue = streamKeeper.getLastSpecifiedValue(useKey, "sales");
+    EngineNumber lastValue = simulationState.getLastSpecifiedValue(useKey, "sales");
     return lastValue != null ? Optional.of(lastValue.getUnits()) : Optional.empty();
   }
 
@@ -557,12 +569,12 @@ public class SingleThreadEngine implements Engine {
 
   @Override
   public EngineNumber getRechargeVolume() {
-    return streamKeeper.getRechargePopulation(scope);
+    return simulationState.getRechargePopulation(scope);
   }
 
   @Override
   public EngineNumber getRechargeIntensity() {
-    return streamKeeper.getRechargeIntensity(scope);
+    return simulationState.getRechargeIntensity(scope);
   }
 
   // Additional placeholder methods for remaining interface methods
@@ -582,15 +594,15 @@ public class SingleThreadEngine implements Engine {
     }
 
     // Set values
-    streamKeeper.setRechargePopulation(scope, volume);
-    streamKeeper.setRechargeIntensity(scope, intensity);
+    simulationState.setRechargePopulation(scope, volume);
+    simulationState.setRechargeIntensity(scope, intensity);
 
     boolean isCarryOver = isCarryOver(scope);
 
     if (isCarryOver) {
       // Preserve user's original unit-based intent
       // Use executeStreamUpdate with the original value - this will automatically add recharge on top
-      EngineNumber lastSalesValue = streamKeeper.getLastSpecifiedValue(scope, "sales");
+      EngineNumber lastSalesValue = simulationState.getLastSpecifiedValue(scope, "sales");
       StreamUpdate update = new StreamUpdateBuilder()
           .setName("sales")
           .setValue(lastSalesValue)
@@ -616,7 +628,13 @@ public class SingleThreadEngine implements Engine {
       // Only clear implicit recharge if NOT using explicit recharge (i.e., when units were used)
       // This ensures implicit recharge persists for carried-over values
       if (useExplicitRecharge) {
-        streamKeeper.setStream(scope, "implicitRecharge", new EngineNumber(BigDecimal.ZERO, "kg"));
+        SimulationStateUpdate clearImplicitRechargeStream = new SimulationStateUpdateBuilder()
+            .setUseKey(scope)
+            .setName("implicitRecharge")
+            .setValue(new EngineNumber(BigDecimal.ZERO, "kg"))
+            .setSubtractRecycling(false)
+            .build();
+        simulationState.update(clearImplicitRechargeStream);
       }
     }
   }
@@ -626,7 +644,7 @@ public class SingleThreadEngine implements Engine {
     if (!getIsInRange(yearMatcher)) {
       return;
     }
-    streamKeeper.setRetirementRate(scope, amount);
+    simulationState.setRetirementRate(scope, amount);
 
     RecalcOperationBuilder builder = new RecalcOperationBuilder()
         .setRecalcKit(createRecalcKit())
@@ -643,7 +661,7 @@ public class SingleThreadEngine implements Engine {
 
   @Override
   public EngineNumber getRetirementRate() {
-    return streamKeeper.getRetirementRate(scope);
+    return simulationState.getRetirementRate(scope);
   }
 
   @Override
@@ -653,8 +671,8 @@ public class SingleThreadEngine implements Engine {
       return;
     }
 
-    streamKeeper.setRecoveryRate(scope, recoveryWithUnits, stage);
-    streamKeeper.setYieldRate(scope, yieldWithUnits, stage);
+    simulationState.setRecoveryRate(scope, recoveryWithUnits, stage);
+    simulationState.setYieldRate(scope, yieldWithUnits, stage);
 
     RecalcOperation operation = new RecalcOperationBuilder()
         .setRecalcKit(createRecalcKit())
@@ -669,38 +687,22 @@ public class SingleThreadEngine implements Engine {
   }
 
   @Override
-  public void recycle(EngineNumber recoveryWithUnits, EngineNumber yieldWithUnits,
-      YearMatcher yearMatcher, String displacementTarget, RecoveryStage stage) {
-    if (!getIsInRange(yearMatcher)) {
-      return;
+  public void setInductionRate(EngineNumber inductionRate, RecoveryStage stage) {
+    if (inductionRate != null) {
+      // Validate the induction rate is a percentage between 0 and 100
+      if (!"%".equals(inductionRate.getUnits())) {
+        throw new IllegalArgumentException("Induction rate must have percentage units, got: " + inductionRate.getUnits());
+      }
+      double ratePercent = inductionRate.getValue().doubleValue();
+      if (ratePercent < 0.0 || ratePercent > 100.0) {
+        throw new IllegalArgumentException("Induction rate must be between 0% and 100%, got: " + ratePercent + "%");
+      }
+      simulationState.setInductionRate(scope, inductionRate, stage);
+    } else {
+      // Default behavior - set to 100% (induced demand behavior)
+      EngineNumber defaultInductionRate = new EngineNumber(new BigDecimal("100"), "%");
+      simulationState.setInductionRate(scope, defaultInductionRate, stage);
     }
-
-    // Block displacement except for sales
-    if (displacementTarget != null && !displacementTarget.equals("sales")) {
-      throw new UnsupportedOperationException(
-        "Displacement target '" + displacementTarget + "' is not currently supported in recycling operations. "
-        + "Only 'sales' displacement or no displacement is allowed.");
-    }
-
-    streamKeeper.setRecoveryRate(scope, recoveryWithUnits, stage);
-    streamKeeper.setYieldRate(scope, yieldWithUnits, stage);
-
-    // Apply the recovery through normal recycle operation
-    RecalcOperation operation = new RecalcOperationBuilder()
-        .setRecalcKit(createRecalcKit())
-        .recalcSales()
-        .thenPropagateToPopulationChange()
-        .thenPropagateToConsumption()
-        .build();
-    operation.execute(this);
-
-    // Update lastSpecifiedValue after recycling for volume-based specs
-    updateLastSpecifiedValueAfterRecycling();
-
-    // Handle displacement using the existing displacement logic
-    UnitConverter unitConverter = EngineSupportUtils.createUnitConverterWithTotal(this, RECYCLE_RECOVER_STREAM);
-    EngineNumber recoveryInKg = unitConverter.convert(recoveryWithUnits, "kg");
-    handleDisplacement(RECYCLE_RECOVER_STREAM, recoveryWithUnits, recoveryInKg.getValue(), displacementTarget);
   }
 
   @Override
@@ -714,7 +716,7 @@ public class SingleThreadEngine implements Engine {
     boolean isKwh = units.startsWith("kwh");
 
     if (isGhg) {
-      streamKeeper.setGhgIntensity(scope, amount);
+      simulationState.setGhgIntensity(scope, amount);
       RecalcOperation operation = new RecalcOperationBuilder()
           .setScopeEffective(scope)
           .setRecalcKit(createRecalcKit())
@@ -723,7 +725,7 @@ public class SingleThreadEngine implements Engine {
           .build();
       operation.execute(this);
     } else if (isKwh) {
-      streamKeeper.setEnergyIntensity(scope, amount);
+      simulationState.setEnergyIntensity(scope, amount);
     } else {
       throw new RuntimeException("Cannot equals " + amount.getUnits());
     }
@@ -737,27 +739,27 @@ public class SingleThreadEngine implements Engine {
 
   @Override
   public EngineNumber getGhgIntensity(UseKey useKey) {
-    return streamKeeper.getGhgIntensity(useKey);
+    return simulationState.getGhgIntensity(useKey);
   }
 
   @Override
   public EngineNumber getEqualsGhgIntensity() {
-    return streamKeeper.getGhgIntensity(scope);
+    return simulationState.getGhgIntensity(scope);
   }
 
   @Override
   public EngineNumber getEqualsGhgIntensityFor(UseKey useKey) {
-    return streamKeeper.getGhgIntensity(useKey);
+    return simulationState.getGhgIntensity(useKey);
   }
 
   @Override
   public EngineNumber getEqualsEnergyIntensity() {
-    return streamKeeper.getEnergyIntensity(scope);
+    return simulationState.getEnergyIntensity(scope);
   }
 
   @Override
   public EngineNumber getEqualsEnergyIntensityFor(UseKey useKey) {
-    return streamKeeper.getEnergyIntensity(useKey);
+    return simulationState.getEnergyIntensity(useKey);
   }
 
   @Override
@@ -817,11 +819,11 @@ public class SingleThreadEngine implements Engine {
 
     if (isSalesStream(stream)) {
       // Track the specific stream and amount for the current substance
-      streamKeeper.setLastSpecifiedValue(currentScope, stream, amountRaw);
+      simulationState.setLastSpecifiedValue(currentScope, stream, amountRaw);
 
       // Track the specific stream and amount for the destination substance
       SimpleUseKey destKey = new SimpleUseKey(application, destinationSubstance);
-      streamKeeper.setLastSpecifiedValue(destKey, stream, amountRaw);
+      simulationState.setLastSpecifiedValue(destKey, stream, amountRaw);
     }
 
     if (amountRaw.hasEquipmentUnits()) {
@@ -861,14 +863,14 @@ public class SingleThreadEngine implements Engine {
 
   @Override
   public List<EngineResult> getResults() {
-    List<SubstanceInApplicationId> substances = streamKeeper.getRegisteredSubstances();
+    List<SubstanceInApplicationId> substances = simulationState.getRegisteredSubstances();
     EngineResultSerializer serializer = new EngineResultSerializer(this, stateGetter);
 
     return substances.stream()
         .map(substanceId -> {
           String application = substanceId.getApplication();
           String substance = substanceId.getSubstance();
-          int year = currentYear;
+          int year = simulationState.getCurrentYear();
           return serializer.getResult(new SimpleUseKey(application, substance), year);
         })
         .collect(Collectors.toList());
@@ -881,7 +883,7 @@ public class SingleThreadEngine implements Engine {
    * @return True if in range or no matcher provided
    */
   private boolean getIsInRange(YearMatcher yearMatcher) {
-    return EngineSupportUtils.isInRange(yearMatcher, currentYear);
+    return EngineSupportUtils.isInRange(yearMatcher, simulationState.getCurrentYear());
   }
 
   /**
@@ -1072,7 +1074,7 @@ public class SingleThreadEngine implements Engine {
       // Sales stream gets 100% - setStreamForSales will distribute it
       return totalRecharge.getValue();
     } else if (getIsSalesSubstream(streamName)) {
-      SalesStreamDistribution distribution = streamKeeper.getDistribution(keyEffective);
+      SalesStreamDistribution distribution = simulationState.getDistribution(keyEffective);
       BigDecimal percentage;
       if ("domestic".equals(streamName)) {
         percentage = distribution.getPercentDomestic();
@@ -1143,11 +1145,11 @@ public class SingleThreadEngine implements Engine {
   /**
    * Create a RecalcKit with this engine's dependencies.
    *
-   * @return A RecalcKit containing this engine's streamKeeper, unitConverter, and stateGetter
+   * @return A RecalcKit containing this engine's simulationState, unitConverter, and stateGetter
    */
   private RecalcKit createRecalcKit() {
     return new RecalcKitBuilder()
-        .setStreamKeeper(streamKeeper)
+        .setStreamKeeper(simulationState)
         .setUnitConverter(unitConverter)
         .setStateGetter(stateGetter)
         .build();
@@ -1208,7 +1210,7 @@ public class SingleThreadEngine implements Engine {
 
     // When setting manufacture or import, combine with the other to create sales intent
     String otherStream = "domestic".equals(streamName) ? "import" : "domestic";
-    EngineNumber otherValue = streamKeeper.getLastSpecifiedValue(useKey, otherStream);
+    EngineNumber otherValue = simulationState.getLastSpecifiedValue(useKey, otherStream);
 
     if (otherValue != null && otherValue.hasEquipmentUnits()) {
       // Both streams have unit-based values - combine them
@@ -1222,10 +1224,10 @@ public class SingleThreadEngine implements Engine {
       EngineNumber salesIntent = new EngineNumber(combinedValue, targetUnits);
 
       // Track the combined sales intent
-      streamKeeper.setLastSpecifiedValue(useKey, "sales", salesIntent);
+      simulationState.setLastSpecifiedValue(useKey, "sales", salesIntent);
     } else {
       // Only one stream has units - use it as the sales intent
-      streamKeeper.setLastSpecifiedValue(useKey, "sales", value);
+      simulationState.setLastSpecifiedValue(useKey, "sales", value);
     }
   }
 
@@ -1237,8 +1239,8 @@ public class SingleThreadEngine implements Engine {
    */
   private boolean isCarryOver(UseKey scope) {
     // Check if we have a previous unit-based sales specification and no fresh input this year
-    return !streamKeeper.isSalesIntentFreshlySet(scope)
-           && EngineSupportUtils.hasUnitBasedSalesSpecifications(streamKeeper, scope);
+    return !simulationState.isSalesIntentFreshlySet(scope)
+           && EngineSupportUtils.hasUnitBasedSalesSpecifications(simulationState, scope);
   }
 
   /**
@@ -1249,7 +1251,7 @@ public class SingleThreadEngine implements Engine {
    * @return true if sales streams were specified in units
    */
   private boolean hasUnitBasedSalesSpecifications() {
-    return EngineSupportUtils.hasUnitBasedSalesSpecifications(streamKeeper, scope);
+    return EngineSupportUtils.hasUnitBasedSalesSpecifications(simulationState, scope);
   }
 
   /**
@@ -1263,14 +1265,14 @@ public class SingleThreadEngine implements Engine {
    */
   private BigDecimal calculateAvailableRecycling(UseKey scope) {
     // Get current prior population
-    EngineNumber priorPopulationRaw = streamKeeper.getStream(scope, "priorEquipment");
+    EngineNumber priorPopulationRaw = simulationState.getStream(scope, "priorEquipment");
     if (priorPopulationRaw == null) {
       return BigDecimal.ZERO;
     }
 
     // Get rates from parameterization
-    EngineNumber retirementRate = streamKeeper.getRetirementRate(scope);
-    EngineNumber rechargePopulation = streamKeeper.getRechargePopulation(scope);
+    EngineNumber retirementRate = simulationState.getRetirementRate(scope);
+    EngineNumber rechargePopulation = simulationState.getRechargePopulation(scope);
 
     // Convert everything to proper units
     UnitConverter unitConverter = EngineSupportUtils.createUnitConverterWithTotal(this, "sales");
@@ -1281,7 +1283,7 @@ public class SingleThreadEngine implements Engine {
     BigDecimal rechargePopulationDecimal = rechargePopulation.getValue().divide(BigDecimal.valueOf(100));
 
     // Calculate EOL recycling (from actual retired equipment)
-    EngineNumber retiredPopulationRaw = streamKeeper.getStream(scope, "retired");
+    EngineNumber retiredPopulationRaw = simulationState.getStream(scope, "retired");
     EngineNumber retiredPopulation = unitConverter.convert(retiredPopulationRaw, "units");
     BigDecimal retiredUnits = retiredPopulation.getValue();
     BigDecimal eolRecycling = calculateRecyclingForStage(scope, retiredUnits, RecoveryStage.EOL, unitConverter);
@@ -1308,8 +1310,8 @@ public class SingleThreadEngine implements Engine {
    */
   private BigDecimal calculateRecyclingForStage(UseKey scope, BigDecimal availableUnits, RecoveryStage stage, UnitConverter unitConverter) {
     // Get stage-specific rates
-    EngineNumber recoveryRate = streamKeeper.getRecoveryRate(scope, stage);
-    EngineNumber yieldRate = streamKeeper.getYieldRate(scope, stage);
+    EngineNumber recoveryRate = simulationState.getRecoveryRate(scope, stage);
+    EngineNumber yieldRate = simulationState.getYieldRate(scope, stage);
 
     // Calculate rates as decimals
     BigDecimal recoveryRateDecimal = recoveryRate.getValue().divide(BigDecimal.valueOf(100));
@@ -1320,7 +1322,7 @@ public class SingleThreadEngine implements Engine {
     BigDecimal recycledUnits = recoveredUnits.multiply(yieldRateDecimal);
 
     // Convert to kg
-    EngineNumber initialCharge = streamKeeper.getInitialCharge(scope, "import");
+    EngineNumber initialCharge = simulationState.getInitialCharge(scope, "import");
     EngineNumber initialChargeKg = unitConverter.convert(initialCharge, "kg / unit");
     BigDecimal recycledKg = recycledUnits.multiply(initialChargeKg.getValue());
 
@@ -1334,8 +1336,8 @@ public class SingleThreadEngine implements Engine {
    */
   private void updateLastSpecifiedValueAfterRecycling() {
     // Only update for volume-based specifications
-    EngineNumber lastDomestic = streamKeeper.getLastSpecifiedValue(scope, "domestic");
-    EngineNumber lastImport = streamKeeper.getLastSpecifiedValue(scope, "import");
+    EngineNumber lastDomestic = simulationState.getLastSpecifiedValue(scope, "domestic");
+    EngineNumber lastImport = simulationState.getLastSpecifiedValue(scope, "import");
 
     // Check if we have volume-based lastSpecifiedValues
     boolean hasVolumeDomestic = lastDomestic != null && !lastDomestic.hasEquipmentUnits();
@@ -1359,7 +1361,7 @@ public class SingleThreadEngine implements Engine {
         // Convert current value to the original units of lastSpecifiedValue
         UnitConverter unitConverter = EngineSupportUtils.createUnitConverterWithTotal(this, "domestic");
         EngineNumber domesticInOriginalUnits = unitConverter.convert(currentDomestic, lastDomestic.getUnits());
-        streamKeeper.setLastSpecifiedValue(scope, "domestic", domesticInOriginalUnits);
+        simulationState.setLastSpecifiedValue(scope, "domestic", domesticInOriginalUnits);
       }
     }
 
@@ -1370,7 +1372,7 @@ public class SingleThreadEngine implements Engine {
         // Convert current value to the original units of lastSpecifiedValue
         UnitConverter unitConverter = EngineSupportUtils.createUnitConverterWithTotal(this, "import");
         EngineNumber importInOriginalUnits = unitConverter.convert(currentImport, lastImport.getUnits());
-        streamKeeper.setLastSpecifiedValue(scope, "import", importInOriginalUnits);
+        simulationState.setLastSpecifiedValue(scope, "import", importInOriginalUnits);
       }
     }
   }
@@ -1387,8 +1389,8 @@ public class SingleThreadEngine implements Engine {
     EngineNumber currentValueRaw = getStream(stream);
     EngineNumber currentValue = unitConverter.convert(currentValueRaw, "kg");
 
-    StreamKeeper streamKeeper = getStreamKeeper();
-    EngineNumber lastSpecified = streamKeeper.getLastSpecifiedValue(scope, stream);
+    SimulationState simulationState = getStreamKeeper();
+    EngineNumber lastSpecified = simulationState.getLastSpecifiedValue(scope, stream);
 
     if (lastSpecified != null) {
       BigDecimal capValue = lastSpecified.getValue().multiply(amount.getValue()).divide(new BigDecimal("100"));
@@ -1398,7 +1400,13 @@ public class SingleThreadEngine implements Engine {
       EngineNumber newCappedInKg = unitConverter.convert(newCappedValue, "kg");
 
       if (currentInKg.getValue().compareTo(newCappedInKg.getValue()) > 0) {
-        setStream(stream, newCappedValue, Optional.empty());
+        StreamUpdate update = new StreamUpdateBuilder()
+            .setName(stream)
+            .setValue(newCappedValue)
+            .setYearMatcher(Optional.empty())
+            .inferSubtractRecycling()
+            .build();
+        executeStreamUpdate(update);
 
         if (displaceTarget != null) {
           EngineNumber finalInKg = getStream(stream);
@@ -1433,7 +1441,13 @@ public class SingleThreadEngine implements Engine {
 
     if (currentValueInAmountUnits.getValue().compareTo(amount.getValue()) > 0) {
       EngineNumber currentInKg = unitConverter.convert(currentValueRaw, "kg");
-      setStream(stream, amount, Optional.empty());
+      StreamUpdate update = new StreamUpdateBuilder()
+          .setName(stream)
+          .setValue(amount)
+          .setYearMatcher(Optional.empty())
+          .inferSubtractRecycling()
+          .build();
+      executeStreamUpdate(update);
 
       if (displaceTarget != null) {
         EngineNumber cappedInKg = getStream(stream);
@@ -1455,8 +1469,8 @@ public class SingleThreadEngine implements Engine {
     EngineNumber currentValueRaw = getStream(stream);
     EngineNumber currentValue = unitConverter.convert(currentValueRaw, "kg");
 
-    StreamKeeper streamKeeper = getStreamKeeper();
-    EngineNumber lastSpecified = streamKeeper.getLastSpecifiedValue(scope, stream);
+    SimulationState simulationState = getStreamKeeper();
+    EngineNumber lastSpecified = simulationState.getLastSpecifiedValue(scope, stream);
 
     if (lastSpecified != null) {
       BigDecimal floorValue = lastSpecified.getValue().multiply(amount.getValue()).divide(new BigDecimal("100"));
@@ -1466,7 +1480,13 @@ public class SingleThreadEngine implements Engine {
       EngineNumber newFloorInKg = unitConverter.convert(newFloorValue, "kg");
 
       if (currentInKg.getValue().compareTo(newFloorInKg.getValue()) < 0) {
-        setStream(stream, newFloorValue, Optional.empty());
+        StreamUpdate update = new StreamUpdateBuilder()
+            .setName(stream)
+            .setValue(newFloorValue)
+            .setYearMatcher(Optional.empty())
+            .inferSubtractRecycling()
+            .build();
+        executeStreamUpdate(update);
 
         if (displaceTarget != null) {
           EngineNumber finalInKg = getStream(stream);
@@ -1501,7 +1521,13 @@ public class SingleThreadEngine implements Engine {
 
     if (currentValueInAmountUnits.getValue().compareTo(amount.getValue()) < 0) {
       EngineNumber currentInKg = unitConverter.convert(currentValueRaw, "kg");
-      setStream(stream, amount, Optional.empty());
+      StreamUpdate update = new StreamUpdateBuilder()
+          .setName(stream)
+          .setValue(amount)
+          .setYearMatcher(Optional.empty())
+          .inferSubtractRecycling()
+          .build();
+      executeStreamUpdate(update);
 
       if (displaceTarget != null) {
         EngineNumber newInKg = getStream(stream);
@@ -1510,4 +1536,5 @@ public class SingleThreadEngine implements Engine {
       }
     }
   }
+
 }

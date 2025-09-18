@@ -14,7 +14,7 @@ import static org.mockito.Mockito.mock;
 import org.junit.jupiter.api.Test;
 import org.kigalisim.engine.number.UnitConverter;
 import org.kigalisim.engine.state.ConverterStateGetter;
-import org.kigalisim.engine.state.StreamKeeper;
+import org.kigalisim.engine.state.SimulationState;
 
 /**
  * Tests for RecalcKitBuilder.
@@ -30,13 +30,13 @@ public class RecalcKitBuilderTest {
 
   @Test
   public void testBuilderWithAllValues() {
-    StreamKeeper streamKeeper = mock(StreamKeeper.class);
+    SimulationState simulationState = mock(SimulationState.class);
     UnitConverter unitConverter = mock(UnitConverter.class);
     ConverterStateGetter stateGetter = mock(ConverterStateGetter.class);
 
     RecalcKitBuilder builder = new RecalcKitBuilder();
     RecalcKit kit = builder
-        .setStreamKeeper(streamKeeper)
+        .setStreamKeeper(simulationState)
         .setUnitConverter(unitConverter)
         .setStateGetter(stateGetter)
         .build();
@@ -44,13 +44,13 @@ public class RecalcKitBuilderTest {
     assertNotNull(kit.getStreamKeeper());
     assertNotNull(kit.getUnitConverter());
     assertNotNull(kit.getStateGetter());
-    assertEquals(streamKeeper, kit.getStreamKeeper());
+    assertEquals(simulationState, kit.getStreamKeeper());
     assertEquals(unitConverter, kit.getUnitConverter());
     assertEquals(stateGetter, kit.getStateGetter());
   }
 
   @Test
-  public void testBuilderWithMissingStreamKeeper() {
+  public void testBuilderWithMissingSimulationState() {
     UnitConverter unitConverter = mock(UnitConverter.class);
     ConverterStateGetter stateGetter = mock(ConverterStateGetter.class);
 
@@ -63,11 +63,11 @@ public class RecalcKitBuilderTest {
 
   @Test
   public void testBuilderWithMissingUnitConverter() {
-    StreamKeeper streamKeeper = mock(StreamKeeper.class);
+    SimulationState simulationState = mock(SimulationState.class);
     ConverterStateGetter stateGetter = mock(ConverterStateGetter.class);
 
     RecalcKitBuilder builder = new RecalcKitBuilder();
-    builder.setStreamKeeper(streamKeeper)
+    builder.setStreamKeeper(simulationState)
         .setStateGetter(stateGetter);
 
     assertThrows(IllegalStateException.class, builder::build);
@@ -75,11 +75,11 @@ public class RecalcKitBuilderTest {
 
   @Test
   public void testBuilderWithMissingStateGetter() {
-    StreamKeeper streamKeeper = mock(StreamKeeper.class);
+    SimulationState simulationState = mock(SimulationState.class);
     UnitConverter unitConverter = mock(UnitConverter.class);
 
     RecalcKitBuilder builder = new RecalcKitBuilder();
-    builder.setStreamKeeper(streamKeeper)
+    builder.setStreamKeeper(simulationState)
         .setUnitConverter(unitConverter);
 
     assertThrows(IllegalStateException.class, builder::build);
@@ -87,18 +87,18 @@ public class RecalcKitBuilderTest {
 
   @Test
   public void testBuilderChaining() {
-    StreamKeeper streamKeeper = mock(StreamKeeper.class);
+    SimulationState simulationState = mock(SimulationState.class);
     UnitConverter unitConverter = mock(UnitConverter.class);
     ConverterStateGetter stateGetter = mock(ConverterStateGetter.class);
 
     RecalcKitBuilder builder = new RecalcKitBuilder();
     RecalcKit kit = builder
-        .setStreamKeeper(streamKeeper)
+        .setStreamKeeper(simulationState)
         .setUnitConverter(unitConverter)
         .setStateGetter(stateGetter)
         .build();
 
-    assertEquals(streamKeeper, kit.getStreamKeeper());
+    assertEquals(simulationState, kit.getStreamKeeper());
     assertEquals(unitConverter, kit.getUnitConverter());
     assertEquals(stateGetter, kit.getStateGetter());
   }

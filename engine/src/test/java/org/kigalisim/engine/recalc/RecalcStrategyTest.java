@@ -14,7 +14,7 @@ import org.junit.jupiter.api.Test;
 import org.kigalisim.engine.number.UnitConverter;
 import org.kigalisim.engine.state.ConverterStateGetter;
 import org.kigalisim.engine.state.Scope;
-import org.kigalisim.engine.state.StreamKeeper;
+import org.kigalisim.engine.state.SimulationState;
 
 /**
  * Test class for individual recalculation strategy classes.
@@ -36,11 +36,11 @@ public class RecalcStrategyTest {
     testScope = new Scope("test", "testApp", "testSubstance");
 
     // Create a mock RecalcKit for testing
-    StreamKeeper streamKeeper = mock(StreamKeeper.class);
+    SimulationState simulationState = mock(SimulationState.class);
     UnitConverter unitConverter = mock(UnitConverter.class);
     ConverterStateGetter stateGetter = mock(ConverterStateGetter.class);
 
-    testKit = new RecalcKit(streamKeeper, unitConverter, stateGetter);
+    testKit = new RecalcKit(simulationState, unitConverter, stateGetter);
   }
 
   @Test

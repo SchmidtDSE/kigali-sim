@@ -27,7 +27,7 @@
     }
   },
   "forwardPorts": [8000, 8080],
-  "postCreateCommand": "npm install",
+  "postCreateCommand": "cd editor && pnpm install",
   "workspaceFolder": "/workspace",
   "workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind,consistency=cached"
 }

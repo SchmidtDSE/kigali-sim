@@ -14,7 +14,9 @@ import org.kigalisim.engine.Engine;
 import org.kigalisim.engine.number.EngineNumber;
 import org.kigalisim.engine.number.UnitConverter;
 import org.kigalisim.engine.state.OverridingConverterStateGetter;
-import org.kigalisim.engine.state.StreamKeeper;
+import org.kigalisim.engine.state.SimulationState;
+import org.kigalisim.engine.state.SimulationStateUpdate;
+import org.kigalisim.engine.state.SimulationStateUpdateBuilder;
 import org.kigalisim.engine.state.UseKey;
 import org.kigalisim.engine.support.ExceptionsGenerator;
 
@@ -52,13 +54,19 @@ public class EolEmissionsRecalcStrategy implements RecalcStrategy {
     EngineNumber currentPrior = unitConverter.convert(currentPriorRaw, "units");
 
     stateGetter.setPopulation(currentPrior);
-    StreamKeeper streamKeeper = kit.getStreamKeeper();
-    EngineNumber amountRaw = streamKeeper.getRetirementRate(scopeEffective);
+    SimulationState simulationState = kit.getStreamKeeper();
+    EngineNumber amountRaw = simulationState.getRetirementRate(scopeEffective);
     EngineNumber amount = unitConverter.convert(amountRaw, "units");
     stateGetter.clearPopulation();
 
     // Update GHG accounting
     EngineNumber eolGhg = unitConverter.convert(amount, "tCO2e");
-    streamKeeper.setStream(scopeEffective, "eolEmissions", eolGhg);
+    SimulationStateUpdate eolEmissionsStream = new SimulationStateUpdateBuilder()
+        .setUseKey(scopeEffective)
+        .setName("eolEmissions")
+        .setValue(eolGhg)
+        .setSubtractRecycling(false)
+        .build();
+    simulationState.update(eolEmissionsStream);
   }
 }

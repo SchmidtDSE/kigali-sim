@@ -11,15 +11,15 @@ package org.kigalisim.engine.recalc;
 
 import java.util.Optional;
 import org.kigalisim.engine.number.UnitConverter;
+import org.kigalisim.engine.state.SimulationState;
 import org.kigalisim.engine.state.StateGetter;
-import org.kigalisim.engine.state.StreamKeeper;
 
 /**
  * Builder for creating RecalcKit instances.
  */
 public class RecalcKitBuilder {
 
-  private Optional<StreamKeeper> streamKeeper;
+  private Optional<SimulationState> simulationState;
   private Optional<UnitConverter> unitConverter;
   private Optional<StateGetter> stateGetter;
 
@@ -27,19 +27,19 @@ public class RecalcKitBuilder {
    * Create a new RecalcKitBuilder.
    */
   public RecalcKitBuilder() {
-    this.streamKeeper = Optional.empty();
+    this.simulationState = Optional.empty();
     this.unitConverter = Optional.empty();
     this.stateGetter = Optional.empty();
   }
 
   /**
-   * Set the stream keeper.
+   * Set the simulation state.
    *
-   * @param streamKeeper The stream keeper to set
+   * @param simulationState The simulation state to set
    * @return This builder for chaining
    */
-  public RecalcKitBuilder setStreamKeeper(StreamKeeper streamKeeper) {
-    this.streamKeeper = Optional.of(streamKeeper);
+  public RecalcKitBuilder setStreamKeeper(SimulationState simulationState) {
+    this.simulationState = Optional.of(simulationState);
     return this;
   }
 
@@ -72,8 +72,8 @@ public class RecalcKitBuilder {
    * @throws IllegalStateException if any required field is missing
    */
   public RecalcKit build() {
-    if (streamKeeper.isEmpty()) {
-      throw new IllegalStateException("StreamKeeper is required");
+    if (simulationState.isEmpty()) {
+      throw new IllegalStateException("SimulationState is required");
     }
     if (unitConverter.isEmpty()) {
       throw new IllegalStateException("UnitConverter is required");
@@ -81,6 +81,6 @@ public class RecalcKitBuilder {
     if (stateGetter.isEmpty()) {
       throw new IllegalStateException("StateGetter is required");
     }
-    return new RecalcKit(streamKeeper.get(), unitConverter.get(), stateGetter.get());
+    return new RecalcKit(simulationState.get(), unitConverter.get(), stateGetter.get());
   }
 }

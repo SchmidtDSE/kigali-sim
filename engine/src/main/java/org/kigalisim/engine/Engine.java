@@ -14,11 +14,11 @@ package org.kigalisim.engine;
 import java.util.List;
 import java.util.Optional;
 import org.kigalisim.engine.number.EngineNumber;
+import org.kigalisim.engine.recalc.StreamUpdate;
 import org.kigalisim.engine.serializer.EngineResult;
 import org.kigalisim.engine.state.Scope;
 import org.kigalisim.engine.state.UseKey;
 import org.kigalisim.engine.state.YearMatcher;
-import org.kigalisim.engine.support.StreamUpdate;
 import org.kigalisim.lang.operation.RecoverOperation.RecoveryStage;
 
 /**
@@ -124,11 +124,11 @@ public interface Engine {
   org.kigalisim.engine.number.UnitConverter getUnitConverter();
 
   /**
-   * Get the stream keeper for this engine.
+   * Get the simulation state for this engine.
    *
-   * @return StreamKeeper instance
+   * @return SimulationState instance
    */
-  org.kigalisim.engine.state.StreamKeeper getStreamKeeper();
+  org.kigalisim.engine.state.SimulationState getStreamKeeper();
 
   /**
    * Increment the engine to simulate the next year.
@@ -157,24 +157,15 @@ public interface Engine {
    */
   void executeStreamUpdate(StreamUpdate update);
 
-  /**
-   * Set the value of a stream with default parameters.
-   *
-   * @param name The name of the stream to set
-   * @param value The value to set for the stream
-   * @param yearMatcher The year matcher object or empty
-   */
-  void setStream(String name, EngineNumber value, Optional<YearMatcher> yearMatcher);
 
   /**
-   * Set a stream with explicit control over recycling behavior.
+   * Set a stream for explicit user operations (applies user-level processing like SetExecutor).
    *
    * @param name The stream name
-   * @param value The value to set
+   * @param value The value to set for the stream
    * @param yearMatcher Optional year matcher for conditional setting
-   * @param subtractRecycling Whether to apply recycling logic during stream setting
    */
-  void setStream(String name, EngineNumber value, Optional<YearMatcher> yearMatcher, boolean subtractRecycling);
+  void fulfillSetCommand(String name, EngineNumber value, Optional<YearMatcher> yearMatcher);
 
   /**
    * Enable a stream without setting its value.
@@ -318,16 +309,14 @@ public interface Engine {
       YearMatcher yearMatcher, RecoveryStage stage);
 
   /**
-   * Recycle or recover a substance with displacement to another stream.
+   * Set the induction rate for recycling operations.
    *
-   * @param recoveryWithUnits The recovery rate
-   * @param yieldWithUnits The yield rate
-   * @param yearMatcher Matcher to determine if the change applies to current year
-   * @param displacementTarget The stream or substance to displace (reduce)
-   * @param stage The recovery stage (EOL or RECHARGE)
+   * @param inductionRate The induction rate as an EngineNumber with percentage units,
+   *                      or null for default behavior (100% induced demand)
+   * @param stage The recovery stage (EOL or RECHARGE) to set the induction rate for
    */
-  void recycle(EngineNumber recoveryWithUnits, EngineNumber yieldWithUnits,
-      YearMatcher yearMatcher, String displacementTarget, RecoveryStage stage);
+  void setInductionRate(EngineNumber inductionRate, RecoveryStage stage);
+
 
   /**
    * Set GHG equivalency for the current application and substance.

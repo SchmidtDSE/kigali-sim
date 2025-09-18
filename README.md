@@ -53,9 +53,9 @@ In the engine directory (`cd engine`):
 
 In the editor directory (`cd editor`):
 
- - `npx grunt`: Runs front-end unit tests and end-to-end integration tests
- - `npx eslint ./js/*.js`: Lint production JavaScript
- - `npx eslint ./test/*.js`: Lint test JavaScript
+ - `pnpm exec grunt`: Runs front-end unit tests and end-to-end integration tests
+ - `pnpm exec eslint ./js/*.js`: Lint production JavaScript
+ - `pnpm exec eslint ./test/*.js`: Lint test JavaScript
 
 #### Building and Deploying WASM Engine
 
@@ -99,7 +99,7 @@ This project includes a dev container configuration that provides a complete dev
 
 The dev container includes:
 - Eclipse Temurin JDK 21 (as specified in requirements)
-- Node.js 18.x with npm
+- Node.js 18.x with pnpm
 - All system dependencies for building and testing
 - VS Code extensions for Java, JavaScript, and Gradle development
 - Pre-configured ports (8000, 8080) for local development servers
@@ -108,8 +108,8 @@ The dev container includes:
 
 All the automated checks described below work in the dev container environment:
 
-- JavaScript linting: `cd editor && npx eslint ./js/*.js` and `cd editor && npx eslint ./test/*.js`
-- JavaScript testing: `cd editor && npx grunt`
+- JavaScript linting: `cd editor && pnpm exec eslint ./js/*.js` and `cd editor && pnpm exec eslint ./test/*.js`
+- JavaScript testing: `cd editor && pnpm exec grunt`
 - Java testing: `cd engine && ./gradlew test`
 - Java linting: `cd engine && ./gradlew checkstyleMain` and `cd engine && ./gradlew checkstyleTest`
 
@@ -120,7 +120,7 @@ To run this system locally, please complete the following steps:
 
 ```bash
 cd editor
-npm install
+pnpm install
 ```
 
 2. Install frontend dependencies:

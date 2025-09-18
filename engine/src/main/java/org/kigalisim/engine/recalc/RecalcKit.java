@@ -10,39 +10,39 @@
 package org.kigalisim.engine.recalc;
 
 import org.kigalisim.engine.number.UnitConverter;
+import org.kigalisim.engine.state.SimulationState;
 import org.kigalisim.engine.state.StateGetter;
-import org.kigalisim.engine.state.StreamKeeper;
 
 /**
  * Container for dependencies needed by recalculation strategies.
  */
 public class RecalcKit {
 
-  private final StreamKeeper streamKeeper;
+  private final SimulationState simulationState;
   private final UnitConverter unitConverter;
   private final StateGetter stateGetter;
 
   /**
    * Create a new RecalcKit.
    *
-   * @param streamKeeper The stream keeper instance (required)
+   * @param simulationState The simulation state instance (required)
    * @param unitConverter The unit converter instance (required)
    * @param stateGetter The state getter instance (required)
    */
-  public RecalcKit(StreamKeeper streamKeeper, UnitConverter unitConverter,
+  public RecalcKit(SimulationState simulationState, UnitConverter unitConverter,
       StateGetter stateGetter) {
-    this.streamKeeper = streamKeeper;
+    this.simulationState = simulationState;
     this.unitConverter = unitConverter;
     this.stateGetter = stateGetter;
   }
 
   /**
-   * Get the stream keeper.
+   * Get the simulation state.
    *
-   * @return The stream keeper
+   * @return The simulation state
    */
-  public StreamKeeper getStreamKeeper() {
-    return streamKeeper;
+  public SimulationState getStreamKeeper() {
+    return simulationState;
   }
 
   /**
