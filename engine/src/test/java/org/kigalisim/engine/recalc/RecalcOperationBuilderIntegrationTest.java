@@ -14,6 +14,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.kigalisim.engine.SingleThreadEngine;
 import org.kigalisim.engine.number.EngineNumber;
+import org.kigalisim.engine.recalc.StreamUpdate;
+import org.kigalisim.engine.recalc.StreamUpdateBuilder;
 import org.kigalisim.engine.state.Scope;
 import org.kigalisim.engine.state.YearMatcher;
 
@@ -39,8 +41,21 @@ public class RecalcOperationBuilderIntegrationTest {
     // Initialize some basic streams
     engine.enable("domestic", Optional.empty());
     engine.enable("import", Optional.empty());
-    engine.setStream("domestic", new EngineNumber(100, "kg"), Optional.of(YearMatcher.unbounded()));
-    engine.setStream("import", new EngineNumber(50, "kg"), Optional.of(YearMatcher.unbounded()));
+    StreamUpdate domesticUpdate = new StreamUpdateBuilder()
+        .setName("domestic")
+        .setValue(new EngineNumber(100, "kg"))
+        .setYearMatcher(Optional.of(YearMatcher.unbounded()))
+        .inferSubtractRecycling()
+        .build();
+    engine.executeStreamUpdate(domesticUpdate);
+
+    StreamUpdate importUpdate = new StreamUpdateBuilder()
+        .setName("import")
+        .setValue(new EngineNumber(50, "kg"))
+        .setYearMatcher(Optional.of(YearMatcher.unbounded()))
+        .inferSubtractRecycling()
+        .build();
+    engine.executeStreamUpdate(importUpdate);
   }
 
   @Test

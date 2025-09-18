@@ -13,7 +13,7 @@ import static org.mockito.Mockito.mock;
 import org.junit.jupiter.api.Test;
 import org.kigalisim.engine.number.UnitConverter;
 import org.kigalisim.engine.state.ConverterStateGetter;
-import org.kigalisim.engine.state.StreamKeeper;
+import org.kigalisim.engine.state.SimulationState;
 
 /**
  * Tests for RecalcKit.
@@ -22,12 +22,12 @@ public class RecalcKitTest {
 
   @Test
   public void testConstructorWithAllValues() {
-    StreamKeeper streamKeeper = mock(StreamKeeper.class);
+    SimulationState simulationState = mock(SimulationState.class);
     UnitConverter unitConverter = mock(UnitConverter.class);
     ConverterStateGetter stateGetter = mock(ConverterStateGetter.class);
 
     RecalcKit kit = new RecalcKit(
-        streamKeeper,
+        simulationState,
         unitConverter,
         stateGetter
     );
@@ -35,7 +35,7 @@ public class RecalcKitTest {
     assertNotNull(kit.getStreamKeeper());
     assertNotNull(kit.getUnitConverter());
     assertNotNull(kit.getStateGetter());
-    assertEquals(streamKeeper, kit.getStreamKeeper());
+    assertEquals(simulationState, kit.getStreamKeeper());
     assertEquals(unitConverter, kit.getUnitConverter());
     assertEquals(stateGetter, kit.getStateGetter());
   }

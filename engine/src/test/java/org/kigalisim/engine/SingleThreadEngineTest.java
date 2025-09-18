@@ -15,6 +15,8 @@ import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.kigalisim.engine.number.EngineNumber;
+import org.kigalisim.engine.recalc.StreamUpdate;
+import org.kigalisim.engine.recalc.StreamUpdateBuilder;
 import org.kigalisim.engine.serializer.EngineResult;
 import org.kigalisim.engine.state.Scope;
 import org.kigalisim.engine.state.YearMatcher;
@@ -176,7 +178,13 @@ public class SingleThreadEngineTest {
     // Test setting a stream
     engine.enable("domestic", Optional.empty());
     EngineNumber newValue = new EngineNumber(BigDecimal.valueOf(10), "kg");
-    engine.setStream("domestic", newValue, Optional.empty());
+    StreamUpdate update = new StreamUpdateBuilder()
+        .setName("domestic")
+        .setValue(newValue)
+        .setYearMatcher(Optional.empty())
+        .inferSubtractRecycling()
+        .build();
+    engine.executeStreamUpdate(update);
 
     EngineNumber updated = engine.getStream("domestic");
     assertEquals(BigDecimal.valueOf(10), updated.getValue(), "Should have updated value");
@@ -191,8 +199,15 @@ public class SingleThreadEngineTest {
     SingleThreadEngine engine = new SingleThreadEngine(1, 3);
 
     EngineNumber value = new EngineNumber(BigDecimal.valueOf(10), "kg");
-    assertThrows(RuntimeException.class, () -> engine.setStream("domestic", value, Optional.empty()),
-        "Should throw error when setting stream without application and substance");
+    assertThrows(RuntimeException.class, () -> {
+      StreamUpdate update = new StreamUpdateBuilder()
+          .setName("domestic")
+          .setValue(value)
+          .setYearMatcher(Optional.empty())
+          .inferSubtractRecycling()
+          .build();
+      engine.executeStreamUpdate(update);
+    }, "Should throw error when setting stream without application and substance");
   }
 
   /**
@@ -210,7 +225,13 @@ public class SingleThreadEngineTest {
     engine.enable("domestic", Optional.empty());
     EngineNumber value = new EngineNumber(BigDecimal.valueOf(10), "kg");
     YearMatcher matcher = new YearMatcher(Optional.of(1), Optional.empty());
-    engine.setStream("domestic", value, Optional.ofNullable(matcher));
+    StreamUpdate update2 = new StreamUpdateBuilder()
+        .setName("domestic")
+        .setValue(value)
+        .setYearMatcher(Optional.ofNullable(matcher))
+        .inferSubtractRecycling()
+        .build();
+    engine.executeStreamUpdate(update2);
 
     EngineNumber result = engine.getStream("domestic");
     assertEquals(BigDecimal.valueOf(10), result.getValue(), "Should set value when year matches");
@@ -218,7 +239,13 @@ public class SingleThreadEngineTest {
     // Set a stream with year matcher that should not apply
     EngineNumber value2 = new EngineNumber(BigDecimal.valueOf(20), "kg");
     YearMatcher matcher2 = new YearMatcher(Optional.of(2), Optional.empty());
-    engine.setStream("domestic", value2, Optional.ofNullable(matcher2));
+    StreamUpdate update3 = new StreamUpdateBuilder()
+        .setName("domestic")
+        .setValue(value2)
+        .setYearMatcher(Optional.ofNullable(matcher2))
+        .inferSubtractRecycling()
+        .build();
+    engine.executeStreamUpdate(update3);
 
     EngineNumber result2 = engine.getStream("domestic");
     assertEquals(BigDecimal.valueOf(10), result2.getValue(),
@@ -239,7 +266,13 @@ public class SingleThreadEngineTest {
     // Set initial value
     engine.enable("domestic", Optional.empty());
     EngineNumber initialValue = new EngineNumber(BigDecimal.valueOf(10), "kg");
-    engine.setStream("domestic", initialValue, Optional.empty());
+    StreamUpdate update = new StreamUpdateBuilder()
+        .setName("domestic")
+        .setValue(initialValue)
+        .setYearMatcher(Optional.empty())
+        .inferSubtractRecycling()
+        .build();
+    engine.executeStreamUpdate(update);
 
     // Change stream by a delta
     EngineNumber delta = new EngineNumber(BigDecimal.valueOf(5), "kg");
@@ -264,7 +297,13 @@ public class SingleThreadEngineTest {
     // Set initial value
     engine.enable("domestic", Optional.empty());
     EngineNumber initialValue = new EngineNumber(BigDecimal.valueOf(10), "kg");
-    engine.setStream("domestic", initialValue, Optional.empty());
+    StreamUpdate update = new StreamUpdateBuilder()
+        .setName("domestic")
+        .setValue(initialValue)
+        .setYearMatcher(Optional.empty())
+        .inferSubtractRecycling()
+        .build();
+    engine.executeStreamUpdate(update);
 
     // Change stream with year matcher that should apply
     EngineNumber delta = new EngineNumber(BigDecimal.valueOf(5), "kg");
@@ -302,7 +341,13 @@ public class SingleThreadEngineTest {
     // Set initial value
     engine.enable("domestic", Optional.empty());
     EngineNumber initialValue = new EngineNumber(BigDecimal.valueOf(10), "kg");
-    engine.setStream("domestic", initialValue, Optional.ofNullable(YearMatcher.unbounded()));
+    StreamUpdate updateUnbounded = new StreamUpdateBuilder()
+        .setName("domestic")
+        .setValue(initialValue)
+        .setYearMatcher(Optional.ofNullable(YearMatcher.unbounded()))
+        .inferSubtractRecycling()
+        .build();
+    engine.executeStreamUpdate(updateUnbounded);
 
     // Change by 10% when year doesn't match (should not apply)
     EngineNumber percentChange = new EngineNumber(BigDecimal.valueOf(10), "%");
@@ -356,7 +401,13 @@ public class SingleThreadEngineTest {
     // Set some stream values to ensure substance is registered
     engine.enable("domestic", Optional.empty());
     EngineNumber manufactureValue = new EngineNumber(BigDecimal.valueOf(100), "kg");
-    engine.setStream("domestic", manufactureValue, Optional.empty());
+    StreamUpdate manufactureUpdate = new StreamUpdateBuilder()
+        .setName("domestic")
+        .setValue(manufactureValue)
+        .setYearMatcher(Optional.empty())
+        .inferSubtractRecycling()
+        .build();
+    engine.executeStreamUpdate(manufactureUpdate);
 
     // Set up second substance
     engine.setApplication("test app 2");
@@ -364,7 +415,13 @@ public class SingleThreadEngineTest {
 
     engine.enable("import", Optional.empty());
     EngineNumber importValue = new EngineNumber(BigDecimal.valueOf(50), "kg");
-    engine.setStream("import", importValue, Optional.empty());
+    StreamUpdate importUpdate = new StreamUpdateBuilder()
+        .setName("import")
+        .setValue(importValue)
+        .setYearMatcher(Optional.empty())
+        .inferSubtractRecycling()
+        .build();
+    engine.executeStreamUpdate(importUpdate);
 
     // Get results
     List<EngineResult> results = engine.getResults();
@@ -402,7 +459,13 @@ public class SingleThreadEngineTest {
     engine.setApplication("test app");
     engine.setSubstance("test substance");
     engine.enable("domestic", Optional.empty());
-    engine.setStream("domestic", new EngineNumber(BigDecimal.valueOf(100), "kg"), Optional.empty());
+    StreamUpdate update100 = new StreamUpdateBuilder()
+        .setName("domestic")
+        .setValue(new EngineNumber(BigDecimal.valueOf(100), "kg"))
+        .setYearMatcher(Optional.empty())
+        .inferSubtractRecycling()
+        .build();
+    engine.executeStreamUpdate(update100);
 
     // Get results for initial year
     List<EngineResult> results1 = engine.getResults();
@@ -436,8 +499,20 @@ public class SingleThreadEngineTest {
         "domestic",
         null
     );
-    engine.setStream("domestic", new EngineNumber(BigDecimal.valueOf(100), "kg"), Optional.empty());
-    engine.setStream("priorEquipment", new EngineNumber(BigDecimal.valueOf(20), "units"), Optional.empty());
+    StreamUpdate update100 = new StreamUpdateBuilder()
+        .setName("domestic")
+        .setValue(new EngineNumber(BigDecimal.valueOf(100), "kg"))
+        .setYearMatcher(Optional.empty())
+        .inferSubtractRecycling()
+        .build();
+    engine.executeStreamUpdate(update100);
+    StreamUpdate update4 = new StreamUpdateBuilder()
+        .setName("priorEquipment")
+        .setValue(new EngineNumber(BigDecimal.valueOf(20), "units"))
+        .setYearMatcher(Optional.empty())
+        .inferSubtractRecycling()
+        .build();
+    engine.executeStreamUpdate(update4);
     engine.recharge(
         new EngineNumber(BigDecimal.valueOf(10), "%"),
         new EngineNumber(BigDecimal.valueOf(10), "kg / unit"),
@@ -452,7 +527,13 @@ public class SingleThreadEngineTest {
         "domestic",
         null
     );
-    engine.setStream("domestic", new EngineNumber(BigDecimal.valueOf(200), "kg"), Optional.empty());
+    StreamUpdate update200 = new StreamUpdateBuilder()
+        .setName("domestic")
+        .setValue(new EngineNumber(BigDecimal.valueOf(200), "kg"))
+        .setYearMatcher(Optional.empty())
+        .inferSubtractRecycling()
+        .build();
+    engine.executeStreamUpdate(update200);
 
     // Apply cap with displacement
     engine.setSubstance("sub1");
@@ -503,8 +584,20 @@ public class SingleThreadEngineTest {
         "domestic",
         null
     );
-    engine.setStream("domestic", new EngineNumber(BigDecimal.valueOf(50), "kg"), Optional.empty());
-    engine.setStream("priorEquipment", new EngineNumber(BigDecimal.valueOf(20), "units"), Optional.empty());
+    StreamUpdate update50 = new StreamUpdateBuilder()
+        .setName("domestic")
+        .setValue(new EngineNumber(BigDecimal.valueOf(50), "kg"))
+        .setYearMatcher(Optional.empty())
+        .inferSubtractRecycling()
+        .build();
+    engine.executeStreamUpdate(update50);
+    StreamUpdate update4 = new StreamUpdateBuilder()
+        .setName("priorEquipment")
+        .setValue(new EngineNumber(BigDecimal.valueOf(20), "units"))
+        .setYearMatcher(Optional.empty())
+        .inferSubtractRecycling()
+        .build();
+    engine.executeStreamUpdate(update4);
     engine.recharge(
         new EngineNumber(BigDecimal.valueOf(10), "%"),
         new EngineNumber(BigDecimal.valueOf(10), "kg / unit"),
@@ -519,7 +612,13 @@ public class SingleThreadEngineTest {
         "domestic",
         null
     );
-    engine.setStream("domestic", new EngineNumber(BigDecimal.valueOf(200), "kg"), Optional.empty());
+    StreamUpdate update200 = new StreamUpdateBuilder()
+        .setName("domestic")
+        .setValue(new EngineNumber(BigDecimal.valueOf(200), "kg"))
+        .setYearMatcher(Optional.empty())
+        .inferSubtractRecycling()
+        .build();
+    engine.executeStreamUpdate(update200);
 
     // Apply floor with displacement
     engine.setSubstance("sub1");
@@ -571,8 +670,13 @@ public class SingleThreadEngineTest {
         "domestic",
         YearMatcher.unbounded()
     );
-    engine.setStream("domestic", new EngineNumber(BigDecimal.valueOf(50), "kg"),
-        Optional.of(YearMatcher.unbounded()));
+    StreamUpdate updateMultiA = new StreamUpdateBuilder()
+        .setName("domestic")
+        .setValue(new EngineNumber(BigDecimal.valueOf(50), "kg"))
+        .setYearMatcher(Optional.of(YearMatcher.unbounded()))
+        .inferSubtractRecycling()
+        .build();
+    engine.executeStreamUpdate(updateMultiA);
 
     // Set up substance B with 20 kg/unit initial charge
     engine.setSubstance("sub B");
@@ -582,8 +686,13 @@ public class SingleThreadEngineTest {
         "domestic",
         YearMatcher.unbounded()
     );
-    engine.setStream("domestic", new EngineNumber(BigDecimal.valueOf(0), "kg"),
-        Optional.of(YearMatcher.unbounded()));
+    StreamUpdate updateMultiB = new StreamUpdateBuilder()
+        .setName("domestic")
+        .setValue(new EngineNumber(BigDecimal.valueOf(0), "kg"))
+        .setYearMatcher(Optional.of(YearMatcher.unbounded()))
+        .inferSubtractRecycling()
+        .build();
+    engine.executeStreamUpdate(updateMultiB);
 
     // Go back to substance A and replace 2 units with substance B
     engine.setSubstance("sub A");

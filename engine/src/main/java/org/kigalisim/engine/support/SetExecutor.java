@@ -16,7 +16,9 @@ import java.util.Optional;
 import org.kigalisim.engine.Engine;
 import org.kigalisim.engine.number.EngineNumber;
 import org.kigalisim.engine.recalc.SalesStreamDistribution;
-import org.kigalisim.engine.state.StreamKeeper;
+import org.kigalisim.engine.recalc.StreamUpdate;
+import org.kigalisim.engine.recalc.StreamUpdateBuilder;
+import org.kigalisim.engine.state.SimulationState;
 import org.kigalisim.engine.state.UseKey;
 import org.kigalisim.engine.state.YearMatcher;
 
@@ -57,24 +59,36 @@ public class SetExecutor {
     }
 
     // Get distribution ratios like SalesRecalcStrategy does
-    StreamKeeper streamKeeper = engine.getStreamKeeper();
-    streamKeeper.setLastSpecifiedValue(useKey, "sales", value);
-    SalesStreamDistribution distribution = streamKeeper.getDistribution(useKey);
+    SimulationState simulationState = engine.getStreamKeeper();
+    simulationState.setLastSpecifiedValue(useKey, "sales", value);
+    SalesStreamDistribution distribution = simulationState.getDistribution(useKey);
 
     // Calculate component amounts based on distribution percentages
     BigDecimal domesticAmount = value.getValue().multiply(distribution.getPercentDomestic());
     BigDecimal importAmount = value.getValue().multiply(distribution.getPercentImport());
 
-    // Set component streams using internal method to avoid SetExecutor recursion
+    // Set component streams using executeStreamUpdate to avoid SetExecutor recursion
     // Only set streams that have non-zero allocations (are enabled)
     if (distribution.getPercentDomestic().compareTo(BigDecimal.ZERO) > 0) {
       EngineNumber domesticValue = new EngineNumber(domesticAmount, value.getUnits());
-      engine.setStreamInternal("domestic", domesticValue, yearMatcher);
+      StreamUpdate update = new StreamUpdateBuilder()
+          .setName("domestic")
+          .setValue(domesticValue)
+          .setYearMatcher(yearMatcher)
+          .inferSubtractRecycling()
+          .build();
+      engine.executeStreamUpdate(update);
     }
 
     if (distribution.getPercentImport().compareTo(BigDecimal.ZERO) > 0) {
       EngineNumber importValue = new EngineNumber(importAmount, value.getUnits());
-      engine.setStreamInternal("import", importValue, yearMatcher);
+      StreamUpdate update = new StreamUpdateBuilder()
+          .setName("import")
+          .setValue(importValue)
+          .setYearMatcher(yearMatcher)
+          .inferSubtractRecycling()
+          .build();
+      engine.executeStreamUpdate(update);
     }
   }
 }

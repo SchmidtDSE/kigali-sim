@@ -61,7 +61,7 @@ public final class EngineConstants {
     units.put("recycleRecharge", "kg");
     units.put("recycleEol", "kg");
     units.put("inductionEol", "kg");
-    units.put("inductionServicing", "kg");
+    units.put("inductionRecharge", "kg");
     units.put("induction", "kg");
     units.put("consumption", "tCO2e");
     units.put("rechargeEmissions", "tCO2e");
