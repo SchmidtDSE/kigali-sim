@@ -15,6 +15,7 @@ Let's create ABC's recovery program:
 - Go to the **Recycle** tab and click **Add Recycling**
 - Set **20% recovery with 90% reuse**.
 - Let's have this start at **recharge** (at the point of servicing).
+- Leave **induced demand at 100%** (the default).
 - Start in **year 2027**.
 - Click **Finish**
 
