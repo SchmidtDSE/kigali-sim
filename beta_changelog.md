@@ -14,11 +14,19 @@ Finally, we want to again express our gratitude for your feedback and time.
 
 The following changes have been adopted and released.
 
+### Label for domestic
+
+**Status**: Released September 18, 2025
+
+**Classification**: Clarification
+
+Clarified in the UI-based editor that domestic is domestic virgin production as distinct to the recycling stream.
+
 ### Induced demand
 
 **Status**: Released September 18, 2025
 
-**Classification**: Clarificatino
+**Classification**: Clarification
 
 Allow the user to directly control induced demand from recycling but suggesting 100% by default as alternatives require very careful modeling.
 
