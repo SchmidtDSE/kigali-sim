@@ -292,7 +292,8 @@ public class TutorialLiveTests {
     Stream<EngineResult> combinedResults = KigaliSimFacade.runScenario(program, "Combined", progress -> {});
     List<EngineResult> combinedResultsList = combinedResults.collect(Collectors.toList());
 
-    // Test 1: Recycling scenario is consistently lower than BAU from 2027 onwards
+    // Test 1: With 100% induced demand, virgin production stays about the same,
+    // but recycling is happening (non-zero) from 2027 onwards
     for (int year = 2027; year <= 2035; year++) {
       EngineResult bauResult = LiveTestsUtil.getResult(bauResultsList.stream(), year,
           "Domestic Refrigeration", "HFC-134a");
@@ -307,9 +308,14 @@ public class TutorialLiveTests {
       double recyclingTotal = recyclingResult.getDomestic().getValue().doubleValue()
                               + recyclingResult.getImport().getValue().doubleValue();
 
-      assertTrue(recyclingTotal < bauTotal,
-          "Recycling total (" + recyclingTotal + ") should be lower than BAU total ("
-          + bauTotal + ") in year " + year);
+      // With 100% induced demand, virgin production should stay approximately the same
+      assertEquals(bauTotal, recyclingTotal, bauTotal * 0.01,
+          "With 100% induced demand, virgin production should remain approximately the same in year " + year);
+
+      // But recycling should be happening
+      double recyclingAmount = recyclingResult.getRecycle().getValue().doubleValue();
+      assertTrue(recyclingAmount > 0,
+          "Recycling amount should be greater than zero in year " + year);
     }
 
     // Test 2: Combined policy is more effective (<=) than recycling from 2030 onwards
@@ -372,19 +378,28 @@ public class TutorialLiveTests {
     assertNotNull(recycling7Hfc, "Should have Tutorial 7 HFC-134a result for 2035");
     assertNotNull(recycling7R600a, "Should have Tutorial 7 R-600a result for 2035");
 
-    // Calculate total consumption (domestic + import) across all substances for both tutorials
-    double recycling6Total = (recycling6Hfc.getDomestic().getValue().doubleValue()
+    // Calculate total virgin consumption (domestic + import) across all substances for both tutorials
+    double recycling6VirginTotal = (recycling6Hfc.getDomestic().getValue().doubleValue()
                              + recycling6Hfc.getImport().getValue().doubleValue())
                              + (recycling6R600a.getDomestic().getValue().doubleValue()
                              + recycling6R600a.getImport().getValue().doubleValue());
-    double recycling7Total = (recycling7Hfc.getDomestic().getValue().doubleValue()
+    double recycling7VirginTotal = (recycling7Hfc.getDomestic().getValue().doubleValue()
                              + recycling7Hfc.getImport().getValue().doubleValue())
                              + (recycling7R600a.getDomestic().getValue().doubleValue()
                              + recycling7R600a.getImport().getValue().doubleValue());
 
-    // Tutorial 7 should have lower consumption than Tutorial 6 (due to enhanced recycling in Tutorial 7)
-    assertTrue(recycling7Total < recycling6Total,
-        "Tutorial 7 recycling total (" + recycling7Total + ") should be lower than Tutorial 6 recycling total ("
-        + recycling6Total + ") in 2035 due to enhanced R-600a recycling program in Tutorial 7");
+    // With 100% induced demand, virgin consumption should be similar
+    assertEquals(recycling6VirginTotal, recycling7VirginTotal, recycling6VirginTotal * 0.01,
+        "With 100% induced demand, virgin consumption should be similar between Tutorial 6 and Tutorial 7");
+
+    // But Tutorial 7 should have more total recycling (both HFC-134a and R-600a) than Tutorial 6 (only HFC-134a)
+    double recycling6RecycleTotal = recycling6Hfc.getRecycle().getValue().doubleValue()
+                                    + recycling6R600a.getRecycle().getValue().doubleValue();
+    double recycling7RecycleTotal = recycling7Hfc.getRecycle().getValue().doubleValue()
+                                    + recycling7R600a.getRecycle().getValue().doubleValue();
+
+    assertTrue(recycling7RecycleTotal > recycling6RecycleTotal,
+        "Tutorial 7 total recycling (" + recycling7RecycleTotal + ") should be greater than Tutorial 6 recycling ("
+        + recycling6RecycleTotal + ") in 2035 due to additional R-600a recycling program in Tutorial 7");
   }
 }
