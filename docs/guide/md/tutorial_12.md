@@ -23,7 +23,7 @@ Let's create our baseline scenario with both high-energy and low-energy models o
 **Step 1: Create the Domestic Refrigeration application**
 - Click **Add Application**
 - Name it "Domestic Refrigeration"
-- Click **Save**
+- Click **Finish**
 
 **Step 2: Add HFC-134a High Energy equipment model**
 - Click **Add Consumption**
@@ -39,9 +39,9 @@ Let's create our baseline scenario with both high-energy and low-energy models o
 - On the **Servicing** tab:
   - Set **recharge** to 10% with 0.15 kg/unit during all years
 - On the **Set** tab:
-  - Set **prior equipment** to 1,000,000 units in year 2025
+  - Set **prior equipment** to 1,000,000.0 units in year 2025
   - Set **domestic** manufacture to 20 mt in year 2025
-- Click **Save**
+- Click **Finish**
 
 **Step 3: Add HFC-134a Low Energy equipment model**
 - Click **Add Consumption**
@@ -57,15 +57,15 @@ Let's create our baseline scenario with both high-energy and low-energy models o
 - On the **Servicing** tab:
   - Set **recharge** to 10% with 0.15 kg/unit during all years
 - On the **Set** tab:
-  - Set **prior equipment** to 1,000 units in year 2025
+  - Set **prior equipment** to 1,000.0 units in year 2025
   - Set **domestic** manufacture to 10 mt in year 2025
-- Click **Save**
+- Click **Finish**
 
 **Step 4: Create baseline simulation**
 - Click **Add Simulation**
 - Name it "BAU"
 - Set duration from **years 2025 to 2035**
-- Click **Save**
+- Click **Finish**
 
 You should now see your baseline simulation running, showing the high-energy model as the dominant equipment with much higher consumption volumes than the low-energy alternative. To see this, select the **Population** and **Equipment** radio buttons. With the specifics of the values we entered in given the production numbers and recharge demands, there is very slight decrease in high energy equipment over time and a gradual increase in low energy. However, overall population is increasing.
 
@@ -85,7 +85,7 @@ Now let's create a policy that accelerates this replacement of high-energy equip
 - Set to replace 20% of sales
 - Indiciate that it is to be replaced with **HFC-134a - low energy**
 - Set timing to **starting in 2028 to onwards**
-- Click **Save** to finish the policy
+- Click **Finish** to finish the policy
 
 This policy will progressively reduce high-energy equipment consumption relative to the BAU. Specifically, we change 10% of high energy sales each year starting in 2028 with that demand being met by low-energy equipment instead. This accelerates that change we saw earlier. However, before we can see the effects, we need to make an additional simulation.
 
@@ -97,7 +97,7 @@ Now let's create a simulation to compare the policy scenario with our business-a
 - Name it "Efficiency Policy"
 - Check the **Energy Efficiency** policy checkbox
 - Set duration from **years 2025 to 2035**
-- Click **Save**
+- Click **Finish**
 
 Kigali Sim is now simulating both options but we need to configure the visualizations to do a comparison.
 

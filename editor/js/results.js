@@ -414,10 +414,15 @@ class ScorecardPresenter {
       const salesValue = results.getSales(filterSet);
       const equipmentValue = results.getPopulation(filterSet);
 
+      // Helper function to safely get value from potentially null results
+      const safeGetValue = (engineNumber, defaultValue = 0) => {
+        return engineNumber !== null ? engineNumber.getValue() : defaultValue;
+      };
+
       const roundToTenths = (x) => Math.round(x * 10) / 10;
-      const emissionRounded = roundToTenths(emissionsValue.getValue() / 1000000);
-      const salesMt = roundToTenths(salesValue.getValue() / 1000000) + " k";
-      const millionEqipment = roundToTenths(equipmentValue.getValue() / 1000000) + " M";
+      const emissionRounded = roundToTenths(safeGetValue(emissionsValue) / 1000000);
+      const salesMt = roundToTenths(safeGetValue(salesValue) / 1000000) + " k";
+      const millionEqipment = roundToTenths(safeGetValue(equipmentValue) / 1000000) + " M";
 
       const metricSelected = filterSet.getMetric();
       const emissionsSelected = metricSelected === "emissions";
@@ -778,7 +783,9 @@ class DimensionCardPresenter {
     identifiersArray.sort();
 
     const values = identifiersArray.map(valueGetter);
-    const maxValue = Math.max(...values);
+    // Filter out null values and handle empty arrays gracefully
+    const validValues = values.filter((v) => v !== null && v !== undefined && !isNaN(v));
+    const maxValue = validValues.length > 0 ? Math.max(...validValues) : 0;
     d3.select(card.querySelector(".right-tick")).text(Math.round(maxValue));
 
     const hasSingleScenario = self._filterSet.hasSingleScenario(scenarios);
@@ -842,6 +849,10 @@ class DimensionCardPresenter {
             return "0%";
           } else {
             const value = valueGetter(x);
+            // Handle null values gracefully
+            if (value === null || value === undefined || isNaN(value) || maxValue === 0) {
+              return "0%";
+            }
             const percent = value / maxValue;
             return Math.round(percent * 100) + "%";
           }

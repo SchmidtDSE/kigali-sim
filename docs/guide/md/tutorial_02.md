@@ -1,5 +1,7 @@
 # Tutorial 2: Single Application and Substance
 
+This tutorial covers the basic building blocks of a simulation: applications and substances. You can follow along with this written guide or watch the [video version](https://vimeo.com/1116227339) for a visual walkthrough of the same concepts.
+
 We start with the basic building blocks of a simulation: applications and substances.
 
 ## Motivation
@@ -14,7 +16,7 @@ Let's start by creating a new simulation for ABC:
 
 - Click **Add Application** and enter "Domestic Refrigeration" without quotes.
 - Leave Subapplication empty for now
-- Click **Save**
+- Click **Finish**
 
 You won't see results yet because we haven't added any substances or equipment data.
 
@@ -66,7 +68,7 @@ We're almost ready to run our first simulation! We just need initial conditions.
 Head to the **Set tab** to specify ABC Country's starting conditions:
 
 - Click **Add Setpoint**
-- Set **prior equipment** to **1,000,000 units** in year 2025
+- Set **prior equipment** to **1,000,000.0 units** in year 2025
 - Set **domestic** manufacture to **25 mt / yr** in year 2025
 
 This 25 mt/year gives us a good demonstrative curve showing how consumption patterns evolve. However, until we specify changes in later tutorials, this production rate will remain steady based on tonnage. It will be used both for initial charge and recharge.
@@ -81,7 +83,7 @@ Now let's see our model in action. After clicking save for our consumption recor
 - Create a "Business as Usual" simulation (call it **BAU**).
 - Set no policies (we'll add those later).
 - Indicate a duration from **2025 to 2035**
-- Click **Save**
+- Click **Finish**
 
 (tutorial02_step06.gif - alt: animated gif showing how to create a simulation)
 

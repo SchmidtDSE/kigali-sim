@@ -1,5 +1,5 @@
 /**
- * Class responsible for managing / tracking substance streams.
+ * Manages the state for a single scenario within a single trial.
  *
  * <p>State management object for storage and retrieval of substance data, stream
  * values, and associated parameterizations.</p>
@@ -14,20 +14,22 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import org.kigalisim.engine.number.EngineNumber;
 import org.kigalisim.engine.number.UnitConverter;
 import org.kigalisim.engine.recalc.SalesStreamDistribution;
 import org.kigalisim.engine.recalc.SalesStreamDistributionBuilder;
+import org.kigalisim.engine.state.SimulationStateUpdate;
 import org.kigalisim.lang.operation.RecoverOperation.RecoveryStage;
 
 /**
- * Class responsible for managing / tracking substance streams.
+ * Manages the state for a single scenario within a single trial.
  *
  * <p>State management object for storage and retrieval of substance data, stream
  * values, and associated parameterizations.</p>
  */
-public class StreamKeeper {
+public class SimulationState {
 
   private static final boolean CHECK_NAN_STATE = true;
 
@@ -35,14 +37,15 @@ public class StreamKeeper {
   private final Map<String, EngineNumber> streams;
   private final OverridingConverterStateGetter stateGetter;
   private final UnitConverter unitConverter;
+  private int currentYear;
 
   /**
-   * Create a new StreamKeeper instance.
+   * Create a new SimulationState instance.
    *
    * @param stateGetter Structure to retrieve state information
    * @param unitConverter Converter for handling unit transformations
    */
-  public StreamKeeper(OverridingConverterStateGetter stateGetter, UnitConverter unitConverter) {
+  public SimulationState(OverridingConverterStateGetter stateGetter, UnitConverter unitConverter) {
     this.substances = new HashMap<>();
     this.streams = new HashMap<>();
     this.stateGetter = stateGetter;
@@ -112,6 +115,10 @@ public class StreamKeeper {
     streams.put(recycleRechargeKey, new EngineNumber(BigDecimal.ZERO, "kg"));
     String recycleEolKey = getKey(useKey, "recycleEol");
     streams.put(recycleEolKey, new EngineNumber(BigDecimal.ZERO, "kg"));
+    String inductionEolKey = getKey(useKey, "inductionEol");
+    streams.put(inductionEolKey, new EngineNumber(BigDecimal.ZERO, "kg"));
+    String inductionRechargeKey = getKey(useKey, "inductionRecharge");
+    streams.put(inductionRechargeKey, new EngineNumber(BigDecimal.ZERO, "kg"));
 
     // Consumption: count, conversion
     String consumptionKey = getKey(useKey, "consumption");
@@ -138,29 +145,29 @@ public class StreamKeeper {
     streams.put(implicitRechargeKey, new EngineNumber(BigDecimal.ZERO, "kg"));
   }
 
-  /**
-   * Set the value for a specific stream using key.
-   *
-   * @param useKey The key containing application and substance
-   * @param name The stream name
-   * @param value The value to set
-   */
-  public void setStream(UseKey useKey, String name, EngineNumber value) {
-    // Default behavior: apply recycling logic (backwards compatibility)
-    setStream(useKey, name, value, true);
-  }
+
+
 
   /**
-   * Set the value of a stream with control over recycling subtraction.
+   * Set a stream using pre-computed stream data.
    *
-   * @param useKey The key containing application and substance
-   * @param name The stream name
-   * @param value The value to set
-   * @param subtractRecycling Whether to apply recycling logic (false for direct setting)
+   * <p>This method replaces setStream, setOutcomeStream, and setSalesStream
+   * with a unified interface that accepts pre-computed stream values.
+   * The SimulationStateUpdate object encapsulates all necessary parameters
+   * including distribution logic and recycling behavior.</p>
+   *
+   * <p>This method provides clear architectural separation between calculation
+   * instructions (StreamUpdate) and pre-computed results (SimulationStateUpdate).</p>
+   *
+   * @param stateUpdate Pre-computed stream data with all parameters
    */
-  public void setStream(UseKey useKey, String name, EngineNumber value, boolean subtractRecycling) {
+  public void update(SimulationStateUpdate stateUpdate) {
+    UseKey useKey = stateUpdate.getUseKey();
+    String name = stateUpdate.getName();
+    EngineNumber value = stateUpdate.getValue();
+
     String key = getKey(useKey);
-    ensureSubstanceOrThrow(key, "setStream");
+    ensureSubstanceOrThrow(key, "update(SimulationStateUpdate)");
     ensureStreamKnown(name);
 
     // Check if stream needs to be enabled before setting
@@ -177,25 +184,89 @@ public class StreamKeeper {
       throw new RuntimeException("Encountered NaN to be set for: " + pieces);
     }
 
-    // Apply routing logic based on subtractRecycling parameter
+    // Extract routing parameters when needed
+    final boolean subtractRecycling = stateUpdate.getSubtractRecycling();
+    final Optional<SalesStreamDistribution> distribution = stateUpdate.getDistribution();
+
+    // Route to appropriate internal method based on stream characteristics and subtractRecycling
     if (!subtractRecycling && ("domestic".equals(name) || "import".equals(name))) {
-      // Direct setting - bypass recycling logic
+      // Direct setting for sales streams - bypass recycling logic
       setSimpleStream(useKey, name, value);
     } else {
-      // Normal routing with recycling logic
+      // Route based on stream type using the same logic as original setStream method
       if ("sales".equals(name)) {
         setStreamForSales(useKey, name, value);
       } else if ("domestic".equals(name) || "import".equals(name)) {
-        // Always use setSalesSubstream for sales substreams to ensure recycling is applied
-        setSalesSubstream(useKey, name, value);
+        // Sales substreams - delegate to organized private method
+        setStreamSalesSubstream(useKey, name, value, distribution);
       } else if ("recycle".equals(name)) {
         setStreamForRecycle(useKey, name, value);
       } else if (getIsSettingVolumeByUnits(name, value)) {
         setStreamForSalesWithUnits(useKey, name, value);
       } else {
+        // Outcome streams - inline outcome stream logic (direct setting)
         setSimpleStream(useKey, name, value);
       }
     }
+  }
+
+  /**
+   * Set a sales substream (domestic or import) with recycling displacement logic.
+   *
+   * <p>This method handles individual sales streams while applying proportional recycling
+   * displacement based on distribution percentages. It consolidates the sales substream
+   * logic that was previously inlined in the main setStream method.</p>
+   *
+   * @param useKey The key containing application and substance
+   * @param name The stream name ("domestic" or "import")
+   * @param value The total value for this specific sales stream
+   * @param distribution Optional pre-calculated distribution for recycling allocation
+   */
+  private void setStreamSalesSubstream(UseKey useKey, String name, EngineNumber value,
+      Optional<SalesStreamDistribution> distribution) {
+    EngineNumber valueConverted = unitConverter.convert(value, "kg");
+    final BigDecimal amountKg = valueConverted.getValue();
+
+    // Check if any streams are enabled for distribution calculation
+    if (!hasStreamsEnabled(useKey)) {
+      throw new IllegalStateException("Cannot set sales stream: no streams have been enabled. "
+          + "Use 'set " + name + "' or other stream statements to enable streams before "
+          + "operations that require sales recalculation.");
+    }
+
+    // Get current recycling amount
+    EngineNumber recycleAmountRaw = getStream(useKey, "recycle");
+    EngineNumber recycleAmount = unitConverter.convert(recycleAmountRaw, "kg");
+    BigDecimal recycleKg = recycleAmount != null ? recycleAmount.getValue() : BigDecimal.ZERO;
+
+    // Determine distribution to use
+    SalesStreamDistribution streamDistribution;
+    if (distribution.isPresent()) {
+      streamDistribution = distribution.get();
+    } else {
+      streamDistribution = getDistribution(useKey);
+    }
+
+    // Use distribution to determine this sales stream's share of recycling
+    BigDecimal substreamPercent;
+    if ("domestic".equals(name)) {
+      substreamPercent = streamDistribution.getPercentDomestic();
+    } else {
+      substreamPercent = streamDistribution.getPercentImport();
+    }
+
+    // Calculate proportional recycling for this sales stream
+    BigDecimal substreamRecycling = recycleKg.multiply(substreamPercent);
+
+    // Subtract proportional recycling to get virgin material amount
+    BigDecimal netAmount = amountKg.subtract(substreamRecycling);
+    if (netAmount.compareTo(BigDecimal.ZERO) < 0) {
+      netAmount = BigDecimal.ZERO;
+    }
+
+    // Set the net amount directly
+    EngineNumber netAmountToSet = new EngineNumber(netAmount, "kg");
+    setSimpleStream(useKey, name, netAmountToSet);
   }
 
   /**
@@ -239,6 +310,8 @@ public class StreamKeeper {
       BigDecimal newTotal = recycleRechargeAmountValue.add(recycleEolAmountValue);
 
       return new EngineNumber(newTotal, "kg");
+    } else if ("induction".equals(name)) {
+      return getTotalInductionStream(useKey);
     } else {
       EngineNumber result = streams.get(getKey(useKey, name));
       if (result == null) {
@@ -261,6 +334,64 @@ public class StreamKeeper {
    */
   public boolean isKnownStream(UseKey useKey, String name) {
     return streams.containsKey(getKey(useKey, name));
+  }
+
+  /**
+   * Get the induction stream value for a specific recovery stage.
+   *
+   * @param useKey The key containing application and substance
+   * @param stage The recovery stage (EOL or RECHARGE)
+   * @return The induction stream value in kg
+   */
+  public EngineNumber getInductionStream(UseKey useKey, RecoveryStage stage) {
+    String streamName = getInductionStreamName(stage);
+    return getStream(useKey, streamName);
+  }
+
+  /**
+   * Set the induction stream value for a specific recovery stage.
+   *
+   * @param useKey The key containing application and substance
+   * @param stage The recovery stage (EOL or RECHARGE)
+   * @param value The induction value in kg
+   */
+  private void setInductionStream(UseKey useKey, RecoveryStage stage, EngineNumber value) {
+    String streamName = getInductionStreamName(stage);
+    String key = getKey(useKey);
+    ensureSubstanceOrThrow(key, "setInductionStream");
+    ensureStreamKnown(streamName);
+    assertStreamEnabled(useKey, streamName, value);
+    setSimpleStream(useKey, streamName, value);
+  }
+
+  /**
+   * Get total induction across all stages.
+   *
+   * @param useKey The key containing application and substance
+   * @return Total induction in kg
+   */
+  public EngineNumber getTotalInductionStream(UseKey useKey) {
+    EngineNumber inductionEol = getInductionStream(useKey, RecoveryStage.EOL);
+    EngineNumber inductionRecharge = getInductionStream(useKey, RecoveryStage.RECHARGE);
+
+    EngineNumber eolConverted = unitConverter.convert(inductionEol, "kg");
+    EngineNumber rechargeConverted = unitConverter.convert(inductionRecharge, "kg");
+
+    BigDecimal total = eolConverted.getValue().add(rechargeConverted.getValue());
+    return new EngineNumber(total, "kg");
+  }
+
+  /**
+   * Get the stream name for an induction stage.
+   *
+   * @param stage The recovery stage
+   * @return The corresponding stream name
+   */
+  private String getInductionStreamName(RecoveryStage stage) {
+    return switch (stage) {
+      case EOL -> "inductionEol";
+      case RECHARGE -> "inductionRecharge";
+    };
   }
 
   /**
@@ -331,9 +462,29 @@ public class StreamKeeper {
   }
 
   /**
+   * Get the current year for this simulation state.
+   *
+   * @return The current year
+   */
+  public int getCurrentYear() {
+    return currentYear;
+  }
+
+  /**
+   * Set the current year for this simulation state.
+   *
+   * @param year The current year
+   */
+  public void setCurrentYear(int year) {
+    this.currentYear = year;
+  }
+
+  /**
    * Increment the year, updating populations and resetting internal params.
    */
   public void incrementYear() {
+    // Increment the internal year counter
+    currentYear += 1;
     // Move population
     for (String key : substances.keySet()) {
       String[] keyPieces = key.split("\t");
@@ -342,7 +493,7 @@ public class StreamKeeper {
 
       SimpleUseKey useKey = new SimpleUseKey(application, substance);
       EngineNumber equipment = getStream(useKey, "equipment");
-      setStream(useKey, "priorEquipment", equipment);
+      setSimpleStream(useKey, "priorEquipment", equipment);
     }
 
     // Reset state at timestep for all parameterizations
@@ -353,6 +504,9 @@ public class StreamKeeper {
     // Redistribute recycling back to sales streams before clearing to prevent cross-year deficit
     redistributeRecyclingToSales();
 
+    // Subtract induction from virgin streams before year transition
+    redistributeInductionFromSales();
+
     // Reset recycling streams at year boundary to prevent stale values
     // from affecting subsequent cap operations
     for (String key : substances.keySet()) {
@@ -361,8 +515,11 @@ public class StreamKeeper {
       String substance = keyPieces[1];
 
       SimpleUseKey useKey = new SimpleUseKey(application, substance);
-      setStream(useKey, "recycleRecharge", new EngineNumber(BigDecimal.ZERO, "kg"));
-      setStream(useKey, "recycleEol", new EngineNumber(BigDecimal.ZERO, "kg"));
+      setSimpleStream(useKey, "recycleRecharge", new EngineNumber(BigDecimal.ZERO, "kg"));
+      setSimpleStream(useKey, "recycleEol", new EngineNumber(BigDecimal.ZERO, "kg"));
+      // Reset induction streams at year boundary to prevent cross-year accumulation
+      setSimpleStream(useKey, "inductionEol", new EngineNumber(BigDecimal.ZERO, "kg"));
+      setSimpleStream(useKey, "inductionRecharge", new EngineNumber(BigDecimal.ZERO, "kg"));
     }
 
   }
@@ -540,21 +697,17 @@ public class StreamKeeper {
     // Get existing recovery rate for this stage
     EngineNumber existingRecovery = parameterization.getRecoveryRate(stage);
 
-    // If existing recovery rate is non-zero, implement additive recycling
+    // Check if recovery rate is already set - use additive behavior for multiple recover commands
     if (existingRecovery.getValue().compareTo(BigDecimal.ZERO) > 0) {
-      // Convert both rates to the same units (percentage)
-      EngineNumber existingRecoveryPercent = unitConverter.convert(existingRecovery, "%");
-      EngineNumber newRecoveryPercent = unitConverter.convert(newValue, "%");
-
-      // Add recovery rates
-      BigDecimal combinedRecovery = existingRecoveryPercent.getValue().add(newRecoveryPercent.getValue());
-
-      // Set the combined recovery rate
-      parameterization.setRecoveryRate(new EngineNumber(combinedRecovery, "%"), stage);
-    } else {
-      // First recovery rate, set normally
-      parameterization.setRecoveryRate(newValue, stage);
+      // Add the new recovery rate to the existing one (additive behavior)
+      BigDecimal newRate = existingRecovery.getValue().add(newValue.getValue());
+      EngineNumber combinedRate = new EngineNumber(newRate, "%");
+      parameterization.setRecoveryRate(combinedRate, stage);
+      return; // Early return to avoid setting the rate again below
     }
+
+    // Set the recovery rate (first one for this timestep)
+    parameterization.setRecoveryRate(newValue, stage);
   }
 
   /**
@@ -677,6 +830,52 @@ public class StreamKeeper {
   public EngineNumber getYieldRate(UseKey useKey, RecoveryStage stage) {
     StreamParameterization parameterization = getParameterization(useKey);
     return parameterization.getYieldRate(stage);
+  }
+
+  /**
+   * Set the induction rate percentage for recycling for a key.
+   *
+   * @param useKey The key containing application and substance
+   * @param newValue The new induction rate value
+   */
+  public void setInductionRate(UseKey useKey, EngineNumber newValue) {
+    StreamParameterization parameterization = getParameterization(useKey);
+    parameterization.setInductionRate(newValue);
+  }
+
+  /**
+   * Set the induction rate percentage for recycling for a key with a specific stage.
+   *
+   * @param useKey The key containing application and substance
+   * @param newValue The new induction rate value
+   * @param stage The recovery stage (EOL or RECHARGE)
+   */
+  public void setInductionRate(UseKey useKey, EngineNumber newValue, RecoveryStage stage) {
+    StreamParameterization parameterization = getParameterization(useKey);
+    parameterization.setInductionRate(newValue, stage);
+  }
+
+  /**
+   * Get the induction rate percentage for recycling for a key.
+   *
+   * @param useKey The key containing application and substance
+   * @return The current induction rate value
+   */
+  public EngineNumber getInductionRate(UseKey useKey) {
+    StreamParameterization parameterization = getParameterization(useKey);
+    return parameterization.getInductionRate();
+  }
+
+  /**
+   * Get the induction rate percentage for recycling for a key with a specific stage.
+   *
+   * @param useKey The key containing application and substance
+   * @param stage The recovery stage (EOL or RECHARGE)
+   * @return The current induction rate value
+   */
+  public EngineNumber getInductionRate(UseKey useKey, RecoveryStage stage) {
+    StreamParameterization parameterization = getParameterization(useKey);
+    return parameterization.getInductionRate(stage);
   }
 
   /**
@@ -894,6 +1093,7 @@ public class StreamKeeper {
 
     // Calculate virgin material needed (sales - recycling)
     BigDecimal virginMaterialKg = amountKg.subtract(recycleKg);
+
     if (virginMaterialKg.compareTo(BigDecimal.ZERO) < 0) {
       virginMaterialKg = BigDecimal.ZERO;
     }
@@ -913,56 +1113,6 @@ public class StreamKeeper {
 
     setSimpleStream(useKey, "domestic", domesticAmountToSet);
     setSimpleStream(useKey, "import", importAmountToSet);
-  }
-
-  /**
-   * Sets individual sales substreams (domestic/import) with recycling awareness.
-   * Unlike setStreamForSales, this method handles individual substreams without
-   * distribution logic but still accounts for proportional recycling.
-   *
-   * @param useKey The key containing application and substance
-   * @param streamName The stream name ("domestic" or "import")
-   * @param value The total value for this specific substream
-   */
-  private void setSalesSubstream(UseKey useKey, String streamName, EngineNumber value) {
-    EngineNumber valueConverted = unitConverter.convert(value, "kg");
-    BigDecimal amountKg = valueConverted.getValue();
-
-    // Check if any streams are enabled for distribution calculation
-    if (!hasStreamsEnabled(useKey)) {
-      throw new IllegalStateException("Cannot set sales substream: no streams have been enabled. "
-          + "Use 'set " + streamName + "' or other stream statements to enable streams before "
-          + "operations that require sales recalculation.");
-    }
-
-    // Get current recycling amount
-    EngineNumber recycleAmountRaw = getStream(useKey, "recycle");
-    EngineNumber recycleAmount = unitConverter.convert(recycleAmountRaw, "kg");
-    BigDecimal recycleKg = recycleAmount != null ? recycleAmount.getValue() : BigDecimal.ZERO;
-
-    // Get distribution to determine this substream's share of recycling
-    SalesStreamDistribution distribution = getDistribution(useKey);
-    BigDecimal substreamPercent;
-    if ("domestic".equals(streamName)) {
-      substreamPercent = distribution.getPercentDomestic();
-    } else if ("import".equals(streamName)) {
-      substreamPercent = distribution.getPercentImport();
-    } else {
-      throw new IllegalArgumentException("Unknown sales substream: " + streamName);
-    }
-
-    // Calculate proportional recycling for this substream
-    BigDecimal substreamRecycling = recycleKg.multiply(substreamPercent);
-
-    // Subtract proportional recycling to get virgin material amount
-    BigDecimal netAmount = amountKg.subtract(substreamRecycling);
-    if (netAmount.compareTo(BigDecimal.ZERO) < 0) {
-      netAmount = BigDecimal.ZERO;
-    }
-
-    // Set the net amount directly
-    EngineNumber netAmountToSet = new EngineNumber(netAmount, "kg");
-    setSimpleStream(useKey, streamName, netAmountToSet);
   }
 
   /**
@@ -1042,7 +1192,7 @@ public class StreamKeeper {
     EngineNumber valueConverted = unitConverter.convert(valueUnitsPlain, "kg");
     BigDecimal amountKg = valueConverted.getValue();
 
-    // Set the amount directly - recycling should already be handled by setSalesSubstream
+    // Set the amount directly - recycling should already be handled by setSalesStream
     String streamKey = getKey(useKey, name);
     EngineNumber amountToSet = new EngineNumber(amountKg, "kg");
     streams.put(streamKey, amountToSet);
@@ -1271,7 +1421,7 @@ public class StreamKeeper {
         continue;
       }
 
-      // Get current sales distribution for proportional allocation
+      // Get current sales distribution for proportional allocation (BEFORE modifying streams)
       SalesStreamDistribution distribution = getDistribution(useKey, false); // Exclude exports for compatibility
 
       // Calculate redistribution amounts
@@ -1288,9 +1438,62 @@ public class StreamKeeper {
       BigDecimal newDomestic = domesticConverted.getValue().add(domesticAdd);
       BigDecimal newImport = importConverted.getValue().add(importAdd);
 
-      // Set new amounts directly (bypass recycling logic to avoid recursion)
-      setStream(useKey, "domestic", new EngineNumber(newDomestic, "kg"), false);
-      setStream(useKey, "import", new EngineNumber(newImport, "kg"), false);
+      // Set new amounts using direct stream setting to avoid circular dependency
+      // Use setSimpleStream since this is internal redistribution logic
+      setSimpleStream(useKey, "domestic", new EngineNumber(newDomestic, "kg"));
+      setSimpleStream(useKey, "import", new EngineNumber(newImport, "kg"));
+    }
+  }
+
+  /**
+   * Redistribute induction amounts from sales streams before year transition.
+   *
+   * <p>This method addresses the cross-year induction carryover issue where induction
+   * correctly adds to virgin material in Year N, but the increased virgin sales
+   * baseline incorrectly carries forward to Year N+1, creating cumulative surplus.</p>
+   */
+  private void redistributeInductionFromSales() {
+    for (String key : substances.keySet()) {
+      String[] keyPieces = key.split("\t");
+      String application = keyPieces[0];
+      String substance = keyPieces[1];
+
+      SimpleUseKey useKey = new SimpleUseKey(application, substance);
+
+      // Skip if no streams are enabled
+      if (!hasStreamsEnabled(useKey)) {
+        continue;
+      }
+
+      // Get total induction amount for this substance/application
+      EngineNumber totalInduction = getTotalInductionStream(useKey);
+      EngineNumber inductionKg = unitConverter.convert(totalInduction, "kg");
+
+      // Skip if no induction to redistribute
+      if (inductionKg.getValue().compareTo(BigDecimal.ZERO) <= 0) {
+        continue;
+      }
+
+      // Get current sales distribution for proportional allocation
+      SalesStreamDistribution distribution = getDistribution(useKey, false);
+
+      // Calculate redistribution amounts (subtract induction from virgin streams)
+      BigDecimal domesticSubtract = inductionKg.getValue().multiply(distribution.getPercentDomestic());
+      BigDecimal importSubtract = inductionKg.getValue().multiply(distribution.getPercentImport());
+
+      // Subtract induction from sales streams (normalize baseline for next year)
+      EngineNumber currentDomestic = getStream(useKey, "domestic");
+      EngineNumber currentImport = getStream(useKey, "import");
+
+      EngineNumber domesticConverted = unitConverter.convert(currentDomestic, "kg");
+      EngineNumber importConverted = unitConverter.convert(currentImport, "kg");
+
+      BigDecimal newDomestic = domesticConverted.getValue().subtract(domesticSubtract).max(BigDecimal.ZERO);
+      BigDecimal newImport = importConverted.getValue().subtract(importSubtract).max(BigDecimal.ZERO);
+
+      // Set new amounts using direct stream setting
+      setSimpleStream(useKey, "domestic", new EngineNumber(newDomestic, "kg"));
+      setSimpleStream(useKey, "import", new EngineNumber(newImport, "kg"));
     }
   }
 

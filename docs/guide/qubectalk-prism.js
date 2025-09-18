@@ -20,7 +20,7 @@ Prism.languages.qubectalk = {
       "start", "end", "default", "policy", "simulations", "application",
       "substance", "define", "uses", "modify", "simulate", "about",
       "variables", "across", "as", "at", "by", "cap", "change", "charge",
-      "during", "enable", "eol", "equals", "floor", "for", "from", "get", "in", "initial",
+      "during", "enable", "eol", "equals", "floor", "for", "from", "get", "in", "induction", "initial",
       "of", "recharge", "recover", "replace", "retire", "reuse", "set",
       "then", "to", "trials", "using", "with", "displacing", "and", "or",
       "xor", "if", "else", "endif", "normally", "sample", "std",

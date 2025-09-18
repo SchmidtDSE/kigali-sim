@@ -16,8 +16,8 @@ start default
       equals 1430 tCO2e / kg
       equals 1 kwh / unit
       set priorEquipment to 1000000 units during year 2025
-      set domestic to 87,000 units / year during year 2025
-      set import to 55,000 units / year during year 2025
+      set domestic to 87,000.0 units / year during year 2025
+      set import to 55,000.0 units / year during year 2025
       change sales by sample normally from mean of 6 std of 1 % / year during years 2025 to 2030
       change sales by sample normally from mean of 4 std of 1 % / year during years 2031 to 2035
       retire 5 % / year
@@ -33,8 +33,8 @@ start default
       equals 6 tCO2e / kg
       equals 1 kwh / kg
       set priorEquipment to 100000 units during year 2025
-      set domestic to 14,000 units / year during year 2025
-      set import to 14,000 units / year during year 2025
+      set domestic to 14,000.0 units / year during year 2025
+      set import to 14,000.0 units / year during year 2025
       change sales by sample normally from mean of 5 std of 1 % / year during years 2025 to 2030
       change sales by sample normally from mean of 3 std of 1 % / year during years 2031 to 2035
       retire 5 % / year

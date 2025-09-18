@@ -12,6 +12,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.kigalisim.engine.SingleThreadEngine;
 import org.kigalisim.engine.number.EngineNumber;
+import org.kigalisim.engine.recalc.StreamUpdate;
+import org.kigalisim.engine.recalc.StreamUpdateBuilder;
 import org.kigalisim.engine.state.UseKey;
 import org.kigalisim.engine.state.YearMatcher;
 
@@ -50,7 +52,7 @@ class ChangeExecutorTest {
 
     // Assert - no further interactions should occur when out of range
     verify(mockEngine, never()).changeStream(any(), any(), any(), any());
-    verify(mockEngine, never()).setStream(any(), any(), any());
+    verify(mockEngine, never()).executeStreamUpdate(any());
   }
 
   @Test
@@ -69,7 +71,7 @@ class ChangeExecutorTest {
 
     // Assert - no further interactions should occur when out of range
     verify(mockEngine, never()).changeStream(any(), any(), any(), any());
-    verify(mockEngine, never()).setStream(any(), any(), any());
+    verify(mockEngine, never()).executeStreamUpdate(any());
   }
 
   @Test

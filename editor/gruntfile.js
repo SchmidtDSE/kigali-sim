@@ -2,6 +2,19 @@ module.exports = function (grunt) {
   grunt.loadNpmTasks("grunt-contrib-qunit");
   grunt.loadNpmTasks("grunt-contrib-connect");
 
+  // Detect Chromium executable using 'which' command
+  const { execSync } = require('child_process');
+  let chromiumPath = null;
+
+  try {
+    chromiumPath = execSync('which chromium', { encoding: 'utf8' }).trim();
+    grunt.log.writeln(`Found Chromium at: ${chromiumPath}`);
+  } catch (e) {
+    grunt.log.warn('Chromium not found. Puppeteer will use its bundled Chrome.');
+  }
+
+  const puppeteerOptions = chromiumPath ? { executablePath: chromiumPath } : {};
+
   grunt.initConfig({
     pkg: grunt.file.readJSON("package.json"),
     connect: {
@@ -17,6 +30,7 @@ module.exports = function (grunt) {
           urls: ["http://localhost:8000/test/test.html"],
           timeout: 60000,
           puppeteer: {
+            ...puppeteerOptions,
             args: [],
           },
         },
@@ -26,6 +40,7 @@ module.exports = function (grunt) {
           urls: ["http://localhost:8000/test/test.html"],
           timeout: 60000,
           puppeteer: {
+            ...puppeteerOptions,
             args: ["--no-sandbox", "--disable-setuid-sandbox"],
           },
         },

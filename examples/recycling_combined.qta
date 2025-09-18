@@ -21,8 +21,8 @@ start policy "intervention"
   modify application "test"
     
     modify substance "test"
-      recover 40 % with 80 % reuse at eol during year 2
-      recover 30 % with 90 % reuse at recharge during year 2
+      recover 40 % with 80 % reuse with 0 % induction at eol during year 2
+      recover 30 % with 90 % reuse with 0 % induction at recharge during year 2
     end substance
 
   end application

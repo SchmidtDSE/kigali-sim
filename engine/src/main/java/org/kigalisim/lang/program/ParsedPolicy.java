@@ -8,9 +8,7 @@ package org.kigalisim.lang.program;
 
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
+import org.kigalisim.lang.validation.DuplicateValidator;
 
 /**
  * Record of a policy parsed from the source of a QubecTalk program.
@@ -30,8 +28,8 @@ public class ParsedPolicy {
    */
   public ParsedPolicy(String name, Iterable<ParsedApplication> applications) {
     this.name = name;
-    this.applications = StreamSupport.stream(applications.spliterator(), false)
-        .collect(Collectors.toMap(ParsedApplication::getName, Function.identity()));
+    this.applications = DuplicateValidator.validateUniqueNames(
+        applications, ParsedApplication::getName, "application", "policy '" + name + "'");
   }
 
   /**

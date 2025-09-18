@@ -8,6 +8,7 @@ package org.kigalisim.validate;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
@@ -18,6 +19,7 @@ import org.junit.jupiter.api.Test;
 import org.kigalisim.KigaliSimFacade;
 import org.kigalisim.engine.serializer.EngineResult;
 import org.kigalisim.lang.program.ParsedProgram;
+import org.kigalisim.lang.validation.DuplicateValidationException;
 
 /**
  * Tests that validate basic QTA files against expected behavior.
@@ -79,9 +81,9 @@ public class BasicLiveTests {
         "Equipment units should be units");
 
     // Check consumption value
-    assertEquals(500.0, result.getGhgConsumption().getValue().doubleValue(), 0.0001,
+    assertEquals(500.0, result.getConsumption().getValue().doubleValue(), 0.0001,
         "Consumption should be 500 tCO2e");
-    assertEquals("tCO2e", result.getGhgConsumption().getUnits(),
+    assertEquals("tCO2e", result.getConsumption().getUnits(),
         "Consumption units should be tCO2e");
 
     // Check domestic value - should be 100 mt = 100000 kg
@@ -225,31 +227,31 @@ public class BasicLiveTests {
     EngineResult recordYear1A = LiveTestsUtil.getResult(resultsList.stream(), 1, "Test", "Sub A");
     assertNotNull(recordYear1A, "Should have result for Test/Sub A in year 1");
 
-    assertEquals(10000.0, recordYear1A.getGhgConsumption().getValue().doubleValue(), 0.0001,
+    assertEquals(10000.0, recordYear1A.getConsumption().getValue().doubleValue(), 0.0001,
         "Sub A GHG consumption should be 10000 tCO2e in year 1");
-    assertEquals("tCO2e", recordYear1A.getGhgConsumption().getUnits(),
+    assertEquals("tCO2e", recordYear1A.getConsumption().getUnits(),
         "Sub A GHG consumption units should be tCO2e in year 1");
 
     EngineResult recordYear1B = LiveTestsUtil.getResult(resultsList.stream(), 1, "Test", "Sub B");
     assertNotNull(recordYear1B, "Should have result for Test/Sub B in year 1");
-    assertEquals(0.0, recordYear1B.getGhgConsumption().getValue().doubleValue(), 0.0001,
+    assertEquals(0.0, recordYear1B.getConsumption().getValue().doubleValue(), 0.0001,
         "Sub B GHG consumption should be 0 tCO2e in year 1");
-    assertEquals("tCO2e", recordYear1B.getGhgConsumption().getUnits(),
+    assertEquals("tCO2e", recordYear1B.getConsumption().getUnits(),
         "Sub B GHG consumption units should be tCO2e in year 1");
 
     // Check year 10 consumption
     EngineResult recordYear10A = LiveTestsUtil.getResult(resultsList.stream(), 10, "Test", "Sub A");
     assertNotNull(recordYear10A, "Should have result for Test/Sub A in year 10");
-    assertEquals(0.0, recordYear10A.getGhgConsumption().getValue().doubleValue(), 0.0001,
+    assertEquals(0.0, recordYear10A.getConsumption().getValue().doubleValue(), 0.0001,
         "Sub A GHG consumption should be 0 tCO2e in year 10");
-    assertEquals("tCO2e", recordYear10A.getGhgConsumption().getUnits(),
+    assertEquals("tCO2e", recordYear10A.getConsumption().getUnits(),
         "Sub A GHG consumption units should be tCO2e in year 10");
 
     EngineResult recordYear10B = LiveTestsUtil.getResult(resultsList.stream(), 10, "Test", "Sub B");
     assertNotNull(recordYear10B, "Should have result for Test/Sub B in year 10");
-    assertEquals(1000.0, recordYear10B.getGhgConsumption().getValue().doubleValue(), 0.0001,
+    assertEquals(1000.0, recordYear10B.getConsumption().getValue().doubleValue(), 0.0001,
         "Sub B GHG consumption should be 1000 tCO2e in year 10");
-    assertEquals("tCO2e", recordYear10B.getGhgConsumption().getUnits(),
+    assertEquals("tCO2e", recordYear10B.getConsumption().getUnits(),
         "Sub B GHG consumption units should be tCO2e in year 10");
   }
 
@@ -274,31 +276,31 @@ public class BasicLiveTests {
     // Check year 1 - no replacement yet (following JS test pattern)
     EngineResult recordYear1A = LiveTestsUtil.getResult(resultsList.stream(), 1, "Test", "Sub A");
     assertNotNull(recordYear1A, "Should have result for Test/Sub A in year 1");
-    assertEquals(10000000.0, recordYear1A.getGhgConsumption().getValue().doubleValue(), 0.0001,
+    assertEquals(10000000.0, recordYear1A.getConsumption().getValue().doubleValue(), 0.0001,
         "Sub A GHG consumption should be 10000000 tCO2e in year 1");
-    assertEquals("tCO2e", recordYear1A.getGhgConsumption().getUnits(),
+    assertEquals("tCO2e", recordYear1A.getConsumption().getUnits(),
         "Sub A GHG consumption units should be tCO2e in year 1");
 
     EngineResult recordYear1B = LiveTestsUtil.getResult(resultsList.stream(), 1, "Test", "Sub B");
     assertNotNull(recordYear1B, "Should have result for Test/Sub B in year 1");
-    assertEquals(0.0, recordYear1B.getGhgConsumption().getValue().doubleValue(), 0.0001,
+    assertEquals(0.0, recordYear1B.getConsumption().getValue().doubleValue(), 0.0001,
         "Sub B GHG consumption should be 0 tCO2e in year 1");
-    assertEquals("tCO2e", recordYear1B.getGhgConsumption().getUnits(),
+    assertEquals("tCO2e", recordYear1B.getConsumption().getUnits(),
         "Sub B GHG consumption units should be tCO2e in year 1");
 
     // Check year 10 - replacement should result in complete shift from A to B
     EngineResult recordYear10A = LiveTestsUtil.getResult(resultsList.stream(), 10, "Test", "Sub A");
     assertNotNull(recordYear10A, "Should have result for Test/Sub A in year 10");
-    assertEquals(0.0, recordYear10A.getGhgConsumption().getValue().doubleValue(), 0.0001,
+    assertEquals(0.0, recordYear10A.getConsumption().getValue().doubleValue(), 0.0001,
         "Sub A GHG consumption should be 0 tCO2e in year 10");
-    assertEquals("tCO2e", recordYear10A.getGhgConsumption().getUnits(),
+    assertEquals("tCO2e", recordYear10A.getConsumption().getUnits(),
         "Sub A GHG consumption units should be tCO2e in year 10");
 
     EngineResult recordYear10B = LiveTestsUtil.getResult(resultsList.stream(), 10, "Test", "Sub B");
     assertNotNull(recordYear10B, "Should have result for Test/Sub B in year 10");
-    assertEquals(1000000.0, recordYear10B.getGhgConsumption().getValue().doubleValue(), 0.0001,
+    assertEquals(1000000.0, recordYear10B.getConsumption().getValue().doubleValue(), 0.0001,
         "Sub B GHG consumption should be 1000000 tCO2e in year 10");
-    assertEquals("tCO2e", recordYear10B.getGhgConsumption().getUnits(),
+    assertEquals("tCO2e", recordYear10B.getConsumption().getUnits(),
         "Sub B GHG consumption units should be tCO2e in year 10");
   }
 
@@ -323,16 +325,16 @@ public class BasicLiveTests {
     // Check year 1 - no replacement yet (following JS test pattern)
     EngineResult recordYear1A = LiveTestsUtil.getResult(resultsList.stream(), 1, "Test", "Sub A");
     assertNotNull(recordYear1A, "Should have result for Test/Sub A in year 1");
-    assertEquals(10000000.0, recordYear1A.getGhgConsumption().getValue().doubleValue(), 0.0001,
+    assertEquals(10000000.0, recordYear1A.getConsumption().getValue().doubleValue(), 0.0001,
         "Sub A GHG consumption should be 10000000 tCO2e in year 1");
-    assertEquals("tCO2e", recordYear1A.getGhgConsumption().getUnits(),
+    assertEquals("tCO2e", recordYear1A.getConsumption().getUnits(),
         "Sub A GHG consumption units should be tCO2e in year 1");
 
     EngineResult recordYear1B = LiveTestsUtil.getResult(resultsList.stream(), 1, "Test", "Sub B");
     assertNotNull(recordYear1B, "Should have result for Test/Sub B in year 1");
-    assertEquals(0.0, recordYear1B.getGhgConsumption().getValue().doubleValue(), 0.0001,
+    assertEquals(0.0, recordYear1B.getConsumption().getValue().doubleValue(), 0.0001,
         "Sub B GHG consumption should be 0 tCO2e in year 1");
-    assertEquals("tCO2e", recordYear1B.getGhgConsumption().getUnits(),
+    assertEquals("tCO2e", recordYear1B.getConsumption().getUnits(),
         "Sub B GHG consumption units should be tCO2e in year 1");
 
     // Check year 10 - replacement active for years 5-10 (6 years total)
@@ -340,18 +342,18 @@ public class BasicLiveTests {
     // Remaining: 40 mt × 100 tCO2e/mt = 4,000,000 tCO2e
     EngineResult recordYear10A = LiveTestsUtil.getResult(resultsList.stream(), 10, "Test", "Sub A");
     assertNotNull(recordYear10A, "Should have result for Test/Sub A in year 10");
-    assertEquals(4000000.0, recordYear10A.getGhgConsumption().getValue().doubleValue(), 0.0001,
+    assertEquals(4000000.0, recordYear10A.getConsumption().getValue().doubleValue(), 0.0001,
         "Sub A GHG consumption should be 4000000 tCO2e in year 10");
-    assertEquals("tCO2e", recordYear10A.getGhgConsumption().getUnits(),
+    assertEquals("tCO2e", recordYear10A.getConsumption().getUnits(),
         "Sub A GHG consumption units should be tCO2e in year 10");
 
     // Sub B: Added 6 × (1000 units × 20 kg/unit) = 120 mt
     // Total: 120 mt × 10 tCO2e/mt = 1,200,000 tCO2e
     EngineResult recordYear10B = LiveTestsUtil.getResult(resultsList.stream(), 10, "Test", "Sub B");
     assertNotNull(recordYear10B, "Should have result for Test/Sub B in year 10");
-    assertEquals(1200000.0, recordYear10B.getGhgConsumption().getValue().doubleValue(), 0.0001,
+    assertEquals(1200000.0, recordYear10B.getConsumption().getValue().doubleValue(), 0.0001,
         "Sub B GHG consumption should be 1200000 tCO2e in year 10");
-    assertEquals("tCO2e", recordYear10B.getGhgConsumption().getUnits(),
+    assertEquals("tCO2e", recordYear10B.getConsumption().getUnits(),
         "Sub B GHG consumption units should be tCO2e in year 10");
   }
 
@@ -628,5 +630,95 @@ public class BasicLiveTests {
     // Check that we can get results without division by zero error
     assertTrue(result.getPopulation().getValue().doubleValue() > 0,
         "Equipment population should be positive");
+  }
+
+  /**
+   * Test that KigaliSimFacade.parseAndInterpret throws meaningful exceptions
+   * for each type of duplication with descriptive error messages.
+   */
+  @Test
+  public void testInformativeDuplicateErrorMessages() {
+    // Test duplicate scenario names
+    DuplicateValidationException scenarioException = assertThrows(
+        DuplicateValidationException.class,
+        () -> KigaliSimFacade.parseAndInterpret("../examples/duplicate_scenarios.qta"),
+        "Should throw DuplicateValidationException for duplicate scenarios"
+    );
+    assertTrue(scenarioException.getMessage().contains("Duplicate scenario name 'BAU'"),
+        "Scenario error message should be informative");
+    assertTrue(scenarioException.getMessage().contains("found in simulations stanza"),
+        "Scenario error message should include context");
+
+    // Test duplicate application names
+    DuplicateValidationException applicationException = assertThrows(
+        DuplicateValidationException.class,
+        () -> KigaliSimFacade.parseAndInterpret("../examples/duplicate_applications.qta"),
+        "Should throw DuplicateValidationException for duplicate applications"
+    );
+    assertTrue(applicationException.getMessage().contains("Duplicate application name 'Test'"),
+        "Application error message should be informative");
+    assertTrue(applicationException.getMessage().contains("found in policy 'default'"),
+        "Application error message should include policy context");
+
+    // Test duplicate substance names
+    DuplicateValidationException substanceException = assertThrows(
+        DuplicateValidationException.class,
+        () -> KigaliSimFacade.parseAndInterpret("../examples/duplicate_substances.qta"),
+        "Should throw DuplicateValidationException for duplicate substances"
+    );
+    assertTrue(substanceException.getMessage().contains("Duplicate substance name 'HFC-134a'"),
+        "Substance error message should be informative");
+    assertTrue(substanceException.getMessage().contains("found in application 'Test'"),
+        "Substance error message should include application context");
+
+    // Test duplicate policy names
+    DuplicateValidationException policyException = assertThrows(
+        DuplicateValidationException.class,
+        () -> KigaliSimFacade.parseAndInterpret("../examples/duplicate_policies.qta"),
+        "Should throw DuplicateValidationException for duplicate policies"
+    );
+    assertTrue(policyException.getMessage().contains("Duplicate policy name 'default'"),
+        "Policy error message should be informative");
+    assertTrue(policyException.getMessage().contains("found in program"),
+        "Policy error message should include context");
+  }
+
+  /**
+   * Test that "each year" syntax preprocessing works correctly with a complete QTA file.
+   *
+   * <p>This test validates that the preprocessing solution correctly handles standalone
+   * "each year" syntax at the end of statements while preserving valid "during each year"
+   * clauses within temporal ranges.</p>
+   */
+  @Test
+  public void testEachYearSyntaxPreprocessing() throws IOException {
+    // Load and parse the QTA file that contains "each year" syntax
+    String qtaPath = "../examples/each_year_syntax_test.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null for each year syntax");
+
+    // Run the scenario using KigaliSimFacade
+    String scenarioName = "Each Year Test";
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
+    List<EngineResult> resultsList = results.collect(Collectors.toList());
+
+    // Test that simulation completed successfully
+    assertTrue(resultsList.size() > 0, "Should have simulation results");
+
+    // Test specific functionality - validate that retire and recharge commands work
+    EngineResult result2025 = LiveTestsUtil.getResult(resultsList.stream(), 2025, "domestic equipment", "HFC-134a");
+    assertNotNull(result2025, "Should find result for 2025");
+
+    // Check that domestic value is reasonable (should be 25000 kg as set in the QTA file)
+    assertTrue(result2025.getDomestic().getValue().compareTo(new java.math.BigDecimal("20000")) > 0,
+        "Domestic should be greater than 20000 kg");
+    assertTrue(result2025.getDomestic().getValue().compareTo(new java.math.BigDecimal("30000")) < 0,
+        "Domestic should be less than 30000 kg");
+    assertEquals("kg", result2025.getDomestic().getUnits(), "Domestic units should be kg");
+
+    // Test that population tracking works (indicating retire command processed correctly)
+    assertTrue(result2025.getPopulation().getValue().compareTo(java.math.BigDecimal.ZERO) > 0,
+        "Population should be positive");
+    assertEquals("units", result2025.getPopulation().getUnits(), "Population units should be units");
   }
 }

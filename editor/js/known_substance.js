@@ -157,7 +157,8 @@ class GwpLookupPresenter {
 
       if (substance) {
         // Update the GHG input with the found value
-        self._ghgInput.value = substance.getGwp().toString();
+        const gwpValue = substance.getGwp();
+        self._ghgInput.value = isNaN(gwpValue) ? "" : gwpValue.toString();
 
         // Ensure units are set to kgCO2e / kg (which matches our data)
         self._ghgUnitsInput.value = "kgCO2e / kg";

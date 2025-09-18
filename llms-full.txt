@@ -70,12 +70,15 @@ The about stanza is optional.
 #### Policy Interventions
 - `cap|floor stream to {amount} <displacing> <during>` - Manufacturing/import restrictions and minimums
 - `replace {amount} of {stream} with "substance" <during>` - Substance transitions
-- `recover {amount} with {amount} reuse <at {stage}> <displacing> <during>` - Recycling with optional stage (eol or recharge), displacement, and duration
+- `recover {amount} with {amount} reuse <at {stage}> <during>` - Recycling with optional stage (eol or recharge) and duration
 
 **Note**: When using units (of equipment) in cap, floor, and set commands, those limits apply after recharge calculations. So a cap of 100 units means 100 units on top of recharge for prior equipment.
 
 #### Units System
 Supports automatic unit conversion: kg, mt (metric tons), tCO2e (tons CO2 equivalent), kwh (kilowatt hours), units (equipment), years/months/days (time), % (percentages)
+
+#### Number formatting
+Kigali Sim requires DecimalFormat number formatting (comma for thousands separator, period for decimal point). Both formatting conventions are internationally valid, but Kigali Sim uses the DecimalFormat format for consistency with the technologies it leverages. Alternative format numbers like `123.456,7` will generate a message with a suggestion for the equivalent supported format `123,456.7`. Numbers like `123,456` or `123.456` are interpreted as DecimalFormat without error.
 
 #### Advanced Features
 - **Variables**: `define identifier as expression` and `get identifier` (scoped to enclosing start/end block)
@@ -150,18 +153,32 @@ Changes in one substance can be offset by changes in another. For example:
 
 This is available for `cap`, `floor`, and `recover`.
 
-### Recycling Stages
-The `recover` command supports specifying when recycling occurs:
-- `recover {amount} with {amount} reuse` - Defaults to recycling at recharge (service) time
+### Recycling Stages and Induction
+The `recover` command supports specifying when recycling occurs and how much induced demand it creates:
+- `recover {amount} with {amount} reuse` - Defaults to recycling at recharge (service) time with 100% induction (induced demand behavior)
+- `recover {amount} with {amount} reuse with {amount} induction` - Explicit induction percentage (0-100%)
+- `recover {amount} with {amount} reuse with default induction` - Uses 100% induction (induced demand behavior)
 - `recover {amount} with {amount} reuse at recharge` - Explicitly specifies recycling at service time
 - `recover {amount} with {amount} reuse at eol` - Specifies recycling at end-of-life (retirement)
 
+**Induction Control**: Induction determines how much recycled material adds to the market versus displaces virgin production:
+- **Units-based specs**: Default 0% induction (displacement behavior) - recycling reduces virgin sales to maintain steady population
+- **Non-units specs (kg/mt)**: Default 100% induction (induced demand behavior) - recycling adds on top of existing demand
+- **Explicit specification**: Users can override defaults by specifying exact percentages (0-100%)
+
 Examples:
 ```
-recover 20 % with 80 % reuse at recharge
-recover 15 % with 75 % reuse at eol displacing import
-recover 10 % with 90 % reuse at eol during years 3 to 5
+recover 20 % with 80 % reuse at recharge              # Uses default: 0% for units, 100% for volume
+recover 15 % with 75 % reuse with 50 % induction at eol   # Explicit 50% induction
+recover 10 % with 90 % reuse with default induction during years 3 to 5   # Uses default behavior
+recover 25 % with 85 % reuse with 0 % induction during year 2027 to onwards   # Full displacement
+recover 30 % with 95 % reuse with 100 % induction at eol  # Full induced demand
 ```
+
+**Behavioral Differences**:
+- **0% Induction (Displacement)**: Recycled material reduces virgin material demand. Total equipment population stays constant.
+- **100% Induction (Induced Demand)**: Recycled material adds to total supply. Equipment population increases due to additional material availability.
+- **Partial Induction (Mixed)**: Combines both behaviors proportionally.
 
 ## Example QubecTalk Program
 
@@ -198,7 +215,7 @@ start policy "HFC Phasedown"
     modify substance "HFC-134a"
       cap domestic to 85% during years 3 to 5
       cap import to 85% during years 3 to 5
-      recover 20 % with 80 % reuse at eol during years 4 to 10
+      recover 20 % with 80 % reuse with 25 % induction at eol during years 4 to 10
       replace 50% of domestic with "R-600a" during years 6 to onwards
     end substance
     

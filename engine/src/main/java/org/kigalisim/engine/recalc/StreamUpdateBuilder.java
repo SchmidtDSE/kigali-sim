@@ -1,9 +1,11 @@
-package org.kigalisim.engine.support;
+package org.kigalisim.engine.recalc;
 
 import java.util.Optional;
 import org.kigalisim.engine.number.EngineNumber;
+import org.kigalisim.engine.recalc.SalesStreamDistribution;
 import org.kigalisim.engine.state.UseKey;
 import org.kigalisim.engine.state.YearMatcher;
+import org.kigalisim.engine.support.EngineSupportUtils;
 
 /**
  * Builder for creating StreamUpdate instances.
@@ -17,6 +19,14 @@ public final class StreamUpdateBuilder {
   private Optional<String> unitsToRecord = Optional.empty();
   private boolean subtractRecycling = true;
   private boolean forceUseFullRecharge = false;
+  private Optional<SalesStreamDistribution> distribution;
+
+  /**
+   * Creates a new StreamUpdateBuilder with default values.
+   */
+  public StreamUpdateBuilder() {
+    this.distribution = Optional.empty();
+  }
 
   /**
    * Sets the stream name.
@@ -129,6 +139,42 @@ public final class StreamUpdateBuilder {
   }
 
   /**
+   * Sets the distribution for sales streams.
+   *
+   * @param distribution the sales stream distribution
+   * @return this builder
+   */
+  public StreamUpdateBuilder setDistribution(SalesStreamDistribution distribution) {
+    this.distribution = Optional.of(distribution);
+    return this;
+  }
+
+  /**
+   * Clears the distribution.
+   *
+   * @return this builder
+   */
+  public StreamUpdateBuilder clearDistribution() {
+    this.distribution = Optional.empty();
+    return this;
+  }
+
+  /**
+   * Infers the subtractRecycling flag based on stream name and value units.
+   *
+   * @return this builder with subtractRecycling set appropriately
+   * @throws RuntimeException if name or value is null or invalid
+   */
+  public StreamUpdateBuilder inferSubtractRecycling() {
+    if (this.name == null || this.value == null) {
+      throw new RuntimeException("Name and value must be set before calling inferSubtractRecycling");
+    }
+    boolean subtractRecycling = !EngineSupportUtils.isSalesSubstream(this.name)
+        || "units".equals(this.value.getUnits());
+    return setSubtractRecycling(subtractRecycling);
+  }
+
+  /**
    * Builds the StreamUpdate.
    *
    * @return the built StreamUpdate
@@ -146,7 +192,8 @@ public final class StreamUpdateBuilder {
         propagateChanges,
         unitsToRecord,
         subtractRecycling,
-        forceUseFullRecharge
+        forceUseFullRecharge,
+        distribution
     );
   }
 }

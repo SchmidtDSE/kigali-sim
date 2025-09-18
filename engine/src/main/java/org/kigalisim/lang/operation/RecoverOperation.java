@@ -36,9 +36,9 @@ public class RecoverOperation implements Operation {
 
   private final Operation volumeOperation;
   private final Operation yieldOperation;
-  private final Optional<String> displaceTarget;
   private final Optional<ParsedDuring> duringMaybe;
   private final RecoveryStage stage;
+  private final Optional<Operation> inductionOperation;
 
   /**
    * Create a new RecoverOperation that applies to all years.
@@ -49,9 +49,9 @@ public class RecoverOperation implements Operation {
   public RecoverOperation(Operation volumeOperation, Operation yieldOperation) {
     this.volumeOperation = volumeOperation;
     this.yieldOperation = yieldOperation;
-    this.displaceTarget = Optional.empty();
     this.duringMaybe = Optional.empty();
     this.stage = RecoveryStage.RECHARGE;
+    this.inductionOperation = Optional.empty();
   }
 
   /**
@@ -64,41 +64,12 @@ public class RecoverOperation implements Operation {
   public RecoverOperation(Operation volumeOperation, Operation yieldOperation, RecoveryStage stage) {
     this.volumeOperation = volumeOperation;
     this.yieldOperation = yieldOperation;
-    this.displaceTarget = Optional.empty();
     this.duringMaybe = Optional.empty();
     this.stage = stage;
+    this.inductionOperation = Optional.empty();
   }
 
-  /**
-   * Create a new RecoverOperation that applies to all years with displacement.
-   *
-   * @param volumeOperation The operation that calculates the recovery amount.
-   * @param yieldOperation The operation that calculates the yield rate.
-   * @param displaceTarget The name of the stream or substance to displace.
-   */
-  public RecoverOperation(Operation volumeOperation, Operation yieldOperation, String displaceTarget) {
-    this.volumeOperation = volumeOperation;
-    this.yieldOperation = yieldOperation;
-    this.displaceTarget = Optional.ofNullable(displaceTarget);
-    this.duringMaybe = Optional.empty();
-    this.stage = RecoveryStage.RECHARGE;
-  }
 
-  /**
-   * Create a new RecoverOperation that applies to all years with displacement and stage.
-   *
-   * @param volumeOperation The operation that calculates the recovery amount.
-   * @param yieldOperation The operation that calculates the yield rate.
-   * @param displaceTarget The name of the stream or substance to displace.
-   * @param stage The recovery stage (EOL or RECHARGE).
-   */
-  public RecoverOperation(Operation volumeOperation, Operation yieldOperation, String displaceTarget, RecoveryStage stage) {
-    this.volumeOperation = volumeOperation;
-    this.yieldOperation = yieldOperation;
-    this.displaceTarget = Optional.ofNullable(displaceTarget);
-    this.duringMaybe = Optional.empty();
-    this.stage = stage;
-  }
 
   /**
    * Create a new RecoverOperation that applies to a specific time period.
@@ -110,9 +81,9 @@ public class RecoverOperation implements Operation {
   public RecoverOperation(Operation volumeOperation, Operation yieldOperation, ParsedDuring during) {
     this.volumeOperation = volumeOperation;
     this.yieldOperation = yieldOperation;
-    this.displaceTarget = Optional.empty();
     this.duringMaybe = Optional.of(during);
     this.stage = RecoveryStage.RECHARGE;
+    this.inductionOperation = Optional.empty();
   }
 
   /**
@@ -126,44 +97,73 @@ public class RecoverOperation implements Operation {
   public RecoverOperation(Operation volumeOperation, Operation yieldOperation, ParsedDuring during, RecoveryStage stage) {
     this.volumeOperation = volumeOperation;
     this.yieldOperation = yieldOperation;
-    this.displaceTarget = Optional.empty();
     this.duringMaybe = Optional.of(during);
     this.stage = stage;
+    this.inductionOperation = Optional.empty();
   }
 
   /**
-   * Create a new RecoverOperation that applies to a specific time period with displacement.
+   * Create a new RecoverOperation that applies to all years with induction.
    *
    * @param volumeOperation The operation that calculates the recovery amount.
    * @param yieldOperation The operation that calculates the yield rate.
-   * @param displaceTarget The name of the stream or substance to displace.
-   * @param during The time period during which this operation applies.
+   * @param inductionOperation The operation that calculates the induction rate (Optional.empty() for default).
    */
-  public RecoverOperation(Operation volumeOperation, Operation yieldOperation,
-                         String displaceTarget, ParsedDuring during) {
+  public RecoverOperation(Operation volumeOperation, Operation yieldOperation, Optional<Operation> inductionOperation) {
     this.volumeOperation = volumeOperation;
     this.yieldOperation = yieldOperation;
-    this.displaceTarget = Optional.ofNullable(displaceTarget);
+    this.duringMaybe = Optional.empty();
+    this.stage = RecoveryStage.RECHARGE;
+    this.inductionOperation = inductionOperation;
+  }
+
+  /**
+   * Create a new RecoverOperation that applies to all years with stage and induction.
+   *
+   * @param volumeOperation The operation that calculates the recovery amount.
+   * @param yieldOperation The operation that calculates the yield rate.
+   * @param stage The recovery stage (EOL or RECHARGE).
+   * @param inductionOperation The operation that calculates the induction rate (Optional.empty() for default).
+   */
+  public RecoverOperation(Operation volumeOperation, Operation yieldOperation, RecoveryStage stage, Optional<Operation> inductionOperation) {
+    this.volumeOperation = volumeOperation;
+    this.yieldOperation = yieldOperation;
+    this.duringMaybe = Optional.empty();
+    this.stage = stage;
+    this.inductionOperation = inductionOperation;
+  }
+
+  /**
+   * Create a new RecoverOperation that applies to a specific time period with induction.
+   *
+   * @param volumeOperation The operation that calculates the recovery amount.
+   * @param yieldOperation The operation that calculates the yield rate.
+   * @param during The time period during which this operation applies.
+   * @param inductionOperation The operation that calculates the induction rate (Optional.empty() for default).
+   */
+  public RecoverOperation(Operation volumeOperation, Operation yieldOperation, ParsedDuring during, Optional<Operation> inductionOperation) {
+    this.volumeOperation = volumeOperation;
+    this.yieldOperation = yieldOperation;
     this.duringMaybe = Optional.of(during);
     this.stage = RecoveryStage.RECHARGE;
+    this.inductionOperation = inductionOperation;
   }
 
   /**
-   * Create a new RecoverOperation that applies to a specific time period with displacement and stage.
+   * Create a new RecoverOperation that applies to a specific time period with stage and induction.
    *
    * @param volumeOperation The operation that calculates the recovery amount.
    * @param yieldOperation The operation that calculates the yield rate.
-   * @param displaceTarget The name of the stream or substance to displace.
    * @param during The time period during which this operation applies.
    * @param stage The recovery stage (EOL or RECHARGE).
+   * @param inductionOperation The operation that calculates the induction rate (Optional.empty() for default).
    */
-  public RecoverOperation(Operation volumeOperation, Operation yieldOperation,
-                         String displaceTarget, ParsedDuring during, RecoveryStage stage) {
+  public RecoverOperation(Operation volumeOperation, Operation yieldOperation, ParsedDuring during, RecoveryStage stage, Optional<Operation> inductionOperation) {
     this.volumeOperation = volumeOperation;
     this.yieldOperation = yieldOperation;
-    this.displaceTarget = Optional.ofNullable(displaceTarget);
     this.duringMaybe = Optional.of(during);
     this.stage = stage;
+    this.inductionOperation = inductionOperation;
   }
 
   /**
@@ -179,11 +179,24 @@ public class RecoverOperation implements Operation {
   public void execute(PushDownMachine machine) {
     // Execute the volume operation to get the recovery amount
     volumeOperation.execute(machine);
-    EngineNumber recoveryAmount = machine.getResult();
+    final EngineNumber recoveryAmount = machine.getResult();
 
     // Execute the yield operation to get the yield rate
     yieldOperation.execute(machine);
-    EngineNumber yieldRate = machine.getResult();
+    final EngineNumber yieldRate = machine.getResult();
+
+    // Execute the induction operation if present
+    EngineNumber inductionRate = null;
+    if (inductionOperation.isPresent()) {
+      inductionOperation.get().execute(machine);
+      inductionRate = machine.getResult();
+      // Validate that the induction value is a percentage (0-100%)
+      double induction = inductionRate.getValue().doubleValue();
+      if (induction < 0 || induction > 100) {
+        throw new IllegalArgumentException("Induction rate must be between 0% and 100%, got: " + induction + "%");
+      }
+      // No need to convert - use the EngineNumber directly with percentage units
+    }
 
     // Build the year matcher
     ParsedDuring parsedDuring = duringMaybe.orElseGet(
@@ -191,12 +204,11 @@ public class RecoverOperation implements Operation {
     );
     YearMatcher yearMatcher = parsedDuring.buildYearMatcher(machine);
 
-    // Call the appropriate recycle method on the engine
+    // Get the engine and set the induction rate
     Engine engine = machine.getEngine();
-    if (displaceTarget.isPresent()) {
-      engine.recycle(recoveryAmount, yieldRate, yearMatcher, displaceTarget.get(), stage);
-    } else {
-      engine.recycle(recoveryAmount, yieldRate, yearMatcher, stage);
-    }
+    engine.setInductionRate(inductionRate, stage);
+
+    // Call the recycle method on the engine
+    engine.recycle(recoveryAmount, yieldRate, yearMatcher, stage);
   }
 }

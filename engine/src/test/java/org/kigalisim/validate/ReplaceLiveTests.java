@@ -46,9 +46,9 @@ public class ReplaceLiveTests {
     assertNotNull(resultA, "Should have result for test/a in year 1");
 
     // Calculation: Original 50 mt - replaced 50% = 25 mt remaining × 10 tCO2e/mt = 250 tCO2e
-    assertEquals(250.0, resultA.getGhgConsumption().getValue().doubleValue(), 0.0001,
+    assertEquals(250.0, resultA.getConsumption().getValue().doubleValue(), 0.0001,
         "Consumption for substance a should be 250 tCO2e");
-    assertEquals("tCO2e", resultA.getGhgConsumption().getUnits(),
+    assertEquals("tCO2e", resultA.getConsumption().getUnits(),
         "Consumption units should be tCO2e");
 
     // Check substance "b" consumption
@@ -56,9 +56,9 @@ public class ReplaceLiveTests {
     assertNotNull(resultB, "Should have result for test/b in year 1");
 
     // Calculation: Original 50 mt + added 25 mt = 75 mt total × 5 tCO2e/mt = 375 tCO2e
-    assertEquals(375.0, resultB.getGhgConsumption().getValue().doubleValue(), 0.0001,
+    assertEquals(375.0, resultB.getConsumption().getValue().doubleValue(), 0.0001,
         "Consumption for substance b should be 375 tCO2e");
-    assertEquals("tCO2e", resultB.getGhgConsumption().getUnits(),
+    assertEquals("tCO2e", resultB.getConsumption().getUnits(),
         "Consumption units should be tCO2e");
   }
 
@@ -84,9 +84,9 @@ public class ReplaceLiveTests {
     assertNotNull(resultA, "Should have result for test/a in year 1");
 
     // Calculation: Original 50 mt - replaced 25 kg = 25 mt remaining × 10 tCO2e/mt = 250 tCO2e
-    assertEquals(250.0, resultA.getGhgConsumption().getValue().doubleValue(), 0.0001,
+    assertEquals(250.0, resultA.getConsumption().getValue().doubleValue(), 0.0001,
         "Consumption for substance a should be 250 tCO2e");
-    assertEquals("tCO2e", resultA.getGhgConsumption().getUnits(),
+    assertEquals("tCO2e", resultA.getConsumption().getUnits(),
         "Consumption units should be tCO2e");
 
     // Check substance "b" consumption
@@ -94,9 +94,9 @@ public class ReplaceLiveTests {
     assertNotNull(resultB, "Should have result for test/b in year 1");
 
     // Calculation: Original 50 mt + added 25 kg = 75 mt total × 5 tCO2e/mt = 375 tCO2e
-    assertEquals(375.0, resultB.getGhgConsumption().getValue().doubleValue(), 0.0001,
+    assertEquals(375.0, resultB.getConsumption().getValue().doubleValue(), 0.0001,
         "Consumption for substance b should be 375 tCO2e");
-    assertEquals("tCO2e", resultB.getGhgConsumption().getUnits(),
+    assertEquals("tCO2e", resultB.getConsumption().getUnits(),
         "Consumption units should be tCO2e");
   }
 
@@ -122,9 +122,9 @@ public class ReplaceLiveTests {
     assertNotNull(resultA, "Should have result for test/a in year 1");
 
     // Calculation: Original 50 mt - replaced 25000 units = 25 mt remaining × 10 tCO2e/mt = 250 tCO2e
-    assertEquals(250.0, resultA.getGhgConsumption().getValue().doubleValue(), 0.0001,
+    assertEquals(250.0, resultA.getConsumption().getValue().doubleValue(), 0.0001,
         "Consumption for substance a should be 250 tCO2e");
-    assertEquals("tCO2e", resultA.getGhgConsumption().getUnits(),
+    assertEquals("tCO2e", resultA.getConsumption().getUnits(),
         "Consumption units should be tCO2e");
 
     // Check substance "b" consumption
@@ -132,9 +132,9 @@ public class ReplaceLiveTests {
     assertNotNull(resultB, "Should have result for test/b in year 1");
 
     // Calculation: Original 50 mt + added 25000 units = 75 mt total × 5 tCO2e/mt = 375 tCO2e
-    assertEquals(375.0, resultB.getGhgConsumption().getValue().doubleValue(), 0.0001,
+    assertEquals(375.0, resultB.getConsumption().getValue().doubleValue(), 0.0001,
         "Consumption for substance b should be 375 tCO2e");
-    assertEquals("tCO2e", resultB.getGhgConsumption().getUnits(),
+    assertEquals("tCO2e", resultB.getConsumption().getUnits(),
         "Consumption units should be tCO2e");
   }
 
@@ -162,13 +162,13 @@ public class ReplaceLiveTests {
 
     // Get year 2030 results (year 6 since simulation starts at 2025)
     int targetYear = 2030;
-    
+
     // BAU results for 2030
-    EngineResult bauHfc134a = LiveTestsUtil.getResult(bauResultsList.stream(), targetYear, 
+    EngineResult bauHfc134a = LiveTestsUtil.getResult(bauResultsList.stream(), targetYear,
         "Domestic Refrigeration", "HFC-134a");
     EngineResult bauR600a = LiveTestsUtil.getResult(bauResultsList.stream(), targetYear,
         "Domestic Refrigeration", "R-600a");
-    
+
     // Replacement results for 2030
     EngineResult replacementHfc134a = LiveTestsUtil.getResult(replacementResultsList.stream(), targetYear,
         "Domestic Refrigeration", "HFC-134a");
@@ -184,12 +184,12 @@ public class ReplaceLiveTests {
     double bauHfc134aSales = bauHfc134a.getDomestic().getValue().doubleValue();
     double bauR600aSales = bauR600a.getDomestic().getValue().doubleValue();
     double bauTotalSales = bauHfc134aSales + bauR600aSales;
-    
+
     double replacementHfc134aSales = replacementHfc134a.getDomestic().getValue().doubleValue();
     double replacementR600aSales = replacementR600a.getDomestic().getValue().doubleValue();
     double replacementTotalSales = replacementHfc134aSales + replacementR600aSales;
-    
-    
+
+
     assertEquals(bauTotalSales, replacementTotalSales, 0.01,
         "Total kg of sales should be the same between BAU and Replacement scenarios at 2030");
 
@@ -197,12 +197,12 @@ public class ReplaceLiveTests {
     double bauHfc134aPopulation = bauHfc134a.getPopulation().getValue().doubleValue();
     double bauR600aPopulation = bauR600a.getPopulation().getValue().doubleValue();
     double bauTotalPopulation = bauHfc134aPopulation + bauR600aPopulation;
-    
+
     double replacementHfc134aPopulation = replacementHfc134a.getPopulation().getValue().doubleValue();
     double replacementR600aPopulation = replacementR600a.getPopulation().getValue().doubleValue();
     double replacementTotalPopulation = replacementHfc134aPopulation + replacementR600aPopulation;
-    
-    
+
+
     assertEquals(bauTotalPopulation, replacementTotalPopulation, 1.0,
         "Total equipment populations should be the same between BAU and Replacement scenarios at 2030");
 
@@ -212,12 +212,12 @@ public class ReplaceLiveTests {
     double bauHfc134aRecharge = bauHfc134a.getRechargeEmissions().getValue().doubleValue();
     double bauR600aRecharge = bauR600a.getRechargeEmissions().getValue().doubleValue();
     double bauTotalRechargeEmissions = bauHfc134aRecharge + bauR600aRecharge;
-    
+
     double replacementHfc134aRecharge = replacementHfc134a.getRechargeEmissions().getValue().doubleValue();
     double replacementR600aRecharge = replacementR600a.getRechargeEmissions().getValue().doubleValue();
     double replacementTotalRechargeEmissions = replacementHfc134aRecharge + replacementR600aRecharge;
-    
-    
+
+
     assertTrue(bauTotalRechargeEmissions > replacementTotalRechargeEmissions,
         String.format("BAU recharge emissions (%.2f) should be higher than Replacement recharge emissions (%.2f), not lower",
             bauTotalRechargeEmissions, replacementTotalRechargeEmissions));

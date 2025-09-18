@@ -88,10 +88,10 @@
             </tr>
             <tr>
               <td><strong>Prior Equipment (units)</strong></td>
-              <td>1,000,000</td>
-              <td>100,000</td>
-              <td>40,000</td>
-              <td>20,000</td>
+              <td>1,000,000.0</td>
+              <td>100,000.0</td>
+              <td>40,000.0</td>
+              <td>20,000.0</td>
             </tr>
             <tr>
               <td><strong>Domestic Manufacture (mt/yr)</strong></td>
@@ -104,6 +104,8 @@
         </table>
 
         <p>We will add in socioeconomic projections soon but, for now, consumption volumes will continue unchanged into the future.</p>
+        
+        <p><strong>Note</strong>: Kigali Sim requires DecimalFormat number formatting (comma for thousands separator, period for decimal point, e.g., <code>123,456.7</code> or <code>40,000.0</code>). If you use alternative formatting (e.g., <code>123.456,7</code>), Kigali Sim will display a message with a suggestion for the equivalent supported format. Both formatting conventions are internationally valid, but Kigali Sim uses the DecimalFormat format for consistency with the technologies it leverages. This means <code>40,000</code> is interpreted as forty thousand.</p>
       </section>
 
       <section id="interpreting-multi-application-results">

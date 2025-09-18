@@ -1,0 +1,29 @@
+start default
+  define application "TestApp"
+    uses substance "TestSub"
+      enable domestic
+      enable import
+      initial charge with 1 kg / unit for domestic
+      initial charge with 1 kg / unit for import
+      equals 1 tCO2e / kg
+      set domestic to 50 kg
+      set import to 50 kg
+      retire 10 % each year
+      recharge 10 % each year with 0.8 kg / unit
+    end substance
+  end application
+end default
+
+start policy "FullInductionRecalc"
+  modify application "TestApp"
+    modify substance "TestSub"
+      recover 20 % with 90 % reuse with 100 % induction during years 2 to 5
+      change sales by +0 % during year 3
+    end substance
+  end application
+end policy
+
+start simulations
+  simulate "BAU" from years 1 to 5
+  simulate "Recycling" using "FullInductionRecalc" from years 1 to 5
+end simulations

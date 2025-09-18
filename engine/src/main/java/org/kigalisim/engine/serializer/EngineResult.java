@@ -150,11 +150,21 @@ public class EngineResult {
   }
 
   /**
-   * Get the total consumption without recycling.
+   * Get the total consumption. By default, excludes recycling consumption to measure virgin material consumption.
    *
+   * @return The virgin material consumption value in tCO2e or similar
+   */
+  public EngineNumber getConsumption() {
+    return getConsumption(false);
+  }
+
+  /**
+   * Get the total consumption with optional recycling inclusion.
+   *
+   * @param includeRecycling If true, includes recycling consumption in the total
    * @return The consumption value in tCO2e or similar
    */
-  public EngineNumber getConsumptionNoRecycle() {
+  public EngineNumber getConsumption(boolean includeRecycling) {
     String domesticUnits = domesticConsumptionValue.getUnits();
     String importUnits = importConsumptionValue.getUnits();
 
@@ -166,6 +176,16 @@ public class EngineResult {
     BigDecimal domesticConsumptionRaw = domesticConsumptionValue.getValue();
     BigDecimal importConsumptionRaw = importConsumptionValue.getValue();
     BigDecimal totalValue = domesticConsumptionRaw.add(importConsumptionRaw);
+
+    if (includeRecycling) {
+      String recycleUnits = recycleConsumptionValue.getUnits();
+      if (!domesticUnits.equals(recycleUnits)) {
+        throw new IllegalStateException(
+            "Could not add incompatible units for total consumption with recycling.");
+      }
+      totalValue = totalValue.add(recycleConsumptionValue.getValue());
+    }
+
     return new EngineNumber(totalValue, domesticUnits);
   }
 
@@ -254,35 +274,6 @@ public class EngineResult {
     return energyConsumption;
   }
 
-  /**
-   * Get the total greenhouse gas consumption combining all consumption types.
-   *
-   * <p>This method combines domestic consumption, import consumption, and recycle
-   * consumption to provide the total GHG consumption value, matching the behavior
-   * of the JavaScript implementation.</p>
-   *
-   * @return The total GHG consumption value in tCO2e or equivalent
-   */
-  public EngineNumber getGhgConsumption() {
-    // Get consumption without recycle (domestic + import)
-    EngineNumber noRecycleConsumption = getConsumptionNoRecycle();
-
-    // Check unit compatibility
-    String noRecycleUnits = noRecycleConsumption.getUnits();
-    String recycleUnits = recycleConsumptionValue.getUnits();
-
-    if (!noRecycleUnits.equals(recycleUnits)) {
-      throw new IllegalStateException(
-          "Could not add incompatible units for total GHG consumption.");
-    }
-
-    // Combine with recycle consumption
-    BigDecimal noRecycleValue = noRecycleConsumption.getValue();
-    BigDecimal recycleValue = recycleConsumptionValue.getValue();
-    BigDecimal totalValue = noRecycleValue.add(recycleValue);
-
-    return new EngineNumber(totalValue, noRecycleUnits);
-  }
 
   /**
    * Get the export value.

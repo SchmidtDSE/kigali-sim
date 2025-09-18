@@ -15,6 +15,8 @@ import org.junit.jupiter.api.Test;
 import org.kigalisim.engine.Engine;
 import org.kigalisim.engine.SingleThreadEngine;
 import org.kigalisim.engine.number.EngineNumber;
+import org.kigalisim.engine.recalc.StreamUpdate;
+import org.kigalisim.engine.recalc.StreamUpdateBuilder;
 import org.kigalisim.engine.state.YearMatcher;
 import org.kigalisim.lang.machine.PushDownMachine;
 import org.kigalisim.lang.machine.SingleThreadPushDownMachine;
@@ -88,7 +90,13 @@ public class ReplaceOperationTest {
     // Set initial value
     engine.enable(STREAM_NAME, Optional.empty());
     EngineNumber initialNumber = new EngineNumber(BigDecimal.valueOf(100), "kg");
-    engine.setStream(STREAM_NAME, initialNumber, Optional.ofNullable(allYearsMatcher));
+    StreamUpdate update = new StreamUpdateBuilder()
+        .setName(STREAM_NAME)
+        .setValue(initialNumber)
+        .setYearMatcher(Optional.ofNullable(allYearsMatcher))
+        .inferSubtractRecycling()
+        .build();
+    engine.executeStreamUpdate(update);
 
     // Replace some of the substance
     EngineNumber amount = new EngineNumber(BigDecimal.valueOf(42), "kg");
@@ -111,7 +119,13 @@ public class ReplaceOperationTest {
     // Set initial value
     engine.enable(STREAM_NAME, Optional.empty());
     EngineNumber initialNumber = new EngineNumber(BigDecimal.valueOf(100), "kg");
-    engine.setStream(STREAM_NAME, initialNumber, Optional.ofNullable(allYearsMatcher));
+    StreamUpdate update = new StreamUpdateBuilder()
+        .setName(STREAM_NAME)
+        .setValue(initialNumber)
+        .setYearMatcher(Optional.ofNullable(allYearsMatcher))
+        .inferSubtractRecycling()
+        .build();
+    engine.executeStreamUpdate(update);
 
     // Replace some of the substance with a during that applies to the current year (2020)
     EngineNumber amount = new EngineNumber(BigDecimal.valueOf(42), "kg");
@@ -138,7 +152,13 @@ public class ReplaceOperationTest {
     // Set initial value
     engine.enable(STREAM_NAME, Optional.empty());
     EngineNumber initialNumber = new EngineNumber(BigDecimal.valueOf(100), "kg");
-    engine.setStream(STREAM_NAME, initialNumber, Optional.ofNullable(allYearsMatcher));
+    StreamUpdate update = new StreamUpdateBuilder()
+        .setName(STREAM_NAME)
+        .setValue(initialNumber)
+        .setYearMatcher(Optional.ofNullable(allYearsMatcher))
+        .inferSubtractRecycling()
+        .build();
+    engine.executeStreamUpdate(update);
 
     // Replace some of the substance with a during that applies to a future year (2021)
     EngineNumber amount = new EngineNumber(BigDecimal.valueOf(42), "kg");
@@ -165,7 +185,13 @@ public class ReplaceOperationTest {
     // Set initial value
     engine.enable(STREAM_NAME, Optional.empty());
     EngineNumber initialNumber = new EngineNumber(BigDecimal.valueOf(100), "kg");
-    engine.setStream(STREAM_NAME, initialNumber, Optional.ofNullable(allYearsMatcher));
+    StreamUpdate update = new StreamUpdateBuilder()
+        .setName(STREAM_NAME)
+        .setValue(initialNumber)
+        .setYearMatcher(Optional.ofNullable(allYearsMatcher))
+        .inferSubtractRecycling()
+        .build();
+    engine.executeStreamUpdate(update);
 
     // Replace some of the substance with a complex operation
     Operation left = new PreCalculatedOperation(new EngineNumber(BigDecimal.valueOf(30), "kg"));

@@ -14,14 +14,14 @@ import java.util.Optional;
 import org.kigalisim.engine.Engine;
 import org.kigalisim.engine.number.EngineNumber;
 import org.kigalisim.engine.number.UnitConverter;
+import org.kigalisim.engine.recalc.StreamUpdate;
+import org.kigalisim.engine.recalc.StreamUpdateBuilder;
 import org.kigalisim.engine.state.OverridingConverterStateGetter;
 import org.kigalisim.engine.state.StateGetter;
 import org.kigalisim.engine.state.UseKey;
 import org.kigalisim.engine.support.DivisionHelper;
 import org.kigalisim.engine.support.ExceptionsGenerator;
 import org.kigalisim.engine.support.RechargeVolumeCalculator;
-import org.kigalisim.engine.support.StreamUpdate;
-import org.kigalisim.engine.support.StreamUpdateBuilder;
 
 /**
  * Strategy for recalculating population changes.
@@ -40,7 +40,6 @@ public class PopulationChangeRecalcStrategy implements RecalcStrategy {
   public PopulationChangeRecalcStrategy(Optional<UseKey> scope, Optional<Boolean> useExplicitRecharge) {
     this.scope = scope;
     this.useExplicitRecharge = useExplicitRecharge;
-
   }
 
   @Override
@@ -63,7 +62,7 @@ public class PopulationChangeRecalcStrategy implements RecalcStrategy {
     EngineNumber priorPopulation = unitConverter.convert(priorPopulationRaw, "units");
     stateGetter.setPopulation(priorPopulation);
 
-    // Get substance sales
+    // Get substance sales (includes domestic + import + recycle)
     EngineNumber substanceSalesRaw = target.getStream("sales", Optional.of(scopeEffective), Optional.empty());
     EngineNumber substanceSales = unitConverter.convert(substanceSalesRaw, "kg");
 

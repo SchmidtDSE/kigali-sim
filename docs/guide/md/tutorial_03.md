@@ -17,10 +17,12 @@ Use the same procedures from Tutorial 2, let's add additional applications and s
 | **Initial Charge (kg/unit)**     | 0.15                   | 0.07                   | 0.85        | 1.00        |
 | **Retirement (%/year)**          | 5%                     | 5%                     | 7%          | 7%          |
 | **Recharge (% @ kg/unit)**       | 10% @ 0.15             | 10% @ 0.07             | 15% @ 0.85  | 15% @ 1.00  |
-| **Prior Equipment (units)**      | 1,000,000              | 100,000                | 40,000      | 20,000      |
+| **Prior Equipment (units)**      | 1,000,000.0            | 100,000.0              | 40,000.0    | 20,000.0    |
 | **Domestic Manufacture (mt/yr)** | 25                     | 2                      | 15          | 5           |
 
 We will add in socioeconomic projections soon but, for now, consumption volumes will continue unchanged into the future.
+
+**Note**: Kigali Sim requires DecimalFormat number formatting (comma for thousands separator, period for decimal point, e.g., `123,456.7` or `40,000.0`). If you use alternative formatting (e.g., `123.456,7`), Kigali Sim will display a message with a suggestion for the equivalent supported format. Both formatting conventions are internationally valid, but Kigali Sim uses the DecimalFormat format for consistency with the technologies it leverages. This means `40,000` is interpreted as forty thousand.
 
 ## Interpreting Multi-Application Results
 

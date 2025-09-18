@@ -96,7 +96,7 @@ start policy "Domestic Recycling"
   modify application "Domestic Refrigeration"
   
     modify substance "HFC-134a"
-      recover 20 % with 90 % reuse during years 2027 to onwards
+      recover 20 % with 90 % reuse with 100 % induction during years 2027 to onwards
     end substance
   
   end application

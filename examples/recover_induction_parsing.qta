@@ -1,0 +1,13 @@
+start default
+  define application "test"
+    uses substance "test"
+      enable domestic
+      set domestic to 100 kg
+      recover 50 % with 90 % reuse with 25 % induction during year 2
+    end substance
+  end application
+end default
+
+start simulations
+  simulate "result" using "default" from years 1 to 2
+end simulations
