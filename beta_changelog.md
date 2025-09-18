@@ -14,9 +14,25 @@ Finally, we want to again express our gratitude for your feedback and time.
 
 The following changes have been adopted and released.
 
+### Induced demand
+
+**Status**: Released September 18, 2025
+
+**Classification**: Clarificatino
+
+Allow the user to directly control induced demand from recycling but suggesting 100% by default as alternatives require very careful modeling.
+
+### Workshop tweaks
+
+**Status**: Released September 18, 2025
+
+**Classification**: Feature
+
+Various small tweaks from workshops including the duplicate button and improved error messages for alternative number formats like 1.000.000,0 (instead of 1,000,000.0).
+
 ### Clarify inferred stream for change in sales
 
-**Status**: Released September 10, 2025
+**Status**: Released September 10 (preview) and September 18 (all users), 2025
 
 **Classification**: Bug
 
