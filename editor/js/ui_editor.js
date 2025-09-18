@@ -337,7 +337,11 @@ function validateNumericInputs(dialog, dialogType) {
     // Check for ambiguous number formats
     const isAmbiguous = numberParser.isAmbiguous(value);
 
-    if (isLikelyInvalid || isAmbiguous) {
+    // Check if the number fails to parse (e.g., European format)
+    const parseResult = numberParser.parseFlexibleNumber(value);
+    const isParseError = !parseResult.isSuccess();
+
+    if (isLikelyInvalid || isAmbiguous || isParseError) {
       // Get field description from aria-label
       const fieldDescription = input.getAttribute("aria-label") || "Unknown field";
 
@@ -347,7 +351,18 @@ function validateNumericInputs(dialog, dialogType) {
       if (isAmbiguous) {
         itemDescription = `${fieldDescription} (ambiguous number format)`;
         suggestion = numberParser.getDisambiguationSuggestion(value);
+      } else if (isParseError) {
+        const errorMessage = parseResult.getError();
+        // Extract suggestion from error message if it contains "Please use:"
+        if (errorMessage.includes("Please use:")) {
+          const match = errorMessage.match(/Please use: '([^']+)'/);
+          if (match) {
+            suggestion = `Use '${match[1]}' instead (comma for thousands, period for decimal)`;
+          }
+        }
+        itemDescription = `${fieldDescription} (unsupported number format)`;
       }
+
       potentiallyInvalid.push({
         element: input,
         value: value,
