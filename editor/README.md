@@ -24,7 +24,7 @@ The editor provides an interactive web interface for creating simulations, runni
 
 ```bash
 # Install Node.js dependencies
-npm install
+pnpm install
 
 # Install frontend dependencies
 bash ./support/install_deps.sh
@@ -37,11 +37,11 @@ bash ./support/make.sh
 
 ```bash
 # Run unit tests and integration tests
-npx grunt
+pnpm exec grunt
 
 # Lint JavaScript code
-npx eslint ./js/*.js
-npx eslint ./test/*.js
+pnpm exec eslint ./js/*.js
+pnpm exec eslint ./test/*.js
 ```
 
 ### Local Development

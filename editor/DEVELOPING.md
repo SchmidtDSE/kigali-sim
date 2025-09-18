@@ -26,7 +26,7 @@ kigali-sim/
 1. **Install dependencies**:
    ```bash
    cd editor
-   npm install
+   pnpm install
    bash ./support/install_deps.sh
    ```
 
@@ -49,19 +49,19 @@ Run all validation commands from the `editor/` directory:
 #### Linting
 ```bash
 # Lint production code
-npx eslint ./js/*.js
+pnpm exec eslint ./js/*.js
 
 # Lint test code
-npx eslint ./test/*.js
+pnpm exec eslint ./test/*.js
 ```
 
 #### Testing
 ```bash
 # Run all tests (unit + integration)
-npx grunt
+pnpm exec grunt
 
 # Run specific test suites
-npx grunt qunit  # Unit tests only
+pnpm exec grunt qunit  # Unit tests only
 ```
 
 ### Java Engine Validation
@@ -89,9 +89,9 @@ To run all checks before committing:
 ```bash
 # From editor directory
 cd editor
-npx eslint ./js/*.js
-npx eslint ./test/*.js
-npx grunt
+pnpm exec eslint ./js/*.js
+pnpm exec eslint ./test/*.js
+pnpm exec grunt
 
 # From engine directory (if working on Java)
 cd ../engine
@@ -154,7 +154,7 @@ cd ../engine
 
 If `make.sh` fails:
 1. Check Java is installed (for ANTLR)
-2. Verify npm dependencies are installed
+2. Verify pnpm dependencies are installed
 3. Check for syntax errors in grammar files
 
 ### Test Failures
