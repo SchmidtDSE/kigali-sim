@@ -64,17 +64,17 @@ function buildNumberParseUtilTests() {
 
       assert.ok(!result.isSuccess(), "European format 1.000.000,0 should fail");
       assert.ok(result.getError().includes("Unsupported number format"),
-                "Should detect as unsupported number format");
+        "Should detect as unsupported number format");
       assert.ok(result.getError().includes("1.000.000,0"),
-                "Error should mention the original input");
+        "Error should mention the original input");
       assert.ok(result.getError().includes("1,000,000.0"),
-                "Should suggest UK equivalent 1,000,000.0");
+        "Should suggest UK equivalent 1,000,000.0");
       assert.ok(result.getError().includes("Kigali Sim requires comma for thousands separator and period for decimal point"),
-                "Should explain the required format");
+        "Should explain the required format");
 
       // Also verify the error is NOT considered ambiguous
       assert.notOk(numberParser.isAmbiguous("1.000.000,0"),
-                   "European format should not be considered ambiguous, but an error");
+        "European format should not be considered ambiguous, but an error");
     });
 
     QUnit.test("parses numbers without separators", function (assert) {
