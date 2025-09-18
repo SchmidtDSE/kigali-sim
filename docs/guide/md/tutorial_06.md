@@ -31,9 +31,9 @@ Add both a Recycling simulation with just Domestic Recycling selected. Then, add
 
 Piecing together what is going on with multiple policies can take a little work but let's dig in. For this, go ahead and enable **Attribute initial charge to importer** just to make it easier to reason about how volumes are shifting.
 
-First, using the **Consumption** radio button, recycling certainly cuts down on overall virgin substance, either imported or domestic. This is unlike the caps we introduced previously which simply move that consumption between substances. Even so, the combined policies encounter a small snag: moving more substance to R-600a means there's less HFC-134a to recycle late in the simulation. In a later tutorial, we will address this by adding a R-600a recycling program!
+Next, the **Emissions** radio button tells an interesting story where recycling captures some of those emissions. Also, this is where the combination of policies may be effective. Once we add in the cap as well, the two complement each other to achieve a higher impact than either on their own.
 
-Next, the **Emissions** radio button tells a more interesting story where recycling from servicing fails to keep up with demand so, eventually, BAU and the recycling scenario trend together. This is where the combination of policies may be effective. Once we add in the cap as well, the two complement each other to achieve a higher impact than either on their own.
+Note that we said 100% induced demand. This means that virgin consumption does not on its own decrease because recycling is present. This is common in recycling programs where recycling does not 1:1 offset virgin production. Determining the correct rate of displacement (100% - induced demand) can require a bit of work. Induced demand is likely neither 0% or 100% in practice. However, this ambiguity goes away when we add the cap policy. When both are employed together, we see a stronger response in terms of emissions.
 
 ## Conclusion
 
