@@ -1,5 +1,5 @@
 /**
- * Class responsible for managing / tracking substance streams.
+ * Manages the state for a single scenario within a single trial.
  *
  * <p>State management object for storage and retrieval of substance data, stream
  * values, and associated parameterizations.</p>
@@ -20,16 +20,16 @@ import org.kigalisim.engine.number.EngineNumber;
 import org.kigalisim.engine.number.UnitConverter;
 import org.kigalisim.engine.recalc.SalesStreamDistribution;
 import org.kigalisim.engine.recalc.SalesStreamDistributionBuilder;
-import org.kigalisim.engine.support.CalculatedStream;
+import org.kigalisim.engine.state.SimulationStateUpdate;
 import org.kigalisim.lang.operation.RecoverOperation.RecoveryStage;
 
 /**
- * Class responsible for managing / tracking substance streams.
+ * Manages the state for a single scenario within a single trial.
  *
  * <p>State management object for storage and retrieval of substance data, stream
  * values, and associated parameterizations.</p>
  */
-public class StreamKeeper {
+public class SimulationState {
 
   private static final boolean CHECK_NAN_STATE = true;
 
@@ -37,14 +37,15 @@ public class StreamKeeper {
   private final Map<String, EngineNumber> streams;
   private final OverridingConverterStateGetter stateGetter;
   private final UnitConverter unitConverter;
+  private int currentYear;
 
   /**
-   * Create a new StreamKeeper instance.
+   * Create a new SimulationState instance.
    *
    * @param stateGetter Structure to retrieve state information
    * @param unitConverter Converter for handling unit transformations
    */
-  public StreamKeeper(OverridingConverterStateGetter stateGetter, UnitConverter unitConverter) {
+  public SimulationState(OverridingConverterStateGetter stateGetter, UnitConverter unitConverter) {
     this.substances = new HashMap<>();
     this.streams = new HashMap<>();
     this.stateGetter = stateGetter;
@@ -116,8 +117,8 @@ public class StreamKeeper {
     streams.put(recycleEolKey, new EngineNumber(BigDecimal.ZERO, "kg"));
     String inductionEolKey = getKey(useKey, "inductionEol");
     streams.put(inductionEolKey, new EngineNumber(BigDecimal.ZERO, "kg"));
-    String inductionServicingKey = getKey(useKey, "inductionServicing");
-    streams.put(inductionServicingKey, new EngineNumber(BigDecimal.ZERO, "kg"));
+    String inductionRechargeKey = getKey(useKey, "inductionRecharge");
+    streams.put(inductionRechargeKey, new EngineNumber(BigDecimal.ZERO, "kg"));
 
     // Consumption: count, conversion
     String consumptionKey = getKey(useKey, "consumption");
@@ -148,25 +149,25 @@ public class StreamKeeper {
 
 
   /**
-   * Set a stream using pre-calculated stream data.
+   * Set a stream using pre-computed stream data.
    *
    * <p>This method replaces setStream, setOutcomeStream, and setSalesStream
-   * with a unified interface that accepts pre-calculated stream values.
-   * The CalculatedStream object encapsulates all necessary parameters
+   * with a unified interface that accepts pre-computed stream values.
+   * The SimulationStateUpdate object encapsulates all necessary parameters
    * including distribution logic and recycling behavior.</p>
    *
    * <p>This method provides clear architectural separation between calculation
-   * instructions (StreamUpdate) and pre-computed results (CalculatedStream).</p>
+   * instructions (StreamUpdate) and pre-computed results (SimulationStateUpdate).</p>
    *
-   * @param calculatedStream Pre-calculated stream data with all parameters
+   * @param stateUpdate Pre-computed stream data with all parameters
    */
-  public void setStream(CalculatedStream calculatedStream) {
-    UseKey useKey = calculatedStream.getUseKey();
-    String name = calculatedStream.getName();
-    EngineNumber value = calculatedStream.getValue();
+  public void update(SimulationStateUpdate stateUpdate) {
+    UseKey useKey = stateUpdate.getUseKey();
+    String name = stateUpdate.getName();
+    EngineNumber value = stateUpdate.getValue();
 
     String key = getKey(useKey);
-    ensureSubstanceOrThrow(key, "setStream(CalculatedStream)");
+    ensureSubstanceOrThrow(key, "update(SimulationStateUpdate)");
     ensureStreamKnown(name);
 
     // Check if stream needs to be enabled before setting
@@ -184,8 +185,8 @@ public class StreamKeeper {
     }
 
     // Extract routing parameters when needed
-    final boolean subtractRecycling = calculatedStream.getSubtractRecycling();
-    final Optional<SalesStreamDistribution> distribution = calculatedStream.getDistribution();
+    final boolean subtractRecycling = stateUpdate.getSubtractRecycling();
+    final Optional<SalesStreamDistribution> distribution = stateUpdate.getDistribution();
 
     // Route to appropriate internal method based on stream characteristics and subtractRecycling
     if (!subtractRecycling && ("domestic".equals(name) || "import".equals(name))) {
@@ -354,7 +355,7 @@ public class StreamKeeper {
    * @param stage The recovery stage (EOL or RECHARGE)
    * @param value The induction value in kg
    */
-  public void setInductionStream(UseKey useKey, RecoveryStage stage, EngineNumber value) {
+  private void setInductionStream(UseKey useKey, RecoveryStage stage, EngineNumber value) {
     String streamName = getInductionStreamName(stage);
     String key = getKey(useKey);
     ensureSubstanceOrThrow(key, "setInductionStream");
@@ -371,12 +372,12 @@ public class StreamKeeper {
    */
   public EngineNumber getTotalInductionStream(UseKey useKey) {
     EngineNumber inductionEol = getInductionStream(useKey, RecoveryStage.EOL);
-    EngineNumber inductionServicing = getInductionStream(useKey, RecoveryStage.RECHARGE);
+    EngineNumber inductionRecharge = getInductionStream(useKey, RecoveryStage.RECHARGE);
 
     EngineNumber eolConverted = unitConverter.convert(inductionEol, "kg");
-    EngineNumber servicingConverted = unitConverter.convert(inductionServicing, "kg");
+    EngineNumber rechargeConverted = unitConverter.convert(inductionRecharge, "kg");
 
-    BigDecimal total = eolConverted.getValue().add(servicingConverted.getValue());
+    BigDecimal total = eolConverted.getValue().add(rechargeConverted.getValue());
     return new EngineNumber(total, "kg");
   }
 
@@ -389,7 +390,7 @@ public class StreamKeeper {
   private String getInductionStreamName(RecoveryStage stage) {
     return switch (stage) {
       case EOL -> "inductionEol";
-      case RECHARGE -> "inductionServicing";
+      case RECHARGE -> "inductionRecharge";
     };
   }
 
@@ -461,9 +462,29 @@ public class StreamKeeper {
   }
 
   /**
+   * Get the current year for this simulation state.
+   *
+   * @return The current year
+   */
+  public int getCurrentYear() {
+    return currentYear;
+  }
+
+  /**
+   * Set the current year for this simulation state.
+   *
+   * @param year The current year
+   */
+  public void setCurrentYear(int year) {
+    this.currentYear = year;
+  }
+
+  /**
    * Increment the year, updating populations and resetting internal params.
    */
   public void incrementYear() {
+    // Increment the internal year counter
+    currentYear += 1;
     // Move population
     for (String key : substances.keySet()) {
       String[] keyPieces = key.split("\t");
@@ -498,7 +519,7 @@ public class StreamKeeper {
       setSimpleStream(useKey, "recycleEol", new EngineNumber(BigDecimal.ZERO, "kg"));
       // Reset induction streams at year boundary to prevent cross-year accumulation
       setSimpleStream(useKey, "inductionEol", new EngineNumber(BigDecimal.ZERO, "kg"));
-      setSimpleStream(useKey, "inductionServicing", new EngineNumber(BigDecimal.ZERO, "kg"));
+      setSimpleStream(useKey, "inductionRecharge", new EngineNumber(BigDecimal.ZERO, "kg"));
     }
 
   }

@@ -71,7 +71,7 @@ public class EnableOperationTest {
     EnableOperation operation = new EnableOperation("domestic");
     operation.execute(machine);
 
-    // The stream should be enabled now (though we can't directly test this without access to StreamKeeper)
+    // The stream should be enabled now (though we can't directly test this without access to SimulationState)
     // We can verify by testing that operations requiring enabled streams work
     assertTrue(true, "EnableOperation should execute without error");
   }

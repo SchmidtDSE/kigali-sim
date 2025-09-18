@@ -13,8 +13,8 @@ import java.util.Optional;
 import org.kigalisim.engine.number.EngineNumber;
 import org.kigalisim.engine.number.UnitConverter;
 import org.kigalisim.engine.state.OverridingConverterStateGetter;
+import org.kigalisim.engine.state.SimulationState;
 import org.kigalisim.engine.state.StateGetter;
-import org.kigalisim.engine.state.StreamKeeper;
 import org.kigalisim.engine.state.UseKey;
 
 /**
@@ -27,12 +27,12 @@ public class RechargeVolumeCalculator {
    *
    * @param scope The scope containing application and substance
    * @param stateGetter The state getter for unit conversions
-   * @param streamKeeper The stream keeper for accessing recharge data
+   * @param simulationState The simulation state for accessing recharge data
    * @param engine The engine for getting stream values
    * @return The recharge volume in kg
    */
   public static EngineNumber calculateRechargeVolume(UseKey scope, StateGetter stateGetter,
-                                                     StreamKeeper streamKeeper, org.kigalisim.engine.Engine engine) {
+                                                     SimulationState simulationState, org.kigalisim.engine.Engine engine) {
     OverridingConverterStateGetter overridingStateGetter =
         new OverridingConverterStateGetter(stateGetter);
     UnitConverter unitConverter = new UnitConverter(overridingStateGetter);
@@ -49,7 +49,7 @@ public class RechargeVolumeCalculator {
 
     // Get recharge population
     overridingStateGetter.setPopulation(engine.getStream("priorEquipment"));
-    EngineNumber rechargePopRaw = streamKeeper.getRechargePopulation(scope);
+    EngineNumber rechargePopRaw = simulationState.getRechargePopulation(scope);
     EngineNumber rechargePop = unitConverter.convert(rechargePopRaw, "units");
     overridingStateGetter.clearPopulation();
 
@@ -57,7 +57,7 @@ public class RechargeVolumeCalculator {
     overridingStateGetter.setPopulation(rechargePop);
 
     // Get recharge amount
-    EngineNumber rechargeIntensityRaw = streamKeeper.getRechargeIntensity(scope);
+    EngineNumber rechargeIntensityRaw = simulationState.getRechargeIntensity(scope);
     EngineNumber rechargeVolume = unitConverter.convert(rechargeIntensityRaw, "kg");
 
     // Return to prior population

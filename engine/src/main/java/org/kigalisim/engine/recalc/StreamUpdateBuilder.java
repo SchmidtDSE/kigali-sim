@@ -1,10 +1,11 @@
-package org.kigalisim.engine.support;
+package org.kigalisim.engine.recalc;
 
 import java.util.Optional;
 import org.kigalisim.engine.number.EngineNumber;
 import org.kigalisim.engine.recalc.SalesStreamDistribution;
 import org.kigalisim.engine.state.UseKey;
 import org.kigalisim.engine.state.YearMatcher;
+import org.kigalisim.engine.support.EngineSupportUtils;
 
 /**
  * Builder for creating StreamUpdate instances.
@@ -156,6 +157,21 @@ public final class StreamUpdateBuilder {
   public StreamUpdateBuilder clearDistribution() {
     this.distribution = Optional.empty();
     return this;
+  }
+
+  /**
+   * Infers the subtractRecycling flag based on stream name and value units.
+   *
+   * @return this builder with subtractRecycling set appropriately
+   * @throws RuntimeException if name or value is null or invalid
+   */
+  public StreamUpdateBuilder inferSubtractRecycling() {
+    if (this.name == null || this.value == null) {
+      throw new RuntimeException("Name and value must be set before calling inferSubtractRecycling");
+    }
+    boolean subtractRecycling = !EngineSupportUtils.isSalesSubstream(this.name)
+        || "units".equals(this.value.getUnits());
+    return setSubtractRecycling(subtractRecycling);
   }
 
   /**

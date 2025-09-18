@@ -7,7 +7,7 @@ import static org.mockito.Mockito.when;
 
 import org.junit.jupiter.api.Test;
 import org.kigalisim.engine.number.EngineNumber;
-import org.kigalisim.engine.state.StreamKeeper;
+import org.kigalisim.engine.state.SimulationState;
 import org.kigalisim.engine.state.UseKey;
 import org.kigalisim.engine.state.YearMatcher;
 
@@ -68,56 +68,56 @@ class EngineSupportUtilsTest {
   @Test
   void testHasUnitBasedSalesSpecificationsWithUnitBasedSales() {
     // Arrange
-    StreamKeeper mockStreamKeeper = mock(StreamKeeper.class);
+    SimulationState mockSimulationState = mock(SimulationState.class);
     UseKey mockScope = mock(UseKey.class);
     EngineNumber mockEngineNumber = mock(EngineNumber.class);
 
-    when(mockStreamKeeper.hasLastSpecifiedValue(mockScope, "sales")).thenReturn(true);
-    when(mockStreamKeeper.getLastSpecifiedValue(mockScope, "sales")).thenReturn(mockEngineNumber);
+    when(mockSimulationState.hasLastSpecifiedValue(mockScope, "sales")).thenReturn(true);
+    when(mockSimulationState.getLastSpecifiedValue(mockScope, "sales")).thenReturn(mockEngineNumber);
     when(mockEngineNumber.hasEquipmentUnits()).thenReturn(true);
 
     // Act & Assert
-    assertTrue(EngineSupportUtils.hasUnitBasedSalesSpecifications(mockStreamKeeper, mockScope));
+    assertTrue(EngineSupportUtils.hasUnitBasedSalesSpecifications(mockSimulationState, mockScope));
   }
 
   @Test
   void testHasUnitBasedSalesSpecificationsWithVolumeBasedSales() {
     // Arrange
-    StreamKeeper mockStreamKeeper = mock(StreamKeeper.class);
+    SimulationState mockSimulationState = mock(SimulationState.class);
     UseKey mockScope = mock(UseKey.class);
     EngineNumber mockEngineNumber = mock(EngineNumber.class);
 
-    when(mockStreamKeeper.hasLastSpecifiedValue(mockScope, "sales")).thenReturn(true);
-    when(mockStreamKeeper.getLastSpecifiedValue(mockScope, "sales")).thenReturn(mockEngineNumber);
+    when(mockSimulationState.hasLastSpecifiedValue(mockScope, "sales")).thenReturn(true);
+    when(mockSimulationState.getLastSpecifiedValue(mockScope, "sales")).thenReturn(mockEngineNumber);
     when(mockEngineNumber.hasEquipmentUnits()).thenReturn(false);
 
     // Act & Assert
-    assertFalse(EngineSupportUtils.hasUnitBasedSalesSpecifications(mockStreamKeeper, mockScope));
+    assertFalse(EngineSupportUtils.hasUnitBasedSalesSpecifications(mockSimulationState, mockScope));
   }
 
   @Test
   void testHasUnitBasedSalesSpecificationsWithNoLastSpecifiedValue() {
     // Arrange
-    StreamKeeper mockStreamKeeper = mock(StreamKeeper.class);
+    SimulationState mockSimulationState = mock(SimulationState.class);
     UseKey mockScope = mock(UseKey.class);
 
-    when(mockStreamKeeper.hasLastSpecifiedValue(mockScope, "sales")).thenReturn(false);
+    when(mockSimulationState.hasLastSpecifiedValue(mockScope, "sales")).thenReturn(false);
 
     // Act & Assert
-    assertFalse(EngineSupportUtils.hasUnitBasedSalesSpecifications(mockStreamKeeper, mockScope));
+    assertFalse(EngineSupportUtils.hasUnitBasedSalesSpecifications(mockSimulationState, mockScope));
   }
 
   @Test
   void testHasUnitBasedSalesSpecificationsWithNullLastSpecifiedValue() {
     // Arrange
-    StreamKeeper mockStreamKeeper = mock(StreamKeeper.class);
+    SimulationState mockSimulationState = mock(SimulationState.class);
     UseKey mockScope = mock(UseKey.class);
 
-    when(mockStreamKeeper.hasLastSpecifiedValue(mockScope, "sales")).thenReturn(true);
-    when(mockStreamKeeper.getLastSpecifiedValue(mockScope, "sales")).thenReturn(null);
+    when(mockSimulationState.hasLastSpecifiedValue(mockScope, "sales")).thenReturn(true);
+    when(mockSimulationState.getLastSpecifiedValue(mockScope, "sales")).thenReturn(null);
 
     // Act & Assert - should handle null gracefully without NPE
-    assertFalse(EngineSupportUtils.hasUnitBasedSalesSpecifications(mockStreamKeeper, mockScope));
+    assertFalse(EngineSupportUtils.hasUnitBasedSalesSpecifications(mockSimulationState, mockScope));
   }
 
   // Note: testCreateUnitConverterWithTotal removed as it requires access to package-private method

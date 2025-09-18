@@ -16,7 +16,7 @@ import org.junit.jupiter.api.Test;
 import org.kigalisim.engine.number.EngineNumber;
 import org.kigalisim.engine.state.ConverterStateGetter;
 import org.kigalisim.engine.state.Scope;
-import org.kigalisim.engine.state.StreamKeeper;
+import org.kigalisim.engine.state.SimulationState;
 import org.kigalisim.engine.state.UseKey;
 
 /**
@@ -29,7 +29,7 @@ public class RechargeVolumeCalculatorTest {
     // Setup mocks
     UseKey scope = mock(UseKey.class);
     ConverterStateGetter stateGetter = mock(ConverterStateGetter.class);
-    StreamKeeper streamKeeper = mock(StreamKeeper.class);
+    SimulationState simulationState = mock(SimulationState.class);
     org.kigalisim.engine.Engine engine = mock(org.kigalisim.engine.Engine.class);
 
     when(scope.getApplication()).thenReturn("testApp");
@@ -40,14 +40,14 @@ public class RechargeVolumeCalculatorTest {
     EngineNumber rechargeIntensity = new EngineNumber(new BigDecimal("10.0"), "kg");
 
     when(engine.getStream("priorEquipment")).thenReturn(priorEquipment);
-    when(streamKeeper.getRechargePopulation(scope))
+    when(simulationState.getRechargePopulation(scope))
         .thenReturn(rechargePopulation);
-    when(streamKeeper.getRechargeIntensity(scope))
+    when(simulationState.getRechargeIntensity(scope))
         .thenReturn(rechargeIntensity);
 
     // Call the method
     EngineNumber result = RechargeVolumeCalculator.calculateRechargeVolume(
-        scope, stateGetter, streamKeeper, engine);
+        scope, stateGetter, simulationState, engine);
 
     // Verify the result - should be the converted recharge intensity
     assertEquals("kg", result.getUnits());
@@ -58,7 +58,7 @@ public class RechargeVolumeCalculatorTest {
     // Setup mocks
     UseKey scope = mock(UseKey.class);
     ConverterStateGetter stateGetter = mock(ConverterStateGetter.class);
-    StreamKeeper streamKeeper = mock(StreamKeeper.class);
+    SimulationState simulationState = mock(SimulationState.class);
     org.kigalisim.engine.Engine engine = mock(org.kigalisim.engine.Engine.class);
 
     when(scope.getApplication()).thenReturn("testApp");
@@ -69,16 +69,16 @@ public class RechargeVolumeCalculatorTest {
     EngineNumber zeroRechargeIntensity = new EngineNumber(BigDecimal.ZERO, "kg");
 
     when(engine.getStream("priorEquipment")).thenReturn(zeroPriorEquipment);
-    when(streamKeeper.getRechargePopulation(scope))
+    when(simulationState.getRechargePopulation(scope))
         .thenReturn(zeroRechargePopulation);
-    when(streamKeeper.getRechargeIntensity(scope))
+    when(simulationState.getRechargeIntensity(scope))
         .thenReturn(zeroRechargeIntensity);
 
     // Call the method
     EngineNumber result = RechargeVolumeCalculator.calculateRechargeVolume(
         scope,
         stateGetter,
-        streamKeeper,
+        simulationState,
         engine
     );
 
@@ -92,7 +92,7 @@ public class RechargeVolumeCalculatorTest {
     // Setup mocks
     Scope scope = mock(Scope.class);
     ConverterStateGetter stateGetter = mock(ConverterStateGetter.class);
-    StreamKeeper streamKeeper = mock(StreamKeeper.class);
+    SimulationState simulationState = mock(SimulationState.class);
     org.kigalisim.engine.Engine engine = mock(org.kigalisim.engine.Engine.class);
 
     // Return null for application or substance to trigger exception
@@ -101,7 +101,7 @@ public class RechargeVolumeCalculatorTest {
 
     // Should throw RuntimeException from ExceptionsGenerator
     assertThrows(RuntimeException.class, () -> {
-      RechargeVolumeCalculator.calculateRechargeVolume(scope, stateGetter, streamKeeper, engine);
+      RechargeVolumeCalculator.calculateRechargeVolume(scope, stateGetter, simulationState, engine);
     });
   }
 }
