@@ -55,7 +55,7 @@ The project includes a complete dev container configuration for VS Code and GitH
 
 The dev container includes:
 - Eclipse Temurin JDK 21
-- Node.js 18.x with npm
+- Node.js 18.x with pnpm
 - All system dependencies for building and testing
 - Pre-configured VS Code extensions
 - Ports 8000 and 8080 exposed for development servers
@@ -64,7 +64,7 @@ The dev container includes:
 
 #### Prerequisites
 - Java JDK 19 or higher (TeaVM requirement)
-- Node.js 18.x and npm
+- Node.js 18.x and pnpm
 - Python 3.x (for local development server)
 
 #### Installation Steps
@@ -77,7 +77,7 @@ The dev container includes:
 2. **Set up the JavaScript editor:**
    ```bash
    cd editor
-   npm install
+   pnpm install
    bash ./support/install_deps.sh
    ```
 
@@ -117,13 +117,13 @@ From the `editor/` directory:
 
 ```bash
 # Install dependencies (if not already done)
-npm install
+pnpm install
 
 # Build the QubecTalk parser and webpack bundle (recommended)
 bash ./support/make.sh
 
 # Or build webpack directly
-npm run build
+pnpm run build
 ```
 
 ## Running Tests
@@ -146,7 +146,7 @@ From the `editor/` directory:
 
 ```bash
 # Run QUnit tests with Grunt
-npx grunt
+pnpm exec grunt
 
 # The Grunt task will:
 # 1. Copy examples for testing
@@ -181,13 +181,13 @@ From the `editor/` directory:
 
 ```bash
 # Lint production JavaScript code
-npx eslint ./js/*.js
+pnpm exec eslint ./js/*.js
 
 # Lint test JavaScript code
-npx eslint ./test/*.js
+pnpm exec eslint ./test/*.js
 
 # Auto-fix linting issues where possible
-npx eslint ./js/*.js --fix
+pnpm exec eslint ./js/*.js --fix
 ```
 
 ### Code Style Guidelines
@@ -269,9 +269,9 @@ git checkout -b fix/issue-description
 
 #### For JavaScript Editor Development:
 1. Make changes in `editor/js/`
-2. Build: `npm run build` or `bash support/make.sh`
-3. Lint: `npx eslint ./js/*.js`
-4. Test: `npx grunt`
+2. Build: `pnpm run build` or `bash support/make.sh`
+3. Lint: `pnpm exec eslint ./js/*.js`
+4. Test: `pnpm exec grunt`
 
 ### 3. Testing Your Changes
 1. Start local server: `python -m http.server 8000`
@@ -283,7 +283,7 @@ git checkout -b fix/issue-description
 
 Before committing, ensure:
 
-- [ ] All tests pass (`./gradlew test` and `npx grunt`)
+- [ ] All tests pass (`./gradlew test` and `pnpm exec grunt`)
 - [ ] Code is properly formatted
 - [ ] Linting passes with no errors
 - [ ] WASM artifacts are updated if engine changed
@@ -352,8 +352,8 @@ kill -9 <PID>
 ```bash
 # Clean and reinstall dependencies
 cd editor
-rm -rf node_modules package-lock.json
-npm install
+rm -rf node_modules pnpm-lock.yaml
+pnpm install
 bash support/install_deps.sh
 ```
 
