@@ -559,4 +559,69 @@ public class RecycleRecoverVolumeLiveTests {
         String.format("Policy equipment population (%.2f) should equal BAU (%.2f) with 0%% induction due to universal redistribution",
                       policyEquipmentYear5, bauEquipmentYear5));
   }
+
+  /**
+   * Test 0% induction volume-based recycling scenario with change command.
+   * This test validates the specific issue where at 0% induction, virgin production should decrease
+   * (so recycling virgin consumption lower in year 10 than BAU) while overall consumption
+   * (virgin + secondary) and population should stay the same. The issue occurs when a change
+   * command is included - without change this assumption holds, with change it breaks.
+   */
+  @Test
+  public void testZeroInductionVolumeWithChange() throws IOException {
+    // Load and parse QTA file
+    String qtaPath = "../examples/test_0_induction_volume_change.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    // Run both scenarios
+    Stream<EngineResult> bauResults = KigaliSimFacade.runScenario(program, "BAU", progress -> {});
+    List<EngineResult> bauResultsList = bauResults.collect(Collectors.toList());
+
+    Stream<EngineResult> recyclingResults = KigaliSimFacade.runScenario(program, "Recycling", progress -> {});
+    List<EngineResult> recyclingResultsList = recyclingResults.collect(Collectors.toList());
+
+    // Test year 10 specifically where the issue manifests
+    EngineResult bauResult = LiveTestsUtil.getResult(bauResultsList.stream(), 10, "Test", "SubA");
+    EngineResult recyclingResult = LiveTestsUtil.getResult(recyclingResultsList.stream(), 10, "Test", "SubA");
+
+    assertNotNull(bauResult, "Should have BAU result for Test/SubA in year 10");
+    assertNotNull(recyclingResult, "Should have Recycling result for Test/SubA in year 10");
+
+    // Core assertions that should pass but currently fail due to the bug
+
+    // 1. Population should be within 0.1% of each other with 0% induction
+    double bauPopulation = bauResult.getPopulation().getValue().doubleValue();
+    double recyclingPopulation = recyclingResult.getPopulation().getValue().doubleValue();
+    double populationDifference = Math.abs(bauPopulation - recyclingPopulation);
+    double populationTolerancePercent = 0.001; // 0.1%
+    double populationTolerance = bauPopulation * populationTolerancePercent;
+
+    assertTrue(populationDifference <= populationTolerance,
+        String.format("Year 10: Population should be within 0.1%% - BAU: %.2f, Recycling: %.2f, Difference: %.2f, Tolerance: %.2f",
+                     bauPopulation, recyclingPopulation, populationDifference, populationTolerance));
+
+    // 2. Total consumption (domestic + recycling) should be the same with 0% induction
+    double bauDomesticConsumption = bauResult.getDomestic().getValue().doubleValue();
+    double recyclingDomesticConsumption = recyclingResult.getDomestic().getValue().doubleValue();
+    double recyclingRecycleConsumption = recyclingResult.getRecycleConsumption().getValue().doubleValue();
+    double recyclingTotalConsumption = recyclingDomesticConsumption + recyclingRecycleConsumption;
+
+    assertEquals(bauDomesticConsumption, recyclingTotalConsumption, 0.01,
+        String.format("Year 10: Total consumption should be same - BAU domestic: %.2f, Recycling (domestic + recycle): %.2f",
+                     bauDomesticConsumption, recyclingTotalConsumption));
+
+    // 3. Virgin production (domestic) should be lower in recycling scenario
+    assertTrue(recyclingDomesticConsumption < bauDomesticConsumption,
+        String.format("Year 10: Virgin (domestic) consumption should be lower with recycling - BAU: %.2f, Recycling: %.2f",
+                     bauDomesticConsumption, recyclingDomesticConsumption));
+
+    // Also test year 3 to verify recycling is active
+    EngineResult bauResultYear3 = LiveTestsUtil.getResult(bauResultsList.stream(), 3, "Test", "SubA");
+    EngineResult recyclingResultYear3 = LiveTestsUtil.getResult(recyclingResultsList.stream(), 3, "Test", "SubA");
+
+    double recycledAmountYear3 = recyclingResultYear3.getRecycleConsumption().getValue().doubleValue();
+    assertTrue(recycledAmountYear3 > 0,
+        String.format("Year 3: Should have positive recycling amount: %.2f", recycledAmountYear3));
+  }
 }
