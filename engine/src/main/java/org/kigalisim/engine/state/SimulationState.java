@@ -1497,13 +1497,4 @@ public class SimulationState {
     }
   }
 
-  /**
-   * Update lastSpecifiedValue for domestic and import streams after redistribution.
-   *
-   * <p>This method restores the lastSpecifiedValue for domestic and import streams
-   * after redistribution operations have modified their actual values. It ensures
-   * that change commands continue to work from the user's intended baseline progression
-   * rather than using recycling-affected values.</p>
-   */
-
 }
