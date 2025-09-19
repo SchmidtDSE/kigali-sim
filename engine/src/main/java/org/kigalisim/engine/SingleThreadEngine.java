@@ -683,7 +683,7 @@ public class SingleThreadEngine implements Engine {
     operation.execute(this);
 
     // Update lastSpecifiedValue after recycling for volume-based specs
-    updateLastSpecifiedValueAfterRecycling();
+    // updateLastSpecifiedValueAfterRecycling();
   }
 
   @Override

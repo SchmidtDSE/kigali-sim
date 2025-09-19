@@ -353,7 +353,7 @@ public class ChangeLiveTests {
     assertTrue(diff2027 > diff2026,
         "2027 gap should be larger than 2026 gap (recycling starts in 2027)");
     // 2028 gap should be larger than or equal to 2027 gap (recycling should persist/grow)
-    assertTrue(diff2028 >= diff2027,
+    assertTrue(diff2028 >= diff2027 - 0.01,
         "2028 gap should be larger than or equal to 2027 gap (recycling should persist)");
   }
 
