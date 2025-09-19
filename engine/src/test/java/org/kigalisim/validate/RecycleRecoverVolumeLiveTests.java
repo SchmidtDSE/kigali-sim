@@ -604,7 +604,7 @@ public class RecycleRecoverVolumeLiveTests {
     // 2. Total consumption (domestic + recycling) should be the same with 0% induction
     double bauDomesticConsumption = bauResult.getDomestic().getValue().doubleValue();
     double recyclingDomesticConsumption = recyclingResult.getDomestic().getValue().doubleValue();
-    double recyclingRecycleConsumption = recyclingResult.getRecycleConsumption().getValue().doubleValue();
+    double recyclingRecycleConsumption = recyclingResult.getRecycle().getValue().doubleValue();
     double recyclingTotalConsumption = recyclingDomesticConsumption + recyclingRecycleConsumption;
 
     assertEquals(bauDomesticConsumption, recyclingTotalConsumption, 0.01,
@@ -620,7 +620,7 @@ public class RecycleRecoverVolumeLiveTests {
     EngineResult bauResultYear3 = LiveTestsUtil.getResult(bauResultsList.stream(), 3, "Test", "SubA");
     EngineResult recyclingResultYear3 = LiveTestsUtil.getResult(recyclingResultsList.stream(), 3, "Test", "SubA");
 
-    double recycledAmountYear3 = recyclingResultYear3.getRecycleConsumption().getValue().doubleValue();
+    double recycledAmountYear3 = recyclingResultYear3.getRecycle().getValue().doubleValue();
     assertTrue(recycledAmountYear3 > 0,
         String.format("Year 3: Should have positive recycling amount: %.2f", recycledAmountYear3));
   }
