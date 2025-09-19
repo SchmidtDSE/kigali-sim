@@ -507,6 +507,9 @@ public class SimulationState {
     // Subtract induction from virgin streams before year transition
     redistributeInductionFromSales();
 
+    // Update lastSpecifiedValue to match redistributed values to preserve change command progression
+    updateLastSpecifiedAfterRedistribution();
+
     // Reset recycling streams at year boundary to prevent stale values
     // from affecting subsequent cap operations
     for (String key : substances.keySet()) {
@@ -1494,6 +1497,49 @@ public class SimulationState {
       // Set new amounts using direct stream setting
       setSimpleStream(useKey, "domestic", new EngineNumber(newDomestic, "kg"));
       setSimpleStream(useKey, "import", new EngineNumber(newImport, "kg"));
+    }
+  }
+
+  /**
+   * Update lastSpecifiedValue for domestic and import streams after redistribution.
+   *
+   * <p>This method restores the lastSpecifiedValue for domestic and import streams
+   * after redistribution operations have modified their actual values. It ensures
+   * that change commands continue to work from the user's intended baseline progression
+   * rather than using recycling-affected values.</p>
+   */
+  private void updateLastSpecifiedAfterRedistribution() {
+    for (String key : substances.keySet()) {
+      String[] keyPieces = key.split("\t");
+      String application = keyPieces[0];
+      String substance = keyPieces[1];
+
+      SimpleUseKey useKey = new SimpleUseKey(application, substance);
+      StreamParameterization parameterization = getParameterization(useKey);
+
+      // Update domestic lastSpecifiedValue if it was previously set
+      if (parameterization.hasLastSpecifiedValue("domestic")) {
+        EngineNumber lastSpecDomestic = parameterization.getLastSpecifiedValue("domestic");
+        EngineNumber currentDomestic = getStream(useKey, "domestic");
+
+        // Convert current value to the original units of lastSpecifiedValue
+        EngineNumber domesticInOriginalUnits = unitConverter.convert(currentDomestic, lastSpecDomestic.getUnits());
+
+        // Update lastSpecifiedValue to match redistributed value
+        parameterization.setLastSpecifiedValue("domestic", domesticInOriginalUnits);
+      }
+
+      // Update import lastSpecifiedValue if it was previously set
+      if (parameterization.hasLastSpecifiedValue("import")) {
+        EngineNumber lastSpecImport = parameterization.getLastSpecifiedValue("import");
+        EngineNumber currentImport = getStream(useKey, "import");
+
+        // Convert current value to the original units of lastSpecifiedValue
+        EngineNumber importInOriginalUnits = unitConverter.convert(currentImport, lastSpecImport.getUnits());
+
+        // Update lastSpecifiedValue to match redistributed value
+        parameterization.setLastSpecifiedValue("import", importInOriginalUnits);
+      }
     }
   }
 
