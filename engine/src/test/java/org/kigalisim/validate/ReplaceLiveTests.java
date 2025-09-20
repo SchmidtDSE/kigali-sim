@@ -222,4 +222,50 @@ public class ReplaceLiveTests {
         String.format("BAU recharge emissions (%.2f) should be higher than Replacement recharge emissions (%.2f), not lower",
             bauTotalRechargeEmissions, replacementTotalRechargeEmissions));
   }
+
+  /**
+   * Test that replacing a substance with itself should produce an error.
+   * This tests the bug where "replace 50% of import with 'R-410A'" is specified
+   * for substance "R-410A" itself, which should not be allowed.
+   */
+  @Test
+  public void testReplaceSelfShouldFail() {
+    // Load and parse the QTA file
+    String qtaPath = "../examples/replace_self.qta";
+
+    // This should throw an exception or produce an error when trying to replace
+    // a substance with itself
+    boolean errorThrown = false;
+    String errorMessage = null;
+
+    try {
+      ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+
+      if (program != null) {
+        // If parsing succeeds, try running the scenario
+        String scenarioName = "S1";
+        Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
+
+        // Collect results to force execution
+        List<EngineResult> resultsList = results.collect(Collectors.toList());
+
+        // If we get here without an exception, the bug is present
+        // The test should fail to indicate the bug exists
+      }
+    } catch (Exception e) {
+      errorThrown = true;
+      errorMessage = e.getMessage();
+    }
+
+    assertTrue(errorThrown,
+        "Replacing a substance with itself should throw an error. "
+        + "The bug allows self-replacement without error.");
+
+    if (errorThrown && errorMessage != null) {
+      assertTrue(errorMessage.toLowerCase().contains("replace")
+                 || errorMessage.toLowerCase().contains("self")
+                 || errorMessage.toLowerCase().contains("same"),
+          "Error message should indicate the problem with self-replacement: " + errorMessage);
+    }
+  }
 }
