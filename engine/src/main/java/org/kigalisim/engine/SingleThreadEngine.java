@@ -817,6 +817,11 @@ public class SingleThreadEngine implements Engine {
       raiseNoAppOrSubstance("setting stream", " specified");
     }
 
+    // Validate that we're not attempting to replace substance with itself
+    if (currentSubstance.equals(destinationSubstance)) {
+      ExceptionsGenerator.raiseSelfReplacement(currentSubstance);
+    }
+
     if (isSalesStream(stream)) {
       // Track the specific stream and amount for the current substance
       simulationState.setLastSpecifiedValue(currentScope, stream, amountRaw);
