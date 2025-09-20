@@ -17,7 +17,6 @@ import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.kigalisim.engine.number.EngineNumber;
 import org.kigalisim.engine.recalc.SalesStreamDistribution;
-import org.kigalisim.engine.state.Scope;
 
 /**
  * Tests for the SimulationStateUpdateBuilder class.
