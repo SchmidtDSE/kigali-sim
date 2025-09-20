@@ -105,6 +105,23 @@ header {
   margin-bottom: 40px;
 }
 
+/* Base styling for input elements */
+input[type="text"],
+input[type="number"],
+textarea {
+  border: 1px solid #cfcfcf;
+  padding: 5px;
+  background-color: white;
+}
+
+/* Focus styling for regular input elements */
+input[type="text"]:focus,
+input[type="number"]:focus,
+textarea:focus {
+  outline: 1px solid #A0A0A0;
+  border: 1px solid #A0A0A0;
+}
+
 main {
   background-color: white;
   padding: 15px;
@@ -715,6 +732,11 @@ select option[disabled] {
 .sel:hover::after {
   transform: translateY(-50%) rotate(90deg);
   color: #ff1212;
+}
+
+.sel select:focus {
+  outline: 1px solid #A0A0A0;
+  border: 1px solid #A0A0A0;
 }
 
 .tos section.major {
