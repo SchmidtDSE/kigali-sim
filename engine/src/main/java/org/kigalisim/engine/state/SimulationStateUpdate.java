@@ -3,7 +3,6 @@ package org.kigalisim.engine.state;
 import java.util.Optional;
 import org.kigalisim.engine.number.EngineNumber;
 import org.kigalisim.engine.recalc.SalesStreamDistribution;
-import org.kigalisim.engine.state.UseKey;
 
 /**
  * Immutable class representing a simulation state update value ready to be set.
