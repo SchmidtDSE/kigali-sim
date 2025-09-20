@@ -1,0 +1,57 @@
+start default
+
+ define application "Domref1"
+
+   uses substance "HFC-134a - Eavdr1"
+     enable import
+     initial charge with 0 kg / unit for domestic
+     initial charge with 0.15 kg / unit for import
+     initial charge with 0 kg / unit for export
+     equals 1430 kgCO2e / kg
+     equals 650 kwh / unit
+     set import to 3000 units during year 1
+     change import by 7 % / year during years 2 to 6
+     change import by 5 % / year during years 7 to 10
+     retire 8 % / year
+     recharge 5 % with 0.15 kg / unit
+   end substance
+
+   uses substance "R-410A"
+     enable import
+     initial charge with 0 kg / unit for domestic
+     initial charge with 0.85 kg / unit for import
+     initial charge with 0 kg / unit for export
+     equals 2087.5 kgCO2e / kg
+     equals 2000 kwh / unit
+     set import to 700 units / year during year 1
+     change import by 5 % / year during years 2 to 10
+     retire 5 % / year
+     recharge 10 % with 0.85 kg / unit
+   end substance
+
+ end application
+
+ define application "ResAC"
+ end application
+
+end default
+
+start policy "RR1"
+
+ modify application "ResAC"
+
+   modify substance "R-410A"
+     replace 50 % of import with "R-410A" during years 2 to 10
+   end substance
+
+ end application
+
+end policy
+
+start simulations
+
+ simulate "S1"
+   using "RR1"
+ from years 1 to 10
+
+end simulations
