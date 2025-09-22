@@ -274,9 +274,9 @@ public class ReplaceLiveTests {
    * as cap displacement in year 5. This tests if priorEquipment replacement
    * properly reflects into equipment totals.
    *
-   * Expected: Replace 100% should have same total equipment as BAU since it's
+   * <p>Expected: Replace 100% should have same total equipment as BAU since it's
    * just redistributing equipment between substances.
-   * This test should fail if priorEquipment changes don't reflect in equipment.
+   * This test should fail if priorEquipment changes don't reflect in equipment.</p>
    */
   @Test
   public void testReplacePriorEquipmentTotalPopulation() throws IOException {
@@ -291,13 +291,13 @@ public class ReplaceLiveTests {
 
     // Run Replace S1 scenario (with 100% replacement policies)
     Stream<EngineResult> replaceResults = KigaliSimFacade.runScenario(program, "Replace_S1", progress -> {});
-    List<EngineResult> replaceResultsList = replaceResults.collect(Collectors.toList());
+    final List<EngineResult> replaceResultsList = replaceResults.collect(Collectors.toList());
 
     // Get year 5 results for BAU scenario - all 4 substances
     EngineResult bauR600a = LiveTestsUtil.getResult(bauResultsList.stream(), 5, "Domref1", "R-600a - DRe1");
     EngineResult bauHfc134a = LiveTestsUtil.getResult(bauResultsList.stream(), 5, "Domref1", "HFC-134a - Domref1");
     EngineResult bauR410a = LiveTestsUtil.getResult(bauResultsList.stream(), 5, "ResAC1", "R-410A - E1");
-    EngineResult bauHfc32 = LiveTestsUtil.getResult(bauResultsList.stream(), 5, "ResAC1", "HFC-32 - E11");
+    final EngineResult bauHfc32 = LiveTestsUtil.getResult(bauResultsList.stream(), 5, "ResAC1", "HFC-32 - E11");
 
     assertNotNull(bauR600a, "Should have BAU result for Domref1/R-600a - DRe1 in year 5");
     assertNotNull(bauHfc134a, "Should have BAU result for Domref1/HFC-134a - Domref1 in year 5");
@@ -308,7 +308,7 @@ public class ReplaceLiveTests {
     EngineResult replaceR600a = LiveTestsUtil.getResult(replaceResultsList.stream(), 5, "Domref1", "R-600a - DRe1");
     EngineResult replaceHfc134a = LiveTestsUtil.getResult(replaceResultsList.stream(), 5, "Domref1", "HFC-134a - Domref1");
     EngineResult replaceR410a = LiveTestsUtil.getResult(replaceResultsList.stream(), 5, "ResAC1", "R-410A - E1");
-    EngineResult replaceHfc32 = LiveTestsUtil.getResult(replaceResultsList.stream(), 5, "ResAC1", "HFC-32 - E11");
+    final EngineResult replaceHfc32 = LiveTestsUtil.getResult(replaceResultsList.stream(), 5, "ResAC1", "HFC-32 - E11");
 
     assertNotNull(replaceR600a, "Should have Replace result for Domref1/R-600a - DRe1 in year 5");
     assertNotNull(replaceHfc134a, "Should have Replace result for Domref1/HFC-134a - Domref1 in year 5");
@@ -316,16 +316,16 @@ public class ReplaceLiveTests {
     assertNotNull(replaceHfc32, "Should have Replace result for ResAC1/HFC-32 - E11 in year 5");
 
     // Calculate total equipment population for BAU scenario in year 5 (all substances)
-    double bauTotalPopulation = bauR600a.getPopulation().getValue().doubleValue() +
-                               bauHfc134a.getPopulation().getValue().doubleValue() +
-                               bauR410a.getPopulation().getValue().doubleValue() +
-                               bauHfc32.getPopulation().getValue().doubleValue();
+    double bauTotalPopulation = bauR600a.getPopulation().getValue().doubleValue()
+                               + bauHfc134a.getPopulation().getValue().doubleValue()
+                               + bauR410a.getPopulation().getValue().doubleValue()
+                               + bauHfc32.getPopulation().getValue().doubleValue();
 
     // Calculate total equipment population for Replace scenario in year 5 (all substances)
-    double replaceTotalPopulation = replaceR600a.getPopulation().getValue().doubleValue() +
-                                   replaceHfc134a.getPopulation().getValue().doubleValue() +
-                                   replaceR410a.getPopulation().getValue().doubleValue() +
-                                   replaceHfc32.getPopulation().getValue().doubleValue();
+    double replaceTotalPopulation = replaceR600a.getPopulation().getValue().doubleValue()
+                                   + replaceHfc134a.getPopulation().getValue().doubleValue()
+                                   + replaceR410a.getPopulation().getValue().doubleValue()
+                                   + replaceHfc32.getPopulation().getValue().doubleValue();
 
     // Log the values for debugging
     System.out.printf("Year 5 - BAU Total population (all substances): %.6f units%n", bauTotalPopulation);
@@ -334,8 +334,8 @@ public class ReplaceLiveTests {
     // This assertion should pass if replacement works correctly across all substances
     // If it fails, it indicates the same priorEquipment->equipment issue as cap displacement
     assertEquals(bauTotalPopulation, replaceTotalPopulation, 0.0001,
-        String.format("Total equipment population should be equal between BAU (%.6f) and Replace (%.6f) scenarios in year 5 " +
-                     "because 100%% replacement should just redistribute equipment between substances",
+        String.format("Total equipment population should be equal between BAU (%.6f) and Replace (%.6f) scenarios in year 5 "
+                     + "because 100%% replacement should just redistribute equipment between substances",
                      bauTotalPopulation, replaceTotalPopulation));
   }
 
@@ -344,8 +344,8 @@ public class ReplaceLiveTests {
    * This tests that replacing 100% of priorEquipment should still leave some population for that substance
    * (reduced but not zero) because only the baseline is affected, not the current equipment directly.
    *
-   * Expected: The replaced substance should have reduced but non-zero population.
-   * The target substance should have increased population.
+   * <p>Expected: The replaced substance should have reduced but non-zero population.
+   * The target substance should have increased population.</p>
    */
   @Test
   public void testReplacePriorEquipmentOnly() throws IOException {
@@ -360,13 +360,13 @@ public class ReplaceLiveTests {
 
     // Run ReplacePriorOnly S1 scenario (with priorEquipment replace policies only)
     Stream<EngineResult> s1Results = KigaliSimFacade.runScenario(program, "ReplacePriorOnly_S1", progress -> {});
-    List<EngineResult> s1ResultsList = s1Results.collect(Collectors.toList());
+    final List<EngineResult> s1ResultsList = s1Results.collect(Collectors.toList());
 
     // Get year 5 results for BAU scenario
     EngineResult bauHfc134a = LiveTestsUtil.getResult(bauResultsList.stream(), 5, "Domref1", "HFC-134a - Domref1");
     EngineResult bauR600a = LiveTestsUtil.getResult(bauResultsList.stream(), 5, "Domref1", "R-600a - DRe1");
     EngineResult bauR410a = LiveTestsUtil.getResult(bauResultsList.stream(), 5, "ResAC1", "R-410A - E1");
-    EngineResult bauHfc32 = LiveTestsUtil.getResult(bauResultsList.stream(), 5, "ResAC1", "HFC-32 - E11");
+    final EngineResult bauHfc32 = LiveTestsUtil.getResult(bauResultsList.stream(), 5, "ResAC1", "HFC-32 - E11");
 
     assertNotNull(bauHfc134a, "Should have BAU result for Domref1/HFC-134a - Domref1 in year 5");
     assertNotNull(bauR600a, "Should have BAU result for Domref1/R-600a - DRe1 in year 5");
@@ -377,7 +377,7 @@ public class ReplaceLiveTests {
     EngineResult s1Hfc134a = LiveTestsUtil.getResult(s1ResultsList.stream(), 5, "Domref1", "HFC-134a - Domref1");
     EngineResult s1R600a = LiveTestsUtil.getResult(s1ResultsList.stream(), 5, "Domref1", "R-600a - DRe1");
     EngineResult s1R410a = LiveTestsUtil.getResult(s1ResultsList.stream(), 5, "ResAC1", "R-410A - E1");
-    EngineResult s1Hfc32 = LiveTestsUtil.getResult(s1ResultsList.stream(), 5, "ResAC1", "HFC-32 - E11");
+    final EngineResult s1Hfc32 = LiveTestsUtil.getResult(s1ResultsList.stream(), 5, "ResAC1", "HFC-32 - E11");
 
     assertNotNull(s1Hfc134a, "Should have ReplacePriorOnly S1 result for Domref1/HFC-134a - Domref1 in year 5");
     assertNotNull(s1R600a, "Should have ReplacePriorOnly S1 result for Domref1/R-600a - DRe1 in year 5");
@@ -393,7 +393,7 @@ public class ReplaceLiveTests {
     // Test that replaced substances (HFC-134a and R-410A) have reduced but non-zero populations
     double bauHfc134aPopulation = bauHfc134a.getPopulation().getValue().doubleValue();
     double s1Hfc134aPopulation = s1Hfc134a.getPopulation().getValue().doubleValue();
-    double bauR410aPopulation = bauR410a.getPopulation().getValue().doubleValue();
+    final double bauR410aPopulation = bauR410a.getPopulation().getValue().doubleValue();
     double s1R410aPopulation = s1R410a.getPopulation().getValue().doubleValue();
 
     assertTrue(s1Hfc134aPopulation > 0.0,

@@ -726,7 +726,7 @@ public class BasicLiveTests {
    * Test that changes to priorEquipment properly affect current equipment totals.
    * This tests that setting priorEquipment changes the baseline for equipment calculations.
    *
-   * Expected: When priorEquipment is changed, the current equipment should change accordingly
+   * <p>Expected: When priorEquipment is changed, the current equipment should change accordingly
    * because sales are added on top of the priorEquipment baseline.
    */
   @Test
@@ -766,8 +766,8 @@ public class BasicLiveTests {
     // Equipment should change because sales are added on top of the priorEquipment baseline
     // The actual difference from the test run is -3007.144547
     assertEquals(-3007.144547, equipmentDifference, 0.0001,
-        String.format("Equipment population should change when priorEquipment baseline is modified. " +
-                     "BAU: %.6f, Set: %.6f, Difference: %.6f",
+        String.format("Equipment population should change when priorEquipment baseline is modified. "
+                     + "BAU: %.6f, Set: %.6f, Difference: %.6f",
                      bauEquipment, setEquipment, equipmentDifference));
   }
 }
