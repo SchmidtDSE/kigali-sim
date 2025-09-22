@@ -401,6 +401,33 @@ public class CapLiveTests {
   }
 
   /**
+   * Test cap displacing import to import should throw an error.
+   * This tests that displacing imports into imports is detected and raises an error.
+   */
+  @Test
+  public void testCapDisplaceImportToImport() throws IOException {
+    // Load and parse the QTA file
+    String qtaPath = "../examples/cap_displace_import_to_import.qta";
+
+    // This should throw an exception due to invalid displacement
+    try {
+      ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+
+      // If we get here without an exception, run the scenario to see if runtime error occurs
+      String scenarioName = "S1";
+      Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
+      List<EngineResult> resultsList = results.collect(Collectors.toList());
+
+      // If we reach here, no exception was thrown - this indicates the bug exists
+      assertTrue(false, "Expected an exception when displacing import to import, but none was thrown");
+
+    } catch (Exception e) {
+      // Exception was thrown as expected - test passes
+      assertTrue(true, "Exception correctly thrown for import-to-import displacement: " + e.getMessage());
+    }
+  }
+
+  /**
    * Test cap with displacement to another substance preserves prior equipment.
    * This tests that when capping one substance and displacing to another,
    * the destination substance's prior equipment is properly maintained.

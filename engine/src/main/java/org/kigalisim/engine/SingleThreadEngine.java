@@ -905,6 +905,10 @@ public class SingleThreadEngine implements Engine {
       return;
     }
 
+    // Validate that we're not attempting to displace stream to itself
+    if (stream.equals(displaceTarget)) {
+      ExceptionsGenerator.raiseSelfDisplacement(stream);
+    }
 
     // Check if this is a stream-based displacement (moved to top to avoid duplication)
     boolean isStream = STREAM_NAMES.contains(displaceTarget);
