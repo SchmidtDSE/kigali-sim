@@ -447,4 +447,70 @@ public class CapLiveTests {
         String.format("Low-GWP population (%.2f) should be above 38000 units",
             capLowGwp.getPopulation().getValue().doubleValue()));
   }
+
+  /**
+   * Test displacement scenario to verify total equipment population behavior.
+   * This tests that the total equipment population for R-600a + HFC-134a in BAU and S1
+   * should be the same in year 5 because we cap and displace in S1.
+   *
+   * Expected: Total equipment population should be equal between BAU and S1 scenarios.
+   * This test is designed to fail and identify the discrepancy described in the issue.
+   */
+  @Test
+  public void testCapDisplacePriorEquipmentTotalPopulation() throws IOException {
+    // Load and parse the QTA file
+    String qtaPath = "../examples/cap_displace_prior_equipment_test.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    // Run BAU scenario
+    Stream<EngineResult> bauResults = KigaliSimFacade.runScenario(program, "BAU", progress -> {});
+    List<EngineResult> bauResultsList = bauResults.collect(Collectors.toList());
+
+    // Run S1 scenario (with cap and displacement policies)
+    Stream<EngineResult> s1Results = KigaliSimFacade.runScenario(program, "S1", progress -> {});
+    List<EngineResult> s1ResultsList = s1Results.collect(Collectors.toList());
+
+    // Get year 5 results for BAU scenario
+    EngineResult bauR600a = LiveTestsUtil.getResult(bauResultsList.stream(), 5, "Domref1", "R-600a - DRe1");
+    EngineResult bauHfc134a = LiveTestsUtil.getResult(bauResultsList.stream(), 5, "Domref1", "HFC-134a - Domref1");
+
+    assertNotNull(bauR600a, "Should have BAU result for Domref1/R-600a - DRe1 in year 5");
+    assertNotNull(bauHfc134a, "Should have BAU result for Domref1/HFC-134a - Domref1 in year 5");
+
+    // Get year 5 results for S1 scenario
+    EngineResult s1R600a = LiveTestsUtil.getResult(s1ResultsList.stream(), 5, "Domref1", "R-600a - DRe1");
+    EngineResult s1Hfc134a = LiveTestsUtil.getResult(s1ResultsList.stream(), 5, "Domref1", "HFC-134a - Domref1");
+
+    assertNotNull(s1R600a, "Should have S1 result for Domref1/R-600a - DRe1 in year 5");
+    assertNotNull(s1Hfc134a, "Should have S1 result for Domref1/HFC-134a - Domref1 in year 5");
+
+    // Calculate total equipment population for BAU scenario in year 5
+    double bauTotalPopulation = bauR600a.getPopulation().getValue().doubleValue() +
+                               bauHfc134a.getPopulation().getValue().doubleValue();
+
+    // Calculate total equipment population for S1 scenario in year 5
+    double s1TotalPopulation = s1R600a.getPopulation().getValue().doubleValue() +
+                              s1Hfc134a.getPopulation().getValue().doubleValue();
+
+    // Log the values for debugging
+    System.out.printf("Year 5 - BAU R-600a population: %.6f units%n",
+                     bauR600a.getPopulation().getValue().doubleValue());
+    System.out.printf("Year 5 - BAU HFC-134a population: %.6f units%n",
+                     bauHfc134a.getPopulation().getValue().doubleValue());
+    System.out.printf("Year 5 - BAU Total population: %.6f units%n", bauTotalPopulation);
+
+    System.out.printf("Year 5 - S1 R-600a population: %.6f units%n",
+                     s1R600a.getPopulation().getValue().doubleValue());
+    System.out.printf("Year 5 - S1 HFC-134a population: %.6f units%n",
+                     s1Hfc134a.getPopulation().getValue().doubleValue());
+    System.out.printf("Year 5 - S1 Total population: %.6f units%n", s1TotalPopulation);
+
+    // This assertion should pass if displacement works correctly
+    // If it fails, it indicates the bug described in the issue
+    assertEquals(bauTotalPopulation, s1TotalPopulation, 0.0001,
+        String.format("Total equipment population should be equal between BAU (%.6f) and S1 (%.6f) scenarios in year 5 " +
+                     "because cap and displacement should conserve total equipment",
+                     bauTotalPopulation, s1TotalPopulation));
+  }
 }
