@@ -1,0 +1,44 @@
+start default
+
+  define application "TestApp"
+
+    uses substance "TestSubstance"
+      enable domestic
+      initial charge with 0.1 kg / unit for domestic
+      equals 1000 kgCO2e / kg
+      equals 100 kwh / unit
+      set domestic to 1000 units during year 1
+      set priorEquipment to 500 units during year 1
+      retire 5 % / year
+      recharge 10 % with 0.1 kg / unit
+    end substance
+
+  end application
+
+end default
+
+
+start policy "SetPriorEquipmentPolicy"
+
+  modify application "TestApp"
+
+    modify substance "TestSubstance"
+      set priorEquipment to 600 units during year 5
+    end substance
+
+  end application
+
+end policy
+
+
+start simulations
+
+  simulate "SetPriorEquipment"
+    using "SetPriorEquipmentPolicy"
+  from years 1 to 10
+
+
+  simulate "BAU"
+  from years 1 to 10
+
+end simulations
