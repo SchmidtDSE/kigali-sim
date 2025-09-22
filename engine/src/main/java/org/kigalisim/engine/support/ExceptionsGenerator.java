@@ -20,6 +20,9 @@ public class ExceptionsGenerator {
   private static final String SELF_REPLACEMENT_MESSAGE =
       "Cannot replace substance \"%s\" with itself. Please specify a different target substance for replacement.";
 
+  private static final String SELF_DISPLACEMENT_MESSAGE =
+      "Cannot displace stream \"%s\" to itself. Please specify a different target stream for displacement.";
+
   /**
    * Raise an exception for missing application or substance.
    *
@@ -39,5 +42,15 @@ public class ExceptionsGenerator {
    */
   public static void raiseSelfReplacement(String substanceName) {
     throw new RuntimeException(String.format(SELF_REPLACEMENT_MESSAGE, substanceName));
+  }
+
+  /**
+   * Raise an exception for attempted self-displacement.
+   *
+   * @param streamName The name of the stream being self-displaced
+   * @throws RuntimeException Always throws with formatted message
+   */
+  public static void raiseSelfDisplacement(String streamName) {
+    throw new RuntimeException(String.format(SELF_DISPLACEMENT_MESSAGE, streamName));
   }
 }
