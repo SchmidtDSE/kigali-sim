@@ -268,4 +268,74 @@ public class ReplaceLiveTests {
           "Error message should indicate the problem with self-replacement: " + errorMessage);
     }
   }
+
+  /**
+   * Test that 100% replacement should produce the same total equipment population
+   * as cap displacement in year 5. This tests if priorEquipment replacement
+   * properly reflects into equipment totals.
+   *
+   * Expected: Replace 100% should have same total equipment as BAU since it's
+   * just redistributing equipment between substances.
+   * This test should fail if priorEquipment changes don't reflect in equipment.
+   */
+  @Test
+  public void testReplacePriorEquipmentTotalPopulation() throws IOException {
+    // Load and parse the QTA file
+    String qtaPath = "../examples/replace_prior_equipment_test.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    // Run BAU scenario
+    Stream<EngineResult> bauResults = KigaliSimFacade.runScenario(program, "BAU", progress -> {});
+    List<EngineResult> bauResultsList = bauResults.collect(Collectors.toList());
+
+    // Run Replace S1 scenario (with 100% replacement policies)
+    Stream<EngineResult> replaceResults = KigaliSimFacade.runScenario(program, "Replace_S1", progress -> {});
+    List<EngineResult> replaceResultsList = replaceResults.collect(Collectors.toList());
+
+    // Get year 5 results for BAU scenario - all 4 substances
+    EngineResult bauR600a = LiveTestsUtil.getResult(bauResultsList.stream(), 5, "Domref1", "R-600a - DRe1");
+    EngineResult bauHfc134a = LiveTestsUtil.getResult(bauResultsList.stream(), 5, "Domref1", "HFC-134a - Domref1");
+    EngineResult bauR410a = LiveTestsUtil.getResult(bauResultsList.stream(), 5, "ResAC1", "R-410A - E1");
+    EngineResult bauHfc32 = LiveTestsUtil.getResult(bauResultsList.stream(), 5, "ResAC1", "HFC-32 - E11");
+
+    assertNotNull(bauR600a, "Should have BAU result for Domref1/R-600a - DRe1 in year 5");
+    assertNotNull(bauHfc134a, "Should have BAU result for Domref1/HFC-134a - Domref1 in year 5");
+    assertNotNull(bauR410a, "Should have BAU result for ResAC1/R-410A - E1 in year 5");
+    assertNotNull(bauHfc32, "Should have BAU result for ResAC1/HFC-32 - E11 in year 5");
+
+    // Get year 5 results for Replace scenario - all 4 substances
+    EngineResult replaceR600a = LiveTestsUtil.getResult(replaceResultsList.stream(), 5, "Domref1", "R-600a - DRe1");
+    EngineResult replaceHfc134a = LiveTestsUtil.getResult(replaceResultsList.stream(), 5, "Domref1", "HFC-134a - Domref1");
+    EngineResult replaceR410a = LiveTestsUtil.getResult(replaceResultsList.stream(), 5, "ResAC1", "R-410A - E1");
+    EngineResult replaceHfc32 = LiveTestsUtil.getResult(replaceResultsList.stream(), 5, "ResAC1", "HFC-32 - E11");
+
+    assertNotNull(replaceR600a, "Should have Replace result for Domref1/R-600a - DRe1 in year 5");
+    assertNotNull(replaceHfc134a, "Should have Replace result for Domref1/HFC-134a - Domref1 in year 5");
+    assertNotNull(replaceR410a, "Should have Replace result for ResAC1/R-410A - E1 in year 5");
+    assertNotNull(replaceHfc32, "Should have Replace result for ResAC1/HFC-32 - E11 in year 5");
+
+    // Calculate total equipment population for BAU scenario in year 5 (all substances)
+    double bauTotalPopulation = bauR600a.getPopulation().getValue().doubleValue() +
+                               bauHfc134a.getPopulation().getValue().doubleValue() +
+                               bauR410a.getPopulation().getValue().doubleValue() +
+                               bauHfc32.getPopulation().getValue().doubleValue();
+
+    // Calculate total equipment population for Replace scenario in year 5 (all substances)
+    double replaceTotalPopulation = replaceR600a.getPopulation().getValue().doubleValue() +
+                                   replaceHfc134a.getPopulation().getValue().doubleValue() +
+                                   replaceR410a.getPopulation().getValue().doubleValue() +
+                                   replaceHfc32.getPopulation().getValue().doubleValue();
+
+    // Log the values for debugging
+    System.out.printf("Year 5 - BAU Total population (all substances): %.6f units%n", bauTotalPopulation);
+    System.out.printf("Year 5 - Replace Total population (all substances): %.6f units%n", replaceTotalPopulation);
+
+    // This assertion should pass if replacement works correctly across all substances
+    // If it fails, it indicates the same priorEquipment->equipment issue as cap displacement
+    assertEquals(bauTotalPopulation, replaceTotalPopulation, 0.0001,
+        String.format("Total equipment population should be equal between BAU (%.6f) and Replace (%.6f) scenarios in year 5 " +
+                     "because 100%% replacement should just redistribute equipment between substances",
+                     bauTotalPopulation, replaceTotalPopulation));
+  }
 }

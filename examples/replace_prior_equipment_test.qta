@@ -1,0 +1,103 @@
+start default
+
+  define application "Domref1"
+
+    uses substance "R-600a - DRe1"
+      enable import
+      initial charge with 0 kg / unit for domestic
+      initial charge with 0.07 kg / unit for import
+      initial charge with 0 kg / unit for export
+      equals 6 kgCO2e / kg
+      equals 500 kwh / unit
+      set import to 0 units during years 1 to onwards
+      change import by 5 % / year during years 2 to 10
+      retire 5 % / year
+      recharge 5 % with 0.07 kg / unit
+    end substance
+
+
+    uses substance "HFC-134a - Domref1"
+      enable import
+      initial charge with 0 kg / unit for domestic
+      initial charge with 0.15 kg / unit for import
+      initial charge with 0 kg / unit for export
+      equals 1430 kgCO2e / kg
+      equals 650 kwh / unit
+      set import to 1500 units during years 1 to onwards
+      change import by 7 % / year during years 2 to 6
+      change import by 5 % / year during years 7 to 10
+      retire 8 % / year
+      recharge 5 % with 0.15 kg / unit
+    end substance
+
+  end application
+
+
+  define application "ResAC1"
+
+    uses substance "R-410A - E1"
+      enable import
+      initial charge with 0 kg / unit for domestic
+      initial charge with 0.85 kg / unit for import
+      initial charge with 0 kg / unit for export
+      equals 2087.5 kgCO2e / kg
+      equals 2000 kwh / unit
+      set import to 700 units / year during year 1
+      change import by 5 % / year during years 2 to 10
+      retire 5 % / year
+      recharge 10 % with 0.85 kg / unit
+    end substance
+
+
+    uses substance "HFC-32 - E11"
+      enable import
+      initial charge with 0 kg / unit for domestic
+      initial charge with 0.75 kg / unit for import
+      initial charge with 0 kg / unit for export
+      equals 675 kgCO2e / kg
+      equals 1 kwh / unit
+      set import to 1000 units
+      change sales by 8 % / year during years 2 to 10
+      retire 5 % / year
+      recharge 5 % with 0.85 kg / unit during year 1
+    end substance
+
+  end application
+
+end default
+
+
+start policy "Replace Policy"
+
+  modify application "Domref1"
+
+    modify substance "HFC-134a - Domref1"
+      replace 100% of priorEquipment with "R-600a - DRe1" during years 5 to 10
+      replace 100% of equipment with "R-600a - DRe1" during years 5 to 10
+    end substance
+
+  end application
+
+  modify application "ResAC1"
+
+    modify substance "R-410A - E1"
+      replace 100% of priorEquipment with "HFC-32 - E11" during years 5 to 10
+      replace 100% of equipment with "HFC-32 - E11" during years 5 to 10
+    end substance
+
+  end application
+
+end policy
+
+
+start simulations
+
+  simulate "Replace_S1"
+    using "Replace Policy"
+  from years 1 to 10
+
+
+  simulate "BAU"
+  from years 1 to 10
+
+end simulations
