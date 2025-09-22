@@ -73,6 +73,7 @@ start policy "Replace Policy"
 
     modify substance "HFC-134a - Domref1"
       replace 100% of equipment with "R-600a - DRe1" during years 5 to 10
+      replace 100% of priorEquipment with "R-600a - DRe1" during years 5 to 10
     end substance
 
   end application
@@ -81,6 +82,7 @@ start policy "Replace Policy"
 
     modify substance "R-410A - E1"
       replace 100% of equipment with "HFC-32 - E11" during years 5 to 10
+      replace 100% of priorEquipment with "HFC-32 - E11" during years 5 to 10
     end substance
 
   end application

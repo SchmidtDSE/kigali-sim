@@ -73,6 +73,7 @@ start policy "Polac1"
 
     modify substance "R-410A - E1"
       cap equipment to 0 units displacing "HFC-32 - E11" during years 5 to 10
+      cap priorEquipment to 0 units displacing "HFC-32 - E11" during years 5 to 10
     end substance
 
   end application
@@ -87,6 +88,7 @@ start policy "Poldr1"
 
     modify substance "HFC-134a - Domref1"
       cap equipment to 0 units displacing "R-600a - DRe1" during years 5 to 10
+      cap priorEquipment to 0 units displacing "R-600a - DRe1" during years 5 to 10
     end substance
 
   end application
