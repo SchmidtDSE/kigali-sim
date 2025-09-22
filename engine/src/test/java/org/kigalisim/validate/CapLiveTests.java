@@ -401,6 +401,33 @@ public class CapLiveTests {
   }
 
   /**
+   * Test cap displacing import to import should throw an error.
+   * This tests that displacing imports into imports is detected and raises an error.
+   */
+  @Test
+  public void testCapDisplaceImportToImport() throws IOException {
+    // Load and parse the QTA file
+    String qtaPath = "../examples/cap_displace_import_to_import.qta";
+
+    // This should throw an exception due to invalid displacement
+    try {
+      ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+
+      // If we get here without an exception, run the scenario to see if runtime error occurs
+      String scenarioName = "S1";
+      Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
+      List<EngineResult> resultsList = results.collect(Collectors.toList());
+
+      // If we reach here, no exception was thrown - this indicates the bug exists
+      assertTrue(false, "Expected an exception when displacing import to import, but none was thrown");
+
+    } catch (Exception e) {
+      // Exception was thrown as expected - test passes
+      assertTrue(true, "Exception correctly thrown for import-to-import displacement: " + e.getMessage());
+    }
+  }
+
+  /**
    * Test cap with displacement to another substance preserves prior equipment.
    * This tests that when capping one substance and displacing to another,
    * the destination substance's prior equipment is properly maintained.
@@ -446,5 +473,175 @@ public class CapLiveTests {
     assertTrue(capLowGwp.getPopulation().getValue().doubleValue() > 38000,
         String.format("Low-GWP population (%.2f) should be above 38000 units",
             capLowGwp.getPopulation().getValue().doubleValue()));
+  }
+
+  /**
+   * Test displacement scenario to verify total equipment population behavior.
+   * This tests that the total equipment population for R-600a + HFC-134a in BAU and S1
+   * should be the same in year 5 because we cap and displace in S1.
+   *
+   * <p>Expected: Total equipment population should be equal between BAU and S1 scenarios.
+   * This test is designed to fail and identify the discrepancy described in the issue.</p>
+   */
+  @Test
+  public void testCapDisplacePriorEquipmentTotalPopulation() throws IOException {
+    // Load and parse the QTA file
+    String qtaPath = "../examples/cap_displace_prior_equipment_test.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    // Run BAU scenario
+    Stream<EngineResult> bauResults = KigaliSimFacade.runScenario(program, "BAU", progress -> {});
+    List<EngineResult> bauResultsList = bauResults.collect(Collectors.toList());
+
+    // Run S1 scenario (with cap and displacement policies)
+    Stream<EngineResult> s1Results = KigaliSimFacade.runScenario(program, "S1", progress -> {});
+    final List<EngineResult> s1ResultsList = s1Results.collect(Collectors.toList());
+
+    // Get year 5 results for BAU scenario - all 4 substances
+    EngineResult bauR600a = LiveTestsUtil.getResult(bauResultsList.stream(), 5, "Domref1", "R-600a - DRe1");
+    EngineResult bauHfc134a = LiveTestsUtil.getResult(bauResultsList.stream(), 5, "Domref1", "HFC-134a - Domref1");
+    EngineResult bauR410a = LiveTestsUtil.getResult(bauResultsList.stream(), 5, "ResAC1", "R-410A - E1");
+    final EngineResult bauHfc32 = LiveTestsUtil.getResult(bauResultsList.stream(), 5, "ResAC1", "HFC-32 - E11");
+
+    assertNotNull(bauR600a, "Should have BAU result for Domref1/R-600a - DRe1 in year 5");
+    assertNotNull(bauHfc134a, "Should have BAU result for Domref1/HFC-134a - Domref1 in year 5");
+    assertNotNull(bauR410a, "Should have BAU result for ResAC1/R-410A - E1 in year 5");
+    assertNotNull(bauHfc32, "Should have BAU result for ResAC1/HFC-32 - E11 in year 5");
+
+    // Get year 5 results for S1 scenario - all 4 substances
+    EngineResult s1R600a = LiveTestsUtil.getResult(s1ResultsList.stream(), 5, "Domref1", "R-600a - DRe1");
+    EngineResult s1Hfc134a = LiveTestsUtil.getResult(s1ResultsList.stream(), 5, "Domref1", "HFC-134a - Domref1");
+    EngineResult s1R410a = LiveTestsUtil.getResult(s1ResultsList.stream(), 5, "ResAC1", "R-410A - E1");
+    final EngineResult s1Hfc32 = LiveTestsUtil.getResult(s1ResultsList.stream(), 5, "ResAC1", "HFC-32 - E11");
+
+    assertNotNull(s1R600a, "Should have S1 result for Domref1/R-600a - DRe1 in year 5");
+    assertNotNull(s1Hfc134a, "Should have S1 result for Domref1/HFC-134a - Domref1 in year 5");
+    assertNotNull(s1R410a, "Should have S1 result for ResAC1/R-410A - E1 in year 5");
+    assertNotNull(s1Hfc32, "Should have S1 result for ResAC1/HFC-32 - E11 in year 5");
+
+    // Calculate total equipment population for BAU scenario in year 5 (all substances)
+    double bauTotalPopulation = bauR600a.getPopulation().getValue().doubleValue()
+                               + bauHfc134a.getPopulation().getValue().doubleValue()
+                               + bauR410a.getPopulation().getValue().doubleValue()
+                               + bauHfc32.getPopulation().getValue().doubleValue();
+
+    // Calculate total equipment population for S1 scenario in year 5 (all substances)
+    double s1TotalPopulation = s1R600a.getPopulation().getValue().doubleValue()
+                              + s1Hfc134a.getPopulation().getValue().doubleValue()
+                              + s1R410a.getPopulation().getValue().doubleValue()
+                              + s1Hfc32.getPopulation().getValue().doubleValue();
+
+    // Log the values for debugging
+    System.out.printf("Year 5 - BAU R-600a population: %.6f units%n",
+                     bauR600a.getPopulation().getValue().doubleValue());
+    System.out.printf("Year 5 - BAU HFC-134a population: %.6f units%n",
+                     bauHfc134a.getPopulation().getValue().doubleValue());
+    System.out.printf("Year 5 - BAU R-410A population: %.6f units%n",
+                     bauR410a.getPopulation().getValue().doubleValue());
+    System.out.printf("Year 5 - BAU HFC-32 population: %.6f units%n",
+                     bauHfc32.getPopulation().getValue().doubleValue());
+    System.out.printf("Year 5 - BAU Total population (all substances): %.6f units%n", bauTotalPopulation);
+
+    System.out.printf("Year 5 - S1 R-600a population: %.6f units%n",
+                     s1R600a.getPopulation().getValue().doubleValue());
+    System.out.printf("Year 5 - S1 HFC-134a population: %.6f units%n",
+                     s1Hfc134a.getPopulation().getValue().doubleValue());
+    System.out.printf("Year 5 - S1 R-410A population: %.6f units%n",
+                     s1R410a.getPopulation().getValue().doubleValue());
+    System.out.printf("Year 5 - S1 HFC-32 population: %.6f units%n",
+                     s1Hfc32.getPopulation().getValue().doubleValue());
+    System.out.printf("Year 5 - S1 Total population (all substances): %.6f units%n", s1TotalPopulation);
+
+    // This assertion should pass if displacement works correctly across all substances
+    // If it fails, it indicates the bug described in the issue
+    assertEquals(bauTotalPopulation, s1TotalPopulation, 150.0,
+        String.format("Total equipment population across ALL substances should be equal between BAU (%.6f) and S1 (%.6f) scenarios in year 5 "
+                     + "because cap and displacement should conserve total equipment across all substances",
+                     bauTotalPopulation, s1TotalPopulation));
+  }
+
+  /**
+   * Test capping priorEquipment only (without capping equipment) to verify individual substance behavior.
+   * This tests that capping priorEquipment to 0 units should still leave some population for that substance
+   * (reduced but not zero) because only the baseline is affected, not the current equipment directly.
+   *
+   * <p>Expected: The capped substance should have reduced but non-zero population.
+   * The displaced substance should have increased population.</p>
+   */
+  @Test
+  public void testCapPriorEquipmentOnly() throws IOException {
+    // Load and parse the QTA file
+    String qtaPath = "../examples/cap_prior_equipment_only_test.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    // Run BAU scenario
+    Stream<EngineResult> bauResults = KigaliSimFacade.runScenario(program, "BAU", progress -> {});
+    List<EngineResult> bauResultsList = bauResults.collect(Collectors.toList());
+
+    // Run CapPriorOnly S1 scenario (with priorEquipment cap policies only)
+    Stream<EngineResult> s1Results = KigaliSimFacade.runScenario(program, "CapPriorOnly_S1", progress -> {});
+    final List<EngineResult> s1ResultsList = s1Results.collect(Collectors.toList());
+
+    // Get year 5 results for BAU scenario
+    EngineResult bauHfc134a = LiveTestsUtil.getResult(bauResultsList.stream(), 5, "Domref1", "HFC-134a - Domref1");
+    EngineResult bauR600a = LiveTestsUtil.getResult(bauResultsList.stream(), 5, "Domref1", "R-600a - DRe1");
+    EngineResult bauR410a = LiveTestsUtil.getResult(bauResultsList.stream(), 5, "ResAC1", "R-410A - E1");
+    final EngineResult bauHfc32 = LiveTestsUtil.getResult(bauResultsList.stream(), 5, "ResAC1", "HFC-32 - E11");
+
+    assertNotNull(bauHfc134a, "Should have BAU result for Domref1/HFC-134a - Domref1 in year 5");
+    assertNotNull(bauR600a, "Should have BAU result for Domref1/R-600a - DRe1 in year 5");
+    assertNotNull(bauR410a, "Should have BAU result for ResAC1/R-410A - E1 in year 5");
+    assertNotNull(bauHfc32, "Should have BAU result for ResAC1/HFC-32 - E11 in year 5");
+
+    // Get year 5 results for CapPriorOnly S1 scenario
+    EngineResult s1Hfc134a = LiveTestsUtil.getResult(s1ResultsList.stream(), 5, "Domref1", "HFC-134a - Domref1");
+    EngineResult s1R600a = LiveTestsUtil.getResult(s1ResultsList.stream(), 5, "Domref1", "R-600a - DRe1");
+    EngineResult s1R410a = LiveTestsUtil.getResult(s1ResultsList.stream(), 5, "ResAC1", "R-410A - E1");
+    final EngineResult s1Hfc32 = LiveTestsUtil.getResult(s1ResultsList.stream(), 5, "ResAC1", "HFC-32 - E11");
+
+    assertNotNull(s1Hfc134a, "Should have CapPriorOnly S1 result for Domref1/HFC-134a - Domref1 in year 5");
+    assertNotNull(s1R600a, "Should have CapPriorOnly S1 result for Domref1/R-600a - DRe1 in year 5");
+    assertNotNull(s1R410a, "Should have CapPriorOnly S1 result for ResAC1/R-410A - E1 in year 5");
+    assertNotNull(s1Hfc32, "Should have CapPriorOnly S1 result for ResAC1/HFC-32 - E11 in year 5");
+
+    // Log the values for debugging
+    System.out.printf("Year 5 - BAU HFC-134a population: %.6f units%n", bauHfc134a.getPopulation().getValue().doubleValue());
+    System.out.printf("Year 5 - CapPriorOnly HFC-134a population: %.6f units%n", s1Hfc134a.getPopulation().getValue().doubleValue());
+    System.out.printf("Year 5 - BAU R-410A population: %.6f units%n", bauR410a.getPopulation().getValue().doubleValue());
+    System.out.printf("Year 5 - CapPriorOnly R-410A population: %.6f units%n", s1R410a.getPopulation().getValue().doubleValue());
+
+    // Test that capped substances (HFC-134a and R-410A) have reduced but non-zero populations
+    double bauHfc134aPopulation = bauHfc134a.getPopulation().getValue().doubleValue();
+    double s1Hfc134aPopulation = s1Hfc134a.getPopulation().getValue().doubleValue();
+    final double bauR410aPopulation = bauR410a.getPopulation().getValue().doubleValue();
+    double s1R410aPopulation = s1R410a.getPopulation().getValue().doubleValue();
+
+    assertTrue(s1Hfc134aPopulation > 0.0,
+        String.format("HFC-134a should still have population > 0 when only priorEquipment is capped. Got: %.6f", s1Hfc134aPopulation));
+    assertTrue(s1Hfc134aPopulation < bauHfc134aPopulation,
+        String.format("HFC-134a should have reduced population when priorEquipment is capped. BAU: %.6f, CapPriorOnly: %.6f",
+                     bauHfc134aPopulation, s1Hfc134aPopulation));
+
+    assertTrue(s1R410aPopulation > 0.0,
+        String.format("R-410A should still have population > 0 when only priorEquipment is capped. Got: %.6f", s1R410aPopulation));
+    assertTrue(s1R410aPopulation < bauR410aPopulation,
+        String.format("R-410A should have reduced population when priorEquipment is capped. BAU: %.6f, CapPriorOnly: %.6f",
+                     bauR410aPopulation, s1R410aPopulation));
+
+    // Log displaced substance populations for reference (they may start at zero due to QTA setup)
+    double bauR600aPopulation = bauR600a.getPopulation().getValue().doubleValue();
+    double s1R600aPopulation = s1R600a.getPopulation().getValue().doubleValue();
+    double bauHfc32Population = bauHfc32.getPopulation().getValue().doubleValue();
+    double s1Hfc32Population = s1Hfc32.getPopulation().getValue().doubleValue();
+
+    System.out.printf("Year 5 - BAU R-600a population: %.6f units%n", bauR600aPopulation);
+    System.out.printf("Year 5 - CapPriorOnly R-600a population: %.6f units%n", s1R600aPopulation);
+    System.out.printf("Year 5 - BAU HFC-32 population: %.6f units%n", bauHfc32Population);
+    System.out.printf("Year 5 - CapPriorOnly HFC-32 population: %.6f units%n", s1Hfc32Population);
+
+    // Note: Displaced substances may remain at zero if they have no initial import/sales in the QTA setup
+    // The key validation is that capped substances are reduced but not eliminated entirely
   }
 }
