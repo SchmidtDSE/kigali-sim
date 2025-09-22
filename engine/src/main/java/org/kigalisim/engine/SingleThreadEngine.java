@@ -831,10 +831,26 @@ public class SingleThreadEngine implements Engine {
       simulationState.setLastSpecifiedValue(destKey, stream, amountRaw);
     }
 
-    if (amountRaw.hasEquipmentUnits()) {
+    // For percentage operations, check lastSpecified value to determine unit type
+    EngineNumber effectiveAmount = amountRaw;
+    if (amountRaw.getUnits().equals("%")) {
+      EngineNumber lastSpecified = simulationState.getLastSpecifiedValue(scope, stream);
+
+      if (lastSpecified != null) {
+        BigDecimal percentageValue = lastSpecified.getValue().multiply(amountRaw.getValue()).divide(new BigDecimal("100"));
+        effectiveAmount = new EngineNumber(percentageValue, lastSpecified.getUnits());
+      } else {
+        // Use current value units to determine if unit-based logic should apply
+        EngineNumber currentValue = getStream(stream);
+        BigDecimal percentageValue = currentValue.getValue().multiply(amountRaw.getValue()).divide(new BigDecimal("100"));
+        effectiveAmount = new EngineNumber(percentageValue, currentValue.getUnits());
+      }
+    }
+
+    if (effectiveAmount.hasEquipmentUnits()) {
       // For equipment units, convert to units first, then handle each substance separately
       UnitConverter sourceUnitConverter = EngineSupportUtils.createUnitConverterWithTotal(this, stream);
-      EngineNumber unitsToReplace = sourceUnitConverter.convert(amountRaw, "units");
+      EngineNumber unitsToReplace = sourceUnitConverter.convert(effectiveAmount, "units");
 
       // Remove from source substance using source's initial charge
       EngineNumber sourceVolumeChange = sourceUnitConverter.convert(unitsToReplace, "kg");
@@ -844,11 +860,20 @@ public class SingleThreadEngine implements Engine {
       );
       changeStreamWithoutReportingUnits(stream, sourceAmountNegative, Optional.empty(), Optional.empty());
 
-      // Add to destination substance using destination's initial charge
+      // Add to destination substance: convert the same number of units to destination's kg amount
       Scope destinationScope = scope.getWithSubstance(destinationSubstance);
       Scope originalScope = scope;
       scope = destinationScope;
-      UnitConverter destinationUnitConverter = EngineSupportUtils.createUnitConverterWithTotal(this, stream);
+
+      // Get the destination substance's initial charge for sales
+      EngineNumber destinationInitialCharge = getInitialCharge("sales");
+
+      // Create a state getter that uses the destination substance's initial charge
+      OverridingConverterStateGetter destinationStateGetter =
+          new OverridingConverterStateGetter(getStateGetter());
+      destinationStateGetter.setAmortizedUnitVolume(destinationInitialCharge);
+      UnitConverter destinationUnitConverter = new UnitConverter(destinationStateGetter);
+
       scope = originalScope;
 
       EngineNumber destinationVolumeChange = destinationUnitConverter.convert(unitsToReplace, "kg");
@@ -856,7 +881,7 @@ public class SingleThreadEngine implements Engine {
     } else {
       // For volume units, use the original logic
       UnitConverter unitConverter = EngineSupportUtils.createUnitConverterWithTotal(this, stream);
-      EngineNumber amount = unitConverter.convert(amountRaw, "kg");
+      EngineNumber amount = unitConverter.convert(effectiveAmount, "kg");
 
       EngineNumber amountNegative = new EngineNumber(amount.getValue().negate(), amount.getUnits());
       changeStreamWithoutReportingUnits(stream, amountNegative, Optional.empty(), Optional.empty());
@@ -905,6 +930,10 @@ public class SingleThreadEngine implements Engine {
       return;
     }
 
+    // Validate that we're not attempting to displace stream to itself
+    if (stream.equals(displaceTarget)) {
+      ExceptionsGenerator.raiseSelfDisplacement(stream);
+    }
 
     // Check if this is a stream-based displacement (moved to top to avoid duplication)
     boolean isStream = STREAM_NAMES.contains(displaceTarget);
