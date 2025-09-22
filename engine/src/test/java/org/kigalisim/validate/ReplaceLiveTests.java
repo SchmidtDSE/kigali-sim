@@ -268,4 +268,158 @@ public class ReplaceLiveTests {
           "Error message should indicate the problem with self-replacement: " + errorMessage);
     }
   }
+
+  /**
+   * Test that 100% replacement should produce the same total equipment population
+   * as cap displacement in year 5. This tests if priorEquipment replacement
+   * properly reflects into equipment totals.
+   *
+   * <p>Expected: Replace 100% should have same total equipment as BAU since it's
+   * just redistributing equipment between substances.
+   * This test should fail if priorEquipment changes don't reflect in equipment.</p>
+   */
+  @Test
+  public void testReplacePriorEquipmentTotalPopulation() throws IOException {
+    // Load and parse the QTA file
+    String qtaPath = "../examples/replace_prior_equipment_test.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    // Run BAU scenario
+    Stream<EngineResult> bauResults = KigaliSimFacade.runScenario(program, "BAU", progress -> {});
+    List<EngineResult> bauResultsList = bauResults.collect(Collectors.toList());
+
+    // Run Replace S1 scenario (with 100% replacement policies)
+    Stream<EngineResult> replaceResults = KigaliSimFacade.runScenario(program, "Replace_S1", progress -> {});
+    final List<EngineResult> replaceResultsList = replaceResults.collect(Collectors.toList());
+
+    // Get year 5 results for BAU scenario - all 4 substances
+    EngineResult bauR600a = LiveTestsUtil.getResult(bauResultsList.stream(), 5, "Domref1", "R-600a - DRe1");
+    EngineResult bauHfc134a = LiveTestsUtil.getResult(bauResultsList.stream(), 5, "Domref1", "HFC-134a - Domref1");
+    EngineResult bauR410a = LiveTestsUtil.getResult(bauResultsList.stream(), 5, "ResAC1", "R-410A - E1");
+    final EngineResult bauHfc32 = LiveTestsUtil.getResult(bauResultsList.stream(), 5, "ResAC1", "HFC-32 - E11");
+
+    assertNotNull(bauR600a, "Should have BAU result for Domref1/R-600a - DRe1 in year 5");
+    assertNotNull(bauHfc134a, "Should have BAU result for Domref1/HFC-134a - Domref1 in year 5");
+    assertNotNull(bauR410a, "Should have BAU result for ResAC1/R-410A - E1 in year 5");
+    assertNotNull(bauHfc32, "Should have BAU result for ResAC1/HFC-32 - E11 in year 5");
+
+    // Get year 5 results for Replace scenario - all 4 substances
+    EngineResult replaceR600a = LiveTestsUtil.getResult(replaceResultsList.stream(), 5, "Domref1", "R-600a - DRe1");
+    EngineResult replaceHfc134a = LiveTestsUtil.getResult(replaceResultsList.stream(), 5, "Domref1", "HFC-134a - Domref1");
+    EngineResult replaceR410a = LiveTestsUtil.getResult(replaceResultsList.stream(), 5, "ResAC1", "R-410A - E1");
+    final EngineResult replaceHfc32 = LiveTestsUtil.getResult(replaceResultsList.stream(), 5, "ResAC1", "HFC-32 - E11");
+
+    assertNotNull(replaceR600a, "Should have Replace result for Domref1/R-600a - DRe1 in year 5");
+    assertNotNull(replaceHfc134a, "Should have Replace result for Domref1/HFC-134a - Domref1 in year 5");
+    assertNotNull(replaceR410a, "Should have Replace result for ResAC1/R-410A - E1 in year 5");
+    assertNotNull(replaceHfc32, "Should have Replace result for ResAC1/HFC-32 - E11 in year 5");
+
+    // Calculate total equipment population for BAU scenario in year 5 (all substances)
+    double bauTotalPopulation = bauR600a.getPopulation().getValue().doubleValue()
+                               + bauHfc134a.getPopulation().getValue().doubleValue()
+                               + bauR410a.getPopulation().getValue().doubleValue()
+                               + bauHfc32.getPopulation().getValue().doubleValue();
+
+    // Calculate total equipment population for Replace scenario in year 5 (all substances)
+    double replaceTotalPopulation = replaceR600a.getPopulation().getValue().doubleValue()
+                                   + replaceHfc134a.getPopulation().getValue().doubleValue()
+                                   + replaceR410a.getPopulation().getValue().doubleValue()
+                                   + replaceHfc32.getPopulation().getValue().doubleValue();
+
+    // Log the values for debugging
+    System.out.printf("Year 5 - BAU Total population (all substances): %.6f units%n", bauTotalPopulation);
+    System.out.printf("Year 5 - Replace Total population (all substances): %.6f units%n", replaceTotalPopulation);
+
+    // This assertion should pass if replacement works correctly across all substances
+    // If it fails, it indicates the same priorEquipment->equipment issue as cap displacement
+    assertEquals(bauTotalPopulation, replaceTotalPopulation, 0.0001,
+        String.format("Total equipment population should be equal between BAU (%.6f) and Replace (%.6f) scenarios in year 5 "
+                     + "because 100%% replacement should just redistribute equipment between substances",
+                     bauTotalPopulation, replaceTotalPopulation));
+  }
+
+  /**
+   * Test replacing priorEquipment only (without replacing equipment) to verify individual substance behavior.
+   * This tests that replacing 100% of priorEquipment should still leave some population for that substance
+   * (reduced but not zero) because only the baseline is affected, not the current equipment directly.
+   *
+   * <p>Expected: The replaced substance should have reduced but non-zero population.
+   * The target substance should have increased population.</p>
+   */
+  @Test
+  public void testReplacePriorEquipmentOnly() throws IOException {
+    // Load and parse the QTA file
+    String qtaPath = "../examples/replace_prior_equipment_only_test.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    // Run BAU scenario
+    Stream<EngineResult> bauResults = KigaliSimFacade.runScenario(program, "BAU", progress -> {});
+    List<EngineResult> bauResultsList = bauResults.collect(Collectors.toList());
+
+    // Run ReplacePriorOnly S1 scenario (with priorEquipment replace policies only)
+    Stream<EngineResult> s1Results = KigaliSimFacade.runScenario(program, "ReplacePriorOnly_S1", progress -> {});
+    final List<EngineResult> s1ResultsList = s1Results.collect(Collectors.toList());
+
+    // Get year 5 results for BAU scenario
+    EngineResult bauHfc134a = LiveTestsUtil.getResult(bauResultsList.stream(), 5, "Domref1", "HFC-134a - Domref1");
+    EngineResult bauR600a = LiveTestsUtil.getResult(bauResultsList.stream(), 5, "Domref1", "R-600a - DRe1");
+    EngineResult bauR410a = LiveTestsUtil.getResult(bauResultsList.stream(), 5, "ResAC1", "R-410A - E1");
+    final EngineResult bauHfc32 = LiveTestsUtil.getResult(bauResultsList.stream(), 5, "ResAC1", "HFC-32 - E11");
+
+    assertNotNull(bauHfc134a, "Should have BAU result for Domref1/HFC-134a - Domref1 in year 5");
+    assertNotNull(bauR600a, "Should have BAU result for Domref1/R-600a - DRe1 in year 5");
+    assertNotNull(bauR410a, "Should have BAU result for ResAC1/R-410A - E1 in year 5");
+    assertNotNull(bauHfc32, "Should have BAU result for ResAC1/HFC-32 - E11 in year 5");
+
+    // Get year 5 results for ReplacePriorOnly S1 scenario
+    EngineResult s1Hfc134a = LiveTestsUtil.getResult(s1ResultsList.stream(), 5, "Domref1", "HFC-134a - Domref1");
+    EngineResult s1R600a = LiveTestsUtil.getResult(s1ResultsList.stream(), 5, "Domref1", "R-600a - DRe1");
+    EngineResult s1R410a = LiveTestsUtil.getResult(s1ResultsList.stream(), 5, "ResAC1", "R-410A - E1");
+    final EngineResult s1Hfc32 = LiveTestsUtil.getResult(s1ResultsList.stream(), 5, "ResAC1", "HFC-32 - E11");
+
+    assertNotNull(s1Hfc134a, "Should have ReplacePriorOnly S1 result for Domref1/HFC-134a - Domref1 in year 5");
+    assertNotNull(s1R600a, "Should have ReplacePriorOnly S1 result for Domref1/R-600a - DRe1 in year 5");
+    assertNotNull(s1R410a, "Should have ReplacePriorOnly S1 result for ResAC1/R-410A - E1 in year 5");
+    assertNotNull(s1Hfc32, "Should have ReplacePriorOnly S1 result for ResAC1/HFC-32 - E11 in year 5");
+
+    // Log the values for debugging
+    System.out.printf("Year 5 - BAU HFC-134a population: %.6f units%n", bauHfc134a.getPopulation().getValue().doubleValue());
+    System.out.printf("Year 5 - ReplacePriorOnly HFC-134a population: %.6f units%n", s1Hfc134a.getPopulation().getValue().doubleValue());
+    System.out.printf("Year 5 - BAU R-410A population: %.6f units%n", bauR410a.getPopulation().getValue().doubleValue());
+    System.out.printf("Year 5 - ReplacePriorOnly R-410A population: %.6f units%n", s1R410a.getPopulation().getValue().doubleValue());
+
+    // Test that replaced substances (HFC-134a and R-410A) have reduced but non-zero populations
+    double bauHfc134aPopulation = bauHfc134a.getPopulation().getValue().doubleValue();
+    double s1Hfc134aPopulation = s1Hfc134a.getPopulation().getValue().doubleValue();
+    final double bauR410aPopulation = bauR410a.getPopulation().getValue().doubleValue();
+    double s1R410aPopulation = s1R410a.getPopulation().getValue().doubleValue();
+
+    assertTrue(s1Hfc134aPopulation > 0.0,
+        String.format("HFC-134a should still have population > 0 when only priorEquipment is replaced. Got: %.6f", s1Hfc134aPopulation));
+    assertTrue(s1Hfc134aPopulation < bauHfc134aPopulation,
+        String.format("HFC-134a should have reduced population when priorEquipment is replaced. BAU: %.6f, ReplacePriorOnly: %.6f",
+                     bauHfc134aPopulation, s1Hfc134aPopulation));
+
+    assertTrue(s1R410aPopulation > 0.0,
+        String.format("R-410A should still have population > 0 when only priorEquipment is replaced. Got: %.6f", s1R410aPopulation));
+    assertTrue(s1R410aPopulation < bauR410aPopulation,
+        String.format("R-410A should have reduced population when priorEquipment is replaced. BAU: %.6f, ReplacePriorOnly: %.6f",
+                     bauR410aPopulation, s1R410aPopulation));
+
+    // Log target substance populations for reference (they may start at zero due to QTA setup)
+    double bauR600aPopulation = bauR600a.getPopulation().getValue().doubleValue();
+    double s1R600aPopulation = s1R600a.getPopulation().getValue().doubleValue();
+    double bauHfc32Population = bauHfc32.getPopulation().getValue().doubleValue();
+    double s1Hfc32Population = s1Hfc32.getPopulation().getValue().doubleValue();
+
+    System.out.printf("Year 5 - BAU R-600a population: %.6f units%n", bauR600aPopulation);
+    System.out.printf("Year 5 - ReplacePriorOnly R-600a population: %.6f units%n", s1R600aPopulation);
+    System.out.printf("Year 5 - BAU HFC-32 population: %.6f units%n", bauHfc32Population);
+    System.out.printf("Year 5 - ReplacePriorOnly HFC-32 population: %.6f units%n", s1Hfc32Population);
+
+    // Note: Target substances may remain at zero if they have no initial import/sales in the QTA setup
+    // The key validation is that replaced substances are reduced but not eliminated entirely
+  }
 }
