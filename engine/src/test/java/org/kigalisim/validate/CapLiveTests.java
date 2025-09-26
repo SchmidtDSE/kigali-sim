@@ -497,22 +497,23 @@ public class CapLiveTests {
 
     List<EngineResult> resultsList = results.collect(Collectors.toList());
 
-    // Get R-600a results for 2027 and 2028
+    // Get R-600a results for multiple years to understand the pattern
+    EngineResult r600a2026 = LiveTestsUtil.getResult(resultsList.stream(), 2026, "Domestic Refrigeration", "R-600a");
     EngineResult r600a2027 = LiveTestsUtil.getResult(resultsList.stream(), 2027, "Domestic Refrigeration", "R-600a");
     EngineResult r600a2028 = LiveTestsUtil.getResult(resultsList.stream(), 2028, "Domestic Refrigeration", "R-600a");
+    EngineResult r600a2029 = LiveTestsUtil.getResult(resultsList.stream(), 2029, "Domestic Refrigeration", "R-600a");
 
+    assertNotNull(r600a2026, "Should have result for R-600a in year 2026");
     assertNotNull(r600a2027, "Should have result for R-600a in year 2027");
     assertNotNull(r600a2028, "Should have result for R-600a in year 2028");
+    assertNotNull(r600a2029, "Should have result for R-600a in year 2029");
 
-    // Calculate total consumption (domestic + import)
+
+    // Calculate total consumption (domestic + import) for assertion
     double consumption2027 = r600a2027.getDomesticConsumption().getValue().doubleValue()
                            + r600a2027.getImportConsumption().getValue().doubleValue();
     double consumption2028 = r600a2028.getDomesticConsumption().getValue().doubleValue()
                            + r600a2028.getImportConsumption().getValue().doubleValue();
-
-    // Log the values for debugging
-    System.out.printf("R-600a consumption 2027: %.6f kg%n", consumption2027);
-    System.out.printf("R-600a consumption 2028: %.6f kg%n", consumption2028);
 
     // This should fail if the bug exists - consumption should NOT decrease in 2028
     assertTrue(consumption2028 >= consumption2027,
