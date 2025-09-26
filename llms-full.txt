@@ -1,5 +1,5 @@
 # KigaliSim - Montreal Protocol Policy Simulation Tool
-v=20250910
+v=20250926
 
 KigaliSim is an open source web-based simulation engine for modeling substances, applications, and policies related to the Montreal Protocol and Kigali Amendment. It can model high global warming potential greenhouse gases such as HFCs and supports business-as-usual scenarios as well as policy interventions.
 
