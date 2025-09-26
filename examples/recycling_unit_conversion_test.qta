@@ -1,0 +1,44 @@
+start default
+
+  define application "Domestic Refrigeration"
+
+    uses substance "HFC-134a"
+      enable import
+      initial charge with 0 kg / unit for domestic
+      initial charge with 0.15 kg / unit for import
+      initial charge with 0 kg / unit for export
+      equals 1430 kgCO2e / kg
+      equals 1 kwh / unit
+      set priorEquipment to 1,000,000 units during year 2025
+      set import to 200 mt during year 2025
+      recharge 10 % with 0.10 kg / unit
+    end substance
+
+  end application
+
+end default
+
+
+start policy "Recycling"
+
+  modify application "Domestic Refrigeration"
+
+    modify substance "HFC-134a"
+      recover 100 % with 100 % reuse with 0 % induction
+    end substance
+
+  end application
+
+end policy
+
+
+start simulations
+
+  simulate "BAU"
+  from years 2025 to 2035
+
+  simulate "Recycling"
+    using "Recycling"
+  from years 2025 to 2035
+
+end simulations

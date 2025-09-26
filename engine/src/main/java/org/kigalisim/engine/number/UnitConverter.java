@@ -297,11 +297,17 @@ public class UnitConverter {
     } else if ("tCO2e".equals(currentUnits)) {
       BigDecimal originalValue = target.getValue();
       EngineNumber conversion = stateGetter.getSubstanceConsumption();
-      BigDecimal conversionValue = conversion.getValue();
       String normalizedUnits = normalizeUnitString(conversion.getUnits());
       String[] conversionUnitPieces = normalizedUnits.split("/");
+      String conversionNumeratorUnits = conversionUnitPieces[0];
       String newUnits = conversionUnitPieces[1];
-      BigDecimal newValue = originalValue.divide(conversionValue, MATH_CONTEXT);
+
+      // Normalize conversion factor to match input units (recursive call to ensure unit consistency)
+      EngineNumber conversionNumerator = new EngineNumber(conversion.getValue(), conversionNumeratorUnits);
+      EngineNumber normalizedConversionNumerator = convert(conversionNumerator, currentUnits);
+      BigDecimal normalizedConversionValue = normalizedConversionNumerator.getValue();
+
+      BigDecimal newValue = originalValue.divide(normalizedConversionValue, MATH_CONTEXT);
       return new EngineNumber(newValue, newUnits);
     } else if ("kgCO2e".equals(currentUnits)) {
       // Convert kgCO2e to tCO2e first, then to volume
@@ -359,8 +365,16 @@ public class UnitConverter {
     } else if ("tCO2e".equals(currentUnits)) {
       BigDecimal originalValue = target.getValue();
       EngineNumber conversion = stateGetter.getAmortizedUnitConsumption();
-      BigDecimal conversionValue = conversion.getValue();
-      BigDecimal newValue = originalValue.divide(conversionValue, MATH_CONTEXT);
+      String normalizedUnits = normalizeUnitString(conversion.getUnits());
+      String[] conversionUnitPieces = normalizedUnits.split("/");
+      String conversionNumeratorUnits = conversionUnitPieces[0];
+
+      // Normalize conversion factor to match input units (recursive call to ensure unit consistency)
+      EngineNumber conversionNumerator = new EngineNumber(conversion.getValue(), conversionNumeratorUnits);
+      EngineNumber normalizedConversionNumerator = convert(conversionNumerator, currentUnits);
+      BigDecimal normalizedConversionValue = normalizedConversionNumerator.getValue();
+
+      BigDecimal newValue = originalValue.divide(normalizedConversionValue, MATH_CONTEXT);
       return new EngineNumber(newValue, "units");
     } else if ("kgCO2e".equals(currentUnits)) {
       // Convert kgCO2e to tCO2e first, then to units
