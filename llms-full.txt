@@ -155,9 +155,9 @@ This is available for `cap`, `floor`, and `recover`.
 
 ### Recycling Stages and Induction
 The `recover` command supports specifying when recycling occurs and how much induced demand it creates:
-- `recover {amount} with {amount} reuse` - Defaults to recycling at recharge (service) time with 100% induction (induced demand behavior)
+- `recover {amount} with {amount} reuse` - Defaults to recycling at recharge (service) time with default induction behavior
 - `recover {amount} with {amount} reuse with {amount} induction` - Explicit induction percentage (0-100%)
-- `recover {amount} with {amount} reuse with default induction` - Uses 100% induction (induced demand behavior)
+- `recover {amount} with {amount} reuse with default induction` - Uses default induction behavior based on specification type
 - `recover {amount} with {amount} reuse at recharge` - Explicitly specifies recycling at service time
 - `recover {amount} with {amount} reuse at eol` - Specifies recycling at end-of-life (retirement)
 
@@ -165,6 +165,11 @@ The `recover` command supports specifying when recycling occurs and how much ind
 - **Units-based specs**: Default 0% induction (displacement behavior) - recycling reduces virgin sales to maintain steady population
 - **Non-units specs (kg/mt)**: Default 100% induction (induced demand behavior) - recycling adds on top of existing demand
 - **Explicit specification**: Users can override defaults by specifying exact percentages (0-100%)
+
+**100% Induction Recommendations**:
+- **100% induction means recycled material does not displace virgin material** - it adds to total supply
+- **100% is recommended for users who are uncertain** as induction is a complex economic phenomenon that can be hard to predict
+- **Can be paired with other policies**, for example, a cap on virgin (import, domestic) to ensure desired reduction in virgin material alongside increasing supply through expanded recycling stream
 
 Examples:
 ```
