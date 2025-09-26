@@ -497,16 +497,12 @@ public class CapLiveTests {
 
     List<EngineResult> resultsList = results.collect(Collectors.toList());
 
-    // Get R-600a results for multiple years to understand the pattern
-    EngineResult r600a2026 = LiveTestsUtil.getResult(resultsList.stream(), 2026, "Domestic Refrigeration", "R-600a");
+    // Get R-600a results for 2027 and 2028
     EngineResult r600a2027 = LiveTestsUtil.getResult(resultsList.stream(), 2027, "Domestic Refrigeration", "R-600a");
     EngineResult r600a2028 = LiveTestsUtil.getResult(resultsList.stream(), 2028, "Domestic Refrigeration", "R-600a");
-    EngineResult r600a2029 = LiveTestsUtil.getResult(resultsList.stream(), 2029, "Domestic Refrigeration", "R-600a");
 
-    assertNotNull(r600a2026, "Should have result for R-600a in year 2026");
     assertNotNull(r600a2027, "Should have result for R-600a in year 2027");
     assertNotNull(r600a2028, "Should have result for R-600a in year 2028");
-    assertNotNull(r600a2029, "Should have result for R-600a in year 2029");
 
 
     // Calculate total consumption (domestic + import) for assertion
@@ -517,8 +513,8 @@ public class CapLiveTests {
 
     // This should fail if the bug exists - consumption should NOT decrease in 2028
     assertTrue(consumption2028 >= consumption2027,
-        String.format("R-600a consumption should not decrease from 2027 (%.6f kg) to 2028 (%.6f kg) " +
-                     "due to ongoing cap displacement", consumption2027, consumption2028));
+        String.format("R-600a consumption should not decrease from 2027 (%.6f kg) to 2028 (%.6f kg) "
+                     + "due to ongoing cap displacement", consumption2027, consumption2028));
   }
 
   /**
