@@ -510,7 +510,7 @@ class DuplicateEntityPresenter {
       ".duplicate-target-application-input",
     ).value;
     if (!targetApplicationName) {
-      throw new Error("Please select a target application");
+      throw new Error("No applications available for substance duplication");
     }
 
     // Find target application
