@@ -149,13 +149,6 @@ class DuplicateEntityPresenter {
       self._updateNewNameSuggestion();
     });
 
-    // Target application change handler
-    const targetApplicationInput = self._dialog.querySelector(
-      ".duplicate-target-application-input",
-    );
-    targetApplicationInput.addEventListener("change", () => {
-      // No additional action needed - application selection is handled in duplication
-    });
 
     // Save button handler
     const saveButton = self._dialog.querySelector(".save-button");
@@ -487,10 +480,7 @@ class DuplicateEntityPresenter {
     }
 
     // Find source substance's application for default selection
-    let sourceApplicationName = null;
-    if (sourceEntityName) {
-      sourceApplicationName = self._findSubstanceApplication(codeObj, sourceEntityName);
-    }
+    const sourceApplicationName = self._findSubstanceApplication(codeObj, sourceEntityName);
 
     // Add application options
     applications.forEach((app) => {
