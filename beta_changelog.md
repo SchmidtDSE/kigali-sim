@@ -14,6 +14,38 @@ Finally, we want to again express our gratitude for your feedback and time.
 
 The following changes have been adopted and released.
 
+### Change application of duplicate
+
+**Status**: Released September 27, 2025
+
+**Classification**: Feature / Bug
+
+Now allow users to specify the application in which a duplicate substance consumption record is to be registered. Also fixes bug on numeric validation that was causing an error message. See [#575](https://github.com/SchmidtDSE/kigali-sim/pull/575).
+
+### LLMs Exports
+
+**Status**: Released September 27, 2025
+
+**Classification**: Feature
+
+Clarify to LLMs what the export columns are in order to allow them to more reliably perform analysis on simluation outputs.
+
+### Change apply post-intervention
+
+**Status**: Released September 27, 2025
+
+**Classification**: Clarification
+
+The simulation was preivously not applying percent changes to the post-intervention values on displacement targets. We now clarify this to always apply to the result of values after intervention. See [#570](https://github.com/SchmidtDSE/kigali-sim/pull/570).
+
+### Unit conversion expansion
+
+**Status**: Released September 27, 2025
+
+**Classification**: Bug
+
+Only tCO2e / mt was supported for conversions to masses and not kgCO2e / kg. This is fixed see [#572](https://github.com/SchmidtDSE/kigali-sim/pull/572)
+
 ### Label for domestic
 
 **Status**: Released September 18, 2025
