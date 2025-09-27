@@ -377,6 +377,12 @@ public class SingleThreadEngine implements Engine {
 
   @Override
   public void fulfillSetCommand(String name, EngineNumber value, Optional<YearMatcher> yearMatcher) {
+
+    // Check year range before proceeding
+    if (!getIsInRange(yearMatcher.orElse(null))) {
+      return;
+    }
+
     // Delegate sales streams to SetExecutor for proper component distribution
     if ("sales".equals(name)) {
       SetExecutor setExecutor = new SetExecutor(this);
@@ -1035,7 +1041,14 @@ public class SingleThreadEngine implements Engine {
           .setValue(outputWithUnits)
           .setPropagateChanges(false)
           .build();
+
       executeStreamUpdate(update);
+
+      // Update lastSpecifiedValue for sales substreams since propagateChanges=false skips this
+      if (isSalesStream(stream, false)) {
+        UseKey destKey = new SimpleUseKey(destinationScope.getApplication(), destinationScope.getSubstance());
+        simulationState.setLastSpecifiedValue(destKey, stream, outputWithUnits);
+      }
 
       // Only recalculate for streams that affect equipment populations
       if (!isSalesStream(stream, false)) {
@@ -1044,6 +1057,7 @@ public class SingleThreadEngine implements Engine {
 
       // Create standard recalc operation - engine scope is now correctly set to destination
       boolean useImplicitRecharge = false; // Displacement operations don't add recharge
+
       RecalcOperationBuilder builder = new RecalcOperationBuilder()
           .setRecalcKit(createRecalcKit()) // Use standard recalc kit - scope is correct now
           .setUseExplicitRecharge(!useImplicitRecharge)
