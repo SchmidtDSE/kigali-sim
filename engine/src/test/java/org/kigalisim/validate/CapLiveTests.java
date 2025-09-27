@@ -476,6 +476,48 @@ public class CapLiveTests {
   }
 
   /**
+   * Test sticky demand issue - consumption should not decrease in 2028.
+   * This test reproduces the issue where R-600a imports bump up in 2027 due to
+   * HFC-134a cap displacement but then revert back/decrease in 2028.
+   *
+   * <p>Expected: R-600a consumption in 2028 should be >= consumption in 2027
+   * since the cap displacement should continue. This test is designed to fail
+   * to demonstrate the issue.</p>
+   */
+  @Test
+  public void testStickyDemand() throws IOException {
+    // Load and parse the QTA file
+    String qtaPath = "../examples/sticky_demand.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    // Run the "StickyDemand" scenario
+    String scenarioName = "StickyDemand";
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
+
+    List<EngineResult> resultsList = results.collect(Collectors.toList());
+
+    // Get R-600a results for 2027 and 2028
+    EngineResult r600a2027 = LiveTestsUtil.getResult(resultsList.stream(), 2027, "Domestic Refrigeration", "R-600a");
+    EngineResult r600a2028 = LiveTestsUtil.getResult(resultsList.stream(), 2028, "Domestic Refrigeration", "R-600a");
+
+    assertNotNull(r600a2027, "Should have result for R-600a in year 2027");
+    assertNotNull(r600a2028, "Should have result for R-600a in year 2028");
+
+
+    // Calculate total consumption (domestic + import) for assertion
+    double consumption2027 = r600a2027.getDomesticConsumption().getValue().doubleValue()
+                           + r600a2027.getImportConsumption().getValue().doubleValue();
+    double consumption2028 = r600a2028.getDomesticConsumption().getValue().doubleValue()
+                           + r600a2028.getImportConsumption().getValue().doubleValue();
+
+    // This should fail if the bug exists - consumption should NOT decrease in 2028
+    assertTrue(consumption2028 >= consumption2027,
+        String.format("R-600a consumption should not decrease from 2027 (%.6f kg) to 2028 (%.6f kg) "
+                     + "due to ongoing cap displacement", consumption2027, consumption2028));
+  }
+
+  /**
    * Test displacement scenario to verify total equipment population behavior.
    * This tests that the total equipment population for R-600a + HFC-134a in BAU and S1
    * should be the same in year 5 because we cap and displace in S1.
