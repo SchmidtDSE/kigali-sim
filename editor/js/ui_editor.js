@@ -3669,4 +3669,4 @@ function readDurationUi(root) {
 }
 
 
-export {UiEditorPresenter};
+export {UiEditorPresenter, validateNumericInputs};
