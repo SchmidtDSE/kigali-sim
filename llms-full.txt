@@ -16,7 +16,7 @@ KigaliSim supports both business-as-usual projections and policy intervention sc
 ## QubecTalk Domain Specific Language
 KigaliSim uses QubecTalk, a HyperTalk-inspired domain-specific language for defining simulations. QubecTalk programs are human-readable and use natural language constructs.
 
-**Note**: In this documentation, the pipe symbol (|) is used to indicate different command options or alternatives, not as part of the actual QubecTalk syntax. For example, `set domestic|import to X kg during year Y` means both `set domestic to X kg during year Y` and `set import to X kg during year Y` are valid. Similarly, chevrons (<) mean a value may be provided while curly braces ({) mean a value must be provided but are only provided for documentation purposes and are not part of QubecTalk syntax.
+**Note**: In this documentation, pipe symbols (|) indicate command alternatives, not syntax. Chevrons (<) indicate optional values, curly braces ({) indicate required values. Neither are part of actual QubecTalk syntax.
 
 **Comments**: Use `#` to add comments. Comments run to the end of the line and are ignored by the interpreter.
 
@@ -58,13 +58,13 @@ The about stanza is optional.
 
 #### Manufacturing and Trade
 - `initial charge with {amount} for {stream}` - Sets substance per unit where amount is typically X kg / unit
-- `enable {stream}` - Explicitly marks a stream as enabled without setting values (required before operations like recharge that need sales recalculation). By convention, enable statements should be placed at the top of substance definitions within application definitions, though this is not enforced by the language.
+- `enable {stream}` - Marks stream as enabled without setting values (required before recharge operations). By convention, place at top of substance definitions.
 - `set {stream} to {amount} <during>` - Sets flow volumes
 - `change {stream} by {amount} <during>` - Growth or decay rates where amount is often +X %
 
 #### Equipment Lifecycle
 - `retire {amount} <during>` - Equipment retirement rate
-- `recharge {population} with {volume} <during>` - Service recharging where population specifies equipment to recharge and volume is substance per unit.
+- `recharge {population} with {volume} <during>` - Service recharging (population = equipment to recharge, volume = substance per unit)
 - `set priorEquipment to {amount} <during>` - Pre-existing equipment.
 
 #### Policy Interventions
@@ -78,7 +78,7 @@ The about stanza is optional.
 Supports automatic unit conversion: kg, mt (metric tons), tCO2e (tons CO2 equivalent), kwh (kilowatt hours), units (equipment), years/months/days (time), % (percentages)
 
 #### Number formatting
-Kigali Sim requires DecimalFormat number formatting (comma for thousands separator, period for decimal point). Both formatting conventions are internationally valid, but Kigali Sim uses the DecimalFormat format for consistency with the technologies it leverages. Alternative format numbers like `123.456,7` will generate a message with a suggestion for the equivalent supported format `123,456.7`. Numbers like `123,456` or `123.456` are interpreted as DecimalFormat without error.
+KigaliSim uses DecimalFormat number formatting (comma for thousands, period for decimal). Alternative formats like `123.456,7` generate suggestions for equivalent supported format `123,456.7`.
 
 #### Advanced Features
 - **Variables**: `define identifier as expression` and `get identifier` (scoped to enclosing start/end block)
@@ -93,33 +93,28 @@ Kigali Sim requires DecimalFormat number formatting (comma for thousands separat
 ### Time
 Simulations may be run with years as the time unit where each time unit is a single step. Use of months or days is reserved for future use.
 
-To specify when a command should run, during may be appended like `cap equipment to 0 units during year|years 1 to 5` or `cap equipment to 0 units during year|years 2028 to 2033`. This may also be an individual time like `during year 2028`.
+Commands can specify timing with `during year|years X to Y` or `during year X` for individual years.
 
 Keywords `beginning` and `onwards` are available. For a simulation running from years 2025 to 2030, the following is valid: `during year|years 2025|beginning to 2030|onwards`.
 
 Keywords `at` and `eol` are available for recycling commands. Use `at recharge` for recycling at service time and `at eol` for recycling at equipment retirement.
 
-No duration means runs each year though `each year` may also be optionally written to apply to all years.
-
-To have a command only run in the first year, use `during year beginning` which, for a simulation running 2025 to 2030, is the same as `during year 2030`.
+No duration means runs each year. Use `during year beginning` for first year only.
 
 ### Streams
 Streams may be `domestic|import|export|sales|equipment|priorEquipment`
 
- - `domestic` is domestic manufacturing (as opposed to `import` or `export`)
- - `sales` is both `domestic` and `import`
- - `equipment` is both equipment which entered into service prior steps (`priorEquipment`) and new equipment in the current step
+- `domestic` - domestic manufacturing
+- `sales` - both `domestic` and `import`
+- `equipment` - both prior and new equipment
 
 **Note**: The `enable` command only works with `domestic`, `import`, and `export` streams. Streams must be enabled (either explicitly with `enable` or implicitly by setting non-zero values) before operations like `recharge` that require sales distribution calculations.
 
 ### Formatting
-Curly braces are not supported, start and end keywords must be used. It is recommended but not required to use two spaces per tab.
+Use start/end keywords (curly braces not supported). Two spaces per tab recommended.
 
 ### Built-in Variables
-Special variables available in expressions:
-- `yearAbsolute` - The current absolute year number
-- `yearsElapsed` - Years since simulation start (starts at 0)
-- Similar variables for other time units: `monthAbsolute`, `monthsElapsed`, `dayAbsolute`, `daysElapsed`
+Built-in variables: `yearAbsolute` (current year), `yearsElapsed` (years since start), plus similar for months/days
 
 ### Conditional Logic
 Ternary operations using `if`/`else`/`endif`:
@@ -329,6 +324,58 @@ KigaliSim generates:
 - **Consumption data**: Manufacturing and import volumes
 - **Energy consumption**: Associated electricity usage
 - **Policy impact**: Comparison between scenarios
+
+## Simulation Exports
+
+KigaliSim provides CSV export functionality from both the web interface and the standalone JAR engine with identical column structures and data formats.
+
+### Export Sources
+- **Web Interface**: Click "Export CSV" button in the results panel after running a simulation
+- **JAR Engine**: Generated automatically when running simulations via command line or programmatically
+
+### CSV Column Descriptions
+
+**Identification Columns:**
+- `scenario` - Name of simulation scenario (e.g., "business as usual", "with phasedown")
+- `trial` - Trial number for Monte Carlo simulations (1 for single-run scenarios)
+- `year` - Simulation year
+- `application` - Equipment application (e.g., "domestic refrigeration", "commercial AC")
+- `substance` - Refrigerant substance (e.g., "HFC-134a", "R-410A")
+
+**Production & Trade Volumes (kg/year):**
+- `domestic` - Domestic manufacturing volume
+- `import` - Import volume (bulk substance)
+- `export` - Export volume (bulk substance)
+- `recycle` - Recycled substance volume
+
+**Consumption Impact (tCO2e/year):**
+- `domesticConsumption` - GHG impact from domestic manufacturing
+- `importConsumption` - GHG impact from imports
+- `exportConsumption` - GHG impact from exports
+- `recycleConsumption` - GHG impact from recycling
+
+**Equipment Population (units):**
+- `population` - Total equipment population in service
+- `populationNew` - New equipment added in current year
+
+**Emissions Sources (tCO2e/year):**
+- `rechargeEmissions` - Emissions from equipment servicing/leakage
+- `eolEmissions` - Emissions from end-of-life equipment disposal
+- `initialChargeEmissions` - Informational metric for GHG potential of new charges
+
+**Energy Impact:**
+- `energyConsumption` - Energy consumption from equipment operation (kwh/year)
+
+**Trade Attribution Supplement:**
+- `importInitialChargeValue` - Substance volume in imported equipment initial charges (kg)
+- `importInitialChargeConsumption` - GHG impact from imported equipment charges (tCO2e)
+- `importPopulation` - Equipment units imported with initial charges
+- `exportInitialChargeValue` - Substance volume in exported equipment initial charges (kg)
+- `exportInitialChargeConsumption` - GHG impact from exported equipment charges (tCO2e)
+
+### Montreal Protocol Attribution Convention
+
+Under standard Montreal Protocol reporting, initial charge for imported equipment is typically attributed to the exporting country (equipment manufacturer), while recharge/servicing is attributed to the importing country (equipment operator). Domestically produced and consumed substances are attributed domestically. The trade supplement columns enable user-configurable attribution to support both standard convention and alternative accounting methodologies for international trade reporting.
 
 ## Limitations
 
