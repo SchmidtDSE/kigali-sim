@@ -20,7 +20,7 @@ The following changes have been adopted and released.
 
 **Classification**: Feature
 
-Streamline the llms-full and llms.txt to better clarify what files are necessary and when.
+Streamline the llms-full and llms.txt to better clarify what files are necessary and when. See [#577](https://github.com/SchmidtDSE/kigali-sim/pull/577).
 
 ### Change application of duplicate
 
