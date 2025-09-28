@@ -254,6 +254,7 @@ When working with AI assistants, you may want to specify that only UI Editor com
 - Stream operations: `set`, `change`, `cap`, `floor` commands
 - Equipment recharging
 - Policy modifications: `recycle`, `replace` commands
+- Induction parameters: `with X % induction` in recover commands
 - Time durations for commands
 - Simple numeric values and standard units
 - Single-substance policies (one substance per policy)
