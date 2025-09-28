@@ -14,6 +14,14 @@ Finally, we want to again express our gratitude for your feedback and time.
 
 The following changes have been adopted and released.
 
+### Streamline llms.txt
+
+**Status**: Released September 28, 2025
+
+**Classification**: Feature
+
+Streamline the llms-full and llms.txt to better clarify what files are necessary and when.
+
 ### Change application of duplicate
 
 **Status**: Released September 27, 2025
