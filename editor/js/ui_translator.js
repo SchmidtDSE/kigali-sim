@@ -4339,12 +4339,14 @@ class UiTranslatorCompiler {
         const result = `(line ${line}, col ${column}): ${msg}`;
         errors.push(result);
       },
+      // reportAmbiguity is a performance warning about ambiguous grammar, not an error
       reportAmbiguity: (recognizer, dfa, startIndex, stopIndex, exact, ambigAlts, configs) => {
-        errors.push(`Parser ambiguity at position ${startIndex}-${stopIndex}`);
+        console.log(`Parser ambiguity at position ${startIndex}-${stopIndex}`);
       },
+      // reportAttemptingFullContext is a performance warning, not an error - ignore it
       reportAttemptingFullContext: (recognizer, dfa, startIndex, stopIndex,
         conflictingAlts, configs) => {
-        errors.push(`Parser attempting full context at position ${startIndex}-${stopIndex}`);
+        console.log(`Parser attempting full context at position ${startIndex}-${stopIndex}`);
       },
       reportContextSensitivity: (recognizer, dfa, startIndex, stopIndex, prediction, configs) => {
         errors.push(`Parser context sensitivity at position ${startIndex}-${stopIndex}`);
