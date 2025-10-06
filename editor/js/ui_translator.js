@@ -4341,12 +4341,12 @@ class UiTranslatorCompiler {
       },
       // reportAmbiguity is a performance warning about ambiguous grammar, not an error
       reportAmbiguity: (recognizer, dfa, startIndex, stopIndex, exact, ambigAlts, configs) => {
-        // Intentionally do nothing - ANTLR can resolve these ambiguities
+        console.log(`Parser ambiguity at position ${startIndex}-${stopIndex}`);
       },
       // reportAttemptingFullContext is a performance warning, not an error - ignore it
       reportAttemptingFullContext: (recognizer, dfa, startIndex, stopIndex,
         conflictingAlts, configs) => {
-        // Intentionally do nothing - this is just a performance hint
+        console.log(`Parser attempting full context at position ${startIndex}-${stopIndex}`);
       },
       reportContextSensitivity: (recognizer, dfa, startIndex, stopIndex, prediction, configs) => {
         errors.push(`Parser context sensitivity at position ${startIndex}-${stopIndex}`);
