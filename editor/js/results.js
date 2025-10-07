@@ -51,6 +51,22 @@ function getColor(i) {
 }
 
 /**
+ * Extract base application/substance name by removing subtype suffix.
+ *
+ * For "Refrigeration - Commercial", returns "Refrigeration".
+ * For "HFC-134a", returns "HFC-134a" (no change).
+ *
+ * @param {string} fullName - Full name with potential subtype.
+ * @returns {string} Base name without subtype.
+ */
+function getBaseName(fullName) {
+  if (fullName.includes(" - ")) {
+    return fullName.split(" - ")[0];
+  }
+  return fullName;
+}
+
+/**
  * Add references to application metagroups.
  *
  * Add references to application metagroups by looking for those with subgroups
@@ -233,9 +249,12 @@ class ResultsPresenter {
       // Check if selected application exists
       const selectedApplication = constrainedFilterSet.getApplication();
       if (selectedApplication !== null) {
-        const availableApplications = self._results.getApplications(
+        const availableApplicationsRaw = self._results.getApplications(
           constrainedFilterSet.getWithApplication(null));
-        if (!availableApplications.has(selectedApplication)) {
+        const availableApplications = getWithMetaEquipment(
+          getWithMetaApplications(availableApplicationsRaw),
+        );
+        if (!availableApplications.includes(selectedApplication)) {
           constrainedFilterSet = constrainedFilterSet.getWithApplication(null);
         }
       }
@@ -243,9 +262,10 @@ class ResultsPresenter {
       // Check if selected substance exists
       const selectedSubstance = constrainedFilterSet.getSubstance();
       if (selectedSubstance !== null) {
-        const availableSubstances = self._results.getSubstances(
+        const availableSubstancesRaw = self._results.getSubstances(
           constrainedFilterSet.getWithSubstance(null));
-        if (!availableSubstances.has(selectedSubstance)) {
+        const availableSubstances = getWithMetaSubstanceEquipment(availableSubstancesRaw);
+        if (!availableSubstances.includes(selectedSubstance)) {
           constrainedFilterSet = constrainedFilterSet.getWithSubstance(null);
         }
       }
@@ -830,20 +850,64 @@ class DimensionCardPresenter {
 
     if (hasSingleScenario || label === "sim") {
       const offset = allNeeded ? 1 : 0;
+
+      // Only use base name color coordination if there are more than 5 items
+      const useBaseNameColors = identifiersArray.length > 5;
+
+      // Build base names for color assignment
+      const nonAllItems = identifiersArray.filter((x) => x !== "All");
+      const baseNames = Array.from(new Set(nonAllItems.map((x) => getBaseName(x))));
+      baseNames.sort();
+
+      const getColorIndex = (x, i) => {
+        if (useBaseNameColors) {
+          const baseName = getBaseName(x);
+          return baseNames.indexOf(baseName);
+        } else {
+          return i - offset;
+        }
+      };
+
       const lineHolders = itemDivs.append("div").classed("list-line-holder", true);
 
       const lines = lineHolders
         .append("div")
         .classed("list-line", true)
         .style("width", "100%")
-        .style("height", (x, i) => (x === "All" ? "0px" : "1px"))
-        .style("background-color", (x, i) => (selected ? getColor(i - offset) : "#C0C0C0"));
+        .style("height", (x, i) => {
+          if (x === "All") {
+            return "0px";
+          }
+          return "1px";
+        })
+        .style("background-color", (x, i) => {
+          if (!selected) {
+            return "#C0C0C0";
+          }
+          if (x === "All") {
+            return "transparent";
+          }
+          return getColor(getColorIndex(x, i));
+        });
 
       lines
         .append("div")
         .classed("list-bar", true)
-        .style("height", (x, i) => (x === "All" ? "0px" : "5px"))
-        .style("background-color", (x, i) => (selected ? getColor(i - offset) : "#C0C0C0"))
+        .style("height", (x, i) => {
+          if (x === "All") {
+            return "0px";
+          }
+          return "5px";
+        })
+        .style("background-color", (x, i) => {
+          if (!selected) {
+            return "#C0C0C0";
+          }
+          if (x === "All") {
+            return "transparent";
+          }
+          return getColor(getColorIndex(x, i));
+        })
         .style("width", (x) => {
           if (x === "All") {
             return "0%";
@@ -1037,9 +1101,28 @@ class CenterChartPresenter {
     const unconstrainedDimValues = getDimensionValues(filterSet.getWithDimensionValue(null));
     unconstrainedDimValues.sort();
 
+    // Only use base name color coordination if there are more than 5 dimension values
+    const useBaseNameColors = unconstrainedDimValues.length > 5;
+
+    // Get base names for color assignment so subapplications share colors
+    const baseNames = Array.from(
+      new Set(unconstrainedDimValues.map((x) => getBaseName(x))),
+    );
+    baseNames.sort();
+
+    const getColorIndex = (name) => {
+      if (useBaseNameColors) {
+        // Use base name to determine color, so all subapplications get same color
+        const baseName = getBaseName(name);
+        return baseNames.indexOf(baseName);
+      } else {
+        // Use full name for unique colors
+        return unconstrainedDimValues.indexOf(name);
+      }
+    };
+
     const chartJsDatasets = dimensionSeries.map((x) => {
-      const index = unconstrainedDimValues.indexOf(x["name"]);
-      const color = getColor(index);
+      const color = getColor(getColorIndex(x["name"]));
       return {
         label: x["name"],
         data: x["vals"],
