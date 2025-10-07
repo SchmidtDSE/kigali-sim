@@ -1,0 +1,29 @@
+start default
+
+  define application "Test"
+
+    uses substance "Sub"
+      enable import
+      initial charge with 0 kg / unit for domestic
+      initial charge with 1 kg / unit for import
+      initial charge with 0 kg / unit for export
+      equals 1 kgCO2e / kg
+      equals 1 kwh / unit
+      set equipment to 1000 units during year 1
+      set equipment to 1200 units during year 2
+      set equipment to 100 units during year 3
+      recharge 5% with 1 kg / unit each year
+      retire 5 % / year
+    end substance
+
+  end application
+
+end default
+
+
+start simulations
+
+  simulate "BAU"
+  from years 1 to 10
+
+end simulations
