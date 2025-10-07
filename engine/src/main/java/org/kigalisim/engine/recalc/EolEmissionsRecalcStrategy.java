@@ -49,15 +49,24 @@ public class EolEmissionsRecalcStrategy implements RecalcStrategy {
       ExceptionsGenerator.raiseNoAppOrSubstance("recalculating EOL emissions change", "");
     }
 
-    // Calculate change
-    EngineNumber currentPriorRaw = target.getStreamFor(scopeEffective, "priorEquipment");
-    EngineNumber currentPrior = unitConverter.convert(currentPriorRaw, "units");
-
-    stateGetter.setPopulation(currentPrior);
+    // Calculate the amount retired this year by using the retired stream delta
+    // The retired stream is cumulative across all years
+    // The priorRetired stream holds the retired count from the start of this year
+    // So the delta gives us the amount retired during this year's operations
     SimulationState simulationState = kit.getStreamKeeper();
-    EngineNumber amountRaw = simulationState.getRetirementRate(scopeEffective);
-    EngineNumber amount = unitConverter.convert(amountRaw, "units");
-    stateGetter.clearPopulation();
+
+    // Get current retired amount (after RetireRecalcStrategy added this year's retirement)
+    EngineNumber currentRetiredRaw = simulationState.getStream(scopeEffective, "retired");
+    EngineNumber currentRetired = unitConverter.convert(currentRetiredRaw, "units");
+
+    // Get priorRetired (the retired count at the start of this year)
+    EngineNumber priorRetiredRaw = simulationState.getStream(scopeEffective, "priorRetired");
+    EngineNumber priorRetired = unitConverter.convert(priorRetiredRaw, "units");
+
+    // Calculate this year's retirement amount
+    java.math.BigDecimal amountRetiredThisYear =
+        currentRetired.getValue().subtract(priorRetired.getValue());
+    EngineNumber amount = new EngineNumber(amountRetiredThisYear, "units");
 
     // Update GHG accounting
     EngineNumber eolGhg = unitConverter.convert(amount, "tCO2e");
