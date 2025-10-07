@@ -14,6 +14,14 @@ Finally, we want to again express our gratitude for your feedback and time.
 
 The following changes have been adopted and released.
 
+### Color coordiantion in subapps
+
+**Status**: Release October 6, 2025
+
+**Classification**: Feature
+
+Added a feature where all of the sub-applications now have the same color as their parent application if there are more than 5 substances. This makes compelx simulations easier to read. See [#581](https://github.com/SchmidtDSE/kigali-sim/pull/581).
+
 ### Set equipment meta-command
 
 **Status**: Released October 6, 2025
