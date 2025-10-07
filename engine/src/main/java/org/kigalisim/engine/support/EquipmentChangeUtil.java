@@ -70,8 +70,6 @@ public class EquipmentChangeUtil {
     EngineNumber targetUnits = unitConverter.convert(targetEquipment, "units");
 
     // Get priorEquipment to calculate the required sales
-    // Equipment = priorEquipment + newEquipment, where newEquipment comes from sales
-    // So: sales = target equipment - priorEquipment
     EngineNumber priorEquipmentRaw = engine.getStream("priorEquipment");
     EngineNumber priorEquipment = unitConverter.convert(priorEquipmentRaw, "units");
 
