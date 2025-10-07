@@ -20,6 +20,7 @@ import org.kigalisim.engine.recalc.RecalcKit;
 import org.kigalisim.engine.recalc.RecalcKitBuilder;
 import org.kigalisim.engine.recalc.RecalcOperation;
 import org.kigalisim.engine.recalc.RecalcOperationBuilder;
+import org.kigalisim.engine.state.Scope;
 import org.kigalisim.engine.state.SimulationState;
 import org.kigalisim.engine.state.UseKey;
 import org.kigalisim.engine.state.YearMatcher;
@@ -57,15 +58,15 @@ public class EquipmentChangeUtil {
    */
   public void handleSet(EngineNumber targetEquipment, Optional<YearMatcher> yearMatcher) {
     // Check year range with EngineSupportUtils
-    if (yearMatcher.isPresent()
-        && !EngineSupportUtils.isInRange(yearMatcher.get(), engine.getYear())) {
+    boolean isInRange = !yearMatcher.isPresent()
+        || EngineSupportUtils.isInRange(yearMatcher.get(), engine.getYear());
+    if (!isInRange) {
       return;
     }
 
     // Get current equipment level
     EngineNumber currentEquipmentRaw = engine.getStream("equipment");
-    UnitConverter unitConverter = EngineSupportUtils.createUnitConverterWithTotal(
-        engine, "equipment");
+    UnitConverter unitConverter = createEquipmentUnitConverter();
 
     // Convert both to units
     EngineNumber currentEquipment = unitConverter.convert(currentEquipmentRaw, "units");
@@ -84,7 +85,6 @@ public class EquipmentChangeUtil {
       EngineNumber unitsToRetire = new EngineNumber(delta.abs(), "units");
       retireEquipment(unitsToRetire, yearMatcher);
     }
-    // If delta == 0, no action needed
   }
 
   /**
@@ -99,14 +99,14 @@ public class EquipmentChangeUtil {
    */
   public void handleChange(EngineNumber changeAmount, YearMatcher yearMatcher) {
     // Check year range
-    if (!EngineSupportUtils.isInRange(yearMatcher, engine.getYear())) {
+    boolean isInRange = EngineSupportUtils.isInRange(yearMatcher, engine.getYear());
+    if (!isInRange) {
       return;
     }
 
     // Get current equipment level
     EngineNumber currentEquipmentRaw = engine.getStream("equipment");
-    UnitConverter unitConverter = EngineSupportUtils.createUnitConverterWithTotal(
-        engine, "equipment");
+    UnitConverter unitConverter = createEquipmentUnitConverter();
     EngineNumber currentEquipment = unitConverter.convert(currentEquipmentRaw, "units");
 
     // Calculate delta based on units
@@ -142,14 +142,14 @@ public class EquipmentChangeUtil {
    */
   public void handleCap(EngineNumber capValue, YearMatcher yearMatcher, String displaceTarget) {
     // Check year range
-    if (!EngineSupportUtils.isInRange(yearMatcher, engine.getYear())) {
+    boolean isInRange = EngineSupportUtils.isInRange(yearMatcher, engine.getYear());
+    if (!isInRange) {
       return;
     }
 
     // Get current equipment level
     EngineNumber currentEquipmentRaw = engine.getStream("equipment");
-    UnitConverter unitConverter = EngineSupportUtils.createUnitConverterWithTotal(
-        engine, "equipment");
+    UnitConverter unitConverter = createEquipmentUnitConverter();
     EngineNumber currentEquipment = unitConverter.convert(currentEquipmentRaw, "units");
     EngineNumber capUnits = unitConverter.convert(capValue, "units");
 
@@ -182,14 +182,14 @@ public class EquipmentChangeUtil {
   public void handleFloor(EngineNumber floorValue, YearMatcher yearMatcher,
       String displaceTarget) {
     // Check year range
-    if (!EngineSupportUtils.isInRange(yearMatcher, engine.getYear())) {
+    boolean isInRange = EngineSupportUtils.isInRange(yearMatcher, engine.getYear());
+    if (!isInRange) {
       return;
     }
 
     // Get current equipment level
     EngineNumber currentEquipmentRaw = engine.getStream("equipment");
-    UnitConverter unitConverter = EngineSupportUtils.createUnitConverterWithTotal(
-        engine, "equipment");
+    UnitConverter unitConverter = createEquipmentUnitConverter();
     EngineNumber currentEquipment = unitConverter.convert(currentEquipmentRaw, "units");
     EngineNumber floorUnits = unitConverter.convert(floorValue, "units");
 
@@ -244,8 +244,7 @@ public class EquipmentChangeUtil {
    */
   private EngineNumber retireEquipment(EngineNumber unitsToRetire, Optional<YearMatcher> yearMatcher) {
     UseKey scope = engine.getScope();
-    UnitConverter unitConverter = EngineSupportUtils.createUnitConverterWithTotal(
-        engine, "equipment");
+    UnitConverter unitConverter = createEquipmentUnitConverter();
 
     // Set sales to 0 units (maintains unit-based tracking)
     EngineNumber zeroSales = new EngineNumber(BigDecimal.ZERO, "units");
@@ -307,6 +306,18 @@ public class EquipmentChangeUtil {
   }
 
   /**
+   * Create a unit converter for equipment stream.
+   *
+   * @return A UnitConverter configured for equipment stream
+   */
+  private UnitConverter createEquipmentUnitConverter() {
+    return EngineSupportUtils.createUnitConverterWithTotal(
+        engine,
+        "equipment"
+    );
+  }
+
+  /**
    * Handle displacement logic for cap/floor operations.
    *
    * <p>For equipment displacement, this changes the equipment level in the target substance.
@@ -323,39 +334,31 @@ public class EquipmentChangeUtil {
     }
 
     // Get original scope
-    UseKey originalScope = engine.getScope();
+    Scope currentScope = engine.getScope();
 
-    // Create scope for target substance
-    org.kigalisim.engine.state.Scope currentScopeObj =
-        (org.kigalisim.engine.state.Scope) originalScope;
-    org.kigalisim.engine.state.Scope targetScope = currentScopeObj.getWithSubstance(displaceTarget);
+    // Switch to target substance scope
+    engine.setSubstance(displaceTarget, true);
 
-    try {
-      // Switch to target substance scope
-      engine.setSubstance(displaceTarget, true);
+    // For cap: we removed equipment from current substance, add it to target
+    // For floor: we added equipment to current substance, remove it from target
+    EngineNumber changeAmount = isCap ? amount : new EngineNumber(amount.getValue().negate(), "units");
 
-      // For cap: we removed equipment from current substance, add it to target
-      // For floor: we added equipment to current substance, remove it from target
-      EngineNumber changeAmount = isCap ? amount : new EngineNumber(amount.getValue().negate(), "units");
+    // Get current equipment in target substance
+    EngineNumber targetCurrentRaw = engine.getStream("equipment");
+    UnitConverter targetConverter = createEquipmentUnitConverter();
+    EngineNumber targetCurrent = targetConverter.convert(targetCurrentRaw, "units");
 
-      // Get current equipment in target substance
-      EngineNumber targetCurrentRaw = engine.getStream("equipment");
-      UnitConverter targetConverter = EngineSupportUtils.createUnitConverterWithTotal(engine, "equipment");
-      EngineNumber targetCurrent = targetConverter.convert(targetCurrentRaw, "units");
+    // Calculate new target equipment level
+    BigDecimal newTargetLevel = targetCurrent.getValue().add(changeAmount.getValue());
+    EngineNumber newTarget = new EngineNumber(newTargetLevel, "units");
 
-      // Calculate new target equipment level
-      BigDecimal newTargetLevel = targetCurrent.getValue().add(changeAmount.getValue());
-      EngineNumber newTarget = new EngineNumber(newTargetLevel, "units");
+    // Set the new equipment level in target substance (this will trigger sales/recharge)
+    handleSet(newTarget, Optional.empty());
 
-      // Set the new equipment level in target substance (this will trigger sales/recharge)
-      handleSet(newTarget, Optional.empty());
-
-    } finally {
-      // Restore original scope
-      String originalSubstance = currentScopeObj.getSubstance();
-      if (originalSubstance != null) {
-        engine.setSubstance(originalSubstance, true);
-      }
+    // Restore original scope
+    String originalSubstance = currentScope.getSubstance();
+    if (originalSubstance != null) {
+      engine.setSubstance(originalSubstance, true);
     }
   }
 }
