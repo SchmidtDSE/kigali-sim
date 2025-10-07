@@ -723,6 +723,63 @@ public class BasicLiveTests {
   }
 
   /**
+   * Test that EOL emissions are calculated correctly in the final year with 100% retirement.
+   * This tests that when retiring 100% in the final year, EOL emissions should be based on
+   * the equipment retired (retirement rate * priorEquipment before retirement), not on the
+   * population after retirement.
+   */
+  @Test
+  public void testEolEmissionsInFinalYearWithFullRetirement() throws IOException {
+    // Create a test program with full retirement in final year
+    String testProgram = """
+        start default
+          define application "Test"
+            uses substance "Sub"
+              enable import
+              initial charge with 0 kg / unit for domestic
+              initial charge with 1 kg / unit for import
+              initial charge with 0 kg / unit for export
+              equals 1 kgCO2e / kg
+              equals 1 kwh / unit
+              set import to 1 mt during year 1
+              retire 5 % / year during years 1 to 9
+              retire 100 % during year 10
+            end substance
+          end application
+        end default
+
+        start simulations
+          simulate "BAU"
+          from years 1 to 10
+        end simulations
+        """;
+
+    // Write test file to temp location
+    String tempPath = "/tmp/test_eol_emissions.qta";
+    java.nio.file.Files.writeString(java.nio.file.Path.of(tempPath), testProgram);
+
+    // Parse and run the simulation
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(tempPath);
+    assertNotNull(program, "Program should not be null");
+
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, "BAU", progress -> {});
+    List<EngineResult> resultsList = results.collect(Collectors.toList());
+
+    // Get year 10 result
+    EngineResult year10Result = LiveTestsUtil.getResult(resultsList.stream(), 10, "Test", "Sub");
+    assertNotNull(year10Result, "Should have result for Test/Sub in year 10");
+
+    // EOL emissions should be > 0 in year 10 when retiring 100%
+    double eolEmissions = year10Result.getEolEmissions().getValue().doubleValue();
+    assertTrue(eolEmissions > 0,
+        String.format("EOL emissions should be > 0 in final year with 100%% retirement, but was %.6f tCO2e",
+            eolEmissions));
+
+    // Clean up temp file
+    java.nio.file.Files.deleteIfExists(java.nio.file.Path.of(tempPath));
+  }
+
+  /**
    * Test that changes to priorEquipment properly affect current equipment totals.
    * This tests that setting priorEquipment changes the baseline for equipment calculations.
    *
