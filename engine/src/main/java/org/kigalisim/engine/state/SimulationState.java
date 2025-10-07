@@ -132,6 +132,8 @@ public class SimulationState {
     streams.put(newEquipmentKey, new EngineNumber(BigDecimal.ZERO, "units"));
     String retiredKey = getKey(useKey, "retired");
     streams.put(retiredKey, new EngineNumber(BigDecimal.ZERO, "units"));
+    String priorRetiredKey = getKey(useKey, "priorRetired");
+    streams.put(priorRetiredKey, new EngineNumber(BigDecimal.ZERO, "units"));
 
     // Emissions
     String rechargeEmissionsKey = getKey(useKey, "rechargeEmissions");
@@ -484,7 +486,7 @@ public class SimulationState {
   public void incrementYear() {
     // Increment the internal year counter
     currentYear += 1;
-    // Move population
+    // Move population and retired counts
     for (String key : substances.keySet()) {
       String[] keyPieces = key.split("\t");
       String application = keyPieces[0];
@@ -493,6 +495,9 @@ public class SimulationState {
       SimpleUseKey useKey = new SimpleUseKey(application, substance);
       EngineNumber equipment = getStream(useKey, "equipment");
       setSimpleStream(useKey, "priorEquipment", equipment);
+
+      EngineNumber retired = getStream(useKey, "retired");
+      setSimpleStream(useKey, "priorRetired", retired);
     }
 
     // Reset state at timestep for all parameterizations

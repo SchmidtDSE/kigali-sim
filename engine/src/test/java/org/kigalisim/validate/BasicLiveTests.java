@@ -723,6 +723,35 @@ public class BasicLiveTests {
   }
 
   /**
+   * Test that EOL emissions are calculated correctly in the final year with 100% retirement.
+   * This tests that when retiring 100% in the final year, EOL emissions should be based on
+   * the equipment retired (retirement rate * priorEquipment before retirement), not on the
+   * population after retirement.
+   */
+  @Test
+  public void testEolEmissionsInFinalYearWithFullRetirement() throws IOException {
+    // Load and parse the QTA file
+    String qtaPath = "../examples/eol_emissions_full_retirement.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    // Run the scenario using KigaliSimFacade
+    String scenarioName = "BAU";
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
+    List<EngineResult> resultsList = results.collect(Collectors.toList());
+
+    // Get year 10 result
+    EngineResult year10Result = LiveTestsUtil.getResult(resultsList.stream(), 10, "Test", "Sub");
+    assertNotNull(year10Result, "Should have result for Test/Sub in year 10");
+
+    // EOL emissions should be > 0 in year 10 when retiring 100%
+    double eolEmissions = year10Result.getEolEmissions().getValue().doubleValue();
+    assertTrue(eolEmissions > 0,
+        String.format("EOL emissions should be > 0 in final year with 100%% retirement, but was %.6f tCO2e",
+            eolEmissions));
+  }
+
+  /**
    * Test that changes to priorEquipment properly affect current equipment totals.
    * This tests that setting priorEquipment changes the baseline for equipment calculations.
    *
