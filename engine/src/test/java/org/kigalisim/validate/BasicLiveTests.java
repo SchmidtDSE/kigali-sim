@@ -730,39 +730,14 @@ public class BasicLiveTests {
    */
   @Test
   public void testEolEmissionsInFinalYearWithFullRetirement() throws IOException {
-    // Create a test program with full retirement in final year
-    String testProgram = """
-        start default
-          define application "Test"
-            uses substance "Sub"
-              enable import
-              initial charge with 0 kg / unit for domestic
-              initial charge with 1 kg / unit for import
-              initial charge with 0 kg / unit for export
-              equals 1 kgCO2e / kg
-              equals 1 kwh / unit
-              set import to 1 mt during year 1
-              retire 5 % / year during years 1 to 9
-              retire 100 % during year 10
-            end substance
-          end application
-        end default
-
-        start simulations
-          simulate "BAU"
-          from years 1 to 10
-        end simulations
-        """;
-
-    // Write test file to temp location
-    String tempPath = "/tmp/test_eol_emissions.qta";
-    java.nio.file.Files.writeString(java.nio.file.Path.of(tempPath), testProgram);
-
-    // Parse and run the simulation
-    ParsedProgram program = KigaliSimFacade.parseAndInterpret(tempPath);
+    // Load and parse the QTA file
+    String qtaPath = "../examples/eol_emissions_full_retirement.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
     assertNotNull(program, "Program should not be null");
 
-    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, "BAU", progress -> {});
+    // Run the scenario using KigaliSimFacade
+    String scenarioName = "BAU";
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
     List<EngineResult> resultsList = results.collect(Collectors.toList());
 
     // Get year 10 result
@@ -774,9 +749,6 @@ public class BasicLiveTests {
     assertTrue(eolEmissions > 0,
         String.format("EOL emissions should be > 0 in final year with 100%% retirement, but was %.6f tCO2e",
             eolEmissions));
-
-    // Clean up temp file
-    java.nio.file.Files.deleteIfExists(java.nio.file.Path.of(tempPath));
   }
 
   /**
