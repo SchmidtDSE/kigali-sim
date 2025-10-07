@@ -39,6 +39,7 @@ import org.kigalisim.engine.state.UseKey;
 import org.kigalisim.engine.state.YearMatcher;
 import org.kigalisim.engine.support.ChangeExecutor;
 import org.kigalisim.engine.support.EngineSupportUtils;
+import org.kigalisim.engine.support.EquipmentChangeUtil;
 import org.kigalisim.engine.support.ExceptionsGenerator;
 import org.kigalisim.engine.support.RechargeVolumeCalculator;
 import org.kigalisim.engine.support.SetExecutor;
@@ -78,6 +79,7 @@ public class SingleThreadEngine implements Engine {
   private final UnitConverter unitConverter;
   private final SimulationState simulationState;
   private final ChangeExecutor changeExecutor;
+  private final EquipmentChangeUtil equipmentChangeUtil;
   private Scope scope;
 
   /**
@@ -102,6 +104,7 @@ public class SingleThreadEngine implements Engine {
         new OverridingConverterStateGetter(stateGetter), unitConverter);
     this.simulationState.setCurrentYear(startYear);
     this.changeExecutor = new ChangeExecutor(this);
+    this.equipmentChangeUtil = new EquipmentChangeUtil(this);
     scope = new Scope(null, null, null);
   }
 
@@ -380,6 +383,12 @@ public class SingleThreadEngine implements Engine {
 
     // Check year range before proceeding
     if (!getIsInRange(yearMatcher.orElse(null))) {
+      return;
+    }
+
+    // Handle equipment stream with special logic
+    if ("equipment".equals(name)) {
+      equipmentChangeUtil.handleSet(value, yearMatcher);
       return;
     }
 
@@ -776,6 +785,12 @@ public class SingleThreadEngine implements Engine {
   @Override
   public void changeStream(String stream, EngineNumber amount, YearMatcher yearMatcher,
       UseKey useKey) {
+    // Handle equipment stream with special logic
+    if ("equipment".equals(stream)) {
+      equipmentChangeUtil.handleChange(amount, yearMatcher);
+      return;
+    }
+
     UseKey useKeyEffective = useKey == null ? scope : useKey;
     changeExecutor.executeChange(stream, amount, yearMatcher, useKeyEffective);
   }
@@ -784,6 +799,12 @@ public class SingleThreadEngine implements Engine {
   public void cap(String stream, EngineNumber amount, YearMatcher yearMatcher,
       String displaceTarget) {
     if (!getIsInRange(yearMatcher)) {
+      return;
+    }
+
+    // Handle equipment stream with special logic
+    if ("equipment".equals(stream)) {
+      equipmentChangeUtil.handleCap(amount, yearMatcher, displaceTarget);
       return;
     }
 
@@ -798,6 +819,12 @@ public class SingleThreadEngine implements Engine {
   public void floor(String stream, EngineNumber amount, YearMatcher yearMatcher,
       String displaceTarget) {
     if (!getIsInRange(yearMatcher)) {
+      return;
+    }
+
+    // Handle equipment stream with special logic
+    if ("equipment".equals(stream)) {
+      equipmentChangeUtil.handleFloor(amount, yearMatcher, displaceTarget);
       return;
     }
 
