@@ -851,10 +851,22 @@ class DimensionCardPresenter {
     if (hasSingleScenario || label === "sim") {
       const offset = allNeeded ? 1 : 0;
 
+      // Only use base name color coordination if there are more than 5 items
+      const useBaseNameColors = identifiersArray.length > 5;
+
       // Build base names for color assignment
       const nonAllItems = identifiersArray.filter((x) => x !== "All");
       const baseNames = Array.from(new Set(nonAllItems.map((x) => getBaseName(x))));
       baseNames.sort();
+
+      const getColorIndex = (x, i) => {
+        if (useBaseNameColors) {
+          const baseName = getBaseName(x);
+          return baseNames.indexOf(baseName);
+        } else {
+          return i - offset;
+        }
+      };
 
       const lineHolders = itemDivs.append("div").classed("list-line-holder", true);
 
@@ -875,9 +887,7 @@ class DimensionCardPresenter {
           if (x === "All") {
             return "transparent";
           }
-          const baseName = getBaseName(x);
-          const baseIndex = baseNames.indexOf(baseName);
-          return getColor(baseIndex);
+          return getColor(getColorIndex(x, i));
         });
 
       lines
@@ -896,9 +906,7 @@ class DimensionCardPresenter {
           if (x === "All") {
             return "transparent";
           }
-          const baseName = getBaseName(x);
-          const baseIndex = baseNames.indexOf(baseName);
-          return getColor(baseIndex);
+          return getColor(getColorIndex(x, i));
         })
         .style("width", (x) => {
           if (x === "All") {
@@ -1093,17 +1101,28 @@ class CenterChartPresenter {
     const unconstrainedDimValues = getDimensionValues(filterSet.getWithDimensionValue(null));
     unconstrainedDimValues.sort();
 
+    // Only use base name color coordination if there are more than 5 dimension values
+    const useBaseNameColors = unconstrainedDimValues.length > 5;
+
     // Get base names for color assignment so subapplications share colors
     const baseNames = Array.from(
       new Set(unconstrainedDimValues.map((x) => getBaseName(x))),
     );
     baseNames.sort();
 
+    const getColorIndex = (name) => {
+      if (useBaseNameColors) {
+        // Use base name to determine color, so all subapplications get same color
+        const baseName = getBaseName(name);
+        return baseNames.indexOf(baseName);
+      } else {
+        // Use full name for unique colors
+        return unconstrainedDimValues.indexOf(name);
+      }
+    };
+
     const chartJsDatasets = dimensionSeries.map((x) => {
-      // Use base name to determine color, so all subapplications get same color
-      const baseName = getBaseName(x["name"]);
-      const index = baseNames.indexOf(baseName);
-      const color = getColor(index);
+      const color = getColor(getColorIndex(x["name"]));
       return {
         label: x["name"],
         data: x["vals"],
