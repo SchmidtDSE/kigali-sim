@@ -14,6 +14,14 @@ Finally, we want to again express our gratitude for your feedback and time.
 
 The following changes have been adopted and released.
 
+### Non-amortized retirement
+
+**Status**: Released October 6, 2025
+
+**Classification**: Bug
+
+Previously the retirement emissions was amortized but spikes in retirement could cause EOL emissions to be spread out. This correctly puts the retirement in the year impacted. See [#579](https://github.com/SchmidtDSE/kigali-sim/pull/579).
+
 ### Streamline llms.txt
 
 **Status**: Released September 28, 2025
