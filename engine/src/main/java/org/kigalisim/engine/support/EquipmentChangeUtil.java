@@ -64,16 +64,22 @@ public class EquipmentChangeUtil {
       return;
     }
 
-    // Get current equipment level
-    EngineNumber currentEquipmentRaw = engine.getStream("equipment");
     UnitConverter unitConverter = createEquipmentUnitConverter();
 
-    // Convert both to units
-    EngineNumber currentEquipment = unitConverter.convert(currentEquipmentRaw, "units");
+    // Convert target to units
     EngineNumber targetUnits = unitConverter.convert(targetEquipment, "units");
 
-    // Calculate delta
-    BigDecimal delta = targetUnits.getValue().subtract(currentEquipment.getValue());
+    // Get priorEquipment to calculate the required sales
+    // Equipment = priorEquipment + newEquipment, where newEquipment comes from sales
+    // So: sales = target equipment - priorEquipment
+    EngineNumber priorEquipmentRaw = engine.getStream("priorEquipment");
+    EngineNumber priorEquipment = unitConverter.convert(priorEquipmentRaw, "units");
+
+    // Calculate required sales to reach target
+    BigDecimal requiredSales = targetUnits.getValue().subtract(priorEquipment.getValue());
+
+    // Determine if we need to increase sales or retire equipment
+    BigDecimal delta = requiredSales;
 
     // Handle based on delta direction
     if (delta.compareTo(BigDecimal.ZERO) > 0) {
@@ -212,24 +218,24 @@ public class EquipmentChangeUtil {
   /**
    * Convert equipment increase to sales operation.
    *
-   * <p>Sets sales to the delta in units, which automatically handles recharge
+   * <p>Sets sales to the required value in units, which automatically handles recharge
    * through existing sales distribution logic.</p>
    *
-   * @param deltaUnits The number of units to add
+   * @param salesUnits The sales value to set
    * @param yearMatcher Optional year matcher
    */
-  private void convertToSalesIncrease(EngineNumber deltaUnits,
+  private void convertToSalesIncrease(EngineNumber salesUnits,
       Optional<YearMatcher> yearMatcher) {
     // Get scope from engine
     UseKey scope = engine.getScope();
 
     // Update lastSpecifiedValue for sales to maintain unit-based tracking
     SimulationState simulationState = engine.getStreamKeeper();
-    simulationState.setLastSpecifiedValue(scope, "sales", deltaUnits);
+    simulationState.setLastSpecifiedValue(scope, "sales", salesUnits);
 
     // Use SetExecutor to distribute to domestic/import
     SetExecutor setExecutor = new SetExecutor(engine);
-    setExecutor.handleSalesSet(scope, "sales", deltaUnits, yearMatcher);
+    setExecutor.handleSalesSet(scope, "sales", salesUnits, yearMatcher);
   }
 
   /**
