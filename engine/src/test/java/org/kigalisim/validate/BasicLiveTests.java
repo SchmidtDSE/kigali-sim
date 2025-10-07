@@ -826,4 +826,84 @@ public class BasicLiveTests {
     assertTrue(importConsumption > 0,
         "Import consumption should be greater than 0 kg in year 3 to cover recharge needs, but was " + importConsumption);
   }
+
+  @Test
+  public void testMultipleEquipmentSetsAcrossYears() throws IOException {
+    // Test that "set equipment" commands across years work correctly
+    String qtaPath = "../examples/multiple_equipment_sets.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    String scenarioName = "BAU";
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
+    List<EngineResult> resultsList = results.collect(Collectors.toList());
+
+    // 1990: set to 1000 units
+    EngineResult result1990 = LiveTestsUtil.getResult(resultsList.stream(), 1990, "Test", "Sub");
+    assertNotNull(result1990, "Should have result for Test/Sub in year 1990");
+    double equipment1990 = result1990.getPopulation().getValue().doubleValue();
+    assertEquals(1000.0, equipment1990, 0.01,
+        "Equipment in 1990 should be exactly 1000 units, but was " + equipment1990);
+
+    // 1991: set to 1500 units
+    EngineResult result1991 = LiveTestsUtil.getResult(resultsList.stream(), 1991, "Test", "Sub");
+    assertNotNull(result1991, "Should have result for Test/Sub in year 1991");
+    double equipment1991 = result1991.getPopulation().getValue().doubleValue();
+    assertEquals(1500.0, equipment1991, 0.01,
+        "Equipment in 1991 should be exactly 1500 units, but was " + equipment1991);
+
+    // 1992: set to 2500 units
+    EngineResult result1992 = LiveTestsUtil.getResult(resultsList.stream(), 1992, "Test", "Sub");
+    assertNotNull(result1992, "Should have result for Test/Sub in year 1992");
+    double equipment1992 = result1992.getPopulation().getValue().doubleValue();
+    assertEquals(2500.0, equipment1992, 0.01,
+        "Equipment in 1992 should be exactly 2500 units, but was " + equipment1992);
+
+    // 1993: set to 3000 units
+    EngineResult result1993 = LiveTestsUtil.getResult(resultsList.stream(), 1993, "Test", "Sub");
+    assertNotNull(result1993, "Should have result for Test/Sub in year 1993");
+    double equipment1993 = result1993.getPopulation().getValue().doubleValue();
+    assertEquals(3000.0, equipment1993, 0.01,
+        "Equipment in 1993 should be exactly 3000 units, but was " + equipment1993);
+  }
+
+  @Test
+  public void testEquipmentSetWithImportBetween() throws IOException {
+    // Test that "set equipment" works correctly even when other operations happen between
+    String qtaPath = "../examples/equipment_with_import_between.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    String scenarioName = "BAU";
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
+    List<EngineResult> resultsList = results.collect(Collectors.toList());
+
+    // 1990: set to 1000 units
+    EngineResult result1990 = LiveTestsUtil.getResult(resultsList.stream(), 1990, "Test", "Sub");
+    assertNotNull(result1990, "Should have result for Test/Sub in year 1990");
+    double equipment1990 = result1990.getPopulation().getValue().doubleValue();
+    assertEquals(1000.0, equipment1990, 0.01,
+        "Equipment in 1990 should be exactly 1000 units, but was " + equipment1990);
+
+    // 1991: set to 1500 units
+    EngineResult result1991 = LiveTestsUtil.getResult(resultsList.stream(), 1991, "Test", "Sub");
+    assertNotNull(result1991, "Should have result for Test/Sub in year 1991");
+    double equipment1991 = result1991.getPopulation().getValue().doubleValue();
+    assertEquals(1500.0, equipment1991, 0.01,
+        "Equipment in 1991 should be exactly 1500 units, but was " + equipment1991);
+
+    // 1992: set import to 100 units (equipment should be based on that + carryover)
+    EngineResult result1992 = LiveTestsUtil.getResult(resultsList.stream(), 1992, "Test", "Sub");
+    assertNotNull(result1992, "Should have result for Test/Sub in year 1992");
+    double equipment1992 = result1992.getPopulation().getValue().doubleValue();
+    double import1992 = result1992.getImport().getValue().doubleValue();
+    // Equipment = priorEquipment (~1500 after retirement) + newEquipment (100 from import) = ~1600
+
+    // 1993: set to 3000 units - this should be ABSOLUTE, not relative to 1992
+    EngineResult result1993 = LiveTestsUtil.getResult(resultsList.stream(), 1993, "Test", "Sub");
+    assertNotNull(result1993, "Should have result for Test/Sub in year 1993");
+    double equipment1993 = result1993.getPopulation().getValue().doubleValue();
+    assertEquals(3000.0, equipment1993, 0.01,
+        "Equipment in 1993 should be exactly 3000 units, but was " + equipment1993);
+  }
 }
