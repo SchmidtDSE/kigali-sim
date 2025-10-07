@@ -1,0 +1,25 @@
+start default
+
+  define application "Test"
+
+    uses substance "Sub"
+      enable import
+      equals 1300 kgCO2e / kg
+      initial charge with 1.0 kg / unit for import
+      set equipment to 1000 units during year 1990
+      set equipment to 1500 units during year 1991
+      set import to 100 units during year 1992
+      set equipment to 3000 units during year 1993
+    end substance
+
+  end application
+
+end default
+
+
+start simulations
+
+  simulate "BAU"
+  from years 1990 to 1993
+
+end simulations

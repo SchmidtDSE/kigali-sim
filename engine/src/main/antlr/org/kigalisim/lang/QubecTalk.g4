@@ -442,9 +442,9 @@ simulate: SIMULATE_ name=string FROM_ YEARS_ start=expression TO_ end=expression
  * ---------------------
  **/
 
-globalStatement: (defineVarStatement | setStatement);
+globalStatement: defineVarStatement;
 
-substanceStatement: (capStatement | changeStatement | enableStatement | equalsStatement | initialChargeStatement | rechargeStatement | recycleStatement | replaceStatement | retireStatement);
+substanceStatement: (capStatement | changeStatement | enableStatement | equalsStatement | initialChargeStatement | rechargeStatement | recycleStatement | replaceStatement | retireStatement | setStatement);
 
 /**
  * -------------
