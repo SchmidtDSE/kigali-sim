@@ -14,6 +14,30 @@ Finally, we want to again express our gratitude for your feedback and time.
 
 The following changes have been adopted and released.
 
+### Color coordiantion in subapps
+
+**Status**: Release October 6, 2025
+
+**Classification**: Feature
+
+Added a feature where all of the sub-applications now have the same color as their parent application if there are more than 5 substances. This makes compelx simulations easier to read. See [#581](https://github.com/SchmidtDSE/kigali-sim/pull/581).
+
+### Set equipment meta-command
+
+**Status**: Released October 6, 2025
+
+**Classification**: Clarification
+
+It was unclear if setting the equipment stream would cause retirement actions or not to happen based on the prior year. This was ambiguous because we encourage users to set priorEquipment which does not cause retirement. However, based on user feedback, we are having this perform retirement operations. See [#580](https://github.com/SchmidtDSE/kigali-sim/pull/580).
+
+### Non-amortized retirement
+
+**Status**: Released October 6, 2025
+
+**Classification**: Bug
+
+Previously the retirement emissions was amortized but spikes in retirement could cause EOL emissions to be spread out. This correctly puts the retirement in the year impacted. See [#579](https://github.com/SchmidtDSE/kigali-sim/pull/579).
+
 ### Streamline llms.txt
 
 **Status**: Released September 28, 2025
