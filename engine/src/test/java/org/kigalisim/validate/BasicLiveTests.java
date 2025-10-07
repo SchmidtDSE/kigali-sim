@@ -799,4 +799,31 @@ public class BasicLiveTests {
                      + "BAU: %.6f, Set: %.6f, Difference: %.6f",
                      bauEquipment, setEquipment, equipmentDifference));
   }
+
+  /**
+   * Test population decrease with recharge needs.
+   * When equipment is set to decrease, the system should handle recharge needs for remaining equipment.
+   */
+  @Test
+  public void testPopulationDecreaseRecharge() throws IOException {
+    String qtaPath = "../examples/population_decrease_recharge_issue.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    String scenarioName = "BAU";
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
+    List<EngineResult> resultsList = results.collect(Collectors.toList());
+
+    // Check year 3 when population decreases from 1200 to 100
+    EngineResult resultYear3 = LiveTestsUtil.getResult(resultsList.stream(), 3, "Test", "Sub");
+    assertNotNull(resultYear3, "Should have result for Test/Sub in year 3");
+
+    // Get import consumption which should include recharge needs
+    double importConsumption = resultYear3.getImportConsumption().getValue().doubleValue();
+
+    // There should be some import consumption for recharge even when population decreases
+    // Year 3 has equipment from year 2 that needs recharge before being retired
+    assertTrue(importConsumption > 0,
+        "Import consumption should be greater than 0 kg in year 3 to cover recharge needs, but was " + importConsumption);
+  }
 }
