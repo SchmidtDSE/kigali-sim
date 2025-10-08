@@ -1,5 +1,6 @@
 package org.kigalisim.lang.operation;
 
+import java.math.BigDecimal;
 import java.util.Optional;
 import org.kigalisim.engine.Engine;
 import org.kigalisim.engine.number.EngineNumber;
@@ -64,8 +65,7 @@ public class RetireWithReplacementOperation implements Operation {
 
     UseKey scope = engine.getScope();
 
-    // Step 1: Determine the target units for replacement
-    // Check what units sales were last specified in
+    // Determine the target units for replacement by checking what units sales were last specified in
     SimulationState simulationState = engine.getStreamKeeper();
     EngineNumber lastSalesValue = simulationState.getLastSpecifiedValue(scope, "sales");
 
@@ -78,21 +78,22 @@ public class RetireWithReplacementOperation implements Operation {
       targetUnits = "kg";
     }
 
-    // Step 2: Get equipment level BEFORE retirement
+    // Get equipment level before retirement to measure actual reduction
     UnitConverter unitConverter = EngineSupportUtils.createUnitConverterWithTotal(engine, "sales");
     EngineNumber equipmentBefore = unitConverter.convert(engine.getStream("equipment"), "units");
 
-    // Step 3: Execute the retirement (reduces equipment population)
+    // Execute the retirement (reduces equipment population)
     engine.retire(retireAmount, yearMatcher);
 
-    // Step 4: Get equipment level AFTER retirement and calculate actual reduction
+    // Get equipment level after retirement and calculate actual reduction
     EngineNumber equipmentAfter = unitConverter.convert(engine.getStream("equipment"), "units");
-    java.math.BigDecimal actualReduction = equipmentBefore.getValue().subtract(equipmentAfter.getValue());
+    BigDecimal actualReduction = equipmentBefore.getValue().subtract(equipmentAfter.getValue());
 
-    // Step 5: Add replacement by increasing sales by the actual reduction amount
-    // This increases the equipment population back to compensate for retirement
-    // Only add replacement if there was actual retirement (non-zero amount)
-    if (actualReduction.compareTo(java.math.BigDecimal.ZERO) > 0) {
+    // Add replacement by increasing sales by the actual reduction amount.
+    // This increases the equipment population back to compensate for retirement.
+    // Only add replacement if there was actual retirement (non-zero amount).
+    boolean hadReduction = actualReduction.compareTo(BigDecimal.ZERO) > 0;
+    if (hadReduction) {
       EngineNumber replacementAmount = unitConverter.convert(
           new EngineNumber(actualReduction, "units"),
           targetUnits

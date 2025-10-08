@@ -929,7 +929,7 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
     Operation volumeOperation = visit(ctx.volume).getOperation();
 
     // Check if "with replacement" is present
-    boolean withReplacement = ctx.getText().contains("withreplacement");
+    boolean withReplacement = hasWithReplacement(ctx);
 
     if (withReplacement) {
       // Create compound operation that retires and then adds replacement
@@ -951,7 +951,7 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
     ParsedDuring during = visit(ctx.duration).getDuring();
 
     // Check if "with replacement" is present
-    boolean withReplacement = ctx.getText().contains("withreplacement");
+    boolean withReplacement = hasWithReplacement(ctx);
 
     if (withReplacement) {
       // Create compound operation that retires and then adds replacement
@@ -1153,6 +1153,20 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
       case "recharge" -> RecoveryStage.RECHARGE;
       default -> throw new IllegalArgumentException("Invalid recovery stage: " + stageText);
     };
+  }
+
+  /**
+   * Check if a parse tree context contains the "with replacement" clause.
+   *
+   * <p>This method checks for the presence of "withreplacement" (case-insensitive,
+   * no spaces) in the parse tree text. The grammar combines WITH_ and REPLACEMENT_
+   * tokens, so they appear concatenated in the text representation.</p>
+   *
+   * @param ctx The parse tree context to check
+   * @return true if the context contains "with replacement", false otherwise
+   */
+  private boolean hasWithReplacement(org.antlr.v4.runtime.ParserRuleContext ctx) {
+    return ctx.getText().toLowerCase().contains("withreplacement");
   }
 
   /**
