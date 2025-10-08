@@ -152,6 +152,34 @@ function buildUiTranslatorReverseTests() {
       assert.notEqual(code.indexOf("retire 10 %"), -1);
     });
 
+    QUnit.test("retires substances with replacement", function (assert) {
+      const command = new Command("retire", null, new EngineNumber("5", "% / year"), null, true);
+      const substance = createWithCommand("test", false, command);
+      const code = substance.toCode(0);
+      assert.notEqual(code.indexOf("retire 5 % / year with replacement"), -1);
+    });
+
+    QUnit.test("retires substances without replacement flag", function (assert) {
+      const command = new Command("retire", null, new EngineNumber("5", "% / year"), null, false);
+      const substance = createWithCommand("test", false, command);
+      const code = substance.toCode(0);
+      assert.equal(code.indexOf("with replacement"), -1);
+      assert.notEqual(code.indexOf("retire 5 % / year"), -1);
+    });
+
+    QUnit.test("retires substances with replacement and duration", function (assert) {
+      const command = new Command(
+        "retire",
+        null,
+        new EngineNumber("10", "%"),
+        new YearMatcher(new ParsedYear(1), new ParsedYear(5)),
+        true,
+      );
+      const substance = createWithCommand("test", false, command);
+      const code = substance.toCode(0);
+      assert.notEqual(code.indexOf("retire 10 % with replacement during years 1 to 5"), -1);
+    });
+
     QUnit.test("sets values in substances", function (assert) {
       const command = new Command("setVal", "domestic", new EngineNumber("10", "mt"), null);
       const substance = createWithCommand("test", true, command);

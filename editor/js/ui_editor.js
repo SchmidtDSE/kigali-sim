@@ -1222,6 +1222,21 @@ class ConsumptionListPresenter {
       (x) => x.getRetire() ? x.getRetire().getValue() : null,
     );
 
+    // Set retirement reduces equipment checkbox based on retire command
+    const retirementReducesCheckbox = self._dialog.querySelector(
+      ".retirement-reduces-equipment-checkbox",
+    );
+
+    if (objToShow !== null && objToShow.getRetire()) {
+      // If retire command has withReplacement flag, checkbox should be UNCHECKED
+      // Logic is inverted: checked = reduces equipment, unchecked = with replacement
+      const withReplacement = objToShow.getRetire().getWithReplacement();
+      retirementReducesCheckbox.checked = !withReplacement;
+    } else {
+      // Default to checked (normal retirement reduces equipment)
+      retirementReducesCheckbox.checked = true;
+    }
+
     const removeCallback = () => self._updateCounts();
 
     setListInput(
@@ -1624,7 +1639,15 @@ class ConsumptionListPresenter {
       self._dialog.querySelector(".edit-consumption-retirement-input"),
       self._dialog.querySelector(".retirement-units-input"),
     );
-    const retireCommand = new Command("retire", null, retirement, null);
+
+    // Get checkbox state - inverted logic (checked = reduces, unchecked = with replacement)
+    const retirementReducesCheckbox = self._dialog.querySelector(
+      ".retirement-reduces-equipment-checkbox",
+    );
+    const withReplacement = !retirementReducesCheckbox.checked;
+
+    // Create retire command with withReplacement flag (5th parameter)
+    const retireCommand = new Command("retire", null, retirement, null, withReplacement);
     substanceBuilder.addCommand(retireCommand);
 
 

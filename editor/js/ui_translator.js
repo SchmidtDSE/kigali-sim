@@ -1876,6 +1876,12 @@ class Substance {
       "retire",
       formatEngineNumber(engineNumber),
     ];
+
+    // Add "with replacement" if the flag is set (must come before duration)
+    if (self._retire.getWithReplacement()) {
+      pieces.push("with replacement");
+    }
+
     self._addDuration(pieces, self._retire);
 
     return self._finalizeStatement(pieces);
@@ -2514,13 +2520,15 @@ class Command {
    * @param {string} target - Target of the command.
    * @param {EngineNumber} value - Value for the command.
    * @param {YearMatcher} duration - Duration for the command.
+   * @param {boolean} withReplacement - Whether retire uses replacement (default false).
    */
-  constructor(typeName, target, value, duration) {
+  constructor(typeName, target, value, duration, withReplacement = false) {
     const self = this;
     self._typeName = typeName;
     self._target = target;
     self._value = value;
     self._duration = duration;
+    self._withReplacement = withReplacement;
   }
 
   /**
@@ -2561,6 +2569,16 @@ class Command {
   getDuration() {
     const self = this;
     return self._duration;
+  }
+
+  /**
+   * Get whether this retire command uses replacement.
+   *
+   * @returns {boolean} True if retire should maintain equipment via replacement.
+   */
+  getWithReplacement() {
+    const self = this;
+    return self._withReplacement || false;
   }
 
   /**
@@ -3870,7 +3888,16 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
     const self = this;
     const targetFuture = (ctx) => null;
     const volumeFuture = (ctx) => ctx.volume.accept(self);
-    return self._buildOperation(ctx, "retire", null, targetFuture, volumeFuture);
+
+    // Check if "with replacement" is present in the parsed context
+    const withReplacement = ctx.getText().toLowerCase().includes("withreplacement");
+
+    const command = self._buildOperation(ctx, "retire", null, targetFuture, volumeFuture);
+
+    // Set the withReplacement property
+    command._withReplacement = withReplacement;
+
+    return command;
   }
 
   /**
@@ -3884,7 +3911,16 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
     const targetFuture = (ctx) => null;
     const volumeFuture = (ctx) => ctx.volume.accept(self);
     const duration = ctx.duration.accept(self);
-    return self._buildOperation(ctx, "retire", duration, targetFuture, volumeFuture);
+
+    // Check if "with replacement" is present in the parsed context
+    const withReplacement = ctx.getText().toLowerCase().includes("withreplacement");
+
+    const command = self._buildOperation(ctx, "retire", duration, targetFuture, volumeFuture);
+
+    // Set the withReplacement property
+    command._withReplacement = withReplacement;
+
+    return command;
   }
 
   /**
