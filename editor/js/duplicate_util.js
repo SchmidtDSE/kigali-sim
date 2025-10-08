@@ -620,16 +620,13 @@ class DuplicateEntityPresenter {
    */
   _deepCopyCommand(sourceCommand) {
     const self = this;
-    const value = sourceCommand.getValue();
-    const engineNumber = value ?
-      new EngineNumber(value.getValue(), value.getUnits(), value.getOriginalString()) : null;
     const duration = sourceCommand.getDuration();
     const yearMatcher = duration ? self._deepCopyYearMatcher(duration) : null;
 
     return new Command(
       sourceCommand.getTypeName(),
       sourceCommand.getTarget(),
-      engineNumber,
+      sourceCommand.getValue(),
       yearMatcher,
     );
   }
@@ -642,17 +639,13 @@ class DuplicateEntityPresenter {
    */
   _deepCopyRetireCommand(sourceRetireCommand) {
     const self = this;
-    const value = sourceRetireCommand.getValue();
-    const engineNumber = value ?
-      new EngineNumber(value.getValue(), value.getUnits(), value.getOriginalString()) : null;
     const duration = sourceRetireCommand.getDuration();
     const yearMatcher = duration ? self._deepCopyYearMatcher(duration) : null;
-    const withReplacement = sourceRetireCommand.getWithReplacement();
 
     return new RetireCommand(
-      engineNumber,
+      sourceRetireCommand.getValue(),
       yearMatcher,
-      withReplacement,
+      sourceRetireCommand.getWithReplacement(),
     );
   }
 
@@ -664,16 +657,13 @@ class DuplicateEntityPresenter {
    */
   _deepCopyLimitCommand(sourceLimitCommand) {
     const self = this;
-    const value = sourceLimitCommand.getValue();
-    const engineNumber = value ?
-      new EngineNumber(value.getValue(), value.getUnits(), value.getOriginalString()) : null;
     const duration = sourceLimitCommand.getDuration();
     const yearMatcher = duration ? self._deepCopyYearMatcher(duration) : null;
 
     return new LimitCommand(
       sourceLimitCommand.getTypeName(),
       sourceLimitCommand.getTarget(),
-      engineNumber,
+      sourceLimitCommand.getValue(),
       yearMatcher,
       sourceLimitCommand.getDisplacing(),
     );
@@ -720,18 +710,12 @@ class DuplicateEntityPresenter {
    */
   _deepCopyRecycleCommand(sourceRecycleCommand) {
     const self = this;
-    const target = sourceRecycleCommand.getTarget();
-    const targetNumber = target ?
-      new EngineNumber(target.getValue(), target.getUnits(), target.getOriginalString()) : null;
-    const value = sourceRecycleCommand.getValue();
-    const valueNumber = value ?
-      new EngineNumber(value.getValue(), value.getUnits(), value.getOriginalString()) : null;
     const duration = sourceRecycleCommand.getDuration();
     const yearMatcher = duration ? self._deepCopyYearMatcher(duration) : null;
 
     return new RecycleCommand(
-      targetNumber,
-      valueNumber,
+      sourceRecycleCommand.getTarget(),
+      sourceRecycleCommand.getValue(),
       yearMatcher,
       sourceRecycleCommand.getStage(),
       sourceRecycleCommand.getInduction(),
@@ -746,14 +730,11 @@ class DuplicateEntityPresenter {
    */
   _deepCopyReplaceCommand(sourceReplaceCommand) {
     const self = this;
-    const volume = sourceReplaceCommand.getVolume();
-    const volumeNumber = volume ?
-      new EngineNumber(volume.getValue(), volume.getUnits(), volume.getOriginalString()) : null;
     const duration = sourceReplaceCommand.getDuration();
     const yearMatcher = duration ? self._deepCopyYearMatcher(duration) : null;
 
     return new ReplaceCommand(
-      volumeNumber,
+      sourceReplaceCommand.getVolume(),
       sourceReplaceCommand.getSource(),
       sourceReplaceCommand.getDestination(),
       yearMatcher,
