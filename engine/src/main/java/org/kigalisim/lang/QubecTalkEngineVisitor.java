@@ -49,6 +49,7 @@ import org.kigalisim.lang.operation.RecoverOperation;
 import org.kigalisim.lang.operation.RecoverOperation.RecoveryStage;
 import org.kigalisim.lang.operation.ReplaceOperation;
 import org.kigalisim.lang.operation.RetireOperation;
+import org.kigalisim.lang.operation.RetireWithReplacementOperation;
 import org.kigalisim.lang.operation.SetOperation;
 import org.kigalisim.lang.operation.SubtractionOperation;
 import org.kigalisim.lang.program.ParsedApplication;
@@ -691,6 +692,11 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
   public Fragment visitInitialChargeAllYears(QubecTalkParser.InitialChargeAllYearsContext ctx) {
     Operation valueOperation = visit(ctx.value).getOperation();
     String stream = ctx.target.getText();
+
+    // Validate that initial charge uses unit-based denominator
+    String unitString = ctx.value.unitOrRatio().getText();
+    validateInitialChargeUnits(unitString, stream);
+
     Operation operation = new InitialChargeOperation(stream, valueOperation);
     return new OperationFragment(operation);
   }
@@ -700,7 +706,16 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
    */
   @Override
   public Fragment visitInitialChargeDuration(QubecTalkParser.InitialChargeDurationContext ctx) {
-    return visitChildren(ctx);
+    Operation valueOperation = visit(ctx.value).getOperation();
+    String stream = ctx.target.getText();
+    ParsedDuring during = visit(ctx.duration).getDuring();
+
+    // Validate that initial charge uses unit-based denominator
+    String unitString = ctx.value.unitOrRatio().getText();
+    validateInitialChargeUnits(unitString, stream);
+
+    Operation operation = new InitialChargeOperation(stream, valueOperation, during);
+    return new OperationFragment(operation);
   }
 
   /**
@@ -912,8 +927,19 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
   @Override
   public Fragment visitRetireAllYears(QubecTalkParser.RetireAllYearsContext ctx) {
     Operation volumeOperation = visit(ctx.volume).getOperation();
-    Operation operation = new RetireOperation(volumeOperation);
-    return new OperationFragment(operation);
+
+    // Check if "with replacement" is present
+    boolean withReplacement = hasWithReplacement(ctx);
+
+    if (withReplacement) {
+      // Create compound operation that retires and then adds replacement
+      Operation operation = new RetireWithReplacementOperation(volumeOperation);
+      return new OperationFragment(operation);
+    } else {
+      // Standard retire operation
+      Operation operation = new RetireOperation(volumeOperation);
+      return new OperationFragment(operation);
+    }
   }
 
   /**
@@ -923,8 +949,19 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
   public Fragment visitRetireDuration(QubecTalkParser.RetireDurationContext ctx) {
     Operation volumeOperation = visit(ctx.volume).getOperation();
     ParsedDuring during = visit(ctx.duration).getDuring();
-    Operation operation = new RetireOperation(volumeOperation, during);
-    return new OperationFragment(operation);
+
+    // Check if "with replacement" is present
+    boolean withReplacement = hasWithReplacement(ctx);
+
+    if (withReplacement) {
+      // Create compound operation that retires and then adds replacement
+      Operation operation = new RetireWithReplacementOperation(volumeOperation, during);
+      return new OperationFragment(operation);
+    } else {
+      // Standard retire operation
+      Operation operation = new RetireOperation(volumeOperation, during);
+      return new OperationFragment(operation);
+    }
   }
 
   /**
@@ -1116,5 +1153,41 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
       case "recharge" -> RecoveryStage.RECHARGE;
       default -> throw new IllegalArgumentException("Invalid recovery stage: " + stageText);
     };
+  }
+
+  /**
+   * Check if a parse tree context contains the "with replacement" clause.
+   *
+   * <p>This method checks for the presence of "withreplacement" (case-insensitive,
+   * no spaces) in the parse tree text. The grammar combines WITH_ and REPLACEMENT_
+   * tokens, so they appear concatenated in the text representation.</p>
+   *
+   * @param ctx The parse tree context to check
+   * @return true if the context contains "with replacement", false otherwise
+   */
+  private boolean hasWithReplacement(org.antlr.v4.runtime.ParserRuleContext ctx) {
+    return ctx.getText().toLowerCase().contains("withreplacement");
+  }
+
+  /**
+   * Validates that initial charge units end with "unit" or "units".
+   *
+   * @param unitString The unit string to validate (e.g., "kg / unit", "kg / units", "kg")
+   * @param stream The stream name for error reporting (e.g., "domestic", "import")
+   * @throws RuntimeException if units don't end with "unit" or "units"
+   */
+  private void validateInitialChargeUnits(String unitString, String stream) {
+    String normalized = unitString.trim().toLowerCase();
+
+    if (!normalized.endsWith("unit") && !normalized.endsWith("units")) {
+      throw new RuntimeException(
+          String.format(
+              "Initial charge for %s stream must be specified per unit (e.g., 'kg / unit' or 'kg / units'), but found '%s'. "
+                  + "Equipment-based calculations require initial charges to be rates per unit.",
+              stream,
+              unitString
+          )
+      );
+    }
   }
 }

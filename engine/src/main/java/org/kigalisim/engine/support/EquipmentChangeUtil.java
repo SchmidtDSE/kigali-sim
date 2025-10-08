@@ -49,9 +49,11 @@ public class EquipmentChangeUtil {
    * Handle setting equipment to a target value.
    *
    * <p>Compares target equipment level with current level:
-   * - If higher: converts delta to sales operation (handles recharge automatically)
-   * - If lower: sets sales to 0 and retires excess from priorEquipment
-   * - If equal: no action needed</p>
+   * <ul>
+   *   <li>If higher: converts delta to sales operation (handles recharge automatically)</li>
+   *   <li>If lower: sets sales to 0 and retires excess from priorEquipment</li>
+   *   <li>If equal: no action needed</li>
+   * </ul>
    *
    * @param targetEquipment The target equipment level in units
    * @param yearMatcher Optional year matcher for conditional setting
@@ -97,18 +99,43 @@ public class EquipmentChangeUtil {
    * Handle changing equipment by a delta amount.
    *
    * <p>Supports both percentage and absolute changes:
-   * - Percentage: change equipment by +8%
-   * - Absolute: change equipment by +100 units</p>
+   * <ul>
+   *   <li>Percentage: change equipment by +8%</li>
+   *   <li>Absolute: change equipment by +100 units</li>
+   * </ul>
+   *
+   * <p>Note: This method assumes the caller has already verified that the current
+   * year matches the yearMatcher. It does not perform year range checking internally.</p>
    *
    * @param changeAmount The change amount (percentage or units)
-   * @param yearMatcher Matcher to determine if change applies to current year
+   * @param yearMatcher Matcher for year-specific operations (passed to internal operations)
    */
   public void handleChange(EngineNumber changeAmount, YearMatcher yearMatcher) {
-    // Check year range
-    boolean isInRange = EngineSupportUtils.isInRange(yearMatcher, engine.getYear());
-    if (!isInRange) {
-      return;
-    }
+    handleChange(changeAmount, Optional.of(yearMatcher));
+  }
+
+  /**
+   * Handle changing equipment by a delta amount (internal version).
+   *
+   * <p>This is the core implementation used by both the public handleChange method
+   * and the refactored handleCap/handleFloor methods. It supports both percentage
+   * and absolute changes and handles optional year matching.</p>
+   *
+   * <p>Supports both percentage and absolute changes:
+   * <ul>
+   *   <li>Percentage: change equipment by +8%</li>
+   *   <li>Absolute: change equipment by +100 units</li>
+   * </ul>
+   *
+   * <p>Note: This method assumes the caller has already verified that the current
+   * year matches the yearMatcher. It does not perform year range checking internally.</p>
+   *
+   * @param changeAmount The change amount (percentage or units)
+   * @param yearMatcher Optional matcher for year-specific operations (passed to internal operations)
+   */
+  private void handleChange(EngineNumber changeAmount, Optional<YearMatcher> yearMatcher) {
+    // Caller is responsible for year checking
+    // This method assumes it's being called in the correct year context
 
     // Get current equipment level
     EngineNumber currentEquipmentRaw = engine.getStream("equipment");
@@ -129,29 +156,32 @@ public class EquipmentChangeUtil {
     // Handle based on delta direction
     if (delta.compareTo(BigDecimal.ZERO) > 0) {
       EngineNumber deltaUnits = new EngineNumber(delta, "units");
-      changeSales(deltaUnits, Optional.of(yearMatcher));
+      changeSales(deltaUnits, yearMatcher);
     } else if (delta.compareTo(BigDecimal.ZERO) < 0) {
       EngineNumber unitsToRetire = new EngineNumber(delta.abs(), "units");
-      retireEquipment(unitsToRetire, Optional.of(yearMatcher));
+      retireEquipment(unitsToRetire, yearMatcher);
     }
   }
 
   /**
    * Handle capping equipment to a maximum value.
    *
-   * <p>If current equipment exceeds cap, retires excess. Supports displacement
-   * to move retired equipment to another substance.</p>
+   * <p>If current equipment exceeds cap, reduces equipment by the excess amount.
+   * Supports displacement to move retired equipment to another substance.</p>
+   *
+   * <p>This method now uses change semantics: it calculates the delta (excess over cap)
+   * and calls handleChange with a negative delta to reduce equipment.</p>
+   *
+   * <p>Note: This method assumes the caller has already verified that the current
+   * year matches the yearMatcher. It does not perform year range checking internally.</p>
    *
    * @param capValue The maximum equipment level
-   * @param yearMatcher Matcher to determine if cap applies to current year
+   * @param yearMatcher Matcher for year-specific operations (passed to internal operations)
    * @param displaceTarget Optional substance/stream to displace to (null for no displacement)
    */
   public void handleCap(EngineNumber capValue, YearMatcher yearMatcher, String displaceTarget) {
-    // Check year range
-    boolean isInRange = EngineSupportUtils.isInRange(yearMatcher, engine.getYear());
-    if (!isInRange) {
-      return;
-    }
+    // Caller is responsible for year checking
+    // This method assumes it's being called in the correct year context
 
     // Get current equipment level
     EngineNumber currentEquipmentRaw = engine.getStream("equipment");
@@ -161,20 +191,25 @@ public class EquipmentChangeUtil {
 
     // Only act if current exceeds cap
     if (currentEquipment.getValue().compareTo(capUnits.getValue()) > 0) {
-      // Calculate excess
+      // Calculate excess (amount over the cap)
       BigDecimal excess = currentEquipment.getValue().subtract(capUnits.getValue());
       EngineNumber excessUnits = new EngineNumber(excess, "units");
 
-      // Set sales to 0 to prevent new equipment
-      EngineNumber zeroSales = new EngineNumber(BigDecimal.ZERO, "units");
-      setSales(zeroSales, Optional.of(yearMatcher));
+      // Get equipment level before change for displacement calculation
+      EngineNumber equipmentBefore = unitConverter.convert(engine.getStream("equipment"), "units");
 
-      // Retire excess equipment from priorEquipment only
-      EngineNumber actualRetired = retireFromPriorEquipment(excessUnits, Optional.of(yearMatcher));
+      // Use handleChange to reduce equipment by the excess amount
+      EngineNumber negativeChange = new EngineNumber(excess.negate(), "units");
+      handleChange(negativeChange, Optional.of(yearMatcher));
 
-      // Handle displacement if specified - only displace what was actually retired
-      if (displaceTarget != null) {
-        handleDisplacement(actualRetired, displaceTarget, true);
+      // Calculate actual change in equipment for displacement
+      EngineNumber equipmentAfter = unitConverter.convert(engine.getStream("equipment"), "units");
+      BigDecimal actualChange = equipmentBefore.getValue().subtract(equipmentAfter.getValue());
+      EngineNumber actualReduction = new EngineNumber(actualChange, "units");
+
+      // Handle displacement if specified - only displace what was actually changed
+      if (displaceTarget != null && actualChange.compareTo(BigDecimal.ZERO) > 0) {
+        handleDisplacement(actualReduction, displaceTarget, true);
       }
     }
   }
@@ -182,20 +217,23 @@ public class EquipmentChangeUtil {
   /**
    * Handle flooring equipment to a minimum value.
    *
-   * <p>If current equipment is below floor, increases sales to meet minimum.
+   * <p>If current equipment is below floor, increases equipment by the deficit amount.
    * Supports displacement to offset the increase.</p>
    *
+   * <p>This method now uses change semantics: it calculates the delta (deficit under floor)
+   * and calls handleChange with a positive delta to increase equipment.</p>
+   *
+   * <p>Note: This method assumes the caller has already verified that the current
+   * year matches the yearMatcher. It does not perform year range checking internally.</p>
+   *
    * @param floorValue The minimum equipment level
-   * @param yearMatcher Matcher to determine if floor applies to current year
+   * @param yearMatcher Matcher for year-specific operations (passed to internal operations)
    * @param displaceTarget Optional substance/stream to displace from (null for no displacement)
    */
   public void handleFloor(EngineNumber floorValue, YearMatcher yearMatcher,
       String displaceTarget) {
-    // Check year range
-    boolean isInRange = EngineSupportUtils.isInRange(yearMatcher, engine.getYear());
-    if (!isInRange) {
-      return;
-    }
+    // Caller is responsible for year checking
+    // This method assumes it's being called in the correct year context
 
     // Get current equipment level
     EngineNumber currentEquipmentRaw = engine.getStream("equipment");
@@ -205,16 +243,24 @@ public class EquipmentChangeUtil {
 
     // Only act if current is below floor
     if (currentEquipment.getValue().compareTo(floorUnits.getValue()) < 0) {
-      // Calculate deficit
+      // Calculate deficit (amount under the floor)
       BigDecimal deficit = floorUnits.getValue().subtract(currentEquipment.getValue());
       EngineNumber deficitUnits = new EngineNumber(deficit, "units");
 
-      // Increase sales to meet floor
-      changeSales(deficitUnits, Optional.of(yearMatcher));
+      // Get equipment level before change for displacement calculation
+      EngineNumber equipmentBefore = unitConverter.convert(engine.getStream("equipment"), "units");
 
-      // Handle displacement if specified
-      if (displaceTarget != null) {
-        handleDisplacement(deficitUnits, displaceTarget, false);
+      // Use handleChange to increase equipment by the deficit amount
+      handleChange(deficitUnits, Optional.of(yearMatcher));
+
+      // Calculate actual change in equipment for displacement
+      EngineNumber equipmentAfter = unitConverter.convert(engine.getStream("equipment"), "units");
+      BigDecimal actualChange = equipmentAfter.getValue().subtract(equipmentBefore.getValue());
+      EngineNumber actualIncrease = new EngineNumber(actualChange, "units");
+
+      // Handle displacement if specified - only displace what was actually changed
+      if (displaceTarget != null && actualChange.compareTo(BigDecimal.ZERO) > 0) {
+        handleDisplacement(actualIncrease, displaceTarget, false);
       }
     }
   }

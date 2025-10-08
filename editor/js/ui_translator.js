@@ -1418,23 +1418,26 @@ class Substance {
 
     const domesticCharge = parseUnitValue(newMetadata.getInitialChargeDomestic(), true);
     if (domesticCharge) {
-      self._initialCharges.push(new Command("initial charge", "domestic", domesticCharge, null));
+      const cmd = new Command("initial charge", "domestic", domesticCharge, null);
+      self._initialCharges.push(cmd);
     }
 
     const importCharge = parseUnitValue(newMetadata.getInitialChargeImport(), true);
     if (importCharge) {
-      self._initialCharges.push(new Command("initial charge", "import", importCharge, null));
+      const cmd = new Command("initial charge", "import", importCharge, null);
+      self._initialCharges.push(cmd);
     }
 
     const exportCharge = parseUnitValue(newMetadata.getInitialChargeExport(), true);
     if (exportCharge) {
-      self._initialCharges.push(new Command("initial charge", "export", exportCharge, null));
+      const cmd = new Command("initial charge", "export", exportCharge, null);
+      self._initialCharges.push(cmd);
     }
 
     // Update retirement command
     const retirementValue = parseUnitValue(newMetadata.getRetirement(), true);
     if (retirementValue) {
-      self._retire = new Command("retire", null, retirementValue, null);
+      self._retire = new RetireCommand(retirementValue, null, false);
     } else {
       self._retire = null;
     }
@@ -1876,6 +1879,12 @@ class Substance {
       "retire",
       formatEngineNumber(engineNumber),
     ];
+
+    // Add "with replacement" if the flag is set (must come before duration)
+    if (self._retire.getWithReplacement()) {
+      pieces.push("with replacement");
+    }
+
     self._addDuration(pieces, self._retire);
 
     return self._finalizeStatement(pieces);
@@ -2567,6 +2576,78 @@ class Command {
    * Check if this command is compatible with UI editing.
    *
    * @returns {boolean} Always returns true as basic commands are UI-compatible.
+   */
+  getIsCompatible() {
+    const self = this;
+    return true;
+  }
+}
+
+/**
+ * Retire command with optional replacement capability.
+ *
+ * Retire command with value, duration, and withReplacement flag indicating
+ * whether retired equipment should be replaced to maintain population.
+ */
+class RetireCommand {
+  /**
+   * Create a new RetireCommand.
+   *
+   * @param {EngineNumber} value - Retirement rate/amount.
+   * @param {YearMatcher|null} duration - Duration specification or null for all years.
+   * @param {boolean} withReplacement - Whether to maintain equipment via replacement.
+   */
+  constructor(value, duration, withReplacement) {
+    const self = this;
+    self._value = value;
+    self._duration = duration;
+    self._withReplacement = withReplacement;
+  }
+
+  /**
+   * Get the type name of this command.
+   *
+   * @returns {string} Always returns "retire".
+   */
+  getTypeName() {
+    const self = this;
+    return "retire";
+  }
+
+  /**
+   * Get the value associated with this command.
+   *
+   * @returns {EngineNumber} The retirement rate/amount with units.
+   */
+  getValue() {
+    const self = this;
+    return self._value;
+  }
+
+  /**
+   * Get the duration for which this command applies.
+   *
+   * @returns {YearMatcher|null} The duration specification, or null for all years.
+   */
+  getDuration() {
+    const self = this;
+    return self._duration;
+  }
+
+  /**
+   * Get whether this retire command uses replacement.
+   *
+   * @returns {boolean} True if retire should maintain equipment via replacement.
+   */
+  getWithReplacement() {
+    const self = this;
+    return self._withReplacement;
+  }
+
+  /**
+   * Check if this command is compatible with UI editing.
+   *
+   * @returns {boolean} Always returns true as retire commands are UI-compatible.
    */
   getIsCompatible() {
     const self = this;
@@ -3864,27 +3945,37 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
    * Visit a retire command with all years duration node.
    *
    * @param {Object} ctx - The parse tree node context.
-   * @returns {Command} New retire command instance.
+   * @returns {RetireCommand} New retire command instance.
    */
   visitRetireAllYears(ctx) {
     const self = this;
-    const targetFuture = (ctx) => null;
     const volumeFuture = (ctx) => ctx.volume.accept(self);
-    return self._buildOperation(ctx, "retire", null, targetFuture, volumeFuture);
+    const value = volumeFuture(ctx);
+
+    // Check if "with replacement" is present in the parsed context
+    const withReplacement = ctx.getText().toLowerCase().includes("withreplacement");
+
+    // Create retire-specific command
+    return new RetireCommand(value, null, withReplacement);
   }
 
   /**
    * Visit a retire command with duration node.
    *
    * @param {Object} ctx - The parse tree node context.
-   * @returns {Command} New retire command instance.
+   * @returns {RetireCommand} New retire command instance.
    */
   visitRetireDuration(ctx) {
     const self = this;
-    const targetFuture = (ctx) => null;
     const volumeFuture = (ctx) => ctx.volume.accept(self);
+    const value = volumeFuture(ctx);
     const duration = ctx.duration.accept(self);
-    return self._buildOperation(ctx, "retire", duration, targetFuture, volumeFuture);
+
+    // Check if "with replacement" is present in the parsed context
+    const withReplacement = ctx.getText().toLowerCase().includes("withreplacement");
+
+    // Create retire-specific command with duration
+    return new RetireCommand(value, duration, withReplacement);
   }
 
   /**
@@ -4378,6 +4469,7 @@ export {
   RechargeCommand,
   RecycleCommand,
   ReplaceCommand,
+  RetireCommand,
   SimulationScenario,
   SimulationStanza,
   Substance,

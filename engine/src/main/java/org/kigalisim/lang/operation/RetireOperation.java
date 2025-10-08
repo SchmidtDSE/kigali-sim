@@ -4,6 +4,7 @@ import java.util.Optional;
 import org.kigalisim.engine.Engine;
 import org.kigalisim.engine.number.EngineNumber;
 import org.kigalisim.engine.state.YearMatcher;
+import org.kigalisim.engine.support.EngineSupportUtils;
 import org.kigalisim.lang.machine.PushDownMachine;
 import org.kigalisim.lang.time.ParsedDuring;
 
@@ -51,6 +52,12 @@ public class RetireOperation implements Operation {
     YearMatcher yearMatcher = parsedDuring.buildYearMatcher(machine);
 
     Engine engine = machine.getEngine();
+
+    // Check if this operation should execute in the current year
+    if (!EngineSupportUtils.isInRange(yearMatcher, engine.getYear())) {
+      return;
+    }
+
     engine.retire(result, yearMatcher);
   }
 }

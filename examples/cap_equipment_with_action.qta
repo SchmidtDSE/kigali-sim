@@ -1,0 +1,37 @@
+start default
+
+  define application "test"
+
+    uses substance "test"
+      enable domestic
+      initial charge with 1 kg / unit for domestic
+      set domestic to 100 kg during year 1
+      set priorEquipment to 50 units
+      equals 5 tCO2e / mt
+    end substance
+
+  end application
+
+end default
+
+
+start policy "intervention"
+
+  modify application "test"
+
+    modify substance "test"
+      # Cap at 100 units - current equipment is 150 units (100 new + 50 prior)
+      # Should reduce equipment to 100 units (retire 50 units from prior)
+      cap equipment to 100 units
+    end substance
+
+  end application
+
+end policy
+
+
+start simulations
+
+  simulate "result" using "intervention" from years 1 to 1
+
+end simulations

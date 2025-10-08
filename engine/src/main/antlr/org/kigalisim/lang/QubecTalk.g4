@@ -188,6 +188,8 @@ RECOVER_: 'recover';
 
 REPLACE_: 'replace';
 
+REPLACEMENT_: 'replacement';
+
 RETIRE_: 'retire';
 
 REUSE_: 'reuse';
@@ -418,8 +420,8 @@ replaceStatement: REPLACE_ volume=unitValue OF_ target=stream WITH_ destination=
   | REPLACE_ volume=unitValue OF_ target=stream WITH_ destination=string duration=during  # replaceDuration
   ;
 
-retireStatement: RETIRE_ volume=unitValue  # retireAllYears
-  | RETIRE_ volume=unitValue duration=during  # retireDuration
+retireStatement: RETIRE_ volume=unitValue (WITH_ REPLACEMENT_)?  # retireAllYears
+  | RETIRE_ volume=unitValue (WITH_ REPLACEMENT_)? duration=during  # retireDuration
   ;
 
 setStatement: SET_ target=stream TO_ value=unitValue  # setAllYears
