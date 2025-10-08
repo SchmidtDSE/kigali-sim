@@ -100,8 +100,11 @@ public class EquipmentChangeUtil {
    * - Percentage: change equipment by +8%
    * - Absolute: change equipment by +100 units</p>
    *
+   * <p>Note: This method assumes the caller has already verified that the current
+   * year matches the yearMatcher. It does not perform year range checking internally.</p>
+   *
    * @param changeAmount The change amount (percentage or units)
-   * @param yearMatcher Matcher to determine if change applies to current year
+   * @param yearMatcher Matcher for year-specific operations (passed to internal operations)
    */
   public void handleChange(EngineNumber changeAmount, YearMatcher yearMatcher) {
     handleChange(changeAmount, Optional.of(yearMatcher));
@@ -118,17 +121,15 @@ public class EquipmentChangeUtil {
    * - Percentage: change equipment by +8%
    * - Absolute: change equipment by +100 units</p>
    *
+   * <p>Note: This method assumes the caller has already verified that the current
+   * year matches the yearMatcher. It does not perform year range checking internally.</p>
+   *
    * @param changeAmount The change amount (percentage or units)
-   * @param yearMatcher Optional matcher to determine if change applies to current year
+   * @param yearMatcher Optional matcher for year-specific operations (passed to internal operations)
    */
   private void handleChange(EngineNumber changeAmount, Optional<YearMatcher> yearMatcher) {
-    // Check year range if yearMatcher is present
-    if (yearMatcher.isPresent()) {
-      boolean isInRange = EngineSupportUtils.isInRange(yearMatcher.get(), engine.getYear());
-      if (!isInRange) {
-        return;
-      }
-    }
+    // Caller is responsible for year checking
+    // This method assumes it's being called in the correct year context
 
     // Get current equipment level
     EngineNumber currentEquipmentRaw = engine.getStream("equipment");
@@ -165,16 +166,16 @@ public class EquipmentChangeUtil {
    * <p>This method now uses change semantics: it calculates the delta (excess over cap)
    * and calls handleChange with a negative delta to reduce equipment.</p>
    *
+   * <p>Note: This method assumes the caller has already verified that the current
+   * year matches the yearMatcher. It does not perform year range checking internally.</p>
+   *
    * @param capValue The maximum equipment level
-   * @param yearMatcher Matcher to determine if cap applies to current year
+   * @param yearMatcher Matcher for year-specific operations (passed to internal operations)
    * @param displaceTarget Optional substance/stream to displace to (null for no displacement)
    */
   public void handleCap(EngineNumber capValue, YearMatcher yearMatcher, String displaceTarget) {
-    // Check year range
-    boolean isInRange = EngineSupportUtils.isInRange(yearMatcher, engine.getYear());
-    if (!isInRange) {
-      return;
-    }
+    // Caller is responsible for year checking
+    // This method assumes it's being called in the correct year context
 
     // Get current equipment level
     EngineNumber currentEquipmentRaw = engine.getStream("equipment");
@@ -216,17 +217,17 @@ public class EquipmentChangeUtil {
    * <p>This method now uses change semantics: it calculates the delta (deficit under floor)
    * and calls handleChange with a positive delta to increase equipment.</p>
    *
+   * <p>Note: This method assumes the caller has already verified that the current
+   * year matches the yearMatcher. It does not perform year range checking internally.</p>
+   *
    * @param floorValue The minimum equipment level
-   * @param yearMatcher Matcher to determine if floor applies to current year
+   * @param yearMatcher Matcher for year-specific operations (passed to internal operations)
    * @param displaceTarget Optional substance/stream to displace from (null for no displacement)
    */
   public void handleFloor(EngineNumber floorValue, YearMatcher yearMatcher,
       String displaceTarget) {
-    // Check year range
-    boolean isInRange = EngineSupportUtils.isInRange(yearMatcher, engine.getYear());
-    if (!isInRange) {
-      return;
-    }
+    // Caller is responsible for year checking
+    // This method assumes it's being called in the correct year context
 
     // Get current equipment level
     EngineNumber currentEquipmentRaw = engine.getStream("equipment");

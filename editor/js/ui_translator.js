@@ -1388,7 +1388,7 @@ class Substance {
     // Update GHG equals command
     const ghgValue = parseUnitValue(newMetadata.getGhg(), true);
     if (ghgValue) {
-      self._equalsGhg = new Command("equals", null, ghgValue, null, undefined);
+      self._equalsGhg = new Command("equals", null, ghgValue, null);
     } else {
       self._equalsGhg = null;
     }
@@ -1396,7 +1396,7 @@ class Substance {
     // Update energy equals command
     const energyValue = parseUnitValue(newMetadata.getEnergy(), true);
     if (energyValue) {
-      self._equalsKwh = new Command("equals", null, energyValue, null, undefined);
+      self._equalsKwh = new Command("equals", null, energyValue, null);
     } else {
       self._equalsKwh = null;
     }
@@ -1404,13 +1404,13 @@ class Substance {
     // Update enabled streams
     self._enables = [];
     if (newMetadata.getHasDomestic()) {
-      self._enables.push(new Command("enable", "domestic", null, null, undefined));
+      self._enables.push(new Command("enable", "domestic", null, null));
     }
     if (newMetadata.getHasImport()) {
-      self._enables.push(new Command("enable", "import", null, null, undefined));
+      self._enables.push(new Command("enable", "import", null, null));
     }
     if (newMetadata.getHasExport()) {
-      self._enables.push(new Command("enable", "export", null, null, undefined));
+      self._enables.push(new Command("enable", "export", null, null));
     }
 
     // Update initial charges
@@ -1418,29 +1418,26 @@ class Substance {
 
     const domesticCharge = parseUnitValue(newMetadata.getInitialChargeDomestic(), true);
     if (domesticCharge) {
-      const cmd = new Command("initial charge", "domestic", domesticCharge,
-        null, undefined);
+      const cmd = new Command("initial charge", "domestic", domesticCharge, null);
       self._initialCharges.push(cmd);
     }
 
     const importCharge = parseUnitValue(newMetadata.getInitialChargeImport(), true);
     if (importCharge) {
-      const cmd = new Command("initial charge", "import", importCharge, null,
-        undefined);
+      const cmd = new Command("initial charge", "import", importCharge, null);
       self._initialCharges.push(cmd);
     }
 
     const exportCharge = parseUnitValue(newMetadata.getInitialChargeExport(), true);
     if (exportCharge) {
-      const cmd = new Command("initial charge", "export", exportCharge, null,
-        undefined);
+      const cmd = new Command("initial charge", "export", exportCharge, null);
       self._initialCharges.push(cmd);
     }
 
     // Update retirement command
     const retirementValue = parseUnitValue(newMetadata.getRetirement(), true);
     if (retirementValue) {
-      self._retire = new Command("retire", null, retirementValue, null, false);
+      self._retire = new RetireCommand(retirementValue, null, false);
     } else {
       self._retire = null;
     }
@@ -2526,15 +2523,13 @@ class Command {
    * @param {string} target - Target of the command.
    * @param {EngineNumber} value - Value for the command.
    * @param {YearMatcher} duration - Duration for the command.
-   * @param {boolean} withReplacement - Whether retire uses replacement.
    */
-  constructor(typeName, target, value, duration, withReplacement) {
+  constructor(typeName, target, value, duration) {
     const self = this;
     self._typeName = typeName;
     self._target = target;
     self._value = value;
     self._duration = duration;
-    self._withReplacement = withReplacement;
   }
 
   /**
@@ -2578,6 +2573,68 @@ class Command {
   }
 
   /**
+   * Check if this command is compatible with UI editing.
+   *
+   * @returns {boolean} Always returns true as basic commands are UI-compatible.
+   */
+  getIsCompatible() {
+    const self = this;
+    return true;
+  }
+}
+
+/**
+ * Retire command with optional replacement capability.
+ *
+ * Retire command with value, duration, and withReplacement flag indicating
+ * whether retired equipment should be replaced to maintain population.
+ */
+class RetireCommand {
+  /**
+   * Create a new RetireCommand.
+   *
+   * @param {EngineNumber} value - Retirement rate/amount.
+   * @param {YearMatcher|null} duration - Duration specification or null for all years.
+   * @param {boolean} withReplacement - Whether to maintain equipment via replacement.
+   */
+  constructor(value, duration, withReplacement) {
+    const self = this;
+    self._value = value;
+    self._duration = duration;
+    self._withReplacement = withReplacement;
+  }
+
+  /**
+   * Get the type name of this command.
+   *
+   * @returns {string} Always returns "retire".
+   */
+  getTypeName() {
+    const self = this;
+    return "retire";
+  }
+
+  /**
+   * Get the value associated with this command.
+   *
+   * @returns {EngineNumber} The retirement rate/amount with units.
+   */
+  getValue() {
+    const self = this;
+    return self._value;
+  }
+
+  /**
+   * Get the duration for which this command applies.
+   *
+   * @returns {YearMatcher|null} The duration specification, or null for all years.
+   */
+  getDuration() {
+    const self = this;
+    return self._duration;
+  }
+
+  /**
    * Get whether this retire command uses replacement.
    *
    * @returns {boolean} True if retire should maintain equipment via replacement.
@@ -2590,7 +2647,7 @@ class Command {
   /**
    * Check if this command is compatible with UI editing.
    *
-   * @returns {boolean} Always returns true as basic commands are UI-compatible.
+   * @returns {boolean} Always returns true as retire commands are UI-compatible.
    */
   getIsCompatible() {
     const self = this;
@@ -3888,45 +3945,37 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
    * Visit a retire command with all years duration node.
    *
    * @param {Object} ctx - The parse tree node context.
-   * @returns {Command} New retire command instance.
+   * @returns {RetireCommand} New retire command instance.
    */
   visitRetireAllYears(ctx) {
     const self = this;
-    const targetFuture = (ctx) => null;
     const volumeFuture = (ctx) => ctx.volume.accept(self);
+    const value = volumeFuture(ctx);
 
     // Check if "with replacement" is present in the parsed context
     const withReplacement = ctx.getText().toLowerCase().includes("withreplacement");
 
-    const command = self._buildOperation(ctx, "retire", null, targetFuture, volumeFuture);
-
-    // Set the withReplacement property
-    command._withReplacement = withReplacement;
-
-    return command;
+    // Create retire-specific command
+    return new RetireCommand(value, null, withReplacement);
   }
 
   /**
    * Visit a retire command with duration node.
    *
    * @param {Object} ctx - The parse tree node context.
-   * @returns {Command} New retire command instance.
+   * @returns {RetireCommand} New retire command instance.
    */
   visitRetireDuration(ctx) {
     const self = this;
-    const targetFuture = (ctx) => null;
     const volumeFuture = (ctx) => ctx.volume.accept(self);
+    const value = volumeFuture(ctx);
     const duration = ctx.duration.accept(self);
 
     // Check if "with replacement" is present in the parsed context
     const withReplacement = ctx.getText().toLowerCase().includes("withreplacement");
 
-    const command = self._buildOperation(ctx, "retire", duration, targetFuture, volumeFuture);
-
-    // Set the withReplacement property
-    command._withReplacement = withReplacement;
-
-    return command;
+    // Create retire-specific command with duration
+    return new RetireCommand(value, duration, withReplacement);
   }
 
   /**
@@ -3986,7 +4035,7 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
   visitEnableAllYears(ctx) {
     const self = this;
     const target = ctx.target.getText();
-    return new Command("enable", target, null, null, undefined);
+    return new Command("enable", target, null, null);
   }
 
   /**
@@ -3999,7 +4048,7 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
     const self = this;
     const target = ctx.target.getText();
     const duration = ctx.duration.accept(self);
-    return new Command("enable", target, null, duration, undefined);
+    return new Command("enable", target, null, duration);
   }
 
   /**
@@ -4232,7 +4281,7 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
     }
     const value = valueGetter(ctx);
 
-    return new Command(typeName, target, value, duration, undefined);
+    return new Command(typeName, target, value, duration);
   }
 
   /**
@@ -4420,6 +4469,7 @@ export {
   RechargeCommand,
   RecycleCommand,
   ReplaceCommand,
+  RetireCommand,
   SimulationScenario,
   SimulationStanza,
   Substance,

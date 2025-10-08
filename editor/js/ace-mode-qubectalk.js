@@ -14,8 +14,8 @@ ace.define("ace/mode/qubectalk", [
 
     // Keywords from QubecTalk.g4 grammar - command keywords
     const commandKeywords = "across|as|at|by|cap|change|charge|during|enable|eol|floor|for|" +
-      "from|get|in|induction|initial|modify|of|recharge|recover|replace|replacement|retire|reuse|set|" +
-      "simulate|then|to|trials|using|with";
+      "from|get|in|induction|initial|modify|of|recharge|recover|replace|" +
+      "replacement|retire|reuse|set|simulate|then|to|trials|using|with";
 
     // Keywords from QubecTalk.g4 grammar - conditional and logical
     const conditionalKeywords = "and|else|endif|if|or|xor";

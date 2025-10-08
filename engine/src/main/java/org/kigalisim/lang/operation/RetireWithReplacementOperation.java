@@ -56,6 +56,12 @@ public class RetireWithReplacementOperation implements Operation {
     YearMatcher yearMatcher = parsedDuring.buildYearMatcher(machine);
 
     Engine engine = machine.getEngine();
+
+    // Check if this operation should execute in the current year
+    if (!EngineSupportUtils.isInRange(yearMatcher, engine.getYear())) {
+      return;
+    }
+
     UseKey scope = engine.getScope();
 
     // Step 1: Determine the target units for replacement

@@ -18,6 +18,7 @@ import {
   RechargeCommand,
   RecycleCommand,
   ReplaceCommand,
+  RetireCommand,
   SimulationScenario,
   SubstanceBuilder,
 } from "ui_translator";
@@ -1578,26 +1579,26 @@ class ConsumptionListPresenter {
     const enableExport = self._dialog.querySelector(".enable-export-checkbox");
 
     if (enableDomestic.checked) {
-      substanceBuilder.addCommand(new Command("enable", "domestic", null, null, undefined));
+      substanceBuilder.addCommand(new Command("enable", "domestic", null, null));
     }
     if (enableImport.checked) {
-      substanceBuilder.addCommand(new Command("enable", "import", null, null, undefined));
+      substanceBuilder.addCommand(new Command("enable", "import", null, null));
     }
     if (enableExport.checked) {
-      substanceBuilder.addCommand(new Command("enable", "export", null, null, undefined));
+      substanceBuilder.addCommand(new Command("enable", "export", null, null));
     }
 
     const ghgValue = getEngineNumberValue(
       self._dialog.querySelector(".edit-consumption-ghg-input"),
       self._dialog.querySelector(".edit-consumption-ghg-units-input"),
     );
-    substanceBuilder.addCommand(new Command("equals", null, ghgValue, null, undefined));
+    substanceBuilder.addCommand(new Command("equals", null, ghgValue, null));
 
     const energyValue = getEngineNumberValue(
       self._dialog.querySelector(".edit-consumption-energy-input"),
       self._dialog.querySelector(".edit-consumption-energy-units-input"),
     );
-    substanceBuilder.addCommand(new Command("equals", null, energyValue, null, undefined));
+    substanceBuilder.addCommand(new Command("equals", null, energyValue, null));
 
     const initialChargeDomestic = getEngineNumberValue(
       self._dialog.querySelector(".edit-consumption-initial-charge-domestic-input"),
@@ -1646,8 +1647,8 @@ class ConsumptionListPresenter {
     );
     const withReplacement = !retirementReducesCheckbox.checked;
 
-    // Create retire command with withReplacement flag (5th parameter)
-    const retireCommand = new Command("retire", null, retirement, null, withReplacement);
+    // Create retire command with withReplacement flag
+    const retireCommand = new RetireCommand(retirement, null, withReplacement);
     substanceBuilder.addCommand(retireCommand);
 
 
@@ -3217,7 +3218,7 @@ function readSetCommandUi(root) {
     root.querySelector(".set-units-input"),
   );
   const duration = readDurationUi(root.querySelector(".duration-subcomponent"));
-  return new Command("setVal", target, amount, duration, undefined);
+  return new Command("setVal", target, amount, duration);
 }
 
 /**
@@ -3283,7 +3284,7 @@ function readChangeCommandUi(root) {
   const originalString = invert ? invertNumberString(amountInput) : amountInput.trim();
   const amountWithUnits = new EngineNumber(amount, units, originalString);
   const duration = readDurationUi(root.querySelector(".duration-subcomponent"));
-  return new Command("change", target, amountWithUnits, duration, undefined);
+  return new Command("change", target, amountWithUnits, duration);
 }
 
 /**

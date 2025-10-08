@@ -10,6 +10,7 @@ import {
   RechargeCommand,
   RecycleCommand,
   ReplaceCommand,
+  RetireCommand,
   SimulationScenario,
   SimulationStanza,
   SubstanceBuilder,
@@ -146,21 +147,21 @@ function buildUiTranslatorReverseTests() {
     });
 
     QUnit.test("retires substances", function (assert) {
-      const command = new Command("retire", null, new EngineNumber("10", "%"), null);
+      const command = new RetireCommand(new EngineNumber("10", "%"), null, false);
       const substance = createWithCommand("test", false, command);
       const code = substance.toCode(0);
       assert.notEqual(code.indexOf("retire 10 %"), -1);
     });
 
     QUnit.test("retires substances with replacement", function (assert) {
-      const command = new Command("retire", null, new EngineNumber("5", "% / year"), null, true);
+      const command = new RetireCommand(new EngineNumber("5", "% / year"), null, true);
       const substance = createWithCommand("test", false, command);
       const code = substance.toCode(0);
       assert.notEqual(code.indexOf("retire 5 % / year with replacement"), -1);
     });
 
     QUnit.test("retires substances without replacement flag", function (assert) {
-      const command = new Command("retire", null, new EngineNumber("5", "% / year"), null, false);
+      const command = new RetireCommand(new EngineNumber("5", "% / year"), null, false);
       const substance = createWithCommand("test", false, command);
       const code = substance.toCode(0);
       assert.equal(code.indexOf("with replacement"), -1);
@@ -168,9 +169,7 @@ function buildUiTranslatorReverseTests() {
     });
 
     QUnit.test("retires substances with replacement and duration", function (assert) {
-      const command = new Command(
-        "retire",
-        null,
+      const command = new RetireCommand(
         new EngineNumber("10", "%"),
         new YearMatcher(new ParsedYear(1), new ParsedYear(5)),
         true,
@@ -200,11 +199,10 @@ function buildUiTranslatorReverseTests() {
     });
 
     QUnit.test("supports duration multiple years", function (assert) {
-      const command = new Command(
-        "retire",
-        null,
+      const command = new RetireCommand(
         new EngineNumber("10", "%"),
         new YearMatcher(new ParsedYear(2), new ParsedYear(5)),
+        false,
       );
       const substance = createWithCommand("test", false, command);
       const code = substance.toCode(0);
@@ -212,11 +210,10 @@ function buildUiTranslatorReverseTests() {
     });
 
     QUnit.test("supports duration multiple years reversed", function (assert) {
-      const command = new Command(
-        "retire",
-        null,
+      const command = new RetireCommand(
         new EngineNumber("10", "%"),
         new YearMatcher(new ParsedYear(5), new ParsedYear(2)),
+        false,
       );
       const substance = createWithCommand("test", false, command);
       const code = substance.toCode(0);

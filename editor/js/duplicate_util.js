@@ -15,6 +15,7 @@ import {
   RechargeCommand,
   RecycleCommand,
   ReplaceCommand,
+  RetireCommand,
   SimulationScenario,
   Substance,
 } from "ui_translator";
@@ -584,7 +585,7 @@ class DuplicateEntityPresenter {
       return self._deepCopyReplaceCommand(cmd);
     });
     const copiedRetire = sourceSubstance.getRetire() ?
-      self._deepCopyCommand(sourceSubstance.getRetire()) : null;
+      self._deepCopyRetireCommand(sourceSubstance.getRetire()) : null;
     const copiedSetVals = sourceSubstance.getSetVals().map((cmd) =>
       self._deepCopyCommand(cmd),
     );
@@ -630,6 +631,28 @@ class DuplicateEntityPresenter {
       sourceCommand.getTarget(),
       engineNumber,
       yearMatcher,
+    );
+  }
+
+  /**
+   * Deep copy a retire command.
+   * @param {RetireCommand} sourceRetireCommand - The retire command to copy
+   * @returns {RetireCommand} Deep copied retire command
+   * @private
+   */
+  _deepCopyRetireCommand(sourceRetireCommand) {
+    const self = this;
+    const value = sourceRetireCommand.getValue();
+    const engineNumber = value ?
+      new EngineNumber(value.getValue(), value.getUnits(), value.getOriginalString()) : null;
+    const duration = sourceRetireCommand.getDuration();
+    const yearMatcher = duration ? self._deepCopyYearMatcher(duration) : null;
+    const withReplacement = sourceRetireCommand.getWithReplacement();
+
+    return new RetireCommand(
+      engineNumber,
+      yearMatcher,
+      withReplacement,
     );
   }
 
