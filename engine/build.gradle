@@ -77,7 +77,7 @@ test {
   testLogging {
     exceptionFormat = "full"
     events "failed"
-    showStandardStreams = true
+    showStandardStreams = false
   }
 }
 
