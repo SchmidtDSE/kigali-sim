@@ -81,13 +81,15 @@ public class EquipmentChangeUtil {
 
     // Handle based on delta direction
     if (delta.compareTo(BigDecimal.ZERO) > 0) {
-      // Increase: convert to sales
-      EngineNumber deltaUnits = new EngineNumber(delta, "units");
-      convertToSalesIncrease(deltaUnits, yearMatcher);
+      // Increase: set sales to achieve target
+      EngineNumber salesUnits = new EngineNumber(delta, "units");
+      setSales(salesUnits, yearMatcher);
     } else if (delta.compareTo(BigDecimal.ZERO) < 0) {
-      // Decrease: retire equipment
+      // Decrease: set sales to 0 and retire equipment
+      EngineNumber zeroSales = new EngineNumber(BigDecimal.ZERO, "units");
+      setSales(zeroSales, yearMatcher);
       EngineNumber unitsToRetire = new EngineNumber(delta.abs(), "units");
-      retireEquipment(unitsToRetire, yearMatcher);
+      retireFromPriorEquipment(unitsToRetire, yearMatcher);
     }
   }
 
@@ -127,7 +129,7 @@ public class EquipmentChangeUtil {
     // Handle based on delta direction
     if (delta.compareTo(BigDecimal.ZERO) > 0) {
       EngineNumber deltaUnits = new EngineNumber(delta, "units");
-      convertToSalesIncrease(deltaUnits, Optional.of(yearMatcher));
+      changeSales(deltaUnits, Optional.of(yearMatcher));
     } else if (delta.compareTo(BigDecimal.ZERO) < 0) {
       EngineNumber unitsToRetire = new EngineNumber(delta.abs(), "units");
       retireEquipment(unitsToRetire, Optional.of(yearMatcher));
@@ -163,8 +165,12 @@ public class EquipmentChangeUtil {
       BigDecimal excess = currentEquipment.getValue().subtract(capUnits.getValue());
       EngineNumber excessUnits = new EngineNumber(excess, "units");
 
-      // Retire excess equipment (returns actual amount retired, may be less than requested)
-      EngineNumber actualRetired = retireEquipment(excessUnits, Optional.of(yearMatcher));
+      // Set sales to 0 to prevent new equipment
+      EngineNumber zeroSales = new EngineNumber(BigDecimal.ZERO, "units");
+      setSales(zeroSales, Optional.of(yearMatcher));
+
+      // Retire excess equipment from priorEquipment only
+      EngineNumber actualRetired = retireFromPriorEquipment(excessUnits, Optional.of(yearMatcher));
 
       // Handle displacement if specified - only displace what was actually retired
       if (displaceTarget != null) {
@@ -204,7 +210,7 @@ public class EquipmentChangeUtil {
       EngineNumber deficitUnits = new EngineNumber(deficit, "units");
 
       // Increase sales to meet floor
-      convertToSalesIncrease(deficitUnits, Optional.of(yearMatcher));
+      changeSales(deficitUnits, Optional.of(yearMatcher));
 
       // Handle displacement if specified
       if (displaceTarget != null) {
@@ -214,33 +220,95 @@ public class EquipmentChangeUtil {
   }
 
   /**
-   * Convert equipment increase to sales operation.
+   * Set sales to an absolute value (used by handleSet).
    *
    * <p>Sets sales to the required value in units, which automatically handles recharge
    * through existing sales distribution logic.</p>
    *
-   * @param salesUnits The sales value to set
+   * @param salesUnits The absolute sales value to set
    * @param yearMatcher Optional year matcher
    */
-  private void convertToSalesIncrease(EngineNumber salesUnits,
-      Optional<YearMatcher> yearMatcher) {
-    // Get scope from engine
+  private void setSales(EngineNumber salesUnits, Optional<YearMatcher> yearMatcher) {
     UseKey scope = engine.getScope();
-
-    // Update lastSpecifiedValue for sales to maintain unit-based tracking
     SimulationState simulationState = engine.getStreamKeeper();
     simulationState.setLastSpecifiedValue(scope, "sales", salesUnits);
 
-    // Use SetExecutor to distribute to domestic/import
     SetExecutor setExecutor = new SetExecutor(engine);
     setExecutor.handleSalesSet(scope, "sales", salesUnits, yearMatcher);
   }
 
   /**
-   * Retire equipment from priorEquipment.
+   * Change sales by a delta amount (used by handleChange).
    *
-   * <p>Sets sales to 0 units and retires the specified amount from priorEquipment.
+   * <p>Uses changeStream to incrementally change sales, allowing multiple
+   * operations to stack properly.</p>
+   *
+   * @param salesDelta The sales change in units (can be positive or negative)
+   * @param yearMatcher Optional year matcher
+   */
+  private void changeSales(EngineNumber salesDelta, Optional<YearMatcher> yearMatcher) {
+    // Use changeStream to add to existing sales
+    YearMatcher yearMatcherEffective = yearMatcher.orElse(null);
+    engine.changeStream("sales", salesDelta, yearMatcherEffective);
+  }
+
+  /**
+   * Retire equipment from priorEquipment only (used by handleSet).
+   *
+   * <p>Retires the specified amount from priorEquipment only. Does not modify sales.
    * If insufficient priorEquipment, retires only what's available.</p>
+   *
+   * @param unitsToRetire The number of units to retire
+   * @param yearMatcher Optional year matcher
+   * @return The actual number of units retired
+   */
+  private EngineNumber retireFromPriorEquipment(EngineNumber unitsToRetire, Optional<YearMatcher> yearMatcher) {
+    UseKey scope = engine.getScope();
+    UnitConverter unitConverter = createEquipmentUnitConverter();
+    SimulationState simulationState = engine.getStreamKeeper();
+
+    // Calculate retirement from priorEquipment
+    EngineNumber priorEquipmentRaw = engine.getStream("priorEquipment");
+    EngineNumber priorEquipment = unitConverter.convert(priorEquipmentRaw, "units");
+    BigDecimal actualRetirement = priorEquipment.getValue().min(unitsToRetire.getValue());
+
+    // Execute retirement if there's anything to retire from priorEquipment
+    if (actualRetirement.compareTo(BigDecimal.ZERO) > 0) {
+      // Convert to percentage of priorEquipment for retire command
+      BigDecimal retirementPercentage = actualRetirement
+          .divide(priorEquipment.getValue(), MathContext.DECIMAL128)
+          .multiply(BigDecimal.valueOf(100));
+
+      // Execute retirement
+      EngineNumber retirementRate = new EngineNumber(retirementPercentage, "%");
+      simulationState.setRetirementRate(scope, retirementRate);
+
+      // Trigger retirement recalc using RecalcKit
+      RecalcKit recalcKit = new RecalcKitBuilder()
+          .setStreamKeeper(simulationState)
+          .setUnitConverter(engine.getUnitConverter())
+          .setStateGetter(engine.getStateGetter())
+          .build();
+
+      RecalcOperation operation = new RecalcOperationBuilder()
+          .setRecalcKit(recalcKit)
+          .recalcRetire()
+          .thenPropagateToSales()
+          .build();
+      operation.execute(engine);
+    }
+
+    // Return the actual amount retired
+    return new EngineNumber(actualRetirement, "units");
+  }
+
+  /**
+   * Retire equipment from priorEquipment (used by handleChange).
+   *
+   * <p>Retires the specified amount from priorEquipment. If priorEquipment is insufficient
+   * to cover the full retirement, retires what's available from priorEquipment and uses
+   * changeStream to reduce sales by the remainder. This enables proper handling of
+   * percentage-based equipment changes.</p>
    *
    * @param unitsToRetire The number of units to retire
    * @param yearMatcher Optional year matcher
@@ -249,47 +317,47 @@ public class EquipmentChangeUtil {
   private EngineNumber retireEquipment(EngineNumber unitsToRetire, Optional<YearMatcher> yearMatcher) {
     UseKey scope = engine.getScope();
     UnitConverter unitConverter = createEquipmentUnitConverter();
-
-    // Set sales to 0 units (maintains unit-based tracking)
-    EngineNumber zeroSales = new EngineNumber(BigDecimal.ZERO, "units");
     SimulationState simulationState = engine.getStreamKeeper();
-    simulationState.setLastSpecifiedValue(scope, "sales", zeroSales);
-
-    SetExecutor setExecutor = new SetExecutor(engine);
-    setExecutor.handleSalesSet(scope, "sales", zeroSales, yearMatcher);
 
     // Calculate retirement from priorEquipment
     EngineNumber priorEquipmentRaw = engine.getStream("priorEquipment");
     EngineNumber priorEquipment = unitConverter.convert(priorEquipmentRaw, "units");
     BigDecimal actualRetirement = priorEquipment.getValue().min(unitsToRetire.getValue());
 
-    // Convert to percentage of priorEquipment for retire command
-    BigDecimal retirementPercentage;
-    if (priorEquipment.getValue().compareTo(BigDecimal.ZERO) == 0) {
-      retirementPercentage = BigDecimal.ZERO;
-    } else {
-      retirementPercentage = actualRetirement
-          .divide(priorEquipment.getValue(), MathContext.DECIMAL128)
-          .multiply(BigDecimal.valueOf(100));
+    // Check if we need to reduce sales for the remainder
+    BigDecimal remainder = unitsToRetire.getValue().subtract(actualRetirement);
+    if (remainder.compareTo(BigDecimal.ZERO) > 0) {
+      // Not enough priorEquipment - use changeStream to reduce sales by the remainder
+      EngineNumber salesDecrease = new EngineNumber(remainder.negate(), "units");
+      YearMatcher yearMatcherEffective = yearMatcher.orElse(null);
+      engine.changeStream("sales", salesDecrease, yearMatcherEffective);
     }
 
-    // Execute retirement
-    EngineNumber retirementRate = new EngineNumber(retirementPercentage, "%");
-    simulationState.setRetirementRate(scope, retirementRate);
+    // Execute retirement if there's anything to retire from priorEquipment
+    if (actualRetirement.compareTo(BigDecimal.ZERO) > 0) {
+      // Convert to percentage of priorEquipment for retire command
+      BigDecimal retirementPercentage = actualRetirement
+          .divide(priorEquipment.getValue(), MathContext.DECIMAL128)
+          .multiply(BigDecimal.valueOf(100));
 
-    // Trigger retirement recalc using RecalcKit
-    RecalcKit recalcKit = new RecalcKitBuilder()
-        .setStreamKeeper(simulationState)
-        .setUnitConverter(engine.getUnitConverter())
-        .setStateGetter(engine.getStateGetter())
-        .build();
+      // Execute retirement
+      EngineNumber retirementRate = new EngineNumber(retirementPercentage, "%");
+      simulationState.setRetirementRate(scope, retirementRate);
 
-    RecalcOperation operation = new RecalcOperationBuilder()
-        .setRecalcKit(recalcKit)
-        .recalcRetire()
-        .thenPropagateToSales()
-        .build();
-    operation.execute(engine);
+      // Trigger retirement recalc using RecalcKit
+      RecalcKit recalcKit = new RecalcKitBuilder()
+          .setStreamKeeper(simulationState)
+          .setUnitConverter(engine.getUnitConverter())
+          .setStateGetter(engine.getStateGetter())
+          .build();
+
+      RecalcOperation operation = new RecalcOperationBuilder()
+          .setRecalcKit(recalcKit)
+          .recalcRetire()
+          .thenPropagateToSales()
+          .build();
+      operation.execute(engine);
+    }
 
     // Return the actual amount retired
     return new EngineNumber(actualRetirement, "units");
