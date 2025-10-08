@@ -482,4 +482,46 @@ public class ChangeLiveTests {
     assertTrue(salesDiff2028 > 0.045,
         "2028 should maintain recycling effect (>4.5% reduction)");
   }
+
+  /**
+   * Test equipment change by percentage resulting in zero equipment bug.
+   * When applying +100% followed by -1%, equipment should not become zero.
+   */
+  @Test
+  public void testEquipmentPercentageChangeBug() throws IOException {
+    // Load and parse the QTA file
+    String qtaPath = "../examples/equipment_percentage_change_bug.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    // Run the scenario
+    String scenarioName = "BAU";
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
+
+    List<EngineResult> resultsList = results.collect(Collectors.toList());
+
+    // Check year 1 equipment - should be 1000 units (initial set)
+    EngineResult year1Result = LiveTestsUtil.getResult(resultsList.stream(), 1, "Test", "SubA");
+    assertNotNull(year1Result, "Should have result for Test/SubA in year 1");
+    assertEquals(1000.0, year1Result.getPopulation().getValue().doubleValue(), 0.0001,
+        "Year 1 equipment should be 1000 units");
+
+    // Check year 2 equipment - should be 2000 units (1000 + 100% = 2000)
+    EngineResult year2Result = LiveTestsUtil.getResult(resultsList.stream(), 2, "Test", "SubA");
+    assertNotNull(year2Result, "Should have result for Test/SubA in year 2");
+    assertEquals(2000.0, year2Result.getPopulation().getValue().doubleValue(), 0.0001,
+        "Year 2 equipment should be 2000 units (after +100%)");
+
+    // Check year 3 equipment - should be 1980 units (2000 - 1% = 1980)
+    EngineResult year3Result = LiveTestsUtil.getResult(resultsList.stream(), 3, "Test", "SubA");
+    assertNotNull(year3Result, "Should have result for Test/SubA in year 3");
+    assertEquals(1980.0, year3Result.getPopulation().getValue().doubleValue(), 0.0001,
+        "Year 3 equipment should be 1980 units (after -1%)");
+
+    // Verify equipment is NOT zero in later years
+    EngineResult year5Result = LiveTestsUtil.getResult(resultsList.stream(), 5, "Test", "SubA");
+    assertNotNull(year5Result, "Should have result for Test/SubA in year 5");
+    assertTrue(year5Result.getPopulation().getValue().doubleValue() > 0,
+        "Year 5 equipment should be greater than 0 units");
+  }
 }
