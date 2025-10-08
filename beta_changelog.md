@@ -14,9 +14,17 @@ Finally, we want to again express our gratitude for your feedback and time.
 
 The following changes have been adopted and released.
 
+### Speed boost
+
+**Status**: Released October 7, 2025
+
+**Classification**: Feature
+
+Speed boost in unit conversion. See [#584](https://github.com/SchmidtDSE/kigali-sim/pull/584).
+
 ### Color coordiantion in subapps
 
-**Status**: Release October 6, 2025
+**Status**: Release October 6, 2025 (all users Oct 7)
 
 **Classification**: Feature
 
@@ -24,7 +32,7 @@ Added a feature where all of the sub-applications now have the same color as the
 
 ### Set equipment meta-command
 
-**Status**: Released October 6, 2025
+**Status**: Released October 6, 2025 (all users Oct 7)
 
 **Classification**: Clarification
 
@@ -32,7 +40,7 @@ It was unclear if setting the equipment stream would cause retirement actions or
 
 ### Non-amortized retirement
 
-**Status**: Released October 6, 2025
+**Status**: Released October 6, 2025 (all users Oct 7)
 
 **Classification**: Bug
 
