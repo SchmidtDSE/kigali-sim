@@ -785,13 +785,30 @@ public class SingleThreadEngine implements Engine {
   @Override
   public void changeStream(String stream, EngineNumber amount, YearMatcher yearMatcher,
       UseKey useKey) {
-    if ("equipment".equals(stream) && getIsInRange(yearMatcher)) {
-      equipmentChangeUtil.handleChange(amount);
+    if ("equipment".equals(stream)) {
+      handleEquipmentChange(amount, yearMatcher);
       return;
     }
 
     UseKey useKeyEffective = useKey == null ? scope : useKey;
     changeExecutor.executeChange(stream, amount, yearMatcher, useKeyEffective);
+  }
+
+  /**
+   * Handle equipment change with year range checking.
+   *
+   * <p>This method checks if the current year is within the specified range
+   * before delegating to the equipment change utility. This ensures consistent
+   * year checking behavior across all equipment operations.</p>
+   *
+   * @param amount The amount to change equipment by
+   * @param yearMatcher The year matcher to check range against
+   */
+  private void handleEquipmentChange(EngineNumber amount, YearMatcher yearMatcher) {
+    if (!getIsInRange(yearMatcher)) {
+      return;
+    }
+    equipmentChangeUtil.handleChange(amount);
   }
 
   @Override
