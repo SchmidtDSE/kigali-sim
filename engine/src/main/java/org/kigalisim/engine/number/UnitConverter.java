@@ -15,6 +15,7 @@ import java.math.MathContext;
 import java.util.HashMap;
 import java.util.Map;
 import org.kigalisim.engine.state.StateGetter;
+import org.kigalisim.util.UnitStringNormalizer;
 
 /**
  * Object simplifying conversion between units.
@@ -55,7 +56,38 @@ public class UnitConverter {
    * @return The normalized unit string with all spaces removed
    */
   private static String normalizeUnitString(String unitString) {
-    return unitString.replaceAll("\\s+", "");
+    return UnitStringNormalizer.normalize(unitString);
+  }
+
+  /**
+   * Split a unit string on the first '/' character.
+   *
+   * <p>This is faster than split("/") since we know there's only one slash.
+   * Returns an array with the numerator at [0] and denominator at [1] (or empty string if no slash).</p>
+   *
+   * @param unitString The unit string to split
+   * @return Array with [numerator, denominator]
+   */
+  private static String[] splitUnits(String unitString) {
+    int slashIndex = unitString.indexOf('/');
+    if (slashIndex == -1) {
+      return new String[]{unitString, ""};
+    }
+    return new String[]{
+      unitString.substring(0, slashIndex),
+      unitString.substring(slashIndex + 1)
+    };
+  }
+
+  /**
+   * Get the numerator part of a unit string (before the '/').
+   *
+   * @param unitString The unit string
+   * @return The numerator part
+   */
+  private static String getNumerator(String unitString) {
+    int slashIndex = unitString.indexOf('/');
+    return slashIndex == -1 ? unitString : unitString.substring(0, slashIndex);
   }
 
   /**
@@ -99,11 +131,11 @@ public class UnitConverter {
       String normalizedSourceUnits = normalizeUnitString(source.getUnits());
       String normalizedDestinationUnits = normalizeUnitString(destinationUnits);
 
-      String[] sourceUnitPieces = normalizedSourceUnits.split("/");
+      String[] sourceUnitPieces = splitUnits(normalizedSourceUnits);
       boolean sourceHasDenominator = sourceUnitPieces.length > 1;
       String sourceDenominatorUnits = sourceHasDenominator ? sourceUnitPieces[1] : "";
 
-      String[] destinationUnitPieces = normalizedDestinationUnits.split("/");
+      String[] destinationUnitPieces = splitUnits(normalizedDestinationUnits);
       boolean destHasDenominator = destinationUnitPieces.length > 1;
       String destinationDenominatorUnits = destHasDenominator ? destinationUnitPieces[1] : "";
 
@@ -298,7 +330,7 @@ public class UnitConverter {
       BigDecimal originalValue = target.getValue();
       EngineNumber conversion = stateGetter.getSubstanceConsumption();
       String normalizedUnits = normalizeUnitString(conversion.getUnits());
-      String[] conversionUnitPieces = normalizedUnits.split("/");
+      String[] conversionUnitPieces = splitUnits(normalizedUnits);
       String conversionNumeratorUnits = conversionUnitPieces[0];
       String newUnits = conversionUnitPieces[1];
 
@@ -320,7 +352,7 @@ public class UnitConverter {
       EngineNumber conversion = stateGetter.getAmortizedUnitVolume();
       BigDecimal conversionValue = conversion.getValue();
       String normalizedUnits = normalizeUnitString(conversion.getUnits());
-      String[] conversionUnitPieces = normalizedUnits.split("/");
+      String[] conversionUnitPieces = splitUnits(normalizedUnits);
       String newUnits = conversionUnitPieces[0];
       BigDecimal newValue = originalValue.multiply(conversionValue);
       return new EngineNumber(newValue, newUnits);
@@ -356,7 +388,7 @@ public class UnitConverter {
       EngineNumber conversion = stateGetter.getAmortizedUnitVolume();
       BigDecimal conversionValue = conversion.getValue();
       String normalizedUnits = normalizeUnitString(conversion.getUnits());
-      String[] conversionUnitPieces = normalizedUnits.split("/");
+      String[] conversionUnitPieces = splitUnits(normalizedUnits);
       String expectedUnits = conversionUnitPieces[0];
       EngineNumber targetConverted = convert(target, expectedUnits);
       BigDecimal originalValue = targetConverted.getValue();
@@ -366,7 +398,7 @@ public class UnitConverter {
       BigDecimal originalValue = target.getValue();
       EngineNumber conversion = stateGetter.getAmortizedUnitConsumption();
       String normalizedUnits = normalizeUnitString(conversion.getUnits());
-      String[] conversionUnitPieces = normalizedUnits.split("/");
+      String[] conversionUnitPieces = splitUnits(normalizedUnits);
       String conversionNumeratorUnits = conversionUnitPieces[0];
 
       // Normalize conversion factor to match input units (recursive call to ensure unit consistency)
@@ -419,7 +451,7 @@ public class UnitConverter {
     } else if (currentInfer) {
       EngineNumber conversion = stateGetter.getSubstanceConsumption();
       String normalizedUnits = normalizeUnitString(conversion.getUnits());
-      String[] conversionUnitPieces = normalizedUnits.split("/");
+      String[] conversionUnitPieces = splitUnits(normalizedUnits);
       String newUnits = conversionUnitPieces[0];
       String expectedUnits = conversionUnitPieces[1];
 
@@ -465,7 +497,7 @@ public class UnitConverter {
     } else if (currentInfer) {
       EngineNumber conversion = stateGetter.getSubstanceConsumption();
       String normalizedUnits = normalizeUnitString(conversion.getUnits());
-      String[] conversionUnitPieces = normalizedUnits.split("/");
+      String[] conversionUnitPieces = splitUnits(normalizedUnits);
       String newUnits = conversionUnitPieces[0];
       String expectedUnits = conversionUnitPieces[1];
 
@@ -508,7 +540,7 @@ public class UnitConverter {
       EngineNumber conversion = stateGetter.getEnergyIntensity();
       BigDecimal conversionValue = conversion.getValue();
       String normalizedUnits = normalizeUnitString(conversion.getUnits());
-      String[] conversionUnitPieces = normalizedUnits.split("/");
+      String[] conversionUnitPieces = splitUnits(normalizedUnits);
       String newUnits = conversionUnitPieces[0];
       String expectedUnits = conversionUnitPieces[1];
       EngineNumber targetConverted = convert(target, expectedUnits);
@@ -739,7 +771,7 @@ public class UnitConverter {
     if (!needsNorm) {
       return target;
     } else {
-      String[] targetUnitPieces = normalizedTargetUnits.split("/");
+      String[] targetUnitPieces = splitUnits(normalizedTargetUnits);
       String newUnits = targetUnitPieces[0];
       String expectedUnits = targetUnitPieces[1];
 
