@@ -621,8 +621,18 @@ class DuplicateEntityPresenter {
   _deepCopyCommand(sourceCommand) {
     const self = this;
     const value = sourceCommand.getValue();
-    const engineNumber = value ?
-      new EngineNumber(value.getValue(), value.getUnits(), value.getOriginalString()) : null;
+    cosnt makeEngineNum = (value) => {
+      if (value) {
+        return new EngineNumber(
+          value.getValue(),
+          value.getUnits(),
+          value.getOriginalString()
+        );
+      } else {
+        return null;
+      }
+    };
+    const engineNumber = makeEngineNum(value);
     const duration = sourceCommand.getDuration();
     const yearMatcher = duration ? self._deepCopyYearMatcher(duration) : null;
 
