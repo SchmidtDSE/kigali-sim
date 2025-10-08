@@ -388,7 +388,7 @@ public class SingleThreadEngine implements Engine {
 
     // Handle equipment stream with special logic
     if ("equipment".equals(name)) {
-      equipmentChangeUtil.handleSet(value, yearMatcher);
+      equipmentChangeUtil.handleSet(value);
       return;
     }
 
@@ -785,9 +785,8 @@ public class SingleThreadEngine implements Engine {
   @Override
   public void changeStream(String stream, EngineNumber amount, YearMatcher yearMatcher,
       UseKey useKey) {
-    // Handle equipment stream with special logic
-    if ("equipment".equals(stream)) {
-      equipmentChangeUtil.handleChange(amount, yearMatcher);
+    if ("equipment".equals(stream) && getIsInRange(yearMatcher)) {
+      equipmentChangeUtil.handleChange(amount);
       return;
     }
 
@@ -804,7 +803,7 @@ public class SingleThreadEngine implements Engine {
 
     // Handle equipment stream with special logic
     if ("equipment".equals(stream)) {
-      equipmentChangeUtil.handleCap(amount, yearMatcher, displaceTarget);
+      equipmentChangeUtil.handleCap(amount, displaceTarget);
       return;
     }
 
@@ -824,7 +823,7 @@ public class SingleThreadEngine implements Engine {
 
     // Handle equipment stream with special logic
     if ("equipment".equals(stream)) {
-      equipmentChangeUtil.handleFloor(amount, yearMatcher, displaceTarget);
+      equipmentChangeUtil.handleFloor(amount, displaceTarget);
       return;
     }
 
