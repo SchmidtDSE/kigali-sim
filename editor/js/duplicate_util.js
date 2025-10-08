@@ -4,17 +4,10 @@
  * @license BSD, see LICENSE.md.
  */
 
-import {ParsedYear, YearMatcher} from "duration";
-import {EngineNumber} from "engine_number";
 import {validateNumericInputs} from "ui_editor";
 import {
   Application,
-  Command,
   DefinitionalStanza,
-  LimitCommand,
-  RechargeCommand,
-  RecycleCommand,
-  ReplaceCommand,
   SimulationScenario,
   Substance,
 } from "ui_translator";
@@ -558,39 +551,18 @@ class DuplicateEntityPresenter {
    * @private
    */
   _deepCopySubstance(sourceSubstance) {
-    const self = this;
-
-    // Deep copy all command arrays
-    const copiedCharges = sourceSubstance.getInitialCharges().map((cmd) =>
-      self._deepCopyCommand(cmd),
-    );
-    const copiedLimits = sourceSubstance.getLimits().map((cmd) =>
-      self._deepCopyLimitCommand(cmd),
-    );
-    const copiedChanges = sourceSubstance.getChanges().map((cmd) =>
-      self._deepCopyCommand(cmd),
-    );
-    const copiedEqualsGhg = sourceSubstance.getEqualsGhg() ?
-      self._deepCopyCommand(sourceSubstance.getEqualsGhg()) : null;
-    const copiedEqualsKwh = sourceSubstance.getEqualsKwh() ?
-      self._deepCopyCommand(sourceSubstance.getEqualsKwh()) : null;
-    const copiedRecharges = sourceSubstance.getRecharges().map((cmd) => {
-      return self._deepCopyRechargeCommand(cmd);
-    });
-    const copiedRecycles = sourceSubstance.getRecycles().map((cmd) => {
-      return self._deepCopyRecycleCommand(cmd);
-    });
-    const copiedReplaces = sourceSubstance.getReplaces().map((cmd) => {
-      return self._deepCopyReplaceCommand(cmd);
-    });
-    const copiedRetire = sourceSubstance.getRetire() ?
-      self._deepCopyCommand(sourceSubstance.getRetire()) : null;
-    const copiedSetVals = sourceSubstance.getSetVals().map((cmd) =>
-      self._deepCopyCommand(cmd),
-    );
-    const copiedEnables = sourceSubstance.getEnables().map((cmd) =>
-      self._deepCopyCommand(cmd),
-    );
+    // Commands are immutable, so we can share references
+    const copiedCharges = sourceSubstance.getInitialCharges();
+    const copiedLimits = sourceSubstance.getLimits();
+    const copiedChanges = sourceSubstance.getChanges();
+    const copiedEqualsGhg = sourceSubstance.getEqualsGhg();
+    const copiedEqualsKwh = sourceSubstance.getEqualsKwh();
+    const copiedRecharges = sourceSubstance.getRecharges();
+    const copiedRecycles = sourceSubstance.getRecycles();
+    const copiedReplaces = sourceSubstance.getReplaces();
+    const copiedRetire = sourceSubstance.getRetire();
+    const copiedSetVals = sourceSubstance.getSetVals();
+    const copiedEnables = sourceSubstance.getEnables();
 
     // Create new substance with copied commands (matching constructor parameter order)
     return new Substance(
@@ -608,146 +580,6 @@ class DuplicateEntityPresenter {
       copiedEnables,
       sourceSubstance._isModification,
       sourceSubstance._isCompatible,
-    );
-  }
-
-  /**
-   * Deep copy a basic command.
-   * @param {Command} sourceCommand - The command to copy
-   * @returns {Command} Deep copied command
-   * @private
-   */
-  _deepCopyCommand(sourceCommand) {
-    const self = this;
-    const value = sourceCommand.getValue();
-    const engineNumber = value ?
-      new EngineNumber(value.getValue(), value.getUnits(), value.getOriginalString()) : null;
-    const duration = sourceCommand.getDuration();
-    const yearMatcher = duration ? self._deepCopyYearMatcher(duration) : null;
-
-    return new Command(
-      sourceCommand.getTypeName(),
-      sourceCommand.getTarget(),
-      engineNumber,
-      yearMatcher,
-    );
-  }
-
-  /**
-   * Deep copy a limit command.
-   * @param {LimitCommand} sourceLimitCommand - The limit command to copy
-   * @returns {LimitCommand} Deep copied limit command
-   * @private
-   */
-  _deepCopyLimitCommand(sourceLimitCommand) {
-    const self = this;
-    const value = sourceLimitCommand.getValue();
-    const engineNumber = value ?
-      new EngineNumber(value.getValue(), value.getUnits(), value.getOriginalString()) : null;
-    const duration = sourceLimitCommand.getDuration();
-    const yearMatcher = duration ? self._deepCopyYearMatcher(duration) : null;
-
-    return new LimitCommand(
-      sourceLimitCommand.getTypeName(),
-      sourceLimitCommand.getTarget(),
-      engineNumber,
-      yearMatcher,
-      sourceLimitCommand.getDisplacing(),
-    );
-  }
-
-  /**
-   * Deep copy a recharge command.
-   * @param {RechargeCommand} sourceRechargeCommand - The recharge command to copy
-   * @returns {RechargeCommand} Deep copied recharge command
-   * @private
-   */
-  _deepCopyRechargeCommand(sourceRechargeCommand) {
-    const self = this;
-
-    const srcPopulation = sourceRechargeCommand.getPopulationEngineNumber();
-    const srcVolume = sourceRechargeCommand.getVolumeEngineNumber();
-
-    const populationEngineNumber = new EngineNumber(
-      srcPopulation.getValue(),
-      srcPopulation.getUnits(),
-      srcPopulation.getOriginalString(),
-    );
-    const volumeEngineNumber = new EngineNumber(
-      srcVolume.getValue(),
-      srcVolume.getUnits(),
-      srcVolume.getOriginalString(),
-    );
-
-    const duration = sourceRechargeCommand.getDuration();
-    const yearMatcher = duration ? self._deepCopyYearMatcher(duration) : null;
-
-    return new RechargeCommand(
-      populationEngineNumber,
-      volumeEngineNumber,
-      yearMatcher,
-    );
-  }
-
-  /**
-   * Deep copy a recycle command.
-   * @param {RecycleCommand} sourceRecycleCommand - The recycle command to copy
-   * @returns {RecycleCommand} Deep copied recycle command
-   * @private
-   */
-  _deepCopyRecycleCommand(sourceRecycleCommand) {
-    const self = this;
-    const target = sourceRecycleCommand.getTarget();
-    const targetNumber = target ?
-      new EngineNumber(target.getValue(), target.getUnits(), target.getOriginalString()) : null;
-    const value = sourceRecycleCommand.getValue();
-    const valueNumber = value ?
-      new EngineNumber(value.getValue(), value.getUnits(), value.getOriginalString()) : null;
-    const duration = sourceRecycleCommand.getDuration();
-    const yearMatcher = duration ? self._deepCopyYearMatcher(duration) : null;
-
-    return new RecycleCommand(
-      targetNumber,
-      valueNumber,
-      yearMatcher,
-      sourceRecycleCommand.getStage(),
-      sourceRecycleCommand.getInduction(),
-    );
-  }
-
-  /**
-   * Deep copy a replace command.
-   * @param {ReplaceCommand} sourceReplaceCommand - The replace command to copy
-   * @returns {ReplaceCommand} Deep copied replace command
-   * @private
-   */
-  _deepCopyReplaceCommand(sourceReplaceCommand) {
-    const self = this;
-    const volume = sourceReplaceCommand.getVolume();
-    const volumeNumber = volume ?
-      new EngineNumber(volume.getValue(), volume.getUnits(), volume.getOriginalString()) : null;
-    const duration = sourceReplaceCommand.getDuration();
-    const yearMatcher = duration ? self._deepCopyYearMatcher(duration) : null;
-
-    return new ReplaceCommand(
-      volumeNumber,
-      sourceReplaceCommand.getSource(),
-      sourceReplaceCommand.getDestination(),
-      yearMatcher,
-    );
-  }
-
-  /**
-   * Deep copy a YearMatcher duration object.
-   * @param {YearMatcher} sourceYearMatcher - The year matcher to copy
-   * @returns {YearMatcher} Deep copied year matcher
-   * @private
-   */
-  _deepCopyYearMatcher(sourceYearMatcher) {
-    // YearMatcher constructor takes start and end ParsedYear parameters
-    return new YearMatcher(
-      sourceYearMatcher.getStart(),
-      sourceYearMatcher.getEnd(),
     );
   }
 }

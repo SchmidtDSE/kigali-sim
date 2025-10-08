@@ -574,35 +574,14 @@ public class CapLiveTests {
                               + s1R410a.getPopulation().getValue().doubleValue()
                               + s1Hfc32.getPopulation().getValue().doubleValue();
 
-    // Log the values for debugging
-    System.out.printf("Year 5 - BAU R-600a population: %.6f units%n",
-                     bauR600a.getPopulation().getValue().doubleValue());
-    System.out.printf("Year 5 - BAU HFC-134a population: %.6f units%n",
-                     bauHfc134a.getPopulation().getValue().doubleValue());
-    System.out.printf("Year 5 - BAU R-410A population: %.6f units%n",
-                     bauR410a.getPopulation().getValue().doubleValue());
-    System.out.printf("Year 5 - BAU HFC-32 population: %.6f units%n",
-                     bauHfc32.getPopulation().getValue().doubleValue());
-    System.out.printf("Year 5 - BAU Total population (all substances): %.6f units%n", bauTotalPopulation);
+    // Note: Total population SHOULD be conserved when capping equipment to 0 with displacement
+    // because handleCap now uses change semantics. When priorEquipment is insufficient to meet the cap,
+    // sales are also reduced to achieve the target. This ensures proper equipment conservation through
+    // displacement. The displaced amount equals the full equipment change achieved.
 
-    System.out.printf("Year 5 - S1 R-600a population: %.6f units%n",
-                     s1R600a.getPopulation().getValue().doubleValue());
-    System.out.printf("Year 5 - S1 HFC-134a population: %.6f units%n",
-                     s1Hfc134a.getPopulation().getValue().doubleValue());
-    System.out.printf("Year 5 - S1 R-410A population: %.6f units%n",
-                     s1R410a.getPopulation().getValue().doubleValue());
-    System.out.printf("Year 5 - S1 HFC-32 population: %.6f units%n",
-                     s1Hfc32.getPopulation().getValue().doubleValue());
-    System.out.printf("Year 5 - S1 Total population (all substances): %.6f units%n", s1TotalPopulation);
-
-    // Note: Total population will NOT be fully conserved when capping equipment to 0 with displacement
-    // because we can only retire from priorEquipment. Any "new" equipment (from recent sales not yet
-    // in priorEquipment) cannot be retired and therefore cannot be displaced. This is expected behavior.
-    // The displaced amount equals what was actually retired from priorEquipment, not the full cap delta.
-
-    // Verify that displacement happened (S1 should have LESS total than BAU due to unretiable new equipment)
-    assertTrue(s1TotalPopulation < bauTotalPopulation,
-        String.format("S1 total population (%.6f) should be less than BAU (%.6f) because some new equipment cannot be retired",
+    // Verify that displacement happened and total population is conserved
+    assertEquals(bauTotalPopulation, s1TotalPopulation, 0.001,
+        String.format("S1 total population (%.6f) should equal BAU (%.6f) due to proper displacement",
                      s1TotalPopulation, bauTotalPopulation));
 
     // Verify R-600a received displacement from HFC-134a (should be non-zero in S1, zero in BAU)
@@ -661,12 +640,6 @@ public class CapLiveTests {
     assertNotNull(s1R410a, "Should have CapPriorOnly S1 result for ResAC1/R-410A - E1 in year 5");
     assertNotNull(s1Hfc32, "Should have CapPriorOnly S1 result for ResAC1/HFC-32 - E11 in year 5");
 
-    // Log the values for debugging
-    System.out.printf("Year 5 - BAU HFC-134a population: %.6f units%n", bauHfc134a.getPopulation().getValue().doubleValue());
-    System.out.printf("Year 5 - CapPriorOnly HFC-134a population: %.6f units%n", s1Hfc134a.getPopulation().getValue().doubleValue());
-    System.out.printf("Year 5 - BAU R-410A population: %.6f units%n", bauR410a.getPopulation().getValue().doubleValue());
-    System.out.printf("Year 5 - CapPriorOnly R-410A population: %.6f units%n", s1R410a.getPopulation().getValue().doubleValue());
-
     // Test that capped substances (HFC-134a and R-410A) have reduced but non-zero populations
     double bauHfc134aPopulation = bauHfc134a.getPopulation().getValue().doubleValue();
     double s1Hfc134aPopulation = s1Hfc134a.getPopulation().getValue().doubleValue();
@@ -691,12 +664,71 @@ public class CapLiveTests {
     double bauHfc32Population = bauHfc32.getPopulation().getValue().doubleValue();
     double s1Hfc32Population = s1Hfc32.getPopulation().getValue().doubleValue();
 
-    System.out.printf("Year 5 - BAU R-600a population: %.6f units%n", bauR600aPopulation);
-    System.out.printf("Year 5 - CapPriorOnly R-600a population: %.6f units%n", s1R600aPopulation);
-    System.out.printf("Year 5 - BAU HFC-32 population: %.6f units%n", bauHfc32Population);
-    System.out.printf("Year 5 - CapPriorOnly HFC-32 population: %.6f units%n", s1Hfc32Population);
-
     // Note: Displaced substances may remain at zero if they have no initial import/sales in the QTA setup
     // The key validation is that capped substances are reduced but not eliminated entirely
+  }
+
+  /**
+   * Test cap on equipment stream when no action is required.
+   * This verifies that when equipment is already below the cap, no changes occur.
+   */
+  @Test
+  public void testCapEquipmentNoAction() throws IOException {
+    // Load and parse the QTA file
+    String qtaPath = "../examples/cap_equipment_no_action.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    // Run the scenario using KigaliSimFacade
+    String scenarioName = "result";
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
+
+    List<EngineResult> resultsList = results.collect(Collectors.toList());
+    EngineResult result = LiveTestsUtil.getResult(resultsList.stream(), 1, "test", "test");
+    assertNotNull(result, "Should have result for test/test in year 1");
+
+    // Equipment should be unchanged (50 new + 10 prior = 60 units total)
+    // Since cap is 100 units and we're at 60, no action should be taken
+    assertEquals(60.0, result.getPopulation().getValue().doubleValue(), 0.0001,
+        "Equipment population should be unchanged at 60 units (below cap)");
+    assertEquals("units", result.getPopulation().getUnits(),
+        "Equipment units should be units");
+
+    // New equipment should also be unchanged at 50 units
+    assertEquals(50.0, result.getPopulationNew().getValue().doubleValue(), 0.0001,
+        "New equipment should be unchanged at 50 units");
+  }
+
+  /**
+   * Test cap on equipment stream when action is required.
+   * This verifies that when equipment exceeds the cap, it is reduced appropriately.
+   */
+  @Test
+  public void testCapEquipmentWithAction() throws IOException {
+    // Load and parse the QTA file
+    String qtaPath = "../examples/cap_equipment_with_action.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    // Run the scenario using KigaliSimFacade
+    String scenarioName = "result";
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
+
+    List<EngineResult> resultsList = results.collect(Collectors.toList());
+    EngineResult result = LiveTestsUtil.getResult(resultsList.stream(), 1, "test", "test");
+    assertNotNull(result, "Should have result for test/test in year 1");
+
+    // Equipment should be capped at 100 units (reduced from 150)
+    // Original: 100 new + 50 prior = 150 units
+    // After cap: should be 100 units total
+    assertEquals(100.0, result.getPopulation().getValue().doubleValue(), 0.0001,
+        "Equipment population should be capped at 100 units");
+    assertEquals("units", result.getPopulation().getUnits(),
+        "Equipment units should be units");
+
+    // New equipment should be 100 units (no reduction needed from new equipment)
+    // The 50-unit reduction comes from priorEquipment via retirement
+    assertEquals(100.0, result.getPopulationNew().getValue().doubleValue(), 0.0001,
+        "New equipment should be 100 units");
   }
 }
