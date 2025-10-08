@@ -49,6 +49,7 @@ import org.kigalisim.lang.operation.RecoverOperation;
 import org.kigalisim.lang.operation.RecoverOperation.RecoveryStage;
 import org.kigalisim.lang.operation.ReplaceOperation;
 import org.kigalisim.lang.operation.RetireOperation;
+import org.kigalisim.lang.operation.RetireWithReplacementOperation;
 import org.kigalisim.lang.operation.SetOperation;
 import org.kigalisim.lang.operation.SubtractionOperation;
 import org.kigalisim.lang.program.ParsedApplication;
@@ -926,8 +927,19 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
   @Override
   public Fragment visitRetireAllYears(QubecTalkParser.RetireAllYearsContext ctx) {
     Operation volumeOperation = visit(ctx.volume).getOperation();
-    Operation operation = new RetireOperation(volumeOperation);
-    return new OperationFragment(operation);
+
+    // Check if "with replacement" is present
+    boolean withReplacement = ctx.getText().contains("withreplacement");
+
+    if (withReplacement) {
+      // Create compound operation that retires and then adds replacement
+      Operation operation = new RetireWithReplacementOperation(volumeOperation);
+      return new OperationFragment(operation);
+    } else {
+      // Standard retire operation
+      Operation operation = new RetireOperation(volumeOperation);
+      return new OperationFragment(operation);
+    }
   }
 
   /**
@@ -937,8 +949,19 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
   public Fragment visitRetireDuration(QubecTalkParser.RetireDurationContext ctx) {
     Operation volumeOperation = visit(ctx.volume).getOperation();
     ParsedDuring during = visit(ctx.duration).getDuring();
-    Operation operation = new RetireOperation(volumeOperation, during);
-    return new OperationFragment(operation);
+
+    // Check if "with replacement" is present
+    boolean withReplacement = ctx.getText().contains("withreplacement");
+
+    if (withReplacement) {
+      // Create compound operation that retires and then adds replacement
+      Operation operation = new RetireWithReplacementOperation(volumeOperation, during);
+      return new OperationFragment(operation);
+    } else {
+      // Standard retire operation
+      Operation operation = new RetireOperation(volumeOperation, during);
+      return new OperationFragment(operation);
+    }
   }
 
   /**

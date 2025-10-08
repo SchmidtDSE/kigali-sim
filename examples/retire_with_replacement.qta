@@ -9,7 +9,7 @@ start default
       initial charge with 0 kg / unit for export
       equals 1 kgCO2e / kg
       equals 1 kwh / unit
-      set import to 100 units during year 1
+      set import to 100 units
       retire 5 % / year with replacement
     end substance
 
