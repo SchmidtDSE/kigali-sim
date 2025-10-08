@@ -691,6 +691,11 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
   public Fragment visitInitialChargeAllYears(QubecTalkParser.InitialChargeAllYearsContext ctx) {
     Operation valueOperation = visit(ctx.value).getOperation();
     String stream = ctx.target.getText();
+
+    // Validate that initial charge uses unit-based denominator
+    String unitString = ctx.value.unitOrRatio().getText();
+    validateInitialChargeUnits(unitString, stream);
+
     Operation operation = new InitialChargeOperation(stream, valueOperation);
     return new OperationFragment(operation);
   }
@@ -700,7 +705,16 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
    */
   @Override
   public Fragment visitInitialChargeDuration(QubecTalkParser.InitialChargeDurationContext ctx) {
-    return visitChildren(ctx);
+    Operation valueOperation = visit(ctx.value).getOperation();
+    String stream = ctx.target.getText();
+    ParsedDuring during = visit(ctx.duration).getDuring();
+
+    // Validate that initial charge uses unit-based denominator
+    String unitString = ctx.value.unitOrRatio().getText();
+    validateInitialChargeUnits(unitString, stream);
+
+    Operation operation = new InitialChargeOperation(stream, valueOperation, during);
+    return new OperationFragment(operation);
   }
 
   /**
@@ -1116,5 +1130,27 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
       case "recharge" -> RecoveryStage.RECHARGE;
       default -> throw new IllegalArgumentException("Invalid recovery stage: " + stageText);
     };
+  }
+
+  /**
+   * Validates that initial charge units end with "unit" or "units".
+   *
+   * @param unitString The unit string to validate (e.g., "kg / unit", "kg / units", "kg")
+   * @param stream The stream name for error reporting (e.g., "domestic", "import")
+   * @throws RuntimeException if units don't end with "unit" or "units"
+   */
+  private void validateInitialChargeUnits(String unitString, String stream) {
+    String normalized = unitString.trim().toLowerCase();
+
+    if (!normalized.endsWith("unit") && !normalized.endsWith("units")) {
+      throw new RuntimeException(
+          String.format(
+              "Initial charge for %s stream must be specified per unit (e.g., 'kg / unit' or 'kg / units'), but found '%s'. "
+                  + "Equipment-based calculations require initial charges to be rates per unit.",
+              stream,
+              unitString
+          )
+      );
+    }
   }
 }

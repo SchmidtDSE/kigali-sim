@@ -906,4 +906,24 @@ public class BasicLiveTests {
     assertEquals(3000.0, equipment1993, 0.01,
         "Equipment in 1993 should be exactly 3000 units, but was " + equipment1993);
   }
+
+  /**
+   * Test that initial charges without unit-based denominators are rejected.
+   */
+  @Test
+  public void testInitialChargeRequiresUnits() {
+    // Test that initial charge without units throws an error
+    RuntimeException exception = assertThrows(
+        RuntimeException.class,
+        () -> KigaliSimFacade.parseAndInterpret("../examples/basic_initial_charge_invalid_units.qta"),
+        "Should throw RuntimeException for initial charge without unit denominator"
+    );
+
+    assertTrue(exception.getMessage().contains("Initial charge for import stream"),
+        "Error message should mention the stream (import)");
+    assertTrue(exception.getMessage().contains("must be specified per unit"),
+        "Error message should explain the requirement");
+    assertTrue(exception.getMessage().contains("kg / unit"),
+        "Error message should provide an example of correct format");
+  }
 }
