@@ -1403,47 +1403,49 @@ class MetaChangeApplier {
     const ghgValue = self._parseUnitValue(metadata.getGhg());
     if (ghgValue) {
       // For GHG commands, we need to ensure the routing works correctly by using specific target
-      builder.setEqualsGhg(new Command("equals", null, ghgValue, null));
+      builder.setEqualsGhg(new Command("equals", null, ghgValue, null, undefined));
     }
 
     // Add energy equals command if present
     const energyValue = self._parseUnitValue(metadata.getEnergy());
     if (energyValue) {
       // For energy commands, we need to ensure the routing works correctly by using specific target
-      builder.setEqualsKwh(new Command("equals", null, energyValue, null));
+      builder.setEqualsKwh(new Command("equals", null, energyValue, null, undefined));
     }
 
     // Add enable commands based on stream flags
     if (metadata.getHasDomestic()) {
-      builder.addCommand(new Command("enable", "domestic", null, null));
+      builder.addCommand(new Command("enable", "domestic", null, null, undefined));
     }
     if (metadata.getHasImport()) {
-      builder.addCommand(new Command("enable", "import", null, null));
+      builder.addCommand(new Command("enable", "import", null, null, undefined));
     }
     if (metadata.getHasExport()) {
-      builder.addCommand(new Command("enable", "export", null, null));
+      builder.addCommand(new Command("enable", "export", null, null, undefined));
     }
 
     // Add initial charge commands for each stream (skip zero values)
     const domesticCharge = self._parseUnitValue(metadata.getInitialChargeDomestic());
     if (domesticCharge && domesticCharge.getValue() > 0) {
-      builder.addCommand(new Command("initial charge", "domestic", domesticCharge, null));
+      const cmd = new Command("initial charge", "domestic", domesticCharge,
+        null, undefined);
+      builder.addCommand(cmd);
     }
 
     const importCharge = self._parseUnitValue(metadata.getInitialChargeImport());
     if (importCharge && importCharge.getValue() > 0) {
-      builder.addCommand(new Command("initial charge", "import", importCharge, null));
+      builder.addCommand(new Command("initial charge", "import", importCharge, null, undefined));
     }
 
     const exportCharge = self._parseUnitValue(metadata.getInitialChargeExport());
     if (exportCharge && exportCharge.getValue() > 0) {
-      builder.addCommand(new Command("initial charge", "export", exportCharge, null));
+      builder.addCommand(new Command("initial charge", "export", exportCharge, null, undefined));
     }
 
     // Add retirement command if present
     const retirementValue = self._parseUnitValue(metadata.getRetirement());
     if (retirementValue) {
-      builder.addCommand(new Command("retire", null, retirementValue, null));
+      builder.addCommand(new Command("retire", null, retirementValue, null, false));
     }
 
     // Build the substance (compatible with UI editing)

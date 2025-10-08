@@ -1578,26 +1578,26 @@ class ConsumptionListPresenter {
     const enableExport = self._dialog.querySelector(".enable-export-checkbox");
 
     if (enableDomestic.checked) {
-      substanceBuilder.addCommand(new Command("enable", "domestic", null, null));
+      substanceBuilder.addCommand(new Command("enable", "domestic", null, null, undefined));
     }
     if (enableImport.checked) {
-      substanceBuilder.addCommand(new Command("enable", "import", null, null));
+      substanceBuilder.addCommand(new Command("enable", "import", null, null, undefined));
     }
     if (enableExport.checked) {
-      substanceBuilder.addCommand(new Command("enable", "export", null, null));
+      substanceBuilder.addCommand(new Command("enable", "export", null, null, undefined));
     }
 
     const ghgValue = getEngineNumberValue(
       self._dialog.querySelector(".edit-consumption-ghg-input"),
       self._dialog.querySelector(".edit-consumption-ghg-units-input"),
     );
-    substanceBuilder.addCommand(new Command("equals", null, ghgValue, null));
+    substanceBuilder.addCommand(new Command("equals", null, ghgValue, null, undefined));
 
     const energyValue = getEngineNumberValue(
       self._dialog.querySelector(".edit-consumption-energy-input"),
       self._dialog.querySelector(".edit-consumption-energy-units-input"),
     );
-    substanceBuilder.addCommand(new Command("equals", null, energyValue, null));
+    substanceBuilder.addCommand(new Command("equals", null, energyValue, null, undefined));
 
     const initialChargeDomestic = getEngineNumberValue(
       self._dialog.querySelector(".edit-consumption-initial-charge-domestic-input"),
@@ -3217,7 +3217,7 @@ function readSetCommandUi(root) {
     root.querySelector(".set-units-input"),
   );
   const duration = readDurationUi(root.querySelector(".duration-subcomponent"));
-  return new Command("setVal", target, amount, duration);
+  return new Command("setVal", target, amount, duration, undefined);
 }
 
 /**
@@ -3283,7 +3283,7 @@ function readChangeCommandUi(root) {
   const originalString = invert ? invertNumberString(amountInput) : amountInput.trim();
   const amountWithUnits = new EngineNumber(amount, units, originalString);
   const duration = readDurationUi(root.querySelector(".duration-subcomponent"));
-  return new Command("change", target, amountWithUnits, duration);
+  return new Command("change", target, amountWithUnits, duration, undefined);
 }
 
 /**

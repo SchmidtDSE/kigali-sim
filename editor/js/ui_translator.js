@@ -1388,7 +1388,7 @@ class Substance {
     // Update GHG equals command
     const ghgValue = parseUnitValue(newMetadata.getGhg(), true);
     if (ghgValue) {
-      self._equalsGhg = new Command("equals", null, ghgValue, null);
+      self._equalsGhg = new Command("equals", null, ghgValue, null, undefined);
     } else {
       self._equalsGhg = null;
     }
@@ -1396,7 +1396,7 @@ class Substance {
     // Update energy equals command
     const energyValue = parseUnitValue(newMetadata.getEnergy(), true);
     if (energyValue) {
-      self._equalsKwh = new Command("equals", null, energyValue, null);
+      self._equalsKwh = new Command("equals", null, energyValue, null, undefined);
     } else {
       self._equalsKwh = null;
     }
@@ -1404,13 +1404,13 @@ class Substance {
     // Update enabled streams
     self._enables = [];
     if (newMetadata.getHasDomestic()) {
-      self._enables.push(new Command("enable", "domestic", null, null));
+      self._enables.push(new Command("enable", "domestic", null, null, undefined));
     }
     if (newMetadata.getHasImport()) {
-      self._enables.push(new Command("enable", "import", null, null));
+      self._enables.push(new Command("enable", "import", null, null, undefined));
     }
     if (newMetadata.getHasExport()) {
-      self._enables.push(new Command("enable", "export", null, null));
+      self._enables.push(new Command("enable", "export", null, null, undefined));
     }
 
     // Update initial charges
@@ -1418,23 +1418,29 @@ class Substance {
 
     const domesticCharge = parseUnitValue(newMetadata.getInitialChargeDomestic(), true);
     if (domesticCharge) {
-      self._initialCharges.push(new Command("initial charge", "domestic", domesticCharge, null));
+      const cmd = new Command("initial charge", "domestic", domesticCharge,
+        null, undefined);
+      self._initialCharges.push(cmd);
     }
 
     const importCharge = parseUnitValue(newMetadata.getInitialChargeImport(), true);
     if (importCharge) {
-      self._initialCharges.push(new Command("initial charge", "import", importCharge, null));
+      const cmd = new Command("initial charge", "import", importCharge, null,
+        undefined);
+      self._initialCharges.push(cmd);
     }
 
     const exportCharge = parseUnitValue(newMetadata.getInitialChargeExport(), true);
     if (exportCharge) {
-      self._initialCharges.push(new Command("initial charge", "export", exportCharge, null));
+      const cmd = new Command("initial charge", "export", exportCharge, null,
+        undefined);
+      self._initialCharges.push(cmd);
     }
 
     // Update retirement command
     const retirementValue = parseUnitValue(newMetadata.getRetirement(), true);
     if (retirementValue) {
-      self._retire = new Command("retire", null, retirementValue, null);
+      self._retire = new Command("retire", null, retirementValue, null, false);
     } else {
       self._retire = null;
     }
@@ -2520,9 +2526,9 @@ class Command {
    * @param {string} target - Target of the command.
    * @param {EngineNumber} value - Value for the command.
    * @param {YearMatcher} duration - Duration for the command.
-   * @param {boolean} withReplacement - Whether retire uses replacement (default false).
+   * @param {boolean} withReplacement - Whether retire uses replacement.
    */
-  constructor(typeName, target, value, duration, withReplacement = false) {
+  constructor(typeName, target, value, duration, withReplacement) {
     const self = this;
     self._typeName = typeName;
     self._target = target;
@@ -2578,7 +2584,7 @@ class Command {
    */
   getWithReplacement() {
     const self = this;
-    return self._withReplacement || false;
+    return self._withReplacement;
   }
 
   /**
@@ -3980,7 +3986,7 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
   visitEnableAllYears(ctx) {
     const self = this;
     const target = ctx.target.getText();
-    return new Command("enable", target, null, null);
+    return new Command("enable", target, null, null, undefined);
   }
 
   /**
@@ -3993,7 +3999,7 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
     const self = this;
     const target = ctx.target.getText();
     const duration = ctx.duration.accept(self);
-    return new Command("enable", target, null, duration);
+    return new Command("enable", target, null, duration, undefined);
   }
 
   /**
@@ -4226,7 +4232,7 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
     }
     const value = valueGetter(ctx);
 
-    return new Command(typeName, target, value, duration);
+    return new Command(typeName, target, value, duration, undefined);
   }
 
   /**
