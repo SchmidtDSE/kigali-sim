@@ -60,6 +60,8 @@ public class EquipmentChangeUtil {
     // Check year range with EngineSupportUtils
     boolean isInRange = !yearMatcher.isPresent()
         || EngineSupportUtils.isInRange(yearMatcher.get(), engine.getYear());
+    System.out.printf("[DEBUG handleSet] Year=%d, isInRange=%b, targetEquipment=%s %s%n",
+        engine.getYear(), isInRange, targetEquipment.getValue(), targetEquipment.getUnits());
     if (!isInRange) {
       return;
     }
@@ -79,15 +81,22 @@ public class EquipmentChangeUtil {
     // Determine if we need to increase sales or retire equipment
     BigDecimal delta = requiredSales;
 
+    System.out.printf("[DEBUG handleSet] targetUnits=%s, priorEquipment=%s, delta=%s%n",
+        targetUnits.getValue(), priorEquipment.getValue(), delta);
+
     // Handle based on delta direction
     if (delta.compareTo(BigDecimal.ZERO) > 0) {
       // Increase: convert to sales
+      System.out.printf("[DEBUG handleSet] Increasing by %s units%n", delta);
       EngineNumber deltaUnits = new EngineNumber(delta, "units");
       convertToSalesIncrease(deltaUnits, yearMatcher);
     } else if (delta.compareTo(BigDecimal.ZERO) < 0) {
       // Decrease: retire equipment
+      System.out.printf("[DEBUG handleSet] Decreasing by %s units%n", delta.abs());
       EngineNumber unitsToRetire = new EngineNumber(delta.abs(), "units");
       retireEquipment(unitsToRetire, yearMatcher);
+    } else {
+      System.out.printf("[DEBUG handleSet] No change (delta is zero)%n");
     }
   }
 
@@ -104,6 +113,8 @@ public class EquipmentChangeUtil {
   public void handleChange(EngineNumber changeAmount, YearMatcher yearMatcher) {
     // Check year range
     boolean isInRange = EngineSupportUtils.isInRange(yearMatcher, engine.getYear());
+    System.out.printf("[DEBUG handleChange] Year=%d, isInRange=%b, changeAmount=%s %s%n",
+        engine.getYear(), isInRange, changeAmount.getValue(), changeAmount.getUnits());
     if (!isInRange) {
       return;
     }
@@ -112,25 +123,35 @@ public class EquipmentChangeUtil {
     EngineNumber currentEquipmentRaw = engine.getStream("equipment");
     UnitConverter unitConverter = createEquipmentUnitConverter();
     EngineNumber currentEquipment = unitConverter.convert(currentEquipmentRaw, "units");
+    System.out.printf("[DEBUG handleChange] currentEquipmentRaw=%s %s, currentEquipment=%s units%n",
+        currentEquipmentRaw.getValue(), currentEquipmentRaw.getUnits(),
+        currentEquipment.getValue());
 
     // Calculate delta based on units
     BigDecimal delta;
     if ("%".equals(changeAmount.getUnits())) {
       // Percentage change
       delta = calculatePercentageChange(currentEquipment, changeAmount);
+      System.out.printf("[DEBUG handleChange] Percentage change: %s%% of %s = %s units%n",
+          changeAmount.getValue(), currentEquipment.getValue(), delta);
     } else {
       // Absolute unit change
       EngineNumber changeUnits = unitConverter.convert(changeAmount, "units");
       delta = changeUnits.getValue();
+      System.out.printf("[DEBUG handleChange] Absolute change: %s units%n", delta);
     }
 
     // Handle based on delta direction
     if (delta.compareTo(BigDecimal.ZERO) > 0) {
+      System.out.printf("[DEBUG handleChange] Increasing by %s units%n", delta);
       EngineNumber deltaUnits = new EngineNumber(delta, "units");
       convertToSalesIncrease(deltaUnits, Optional.of(yearMatcher));
     } else if (delta.compareTo(BigDecimal.ZERO) < 0) {
+      System.out.printf("[DEBUG handleChange] Decreasing by %s units%n", delta.abs());
       EngineNumber unitsToRetire = new EngineNumber(delta.abs(), "units");
       retireEquipment(unitsToRetire, Optional.of(yearMatcher));
+    } else {
+      System.out.printf("[DEBUG handleChange] No change (delta is zero)%n");
     }
   }
 
