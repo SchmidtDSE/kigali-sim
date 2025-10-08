@@ -49,9 +49,11 @@ public class EquipmentChangeUtil {
    * Handle setting equipment to a target value.
    *
    * <p>Compares target equipment level with current level:
-   * - If higher: converts delta to sales operation (handles recharge automatically)
-   * - If lower: sets sales to 0 and retires excess from priorEquipment
-   * - If equal: no action needed</p>
+   * <ul>
+   * <li>If higher: converts delta to sales operation (handles recharge automatically)</li>
+   * <li>If lower: sets sales to 0 and retires excess from priorEquipment</li>
+   * <li>If equal: no action needed</li>
+   * </ul>
    *
    * @param targetEquipment The target equipment level in units
    * @param yearMatcher Optional year matcher for conditional setting
@@ -97,8 +99,10 @@ public class EquipmentChangeUtil {
    * Handle changing equipment by a delta amount.
    *
    * <p>Supports both percentage and absolute changes:
-   * - Percentage: change equipment by +8%
-   * - Absolute: change equipment by +100 units</p>
+   * <ul>
+   * <li>Percentage: change equipment by +8%</li>
+   * <li>Absolute: change equipment by +100 units</li>
+   * </ul>
    *
    * <p>Note: This method assumes the caller has already verified that the current
    * year matches the yearMatcher. It does not perform year range checking internally.</p>
@@ -118,8 +122,10 @@ public class EquipmentChangeUtil {
    * and absolute changes and handles optional year matching.</p>
    *
    * <p>Supports both percentage and absolute changes:
-   * - Percentage: change equipment by +8%
-   * - Absolute: change equipment by +100 units</p>
+   * <ul>
+   * <li>Percentage: change equipment by +8%</li>
+   * <li>Absolute: change equipment by +100 units</li>
+   * </ul>
    *
    * <p>Note: This method assumes the caller has already verified that the current
    * year matches the yearMatcher. It does not perform year range checking internally.</p>
