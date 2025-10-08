@@ -50,9 +50,9 @@ public class EquipmentChangeUtil {
    *
    * <p>Compares target equipment level with current level:
    * <ul>
-   * <li>If higher: converts delta to sales operation (handles recharge automatically)</li>
-   * <li>If lower: sets sales to 0 and retires excess from priorEquipment</li>
-   * <li>If equal: no action needed</li>
+   *   <li>If higher: converts delta to sales operation (handles recharge automatically)</li>
+   *   <li>If lower: sets sales to 0 and retires excess from priorEquipment</li>
+   *   <li>If equal: no action needed</li>
    * </ul>
    *
    * @param targetEquipment The target equipment level in units
@@ -100,8 +100,8 @@ public class EquipmentChangeUtil {
    *
    * <p>Supports both percentage and absolute changes:
    * <ul>
-   * <li>Percentage: change equipment by +8%</li>
-   * <li>Absolute: change equipment by +100 units</li>
+   *   <li>Percentage: change equipment by +8%</li>
+   *   <li>Absolute: change equipment by +100 units</li>
    * </ul>
    *
    * <p>Note: This method assumes the caller has already verified that the current
@@ -123,8 +123,8 @@ public class EquipmentChangeUtil {
    *
    * <p>Supports both percentage and absolute changes:
    * <ul>
-   * <li>Percentage: change equipment by +8%</li>
-   * <li>Absolute: change equipment by +100 units</li>
+   *   <li>Percentage: change equipment by +8%</li>
+   *   <li>Absolute: change equipment by +100 units</li>
    * </ul>
    *
    * <p>Note: This method assumes the caller has already verified that the current
