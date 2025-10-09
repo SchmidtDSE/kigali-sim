@@ -1249,6 +1249,7 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
    * Currently supports:
    * <ul>
    *   <li>"bank" -> "equipment"</li>
+   *   <li>"priorBank" -> "priorEquipment"</li>
    * </ul>
    *
    * @param streamName The stream name to transform
@@ -1257,6 +1258,9 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
   private String applyStreamSugar(String streamName) {
     if ("bank".equals(streamName)) {
       return "equipment";
+    }
+    if ("priorBank".equals(streamName)) {
+      return "priorEquipment";
     }
     return streamName;
   }

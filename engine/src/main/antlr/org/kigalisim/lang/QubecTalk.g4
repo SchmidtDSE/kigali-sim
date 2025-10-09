@@ -352,7 +352,7 @@ expression: number  # simpleExpression
  * -----------------
  **/
 
-stream: (PRIOR_EQUIPMENT_ | EQUIPMENT_ | BANK_ | EXPORT_ | IMPORT_ | DOMESTIC_ | SALES_);
+stream: (PRIOR_EQUIPMENT_ | EQUIPMENT_ | BANK_ | PRIOR_BANK_ | EXPORT_ | IMPORT_ | DOMESTIC_ | SALES_);
 
 identifier: IDENTIFIER_  # identifierAsVar;
 

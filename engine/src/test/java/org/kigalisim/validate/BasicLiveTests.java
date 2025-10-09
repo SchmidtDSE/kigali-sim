@@ -801,6 +801,55 @@ public class BasicLiveTests {
   }
 
   /**
+   * Test that changes to priorBank properly affect current equipment totals.
+   * This tests that setting priorBank (syntactic sugar for priorEquipment) works correctly.
+   *
+   * <p>Expected: When priorBank is changed, the current equipment should change accordingly
+   * because sales are added on top of the priorBank baseline.
+   */
+  @Test
+  public void testSetPriorBankAffectsCurrentEquipment() throws IOException {
+    // Load and parse the QTA file
+    String qtaPath = "../examples/set_prior_bank_test.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    // Run BAU scenario
+    Stream<EngineResult> bauResults = KigaliSimFacade.runScenario(program, "BAU", progress -> {});
+    List<EngineResult> bauResultsList = bauResults.collect(Collectors.toList());
+
+    // Run SetPriorBank scenario (priorBank set to 600 units in year 5)
+    Stream<EngineResult> setResults = KigaliSimFacade.runScenario(program, "SetPriorBank", progress -> {});
+    List<EngineResult> setResultsList = setResults.collect(Collectors.toList());
+
+    // Get year 5 results for BAU scenario
+    EngineResult bauResult = LiveTestsUtil.getResult(bauResultsList.stream(), 5, "TestApp", "TestSubstance");
+    assertNotNull(bauResult, "Should have BAU result for TestApp/TestSubstance in year 5");
+
+    // Get year 5 results for SetPriorBank scenario
+    EngineResult setResult = LiveTestsUtil.getResult(setResultsList.stream(), 5, "TestApp", "TestSubstance");
+    assertNotNull(setResult, "Should have SetPriorBank result for TestApp/TestSubstance in year 5");
+
+    // Calculate equipment population difference
+    double bauEquipment = bauResult.getPopulation().getValue().doubleValue();
+    double setEquipment = setResult.getPopulation().getValue().doubleValue();
+    double equipmentDifference = setEquipment - bauEquipment;
+
+    // Log the values for debugging
+    System.out.printf("Year 5 - BAU bank (equipment) population: %.6f units%n", bauEquipment);
+    System.out.printf("Year 5 - Set bank (equipment) population: %.6f units%n", setEquipment);
+    System.out.printf("Year 5 - Bank (equipment) difference: %.6f units%n", equipmentDifference);
+
+    // In the QTA file, priorBank is set from 500 to 600 units in year 5 (+100 units)
+    // Equipment should change because sales are added on top of the priorBank baseline
+    // The expected difference should be the same as priorEquipment test: -3007.144547
+    assertEquals(-3007.144547, equipmentDifference, 0.0001,
+        String.format("Bank (equipment) population should change when priorBank baseline is modified. "
+                     + "BAU: %.6f, Set: %.6f, Difference: %.6f",
+                     bauEquipment, setEquipment, equipmentDifference));
+  }
+
+  /**
    * Test population decrease with recharge needs.
    * When equipment is set to decrease, the system should handle recharge needs for remaining equipment.
    */
