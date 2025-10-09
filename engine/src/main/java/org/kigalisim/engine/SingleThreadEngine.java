@@ -388,7 +388,7 @@ public class SingleThreadEngine implements Engine {
 
     // Handle equipment stream with special logic
     if ("equipment".equals(name)) {
-      equipmentChangeUtil.handleSet(value, yearMatcher);
+      equipmentChangeUtil.handleSet(value);
       return;
     }
 
@@ -785,14 +785,30 @@ public class SingleThreadEngine implements Engine {
   @Override
   public void changeStream(String stream, EngineNumber amount, YearMatcher yearMatcher,
       UseKey useKey) {
-    // Handle equipment stream with special logic
     if ("equipment".equals(stream)) {
-      equipmentChangeUtil.handleChange(amount, yearMatcher);
+      handleEquipmentChange(amount, yearMatcher);
       return;
     }
 
     UseKey useKeyEffective = useKey == null ? scope : useKey;
     changeExecutor.executeChange(stream, amount, yearMatcher, useKeyEffective);
+  }
+
+  /**
+   * Handle equipment change with year range checking.
+   *
+   * <p>This method checks if the current year is within the specified range
+   * before delegating to the equipment change utility. This ensures consistent
+   * year checking behavior across all equipment operations.</p>
+   *
+   * @param amount The amount to change equipment by
+   * @param yearMatcher The year matcher to check range against
+   */
+  private void handleEquipmentChange(EngineNumber amount, YearMatcher yearMatcher) {
+    if (!getIsInRange(yearMatcher)) {
+      return;
+    }
+    equipmentChangeUtil.handleChange(amount);
   }
 
   @Override
@@ -804,7 +820,7 @@ public class SingleThreadEngine implements Engine {
 
     // Handle equipment stream with special logic
     if ("equipment".equals(stream)) {
-      equipmentChangeUtil.handleCap(amount, yearMatcher, displaceTarget);
+      equipmentChangeUtil.handleCap(amount, displaceTarget);
       return;
     }
 
@@ -824,7 +840,7 @@ public class SingleThreadEngine implements Engine {
 
     // Handle equipment stream with special logic
     if ("equipment".equals(stream)) {
-      equipmentChangeUtil.handleFloor(amount, yearMatcher, displaceTarget);
+      equipmentChangeUtil.handleFloor(amount, displaceTarget);
       return;
     }
 
