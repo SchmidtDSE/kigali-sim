@@ -374,9 +374,21 @@ KigaliSim provides CSV export functionality from both the web interface and the 
 - `exportInitialChargeValue` - Substance volume in exported equipment initial charges (kg)
 - `exportInitialChargeConsumption` - GHG impact from exported equipment charges (tCO2e)
 
+**Bank Tracking (substance in equipment):**
+- `bankKg` - Total substance volume contained in all equipment in service (kg)
+- `bankTCO2e` - Total GHG potential of substance in all equipment in service (tCO2e)
+- `bankChangeKg` - Change in substance bank from previous year (kg)
+- `bankChangeTCO2e` - Change in GHG potential of substance bank from previous year (tCO2e)
+
 ### Montreal Protocol Attribution Convention
 
 Under standard Montreal Protocol reporting, initial charge for imported equipment is typically attributed to the exporting country (equipment manufacturer), while recharge/servicing is attributed to the importing country (equipment operator). Domestically produced and consumed substances are attributed domestically. The trade supplement columns enable user-configurable attribution to support both standard convention and alternative accounting methodologies for international trade reporting.
+
+### Bank Tracking Columns
+
+The bank columns (bankKg, bankTCO2e, bankChangeKg, bankChangeTCO2e) represent the substance "bank" - the total amount of substance contained within the equipment population currently in service. This differs from consumption/sales columns which track substance flow volumes.
+
+Bank calculations use initial charge values and GWP (Global Warming Potential) from the equals statement to convert equipment population (units) to substance volume (kg) and GHG impact (tCO2e). The change columns show the difference from the previous year, reflecting net increase or decrease in the substance bank.
 
 ## Limitations
 
