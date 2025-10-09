@@ -1804,19 +1804,18 @@ class Substance {
   _getAssumeCode() {
     const self = this;
 
-    // Don't emit anything for null (no assume) or "continued" (no-op)
     if (self._assumeMode === null || self._assumeMode === "continued") {
       return null;
-    }
-
-    // Emit "assume no sales" or "assume only recharge sales"
-    if (self._assumeMode === "no") {
+    } else if (self._assumeMode === "no") {
       return "assume no sales";
     } else if (self._assumeMode === "only recharge") {
       return "assume only recharge sales";
+    } else {
+      throw new Error(
+        "Invalid assume mode: " + self._assumeMode + ". " +
+        "Expected null, 'continued', 'no', or 'only recharge'.",
+      );
     }
-
-    return null;
   }
 
   /**
