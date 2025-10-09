@@ -2720,6 +2720,78 @@ class RetireCommand {
 }
 
 /**
+ * Assume command with mode for sales assumptions.
+ *
+ * Assume command with target stream, mode, and duration for specifying
+ * sales behavior assumptions.
+ */
+class AssumeCommand {
+  /**
+   * Create a new AssumeCommand.
+   *
+   * @param {string} mode - The assumption mode: "no", "only recharge", or "continued".
+   * @param {string} stream - The target stream (e.g., "sales").
+   * @param {YearMatcher|null} duration - Duration specification or null for all years.
+   */
+  constructor(mode, stream, duration) {
+    const self = this;
+    self._mode = mode;
+    self._stream = stream;
+    self._duration = duration;
+  }
+
+  /**
+   * Get the type name of this command.
+   *
+   * @returns {string} Always returns "assume".
+   */
+  getTypeName() {
+    const self = this;
+    return "assume";
+  }
+
+  /**
+   * Get the assumption mode.
+   *
+   * @returns {string} The mode: "no", "only recharge", or "continued".
+   */
+  getMode() {
+    const self = this;
+    return self._mode;
+  }
+
+  /**
+   * Get the target stream.
+   *
+   * @returns {string} The target stream name (e.g., "sales").
+   */
+  getStream() {
+    const self = this;
+    return self._stream;
+  }
+
+  /**
+   * Get the duration for which this command applies.
+   *
+   * @returns {YearMatcher|null} The duration specification, or null for all years.
+   */
+  getDuration() {
+    const self = this;
+    return self._duration;
+  }
+
+  /**
+   * Check if this command is compatible with UI editing.
+   *
+   * @returns {boolean} Always returns true as assume commands are UI-compatible.
+   */
+  getIsCompatible() {
+    const self = this;
+    return true;
+  }
+}
+
+/**
  * Limit command with displacement capability.
  */
 class LimitCommand {
@@ -4119,99 +4191,75 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
    * Visit an assume no command for all years.
    *
    * @param {Object} ctx - Parse tree context.
-   * @returns {Object} Command object with mode, stream, and duration.
+   * @returns {AssumeCommand} Assume command with mode, stream, and duration.
    */
   visitAssumeNoAllYears(ctx) {
     const self = this;
     const stream = ctx.target.getText();
-    return {
-      mode: "no",
-      stream: stream,
-      duration: null,
-    };
+    return new AssumeCommand("no", stream, null);
   }
 
   /**
    * Visit an assume no command with duration.
    *
    * @param {Object} ctx - Parse tree context.
-   * @returns {Object} Command object with mode, stream, and duration.
+   * @returns {AssumeCommand} Assume command with mode, stream, and duration.
    */
   visitAssumeNoDuration(ctx) {
     const self = this;
     const stream = ctx.target.getText();
     const duration = ctx.duration.accept(self);
-    return {
-      mode: "no",
-      stream: stream,
-      duration: duration,
-    };
+    return new AssumeCommand("no", stream, duration);
   }
 
   /**
    * Visit an assume only recharge command for all years.
    *
    * @param {Object} ctx - Parse tree context.
-   * @returns {Object} Command object with mode, stream, and duration.
+   * @returns {AssumeCommand} Assume command with mode, stream, and duration.
    */
   visitAssumeOnlyRechargeAllYears(ctx) {
     const self = this;
     const stream = ctx.target.getText();
-    return {
-      mode: "only recharge",
-      stream: stream,
-      duration: null,
-    };
+    return new AssumeCommand("only recharge", stream, null);
   }
 
   /**
    * Visit an assume only recharge command with duration.
    *
    * @param {Object} ctx - Parse tree context.
-   * @returns {Object} command object with mode, stream, and duration.
+   * @returns {AssumeCommand} Assume command with mode, stream, and duration.
    */
   visitAssumeOnlyRechargeDuration(ctx) {
     const self = this;
     const stream = ctx.target.getText();
     const duration = ctx.duration.accept(self);
-    return {
-      mode: "only recharge",
-      stream: stream,
-      duration: duration,
-    };
+    return new AssumeCommand("only recharge", stream, duration);
   }
 
   /**
    * Visit an assume continued command for all years.
    *
    * @param {Object} ctx - Parse tree context.
-   * @returns {Object} Command object with mode, stream, and duration.
+   * @returns {AssumeCommand} Assume command with mode, stream, and duration.
    */
   visitAssumeContinuedAllYears(ctx) {
     const self = this;
     const stream = ctx.target.getText();
-    return {
-      mode: "continued",
-      stream: stream,
-      duration: null,
-    };
+    return new AssumeCommand("continued", stream, null);
   }
 
   /**
    * Visit an assume continued command with duration.
    *
    * @param {Object} ctx - Parse tree context.
-   * @returns {Object} Command object with mode, stream, and duration.
+   * @returns {AssumeCommand} Assume command with mode, stream, and duration.
    */
   visitAssumeContinuedDuration(ctx) {
     const self = this;
     const stream = ctx.target.getText();
     const duration = ctx.duration.accept(self);
-    return {
-      mode: "continued",
-      stream: stream,
-      duration: duration,
-    };
+    return new AssumeCommand("continued", stream, duration);
   }
 
   /**
@@ -4422,10 +4470,7 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
 
     // Process assume commands (UI editor supports max 1 assume for sales without duration)
     const assumeCommands = commands
-      .filter((x) => x && x.mode !== undefined)
-      .map((x) => {
-        return {mode: x.mode, stream: x.stream, duration: x.duration};
-      });
+      .filter((x) => x && x.getTypeName && x.getTypeName() === "assume");
 
     if (assumeCommands.length > 1) {
       // Multiple assumes not supported in UI
@@ -4434,10 +4479,10 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
       const assume = assumeCommands[0];
 
       // Check if compatible with UI: single assume, for sales, no duration
-      if (assume.stream !== "sales" || assume.duration !== null) {
+      if (assume.getStream() !== "sales" || assume.getDuration() !== null) {
         substance.setIsCompatible(false);
       } else {
-        substance.setAssumeMode(assume.mode);
+        substance.setAssumeMode(assume.getMode());
       }
     }
 
