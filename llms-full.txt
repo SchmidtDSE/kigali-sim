@@ -121,11 +121,18 @@ Keywords `at` and `eol` are available for recycling commands. Use `at recharge` 
 No duration means runs each year. Use `during year beginning` for first year only.
 
 ### Streams
-Streams may be `domestic|import|export|sales|equipment|priorEquipment`
+Streams may be `domestic|import|export|sales|equipment|priorEquipment|bank`
 
 - `domestic` - domestic manufacturing
 - `sales` - both `domestic` and `import`
 - `equipment` - both prior and new equipment
+
+**Bank Keyword**: The `bank` keyword is syntactic sugar for the `equipment` stream, provided for semantic clarity when modeling substance banks (total refrigerant in equipment). Using `bank` instead of `equipment` can make code more readable in banking scenarios:
+
+```qubectalk
+set bank to 1000 units during year 1990         # Same as: set equipment to 1000 units
+assume only recharge bank during years 2025 to onwards
+```
 
 **Note**: The `enable` command only works with `domestic`, `import`, and `export` streams. Streams must be enabled (either explicitly with `enable` or implicitly by setting non-zero values) before operations like `recharge` that require sales distribution calculations.
 
