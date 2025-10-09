@@ -45,6 +45,7 @@ Now let's define the equipment characteristics that drive HFC consumption:
 - Leave equipment type/model empty for now
 - Enter **0.15 kg/unit** for initial charge (refrigerant per new unit)
 - Set annual retirement rate to **5% each year** (corresponds to 20-year average equipment lifetime)
+- Leave **"Retirement reduces in-service equipment"** checked (recommended for most simulations)
 
 These basic parameters are enough to start modeling, but we also will want to account for servicing existing equipment.
 

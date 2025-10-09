@@ -906,4 +906,69 @@ public class BasicLiveTests {
     assertEquals(3000.0, equipment1993, 0.01,
         "Equipment in 1993 should be exactly 3000 units, but was " + equipment1993);
   }
+
+  /**
+   * Test that initial charges without unit-based denominators are rejected.
+   */
+  @Test
+  public void testInitialChargeRequiresUnits() {
+    // Test that initial charge without units throws an error
+    RuntimeException exception = assertThrows(
+        RuntimeException.class,
+        () -> KigaliSimFacade.parseAndInterpret("../examples/basic_initial_charge_invalid_units.qta"),
+        "Should throw RuntimeException for initial charge without unit denominator"
+    );
+
+    assertTrue(exception.getMessage().contains("Initial charge for import stream"),
+        "Error message should mention the stream (import)");
+    assertTrue(exception.getMessage().contains("must be specified per unit"),
+        "Error message should explain the requirement");
+    assertTrue(exception.getMessage().contains("kg / unit"),
+        "Error message should provide an example of correct format");
+  }
+
+  /**
+   * Test retire with replacement maintains equipment population.
+   *
+   * <p>With "retire 5% / year with replacement" and "set import to 100 units during year 1",
+   * there should be 1000 units at the end of year 10 (100 units/year * 10 years).</p>
+   */
+  @Test
+  public void testRetireWithReplacement() throws IOException {
+    // Load and parse the QTA file
+    String qtaPath = "../examples/retire_with_replacement.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    // Run the scenario using KigaliSimFacade
+    String scenarioName = "BAU";
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
+
+    List<EngineResult> resultsList = results.collect(Collectors.toList());
+
+    // Check year 1 - should have 100 units (initial import)
+    EngineResult resultYear1 = LiveTestsUtil.getResult(resultsList.stream(), 1, "Test", "SubA");
+    assertNotNull(resultYear1, "Should have result for Test/SubA in year 1");
+    assertEquals(100.0, resultYear1.getPopulation().getValue().doubleValue(), 0.0001,
+        "Equipment should be 100 units in year 1");
+    assertEquals("units", resultYear1.getPopulation().getUnits(),
+        "Equipment units should be units");
+
+    // Check year 10 - should have 1000 units (100 units/year * 10 years)
+    EngineResult resultYear10 = LiveTestsUtil.getResult(resultsList.stream(), 10, "Test", "SubA");
+    assertNotNull(resultYear10, "Should have result for Test/SubA in year 10");
+    assertEquals(1000.0, resultYear10.getPopulation().getValue().doubleValue(), 0.0001,
+        "Equipment should be 1000 units in year 10 (replacement maintains population)");
+    assertEquals("units", resultYear10.getPopulation().getUnits(),
+        "Equipment units should be units");
+
+    // Verify intermediate years to ensure steady growth
+    for (int year = 2; year <= 10; year++) {
+      EngineResult result = LiveTestsUtil.getResult(resultsList.stream(), year, "Test", "SubA");
+      assertNotNull(result, "Should have result for Test/SubA in year " + year);
+      double expectedUnits = 100.0 * year;
+      assertEquals(expectedUnits, result.getPopulation().getValue().doubleValue(), 0.0001,
+          "Equipment should be " + expectedUnits + " units in year " + year);
+    }
+  }
 }

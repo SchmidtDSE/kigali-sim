@@ -63,7 +63,7 @@ The about stanza is optional.
 - `change {stream} by {amount} <during>` - Growth or decay rates where amount is often +X %
 
 #### Equipment Lifecycle
-- `retire {amount} <during>` - Equipment retirement rate
+- `retire {amount} <with replacement> <during>` - Equipment retirement rate (with replacement maintains equipment population)
 - `recharge {population} with {volume} <during>` - Service recharging (population = equipment to recharge, volume = substance per unit)
 - `set priorEquipment to {amount} <during>` - Pre-existing equipment.
 

@@ -124,4 +124,67 @@ public class FloorLiveTests {
     assertEquals("kg", resultB.getDomestic().getUnits(),
         "Domestic units for sub_b should be kg");
   }
+
+  /**
+   * Test floor on equipment stream when no action is required.
+   * This verifies that when equipment is already above the floor, no changes occur.
+   */
+  @Test
+  public void testFloorEquipmentNoAction() throws IOException {
+    // Load and parse the QTA file
+    String qtaPath = "../examples/floor_equipment_no_action.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    // Run the scenario using KigaliSimFacade
+    String scenarioName = "result";
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
+
+    List<EngineResult> resultsList = results.collect(Collectors.toList());
+    EngineResult result = LiveTestsUtil.getResult(resultsList.stream(), 1, "test", "test");
+    assertNotNull(result, "Should have result for test/test in year 1");
+
+    // Equipment should be unchanged (100 new + 50 prior = 150 units total)
+    // Since floor is 50 units and we're at 150, no action should be taken
+    assertEquals(150.0, result.getPopulation().getValue().doubleValue(), 0.0001,
+        "Equipment population should be unchanged at 150 units (above floor)");
+    assertEquals("units", result.getPopulation().getUnits(),
+        "Equipment units should be units");
+
+    // New equipment should also be unchanged at 100 units
+    assertEquals(100.0, result.getPopulationNew().getValue().doubleValue(), 0.0001,
+        "New equipment should be unchanged at 100 units");
+  }
+
+  /**
+   * Test floor on equipment stream when action is required.
+   * This verifies that when equipment is below the floor, it is increased appropriately.
+   */
+  @Test
+  public void testFloorEquipmentWithAction() throws IOException {
+    // Load and parse the QTA file
+    String qtaPath = "../examples/floor_equipment_with_action.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    // Run the scenario using KigaliSimFacade
+    String scenarioName = "result";
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
+
+    List<EngineResult> resultsList = results.collect(Collectors.toList());
+    EngineResult result = LiveTestsUtil.getResult(resultsList.stream(), 1, "test", "test");
+    assertNotNull(result, "Should have result for test/test in year 1");
+
+    // Equipment should meet the floor at 100 units (increased from 70)
+    // Original: 50 new + 20 prior = 70 units
+    // After floor: should be 100 units total (30 units added via sales increase)
+    assertEquals(100.0, result.getPopulation().getValue().doubleValue(), 0.0001,
+        "Equipment population should meet floor at 100 units");
+    assertEquals("units", result.getPopulation().getUnits(),
+        "Equipment units should be units");
+
+    // New equipment should be 80 units (original 50 + 30 added)
+    assertEquals(80.0, result.getPopulationNew().getValue().doubleValue(), 0.0001,
+        "New equipment should be 80 units (50 original + 30 from floor increase)");
+  }
 }
