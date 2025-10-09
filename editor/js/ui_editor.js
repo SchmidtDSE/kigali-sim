@@ -1302,9 +1302,13 @@ class ConsumptionListPresenter {
     }
 
     // Set sales assumption dropdown
-    const assumeMode = objToShow !== null ?
-      (objToShow.getAssumeMode() || "continued") : "continued";
-    self._dialog.querySelector(".sales-assumption-input").value = assumeMode;
+    const salesAssumptionInput = self._dialog.querySelector(".sales-assumption-input");
+    if (objToShow === null) {
+      salesAssumptionInput.value = "continued";
+    } else {
+      const assumeMode = objToShow.getAssumeMode();
+      salesAssumptionInput.value = assumeMode || "continued";
+    }
 
     self._updateEnableCheckboxes();
     self._updateSource();
