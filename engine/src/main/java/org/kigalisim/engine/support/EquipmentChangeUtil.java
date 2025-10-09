@@ -137,7 +137,6 @@ public class EquipmentChangeUtil {
    * @param displaceTarget Optional substance/stream to displace to (null for no displacement)
    */
   public void handleCap(EngineNumber capValue, String displaceTarget) {
-
     // Get current equipment level
     EngineNumber currentEquipmentRaw = engine.getStream("equipment");
     UnitConverter unitConverter = createEquipmentUnitConverter();
@@ -146,20 +145,25 @@ public class EquipmentChangeUtil {
 
     // Only act if current exceeds cap
     if (currentEquipment.getValue().compareTo(capUnits.getValue()) > 0) {
-      // Calculate excess
-      BigDecimal excess = currentEquipment.getValue().subtract(capUnits.getValue());
-      EngineNumber excessUnits = new EngineNumber(excess, "units");
-
-      // Set sales to 0 to prevent new equipment
-      EngineNumber zeroSales = new EngineNumber(BigDecimal.ZERO, "units");
-      setSales(zeroSales, Optional.empty());
+      // Calculate total reduction needed (this is what should be displaced)
+      BigDecimal totalReduction = currentEquipment.getValue().subtract(capUnits.getValue());
+      EngineNumber totalReductionUnits = new EngineNumber(totalReduction, "units");
 
       // Retire excess equipment from priorEquipment only
-      EngineNumber actualRetired = retireFromPriorEquipment(excessUnits, Optional.empty());
+      retireFromPriorEquipment(totalReductionUnits, Optional.empty());
 
-      // Handle displacement if specified - only displace what was actually retired
+      // Get priorEquipment after retirement
+      EngineNumber priorAfterRetireRaw = engine.getStream("priorEquipment");
+      EngineNumber priorAfterRetire = unitConverter.convert(priorAfterRetireRaw, "units");
+
+      // Calculate required sales to reach cap: sales = cap - remaining_prior
+      BigDecimal requiredSales = capUnits.getValue().subtract(priorAfterRetire.getValue());
+      EngineNumber salesUnits = new EngineNumber(requiredSales.max(BigDecimal.ZERO), "units");
+      setSales(salesUnits, Optional.empty());
+
+      // Handle displacement if specified - displace the total reduction amount
       if (displaceTarget != null) {
-        handleDisplacement(actualRetired, displaceTarget, true);
+        handleDisplacement(totalReductionUnits, displaceTarget, true);
       }
     }
   }
@@ -382,6 +386,11 @@ public class EquipmentChangeUtil {
    */
   private void handleDisplacement(EngineNumber amount, String displaceTarget, boolean isCap) {
     if (displaceTarget == null) {
+      return;
+    }
+
+    // Don't displace if amount is zero or negligible
+    if (amount.getValue().abs().compareTo(new BigDecimal("1E-10")) < 0) {
       return;
     }
 
