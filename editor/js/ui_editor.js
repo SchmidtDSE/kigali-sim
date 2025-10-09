@@ -1307,7 +1307,7 @@ class ConsumptionListPresenter {
       salesAssumptionInput.value = "continued";
     } else {
       const assumeMode = objToShow.getAssumeMode();
-      salesAssumptionInput.value = assumeMode || "continued";
+      salesAssumptionInput.value = assumeMode === null ? "continued" : assumeMode;
     }
 
     self._updateEnableCheckboxes();
@@ -1681,7 +1681,7 @@ class ConsumptionListPresenter {
 
     const substance = substanceBuilder.build(true);
 
-    substance.setAssumeMode(assumeMode === "continued" ? null : assumeMode);
+    substance.setAssumeMode(assumeMode);
 
     return substance;
   }
