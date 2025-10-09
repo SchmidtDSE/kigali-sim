@@ -218,6 +218,10 @@ PRIOR_EQUIPMENT_: 'priorEquipment';
 
 EQUIPMENT_: 'equipment';
 
+BANK_: 'bank';
+
+PRIOR_BANK_: 'priorBank';
+
 EXPORT_: 'export';
 
 IMPORT_: 'import';
@@ -334,7 +338,7 @@ expression: number  # simpleExpression
  * -----------------
  **/
 
-stream: (PRIOR_EQUIPMENT_ | EQUIPMENT_ | EXPORT_ | IMPORT_ | DOMESTIC_ | SALES_);
+stream: (PRIOR_EQUIPMENT_ | EQUIPMENT_ | BANK_ | EXPORT_ | IMPORT_ | DOMESTIC_ | SALES_);
 
 identifier: IDENTIFIER_  # identifierAsVar;
 

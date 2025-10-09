@@ -971,4 +971,47 @@ public class BasicLiveTests {
           "Equipment should be " + expectedUnits + " units in year " + year);
     }
   }
+
+  /**
+   * Test that "bank" keyword works as syntactic sugar for "equipment".
+   * This test mirrors testEquipmentSetWithImportBetween but uses "bank" instead of "equipment".
+   */
+  @Test
+  public void testBankSyntacticSugar() throws IOException {
+    // Load and parse the QTA file that uses "bank" instead of "equipment"
+    String qtaPath = "../examples/basic_bank.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    String scenarioName = "BAU";
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
+    List<EngineResult> resultsList = results.collect(Collectors.toList());
+
+    // 1990: set bank to 1000 units (should behave identically to "set equipment to 1000 units")
+    EngineResult result1990 = LiveTestsUtil.getResult(resultsList.stream(), 1990, "Test", "Sub");
+    assertNotNull(result1990, "Should have result for Test/Sub in year 1990");
+    double equipment1990 = result1990.getPopulation().getValue().doubleValue();
+    assertEquals(1000.0, equipment1990, 0.01,
+        "Bank (equipment) in 1990 should be exactly 1000 units, but was " + equipment1990);
+
+    // 1991: set bank to 1500 units
+    EngineResult result1991 = LiveTestsUtil.getResult(resultsList.stream(), 1991, "Test", "Sub");
+    assertNotNull(result1991, "Should have result for Test/Sub in year 1991");
+    double equipment1991 = result1991.getPopulation().getValue().doubleValue();
+    assertEquals(1500.0, equipment1991, 0.01,
+        "Bank (equipment) in 1991 should be exactly 1500 units, but was " + equipment1991);
+
+    // 1992: set import to 100 units (bank should be based on that + carryover)
+    EngineResult result1992 = LiveTestsUtil.getResult(resultsList.stream(), 1992, "Test", "Sub");
+    assertNotNull(result1992, "Should have result for Test/Sub in year 1992");
+    double equipment1992 = result1992.getPopulation().getValue().doubleValue();
+    // Equipment = priorEquipment (~1500 after retirement) + newEquipment (100 from import)
+
+    // 1993: set bank to 3000 units - this should be ABSOLUTE, not relative to 1992
+    EngineResult result1993 = LiveTestsUtil.getResult(resultsList.stream(), 1993, "Test", "Sub");
+    assertNotNull(result1993, "Should have result for Test/Sub in year 1993");
+    double equipment1993 = result1993.getPopulation().getValue().doubleValue();
+    assertEquals(3000.0, equipment1993, 0.01,
+        "Bank (equipment) in 1993 should be exactly 3000 units, but was " + equipment1993);
+  }
 }
