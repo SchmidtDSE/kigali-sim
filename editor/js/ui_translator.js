@@ -50,6 +50,7 @@ const COMMAND_COMPATIBILITIES = {
   "recycle": "policy",
   "replace": "policy",
   "enable": "definition",
+  "assume": "definition",
 };
 
 const SUPPORTED_EQUALS_UNITS = [
@@ -1291,7 +1292,19 @@ class SubstanceBuilder {
 }
 
 /**
- * A substance with various commands dictating its behavior.
+ * Substance configuration including consumption patterns and lifecycle.
+ *
+ * Represents a single substance (e.g., HFC-134a, R-410A) used within an application.
+ * Contains GWP values, initial charges, consumption/sales streams (domestic, import, export),
+ * retirement rates, recharge schedules, and sales assumptions for bank tracking.
+ *
+ * Sales assumptions control carryover behavior:
+ * - "continued": Sales continue from previous year (default, no-op)
+ * - "only recharge": New sales limited to servicing existing equipment
+ * - "no": All sales reset to zero
+ *
+ * UI editor supports max 1 assume command for sales stream without duration.
+ * Advanced editor supports multiple assumes, durations, and other streams (domestic, import, bank).
  */
 class Substance {
   /**
@@ -1342,6 +1355,7 @@ class Substance {
     self._enables = enables;
     self._isModification = isMod;
     self._isCompatible = compat;
+    self._assumeMode = null; // One of: null, "continued", "only recharge", "no"
   }
 
   /**
@@ -1566,6 +1580,27 @@ class Substance {
   }
 
   /**
+   * Get the sales assumption mode for this substance.
+   *
+   * @returns {string|null} The assumption mode: "continued", "only recharge",
+   *   "no", or null for default.
+   */
+  getAssumeMode() {
+    const self = this;
+    return self._assumeMode;
+  }
+
+  /**
+   * Set the sales assumption mode for this substance.
+   *
+   * @param {string|null} mode - The assumption mode: "continued", "only recharge", "no", or null.
+   */
+  setAssumeMode(mode) {
+    const self = this;
+    self._assumeMode = mode;
+  }
+
+  /**
    * Check if this substance modifies an existing one.
    *
    * @returns {boolean} True if this modifies an existing substance.
@@ -1720,6 +1755,7 @@ class Substance {
     };
 
     addAllIfGiven(self._getEnablesCode());
+    addIfGiven(self._getAssumeCode());
     addAllIfGiven(self._getInitialChargesCode());
     addIfGiven(self._getEqualsCode(self._equalsGhg));
     addIfGiven(self._getEqualsCode(self._equalsKwh));
@@ -1757,6 +1793,30 @@ class Substance {
     };
 
     return self._enables.map(buildEnable);
+  }
+
+  /**
+   * Generate code for assume command.
+   *
+   * @returns {string|null} Code string or null if no assume or if assume is "continued" (no-op).
+   * @private
+   */
+  _getAssumeCode() {
+    const self = this;
+
+    // Don't emit anything for null (no assume) or "continued" (no-op)
+    if (self._assumeMode === null || self._assumeMode === "continued") {
+      return null;
+    }
+
+    // Emit "assume no sales" or "assume only recharge sales"
+    if (self._assumeMode === "no") {
+      return "assume no sales";
+    } else if (self._assumeMode === "only recharge") {
+      return "assume only recharge sales";
+    }
+
+    return null;
   }
 
   /**
@@ -4057,6 +4117,105 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
   }
 
   /**
+   * Visit an assume no command for all years.
+   *
+   * @param {Object} ctx - Parse tree context.
+   * @returns {Object} Command object with mode, stream, and duration.
+   */
+  visitAssumeNoAllYears(ctx) {
+    const self = this;
+    const stream = ctx.target.getText();
+    return {
+      mode: "no",
+      stream: stream,
+      duration: null,
+    };
+  }
+
+  /**
+   * Visit an assume no command with duration.
+   *
+   * @param {Object} ctx - Parse tree context.
+   * @returns {Object} Command object with mode, stream, and duration.
+   */
+  visitAssumeNoDuration(ctx) {
+    const self = this;
+    const stream = ctx.target.getText();
+    const duration = ctx.duration.accept(self);
+    return {
+      mode: "no",
+      stream: stream,
+      duration: duration,
+    };
+  }
+
+  /**
+   * Visit an assume only recharge command for all years.
+   *
+   * @param {Object} ctx - Parse tree context.
+   * @returns {Object} Command object with mode, stream, and duration.
+   */
+  visitAssumeOnlyRechargeAllYears(ctx) {
+    const self = this;
+    const stream = ctx.target.getText();
+    return {
+      mode: "only recharge",
+      stream: stream,
+      duration: null,
+    };
+  }
+
+  /**
+   * Visit an assume only recharge command with duration.
+   *
+   * @param {Object} ctx - Parse tree context.
+   * @returns {Object} command object with mode, stream, and duration.
+   */
+  visitAssumeOnlyRechargeDuration(ctx) {
+    const self = this;
+    const stream = ctx.target.getText();
+    const duration = ctx.duration.accept(self);
+    return {
+      mode: "only recharge",
+      stream: stream,
+      duration: duration,
+    };
+  }
+
+  /**
+   * Visit an assume continued command for all years.
+   *
+   * @param {Object} ctx - Parse tree context.
+   * @returns {Object} Command object with mode, stream, and duration.
+   */
+  visitAssumeContinuedAllYears(ctx) {
+    const self = this;
+    const stream = ctx.target.getText();
+    return {
+      mode: "continued",
+      stream: stream,
+      duration: null,
+    };
+  }
+
+  /**
+   * Visit an assume continued command with duration.
+   *
+   * @param {Object} ctx - Parse tree context.
+   * @returns {Object} Command object with mode, stream, and duration.
+   */
+  visitAssumeContinuedDuration(ctx) {
+    const self = this;
+    const stream = ctx.target.getText();
+    const duration = ctx.duration.accept(self);
+    return {
+      mode: "continued",
+      stream: stream,
+      duration: duration,
+    };
+  }
+
+  /**
    * Visit a base simulation node.
    *
    * @param {Object} ctx - The parse tree node context.
@@ -4260,7 +4419,30 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
 
     const isCompatibleRaw = commands.map((x) => x.getIsCompatible()).reduce((a, b) => a && b, true);
 
-    return builder.build(isCompatibleRaw);
+    const substance = builder.build(isCompatibleRaw);
+
+    // Process assume commands (UI editor supports max 1 assume for sales without duration)
+    const assumeCommands = commands
+      .filter((x) => x && x.mode !== undefined)
+      .map((x) => {
+        return {mode: x.mode, stream: x.stream, duration: x.duration};
+      });
+
+    if (assumeCommands.length > 1) {
+      // Multiple assumes not supported in UI
+      substance.setIsCompatible(false);
+    } else if (assumeCommands.length === 1) {
+      const assume = assumeCommands[0];
+
+      // Check if compatible with UI: single assume, for sales, no duration
+      if (assume.stream !== "sales" || assume.duration !== null) {
+        substance.setIsCompatible(false);
+      } else {
+        substance.setAssumeMode(assume.mode);
+      }
+    }
+
+    return substance;
   }
 
   /**

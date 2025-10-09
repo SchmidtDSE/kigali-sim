@@ -1301,6 +1301,11 @@ class ConsumptionListPresenter {
       enableExport.checked = false;
     }
 
+    // Set sales assumption dropdown
+    const assumeMode = objToShow !== null ?
+      (objToShow.getAssumeMode() || "continued") : "continued";
+    self._dialog.querySelector(".sales-assumption-input").value = assumeMode;
+
     self._updateEnableCheckboxes();
     self._updateSource();
 
@@ -1588,6 +1593,10 @@ class ConsumptionListPresenter {
       substanceBuilder.addCommand(new Command("enable", "export", null, null));
     }
 
+    // Get sales assumption mode and set it after building the substance
+    const assumeModeDropdown = self._dialog.querySelector(".sales-assumption-input");
+    const assumeMode = assumeModeDropdown.value;
+
     const ghgValue = getEngineNumberValue(
       self._dialog.querySelector(".edit-consumption-ghg-input"),
       self._dialog.querySelector(".edit-consumption-ghg-units-input"),
@@ -1667,7 +1676,12 @@ class ConsumptionListPresenter {
     );
     recharges.forEach((x) => substanceBuilder.addCommand(x));
 
-    return substanceBuilder.build(true);
+    const substance = substanceBuilder.build(true);
+
+    // Set assume mode (store null for "continued" since it's the default/no-op behavior)
+    substance.setAssumeMode(assumeMode === "continued" ? null : assumeMode);
+
+    return substance;
   }
 
   /**
