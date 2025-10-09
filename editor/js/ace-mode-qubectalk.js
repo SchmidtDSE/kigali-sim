@@ -24,7 +24,7 @@ ace.define("ace/mode/qubectalk", [
     const samplingKeywords = "mean|normally|sample|std|uniformly|limit";
 
     // Built-in streams
-    const streams = "priorEquipment|equipment|export|import|domestic|sales";
+    const streams = "priorEquipment|equipment|priorBank|bank|export|import|domestic|sales";
 
     // Units
     const units = "annually|beginning|day|days|each|kg|kwh|month|months|mt|onwards|percent|" +

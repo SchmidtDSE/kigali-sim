@@ -2520,7 +2520,10 @@ class Command {
    * Create a new Command.
    *
    * @param {string} typeName - Type of the command.
-   * @param {string} target - Target of the command.
+   * @param {string} target - Target of the command (e.g., "domestic", "import", "export",
+   *                          "equipment", "priorEquipment", "bank", "priorBank", "sales").
+   *                          Note: "bank" and "priorBank" are synonyms for "equipment" and
+   *                          "priorEquipment" respectively.
    * @param {EngineNumber} value - Value for the command.
    * @param {YearMatcher} duration - Duration for the command.
    */
@@ -2545,7 +2548,9 @@ class Command {
   /**
    * Get the target of this command.
    *
-   * @returns {string} The target name (e.g. "domestic", "import", etc).
+   * @returns {string} The target name (e.g., "domestic", "import", "equipment", "bank", etc).
+   *                   Note: "bank" and "priorBank" are accepted as synonyms for "equipment"
+   *                   and "priorEquipment".
    */
   getTarget() {
     const self = this;
