@@ -46,6 +46,10 @@ function buildEngineStructTests() {
         new EngineNumber(200, "tCO2e"),
         new EngineNumber(500, "kWh"),
         tradeSupplement,
+        new EngineNumber(400, "kg"),
+        new EngineNumber(800, "tCO2e"),
+        new EngineNumber(50, "kg"),
+        new EngineNumber(100, "tCO2e"),
       );
     };
 
@@ -216,6 +220,10 @@ function buildEngineStructTests() {
         new EngineNumber(200, "tCO2e"),
         new EngineNumber(500, "kWh"),
         tradeSupplement,
+        new EngineNumber(400, "kg"),
+        new EngineNumber(800, "tCO2e"),
+        new EngineNumber(50, "kg"),
+        new EngineNumber(100, "tCO2e"),
       );
     };
 
@@ -399,8 +407,13 @@ function buildEngineStructTests() {
       builder.setPopulationNew(new EngineNumber(100, "units"));
       builder.setRechargeEmissions(new EngineNumber(300, "tCO2e"));
       builder.setEolEmissions(new EngineNumber(150, "tCO2e"));
+      builder.setInitialChargeEmissions(new EngineNumber(200, "tCO2e"));
       builder.setEnergyConsumption(new EngineNumber(500, "kWh"));
       builder.setTradeSupplement(tradeSupplement);
+      builder.setBankKg(new EngineNumber(400, "kg"));
+      builder.setBankTco2e(new EngineNumber(800, "tCO2e"));
+      builder.setBankChangeKg(new EngineNumber(50, "kg"));
+      builder.setBankChangeTco2e(new EngineNumber(100, "tCO2e"));
 
       return builder;
     };
@@ -512,6 +525,10 @@ function buildEngineStructTests() {
         new EngineNumber(150, "tCO2e"), // eolEmissions
         new EngineNumber(200, "tCO2e"), // initialChargeEmissions
         new EngineNumber(500, "kWh"), // energyConsumption
+        new EngineNumber(400, "kg"), // bankKg
+        new EngineNumber(800, "tCO2e"), // bankTco2e
+        new EngineNumber(50, "kg"), // bankChangeKg
+        new EngineNumber(100, "tCO2e"), // bankChangeTco2e
       );
     };
 
@@ -635,6 +652,10 @@ function buildEngineStructTests() {
         new EngineNumber(75, "tCO2e"), // eolEmissions
         new EngineNumber(100, "tCO2e"), // initialChargeEmissions
         new EngineNumber(250, "kWh"), // energyConsumption
+        new EngineNumber(200, "kg"), // bankKg
+        new EngineNumber(400, "tCO2e"), // bankTco2e
+        new EngineNumber(25, "kg"), // bankChangeKg
+        new EngineNumber(50, "tCO2e"), // bankChangeTco2e
       );
 
       const combined = result1.combine(result2);

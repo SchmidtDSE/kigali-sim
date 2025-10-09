@@ -493,10 +493,70 @@ class ReportDataWrapper {
       makeForEnergyUnits(strategyBuilder);
     };
 
+    const addBankStrategies = (strategyBuilder) => {
+      const makeForKgMtAndTco2e = (strategyBuilder) => {
+        const validateBankUnits = (value, expectedBaseUnit) => {
+          const normalizedUnits = self._normalizeTimeUnits(value.getUnits());
+          if (normalizedUnits !== expectedBaseUnit) {
+            throw "Unexpected bank units: " + value.getUnits();
+          }
+        };
+
+        // kg -> mt conversion for substance bank
+        strategyBuilder.setUnits("mt / yr");
+        strategyBuilder.setTransformation((value) => {
+          validateBankUnits(value, "kg");
+          const convertedValue = value.getValue() / 1000;
+          return new EngineNumber(
+            convertedValue, "mt / yr", makeNumberUnambiguousString(convertedValue),
+          );
+        });
+        strategyBuilder.add();
+
+        strategyBuilder.setUnits("kg / yr");
+        strategyBuilder.setTransformation((value) => {
+          validateBankUnits(value, "kg");
+          return new EngineNumber(
+            value.getValue(), "kg / yr", makeNumberUnambiguousString(value.getValue()),
+          );
+        });
+        strategyBuilder.add();
+
+        // tCO2e conversions for bank
+        strategyBuilder.setUnits("tCO2e / yr");
+        strategyBuilder.setTransformation((value) => {
+          validateBankUnits(value, "tCO2e");
+          return new EngineNumber(
+            value.getValue(), "tCO2e / yr", makeNumberUnambiguousString(value.getValue()),
+          );
+        });
+        strategyBuilder.add();
+      };
+
+      strategyBuilder.setMetric("population");
+
+      strategyBuilder.setSubmetric("all");
+      strategyBuilder.setStrategy((x) => self.getBankKg(x));
+      makeForKgMtAndTco2e(strategyBuilder);
+
+      strategyBuilder.setSubmetric("all");
+      strategyBuilder.setStrategy((x) => self.getBankTco2e(x));
+      makeForKgMtAndTco2e(strategyBuilder);
+
+      strategyBuilder.setSubmetric("new");
+      strategyBuilder.setStrategy((x) => self.getBankChangeKg(x));
+      makeForKgMtAndTco2e(strategyBuilder);
+
+      strategyBuilder.setSubmetric("new");
+      strategyBuilder.setStrategy((x) => self.getBankChangeTco2e(x));
+      makeForKgMtAndTco2e(strategyBuilder);
+    };
+
     addEmissionsStrategies(strategyBuilder);
     addSalesStrategies(strategyBuilder);
     addConsumptionStrategies(strategyBuilder);
     addPopulationStrategies(strategyBuilder);
+    addBankStrategies(strategyBuilder);
 
     self._metricStrategies = strategyBuilder.build();
   }
@@ -888,6 +948,58 @@ class ReportDataWrapper {
   }
 
   /**
+   * Get bank kg value matching a given filter set.
+   *
+   * @param {FilterSet} filterSet - The filter criteria to apply.
+   * @returns {EngineNumber|null} The bank kg value, or null if no matching
+   *     results.
+   */
+  getBankKg(filterSet) {
+    const self = this;
+    const aggregated = self._getAggregatedAfterFilter(filterSet);
+    return aggregated === null ? null : aggregated.getBankKg();
+  }
+
+  /**
+   * Get bank tCO2e value matching a given filter set.
+   *
+   * @param {FilterSet} filterSet - The filter criteria to apply.
+   * @returns {EngineNumber|null} The bank tCO2e value, or null if no matching
+   *     results.
+   */
+  getBankTco2e(filterSet) {
+    const self = this;
+    const aggregated = self._getAggregatedAfterFilter(filterSet);
+    return aggregated === null ? null : aggregated.getBankTco2e();
+  }
+
+  /**
+   * Get bank change kg value matching a given filter set.
+   *
+   * @param {FilterSet} filterSet - The filter criteria to apply.
+   * @returns {EngineNumber|null} The bank change kg value, or null if no matching
+   *     results.
+   */
+  getBankChangeKg(filterSet) {
+    const self = this;
+    const aggregated = self._getAggregatedAfterFilter(filterSet);
+    return aggregated === null ? null : aggregated.getBankChangeKg();
+  }
+
+  /**
+   * Get bank change tCO2e value matching a given filter set.
+   *
+   * @param {FilterSet} filterSet - The filter criteria to apply.
+   * @returns {EngineNumber|null} The bank change tCO2e value, or null if no matching
+   *     results.
+   */
+  getBankChangeTco2e(filterSet) {
+    const self = this;
+    const aggregated = self._getAggregatedAfterFilter(filterSet);
+    return aggregated === null ? null : aggregated.getBankChangeTco2e();
+  }
+
+  /**
    * Normalize time units by removing " / year" and " / yr" suffixes.
    *
    * @private
@@ -941,6 +1053,10 @@ class ReportDataWrapper {
           x.getEolEmissions(),
           x.getInitialChargeEmissions(),
           x.getEnergyConsumption(),
+          x.getBankKg(),
+          x.getBankTco2e(),
+          x.getBankChangeKg(),
+          x.getBankChangeTco2e(),
         ),
     );
 
