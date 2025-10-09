@@ -1014,4 +1014,49 @@ public class BasicLiveTests {
     assertEquals(3000.0, equipment1993, 0.01,
         "Bank (equipment) in 1993 should be exactly 3000 units, but was " + equipment1993);
   }
+
+  /**
+   * Test that "assume" keyword works as syntactic sugar for set commands.
+   * Tests three modes: "assume no", "assume only recharge", and "assume continued".
+   */
+  @Test
+  public void testAssumeSyntacticSugar() throws IOException {
+    // Load and parse the QTA file that uses "assume" commands
+    String qtaPath = "../examples/basic_assume.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    String scenarioName = "test assume";
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
+    List<EngineResult> resultsList = results.collect(Collectors.toList());
+
+    // Year 1: Initial setup with 1000 domestic + 500 import units
+    EngineResult result1 = LiveTestsUtil.getResult(resultsList.stream(), 1, "Test App", "Test Substance");
+    assertNotNull(result1, "Should have result for year 1");
+
+    // Years 2-3: "assume only recharge sales" should set sales to 0 units (no new equipment)
+    // This means recharge continues but no new equipment is added
+    EngineResult result2 = LiveTestsUtil.getResult(resultsList.stream(), 2, "Test App", "Test Substance");
+    assertNotNull(result2, "Should have result for year 2");
+    // New equipment should be 0 in year 2 (only recharge mode)
+    assertEquals(0.0, result2.getPopulationNew().getValue().doubleValue(), 0.0001,
+        "New equipment should be 0 units in year 2 (assume only recharge)");
+
+    // Years 4-5: "assume no sales" should set sales to 0 kg (zero all sales)
+    EngineResult result4 = LiveTestsUtil.getResult(resultsList.stream(), 4, "Test App", "Test Substance");
+    assertNotNull(result4, "Should have result for year 4");
+    assertEquals(0.0, result4.getDomestic().getValue().doubleValue(), 0.0001,
+        "Domestic should be 0 kg in year 4 (assume no sales)");
+    assertEquals(0.0, result4.getImport().getValue().doubleValue(), 0.0001,
+        "Import should be 0 kg in year 4 (assume no sales)");
+
+    // Years 6-10: "assume continued sales" is a no-op, sales should continue from previous year (0)
+    EngineResult result6 = LiveTestsUtil.getResult(resultsList.stream(), 6, "Test App", "Test Substance");
+    assertNotNull(result6, "Should have result for year 6");
+    // Sales continue from year 5 (which was 0), so should remain 0
+    assertEquals(0.0, result6.getDomestic().getValue().doubleValue(), 0.0001,
+        "Domestic should continue at 0 kg in year 6 (assume continued)");
+    assertEquals(0.0, result6.getImport().getValue().doubleValue(), 0.0001,
+        "Import should continue at 0 kg in year 6 (assume continued)");
+  }
 }

@@ -67,6 +67,25 @@ The about stanza is optional.
 - `recharge {population} with {volume} <during>` - Service recharging (population = equipment to recharge, volume = substance per unit)
 - `set priorEquipment to {amount} <during>` - Pre-existing equipment.
 
+#### Sales Assumptions (Bank Tracking)
+The `assume` command provides control over sales carryover behavior:
+
+- `assume no [stream] <during>` - Sets stream to 0 kg (zero all sales)
+- `assume only recharge [stream] <during>` - Sets stream to 0 units (only recharge, no new equipment)
+- `assume continued [stream] <during>` - No-op (sales continue from previous year, default behavior)
+
+Streams supported: `domestic`, `import`, `sales`, `bank`
+
+Examples:
+```qubectalk
+assume only recharge sales during years 2025 to onwards
+assume no import during year 2030
+assume continued domestic
+assume only recharge bank during years 2 to 5
+```
+
+The `assume` command is particularly useful for bank (equipment) tracking scenarios where you want to model that sales should only cover recharge (servicing) needs rather than adding new equipment.
+
 #### Policy Interventions
 - `cap|floor stream to {amount} <displacing> <during>` - Manufacturing/import restrictions and minimums
 - `replace {amount} of {stream} with "substance" <during>` - Substance transitions

@@ -1012,6 +1012,57 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
    * {@inheritDoc}
    */
   @Override
+  public Fragment visitAssumeNoAllYears(QubecTalkParser.AssumeNoAllYearsContext ctx) {
+    return processAssumeStatement("no", ctx.target, Optional.empty());
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public Fragment visitAssumeNoDuration(QubecTalkParser.AssumeNoDurationContext ctx) {
+    ParsedDuring during = visit(ctx.duration).getDuring();
+    return processAssumeStatement("no", ctx.target, Optional.of(during));
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public Fragment visitAssumeOnlyRechargeAllYears(QubecTalkParser.AssumeOnlyRechargeAllYearsContext ctx) {
+    return processAssumeStatement("onlyrecharge", ctx.target, Optional.empty());
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public Fragment visitAssumeOnlyRechargeDuration(QubecTalkParser.AssumeOnlyRechargeDurationContext ctx) {
+    ParsedDuring during = visit(ctx.duration).getDuring();
+    return processAssumeStatement("onlyrecharge", ctx.target, Optional.of(during));
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public Fragment visitAssumeContinuedAllYears(QubecTalkParser.AssumeContinuedAllYearsContext ctx) {
+    return processAssumeStatement("continued", ctx.target, Optional.empty());
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public Fragment visitAssumeContinuedDuration(QubecTalkParser.AssumeContinuedDurationContext ctx) {
+    ParsedDuring during = visit(ctx.duration).getDuring();
+    return processAssumeStatement("continued", ctx.target, Optional.of(during));
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
   public Fragment visitBaseSimulation(QubecTalkParser.BaseSimulationContext ctx) {
     // Get the scenario name
     String name = visit(ctx.name).getString();
@@ -1208,5 +1259,55 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
       return "equipment";
     }
     return streamName;
+  }
+
+  /**
+   * Process assume statement and transform to SetOperation.
+   *
+   * <p>Transforms assume commands to equivalent set commands:
+   * <ul>
+   *   <li>"assume no [stream]" → "set [stream] to 0 kg"</li>
+   *   <li>"assume only recharge [stream]" → "set [stream] to 0 units"</li>
+   *   <li>"assume continued [stream]" → no-op (returns null operation)</li>
+   * </ul>
+   *
+   * @param modeText The assume mode ("no", "onlyrecharge", or "continued")
+   * @param targetContext The parse context containing the target stream
+   * @param duringMaybe Optional time period for the command
+   * @return OperationFragment containing the transformed SetOperation, or null for no-op
+   */
+  private Fragment processAssumeStatement(
+      String modeText,
+      QubecTalkParser.StreamContext targetContext,
+      Optional<ParsedDuring> duringMaybe) {
+
+    String stream = applyStreamSugar(targetContext.getText());
+
+    // Determine transformation based on mode
+    if (modeText.equals("no")) {
+      // "assume no" → "set to 0 kg"
+      EngineNumber zeroKg = new EngineNumber(java.math.BigDecimal.ZERO, "kg");
+      Operation valueOperation = new PreCalculatedOperation(zeroKg);
+      Operation setOperation = duringMaybe.isPresent()
+          ? new SetOperation(stream, valueOperation, duringMaybe.get())
+          : new SetOperation(stream, valueOperation);
+      return new OperationFragment(setOperation);
+
+    } else if (modeText.equals("onlyrecharge")) {
+      // "assume only recharge" → "set to 0 units"
+      EngineNumber zeroUnits = new EngineNumber(java.math.BigDecimal.ZERO, "units");
+      Operation valueOperation = new PreCalculatedOperation(zeroUnits);
+      Operation setOperation = duringMaybe.isPresent()
+          ? new SetOperation(stream, valueOperation, duringMaybe.get())
+          : new SetOperation(stream, valueOperation);
+      return new OperationFragment(setOperation);
+
+    } else if (modeText.equals("continued")) {
+      // "assume continued" → no-op (return null fragment that visitor will ignore)
+      return new OperationFragment(null);
+
+    } else {
+      throw new RuntimeException("Unknown assume mode: " + modeText);
+    }
   }
 }
