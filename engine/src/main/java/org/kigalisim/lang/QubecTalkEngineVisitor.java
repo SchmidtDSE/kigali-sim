@@ -1268,13 +1268,6 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
   /**
    * Process assume statement and transform to SetOperation.
    *
-   * <p>Transforms assume commands to equivalent set commands:
-   * <ul>
-   *   <li>"assume no [stream]" → "set [stream] to 0 kg"</li>
-   *   <li>"assume only recharge [stream]" → "set [stream] to 0 units"</li>
-   *   <li>"assume continued [stream]" → no-op (returns null operation)</li>
-   * </ul>
-   *
    * @param modeText The assume mode ("no", "onlyrecharge", or "continued")
    * @param targetContext The parse context containing the target stream
    * @param duringMaybe Optional time period for the command
@@ -1289,7 +1282,6 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
 
     // Determine transformation based on mode
     if (modeText.equals("no")) {
-      // "assume no" → "set to 0 kg"
       EngineNumber zeroKg = new EngineNumber(java.math.BigDecimal.ZERO, "kg");
       Operation valueOperation = new PreCalculatedOperation(zeroKg);
       Operation setOperation = duringMaybe.isPresent()
@@ -1298,7 +1290,6 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
       return new OperationFragment(setOperation);
 
     } else if (modeText.equals("onlyrecharge")) {
-      // "assume only recharge" → "set to 0 units"
       EngineNumber zeroUnits = new EngineNumber(java.math.BigDecimal.ZERO, "units");
       Operation valueOperation = new PreCalculatedOperation(zeroUnits);
       Operation setOperation = duringMaybe.isPresent()
@@ -1307,9 +1298,7 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
       return new OperationFragment(setOperation);
 
     } else if (modeText.equals("continued")) {
-      // "assume continued" → no-op (return null fragment that visitor will ignore)
       return new OperationFragment(null);
-
     } else {
       throw new RuntimeException("Unknown assume mode: " + modeText);
     }

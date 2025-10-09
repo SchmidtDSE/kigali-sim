@@ -1593,7 +1593,6 @@ class ConsumptionListPresenter {
       substanceBuilder.addCommand(new Command("enable", "export", null, null));
     }
 
-    // Get sales assumption mode and set it after building the substance
     const assumeModeDropdown = self._dialog.querySelector(".sales-assumption-input");
     const assumeMode = assumeModeDropdown.value;
 
@@ -1678,7 +1677,6 @@ class ConsumptionListPresenter {
 
     const substance = substanceBuilder.build(true);
 
-    // Set assume mode (store null for "continued" since it's the default/no-op behavior)
     substance.setAssumeMode(assumeMode === "continued" ? null : assumeMode);
 
     return substance;

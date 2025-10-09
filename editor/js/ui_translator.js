@@ -1355,7 +1355,7 @@ class Substance {
     self._enables = enables;
     self._isModification = isMod;
     self._isCompatible = compat;
-    self._assumeMode = null; // One of: null, "continued", "only recharge", "no"
+    self._assumeMode = null;
   }
 
   /**
