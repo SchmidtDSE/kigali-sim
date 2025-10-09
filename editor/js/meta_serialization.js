@@ -15,6 +15,7 @@ import {
   Substance,
   SubstanceBuilder,
   Command,
+  RetireCommand,
 } from "ui_translator";
 import {EngineNumber} from "engine_number";
 
@@ -1427,7 +1428,8 @@ class MetaChangeApplier {
     // Add initial charge commands for each stream (skip zero values)
     const domesticCharge = self._parseUnitValue(metadata.getInitialChargeDomestic());
     if (domesticCharge && domesticCharge.getValue() > 0) {
-      builder.addCommand(new Command("initial charge", "domestic", domesticCharge, null));
+      const cmd = new Command("initial charge", "domestic", domesticCharge, null);
+      builder.addCommand(cmd);
     }
 
     const importCharge = self._parseUnitValue(metadata.getInitialChargeImport());
@@ -1443,7 +1445,7 @@ class MetaChangeApplier {
     // Add retirement command if present
     const retirementValue = self._parseUnitValue(metadata.getRetirement());
     if (retirementValue) {
-      builder.addCommand(new Command("retire", null, retirementValue, null));
+      builder.addCommand(new RetireCommand(retirementValue, null, false));
     }
 
     // Build the substance (compatible with UI editing)

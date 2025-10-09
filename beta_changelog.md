@@ -14,6 +14,14 @@ Finally, we want to again express our gratitude for your feedback and time.
 
 The following changes have been adopted and released.
 
+### Retire with replacement option
+
+**Status**: Released October 8, 2025
+
+**Classification**: Feature
+
+Added support for the retire command to automatically marginally increase sales to offset any lost equipment. See [#587](https://github.com/SchmidtDSE/kigali-sim/pull/587).
+
 ### Speed boost
 
 **Status**: Released October 7, 2025

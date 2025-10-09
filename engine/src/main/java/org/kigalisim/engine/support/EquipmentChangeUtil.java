@@ -53,17 +53,11 @@ public class EquipmentChangeUtil {
    * - If lower: sets sales to 0 and retires excess from priorEquipment
    * - If equal: no action needed</p>
    *
+   * <p>Caller is responsible for checking year range before calling this method.</p>
+   *
    * @param targetEquipment The target equipment level in units
-   * @param yearMatcher Optional year matcher for conditional setting
    */
-  public void handleSet(EngineNumber targetEquipment, Optional<YearMatcher> yearMatcher) {
-    // Check year range with EngineSupportUtils
-    boolean isInRange = !yearMatcher.isPresent()
-        || EngineSupportUtils.isInRange(yearMatcher.get(), engine.getYear());
-    if (!isInRange) {
-      return;
-    }
-
+  public void handleSet(EngineNumber targetEquipment) {
     UnitConverter unitConverter = createEquipmentUnitConverter();
 
     // Convert target to units
@@ -83,13 +77,13 @@ public class EquipmentChangeUtil {
     if (delta.compareTo(BigDecimal.ZERO) > 0) {
       // Increase: set sales to achieve target
       EngineNumber salesUnits = new EngineNumber(delta, "units");
-      setSales(salesUnits, yearMatcher);
+      setSales(salesUnits, Optional.empty());
     } else if (delta.compareTo(BigDecimal.ZERO) < 0) {
       // Decrease: set sales to 0 and retire equipment
       EngineNumber zeroSales = new EngineNumber(BigDecimal.ZERO, "units");
-      setSales(zeroSales, yearMatcher);
+      setSales(zeroSales, Optional.empty());
       EngineNumber unitsToRetire = new EngineNumber(delta.abs(), "units");
-      retireFromPriorEquipment(unitsToRetire, yearMatcher);
+      retireFromPriorEquipment(unitsToRetire, Optional.empty());
     }
   }
 
@@ -100,16 +94,11 @@ public class EquipmentChangeUtil {
    * - Percentage: change equipment by +8%
    * - Absolute: change equipment by +100 units</p>
    *
+   * <p>Caller is responsible for checking year range before calling this method.</p>
+   *
    * @param changeAmount The change amount (percentage or units)
-   * @param yearMatcher Matcher to determine if change applies to current year
    */
-  public void handleChange(EngineNumber changeAmount, YearMatcher yearMatcher) {
-    // Check year range
-    boolean isInRange = EngineSupportUtils.isInRange(yearMatcher, engine.getYear());
-    if (!isInRange) {
-      return;
-    }
-
+  public void handleChange(EngineNumber changeAmount) {
     // Get current equipment level
     EngineNumber currentEquipmentRaw = engine.getStream("equipment");
     UnitConverter unitConverter = createEquipmentUnitConverter();
@@ -129,10 +118,10 @@ public class EquipmentChangeUtil {
     // Handle based on delta direction
     if (delta.compareTo(BigDecimal.ZERO) > 0) {
       EngineNumber deltaUnits = new EngineNumber(delta, "units");
-      changeSales(deltaUnits, Optional.of(yearMatcher));
+      changeSales(deltaUnits, Optional.empty());
     } else if (delta.compareTo(BigDecimal.ZERO) < 0) {
       EngineNumber unitsToRetire = new EngineNumber(delta.abs(), "units");
-      retireEquipment(unitsToRetire, Optional.of(yearMatcher));
+      retireEquipment(unitsToRetire, Optional.empty());
     }
   }
 
@@ -142,17 +131,12 @@ public class EquipmentChangeUtil {
    * <p>If current equipment exceeds cap, retires excess. Supports displacement
    * to move retired equipment to another substance.</p>
    *
+   * <p>Caller is responsible for checking year range before calling this method.</p>
+   *
    * @param capValue The maximum equipment level
-   * @param yearMatcher Matcher to determine if cap applies to current year
    * @param displaceTarget Optional substance/stream to displace to (null for no displacement)
    */
-  public void handleCap(EngineNumber capValue, YearMatcher yearMatcher, String displaceTarget) {
-    // Check year range
-    boolean isInRange = EngineSupportUtils.isInRange(yearMatcher, engine.getYear());
-    if (!isInRange) {
-      return;
-    }
-
+  public void handleCap(EngineNumber capValue, String displaceTarget) {
     // Get current equipment level
     EngineNumber currentEquipmentRaw = engine.getStream("equipment");
     UnitConverter unitConverter = createEquipmentUnitConverter();
@@ -161,20 +145,25 @@ public class EquipmentChangeUtil {
 
     // Only act if current exceeds cap
     if (currentEquipment.getValue().compareTo(capUnits.getValue()) > 0) {
-      // Calculate excess
-      BigDecimal excess = currentEquipment.getValue().subtract(capUnits.getValue());
-      EngineNumber excessUnits = new EngineNumber(excess, "units");
-
-      // Set sales to 0 to prevent new equipment
-      EngineNumber zeroSales = new EngineNumber(BigDecimal.ZERO, "units");
-      setSales(zeroSales, Optional.of(yearMatcher));
+      // Calculate total reduction needed (this is what should be displaced)
+      BigDecimal totalReduction = currentEquipment.getValue().subtract(capUnits.getValue());
+      EngineNumber totalReductionUnits = new EngineNumber(totalReduction, "units");
 
       // Retire excess equipment from priorEquipment only
-      EngineNumber actualRetired = retireFromPriorEquipment(excessUnits, Optional.of(yearMatcher));
+      retireFromPriorEquipment(totalReductionUnits, Optional.empty());
 
-      // Handle displacement if specified - only displace what was actually retired
+      // Get priorEquipment after retirement
+      EngineNumber priorAfterRetireRaw = engine.getStream("priorEquipment");
+      EngineNumber priorAfterRetire = unitConverter.convert(priorAfterRetireRaw, "units");
+
+      // Calculate required sales to reach cap: sales = cap - remaining_prior
+      BigDecimal requiredSales = capUnits.getValue().subtract(priorAfterRetire.getValue());
+      EngineNumber salesUnits = new EngineNumber(requiredSales.max(BigDecimal.ZERO), "units");
+      setSales(salesUnits, Optional.empty());
+
+      // Handle displacement if specified - displace the total reduction amount
       if (displaceTarget != null) {
-        handleDisplacement(actualRetired, displaceTarget, true);
+        handleDisplacement(totalReductionUnits, displaceTarget, true);
       }
     }
   }
@@ -185,17 +174,12 @@ public class EquipmentChangeUtil {
    * <p>If current equipment is below floor, increases sales to meet minimum.
    * Supports displacement to offset the increase.</p>
    *
+   * <p>Caller is responsible for checking year range before calling this method.</p>
+   *
    * @param floorValue The minimum equipment level
-   * @param yearMatcher Matcher to determine if floor applies to current year
    * @param displaceTarget Optional substance/stream to displace from (null for no displacement)
    */
-  public void handleFloor(EngineNumber floorValue, YearMatcher yearMatcher,
-      String displaceTarget) {
-    // Check year range
-    boolean isInRange = EngineSupportUtils.isInRange(yearMatcher, engine.getYear());
-    if (!isInRange) {
-      return;
-    }
+  public void handleFloor(EngineNumber floorValue, String displaceTarget) {
 
     // Get current equipment level
     EngineNumber currentEquipmentRaw = engine.getStream("equipment");
@@ -210,7 +194,7 @@ public class EquipmentChangeUtil {
       EngineNumber deficitUnits = new EngineNumber(deficit, "units");
 
       // Increase sales to meet floor
-      changeSales(deficitUnits, Optional.of(yearMatcher));
+      changeSales(deficitUnits, Optional.empty());
 
       // Handle displacement if specified
       if (displaceTarget != null) {
@@ -405,6 +389,11 @@ public class EquipmentChangeUtil {
       return;
     }
 
+    // Don't displace if amount is zero or negligible
+    if (amount.getValue().abs().compareTo(new BigDecimal("1E-10")) < 0) {
+      return;
+    }
+
     // Get original scope
     Scope currentScope = engine.getScope();
 
@@ -425,7 +414,7 @@ public class EquipmentChangeUtil {
     EngineNumber newTarget = new EngineNumber(newTargetLevel, "units");
 
     // Set the new equipment level in target substance (this will trigger sales/recharge)
-    handleSet(newTarget, Optional.empty());
+    handleSet(newTarget);
 
     // Restore original scope
     String originalSubstance = currentScope.getSubstance();
