@@ -1266,6 +1266,22 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
   }
 
   /**
+   * Create a SetOperation with optional duration.
+   *
+   * @param stream The target stream name
+   * @param valueOperation The operation producing the value to set
+   * @param duringMaybe Optional time period for the operation
+   * @return SetOperation with or without duration based on duringMaybe
+   */
+  private Operation makeSet(String stream, Operation valueOperation, Optional<ParsedDuring> duringMaybe) {
+    if (duringMaybe.isPresent()) {
+      return new SetOperation(stream, valueOperation, duringMaybe.get());
+    } else {
+      return new SetOperation(stream, valueOperation);
+    }
+  }
+
+  /**
    * Process assume statement and transform to SetOperation.
    *
    * @param modeText The assume mode ("no", "onlyrecharge", or "continued")
@@ -1280,27 +1296,19 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
 
     String stream = applyStreamSugar(targetContext.getText());
 
-    // Determine transformation based on mode
-    if (modeText.equals("no")) {
-      EngineNumber zeroKg = new EngineNumber(java.math.BigDecimal.ZERO, "kg");
-      Operation valueOperation = new PreCalculatedOperation(zeroKg);
-      Operation setOperation = duringMaybe.isPresent()
-          ? new SetOperation(stream, valueOperation, duringMaybe.get())
-          : new SetOperation(stream, valueOperation);
-      return new OperationFragment(setOperation);
-
-    } else if (modeText.equals("onlyrecharge")) {
-      EngineNumber zeroUnits = new EngineNumber(java.math.BigDecimal.ZERO, "units");
-      Operation valueOperation = new PreCalculatedOperation(zeroUnits);
-      Operation setOperation = duringMaybe.isPresent()
-          ? new SetOperation(stream, valueOperation, duringMaybe.get())
-          : new SetOperation(stream, valueOperation);
-      return new OperationFragment(setOperation);
-
-    } else if (modeText.equals("continued")) {
-      return new OperationFragment(null);
-    } else {
-      throw new RuntimeException("Unknown assume mode: " + modeText);
-    }
+    return switch (modeText) {
+      case "no" -> {
+        EngineNumber zeroKg = new EngineNumber(java.math.BigDecimal.ZERO, "kg");
+        Operation valueOperation = new PreCalculatedOperation(zeroKg);
+        yield new OperationFragment(makeSet(stream, valueOperation, duringMaybe));
+      }
+      case "onlyrecharge" -> {
+        EngineNumber zeroUnits = new EngineNumber(java.math.BigDecimal.ZERO, "units");
+        Operation valueOperation = new PreCalculatedOperation(zeroUnits);
+        yield new OperationFragment(makeSet(stream, valueOperation, duringMaybe));
+      }
+      case "continued" -> new OperationFragment(null);
+      default -> throw new RuntimeException("Unknown assume mode: " + modeText);
+    };
   }
 }
