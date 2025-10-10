@@ -1,0 +1,31 @@
+start default
+  define application "Test App"
+    uses substance "Test Substance"
+      enable domestic
+      enable import
+      equals 100 tCO2e / mt
+
+      initial charge with 0.1 kg / unit for domestic
+      initial charge with 0.1 kg / unit for import
+
+      set domestic to 1000 units during year 1
+      set import to 500 units during year 1
+
+      # Test "assume only recharge" - should zero out new equipment sales (units)
+      assume only recharge sales during years 2 to 3
+
+      # Test "assume no" - should zero out all sales (kg)
+      assume no sales during years 4 to 5
+
+      # Test "assume continued" - no-op, sales continue from previous year
+      assume continued sales during years 6 to 10
+
+      retire 5 % each year
+      recharge 10 % with 0.1 kg / unit
+    end substance
+  end application
+end default
+
+start simulations
+  simulate "test assume" from years 1 to 10
+end simulations

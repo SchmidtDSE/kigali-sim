@@ -214,6 +214,10 @@ PRIOR_EQUIPMENT_: 'priorEquipment';
 
 EQUIPMENT_: 'equipment';
 
+PRIOR_BANK_: 'priorBank';
+
+BANK_: 'bank';
+
 EXPORT_: 'export';
 
 IMPORT_: 'import';
@@ -221,6 +225,14 @@ IMPORT_: 'import';
 DOMESTIC_: 'domestic';
 
 SALES_: 'sales';
+
+ASSUME_: 'assume';
+
+NO_: 'no';
+
+ONLY_: 'only';
+
+CONTINUED_: 'continued';
 
 /**
  * -----------
@@ -330,7 +342,7 @@ expression: number  # simpleExpression
  * -----------------
  **/
 
-stream: (PRIOR_EQUIPMENT_ | EQUIPMENT_ | EXPORT_ | IMPORT_ | DOMESTIC_ | SALES_);
+stream: (PRIOR_EQUIPMENT_ | EQUIPMENT_ | PRIOR_BANK_ | BANK_ | EXPORT_ | IMPORT_ | DOMESTIC_ | SALES_);
 
 identifier: IDENTIFIER_  # identifierAsVar;
 
@@ -428,6 +440,14 @@ enableStatement: ENABLE_ target=stream  # enableAllYears
   | ENABLE_ target=stream duration=during  # enableDuration
   ;
 
+assumeStatement: ASSUME_ NO_ target=stream  # assumeNoAllYears
+  | ASSUME_ NO_ target=stream duration=during  # assumeNoDuration
+  | ASSUME_ ONLY_ RECHARGE_ target=stream  # assumeOnlyRechargeAllYears
+  | ASSUME_ ONLY_ RECHARGE_ target=stream duration=during  # assumeOnlyRechargeDuration
+  | ASSUME_ CONTINUED_ target=stream  # assumeContinuedAllYears
+  | ASSUME_ CONTINUED_ target=stream duration=during  # assumeContinuedDuration
+  ;
+
 simulate: SIMULATE_ name=string FROM_ YEARS_ start=expression TO_ end=expression  # baseSimulation
   | SIMULATE_ name=string USING_ string (THEN_ string)* FROM_ YEARS_ start=expression TO_ end=expression  # policySim
   | SIMULATE_ name=string FROM_ YEARS_ start=expression TO_ end=expression ACROSS_ trials=expression TRIALS_  # baseSimulationTrials
@@ -442,7 +462,7 @@ simulate: SIMULATE_ name=string FROM_ YEARS_ start=expression TO_ end=expression
 
 globalStatement: defineVarStatement;
 
-substanceStatement: (capStatement | changeStatement | enableStatement | equalsStatement | initialChargeStatement | rechargeStatement | recycleStatement | replaceStatement | retireStatement | setStatement);
+substanceStatement: (assumeStatement | capStatement | changeStatement | enableStatement | equalsStatement | initialChargeStatement | rechargeStatement | recycleStatement | replaceStatement | retireStatement | setStatement);
 
 /**
  * -------------

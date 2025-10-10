@@ -39,6 +39,10 @@ public class EngineResultBuilder {
   private Optional<EngineNumber> exportValue;
   private Optional<EngineNumber> exportConsumptionValue;
   private Optional<TradeSupplement> tradeSupplement;
+  private Optional<EngineNumber> bankKg;
+  private Optional<EngineNumber> bankTco2e;
+  private Optional<EngineNumber> bankChangeKg;
+  private Optional<EngineNumber> bankChangeTco2e;
 
   /**
    * Create builder without any values initialized.
@@ -64,6 +68,10 @@ public class EngineResultBuilder {
     exportValue = Optional.empty();
     exportConsumptionValue = Optional.empty();
     tradeSupplement = Optional.empty();
+    bankKg = Optional.empty();
+    bankTco2e = Optional.empty();
+    bankChangeKg = Optional.empty();
+    bankChangeTco2e = Optional.empty();
   }
 
   /**
@@ -292,6 +300,50 @@ public class EngineResultBuilder {
   }
 
   /**
+   * Set the bank kg value.
+   *
+   * @param bankKg The total substance volume in equipment bank in kg
+   * @return This builder for method chaining
+   */
+  public EngineResultBuilder setBankKg(EngineNumber bankKg) {
+    this.bankKg = Optional.of(bankKg);
+    return this;
+  }
+
+  /**
+   * Set the bank tCO2e value.
+   *
+   * @param bankTco2e The total GHG potential of substance in equipment bank in tCO2e
+   * @return This builder for method chaining
+   */
+  public EngineResultBuilder setBankTco2e(EngineNumber bankTco2e) {
+    this.bankTco2e = Optional.of(bankTco2e);
+    return this;
+  }
+
+  /**
+   * Set the bank change kg value.
+   *
+   * @param bankChangeKg The change in substance bank from previous year in kg
+   * @return This builder for method chaining
+   */
+  public EngineResultBuilder setBankChangeKg(EngineNumber bankChangeKg) {
+    this.bankChangeKg = Optional.of(bankChangeKg);
+    return this;
+  }
+
+  /**
+   * Set the bank change tCO2e value.
+   *
+   * @param bankChangeTco2e The change in GHG potential of substance bank from previous year in tCO2e
+   * @return This builder for method chaining
+   */
+  public EngineResultBuilder setBankChangeTco2e(EngineNumber bankChangeTco2e) {
+    this.bankChangeTco2e = Optional.of(bankChangeTco2e);
+    return this;
+  }
+
+  /**
    * Check that the builder is complete and create a new result.
    *
    * @return The result built from the values provided to this builder
@@ -319,7 +371,11 @@ public class EngineResultBuilder {
         energyConsumption.get(),
         exportValue.get(),
         exportConsumptionValue.get(),
-        tradeSupplement.get()
+        tradeSupplement.get(),
+        bankKg.get(),
+        bankTco2e.get(),
+        bankChangeKg.get(),
+        bankChangeTco2e.get()
     );
   }
 
@@ -349,6 +405,10 @@ public class EngineResultBuilder {
     checkValid(exportValue, "exportValue");
     checkValid(exportConsumptionValue, "exportConsumptionValue");
     checkValid(tradeSupplement, "tradeSupplement");
+    checkValid(bankKg, "bankKg");
+    checkValid(bankTco2e, "bankTco2e");
+    checkValid(bankChangeKg, "bankChangeKg");
+    checkValid(bankChangeTco2e, "bankChangeTco2e");
   }
 
   /**

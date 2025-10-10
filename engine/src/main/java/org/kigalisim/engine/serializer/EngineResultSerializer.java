@@ -60,6 +60,7 @@ public class EngineResultSerializer {
     // Add values into builder
     parseMainBody(builder, useKey);
     parseTradeSupplement(builder, useKey);
+    calculateBankValues(builder, useKey);
 
     return builder.build();
   }
@@ -182,6 +183,64 @@ public class EngineResultSerializer {
     EngineNumber rechargeEmissionsOffset = new EngineNumber(
         rechargeEmissionsConvert.getValue().subtract(recycleConsumptionValue.getValue()), "tCO2e");
     builder.setRechargeEmissions(rechargeEmissionsOffset);
+  }
+
+  /**
+   * Calculate bank values from equipment population.
+   *
+   * <p>Converts equipment population to substance volume (kg) and GHG impact (tCO2e)
+   * using initial charge and GWP values. Also calculates year-over-year changes.</p>
+   *
+   * @param builder The builder into which calculated values should be registered
+   * @param useKey The UseKey containing application and substance information
+   */
+  private void calculateBankValues(EngineResultBuilder builder, UseKey useKey) {
+    // Create UnitConverter with proper state for this substance
+    OverridingConverterStateGetter stateGetter = new OverridingConverterStateGetter(this.stateGetter);
+
+    // Get initial charge - prefer domestic, fallback to import
+    EngineNumber initialCharge = engine.getRawInitialChargeFor(useKey, "domestic");
+    if (initialCharge == null || initialCharge.getValue().compareTo(BigDecimal.ZERO) == 0) {
+      initialCharge = engine.getRawInitialChargeFor(useKey, "import");
+    }
+
+    // Set up state for conversion - need initial charge and GHG intensity
+    stateGetter.setAmortizedUnitVolume(initialCharge);
+
+    EngineNumber ghgIntensity = engine.getGhgIntensity(useKey);
+    stateGetter.setSubstanceConsumption(ghgIntensity);
+
+    UnitConverter unitConverter = new UnitConverter(stateGetter);
+
+    // Get equipment and convert to kg and tCO2e
+    EngineNumber equipment = engine.getStreamFor(useKey, "equipment");
+    EngineNumber bankKg = unitConverter.convert(equipment, "kg");
+    EngineNumber bankTco2e = unitConverter.convert(equipment, "tCO2e");
+
+    // Get priorEquipment and convert to kg and tCO2e (handling null for first year)
+    EngineNumber priorEquipment = engine.getStreamFor(useKey, "priorEquipment");
+    EngineNumber priorBankKg;
+    EngineNumber priorBankTco2e;
+    if (priorEquipment == null) {
+      priorBankKg = new EngineNumber(BigDecimal.ZERO, "kg");
+      priorBankTco2e = new EngineNumber(BigDecimal.ZERO, "tCO2e");
+    } else {
+      priorBankKg = unitConverter.convert(priorEquipment, "kg");
+      priorBankTco2e = unitConverter.convert(priorEquipment, "tCO2e");
+    }
+
+    // Calculate change (current - prior)
+    BigDecimal changeKg = bankKg.getValue().subtract(priorBankKg.getValue());
+    BigDecimal changeTco2e = bankTco2e.getValue().subtract(priorBankTco2e.getValue());
+
+    EngineNumber bankChangeKg = new EngineNumber(changeKg, "kg");
+    EngineNumber bankChangeTco2e = new EngineNumber(changeTco2e, "tCO2e");
+
+    // Set values in builder
+    builder.setBankKg(bankKg);
+    builder.setBankTco2e(bankTco2e);
+    builder.setBankChangeKg(bankChangeKg);
+    builder.setBankChangeTco2e(bankChangeTco2e);
   }
 
   /**

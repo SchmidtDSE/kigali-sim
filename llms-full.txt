@@ -67,6 +67,25 @@ The about stanza is optional.
 - `recharge {population} with {volume} <during>` - Service recharging (population = equipment to recharge, volume = substance per unit)
 - `set priorEquipment to {amount} <during>` - Pre-existing equipment.
 
+#### Sales Assumptions (Bank Tracking)
+The `assume` command provides control over sales carryover behavior:
+
+- `assume no [stream] <during>` - Sets stream to 0 kg (zero all sales)
+- `assume only recharge [stream] <during>` - Sets stream to 0 units (only recharge, no new equipment)
+- `assume continued [stream] <during>` - No-op (sales continue from previous year, default behavior)
+
+Streams supported: `domestic`, `import`, `sales`, `bank`
+
+Examples:
+```qubectalk
+assume only recharge sales during years 2025 to onwards
+assume no import during year 2030
+assume continued domestic
+assume only recharge bank during years 2 to 5
+```
+
+The `assume` command is particularly useful for bank (equipment) tracking scenarios where you want to model that sales should only cover recharge (servicing) needs rather than adding new equipment.
+
 #### Policy Interventions
 - `cap|floor stream to {amount} <displacing> <during>` - Manufacturing/import restrictions and minimums
 - `replace {amount} of {stream} with "substance" <during>` - Substance transitions
@@ -102,11 +121,18 @@ Keywords `at` and `eol` are available for recycling commands. Use `at recharge` 
 No duration means runs each year. Use `during year beginning` for first year only.
 
 ### Streams
-Streams may be `domestic|import|export|sales|equipment|priorEquipment`
+Streams may be `domestic|import|export|sales|equipment|priorEquipment|bank`
 
 - `domestic` - domestic manufacturing
 - `sales` - both `domestic` and `import`
 - `equipment` - both prior and new equipment
+
+**Bank Keyword**: The `bank` keyword is syntactic sugar for the `equipment` stream, provided for semantic clarity when modeling substance banks (total refrigerant in equipment). Using `bank` instead of `equipment` can make code more readable in banking scenarios:
+
+```qubectalk
+set bank to 1000 units during year 1990         # Same as: set equipment to 1000 units
+assume only recharge bank during years 2025 to onwards
+```
 
 **Note**: The `enable` command only works with `domestic`, `import`, and `export` streams. Streams must be enabled (either explicitly with `enable` or implicitly by setting non-zero values) before operations like `recharge` that require sales distribution calculations.
 
@@ -374,9 +400,21 @@ KigaliSim provides CSV export functionality from both the web interface and the 
 - `exportInitialChargeValue` - Substance volume in exported equipment initial charges (kg)
 - `exportInitialChargeConsumption` - GHG impact from exported equipment charges (tCO2e)
 
+**Bank Tracking (substance in equipment):**
+- `bankKg` - Total substance volume contained in all equipment in service (kg)
+- `bankTCO2e` - Total GHG potential of substance in all equipment in service (tCO2e)
+- `bankChangeKg` - Change in substance bank from previous year (kg)
+- `bankChangeTCO2e` - Change in GHG potential of substance bank from previous year (tCO2e)
+
 ### Montreal Protocol Attribution Convention
 
 Under standard Montreal Protocol reporting, initial charge for imported equipment is typically attributed to the exporting country (equipment manufacturer), while recharge/servicing is attributed to the importing country (equipment operator). Domestically produced and consumed substances are attributed domestically. The trade supplement columns enable user-configurable attribution to support both standard convention and alternative accounting methodologies for international trade reporting.
+
+### Bank Tracking Columns
+
+The bank columns (bankKg, bankTCO2e, bankChangeKg, bankChangeTCO2e) represent the substance "bank" - the total amount of substance contained within the equipment population currently in service. This differs from consumption/sales columns which track substance flow volumes.
+
+Bank calculations use initial charge values and GWP (Global Warming Potential) from the equals statement to convert equipment population (units) to substance volume (kg) and GHG impact (tCO2e). The change columns show the difference from the previous year, reflecting net increase or decrease in the substance bank.
 
 ## Limitations
 

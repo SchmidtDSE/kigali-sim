@@ -140,6 +140,12 @@ class ReportDataParser {
     const initialChargeEmissions = parseEngineNumber(row["initialChargeEmissions"], "tCO2e");
     const energyConsumption = parseEngineNumber(row["energyConsumption"], "kwh");
 
+    // Parse bank fields from Java CSV
+    const bankKg = parseEngineNumber(row["bankKg"], "kg");
+    const bankTco2e = parseEngineNumber(row["bankTCO2e"], "tCO2e");
+    const bankChangeKg = parseEngineNumber(row["bankChangeKg"], "kg");
+    const bankChangeTco2e = parseEngineNumber(row["bankChangeTCO2e"], "tCO2e");
+
     // Handle TradeSupplement fields from Java CSV
     const importInitialChargeValue = parseEngineNumber(
       row["importInitialChargeValue"],
@@ -189,6 +195,10 @@ class ReportDataParser {
       initialChargeEmissions,
       energyConsumption,
       tradeSupplement,
+      bankKg,
+      bankTco2e,
+      bankChangeKg,
+      bankChangeTco2e,
     );
   }
 }
