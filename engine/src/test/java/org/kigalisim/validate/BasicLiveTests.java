@@ -801,6 +801,55 @@ public class BasicLiveTests {
   }
 
   /**
+   * Test that changes to priorBank properly affect current equipment totals.
+   * This tests that setting priorBank (syntactic sugar for priorEquipment) works correctly.
+   *
+   * <p>Expected: When priorBank is changed, the current equipment should change accordingly
+   * because sales are added on top of the priorBank baseline.
+   */
+  @Test
+  public void testSetPriorBankAffectsCurrentEquipment() throws IOException {
+    // Load and parse the QTA file
+    String qtaPath = "../examples/set_prior_bank_test.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    // Run BAU scenario
+    Stream<EngineResult> bauResults = KigaliSimFacade.runScenario(program, "BAU", progress -> {});
+    List<EngineResult> bauResultsList = bauResults.collect(Collectors.toList());
+
+    // Run SetPriorBank scenario (priorBank set to 600 units in year 5)
+    Stream<EngineResult> setResults = KigaliSimFacade.runScenario(program, "SetPriorBank", progress -> {});
+    List<EngineResult> setResultsList = setResults.collect(Collectors.toList());
+
+    // Get year 5 results for BAU scenario
+    EngineResult bauResult = LiveTestsUtil.getResult(bauResultsList.stream(), 5, "TestApp", "TestSubstance");
+    assertNotNull(bauResult, "Should have BAU result for TestApp/TestSubstance in year 5");
+
+    // Get year 5 results for SetPriorBank scenario
+    EngineResult setResult = LiveTestsUtil.getResult(setResultsList.stream(), 5, "TestApp", "TestSubstance");
+    assertNotNull(setResult, "Should have SetPriorBank result for TestApp/TestSubstance in year 5");
+
+    // Calculate equipment population difference
+    double bauEquipment = bauResult.getPopulation().getValue().doubleValue();
+    double setEquipment = setResult.getPopulation().getValue().doubleValue();
+    double equipmentDifference = setEquipment - bauEquipment;
+
+    // Log the values for debugging
+    System.out.printf("Year 5 - BAU bank (equipment) population: %.6f units%n", bauEquipment);
+    System.out.printf("Year 5 - Set bank (equipment) population: %.6f units%n", setEquipment);
+    System.out.printf("Year 5 - Bank (equipment) difference: %.6f units%n", equipmentDifference);
+
+    // In the QTA file, priorBank is set from 500 to 600 units in year 5 (+100 units)
+    // Equipment should change because sales are added on top of the priorBank baseline
+    // The expected difference should be the same as priorEquipment test: -3007.144547
+    assertEquals(-3007.144547, equipmentDifference, 0.0001,
+        String.format("Bank (equipment) population should change when priorBank baseline is modified. "
+                     + "BAU: %.6f, Set: %.6f, Difference: %.6f",
+                     bauEquipment, setEquipment, equipmentDifference));
+  }
+
+  /**
    * Test population decrease with recharge needs.
    * When equipment is set to decrease, the system should handle recharge needs for remaining equipment.
    */
@@ -970,5 +1019,93 @@ public class BasicLiveTests {
       assertEquals(expectedUnits, result.getPopulation().getValue().doubleValue(), 0.0001,
           "Equipment should be " + expectedUnits + " units in year " + year);
     }
+  }
+
+  /**
+   * Test that "bank" keyword works as syntactic sugar for "equipment".
+   * This test mirrors testEquipmentSetWithImportBetween but uses "bank" instead of "equipment".
+   */
+  @Test
+  public void testBankSyntacticSugar() throws IOException {
+    // Load and parse the QTA file that uses "bank" instead of "equipment"
+    String qtaPath = "../examples/basic_bank.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    String scenarioName = "BAU";
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
+    List<EngineResult> resultsList = results.collect(Collectors.toList());
+
+    // 1990: set bank to 1000 units (should behave identically to "set equipment to 1000 units")
+    EngineResult result1990 = LiveTestsUtil.getResult(resultsList.stream(), 1990, "Test", "Sub");
+    assertNotNull(result1990, "Should have result for Test/Sub in year 1990");
+    double equipment1990 = result1990.getPopulation().getValue().doubleValue();
+    assertEquals(1000.0, equipment1990, 0.01,
+        "Bank (equipment) in 1990 should be exactly 1000 units, but was " + equipment1990);
+
+    // 1991: set bank to 1500 units
+    EngineResult result1991 = LiveTestsUtil.getResult(resultsList.stream(), 1991, "Test", "Sub");
+    assertNotNull(result1991, "Should have result for Test/Sub in year 1991");
+    double equipment1991 = result1991.getPopulation().getValue().doubleValue();
+    assertEquals(1500.0, equipment1991, 0.01,
+        "Bank (equipment) in 1991 should be exactly 1500 units, but was " + equipment1991);
+
+    // 1992: set import to 100 units (bank should be based on that + carryover)
+    EngineResult result1992 = LiveTestsUtil.getResult(resultsList.stream(), 1992, "Test", "Sub");
+    assertNotNull(result1992, "Should have result for Test/Sub in year 1992");
+    double equipment1992 = result1992.getPopulation().getValue().doubleValue();
+    // Equipment = priorEquipment (~1500 after retirement) + newEquipment (100 from import)
+
+    // 1993: set bank to 3000 units - this should be ABSOLUTE, not relative to 1992
+    EngineResult result1993 = LiveTestsUtil.getResult(resultsList.stream(), 1993, "Test", "Sub");
+    assertNotNull(result1993, "Should have result for Test/Sub in year 1993");
+    double equipment1993 = result1993.getPopulation().getValue().doubleValue();
+    assertEquals(3000.0, equipment1993, 0.01,
+        "Bank (equipment) in 1993 should be exactly 3000 units, but was " + equipment1993);
+  }
+
+  /**
+   * Test that "assume" keyword works as syntactic sugar for set commands.
+   * Tests three modes: "assume no", "assume only recharge", and "assume continued".
+   */
+  @Test
+  public void testAssumeSyntacticSugar() throws IOException {
+    // Load and parse the QTA file that uses "assume" commands
+    String qtaPath = "../examples/basic_assume.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    String scenarioName = "test assume";
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
+    List<EngineResult> resultsList = results.collect(Collectors.toList());
+
+    // Year 1: Initial setup with 1000 domestic + 500 import units
+    EngineResult result1 = LiveTestsUtil.getResult(resultsList.stream(), 1, "Test App", "Test Substance");
+    assertNotNull(result1, "Should have result for year 1");
+
+    // Years 2-3: "assume only recharge sales" should set sales to 0 units (no new equipment)
+    // This means recharge continues but no new equipment is added
+    EngineResult result2 = LiveTestsUtil.getResult(resultsList.stream(), 2, "Test App", "Test Substance");
+    assertNotNull(result2, "Should have result for year 2");
+    // New equipment should be 0 in year 2 (only recharge mode)
+    assertEquals(0.0, result2.getPopulationNew().getValue().doubleValue(), 0.0001,
+        "New equipment should be 0 units in year 2 (assume only recharge)");
+
+    // Years 4-5: "assume no sales" should set sales to 0 kg (zero all sales)
+    EngineResult result4 = LiveTestsUtil.getResult(resultsList.stream(), 4, "Test App", "Test Substance");
+    assertNotNull(result4, "Should have result for year 4");
+    assertEquals(0.0, result4.getDomestic().getValue().doubleValue(), 0.0001,
+        "Domestic should be 0 kg in year 4 (assume no sales)");
+    assertEquals(0.0, result4.getImport().getValue().doubleValue(), 0.0001,
+        "Import should be 0 kg in year 4 (assume no sales)");
+
+    // Years 6-10: "assume continued sales" is a no-op, sales should continue from previous year (0)
+    EngineResult result6 = LiveTestsUtil.getResult(resultsList.stream(), 6, "Test App", "Test Substance");
+    assertNotNull(result6, "Should have result for year 6");
+    // Sales continue from year 5 (which was 0), so should remain 0
+    assertEquals(0.0, result6.getDomestic().getValue().doubleValue(), 0.0001,
+        "Domestic should continue at 0 kg in year 6 (assume continued)");
+    assertEquals(0.0, result6.getImport().getValue().doubleValue(), 0.0001,
+        "Import should continue at 0 kg in year 6 (assume continued)");
   }
 }

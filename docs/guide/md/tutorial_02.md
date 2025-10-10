@@ -72,6 +72,8 @@ Head to the **Set tab** to specify ABC Country's starting conditions:
 - Set **prior equipment** to **1,000,000.0 units** in year 2025
 - Set **domestic** manufacture to **25 mt / yr** in year 2025
 
+Note that below the setpoints, you'll see a "Default sales assumption in a new year" dropdown. For this tutorial (and most simulations), **leave this set to "Continue from last year (recommended)"**, which is the default. This setting controls how sales carry over from one year to the next. The default option maintains existing sales patterns, allowing the model to automatically balance substance allocation between initial charge and recharge based on equipment population dynamics.
+
 This 25 mt/year gives us a good demonstrative curve showing how consumption patterns evolve. However, until we specify changes in later tutorials, this production rate will remain steady based on tonnage. It will be used both for initial charge and recharge.
 
 (tutorial02_step05.gif - alt: animated gif showing how to specify initial conditions)
