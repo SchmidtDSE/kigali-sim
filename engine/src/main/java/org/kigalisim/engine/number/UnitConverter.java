@@ -41,18 +41,13 @@ public class UnitConverter {
       BigDecimal.ONE.divide(KG_TO_MT_FACTOR, MATH_CONTEXT);
   private static final BigDecimal PERCENT_FACTOR = new BigDecimal("100");
   private static final BigDecimal TCO2E_TO_KGCO2E_FACTOR = new BigDecimal("1000");
-  // Pre-calculated inverse conversion factors for multiplication instead of division
-  // Following the pattern of MT_TO_KG_FACTOR optimization (2% speedup)
   private static final BigDecimal KGCO2E_TO_TCO2E_FACTOR =
       BigDecimal.ONE.divide(TCO2E_TO_KGCO2E_FACTOR, MATH_CONTEXT);
   private static final BigDecimal TO_PERCENT_FACTOR =
       BigDecimal.ONE.divide(PERCENT_FACTOR, MATH_CONTEXT);
 
-  // Cached scale map for inferScale - initialized once at class load time
+  // Caches
   private static final Map<String, Map<String, BigDecimal>> SCALE_MAP = createScaleMap();
-
-  // Cache for state-independent conversion results
-  // Key format: "sourceUnits|destUnits|value"
   private static final Map<String, EngineNumber> CONVERSION_CACHE =
       new ConcurrentHashMap<>(256);
   private static final int MAX_CACHE_SIZE = 1000;
@@ -124,37 +119,60 @@ public class UnitConverter {
   /**
    * Check if a conversion is state-independent and can be cached.
    *
-   * <p>Only simple conversions that don't depend on StateGetter can be cached:
-   * <ul>
-   * <li>kg ↔ mt conversions</li>
-   * <li>tCO2e ↔ kgCO2e conversions</li>
-   * <li>Unit aliases (unit/units, year/years/yr/yrs)</li>
-   * </ul>
-   *
    * @param sourceUnits The source units (normalized)
    * @param destUnits The destination units (normalized)
    * @return True if this conversion can be cached
    */
   private static boolean isCacheable(String sourceUnits, String destUnits) {
-    // kg ↔ mt conversions
-    boolean isVolume = ("kg".equals(sourceUnits) || "mt".equals(sourceUnits))
-        && ("kg".equals(destUnits) || "mt".equals(destUnits));
+    boolean startsWithVolume = "kg".equals(sourceUnits) || "mt".equals(sourceUnits);
+    boolean endsWithVolume = "kg".equals(destUnits) || "mt".equals(destUnits);
+    boolean isVolume = startsWithVolume && endsWithVolume;
+    if (isVolume) {
+      return true;
+    }
 
-    // tCO2e ↔ kgCO2e conversions
-    boolean isEmissions = ("tCO2e".equals(sourceUnits) || "kgCO2e".equals(sourceUnits))
-        && ("tCO2e".equals(destUnits) || "kgCO2e".equals(destUnits));
+    boolean startsWithEmissions = "tCO2e".equals(sourceUnits) || "kgCO2e".equals(sourceUnits);
+    boolean endsWithEmissions = "tCO2e".equals(destUnits) || "kgCO2e".equals(destUnits);
+    boolean isEmissions = startsWithEmissions && endsWithEmissions;
+    if (isEmissions) {
+      return true;
+    }
 
-    // Unit aliases
-    boolean isUnitAlias = ("unit".equals(sourceUnits) || "units".equals(sourceUnits))
-        && ("unit".equals(destUnits) || "units".equals(destUnits));
+    boolean startsWithUnits = "unit".equals(sourceUnits) || "units".equals(sourceUnits);
+    boolean endsWithUnits = "unit".equals(destUnits) || "units".equals(destUnits);
+    boolean isUnitAlias = startsWithUnits && endsWithUnits;
+    if (isUnitAlias) {
+      return true;
+    }
 
-    // Year aliases
-    boolean isYearAlias = ("year".equals(sourceUnits) || "years".equals(sourceUnits)
-        || "yr".equals(sourceUnits) || "yrs".equals(sourceUnits))
-        && ("year".equals(destUnits) || "years".equals(destUnits)
-        || "yr".equals(destUnits) || "yrs".equals(destUnits));
+    boolean startsWithYears = isYearVariant(sourceUnits);
+    boolean endsWithYears = isYearVariant(destUnits);
+    boolean isYearAlias = startsWithYears && endsWithYears;
+    if (isYearAlias) {
+      return true;
+    }
 
-    return isVolume || isEmissions || isUnitAlias || isYearAlias;
+    return false;
+  }
+
+  /**
+   * Check if some form of years.
+   *
+   * @param target The value to evaluate.
+   * @returns True if some form of years and false otherwise.
+   */
+  private static boolean isYearVariant(String target) {
+    if ("year".equals(sourceUnits)) {
+      return true;
+    } else if ("years".equals(sourceUnits)) {
+      return true;
+    } else if ("yr".equals(sourceUnits)) {
+      return true;
+    } else if ("yrs".equals(sourceUnits)) {
+      return true;
+    } else {
+      return false;
+    }
   }
 
   /**
