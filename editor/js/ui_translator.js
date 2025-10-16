@@ -1038,6 +1038,8 @@ class SubstanceBuilder {
     self._retire = null;
     self._setVals = [];
     self._enables = [];
+    self._assumeMode = null;
+    self._isCompatibleOverride = null;
   }
 
   /**
@@ -1069,7 +1071,8 @@ class SubstanceBuilder {
     const initialChargeTargetsUnique = new Set(initialChargeTargets);
     const initialChargesNonOverlap = initialChargeTargets.length == initialChargeTargetsUnique.size;
 
-    const isCompatible = isCompatibleRaw && isCompatibleInterpreted && initialChargesNonOverlap;
+    const isCompatibleComputed = isCompatibleRaw && isCompatibleInterpreted && initialChargesNonOverlap;
+    const isCompatible = self._isCompatibleOverride !== null ? self._isCompatibleOverride : isCompatibleComputed;
 
     return new Substance(
       self._name,
@@ -1086,6 +1089,7 @@ class SubstanceBuilder {
       self._enables,
       self._isModification,
       isCompatible,
+      self._assumeMode,
     );
   }
 
@@ -1131,6 +1135,7 @@ class SubstanceBuilder {
       "floor": (x) => self.addLimit(x),
       "replace": (x) => self.addReplace(x),
       "enable": (x) => self.addEnable(x),
+      "assume": (x) => self.setAssumeMode(x.getMode()),
     }[commandType];
 
     if (incompatiblePlace) {
@@ -1244,6 +1249,26 @@ class SubstanceBuilder {
   }
 
   /**
+   * Set the sales assumption mode for this substance.
+   *
+   * @param {string|null} mode - The assumption mode: "continued", "only recharge", "no", or null.
+   */
+  setAssumeMode(mode) {
+    const self = this;
+    self._assumeMode = mode;
+  }
+
+  /**
+   * Override the compatibility flag for this substance.
+   *
+   * @param {boolean} isCompatible - Whether the substance is UI-compatible.
+   */
+  setIsCompatible(isCompatible) {
+    const self = this;
+    self._isCompatibleOverride = isCompatible;
+  }
+
+  /**
    * Add a set value command.
    *
    * @param {Command} newVal - Set value command to add.
@@ -1323,6 +1348,7 @@ class Substance {
    * @param {Command[]} enables - Enable commands.
    * @param {boolean} isMod - Whether this modifies existing substance.
    * @param {boolean} compat - Whether substance is UI-compatible.
+   * @param {string|null} assumeMode - Sales assumption mode.
    */
   constructor(
     name,
@@ -1339,6 +1365,7 @@ class Substance {
     enables,
     isMod,
     compat,
+    assumeMode,
   ) {
     const self = this;
     self._name = name;
@@ -1355,7 +1382,7 @@ class Substance {
     self._enables = enables;
     self._isModification = isMod;
     self._isCompatible = compat;
-    self._assumeMode = null;
+    self._assumeMode = assumeMode;
   }
 
   /**
@@ -1588,16 +1615,6 @@ class Substance {
   getAssumeMode() {
     const self = this;
     return self._assumeMode;
-  }
-
-  /**
-   * Set the sales assumption mode for this substance.
-   *
-   * @param {string|null} mode - The assumption mode: "continued", "only recharge", "no", or null.
-   */
-  setAssumeMode(mode) {
-    const self = this;
-    self._assumeMode = mode;
   }
 
   /**
@@ -4464,27 +4481,25 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
       builder.addCommand(x);
     });
 
-    const isCompatibleRaw = commands.map((x) => x.getIsCompatible()).reduce((a, b) => a && b, true);
-
-    const substance = builder.build(isCompatibleRaw);
-
-    // Process assume commands (UI editor supports max 1 assume for sales without duration)
+    // Check assume compatibility before building
     const assumeCommands = commands
       .filter((x) => x && x.getTypeName && x.getTypeName() === "assume");
 
     if (assumeCommands.length > 1) {
       // Multiple assumes not supported in UI
-      substance.setIsCompatible(false);
+      builder.setIsCompatible(false);
     } else if (assumeCommands.length === 1) {
       const assume = assumeCommands[0];
 
       // Check if compatible with UI: single assume, for sales, no duration
       if (assume.getStream() !== "sales" || assume.getDuration() !== null) {
-        substance.setIsCompatible(false);
-      } else {
-        substance.setAssumeMode(assume.getMode());
+        builder.setIsCompatible(false);
       }
     }
+
+    const isCompatibleRaw = commands.map((x) => x.getIsCompatible()).reduce((a, b) => a && b, true);
+
+    const substance = builder.build(isCompatibleRaw);
 
     return substance;
   }
