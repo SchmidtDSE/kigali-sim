@@ -10,6 +10,9 @@
 
 package org.kigalisim.util;
 
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
 /**
  * Utility class for normalizing unit strings.
  *
@@ -18,6 +21,14 @@ package org.kigalisim.util;
  * for optimal performance.</p>
  */
 public final class UnitStringNormalizer {
+
+  // Cache for normalized unit strings to avoid repeated string allocation
+  // Uses ConcurrentHashMap for thread-safe access without synchronization
+  private static final Map<String, String> NORMALIZATION_CACHE = new ConcurrentHashMap<>(64);
+
+  // Maximum cache size - typical simulations use 10-30 unique unit patterns
+  // 100 provides headroom for complex scenarios while preventing unbounded growth
+  private static final int MAX_CACHE_SIZE = 100;
 
   /**
    * Private constructor to prevent instantiation of utility class.
@@ -36,6 +47,24 @@ public final class UnitStringNormalizer {
    * @return The normalized unit string with all whitespace removed
    */
   public static String normalize(String unitString) {
-    return unitString.replace(" ", "");
+    // Fast path: Check cache first
+    // ConcurrentHashMap.get() is lock-free and highly optimized
+    String cached = NORMALIZATION_CACHE.get(unitString);
+    if (cached != null) {
+      return cached;
+    }
+
+    // Slow path: Perform normalization
+    // Use literal string replacement (faster than regex for simple case)
+    String normalized = unitString.replace(" ", "");
+
+    // Cache the result if space available
+    // Size check prevents unbounded growth in long-running scenarios
+    // Race condition on size check is acceptable - worst case is cache grows to ~110 entries
+    if (NORMALIZATION_CACHE.size() < MAX_CACHE_SIZE) {
+      NORMALIZATION_CACHE.put(unitString, normalized);
+    }
+
+    return normalized;
   }
 }

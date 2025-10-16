@@ -12,8 +12,10 @@ package org.kigalisim.engine.number;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import org.kigalisim.engine.state.StateGetter;
 import org.kigalisim.util.UnitStringNormalizer;
 
@@ -35,8 +37,25 @@ public class UnitConverter {
 
   // Conversion factors
   private static final BigDecimal KG_TO_MT_FACTOR = new BigDecimal("1000");
+  private static final BigDecimal MT_TO_KG_FACTOR =
+      BigDecimal.ONE.divide(KG_TO_MT_FACTOR, MATH_CONTEXT);
   private static final BigDecimal PERCENT_FACTOR = new BigDecimal("100");
   private static final BigDecimal TCO2E_TO_KGCO2E_FACTOR = new BigDecimal("1000");
+  // Pre-calculated inverse conversion factors for multiplication instead of division
+  // Following the pattern of MT_TO_KG_FACTOR optimization (2% speedup)
+  private static final BigDecimal KGCO2E_TO_TCO2E_FACTOR =
+      BigDecimal.ONE.divide(TCO2E_TO_KGCO2E_FACTOR, MATH_CONTEXT);
+  private static final BigDecimal TO_PERCENT_FACTOR =
+      BigDecimal.ONE.divide(PERCENT_FACTOR, MATH_CONTEXT);
+
+  // Cached scale map for inferScale - initialized once at class load time
+  private static final Map<String, Map<String, BigDecimal>> SCALE_MAP = createScaleMap();
+
+  // Cache for state-independent conversion results
+  // Key format: "sourceUnits|destUnits|value"
+  private static final Map<String, EngineNumber> CONVERSION_CACHE =
+      new ConcurrentHashMap<>(256);
+  private static final int MAX_CACHE_SIZE = 1000;
 
   private final StateGetter stateGetter;
 
@@ -47,6 +66,107 @@ public class UnitConverter {
    */
   public UnitConverter(StateGetter stateGetter) {
     this.stateGetter = stateGetter;
+  }
+
+  /**
+   * Create and initialize the scale map for unit conversions.
+   *
+   * <p>This method is called once at class initialization time to create an immutable
+   * map of conversion factors between compatible units. The map is cached to avoid
+   * repeated allocations during unit conversions.</p>
+   *
+   * @return An unmodifiable map of conversion scales
+   */
+  private static Map<String, Map<String, BigDecimal>> createScaleMap() {
+    Map<String, Map<String, BigDecimal>> scaleMap = new HashMap<>();
+
+    Map<String, BigDecimal> kgScales = new HashMap<>();
+    kgScales.put("mt", KG_TO_MT_FACTOR);
+    scaleMap.put("kg", kgScales);
+
+    Map<String, BigDecimal> mtScales = new HashMap<>();
+    mtScales.put("kg", MT_TO_KG_FACTOR);
+    scaleMap.put("mt", mtScales);
+
+    Map<String, BigDecimal> unitScales = new HashMap<>();
+    unitScales.put("units", BigDecimal.ONE);
+    scaleMap.put("unit", unitScales);
+
+    Map<String, BigDecimal> unitsScales = new HashMap<>();
+    unitsScales.put("unit", BigDecimal.ONE);
+    scaleMap.put("units", unitsScales);
+
+    Map<String, BigDecimal> yearsScales = new HashMap<>();
+    yearsScales.put("year", BigDecimal.ONE);
+    scaleMap.put("years", yearsScales);
+
+    Map<String, BigDecimal> yearScales = new HashMap<>();
+    yearScales.put("years", BigDecimal.ONE);
+    yearScales.put("yr", BigDecimal.ONE);
+    yearScales.put("yrs", BigDecimal.ONE);
+    scaleMap.put("year", yearScales);
+
+    Map<String, BigDecimal> yrScales = new HashMap<>();
+    yrScales.put("year", BigDecimal.ONE);
+    yrScales.put("years", BigDecimal.ONE);
+    yrScales.put("yrs", BigDecimal.ONE);
+    scaleMap.put("yr", yrScales);
+
+    Map<String, BigDecimal> yrsScales = new HashMap<>();
+    yrsScales.put("year", BigDecimal.ONE);
+    yrsScales.put("years", BigDecimal.ONE);
+    yrsScales.put("yr", BigDecimal.ONE);
+    scaleMap.put("yrs", yrsScales);
+
+    return Collections.unmodifiableMap(scaleMap);
+  }
+
+  /**
+   * Check if a conversion is state-independent and can be cached.
+   *
+   * <p>Only simple conversions that don't depend on StateGetter can be cached:
+   * <ul>
+   * <li>kg ↔ mt conversions</li>
+   * <li>tCO2e ↔ kgCO2e conversions</li>
+   * <li>Unit aliases (unit/units, year/years/yr/yrs)</li>
+   * </ul>
+   *
+   * @param sourceUnits The source units (normalized)
+   * @param destUnits The destination units (normalized)
+   * @return True if this conversion can be cached
+   */
+  private static boolean isCacheable(String sourceUnits, String destUnits) {
+    // kg ↔ mt conversions
+    boolean isVolume = ("kg".equals(sourceUnits) || "mt".equals(sourceUnits))
+        && ("kg".equals(destUnits) || "mt".equals(destUnits));
+
+    // tCO2e ↔ kgCO2e conversions
+    boolean isEmissions = ("tCO2e".equals(sourceUnits) || "kgCO2e".equals(sourceUnits))
+        && ("tCO2e".equals(destUnits) || "kgCO2e".equals(destUnits));
+
+    // Unit aliases
+    boolean isUnitAlias = ("unit".equals(sourceUnits) || "units".equals(sourceUnits))
+        && ("unit".equals(destUnits) || "units".equals(destUnits));
+
+    // Year aliases
+    boolean isYearAlias = ("year".equals(sourceUnits) || "years".equals(sourceUnits)
+        || "yr".equals(sourceUnits) || "yrs".equals(sourceUnits))
+        && ("year".equals(destUnits) || "years".equals(destUnits)
+        || "yr".equals(destUnits) || "yrs".equals(destUnits));
+
+    return isVolume || isEmissions || isUnitAlias || isYearAlias;
+  }
+
+  /**
+   * Create a cache key for a conversion.
+   *
+   * @param sourceUnits The source units
+   * @param destUnits The destination units
+   * @param value The value to convert
+   * @return Cache key string
+   */
+  private static String createCacheKey(String sourceUnits, String destUnits, BigDecimal value) {
+    return sourceUnits + "|" + destUnits + "|" + value.toPlainString();
   }
 
   /**
@@ -131,6 +251,18 @@ public class UnitConverter {
       String normalizedSourceUnits = normalizeUnitString(source.getUnits());
       String normalizedDestinationUnits = normalizeUnitString(destinationUnits);
 
+      // Check cache for state-independent conversions
+      boolean cacheable = isCacheable(normalizedSourceUnits, normalizedDestinationUnits);
+      String cacheKey = null;
+      if (cacheable) {
+        cacheKey = createCacheKey(normalizedSourceUnits, normalizedDestinationUnits,
+            source.getValue());
+        EngineNumber cached = CONVERSION_CACHE.get(cacheKey);
+        if (cached != null) {
+          return cached;
+        }
+      }
+
       String[] sourceUnitPieces = splitUnits(normalizedSourceUnits);
       boolean sourceHasDenominator = sourceUnitPieces.length > 1;
       String sourceDenominatorUnits = sourceHasDenominator ? sourceUnitPieces[1] : "";
@@ -144,10 +276,11 @@ public class UnitConverter {
       boolean differentDenominator = !destinationDenominatorUnits.equals(sourceDenominatorUnits);
       boolean sameDenominator = !differentDenominator;
 
+      EngineNumber result;
       if (sourceHasDenominator && sameDenominator) {
         EngineNumber sourceEffective = new EngineNumber(source.getValue(), sourceNumeratorUnits);
         EngineNumber convertedNumerator = convertNumerator(sourceEffective, destinationNumeratorUnits);
-        return new EngineNumber(convertedNumerator.getValue(), destinationUnits);
+        result = new EngineNumber(convertedNumerator.getValue(), destinationUnits);
       } else {
         EngineNumber numerator = convertNumerator(source, destinationNumeratorUnits);
         EngineNumber denominator = convertDenominator(source, destinationDenominatorUnits);
@@ -156,19 +289,26 @@ public class UnitConverter {
           BigDecimal inferredFactor = inferScale(sourceDenominatorUnits,
               destinationDenominatorUnits);
           if (inferredFactor != null) {
-            return new EngineNumber(
+            result = new EngineNumber(
                 numerator.getValue().divide(inferredFactor, MATH_CONTEXT), destinationUnits);
           } else if (ZERO_EMPTY_VOLUME_INTENSITY) {
-            return new EngineNumber(BigDecimal.ZERO, destinationUnits);
+            result = new EngineNumber(BigDecimal.ZERO, destinationUnits);
           } else {
             throw new RuntimeException(
                 "Encountered unrecoverable NaN in conversion due to no volume.");
           }
         } else {
-          return new EngineNumber(
+          result = new EngineNumber(
               numerator.getValue().divide(denominator.getValue(), MATH_CONTEXT), destinationUnits);
         }
       }
+
+      // Cache the result if it's cacheable and cache isn't too full
+      if (cacheable && CONVERSION_CACHE.size() < MAX_CACHE_SIZE) {
+        CONVERSION_CACHE.put(cacheKey, result);
+      }
+
+      return result;
     }
   }
 
@@ -220,54 +360,15 @@ public class UnitConverter {
    * Infer a scaling factor without population information.
    *
    * <p>Infer the scale factor for converting between source and destination
-   * units without population information.</p>
+   * units without population information. Uses a cached static map to avoid
+   * repeated allocations.</p>
    *
    * @param source The source unit type
    * @param destination The destination unit type
    * @return The scale factor for conversion or null if not found
    */
   private BigDecimal inferScale(String source, String destination) {
-    Map<String, Map<String, BigDecimal>> scaleMap = new HashMap<>();
-
-    Map<String, BigDecimal> kgScales = new HashMap<>();
-    kgScales.put("mt", KG_TO_MT_FACTOR);
-    scaleMap.put("kg", kgScales);
-
-    Map<String, BigDecimal> mtScales = new HashMap<>();
-    mtScales.put("kg", BigDecimal.ONE.divide(KG_TO_MT_FACTOR, MATH_CONTEXT));
-    scaleMap.put("mt", mtScales);
-
-    Map<String, BigDecimal> unitScales = new HashMap<>();
-    unitScales.put("units", BigDecimal.ONE);
-    scaleMap.put("unit", unitScales);
-
-    Map<String, BigDecimal> unitsScales = new HashMap<>();
-    unitsScales.put("unit", BigDecimal.ONE);
-    scaleMap.put("units", unitsScales);
-
-    Map<String, BigDecimal> yearsScales = new HashMap<>();
-    yearsScales.put("year", BigDecimal.ONE);
-    scaleMap.put("years", yearsScales);
-
-    Map<String, BigDecimal> yearScales = new HashMap<>();
-    yearScales.put("years", BigDecimal.ONE);
-    yearScales.put("yr", BigDecimal.ONE);
-    yearScales.put("yrs", BigDecimal.ONE);
-    scaleMap.put("year", yearScales);
-
-    Map<String, BigDecimal> yrScales = new HashMap<>();
-    yrScales.put("year", BigDecimal.ONE);
-    yrScales.put("years", BigDecimal.ONE);
-    yrScales.put("yrs", BigDecimal.ONE);
-    scaleMap.put("yr", yrScales);
-
-    Map<String, BigDecimal> yrsScales = new HashMap<>();
-    yrsScales.put("year", BigDecimal.ONE);
-    yrsScales.put("years", BigDecimal.ONE);
-    yrsScales.put("yr", BigDecimal.ONE);
-    scaleMap.put("yrs", yrsScales);
-
-    Map<String, BigDecimal> sourceScales = scaleMap.get(source);
+    Map<String, BigDecimal> sourceScales = SCALE_MAP.get(source);
     if (sourceScales != null) {
       return sourceScales.get(destination);
     } else {
@@ -303,7 +404,7 @@ public class UnitConverter {
     EngineNumber asVolume = toVolume(target);
     String currentUnits = asVolume.getUnits();
     if ("kg".equals(currentUnits) || "kgeachyear".equals(currentUnits)) {
-      return new EngineNumber(asVolume.getValue().divide(KG_TO_MT_FACTOR, MATH_CONTEXT), "mt");
+      return new EngineNumber(asVolume.getValue().multiply(MT_TO_KG_FACTOR), "mt");
     } else if ("mt".equals(currentUnits) || "mteachyear".equals(currentUnits)) {
       return new EngineNumber(asVolume.getValue(), "mt");
     } else {
@@ -344,7 +445,7 @@ public class UnitConverter {
     } else if ("kgCO2e".equals(currentUnits)) {
       // Convert kgCO2e to tCO2e first, then to volume
       BigDecimal kgco2eValue = target.getValue();
-      BigDecimal tco2eValue = kgco2eValue.divide(TCO2E_TO_KGCO2E_FACTOR, MATH_CONTEXT);
+      BigDecimal tco2eValue = kgco2eValue.multiply(KGCO2E_TO_TCO2E_FACTOR);
       EngineNumber tco2eTarget = new EngineNumber(tco2eValue, "tCO2e");
       return toVolume(tco2eTarget);
     } else if ("unit".equals(currentUnits) || "units".equals(currentUnits) || "unitseachyear".equals(currentUnits)) {
@@ -358,7 +459,7 @@ public class UnitConverter {
       return new EngineNumber(newValue, newUnits);
     } else if ("%".equals(currentUnits)) {
       BigDecimal originalValue = target.getValue();
-      BigDecimal asRatio = originalValue.divide(PERCENT_FACTOR, MATH_CONTEXT);
+      BigDecimal asRatio = originalValue.multiply(TO_PERCENT_FACTOR);
       EngineNumber total = stateGetter.getVolume();
       String newUnits = total.getUnits();
       BigDecimal newValue = total.getValue().multiply(asRatio);
@@ -411,12 +512,12 @@ public class UnitConverter {
     } else if ("kgCO2e".equals(currentUnits)) {
       // Convert kgCO2e to tCO2e first, then to units
       BigDecimal kgco2eValue = target.getValue();
-      BigDecimal tco2eValue = kgco2eValue.divide(TCO2E_TO_KGCO2E_FACTOR, MATH_CONTEXT);
+      BigDecimal tco2eValue = kgco2eValue.multiply(KGCO2E_TO_TCO2E_FACTOR);
       EngineNumber tco2eTarget = new EngineNumber(tco2eValue, "tCO2e");
       return toUnits(tco2eTarget);
     } else if ("%".equals(currentUnits) || "%eachyear".equals(currentUnits)) {
       BigDecimal originalValue = target.getValue();
-      BigDecimal asRatio = originalValue.divide(PERCENT_FACTOR, MATH_CONTEXT);
+      BigDecimal asRatio = originalValue.multiply(TO_PERCENT_FACTOR);
       EngineNumber total = stateGetter.getPopulation();
       BigDecimal newValue = total.getValue().multiply(asRatio);
       return new EngineNumber(newValue, "units");
@@ -446,7 +547,7 @@ public class UnitConverter {
     } else if ("kgCO2e".equals(currentUnits)) {
       // Convert kgCO2e to tCO2e
       BigDecimal kgco2eValue = target.getValue();
-      BigDecimal tco2eValue = kgco2eValue.divide(TCO2E_TO_KGCO2E_FACTOR, MATH_CONTEXT);
+      BigDecimal tco2eValue = kgco2eValue.multiply(KGCO2E_TO_TCO2E_FACTOR);
       return new EngineNumber(tco2eValue, "tCO2e");
     } else if (currentInfer) {
       EngineNumber conversion = stateGetter.getSubstanceConsumption();
@@ -462,7 +563,7 @@ public class UnitConverter {
       }
     } else if ("%".equals(currentUnits)) {
       BigDecimal originalValue = target.getValue();
-      BigDecimal asRatio = originalValue.divide(PERCENT_FACTOR, MATH_CONTEXT);
+      BigDecimal asRatio = originalValue.multiply(TO_PERCENT_FACTOR);
       EngineNumber total = stateGetter.getGhgConsumption();
       BigDecimal newValue = total.getValue().multiply(asRatio);
       return new EngineNumber(newValue, "tCO2e");
@@ -508,7 +609,7 @@ public class UnitConverter {
       }
     } else if ("%".equals(currentUnits)) {
       BigDecimal originalValue = target.getValue();
-      BigDecimal asRatio = originalValue.divide(PERCENT_FACTOR, MATH_CONTEXT);
+      BigDecimal asRatio = originalValue.multiply(TO_PERCENT_FACTOR);
       EngineNumber total = stateGetter.getGhgConsumption();
       BigDecimal kgco2eTotal = total.getValue().multiply(TCO2E_TO_KGCO2E_FACTOR);
       BigDecimal newValue = kgco2eTotal.multiply(asRatio);
@@ -552,7 +653,7 @@ public class UnitConverter {
       return new EngineNumber(newValue, newUnits);
     } else if ("%".equals(currentUnits)) {
       BigDecimal originalValue = target.getValue();
-      BigDecimal asRatio = originalValue.divide(PERCENT_FACTOR, MATH_CONTEXT);
+      BigDecimal asRatio = originalValue.multiply(TO_PERCENT_FACTOR);
       EngineNumber total = stateGetter.getEnergyConsumption();
       BigDecimal newValue = total.getValue().multiply(asRatio);
       return new EngineNumber(newValue, "kwh");
@@ -583,7 +684,7 @@ public class UnitConverter {
     } else if ("kgCO2e".equals(currentUnits)) {
       // Convert kgCO2e to tCO2e first, then calculate years
       BigDecimal kgco2eValue = target.getValue();
-      BigDecimal tco2eValue = kgco2eValue.divide(TCO2E_TO_KGCO2E_FACTOR, MATH_CONTEXT);
+      BigDecimal tco2eValue = kgco2eValue.multiply(KGCO2E_TO_TCO2E_FACTOR);
       BigDecimal perYearConsumptionValue = stateGetter.getGhgConsumption().getValue();
       BigDecimal newYears = tco2eValue.divide(perYearConsumptionValue, MATH_CONTEXT);
       return new EngineNumber(newYears, "years");
@@ -605,7 +706,7 @@ public class UnitConverter {
       return new EngineNumber(newYears, "years");
     } else if ("%".equals(currentUnits)) {
       BigDecimal originalValue = target.getValue();
-      BigDecimal asRatio = originalValue.divide(PERCENT_FACTOR, MATH_CONTEXT);
+      BigDecimal asRatio = originalValue.multiply(TO_PERCENT_FACTOR);
       EngineNumber total = stateGetter.getYearsElapsed();
       BigDecimal newValue = total.getValue().multiply(asRatio);
       return new EngineNumber(newValue, "years");
@@ -846,7 +947,7 @@ public class UnitConverter {
         return new EngineNumber(emissionsValue, "tCO2e");
       } else if ("kgCO2e".equals(newUnits)) {
         BigDecimal kgco2eValue = populationValue.multiply(conversionValue);
-        BigDecimal tco2eValue = kgco2eValue.divide(TCO2E_TO_KGCO2E_FACTOR, MATH_CONTEXT);
+        BigDecimal tco2eValue = kgco2eValue.multiply(KGCO2E_TO_TCO2E_FACTOR);
         return new EngineNumber(tco2eValue, "tCO2e");
       } else {
         throw new IllegalArgumentException("Unsupported per-unit emissions type: " + newUnits);
@@ -887,7 +988,7 @@ public class UnitConverter {
     } else {
       // Convert to tCO2e if result is in kgCO2e
       if ("kgCO2e".equals(newUnits)) {
-        newValue = newValue.divide(TCO2E_TO_KGCO2E_FACTOR, MATH_CONTEXT);
+        newValue = newValue.multiply(KGCO2E_TO_TCO2E_FACTOR);
         newUnits = "tCO2e";
       }
     }
