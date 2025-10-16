@@ -40,6 +40,7 @@ public class RunCommand implements Callable<Integer> {
   private static final int SIMULATION_NOT_FOUND_ERROR = 3;
   private static final int EXECUTION_ERROR = 4;
   private static final int CSV_WRITE_ERROR = 5;
+  private static final int INVALID_REPLICATES_ERROR = 6;
 
   @Parameters(index = "0", description = "Path to QubecTalk file to run")
   private File file;
@@ -47,11 +48,19 @@ public class RunCommand implements Callable<Integer> {
   @Option(names = {"-o", "--output"}, description = "Path to CSV output file", required = true)
   private File csvOutputFile;
 
+  @Option(names = {"-r", "--replicates"}, description = "Number of times to run each scenario (default: 1)", defaultValue = "1")
+  private int replicates;
+
   @Override
   public Integer call() {
     if (!file.exists()) {
       System.err.println("Could not find file: " + file);
       return FILE_NOT_FOUND_ERROR;
+    }
+
+    if (replicates < 1) {
+      System.err.println("Replicates must be at least 1, got: " + replicates);
+      return INVALID_REPLICATES_ERROR;
     }
 
     try {
@@ -85,9 +94,18 @@ public class RunCommand implements Callable<Integer> {
         System.out.flush();
       };
 
-      // Run all scenarios in the program and collect results
+      // Run all scenarios in the program with replicates and collect results
       Stream<EngineResult> allResults = program.getScenarios().stream()
-          .flatMap(scenarioName -> KigaliSimFacade.runScenario(program, scenarioName, progressCallback));
+          .flatMap(scenarioName ->
+              java.util.stream.IntStream.range(0, replicates)
+                  .boxed()
+                  .flatMap(replicateIndex -> {
+                    if (replicates > 1) {
+                      System.out.println("Running scenario '" + scenarioName + "' - replicate " + (replicateIndex + 1) + " of " + replicates);
+                    }
+                    return KigaliSimFacade.runScenario(program, scenarioName, progressCallback);
+                  })
+          );
 
       // Collect to a list to see how many results we have
       List<EngineResult> resultsList = allResults.collect(java.util.stream.Collectors.toList());
