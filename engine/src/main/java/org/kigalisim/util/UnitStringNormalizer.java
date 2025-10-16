@@ -47,20 +47,13 @@ public final class UnitStringNormalizer {
    * @return The normalized unit string with all whitespace removed
    */
   public static String normalize(String unitString) {
-    // Fast path: Check cache first
-    // ConcurrentHashMap.get() is lock-free and highly optimized
     String cached = NORMALIZATION_CACHE.get(unitString);
     if (cached != null) {
       return cached;
     }
 
-    // Slow path: Perform normalization
-    // Use literal string replacement (faster than regex for simple case)
     String normalized = unitString.replace(" ", "");
 
-    // Cache the result if space available
-    // Size check prevents unbounded growth in long-running scenarios
-    // Race condition on size check is acceptable - worst case is cache grows to ~110 entries
     if (NORMALIZATION_CACHE.size() < MAX_CACHE_SIZE) {
       NORMALIZATION_CACHE.put(unitString, normalized);
     }
