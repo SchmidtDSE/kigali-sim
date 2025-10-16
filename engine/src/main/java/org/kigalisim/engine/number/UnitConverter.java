@@ -162,13 +162,13 @@ public class UnitConverter {
    * @returns True if some form of years and false otherwise.
    */
   private static boolean isYearVariant(String target) {
-    if ("year".equals(sourceUnits)) {
+    if ("year".equals(target)) {
       return true;
-    } else if ("years".equals(sourceUnits)) {
+    } else if ("years".equals(target)) {
       return true;
-    } else if ("yr".equals(sourceUnits)) {
+    } else if ("yr".equals(target)) {
       return true;
-    } else if ("yrs".equals(sourceUnits)) {
+    } else if ("yrs".equals(target)) {
       return true;
     } else {
       return false;
