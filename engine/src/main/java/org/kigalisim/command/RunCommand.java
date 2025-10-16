@@ -15,6 +15,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.util.List;
 import java.util.concurrent.Callable;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 import org.kigalisim.KigaliSimFacade;
 import org.kigalisim.ProgressReportCallback;
@@ -97,7 +99,7 @@ public class RunCommand implements Callable<Integer> {
       // Run all scenarios in the program with replicates and collect results
       Stream<EngineResult> allResults = program.getScenarios().stream()
           .flatMap(scenarioName ->
-              java.util.stream.IntStream.range(0, replicates)
+              IntStream.range(0, replicates)
                   .boxed()
                   .flatMap(replicateIndex -> {
                     if (replicates > 1) {
@@ -108,7 +110,7 @@ public class RunCommand implements Callable<Integer> {
           );
 
       // Collect to a list to see how many results we have
-      List<EngineResult> resultsList = allResults.collect(java.util.stream.Collectors.toList());
+      List<EngineResult> resultsList = allResults.collect(Collectors.toList());
 
       // Print a newline after progress is complete
       System.out.println();
