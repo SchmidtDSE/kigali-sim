@@ -273,8 +273,11 @@ public class UnitConverter {
       boolean cacheable = isCacheable(normalizedSourceUnits, normalizedDestinationUnits);
       String cacheKey = null;
       if (cacheable) {
-        cacheKey = createCacheKey(normalizedSourceUnits, normalizedDestinationUnits,
-            source.getValue());
+        cacheKey = createCacheKey(
+            normalizedSourceUnits,
+            normalizedDestinationUnits,
+            source.getValue()
+        );
         EngineNumber cached = CONVERSION_CACHE.get(cacheKey);
         if (cached != null) {
           return cached;
