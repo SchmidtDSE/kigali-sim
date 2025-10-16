@@ -494,62 +494,130 @@ class ReportDataWrapper {
     };
 
     const addBankStrategies = (strategyBuilder) => {
-      const makeForKgMtAndTco2e = (strategyBuilder) => {
-        const validateBankUnits = (value, expectedBaseUnit) => {
-          const normalizedUnits = self._normalizeTimeUnits(value.getUnits());
-          if (normalizedUnits !== expectedBaseUnit) {
-            throw "Unexpected bank units: " + value.getUnits();
-          }
-        };
-
-        // kg -> mt conversion for substance bank
-        strategyBuilder.setUnits("mt / yr");
-        strategyBuilder.setTransformation((value) => {
-          validateBankUnits(value, "kg");
-          const convertedValue = value.getValue() / 1000;
-          return new EngineNumber(
-            convertedValue, "mt / yr", makeNumberUnambiguousString(convertedValue),
-          );
-        });
-        strategyBuilder.add();
-
-        strategyBuilder.setUnits("kg / yr");
-        strategyBuilder.setTransformation((value) => {
-          validateBankUnits(value, "kg");
-          return new EngineNumber(
-            value.getValue(), "kg / yr", makeNumberUnambiguousString(value.getValue()),
-          );
-        });
-        strategyBuilder.add();
-
-        // tCO2e conversions for bank
-        strategyBuilder.setUnits("tCO2e / yr");
-        strategyBuilder.setTransformation((value) => {
-          validateBankUnits(value, "tCO2e");
-          return new EngineNumber(
-            value.getValue(), "tCO2e / yr", makeNumberUnambiguousString(value.getValue()),
-          );
-        });
-        strategyBuilder.add();
-      };
-
       strategyBuilder.setMetric("population");
 
+      // Helper to create a strategy that picks the right bank method based on units
+      const makeBankStrategy = (kgMethod, tco2eMethod) => {
+        return (filterSet) => {
+          const units = filterSet.getUnits();
+          const normalizedUnits = self._normalizeTimeUnits(units);
+
+          // Determine which method to use based on requested units
+          if (normalizedUnits === "kg" || normalizedUnits === "mt") {
+            return kgMethod(filterSet);
+          } else if (normalizedUnits === "tCO2e") {
+            return tco2eMethod(filterSet);
+          } else {
+            throw "Unsupported bank units: " + units;
+          }
+        };
+      };
+
+      // kg -> mt conversion for substance bank
       strategyBuilder.setSubmetric("all");
-      strategyBuilder.setStrategy((x) => self.getBankKg(x));
-      makeForKgMtAndTco2e(strategyBuilder);
+      strategyBuilder.setStrategy(makeBankStrategy(
+        (x) => self.getBankKg(x),
+        (x) => self.getBankTco2e(x),
+      ));
+      strategyBuilder.setUnits("mt / yr");
+      strategyBuilder.setTransformation((value) => {
+        const normalizedUnits = self._normalizeTimeUnits(value.getUnits());
+        if (normalizedUnits !== "kg") {
+          throw "Unexpected bank units: " + value.getUnits();
+        }
+        const convertedValue = value.getValue() / 1000;
+        return new EngineNumber(
+          convertedValue, "mt / yr", makeNumberUnambiguousString(convertedValue),
+        );
+      });
+      strategyBuilder.add();
 
       strategyBuilder.setSubmetric("all");
-      strategyBuilder.setStrategy((x) => self.getBankTco2e(x));
-      makeForKgMtAndTco2e(strategyBuilder);
+      strategyBuilder.setStrategy(makeBankStrategy(
+        (x) => self.getBankKg(x),
+        (x) => self.getBankTco2e(x),
+      ));
+      strategyBuilder.setUnits("kg / yr");
+      strategyBuilder.setTransformation((value) => {
+        const normalizedUnits = self._normalizeTimeUnits(value.getUnits());
+        if (normalizedUnits !== "kg") {
+          throw "Unexpected bank units: " + value.getUnits();
+        }
+        return new EngineNumber(
+          value.getValue(), "kg / yr", makeNumberUnambiguousString(value.getValue()),
+        );
+      });
+      strategyBuilder.add();
+
+      strategyBuilder.setSubmetric("all");
+      strategyBuilder.setStrategy(makeBankStrategy(
+        (x) => self.getBankKg(x),
+        (x) => self.getBankTco2e(x),
+      ));
+      strategyBuilder.setUnits("tCO2e / yr");
+      strategyBuilder.setTransformation((value) => {
+        const normalizedUnits = self._normalizeTimeUnits(value.getUnits());
+        if (normalizedUnits !== "tCO2e") {
+          throw "Unexpected bank units: " + value.getUnits();
+        }
+        return new EngineNumber(
+          value.getValue(), "tCO2e / yr", makeNumberUnambiguousString(value.getValue()),
+        );
+      });
+      strategyBuilder.add();
+
+      // Same pattern for "new" submetric
+      strategyBuilder.setSubmetric("new");
+      strategyBuilder.setStrategy(makeBankStrategy(
+        (x) => self.getBankChangeKg(x),
+        (x) => self.getBankChangeTco2e(x),
+      ));
+      strategyBuilder.setUnits("mt / yr");
+      strategyBuilder.setTransformation((value) => {
+        const normalizedUnits = self._normalizeTimeUnits(value.getUnits());
+        if (normalizedUnits !== "kg") {
+          throw "Unexpected bank units: " + value.getUnits();
+        }
+        const convertedValue = value.getValue() / 1000;
+        return new EngineNumber(
+          convertedValue, "mt / yr", makeNumberUnambiguousString(convertedValue),
+        );
+      });
+      strategyBuilder.add();
 
       strategyBuilder.setSubmetric("new");
-      strategyBuilder.setStrategy((x) => self.getBankChangeKg(x));
-      makeForKgMtAndTco2e(strategyBuilder);
+      strategyBuilder.setStrategy(makeBankStrategy(
+        (x) => self.getBankChangeKg(x),
+        (x) => self.getBankChangeTco2e(x),
+      ));
+      strategyBuilder.setUnits("kg / yr");
+      strategyBuilder.setTransformation((value) => {
+        const normalizedUnits = self._normalizeTimeUnits(value.getUnits());
+        if (normalizedUnits !== "kg") {
+          throw "Unexpected bank units: " + value.getUnits();
+        }
+        return new EngineNumber(
+          value.getValue(), "kg / yr", makeNumberUnambiguousString(value.getValue()),
+        );
+      });
+      strategyBuilder.add();
 
       strategyBuilder.setSubmetric("new");
-      strategyBuilder.setStrategy((x) => self.getBankChangeTco2e(x));
-      makeForKgMtAndTco2e(strategyBuilder);
+      strategyBuilder.setStrategy(makeBankStrategy(
+        (x) => self.getBankChangeKg(x),
+        (x) => self.getBankChangeTco2e(x),
+      ));
+      strategyBuilder.setUnits("tCO2e / yr");
+      strategyBuilder.setTransformation((value) => {
+        const normalizedUnits = self._normalizeTimeUnits(value.getUnits());
+        if (normalizedUnits !== "tCO2e") {
+          throw "Unexpected bank units: " + value.getUnits();
+        }
+        return new EngineNumber(
+          value.getValue(), "tCO2e / yr", makeNumberUnambiguousString(value.getValue()),
+        );
+      });
+      strategyBuilder.add();
     };
 
     addEmissionsStrategies(strategyBuilder);

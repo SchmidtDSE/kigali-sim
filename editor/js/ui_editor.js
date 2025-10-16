@@ -1679,9 +1679,9 @@ class ConsumptionListPresenter {
     );
     recharges.forEach((x) => substanceBuilder.addCommand(x));
 
-    const substance = substanceBuilder.build(true);
+    substanceBuilder.setAssumeMode(assumeMode);
 
-    substance.setAssumeMode(assumeMode);
+    const substance = substanceBuilder.build(true);
 
     return substance;
   }
