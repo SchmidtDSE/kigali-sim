@@ -1071,8 +1071,12 @@ class SubstanceBuilder {
     const initialChargeTargetsUnique = new Set(initialChargeTargets);
     const initialChargesNonOverlap = initialChargeTargets.length == initialChargeTargetsUnique.size;
 
-    const isCompatibleComputed = isCompatibleRaw && isCompatibleInterpreted && initialChargesNonOverlap;
-    const isCompatible = self._isCompatibleOverride !== null ? self._isCompatibleOverride : isCompatibleComputed;
+    const isCompatibleComputed =
+      isCompatibleRaw && isCompatibleInterpreted && initialChargesNonOverlap;
+    const isCompatible =
+      self._isCompatibleOverride !== null ?
+        self._isCompatibleOverride :
+        isCompatibleComputed;
 
     return new Substance(
       self._name,
