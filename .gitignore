@@ -18,4 +18,6 @@ screenlog.*
 
 profile_test.qta
 
+*.jfr
+
 .claude
