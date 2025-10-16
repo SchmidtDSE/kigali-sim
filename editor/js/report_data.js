@@ -517,7 +517,7 @@ class ReportDataWrapper {
       strategyBuilder.setSubmetric("all");
       strategyBuilder.setStrategy(makeBankStrategy(
         (x) => self.getBankKg(x),
-        (x) => self.getBankTco2e(x)
+        (x) => self.getBankTco2e(x),
       ));
       strategyBuilder.setUnits("mt / yr");
       strategyBuilder.setTransformation((value) => {
@@ -535,7 +535,7 @@ class ReportDataWrapper {
       strategyBuilder.setSubmetric("all");
       strategyBuilder.setStrategy(makeBankStrategy(
         (x) => self.getBankKg(x),
-        (x) => self.getBankTco2e(x)
+        (x) => self.getBankTco2e(x),
       ));
       strategyBuilder.setUnits("kg / yr");
       strategyBuilder.setTransformation((value) => {
@@ -552,7 +552,7 @@ class ReportDataWrapper {
       strategyBuilder.setSubmetric("all");
       strategyBuilder.setStrategy(makeBankStrategy(
         (x) => self.getBankKg(x),
-        (x) => self.getBankTco2e(x)
+        (x) => self.getBankTco2e(x),
       ));
       strategyBuilder.setUnits("tCO2e / yr");
       strategyBuilder.setTransformation((value) => {
@@ -570,7 +570,7 @@ class ReportDataWrapper {
       strategyBuilder.setSubmetric("new");
       strategyBuilder.setStrategy(makeBankStrategy(
         (x) => self.getBankChangeKg(x),
-        (x) => self.getBankChangeTco2e(x)
+        (x) => self.getBankChangeTco2e(x),
       ));
       strategyBuilder.setUnits("mt / yr");
       strategyBuilder.setTransformation((value) => {
@@ -588,7 +588,7 @@ class ReportDataWrapper {
       strategyBuilder.setSubmetric("new");
       strategyBuilder.setStrategy(makeBankStrategy(
         (x) => self.getBankChangeKg(x),
-        (x) => self.getBankChangeTco2e(x)
+        (x) => self.getBankChangeTco2e(x),
       ));
       strategyBuilder.setUnits("kg / yr");
       strategyBuilder.setTransformation((value) => {
@@ -605,7 +605,7 @@ class ReportDataWrapper {
       strategyBuilder.setSubmetric("new");
       strategyBuilder.setStrategy(makeBankStrategy(
         (x) => self.getBankChangeKg(x),
-        (x) => self.getBankChangeTco2e(x)
+        (x) => self.getBankChangeTco2e(x),
       ));
       strategyBuilder.setUnits("tCO2e / yr");
       strategyBuilder.setTransformation((value) => {
