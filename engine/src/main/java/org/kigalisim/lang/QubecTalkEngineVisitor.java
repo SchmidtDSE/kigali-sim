@@ -318,7 +318,7 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
    */
   @Override
   public Fragment visitStream(QubecTalkParser.StreamContext ctx) {
-    return new StringFragment(ctx.getText().replaceAll("\"", ""));
+    return new StringFragment(applyStreamSugar(ctx.getText().replaceAll("\"", "")));
   }
 
   /**
@@ -554,7 +554,7 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
    */
   @Override
   public Fragment visitLimitCommandAllYears(QubecTalkParser.LimitCommandAllYearsContext ctx) {
-    String stream = ctx.target.getText();
+    String stream = applyStreamSugar(ctx.target.getText());
     Operation valueOperation = visit(ctx.value).getOperation();
     Operation operation;
 
@@ -574,7 +574,7 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
   @Override
   public Fragment visitLimitCommandDisplacingAllYears(
       QubecTalkParser.LimitCommandDisplacingAllYearsContext ctx) {
-    String stream = ctx.target.getText();
+    String stream = applyStreamSugar(ctx.target.getText());
     Operation valueOperation = visit(ctx.value).getOperation();
     String displaceTarget = ctx.getChild(5).accept(this).getString();
 
@@ -595,7 +595,7 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
    */
   @Override
   public Fragment visitLimitCommandDuration(QubecTalkParser.LimitCommandDurationContext ctx) {
-    String stream = ctx.target.getText();
+    String stream = applyStreamSugar(ctx.target.getText());
     Operation valueOperation = visit(ctx.value).getOperation();
     ParsedDuring during = visit(ctx.duration).getDuring();
     Operation operation;
@@ -616,7 +616,7 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
   @Override
   public Fragment visitLimitCommandDisplacingDuration(
       QubecTalkParser.LimitCommandDisplacingDurationContext ctx) {
-    String stream = ctx.target.getText();
+    String stream = applyStreamSugar(ctx.target.getText());
     Operation valueOperation = visit(ctx.value).getOperation();
     ParsedDuring during = visit(ctx.duration).getDuring();
     String displaceTarget = ctx.getChild(5).accept(this).getString();
@@ -638,7 +638,7 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
    */
   @Override
   public Fragment visitChangeAllYears(QubecTalkParser.ChangeAllYearsContext ctx) {
-    String stream = ctx.target.getText();
+    String stream = applyStreamSugar(ctx.target.getText());
     Operation valueOperation = visit(ctx.value).getOperation();
     Operation operation = new ChangeOperation(stream, valueOperation);
     return new OperationFragment(operation);
@@ -649,7 +649,7 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
    */
   @Override
   public Fragment visitChangeDuration(QubecTalkParser.ChangeDurationContext ctx) {
-    String stream = ctx.target.getText();
+    String stream = applyStreamSugar(ctx.target.getText());
     Operation valueOperation = visit(ctx.value).getOperation();
     ParsedDuring during = visit(ctx.duration).getDuring();
     Operation operation = new ChangeOperation(stream, valueOperation, during);
@@ -691,7 +691,7 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
   @Override
   public Fragment visitInitialChargeAllYears(QubecTalkParser.InitialChargeAllYearsContext ctx) {
     Operation valueOperation = visit(ctx.value).getOperation();
-    String stream = ctx.target.getText();
+    String stream = applyStreamSugar(ctx.target.getText());
 
     // Validate that initial charge uses unit-based denominator
     String unitString = ctx.value.unitOrRatio().getText();
@@ -707,7 +707,7 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
   @Override
   public Fragment visitInitialChargeDuration(QubecTalkParser.InitialChargeDurationContext ctx) {
     Operation valueOperation = visit(ctx.value).getOperation();
-    String stream = ctx.target.getText();
+    String stream = applyStreamSugar(ctx.target.getText());
     ParsedDuring during = visit(ctx.duration).getDuring();
 
     // Validate that initial charge uses unit-based denominator
@@ -901,7 +901,7 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
   @Override
   public Fragment visitReplaceAllYears(QubecTalkParser.ReplaceAllYearsContext ctx) {
     Operation volumeOperation = visit(ctx.volume).getOperation();
-    String stream = ctx.target.getText();
+    String stream = applyStreamSugar(ctx.target.getText());
     String destinationSubstance = visit(ctx.destination).getString();
     Operation operation = new ReplaceOperation(volumeOperation, stream, destinationSubstance);
     return new OperationFragment(operation);
@@ -913,7 +913,7 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
   @Override
   public Fragment visitReplaceDuration(QubecTalkParser.ReplaceDurationContext ctx) {
     Operation volumeOperation = visit(ctx.volume).getOperation();
-    String stream = ctx.target.getText();
+    String stream = applyStreamSugar(ctx.target.getText());
     String destinationSubstance = visit(ctx.destination).getString();
     ParsedDuring during = visit(ctx.duration).getDuring();
     Operation operation = new ReplaceOperation(volumeOperation, stream, destinationSubstance, during);
@@ -970,7 +970,7 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
   @Override
   public Fragment visitSetAllYears(QubecTalkParser.SetAllYearsContext ctx) {
     Operation valueOperation = visit(ctx.value).getOperation();
-    String stream = ctx.target.getText();
+    String stream = applyStreamSugar(ctx.target.getText());
     Operation operation = new SetOperation(stream, valueOperation);
     return new OperationFragment(operation);
   }
@@ -981,7 +981,7 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
   @Override
   public Fragment visitSetDuration(QubecTalkParser.SetDurationContext ctx) {
     Operation valueOperation = visit(ctx.value).getOperation();
-    String stream = ctx.target.getText();
+    String stream = applyStreamSugar(ctx.target.getText());
     ParsedDuring during = visit(ctx.duration).getDuring();
     Operation operation = new SetOperation(stream, valueOperation, during);
     return new OperationFragment(operation);
@@ -992,7 +992,7 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
    */
   @Override
   public Fragment visitEnableAllYears(QubecTalkParser.EnableAllYearsContext ctx) {
-    String stream = ctx.target.getText();
+    String stream = applyStreamSugar(ctx.target.getText());
     Operation operation = new EnableOperation(stream);
     return new OperationFragment(operation);
   }
@@ -1002,10 +1002,61 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
    */
   @Override
   public Fragment visitEnableDuration(QubecTalkParser.EnableDurationContext ctx) {
-    String stream = ctx.target.getText();
+    String stream = applyStreamSugar(ctx.target.getText());
     ParsedDuring during = visit(ctx.duration).getDuring();
     Operation operation = new EnableOperation(stream, during);
     return new OperationFragment(operation);
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public Fragment visitAssumeNoAllYears(QubecTalkParser.AssumeNoAllYearsContext ctx) {
+    return processAssumeStatement("no", ctx.target, Optional.empty());
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public Fragment visitAssumeNoDuration(QubecTalkParser.AssumeNoDurationContext ctx) {
+    ParsedDuring during = visit(ctx.duration).getDuring();
+    return processAssumeStatement("no", ctx.target, Optional.of(during));
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public Fragment visitAssumeOnlyRechargeAllYears(QubecTalkParser.AssumeOnlyRechargeAllYearsContext ctx) {
+    return processAssumeStatement("onlyrecharge", ctx.target, Optional.empty());
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public Fragment visitAssumeOnlyRechargeDuration(QubecTalkParser.AssumeOnlyRechargeDurationContext ctx) {
+    ParsedDuring during = visit(ctx.duration).getDuring();
+    return processAssumeStatement("onlyrecharge", ctx.target, Optional.of(during));
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public Fragment visitAssumeContinuedAllYears(QubecTalkParser.AssumeContinuedAllYearsContext ctx) {
+    return processAssumeStatement("continued", ctx.target, Optional.empty());
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public Fragment visitAssumeContinuedDuration(QubecTalkParser.AssumeContinuedDurationContext ctx) {
+    ParsedDuring during = visit(ctx.duration).getDuring();
+    return processAssumeStatement("continued", ctx.target, Optional.of(during));
   }
 
   /**
@@ -1189,5 +1240,75 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
           )
       );
     }
+  }
+
+  /**
+   * Apply syntactic sugar transformations to stream names.
+   *
+   * <p>This method transforms stream name aliases to their canonical form.
+   * Currently supports:
+   * <ul>
+   *   <li>"bank" -> "equipment"</li>
+   *   <li>"priorBank" -> "priorEquipment"</li>
+   * </ul>
+   *
+   * @param streamName The stream name to transform
+   * @return The canonical stream name
+   */
+  private String applyStreamSugar(String streamName) {
+    if ("bank".equals(streamName)) {
+      return "equipment";
+    }
+    if ("priorBank".equals(streamName)) {
+      return "priorEquipment";
+    }
+    return streamName;
+  }
+
+  /**
+   * Create a SetOperation with optional duration.
+   *
+   * @param stream The target stream name
+   * @param valueOperation The operation producing the value to set
+   * @param duringMaybe Optional time period for the operation
+   * @return SetOperation with or without duration based on duringMaybe
+   */
+  private Operation makeSet(String stream, Operation valueOperation, Optional<ParsedDuring> duringMaybe) {
+    if (duringMaybe.isPresent()) {
+      return new SetOperation(stream, valueOperation, duringMaybe.get());
+    } else {
+      return new SetOperation(stream, valueOperation);
+    }
+  }
+
+  /**
+   * Process assume statement and transform to SetOperation.
+   *
+   * @param modeText The assume mode ("no", "onlyrecharge", or "continued")
+   * @param targetContext The parse context containing the target stream
+   * @param duringMaybe Optional time period for the command
+   * @return OperationFragment containing the transformed SetOperation, or null for no-op
+   */
+  private Fragment processAssumeStatement(
+      String modeText,
+      QubecTalkParser.StreamContext targetContext,
+      Optional<ParsedDuring> duringMaybe) {
+
+    String stream = applyStreamSugar(targetContext.getText());
+
+    return switch (modeText) {
+      case "no" -> {
+        EngineNumber zeroKg = new EngineNumber(java.math.BigDecimal.ZERO, "kg");
+        Operation valueOperation = new PreCalculatedOperation(zeroKg);
+        yield new OperationFragment(makeSet(stream, valueOperation, duringMaybe));
+      }
+      case "onlyrecharge" -> {
+        EngineNumber zeroUnits = new EngineNumber(java.math.BigDecimal.ZERO, "units");
+        Operation valueOperation = new PreCalculatedOperation(zeroUnits);
+        yield new OperationFragment(makeSet(stream, valueOperation, duringMaybe));
+      }
+      case "continued" -> new OperationFragment(null);
+      default -> throw new RuntimeException("Unknown assume mode: " + modeText);
+    };
   }
 }

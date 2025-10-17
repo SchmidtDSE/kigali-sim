@@ -300,44 +300,49 @@ public class KigaliSimFacade {
     }
 
     // Estimate capacity: header + (rows * estimated_chars_per_row)
-    // With export fields: 21 decimal fields (15 chars each) + strings (~45) + integers (~6) + overhead = ~370 chars per row
-    int estimatedCapacity = 400 + (results.size() * 370);
+    // With export and bank fields: 25 decimal fields (15 chars each) + strings (~45) + integers (~6) + overhead = ~430 chars per row
+    int estimatedCapacity = 450 + (results.size() * 430);
     StringBuilder csvBuilder = new StringBuilder(estimatedCapacity);
 
-    // Create header row - direct append with commas, including export fields
+    // Create header row - direct append with commas, including export and bank fields
     csvBuilder.append("scenario,trial,year,application,substance,domestic,import,recycle,")
-              .append("domesticConsumption,importConsumption,recycleConsumption,population,")
-              .append("populationNew,rechargeEmissions,eolEmissions,initialChargeEmissions,energyConsumption,")
-              .append("export,exportConsumption,importInitialChargeValue,")
-              .append("importInitialChargeConsumption,importPopulation,")
-              .append("exportInitialChargeValue,exportInitialChargeConsumption\n");
+        .append("domesticConsumption,importConsumption,recycleConsumption,population,")
+        .append("populationNew,rechargeEmissions,eolEmissions,initialChargeEmissions,energyConsumption,")
+        .append("export,exportConsumption,importInitialChargeValue,")
+        .append("importInitialChargeConsumption,importPopulation,")
+        .append("exportInitialChargeValue,exportInitialChargeConsumption,")
+        .append("bankKg,bankTCO2e,bankChangeKg,bankChangeTCO2e\n");
 
     // Add data rows - direct append with commas, including export fields
     for (EngineResult result : results) {
       csvBuilder.append(result.getScenarioName()).append(',')
-                .append(result.getTrialNumber()).append(',')
-                .append(result.getYear()).append(',')
-                .append(result.getApplication()).append(',')
-                .append(result.getSubstance()).append(',')
-                .append(result.getDomestic().getValue()).append(',')
-                .append(result.getImport().getValue()).append(',')
-                .append(result.getRecycle().getValue()).append(',')
-                .append(result.getDomesticConsumption().getValue()).append(',')
-                .append(result.getImportConsumption().getValue()).append(',')
-                .append(result.getRecycleConsumption().getValue()).append(',')
-                .append(result.getPopulation().getValue()).append(',')
-                .append(result.getPopulationNew().getValue()).append(',')
-                .append(result.getRechargeEmissions().getValue()).append(',')
-                .append(result.getEolEmissions().getValue()).append(',')
-                .append(result.getInitialChargeEmissions().getValue()).append(',')
-                .append(result.getEnergyConsumption().getValue()).append(',')
-                .append(result.getExport().getValue()).append(',')
-                .append(result.getExportConsumption().getValue()).append(',')
-                .append(result.getTradeSupplement().getImportInitialChargeValue().getValue()).append(',')
-                .append(result.getTradeSupplement().getImportInitialChargeConsumption().getValue()).append(',')
-                .append(result.getTradeSupplement().getImportPopulation().getValue()).append(',')
-                .append(result.getTradeSupplement().getExportInitialChargeValue().getValue()).append(',')
-                .append(result.getTradeSupplement().getExportInitialChargeConsumption().getValue()).append('\n');
+          .append(result.getTrialNumber()).append(',')
+          .append(result.getYear()).append(',')
+          .append(result.getApplication()).append(',')
+          .append(result.getSubstance()).append(',')
+          .append(result.getDomestic().getValue()).append(',')
+          .append(result.getImport().getValue()).append(',')
+          .append(result.getRecycle().getValue()).append(',')
+          .append(result.getDomesticConsumption().getValue()).append(',')
+          .append(result.getImportConsumption().getValue()).append(',')
+          .append(result.getRecycleConsumption().getValue()).append(',')
+          .append(result.getPopulation().getValue()).append(',')
+          .append(result.getPopulationNew().getValue()).append(',')
+          .append(result.getRechargeEmissions().getValue()).append(',')
+          .append(result.getEolEmissions().getValue()).append(',')
+          .append(result.getInitialChargeEmissions().getValue()).append(',')
+          .append(result.getEnergyConsumption().getValue()).append(',')
+          .append(result.getExport().getValue()).append(',')
+          .append(result.getExportConsumption().getValue()).append(',')
+          .append(result.getTradeSupplement().getImportInitialChargeValue().getValue()).append(',')
+          .append(result.getTradeSupplement().getImportInitialChargeConsumption().getValue()).append(',')
+          .append(result.getTradeSupplement().getImportPopulation().getValue()).append(',')
+          .append(result.getTradeSupplement().getExportInitialChargeValue().getValue()).append(',')
+          .append(result.getTradeSupplement().getExportInitialChargeConsumption().getValue()).append(',')
+          .append(result.getBankKg().getValue()).append(',')
+          .append(result.getBankTco2e().getValue()).append(',')
+          .append(result.getBankChangeKg().getValue()).append(',')
+          .append(result.getBankChangeTco2e().getValue()).append('\n');
     }
 
     return csvBuilder.toString();

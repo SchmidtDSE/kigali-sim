@@ -50,6 +50,7 @@ const COMMAND_COMPATIBILITIES = {
   "recycle": "policy",
   "replace": "policy",
   "enable": "definition",
+  "assume": "definition",
 };
 
 const SUPPORTED_EQUALS_UNITS = [
@@ -1037,6 +1038,8 @@ class SubstanceBuilder {
     self._retire = null;
     self._setVals = [];
     self._enables = [];
+    self._assumeMode = null;
+    self._isCompatibleOverride = null;
   }
 
   /**
@@ -1068,7 +1071,12 @@ class SubstanceBuilder {
     const initialChargeTargetsUnique = new Set(initialChargeTargets);
     const initialChargesNonOverlap = initialChargeTargets.length == initialChargeTargetsUnique.size;
 
-    const isCompatible = isCompatibleRaw && isCompatibleInterpreted && initialChargesNonOverlap;
+    const isCompatibleComputed =
+      isCompatibleRaw && isCompatibleInterpreted && initialChargesNonOverlap;
+    const isCompatible =
+      self._isCompatibleOverride !== null ?
+        self._isCompatibleOverride :
+        isCompatibleComputed;
 
     return new Substance(
       self._name,
@@ -1085,6 +1093,7 @@ class SubstanceBuilder {
       self._enables,
       self._isModification,
       isCompatible,
+      self._assumeMode,
     );
   }
 
@@ -1130,6 +1139,7 @@ class SubstanceBuilder {
       "floor": (x) => self.addLimit(x),
       "replace": (x) => self.addReplace(x),
       "enable": (x) => self.addEnable(x),
+      "assume": (x) => self.setAssumeMode(x.getMode()),
     }[commandType];
 
     if (incompatiblePlace) {
@@ -1243,6 +1253,26 @@ class SubstanceBuilder {
   }
 
   /**
+   * Set the sales assumption mode for this substance.
+   *
+   * @param {string|null} mode - The assumption mode: "continued", "only recharge", "no", or null.
+   */
+  setAssumeMode(mode) {
+    const self = this;
+    self._assumeMode = mode;
+  }
+
+  /**
+   * Override the compatibility flag for this substance.
+   *
+   * @param {boolean} isCompatible - Whether the substance is UI-compatible.
+   */
+  setIsCompatible(isCompatible) {
+    const self = this;
+    self._isCompatibleOverride = isCompatible;
+  }
+
+  /**
    * Add a set value command.
    *
    * @param {Command} newVal - Set value command to add.
@@ -1291,7 +1321,19 @@ class SubstanceBuilder {
 }
 
 /**
- * A substance with various commands dictating its behavior.
+ * Substance configuration including consumption patterns and lifecycle.
+ *
+ * Represents a single substance (e.g., HFC-134a, R-410A) used within an application.
+ * Contains GWP values, initial charges, consumption/sales streams (domestic, import, export),
+ * retirement rates, recharge schedules, and sales assumptions for bank tracking.
+ *
+ * Sales assumptions control carryover behavior:
+ * - "continued": Sales continue from previous year (default, no-op)
+ * - "only recharge": New sales limited to servicing existing equipment
+ * - "no": All sales reset to zero
+ *
+ * UI editor supports max 1 assume command for sales stream without duration.
+ * Advanced editor supports multiple assumes, durations, and other streams (domestic, import, bank).
  */
 class Substance {
   /**
@@ -1310,6 +1352,7 @@ class Substance {
    * @param {Command[]} enables - Enable commands.
    * @param {boolean} isMod - Whether this modifies existing substance.
    * @param {boolean} compat - Whether substance is UI-compatible.
+   * @param {string|null} assumeMode - Sales assumption mode.
    */
   constructor(
     name,
@@ -1326,6 +1369,7 @@ class Substance {
     enables,
     isMod,
     compat,
+    assumeMode,
   ) {
     const self = this;
     self._name = name;
@@ -1342,6 +1386,7 @@ class Substance {
     self._enables = enables;
     self._isModification = isMod;
     self._isCompatible = compat;
+    self._assumeMode = assumeMode;
   }
 
   /**
@@ -1566,6 +1611,17 @@ class Substance {
   }
 
   /**
+   * Get the sales assumption mode for this substance.
+   *
+   * @returns {string|null} The assumption mode: "continued", "only recharge",
+   *   "no", or null for default.
+   */
+  getAssumeMode() {
+    const self = this;
+    return self._assumeMode;
+  }
+
+  /**
    * Check if this substance modifies an existing one.
    *
    * @returns {boolean} True if this modifies an existing substance.
@@ -1720,6 +1776,7 @@ class Substance {
     };
 
     addAllIfGiven(self._getEnablesCode());
+    addIfGiven(self._getAssumeCode());
     addAllIfGiven(self._getInitialChargesCode());
     addIfGiven(self._getEqualsCode(self._equalsGhg));
     addIfGiven(self._getEqualsCode(self._equalsKwh));
@@ -1757,6 +1814,29 @@ class Substance {
     };
 
     return self._enables.map(buildEnable);
+  }
+
+  /**
+   * Generate code for assume command.
+   *
+   * @returns {string|null} Code string or null if no assume or if assume is "continued" (no-op).
+   * @private
+   */
+  _getAssumeCode() {
+    const self = this;
+
+    if (self._assumeMode === null || self._assumeMode === "continued") {
+      return null;
+    } else if (self._assumeMode === "no") {
+      return "assume no sales";
+    } else if (self._assumeMode === "only recharge") {
+      return "assume only recharge sales";
+    } else {
+      throw new Error(
+        "Invalid assume mode: " + self._assumeMode + ". " +
+        "Expected null, 'continued', 'no', or 'only recharge'.",
+      );
+    }
   }
 
   /**
@@ -2520,7 +2600,10 @@ class Command {
    * Create a new Command.
    *
    * @param {string} typeName - Type of the command.
-   * @param {string} target - Target of the command.
+   * @param {string} target - Target of the command (e.g., "domestic", "import", "export",
+   *    "equipment", "priorEquipment", "bank", "priorBank", "sales").
+   *    Note: "bank" and "priorBank" are synonyms for "equipment" and
+   *    "priorEquipment" respectively.
    * @param {EngineNumber} value - Value for the command.
    * @param {YearMatcher} duration - Duration for the command.
    */
@@ -2545,7 +2628,9 @@ class Command {
   /**
    * Get the target of this command.
    *
-   * @returns {string} The target name (e.g. "domestic", "import", etc).
+   * @returns {string} The target name (e.g., "domestic", "import", "equipment", "bank", etc).
+   *    Note: "bank" and "priorBank" are accepted as synonyms for "equipment"
+   *    and "priorEquipment".
    */
   getTarget() {
     const self = this;
@@ -2648,6 +2733,78 @@ class RetireCommand {
    * Check if this command is compatible with UI editing.
    *
    * @returns {boolean} Always returns true as retire commands are UI-compatible.
+   */
+  getIsCompatible() {
+    const self = this;
+    return true;
+  }
+}
+
+/**
+ * Assume command with mode for sales assumptions.
+ *
+ * Assume command with target stream, mode, and duration for specifying
+ * sales behavior assumptions.
+ */
+class AssumeCommand {
+  /**
+   * Create a new AssumeCommand.
+   *
+   * @param {string} mode - The assumption mode: "no", "only recharge", or "continued".
+   * @param {string} stream - The target stream (e.g., "sales").
+   * @param {YearMatcher|null} duration - Duration specification or null for all years.
+   */
+  constructor(mode, stream, duration) {
+    const self = this;
+    self._mode = mode;
+    self._stream = stream;
+    self._duration = duration;
+  }
+
+  /**
+   * Get the type name of this command.
+   *
+   * @returns {string} Always returns "assume".
+   */
+  getTypeName() {
+    const self = this;
+    return "assume";
+  }
+
+  /**
+   * Get the assumption mode.
+   *
+   * @returns {string} The mode: "no", "only recharge", or "continued".
+   */
+  getMode() {
+    const self = this;
+    return self._mode;
+  }
+
+  /**
+   * Get the target stream.
+   *
+   * @returns {string} The target stream name (e.g., "sales").
+   */
+  getStream() {
+    const self = this;
+    return self._stream;
+  }
+
+  /**
+   * Get the duration for which this command applies.
+   *
+   * @returns {YearMatcher|null} The duration specification, or null for all years.
+   */
+  getDuration() {
+    const self = this;
+    return self._duration;
+  }
+
+  /**
+   * Check if this command is compatible with UI editing.
+   *
+   * @returns {boolean} Always returns true as assume commands are UI-compatible.
    */
   getIsCompatible() {
     const self = this;
@@ -4052,6 +4209,81 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
   }
 
   /**
+   * Visit an assume no command for all years.
+   *
+   * @param {Object} ctx - Parse tree context.
+   * @returns {AssumeCommand} Assume command with mode, stream, and duration.
+   */
+  visitAssumeNoAllYears(ctx) {
+    const self = this;
+    const stream = ctx.target.getText();
+    return new AssumeCommand("no", stream, null);
+  }
+
+  /**
+   * Visit an assume no command with duration.
+   *
+   * @param {Object} ctx - Parse tree context.
+   * @returns {AssumeCommand} Assume command with mode, stream, and duration.
+   */
+  visitAssumeNoDuration(ctx) {
+    const self = this;
+    const stream = ctx.target.getText();
+    const duration = ctx.duration.accept(self);
+    return new AssumeCommand("no", stream, duration);
+  }
+
+  /**
+   * Visit an assume only recharge command for all years.
+   *
+   * @param {Object} ctx - Parse tree context.
+   * @returns {AssumeCommand} Assume command with mode, stream, and duration.
+   */
+  visitAssumeOnlyRechargeAllYears(ctx) {
+    const self = this;
+    const stream = ctx.target.getText();
+    return new AssumeCommand("only recharge", stream, null);
+  }
+
+  /**
+   * Visit an assume only recharge command with duration.
+   *
+   * @param {Object} ctx - Parse tree context.
+   * @returns {AssumeCommand} Assume command with mode, stream, and duration.
+   */
+  visitAssumeOnlyRechargeDuration(ctx) {
+    const self = this;
+    const stream = ctx.target.getText();
+    const duration = ctx.duration.accept(self);
+    return new AssumeCommand("only recharge", stream, duration);
+  }
+
+  /**
+   * Visit an assume continued command for all years.
+   *
+   * @param {Object} ctx - Parse tree context.
+   * @returns {AssumeCommand} Assume command with mode, stream, and duration.
+   */
+  visitAssumeContinuedAllYears(ctx) {
+    const self = this;
+    const stream = ctx.target.getText();
+    return new AssumeCommand("continued", stream, null);
+  }
+
+  /**
+   * Visit an assume continued command with duration.
+   *
+   * @param {Object} ctx - Parse tree context.
+   * @returns {AssumeCommand} Assume command with mode, stream, and duration.
+   */
+  visitAssumeContinuedDuration(ctx) {
+    const self = this;
+    const stream = ctx.target.getText();
+    const duration = ctx.duration.accept(self);
+    return new AssumeCommand("continued", stream, duration);
+  }
+
+  /**
    * Visit a base simulation node.
    *
    * @param {Object} ctx - The parse tree node context.
@@ -4253,9 +4485,27 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
       builder.addCommand(x);
     });
 
+    // Check assume compatibility before building
+    const assumeCommands = commands
+      .filter((x) => x && x.getTypeName && x.getTypeName() === "assume");
+
+    if (assumeCommands.length > 1) {
+      // Multiple assumes not supported in UI
+      builder.setIsCompatible(false);
+    } else if (assumeCommands.length === 1) {
+      const assume = assumeCommands[0];
+
+      // Check if compatible with UI: single assume, for sales, no duration
+      if (assume.getStream() !== "sales" || assume.getDuration() !== null) {
+        builder.setIsCompatible(false);
+      }
+    }
+
     const isCompatibleRaw = commands.map((x) => x.getIsCompatible()).reduce((a, b) => a && b, true);
 
-    return builder.build(isCompatibleRaw);
+    const substance = builder.build(isCompatibleRaw);
+
+    return substance;
   }
 
   /**

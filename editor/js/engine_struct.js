@@ -52,6 +52,10 @@ class EngineResult {
    * @param {EngineNumber} energyConsumption - The energy consumption value.
    * @param {TradeSupplement} tradeSupplement - The supplemental trade data
    *     needed for attribution.
+   * @param {EngineNumber} bankKg - The substance bank in kg.
+   * @param {EngineNumber} bankTco2e - The substance bank in tCO2e.
+   * @param {EngineNumber} bankChangeKg - The change in substance bank in kg.
+   * @param {EngineNumber} bankChangeTco2e - The change in substance bank in tCO2e.
    */
   constructor(
     application,
@@ -74,6 +78,10 @@ class EngineResult {
     initialChargeEmissions,
     energyConsumption,
     tradeSupplement,
+    bankKg,
+    bankTco2e,
+    bankChangeKg,
+    bankChangeTco2e,
   ) {
     const self = this;
     self._application = application;
@@ -96,6 +104,10 @@ class EngineResult {
     self._initialChargeEmissions = initialChargeEmissions;
     self._energyConsumption = energyConsumption;
     self._tradeSupplement = tradeSupplement;
+    self._bankKg = bankKg;
+    self._bankTco2e = bankTco2e;
+    self._bankChangeKg = bankChangeKg;
+    self._bankChangeTco2e = bankChangeTco2e;
   }
 
   /**
@@ -321,6 +333,45 @@ class EngineResult {
     return self._tradeSupplement;
   }
 
+  /**
+   * Get the substance bank in kg.
+   *
+   * @returns {EngineNumber} The bank value in kg.
+   */
+  getBankKg() {
+    const self = this;
+    return self._bankKg;
+  }
+
+  /**
+   * Get the substance bank in tCO2e.
+   *
+   * @returns {EngineNumber} The bank value in tCO2e.
+   */
+  getBankTco2e() {
+    const self = this;
+    return self._bankTco2e;
+  }
+
+  /**
+   * Get the change in substance bank in kg.
+   *
+   * @returns {EngineNumber} The bank change value in kg.
+   */
+  getBankChangeKg() {
+    const self = this;
+    return self._bankChangeKg;
+  }
+
+  /**
+   * Get the change in substance bank in tCO2e.
+   *
+   * @returns {EngineNumber} The bank change value in tCO2e.
+   */
+  getBankChangeTco2e() {
+    const self = this;
+    return self._bankChangeTco2e;
+  }
 
   /**
    * Get the scenario name.
@@ -651,6 +702,46 @@ class AttributeToExporterResult {
     const innerNumber = totalExport.getValue() + effectiveInitialCharge;
     return new EngineNumber(innerNumber, totalUnits, makeNumberUnambiguousString(innerNumber));
   }
+
+  /**
+   * Get the substance bank in kg.
+   *
+   * @returns {EngineNumber} The bank value in kg.
+   */
+  getBankKg() {
+    const self = this;
+    return self._inner.getBankKg();
+  }
+
+  /**
+   * Get the substance bank in tCO2e.
+   *
+   * @returns {EngineNumber} The bank value in tCO2e.
+   */
+  getBankTco2e() {
+    const self = this;
+    return self._inner.getBankTco2e();
+  }
+
+  /**
+   * Get the change in substance bank in kg.
+   *
+   * @returns {EngineNumber} The bank change value in kg.
+   */
+  getBankChangeKg() {
+    const self = this;
+    return self._inner.getBankChangeKg();
+  }
+
+  /**
+   * Get the change in substance bank in tCO2e.
+   *
+   * @returns {EngineNumber} The bank change value in tCO2e.
+   */
+  getBankChangeTco2e() {
+    const self = this;
+    return self._inner.getBankChangeTco2e();
+  }
 }
 
 /**
@@ -772,8 +863,13 @@ class EngineResultBuilder {
     self._populationNew = null;
     self._rechargeEmissions = null;
     self._eolEmissions = null;
+    self._initialChargeEmissions = null;
     self._energyConsumption = null;
     self._tradeSupplement = null;
+    self._bankKg = null;
+    self._bankTco2e = null;
+    self._bankChangeKg = null;
+    self._bankChangeTco2e = null;
   }
 
   /**
@@ -961,6 +1057,17 @@ class EngineResultBuilder {
   }
 
   /**
+   * Set the initial charge emissions value.
+   *
+   * @param {EngineNumber} initialChargeEmissions - The greenhouse gas emissions from
+   *     initial charge activities.
+   */
+  setInitialChargeEmissions(initialChargeEmissions) {
+    const self = this;
+    self._initialChargeEmissions = initialChargeEmissions;
+  }
+
+  /**
    * Set the energy consumption value.
    *
    * @param {EngineNumber} energyConsumption - The energy consumption value
@@ -982,6 +1089,45 @@ class EngineResultBuilder {
     self._tradeSupplement = tradeSupplement;
   }
 
+  /**
+   * Set the bank kg value.
+   *
+   * @param {EngineNumber} bankKg - The bank value in kg.
+   */
+  setBankKg(bankKg) {
+    const self = this;
+    self._bankKg = bankKg;
+  }
+
+  /**
+   * Set the bank tCO2e value.
+   *
+   * @param {EngineNumber} bankTco2e - The bank value in tCO2e.
+   */
+  setBankTco2e(bankTco2e) {
+    const self = this;
+    self._bankTco2e = bankTco2e;
+  }
+
+  /**
+   * Set the bank change kg value.
+   *
+   * @param {EngineNumber} bankChangeKg - The bank change value in kg.
+   */
+  setBankChangeKg(bankChangeKg) {
+    const self = this;
+    self._bankChangeKg = bankChangeKg;
+  }
+
+  /**
+   * Set the bank change tCO2e value.
+   *
+   * @param {EngineNumber} bankChangeTco2e - The bank change value in tCO2e.
+   */
+  setBankChangeTco2e(bankChangeTco2e) {
+    const self = this;
+    self._bankChangeTco2e = bankChangeTco2e;
+  }
 
   /**
    * Check that the builder is complete and create a new result.
@@ -1010,8 +1156,13 @@ class EngineResultBuilder {
       self._populationNew,
       self._rechargeEmissions,
       self._eolEmissions,
+      self._initialChargeEmissions,
       self._energyConsumption,
       self._tradeSupplement,
+      self._bankKg,
+      self._bankTco2e,
+      self._bankChangeKg,
+      self._bankChangeTco2e,
     );
   }
 
@@ -1041,8 +1192,13 @@ class EngineResultBuilder {
     checkValid(self._populationNew, "populationNew");
     checkValid(self._rechargeEmissions, "rechargeEmissions");
     checkValid(self._eolEmissions, "eolEmissions");
+    checkValid(self._initialChargeEmissions, "initialChargeEmissions");
     checkValid(self._energyConsumption, "energyConsumption");
     checkValid(self._tradeSupplement, "tradeSupplement");
+    checkValid(self._bankKg, "bankKg");
+    checkValid(self._bankTco2e, "bankTco2e");
+    checkValid(self._bankChangeKg, "bankChangeKg");
+    checkValid(self._bankChangeTco2e, "bankChangeTco2e");
   }
 }
 
@@ -1079,6 +1235,10 @@ class AggregatedResult {
    *     initial charge activities.
    * @param {EngineNumber} energyConsumtion - Equivalent energy consumption for
    *     activity specified.
+   * @param {EngineNumber} bankKg - The substance bank in kg.
+   * @param {EngineNumber} bankTco2e - The substance bank in tCO2e.
+   * @param {EngineNumber} bankChangeKg - The change in substance bank in kg.
+   * @param {EngineNumber} bankChangeTco2e - The change in substance bank in tCO2e.
    */
   constructor(
     domesticValue,
@@ -1095,6 +1255,10 @@ class AggregatedResult {
     eolEmissions,
     initialChargeEmissions,
     energyConsumption,
+    bankKg,
+    bankTco2e,
+    bankChangeKg,
+    bankChangeTco2e,
   ) {
     const self = this;
     self._domesticValue = domesticValue;
@@ -1111,6 +1275,10 @@ class AggregatedResult {
     self._eolEmissions = eolEmissions;
     self._initialChargeEmissions = initialChargeEmissions;
     self._energyConsumption = energyConsumption;
+    self._bankKg = bankKg;
+    self._bankTco2e = bankTco2e;
+    self._bankChangeKg = bankChangeKg;
+    self._bankChangeTco2e = bankChangeTco2e;
   }
 
   /**
@@ -1292,6 +1460,46 @@ class AggregatedResult {
   }
 
   /**
+   * Get the substance bank in kg.
+   *
+   * @returns {EngineNumber} The bank value in kg.
+   */
+  getBankKg() {
+    const self = this;
+    return self._bankKg;
+  }
+
+  /**
+   * Get the substance bank in tCO2e.
+   *
+   * @returns {EngineNumber} The bank value in tCO2e.
+   */
+  getBankTco2e() {
+    const self = this;
+    return self._bankTco2e;
+  }
+
+  /**
+   * Get the change in substance bank in kg.
+   *
+   * @returns {EngineNumber} The bank change value in kg.
+   */
+  getBankChangeKg() {
+    const self = this;
+    return self._bankChangeKg;
+  }
+
+  /**
+   * Get the change in substance bank in tCO2e.
+   *
+   * @returns {EngineNumber} The bank change value in tCO2e.
+   */
+  getBankChangeTco2e() {
+    const self = this;
+    return self._bankChangeTco2e;
+  }
+
+  /**
    * Get the total greenhouse gas emissions combining recharge and end-of-life emissions.
    *
    * @returns {EngineNumber} The combined emissions value with units like tCO2e.
@@ -1350,6 +1558,23 @@ class AggregatedResult {
       other.getEnergyConsumption(),
     );
 
+    const bankKg = self._combineUnitValue(
+      self.getBankKg(),
+      other.getBankKg(),
+    );
+    const bankTco2e = self._combineUnitValue(
+      self.getBankTco2e(),
+      other.getBankTco2e(),
+    );
+    const bankChangeKg = self._combineUnitValue(
+      self.getBankChangeKg(),
+      other.getBankChangeKg(),
+    );
+    const bankChangeTco2e = self._combineUnitValue(
+      self.getBankChangeTco2e(),
+      other.getBankChangeTco2e(),
+    );
+
     return new AggregatedResult(
       domesticValue,
       importValue,
@@ -1365,6 +1590,10 @@ class AggregatedResult {
       eolEmissions,
       initialChargeEmissions,
       energyConsumption,
+      bankKg,
+      bankTco2e,
+      bankChangeKg,
+      bankChangeTco2e,
     );
   }
 

@@ -39,6 +39,10 @@ public class EngineResult {
   private final EngineNumber exportValue;
   private final EngineNumber exportConsumptionValue;
   private final TradeSupplement tradeSupplement;
+  private final EngineNumber bankKg;
+  private final EngineNumber bankTco2e;
+  private final EngineNumber bankChangeKg;
+  private final EngineNumber bankChangeTco2e;
 
   /**
    * Constructor for creating an EngineResult instance.
@@ -63,6 +67,10 @@ public class EngineResult {
    * @param exportValue The value related to exports in volume like kg
    * @param exportConsumptionValue The export consumption value in tCO2e or equivalent
    * @param tradeSupplement The supplemental trade data needed for attribution
+   * @param bankKg The total substance volume in equipment bank in kg
+   * @param bankTco2e The total GHG potential of substance in equipment bank in tCO2e
+   * @param bankChangeKg The change in substance bank from previous year in kg
+   * @param bankChangeTco2e The change in GHG potential of substance bank from previous year in tCO2e
    */
   public EngineResult(String application, String substance, int year, String scenarioName, int trialNumber,
                      EngineNumber domesticValue, EngineNumber importValue,
@@ -72,7 +80,8 @@ public class EngineResult {
                      EngineNumber rechargeEmissions, EngineNumber eolEmissions,
                      EngineNumber initialChargeEmissions, EngineNumber energyConsumption,
                      EngineNumber exportValue, EngineNumber exportConsumptionValue,
-                     TradeSupplement tradeSupplement) {
+                     TradeSupplement tradeSupplement, EngineNumber bankKg, EngineNumber bankTco2e,
+                     EngineNumber bankChangeKg, EngineNumber bankChangeTco2e) {
     this.application = application;
     this.substance = substance;
     this.year = year;
@@ -93,6 +102,10 @@ public class EngineResult {
     this.exportValue = exportValue;
     this.exportConsumptionValue = exportConsumptionValue;
     this.tradeSupplement = tradeSupplement;
+    this.bankKg = bankKg;
+    this.bankTco2e = bankTco2e;
+    this.bankChangeKg = bankChangeKg;
+    this.bankChangeTco2e = bankChangeTco2e;
   }
 
   /**
@@ -318,5 +331,41 @@ public class EngineResult {
    */
   public int getTrialNumber() {
     return trialNumber;
+  }
+
+  /**
+   * Get the bank kg value.
+   *
+   * @return The total substance volume in equipment bank in kg
+   */
+  public EngineNumber getBankKg() {
+    return bankKg;
+  }
+
+  /**
+   * Get the bank tCO2e value.
+   *
+   * @return The total GHG potential of substance in equipment bank in tCO2e
+   */
+  public EngineNumber getBankTco2e() {
+    return bankTco2e;
+  }
+
+  /**
+   * Get the bank change kg value.
+   *
+   * @return The change in substance bank from previous year in kg
+   */
+  public EngineNumber getBankChangeKg() {
+    return bankChangeKg;
+  }
+
+  /**
+   * Get the bank change tCO2e value.
+   *
+   * @return The change in GHG potential of substance bank from previous year in tCO2e
+   */
+  public EngineNumber getBankChangeTco2e() {
+    return bankChangeTco2e;
   }
 }
