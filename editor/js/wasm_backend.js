@@ -212,10 +212,39 @@ class WasmLayer {
    * Create a new WasmLayer instance.
    *
    * @param {Function} reportProgressCallback - Callback for progress updates.
+   * @param {number|null} poolSize - Optional worker pool size. If null, auto-calculated
+   *                                  from navigator.hardwareConcurrency.
    */
-  constructor(reportProgressCallback) {
+  constructor(reportProgressCallback, poolSize = null) {
     const self = this;
-    self._worker = null;
+
+    /**
+     * Number of workers in the pool.
+     * @private
+     * @type {number}
+     */
+    // Calculate optimal pool size: (CPU cores - 1) with minimum of 2
+    if (poolSize === null) {
+      const cores = navigator.hardwareConcurrency || 4;
+      self._poolSize = Math.max(2, cores - 1);
+    } else {
+      self._poolSize = Math.max(2, poolSize);
+    }
+
+    /**
+     * Array of Web Worker instances for parallel execution.
+     * @private
+     * @type {Array<Worker>}
+     */
+    self._workers = [];
+
+    /**
+     * Round-robin index for distributing tasks across workers.
+     * @private
+     * @type {number}
+     */
+    self._nextWorkerIndex = 0;
+
     self._initPromise = null;
     self._pendingRequests = new Map();
     self._nextRequestId = 1;
@@ -223,9 +252,9 @@ class WasmLayer {
   }
 
   /**
-   * Initialize the worker and prepare for execution.
+   * Initialize the worker pool and prepare for execution.
    *
-   * @returns {Promise<void>} Promise that resolves when worker is ready.
+   * @returns {Promise<void>} Promise that resolves when all workers are ready.
    */
   initialize() {
     const self = this;
@@ -236,18 +265,25 @@ class WasmLayer {
 
     self._initPromise = new Promise((resolve, reject) => {
       try {
-        self._worker = new Worker("/js/wasm.worker.js?v=EPOCH");
+        // Create worker pool
+        for (let i = 0; i < self._poolSize; i++) {
+          const worker = new Worker("/js/wasm.worker.js?v=EPOCH");
 
-        self._worker.onmessage = (event) => {
-          self._handleWorkerMessage(event);
-        };
+          worker.onmessage = (event) => {
+            self._handleWorkerMessage(event);
+          };
 
-        self._worker.onerror = (error) => {
-          console.error("WASM Worker error:", error);
-          reject(new Error("WASM Worker failed to load: " + error.message));
-        };
+          worker.onerror = (error) => {
+            console.error(`WASM Worker ${i} error:`, error);
+            reject(new Error(`WASM Worker ${i} failed to load: ${error.message}`));
+          };
 
-        // Worker is ready immediately - WASM initialization happens inside worker
+          self._workers.push(worker);
+        }
+
+        console.log(`WASM worker pool initialized with ${self._poolSize} workers`);
+
+        // Workers are ready immediately - WASM initialization happens inside each worker
         resolve();
       } catch (error) {
         reject(error);
@@ -291,9 +327,14 @@ class WasmLayer {
         remainingScenarios: scenarioNames.length,
       });
 
-      // Send requests for each scenario sequentially
+      // Send requests for each scenario to workers in round-robin fashion
       scenarioNames.forEach((scenarioName, index) => {
-        self._worker.postMessage({
+        // Select worker using round-robin
+        const workerIndex = self._nextWorkerIndex % self._poolSize;
+        const worker = self._workers[workerIndex];
+        self._nextWorkerIndex++;
+
+        worker.postMessage({
           id: requestId,
           command: "execute",
           code: code,
@@ -409,15 +450,18 @@ class WasmLayer {
   }
 
   /**
-   * Terminate the worker and clean up resources.
+   * Terminate all workers and clean up resources.
    */
   terminate() {
     const self = this;
 
-    if (self._worker) {
-      self._worker.terminate();
-      self._worker = null;
+    if (self._workers && self._workers.length > 0) {
+      self._workers.forEach((worker) => {
+        worker.terminate();
+      });
+      self._workers = [];
     }
+    self._nextWorkerIndex = 0;
 
     // Reject any pending requests
     for (const [id, request] of self._pendingRequests) {

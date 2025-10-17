@@ -147,24 +147,75 @@ function buildWasmBackendTests() {
         const wasmLayer = new WasmLayer();
 
         assert.ok(wasmLayer, "WasmLayer should be created");
-        assert.equal(wasmLayer._worker, null, "Worker should be null initially");
+        assert.ok(Array.isArray(wasmLayer._workers), "Workers should be an array");
+        assert.equal(wasmLayer._workers.length, 0, "Workers array should be empty initially");
         assert.equal(wasmLayer._initPromise, null,
           "Init promise should be null initially");
         assert.ok(wasmLayer._pendingRequests instanceof Map,
           "Pending requests should be a Map");
         assert.equal(wasmLayer._nextRequestId, 1, "Next request ID should start at 1");
+        assert.equal(wasmLayer._nextWorkerIndex, 0,
+          "Next worker index should start at 0");
       });
 
-      QUnit.test("initialize creates worker correctly", function (assert) {
+      QUnit.test("constructor calculates pool size from hardwareConcurrency", function (assert) {
+        // Save original value
+        const originalConcurrency = navigator.hardwareConcurrency;
+
+        // Test with different hardwareConcurrency values
+        const testCases = [
+          {concurrency: undefined, expected: 3}, // Fallback to 4, then 4-1=3
+          {concurrency: 1, expected: 2}, // min(2, 1-1) = 2
+          {concurrency: 2, expected: 2}, // 2-1=1, min is 2
+          {concurrency: 4, expected: 3}, // 4-1=3
+          {concurrency: 8, expected: 7}, // 8-1=7
+          {concurrency: 16, expected: 15}, // 16-1=15
+        ];
+
+        testCases.forEach(({concurrency, expected}) => {
+          // Mock navigator.hardwareConcurrency
+          Object.defineProperty(navigator, "hardwareConcurrency", {
+            value: concurrency,
+            configurable: true,
+          });
+
+          const wasmLayer = new WasmLayer();
+          assert.equal(wasmLayer._poolSize, expected,
+            `Pool size should be ${expected} when hardwareConcurrency is ${concurrency}`);
+        });
+
+        // Restore original value
+        Object.defineProperty(navigator, "hardwareConcurrency", {
+          value: originalConcurrency,
+          configurable: true,
+        });
+      });
+
+      QUnit.test("constructor accepts custom pool size", function (assert) {
+        const customPoolSize = 5;
+        const wasmLayer = new WasmLayer(null, customPoolSize);
+
+        assert.equal(wasmLayer._poolSize, customPoolSize,
+          "Pool size should match custom value");
+      });
+
+      QUnit.test("constructor enforces minimum pool size of 2", function (assert) {
+        const wasmLayer = new WasmLayer(null, 1);
+
+        assert.equal(wasmLayer._poolSize, 2,
+          "Pool size should be at least 2 even if custom value is 1");
+      });
+
+      QUnit.test("initialize creates worker pool correctly", function (assert) {
         const done = assert.async();
-        const wasmLayer = new WasmLayer();
+        const wasmLayer = new WasmLayer(null, 3); // Use custom pool size for testing
 
         // Mock Worker to avoid actual worker creation in test
         const originalWorker = window.Worker;
-        let workerCreated = false;
+        let workersCreated = 0;
 
         window.Worker = function (scriptUrl) {
-          workerCreated = true;
+          workersCreated++;
           assert.ok(
             scriptUrl.startsWith("/js/wasm.worker.js"),
             "Should create worker with correct script URL",
@@ -180,8 +231,11 @@ function buildWasmBackendTests() {
         };
 
         wasmLayer.initialize().then(() => {
-          assert.ok(workerCreated, "Worker should be created");
-          assert.ok(wasmLayer._worker, "Worker should be assigned");
+          assert.equal(workersCreated, 3, "Should create 3 workers");
+          assert.equal(wasmLayer._workers.length, 3, "Workers array should have 3 workers");
+          assert.ok(wasmLayer._workers[0], "First worker should be assigned");
+          assert.ok(wasmLayer._workers[1], "Second worker should be assigned");
+          assert.ok(wasmLayer._workers[2], "Third worker should be assigned");
 
           // Restore original Worker
           window.Worker = originalWorker;
@@ -194,18 +248,33 @@ function buildWasmBackendTests() {
         });
       });
 
-      QUnit.test("terminate cleans up resources", function (assert) {
-        const wasmLayer = new WasmLayer();
+      QUnit.test("terminate cleans up all workers in pool", function (assert) {
+        const wasmLayer = new WasmLayer(null, 3);
 
-        // Mock worker
-        const mockWorker = {
-          terminate: function () {
-            this.terminated = true;
+        // Mock workers
+        const mockWorkers = [
+          {
+            terminate: function () {
+              this.terminated = true;
+            },
+            terminated: false,
           },
-          terminated: false,
-        };
+          {
+            terminate: function () {
+              this.terminated = true;
+            },
+            terminated: false,
+          },
+          {
+            terminate: function () {
+              this.terminated = true;
+            },
+            terminated: false,
+          },
+        ];
 
-        wasmLayer._worker = mockWorker;
+        wasmLayer._workers = mockWorkers;
+        wasmLayer._nextWorkerIndex = 5; // Simulate some usage
         wasmLayer._initPromise = Promise.resolve();
 
         // Add a pending request
@@ -220,14 +289,121 @@ function buildWasmBackendTests() {
 
         wasmLayer.terminate();
 
-        assert.ok(mockWorker.terminated, "Worker should be terminated");
-        assert.equal(wasmLayer._worker, null, "Worker reference should be cleared");
+        assert.ok(mockWorkers[0].terminated, "First worker should be terminated");
+        assert.ok(mockWorkers[1].terminated, "Second worker should be terminated");
+        assert.ok(mockWorkers[2].terminated, "Third worker should be terminated");
+        assert.equal(wasmLayer._workers.length, 0, "Workers array should be empty");
+        assert.equal(wasmLayer._nextWorkerIndex, 0, "Worker index should be reset");
         assert.equal(wasmLayer._initPromise, null, "Init promise should be cleared");
         assert.equal(wasmLayer._pendingRequests.size, 0,
           "Pending requests should be cleared");
       });
 
-      QUnit.test("runSimulation generates correct request", function (assert) {
+      QUnit.test("runSimulation uses round-robin distribution", function (assert) {
+        const done = assert.async();
+
+        // Mock Worker before creating the layer
+        const originalWorker = window.Worker;
+        const workerMessages = [[], [], []]; // Track messages per worker
+        const mockWorkers = [];
+
+        window.Worker = function () {
+          const workerIndex = mockWorkers.length;
+          const mockWorker = {
+            onmessage: null,
+            onerror: null,
+            postMessage: function (message) {
+              workerMessages[workerIndex].push(message);
+            },
+            terminate: function () {},
+          };
+          mockWorkers.push(mockWorker);
+          return mockWorker;
+        };
+
+        const wasmLayer = new WasmLayer(null, 3); // 3 workers
+        const testCode = "test QubecTalk code";
+        const scenarioNames = ["Scenario1", "Scenario2", "Scenario3", "Scenario4"];
+
+        wasmLayer.initialize().then(() => {
+          const runPromise = wasmLayer.runSimulation(testCode, scenarioNames);
+
+          // Wait a tick for postMessage to be called
+          setTimeout(() => {
+            // Check round-robin distribution: 4 scenarios across 3 workers
+            // Worker 0 should get Scenario1, Scenario4
+            // Worker 1 should get Scenario2
+            // Worker 2 should get Scenario3
+            assert.equal(workerMessages[0].length, 2,
+              "Worker 0 should receive 2 messages");
+            assert.equal(workerMessages[1].length, 1,
+              "Worker 1 should receive 1 message");
+            assert.equal(workerMessages[2].length, 1,
+              "Worker 2 should receive 1 message");
+
+            assert.equal(workerMessages[0][0].scenarioName, "Scenario1",
+              "Worker 0 first message should be Scenario1");
+            assert.equal(workerMessages[0][1].scenarioName, "Scenario4",
+              "Worker 0 second message should be Scenario4");
+            assert.equal(workerMessages[1][0].scenarioName, "Scenario2",
+              "Worker 1 should get Scenario2");
+            assert.equal(workerMessages[2][0].scenarioName, "Scenario3",
+              "Worker 2 should get Scenario3");
+
+            // Simulate successful responses from all workers
+            const responseTemplate = "OK\n\n" +
+              "scenario,trial,year,application,substance,domestic,import," +
+              "recycle,domesticConsumption,importConsumption," +
+              "recycleConsumption,population,populationNew,rechargeEmissions," +
+              "eolEmissions,energyConsumption,initialChargeValue," +
+              "initialChargeConsumption,importNewPopulation\n";
+
+            scenarioNames.forEach((scenarioName, index) => {
+              const workerIndex = index % 3;
+              const message = workerMessages[workerIndex][Math.floor(index / 3)];
+              const responseData = {
+                resultType: "dataset",
+                id: message.id,
+                scenarioName: scenarioName,
+                success: true,
+                result: responseTemplate +
+                  `${scenarioName},1,2024,TestApp,TestSub,0 kg,0 kg,0 kg,0 tCO2e,` +
+                  "0 tCO2e,0 tCO2e,0 units,0 units,0 tCO2e,0 tCO2e,0 kwh," +
+                  "0 kg,0 tCO2e,0 units",
+              };
+              mockWorkers[workerIndex].onmessage({data: responseData});
+            });
+
+            runPromise.then((backendResult) => {
+              assert.ok(backendResult instanceof BackendResult,
+                "Should return BackendResult instance");
+              assert.ok(Array.isArray(backendResult.getParsedResults()),
+                "Should contain array of parsed results");
+              assert.equal(backendResult.getParsedResults().length, 4,
+                "Should have results for all 4 scenarios");
+
+              // Restore original Worker
+              window.Worker = originalWorker;
+              done();
+            }).catch((error) => {
+              // Restore original Worker
+              window.Worker = originalWorker;
+              assert.ok(false, "runSimulation should not fail: " + error.message);
+              done();
+            });
+          }, 0);
+
+          // Return a resolved promise since we handle everything in setTimeout
+          return Promise.resolve();
+        }).catch((error) => {
+          // Restore original Worker in case of initialization failure
+          window.Worker = originalWorker;
+          assert.ok(false, "Initialization failed: " + error.message);
+          done();
+        });
+      });
+
+      QUnit.test("runSimulation handles single scenario", function (assert) {
         const done = assert.async();
 
         // Mock Worker before creating the layer
@@ -246,7 +422,7 @@ function buildWasmBackendTests() {
           return mockWorker;
         };
 
-        const wasmLayer = new WasmLayer();
+        const wasmLayer = new WasmLayer(null, 2);
         const testCode = "test QubecTalk code";
         const scenarioNames = ["TestScenario"];
 
