@@ -356,7 +356,7 @@ class WasmLayer {
           self._pendingRequests.delete(requestId);
           reject(new Error("Simulation timeout"));
         }
-      }, 30000 * scenarioNames.length); // Scale timeout with number of scenarios
+      }, 45000 * scenarioNames.length); // Scale timeout with number of scenarios
     });
   }
 
