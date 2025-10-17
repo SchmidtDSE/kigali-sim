@@ -298,9 +298,10 @@ class WasmLayer {
    *
    * @param {string} code - The QubecTalk code to execute.
    * @param {string[]} scenarioNames - Array of scenario names to execute.
+   * @param {Object.<string, number>} scenarioTrialCounts - Map of scenario name to trial count.
    * @returns {Promise<BackendResult>} Promise resolving to backend result with CSV and parsed data.
    */
-  async runSimulation(code, scenarioNames) {
+  async runSimulation(code, scenarioNames, scenarioTrialCounts) {
     const self = this;
 
     await self.initialize();
@@ -316,7 +317,10 @@ class WasmLayer {
         scenarioTracker[key] = false;
       });
 
-      // Store request with scenario tracking
+      // Calculate total trials across all scenarios
+      const totalTrials = Object.values(scenarioTrialCounts).reduce((sum, count) => sum + count, 0);
+
+      // Store request with scenario tracking and progress tracking
       self._pendingRequests.set(requestId, {
         resolve,
         reject,
@@ -325,6 +329,10 @@ class WasmLayer {
         csvParts: [], // Accumulate CSV parts from each scenario
         code: code,
         remainingScenarios: scenarioNames.length,
+        // Progress tracking fields
+        scenarioTrialCounts: scenarioTrialCounts,
+        totalTrials: totalTrials,
+        scenarioProgressMap: {}, // Track current progress per scenario
       });
 
       // Send requests for each scenario to workers in round-robin fashion
@@ -362,13 +370,33 @@ class WasmLayer {
     const self = this;
     const {resultType, id, success, result, error, progress, scenarioName} = event.data;
 
-    // Handle progress messages (commented out for this component)
-    // if (resultType === "progress") {
-    //   if (self._reportProgressCallback) {
-    //     self._reportProgressCallback(progress);
-    //   }
-    //   return;
-    // }
+    // Handle progress messages
+    if (resultType === "progress") {
+      const request = self._pendingRequests.get(id);
+      if (!request) {
+        return; // Progress for unknown/completed request
+      }
+
+      // Update per-scenario progress
+      const scenarioKey = scenarioName || "null";
+      request.scenarioProgressMap[scenarioKey] = progress || 0;
+
+      // Calculate overall progress: weighted average by trial count
+      let completedTrials = 0;
+      Object.keys(request.scenarioProgressMap).forEach((key) => {
+        const scenarioProgress = request.scenarioProgressMap[key];
+        const trialCount = request.scenarioTrialCounts[key] || 1;
+        completedTrials += scenarioProgress * trialCount;
+      });
+
+      const overallProgress = request.totalTrials > 0 ? completedTrials / request.totalTrials : 0;
+
+      // Report aggregated progress to callback
+      if (self._reportProgressCallback) {
+        self._reportProgressCallback(overallProgress);
+      }
+      return;
+    }
 
     // Handle regular result messages
     const request = self._pendingRequests.get(id);
@@ -523,12 +551,29 @@ class WasmBackend {
       // the worker's backward compatibility path
       if (!scenarioNames || scenarioNames.length === 0) {
         // Legacy path: send without scenario name to execute all scenarios at once
-        const backendResult = await self._wasmLayer.runSimulation(simCode, [null]);
+        // Use default trial count of 1 for progress tracking
+        const scenarioTrialCounts = {"null": 1};
+        const backendResult = await self._wasmLayer.runSimulation(
+          simCode,
+          [null],
+          scenarioTrialCounts,
+        );
         return backendResult;
       }
 
-      // Execute all scenarios sequentially
-      const backendResult = await self._wasmLayer.runSimulation(simCode, scenarioNames);
+      // Extract trial counts for each scenario (default to 1 trial for UI-compatible scenarios)
+      const scenarioTrialCounts = {};
+      scenarioNames.forEach((scenarioName) => {
+        // UI-compatible scenarios (without "across X trials") always have 1 trial
+        scenarioTrialCounts[scenarioName] = 1;
+      });
+
+      // Execute all scenarios in parallel
+      const backendResult = await self._wasmLayer.runSimulation(
+        simCode,
+        scenarioNames,
+        scenarioTrialCounts,
+      );
       return backendResult;
     } catch (error) {
       throw new Error("WASM simulation execution failed: " + error.message);

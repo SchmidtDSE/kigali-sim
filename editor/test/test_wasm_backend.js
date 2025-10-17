@@ -326,7 +326,8 @@ function buildWasmBackendTests() {
         const scenarioNames = ["Scenario1", "Scenario2", "Scenario3", "Scenario4"];
 
         wasmLayer.initialize().then(() => {
-          const runPromise = wasmLayer.runSimulation(testCode, scenarioNames);
+          const scenarioTrialCounts = {"Scenario1": 1, "Scenario2": 1, "Scenario3": 1, "Scenario4": 1};
+          const runPromise = wasmLayer.runSimulation(testCode, scenarioNames, scenarioTrialCounts);
 
           // Wait a tick for postMessage to be called
           setTimeout(() => {
@@ -403,6 +404,351 @@ function buildWasmBackendTests() {
         });
       });
 
+      QUnit.test("runSimulation with progress tracking for single scenario", function (assert) {
+        const done = assert.async();
+
+        const originalWorker = window.Worker;
+        const progressUpdates = [];
+        let mockWorker = null;
+
+        window.Worker = function () {
+          mockWorker = {
+            onmessage: null,
+            onerror: null,
+            postMessage: function () {},
+            terminate: function () {},
+          };
+          return mockWorker;
+        };
+
+        const progressCallback = (progress) => {
+          progressUpdates.push(progress);
+        };
+
+        const wasmLayer = new WasmLayer(progressCallback, 2);
+        const testCode = "test code";
+        const scenarioNames = ["TestScenario"];
+        const scenarioTrialCounts = {"TestScenario": 5};
+
+        wasmLayer.initialize().then(() => {
+          const runPromise = wasmLayer.runSimulation(testCode, scenarioNames, scenarioTrialCounts);
+
+          setTimeout(() => {
+            // Find the request ID from pending requests
+            const requestId = Array.from(wasmLayer._pendingRequests.keys())[0];
+
+            // Simulate progress updates: 0%, 20%, 40%, 60%, 80%, 100%
+            [0, 0.2, 0.4, 0.6, 0.8, 1.0].forEach((progress) => {
+              mockWorker.onmessage({
+                data: {
+                  resultType: "progress",
+                  id: requestId,
+                  scenarioName: "TestScenario",
+                  progress: progress,
+                },
+              });
+            });
+
+            // Simulate completion
+            mockWorker.onmessage({
+              data: {
+                resultType: "dataset",
+                id: requestId,
+                scenarioName: "TestScenario",
+                success: true,
+                result: "OK\n\nscenario,trial,year,application,substance," +
+                  "domestic,import,export,recycle,domesticConsumption," +
+                  "importConsumption,exportConsumption,recycleConsumption," +
+                  "population,populationNew,rechargeEmissions,eolEmissions," +
+                  "initialChargeEmissions,energyConsumption," +
+                  "importInitialChargeValue,importInitialChargeConsumption," +
+                  "importPopulation,exportInitialChargeValue," +
+                  "exportInitialChargeConsumption,bankKg,bankTCO2e,bankChangeKg," +
+                  "bankChangeTCO2e\n" +
+                  "TestScenario,1,2024,TestApp,TestSub,0 kg,0 kg,0 kg,0 kg," +
+                  "0 tCO2e,0 tCO2e,0 tCO2e,0 tCO2e,0 units,0 units,0 tCO2e," +
+                  "0 tCO2e,0 tCO2e,0 kwh,0 kg,0 tCO2e,0 units,0 kg,0 tCO2e," +
+                  "0 kg,0 tCO2e,0 kg,0 tCO2e",
+              },
+            });
+
+            runPromise.then(() => {
+              // Verify progress was reported
+              assert.equal(progressUpdates.length, 6,
+                "Should have 6 progress updates");
+              assert.deepEqual(progressUpdates, [0, 0.2, 0.4, 0.6, 0.8, 1.0],
+                "Progress updates should match expected values");
+
+              window.Worker = originalWorker;
+              done();
+            }).catch((error) => {
+              window.Worker = originalWorker;
+              assert.ok(false, "runSimulation should not fail: " + error.message);
+              done();
+            });
+          }, 0);
+        }).catch((error) => {
+          window.Worker = originalWorker;
+          assert.ok(false, "Initialization failed: " + error.message);
+          done();
+        });
+      });
+
+      QUnit.test("runSimulation with progress tracking for multiple scenarios", function (assert) {
+        const done = assert.async();
+
+        const originalWorker = window.Worker;
+        const progressUpdates = [];
+        const mockWorkers = [];
+
+        window.Worker = function () {
+          const mockWorker = {
+            onmessage: null,
+            onerror: null,
+            postMessage: function () {},
+            terminate: function () {},
+          };
+          mockWorkers.push(mockWorker);
+          return mockWorker;
+        };
+
+        const progressCallback = (progress) => {
+          progressUpdates.push(progress);
+        };
+
+        const wasmLayer = new WasmLayer(progressCallback, 2);
+        const testCode = "test code";
+        const scenarioNames = ["BAU", "Policy"];
+        const scenarioTrialCounts = {"BAU": 3, "Policy": 2};
+
+        wasmLayer.initialize().then(() => {
+          const runPromise = wasmLayer.runSimulation(testCode, scenarioNames, scenarioTrialCounts);
+
+          setTimeout(() => {
+            const requestId = Array.from(wasmLayer._pendingRequests.keys())[0];
+
+            // Simulate progress: BAU completes 33% (1/3), overall should be 20% (1/5)
+            mockWorkers[0].onmessage({
+              data: {
+                resultType: "progress",
+                id: requestId,
+                scenarioName: "BAU",
+                progress: 1 / 3,
+              },
+            });
+
+            // Simulate progress: Policy completes 50% (1/2), overall should be 50% (2.5/5)
+            mockWorkers[1].onmessage({
+              data: {
+                resultType: "progress",
+                id: requestId,
+                scenarioName: "Policy",
+                progress: 0.5,
+              },
+            });
+
+            // Simulate progress: BAU completes 67% (2/3), overall should be 70% (3.5/5)
+            mockWorkers[0].onmessage({
+              data: {
+                resultType: "progress",
+                id: requestId,
+                scenarioName: "BAU",
+                progress: 2 / 3,
+              },
+            });
+
+            // Simulate completion
+            const csvHeader = "scenario,trial,year,application,substance," +
+              "domestic,import,export,recycle,domesticConsumption," +
+              "importConsumption,exportConsumption,recycleConsumption," +
+              "population,populationNew,rechargeEmissions,eolEmissions," +
+              "initialChargeEmissions,energyConsumption," +
+              "importInitialChargeValue,importInitialChargeConsumption," +
+              "importPopulation,exportInitialChargeValue," +
+              "exportInitialChargeConsumption,bankKg,bankTCO2e,bankChangeKg," +
+              "bankChangeTCO2e\n";
+
+            mockWorkers[0].onmessage({
+              data: {
+                resultType: "dataset",
+                id: requestId,
+                scenarioName: "BAU",
+                success: true,
+                result: "OK\n\n" + csvHeader +
+                  "BAU,1,2024,TestApp,TestSub,0 kg,0 kg,0 kg,0 kg," +
+                  "0 tCO2e,0 tCO2e,0 tCO2e,0 tCO2e,0 units,0 units,0 tCO2e," +
+                  "0 tCO2e,0 tCO2e,0 kwh,0 kg,0 tCO2e,0 units,0 kg,0 tCO2e," +
+                  "0 kg,0 tCO2e,0 kg,0 tCO2e",
+              },
+            });
+
+            mockWorkers[1].onmessage({
+              data: {
+                resultType: "dataset",
+                id: requestId,
+                scenarioName: "Policy",
+                success: true,
+                result: "OK\n\n" + csvHeader +
+                  "Policy,1,2024,TestApp,TestSub,0 kg,0 kg,0 kg,0 kg," +
+                  "0 tCO2e,0 tCO2e,0 tCO2e,0 tCO2e,0 units,0 units,0 tCO2e," +
+                  "0 tCO2e,0 tCO2e,0 kwh,0 kg,0 tCO2e,0 units,0 kg,0 tCO2e," +
+                  "0 kg,0 tCO2e,0 kg,0 tCO2e",
+              },
+            });
+
+            runPromise.then(() => {
+              // Verify progress aggregation
+              assert.equal(progressUpdates.length, 3,
+                "Should have 3 progress updates");
+
+              // BAU: 1/3 complete = 1 trial out of 3, overall: 1/5 = 0.2
+              assert.ok(Math.abs(progressUpdates[0] - 0.2) < 0.01,
+                "First progress should be ~0.2 (1/5 trials)");
+
+              // BAU: 1/3, Policy: 1/2 = 1 + 1 = 2 trials, overall: 2/5 = 0.4
+              // Actually: (1/3 * 3 + 0.5 * 2) / 5 = (1 + 1) / 5 = 0.4
+              assert.ok(Math.abs(progressUpdates[1] - 0.4) < 0.01,
+                "Second progress should be ~0.4 (2/5 trials)");
+
+              // BAU: 2/3, Policy: 1/2 = 2 + 1 = 3 trials, overall: 3/5 = 0.6
+              assert.ok(Math.abs(progressUpdates[2] - 0.6) < 0.01,
+                "Third progress should be ~0.6 (3/5 trials)");
+
+              window.Worker = originalWorker;
+              done();
+            }).catch((error) => {
+              window.Worker = originalWorker;
+              assert.ok(false, "runSimulation should not fail: " + error.message);
+              done();
+            });
+          }, 0);
+        }).catch((error) => {
+          window.Worker = originalWorker;
+          assert.ok(false, "Initialization failed: " + error.message);
+          done();
+        });
+      });
+
+      QUnit.test("runSimulation with progress tracking handles variable trial counts", function (assert) {
+        const done = assert.async();
+
+        const originalWorker = window.Worker;
+        const progressUpdates = [];
+        const mockWorkers = [];
+
+        window.Worker = function () {
+          const mockWorker = {
+            onmessage: null,
+            onerror: null,
+            postMessage: function () {},
+            terminate: function () {},
+          };
+          mockWorkers.push(mockWorker);
+          return mockWorker;
+        };
+
+        const progressCallback = (progress) => {
+          progressUpdates.push(progress);
+        };
+
+        const wasmLayer = new WasmLayer(progressCallback, 2);
+        const testCode = "test code";
+        const scenarioNames = ["ScenarioA", "ScenarioB"];
+        const scenarioTrialCounts = {"ScenarioA": 1, "ScenarioB": 9};
+
+        wasmLayer.initialize().then(() => {
+          const runPromise = wasmLayer.runSimulation(testCode, scenarioNames, scenarioTrialCounts);
+
+          setTimeout(() => {
+            const requestId = Array.from(wasmLayer._pendingRequests.keys())[0];
+
+            // ScenarioA completes 100% (1 trial), overall: 1/10 = 0.1
+            mockWorkers[0].onmessage({
+              data: {
+                resultType: "progress",
+                id: requestId,
+                scenarioName: "ScenarioA",
+                progress: 1.0,
+              },
+            });
+
+            // ScenarioB completes 33% (3/9 trials), overall: (1 + 3)/10 = 0.4
+            mockWorkers[1].onmessage({
+              data: {
+                resultType: "progress",
+                id: requestId,
+                scenarioName: "ScenarioB",
+                progress: 1 / 3,
+              },
+            });
+
+            // Simulate completion
+            const csvHeader = "scenario,trial,year,application,substance," +
+              "domestic,import,export,recycle,domesticConsumption," +
+              "importConsumption,exportConsumption,recycleConsumption," +
+              "population,populationNew,rechargeEmissions,eolEmissions," +
+              "initialChargeEmissions,energyConsumption," +
+              "importInitialChargeValue,importInitialChargeConsumption," +
+              "importPopulation,exportInitialChargeValue," +
+              "exportInitialChargeConsumption,bankKg,bankTCO2e,bankChangeKg," +
+              "bankChangeTCO2e\n";
+
+            mockWorkers[0].onmessage({
+              data: {
+                resultType: "dataset",
+                id: requestId,
+                scenarioName: "ScenarioA",
+                success: true,
+                result: "OK\n\n" + csvHeader +
+                  "ScenarioA,1,2024,TestApp,TestSub,0 kg,0 kg,0 kg,0 kg," +
+                  "0 tCO2e,0 tCO2e,0 tCO2e,0 tCO2e,0 units,0 units,0 tCO2e," +
+                  "0 tCO2e,0 tCO2e,0 kwh,0 kg,0 tCO2e,0 units,0 kg,0 tCO2e," +
+                  "0 kg,0 tCO2e,0 kg,0 tCO2e",
+              },
+            });
+
+            mockWorkers[1].onmessage({
+              data: {
+                resultType: "dataset",
+                id: requestId,
+                scenarioName: "ScenarioB",
+                success: true,
+                result: "OK\n\n" + csvHeader +
+                  "ScenarioB,1,2024,TestApp,TestSub,0 kg,0 kg,0 kg,0 kg," +
+                  "0 tCO2e,0 tCO2e,0 tCO2e,0 tCO2e,0 units,0 units,0 tCO2e," +
+                  "0 tCO2e,0 tCO2e,0 kwh,0 kg,0 tCO2e,0 units,0 kg,0 tCO2e," +
+                  "0 kg,0 tCO2e,0 kg,0 tCO2e",
+              },
+            });
+
+            runPromise.then(() => {
+              // Verify ScenarioB progress is weighted 9x more than ScenarioA
+              assert.equal(progressUpdates.length, 2,
+                "Should have 2 progress updates");
+
+              // ScenarioA: 1/1 = 1 trial, overall: 1/10 = 0.1
+              assert.ok(Math.abs(progressUpdates[0] - 0.1) < 0.01,
+                "First progress should be ~0.1 (1/10 trials)");
+
+              // ScenarioA: 1, ScenarioB: 3 = 4 trials, overall: 4/10 = 0.4
+              assert.ok(Math.abs(progressUpdates[1] - 0.4) < 0.01,
+                "Second progress should be ~0.4 (4/10 trials)");
+
+              window.Worker = originalWorker;
+              done();
+            }).catch((error) => {
+              window.Worker = originalWorker;
+              assert.ok(false, "runSimulation should not fail: " + error.message);
+              done();
+            });
+          }, 0);
+        }).catch((error) => {
+          window.Worker = originalWorker;
+          assert.ok(false, "Initialization failed: " + error.message);
+          done();
+        });
+      });
+
       QUnit.test("runSimulation handles single scenario", function (assert) {
         const done = assert.async();
 
@@ -427,7 +773,8 @@ function buildWasmBackendTests() {
         const scenarioNames = ["TestScenario"];
 
         wasmLayer.initialize().then(() => {
-          const runPromise = wasmLayer.runSimulation(testCode, scenarioNames);
+          const scenarioTrialCounts = {"TestScenario": 1};
+          const runPromise = wasmLayer.runSimulation(testCode, scenarioNames, scenarioTrialCounts);
 
           // Wait a tick for postMessage to be called
           setTimeout(() => {
@@ -505,11 +852,12 @@ function buildWasmBackendTests() {
         );
 
         const mockWasmLayer = {
-          runSimulation: function (code, scenarioNames) {
+          runSimulation: function (code, scenarioNames, scenarioTrialCounts) {
             simulationCalled = true;
             assert.equal(code, testCode, "Code should be passed correctly");
             assert.ok(Array.isArray(scenarioNames), "Scenario names should be an array");
             assert.ok(scenarioNames.length > 0, "Should have at least one scenario name");
+            assert.ok(scenarioTrialCounts, "Trial counts should be provided");
             return Promise.resolve(mockBackendResult);
           },
         };
@@ -533,7 +881,7 @@ function buildWasmBackendTests() {
           "simulate \"scenario1\" from years 1 to 10\nend simulations";
 
         const mockWasmLayer = {
-          runSimulation: function (code, scenarioNames) {
+          runSimulation: function (code, scenarioNames, scenarioTrialCounts) {
             return Promise.reject(testError);
           },
         };

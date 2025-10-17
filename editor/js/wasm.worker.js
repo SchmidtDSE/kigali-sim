@@ -11,6 +11,10 @@
 let wasmLayer = null;
 let isInitialized = false;
 
+// Context variables for progress reporting
+let currentRequestId = null;
+let currentScenarioName = null;
+
 /**
  * Global reportProgress function called by WASM to report simulation progress.
  * This function is available globally for the Java code to call via @JSBody.
@@ -20,6 +24,8 @@ let isInitialized = false;
 function reportProgress(progress) {
   self.postMessage({
     resultType: "progress",
+    id: currentRequestId,
+    scenarioName: currentScenarioName,
     progress: progress,
   });
 }
@@ -71,6 +77,10 @@ async function executeCode(code, scenarioName) {
       throw new Error("WASM layer not initialized");
     }
 
+    // Set scenario name for progress reporting
+    // Note: currentRequestId is already set by onmessage handler
+    currentScenarioName = scenarioName;
+
     // Execute using WASM
     let result;
     if (scenarioName) {
@@ -107,6 +117,9 @@ async function executeCode(code, scenarioName) {
  */
 self.onmessage = async function (event) {
   const {id, command, code, scenarioName} = event.data;
+
+  // Set request ID for progress reporting
+  currentRequestId = id;
 
   try {
     if (command === "execute") {

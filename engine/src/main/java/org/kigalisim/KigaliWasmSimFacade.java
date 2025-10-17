@@ -118,8 +118,7 @@ public class KigaliWasmSimFacade {
       }
 
       // Create progress callback that reports to JavaScript
-      // Note: Progress reporting will be commented out for this component
-      ProgressReportCallback progressCallback = null; // progress -> reportProgressToJavaScript(progress);
+      ProgressReportCallback progressCallback = progress -> reportProgressToJavaScript(progress);
 
       // Run the specific scenario
       List<EngineResult> scenarioResults = KigaliSimFacade.runScenario(
