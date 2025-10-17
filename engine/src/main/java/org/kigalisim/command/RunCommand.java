@@ -13,16 +13,16 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
-import java.util.stream.Stream;
 import org.kigalisim.KigaliSimFacade;
-import org.kigalisim.ProgressReportCallback;
 import org.kigalisim.engine.serializer.EngineResult;
 import org.kigalisim.lang.parse.ParseResult;
 import org.kigalisim.lang.program.ParsedProgram;
+import org.kigalisim.pipeline.ParallelSimulationExecutor;
+import org.kigalisim.pipeline.ProgressReporter;
+import org.kigalisim.pipeline.SimulationTask;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
@@ -89,34 +89,41 @@ public class RunCommand implements Callable<Integer> {
         return PARSE_ERROR;
       }
 
-      // Create progress callback that prints to stdout
-      ProgressReportCallback progressCallback = progress -> {
-        int percentage = (int) (progress * 100);
+      // Create simulation tasks for all scenarios and replicates
+      List<SimulationTask> tasks = new ArrayList<>();
+      for (String scenarioName : program.getScenarios()) {
+        for (int i = 0; i < replicates; i++) {
+          tasks.add(new SimulationTask(scenarioName, i + 1, replicates));
+        }
+      }
+
+      System.out.println("Running " + tasks.size() + " simulations in parallel...");
+
+      // Create progress reporter
+      ProgressReporter progressReporter = (completed, total) -> {
+        int percentage = (int) ((double) completed / total * 100);
         System.out.print("\rProgress: " + percentage + "%");
         System.out.flush();
       };
 
-      // Run all scenarios in the program with replicates and collect results
-      Stream<EngineResult> allResults = program.getScenarios().stream()
-          .flatMap(scenarioName ->
-              IntStream.range(0, replicates)
-                  .boxed()
-                  .flatMap(replicateIndex -> {
-                    if (replicates > 1) {
-                      System.out.println("Running scenario '" + scenarioName + "' - replicate " + (replicateIndex + 1) + " of " + replicates);
-                    }
-                    return KigaliSimFacade.runScenario(program, scenarioName, progressCallback);
-                  })
-          );
+      // Execute simulations in parallel
+      List<EngineResult> allResults;
+      try {
+        ParallelSimulationExecutor executor = new ParallelSimulationExecutor(
+            program, tasks, progressReporter);
+        allResults = executor.execute();
+      } catch (Exception e) {
+        System.err.println("\nError during parallel execution: " + e.getMessage());
+        e.printStackTrace();
+        return EXECUTION_ERROR;
+      }
 
-      // Collect to a list to see how many results we have
-      List<EngineResult> resultsList = allResults.collect(Collectors.toList());
+      System.out.println("\nSimulations complete. Writing results...");
 
-      // Print a newline after progress is complete
-      System.out.println();
+      // Convert results to CSV
+      String csvContent = KigaliSimFacade.convertResultsToCsv(allResults);
 
-      // Convert results to CSV and write to file
-      String csvContent = KigaliSimFacade.convertResultsToCsv(resultsList);
+      System.out.println("Writing " + allResults.size() + " results to file: " + csvOutputFile);
       try (FileWriter writer = new FileWriter(csvOutputFile)) {
         writer.write(csvContent);
       } catch (IOException e) {
