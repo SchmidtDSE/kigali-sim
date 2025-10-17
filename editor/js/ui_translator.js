@@ -358,6 +358,21 @@ class Program {
   }
 
   /**
+   * Get the names of all simulation scenarios.
+   *
+   * Convenience method to extract just the scenario names without
+   * needing to access full SimulationScenario objects.
+   *
+   * @returns {string[]} Array of scenario names in order they appear.
+   */
+  getScenarioNames() {
+    const self = this;
+    return self._scenarios
+      .filter((scenario) => scenario.getName !== undefined)
+      .map((scenario) => scenario.getName());
+  }
+
+  /**
    * Get a simulation scenario by name.
    *
    * @param {string} name - Name of scenario to find.
