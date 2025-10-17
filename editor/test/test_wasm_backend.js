@@ -164,9 +164,9 @@ function buildWasmBackendTests() {
 
         // Test with different hardwareConcurrency values
         const testCases = [
-          {concurrency: undefined, expected: 3}, // Fallback to 4, then 4-1=3
-          {concurrency: 1, expected: 2}, // min(2, 1-1) = 2
-          {concurrency: 2, expected: 2}, // 2-1=1, min is 2
+          {concurrency: undefined, expected: 2}, // Fallback to 2, then max(2, 2-1) = 2
+          {concurrency: 1, expected: 2}, // max(2, 1-1) = 2
+          {concurrency: 2, expected: 2}, // max(2, 2-1) = 2
           {concurrency: 4, expected: 3}, // 4-1=3
           {concurrency: 8, expected: 7}, // 8-1=7
           {concurrency: 16, expected: 15}, // 16-1=15

@@ -225,7 +225,7 @@ class WasmLayer {
      */
     // Calculate optimal pool size: (CPU cores - 1) with minimum of 2
     if (poolSize === null) {
-      const cores = navigator.hardwareConcurrency || 4;
+      const cores = navigator.hardwareConcurrency || 2;
       self._poolSize = Math.max(2, cores - 1);
     } else {
       self._poolSize = Math.max(2, poolSize);
@@ -547,10 +547,9 @@ class WasmBackend {
       const scenarioNames = program.getScenarioNames();
 
       // If no scenario names found (e.g., code uses "across X trials" syntax),
-      // fall back to legacy behavior by passing single empty name to trigger
-      // the worker's backward compatibility path
+      // execute using the full program (non-UI-compatible path)
       if (!scenarioNames || scenarioNames.length === 0) {
-        // Legacy path: send without scenario name to execute all scenarios at once
+        // Non-UI-compatible path: execute all scenarios at once
         // Use default trial count of 1 for progress tracking
         const scenarioTrialCounts = {"null": 1};
         const backendResult = await self._wasmLayer.runSimulation(

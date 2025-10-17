@@ -84,7 +84,7 @@ async function executeCode(code, scenarioName) {
     // Execute using WASM
     let result;
     if (scenarioName) {
-      // Execute single scenario if scenarioName provided
+      // Execute single scenario
       if (typeof executeScenario === "function") {
         result = executeScenario(code, scenarioName);
       } else if (wasmLayer.exports && wasmLayer.exports.executeScenario) {
@@ -93,7 +93,7 @@ async function executeCode(code, scenarioName) {
         throw new Error("executeScenario function not found in WASM");
       }
     } else {
-      // Execute all scenarios (backward compatibility)
+      // Execute all scenarios (for non-UI-compatible code)
       if (typeof execute === "function") {
         result = execute(code);
       } else if (wasmLayer.exports && wasmLayer.exports.execute) {
@@ -123,8 +123,6 @@ self.onmessage = async function (event) {
 
   try {
     if (command === "execute") {
-      // Handle backward compatibility: if scenarioName is null/undefined,
-      // execute all scenarios at once using the legacy execute() method
       const result = await executeCode(code, scenarioName || undefined);
 
       self.postMessage({
