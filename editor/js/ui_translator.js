@@ -361,14 +361,15 @@ class Program {
    * Get the names of all simulation scenarios.
    *
    * Convenience method to extract just the scenario names without
-   * needing to access full SimulationScenario objects.
+   * needing to access full SimulationScenario objects. Filters out
+   * IncompatibleCommand objects (e.g., from "across X trials" syntax).
    *
    * @returns {string[]} Array of scenario names in order they appear.
    */
   getScenarioNames() {
     const self = this;
     return self._scenarios
-      .filter((scenario) => scenario.getName !== undefined)
+      .filter((scenario) => scenario.getIsCompatible())
       .map((scenario) => scenario.getName());
   }
 
