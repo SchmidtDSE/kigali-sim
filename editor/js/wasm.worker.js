@@ -59,9 +59,10 @@ async function initializeWasm() {
  * Execute QubecTalk code using WASM backend.
  *
  * @param {string} code - The QubecTalk code to execute.
+ * @param {string} [scenarioName] - Optional scenario name to execute single scenario.
  * @returns {Promise<string>} Promise resolving to status + CSV results.
  */
-async function executeCode(code) {
+async function executeCode(code, scenarioName) {
   try {
     // Ensure WASM is initialized
     await initializeWasm();
@@ -70,16 +71,26 @@ async function executeCode(code) {
       throw new Error("WASM layer not initialized");
     }
 
-    // Execute using WASM (the TeaVM exports are global functions, not in exports)
+    // Execute using WASM
     let result;
-    if (typeof execute === "function") {
-      // WASM is loaded and execute function is available globally
-      result = execute(code);
-    } else if (wasmLayer.exports && wasmLayer.exports.execute) {
-      // Fallback case
-      result = wasmLayer.exports.execute(code);
+    if (scenarioName) {
+      // Execute single scenario if scenarioName provided
+      if (typeof executeScenario === "function") {
+        result = executeScenario(code, scenarioName);
+      } else if (wasmLayer.exports && wasmLayer.exports.executeScenario) {
+        result = wasmLayer.exports.executeScenario(code, scenarioName);
+      } else {
+        throw new Error("executeScenario function not found in WASM");
+      }
     } else {
-      throw new Error("Execute function not found in WASM or fallback");
+      // Execute all scenarios (backward compatibility)
+      if (typeof execute === "function") {
+        result = execute(code);
+      } else if (wasmLayer.exports && wasmLayer.exports.execute) {
+        result = wasmLayer.exports.execute(code);
+      } else {
+        throw new Error("Execute function not found in WASM");
+      }
     }
 
     // The Java facade already returns the properly formatted string: "OK\n\nCSV"
@@ -95,15 +106,18 @@ async function executeCode(code) {
  * Handle messages from the main thread.
  */
 self.onmessage = async function (event) {
-  const {id, command, code} = event.data;
+  const {id, command, code, scenarioName} = event.data;
 
   try {
     if (command === "execute") {
-      const result = await executeCode(code);
+      // Handle backward compatibility: if scenarioName is null/undefined,
+      // execute all scenarios at once using the legacy execute() method
+      const result = await executeCode(code, scenarioName || undefined);
 
       self.postMessage({
         resultType: "dataset",
         id: id,
+        scenarioName: scenarioName, // Include scenario name in response
         success: true,
         result: result,
       });

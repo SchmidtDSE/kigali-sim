@@ -248,9 +248,10 @@ function buildWasmBackendTests() {
 
         const wasmLayer = new WasmLayer();
         const testCode = "test QubecTalk code";
+        const scenarioNames = ["TestScenario"];
 
         wasmLayer.initialize().then(() => {
-          const runPromise = wasmLayer.runSimulation(testCode);
+          const runPromise = wasmLayer.runSimulation(testCode, scenarioNames);
 
           // Wait a tick for postMessage to be called
           setTimeout(() => {
@@ -259,10 +260,14 @@ function buildWasmBackendTests() {
             assert.equal(workerMessage.command, "execute", "Command should be execute");
             assert.equal(workerMessage.code, testCode, "Code should be passed correctly");
             assert.ok(workerMessage.id > 0, "Request ID should be positive");
+            assert.equal(workerMessage.scenarioName, "TestScenario",
+              "Scenario name should be passed correctly");
 
             // Simulate successful response
             const responseData = {
+              resultType: "dataset",
               id: workerMessage.id,
+              scenarioName: "TestScenario",
               success: true,
               result: "OK\n\n" +
                 "scenario,trial,year,application,substance,domestic,import," +
@@ -316,14 +321,20 @@ function buildWasmBackendTests() {
       QUnit.test("execute calls wasmLayer.runSimulation", function (assert) {
         const done = assert.async();
         let simulationCalled = false;
-        const testCode = "test code";
-        const mockResults = [new EngineResult("app", "sub", 2024, "scenario", 1)];
+        const testCode = "start default\nend default\nstart simulations\n" +
+          "simulate \"scenario1\" from years 1 to 10\nend simulations";
+        const mockBackendResult = new BackendResult(
+          "csv data",
+          [new EngineResult("app", "sub", 2024, "scenario1", 1)],
+        );
 
         const mockWasmLayer = {
-          runSimulation: function (code) {
+          runSimulation: function (code, scenarioNames) {
             simulationCalled = true;
             assert.equal(code, testCode, "Code should be passed correctly");
-            return Promise.resolve(mockResults);
+            assert.ok(Array.isArray(scenarioNames), "Scenario names should be an array");
+            assert.ok(scenarioNames.length > 0, "Should have at least one scenario name");
+            return Promise.resolve(mockBackendResult);
           },
         };
 
@@ -331,7 +342,7 @@ function buildWasmBackendTests() {
 
         wasmBackend.execute(testCode).then((results) => {
           assert.ok(simulationCalled, "runSimulation should be called");
-          assert.equal(results, mockResults, "Results should be returned correctly");
+          assert.equal(results, mockBackendResult, "Results should be returned correctly");
           done();
         }).catch((error) => {
           assert.ok(false, "execute should not fail: " + error.message);
@@ -342,16 +353,18 @@ function buildWasmBackendTests() {
       QUnit.test("execute handles wasmLayer errors", function (assert) {
         const done = assert.async();
         const testError = new Error("WASM execution failed");
+        const testCode = "start default\nend default\nstart simulations\n" +
+          "simulate \"scenario1\" from years 1 to 10\nend simulations";
 
         const mockWasmLayer = {
-          runSimulation: function () {
+          runSimulation: function (code, scenarioNames) {
             return Promise.reject(testError);
           },
         };
 
         const wasmBackend = new WasmBackend(mockWasmLayer);
 
-        wasmBackend.execute("test code").then(() => {
+        wasmBackend.execute(testCode).then(() => {
           assert.ok(false, "execute should reject when wasmLayer fails");
           done();
         }).catch((error) => {
