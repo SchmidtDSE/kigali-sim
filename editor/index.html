@@ -519,6 +519,21 @@
                               </div>
                             </div>
                           </div>
+                          <div class="form-group">
+                            <div><label for="sales-assumption">Default sales assumption in a new year:</label></div>
+                            <div>
+                              <select
+                                name="sales-assumption"
+                                class="sales-assumption-input mid"
+                                aria-label="Default sales assumption for new years"
+                                data-tippy-content="Controls how sales carry over from one year to the next. 'Continue from last year' maintains existing sales patterns (default). 'Cover only servicing' limits sales to recharge needs only. 'Go back to zero' resets all sales."
+                              >
+                                <option value="continued">Continue from last year (recommended)</option>
+                                <option value="only recharge">Cover only servicing</option>
+                                <option value="no">Go back to zero</option>
+                              </select>
+                            </div>
+                          </div>
                         </div>
                         <div id="consumption-equipment">
                           <div class="instructions">
@@ -737,7 +752,7 @@
                             <div>
                               <label><strong>Change equipment count through retirement</strong></label>
                             </div>
-                            <div>
+                            <div class="checkbox-list">
                               <label>
                                 <input
                                   type="checkbox"
@@ -1262,7 +1277,7 @@
 
               <div class="scorecard inactive" id="population-scorecard">
                 <div class="label">
-                  <label for="population-radio" tabindex="0" data-tippy-content="Population and energy consumption for all equipment in service within the simulated country."
+                  <label for="population-radio" class="population-label" tabindex="0" data-tippy-content="Population, energy consumption, and substance bank for all equipment in service within the simulated country."
                     ><input
                       id="population-radio"
                       class="metric-radio"
@@ -1270,7 +1285,7 @@
                       name="metric"
                       value="population"
                     />
-                     Population</label
+                     Bank</label
                   >
                 </div>
                 <div class="value"></div>
@@ -1294,6 +1309,9 @@
                       <option value="units">units</option>
                       <option value="thousand units">thousand units</option>
                       <option value="million units" selected>million units</option>
+                      <option value="kg / yr">kg</option>
+                      <option value="mt / yr">mt</option>
+                      <option value="tCO2e / yr">tCO2e</option>
                       <option value="kwh / year">kWh / year</option>
                       <option value="mwh / year">MWh / year</option>
                       <option value="gwh / year">GWh / year</option>
@@ -1459,6 +1477,8 @@
             <option value="export">export</option>
             <option value="equipment">equipment</option>
             <option value="priorEquipment">prior equipment</option>
+            <option value="bank">bank</option>
+            <option value="priorBank">prior bank</option>
           </select>
         </span>
         <span class="embed-reminder">
@@ -1522,6 +1542,8 @@
                 <option value="export">export</option>
                 <option value="equipment">equipment</option>
                 <option value="priorEquipment">prior equipment</option>
+                <option value="bank">bank</option>
+                <option value="priorBank">prior bank</option>
               </select>
             </span>
           <span class="embed-reminder">
@@ -1596,6 +1618,8 @@
             <option value="export">export</option>
             <option value="equipment">equipment</option>
             <option value="priorEquipment">prior equipment</option>
+            <option value="bank">bank</option>
+            <option value="priorBank">prior bank</option>
           </select>
         </span>
         <span class="embed-reminder">
@@ -1642,6 +1666,8 @@
               <option value="export">export</option>
               <option value="equipment">equipment</option>
               <option value="priorEquipment">prior equipment</option>
+              <option value="bank">bank</option>
+              <option value="priorBank">prior bank</option>
             </optgroup>
             <optgroup class="substances-select" label="Substances">
             </optgroup>
@@ -1755,6 +1781,8 @@
                 <option value="export">export</option>
                 <option value="equipment">equipment</option>
                 <option value="priorEquipment">prior equipment</option>
+                <option value="bank">bank</option>
+                <option value="priorBank">prior bank</option>
               </optgroup>
               <optgroup class="substances-select" label="Substances">
               </optgroup>
@@ -1820,6 +1848,8 @@
             <option value="export">export</option>
             <option value="equipment">equipment</option>
             <option value="priorEquipment">prior equipment</option>
+            <option value="bank">bank</option>
+            <option value="priorBank">prior bank</option>
           </select>
         </span>
         with

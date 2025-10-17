@@ -30,7 +30,7 @@ import org.kigalisim.lang.operation.RecoverOperation.RecoveryStage;
  */
 public class SimulationState {
 
-  private static final boolean CHECK_NAN_STATE = true;
+  private static final boolean CHECK_NAN_STATE = false;
 
   private final Map<String, StreamParameterization> substances;
   private final Map<String, EngineNumber> streams;

@@ -1301,6 +1301,15 @@ class ConsumptionListPresenter {
       enableExport.checked = false;
     }
 
+    // Set sales assumption dropdown
+    const salesAssumptionInput = self._dialog.querySelector(".sales-assumption-input");
+    if (objToShow === null) {
+      salesAssumptionInput.value = "continued";
+    } else {
+      const assumeMode = objToShow.getAssumeMode();
+      salesAssumptionInput.value = assumeMode === null ? "continued" : assumeMode;
+    }
+
     self._updateEnableCheckboxes();
     self._updateSource();
 
@@ -1588,6 +1597,9 @@ class ConsumptionListPresenter {
       substanceBuilder.addCommand(new Command("enable", "export", null, null));
     }
 
+    const assumeModeDropdown = self._dialog.querySelector(".sales-assumption-input");
+    const assumeMode = assumeModeDropdown.value;
+
     const ghgValue = getEngineNumberValue(
       self._dialog.querySelector(".edit-consumption-ghg-input"),
       self._dialog.querySelector(".edit-consumption-ghg-units-input"),
@@ -1667,7 +1679,11 @@ class ConsumptionListPresenter {
     );
     recharges.forEach((x) => substanceBuilder.addCommand(x));
 
-    return substanceBuilder.build(true);
+    substanceBuilder.setAssumeMode(assumeMode);
+
+    const substance = substanceBuilder.build(true);
+
+    return substance;
   }
 
   /**
