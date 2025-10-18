@@ -81,8 +81,8 @@ async function executeCode(code, scenarioName) {
     currentScenarioName = scenarioName;
 
     // Determine execution mode
-    const executeSingleScenario =
-      scenarioName !== null && scenarioName !== undefined && scenarioName !== "";
+    const scenarioValid = scenarioName !== null && scenarioName !== undefined;
+    const executeSingleScenario = scenarioValid && scenarioName !== "";
 
     let result;
     if (executeSingleScenario) {
