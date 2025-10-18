@@ -50,7 +50,7 @@ public class RunCommand implements Callable<Integer> {
   @Option(names = {"-o", "--output"}, description = "Path to CSV output file", required = true)
   private File csvOutputFile;
 
-  @Option(names = {"-r", "--replicates"}, description = "Number of times to run each scenario (default: 1)", defaultValue = "1")
+  @Option(names = {"-r", "--parallel-replicates"}, description = "Number of times to run each scenario (default: 1)", defaultValue = "1")
   private int replicates;
 
   @Override

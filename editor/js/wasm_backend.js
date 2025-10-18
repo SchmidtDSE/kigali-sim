@@ -9,6 +9,18 @@ import {EngineResult, TradeSupplement} from "engine_struct";
 import {UiTranslatorCompiler} from "ui_translator";
 
 /**
+ * Default number of CPU cores to assume when hardwareConcurrency is unavailable.
+ * @type {number}
+ */
+const DEFAULT_CORES = 2;
+
+/**
+ * Timeout in milliseconds per scenario for simulation execution.
+ * @type {number}
+ */
+const TIMEOUT_PER_SCENARIO = 45000;
+
+/**
  * Parser for handling CSV report data returned from the WASM worker.
  * Uses the same parsing logic as the legacy backend.
  */
@@ -225,7 +237,7 @@ class WasmLayer {
      */
     // Calculate optimal pool size: (CPU cores - 1) with minimum of 2
     if (poolSize === null) {
-      const cores = navigator.hardwareConcurrency || 2;
+      const cores = navigator.hardwareConcurrency || DEFAULT_CORES;
       self._poolSize = Math.max(2, cores - 1);
     } else {
       self._poolSize = Math.max(2, poolSize);
@@ -312,27 +324,24 @@ class WasmLayer {
       // Create scenario completion tracker
       const scenarioTracker = {};
       scenarioNames.forEach((name) => {
-        // Use "null" as key for null/undefined scenario names (legacy compatibility)
-        const key = name !== null ? name : "null";
-        scenarioTracker[key] = false;
+        scenarioTracker[name] = false;
       });
 
       // Calculate total trials across all scenarios
       const totalTrials = Object.values(scenarioTrialCounts).reduce((sum, count) => sum + count, 0);
 
-      // Store request with scenario tracking and progress tracking
+      // Store request with scenario tracking
       self._pendingRequests.set(requestId, {
         resolve,
         reject,
         scenarioTracker: scenarioTracker,
-        results: [], // Accumulate results from each scenario
-        csvParts: [], // Accumulate CSV parts from each scenario
+        results: [],
+        csvParts: [],
         code: code,
         remainingScenarios: scenarioNames.length,
-        // Progress tracking fields
         scenarioTrialCounts: scenarioTrialCounts,
         totalTrials: totalTrials,
-        scenarioProgressMap: {}, // Track current progress per scenario
+        scenarioProgressMap: {},
       });
 
       // Send requests for each scenario to workers in round-robin fashion
@@ -351,12 +360,13 @@ class WasmLayer {
       });
 
       // Set timeout for long-running simulations
+      const totalTimeAllowed = TIMEOUT_PER_SCENARIO * scenarioNames.length;
       setTimeout(() => {
         if (self._pendingRequests.has(requestId)) {
           self._pendingRequests.delete(requestId);
           reject(new Error("Simulation timeout"));
         }
-      }, 45000 * scenarioNames.length); // Scale timeout with number of scenarios
+      }, totalTimeAllowed);
     });
   }
 
@@ -378,7 +388,7 @@ class WasmLayer {
       }
 
       // Update per-scenario progress
-      const scenarioKey = scenarioName || "null";
+      const scenarioKey = scenarioName || "";
       request.scenarioProgressMap[scenarioKey] = progress || 0;
 
       // Calculate overall progress: weighted average by trial count
@@ -429,8 +439,7 @@ class WasmLayer {
 
       // Mark scenario as complete
       if (request.scenarioTracker) {
-        // For null/undefined scenario names (legacy path), mark as complete immediately
-        const key = scenarioName || "null";
+        const key = scenarioName || "";
         if (request.scenarioTracker[key] !== undefined) {
           request.scenarioTracker[key] = true;
         }
@@ -550,11 +559,10 @@ class WasmBackend {
       // execute using the full program (non-UI-compatible path)
       if (!scenarioNames || scenarioNames.length === 0) {
         // Non-UI-compatible path: execute all scenarios at once
-        // Use default trial count of 1 for progress tracking
-        const scenarioTrialCounts = {"null": 1};
+        const scenarioTrialCounts = {"": 1};
         const backendResult = await self._wasmLayer.runSimulation(
           simCode,
-          [null],
+          [""],
           scenarioTrialCounts,
         );
         return backendResult;

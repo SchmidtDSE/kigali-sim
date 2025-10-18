@@ -65,7 +65,7 @@ async function initializeWasm() {
  * Execute QubecTalk code using WASM backend.
  *
  * @param {string} code - The QubecTalk code to execute.
- * @param {string} [scenarioName] - Optional scenario name to execute single scenario.
+ * @param {string} scenarioName - Scenario name to execute, or empty string for all scenarios.
  * @returns {Promise<string>} Promise resolving to status + CSV results.
  */
 async function executeCode(code, scenarioName) {
@@ -78,33 +78,37 @@ async function executeCode(code, scenarioName) {
     }
 
     // Set scenario name for progress reporting
-    // Note: currentRequestId is already set by onmessage handler
     currentScenarioName = scenarioName;
 
-    // Execute using WASM
+    // Determine execution mode
+    const executeSingleScenario =
+      scenarioName !== null && scenarioName !== undefined && scenarioName !== "";
+
     let result;
-    if (scenarioName) {
-      // Execute single scenario
-      if (typeof executeScenario === "function") {
+    if (executeSingleScenario) {
+      const execScenAvailLocal = typeof executeScenario === "function";
+      const execScenExported = wasmLayer.exports && wasmLayer.exports.executeScenario;
+
+      if (execScenAvailLocal) {
         result = executeScenario(code, scenarioName);
-      } else if (wasmLayer.exports && wasmLayer.exports.executeScenario) {
+      } else if (execScenExported) {
         result = wasmLayer.exports.executeScenario(code, scenarioName);
       } else {
         throw new Error("executeScenario function not found in WASM");
       }
     } else {
-      // Execute all scenarios (for non-UI-compatible code)
-      if (typeof execute === "function") {
+      const execAvailLocal = typeof execute === "function";
+      const execExported = wasmLayer.exports && wasmLayer.exports.execute;
+
+      if (execAvailLocal) {
         result = execute(code);
-      } else if (wasmLayer.exports && wasmLayer.exports.execute) {
+      } else if (execExported) {
         result = wasmLayer.exports.execute(code);
       } else {
         throw new Error("Execute function not found in WASM");
       }
     }
 
-    // The Java facade already returns the properly formatted string: "OK\n\nCSV"
-    // So we just return the result as-is
     return result;
   } catch (error) {
     console.error("WASM execution error:", error);
@@ -123,7 +127,7 @@ self.onmessage = async function (event) {
 
   try {
     if (command === "execute") {
-      const result = await executeCode(code, scenarioName || undefined);
+      const result = await executeCode(code, scenarioName || "");
 
       self.postMessage({
         resultType: "dataset",
