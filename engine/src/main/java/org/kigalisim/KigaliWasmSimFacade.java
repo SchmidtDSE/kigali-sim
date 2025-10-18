@@ -92,6 +92,51 @@ public class KigaliWasmSimFacade {
   }
 
   /**
+   * Executes a single scenario from the provided QubecTalk code.
+   *
+   * @param code The QubecTalk code to execute.
+   * @param scenarioName The name of the specific scenario to execute.
+   * @return A formatted string with execution status and CSV results for the single scenario.
+   */
+  @JSExport
+  public static String executeScenario(String code, String scenarioName) {
+    try {
+      // Parse the code
+      ParseResult parseResult = KigaliSimFacade.parse(code);
+
+      if (parseResult.hasErrors()) {
+        String detailedError = KigaliSimFacade.getDetailedErrorMessage(parseResult);
+        return "Error: " + detailedError + "\n\n";
+      }
+
+      // Interpret the parsed code
+      ParsedProgram program = KigaliSimFacade.interpret(parseResult);
+
+      // Verify scenario exists
+      if (!program.getScenarios().contains(scenarioName)) {
+        return "Error: Scenario not found: " + scenarioName + "\n\n";
+      }
+
+      // Create progress callback that reports to JavaScript
+      ProgressReportCallback progressCallback = progress -> reportProgressToJavaScript(progress);
+
+      // Run the specific scenario
+      List<EngineResult> scenarioResults = KigaliSimFacade.runScenario(
+          program, scenarioName, progressCallback)
+          .collect(Collectors.toList());
+
+      // Convert results to CSV
+      String csvResults = KigaliSimFacade.convertResultsToCsv(scenarioResults);
+
+      // Return success message followed by CSV results
+      return "OK\n\n" + csvResults;
+    } catch (Exception e) {
+      // Return error message
+      return "Error: " + e.getMessage() + "\n\n";
+    }
+  }
+
+  /**
    * Required entrypoint for wasm.
    *
    * @param args ignored arguments

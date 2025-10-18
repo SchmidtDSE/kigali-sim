@@ -6,6 +6,19 @@
 
 import {EngineNumber} from "engine_number";
 import {EngineResult, TradeSupplement} from "engine_struct";
+import {UiTranslatorCompiler} from "ui_translator";
+
+/**
+ * Default number of CPU cores to assume when hardwareConcurrency is unavailable.
+ * @type {number}
+ */
+const DEFAULT_CORES = 2;
+
+/**
+ * Timeout in milliseconds per scenario for simulation execution.
+ * @type {number}
+ */
+const TIMEOUT_PER_SCENARIO = 45000;
 
 /**
  * Parser for handling CSV report data returned from the WASM worker.
@@ -211,10 +224,39 @@ class WasmLayer {
    * Create a new WasmLayer instance.
    *
    * @param {Function} reportProgressCallback - Callback for progress updates.
+   * @param {number|null} poolSize - Optional worker pool size. If null, auto-calculated
+   *                                  from navigator.hardwareConcurrency.
    */
-  constructor(reportProgressCallback) {
+  constructor(reportProgressCallback, poolSize = null) {
     const self = this;
-    self._worker = null;
+
+    /**
+     * Number of workers in the pool.
+     * @private
+     * @type {number}
+     */
+    // Calculate optimal pool size: (CPU cores - 1) with minimum of 2
+    if (poolSize === null) {
+      const cores = navigator.hardwareConcurrency || DEFAULT_CORES;
+      self._poolSize = Math.max(2, cores - 1);
+    } else {
+      self._poolSize = Math.max(2, poolSize);
+    }
+
+    /**
+     * Array of Web Worker instances for parallel execution.
+     * @private
+     * @type {Array<Worker>}
+     */
+    self._workers = [];
+
+    /**
+     * Round-robin index for distributing tasks across workers.
+     * @private
+     * @type {number}
+     */
+    self._nextWorkerIndex = 0;
+
     self._initPromise = null;
     self._pendingRequests = new Map();
     self._nextRequestId = 1;
@@ -222,9 +264,9 @@ class WasmLayer {
   }
 
   /**
-   * Initialize the worker and prepare for execution.
+   * Initialize the worker pool and prepare for execution.
    *
-   * @returns {Promise<void>} Promise that resolves when worker is ready.
+   * @returns {Promise<void>} Promise that resolves when all workers are ready.
    */
   initialize() {
     const self = this;
@@ -235,18 +277,25 @@ class WasmLayer {
 
     self._initPromise = new Promise((resolve, reject) => {
       try {
-        self._worker = new Worker("/js/wasm.worker.js?v=EPOCH");
+        // Create worker pool
+        for (let i = 0; i < self._poolSize; i++) {
+          const worker = new Worker("/js/wasm.worker.js?v=EPOCH");
 
-        self._worker.onmessage = (event) => {
-          self._handleWorkerMessage(event);
-        };
+          worker.onmessage = (event) => {
+            self._handleWorkerMessage(event);
+          };
 
-        self._worker.onerror = (error) => {
-          console.error("WASM Worker error:", error);
-          reject(new Error("WASM Worker failed to load: " + error.message));
-        };
+          worker.onerror = (error) => {
+            console.error(`WASM Worker ${i} error:`, error);
+            reject(new Error(`WASM Worker ${i} failed to load: ${error.message}`));
+          };
 
-        // Worker is ready immediately - WASM initialization happens inside worker
+          self._workers.push(worker);
+        }
+
+        console.log(`WASM worker pool initialized with ${self._poolSize} workers`);
+
+        // Workers are ready immediately - WASM initialization happens inside each worker
         resolve();
       } catch (error) {
         reject(error);
@@ -260,9 +309,11 @@ class WasmLayer {
    * Execute QubecTalk code and return backend result.
    *
    * @param {string} code - The QubecTalk code to execute.
+   * @param {string[]} scenarioNames - Array of scenario names to execute.
+   * @param {Object.<string, number>} scenarioTrialCounts - Map of scenario name to trial count.
    * @returns {Promise<BackendResult>} Promise resolving to backend result with CSV and parsed data.
    */
-  async runSimulation(code) {
+  async runSimulation(code, scenarioNames, scenarioTrialCounts) {
     const self = this;
 
     await self.initialize();
@@ -270,21 +321,52 @@ class WasmLayer {
     return new Promise((resolve, reject) => {
       const requestId = self._nextRequestId++;
 
-      self._pendingRequests.set(requestId, {resolve, reject});
+      // Create scenario completion tracker
+      const scenarioTracker = {};
+      scenarioNames.forEach((name) => {
+        scenarioTracker[name] = false;
+      });
 
-      self._worker.postMessage({
-        id: requestId,
-        command: "execute",
+      // Calculate total trials across all scenarios
+      const totalTrials = Object.values(scenarioTrialCounts).reduce((sum, count) => sum + count, 0);
+
+      // Store request with scenario tracking
+      self._pendingRequests.set(requestId, {
+        resolve,
+        reject,
+        scenarioTracker: scenarioTracker,
+        results: [],
+        csvParts: [],
         code: code,
+        remainingScenarios: scenarioNames.length,
+        scenarioTrialCounts: scenarioTrialCounts,
+        totalTrials: totalTrials,
+        scenarioProgressMap: {},
+      });
+
+      // Send requests for each scenario to workers in round-robin fashion
+      scenarioNames.forEach((scenarioName, index) => {
+        // Select worker using round-robin
+        const workerIndex = self._nextWorkerIndex % self._poolSize;
+        const worker = self._workers[workerIndex];
+        self._nextWorkerIndex++;
+
+        worker.postMessage({
+          id: requestId,
+          command: "execute",
+          code: code,
+          scenarioName: scenarioName,
+        });
       });
 
       // Set timeout for long-running simulations
+      const totalTimeAllowed = TIMEOUT_PER_SCENARIO * scenarioNames.length;
       setTimeout(() => {
         if (self._pendingRequests.has(requestId)) {
           self._pendingRequests.delete(requestId);
           reject(new Error("Simulation timeout"));
         }
-      }, 30000); // 30 second timeout
+      }, totalTimeAllowed);
     });
   }
 
@@ -296,12 +378,32 @@ class WasmLayer {
    */
   _handleWorkerMessage(event) {
     const self = this;
-    const {resultType, id, success, result, error, progress} = event.data;
+    const {resultType, id, success, result, error, progress, scenarioName} = event.data;
 
     // Handle progress messages
     if (resultType === "progress") {
+      const request = self._pendingRequests.get(id);
+      if (!request) {
+        return; // Progress for unknown/completed request
+      }
+
+      // Update per-scenario progress
+      const scenarioKey = scenarioName || "";
+      request.scenarioProgressMap[scenarioKey] = progress || 0;
+
+      // Calculate overall progress: weighted average by trial count
+      let completedTrials = 0;
+      Object.keys(request.scenarioProgressMap).forEach((key) => {
+        const scenarioProgress = request.scenarioProgressMap[key];
+        const trialCount = request.scenarioTrialCounts[key] || 1;
+        completedTrials += scenarioProgress * trialCount;
+      });
+
+      const overallProgress = request.totalTrials > 0 ? completedTrials / request.totalTrials : 0;
+
+      // Report aggregated progress to callback
       if (self._reportProgressCallback) {
-        self._reportProgressCallback(progress);
+        self._reportProgressCallback(overallProgress);
       }
       return;
     }
@@ -313,38 +415,90 @@ class WasmLayer {
       return;
     }
 
-    self._pendingRequests.delete(id);
-
-    if (success) {
-      try {
-        const parsedResults = ReportDataParser.parseResponse(result);
-
-        // Extract CSV string from the response
-        // The response format is "OK\n\n<CSV_DATA>"
-        const lines = result.split("\n");
-        const csvString = lines.slice(2).join("\n").trim();
-
-        // Create BackendResult with both CSV and parsed data
-        const backendResult = new BackendResult(csvString, parsedResults);
-        request.resolve(backendResult);
-      } catch (parseError) {
-        request.reject(parseError);
-      }
-    } else {
+    if (!success) {
+      self._pendingRequests.delete(id);
       request.reject(new Error(error || "Unknown WASM worker error"));
+      return;
+    }
+
+    try {
+      // Parse results from this scenario
+      const parsedResults = ReportDataParser.parseResponse(result);
+
+      // Extract CSV string from the response
+      const lines = result.split("\n");
+      const csvData = lines.slice(2).join("\n").trim();
+
+      // Accumulate results
+      request.results.push(...parsedResults);
+
+      // Store CSV data (we'll combine them later)
+      if (csvData) {
+        request.csvParts.push(csvData);
+      }
+
+      // Mark scenario as complete
+      if (request.scenarioTracker) {
+        const key = scenarioName || "";
+        if (request.scenarioTracker[key] !== undefined) {
+          request.scenarioTracker[key] = true;
+        }
+        request.remainingScenarios--;
+      }
+
+      // Check if all scenarios are complete
+      const allComplete = request.remainingScenarios === 0;
+
+      if (allComplete) {
+        // Combine CSV parts - use first part's header, then all data rows
+        let combinedCsv = "";
+        if (request.csvParts.length > 0) {
+          const firstPart = request.csvParts[0];
+          const firstLines = firstPart.split("\n");
+          const header = firstLines[0];
+
+          // Start with header
+          const allDataRows = [header];
+
+          // Add data rows from all parts
+          request.csvParts.forEach((part) => {
+            const partLines = part.split("\n");
+            // Skip header (first line) and add data rows
+            for (let i = 1; i < partLines.length; i++) {
+              if (partLines[i].trim()) {
+                allDataRows.push(partLines[i]);
+              }
+            }
+          });
+
+          combinedCsv = allDataRows.join("\n");
+        }
+
+        // Create BackendResult with combined data
+        const backendResult = new BackendResult(combinedCsv, request.results);
+
+        self._pendingRequests.delete(id);
+        request.resolve(backendResult);
+      }
+    } catch (parseError) {
+      self._pendingRequests.delete(id);
+      request.reject(parseError);
     }
   }
 
   /**
-   * Terminate the worker and clean up resources.
+   * Terminate all workers and clean up resources.
    */
   terminate() {
     const self = this;
 
-    if (self._worker) {
-      self._worker.terminate();
-      self._worker = null;
+    if (self._workers && self._workers.length > 0) {
+      self._workers.forEach((worker) => {
+        worker.terminate();
+      });
+      self._workers = [];
     }
+    self._nextWorkerIndex = 0;
 
     // Reject any pending requests
     for (const [id, request] of self._pendingRequests) {
@@ -390,7 +544,43 @@ class WasmBackend {
     const self = this;
 
     try {
-      const backendResult = await self._wasmLayer.runSimulation(simCode);
+      // Parse code to extract scenario names using UiTranslatorCompiler
+      const compiler = new UiTranslatorCompiler();
+      const translationResult = compiler.compile(simCode);
+
+      if (translationResult.getErrors().length > 0) {
+        throw new Error("Syntax error in code: " + translationResult.getErrors().join("; "));
+      }
+
+      const program = translationResult.getProgram();
+      const scenarioNames = program.getScenarioNames();
+
+      // If no scenario names found (e.g., code uses "across X trials" syntax),
+      // execute using the full program (non-UI-compatible path)
+      if (!scenarioNames || scenarioNames.length === 0) {
+        // Non-UI-compatible path: execute all scenarios at once
+        const scenarioTrialCounts = {"": 1};
+        const backendResult = await self._wasmLayer.runSimulation(
+          simCode,
+          [""],
+          scenarioTrialCounts,
+        );
+        return backendResult;
+      }
+
+      // Extract trial counts for each scenario (default to 1 trial for UI-compatible scenarios)
+      const scenarioTrialCounts = {};
+      scenarioNames.forEach((scenarioName) => {
+        // UI-compatible scenarios (without "across X trials") always have 1 trial
+        scenarioTrialCounts[scenarioName] = 1;
+      });
+
+      // Execute all scenarios in parallel
+      const backendResult = await self._wasmLayer.runSimulation(
+        simCode,
+        scenarioNames,
+        scenarioTrialCounts,
+      );
       return backendResult;
     } catch (error) {
       throw new Error("WASM simulation execution failed: " + error.message);
