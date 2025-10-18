@@ -1,5 +1,5 @@
 # KigaliSim - Montreal Protocol Policy Simulation Tool
-v=20250926
+v=20251018
 
 KigaliSim is an open source web-based simulation engine for modeling substances, applications, and policies related to the Montreal Protocol and Kigali Amendment. It can model high global warming potential greenhouse gases such as HFCs and supports business-as-usual scenarios as well as policy interventions.
 
@@ -20,7 +20,7 @@ KigaliSim uses QubecTalk, a HyperTalk-inspired domain-specific language for defi
 
 **Comments**: Use `#` to add comments. Comments run to the end of the line and are ignored by the interpreter.
 
-**Define vs Modify**: Use `define` in the `default` stanza to create new applications and substances for the business-as-usual scenario. Use `modify` in `policy` stanzas to change existing applications and substances defined in the default scenario.
+**Define vs Modify**: Use `define` and `uses` ONLY in the `default` stanza to create new applications and substances for the business-as-usual scenario. In `policy` stanzas, use ONLY `modify` to change existing applications and substances. For substances that are only used in policies and not in the default scenario, they should still be defined in the `default` stanza using `define` and `uses`, but set to 0 sales with a sales stream enabled (e.g., `enable domestic`, `set domestic to 0 kg`).
 
 ### Program Structure
 QubecTalk programs are organized into stanzas:
@@ -182,15 +182,17 @@ The `recover` command supports specifying when recycling occurs and how much ind
 - `recover {amount} with {amount} reuse at recharge` - Explicitly specifies recycling at service time
 - `recover {amount} with {amount} reuse at eol` - Specifies recycling at end-of-life (retirement)
 
+**Recycling Stage Selection**: Use recycling `at recharge` (servicing) unless the user specifically mentions end-of-life recycling, as servicing recycling is more common. The default (when no stage is specified) is already `at recharge`.
+
 **Induction Control**: Induction determines how much recycled material adds to the market versus displaces virgin production:
 - **Units-based specs**: Default 0% induction (displacement behavior) - recycling reduces virgin sales to maintain steady population
 - **Non-units specs (kg/mt)**: Default 100% induction (induced demand behavior) - recycling adds on top of existing demand
 - **Explicit specification**: Users can override defaults by specifying exact percentages (0-100%)
 
 **100% Induction Recommendations**:
-- **100% induction means recycled material does not displace virgin material** - it adds to total supply
-- **100% is recommended for users who are uncertain** as induction is a complex economic phenomenon that can be hard to predict
-- **Can be paired with other policies**, for example, a cap on virgin (import, domestic) to ensure desired reduction in virgin material alongside increasing supply through expanded recycling stream
+- 100% induction means recycled material does not displace virgin material - it adds to total supply
+- Recommended when uncertain, as induction is complex and hard to predict
+- Can be paired with caps on virgin material (import, domestic) to ensure reductions alongside expanded recycling
 
 Examples:
 ```
@@ -272,34 +274,29 @@ The Advanced Editor tab accepts QubecTalk code as input and can run probabilisti
 When working with AI assistants, you may want to specify that only UI Editor compatible features should be used. The UI Editor supports a subset of QubecTalk features for ease of use:
 
 **Supported in UI Editor:**
-- Basic application and substance definitions
+- Basic application and substance definitions (one application per policy)
 - Initial charges for domestic, import, export streams
 - GWP values (`equals` with standard units: tCO2e/kgCO2e per unit/kg/mt)
 - Energy consumption (`equals` with kwh per unit/kg/mt)
 - Equipment retirement rates
 - Stream operations: `set`, `change`, `cap`, `floor` commands
 - Equipment recharging
-- Policy modifications: `recycle`, `replace` commands
+- Policy modifications: `recycle`, `replace` commands (one substance per policy)
 - Induction parameters: `with X % induction` in recover commands
 - Time durations for commands
 - Simple numeric values and standard units
-- Single-substance policies (one substance per policy)
 - Basic simulation scenarios (single policy chains)
 
+**Important UI Editor Limitation**: The UI editor only supports one application and one substance per policy. Multi-application and multi-substance policies are only supported in QubecTalk (Advanced Editor).
+
 **Not Supported in UI Editor (Advanced Editor Only):**
-- **About stanza**: Metadata and descriptions (`start about`/`end about`)
+- **About stanza**: Metadata (`start about`/`end about`)
 - **Variables**: `define identifier as expression` and `get identifier`
-- **Mathematical expressions**: Complex calculations, arithmetic operations in commands
-- **Conditional logic**: `if`/`else`/`endif` constructs, ternary operations
-- **Boolean operators**: `and`, `or`, `xor` for logical combinations
-- **Comparison operators**: `==`, `!=`, `<`, `>`, `<=`, `>=` in conditions
-- **Constraints**: `limit expression to [min,max]` operations
-- **Probabilistic features**: `sample normally`, `sample uniformly` distributions
-- **Monte Carlo simulations**: `across X trials` for multiple simulation runs
-- **Stream access**: `get {stream}` and `get {stream} as {units}` operations
-- **Complex expressions**: Any mathematical or logical expressions beyond simple numeric values
-- **Multi-substance policies**: Policies affecting multiple substances simultaneously
-- **Advanced unit conversions**: Dynamic unit conversion expressions
+- **Expressions**: Mathematical calculations, arithmetic operations, `limit expression to [min,max]`
+- **Conditional logic**: `if`/`else`/`endif`, boolean operators (`and`, `or`, `xor`), comparison operators
+- **Probabilistic features**: `sample normally`, `sample uniformly`, Monte Carlo (`across X trials`)
+- **Stream access**: `get {stream}` and dynamic unit conversions
+- **Multi-substance/application policies**: Policies affecting multiple substances or applications
 
 **Example UI-Compatible Code:**
 ```
@@ -408,13 +405,11 @@ KigaliSim provides CSV export functionality from both the web interface and the 
 
 ### Montreal Protocol Attribution Convention
 
-Under standard Montreal Protocol reporting, initial charge for imported equipment is typically attributed to the exporting country (equipment manufacturer), while recharge/servicing is attributed to the importing country (equipment operator). Domestically produced and consumed substances are attributed domestically. The trade supplement columns enable user-configurable attribution to support both standard convention and alternative accounting methodologies for international trade reporting.
+Under standard Montreal Protocol reporting, initial charge for imported equipment is attributed to the exporting country (manufacturer), while recharge/servicing is attributed to the importing country (operator). Trade supplement columns enable user-configurable attribution for both standard and alternative accounting methodologies.
 
 ### Bank Tracking Columns
 
-The bank columns (bankKg, bankTCO2e, bankChangeKg, bankChangeTCO2e) represent the substance "bank" - the total amount of substance contained within the equipment population currently in service. This differs from consumption/sales columns which track substance flow volumes.
-
-Bank calculations use initial charge values and GWP (Global Warming Potential) from the equals statement to convert equipment population (units) to substance volume (kg) and GHG impact (tCO2e). The change columns show the difference from the previous year, reflecting net increase or decrease in the substance bank.
+The bank columns (bankKg, bankTCO2e, bankChangeKg, bankChangeTCO2e) represent the substance "bank" - total substance in equipment currently in service. This differs from consumption/sales columns which track substance flows. Calculations use initial charge values and GWP to convert equipment population to substance volume (kg) and GHG impact (tCO2e).
 
 ## Limitations
 
