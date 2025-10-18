@@ -11,6 +11,10 @@
 let wasmLayer = null;
 let isInitialized = false;
 
+// Context variables for progress reporting
+let currentRequestId = null;
+let currentScenarioName = null;
+
 /**
  * Global reportProgress function called by WASM to report simulation progress.
  * This function is available globally for the Java code to call via @JSBody.
@@ -20,6 +24,8 @@ let isInitialized = false;
 function reportProgress(progress) {
   self.postMessage({
     resultType: "progress",
+    id: currentRequestId,
+    scenarioName: currentScenarioName,
     progress: progress,
   });
 }
@@ -59,9 +65,10 @@ async function initializeWasm() {
  * Execute QubecTalk code using WASM backend.
  *
  * @param {string} code - The QubecTalk code to execute.
+ * @param {string} scenarioName - Scenario name to execute, or empty string for all scenarios.
  * @returns {Promise<string>} Promise resolving to status + CSV results.
  */
-async function executeCode(code) {
+async function executeCode(code, scenarioName) {
   try {
     // Ensure WASM is initialized
     await initializeWasm();
@@ -70,20 +77,38 @@ async function executeCode(code) {
       throw new Error("WASM layer not initialized");
     }
 
-    // Execute using WASM (the TeaVM exports are global functions, not in exports)
+    // Set scenario name for progress reporting
+    currentScenarioName = scenarioName;
+
+    // Determine execution mode
+    const scenarioValid = scenarioName !== null && scenarioName !== undefined;
+    const executeSingleScenario = scenarioValid && scenarioName !== "";
+
     let result;
-    if (typeof execute === "function") {
-      // WASM is loaded and execute function is available globally
-      result = execute(code);
-    } else if (wasmLayer.exports && wasmLayer.exports.execute) {
-      // Fallback case
-      result = wasmLayer.exports.execute(code);
+    if (executeSingleScenario) {
+      const execScenAvailLocal = typeof executeScenario === "function";
+      const execScenExported = wasmLayer.exports && wasmLayer.exports.executeScenario;
+
+      if (execScenAvailLocal) {
+        result = executeScenario(code, scenarioName);
+      } else if (execScenExported) {
+        result = wasmLayer.exports.executeScenario(code, scenarioName);
+      } else {
+        throw new Error("executeScenario function not found in WASM");
+      }
     } else {
-      throw new Error("Execute function not found in WASM or fallback");
+      const execAvailLocal = typeof execute === "function";
+      const execExported = wasmLayer.exports && wasmLayer.exports.execute;
+
+      if (execAvailLocal) {
+        result = execute(code);
+      } else if (execExported) {
+        result = wasmLayer.exports.execute(code);
+      } else {
+        throw new Error("Execute function not found in WASM");
+      }
     }
 
-    // The Java facade already returns the properly formatted string: "OK\n\nCSV"
-    // So we just return the result as-is
     return result;
   } catch (error) {
     console.error("WASM execution error:", error);
@@ -95,15 +120,19 @@ async function executeCode(code) {
  * Handle messages from the main thread.
  */
 self.onmessage = async function (event) {
-  const {id, command, code} = event.data;
+  const {id, command, code, scenarioName} = event.data;
+
+  // Set request ID for progress reporting
+  currentRequestId = id;
 
   try {
     if (command === "execute") {
-      const result = await executeCode(code);
+      const result = await executeCode(code, scenarioName || "");
 
       self.postMessage({
         resultType: "dataset",
         id: id,
+        scenarioName: scenarioName, // Include scenario name in response
         success: true,
         result: result,
       });
