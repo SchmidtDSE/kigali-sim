@@ -174,6 +174,11 @@ public class SimulationState {
     // Check if stream needs to be enabled before setting
     assertStreamEnabled(useKey, name, value);
 
+    // Conditionally invalidate bases if priorEquipment manually modified (exempt retire recalc)
+    if (!stateUpdate.isFromRetireRecalc()) {
+      invalidateBasesIfPriorEquipment(useKey, name, value);
+    }
+
     if (CHECK_NAN_STATE && value.getValue().toString().equals("NaN")) {
       String[] keyPieces = key.split("\t");
       String application = keyPieces.length > 0 ? keyPieces[0] : "";
@@ -1642,6 +1647,130 @@ public class SimulationState {
       // Set new amounts using direct stream setting
       setSimpleStream(useKey, "domestic", new EngineNumber(newDomestic, "kg"));
       setSimpleStream(useKey, "import", new EngineNumber(newImport, "kg"));
+    }
+  }
+
+  /**
+   * Invalidate cumulative bases if priorEquipment is manually modified.
+   *
+   * <p>When priorEquipment changes via user commands (set/change/floor/ceiling),
+   * the captured retirement and recharge bases become stale. This method
+   * proportionally scales both the base populations and applied amounts
+   * to maintain mathematical consistency.</p>
+   *
+   * <p>Algorithm:</p>
+   * <ul>
+   *   <li>Calculate percentage already applied: applied / base</li>
+   *   <li>Update base to new priorEquipment value</li>
+   *   <li>Scale applied amount: new base × percentage</li>
+   * </ul>
+   *
+   * <p>Example: retire 10% of 100 (applied=10), then set prior=50.
+   * Percentage = 10/100 = 10%. New applied = 50 × 10% = 5.
+   * Next retire 5% uses base=50, cumulative 15% of 50 = 7.5, delta = 2.5.</p>
+   *
+   * <p>This method is ONLY called for user-initiated updates (exempted for
+   * RetireRecalcStrategy internal updates via fromRetireRecalc flag).</p>
+   *
+   * @param useKey The key containing application and substance
+   * @param streamName The name of the stream being modified
+   * @param newValue The new value being set for priorEquipment
+   */
+  private void invalidateBasesIfPriorEquipment(
+      UseKey useKey, String streamName, EngineNumber newValue) {
+    // Only process priorEquipment changes
+    if (!"priorEquipment".equals(streamName)) {
+      return;
+    }
+
+    String key = getKey(useKey);
+    StreamParameterization param = substances.get(key);
+    if (param == null) {
+      return;  // No parameterization yet, nothing to invalidate
+    }
+
+    // Convert new value to units for consistency
+    EngineNumber newPriorUnits = unitConverter.convert(newValue, "units");
+
+    // Only invalidate if bases have been captured this year
+    // This handles the mid-year manual change scenario:
+    //   retire 10% → captures base
+    //   set priorEquipment to 50 → manual change (should invalidate)
+    //   retire 5% → uses invalidated base
+    //
+    // But does NOT invalidate for yearly resets:
+    //   set priorEquipment to 1000 during year beginning → no bases captured yet
+    EngineNumber retireBase = param.getRetirementBasePopulation();
+    EngineNumber rechargeBase = param.getRechargeBasePopulation();
+
+    // If no bases captured yet, no need to invalidate
+    if (retireBase == null && rechargeBase == null) {
+      return;  // Bases not yet captured this year
+    }
+
+    // Get current priorEquipment value to check if it's actually changing
+    EngineNumber currentPriorRaw = getStream(useKey, "priorEquipment");
+    EngineNumber currentPriorUnits = unitConverter.convert(currentPriorRaw, "units");
+
+    // Only invalidate if the value is significantly changing
+    // If setting to approximately the same value (e.g., re-running "set priorEquipment to 1000"),
+    // skip invalidation. Use small tolerance to handle floating-point precision issues.
+    BigDecimal currentPriorValue = currentPriorUnits.getValue();
+    BigDecimal newPriorValue = newPriorUnits.getValue();
+    BigDecimal diff = currentPriorValue.subtract(newPriorValue).abs();
+    BigDecimal tolerance = new BigDecimal("0.0001");  // Very small tolerance for floating-point comparison
+
+    if (diff.compareTo(tolerance) <= 0) {
+      return;  // No significant change, no need to invalidate bases
+    }
+
+    // Handle retirement base invalidation
+    if (retireBase != null) {
+      EngineNumber appliedRetire = param.getAppliedRetirementAmount();
+
+      // Guard against division by zero
+      if (retireBase.getValue().compareTo(BigDecimal.ZERO) == 0) {
+        // Base is zero, just update to new base with zero applied
+        param.setRetirementBasePopulation(newPriorUnits);
+        param.setAppliedRetirementAmount(new EngineNumber(BigDecimal.ZERO, "units"));
+      } else {
+        // Calculate what percentage was already applied
+        BigDecimal retirePercent = appliedRetire.getValue().divide(
+            retireBase.getValue(), 10, java.math.RoundingMode.HALF_UP);
+
+        // Scale applied amount proportionally to new base
+        BigDecimal newApplied = newPriorUnits.getValue().multiply(retirePercent);
+
+        // Update base and applied
+        param.setRetirementBasePopulation(newPriorUnits);
+        param.setAppliedRetirementAmount(new EngineNumber(newApplied, "units"));
+      }
+    }
+
+    // Handle recharge base invalidation
+    if (rechargeBase != null) {
+      EngineNumber appliedRecharge = param.getAppliedRechargeAmount();
+
+      // Guard against division by zero
+      if (rechargeBase.getValue().compareTo(BigDecimal.ZERO) == 0) {
+        // Base is zero, just update to new base with zero applied
+        param.setRechargeBasePopulation(newPriorUnits);
+        param.setAppliedRechargeAmount(new EngineNumber(BigDecimal.ZERO, "kg"));
+      } else {
+        // Calculate recharge percentage
+        // Note: appliedRecharge is in kg, need to account for intensity
+        // But we don't have direct access to intensity here
+        // Solution: Calculate ratio of bases and scale applied amount
+        BigDecimal baseRatio = newPriorUnits.getValue().divide(
+            rechargeBase.getValue(), 10, java.math.RoundingMode.HALF_UP);
+
+        // Scale applied amount by same ratio
+        BigDecimal newApplied = appliedRecharge.getValue().multiply(baseRatio);
+
+        // Update base and applied
+        param.setRechargeBasePopulation(newPriorUnits);
+        param.setAppliedRechargeAmount(new EngineNumber(newApplied, "kg"));
+      }
     }
   }
 

@@ -103,6 +103,7 @@ public class RetireRecalcStrategy implements RecalcStrategy {
         .setName("priorEquipment")
         .setValue(newPrior)
         .setSubtractRecycling(false)
+        .setFromRetireRecalc(true)  // Exempt from invalidation
         .build();
     simulationState.update(priorEquipmentStream);
 

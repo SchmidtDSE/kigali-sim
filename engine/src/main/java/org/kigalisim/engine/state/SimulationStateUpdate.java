@@ -24,6 +24,7 @@ public final class SimulationStateUpdate {
   private final boolean subtractRecycling;
   private final Optional<SalesStreamDistribution> distribution;
   private final boolean salesDistributionRequired;
+  private final boolean fromRetireRecalc;
 
   /**
    * Package-private constructor for creating a SimulationStateUpdate instance.
@@ -34,16 +35,18 @@ public final class SimulationStateUpdate {
    * @param subtractRecycling whether recycling should be subtracted from the value
    * @param distribution optional pre-calculated distribution for sales streams
    * @param salesDistributionRequired whether this stream requires sales distribution logic
+   * @param fromRetireRecalc whether this update is from RetireRecalcStrategy
    */
   SimulationStateUpdate(UseKey useKey, String name, EngineNumber value,
                    boolean subtractRecycling, Optional<SalesStreamDistribution> distribution,
-                   boolean salesDistributionRequired) {
+                   boolean salesDistributionRequired, boolean fromRetireRecalc) {
     this.useKey = useKey;
     this.name = name;
     this.value = value;
     this.subtractRecycling = subtractRecycling;
     this.distribution = distribution;
     this.salesDistributionRequired = salesDistributionRequired;
+    this.fromRetireRecalc = fromRetireRecalc;
   }
 
   /**
@@ -98,5 +101,14 @@ public final class SimulationStateUpdate {
    */
   public boolean isSalesDistributionRequired() {
     return salesDistributionRequired;
+  }
+
+  /**
+   * Gets whether this update is from RetireRecalcStrategy.
+   *
+   * @return true if from retire recalc (exempt from base invalidation), false otherwise
+   */
+  public boolean isFromRetireRecalc() {
+    return fromRetireRecalc;
   }
 }

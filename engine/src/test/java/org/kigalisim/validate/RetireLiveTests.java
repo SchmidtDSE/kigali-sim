@@ -198,4 +198,32 @@ public class RetireLiveTests {
     assertEquals(95.0, y1.getPopulation().getValue().doubleValue(), 0.0001,
         "Equipment after retire and new sales");
   }
+
+  /**
+   * Test that manual priorEquipment changes invalidate bases correctly.
+   *
+   * <p>This edge case tests the scenario where a user explicitly modifies
+   * priorEquipment mid-year after cumulative retire operations have already
+   * captured their base population. The invalidation logic should proportionally
+   * scale both the base and applied amounts to maintain mathematical consistency.</p>
+   */
+  @Test
+  public void testRetireWithManualPriorEquipmentChange() throws IOException {
+    String qtaPath = "../examples/test_retire_manual_prior.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(
+        program, "business as usual", p -> {});
+    List<EngineResult> list = results.collect(Collectors.toList());
+
+    // Year 1 Execution Flow:
+    // 1. set priorEquipment to 100 units → prior = 100
+    // 2. retire 10% → base=100, applied=10, prior = 90
+    // 3. set priorEquipment to 50 units → invalidation scales: base=50, applied=5, prior=50
+    // 4. retire 5% → cumulative 15% of base 50 = 7.5, delta = 7.5-5 = 2.5, prior = 47.5
+    //
+    // Final equipment: 47.5 units (NOT 42.5 which would be 50 - 15% without scaling)
+    EngineResult y1 = LiveTestsUtil.getResult(list.stream(), 1, "test", "test");
+    assertEquals(47.5, y1.getPopulation().getValue().doubleValue(), 0.0001,
+        "Manual priorEquipment change should proportionally scale cumulative base");
+  }
 }

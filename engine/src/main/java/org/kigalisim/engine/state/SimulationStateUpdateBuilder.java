@@ -16,6 +16,7 @@ public final class SimulationStateUpdateBuilder {
   private EngineNumber value;
   private boolean subtractRecycling = true;  // Default to recycling logic for backward compatibility
   private Optional<SalesStreamDistribution> distribution = Optional.empty();
+  private boolean fromRetireRecalc = false;  // Default: not from recalc
 
   /**
    * Creates a new SimulationStateUpdateBuilder with default values.
@@ -90,6 +91,17 @@ public final class SimulationStateUpdateBuilder {
   }
 
   /**
+   * Sets whether this update is from RetireRecalcStrategy.
+   *
+   * @param fromRetireRecalc true if from retire recalc (exempt from base invalidation)
+   * @return this builder
+   */
+  public SimulationStateUpdateBuilder setFromRetireRecalc(boolean fromRetireRecalc) {
+    this.fromRetireRecalc = fromRetireRecalc;
+    return this;
+  }
+
+  /**
    * Determines if a stream name requires sales distribution logic.
    *
    * <p>Sales streams include: "sales", "domestic", "import", "export"</p>
@@ -130,7 +142,8 @@ public final class SimulationStateUpdateBuilder {
         value,
         subtractRecycling,
         distribution,
-        inferSalesDistributionRequired(name)
+        inferSalesDistributionRequired(name),
+        fromRetireRecalc
     );
   }
 }
