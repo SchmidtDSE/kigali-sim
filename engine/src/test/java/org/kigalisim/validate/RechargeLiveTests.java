@@ -510,7 +510,11 @@ public class RechargeLiveTests {
 
     // Expected: Recycling scenario produces consistent consumption
     // Value reflects correct material balance with recycling providing additional supply
-    assertEquals(64005.984578, recyclingTotalConsumption, 1.0, "Recycling scenario total consumption should be ~64,006 kg");
+    // Updated value after cumulative recharge implementation (Component 4): The recharge base
+    // is now captured once per year (at first recharge), leading to more accurate recycling
+    // calculations. The old value (64,006 kg) was based on sequential recharge behavior.
+    // New value (63,497 kg) reflects correct cumulative recharge with proper base timing.
+    assertEquals(63496.596453485006, recyclingTotalConsumption, 1.0, "Recycling scenario total consumption should be ~63,497 kg");
 
     // Expected: Combined policies (recycling + cap) should consume LESS than recycling alone
     // Cap policies should reduce overall consumption when applied on top of recycling
@@ -579,7 +583,11 @@ public class RechargeLiveTests {
 
     // Expected: Recycling scenario produces consistent consumption
     // Value reflects correct material balance with recycling providing additional supply
-    assertEquals(64005.984578, recyclingTotalConsumption, 1.0, "Recycling scenario total consumption should be ~64,006 kg");
+    // Updated value after cumulative recharge implementation (Component 4): The recharge base
+    // is now captured once per year (at first recharge), leading to more accurate recycling
+    // calculations. The old value (64,006 kg) was based on sequential recharge behavior.
+    // New value (63,497 kg) reflects correct cumulative recharge with proper base timing.
+    assertEquals(63496.596453485006, recyclingTotalConsumption, 1.0, "Recycling scenario total consumption should be ~63,497 kg");
 
     // Expected: Combined policies (recycling + cap) should consume LESS than recycling alone
     // Cap policies should reduce overall consumption when applied on top of recycling

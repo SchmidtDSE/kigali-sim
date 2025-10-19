@@ -46,6 +46,11 @@ public class StreamParameterization {
   private EngineNumber appliedRetirementAmount;   // Total units already retired this year
   private Boolean hasReplacementThisYear;         // null = no retire yet, true/false tracks consistency
 
+  // Cumulative recharge tracking (independent from retire base)
+  private EngineNumber rechargeBasePopulation;    // null = not captured yet this year
+  private EngineNumber appliedRechargeAmount;     // Total kg already recharged this year
+  private boolean recyclingCalculatedThisYear;     // Track if recycling was calculated this year
+
   /**
    * Create a new stream parameterization instance.
    */
@@ -75,6 +80,10 @@ public class StreamParameterization {
     retirementBasePopulation = null;
     appliedRetirementAmount = new EngineNumber(BigDecimal.ZERO, "units");
     hasReplacementThisYear = null;
+
+    rechargeBasePopulation = null;
+    appliedRechargeAmount = new EngineNumber(BigDecimal.ZERO, "kg");
+    recyclingCalculatedThisYear = false;
   }
 
 
@@ -386,6 +395,97 @@ public class StreamParameterization {
   }
 
   /**
+   * Get the recharge base population for cumulative calculations.
+   *
+   * @return The base population, or null if not yet captured this year
+   */
+  public EngineNumber getRechargeBasePopulation() {
+    return rechargeBasePopulation;
+  }
+
+  /**
+   * Set the recharge base population for cumulative calculations.
+   *
+   * @param value The base population value
+   */
+  public void setRechargeBasePopulation(EngineNumber value) {
+    this.rechargeBasePopulation = value;
+  }
+
+  /**
+   * Get the applied recharge amount for cumulative calculations.
+   *
+   * @return The total amount already recharged this year in kg
+   */
+  public EngineNumber getAppliedRechargeAmount() {
+    return appliedRechargeAmount;
+  }
+
+  /**
+   * Set the applied recharge amount for cumulative calculations.
+   *
+   * @param value The total amount recharged this year in kg
+   */
+  public void setAppliedRechargeAmount(EngineNumber value) {
+    this.appliedRechargeAmount = value;
+  }
+
+  /**
+   * Get whether recycling has been calculated this year.
+   *
+   * @return true if recycling was calculated, false otherwise
+   */
+  public boolean isRecyclingCalculatedThisYear() {
+    return recyclingCalculatedThisYear;
+  }
+
+  /**
+   * Set whether recycling has been calculated this year.
+   *
+   * @param calculated true if recycling was calculated, false otherwise
+   */
+  public void setRecyclingCalculatedThisYear(boolean calculated) {
+    this.recyclingCalculatedThisYear = calculated;
+  }
+
+  /**
+   * Set recharge parameters with cumulative accumulation.
+   *
+   * <p>Population rates are added, intensities are weighted-averaged using
+   * absolute values for weights to handle negative adjustments correctly.</p>
+   *
+   * <p>Weighted average formula: (|rate1| × intensity1 + |rate2| × intensity2) / (|rate1| + |rate2|)</p>
+   *
+   * @param population The recharge population rate to add
+   * @param intensity The recharge intensity for this rate
+   */
+  public void setRecharge(EngineNumber population, EngineNumber intensity) {
+    // Calculate weighted-average intensity BEFORE updating population
+    // Use absolute values for weights to handle negative values correctly
+    BigDecimal currentWeight = rechargePopulation.getValue().abs();
+    BigDecimal newWeight = population.getValue().abs();
+
+    BigDecimal weightedIntensity;
+    if (currentWeight.compareTo(BigDecimal.ZERO) == 0) {
+      // First recharge command this year, just use new intensity directly
+      weightedIntensity = intensity.getValue();
+    } else {
+      // Multiple recharge commands - compute weighted average: (w1*i1 + w2*i2) / (w1 + w2)
+      BigDecimal totalWeight = currentWeight.add(newWeight);
+      weightedIntensity = currentWeight.multiply(rechargeIntensity.getValue())
+          .add(newWeight.multiply(intensity.getValue()))
+          .divide(totalWeight, 10, java.math.RoundingMode.HALF_UP);
+    }
+
+    // Accumulate population rates (can be negative)
+    BigDecimal newPopulation = rechargePopulation.getValue().add(population.getValue());
+
+    // Update both values
+    rechargePopulation = new EngineNumber(newPopulation, "%");
+    rechargeIntensity = new EngineNumber(weightedIntensity, "kg / unit");
+  }
+
+  /**
    * Set the last specified value for a stream.
    *
    * <p>This tracks the value and units last used when setting streams
@@ -485,6 +585,13 @@ public class StreamParameterization {
     retirementBasePopulation = null;
     appliedRetirementAmount = new EngineNumber(BigDecimal.ZERO, "units");
     hasReplacementThisYear = null;
+
+    // Reset recharge tracking for new year
+    rechargePopulation = new EngineNumber(BigDecimal.ZERO, "%");
+    rechargeIntensity = new EngineNumber(BigDecimal.ZERO, "kg / unit");
+    rechargeBasePopulation = null;
+    appliedRechargeAmount = new EngineNumber(BigDecimal.ZERO, "kg");
+    recyclingCalculatedThisYear = false;
   }
 
   /**

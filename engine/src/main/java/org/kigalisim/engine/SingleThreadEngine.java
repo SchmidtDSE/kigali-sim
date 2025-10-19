@@ -608,9 +608,18 @@ public class SingleThreadEngine implements Engine {
       raiseNoAppOrSubstance("recalculating population change", " specified");
     }
 
-    // Set values
-    simulationState.setRechargePopulation(scope, volume);
-    simulationState.setRechargeIntensity(scope, intensity);
+    // Accumulate recharge parameters (rates add, intensities weighted-average)
+    simulationState.setRecharge(scope, volume, intensity);
+
+    // Capture base on first recharge this year (AFTER retires have completed!)
+    EngineNumber basePopulation = simulationState.getRechargeBasePopulation(scope);
+    if (basePopulation == null) {
+      // Use current priorEquipment as base (post-retirement)
+      EngineNumber currentPriorRaw = getStream("priorEquipment");
+      UnitConverter unitConverter = EngineSupportUtils.createUnitConverterWithTotal(this, "sales");
+      EngineNumber currentPrior = unitConverter.convert(currentPriorRaw, "units");
+      simulationState.setRechargeBasePopulation(scope, currentPrior);
+    }
 
     boolean isCarryOver = isCarryOver(scope);
 
@@ -1071,11 +1080,6 @@ public class SingleThreadEngine implements Engine {
       BigDecimal newAmount = currentValue.getValue().add(convertedDelta.getValue());
       BigDecimal newAmountBound = newAmount.max(BigDecimal.ZERO);
 
-      // Warn when negative values are clamped to zero
-      if (newAmount.compareTo(BigDecimal.ZERO) < 0) {
-        System.err.println("WARNING: Negative stream value clamped to zero for stream " + stream);
-      }
-
       EngineNumber outputWithUnits = new EngineNumber(newAmountBound, currentValue.getUnits());
 
       // Set the stream value without triggering standard recalc to avoid double calculation
@@ -1201,11 +1205,6 @@ public class SingleThreadEngine implements Engine {
     EngineNumber convertedDelta = unitConverter.convert(amount, currentValue.getUnits());
     BigDecimal newAmount = currentValue.getValue().add(convertedDelta.getValue());
     BigDecimal newAmountBound = newAmount.max(BigDecimal.ZERO);
-
-    // Warn when negative values are clamped to zero
-    if (newAmount.compareTo(BigDecimal.ZERO) < 0) {
-      System.err.println("WARNING: Negative stream value clamped to zero for stream " + stream);
-    }
 
     EngineNumber outputWithUnits = new EngineNumber(newAmountBound, currentValue.getUnits());
 

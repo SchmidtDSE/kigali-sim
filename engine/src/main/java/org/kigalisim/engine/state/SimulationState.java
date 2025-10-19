@@ -657,6 +657,84 @@ public class SimulationState {
   }
 
   /**
+   * Set recharge parameters with cumulative accumulation.
+   *
+   * @param useKey The key containing application and substance
+   * @param population The recharge population rate to add
+   * @param intensity The recharge intensity for this rate
+   */
+  public void setRecharge(UseKey useKey, EngineNumber population, EngineNumber intensity) {
+    StreamParameterization parameterization = getParameterization(useKey);
+    parameterization.setRecharge(population, intensity);
+  }
+
+  /**
+   * Get the recharge base population for cumulative calculations.
+   *
+   * @param useKey The key containing application and substance
+   * @return The base population, or null if not yet captured this year
+   */
+  public EngineNumber getRechargeBasePopulation(UseKey useKey) {
+    StreamParameterization parameterization = getParameterization(useKey);
+    return parameterization.getRechargeBasePopulation();
+  }
+
+  /**
+   * Set the recharge base population for cumulative calculations.
+   *
+   * @param useKey The key containing application and substance
+   * @param value The base population value
+   */
+  public void setRechargeBasePopulation(UseKey useKey, EngineNumber value) {
+    StreamParameterization parameterization = getParameterization(useKey);
+    parameterization.setRechargeBasePopulation(value);
+  }
+
+  /**
+   * Get the applied recharge amount for cumulative calculations.
+   *
+   * @param useKey The key containing application and substance
+   * @return The total amount already recharged this year in kg
+   */
+  public EngineNumber getAppliedRechargeAmount(UseKey useKey) {
+    StreamParameterization parameterization = getParameterization(useKey);
+    return parameterization.getAppliedRechargeAmount();
+  }
+
+  /**
+   * Set the applied recharge amount for cumulative calculations.
+   *
+   * @param useKey The key containing application and substance
+   * @param value The total amount recharged this year in kg
+   */
+  public void setAppliedRechargeAmount(UseKey useKey, EngineNumber value) {
+    StreamParameterization parameterization = getParameterization(useKey);
+    parameterization.setAppliedRechargeAmount(value);
+  }
+
+  /**
+   * Get whether recycling has been calculated this year.
+   *
+   * @param useKey The key containing application and substance
+   * @return true if recycling was calculated, false otherwise
+   */
+  public boolean isRecyclingCalculatedThisYear(UseKey useKey) {
+    StreamParameterization parameterization = getParameterization(useKey);
+    return parameterization.isRecyclingCalculatedThisYear();
+  }
+
+  /**
+   * Set whether recycling has been calculated this year.
+   *
+   * @param useKey The key containing application and substance
+   * @param calculated true if recycling was calculated, false otherwise
+   */
+  public void setRecyclingCalculatedThisYear(UseKey useKey, boolean calculated) {
+    StreamParameterization parameterization = getParameterization(useKey);
+    parameterization.setRecyclingCalculatedThisYear(calculated);
+  }
+
+  /**
    * Set the recovery rate percentage for a key.
    *
    * <p>If a recovery rate is already set, this method implements additive recycling:
