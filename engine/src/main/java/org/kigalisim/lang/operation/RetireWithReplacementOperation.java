@@ -49,7 +49,6 @@ public class RetireWithReplacementOperation implements Operation {
   @Override
   public void execute(PushDownMachine machine) {
     amountOperation.execute(machine);
-    final EngineNumber retireAmount = machine.getResult();
 
     ParsedDuring parsedDuring = duringMaybe.orElseGet(
         () -> new ParsedDuring(Optional.empty(), Optional.empty())
@@ -63,16 +62,19 @@ public class RetireWithReplacementOperation implements Operation {
       return;
     }
 
-    // Check for mixed with/without replacement (Component 3)
+    // Check for mixed with/without replacement
     SimulationState simulationState = engine.getStreamKeeper();
     UseKey scope = engine.getScope();
-    Boolean currentReplacement = simulationState.getHasReplacementThisYear(scope);
-    if (currentReplacement != null && currentReplacement == false) {
-      throw new RuntimeException(
-          "Cannot mix retire commands with and without replacement in same year for "
-          + scope.getApplication() + "/" + scope.getSubstance());
+    boolean retireCalculated = simulationState.getRetireCalculatedThisStep(scope);
+    if (retireCalculated) {
+      boolean currentReplacement = simulationState.getHasReplacementThisStep(scope);
+      if (!currentReplacement) {
+        throw new RuntimeException(
+            "Cannot mix retire commands with and without replacement in same step for "
+            + scope.getApplication() + "/" + scope.getSubstance());
+      }
     }
-    simulationState.setHasReplacementThisYear(scope, true);
+    simulationState.setHasReplacementThisStep(scope, true);
 
     // Determine the target units for replacement by checking what units sales were last specified in
     EngineNumber lastSalesValue = simulationState.getLastSpecifiedValue(scope, "sales");
@@ -91,6 +93,7 @@ public class RetireWithReplacementOperation implements Operation {
     EngineNumber equipmentBefore = unitConverter.convert(engine.getStream("equipment"), "units");
 
     // Execute the retirement (reduces equipment population)
+    final EngineNumber retireAmount = machine.getResult();
     engine.retire(retireAmount, yearMatcher);
 
     // Get equipment level after retirement and calculate actual reduction

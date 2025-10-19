@@ -24,7 +24,7 @@ public final class SimulationStateUpdate {
   private final boolean subtractRecycling;
   private final Optional<SalesStreamDistribution> distribution;
   private final boolean salesDistributionRequired;
-  private final boolean fromRetireRecalc;
+  private final boolean invalidatePriorEquipment;
 
   /**
    * Package-private constructor for creating a SimulationStateUpdate instance.
@@ -35,18 +35,23 @@ public final class SimulationStateUpdate {
    * @param subtractRecycling whether recycling should be subtracted from the value
    * @param distribution optional pre-calculated distribution for sales streams
    * @param salesDistributionRequired whether this stream requires sales distribution logic
-   * @param fromRetireRecalc whether this update is from RetireRecalcStrategy
+   * @param invalidatePriorEquipment whether this update should trigger prior equipment base invalidation
    */
-  SimulationStateUpdate(UseKey useKey, String name, EngineNumber value,
-                   boolean subtractRecycling, Optional<SalesStreamDistribution> distribution,
-                   boolean salesDistributionRequired, boolean fromRetireRecalc) {
+  SimulationStateUpdate(
+      UseKey useKey,
+      String name,
+      EngineNumber value,
+      boolean subtractRecycling,
+      Optional<SalesStreamDistribution> distribution,
+      boolean salesDistributionRequired,
+      boolean invalidatePriorEquipment) {
     this.useKey = useKey;
     this.name = name;
     this.value = value;
     this.subtractRecycling = subtractRecycling;
     this.distribution = distribution;
     this.salesDistributionRequired = salesDistributionRequired;
-    this.fromRetireRecalc = fromRetireRecalc;
+    this.invalidatePriorEquipment = invalidatePriorEquipment;
   }
 
   /**
@@ -104,11 +109,11 @@ public final class SimulationStateUpdate {
   }
 
   /**
-   * Gets whether this update is from RetireRecalcStrategy.
+   * Gets whether this update should invalidate prior equipment cumulative bases.
    *
-   * @return true if from retire recalc (exempt from base invalidation), false otherwise
+   * @return true if this update should trigger base invalidation, false otherwise
    */
-  public boolean isFromRetireRecalc() {
-    return fromRetireRecalc;
+  public boolean getInvalidatesPriorEquipment() {
+    return invalidatePriorEquipment;
   }
 }

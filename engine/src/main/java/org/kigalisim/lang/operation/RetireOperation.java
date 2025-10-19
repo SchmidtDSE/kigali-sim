@@ -60,16 +60,19 @@ public class RetireOperation implements Operation {
       return;
     }
 
-    // Check for mixed with/without replacement (Component 3)
+    // Check for mixed with/without replacement
     SimulationState simulationState = engine.getStreamKeeper();
     UseKey scope = engine.getScope();
-    Boolean currentReplacement = simulationState.getHasReplacementThisYear(scope);
-    if (currentReplacement != null && currentReplacement == true) {
-      throw new RuntimeException(
-          "Cannot mix retire commands with and without replacement in same year for "
-          + scope.getApplication() + "/" + scope.getSubstance());
+    boolean retireCalculated = simulationState.getRetireCalculatedThisStep(scope);
+    if (retireCalculated) {
+      boolean currentReplacement = simulationState.getHasReplacementThisStep(scope);
+      if (currentReplacement) {
+        throw new RuntimeException(
+            "Cannot mix retire commands with and without replacement in same step for "
+            + scope.getApplication() + "/" + scope.getSubstance());
+      }
     }
-    simulationState.setHasReplacementThisYear(scope, false);
+    simulationState.setHasReplacementThisStep(scope, false);
 
     engine.retire(result, yearMatcher);
   }

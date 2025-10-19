@@ -16,7 +16,7 @@ public final class SimulationStateUpdateBuilder {
   private EngineNumber value;
   private boolean subtractRecycling = true;  // Default to recycling logic for backward compatibility
   private Optional<SalesStreamDistribution> distribution = Optional.empty();
-  private boolean fromRetireRecalc = false;  // Default: not from recalc
+  private boolean invalidatePriorEquipment = true;  // Default: invalidate bases on priorEquipment changes
 
   /**
    * Creates a new SimulationStateUpdateBuilder with default values.
@@ -91,13 +91,13 @@ public final class SimulationStateUpdateBuilder {
   }
 
   /**
-   * Sets whether this update is from RetireRecalcStrategy.
+   * Sets whether this update should invalidate prior equipment cumulative bases.
    *
-   * @param fromRetireRecalc true if from retire recalc (exempt from base invalidation)
+   * @param invalidatePriorEquipment true if this update should trigger base invalidation
    * @return this builder
    */
-  public SimulationStateUpdateBuilder setFromRetireRecalc(boolean fromRetireRecalc) {
-    this.fromRetireRecalc = fromRetireRecalc;
+  public SimulationStateUpdateBuilder setInvalidatePriorEquipment(boolean invalidatePriorEquipment) {
+    this.invalidatePriorEquipment = invalidatePriorEquipment;
     return this;
   }
 
@@ -143,7 +143,7 @@ public final class SimulationStateUpdateBuilder {
         subtractRecycling,
         distribution,
         inferSalesDistributionRequired(name),
-        fromRetireRecalc
+        invalidatePriorEquipment
     );
   }
 }

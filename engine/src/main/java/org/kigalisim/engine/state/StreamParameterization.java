@@ -13,6 +13,7 @@ import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import org.kigalisim.engine.number.EngineNumber;
 import org.kigalisim.lang.operation.RecoverOperation.RecoveryStage;
@@ -41,15 +42,8 @@ public class StreamParameterization {
   private final Set<String> enabledStreams;
   private boolean salesIntentFreshlySet;
 
-  // Cumulative retirement tracking
-  private EngineNumber retirementBasePopulation;  // null = not captured yet this year
-  private EngineNumber appliedRetirementAmount;   // Total units already retired this year
-  private Boolean hasReplacementThisYear;         // null = no retire yet, true/false tracks consistency
-
-  // Cumulative recharge tracking (independent from retire base)
-  private EngineNumber rechargeBasePopulation;    // null = not captured yet this year
-  private EngineNumber appliedRechargeAmount;     // Total kg already recharged this year
-  private boolean recyclingCalculatedThisYear;     // Track if recycling was calculated this year
+  // Cumulative retirement and recharge tracking (independent bases)
+  private PriorEquipmentBases priorEquipmentBases;
 
   /**
    * Create a new stream parameterization instance.
@@ -77,13 +71,7 @@ public class StreamParameterization {
     inductionRateRecharge = new EngineNumber(new BigDecimal("100"), "%");
     inductionRateEol = new EngineNumber(new BigDecimal("100"), "%");
 
-    retirementBasePopulation = null;
-    appliedRetirementAmount = new EngineNumber(BigDecimal.ZERO, "units");
-    hasReplacementThisYear = null;
-
-    rechargeBasePopulation = null;
-    appliedRechargeAmount = new EngineNumber(BigDecimal.ZERO, "kg");
-    recyclingCalculatedThisYear = false;
+    priorEquipmentBases = new PriorEquipmentBases();
   }
 
 
@@ -343,10 +331,10 @@ public class StreamParameterization {
   /**
    * Get the retirement base population for cumulative calculations.
    *
-   * @return The base population, or null if not yet captured this year
+   * @return The base population, or empty if not yet captured this step
    */
-  public EngineNumber getRetirementBasePopulation() {
-    return retirementBasePopulation;
+  public Optional<EngineNumber> getRetirementBasePopulation() {
+    return priorEquipmentBases.getRetirementBasePopulation();
   }
 
   /**
@@ -355,52 +343,70 @@ public class StreamParameterization {
    * @param value The base population value
    */
   public void setRetirementBasePopulation(EngineNumber value) {
-    this.retirementBasePopulation = value;
+    priorEquipmentBases.setRetirementBasePopulation(value);
   }
 
   /**
    * Get the applied retirement amount for cumulative calculations.
    *
-   * @return The total amount already retired this year
+   * @return The total amount already retired this step
    */
-  public EngineNumber getAppliedRetirementAmount() {
-    return appliedRetirementAmount;
+  public Optional<EngineNumber> getAppliedRetirementAmount() {
+    return priorEquipmentBases.getAppliedRetirementAmount();
   }
 
   /**
    * Set the applied retirement amount for cumulative calculations.
    *
-   * @param value The total amount retired this year
+   * @param value The total amount retired this step
    */
   public void setAppliedRetirementAmount(EngineNumber value) {
-    this.appliedRetirementAmount = value;
+    priorEquipmentBases.setAppliedRetirementAmount(value);
   }
 
   /**
-   * Get the replacement mode for this year's retire commands.
+   * Get the replacement mode for this step's retire commands.
    *
-   * @return null if no retire yet, true if with replacement, false if without replacement
+   * @return true if with replacement, false if without replacement
    */
-  public Boolean getHasReplacementThisYear() {
-    return hasReplacementThisYear;
+  public boolean getHasReplacementThisStep() {
+    return priorEquipmentBases.getHasReplacementThisStep();
   }
 
   /**
-   * Set the replacement mode for this year's retire commands.
+   * Set the replacement mode for this step's retire commands.
    *
-   * @param value true for with replacement, false for without replacement, null to reset
+   * @param value true for with replacement, false for without replacement
    */
-  public void setHasReplacementThisYear(Boolean value) {
-    this.hasReplacementThisYear = value;
+  public void setHasReplacementThisStep(boolean value) {
+    priorEquipmentBases.setHasReplacementThisStep(value);
+  }
+
+  /**
+   * Get whether retire has been calculated this step.
+   *
+   * @return true if retire was calculated, false otherwise
+   */
+  public boolean getRetireCalculatedThisStep() {
+    return priorEquipmentBases.getRetireCalculatedThisStep();
+  }
+
+  /**
+   * Set whether retire has been calculated this step.
+   *
+   * @param calculated true if retire was calculated, false otherwise
+   */
+  public void setRetireCalculatedThisStep(boolean calculated) {
+    priorEquipmentBases.setRetireCalculatedThisStep(calculated);
   }
 
   /**
    * Get the recharge base population for cumulative calculations.
    *
-   * @return The base population, or null if not yet captured this year
+   * @return The base population, or empty if not yet captured this step
    */
-  public EngineNumber getRechargeBasePopulation() {
-    return rechargeBasePopulation;
+  public Optional<EngineNumber> getRechargeBasePopulation() {
+    return priorEquipmentBases.getRechargeBasePopulation();
   }
 
   /**
@@ -409,80 +415,63 @@ public class StreamParameterization {
    * @param value The base population value
    */
   public void setRechargeBasePopulation(EngineNumber value) {
-    this.rechargeBasePopulation = value;
+    priorEquipmentBases.setRechargeBasePopulation(value);
   }
 
   /**
    * Get the applied recharge amount for cumulative calculations.
    *
-   * @return The total amount already recharged this year in kg
+   * @return The total amount already recharged this step in kg
    */
-  public EngineNumber getAppliedRechargeAmount() {
-    return appliedRechargeAmount;
+  public Optional<EngineNumber> getAppliedRechargeAmount() {
+    return priorEquipmentBases.getAppliedRechargeAmount();
   }
 
   /**
    * Set the applied recharge amount for cumulative calculations.
    *
-   * @param value The total amount recharged this year in kg
+   * @param value The total amount recharged this step in kg
    */
   public void setAppliedRechargeAmount(EngineNumber value) {
-    this.appliedRechargeAmount = value;
+    priorEquipmentBases.setAppliedRechargeAmount(value);
   }
 
   /**
-   * Get whether recycling has been calculated this year.
+   * Get whether recycling has been calculated this step.
    *
    * @return true if recycling was calculated, false otherwise
    */
-  public boolean isRecyclingCalculatedThisYear() {
-    return recyclingCalculatedThisYear;
+  public boolean isRecyclingCalculatedThisStep() {
+    return priorEquipmentBases.getRecyclingCalculatedThisStep();
   }
 
   /**
-   * Set whether recycling has been calculated this year.
+   * Set whether recycling has been calculated this step.
    *
    * @param calculated true if recycling was calculated, false otherwise
    */
-  public void setRecyclingCalculatedThisYear(boolean calculated) {
-    this.recyclingCalculatedThisYear = calculated;
+  public void setRecyclingCalculatedThisStep(boolean calculated) {
+    priorEquipmentBases.setRecyclingCalculatedThisStep(calculated);
   }
 
   /**
-   * Set recharge parameters with cumulative accumulation.
+   * Accumulate recharge parameters. Sets when not previously set, accumulates otherwise.
    *
-   * <p>Population rates are added, intensities are weighted-averaged using
-   * absolute values for weights to handle negative adjustments correctly.</p>
+   * <p>Multiple calls accumulate rates (addition) and intensities (weighted-average).
+   * Population rates are added, intensities are weighted-averaged using absolute values
+   * for weights to handle negative adjustments correctly.</p>
    *
    * <p>Weighted average formula: (|rate1| × intensity1 + |rate2| × intensity2) / (|rate1| + |rate2|)</p>
    *
    * @param population The recharge population rate to add
    * @param intensity The recharge intensity for this rate
    */
-  public void setRecharge(EngineNumber population, EngineNumber intensity) {
-    // Calculate weighted-average intensity BEFORE updating population
-    // Use absolute values for weights to handle negative values correctly
-    BigDecimal currentWeight = rechargePopulation.getValue().abs();
-    BigDecimal newWeight = population.getValue().abs();
+  public void accumulateRecharge(EngineNumber population, EngineNumber intensity) {
+    EngineNumber[] result = priorEquipmentBases.accumulateRecharge(
+        rechargePopulation, rechargeIntensity, population, intensity);
 
-    BigDecimal weightedIntensity;
-    if (currentWeight.compareTo(BigDecimal.ZERO) == 0) {
-      // First recharge command this year, just use new intensity directly
-      weightedIntensity = intensity.getValue();
-    } else {
-      // Multiple recharge commands - compute weighted average: (w1*i1 + w2*i2) / (w1 + w2)
-      BigDecimal totalWeight = currentWeight.add(newWeight);
-      weightedIntensity = currentWeight.multiply(rechargeIntensity.getValue())
-          .add(newWeight.multiply(intensity.getValue()))
-          .divide(totalWeight, 10, java.math.RoundingMode.HALF_UP);
-    }
-
-    // Accumulate population rates (can be negative)
-    BigDecimal newPopulation = rechargePopulation.getValue().add(population.getValue());
-
-    // Update both values
-    rechargePopulation = new EngineNumber(newPopulation, "%");
-    rechargeIntensity = new EngineNumber(weightedIntensity, "kg / unit");
+    rechargePopulation = result[0];
+    rechargeIntensity = result[1];
   }
 
   /**
@@ -568,30 +557,27 @@ public class StreamParameterization {
   /**
    * Reset state at the beginning of a timestep.
    *
-   * <p>This method resets recovery rate to 0% and induction rate to 100% between years since
+   * <p>This method resets recovery rate to 0% and induction rate to 100% between steps since
    * recycling programs may cease and should not be expected to continue unchanged, but
    * default induction behavior should return to induced demand (100%).</p>
    */
   public void resetStateAtTimestep() {
-    // Reset recovery to 0% between years since recycling programs may cease
+    // Reset recovery to 0% between steps since recycling programs may cease
     recoveryRateRecharge = new EngineNumber(BigDecimal.ZERO, "%");
     recoveryRateEol = new EngineNumber(BigDecimal.ZERO, "%");
     // Reset induction to 100% (default induced demand behavior)
     inductionRateRecharge = new EngineNumber(new BigDecimal("100"), "%");
     inductionRateEol = new EngineNumber(new BigDecimal("100"), "%");
 
-    // Reset retirement tracking for new year
+    // Reset retirement tracking for new step
     retirementRate = new EngineNumber(BigDecimal.ZERO, "%");
-    retirementBasePopulation = null;
-    appliedRetirementAmount = new EngineNumber(BigDecimal.ZERO, "units");
-    hasReplacementThisYear = null;
 
-    // Reset recharge tracking for new year
+    // Reset recharge tracking for new step
     rechargePopulation = new EngineNumber(BigDecimal.ZERO, "%");
     rechargeIntensity = new EngineNumber(BigDecimal.ZERO, "kg / unit");
-    rechargeBasePopulation = null;
-    appliedRechargeAmount = new EngineNumber(BigDecimal.ZERO, "kg");
-    recyclingCalculatedThisYear = false;
+
+    // Reset cumulative tracking
+    priorEquipmentBases.resetStateAtTimestep();
   }
 
   /**

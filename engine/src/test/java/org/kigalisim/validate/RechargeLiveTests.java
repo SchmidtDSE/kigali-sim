@@ -89,8 +89,7 @@ public class RechargeLiveTests {
     Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
     List<EngineResult> resultsList = results.collect(Collectors.toList());
 
-    // Check year 1 equipment (population) value
-    // Should have 10000 (prior) + 1000 (manufacture) = 11000 units in year 1
+    // Year 1: Equipment should be 11000 units (10000 prior + 1000 new)
     EngineResult resultYear1 = LiveTestsUtil.getResult(resultsList.stream(), 1, "App", "Sub1");
     assertNotNull(resultYear1, "Should have result for App/Sub1 in year 1");
     assertEquals(11000.0, resultYear1.getPopulation().getValue().doubleValue(), 0.0001,
@@ -286,35 +285,25 @@ public class RechargeLiveTests {
     Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
     List<EngineResult> resultsList = results.collect(Collectors.toList());
 
-    // Check year 2025 equipment (population) value
-    // Recharge needed: 20000 * 0.1 * 0.85 = 1700 kg
-    // Import available: 800 kg
-    // Deficit: 900 kg = 1058.82 units
-    // Equipment: 20000 - 1058.82 = 18941.18 units
+    // Year 2025: Equipment decreases due to insufficient imports for recharge
     EngineResult resultYear2025 = LiveTestsUtil.getResult(resultsList.stream(), 2025, "Domestic AC", "HFC-32");
     assertNotNull(resultYear2025, "Should have result for Domestic AC/HFC-32 in year 2025");
     assertEquals(18941.18, resultYear2025.getPopulation().getValue().doubleValue(), 0.01,
-        "Equipment should decrease to 18941 units due to insufficient imports for recharge");
+        "Equipment should be 18941 units in year 2025");
 
-    // Check year 2026 equipment (population) value
-    // Recharge needed: 18941.18 * 0.1 * 0.85 = 1610 kg
-    // Import available: 800 kg
-    // Deficit: 810 kg = 952.94 units
-    // Equipment: 18941.18 - 952.94 = 17988.24 units
+    // Year 2026: Equipment continues decreasing as imports insufficient for recharge
     EngineResult resultYear2026 = LiveTestsUtil.getResult(resultsList.stream(), 2026, "Domestic AC", "HFC-32");
     assertNotNull(resultYear2026, "Should have result for Domestic AC/HFC-32 in year 2026");
     assertEquals(17988.24, resultYear2026.getPopulation().getValue().doubleValue(), 0.01,
-        "Equipment should continue decreasing to 17988 units");
+        "Equipment should be 17988 units in year 2026");
 
-    // Check year 2027 equipment (population) value
-    // Similar calculation continues
+    // Year 2027: Equipment continues declining
     EngineResult resultYear2027 = LiveTestsUtil.getResult(resultsList.stream(), 2027, "Domestic AC", "HFC-32");
     assertNotNull(resultYear2027, "Should have result for Domestic AC/HFC-32 in year 2027");
     assertEquals(17130.59, resultYear2027.getPopulation().getValue().doubleValue(), 0.01,
         "Equipment should be 17131 units in year 2027");
 
-    // Check year 2028 equipment (population) value
-    // Equipment continues to decrease as imports remain insufficient
+    // Year 2028: Equipment continues declining with persistent import deficit
     EngineResult resultYear2028 = LiveTestsUtil.getResult(resultsList.stream(), 2028, "Domestic AC", "HFC-32");
     assertNotNull(resultYear2028, "Should have result for Domestic AC/HFC-32 in year 2028");
     assertEquals(16358.71, resultYear2028.getPopulation().getValue().doubleValue(), 0.01,
@@ -454,11 +443,8 @@ public class RechargeLiveTests {
         "Drop in HFC-134a (" + hfcDropRelativeToBau + " kg) should equal increase in R-600a ("
         + r600aIncreaseRelativeToBau + " kg) relative to BAU values");
 
-    // Validate displacement/recharge interaction fix
-    // Verify the correct GWP is being used (validates the main displacement context fix)
+    // Validate GWP calculation uses correct substance
     double calculatedGwpFromEmissions = actualR600aRechargeEmissions / actualRechargeVolumeFromEmissions;
-
-    // Test that the GWP being used is correct (validates our main fix)
     assertEquals(r600aGwp, calculatedGwpFromEmissions, 0.01,
         "GWP calculation should use R-600a's GWP (3 kgCO2e/kg), not HFC-134a's (1430 kgCO2e/kg). "
         + "Calculated GWP: " + calculatedGwpFromEmissions + ", Expected: " + r600aGwp);
@@ -508,50 +494,11 @@ public class RechargeLiveTests {
         (combinedHfc2035.getDomestic().getValue().doubleValue() + combinedHfc2035.getImport().getValue().doubleValue())
         + (combinedR600a2035.getDomestic().getValue().doubleValue() + combinedR600a2035.getImport().getValue().doubleValue());
 
-    // MANUAL VERIFICATION (Component 4.7): Cumulative Recharge Base Capture Impact
-    //
-    // OLD ASSERTION (Sequential Implementation): 64,006 kg
-    // NEW ASSERTION (Cumulative Implementation): 63,497 kg
-    // DIFFERENCE: -509 kg (-0.8%)
-    //
-    // WHY THE OLD VALUE WAS WRONG:
-    // The sequential implementation captured recharge base AT COMMAND EXECUTION TIME, which
-    // caused inconsistent base populations within a single year when multiple operations
-    // (recharge, recycling) were combined. This created cascading errors:
-    //
-    // Sequential (INCORRECT):
-    //   Year N: Equipment = 100 units
-    //   - First recharge 10% executes → captures base = 100 → volume = 10 kg
-    //   - Recycling displaces material → equipment base CHANGES
-    //   - Second operation uses DIFFERENT base → inconsistent calculations
-    //   Result: Material balance errors compound over 11 years (2025-2035)
-    //
-    // Cumulative (CORRECT):
-    //   Year N: Equipment = 100 units
-    //   - ALL recharges use SAME base (captured at first recalc)
-    //   - Base = equipment AFTER retirements but BEFORE new sales
-    //   - Recycling displacement calculated consistently
-    //   Result: Correct material balance maintained
-    //
-    // WHY THE DIFFERENCE IS 509 KG:
-    // The error accumulates across:
-    // - 11 years (2025-2035)
-    // - 2 substances (HFC-134a, R-600a)
-    // - Recycling active years 2027-2035 (9 years)
-    // - Compounding effect: errors in year N affect calculations in year N+1
-    //
-    // The new value (63,497 kg) is the mathematically correct total consumption
-    // for year 2035 when recharge base is captured consistently per Component 4's
-    // cumulative implementation.
-    //
-    // VERIFICATION METHOD:
-    // - Empirical: Test passes with stable results
-    // - Mathematical: Cumulative base capture ensures consistent material balance
-    // - Architectural: Aligns with design principle (base captured once per year)
+    // Verify recycling scenario consumption matches expected value
+    // Recharge base is captured once per year before sales calculations occur
     assertEquals(63496.596453485006, recyclingTotalConsumption, 1.0, "Recycling scenario total consumption should be ~63,497 kg");
 
-    // Expected: Combined policies (recycling + cap) should consume LESS than recycling alone
-    // Cap policies should reduce overall consumption when applied on top of recycling
+    // Combined policies should reduce overall consumption compared to recycling alone
     assertTrue(combinedTotalConsumption < recyclingTotalConsumption,
         "Combined scenario should consume less than recycling alone (combined: " + combinedTotalConsumption
         + " kg, recycling: " + recyclingTotalConsumption + " kg)");
@@ -615,50 +562,11 @@ public class RechargeLiveTests {
         (combinedHfc2035.getDomestic().getValue().doubleValue() + combinedHfc2035.getImport().getValue().doubleValue())
         + (combinedR600a2035.getDomestic().getValue().doubleValue() + combinedR600a2035.getImport().getValue().doubleValue());
 
-    // MANUAL VERIFICATION (Component 4.7): Cumulative Recharge Base Capture Impact
-    //
-    // OLD ASSERTION (Sequential Implementation): 64,006 kg
-    // NEW ASSERTION (Cumulative Implementation): 63,497 kg
-    // DIFFERENCE: -509 kg (-0.8%)
-    //
-    // WHY THE OLD VALUE WAS WRONG:
-    // The sequential implementation captured recharge base AT COMMAND EXECUTION TIME, which
-    // caused inconsistent base populations within a single year when multiple operations
-    // (recharge, recycling) were combined. This created cascading errors:
-    //
-    // Sequential (INCORRECT):
-    //   Year N: Equipment = 100 units
-    //   - First recharge 10% executes → captures base = 100 → volume = 10 kg
-    //   - Recycling displaces material → equipment base CHANGES
-    //   - Second operation uses DIFFERENT base → inconsistent calculations
-    //   Result: Material balance errors compound over 11 years (2025-2035)
-    //
-    // Cumulative (CORRECT):
-    //   Year N: Equipment = 100 units
-    //   - ALL recharges use SAME base (captured at first recalc)
-    //   - Base = equipment AFTER retirements but BEFORE new sales
-    //   - Recycling displacement calculated consistently
-    //   Result: Correct material balance maintained
-    //
-    // WHY THE DIFFERENCE IS 509 KG:
-    // The error accumulates across:
-    // - 11 years (2025-2035)
-    // - 2 substances (HFC-134a, R-600a)
-    // - Recycling active years 2027-2035 (9 years)
-    // - Compounding effect: errors in year N affect calculations in year N+1
-    //
-    // The new value (63,497 kg) is the mathematically correct total consumption
-    // for year 2035 when recharge base is captured consistently per Component 4's
-    // cumulative implementation.
-    //
-    // VERIFICATION METHOD:
-    // - Empirical: Test passes with stable results
-    // - Mathematical: Cumulative base capture ensures consistent material balance
-    // - Architectural: Aligns with design principle (base captured once per year)
+    // Verify recycling scenario consumption matches expected value
+    // Recharge base is captured once per year before sales calculations occur
     assertEquals(63496.596453485006, recyclingTotalConsumption, 1.0, "Recycling scenario total consumption should be ~63,497 kg");
 
-    // Expected: Combined policies (recycling + cap) should consume LESS than recycling alone
-    // Cap policies should reduce overall consumption when applied on top of recycling
+    // Combined policies should reduce overall consumption compared to recycling alone
     assertTrue(combinedTotalConsumption < recyclingTotalConsumption,
         "Combined scenario should consume less than recycling alone (combined: " + combinedTotalConsumption
         + " kg, recycling: " + recyclingTotalConsumption + " kg)");
@@ -814,31 +722,29 @@ public class RechargeLiveTests {
     Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
     List<EngineResult> resultsList = results.collect(Collectors.toList());
 
-    // Year 1: Equipment calculation works correctly
+    // Year 1: Equipment 9575 units, Domestic ~2308 kg
     EngineResult resultYear1 = LiveTestsUtil.getResult(resultsList.stream(), 1, "AC1", "R-410A");
     assertNotNull(resultYear1, "Should have result for AC1/R-410A in year 1");
     assertEquals(9575.0, resultYear1.getPopulation().getValue().doubleValue(), 0.01,
         "Equipment should be 9575 units in year 1");
     assertEquals(2308.0, resultYear1.getDomestic().getValue().doubleValue(), 1.0,
-        "Domestic should be ~2308 kg in year 1 (1500 + 807.5 recharge)");
+        "Domestic should be ~2308 kg in year 1");
 
-    // Year 2: Validate equipment and domestic calculations
-    // Expected: 1575 (new) + 909.625 (recharge from 9096.25 prior) = 2484.625 kg
+    // Year 2: Equipment 10671 units, Domestic ~2485 kg
     EngineResult resultYear2 = LiveTestsUtil.getResult(resultsList.stream(), 2, "AC1", "R-410A");
     assertNotNull(resultYear2, "Should have result for AC1/R-410A in year 2");
     assertEquals(10671.25, resultYear2.getPopulation().getValue().doubleValue(), 0.01,
-        "Equipment calculation works correctly in year 2");
+        "Equipment should be 10671 units in year 2");
     assertEquals(2485.0, resultYear2.getDomestic().getValue().doubleValue(), 1.0,
-        "Domestic should be ~2485 kg with proper recharge calculation");
+        "Domestic should be ~2485 kg in year 2");
 
-    // Year 3: Validate continued proper calculation
-    // Expected: 1653.75 (new) + 1013.77 (recharge from 10137.69 prior) = 2667.52 kg
+    // Year 3: Equipment 11791 units, Domestic ~2668 kg
     EngineResult resultYear3 = LiveTestsUtil.getResult(resultsList.stream(), 3, "AC1", "R-410A");
     assertNotNull(resultYear3, "Should have result for AC1/R-410A in year 3");
     assertEquals(11791.44, resultYear3.getPopulation().getValue().doubleValue(), 0.01,
-        "Equipment calculation works correctly in year 3");
+        "Equipment should be 11791 units in year 3");
     assertEquals(2668.0, resultYear3.getDomestic().getValue().doubleValue(), 1.0,
-        "Domestic should be ~2668 kg with proper recharge tracking");
+        "Domestic should be ~2668 kg in year 3");
   }
 
   /**
@@ -884,15 +790,13 @@ public class RechargeLiveTests {
     Stream<EngineResult> results = KigaliSimFacade.runScenario(program, "business as usual", p -> {});
     List<EngineResult> list = results.collect(Collectors.toList());
 
-    // Year 1: 15% recharge with weighted intensity = (5%×0.5 + 10%×1.0)/15% = 0.833 kg/unit
-    // Recharge base = 100 units (priorEquipment only, not including new sales)
-    // Recharge volume = 100 units × 15% × 0.833 kg/unit = 12.5 kg
-    // Domestic = 10 kg (new) + 12.5 kg (recharge) = 22.5 kg
+    // Year 1: Cumulative 15% recharge with weighted intensity 0.833 kg/unit
+    // Total: 10 kg (new) + 12.5 kg (recharge) = 22.5 kg
     EngineResult y1 = LiveTestsUtil.getResult(list.stream(), 1, "test", "test");
     assertEquals(22.5, y1.getDomestic().getValue().doubleValue(), 0.1,
-        "Domestic should include cumulative recharge with weighted intensity");
+        "Domestic should be 22.5 kg with cumulative recharge");
     assertEquals(110.0, y1.getPopulation().getValue().doubleValue(), 0.0001,
-        "Equipment should be 110 (100 prior + 10 new)");
+        "Equipment should be 110 units");
   }
 
   /**
@@ -909,15 +813,12 @@ public class RechargeLiveTests {
     Stream<EngineResult> results = KigaliSimFacade.runScenario(program, "business as usual", progress -> {});
     List<EngineResult> resultsList = results.collect(Collectors.toList());
 
-    // Year 1: recharge 10% - 5% = 5% net
-    // Weighted intensity (using absolute values): (10×1.0 + 5×0.5)/(10+5) = 0.8333 kg/unit
-    // Base population (captured BEFORE sales): 100 units
-    // Recharge volume: 100 units × 5% × 0.8333 kg/unit = 4.1667 kg
-    // Total domestic: 10 kg (initial) + 4.1667 kg (recharge) = 14.1667 kg
+    // Year 1: Net 5% recharge with weighted intensity calculated from both recharge operations
+    // Total: 10 kg (initial) + 4.1667 kg (recharge) = 14.1667 kg
     EngineResult resultYear1 = LiveTestsUtil.getResult(resultsList.stream(), 1, "test", "test");
     assertNotNull(resultYear1, "Should have result for test/test in year 1");
     assertEquals(14.1667, resultYear1.getDomestic().getValue().doubleValue(), 0.1,
-        "Domestic should be 14.1667 kg including net 5% recharge with weighted intensity");
+        "Domestic should be 14.1667 kg with net recharge and weighted intensity");
     assertEquals("kg", resultYear1.getDomestic().getUnits(),
         "Domestic units should be kg");
   }

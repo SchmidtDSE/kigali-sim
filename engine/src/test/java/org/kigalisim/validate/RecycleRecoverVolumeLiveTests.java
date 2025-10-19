@@ -554,81 +554,12 @@ public class RecycleRecoverVolumeLiveTests {
     double bauEquipmentYear5 = bauYear5.getPopulation().getValue().doubleValue();
     double policyEquipmentYear5 = policyYear5.getPopulation().getValue().doubleValue();
 
-    // MANUAL VERIFICATION (Component 4.7): Kg-Based Imports with Cumulative Recharge
-    //
-    // OLD ASSERTION (Sequential Implementation): BAU population == Policy population (~381,807 units)
-    // NEW ASSERTION (Cumulative Implementation): BAU=381,807 units, Policy=388,208 units
-    // DIFFERENCE: +6,400 units (+1.7%)
-    //
-    // WHY THE OLD ASSERTION WAS WRONG:
-    // The original test expected equal populations based on the assumption that 0% induction
-    // means "recycling displaces virgin material, keeping equipment constant". This is TRUE
-    // for unit-based imports but FALSE for kg-based imports with cumulative recharge.
-    //
-    // KG-BASED IMPORT MECHANICS (Critical):
-    // - Each year: Import 100,000 kg (FIXED allocation)
-    // - Recharge consumption: Equipment × 20% × 0.2 kg/unit = X kg
-    // - Virgin material remaining: 100,000 - X kg → (100,000 - X) units
-    // - Recycling adds material: (Recovered × 90% reuse) kg → units
-    //
-    // FEEDBACK LOOP EXPLANATION:
-    //
-    // Year 1: Both scenarios identical (no recycling yet)
-    //   BAU: 1,000 + 100,000 = 101,000 units
-    //   Policy: 1,000 + 100,000 = 101,000 units
-    //   Difference: 0
-    //
-    // Year 2: Recycling starts (50% recovery, 90% reuse, 0% induction)
-    //   BAU:
-    //     Prior equipment: 101,000 × 90% (after 10% retire) = 90,900 units
-    //     Recharge: 90,900 × 20% × 0.2 kg/unit = 3,636 kg
-    //     Virgin remaining: 100,000 - 3,636 = 96,364 kg = 96,364 units
-    //     Total: 90,900 + 96,364 = 187,264 units
-    //
-    //   Policy:
-    //     Prior equipment: 101,000 × 90% = 90,900 units
-    //     Recharge: 90,900 × 20% × 0.2 kg/unit = 3,636 kg
-    //     Recycling recovered: 3,636 × 50% = 1,818 kg
-    //     Recycling reused: 1,818 × 90% = 1,636 kg
-    //     Virgin remaining: 100,000 - 3,636 = 96,364 kg (same as BAU)
-    //     Recycling adds: 1,636 kg = 1,636 units (converts to equipment)
-    //     Total: 90,900 + 96,364 + 1,636 = 188,900 units
-    //
-    //   Difference: +1,636 units (Policy > BAU)
-    //
-    // Years 3-5: COMPOUNDING EFFECT
-    //   - Year 3: Policy has more equipment → more recharge → more recycling → bigger difference
-    //   - Year 4: Difference continues growing
-    //   - Year 5: Cumulative difference = +6,400 units
-    //
-    // WHY 0% INDUCTION DOESN'T PREVENT THIS:
-    // The "induction" parameter controls virgin material INDUCED DEMAND (whether recycling
-    // triggers additional virgin production). With 0% induction, virgin material is NOT
-    // increased due to recycling. HOWEVER:
-    // - Kg-based imports have FIXED allocation (100,000 kg/year)
-    // - Recharge subtracts from this allocation (reduces virgin units)
-    // - Recycling ADDS material back (converts to equipment)
-    // - Net effect: More total equipment despite no virgin induction
-    //
-    // WHY SEQUENTIAL IMPLEMENTATION HID THIS:
-    // Sequential recharge captured base AT COMMAND TIME, creating inconsistent material
-    // balance calculations. Errors in virgin displacement CANCELLED OUT the compounding
-    // effect, making populations APPEAR equal (mathematical coincidence, not correctness).
-    //
-    // WHY CUMULATIVE IMPLEMENTATION EXPOSES THIS:
-    // Cumulative recharge captures base ONCE per year (at first recalc), ensuring consistent
-    // material balance. This reveals the TRUE mathematical behavior: kg-based imports with
-    // recycling create equipment growth even with 0% induction.
-    //
-    // VERIFICATION:
-    // The new assertions (BAU=381,807, Policy=388,208) are mathematically correct.
-    // They reflect:
-    // - Correct cumulative recharge base capture (Component 4)
-    // - Correct kg-based import mechanics
-    // - Correct 0% induction displacement behavior
-    // - Correct compounding over 5 years
-    // Note: Tolerance increased to 120.0 to account for Component 6 priorEquipment invalidation logic
-    // which may introduce small precision differences in edge cases (BAU diff ~53.5, Policy diff ~114.2 units)
+    // Validate equipment populations at year 5
+    // With kg-based imports and cumulative recharge:
+    // - Fixed annual import (100,000 kg) minus recharge costs leaves virgin material
+    // - Recycling (50% recovery, 90% reuse) adds to total equipment supply
+    // - Policy scenario population exceeds BAU due to compounding recycling additions
+    // Note: Tolerance of 120.0 accounts for edge cases in priorEquipment invalidation
     assertEquals(381807.4482284954, bauEquipmentYear5, 120.0,
         "BAU equipment population in year 5");
     assertEquals(388207.907683154, policyEquipmentYear5, 120.0,
@@ -642,8 +573,7 @@ public class RecycleRecoverVolumeLiveTests {
    * (virgin + secondary) and population should stay the same. The issue occurs when a change
    * command is included - without change this assumption holds, with change it breaks.
    */
-  // TODO(Component 5): Re-enable requires cumulative recover implementation (not just recharge)
-  // @Test
+  @Test
   public void testZeroInductionVolumeWithChange() throws IOException {
     // Load and parse QTA file
     String qtaPath = "../examples/test_0_induction_volume_change.qta";

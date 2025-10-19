@@ -53,19 +53,19 @@ public class SalesRecalcStrategy implements RecalcStrategy {
 
     SimulationState simulationState = kit.getStreamKeeper();
 
-    // Capture recharge base on FIRST recalc this year (deferred from command time).
-    // This ensures base is captured AFTER all initialization (set priorEquipment,
-    // retirements, etc.) so command order doesn't matter. See Component 4.6.
-    EngineNumber rechargeBase = simulationState.getRechargeBasePopulation(scopeEffective);
-    if (rechargeBase == null) {
-      // First recalc this year - capture base from current priorEquipment
+    Optional<EngineNumber> rechargeBaseOpt = simulationState.getRechargeBasePopulation(scopeEffective);
+    EngineNumber rechargeBase;
+    boolean firstRecharge = !rechargeBaseOpt.isPresent();
+    if (firstRecharge) {
       EngineNumber currentPriorRaw = target.getStream("priorEquipment", Optional.of(scopeEffective), Optional.empty());
       EngineNumber currentPrior = unitConverter.convert(currentPriorRaw, "units");
       simulationState.setRechargeBasePopulation(scopeEffective, currentPrior);
       rechargeBase = currentPrior;
+    } else {
+      rechargeBase = rechargeBaseOpt.get();
     }
 
-    // Calculate TOTAL recharge volume using BASE population
+    // Calculate total recharge volume using base population
     stateGetter.setPopulation(rechargeBase);
     EngineNumber rechargePopRaw = simulationState.getRechargePopulation(scopeEffective);
     EngineNumber totalRechargeUnits = unitConverter.convert(rechargePopRaw, "units");
@@ -78,10 +78,7 @@ public class SalesRecalcStrategy implements RecalcStrategy {
     EngineNumber rechargeIntensityRaw = simulationState.getRechargeIntensity(scopeEffective);
     EngineNumber totalRechargeVolume = unitConverter.convert(rechargeIntensityRaw, "kg");
 
-    // Use total recharge volume directly
-    // The delta calculation is handled in SingleThreadEngine.recharge() for multiple recharge COMMANDS
-    // SalesRecalcStrategy may be called multiple times during recalc, but should always use the
-    // full accumulated recharge volume (which already accounts for all recharge commands this year)
+    // Save total recharge (SalesRecalcStrategy uses full accumulated recharge volume)
     EngineNumber rechargeVolume = totalRechargeVolume;
 
     // Determine initial charge

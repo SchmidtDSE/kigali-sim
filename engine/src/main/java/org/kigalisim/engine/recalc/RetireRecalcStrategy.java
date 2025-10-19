@@ -67,25 +67,31 @@ public class RetireRecalcStrategy implements RecalcStrategy {
     );
     final EngineNumber currentEquipment = unitConverter.convert(currentEquipmentRaw, "units");
 
-    // Capture base population on first retire command this year
-    EngineNumber basePopulation = simulationState.getRetirementBasePopulation(scopeEffective);
-    if (basePopulation == null) {
+    Optional<EngineNumber> basePopulationOpt = simulationState.getRetirementBasePopulation(
+        scopeEffective
+    );
+    EngineNumber basePopulation;
+    boolean firstRetire = !basePopulationOpt.isPresent();
+    if (firstRetire) {
       basePopulation = currentPrior;
       simulationState.setRetirementBasePopulation(scopeEffective, basePopulation);
+    } else {
+      basePopulation = basePopulationOpt.get();
     }
 
-    // Convert cumulative retirement rate using BASE population (not current)
+    // Convert cumulative retirement rate using base prior equipment
     EngineNumber cumulativeRateRaw = simulationState.getRetirementRate(scopeEffective);
     stateGetter.setPopulation(basePopulation);
     EngineNumber cumulativeAmount = unitConverter.convert(cumulativeRateRaw, "units");
     stateGetter.clearPopulation();
 
     // Calculate delta (incremental retirement since last retire command)
-    EngineNumber appliedAmount = simulationState.getAppliedRetirementAmount(scopeEffective);
+    Optional<EngineNumber> appliedAmountOpt = simulationState.getAppliedRetirementAmount(scopeEffective);
+    EngineNumber appliedAmount = appliedAmountOpt.orElse(new EngineNumber(BigDecimal.ZERO, "units"));
     BigDecimal deltaValue = cumulativeAmount.getValue().subtract(appliedAmount.getValue());
     EngineNumber delta = new EngineNumber(deltaValue, "units");
 
-    // Apply ONLY delta to streams (not cumulative amount)
+    // Apply delta to streams
     BigDecimal newPriorValue = currentPrior.getValue().subtract(delta.getValue());
     BigDecimal newEquipmentValue = currentEquipment.getValue().subtract(delta.getValue());
 
@@ -103,7 +109,7 @@ public class RetireRecalcStrategy implements RecalcStrategy {
         .setName("priorEquipment")
         .setValue(newPrior)
         .setSubtractRecycling(false)
-        .setFromRetireRecalc(true)  // Exempt from invalidation
+        .setInvalidatePriorEquipment(false)
         .build();
     simulationState.update(priorEquipmentStream);
 

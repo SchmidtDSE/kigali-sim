@@ -608,11 +608,7 @@ public class SingleThreadEngine implements Engine {
       raiseNoAppOrSubstance("recalculating population change", " specified");
     }
 
-    // Accumulate recharge parameters (rates add, intensities weighted-average)
-    simulationState.setRecharge(scope, volume, intensity);
-
-    // Base capture deferred to SalesRecalcStrategy.execute() to ensure command order independence.
-    // This allows recharge commands to appear before priorEquipment initialization without issues.
+    simulationState.accumulateRecharge(scope, volume, intensity);
 
     boolean isCarryOver = isCarryOver(scope);
 
@@ -1058,6 +1054,23 @@ public class SingleThreadEngine implements Engine {
    * @param destinationScope The scope for the destination substance
    */
   private void changeStreamWithDisplacementContext(String stream, EngineNumber amount, Scope destinationScope) {
+    changeStreamWithDisplacementContext(stream, amount, destinationScope, false);
+  }
+
+  /**
+   * Change a stream value with proper displacement context for correct GWP calculations.
+   *
+   * <p>This method creates a custom recalc kit that uses the destination substance's
+   * properties (GWP, initial charge, energy intensity) to ensure correct emissions
+   * calculations during displacement operations.</p>
+   *
+   * @param stream The stream identifier to modify
+   * @param amount The amount to change the stream by
+   * @param destinationScope The scope for the destination substance
+   * @param negativeAllowed If true, negative stream values are permitted (useful for tests with
+   *                         negative retire/recharge adjustments)
+   */
+  private void changeStreamWithDisplacementContext(String stream, EngineNumber amount, Scope destinationScope, boolean negativeAllowed) {
     // Store original scope
     Scope originalScope = scope;
 
@@ -1071,7 +1084,7 @@ public class SingleThreadEngine implements Engine {
 
       EngineNumber convertedDelta = unitConverter.convert(amount, currentValue.getUnits());
       BigDecimal newAmount = currentValue.getValue().add(convertedDelta.getValue());
-      BigDecimal newAmountBound = newAmount.max(BigDecimal.ZERO);
+      BigDecimal newAmountBound = negativeAllowed ? newAmount : newAmount.max(BigDecimal.ZERO);
 
       EngineNumber outputWithUnits = new EngineNumber(newAmountBound, currentValue.getUnits());
 

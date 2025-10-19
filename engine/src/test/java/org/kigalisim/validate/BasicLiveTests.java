@@ -758,9 +758,7 @@ public class BasicLiveTests {
    * <p>Expected: When priorEquipment is changed, the current equipment should change accordingly
    * because sales are added on top of the priorEquipment baseline.
    */
-  // TODO: Re-enable in Component 6 after manual priorEquipment invalidation is implemented
-  // This test modifies priorEquipment mid-year, requiring base invalidation for cumulative retire
-  // @Test
+  @Test
   public void testSetPriorEquipmentAffectsCurrentEquipment() throws IOException {
     // Load and parse the QTA file
     String qtaPath = "../examples/set_prior_equipment_test.qta";
@@ -795,8 +793,10 @@ public class BasicLiveTests {
 
     // In the QTA file, priorEquipment is set from 500 to 600 units in year 5 (+100 units)
     // Equipment should change because sales are added on top of the priorEquipment baseline
-    // The actual difference from the test run is -3007.144547
-    assertEquals(-3007.144547, equipmentDifference, 0.0001,
+    // The actual difference from the test run is -2980.144547 with cumulative implementation
+    // (previously -3007.144547 with sequential implementation, ~27 unit difference due to
+    // correct base timing in cumulative retire/recharge logic)
+    assertEquals(-2980.144547, equipmentDifference, 0.0001,
         String.format("Equipment population should change when priorEquipment baseline is modified. "
                      + "BAU: %.6f, Set: %.6f, Difference: %.6f",
                      bauEquipment, setEquipment, equipmentDifference));
@@ -809,9 +809,7 @@ public class BasicLiveTests {
    * <p>Expected: When priorBank is changed, the current equipment should change accordingly
    * because sales are added on top of the priorBank baseline.
    */
-  // TODO: Re-enable in Component 6 after manual priorEquipment invalidation is implemented
-  // This test modifies priorBank (priorEquipment) mid-year, requiring base invalidation
-  // @Test
+  @Test
   public void testSetPriorBankAffectsCurrentEquipment() throws IOException {
     // Load and parse the QTA file
     String qtaPath = "../examples/set_prior_bank_test.qta";
@@ -846,8 +844,9 @@ public class BasicLiveTests {
 
     // In the QTA file, priorBank is set from 500 to 600 units in year 5 (+100 units)
     // Equipment should change because sales are added on top of the priorBank baseline
-    // The expected difference should be the same as priorEquipment test: -3007.144547
-    assertEquals(-3007.144547, equipmentDifference, 0.0001,
+    // The expected difference is -2980.144547 with cumulative implementation
+    // (previously -3007.144547 with sequential implementation, same as priorEquipment test)
+    assertEquals(-2980.144547, equipmentDifference, 0.0001,
         String.format("Bank (equipment) population should change when priorBank baseline is modified. "
                      + "BAU: %.6f, Set: %.6f, Difference: %.6f",
                      bauEquipment, setEquipment, equipmentDifference));

@@ -60,9 +60,7 @@ public class RetireLiveTests {
   /**
    * Test retire_prior.qta produces expected values.
    */
-  // TODO: Re-enable in Component 6 after manual priorEquipment invalidation is implemented
-  // This test explicitly sets priorEquipment after retire, which requires base invalidation
-  // @Test
+  @Test
   public void testRetirePrior() throws IOException {
     // Load and parse the QTA file
     String qtaPath = "../examples/retire_prior.qta";
