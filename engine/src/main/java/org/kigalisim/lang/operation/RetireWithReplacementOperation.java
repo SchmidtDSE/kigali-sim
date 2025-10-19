@@ -49,7 +49,7 @@ public class RetireWithReplacementOperation implements Operation {
   @Override
   public void execute(PushDownMachine machine) {
     amountOperation.execute(machine);
-    EngineNumber retireAmount = machine.getResult();
+    final EngineNumber retireAmount = machine.getResult();
 
     ParsedDuring parsedDuring = duringMaybe.orElseGet(
         () -> new ParsedDuring(Optional.empty(), Optional.empty())
@@ -63,10 +63,18 @@ public class RetireWithReplacementOperation implements Operation {
       return;
     }
 
+    // Check for mixed with/without replacement (Component 3)
+    SimulationState simulationState = engine.getStreamKeeper();
     UseKey scope = engine.getScope();
+    Boolean currentReplacement = simulationState.getHasReplacementThisYear(scope);
+    if (currentReplacement != null && currentReplacement == false) {
+      throw new RuntimeException(
+          "Cannot mix retire commands with and without replacement in same year for "
+          + scope.getApplication() + "/" + scope.getSubstance());
+    }
+    simulationState.setHasReplacementThisYear(scope, true);
 
     // Determine the target units for replacement by checking what units sales were last specified in
-    SimulationState simulationState = engine.getStreamKeeper();
     EngineNumber lastSalesValue = simulationState.getLastSpecifiedValue(scope, "sales");
 
     String targetUnits;

@@ -44,6 +44,7 @@ public class StreamParameterization {
   // Cumulative retirement tracking
   private EngineNumber retirementBasePopulation;  // null = not captured yet this year
   private EngineNumber appliedRetirementAmount;   // Total units already retired this year
+  private Boolean hasReplacementThisYear;         // null = no retire yet, true/false tracks consistency
 
   /**
    * Create a new stream parameterization instance.
@@ -73,6 +74,7 @@ public class StreamParameterization {
 
     retirementBasePopulation = null;
     appliedRetirementAmount = new EngineNumber(BigDecimal.ZERO, "units");
+    hasReplacementThisYear = null;
   }
 
 
@@ -366,6 +368,24 @@ public class StreamParameterization {
   }
 
   /**
+   * Get the replacement mode for this year's retire commands.
+   *
+   * @return null if no retire yet, true if with replacement, false if without replacement
+   */
+  public Boolean getHasReplacementThisYear() {
+    return hasReplacementThisYear;
+  }
+
+  /**
+   * Set the replacement mode for this year's retire commands.
+   *
+   * @param value true for with replacement, false for without replacement, null to reset
+   */
+  public void setHasReplacementThisYear(Boolean value) {
+    this.hasReplacementThisYear = value;
+  }
+
+  /**
    * Set the last specified value for a stream.
    *
    * <p>This tracks the value and units last used when setting streams
@@ -464,6 +484,7 @@ public class StreamParameterization {
     retirementRate = new EngineNumber(BigDecimal.ZERO, "%");
     retirementBasePopulation = null;
     appliedRetirementAmount = new EngineNumber(BigDecimal.ZERO, "units");
+    hasReplacementThisYear = null;
   }
 
   /**

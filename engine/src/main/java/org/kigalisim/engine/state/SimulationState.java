@@ -949,6 +949,28 @@ public class SimulationState {
   }
 
   /**
+   * Get the replacement mode for retire commands this year.
+   *
+   * @param useKey The key containing application and substance
+   * @return null if no retire yet, true if with replacement, false if without replacement
+   */
+  public Boolean getHasReplacementThisYear(UseKey useKey) {
+    StreamParameterization parameterization = getParameterization(useKey);
+    return parameterization.getHasReplacementThisYear();
+  }
+
+  /**
+   * Set the replacement mode for retire commands this year.
+   *
+   * @param useKey The key containing application and substance
+   * @param value true for with replacement, false for without replacement, null to reset
+   */
+  public void setHasReplacementThisYear(UseKey useKey, Boolean value) {
+    StreamParameterization parameterization = getParameterization(useKey);
+    parameterization.setHasReplacementThisYear(value);
+  }
+
+  /**
    * Set the last specified value for a stream.
    *
    * <p>This tracks the value and units last used when setting streams
