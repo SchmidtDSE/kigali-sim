@@ -41,6 +41,10 @@ public class StreamParameterization {
   private final Set<String> enabledStreams;
   private boolean salesIntentFreshlySet;
 
+  // Cumulative retirement tracking
+  private EngineNumber retirementBasePopulation;  // null = not captured yet this year
+  private EngineNumber appliedRetirementAmount;   // Total units already retired this year
+
   /**
    * Create a new stream parameterization instance.
    */
@@ -66,6 +70,9 @@ public class StreamParameterization {
     retirementRate = new EngineNumber(BigDecimal.ZERO, "%");
     inductionRateRecharge = new EngineNumber(new BigDecimal("100"), "%");
     inductionRateEol = new EngineNumber(new BigDecimal("100"), "%");
+
+    retirementBasePopulation = null;
+    appliedRetirementAmount = new EngineNumber(BigDecimal.ZERO, "units");
   }
 
 
@@ -302,10 +309,15 @@ public class StreamParameterization {
   /**
    * Set the retirement rate percentage.
    *
-   * @param newValue The new retirement rate value
+   * <p>This method accumulates retirement rates across multiple retire commands
+   * in the same year to support cumulative retirement behavior.</p>
+   *
+   * @param newValue The new retirement rate value to add
    */
   public void setRetirementRate(EngineNumber newValue) {
-    retirementRate = newValue;
+    BigDecimal currentValue = retirementRate.getValue();
+    BigDecimal newTotal = currentValue.add(newValue.getValue());
+    retirementRate = new EngineNumber(newTotal, newValue.getUnits());
   }
 
   /**
@@ -315,6 +327,42 @@ public class StreamParameterization {
    */
   public EngineNumber getRetirementRate() {
     return retirementRate;
+  }
+
+  /**
+   * Get the retirement base population for cumulative calculations.
+   *
+   * @return The base population, or null if not yet captured this year
+   */
+  public EngineNumber getRetirementBasePopulation() {
+    return retirementBasePopulation;
+  }
+
+  /**
+   * Set the retirement base population for cumulative calculations.
+   *
+   * @param value The base population value
+   */
+  public void setRetirementBasePopulation(EngineNumber value) {
+    this.retirementBasePopulation = value;
+  }
+
+  /**
+   * Get the applied retirement amount for cumulative calculations.
+   *
+   * @return The total amount already retired this year
+   */
+  public EngineNumber getAppliedRetirementAmount() {
+    return appliedRetirementAmount;
+  }
+
+  /**
+   * Set the applied retirement amount for cumulative calculations.
+   *
+   * @param value The total amount retired this year
+   */
+  public void setAppliedRetirementAmount(EngineNumber value) {
+    this.appliedRetirementAmount = value;
   }
 
   /**
@@ -411,6 +459,11 @@ public class StreamParameterization {
     // Reset induction to 100% (default induced demand behavior)
     inductionRateRecharge = new EngineNumber(new BigDecimal("100"), "%");
     inductionRateEol = new EngineNumber(new BigDecimal("100"), "%");
+
+    // Reset retirement tracking for new year
+    retirementRate = new EngineNumber(BigDecimal.ZERO, "%");
+    retirementBasePopulation = null;
+    appliedRetirementAmount = new EngineNumber(BigDecimal.ZERO, "units");
   }
 
   /**

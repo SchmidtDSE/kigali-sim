@@ -905,6 +905,50 @@ public class SimulationState {
   }
 
   /**
+   * Get the retirement base population for cumulative calculations.
+   *
+   * @param useKey The key containing application and substance
+   * @return The base population, or null if not yet captured
+   */
+  public EngineNumber getRetirementBasePopulation(UseKey useKey) {
+    StreamParameterization parameterization = getParameterization(useKey);
+    return parameterization.getRetirementBasePopulation();
+  }
+
+  /**
+   * Set the retirement base population for cumulative calculations.
+   *
+   * @param useKey The key containing application and substance
+   * @param value The base population value
+   */
+  public void setRetirementBasePopulation(UseKey useKey, EngineNumber value) {
+    StreamParameterization parameterization = getParameterization(useKey);
+    parameterization.setRetirementBasePopulation(value);
+  }
+
+  /**
+   * Get the applied retirement amount for cumulative calculations.
+   *
+   * @param useKey The key containing application and substance
+   * @return The total amount already retired this year
+   */
+  public EngineNumber getAppliedRetirementAmount(UseKey useKey) {
+    StreamParameterization parameterization = getParameterization(useKey);
+    return parameterization.getAppliedRetirementAmount();
+  }
+
+  /**
+   * Set the applied retirement amount for cumulative calculations.
+   *
+   * @param useKey The key containing application and substance
+   * @param value The total amount retired this year
+   */
+  public void setAppliedRetirementAmount(UseKey useKey, EngineNumber value) {
+    StreamParameterization parameterization = getParameterization(useKey);
+    parameterization.setAppliedRetirementAmount(value);
+  }
+
+  /**
    * Set the last specified value for a stream.
    *
    * <p>This tracks the value and units last used when setting streams
