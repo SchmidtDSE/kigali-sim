@@ -6,10 +6,9 @@ start default
       enable domestic
       initial charge with 1 kg / unit for domestic
       set domestic to 100 mt
-      retire 10 %
       equals 5 tCO2e / mt
-      set priorEquipment to 100000 units
-      set priorEquipment to 100000 units
+      set priorEquipment to 100000 units during year 1
+      retire 10 %
     end substance
 
   end application
