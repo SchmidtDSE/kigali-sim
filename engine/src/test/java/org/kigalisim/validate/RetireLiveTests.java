@@ -152,4 +152,50 @@ public class RetireLiveTests {
     assertEquals("units", resultYear2.getPopulation().getUnits(),
         "Equipment units should be units");
   }
+
+  /**
+   * Test cumulative retire behavior across multiple years.
+   */
+  @Test
+  public void testCumulativeRetire() throws IOException {
+    String qtaPath = "../examples/test_cumulative_retire.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, "business as usual", p -> {});
+    List<EngineResult> list = results.collect(Collectors.toList());
+
+    // Year 1: 100 - (5%+10%=15% of 100) + 10 new = 95
+    EngineResult y1 = LiveTestsUtil.getResult(list.stream(), 1, "test", "test");
+    assertEquals(95.0, y1.getPopulation().getValue().doubleValue(), 0.0001,
+        "Equipment should be 95 after cumulative 15% retire");
+
+    // Year 2: 95 - (15% of 95) + 10 new = 90.75
+    EngineResult y2 = LiveTestsUtil.getResult(list.stream(), 2, "test", "test");
+    assertEquals(90.75, y2.getPopulation().getValue().doubleValue(), 0.0001,
+        "Equipment should be 90.75 after year 2 retire");
+
+    // Year 3: 90.75 - (15% of 90.75) + 10 new = 87.1375
+    EngineResult y3 = LiveTestsUtil.getResult(list.stream(), 3, "test", "test");
+    assertEquals(87.1375, y3.getPopulation().getValue().doubleValue(), 0.0001,
+        "Equipment should be 87.1375 after year 3 retire");
+  }
+
+  /**
+   * Test cumulative retire + recharge in same year (separate bases).
+   */
+  @Test
+  public void testCumulativeRetireAndRecharge() throws IOException {
+    String qtaPath = "../examples/test_cumulative_retire_recharge.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, "business as usual", p -> {});
+    List<EngineResult> list = results.collect(Collectors.toList());
+
+    // Year 1:
+    // - Start: 100 units
+    // - Retire 15% of 100 = 15 units → 85 units
+    // - Add new: 10 units → 95 units
+    // - Recharge 15% of 95 = 14.25 units
+    EngineResult y1 = LiveTestsUtil.getResult(list.stream(), 1, "test", "test");
+    assertEquals(95.0, y1.getPopulation().getValue().doubleValue(), 0.0001,
+        "Equipment after retire and new sales");
+  }
 }

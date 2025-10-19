@@ -361,7 +361,7 @@ public class ChangeLiveTests {
    * Test recycling with change statements using units-based specifications.
    * Tests the same issue as testChangeRecycle but with units instead of mt/kg.
    */
-  // TODO(Component 5): Re-enable after cumulative retire/recharge implemented
+  // TODO(Component 5): Re-enable requires cumulative recover implementation (not just recharge)
   // @Test
   public void testChangeRecycleUnits() throws IOException {
     // Load and parse the QTA file

@@ -640,7 +640,7 @@ public class RecycleRecoverVolumeLiveTests {
    * (virgin + secondary) and population should stay the same. The issue occurs when a change
    * command is included - without change this assumption holds, with change it breaks.
    */
-  // TODO(Component 5): Re-enable after cumulative retire/recharge implemented
+  // TODO(Component 5): Re-enable requires cumulative recover implementation (not just recharge)
   // @Test
   public void testZeroInductionVolumeWithChange() throws IOException {
     // Load and parse QTA file

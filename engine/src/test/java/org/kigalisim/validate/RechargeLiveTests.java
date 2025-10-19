@@ -874,4 +874,25 @@ public class RechargeLiveTests {
         "Equipment population should grow from 2025 to 2035 due to 5% annual growth");
   }
 
+  /**
+   * Test cumulative recharge behavior with weighted-average intensity.
+   */
+  @Test
+  public void testCumulativeRecharge() throws IOException {
+    String qtaPath = "../examples/test_cumulative_recharge.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, "business as usual", p -> {});
+    List<EngineResult> list = results.collect(Collectors.toList());
+
+    // Year 1: 15% recharge with weighted intensity = (5%×0.5 + 10%×1.0)/15% = 0.833 kg/unit
+    // Recharge base = 100 units (priorEquipment only, not including new sales)
+    // Recharge volume = 100 units × 15% × 0.833 kg/unit = 12.5 kg
+    // Domestic = 10 kg (new) + 12.5 kg (recharge) = 22.5 kg
+    EngineResult y1 = LiveTestsUtil.getResult(list.stream(), 1, "test", "test");
+    assertEquals(22.5, y1.getDomestic().getValue().doubleValue(), 0.1,
+        "Domestic should include cumulative recharge with weighted intensity");
+    assertEquals(110.0, y1.getPopulation().getValue().doubleValue(), 0.0001,
+        "Equipment should be 110 (100 prior + 10 new)");
+  }
+
 }
