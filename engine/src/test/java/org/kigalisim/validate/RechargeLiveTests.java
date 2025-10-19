@@ -895,4 +895,31 @@ public class RechargeLiveTests {
         "Equipment should be 110 (100 prior + 10 new)");
   }
 
+  /**
+   * Test cumulative recharge with negative adjustment and weighted-average intensity.
+   * Tests that recharge 10% @ 1.0 kg/unit followed by recharge -5% @ 0.5 kg/unit
+   * results in net 5% recharge with weighted intensity of 0.833 kg/unit.
+   */
+  @Test
+  public void testNegativeRecharge() throws IOException {
+    String qtaPath = "../examples/test_negative_recharge.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, "business as usual", progress -> {});
+    List<EngineResult> resultsList = results.collect(Collectors.toList());
+
+    // Year 1: recharge 10% - 5% = 5% net
+    // Weighted intensity (using absolute values): (10×1.0 + 5×0.5)/(10+5) = 0.8333 kg/unit
+    // Base population (captured BEFORE sales): 100 units
+    // Recharge volume: 100 units × 5% × 0.8333 kg/unit = 4.1667 kg
+    // Total domestic: 10 kg (initial) + 4.1667 kg (recharge) = 14.1667 kg
+    EngineResult resultYear1 = LiveTestsUtil.getResult(resultsList.stream(), 1, "test", "test");
+    assertNotNull(resultYear1, "Should have result for test/test in year 1");
+    assertEquals(14.1667, resultYear1.getDomestic().getValue().doubleValue(), 0.1,
+        "Domestic should be 14.1667 kg including net 5% recharge with weighted intensity");
+    assertEquals("kg", resultYear1.getDomestic().getUnits(),
+        "Domestic units should be kg");
+  }
+
 }

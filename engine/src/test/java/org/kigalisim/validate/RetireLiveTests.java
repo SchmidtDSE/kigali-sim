@@ -226,4 +226,27 @@ public class RetireLiveTests {
     assertEquals(47.5, y1.getPopulation().getValue().doubleValue(), 0.0001,
         "Manual priorEquipment change should proportionally scale cumulative base");
   }
+
+  /**
+   * Test cumulative retirement with negative adjustment.
+   * Tests that retire 10% followed by retire -5% results in net 5% retirement.
+   */
+  @Test
+  public void testNegativeRetire() throws IOException {
+    String qtaPath = "../examples/test_negative_retire.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, "business as usual", progress -> {});
+    List<EngineResult> resultsList = results.collect(Collectors.toList());
+
+    // Year 1: retire 10% - 5% = 5% of 100 base = 5 units retired
+    // Equipment: 100 base - 5 retired + 10 sales = 105 units
+    EngineResult resultYear1 = LiveTestsUtil.getResult(resultsList.stream(), 1, "test", "test");
+    assertNotNull(resultYear1, "Should have result for test/test in year 1");
+    assertEquals(105.0, resultYear1.getPopulation().getValue().doubleValue(), 0.0001,
+        "Equipment should be 105 units after net 5% retirement (10% - 5%)");
+    assertEquals("units", resultYear1.getPopulation().getUnits(),
+        "Equipment units should be units");
+  }
 }
