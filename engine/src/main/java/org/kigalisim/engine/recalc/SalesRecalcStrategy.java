@@ -53,12 +53,16 @@ public class SalesRecalcStrategy implements RecalcStrategy {
 
     SimulationState simulationState = kit.getStreamKeeper();
 
-    // Get recharge base population (captured in SingleThreadEngine.recharge())
+    // Capture recharge base on FIRST recalc this year (deferred from command time).
+    // This ensures base is captured AFTER all initialization (set priorEquipment,
+    // retirements, etc.) so command order doesn't matter. See Component 4.6.
     EngineNumber rechargeBase = simulationState.getRechargeBasePopulation(scopeEffective);
     if (rechargeBase == null) {
-      // Fallback: use current prior if base not captured (shouldn't happen in normal flow)
+      // First recalc this year - capture base from current priorEquipment
       EngineNumber currentPriorRaw = target.getStream("priorEquipment", Optional.of(scopeEffective), Optional.empty());
-      rechargeBase = unitConverter.convert(currentPriorRaw, "units");
+      EngineNumber currentPrior = unitConverter.convert(currentPriorRaw, "units");
+      simulationState.setRechargeBasePopulation(scopeEffective, currentPrior);
+      rechargeBase = currentPrior;
     }
 
     // Calculate TOTAL recharge volume using BASE population

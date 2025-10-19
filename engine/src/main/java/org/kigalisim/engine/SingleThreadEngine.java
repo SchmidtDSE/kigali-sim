@@ -611,15 +611,8 @@ public class SingleThreadEngine implements Engine {
     // Accumulate recharge parameters (rates add, intensities weighted-average)
     simulationState.setRecharge(scope, volume, intensity);
 
-    // Capture base on first recharge this year (AFTER retires have completed!)
-    EngineNumber basePopulation = simulationState.getRechargeBasePopulation(scope);
-    if (basePopulation == null) {
-      // Use current priorEquipment as base (post-retirement)
-      EngineNumber currentPriorRaw = getStream("priorEquipment");
-      UnitConverter unitConverter = EngineSupportUtils.createUnitConverterWithTotal(this, "sales");
-      EngineNumber currentPrior = unitConverter.convert(currentPriorRaw, "units");
-      simulationState.setRechargeBasePopulation(scope, currentPrior);
-    }
+    // Base capture deferred to SalesRecalcStrategy.execute() to ensure command order independence.
+    // This allows recharge commands to appear before priorEquipment initialization without issues.
 
     boolean isCarryOver = isCarryOver(scope);
 
