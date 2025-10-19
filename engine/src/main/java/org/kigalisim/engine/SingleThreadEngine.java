@@ -1201,6 +1201,24 @@ public class SingleThreadEngine implements Engine {
    */
   private void changeStreamWithoutReportingUnits(String stream, EngineNumber amount,
       Optional<YearMatcher> yearMatcher, Optional<UseKey> scope) {
+    changeStreamWithoutReportingUnits(stream, amount, yearMatcher, scope, false);
+  }
+
+  /**
+   * Change a stream value without reporting units to the last units tracking system.
+   *
+   * <p>This method is similar to changeStreamWithDisplacementContext but without the displacement
+   * context. It allows for consistent handling of negative stream values across both methods.</p>
+   *
+   * @param stream The stream identifier to modify
+   * @param amount The amount to change the stream by
+   * @param yearMatcher Matcher to determine if the change applies to current year
+   * @param scope The scope in which to make the change
+   * @param negativeAllowed If true, negative stream values are permitted (useful for tests with
+   *                         negative retire/recharge adjustments)
+   */
+  private void changeStreamWithoutReportingUnits(String stream, EngineNumber amount,
+      Optional<YearMatcher> yearMatcher, Optional<UseKey> scope, boolean negativeAllowed) {
     if (!getIsInRange(yearMatcher.orElse(null))) {
       return;
     }
@@ -1210,7 +1228,7 @@ public class SingleThreadEngine implements Engine {
 
     EngineNumber convertedDelta = unitConverter.convert(amount, currentValue.getUnits());
     BigDecimal newAmount = currentValue.getValue().add(convertedDelta.getValue());
-    BigDecimal newAmountBound = newAmount.max(BigDecimal.ZERO);
+    BigDecimal newAmountBound = negativeAllowed ? newAmount : newAmount.max(BigDecimal.ZERO);
 
     EngineNumber outputWithUnits = new EngineNumber(newAmountBound, currentValue.getUnits());
 
