@@ -1067,8 +1067,7 @@ public class SingleThreadEngine implements Engine {
    * @param stream The stream identifier to modify
    * @param amount The amount to change the stream by
    * @param destinationScope The scope for the destination substance
-   * @param negativeAllowed If true, negative stream values are permitted (useful for tests with
-   *                         negative retire/recharge adjustments)
+   * @param negativeAllowed If true, negative stream values are permitted
    */
   private void changeStreamWithDisplacementContext(String stream, EngineNumber amount, Scope destinationScope, boolean negativeAllowed) {
     // Store original scope
