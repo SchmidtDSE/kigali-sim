@@ -3,6 +3,8 @@ package org.kigalisim.lang.operation;
 import java.util.Optional;
 import org.kigalisim.engine.Engine;
 import org.kigalisim.engine.number.EngineNumber;
+import org.kigalisim.engine.state.SimulationState;
+import org.kigalisim.engine.state.UseKey;
 import org.kigalisim.engine.state.YearMatcher;
 import org.kigalisim.engine.support.EngineSupportUtils;
 import org.kigalisim.lang.machine.PushDownMachine;
@@ -44,7 +46,7 @@ public class RetireOperation implements Operation {
   @Override
   public void execute(PushDownMachine machine) {
     amountOperation.execute(machine);
-    EngineNumber result = machine.getResult();
+    final EngineNumber result = machine.getResult();
 
     ParsedDuring parsedDuring = duringMaybe.orElseGet(
         () -> new ParsedDuring(Optional.empty(), Optional.empty())
@@ -57,6 +59,20 @@ public class RetireOperation implements Operation {
     if (!EngineSupportUtils.isInRange(yearMatcher, engine.getYear())) {
       return;
     }
+
+    // Check for mixed with/without replacement
+    SimulationState simulationState = engine.getStreamKeeper();
+    UseKey scope = engine.getScope();
+    boolean retireCalculated = simulationState.getRetireCalculatedThisStep(scope);
+    if (retireCalculated) {
+      boolean currentReplacement = simulationState.getHasReplacementThisStep(scope);
+      if (currentReplacement) {
+        throw new RuntimeException(
+            "Cannot mix retire commands with and without replacement in same step for "
+            + scope.getApplication() + "/" + scope.getSubstance());
+      }
+    }
+    simulationState.setHasReplacementThisStep(scope, false);
 
     engine.retire(result, yearMatcher);
   }

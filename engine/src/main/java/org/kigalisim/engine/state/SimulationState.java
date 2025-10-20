@@ -31,6 +31,7 @@ import org.kigalisim.lang.operation.RecoverOperation.RecoveryStage;
 public class SimulationState {
 
   private static final boolean CHECK_NAN_STATE = false;
+  private static final BigDecimal BASE_CHANGE_TOLERANCE = new BigDecimal("0.0001");
 
   private final Map<String, StreamParameterization> substances;
   private final Map<String, EngineNumber> streams;
@@ -173,6 +174,11 @@ public class SimulationState {
 
     // Check if stream needs to be enabled before setting
     assertStreamEnabled(useKey, name, value);
+
+    // Conditionally invalidate bases if priorEquipment manually modified
+    if (stateUpdate.getInvalidatesPriorEquipment()) {
+      updatePriorEquipmentBase(useKey, name, value);
+    }
 
     if (CHECK_NAN_STATE && value.getValue().toString().equals("NaN")) {
       String[] keyPieces = key.split("\t");
@@ -657,6 +663,88 @@ public class SimulationState {
   }
 
   /**
+   * Accumulate recharge parameters. Sets when not previously set, accumulates otherwise.
+   *
+   * <p>Multiple calls accumulate rates (addition) and intensities (weighted-average).
+   * Rates add linearly and intensities use weighted-average with absolute value weights
+   * to handle negative adjustments correctly.</p>
+   *
+   * @param useKey The key containing application and substance
+   * @param population The recharge population rate to add
+   * @param intensity The recharge intensity for this rate
+   */
+  public void accumulateRecharge(UseKey useKey, EngineNumber population, EngineNumber intensity) {
+    StreamParameterization parameterization = getParameterization(useKey);
+    parameterization.accumulateRecharge(population, intensity);
+  }
+
+  /**
+   * Get the recharge base population for cumulative calculations.
+   *
+   * @param useKey The key containing application and substance
+   * @return The base population, or null if not yet captured this year
+   */
+  public Optional<EngineNumber> getRechargeBasePopulation(UseKey useKey) {
+    StreamParameterization parameterization = getParameterization(useKey);
+    return parameterization.getRechargeBasePopulation();
+  }
+
+  /**
+   * Set the recharge base population for cumulative calculations.
+   *
+   * @param useKey The key containing application and substance
+   * @param value The base population value
+   */
+  public void setRechargeBasePopulation(UseKey useKey, EngineNumber value) {
+    StreamParameterization parameterization = getParameterization(useKey);
+    parameterization.setRechargeBasePopulation(value);
+  }
+
+  /**
+   * Get the applied recharge amount for cumulative calculations.
+   *
+   * @param useKey The key containing application and substance
+   * @return The total amount already recharged this year in kg
+   */
+  public Optional<EngineNumber> getAppliedRechargeAmount(UseKey useKey) {
+    StreamParameterization parameterization = getParameterization(useKey);
+    return parameterization.getAppliedRechargeAmount();
+  }
+
+  /**
+   * Set the applied recharge amount for cumulative calculations.
+   *
+   * @param useKey The key containing application and substance
+   * @param value The total amount recharged this year in kg
+   */
+  public void setAppliedRechargeAmount(UseKey useKey, EngineNumber value) {
+    StreamParameterization parameterization = getParameterization(useKey);
+    parameterization.setAppliedRechargeAmount(value);
+  }
+
+  /**
+   * Get whether recycling has been calculated this step.
+   *
+   * @param useKey The key containing application and substance
+   * @return true if recycling was calculated, false otherwise
+   */
+  public boolean isRecyclingCalculatedThisStep(UseKey useKey) {
+    StreamParameterization parameterization = getParameterization(useKey);
+    return parameterization.isRecyclingCalculatedThisStep();
+  }
+
+  /**
+   * Set whether recycling has been calculated this step.
+   *
+   * @param useKey The key containing application and substance
+   * @param calculated true if recycling was calculated, false otherwise
+   */
+  public void setRecyclingCalculatedThisStep(UseKey useKey, boolean calculated) {
+    StreamParameterization parameterization = getParameterization(useKey);
+    parameterization.setRecyclingCalculatedThisStep(calculated);
+  }
+
+  /**
    * Set the recovery rate percentage for a key.
    *
    * <p>If a recovery rate is already set, this method implements additive recycling:
@@ -902,6 +990,94 @@ public class SimulationState {
   public EngineNumber getRetirementRate(UseKey useKey) {
     StreamParameterization parameterization = getParameterization(useKey);
     return parameterization.getRetirementRate();
+  }
+
+  /**
+   * Get the retirement base population for cumulative calculations.
+   *
+   * @param useKey The key containing application and substance
+   * @return The base population, or null if not yet captured
+   */
+  public Optional<EngineNumber> getRetirementBasePopulation(UseKey useKey) {
+    StreamParameterization parameterization = getParameterization(useKey);
+    return parameterization.getRetirementBasePopulation();
+  }
+
+  /**
+   * Set the retirement base population for cumulative calculations.
+   *
+   * @param useKey The key containing application and substance
+   * @param value The base population value
+   */
+  public void setRetirementBasePopulation(UseKey useKey, EngineNumber value) {
+    StreamParameterization parameterization = getParameterization(useKey);
+    parameterization.setRetirementBasePopulation(value);
+  }
+
+  /**
+   * Get the applied retirement amount for cumulative calculations.
+   *
+   * @param useKey The key containing application and substance
+   * @return The total amount already retired this year
+   */
+  public Optional<EngineNumber> getAppliedRetirementAmount(UseKey useKey) {
+    StreamParameterization parameterization = getParameterization(useKey);
+    return parameterization.getAppliedRetirementAmount();
+  }
+
+  /**
+   * Set the applied retirement amount for cumulative calculations.
+   *
+   * @param useKey The key containing application and substance
+   * @param value The total amount retired this year
+   */
+  public void setAppliedRetirementAmount(UseKey useKey, EngineNumber value) {
+    StreamParameterization parameterization = getParameterization(useKey);
+    parameterization.setAppliedRetirementAmount(value);
+  }
+
+  /**
+   * Get the replacement mode for retire commands this step.
+   *
+   * @param useKey The key containing application and substance
+   * @return null if no retire yet, true if with replacement, false if without replacement
+   */
+  public boolean getHasReplacementThisStep(UseKey useKey) {
+    StreamParameterization parameterization = getParameterization(useKey);
+    return parameterization.getHasReplacementThisStep();
+  }
+
+  /**
+   * Set the replacement mode for retire commands this step.
+   *
+   * @param useKey The key containing application and substance
+   * @param value true for with replacement, false for without replacement
+   */
+  public void setHasReplacementThisStep(UseKey useKey, boolean value) {
+    StreamParameterization parameterization = getParameterization(useKey);
+    parameterization.setHasReplacementThisStep(value);
+  }
+
+  /**
+   * Get whether retire has been calculated this step.
+   *
+   * @param useKey The key containing application and substance
+   * @return true if retire was calculated, false otherwise
+   */
+  public boolean getRetireCalculatedThisStep(UseKey useKey) {
+    StreamParameterization parameterization = getParameterization(useKey);
+    return parameterization.getRetireCalculatedThisStep();
+  }
+
+  /**
+   * Set whether retire has been calculated this step.
+   *
+   * @param useKey The key containing application and substance
+   * @param calculated true if retire was calculated, false otherwise
+   */
+  public void setRetireCalculatedThisStep(UseKey useKey, boolean calculated) {
+    StreamParameterization parameterization = getParameterization(useKey);
+    parameterization.setRetireCalculatedThisStep(calculated);
   }
 
   /**
@@ -1498,6 +1674,136 @@ public class SimulationState {
       // Set new amounts using direct stream setting
       setSimpleStream(useKey, "domestic", new EngineNumber(newDomestic, "kg"));
       setSimpleStream(useKey, "import", new EngineNumber(newImport, "kg"));
+    }
+  }
+
+  /**
+   * Update cumulative bases when priorEquipment is manually modified.
+   *
+   * <p>When priorEquipment changes via user commands (set/change/floor/ceiling),
+   * captured bases are proportionally scaled with applied amounts to maintain
+   * cumulative semantics. Retirement and recharge bases scale independently.</p>
+   *
+   * @param useKey The key containing application and substance
+   * @param streamName The name of the stream being modified
+   * @param newValue The new value being set for priorEquipment
+   */
+  private void updatePriorEquipmentBase(UseKey useKey, String streamName, EngineNumber newValue) {
+    // Only process priorEquipment changes
+    if (!"priorEquipment".equals(streamName)) {
+      return;
+    }
+
+    String key = getKey(useKey);
+    StreamParameterization param = substances.get(key);
+    boolean noParameterizationYet = param == null;
+    if (noParameterizationYet) {
+      return;
+    }
+
+    // Convert new value to units for consistency
+    EngineNumber newPriorUnits = unitConverter.convert(newValue, "units");
+
+    Optional<EngineNumber> retireBaseOpt = param.getRetirementBasePopulation();
+    Optional<EngineNumber> rechargeBaseOpt = param.getRechargeBasePopulation();
+
+    boolean retireBaseActive = retireBaseOpt.isPresent();
+    boolean rechargeBaseActive = rechargeBaseOpt.isPresent();
+    boolean nothingToUpdate = !retireBaseActive && !rechargeBaseActive;
+
+    if (nothingToUpdate) {
+      return;
+    }
+
+    // Get current priorEquipment value to check if it's actually changing
+    EngineNumber currentPriorRaw = getStream(useKey, "priorEquipment");
+    EngineNumber currentPriorUnits = unitConverter.convert(currentPriorRaw, "units");
+
+    BigDecimal currentPriorValue = currentPriorUnits.getValue();
+    BigDecimal newPriorValue = newPriorUnits.getValue();
+    BigDecimal diff = currentPriorValue.subtract(newPriorValue).abs();
+
+    boolean withinTolerance = diff.compareTo(BASE_CHANGE_TOLERANCE) <= 0;
+    if (withinTolerance) {
+      return;
+    }
+
+    if (retireBaseActive) {
+      updateRetireBase(useKey, newValue, retireBaseOpt.get(), param);
+    }
+
+    if (rechargeBaseActive) {
+      updateRechargeBase(useKey, newValue, rechargeBaseOpt.get(), param);
+    }
+  }
+
+  /**
+   * Scale retirement base and applied amount when priorEquipment changes.
+   *
+   * <p>Maintains the percentage of population already retired by scaling both
+   * the base population and applied amount proportionally to the new priorEquipment value.</p>
+   *
+   * @param useKey The key containing application and substance
+   * @param newValue The new priorEquipment value
+   * @param retireBase The current retirement base population
+   * @param param The parameterization containing retirement state
+   */
+  private void updateRetireBase(UseKey useKey, EngineNumber newValue, EngineNumber retireBase,
+      StreamParameterization param) {
+    EngineNumber newPriorUnits = unitConverter.convert(newValue, "units");
+    Optional<EngineNumber> appliedRetireOpt = param.getAppliedRetirementAmount();
+    EngineNumber appliedRetire = appliedRetireOpt.orElse(new EngineNumber(BigDecimal.ZERO, "units"));
+
+    // Guard against division by zero
+    if (retireBase.getValue().compareTo(BigDecimal.ZERO) == 0) {
+      param.setRetirementBasePopulation(newPriorUnits);
+      param.setAppliedRetirementAmount(new EngineNumber(BigDecimal.ZERO, "units"));
+    } else {
+      // Calculate what percentage was already applied
+      BigDecimal retirePercent = appliedRetire.getValue().divide(
+          retireBase.getValue(), 10, java.math.RoundingMode.HALF_UP);
+
+      // Scale applied amount proportionally to new base
+      BigDecimal newApplied = newPriorUnits.getValue().multiply(retirePercent);
+
+      // Update base and applied
+      param.setRetirementBasePopulation(newPriorUnits);
+      param.setAppliedRetirementAmount(new EngineNumber(newApplied, "units"));
+    }
+  }
+
+  /**
+   * Scale recharge base and applied amount when priorEquipment changes.
+   *
+   * <p>Scales the recharge base and applied amount by the ratio of new to old base value.
+   * This maintains the cumulative semantics while adjusting for the new population base.</p>
+   *
+   * @param useKey The key containing application and substance
+   * @param newValue The new priorEquipment value
+   * @param rechargeBase The current recharge base population
+   * @param param The parameterization containing recharge state
+   */
+  private void updateRechargeBase(UseKey useKey, EngineNumber newValue, EngineNumber rechargeBase,
+      StreamParameterization param) {
+    EngineNumber newPriorUnits = unitConverter.convert(newValue, "units");
+    Optional<EngineNumber> appliedRechargeOpt = param.getAppliedRechargeAmount();
+    EngineNumber appliedRecharge = appliedRechargeOpt.orElse(new EngineNumber(BigDecimal.ZERO, "kg"));
+
+    // Guard against division by zero
+    if (rechargeBase.getValue().compareTo(BigDecimal.ZERO) == 0) {
+      param.setRechargeBasePopulation(newPriorUnits);
+      param.setAppliedRechargeAmount(new EngineNumber(BigDecimal.ZERO, "kg"));
+    } else {
+      // Scale both base and applied by the same ratio
+      BigDecimal baseRatio = newPriorUnits.getValue().divide(
+          rechargeBase.getValue(), 10, java.math.RoundingMode.HALF_UP);
+
+      // Scale applied amount by same ratio
+      BigDecimal newApplied = appliedRecharge.getValue().multiply(baseRatio);
+
+      // Update base and applied
+      param.setRechargeBasePopulation(newPriorUnits);
+      param.setAppliedRechargeAmount(new EngineNumber(newApplied, "kg"));
     }
   }
 
