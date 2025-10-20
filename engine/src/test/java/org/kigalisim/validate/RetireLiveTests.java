@@ -150,4 +150,101 @@ public class RetireLiveTests {
     assertEquals("units", resultYear2.getPopulation().getUnits(),
         "Equipment units should be units");
   }
+
+  /**
+   * Test cumulative retire behavior across multiple years.
+   */
+  @Test
+  public void testCumulativeRetire() throws IOException {
+    String qtaPath = "../examples/test_cumulative_retire.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, "business as usual", p -> {});
+    List<EngineResult> list = results.collect(Collectors.toList());
+
+    // Year 1: 100 - (5%+10%=15% of 100) + 10 new = 95
+    EngineResult y1 = LiveTestsUtil.getResult(list.stream(), 1, "test", "test");
+    assertEquals(95.0, y1.getPopulation().getValue().doubleValue(), 0.0001,
+        "Equipment should be 95 after cumulative 15% retire");
+
+    // Year 2: 95 - (15% of 95) + 10 new = 90.75
+    EngineResult y2 = LiveTestsUtil.getResult(list.stream(), 2, "test", "test");
+    assertEquals(90.75, y2.getPopulation().getValue().doubleValue(), 0.0001,
+        "Equipment should be 90.75 after year 2 retire");
+
+    // Year 3: 90.75 - (15% of 90.75) + 10 new = 87.1375
+    EngineResult y3 = LiveTestsUtil.getResult(list.stream(), 3, "test", "test");
+    assertEquals(87.1375, y3.getPopulation().getValue().doubleValue(), 0.0001,
+        "Equipment should be 87.1375 after year 3 retire");
+  }
+
+  /**
+   * Test cumulative retire + recharge in same year (separate bases).
+   */
+  @Test
+  public void testCumulativeRetireAndRecharge() throws IOException {
+    String qtaPath = "../examples/test_cumulative_retire_recharge.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, "business as usual", p -> {});
+    List<EngineResult> list = results.collect(Collectors.toList());
+
+    // Year 1:
+    // - Start: 100 units
+    // - Retire 15% of 100 = 15 units → 85 units
+    // - Add new: 10 units → 95 units
+    // - Recharge 15% of 95 = 14.25 units
+    EngineResult y1 = LiveTestsUtil.getResult(list.stream(), 1, "test", "test");
+    assertEquals(95.0, y1.getPopulation().getValue().doubleValue(), 0.0001,
+        "Equipment after retire and new sales");
+  }
+
+  /**
+   * Test that manual priorEquipment changes invalidate bases correctly.
+   *
+   * <p>This edge case tests the scenario where a user explicitly modifies
+   * priorEquipment mid-year after cumulative retire operations have already
+   * captured their base population. The invalidation logic should proportionally
+   * scale both the base and applied amounts to maintain mathematical consistency.</p>
+   */
+  @Test
+  public void testRetireWithManualPriorEquipmentChange() throws IOException {
+    String qtaPath = "../examples/test_retire_manual_prior.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(
+        program, "business as usual", p -> {});
+    List<EngineResult> list = results.collect(Collectors.toList());
+
+    // Year 1 Execution Flow:
+    // 1. set priorEquipment to 100 units → prior = 100
+    // 2. retire 10% → base=100, applied=10, prior = 90
+    // 3. set priorEquipment to 50 units → invalidation scales: base=50, applied=5, prior=50
+    // 4. retire 5% → cumulative 15% of base 50 = 7.5, delta = 7.5-5 = 2.5, prior = 47.5
+    //
+    // Final equipment: 47.5 units (NOT 42.5 which would be 50 - 15% without scaling)
+    EngineResult y1 = LiveTestsUtil.getResult(list.stream(), 1, "test", "test");
+    assertEquals(47.5, y1.getPopulation().getValue().doubleValue(), 0.0001,
+        "Manual priorEquipment change should proportionally scale cumulative base");
+  }
+
+  /**
+   * Test cumulative retirement with negative adjustment.
+   * Tests that retire 10% followed by retire -5% results in net 5% retirement.
+   */
+  @Test
+  public void testNegativeRetire() throws IOException {
+    String qtaPath = "../examples/test_negative_retire.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, "business as usual", progress -> {});
+    List<EngineResult> resultsList = results.collect(Collectors.toList());
+
+    // Year 1: retire 10% - 5% = 5% of 100 base = 5 units retired
+    // Equipment: 100 base - 5 retired + 10 sales = 105 units
+    EngineResult resultYear1 = LiveTestsUtil.getResult(resultsList.stream(), 1, "test", "test");
+    assertNotNull(resultYear1, "Should have result for test/test in year 1");
+    assertEquals(105.0, resultYear1.getPopulation().getValue().doubleValue(), 0.0001,
+        "Equipment should be 105 units after net 5% retirement (10% - 5%)");
+    assertEquals("units", resultYear1.getPopulation().getUnits(),
+        "Equipment units should be units");
+  }
 }
