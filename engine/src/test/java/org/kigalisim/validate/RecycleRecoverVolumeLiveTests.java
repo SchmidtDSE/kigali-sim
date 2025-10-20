@@ -117,8 +117,8 @@ public class RecycleRecoverVolumeLiveTests {
   }
 
   /**
-   * Test that the example file with multiple recover commands now properly fails.
-   * This verifies that Component 5's validation prevents multiple recover commands.
+   * Test that the example file with multiple recover commands works correctly.
+   * This verifies that validation prevents multiple recover commands.
    */
   @Test
   public void testMultipleRecycles() throws IOException {
@@ -633,11 +633,10 @@ public class RecycleRecoverVolumeLiveTests {
 
   /**
    * Test that recharge BEFORE priorEquipment works correctly with deferred base capture.
-   * This verifies Component 4.6: command order should not matter after the fix.
+   * This verifies that command order does not matter.
    *
-   * <p>The original test_multiple_recycles.qta had recharge BEFORE priorEquipment, which
-   * caused failures with cumulative implementation because base was captured at command time.
-   * After moving base capture to recalc time, both orders should work identically.</p>
+   * <p>When recharge appears BEFORE priorEquipment, base capture must be deferred to recalc time
+   * to ensure both command orders work identically.</p>
    */
   @Test
   public void testMultipleRecyclesReverse() throws IOException {
