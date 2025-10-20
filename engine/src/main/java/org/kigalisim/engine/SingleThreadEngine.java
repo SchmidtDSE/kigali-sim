@@ -1218,8 +1218,7 @@ public class SingleThreadEngine implements Engine {
    * @param amount The amount to change the stream by
    * @param yearMatcher Matcher to determine if the change applies to current year
    * @param scope The scope in which to make the change
-   * @param negativeAllowed If true, negative stream values are permitted (useful for tests with
-   *                         negative retire/recharge adjustments)
+   * @param negativeAllowed If true, negative stream values are permitted
    */
   private void changeStreamWithoutReportingUnits(String stream, EngineNumber amount,
       Optional<YearMatcher> yearMatcher, Optional<UseKey> scope, boolean negativeAllowed) {
