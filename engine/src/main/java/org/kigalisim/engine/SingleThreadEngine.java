@@ -1070,7 +1070,6 @@ public class SingleThreadEngine implements Engine {
    * @param negativeAllowed If true, negative stream values are permitted
    */
   private void changeStreamWithDisplacementContext(String stream, EngineNumber amount, Scope destinationScope, boolean negativeAllowed) {
-    // Store original scope
     Scope originalScope = scope;
 
     try {
