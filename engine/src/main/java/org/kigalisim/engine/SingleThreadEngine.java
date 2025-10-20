@@ -1235,11 +1235,9 @@ public class SingleThreadEngine implements Engine {
 
     BigDecimal newAmountBound;
     if (!negativeAllowed && newAmount.compareTo(BigDecimal.ZERO) < 0) {
-      // Negative value and not allowed - clamp to zero and warn
       System.err.println("WARNING: Negative stream value clamped to zero for stream " + stream);
       newAmountBound = BigDecimal.ZERO;
     } else {
-      // Either negative is allowed, or value is already non-negative
       newAmountBound = newAmount;
     }
 
