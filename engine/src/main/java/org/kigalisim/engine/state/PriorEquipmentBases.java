@@ -14,10 +14,10 @@ import java.util.Optional;
 import org.kigalisim.engine.number.EngineNumber;
 
 /**
- * Manages cumulative retirement and recharge base tracking for prior equipment.
+ * State supporting cumulative retirement / recharge base tracking (prior equip).
  *
- * <p>Tracks population bases and applied amounts across multiple retire/recharge
- * commands within a single timestep to enable cumulative calculations.</p>
+ * <p>State mangaer tracking population bases and applied amounts across multiple
+ * retire/recharge commands within a timestep to enable cumulative calculations.</p>
  */
 public class PriorEquipmentBases {
 
