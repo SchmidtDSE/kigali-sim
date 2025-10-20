@@ -1072,71 +1072,69 @@ public class SingleThreadEngine implements Engine {
    */
   private void changeStreamWithDisplacementContext(String stream, EngineNumber amount, Scope destinationScope, boolean negativeAllowed) {
     // Store original scope
-    Scope originalScope = scope;
+    final Scope originalScope = scope;
 
-    try {
-      // Temporarily switch engine scope to destination substance
-      scope = destinationScope;
+    // Temporarily switch engine scope to destination substance
+    scope = destinationScope;
 
-      // Get current value and calculate new value (now using correct scope)
-      EngineNumber currentValue = getStream(stream);
-      UnitConverter unitConverter = EngineSupportUtils.createUnitConverterWithTotal(this, stream);
+    // Get current value and calculate new value (now using correct scope)
+    EngineNumber currentValue = getStream(stream);
+    UnitConverter unitConverter = EngineSupportUtils.createUnitConverterWithTotal(this, stream);
 
-      EngineNumber convertedDelta = unitConverter.convert(amount, currentValue.getUnits());
-      BigDecimal newAmount = currentValue.getValue().add(convertedDelta.getValue());
+    EngineNumber convertedDelta = unitConverter.convert(amount, currentValue.getUnits());
+    BigDecimal newAmount = currentValue.getValue().add(convertedDelta.getValue());
 
-      BigDecimal newAmountBound;
-      if (!negativeAllowed && newAmount.compareTo(BigDecimal.ZERO) < 0) {
-        // Negative value and not allowed - clamp to zero and warn
-        System.err.println("WARNING: Negative stream value clamped to zero for stream " + stream);
-        newAmountBound = BigDecimal.ZERO;
-      } else {
-        // Either negative is allowed, or value is already non-negative
-        newAmountBound = newAmount;
-      }
-
-      EngineNumber outputWithUnits = new EngineNumber(newAmountBound, currentValue.getUnits());
-
-      // Set the stream value without triggering standard recalc to avoid double calculation
-      StreamUpdate update = new StreamUpdateBuilder()
-          .setName(stream)
-          .setValue(outputWithUnits)
-          .setPropagateChanges(false)
-          .build();
-
-      executeStreamUpdate(update);
-
-      // Update lastSpecifiedValue for sales substreams since propagateChanges=false skips this
-      if (isSalesStream(stream, false)) {
-        UseKey destKey = new SimpleUseKey(destinationScope.getApplication(), destinationScope.getSubstance());
-        simulationState.setLastSpecifiedValue(destKey, stream, outputWithUnits);
-      }
-
-      // Only recalculate for streams that affect equipment populations
-      if (!isSalesStream(stream, false)) {
-        return;
-      }
-
-      // Create standard recalc operation - engine scope is now correctly set to destination
-      boolean useImplicitRecharge = false; // Displacement operations don't add recharge
-
-      RecalcOperationBuilder builder = new RecalcOperationBuilder()
-          .setRecalcKit(createRecalcKit()) // Use standard recalc kit - scope is correct now
-          .setUseExplicitRecharge(!useImplicitRecharge)
-          .recalcPopulationChange()
-          .thenPropagateToConsumption();
-
-      if (!OPTIMIZE_RECALCS) {
-        builder = builder.thenPropagateToSales();
-      }
-
-      RecalcOperation operation = builder.build();
-      operation.execute(this);
-
-    } finally {
-      // Always restore original scope
-      scope = originalScope;
+    BigDecimal newAmountBound;
+    if (!negativeAllowed && newAmount.compareTo(BigDecimal.ZERO) < 0) {
+      // Negative value and not allowed - clamp to zero and warn
+      System.err.println("WARNING: Negative stream value clamped to zero for stream " + stream);
+      newAmountBound = BigDecimal.ZERO;
+    } else {
+      // Either negative is allowed, or value is already non-negative
+      newAmountBound = newAmount;
     }
+
+    EngineNumber outputWithUnits = new EngineNumber(newAmountBound, currentValue.getUnits());
+
+    // Set the stream value without triggering standard recalc to avoid double calculation
+    StreamUpdate update = new StreamUpdateBuilder()
+        .setName(stream)
+        .setValue(outputWithUnits)
+        .setPropagateChanges(false)
+        .build();
+
+    executeStreamUpdate(update);
+
+    // Update lastSpecifiedValue for sales substreams since propagateChanges=false skips this
+    if (isSalesStream(stream, false)) {
+      UseKey destKey = new SimpleUseKey(destinationScope.getApplication(), destinationScope.getSubstance());
+      simulationState.setLastSpecifiedValue(destKey, stream, outputWithUnits);
+    }
+
+    // Only recalculate for streams that affect equipment populations
+    if (!isSalesStream(stream, false)) {
+      scope = originalScope;
+      return;
+    }
+
+    // Create standard recalc operation - engine scope is now correctly set to destination
+    boolean useImplicitRecharge = false; // Displacement operations don't add recharge
+
+    RecalcOperationBuilder builder = new RecalcOperationBuilder()
+        .setRecalcKit(createRecalcKit()) // Use standard recalc kit - scope is correct now
+        .setUseExplicitRecharge(!useImplicitRecharge)
+        .recalcPopulationChange()
+        .thenPropagateToConsumption();
+
+    if (!OPTIMIZE_RECALCS) {
+      builder = builder.thenPropagateToSales();
+    }
+
+    RecalcOperation operation = builder.build();
+    operation.execute(this);
+
+    // Restore original scope
+    scope = originalScope;
   }
 
   /**
