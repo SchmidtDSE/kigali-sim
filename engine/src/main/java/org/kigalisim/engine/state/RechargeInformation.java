@@ -89,6 +89,7 @@ public class RechargeInformation {
 
     return new RechargeInformation(
         new EngineNumber(accumulatedPopulation, "%"),
-        new EngineNumber(weightedIntensity, "kg / unit"));
+        new EngineNumber(weightedIntensity, "kg / unit")
+    );
   }
 }
