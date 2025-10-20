@@ -467,11 +467,12 @@ public class StreamParameterization {
    * @param intensity The recharge intensity for this rate
    */
   public void accumulateRecharge(EngineNumber population, EngineNumber intensity) {
-    EngineNumber[] result = priorEquipmentBases.accumulateRecharge(
-        rechargePopulation, rechargeIntensity, population, intensity);
+    RechargeInformation currentInfo =
+        new RechargeInformation(rechargePopulation, rechargeIntensity);
+    RechargeInformation result = currentInfo.add(population, intensity);
 
-    rechargePopulation = result[0];
-    rechargeIntensity = result[1];
+    rechargePopulation = result.getPopulation();
+    rechargeIntensity = result.getIntensity();
   }
 
   /**

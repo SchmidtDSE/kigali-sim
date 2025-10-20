@@ -181,46 +181,4 @@ public class PriorEquipmentBases {
     recyclingCalculatedThisStep = false;
   }
 
-  /**
-   * Accumulate recharge parameters with weighted-average intensity.
-   *
-   * <p>Multiple calls accumulate rates (addition) and intensities (weighted-average).
-   * Population rates are added, intensities are weighted-averaged using absolute values
-   * for weights to handle negative adjustments correctly.</p>
-   *
-   * <p>Weighted average formula: (|rate1| × intensity1 + |rate2| × intensity2) / (|rate1| + |rate2|)</p>
-   *
-   * @param currentPopulation The current recharge population rate
-   * @param currentIntensity The current recharge intensity
-   * @param population The recharge population rate to add
-   * @param intensity The recharge intensity for this rate
-   * @return An array with [newPopulation, newIntensity]
-   */
-  public EngineNumber[] accumulateRecharge(EngineNumber currentPopulation, EngineNumber currentIntensity,
-      EngineNumber population, EngineNumber intensity) {
-    // Calculate weighted-average intensity BEFORE updating population
-    // Use absolute values for weights to handle negative values correctly
-    BigDecimal currentWeight = currentPopulation.getValue().abs();
-    BigDecimal newWeight = population.getValue().abs();
-
-    BigDecimal weightedIntensity;
-    if (currentWeight.compareTo(BigDecimal.ZERO) == 0) {
-      // First recharge command this step, just use new intensity directly
-      weightedIntensity = intensity.getValue();
-    } else {
-      // Multiple recharge commands - compute weighted average: (w1*i1 + w2*i2) / (w1 + w2)
-      BigDecimal totalWeight = currentWeight.add(newWeight);
-      weightedIntensity = currentWeight.multiply(currentIntensity.getValue())
-          .add(newWeight.multiply(intensity.getValue()))
-          .divide(totalWeight, 10, java.math.RoundingMode.HALF_UP);
-    }
-
-    // Accumulate population rates (can be negative)
-    BigDecimal newPopulation = currentPopulation.getValue().add(population.getValue());
-
-    return new EngineNumber[] {
-        new EngineNumber(newPopulation, "%"),
-        new EngineNumber(weightedIntensity, "kg / unit")
-    };
-  }
 }
