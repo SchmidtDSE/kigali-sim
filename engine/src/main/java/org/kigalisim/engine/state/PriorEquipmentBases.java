@@ -33,13 +33,13 @@ public class PriorEquipmentBases {
    * Create a new PriorEquipmentBases instance with default values.
    */
   public PriorEquipmentBases() {
-    this.retirementBasePopulation = Optional.empty();
-    this.appliedRetirementAmount = Optional.of(new EngineNumber(BigDecimal.ZERO, "units"));
-    this.hasReplacementThisStep = false;
-    this.retireCalculatedThisStep = false;
-    this.rechargeBasePopulation = Optional.empty();
-    this.appliedRechargeAmount = Optional.of(new EngineNumber(BigDecimal.ZERO, "kg"));
-    this.recyclingCalculatedThisStep = false;
+    retirementBasePopulation = Optional.empty();
+    appliedRetirementAmount = Optional.of(new EngineNumber(BigDecimal.ZERO, "units"));
+    hasReplacementThisStep = false;
+    retireCalculatedThisStep = false;
+    rechargeBasePopulation = Optional.empty();
+    appliedRechargeAmount = Optional.of(new EngineNumber(BigDecimal.ZERO, "kg"));
+    recyclingCalculatedThisStep = false;
   }
 
   /**
@@ -57,7 +57,7 @@ public class PriorEquipmentBases {
    * @param value The base population value
    */
   public void setRetirementBasePopulation(EngineNumber value) {
-    this.retirementBasePopulation = Optional.of(value);
+    retirementBasePopulation = Optional.of(value);
   }
 
   /**
@@ -75,7 +75,7 @@ public class PriorEquipmentBases {
    * @param value The total amount retired this step
    */
   public void setAppliedRetirementAmount(EngineNumber value) {
-    this.appliedRetirementAmount = Optional.of(value);
+    appliedRetirementAmount = Optional.of(value);
   }
 
   /**
@@ -93,7 +93,7 @@ public class PriorEquipmentBases {
    * @param value true for with replacement, false for without replacement
    */
   public void setHasReplacementThisStep(boolean value) {
-    this.hasReplacementThisStep = value;
+    hasReplacementThisStep = value;
   }
 
   /**
@@ -111,7 +111,7 @@ public class PriorEquipmentBases {
    * @param calculated true if retire was calculated, false otherwise
    */
   public void setRetireCalculatedThisStep(boolean calculated) {
-    this.retireCalculatedThisStep = calculated;
+    retireCalculatedThisStep = calculated;
   }
 
   /**
@@ -129,7 +129,7 @@ public class PriorEquipmentBases {
    * @param value The base population value
    */
   public void setRechargeBasePopulation(EngineNumber value) {
-    this.rechargeBasePopulation = Optional.of(value);
+    rechargeBasePopulation = Optional.of(value);
   }
 
   /**
@@ -147,7 +147,7 @@ public class PriorEquipmentBases {
    * @param value The total amount recharged this step in kg
    */
   public void setAppliedRechargeAmount(EngineNumber value) {
-    this.appliedRechargeAmount = Optional.of(value);
+    appliedRechargeAmount = Optional.of(value);
   }
 
   /**
@@ -165,20 +165,20 @@ public class PriorEquipmentBases {
    * @param calculated true if recycling was calculated, false otherwise
    */
   public void setRecyclingCalculatedThisStep(boolean calculated) {
-    this.recyclingCalculatedThisStep = calculated;
+    recyclingCalculatedThisStep = calculated;
   }
 
   /**
    * Reset all tracking state at the beginning of a timestep.
    */
   public void resetStateAtTimestep() {
-    this.retirementBasePopulation = Optional.empty();
-    this.appliedRetirementAmount = Optional.of(new EngineNumber(BigDecimal.ZERO, "units"));
-    this.hasReplacementThisStep = false;
-    this.retireCalculatedThisStep = false;
-    this.rechargeBasePopulation = Optional.empty();
-    this.appliedRechargeAmount = Optional.of(new EngineNumber(BigDecimal.ZERO, "kg"));
-    this.recyclingCalculatedThisStep = false;
+    retirementBasePopulation = Optional.empty();
+    appliedRetirementAmount = Optional.of(new EngineNumber(BigDecimal.ZERO, "units"));
+    hasReplacementThisStep = false;
+    retireCalculatedThisStep = false;
+    rechargeBasePopulation = Optional.empty();
+    appliedRechargeAmount = Optional.of(new EngineNumber(BigDecimal.ZERO, "kg"));
+    recyclingCalculatedThisStep = false;
   }
 
   /**
