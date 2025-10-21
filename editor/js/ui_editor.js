@@ -1929,6 +1929,18 @@ class PolicyListPresenter {
       "policy",
     );
 
+    const addRechargeButton = self._root.querySelector(".add-recharge-button");
+    const rechargeList = self._root.querySelector(".recharge-list");
+    setupListButton(
+      addRechargeButton,
+      rechargeList,
+      "recharge-command-template",
+      (item, root, context) => {
+        initRechargeCommandUi(item, root, self._getCodeObj());
+      },
+      "policy",
+    );
+
     setupDialogInternalLinks(self._root, self._tabs);
   }
 
@@ -2055,6 +2067,14 @@ class PolicyListPresenter {
       removeCallback,
     );
 
+    setListInput(
+      self._dialog.querySelector(".recharge-list"),
+      document.getElementById("recharge-command-template").innerHTML,
+      targetSubstance === null ? [] : targetSubstance.getRecharges(),
+      (item, root) => initRechargeCommandUi(item, root, self._getCodeObj()),
+      removeCallback,
+    );
+
     self._dialog.showModal();
     self._reminderPresenter.update();
     self._updateCounts();
@@ -2125,6 +2145,12 @@ class PolicyListPresenter {
     const limits = getListInput(self._dialog.querySelector(".limit-list"), readLimitCommandUi);
     limits.forEach((command) => builder.addCommand(command));
 
+    const recharges = getListInput(
+      self._dialog.querySelector(".recharge-list"),
+      readRechargeCommandUi,
+    );
+    recharges.forEach((command) => builder.addCommand(command));
+
     const substance = builder.build(true);
     const application = new Application(applicationName, [substance], true, true);
     const policy = new DefinitionalStanza(policyName, [application], true, true);
@@ -2181,6 +2207,7 @@ class PolicyListPresenter {
     updateCount(".level-list", "#policy-set-count");
     updateCount(".change-list", "#policy-change-count");
     updateCount(".limit-list", "#policy-limit-count");
+    updateCount(".recharge-list", "#policy-servicing-count");
   }
 }
 
