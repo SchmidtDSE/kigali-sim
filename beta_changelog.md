@@ -14,6 +14,14 @@ Finally, we want to again express our gratitude for your feedback and time.
 
 The following changes have been adopted and released.
 
+### Servicing in policy UI
+
+**Status**: Released October 21, 2025
+
+**Classification**: Enhancement
+
+Allow the user to include servicing into a policy. In other words, allows UI-based editor to express changes to servicing schedule previuosly only possible in QubecTalk code. See [#600](https://github.com/SchmidtDSE/kigali-sim/pull/600).
+
 ### Multiple retire / recharge
 
 **Status**: Released October 20, 2025
