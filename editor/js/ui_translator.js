@@ -46,7 +46,7 @@ const COMMAND_COMPATIBILITIES = {
   "limit": "any",
   "initial charge": "definition",
   "equals": "definition",
-  "recharge": "definition",
+  "recharge": "any",
   "recycle": "policy",
   "replace": "policy",
   "enable": "definition",
