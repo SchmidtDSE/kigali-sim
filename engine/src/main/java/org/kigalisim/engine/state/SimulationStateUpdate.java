@@ -24,6 +24,7 @@ public final class SimulationStateUpdate {
   private final boolean subtractRecycling;
   private final Optional<SalesStreamDistribution> distribution;
   private final boolean salesDistributionRequired;
+  private final boolean invalidatePriorEquipment;
 
   /**
    * Package-private constructor for creating a SimulationStateUpdate instance.
@@ -34,16 +35,23 @@ public final class SimulationStateUpdate {
    * @param subtractRecycling whether recycling should be subtracted from the value
    * @param distribution optional pre-calculated distribution for sales streams
    * @param salesDistributionRequired whether this stream requires sales distribution logic
+   * @param invalidatePriorEquipment whether this update should trigger prior equipment base invalidation
    */
-  SimulationStateUpdate(UseKey useKey, String name, EngineNumber value,
-                   boolean subtractRecycling, Optional<SalesStreamDistribution> distribution,
-                   boolean salesDistributionRequired) {
+  SimulationStateUpdate(
+      UseKey useKey,
+      String name,
+      EngineNumber value,
+      boolean subtractRecycling,
+      Optional<SalesStreamDistribution> distribution,
+      boolean salesDistributionRequired,
+      boolean invalidatePriorEquipment) {
     this.useKey = useKey;
     this.name = name;
     this.value = value;
     this.subtractRecycling = subtractRecycling;
     this.distribution = distribution;
     this.salesDistributionRequired = salesDistributionRequired;
+    this.invalidatePriorEquipment = invalidatePriorEquipment;
   }
 
   /**
@@ -98,5 +106,14 @@ public final class SimulationStateUpdate {
    */
   public boolean isSalesDistributionRequired() {
     return salesDistributionRequired;
+  }
+
+  /**
+   * Gets whether this update should invalidate prior equipment cumulative bases.
+   *
+   * @return true if this update should trigger base invalidation, false otherwise
+   */
+  public boolean getInvalidatesPriorEquipment() {
+    return invalidatePriorEquipment;
   }
 }
