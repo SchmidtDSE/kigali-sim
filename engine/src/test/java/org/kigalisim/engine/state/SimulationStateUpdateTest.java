@@ -33,7 +33,7 @@ public class SimulationStateUpdateTest {
         new BigDecimal("0.7"), new BigDecimal("0.3"));
 
     SimulationStateUpdate stream = new SimulationStateUpdate(
-        useKey, "domestic", value, true, Optional.of(distribution), true);
+        useKey, "domestic", value, true, Optional.of(distribution), true, true);
 
     assertNotNull(stream, "SimulationStateUpdate should be constructable");
     assertEquals(useKey, stream.getUseKey(), "UseKey should match");
@@ -42,6 +42,7 @@ public class SimulationStateUpdateTest {
     assertTrue(stream.getSubtractRecycling(), "SubtractRecycling should be true");
     assertEquals(Optional.of(distribution), stream.getDistribution(), "Distribution should match");
     assertTrue(stream.isSalesDistributionRequired(), "SalesDistributionRequired should be true");
+    assertTrue(stream.getInvalidatesPriorEquipment(), "InvalidatesPriorEquipment should be true by default");
   }
 
   /**
@@ -53,7 +54,7 @@ public class SimulationStateUpdateTest {
     EngineNumber value = new EngineNumber(new BigDecimal("50"), "units");
 
     SimulationStateUpdate stream = new SimulationStateUpdate(
-        useKey, "equipment", value, false, Optional.empty(), false);
+        useKey, "equipment", value, false, Optional.empty(), false, true);
 
     assertEquals(useKey, stream.getUseKey(), "UseKey should match");
     assertEquals("equipment", stream.getName(), "Name should match");
@@ -72,7 +73,7 @@ public class SimulationStateUpdateTest {
     EngineNumber originalValue = new EngineNumber(new BigDecimal("75"), "tCO2e");
 
     SimulationStateUpdate stream = new SimulationStateUpdate(
-        useKey, "consumption", originalValue, false, null, false);
+        useKey, "consumption", originalValue, false, null, false, true);
 
     EngineNumber retrievedValue = stream.getValue();
     assertEquals(originalValue.getValue(), retrievedValue.getValue(), "Value should be preserved");
@@ -89,7 +90,7 @@ public class SimulationStateUpdateTest {
     // Test outcome stream
     EngineNumber outcomeValue = new EngineNumber(new BigDecimal("200"), "kg");
     SimulationStateUpdate outcomeStream = new SimulationStateUpdate(
-        useKey, "recycle", outcomeValue, false, Optional.empty(), false);
+        useKey, "recycle", outcomeValue, false, Optional.empty(), false, true);
     assertEquals("recycle", outcomeStream.getName(), "Outcome stream name should match");
 
     // Test sales stream
@@ -97,7 +98,7 @@ public class SimulationStateUpdateTest {
     SalesStreamDistribution dist = new SalesStreamDistribution(
         new BigDecimal("0.8"), new BigDecimal("0.2"));
     SimulationStateUpdate salesStream = new SimulationStateUpdate(
-        useKey, "import", salesValue, true, Optional.of(dist), true);
+        useKey, "import", salesValue, true, Optional.of(dist), true, true);
     assertEquals("import", salesStream.getName(), "Sales stream name should match");
     assertTrue(salesStream.isSalesDistributionRequired(), "Sales stream should require distribution");
   }

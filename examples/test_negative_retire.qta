@@ -4,11 +4,12 @@ start default
 
     uses substance "test"
       enable domestic
+      equals 5 tCO2e / kg
       initial charge with 1 kg / unit for domestic
-      set domestic to 100 mt
-      equals 5 tCO2e / mt
-      set priorEquipment to 100000 units during year 1
-      retire 10 %
+      set priorEquipment to 100 units during year 1
+      set domestic to 10 units
+      retire 10%
+      retire -5%
     end substance
 
   end application
@@ -18,6 +19,6 @@ end default
 
 start simulations
 
-  simulate "business as usual" from years 1 to 2
+  simulate "business as usual" from years 1 to 1
 
 end simulations

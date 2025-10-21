@@ -13,7 +13,7 @@ start default
       set priorEquipment to 100 units during year 1
       change domestic by 5 % / year during years 2 to 10
       retire 5 % / year
-      recharge 5 % with 0.85 kg / unit during year 1
+      recharge 5 % with 0.85 kg / unit
     end substance
 
   end application

@@ -14,19 +14,51 @@ Finally, we want to again express our gratitude for your feedback and time.
 
 The following changes have been adopted and released.
 
+### Multiple retire / recharge
+
+**Status**: Released October 20, 2025
+
+**Classification**: Enhancement
+
+Allow the user to specify multiple retire and recharge commands for a single app / substance pair. See [#598](https://github.com/SchmidtDSE/kigali-sim/pull/598).
+
+### Fix recharge calculation on retire with replace
+
+**Status**: Released October 20, 2025
+
+**Classification**: Bug
+
+The retire with replacement option was still including an outdated equipment count in determining servicing requirements. For consistency with the Kigali Sim convention that newly sold eqiupment are not subject to servicing rates, the servicing calculation is now using the correct value. This only impacted simulations using the new `with replacement` feature. We sincerely apologize for this issue. See [#598](https://github.com/SchmidtDSE/kigali-sim/pull/598). 
+
+### Speed boost 2
+
+**Status**: Released October 20, 2025
+
+**Classification**: Enhancement
+
+Various speed improvements. See [#593](https://github.com/SchmidtDSE/kigali-sim/pull/593), [#594](https://github.com/SchmidtDSE/kigali-sim/pull/594), [#596](https://github.com/SchmidtDSE/kigali-sim/pull/596). Some users may have seen this prior to release date on early rollout after Oct 8.
+
+### Add bank to visualization and grammar
+
+**Status**: Released October 20, 2025
+
+**Classification**: Enhancement
+
+Added option to visualize the bank in equipment or volume and use bank keyword in QubecTalk code. See [#591](https://github.com/SchmidtDSE/kigali-sim/pull/591) and [#592](https://github.com/SchmidtDSE/kigali-sim/pull/592). Some users may have seen this prior to release date on early rollout after Oct 8.
+
 ### Retire with replacement option
 
 **Status**: Released October 8, 2025
 
-**Classification**: Feature
+**Classification**: Enhancement
 
 Added support for the retire command to automatically marginally increase sales to offset any lost equipment. See [#587](https://github.com/SchmidtDSE/kigali-sim/pull/587).
 
-### Speed boost
+### Speed boost 1
 
 **Status**: Released October 7, 2025
 
-**Classification**: Feature
+**Classification**: Enhancement
 
 Speed boost in unit conversion. See [#584](https://github.com/SchmidtDSE/kigali-sim/pull/584).
 
@@ -34,7 +66,7 @@ Speed boost in unit conversion. See [#584](https://github.com/SchmidtDSE/kigali-
 
 **Status**: Release October 6, 2025 (all users Oct 7)
 
-**Classification**: Feature
+**Classification**: Enhancement
 
 Added a feature where all of the sub-applications now have the same color as their parent application if there are more than 5 substances. This makes compelx simulations easier to read. See [#581](https://github.com/SchmidtDSE/kigali-sim/pull/581).
 
@@ -58,7 +90,7 @@ Previously the retirement emissions was amortized but spikes in retirement could
 
 **Status**: Released September 28, 2025
 
-**Classification**: Feature
+**Classification**: Enhancement
 
 Streamline the llms-full and llms.txt to better clarify what files are necessary and when. See [#577](https://github.com/SchmidtDSE/kigali-sim/pull/577).
 
@@ -66,7 +98,7 @@ Streamline the llms-full and llms.txt to better clarify what files are necessary
 
 **Status**: Released September 27, 2025
 
-**Classification**: Feature / Bug
+**Classification**: Bug
 
 Now allow users to specify the application in which a duplicate substance consumption record is to be registered. Also fixes bug on numeric validation that was causing an error message. See [#575](https://github.com/SchmidtDSE/kigali-sim/pull/575).
 
@@ -74,7 +106,7 @@ Now allow users to specify the application in which a duplicate substance consum
 
 **Status**: Released September 27, 2025
 
-**Classification**: Feature
+**Classification**: Enhancement
 
 Clarify to LLMs what the export columns are in order to allow them to more reliably perform analysis on simluation outputs.
 
@@ -114,7 +146,7 @@ Allow the user to directly control induced demand from recycling but suggesting 
 
 **Status**: Released September 18, 2025
 
-**Classification**: Feature
+**Classification**: Enhancement
 
 Various small tweaks from workshops including the duplicate button and improved error messages for alternative number formats like 1.000.000,0 (instead of 1,000,000.0).
 
@@ -194,7 +226,7 @@ The privacy brief is now shown prior to accessing the full privacy details. User
 
 **Status:** Released August 19, 2025
 
-**Classification:** Clarification / Bug
+**Classification:** Clarification
 
 Clarified that, when recycling reduces virgin material demand in volume-based sales scenarios, any loss of recycling availability in subsequent years will be immediately back-filled by virgin material to maintain total demand. Previously, in volume-based scenarios (using `set sales to X mt`), recycling would correctly displace virgin material in the year it was active. However, at year boundaries, virgin material would not go up in response to lost recycling volumes. This makes sense for induced demand but, as most users are not modeling that complex logic, this version is more appropriate for majority of users. See [#506](https://github.com/SchmidtDSE/kigali-sim/issues/506). We apologize for the inconvenience.
 
@@ -234,7 +266,7 @@ Modified energy efficiency calculations based on the full equipment population r
 
 **Status:** Released August 4, 2025
 
-**Classification:** Feature
+**Classification:** Enhancement
 
 Added option to select initial charge on emissions. This is technically future emissions as the substance will later appear in recharge and end of life (or recycling), options which are already available. However, this was user-requested and may help validate some calculations and help in some policy making contexts. See [#486](https://github.com/SchmidtDSE/kigali-sim/issues/486). Some smaller changes linked from that issue.
 

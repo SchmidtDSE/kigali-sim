@@ -54,7 +54,7 @@ public class RetireRecalcStrategy implements RecalcStrategy {
     // Get SimulationState from kit
     var simulationState = kit.getStreamKeeper();
 
-    // Calculate change
+    // Get current state
     EngineNumber currentPriorRaw = simulationState.getStream(
         scopeEffective,
         "priorEquipment"
@@ -67,17 +67,41 @@ public class RetireRecalcStrategy implements RecalcStrategy {
     );
     final EngineNumber currentEquipment = unitConverter.convert(currentEquipmentRaw, "units");
 
-    stateGetter.setPopulation(currentPrior);
-    EngineNumber amountRaw = simulationState.getRetirementRate(scopeEffective);
-    EngineNumber amount = unitConverter.convert(amountRaw, "units");
+    Optional<EngineNumber> basePopulationOpt = simulationState.getRetirementBasePopulation(
+        scopeEffective
+    );
+    EngineNumber basePopulation;
+    boolean firstRetire = !basePopulationOpt.isPresent();
+    if (firstRetire) {
+      basePopulation = currentPrior;
+      simulationState.setRetirementBasePopulation(scopeEffective, basePopulation);
+    } else {
+      basePopulation = basePopulationOpt.get();
+    }
+
+    // Convert cumulative retirement rate using base prior equipment
+    EngineNumber cumulativeRateRaw = simulationState.getRetirementRate(scopeEffective);
+    stateGetter.setPopulation(basePopulation);
+    EngineNumber cumulativeAmount = unitConverter.convert(cumulativeRateRaw, "units");
     stateGetter.clearPopulation();
 
-    // Calculate new values - amount is already converted to absolute units by UnitConverter
-    BigDecimal newPriorValue = currentPrior.getValue().subtract(amount.getValue());
-    BigDecimal newEquipmentValue = currentEquipment.getValue().subtract(amount.getValue());
+    // Calculate delta (incremental retirement since last retire command)
+    Optional<EngineNumber> appliedAmountOpt = simulationState.getAppliedRetirementAmount(scopeEffective);
+    EngineNumber appliedAmount = appliedAmountOpt.orElse(new EngineNumber(BigDecimal.ZERO, "units"));
+    BigDecimal deltaValue = cumulativeAmount.getValue().subtract(appliedAmount.getValue());
+    EngineNumber delta = new EngineNumber(deltaValue, "units");
+
+    // Apply delta to streams
+    BigDecimal newPriorValue = currentPrior.getValue().subtract(delta.getValue());
+    BigDecimal newEquipmentValue = currentEquipment.getValue().subtract(delta.getValue());
+
+    EngineNumber currentRetiredRaw = simulationState.getStream(scopeEffective, "retired");
+    EngineNumber currentRetired = unitConverter.convert(currentRetiredRaw, "units");
+    BigDecimal newRetiredValue = currentRetired.getValue().add(delta.getValue());
 
     EngineNumber newPrior = new EngineNumber(newPriorValue, "units");
     EngineNumber newEquipment = new EngineNumber(newEquipmentValue, "units");
+    EngineNumber newRetired = new EngineNumber(newRetiredValue, "units");
 
     // Update equipment streams
     SimulationStateUpdate priorEquipmentStream = new SimulationStateUpdateBuilder()
@@ -85,6 +109,7 @@ public class RetireRecalcStrategy implements RecalcStrategy {
         .setName("priorEquipment")
         .setValue(newPrior)
         .setSubtractRecycling(false)
+        .setInvalidatePriorEquipment(false)
         .build();
     simulationState.update(priorEquipmentStream);
 
@@ -97,10 +122,6 @@ public class RetireRecalcStrategy implements RecalcStrategy {
     simulationState.update(equipmentStream);
 
     // Update retired stream with the amount retired this year
-    EngineNumber currentRetiredRaw = simulationState.getStream(scopeEffective, "retired");
-    EngineNumber currentRetired = unitConverter.convert(currentRetiredRaw, "units");
-    BigDecimal newRetiredValue = currentRetired.getValue().add(amount.getValue());
-    EngineNumber newRetired = new EngineNumber(newRetiredValue, "units");
     SimulationStateUpdate retiredStream = new SimulationStateUpdateBuilder()
         .setUseKey(scopeEffective)
         .setName("retired")
@@ -108,6 +129,9 @@ public class RetireRecalcStrategy implements RecalcStrategy {
         .setSubtractRecycling(false)
         .build();
     simulationState.update(retiredStream);
+
+    // Track cumulative applied amount for next delta calculation
+    simulationState.setAppliedRetirementAmount(scopeEffective, cumulativeAmount);
 
     // Update GHG accounting
     EolEmissionsRecalcStrategy eolStrategy = new EolEmissionsRecalcStrategy(Optional.of(scopeEffective));

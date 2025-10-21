@@ -13,6 +13,7 @@ import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import org.kigalisim.engine.number.EngineNumber;
 import org.kigalisim.lang.operation.RecoverOperation.RecoveryStage;
@@ -41,6 +42,9 @@ public class StreamParameterization {
   private final Set<String> enabledStreams;
   private boolean salesIntentFreshlySet;
 
+  // Cumulative retirement and recharge tracking (independent bases)
+  private PriorEquipmentBases priorEquipmentBases;
+
   /**
    * Create a new stream parameterization instance.
    */
@@ -66,6 +70,8 @@ public class StreamParameterization {
     retirementRate = new EngineNumber(BigDecimal.ZERO, "%");
     inductionRateRecharge = new EngineNumber(new BigDecimal("100"), "%");
     inductionRateEol = new EngineNumber(new BigDecimal("100"), "%");
+
+    priorEquipmentBases = new PriorEquipmentBases();
   }
 
 
@@ -302,10 +308,15 @@ public class StreamParameterization {
   /**
    * Set the retirement rate percentage.
    *
-   * @param newValue The new retirement rate value
+   * <p>This method accumulates retirement rates across multiple retire commands
+   * in the same year to support cumulative retirement behavior.</p>
+   *
+   * @param newValue The new retirement rate value to add
    */
   public void setRetirementRate(EngineNumber newValue) {
-    retirementRate = newValue;
+    BigDecimal currentValue = retirementRate.getValue();
+    BigDecimal newTotal = currentValue.add(newValue.getValue());
+    retirementRate = new EngineNumber(newTotal, newValue.getUnits());
   }
 
   /**
@@ -315,6 +326,153 @@ public class StreamParameterization {
    */
   public EngineNumber getRetirementRate() {
     return retirementRate;
+  }
+
+  /**
+   * Get the retirement base population for cumulative calculations.
+   *
+   * @return The base population, or empty if not yet captured this step
+   */
+  public Optional<EngineNumber> getRetirementBasePopulation() {
+    return priorEquipmentBases.getRetirementBasePopulation();
+  }
+
+  /**
+   * Set the retirement base population for cumulative calculations.
+   *
+   * @param value The base population value
+   */
+  public void setRetirementBasePopulation(EngineNumber value) {
+    priorEquipmentBases.setRetirementBasePopulation(value);
+  }
+
+  /**
+   * Get the applied retirement amount for cumulative calculations.
+   *
+   * @return The total amount already retired this step
+   */
+  public Optional<EngineNumber> getAppliedRetirementAmount() {
+    return priorEquipmentBases.getAppliedRetirementAmount();
+  }
+
+  /**
+   * Set the applied retirement amount for cumulative calculations.
+   *
+   * @param value The total amount retired this step
+   */
+  public void setAppliedRetirementAmount(EngineNumber value) {
+    priorEquipmentBases.setAppliedRetirementAmount(value);
+  }
+
+  /**
+   * Get the replacement mode for this step's retire commands.
+   *
+   * @return true if with replacement, false if without replacement
+   */
+  public boolean getHasReplacementThisStep() {
+    return priorEquipmentBases.getHasReplacementThisStep();
+  }
+
+  /**
+   * Set the replacement mode for this step's retire commands.
+   *
+   * @param value true for with replacement, false for without replacement
+   */
+  public void setHasReplacementThisStep(boolean value) {
+    priorEquipmentBases.setHasReplacementThisStep(value);
+  }
+
+  /**
+   * Get whether retire has been calculated this step.
+   *
+   * @return true if retire was calculated, false otherwise
+   */
+  public boolean getRetireCalculatedThisStep() {
+    return priorEquipmentBases.getRetireCalculatedThisStep();
+  }
+
+  /**
+   * Set whether retire has been calculated this step.
+   *
+   * @param calculated true if retire was calculated, false otherwise
+   */
+  public void setRetireCalculatedThisStep(boolean calculated) {
+    priorEquipmentBases.setRetireCalculatedThisStep(calculated);
+  }
+
+  /**
+   * Get the recharge base population for cumulative calculations.
+   *
+   * @return The base population, or empty if not yet captured this step
+   */
+  public Optional<EngineNumber> getRechargeBasePopulation() {
+    return priorEquipmentBases.getRechargeBasePopulation();
+  }
+
+  /**
+   * Set the recharge base population for cumulative calculations.
+   *
+   * @param value The base population value
+   */
+  public void setRechargeBasePopulation(EngineNumber value) {
+    priorEquipmentBases.setRechargeBasePopulation(value);
+  }
+
+  /**
+   * Get the applied recharge amount for cumulative calculations.
+   *
+   * @return The total amount already recharged this step in kg
+   */
+  public Optional<EngineNumber> getAppliedRechargeAmount() {
+    return priorEquipmentBases.getAppliedRechargeAmount();
+  }
+
+  /**
+   * Set the applied recharge amount for cumulative calculations.
+   *
+   * @param value The total amount recharged this step in kg
+   */
+  public void setAppliedRechargeAmount(EngineNumber value) {
+    priorEquipmentBases.setAppliedRechargeAmount(value);
+  }
+
+  /**
+   * Get whether recycling has been calculated this step.
+   *
+   * @return true if recycling was calculated, false otherwise
+   */
+  public boolean isRecyclingCalculatedThisStep() {
+    return priorEquipmentBases.getRecyclingCalculatedThisStep();
+  }
+
+  /**
+   * Set whether recycling has been calculated this step.
+   *
+   * @param calculated true if recycling was calculated, false otherwise
+   */
+  public void setRecyclingCalculatedThisStep(boolean calculated) {
+    priorEquipmentBases.setRecyclingCalculatedThisStep(calculated);
+  }
+
+  /**
+   * Accumulate recharge parameters. Sets when not previously set, accumulates otherwise.
+   *
+   * <p>Multiple calls accumulate rates (addition) and intensities (weighted-average).
+   * Population rates are added, intensities are weighted-averaged using absolute values
+   * for weights to handle negative adjustments correctly.</p>
+   *
+   * <p>Weighted average formula: (|rate1| × intensity1 + |rate2| × intensity2) / (|rate1| + |rate2|)</p>
+   *
+   * @param population The recharge population rate to add
+   * @param intensity The recharge intensity for this rate
+   */
+  public void accumulateRecharge(EngineNumber population, EngineNumber intensity) {
+    RechargeInformation currentInfo =
+        new RechargeInformation(rechargePopulation, rechargeIntensity);
+    RechargeInformation result = currentInfo.add(population, intensity);
+
+    rechargePopulation = result.getPopulation();
+    rechargeIntensity = result.getIntensity();
   }
 
   /**
@@ -400,17 +558,27 @@ public class StreamParameterization {
   /**
    * Reset state at the beginning of a timestep.
    *
-   * <p>This method resets recovery rate to 0% and induction rate to 100% between years since
+   * <p>This method resets recovery rate to 0% and induction rate to 100% between steps since
    * recycling programs may cease and should not be expected to continue unchanged, but
    * default induction behavior should return to induced demand (100%).</p>
    */
   public void resetStateAtTimestep() {
-    // Reset recovery to 0% between years since recycling programs may cease
+    // Reset recovery to 0% between steps since recycling programs may cease
     recoveryRateRecharge = new EngineNumber(BigDecimal.ZERO, "%");
     recoveryRateEol = new EngineNumber(BigDecimal.ZERO, "%");
     // Reset induction to 100% (default induced demand behavior)
     inductionRateRecharge = new EngineNumber(new BigDecimal("100"), "%");
     inductionRateEol = new EngineNumber(new BigDecimal("100"), "%");
+
+    // Reset retirement tracking for new step
+    retirementRate = new EngineNumber(BigDecimal.ZERO, "%");
+
+    // Reset recharge tracking for new step
+    rechargePopulation = new EngineNumber(BigDecimal.ZERO, "%");
+    rechargeIntensity = new EngineNumber(BigDecimal.ZERO, "kg / unit");
+
+    // Reset cumulative tracking
+    priorEquipmentBases.resetStateAtTimestep();
   }
 
   /**

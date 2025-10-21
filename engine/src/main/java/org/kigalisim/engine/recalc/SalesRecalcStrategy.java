@@ -53,19 +53,33 @@ public class SalesRecalcStrategy implements RecalcStrategy {
 
     SimulationState simulationState = kit.getStreamKeeper();
 
-    // Get recharge population
-    EngineNumber basePopulation = target.getStream("priorEquipment", Optional.of(scopeEffective), Optional.empty());
-    stateGetter.setPopulation(basePopulation);
+    Optional<EngineNumber> rechargeBaseOpt = simulationState.getRechargeBasePopulation(scopeEffective);
+    EngineNumber rechargeBase;
+    boolean firstRecharge = !rechargeBaseOpt.isPresent();
+    if (firstRecharge) {
+      EngineNumber currentPriorRaw = target.getStream("priorEquipment", Optional.of(scopeEffective), Optional.empty());
+      EngineNumber currentPrior = unitConverter.convert(currentPriorRaw, "units");
+      simulationState.setRechargeBasePopulation(scopeEffective, currentPrior);
+      rechargeBase = currentPrior;
+    } else {
+      rechargeBase = rechargeBaseOpt.get();
+    }
+
+    // Calculate total recharge volume using base population
+    stateGetter.setPopulation(rechargeBase);
     EngineNumber rechargePopRaw = simulationState.getRechargePopulation(scopeEffective);
-    EngineNumber rechargePop = unitConverter.convert(rechargePopRaw, "units");
+    EngineNumber totalRechargeUnits = unitConverter.convert(rechargePopRaw, "units");
     stateGetter.clearPopulation();
 
-    // Switch into recharge population
-    stateGetter.setPopulation(rechargePop);
+    // Switch into recharge population for intensity calculation
+    stateGetter.setPopulation(totalRechargeUnits);
 
-    // Get recharge amount
+    // Get weighted-average intensity
     EngineNumber rechargeIntensityRaw = simulationState.getRechargeIntensity(scopeEffective);
-    EngineNumber rechargeVolume = unitConverter.convert(rechargeIntensityRaw, "kg");
+    EngineNumber totalRechargeVolume = unitConverter.convert(rechargeIntensityRaw, "kg");
+
+    // Save total recharge (SalesRecalcStrategy uses full accumulated recharge volume)
+    EngineNumber rechargeVolume = totalRechargeVolume;
 
     // Determine initial charge
     EngineNumber initialChargeRaw = target.getInitialCharge("sales");
