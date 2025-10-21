@@ -886,6 +886,11 @@
                               >Limit (<span id="policy-limit-count">0</span>)</a
                             >
                           </li>
+                          <li>
+                            <a href="#policy-servicing" data-tippy-content="Modify servicing schedules as part of policy intervention. This can model changes to recharge frequency or volume resulting from regulatory requirements or incentive programs."
+                              >Servicing (<span id="policy-servicing-count">0</span>)</a
+                            >
+                          </li>
                         </ul>
                         <div id="policy-general">
                           <div class="instructions">
@@ -1010,6 +1015,25 @@
                           <div class="scope-reminder detached">
                             Your policy will limit <span class="reminder-substance"></span> used for
                             <span class="reminder-app"></span>.
+                            <a href="#edit" class="edit-reminder-link">Change</a>
+                          </div>
+                        </div>
+                        <div id="policy-servicing">
+                          <div class="instructions">
+                            Modify equipment servicing schedules under this policy. This can be used to
+                            model regulatory requirements for more frequent servicing to reduce leakage,
+                            changes to recharge volumes, or other policy-driven modifications to service
+                            operations. For example, a policy might require reduced top-up volumes to
+                            encourage proper repairs. Note that recharge percentages are additive: 10%
+                            recharge in BAU plus 5% recharge in policy equals 15% overall servicing.
+                          </div>
+                          <div class="dialog-list recharge-list"></div>
+                          <div class="dialog-sub-buttons bold-buttons">
+                            <a href="#" class="add-recharge-button secondary">Add Servicing</a>
+                          </div>
+                          <div class="scope-reminder detached">
+                            Your policy will modify servicing for <span class="reminder-substance"></span> used
+                            for <span class="reminder-app"></span>.
                             <a href="#edit" class="edit-reminder-link">Change</a>
                           </div>
                         </div>
