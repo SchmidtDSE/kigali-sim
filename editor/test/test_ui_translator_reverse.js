@@ -99,6 +99,17 @@ function buildUiTranslatorReverseTests() {
       assert.notEqual(code.indexOf(expectedText), -1);
     });
 
+    QUnit.test("recharges in policy modification context", function (assert) {
+      const yearMatcher = new YearMatcher(new ParsedYear(2), new ParsedYear(5));
+      const populationEngineNumber = new EngineNumber("15", "%", "15");
+      const volumeEngineNumber = new EngineNumber("0.2", "kg / unit", "0.2");
+      const command = new RechargeCommand(populationEngineNumber, volumeEngineNumber, yearMatcher);
+      const substance = createWithCommand("test", true, command);
+      const code = substance.toCode(0);
+      assert.notEqual(code.indexOf('modify substance "test"'), -1);
+      assert.notEqual(code.indexOf("recharge 15 % with 0.2 kg / unit during years 2 to 5"), -1);
+    });
+
     QUnit.test("changes substances", function (assert) {
       const command = new Command(
         "change",
