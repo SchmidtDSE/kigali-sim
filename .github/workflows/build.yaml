@@ -165,9 +165,48 @@ jobs:
           echo "SUCCESS: CSV file was created and is non-empty"
           echo "CSV file contents:"
           cat /tmp/minimal_interpreter.csv
+  runMonteCarloReplicates:
+    needs: [ checkEngine, testEngine, runEngineLocal ]
+    environment: Build
+    runs-on: ubuntu-latest
+    name: Run Monte Carlo Replicates Test
+    defaults:
+      run:
+        shell: bash
+        working-directory: ./engine
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+      - name: Download fat jar
+        uses: actions/download-artifact@v4
+        with:
+          name: fatJar
+          path: engine/build/libs/
+      - name: Run Monte Carlo simulation with 100 replicates and normal distribution
+        run: java -jar build/libs/kigalisim-fat.jar run ../examples/test_monte_carlo_replicates.qta -o /tmp/monte_carlo_replicates.csv -r 100
+      - name: Check CSV file was created and is non-empty
+        run: |
+          if [ ! -f /tmp/monte_carlo_replicates.csv ]; then
+            echo "ERROR: CSV file was not created"
+            exit 1
+          fi
+          if [ ! -s /tmp/monte_carlo_replicates.csv ]; then
+            echo "ERROR: CSV file is empty"
+            exit 1
+          fi
+          echo "SUCCESS: CSV file was created and is non-empty"
+          echo "Number of lines in CSV:"
+          wc -l /tmp/monte_carlo_replicates.csv
+          echo "First 10 lines of CSV file:"
+          head -10 /tmp/monte_carlo_replicates.csv
   buildWasm:
     environment: Build
-    needs: [ checkEngine, buildEngine, testEngine, runEngineLocal ]
+    needs: [ checkEngine, buildEngine, testEngine, runEngineLocal, runMonteCarloReplicates ]
     runs-on: ubuntu-latest
     name: WASM Engine Build
     defaults:

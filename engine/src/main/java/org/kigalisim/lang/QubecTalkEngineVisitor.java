@@ -33,6 +33,8 @@ import org.kigalisim.lang.operation.ChangeUnitsOperation;
 import org.kigalisim.lang.operation.ConditionalOperation;
 import org.kigalisim.lang.operation.DefineVariableOperation;
 import org.kigalisim.lang.operation.DivisionOperation;
+import org.kigalisim.lang.operation.DrawNormalOperation;
+import org.kigalisim.lang.operation.DrawUniformOperation;
 import org.kigalisim.lang.operation.EnableOperation;
 import org.kigalisim.lang.operation.EqualityOperation;
 import org.kigalisim.lang.operation.EqualsOperation;
@@ -246,7 +248,14 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
    */
   @Override
   public Fragment visitDrawNormalExpression(QubecTalkParser.DrawNormalExpressionContext ctx) {
-    return visitChildren(ctx);
+    Fragment meanFragment = visit(ctx.mean);
+    Operation mean = meanFragment.getOperation();
+
+    Fragment stdFragment = visit(ctx.std);
+    Operation std = stdFragment.getOperation();
+
+    Operation operation = new DrawNormalOperation(mean, std);
+    return new OperationFragment(operation);
   }
 
   /**
@@ -278,7 +287,14 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
    */
   @Override
   public Fragment visitDrawUniformExpression(QubecTalkParser.DrawUniformExpressionContext ctx) {
-    return visitChildren(ctx);
+    Fragment lowFragment = visit(ctx.low);
+    Operation low = lowFragment.getOperation();
+
+    Fragment highFragment = visit(ctx.high);
+    Operation high = highFragment.getOperation();
+
+    Operation operation = new DrawUniformOperation(low, high);
+    return new OperationFragment(operation);
   }
 
   /**
