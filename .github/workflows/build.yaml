@@ -206,7 +206,7 @@ jobs:
           head -10 /tmp/monte_carlo_replicates.csv
   buildWasm:
     environment: Build
-    needs: [ checkEngine, buildEngine, testEngine, runEngineLocal, runMonteCarloReplicates ]
+    needs: [ checkEngine, buildEngine, testEngine, runEngineLocal ]
     runs-on: ubuntu-latest
     name: WASM Engine Build
     defaults:
@@ -273,7 +273,7 @@ jobs:
     environment: build
     runs-on: ubuntu-latest
     name: Deploy Prep
-    needs: [ lintJs, unitTestsBrowser, checkCacheBusters, buildWasm ]
+    needs: [ lintJs, unitTestsBrowser, checkCacheBusters, buildWasm, runMonteCarloReplicates ]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
