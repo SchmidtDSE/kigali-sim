@@ -14,6 +14,14 @@ Finally, we want to again express our gratitude for your feedback and time.
 
 The following changes have been adopted and released.
 
+### Empty simulation handling
+
+**Status**: Released October 23, 2025
+
+**Classification**: Bug
+
+Fixed error when clearing simulations with the new file button to gracefully handle empty simulation state. See [#606](https://github.com/SchmidtDSE/kigali-sim/pull/606).
+
 ### Trial sampling options
 
 **Status**: Released October 22, 2025
