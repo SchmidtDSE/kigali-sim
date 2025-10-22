@@ -544,6 +544,12 @@ class WasmBackend {
     const self = this;
 
     try {
+      // Check if code is empty or whitespace-only
+      const whitespaceRegex = /^\s*$/;
+      if (whitespaceRegex.test(simCode)) {
+        return new BackendResult("", []);
+      }
+
       // Parse code to extract scenario names using UiTranslatorCompiler
       const compiler = new UiTranslatorCompiler();
       const translationResult = compiler.compile(simCode);
