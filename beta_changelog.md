@@ -14,6 +14,14 @@ Finally, we want to again express our gratitude for your feedback and time.
 
 The following changes have been adopted and released.
 
+### Trial sampling options
+
+**Status**: Released October 22, 2025
+
+**Classification**: Bug
+
+In follow up to Monte Carlo features recently released, fixed the normal and uniform distribution sampling. Our sincere apologies for this issue. See [#604](https://github.com/SchmidtDSE/kigali-sim/pull/604).
+
 ### Servicing in policy UI
 
 **Status**: Released October 21, 2025
@@ -21,6 +29,14 @@ The following changes have been adopted and released.
 **Classification**: Enhancement
 
 Allow the user to include servicing into a policy. In other words, allows UI-based editor to express changes to servicing schedule previuosly only possible in QubecTalk code. See [#600](https://github.com/SchmidtDSE/kigali-sim/pull/600).
+
+### Parallel Monte Carlo
+
+**Status**: Released October 20, 2025
+
+**Classification**: Enghancement
+
+Added support for parallelized Monte Carlo for those running simulations from the Jar. See [#594](https://github.com/SchmidtDSE/kigali-sim/pull/594).
 
 ### Multiple retire / recharge
 

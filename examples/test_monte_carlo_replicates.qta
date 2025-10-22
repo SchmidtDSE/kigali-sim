@@ -1,0 +1,94 @@
+start about
+  # Name: "Monte Carlo Replicates Test"
+  # Description: "Test simulation with 100 trials using normal distributions for CI"
+  # Author: "KigaliSim Test Suite"
+end about
+
+start default
+
+  define application "domestic refrigeration"
+
+    uses substance "HFC-134a"
+      enable domestic
+      enable import
+      initial charge with 0.12 kg / unit for domestic
+      initial charge with 0.15 kg / unit for import
+
+      # Use normal distribution for domestic manufacturing with uncertainty
+      set domestic to sample normally from mean of 50000 std of 5000 kg during year 1
+      change domestic by sample normally from mean of 5 std of 1 % each year during years 2 to 10
+
+      # Use normal distribution for imports with uncertainty
+      set import to sample normally from mean of 30000 std of 3000 kg during year 1
+      change import by sample normally from mean of 4 std of 1 % each year during years 2 to 10
+
+      equals 1430 kgCO2e / kg
+      equals 100 kwh / unit
+
+      retire 6.7 % each year
+      recharge 10 % with 0.12 kg / unit
+    end substance
+
+    uses substance "R-600a"
+      enable domestic
+      initial charge with 0.05 kg / unit for domestic
+
+      # Natural refrigerant with lower GWP
+      equals 6 tCO2e / mt
+      equals 95 kwh / unit
+    end substance
+
+  end application
+
+  define application "domestic air conditioning"
+
+    uses substance "R-410A"
+      enable domestic
+      enable import
+      initial charge with 1.5 kg / unit for domestic
+      initial charge with 1.8 kg / unit for import
+
+      # Use uniform distribution for AC equipment to test both sampling methods
+      set domestic to sample uniformly from 18000 to 22000 kg during year 1
+      change domestic by sample uniformly from 5 to 7 % each year during years 2 to 10
+
+      set import to sample uniformly from 13500 to 16500 kg during year 1
+      change import by sample uniformly from 4 to 6 % each year during years 2 to 10
+
+      equals 2088 kgCO2e / kg
+      equals 1200 kwh / unit
+
+      retire 8 % each year
+      recharge 12 % with 1.5 kg / unit
+    end substance
+
+  end application
+
+end default
+
+start policy "HFC Phasedown"
+  modify application "domestic refrigeration"
+    modify substance "HFC-134a"
+      cap domestic to 85 % during years 3 to 5
+      cap import to 85 % during years 3 to 5
+      recover 20 % with 80 % reuse at eol during years 4 to 10
+      replace 50 % of domestic with "R-600a" during years 6 to 10
+    end substance
+  end application
+
+  modify application "domestic air conditioning"
+    modify substance "R-410A"
+      cap domestic to 80 % during years 4 to 7
+      cap import to 80 % during years 4 to 7
+      recover 15 % with 75 % reuse at eol during years 5 to 10
+    end substance
+  end application
+end policy
+
+start simulations
+
+  simulate "business as usual" from years 1 to 10 across 100 trials
+
+  simulate "with phasedown" using "HFC Phasedown" from years 1 to 10 across 100 trials
+
+end simulations
