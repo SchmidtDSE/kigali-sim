@@ -914,6 +914,59 @@ function buildWasmBackendTests() {
           done();
         });
       });
+
+      QUnit.test("execute handles empty code without errors", function (assert) {
+        const done = assert.async();
+        const emptyCode = "";
+        const mockWasmLayer = {
+          runSimulation: function (code, scenarioNames, scenarioTrialCounts) {
+            assert.ok(false, "runSimulation should not be called for empty code");
+            return Promise.resolve(new BackendResult("", []));
+          },
+        };
+
+        const wasmBackend = new WasmBackend(mockWasmLayer);
+
+        wasmBackend.execute(emptyCode).then((result) => {
+          assert.ok(result instanceof BackendResult,
+            "Should return a BackendResult for empty code");
+          assert.equal(result.getCsvString(), "",
+            "CSV string should be empty for empty code");
+          assert.equal(result.getParsedResults().length, 0,
+            "Parsed results should be empty for empty code");
+          done();
+        }).catch((error) => {
+          assert.ok(false, "execute should not fail for empty code: " + error.message);
+          done();
+        });
+      });
+
+      QUnit.test("execute handles whitespace-only code without errors", function (assert) {
+        const done = assert.async();
+        const whitespaceCode = "   \n\t  \n  ";
+        const mockWasmLayer = {
+          runSimulation: function (code, scenarioNames, scenarioTrialCounts) {
+            assert.ok(false, "runSimulation should not be called for whitespace-only code");
+            return Promise.resolve(new BackendResult("", []));
+          },
+        };
+
+        const wasmBackend = new WasmBackend(mockWasmLayer);
+
+        wasmBackend.execute(whitespaceCode).then((result) => {
+          assert.ok(result instanceof BackendResult,
+            "Should return a BackendResult for whitespace-only code");
+          assert.equal(result.getCsvString(), "",
+            "CSV string should be empty for whitespace-only code");
+          assert.equal(result.getParsedResults().length, 0,
+            "Parsed results should be empty for whitespace-only code");
+          done();
+        }).catch((error) => {
+          assert.ok(false,
+            "execute should not fail for whitespace-only code: " + error.message);
+          done();
+        });
+      });
     });
   });
 }
