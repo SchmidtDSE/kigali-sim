@@ -544,6 +544,12 @@ class WasmBackend {
     const self = this;
 
     try {
+      // Check if code is empty or whitespace-only
+      const whitespaceRegex = /^\s*$/;
+      if (whitespaceRegex.test(simCode)) {
+        return new BackendResult("", []);
+      }
+
       // Parse code to extract scenario names using UiTranslatorCompiler
       const compiler = new UiTranslatorCompiler();
       const translationResult = compiler.compile(simCode);
@@ -553,6 +559,12 @@ class WasmBackend {
       }
 
       const program = translationResult.getProgram();
+
+      // If no program was generated (empty or invalid code), return empty results
+      if (!program) {
+        return new BackendResult("", []);
+      }
+
       const scenarioNames = program.getScenarioNames();
 
       // If no scenario names found (e.g., code uses "across X trials" syntax),
