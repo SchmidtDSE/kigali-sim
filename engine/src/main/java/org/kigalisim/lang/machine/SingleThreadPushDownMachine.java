@@ -9,6 +9,7 @@ package org.kigalisim.lang.machine;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Optional;
+import java.util.Random;
 import java.util.Stack;
 import org.kigalisim.engine.Engine;
 import org.kigalisim.engine.number.EngineNumber;
@@ -25,6 +26,7 @@ public class SingleThreadPushDownMachine implements PushDownMachine {
   private final Engine engine;
   private final Stack<EngineNumber> stack;
   private Optional<String> expectedUnitsMaybe;
+  private final Random random;
 
   /**
    * Create a new SingleThreadPushDownMachine.
@@ -35,6 +37,7 @@ public class SingleThreadPushDownMachine implements PushDownMachine {
     this.engine = engine;
     stack = new Stack<>();
     expectedUnitsMaybe = Optional.empty();
+    random = new Random();
   }
 
   @Override
@@ -279,5 +282,45 @@ public class SingleThreadPushDownMachine implements PushDownMachine {
    */
   private String getExpectedUnits() {
     return expectedUnitsMaybe.orElseThrow();
+  }
+
+  @Override
+  public void drawNormal() {
+    EngineNumber std = pop();
+    setExpectedUnits(std.getUnits());
+    EngineNumber mean = pop();
+
+    // Convert to doubles for random sampling
+    double meanValue = mean.getValue().doubleValue();
+    double stdValue = std.getValue().doubleValue();
+
+    // Sample from normal distribution
+    double sampledValue = random.nextGaussian() * stdValue + meanValue;
+
+    // Convert back to BigDecimal
+    BigDecimal resultValue = BigDecimal.valueOf(sampledValue);
+    EngineNumber result = new EngineNumber(resultValue, getExpectedUnits());
+    push(result);
+    clearExpectedUnits();
+  }
+
+  @Override
+  public void drawUniform() {
+    EngineNumber high = pop();
+    setExpectedUnits(high.getUnits());
+    EngineNumber low = pop();
+
+    // Convert to doubles for random sampling
+    double lowValue = low.getValue().doubleValue();
+    double highValue = high.getValue().doubleValue();
+
+    // Sample from uniform distribution
+    double sampledValue = lowValue + (highValue - lowValue) * random.nextDouble();
+
+    // Convert back to BigDecimal
+    BigDecimal resultValue = BigDecimal.valueOf(sampledValue);
+    EngineNumber result = new EngineNumber(resultValue, getExpectedUnits());
+    push(result);
+    clearExpectedUnits();
   }
 }
