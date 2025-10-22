@@ -553,6 +553,12 @@ class WasmBackend {
       }
 
       const program = translationResult.getProgram();
+
+      // If no program was generated (empty or invalid code), return empty results
+      if (!program) {
+        return new BackendResult("", []);
+      }
+
       const scenarioNames = program.getScenarioNames();
 
       // If no scenario names found (e.g., code uses "across X trials" syntax),

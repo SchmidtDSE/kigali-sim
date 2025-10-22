@@ -699,7 +699,11 @@ class MainPresenter {
     const setCode = (code, resetFilters) => {
       self._codeEditorPresenter.setCode(code);
       self._onCodeChange();
-      self._onBuild(true, resetFilters, false);
+
+      // Only run simulation if code is not empty or whitespace
+      if (!WHITESPACE_REGEX.test(code)) {
+        self._onBuild(true, resetFilters, false);
+      }
     };
 
     const newFileDialog = document.getElementById("new-file-button");
