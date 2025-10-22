@@ -177,4 +177,23 @@ public interface PushDownMachine {
    * operand is right below.</p>
    */
   void lessThanOrEqual();
+
+  /**
+   * Draw a random number from a normal distribution.
+   *
+   * <p>Draw a random number from a normal distribution using the two numbers on top of the stack
+   * as the mean and standard deviation. The right operand (top of stack) is the standard deviation
+   * and the left operand (next on stack) is the mean. Pushes the sampled value to the top of the
+   * stack.</p>
+   */
+  void drawNormal();
+
+  /**
+   * Draw a random number from a uniform distribution.
+   *
+   * <p>Draw a random number from a uniform distribution using the two numbers on top of the stack
+   * as the low and high bounds. The right operand (top of stack) is the high bound and the left
+   * operand (next on stack) is the low bound. Pushes the sampled value to the top of the stack.</p>
+   */
+  void drawUniform();
 }

@@ -7,6 +7,7 @@
 package org.kigalisim.validate;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -46,14 +47,28 @@ public class BasicLiveTests {
     assertEquals(20, resultsList.size(), "Should have 20 results (10 trials * 2 years)");
 
     // Check that we have results for trials 1-10
+    // With normal sampling (mean=100mt, std=10mt) and charge of 5kg/unit:
+    // Expected population mean = 100,000 kg / 5 kg/unit = 20,000 units
+    // Expected population std = 10,000 kg / 5 kg/unit = 2,000 units
+    // Using 3-sigma range: 14,000 to 26,000 units (99.7% of values)
     for (int trial = 1; trial <= 10; trial++) {
       EngineResult result = LiveTestsUtil.getResultWithTrial(resultsList.stream(), trial, 1, "test", "test");
       assertNotNull(result, "Should have result for trial " + trial + " year 1");
 
-      // Equipment should be 2000 units (100 mt * 20 units/mt)
-      assertEquals(2000.0, result.getPopulation().getValue().doubleValue(), 0.0001,
-          "Equipment should be 2000 units for trial " + trial);
+      double population = result.getPopulation().getValue().doubleValue();
+      // Check that population is within reasonable range (3 sigma)
+      assertTrue(population >= 14000.0 && population <= 26000.0,
+          "Equipment should be between 14,000 and 26,000 units for trial " + trial
+          + " (got " + population + ")");
     }
+
+    // Also verify that trials produce different values (not all the same)
+    double firstPopulation = LiveTestsUtil.getResultWithTrial(resultsList.stream(), 1, 1, "test", "test")
+        .getPopulation().getValue().doubleValue();
+    double secondPopulation = LiveTestsUtil.getResultWithTrial(resultsList.stream(), 2, 1, "test", "test")
+        .getPopulation().getValue().doubleValue();
+    assertNotEquals(firstPopulation, secondPopulation, 0.001,
+        "Different trials should produce different sampled values");
   }
 
   /**
