@@ -6,6 +6,23 @@ permissions:
   contents: read
 
 jobs:
+  paper:
+    environment: build
+    runs-on: ubuntu-latest
+    name: Build Paper
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Build JOSS preview
+        uses: openjournals/openjournals-draft-action@master
+        with:
+          journal: joss
+          paper-path: paper/paper.md
+      - name: Upload JOSS preview
+        uses: actions/upload-artifact@v4
+        with:
+          name: paper
+          path: paper/paper.pdf
   lintJs:
     environment: build
     runs-on: ubuntu-latest
