@@ -1,6 +1,6 @@
 <mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.0.1 Safari/605.1.15" version="28.2.8">
   <diagram name="Page-1" id="LTZUzO_ETCQdW7mRmYwp">
-    <mxGraphModel dx="1185" dy="1111" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+    <mxGraphModel dx="935" dy="612" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -20,15 +20,15 @@
           <mxGeometry x="40" y="120" width="120" height="60" as="geometry" />
         </mxCell>
         <mxCell id="MpyGLvlo8WJ0yYy04T46-3" value="&lt;b&gt;Population&lt;/b&gt;" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" parent="1" vertex="1">
-          <mxGeometry x="270" y="80" width="60" height="30" as="geometry" />
+          <mxGeometry x="262" y="80" width="70" height="30" as="geometry" />
         </mxCell>
         <mxCell id="MpyGLvlo8WJ0yYy04T46-5" value="&lt;b&gt;Consumption&lt;/b&gt;" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" parent="1" vertex="1">
-          <mxGeometry x="550" y="80" width="60" height="30" as="geometry" />
+          <mxGeometry x="532" y="80" width="90" height="30" as="geometry" />
         </mxCell>
         <mxCell id="MpyGLvlo8WJ0yYy04T46-30" style="edgeStyle=none;curved=1;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;fontSize=12;startSize=8;endSize=8;endArrow=none;endFill=0;" parent="1" source="MpyGLvlo8WJ0yYy04T46-6" target="MpyGLvlo8WJ0yYy04T46-7" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="_d5WIXjUM6N7sE6DMa4L-2" style="edgeStyle=none;curved=1;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;fontSize=12;startSize=8;endSize=8;endArrow=none;endFill=0;" edge="1" parent="1" source="MpyGLvlo8WJ0yYy04T46-6" target="_d5WIXjUM6N7sE6DMa4L-1">
+        <mxCell id="_d5WIXjUM6N7sE6DMa4L-2" style="edgeStyle=none;curved=1;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;fontSize=12;startSize=8;endSize=8;endArrow=none;endFill=0;" parent="1" source="MpyGLvlo8WJ0yYy04T46-6" target="_d5WIXjUM6N7sE6DMa4L-1" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="MpyGLvlo8WJ0yYy04T46-6" value="Lifecycle" style="swimlane;whiteSpace=wrap;html=1;" parent="1" vertex="1">
@@ -59,7 +59,7 @@
         <mxCell id="MpyGLvlo8WJ0yYy04T46-20" style="edgeStyle=none;curved=1;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;fontSize=12;startSize=8;endSize=8;endArrow=none;endFill=0;" parent="1" source="MpyGLvlo8WJ0yYy04T46-18" target="MpyGLvlo8WJ0yYy04T46-11" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="_d5WIXjUM6N7sE6DMa4L-4" style="edgeStyle=none;curved=1;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;fontSize=12;startSize=8;endSize=8;endArrow=none;endFill=0;" edge="1" parent="1" source="MpyGLvlo8WJ0yYy04T46-18" target="_d5WIXjUM6N7sE6DMa4L-3">
+        <mxCell id="_d5WIXjUM6N7sE6DMa4L-4" style="edgeStyle=none;curved=1;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;fontSize=12;startSize=8;endSize=8;endArrow=none;endFill=0;" parent="1" source="MpyGLvlo8WJ0yYy04T46-18" target="_d5WIXjUM6N7sE6DMa4L-3" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="MpyGLvlo8WJ0yYy04T46-18" value="Domestic" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
@@ -74,10 +74,10 @@
         <mxCell id="MpyGLvlo8WJ0yYy04T46-29" style="edgeStyle=none;curved=1;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;fontSize=12;startSize=8;endSize=8;endArrow=none;endFill=0;" parent="1" source="MpyGLvlo8WJ0yYy04T46-12" target="MpyGLvlo8WJ0yYy04T46-10" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="_d5WIXjUM6N7sE6DMa4L-1" value="Power&lt;div&gt;Consumption&lt;/div&gt;" style="whiteSpace=wrap;html=1;aspect=fixed;" vertex="1" parent="1">
+        <mxCell id="_d5WIXjUM6N7sE6DMa4L-1" value="Power&lt;div&gt;Consumption&lt;/div&gt;" style="whiteSpace=wrap;html=1;aspect=fixed;" parent="1" vertex="1">
           <mxGeometry x="727" y="248" width="80" height="80" as="geometry" />
         </mxCell>
-        <mxCell id="_d5WIXjUM6N7sE6DMa4L-3" value="Export" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+        <mxCell id="_d5WIXjUM6N7sE6DMa4L-3" value="Export" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
           <mxGeometry x="27" y="368" width="120" height="60" as="geometry" />
         </mxCell>
       </root>
