@@ -1,7 +1,6 @@
 ---
 title: 'Kigali Sim: Open source simulation toolkit for modeling substances and policies related to the Montreal Protocol'
 tags:
-  - JavaScript
   - Java
   - policy simulation
   - Montreal Protocol
@@ -22,7 +21,7 @@ authors:
 affiliations:
   - name: Schmidt Center for Data Science and Environment, University of California, Berkeley, California, United States of America
     index: 1
-  - name: United Nations, Ozone Secretariat
+  - name: Secretariat of the Multilateral Fund for the Implementation of the Montreal Protocol, United Nations Environment Programme
     index: 2
 date: 23 October 2025
 bibliography: paper.bib
