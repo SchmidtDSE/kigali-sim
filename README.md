@@ -166,6 +166,10 @@ We thank the following Open Source libraries:
 - [Global Plastics AI Policy Tool](https://global-plastics-tool.org/) under [BSD-3-Clause](https://github.com/SchmidtDSE/plastics-prototype/blob/main/LICENSE.md).
 - [Josh](https://joshsim.org/) under [BSD-3-Clause](https://github.com/SchmidtDSE/josh/blob/main/LICENSE.md).
 
+We also thank the following data sources:
+
+- [UNEP Ozone Secretariat](https://ozone.unep.org/lists-substances-and-blends) for Global Warming Potential (GWP) values of substances and refrigerant blends used in `editor/json/known_gwp.json`.
+
 <br>
 
 ## License
