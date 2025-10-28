@@ -73,10 +73,11 @@ java -jar kigalisim-fat.jar run -o output.csv script.qta
 Here, you may replace `script.qta` with the path to your QubecTalk script and `output.csv` with the path to where you would like to write results.
 
 ### Docker
-For those who prefer Docker, see `Dockerfile` which installs Java ([Teumurin](https://adoptium.net/temurin/releases)) and can be used to run simulations. For example, the following builds the image and runs `script.qta` with output to `output.csv` thorugh the mounted `working` directory:
+For those who prefer Docker, see `Dockerfile` which installs Java ([Teumurin](https://adoptium.net/temurin/releases)) and can be used to run simulations. For example, the following builds the image and runs `script.qta` with output to `output.csv` through the mounted `working` directory:
 
 ```
-TKTK
+docker build -t kigalisim .
+docker run -v $(pwd):/working kigalisim run -o output.csv script.qta
 ```
 
 For running a local version of the browser-based app, see the Development section.
@@ -265,7 +266,7 @@ python -m http.server
 8. Visit the local hosted webpage using any web browser at the given address.
 
 ### Additional development documentation
-Note that JavaDoc is also produced at TKTK which may be used by those bypassing QubecTalk to access the engine directly.
+Note that JavaDoc is also produced at https://kigalisim.org/guide/javadoc/.
 
 <br>
 
