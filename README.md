@@ -6,6 +6,8 @@ Open source web-based tool and simulation engine capable of simulations related 
 ## Purpose
 This open source toolkit provides a simulation engine for modeling substances, applications, and policies related to the Montreal Protocol with a focus on hydrofluorocarbons and their alternatives within the Kigali Amendment. It supports a foundational business as usual simulation and then supports “stacking” policy simulations on top of that baseline. These projections may support activities such as Kigali Amendment Implementation Plans (KIPs). It will simulate emissions, energy, substance consumption, equipment populations, and trade longitudinally. This platform provides access to both UI and code-based editing within the QubecTalk domain specific language (DSL). It can run with parallelization and conduct probabilistic simulation via Monte Carlo.
 
+In use by multiple [Article 5](https://ozone.unep.org/treaties/montreal-protocol/articles/article-5-special-situation-developing-countries) nations, Kigali Sim was co-created in consultation with over a dozen countries and supporting organizations. See [our credits page](https://kigalisim.org/credits.html). For more information about the design of Kigali Sim including why we made QubecTalk, see [our paper draft](https://github.com/SchmidtDSE/kigali-sim/blob/main/paper/paper.md).
+
 <br>
 
 ## Quickstart
@@ -217,7 +219,19 @@ To run this system locally outside a dev container, please:
 cd engine
 ```
 
-3. Build the Jar (Gradle will be setup automatically)
+3. Run unit tests:
+
+```bash
+./gradlew test
+```
+
+4. Check style:
+
+```bash
+./gradlew checkstyleMain checkstyleTest
+```
+
+5. Build the Jar (Gradle will be setup automatically)
 
 ```base
 ./gradlew build
@@ -257,13 +271,20 @@ bash ./support/update_wasm.sh
 pnpm exec grunt
 ```
 
-7. Run a local web server (such as Python http.server):
+7. Run style checks:
+
+```bash
+pnpm exec eslint ./js/*.js
+pnpm exec eslint ./test/*.js
+```
+
+8. Run a local web server (such as Python http.server):
 
 ```bash
 python -m http.server
 ```
 
-8. Visit the local hosted webpage using any web browser at the given address.
+9. Visit the local hosted webpage using any web browser at the given address.
 
 ### Additional development documentation
 Note that JavaDoc is also produced at https://kigalisim.org/guide/javadoc/.
