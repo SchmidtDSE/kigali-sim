@@ -14,6 +14,14 @@ Finally, we want to again express our gratitude for your feedback and time.
 
 The following changes have been adopted and released.
 
+### Fuzzier matching and substance list update
+
+**Status**: Released October 28, 2025
+
+**Classification**: Enhancement
+
+Expanded the substance list to include non-Kigali substances (all registered with Ozone Secretariat) and expanded fuzzy matching. See [#611](https://github.com/SchmidtDSE/kigali-sim/pull/611).
+
 ### Empty simulation handling
 
 **Status**: Released October 23, 2025
