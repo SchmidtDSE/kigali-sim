@@ -90,7 +90,7 @@ For running a local version of the browser-based app, see the Development sectio
 Kigali Sim authors can choose to use a UI-based editor which does not require writing code or the QubecTalk domain-specific programming language.
 
 ### UI-based authoring
-For users prefering a no-code point-and-click approach to authoring simulations, see our [User Guide](https://kigalisim.org/guide/) which includes detailed instructions with animated gifs and video tutorial options.
+For users preferring a no-code point-and-click approach to authoring simulations, see our [User Guide](https://kigalisim.org/guide/) which includes detailed instructions with animated gifs and video tutorial options.
 
 ### Code-based authoring
 For those preferring to write code, review the setup instructions and then run this example of a permitting system to replace a high global warming potential substance with one exhibiting a lower GWP. This demonstrates all of the basic building blocks of Kigali Sim model (applications, substances, policies, and simulations):
@@ -175,7 +175,7 @@ This repository is organized into three main components:
 <br>
 
 ## Development
-If you want to change the code of Kigali Sim itselfm some additional steps are required. For additional information about development, see `DEVELOPING.md`.
+If you want to change the code of Kigali Sim itself, some additional steps are required. For additional information about development, see `DEVELOPING.md`.
 
 ### Using a Dev Container
 For those interested in a dev container, please see `.devcontainer`. **IntelliJ** should automatically detect the dev container (see [JetBrains documentation](https://www.jetbrains.com/help/idea/connect-to-devcontainer.html)). **VS Code** users can use an extension:
@@ -292,7 +292,7 @@ Note that JavaDoc is also produced at https://kigalisim.org/guide/javadoc/.
 <br>
 
 ## Community
-For those interseted in contributing to the Kigali Sim open source project, thank you and please review `CONTRIBUTING.md`. Also, please see [our credits page](https://kigalisim.org/credits.html) and our [humans.txt](https://kigalisim.org/humans.txt) for more information about the community behind this open source project.
+For those interested in contributing to the Kigali Sim open source project, thank you and please review `CONTRIBUTING.md`. Also, please see [our credits page](https://kigalisim.org/credits.html) and our [humans.txt](https://kigalisim.org/humans.txt) for more information about the community behind this open source project.
 
 <br>
 
