@@ -35,13 +35,13 @@ Co-created with over a dozen countries and organizations, Kigali Sim offers reus
 # Statement of need
 Signed by all UN member states, the Montreal Protocol has successfully phased out 99% of ozone-depleting substances [@ozone]. Already the most successful international environmental treaty [@montreal_protocol_success], its ambitious 2016 Kigali Amendment extends this multilateral framework to hydrofluorocarbons which contribute significantly to climate change [@kigali_amendment; @contribute]. However, related research and policy analysis involves complex economic, technological, and policy interactions [@complex]. As National Ozone Units (NOUs) and others who possess deep domain knowledge may work with limited resources [@noo], the current lack of open source domain-oriented toolkit for holistic stock-flow modeling may inhibit transparent accessible modeling [@oses].
 
-Informed by consulting over a dozen countries and supporting organizations in real-world on-the-ground scientist, analyst, and policy-maker use, Kigali Sim provides the first open source reusable full lifecycle toolkit addressing Montreal Protocol-controlled substances. It simulates emissions, energy, substance consumption, equipment populations, trade, and policy following conventions [@mlf_guidelines].
+Informed by consulting over a dozen countries and supporting organizations in real-world use by on-the-ground scientists, analysts, and policy-makers, Kigali Sim provides the first open source reusable full lifecycle toolkit addressing Montreal Protocol-controlled substances. It simulates emissions, energy, substance consumption, equipment populations, trade, and policy following conventions [@mlf_guidelines].
 
 # Design
-Mulitple Article 5 countries [@article5] use Kagali Sim. Spanning NOUs, Implementing Agencies, analysts, researchers, project implementers, and other organizations, it supports domain experts in atmospheric science or environmental policy with heterogeneous programming experience.
+Multiple Article 5 countries [@article5] use Kigali Sim. Spanning NOUs, Implementing Agencies, analysts, researchers, project implementers, and other organizations, it supports domain experts in atmospheric science or environmental policy with heterogeneous programming experience.
 
 ## Simulation engine
-Some countries and supporting organizations work from trade records and industry surveys while others from bank estimates or observed emissions. The engine propagates user-provided values through substance flows and lifecycles to estimate the numbers not provided. It then layers complex policy interventions such as permitting and recycling on top of the "business as usual" scenario.
+Some countries and supporting organizations work from trade records and industry surveys while others from bank estimates or observed emissions. The engine propagates user-provided values through substance flows and lifecycles to estimate the unmeasured quantities. It then layers complex policy interventions such as permitting and recycling on top of the "business as usual" scenario.
 
 ![Diagram showing data flow through Kigali Sim simulation engine from input data (trade records, bank estimates, or equipment surveys) through stock-flow calculations to output metrics.\label{fig:architecture}](KigaliEngine.svg){width="100%"}
 
@@ -57,7 +57,7 @@ The UI-based point-and-click editor familiarizes the user with Kigali Sim's conc
 We find some simulations' complexity too cumbersome to manage in the UI-based editor. Therefore, our QubecTalk domain-specific language facilitates expression of complex Montreal Protocol simulations in human-readable syntax inspired by but distinct to SmallTalk / HyperTalk [@smallhypertalk]. Mirrored by the UI-editor, QubecTalk speaks in treaty terminology: directly translating terms of art like `cap import to 85% during years 3 to 5` into simulations. This also supports uncertainty quantification, conditional logic, and policy chains where multiple interventions apply sequentially. Users may author scripts in a web-based programming portal [@portal] or third-party editors with direct JVM invocation.
 
 ## Flexibility
-Asdiverse methodologies measure stocks, Kigali Sim provides automated unit conversions including those which depend on equipment properties. Additionally, most simulation code can be modified either by the UI-based editor or the code-based editor where changes in one reflect in the other, attempting to bridge preferences and skill sets. Indeed, many community collaborators who identify as non-programmers report starting in the UI-editor but transition to code.
+As diverse methodologies measure stocks, Kigali Sim provides automated unit conversions including those which depend on equipment properties. Additionally, most simulation code can be modified either by the UI-based editor or the code-based editor where changes in one reflect in the other, attempting to bridge preferences and skill sets. Indeed, many community collaborators who identify as non-programmers report starting in the UI-editor but transition to code.
 
 ## Limitations
 Leaving the following for future work, Kigali Sim:
@@ -67,7 +67,7 @@ Leaving the following for future work, Kigali Sim:
  - Provides automatic lookup but allows for override with country-specific parameters, similar to IPCC Tier 2 [@ipcc_tiers].
  - Applies treaty trade attribution but will only attribute charge prior to equipment sale entirely to either the importer or exporter^[Local assembly can be modeled as domestic production.].
 
-Kigali Sim will recieve updates as official guidance changes in the future [@mlf_guidelines].
+Kigali Sim will receive updates as official guidance changes in the future [@mlf_guidelines].
 
 # Implementation
 Kigali Sim runs browser-based via WASM or via JVM [@teavm]. Without transmitting simulations to external servers, both enable privacy-preserving zero installation local computation, BigDecimal [@bigdecimal], and parallelization. The engine uses ANTLR [@antlr] for parsing QubecTalk code in both Java and JS^[A JS ANTLR visitor facilitating real-time translation between the UI-editor and the code-based editor.].
