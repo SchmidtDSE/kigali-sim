@@ -105,6 +105,7 @@ function buildKnownSubstanceTests() {
         "R_407C",
         "R(407)C",
         "R[407]C",
+        "R:407C",
         " R - 407 C ",
       ];
 

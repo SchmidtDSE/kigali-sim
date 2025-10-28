@@ -79,7 +79,7 @@ class SubstanceLibraryKeeper {
 
   /**
    * Normalizes substance names for flexible matching.
-   * Converts to lowercase and removes whitespace and punctuation including hyphens.
+   * Converts to lowercase and removes whitespace and punctuation including hyphens and colons.
    *
    * @param {string} name - The substance name to normalize.
    * @returns {string} The normalized key for lookup.
@@ -87,7 +87,7 @@ class SubstanceLibraryKeeper {
    */
   _getSubstanceKey(name) {
     const self = this;
-    return name.toLowerCase().replace(/[\s\-_\.,\(\)\[\]]/g, "");
+    return name.toLowerCase().replace(/[\s\-_\.,:\(\)\[\]]/g, "");
   }
 }
 
