@@ -297,7 +297,7 @@ jobs:
   generateJavadoc:
     environment: build
     runs-on: ubuntu-latest
-    name: Generate Javadoc
+    name: Generate JavaDoc
     defaults:
       run:
         shell: bash
