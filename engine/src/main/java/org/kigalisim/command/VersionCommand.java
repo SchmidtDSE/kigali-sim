@@ -19,6 +19,13 @@ import picocli.CommandLine.Command;
     mixinStandardHelpOptions = true
 )
 public class VersionCommand implements Runnable {
+
+  /**
+   * Constructs a new VersionCommand.
+   */
+  public VersionCommand() {
+  }
+
   @Override
   public void run() {
     System.out.println("0.0.1");

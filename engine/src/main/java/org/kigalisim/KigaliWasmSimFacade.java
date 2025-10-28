@@ -24,6 +24,12 @@ import org.teavm.jso.JSExport;
 public class KigaliWasmSimFacade {
 
   /**
+   * Constructs a new KigaliWasmSimFacade.
+   */
+  public KigaliWasmSimFacade() {
+  }
+
+  /**
    * Returns the version of KigaliSim.
    *
    * @return The version string "0.0.1".

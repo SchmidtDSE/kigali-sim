@@ -37,6 +37,13 @@ import picocli.CommandLine.Parameters;
     description = "Run a simulation file"
 )
 public class RunCommand implements Callable<Integer> {
+
+  /**
+   * Constructs a new RunCommand.
+   */
+  public RunCommand() {
+  }
+
   private static final int FILE_NOT_FOUND_ERROR = 1;
   private static final int PARSE_ERROR = 2;
   private static final int SIMULATION_NOT_FOUND_ERROR = 3;
