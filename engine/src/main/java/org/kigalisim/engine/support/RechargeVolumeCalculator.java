@@ -23,6 +23,12 @@ import org.kigalisim.engine.state.UseKey;
 public class RechargeVolumeCalculator {
 
   /**
+   * Constructs a new RechargeVolumeCalculator.
+   */
+  public RechargeVolumeCalculator() {
+  }
+
+  /**
    * Calculate the recharge volume for the given application and substance.
    *
    * @param scope The scope containing application and substance

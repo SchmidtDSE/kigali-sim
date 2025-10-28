@@ -24,6 +24,12 @@ import org.kigalisim.lang.program.ParsedSubstance;
 public class DuplicateValidator {
 
   /**
+   * Constructs a new DuplicateValidator.
+   */
+  public DuplicateValidator() {
+  }
+
+  /**
    * Validate that all items in a collection have unique names.
    *
    * @param <T> The type of items to validate

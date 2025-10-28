@@ -39,6 +39,12 @@ public class KigaliSimFacade {
   private static final String DEFAULT_STANZA = "default";
 
   /**
+   * Constructs a new KigaliSimFacade.
+   */
+  public KigaliSimFacade() {
+  }
+
+  /**
    * Parse a QubecTalk script.
    *
    * @param code String code to parse as a QubecTalk source.

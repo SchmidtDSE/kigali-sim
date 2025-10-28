@@ -39,6 +39,11 @@ public class ParsedScenario {
     this.trials = trials;
   }
 
+  /**
+   * Gets the name of the scenario.
+   *
+   * @return The name of the scenario.
+   */
   public String getName() {
     return name;
   }

@@ -17,6 +17,12 @@ import org.kigalisim.lang.program.ParsedProgram;
 public class QubecTalkInterpreter {
 
   /**
+   * Constructs a new QubecTalkInterpreter.
+   */
+  public QubecTalkInterpreter() {
+  }
+
+  /**
    * Interpret a QubecTalk source into a ParsedProgram.
    *
    * @param parseResult The result of parsing to interpret.
