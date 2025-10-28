@@ -34,6 +34,12 @@ public class ConsumptionCalculator {
   private Optional<String> streamName = Optional.empty();
 
   /**
+   * Constructs a new ConsumptionCalculator.
+   */
+  public ConsumptionCalculator() {
+  }
+
+  /**
    * Set the raw consumption value to be processed.
    *
    * @param consumptionRaw The raw consumption value

@@ -17,6 +17,12 @@ import java.util.regex.Pattern;
  */
 public class OnlyCommasParseStrategy implements NumberParseUtilStrategy {
 
+  /**
+   * Constructs a new OnlyCommasParseStrategy.
+   */
+  public OnlyCommasParseStrategy() {
+  }
+
   @Override
   public boolean canHandle(String numberStr, int commaCount, int periodCount) {
     return commaCount > 0 && periodCount == 0;

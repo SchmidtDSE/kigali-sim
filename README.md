@@ -1,5 +1,168 @@
 # Kigali Sim
-Open source web-based tool and simulation engine capable of simulations related to substances, applications, and policies relevant to the Montreal Protocol. It may potentially be useful at the discretion of relevant stakeholders as an optional step in informing proposals.
+Open source web-based tool and simulation engine capable of simulations related to substances, applications, and policies relevant to the Montreal Protocol.
+
+<br>
+
+## Purpose
+This open source toolkit provides a simulation engine for modeling substances, applications, and policies related to the Montreal Protocol with a focus on hydrofluorocarbons and their alternatives within the Kigali Amendment. It supports a foundational business as usual simulation and then supports “stacking” policy simulations on top of that baseline. These projections may support activities such as Kigali Amendment Implementation Plans (KIPs). It will simulate emissions, energy, substance consumption, equipment populations, and trade longitudinally. This platform provides access to both UI and code-based editing within the QubecTalk domain specific language (DSL). It can run with parallelization and conduct probabilistic simulation via Monte Carlo.
+
+In use by multiple [Article 5](https://ozone.unep.org/treaties/montreal-protocol/articles/article-5-special-situation-developing-countries) nations, Kigali Sim was co-created in consultation with over a dozen countries and supporting organizations. See [our credits page](https://kigalisim.org/credits.html). For more information about the design of Kigali Sim including why we made QubecTalk, see [our paper draft](https://github.com/SchmidtDSE/kigali-sim/blob/main/paper/paper.md).
+
+<br>
+
+## Quickstart
+Make a simulation in 3 minutes! View our quickstart video. Prefer a text version? Go to https://kigalisim.org and then in the Designer tab:
+
+ - Click “Add Application” to create a “Commerical Refrigeration” application
+ - Click “Add Consumption” to create HFC-134a (click lookup for GHG equivalency, leave energy consumption at default, check domestic)
+ - In your HFC-134a record, add a set record for 1 mt sales in year 1.
+ - Click “Add Simulation” and make “Business as Usual” from year 1 to 10.
+ - Click the “Bank” radio button for total million units of equipment and see population increase over time.
+
+Finally, go do the Editor tab and see the QubecTalk code you wrote:
+
+```
+start default
+
+  define application “Commercial Refrigeration”
+  
+    uses substance “HFC-134a”
+      enable domestic
+      initial charge with 1 kg / unit for domestic
+      initial charge with 0 kg / unit for import
+      initial charge with 0 kg / unit for export
+      equals 1430 kgCO2e / kg
+      equals 1 kwh / unit
+      set sales to 1 mt during year 1
+      retire 5 % / year
+    end substance
+  
+  end application
+
+end default
+
+
+start simulations
+
+  simulate “Business as Usual”
+  from years 1 to 10
+
+end simulations
+```
+
+<br>
+
+## Setup
+All executions of simulations are private and local.
+
+### Public hosted browser-based app
+Requiring no new local software installation, use the public hosted version of the tool:
+
+1. Open the application in your web browser (https://kigalisim.org).
+2. Use either the designer (UI-based) or editor (code-based) tab to define your simulation
+3. Click Run to execute the simulation
+4. View results in the visualization panel, which shows emissions metrics, consumption / sales data, and equipment population.
+
+Data can be downloaded through the export button shown in the results tab. Simulations are run locally on your own machine through WebAssembly and Kigali Sim will not send your simulation code / data to external machines without your permission. We simply provide public static file hosting (see [privacy](https://kigalisim.org/privacy.html)).
+
+### Local jar file
+For those who prefer the command-line interface, instal Java like through [Adoptium](https://adoptium.net/installation) and download the [latest Kigali Sim jar](https://kigalisim.org/kigalisim-fat.jar). Then, execute simulations with:
+
+```
+java -jar kigalisim-fat.jar run -o output.csv script.qta
+```
+
+Here, you may replace `script.qta` with the path to your QubecTalk script and `output.csv` with the path to where you would like to write results.
+
+### Docker
+For those who prefer Docker, see `Dockerfile` which installs Java ([Teumurin](https://adoptium.net/temurin/releases)) and can be used to run simulations. For example, the following builds the image and runs `script.qta` with output to `output.csv` through the mounted `working` directory:
+
+```
+docker build -t kigalisim .
+docker run -v $(pwd):/working kigalisim run -o output.csv script.qta
+```
+
+For running a local version of the browser-based app, see the Development section.
+
+<br>
+
+## Usage
+Kigali Sim authors can choose to use a UI-based editor which does not require writing code or the QubecTalk domain-specific programming language.
+
+### UI-based authoring
+For users preferring a no-code point-and-click approach to authoring simulations, see our [User Guide](https://kigalisim.org/guide/) which includes detailed instructions with animated gifs and video tutorial options.
+
+### Code-based authoring
+For those preferring to write code, review the setup instructions and then run this example of a permitting system to replace a high global warming potential substance with one exhibiting a lower GWP. This demonstrates all of the basic building blocks of Kigali Sim model (applications, substances, policies, and simulations):
+
+```
+start default
+
+  define application “Commercial Refrigeration”
+  
+    uses substance “HFC-134a”
+      enable domestic
+      initial charge with 1 kg / unit for domestic
+      initial charge with 0 kg / unit for import
+      initial charge with 0 kg / unit for export
+      equals 1430 kgCO2e / kg
+      equals 1 kwh / unit
+      set sales to 1 mt during year 1
+      retire 5 % / year
+      recharge 5 % with 0.85 kg / unit
+    end substance
+
+
+    uses substance “R-600a”
+      enable domestic
+      initial charge with 1 kg / unit for domestic
+      initial charge with 0 kg / unit for import
+      initial charge with 0 kg / unit for export
+      equals 3 kgCO2e / kg
+      equals 1 kwh / unit
+      set sales to 1 kg during year 1
+      retire 5 % / year
+      recharge 5 % with 0.85 kg / unit
+    end substance
+  
+  end application
+
+end default
+
+
+start policy “Permit”
+
+  modify application “Commercial Refrigeration”
+  
+    modify substance “HFC-134a”
+      cap sales to 80 % displacing “R-600a” during years 3 to 10
+    end substance
+  
+  end application
+
+end policy
+
+
+start simulations
+
+  simulate “Business as Usual”
+  from years 1 to 10
+
+
+  simulate “With Permit”
+    using “Permit”
+  from years 1 to 10
+
+end simulations
+```
+
+### Additional resources
+While total consumption in terms of metric tonnes remains the same, see the effect by reviewing the emissions. Developers can continue their work by going to the [User Guide](https://kigalisim.org/guide/) which had information on other features. See also the [formal QubecTalk language specification](https://kigalisim.org/guide/qubectalk.pdf).
+
+### LLM assistants
+If desired, AI coding assistants or chatbots can help in using Kigali Sim. We implement the [llms.txt specification](https://llmstxt.org). Direct your AI to read `https://kigalisim.org/llms-full.txt?v=20250928` and / or `https://kigalisim.org/llms.txt?v=20250928`.
+
+<br>
 
 ## Project Structure
 
@@ -10,138 +173,126 @@ This repository is organized into three main components:
 - **`editor/`**: Web-based editor and analysis tool interface
 
 <br>
-<br>
-
-## Purpose
-This open source toolkit provides a simulation engine for modeling substances, applications, and policies related to the Montreal Protocol. It supports a foundational business as usual simulation and then supports "stacking" policy simulations on top of that baseline. These projections may optionally support activities such as Kigali Amendment Implementation Plans (KIPs). 
-
-Though not intended to be comprehensive of all possible relevant modeling techniques, this tool provides access to both UI and code-based editing where the later can also conduct probabilistic projection. The QubecTalk domain specific language allows for high degree of customization and specificity with automated unit conversions. This includes calculation of direct emissions and energy consumption.
-
-Unofficial and completely voluntary, this privacy-respecting simulation platform offers essential tools to optionally inform potential policy. Though informed by various perspectives from across the Montreal Protocol ecosystem of actors, this is not an official product of any agency, fund, or official international body and is, instead, a community project available to the public as an open source resource.
-
-<br>
-
-## Usage
-To use the public hosted version of the tool:
-
-1. Open the application in your web browser (https://kigalisim.org).
-2. Use either the Basic (UI-based) or Advanced (code-based) editor to define your simulation
-3. Click Run to execute the simulation
-4. View results in the visualization panel, which shows emissions metrics, consumption / sales data, and equipment population.
-
-Data can also be downloaded through the export button shown in the results tab.
-
-<br>
 
 ## Development
+If you want to change the code of Kigali Sim itself, some additional steps are required. For additional information about development, see `DEVELOPING.md`.
 
-When developing on the tool, please try to ensure all automated checks pass, development standards are followed, and deployments only happen through the process described where possible (if releasing to the official release website).
-
-### Automated checks
-
-Various automated tests and checks are available to help those developing on the tool and engine.
-
-#### Java Engine Development
-
-In the engine directory (`cd engine`):
-
- - `./gradlew test`: Run unit tests for the engine
- - `./gradlew checkstyleMain`: Lint production Java code built into WASM engine
- - `./gradlew checkstyleTest`: Lint test Java code
-
-#### JavaScript Editor Development
-
-In the editor directory (`cd editor`):
-
- - `pnpm exec grunt`: Runs front-end unit tests and end-to-end integration tests
- - `pnpm exec eslint ./js/*.js`: Lint production JavaScript
- - `pnpm exec eslint ./test/*.js`: Lint test JavaScript
-
-#### Building and Deploying WASM Engine
-
-To update the web editor with changes from the Java engine:
-
-1. Build the engine WASM output: `cd engine && ./gradlew war`
-2. Update WASM files in editor: `cd editor && bash support/update_wasm.sh`
-
-This extracts the compiled TeaVM/WASM output from the engine build and places it in the editor's `wasm/` directory.
-
-### Development Standards
-While contributing, please maintain existing styles defined in `.prettierrc` and `.eslintrc.yml`. Where ambiguous, follow [Google JavaScript / TypeScript Style Guide](https://google.github.io/styleguide/tsguide.html) conventions. Unit tests through QUnit are encouraged but a specific test coverage target is not specified. Document code using JSDoc comments (required for all public members). Note that Replit AI was used to help with documentation and small trivial code changes but, for other purposes, please disclose use of generative AI before merging pull requests. We generally require that AI not used for architecture or large operations. At this time, we are not considering a change to TypeScript.
-
-### Deployment
-This project can be deployed using Github. Simply push your changes to the repository `deploy` branch. The deployment process is automated through GitHub Actions as defined in `.github/workflows/build.yaml`. The `main` branch will push to a preview (staging) URL at https://preview.kigalisim.org.
-
-<br>
-
-## Development Setup
-
-### Development Container Setup
-
-This project includes a dev container configuration that provides a complete development environment for both the JavaScript frontend and Java engine components.
-
-#### Using with VS Code
+### Using a Dev Container
+For those interested in a dev container, please see `.devcontainer`. **IntelliJ** should automatically detect the dev container (see [JetBrains documentation](https://www.jetbrains.com/help/idea/connect-to-devcontainer.html)). **VS Code** users can use an extension:
 
 1. Install the [Dev Containers extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers)
 2. Open the project in VS Code
-3. When prompted, click "Reopen in Container" or press `F1` and select "Dev Containers: Reopen in Container"
+3. When prompted, click “Reopen in Container” or press `F1` and select “Dev Containers: Reopen in Container”
 4. The container will build automatically with all required dependencies
 
-#### Using with GitHub Codespaces
+One can also use **GitHub Codespaces**:
 
 1. Navigate to the repository on GitHub
-2. Click the green "Code" button
-3. Select the "Codespaces" tab  
-4. Click "Create codespace on main"
+2. Click the green “Code” button
+3. Select the “Codespaces” tab  
+4. Click “Create codespace on main”
 5. The development environment will be set up automatically
 
-#### Container Features
-
 The dev container includes:
+
 - Eclipse Temurin JDK 21 (as specified in requirements)
 - Node.js 18.x with pnpm
 - All system dependencies for building and testing
 - VS Code extensions for Java, JavaScript, and Gradle development
 - Pre-configured ports (8000, 8080) for local development servers
 
-#### Automated Checks in Container
-
 All the automated checks described below work in the dev container environment:
 
-- JavaScript linting: `cd editor && pnpm exec eslint ./js/*.js` and `cd editor && pnpm exec eslint ./test/*.js`
-- JavaScript testing: `cd editor && pnpm exec grunt`
 - Java testing: `cd engine && ./gradlew test`
 - Java linting: `cd engine && ./gradlew checkstyleMain` and `cd engine && ./gradlew checkstyleTest`
+- JavaScript linting: `cd editor && pnpm exec eslint ./js/*.js` and `cd editor && pnpm exec eslint ./test/*.js`
+- JavaScript testing: `cd editor && pnpm exec grunt`
 
-### Local Setup
-To run this system locally, please complete the following steps:
+### Other Local Setup
+To run this system locally outside a dev container, please:
 
-1. Navigate to the editor directory and install dependencies:
+1. Install Java like through [Adoptium](https://adoptium.net).
+
+2. Go to the editor directory:
+
+```bash
+cd engine
+```
+
+3. Run unit tests:
+
+```bash
+./gradlew test
+```
+
+4. Check style:
+
+```bash
+./gradlew checkstyleMain checkstyleTest
+```
+
+5. Build the Jar (Gradle will be setup automatically)
+
+```base
+./gradlew build
+```
+
+If working on the front-end, please set up the editor:
+
+1. [Setup Node](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm) and [pnpm](https://pnpm.io).
+
+2. Navigate to the editor directory:
 
 ```bash
 cd editor
+```
+
+3. Install build dependencies:
+
+```bash
 pnpm install
 ```
 
-2. Install frontend dependencies:
+4. Install frontend dependencies:
 
 ```bash
 bash ./support/install_deps.sh
 ```
 
-3. Build the project:
+5. Build the project:
 
 ```bash
-bash ./support/make.sh
+bash ./support/update_wasm.sh
 ```
 
-4. Run a local web server (such as Python http.server):
+6. Run the front-end tests (may install browser via Puppeteer):
+
+```bash
+pnpm exec grunt
+```
+
+7. Run style checks:
+
+```bash
+pnpm exec eslint ./js/*.js
+pnpm exec eslint ./test/*.js
+```
+
+8. Run a local web server (such as Python http.server):
 
 ```bash
 python -m http.server
 ```
 
-5. Visit the local hosted webpage using any web browser.
+9. Visit the local hosted webpage using any web browser at the given address.
+
+### Additional development documentation
+Note that JavaDoc is also produced at https://kigalisim.org/guide/javadoc/.
+
+<br>
+
+## Community
+For those interested in contributing to the Kigali Sim open source project, thank you and please review `CONTRIBUTING.md`. Also, please see [our credits page](https://kigalisim.org/credits.html) and our [humans.txt](https://kigalisim.org/humans.txt) for more information about the community behind this open source project.
 
 <br>
 
@@ -170,4 +321,6 @@ We thank the following Open Source libraries and resources:
 <br>
 
 ## License
-This project's code is available under the BSD license. All documentation including QubecTalk language specification is available under the Creative Commons CC-BY 4.0 International License.
+This privacy-respecting simulation platform offers essential tools to optionally inform potential policy. Though informed by various perspectives from across the Montreal Protocol ecosystem of actors, this is a community project available to the public as an optional open source resource.
+
+This project’s code is available under the BSD license. All documentation including QubecTalk language specification is available under the Creative Commons CC-BY 4.0 International License.

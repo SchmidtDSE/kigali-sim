@@ -17,6 +17,12 @@ import java.util.regex.Pattern;
  */
 public class MixedParseStrategy implements NumberParseUtilStrategy {
 
+  /**
+   * Constructs a new MixedParseStrategy.
+   */
+  public MixedParseStrategy() {
+  }
+
   @Override
   public boolean canHandle(String numberStr, int commaCount, int periodCount) {
     return commaCount > 0 && periodCount > 0;

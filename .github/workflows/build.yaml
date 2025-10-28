@@ -269,11 +269,34 @@ jobs:
       - name: Run unit tests
         run: pnpm exec grunt
         working-directory: ./editor
-  deploy-prep:
+  generateJavadoc:
+    environment: build
+    runs-on: ubuntu-latest
+    name: Generate JavaDoc
+    defaults:
+      run:
+        shell: bash
+        working-directory: ./engine
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+      - name: Generate Javadoc
+        run: ./gradlew javadoc
+      - name: Upload Javadoc
+        uses: actions/upload-artifact@v4
+        with:
+          name: javadoc
+          path: engine/build/docs/javadoc
+  deployPrep:
     environment: build
     runs-on: ubuntu-latest
     name: Deploy Prep
-    needs: [ lintJs, unitTestsBrowser, checkCacheBusters, buildWasm, runMonteCarloReplicates ]
+    needs: [ lintJs, unitTestsBrowser, checkCacheBusters, buildWasm, runMonteCarloReplicates, generateJavadoc ]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -315,6 +338,11 @@ jobs:
         working-directory: ./editor
       - name: Copy guide
         run: cp -r ./docs/guide ./editor/deploy/guide
+      - name: Download Javadoc
+        uses: actions/download-artifact@v4
+        with:
+          name: javadoc
+          path: ./editor/deploy/guide/javadoc
       - name: Copy case study QTA file to guide
         run: cp ./examples/case_study.qta ./editor/deploy/guide/case_study.qta
       - name: Copy tutorial QTA files to guide
@@ -343,7 +371,7 @@ jobs:
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     name: Preview Deploy
-    needs: [deploy-prep]
+    needs: [deployPrep]
     steps:
       - name: Download deploy artifact
         uses: actions/download-artifact@v4
@@ -370,7 +398,7 @@ jobs:
     if: github.ref == 'refs/heads/deploy'
     runs-on: ubuntu-latest
     name: Production Deploy
-    needs: [deploy-prep]
+    needs: [deployPrep]
     steps:
       - name: Download deploy artifact
         uses: actions/download-artifact@v4
@@ -392,3 +420,29 @@ jobs:
           sshpass -e scp -r -P 22 -o StrictHostKeyChecking=no \
             ./deploy/* \
             ${{ secrets.SFTPUSER }}@${{ secrets.SFTPHOST }}:./kigalisim.org/
+  runEngineDockerSanity:
+    environment: Build
+    if: github.ref == 'refs/heads/deploy'
+    runs-on: ubuntu-latest
+    name: Docker Prod Check
+    needs: [deploy]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Build Docker image
+        run: docker build -t kigalisim .
+      - name: Run example QTA file via Docker
+        run: docker run -v $(pwd)/examples:/working kigalisim run -o /working/minimal_interpreter_docker.csv /working/minimal_interpreter.qta
+      - name: Check CSV file was created and is non-empty
+        run: |
+          if [ ! -f examples/minimal_interpreter_docker.csv ]; then
+            echo "ERROR: CSV file was not created"
+            exit 1
+          fi
+          if [ ! -s examples/minimal_interpreter_docker.csv ]; then
+            echo "ERROR: CSV file is empty"
+            exit 1
+          fi
+          echo "SUCCESS: CSV file was created and is non-empty"
+          echo "CSV file contents:"
+          cat examples/minimal_interpreter_docker.csv
