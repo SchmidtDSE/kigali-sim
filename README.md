@@ -1,6 +1,8 @@
 # Kigali Sim
 Open source web-based tool and simulation engine capable of simulations related to substances, applications, and policies relevant to the Montreal Protocol.
 
+[![Project Status: Active – The project has reached a stable, usable state and is being actively developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active) [![BSD Licensed](https://img.shields.io/badge/License-BSD_3--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause) [![Build](https://github.com/SchmidtDSE/kigali-sim/actions/workflows/build.yaml/badge.svg?branch=deploy)](https://github.com/SchmidtDSE/kigali-sim/actions/workflows/build.yaml) ![Temurin 21 or higher](https://img.shields.io/badge/Java-Temurin%2021%2B-blue)
+
 <br>
 
 ## Purpose
@@ -174,6 +176,15 @@ This repository is organized into three main components:
 
 <br>
 
+## Help / Contributions
+For those with a bug report or a suggestion to improve Kigali Sim, please [open an issue](https://github.com/SchmidtDSE/kigali-sim/issues/new). It's OK if you do not have all of the details sorted out and we are happy to help you refine your report. That said, some basic information is requested and please complete the issue template to the best of your ability. We will help you take it form there!
+
+For those seeking help with using Kigali Sim, we recommend that you consider starting with the "Get Help" button within the application if you are comfortable sharing your work with us. This free and private support channel is currently provided by the University of California's Schmidt Center for Data Science and Environment. If you do not want to share your simluation with us or are instructed to do so, please [open an issue](https://github.com/SchmidtDSE/kigali-sim/issues/new) and try your best to fill in the issue template but please note that this issue will be public.
+
+For those interested in contributing to the Kigali Sim open source project as a developer, thank you and please review `CONTRIBUTING.md`. Also, please see [our credits page](https://kigalisim.org/credits.html) and our [humans.txt](https://kigalisim.org/humans.txt) for more information about the community behind this open source project. If you are unsure which issue might be best for getting started, plesae look for the "good first issue" tag.
+
+<br>
+
 ## Development
 If you want to change the code of Kigali Sim itself, some additional steps are required. For additional information about development, see `DEVELOPING.md`.
 
@@ -288,11 +299,6 @@ python -m http.server
 
 ### Additional development documentation
 Note that JavaDoc is also produced at https://kigalisim.org/guide/javadoc/.
-
-<br>
-
-## Community
-For those interested in contributing to the Kigali Sim open source project, thank you and please review `CONTRIBUTING.md`. Also, please see [our credits page](https://kigalisim.org/credits.html) and our [humans.txt](https://kigalisim.org/humans.txt) for more information about the community behind this open source project.
 
 <br>
 
