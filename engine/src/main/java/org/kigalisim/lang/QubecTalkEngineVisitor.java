@@ -80,6 +80,12 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
   private final NumberParseUtil numberParser = new NumberParseUtil();
 
   /**
+   * Constructs a new QubecTalkEngineVisitor.
+   */
+  public QubecTalkEngineVisitor() {
+  }
+
+  /**
    * {@inheritDoc}
    */
   @Override public Fragment visitNumber(QubecTalkParser.NumberContext ctx) {

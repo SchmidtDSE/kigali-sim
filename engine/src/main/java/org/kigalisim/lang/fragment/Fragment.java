@@ -25,6 +25,12 @@ import org.kigalisim.lang.time.ParsedDuring;
 public abstract class Fragment {
 
   /**
+   * Constructs a new Fragment.
+   */
+  public Fragment() {
+  }
+
+  /**
    * Get the string parsed from the source of this fragment.
    *
    * @return The string found on this fragment.

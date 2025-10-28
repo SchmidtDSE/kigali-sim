@@ -14,6 +14,12 @@ package org.kigalisim.engine.support;
  */
 public class ExceptionsGenerator {
 
+  /**
+   * Constructs a new ExceptionsGenerator.
+   */
+  public ExceptionsGenerator() {
+  }
+
   private static final String NO_APP_OR_SUBSTANCE_MESSAGE =
       "Error %s because application and / or substance not%s";
 

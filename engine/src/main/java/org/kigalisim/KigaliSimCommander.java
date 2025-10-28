@@ -39,6 +39,12 @@ import picocli.CommandLine;
 public class KigaliSimCommander {
 
   /**
+   * Constructs a new KigaliSimCommander.
+   */
+  public KigaliSimCommander() {
+  }
+
+  /**
    * Main entry point for the KigaliSim command line interface.
    *
    * @param args Command line arguments passed to the program

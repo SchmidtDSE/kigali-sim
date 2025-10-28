@@ -25,7 +25,7 @@ public class ComparisonOperation implements Operation {
    *
    * @param left The left operand of the comparison.
    * @param right The right operand of the comparison.
-   * @param operator The comparison operator (==, !=, >, <, >=, <=).
+   * @param operator The comparison operator (==, !=, &gt;, &lt;, &gt;=, &lt;=).
    */
   public ComparisonOperation(Operation left, Operation right, String operator) {
     this.left = left;

@@ -30,7 +30,9 @@ public class RecoverOperation implements Operation {
    * Enum representing the stage of recovery.
    */
   public enum RecoveryStage {
+    /** Recovery at end of life. */
     EOL,
+    /** Recovery during recharge (servicing). */
     RECHARGE
   }
 

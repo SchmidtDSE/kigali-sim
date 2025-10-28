@@ -117,12 +117,29 @@ task fatJar(type: Jar) {
 
 // Standard JavaDoc target
 javadoc {
+  // Exclude generated ANTLR files
+  exclude '**/QubecTalkLexer.java'
+  exclude '**/QubecTalkParser.java'
+  exclude '**/QubecTalkBaseListener.java'
+  exclude '**/QubecTalkBaseVisitor.java'
+  exclude '**/QubecTalkListener.java'
+  exclude '**/QubecTalkVisitor.java'
+
   options {
     outputLevel = JavadocOutputLevel.QUIET
     encoding = "UTF-8"
     memberLevel = JavadocMemberLevel.PROTECTED
     links "https://docs.oracle.com/en/java/javase/11/docs/api/"
     windowTitle = "KigaliSim"
+
+    // Register custom javadoc tags
+    tags = [
+      'command:a:Command:',
+      'mixinStandardHelpOptions:a:Mixin Standard Help Options:',
+      'description:a:Description:',
+      'subcommands:a:Subcommands:',
+      'license:a:License:'
+    ]
   }
 
   destinationDir = file("${buildDir}/docs/javadoc")

@@ -29,6 +29,13 @@ import picocli.CommandLine.Parameters;
     description = "Validate a simulation file"
 )
 public class ValidateCommand implements Callable<Integer> {
+
+  /**
+   * Constructs a new ValidateCommand.
+   */
+  public ValidateCommand() {
+  }
+
   private static final int FILE_NOT_FOUND_ERROR = 1;
   private static final int VALIDATION_ERROR = 2;
 
