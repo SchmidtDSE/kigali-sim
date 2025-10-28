@@ -14,8 +14,11 @@ package org.kigalisim.lang.validation;
  */
 public class DuplicateValidationException extends RuntimeException {
 
+  /** The type of item that is duplicated. */
   private final String duplicateType;
+  /** The name that is duplicated. */
   private final String duplicateName;
+  /** The context where the duplication occurred. */
   private final String context;
 
   /**

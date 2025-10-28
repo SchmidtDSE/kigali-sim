@@ -12,7 +12,7 @@ import org.kigalisim.lang.machine.PushDownMachine;
  * Calculation that performs an equality comparison on two other calculations.
  *
  * <p>Calculation that resolves two calculations and then performs an equality comparison
- * (==, !=, >, <, >=, <=) on the results by using a PushDownMachine within the QubecTalk runtime.</p>
+ * (==, !=, &gt;, &lt;, &gt;=, &lt;=) on the results by using a PushDownMachine within the QubecTalk runtime.</p>
  */
 public class EqualityOperation implements Operation {
 
@@ -25,7 +25,7 @@ public class EqualityOperation implements Operation {
    *
    * @param left The left operand of the equality comparison.
    * @param right The right operand of the equality comparison.
-   * @param operator The equality operator (==, !=, >, <, >=, <=).
+   * @param operator The equality operator (==, !=, &gt;, &lt;, &gt;=, &lt;=).
    */
   public EqualityOperation(Operation left, Operation right, String operator) {
     this.left = left;
