@@ -166,7 +166,6 @@ jobs:
           echo "CSV file contents:"
           cat /tmp/minimal_interpreter.csv
   runEngineDocker:
-    needs: runEngineLocal
     environment: Build
     runs-on: ubuntu-latest
     name: Run Engine via Docker
