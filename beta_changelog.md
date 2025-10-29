@@ -14,6 +14,14 @@ Finally, we want to again express our gratitude for your feedback and time.
 
 The following changes have been adopted and released.
 
+### Formaula hazard rates
+
+**Status**: Released October 30, 2025
+
+**Classification**: Enhancement
+
+Added support for user access to age metrics in support of formaula-based hazard rates. See [#622](https://github.com/SchmidtDSE/kigali-sim/issues/622) and [#626](https://github.com/SchmidtDSE/kigali-sim/issues/626).
+
 ### Improved help text for default sales
 
 **Status**: Released October 28, 2025
