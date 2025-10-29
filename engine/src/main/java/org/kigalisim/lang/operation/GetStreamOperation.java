@@ -64,21 +64,22 @@ public class GetStreamOperation implements Operation {
 
     // Get the stream value, with or without unit conversion and scope resolution
     EngineNumber value;
-    if (targetSubstance.isPresent()) {
+    boolean hasOtherScope = targetSubstance.isPresent();
+    boolean hasUnitConversion = units != null;
+    if (hasOtherScope) {
       // Indirect access: get stream from specified substance
       Scope currentScope = engine.getScope();
 
       // Create a new scope pointing to the target substance within the same application
       Scope targetScope = currentScope.getWithSubstance(targetSubstance.get());
 
-      if (units != null) {
+      if (hasUnitConversion) {
         value = engine.getStream(streamName, Optional.of(targetScope), Optional.of(units));
       } else {
         value = engine.getStream(streamName, Optional.of(targetScope), Optional.empty());
       }
     } else {
-      // Direct access (existing behavior)
-      if (units != null) {
+      if (hasUnitConversion) {
         Scope scope = engine.getScope();
         value = engine.getStream(streamName, Optional.of(scope), Optional.of(units));
       } else {
