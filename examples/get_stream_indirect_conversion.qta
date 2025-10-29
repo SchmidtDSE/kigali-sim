@@ -14,8 +14,8 @@ start default
       equals 500 tCO2e / mt
 
       # Reference substance a's domestic production
-      set domestic to get domestic of "substance a" as kg * 1.5 during year 1
-      set domestic to get domestic of "substance a" as mt * 1200 during year 2
+      set domestic to get domestic of "substance a" as kg * 1.5 kg during year 1
+      set domestic to get domestic of "substance a" as mt * 1200 kg during year 2
 
       retire 10 % / year
     end substance

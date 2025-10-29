@@ -19,6 +19,7 @@ public class GetStreamOperation implements Operation {
 
   private final String streamName;
   private final String units;
+  private final Optional<String> targetSubstance;
 
   /**
    * Create a new GetStreamOperation.
@@ -28,6 +29,7 @@ public class GetStreamOperation implements Operation {
   public GetStreamOperation(String streamName) {
     this.streamName = streamName;
     this.units = null;
+    this.targetSubstance = Optional.empty();
   }
 
   /**
@@ -39,6 +41,20 @@ public class GetStreamOperation implements Operation {
   public GetStreamOperation(String streamName, String units) {
     this.streamName = streamName;
     this.units = units;
+    this.targetSubstance = Optional.empty();
+  }
+
+  /**
+   * Create a new GetStreamOperation with scope resolution and unit conversion.
+   *
+   * @param streamName The name of the stream to get.
+   * @param targetSubstance The substance name to resolve to (for indirect access).
+   * @param units The units to convert to.
+   */
+  public GetStreamOperation(String streamName, String targetSubstance, String units) {
+    this.streamName = streamName;
+    this.targetSubstance = Optional.of(targetSubstance);
+    this.units = units;
   }
 
   @Override
@@ -46,13 +62,28 @@ public class GetStreamOperation implements Operation {
     // Get the engine
     Engine engine = machine.getEngine();
 
-    // Get the stream value, with or without unit conversion
+    // Get the stream value, with or without unit conversion and scope resolution
     EngineNumber value;
-    if (units != null) {
-      Scope scope = engine.getScope();
-      value = engine.getStream(streamName, Optional.of(scope), Optional.of(units));
+    if (targetSubstance.isPresent()) {
+      // Indirect access: get stream from specified substance
+      Scope currentScope = engine.getScope();
+
+      // Create a new scope pointing to the target substance within the same application
+      Scope targetScope = currentScope.getWithSubstance(targetSubstance.get());
+
+      if (units != null) {
+        value = engine.getStream(streamName, Optional.of(targetScope), Optional.of(units));
+      } else {
+        value = engine.getStream(streamName, Optional.of(targetScope), Optional.empty());
+      }
     } else {
-      value = engine.getStream(streamName);
+      // Direct access (existing behavior)
+      if (units != null) {
+        Scope scope = engine.getScope();
+        value = engine.getStream(streamName, Optional.of(scope), Optional.of(units));
+      } else {
+        value = engine.getStream(streamName);
+      }
     }
 
     // Push the value onto the stack

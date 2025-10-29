@@ -72,44 +72,44 @@ public class GetStreamLiveTests {
    * Uses get_stream_indirect_conversion.qta which tests:
    * - get domestic of "substance a" as kg
    * - get domestic of "substance a" as mt
-   *
-   * <p>Note: This test is expected to fail until visitGetStreamIndirectConversion
-   * is implemented in QubecTalkEngineVisitor. The test exists to document the expected
-   * behavior and will pass once the implementation is added.
    */
   @Test
   public void testGetStreamIndirectConversion() throws IOException {
-    // This test will fail with "Cannot interpret program with parse errors"
-    // until visitGetStreamIndirectConversion is implemented
-    try {
-      String qtaPath = "../examples/get_stream_indirect_conversion.qta";
-      ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
-      assertNotNull(program, "Program should not be null");
+    String qtaPath = "../examples/get_stream_indirect_conversion.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
 
-      String scenarioName = "indirect test";
-      Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
-      List<EngineResult> resultsList = results.collect(Collectors.toList());
+    String scenarioName = "indirect test";
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
+    List<EngineResult> resultsList = results.collect(Collectors.toList());
 
-      // Year 1: substance a has 200 kg domestic
-      EngineResult year1SubA = LiveTestsUtil.getResult(resultsList.stream(), 1,
-          "multi substance app", "substance a");
-      assertNotNull(year1SubA, "Should have result for substance a in year 1");
-      assertEquals(200.0, year1SubA.getDomestic().getValue().doubleValue(), 0.0001,
-          "Substance a domestic should be 200 kg in year 1");
+    // Year 1: substance a has 200 kg domestic
+    EngineResult year1SubA = LiveTestsUtil.getResult(resultsList.stream(), 1,
+        "multi substance app", "substance a");
+    assertNotNull(year1SubA, "Should have result for substance a in year 1");
+    assertEquals(200.0, year1SubA.getDomestic().getValue().doubleValue(), 0.0001,
+        "Substance a domestic should be 200 kg in year 1");
 
-      // Year 1: substance b domestic = (get domestic of "substance a" as kg) * 1.5 = 200 * 1.5 = 300 kg
-      EngineResult year1SubB = LiveTestsUtil.getResult(resultsList.stream(), 1,
-          "multi substance app", "substance b");
-      assertNotNull(year1SubB, "Should have result for substance b in year 1");
-      double domesticB1 = year1SubB.getDomestic().getValue().doubleValue();
-      assertTrue(domesticB1 >= 300.0 && domesticB1 <= 350.0,
-          "Substance b domestic should be around 300 kg in year 1 (got " + domesticB1 + ")");
-    } catch (RuntimeException e) {
-      // Expected failure until visitGetStreamIndirectConversion is implemented
-      assertTrue(e.getMessage().contains("Cannot interpret program")
-                 || e.getMessage().contains("does not have an operation"),
-          "Should fail due to unimplemented visitGetStreamIndirectConversion");
-    }
+    // Year 1: substance b domestic = (get domestic of "substance a" as kg) * 1.5 = 200 * 1.5 = 300 kg
+    EngineResult year1SubB = LiveTestsUtil.getResult(resultsList.stream(), 1,
+        "multi substance app", "substance b");
+    assertNotNull(year1SubB, "Should have result for substance b in year 1");
+    assertEquals(300.0, year1SubB.getDomestic().getValue().doubleValue(), 0.0001,
+        "Substance b domestic should be 300 kg in year 1 (200 * 1.5)");
+
+    // Year 2: substance b domestic = (get domestic of "substance a" as mt) * 1200
+    // substance a year 2 domestic stays at 200 kg (no set for year 2) = 0.2 mt
+    // substance b year 2 domestic = 0.2 * 1200 = 240 kg
+    EngineResult year2SubA = LiveTestsUtil.getResult(resultsList.stream(), 2,
+        "multi substance app", "substance a");
+    assertEquals(200.0, year2SubA.getDomestic().getValue().doubleValue(), 0.0001,
+        "Substance a domestic should still be 200 kg in year 2");
+
+    EngineResult year2SubB = LiveTestsUtil.getResult(resultsList.stream(), 2,
+        "multi substance app", "substance b");
+    double domesticB2 = year2SubB.getDomestic().getValue().doubleValue();
+    assertEquals(240.0, domesticB2, 1.0,
+        "Substance b domestic in year 2 should be around 240 kg");
   }
 
   /**
@@ -117,34 +117,43 @@ public class GetStreamLiveTests {
    * Uses get_stream_mixed.qta which tests:
    * - Both direct and indirect stream access in same substance
    * - get equipment of "substance" as units
-   *
-   * <p>Note: This test is expected to fail until visitGetStreamIndirectConversion
-   * is implemented. It exists to document expected behavior for Component 2.
    */
   @Test
   public void testGetStreamMixed() throws IOException {
-    // This test will fail until visitGetStreamIndirectConversion is implemented
-    try {
-      String qtaPath = "../examples/get_stream_mixed.qta";
-      ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
-      assertNotNull(program, "Program should not be null");
+    String qtaPath = "../examples/get_stream_mixed.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
 
-      String scenarioName = "mixed test";
-      Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
-      List<EngineResult> resultsList = results.collect(Collectors.toList());
+    String scenarioName = "mixed test";
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
+    List<EngineResult> resultsList = results.collect(Collectors.toList());
 
-      // Year 1: base substance
-      EngineResult year1Base = LiveTestsUtil.getResult(resultsList.stream(), 1,
-          "complex app", "base substance");
-      assertNotNull(year1Base, "Should have result for base substance in year 1");
-      assertEquals(1000.0, year1Base.getDomestic().getValue().doubleValue(), 0.0001,
-          "Base substance domestic should be 1000 kg in year 1");
-    } catch (RuntimeException e) {
-      // Expected failure until visitGetStreamIndirectConversion is implemented
-      assertTrue(e.getMessage().contains("Cannot interpret program")
-                 || e.getMessage().contains("does not have an operation"),
-          "Should fail due to unimplemented visitGetStreamIndirectConversion");
-    }
+    // Year 1: base substance has 1000 kg domestic, 500 kg import
+    EngineResult year1Base = LiveTestsUtil.getResult(resultsList.stream(), 1,
+        "complex app", "base substance alpha");
+    assertNotNull(year1Base, "Should have result for base substance alpha in year 1");
+    assertEquals(1000.0, year1Base.getDomestic().getValue().doubleValue(), 0.0001,
+        "Base substance alpha domestic should be 1000 kg in year 1");
+
+    // Derived substance domestic = get equipment of "base substance alpha" as units * 12 kg
+    // Base equipment comes from sales (1500 kg) / initial charge (10 kg/unit)
+    double baseEquipment = year1Base.getPopulation().getValue().doubleValue();
+
+    EngineResult year1Derived = LiveTestsUtil.getResult(resultsList.stream(), 1,
+        "complex app", "derived substance beta");
+    double derivedDomestic = year1Derived.getDomestic().getValue().doubleValue();
+    double expectedDomestic = baseEquipment * 12.0;
+    assertEquals(expectedDomestic, derivedDomestic, 0.1,
+        "Derived substance beta domestic should equal base equipment * 12 kg");
+
+    // Year 2: uses both direct (get domestic as kg) and continuation from year 1
+    EngineResult year2Derived = LiveTestsUtil.getResult(resultsList.stream(), 2,
+        "complex app", "derived substance beta");
+    double year2Domestic = year2Derived.getDomestic().getValue().doubleValue();
+    // Year 2: get domestic as kg + 100 kg (domestic from year 1 + 100)
+    double expectedYear2 = derivedDomestic + 100.0;
+    assertEquals(expectedYear2, year2Domestic, 1.0,
+        "Year 2 derived substance beta domestic should be year 1 domestic + 100 kg");
   }
 
   /**
