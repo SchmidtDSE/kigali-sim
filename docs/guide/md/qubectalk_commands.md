@@ -10,6 +10,7 @@ Commands are the executable statements within QubecTalk stanzas that define subs
 - [Enable](#enable)
 - [Equals (GWP)](#equals-gwp)
 - [Floor](#floor)
+- [Get](#get)
 - [Initial Charge](#initial-charge)
 - [Recharge](#recharge)
 - [Recover](#recover)
@@ -95,6 +96,42 @@ equals 3 tCO2e / mt
 floor sales to 10% during years 2030 to onwards
 floor domestic to 5 mt during years 2025 to 2035
 ```
+
+## Get
+
+**Purpose:** Retrieves values from streams for use in expressions and calculations.
+
+**Syntax:** `get streamName [of "substanceName"] [as units]`
+
+**Available Streams:**
+- `sales`, `domestic`, `import`, `export` - Sales and trade volumes
+- `equipment`, `priorEquipment`, `bank` - Equipment population
+- `age` - Weighted average equipment age (read-only, Advanced Editor only)
+
+**Indirect Access (Cross-substance):**
+
+The `of "substanceName"` option allows you to access stream values from other substances within the same application. This is useful for creating dependencies between substances.
+
+**Examples:**
+```qubectalk
+# Direct stream access
+define currentSales as get sales as kg
+define equipmentAge as get age as years
+retire (get age as years) * 1 % each year
+
+# Age-dependent retirement example
+define retirementRate as get age as years
+retire retirementRate % each year during years 5 to onwards
+
+# Cross-substance access with indirect option
+define substanceADomestic as get domestic of "substance a" as kg
+set domestic to (get domestic of "substance a" as kg) * 1.5 during year 1
+
+# Unit conversion with indirect access
+define substanceAInMT as get import of "substance a" as mt
+```
+
+**Note:** The `age` stream is a computed value that tracks the weighted average age of equipment. It starts at 0 years for new equipment and increases annually. This feature is only available in the Advanced Editor.
 
 ## Initial Charge
 

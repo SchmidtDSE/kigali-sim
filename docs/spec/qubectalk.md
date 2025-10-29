@@ -512,6 +512,21 @@ define equipmentCount as get equipment as units
 
 Setting an aggregate stream like sales will cause the value to be distributed proportionally to the prior value of the sub-streams. In the case of this example, this would be applied across import, domestic, and export.
 
+### Age stream
+The `age` stream provides access to the weighted average age of equipment in the population. This is a read-only computed stream:
+
+```
+define currentAge as get age as years
+retire (get age as years) * 1 %  # Age-dependent retirement
+```
+
+Key characteristics:
+- Age starts at 0 years for initial equipment
+- Age increases by 1 year each simulation year
+- With new equipment, age is the weighted average based on equipment quantities
+- Read-only: cannot be set by users
+- Usage: `get age as years` in formulas
+
 # Units
 Various statements can specify units. These are not assignable to variables so are only included in supporting commands.
 
