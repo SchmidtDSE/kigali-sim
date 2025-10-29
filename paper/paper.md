@@ -70,7 +70,7 @@ Leaving the following for future work, Kigali Sim:
 Kigali Sim will receive updates as official guidance changes in the future [@mlf_guidelines].
 
 # Implementation
-Kigali Sim runs browser-based via WASM or via JVM [@teavm]. Without transmitting simulations to external servers, both enable privacy-preserving zero installation local computation, BigDecimal [@bigdecimal], and parallelization. The engine uses ANTLR [@antlr] for parsing QubecTalk code in both Java and JS^[A JS ANTLR visitor facilitating real-time translation between the UI-editor and the code-based editor.].
+Kigali Sim runs browser-based via WASM or via JVM [@teavm]. Without transmitting simulations to external servers, both enable privacy-preserving zero installation local computation, BigDecimal [@bigdecimal], and parallelization. The engine uses ANTLR [@antlr] for parsing QubecTalk code in both Java and JavaScript^[A Javascript-based ANTLR visitor facilitating real-time translation between the UI-editor and the code-based editor.].
 
 ![Diagram describing multi-modal execution in which simulations run across different platforms.\label{fig:execution}](KigaliExecution.svg){width="100%"}
 
