@@ -63,9 +63,8 @@ As diverse methodologies measure stocks, Kigali Sim provides automated unit conv
 Leaving the following for future work, Kigali Sim:
 
  - Can model energy consumption but only estimates direct emissions^[Users may combine exported data with energy mix information for indirect emissions [@energy_mix].].
- - Asks users to provide retirement and servicing as amortized hazard / retirement rates as modelers typically do not know the specific age distribution of equipment, similar to IPCC Tier 1 [@ipcc_tiers].
- - Provides automatic lookup but allows for override with country-specific parameters, similar to IPCC Tier 2 [@ipcc_tiers].
  - Applies treaty trade attribution but will only attribute charge prior to equipment sale entirely to either the importer or exporter^[Local assembly can be modeled as domestic production.].
+ - Supports some complex features like variable servicing / retirement hazard rates but those formulas may not be editable in the UI-based editor and require code-based authoring.
 
 Kigali Sim will receive updates as official guidance changes in the future [@mlf_guidelines].
 
