@@ -2,10 +2,12 @@
  * Live tests for age tracking functionality.
  *
  * <p>Tests validate that:
- * - Age increments naturally over time
- * - Weighted average age calculation works with equipment growth
- * - Manual age setting and subsequent calculations work correctly
- * - Edge cases (zero equipment) are handled properly
+ * <ul>
+ *   <li>Age increments naturally over time
+ *   <li>Weighted average age calculation works with equipment growth
+ *   <li>Manual age setting and subsequent calculations work correctly
+ *   <li>Edge cases (zero equipment) are handled properly
+ * </ul>
  *
  * <p>Note: Age stream is internal and not exported to CSV/EngineResult.
  * Tests verify age tracking through observable equipment population effects
@@ -38,14 +40,18 @@ public class AgeLiveTests {
   /**
    * Test that age increments naturally over years with constant population.
    * Uses age_basic.qta which has:
-   * - 100 units added in year 1
-   * - 5% retirement rate
-   * - No additional sales in years 2-5
+   * <ul>
+   *   <li>100 units added in year 1
+   *   <li>5% retirement rate
+   *   <li>No additional sales in years 2-5
+   * </ul>
    *
    * <p>Expected behavior:
-   * - Year 1: age = 0 (initial equipment)
-   * - Year 2: age ≈ 1 year (equipment aged 1 year, retirement reduces population)
-   * - Year 3-5: age continues incrementing (approximately 1 year per year)
+   * <ul>
+   *   <li>Year 1: age = 0 (initial equipment)
+   *   <li>Year 2: age ≈ 1 year (equipment aged 1 year, retirement reduces population)
+   *   <li>Year 3-5: age continues incrementing (approximately 1 year per year)
+   * </ul>
    *
    * <p>We verify age increments by checking that equipment population
    * decreases steadily due to retirement (no new equipment added).
@@ -94,16 +100,20 @@ public class AgeLiveTests {
   /**
    * Test weighted average age calculation with equipment growth.
    * Uses age_with_growth.qta which has:
-   * - 1000 units of priorEquipment in year 1 (age = 0 initially)
-   * - 100 units added each year from years 2-5
-   * - 5% retirement rate
+   * <ul>
+   *   <li>1000 units of priorEquipment in year 1 (age = 0 initially)
+   *   <li>100 units added each year from years 2-5
+   *   <li>5% retirement rate
+   * </ul>
    *
    * <p>Expected behavior:
-   * - Year 1: age = 0 (prior equipment starts at age 0)
-   * - Year 2: Weighted average of (1000 units at 1 year) and (100 units at 1 year)
-   *   Age ≈ 1 year (both cohorts aged 1 year)
-   * - Year 3+: Age continues to increase but slower than natural aging
-   *   due to dilution effect from new equipment additions
+   * <ul>
+   *   <li>Year 1: age = 0 (prior equipment starts at age 0)
+   *   <li>Year 2: Weighted average of (1000 units at 1 year) and (100 units at 1 year)
+   *     Age ≈ 1 year (both cohorts aged 1 year)
+   *   <li>Year 3+: Age continues to increase but slower than natural aging
+   *     due to dilution effect from new equipment additions
+   * </ul>
    *
    * <p>We verify by checking population growth pattern is consistent
    * with additions minus retirement.
@@ -152,16 +162,20 @@ public class AgeLiveTests {
   /**
    * Test manual age setting and subsequent age calculations.
    * Uses age_with_setting.qta which has:
-   * - 500 units of priorEquipment in year 1
-   * - Age manually set to 10 years in year 1
-   * - 50 units added in years 2-3
-   * - 5% retirement rate
+   * <ul>
+   *   <li>500 units of priorEquipment in year 1
+   *   <li>Age manually set to 10 years in year 1
+   *   <li>50 units added in years 2-3
+   *   <li>5% retirement rate
+   * </ul>
    *
    * <p>Expected behavior:
-   * - Year 1: age = 10 years (manually set)
-   * - Year 2: Weighted average of (500 units at 11 years) and (50 units at 1 year)
-   *   Age ≈ (500*11 + 50*1) / 550 = 10.09 years
-   * - Year 3: Age continues to increase with weighted average
+   * <ul>
+   *   <li>Year 1: age = 10 years (manually set)
+   *   <li>Year 2: Weighted average of (500 units at 11 years) and (50 units at 1 year)
+   *     Age ≈ (500*11 + 50*1) / 550 = 10.09 years
+   *   <li>Year 3: Age continues to increase with weighted average
+   * </ul>
    *
    * <p>We verify by checking equipment population follows expected pattern
    * with manual age initialization.
@@ -210,9 +224,11 @@ public class AgeLiveTests {
    * Creates an inline scenario to test age calculation with equipment approaching zero.
    *
    * <p>Expected behavior:
-   * - Age calculation doesn't crash with very low equipment
-   * - No division by zero errors
-   * - Age calculation remains stable even with high retirement rates
+   * <ul>
+   *   <li>Age calculation doesn't crash with very low equipment
+   *   <li>No division by zero errors
+   *   <li>Age calculation remains stable even with high retirement rates
+   * </ul>
    *
    * <p>This test uses a high retirement rate (100%) to stress-test the age calculation.
    * Note: With default "with replacement" behavior, equipment is replaced, so we test

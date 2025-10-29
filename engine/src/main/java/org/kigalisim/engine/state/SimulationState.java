@@ -10,6 +10,7 @@
 package org.kigalisim.engine.state;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -523,15 +524,16 @@ public class SimulationState {
       // Calculate weighted ages
       BigDecimal priorAgeYears = currentAge.getValue().add(BigDecimal.ONE); // age + 1 year
       BigDecimal priorAgeWeighted = priorAgeYears.multiply(priorAgeWeight);
-      BigDecimal addedAgeWeighted = BigDecimal.ONE.multiply(addedAgeWeight); // 1 year * weight
+      BigDecimal addedAgeWeighted = addedAgeWeight; // 1 year * weight
 
       // Calculate new average age
       BigDecimal totalWeight = priorAgeWeight.add(addedAgeWeight);
+      boolean isZero = totalWeight.compareTo(BigDecimal.ZERO) == 0;
       BigDecimal newAge;
-      if (totalWeight.compareTo(BigDecimal.ZERO) == 0) {
+      if (isZero) {
         newAge = BigDecimal.ZERO; // Avoid division by zero
       } else {
-        newAge = priorAgeWeighted.add(addedAgeWeighted).divide(totalWeight, 10, java.math.RoundingMode.HALF_UP);
+        newAge = priorAgeWeighted.add(addedAgeWeighted).divide(totalWeight, 10, RoundingMode.HALF_UP);
       }
 
       setSimpleStream(useKey, "age", new EngineNumber(newAge, "years"));

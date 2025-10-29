@@ -29,7 +29,9 @@ public class GetStreamLiveTests {
   /**
    * Test basic getStreamConversion with direct stream access and unit conversion.
    * Uses get_stream_conversion.qta which tests:
-   * - get equipment as units (in priorEquipment calculation)
+   * <ul>
+   *   <li>get equipment as units (in priorEquipment calculation)</li>
+   * </ul>
    *
    * <p>Note: This test verifies that the get stream syntax works without causing parse errors.
    * It tests the basic case that already exists in reference_simplified.qta.
@@ -70,8 +72,10 @@ public class GetStreamLiveTests {
   /**
    * Test getStreamIndirectConversion with cross-substance stream access.
    * Uses get_stream_indirect_conversion.qta which tests:
-   * - get domestic of "substance a" as kg
-   * - get domestic of "substance a" as mt
+   * <ul>
+   *   <li>get domestic of "substance a" as kg</li>
+   *   <li>get domestic of "substance a" as mt</li>
+   * </ul>
    */
   @Test
   public void testGetStreamIndirectConversion() throws IOException {
@@ -115,8 +119,10 @@ public class GetStreamLiveTests {
   /**
    * Test mixed usage of getStreamConversion and getStreamIndirectConversion.
    * Uses get_stream_mixed.qta which tests:
-   * - Both direct and indirect stream access in same substance
-   * - get equipment of "substance" as units
+   * <ul>
+   *   <li>Both direct and indirect stream access in same substance</li>
+   *   <li>get equipment of "substance" as units</li>
+   * </ul>
    */
   @Test
   public void testGetStreamMixed() throws IOException {

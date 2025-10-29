@@ -18,7 +18,7 @@ import org.kigalisim.lang.machine.PushDownMachine;
 public class GetStreamOperation implements Operation {
 
   private final String streamName;
-  private final String units;
+  private final Optional<String> units;
   private final Optional<String> targetSubstance;
 
   /**
@@ -28,7 +28,7 @@ public class GetStreamOperation implements Operation {
    */
   public GetStreamOperation(String streamName) {
     this.streamName = streamName;
-    this.units = null;
+    this.units = Optional.empty();
     this.targetSubstance = Optional.empty();
   }
 
@@ -40,7 +40,7 @@ public class GetStreamOperation implements Operation {
    */
   public GetStreamOperation(String streamName, String units) {
     this.streamName = streamName;
-    this.units = units;
+    this.units = Optional.of(units);
     this.targetSubstance = Optional.empty();
   }
 
@@ -54,7 +54,7 @@ public class GetStreamOperation implements Operation {
   public GetStreamOperation(String streamName, String targetSubstance, String units) {
     this.streamName = streamName;
     this.targetSubstance = Optional.of(targetSubstance);
-    this.units = units;
+    this.units = Optional.of(units);
   }
 
   @Override
@@ -65,7 +65,6 @@ public class GetStreamOperation implements Operation {
     // Get the stream value, with or without unit conversion and scope resolution
     EngineNumber value;
     boolean hasOtherScope = targetSubstance.isPresent();
-    boolean hasUnitConversion = units != null;
     if (hasOtherScope) {
       // Indirect access: get stream from specified substance
       Scope currentScope = engine.getScope();
@@ -73,15 +72,15 @@ public class GetStreamOperation implements Operation {
       // Create a new scope pointing to the target substance within the same application
       Scope targetScope = currentScope.getWithSubstance(targetSubstance.get());
 
-      if (hasUnitConversion) {
-        value = engine.getStream(streamName, Optional.of(targetScope), Optional.of(units));
+      if (units.isPresent()) {
+        value = engine.getStream(streamName, Optional.of(targetScope), units);
       } else {
         value = engine.getStream(streamName, Optional.of(targetScope), Optional.empty());
       }
     } else {
-      if (hasUnitConversion) {
+      if (units.isPresent()) {
         Scope scope = engine.getScope();
-        value = engine.getStream(streamName, Optional.of(scope), Optional.of(units));
+        value = engine.getStream(streamName, Optional.of(scope), units);
       } else {
         value = engine.getStream(streamName);
       }
