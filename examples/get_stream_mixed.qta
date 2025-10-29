@@ -1,0 +1,34 @@
+start default
+  define application "complex app"
+    uses substance "base substance"
+      enable domestic
+      enable import
+      initial charge with 10 kg / unit for domestic
+      initial charge with 10 kg / unit for import
+      equals 1500 tCO2e / mt
+
+      set domestic to 1000 kg during year 1
+      set import to 500 kg during year 1
+      set priorEquipment to get equipment as units * 3 units during year 1
+
+      retire 5 % / year
+    end substance
+
+    uses substance "derived substance"
+      enable domestic
+      initial charge with 12 kg / unit for domestic
+      equals 200 tCO2e / mt
+
+      # Mix of direct and indirect stream access
+      set domestic to get equipment of "base substance" as units * 12 kg during year 1
+      set domestic to get domestic as kg + 100 kg during year 2
+      set priorEquipment to get equipment of "base substance" as units units during year 1
+
+      retire 5 % / year
+    end substance
+  end application
+end default
+
+start simulations
+  simulate "mixed test" from years 1 to 5
+end simulations
