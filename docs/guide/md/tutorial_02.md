@@ -47,6 +47,8 @@ Now let's define the equipment characteristics that drive HFC consumption:
 - Set annual retirement rate to **5% each year** (corresponds to 20-year average equipment lifetime)
 - Leave **"Retirement reduces in-service equipment"** checked (recommended for most simulations)
 
+The retirement rate is sometimes called the **hazard rate** or **scrap rate** in equipment lifecycle analysis. Kigali Sim, by default, assumes a constant hazard rate when you specify a percentage. However, this can be modified by using a non-percentage retirement amount if you need more complex retirement patterns.
+
 These basic parameters are enough to start modeling, but we also will want to account for servicing existing equipment.
 
 (tutorial02_step03.gif - alt: animated gif showing how to specify equipment properties)
