@@ -145,7 +145,7 @@ If you would like to contribute code but don't have a specific issue to address,
 <br>
 
 ## Use of Generative AI
-We welcome use of AI coding assistants under some guidelines. First, please disclosue their use for any non-mechanical / non-trivial edits and, if you are uncertain, error on the side of caution by disclosing anyway. We suggest that you mention the model you used as a co-author in your commit. Prompts should be narrow and all generated work should be manually evaluated before submitting to the repository either in a main / deploy branch or in a PR branch. We view these resources as tools but you remain responsible for all actions taken. As with any edit, the maintainers reserve the right to politely decline contributions and, in particular, be sure that any AI-assisted edits follow the norms, conventions, and architecture of the existing code.
+We welcome use of AI coding assistants under some guidelines. First, please disclose their use for any non-mechanical / non-trivial edits and, if you are uncertain, error on the side of caution by disclosing anyway. We suggest that you mention the model you used as a co-author in your commit. Prompts should be narrow and all generated work should be manually evaluated before submitting to the repository either in a main / deploy branch or in a PR branch. We view these resources as tools but you remain responsible for all actions taken. As with any edit, the maintainers reserve the right to politely decline contributions and, in particular, be sure that any AI-assisted edits follow the norms, conventions, and architecture of the existing code.
 
 <br>
 <br>
@@ -153,7 +153,7 @@ We welcome use of AI coding assistants under some guidelines. First, please disc
 ## Documentation
 When adding new features or changing existing functionality:
 
- - Update relevant documentation in the tutorial and users's guide if appropriate.
+ - Update relevant documentation in the tutorial and user's guide if appropriate.
  - Add JavaDoc comments for Java classes and methods
  - Add JSDoc comments for JavaScript functions
  - Update [DEVELOPING.md](DEVELOPING.md) if you change development workflows
