@@ -27,6 +27,7 @@
           <li><a href="#enable">Enable</a></li>
           <li><a href="#equals">Equals (GWP)</a></li>
           <li><a href="#floor">Floor</a></li>
+          <li><a href="#get">Get</a></li>
           <li><a href="#initial-charge">Initial Charge</a></li>
           <li><a href="#recharge">Recharge</a></li>
           <li><a href="#recover">Recover</a></li>
@@ -139,6 +140,44 @@ equals 3 tCO2e / mt</code></pre>
         <p><strong>Examples:</strong></p>
         <pre><code class="language-qubectalk">floor sales to 10% during years 2030 to onwards
 floor domestic to 5 mt during years 2025 to 2035</code></pre>
+      </section>
+
+      <section id="get">
+        <h2>Get</h2>
+
+        <p><strong>Purpose:</strong> Retrieves values from streams for use in expressions and calculations.</p>
+
+        <p><strong>Syntax:</strong> <code>get streamName [of "substanceName"] [as units]</code></p>
+
+        <p><strong>Available Streams:</strong></p>
+        <ul>
+          <li><code>sales</code>, <code>domestic</code>, <code>import</code>, <code>export</code> - Sales and trade volumes</li>
+          <li><code>equipment</code>, <code>priorEquipment</code>, <code>bank</code> - Equipment population</li>
+          <li><code>age</code> - Weighted average equipment age (read-only, Advanced Editor only)</li>
+        </ul>
+
+        <p><strong>Indirect Access (Cross-substance):</strong></p>
+
+        <p>The <code>of "substanceName"</code> option allows you to access stream values from other substances within the same application. This is useful for creating dependencies between substances.</p>
+
+        <p><strong>Examples:</strong></p>
+        <pre><code class="language-qubectalk"># Direct stream access
+define currentSales as get sales as kg
+define equipmentAge as get age as years
+retire (get age as years) * 1 % each year
+
+# Age-dependent retirement example
+define retirementRate as get age as years
+retire retirementRate % each year during years 5 to onwards
+
+# Cross-substance access with indirect option
+define substanceADomestic as get domestic of "substance a" as kg
+set domestic to (get domestic of "substance a" as kg) * 1.5 during year 1
+
+# Unit conversion with indirect access
+define substanceAInMT as get import of "substance a" as mt</code></pre>
+
+        <p><strong>Note:</strong> The <code>age</code> stream is a computed value that tracks the weighted average age of equipment. It starts at 0 years for new equipment and increases annually. This feature is only available in the Advanced Editor.</p>
       </section>
 
       <section id="initial-charge">

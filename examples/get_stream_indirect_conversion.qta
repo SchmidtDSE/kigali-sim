@@ -1,0 +1,27 @@
+start default
+  define application "multi substance app"
+    uses substance "substance a"
+      enable domestic
+      initial charge with 5 kg / unit for domestic
+      equals 1000 tCO2e / mt
+      set domestic to 200 kg during year 1
+      retire 10 % / year
+    end substance
+
+    uses substance "substance b"
+      enable domestic
+      initial charge with 8 kg / unit for domestic
+      equals 500 tCO2e / mt
+
+      # Reference substance a's domestic production
+      set domestic to get domestic of "substance a" as kg * 1.5 kg during year 1
+      set domestic to get domestic of "substance a" as mt * 1200 kg during year 2
+
+      retire 10 % / year
+    end substance
+  end application
+end default
+
+start simulations
+  simulate "indirect test" from years 1 to 5
+end simulations
