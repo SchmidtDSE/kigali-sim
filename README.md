@@ -181,7 +181,7 @@ For those with a bug report or a suggestion to improve Kigali Sim, please [open 
 
 For those seeking help with using Kigali Sim, we recommend that you consider starting with the "Get Help" button within the application if you are comfortable sharing your work with us. This free and private support channel offered by the project maintainers (currently the University of California DSE). If you do not want to share your simluation with us or are instructed to do so, please [open an issue](https://github.com/SchmidtDSE/kigali-sim/issues/new) and try your best to fill in the issue template but please note that this issue will be public.
 
-For those interested in contributing to the Kigali Sim open source project as a developer, thank you and please review `CONTRIBUTING.md`. Also, please see [our credits page](https://kigalisim.org/credits.html) and our [humans.txt](https://kigalisim.org/humans.txt) for more information about the community behind this open source project. If you are unsure which issue might be best for getting started, plesae look for the "good first issue" tag.
+For those interested in contributing to the Kigali Sim open source project as a developer, thank you and please review `CONTRIBUTORS.md`. Also, please see [our credits page](https://kigalisim.org/credits.html) and our [humans.txt](https://kigalisim.org/humans.txt) for more information about the community behind this open source project. If you are unsure which issue might be best for getting started, please look for the "good first issue" tag. For information about community standards and expectations, please see `CONDUCT.md`.
 
 <br>
 
@@ -322,7 +322,8 @@ We thank the following Open Source libraries and resources:
 - [Webpack](https://webpack.js.org/) for bundling JavaScript modules under [MIT](https://github.com/webpack/webpack/blob/main/LICENSE).
 - [Global Plastics AI Policy Tool](https://global-plastics-tool.org/) under [BSD-3-Clause](https://github.com/SchmidtDSE/plastics-prototype/blob/main/LICENSE.md).
 - [Josh](https://joshsim.org/) under [BSD-3-Clause](https://github.com/SchmidtDSE/josh/blob/main/LICENSE.md).
-- [UNEP Ozone Secretariat](https://ozone.unep.org/lists-substances-and-blends) for Global Warming Potential (GWP) values of substances and refrigerant blends used in `editor/json/known_gwp.json`.
+
+Also use data from [UNEP Ozone Secretariat](https://ozone.unep.org/lists-substances-and-blends) for Global Warming Potential (GWP) values of substances and refrigerant blends used in `editor/json/known_gwp.json`. Additionally, [Pandoc](https://pandoc.org/) under [GPL-2.0](https://github.com/jgm/pandoc/blob/master/COPYRIGHT) is invoked from CI / CD but exclusively for optional documentation generation in CI/CD (invoked as an executable). Not a compile-time or run-time dependency of Kigali Sim itself or any of its components and it is used in a completely isolated CI / CD pipeline from the rest of the project.
 
 <br>
 
