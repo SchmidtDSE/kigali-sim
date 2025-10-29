@@ -522,16 +522,18 @@
                           <div class="form-group">
                             <div><label for="sales-assumption">Default sales assumption in a new year:</label></div>
                             <div>
-                              <select
-                                name="sales-assumption"
-                                class="sales-assumption-input mid"
-                                aria-label="Default sales assumption for new years"
-                                data-tippy-content="Controls how sales carry over from one year to the next. 'Continue from last year' maintains existing sales patterns (default). 'Cover only servicing' limits sales to recharge needs only. 'Go back to zero' resets all sales."
-                              >
-                                <option value="continued">Continue from last year (recommended)</option>
-                                <option value="only recharge">Cover only servicing</option>
-                                <option value="no">Go back to zero</option>
-                              </select>
+                              <span class="sel long">
+                                <select
+                                  name="sales-assumption"
+                                  class="sales-assumption-input"
+                                  aria-label="Default sales assumption for new years"
+                                  data-tippy-content="How sales carry over from one year to the next. This is what will happen if no additional data on sales are provided for a year within the simulation. 'Continue from last year' maintains existing sales patterns (default). 'Cover only servicing' limits sales to recharge needs only. 'Go back to zero' resets all sales to zero."
+                                >
+                                  <option value="continued">Continue from last year (recommended)</option>
+                                  <option value="only recharge">Cover only servicing</option>
+                                  <option value="no">Go back to zero</option>
+                                </select>
+                              </span>
                             </div>
                           </div>
                         </div>

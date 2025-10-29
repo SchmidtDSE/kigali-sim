@@ -14,6 +14,14 @@ Finally, we want to again express our gratitude for your feedback and time.
 
 The following changes have been adopted and released.
 
+### Improved help text for default sales
+
+**Status**: Released October 28, 2025
+
+**Classification**: Enhancement
+
+Updated the tooltip text for the "Default sales assumption in a new year" dropdown based on user feedback.
+
 ### Fuzzier matching and substance list update
 
 **Status**: Released October 28, 2025
