@@ -145,10 +145,11 @@ public class SimulationState {
     // Recharge tracking
     String implicitRechargeKey = getKey(useKey, "implicitRecharge");
     streams.put(implicitRechargeKey, new EngineNumber(BigDecimal.ZERO, "kg"));
+
+    // Age tracking
+    String ageKey = getKey(useKey, "age");
+    streams.put(ageKey, new EngineNumber(BigDecimal.ZERO, "years"));
   }
-
-
-
 
   /**
    * Set a stream using pre-computed stream data.
@@ -504,6 +505,36 @@ public class SimulationState {
 
       EngineNumber retired = getStream(useKey, "retired");
       setSimpleStream(useKey, "priorRetired", retired);
+
+      // Calculate weighted average age for the new year
+      EngineNumber priorEquipmentValue = getStream(useKey, "priorEquipment");
+      EngineNumber currentEquipmentValue = getStream(useKey, "equipment");
+      EngineNumber currentAge = getStream(useKey, "age");
+
+      // Convert to units for calculation
+      EngineNumber priorEquipmentUnits = unitConverter.convert(priorEquipmentValue, "units");
+      EngineNumber currentEquipmentUnits = unitConverter.convert(currentEquipmentValue, "units");
+
+      // Calculate weights
+      BigDecimal priorAgeWeight = priorEquipmentUnits.getValue();
+      BigDecimal addedEquipment = currentEquipmentUnits.getValue().subtract(priorEquipmentUnits.getValue());
+      BigDecimal addedAgeWeight = addedEquipment.max(BigDecimal.ZERO); // limit to [0,]
+
+      // Calculate weighted ages
+      BigDecimal priorAgeYears = currentAge.getValue().add(BigDecimal.ONE); // age + 1 year
+      BigDecimal priorAgeWeighted = priorAgeYears.multiply(priorAgeWeight);
+      BigDecimal addedAgeWeighted = BigDecimal.ONE.multiply(addedAgeWeight); // 1 year * weight
+
+      // Calculate new average age
+      BigDecimal totalWeight = priorAgeWeight.add(addedAgeWeight);
+      BigDecimal newAge;
+      if (totalWeight.compareTo(BigDecimal.ZERO) == 0) {
+        newAge = BigDecimal.ZERO; // Avoid division by zero
+      } else {
+        newAge = priorAgeWeighted.add(addedAgeWeighted).divide(totalWeight, 10, java.math.RoundingMode.HALF_UP);
+      }
+
+      setSimpleStream(useKey, "age", new EngineNumber(newAge, "years"));
     }
 
     // Reset state at timestep for all parameterizations
