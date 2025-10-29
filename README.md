@@ -322,7 +322,8 @@ We thank the following Open Source libraries and resources:
 - [Webpack](https://webpack.js.org/) for bundling JavaScript modules under [MIT](https://github.com/webpack/webpack/blob/main/LICENSE).
 - [Global Plastics AI Policy Tool](https://global-plastics-tool.org/) under [BSD-3-Clause](https://github.com/SchmidtDSE/plastics-prototype/blob/main/LICENSE.md).
 - [Josh](https://joshsim.org/) under [BSD-3-Clause](https://github.com/SchmidtDSE/josh/blob/main/LICENSE.md).
-- [UNEP Ozone Secretariat](https://ozone.unep.org/lists-substances-and-blends) for Global Warming Potential (GWP) values of substances and refrigerant blends used in `editor/json/known_gwp.json`.
+
+Also use data from [UNEP Ozone Secretariat](https://ozone.unep.org/lists-substances-and-blends) for Global Warming Potential (GWP) values of substances and refrigerant blends used in `editor/json/known_gwp.json`. Additionally, [Pandoc](https://pandoc.org/) under [GPL-2.0](https://github.com/jgm/pandoc/blob/master/COPYRIGHT) is invoked from CI / CD but exclusively for optional documentation generation in CI/CD (invoked as an executable). Not a compile-time or run-time dependency of Kigali Sim itself or any of its components and it is used in a completely isolated CI / CD pipeline from the rest of the project.
 
 <br>
 

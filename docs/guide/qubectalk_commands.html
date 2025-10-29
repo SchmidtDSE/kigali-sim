@@ -20,6 +20,7 @@
       <details>
         <summary>Contents</summary>
         <ul>
+          <li><a href="#assume">Assume</a></li>
           <li><a href="#cap">Cap</a></li>
           <li><a href="#change">Change</a></li>
           <li><a href="#define">Define</a></li>
@@ -34,6 +35,29 @@
           <li><a href="#set">Set</a></li>
         </ul>
       </details>
+
+      <section id="assume">
+        <h2>Assume</h2>
+
+        <p><strong>Purpose:</strong> Controls sales carryover behavior, particularly useful for bank tracking scenarios.</p>
+
+        <p><strong>Syntax:</strong> <code>assume [no|only recharge|continued] streamName during years startYear to endYear</code></p>
+
+        <p><strong>Available Streams:</strong> domestic, import, export, sales, bank, equipment</p>
+
+        <p><strong>Examples:</strong></p>
+        <pre><code class="language-qubectalk">assume no domestic during year 2030
+assume only recharge sales during years 2025 to onwards
+assume continued import
+assume only recharge bank during years 3 to onwards</code></pre>
+
+        <p><strong>Behavior:</strong></p>
+        <ul>
+          <li><code>assume no</code> - Sets stream to 0 kg (zero all sales)</li>
+          <li><code>assume only recharge</code> - Sales only cover recharge needs, no new equipment</li>
+          <li><code>assume continued</code> - Continue from previous year (default behavior)</li>
+        </ul>
+      </section>
 
       <section id="cap">
         <h2>Cap</h2>
@@ -94,12 +118,15 @@ enable export</code></pre>
 
         <p><strong>Purpose:</strong> Defines the Global Warming Potential and energy consumption for a substance.</p>
 
-        <p><strong>Syntax:</strong> <code>equals gwpValue tCO2e / unit [energyValue kwh / unit]</code></p>
+        <p><strong>Syntax:</strong> <code>equals gwpValue [tCO2e|kgCO2e] / [mt|kg|unit] [energyValue kwh / unit]</code></p>
 
         <p><strong>Examples:</strong></p>
         <pre><code class="language-qubectalk">equals 1430 tCO2e / mt
-equals 675 tCO2e / mt 100 kwh / unit
+equals 1430 kgCO2e / kg
+equals 675 kgCO2e / kg 100 kwh / unit
 equals 3 tCO2e / mt</code></pre>
+
+        <p><strong>Note:</strong> Both tCO2e (tonnes) and kgCO2e (kilograms) CO2 equivalent units are supported for GWP values.</p>
       </section>
 
       <section id="floor">
@@ -143,14 +170,30 @@ recharge 5% with 1.0 kg / unit in all years</code></pre>
       <section id="recover">
         <h2>Recover</h2>
 
-        <p><strong>Purpose:</strong> Implements recycling programs that recover and reuse substances from end-of-life equipment.</p>
+        <p><strong>Purpose:</strong> Implements recycling programs that recover and reuse substances from equipment.</p>
 
-        <p><strong>Syntax:</strong> <code>recover percentage % with reuse_percentage % reuse during years startYear to endYear</code></p>
+        <p><strong>Syntax:</strong> <code>recover percentage % with reuse_percentage % reuse [with induction_percentage % induction] [at stage] [displacing "substanceName"] during years startYear to endYear</code></p>
 
         <p><strong>Examples:</strong></p>
         <pre><code class="language-qubectalk">recover 30% with 90% reuse during years 2027 to onwards
-recover 50% with 80% reuse during years 2030 to 2035
-recover 25% with 100% reuse at eol during years 2028 to onwards</code></pre>
+recover 50% with 80% reuse with 100% induction during years 2030 to 2035
+recover 25% with 100% reuse with 0% induction at eol during years 2028 to onwards
+recover 20% with 80% reuse with default induction at recharge during years 2026 to onwards
+recover 15% with 85% reuse displacing "HFC-134a" during years 2025 to onwards</code></pre>
+
+        <p><strong>Recycling Stages:</strong></p>
+        <ul>
+          <li><code>at recharge</code> - Recycling occurs during equipment servicing (default)</li>
+          <li><code>at eol</code> - Recycling occurs during equipment retirement (end-of-life)</li>
+        </ul>
+
+        <p><strong>Induction Control:</strong></p>
+        <ul>
+          <li><code>with 0% induction</code> - Full displacement (recycled material reduces virgin demand)</li>
+          <li><code>with 100% induction</code> - Full induced demand (recycled material adds to supply, recommended when uncertain)</li>
+          <li><code>with 50% induction</code> - Mixed behavior (partial displacement)</li>
+          <li><code>with default induction</code> - Uses system default based on specification type</li>
+        </ul>
       </section>
 
       <section id="replace">
