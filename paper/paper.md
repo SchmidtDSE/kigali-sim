@@ -59,12 +59,12 @@ We find some simulations' complexity too cumbersome to manage in the UI-based ed
 ## Flexibility
 As diverse methodologies measure stocks, Kigali Sim provides automated unit conversions including those which depend on equipment properties. Additionally, most simulation code can be modified either by the UI-based editor or the code-based editor where changes in one reflect in the other, attempting to bridge preferences and skill sets. Indeed, many community collaborators who identify as non-programmers report starting in the UI-editor but transition to code.
 
-## Limitations
+## Limitations and future work
 Leaving the following for future work, Kigali Sim:
 
  - Can model energy consumption but only estimates direct emissions^[Users may combine exported data with energy mix information for indirect emissions [@energy_mix].].
  - Applies treaty trade attribution but will only attribute charge prior to equipment sale entirely to either the importer or exporter^[Local assembly can be modeled as domestic production.].
- - Supports some complex features like variable servicing / retirement hazard rates but those formulas may not be editable in the UI-based editor and require code-based authoring.
+ - Complex features like formula-based variable servicing / retirement hazard rates may require code-based authoring.
 
 Kigali Sim will receive updates as official guidance changes in the future [@mlf_guidelines].
 
