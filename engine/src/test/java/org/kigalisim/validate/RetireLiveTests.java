@@ -100,9 +100,11 @@ public class RetireLiveTests {
    * increases linearly with equipment age.
    *
    * <p>Expected behavior:
-   * - Year 1: age = 0, retirement rate = 0%, no equipment retired
-   * - Year 2: age = 1, retirement rate = 10%, 10,000 units retired
-   * - Year 3: age = 2, retirement rate = 20%, 18,000 units retired
+   * <ul>
+   * <li>Year 1: age = 0, retirement rate = 0%, no equipment retired</li>
+   * <li>Year 2: age = 1, retirement rate = 10%, 10,000 units retired</li>
+   * <li>Year 3: age = 2, retirement rate = 20%, 18,000 units retired</li>
+   * </ul>
    *
    * <p>The key validation is that year 2 retirement < year 3 retirement,
    * demonstrating that the age-based hazard rate is working correctly.
