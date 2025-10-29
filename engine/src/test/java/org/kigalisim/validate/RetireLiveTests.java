@@ -58,6 +58,42 @@ public class RetireLiveTests {
   }
 
   /**
+   * Test retire_with_basic_parameter.qta produces expected values.
+   * This test validates that parameterized retirement formulas work correctly.
+   * The formula "retire (get priorEquipment as units) * 0.1 units" should
+   * produce identical results to "retire 10 %" from the baseline test.
+   */
+  @Test
+  public void testRetireBasicParameter() throws IOException {
+    // Load and parse the QTA file
+    String qtaPath = "../examples/retire_with_basic_parameter.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    // Run the scenario using KigaliSimFacade
+    String scenarioName = "business as usual";
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
+
+    List<EngineResult> resultsList = results.collect(Collectors.toList());
+
+    // Check year 1 equipment (population) value - should match testRetire
+    EngineResult resultYear1 = LiveTestsUtil.getResult(resultsList.stream(), 1, "test", "test");
+    assertNotNull(resultYear1, "Should have result for test/test in year 1");
+    assertEquals(100000.0, resultYear1.getPopulation().getValue().doubleValue(), 0.0001,
+        "Equipment should be 100000 units in year 1 (same as baseline testRetire)");
+    assertEquals("units", resultYear1.getPopulation().getUnits(),
+        "Equipment units should be units");
+
+    // Check year 2 equipment (population) value - should match testRetire
+    EngineResult resultYear2 = LiveTestsUtil.getResult(resultsList.stream(), 2, "test", "test");
+    assertNotNull(resultYear2, "Should have result for test/test in year 2");
+    assertEquals(190000.0, resultYear2.getPopulation().getValue().doubleValue(), 0.0001,
+        "Equipment should be 190000 units in year 2 (same as baseline testRetire)");
+    assertEquals("units", resultYear2.getPopulation().getUnits(),
+        "Equipment units should be units");
+  }
+
+  /**
    * Test retire_prior.qta produces expected values.
    */
   @Test
