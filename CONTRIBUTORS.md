@@ -36,6 +36,12 @@ For **ECMAScript (Editor)**:
 <br>
 <br>
 
+## Terminology
+Note that we use the name ECMAScript instead of JS or JavaScript as we specifically use the ECMA standards. Additionally, we use `main` not `master` for our primary branch and we refer to, in a concurrency context, `leader` and `worker` nodes. We use the term "pull request" for a request to change code in the repository though merge request is also acceptable.
+
+<br>
+<br>
+
 ## Automated Tests and Checks
 When you submit a pull request, several automated tests and checks will run. Don't worry if some fail at first - we're happy to help you get them passing! See below for what gets checked and we encourage you to try to get these to pass prior to opening a pull request:
 
@@ -86,7 +92,7 @@ There are reasonable differences of opinion in the community about ideal impleme
  7. The engine is designed to support both UI-based (Designer) and code-based (Editor) authoring but, even as all scripts which are authored using the UI-based editor must be compatible with the code-based editor, not all scripts which are possible to write in code need to be compatible with the UI-based editor.
  8. We support Monte Carlo probabilistic simulation with parallelization capabilities but assume Monte Carlo users primarily operate on the command line with the JVM. At this time, analysis of probabilistic outputs in the UI-based editor is not a priority.
  9. Parallelization in the form of parallel scenarios (BAU, with permit, etc) must be supported by all runtimes but not parallelization within a scenario.
- 10. The web editor must work without transpilation or compilation steps for ECMAScript except for the WASM and ANTLR compoennts (we use webpack only for bundling).
+ 10. Due to recurring security issues, we ask that you please use pnpm and not npm.
 
 Please reach out if you have further questions about these guidelines or want to discuss alternative approaches.
 
@@ -101,6 +107,7 @@ There are some limitations of scope for this project:
  - We must maintain both the browser-based application and standalone JAR/Docker execution paths but other execution modalities are currently out of scope.
  - Energy consumption can be modeled but energy mix for secondary emissions is currently considered out of scope.
  - Direct use of the engine outside of QubecTalk or the UI-based editor are not currently priorities for the project given our limited resources.
+ - Currently the web editor must work without transpilation or compilation steps for ECMAScript except for the WASM and ANTLR components (we use webpack only for bundling). Features requiring new compilation steps may be declined.
 
 <br>
 <br>
