@@ -21,5 +21,6 @@ STREAM_BASE_UNITS.set("eolEmissions", "tCO2e");
 STREAM_BASE_UNITS.set("equipment", "units");
 STREAM_BASE_UNITS.set("priorEquipment", "units");
 STREAM_BASE_UNITS.set("newEquipment", "units");
+STREAM_BASE_UNITS.set("age", "years");
 
 export {GLOBAL_CONTEXT, STANZA_CONTEXT, APPLICATION_CONTEXT, SUBSTANCE_CONTEXT, STREAM_BASE_UNITS};

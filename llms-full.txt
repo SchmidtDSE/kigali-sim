@@ -101,8 +101,9 @@ KigaliSim uses DecimalFormat number formatting (comma for thousands, period for 
 
 #### Advanced Features
 - **Variables**: `define identifier as expression` and `get identifier` (scoped to enclosing start/end block)
-- **Stream access**: `get {stream}`
-- **Unit conversions**: `get {stream} as {units}` like `get import of "substance" as mt`
+- **Stream access**: `get {stream}` - access streams like `sales`, `equipment`, `age`, etc.
+- **Unit conversions**: `get {stream} as {units}` like `get import of "substance" as mt` or `get age as years`
+- **Age stream**: `get age as years` provides weighted average equipment age for age-dependent policies (read-only, computed)
 - **Constraints**: `limit expression to [min,max]`, `limit expression to [,max]` (min of negative infinity), `limit expression to [min,]` (max of infinity)
 - **Uncertainties**: `sample normally from mean of X std of Y`, `sample uniformly from X to Y`
 - **Math expressions**: Basic arithmetic with `+`, `-`, `*`, `/`, `^`, parentheses
@@ -121,11 +122,12 @@ Keywords `at` and `eol` are available for recycling commands. Use `at recharge` 
 No duration means runs each year. Use `during year beginning` for first year only.
 
 ### Streams
-Streams may be `domestic|import|export|sales|equipment|priorEquipment|bank`
+Streams may be `domestic|import|export|sales|equipment|priorEquipment|bank|age`
 
 - `domestic` - domestic manufacturing
 - `sales` - both `domestic` and `import`
 - `equipment` - both prior and new equipment
+- `age` - weighted average equipment age (read-only, Advanced Editor only)
 
 **Bank Keyword**: The `bank` keyword is syntactic sugar for the `equipment` stream, provided for semantic clarity when modeling substance banks (total refrigerant in equipment). Using `bank` instead of `equipment` can make code more readable in banking scenarios:
 
@@ -133,6 +135,15 @@ Streams may be `domestic|import|export|sales|equipment|priorEquipment|bank`
 set bank to 1000 units during year 1990         # Same as: set equipment to 1000 units
 assume only recharge bank during years 2025 to onwards
 ```
+
+**Age Stream**: The `age` stream tracks the weighted average age of equipment in the population. This is a computed, read-only stream that cannot be set by users:
+
+- Age starts at 0 years for initial equipment
+- Age increases by 1 year each simulation year
+- With new equipment additions, age is the weighted average based on equipment quantities
+- Usage: `get age as years` in formulas
+- Example: `retire (get age as years) * 1 %` for age-dependent retirement
+- **Advanced Editor only** - not available in Designer UI
 
 **Note**: The `enable` command only works with `domestic`, `import`, and `export` streams. Streams must be enabled (either explicitly with `enable` or implicitly by setting non-zero values) before operations like `recharge` that require sales distribution calculations.
 
@@ -243,8 +254,11 @@ start policy "HFC Phasedown"
       cap import to 85% during years 3 to 5
       recover 20 % with 80 % reuse with 25 % induction at eol during years 4 to 10
       replace 50% of domestic with "R-600a" during years 6 to onwards
+
+      # Example: Age-dependent retirement (Advanced Editor only)
+      # retire (get age as years) * 1 % each year during years 5 to onwards
     end substance
-    
+
     uses substance "R-600a"
       equals 6 tCO2e / mt
       equals 95 kwh / unit
@@ -297,6 +311,7 @@ When working with AI assistants, you may want to specify that only UI Editor com
 - **Probabilistic features**: `sample normally`, `sample uniformly` distributions
 - **Monte Carlo simulations**: `across X trials` for multiple simulation runs
 - **Stream access**: `get {stream}` and `get {stream} as {units}` operations
+- **Age stream**: `get age as years` for equipment age tracking and age-dependent policies
 - **Complex expressions**: Any mathematical or logical expressions beyond simple numeric values
 - **Multi-substance policies**: Policies affecting multiple substances simultaneously
 - **Advanced unit conversions**: Dynamic unit conversion expressions

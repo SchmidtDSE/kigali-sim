@@ -59,18 +59,17 @@ We find some simulations' complexity too cumbersome to manage in the UI-based ed
 ## Flexibility
 As diverse methodologies measure stocks, Kigali Sim provides automated unit conversions including those which depend on equipment properties. Additionally, most simulation code can be modified either by the UI-based editor or the code-based editor where changes in one reflect in the other, attempting to bridge preferences and skill sets. Indeed, many community collaborators who identify as non-programmers report starting in the UI-editor but transition to code.
 
-## Limitations
+## Limitations and future work
 Leaving the following for future work, Kigali Sim:
 
  - Can model energy consumption but only estimates direct emissions^[Users may combine exported data with energy mix information for indirect emissions [@energy_mix].].
- - Asks users to provide retirement and servicing as amortized hazard / retirement rates as modelers typically do not know the specific age distribution of equipment, similar to IPCC Tier 1 [@ipcc_tiers].
- - Provides automatic lookup but allows for override with country-specific parameters, similar to IPCC Tier 2 [@ipcc_tiers].
  - Applies treaty trade attribution but will only attribute charge prior to equipment sale entirely to either the importer or exporter^[Local assembly can be modeled as domestic production.].
+ - Complex features like formula-based variable servicing / retirement hazard rates may require code-based authoring.
 
 Kigali Sim will receive updates as official guidance changes in the future [@mlf_guidelines].
 
 # Implementation
-Kigali Sim runs browser-based via WASM or via JVM [@teavm]. Without transmitting simulations to external servers, both enable privacy-preserving zero installation local computation, BigDecimal [@bigdecimal], and parallelization. The engine uses ANTLR [@antlr] for parsing QubecTalk code in both Java and JS^[A JS ANTLR visitor facilitating real-time translation between the UI-editor and the code-based editor.].
+Kigali Sim runs browser-based via WASM or via JVM [@teavm]. Without transmitting simulations to external servers, both enable privacy-preserving zero installation local computation, BigDecimal [@bigdecimal], and parallelization. The engine uses ANTLR [@antlr] for parsing QubecTalk code in both Java and JavaScript^[A Javascript-based ANTLR visitor facilitating real-time translation between the UI-editor and the code-based editor.].
 
 ![Diagram describing multi-modal execution in which simulations run across different platforms.\label{fig:execution}](KigaliExecution.svg){width="100%"}
 

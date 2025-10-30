@@ -36,6 +36,8 @@ const META_COLUMNS = [
   "initialChargeImport",
   "initialChargeExport",
   "retirement",
+  "retirementWithReplacement",
+  "defaultSales",
   "key",
 ];
 
@@ -56,6 +58,35 @@ const BOOLEAN_VALUES = new Map([
   ["false", false],
   ["no", false],
 ]);
+
+/**
+ * Mapping from CSV defaultSales values to internal assumeMode values.
+ * Supports both user-facing values (from exports) and internal values (backward compatibility).
+ * Used during CSV import to normalize defaultSales to internal representation.
+ */
+const DEFAULT_SALES_TO_ASSUME_MODE = new Map([
+  // User-facing values (from Component 1 exports)
+  ["continue from prior year", "continued"],
+  ["only servicing", "only recharge"],
+  ["none", "no"],
+  // Internal values (for backward compatibility and programmatic use)
+  ["continued", "continued"],
+  ["only recharge", "only recharge"],
+  ["no", "no"],
+]);
+
+/**
+ * Valid defaultSales values for error reporting.
+ * Ordered: user-facing values first, then internal values.
+ */
+const VALID_DEFAULT_SALES_VALUES = [
+  "continue from prior year",
+  "only servicing",
+  "none",
+  "continued",
+  "only recharge",
+  "no",
+];
 
 /**
  * Error information for substance metadata parsing issues.
@@ -340,6 +371,11 @@ class MetaSerializer {
       rowMap.set("initialChargeImport", self._getOrEmpty(metadata.getInitialChargeImport()));
       rowMap.set("initialChargeExport", self._getOrEmpty(metadata.getInitialChargeExport()));
       rowMap.set("retirement", self._getOrEmpty(metadata.getRetirement()));
+      rowMap.set(
+        "retirementWithReplacement",
+        self._getOrEmpty(metadata.getRetirementWithReplacement()),
+      );
+      rowMap.set("defaultSales", self._getOrEmpty(metadata.getDefaultSales()));
       rowMap.set("key", self._getOrEmpty(metadata.getKey()));
 
       return rowMap;
@@ -581,6 +617,44 @@ class MetaSerializer {
   }
 
   /**
+   * Normalize a defaultSales CSV value to internal assumeMode representation.
+   *
+   * Accepts both user-facing values (e.g., "continue from prior year") and internal
+   * values (e.g., "continued") for flexibility and backward compatibility. Empty or
+   * whitespace-only values are treated as "continued" (the default behavior).
+   *
+   * @param {string} value - The defaultSales value from CSV
+   * @returns {string} The normalized internal assumeMode value ("continued", "only recharge", "no")
+   * @throws {Error} If value is not empty and not in the valid set
+   * @private
+   */
+  _normalizeDefaultSales(value) {
+    const self = this;
+
+    // Handle empty/null/undefined values - treat as default (continued)
+    if (!value || typeof value !== "string") {
+      return "continued";
+    }
+
+    // Trim and check if empty after trimming
+    const trimmed = value.trim().toLowerCase();
+    if (!trimmed) {
+      return "continued";
+    }
+
+    // Check if the value exists in our mapping (case-insensitive)
+    for (const [key, internalValue] of DEFAULT_SALES_TO_ASSUME_MODE.entries()) {
+      if (key.toLowerCase() === trimmed) {
+        return internalValue;
+      }
+    }
+
+    // Value not found - throw error with helpful message
+    const validValues = VALID_DEFAULT_SALES_VALUES.map((v) => `"${v}"`).join(", ");
+    throw new Error(`Invalid value "${value}". Expected one of: ${validValues}`);
+  }
+
+  /**
    * Validate that a key field follows the expected format.
    *
    * The expected format is: "substance name" for "application name"
@@ -630,9 +704,46 @@ class MetaSerializer {
       }
     }
 
+    // Parse retirementWithReplacement (Component 5)
+    const retirementWithReplacementRaw = self._getOrEmpty(rowMap.get("retirementWithReplacement"));
+    let retirementWithReplacement = false; // Default to false (normal retirement)
+
+    if (retirementWithReplacementRaw && retirementWithReplacementRaw.trim()) {
+      try {
+        // Use existing _parseBoolean method for consistency
+        retirementWithReplacement = self._parseBoolean(retirementWithReplacementRaw);
+      } catch (error) {
+        result.addError(new SubstanceMetadataError(
+          rowNumber,
+          "retirementWithReplacement",
+          "Invalid value \"" + retirementWithReplacementRaw + "\". " +
+            "Expected one of: \"true\", \"false\", \"yes\", \"no\", \"1\", \"0\"",
+          "USER",
+        ));
+        hasErrors = true;
+        // Keep default value (false) on error
+      }
+    }
+
+    // Parse and normalize defaultSales value (Component 2)
+    const defaultSalesRaw = self._getOrEmpty(rowMap.get("defaultSales"));
+    let defaultSalesNormalized = "continued"; // Default value
+
+    try {
+      defaultSalesNormalized = self._normalizeDefaultSales(defaultSalesRaw);
+    } catch (error) {
+      result.addError(
+        new SubstanceMetadataError(rowNumber, "defaultSales", error.message, "USER"),
+      );
+      // Use default value on error to allow partial processing
+      defaultSalesNormalized = "continued";
+      hasErrors = true;
+    }
+
     // Build metadata object with error handling
     const builder = new SubstanceMetadataBuilder();
-    builder.setSubstance(self._getOrEmpty(rowMap.get("substance")))
+    builder
+      .setSubstance(self._getOrEmpty(rowMap.get("substance")))
       .setEquipment(self._getOrEmpty(rowMap.get("equipment")))
       .setApplication(self._getOrEmpty(rowMap.get("application")))
       .setGhg(self._getOrEmpty(rowMap.get("ghg")))
@@ -643,7 +754,9 @@ class MetaSerializer {
       .setInitialChargeDomestic(self._getOrEmpty(rowMap.get("initialChargeDomestic")))
       .setInitialChargeImport(self._getOrEmpty(rowMap.get("initialChargeImport")))
       .setInitialChargeExport(self._getOrEmpty(rowMap.get("initialChargeExport")))
-      .setRetirement(self._getOrEmpty(rowMap.get("retirement")));
+      .setRetirement(self._getOrEmpty(rowMap.get("retirement")))
+      .setRetirementWithReplacement(retirementWithReplacement ? "true" : "false")
+      .setDefaultSales(defaultSalesNormalized);
 
     return builder.build();
   }
@@ -1442,10 +1555,25 @@ class MetaChangeApplier {
       builder.addCommand(new Command("initial charge", "export", exportCharge, null));
     }
 
-    // Add retirement command if present
+    // Add retirement command if present (Component 5: includes withReplacement)
     const retirementValue = self._parseUnitValue(metadata.getRetirement());
     if (retirementValue) {
-      builder.addCommand(new RetireCommand(retirementValue, null, false));
+      // Parse withReplacement flag from metadata (stored as "true"/"false" string)
+      const retirementWithReplacementStr = metadata.getRetirementWithReplacement();
+      const withReplacement = retirementWithReplacementStr === "true";
+
+      builder.addCommand(new RetireCommand(retirementValue, null, withReplacement));
+    }
+
+    // Set assumeMode from metadata defaultSales (Component 2)
+    // Note: metadata.getDefaultSales() returns normalized internal value
+    const defaultSales = metadata.getDefaultSales();
+    if (defaultSales && defaultSales.trim()) {
+      const assumeMode = defaultSales.trim();
+      // Only set non-default values; "continued" is the default (null behavior)
+      if (assumeMode !== "continued") {
+        builder.setAssumeMode(assumeMode);
+      }
     }
 
     // Build the substance (compatible with UI editing)

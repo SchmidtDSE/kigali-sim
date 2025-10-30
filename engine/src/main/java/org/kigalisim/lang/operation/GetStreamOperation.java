@@ -18,7 +18,8 @@ import org.kigalisim.lang.machine.PushDownMachine;
 public class GetStreamOperation implements Operation {
 
   private final String streamName;
-  private final String units;
+  private final Optional<String> units;
+  private final Optional<String> targetSubstance;
 
   /**
    * Create a new GetStreamOperation.
@@ -27,7 +28,8 @@ public class GetStreamOperation implements Operation {
    */
   public GetStreamOperation(String streamName) {
     this.streamName = streamName;
-    this.units = null;
+    this.units = Optional.empty();
+    this.targetSubstance = Optional.empty();
   }
 
   /**
@@ -38,7 +40,21 @@ public class GetStreamOperation implements Operation {
    */
   public GetStreamOperation(String streamName, String units) {
     this.streamName = streamName;
-    this.units = units;
+    this.units = Optional.of(units);
+    this.targetSubstance = Optional.empty();
+  }
+
+  /**
+   * Create a new GetStreamOperation with scope resolution and unit conversion.
+   *
+   * @param streamName The name of the stream to get.
+   * @param targetSubstance The substance name to resolve to (for indirect access).
+   * @param units The units to convert to.
+   */
+  public GetStreamOperation(String streamName, String targetSubstance, String units) {
+    this.streamName = streamName;
+    this.targetSubstance = Optional.of(targetSubstance);
+    this.units = Optional.of(units);
   }
 
   @Override
@@ -46,13 +62,28 @@ public class GetStreamOperation implements Operation {
     // Get the engine
     Engine engine = machine.getEngine();
 
-    // Get the stream value, with or without unit conversion
+    // Get the stream value, with or without unit conversion and scope resolution
     EngineNumber value;
-    if (units != null) {
-      Scope scope = engine.getScope();
-      value = engine.getStream(streamName, Optional.of(scope), Optional.of(units));
+    boolean hasOtherScope = targetSubstance.isPresent();
+    if (hasOtherScope) {
+      // Indirect access: get stream from specified substance
+      Scope currentScope = engine.getScope();
+
+      // Create a new scope pointing to the target substance within the same application
+      Scope targetScope = currentScope.getWithSubstance(targetSubstance.get());
+
+      if (units.isPresent()) {
+        value = engine.getStream(streamName, Optional.of(targetScope), units);
+      } else {
+        value = engine.getStream(streamName, Optional.of(targetScope), Optional.empty());
+      }
     } else {
-      value = engine.getStream(streamName);
+      if (units.isPresent()) {
+        Scope scope = engine.getScope();
+        value = engine.getStream(streamName, Optional.of(scope), units);
+      } else {
+        value = engine.getStream(streamName);
+      }
     }
 
     // Push the value onto the stack

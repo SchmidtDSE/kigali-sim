@@ -1,0 +1,3 @@
+# Kigali Sim Lang
+
+This package contains the logic for interpreting QubecTalk code. The entrypoint is `QubecTalkEngineVisitor` which is an ANTLR visitor that parses simluations. It does this through "fragments" found in `org.kigalisim.fragment` where we recurse down to the bottom of the parse tree and interpret code into Kigali Sim constructs. These fragments are joined together on the way back up in recursion until they have enough information to construct commands or "operations" found in `org.kigalisim.operation` which can be performed against the engine (see `org.kigalisim.engine`). Note that the grammar file used by the visitor can be found in `QubecTalk.g4`.

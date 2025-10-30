@@ -1,6 +1,6 @@
 # Simulation Engine
 
-This directory contains the Java-based simulation engine for Kigali Sim.
+This directory contains the Java-based simulation engine for Kigali Sim which is also compiled to WASM via TeaVM.
 
 ## Purpose
 
@@ -8,56 +8,66 @@ The engine provides the core computational capabilities for modeling substances,
 
 ## Structure
 
-- **`src/main/java/`**: Production Java source code
+The **`src/main/java`** directory contains production Java source code. It contains the following packages:
+
   - `org.kigalisim.engine`: Core simulation logic and state management
   - `org.kigalisim.lang`: QubecTalk language parsing and interpretation
   - `org.kigalisim.command`: Command-line interface implementations
-- **`src/test/java/`**: Unit tests and integration tests
-- **`src/main/antlr/`**: ANTLR grammar files for QubecTalk parsing
-- **`build.gradle`**: Build configuration and dependencies
+
+Additionally, see the following:
+
+ - **`src/test/java/`**: Unit tests and integration tests
+ - **`src/main/antlr/`**: ANTLR grammar files for QubecTalk parsing
+ - **`build.gradle`**: Build configuration and dependencies
 
 ## Development
 
-### Building
+Compile Java sources:
 
 ```bash
-# Compile Java sources
 ./gradlew compileJava
+```
 
-# Build standalone JAR
+Build standalone JAR:
+
+```bash
 ./gradlew fatJar
+```
 
-# Build WebAssembly for browser
+Build WebAssembly for browser:
+
+```
 ./gradlew war
 ```
 
-### Testing
+Run all unit tests:
 
 ```bash
-# Run all unit tests
 ./gradlew test
+```
 
-# Run code style checks
+Run code style checks:
+
+```bash
 ./gradlew checkstyleMain
 ./gradlew checkstyleTest
 ```
 
-### Usage
+## Usage
 
-#### Standalone Command-Line
+After building the fat jar, run simulation with a QTA (QubecTalk) file:
 
 ```bash
-# Build the fat JAR
-./gradlew fatJar
-
-# Run simulation with QTA file
 java -jar build/libs/kigalisim-fat.jar run example.qta -o output.csv
+```
 
-# Validate QTA file syntax
+You may also validate QTA file syntax instead of running:
+
+```bash
 java -jar build/libs/kigalisim-fat.jar validate example.qta
 ```
 
-#### WebAssembly Integration
+## WebAssembly Integration
 
 To update the web editor with engine changes:
 
@@ -65,6 +75,8 @@ To update the web editor with engine changes:
 2. Extract to editor: `cd ../editor && bash support/update_wasm.sh`
 
 ## Development Standards
+
+Please see [DEVELOPING.md]() but, breifly, do not forget to:
 
 - Follow Google Java Style Guide conventions
 - Maintain comprehensive unit test coverage

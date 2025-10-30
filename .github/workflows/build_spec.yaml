@@ -1,0 +1,85 @@
+name: Build Specification PDF
+on:
+  push:
+    branches:
+      - main
+      - deploy
+    paths:
+      - 'docs/spec/**'
+      - '.github/workflows/build_spec.yaml'
+
+permissions:
+  actions: read
+  contents: read
+
+jobs:
+  buildSpecPDF:
+    environment: build
+    runs-on: ubuntu-latest
+    name: Build QubecTalk Specification PDF
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Pandoc
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y pandoc texlive-latex-base texlive-latex-extra texlive-fonts-recommended
+
+      - name: Build PDF from Markdown
+        run: |
+          pandoc docs/spec/qubectalk.md \
+            -o docs/spec/qubectalk.pdf \
+            --pdf-engine=pdflatex \
+            --from=markdown \
+            --template=eisvogel \
+            --listings \
+            --number-sections \
+            --toc \
+            --metadata title="QubecTalk Domain Specific Language" \
+            --metadata author="A Samuel Pottinger" \
+            --metadata date="2025-10-29" \
+            || pandoc docs/spec/qubectalk.md \
+            -o docs/spec/qubectalk.pdf \
+            --pdf-engine=pdflatex \
+            --from=markdown \
+            --number-sections \
+            --toc
+
+      - name: Upload PDF artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: qubectalk-spec-pdf
+          path: docs/spec/qubectalk.pdf
+          retention-days: 90
+
+  deploySpecPDF:
+    environment: deploy
+    if: github.ref == 'refs/heads/deploy'
+    runs-on: ubuntu-latest
+    name: Deploy Specification PDF
+    needs: [buildSpecPDF]
+    steps:
+      - name: Download PDF artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: qubectalk-spec-pdf
+          path: ./pdf
+
+      - name: Install SSH client and sshpass
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y openssh-client sshpass
+
+      - name: Setup SSH known hosts
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -H -p 22 ${{ secrets.SFTPHOST }} >> ~/.ssh/known_hosts
+
+      - name: Upload PDF via SCP with password
+        env:
+          SSHPASS: ${{ secrets.SFTPPASSWORD }}
+        run: |
+          sshpass -e scp -P 22 -o StrictHostKeyChecking=no \
+            ./pdf/qubectalk.pdf \
+            ${{ secrets.SFTPUSER }}@${{ secrets.SFTPHOST }}:./kigalisim.org/guide/qubectalk.pdf
