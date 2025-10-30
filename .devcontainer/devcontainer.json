@@ -1,9 +1,14 @@
 {
   "name": "Kigali Sim Dev Container",
   "build": {
-    "dockerfile": "Dockerfile"
+    "dockerfile": "Dockerfile",
+    "args": {
+      "USER_UID": "1000",
+      "USER_GID": "1000"
+    }
   },
   "remoteUser": "devuser",
+  "updateRemoteUserUID": true,
   "customizations": {
     "vscode": {
       "extensions": [
@@ -26,8 +31,12 @@
       }
     }
   },
+  "containerEnv": {
+    "PUPPETEER_SKIP_CHROMIUM_DOWNLOAD": "true",
+    "PUPPETEER_EXECUTABLE_PATH": "/usr/bin/chromium"
+  },
   "forwardPorts": [8000, 8080],
-  "postCreateCommand": "cd editor && pnpm install",
+  "postCreateCommand": "cd editor && bash support/install_deps.sh && pnpm install && bash support/update_wasm.sh",
   "workspaceFolder": "/workspace",
   "workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind,consistency=cached"
 }
