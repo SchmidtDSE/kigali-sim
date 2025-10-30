@@ -2,6 +2,10 @@
 
 This guide provides comprehensive information for contributors to the Kigali Sim project, an open source web-based simulation engine for modeling substances, applications, and policies related to the Montreal Protocol.
 
+## Documentation
+
+Note that, in addition to this documentation and [CONTRIBUTORS.md](https://github.com/SchmidtDSE/kigali-sim/blob/main/CONTRIBUTORS.md) many directories within this project's repository also contain their own README files with additional information about that component or area of code.
+
 ## Architecture Overview
 
 KigaliSim is organized into three main components and most have additional READMEs within:

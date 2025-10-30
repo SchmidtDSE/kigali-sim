@@ -93,6 +93,8 @@ There are reasonable differences of opinion in the community about ideal impleme
  8. We support Monte Carlo probabilistic simulation with parallelization capabilities but assume Monte Carlo users primarily operate on the command line with the JVM. At this time, analysis of probabilistic outputs in the UI-based editor is not a priority.
  9. Parallelization in the form of parallel scenarios (BAU, with permit, etc) must be supported by all runtimes but not parallelization within a scenario.
  10. Due to recurring security issues, we ask that you please use pnpm and not npm.
+ 11. Immutability is preferred where possible but not a hard requirement if there is profiler-backed evidence against immutability. Builder patterns are considered compliant.
+ 12. Prior versions saw over and under-flow in practical usage. Please use BigDecimal where possible when working with user-provided numbers and calculations.
 
 Please reach out if you have further questions about these guidelines or want to discuss alternative approaches.
 
