@@ -132,10 +132,11 @@ From the `engine/` directory:
 From the `editor/` directory:
 
 ```bash
-# Install dependencies (if not already done)
+# Install dependencies
 pnpm install
 
-# Build the QubecTalk parser and webpack bundle (recommended)
+# Build the QubecTalk parser and webpack bundle
+bash ./support/update_wasm.sh
 bash ./support/make.sh
 
 # Or build webpack directly
