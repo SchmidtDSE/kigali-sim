@@ -4,6 +4,7 @@ deploy/
 intermediate/static/
 intermediate/QubecTalk*
 language/*.jar
+language/QubecTalk.g4
 third_party/
 test/qunit.css
 test/qunit.min.js
