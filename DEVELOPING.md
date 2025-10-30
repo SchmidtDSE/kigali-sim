@@ -53,12 +53,28 @@ The project includes a complete dev container configuration for VS Code and GitH
 3. Select the "Codespaces" tab
 4. Click "Create codespace on main"
 
-The dev container includes:
-- Eclipse Temurin JDK 21
-- Node.js 18.x with pnpm
-- All system dependencies for building and testing
-- Pre-configured VS Code extensions
-- Ports 8000 and 8080 exposed for development servers
+#### Dev Container Configuration
+
+The dev container (`.devcontainer/`) provides a reproducible development environment with all dependencies pre-installed. It uses:
+
+**Base System:**
+- Debian 12 (bookworm-slim) with Eclipse Temurin JDK 21
+- All packages from official Debian and Eclipse Temurin repositories
+
+**Development Tools:**
+- Node.js 18.x LTS (official Debian package)
+- pnpm 10.20.0 (installed via npm)
+- Chromium browser (official Debian package) for running tests
+- Build tools: git, curl, wget, build-essential, python3
+- VS Code extensions for Java, JavaScript, and Gradle development
+
+**Configuration Features:**
+- Automatic UID/GID mapping to match host user (prevents permission issues)
+- Pre-configured ports: 8000 and 8080 for development servers
+- Automatic dependency installation on container creation
+- WASM artifacts built automatically during setup
+
+The container configuration prioritizes security by using only official package repositories (Debian and Eclipse Temurin) without third-party PPAs.
 
 ### Option 2: Local Setup
 

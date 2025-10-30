@@ -84,7 +84,7 @@ docker build -t kigalisim .
 docker run -v $(pwd):/working kigalisim run -o output.csv script.qta
 ```
 
-For running a local version of the browser-based app, see the Development section.
+For running a local version of the browser-based app, see the Development section. For development container configuration details, see `DEVELOPING.md`.
 
 <br>
 
@@ -193,24 +193,18 @@ For those interested in a dev container, please see `.devcontainer`. **IntelliJ*
 
 1. Install the [Dev Containers extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers)
 2. Open the project in VS Code
-3. When prompted, click “Reopen in Container” or press `F1` and select “Dev Containers: Reopen in Container”
+3. When prompted, click "Reopen in Container" or press `F1` and select "Dev Containers: Reopen in Container"
 4. The container will build automatically with all required dependencies
 
 One can also use **GitHub Codespaces**:
 
 1. Navigate to the repository on GitHub
-2. Click the green “Code” button
-3. Select the “Codespaces” tab  
-4. Click “Create codespace on main”
+2. Click the green "Code" button
+3. Select the "Codespaces" tab
+4. Click "Create codespace on main"
 5. The development environment will be set up automatically
 
-The dev container includes:
-
-- Eclipse Temurin JDK 21 (as specified in requirements)
-- Node.js 18.x with pnpm
-- All system dependencies for building and testing
-- VS Code extensions for Java, JavaScript, and Gradle development
-- Pre-configured ports (8000, 8080) for local development servers
+See `DEVELOPING.md` for detailed information about the dev container configuration.
 
 All the automated checks described below work in the dev container environment:
 
