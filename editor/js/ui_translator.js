@@ -1502,6 +1502,22 @@ class Substance {
     } else {
       self._retire = null;
     }
+
+    // Update assumeMode from metadata defaultSales (Component 2)
+    // Note: metadata.getDefaultSales() returns normalized internal value
+    const defaultSales = newMetadata.getDefaultSales();
+    if (defaultSales && defaultSales.trim()) {
+      const assumeMode = defaultSales.trim();
+      // Set the assumeMode directly; empty string means use default (null)
+      if (assumeMode === "continued" || assumeMode === "") {
+        self._assumeMode = null; // null and "continued" are equivalent
+      } else {
+        self._assumeMode = assumeMode;
+      }
+    } else {
+      // Empty or missing defaultSales means use default (null)
+      self._assumeMode = null;
+    }
   }
 
   /**
@@ -1743,6 +1759,20 @@ class Substance {
       retirement = formatEngineNumber(retireValue);
     }
 
+    // Map assumeMode to user-facing defaultSales value
+    const assumeMode = self.getAssumeMode();
+    let defaultSales = "";
+    if (assumeMode === null || assumeMode === "continued") {
+      defaultSales = "continue from prior year";
+    } else if (assumeMode === "only recharge") {
+      defaultSales = "only servicing";
+    } else if (assumeMode === "no") {
+      defaultSales = "none";
+    } else {
+      // Default to "continue from prior year" for any unexpected values
+      defaultSales = "continue from prior year";
+    }
+
     return new SubstanceMetadata(
       substance,
       equipment,
@@ -1756,6 +1786,7 @@ class Substance {
       initialChargeImport,
       initialChargeExport,
       retirement,
+      defaultSales,
     );
   }
 
@@ -2220,6 +2251,7 @@ class SubstanceMetadata {
    * @param {string} initialChargeImport - Initial charge for import stream
    * @param {string} initialChargeExport - Initial charge for export stream
    * @param {string} retirement - Retirement rate (e.g., "10% / year")
+   * @param {string} defaultSales - Sales assumption mode (user-facing value)
    */
   constructor(
     substance,
@@ -2234,6 +2266,7 @@ class SubstanceMetadata {
     initialChargeImport,
     initialChargeExport,
     retirement,
+    defaultSales,
   ) {
     const self = this;
     self._substance = substance || "";
@@ -2248,6 +2281,7 @@ class SubstanceMetadata {
     self._initialChargeImport = initialChargeImport || "";
     self._initialChargeExport = initialChargeExport || "";
     self._retirement = retirement || "";
+    self._defaultSales = defaultSales || "";
   }
 
   /**
@@ -2399,6 +2433,16 @@ class SubstanceMetadata {
     const self = this;
     return self._retirement;
   }
+
+  /**
+   * Get the default sales assumption mode.
+   *
+   * @returns {string} The default sales mode (user-facing value).
+   */
+  getDefaultSales() {
+    const self = this;
+    return self._defaultSales;
+  }
 }
 
 /**
@@ -2424,6 +2468,7 @@ class SubstanceMetadataBuilder {
     self._initialChargeImport = null;
     self._initialChargeExport = null;
     self._retirement = null;
+    self._defaultSales = null;
   }
 
   /**
@@ -2571,6 +2616,18 @@ class SubstanceMetadataBuilder {
   }
 
   /**
+   * Set the default sales assumption mode.
+   *
+   * @param {string} defaultSales - The default sales mode (user-facing value).
+   * @returns {SubstanceMetadataBuilder} This builder instance for method chaining.
+   */
+  setDefaultSales(defaultSales) {
+    const self = this;
+    self._defaultSales = defaultSales;
+    return self;
+  }
+
+  /**
    * Build a SubstanceMetadata instance from current builder state.
    *
    * @returns {SubstanceMetadata} The constructed metadata instance.
@@ -2601,6 +2658,7 @@ class SubstanceMetadataBuilder {
       self._initialChargeImport || "",
       self._initialChargeExport || "",
       self._retirement || "",
+      self._defaultSales || "",
     );
   }
 }

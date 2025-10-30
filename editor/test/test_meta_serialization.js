@@ -118,6 +118,7 @@ function buildMetaSerializationTests() {
         const testMetadata = new SubstanceMetadata(
           "HFC-134a", "High Energy", "Domestic Refrigeration", "1430 kgCO2e / kg",
           true, false, false, "500 kwh / unit", "0.15 kg / unit", "0 kg / unit", "0 kg / unit", "10% / year",
+          "continue from prior year",
         );
 
         const result = serializer.serialize([testMetadata]);
@@ -129,7 +130,7 @@ function buildMetaSerializationTests() {
           "substance", "equipment", "application", "ghg",
           "hasDomestic", "hasImport", "hasExport", "energy",
           "initialChargeDomestic", "initialChargeImport", "initialChargeExport",
-          "retirement", "key",
+          "retirement", "defaultSales", "key",
         ];
 
         assert.deepEqual(keys, expectedOrder);
@@ -155,6 +156,7 @@ function buildMetaSerializationTests() {
         const testMetadata = new SubstanceMetadata(
           "HFC-134a", "", "Domestic Refrigeration", "1430 kgCO2e / kg",
           true, false, false, "500 kwh / unit", "0.15 kg / unit", "0 kg / unit", "0 kg / unit", "10% / year",
+          "continue from prior year",
         );
 
         const result = serializer.renderMetaToCsvUri([testMetadata]);
@@ -164,7 +166,7 @@ function buildMetaSerializationTests() {
         const lines = csvContent.split("\n");
 
         // Check header row
-        const expectedHeader = "substance,equipment,application,ghg,hasDomestic,hasImport,hasExport,energy,initialChargeDomestic,initialChargeImport,initialChargeExport,retirement,key";
+        const expectedHeader = "substance,equipment,application,ghg,hasDomestic,hasImport,hasExport,energy,initialChargeDomestic,initialChargeImport,initialChargeExport,retirement,defaultSales,key";
         assert.equal(lines[0], expectedHeader);
       });
 
@@ -200,7 +202,7 @@ function buildMetaSerializationTests() {
         const lines = csvContent.split("\n");
 
         assert.equal(lines.length, 1); // Only header row
-        assert.equal(lines[0], "substance,equipment,application,ghg,hasDomestic,hasImport,hasExport,energy,initialChargeDomestic,initialChargeImport,initialChargeExport,retirement,key");
+        assert.equal(lines[0], "substance,equipment,application,ghg,hasDomestic,hasImport,hasExport,energy,initialChargeDomestic,initialChargeImport,initialChargeExport,retirement,defaultSales,key");
       });
 
       QUnit.test("escapes special characters in CSV", function (assert) {
