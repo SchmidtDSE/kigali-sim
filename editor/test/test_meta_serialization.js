@@ -35,6 +35,7 @@ function buildMetaSerializationTests() {
           "0 kg / unit", // initialChargeImport
           "0 kg / unit", // initialChargeExport
           "10% / year", // retirement
+          "", // retirementWithReplacement
         );
 
         const result = serializer.serialize([testMetadata]);
@@ -130,7 +131,7 @@ function buildMetaSerializationTests() {
           "substance", "equipment", "application", "ghg",
           "hasDomestic", "hasImport", "hasExport", "energy",
           "initialChargeDomestic", "initialChargeImport", "initialChargeExport",
-          "retirement", "defaultSales", "key",
+          "retirement", "retirementWithReplacement", "defaultSales", "key",
         ];
 
         assert.deepEqual(keys, expectedOrder);
@@ -166,7 +167,7 @@ function buildMetaSerializationTests() {
         const lines = csvContent.split("\n");
 
         // Check header row
-        const expectedHeader = "substance,equipment,application,ghg,hasDomestic,hasImport,hasExport,energy,initialChargeDomestic,initialChargeImport,initialChargeExport,retirement,defaultSales,key";
+        const expectedHeader = "substance,equipment,application,ghg,hasDomestic,hasImport,hasExport,energy,initialChargeDomestic,initialChargeImport,initialChargeExport,retirement,retirementWithReplacement,defaultSales,key";
         assert.equal(lines[0], expectedHeader);
       });
 
@@ -202,7 +203,7 @@ function buildMetaSerializationTests() {
         const lines = csvContent.split("\n");
 
         assert.equal(lines.length, 1); // Only header row
-        assert.equal(lines[0], "substance,equipment,application,ghg,hasDomestic,hasImport,hasExport,energy,initialChargeDomestic,initialChargeImport,initialChargeExport,retirement,defaultSales,key");
+        assert.equal(lines[0], "substance,equipment,application,ghg,hasDomestic,hasImport,hasExport,energy,initialChargeDomestic,initialChargeImport,initialChargeExport,retirement,retirementWithReplacement,defaultSales,key");
       });
 
       QUnit.test("escapes special characters in CSV", function (assert) {
@@ -1454,7 +1455,7 @@ High Energy,1430 kgCO2e / kg,true`;
         const applier = new MetaChangeApplier(program);
 
         // Test empty substance name
-        const emptySubstance = new SubstanceMetadata("", "", "App1", "", true, false, false, "", "", "", "", "");
+        const emptySubstance = new SubstanceMetadata("", "", "App1", "", true, false, false, "", "", "", "", "", "", "");
         const update1 = new SubstanceMetadataUpdate("", emptySubstance);
 
         try {
@@ -1468,7 +1469,7 @@ High Energy,1430 kgCO2e / kg,true`;
         }
 
         // Test empty application name
-        const emptyApplication = new SubstanceMetadata("HFC-134a", "", "", "", true, false, false, "", "", "", "", "");
+        const emptyApplication = new SubstanceMetadata("HFC-134a", "", "", "", true, false, false, "", "", "", "", "", "", "");
         const update2 = new SubstanceMetadataUpdate("", emptyApplication);
 
         try {
@@ -1486,10 +1487,10 @@ High Energy,1430 kgCO2e / kg,true`;
         const applier = new MetaChangeApplier(program);
 
         // Create batch with multiple validation failures
-        const emptySubstance = new SubstanceMetadata("", "", "App1", "", true, false, false, "", "", "", "", "");
-        const emptyApplication = new SubstanceMetadata("HFC-134a", "", "", "", true, false, false, "", "", "", "", "");
-        const shortSubstance = new SubstanceMetadata("A", "", "App3", "", true, false, false, "", "", "", "", "");
-        const shortApplication = new SubstanceMetadata("HFC-134a", "", "B", "", true, false, false, "", "", "", "", "");
+        const emptySubstance = new SubstanceMetadata("", "", "App1", "", true, false, false, "", "", "", "", "", "", "");
+        const emptyApplication = new SubstanceMetadata("HFC-134a", "", "", "", true, false, false, "", "", "", "", "", "", "");
+        const shortSubstance = new SubstanceMetadata("A", "", "App3", "", true, false, false, "", "", "", "", "", "", "");
+        const shortApplication = new SubstanceMetadata("HFC-134a", "", "B", "", true, false, false, "", "", "", "", "", "", "");
 
         const updates = [
           new SubstanceMetadataUpdate("", emptySubstance),
@@ -1522,8 +1523,8 @@ High Energy,1430 kgCO2e / kg,true`;
         const applier = new MetaChangeApplier(program);
 
         // Create batch with valid substance first, then invalid
-        const validMetadata = new SubstanceMetadata("Valid-Substance", "", "Valid-App", "", true, false, false, "", "", "", "", "");
-        const invalidMetadata = new SubstanceMetadata("", "", "Invalid-App", "", true, false, false, "", "", "", "", "");
+        const validMetadata = new SubstanceMetadata("Valid-Substance", "", "Valid-App", "", true, false, false, "", "", "", "", "", "", "");
+        const invalidMetadata = new SubstanceMetadata("", "", "Invalid-App", "", true, false, false, "", "", "", "", "", "", "");
 
         const updates = [
           new SubstanceMetadataUpdate("", validMetadata),
@@ -1829,8 +1830,8 @@ High Energy,1430 kgCO2e / kg,true`;
       const applier = new MetaChangeApplier(program);
 
       // Create mix of valid and invalid metadata
-      const validMetadata = new SubstanceMetadata("HFC-134a", "", "App1", "", true, false, false, "", "", "", "", "");
-      const invalidMetadata = new SubstanceMetadata("", "", "App2", "", true, false, false, "", "", "", "", ""); // Empty substance
+      const validMetadata = new SubstanceMetadata("HFC-134a", "", "App1", "", true, false, false, "", "", "", "", "", "", "");
+      const invalidMetadata = new SubstanceMetadata("", "", "App2", "", true, false, false, "", "", "", "", "", "", ""); // Empty substance
 
       const updates = [
         new SubstanceMetadataUpdate("", validMetadata),
@@ -1849,7 +1850,7 @@ High Energy,1430 kgCO2e / kg,true`;
       const program = new Program([], [], [], true);
       const applier = new MetaChangeApplier(program);
 
-      const validMetadata = new SubstanceMetadata("HFC-134a", "", "App1", "", true, false, false, "", "", "", "", "");
+      const validMetadata = new SubstanceMetadata("HFC-134a", "", "App1", "", true, false, false, "", "", "", "", "", "", "");
       const updates = [new SubstanceMetadataUpdate("", validMetadata)];
 
       // Should not throw
@@ -1864,8 +1865,8 @@ High Energy,1430 kgCO2e / kg,true`;
       const program = new Program([], [], [], true);
       const applier = new MetaChangeApplier(program);
 
-      const invalidMetadata1 = new SubstanceMetadata("", "", "App1", "", true, false, false, "", "", "", "", "");
-      const invalidMetadata2 = new SubstanceMetadata("HFC-134a", "", "", "", true, false, false, "", "", "", "", "");
+      const invalidMetadata1 = new SubstanceMetadata("", "", "App1", "", true, false, false, "", "", "", "", "", "", "");
+      const invalidMetadata2 = new SubstanceMetadata("HFC-134a", "", "", "", true, false, false, "", "", "", "", "", "", "");
 
       const updates = [
         new SubstanceMetadataUpdate("", invalidMetadata1),

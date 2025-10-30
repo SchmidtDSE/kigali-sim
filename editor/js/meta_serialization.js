@@ -36,6 +36,7 @@ const META_COLUMNS = [
   "initialChargeImport",
   "initialChargeExport",
   "retirement",
+  "retirementWithReplacement",
   "defaultSales",
   "key",
 ];
@@ -370,6 +371,10 @@ class MetaSerializer {
       rowMap.set("initialChargeImport", self._getOrEmpty(metadata.getInitialChargeImport()));
       rowMap.set("initialChargeExport", self._getOrEmpty(metadata.getInitialChargeExport()));
       rowMap.set("retirement", self._getOrEmpty(metadata.getRetirement()));
+      rowMap.set(
+        "retirementWithReplacement",
+        self._getOrEmpty(metadata.getRetirementWithReplacement()),
+      );
       rowMap.set("defaultSales", self._getOrEmpty(metadata.getDefaultSales()));
       rowMap.set("key", self._getOrEmpty(metadata.getKey()));
 
@@ -699,6 +704,27 @@ class MetaSerializer {
       }
     }
 
+    // Parse retirementWithReplacement (Component 5)
+    const retirementWithReplacementRaw = self._getOrEmpty(rowMap.get("retirementWithReplacement"));
+    let retirementWithReplacement = false; // Default to false (normal retirement)
+
+    if (retirementWithReplacementRaw && retirementWithReplacementRaw.trim()) {
+      try {
+        // Use existing _parseBoolean method for consistency
+        retirementWithReplacement = self._parseBoolean(retirementWithReplacementRaw);
+      } catch (error) {
+        result.addError(new SubstanceMetadataError(
+          rowNumber,
+          "retirementWithReplacement",
+          "Invalid value \"" + retirementWithReplacementRaw + "\". " +
+            "Expected one of: \"true\", \"false\", \"yes\", \"no\", \"1\", \"0\"",
+          "USER",
+        ));
+        hasErrors = true;
+        // Keep default value (false) on error
+      }
+    }
+
     // Parse and normalize defaultSales value (Component 2)
     const defaultSalesRaw = self._getOrEmpty(rowMap.get("defaultSales"));
     let defaultSalesNormalized = "continued"; // Default value
@@ -729,6 +755,7 @@ class MetaSerializer {
       .setInitialChargeImport(self._getOrEmpty(rowMap.get("initialChargeImport")))
       .setInitialChargeExport(self._getOrEmpty(rowMap.get("initialChargeExport")))
       .setRetirement(self._getOrEmpty(rowMap.get("retirement")))
+      .setRetirementWithReplacement(retirementWithReplacement ? "true" : "false")
       .setDefaultSales(defaultSalesNormalized);
 
     return builder.build();
@@ -1528,10 +1555,14 @@ class MetaChangeApplier {
       builder.addCommand(new Command("initial charge", "export", exportCharge, null));
     }
 
-    // Add retirement command if present
+    // Add retirement command if present (Component 5: includes withReplacement)
     const retirementValue = self._parseUnitValue(metadata.getRetirement());
     if (retirementValue) {
-      builder.addCommand(new RetireCommand(retirementValue, null, false));
+      // Parse withReplacement flag from metadata (stored as "true"/"false" string)
+      const retirementWithReplacementStr = metadata.getRetirementWithReplacement();
+      const withReplacement = retirementWithReplacementStr === "true";
+
+      builder.addCommand(new RetireCommand(retirementValue, null, withReplacement));
     }
 
     // Set assumeMode from metadata defaultSales (Component 2)
