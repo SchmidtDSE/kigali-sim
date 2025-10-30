@@ -13,14 +13,16 @@ Thank you for your contribution! We appreciate the community's help in any capac
 ## Coding Guidelines
 To ensure the conceptual integrity and readability of our code, we have a few guidelines:
 
-### Java Code (Engine)
+For the **Java code (Engine)**:
+
  - Please try to follow the conventions laid out by the project in existing code. When in doubt, refer to the [Google Java Style Guide](https://google.github.io/styleguide/javaguide.html).
  - Tests are encouraged and should be included with new functionality.
  - JavaDoc comments are encouraged. We generate JavaDoc at https://kigalisim.org/guide/javadoc/.
  - Use 2-space indentation (no tabs).
  - Proper import ordering is expected.
 
-### JavaScript Code (Editor)
+For **ECMAScript (Editor)**:
+
  - Please follow the [Google JavaScript Style Guide](https://google.github.io/styleguide/jsguide.html).
  - Tests are encouraged using QUnit.
  - Use JSDoc comments for documentation.
@@ -35,10 +37,10 @@ To ensure the conceptual integrity and readability of our code, we have a few gu
 <br>
 
 ## Automated Tests and Checks
-When you submit a pull request, several automated tests and checks will run. Don't worry if some fail at first - we're happy to help you get them passing! Here's what gets checked:
+When you submit a pull request, several automated tests and checks will run. Don't worry if some fail at first - we're happy to help you get them passing! See below for what gets checked and we encourage you to try to get these to pass prior to opening a pull request:
 
-### Java Engine Tests
-From the `engine/` directory:
+**Java / engine** tests are run from the `engine/` directory:
+
 ```bash
 # Run unit tests
 ./gradlew test
@@ -51,8 +53,8 @@ From the `engine/` directory:
 ./gradlew spotlessApply
 ```
 
-### JavaScript Editor Tests
-From the `editor/` directory:
+**ECMAScript / editor** tests are run from the `editor/` directory:
+
 ```bash
 # Run QUnit tests
 pnpm exec grunt
@@ -67,7 +69,7 @@ pnpm exec eslint ./test/*.js
 pnpm exec eslint ./js/*.js --fix
 ```
 
-All of these checks are described in detail in [DEVELOPING.md](DEVELOPING.md). If you run into issues with any of these checks, please don't hesitate to ask for help in your pull request. We understand that some of these tools can be tricky to set up, especially if you're new to the project, and we're happy to guide you through the process.
+All of these checks are described in detail in [DEVELOPING.md](DEVELOPING.md). If you run into issues with any of these checks, please don't hesitate to ask for help in your pull request. We understand that some of these tools can be tricky to set up, especially if you're new to the project. We're happy to guide you through the process.
 
 <br>
 <br>
@@ -75,21 +77,16 @@ All of these checks are described in detail in [DEVELOPING.md](DEVELOPING.md). I
 ## Design Choices
 There are reasonable differences of opinion in the community about ideal implementations. That in mind, there are a few opinionated choices we've made in the design of this project that we will maintain moving forward. We encourage folks in our community to open issues if they wish to discuss these design choices further but, at this time, we may not merge pull requests that do not conform to these choices.
 
-### QubecTalk Domain Specific Language
- - QubecTalk is intentionally designed to be accessible to non-programmers while remaining expressive for technical users.
- - The language specification is maintained at https://kigalisim.org/guide/qubectalk.pdf.
- - We use ANTLR4 for parsing QubecTalk.
-
-### Browser-Based Application
- - We compile the Java engine to WebAssembly using TeaVM for browser execution while maintaining standalone CLI capability.
- - All simulations run locally on the user's machine for privacy.
- - We do not use CDNs for privacy reasons and CDN migration PRs are discouraged.
- - We use vanilla JavaScript (not TypeScript or other transpiled languages) for the editor interface.
-
-### Architecture
- - The engine is designed to support both UI-based (Designer) and code-based (Editor) authoring.
- - We support Monte Carlo probabilistic simulation with parallelization capabilities but assume Monte Carlo users primarily operate on the command line with the JVM.
- - We accept that some advanced simulations will not be compatible with the UI-based editor.
+ 1. QubecTalk is intentionally designed to be accessible to non-programmers while remaining expressive for technical users and is intended as the code-based entry point to Kigali Sim: we have previously transitioned from an ECMAScript to Java engine and want to retain the choice to change languages again in the future.
+ 2. We use ANTLR4 for parsing QubecTalk and alternative parsers are not under consideration at this time.
+ 3. We compile the Java engine to WebAssembly using TeaVM for browser execution while maintaining standalone CLI capability.
+ 4. All simulations must run locally on the user's machine for privacy.
+ 5. We do not use CDNs for privacy reasons and CDN migration PRs are discouraged.
+ 6. We use vanilla ECMAScript (not TypeScript / other transpiled languages or UI frameworks like React) for the editor interface as, due to our limited resrources, we must limit dependencies whose major versions may require substantial rewrite and have found in our experience that vanilla ages the best in a resource constrained environment.
+ 7. The engine is designed to support both UI-based (Designer) and code-based (Editor) authoring but, even as all scripts which are authored using the UI-based editor must be compatible with the code-based editor, not all scripts which are possible to write in code need to be compatible with the UI-based editor.
+ 8. We support Monte Carlo probabilistic simulation with parallelization capabilities but assume Monte Carlo users primarily operate on the command line with the JVM. At this time, analysis of probabilistic outputs in the UI-based editor is not a priority.
+ 9. Parallelization in the form of parallel scenarios (BAU, with permit, etc) must be supported by all runtimes but not parallelization within a scenario.
+ 10. The web editor must work without transpilation or compilation steps for ECMAScript except for the WASM and ANTLR compoennts (we use webpack only for bundling).
 
 Please reach out if you have further questions about these guidelines or want to discuss alternative approaches.
 
@@ -97,41 +94,25 @@ Please reach out if you have further questions about these guidelines or want to
 <br>
 
 ## Scope
-There are some limitations of scope for this project that we will enforce:
+There are some limitations of scope for this project:
 
- - The Java engine must remain compatible with Java 19+ to support TeaVM compilation to WebAssembly.
- - The web editor must work without transpilation or compilation steps for JavaScript (we use webpack only for bundling).
- - Changes to QubecTalk language syntax should be discussed in an issue before implementation.
- - We maintain both the browser-based application and standalone JAR/Docker execution paths.
-
-Please open issues with other ideas!
+ - The Java engine must remain compatible with Java 21+ to support TeaVM compilation to WebAssembly but earlier versions are not guaranteed to be supported.
+ - Breaking changes to the QubecTalk language syntax should be discussed in an issue before implementation and require community input.
+ - We must maintain both the browser-based application and standalone JAR/Docker execution paths but other execution modalities are currently out of scope.
+ - Energy consumption can be modeled but energy mix for secondary emissions is currently considered out of scope.
+ - Direct use of the engine outside of QubecTalk or the UI-based editor are not currently priorities for the project given our limited resources.
 
 <br>
 <br>
 
 ## Development Environment
-We support both dev container and local development setups. See [DEVELOPING.md](DEVELOPING.md) for complete setup instructions.
-
-### Quick Start with Dev Container
-The easiest way to get started is using the dev container:
-
- - **VS Code**: Install the Dev Containers extension and reopen in container
- - **GitHub Codespaces**: Click "Code" → "Codespaces" → "Create codespace on main"
-
-The dev container includes all dependencies and tools pre-configured.
-
-### Local Setup
-If you prefer local development:
-
- 1. Install Java 19+ (recommend [Adoptium](https://adoptium.net))
- 2. Install Node.js 18.x and pnpm
- 3. Follow the detailed steps in [DEVELOPING.md](DEVELOPING.md)
+We support both dev container and local development setups. See [DEVELOPING.md](https://github.com/SchmidtDSE/kigali-sim/blob/main/DEVELOPING.md) for setup instructions.
 
 <br>
 <br>
 
 ## Procedure
-By contributing, you attest that you are legally permitted to provide code to the project and agree to release that code under the [project's BSD-3-Clause license](LICENSE.md). To make a contribution, please:
+If you would like to contribute code but don't have a specific issue to address, thank you! Please look for issues tagged "good first issue" or reach out to hello@kigalisim.org. To make a contribution, please:
 
  - If one is not already open, [open an issue](https://github.com/SchmidtDSE/kigali-sim/issues).
  - [Open a pull request](https://github.com/SchmidtDSE/kigali-sim/pulls).
@@ -139,7 +120,7 @@ By contributing, you attest that you are legally permitted to provide code to th
  - Indicate that your pull request closes your issue by saying "closes #" followed by your issue number in the PR description.
  - Request a review when ready.
 
-If you would like to contribute code but don't have a specific issue to address, thank you! Please look for issues tagged "good first issue" or reach out to dse@berkeley.edu.
+We apologize for the formality but there's just a few logistical pieces to keep in mind. First, by contributing, you attest that you are legally permitted to provide code to the project and that you are both able and agree to release that code under the [project's BSD-3-Clause license](https://github.com/SchmidtDSE/kigali-sim/blob/main/LICENSE.md). Second, you agree to follow [CONDUCT.md](https://github.com/SchmidtDSE/kigali-sim/blob/main/CONDUCT.md).
 
 <br>
 <br>
@@ -156,25 +137,12 @@ When adding new features or changing existing functionality:
  - Update relevant documentation in the tutorial and user's guide if appropriate.
  - Add JavaDoc comments for Java classes and methods
  - Add JSDoc comments for JavaScript functions
- - Update [DEVELOPING.md](DEVELOPING.md) if you change development workflows
-
-<br>
-<br>
-
-## Getting Help
-If you're stuck or unsure about anything:
-
- - Ask questions in your issue or pull request
- - Review [DEVELOPING.md](DEVELOPING.md) for detailed development instructions
- - Check existing issues and pull requests for similar questions
- - Reach out to dse@berkeley.edu
-
-We want contributing to be a positive experience, so please don't hesitate to ask for help at any stage of the process.
+ - Update [DEVELOPING.md](https://github.com/SchmidtDSE/kigali-sim/blob/main/DEVELOPING.md) if you change development workflows
 
 <br>
 <br>
 
 ## Parting Thoughts
-Open source is an act of love. Please be kind and respectful of all contributors. Your work on Kigali Sim helps support countries implementing the Kigali Amendment and contributes to global climate action. Thank you for being part of this community.
+Open source is an act of love. Please be kind and respectful of all contributors. Your work on Kigali Sim helps support countries and other organizations charged with safeguarding our environment like through the Kigali Amendment. Thank you for being part of this community.
 
-For more information about community standards, please see [CONDUCT.md](CONDUCT.md) for our Code of Conduct.
+For more information about community standards, please see [CONDUCT.md](https://github.com/SchmidtDSE/kigali-sim/blob/main/CONDUCT.md) for our Code of Conduct.
