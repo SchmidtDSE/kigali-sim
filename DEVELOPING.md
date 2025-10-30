@@ -4,21 +4,24 @@ This guide provides comprehensive information for contributors to the Kigali Sim
 
 ## Architecture Overview
 
-KigaliSim is organized into three main components:
+KigaliSim is organized into three main components and most have additional READMEs within:
 
-### 1. **Java Engine** (`engine/`)
+**Java Engine** (`engine` directory):
+
 - Core simulation engine built with Java 21+
 - Uses ANTLR4 for parsing the QubecTalk domain specific language (DSL)
 - Compiled to WebAssembly using TeaVM for browser execution
 - Can also run standalone via command line
 
-### 2. **Web Editor** (`editor/`)
+**Web Editor** (`editor` directory):
+
 - ECMAScript-based web interface
 - Provides both Basic (UI) and Advanced (code) editing modes
 - Uses webpack for bundling and Grunt for testing
 - Integrates with the WASM-compiled engine
 
-### 3. **Documentation** (`docs/`)
+**Documentation** (`docs` directory):
+
 - Technical specifications and user guides
 - QubecTalk language documentation
 
