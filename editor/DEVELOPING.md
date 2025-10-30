@@ -111,10 +111,15 @@ cd ../engine
 
 ### Updating the QubecTalk Grammar
 
-1. Modify the grammar file in `language/`
-2. Rebuild with `bash ./support/make.sh`
-3. Generated parser files will be in `intermediate/`
-4. Test changes with example QubecTalk programs
+The QubecTalk grammar file (`QubecTalk.g4`) is maintained in the engine and automatically copied during the build process.
+
+1. Modify the grammar file in `engine/src/main/antlr/org/kigalisim/lang/QubecTalk.g4`
+2. Test the Java engine: `cd engine && ./gradlew test`
+3. Rebuild the editor: `cd editor && bash ./support/make.sh`
+4. Generated parser files will be in `intermediate/`
+5. Test changes with example QubecTalk programs in both engine and editor
+
+**Note:** The grammar file in `editor/language/QubecTalk.g4` is a build artifact copied from the engine and should not be edited directly.
 
 ### Updating WASM Engine
 

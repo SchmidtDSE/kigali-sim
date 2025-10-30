@@ -14,11 +14,13 @@ The editor provides an interactive web interface for creating simulations, runni
 - `third_party`: External JavaScript libraries and dependencies
 - `support`: Build and deployment scripts
 - `intermediate`: Generated language parsing files
-- `language`: ANTLR grammar and language processing tools
+- `language`: ANTLR grammar and language processing tools (grammar file is copied from engine during build)
 
 ## Development
 
 The front-end development requires some additional steps after having set up for building the Java components. Then, grunt can be used to run front-end QUnit tests.
+
+**Note:** The QubecTalk grammar file (`QubecTalk.g4`) is automatically copied from `engine/src/main/antlr/org/kigalisim/lang/QubecTalk.g4` during the build process. To modify the grammar, edit the file in the engine directory, not in `editor/language/`.
 
 ### Setup
 

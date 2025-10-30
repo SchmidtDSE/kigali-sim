@@ -14,12 +14,15 @@ KigaliSim is organized into three main components and most have additional READM
 
 - Core simulation engine built with Java 21+
 - Uses ANTLR4 for parsing the QubecTalk domain specific language (DSL)
+- Contains the authoritative QubecTalk.g4 grammar file
 - Compiled to WebAssembly using TeaVM for browser execution
 - Can also run standalone via command line
 
 **Web Editor** (`editor` directory):
 
 - ECMAScript-based web interface
+- Copies QubecTalk.g4 from engine during build process
+- Generates JavaScript parser from grammar using ANTLR
 - Provides both Basic (UI) and Advanced (code) editing modes
 - Uses webpack for bundling and Grunt for testing
 - Integrates with the WASM-compiled engine
