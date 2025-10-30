@@ -563,6 +563,7 @@ class DuplicateEntityPresenter {
     const copiedRetire = sourceSubstance.getRetire();
     const copiedSetVals = sourceSubstance.getSetVals();
     const copiedEnables = sourceSubstance.getEnables();
+    const copiedAssumeMode = sourceSubstance.getAssumeMode();
 
     // Create new substance with copied commands (matching constructor parameter order)
     return new Substance(
@@ -580,6 +581,7 @@ class DuplicateEntityPresenter {
       copiedEnables,
       sourceSubstance._isModification,
       sourceSubstance._isCompatible,
+      copiedAssumeMode,
     );
   }
 }

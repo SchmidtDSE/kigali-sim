@@ -14,6 +14,14 @@ Finally, we want to again express our gratitude for your feedback and time.
 
 The following changes have been adopted and released.
 
+### Include assume in duplication
+
+**Status**: Released October 30, 2025
+
+**Classification**: Bug
+
+Include the assume mode in duplication of substances (duplicate dialog box in editor). See [#629](https://github.com/SchmidtDSE/kigali-sim/pull/629).
+
 ### Formaula hazard rates
 
 **Status**: Released October 30, 2025
