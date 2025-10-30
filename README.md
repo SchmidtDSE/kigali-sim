@@ -6,29 +6,29 @@ Open source engine for simulating substances, applications, and policies relevan
 <br>
 
 ## Purpose
-This open source toolkit provides a simulation engine for modeling substances, applications, and policies related to the Montreal Protocol with a focus on hydrofluorocarbons and their alternatives within the Kigali Amendment. It supports a foundational business as usual simulation and then supports “stacking” policy simulations on top of that baseline. These projections may support activities such as Kigali Amendment Implementation Plans (KIPs). It will simulate emissions, energy, substance consumption, equipment populations, and trade longitudinally. This platform provides access to both UI and code-based editing within the QubecTalk domain specific language (DSL). It can run with parallelization and conduct probabilistic simulation via Monte Carlo.
+This open source toolkit provides a simulation engine and related software for modeling substances, applications, and policies related to the Montreal Protocol with a focus on hydrofluorocarbons and their alternatives within the Kigali Amendment. It supports a foundational business as usual simulation as well as "stacking" policy simulations on top of that baseline. It simulates emissions, energy, substance consumption, equipment populations, and trade longitudinally in service of research and policy activities like Kigali Amendment Implementation Plans (KIPs).
 
-In use by multiple [Article 5](https://ozone.unep.org/treaties/montreal-protocol/articles/article-5-special-situation-developing-countries) nations, Kigali Sim was co-created in consultation with over a dozen countries and supporting organizations. See [our credits page](https://kigalisim.org/credits.html). For more information about the design of Kigali Sim including why we made QubecTalk, see [our paper draft](https://github.com/SchmidtDSE/kigali-sim/blob/main/paper/paper.md).
+This platform provides practical flexibility with access to both UI and code-based editing within the QubecTalk domain specific language (DSL). It can run with parallelization and conduct probabilistic simulation via Monte Carlo. In use by multiple [Article 5](https://ozone.unep.org/treaties/montreal-protocol/articles/article-5-special-situation-developing-countries) nations, Kigali Sim was co-created in consultation with over a dozen countries and supporting organizations. See [our credits page](https://kigalisim.org/credits.html). For more information about the design of Kigali Sim including why we made QubecTalk, see [our paper draft](https://github.com/SchmidtDSE/kigali-sim/blob/main/paper/paper.md).
 
 <br>
 
 ## Quickstart
-Make a simulation in 3 minutes! View our quickstart video. Prefer a text version? Go to https://kigalisim.org and then in the Designer tab:
+Make a simulation in 3 minutes! View our [quickstart video](https://vimeo.com/1116227339?share=copy&fl=sv&fe=ci). Prefer a text version? See our [initial written tutorial with animated gifs](https://kigalisim.org/guide/tutorial_02.html). Alternatively, go to https://kigalisim.org and then in the Designer tab:
 
- - Click “Add Application” to create a “Commerical Refrigeration” application
- - Click “Add Consumption” to create HFC-134a (click lookup for GHG equivalency, leave energy consumption at default, check domestic)
+ - Click "Add Application" to create a "Commerical Refrigeration" application
+ - Click "Add Consumption" to create HFC-134a (click lookup for GHG equivalency, leave energy consumption at default, check domestic)
  - In your HFC-134a record, add a set record for 1 mt sales in year 1.
- - Click “Add Simulation” and make “Business as Usual” from year 1 to 10.
- - Click the “Bank” radio button for total million units of equipment and see population increase over time.
+ - Click "Add Simulation" and make "Business as Usual" from year 1 to 10.
+ - Click the "Bank" radio button for total million units of equipment and see population increase over time.
 
 Finally, go do the Editor tab and see the QubecTalk code you wrote:
 
 ```
 start default
 
-  define application “Commercial Refrigeration”
+  define application "Commercial Refrigeration"
   
-    uses substance “HFC-134a”
+    uses substance "HFC-134a"
       enable domestic
       initial charge with 1 kg / unit for domestic
       initial charge with 0 kg / unit for import
@@ -46,7 +46,7 @@ end default
 
 start simulations
 
-  simulate “Business as Usual”
+  simulate "Business as Usual"
   from years 1 to 10
 
 end simulations
@@ -58,17 +58,10 @@ end simulations
 All executions of simulations are private and local.
 
 ### Public hosted browser-based app
-Requiring no new local software installation, use the public hosted version of the tool:
-
-1. Open the application in your web browser (https://kigalisim.org).
-2. Use either the designer (UI-based) or editor (code-based) tab to define your simulation
-3. Click Run to execute the simulation
-4. View results in the visualization panel, which shows emissions metrics, consumption / sales data, and equipment population.
-
-Data can be downloaded through the export button shown in the results tab. Simulations are run locally on your own machine through WebAssembly and Kigali Sim will not send your simulation code / data to external machines without your permission. We simply provide public static file hosting (see [privacy](https://kigalisim.org/privacy.html)).
+Requiring no new local software installation, use the public hosted version of the tool at https://kigalisim.org. Simulations are run locally on your own machine through WebAssembly and Kigali Sim will not send your simulation code / data to external machines without your permission. We simply provide public static file hosting (see [privacy](https://kigalisim.org/privacy.html)).
 
 ### Local jar file
-For those who prefer the command-line interface, instal Java like through [Adoptium](https://adoptium.net/installation) and download the [latest Kigali Sim jar](https://kigalisim.org/kigalisim-fat.jar). Then, execute simulations with:
+For those who prefer the command-line interface, install Java (like through [Adoptium](https://adoptium.net/installation)) and download the [latest Kigali Sim jar](https://kigalisim.org/kigalisim-fat.jar). Then, execute simulations with:
 
 ```
 java -jar kigalisim-fat.jar run -o output.csv script.qta
@@ -84,7 +77,7 @@ docker build -t kigalisim .
 docker run -v $(pwd):/working kigalisim run -o output.csv script.qta
 ```
 
-For running a local version of the browser-based app, see the Development section. For development container configuration details, see `DEVELOPING.md`.
+We also provide a Dev Container with additional tools for those looking to modify Kigali Sim or run a local version of the web-based editor. see `DEVELOPING.md`.
 
 <br>
 
@@ -92,17 +85,17 @@ For running a local version of the browser-based app, see the Development sectio
 Kigali Sim authors can choose to use a UI-based editor which does not require writing code or the QubecTalk domain-specific programming language.
 
 ### UI-based authoring
-For users preferring a no-code point-and-click approach to authoring simulations, see our [User Guide](https://kigalisim.org/guide/) which includes detailed instructions with animated gifs and video tutorial options.
+For users preferring a no-code point-and-click approach to authoring simulations, open the [UI-based editor](https://kigalisim.org/) and then review our [no-code hello world example](https://kigalisim.org/guide/tutorial_02.html). Alternatively, review an [example simulation](https://kigalisim.org/guide/tutorial_02.qta) made using the UI-editor in order to explore the tools' capabilities.
 
 ### Code-based authoring
-For those preferring to write code, review the setup instructions and then run this example of a permitting system to replace a high global warming potential substance with one exhibiting a lower GWP. This demonstrates all of the basic building blocks of Kigali Sim model (applications, substances, policies, and simulations):
+For those preferring to write code, review the [setup instructions](https://github.com/SchmidtDSE/kigali-sim?tab=readme-ov-file#setup) and then consider this example of a permitting system to replace a high global warming potential substance with one exhibiting a lower GWP. This demonstrates all of the basic building blocks of Kigali Sim model (applications, substances, policies, and simulations):
 
 ```
 start default
 
-  define application “Commercial Refrigeration”
+  define application "Commercial Refrigeration"
   
-    uses substance “HFC-134a”
+    uses substance "HFC-134a"
       enable domestic
       initial charge with 1 kg / unit for domestic
       initial charge with 0 kg / unit for import
@@ -115,7 +108,7 @@ start default
     end substance
 
 
-    uses substance “R-600a”
+    uses substance "R-600a"
       enable domestic
       initial charge with 1 kg / unit for domestic
       initial charge with 0 kg / unit for import
@@ -132,12 +125,12 @@ start default
 end default
 
 
-start policy “Permit”
+start policy "Permit"
 
-  modify application “Commercial Refrigeration”
+  modify application "Commercial Refrigeration"
   
-    modify substance “HFC-134a”
-      cap sales to 80 % displacing “R-600a” during years 3 to 10
+    modify substance "HFC-134a"
+      cap sales to 80 % displacing "R-600a" during years 3 to 10
     end substance
   
   end application
@@ -147,19 +140,21 @@ end policy
 
 start simulations
 
-  simulate “Business as Usual”
+  simulate "Business as Usual"
   from years 1 to 10
 
 
-  simulate “With Permit”
-    using “Permit”
+  simulate "With Permit"
+    using "Permit"
   from years 1 to 10
 
 end simulations
 ```
 
+This can be run using the editor tab at https://kigalisim.org/ or locally via `java -jar kigalisim-fat.jar run -o output.csv script.qta` or similar.
+
 ### Additional resources
-While total consumption in terms of metric tonnes remains the same, see the effect by reviewing the emissions. Developers can continue their work by going to the [User Guide](https://kigalisim.org/guide/) which had information on other features. See also the [formal QubecTalk language specification](https://kigalisim.org/guide/qubectalk.pdf).
+Developers can continue their work by going to the [User Guide](https://kigalisim.org/guide/) which had information on other features. See also the [formal QubecTalk language specification](https://kigalisim.org/guide/qubectalk.pdf).
 
 ### LLM assistants
 If desired, AI coding assistants or chatbots can help in using Kigali Sim. We implement the [llms.txt specification](https://llmstxt.org). Direct your AI to read `https://kigalisim.org/llms-full.txt?v=20250928` and / or `https://kigalisim.org/llms.txt?v=20250928`.
@@ -174,19 +169,21 @@ This repository is organized into three main components:
 - **`engine/`**: Java-based simulation engine that can run standalone or in-browser via WASM
 - **`editor/`**: Web-based editor and analysis tool interface
 
+These directories and their subdirectories also often have their own `README.md` files with additional details.
+
 <br>
 
-## Help / Contributions
+## Help and Contributions
 For those with a bug report or a suggestion to improve Kigali Sim, please [open an issue](https://github.com/SchmidtDSE/kigali-sim/issues/new). It's OK if you do not have all of the details sorted out and we are happy to help you refine your report. That said, some basic information is requested and please complete the issue template to the best of your ability. We will help you take it form there!
 
-For those seeking help with using Kigali Sim, we recommend that you consider starting with the "Get Help" button within the application if you are comfortable sharing your work with us. This free and private support channel offered by the project maintainers (currently the University of California DSE). If you do not want to share your simluation with us or are instructed to do so, please [open an issue](https://github.com/SchmidtDSE/kigali-sim/issues/new) and try your best to fill in the issue template but please note that this issue will be public.
+For those seeking help with using Kigali Sim, we recommend that you consider starting with the "Get Help" button within the application if you are comfortable sharing your work with us. This free and private support channel offered by the project maintainers (currently the University of California DSE). If you do not want to share your simluation with us or are instructed to file a public help request, please [open an issue](https://github.com/SchmidtDSE/kigali-sim/issues/new) and try your best to fill in the issue template. Please note that this issue will be public.
 
 For those interested in contributing to the Kigali Sim open source project as a developer, thank you and please review `CONTRIBUTORS.md`. Also, please see [our credits page](https://kigalisim.org/credits.html) and our [humans.txt](https://kigalisim.org/humans.txt) for more information about the community behind this open source project. If you are unsure which issue might be best for getting started, please look for the "good first issue" tag. For information about community standards and expectations, please see `CONDUCT.md`.
 
 <br>
 
 ## Development
-If you want to change the code of Kigali Sim itself, some additional steps are required. For additional information about development, see `DEVELOPING.md`.
+If you want to change the code of Kigali Sim itself, we have some basic getting started stesps. However, for additional information about development, see `DEVELOPING.md`.
 
 ### Using a Dev Container
 For those interested in a dev container, please see `.devcontainer`. **IntelliJ** should automatically detect the dev container (see [JetBrains documentation](https://www.jetbrains.com/help/idea/connect-to-devcontainer.html)). **VS Code** users can use an extension:
@@ -264,10 +261,11 @@ pnpm install
 bash ./support/install_deps.sh
 ```
 
-5. Build the project:
+5. Build the project (TeaVM build step for WASM):
 
 ```bash
 bash ./support/update_wasm.sh
+bash ./support/make.sh
 ```
 
 6. Run the front-end tests (may install browser via Puppeteer):
@@ -299,29 +297,29 @@ Note that JavaDoc is also produced at https://kigalisim.org/guide/javadoc/.
 ## Open Source
 We thank the following Open Source libraries and resources:
 
-- [ACE Editor](https://ace.c9.io/) for the code editing interface under [BSD-3](https://github.com/ajaxorg/ace/blob/master/LICENSE).
-- [ANTLR4](https://www.antlr.org/) for parsing the QubecTalk domain-specific language under [BSD-3](https://www.antlr.org/license.html).
-- [Apache Commons CSV](https://commons.apache.org/proper/commons-csv/) for CSV file processing under [Apache-2.0](https://github.com/apache/commons-csv/blob/master/LICENSE.txt).
-- [Chart.js](https://www.chartjs.org/) for rendering some charts and graphs under [MIT](https://github.com/chartjs/Chart.js/blob/master/LICENSE.md).
-- [D3](https://d3js.org/) for data visualization under [ISC](https://github.com/d3/d3/blob/main/LICENSE).
-- [ESLint]((https://eslint.org/)) for code style enforcement under [MIT](https://github.com/eslint/eslint/blob/main/LICENSE).
-- [Papa Parse](https://www.papaparse.com/) for CSV file parsing under [MIT](https://github.com/mholt/PapaParse/blob/master/LICENSE).
-- [Popper](https://popper.js.org/) under the [MIT License](https://github.com/floating-ui/floating-ui/blob/master/LICENSE).
-- [Prism.js](https://prismjs.com/) for syntax highlighting under [MIT](https://github.com/PrismJS/prism/blob/v2/LICENSE).
-- [Public Sans](https://public-sans.digital.gov/) font under [OFL-1.1](https://github.com/uswds/public-sans/blob/master/LICENSE.md).
-- [QUnit](https://qunitjs.com/) for unit testing under [MIT](https://github.com/qunitjs/qunit/blob/main/LICENSE.txt).
+- [ACE Editor](https://ace.c9.io/) under [BSD-3](https://github.com/ajaxorg/ace/blob/master/LICENSE).
+- [ANTLR4](https://www.antlr.org/) under [BSD-3](https://www.antlr.org/license.html).
+- [Apache Commons CSV](https://commons.apache.org/proper/commons-csv/) under [Apache-2.0](https://github.com/apache/commons-csv/blob/master/LICENSE.txt).
+- [Chart.js](https://www.chartjs.org/) under [MIT](https://github.com/chartjs/Chart.js/blob/master/LICENSE.md).
+- [D3](https://d3js.org/) under [ISC](https://github.com/d3/d3/blob/main/LICENSE).
+- [ESLint]((https://eslint.org/)) under [MIT](https://github.com/eslint/eslint/blob/main/LICENSE).
+- [Papa Parse](https://www.papaparse.com/) under [MIT](https://github.com/mholt/PapaParse/blob/master/LICENSE).
+- [Popper](https://popper.js.org/) under [MIT](https://github.com/floating-ui/floating-ui/blob/master/LICENSE).
+- [Prism.js](https://prismjs.com/) under [MIT](https://github.com/PrismJS/prism/blob/v2/LICENSE).
+- [Public Sans](https://public-sans.digital.gov/) under [OFL-1.1](https://github.com/uswds/public-sans/blob/master/LICENSE.md).
+- [QUnit](https://qunitjs.com/) under [MIT](https://github.com/qunitjs/qunit/blob/main/LICENSE.txt).
 - [SVG Spinners](https://github.com/n3r4zzurr0/svg-spinners?tab=readme-ov-file) under [MIT](https://github.com/n3r4zzurr0/svg-spinners?tab=readme-ov-file)
-- [Tabby](https://github.com/cferdinandi/tabby) for tab interface management under [MIT](https://github.com/cferdinandi/tabby/blob/master/LICENSE.md).
-- [Tippy](https://atomiks.github.io/tippyjs/) under the [MIT License](https://github.com/atomiks/tippyjs/blob/master/LICENSE).
-- [Webpack](https://webpack.js.org/) for bundling JavaScript modules under [MIT](https://github.com/webpack/webpack/blob/main/LICENSE).
+- [Tabby](https://github.com/cferdinandi/tabby) under [MIT](https://github.com/cferdinandi/tabby/blob/master/LICENSE.md).
+- [Tippy](https://atomiks.github.io/tippyjs/) under [MIT](https://github.com/atomiks/tippyjs/blob/master/LICENSE).
+- [Webpack](https://webpack.js.org/) under [MIT](https://github.com/webpack/webpack/blob/main/LICENSE).
 - [Global Plastics AI Policy Tool](https://global-plastics-tool.org/) under [BSD-3-Clause](https://github.com/SchmidtDSE/plastics-prototype/blob/main/LICENSE.md).
 - [Josh](https://joshsim.org/) under [BSD-3-Clause](https://github.com/SchmidtDSE/josh/blob/main/LICENSE.md).
 
-Also use data from [UNEP Ozone Secretariat](https://ozone.unep.org/lists-substances-and-blends) for Global Warming Potential (GWP) values of substances and refrigerant blends used in `editor/json/known_gwp.json`. Additionally, [Pandoc](https://pandoc.org/) under [GPL-2.0](https://github.com/jgm/pandoc/blob/master/COPYRIGHT) is invoked from CI / CD but exclusively for optional documentation generation in CI/CD (invoked as an executable). Not a compile-time or run-time dependency of Kigali Sim itself or any of its components and it is used in a completely isolated CI / CD pipeline from the rest of the project.
+We also use data from [UNEP Ozone Secretariat](https://ozone.unep.org/lists-substances-and-blends) for Global Warming Potential (GWP) values of substances and refrigerant blends. See `editor/json/known_gwp.json`. Additionally, [Pandoc](https://pandoc.org/) under [GPL-2.0](https://github.com/jgm/pandoc/blob/master/COPYRIGHT) is invoked from CI / CD but exclusively for optional documentation generation (invoked as an executable). Not a compile-time or run-time dependency of Kigali Sim itself or any of its components and it is used in a completely isolated CI / CD pipeline from the rest of the project.
 
 <br>
 
 ## License
-This privacy-respecting simulation platform offers essential tools to optionally inform potential policy. Though informed by various perspectives from across the Montreal Protocol ecosystem of actors, this is a community project available to the public as an optional open source resource.
+This project’s code is available under the [BSD license](https://github.com/SchmidtDSE/kigali-sim/blob/main/LICENSE.md). All documentation is available under the Creative Commons [CC-BY 4.0 International License](https://creativecommons.org/licenses/by/4.0/deed.en).
 
-This project’s code is available under the BSD license. All documentation including QubecTalk language specification is available under the Creative Commons CC-BY 4.0 International License.
+This privacy-respecting simulation platform offers essential tools to assist policy and research efforts. Informed by various perspectives from across the Montreal Protocol ecosystem of actors, we believe that this project is owned by its community. It is available to the public as an optional open source resource.
