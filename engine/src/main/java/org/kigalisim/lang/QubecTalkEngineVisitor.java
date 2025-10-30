@@ -218,7 +218,20 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
   @Override
   public Fragment visitGetStreamIndirectConversion(
       QubecTalkParser.GetStreamIndirectConversionContext ctx) {
-    return visitChildren(ctx);
+    // Get the stream name (e.g., "domestic")
+    String streamName = visit(ctx.target).getString();
+
+    // Get the target substance name from the string (e.g., "substance a")
+    String targetSubstance = visit(ctx.rescope).getString();
+
+    // Get the unit conversion (e.g., "kg")
+    UnitFragment unitFragment = (UnitFragment) visit(ctx.conversion);
+    String unitConversion = unitFragment.getUnit();
+
+    // Create an operation that gets the stream from the target substance with conversion
+    Operation operation = new GetStreamOperation(streamName, targetSubstance, unitConversion);
+
+    return new OperationFragment(operation);
   }
 
   /**
@@ -285,7 +298,16 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
    */
   @Override
   public Fragment visitGetStreamIndirect(QubecTalkParser.GetStreamIndirectContext ctx) {
-    return visitChildren(ctx);
+    // Get the stream name
+    String streamName = visit(ctx.target).getString();
+
+    // Get the target substance name
+    String targetSubstance = visit(ctx.rescope).getString();
+
+    // Create an operation without unit conversion
+    Operation operation = new GetStreamOperation(streamName, targetSubstance, null);
+
+    return new OperationFragment(operation);
   }
 
   /**

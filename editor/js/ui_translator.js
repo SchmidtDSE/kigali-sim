@@ -1495,12 +1495,32 @@ class Substance {
       self._initialCharges.push(cmd);
     }
 
-    // Update retirement command
+    // Update retirement command (Component 5: includes withReplacement)
     const retirementValue = parseUnitValue(newMetadata.getRetirement(), true);
     if (retirementValue) {
-      self._retire = new RetireCommand(retirementValue, null, false);
+      // Parse withReplacement flag from metadata (stored as "true"/"false" string)
+      const retirementWithReplacementStr = newMetadata.getRetirementWithReplacement();
+      const withReplacement = retirementWithReplacementStr === "true";
+
+      self._retire = new RetireCommand(retirementValue, null, withReplacement);
     } else {
       self._retire = null;
+    }
+
+    // Update assumeMode from metadata defaultSales (Component 2)
+    // Note: metadata.getDefaultSales() returns normalized internal value
+    const defaultSales = newMetadata.getDefaultSales();
+    if (defaultSales && defaultSales.trim()) {
+      const assumeMode = defaultSales.trim();
+      // Set the assumeMode directly; empty string means use default (null)
+      if (assumeMode === "continued" || assumeMode === "") {
+        self._assumeMode = null; // null and "continued" are equivalent
+      } else {
+        self._assumeMode = assumeMode;
+      }
+    } else {
+      // Empty or missing defaultSales means use default (null)
+      self._assumeMode = null;
     }
   }
 
@@ -1736,11 +1756,29 @@ class Substance {
       }
     });
 
-    // Extract retirement rate
+    // Extract retirement rate and withReplacement flag
     let retirement = "";
+    let retirementWithReplacement = "";
     if (self._retire) {
       const retireValue = self._retire.getValue();
       retirement = formatEngineNumber(retireValue);
+      // Export withReplacement as "true" or "false" string
+      const withReplacement = self._retire.getWithReplacement();
+      retirementWithReplacement = withReplacement ? "true" : "false";
+    }
+
+    // Map assumeMode to user-facing defaultSales value
+    const assumeMode = self.getAssumeMode();
+    let defaultSales = "";
+    if (assumeMode === null || assumeMode === "continued") {
+      defaultSales = "continue from prior year";
+    } else if (assumeMode === "only recharge") {
+      defaultSales = "only servicing";
+    } else if (assumeMode === "no") {
+      defaultSales = "none";
+    } else {
+      // Default to "continue from prior year" for any unexpected values
+      defaultSales = "continue from prior year";
     }
 
     return new SubstanceMetadata(
@@ -1756,6 +1794,8 @@ class Substance {
       initialChargeImport,
       initialChargeExport,
       retirement,
+      retirementWithReplacement,
+      defaultSales,
     );
   }
 
@@ -2220,6 +2260,8 @@ class SubstanceMetadata {
    * @param {string} initialChargeImport - Initial charge for import stream
    * @param {string} initialChargeExport - Initial charge for export stream
    * @param {string} retirement - Retirement rate (e.g., "10% / year")
+   * @param {string} retirementWithReplacement - String "true" or "false" for replacement flag
+   * @param {string} defaultSales - Sales assumption mode (user-facing value)
    */
   constructor(
     substance,
@@ -2234,6 +2276,8 @@ class SubstanceMetadata {
     initialChargeImport,
     initialChargeExport,
     retirement,
+    retirementWithReplacement,
+    defaultSales,
   ) {
     const self = this;
     self._substance = substance || "";
@@ -2248,6 +2292,8 @@ class SubstanceMetadata {
     self._initialChargeImport = initialChargeImport || "";
     self._initialChargeExport = initialChargeExport || "";
     self._retirement = retirement || "";
+    self._retirementWithReplacement = retirementWithReplacement || "";
+    self._defaultSales = defaultSales || "";
   }
 
   /**
@@ -2399,6 +2445,26 @@ class SubstanceMetadata {
     const self = this;
     return self._retirement;
   }
+
+  /**
+   * Get the retirement with replacement flag.
+   *
+   * @returns {string} String "true" or "false", or empty string if not set.
+   */
+  getRetirementWithReplacement() {
+    const self = this;
+    return self._retirementWithReplacement;
+  }
+
+  /**
+   * Get the default sales assumption mode.
+   *
+   * @returns {string} The default sales mode (user-facing value).
+   */
+  getDefaultSales() {
+    const self = this;
+    return self._defaultSales;
+  }
 }
 
 /**
@@ -2424,6 +2490,8 @@ class SubstanceMetadataBuilder {
     self._initialChargeImport = null;
     self._initialChargeExport = null;
     self._retirement = null;
+    self._retirementWithReplacement = null;
+    self._defaultSales = null;
   }
 
   /**
@@ -2571,6 +2639,30 @@ class SubstanceMetadataBuilder {
   }
 
   /**
+   * Set the retirement with replacement flag.
+   *
+   * @param {string} retirementWithReplacement - String "true" or "false".
+   * @returns {SubstanceMetadataBuilder} This builder instance for method chaining.
+   */
+  setRetirementWithReplacement(retirementWithReplacement) {
+    const self = this;
+    self._retirementWithReplacement = retirementWithReplacement;
+    return self;
+  }
+
+  /**
+   * Set the default sales assumption mode.
+   *
+   * @param {string} defaultSales - The default sales mode (user-facing value).
+   * @returns {SubstanceMetadataBuilder} This builder instance for method chaining.
+   */
+  setDefaultSales(defaultSales) {
+    const self = this;
+    self._defaultSales = defaultSales;
+    return self;
+  }
+
+  /**
    * Build a SubstanceMetadata instance from current builder state.
    *
    * @returns {SubstanceMetadata} The constructed metadata instance.
@@ -2601,6 +2693,8 @@ class SubstanceMetadataBuilder {
       self._initialChargeImport || "",
       self._initialChargeExport || "",
       self._retirement || "",
+      self._retirementWithReplacement || "",
+      self._defaultSales || "",
     );
   }
 }
