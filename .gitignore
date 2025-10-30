@@ -21,3 +21,4 @@ profile_test.qta
 *.jfr
 
 .claude
+.pnpm-store/
