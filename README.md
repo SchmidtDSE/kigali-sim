@@ -1,5 +1,5 @@
 # Kigali Sim
-Open source web-based tool and simulation engine capable of simulations related to substances, applications, and policies relevant to the Montreal Protocol.
+Open source engine for simulating substances, applications, and policies relevant to the Montreal Protocol.
 
 [![Project Status: Active – The project has reached a stable, usable state and is being actively developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active) [![BSD Licensed](https://img.shields.io/badge/License-BSD_3--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause) [![Build](https://github.com/SchmidtDSE/kigali-sim/actions/workflows/build.yaml/badge.svg?branch=deploy)](https://github.com/SchmidtDSE/kigali-sim/actions/workflows/build.yaml) ![Temurin 21 or higher](https://img.shields.io/badge/Java-Temurin%2021%2B-blue)
 
