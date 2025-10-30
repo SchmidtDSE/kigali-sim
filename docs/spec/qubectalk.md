@@ -1,8 +1,8 @@
 ---
 title: QubecTalk Domain Specific Language
 author: A Samuel Pottinger
-date: 2025-01-30
-version: 2.0
+date: 2025-10-30
+version: 1.1
 ---
 
 **Summary**: Modelers may engage with a domain specific language called QubecTalk in order to construct analyses relevant to the Montreal Protocol and Kigali Amendment. Specifically, this human-readable text-based format can describe scenarios to a simulation engine called Kigali Sim. Written in JavaScript with an ANTLR4 parser, the interpreter for this DSL can execute in browser via WebAssembly or locally on a machine using Java (Temurin 21+). It may run as part of a web application with both a graphical user interface (Designer tab) and code editor (Advanced Editor tab). However, it may also be invoked directly through a command line JAR interface or Docker. Additionally, these programs can be written "manually" within a code editor or through a graphical user interface (which does not require authors to engage code directly). This document describes QubecTalk version 2.0 and offers realistic full featured examples of simulations written in the language.
