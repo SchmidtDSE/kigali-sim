@@ -183,7 +183,7 @@ For those interested in contributing to the Kigali Sim open source project as a 
 <br>
 
 ## Development
-If you want to change the code of Kigali Sim itself, we have some basic getting started stesps. However, for additional information about development, see `DEVELOPING.md`.
+If you want to change the code of Kigali Sim itself, we have some basic getting started stesps. However, for additional information about development, see [DEVELOPING.md](https://github.com/SchmidtDSE/kigali-sim/blob/main/DEVELOPING.md).
 
 ### Using a Dev Container
 For those interested in a dev container, please see `.devcontainer`. **IntelliJ** should automatically detect the dev container (see [JetBrains documentation](https://www.jetbrains.com/help/idea/connect-to-devcontainer.html)). **VS Code** users can use an extension:
@@ -289,8 +289,8 @@ python -m http.server
 
 9. Visit the local hosted webpage using any web browser at the given address.
 
-### Additional development documentation
-Note that JavaDoc is also produced at https://kigalisim.org/guide/javadoc/.
+### Additional resources
+We have continuous integration and deployment through GitHub actions. See [DEVELOPING.md](https://github.com/SchmidtDSE/kigali-sim/blob/main/DEVELOPING.md) for more details.
 
 <br>
 
