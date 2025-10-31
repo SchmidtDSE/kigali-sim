@@ -41,6 +41,9 @@ public final class EngineSupportUtils {
   /**
    * Check if a stream name represents a sales substream (domestic or import).
    *
+   * <p>Sales substreams are the component streams that make up the overall sales stream,
+   * representing domestic manufacturing and imported products.</p>
+   *
    * @param name The stream name to check
    * @return true if the stream is domestic or import
    */
@@ -51,9 +54,17 @@ public final class EngineSupportUtils {
   /**
    * Check if a stream is a sales-related stream.
    *
+   * <p>A sales-related stream includes the core sales stream and its substreams (domestic and
+   * import). Optionally, the export stream can be included depending on the context of the
+   * operation being performed.</p>
+   *
+   * <p>This is the centralized implementation for stream classification logic and should be used
+   * throughout the engine instead of local implementations to ensure consistent behavior.</p>
+   *
    * @param stream The stream name to check
    * @param includeExports Whether to include export stream as a sales stream
-   * @return true if the stream is a sales-related stream
+   * @return true if the stream is a sales-related stream (sales, domestic, or import); or export
+   *     if includeExports is true
    */
   public static boolean getIsSalesStream(String stream, boolean includeExports) {
     boolean isCoreStream = "sales".equals(stream) || isSalesSubstream(stream);

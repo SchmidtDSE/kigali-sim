@@ -38,8 +38,7 @@ public final class ImplicitRechargeUpdate {
    * @param valueToSet The adjusted value to set for the stream (with recharge added if applicable)
    * @param implicitRechargeStateUpdate Optional state update for the implicitRecharge stream
    */
-  public ImplicitRechargeUpdate(
-      EngineNumber valueToSet,
+  public ImplicitRechargeUpdate(EngineNumber valueToSet,
       Optional<SimulationStateUpdate> implicitRechargeStateUpdate) {
     this.valueToSet = valueToSet;
     this.implicitRechargeStateUpdate = implicitRechargeStateUpdate;

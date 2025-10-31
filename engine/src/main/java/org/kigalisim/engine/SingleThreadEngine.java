@@ -236,18 +236,13 @@ public class SingleThreadEngine implements Engine {
 
   @Override
   public void executeStreamUpdate(StreamUpdate update) {
-    final String name = update.getName();
-    final EngineNumber value = update.getValue();
     final Optional<YearMatcher> yearMatcher = update.getYearMatcher();
-    final Optional<UseKey> key = update.getKey();
-    final boolean propagateChanges = update.getPropagateChanges();
-    final Optional<String> unitsToRecord = update.getUnitsToRecord();
-    final boolean subtractRecycling = update.getSubtractRecycling();
 
     if (!getIsInRange(yearMatcher.orElse(null))) {
       return;
     }
 
+    final Optional<UseKey> key = update.getKey();
     UseKey keyEffective = key.orElse(scope);
     String application = keyEffective.getApplication();
     String substance = keyEffective.getSubstance();
@@ -256,36 +251,7 @@ public class SingleThreadEngine implements Engine {
       raiseNoAppOrSubstance("setting stream", " specified");
     }
 
-    boolean isSales = getIsSalesStream(name);
-    boolean isUnits = value.hasEquipmentUnits();
-    boolean isSalesSubstream = getIsSalesSubstream(name);
-
-    ImplicitRechargeUpdate rechargeUpdate = streamUpdateExecutor.updateAndApplyImplicitRecharge(
-        keyEffective, name, value, isSales, isUnits, isSalesSubstream);
-
-    EngineNumber valueToSet = rechargeUpdate.getValueToSet();
-
-    rechargeUpdate.getImplicitRechargeStateUpdate().ifPresent(simulationState::update);
-
-    SimulationStateUpdate simulationStateUpdate = new SimulationStateUpdateBuilder()
-        .setUseKey(keyEffective)
-        .setName(name)
-        .setValue(valueToSet)
-        .setSubtractRecycling(subtractRecycling)
-        .setDistribution(update.getDistribution().orElse(null))
-        .build();
-    simulationState.update(simulationStateUpdate);
-
-    if (!propagateChanges) {
-      return;
-    }
-
-    if (isSales) {
-      simulationState.setLastSpecifiedValue(keyEffective, name, value);
-      streamUpdateExecutor.updateSalesCarryOver(keyEffective, name, value);
-    }
-
-    streamUpdateExecutor.propagateChanges(keyEffective, name, isSales, isUnits);
+    streamUpdateExecutor.execute(update);
   }
 
 
@@ -780,7 +746,7 @@ public class SingleThreadEngine implements Engine {
       ExceptionsGenerator.raiseSelfReplacement(currentSubstance);
     }
 
-    if (getIsSalesStream(stream)) {
+    if (EngineSupportUtils.getIsSalesStream(stream, true)) {
       // Track the specific stream and amount for the current substance
       simulationState.setLastSpecifiedValue(currentScope, stream, amountRaw);
 
@@ -1019,13 +985,13 @@ public class SingleThreadEngine implements Engine {
     executeStreamUpdate(update);
 
     // Update lastSpecifiedValue for sales substreams since propagateChanges=false skips this
-    if (getIsSalesStream(stream, false)) {
+    if (EngineSupportUtils.getIsSalesStream(stream, false)) {
       UseKey destKey = new SimpleUseKey(destinationScope.getApplication(), destinationScope.getSubstance());
       simulationState.setLastSpecifiedValue(destKey, stream, outputWithUnits);
     }
 
     // Only recalculate for streams that affect equipment populations
-    if (!getIsSalesStream(stream, false)) {
+    if (!EngineSupportUtils.getIsSalesStream(stream, false)) {
       scope = originalScope;
       return;
     }
@@ -1051,38 +1017,6 @@ public class SingleThreadEngine implements Engine {
   }
 
   /**
-   * Check if a stream is a sales-related stream that influences recharge displacement.
-   *
-   * @param stream The stream name to check
-   * @return true if the stream is sales, manufacture, import, or export
-   */
-  private boolean getIsSalesStream(String stream) {
-    return getIsSalesStream(stream, true);
-  }
-
-  /**
-   * Check if a stream is a sales-related stream.
-   *
-   * @param stream The stream name to check
-   * @param includeExports Whether to include exports in the sales streams
-   * @return true if the stream matches the sales-related criteria
-   */
-  private boolean getIsSalesStream(String stream, boolean includeExports) {
-    boolean isCoreStream = "sales".equals(stream) || getIsSalesSubstream(stream);
-    return isCoreStream || (includeExports && "export".equals(stream));
-  }
-
-  /**
-   * Check if a stream name represents a sales substream (domestic or import).
-   *
-   * @param name The stream name to check
-   * @return true if the stream is domestic or import
-   */
-  private boolean getIsSalesSubstream(String name) {
-    return EngineSupportUtils.isSalesSubstream(name);
-  }
-
-  /**
    * Gets the distributed recharge amount for a specific stream.
    *
    * @param streamName The name of the stream
@@ -1094,7 +1028,7 @@ public class SingleThreadEngine implements Engine {
     if ("sales".equals(streamName)) {
       // Sales stream gets 100% - setStreamForSales will distribute it
       return totalRecharge.getValue();
-    } else if (getIsSalesSubstream(streamName)) {
+    } else if (EngineSupportUtils.isSalesSubstream(streamName)) {
       SalesStreamDistribution distribution = simulationState.getDistribution(keyEffective);
       BigDecimal percentage;
       if ("domestic".equals(streamName)) {
@@ -1229,26 +1163,6 @@ public class SingleThreadEngine implements Engine {
     return target.compareTo(BigDecimal.ZERO) == 0;
   }
 
-  /**
-   * Handles stream combinations for unit preservation during carry-over operations.
-   *
-   * <p>When setting manufacture (domestic) or import streams with unit-based values,
-   * this method combines them to create a unified sales intent. This ensures that
-   * when both domestic and import are specified in units, the total sales value
-   * correctly reflects the combined equipment count. This combination is critical
-   * for maintaining accurate recharge calculations across carry-over years.</p>
-   *
-   * <p>Only processes unit-based specifications for domestic and import streams.
-   * Volume-based (kg/mt) specifications are handled separately and do not require
-   * combination logic.</p>
-   *
-   * @param useKey The key containing application and substance
-   * @param streamName The name of the stream being set (must be "domestic" or "import")
-   * @param value The value being set with equipment units
-   */
-  private void updateSalesCarryOver(UseKey useKey, String streamName, EngineNumber value) {
-    streamUpdateExecutor.updateSalesCarryOver(useKey, streamName, value);
-  }
 
   /**
    * Determines if current operations represent a carry-over situation.

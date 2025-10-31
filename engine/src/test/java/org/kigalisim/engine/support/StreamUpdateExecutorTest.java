@@ -17,7 +17,10 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.kigalisim.engine.SingleThreadEngine;
 import org.kigalisim.engine.number.EngineNumber;
+import org.kigalisim.engine.recalc.StreamUpdate;
+import org.kigalisim.engine.recalc.StreamUpdateBuilder;
 import org.kigalisim.engine.state.Scope;
+import org.kigalisim.engine.state.YearMatcher;
 
 /**
  * Unit tests for StreamUpdateExecutor using real SingleThreadEngine instances.
@@ -63,12 +66,20 @@ class StreamUpdateExecutorTest {
     engine.enable("domestic", Optional.empty());
     engine.enable("import", Optional.empty());
 
-    // Act - simulate the actual flow: set last specified value, then update sales carry-over
-    engine.getStreamKeeper().setLastSpecifiedValue(useKey, "domestic", domestic);
-    executor.updateSalesCarryOver(useKey, "domestic", domestic);
+    // Act - use execute() to set streams
+    StreamUpdate domesticUpdate = new StreamUpdateBuilder()
+        .setName("domestic")
+        .setValue(domestic)
+        .setPropagateChanges(true)
+        .build();
+    executor.execute(domesticUpdate);
 
-    engine.getStreamKeeper().setLastSpecifiedValue(useKey, "import", importValue);
-    executor.updateSalesCarryOver(useKey, "import", importValue);
+    StreamUpdate importUpdate = new StreamUpdateBuilder()
+        .setName("import")
+        .setValue(importValue)
+        .setPropagateChanges(true)
+        .build();
+    executor.execute(importUpdate);
 
     // Assert
     EngineNumber salesIntent = engine.getStreamKeeper().getLastSpecifiedValue(useKey, "sales");
@@ -89,9 +100,13 @@ class StreamUpdateExecutorTest {
     // Enable domestic stream
     engine.enable("domestic", Optional.empty());
 
-    // Act - simulate the actual flow
-    engine.getStreamKeeper().setLastSpecifiedValue(useKey, "domestic", domestic);
-    executor.updateSalesCarryOver(useKey, "domestic", domestic);
+    // Act - use execute() to set stream
+    StreamUpdate domesticUpdate = new StreamUpdateBuilder()
+        .setName("domestic")
+        .setValue(domestic)
+        .setPropagateChanges(true)
+        .build();
+    executor.execute(domesticUpdate);
 
     // Assert
     EngineNumber salesIntent = engine.getStreamKeeper().getLastSpecifiedValue(useKey, "sales");
@@ -112,9 +127,13 @@ class StreamUpdateExecutorTest {
     // Enable import stream
     engine.enable("import", Optional.empty());
 
-    // Act - simulate the actual flow
-    engine.getStreamKeeper().setLastSpecifiedValue(useKey, "import", importValue);
-    executor.updateSalesCarryOver(useKey, "import", importValue);
+    // Act - use execute() to set stream
+    StreamUpdate importUpdate = new StreamUpdateBuilder()
+        .setName("import")
+        .setValue(importValue)
+        .setPropagateChanges(true)
+        .build();
+    executor.execute(importUpdate);
 
     // Assert
     EngineNumber salesIntent = engine.getStreamKeeper().getLastSpecifiedValue(useKey, "sales");
@@ -135,8 +154,13 @@ class StreamUpdateExecutorTest {
     // Enable domestic stream
     engine.enable("domestic", Optional.empty());
 
-    // Act
-    executor.updateSalesCarryOver(useKey, "domestic", domestic);
+    // Act - use execute() to set stream
+    StreamUpdate domesticUpdate = new StreamUpdateBuilder()
+        .setName("domestic")
+        .setValue(domestic)
+        .setPropagateChanges(true)
+        .build();
+    executor.execute(domesticUpdate);
 
     // Assert
     EngineNumber salesIntent = engine.getStreamKeeper().getLastSpecifiedValue(useKey, "sales");
@@ -145,18 +169,23 @@ class StreamUpdateExecutorTest {
   }
 
   /**
-   * Tests that non-sales streams (e.g., export) are ignored.
+   * Tests that non-sales streams (e.g., export) are ignored for sales intent tracking.
    */
   @Test
   void testUpdateSalesCarryOverIgnoresNonSalesStreams() {
     // Arrange
-    EngineNumber export = new EngineNumber(new BigDecimal("25"), "units");
+    EngineNumber export = new EngineNumber(new BigDecimal("25"), "kg");
 
     // Enable export stream
     engine.enable("export", Optional.empty());
 
-    // Act
-    executor.updateSalesCarryOver(useKey, "export", export);
+    // Act - use execute() to set stream (use kg instead of units to avoid implicit recharge logic)
+    StreamUpdate exportUpdate = new StreamUpdateBuilder()
+        .setName("export")
+        .setValue(export)
+        .setPropagateChanges(true)
+        .build();
+    executor.execute(exportUpdate);
 
     // Assert
     EngineNumber salesIntent = engine.getStreamKeeper().getLastSpecifiedValue(useKey, "sales");
@@ -177,12 +206,20 @@ class StreamUpdateExecutorTest {
     engine.enable("domestic", Optional.empty());
     engine.enable("import", Optional.empty());
 
-    // Act - simulate the actual flow
-    engine.getStreamKeeper().setLastSpecifiedValue(useKey, "domestic", domestic);
-    executor.updateSalesCarryOver(useKey, "domestic", domestic);
+    // Act - use execute() to set streams
+    StreamUpdate domesticUpdate = new StreamUpdateBuilder()
+        .setName("domestic")
+        .setValue(domestic)
+        .setPropagateChanges(true)
+        .build();
+    executor.execute(domesticUpdate);
 
-    engine.getStreamKeeper().setLastSpecifiedValue(useKey, "import", importValue);
-    executor.updateSalesCarryOver(useKey, "import", importValue);
+    StreamUpdate importUpdate = new StreamUpdateBuilder()
+        .setName("import")
+        .setValue(importValue)
+        .setPropagateChanges(true)
+        .build();
+    executor.execute(importUpdate);
 
     // Assert
     EngineNumber salesIntent = engine.getStreamKeeper().getLastSpecifiedValue(useKey, "sales");
@@ -207,8 +244,12 @@ class StreamUpdateExecutorTest {
     engine.enable("import", Optional.empty());
 
     // Act - first set domestic (creates intent: 100)
-    engine.getStreamKeeper().setLastSpecifiedValue(useKey, "domestic", domestic1);
-    executor.updateSalesCarryOver(useKey, "domestic", domestic1);
+    StreamUpdate domesticUpdate1 = new StreamUpdateBuilder()
+        .setName("domestic")
+        .setValue(domestic1)
+        .setPropagateChanges(true)
+        .build();
+    executor.execute(domesticUpdate1);
 
     EngineNumber salesIntent1 = engine.getStreamKeeper().getLastSpecifiedValue(useKey, "sales");
     assertNotNull(salesIntent1);
@@ -216,8 +257,12 @@ class StreamUpdateExecutorTest {
         "Initial domestic should create sales intent of 100");
 
     // Act - set import (updates intent to: 100 + 50 = 150)
-    engine.getStreamKeeper().setLastSpecifiedValue(useKey, "import", importValue);
-    executor.updateSalesCarryOver(useKey, "import", importValue);
+    StreamUpdate importUpdate = new StreamUpdateBuilder()
+        .setName("import")
+        .setValue(importValue)
+        .setPropagateChanges(true)
+        .build();
+    executor.execute(importUpdate);
 
     EngineNumber salesIntent2 = engine.getStreamKeeper().getLastSpecifiedValue(useKey, "sales");
     assertNotNull(salesIntent2);
@@ -225,8 +270,12 @@ class StreamUpdateExecutorTest {
         "Adding import should update sales intent to 150");
 
     // Act - update domestic (updates intent to: 200 + 50 = 250)
-    engine.getStreamKeeper().setLastSpecifiedValue(useKey, "domestic", domestic2);
-    executor.updateSalesCarryOver(useKey, "domestic", domestic2);
+    StreamUpdate domesticUpdate2 = new StreamUpdateBuilder()
+        .setName("domestic")
+        .setValue(domestic2)
+        .setPropagateChanges(true)
+        .build();
+    executor.execute(domesticUpdate2);
 
     // Assert
     EngineNumber salesIntent3 = engine.getStreamKeeper().getLastSpecifiedValue(useKey, "sales");
@@ -249,12 +298,20 @@ class StreamUpdateExecutorTest {
     engine.enable("domestic", Optional.empty());
     engine.enable("import", Optional.empty());
 
-    // Act - simulate the actual flow
-    engine.getStreamKeeper().setLastSpecifiedValue(useKey, "domestic", domestic);
-    executor.updateSalesCarryOver(useKey, "domestic", domestic);
+    // Act - use execute() to set streams
+    StreamUpdate domesticUpdate = new StreamUpdateBuilder()
+        .setName("domestic")
+        .setValue(domestic)
+        .setPropagateChanges(true)
+        .build();
+    executor.execute(domesticUpdate);
 
-    engine.getStreamKeeper().setLastSpecifiedValue(useKey, "import", importValue);
-    executor.updateSalesCarryOver(useKey, "import", importValue);
+    StreamUpdate importUpdate = new StreamUpdateBuilder()
+        .setName("import")
+        .setValue(importValue)
+        .setPropagateChanges(true)
+        .build();
+    executor.execute(importUpdate);
 
     // Assert
     EngineNumber salesIntent = engine.getStreamKeeper().getLastSpecifiedValue(useKey, "sales");
@@ -278,12 +335,20 @@ class StreamUpdateExecutorTest {
     engine.enable("domestic", Optional.empty());
     engine.enable("import", Optional.empty());
 
-    // Act - simulate the actual flow
-    engine.getStreamKeeper().setLastSpecifiedValue(useKey, "domestic", domestic);
-    executor.updateSalesCarryOver(useKey, "domestic", domestic);
+    // Act - use execute() to set streams
+    StreamUpdate domesticUpdate = new StreamUpdateBuilder()
+        .setName("domestic")
+        .setValue(domestic)
+        .setPropagateChanges(true)
+        .build();
+    executor.execute(domesticUpdate);
 
-    engine.getStreamKeeper().setLastSpecifiedValue(useKey, "import", importValue);
-    executor.updateSalesCarryOver(useKey, "import", importValue);
+    StreamUpdate importUpdate = new StreamUpdateBuilder()
+        .setName("import")
+        .setValue(importValue)
+        .setPropagateChanges(true)
+        .build();
+    executor.execute(importUpdate);
 
     // Assert
     EngineNumber salesIntent = engine.getStreamKeeper().getLastSpecifiedValue(useKey, "sales");
@@ -334,7 +399,7 @@ class StreamUpdateExecutorTest {
     EngineNumber salesValue = new EngineNumber(new BigDecimal("50"), "units");
 
     // Act
-    ImplicitRechargeUpdate result = executor.updateAndApplyImplicitRecharge(
+    ImplicitRechargeUpdate result = executor.handleImplicitRecharge(
         useKey, "domestic", salesValue, true, true, true);
 
     // Assert
@@ -361,7 +426,7 @@ class StreamUpdateExecutorTest {
     EngineNumber salesValue = new EngineNumber(new BigDecimal("100"), "kg");
 
     // Act
-    ImplicitRechargeUpdate result = executor.updateAndApplyImplicitRecharge(
+    ImplicitRechargeUpdate result = executor.handleImplicitRecharge(
         useKey, "domestic", salesValue, true, false, true);
 
     // Assert
@@ -381,7 +446,7 @@ class StreamUpdateExecutorTest {
     EngineNumber equipmentValue = new EngineNumber(new BigDecimal("100"), "units");
 
     // Act
-    ImplicitRechargeUpdate result = executor.updateAndApplyImplicitRecharge(
+    ImplicitRechargeUpdate result = executor.handleImplicitRecharge(
         useKey, "equipment", equipmentValue, false, true, false);
 
     // Assert
@@ -508,5 +573,122 @@ class StreamUpdateExecutorTest {
     // Assert - verify that propagation executed without error (no-op case)
     // This should complete without throwing an exception
     assertNotNull(engine, "Engine should still be valid after no-op propagation");
+  }
+
+  /**
+   * Tests execute() method with full flow including units and recharge.
+   */
+  @Test
+  void testExecute_fullFlowWithUnitsAndRecharge() {
+    // Arrange
+    engine.enable("domestic", Optional.empty());
+    engine.setInitialCharge(new EngineNumber(new BigDecimal("1"), "kg"), "domestic", null);
+
+    // Set prior equipment for recharge calculation
+    engine.getStreamKeeper().update(
+        new org.kigalisim.engine.state.SimulationStateUpdateBuilder()
+            .setUseKey(useKey)
+            .setName("priorEquipment")
+            .setValue(new EngineNumber(new BigDecimal("100"), "units"))
+            .build()
+    );
+
+    // Set recharge parameters
+    engine.recharge(
+        new EngineNumber(new BigDecimal("10"), "%"),
+        new EngineNumber(new BigDecimal("0.5"), "kg / unit"),
+        null
+    );
+
+    // Act
+    StreamUpdate update = new StreamUpdateBuilder()
+        .setName("domestic")
+        .setValue(new EngineNumber(new BigDecimal("50"), "units"))
+        .setPropagateChanges(true)
+        .build();
+    executor.execute(update);
+
+    // Assert
+    EngineNumber domestic = engine.getStream("domestic");
+    assertNotNull(domestic, "Domestic stream should be set");
+    assertEquals(true, domestic.getValue().compareTo(new BigDecimal("50")) > 0,
+        "Domestic should include implicit recharge");
+  }
+
+  /**
+   * Tests execute() method respects year matcher.
+   */
+  @Test
+  void testExecute_respectsYearMatcher() {
+    // Arrange
+    engine.enable("domestic", Optional.empty());
+    engine.getStreamKeeper().setCurrentYear(2025);
+
+    // Create update that shouldn't apply (wrong year)
+    YearMatcher matcher = new YearMatcher(2020, 2024);
+    StreamUpdate update = new StreamUpdateBuilder()
+        .setName("domestic")
+        .setValue(new EngineNumber(new BigDecimal("100"), "kg"))
+        .setYearMatcher(Optional.of(matcher))
+        .setPropagateChanges(true)
+        .build();
+
+    // Act
+    executor.execute(update);
+
+    // Assert - value should not be set
+    EngineNumber domestic = engine.getStream("domestic");
+    assertEquals(BigDecimal.ZERO, domestic.getValue(),
+        "Stream should not be updated when year doesn't match");
+  }
+
+  /**
+   * Tests execute() with propagateChanges=false skips propagation.
+   */
+  @Test
+  void testExecute_withPropagateChangesFalse() {
+    // Arrange
+    engine.enable("domestic", Optional.empty());
+
+    // Act
+    StreamUpdate update = new StreamUpdateBuilder()
+        .setName("domestic")
+        .setValue(new EngineNumber(new BigDecimal("100"), "kg"))
+        .setPropagateChanges(false)
+        .build();
+    executor.execute(update);
+
+    // Assert
+    EngineNumber domestic = engine.getStream("domestic");
+    assertNotNull(domestic, "Stream should be set");
+    assertEquals(new BigDecimal("100"), domestic.getValue(),
+        "Stream value should be set even without propagation");
+
+    // Sales intent should not be set when propagateChanges is false
+    EngineNumber salesIntent = engine.getStreamKeeper().getLastSpecifiedValue(useKey, "sales");
+    assertNull(salesIntent,
+        "Sales intent should not be set when propagateChanges is false");
+  }
+
+  /**
+   * Tests execute() handles subtractRecycling flag correctly.
+   */
+  @Test
+  void testExecute_withSubtractRecycling() {
+    // Arrange
+    engine.enable("domestic", Optional.empty());
+
+    // Act
+    StreamUpdate update = new StreamUpdateBuilder()
+        .setName("domestic")
+        .setValue(new EngineNumber(new BigDecimal("100"), "kg"))
+        .setSubtractRecycling(true)
+        .setPropagateChanges(true)
+        .build();
+    executor.execute(update);
+
+    // Assert - verify that the update completed without error
+    EngineNumber domestic = engine.getStream("domestic");
+    assertNotNull(domestic, "Stream should be set with subtractRecycling flag");
   }
 }

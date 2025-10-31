@@ -1264,7 +1264,7 @@ public class SimulationState {
    *               for generating the stream key.
    * @param name A string representing the name of the stream or parameter to be processed.
    * @param value An instance of EngineNumber that contains the numerical value to be converted
-   *              and stored in the appropriate stream.
+   *              and stored in the appropriate stream. Example: units might be kg.
    */
   private void setSimpleStream(UseKey useKey, String name, EngineNumber value) {
     String unitsNeeded = getUnits(name);
