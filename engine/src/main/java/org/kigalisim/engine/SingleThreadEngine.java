@@ -43,6 +43,7 @@ import org.kigalisim.engine.support.EquipmentChangeUtil;
 import org.kigalisim.engine.support.ExceptionsGenerator;
 import org.kigalisim.engine.support.RechargeVolumeCalculator;
 import org.kigalisim.engine.support.SetExecutor;
+import org.kigalisim.engine.support.StreamUpdateExecutor;
 import org.kigalisim.lang.operation.RecoverOperation.RecoveryStage;
 
 /**
@@ -80,6 +81,7 @@ public class SingleThreadEngine implements Engine {
   private final SimulationState simulationState;
   private final ChangeExecutor changeExecutor;
   private final EquipmentChangeUtil equipmentChangeUtil;
+  private final StreamUpdateExecutor streamUpdateExecutor;
   private Scope scope;
 
   /**
@@ -105,6 +107,7 @@ public class SingleThreadEngine implements Engine {
     this.simulationState.setCurrentYear(startYear);
     this.changeExecutor = new ChangeExecutor(this);
     this.equipmentChangeUtil = new EquipmentChangeUtil(this);
+    this.streamUpdateExecutor = new StreamUpdateExecutor(this);
     scope = new Scope(null, null, null);
   }
 
@@ -1320,37 +1323,7 @@ public class SingleThreadEngine implements Engine {
    * @param value The value being set with equipment units
    */
   private void updateSalesCarryOver(UseKey useKey, String streamName, EngineNumber value) {
-    // Only process unit-based values for combination tracking
-    if (!value.hasEquipmentUnits()) {
-      return;
-    }
-
-    // Only handle manufacture and import streams for combination
-    if (!getIsSalesSubstream(streamName)) {
-      return;
-    }
-
-    // When setting manufacture or import, combine with the other to create sales intent
-    String otherStream = "domestic".equals(streamName) ? "import" : "domestic";
-    EngineNumber otherValue = simulationState.getLastSpecifiedValue(useKey, otherStream);
-
-    if (otherValue != null && otherValue.hasEquipmentUnits()) {
-      // Both streams have unit-based values - combine them
-      // Convert both to the same units (prefer the current stream's units)
-      String targetUnits = value.getUnits();
-      UnitConverter converter = EngineSupportUtils.createUnitConverterWithTotal(this, streamName);
-      EngineNumber otherConverted = converter.convert(otherValue, targetUnits);
-
-      // Create combined sales value
-      BigDecimal combinedValue = value.getValue().add(otherConverted.getValue());
-      EngineNumber salesIntent = new EngineNumber(combinedValue, targetUnits);
-
-      // Track the combined sales intent
-      simulationState.setLastSpecifiedValue(useKey, "sales", salesIntent);
-    } else {
-      // Only one stream has units - use it as the sales intent
-      simulationState.setLastSpecifiedValue(useKey, "sales", value);
-    }
+    streamUpdateExecutor.updateSalesCarryOver(useKey, streamName, value);
   }
 
   /**
