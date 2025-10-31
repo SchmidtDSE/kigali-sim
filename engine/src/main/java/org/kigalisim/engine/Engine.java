@@ -14,9 +14,12 @@ package org.kigalisim.engine;
 import java.util.List;
 import java.util.Optional;
 import org.kigalisim.engine.number.EngineNumber;
+import org.kigalisim.engine.number.UnitConverter;
 import org.kigalisim.engine.recalc.StreamUpdate;
 import org.kigalisim.engine.serializer.EngineResult;
+import org.kigalisim.engine.state.ConverterStateGetter;
 import org.kigalisim.engine.state.Scope;
+import org.kigalisim.engine.state.SimulationState;
 import org.kigalisim.engine.state.UseKey;
 import org.kigalisim.engine.state.YearMatcher;
 import org.kigalisim.lang.operation.RecoverOperation.RecoveryStage;
@@ -114,21 +117,21 @@ public interface Engine {
    *
    * @return ConverterStateGetter instance
    */
-  org.kigalisim.engine.state.ConverterStateGetter getStateGetter();
+  ConverterStateGetter getStateGetter();
 
   /**
    * Get the unit converter for this engine.
    *
    * @return UnitConverter instance
    */
-  org.kigalisim.engine.number.UnitConverter getUnitConverter();
+  UnitConverter getUnitConverter();
 
   /**
    * Get the simulation state for this engine.
    *
    * @return SimulationState instance
    */
-  org.kigalisim.engine.state.SimulationState getStreamKeeper();
+  SimulationState getStreamKeeper();
 
   /**
    * Increment the engine to simulate the next year.
@@ -185,7 +188,7 @@ public interface Engine {
    * @param name The name of the stream to retrieve
    * @param useKey The key containing application and substance information
    * @param conversion The conversion specification for units, or empty for no conversion
-   * @return The value of the stream, possibly converted
+   * @return The value of the stream, possibly converted in kg.
    */
   EngineNumber getStream(String name, Optional<UseKey> useKey, Optional<String> conversion);
 
@@ -193,7 +196,7 @@ public interface Engine {
    * Get the stream value with default scope and no conversion.
    *
    * @param name The name of the stream to retrieve
-   * @return The value of the stream
+   * @return The value of the stream in kg.
    */
   EngineNumber getStream(String name);
 
@@ -202,7 +205,7 @@ public interface Engine {
    *
    * @param useKey The application and substance name for which the stream should be returned.
    * @param stream The name of the stream to get like recycle
-   * @return The value of the given combination without conversion
+   * @return The value of the given combination without conversion in kg.
    */
   EngineNumber getStreamFor(UseKey useKey, String stream);
 
@@ -219,7 +222,7 @@ public interface Engine {
    * Get the value of a user-defined variable in the current scope.
    *
    * @param name The name of the variable to retrieve
-   * @return The value of the variable, or special values for 'yearsElapsed' and 'yearAbsolute'
+   * @return The value of the variable, or special values for 'yearsElapsed' and 'yearAbsolute' in years.
    */
   EngineNumber getVariable(String name);
 
@@ -237,7 +240,7 @@ public interface Engine {
    * Get the initial charge value for a given stream.
    *
    * @param stream The stream identifier to get the initial charge for
-   * @return The initial charge value for the stream
+   * @return The initial charge value for the stream in kg.
    */
   EngineNumber getInitialCharge(String stream);
 
@@ -246,7 +249,7 @@ public interface Engine {
    *
    * @param key Application and substance for which initial charge is requested
    * @param stream The stream in which the initial charge is requested and must be realized
-   * @return The initial charge for the stream in the given application and substance
+   * @return The initial charge for the stream in the given application and substance in kg.
    */
   EngineNumber getRawInitialChargeFor(UseKey key, String stream);
 
@@ -262,14 +265,14 @@ public interface Engine {
   /**
    * Get the recharge volume for the current application and substance.
    *
-   * @return The recharge volume value
+   * @return The recharge volume value in kg per unit.
    */
   EngineNumber getRechargeVolume();
 
   /**
    * Get the recharge intensity for the current application and substance.
    *
-   * @return The recharge intensity value
+   * @return The recharge intensity value in kg per unit.
    */
   EngineNumber getRechargeIntensity();
 
@@ -293,7 +296,7 @@ public interface Engine {
   /**
    * Get the retirement rate for the current application and substance.
    *
-   * @return The retirement rate value
+   * @return The retirement rate value in kg per unit.
    */
   EngineNumber getRetirementRate();
 
@@ -330,14 +333,14 @@ public interface Engine {
    * Get the GHG intensity associated with a substance.
    *
    * @param useKey The UseKey containing application and substance information
-   * @return The GHG intensity value associated with the given combination
+   * @return The GHG intensity value associated with the given combination in tCO2e per kg.
    */
   EngineNumber getGhgIntensity(UseKey useKey);
 
   /**
    * Retrieve the tCO2e intensity for the current application and substance.
    *
-   * @return The GHG intensity value with volume normalized GHG
+   * @return The GHG intensity value with volume normalized GHG in tCO2e per kg.
    */
   EngineNumber getEqualsGhgIntensity();
 
@@ -345,14 +348,14 @@ public interface Engine {
    * Retrieve the tCO2e intensity for the given UseKey.
    *
    * @param useKey The UseKey containing application and substance information
-   * @return The GHG intensity value with volume normalized GHG
+   * @return The GHG intensity value with volume normalized GHG in tCO2e per kg.
    */
   EngineNumber getEqualsGhgIntensityFor(UseKey useKey);
 
   /**
    * Retrieve the energy intensity for the current application and substance.
    *
-   * @return The energy intensity value with volume normalized energy
+   * @return The energy intensity value with volume normalized energy in MJ per kg.
    */
   EngineNumber getEqualsEnergyIntensity();
 
@@ -360,7 +363,7 @@ public interface Engine {
    * Retrieve the energy intensity for the given UseKey.
    *
    * @param useKey The UseKey containing application and substance information
-   * @return The energy intensity value with volume normalized energy
+   * @return The energy intensity value with volume normalized energy in MJ per kg.
    */
   EngineNumber getEqualsEnergyIntensityFor(UseKey useKey);
 
