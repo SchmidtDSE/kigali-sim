@@ -55,6 +55,5 @@ public class ConsumptionRecalcStrategy implements RecalcStrategy {
     calculator.setConsumptionRaw(ghgIntensity);
     calculator.setStreamName("consumption");
     calculator.execute(target);
-
   }
 }
