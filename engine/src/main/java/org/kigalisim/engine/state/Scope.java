@@ -9,12 +9,9 @@
 
 package org.kigalisim.engine.state;
 
-import static org.kigalisim.engine.state.EngineConstants.APPLICATION_CONTEXT;
-import static org.kigalisim.engine.state.EngineConstants.STANZA_CONTEXT;
-import static org.kigalisim.engine.state.EngineConstants.SUBSTANCE_CONTEXT;
-
 import java.util.Optional;
 import org.kigalisim.engine.number.EngineNumber;
+import org.kigalisim.engine.state.EngineConstants;
 
 /**
  * Object defining a scope within the engine including variables accessible from that scope.
@@ -70,6 +67,16 @@ public class Scope implements UseKey {
    */
   public Scope(String stanza, String application, String substance) {
     this(stanza, application, substance, null);
+  }
+
+  /**
+   * Default constructor for creating a global scope with no context.
+   *
+   * <p>Creates a scope with all empty contexts (stanza, application, substance, and key).
+   * This is useful for initializing a scope at the global level.</p>
+   */
+  public Scope() {
+    this(null, null, null, null);
   }
 
   /**
@@ -143,7 +150,7 @@ public class Scope implements UseKey {
         stanza.orElse(null),
         application.orElse(null),
         newSubstance,
-        variableManager.getWithLevel(SUBSTANCE_CONTEXT)
+        variableManager.getWithLevel(EngineConstants.SUBSTANCE_CONTEXT)
     );
   }
 
@@ -162,7 +169,7 @@ public class Scope implements UseKey {
         stanza.orElse(null),
         newApplication,
         null,
-        variableManager.getWithLevel(APPLICATION_CONTEXT)
+        variableManager.getWithLevel(EngineConstants.APPLICATION_CONTEXT)
     );
   }
 
@@ -173,7 +180,7 @@ public class Scope implements UseKey {
    * @return New scope at the given stanza
    */
   public Scope getWithStanza(String newStanza) {
-    return new Scope(newStanza, null, null, variableManager.getWithLevel(STANZA_CONTEXT));
+    return new Scope(newStanza, null, null, variableManager.getWithLevel(EngineConstants.STANZA_CONTEXT));
   }
 
   /**

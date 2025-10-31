@@ -110,7 +110,7 @@ public class SingleThreadEngine implements Engine {
     changeExecutor = new ChangeExecutor(this);
     equipmentChangeUtil = new EquipmentChangeUtil(this);
     streamUpdateExecutor = new StreamUpdateExecutor(this);
-    scope = new Scope(null, null, null);
+    scope = new Scope();
   }
 
   @Override
