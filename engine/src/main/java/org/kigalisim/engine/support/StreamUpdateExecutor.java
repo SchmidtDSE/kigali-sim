@@ -76,7 +76,6 @@ public class StreamUpdateExecutor {
     boolean isUnits = value.hasEquipmentUnits();
     boolean isSalesSubstream = EngineSupportUtils.isSalesSubstream(name);
 
-    // Handle implicit recharge
     ImplicitRechargeUpdate rechargeUpdate = handleImplicitRecharge(
         keyEffective,
         name,
@@ -217,8 +216,7 @@ public class StreamUpdateExecutor {
    * @param isSalesSubstream Whether this is a sales substream (domestic/import)
    * @return ImplicitRechargeUpdate containing adjusted value and state update
    */
-  private ImplicitRechargeUpdate updateAndApplyImplicitRecharge(
-      UseKey useKey,
+  private ImplicitRechargeUpdate updateAndApplyImplicitRecharge(UseKey useKey,
       String streamName,
       EngineNumber value,
       boolean isSalesSubstream) {
@@ -268,9 +266,7 @@ public class StreamUpdateExecutor {
    * @param value The value to return
    * @return ImplicitRechargeUpdate with clear operation if needed
    */
-  private ImplicitRechargeUpdate clearImplicitRecharge(
-      UseKey useKey,
-      boolean isSales,
+  private ImplicitRechargeUpdate clearImplicitRecharge(UseKey useKey, boolean isSales,
       EngineNumber value) {
 
     if (isSales) {
@@ -300,17 +296,14 @@ public class StreamUpdateExecutor {
    * @return The portion of recharge volume for this substream
    */
   private BigDecimal getDistributedSalesRecharge(String streamName, EngineNumber totalRecharge,
-                                                UseKey useKey) {
+      UseKey useKey) {
     SimulationState simulationState = engine.getStreamKeeper();
     SalesStreamDistribution distribution = simulationState.getDistribution(useKey);
-    BigDecimal percentage;
-    if ("domestic".equals(streamName)) {
-      percentage = distribution.getPercentDomestic();
-    } else if ("import".equals(streamName)) {
-      percentage = distribution.getPercentImport();
-    } else {
-      throw new IllegalArgumentException("Unknown sales substream: " + streamName);
-    }
+    BigDecimal percentage = switch (streamName) {
+      case "domestic" -> distribution.getPercentDomestic();
+      case "import" -> distribution.getPercentImport();
+      default -> throw new IllegalArgumentException("Unknown sales substream: " + streamName);
+    };
     return totalRecharge.getValue().multiply(percentage);
   }
 
@@ -327,7 +320,7 @@ public class StreamUpdateExecutor {
    * @return The portion of recharge volume for this stream
    */
   private BigDecimal getDistributedRecharge(String streamName, EngineNumber totalRecharge,
-                                           UseKey useKey) {
+      UseKey useKey) {
     if ("sales".equals(streamName)) {
       return totalRecharge.getValue();
     } else if (EngineSupportUtils.isSalesSubstream(streamName)) {
@@ -354,10 +347,7 @@ public class StreamUpdateExecutor {
    * @param isSales Whether this is a sales stream
    * @param isUnits Whether the value was in equipment units
    */
-  public void propagateChanges(
-      UseKey useKey,
-      String streamName,
-      boolean isSales,
+  public void propagateChanges(UseKey useKey, String streamName, boolean isSales,
       boolean isUnits) {
 
     if (EngineSupportUtils.getIsSalesStream(streamName, false)) {
