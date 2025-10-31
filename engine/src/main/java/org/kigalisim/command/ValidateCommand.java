@@ -42,6 +42,24 @@ public class ValidateCommand implements Callable<Integer> {
   @Parameters(index = "0", description = "Path to QubecTalk file to validate")
   private File file;
 
+  @Override
+  public Integer call() {
+    if (!file.exists()) {
+      System.err.println("Could not find file: " + file);
+      return FILE_NOT_FOUND_ERROR;
+    }
+
+    // Interpret the code
+    CommandInterpretResult interpretResult = interpret(file);
+    if (interpretResult.getIsFailure()) {
+      System.err.println(interpretResult.getErrorMessage());
+      return VALIDATION_ERROR;
+    }
+
+    System.out.println("Validated QubecTalk code at " + file);
+    return 0;
+  }
+
   /**
    * Interprets QubecTalk code from a file without exception handling.
    *
@@ -50,10 +68,8 @@ public class ValidateCommand implements Callable<Integer> {
    * @throws RuntimeException If parsing or interpretation fails
    */
   private void interpretUnsafe(File file) throws IOException {
-    // Read the file content
     String code = new String(Files.readAllBytes(file.toPath()));
 
-    // Parse the code to get detailed error information
     ParseResult parseResult = KigaliSimFacade.parse(code);
 
     if (parseResult.hasErrors()) {
@@ -80,23 +96,5 @@ public class ValidateCommand implements Callable<Integer> {
     } catch (RuntimeException e) {
       return new CommandInterpretResult("Validation failed for QubecTalk code at " + file + "\nInterpretation error: " + e.getMessage());
     }
-  }
-
-  @Override
-  public Integer call() {
-    if (!file.exists()) {
-      System.err.println("Could not find file: " + file);
-      return FILE_NOT_FOUND_ERROR;
-    }
-
-    // Interpret the code
-    CommandInterpretResult interpretResult = interpret(file);
-    if (interpretResult.getIsFailure()) {
-      System.err.println(interpretResult.getErrorMessage());
-      return VALIDATION_ERROR;
-    }
-
-    System.out.println("Validated QubecTalk code at " + file);
-    return 0;
   }
 }

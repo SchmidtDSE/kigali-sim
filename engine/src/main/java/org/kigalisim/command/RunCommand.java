@@ -61,6 +61,59 @@ public class RunCommand implements Callable<Integer> {
   @Option(names = {"-r", "--parallel-replicates"}, description = "Number of times to run each scenario (default: 1)", defaultValue = "1")
   private int replicates;
 
+  @Override
+  public Integer call() {
+    if (!file.exists()) {
+      System.err.println("Could not find file: " + file);
+      return FILE_NOT_FOUND_ERROR;
+    }
+
+    if (replicates < 1) {
+      System.err.println("Replicates must be at least 1, got: " + replicates);
+      return INVALID_REPLICATES_ERROR;
+    }
+
+    CommandInterpretResult interpretResult = interpret(file);
+    if (interpretResult.getIsFailure()) {
+      System.err.println(interpretResult.getErrorMessage().orElse("Unknown error"));
+      return PARSE_ERROR;
+    }
+
+    ParsedProgram program = interpretResult.getProgram().orElseThrow();
+
+    // Create progress callback that prints to stdout
+    ProgressReportCallback progressCallback = progress -> {
+      String percentage = String.format("%.0f", progress * 100);
+      System.out.print("\rProgress: " + percentage + "%");
+      System.out.flush();
+    };
+
+    Stream<EngineResult> allResults = program.getScenarios().stream()
+        .flatMap(scenarioName ->
+            IntStream.range(0, replicates)
+                .boxed()
+                .flatMap(replicateIndex -> {
+                  if (replicates > 1) {
+                    System.out.println("Running scenario '" + scenarioName + "' - replicate " + (replicateIndex + 1) + " of " + replicates);
+                  }
+                  return KigaliSimFacade.runScenario(program, scenarioName, progressCallback);
+                })
+        );
+
+    List<EngineResult> resultsList = allResults.collect(Collectors.toList());
+
+    System.out.println();
+
+    Optional<String> writeError = writeResultsToCsv(resultsList, csvOutputFile);
+    if (writeError.isPresent()) {
+      System.err.println(writeError.get());
+      return CSV_WRITE_ERROR;
+    }
+
+    System.out.println("Successfully ran all simulations and wrote results to " + csvOutputFile);
+    return 0;
+  }
+
   /**
    * Interprets QubecTalk code from a file without exception handling.
    *
@@ -70,10 +123,8 @@ public class RunCommand implements Callable<Integer> {
    * @throws RuntimeException If parsing or interpretation fails
    */
   private ParsedProgram interpretUnsafe(File file) throws IOException {
-    // Read the file content
     String code = new String(Files.readAllBytes(file.toPath()));
 
-    // Parse the code to get detailed error information
     ParseResult parseResult = KigaliSimFacade.parse(code);
 
     if (parseResult.hasErrors()) {
@@ -81,7 +132,6 @@ public class RunCommand implements Callable<Integer> {
       throw new RuntimeException("Failed to parse QubecTalk code:\n" + detailedError);
     }
 
-    // Interpret the parsed code
     return KigaliSimFacade.interpret(parseResult);
   }
 
@@ -130,64 +180,6 @@ public class RunCommand implements Callable<Integer> {
     } catch (IOException e) {
       return Optional.of("Failed to write CSV output to " + csvOutputFile + "\nError: " + e.getMessage());
     }
-  }
-
-  @Override
-  public Integer call() {
-    if (!file.exists()) {
-      System.err.println("Could not find file: " + file);
-      return FILE_NOT_FOUND_ERROR;
-    }
-
-    if (replicates < 1) {
-      System.err.println("Replicates must be at least 1, got: " + replicates);
-      return INVALID_REPLICATES_ERROR;
-    }
-
-    // Interpret the code
-    CommandInterpretResult interpretResult = interpret(file);
-    if (interpretResult.getIsFailure()) {
-      System.err.println(interpretResult.getErrorMessage().orElse("Unknown error"));
-      return PARSE_ERROR;
-    }
-
-    ParsedProgram program = interpretResult.getProgram().orElseThrow();
-
-    // Create progress callback that prints to stdout
-    ProgressReportCallback progressCallback = progress -> {
-      String percentage = String.format("%.0f", progress * 100);
-      System.out.print("\rProgress: " + percentage + "%");
-      System.out.flush();
-    };
-
-    // Run all scenarios in the program with replicates and collect results
-    Stream<EngineResult> allResults = program.getScenarios().stream()
-        .flatMap(scenarioName ->
-            IntStream.range(0, replicates)
-                .boxed()
-                .flatMap(replicateIndex -> {
-                  if (replicates > 1) {
-                    System.out.println("Running scenario '" + scenarioName + "' - replicate " + (replicateIndex + 1) + " of " + replicates);
-                  }
-                  return KigaliSimFacade.runScenario(program, scenarioName, progressCallback);
-                })
-        );
-
-    // Collect to a list to see how many results we have
-    List<EngineResult> resultsList = allResults.collect(Collectors.toList());
-
-    // Print a newline after progress is complete
-    System.out.println();
-
-    // Write results to CSV
-    Optional<String> writeError = writeResultsToCsv(resultsList, csvOutputFile);
-    if (writeError.isPresent()) {
-      System.err.println(writeError.get());
-      return CSV_WRITE_ERROR;
-    }
-
-    System.out.println("Successfully ran all simulations and wrote results to " + csvOutputFile);
-    return 0;
   }
 
 }
