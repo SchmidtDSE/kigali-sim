@@ -1114,14 +1114,17 @@ public class SimulationState {
   }
 
   /**
-   * Set the last specified value for a stream.
+   * Tracks the last specified value for sales-related streams.
    *
-   * <p>This tracks the value and units last used when setting streams
-   * to preserve user intent across carry-over years.</p>
+   * <p>This method preserves user intent across carry-over years by storing the
+   * units and values that were explicitly specified by the user. This is essential
+   * for maintaining correct behavior when sales values carry over to subsequent years,
+   * particularly for unit-based specifications where recharge calculations need to be
+   * applied consistently.</p>
    *
    * @param useKey The key containing application and substance
-   * @param streamName The name of the stream
-   * @param value The last specified value with units
+   * @param streamName The name of the stream (e.g., "sales", "domestic", "import")
+   * @param value The value being specified with its units
    */
   public void setLastSpecifiedValue(UseKey useKey, String streamName, EngineNumber value) {
     String key = getKey(useKey);
