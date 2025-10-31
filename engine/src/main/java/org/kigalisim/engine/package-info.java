@@ -25,4 +25,5 @@
  *
  * @license BSD-3-Clause
  */
+
 package org.kigalisim.engine;
