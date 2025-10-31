@@ -88,18 +88,7 @@ public class RunCommand implements Callable<Integer> {
       System.out.flush();
     };
 
-    Stream<EngineResult> allResults = program.getScenarios().stream()
-        .flatMap(scenarioName ->
-            IntStream.range(0, replicates)
-                .boxed()
-                .flatMap(replicateIndex -> {
-                  if (replicates > 1) {
-                    System.out.println("Running scenario '" + scenarioName + "' - replicate " + (replicateIndex + 1) + " of " + replicates);
-                  }
-                  return KigaliSimFacade.runScenario(program, scenarioName, progressCallback);
-                })
-        );
-
+    Stream<EngineResult> allResults = runAndStreamResults(program, progressCallback);
     List<EngineResult> resultsList = allResults.collect(Collectors.toList());
 
     System.out.println();
@@ -112,6 +101,30 @@ public class RunCommand implements Callable<Integer> {
 
     System.out.println("Successfully ran all simulations and wrote results to " + csvOutputFile);
     return 0;
+  }
+
+  /**
+   * Runs all scenarios in the program and returns a stream of results.
+   *
+   * <p>This method executes each scenario in the parsed program with the specified number of
+   * replicates, applying the given progress callback to track execution progress.</p>
+   *
+   * @param program The parsed program containing scenarios to run
+   * @param progressCallback The callback for progress reporting
+   * @return A stream of EngineResult objects from running all scenarios and replicates
+   */
+  private Stream<EngineResult> runAndStreamResults(ParsedProgram program, ProgressReportCallback progressCallback) {
+    return program.getScenarios().stream()
+        .flatMap(scenarioName ->
+            IntStream.range(0, replicates)
+                .boxed()
+                .flatMap(replicateIndex -> {
+                  if (replicates > 1) {
+                    System.out.println("Running scenario '" + scenarioName + "' - replicate " + (replicateIndex + 1) + " of " + replicates);
+                  }
+                  return KigaliSimFacade.runScenario(program, scenarioName, progressCallback);
+                })
+        );
   }
 
   /**
