@@ -61,9 +61,11 @@ public class StreamUpdateExecutor {
     final boolean propagateChanges = update.getPropagateChanges();
     final boolean subtractRecycling = update.getSubtractRecycling();
 
-    // Early return if not in year range
-    if (!EngineSupportUtils.isInRange(yearMatcher.orElse(null),
-                                     engine.getStreamKeeper().getCurrentYear())) {
+    boolean isInRange = EngineSupportUtils.isInRange(
+        yearMatcher.orElse(null),
+        engine.getStreamKeeper().getCurrentYear()
+    );
+    if (!isInRange) {
       return;
     }
 
@@ -76,15 +78,19 @@ public class StreamUpdateExecutor {
 
     // Handle implicit recharge
     ImplicitRechargeUpdate rechargeUpdate = handleImplicitRecharge(
-        keyEffective, name, value, isSales, isUnits, isSalesSubstream);
+        keyEffective,
+        name,
+        value,
+        isSales,
+        isUnits,
+        isSalesSubstream
+    );
 
     EngineNumber valueToSet = rechargeUpdate.getValueToSet();
 
-    // Apply implicit recharge state update
     rechargeUpdate.getImplicitRechargeStateUpdate()
         .ifPresent(engine.getStreamKeeper()::update);
 
-    // Apply main stream update
     SimulationStateUpdate simulationStateUpdate = new SimulationStateUpdateBuilder()
         .setUseKey(keyEffective)
         .setName(name)
@@ -94,7 +100,6 @@ public class StreamUpdateExecutor {
         .build();
     engine.getStreamKeeper().update(simulationStateUpdate);
 
-    // Skip propagation if not requested
     if (!propagateChanges) {
       return;
     }
@@ -105,8 +110,22 @@ public class StreamUpdateExecutor {
       updateUnitsTarget(keyEffective, name, value);
     }
 
-    // Propagate changes to dependent streams
     propagateChanges(keyEffective, name, isSales, isUnits);
+  }
+
+  /**
+   * Gets the other stream value (domestic or import).
+   *
+   * <p>When setting one of the sales substreams (domestic or import), this retrieves
+   * the last specified value for the complementary stream.</p>
+   *
+   * @param useKey The key containing application and substance
+   * @param streamName The name of the stream being set (must be "domestic" or "import")
+   * @return The last specified value for the other stream, or null if not set
+   */
+  private EngineNumber getOtherValue(UseKey useKey, String streamName) {
+    String otherStream = "domestic".equals(streamName) ? "import" : "domestic";
+    return engine.getStreamKeeper().getLastSpecifiedValue(useKey, otherStream);
   }
 
   /**
@@ -136,8 +155,7 @@ public class StreamUpdateExecutor {
     SimulationState simulationState = engine.getStreamKeeper();
 
     // When setting manufacture or import, combine with the other to create sales intent
-    String otherStream = "domestic".equals(streamName) ? "import" : "domestic";
-    EngineNumber otherValue = simulationState.getLastSpecifiedValue(useKey, otherStream);
+    EngineNumber otherValue = getOtherValue(useKey, streamName);
 
     boolean otherGiven = otherValue != null;
     boolean otherHasUnitsTarget = otherGiven && otherValue.hasEquipmentUnits();
@@ -175,13 +193,8 @@ public class StreamUpdateExecutor {
    * @param isSalesSubstream Whether this is a sales substream (domestic/import)
    * @return ImplicitRechargeUpdate containing adjusted value and optional state update
    */
-  public ImplicitRechargeUpdate handleImplicitRecharge(
-      UseKey useKey,
-      String streamName,
-      EngineNumber value,
-      boolean isSales,
-      boolean isUnits,
-      boolean isSalesSubstream) {
+  public ImplicitRechargeUpdate handleImplicitRecharge(UseKey useKey, String streamName,
+      EngineNumber value, boolean isSales, boolean isUnits, boolean isSalesSubstream) {
 
     boolean isSalesWithUnitsTarget = isSales && isUnits;
 
@@ -276,6 +289,32 @@ public class StreamUpdateExecutor {
   }
 
   /**
+   * Gets the distributed recharge portion for a sales substream.
+   *
+   * <p>Distributes the total recharge volume between domestic and import based on
+   * their current distribution percentages.</p>
+   *
+   * @param streamName The stream name (domestic or import)
+   * @param totalRecharge The total recharge volume to distribute
+   * @param useKey The use key containing application and substance
+   * @return The portion of recharge volume for this substream
+   */
+  private BigDecimal getDistributedSalesRecharge(String streamName, EngineNumber totalRecharge,
+                                                UseKey useKey) {
+    SimulationState simulationState = engine.getStreamKeeper();
+    SalesStreamDistribution distribution = simulationState.getDistribution(useKey);
+    BigDecimal percentage;
+    if ("domestic".equals(streamName)) {
+      percentage = distribution.getPercentDomestic();
+    } else if ("import".equals(streamName)) {
+      percentage = distribution.getPercentImport();
+    } else {
+      throw new IllegalArgumentException("Unknown sales substream: " + streamName);
+    }
+    return totalRecharge.getValue().multiply(percentage);
+  }
+
+  /**
    * Gets the distributed portion of recharge for a specific sales stream.
    *
    * <p>When setting domestic or import streams, the total recharge volume needs to be
@@ -292,17 +331,7 @@ public class StreamUpdateExecutor {
     if ("sales".equals(streamName)) {
       return totalRecharge.getValue();
     } else if (EngineSupportUtils.isSalesSubstream(streamName)) {
-      SimulationState simulationState = engine.getStreamKeeper();
-      SalesStreamDistribution distribution = simulationState.getDistribution(useKey);
-      BigDecimal percentage;
-      if ("domestic".equals(streamName)) {
-        percentage = distribution.getPercentDomestic();
-      } else if ("import".equals(streamName)) {
-        percentage = distribution.getPercentImport();
-      } else {
-        throw new IllegalArgumentException("Unknown sales substream: " + streamName);
-      }
-      return totalRecharge.getValue().multiply(percentage);
+      return getDistributedSalesRecharge(streamName, totalRecharge, useKey);
     } else {
       throw new IllegalArgumentException("Stream is not a sales stream: " + streamName);
     }
