@@ -8,6 +8,7 @@
 
 package org.kigalisim.command;
 
+import java.util.Optional;
 import org.kigalisim.lang.program.ParsedProgram;
 
 /**
@@ -18,8 +19,8 @@ import org.kigalisim.lang.program.ParsedProgram;
  */
 public class CommandInterpretResult {
 
-  private final ParsedProgram program;
-  private final String errorMessage;
+  private final Optional<ParsedProgram> program;
+  private final Optional<String> errorMessage;
 
   /**
    * Creates a successful interpretation result.
@@ -27,8 +28,8 @@ public class CommandInterpretResult {
    * @param program The successfully parsed program
    */
   public CommandInterpretResult(ParsedProgram program) {
-    this.program = program;
-    this.errorMessage = null;
+    this.program = Optional.of(program);
+    this.errorMessage = Optional.empty();
   }
 
   /**
@@ -37,25 +38,26 @@ public class CommandInterpretResult {
    * @param errorMessage The error message
    */
   public CommandInterpretResult(String errorMessage) {
-    this.program = null;
-    this.errorMessage = errorMessage;
+    this.program = Optional.empty();
+    this.errorMessage = Optional.of(errorMessage);
   }
 
   /**
    * Returns the parsed program if interpretation succeeded.
    *
-   * @return The successfully parsed program, or null if interpretation failed
+   * @return An Optional containing the successfully parsed program, or empty if interpretation
+   *     failed
    */
-  public ParsedProgram getProgram() {
+  public Optional<ParsedProgram> getProgram() {
     return program;
   }
 
   /**
    * Returns the error message if interpretation failed.
    *
-   * @return The error message, or null if interpretation succeeded
+   * @return An Optional containing the error message, or empty if interpretation succeeded
    */
-  public String getErrorMessage() {
+  public Optional<String> getErrorMessage() {
     return errorMessage;
   }
 
@@ -65,7 +67,7 @@ public class CommandInterpretResult {
    * @return true if a program is present, false otherwise
    */
   public boolean getIsSuccess() {
-    return program != null;
+    return program.isPresent();
   }
 
   /**
@@ -74,6 +76,6 @@ public class CommandInterpretResult {
    * @return true if an error message is present, false otherwise
    */
   public boolean getIsFailure() {
-    return errorMessage != null;
+    return errorMessage.isPresent();
   }
 }

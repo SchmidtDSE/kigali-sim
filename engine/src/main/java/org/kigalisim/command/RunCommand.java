@@ -147,11 +147,11 @@ public class RunCommand implements Callable<Integer> {
     // Interpret the code
     CommandInterpretResult interpretResult = interpret(file);
     if (interpretResult.getIsFailure()) {
-      System.err.println(interpretResult.getErrorMessage());
+      System.err.println(interpretResult.getErrorMessage().orElse("Unknown error"));
       return PARSE_ERROR;
     }
 
-    ParsedProgram program = interpretResult.getProgram();
+    ParsedProgram program = interpretResult.getProgram().orElseThrow();
 
     // Create progress callback that prints to stdout
     ProgressReportCallback progressCallback = progress -> {
