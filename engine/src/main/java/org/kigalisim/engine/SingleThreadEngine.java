@@ -41,6 +41,7 @@ import org.kigalisim.engine.support.ChangeExecutor;
 import org.kigalisim.engine.support.EngineSupportUtils;
 import org.kigalisim.engine.support.EquipmentChangeUtil;
 import org.kigalisim.engine.support.ExceptionsGenerator;
+import org.kigalisim.engine.support.ImplicitRechargeUpdate;
 import org.kigalisim.engine.support.RechargeVolumeCalculator;
 import org.kigalisim.engine.support.SetExecutor;
 import org.kigalisim.engine.support.StreamUpdateExecutor;
@@ -258,46 +259,13 @@ public class SingleThreadEngine implements Engine {
     boolean isSales = getIsSalesStream(name);
     boolean isUnits = value.hasEquipmentUnits();
     boolean isSalesSubstream = getIsSalesSubstream(name);
-    boolean implicitRechargeActive = isSales && isUnits;
 
-    EngineNumber valueToSet = value;
-    if (implicitRechargeActive) {
-      UnitConverter unitConverter = EngineSupportUtils.createUnitConverterWithTotal(this, name);
-      EngineNumber valueInKg = unitConverter.convert(value, "kg");
-      EngineNumber rechargeVolume = RechargeVolumeCalculator.calculateRechargeVolume(
-          keyEffective,
-          stateGetter,
-          simulationState,
-          this
-      );
+    ImplicitRechargeUpdate rechargeUpdate = streamUpdateExecutor.updateAndApplyImplicitRecharge(
+        keyEffective, name, value, isSales, isUnits, isSalesSubstream);
 
-      SimulationStateUpdate implicitRechargeStream = new SimulationStateUpdateBuilder()
-          .setUseKey(keyEffective)
-          .setName("implicitRecharge")
-          .setValue(rechargeVolume)
-          .setSubtractRecycling(false)
-          .build();
-      simulationState.update(implicitRechargeStream);
+    EngineNumber valueToSet = rechargeUpdate.getValueToSet();
 
-      BigDecimal rechargeToAdd;
-      if (isSalesSubstream) {
-        rechargeToAdd = getDistributedRecharge(name, rechargeVolume, keyEffective);
-      } else {
-        rechargeToAdd = rechargeVolume.getValue();
-      }
-
-      BigDecimal totalWithRecharge = valueInKg.getValue().add(rechargeToAdd);
-      valueToSet = new EngineNumber(totalWithRecharge, "kg");
-    } else if (isSales) {
-      // Sales stream without units - clear implicit recharge
-      SimulationStateUpdate clearImplicitRechargeStream = new SimulationStateUpdateBuilder()
-          .setUseKey(keyEffective)
-          .setName("implicitRecharge")
-          .setValue(new EngineNumber(BigDecimal.ZERO, "kg"))
-          .setSubtractRecycling(false)
-          .build();
-      simulationState.update(clearImplicitRechargeStream);
-    }
+    rechargeUpdate.getImplicitRechargeStateUpdate().ifPresent(simulationState::update);
 
     SimulationStateUpdate simulationStateUpdate = new SimulationStateUpdateBuilder()
         .setUseKey(keyEffective)
@@ -314,59 +282,10 @@ public class SingleThreadEngine implements Engine {
 
     if (isSales) {
       simulationState.setLastSpecifiedValue(keyEffective, name, value);
-      updateSalesCarryOver(keyEffective, name, value);
+      streamUpdateExecutor.updateSalesCarryOver(keyEffective, name, value);
     }
 
-    if (getIsSalesStream(name, false)) {
-      // Use implicit recharge only if we added recharge (units were used)
-      boolean useImplicitRecharge = isSales && isUnits;
-      RecalcOperationBuilder builder = new RecalcOperationBuilder()
-          .setScopeEffective(keyEffective)
-          .setUseExplicitRecharge(!useImplicitRecharge)
-          .setRecalcKit(createRecalcKit())
-          .recalcPopulationChange()
-          .thenPropagateToConsumption();
-
-      if (!OPTIMIZE_RECALCS) {
-        builder = builder.thenPropagateToSales();
-      }
-
-      RecalcOperation operation = builder.build();
-      operation.execute(this);
-    } else if ("consumption".equals(name)) {
-      RecalcOperationBuilder builder = new RecalcOperationBuilder()
-          .setScopeEffective(keyEffective)
-          .setRecalcKit(createRecalcKit())
-          .recalcSales()
-          .thenPropagateToPopulationChange();
-
-      if (!OPTIMIZE_RECALCS) {
-        builder = builder.thenPropagateToConsumption();
-      }
-
-      RecalcOperation operation = builder.build();
-      operation.execute(this);
-    } else if ("equipment".equals(name)) {
-      RecalcOperationBuilder builder = new RecalcOperationBuilder()
-          .setScopeEffective(keyEffective)
-          .setRecalcKit(createRecalcKit())
-          .recalcSales()
-          .thenPropagateToConsumption();
-
-      if (!OPTIMIZE_RECALCS) {
-        builder = builder.thenPropagateToPopulationChange();
-      }
-
-      RecalcOperation operation = builder.build();
-      operation.execute(this);
-    } else if ("priorEquipment".equals(name)) {
-      RecalcOperation operation = new RecalcOperationBuilder()
-          .setScopeEffective(keyEffective)
-          .setRecalcKit(createRecalcKit())
-          .recalcRetire()
-          .build();
-      operation.execute(this);
-    }
+    streamUpdateExecutor.propagateChanges(keyEffective, name, isSales, isUnits);
   }
 
 
@@ -943,6 +862,11 @@ public class SingleThreadEngine implements Engine {
           return serializer.getResult(new SimpleUseKey(application, substance), year);
         })
         .collect(Collectors.toList());
+  }
+
+  @Override
+  public boolean getOptimizeRecalcs() {
+    return OPTIMIZE_RECALCS;
   }
 
   /**

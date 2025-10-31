@@ -304,4 +304,209 @@ class StreamUpdateExecutorTest {
     // Assert - basic smoke test
     assertNotNull(newExecutor, "Constructor should create non-null executor");
   }
+
+  /**
+   * Tests implicit recharge calculation and application for sales streams with units.
+   */
+  @Test
+  void testUpdateAndApplyImplicitRecharge_withUnitsAndSales() {
+    // Arrange
+    engine.enable("domestic", Optional.empty());
+    engine.setInitialCharge(new EngineNumber(new BigDecimal("1"), "kg"), "domestic", null);
+
+    // Set prior equipment to create a recharge need
+    EngineNumber priorEquipment = new EngineNumber(new BigDecimal("100"), "units");
+    engine.getStreamKeeper().update(
+        new org.kigalisim.engine.state.SimulationStateUpdateBuilder()
+            .setUseKey(useKey)
+            .setName("priorEquipment")
+            .setValue(priorEquipment)
+            .build()
+    );
+
+    // Set recharge parameters
+    engine.recharge(
+        new EngineNumber(new BigDecimal("10"), "%"),
+        new EngineNumber(new BigDecimal("0.5"), "kg / unit"),
+        null
+    );
+
+    EngineNumber salesValue = new EngineNumber(new BigDecimal("50"), "units");
+
+    // Act
+    ImplicitRechargeUpdate result = executor.updateAndApplyImplicitRecharge(
+        useKey, "domestic", salesValue, true, true, true);
+
+    // Assert
+    assertNotNull(result, "Should return ImplicitRechargeUpdate");
+    assertNotNull(result.getValueToSet(), "Should have adjusted value");
+    assertEquals("kg", result.getValueToSet().getUnits(),
+        "Value should be converted to kg");
+    // Value should be original sales (50 units * 1 kg/unit = 50 kg) plus recharge
+    // Recharge = 100 units * 10% * 0.5 kg/unit = 5 kg
+    // Total = 50 + 5 = 55 kg (approximately, may vary with distribution)
+    assertEquals(true, result.getValueToSet().getValue().compareTo(new BigDecimal("50")) > 0,
+        "Value should include implicit recharge added to original value");
+
+    assertEquals(true, result.getImplicitRechargeStateUpdate().isPresent(),
+        "Should have implicit recharge state update");
+  }
+
+  /**
+   * Tests that volume-based sales specifications do not trigger implicit recharge.
+   */
+  @Test
+  void testUpdateAndApplyImplicitRecharge_withVolumeBased() {
+    // Arrange
+    EngineNumber salesValue = new EngineNumber(new BigDecimal("100"), "kg");
+
+    // Act
+    ImplicitRechargeUpdate result = executor.updateAndApplyImplicitRecharge(
+        useKey, "domestic", salesValue, true, false, true);
+
+    // Assert
+    assertNotNull(result, "Should return ImplicitRechargeUpdate");
+    assertEquals(salesValue, result.getValueToSet(),
+        "Value should be unchanged for volume-based specifications");
+    assertEquals(true, result.getImplicitRechargeStateUpdate().isPresent(),
+        "Should clear implicit recharge for volume-based sales");
+  }
+
+  /**
+   * Tests that non-sales streams do not trigger implicit recharge.
+   */
+  @Test
+  void testUpdateAndApplyImplicitRecharge_withNonSalesStream() {
+    // Arrange
+    EngineNumber equipmentValue = new EngineNumber(new BigDecimal("100"), "units");
+
+    // Act
+    ImplicitRechargeUpdate result = executor.updateAndApplyImplicitRecharge(
+        useKey, "equipment", equipmentValue, false, true, false);
+
+    // Assert
+    assertNotNull(result, "Should return ImplicitRechargeUpdate");
+    assertEquals(equipmentValue, result.getValueToSet(),
+        "Value should be unchanged for non-sales streams");
+    assertEquals(false, result.getImplicitRechargeStateUpdate().isPresent(),
+        "Should not have implicit recharge update for non-sales streams");
+  }
+
+  /**
+   * Tests propagation from sales streams.
+   */
+  @Test
+  void testPropagateChanges_fromSalesStream() {
+    // Arrange
+    engine.enable("domestic", Optional.empty());
+    engine.setInitialCharge(new EngineNumber(new BigDecimal("1"), "kg"), "domestic", null);
+
+    // Set a baseline value so there's something to recalculate
+    engine.getStreamKeeper().update(
+        new org.kigalisim.engine.state.SimulationStateUpdateBuilder()
+            .setUseKey(useKey)
+            .setName("domestic")
+            .setValue(new EngineNumber(new BigDecimal("100"), "kg"))
+            .build()
+    );
+
+    // Act - propagate changes from domestic stream
+    executor.propagateChanges(useKey, "domestic", true, false);
+
+    // Assert - verify that propagation executed without error
+    // The actual recalc results depend on internal state, so we just verify no exceptions
+    assertNotNull(engine.getStream("domestic"),
+        "Stream should still be accessible after propagation");
+  }
+
+  /**
+   * Tests propagation from consumption stream.
+   */
+  @Test
+  void testPropagateChanges_fromConsumption() {
+    // Arrange
+    engine.enable("domestic", Optional.empty());
+    engine.setInitialCharge(new EngineNumber(new BigDecimal("1"), "kg"), "domestic", null);
+
+    engine.getStreamKeeper().update(
+        new org.kigalisim.engine.state.SimulationStateUpdateBuilder()
+            .setUseKey(useKey)
+            .setName("consumption")
+            .setValue(new EngineNumber(new BigDecimal("100"), "kg"))
+            .build()
+    );
+
+    // Act - propagate changes from consumption stream
+    executor.propagateChanges(useKey, "consumption", false, false);
+
+    // Assert - verify that propagation executed without error
+    assertNotNull(engine.getStream("consumption"),
+        "Stream should still be accessible after propagation");
+  }
+
+  /**
+   * Tests propagation from equipment stream.
+   */
+  @Test
+  void testPropagateChanges_fromEquipment() {
+    // Arrange
+    engine.enable("domestic", Optional.empty());
+    engine.setInitialCharge(new EngineNumber(new BigDecimal("1"), "kg"), "domestic", null);
+
+    engine.getStreamKeeper().update(
+        new org.kigalisim.engine.state.SimulationStateUpdateBuilder()
+            .setUseKey(useKey)
+            .setName("equipment")
+            .setValue(new EngineNumber(new BigDecimal("100"), "units"))
+            .build()
+    );
+
+    // Act - propagate changes from equipment stream
+    executor.propagateChanges(useKey, "equipment", false, true);
+
+    // Assert - verify that propagation executed without error
+    assertNotNull(engine.getStream("equipment"),
+        "Stream should still be accessible after propagation");
+  }
+
+  /**
+   * Tests propagation from priorEquipment stream.
+   */
+  @Test
+  void testPropagateChanges_fromPriorEquipment() {
+    // Arrange
+    engine.enable("domestic", Optional.empty());
+    engine.setInitialCharge(new EngineNumber(new BigDecimal("1"), "kg"), "domestic", null);
+
+    engine.getStreamKeeper().update(
+        new org.kigalisim.engine.state.SimulationStateUpdateBuilder()
+            .setUseKey(useKey)
+            .setName("priorEquipment")
+            .setValue(new EngineNumber(new BigDecimal("100"), "units"))
+            .build()
+    );
+
+    // Act - propagate changes from priorEquipment stream
+    executor.propagateChanges(useKey, "priorEquipment", false, true);
+
+    // Assert - verify that propagation executed without error
+    assertNotNull(engine.getStream("priorEquipment"),
+        "Stream should still be accessible after propagation");
+  }
+
+  /**
+   * Tests that other streams (not sales, consumption, equipment, priorEquipment) do not propagate.
+   */
+  @Test
+  void testPropagateChanges_fromOtherStream() {
+    // Arrange
+    engine.enable("domestic", Optional.empty());
+
+    // Act - propagate changes from a stream that should not trigger propagation
+    executor.propagateChanges(useKey, "retired", false, false);
+
+    // Assert - verify that propagation executed without error (no-op case)
+    // This should complete without throwing an exception
+    assertNotNull(engine, "Engine should still be valid after no-op propagation");
+  }
 }

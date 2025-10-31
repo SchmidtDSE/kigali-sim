@@ -49,6 +49,18 @@ public final class EngineSupportUtils {
   }
 
   /**
+   * Check if a stream is a sales-related stream.
+   *
+   * @param stream The stream name to check
+   * @param includeExports Whether to include export stream as a sales stream
+   * @return true if the stream is a sales-related stream
+   */
+  public static boolean getIsSalesStream(String stream, boolean includeExports) {
+    boolean isCoreStream = "sales".equals(stream) || isSalesSubstream(stream);
+    return isCoreStream || (includeExports && "export".equals(stream));
+  }
+
+  /**
    * Creates a unit converter with total values initialized.
    *
    * @param stateGetter The converter state getter from the engine

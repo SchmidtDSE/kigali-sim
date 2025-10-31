@@ -420,4 +420,15 @@ public interface Engine {
    * @return List of results for each registered substance
    */
   List<EngineResult> getResults();
+
+  /**
+   * Gets whether recalc optimizations are enabled.
+   *
+   * <p>When true, certain redundant recalculation steps are skipped for
+   * performance. When false, all recalc operations are performed for maximum
+   * accuracy verification.</p>
+   *
+   * @return true if optimizations are enabled, false otherwise
+   */
+  boolean getOptimizeRecalcs();
 }
