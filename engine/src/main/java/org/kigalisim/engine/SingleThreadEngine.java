@@ -98,17 +98,18 @@ public class SingleThreadEngine implements Engine {
 
     this.startYear = startYearRearrange;
     this.endYear = endYearRearrange;
-    this.scenarioName = "";
-    this.trialNumber = 0;
+    scenarioName = "";
+    trialNumber = 0;
 
     stateGetter = new ConverterStateGetter(this);
     unitConverter = new UnitConverter(stateGetter);
-    this.simulationState = new SimulationState(
-        new OverridingConverterStateGetter(stateGetter), unitConverter);
-    this.simulationState.setCurrentYear(startYear);
-    this.changeExecutor = new ChangeExecutor(this);
-    this.equipmentChangeUtil = new EquipmentChangeUtil(this);
-    this.streamUpdateExecutor = new StreamUpdateExecutor(this);
+    simulationState = new SimulationState(
+        new OverridingConverterStateGetter(stateGetter),
+        unitConverter);
+    simulationState.setCurrentYear(startYear);
+    changeExecutor = new ChangeExecutor(this);
+    equipmentChangeUtil = new EquipmentChangeUtil(this);
+    streamUpdateExecutor = new StreamUpdateExecutor(this);
     scope = new Scope(null, null, null);
   }
 
@@ -257,33 +258,24 @@ public class SingleThreadEngine implements Engine {
 
   @Override
   public void fulfillSetCommand(String name, EngineNumber value, Optional<YearMatcher> yearMatcher) {
-
-    // Check year range before proceeding
     if (!getIsInRange(yearMatcher.orElse(null))) {
       return;
     }
 
-    // Handle equipment stream with special logic
     if ("equipment".equals(name)) {
       equipmentChangeUtil.handleSet(value);
-      return;
-    }
-
-    // Delegate sales streams to SetExecutor for proper component distribution
-    if ("sales".equals(name)) {
+    } else if ("sales".equals(name)) {
       SetExecutor setExecutor = new SetExecutor(this);
       setExecutor.handleSalesSet(scope, name, value, yearMatcher);
-      return;
+    } else {
+      StreamUpdate update = new StreamUpdateBuilder()
+          .setName(name)
+          .setValue(value)
+          .setYearMatcher(yearMatcher)
+          .inferSubtractRecycling()
+          .build();
+      executeStreamUpdate(update);
     }
-
-    // For non-sales streams, use executeStreamUpdate with builder
-    StreamUpdate update = new StreamUpdateBuilder()
-        .setName(name)
-        .setValue(value)
-        .setYearMatcher(yearMatcher)
-        .inferSubtractRecycling()
-        .build();
-    executeStreamUpdate(update);
   }
 
   @Override
@@ -300,9 +292,11 @@ public class SingleThreadEngine implements Engine {
       raiseNoAppOrSubstance("enabling stream", " specified");
     }
 
-    // Only allow enabling of manufacture, import, and export streams
-    if ("domestic".equals(name) || "import".equals(name) || "export".equals(name)) {
+    boolean isKnown = "domestic".equals(name) || "import".equals(name) || "export".equals(name);
+    if (isKnown) {
       simulationState.markStreamAsEnabled(keyEffective, name);
+    } else {
+      throw new RuntimeException("Cannot enable unknown stream: " + name);
     }
   }
 
@@ -333,13 +327,11 @@ public class SingleThreadEngine implements Engine {
 
   @Override
   public EngineNumber getVariable(String name) {
-    if ("yearsElapsed".equals(name)) {
-      return new EngineNumber(BigDecimal.valueOf(simulationState.getCurrentYear() - startYear), "years");
-    } else if ("yearAbsolute".equals(name)) {
-      return new EngineNumber(BigDecimal.valueOf(simulationState.getCurrentYear()), "year");
-    } else {
-      return scope.getVariable(name);
-    }
+    return switch (name) {
+      case "yearsElapsed" -> new EngineNumber(BigDecimal.valueOf(simulationState.getCurrentYear() - startYear), "years");
+      case "yearAbsolute" -> new EngineNumber(BigDecimal.valueOf(simulationState.getCurrentYear()), "year");
+      default -> scope.getVariable(name);
+    };
   }
 
   @Override
@@ -354,24 +346,7 @@ public class SingleThreadEngine implements Engine {
   public EngineNumber getInitialCharge(String stream) {
     if ("sales".equals(stream)) {
       try {
-        // Use SalesStreamDistributionBuilder to get the correct weights for enabled streams
-        SalesStreamDistribution distribution = simulationState.getDistribution(scope, false);
-
-        BigDecimal domesticWeight = distribution.getPercentDomestic();
-        BigDecimal importWeight = distribution.getPercentImport();
-
-        // Get raw initial charges for each stream
-        EngineNumber domesticInitialChargeRaw = getRawInitialChargeFor(scope, "domestic");
-        EngineNumber domesticInitialCharge = unitConverter.convert(domesticInitialChargeRaw, "kg / unit");
-
-        EngineNumber importInitialChargeRaw = getRawInitialChargeFor(scope, "import");
-        EngineNumber importInitialCharge = unitConverter.convert(importInitialChargeRaw, "kg / unit");
-
-        // Calculate weighted average of initial charges using distribution percentages
-        BigDecimal weightedSum = domesticInitialCharge.getValue().multiply(domesticWeight)
-            .add(importInitialCharge.getValue().multiply(importWeight));
-
-        return new EngineNumber(weightedSum, "kg / unit");
+        return getSalesWeightedInitialCharge();
       } catch (IllegalStateException e) {
         // Fallback: if no streams are enabled, return zero
         return new EngineNumber(BigDecimal.ZERO, "kg / unit");
@@ -381,21 +356,28 @@ public class SingleThreadEngine implements Engine {
     }
   }
 
-  private static boolean isEmptyStreams(EngineNumber manufactureValue, EngineNumber importValue) {
-    BigDecimal manufactureRawValue = manufactureValue.getValue();
-    BigDecimal importRawValue = importValue.getValue();
-    BigDecimal total;
+  private EngineNumber getSalesWeightedInitialCharge() {
+    // Use SalesStreamDistributionBuilder to get the correct weights for enabled streams
+    SalesStreamDistribution distribution = simulationState.getDistribution(scope, false);
 
-    // Check for finite values (BigDecimal doesn't have infinity, but we can check for very large values)
-    if (manufactureRawValue.abs().compareTo(new BigDecimal("1E+100")) > 0) {
-      total = importRawValue;
-    } else if (importRawValue.abs().compareTo(new BigDecimal("1E+100")) > 0) {
-      total = manufactureRawValue;
-    } else {
-      total = manufactureRawValue.add(importRawValue);
-    }
+    BigDecimal domesticWeight = distribution.getPercentDomestic();
+    BigDecimal importWeight = distribution.getPercentImport();
 
-    return total.compareTo(BigDecimal.ZERO) == 0;
+    // Get raw initial charges for each stream
+    EngineNumber domesticInitialChargeRaw = getRawInitialChargeFor(scope, "domestic");
+    EngineNumber domesticInitialCharge = unitConverter.convert(domesticInitialChargeRaw, "kg / unit");
+
+    EngineNumber importInitialChargeRaw = getRawInitialChargeFor(scope, "import");
+    EngineNumber importInitialCharge = unitConverter.convert(importInitialChargeRaw, "kg / unit");
+
+    // Calculate weighted values
+    BigDecimal domesticWeighted = domesticInitialCharge.getValue().multiply(domesticWeight);
+    BigDecimal importWeighted = importInitialCharge.getValue().multiply(importWeight);
+
+    // Sum weighted components
+    BigDecimal weightedSum = domesticWeighted.add(importWeighted);
+
+    return new EngineNumber(weightedSum, "kg / unit");
   }
 
   @Override
@@ -440,23 +422,26 @@ public class SingleThreadEngine implements Engine {
   /**
    * Determine if recharge should be subtracted based on last specified units.
    *
+   * <p>For sales streams, checks if either domestic or import were last specified in units.
+   * If specified in units, recharge is added on top. For domestic or import streams, checks
+   * if that specific channel was last specified in units. If not specified in units,
+   * recharge is subtracted.</p>
+   *
    * @param stream The stream being set
    * @return true if recharge should be subtracted, false if added on top
    */
   private boolean getShouldUseExplicitRecharge(String stream) {
-    if ("sales".equals(stream)) {
-      // For sales, check if either manufacture or import were last specified in units
-      Optional<String> lastUnits = getLastSalesUnits(scope);
-      if (lastUnits.isPresent() && lastUnits.get().startsWith("unit")) {
-        return false; // Add recharge on top
+    return switch (stream) {
+      case "sales" -> {
+        Optional<String> lastUnits = getLastSalesUnits(scope);
+        yield lastUnits.isEmpty() || !lastUnits.get().startsWith("unit");
       }
-    } else if ("domestic".equals(stream) || "import".equals(stream)) {
-      // For manufacture or import, check if that specific channel was last specified in units
-      Optional<String> lastUnits = getLastSalesUnits(scope);
-      return !lastUnits.isPresent() || !lastUnits.get().startsWith("unit"); // Add recharge on top
-    }
-
-    return true;
+      case "domestic", "import" -> {
+        Optional<String> lastUnits = getLastSalesUnits(scope);
+        yield !lastUnits.isPresent() || !lastUnits.get().startsWith("unit");
+      }
+      default -> true;
+    };
   }
 
   @Override
@@ -469,7 +454,6 @@ public class SingleThreadEngine implements Engine {
     return simulationState.getRechargeIntensity(scope);
   }
 
-  // Additional placeholder methods for remaining interface methods
   @Override
   public void recharge(EngineNumber volume, EngineNumber intensity, YearMatcher yearMatcher) {
     if (!getIsInRange(yearMatcher)) {
@@ -499,7 +483,7 @@ public class SingleThreadEngine implements Engine {
           .setKey(scope)
           .build();
       executeStreamUpdate(update);
-      return; // Skip normal recalc to avoid accumulation
+      return;
     } else {
       // Fall back to kg-based or untracked values
       Optional<String> lastUnits = getLastSalesUnits(scope);
@@ -571,9 +555,6 @@ public class SingleThreadEngine implements Engine {
         .thenPropagateToConsumption()
         .build();
     operation.execute(this);
-
-    // Update lastSpecifiedValue after recycling for volume-based specs
-    // updateLastSpecifiedValueAfterRecycling();
   }
 
   @Override
