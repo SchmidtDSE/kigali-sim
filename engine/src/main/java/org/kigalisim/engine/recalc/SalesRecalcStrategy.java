@@ -10,6 +10,7 @@
 package org.kigalisim.engine.recalc;
 
 import java.math.BigDecimal;
+import java.math.MathContext;
 import java.util.Optional;
 import org.kigalisim.engine.Engine;
 import org.kigalisim.engine.number.EngineNumber;
@@ -321,7 +322,6 @@ public class SalesRecalcStrategy implements RecalcStrategy {
     if (hasUnitBasedSpecs) {
       // Check if the current values indicate a unit-based operation
       // If implicit recharge is present, we know units were used in the current operation
-      // TODO: Consider making this explicit rather than using implicit recharge as a heuristic
       boolean currentOperationIsUnitBased = implicitRechargeKg.compareTo(BigDecimal.ZERO) > 0;
 
       if (!currentOperationIsUnitBased) {
@@ -336,6 +336,10 @@ public class SalesRecalcStrategy implements RecalcStrategy {
   /**
    * Calculate recycling for a specific stage (EOL or RECHARGE).
    *
+   * <p>This method calculates the recycled amount in kg for a given recovery stage through two
+   * steps: first, it determines the recycling volume (recovery rate) for this stage, then it
+   * calculates the recycling amount (yield rate) for this stage.</p>
+   *
    * @param simulationState the simulation state to use for getting rates
    * @param stateGetter the state getter for volume calculations
    * @param unitConverter the unit converter to use
@@ -344,21 +348,15 @@ public class SalesRecalcStrategy implements RecalcStrategy {
    * @param stage the recovery stage (EOL or RECHARGE)
    * @return the recycled amount in kg for this stage
    */
-  private BigDecimal calculateRecyclingForStage(
-      SimulationState simulationState,
-      OverridingConverterStateGetter stateGetter,
-      UnitConverter unitConverter,
-      UseKey scopeEffective,
-      EngineNumber baseVolume,
-      RecoveryStage stage) {
+  private BigDecimal calculateRecyclingForStage(SimulationState simulationState,
+      OverridingConverterStateGetter stateGetter, UnitConverter unitConverter,
+      UseKey scopeEffective, EngineNumber baseVolume, RecoveryStage stage) {
 
-    // Get recycling volume (recovery rate) for this stage
     stateGetter.setVolume(baseVolume);
     EngineNumber recoveryVolumeRaw = simulationState.getRecoveryRate(scopeEffective, stage);
     EngineNumber recoveryVolume = unitConverter.convert(recoveryVolumeRaw, "kg");
     stateGetter.clearVolume();
 
-    // Get recycling amount (yield rate) for this stage
     stateGetter.setVolume(recoveryVolume);
     EngineNumber recycledVolumeRaw = simulationState.getYieldRate(scopeEffective, stage);
     EngineNumber recycledVolume = unitConverter.convert(recycledVolumeRaw, "kg");
@@ -370,28 +368,29 @@ public class SalesRecalcStrategy implements RecalcStrategy {
   /**
    * Get the effective induction rate with appropriate defaults based on specification type.
    *
+   * <p>If the induction rate was explicitly set, it is returned (converted from percentage to
+   * ratio). Otherwise, a default behavior is applied based on the specification type: for
+   * unit-based specs, the default is 0% induction (displacement behavior), while for non-unit
+   * specs, the default is 100% induction (induced demand behavior).</p>
+   *
    * @param simulationState the simulation state to get induction rate from
    * @param scopeEffective the scope to get induction rate for
    * @param stage the recovery stage (EOL or RECHARGE)
    * @param hasUnitBasedSpecs whether the specification is unit-based
    * @return the effective induction rate as a ratio (0.0 to 1.0)
    */
-  private BigDecimal getEffectiveInductionRate(SimulationState simulationState, UseKey scopeEffective, RecoveryStage stage, boolean hasUnitBasedSpecs) {
+  private BigDecimal getEffectiveInductionRate(SimulationState simulationState,
+      UseKey scopeEffective, RecoveryStage stage, boolean hasUnitBasedSpecs) {
     EngineNumber inductionRate = simulationState.getInductionRate(scopeEffective, stage);
 
-    // Check if induction rate was explicitly set (not null)
     boolean wasExplicitlySet = inductionRate != null;
 
     if (wasExplicitlySet) {
-      // Use the explicitly set value
-      return inductionRate.getValue().divide(BigDecimal.valueOf(100), java.math.MathContext.DECIMAL128);
+      return inductionRate.getValue().divide(BigDecimal.valueOf(100), MathContext.DECIMAL128);
     } else {
-      // Apply default behavior based on specification type
       if (hasUnitBasedSpecs) {
-        // Units-based specs: default is 0% induction (displacement behavior)
         return BigDecimal.ZERO;
       } else {
-        // Non-units specs: default is 100% induction (induced demand behavior)
         return BigDecimal.ONE;
       }
     }
