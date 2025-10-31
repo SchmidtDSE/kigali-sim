@@ -14,6 +14,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -72,78 +73,125 @@ public class RunCommand implements Callable<Integer> {
       return INVALID_REPLICATES_ERROR;
     }
 
+    CommandInterpretResult interpretResult = interpret(file);
+    if (interpretResult.getIsFailure()) {
+      System.err.println(interpretResult.getErrorMessage().orElse("Unknown error"));
+      return PARSE_ERROR;
+    }
+
+    ParsedProgram program = interpretResult.getProgram().orElseThrow();
+
+    // Create progress callback that prints to stdout
+    ProgressReportCallback progressCallback = progress -> {
+      String percentage = String.format("%.0f", progress * 100);
+      System.out.print("\rProgress: " + percentage + "%");
+      System.out.flush();
+    };
+
+    Stream<EngineResult> allResults = runAndStreamResults(program, progressCallback);
+    List<EngineResult> resultsList = allResults.collect(Collectors.toList());
+
+    System.out.println();
+
+    Optional<String> writeError = writeResultsToCsv(resultsList, csvOutputFile);
+    if (writeError.isPresent()) {
+      System.err.println(writeError.get());
+      return CSV_WRITE_ERROR;
+    }
+
+    System.out.println("Successfully ran all simulations and wrote results to " + csvOutputFile);
+    return 0;
+  }
+
+  /**
+   * Runs all scenarios in the program and returns a stream of results.
+   *
+   * <p>This method executes each scenario in the parsed program with the specified number of
+   * replicates, applying the given progress callback to track execution progress.</p>
+   *
+   * @param program The parsed program containing scenarios to run
+   * @param progressCallback The callback for progress reporting
+   * @return A stream of EngineResult objects from running all scenarios and replicates
+   */
+  private Stream<EngineResult> runAndStreamResults(ParsedProgram program, ProgressReportCallback progressCallback) {
+    return program.getScenarios().stream()
+        .flatMap(scenarioName ->
+            IntStream.range(0, replicates)
+                .boxed()
+                .flatMap(replicateIndex -> {
+                  if (replicates > 1) {
+                    System.out.println("Running scenario '" + scenarioName + "' - replicate " + (replicateIndex + 1) + " of " + replicates);
+                  }
+                  return KigaliSimFacade.runScenario(program, scenarioName, progressCallback);
+                })
+        );
+  }
+
+  /**
+   * Interprets QubecTalk code from a file without exception handling.
+   *
+   * @param file The file containing QubecTalk code
+   * @return The parsed program
+   * @throws IOException If the file cannot be read
+   * @throws RuntimeException If parsing or interpretation fails
+   */
+  private ParsedProgram interpretUnsafe(File file) throws IOException {
+    String code = new String(Files.readAllBytes(file.toPath()));
+
+    ParseResult parseResult = KigaliSimFacade.parse(code);
+
+    if (parseResult.hasErrors()) {
+      String detailedError = KigaliSimFacade.getDetailedErrorMessage(parseResult);
+      throw new RuntimeException("Failed to parse QubecTalk code:\n" + detailedError);
+    }
+
+    return KigaliSimFacade.interpret(parseResult);
+  }
+
+  /**
+   * Interprets QubecTalk code from a file with exception handling.
+   *
+   * @param file The file containing QubecTalk code
+   * @return A CommandInterpretResult containing either the program or an error message
+   */
+  private CommandInterpretResult interpret(File file) {
     try {
-      // Read the file content
-      String code = new String(Files.readAllBytes(file.toPath()));
-
-      // Parse the code to get detailed error information
-      ParseResult parseResult = KigaliSimFacade.parse(code);
-
-      if (parseResult.hasErrors()) {
-        String detailedError = KigaliSimFacade.getDetailedErrorMessage(parseResult);
-        System.err.println("Failed to parse QubecTalk code at " + file);
-        System.err.println(detailedError);
-        return PARSE_ERROR;
-      }
-
-      // Interpret the parsed code
-      ParsedProgram program;
-      try {
-        program = KigaliSimFacade.interpret(parseResult);
-      } catch (Exception e) {
-        System.err.println("Failed to interpret QubecTalk code at " + file);
-        System.err.println("Interpretation error: " + e.getMessage());
-        return PARSE_ERROR;
-      }
-
-      // Create progress callback that prints to stdout
-      ProgressReportCallback progressCallback = progress -> {
-        int percentage = (int) (progress * 100);
-        System.out.print("\rProgress: " + percentage + "%");
-        System.out.flush();
-      };
-
-      // Run all scenarios in the program with replicates and collect results
-      Stream<EngineResult> allResults = program.getScenarios().stream()
-          .flatMap(scenarioName ->
-              IntStream.range(0, replicates)
-                  .boxed()
-                  .flatMap(replicateIndex -> {
-                    if (replicates > 1) {
-                      System.out.println("Running scenario '" + scenarioName + "' - replicate " + (replicateIndex + 1) + " of " + replicates);
-                    }
-                    return KigaliSimFacade.runScenario(program, scenarioName, progressCallback);
-                  })
-          );
-
-      // Collect to a list to see how many results we have
-      List<EngineResult> resultsList = allResults.collect(Collectors.toList());
-
-      // Print a newline after progress is complete
-      System.out.println();
-
-      // Convert results to CSV and write to file
-      String csvContent = KigaliSimFacade.convertResultsToCsv(resultsList);
-      try (FileWriter writer = new FileWriter(csvOutputFile)) {
-        writer.write(csvContent);
-      } catch (IOException e) {
-        System.err.println("Failed to write CSV output to " + csvOutputFile);
-        System.err.println("Error: " + e.getMessage());
-        return CSV_WRITE_ERROR;
-      }
-
-      System.out.println("Successfully ran all simulations and wrote results to " + csvOutputFile);
-      return 0;
+      ParsedProgram program = interpretUnsafe(file);
+      return new CommandInterpretResult(program);
     } catch (IOException e) {
-      System.err.println("Could not read file: " + file);
-      System.err.println("Error: " + e.getMessage());
-      return FILE_NOT_FOUND_ERROR;
-    } catch (Exception e) {
-      System.err.println("Error running simulation: " + e.getClass().getSimpleName() + ": " + e.getMessage());
-      if (e.getCause() != null) {
-        System.err.println("Caused by: " + e.getCause().getClass().getSimpleName() + ": " + e.getCause().getMessage());
-      }
-      return EXECUTION_ERROR;
+      return new CommandInterpretResult("Could not read file: " + file + "\nError: " + e.getMessage());
+    } catch (RuntimeException e) {
+      return new CommandInterpretResult("Failed to interpret QubecTalk code at " + file + "\nInterpretation error: " + e.getMessage());
+    }
+  }
+
+  /**
+   * Writes simulation results to a CSV file without exception handling.
+   *
+   * @param resultsList The list of simulation results
+   * @param csvOutputFile The file to write to
+   * @throws IOException If the file cannot be written
+   */
+  private void writeResultsToCsvUnsafe(List<EngineResult> resultsList, File csvOutputFile) throws IOException {
+    String csvContent = KigaliSimFacade.convertResultsToCsv(resultsList);
+    try (FileWriter writer = new FileWriter(csvOutputFile)) {
+      writer.write(csvContent);
+    }
+  }
+
+  /**
+   * Writes simulation results to a CSV file with exception handling.
+   *
+   * @param resultsList The list of simulation results
+   * @param csvOutputFile The file to write to
+   * @return An Optional containing an error message if writing failed, or empty if successful
+   */
+  private Optional<String> writeResultsToCsv(List<EngineResult> resultsList, File csvOutputFile) {
+    try {
+      writeResultsToCsvUnsafe(resultsList, csvOutputFile);
+      return Optional.empty();
+    } catch (IOException e) {
+      return Optional.of("Failed to write CSV output to " + csvOutputFile + "\nError: " + e.getMessage());
     }
   }
 
