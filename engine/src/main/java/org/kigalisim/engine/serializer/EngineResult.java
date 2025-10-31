@@ -72,16 +72,15 @@ public class EngineResult {
    * @param bankChangeKg The change in substance bank from previous year in kg
    * @param bankChangeTco2e The change in GHG potential of substance bank from previous year in tCO2e
    */
-  public EngineResult(String application, String substance, int year, String scenarioName, int trialNumber,
-                     EngineNumber domesticValue, EngineNumber importValue,
-                     EngineNumber recycleValue, EngineNumber domesticConsumptionValue,
-                     EngineNumber importConsumptionValue, EngineNumber recycleConsumptionValue,
-                     EngineNumber populationValue, EngineNumber populationNew,
-                     EngineNumber rechargeEmissions, EngineNumber eolEmissions,
-                     EngineNumber initialChargeEmissions, EngineNumber energyConsumption,
-                     EngineNumber exportValue, EngineNumber exportConsumptionValue,
-                     TradeSupplement tradeSupplement, EngineNumber bankKg, EngineNumber bankTco2e,
-                     EngineNumber bankChangeKg, EngineNumber bankChangeTco2e) {
+  public EngineResult(String application, String substance, int year, String scenarioName,
+      int trialNumber, EngineNumber domesticValue, EngineNumber importValue,
+      EngineNumber recycleValue, EngineNumber domesticConsumptionValue,
+      EngineNumber importConsumptionValue, EngineNumber recycleConsumptionValue,
+      EngineNumber populationValue, EngineNumber populationNew, EngineNumber rechargeEmissions,
+      EngineNumber eolEmissions, EngineNumber initialChargeEmissions,
+      EngineNumber energyConsumption, EngineNumber exportValue,
+      EngineNumber exportConsumptionValue, TradeSupplement tradeSupplement, EngineNumber bankKg,
+      EngineNumber bankTco2e, EngineNumber bankChangeKg, EngineNumber bankChangeTco2e) {
     this.application = application;
     this.substance = substance;
     this.year = year;
@@ -183,7 +182,8 @@ public class EngineResult {
 
     if (!domesticUnits.equals(importUnits)) {
       throw new IllegalStateException(
-          "Could not add incompatible units for consumption.");
+          "Could not add incompatible units for consumption."
+      );
     }
 
     BigDecimal domesticConsumptionRaw = domesticConsumptionValue.getValue();
@@ -194,7 +194,8 @@ public class EngineResult {
       String recycleUnits = recycleConsumptionValue.getUnits();
       if (!domesticUnits.equals(recycleUnits)) {
         throw new IllegalStateException(
-            "Could not add incompatible units for total consumption with recycling.");
+            "Could not add incompatible units for total consumption with recycling."
+        );
       }
       totalValue = totalValue.add(recycleConsumptionValue.getValue());
     }
