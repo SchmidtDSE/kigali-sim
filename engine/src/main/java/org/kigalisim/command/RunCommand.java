@@ -14,6 +14,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -66,9 +67,9 @@ public class RunCommand implements Callable<Integer> {
    * @param file The file containing QubecTalk code
    * @return The parsed program
    * @throws IOException If the file cannot be read
-   * @throws Exception If parsing or interpretation fails
+   * @throws RuntimeException If parsing or interpretation fails
    */
-  private ParsedProgram interpretUnsafe(File file) throws IOException, Exception {
+  private ParsedProgram interpretUnsafe(File file) throws IOException {
     // Read the file content
     String code = new String(Files.readAllBytes(file.toPath()));
 
@@ -77,7 +78,7 @@ public class RunCommand implements Callable<Integer> {
 
     if (parseResult.hasErrors()) {
       String detailedError = KigaliSimFacade.getDetailedErrorMessage(parseResult);
-      throw new Exception("Failed to parse QubecTalk code:\n" + detailedError);
+      throw new RuntimeException("Failed to parse QubecTalk code:\n" + detailedError);
     }
 
     // Interpret the parsed code
@@ -93,11 +94,11 @@ public class RunCommand implements Callable<Integer> {
   private CommandInterpretResult interpret(File file) {
     try {
       ParsedProgram program = interpretUnsafe(file);
-      return CommandInterpretResult.success(program);
+      return new CommandInterpretResult(program);
     } catch (IOException e) {
-      return CommandInterpretResult.failure("Could not read file: " + file + "\nError: " + e.getMessage());
-    } catch (Exception e) {
-      return CommandInterpretResult.failure("Failed to interpret QubecTalk code at " + file + "\nInterpretation error: " + e.getMessage());
+      return new CommandInterpretResult("Could not read file: " + file + "\nError: " + e.getMessage());
+    } catch (RuntimeException e) {
+      return new CommandInterpretResult("Failed to interpret QubecTalk code at " + file + "\nInterpretation error: " + e.getMessage());
     }
   }
 
@@ -122,12 +123,12 @@ public class RunCommand implements Callable<Integer> {
    * @param csvOutputFile The file to write to
    * @return An Optional containing an error message if writing failed, or empty if successful
    */
-  private java.util.Optional<String> writeResultsToCsv(List<EngineResult> resultsList, File csvOutputFile) {
+  private Optional<String> writeResultsToCsv(List<EngineResult> resultsList, File csvOutputFile) {
     try {
       writeResultsToCsvUnsafe(resultsList, csvOutputFile);
-      return java.util.Optional.empty();
+      return Optional.empty();
     } catch (IOException e) {
-      return java.util.Optional.of("Failed to write CSV output to " + csvOutputFile + "\nError: " + e.getMessage());
+      return Optional.of("Failed to write CSV output to " + csvOutputFile + "\nError: " + e.getMessage());
     }
   }
 
@@ -145,16 +146,16 @@ public class RunCommand implements Callable<Integer> {
 
     // Interpret the code
     CommandInterpretResult interpretResult = interpret(file);
-    if (interpretResult.isFailure()) {
-      System.err.println(interpretResult.errorMessage().get());
+    if (interpretResult.getIsFailure()) {
+      System.err.println(interpretResult.getErrorMessage());
       return PARSE_ERROR;
     }
 
-    ParsedProgram program = interpretResult.program().get();
+    ParsedProgram program = interpretResult.getProgram();
 
     // Create progress callback that prints to stdout
     ProgressReportCallback progressCallback = progress -> {
-      int percentage = (int) (progress * 100);
+      String percentage = String.format("%.0f", progress * 100);
       System.out.print("\rProgress: " + percentage + "%");
       System.out.flush();
     };
@@ -179,7 +180,7 @@ public class RunCommand implements Callable<Integer> {
     System.out.println();
 
     // Write results to CSV
-    java.util.Optional<String> writeError = writeResultsToCsv(resultsList, csvOutputFile);
+    Optional<String> writeError = writeResultsToCsv(resultsList, csvOutputFile);
     if (writeError.isPresent()) {
       System.err.println(writeError.get());
       return CSV_WRITE_ERROR;

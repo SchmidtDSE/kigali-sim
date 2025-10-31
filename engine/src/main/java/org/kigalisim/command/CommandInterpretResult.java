@@ -1,48 +1,62 @@
 /**
  * Result of interpreting QubecTalk code.
  *
- * <p>This record holds either a successfully parsed program or an error message.</p>
+ * <p>This class holds either a successfully parsed program or an error message.</p>
  *
  * @license BSD-3-Clause
  */
 
 package org.kigalisim.command;
 
-import java.util.Optional;
 import org.kigalisim.lang.program.ParsedProgram;
 
 /**
  * Result of interpreting QubecTalk code.
  *
  * <p>Contains either a successfully parsed program or an error message. Exactly one of the two
- * optionals will be present.</p>
- *
- * @param program The successfully parsed program, if interpretation succeeded
- * @param errorMessage The error message, if interpretation failed
+ * will be present.</p>
  */
-public record CommandInterpretResult(
-    Optional<ParsedProgram> program,
-    Optional<String> errorMessage
-) {
+public class CommandInterpretResult {
+
+  private final ParsedProgram program;
+  private final String errorMessage;
 
   /**
    * Creates a successful interpretation result.
    *
    * @param program The successfully parsed program
-   * @return A CommandInterpretResult with the program
    */
-  public static CommandInterpretResult success(ParsedProgram program) {
-    return new CommandInterpretResult(Optional.of(program), Optional.empty());
+  public CommandInterpretResult(ParsedProgram program) {
+    this.program = program;
+    this.errorMessage = null;
   }
 
   /**
    * Creates a failed interpretation result.
    *
    * @param errorMessage The error message
-   * @return A CommandInterpretResult with the error message
    */
-  public static CommandInterpretResult failure(String errorMessage) {
-    return new CommandInterpretResult(Optional.empty(), Optional.of(errorMessage));
+  public CommandInterpretResult(String errorMessage) {
+    this.program = null;
+    this.errorMessage = errorMessage;
+  }
+
+  /**
+   * Returns the parsed program if interpretation succeeded.
+   *
+   * @return The successfully parsed program, or null if interpretation failed
+   */
+  public ParsedProgram getProgram() {
+    return program;
+  }
+
+  /**
+   * Returns the error message if interpretation failed.
+   *
+   * @return The error message, or null if interpretation succeeded
+   */
+  public String getErrorMessage() {
+    return errorMessage;
   }
 
   /**
@@ -50,8 +64,8 @@ public record CommandInterpretResult(
    *
    * @return true if a program is present, false otherwise
    */
-  public boolean isSuccess() {
-    return program.isPresent();
+  public boolean getIsSuccess() {
+    return program != null;
   }
 
   /**
@@ -59,7 +73,7 @@ public record CommandInterpretResult(
    *
    * @return true if an error message is present, false otherwise
    */
-  public boolean isFailure() {
-    return errorMessage.isPresent();
+  public boolean getIsFailure() {
+    return errorMessage != null;
   }
 }

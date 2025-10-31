@@ -47,9 +47,9 @@ public class ValidateCommand implements Callable<Integer> {
    *
    * @param file The file containing QubecTalk code
    * @throws IOException If the file cannot be read
-   * @throws Exception If parsing or interpretation fails
+   * @throws RuntimeException If parsing or interpretation fails
    */
-  private void interpretUnsafe(File file) throws IOException, Exception {
+  private void interpretUnsafe(File file) throws IOException {
     // Read the file content
     String code = new String(Files.readAllBytes(file.toPath()));
 
@@ -58,7 +58,7 @@ public class ValidateCommand implements Callable<Integer> {
 
     if (parseResult.hasErrors()) {
       String detailedError = KigaliSimFacade.getDetailedErrorMessage(parseResult);
-      throw new Exception("Failed to parse QubecTalk code:\n" + detailedError);
+      throw new RuntimeException("Failed to parse QubecTalk code:\n" + detailedError);
     }
 
     // Interpret the parsed code
@@ -74,11 +74,11 @@ public class ValidateCommand implements Callable<Integer> {
   private CommandInterpretResult interpret(File file) {
     try {
       interpretUnsafe(file);
-      return CommandInterpretResult.success(null);
+      return new CommandInterpretResult((String) null);
     } catch (IOException e) {
-      return CommandInterpretResult.failure("Could not read file: " + file + "\nError: " + e.getMessage());
-    } catch (Exception e) {
-      return CommandInterpretResult.failure("Validation failed for QubecTalk code at " + file + "\nInterpretation error: " + e.getMessage());
+      return new CommandInterpretResult("Could not read file: " + file + "\nError: " + e.getMessage());
+    } catch (RuntimeException e) {
+      return new CommandInterpretResult("Validation failed for QubecTalk code at " + file + "\nInterpretation error: " + e.getMessage());
     }
   }
 
@@ -91,8 +91,8 @@ public class ValidateCommand implements Callable<Integer> {
 
     // Interpret the code
     CommandInterpretResult interpretResult = interpret(file);
-    if (interpretResult.isFailure()) {
-      System.err.println(interpretResult.errorMessage().get());
+    if (interpretResult.getIsFailure()) {
+      System.err.println(interpretResult.getErrorMessage());
       return VALIDATION_ERROR;
     }
 
