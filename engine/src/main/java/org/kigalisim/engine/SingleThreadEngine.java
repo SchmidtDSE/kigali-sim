@@ -41,8 +41,10 @@ import org.kigalisim.engine.support.ChangeExecutor;
 import org.kigalisim.engine.support.EngineSupportUtils;
 import org.kigalisim.engine.support.EquipmentChangeUtil;
 import org.kigalisim.engine.support.ExceptionsGenerator;
+import org.kigalisim.engine.support.ImplicitRechargeUpdate;
 import org.kigalisim.engine.support.RechargeVolumeCalculator;
 import org.kigalisim.engine.support.SetExecutor;
+import org.kigalisim.engine.support.StreamUpdateExecutor;
 import org.kigalisim.lang.operation.RecoverOperation.RecoveryStage;
 
 /**
@@ -80,6 +82,7 @@ public class SingleThreadEngine implements Engine {
   private final SimulationState simulationState;
   private final ChangeExecutor changeExecutor;
   private final EquipmentChangeUtil equipmentChangeUtil;
+  private final StreamUpdateExecutor streamUpdateExecutor;
   private Scope scope;
 
   /**
@@ -105,6 +108,7 @@ public class SingleThreadEngine implements Engine {
     this.simulationState.setCurrentYear(startYear);
     this.changeExecutor = new ChangeExecutor(this);
     this.equipmentChangeUtil = new EquipmentChangeUtil(this);
+    this.streamUpdateExecutor = new StreamUpdateExecutor(this);
     scope = new Scope(null, null, null);
   }
 
@@ -232,18 +236,13 @@ public class SingleThreadEngine implements Engine {
 
   @Override
   public void executeStreamUpdate(StreamUpdate update) {
-    final String name = update.getName();
-    final EngineNumber value = update.getValue();
     final Optional<YearMatcher> yearMatcher = update.getYearMatcher();
-    final Optional<UseKey> key = update.getKey();
-    final boolean propagateChanges = update.getPropagateChanges();
-    final Optional<String> unitsToRecord = update.getUnitsToRecord();
-    final boolean subtractRecycling = update.getSubtractRecycling();
 
     if (!getIsInRange(yearMatcher.orElse(null))) {
       return;
     }
 
+    final Optional<UseKey> key = update.getKey();
     UseKey keyEffective = key.orElse(scope);
     String application = keyEffective.getApplication();
     String substance = keyEffective.getSubstance();
@@ -252,129 +251,7 @@ public class SingleThreadEngine implements Engine {
       raiseNoAppOrSubstance("setting stream", " specified");
     }
 
-    // Check if this is a sales stream with units - if so, add recharge on top
-    boolean isSales = isSalesStream(name);
-    boolean isUnits = value.hasEquipmentUnits();
-    boolean isSalesSubstream = getIsSalesSubstream(name);
-
-    EngineNumber valueToSet = value;
-    if (isSales && isUnits) {
-      // Convert to kg and add recharge on top
-      UnitConverter unitConverter = EngineSupportUtils.createUnitConverterWithTotal(this, name);
-      EngineNumber valueInKg = unitConverter.convert(value, "kg");
-      EngineNumber rechargeVolume = RechargeVolumeCalculator.calculateRechargeVolume(
-          keyEffective,
-          stateGetter,
-          simulationState,
-          this
-      );
-
-      // Set implicit recharge BEFORE distribution (always full amount)
-      SimulationStateUpdate implicitRechargeStream = new SimulationStateUpdateBuilder()
-          .setUseKey(keyEffective)
-          .setName("implicitRecharge")
-          .setValue(rechargeVolume)
-          .setSubtractRecycling(false)
-          .build();
-      simulationState.update(implicitRechargeStream);
-
-      // Distribute recharge proportionally for domestic/import streams
-      BigDecimal rechargeToAdd;
-      if (isSalesSubstream) {
-        // Use distributed recharge for individual substreams
-        rechargeToAdd = getDistributedRecharge(name, rechargeVolume, keyEffective);
-      } else {
-        // Sales stream gets full recharge
-        rechargeToAdd = rechargeVolume.getValue();
-      }
-
-      BigDecimal totalWithRecharge = valueInKg.getValue().add(rechargeToAdd);
-      valueToSet = new EngineNumber(totalWithRecharge, "kg");
-    } else if (isSales) {
-      // Sales stream without units - clear implicit recharge
-      SimulationStateUpdate clearImplicitRechargeStream = new SimulationStateUpdateBuilder()
-          .setUseKey(keyEffective)
-          .setName("implicitRecharge")
-          .setValue(new EngineNumber(BigDecimal.ZERO, "kg"))
-          .setSubtractRecycling(false)
-          .build();
-      simulationState.update(clearImplicitRechargeStream);
-    }
-
-    // Use the subtractRecycling parameter when setting the stream
-    SimulationStateUpdate simulationStateUpdate = new SimulationStateUpdateBuilder()
-        .setUseKey(keyEffective)
-        .setName(name)
-        .setValue(valueToSet)
-        .setSubtractRecycling(subtractRecycling)
-        .setDistribution(update.getDistribution().orElse(null))
-        .build();
-    simulationState.update(simulationStateUpdate);
-
-    // Track the units last used to specify this stream (only for user-initiated calls)
-    if (!propagateChanges) {
-      return;
-    }
-
-    if (isSales) {
-      // Track the last specified value for sales-related streams
-      // This preserves user intent across carry-over years
-      simulationState.setLastSpecifiedValue(keyEffective, name, value);
-
-      // Handle stream combinations for unit preservation
-      updateSalesCarryOver(keyEffective, name, value);
-    }
-
-    if ("sales".equals(name) || getIsSalesSubstream(name)) {
-      // Use implicit recharge only if we added recharge (units were used)
-      boolean useImplicitRecharge = isSales && isUnits;
-      RecalcOperationBuilder builder = new RecalcOperationBuilder()
-          .setScopeEffective(keyEffective)
-          .setUseExplicitRecharge(!useImplicitRecharge)
-          .setRecalcKit(createRecalcKit())
-          .recalcPopulationChange()
-          .thenPropagateToConsumption();
-
-      if (!OPTIMIZE_RECALCS) {
-        builder = builder.thenPropagateToSales();
-      }
-
-      RecalcOperation operation = builder.build();
-      operation.execute(this);
-    } else if ("consumption".equals(name)) {
-      RecalcOperationBuilder builder = new RecalcOperationBuilder()
-          .setScopeEffective(keyEffective)
-          .setRecalcKit(createRecalcKit())
-          .recalcSales()
-          .thenPropagateToPopulationChange();
-
-      if (!OPTIMIZE_RECALCS) {
-        builder = builder.thenPropagateToConsumption();
-      }
-
-      RecalcOperation operation = builder.build();
-      operation.execute(this);
-    } else if ("equipment".equals(name)) {
-      RecalcOperationBuilder builder = new RecalcOperationBuilder()
-          .setScopeEffective(keyEffective)
-          .setRecalcKit(createRecalcKit())
-          .recalcSales()
-          .thenPropagateToConsumption();
-
-      if (!OPTIMIZE_RECALCS) {
-        builder = builder.thenPropagateToPopulationChange();
-      }
-
-      RecalcOperation operation = builder.build();
-      operation.execute(this);
-    } else if ("priorEquipment".equals(name)) {
-      RecalcOperation operation = new RecalcOperationBuilder()
-          .setScopeEffective(keyEffective)
-          .setRecalcKit(createRecalcKit())
-          .recalcRetire()
-          .build();
-      operation.execute(this);
-    }
+    streamUpdateExecutor.execute(update);
   }
 
 
@@ -869,7 +746,7 @@ public class SingleThreadEngine implements Engine {
       ExceptionsGenerator.raiseSelfReplacement(currentSubstance);
     }
 
-    if (isSalesStream(stream)) {
+    if (EngineSupportUtils.getIsSalesStream(stream, true)) {
       // Track the specific stream and amount for the current substance
       simulationState.setLastSpecifiedValue(currentScope, stream, amountRaw);
 
@@ -951,6 +828,11 @@ public class SingleThreadEngine implements Engine {
           return serializer.getResult(new SimpleUseKey(application, substance), year);
         })
         .collect(Collectors.toList());
+  }
+
+  @Override
+  public boolean getOptimizeRecalcs() {
+    return OPTIMIZE_RECALCS;
   }
 
   /**
@@ -1103,13 +985,13 @@ public class SingleThreadEngine implements Engine {
     executeStreamUpdate(update);
 
     // Update lastSpecifiedValue for sales substreams since propagateChanges=false skips this
-    if (isSalesStream(stream, false)) {
+    if (EngineSupportUtils.getIsSalesStream(stream, false)) {
       UseKey destKey = new SimpleUseKey(destinationScope.getApplication(), destinationScope.getSubstance());
       simulationState.setLastSpecifiedValue(destKey, stream, outputWithUnits);
     }
 
     // Only recalculate for streams that affect equipment populations
-    if (!isSalesStream(stream, false)) {
+    if (!EngineSupportUtils.getIsSalesStream(stream, false)) {
       scope = originalScope;
       return;
     }
@@ -1135,38 +1017,6 @@ public class SingleThreadEngine implements Engine {
   }
 
   /**
-   * Check if a stream is a sales-related stream that influences recharge displacement.
-   *
-   * @param stream The stream name to check
-   * @return true if the stream is sales, manufacture, import, or export
-   */
-  private boolean isSalesStream(String stream) {
-    return isSalesStream(stream, true);
-  }
-
-  /**
-   * Check if a stream is a sales-related stream.
-   *
-   * @param stream The stream name to check
-   * @param includeExports Whether to include exports in the sales streams
-   * @return true if the stream matches the sales-related criteria
-   */
-  private boolean isSalesStream(String stream, boolean includeExports) {
-    boolean isCoreStream = "sales".equals(stream) || getIsSalesSubstream(stream);
-    return isCoreStream || (includeExports && "export".equals(stream));
-  }
-
-  /**
-   * Check if a stream name represents a sales substream (domestic or import).
-   *
-   * @param name The stream name to check
-   * @return true if the stream is domestic or import
-   */
-  private boolean getIsSalesSubstream(String name) {
-    return EngineSupportUtils.isSalesSubstream(name);
-  }
-
-  /**
    * Gets the distributed recharge amount for a specific stream.
    *
    * @param streamName The name of the stream
@@ -1178,7 +1028,7 @@ public class SingleThreadEngine implements Engine {
     if ("sales".equals(streamName)) {
       // Sales stream gets 100% - setStreamForSales will distribute it
       return totalRecharge.getValue();
-    } else if (getIsSalesSubstream(streamName)) {
+    } else if (EngineSupportUtils.isSalesSubstream(streamName)) {
       SalesStreamDistribution distribution = simulationState.getDistribution(keyEffective);
       BigDecimal percentage;
       if ("domestic".equals(streamName)) {
@@ -1313,47 +1163,6 @@ public class SingleThreadEngine implements Engine {
     return target.compareTo(BigDecimal.ZERO) == 0;
   }
 
-  /**
-   * Updates sales carry-over tracking when setting manufacture, import, or sales.
-   * This tracks user intent across carry-over years.
-   *
-   * @param useKey The key containing application and substance
-   * @param streamName The name of the stream being set (manufacture, import, or sales)
-   * @param value The value being set with units
-   */
-  private void updateSalesCarryOver(UseKey useKey, String streamName, EngineNumber value) {
-    // Only process unit-based values for combination tracking
-    if (!value.hasEquipmentUnits()) {
-      return;
-    }
-
-    // Only handle manufacture and import streams for combination
-    if (!getIsSalesSubstream(streamName)) {
-      return;
-    }
-
-    // When setting manufacture or import, combine with the other to create sales intent
-    String otherStream = "domestic".equals(streamName) ? "import" : "domestic";
-    EngineNumber otherValue = simulationState.getLastSpecifiedValue(useKey, otherStream);
-
-    if (otherValue != null && otherValue.hasEquipmentUnits()) {
-      // Both streams have unit-based values - combine them
-      // Convert both to the same units (prefer the current stream's units)
-      String targetUnits = value.getUnits();
-      UnitConverter converter = EngineSupportUtils.createUnitConverterWithTotal(this, streamName);
-      EngineNumber otherConverted = converter.convert(otherValue, targetUnits);
-
-      // Create combined sales value
-      BigDecimal combinedValue = value.getValue().add(otherConverted.getValue());
-      EngineNumber salesIntent = new EngineNumber(combinedValue, targetUnits);
-
-      // Track the combined sales intent
-      simulationState.setLastSpecifiedValue(useKey, "sales", salesIntent);
-    } else {
-      // Only one stream has units - use it as the sales intent
-      simulationState.setLastSpecifiedValue(useKey, "sales", value);
-    }
-  }
 
   /**
    * Determines if current operations represent a carry-over situation.
