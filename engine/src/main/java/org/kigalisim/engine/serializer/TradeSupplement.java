@@ -38,10 +38,10 @@ public class TradeSupplement {
    *     initial charge of exported equipment (like tCO2e)
    */
   public TradeSupplement(EngineNumber importInitialChargeValue,
-                         EngineNumber importInitialChargeConsumption,
-                         EngineNumber importPopulation,
-                         EngineNumber exportInitialChargeValue,
-                         EngineNumber exportInitialChargeConsumption) {
+      EngineNumber importInitialChargeConsumption,
+      EngineNumber importPopulation,
+      EngineNumber exportInitialChargeValue,
+      EngineNumber exportInitialChargeConsumption) {
     this.importInitialChargeValue = importInitialChargeValue;
     this.importInitialChargeConsumption = importInitialChargeConsumption;
     this.importPopulation = importPopulation;
