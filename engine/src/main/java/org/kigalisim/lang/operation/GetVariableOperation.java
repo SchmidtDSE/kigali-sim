@@ -21,6 +21,7 @@ public class GetVariableOperation implements Operation {
     this.variableName = variableName;
   }
 
+  /** {@inheritDoc} */
   @Override
   public void execute(PushDownMachine machine) {
     EngineNumber value = machine.getEngine().getVariable(variableName);
