@@ -48,6 +48,7 @@ public class EnableOperation implements Operation {
     return stream;
   }
 
+  /** {@inheritDoc} */
   @Override
   public void execute(PushDownMachine machine) {
     ParsedDuring parsedDuring = duringMaybe.orElseGet(
