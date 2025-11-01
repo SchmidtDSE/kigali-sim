@@ -6,7 +6,7 @@ plugins {
   id "application" // for creating executable JARs
   id "checkstyle" // for code style checking
   id "antlr" // for ANTLR grammar
-  id "org.teavm" version "0.11.0" // TeaVM for WASM compilation
+  id "org.teavm" version "0.12.1" // TeaVM for WASM compilation
   id "com.diffplug.spotless" version "7.0.2" // Autoformatting
 }
 
@@ -37,8 +37,8 @@ dependencies {
   implementation("org.antlr:antlr4-runtime:4.13.2") // ANTLR runtime for generated code
 
   // Interaction with browser
-  implementation("org.teavm:teavm-core:0.11.0")
-  implementation("org.teavm:teavm-jso:0.11.0")
+  implementation("org.teavm:teavm-core:0.12.1")
+  implementation("org.teavm:teavm-jso:0.12.1")
 
   // CSV processing
   implementation("org.apache.commons:commons-csv:1.14.0")
