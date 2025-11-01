@@ -37,13 +37,8 @@ public final class SimulationStateUpdate {
    * @param salesDistributionRequired whether this stream requires sales distribution logic
    * @param invalidatePriorEquipment whether this update should trigger prior equipment base invalidation
    */
-  SimulationStateUpdate(
-      UseKey useKey,
-      String name,
-      EngineNumber value,
-      boolean subtractRecycling,
-      Optional<SalesStreamDistribution> distribution,
-      boolean salesDistributionRequired,
+  SimulationStateUpdate(UseKey useKey, String name, EngineNumber value, boolean subtractRecycling,
+      Optional<SalesStreamDistribution> distribution, boolean salesDistributionRequired,
       boolean invalidatePriorEquipment) {
     this.useKey = useKey;
     this.name = name;
