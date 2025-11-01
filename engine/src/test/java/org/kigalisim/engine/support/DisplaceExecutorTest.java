@@ -57,7 +57,7 @@ class DisplaceExecutorTest {
   }
 
   @Test
-  void testExecute_NullDisplaceTarget_NoOperation() {
+  void testExecuteNullDisplaceTargetNoOperation() {
     // Arrange
     setStreamValue("domestic", new BigDecimal("100"), "kg");
     EngineNumber amount = new EngineNumber(new BigDecimal("10"), "kg");
@@ -72,7 +72,7 @@ class DisplaceExecutorTest {
   }
 
   @Test
-  void testExecute_SelfDisplacement_ThrowsException() {
+  void testExecuteSelfDisplacementThrowsException() {
     // Arrange
     EngineNumber amount = new EngineNumber(new BigDecimal("10"), "kg");
     BigDecimal changeAmount = new BigDecimal("-5");
@@ -84,7 +84,7 @@ class DisplaceExecutorTest {
   }
 
   @Test
-  void testExecute_VolumeDisplacementToStream_CallsShortcuts() {
+  void testExecuteVolumeDisplacementToStreamCallsShortcuts() {
     // Arrange
     setStreamValue("domestic", new BigDecimal("100"), "kg");
     setStreamValue("import", new BigDecimal("50"), "kg");
@@ -102,7 +102,7 @@ class DisplaceExecutorTest {
   }
 
   @Test
-  void testExecute_VolumeDisplacementToSubstance_SwitchesScope() {
+  void testExecuteVolumeDisplacementToSubstanceSwitchesScope() {
     // Arrange
     setStreamValue("domestic", new BigDecimal("100"), "kg");
 
@@ -124,7 +124,7 @@ class DisplaceExecutorTest {
   }
 
   @Test
-  void testExecute_UnitsDisplacementToStream_ConvertsUnits() {
+  void testExecuteUnitsDisplacementToStreamConvertsUnits() {
     // Arrange - equipment units
     setStreamValue("domestic", new BigDecimal("100"), "kg");
     setStreamValue("import", new BigDecimal("50"), "kg");
@@ -143,7 +143,7 @@ class DisplaceExecutorTest {
   }
 
   @Test
-  void testExecute_UnitsDisplacementToSubstance_SwitchesAndRestoresScope() {
+  void testExecuteUnitsDisplacementToSubstanceSwitchesAndRestoresScope() {
     // Arrange - equipment units with substance displacement
     setStreamValue("domestic", new BigDecimal("100"), "kg");
 
@@ -151,7 +151,7 @@ class DisplaceExecutorTest {
     // Reduced by 20kg (20 units * 1 kg/unit for HFC-134a)
     BigDecimal changeAmount = new BigDecimal("-20");
 
-    String originalSubstance = engine.getScope().getSubstance();
+    final String originalSubstance = engine.getScope().getSubstance();
 
     // Act - displace to R-600a (which has 2 kg/unit initial charge)
     displaceExecutor.execute("domestic", amount, changeAmount, "R-600a");

@@ -63,7 +63,7 @@ class ReplaceExecutorTest {
   }
 
   @Test
-  void testExecute_OutsideRange_NoOperation() {
+  void testExecuteOutsideRangeNoOperation() {
     // Arrange
     setStreamValue("domestic", new BigDecimal("100"), "kg");
     YearMatcher matcher = new YearMatcher(2021, 2025); // Outside current year 2020
@@ -80,7 +80,7 @@ class ReplaceExecutorTest {
   }
 
   @Test
-  void testExecute_NullApplication_ThrowsException() {
+  void testExecuteNullApplicationThrowsException() {
     // Arrange
     engine.setApplication(null);
     YearMatcher matcher = new YearMatcher(2020, 2025);
@@ -93,7 +93,7 @@ class ReplaceExecutorTest {
   }
 
   @Test
-  void testExecute_NullSubstance_ThrowsException() {
+  void testExecuteNullSubstanceThrowsException() {
     // Arrange
     engine.setSubstance(null);
     YearMatcher matcher = new YearMatcher(2020, 2025);
@@ -106,7 +106,7 @@ class ReplaceExecutorTest {
   }
 
   @Test
-  void testExecute_SelfReplacement_ThrowsException() {
+  void testExecuteSelfReplacementThrowsException() {
     // Arrange
     YearMatcher matcher = new YearMatcher(2020, 2025);
     EngineNumber amount = new EngineNumber(new BigDecimal("10"), "kg");
@@ -119,7 +119,7 @@ class ReplaceExecutorTest {
   }
 
   @Test
-  void testExecute_SalesStream_UpdatesLastSpecifiedForBothSubstances() {
+  void testExecuteSalesStreamUpdatesLastSpecifiedForBothSubstances() {
     // Arrange
     setStreamValue("sales", new BigDecimal("100"), "kg");
     YearMatcher matcher = new YearMatcher(2020, 2025);
@@ -139,7 +139,7 @@ class ReplaceExecutorTest {
   }
 
   @Test
-  void testExecute_NonSalesStream_DoesNotUpdateLastSpecified() {
+  void testExecuteNonSalesStreamDoesNotUpdateLastSpecified() {
     // Arrange
     setStreamValue("equipment", new BigDecimal("100"), "units");
     YearMatcher matcher = new YearMatcher(2020, 2025);
@@ -155,7 +155,7 @@ class ReplaceExecutorTest {
   }
 
   @Test
-  void testExecute_PercentageWithLastSpecified_UsesLastSpecifiedUnits() {
+  void testExecutePercentageWithLastSpecifiedUsesLastSpecifiedUnits() {
     // Arrange
     setStreamValue("domestic", new BigDecimal("100"), "kg");
 
@@ -185,7 +185,7 @@ class ReplaceExecutorTest {
   }
 
   @Test
-  void testExecute_PercentageWithoutLastSpecified_UsesCurrentValueUnits() {
+  void testExecutePercentageWithoutLastSpecifiedUsesCurrentValueUnits() {
     // Arrange
     setStreamValue("domestic", new BigDecimal("100"), "kg");
     YearMatcher matcher = new YearMatcher(2020, 2025);
@@ -207,7 +207,7 @@ class ReplaceExecutorTest {
   }
 
   @Test
-  void testExecute_NonPercentage_UsesRawAmount() {
+  void testExecuteNonPercentageUsesRawAmount() {
     // Arrange
     setStreamValue("domestic", new BigDecimal("100"), "kg");
     YearMatcher matcher = new YearMatcher(2020, 2025);
@@ -229,7 +229,7 @@ class ReplaceExecutorTest {
   }
 
   @Test
-  void testExecute_WithEquipmentUnits_UsesInitialCharges() {
+  void testExecuteWithEquipmentUnitsUsesInitialCharges() {
     // Arrange
     setStreamValue("domestic", new BigDecimal("100"), "kg"); // 100 units at 1 kg/unit
     YearMatcher matcher = new YearMatcher(2020, 2025);
@@ -251,7 +251,7 @@ class ReplaceExecutorTest {
   }
 
   @Test
-  void testExecute_WithVolumeUnits_UsesSameVolume() {
+  void testExecuteWithVolumeUnitsUsesSameVolume() {
     // Arrange
     setStreamValue("domestic", new BigDecimal("100"), "kg");
     YearMatcher matcher = new YearMatcher(2020, 2025);
@@ -272,7 +272,7 @@ class ReplaceExecutorTest {
   }
 
   @Test
-  void testExecute_WithMtUnits_ConvertsToKg() {
+  void testExecuteWithMtUnitsConvertsToKg() {
     // Arrange
     setStreamValue("domestic", new BigDecimal("1000"), "kg");
     YearMatcher matcher = new YearMatcher(2020, 2025);
