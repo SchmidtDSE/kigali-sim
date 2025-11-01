@@ -344,6 +344,222 @@ public class EngineResultBuilder {
   }
 
   /**
+   * Get the application value.
+   *
+   * @return The application value
+   */
+  public String getApplication() {
+    return application.get();
+  }
+
+  /**
+   * Get the substance value.
+   *
+   * @return The substance value
+   */
+  public String getSubstance() {
+    return substance.get();
+  }
+
+  /**
+   * Get the year value.
+   *
+   * @return The year value
+   */
+  public int getYear() {
+    return year.get();
+  }
+
+  /**
+   * Get the scenario name value.
+   *
+   * @return The scenario name value
+   */
+  public String getScenarioName() {
+    return scenarioName.get();
+  }
+
+  /**
+   * Get the trial number value.
+   *
+   * @return The trial number value
+   */
+  public int getTrialNumber() {
+    return trialNumber.get();
+  }
+
+  /**
+   * Get the domestic value.
+   *
+   * @return The domestic value
+   */
+  public EngineNumber getDomesticValue() {
+    return domesticValue.get();
+  }
+
+  /**
+   * Get the import value.
+   *
+   * @return The import value
+   */
+  public EngineNumber getImportValue() {
+    return importValue.get();
+  }
+
+  /**
+   * Get the recycle value.
+   *
+   * @return The recycle value
+   */
+  public EngineNumber getRecycleValue() {
+    return recycleValue.get();
+  }
+
+  /**
+   * Get the domestic consumption value.
+   *
+   * @return The domestic consumption value
+   */
+  public EngineNumber getDomesticConsumptionValue() {
+    return domesticConsumptionValue.get();
+  }
+
+  /**
+   * Get the import consumption value.
+   *
+   * @return The import consumption value
+   */
+  public EngineNumber getImportConsumptionValue() {
+    return importConsumptionValue.get();
+  }
+
+  /**
+   * Get the recycle consumption value.
+   *
+   * @return The recycle consumption value
+   */
+  public EngineNumber getRecycleConsumptionValue() {
+    return recycleConsumptionValue.get();
+  }
+
+  /**
+   * Get the population value.
+   *
+   * @return The population value
+   */
+  public EngineNumber getPopulationValue() {
+    return populationValue.get();
+  }
+
+  /**
+   * Get the population new value.
+   *
+   * @return The population new value
+   */
+  public EngineNumber getPopulationNew() {
+    return populationNew.get();
+  }
+
+  /**
+   * Get the recharge emissions value.
+   *
+   * @return The recharge emissions value
+   */
+  public EngineNumber getRechargeEmissions() {
+    return rechargeEmissions.get();
+  }
+
+  /**
+   * Get the end-of-life emissions value.
+   *
+   * @return The end-of-life emissions value
+   */
+  public EngineNumber getEolEmissions() {
+    return eolEmissions.get();
+  }
+
+  /**
+   * Get the initial charge emissions value.
+   *
+   * @return The initial charge emissions value
+   */
+  public EngineNumber getInitialChargeEmissions() {
+    return initialChargeEmissions.get();
+  }
+
+  /**
+   * Get the energy consumption value.
+   *
+   * @return The energy consumption value
+   */
+  public EngineNumber getEnergyConsumption() {
+    return energyConsumption.get();
+  }
+
+  /**
+   * Get the export value.
+   *
+   * @return The export value
+   */
+  public EngineNumber getExportValue() {
+    return exportValue.get();
+  }
+
+  /**
+   * Get the export consumption value.
+   *
+   * @return The export consumption value
+   */
+  public EngineNumber getExportConsumptionValue() {
+    return exportConsumptionValue.get();
+  }
+
+  /**
+   * Get the trade supplement data.
+   *
+   * @return The trade supplement data
+   */
+  public TradeSupplement getTradeSupplement() {
+    return tradeSupplement.get();
+  }
+
+  /**
+   * Get the bank kg value.
+   *
+   * @return The bank kg value
+   */
+  public EngineNumber getBankKg() {
+    return bankKg.get();
+  }
+
+  /**
+   * Get the bank tCO2e value.
+   *
+   * @return The bank tCO2e value
+   */
+  public EngineNumber getBankTco2e() {
+    return bankTco2e.get();
+  }
+
+  /**
+   * Get the bank change kg value.
+   *
+   * @return The bank change kg value
+   */
+  public EngineNumber getBankChangeKg() {
+    return bankChangeKg.get();
+  }
+
+  /**
+   * Get the bank change tCO2e value.
+   *
+   * @return The bank change tCO2e value
+   */
+  public EngineNumber getBankChangeTco2e() {
+    return bankChangeTco2e.get();
+  }
+
+  /**
    * Check that the builder is complete and create a new result.
    *
    * @return The result built from the values provided to this builder
@@ -351,32 +567,7 @@ public class EngineResultBuilder {
    */
   public EngineResult build() {
     checkReadyToConstruct();
-    return new EngineResult(
-        application.get(),
-        substance.get(),
-        year.get(),
-        scenarioName.get(),
-        trialNumber.get(),
-        domesticValue.get(),
-        importValue.get(),
-        recycleValue.get(),
-        domesticConsumptionValue.get(),
-        importConsumptionValue.get(),
-        recycleConsumptionValue.get(),
-        populationValue.get(),
-        populationNew.get(),
-        rechargeEmissions.get(),
-        eolEmissions.get(),
-        initialChargeEmissions.get(),
-        energyConsumption.get(),
-        exportValue.get(),
-        exportConsumptionValue.get(),
-        tradeSupplement.get(),
-        bankKg.get(),
-        bankTco2e.get(),
-        bankChangeKg.get(),
-        bankChangeTco2e.get()
-    );
+    return new EngineResult(this);
   }
 
   /**

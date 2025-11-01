@@ -62,12 +62,22 @@ public class SalesRecalcStrategy implements RecalcStrategy {
 
     EngineNumber eolVolumeConverted = calculateEolRecyclingVolume(scopeEffective, simulationState, stateGetter, unitConverter, initialCharge);
     final BigDecimal eolRecycledKg = calculateRecyclingForStage(
-        simulationState, stateGetter, unitConverter, scopeEffective,
-        eolVolumeConverted, RecoveryStage.EOL);
+        simulationState,
+        stateGetter,
+        unitConverter,
+        scopeEffective,
+        eolVolumeConverted,
+        RecoveryStage.EOL
+    );
 
     final BigDecimal rechargeRecycledKg = calculateRecyclingForStage(
-        simulationState, stateGetter, unitConverter, scopeEffective,
-        rechargeVolume, RecoveryStage.RECHARGE);
+        simulationState,
+        stateGetter,
+        unitConverter,
+        scopeEffective,
+        rechargeVolume,
+        RecoveryStage.RECHARGE
+    );
 
     stateGetter.clearPopulation();
 
@@ -101,27 +111,25 @@ public class SalesRecalcStrategy implements RecalcStrategy {
   /**
    * Determines if unit-based specifications should be preserved.
    *
+   * <p>This method checks if we had unit-based specifications that need to be preserved by:
+   * <ol>
+   * <li>Checking if the context indicates unit-based sales specifications</li>
+   * <li>Verifying that the current operation is also unit-based by checking if implicit
+   * recharge is present (indicating units were used in the current operation)</li>
+   * <li>If the current operation is kg-based (like displacement), unit specifications are
+   * not preserved</li>
+   * </ol></p>
+   *
    * @param simulationState the simulation state to use for checking specifications
    * @param scopeEffective the scope to check
    * @param implicitRechargeKg the implicit recharge amount in kg
    * @return true if unit-based specifications should be preserved
    */
   private boolean getHasUnitBasedSpecs(SimulationState simulationState, UseKey scopeEffective, BigDecimal implicitRechargeKg) {
-    // Check if we had unit-based specifications that need to be preserved
     boolean hasUnitBasedSpecs = EngineSupportUtils.hasUnitBasedSalesSpecifications(simulationState, scopeEffective);
-
-    if (hasUnitBasedSpecs) {
-      // Check if the current values indicate a unit-based operation
-      // If implicit recharge is present, we know units were used in the current operation
-      boolean currentOperationIsUnitBased = implicitRechargeKg.compareTo(BigDecimal.ZERO) > 0;
-
-      if (!currentOperationIsUnitBased) {
-        // Current operation is kg-based (like displacement), don't preserve units
-        hasUnitBasedSpecs = false;
-      }
-    }
-
-    return hasUnitBasedSpecs;
+    return hasUnitBasedSpecs
+        ? implicitRechargeKg.compareTo(BigDecimal.ZERO) > 0
+        : false;
   }
 
   /**
@@ -483,10 +491,13 @@ public class SalesRecalcStrategy implements RecalcStrategy {
       BigDecimal domesticKg, BigDecimal importKg, SalesStreamDistribution distribution,
       boolean hasUnitBasedSpecs, EngineNumber initialCharge,
       OverridingConverterStateGetter stateGetter, UnitConverter unitConverter) {
+    boolean hasDomestic = distribution.getPercentDomestic().compareTo(BigDecimal.ZERO) > 0;
+    boolean hasImports = distribution.getPercentImport().compareTo(BigDecimal.ZERO) > 0;
+
     if (hasUnitBasedSpecs) {
       stateGetter.setAmortizedUnitVolume(initialCharge);
 
-      if (distribution.getPercentDomestic().compareTo(BigDecimal.ZERO) > 0) {
+      if (hasDomestic) {
         EngineNumber newDomesticUnits = unitConverter.convert(
             new EngineNumber(domesticKg, "kg"), "units");
         StreamUpdate domesticUpdate = new StreamUpdateBuilder()
@@ -500,7 +511,7 @@ public class SalesRecalcStrategy implements RecalcStrategy {
         target.executeStreamUpdate(domesticUpdate);
       }
 
-      if (distribution.getPercentImport().compareTo(BigDecimal.ZERO) > 0) {
+      if (hasImports) {
         EngineNumber newImportUnits = unitConverter.convert(
             new EngineNumber(importKg, "kg"), "units");
         StreamUpdate importUpdate = new StreamUpdateBuilder()
@@ -516,7 +527,7 @@ public class SalesRecalcStrategy implements RecalcStrategy {
 
       stateGetter.clearAmortizedUnitVolume();
     } else {
-      if (distribution.getPercentDomestic().compareTo(BigDecimal.ZERO) > 0) {
+      if (hasDomestic) {
         EngineNumber newDomestic = new EngineNumber(domesticKg, "kg");
         StreamUpdate domesticUpdate = new StreamUpdateBuilder()
             .setName("domestic")
@@ -529,7 +540,7 @@ public class SalesRecalcStrategy implements RecalcStrategy {
         target.executeStreamUpdate(domesticUpdate);
       }
 
-      if (distribution.getPercentImport().compareTo(BigDecimal.ZERO) > 0) {
+      if (hasImports) {
         EngineNumber newImport = new EngineNumber(importKg, "kg");
         StreamUpdate importUpdate = new StreamUpdateBuilder()
             .setName("import")
