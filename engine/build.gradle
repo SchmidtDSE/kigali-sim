@@ -129,10 +129,18 @@ task fatJarVersion(type: Jar) {
 }
 
 task fatJar(type: Copy) {
-    dependsOn fatJarVersion
-    from fatJarVersion.archiveFile
-    into file("${buildDir}/libs")
-    rename { "kigalisim-fat.jar" }
+  dependsOn fatJarVersion
+  from fatJarVersion.archiveFile
+  into file("${buildDir}/libs")
+  rename { "kigalisim-fat.jar" }
+}
+
+// War unversioned
+task warUnversioned(type: Copy) {
+  dependsOn war
+  from war.archiveFile
+  into file("${buildDir}/libs")
+  rename { "KigaliSim.war" }
 }
 
 // Standard JavaDoc target
