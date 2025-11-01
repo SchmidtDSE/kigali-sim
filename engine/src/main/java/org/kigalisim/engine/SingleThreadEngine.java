@@ -733,7 +733,7 @@ public class SingleThreadEngine implements Engine {
    * @return True if in range or no matcher provided
    */
   private boolean getIsInRange(YearMatcher yearMatcher) {
-    return EngineSupportUtils.isInRange(yearMatcher, simulationState.getCurrentYear());
+    return EngineSupportUtils.getIsInRange(yearMatcher, simulationState.getCurrentYear());
   }
 
 

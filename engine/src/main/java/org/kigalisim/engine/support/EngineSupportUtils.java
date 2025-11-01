@@ -58,7 +58,7 @@ public final class EngineSupportUtils {
    * @param currentYear The current year to check against
    * @return True if in range or no matcher provided
    */
-  public static boolean isInRange(YearMatcher yearMatcher, int currentYear) {
+  public static boolean getIsInRange(YearMatcher yearMatcher, int currentYear) {
     return yearMatcher == null || yearMatcher.getInRange(currentYear);
   }
 
@@ -155,6 +155,24 @@ public final class EngineSupportUtils {
   }
 
   /**
+   * Ensures a value is positive, clamping to zero if negative.
+   *
+   * <p>This method checks if a value would be negative and returns zero if so, otherwise
+   * returns the value unchanged. It's used to enforce constraints that prevent negative
+   * stream values when the operation being performed doesn't allow them.</p>
+   *
+   * @param value The value to check
+   * @return The value if positive, or zero if negative
+   */
+  public static BigDecimal ensurePositive(BigDecimal value) {
+    if (value.compareTo(BigDecimal.ZERO) < 0) {
+      System.err.println("WARNING: Negative stream value clamped to zero");
+      return BigDecimal.ZERO;
+    }
+    return value;
+  }
+
+  /**
    * Gets the distributed recharge amount for a specific stream.
    *
    * <p>This method distributes total recharge volume across sales streams based on
@@ -174,20 +192,19 @@ public final class EngineSupportUtils {
     if ("sales".equals(streamName)) {
       // Sales stream gets 100% - setStreamForSales will distribute it
       return totalRecharge.getValue();
-    } else if (isSalesSubstream(streamName)) {
-      SalesStreamDistribution distribution = simulationState.getDistribution(useKey);
-      BigDecimal percentage;
-      if ("domestic".equals(streamName)) {
-        percentage = distribution.getPercentDomestic();
-      } else if ("import".equals(streamName)) {
-        percentage = distribution.getPercentImport();
-      } else {
-        throw new IllegalArgumentException("Unknown sales substream: " + streamName);
-      }
-      return totalRecharge.getValue().multiply(percentage);
-    } else {
-      // Export and other streams get no recharge
-      return BigDecimal.ZERO;
     }
+
+    if (isSalesSubstream(streamName)) {
+      SalesStreamDistribution distribution = simulationState.getDistribution(useKey);
+      BigDecimal percentage = switch (streamName) {
+        case "domestic" -> distribution.getPercentDomestic();
+        case "import" -> distribution.getPercentImport();
+        default -> throw new IllegalArgumentException("Unknown sales substream: " + streamName);
+      };
+      return totalRecharge.getValue().multiply(percentage);
+    }
+
+    // Export and other streams get no recharge
+    return BigDecimal.ZERO;
   }
 }

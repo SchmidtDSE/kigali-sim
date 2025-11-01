@@ -69,8 +69,8 @@ public class ReplaceExecutor {
    */
   public void execute(EngineNumber amountRaw, String stream, String destinationSubstance,
       YearMatcher yearMatcher) {
-    // Early return if not in range
-    if (!EngineSupportUtils.isInRange(yearMatcher, engine.getStreamKeeper().getCurrentYear())) {
+    boolean isInRange = EngineSupportUtils.getIsInRange(yearMatcher, engine.getStreamKeeper().getCurrentYear());
+    if (!isInRange) {
       return;
     }
 
@@ -117,7 +117,8 @@ public class ReplaceExecutor {
    */
   private void updateLastSpecified(Scope currentScope, String application,
       String destinationSubstance, String stream, EngineNumber amountRaw) {
-    if (!EngineSupportUtils.getIsSalesStream(stream, true)) {
+    boolean isSalesStream = EngineSupportUtils.getIsSalesStream(stream, true);
+    if (!isSalesStream) {
       return;
     }
 
@@ -147,14 +148,16 @@ public class ReplaceExecutor {
    * @return The effective amount in concrete units (units, kg, or mt)
    */
   private EngineNumber getEffectiveAmount(Scope scope, String stream, EngineNumber amountRaw) {
-    if (!amountRaw.getUnits().equals("%")) {
+    boolean isPercent = amountRaw.getUnits().equals("%");
+    if (!isPercent) {
       return amountRaw;
     }
 
     SimulationState simulationState = engine.getStreamKeeper();
     EngineNumber lastSpecified = simulationState.getLastSpecifiedValue(scope, stream);
 
-    if (lastSpecified != null) {
+    boolean hasPrior = lastSpecified != null;
+    if (hasPrior) {
       BigDecimal percentageValue = lastSpecified.getValue()
           .multiply(amountRaw.getValue())
           .divide(new BigDecimal("100"));
@@ -191,7 +194,9 @@ public class ReplaceExecutor {
       String destinationSubstance, EngineNumber effectiveAmount) {
     // Convert to units using source substance's initial charge
     UnitConverter sourceUnitConverter = EngineSupportUtils.createUnitConverterWithTotal(
-        engine, stream);
+        engine,
+        stream
+    );
     EngineNumber unitsToReplace = sourceUnitConverter.convert(effectiveAmount, "units");
 
     // Remove from source substance using source's initial charge
@@ -200,8 +205,12 @@ public class ReplaceExecutor {
         sourceVolumeChange.getValue().negate(),
         sourceVolumeChange.getUnits()
     );
-    shortcuts.changeStreamWithoutReportingUnits(stream, sourceAmountNegative,
-        Optional.empty(), Optional.empty());
+    shortcuts.changeStreamWithoutReportingUnits(
+        stream,
+        sourceAmountNegative,
+        Optional.empty(),
+        Optional.empty()
+    );
 
     // Add to destination substance using destination's initial charge
     Scope destinationScope = currentScope.getWithSubstance(destinationSubstance);
@@ -211,22 +220,24 @@ public class ReplaceExecutor {
     engine.setStanza(destinationScope.getStanza());
     engine.setApplication(destinationScope.getApplication());
     engine.setSubstance(destinationScope.getSubstance());
-    EngineNumber destinationInitialCharge = engine.getInitialCharge("sales");
+    final EngineNumber destinationInitialCharge = engine.getInitialCharge("sales");
     engine.setStanza(originalScope.getStanza());
     engine.setApplication(originalScope.getApplication());
     engine.setSubstance(originalScope.getSubstance());
-
-    // Create state getter with destination substance's initial charge
     ConverterStateGetter baseStateGetter = engine.getStateGetter();
-    OverridingConverterStateGetter destinationStateGetter =
-        new OverridingConverterStateGetter(baseStateGetter);
+    OverridingConverterStateGetter destinationStateGetter = new OverridingConverterStateGetter(
+        baseStateGetter
+    );
     destinationStateGetter.setAmortizedUnitVolume(destinationInitialCharge);
     UnitConverter destinationUnitConverter = new UnitConverter(destinationStateGetter);
 
     // Convert units to destination volume and apply
     EngineNumber destinationVolumeChange = destinationUnitConverter.convert(unitsToReplace, "kg");
-    shortcuts.changeStreamWithDisplacementContext(stream, destinationVolumeChange,
-        destinationScope);
+    shortcuts.changeStreamWithDisplacementContext(
+        stream,
+        destinationVolumeChange,
+        destinationScope
+    );
   }
 
   /**
@@ -245,16 +256,27 @@ public class ReplaceExecutor {
   private void applyReplaceWithVolume(Scope currentScope, String stream,
       String destinationSubstance, EngineNumber effectiveAmount) {
     // Convert to kg
-    UnitConverter unitConverter = EngineSupportUtils.createUnitConverterWithTotal(engine, stream);
+    UnitConverter unitConverter = EngineSupportUtils.createUnitConverterWithTotal(
+        engine,
+        stream
+    );
     EngineNumber amount = unitConverter.convert(effectiveAmount, "kg");
 
     // Remove from source substance
     EngineNumber amountNegative = new EngineNumber(amount.getValue().negate(), amount.getUnits());
-    shortcuts.changeStreamWithoutReportingUnits(stream, amountNegative,
-        Optional.empty(), Optional.empty());
+    shortcuts.changeStreamWithoutReportingUnits(
+        stream,
+        amountNegative,
+        Optional.empty(),
+        Optional.empty()
+    );
 
     // Add to destination substance
     Scope destinationScope = currentScope.getWithSubstance(destinationSubstance);
-    shortcuts.changeStreamWithDisplacementContext(stream, amount, destinationScope);
+    shortcuts.changeStreamWithDisplacementContext(
+        stream,
+        amount,
+        destinationScope
+    );
   }
 }
