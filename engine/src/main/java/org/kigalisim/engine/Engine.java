@@ -402,7 +402,7 @@ public interface Engine {
   /**
    * Retrieve the energy intensity for the current application and substance.
    *
-   * @return The energy intensity value with volume normalized energy in MJ per kg.
+   * @return The energy intensity value in kwh / unit (yearly).
    */
   EngineNumber getEqualsEnergyIntensity();
 
@@ -410,7 +410,7 @@ public interface Engine {
    * Retrieve the energy intensity for the given UseKey.
    *
    * @param useKey The UseKey containing application and substance information
-   * @return The energy intensity value with volume normalized energy in MJ per kg.
+   * @return The energy intensity value in kwh / unit (yearly).
    */
   EngineNumber getEqualsEnergyIntensityFor(UseKey useKey);
 
