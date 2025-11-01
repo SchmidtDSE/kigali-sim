@@ -355,14 +355,14 @@ public interface Engine {
    * material. This is the recommended setting when users are uncertain about induction
    * effects.</p>
    *
-   * <p>Induction rate determines how recycled material affects virgin production:</p>
+   * <div>Induction rate determines how recycled material affects virgin production:
    * <ul>
    *   <li>100% induction (default): Recycled material does not displace virgin material,
    *       adding to total supply (induced demand behavior)</li>
    *   <li>0% induction: Recycled material fully displaces virgin material, maintaining
    *       steady population (displacement behavior)</li>
    *   <li>Partial induction: Mixed behavior with proportional effects</li>
-   * </ul>
+   * </ul></div>
    *
    * @param stage The recovery stage (EOL or RECHARGE) to reset the induction rate for
    */

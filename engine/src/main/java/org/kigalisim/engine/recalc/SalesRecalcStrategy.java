@@ -111,14 +111,14 @@ public class SalesRecalcStrategy implements RecalcStrategy {
   /**
    * Determines if unit-based specifications should be preserved.
    *
-   * <p>This method checks if we had unit-based specifications that need to be preserved by:
+   * <p>This method checks if we had unit-based specifications that need to be preserved by:</p>
    * <ol>
    * <li>Checking if the context indicates unit-based sales specifications</li>
    * <li>Verifying that the current operation is also unit-based by checking if implicit
    * recharge is present (indicating units were used in the current operation)</li>
    * <li>If the current operation is kg-based (like displacement), unit specifications are
    * not preserved</li>
-   * </ol></p>
+   * </ol>
    *
    * @param simulationState the simulation state to use for checking specifications
    * @param scopeEffective the scope to check
@@ -231,11 +231,11 @@ public class SalesRecalcStrategy implements RecalcStrategy {
   /**
    * Calculates the total recharge volume based on recharge base population.
    *
-   * <p>This method performs a two-step calculation:
+   * <p>This method performs a two-step calculation:</p>
    * <ol>
    * <li>Converts the recharge population percentage to absolute units using the base population</li>
    * <li>Calculates the weighted-average recharge intensity (kg) for those units</li>
-   * </ol></p>
+   * </ol>
    *
    * <p>The calculation uses OverridingConverterStateGetter to temporarily set population
    * context for accurate percentage-to-absolute conversions.</p>
@@ -296,11 +296,11 @@ public class SalesRecalcStrategy implements RecalcStrategy {
   /**
    * Calculates the substance volume needed for new equipment deployment.
    *
-   * <p>This method determines how much substance is required for new equipment by:
+   * <p>This method determines how much substance is required for new equipment by:</p>
    * <ol>
    * <li>Getting the population change (delta in equipment units)</li>
    * <li>Converting population change to substance volume using initial charge</li>
-   * </ol></p>
+   * </ol>
    *
    * <p>Uses the amortized unit volume approach to ensure proper conversion from units
    * to kg based on the initial charge per unit.</p>
@@ -324,12 +324,12 @@ public class SalesRecalcStrategy implements RecalcStrategy {
   /**
    * Updates recycling streams with calculated EOL and recharge recycling values.
    *
-   * <p>This method updates three streams:
+   * <div>This method updates three streams:
    * <ul>
    * <li>recycleEol: Recycled material from equipment retirement</li>
    * <li>recycleRecharge: Recycled material from recharge/servicing operations</li>
    * <li>recycle: Total recycled material (for backward compatibility)</li>
-   * </ul></p>
+   * </ul></div>
    *
    * <p>All streams are updated with subtractRecycling = false since these values
    * represent the recycled amounts themselves, not values that need recycling applied.</p>
@@ -373,11 +373,11 @@ public class SalesRecalcStrategy implements RecalcStrategy {
   /**
    * Calculates total substance demand from recharge and new equipment needs.
    *
-   * <p>This method computes the baseline demand before accounting for:
+   * <div>This method computes the baseline demand before accounting for:
    * <ul>
    * <li>Implicit recharge (already included when units were specified)</li>
    * <li>Recycling displacement and induction effects</li>
-   * </ul></p>
+   * </ul></div>
    *
    * @param rechargeVolume Total recharge volume in kg
    * @param newEquipmentVolume Volume needed for new equipment in kg
@@ -396,26 +396,26 @@ public class SalesRecalcStrategy implements RecalcStrategy {
    *
    * <p>This method applies different logic based on specification type:</p>
    *
-   * <p><strong>Unit-based specifications:</strong>
+   * <div><strong>Unit-based specifications:</strong>
    * <ul>
    * <li>Start with total demand (already excludes implicit recharge)</li>
    * <li>Add induced demand based on induction rates (default 0% for displacement)</li>
    * <li>Result maintains unit-based specification intent</li>
-   * </ul></p>
+   * </ul></div>
    *
-   * <p><strong>Volume-based specifications:</strong>
+   * <div><strong>Volume-based specifications:</strong>
    * <ul>
    * <li>Always subtract full recycled amount (baseline displacement)</li>
    * <li>Add back induced demand based on induction rates (default 100%)</li>
    * <li>Ensure non-negative result</li>
-   * </ul></p>
+   * </ul></div>
    *
-   * <p>Induction rates control how recycled material affects total supply:
+   * <div>Induction rates control how recycled material affects total supply:
    * <ul>
    * <li>0% induction: Full displacement (recycling reduces virgin demand)</li>
    * <li>100% induction: Full induced demand (recycling adds to total supply)</li>
    * <li>Partial: Proportional combination of both effects</li>
-   * </ul></p>
+   * </ul></div>
    *
    * @param totalDemand Total demand before recycling effects
    * @param eolRecycledKg EOL recycled material in kg
@@ -462,18 +462,18 @@ public class SalesRecalcStrategy implements RecalcStrategy {
    *
    * <p>This method applies different update strategies based on specification type:</p>
    *
-   * <p><strong>Unit-based specifications:</strong>
+   * <div><strong>Unit-based specifications:</strong>
    * <ul>
    * <li>Convert kg values back to units using initial charge</li>
    * <li>Update streams with subtractRecycling = true to preserve user intent</li>
    * <li>Ensures unit-based specifications are maintained through recycling</li>
-   * </ul></p>
+   * </ul></div>
    *
-   * <p><strong>Volume-based specifications:</strong>
+   * <div><strong>Volume-based specifications:</strong>
    * <ul>
    * <li>Update streams directly in kg</li>
    * <li>Update streams with subtractRecycling = false</li>
-   * </ul></p>
+   * </ul></div>
    *
    * <p>Only streams with non-zero allocations (enabled streams) are updated.</p>
    *

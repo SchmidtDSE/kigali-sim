@@ -125,13 +125,13 @@ public class SalesStreamDistributionBuilder {
   /**
    * Build a sales stream distribution based on provided values.
    *
-   * <p>Distribution logic:
+   * <div>Distribution logic:
    * <ul>
    * <li>If exports are excluded: 100% split between import and domestic only</li>
    * <li>If exports are included: proportional split between import, domestic, and export</li>
    * <li>Proportional split based on current values if streams have sales</li>
    * <li>Equal split among enabled streams if no current sales</li>
-   * </ul>
+   * </ul></div>
    *
    * @return A SalesStreamDistribution with appropriate percentages
    * @throws IllegalStateException if any required field is missing
