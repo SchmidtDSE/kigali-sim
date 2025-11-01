@@ -19,7 +19,7 @@ class EngineSupportUtilsTest {
   @Test
   void testIsInRangeWithNullYearMatcher() {
     // Act & Assert
-    assertTrue(EngineSupportUtils.isInRange(null, 2023));
+    assertTrue(EngineSupportUtils.getIsInRange(null, 2023));
   }
 
   @Test
@@ -29,7 +29,7 @@ class EngineSupportUtilsTest {
     when(mockYearMatcher.getInRange(2023)).thenReturn(true);
 
     // Act & Assert
-    assertTrue(EngineSupportUtils.isInRange(mockYearMatcher, 2023));
+    assertTrue(EngineSupportUtils.getIsInRange(mockYearMatcher, 2023));
   }
 
   @Test
@@ -39,7 +39,7 @@ class EngineSupportUtilsTest {
     when(mockYearMatcher.getInRange(2023)).thenReturn(false);
 
     // Act & Assert
-    assertFalse(EngineSupportUtils.isInRange(mockYearMatcher, 2023));
+    assertFalse(EngineSupportUtils.getIsInRange(mockYearMatcher, 2023));
   }
 
   @Test
