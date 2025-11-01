@@ -1,3 +1,9 @@
+/**
+ * Description of a time point.
+ *
+ * @license BSD-3-Clause
+ */
+
 package org.kigalisim.lang.time;
 
 import java.util.Optional;

@@ -1,3 +1,9 @@
+/**
+ * Calculation which recharges equipment with a specified volume and intensity.
+ *
+ * @license BSD-3-Clause
+ */
+
 package org.kigalisim.lang.operation;
 
 import java.util.Optional;

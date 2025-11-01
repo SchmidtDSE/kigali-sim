@@ -1,3 +1,9 @@
+/**
+ * Calculation which sets a consumption value in the engine.
+ *
+ * @license BSD-3-Clause
+ */
+
 package org.kigalisim.lang.operation;
 
 import java.util.Optional;

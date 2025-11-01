@@ -14,8 +14,7 @@ import org.kigalisim.lang.validation.DuplicateValidator;
 /**
  * Result of parsing (interpreting / compiling) a QubecTalk program.
  *
- * <p>Result of parsing (interpreting / compiling) a QubecTalk program which can be used to evaluate
- * all of the policies and scenarios found.</p>
+ * <p>Can be used to evaluate all of the policies and scenarios found.</p>
  */
 public class ParsedProgram {
 

@@ -49,13 +49,11 @@ public class EquipmentChangeUtil {
    * Handle setting equipment to a target value.
    *
    * <p>Compares target equipment level with current level:</p>
-   * <div>
-   *   <ul>
-   *     <li>If higher: converts delta to sales operation (handles recharge automatically)</li>
-   *     <li>If lower: sets sales to 0 and retires excess from priorEquipment</li>
-   *     <li>If equal: no action needed</li>
-   *   </ul>
-   * </div>
+   * <ul>
+   *   <li>If higher: converts delta to sales operation (handles recharge automatically)</li>
+   *   <li>If lower: sets sales to 0 and retires excess from priorEquipment</li>
+   *   <li>If equal: no action needed</li>
+   * </ul>
    *
    * <p>Caller is responsible for checking year range before calling this method.</p>
    *
@@ -95,12 +93,10 @@ public class EquipmentChangeUtil {
    * Handle changing equipment by a delta amount.
    *
    * <p>Supports both percentage and absolute changes:</p>
-   * <div>
-   *   <ul>
-   *     <li>Percentage: change equipment by +8%</li>
-   *     <li>Absolute: change equipment by +100 units</li>
-   *   </ul>
-   * </div>
+   * <ul>
+   *   <li>Percentage: change equipment by +8%</li>
+   *   <li>Absolute: change equipment by +100 units</li>
+   * </ul>
    *
    * <p>Caller is responsible for checking year range before calling this method.</p>
    *

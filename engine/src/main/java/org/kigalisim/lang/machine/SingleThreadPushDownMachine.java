@@ -19,7 +19,7 @@ import org.kigalisim.engine.number.EngineNumber;
  * A push down automaton which can perform mathematical and logical operations for QubecTalk.
  *
  * <p>A push down automaton which can perform mathematical and logical operations for QubecTalk but
- * which may necessarily be thread safe.</p>
+ * which may not necessarily be thread safe.</p>
  */
 public class SingleThreadPushDownMachine implements PushDownMachine {
 

@@ -1,3 +1,9 @@
+/**
+ * Calculation which retires equipment and immediately replaces it by increasing sales.
+ *
+ * @license BSD-3-Clause
+ */
+
 package org.kigalisim.lang.operation;
 
 import java.math.BigDecimal;

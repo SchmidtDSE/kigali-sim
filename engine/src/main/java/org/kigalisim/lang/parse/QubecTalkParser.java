@@ -18,7 +18,8 @@ import org.kigalisim.lang.QubecTalkParser.ProgramContext;
  * Entrypoint for the QubecTalk DSL parser step.
  *
  * <p>Facade acting as an entry point to the parser machinery for the QubecTalk DSL (Domain Specific
- * Language). It leverages ANTLR for, capturing any syntax errors encountered during parsing.</p>
+ * Language). It leverages ANTLR for parsing, capturing any syntax errors encountered during the
+ * process.</p>
  */
 public class QubecTalkParser {
 

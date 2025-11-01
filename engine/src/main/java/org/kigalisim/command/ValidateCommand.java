@@ -42,6 +42,11 @@ public class ValidateCommand implements Callable<Integer> {
   @Parameters(index = "0", description = "Path to QubecTalk file to validate")
   private File file;
 
+  /**
+   * Executes the validate command.
+   *
+   * @return 0 on success, non-zero error code on failure
+   */
   @Override
   public Integer call() {
     if (!file.exists()) {
@@ -52,7 +57,7 @@ public class ValidateCommand implements Callable<Integer> {
     // Interpret the code
     CommandInterpretResult interpretResult = interpret(file);
     if (interpretResult.getIsFailure()) {
-      System.err.println(interpretResult.getErrorMessage());
+      System.err.println(interpretResult.getErrorMessage().orElse("Unknown error"));
       return VALIDATION_ERROR;
     }
 
@@ -61,7 +66,10 @@ public class ValidateCommand implements Callable<Integer> {
   }
 
   /**
-   * Interprets QubecTalk code from a file without exception handling.
+   * Validates QubecTalk code from a file without exception handling.
+   *
+   * <p>This method parses and interprets the code but does not return the program.
+   * It succeeds silently or throws an exception on error.</p>
    *
    * @param file The file containing QubecTalk code
    * @throws IOException If the file cannot be read
@@ -82,15 +90,15 @@ public class ValidateCommand implements Callable<Integer> {
   }
 
   /**
-   * Interprets QubecTalk code from a file with exception handling.
+   * Validates QubecTalk code from a file with exception handling.
    *
    * @param file The file containing QubecTalk code
-   * @return A CommandInterpretResult containing success or an error message
+   * @return A CommandInterpretResult indicating success or containing an error message
    */
   private CommandInterpretResult interpret(File file) {
     try {
       interpretUnsafe(file);
-      return new CommandInterpretResult((String) null);
+      return new CommandInterpretResult();
     } catch (IOException e) {
       return new CommandInterpretResult("Could not read file: " + file + "\nError: " + e.getMessage());
     } catch (RuntimeException e) {

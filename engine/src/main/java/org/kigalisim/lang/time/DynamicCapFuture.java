@@ -1,7 +1,6 @@
 /**
  * Time point which resolves to a dynamic cap value.
  *
- *
  * @license BSD-3-Clause
  */
 
@@ -22,7 +21,6 @@ public class DynamicCapFuture implements TimePointFuture {
 
   /**
    * Create a new DynamicCapFuture.
-   *
    *
    * @param value The dynamic cap value to which this should resolve.
    */

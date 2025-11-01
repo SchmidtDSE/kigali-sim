@@ -1,10 +1,11 @@
 /**
- * Interface for simulation engine that underpins simulations regardless of interface.
+ * Interface defining the contract for the Montreal Protocol simulation engine.
  *
- * <p>This interface defines the contract for the Montreal Protocol simulation engine,
- * providing methods for managing engine lifecycle, scope operations, stream operations,
- * and various calculation functions. Implementations should handle the core simulation
- * mechanics including substance flows, equipment tracking, and emissions calculations.</p>
+ * <p>This interface provides methods for managing the engine lifecycle, setting simulation
+ * parameters, manipulating substance streams, and retrieving results. It supports operations
+ * across different scopes (stanza/application/substance) and time periods. Implementations
+ * should handle the core simulation mechanics including substance flows, equipment tracking,
+ * and emissions calculations.</p>
  *
  * @license BSD-3-Clause
  */
@@ -24,13 +25,7 @@ import org.kigalisim.engine.state.UseKey;
 import org.kigalisim.engine.state.YearMatcher;
 import org.kigalisim.lang.operation.RecoverOperation.RecoveryStage;
 
-/**
- * Interface defining the contract for the Montreal Protocol simulation engine.
- *
- * <p>This interface provides methods for managing the engine lifecycle, setting simulation
- * parameters, manipulating substance streams, and retrieving results. It supports operations
- * across different scopes (stanza/application/substance) and time periods.</p>
- */
+/** Interface defining the contract for the Montreal Protocol simulation engine. */
 public interface Engine {
 
   /**
@@ -151,7 +146,6 @@ public interface Engine {
    * @return True if reached the end year and false otherwise
    */
   boolean getIsDone();
-
 
   /**
    * Execute a stream update operation using a StreamUpdate object.
@@ -353,16 +347,16 @@ public interface Engine {
    * <p>This method sets the induction rate to 100%, which represents default induced demand
    * behavior where recycled material adds to total supply rather than displacing virgin
    * material. This is the recommended setting when users are uncertain about induction
-   * effects.</p>
+   * effects.
    *
-   * <div>Induction rate determines how recycled material affects virgin production:
+   * <p>Induction rate determines how recycled material affects virgin production:</p>
    * <ul>
    *   <li>100% induction (default): Recycled material does not displace virgin material,
    *       adding to total supply (induced demand behavior)</li>
    *   <li>0% induction: Recycled material fully displaces virgin material, maintaining
    *       steady population (displacement behavior)</li>
    *   <li>Partial induction: Mixed behavior with proportional effects</li>
-   * </ul></div>
+   * </ul>
    *
    * @param stage The recovery stage (EOL or RECHARGE) to reset the induction rate for
    */

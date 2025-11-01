@@ -61,6 +61,11 @@ public class RunCommand implements Callable<Integer> {
   @Option(names = {"-r", "--parallel-replicates"}, description = "Number of times to run each scenario (default: 1)", defaultValue = "1")
   private int replicates;
 
+  /**
+   * Executes the run command.
+   *
+   * @return 0 on success, non-zero error code on failure
+   */
   @Override
   public Integer call() {
     if (!file.exists()) {

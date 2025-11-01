@@ -134,7 +134,9 @@ public class EngineResult {
   }
 
   /**
-   * Get the total consumption. By default, excludes recycling consumption to measure virgin material consumption.
+   * Get the total consumption.
+   *
+   * <p>By default, excludes recycling consumption to measure virgin material consumption.</p>
    *
    * @return The virgin material consumption value in tCO2e or similar
    */

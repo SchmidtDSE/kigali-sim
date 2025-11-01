@@ -449,7 +449,7 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
   }
 
   /**
-   * {@inheritDoc}}
+   * {@inheritDoc}
    */
   @Override
   public Fragment visitAboutStanza(QubecTalkParser.AboutStanzaContext ctx) {

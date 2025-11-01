@@ -26,6 +26,9 @@ public class VersionCommand implements Runnable {
   public VersionCommand() {
   }
 
+  /**
+   * Executes the version command by printing the version number.
+   */
   @Override
   public void run() {
     System.out.println("0.0.1");

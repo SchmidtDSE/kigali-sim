@@ -1,3 +1,9 @@
+/**
+ * Calculation which retrieves a variable's value from the engine.
+ *
+ * @license BSD-3-Clause
+ */
+
 package org.kigalisim.lang.operation;
 
 import org.kigalisim.engine.number.EngineNumber;

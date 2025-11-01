@@ -1,3 +1,9 @@
+/**
+ * Calculation which defines a variable and sets its value in the engine.
+ *
+ * @license BSD-3-Clause
+ */
+
 package org.kigalisim.lang.operation;
 
 import org.kigalisim.engine.number.EngineNumber;
