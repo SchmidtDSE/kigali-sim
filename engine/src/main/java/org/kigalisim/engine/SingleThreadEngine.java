@@ -11,10 +11,8 @@
 package org.kigalisim.engine;
 
 import java.math.BigDecimal;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Collectors;
 import org.kigalisim.engine.number.EngineNumber;
 import org.kigalisim.engine.number.UnitConverter;
@@ -38,11 +36,15 @@ import org.kigalisim.engine.state.SubstanceInApplicationId;
 import org.kigalisim.engine.state.UseKey;
 import org.kigalisim.engine.state.YearMatcher;
 import org.kigalisim.engine.support.ChangeExecutor;
+import org.kigalisim.engine.support.DisplaceExecutor;
 import org.kigalisim.engine.support.EngineSupportUtils;
 import org.kigalisim.engine.support.EquipmentChangeUtil;
 import org.kigalisim.engine.support.ExceptionsGenerator;
+import org.kigalisim.engine.support.LimitExecutor;
+import org.kigalisim.engine.support.ReplaceExecutor;
 import org.kigalisim.engine.support.SetExecutor;
 import org.kigalisim.engine.support.StreamUpdateExecutor;
+import org.kigalisim.engine.support.StreamUpdateShortcuts;
 import org.kigalisim.lang.operation.RecoverOperation.RecoveryStage;
 
 /**
@@ -54,21 +56,9 @@ import org.kigalisim.lang.operation.RecoverOperation.RecoveryStage;
  */
 public class SingleThreadEngine implements Engine {
 
-  private static final Set<String> STREAM_NAMES = new HashSet<>();
   private static final boolean OPTIMIZE_RECALCS = true;
   private static final String NO_APP_OR_SUBSTANCE_MESSAGE =
       "Tried %s without application and substance%s.";
-
-  static {
-    STREAM_NAMES.add("priorEquipment");
-    STREAM_NAMES.add("equipment");
-    STREAM_NAMES.add("export");
-    STREAM_NAMES.add("import");
-    STREAM_NAMES.add("domestic");
-    STREAM_NAMES.add("sales");
-  }
-
-  private static final String RECYCLE_RECOVER_STREAM = "sales";
 
   private final int startYear;
   private final int endYear;
@@ -81,6 +71,10 @@ public class SingleThreadEngine implements Engine {
   private final ChangeExecutor changeExecutor;
   private final EquipmentChangeUtil equipmentChangeUtil;
   private final StreamUpdateExecutor streamUpdateExecutor;
+  private final StreamUpdateShortcuts streamUpdateShortcuts;
+  private final ReplaceExecutor replaceExecutor;
+  private final DisplaceExecutor displaceExecutor;
+  private final LimitExecutor limitExecutor;
   private Scope scope;
 
   /**
@@ -108,6 +102,10 @@ public class SingleThreadEngine implements Engine {
     changeExecutor = new ChangeExecutor(this);
     equipmentChangeUtil = new EquipmentChangeUtil(this);
     streamUpdateExecutor = new StreamUpdateExecutor(this);
+    streamUpdateShortcuts = new StreamUpdateShortcuts(this);
+    replaceExecutor = new ReplaceExecutor(this);
+    displaceExecutor = new DisplaceExecutor(this);
+    limitExecutor = new LimitExecutor(this);
     scope = new Scope();
   }
 
@@ -680,11 +678,7 @@ public class SingleThreadEngine implements Engine {
       return;
     }
 
-    if ("%".equals(amount.getUnits())) {
-      capWithPercent(stream, amount, displaceTarget);
-    } else {
-      capWithValue(stream, amount, displaceTarget);
-    }
+    limitExecutor.executeCap(stream, amount, yearMatcher, displaceTarget);
   }
 
   @Override
@@ -700,100 +694,13 @@ public class SingleThreadEngine implements Engine {
       return;
     }
 
-    if ("%".equals(amount.getUnits())) {
-      floorWithPercent(stream, amount, displaceTarget);
-    } else {
-      floorWithValue(stream, amount, displaceTarget);
-    }
+    limitExecutor.executeFloor(stream, amount, yearMatcher, displaceTarget);
   }
 
   @Override
   public void replace(EngineNumber amountRaw, String stream, String destinationSubstance,
       YearMatcher yearMatcher) {
-    if (!getIsInRange(yearMatcher)) {
-      return;
-    }
-
-    // Track the original user-specified units for the current substance
-    Scope currentScope = scope;
-    String application = currentScope.getApplication();
-    String currentSubstance = currentScope.getSubstance();
-    if (application == null || currentSubstance == null) {
-      raiseNoAppOrSubstance("setting stream", " specified");
-    }
-
-    // Validate that we're not attempting to replace substance with itself
-    if (currentSubstance.equals(destinationSubstance)) {
-      ExceptionsGenerator.raiseSelfReplacement(currentSubstance);
-    }
-
-    if (EngineSupportUtils.getIsSalesStream(stream, true)) {
-      // Track the specific stream and amount for the current substance
-      simulationState.setLastSpecifiedValue(currentScope, stream, amountRaw);
-
-      // Track the specific stream and amount for the destination substance
-      SimpleUseKey destKey = new SimpleUseKey(application, destinationSubstance);
-      simulationState.setLastSpecifiedValue(destKey, stream, amountRaw);
-    }
-
-    // For percentage operations, check lastSpecified value to determine unit type
-    EngineNumber effectiveAmount = amountRaw;
-    if (amountRaw.getUnits().equals("%")) {
-      EngineNumber lastSpecified = simulationState.getLastSpecifiedValue(scope, stream);
-
-      if (lastSpecified != null) {
-        BigDecimal percentageValue = lastSpecified.getValue().multiply(amountRaw.getValue()).divide(new BigDecimal("100"));
-        effectiveAmount = new EngineNumber(percentageValue, lastSpecified.getUnits());
-      } else {
-        // Use current value units to determine if unit-based logic should apply
-        EngineNumber currentValue = getStream(stream);
-        BigDecimal percentageValue = currentValue.getValue().multiply(amountRaw.getValue()).divide(new BigDecimal("100"));
-        effectiveAmount = new EngineNumber(percentageValue, currentValue.getUnits());
-      }
-    }
-
-    if (effectiveAmount.hasEquipmentUnits()) {
-      // For equipment units, convert to units first, then handle each substance separately
-      UnitConverter sourceUnitConverter = EngineSupportUtils.createUnitConverterWithTotal(this, stream);
-      EngineNumber unitsToReplace = sourceUnitConverter.convert(effectiveAmount, "units");
-
-      // Remove from source substance using source's initial charge
-      EngineNumber sourceVolumeChange = sourceUnitConverter.convert(unitsToReplace, "kg");
-      EngineNumber sourceAmountNegative = new EngineNumber(
-          sourceVolumeChange.getValue().negate(),
-          sourceVolumeChange.getUnits()
-      );
-      changeStreamWithoutReportingUnits(stream, sourceAmountNegative, Optional.empty(), Optional.empty());
-
-      // Add to destination substance: convert the same number of units to destination's kg amount
-      Scope destinationScope = scope.getWithSubstance(destinationSubstance);
-      Scope originalScope = scope;
-      scope = destinationScope;
-
-      // Get the destination substance's initial charge for sales
-      EngineNumber destinationInitialCharge = getInitialCharge("sales");
-
-      // Create a state getter that uses the destination substance's initial charge
-      OverridingConverterStateGetter destinationStateGetter =
-          new OverridingConverterStateGetter(getStateGetter());
-      destinationStateGetter.setAmortizedUnitVolume(destinationInitialCharge);
-      UnitConverter destinationUnitConverter = new UnitConverter(destinationStateGetter);
-
-      scope = originalScope;
-
-      EngineNumber destinationVolumeChange = destinationUnitConverter.convert(unitsToReplace, "kg");
-      changeStreamWithDisplacementContext(stream, destinationVolumeChange, destinationScope);
-    } else {
-      // For volume units, use the original logic
-      UnitConverter unitConverter = EngineSupportUtils.createUnitConverterWithTotal(this, stream);
-      EngineNumber amount = unitConverter.convert(effectiveAmount, "kg");
-
-      EngineNumber amountNegative = new EngineNumber(amount.getValue().negate(), amount.getUnits());
-      changeStreamWithoutReportingUnits(stream, amountNegative, Optional.empty(), Optional.empty());
-
-      Scope destinationScope = scope.getWithSubstance(destinationSubstance);
-      changeStreamWithDisplacementContext(stream, amount, destinationScope);
-    }
+    replaceExecutor.execute(amountRaw, stream, destinationSubstance, yearMatcher);
   }
 
   @Override
@@ -823,268 +730,9 @@ public class SingleThreadEngine implements Engine {
    * @return True if in range or no matcher provided
    */
   private boolean getIsInRange(YearMatcher yearMatcher) {
-    return EngineSupportUtils.isInRange(yearMatcher, simulationState.getCurrentYear());
+    return EngineSupportUtils.getIsInRange(yearMatcher, simulationState.getCurrentYear());
   }
 
-  /**
-   * Handle displacement logic for cap and floor operations.
-   *
-   * @param stream The stream identifier being modified
-   * @param amount The amount used for the operation
-   * @param changeAmount The actual change amount in kg
-   * @param displaceTarget Optional target for displaced amount
-   */
-  private void handleDisplacement(String stream, EngineNumber amount,
-      BigDecimal changeAmount, String displaceTarget) {
-    if (displaceTarget == null) {
-      return;
-    }
-
-    // Validate that we're not attempting to displace stream to itself
-    if (stream.equals(displaceTarget)) {
-      ExceptionsGenerator.raiseSelfDisplacement(stream);
-    }
-
-    // Check if this is a stream-based displacement (moved to top to avoid duplication)
-    boolean isStream = STREAM_NAMES.contains(displaceTarget);
-
-    // Automatic recycling addition: if recovery creates recycled material from sales stream,
-    // always add it back to sales first before applying targeted displacement
-    boolean displacementAutomatic = isStream && RECYCLE_RECOVER_STREAM.equals(stream);
-    if (displacementAutomatic) {
-      // Add recycled material back to sales to maintain total material balance
-      EngineNumber recycledAddition = new EngineNumber(changeAmount, "kg");
-      changeStreamWithoutReportingUnits(RECYCLE_RECOVER_STREAM, recycledAddition, Optional.empty(), Optional.empty());
-    }
-
-    EngineNumber displaceChange;
-
-    if (amount.hasEquipmentUnits()) {
-      // For equipment units, displacement should be unit-based, not volume-based
-      UnitConverter currentUnitConverter = EngineSupportUtils.createUnitConverterWithTotal(this, stream);
-
-      // Convert the volume change back to units in the original substance
-      EngineNumber volumeChangeFlip = new EngineNumber(changeAmount.negate(), "kg");
-      EngineNumber unitsChanged = currentUnitConverter.convert(volumeChangeFlip, "units");
-
-      if (isStream) {
-        // Same substance, same stream - use volume displacement
-        displaceChange = new EngineNumber(changeAmount.negate(), "kg");
-
-        changeStreamWithoutReportingUnits(displaceTarget, displaceChange, Optional.empty(), Optional.empty());
-      } else {
-        // Different substance - apply the same number of units to the destination substance
-        Scope destinationScope = scope.getWithSubstance(displaceTarget);
-
-        // Temporarily change scope to destination for unit conversion
-        final Scope originalScope = scope;
-        scope = destinationScope;
-        UnitConverter destinationUnitConverter = EngineSupportUtils.createUnitConverterWithTotal(this, stream);
-
-        // Convert units to destination substance volume using destination's initial charge
-        EngineNumber destinationVolumeChange = destinationUnitConverter.convert(unitsChanged, "kg");
-        displaceChange = new EngineNumber(destinationVolumeChange.getValue(), "kg");
-
-        // Use custom recalc kit with destination substance's properties for correct GWP calculation
-        changeStreamWithDisplacementContext(stream, displaceChange, destinationScope);
-
-        // Restore original scope
-        scope = originalScope;
-      }
-    } else {
-      // For volume units, use volume-based displacement as before
-      displaceChange = new EngineNumber(changeAmount.negate(), "kg");
-
-      if (isStream) {
-        changeStreamWithoutReportingUnits(displaceTarget, displaceChange, Optional.empty(), Optional.empty());
-      } else {
-        Scope destinationScope = scope.getWithSubstance(displaceTarget);
-        // Use custom recalc kit with destination substance's properties for correct GWP calculation
-        changeStreamWithDisplacementContext(stream, displaceChange, destinationScope);
-      }
-    }
-  }
-
-  /**
-   * Change a stream value with proper displacement context for correct GWP calculations.
-   *
-   * <p>This method creates a custom recalc kit that uses the destination substance's
-   * properties (GWP, initial charge, energy intensity) to ensure correct emissions
-   * calculations during displacement operations.</p>
-   *
-   * @param stream The stream identifier to modify
-   * @param amount The amount to change the stream by
-   * @param destinationScope The scope for the destination substance
-   */
-  private void changeStreamWithDisplacementContext(String stream, EngineNumber amount, Scope destinationScope) {
-    changeStreamWithDisplacementContext(stream, amount, destinationScope, false);
-  }
-
-  /**
-   * Change a stream value with proper displacement context for correct GWP calculations.
-   *
-   * <p>This method creates a custom recalc kit that uses the destination substance's
-   * properties (GWP, initial charge, energy intensity) to ensure correct emissions
-   * calculations during displacement operations.</p>
-   *
-   * @param stream The stream identifier to modify
-   * @param amount The amount to change the stream by
-   * @param destinationScope The scope for the destination substance
-   * @param negativeAllowed If true, negative stream values are permitted
-   */
-  private void changeStreamWithDisplacementContext(String stream, EngineNumber amount, Scope destinationScope, boolean negativeAllowed) {
-    // Store original scope
-    final Scope originalScope = scope;
-
-    // Temporarily switch engine scope to destination substance
-    scope = destinationScope;
-
-    // Get current value and calculate new value (now using correct scope)
-    EngineNumber currentValue = getStream(stream);
-    UnitConverter unitConverter = EngineSupportUtils.createUnitConverterWithTotal(this, stream);
-
-    EngineNumber convertedDelta = unitConverter.convert(amount, currentValue.getUnits());
-    BigDecimal newAmount = currentValue.getValue().add(convertedDelta.getValue());
-
-    BigDecimal newAmountBound;
-    if (!negativeAllowed && newAmount.compareTo(BigDecimal.ZERO) < 0) {
-      System.err.println("WARNING: Negative stream value clamped to zero for stream " + stream);
-      newAmountBound = BigDecimal.ZERO;
-    } else {
-      newAmountBound = newAmount;
-    }
-
-    EngineNumber outputWithUnits = new EngineNumber(newAmountBound, currentValue.getUnits());
-
-    // Set the stream value without triggering standard recalc to avoid double calculation
-    StreamUpdate update = new StreamUpdateBuilder()
-        .setName(stream)
-        .setValue(outputWithUnits)
-        .setPropagateChanges(false)
-        .build();
-
-    executeStreamUpdate(update);
-
-    // Update lastSpecifiedValue for sales substreams since propagateChanges=false skips this
-    if (EngineSupportUtils.getIsSalesStream(stream, false)) {
-      UseKey destKey = new SimpleUseKey(destinationScope.getApplication(), destinationScope.getSubstance());
-      simulationState.setLastSpecifiedValue(destKey, stream, outputWithUnits);
-    }
-
-    // Only recalculate for streams that affect equipment populations
-    if (!EngineSupportUtils.getIsSalesStream(stream, false)) {
-      scope = originalScope;
-      return;
-    }
-
-    // Create standard recalc operation - engine scope is now correctly set to destination
-    boolean useImplicitRecharge = false; // Displacement operations don't add recharge
-
-    RecalcOperationBuilder builder = new RecalcOperationBuilder()
-        .setRecalcKit(createRecalcKit()) // Use standard recalc kit - scope is correct now
-        .setUseExplicitRecharge(!useImplicitRecharge)
-        .recalcPopulationChange()
-        .thenPropagateToConsumption();
-
-    if (!OPTIMIZE_RECALCS) {
-      builder = builder.thenPropagateToSales();
-    }
-
-    RecalcOperation operation = builder.build();
-    operation.execute(this);
-
-    // Restore original scope
-    scope = originalScope;
-  }
-
-  /**
-   * Gets the distributed recharge amount for a specific stream.
-   *
-   * @param streamName The name of the stream
-   * @param totalRecharge The total recharge amount
-   * @param keyEffective The effective use key
-   * @return The distributed recharge amount based on stream percentages
-   */
-  private BigDecimal getDistributedRecharge(String streamName, EngineNumber totalRecharge, UseKey keyEffective) {
-    if ("sales".equals(streamName)) {
-      // Sales stream gets 100% - setStreamForSales will distribute it
-      return totalRecharge.getValue();
-    } else if (EngineSupportUtils.isSalesSubstream(streamName)) {
-      SalesStreamDistribution distribution = simulationState.getDistribution(keyEffective);
-      BigDecimal percentage;
-      if ("domestic".equals(streamName)) {
-        percentage = distribution.getPercentDomestic();
-      } else if ("import".equals(streamName)) {
-        percentage = distribution.getPercentImport();
-      } else {
-        throw new IllegalArgumentException("Unknown sales substream: " + streamName);
-      }
-      return totalRecharge.getValue().multiply(percentage);
-    } else {
-      // Export and other streams get no recharge
-      return BigDecimal.ZERO;
-    }
-  }
-
-  /**
-   * Change a stream value without reporting units to the last units tracking system.
-   *
-   * @param stream The stream identifier to modify
-   * @param amount The amount to change the stream by
-   * @param yearMatcher Matcher to determine if the change applies to current year
-   * @param scope The scope in which to make the change
-   */
-  private void changeStreamWithoutReportingUnits(String stream, EngineNumber amount,
-      Optional<YearMatcher> yearMatcher, Optional<UseKey> scope) {
-    changeStreamWithoutReportingUnits(stream, amount, yearMatcher, scope, false);
-  }
-
-  /**
-   * Change a stream value without reporting units to the last units tracking system.
-   *
-   * <p>This method is similar to changeStreamWithDisplacementContext but without the displacement
-   * context. It allows for consistent handling of negative stream values across both methods.</p>
-   *
-   * @param stream The stream identifier to modify
-   * @param amount The amount to change the stream by
-   * @param yearMatcher Matcher to determine if the change applies to current year
-   * @param scope The scope in which to make the change
-   * @param negativeAllowed If true, negative stream values are permitted
-   */
-  private void changeStreamWithoutReportingUnits(String stream, EngineNumber amount,
-      Optional<YearMatcher> yearMatcher, Optional<UseKey> scope, boolean negativeAllowed) {
-    if (!getIsInRange(yearMatcher.orElse(null))) {
-      return;
-    }
-
-    EngineNumber currentValue = getStream(stream, scope, Optional.empty());
-    UnitConverter unitConverter = EngineSupportUtils.createUnitConverterWithTotal(this, stream);
-
-    EngineNumber convertedDelta = unitConverter.convert(amount, currentValue.getUnits());
-    BigDecimal newAmount = currentValue.getValue().add(convertedDelta.getValue());
-
-    BigDecimal newAmountBound;
-    if (!negativeAllowed && newAmount.compareTo(BigDecimal.ZERO) < 0) {
-      System.err.println("WARNING: Negative stream value clamped to zero for stream " + stream);
-      newAmountBound = BigDecimal.ZERO;
-    } else {
-      newAmountBound = newAmount;
-    }
-
-    EngineNumber outputWithUnits = new EngineNumber(newAmountBound, currentValue.getUnits());
-
-    // Allow propagation but don't track units (since units tracking was handled by the caller)
-    StreamUpdateBuilder builder = new StreamUpdateBuilder()
-        .setName(stream)
-        .setValue(outputWithUnits);
-
-    if (scope.isPresent()) {
-      builder.setKey(scope.get());
-    }
-
-    StreamUpdate update = builder.build();
-    executeStreamUpdate(update);
-  }
 
 
   /**
@@ -1298,164 +946,5 @@ public class SingleThreadEngine implements Engine {
     }
   }
 
-  /**
-   * Apply percentage-based cap operation using lastSpecifiedValue for compounding effect.
-   *
-   * @param stream the stream name to cap
-   * @param amount the percentage cap amount
-   * @param displaceTarget the target substance for displacement, or null if no displacement
-   */
-  private void capWithPercent(String stream, EngineNumber amount, String displaceTarget) {
-    UnitConverter unitConverter = EngineSupportUtils.createUnitConverterWithTotal(this, stream);
-    EngineNumber currentValueRaw = getStream(stream);
-    EngineNumber currentValue = unitConverter.convert(currentValueRaw, "kg");
-
-    SimulationState simulationState = getStreamKeeper();
-    EngineNumber lastSpecified = simulationState.getLastSpecifiedValue(scope, stream);
-
-    if (lastSpecified != null) {
-      BigDecimal capValue = lastSpecified.getValue().multiply(amount.getValue()).divide(new BigDecimal("100"));
-      EngineNumber newCappedValue = new EngineNumber(capValue, lastSpecified.getUnits());
-
-      EngineNumber currentInKg = unitConverter.convert(currentValueRaw, "kg");
-      EngineNumber newCappedInKg = unitConverter.convert(newCappedValue, "kg");
-
-      if (currentInKg.getValue().compareTo(newCappedInKg.getValue()) > 0) {
-        StreamUpdate update = new StreamUpdateBuilder()
-            .setName(stream)
-            .setValue(newCappedValue)
-            .setYearMatcher(Optional.empty())
-            .inferSubtractRecycling()
-            .build();
-        executeStreamUpdate(update);
-
-        if (displaceTarget != null) {
-          EngineNumber finalInKg = getStream(stream);
-          BigDecimal changeInKg = finalInKg.getValue().subtract(currentInKg.getValue());
-          handleDisplacement(stream, amount, changeInKg, displaceTarget);
-        }
-      }
-    } else {
-      EngineNumber convertedMax = unitConverter.convert(amount, "kg");
-      BigDecimal changeAmountRaw = convertedMax.getValue().subtract(currentValue.getValue());
-      BigDecimal changeAmount = changeAmountRaw.min(BigDecimal.ZERO);
-
-      if (changeAmount.compareTo(BigDecimal.ZERO) < 0) {
-        EngineNumber changeWithUnits = new EngineNumber(changeAmount, "kg");
-        changeStreamWithoutReportingUnits(stream, changeWithUnits, Optional.empty(), Optional.empty());
-        handleDisplacement(stream, amount, changeAmount, displaceTarget);
-      }
-    }
-  }
-
-  /**
-   * Apply absolute value-based cap operation.
-   *
-   * @param stream the stream name to cap
-   * @param amount the absolute cap amount
-   * @param displaceTarget the target substance for displacement, or null if no displacement
-   */
-  private void capWithValue(String stream, EngineNumber amount, String displaceTarget) {
-    UnitConverter unitConverter = EngineSupportUtils.createUnitConverterWithTotal(this, stream);
-    EngineNumber currentValueRaw = getStream(stream);
-    EngineNumber currentValueInAmountUnits = unitConverter.convert(currentValueRaw, amount.getUnits());
-
-    if (currentValueInAmountUnits.getValue().compareTo(amount.getValue()) > 0) {
-      EngineNumber currentInKg = unitConverter.convert(currentValueRaw, "kg");
-      StreamUpdate update = new StreamUpdateBuilder()
-          .setName(stream)
-          .setValue(amount)
-          .setYearMatcher(Optional.empty())
-          .inferSubtractRecycling()
-          .build();
-      executeStreamUpdate(update);
-
-      if (displaceTarget != null) {
-        EngineNumber cappedInKg = getStream(stream);
-        BigDecimal changeInKg = cappedInKg.getValue().subtract(currentInKg.getValue());
-        handleDisplacement(stream, amount, changeInKg, displaceTarget);
-      }
-    }
-  }
-
-  /**
-   * Apply percentage-based floor operation using lastSpecifiedValue for compounding effect.
-   *
-   * @param stream the stream name to floor
-   * @param amount the percentage floor amount
-   * @param displaceTarget the target substance for displacement, or null if no displacement
-   */
-  private void floorWithPercent(String stream, EngineNumber amount, String displaceTarget) {
-    UnitConverter unitConverter = EngineSupportUtils.createUnitConverterWithTotal(this, stream);
-    EngineNumber currentValueRaw = getStream(stream);
-    EngineNumber currentValue = unitConverter.convert(currentValueRaw, "kg");
-
-    SimulationState simulationState = getStreamKeeper();
-    EngineNumber lastSpecified = simulationState.getLastSpecifiedValue(scope, stream);
-
-    if (lastSpecified != null) {
-      BigDecimal floorValue = lastSpecified.getValue().multiply(amount.getValue()).divide(new BigDecimal("100"));
-      EngineNumber newFloorValue = new EngineNumber(floorValue, lastSpecified.getUnits());
-
-      EngineNumber currentInKg = unitConverter.convert(currentValueRaw, "kg");
-      EngineNumber newFloorInKg = unitConverter.convert(newFloorValue, "kg");
-
-      if (currentInKg.getValue().compareTo(newFloorInKg.getValue()) < 0) {
-        StreamUpdate update = new StreamUpdateBuilder()
-            .setName(stream)
-            .setValue(newFloorValue)
-            .setYearMatcher(Optional.empty())
-            .inferSubtractRecycling()
-            .build();
-        executeStreamUpdate(update);
-
-        if (displaceTarget != null) {
-          EngineNumber finalInKg = getStream(stream);
-          BigDecimal changeInKg = finalInKg.getValue().subtract(currentInKg.getValue());
-          handleDisplacement(stream, amount, changeInKg, displaceTarget);
-        }
-      }
-    } else {
-      EngineNumber convertedMin = unitConverter.convert(amount, "kg");
-      BigDecimal changeAmountRaw = convertedMin.getValue().subtract(currentValue.getValue());
-      BigDecimal changeAmount = changeAmountRaw.max(BigDecimal.ZERO);
-
-      if (changeAmount.compareTo(BigDecimal.ZERO) > 0) {
-        EngineNumber changeWithUnits = new EngineNumber(changeAmount, "kg");
-        changeStreamWithoutReportingUnits(stream, changeWithUnits, Optional.empty(), Optional.empty());
-        handleDisplacement(stream, amount, changeAmount, displaceTarget);
-      }
-    }
-  }
-
-  /**
-   * Apply absolute value-based floor operation.
-   *
-   * @param stream the stream name to floor
-   * @param amount the absolute floor amount
-   * @param displaceTarget the target substance for displacement, or null if no displacement
-   */
-  private void floorWithValue(String stream, EngineNumber amount, String displaceTarget) {
-    UnitConverter unitConverter = EngineSupportUtils.createUnitConverterWithTotal(this, stream);
-    EngineNumber currentValueRaw = getStream(stream);
-    EngineNumber currentValueInAmountUnits = unitConverter.convert(currentValueRaw, amount.getUnits());
-
-    if (currentValueInAmountUnits.getValue().compareTo(amount.getValue()) < 0) {
-      EngineNumber currentInKg = unitConverter.convert(currentValueRaw, "kg");
-      StreamUpdate update = new StreamUpdateBuilder()
-          .setName(stream)
-          .setValue(amount)
-          .setYearMatcher(Optional.empty())
-          .inferSubtractRecycling()
-          .build();
-      executeStreamUpdate(update);
-
-      if (displaceTarget != null) {
-        EngineNumber newInKg = getStream(stream);
-        BigDecimal changeInKg = newInKg.getValue().subtract(currentInKg.getValue());
-        handleDisplacement(stream, amount, changeInKg, displaceTarget);
-      }
-    }
-  }
 
 }
