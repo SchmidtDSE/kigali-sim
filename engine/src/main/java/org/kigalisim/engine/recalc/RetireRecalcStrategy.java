@@ -55,19 +55,15 @@ public class RetireRecalcStrategy implements RecalcStrategy {
    */
   private RetireBackgroundInfo getCurrentState(UseKey scopeEffective,
       SimulationState simulationState, UnitConverter unitConverter) {
-    // Get current prior equipment
     EngineNumber currentPriorRaw = simulationState.getStream(scopeEffective, "priorEquipment");
     EngineNumber currentPrior = unitConverter.convert(currentPriorRaw, "units");
 
-    // Get current total equipment
     EngineNumber currentEquipmentRaw = simulationState.getStream(scopeEffective, "equipment");
     EngineNumber currentEquipment = unitConverter.convert(currentEquipmentRaw, "units");
 
-    // Get current retired
     EngineNumber currentRetiredRaw = simulationState.getStream(scopeEffective, "retired");
     EngineNumber currentRetired = unitConverter.convert(currentRetiredRaw, "units");
 
-    // Get or set base population
     Optional<EngineNumber> basePopulationOpt =
         simulationState.getRetirementBasePopulation(scopeEffective);
     EngineNumber basePopulation;
@@ -79,8 +75,13 @@ public class RetireRecalcStrategy implements RecalcStrategy {
       basePopulation = basePopulationOpt.get();
     }
 
-    return new RetireBackgroundInfo(currentPrior, currentEquipment, currentRetired,
-        basePopulation, firstRetire);
+    return new RetireBackgroundInfo(
+        currentPrior,
+        currentEquipment,
+        currentRetired,
+        basePopulation,
+        firstRetire
+    );
   }
 
   /**
@@ -115,7 +116,9 @@ public class RetireRecalcStrategy implements RecalcStrategy {
     // Calculate delta (incremental retirement since last retire command)
     Optional<EngineNumber> appliedAmountOpt =
         simulationState.getAppliedRetirementAmount(scopeEffective);
-    EngineNumber appliedAmount = appliedAmountOpt.orElse(new EngineNumber(BigDecimal.ZERO, "units"));
+    EngineNumber appliedAmount = appliedAmountOpt.orElse(
+        new EngineNumber(BigDecimal.ZERO, "units")
+    );
     BigDecimal deltaValue = cumulativeAmount.getValue().subtract(appliedAmount.getValue());
     EngineNumber delta = new EngineNumber(deltaValue, "units");
 
@@ -152,7 +155,11 @@ public class RetireRecalcStrategy implements RecalcStrategy {
     EngineNumber newEquipment = new EngineNumber(newEquipmentValue, "units");
     EngineNumber newRetired = new EngineNumber(newRetiredValue, "units");
 
-    return new PostRetireNewLevels(newPrior, newEquipment, newRetired);
+    return new PostRetireNewLevels(
+        newPrior,
+        newEquipment,
+        newRetired
+    );
   }
 
   /**
@@ -178,7 +185,9 @@ public class RetireRecalcStrategy implements RecalcStrategy {
         .setSubtractRecycling(false)
         .setInvalidatePriorEquipment(false)
         .build();
-    simulationState.update(priorEquipmentStream);
+    simulationState.update(
+        priorEquipmentStream
+    );
 
     SimulationStateUpdate equipmentStream = new SimulationStateUpdateBuilder()
         .setUseKey(scopeEffective)
@@ -186,7 +195,9 @@ public class RetireRecalcStrategy implements RecalcStrategy {
         .setValue(newLevels.getNewEquipment())
         .setSubtractRecycling(false)
         .build();
-    simulationState.update(equipmentStream);
+    simulationState.update(
+        equipmentStream
+    );
   }
 
   /**
@@ -209,7 +220,9 @@ public class RetireRecalcStrategy implements RecalcStrategy {
         .setValue(newLevels.getNewRetired())
         .setSubtractRecycling(false)
         .build();
-    simulationState.update(retiredStream);
+    simulationState.update(
+        retiredStream
+    );
   }
 
   /**
@@ -225,8 +238,9 @@ public class RetireRecalcStrategy implements RecalcStrategy {
    * @param kit The recalculation kit with dependencies
    */
   private void updateGhgAccounting(Engine target, UseKey scopeEffective, RecalcKit kit) {
-    EolEmissionsRecalcStrategy eolStrategy =
-        new EolEmissionsRecalcStrategy(Optional.of(scopeEffective));
+    EolEmissionsRecalcStrategy eolStrategy = new EolEmissionsRecalcStrategy(
+        Optional.of(scopeEffective)
+    );
     eolStrategy.execute(target, kit);
   }
 
@@ -249,11 +263,15 @@ public class RetireRecalcStrategy implements RecalcStrategy {
    * @param kit The recalculation kit with dependencies
    */
   private void propagateChanges(Engine target, RecalcKit kit) {
-    PopulationChangeRecalcStrategy populationStrategy =
-        new PopulationChangeRecalcStrategy(Optional.empty(), Optional.empty());
+    PopulationChangeRecalcStrategy populationStrategy = new PopulationChangeRecalcStrategy(
+        Optional.empty(),
+        Optional.empty()
+    );
     populationStrategy.execute(target, kit);
 
-    ConsumptionRecalcStrategy consumptionStrategy = new ConsumptionRecalcStrategy(Optional.empty());
+    ConsumptionRecalcStrategy consumptionStrategy = new ConsumptionRecalcStrategy(
+        Optional.empty()
+    );
     consumptionStrategy.execute(target, kit);
   }
 
@@ -274,26 +292,45 @@ public class RetireRecalcStrategy implements RecalcStrategy {
     SimulationState simulationState = kit.getStreamKeeper();
 
     // Get current state
-    RetireBackgroundInfo backgroundInfo = getCurrentState(scopeEffective, simulationState,
-        unitConverter);
+    RetireBackgroundInfo backgroundInfo = getCurrentState(
+        scopeEffective,
+        simulationState,
+        unitConverter
+    );
 
     // Calculate incremental retirement delta
-    EngineNumber delta = calculateDelta(scopeEffective, simulationState, unitConverter,
-        stateGetter, backgroundInfo);
+    EngineNumber delta = calculateDelta(
+        scopeEffective,
+        simulationState,
+        unitConverter,
+        stateGetter,
+        backgroundInfo
+    );
 
     // Calculate new stream values
     PostRetireNewLevels newLevels = calculateNewLevels(delta, backgroundInfo);
 
     // Update simulation state
-    updateEquipmentStreams(scopeEffective, simulationState, newLevels);
-    updateRetiredStream(scopeEffective, simulationState, newLevels);
+    updateEquipmentStreams(
+        scopeEffective,
+        simulationState,
+        newLevels
+    );
+    updateRetiredStream(
+        scopeEffective,
+        simulationState,
+        newLevels
+    );
 
     // Track cumulative applied amount for next delta calculation
     EngineNumber cumulativeRateRaw = simulationState.getRetirementRate(scopeEffective);
     stateGetter.setPopulation(backgroundInfo.getBasePopulation());
     EngineNumber cumulativeAmount = unitConverter.convert(cumulativeRateRaw, "units");
     stateGetter.clearPopulation();
-    simulationState.setAppliedRetirementAmount(scopeEffective, cumulativeAmount);
+    simulationState.setAppliedRetirementAmount(
+        scopeEffective,
+        cumulativeAmount
+    );
 
     // Update dependent calculations
     updateGhgAccounting(target, scopeEffective, kit);

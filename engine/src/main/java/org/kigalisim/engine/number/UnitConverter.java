@@ -780,7 +780,6 @@ public class UnitConverter {
       case "year", "years", "yr", "yrs" -> stateGetter.getYearsElapsed();
       case "tCO2e" -> stateGetter.getGhgConsumption();
       case "kgCO2e" -> {
-        // Convert kgCO2e to tCO2e first, then calculate percentage
         EngineNumber tco2eTotal = stateGetter.getGhgConsumption();
         BigDecimal kgco2eTotal = tco2eTotal.getValue().multiply(TCO2E_TO_KGCO2E_FACTOR);
         yield new EngineNumber(kgco2eTotal, "kgCO2e");
@@ -831,7 +830,7 @@ public class UnitConverter {
       return target;
     } else {
       BigDecimal originalValue = target.getValue();
-      String newUnits = normalizedCurrentUnits.split("/")[0];
+      String newUnits = normalizedCurrentUnits.substring(0, normalizedCurrentUnits.indexOf("/"));
       EngineNumber population = stateGetter.getPopulation();
       BigDecimal populationValue = population.getValue();
       BigDecimal newValue = originalValue.multiply(populationValue);
@@ -854,7 +853,7 @@ public class UnitConverter {
       return target;
     } else {
       BigDecimal originalValue = target.getValue();
-      String newUnits = normalizedCurrentUnits.split("/")[0];
+      String newUnits = normalizedCurrentUnits.substring(0, normalizedCurrentUnits.indexOf("/"));
       EngineNumber years = stateGetter.getYearsElapsed();
       BigDecimal yearsValue = years.getValue();
       BigDecimal newValue = originalValue.multiply(yearsValue);
@@ -887,7 +886,6 @@ public class UnitConverter {
     if (isCo2) {
       targetConsumption = stateGetter.getGhgConsumption();
     } else if (isKgCo2) {
-      // Get tCO2e consumption and convert to kgCO2e
       EngineNumber tco2eConsumption = stateGetter.getGhgConsumption();
       BigDecimal kgco2eValue = tco2eConsumption.getValue().multiply(TCO2E_TO_KGCO2E_FACTOR);
       targetConsumption = new EngineNumber(kgco2eValue, "kgCO2e");
@@ -896,7 +894,7 @@ public class UnitConverter {
     }
 
     BigDecimal originalValue = target.getValue();
-    String newUnits = normalizedCurrentUnits.split("/")[0];
+    String newUnits = normalizedCurrentUnits.substring(0, normalizedCurrentUnits.indexOf("/"));
     BigDecimal totalConsumptionValue = targetConsumption.getValue();
     BigDecimal newValue = originalValue.multiply(totalConsumptionValue);
 

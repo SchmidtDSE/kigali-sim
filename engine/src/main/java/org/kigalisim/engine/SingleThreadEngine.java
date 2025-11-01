@@ -355,13 +355,11 @@ public class SingleThreadEngine implements Engine {
   }
 
   private EngineNumber getSalesWeightedInitialCharge() {
-    // Use SalesStreamDistributionBuilder to get the correct weights for enabled streams
     SalesStreamDistribution distribution = simulationState.getDistribution(scope, false);
 
     BigDecimal domesticWeight = distribution.getPercentDomestic();
     BigDecimal importWeight = distribution.getPercentImport();
 
-    // Get raw initial charges for each stream
     EngineNumber domesticInitialChargeRaw = getRawInitialChargeFor(scope, "domestic");
     EngineNumber domesticInitialCharge = unitConverter.convert(domesticInitialChargeRaw, "kg / unit");
 
@@ -372,7 +370,6 @@ public class SingleThreadEngine implements Engine {
     BigDecimal domesticWeighted = domesticInitialCharge.getValue().multiply(domesticWeight);
     BigDecimal importWeighted = importInitialCharge.getValue().multiply(importWeight);
 
-    // Sum weighted components
     BigDecimal weightedSum = domesticWeighted.add(importWeighted);
 
     return new EngineNumber(weightedSum, "kg / unit");
@@ -1149,51 +1146,13 @@ public class SingleThreadEngine implements Engine {
 
 
   /**
-   * Determines if the current simulation state represents a carry-over scenario.
+   * Determines if unit-based sales from a previous year carry over into the current year.
    *
-   * <p><strong>What is carry over?</strong> Carry over occurs when unit-based sales
-   * specifications from a previous year continue to apply in the current year without
-   * being explicitly re-specified by the user. This happens when modeling equipment
-   * sales where users specify the number of equipment units sold (e.g., "800 units")
-   * rather than the volume of substance sold (e.g., "100 kg").</p>
-   *
-   * <p><strong>Why does carry over happen?</strong> Carry over is triggered when:</p>
-   * <ul>
-   *   <li>Sales (or sales substreams like domestic/import) were previously specified
-   *       in equipment units rather than substance volume</li>
-   *   <li>The current year has no fresh sales specification from the user (tracked via
-   *       {@code isSalesIntentFreshlySet})</li>
-   *   <li>The user has not overridden default continuation behavior with an
-   *       {@code assume} command</li>
-   * </ul>
-   *
-   * <p><strong>What must be done when carry over occurs?</strong> When carry over is
-   * detected during recharge operations, the engine must:</p>
-   * <ol>
-   *   <li>Preserve the user's original unit-based intent (they specified equipment
-   *       units, not substance volume)</li>
-   *   <li>Re-apply the previous sales value using the last specified value from state</li>
-   *   <li>Automatically add implicit recharge on top (recharge for servicing existing
-   *       equipment is separate from new equipment sales)</li>
-   *   <li>Skip the standard recalculation path which is designed for fresh user input</li>
-   * </ol>
-   *
-   * <p><strong>Example scenario:</strong></p>
-   * <pre>
-   * Year 2025: set import to 800 units  // User specifies 800 NEW units
-   * Year 2026: (no specification)       // Carry over: 800 units continues automatically
-   * Year 2027: (no specification)       // Carry over: 800 units continues automatically
-   * </pre>
-   *
-   * <p>In each year, the engine calculates recharge needed for existing equipment and
-   * adds it on top of the 800 new units, maintaining the user's intent that "800 units"
-   * means new equipment sales, not total substance volume.</p>
-   *
-   * <p><strong>Relationship to recharge:</strong> When users specify sales in units,
-   * they indicate how many NEW equipment units should be sold. The recharge() method
-   * must calculate substance needed to service EXISTING equipment and add it on top.
-   * Carry over ensures this implicit recharge behavior continues year-to-year without
-   * requiring the user to re-specify sales every year.</p>
+   * <p>Carry over occurs when equipment sales were previously specified in units
+   * (e.g., "800 units") but the current year has no fresh specification. When detected
+   * during recharge operations, the engine re-applies the previous sales value and
+   * adds implicit recharge on top, preserving the user's intent that unit counts
+   * represent new equipment sales, not total substance volume.</p>
    *
    * @param scope The scope (application/substance) to check for carry over state
    * @return true if this is a carry-over scenario (unit-based sales without fresh
