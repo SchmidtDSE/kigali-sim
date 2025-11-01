@@ -60,7 +60,7 @@ class LimitExecutorTest {
   }
 
   @Test
-  void testExecuteCap_OutsideRange_NoOperation() {
+  void testExecuteCapOutsideRangeNoOperation() {
     // Arrange
     setStreamValue("domestic", new BigDecimal("150"), "kg");
     YearMatcher matcher = new YearMatcher(2021, 2025); // Outside current year 2020
@@ -75,7 +75,7 @@ class LimitExecutorTest {
   }
 
   @Test
-  void testExecuteCap_EquipmentStream_ThrowsException() {
+  void testExecuteCapEquipmentStreamThrowsException() {
     // Arrange
     YearMatcher matcher = new YearMatcher(2020, 2025);
     EngineNumber amount = new EngineNumber(new BigDecimal("100"), "units");
@@ -87,7 +87,7 @@ class LimitExecutorTest {
   }
 
   @Test
-  void testExecuteCap_PercentageWithLastSpecified_AppliesPercentageOfLastSpecified() {
+  void testExecuteCapPercentageWithLastSpecifiedAppliesPercentageOfLastSpecified() {
     // Arrange
     setStreamValue("domestic", new BigDecimal("1200"), "kg");
 
@@ -111,7 +111,7 @@ class LimitExecutorTest {
   }
 
   @Test
-  void testExecuteCap_ValueBased_AppliesAbsoluteCap() {
+  void testExecuteCapValueBasedAppliesAbsoluteCap() {
     // Arrange
     setStreamValue("domestic", new BigDecimal("150"), "kg");
     YearMatcher matcher = new YearMatcher(2020, 2025);
@@ -127,7 +127,7 @@ class LimitExecutorTest {
   }
 
   @Test
-  void testExecuteFloor_OutsideRange_NoOperation() {
+  void testExecuteFloorOutsideRangeNoOperation() {
     // Arrange
     setStreamValue("domestic", new BigDecimal("50"), "kg");
     YearMatcher matcher = new YearMatcher(2021, 2025); // Outside current year 2020
@@ -142,7 +142,7 @@ class LimitExecutorTest {
   }
 
   @Test
-  void testExecuteFloor_EquipmentStream_ThrowsException() {
+  void testExecuteFloorEquipmentStreamThrowsException() {
     // Arrange
     YearMatcher matcher = new YearMatcher(2020, 2025);
     EngineNumber amount = new EngineNumber(new BigDecimal("100"), "units");
@@ -162,7 +162,7 @@ class LimitExecutorTest {
   // }
 
   @Test
-  void testExecuteFloor_ValueBased_AppliesAbsoluteFloor() {
+  void testExecuteFloorValueBasedAppliesAbsoluteFloor() {
     // Arrange
     setStreamValue("domestic", new BigDecimal("50"), "kg");
     YearMatcher matcher = new YearMatcher(2020, 2025);
@@ -178,7 +178,7 @@ class LimitExecutorTest {
   }
 
   @Test
-  void testExecuteCap_WithDisplacement_CallsDisplaceExecutor() {
+  void testExecuteCapWithDisplacementCallsDisplaceExecutor() {
     // Arrange
     setStreamValue("domestic", new BigDecimal("150"), "kg");
     YearMatcher matcher = new YearMatcher(2020, 2025);

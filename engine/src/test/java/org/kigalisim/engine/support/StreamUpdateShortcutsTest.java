@@ -50,7 +50,7 @@ class StreamUpdateShortcutsTest {
   }
 
   @Test
-  void testChangeStreamWithoutReportingUnits_WithinRange_UpdatesStream() {
+  void testChangeStreamWithoutReportingUnitsWithinRangeUpdatesStream() {
     // Arrange
     setStreamValue("domestic", new BigDecimal("100"), "kg");
     YearMatcher matcher = new YearMatcher(2020, 2025);
@@ -68,7 +68,7 @@ class StreamUpdateShortcutsTest {
   }
 
   @Test
-  void testChangeStreamWithoutReportingUnits_OutsideRange_NoOperation() {
+  void testChangeStreamWithoutReportingUnitsOutsideRangeNoOperation() {
     // Arrange
     setStreamValue("domestic", new BigDecimal("100"), "kg");
     YearMatcher matcher = new YearMatcher(2021, 2025); // Outside current year 2020
@@ -85,7 +85,7 @@ class StreamUpdateShortcutsTest {
   }
 
   @Test
-  void testChangeStreamWithoutReportingUnits_NegativeValue_ClampedToZero() {
+  void testChangeStreamWithoutReportingUnitsNegativeValueClampedToZero() {
     // Arrange
     setStreamValue("domestic", new BigDecimal("30"), "kg");
     YearMatcher matcher = new YearMatcher(2020, 2025);
@@ -102,7 +102,7 @@ class StreamUpdateShortcutsTest {
   }
 
   @Test
-  void testChangeStreamWithoutReportingUnits_NegativeValue_Allowed() {
+  void testChangeStreamWithoutReportingUnitsNegativeValueAllowed() {
     // Arrange
     setStreamValue("domestic", new BigDecimal("30"), "kg");
     YearMatcher matcher = new YearMatcher(2020, 2025);
@@ -119,7 +119,7 @@ class StreamUpdateShortcutsTest {
   }
 
   @Test
-  void testChangeStreamWithoutReportingUnits_WithCustomScope_UsesProvidedScope() {
+  void testChangeStreamWithoutReportingUnitsWithCustomScopeUsesProvidedScope() {
     // Arrange
     setStreamValue("import", new BigDecimal("100"), "kg");
     UseKey customScope = new SimpleUseKey("TestApp", "HFC-134a");
@@ -137,7 +137,7 @@ class StreamUpdateShortcutsTest {
   }
 
   @Test
-  void testChangeStreamWithDisplacementContext_SalesStream_RecalculatesPopulation() {
+  void testChangeStreamWithDisplacementContextSalesStreamRecalculatesPopulation() {
     // Arrange - setup destination substance
     engine.setSubstance("R-600a");
     engine.enable("domestic", Optional.empty());
@@ -166,7 +166,7 @@ class StreamUpdateShortcutsTest {
   }
 
   @Test
-  void testChangeStreamWithDisplacementContext_UpdatesLastSpecifiedValue() {
+  void testChangeStreamWithDisplacementContextUpdatesLastSpecifiedValue() {
     // Arrange - setup destination substance
     engine.setSubstance("R-600a");
     engine.enable("domestic", Optional.empty());
@@ -191,7 +191,7 @@ class StreamUpdateShortcutsTest {
   }
 
   @Test
-  void testChangeStreamWithDisplacementContext_NegativeValue_ClampedToZero() {
+  void testChangeStreamWithDisplacementContextNegativeValueClampedToZero() {
     // Arrange - setup destination substance
     engine.setSubstance("R-600a");
     engine.enable("import", Optional.empty());
@@ -216,7 +216,7 @@ class StreamUpdateShortcutsTest {
   }
 
   @Test
-  void testChangeStreamWithDisplacementContext_OptimizeRecalcsTrue_SkipsSalesPropagation() {
+  void testChangeStreamWithDisplacementContextOptimizeRecalcsTrueSkipsSalesPropagation() {
     // Arrange - setup destination substance
     engine.setSubstance("R-600a");
     engine.enable("domestic", Optional.empty());
@@ -240,7 +240,7 @@ class StreamUpdateShortcutsTest {
   }
 
   @Test
-  void testChangeStreamWithDisplacementContext_OptimizeRecalcsFalse_PropagatestoSales() {
+  void testChangeStreamWithDisplacementContextOptimizeRecalcsFalsePropagatestoSales() {
     // This test would require setting OPTIMIZE_RECALCS to false
     // Since it's a static final in the implementation, we just verify basic behavior
     // Arrange - setup destination substance
@@ -266,10 +266,10 @@ class StreamUpdateShortcutsTest {
   }
 
   @Test
-  void testChangeStreamMethods_WorkTogether() {
+  void testChangeStreamMethodsWorkTogether() {
     // Arrange
     setStreamValue("domestic", new BigDecimal("100"), "kg");
-    YearMatcher matcher = new YearMatcher(2020, 2025);
+    final YearMatcher matcher = new YearMatcher(2020, 2025);
 
     // Setup destination substance
     engine.setSubstance("R-600a");
