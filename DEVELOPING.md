@@ -110,7 +110,7 @@ For those working on the **Java-based engine** go to the `engine` directory:
 ./gradlew build
 
 # Build the WAR file with WASM output
-./gradlew warUnversioned
+./gradlew war
 
 # Build a standalone executable JAR
 ./gradlew fatJar
