@@ -58,6 +58,7 @@ public class LimitOperation implements Operation {
     this.upperBound = Optional.empty();
   }
 
+  /** {@inheritDoc} */
   @Override
   public void execute(PushDownMachine machine) {
     // Execute the operand
