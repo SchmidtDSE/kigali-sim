@@ -96,9 +96,11 @@ public class StreamUpdateShortcuts {
     EngineNumber outputWithUnits = new EngineNumber(newAmountBound, currentValue.getUnits());
 
     // Allow propagation but don't track units (since units tracking was handled by the caller)
+    // Also set subtractRecycling=false to avoid negative value clamping in setStreamSalesSubstream
     StreamUpdateBuilder builder = new StreamUpdateBuilder()
         .setName(stream)
-        .setValue(outputWithUnits);
+        .setValue(outputWithUnits)
+        .setSubtractRecycling(false);
 
     if (scope.isPresent()) {
       builder.setKey(scope.get());
@@ -153,10 +155,12 @@ public class StreamUpdateShortcuts {
     EngineNumber outputWithUnits = applyDelta(stream, amount, negativeAllowed);
 
     // Set the stream value without triggering standard recalc to avoid double calculation
+    // Also set subtractRecycling=false to avoid negative value clamping in setStreamSalesSubstream
     StreamUpdate update = new StreamUpdateBuilder()
         .setName(stream)
         .setValue(outputWithUnits)
         .setPropagateChanges(false)
+        .setSubtractRecycling(false)
         .build();
 
     engine.executeStreamUpdate(update);
