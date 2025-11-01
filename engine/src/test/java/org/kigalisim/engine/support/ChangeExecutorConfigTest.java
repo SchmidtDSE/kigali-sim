@@ -1,10 +1,13 @@
 package org.kigalisim.engine.support;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 
 import java.math.BigDecimal;
+import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.kigalisim.engine.number.EngineNumber;
 import org.kigalisim.engine.state.UseKey;
@@ -29,7 +32,8 @@ class ChangeExecutorConfigTest {
     // Assert
     assertEquals(stream, config.getStream());
     assertSame(amount, config.getAmount());
-    assertSame(yearMatcher, config.getYearMatcher());
+    assertTrue(config.getYearMatcher().isPresent());
+    assertSame(yearMatcher, config.getYearMatcher().get());
     assertSame(useKey, config.getUseKeyEffective());
   }
 
@@ -41,12 +45,12 @@ class ChangeExecutorConfigTest {
     UseKey useKey = mock(UseKey.class);
 
     // Act
-    ChangeExecutorConfig config = new ChangeExecutorConfig(stream, amount, null, useKey);
+    ChangeExecutorConfig config = new ChangeExecutorConfig(stream, amount, useKey);
 
     // Assert
     assertEquals(stream, config.getStream());
     assertSame(amount, config.getAmount());
-    assertEquals(null, config.getYearMatcher());
+    assertFalse(config.getYearMatcher().isPresent());
     assertSame(useKey, config.getUseKeyEffective());
   }
 
@@ -65,7 +69,8 @@ class ChangeExecutorConfigTest {
     assertEquals(stream, config.getStream());
     assertEquals("5", config.getAmount().getValue().toString());
     assertEquals("%", config.getAmount().getUnits());
-    assertSame(yearMatcher, config.getYearMatcher());
+    assertTrue(config.getYearMatcher().isPresent());
+    assertSame(yearMatcher, config.getYearMatcher().get());
     assertSame(useKey, config.getUseKeyEffective());
   }
 }

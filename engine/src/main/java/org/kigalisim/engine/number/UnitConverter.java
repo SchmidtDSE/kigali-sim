@@ -162,17 +162,10 @@ public class UnitConverter {
    * @returns True if some form of years and false otherwise.
    */
   private static boolean isYearVariant(String target) {
-    if ("year".equals(target)) {
-      return true;
-    } else if ("years".equals(target)) {
-      return true;
-    } else if ("yr".equals(target)) {
-      return true;
-    } else if ("yrs".equals(target)) {
-      return true;
-    } else {
-      return false;
-    }
+    return switch (target) {
+      case "year", "years", "yr", "yrs" -> true;
+      default -> false;
+    };
   }
 
   /**
@@ -266,71 +259,86 @@ public class UnitConverter {
     } else if (CONVERT_ZERO_NOOP && source.getValue().compareTo(BigDecimal.ZERO) == 0) {
       return new EngineNumber(BigDecimal.ZERO, destinationUnits);
     } else {
-      String normalizedSourceUnits = normalizeUnitString(source.getUnits());
-      String normalizedDestinationUnits = normalizeUnitString(destinationUnits);
-
-      // Check cache for state-independent conversions
-      boolean cacheable = isCacheable(normalizedSourceUnits, normalizedDestinationUnits);
-      String cacheKey = null;
-      if (cacheable) {
-        cacheKey = createCacheKey(
-            normalizedSourceUnits,
-            normalizedDestinationUnits,
-            source.getValue()
-        );
-        EngineNumber cached = CONVERSION_CACHE.get(cacheKey);
-        if (cached != null) {
-          return cached;
-        }
-      }
-
-      String[] sourceUnitPieces = splitUnits(normalizedSourceUnits);
-      boolean sourceHasDenominator = sourceUnitPieces.length > 1;
-      String sourceDenominatorUnits = sourceHasDenominator ? sourceUnitPieces[1] : "";
-
-      String[] destinationUnitPieces = splitUnits(normalizedDestinationUnits);
-      boolean destHasDenominator = destinationUnitPieces.length > 1;
-      String destinationDenominatorUnits = destHasDenominator ? destinationUnitPieces[1] : "";
-
-      String sourceNumeratorUnits = sourceUnitPieces[0];
-      String destinationNumeratorUnits = destinationUnitPieces[0];
-      boolean differentDenominator = !destinationDenominatorUnits.equals(sourceDenominatorUnits);
-      boolean sameDenominator = !differentDenominator;
-
-      EngineNumber result;
-      if (sourceHasDenominator && sameDenominator) {
-        EngineNumber sourceEffective = new EngineNumber(source.getValue(), sourceNumeratorUnits);
-        EngineNumber convertedNumerator = convertNumerator(sourceEffective, destinationNumeratorUnits);
-        result = new EngineNumber(convertedNumerator.getValue(), destinationUnits);
-      } else {
-        EngineNumber numerator = convertNumerator(source, destinationNumeratorUnits);
-        EngineNumber denominator = convertDenominator(source, destinationDenominatorUnits);
-
-        if (denominator.getValue().compareTo(BigDecimal.ZERO) == 0) {
-          BigDecimal inferredFactor = inferScale(sourceDenominatorUnits,
-              destinationDenominatorUnits);
-          if (inferredFactor != null) {
-            result = new EngineNumber(
-                numerator.getValue().divide(inferredFactor, MATH_CONTEXT), destinationUnits);
-          } else if (ZERO_EMPTY_VOLUME_INTENSITY) {
-            result = new EngineNumber(BigDecimal.ZERO, destinationUnits);
-          } else {
-            throw new RuntimeException(
-                "Encountered unrecoverable NaN in conversion due to no volume.");
-          }
-        } else {
-          result = new EngineNumber(
-              numerator.getValue().divide(denominator.getValue(), MATH_CONTEXT), destinationUnits);
-        }
-      }
-
-      // Cache the result if it's cacheable and cache isn't too full
-      if (cacheable && CONVERSION_CACHE.size() < MAX_CACHE_SIZE) {
-        CONVERSION_CACHE.put(cacheKey, result);
-      }
-
-      return result;
+      return convertDifferentValue(source, destinationUnits);
     }
+  }
+
+  /**
+   * Convert a number to new units when confirmed to be a non-noop conversion.
+   *
+   * <p>This method handles the conversion when the source units differ from destination units
+   * and the value is non-zero. It manages the caching, denominator/numerator splitting, and
+   * recursive conversions needed for complex unit transformations.</p>
+   *
+   * @param source The EngineNumber to convert
+   * @param destinationUnits The units to which source should be converted
+   * @return The converted EngineNumber
+   */
+  private EngineNumber convertDifferentValue(EngineNumber source, String destinationUnits) {
+    String normalizedSourceUnits = normalizeUnitString(source.getUnits());
+    String normalizedDestinationUnits = normalizeUnitString(destinationUnits);
+
+    // Check cache for state-independent conversions
+    boolean cacheable = isCacheable(normalizedSourceUnits, normalizedDestinationUnits);
+    String cacheKey = null;
+    if (cacheable) {
+      cacheKey = createCacheKey(
+          normalizedSourceUnits,
+          normalizedDestinationUnits,
+          source.getValue()
+      );
+      EngineNumber cached = CONVERSION_CACHE.get(cacheKey);
+      if (cached != null) {
+        return cached;
+      }
+    }
+
+    String[] sourceUnitPieces = splitUnits(normalizedSourceUnits);
+    boolean sourceHasDenominator = sourceUnitPieces.length > 1;
+    String sourceDenominatorUnits = sourceHasDenominator ? sourceUnitPieces[1] : "";
+
+    String[] destinationUnitPieces = splitUnits(normalizedDestinationUnits);
+    boolean destHasDenominator = destinationUnitPieces.length > 1;
+    String destinationDenominatorUnits = destHasDenominator ? destinationUnitPieces[1] : "";
+
+    String sourceNumeratorUnits = sourceUnitPieces[0];
+    String destinationNumeratorUnits = destinationUnitPieces[0];
+    boolean differentDenominator = !destinationDenominatorUnits.equals(sourceDenominatorUnits);
+    boolean sameDenominator = !differentDenominator;
+
+    EngineNumber result;
+    if (sourceHasDenominator && sameDenominator) {
+      EngineNumber sourceEffective = new EngineNumber(source.getValue(), sourceNumeratorUnits);
+      EngineNumber convertedNumerator = convertNumerator(sourceEffective, destinationNumeratorUnits);
+      result = new EngineNumber(convertedNumerator.getValue(), destinationUnits);
+    } else {
+      EngineNumber numerator = convertNumerator(source, destinationNumeratorUnits);
+      EngineNumber denominator = convertDenominator(source, destinationDenominatorUnits);
+
+      if (denominator.getValue().compareTo(BigDecimal.ZERO) == 0) {
+        BigDecimal inferredFactor = inferScale(sourceDenominatorUnits,
+            destinationDenominatorUnits);
+        if (inferredFactor != null) {
+          result = new EngineNumber(
+              numerator.getValue().divide(inferredFactor, MATH_CONTEXT), destinationUnits);
+        } else if (ZERO_EMPTY_VOLUME_INTENSITY) {
+          result = new EngineNumber(BigDecimal.ZERO, destinationUnits);
+        } else {
+          throw new RuntimeException(
+              "Encountered unrecoverable NaN in conversion due to no volume.");
+        }
+      } else {
+        result = new EngineNumber(
+            numerator.getValue().divide(denominator.getValue(), MATH_CONTEXT), destinationUnits);
+      }
+    }
+
+    // Cache the result if it's cacheable and cache isn't too full
+    if (cacheable && CONVERSION_CACHE.size() < MAX_CACHE_SIZE) {
+      CONVERSION_CACHE.put(cacheKey, result);
+    }
+
+    return result;
   }
 
   /**
@@ -406,13 +414,11 @@ public class UnitConverter {
   private EngineNumber toKg(EngineNumber target) {
     EngineNumber asVolume = toVolume(target);
     String currentUnits = asVolume.getUnits();
-    if ("mt".equals(currentUnits) || "mteachyear".equals(currentUnits)) {
-      return new EngineNumber(asVolume.getValue().multiply(KG_TO_MT_FACTOR), "kg");
-    } else if ("kg".equals(currentUnits) || "kgeachyear".equals(currentUnits)) {
-      return new EngineNumber(asVolume.getValue(), "kg");
-    } else {
-      throw new IllegalArgumentException("Unexpected units " + currentUnits);
-    }
+    return switch (currentUnits) {
+      case "mt", "mteachyear" -> new EngineNumber(asVolume.getValue().multiply(KG_TO_MT_FACTOR), "kg");
+      case "kg", "kgeachyear" -> new EngineNumber(asVolume.getValue(), "kg");
+      default -> throw new IllegalArgumentException("Unexpected units " + currentUnits);
+    };
   }
 
   /**
@@ -424,13 +430,11 @@ public class UnitConverter {
   private EngineNumber toMt(EngineNumber target) {
     EngineNumber asVolume = toVolume(target);
     String currentUnits = asVolume.getUnits();
-    if ("kg".equals(currentUnits) || "kgeachyear".equals(currentUnits)) {
-      return new EngineNumber(asVolume.getValue().multiply(MT_TO_KG_FACTOR), "mt");
-    } else if ("mt".equals(currentUnits) || "mteachyear".equals(currentUnits)) {
-      return new EngineNumber(asVolume.getValue(), "mt");
-    } else {
-      throw new IllegalArgumentException("Unexpected units " + currentUnits);
-    }
+    return switch (currentUnits) {
+      case "kg", "kgeachyear" -> new EngineNumber(asVolume.getValue().multiply(MT_TO_KG_FACTOR), "mt");
+      case "mt", "mteachyear" -> new EngineNumber(asVolume.getValue(), "mt");
+      default -> throw new IllegalArgumentException("Unexpected units " + currentUnits);
+    };
   }
 
   /**
@@ -448,46 +452,52 @@ public class UnitConverter {
 
     if (alreadyMt || alreadyKg) {
       return target;
-    } else if ("tCO2e".equals(currentUnits)) {
-      BigDecimal originalValue = target.getValue();
-      EngineNumber conversion = stateGetter.getSubstanceConsumption();
-      String normalizedUnits = normalizeUnitString(conversion.getUnits());
-      String[] conversionUnitPieces = splitUnits(normalizedUnits);
-      String conversionNumeratorUnits = conversionUnitPieces[0];
-      String newUnits = conversionUnitPieces[1];
-
-      // Normalize conversion factor to match input units (recursive call to ensure unit consistency)
-      EngineNumber conversionNumerator = new EngineNumber(conversion.getValue(), conversionNumeratorUnits);
-      EngineNumber normalizedConversionNumerator = convert(conversionNumerator, currentUnits);
-      BigDecimal normalizedConversionValue = normalizedConversionNumerator.getValue();
-
-      BigDecimal newValue = originalValue.divide(normalizedConversionValue, MATH_CONTEXT);
-      return new EngineNumber(newValue, newUnits);
-    } else if ("kgCO2e".equals(currentUnits)) {
-      // Convert kgCO2e to tCO2e first, then to volume
-      BigDecimal kgco2eValue = target.getValue();
-      BigDecimal tco2eValue = kgco2eValue.multiply(KGCO2E_TO_TCO2E_FACTOR);
-      EngineNumber tco2eTarget = new EngineNumber(tco2eValue, "tCO2e");
-      return toVolume(tco2eTarget);
-    } else if ("unit".equals(currentUnits) || "units".equals(currentUnits) || "unitseachyear".equals(currentUnits)) {
-      BigDecimal originalValue = target.getValue();
-      EngineNumber conversion = stateGetter.getAmortizedUnitVolume();
-      BigDecimal conversionValue = conversion.getValue();
-      String normalizedUnits = normalizeUnitString(conversion.getUnits());
-      String[] conversionUnitPieces = splitUnits(normalizedUnits);
-      String newUnits = conversionUnitPieces[0];
-      BigDecimal newValue = originalValue.multiply(conversionValue);
-      return new EngineNumber(newValue, newUnits);
-    } else if ("%".equals(currentUnits)) {
-      BigDecimal originalValue = target.getValue();
-      BigDecimal asRatio = originalValue.multiply(TO_PERCENT_FACTOR);
-      EngineNumber total = stateGetter.getVolume();
-      String newUnits = total.getUnits();
-      BigDecimal newValue = total.getValue().multiply(asRatio);
-      return new EngineNumber(newValue, newUnits);
-    } else {
-      throw new IllegalArgumentException("Unable to convert to volume: " + currentUnits);
     }
+
+    return switch (currentUnits) {
+      case "tCO2e" -> {
+        BigDecimal originalValue = target.getValue();
+        EngineNumber conversion = stateGetter.getSubstanceConsumption();
+        String normalizedUnits = normalizeUnitString(conversion.getUnits());
+        String[] conversionUnitPieces = splitUnits(normalizedUnits);
+        String conversionNumeratorUnits = conversionUnitPieces[0];
+        String newUnits = conversionUnitPieces[1];
+
+        // Normalize conversion factor to match input units (recursive call to ensure unit consistency)
+        EngineNumber conversionNumerator = new EngineNumber(conversion.getValue(), conversionNumeratorUnits);
+        EngineNumber normalizedConversionNumerator = convert(conversionNumerator, currentUnits);
+        BigDecimal normalizedConversionValue = normalizedConversionNumerator.getValue();
+
+        BigDecimal newValue = originalValue.divide(normalizedConversionValue, MATH_CONTEXT);
+        yield new EngineNumber(newValue, newUnits);
+      }
+      case "kgCO2e" -> {
+        // Convert kgCO2e to tCO2e first, then to volume
+        BigDecimal kgco2eValue = target.getValue();
+        BigDecimal tco2eValue = kgco2eValue.multiply(KGCO2E_TO_TCO2E_FACTOR);
+        EngineNumber tco2eTarget = new EngineNumber(tco2eValue, "tCO2e");
+        yield toVolume(tco2eTarget);
+      }
+      case "unit", "units", "unitseachyear" -> {
+        BigDecimal originalValue = target.getValue();
+        EngineNumber conversion = stateGetter.getAmortizedUnitVolume();
+        BigDecimal conversionValue = conversion.getValue();
+        String normalizedUnits = normalizeUnitString(conversion.getUnits());
+        String[] conversionUnitPieces = splitUnits(normalizedUnits);
+        String newUnits = conversionUnitPieces[0];
+        BigDecimal newValue = originalValue.multiply(conversionValue);
+        yield new EngineNumber(newValue, newUnits);
+      }
+      case "%" -> {
+        BigDecimal originalValue = target.getValue();
+        BigDecimal asRatio = originalValue.multiply(TO_PERCENT_FACTOR);
+        EngineNumber total = stateGetter.getVolume();
+        String newUnits = total.getUnits();
+        BigDecimal newValue = total.getValue().multiply(asRatio);
+        yield new EngineNumber(newValue, newUnits);
+      }
+      default -> throw new IllegalArgumentException("Unable to convert to volume: " + currentUnits);
+    };
   }
 
   /**
@@ -500,51 +510,51 @@ public class UnitConverter {
     target = normalize(target);
     String currentUnits = target.getUnits();
 
-    boolean isUnitsAlias = "unit".equals(currentUnits) || "unitseachyear".equals(currentUnits);
+    return switch (currentUnits) {
+      case "units" -> target;
+      case "unit", "unitseachyear" -> new EngineNumber(target.getValue(), "units");
+      case "kg", "mt" -> {
+        EngineNumber conversion = stateGetter.getAmortizedUnitVolume();
+        BigDecimal conversionValue = conversion.getValue();
+        String normalizedUnits = normalizeUnitString(conversion.getUnits());
+        String[] conversionUnitPieces = splitUnits(normalizedUnits);
+        String expectedUnits = conversionUnitPieces[0];
+        EngineNumber targetConverted = convert(target, expectedUnits);
+        BigDecimal originalValue = targetConverted.getValue();
+        BigDecimal newValue = originalValue.divide(conversionValue, MATH_CONTEXT);
+        yield new EngineNumber(newValue, "units");
+      }
+      case "tCO2e" -> {
+        BigDecimal originalValue = target.getValue();
+        EngineNumber conversion = stateGetter.getAmortizedUnitConsumption();
+        String normalizedUnits = normalizeUnitString(conversion.getUnits());
+        String[] conversionUnitPieces = splitUnits(normalizedUnits);
+        String conversionNumeratorUnits = conversionUnitPieces[0];
 
-    if ("units".equals(currentUnits)) {
-      return target;
-    } else if (isUnitsAlias) {
-      return new EngineNumber(target.getValue(), "units");
-    } else if ("kg".equals(currentUnits) || "mt".equals(currentUnits)) {
-      EngineNumber conversion = stateGetter.getAmortizedUnitVolume();
-      BigDecimal conversionValue = conversion.getValue();
-      String normalizedUnits = normalizeUnitString(conversion.getUnits());
-      String[] conversionUnitPieces = splitUnits(normalizedUnits);
-      String expectedUnits = conversionUnitPieces[0];
-      EngineNumber targetConverted = convert(target, expectedUnits);
-      BigDecimal originalValue = targetConverted.getValue();
-      BigDecimal newValue = originalValue.divide(conversionValue, MATH_CONTEXT);
-      return new EngineNumber(newValue, "units");
-    } else if ("tCO2e".equals(currentUnits)) {
-      BigDecimal originalValue = target.getValue();
-      EngineNumber conversion = stateGetter.getAmortizedUnitConsumption();
-      String normalizedUnits = normalizeUnitString(conversion.getUnits());
-      String[] conversionUnitPieces = splitUnits(normalizedUnits);
-      String conversionNumeratorUnits = conversionUnitPieces[0];
+        // Normalize conversion factor to match input units (recursive call to ensure unit consistency)
+        EngineNumber conversionNumerator = new EngineNumber(conversion.getValue(), conversionNumeratorUnits);
+        EngineNumber normalizedConversionNumerator = convert(conversionNumerator, currentUnits);
+        BigDecimal normalizedConversionValue = normalizedConversionNumerator.getValue();
 
-      // Normalize conversion factor to match input units (recursive call to ensure unit consistency)
-      EngineNumber conversionNumerator = new EngineNumber(conversion.getValue(), conversionNumeratorUnits);
-      EngineNumber normalizedConversionNumerator = convert(conversionNumerator, currentUnits);
-      BigDecimal normalizedConversionValue = normalizedConversionNumerator.getValue();
-
-      BigDecimal newValue = originalValue.divide(normalizedConversionValue, MATH_CONTEXT);
-      return new EngineNumber(newValue, "units");
-    } else if ("kgCO2e".equals(currentUnits)) {
-      // Convert kgCO2e to tCO2e first, then to units
-      BigDecimal kgco2eValue = target.getValue();
-      BigDecimal tco2eValue = kgco2eValue.multiply(KGCO2E_TO_TCO2E_FACTOR);
-      EngineNumber tco2eTarget = new EngineNumber(tco2eValue, "tCO2e");
-      return toUnits(tco2eTarget);
-    } else if ("%".equals(currentUnits) || "%eachyear".equals(currentUnits)) {
-      BigDecimal originalValue = target.getValue();
-      BigDecimal asRatio = originalValue.multiply(TO_PERCENT_FACTOR);
-      EngineNumber total = stateGetter.getPopulation();
-      BigDecimal newValue = total.getValue().multiply(asRatio);
-      return new EngineNumber(newValue, "units");
-    } else {
-      throw new IllegalArgumentException("Unable to convert to population: " + currentUnits);
-    }
+        BigDecimal newValue = originalValue.divide(normalizedConversionValue, MATH_CONTEXT);
+        yield new EngineNumber(newValue, "units");
+      }
+      case "kgCO2e" -> {
+        // Convert kgCO2e to tCO2e first, then to units
+        BigDecimal kgco2eValue = target.getValue();
+        BigDecimal tco2eValue = kgco2eValue.multiply(KGCO2E_TO_TCO2E_FACTOR);
+        EngineNumber tco2eTarget = new EngineNumber(tco2eValue, "tCO2e");
+        yield toUnits(tco2eTarget);
+      }
+      case "%", "%eachyear" -> {
+        BigDecimal originalValue = target.getValue();
+        BigDecimal asRatio = originalValue.multiply(TO_PERCENT_FACTOR);
+        EngineNumber total = stateGetter.getPopulation();
+        BigDecimal newValue = total.getValue().multiply(asRatio);
+        yield new EngineNumber(newValue, "units");
+      }
+      default -> throw new IllegalArgumentException("Unable to convert to population: " + currentUnits);
+    };
   }
 
   /**
@@ -611,12 +621,9 @@ public class UnitConverter {
 
     if (alreadyCorrect) {
       return target;
-    } else if ("tCO2e".equals(currentUnits)) {
-      // Convert tCO2e to kgCO2e
-      BigDecimal tco2eValue = target.getValue();
-      BigDecimal kgco2eValue = tco2eValue.multiply(TCO2E_TO_KGCO2E_FACTOR);
-      return new EngineNumber(kgco2eValue, "kgCO2e");
-    } else if (currentInfer) {
+    }
+
+    if (currentInfer) {
       EngineNumber conversion = stateGetter.getSubstanceConsumption();
       String normalizedUnits = normalizeUnitString(conversion.getUnits());
       String[] conversionUnitPieces = splitUnits(normalizedUnits);
@@ -628,16 +635,25 @@ public class UnitConverter {
       } else {
         return convertEmissionsPerVolume(target, conversion, newUnits, expectedUnits, true);
       }
-    } else if ("%".equals(currentUnits)) {
-      BigDecimal originalValue = target.getValue();
-      BigDecimal asRatio = originalValue.multiply(TO_PERCENT_FACTOR);
-      EngineNumber total = stateGetter.getGhgConsumption();
-      BigDecimal kgco2eTotal = total.getValue().multiply(TCO2E_TO_KGCO2E_FACTOR);
-      BigDecimal newValue = kgco2eTotal.multiply(asRatio);
-      return new EngineNumber(newValue, "kgCO2e");
-    } else {
-      throw new IllegalArgumentException("Unable to convert to kgCO2e consumption: " + currentUnits);
     }
+
+    return switch (currentUnits) {
+      case "tCO2e" -> {
+        // Convert tCO2e to kgCO2e
+        BigDecimal tco2eValue = target.getValue();
+        BigDecimal kgco2eValue = tco2eValue.multiply(TCO2E_TO_KGCO2E_FACTOR);
+        yield new EngineNumber(kgco2eValue, "kgCO2e");
+      }
+      case "%" -> {
+        BigDecimal originalValue = target.getValue();
+        BigDecimal asRatio = originalValue.multiply(TO_PERCENT_FACTOR);
+        EngineNumber total = stateGetter.getGhgConsumption();
+        BigDecimal kgco2eTotal = total.getValue().multiply(TCO2E_TO_KGCO2E_FACTOR);
+        BigDecimal newValue = kgco2eTotal.multiply(asRatio);
+        yield new EngineNumber(newValue, "kgCO2e");
+      }
+      default -> throw new IllegalArgumentException("Unable to convert to kgCO2e consumption: " + currentUnits);
+    };
   }
 
   /**
@@ -694,46 +710,56 @@ public class UnitConverter {
     target = normalize(target);
     String currentUnits = target.getUnits();
 
-    if ("years".equals(currentUnits)) {
-      return target;
-    } else if (isYearsUnitStr(currentUnits)) {
-      return new EngineNumber(target.getValue(), "years");
-    } else if ("tCO2e".equals(currentUnits)) {
-      BigDecimal perYearConsumptionValue = stateGetter.getGhgConsumption().getValue();
-      BigDecimal newYears = target.getValue().divide(perYearConsumptionValue, MATH_CONTEXT);
-      return new EngineNumber(newYears, "years");
-    } else if ("kgCO2e".equals(currentUnits)) {
-      // Convert kgCO2e to tCO2e first, then calculate years
-      BigDecimal kgco2eValue = target.getValue();
-      BigDecimal tco2eValue = kgco2eValue.multiply(KGCO2E_TO_TCO2E_FACTOR);
-      BigDecimal perYearConsumptionValue = stateGetter.getGhgConsumption().getValue();
-      BigDecimal newYears = tco2eValue.divide(perYearConsumptionValue, MATH_CONTEXT);
-      return new EngineNumber(newYears, "years");
-    } else if ("kwh".equals(currentUnits)) {
-      BigDecimal perYearConsumptionValue = stateGetter.getEnergyConsumption().getValue();
-      BigDecimal newYears = target.getValue().divide(perYearConsumptionValue, MATH_CONTEXT);
-      return new EngineNumber(newYears, "years");
-    } else if ("kg".equals(currentUnits) || "mt".equals(currentUnits)) {
-      EngineNumber perYearVolume = stateGetter.getVolume();
-      String perYearVolumeUnits = perYearVolume.getUnits();
-      BigDecimal perYearVolumeValue = perYearVolume.getValue();
-      EngineNumber volumeConverted = convert(target, perYearVolumeUnits);
-      BigDecimal volumeConvertedValue = volumeConverted.getValue();
-      BigDecimal newYears = volumeConvertedValue.divide(perYearVolumeValue, MATH_CONTEXT);
-      return new EngineNumber(newYears, "years");
-    } else if ("unit".equals(currentUnits) || "units".equals(currentUnits)) {
-      BigDecimal perYearPopulation = stateGetter.getPopulationChange(this).getValue();
-      BigDecimal newYears = target.getValue().divide(perYearPopulation, MATH_CONTEXT);
-      return new EngineNumber(newYears, "years");
-    } else if ("%".equals(currentUnits)) {
-      BigDecimal originalValue = target.getValue();
-      BigDecimal asRatio = originalValue.multiply(TO_PERCENT_FACTOR);
-      EngineNumber total = stateGetter.getYearsElapsed();
-      BigDecimal newValue = total.getValue().multiply(asRatio);
-      return new EngineNumber(newValue, "years");
-    } else {
-      throw new IllegalArgumentException("Unable to convert to years: " + currentUnits);
+    if ("years".equals(currentUnits) || isYearsUnitStr(currentUnits)) {
+      if ("years".equals(currentUnits)) {
+        return target;
+      } else {
+        return new EngineNumber(target.getValue(), "years");
+      }
     }
+
+    return switch (currentUnits) {
+      case "tCO2e" -> {
+        BigDecimal perYearConsumptionValue = stateGetter.getGhgConsumption().getValue();
+        BigDecimal newYears = target.getValue().divide(perYearConsumptionValue, MATH_CONTEXT);
+        yield new EngineNumber(newYears, "years");
+      }
+      case "kgCO2e" -> {
+        // Convert kgCO2e to tCO2e first, then calculate years
+        BigDecimal kgco2eValue = target.getValue();
+        BigDecimal tco2eValue = kgco2eValue.multiply(KGCO2E_TO_TCO2E_FACTOR);
+        BigDecimal perYearConsumptionValue = stateGetter.getGhgConsumption().getValue();
+        BigDecimal newYears = tco2eValue.divide(perYearConsumptionValue, MATH_CONTEXT);
+        yield new EngineNumber(newYears, "years");
+      }
+      case "kwh" -> {
+        BigDecimal perYearConsumptionValue = stateGetter.getEnergyConsumption().getValue();
+        BigDecimal newYears = target.getValue().divide(perYearConsumptionValue, MATH_CONTEXT);
+        yield new EngineNumber(newYears, "years");
+      }
+      case "kg", "mt" -> {
+        EngineNumber perYearVolume = stateGetter.getVolume();
+        String perYearVolumeUnits = perYearVolume.getUnits();
+        BigDecimal perYearVolumeValue = perYearVolume.getValue();
+        EngineNumber volumeConverted = convert(target, perYearVolumeUnits);
+        BigDecimal volumeConvertedValue = volumeConverted.getValue();
+        BigDecimal newYears = volumeConvertedValue.divide(perYearVolumeValue, MATH_CONTEXT);
+        yield new EngineNumber(newYears, "years");
+      }
+      case "unit", "units" -> {
+        BigDecimal perYearPopulation = stateGetter.getPopulationChange(this).getValue();
+        BigDecimal newYears = target.getValue().divide(perYearPopulation, MATH_CONTEXT);
+        yield new EngineNumber(newYears, "years");
+      }
+      case "%" -> {
+        BigDecimal originalValue = target.getValue();
+        BigDecimal asRatio = originalValue.multiply(TO_PERCENT_FACTOR);
+        EngineNumber total = stateGetter.getYearsElapsed();
+        BigDecimal newValue = total.getValue().multiply(asRatio);
+        yield new EngineNumber(newValue, "years");
+      }
+      default -> throw new IllegalArgumentException("Unable to convert to years: " + currentUnits);
+    };
   }
 
   /**
@@ -746,28 +772,25 @@ public class UnitConverter {
     target = normalize(target);
     String currentUnits = target.getUnits();
 
-    EngineNumber total;
-
     if ("%".equals(currentUnits)) {
       return target;
-    } else if (isYearsUnitStr(currentUnits)) {
-      total = stateGetter.getYearsElapsed();
-    } else if ("tCO2e".equals(currentUnits)) {
-      total = stateGetter.getGhgConsumption();
-    } else if ("kgCO2e".equals(currentUnits)) {
-      // Convert kgCO2e to tCO2e first, then calculate percentage
-      EngineNumber tco2eTotal = stateGetter.getGhgConsumption();
-      BigDecimal kgco2eTotal = tco2eTotal.getValue().multiply(TCO2E_TO_KGCO2E_FACTOR);
-      total = new EngineNumber(kgco2eTotal, "kgCO2e");
-    } else if ("kg".equals(currentUnits) || "mt".equals(currentUnits)) {
-      EngineNumber volume = stateGetter.getVolume();
-      total = convert(volume, currentUnits);
-    } else if ("unit".equals(currentUnits) || "units".equals(currentUnits)) {
-      total = stateGetter.getPopulation();
-    } else {
-      throw new IllegalArgumentException(
-          "Unable to convert to %: " + currentUnits);
     }
+
+    EngineNumber total = switch (currentUnits) {
+      case "year", "years", "yr", "yrs" -> stateGetter.getYearsElapsed();
+      case "tCO2e" -> stateGetter.getGhgConsumption();
+      case "kgCO2e" -> {
+        EngineNumber tco2eTotal = stateGetter.getGhgConsumption();
+        BigDecimal kgco2eTotal = tco2eTotal.getValue().multiply(TCO2E_TO_KGCO2E_FACTOR);
+        yield new EngineNumber(kgco2eTotal, "kgCO2e");
+      }
+      case "kg", "mt" -> {
+        EngineNumber volume = stateGetter.getVolume();
+        yield convert(volume, currentUnits);
+      }
+      case "unit", "units" -> stateGetter.getPopulation();
+      default -> throw new IllegalArgumentException("Unable to convert to %: " + currentUnits);
+    };
 
     BigDecimal percentValue = target.getValue()
         .divide(total.getValue(), MATH_CONTEXT)
@@ -807,7 +830,7 @@ public class UnitConverter {
       return target;
     } else {
       BigDecimal originalValue = target.getValue();
-      String newUnits = normalizedCurrentUnits.split("/")[0];
+      String newUnits = normalizedCurrentUnits.substring(0, normalizedCurrentUnits.indexOf("/"));
       EngineNumber population = stateGetter.getPopulation();
       BigDecimal populationValue = population.getValue();
       BigDecimal newValue = originalValue.multiply(populationValue);
@@ -830,7 +853,7 @@ public class UnitConverter {
       return target;
     } else {
       BigDecimal originalValue = target.getValue();
-      String newUnits = normalizedCurrentUnits.split("/")[0];
+      String newUnits = normalizedCurrentUnits.substring(0, normalizedCurrentUnits.indexOf("/"));
       EngineNumber years = stateGetter.getYearsElapsed();
       BigDecimal yearsValue = years.getValue();
       BigDecimal newValue = originalValue.multiply(yearsValue);
@@ -853,28 +876,29 @@ public class UnitConverter {
     boolean isCo2 = normalizedCurrentUnits.endsWith("/tCO2e");
     boolean isKgCo2 = normalizedCurrentUnits.endsWith("/kgCO2e");
     boolean isKwh = normalizedCurrentUnits.endsWith("/kwh");
-    if (!isCo2 && !isKgCo2 && !isKwh) {
+    boolean isNormed = !isCo2 && !isKgCo2 && !isKwh;
+
+    if (isNormed) {
       return target;
-    } else {
-      EngineNumber targetConsumption;
-      if (isCo2) {
-        targetConsumption = stateGetter.getGhgConsumption();
-      } else if (isKgCo2) {
-        // Get tCO2e consumption and convert to kgCO2e
-        EngineNumber tco2eConsumption = stateGetter.getGhgConsumption();
-        BigDecimal kgco2eValue = tco2eConsumption.getValue().multiply(TCO2E_TO_KGCO2E_FACTOR);
-        targetConsumption = new EngineNumber(kgco2eValue, "kgCO2e");
-      } else {
-        targetConsumption = stateGetter.getEnergyConsumption();
-      }
-
-      BigDecimal originalValue = target.getValue();
-      String newUnits = normalizedCurrentUnits.split("/")[0];
-      BigDecimal totalConsumptionValue = targetConsumption.getValue();
-      BigDecimal newValue = originalValue.multiply(totalConsumptionValue);
-
-      return new EngineNumber(newValue, newUnits);
     }
+
+    EngineNumber targetConsumption;
+    if (isCo2) {
+      targetConsumption = stateGetter.getGhgConsumption();
+    } else if (isKgCo2) {
+      EngineNumber tco2eConsumption = stateGetter.getGhgConsumption();
+      BigDecimal kgco2eValue = tco2eConsumption.getValue().multiply(TCO2E_TO_KGCO2E_FACTOR);
+      targetConsumption = new EngineNumber(kgco2eValue, "kgCO2e");
+    } else {
+      targetConsumption = stateGetter.getEnergyConsumption();
+    }
+
+    BigDecimal originalValue = target.getValue();
+    String newUnits = normalizedCurrentUnits.substring(0, normalizedCurrentUnits.indexOf("/"));
+    BigDecimal totalConsumptionValue = targetConsumption.getValue();
+    BigDecimal newValue = originalValue.multiply(totalConsumptionValue);
+
+    return new EngineNumber(newValue, newUnits);
   }
 
   /**
@@ -890,22 +914,23 @@ public class UnitConverter {
     boolean divKg = normalizedTargetUnits.endsWith("/kg");
     boolean divMt = normalizedTargetUnits.endsWith("/mt");
     boolean needsNorm = divKg || divMt;
+
     if (!needsNorm) {
       return target;
-    } else {
-      String[] targetUnitPieces = splitUnits(normalizedTargetUnits);
-      String newUnits = targetUnitPieces[0];
-      String expectedUnits = targetUnitPieces[1];
-
-      EngineNumber volume = stateGetter.getVolume();
-      EngineNumber volumeConverted = convert(volume, expectedUnits);
-      BigDecimal conversionValue = volumeConverted.getValue();
-
-      BigDecimal originalValue = target.getValue();
-      BigDecimal newValue = originalValue.multiply(conversionValue);
-
-      return new EngineNumber(newValue, newUnits);
     }
+
+    String[] targetUnitPieces = splitUnits(normalizedTargetUnits);
+    String newUnits = targetUnitPieces[0];
+    String expectedUnits = targetUnitPieces[1];
+
+    EngineNumber volume = stateGetter.getVolume();
+    EngineNumber volumeConverted = convert(volume, expectedUnits);
+    BigDecimal conversionValue = volumeConverted.getValue();
+
+    BigDecimal originalValue = target.getValue();
+    BigDecimal newValue = originalValue.multiply(conversionValue);
+
+    return new EngineNumber(newValue, newUnits);
   }
 
   /**
