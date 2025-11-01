@@ -239,7 +239,7 @@ jobs:
           distribution: 'temurin'
           java-version: '21'
       - name: Build war
-        run: ./gradlew war
+        run: ./gradlew warUnversioned
       - name: Upload war
         uses: actions/upload-artifact@v4
         with:
@@ -463,3 +463,14 @@ jobs:
           echo "SUCCESS: CSV file was created and is non-empty"
           echo "CSV file contents:"
           cat examples/minimal_interpreter_docker.csv
+  publishJar:
+    environment: deploy
+    if: github.ref == 'refs/heads/deploy'
+    runs-on: ubuntu-latest
+    name: Publish Jar
+    needs: [runEngineDockerSanity]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Publish
+        run: cd engine; ./gradlew publish
