@@ -92,9 +92,26 @@ sourceSets {
     }
 }
 
+// Regular jar
+jar {
+  manifest {
+    attributes(
+      "Main-Class": "org.kigalisim.KigaliSimCommander"
+    )
+  }
+  archiveBaseName = "kigalisim"
+}
+
 // Fat jar containing all dependencies required for production
-// Note: We only run as a stand alone executable right now, so no need for a thin jar.
-task fatJar(type: Jar) {
+// Create a copy of the fat jar without version in the name
+task fatJar(type: Copy) {
+    dependsOn fatJarVersion
+    from fatJarVersion.archiveFile
+    into file("${buildDir}/libs")
+    rename { "kigalisim-fat.jar" }
+}
+
+task fatJarVersion(type: Jar) {
   manifest {
     attributes(
       "Main-Class": "org.kigalisim.KigaliSimCommander"
@@ -258,7 +275,8 @@ publishing {
     }
     publications {
       gpr(MavenPublication) {
-        artifact fatJar
+        from(components.java)
+        artifact fatJarVersion
       }
     }
 }
