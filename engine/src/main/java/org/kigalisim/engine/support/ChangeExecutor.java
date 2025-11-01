@@ -127,7 +127,9 @@ public class ChangeExecutor {
   /**
    * Handle percentage-based change operations.
    *
-   * <p>Apply percentage directly to lastSpecifiedValue and let setStream handle recharge.</p>
+   * <p>Applies percentage to the last specified value, with recharge handled by
+   * executeStreamUpdate to avoid double counting. For units-based specifications,
+   * enables recycling logic.</p>
    *
    * @param config The configuration containing all parameters for the change operation
    */
@@ -140,18 +142,14 @@ public class ChangeExecutor {
     SimulationState simulationState = engine.getStreamKeeper();
     EngineNumber lastSpecified = simulationState.getLastSpecifiedValue(useKeyEffective, stream);
     if (lastSpecified == null) {
-      return; // No base value, no change
+      return;
     }
 
-    // Apply percentage directly to lastSpecified value (user intent)
     BigDecimal percentageValue = amount.getValue();
     BigDecimal changeAmount = lastSpecified.getValue().multiply(percentageValue).divide(new BigDecimal("100"));
     BigDecimal newTotalValue = lastSpecified.getValue().add(changeAmount);
     EngineNumber newTotal = new EngineNumber(newTotalValue, lastSpecified.getUnits());
 
-    // Let executeStreamUpdate handle unit conversion and recharge addition properly
-    // This eliminates double counting - recharge calculated only in executeStreamUpdate
-    // For units-based specifications, enable recycling logic
     boolean subtractRecycling = "units".equals(lastSpecified.getUnits());
     StreamUpdate update = new StreamUpdateBuilder()
         .setName(stream)
@@ -164,7 +162,10 @@ public class ChangeExecutor {
 
   /**
    * Handle sales stream changes by distributing proportionally to domestic and import.
-   * This avoids double recharge by letting each component stream handle its own recharge.
+   *
+   * <p>Percentage changes apply the same percentage to both domestic and import.
+   * Units or kg changes are distributed proportionally based on current ratios.
+   * Each component stream handles its own recharge to avoid double counting.</p>
    *
    * @param config The configuration containing all parameters for the change operation
    */
@@ -173,20 +174,15 @@ public class ChangeExecutor {
     YearMatcher yearMatcher = config.getYearMatcher();
     UseKey useKeyEffective = config.getUseKeyEffective();
 
-    // Get the distribution ratios for domestic and import
     SimulationState simulationState = engine.getStreamKeeper();
     SalesStreamDistribution distribution = simulationState.getDistribution(useKeyEffective);
     BigDecimal percentDomestic = distribution.getPercentDomestic();
     BigDecimal percentImport = distribution.getPercentImport();
 
-    // Calculate proportional amounts for each component
     if (amount.getUnits() != null && amount.getUnits().contains("%")) {
-      // Percentage changes: apply same percentage to both components
-      // This ensures that 5% to sales means both domestic and import grow by 5%
       engine.changeStream("domestic", amount, yearMatcher, useKeyEffective);
       engine.changeStream("import", amount, yearMatcher, useKeyEffective);
     } else {
-      // Units or kg changes: distribute proportionally
       BigDecimal domesticAmount = amount.getValue().multiply(percentDomestic);
       BigDecimal importAmount = amount.getValue().multiply(percentImport);
 
@@ -201,7 +197,9 @@ public class ChangeExecutor {
   /**
    * Handle units-based change operations.
    *
-   * <p>Apply change to lastSpecifiedValue and let setStream handle recharge.</p>
+   * <p>Applies change to the last specified value, or falls back to current stream
+   * value if no specification exists. Recharge is handled by executeStreamUpdate,
+   * with recycling logic enabled for units-based specifications.</p>
    *
    * @param config The configuration containing all parameters for the change operation
    */
@@ -215,13 +213,11 @@ public class ChangeExecutor {
     EngineNumber lastSpecified = simulationState.getLastSpecifiedValue(useKeyEffective, stream);
 
     if (lastSpecified == null) {
-      // Fallback: apply change to current stream value
       EngineNumber currentValue = engine.getStream(stream, Optional.of(useKeyEffective), Optional.empty());
       UnitConverter unitConverter = EngineSupportUtils.createUnitConverterWithTotal(engine, stream);
       EngineNumber currentInUnits = unitConverter.convert(currentValue, "units");
       BigDecimal newUnits = currentInUnits.getValue().add(amount.getValue());
       EngineNumber newTotal = new EngineNumber(newUnits, "units");
-      // Units-based change should use recycling logic
       StreamUpdate update = new StreamUpdateBuilder()
           .setName(stream)
           .setValue(newTotal)
@@ -230,12 +226,9 @@ public class ChangeExecutor {
           .build();
       engine.executeStreamUpdate(update);
     } else {
-      // Apply units change to lastSpecified value
       BigDecimal newTotalValue = lastSpecified.getValue().add(amount.getValue());
       EngineNumber newTotal = new EngineNumber(newTotalValue, lastSpecified.getUnits());
 
-      // Let executeStreamUpdate handle unit conversion and recharge addition properly
-      // For units-based specifications, enable recycling logic
       boolean subtractRecycling = "units".equals(lastSpecified.getUnits());
       StreamUpdate update = new StreamUpdateBuilder()
           .setName(stream)
