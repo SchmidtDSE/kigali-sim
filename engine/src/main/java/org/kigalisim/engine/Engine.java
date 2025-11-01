@@ -279,8 +279,35 @@ public interface Engine {
   /**
    * Set recharge parameters for the current application and substance.
    *
-   * @param volume The recharge volume to set
-   * @param intensity The recharge intensity to set
+   * <p>Recharge represents the substance needed to service existing equipment due to
+   * leakage, maintenance, or repair. This method configures both the percentage of
+   * equipment requiring recharge (volume) and the amount of substance needed per unit
+   * (intensity).</p>
+   *
+   * <p><strong>Carry Over Behavior:</strong> When users specify sales in equipment
+   * units (e.g., "800 units"), they indicate how many NEW equipment units should be
+   * sold. This recharge method must calculate substance needed for EXISTING equipment
+   * and add it on top. If the current state is a carry-over scenario (unit-based sales
+   * from a previous year continuing without fresh specification), this method will:</p>
+   * <ol>
+   *   <li>Detect that no fresh sales specification was provided this year</li>
+   *   <li>Retrieve the last specified unit-based sales value from state</li>
+   *   <li>Re-apply that value using executeStreamUpdate, which automatically adds
+   *       implicit recharge on top</li>
+   *   <li>Return early, skipping standard recalculation paths designed for fresh input</li>
+   * </ol>
+   *
+   * <p>This carry-over handling ensures consistent behavior across years, maintaining
+   * the user's intent that unit specifications represent new equipment sales with
+   * recharge calculated and added separately for existing equipment populations.</p>
+   *
+   * <p><strong>Example:</strong> If a user specifies "set import to 800 units during
+   * year 2025" and provides no specification for 2026, the carry over mechanism will
+   * automatically continue 800 new units in 2026, while recalculating and adding the
+   * appropriate recharge volume based on the growing equipment population.</p>
+   *
+   * @param volume The recharge volume to set (percentage of equipment requiring recharge)
+   * @param intensity The recharge intensity to set (substance amount per unit recharged)
    * @param yearMatcher Matcher to determine if the change applies to current year
    */
   void recharge(EngineNumber volume, EngineNumber intensity, YearMatcher yearMatcher);
