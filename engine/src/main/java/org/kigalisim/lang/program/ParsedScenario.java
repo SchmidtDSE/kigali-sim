@@ -85,6 +85,4 @@ public class ParsedScenario {
     return trials;
   }
 
-  // TODO: getTrials is not used yet.
-
 }

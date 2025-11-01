@@ -39,13 +39,13 @@ public class RechargeOperation implements Operation {
    * @param intensityOperation The operation that calculates the recharge intensity.
    * @param during The time period during which this operation applies.
    */
-  public RechargeOperation(Operation volumeOperation, Operation intensityOperation,
-      ParsedDuring during) {
+  public RechargeOperation(Operation volumeOperation, Operation intensityOperation, ParsedDuring during) {
     this.volumeOperation = volumeOperation;
     this.intensityOperation = intensityOperation;
     duringMaybe = Optional.of(during);
   }
 
+  /** {@inheritDoc} */
   @Override
   public void execute(PushDownMachine machine) {
     volumeOperation.execute(machine);

@@ -30,9 +30,17 @@ public class ParsedProgram {
    */
   public ParsedProgram(Iterable<ParsedPolicy> policies, Iterable<ParsedScenario> scenarios) {
     this.policies = DuplicateValidator.validateUniqueNames(
-        policies, ParsedPolicy::getName, "policy", "program");
+        policies,
+        ParsedPolicy::getName,
+        "policy",
+        "program"
+    );
     this.scenarios = DuplicateValidator.validateUniqueNames(
-        scenarios, ParsedScenario::getName, "scenario", "program");
+        scenarios,
+        ParsedScenario::getName,
+        "scenario",
+        "program"
+    );
   }
 
   /**

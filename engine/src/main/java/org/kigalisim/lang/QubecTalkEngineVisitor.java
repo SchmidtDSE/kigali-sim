@@ -79,6 +79,18 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
   /** Number parser for handling flexible thousands and decimal separators. */
   private final NumberParseUtil numberParser = new NumberParseUtil();
 
+  /** Constant for "beginning" dynamic cap marker. */
+  private static final String BEGINNING = "beginning";
+
+  /** Constant for "onwards" dynamic cap marker. */
+  private static final String ONWARDS = "onwards";
+
+  /** Child index offset for substance body start. */
+  private static final int SUBSTANCE_BODY_START = 3;
+
+  /** Child index offset for substance body end. */
+  private static final int SUBSTANCE_BODY_END = 2;
+
   /**
    * Constructs a new QubecTalkEngineVisitor.
    */
@@ -126,7 +138,6 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
   public Fragment visitUnitOrRatio(QubecTalkParser.UnitOrRatioContext ctx) {
     String unit = ctx.getText();
 
-    // Convert "each" to "/" for unit ratios
     unit = unit.replaceAll(" each ", " / ");
 
     return new UnitFragment(unit);
@@ -154,14 +165,11 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
     Operation right = visit(ctx.expression(1)).getOperation();
 
     String operatorStr = ctx.op.getText();
-    Operation calculation;
-    if (operatorStr.equals("+")) {
-      calculation = new AdditionOperation(left, right);
-    } else if (operatorStr.equals("-")) {
-      calculation = new SubtractionOperation(left, right);
-    } else {
-      throw new RuntimeException("Unknown addition operation");
-    }
+    Operation calculation = switch (operatorStr) {
+      case "+" -> new AdditionOperation(left, right);
+      case "-" -> new SubtractionOperation(left, right);
+      default -> throw new RuntimeException("Unknown addition operation");
+    };
     return new OperationFragment(calculation);
   }
 
@@ -191,14 +199,11 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
    */
   @Override
   public Fragment visitGetStreamConversion(QubecTalkParser.GetStreamConversionContext ctx) {
-    // Get the stream name
     String streamName = visit(ctx.target).getString();
 
-    // Get the unit conversion
     UnitFragment unitFragment = (UnitFragment) visit(ctx.conversion);
     String unitConversion = unitFragment.getUnit();
 
-    // Create an operation that represents getting the stream value and converting it to the specified unit
     Operation operation = new GetStreamOperation(streamName, unitConversion);
 
     return new OperationFragment(operation);
@@ -218,17 +223,13 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
   @Override
   public Fragment visitGetStreamIndirectConversion(
       QubecTalkParser.GetStreamIndirectConversionContext ctx) {
-    // Get the stream name (e.g., "domestic")
     String streamName = visit(ctx.target).getString();
 
-    // Get the target substance name from the string (e.g., "substance a")
     String targetSubstance = visit(ctx.rescope).getString();
 
-    // Get the unit conversion (e.g., "kg")
     UnitFragment unitFragment = (UnitFragment) visit(ctx.conversion);
     String unitConversion = unitFragment.getUnit();
 
-    // Create an operation that gets the stream from the target substance with conversion
     Operation operation = new GetStreamOperation(streamName, targetSubstance, unitConversion);
 
     return new OperationFragment(operation);
@@ -251,14 +252,11 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
     Operation right = visit(ctx.expression(1)).getOperation();
 
     String operatorStr = ctx.op.getText();
-    Operation calculation;
-    if (operatorStr.equals("*")) {
-      calculation = new MultiplicationOperation(left, right);
-    } else if (operatorStr.equals("/")) {
-      calculation = new DivisionOperation(left, right);
-    } else {
-      throw new RuntimeException("Unknown multiplication operation");
-    }
+    Operation calculation = switch (operatorStr) {
+      case "*" -> new MultiplicationOperation(left, right);
+      case "/" -> new DivisionOperation(left, right);
+      default -> throw new RuntimeException("Unknown multiplication operation");
+    };
     return new OperationFragment(calculation);
   }
 
@@ -298,13 +296,10 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
    */
   @Override
   public Fragment visitGetStreamIndirect(QubecTalkParser.GetStreamIndirectContext ctx) {
-    // Get the stream name
     String streamName = visit(ctx.target).getString();
 
-    // Get the target substance name
     String targetSubstance = visit(ctx.rescope).getString();
 
-    // Create an operation without unit conversion
     Operation operation = new GetStreamOperation(streamName, targetSubstance, null);
 
     return new OperationFragment(operation);
@@ -340,10 +335,8 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
    */
   @Override
   public Fragment visitGetStream(QubecTalkParser.GetStreamContext ctx) {
-    // Get the stream name
     String streamName = visit(ctx.target).getString();
 
-    // Create an operation that represents getting the stream value
     Operation operation = new GetStreamOperation(streamName);
 
     return new OperationFragment(operation);
@@ -391,7 +384,7 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
    */
   @Override
   public Fragment visitDuringStart(QubecTalkParser.DuringStartContext ctx) {
-    TimePointFuture start = new DynamicCapFuture("beginning");
+    TimePointFuture start = new DynamicCapFuture(BEGINNING);
     ParsedDuring during = new ParsedDuring(Optional.of(start), Optional.of(start));
     return new DuringFragment(during);
   }
@@ -411,8 +404,8 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
    */
   @Override
   public Fragment visitDuringAll(QubecTalkParser.DuringAllContext ctx) {
-    TimePointFuture start = new DynamicCapFuture("beginning");
-    TimePointFuture end = new DynamicCapFuture("onwards");
+    TimePointFuture start = new DynamicCapFuture(BEGINNING);
+    TimePointFuture end = new DynamicCapFuture(ONWARDS);
     ParsedDuring during = new ParsedDuring(Optional.of(start), Optional.of(end));
     return new DuringFragment(during);
   }
@@ -422,7 +415,7 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
    */
   @Override
   public Fragment visitDuringWithMax(QubecTalkParser.DuringWithMaxContext ctx) {
-    TimePointFuture start = new DynamicCapFuture("beginning");
+    TimePointFuture start = new DynamicCapFuture(BEGINNING);
     TimePointFuture end = new CalculatedTimePointFuture(visit(ctx.expression()).getOperation());
     ParsedDuring during = new ParsedDuring(Optional.of(start), Optional.of(end));
     return new DuringFragment(during);
@@ -434,7 +427,7 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
   @Override
   public Fragment visitDuringWithMin(QubecTalkParser.DuringWithMinContext ctx) {
     TimePointFuture start = new CalculatedTimePointFuture(visit(ctx.expression()).getOperation());
-    TimePointFuture end = new DynamicCapFuture("onwards");
+    TimePointFuture end = new DynamicCapFuture(ONWARDS);
     ParsedDuring during = new ParsedDuring(Optional.of(start), Optional.of(end));
     return new DuringFragment(during);
   }
@@ -520,17 +513,18 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
   }
 
   /**
-   * {@inheritDoc}
+   * Processes a substance definition by extracting its name and operations.
+   *
+   * <p>Iterates through all children in order, processing both substanceStatement and
+   * globalStatement types in the correct sequence. Uses getChild since multiple statement
+   * types are present in a single substance definition.</p>
    */
   @Override
   public Fragment visitSubstanceDef(QubecTalkParser.SubstanceDefContext ctx) {
     String name = visit(ctx.name).getString();
     List<Operation> operations = new ArrayList<>();
 
-    // Process all children in order (after the substance name and before END_SUBSTANCE_)
-    // This ensures we process both substanceStatement and globalStatement in the correct order
-    // Note that getChild is needed here because two different statement types are present.
-    for (int i = 3; i < ctx.getChildCount() - 2; i++) {
+    for (int i = SUBSTANCE_BODY_START; i < ctx.getChildCount() - SUBSTANCE_BODY_END; i++) {
       Fragment statementFragment = visit(ctx.getChild(i));
       if (statementFragment != null) {
         try {
@@ -566,16 +560,18 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
   }
 
   /**
-   * {@inheritDoc}
+   * Processes a substance modification by extracting its name and operations.
+   *
+   * <p>Iterates through all children in order, processing both substanceStatement and
+   * globalStatement types in the correct sequence. Uses getChild since multiple statement
+   * types are present in a single substance modification.</p>
    */
   @Override
   public Fragment visitSubstanceMod(QubecTalkParser.SubstanceModContext ctx) {
     String name = visit(ctx.name).getString();
     List<Operation> operations = new ArrayList<>();
 
-    // Process all children in order (after the substance name and before END_SUBSTANCE_)
-    // This ensures we process both substanceStatement and globalStatement in the correct order
-    for (int i = 3; i < ctx.getChildCount() - 2; i++) {
+    for (int i = SUBSTANCE_BODY_START; i < ctx.getChildCount() - SUBSTANCE_BODY_END; i++) {
       Fragment statementFragment = visit(ctx.getChild(i));
       if (statementFragment != null) {
         try {
@@ -602,11 +598,12 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
     Operation valueOperation = visit(ctx.value).getOperation();
     Operation operation;
 
-    // Check if this is a cap or floor operation
     if (ctx.getText().startsWith("cap")) {
       operation = new CapOperation(stream, valueOperation);
-    } else {
+    } else if (ctx.getText().startsWith("floor")) {
       operation = new FloorOperation(stream, valueOperation);
+    } else {
+      throw new RuntimeException("Unknown limit operation: expected 'cap' or 'floor'");
     }
 
     return new OperationFragment(operation);
@@ -624,11 +621,12 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
 
     Operation operation;
 
-    // Check if this is a cap or floor operation
     if (ctx.getText().startsWith("cap")) {
       operation = new CapOperation(stream, valueOperation, displaceTarget);
-    } else {
+    } else if (ctx.getText().startsWith("floor")) {
       operation = new FloorOperation(stream, valueOperation, displaceTarget);
+    } else {
+      throw new RuntimeException("Unknown limit operation: expected 'cap' or 'floor'");
     }
 
     return new OperationFragment(operation);
@@ -644,11 +642,12 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
     ParsedDuring during = visit(ctx.duration).getDuring();
     Operation operation;
 
-    // Check if this is a cap or floor operation
     if (ctx.getText().startsWith("cap")) {
       operation = new CapOperation(stream, valueOperation, during);
-    } else {
+    } else if (ctx.getText().startsWith("floor")) {
       operation = new FloorOperation(stream, valueOperation, during);
+    } else {
+      throw new RuntimeException("Unknown limit operation: expected 'cap' or 'floor'");
     }
 
     return new OperationFragment(operation);
@@ -667,11 +666,12 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
 
     Operation operation;
 
-    // Check if this is a cap or floor operation
     if (ctx.getText().startsWith("cap")) {
       operation = new CapOperation(stream, valueOperation, displaceTarget, during);
-    } else {
+    } else if (ctx.getText().startsWith("floor")) {
       operation = new FloorOperation(stream, valueOperation, displaceTarget, during);
+    } else {
+      throw new RuntimeException("Unknown limit operation: expected 'cap' or 'floor'");
     }
 
     return new OperationFragment(operation);
@@ -737,7 +737,6 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
     Operation valueOperation = visit(ctx.value).getOperation();
     String stream = applyStreamSugar(ctx.target.getText());
 
-    // Validate that initial charge uses unit-based denominator
     String unitString = ctx.value.unitOrRatio().getText();
     validateInitialChargeUnits(unitString, stream);
 
@@ -754,7 +753,6 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
     String stream = applyStreamSugar(ctx.target.getText());
     ParsedDuring during = visit(ctx.duration).getDuring();
 
-    // Validate that initial charge uses unit-based denominator
     String unitString = ctx.value.unitOrRatio().getText();
     validateInitialChargeUnits(unitString, stream);
 
@@ -894,7 +892,6 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
   public Fragment visitRecoverDefaultInductionAllYears(QubecTalkParser.RecoverDefaultInductionAllYearsContext ctx) {
     Operation volumeOperation = visit(ctx.volume).getOperation();
     Operation yieldOperation = visit(ctx.yieldVal).getOperation();
-    // Use Optional.empty() for default induction behavior
     Operation operation = new RecoverOperation(volumeOperation, yieldOperation, Optional.empty());
     return new OperationFragment(operation);
   }
@@ -907,7 +904,6 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
     Operation volumeOperation = visit(ctx.volume).getOperation();
     Operation yieldOperation = visit(ctx.yieldVal).getOperation();
     ParsedDuring during = visit(ctx.duration).getDuring();
-    // Use Optional.empty() for default induction behavior
     Operation operation = new RecoverOperation(volumeOperation, yieldOperation, during, Optional.empty());
     return new OperationFragment(operation);
   }
@@ -920,7 +916,6 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
     Operation volumeOperation = visit(ctx.volume).getOperation();
     Operation yieldOperation = visit(ctx.yieldVal).getOperation();
     RecoveryStage stage = parseRecoveryStage(ctx.stage);
-    // Use Optional.empty() for default induction behavior
     Operation operation = new RecoverOperation(volumeOperation, yieldOperation, stage, Optional.empty());
     return new OperationFragment(operation);
   }
@@ -934,7 +929,6 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
     Operation yieldOperation = visit(ctx.yieldVal).getOperation();
     ParsedDuring during = visit(ctx.duration).getDuring();
     RecoveryStage stage = parseRecoveryStage(ctx.stage);
-    // Use Optional.empty() for default induction behavior
     Operation operation = new RecoverOperation(volumeOperation, yieldOperation, during, stage, Optional.empty());
     return new OperationFragment(operation);
   }
@@ -966,46 +960,40 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
 
 
   /**
-   * {@inheritDoc}
+   * Processes retire operation applied to all years, with or without replacement.
+   *
+   * <p>Checks for the presence of "with replacement" clause and creates the appropriate
+   * operation type.</p>
    */
   @Override
   public Fragment visitRetireAllYears(QubecTalkParser.RetireAllYearsContext ctx) {
     Operation volumeOperation = visit(ctx.volume).getOperation();
-
-    // Check if "with replacement" is present
     boolean withReplacement = hasWithReplacement(ctx);
 
-    if (withReplacement) {
-      // Create compound operation that retires and then adds replacement
-      Operation operation = new RetireWithReplacementOperation(volumeOperation);
-      return new OperationFragment(operation);
-    } else {
-      // Standard retire operation
-      Operation operation = new RetireOperation(volumeOperation);
-      return new OperationFragment(operation);
-    }
+    Operation operation = withReplacement
+        ? new RetireWithReplacementOperation(volumeOperation)
+        : new RetireOperation(volumeOperation);
+
+    return new OperationFragment(operation);
   }
 
   /**
-   * {@inheritDoc}
+   * Processes retire operation for a specified duration, with or without replacement.
+   *
+   * <p>Checks for the presence of "with replacement" clause and creates the appropriate
+   * operation type with timing information.</p>
    */
   @Override
   public Fragment visitRetireDuration(QubecTalkParser.RetireDurationContext ctx) {
     Operation volumeOperation = visit(ctx.volume).getOperation();
     ParsedDuring during = visit(ctx.duration).getDuring();
-
-    // Check if "with replacement" is present
     boolean withReplacement = hasWithReplacement(ctx);
 
-    if (withReplacement) {
-      // Create compound operation that retires and then adds replacement
-      Operation operation = new RetireWithReplacementOperation(volumeOperation, during);
-      return new OperationFragment(operation);
-    } else {
-      // Standard retire operation
-      Operation operation = new RetireOperation(volumeOperation, during);
-      return new OperationFragment(operation);
-    }
+    Operation operation = withReplacement
+        ? new RetireWithReplacementOperation(volumeOperation, during)
+        : new RetireOperation(volumeOperation, during);
+
+    return new OperationFragment(operation);
   }
 
   /**
@@ -1121,70 +1109,58 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
   }
 
   /**
-   * {@inheritDoc}
+   * Processes a simulation scenario with specified policies and time bounds.
+   *
+   * <p>Extracts the scenario name, start/end years, and the list of policies to apply.</p>
    */
   @Override
   public Fragment visitPolicySim(QubecTalkParser.PolicySimContext ctx) {
-    // Get the scenario name
     String name = visit(ctx.name).getString();
-
-    // Get start and end years
     int startYear = Integer.parseInt(ctx.start.getText());
     int endYear = Integer.parseInt(ctx.end.getText());
 
-    // Get the policies
     List<String> policies = new ArrayList<>();
     for (int i = 0; i < ctx.string().size() - 1; i++) {
       policies.add(visit(ctx.string(i + 1)).getString());
     }
 
-    // Create a scenario with the policies
     ParsedScenario scenario = new ParsedScenario(name, policies, startYear, endYear, 1);
     return new ScenarioFragment(scenario);
   }
 
   /**
-   * {@inheritDoc}
+   * Processes a base simulation scenario with multiple trials but no policies.
+   *
+   * <p>Extracts the scenario name, start/end years, and trial count for stochastic runs.</p>
    */
   @Override
   public Fragment visitBaseSimulationTrials(QubecTalkParser.BaseSimulationTrialsContext ctx) {
-    // Get the scenario name
     String name = visit(ctx.name).getString();
-
-    // Get start and end years
     int startYear = Integer.parseInt(ctx.start.getText());
     int endYear = Integer.parseInt(ctx.end.getText());
-
-    // Get the number of trials
     int trials = Integer.parseInt(ctx.trials.getText());
 
-    // Create a scenario with no policies
     ParsedScenario scenario = new ParsedScenario(name, new ArrayList<>(), startYear, endYear, trials);
     return new ScenarioFragment(scenario);
   }
 
   /**
-   * {@inheritDoc}
+   * Processes a policy simulation scenario with multiple trials and specified policies.
+   *
+   * <p>Extracts the scenario name, start/end years, trial count, and the list of policies.</p>
    */
   @Override
   public Fragment visitPolicySimTrials(QubecTalkParser.PolicySimTrialsContext ctx) {
-    // Get the scenario name
     String name = visit(ctx.name).getString();
-
-    // Get start and end years
     int startYear = Integer.parseInt(ctx.start.getText());
     int endYear = Integer.parseInt(ctx.end.getText());
-
-    // Get the number of trials
     int trials = Integer.parseInt(ctx.trials.getText());
 
-    // Get the policies
     List<String> policies = new ArrayList<>();
     for (int i = 0; i < ctx.string().size() - 1; i++) {
       policies.add(visit(ctx.string(i + 1)).getString());
     }
 
-    // Create a scenario with the policies
     ParsedScenario scenario = new ParsedScenario(name, policies, startYear, endYear, trials);
     return new ScenarioFragment(scenario);
   }
@@ -1300,13 +1276,11 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
    * @return The canonical stream name
    */
   private String applyStreamSugar(String streamName) {
-    if ("bank".equals(streamName)) {
-      return "equipment";
-    }
-    if ("priorBank".equals(streamName)) {
-      return "priorEquipment";
-    }
-    return streamName;
+    return switch (streamName) {
+      case "bank" -> "equipment";
+      case "priorBank" -> "priorEquipment";
+      default -> streamName;
+    };
   }
 
   /**

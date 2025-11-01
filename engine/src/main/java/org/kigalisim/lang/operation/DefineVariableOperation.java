@@ -24,16 +24,21 @@ public class DefineVariableOperation implements Operation {
     this.valueOperation = valueOperation;
   }
 
+  /**
+   * Executes the variable definition operation.
+   *
+   * <p>This method executes the value operation to obtain the value, defines the variable if it
+   * doesn't exist, and then sets the variable value in the engine.
+   *
+   * @param machine The push-down machine on which to execute the operation.
+   */
   @Override
   public void execute(PushDownMachine machine) {
-    // Execute the value operation to get the value
     valueOperation.execute(machine);
     EngineNumber value = machine.getResult();
 
-    // Define the variable if it doesn't exist already
     machine.getEngine().defineVariable(variableName);
 
-    // Set the variable value in the engine
     machine.getEngine().setVariable(variableName, value);
   }
 }
