@@ -43,14 +43,15 @@ public class ReplaceOperation implements Operation {
    * @param destinationSubstance The substance to replace with.
    * @param during The time period during which this operation applies.
    */
-  public ReplaceOperation(Operation amountOperation, String stream, String destinationSubstance,
-      ParsedDuring during) {
+  public ReplaceOperation(Operation amountOperation, String stream,
+      String destinationSubstance, ParsedDuring during) {
     this.amountOperation = amountOperation;
     this.stream = stream;
     this.destinationSubstance = destinationSubstance;
     duringMaybe = Optional.of(during);
   }
 
+  /** {@inheritDoc} */
   @Override
   public void execute(PushDownMachine machine) {
     amountOperation.execute(machine);

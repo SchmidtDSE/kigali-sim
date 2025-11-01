@@ -33,6 +33,7 @@ public class LogicalOperation implements Operation {
     this.operator = operator;
   }
 
+  /** {@inheritDoc} */
   @Override
   public void execute(PushDownMachine machine) {
     left.execute(machine);

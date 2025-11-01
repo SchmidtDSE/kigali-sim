@@ -76,20 +76,20 @@ public class CapOperation implements Operation {
    * @param displaceTarget The name of the stream to displace excess to.
    * @param during The time period during which this operation applies.
    */
-  public CapOperation(String stream, Operation valueOperation,
-                     String displaceTarget, ParsedDuring during) {
+  public CapOperation(String stream, Operation valueOperation, String displaceTarget,
+      ParsedDuring during) {
     this.stream = stream;
     this.valueOperation = valueOperation;
     this.displaceTarget = Optional.ofNullable(displaceTarget);
     duringMaybe = Optional.of(during);
   }
 
+  /** {@inheritDoc} */
   @Override
   public void execute(PushDownMachine machine) {
     valueOperation.execute(machine);
     EngineNumber result = machine.getResult();
 
-    // Handle special "each year" units by extracting the actual unit
     String units = result.getUnits();
     if (units != null && units.endsWith("eachyear")) {
       String actualUnit = units.replace("eachyear", "");
