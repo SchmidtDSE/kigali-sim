@@ -1,8 +1,10 @@
 package org.kigalisim.engine.support;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 
 import java.math.BigDecimal;
@@ -43,7 +45,8 @@ class ChangeExecutorConfigBuilderTest {
     // Assert
     assertEquals("domestic", config.getStream());
     assertSame(mockAmount, config.getAmount());
-    assertSame(mockYearMatcher, config.getYearMatcher());
+    assertTrue(config.getYearMatcher().isPresent());
+    assertSame(mockYearMatcher, config.getYearMatcher().get());
     assertSame(mockUseKey, config.getUseKeyEffective());
   }
 
@@ -59,7 +62,7 @@ class ChangeExecutorConfigBuilderTest {
     // Assert
     assertEquals("import", config.getStream());
     assertSame(mockAmount, config.getAmount());
-    assertEquals(null, config.getYearMatcher());
+    assertFalse(config.getYearMatcher().isPresent());
     assertSame(mockUseKey, config.getUseKeyEffective());
   }
 

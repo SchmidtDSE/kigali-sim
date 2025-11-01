@@ -26,6 +26,17 @@ public class Scope implements UseKey {
   private volatile Optional<String> key;
 
   /**
+   * Convenience constructor for creating a scope without a variable manager.
+   *
+   * @param stanza The name of stanza or null if in global scope
+   * @param application The name of the application or null if in stanza or higher scope
+   * @param substance The name of the substance or null if in application or higher scope
+   */
+  public Scope(String stanza, String application, String substance) {
+    this(stanza, application, substance, null);
+  }
+
+  /**
    * Create a new scope.
    *
    * @param stanza The name of stanza or null if in global scope
@@ -35,7 +46,7 @@ public class Scope implements UseKey {
    *     scope or null if no variables accessible
    */
   public Scope(String stanza, String application, String substance,
-               VariableManager variableManager) {
+      VariableManager variableManager) {
     this.stanza = Optional.ofNullable(stanza);
     this.application = Optional.ofNullable(application);
     this.substance = Optional.ofNullable(substance);
@@ -55,17 +66,6 @@ public class Scope implements UseKey {
     } else {
       this.variableManager = variableManager;
     }
-  }
-
-  /**
-   * Convenience constructor for creating a scope without a variable manager.
-   *
-   * @param stanza The name of stanza or null if in global scope
-   * @param application The name of the application or null if in stanza or higher scope
-   * @param substance The name of the substance or null if in application or higher scope
-   */
-  public Scope(String stanza, String application, String substance) {
-    this(stanza, application, substance, null);
   }
 
   /**

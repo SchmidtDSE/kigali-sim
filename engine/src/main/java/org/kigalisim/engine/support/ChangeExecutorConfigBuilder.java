@@ -9,6 +9,7 @@
 
 package org.kigalisim.engine.support;
 
+import java.util.Optional;
 import org.kigalisim.engine.number.EngineNumber;
 import org.kigalisim.engine.state.UseKey;
 import org.kigalisim.engine.state.YearMatcher;
@@ -18,16 +19,19 @@ import org.kigalisim.engine.state.YearMatcher;
  */
 public final class ChangeExecutorConfigBuilder {
 
-  private String stream;
-  private EngineNumber amount;
-  private YearMatcher yearMatcher;
-  private UseKey useKeyEffective;
+  private Optional<String> stream;
+  private Optional<EngineNumber> amount;
+  private Optional<YearMatcher> yearMatcher;
+  private Optional<UseKey> useKeyEffective;
 
   /**
    * Create a new ChangeExecutorConfigBuilder.
    */
   public ChangeExecutorConfigBuilder() {
-    // Initialize with defaults
+    this.stream = Optional.empty();
+    this.amount = Optional.empty();
+    this.yearMatcher = Optional.empty();
+    this.useKeyEffective = Optional.empty();
   }
 
   /**
@@ -37,7 +41,7 @@ public final class ChangeExecutorConfigBuilder {
    * @return this builder for method chaining
    */
   public ChangeExecutorConfigBuilder setStream(String stream) {
-    this.stream = stream;
+    this.stream = Optional.of(stream);
     return this;
   }
 
@@ -48,7 +52,7 @@ public final class ChangeExecutorConfigBuilder {
    * @return this builder for method chaining
    */
   public ChangeExecutorConfigBuilder setAmount(EngineNumber amount) {
-    this.amount = amount;
+    this.amount = Optional.of(amount);
     return this;
   }
 
@@ -59,7 +63,7 @@ public final class ChangeExecutorConfigBuilder {
    * @return this builder for method chaining
    */
   public ChangeExecutorConfigBuilder setYearMatcher(YearMatcher yearMatcher) {
-    this.yearMatcher = yearMatcher;
+    this.yearMatcher = Optional.ofNullable(yearMatcher);
     return this;
   }
 
@@ -70,7 +74,7 @@ public final class ChangeExecutorConfigBuilder {
    * @return this builder for method chaining
    */
   public ChangeExecutorConfigBuilder setUseKeyEffective(UseKey useKeyEffective) {
-    this.useKeyEffective = useKeyEffective;
+    this.useKeyEffective = Optional.of(useKeyEffective);
     return this;
   }
 
@@ -81,17 +85,21 @@ public final class ChangeExecutorConfigBuilder {
    * @throws IllegalStateException if required fields are not set
    */
   public ChangeExecutorConfig build() {
-    if (stream == null) {
+    if (stream.isEmpty()) {
       throw new IllegalStateException("Stream is required");
     }
-    if (amount == null) {
+    if (amount.isEmpty()) {
       throw new IllegalStateException("Amount is required");
     }
-    if (useKeyEffective == null) {
+    if (useKeyEffective.isEmpty()) {
       throw new IllegalStateException("UseKeyEffective is required");
     }
-    // yearMatcher can be null (Optional in the original design)
 
-    return new ChangeExecutorConfig(stream, amount, yearMatcher, useKeyEffective);
+    return new ChangeExecutorConfig(
+        stream.get(),
+        amount.get(),
+        yearMatcher,
+        useKeyEffective.get()
+    );
   }
 }

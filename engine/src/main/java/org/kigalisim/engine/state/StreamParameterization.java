@@ -475,8 +475,10 @@ public class StreamParameterization {
    * @param intensity The recharge intensity for this rate
    */
   public void accumulateRecharge(EngineNumber population, EngineNumber intensity) {
-    RechargeInformation currentInfo =
-        new RechargeInformation(rechargePopulation, rechargeIntensity);
+    RechargeInformation currentInfo = new RechargeInformation(
+        rechargePopulation,
+        rechargeIntensity
+    );
     RechargeInformation result = currentInfo.add(population, intensity);
 
     rechargePopulation = result.getPopulation();
@@ -574,6 +576,7 @@ public class StreamParameterization {
     // Reset recovery to 0% between steps since recycling programs may cease
     recoveryRateRecharge = new EngineNumber(BigDecimal.ZERO, "%");
     recoveryRateEol = new EngineNumber(BigDecimal.ZERO, "%");
+
     // Reset induction to 100% (default induced demand behavior)
     inductionRateRecharge = getDefaultInductionRate();
     inductionRateEol = getDefaultInductionRate();
