@@ -1,3 +1,9 @@
+/**
+ * Calculation which retires a percentage of equipment each year.
+ *
+ * @license BSD-3-Clause
+ */
+
 package org.kigalisim.lang.operation;
 
 import java.util.Optional;

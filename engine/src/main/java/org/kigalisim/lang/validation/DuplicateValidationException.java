@@ -1,5 +1,5 @@
 /**
- * Exception thrown when duplicate names are detected during program validation.
+ * Classes for validating QubecTalk program structure and uniqueness constraints.
  *
  * @license BSD-3-Clause
  */

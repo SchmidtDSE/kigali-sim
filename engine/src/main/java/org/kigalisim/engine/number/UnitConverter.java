@@ -158,8 +158,8 @@ public class UnitConverter {
   /**
    * Check if some form of years.
    *
-   * @param target The value to evaluate.
-   * @returns True if some form of years and false otherwise.
+   * @param target The value to evaluate
+   * @return True if some form of years and false otherwise
    */
   private static boolean isYearVariant(String target) {
     return switch (target) {

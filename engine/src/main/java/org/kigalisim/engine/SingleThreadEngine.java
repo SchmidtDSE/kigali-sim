@@ -1,9 +1,10 @@
 /**
- * Single-threaded implementation of the Engine interface.
+ * Single-threaded implementation of the Engine interface for Montreal Protocol simulations.
  *
  * <p>This class provides a concrete implementation of the Engine interface that is not
- * designed to be thread-safe. It translates the functionality from the JavaScript
- * Engine implementation to Java, using BigDecimal for numerical stability.</p>
+ * designed to be thread-safe. It manages substance streams, equipment populations, and
+ * calculations related to the Montreal Protocol simulation using BigDecimal for numerical
+ * stability.</p>
  *
  * @license BSD-3-Clause
  */
@@ -47,13 +48,7 @@ import org.kigalisim.engine.support.StreamUpdateExecutor;
 import org.kigalisim.engine.support.StreamUpdateShortcuts;
 import org.kigalisim.lang.operation.RecoverOperation.RecoveryStage;
 
-/**
- * Single-threaded implementation of the Engine interface.
- *
- * <p>This implementation provides the core simulation engine functionality
- * without thread safety considerations. It manages substance streams, equipment
- * populations, and various calculations related to the Montreal Protocol simulation.</p>
- */
+/** Single-threaded implementation of the Engine interface. */
 public class SingleThreadEngine implements Engine {
 
   private static final boolean OPTIMIZE_RECALCS = true;
@@ -288,11 +283,9 @@ public class SingleThreadEngine implements Engine {
       raiseNoAppOrSubstance("enabling stream", " specified");
     }
 
-    boolean isKnown = "domestic".equals(name) || "import".equals(name) || "export".equals(name);
-    if (isKnown) {
+    // Only allow enabling of manufacture, import, and export streams
+    if ("domestic".equals(name) || "import".equals(name) || "export".equals(name)) {
       simulationState.markStreamAsEnabled(keyEffective, name);
-    } else {
-      throw new RuntimeException("Cannot enable unknown stream: " + name);
     }
   }
 
