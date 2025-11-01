@@ -9,6 +9,7 @@
 
 package org.kigalisim.engine.support;
 
+import java.util.Optional;
 import org.kigalisim.engine.number.EngineNumber;
 import org.kigalisim.engine.state.UseKey;
 import org.kigalisim.engine.state.YearMatcher;
@@ -23,11 +24,27 @@ public final class ChangeExecutorConfig {
 
   private final String stream;
   private final EngineNumber amount;
-  private final YearMatcher yearMatcher;
+  private final Optional<YearMatcher> yearMatcher;
   private final UseKey useKeyEffective;
 
   /**
    * Creates a new ChangeExecutorConfig.
+   *
+   * @param stream The stream identifier to modify
+   * @param amount The change amount (percentage, units, or kg)
+   * @param yearMatcher Optional matcher to determine if the change applies to current year
+   * @param useKeyEffective The effective UseKey for the operation
+   */
+  public ChangeExecutorConfig(String stream, EngineNumber amount,
+      Optional<YearMatcher> yearMatcher, UseKey useKeyEffective) {
+    this.stream = stream;
+    this.amount = amount;
+    this.yearMatcher = yearMatcher;
+    this.useKeyEffective = useKeyEffective;
+  }
+
+  /**
+   * Creates a new ChangeExecutorConfig with a YearMatcher.
    *
    * @param stream The stream identifier to modify
    * @param amount The change amount (percentage, units, or kg)
@@ -36,10 +53,20 @@ public final class ChangeExecutorConfig {
    */
   public ChangeExecutorConfig(String stream, EngineNumber amount, YearMatcher yearMatcher,
       UseKey useKeyEffective) {
-    this.stream = stream;
-    this.amount = amount;
-    this.yearMatcher = yearMatcher;
-    this.useKeyEffective = useKeyEffective;
+    this(stream, amount, Optional.ofNullable(yearMatcher), useKeyEffective);
+  }
+
+  /**
+   * Creates a new ChangeExecutorConfig without a year matcher.
+   *
+   * <p>This configuration will apply to all years since no year matching is specified.</p>
+   *
+   * @param stream The stream identifier to modify
+   * @param amount The change amount (percentage, units, or kg)
+   * @param useKeyEffective The effective UseKey for the operation
+   */
+  public ChangeExecutorConfig(String stream, EngineNumber amount, UseKey useKeyEffective) {
+    this(stream, amount, Optional.empty(), useKeyEffective);
   }
 
   /**
@@ -63,9 +90,9 @@ public final class ChangeExecutorConfig {
   /**
    * Gets the year matcher.
    *
-   * @return the year matcher
+   * @return the year matcher wrapped in Optional, or Optional.empty() if not specified
    */
-  public YearMatcher getYearMatcher() {
+  public Optional<YearMatcher> getYearMatcher() {
     return yearMatcher;
   }
 

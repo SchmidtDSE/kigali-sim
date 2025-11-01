@@ -284,7 +284,6 @@ public class SimulationState {
         if (getIsSettingVolumeByUnits(name, value)) {
           setStreamForSalesWithUnits(useKey, name, value);
         } else {
-          // Outcome streams - direct setting
           setSimpleStream(useKey, name, value);
         }
       }
@@ -891,9 +890,9 @@ public class SimulationState {
    *
    * <div>If a recovery rate is already set, this method implements additive recycling:
    * <ul>
-   * <li>Recovery rates are added together</li>
-   * <li>Both rates are converted to percentage units before addition</li>
-   * <li>The combined rate is stored as a percentage</li>
+   *   <li>Recovery rates are added together</li>
+   *   <li>Both rates are converted to percentage units before addition</li>
+   *   <li>The combined rate is stored as a percentage</li>
    * </ul>
    * </div>
    *
@@ -919,9 +918,9 @@ public class SimulationState {
    *
    * <div>Implements additive behavior for multiple recovery commands on the same stage:
    * <ul>
-   * <li>When a recovery rate is already set for this stage, the new rate is added to the existing
-   * one</li>
-   * <li>The first recovery rate for a timestep is set directly without addition</li>
+   *   <li>When a recovery rate is already set for this stage, the new rate is added to the existing
+   *   one</li>
+   *   <li>The first recovery rate for a timestep is set directly without addition</li>
    * </ul>
    * </div>
    *
@@ -1673,9 +1672,9 @@ public class SimulationState {
    *
    * <div>This fix is applied to all scenarios with configured sales streams including:
    * <ul>
-   * <li>"set sales to X [units]" - Total sales specified</li>
-   * <li>"set import to X [units]" - Import volume specified</li>
-   * <li>"set domestic to X [units]" - Domestic volume specified</li>
+   *   <li>"set sales to X [units]" - Total sales specified</li>
+   *   <li>"set import to X [units]" - Import volume specified</li>
+   *   <li>"set domestic to X [units]" - Domestic volume specified</li>
    * </ul></div>
    *
    * <p>The redistribution preserves user expectations that loss of recycling will be

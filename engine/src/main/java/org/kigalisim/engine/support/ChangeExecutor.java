@@ -66,7 +66,7 @@ public class ChangeExecutor {
    * @param config The configuration containing all parameters for the change operation
    */
   public void executeChange(ChangeExecutorConfig config) {
-    if (!EngineSupportUtils.getIsInRange(config.getYearMatcher(), engine.getYear())) {
+    if (!EngineSupportUtils.getIsInRange(config.getYearMatcher().orElse(null), engine.getYear())) {
       return;
     }
 
@@ -136,7 +136,7 @@ public class ChangeExecutor {
   private void handlePercentageChange(ChangeExecutorConfig config) {
     String stream = config.getStream();
     EngineNumber amount = config.getAmount();
-    YearMatcher yearMatcher = config.getYearMatcher();
+    YearMatcher yearMatcher = config.getYearMatcher().orElse(null);
     UseKey useKeyEffective = config.getUseKeyEffective();
 
     SimulationState simulationState = engine.getStreamKeeper();
@@ -171,7 +171,7 @@ public class ChangeExecutor {
    */
   private void handleSalesChange(ChangeExecutorConfig config) {
     EngineNumber amount = config.getAmount();
-    YearMatcher yearMatcher = config.getYearMatcher();
+    YearMatcher yearMatcher = config.getYearMatcher().orElse(null);
     UseKey useKeyEffective = config.getUseKeyEffective();
 
     SimulationState simulationState = engine.getStreamKeeper();
@@ -206,7 +206,7 @@ public class ChangeExecutor {
   private void handleUnitsChange(ChangeExecutorConfig config) {
     String stream = config.getStream();
     EngineNumber amount = config.getAmount();
-    YearMatcher yearMatcher = config.getYearMatcher();
+    YearMatcher yearMatcher = config.getYearMatcher().orElse(null);
     UseKey useKeyEffective = config.getUseKeyEffective();
 
     SimulationState simulationState = engine.getStreamKeeper();
@@ -249,7 +249,7 @@ public class ChangeExecutor {
   private void handleVolumeChange(ChangeExecutorConfig config) {
     String stream = config.getStream();
     EngineNumber amount = config.getAmount();
-    YearMatcher yearMatcher = config.getYearMatcher();
+    YearMatcher yearMatcher = config.getYearMatcher().orElse(null);
     UseKey useKeyEffective = config.getUseKeyEffective();
 
     // Get current stream value and apply change, calling setStream with kg
