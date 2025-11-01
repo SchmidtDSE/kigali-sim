@@ -66,7 +66,7 @@ public class ChangeExecutor {
    * @param config The configuration containing all parameters for the change operation
    */
   public void executeChange(ChangeExecutorConfig config) {
-    if (!EngineSupportUtils.isInRange(config.getYearMatcher(), engine.getYear())) {
+    if (!EngineSupportUtils.getIsInRange(config.getYearMatcher(), engine.getYear())) {
       return;
     }
 
