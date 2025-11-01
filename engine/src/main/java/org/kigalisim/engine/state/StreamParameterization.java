@@ -68,8 +68,8 @@ public class StreamParameterization {
     recoveryRateEol = new EngineNumber(BigDecimal.ZERO, "%");
     yieldRateEol = new EngineNumber(BigDecimal.ZERO, "%");
     retirementRate = new EngineNumber(BigDecimal.ZERO, "%");
-    inductionRateRecharge = new EngineNumber(new BigDecimal("100"), "%");
-    inductionRateEol = new EngineNumber(new BigDecimal("100"), "%");
+    inductionRateRecharge = getDefaultInductionRate();
+    inductionRateEol = getDefaultInductionRate();
 
     priorEquipmentBases = new PriorEquipmentBases();
   }
@@ -304,6 +304,14 @@ public class StreamParameterization {
     };
   }
 
+  /**
+   * Get the default induction rate (100% - induced demand behavior).
+   *
+   * @return EngineNumber representing 100% induction
+   */
+  private static EngineNumber getDefaultInductionRate() {
+    return new EngineNumber(new BigDecimal("100"), "%");
+  }
 
   /**
    * Set the retirement rate percentage.
@@ -567,8 +575,8 @@ public class StreamParameterization {
     recoveryRateRecharge = new EngineNumber(BigDecimal.ZERO, "%");
     recoveryRateEol = new EngineNumber(BigDecimal.ZERO, "%");
     // Reset induction to 100% (default induced demand behavior)
-    inductionRateRecharge = new EngineNumber(new BigDecimal("100"), "%");
-    inductionRateEol = new EngineNumber(new BigDecimal("100"), "%");
+    inductionRateRecharge = getDefaultInductionRate();
+    inductionRateEol = getDefaultInductionRate();
 
     // Reset retirement tracking for new step
     retirementRate = new EngineNumber(BigDecimal.ZERO, "%");
