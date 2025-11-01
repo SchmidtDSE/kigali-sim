@@ -217,9 +217,7 @@ public class StreamUpdateExecutor {
    * @return ImplicitRechargeUpdate containing adjusted value and state update
    */
   private ImplicitRechargeUpdate updateAndApplyImplicitRecharge(UseKey useKey,
-      String streamName,
-      EngineNumber value,
-      boolean isSalesSubstream) {
+      String streamName, EngineNumber value, boolean isSalesSubstream) {
 
     // Calculate recharge volume for existing equipment
     SimulationState simulationState = engine.getStreamKeeper();
