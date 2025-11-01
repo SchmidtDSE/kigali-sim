@@ -53,7 +53,7 @@ public class SetExecutor {
   public void handleSalesSet(UseKey useKey, String stream, EngineNumber value,
                              Optional<YearMatcher> yearMatcher) {
     boolean hasYearMatch = yearMatcher.isPresent();
-    boolean inRange = hasYearMatch && !EngineSupportUtils.isInRange(
+    boolean inRange = hasYearMatch && !EngineSupportUtils.getIsInRange(
         yearMatcher.get(),
         engine.getYear()
     );
