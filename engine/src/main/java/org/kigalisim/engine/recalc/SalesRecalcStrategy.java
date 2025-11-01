@@ -54,257 +54,48 @@ public class SalesRecalcStrategy implements RecalcStrategy {
 
     SimulationState simulationState = kit.getStreamKeeper();
 
-    Optional<EngineNumber> rechargeBaseOpt = simulationState.getRechargeBasePopulation(scopeEffective);
-    EngineNumber rechargeBase;
-    boolean firstRecharge = !rechargeBaseOpt.isPresent();
-    if (firstRecharge) {
-      EngineNumber currentPriorRaw = target.getStream("priorEquipment", Optional.of(scopeEffective), Optional.empty());
-      EngineNumber currentPrior = unitConverter.convert(currentPriorRaw, "units");
-      simulationState.setRechargeBasePopulation(scopeEffective, currentPrior);
-      rechargeBase = currentPrior;
-    } else {
-      rechargeBase = rechargeBaseOpt.get();
-    }
+    EngineNumber rechargeBase = initializeRechargeBase(scopeEffective, simulationState, unitConverter, target);
+    EngineNumber rechargeVolume = calculateTotalRecharge(scopeEffective, simulationState, stateGetter, unitConverter, rechargeBase);
 
-    // Calculate total recharge volume using base population
-    stateGetter.setPopulation(rechargeBase);
-    EngineNumber rechargePopRaw = simulationState.getRechargePopulation(scopeEffective);
-    EngineNumber totalRechargeUnits = unitConverter.convert(rechargePopRaw, "units");
-    stateGetter.clearPopulation();
-
-    // Switch into recharge population for intensity calculation
-    stateGetter.setPopulation(totalRechargeUnits);
-
-    // Get weighted-average intensity
-    EngineNumber rechargeIntensityRaw = simulationState.getRechargeIntensity(scopeEffective);
-    EngineNumber totalRechargeVolume = unitConverter.convert(rechargeIntensityRaw, "kg");
-
-    // Save total recharge (SalesRecalcStrategy uses full accumulated recharge volume)
-    EngineNumber rechargeVolume = totalRechargeVolume;
-
-    // Determine initial charge
     EngineNumber initialChargeRaw = target.getInitialCharge("sales");
     EngineNumber initialCharge = unitConverter.convert(initialChargeRaw, "kg / unit");
 
-    // Calculate EOL recycling (from actual retired equipment)
-    EngineNumber retiredPopulationRaw = simulationState.getStream(scopeEffective, "retired");
-    EngineNumber retiredPopulation = unitConverter.convert(retiredPopulationRaw, "units");
-
-    // Calculate EOL volume from retired equipment
-    stateGetter.setPopulation(retiredPopulation);
-    EngineNumber eolVolumeRaw = simulationState.getStream(scopeEffective, "retired");
-    EngineNumber eolVolume = unitConverter.convert(eolVolumeRaw, "kg");
-    // Convert from units to kg using initial charge
-    BigDecimal eolVolumeKg = retiredPopulation.getValue().multiply(initialCharge.getValue());
-    EngineNumber eolVolumeConverted = new EngineNumber(eolVolumeKg, "kg");
-    stateGetter.clearPopulation();
-
-    BigDecimal eolRecycledKg = calculateRecyclingForStage(
+    EngineNumber eolVolumeConverted = calculateEolRecyclingVolume(scopeEffective, simulationState, stateGetter, unitConverter, initialCharge);
+    final BigDecimal eolRecycledKg = calculateRecyclingForStage(
         simulationState, stateGetter, unitConverter, scopeEffective,
         eolVolumeConverted, RecoveryStage.EOL);
 
-    // Calculate recharge recycling (from recharge population)
-    BigDecimal rechargeRecycledKg = calculateRecyclingForStage(
+    final BigDecimal rechargeRecycledKg = calculateRecyclingForStage(
         simulationState, stateGetter, unitConverter, scopeEffective,
         rechargeVolume, RecoveryStage.RECHARGE);
 
-    // Recycling does not apply cross-substance displacement
-    // Only within-substance displacement (recycled material displaces virgin material of same substance)
-    final BigDecimal recycledKg = eolRecycledKg.add(rechargeRecycledKg);
-
-    // Switch out of recharge population
     stateGetter.clearPopulation();
 
-    // Determine needs for new equipment deployment
-    stateGetter.setAmortizedUnitVolume(initialCharge);
-    UnitConverter converter = kit.getUnitConverter();
-    EngineNumber populationChangeRaw = stateGetter.getPopulationChange(converter);
-    EngineNumber populationChange = unitConverter.convert(populationChangeRaw, "units");
-    EngineNumber volumeForNew = unitConverter.convert(populationChange, "kg");
+    final EngineNumber volumeForNew = calculateNewEquipmentNeeds(stateGetter, unitConverter, kit.getUnitConverter(), initialCharge);
 
-    // Get prior population
     EngineNumber priorPopulationRaw = target.getStream("priorEquipment", Optional.of(scopeEffective), Optional.empty());
     EngineNumber priorPopulation = unitConverter.convert(priorPopulationRaw, "units");
     stateGetter.setPopulation(priorPopulation);
 
-    // Determine sales prior to recycling
-    final BigDecimal kgForRecharge = rechargeVolume.getValue();
-    final BigDecimal kgForNew = volumeForNew.getValue();
-
-    // Return to original initial charge
     stateGetter.clearAmortizedUnitVolume();
-
-    // Return original
     stateGetter.clearVolume();
 
-    // Get distribution using centralized method
     SalesStreamDistribution distribution = simulationState.getDistribution(scopeEffective);
 
-    final BigDecimal percentDomestic = distribution.getPercentDomestic();
-    final BigDecimal percentImport = distribution.getPercentImport();
+    updateRecyclingStreams(scopeEffective, simulationState, eolRecycledKg, rechargeRecycledKg);
 
-    // Set individual recycling streams
-    EngineNumber newRecycleEolValue = new EngineNumber(eolRecycledKg, "kg");
-    EngineNumber newRecycleRechargeValue = new EngineNumber(rechargeRecycledKg, "kg");
-    SimulationStateUpdate recycleEolStream = new SimulationStateUpdateBuilder()
-        .setUseKey(scopeEffective)
-        .setName("recycleEol")
-        .setValue(newRecycleEolValue)
-        .setSubtractRecycling(false)
-        .build();
-    simulationState.update(recycleEolStream);
-
-    SimulationStateUpdate recycleRechargeStream = new SimulationStateUpdateBuilder()
-        .setUseKey(scopeEffective)
-        .setName("recycleRecharge")
-        .setValue(newRecycleRechargeValue)
-        .setSubtractRecycling(false)
-        .build();
-    simulationState.update(recycleRechargeStream);
-
-    // Also set total recycle stream for backward compatibility
-    EngineNumber newRecycleValue = new EngineNumber(recycledKg, "kg");
-    SimulationStateUpdate recycleStream = new SimulationStateUpdateBuilder()
-        .setUseKey(scopeEffective)
-        .setName("recycle")
-        .setValue(newRecycleValue)
-        .setSubtractRecycling(false)
-        .build();
-    simulationState.update(recycleStream);
-
-    // Get implicit recharge to avoid double-counting
     EngineNumber implicitRechargeRaw = target.getStream("implicitRecharge", Optional.of(scopeEffective), Optional.empty());
     EngineNumber implicitRecharge = unitConverter.convert(implicitRechargeRaw, "kg");
     BigDecimal implicitRechargeKg = implicitRecharge.getValue();
 
-    // Determine specification type early
-    boolean hasUnitBasedSpecsEarly = getHasUnitBasedSpecs(simulationState, scopeEffective, implicitRechargeKg);
-
-    // Deal with implicit recharge and recycling
-    // Total demand is recharge + new equipment needs
-    BigDecimal totalDemand = kgForRecharge.add(kgForNew);
-
-    // Subtract what we can fulfill from other sources:
-    // - implicitRechargeKg: recharge that was already added when units were specified
-    BigDecimal requiredKg = totalDemand
-        .subtract(implicitRechargeKg);
-
-    // Calculate induced demand based on induction rate using unified logic for all specifications
-    BigDecimal inducedDemandKg = BigDecimal.ZERO;
+    BigDecimal requiredKg = calculateTotalDemand(rechargeVolume, volumeForNew, implicitRechargeKg);
     boolean hasUnitBasedSpecs = getHasUnitBasedSpecs(simulationState, scopeEffective, implicitRechargeKg);
+    BigDecimal totalRequiredKg = calculateRequiredVirginMaterial(requiredKg, eolRecycledKg, rechargeRecycledKg, simulationState, scopeEffective, hasUnitBasedSpecs);
 
-    if (hasUnitBasedSpecs) {
-      // Get effective induction rate (default is 0% for displacement behavior in unit-based specs)
-      BigDecimal inductionRatioEol = getEffectiveInductionRate(simulationState, scopeEffective, RecoveryStage.EOL, hasUnitBasedSpecs);
-      BigDecimal inductionRatioRecharge = getEffectiveInductionRate(simulationState, scopeEffective, RecoveryStage.RECHARGE, hasUnitBasedSpecs);
+    BigDecimal newDomesticKg = distribution.getPercentDomestic().multiply(totalRequiredKg);
+    BigDecimal newImportKg = distribution.getPercentImport().multiply(totalRequiredKg);
 
-      // Calculate induced demand for each stage
-      BigDecimal eolInducedKg = eolRecycledKg.multiply(inductionRatioEol);
-      BigDecimal rechargeInducedKg = rechargeRecycledKg.multiply(inductionRatioRecharge);
-
-      // Total induced demand
-      inducedDemandKg = eolInducedKg.add(rechargeInducedKg);
-    }
-
-    // Apply different logic for unit-based vs non-unit specifications
-    BigDecimal totalRequiredKg;
-
-    if (hasUnitBasedSpecs) {
-      // Unit-based: Add induced demand to required kg
-      totalRequiredKg = requiredKg.add(inducedDemandKg);
-    } else {
-      // Non-unit based: Apply both displacement and induction effects
-      // When induction = 0%: full displacement (subtract all recycling), no induction
-      // When induction = 100%: no displacement, full induction (add all recycling)
-
-      // Get effective induction rates for non-units specifications
-      BigDecimal inductionRatioEol = getEffectiveInductionRate(simulationState, scopeEffective, RecoveryStage.EOL, hasUnitBasedSpecs);
-      BigDecimal inductionRatioRecharge = getEffectiveInductionRate(simulationState, scopeEffective, RecoveryStage.RECHARGE, hasUnitBasedSpecs);
-
-      // Step 1: Always subtract baseline recycling displacement (recycling always displaces virgin material)
-      BigDecimal totalRecycledKg = eolRecycledKg.add(rechargeRecycledKg);
-      totalRequiredKg = requiredKg.subtract(totalRecycledKg);
-
-      // Step 2: Add back induced demand based on induction rates
-      BigDecimal eolInducedKg = eolRecycledKg.multiply(inductionRatioEol);
-      BigDecimal rechargeInducedKg = rechargeRecycledKg.multiply(inductionRatioRecharge);
-      BigDecimal totalInducedKg = eolInducedKg.add(rechargeInducedKg);
-      totalRequiredKg = totalRequiredKg.add(totalInducedKg);
-
-      // Ensure sales don't go negative
-      totalRequiredKg = totalRequiredKg.max(BigDecimal.ZERO);
-    }
-
-    BigDecimal newDomesticKg = percentDomestic.multiply(totalRequiredKg);
-    BigDecimal newImportKg = percentImport.multiply(totalRequiredKg);
-
-
-    if (hasUnitBasedSpecs) {
-      // Convert back to units to preserve user intent
-      // This ensures that unit-based specifications are maintained through recycling operations
-      // Need to set up the converter state for proper unit conversion
-      stateGetter.setAmortizedUnitVolume(initialCharge);
-
-      // Only set streams that have non-zero allocations (i.e., are enabled)
-      if (percentDomestic.compareTo(BigDecimal.ZERO) > 0) {
-        EngineNumber newDomesticUnits = unitConverter.convert(
-            new EngineNumber(newDomesticKg, "kg"), "units");
-        StreamUpdate domesticUpdate = new StreamUpdateBuilder()
-            .setName("domestic")
-            .setValue(newDomesticUnits)
-            .setKey(scopeEffective)
-            .setPropagateChanges(false)
-            .setSubtractRecycling(hasUnitBasedSpecs)
-            .setDistribution(distribution)
-            .build();
-        target.executeStreamUpdate(domesticUpdate);
-      }
-
-      if (percentImport.compareTo(BigDecimal.ZERO) > 0) {
-        EngineNumber newImportUnits = unitConverter.convert(
-            new EngineNumber(newImportKg, "kg"), "units");
-        StreamUpdate importUpdate = new StreamUpdateBuilder()
-            .setName("import")
-            .setValue(newImportUnits)
-            .setKey(scopeEffective)
-            .setPropagateChanges(false)
-            .setSubtractRecycling(hasUnitBasedSpecs)
-            .setDistribution(distribution)
-            .build();
-        target.executeStreamUpdate(importUpdate);
-      }
-
-      // Clear the state after conversion
-      stateGetter.clearAmortizedUnitVolume();
-    } else {
-      // Normal kg-based setting for non-unit specifications
-      // Only set streams that have non-zero allocations (i.e., are enabled)
-      if (percentDomestic.compareTo(BigDecimal.ZERO) > 0) {
-        EngineNumber newDomestic = new EngineNumber(newDomesticKg, "kg");
-        StreamUpdate domesticUpdate = new StreamUpdateBuilder()
-            .setName("domestic")
-            .setValue(newDomestic)
-            .setKey(scopeEffective)
-            .setPropagateChanges(false)
-            .setSubtractRecycling(hasUnitBasedSpecs)
-            .setDistribution(distribution)
-            .build();
-        target.executeStreamUpdate(domesticUpdate);
-      }
-
-      if (percentImport.compareTo(BigDecimal.ZERO) > 0) {
-        EngineNumber newImport = new EngineNumber(newImportKg, "kg");
-        StreamUpdate importUpdate = new StreamUpdateBuilder()
-            .setName("import")
-            .setValue(newImport)
-            .setKey(scopeEffective)
-            .setPropagateChanges(false)
-            .setSubtractRecycling(hasUnitBasedSpecs)
-            .setDistribution(distribution)
-            .build();
-        target.executeStreamUpdate(importUpdate);
-      }
-    }
+    updateSalesStreams(target, scopeEffective, newDomesticKg, newImportKg, distribution, hasUnitBasedSpecs, initialCharge, stateGetter, unitConverter);
   }
 
   /**
@@ -392,6 +183,363 @@ public class SalesRecalcStrategy implements RecalcStrategy {
         return BigDecimal.ZERO;
       } else {
         return BigDecimal.ONE;
+      }
+    }
+  }
+
+  /**
+   * Initializes the recharge base population for this scope if not already set.
+   *
+   * <p>On the first recharge operation for a given scope, this method captures the current
+   * prior equipment value as the base population for all future recharge calculations. This
+   * ensures that recharge percentages are consistently applied against the same baseline
+   * throughout the simulation.</p>
+   *
+   * <p>Side effect: If this is the first recharge, sets the recharge base population in
+   * the simulation state to the current priorEquipment value.</p>
+   *
+   * @param scopeEffective The use key scope for this calculation
+   * @param simulationState The simulation state to query/update
+   * @param unitConverter Unit converter for normalizing values to units
+   * @param target The engine instance for stream access
+   * @return EngineNumber representing the recharge base population in units
+   */
+  private EngineNumber initializeRechargeBase(UseKey scopeEffective,
+      SimulationState simulationState, UnitConverter unitConverter, Engine target) {
+    Optional<EngineNumber> rechargeBaseOpt = simulationState.getRechargeBasePopulation(scopeEffective);
+    EngineNumber rechargeBase;
+    boolean firstRecharge = !rechargeBaseOpt.isPresent();
+    if (firstRecharge) {
+      EngineNumber currentPriorRaw = target.getStream("priorEquipment", Optional.of(scopeEffective), Optional.empty());
+      EngineNumber currentPrior = unitConverter.convert(currentPriorRaw, "units");
+      simulationState.setRechargeBasePopulation(scopeEffective, currentPrior);
+      rechargeBase = currentPrior;
+    } else {
+      rechargeBase = rechargeBaseOpt.get();
+    }
+    return rechargeBase;
+  }
+
+  /**
+   * Calculates the total recharge volume based on recharge base population.
+   *
+   * <p>This method performs a two-step calculation:
+   * <ol>
+   * <li>Converts the recharge population percentage to absolute units using the base population</li>
+   * <li>Calculates the weighted-average recharge intensity (kg) for those units</li>
+   * </ol></p>
+   *
+   * <p>The calculation uses OverridingConverterStateGetter to temporarily set population
+   * context for accurate percentage-to-absolute conversions.</p>
+   *
+   * @param scopeEffective The use key scope for this calculation
+   * @param simulationState The simulation state to query
+   * @param stateGetter State getter with population override capability
+   * @param unitConverter Unit converter for converting values
+   * @param rechargeBase The base population for recharge calculations
+   * @return EngineNumber representing total recharge volume in kg
+   */
+  private EngineNumber calculateTotalRecharge(UseKey scopeEffective,
+      SimulationState simulationState, OverridingConverterStateGetter stateGetter,
+      UnitConverter unitConverter, EngineNumber rechargeBase) {
+    stateGetter.setPopulation(rechargeBase);
+    EngineNumber rechargePopRaw = simulationState.getRechargePopulation(scopeEffective);
+    EngineNumber totalRechargeUnits = unitConverter.convert(rechargePopRaw, "units");
+    stateGetter.clearPopulation();
+
+    stateGetter.setPopulation(totalRechargeUnits);
+    EngineNumber rechargeIntensityRaw = simulationState.getRechargeIntensity(scopeEffective);
+    EngineNumber totalRechargeVolume = unitConverter.convert(rechargeIntensityRaw, "kg");
+
+    return totalRechargeVolume;
+  }
+
+  /**
+   * Calculates end-of-life recycling volume from retired equipment.
+   *
+   * <p>This method determines the total substance volume available for recycling at
+   * equipment end-of-life by multiplying retired equipment units by the initial charge
+   * per unit. The result is passed to {@link #calculateRecyclingForStage} to apply
+   * recovery and yield rates.</p>
+   *
+   * @param scopeEffective The use key scope for this calculation
+   * @param simulationState The simulation state to query
+   * @param stateGetter State getter with population override capability
+   * @param unitConverter Unit converter for converting values
+   * @param initialCharge Initial charge per unit in kg/unit
+   * @return EngineNumber representing total EOL volume available for recycling in kg
+   */
+  private EngineNumber calculateEolRecyclingVolume(UseKey scopeEffective,
+      SimulationState simulationState, OverridingConverterStateGetter stateGetter,
+      UnitConverter unitConverter, EngineNumber initialCharge) {
+    EngineNumber retiredPopulationRaw = simulationState.getStream(scopeEffective, "retired");
+    EngineNumber retiredPopulation = unitConverter.convert(retiredPopulationRaw, "units");
+
+    stateGetter.setPopulation(retiredPopulation);
+    EngineNumber eolVolumeRaw = simulationState.getStream(scopeEffective, "retired");
+    EngineNumber eolVolume = unitConverter.convert(eolVolumeRaw, "kg");
+    BigDecimal eolVolumeKg = retiredPopulation.getValue().multiply(initialCharge.getValue());
+    EngineNumber eolVolumeConverted = new EngineNumber(eolVolumeKg, "kg");
+    stateGetter.clearPopulation();
+
+    return eolVolumeConverted;
+  }
+
+  /**
+   * Calculates the substance volume needed for new equipment deployment.
+   *
+   * <p>This method determines how much substance is required for new equipment by:
+   * <ol>
+   * <li>Getting the population change (delta in equipment units)</li>
+   * <li>Converting population change to substance volume using initial charge</li>
+   * </ol></p>
+   *
+   * <p>Uses the amortized unit volume approach to ensure proper conversion from units
+   * to kg based on the initial charge per unit.</p>
+   *
+   * @param stateGetter State getter with override capability for unit conversions
+   * @param unitConverter Unit converter for converting population to volume
+   * @param converter Additional converter from the RecalcKit
+   * @param initialCharge Initial charge per unit in kg/unit
+   * @return EngineNumber representing volume needed for new equipment in kg
+   */
+  private EngineNumber calculateNewEquipmentNeeds(OverridingConverterStateGetter stateGetter,
+      UnitConverter unitConverter, UnitConverter converter, EngineNumber initialCharge) {
+    stateGetter.setAmortizedUnitVolume(initialCharge);
+    EngineNumber populationChangeRaw = stateGetter.getPopulationChange(converter);
+    EngineNumber populationChange = unitConverter.convert(populationChangeRaw, "units");
+    EngineNumber volumeForNew = unitConverter.convert(populationChange, "kg");
+
+    return volumeForNew;
+  }
+
+  /**
+   * Updates recycling streams with calculated EOL and recharge recycling values.
+   *
+   * <p>This method updates three streams:
+   * <ul>
+   * <li>recycleEol: Recycled material from equipment retirement</li>
+   * <li>recycleRecharge: Recycled material from recharge/servicing operations</li>
+   * <li>recycle: Total recycled material (for backward compatibility)</li>
+   * </ul></p>
+   *
+   * <p>All streams are updated with subtractRecycling = false since these values
+   * represent the recycled amounts themselves, not values that need recycling applied.</p>
+   *
+   * @param scopeEffective The use key scope for stream updates
+   * @param simulationState The simulation state to update
+   * @param eolRecycledKg EOL recycling amount in kg
+   * @param rechargeRecycledKg Recharge-stage recycling amount in kg
+   */
+  private void updateRecyclingStreams(UseKey scopeEffective, SimulationState simulationState,
+      BigDecimal eolRecycledKg, BigDecimal rechargeRecycledKg) {
+    EngineNumber newRecycleEolValue = new EngineNumber(eolRecycledKg, "kg");
+    EngineNumber newRecycleRechargeValue = new EngineNumber(rechargeRecycledKg, "kg");
+    SimulationStateUpdate recycleEolStream = new SimulationStateUpdateBuilder()
+        .setUseKey(scopeEffective)
+        .setName("recycleEol")
+        .setValue(newRecycleEolValue)
+        .setSubtractRecycling(false)
+        .build();
+    simulationState.update(recycleEolStream);
+
+    SimulationStateUpdate recycleRechargeStream = new SimulationStateUpdateBuilder()
+        .setUseKey(scopeEffective)
+        .setName("recycleRecharge")
+        .setValue(newRecycleRechargeValue)
+        .setSubtractRecycling(false)
+        .build();
+    simulationState.update(recycleRechargeStream);
+
+    BigDecimal recycledKg = eolRecycledKg.add(rechargeRecycledKg);
+    EngineNumber newRecycleValue = new EngineNumber(recycledKg, "kg");
+    SimulationStateUpdate recycleStream = new SimulationStateUpdateBuilder()
+        .setUseKey(scopeEffective)
+        .setName("recycle")
+        .setValue(newRecycleValue)
+        .setSubtractRecycling(false)
+        .build();
+    simulationState.update(recycleStream);
+  }
+
+  /**
+   * Calculates total substance demand from recharge and new equipment needs.
+   *
+   * <p>This method computes the baseline demand before accounting for:
+   * <ul>
+   * <li>Implicit recharge (already included when units were specified)</li>
+   * <li>Recycling displacement and induction effects</li>
+   * </ul></p>
+   *
+   * @param rechargeVolume Total recharge volume in kg
+   * @param newEquipmentVolume Volume needed for new equipment in kg
+   * @param implicitRechargeKg Implicit recharge from unit-based specs in kg
+   * @return BigDecimal representing total demand minus implicit recharge in kg
+   */
+  private BigDecimal calculateTotalDemand(EngineNumber rechargeVolume,
+      EngineNumber newEquipmentVolume, BigDecimal implicitRechargeKg) {
+    BigDecimal totalDemand = rechargeVolume.getValue().add(newEquipmentVolume.getValue());
+    BigDecimal requiredKg = totalDemand.subtract(implicitRechargeKg);
+    return requiredKg;
+  }
+
+  /**
+   * Calculates required virgin material after applying recycling and induction effects.
+   *
+   * <p>This method applies different logic based on specification type:</p>
+   *
+   * <p><strong>Unit-based specifications:</strong>
+   * <ul>
+   * <li>Start with total demand (already excludes implicit recharge)</li>
+   * <li>Add induced demand based on induction rates (default 0% for displacement)</li>
+   * <li>Result maintains unit-based specification intent</li>
+   * </ul></p>
+   *
+   * <p><strong>Volume-based specifications:</strong>
+   * <ul>
+   * <li>Always subtract full recycled amount (baseline displacement)</li>
+   * <li>Add back induced demand based on induction rates (default 100%)</li>
+   * <li>Ensure non-negative result</li>
+   * </ul></p>
+   *
+   * <p>Induction rates control how recycled material affects total supply:
+   * <ul>
+   * <li>0% induction: Full displacement (recycling reduces virgin demand)</li>
+   * <li>100% induction: Full induced demand (recycling adds to total supply)</li>
+   * <li>Partial: Proportional combination of both effects</li>
+   * </ul></p>
+   *
+   * @param totalDemand Total demand before recycling effects
+   * @param eolRecycledKg EOL recycled material in kg
+   * @param rechargeRecycledKg Recharge-stage recycled material in kg
+   * @param simulationState Simulation state for induction rate queries
+   * @param scopeEffective Scope for induction rate queries
+   * @param hasUnitBasedSpecs Whether specifications are unit-based
+   * @return BigDecimal representing required virgin material in kg
+   */
+  private BigDecimal calculateRequiredVirginMaterial(BigDecimal totalDemand,
+      BigDecimal eolRecycledKg, BigDecimal rechargeRecycledKg,
+      SimulationState simulationState, UseKey scopeEffective, boolean hasUnitBasedSpecs) {
+    BigDecimal totalRequiredKg;
+
+    if (hasUnitBasedSpecs) {
+      BigDecimal inductionRatioEol = getEffectiveInductionRate(simulationState, scopeEffective, RecoveryStage.EOL, hasUnitBasedSpecs);
+      BigDecimal inductionRatioRecharge = getEffectiveInductionRate(simulationState, scopeEffective, RecoveryStage.RECHARGE, hasUnitBasedSpecs);
+
+      BigDecimal eolInducedKg = eolRecycledKg.multiply(inductionRatioEol);
+      BigDecimal rechargeInducedKg = rechargeRecycledKg.multiply(inductionRatioRecharge);
+
+      BigDecimal inducedDemandKg = eolInducedKg.add(rechargeInducedKg);
+      totalRequiredKg = totalDemand.add(inducedDemandKg);
+    } else {
+      BigDecimal inductionRatioEol = getEffectiveInductionRate(simulationState, scopeEffective, RecoveryStage.EOL, hasUnitBasedSpecs);
+      BigDecimal inductionRatioRecharge = getEffectiveInductionRate(simulationState, scopeEffective, RecoveryStage.RECHARGE, hasUnitBasedSpecs);
+
+      BigDecimal totalRecycledKg = eolRecycledKg.add(rechargeRecycledKg);
+      totalRequiredKg = totalDemand.subtract(totalRecycledKg);
+
+      BigDecimal eolInducedKg = eolRecycledKg.multiply(inductionRatioEol);
+      BigDecimal rechargeInducedKg = rechargeRecycledKg.multiply(inductionRatioRecharge);
+      BigDecimal totalInducedKg = eolInducedKg.add(rechargeInducedKg);
+      totalRequiredKg = totalRequiredKg.add(totalInducedKg);
+
+      totalRequiredKg = totalRequiredKg.max(BigDecimal.ZERO);
+    }
+
+    return totalRequiredKg;
+  }
+
+  /**
+   * Updates sales streams (domestic and import) based on specification type.
+   *
+   * <p>This method applies different update strategies based on specification type:</p>
+   *
+   * <p><strong>Unit-based specifications:</strong>
+   * <ul>
+   * <li>Convert kg values back to units using initial charge</li>
+   * <li>Update streams with subtractRecycling = true to preserve user intent</li>
+   * <li>Ensures unit-based specifications are maintained through recycling</li>
+   * </ul></p>
+   *
+   * <p><strong>Volume-based specifications:</strong>
+   * <ul>
+   * <li>Update streams directly in kg</li>
+   * <li>Update streams with subtractRecycling = false</li>
+   * </ul></p>
+   *
+   * <p>Only streams with non-zero allocations (enabled streams) are updated.</p>
+   *
+   * @param target Engine instance for executing stream updates
+   * @param scopeEffective Scope for stream updates
+   * @param domesticKg Domestic sales amount in kg
+   * @param importKg Import sales amount in kg
+   * @param distribution Sales stream distribution (domestic/import percentages)
+   * @param hasUnitBasedSpecs Whether specifications are unit-based
+   * @param initialCharge Initial charge per unit for unit conversion
+   * @param stateGetter State getter for unit conversion context
+   * @param unitConverter Unit converter for kg-to-units conversion
+   */
+  private void updateSalesStreams(Engine target, UseKey scopeEffective,
+      BigDecimal domesticKg, BigDecimal importKg, SalesStreamDistribution distribution,
+      boolean hasUnitBasedSpecs, EngineNumber initialCharge,
+      OverridingConverterStateGetter stateGetter, UnitConverter unitConverter) {
+    if (hasUnitBasedSpecs) {
+      stateGetter.setAmortizedUnitVolume(initialCharge);
+
+      if (distribution.getPercentDomestic().compareTo(BigDecimal.ZERO) > 0) {
+        EngineNumber newDomesticUnits = unitConverter.convert(
+            new EngineNumber(domesticKg, "kg"), "units");
+        StreamUpdate domesticUpdate = new StreamUpdateBuilder()
+            .setName("domestic")
+            .setValue(newDomesticUnits)
+            .setKey(scopeEffective)
+            .setPropagateChanges(false)
+            .setSubtractRecycling(hasUnitBasedSpecs)
+            .setDistribution(distribution)
+            .build();
+        target.executeStreamUpdate(domesticUpdate);
+      }
+
+      if (distribution.getPercentImport().compareTo(BigDecimal.ZERO) > 0) {
+        EngineNumber newImportUnits = unitConverter.convert(
+            new EngineNumber(importKg, "kg"), "units");
+        StreamUpdate importUpdate = new StreamUpdateBuilder()
+            .setName("import")
+            .setValue(newImportUnits)
+            .setKey(scopeEffective)
+            .setPropagateChanges(false)
+            .setSubtractRecycling(hasUnitBasedSpecs)
+            .setDistribution(distribution)
+            .build();
+        target.executeStreamUpdate(importUpdate);
+      }
+
+      stateGetter.clearAmortizedUnitVolume();
+    } else {
+      if (distribution.getPercentDomestic().compareTo(BigDecimal.ZERO) > 0) {
+        EngineNumber newDomestic = new EngineNumber(domesticKg, "kg");
+        StreamUpdate domesticUpdate = new StreamUpdateBuilder()
+            .setName("domestic")
+            .setValue(newDomestic)
+            .setKey(scopeEffective)
+            .setPropagateChanges(false)
+            .setSubtractRecycling(hasUnitBasedSpecs)
+            .setDistribution(distribution)
+            .build();
+        target.executeStreamUpdate(domesticUpdate);
+      }
+
+      if (distribution.getPercentImport().compareTo(BigDecimal.ZERO) > 0) {
+        EngineNumber newImport = new EngineNumber(importKg, "kg");
+        StreamUpdate importUpdate = new StreamUpdateBuilder()
+            .setName("import")
+            .setValue(newImport)
+            .setKey(scopeEffective)
+            .setPropagateChanges(false)
+            .setSubtractRecycling(hasUnitBasedSpecs)
+            .setDistribution(distribution)
+            .build();
+        target.executeStreamUpdate(importUpdate);
       }
     }
   }
