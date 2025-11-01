@@ -45,6 +45,7 @@ public class SetOperation implements Operation {
     duringMaybe = Optional.of(during);
   }
 
+  /** {@inheritDoc} */
   @Override
   public void execute(PushDownMachine machine) {
     valueOperation.execute(machine);

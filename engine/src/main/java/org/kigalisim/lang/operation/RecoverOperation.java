@@ -177,6 +177,24 @@ public class RecoverOperation implements Operation {
     return stage;
   }
 
+  /**
+   * Executes the recovery operation.
+   *
+   * <div>
+   * This method performs the following steps:
+   *
+   * <ul>
+   * <li>Executes the volume operation to get the recovery amount</li>
+   * <li>Executes the yield operation to get the yield rate</li>
+   * <li>Handles the induction operation if present</li>
+   * <li>Builds the year matcher from the parsed during object</li>
+   * <li>Sets the induction rate on the engine</li>
+   * <li>Calls the recycle method on the engine</li>
+   * </ul>
+   * </div>
+   *
+   * @param machine The push down machine to execute the operation on.
+   */
   @Override
   public void execute(PushDownMachine machine) {
     // Execute the volume operation to get the recovery amount
@@ -188,17 +206,7 @@ public class RecoverOperation implements Operation {
     final EngineNumber yieldRate = machine.getResult();
 
     // Execute the induction operation if present
-    EngineNumber inductionRate = null;
-    if (inductionOperation.isPresent()) {
-      inductionOperation.get().execute(machine);
-      inductionRate = machine.getResult();
-      // Validate that the induction value is a percentage (0-100%)
-      double induction = inductionRate.getValue().doubleValue();
-      if (induction < 0 || induction > 100) {
-        throw new IllegalArgumentException("Induction rate must be between 0% and 100%, got: " + induction + "%");
-      }
-      // No need to convert - use the EngineNumber directly with percentage units
-    }
+    EngineNumber inductionRate = handleInduction(machine);
 
     // Build the year matcher
     ParsedDuring parsedDuring = duringMaybe.orElseGet(
@@ -212,5 +220,30 @@ public class RecoverOperation implements Operation {
 
     // Call the recycle method on the engine
     engine.recycle(recoveryAmount, yieldRate, yearMatcher, stage);
+  }
+
+  /**
+   * Executes the induction operation if present.
+   *
+   * <div>
+   * Validates that the induction value is a percentage (0-100%). Uses the EngineNumber
+   * directly with percentage units without conversion.
+   * </div>
+   *
+   * @param machine The push down machine to execute the operation on.
+   * @return The induction rate, or null if the induction operation is not present.
+   * @throws IllegalArgumentException if the induction rate is not between 0% and 100%.
+   */
+  private EngineNumber handleInduction(PushDownMachine machine) {
+    EngineNumber inductionRate = null;
+    if (inductionOperation.isPresent()) {
+      inductionOperation.get().execute(machine);
+      inductionRate = machine.getResult();
+      double induction = inductionRate.getValue().doubleValue();
+      if (induction < 0 || induction > 100) {
+        throw new IllegalArgumentException("Induction rate must be between 0% and 100%, got: " + induction + "%");
+      }
+    }
+    return inductionRate;
   }
 }
