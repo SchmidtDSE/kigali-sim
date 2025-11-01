@@ -11,7 +11,6 @@ package org.kigalisim.engine.state;
 
 import java.util.Optional;
 import org.kigalisim.engine.number.EngineNumber;
-import org.kigalisim.engine.state.EngineConstants;
 
 /**
  * Object defining a scope within the engine including variables accessible from that scope.
