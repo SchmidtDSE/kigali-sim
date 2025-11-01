@@ -60,7 +60,7 @@ public class StreamUpdateExecutor {
     final boolean propagateChanges = update.getPropagateChanges();
     final boolean subtractRecycling = update.getSubtractRecycling();
 
-    boolean isInRange = EngineSupportUtils.isInRange(
+    boolean isInRange = EngineSupportUtils.getIsInRange(
         yearMatcher.orElse(null),
         engine.getStreamKeeper().getCurrentYear()
     );

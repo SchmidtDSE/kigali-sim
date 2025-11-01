@@ -80,7 +80,8 @@ public class StreamUpdateShortcuts {
    */
   public void changeStreamWithoutReportingUnits(String stream, EngineNumber amount,
       Optional<YearMatcher> yearMatcher, Optional<UseKey> scope, boolean negativeAllowed) {
-    if (!EngineSupportUtils.isInRange(yearMatcher.orElse(null), engine.getYear())) {
+    boolean isInRange = EngineSupportUtils.getIsInRange(yearMatcher.orElse(null), engine.getYear());
+    if (!isInRange) {
       return;
     }
 
@@ -90,13 +91,7 @@ public class StreamUpdateShortcuts {
     EngineNumber convertedDelta = unitConverter.convert(amount, currentValue.getUnits());
     BigDecimal newAmount = currentValue.getValue().add(convertedDelta.getValue());
 
-    BigDecimal newAmountBound;
-    if (!negativeAllowed && newAmount.compareTo(BigDecimal.ZERO) < 0) {
-      System.err.println("WARNING: Negative stream value clamped to zero for stream " + stream);
-      newAmountBound = BigDecimal.ZERO;
-    } else {
-      newAmountBound = newAmount;
-    }
+    BigDecimal newAmountBound = negativeAllowed ? newAmount : EngineSupportUtils.ensurePositive(newAmount);
 
     EngineNumber outputWithUnits = new EngineNumber(newAmountBound, currentValue.getUnits());
 
@@ -154,22 +149,8 @@ public class StreamUpdateShortcuts {
     engine.setApplication(destinationScope.getApplication());
     engine.setSubstance(destinationScope.getSubstance());
 
-    // Get current value and calculate new value (now using correct scope)
-    EngineNumber currentValue = engine.getStream(stream);
-    UnitConverter unitConverter = EngineSupportUtils.createUnitConverterWithTotal(engine, stream);
-
-    EngineNumber convertedDelta = unitConverter.convert(amount, currentValue.getUnits());
-    BigDecimal newAmount = currentValue.getValue().add(convertedDelta.getValue());
-
-    BigDecimal newAmountBound;
-    if (!negativeAllowed && newAmount.compareTo(BigDecimal.ZERO) < 0) {
-      System.err.println("WARNING: Negative stream value clamped to zero for stream " + stream);
-      newAmountBound = BigDecimal.ZERO;
-    } else {
-      newAmountBound = newAmount;
-    }
-
-    EngineNumber outputWithUnits = new EngineNumber(newAmountBound, currentValue.getUnits());
+    // Get current value and calculate new value
+    EngineNumber outputWithUnits = applyDelta(stream, amount, negativeAllowed);
 
     // Set the stream value without triggering standard recalc to avoid double calculation
     StreamUpdate update = new StreamUpdateBuilder()
@@ -181,11 +162,7 @@ public class StreamUpdateShortcuts {
     engine.executeStreamUpdate(update);
 
     // Update lastSpecifiedValue for sales substreams since propagateChanges=false skips this
-    if (EngineSupportUtils.getIsSalesStream(stream, false)) {
-      UseKey destKey = new SimpleUseKey(destinationScope.getApplication(),
-                                        destinationScope.getSubstance());
-      engine.getStreamKeeper().setLastSpecifiedValue(destKey, stream, outputWithUnits);
-    }
+    forceSetLastSpecifiedValue(stream, outputWithUnits, destinationScope);
 
     // Only recalculate for streams that affect equipment populations
     if (!EngineSupportUtils.getIsSalesStream(stream, false)) {
@@ -216,6 +193,50 @@ public class StreamUpdateShortcuts {
     engine.setStanza(originalScope.getStanza());
     engine.setApplication(originalScope.getApplication());
     engine.setSubstance(originalScope.getSubstance());
+  }
+
+  /**
+   * Calculates the delta and applies it to the current stream value, clamping if necessary.
+   *
+   * <p>Gets the current stream value using the engine's current scope, converts the delta
+   * to the appropriate units, and calculates the new value. The result is clamped to zero
+   * if negative values are not allowed.</p>
+   *
+   * @param stream The stream identifier
+   * @param amount The amount to change by
+   * @param negativeAllowed If true, negative stream values are permitted
+   * @return The new EngineNumber value with appropriate units
+   */
+  private EngineNumber applyDelta(String stream, EngineNumber amount, boolean negativeAllowed) {
+    EngineNumber currentValue = engine.getStream(stream);
+    UnitConverter unitConverter = EngineSupportUtils.createUnitConverterWithTotal(engine, stream);
+
+    EngineNumber convertedDelta = unitConverter.convert(amount, currentValue.getUnits());
+    BigDecimal newAmount = currentValue.getValue().add(convertedDelta.getValue());
+
+    BigDecimal newAmountBound = negativeAllowed ? newAmount : EngineSupportUtils.ensurePositive(newAmount);
+
+    return new EngineNumber(newAmountBound, currentValue.getUnits());
+  }
+
+  /**
+   * Updates the lastSpecifiedValue for a sales substream.
+   *
+   * <p>This method ensures that the lastSpecifiedValue is properly tracked for sales
+   * substreams when propagateChanges=false skips the normal tracking mechanism. This is
+   * necessary for correct unit-based carry-over behavior in subsequent operations.</p>
+   *
+   * @param stream The stream identifier
+   * @param value The EngineNumber value to set as the last specified value
+   * @param destinationScope The scope for the destination substance
+   */
+  private void forceSetLastSpecifiedValue(String stream, EngineNumber value,
+      Scope destinationScope) {
+    if (EngineSupportUtils.getIsSalesStream(stream, false)) {
+      UseKey destKey = new SimpleUseKey(destinationScope.getApplication(),
+                                        destinationScope.getSubstance());
+      engine.getStreamKeeper().setLastSpecifiedValue(destKey, stream, value);
+    }
   }
 
   /**

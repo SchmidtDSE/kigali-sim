@@ -172,11 +172,16 @@ public class DisplaceExecutor {
   private void applyUnitsDisplacement(String stream, BigDecimal changeAmount,
       String displaceTarget, boolean isStreamDisplacement) {
     UnitConverter currentUnitConverter = EngineSupportUtils.createUnitConverterWithTotal(
-        engine, stream);
+        engine,
+        stream
+    );
 
     // Convert the volume change back to units in the original substance
     EngineNumber volumeChangeFlip = new EngineNumber(changeAmount.negate(), "kg");
-    EngineNumber unitsChanged = currentUnitConverter.convert(volumeChangeFlip, "units");
+    EngineNumber unitsChanged = currentUnitConverter.convert(
+        volumeChangeFlip,
+        "units"
+    );
 
     if (isStreamDisplacement) {
       applyUnitsDisplacementSameSubstance(stream, changeAmount, displaceTarget);
@@ -244,11 +249,15 @@ public class DisplaceExecutor {
     // Temporarily change scope to destination for unit conversion
     engine.setSubstance(displaceTarget);
     UnitConverter destinationUnitConverter = EngineSupportUtils.createUnitConverterWithTotal(
-        engine, stream);
+        engine,
+        stream
+    );
 
     // Convert units to destination substance volume using destination's initial charge
     EngineNumber destinationVolumeChange = destinationUnitConverter.convert(
-        unitsChanged, "kg");
+        unitsChanged,
+        "kg"
+    );
     EngineNumber displaceChange = new EngineNumber(destinationVolumeChange.getValue(), "kg");
 
     // Use custom recalc kit with destination substance's properties for correct GWP calculation

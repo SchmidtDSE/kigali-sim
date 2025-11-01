@@ -58,6 +58,23 @@ public class LimitExecutor {
   }
 
   /**
+   * Validates that the stream is not the equipment stream.
+   *
+   * <p>Equipment streams should never be processed by this executor as they are handled
+   * separately by EquipmentChangeUtil. This validation should never fail if routing from
+   * SingleThreadEngine is correct.</p>
+   *
+   * @param stream The stream identifier to validate
+   * @throws IllegalStateException if stream is "equipment"
+   */
+  private void checkIsNotEquipment(String stream) {
+    if ("equipment".equals(stream)) {
+      throw new IllegalStateException(
+          "Equipment stream operations should be handled by EquipmentChangeUtil");
+    }
+  }
+
+  /**
    * Executes a cap operation to limit a stream to a maximum value.
    *
    * <p>Cap operations enforce maximum constraints on stream values, reducing the
@@ -84,16 +101,11 @@ public class LimitExecutor {
    */
   public void executeCap(String stream, EngineNumber amount, YearMatcher yearMatcher,
       String displaceTarget) {
-    if (!EngineSupportUtils.isInRange(yearMatcher, engine.getYear())) {
+    if (!EngineSupportUtils.getIsInRange(yearMatcher, engine.getYear())) {
       return;
     }
 
-    // Handle equipment stream with special logic through EquipmentChangeUtil
-    if ("equipment".equals(stream)) {
-      // Equipment cap is handled by EquipmentChangeUtil, not by this executor
-      // This routing is already done in SingleThreadEngine.cap() so we should never reach here
-      throw new IllegalStateException("Equipment stream cap should be handled by EquipmentChangeUtil");
-    }
+    checkIsNotEquipment(stream);
 
     if ("%".equals(amount.getUnits())) {
       capWithPercent(stream, amount, displaceTarget);
@@ -130,16 +142,11 @@ public class LimitExecutor {
    */
   public void executeFloor(String stream, EngineNumber amount, YearMatcher yearMatcher,
       String displaceTarget) {
-    if (!EngineSupportUtils.isInRange(yearMatcher, engine.getYear())) {
+    if (!EngineSupportUtils.getIsInRange(yearMatcher, engine.getYear())) {
       return;
     }
 
-    // Handle equipment stream with special logic through EquipmentChangeUtil
-    if ("equipment".equals(stream)) {
-      // Equipment floor is handled by EquipmentChangeUtil, not by this executor
-      // This routing is already done in SingleThreadEngine.floor() so we should never reach here
-      throw new IllegalStateException("Equipment stream floor should be handled by EquipmentChangeUtil");
-    }
+    checkIsNotEquipment(stream);
 
     if ("%".equals(amount.getUnits())) {
       floorWithPercent(stream, amount, displaceTarget);
@@ -180,8 +187,9 @@ public class LimitExecutor {
     SimulationState simulationState = engine.getStreamKeeper();
     Scope scope = engine.getScope();
     EngineNumber lastSpecified = simulationState.getLastSpecifiedValue(scope, stream);
+    boolean hasPrior = lastSpecified != null;
 
-    if (lastSpecified != null) {
+    if (hasPrior) {
       BigDecimal capValue = lastSpecified.getValue()
           .multiply(amount.getValue())
           .divide(new BigDecimal("100"));
@@ -190,32 +198,42 @@ public class LimitExecutor {
       EngineNumber currentInKg = unitConverter.convert(currentValueRaw, "kg");
       EngineNumber newCappedInKg = unitConverter.convert(newCappedValue, "kg");
 
-      if (currentInKg.getValue().compareTo(newCappedInKg.getValue()) > 0) {
-        StreamUpdate update = new StreamUpdateBuilder()
-            .setName(stream)
-            .setValue(newCappedValue)
-            .setYearMatcher(Optional.empty())
-            .inferSubtractRecycling()
-            .build();
-        engine.executeStreamUpdate(update);
+      boolean capSatisfied = currentInKg.getValue().compareTo(newCappedInKg.getValue()) <= 0;
+      if (capSatisfied) {
+        return;
+      }
 
-        if (displaceTarget != null) {
-          EngineNumber finalInKg = engine.getStream(stream);
-          BigDecimal changeInKg = finalInKg.getValue().subtract(currentInKg.getValue());
-          displaceExecutor.execute(stream, amount, changeInKg, displaceTarget);
-        }
+      StreamUpdate update = new StreamUpdateBuilder()
+          .setName(stream)
+          .setValue(newCappedValue)
+          .setYearMatcher(Optional.empty())
+          .inferSubtractRecycling()
+          .build();
+      engine.executeStreamUpdate(update);
+
+      if (displaceTarget != null) {
+        EngineNumber finalInKg = engine.getStream(stream);
+        BigDecimal changeInKg = finalInKg.getValue().subtract(currentInKg.getValue());
+        displaceExecutor.execute(stream, amount, changeInKg, displaceTarget);
       }
     } else {
       EngineNumber convertedMax = unitConverter.convert(amount, "kg");
       BigDecimal changeAmountRaw = convertedMax.getValue().subtract(currentValue.getValue());
       BigDecimal changeAmount = changeAmountRaw.min(BigDecimal.ZERO);
 
-      if (changeAmount.compareTo(BigDecimal.ZERO) < 0) {
-        EngineNumber changeWithUnits = new EngineNumber(changeAmount, "kg");
-        shortcuts.changeStreamWithoutReportingUnits(stream, changeWithUnits,
-            Optional.empty(), Optional.empty());
-        displaceExecutor.execute(stream, amount, changeAmount, displaceTarget);
+      boolean capSatisfied = changeAmount.compareTo(BigDecimal.ZERO) >= 0;
+      if (capSatisfied) {
+        return;
       }
+
+      EngineNumber changeWithUnits = new EngineNumber(changeAmount, "kg");
+      shortcuts.changeStreamWithoutReportingUnits(
+          stream,
+          changeWithUnits,
+          Optional.empty(),
+          Optional.empty()
+      );
+      displaceExecutor.execute(stream, amount, changeAmount, displaceTarget);
     }
   }
 
@@ -244,21 +262,24 @@ public class LimitExecutor {
     EngineNumber currentValueInAmountUnits = unitConverter.convert(
         currentValueRaw, amount.getUnits());
 
-    if (currentValueInAmountUnits.getValue().compareTo(amount.getValue()) > 0) {
-      EngineNumber currentInKg = unitConverter.convert(currentValueRaw, "kg");
-      StreamUpdate update = new StreamUpdateBuilder()
-          .setName(stream)
-          .setValue(amount)
-          .setYearMatcher(Optional.empty())
-          .inferSubtractRecycling()
-          .build();
-      engine.executeStreamUpdate(update);
+    boolean capSatisfied = currentValueInAmountUnits.getValue().compareTo(amount.getValue()) <= 0;
+    if (capSatisfied) {
+      return;
+    }
 
-      if (displaceTarget != null) {
-        EngineNumber cappedInKg = engine.getStream(stream);
-        BigDecimal changeInKg = cappedInKg.getValue().subtract(currentInKg.getValue());
-        displaceExecutor.execute(stream, amount, changeInKg, displaceTarget);
-      }
+    EngineNumber currentInKg = unitConverter.convert(currentValueRaw, "kg");
+    StreamUpdate update = new StreamUpdateBuilder()
+        .setName(stream)
+        .setValue(amount)
+        .setYearMatcher(Optional.empty())
+        .inferSubtractRecycling()
+        .build();
+    engine.executeStreamUpdate(update);
+
+    if (displaceTarget != null) {
+      EngineNumber cappedInKg = engine.getStream(stream);
+      BigDecimal changeInKg = cappedInKg.getValue().subtract(currentInKg.getValue());
+      displaceExecutor.execute(stream, amount, changeInKg, displaceTarget);
     }
   }
 
@@ -294,8 +315,9 @@ public class LimitExecutor {
     SimulationState simulationState = engine.getStreamKeeper();
     Scope scope = engine.getScope();
     EngineNumber lastSpecified = simulationState.getLastSpecifiedValue(scope, stream);
+    boolean hasPrior = lastSpecified != null;
 
-    if (lastSpecified != null) {
+    if (hasPrior) {
       BigDecimal floorValue = lastSpecified.getValue()
           .multiply(amount.getValue())
           .divide(new BigDecimal("100"));
@@ -304,32 +326,42 @@ public class LimitExecutor {
       EngineNumber currentInKg = unitConverter.convert(currentValueRaw, "kg");
       EngineNumber newFloorInKg = unitConverter.convert(newFloorValue, "kg");
 
-      if (currentInKg.getValue().compareTo(newFloorInKg.getValue()) < 0) {
-        StreamUpdate update = new StreamUpdateBuilder()
-            .setName(stream)
-            .setValue(newFloorValue)
-            .setYearMatcher(Optional.empty())
-            .inferSubtractRecycling()
-            .build();
-        engine.executeStreamUpdate(update);
+      boolean floorSatisfied = currentInKg.getValue().compareTo(newFloorInKg.getValue()) >= 0;
+      if (floorSatisfied) {
+        return;
+      }
 
-        if (displaceTarget != null) {
-          EngineNumber finalInKg = engine.getStream(stream);
-          BigDecimal changeInKg = finalInKg.getValue().subtract(currentInKg.getValue());
-          displaceExecutor.execute(stream, amount, changeInKg, displaceTarget);
-        }
+      StreamUpdate update = new StreamUpdateBuilder()
+          .setName(stream)
+          .setValue(newFloorValue)
+          .setYearMatcher(Optional.empty())
+          .inferSubtractRecycling()
+          .build();
+      engine.executeStreamUpdate(update);
+
+      if (displaceTarget != null) {
+        EngineNumber finalInKg = engine.getStream(stream);
+        BigDecimal changeInKg = finalInKg.getValue().subtract(currentInKg.getValue());
+        displaceExecutor.execute(stream, amount, changeInKg, displaceTarget);
       }
     } else {
       EngineNumber convertedMin = unitConverter.convert(amount, "kg");
       BigDecimal changeAmountRaw = convertedMin.getValue().subtract(currentValue.getValue());
       BigDecimal changeAmount = changeAmountRaw.max(BigDecimal.ZERO);
 
-      if (changeAmount.compareTo(BigDecimal.ZERO) > 0) {
-        EngineNumber changeWithUnits = new EngineNumber(changeAmount, "kg");
-        shortcuts.changeStreamWithoutReportingUnits(stream, changeWithUnits,
-            Optional.empty(), Optional.empty());
-        displaceExecutor.execute(stream, amount, changeAmount, displaceTarget);
+      boolean floorSatisfied = changeAmount.compareTo(BigDecimal.ZERO) <= 0;
+      if (floorSatisfied) {
+        return;
       }
+
+      EngineNumber changeWithUnits = new EngineNumber(changeAmount, "kg");
+      shortcuts.changeStreamWithoutReportingUnits(
+          stream,
+          changeWithUnits,
+          Optional.empty(),
+          Optional.empty()
+      );
+      displaceExecutor.execute(stream, amount, changeAmount, displaceTarget);
     }
   }
 
@@ -358,21 +390,24 @@ public class LimitExecutor {
     EngineNumber currentValueInAmountUnits = unitConverter.convert(
         currentValueRaw, amount.getUnits());
 
-    if (currentValueInAmountUnits.getValue().compareTo(amount.getValue()) < 0) {
-      EngineNumber currentInKg = unitConverter.convert(currentValueRaw, "kg");
-      StreamUpdate update = new StreamUpdateBuilder()
-          .setName(stream)
-          .setValue(amount)
-          .setYearMatcher(Optional.empty())
-          .inferSubtractRecycling()
-          .build();
-      engine.executeStreamUpdate(update);
+    boolean floorSatisfied = currentValueInAmountUnits.getValue().compareTo(amount.getValue()) >= 0;
+    if (floorSatisfied) {
+      return;
+    }
 
-      if (displaceTarget != null) {
-        EngineNumber newInKg = engine.getStream(stream);
-        BigDecimal changeInKg = newInKg.getValue().subtract(currentInKg.getValue());
-        displaceExecutor.execute(stream, amount, changeInKg, displaceTarget);
-      }
+    EngineNumber currentInKg = unitConverter.convert(currentValueRaw, "kg");
+    StreamUpdate update = new StreamUpdateBuilder()
+        .setName(stream)
+        .setValue(amount)
+        .setYearMatcher(Optional.empty())
+        .inferSubtractRecycling()
+        .build();
+    engine.executeStreamUpdate(update);
+
+    if (displaceTarget != null) {
+      EngineNumber newInKg = engine.getStream(stream);
+      BigDecimal changeInKg = newInKg.getValue().subtract(currentInKg.getValue());
+      displaceExecutor.execute(stream, amount, changeInKg, displaceTarget);
     }
   }
 }

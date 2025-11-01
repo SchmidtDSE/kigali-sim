@@ -54,7 +54,7 @@ public class SetExecutor {
                              Optional<YearMatcher> yearMatcher) {
     // Check if this operation should apply to current year
     if (yearMatcher.isPresent()
-        && !EngineSupportUtils.isInRange(yearMatcher.get(), engine.getYear())) {
+        && !EngineSupportUtils.getIsInRange(yearMatcher.get(), engine.getYear())) {
       return;
     }
 
