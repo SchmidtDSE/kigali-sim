@@ -1,3 +1,9 @@
+/**
+ * Calculation which sets a value to a stream in the engine.
+ *
+ * @license BSD-3-Clause
+ */
+
 package org.kigalisim.lang.operation;
 
 import java.util.Optional;
