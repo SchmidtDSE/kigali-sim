@@ -89,9 +89,9 @@ public class RetireRecalcStrategy implements RecalcStrategy {
    *
    * <p>This method computes the delta (incremental) retirement by:</p>
    * <ol>
-   * <li>Converting the cumulative retirement rate to absolute units using base population</li>
-   * <li>Retrieving the previously applied cumulative amount</li>
-   * <li>Calculating delta as the difference between current cumulative and previously applied</li>
+   *   <li>Converting the cumulative retirement rate to absolute units using base population</li>
+   *   <li>Retrieving the previously applied cumulative amount</li>
+   *   <li>Calculating delta as the difference between current cumulative and previously applied</li>
    * </ol>
    *
    * <p>The OverridingConverterStateGetter is used to temporarily set the population context
@@ -130,9 +130,9 @@ public class RetireRecalcStrategy implements RecalcStrategy {
    *
    * <div>This method applies the retirement delta to compute new values for:
    * <ul>
-   * <li>Prior equipment: reduced by delta (equipment that was in service is now retired)</li>
-   * <li>Total equipment: reduced by delta (overall population decreases)</li>
-   * <li>Retired: increased by delta (cumulative retired equipment increases)</li>
+   *   <li>Prior equipment: reduced by delta (equipment that was in service is now retired)</li>
+   *   <li>Total equipment: reduced by delta (overall population decreases)</li>
+   *   <li>Retired: increased by delta (cumulative retired equipment increases)</li>
    * </ul></div>
    *
    * <p>All calculations are performed in units.</p>
@@ -168,8 +168,8 @@ public class RetireRecalcStrategy implements RecalcStrategy {
    * <div>This method applies the calculated new values to the priorEquipment and equipment
    * streams. Both updates use:
    * <ul>
-   * <li>subtractRecycling = false: values already account for retirement</li>
-   * <li>invalidatePriorEquipment = false (for priorEquipment): prevent circular invalidation</li>
+   *   <li>subtractRecycling = false: values already account for retirement</li>
+   *   <li>invalidatePriorEquipment = false (for priorEquipment): prevent circular invalidation</li>
    * </ul></div>
    *
    * @param scopeEffective The use key scope for stream updates
@@ -250,8 +250,8 @@ public class RetireRecalcStrategy implements RecalcStrategy {
    * <div>This method triggers dependent recalculations to maintain simulation state consistency
    * after retirement operations:
    * <ul>
-   * <li>PopulationChangeRecalcStrategy: Updates equipment population deltas</li>
-   * <li>ConsumptionRecalcStrategy: Recalculates substance consumption based on new populations</li>
+   *   <li>PopulationChangeRecalcStrategy: Updates equipment population deltas</li>
+   *   <li>ConsumptionRecalcStrategy: Recalculates substance consumption based on new populations</li>
    * </ul></div>
    *
    * <p><strong>Important:</strong> SalesRecalcStrategy is intentionally NOT called here.

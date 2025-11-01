@@ -80,7 +80,7 @@ public class StreamUpdateShortcuts {
    */
   public void changeStreamWithoutReportingUnits(String stream, EngineNumber amount,
       Optional<YearMatcher> yearMatcher, Optional<UseKey> scope, boolean negativeAllowed) {
-    boolean isInRange = EngineSupportUtils.getIsInRange(yearMatcher.orElse(null), engine.getYear());
+    boolean isInRange = EngineSupportUtils.getIsInRange(yearMatcher, engine.getYear());
     if (!isInRange) {
       return;
     }

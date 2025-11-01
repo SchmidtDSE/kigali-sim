@@ -235,7 +235,7 @@ public class SingleThreadEngine implements Engine {
   public void executeStreamUpdate(StreamUpdate update) {
     final Optional<YearMatcher> yearMatcher = update.getYearMatcher();
 
-    if (!getIsInRange(yearMatcher.orElse(null))) {
+    if (!getIsInRange(yearMatcher)) {
       return;
     }
 
@@ -254,7 +254,7 @@ public class SingleThreadEngine implements Engine {
 
   @Override
   public void fulfillSetCommand(String name, EngineNumber value, Optional<YearMatcher> yearMatcher) {
-    if (!getIsInRange(yearMatcher.orElse(null))) {
+    if (!getIsInRange(yearMatcher)) {
       return;
     }
 
@@ -276,7 +276,7 @@ public class SingleThreadEngine implements Engine {
 
   @Override
   public void enable(String name, Optional<YearMatcher> yearMatcher) {
-    if (!getIsInRange(yearMatcher.orElse(null))) {
+    if (!getIsInRange(yearMatcher)) {
       return;
     }
 
@@ -730,6 +730,16 @@ public class SingleThreadEngine implements Engine {
    * @return True if in range or no matcher provided
    */
   private boolean getIsInRange(YearMatcher yearMatcher) {
+    return EngineSupportUtils.getIsInRange(yearMatcher, simulationState.getCurrentYear());
+  }
+
+  /**
+   * Helper method to determine if a year matcher applies to current year.
+   *
+   * @param yearMatcher The optional year matcher to check
+   * @return True if in range or no matcher provided
+   */
+  private boolean getIsInRange(Optional<YearMatcher> yearMatcher) {
     return EngineSupportUtils.getIsInRange(yearMatcher, simulationState.getCurrentYear());
   }
 

@@ -148,7 +148,8 @@ public class SimulationState {
   /**
    * Ensure consumption streams are initialized.
    *
-   * <p>Initializes the consumption stream used for tracking greenhouse gas impacts.</p>
+   * <p>Initializes the consumption stream used for tracking greenhouse gas impacts, defaulting to
+   * 0 tCO2e.</p>
    *
    * @param useKey The key containing application and substance
    */
@@ -890,9 +891,9 @@ public class SimulationState {
    *
    * <div>If a recovery rate is already set, this method implements additive recycling:
    * <ul>
-   *   <li>Recovery rates are added together</li>
-   *   <li>Both rates are converted to percentage units before addition</li>
-   *   <li>The combined rate is stored as a percentage</li>
+   *   <li>Recovery rates are added together.</li>
+   *   <li>Both rates are converted to percentage units before addition.</li>
+   *   <li>The combined rate is stored as a percentage.</li>
    * </ul>
    * </div>
    *
@@ -919,8 +920,8 @@ public class SimulationState {
    * <div>Implements additive behavior for multiple recovery commands on the same stage:
    * <ul>
    *   <li>When a recovery rate is already set for this stage, the new rate is added to the existing
-   *   one</li>
-   *   <li>The first recovery rate for a timestep is set directly without addition</li>
+   *   one.</li>
+   *   <li>The first recovery rate for a timestep is set directly without addition.</li>
    * </ul>
    * </div>
    *

@@ -66,7 +66,11 @@ public class ChangeExecutor {
    * @param config The configuration containing all parameters for the change operation
    */
   public void executeChange(ChangeExecutorConfig config) {
-    if (!EngineSupportUtils.getIsInRange(config.getYearMatcher().orElse(null), engine.getYear())) {
+    boolean inRange = EngineSupportUtils.getIsInRange(
+        config.getYearMatcher(),
+        engine.getYear()
+    );
+    if (!inRange) {
       return;
     }
 
@@ -174,6 +178,11 @@ public class ChangeExecutor {
     YearMatcher yearMatcher = config.getYearMatcher().orElse(null);
     UseKey useKeyEffective = config.getUseKeyEffective();
 
+    boolean inRange = EngineSupportUtils.getIsInRange(yearMatcher, engine.getYear());
+    if (!inRange) {
+      return;
+    }
+
     SimulationState simulationState = engine.getStreamKeeper();
     SalesStreamDistribution distribution = simulationState.getDistribution(useKeyEffective);
     BigDecimal percentDomestic = distribution.getPercentDomestic();
@@ -208,6 +217,11 @@ public class ChangeExecutor {
     EngineNumber amount = config.getAmount();
     YearMatcher yearMatcher = config.getYearMatcher().orElse(null);
     UseKey useKeyEffective = config.getUseKeyEffective();
+
+    boolean inRange = EngineSupportUtils.getIsInRange(yearMatcher, engine.getYear());
+    if (!inRange) {
+      return;
+    }
 
     SimulationState simulationState = engine.getStreamKeeper();
     EngineNumber lastSpecified = simulationState.getLastSpecifiedValue(useKeyEffective, stream);
