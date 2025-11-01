@@ -369,15 +369,15 @@ public interface Engine {
   void resetInductionRate(RecoveryStage stage);
 
   /**
-   * Set GHG equivalency for the current application and substance.
+   * Set GHG equivalency (GWP - Global Warming Potential) for the current application and substance.
    *
-   * @param amount The GHG intensity value to set
+   * @param amount The GHG intensity value to set (typically in kgCO2e / kg)
    * @param yearMatcher Matcher to determine if the change applies to current year
    */
   void equals(EngineNumber amount, YearMatcher yearMatcher);
 
   /**
-   * Get the GHG intensity associated with a substance.
+   * Get the GHG intensity (GWP - Global Warming Potential) associated with a substance.
    *
    * @param useKey The UseKey containing application and substance information
    * @return The GHG intensity value associated with the given combination in tCO2e per kg.
@@ -385,14 +385,14 @@ public interface Engine {
   EngineNumber getGhgIntensity(UseKey useKey);
 
   /**
-   * Retrieve the tCO2e intensity for the current application and substance.
+   * Retrieve the tCO2e intensity (GWP - Global Warming Potential) for the current application and substance.
    *
    * @return The GHG intensity value with volume normalized GHG in tCO2e per kg.
    */
   EngineNumber getEqualsGhgIntensity();
 
   /**
-   * Retrieve the tCO2e intensity for the given UseKey.
+   * Retrieve the tCO2e intensity (GWP - Global Warming Potential) for the given UseKey.
    *
    * @param useKey The UseKey containing application and substance information
    * @return The GHG intensity value with volume normalized GHG in tCO2e per kg.
