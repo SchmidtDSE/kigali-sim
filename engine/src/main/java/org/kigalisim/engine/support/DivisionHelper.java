@@ -20,9 +20,8 @@ public class DivisionHelper {
   /**
    * Private constructor to prevent instantiation of utility class.
    */
-  private DivisionHelper() {
-    // Utility class - no instantiation
-  }
+  private DivisionHelper() {}
+
 
   /**
    * Divide with a check for division by zero.
