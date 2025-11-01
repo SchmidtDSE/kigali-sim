@@ -1,3 +1,9 @@
+/**
+ * Calculation which replaces a substance with another substance.
+ *
+ * @license BSD-3-Clause
+ */
+
 package org.kigalisim.lang.operation;
 
 import java.util.Optional;

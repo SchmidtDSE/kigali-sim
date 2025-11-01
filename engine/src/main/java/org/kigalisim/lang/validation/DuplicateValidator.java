@@ -1,5 +1,5 @@
 /**
- * Utility class for validating unique names and preventing duplicates.
+ * Classes for validating QubecTalk program structure and uniqueness constraints.
  *
  * @license BSD-3-Clause
  */

@@ -1,5 +1,8 @@
 /**
- * StringJoiner for WASM.
+ * A WebAssembly-compatible implementation of StringJoiner.
+ *
+ * <p>This implementation provides string joining functionality for WebAssembly environments where
+ * Java's StringJoiner is not available.</p>
  *
  * @license BSD-3-Clause
  */
@@ -7,10 +10,9 @@
 package org.kigalisim.util;
 
 /**
- * A WebAssembly-compatible implementation of StringJoiner.
+ * A WebAssembly-compatible string joiner that builds sequences with delimiters.
  *
- * <p>This implementation provides string joining functionality for WebAssembly environments where
- * Java's StringJoiner is not available.</p>
+ * <p>Provides an alternative to Java's StringJoiner for environments where it is unavailable.</p>
  */
 public class EmulatedStringJoiner {
 

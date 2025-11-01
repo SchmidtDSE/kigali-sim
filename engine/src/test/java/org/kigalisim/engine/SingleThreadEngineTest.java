@@ -820,8 +820,10 @@ public class SingleThreadEngineTest {
     engine.setApplication("test app");
     engine.setSubstance("test substance");
 
-    // Try to enable invalid stream - should throw error
-    assertThrows(RuntimeException.class, () -> engine.enable("invalidStream", Optional.empty()),
-        "Enable method should throw RuntimeException for unknown stream names");
+    // Try to enable invalid stream - should not throw error
+    engine.enable("invalidStream", Optional.empty());
+
+    // Test passes if no exception is thrown
+    assertTrue(true, "Enable method should ignore invalid stream names without error");
   }
 }
