@@ -104,13 +104,6 @@ jar {
 
 // Fat jar containing all dependencies required for production
 // Create a copy of the fat jar without version in the name
-task fatJar(type: Copy) {
-    dependsOn fatJarVersion
-    from fatJarVersion.archiveFile
-    into file("${buildDir}/libs")
-    rename { "kigalisim-fat.jar" }
-}
-
 task fatJarVersion(type: Jar) {
   manifest {
     attributes(
@@ -133,6 +126,13 @@ task fatJarVersion(type: Jar) {
 
   // Exclude META-INF signatures to avoid security exceptions
   exclude "META-INF/*.RSA", "META-INF/*.SF", "META-INF/*.DSA"
+}
+
+task fatJar(type: Copy) {
+    dependsOn fatJarVersion
+    from fatJarVersion.archiveFile
+    into file("${buildDir}/libs")
+    rename { "kigalisim-fat.jar" }
 }
 
 // Standard JavaDoc target
