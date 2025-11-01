@@ -11,10 +11,8 @@
 package org.kigalisim.engine;
 
 import java.math.BigDecimal;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Collectors;
 import org.kigalisim.engine.number.EngineNumber;
 import org.kigalisim.engine.number.UnitConverter;
@@ -54,21 +52,9 @@ import org.kigalisim.lang.operation.RecoverOperation.RecoveryStage;
  */
 public class SingleThreadEngine implements Engine {
 
-  private static final Set<String> STREAM_NAMES = new HashSet<>();
   private static final boolean OPTIMIZE_RECALCS = true;
   private static final String NO_APP_OR_SUBSTANCE_MESSAGE =
       "Tried %s without application and substance%s.";
-
-  static {
-    STREAM_NAMES.add("priorEquipment");
-    STREAM_NAMES.add("equipment");
-    STREAM_NAMES.add("export");
-    STREAM_NAMES.add("import");
-    STREAM_NAMES.add("domestic");
-    STREAM_NAMES.add("sales");
-  }
-
-  private static final String RECYCLE_RECOVER_STREAM = "sales";
 
   private final int startYear;
   private final int endYear;
@@ -849,15 +835,15 @@ public class SingleThreadEngine implements Engine {
     }
 
     // Check if this is a stream-based displacement (moved to top to avoid duplication)
-    boolean isStream = STREAM_NAMES.contains(displaceTarget);
+    boolean isStream = EngineSupportUtils.STREAM_NAMES.contains(displaceTarget);
 
     // Automatic recycling addition: if recovery creates recycled material from sales stream,
     // always add it back to sales first before applying targeted displacement
-    boolean displacementAutomatic = isStream && RECYCLE_RECOVER_STREAM.equals(stream);
+    boolean displacementAutomatic = isStream && EngineSupportUtils.RECYCLE_RECOVER_STREAM.equals(stream);
     if (displacementAutomatic) {
       // Add recycled material back to sales to maintain total material balance
       EngineNumber recycledAddition = new EngineNumber(changeAmount, "kg");
-      changeStreamWithoutReportingUnits(RECYCLE_RECOVER_STREAM, recycledAddition, Optional.empty(), Optional.empty());
+      changeStreamWithoutReportingUnits(EngineSupportUtils.RECYCLE_RECOVER_STREAM, recycledAddition, Optional.empty(), Optional.empty());
     }
 
     EngineNumber displaceChange;
@@ -998,35 +984,6 @@ public class SingleThreadEngine implements Engine {
 
     // Restore original scope
     scope = originalScope;
-  }
-
-  /**
-   * Gets the distributed recharge amount for a specific stream.
-   *
-   * @param streamName The name of the stream
-   * @param totalRecharge The total recharge amount
-   * @param keyEffective The effective use key
-   * @return The distributed recharge amount based on stream percentages
-   */
-  private BigDecimal getDistributedRecharge(String streamName, EngineNumber totalRecharge, UseKey keyEffective) {
-    if ("sales".equals(streamName)) {
-      // Sales stream gets 100% - setStreamForSales will distribute it
-      return totalRecharge.getValue();
-    } else if (EngineSupportUtils.isSalesSubstream(streamName)) {
-      SalesStreamDistribution distribution = simulationState.getDistribution(keyEffective);
-      BigDecimal percentage;
-      if ("domestic".equals(streamName)) {
-        percentage = distribution.getPercentDomestic();
-      } else if ("import".equals(streamName)) {
-        percentage = distribution.getPercentImport();
-      } else {
-        throw new IllegalArgumentException("Unknown sales substream: " + streamName);
-      }
-      return totalRecharge.getValue().multiply(percentage);
-    } else {
-      // Export and other streams get no recharge
-      return BigDecimal.ZERO;
-    }
   }
 
   /**
