@@ -96,6 +96,10 @@ public final class ChangeExecutorConfigBuilder {
     }
 
     return new ChangeExecutorConfig(
-        stream.get(), amount.get(), yearMatcher.orElse(null), useKeyEffective.get());
+        stream.get(),
+        amount.get(),
+        yearMatcher,
+        useKeyEffective.get()
+    );
   }
 }
