@@ -970,34 +970,16 @@ public class SimulationState {
   /**
    * Set the yield rate percentage for recycling for a key.
    *
-   * <p>Implements weighted average yield calculation when a yield rate is already set and recovery
-   * rate is non-zero. When recovery rates were already combined in setRecoveryRate, assumes equal
-   * weighting for combining yield rates as a reasonable approximation.</p>
+   * <p>Convenience method that sets the yield rate for the RECHARGE recovery stage.
+   * Delegates to {@link #setYieldRate(UseKey, EngineNumber, RecoveryStage)} with
+   * RecoveryStage.RECHARGE.</p>
    *
    * @param useKey The key containing application and substance
    * @param newValue The new yield rate value
+   * @see #setYieldRate(UseKey, EngineNumber, RecoveryStage)
    */
   public void setYieldRate(UseKey useKey, EngineNumber newValue) {
-    StreamParameterization parameterization = getParameterization(useKey);
-    EngineNumber existingYield = parameterization.getYieldRate();
-    EngineNumber existingRecovery = parameterization.getRecoveryRate();
-
-    if (existingYield.getValue().compareTo(BigDecimal.ZERO) > 0
-        && existingRecovery.getValue().compareTo(BigDecimal.ZERO) > 0) {
-      EngineNumber existingYieldPercent = unitConverter.convert(existingYield, "%");
-      EngineNumber newYieldPercent = unitConverter.convert(newValue, "%");
-
-      BigDecimal combinedYield = existingYieldPercent.getValue()
-          .add(newYieldPercent.getValue())
-          .divide(
-              BigDecimal.valueOf(2),
-              java.math.MathContext.DECIMAL128
-          );
-
-      parameterization.setYieldRate(new EngineNumber(combinedYield, "%"));
-    } else {
-      parameterization.setYieldRate(newValue);
-    }
+    setYieldRate(useKey, newValue, RecoveryStage.RECHARGE);
   }
 
   /**
