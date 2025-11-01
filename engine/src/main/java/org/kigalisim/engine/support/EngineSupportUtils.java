@@ -9,9 +9,14 @@
 
 package org.kigalisim.engine.support;
 
+import java.math.BigDecimal;
+import java.util.HashSet;
+import java.util.Optional;
+import java.util.Set;
 import org.kigalisim.engine.Engine;
 import org.kigalisim.engine.number.EngineNumber;
 import org.kigalisim.engine.number.UnitConverter;
+import org.kigalisim.engine.recalc.SalesStreamDistribution;
 import org.kigalisim.engine.state.ConverterStateGetter;
 import org.kigalisim.engine.state.OverridingConverterStateGetter;
 import org.kigalisim.engine.state.SimulationState;
@@ -22,6 +27,26 @@ import org.kigalisim.engine.state.YearMatcher;
  * Static utility methods for engine operations.
  */
 public final class EngineSupportUtils {
+
+  /**
+   * Set of valid stream names in the simulation engine.
+   * Includes equipment streams, sales streams, and trade streams.
+   */
+  public static final Set<String> STREAM_NAMES = new HashSet<>();
+
+  /**
+   * The stream used for recycled material recovery operations.
+   */
+  public static final String RECYCLE_RECOVER_STREAM = "sales";
+
+  static {
+    STREAM_NAMES.add("priorEquipment");
+    STREAM_NAMES.add("equipment");
+    STREAM_NAMES.add("export");
+    STREAM_NAMES.add("import");
+    STREAM_NAMES.add("domestic");
+    STREAM_NAMES.add("sales");
+  }
 
   private EngineSupportUtils() {
     // Utility class - prevent instantiation
@@ -34,8 +59,19 @@ public final class EngineSupportUtils {
    * @param currentYear The current year to check against
    * @return True if in range or no matcher provided
    */
-  public static boolean isInRange(YearMatcher yearMatcher, int currentYear) {
+  public static boolean getIsInRange(YearMatcher yearMatcher, int currentYear) {
     return yearMatcher == null || yearMatcher.getInRange(currentYear);
+  }
+
+  /**
+   * Check if a year matcher is in range for the given current year.
+   *
+   * @param yearMatcher The optional year matcher to check
+   * @param currentYear The current year to check against
+   * @return True if in range or no matcher provided
+   */
+  public static boolean getIsInRange(Optional<YearMatcher> yearMatcher, int currentYear) {
+    return getIsInRange(yearMatcher.orElse(null), currentYear);
   }
 
   /**
@@ -128,5 +164,59 @@ public final class EngineSupportUtils {
     }
     EngineNumber lastSpecifiedValue = simulationState.getLastSpecifiedValue(scope, "sales");
     return lastSpecifiedValue != null && lastSpecifiedValue.hasEquipmentUnits();
+  }
+
+  /**
+   * Ensures a value is positive, clamping to zero if negative.
+   *
+   * <p>This method checks if a value would be negative and returns zero if so, otherwise
+   * returns the value unchanged. It's used to enforce constraints that prevent negative
+   * stream values when the operation being performed doesn't allow them.</p>
+   *
+   * @param value The value to check
+   * @return The value if positive, or zero if negative
+   */
+  public static BigDecimal ensurePositive(BigDecimal value) {
+    if (value.compareTo(BigDecimal.ZERO) < 0) {
+      System.err.println("WARNING: Negative stream value clamped to zero");
+      return BigDecimal.ZERO;
+    }
+    return value;
+  }
+
+  /**
+   * Gets the distributed recharge amount for a specific stream.
+   *
+   * <p>This method distributes total recharge volume across sales streams based on
+   * their current distribution percentages. The sales stream receives 100% of the
+   * recharge (to be distributed internally), sales substreams (domestic/import) receive
+   * their proportional share, and other streams receive zero.</p>
+   *
+   * @param streamName The name of the stream
+   * @param totalRecharge The total recharge amount
+   * @param useKey The use key containing application and substance
+   * @param simulationState The simulation state to query for distribution
+   * @return The distributed recharge amount based on stream percentages
+   * @throws IllegalArgumentException if streamName is a sales substream but not domestic or import
+   */
+  public static BigDecimal getDistributedRecharge(String streamName, EngineNumber totalRecharge,
+      UseKey useKey, SimulationState simulationState) {
+    if ("sales".equals(streamName)) {
+      // Sales stream gets 100% - setStreamForSales will distribute it
+      return totalRecharge.getValue();
+    }
+
+    if (isSalesSubstream(streamName)) {
+      SalesStreamDistribution distribution = simulationState.getDistribution(useKey);
+      BigDecimal percentage = switch (streamName) {
+        case "domestic" -> distribution.getPercentDomestic();
+        case "import" -> distribution.getPercentImport();
+        default -> throw new IllegalArgumentException("Unknown sales substream: " + streamName);
+      };
+      return totalRecharge.getValue().multiply(percentage);
+    }
+
+    // Export and other streams get no recharge
+    return BigDecimal.ZERO;
   }
 }

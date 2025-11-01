@@ -67,7 +67,8 @@ public class RetireOperation implements Operation {
 
     Engine engine = machine.getEngine();
 
-    if (!EngineSupportUtils.isInRange(yearMatcher, engine.getYear())) {
+    // Check if this operation should execute in the current year
+    if (!EngineSupportUtils.getIsInRange(yearMatcher, engine.getYear())) {
       return;
     }
 

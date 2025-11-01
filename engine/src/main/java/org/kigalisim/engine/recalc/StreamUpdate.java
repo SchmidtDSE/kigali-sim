@@ -44,9 +44,9 @@ public final class StreamUpdate {
    * @param distribution optional pre-calculated distribution for sales streams
    */
   StreamUpdate(String name, EngineNumber value, Optional<YearMatcher> yearMatcher,
-               Optional<UseKey> key, boolean propagateChanges, Optional<String> unitsToRecord,
-               boolean subtractRecycling, boolean forceUseFullRecharge,
-               Optional<SalesStreamDistribution> distribution) {
+      Optional<UseKey> key, boolean propagateChanges, Optional<String> unitsToRecord,
+      boolean subtractRecycling, boolean forceUseFullRecharge,
+      Optional<SalesStreamDistribution> distribution) {
     this.name = name;
     this.value = value;
     this.yearMatcher = yearMatcher;
