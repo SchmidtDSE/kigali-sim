@@ -347,6 +347,26 @@ public interface Engine {
    */
   void setInductionRate(EngineNumber inductionRate, RecoveryStage stage);
 
+  /**
+   * Reset the induction rate to default behavior for recycling operations.
+   *
+   * <p>This method sets the induction rate to 100%, which represents default induced demand
+   * behavior where recycled material adds to total supply rather than displacing virgin
+   * material. This is the recommended setting when users are uncertain about induction
+   * effects.</p>
+   *
+   * <p>Induction rate determines how recycled material affects virgin production:</p>
+   * <ul>
+   *   <li>100% induction (default): Recycled material does not displace virgin material,
+   *       adding to total supply (induced demand behavior)</li>
+   *   <li>0% induction: Recycled material fully displaces virgin material, maintaining
+   *       steady population (displacement behavior)</li>
+   *   <li>Partial induction: Mixed behavior with proportional effects</li>
+   * </ul>
+   *
+   * @param stage The recovery stage (EOL or RECHARGE) to reset the induction rate for
+   */
+  void resetInductionRate(RecoveryStage stage);
 
   /**
    * Set GHG equivalency for the current application and substance.

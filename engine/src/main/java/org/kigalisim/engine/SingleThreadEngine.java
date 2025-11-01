@@ -570,10 +570,15 @@ public class SingleThreadEngine implements Engine {
       }
       simulationState.setInductionRate(scope, inductionRate, stage);
     } else {
-      // Default behavior - set to 100% (induced demand behavior)
-      EngineNumber defaultInductionRate = new EngineNumber(new BigDecimal("100"), "%");
-      simulationState.setInductionRate(scope, defaultInductionRate, stage);
+      // Default behavior - reset to 100% (induced demand behavior)
+      resetInductionRate(stage);
     }
+  }
+
+  @Override
+  public void resetInductionRate(RecoveryStage stage) {
+    EngineNumber defaultInductionRate = new EngineNumber(new BigDecimal("100"), "%");
+    simulationState.setInductionRate(scope, defaultInductionRate, stage);
   }
 
   @Override
