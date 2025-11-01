@@ -52,9 +52,12 @@ public class SetExecutor {
    */
   public void handleSalesSet(UseKey useKey, String stream, EngineNumber value,
                              Optional<YearMatcher> yearMatcher) {
-    // Check if this operation should apply to current year
-    if (yearMatcher.isPresent()
-        && !EngineSupportUtils.isInRange(yearMatcher.get(), engine.getYear())) {
+    boolean hasYearMatch = yearMatcher.isPresent();
+    boolean inRange = hasYearMatch && !EngineSupportUtils.isInRange(
+        yearMatcher.get(),
+        engine.getYear()
+    );
+    if (inRange) {
       return;
     }
 
