@@ -33,6 +33,7 @@ public class SimulationState {
 
   private static final boolean CHECK_NAN_STATE = false;
   private static final BigDecimal BASE_CHANGE_TOLERANCE = new BigDecimal("0.0001");
+  private static final BigDecimal HUNDRED_PERCENT = BigDecimal.valueOf(100);
 
   private final Map<String, StreamParameterization> substances;
   private final Map<String, EngineNumber> streams;
@@ -105,49 +106,119 @@ public class SimulationState {
 
     substances.put(key, new StreamParameterization());
 
-    // Sales: domestic, import, export, recycle (split into recycleRecharge and recycleEol)
+    ensureSubstanceSales(useKey);
+    ensureSubstanceConsumption(useKey);
+    ensureSubstancePopulation(useKey);
+    ensureSubstanceEmissions(useKey);
+    ensureSubstanceRecharge(useKey);
+    ensureSubstanceAge(useKey);
+  }
+
+  /**
+   * Ensure sales streams are initialized.
+   *
+   * <p>Initializes domestic, import, export, and recycle streams (split into recycleRecharge and
+   * recycleEol) along with induction streams (inductionEol and inductionRecharge).</p>
+   *
+   * @param useKey The key containing application and substance
+   */
+  private void ensureSubstanceSales(UseKey useKey) {
     String domesticKey = getKey(useKey, "domestic");
     streams.put(domesticKey, new EngineNumber(BigDecimal.ZERO, "kg"));
+
     String importKey = getKey(useKey, "import");
     streams.put(importKey, new EngineNumber(BigDecimal.ZERO, "kg"));
+
     String exportKey = getKey(useKey, "export");
     streams.put(exportKey, new EngineNumber(BigDecimal.ZERO, "kg"));
+
     String recycleRechargeKey = getKey(useKey, "recycleRecharge");
     streams.put(recycleRechargeKey, new EngineNumber(BigDecimal.ZERO, "kg"));
+
     String recycleEolKey = getKey(useKey, "recycleEol");
     streams.put(recycleEolKey, new EngineNumber(BigDecimal.ZERO, "kg"));
+
     String inductionEolKey = getKey(useKey, "inductionEol");
     streams.put(inductionEolKey, new EngineNumber(BigDecimal.ZERO, "kg"));
+
     String inductionRechargeKey = getKey(useKey, "inductionRecharge");
     streams.put(inductionRechargeKey, new EngineNumber(BigDecimal.ZERO, "kg"));
+  }
 
-    // Consumption: count, conversion
+  /**
+   * Ensure consumption streams are initialized.
+   *
+   * <p>Initializes the consumption stream used for tracking greenhouse gas impacts, defaulting to
+   * 0 tCO2e.</p>
+   *
+   * @param useKey The key containing application and substance
+   */
+  private void ensureSubstanceConsumption(UseKey useKey) {
     String consumptionKey = getKey(useKey, "consumption");
     streams.put(consumptionKey, new EngineNumber(BigDecimal.ZERO, "tCO2e"));
+  }
 
-    // Population
+  /**
+   * Ensure population streams are initialized.
+   *
+   * <p>Initializes equipment, priorEquipment, newEquipment, retired, and priorRetired streams
+   * for tracking equipment populations and their lifecycle transitions.</p>
+   *
+   * @param useKey The key containing application and substance
+   */
+  private void ensureSubstancePopulation(UseKey useKey) {
     String equipmentKey = getKey(useKey, "equipment");
     streams.put(equipmentKey, new EngineNumber(BigDecimal.ZERO, "units"));
+
     String priorEquipmentKey = getKey(useKey, "priorEquipment");
     streams.put(priorEquipmentKey, new EngineNumber(BigDecimal.ZERO, "units"));
+
     String newEquipmentKey = getKey(useKey, "newEquipment");
     streams.put(newEquipmentKey, new EngineNumber(BigDecimal.ZERO, "units"));
+
     String retiredKey = getKey(useKey, "retired");
     streams.put(retiredKey, new EngineNumber(BigDecimal.ZERO, "units"));
+
     String priorRetiredKey = getKey(useKey, "priorRetired");
     streams.put(priorRetiredKey, new EngineNumber(BigDecimal.ZERO, "units"));
+  }
 
-    // Emissions
+  /**
+   * Ensure emissions streams are initialized.
+   *
+   * <p>Initializes rechargeEmissions and eolEmissions streams for tracking emissions
+   * from recharge and end-of-life recovery operations.</p>
+   *
+   * @param useKey The key containing application and substance
+   */
+  private void ensureSubstanceEmissions(UseKey useKey) {
     String rechargeEmissionsKey = getKey(useKey, "rechargeEmissions");
     streams.put(rechargeEmissionsKey, new EngineNumber(BigDecimal.ZERO, "tCO2e"));
+
     String eolEmissionsKey = getKey(useKey, "eolEmissions");
     streams.put(eolEmissionsKey, new EngineNumber(BigDecimal.ZERO, "tCO2e"));
+  }
 
-    // Recharge tracking
+  /**
+   * Ensure recharge tracking streams are initialized.
+   *
+   * <p>Initializes the implicitRecharge stream for tracking accumulated recharge amounts.</p>
+   *
+   * @param useKey The key containing application and substance
+   */
+  private void ensureSubstanceRecharge(UseKey useKey) {
     String implicitRechargeKey = getKey(useKey, "implicitRecharge");
     streams.put(implicitRechargeKey, new EngineNumber(BigDecimal.ZERO, "kg"));
+  }
 
-    // Age tracking
+  /**
+   * Ensure age tracking streams are initialized.
+   *
+   * <p>Initializes the age stream for tracking the weighted average age of equipment.</p>
+   *
+   * @param useKey The key containing application and substance
+   */
+  private void ensureSubstanceAge(UseKey useKey) {
     String ageKey = getKey(useKey, "age");
     streams.put(ageKey, new EngineNumber(BigDecimal.ZERO, "years"));
   }
@@ -197,24 +268,25 @@ public class SimulationState {
     final boolean subtractRecycling = stateUpdate.getSubtractRecycling();
     final Optional<SalesStreamDistribution> distribution = stateUpdate.getDistribution();
 
-    // Route to appropriate internal method based on stream characteristics and subtractRecycling
-    if (!subtractRecycling && ("domestic".equals(name) || "import".equals(name))) {
-      // Direct setting for sales streams - bypass recycling logic
+    boolean isUsedSalesSubstream = "domestic".equals(name) || "import".equals(name);
+    boolean isSimpleSet = !subtractRecycling && isUsedSalesSubstream;
+
+    if (isSimpleSet) {
       setSimpleStream(useKey, name, value);
-    } else {
-      // Route based on stream type using the same logic as original setStream method
-      if ("sales".equals(name)) {
-        setStreamForSales(useKey, name, value);
-      } else if ("domestic".equals(name) || "import".equals(name)) {
-        // Sales substreams - delegate to organized private method
-        setStreamSalesSubstream(useKey, name, value, distribution);
-      } else if ("recycle".equals(name)) {
-        setStreamForRecycle(useKey, name, value);
-      } else if (getIsSettingVolumeByUnits(name, value)) {
-        setStreamForSalesWithUnits(useKey, name, value);
-      } else {
-        // Outcome streams - inline outcome stream logic (direct setting)
-        setSimpleStream(useKey, name, value);
+      return;
+    }
+
+    // Route based on stream type using a new-style switch
+    switch (name) {
+      case "sales" -> setStreamForSales(useKey, name, value);
+      case "domestic", "import" -> setStreamSalesSubstream(useKey, name, value, distribution);
+      case "recycle" -> setStreamForRecycle(useKey, name, value);
+      default -> {
+        if (getIsSettingVolumeByUnits(name, value)) {
+          setStreamForSalesWithUnits(useKey, name, value);
+        } else {
+          setSimpleStream(useKey, name, value);
+        }
       }
     }
   }
@@ -286,52 +358,88 @@ public class SimulationState {
    * @return The stream value
    */
   public EngineNumber getStream(UseKey useKey, String name) {
-    String key = getKey(useKey);
-
     ensureStreamKnown(name);
 
-    if ("sales".equals(name)) {
-      EngineNumber domesticAmountRaw = getStream(useKey, "domestic");
-      EngineNumber importAmountRaw = getStream(useKey, "import");
-      EngineNumber recycleAmountRaw = getStream(useKey, "recycle");
+    return switch (name) {
+      case "sales" -> getStreamSales(useKey);
+      case "recycle" -> getStreamRecycle(useKey);
+      case "induction" -> getStreamInduction(useKey);
+      default -> getStreamDirect(useKey, name);
+    };
+  }
 
-      EngineNumber domesticAmount = unitConverter.convert(domesticAmountRaw, "kg");
-      EngineNumber importAmount = unitConverter.convert(importAmountRaw, "kg");
-      EngineNumber recycleAmount = unitConverter.convert(recycleAmountRaw, "kg");
+  /**
+   * Get the sales stream value by summing domestic, import, and recycle streams.
+   *
+   * @param useKey The key containing application and substance
+   * @return The total sales value in kg
+   */
+  private EngineNumber getStreamSales(UseKey useKey) {
+    EngineNumber domesticAmountRaw = getStream(useKey, "domestic");
+    EngineNumber importAmountRaw = getStream(useKey, "import");
+    EngineNumber recycleAmountRaw = getStream(useKey, "recycle");
 
-      BigDecimal domesticAmountValue = domesticAmount.getValue();
-      BigDecimal importAmountValue = importAmount.getValue();
-      BigDecimal recycleAmountValue = recycleAmount.getValue();
+    EngineNumber domesticAmount = unitConverter.convert(domesticAmountRaw, "kg");
+    EngineNumber importAmount = unitConverter.convert(importAmountRaw, "kg");
+    EngineNumber recycleAmount = unitConverter.convert(recycleAmountRaw, "kg");
 
-      BigDecimal newTotal = domesticAmountValue.add(importAmountValue).add(recycleAmountValue);
+    BigDecimal domesticAmountValue = domesticAmount.getValue();
+    BigDecimal importAmountValue = importAmount.getValue();
+    BigDecimal recycleAmountValue = recycleAmount.getValue();
 
-      return new EngineNumber(newTotal, "kg");
-    } else if ("recycle".equals(name)) {
-      EngineNumber recycleRechargeAmountRaw = getStream(useKey, "recycleRecharge");
-      EngineNumber recycleEolAmountRaw = getStream(useKey, "recycleEol");
+    BigDecimal newTotal = domesticAmountValue.add(importAmountValue).add(recycleAmountValue);
 
-      EngineNumber recycleRechargeAmount = unitConverter.convert(recycleRechargeAmountRaw, "kg");
-      EngineNumber recycleEolAmount = unitConverter.convert(recycleEolAmountRaw, "kg");
+    return new EngineNumber(newTotal, "kg");
+  }
 
-      BigDecimal recycleRechargeAmountValue = recycleRechargeAmount.getValue();
-      BigDecimal recycleEolAmountValue = recycleEolAmount.getValue();
+  /**
+   * Get the recycle stream value by summing recycleRecharge and recycleEol streams.
+   *
+   * @param useKey The key containing application and substance
+   * @return The total recycle value in kg
+   */
+  private EngineNumber getStreamRecycle(UseKey useKey) {
+    EngineNumber recycleRechargeAmountRaw = getStream(useKey, "recycleRecharge");
+    EngineNumber recycleEolAmountRaw = getStream(useKey, "recycleEol");
 
-      BigDecimal newTotal = recycleRechargeAmountValue.add(recycleEolAmountValue);
+    EngineNumber recycleRechargeAmount = unitConverter.convert(recycleRechargeAmountRaw, "kg");
+    EngineNumber recycleEolAmount = unitConverter.convert(recycleEolAmountRaw, "kg");
 
-      return new EngineNumber(newTotal, "kg");
-    } else if ("induction".equals(name)) {
-      return getTotalInductionStream(useKey);
-    } else {
-      EngineNumber result = streams.get(getKey(useKey, name));
-      if (result == null) {
-        throwSubstanceMissing(
-            "getStream",
-            useKey.getApplication(),
-            useKey.getSubstance()
-        );
-      }
-      return result;
+    BigDecimal recycleRechargeAmountValue = recycleRechargeAmount.getValue();
+    BigDecimal recycleEolAmountValue = recycleEolAmount.getValue();
+
+    BigDecimal newTotal = recycleRechargeAmountValue.add(recycleEolAmountValue);
+
+    return new EngineNumber(newTotal, "kg");
+  }
+
+  /**
+   * Get the induction stream value by summing all induction stages.
+   *
+   * @param useKey The key containing application and substance
+   * @return The total induction value in kg
+   */
+  private EngineNumber getStreamInduction(UseKey useKey) {
+    return getTotalInductionStream(useKey);
+  }
+
+  /**
+   * Get a stream value directly from the streams map.
+   *
+   * @param useKey The key containing application and substance
+   * @param name The stream name
+   * @return The stream value
+   */
+  private EngineNumber getStreamDirect(UseKey useKey, String name) {
+    EngineNumber result = streams.get(getKey(useKey, name));
+    if (result == null) {
+      throwSubstanceMissing(
+          "getStream",
+          useKey.getApplication(),
+          useKey.getSubstance()
+      );
     }
+    return result;
   }
 
   /**
@@ -560,6 +668,7 @@ public class SimulationState {
       SimpleUseKey useKey = new SimpleUseKey(application, substance);
       setSimpleStream(useKey, "recycleRecharge", new EngineNumber(BigDecimal.ZERO, "kg"));
       setSimpleStream(useKey, "recycleEol", new EngineNumber(BigDecimal.ZERO, "kg"));
+
       // Reset induction streams at year boundary to prevent cross-year accumulation
       setSimpleStream(useKey, "inductionEol", new EngineNumber(BigDecimal.ZERO, "kg"));
       setSimpleStream(useKey, "inductionRecharge", new EngineNumber(BigDecimal.ZERO, "kg"));
@@ -780,31 +889,27 @@ public class SimulationState {
   /**
    * Set the recovery rate percentage for a key.
    *
-   * <p>If a recovery rate is already set, this method implements additive recycling:
-   * - Recovery rates are added together</p>
+   * <div>If a recovery rate is already set, this method implements additive recycling:
+   * <ul>
+   *   <li>Recovery rates are added together.</li>
+   *   <li>Both rates are converted to percentage units before addition.</li>
+   *   <li>The combined rate is stored as a percentage.</li>
+   * </ul>
+   * </div>
    *
    * @param useKey The key containing application and substance
    * @param newValue The new recovery rate value
    */
   public void setRecoveryRate(UseKey useKey, EngineNumber newValue) {
     StreamParameterization parameterization = getParameterization(useKey);
-
-    // Get existing recovery rate
     EngineNumber existingRecovery = parameterization.getRecoveryRate();
 
-    // If existing recovery rate is non-zero, implement additive recycling
     if (existingRecovery.getValue().compareTo(BigDecimal.ZERO) > 0) {
-      // Convert both rates to the same units (percentage)
       EngineNumber existingRecoveryPercent = unitConverter.convert(existingRecovery, "%");
       EngineNumber newRecoveryPercent = unitConverter.convert(newValue, "%");
-
-      // Add recovery rates
       BigDecimal combinedRecovery = existingRecoveryPercent.getValue().add(newRecoveryPercent.getValue());
-
-      // Set the combined recovery rate
       parameterization.setRecoveryRate(new EngineNumber(combinedRecovery, "%"));
     } else {
-      // First recovery rate, set normally
       parameterization.setRecoveryRate(newValue);
     }
   }
@@ -812,26 +917,29 @@ public class SimulationState {
   /**
    * Set the recovery rate percentage for a key with a specific stage.
    *
+   * <div>Implements additive behavior for multiple recovery commands on the same stage:
+   * <ul>
+   *   <li>When a recovery rate is already set for this stage, the new rate is added to the existing
+   *   one.</li>
+   *   <li>The first recovery rate for a timestep is set directly without addition.</li>
+   * </ul>
+   * </div>
+   *
    * @param useKey The key containing application and substance
    * @param newValue The new recovery rate value
    * @param stage The recovery stage (EOL or RECHARGE)
    */
   public void setRecoveryRate(UseKey useKey, EngineNumber newValue, RecoveryStage stage) {
     StreamParameterization parameterization = getParameterization(useKey);
-
-    // Get existing recovery rate for this stage
     EngineNumber existingRecovery = parameterization.getRecoveryRate(stage);
 
-    // Check if recovery rate is already set - use additive behavior for multiple recover commands
     if (existingRecovery.getValue().compareTo(BigDecimal.ZERO) > 0) {
-      // Add the new recovery rate to the existing one (additive behavior)
       BigDecimal newRate = existingRecovery.getValue().add(newValue.getValue());
       EngineNumber combinedRate = new EngineNumber(newRate, "%");
       parameterization.setRecoveryRate(combinedRate, stage);
-      return; // Early return to avoid setting the rate again below
+      return;
     }
 
-    // Set the recovery rate (first one for this timestep)
     parameterization.setRecoveryRate(newValue, stage);
   }
 
@@ -862,46 +970,23 @@ public class SimulationState {
   /**
    * Set the yield rate percentage for recycling for a key.
    *
-   * <p>If a yield rate is already set and recovery rate is non-zero, this method implements
-   * weighted average yield calculation based on recovery rates.</p>
+   * <p>Convenience method that sets the yield rate for the RECHARGE recovery stage.
+   * Delegates to {@link #setYieldRate(UseKey, EngineNumber, RecoveryStage)} with
+   * RecoveryStage.RECHARGE.</p>
    *
    * @param useKey The key containing application and substance
    * @param newValue The new yield rate value
+   * @see #setYieldRate(UseKey, EngineNumber, RecoveryStage)
    */
   public void setYieldRate(UseKey useKey, EngineNumber newValue) {
-    StreamParameterization parameterization = getParameterization(useKey);
-
-    // Get existing yield and recovery rates
-    EngineNumber existingYield = parameterization.getYieldRate();
-    EngineNumber existingRecovery = parameterization.getRecoveryRate();
-
-    // If existing yield is non-zero and recovery rate is non-zero, calculate weighted average
-    if (existingYield.getValue().compareTo(BigDecimal.ZERO) > 0
-        && existingRecovery.getValue().compareTo(BigDecimal.ZERO) > 0) {
-
-      // For weighted average, we need to know the recovery rate components
-      // Since recovery rates were already combined in setRecoveryRate, we need to estimate
-      // the new recovery rate component from the context
-
-      // Convert yield rates to the same units (percentage)
-      EngineNumber existingYieldPercent = unitConverter.convert(existingYield, "%");
-      EngineNumber newYieldPercent = unitConverter.convert(newValue, "%");
-
-      // For simplicity, assume equal weighting if we can't determine recovery components
-      // This is a reasonable approximation for the weighted average
-      BigDecimal combinedYield = existingYieldPercent.getValue().add(newYieldPercent.getValue()).divide(
-          BigDecimal.valueOf(2), java.math.MathContext.DECIMAL128);
-
-      // Set the combined yield rate
-      parameterization.setYieldRate(new EngineNumber(combinedYield, "%"));
-    } else {
-      // First yield rate or no existing recovery, set normally
-      parameterization.setYieldRate(newValue);
-    }
+    setYieldRate(useKey, newValue, RecoveryStage.RECHARGE);
   }
 
   /**
    * Set the yield rate percentage for recycling for a key with a specific stage.
+   *
+   * <p>When an existing yield rate is set for this stage, combines them using a weighted average
+   * approach that uses equal weighting, which is a reasonable approximation for efficiency rates.</p>
    *
    * @param useKey The key containing application and substance
    * @param newValue The new yield rate value
@@ -909,27 +994,21 @@ public class SimulationState {
    */
   public void setYieldRate(UseKey useKey, EngineNumber newValue, RecoveryStage stage) {
     StreamParameterization parameterization = getParameterization(useKey);
-
-    // Get existing yield and recovery rates for this stage
     EngineNumber existingYield = parameterization.getYieldRate(stage);
-    EngineNumber existingRecovery = parameterization.getRecoveryRate(stage);
 
-    // If existing yield rate is non-zero, implement additive recycling
     if (existingYield.getValue().compareTo(BigDecimal.ZERO) > 0) {
-      // Convert both rates to the same units (percentage)
       EngineNumber existingYieldPercent = unitConverter.convert(existingYield, "%");
       EngineNumber newYieldPercent = unitConverter.convert(newValue, "%");
 
-      // For yield rates, we need to handle combining them properly
-      // Since they represent efficiency rates, we'll use a weighted average approach
-      // This is a reasonable approximation for the weighted average
-      BigDecimal combinedYield = existingYieldPercent.getValue().add(newYieldPercent.getValue()).divide(
-          BigDecimal.valueOf(2), java.math.MathContext.DECIMAL128);
+      BigDecimal combinedYield = existingYieldPercent.getValue()
+          .add(newYieldPercent.getValue())
+          .divide(
+              BigDecimal.valueOf(2),
+              java.math.MathContext.DECIMAL128
+          );
 
-      // Set the combined yield rate
       parameterization.setYieldRate(new EngineNumber(combinedYield, "%"), stage);
     } else {
-      // First yield rate or no existing recovery, set normally
       parameterization.setYieldRate(newValue, stage);
     }
   }
@@ -1344,7 +1423,6 @@ public class SimulationState {
     EngineNumber valueConverted = unitConverter.convert(value, "kg");
     BigDecimal totalRecycleKg = valueConverted.getValue();
 
-    // Get current recycle amounts to determine proportional distribution
     EngineNumber recycleRechargeAmountRaw = getStream(useKey, "recycleRecharge");
     EngineNumber recycleEolAmountRaw = getStream(useKey, "recycleEol");
 
@@ -1355,17 +1433,15 @@ public class SimulationState {
     BigDecimal recycleEolKg = recycleEolAmount != null ? recycleEolAmount.getValue() : BigDecimal.ZERO;
 
     BigDecimal totalExistingRecycle = recycleRechargeKg.add(recycleEolKg);
+    boolean noExistingRecycling = totalExistingRecycle.compareTo(BigDecimal.ZERO) == 0;
 
-    // Calculate proportional distribution
     BigDecimal newRecycleRechargeAmount;
     BigDecimal newRecycleEolAmount;
 
-    if (totalExistingRecycle.compareTo(BigDecimal.ZERO) == 0) {
-      // If no existing recycle, split equally
+    if (noExistingRecycling) {
       newRecycleRechargeAmount = totalRecycleKg.divide(new BigDecimal("2"));
       newRecycleEolAmount = totalRecycleKg.divide(new BigDecimal("2"));
     } else {
-      // Distribute proportionally based on existing amounts
       BigDecimal rechargePercent = recycleRechargeKg.divide(totalExistingRecycle, 10, BigDecimal.ROUND_HALF_UP);
       BigDecimal eolPercent = recycleEolKg.divide(totalExistingRecycle, 10, BigDecimal.ROUND_HALF_UP);
 
@@ -1397,7 +1473,8 @@ public class SimulationState {
     UnitConverter unitConverter = new UnitConverter(overridingStateGetter);
 
     EngineNumber initialCharge = getInitialCharge(useKey, name);
-    if (initialCharge.getValue().compareTo(BigDecimal.ZERO) == 0) {
+    boolean noInitialCharge = initialCharge.getValue().compareTo(BigDecimal.ZERO) == 0;
+    if (noInitialCharge) {
       throw new RuntimeException("Cannot set " + name + " stream with a zero initial charge.");
     }
 
@@ -1511,8 +1588,10 @@ public class SimulationState {
    * @return true if the user is setting a sales component by units and false otherwise
    */
   private boolean getIsSettingVolumeByUnits(String name, EngineNumber value) {
-    boolean isSalesComponent = "domestic".equals(name) || "import".equals(name)
-                               || "sales".equals(name);
+    boolean isSalesComponent = switch (name) {
+      case "domestic", "import", "sales" -> true;
+      default -> false;
+    };
     boolean isUnits = value.getUnits().startsWith("unit");
     return isSalesComponent && isUnits;
   }
@@ -1541,7 +1620,7 @@ public class SimulationState {
     BigDecimal retirementRateRatio;
     if (retirementRate.getUnits().contains("%")) {
       retirementRateRatio = retirementRate.getValue().divide(
-          BigDecimal.valueOf(100), java.math.MathContext.DECIMAL128);
+          HUNDRED_PERCENT, java.math.MathContext.DECIMAL128);
     } else {
       // If units are not percentage, assume it's already a ratio
       retirementRateRatio = retirementRate.getValue();
@@ -1555,7 +1634,7 @@ public class SimulationState {
     BigDecimal recoveryRateRatio;
     if (recoveryRate.getUnits().contains("%")) {
       recoveryRateRatio = recoveryRate.getValue().divide(
-          BigDecimal.valueOf(100), java.math.MathContext.DECIMAL128);
+          HUNDRED_PERCENT, java.math.MathContext.DECIMAL128);
     } else {
       recoveryRateRatio = recoveryRate.getValue();
     }
@@ -1568,7 +1647,7 @@ public class SimulationState {
     BigDecimal yieldRateRatio;
     if (yieldRate.getUnits().contains("%")) {
       yieldRateRatio = yieldRate.getValue().divide(
-          BigDecimal.valueOf(100), java.math.MathContext.DECIMAL128);
+          HUNDRED_PERCENT, java.math.MathContext.DECIMAL128);
     } else {
       yieldRateRatio = yieldRate.getValue();
     }
@@ -1592,12 +1671,12 @@ public class SimulationState {
    * correctly displaces virgin material in Year N, but the reduced virgin sales
    * baseline incorrectly carries forward to Year N+1, creating cumulative deficit.</p>
    *
-   * <p>This fix is applied to all scenarios with configured sales streams including:</p>
+   * <div>This fix is applied to all scenarios with configured sales streams including:
    * <ul>
-   * <li>"set sales to X [units]" - Total sales specified</li>
-   * <li>"set import to X [units]" - Import volume specified</li>
-   * <li>"set domestic to X [units]" - Domestic volume specified</li>
-   * </ul>
+   *   <li>"set sales to X [units]" - Total sales specified</li>
+   *   <li>"set import to X [units]" - Import volume specified</li>
+   *   <li>"set domestic to X [units]" - Domestic volume specified</li>
+   * </ul></div>
    *
    * <p>The redistribution preserves user expectations that loss of recycling will be
    * back-filled by virgin material to maintain total available material, regardless
@@ -1790,19 +1869,16 @@ public class SimulationState {
     Optional<EngineNumber> appliedRetireOpt = param.getAppliedRetirementAmount();
     EngineNumber appliedRetire = appliedRetireOpt.orElse(new EngineNumber(BigDecimal.ZERO, "units"));
 
-    // Guard against division by zero
-    if (retireBase.getValue().compareTo(BigDecimal.ZERO) == 0) {
+    boolean noPriorBase = retireBase.getValue().compareTo(BigDecimal.ZERO) == 0;
+    if (noPriorBase) {
       param.setRetirementBasePopulation(newPriorUnits);
       param.setAppliedRetirementAmount(new EngineNumber(BigDecimal.ZERO, "units"));
     } else {
-      // Calculate what percentage was already applied
       BigDecimal retirePercent = appliedRetire.getValue().divide(
           retireBase.getValue(), 10, java.math.RoundingMode.HALF_UP);
 
-      // Scale applied amount proportionally to new base
       BigDecimal newApplied = newPriorUnits.getValue().multiply(retirePercent);
 
-      // Update base and applied
       param.setRetirementBasePopulation(newPriorUnits);
       param.setAppliedRetirementAmount(new EngineNumber(newApplied, "units"));
     }
@@ -1825,19 +1901,16 @@ public class SimulationState {
     Optional<EngineNumber> appliedRechargeOpt = param.getAppliedRechargeAmount();
     EngineNumber appliedRecharge = appliedRechargeOpt.orElse(new EngineNumber(BigDecimal.ZERO, "kg"));
 
-    // Guard against division by zero
-    if (rechargeBase.getValue().compareTo(BigDecimal.ZERO) == 0) {
+    boolean noPriorBase = rechargeBase.getValue().compareTo(BigDecimal.ZERO) == 0;
+    if (noPriorBase) {
       param.setRechargeBasePopulation(newPriorUnits);
       param.setAppliedRechargeAmount(new EngineNumber(BigDecimal.ZERO, "kg"));
     } else {
-      // Scale both base and applied by the same ratio
       BigDecimal baseRatio = newPriorUnits.getValue().divide(
           rechargeBase.getValue(), 10, java.math.RoundingMode.HALF_UP);
 
-      // Scale applied amount by same ratio
       BigDecimal newApplied = appliedRecharge.getValue().multiply(baseRatio);
 
-      // Update base and applied
       param.setRechargeBasePopulation(newPriorUnits);
       param.setAppliedRechargeAmount(new EngineNumber(newApplied, "kg"));
     }

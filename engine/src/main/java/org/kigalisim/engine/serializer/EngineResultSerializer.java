@@ -144,14 +144,24 @@ public class EngineResultSerializer {
 
     // Get consumption
     EngineNumber consumptionByVolume = getConsumptionByVolume(
-        useKey, unitConverter);
+        useKey,
+        unitConverter
+    );
 
     EngineNumber domesticConsumptionValue = getConsumptionForVolume(
-        manufactureValue, consumptionByVolume, stateGetter, unitConverter);
+        manufactureValue,
+        consumptionByVolume,
+        stateGetter,
+        unitConverter
+    );
     builder.setDomesticConsumptionValue(domesticConsumptionValue);
 
     EngineNumber importConsumptionValue = getConsumptionForVolume(
-        importValue, consumptionByVolume, stateGetter, unitConverter);
+        importValue,
+        consumptionByVolume,
+        stateGetter,
+        unitConverter
+    );
     builder.setImportConsumptionValue(importConsumptionValue);
 
     // Set export values (exports don't affect equipment population, just track volume and consumption)
@@ -164,11 +174,19 @@ public class EngineResultSerializer {
     }
     builder.setExportValue(exportValue);
     EngineNumber exportConsumptionValue = getConsumptionForVolume(
-        exportValue, consumptionByVolume, stateGetter, unitConverter);
+        exportValue,
+        consumptionByVolume,
+        stateGetter,
+        unitConverter
+    );
     builder.setExportConsumptionValue(exportConsumptionValue);
 
     EngineNumber recycleConsumptionValue = getConsumptionForVolume(
-        recycleValue, consumptionByVolume, stateGetter, unitConverter);
+        recycleValue,
+        consumptionByVolume,
+        stateGetter,
+        unitConverter
+    );
     builder.setRecycleConsumptionValue(recycleConsumptionValue);
 
     // Offset recharge emissions
@@ -251,7 +269,7 @@ public class EngineResultSerializer {
    * @return The consumption by volume engine number
    */
   private EngineNumber getConsumptionByVolume(UseKey useKey,
-                                            UnitConverter unitConverter) {
+      UnitConverter unitConverter) {
     EngineNumber consumptionRaw = engine.getGhgIntensity(useKey);
     String units = consumptionRaw.getUnits();
     if (units.endsWith("kg") || units.endsWith("mt")) {
@@ -271,9 +289,9 @@ public class EngineResultSerializer {
    * @return The consumption engine number
    */
   private EngineNumber getConsumptionForVolume(EngineNumber volume,
-                                             EngineNumber consumptionByVolume,
-                                             OverridingConverterStateGetter stateGetter,
-                                             UnitConverter unitConverter) {
+      EngineNumber consumptionByVolume,
+      OverridingConverterStateGetter stateGetter,
+      UnitConverter unitConverter) {
     if (volume.getValue().compareTo(BigDecimal.ZERO) == 0) {
       return new EngineNumber(BigDecimal.ZERO, "tCO2e");
     } else {
@@ -293,7 +311,7 @@ public class EngineResultSerializer {
    * @param useKey The UseKey containing application and substance information
    */
   private void parseTradeSupplement(EngineResultBuilder builder,
-                                    UseKey useKey) {
+      UseKey useKey) {
     // Prepare units
     OverridingConverterStateGetter stateGetter =
         new OverridingConverterStateGetter(this.stateGetter);
@@ -303,7 +321,9 @@ public class EngineResultSerializer {
     stateGetter.setSubstanceConsumption(ghgIntensity);
 
     EngineNumber importInitialChargeUnit = engine.getRawInitialChargeFor(
-        useKey, "import");
+        useKey,
+        "import"
+    );
     stateGetter.setAmortizedUnitVolume(importInitialChargeUnit);
 
     // Check if this is a per-unit emissions factor
@@ -316,7 +336,9 @@ public class EngineResultSerializer {
     EngineNumber totalImportValue = engine.getStreamFor(useKey, "import");
     EngineNumber totalDomesticValue = engine.getStreamFor(useKey, "domestic");
     EngineNumber totalRechargeEmissions = engine.getStreamFor(
-        useKey, "rechargeEmissions");
+        useKey,
+        "rechargeEmissions"
+    );
 
     BigDecimal totalImportValueKg = unitConverter.convert(totalImportValue, "kg").getValue();
     BigDecimal totalDomesticValueKg = unitConverter.convert(totalDomesticValue, "kg").getValue();
@@ -387,9 +409,17 @@ public class EngineResultSerializer {
     UnitConverter scopedConverter = new UnitConverter(scopedStateGetter);
 
     if (isPerUnit(ghgIntensity)) {
-      return calculatePerUnitInitialChargeEmissions(useKey, ghgIntensity, scopedConverter);
+      return calculatePerUnitInitialChargeEmissions(
+          useKey,
+          ghgIntensity,
+          scopedConverter
+      );
     } else {
-      return calculatePerVolumeInitialChargeEmissions(useKey, ghgIntensity, scopedConverter);
+      return calculatePerVolumeInitialChargeEmissions(
+          useKey,
+          ghgIntensity,
+          scopedConverter
+      );
     }
   }
 
@@ -404,7 +434,9 @@ public class EngineResultSerializer {
    * @param scopedConverter The unit converter with appropriate scope
    * @return The calculated initial charge emissions in tCO2e
    */
-  private EngineNumber calculatePerUnitInitialChargeEmissions(UseKey useKey, EngineNumber ghgIntensity, UnitConverter scopedConverter) {
+  private EngineNumber calculatePerUnitInitialChargeEmissions(UseKey useKey,
+      EngineNumber ghgIntensity,
+      UnitConverter scopedConverter) {
     // Initial charge emissions = new equipment population * per-unit emissions factor
     EngineNumber newPopulation = engine.getStreamFor(useKey, "newEquipment");
     if (newPopulation == null) {
@@ -432,7 +464,9 @@ public class EngineResultSerializer {
    * @param scopedConverter The unit converter with appropriate scope
    * @return The calculated initial charge emissions in tCO2e
    */
-  private EngineNumber calculatePerVolumeInitialChargeEmissions(UseKey useKey, EngineNumber ghgIntensity, UnitConverter scopedConverter) {
+  private EngineNumber calculatePerVolumeInitialChargeEmissions(UseKey useKey,
+      EngineNumber ghgIntensity,
+      UnitConverter scopedConverter) {
     // Get all volume streams in kg
     EngineNumber domesticKg = getInKg(useKey, "domestic", scopedConverter);
     EngineNumber importKg = getInKg(useKey, "import", scopedConverter);
