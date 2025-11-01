@@ -1,16 +1,18 @@
 plugins {
+  id "maven-publish"
   id "java"
   id "war"
-  id "eclipse" // optional (to generate Eclipse project files)
-  id "idea" // optional (to generate IntelliJ IDEA project files)
-  id "application" // for creating executable JARs
-  id "checkstyle" // for code style checking
-  id "antlr" // for ANTLR grammar
-  id "org.teavm" version "0.12.1" // TeaVM for WASM compilation
-  id "com.diffplug.spotless" version "7.0.2" // Autoformatting
+  id "eclipse"
+  id "idea"
+  id "application"
+  id "checkstyle"
+  id "antlr"
+  id "org.teavm" version "0.12.1"
+  id "com.diffplug.spotless" version "7.0.2"
 }
 
 group = 'org.kigalisim'
+version = '0.1.0'
 
 eclipse {
     classpath {
@@ -90,7 +92,17 @@ sourceSets {
     }
 }
 
-// Jar containing all dependencies required for production
+// Regular jar
+jar {
+  manifest {
+    attributes(
+      "Main-Class": "org.kigalisim.KigaliSimCommander"
+    )
+  }
+  archiveBaseName = "kigalisim"
+}
+
+// Fat jar containing all dependencies required for production
 task fatJar(type: Jar) {
   manifest {
     attributes(
@@ -240,3 +252,23 @@ checkstyleMain.dependsOn setupCheckstyle
 
 // Require Checkstyle set up before checking test.
 checkstyleTest.dependsOn setupCheckstyle
+
+// Publish to github maven
+publishing {
+    repositories {
+      maven {
+        name = "GitHubPackages"
+        url = uri("https://maven.pkg.github.com/SchmidtDSE/kigali-sim")
+        credentials {
+          username = project.findProperty("gpr.user") ?: System.getenv("USERNAME")
+          password = project.findProperty("gpr.key") ?: System.getenv("PUBLISH_TOKEN")
+        }
+      }
+    }
+    publications {
+      gpr(MavenPublication) {
+        from(components.java)
+        artifact fatJar
+      }
+    }
+}
