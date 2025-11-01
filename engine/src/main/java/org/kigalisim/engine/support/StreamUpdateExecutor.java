@@ -331,14 +331,14 @@ public class StreamUpdateExecutor {
   /**
    * Propagates stream changes to dependent calculations based on stream type.
    *
-   * <p>Different stream types require different recalculation operations:
+   * <div>Different stream types require different recalculation operations:
    * <ul>
    *   <li>Sales streams (domestic, import, sales): recalc population change, propagate to consumption</li>
    *   <li>Consumption stream: recalc sales, propagate to population change</li>
    *   <li>Equipment stream: recalc sales, propagate to consumption</li>
    *   <li>PriorEquipment stream: recalc retirement only</li>
    *   <li>Other streams: no propagation</li>
-   * </ul>
+   * </ul></div>
    *
    * @param useKey The use key containing application and substance
    * @param streamName The name of the stream that was updated

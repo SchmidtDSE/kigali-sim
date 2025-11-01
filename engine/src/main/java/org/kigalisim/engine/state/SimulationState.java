@@ -1689,12 +1689,12 @@ public class SimulationState {
    * correctly displaces virgin material in Year N, but the reduced virgin sales
    * baseline incorrectly carries forward to Year N+1, creating cumulative deficit.</p>
    *
-   * <p>This fix is applied to all scenarios with configured sales streams including:</p>
+   * <div>This fix is applied to all scenarios with configured sales streams including:
    * <ul>
    * <li>"set sales to X [units]" - Total sales specified</li>
    * <li>"set import to X [units]" - Import volume specified</li>
    * <li>"set domestic to X [units]" - Domestic volume specified</li>
-   * </ul>
+   * </ul></div>
    *
    * <p>The redistribution preserves user expectations that loss of recycling will be
    * back-filled by virgin material to maintain total available material, regardless
