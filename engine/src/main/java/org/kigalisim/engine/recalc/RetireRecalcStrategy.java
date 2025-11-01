@@ -87,12 +87,12 @@ public class RetireRecalcStrategy implements RecalcStrategy {
   /**
    * Calculates the incremental retirement amount since the last retire command.
    *
-   * <p>This method computes the delta (incremental) retirement by:
+   * <p>This method computes the delta (incremental) retirement by:</p>
    * <ol>
-   * <li>Converting the cumulative retirement rate to absolute units using base population</li>
-   * <li>Retrieving the previously applied cumulative amount</li>
-   * <li>Calculating delta as the difference between current cumulative and previously applied</li>
-   * </ol></p>
+   *   <li>Converting the cumulative retirement rate to absolute units using base population</li>
+   *   <li>Retrieving the previously applied cumulative amount</li>
+   *   <li>Calculating delta as the difference between current cumulative and previously applied</li>
+   * </ol>
    *
    * <p>The OverridingConverterStateGetter is used to temporarily set the population context
    * for converting percentage-based retirement rates to absolute unit amounts.</p>
@@ -128,12 +128,12 @@ public class RetireRecalcStrategy implements RecalcStrategy {
   /**
    * Calculates new stream values after applying retirement delta.
    *
-   * <p>This method applies the retirement delta to compute new values for:
+   * <div>This method applies the retirement delta to compute new values for:
    * <ul>
-   * <li>Prior equipment: reduced by delta (equipment that was in service is now retired)</li>
-   * <li>Total equipment: reduced by delta (overall population decreases)</li>
-   * <li>Retired: increased by delta (cumulative retired equipment increases)</li>
-   * </ul></p>
+   *   <li>Prior equipment: reduced by delta (equipment that was in service is now retired)</li>
+   *   <li>Total equipment: reduced by delta (overall population decreases)</li>
+   *   <li>Retired: increased by delta (cumulative retired equipment increases)</li>
+   * </ul></div>
    *
    * <p>All calculations are performed in units.</p>
    *
@@ -165,12 +165,12 @@ public class RetireRecalcStrategy implements RecalcStrategy {
   /**
    * Updates equipment-related streams in the simulation state.
    *
-   * <p>This method applies the calculated new values to the priorEquipment and equipment
+   * <div>This method applies the calculated new values to the priorEquipment and equipment
    * streams. Both updates use:
    * <ul>
-   * <li>subtractRecycling = false: values already account for retirement</li>
-   * <li>invalidatePriorEquipment = false (for priorEquipment): prevent circular invalidation</li>
-   * </ul></p>
+   *   <li>subtractRecycling = false: values already account for retirement</li>
+   *   <li>invalidatePriorEquipment = false (for priorEquipment): prevent circular invalidation</li>
+   * </ul></div>
    *
    * @param scopeEffective The use key scope for stream updates
    * @param simulationState The simulation state to update
@@ -247,12 +247,12 @@ public class RetireRecalcStrategy implements RecalcStrategy {
   /**
    * Propagates retirement changes to dependent recalculation strategies.
    *
-   * <p>This method triggers dependent recalculations to maintain simulation state consistency
+   * <div>This method triggers dependent recalculations to maintain simulation state consistency
    * after retirement operations:
    * <ul>
-   * <li>PopulationChangeRecalcStrategy: Updates equipment population deltas</li>
-   * <li>ConsumptionRecalcStrategy: Recalculates substance consumption based on new populations</li>
-   * </ul></p>
+   *   <li>PopulationChangeRecalcStrategy: Updates equipment population deltas</li>
+   *   <li>ConsumptionRecalcStrategy: Recalculates substance consumption based on new populations</li>
+   * </ul></div>
    *
    * <p><strong>Important:</strong> SalesRecalcStrategy is intentionally NOT called here.
    * Retirement should not recalculate sales because sales were already calculated correctly

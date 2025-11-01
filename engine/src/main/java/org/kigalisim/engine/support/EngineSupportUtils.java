@@ -11,6 +11,7 @@ package org.kigalisim.engine.support;
 
 import java.math.BigDecimal;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 import org.kigalisim.engine.Engine;
 import org.kigalisim.engine.number.EngineNumber;
@@ -60,6 +61,17 @@ public final class EngineSupportUtils {
    */
   public static boolean getIsInRange(YearMatcher yearMatcher, int currentYear) {
     return yearMatcher == null || yearMatcher.getInRange(currentYear);
+  }
+
+  /**
+   * Check if a year matcher is in range for the given current year.
+   *
+   * @param yearMatcher The optional year matcher to check
+   * @param currentYear The current year to check against
+   * @return True if in range or no matcher provided
+   */
+  public static boolean getIsInRange(Optional<YearMatcher> yearMatcher, int currentYear) {
+    return getIsInRange(yearMatcher.orElse(null), currentYear);
   }
 
   /**
