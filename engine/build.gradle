@@ -1,16 +1,18 @@
 plugins {
+  id "maven-publish"
   id "java"
   id "war"
-  id "eclipse" // optional (to generate Eclipse project files)
-  id "idea" // optional (to generate IntelliJ IDEA project files)
-  id "application" // for creating executable JARs
-  id "checkstyle" // for code style checking
-  id "antlr" // for ANTLR grammar
-  id "org.teavm" version "0.11.0" // TeaVM for WASM compilation
-  id "com.diffplug.spotless" version "7.0.2" // Autoformatting
+  id "eclipse"
+  id "idea"
+  id "application"
+  id "checkstyle"
+  id "antlr"
+  id "org.teavm" version "0.12.1"
+  id "com.diffplug.spotless" version "7.0.2"
 }
 
 group = 'org.kigalisim'
+version = '0.1.0'
 
 eclipse {
     classpath {
@@ -37,8 +39,8 @@ dependencies {
   implementation("org.antlr:antlr4-runtime:4.13.2") // ANTLR runtime for generated code
 
   // Interaction with browser
-  implementation("org.teavm:teavm-core:0.11.0")
-  implementation("org.teavm:teavm-jso:0.11.0")
+  implementation("org.teavm:teavm-core:0.12.1")
+  implementation("org.teavm:teavm-jso:0.12.1")
 
   // CSV processing
   implementation("org.apache.commons:commons-csv:1.14.0")
@@ -90,8 +92,19 @@ sourceSets {
     }
 }
 
-// Jar containing all dependencies required for production
-task fatJar(type: Jar) {
+// Regular jar
+jar {
+  manifest {
+    attributes(
+      "Main-Class": "org.kigalisim.KigaliSimCommander"
+    )
+  }
+  archiveBaseName = "kigalisim"
+}
+
+// Fat jar containing all dependencies required for production
+// Create a copy of the fat jar without version in the name
+task fatJarVersion(type: Jar) {
   manifest {
     attributes(
       "Main-Class": "org.kigalisim.KigaliSimCommander"
@@ -113,6 +126,21 @@ task fatJar(type: Jar) {
 
   // Exclude META-INF signatures to avoid security exceptions
   exclude "META-INF/*.RSA", "META-INF/*.SF", "META-INF/*.DSA"
+}
+
+task fatJar(type: Copy) {
+  dependsOn fatJarVersion
+  from fatJarVersion.archiveFile
+  into file("${buildDir}/libs")
+  rename { "kigalisim-fat.jar" }
+}
+
+// War unversioned
+task warUnversioned(type: Copy) {
+  dependsOn war
+  from war.archiveFile
+  into file("${buildDir}/libs")
+  rename { "KigaliSim.war" }
 }
 
 // Standard JavaDoc target
@@ -240,3 +268,23 @@ checkstyleMain.dependsOn setupCheckstyle
 
 // Require Checkstyle set up before checking test.
 checkstyleTest.dependsOn setupCheckstyle
+
+// Publish to github maven
+publishing {
+    repositories {
+      maven {
+        name = "GitHubPackages"
+        url = uri("https://maven.pkg.github.com/SchmidtDSE/kigali-sim")
+        credentials {
+          username = project.findProperty("gpr.user") ?: System.getenv("USERNAME")
+          password = project.findProperty("gpr.key") ?: System.getenv("PUBLISH_TOKEN")
+        }
+      }
+    }
+    publications {
+      gpr(MavenPublication) {
+        from(components.java)
+        artifact fatJarVersion
+      }
+    }
+}
