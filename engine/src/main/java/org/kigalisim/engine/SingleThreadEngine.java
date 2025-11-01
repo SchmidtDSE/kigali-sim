@@ -41,8 +41,6 @@ import org.kigalisim.engine.support.ChangeExecutor;
 import org.kigalisim.engine.support.EngineSupportUtils;
 import org.kigalisim.engine.support.EquipmentChangeUtil;
 import org.kigalisim.engine.support.ExceptionsGenerator;
-import org.kigalisim.engine.support.ImplicitRechargeUpdate;
-import org.kigalisim.engine.support.RechargeVolumeCalculator;
 import org.kigalisim.engine.support.SetExecutor;
 import org.kigalisim.engine.support.StreamUpdateExecutor;
 import org.kigalisim.lang.operation.RecoverOperation.RecoveryStage;
