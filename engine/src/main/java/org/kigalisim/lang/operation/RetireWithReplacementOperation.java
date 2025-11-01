@@ -76,7 +76,7 @@ public class RetireWithReplacementOperation implements Operation {
     Engine engine = machine.getEngine();
 
     // Check if this operation should execute in the current year
-    if (!EngineSupportUtils.isInRange(yearMatcher, engine.getYear())) {
+    if (!EngineSupportUtils.getIsInRange(yearMatcher, engine.getYear())) {
       return;
     }
 
