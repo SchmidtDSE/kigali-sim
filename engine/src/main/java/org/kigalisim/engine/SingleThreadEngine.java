@@ -41,6 +41,7 @@ import org.kigalisim.engine.support.EquipmentChangeUtil;
 import org.kigalisim.engine.support.ExceptionsGenerator;
 import org.kigalisim.engine.support.SetExecutor;
 import org.kigalisim.engine.support.StreamUpdateExecutor;
+import org.kigalisim.engine.support.StreamUpdateShortcuts;
 import org.kigalisim.lang.operation.RecoverOperation.RecoveryStage;
 
 /**
@@ -67,6 +68,7 @@ public class SingleThreadEngine implements Engine {
   private final ChangeExecutor changeExecutor;
   private final EquipmentChangeUtil equipmentChangeUtil;
   private final StreamUpdateExecutor streamUpdateExecutor;
+  private final StreamUpdateShortcuts streamUpdateShortcuts;
   private Scope scope;
 
   /**
@@ -94,6 +96,7 @@ public class SingleThreadEngine implements Engine {
     changeExecutor = new ChangeExecutor(this);
     equipmentChangeUtil = new EquipmentChangeUtil(this);
     streamUpdateExecutor = new StreamUpdateExecutor(this);
+    streamUpdateShortcuts = new StreamUpdateShortcuts(this);
     scope = new Scope();
   }
 
@@ -752,7 +755,7 @@ public class SingleThreadEngine implements Engine {
           sourceVolumeChange.getValue().negate(),
           sourceVolumeChange.getUnits()
       );
-      changeStreamWithoutReportingUnits(stream, sourceAmountNegative, Optional.empty(), Optional.empty());
+      streamUpdateShortcuts.changeStreamWithoutReportingUnits(stream, sourceAmountNegative, Optional.empty(), Optional.empty());
 
       // Add to destination substance: convert the same number of units to destination's kg amount
       Scope destinationScope = scope.getWithSubstance(destinationSubstance);
@@ -771,17 +774,17 @@ public class SingleThreadEngine implements Engine {
       scope = originalScope;
 
       EngineNumber destinationVolumeChange = destinationUnitConverter.convert(unitsToReplace, "kg");
-      changeStreamWithDisplacementContext(stream, destinationVolumeChange, destinationScope);
+      streamUpdateShortcuts.changeStreamWithDisplacementContext(stream, destinationVolumeChange, destinationScope);
     } else {
       // For volume units, use the original logic
       UnitConverter unitConverter = EngineSupportUtils.createUnitConverterWithTotal(this, stream);
       EngineNumber amount = unitConverter.convert(effectiveAmount, "kg");
 
       EngineNumber amountNegative = new EngineNumber(amount.getValue().negate(), amount.getUnits());
-      changeStreamWithoutReportingUnits(stream, amountNegative, Optional.empty(), Optional.empty());
+      streamUpdateShortcuts.changeStreamWithoutReportingUnits(stream, amountNegative, Optional.empty(), Optional.empty());
 
       Scope destinationScope = scope.getWithSubstance(destinationSubstance);
-      changeStreamWithDisplacementContext(stream, amount, destinationScope);
+      streamUpdateShortcuts.changeStreamWithDisplacementContext(stream, amount, destinationScope);
     }
   }
 
@@ -843,7 +846,7 @@ public class SingleThreadEngine implements Engine {
     if (displacementAutomatic) {
       // Add recycled material back to sales to maintain total material balance
       EngineNumber recycledAddition = new EngineNumber(changeAmount, "kg");
-      changeStreamWithoutReportingUnits(EngineSupportUtils.RECYCLE_RECOVER_STREAM, recycledAddition, Optional.empty(), Optional.empty());
+      streamUpdateShortcuts.changeStreamWithoutReportingUnits(EngineSupportUtils.RECYCLE_RECOVER_STREAM, recycledAddition, Optional.empty(), Optional.empty());
     }
 
     EngineNumber displaceChange;
@@ -860,7 +863,7 @@ public class SingleThreadEngine implements Engine {
         // Same substance, same stream - use volume displacement
         displaceChange = new EngineNumber(changeAmount.negate(), "kg");
 
-        changeStreamWithoutReportingUnits(displaceTarget, displaceChange, Optional.empty(), Optional.empty());
+        streamUpdateShortcuts.changeStreamWithoutReportingUnits(displaceTarget, displaceChange, Optional.empty(), Optional.empty());
       } else {
         // Different substance - apply the same number of units to the destination substance
         Scope destinationScope = scope.getWithSubstance(displaceTarget);
@@ -875,7 +878,7 @@ public class SingleThreadEngine implements Engine {
         displaceChange = new EngineNumber(destinationVolumeChange.getValue(), "kg");
 
         // Use custom recalc kit with destination substance's properties for correct GWP calculation
-        changeStreamWithDisplacementContext(stream, displaceChange, destinationScope);
+        streamUpdateShortcuts.changeStreamWithDisplacementContext(stream, displaceChange, destinationScope);
 
         // Restore original scope
         scope = originalScope;
@@ -885,165 +888,13 @@ public class SingleThreadEngine implements Engine {
       displaceChange = new EngineNumber(changeAmount.negate(), "kg");
 
       if (isStream) {
-        changeStreamWithoutReportingUnits(displaceTarget, displaceChange, Optional.empty(), Optional.empty());
+        streamUpdateShortcuts.changeStreamWithoutReportingUnits(displaceTarget, displaceChange, Optional.empty(), Optional.empty());
       } else {
         Scope destinationScope = scope.getWithSubstance(displaceTarget);
         // Use custom recalc kit with destination substance's properties for correct GWP calculation
-        changeStreamWithDisplacementContext(stream, displaceChange, destinationScope);
+        streamUpdateShortcuts.changeStreamWithDisplacementContext(stream, displaceChange, destinationScope);
       }
     }
-  }
-
-  /**
-   * Change a stream value with proper displacement context for correct GWP calculations.
-   *
-   * <p>This method creates a custom recalc kit that uses the destination substance's
-   * properties (GWP, initial charge, energy intensity) to ensure correct emissions
-   * calculations during displacement operations.</p>
-   *
-   * @param stream The stream identifier to modify
-   * @param amount The amount to change the stream by
-   * @param destinationScope The scope for the destination substance
-   */
-  private void changeStreamWithDisplacementContext(String stream, EngineNumber amount, Scope destinationScope) {
-    changeStreamWithDisplacementContext(stream, amount, destinationScope, false);
-  }
-
-  /**
-   * Change a stream value with proper displacement context for correct GWP calculations.
-   *
-   * <p>This method creates a custom recalc kit that uses the destination substance's
-   * properties (GWP, initial charge, energy intensity) to ensure correct emissions
-   * calculations during displacement operations.</p>
-   *
-   * @param stream The stream identifier to modify
-   * @param amount The amount to change the stream by
-   * @param destinationScope The scope for the destination substance
-   * @param negativeAllowed If true, negative stream values are permitted
-   */
-  private void changeStreamWithDisplacementContext(String stream, EngineNumber amount, Scope destinationScope, boolean negativeAllowed) {
-    // Store original scope
-    final Scope originalScope = scope;
-
-    // Temporarily switch engine scope to destination substance
-    scope = destinationScope;
-
-    // Get current value and calculate new value (now using correct scope)
-    EngineNumber currentValue = getStream(stream);
-    UnitConverter unitConverter = EngineSupportUtils.createUnitConverterWithTotal(this, stream);
-
-    EngineNumber convertedDelta = unitConverter.convert(amount, currentValue.getUnits());
-    BigDecimal newAmount = currentValue.getValue().add(convertedDelta.getValue());
-
-    BigDecimal newAmountBound;
-    if (!negativeAllowed && newAmount.compareTo(BigDecimal.ZERO) < 0) {
-      System.err.println("WARNING: Negative stream value clamped to zero for stream " + stream);
-      newAmountBound = BigDecimal.ZERO;
-    } else {
-      newAmountBound = newAmount;
-    }
-
-    EngineNumber outputWithUnits = new EngineNumber(newAmountBound, currentValue.getUnits());
-
-    // Set the stream value without triggering standard recalc to avoid double calculation
-    StreamUpdate update = new StreamUpdateBuilder()
-        .setName(stream)
-        .setValue(outputWithUnits)
-        .setPropagateChanges(false)
-        .build();
-
-    executeStreamUpdate(update);
-
-    // Update lastSpecifiedValue for sales substreams since propagateChanges=false skips this
-    if (EngineSupportUtils.getIsSalesStream(stream, false)) {
-      UseKey destKey = new SimpleUseKey(destinationScope.getApplication(), destinationScope.getSubstance());
-      simulationState.setLastSpecifiedValue(destKey, stream, outputWithUnits);
-    }
-
-    // Only recalculate for streams that affect equipment populations
-    if (!EngineSupportUtils.getIsSalesStream(stream, false)) {
-      scope = originalScope;
-      return;
-    }
-
-    // Create standard recalc operation - engine scope is now correctly set to destination
-    boolean useImplicitRecharge = false; // Displacement operations don't add recharge
-
-    RecalcOperationBuilder builder = new RecalcOperationBuilder()
-        .setRecalcKit(createRecalcKit()) // Use standard recalc kit - scope is correct now
-        .setUseExplicitRecharge(!useImplicitRecharge)
-        .recalcPopulationChange()
-        .thenPropagateToConsumption();
-
-    if (!OPTIMIZE_RECALCS) {
-      builder = builder.thenPropagateToSales();
-    }
-
-    RecalcOperation operation = builder.build();
-    operation.execute(this);
-
-    // Restore original scope
-    scope = originalScope;
-  }
-
-  /**
-   * Change a stream value without reporting units to the last units tracking system.
-   *
-   * @param stream The stream identifier to modify
-   * @param amount The amount to change the stream by
-   * @param yearMatcher Matcher to determine if the change applies to current year
-   * @param scope The scope in which to make the change
-   */
-  private void changeStreamWithoutReportingUnits(String stream, EngineNumber amount,
-      Optional<YearMatcher> yearMatcher, Optional<UseKey> scope) {
-    changeStreamWithoutReportingUnits(stream, amount, yearMatcher, scope, false);
-  }
-
-  /**
-   * Change a stream value without reporting units to the last units tracking system.
-   *
-   * <p>This method is similar to changeStreamWithDisplacementContext but without the displacement
-   * context. It allows for consistent handling of negative stream values across both methods.</p>
-   *
-   * @param stream The stream identifier to modify
-   * @param amount The amount to change the stream by
-   * @param yearMatcher Matcher to determine if the change applies to current year
-   * @param scope The scope in which to make the change
-   * @param negativeAllowed If true, negative stream values are permitted
-   */
-  private void changeStreamWithoutReportingUnits(String stream, EngineNumber amount,
-      Optional<YearMatcher> yearMatcher, Optional<UseKey> scope, boolean negativeAllowed) {
-    if (!getIsInRange(yearMatcher.orElse(null))) {
-      return;
-    }
-
-    EngineNumber currentValue = getStream(stream, scope, Optional.empty());
-    UnitConverter unitConverter = EngineSupportUtils.createUnitConverterWithTotal(this, stream);
-
-    EngineNumber convertedDelta = unitConverter.convert(amount, currentValue.getUnits());
-    BigDecimal newAmount = currentValue.getValue().add(convertedDelta.getValue());
-
-    BigDecimal newAmountBound;
-    if (!negativeAllowed && newAmount.compareTo(BigDecimal.ZERO) < 0) {
-      System.err.println("WARNING: Negative stream value clamped to zero for stream " + stream);
-      newAmountBound = BigDecimal.ZERO;
-    } else {
-      newAmountBound = newAmount;
-    }
-
-    EngineNumber outputWithUnits = new EngineNumber(newAmountBound, currentValue.getUnits());
-
-    // Allow propagation but don't track units (since units tracking was handled by the caller)
-    StreamUpdateBuilder builder = new StreamUpdateBuilder()
-        .setName(stream)
-        .setValue(outputWithUnits);
-
-    if (scope.isPresent()) {
-      builder.setKey(scope.get());
-    }
-
-    StreamUpdate update = builder.build();
-    executeStreamUpdate(update);
   }
 
 
@@ -1340,7 +1191,7 @@ public class SingleThreadEngine implements Engine {
 
       if (changeAmount.compareTo(BigDecimal.ZERO) < 0) {
         EngineNumber changeWithUnits = new EngineNumber(changeAmount, "kg");
-        changeStreamWithoutReportingUnits(stream, changeWithUnits, Optional.empty(), Optional.empty());
+        streamUpdateShortcuts.changeStreamWithoutReportingUnits(stream, changeWithUnits, Optional.empty(), Optional.empty());
         handleDisplacement(stream, amount, changeAmount, displaceTarget);
       }
     }
@@ -1420,7 +1271,7 @@ public class SingleThreadEngine implements Engine {
 
       if (changeAmount.compareTo(BigDecimal.ZERO) > 0) {
         EngineNumber changeWithUnits = new EngineNumber(changeAmount, "kg");
-        changeStreamWithoutReportingUnits(stream, changeWithUnits, Optional.empty(), Optional.empty());
+        streamUpdateShortcuts.changeStreamWithoutReportingUnits(stream, changeWithUnits, Optional.empty(), Optional.empty());
         handleDisplacement(stream, amount, changeAmount, displaceTarget);
       }
     }
