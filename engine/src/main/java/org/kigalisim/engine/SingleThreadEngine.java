@@ -39,6 +39,7 @@ import org.kigalisim.engine.support.ChangeExecutor;
 import org.kigalisim.engine.support.EngineSupportUtils;
 import org.kigalisim.engine.support.EquipmentChangeUtil;
 import org.kigalisim.engine.support.ExceptionsGenerator;
+import org.kigalisim.engine.support.ReplaceExecutor;
 import org.kigalisim.engine.support.SetExecutor;
 import org.kigalisim.engine.support.StreamUpdateExecutor;
 import org.kigalisim.engine.support.StreamUpdateShortcuts;
@@ -69,6 +70,7 @@ public class SingleThreadEngine implements Engine {
   private final EquipmentChangeUtil equipmentChangeUtil;
   private final StreamUpdateExecutor streamUpdateExecutor;
   private final StreamUpdateShortcuts streamUpdateShortcuts;
+  private final ReplaceExecutor replaceExecutor;
   private Scope scope;
 
   /**
@@ -97,6 +99,7 @@ public class SingleThreadEngine implements Engine {
     equipmentChangeUtil = new EquipmentChangeUtil(this);
     streamUpdateExecutor = new StreamUpdateExecutor(this);
     streamUpdateShortcuts = new StreamUpdateShortcuts(this);
+    replaceExecutor = new ReplaceExecutor(this);
     scope = new Scope();
   }
 
@@ -702,90 +705,7 @@ public class SingleThreadEngine implements Engine {
   @Override
   public void replace(EngineNumber amountRaw, String stream, String destinationSubstance,
       YearMatcher yearMatcher) {
-    if (!getIsInRange(yearMatcher)) {
-      return;
-    }
-
-    // Track the original user-specified units for the current substance
-    Scope currentScope = scope;
-    String application = currentScope.getApplication();
-    String currentSubstance = currentScope.getSubstance();
-    if (application == null || currentSubstance == null) {
-      raiseNoAppOrSubstance("setting stream", " specified");
-    }
-
-    // Validate that we're not attempting to replace substance with itself
-    if (currentSubstance.equals(destinationSubstance)) {
-      ExceptionsGenerator.raiseSelfReplacement(currentSubstance);
-    }
-
-    if (EngineSupportUtils.getIsSalesStream(stream, true)) {
-      // Track the specific stream and amount for the current substance
-      simulationState.setLastSpecifiedValue(currentScope, stream, amountRaw);
-
-      // Track the specific stream and amount for the destination substance
-      SimpleUseKey destKey = new SimpleUseKey(application, destinationSubstance);
-      simulationState.setLastSpecifiedValue(destKey, stream, amountRaw);
-    }
-
-    // For percentage operations, check lastSpecified value to determine unit type
-    EngineNumber effectiveAmount = amountRaw;
-    if (amountRaw.getUnits().equals("%")) {
-      EngineNumber lastSpecified = simulationState.getLastSpecifiedValue(scope, stream);
-
-      if (lastSpecified != null) {
-        BigDecimal percentageValue = lastSpecified.getValue().multiply(amountRaw.getValue()).divide(new BigDecimal("100"));
-        effectiveAmount = new EngineNumber(percentageValue, lastSpecified.getUnits());
-      } else {
-        // Use current value units to determine if unit-based logic should apply
-        EngineNumber currentValue = getStream(stream);
-        BigDecimal percentageValue = currentValue.getValue().multiply(amountRaw.getValue()).divide(new BigDecimal("100"));
-        effectiveAmount = new EngineNumber(percentageValue, currentValue.getUnits());
-      }
-    }
-
-    if (effectiveAmount.hasEquipmentUnits()) {
-      // For equipment units, convert to units first, then handle each substance separately
-      UnitConverter sourceUnitConverter = EngineSupportUtils.createUnitConverterWithTotal(this, stream);
-      EngineNumber unitsToReplace = sourceUnitConverter.convert(effectiveAmount, "units");
-
-      // Remove from source substance using source's initial charge
-      EngineNumber sourceVolumeChange = sourceUnitConverter.convert(unitsToReplace, "kg");
-      EngineNumber sourceAmountNegative = new EngineNumber(
-          sourceVolumeChange.getValue().negate(),
-          sourceVolumeChange.getUnits()
-      );
-      streamUpdateShortcuts.changeStreamWithoutReportingUnits(stream, sourceAmountNegative, Optional.empty(), Optional.empty());
-
-      // Add to destination substance: convert the same number of units to destination's kg amount
-      Scope destinationScope = scope.getWithSubstance(destinationSubstance);
-      Scope originalScope = scope;
-      scope = destinationScope;
-
-      // Get the destination substance's initial charge for sales
-      EngineNumber destinationInitialCharge = getInitialCharge("sales");
-
-      // Create a state getter that uses the destination substance's initial charge
-      OverridingConverterStateGetter destinationStateGetter =
-          new OverridingConverterStateGetter(getStateGetter());
-      destinationStateGetter.setAmortizedUnitVolume(destinationInitialCharge);
-      UnitConverter destinationUnitConverter = new UnitConverter(destinationStateGetter);
-
-      scope = originalScope;
-
-      EngineNumber destinationVolumeChange = destinationUnitConverter.convert(unitsToReplace, "kg");
-      streamUpdateShortcuts.changeStreamWithDisplacementContext(stream, destinationVolumeChange, destinationScope);
-    } else {
-      // For volume units, use the original logic
-      UnitConverter unitConverter = EngineSupportUtils.createUnitConverterWithTotal(this, stream);
-      EngineNumber amount = unitConverter.convert(effectiveAmount, "kg");
-
-      EngineNumber amountNegative = new EngineNumber(amount.getValue().negate(), amount.getUnits());
-      streamUpdateShortcuts.changeStreamWithoutReportingUnits(stream, amountNegative, Optional.empty(), Optional.empty());
-
-      Scope destinationScope = scope.getWithSubstance(destinationSubstance);
-      streamUpdateShortcuts.changeStreamWithDisplacementContext(stream, amount, destinationScope);
-    }
+    replaceExecutor.execute(amountRaw, stream, destinationSubstance, yearMatcher);
   }
 
   @Override
