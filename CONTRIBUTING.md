@@ -158,6 +158,9 @@ When adding new features or changing existing functionality:
 <br>
 <br>
 
+## Accessibility
+Please ensure contributions meet WCAG 2.0 AA guidelines or better.
+
 ## Parting Thoughts
 Open source is an act of love. Please be kind and respectful of all contributors. Your work on Kigali Sim helps support countries and other organizations charged with safeguarding our environment like through the Kigali Amendment. Thank you for being part of this community.
 
