@@ -8,6 +8,12 @@
  * Presenter for managing the introduction sequence.
  */
 class IntroductionPresenter {
+  /**
+   * Creates a new IntroductionPresenter instance.
+   *
+   * @param {Object} localStorageKeeper - The storage keeper instance for
+   *     managing introduction state.
+   */
   constructor(localStorageKeeper) {
     const self = this;
     self._localStorageKeeper = localStorageKeeper;
@@ -79,6 +85,12 @@ class IntroductionPresenter {
  * Presenter for managing the privacy confirmation checkbox and dialog.
  */
 class PrivacyConfirmationPresenter {
+  /**
+   * Creates a new PrivacyConfirmationPresenter instance.
+   *
+   * Initializes the presenter by setting up event listeners and configuring
+   * privacy confirmation UI elements.
+   */
   constructor() {
     const self = this;
     self._checkbox = document.getElementById("privacy-confirmation-check");
@@ -166,6 +178,12 @@ class PrivacyConfirmationPresenter {
  * Presenter for managing the AI assistant dialog.
  */
 class AIAssistantPresenter {
+  /**
+   * Creates a new AIAssistantPresenter instance.
+   *
+   * Initializes the presenter by setting up event listeners for the AI
+   * assistant dialog interactions.
+   */
   constructor() {
     const self = this;
     self._dialog = document.getElementById("ai-assistant-dialog");
@@ -230,6 +248,12 @@ class AIAssistantPresenter {
  * Presenter for managing the AI designer dialog.
  */
 class AIDesignerPresenter {
+  /**
+   * Creates a new AIDesignerPresenter instance.
+   *
+   * Initializes the presenter by setting up event listeners for the AI
+   * designer dialog interactions.
+   */
   constructor() {
     const self = this;
     self._dialog = document.getElementById("ai-designer-dialog");

@@ -105,6 +105,7 @@ class DuplicateEntityPresenter {
 
   /**
    * Set up dialog event handlers and dynamic behavior.
+   *
    * @private
    */
   _setupDialog() {
@@ -119,6 +120,7 @@ class DuplicateEntityPresenter {
 
   /**
    * Set up duplicate link click handler.
+   *
    * @private
    */
   _setupDuplicateLink() {
@@ -132,6 +134,7 @@ class DuplicateEntityPresenter {
 
   /**
    * Set up entity type change handler.
+   *
    * @private
    */
   _setupEntityType() {
@@ -146,6 +149,7 @@ class DuplicateEntityPresenter {
 
   /**
    * Set up source entity change handler.
+   *
    * @private
    */
   _setupSourceEntity() {
@@ -162,6 +166,7 @@ class DuplicateEntityPresenter {
 
   /**
    * Set up equipment model change handler.
+   *
    * @private
    */
   _setupEquipmentModel() {
@@ -174,6 +179,7 @@ class DuplicateEntityPresenter {
 
   /**
    * Set up save button click handler.
+   *
    * @private
    */
   _setupSaveButton() {
@@ -187,6 +193,7 @@ class DuplicateEntityPresenter {
 
   /**
    * Set up cancel button click handler.
+   *
    * @private
    */
   _setupCancelButton() {
@@ -200,6 +207,7 @@ class DuplicateEntityPresenter {
 
   /**
    * Refresh the source entity dropdown based on selected entity type.
+   *
    * @private
    */
   _refreshEntityDropdown() {
@@ -253,6 +261,7 @@ class DuplicateEntityPresenter {
 
   /**
    * Update the new name suggestion based on selected source entity.
+   *
    * @private
    */
   _updateNewNameSuggestion() {
@@ -273,6 +282,7 @@ class DuplicateEntityPresenter {
 
   /**
    * Execute the entity duplication operation.
+   *
    * @private
    */
   _duplicateEntity() {
@@ -323,6 +333,7 @@ class DuplicateEntityPresenter {
   /**
    * Validate the duplicate dialog before updating code object.
    * Runs validation checks that may show confirmation dialogs.
+   *
    * @param {string} entityType - The type of entity being duplicated
    * @returns {boolean} True if validation passes or user confirms, false if user cancels
    * @private
@@ -347,6 +358,7 @@ class DuplicateEntityPresenter {
 
   /**
    * Duplicate an application with deep copy of all substances and commands.
+   *
    * @param {Program} codeObj - The program object to modify
    * @param {string} sourceAppName - Name of source application
    * @param {string} newName - Name for the duplicated application
@@ -378,6 +390,7 @@ class DuplicateEntityPresenter {
 
   /**
    * Duplicate a policy with deep copy of all applications and commands.
+   *
    * @param {Program} codeObj - The program object to modify
    * @param {string} sourcePolicyName - Name of source policy
    * @param {string} newName - Name for the duplicated policy
@@ -417,12 +430,14 @@ class DuplicateEntityPresenter {
 
   /**
    * Duplicate a simulation scenario.
+   *
    * @param {Program} codeObj - The program object to modify
    * @param {string} sourceSimName - Name of source simulation
    * @param {string} newName - Name for the duplicated simulation
    * @private
    */
   _duplicateSimulation(codeObj, sourceSimName, newName) {
+    const self = this;
     const sourceSimulation = codeObj.getScenario(sourceSimName);
 
     if (!sourceSimulation) {
@@ -431,7 +446,7 @@ class DuplicateEntityPresenter {
 
     const newSimulation = new SimulationScenario(
       newName,
-      this._copyPolicyArray(sourceSimulation),
+      self._copyPolicyArray(sourceSimulation),
       sourceSimulation.getYearStart(),
       sourceSimulation.getYearEnd(),
       sourceSimulation._isCompatible,
@@ -442,17 +457,20 @@ class DuplicateEntityPresenter {
 
   /**
    * Create a copy of the policy names array from a simulation scenario.
+   *
    * @param {SimulationScenario} sourceSimulation - The source simulation to copy from
    * @returns {Array<string>} A new array containing copied policy names
    * @private
    */
   _copyPolicyArray(sourceSimulation) {
+    const self = this;
     return [...sourceSimulation.getPolicyNames()];
   }
 
   /**
    * Show/hide substance-specific fields (equipment model and application selection)
    * based on entity type selection.
+   *
    * @private
    */
   _toggleSubstanceSpecificFields() {
@@ -475,12 +493,14 @@ class DuplicateEntityPresenter {
 
   /**
    * Find which application contains a specific substance.
+   *
    * @param {Program} codeObj - The program object
    * @param {string} substanceName - Name of substance to find
    * @returns {string} Application name containing the substance
    * @private
    */
   _findSubstanceApplication(codeObj, substanceName) {
+    const self = this;
     const applications = codeObj.getApplications();
     for (const app of applications) {
       if (app.getSubstances().some((sub) => sub.getName() === substanceName)) {
@@ -492,6 +512,7 @@ class DuplicateEntityPresenter {
 
   /**
    * Refresh the application dropdown with available applications.
+   *
    * @private
    */
   _refreshApplicationDropdown() {
@@ -535,6 +556,7 @@ class DuplicateEntityPresenter {
 
   /**
    * Duplicate a substance with optional equipment model for compound naming.
+   *
    * @param {Program} codeObj - The program object to modify
    * @param {string} sourceSubstanceName - Name of source substance
    * @param {string} newName - Name for the duplicated substance (may be compound)
@@ -591,11 +613,13 @@ class DuplicateEntityPresenter {
 
   /**
    * Deep copy a substance with all its commands and properties.
+   *
    * @param {Substance} sourceSubstance - The substance to copy
    * @returns {Substance} Deep copied substance
    * @private
    */
   _deepCopySubstance(sourceSubstance) {
+    const self = this;
     // Commands are immutable, so we can share references
     const copiedCharges = sourceSubstance.getInitialCharges();
     const copiedLimits = sourceSubstance.getLimits();

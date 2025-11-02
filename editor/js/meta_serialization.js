@@ -2039,17 +2039,11 @@ class MetaChangeApplier {
 
     if (!match) {
       if (throwOnError) {
-        if (self._checkNumberTrailingSpaces(trimmed, valueString, false)) {
-          self._checkNumberTrailingSpaces(trimmed, valueString, true);
-        } else if (self._checkMalformedDecimals(trimmed, valueString, false)) {
-          self._checkMalformedDecimals(trimmed, valueString, true);
-        } else if (self._checkMissingSpace(trimmed, valueString, false)) {
-          self._checkMissingSpace(trimmed, valueString, true);
-        } else if (self._checkNonNumeric(trimmed, valueString, false)) {
-          self._checkNonNumeric(trimmed, valueString, true);
-        } else {
-          self._throwInvalidGeneric(valueString);
-        }
+        self._checkNumberTrailingSpaces(trimmed, valueString, true);
+        self._checkMalformedDecimals(trimmed, valueString, true);
+        self._checkMissingSpace(trimmed, valueString, true);
+        self._checkNonNumeric(trimmed, valueString, true);
+        self._throwInvalidGeneric(valueString);
       }
       return null;
     }

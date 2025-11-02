@@ -1362,22 +1362,25 @@ class EngineResultBuilder {
  */
 class AggregatedResult {
   /**
-   * Construct an AggregatedResult instance from two objects compatible with EngineResult.
+   * Construct an AggregatedResult instance from one or two objects compatible with EngineResult.
    *
    * Combines two objects that have accessor methods matching EngineResult by using additive
-   * logic with unit standardization and conversion. If both objects are identical (same reference),
-   * creates a copy without doubling values.
+   * logic with unit standardization and conversion. If only one object is provided, or if both
+   * arguments are the same object, creates a copy of the first object's values without
+   * combining or doubling.
    *
    * @param {Object} first - The first result object with compatible accessor methods
    *     (getDomestic, getImport, etc.).
    * @param {Object} second - The second result object with compatible accessor methods,
-   *     to be combined with the first result. If same as first, creates a wrapper without doubling.
+   *     to be combined with the first result. If null or not provided, creates a copy of
+   *     the first object's values without combining. If same reference as first, creates a
+   *     wrapper without doubling values.
    */
-  constructor(first, second) {
+  constructor(first, second = null) {
     const self = this;
 
-    // If both arguments are the same object, just copy the values without combining
-    if (first === second) {
+    // If second is null/not provided or same object, just copy values from first
+    if (second === null || first === second) {
       self._domesticValue = first.getDomestic();
       self._importValue = first.getImport();
       self._recycleValue = first.getRecycle();

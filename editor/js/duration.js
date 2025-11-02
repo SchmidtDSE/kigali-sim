@@ -23,19 +23,33 @@ class ParsedYear {
     const self = this;
 
     self._year = self._determineYear(year);
-    self._originalString = originalString || (year !== null ? String(year) : null);
+    self._originalString = self._determineOriginalString(originalString, year);
   }
 
   /**
-   * Determine the year value from input, converting numeric strings to numbers.
+   * Determine the original string representation of the year.
+   *
+   * @private
+   * @param {string|null} originalString - The original string if provided.
+   * @param {number|string|null} year - The year value to use as fallback.
+   * @returns {string|null} The original string or a string version of the year.
+   */
+  _determineOriginalString(originalString, year) {
+    const self = this;
+    return originalString || (year !== null ? String(year) : null);
+  }
+
+  /**
+   * Determine the year value from input.
+   *
+   * Convert numeric strings to numbers for proper handling while preserving
+   * special strings like "beginning" and "onwards".
    *
    * @private
    * @param {number|string|null} year - The year value to process.
    * @returns {number|string|null} The processed year value.
    */
   _determineYear(year) {
-    // Convert numeric strings to numbers for proper handling
-    // while preserving special strings like "beginning" and "onwards"
     if (typeof year === "string" && year !== "beginning" && year !== "onwards") {
       const numericValue = parseFloat(year);
       if (!isNaN(numericValue) && isFinite(numericValue)) {

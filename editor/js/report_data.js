@@ -166,25 +166,11 @@ class ReportDataWrapper {
 
     const strategyBuilder = new MetricStrategyBuilder();
 
-    // Curry wrappers for inline function compatibility
-    const addEmissionsConversion = (strategyBuilder) =>
-      self._addEmissionsConversion(strategyBuilder);
-    const addEmissionsStrategies = (strategyBuilder) =>
-      self._addEmissionsStrategies(strategyBuilder);
-    const addSalesStrategies = (strategyBuilder) =>
-      self._addSalesStrategies(strategyBuilder);
-    const addConsumptionStrategies = (strategyBuilder) =>
-      self._addConsumptionStrategies(strategyBuilder);
-    const addPopulationStrategies = (strategyBuilder) =>
-      self._addPopulationStrategies(strategyBuilder);
-    const addBankStrategies = (strategyBuilder) =>
-      self._addBankStrategies(strategyBuilder);
-
-    addEmissionsStrategies(strategyBuilder);
-    addSalesStrategies(strategyBuilder);
-    addConsumptionStrategies(strategyBuilder);
-    addPopulationStrategies(strategyBuilder);
-    addBankStrategies(strategyBuilder);
+    self._addEmissionsStrategies(strategyBuilder);
+    self._addSalesStrategies(strategyBuilder);
+    self._addConsumptionStrategies(strategyBuilder);
+    self._addPopulationStrategies(strategyBuilder);
+    self._addBankStrategies(strategyBuilder);
 
     self._metricStrategies = strategyBuilder.build();
   }
@@ -1274,7 +1260,9 @@ class ReportDataWrapper {
 
     // Combine all results using the AggregatedResult constructor which takes two objects
     // and combines them. Start with the first two results and keep combining with the rest.
-    let aggregated = new AggregatedResult(afterFilter[0], afterFilter[1] || afterFilter[0]);
+    let aggregated = afterFilter.length === 1 ?
+      new AggregatedResult(afterFilter[0]) :
+      new AggregatedResult(afterFilter[0], afterFilter[1]);
 
     // Continue combining with remaining results
     for (let i = 2; i < afterFilter.length; i++) {
