@@ -21,7 +21,7 @@ import {
   RetireCommand,
   SimulationScenario,
   SubstanceBuilder,
-} from "ui_translator";
+} from "ui_translator_components";
 import {
   NameConflictResolution,
   resolveNameConflict,

@@ -16,7 +16,7 @@ import {
   SubstanceBuilder,
   Command,
   RetireCommand,
-} from "ui_translator";
+} from "ui_translator_components";
 import {EngineNumber} from "engine_number";
 
 /**

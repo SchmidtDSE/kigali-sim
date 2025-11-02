@@ -10,7 +10,7 @@ import {
   DefinitionalStanza,
   SimulationScenario,
   Substance,
-} from "ui_translator";
+} from "ui_translator_components";
 
 /**
  * Result of name conflict resolution.

@@ -38,6 +38,8 @@ const ESSENTIAL_FILES = [
     "/js/ui_editor.js",
     "/js/ui_editor_util.js",
     "/js/ui_translator.js",
+    "/js/ui_translator_components.js",
+    "/js/ui_translator_util.js",
     "/js/user_config.js",
     "/js/wasm.worker.js",
     "/js/wasm_backend.js",
