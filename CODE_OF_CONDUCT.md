@@ -53,4 +53,4 @@ Violations of the code of conduct may be unintentional and we hope that respectf
 <br>
 
 ## Acknowledgements
-This document was inspired by the [p5.js code of conduct](https://github.com/processing/p5.js/blob/main/CODE_OF_CONDUCT.md#p5js-code-of-conduct) and the [afscgap code of conduct](https://github.com/SchmidtDSE/afscgap/blob/main/CONDUCT.md), and is released under the [CC BY-SA 4.0 license](https://creativecommons.org/licenses/by-sa/4.0/).
+This document was inspired by the [p5.js code of conduct](https://github.com/processing/p5.js/blob/main/CODE_OF_CODE_OF_CONDUCT.md#p5js-code-of-conduct) and the [afscgap code of conduct](https://github.com/SchmidtDSE/afscgap/blob/main/CODE_OF_CONDUCT.md), and is released under the [CC BY-SA 4.0 license](https://creativecommons.org/licenses/by-sa/4.0/).
