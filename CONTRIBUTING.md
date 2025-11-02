@@ -137,14 +137,12 @@ We apologize for the formality but there's just a few logistical pieces to keep 
 ## Use of Generative AI
 We welcome use of AI coding assistants. Indeed, the maintainers of this package are using them but ask them to follow the pattern of existing code within the repository. However, we have some guidelines:
 
- - Please disclose their use by mentioning the model you used as a co-author in your commit.
+ - Unless covered by the narrow exception below, please disclose use of AI assistants by mentioning the model you used as a co-author in your commit. If uncertain, please add as a co-author.
  - Prompts should be narrow and all generated work should be manually evaluated before submitting to the repository either in a main / deploy branch or in a PR branch.
  - All structural choices must be made manually. AI assistants are only expected to be used for "mechanical" edits.
  - We view these resources as tools but you remain responsible for all actions taken. Any code you contribute with assistance of an AI is held to the same standard as code contributed without an AI assistant.
 
-As with any contribution, the maintainers reserve the right to politely decline contributions and, in particular, be sure that any AI-assisted edits follow the norms, conventions, and architecture of the existing code.
-
-For an example of a specific prompt, please see `tasks/example.md`.
+As with any contribution, the maintainers reserve the right to politely decline contributions and, in particular, be sure that any AI-assisted edits follow the norms, conventions, and architecture of the existing code. For an example of a specific prompt, please see `tasks/example.md`. We make an exception for the co-author disclosure only for mechanical edits strictly replicating existing patterns in the codebase closely similar to classic refactoring tools in IDEs.
 
 <br>
 <br>
