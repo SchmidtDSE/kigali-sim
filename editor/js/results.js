@@ -453,11 +453,27 @@ class ScorecardPresenter {
       const showVal = ALLOW_SCORE_DISPLAY && self._filterSet.hasSingleScenario(scenarios);
       const hideVal = !showVal;
 
-      self._updateCard(emissionsScorecard, emissionRounded, currentYear,
-        emissionsSelected, hideVal);
-      self._updateCard(salesScorecard, salesMt, currentYear, salesSelected, hideVal);
-      self._updateCard(equipmentScorecard, millionEqipment, currentYear,
-        equipmentSelected, hideVal);
+      self._updateCard(
+        emissionsScorecard,
+        emissionRounded,
+        currentYear,
+        emissionsSelected,
+        hideVal,
+      );
+      self._updateCard(
+        salesScorecard,
+        salesMt,
+        currentYear,
+        salesSelected,
+        hideVal,
+      );
+      self._updateCard(
+        equipmentScorecard,
+        millionEqipment,
+        currentYear,
+        equipmentSelected,
+        hideVal,
+      );
 
       // Update dropdown values to match FilterSet
       const metricFamily = self._filterSet.getMetric();
@@ -1217,7 +1233,12 @@ class SelectorTitlePresenter {
     const scenarioDropdown = self._selection.querySelector(".scenario-select");
     const scenarioSelected = self._filterSet.getScenario();
     const scenarios = results.getScenarios(self._filterSet);
-    self._updateDynamicDropdown(scenarioDropdown, scenarios, scenarioSelected, "All Simulations");
+    self._updateDynamicDropdown(
+      scenarioDropdown,
+      scenarios,
+      scenarioSelected,
+      "All Simulations",
+    );
 
     const baselineDropdown = self._selection.querySelector(".baseline-select");
     const baselineSelected = self._filterSet.getBaseline();
@@ -1244,7 +1265,12 @@ class SelectorTitlePresenter {
     const substances = getWithMetaSubstanceEquipment(
       results.getSubstances(self._filterSet.getWithSubstance(null)),
     );
-    self._updateDynamicDropdown(substanceDropdown, substances, substanceSelected, "All Substances");
+    self._updateDynamicDropdown(
+      substanceDropdown,
+      substances,
+      substanceSelected,
+      "All Substances",
+    );
   }
 
   /**
