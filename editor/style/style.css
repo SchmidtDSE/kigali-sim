@@ -628,6 +628,9 @@ select option[disabled] {
 
   header h1 {
     margin-bottom: 15px;
+    text-align: center;
+    margin-left: auto;
+    margin-right: auto;
   }
 
   header .file-buttons {
@@ -871,11 +874,9 @@ select option[disabled] {
   header {
     display: grid;
     grid-template-columns: auto 1fr;
-    grid-template-areas:
-      "logo buttons";
+    grid-template-areas: "logo buttons";
     align-items: center;
     gap: 20px;
-    padding: 20px;
   }
 
   header h1 {
