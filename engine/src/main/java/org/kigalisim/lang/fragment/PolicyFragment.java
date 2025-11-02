@@ -24,6 +24,11 @@ public class PolicyFragment extends Fragment {
     this.policy = policy;
   }
 
+  /**
+   * Get the policy parsed from the source of this fragment.
+   *
+   * @return The parsed policy.
+   */
   @Override
   public ParsedPolicy getPolicy() {
     return policy;

@@ -67,19 +67,18 @@ public class ParsedDuring {
   }
 
   /**
-   * Build a YearMatcher from this parsed version of a during statement.
+   * Extract the start year from the start time point.
    *
-   * <p>If a TimePointFuture is a dynamic cap (beginning or onwards), it is interpreted as
-   * Optional.empty().</p>
+   * <p>Processes the start time point if present. If a TimePointFuture is a dynamic cap
+   * (beginning or onwards), it is interpreted as the engine's start or end year accordingly.
+   * Otherwise, the time point value is extracted and converted to an integer year.</p>
    *
    * @param machine Machine to use for calculations if needed.
-   * @return The YearMatcher built from the values parsed and saved to this ParsedDuring.
+   * @return The start year as an Optional, or empty if start is not present.
    */
-  public YearMatcher buildYearMatcher(PushDownMachine machine) {
+  private Optional<Integer> getStartYear(PushDownMachine machine) {
     Optional<Integer> startYear = Optional.empty();
-    Optional<Integer> endYear = Optional.empty();
 
-    // Process start time point if present
     if (start.isPresent()) {
       TimePointRealized startRealized = start.get().realize(machine);
       if (startRealized.isDynamicCap()) {
@@ -94,7 +93,22 @@ public class ParsedDuring {
       }
     }
 
-    // Process end time point if present
+    return startYear;
+  }
+
+  /**
+   * Extract the end year from the end time point.
+   *
+   * <p>Processes the end time point if present. If a TimePointFuture is a dynamic cap
+   * (beginning or onwards), it is interpreted as the engine's start or end year accordingly.
+   * Otherwise, the time point value is extracted and converted to an integer year.</p>
+   *
+   * @param machine Machine to use for calculations if needed.
+   * @return The end year as an Optional, or empty if end is not present.
+   */
+  private Optional<Integer> getEndYear(PushDownMachine machine) {
+    Optional<Integer> endYear = Optional.empty();
+
     if (end.isPresent()) {
       TimePointRealized endRealized = end.get().realize(machine);
       if (endRealized.isDynamicCap()) {
@@ -108,6 +122,22 @@ public class ParsedDuring {
         endYear = Optional.of(endValue.getValue().intValue());
       }
     }
+
+    return endYear;
+  }
+
+  /**
+   * Build a YearMatcher from this parsed version of a during statement.
+   *
+   * <p>If a TimePointFuture is a dynamic cap (beginning or onwards), it is interpreted as
+   * Optional.empty().</p>
+   *
+   * @param machine Machine to use for calculations if needed.
+   * @return The YearMatcher built from the values parsed and saved to this ParsedDuring.
+   */
+  public YearMatcher buildYearMatcher(PushDownMachine machine) {
+    Optional<Integer> startYear = getStartYear(machine);
+    Optional<Integer> endYear = getEndYear(machine);
 
     return new YearMatcher(startYear, endYear);
   }
