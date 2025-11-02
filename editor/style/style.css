@@ -103,7 +103,6 @@ html {
 
 header {
   margin-bottom: 20px;
-  padding: 20px;
 }
 
 header h1 {
@@ -609,7 +608,18 @@ select option[disabled] {
 }
 
 /* Ensure buttons work well on smaller screens */
-@media (max-width: 30em) {
+@media (max-width: 670px) {
+  footer .file-buttons.buttons-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  footer .file-buttons.buttons-panel a {
+    line-height: 2;
+    text-align: center;
+  }
+
   header {
     display: flex;
     flex-direction: column;
@@ -641,18 +651,6 @@ select option[disabled] {
 
   .designer-buttons-layout .secondary {
     width: 100%;
-    text-align: center;
-  }
-
-  /* Footer buttons - one per line on narrow screens */
-  footer .file-buttons.buttons-panel {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-  }
-
-  footer .file-buttons.buttons-panel a {
-    line-height: 2;
     text-align: center;
   }
 }
@@ -877,6 +875,7 @@ select option[disabled] {
       "logo buttons";
     align-items: center;
     gap: 20px;
+    padding: 20px;
   }
 
   header h1 {
