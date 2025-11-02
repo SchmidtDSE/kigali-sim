@@ -144,6 +144,8 @@ We welcome use of AI coding assistants. Indeed, the maintainers of this package 
 
 As with any contribution, the maintainers reserve the right to politely decline contributions and, in particular, be sure that any AI-assisted edits follow the norms, conventions, and architecture of the existing code.
 
+For an example of a specific prompt, please see `tasks/example.md`.
+
 <br>
 <br>
 
