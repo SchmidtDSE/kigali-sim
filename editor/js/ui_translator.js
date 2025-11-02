@@ -14,8 +14,6 @@ import {parseUnitValue} from "meta_serialization";
 import {NumberParseUtil} from "number_parse_util";
 import {
   formatEngineNumber,
-  COMMAND_COMPATIBILITIES,
-  SUPPORTED_EQUALS_UNITS,
   indentSingle,
   indent,
   buildAddCode,

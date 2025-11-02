@@ -21,44 +21,6 @@ function formatEngineNumber(engineNumber) {
   }
 }
 
-/**
- * Command compatibility mapping to compatibility modes:
- *
- * - "any": Compatible with both policy and definition contexts
- * - "none": Not compatible with simplified UI
- * - "definition": Only compatible with substance definitions.
- * - "policy": Only compatible with policy modifications.
- *
- * @type {Object.<string, string>}
- */
-const COMMAND_COMPATIBILITIES = {
-  "change": "any",
-  "define var": "none",
-  "retire": "any",
-  "setVal": "any",
-  "cap": "any",
-  "floor": "any",
-  "limit": "any",
-  "initial charge": "definition",
-  "equals": "definition",
-  "recharge": "any",
-  "recycle": "policy",
-  "replace": "policy",
-  "enable": "definition",
-  "assume": "definition",
-};
-
-const SUPPORTED_EQUALS_UNITS = [
-  "tCO2e / unit",
-  "tCO2e / kg",
-  "tCO2e / mt",
-  "kgCO2e / unit",
-  "kgCO2e / kg",
-  "kgCO2e / mt",
-  "kwh / kg",
-  "kwh / mt",
-  "kwh / unit",
-];
 
 /**
  * Indent a single piece of text by the specified number of spaces.
@@ -129,8 +91,6 @@ function preprocessEachYearSyntax(input) {
 
 export {
   formatEngineNumber,
-  COMMAND_COMPATIBILITIES,
-  SUPPORTED_EQUALS_UNITS,
   indentSingle,
   indent,
   buildAddCode,

@@ -5,6 +5,7 @@
  */
 import {EngineNumber} from "engine_number";
 import {NumberParseUtil} from "number_parse_util";
+import {VALID_YEAR_KEYWORDS} from "ui_editor_const";
 
 /**
  * Stream target selectors used throughout the application for updating dropdown states.
@@ -19,22 +20,69 @@ export const STREAM_TARGET_SELECTORS = [
 ];
 
 /**
- * Stream types that can be enabled/disabled based on substance configuration.
- * @constant {Array<string>}
+ * Invalid patterns for numeric input validation.
+ * @constant {Array<RegExp>}
  */
-export const ENABLEABLE_STREAMS = ["domestic", "import", "export"];
+const NUMERIC_INPUT_INVALID_PATTERNS = [
+  /[a-zA-Z\s]/, // Alphabetical characters or spaces
+  /[^\d\s\-+.,]/, // Non-numeric symbols except digits, spaces, signs, periods, and commas
+];
 
 /**
- * Stream types that are always available regardless of substance configuration.
- * @constant {Array<string>}
+ * Determines if an input element is a duration field.
+ *
+ * @param {HTMLElement} input - The input element to check.
+ * @returns {boolean} True if the input is a duration field.
  */
-export const ALWAYS_ON_STREAMS = ["sales", "equipment", "priorEquipment"];
+function getIsDurationField(input) {
+  if (input.classList.contains("duration-start")) {
+    return true;
+  } else if (input.classList.contains("duration-end")) {
+    return true;
+  } else {
+    return false;
+  }
+}
 
 /**
- * Valid QubecTalk year keywords that should not trigger validation warnings.
- * @constant {Array<string>}
+ * Gets suggestion and description for numeric input validation.
+ *
+ * @param {string} fieldDescription - The field description from aria-label.
+ * @param {string} value - The input value being validated.
+ * @param {boolean} isAmbiguous - Whether the value has an ambiguous format.
+ * @param {boolean} isParseError - Whether the value failed to parse.
+ * @param {Object} parseResult - The parse result object (if parse error).
+ * @param {NumberParseUtil} numberParser - The number parser utility.
+ * @returns {Object} Object with suggestion and description fields.
  */
-export const VALID_YEAR_KEYWORDS = ["beginning", "onwards"];
+function getNumericInputSuggestionAndDescription(
+  fieldDescription,
+  value,
+  isAmbiguous,
+  isParseError,
+  parseResult,
+  numberParser,
+) {
+  let description = fieldDescription;
+  let suggestion = "";
+
+  if (isAmbiguous) {
+    description = `${fieldDescription} (ambiguous number format)`;
+    suggestion = numberParser.getDisambiguationSuggestion(value);
+  } else if (isParseError) {
+    const errorMessage = parseResult.getError();
+    // Extract suggestion from error message if it contains "Please use:"
+    if (errorMessage.includes("Please use:")) {
+      const match = errorMessage.match(/Please use: '([^']+)'/);
+      if (match) {
+        suggestion = `Use '${match[1]}' instead (comma for thousands, period for decimal)`;
+      }
+    }
+    description = `${fieldDescription} (unsupported number format)`;
+  }
+
+  return {suggestion, description};
+}
 
 /**
  * Updates the visibility of selector elements based on selected duration type.
@@ -289,20 +337,15 @@ export function validateNumericInputs(dialog, dialogType) {
   const potentiallyInvalid = [];
   const numberParser = new NumberParseUtil();
 
-  // Define patterns for potentially invalid values
-  const invalidPatterns = [
-    /[a-zA-Z\s]/, // Alphabetical characters or spaces
-    /[^\d\s\-+.,]/, // Non-numeric symbols except digits, spaces, signs, periods, and commas
-  ];
-
   // Check each numeric input
   numericInputs.forEach((input) => {
     const value = input.value.trim();
-    if (value === "") return; // Skip empty values (may be optional)
+    if (value === "") {
+      return; // Skip empty values (may be optional)
+    }
 
     // Allow valid QubecTalk year keywords for duration fields
-    const isDurationField = input.classList.contains("duration-start") ||
-                           input.classList.contains("duration-end");
+    const isDurationField = getIsDurationField(input);
     const isValidYearKeyword = isDurationField && VALID_YEAR_KEYWORDS.includes(value.toLowerCase());
 
     if (isValidYearKeyword) {
@@ -310,7 +353,7 @@ export function validateNumericInputs(dialog, dialogType) {
     }
 
     // Check against invalid patterns
-    const isLikelyInvalid = invalidPatterns.some((pattern) => pattern.test(value));
+    const isLikelyInvalid = NUMERIC_INPUT_INVALID_PATTERNS.some((pattern) => pattern.test(value));
 
     // Check for ambiguous number formats
     const isAmbiguous = numberParser.isAmbiguous(value);
@@ -323,28 +366,19 @@ export function validateNumericInputs(dialog, dialogType) {
       // Get field description from aria-label
       const fieldDescription = input.getAttribute("aria-label") || "Unknown field";
 
-      let itemDescription = fieldDescription;
-      let suggestion = "";
-
-      if (isAmbiguous) {
-        itemDescription = `${fieldDescription} (ambiguous number format)`;
-        suggestion = numberParser.getDisambiguationSuggestion(value);
-      } else if (isParseError) {
-        const errorMessage = parseResult.getError();
-        // Extract suggestion from error message if it contains "Please use:"
-        if (errorMessage.includes("Please use:")) {
-          const match = errorMessage.match(/Please use: '([^']+)'/);
-          if (match) {
-            suggestion = `Use '${match[1]}' instead (comma for thousands, period for decimal)`;
-          }
-        }
-        itemDescription = `${fieldDescription} (unsupported number format)`;
-      }
+      const {suggestion, description} = getNumericInputSuggestionAndDescription(
+        fieldDescription,
+        value,
+        isAmbiguous,
+        isParseError,
+        parseResult,
+        numberParser,
+      );
 
       potentiallyInvalid.push({
         element: input,
         value: value,
-        description: itemDescription,
+        description: description,
         suggestion: suggestion,
       });
     }

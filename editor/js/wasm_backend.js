@@ -10,12 +10,14 @@ import {UiTranslatorCompiler} from "ui_translator";
 
 /**
  * Default number of CPU cores to assume when hardwareConcurrency is unavailable.
+ *
  * @type {number}
  */
 const DEFAULT_CORES = 2;
 
 /**
  * Timeout in milliseconds per scenario for simulation execution.
+ *
  * @type {number}
  */
 const TIMEOUT_PER_SCENARIO = 45000;
@@ -244,6 +246,7 @@ class WasmLayer {
 
     /**
      * Parser instance for handling CSV report data.
+     *
      * @private
      * @type {ReportDataParser}
      */
@@ -251,6 +254,7 @@ class WasmLayer {
 
     /**
      * Number of workers in the pool.
+     *
      * @private
      * @type {number}
      */
@@ -264,6 +268,7 @@ class WasmLayer {
 
     /**
      * Array of Web Worker instances for parallel execution.
+     *
      * @private
      * @type {Array<Worker>}
      */
@@ -271,6 +276,7 @@ class WasmLayer {
 
     /**
      * Round-robin index for distributing tasks across workers.
+     *
      * @private
      * @type {number}
      */

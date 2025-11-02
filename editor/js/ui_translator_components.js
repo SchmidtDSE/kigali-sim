@@ -12,13 +12,12 @@ import {YearMatcher, ParsedYear} from "duration";
 import {parseUnitValue} from "meta_serialization";
 import {
   formatEngineNumber,
-  COMMAND_COMPATIBILITIES,
-  SUPPORTED_EQUALS_UNITS,
   indentSingle,
   indent,
   buildAddCode,
   finalizeCodePieces,
 } from "ui_translator_util";
+import {COMMAND_COMPATIBILITIES, SUPPORTED_EQUALS_UNITS} from "ui_editor_const";
 
 const toolkit = QubecTalk.getToolkit();
 
@@ -46,8 +45,7 @@ class Program {
    */
   getSubstances() {
     const self = this;
-    return self
-      .getApplications()
+    return self.getApplications()
       .map((x) => x.getSubstances())
       .flat();
   }
@@ -325,8 +323,7 @@ class Program {
     const addCode = buildAddCode(baselinePieces);
 
     if (self.getApplications().length > 0) {
-      const applicationsCode = self
-        .getApplications()
+      const applicationsCode = self.getApplications()
         .map((x) => x.toCode(spaces + 2))
         .join("\n\n\n");
 
@@ -340,8 +337,7 @@ class Program {
     }
 
     if (self.getPolicies().length > 0) {
-      const policiesCode = self
-        .getPolicies()
+      const policiesCode = self.getPolicies()
         .map((x) => x.toCode(spaces))
         .join("\n\n\n\n");
       addCode(policiesCode, spaces);
@@ -352,8 +348,7 @@ class Program {
     if (self.getScenarios().length > 0) {
       addCode("start simulations", spaces);
       addCode("", spaces);
-      const scenariosCode = self
-        .getScenarios()
+      const scenariosCode = self.getScenarios()
         .map((x) => x.toCode(2))
         .join("\n\n\n");
       addCode(scenariosCode, spaces);
@@ -593,8 +588,7 @@ class DefinitionalStanza {
     addCode("", spaces);
 
     if (self.getApplications().length > 0) {
-      const applicationsCode = self
-        .getApplications()
+      const applicationsCode = self.getApplications()
         .map((x) => x.toCode(spaces + 2))
         .join("\n\n\n");
       addCode(applicationsCode, 0);
@@ -908,8 +902,7 @@ class Application {
 
     if (self.getSubstances().length > 0) {
       addCode("", spaces);
-      const substancesCode = self
-        .getSubstances()
+      const substancesCode = self.getSubstances()
         .map((x) => x.toCode(spaces + 2))
         .join("\n\n\n");
       addCode(substancesCode, 0);

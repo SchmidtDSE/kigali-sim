@@ -622,7 +622,9 @@ class ReportDataWrapper {
    */
   _normalizeTimeUnits(units) {
     const self = this;
-    return units.replace(" / year", "").replace(" / yr", "");
+    return units
+      .replace(" / year", "")
+      .replace(" / yr", "");
   }
 
   /**
@@ -731,7 +733,9 @@ class ReportDataWrapper {
     strategyBuilder.setSubmetric("custom");
     strategyBuilder.setStrategy((filterSet) => {
       const customDef = filterSet.getCustomDefinition("emissions");
-      if (!customDef || customDef.length === 0) return null;
+      if (!customDef || customDef.length === 0) {
+        return null;
+      }
 
       // Map submetrics to their raw emission methods
       const emissionMethods = {
@@ -746,11 +750,17 @@ class ReportDataWrapper {
         return method ? method(filterSet) : null;
       }).filter((result) => result !== null);
 
-      if (results.length === 0) return null;
+      if (results.length === 0) {
+        return null;
+      }
 
       return results.reduce((a, b) => {
-        if (!a) return b;
-        if (!b) return a;
+        if (!a) {
+          return b;
+        }
+        if (!b) {
+          return a;
+        }
         if (a.getUnits() !== b.getUnits()) {
           throw new Error(
             `Cannot combine incompatible units: ${a.getUnits()} and ${b.getUnits()}`,
@@ -847,7 +857,9 @@ class ReportDataWrapper {
     strategyBuilder.setSubmetric("custom");
     strategyBuilder.setStrategy((filterSet) => {
       const customDef = filterSet.getCustomDefinition("sales");
-      if (!customDef || customDef.length === 0) return null;
+      if (!customDef || customDef.length === 0) {
+        return null;
+      }
 
       // Map submetrics to their raw sales methods
       const salesMethods = {
@@ -862,11 +874,17 @@ class ReportDataWrapper {
         return method ? method(filterSet) : null;
       }).filter((result) => result !== null);
 
-      if (results.length === 0) return null;
+      if (results.length === 0) {
+        return null;
+      }
 
       return results.reduce((a, b) => {
-        if (!a) return b;
-        if (!b) return a;
+        if (!a) {
+          return b;
+        }
+        if (!b) {
+          return a;
+        }
         if (a.getUnits() !== b.getUnits()) {
           throw new Error(
             `Cannot combine incompatible units: ${a.getUnits()} and ${b.getUnits()}`,
@@ -912,7 +930,9 @@ class ReportDataWrapper {
     strategyBuilder.setSubmetric("custom");
     strategyBuilder.setStrategy((filterSet) => {
       const customDef = filterSet.getCustomDefinition("sales");
-      if (!customDef || customDef.length === 0) return null;
+      if (!customDef || customDef.length === 0) {
+        return null;
+      }
 
       // Map submetrics to their consumption equivalents
       const consumptionMethods = {
@@ -927,11 +947,17 @@ class ReportDataWrapper {
         return method ? method(filterSet) : null;
       }).filter((result) => result !== null);
 
-      if (results.length === 0) return null;
+      if (results.length === 0) {
+        return null;
+      }
 
       return results.reduce((a, b) => {
-        if (!a) return b;
-        if (!b) return a;
+        if (!a) {
+          return b;
+        }
+        if (!b) {
+          return a;
+        }
         if (a.getUnits() !== b.getUnits()) {
           throw new Error(
             `Cannot combine incompatible units: ${a.getUnits()} and ${b.getUnits()}`,
@@ -1244,6 +1270,25 @@ class ReportDataWrapper {
   }
 
   /**
+   * Get the initial aggregated result from the first one or two items.
+   *
+   * Creates the starting aggregated result using either a single item or the
+   * combination of the first two items, depending on array length.
+   *
+   * @private
+   * @param {Array<*>} afterFilter - The filtered results array.
+   * @returns {AggregatedResult} Initial aggregated result.
+   */
+  _getStartAggregated(afterFilter) {
+    const self = this;
+    if (afterFilter.length === 1) {
+      return new AggregatedResult(afterFilter[0]);
+    } else {
+      return new AggregatedResult(afterFilter[0], afterFilter[1]);
+    }
+  }
+
+  /**
    * Get aggregated result after applying filters.
    *
    * @private
@@ -1260,9 +1305,7 @@ class ReportDataWrapper {
 
     // Combine all results using the AggregatedResult constructor which takes two objects
     // and combines them. Start with the first two results and keep combining with the rest.
-    let aggregated = afterFilter.length === 1 ?
-      new AggregatedResult(afterFilter[0]) :
-      new AggregatedResult(afterFilter[0], afterFilter[1]);
+    let aggregated = self._getStartAggregated(afterFilter);
 
     // Continue combining with remaining results
     for (let i = 2; i < afterFilter.length; i++) {

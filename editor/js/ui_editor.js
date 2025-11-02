@@ -29,10 +29,12 @@ import {
   DuplicateEntityPresenter,
 } from "duplicate_util";
 import {
-  STREAM_TARGET_SELECTORS,
   ENABLEABLE_STREAMS,
   ALWAYS_ON_STREAMS,
   VALID_YEAR_KEYWORDS,
+} from "ui_editor_const";
+import {
+  STREAM_TARGET_SELECTORS,
   updateDurationSelector,
   setupDurationSelector,
   buildSetupListButton,
