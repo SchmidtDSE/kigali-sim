@@ -6,15 +6,15 @@ Open source engine for simulating substances, applications, and policies relevan
 <br>
 
 ## Purpose
-This reusable toolkit models substances and equipment related to Montreal Protocol and the Kigali Amendment including those with a high global warming potential. 
+This open source toolkit models substances and equipment related to the Montreal Protocol and Kigali Amendment, including high global warming potential substances.
 
-**What it does**: This open source toolkit provides a simulation engine and related software for modeling substances, applications, and policies related to the Montreal Protocol. It focuses on hydrofluorocarbons and their alternatives within the Kigali Amendment. It supports a foundational business as usual simulation as well as "stacking" policy simulations on top of that baseline. It simulates emissions, energy, substance consumption, equipment populations, and trade longitudinally in service of research and policy activities like Kigali Amendment Implementation Plans (KIPs).
+**What it does**: Provides a simulation engine for modeling substances, applications, and policies related to the Montreal Protocol, focusing on hydrofluorocarbons and their alternatives within the Kigali Amendment. Supports foundational business-as-usual simulation and "stacking" policy simulations on top. Simulates emissions, energy, substance consumption, equipment populations, and trade longitudinally.
 
-**How it does it**: This platform provides practical flexibility in stock and flow modeling. It supports user-defined structures in terms of applications like commercial refrigeration and substances like HFC-134a. It offers both UI-based and code-based editing within the QubecTalk domain specific language (DSL) where these two options interoperate between each other. For more information about the design of Kigali Sim including why we made QubecTalk, see [our paper draft](https://github.com/SchmidtDSE/kigali-sim/blob/main/paper/paper.md).
+**How it does it**: Offers stock and flow modeling with user-defined structures for applications and substances. Features both UI-based and code-based editing within the QubecTalk domain specific language (DSL) with interoperability. Design details available in [our paper draft](https://github.com/SchmidtDSE/kigali-sim/blob/main/paper/paper.md).
 
-**Where it does it**: This portable execution can happen through a web-based bespoke IDE or outside the browser in the command line or within larger workflows. It is available running in WebAssembly (WASM) or on the Java Virtual Machine (JVM). It can also run with parallelization and conduct probabilistic simulation via Monte Carlo.
+**Where it does it**: Portable execution through web-based bespoke IDE, command line, or integration into larger workflows. Available on WebAssembly (WASM) or Java Virtual Machine (JVM). Supports parallelization and probabilistic simulation via Monte Carlo.
 
-**Who it serves**: This scientific package supports researchers working on stock and flow modeling of these important substances as well as policy makers. With ongoing [Article 5](https://ozone.unep.org/treaties/montreal-protocol/articles/article-5-special-situation-developing-countries) nation usage, Kigali Sim was co-created in consultation with over a dozen countries and supporting organizations. See [our credits page](https://kigalisim.org/credits.html). We recognize that our community includes those of varied backgrounds in programming and [optional AI assistance is available](https://github.com/SchmidtDSE/kigali-sim?tab=readme-ov-file#llm-assistants).
+**Who it serves**: Intended for researchers working on stock and flow modeling of these substances and policy makers like those working on Kigali Amendment Implementation Plans (KIPs). With ongoing [Article 5](https://ozone.unep.org/treaties/montreal-protocol/articles/article-5-special-situation-developing-countries) use, it was co-created with over a dozen countries and supporting organizations. Serves community members with varied programming backgrounds and offers [optional AI assistance](https://github.com/SchmidtDSE/kigali-sim?tab=readme-ov-file#llm-assistants).
 
 <br>
 
