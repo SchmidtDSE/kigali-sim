@@ -166,459 +166,19 @@ class ReportDataWrapper {
 
     const strategyBuilder = new MetricStrategyBuilder();
 
-    const addEmissionsConversion = (strategyBuilder) => {
-      const validateEmissionsUnits = (val) => {
-        const normalizedUnits = self._normalizeTimeUnits(val.getUnits());
-        if (normalizedUnits !== "tCO2e") {
-          throw "Unexpected emissions source units: " + val.getUnits();
-        }
-      };
-
-      // tCO2e scale conversions
-      strategyBuilder.setUnits("tCO2e / yr");
-      strategyBuilder.setTransformation((val) => {
-        validateEmissionsUnits(val);
-        return new EngineNumber(
-          val.getValue(), "tCO2e / yr", makeNumberUnambiguousString(val.getValue()),
-        );
-      });
-      strategyBuilder.add();
-
-      strategyBuilder.setUnits("ktCO2e / yr");
-      strategyBuilder.setTransformation((val) => {
-        validateEmissionsUnits(val);
-        const convertedValue = val.getValue() / 1000;
-        return new EngineNumber(
-          convertedValue, "ktCO2e / yr", makeNumberUnambiguousString(convertedValue),
-        );
-      });
-      strategyBuilder.add();
-
-      strategyBuilder.setUnits("MtCO2e / yr");
-      strategyBuilder.setTransformation((val) => {
-        validateEmissionsUnits(val);
-        const convertedValue = val.getValue() / 1000000;
-        return new EngineNumber(
-          convertedValue, "MtCO2e / yr", makeNumberUnambiguousString(convertedValue),
-        );
-      });
-      strategyBuilder.add();
-
-      // kgCO2e scale conversions
-      strategyBuilder.setUnits("kgCO2e / yr");
-      strategyBuilder.setTransformation((val) => {
-        validateEmissionsUnits(val);
-        const convertedValue = val.getValue() * 1000;
-        return new EngineNumber(
-          convertedValue, "kgCO2e / yr", makeNumberUnambiguousString(convertedValue),
-        );
-      });
-      strategyBuilder.add();
-    };
-
-    const addEmissionsStrategies = (strategyBuilder) => {
-      strategyBuilder.setMetric("emissions");
-
-      strategyBuilder.setSubmetric("recharge");
-      strategyBuilder.setStrategy((x) => self.getRechargeEmissions(x));
-      addEmissionsConversion(strategyBuilder);
-
-      strategyBuilder.setSubmetric("eol");
-      strategyBuilder.setStrategy((x) => self.getEolEmissions(x));
-      addEmissionsConversion(strategyBuilder);
-
-      strategyBuilder.setSubmetric("export");
-      strategyBuilder.setStrategy((x) => self.getExportEmissions(x));
-      addEmissionsConversion(strategyBuilder);
-
-      strategyBuilder.setSubmetric("initial charge");
-      strategyBuilder.setStrategy((x) => self.getInitialChargeEmissions(x));
-      addEmissionsConversion(strategyBuilder);
-
-      strategyBuilder.setSubmetric("custom");
-      strategyBuilder.setStrategy((filterSet) => {
-        const customDef = filterSet.getCustomDefinition("emissions");
-        if (!customDef || customDef.length === 0) return null;
-
-        // Map submetrics to their raw emission methods
-        const emissionMethods = {
-          "recharge": (x) => self.getRechargeEmissions(x),
-          "eol": (x) => self.getEolEmissions(x),
-          "export": (x) => self.getExportEmissions(x),
-          "initial charge": (x) => self.getInitialChargeEmissions(x),
-        };
-
-        const results = customDef.map((submetric) => {
-          const method = emissionMethods[submetric];
-          return method ? method(filterSet) : null;
-        }).filter((result) => result !== null);
-
-        if (results.length === 0) return null;
-
-        return results.reduce((a, b) => {
-          if (!a) return b;
-          if (!b) return a;
-          if (a.getUnits() !== b.getUnits()) {
-            throw new Error(
-              `Cannot combine incompatible units: ${a.getUnits()} and ${b.getUnits()}`,
-            );
-          }
-          const result = a.getValue() + b.getValue();
-          return new EngineNumber(result, a.getUnits(), makeNumberUnambiguousString(result));
-        });
-      });
-      addEmissionsConversion(strategyBuilder);
-    };
-
-    const addSalesStrategies = (strategyBuilder) => {
-      strategyBuilder.setMetric("sales");
-
-      const makeForKgAndMt = (strategyBuilder) => {
-        const validateSalesUnits = (value) => {
-          const normalizedUnits = self._normalizeTimeUnits(value.getUnits());
-          if (normalizedUnits !== "kg") {
-            throw "Unexpected sales units: " + value.getUnits();
-          }
-        };
-
-        strategyBuilder.setUnits("mt / yr");
-        strategyBuilder.setTransformation((value) => {
-          validateSalesUnits(value);
-          const convertedValue = value.getValue() / 1000;
-          return new EngineNumber(
-            convertedValue, "mt / yr", makeNumberUnambiguousString(convertedValue),
-          );
-        });
-        strategyBuilder.add();
-
-        strategyBuilder.setUnits("kg / yr");
-        strategyBuilder.setTransformation((value) => {
-          validateSalesUnits(value);
-          return new EngineNumber(
-            value.getValue(), "kg / yr", makeNumberUnambiguousString(value.getValue()),
-          );
-        });
-        strategyBuilder.add();
-      };
-
-      strategyBuilder.setSubmetric("import");
-      strategyBuilder.setStrategy((x) => self.getImport(x));
-      makeForKgAndMt(strategyBuilder);
-
-      strategyBuilder.setSubmetric("domestic");
-      strategyBuilder.setStrategy((x) => self.getDomestic(x));
-      makeForKgAndMt(strategyBuilder);
-
-      strategyBuilder.setSubmetric("recycle");
-      strategyBuilder.setStrategy((x) => self.getRecycle(x));
-      makeForKgAndMt(strategyBuilder);
-
-      strategyBuilder.setSubmetric("export");
-      strategyBuilder.setStrategy((x) => self.getExport(x));
-      makeForKgAndMt(strategyBuilder);
-
-      strategyBuilder.setSubmetric("custom");
-      strategyBuilder.setStrategy((filterSet) => {
-        const customDef = filterSet.getCustomDefinition("sales");
-        if (!customDef || customDef.length === 0) return null;
-
-        // Map submetrics to their raw sales methods
-        const salesMethods = {
-          "domestic": (x) => self.getDomestic(x),
-          "import": (x) => self.getImport(x),
-          "export": (x) => self.getExport(x),
-          "recycle": (x) => self.getRecycle(x),
-        };
-
-        const results = customDef.map((submetric) => {
-          const method = salesMethods[submetric];
-          return method ? method(filterSet) : null;
-        }).filter((result) => result !== null);
-
-        if (results.length === 0) return null;
-
-        return results.reduce((a, b) => {
-          if (!a) return b;
-          if (!b) return a;
-          if (a.getUnits() !== b.getUnits()) {
-            throw new Error(
-              `Cannot combine incompatible units: ${a.getUnits()} and ${b.getUnits()}`,
-            );
-          }
-          const result = a.getValue() + b.getValue();
-          return new EngineNumber(result, a.getUnits(), makeNumberUnambiguousString(result));
-        });
-      });
-      makeForKgAndMt(strategyBuilder);
-    };
-
-    const addConsumptionStrategies = (strategyBuilder) => {
-      strategyBuilder.setMetric("sales");
-
-      strategyBuilder.setSubmetric("import");
-      strategyBuilder.setStrategy((x) => self.getImportConsumption(x));
-      addEmissionsConversion(strategyBuilder);
-
-      strategyBuilder.setSubmetric("domestic");
-      strategyBuilder.setStrategy((x) => self.getDomesticConsumption(x));
-      addEmissionsConversion(strategyBuilder);
-
-      strategyBuilder.setSubmetric("recycle");
-      strategyBuilder.setStrategy((x) => self.getRecycleConsumption(x));
-      addEmissionsConversion(strategyBuilder);
-
-      strategyBuilder.setSubmetric("export");
-      strategyBuilder.setStrategy((x) => self.getExportConsumption(x));
-      addEmissionsConversion(strategyBuilder);
-
-      strategyBuilder.setSubmetric("custom");
-      strategyBuilder.setStrategy((filterSet) => {
-        const customDef = filterSet.getCustomDefinition("sales");
-        if (!customDef || customDef.length === 0) return null;
-
-        // Map submetrics to their consumption equivalents
-        const consumptionMethods = {
-          "domestic": (x) => self.getDomesticConsumption(x),
-          "import": (x) => self.getImportConsumption(x),
-          "export": (x) => self.getExportConsumption(x),
-          "recycle": (x) => self.getRecycleConsumption(x),
-        };
-
-        const results = customDef.map((submetric) => {
-          const method = consumptionMethods[submetric];
-          return method ? method(filterSet) : null;
-        }).filter((result) => result !== null);
-
-        if (results.length === 0) return null;
-
-        return results.reduce((a, b) => {
-          if (!a) return b;
-          if (!b) return a;
-          if (a.getUnits() !== b.getUnits()) {
-            throw new Error(
-              `Cannot combine incompatible units: ${a.getUnits()} and ${b.getUnits()}`,
-            );
-          }
-          const result = a.getValue() + b.getValue();
-          return new EngineNumber(result, a.getUnits(), makeNumberUnambiguousString(result));
-        });
-      });
-      addEmissionsConversion(strategyBuilder);
-    };
-
-    const addPopulationStrategies = (strategyBuilder) => {
-      const makeForThousandAndMillion = (strategyBuilder) => {
-        strategyBuilder.setUnits("units");
-        strategyBuilder.setTransformation((value) => {
-          if (value.getUnits() !== "units") {
-            throw "Unexpected population units: " + value.getUnits();
-          }
-          return value;
-        });
-        strategyBuilder.add();
-
-        strategyBuilder.setUnits("thousand units");
-        strategyBuilder.setTransformation((value) => {
-          if (value.getUnits() !== "units") {
-            throw "Unexpected population units: " + value.getUnits();
-          }
-          const convertedValue = value.getValue() / 1000;
-          return new EngineNumber(
-            convertedValue, "thousands of units", makeNumberUnambiguousString(convertedValue),
-          );
-        });
-        strategyBuilder.add();
-
-        strategyBuilder.setUnits("million units");
-        strategyBuilder.setTransformation((value) => {
-          if (value.getUnits() !== "units") {
-            throw "Unexpected population units: " + value.getUnits();
-          }
-          const convertedValue = value.getValue() / 1000000;
-          return new EngineNumber(
-            convertedValue, "millions of units", makeNumberUnambiguousString(convertedValue),
-          );
-        });
-        strategyBuilder.add();
-      };
-
-      const makeForEnergyUnits = (strategyBuilder) => {
-        strategyBuilder.setStrategy((x) => self.getEnergyConsumption(x));
-
-        const getKwhYr = (value) => {
-          const normalizedUnits = self._normalizeTimeUnits(value.getUnits());
-          if (normalizedUnits !== "kwh") {
-            throw "Unexpected energy units: " + value.getUnits();
-          }
-          return new EngineNumber(
-            value.getValue(), "kwh / yr", makeNumberUnambiguousString(value.getValue()),
-          );
-        };
-
-        strategyBuilder.setUnits("kwh / year");
-        strategyBuilder.setTransformation(getKwhYr);
-        strategyBuilder.add();
-
-        strategyBuilder.setUnits("mwh / year");
-        strategyBuilder.setTransformation((value) => {
-          const kwhValue = getKwhYr(value);
-          const convertedValue = kwhValue.getValue() / 1000;
-          return new EngineNumber(
-            convertedValue, "mwh / yr", makeNumberUnambiguousString(convertedValue),
-          );
-        });
-        strategyBuilder.add();
-
-        strategyBuilder.setUnits("gwh / year");
-        strategyBuilder.setTransformation((value) => {
-          const kwhValue = getKwhYr(value);
-          const convertedValue = kwhValue.getValue() / 1000000;
-          return new EngineNumber(
-            convertedValue, "gwh / yr", makeNumberUnambiguousString(convertedValue),
-          );
-        });
-        strategyBuilder.add();
-      };
-
-      strategyBuilder.setMetric("population");
-
-      strategyBuilder.setSubmetric("all");
-      strategyBuilder.setStrategy((x) => self.getPopulation(x));
-      makeForThousandAndMillion(strategyBuilder);
-      makeForEnergyUnits(strategyBuilder);
-
-      strategyBuilder.setSubmetric("new");
-      strategyBuilder.setStrategy((x) => self.getPopulationNew(x));
-      makeForThousandAndMillion(strategyBuilder);
-      makeForEnergyUnits(strategyBuilder);
-    };
-
-    const addBankStrategies = (strategyBuilder) => {
-      strategyBuilder.setMetric("population");
-
-      // Helper to create a strategy that picks the right bank method based on units
-      const makeBankStrategy = (kgMethod, tco2eMethod) => {
-        return (filterSet) => {
-          const units = filterSet.getUnits();
-          const normalizedUnits = self._normalizeTimeUnits(units);
-
-          // Determine which method to use based on requested units
-          if (normalizedUnits === "kg" || normalizedUnits === "mt") {
-            return kgMethod(filterSet);
-          } else if (normalizedUnits === "tCO2e") {
-            return tco2eMethod(filterSet);
-          } else {
-            throw "Unsupported bank units: " + units;
-          }
-        };
-      };
-
-      // kg -> mt conversion for substance bank
-      strategyBuilder.setSubmetric("all");
-      strategyBuilder.setStrategy(makeBankStrategy(
-        (x) => self.getBankKg(x),
-        (x) => self.getBankTco2e(x),
-      ));
-      strategyBuilder.setUnits("mt / yr");
-      strategyBuilder.setTransformation((value) => {
-        const normalizedUnits = self._normalizeTimeUnits(value.getUnits());
-        if (normalizedUnits !== "kg") {
-          throw "Unexpected bank units: " + value.getUnits();
-        }
-        const convertedValue = value.getValue() / 1000;
-        return new EngineNumber(
-          convertedValue, "mt / yr", makeNumberUnambiguousString(convertedValue),
-        );
-      });
-      strategyBuilder.add();
-
-      strategyBuilder.setSubmetric("all");
-      strategyBuilder.setStrategy(makeBankStrategy(
-        (x) => self.getBankKg(x),
-        (x) => self.getBankTco2e(x),
-      ));
-      strategyBuilder.setUnits("kg / yr");
-      strategyBuilder.setTransformation((value) => {
-        const normalizedUnits = self._normalizeTimeUnits(value.getUnits());
-        if (normalizedUnits !== "kg") {
-          throw "Unexpected bank units: " + value.getUnits();
-        }
-        return new EngineNumber(
-          value.getValue(), "kg / yr", makeNumberUnambiguousString(value.getValue()),
-        );
-      });
-      strategyBuilder.add();
-
-      strategyBuilder.setSubmetric("all");
-      strategyBuilder.setStrategy(makeBankStrategy(
-        (x) => self.getBankKg(x),
-        (x) => self.getBankTco2e(x),
-      ));
-      strategyBuilder.setUnits("tCO2e / yr");
-      strategyBuilder.setTransformation((value) => {
-        const normalizedUnits = self._normalizeTimeUnits(value.getUnits());
-        if (normalizedUnits !== "tCO2e") {
-          throw "Unexpected bank units: " + value.getUnits();
-        }
-        return new EngineNumber(
-          value.getValue(), "tCO2e / yr", makeNumberUnambiguousString(value.getValue()),
-        );
-      });
-      strategyBuilder.add();
-
-      // Same pattern for "new" submetric
-      strategyBuilder.setSubmetric("new");
-      strategyBuilder.setStrategy(makeBankStrategy(
-        (x) => self.getBankChangeKg(x),
-        (x) => self.getBankChangeTco2e(x),
-      ));
-      strategyBuilder.setUnits("mt / yr");
-      strategyBuilder.setTransformation((value) => {
-        const normalizedUnits = self._normalizeTimeUnits(value.getUnits());
-        if (normalizedUnits !== "kg") {
-          throw "Unexpected bank units: " + value.getUnits();
-        }
-        const convertedValue = value.getValue() / 1000;
-        return new EngineNumber(
-          convertedValue, "mt / yr", makeNumberUnambiguousString(convertedValue),
-        );
-      });
-      strategyBuilder.add();
-
-      strategyBuilder.setSubmetric("new");
-      strategyBuilder.setStrategy(makeBankStrategy(
-        (x) => self.getBankChangeKg(x),
-        (x) => self.getBankChangeTco2e(x),
-      ));
-      strategyBuilder.setUnits("kg / yr");
-      strategyBuilder.setTransformation((value) => {
-        const normalizedUnits = self._normalizeTimeUnits(value.getUnits());
-        if (normalizedUnits !== "kg") {
-          throw "Unexpected bank units: " + value.getUnits();
-        }
-        return new EngineNumber(
-          value.getValue(), "kg / yr", makeNumberUnambiguousString(value.getValue()),
-        );
-      });
-      strategyBuilder.add();
-
-      strategyBuilder.setSubmetric("new");
-      strategyBuilder.setStrategy(makeBankStrategy(
-        (x) => self.getBankChangeKg(x),
-        (x) => self.getBankChangeTco2e(x),
-      ));
-      strategyBuilder.setUnits("tCO2e / yr");
-      strategyBuilder.setTransformation((value) => {
-        const normalizedUnits = self._normalizeTimeUnits(value.getUnits());
-        if (normalizedUnits !== "tCO2e") {
-          throw "Unexpected bank units: " + value.getUnits();
-        }
-        return new EngineNumber(
-          value.getValue(), "tCO2e / yr", makeNumberUnambiguousString(value.getValue()),
-        );
-      });
-      strategyBuilder.add();
-    };
+    // Curry wrappers for inline function compatibility
+    const addEmissionsConversion = (strategyBuilder) =>
+      self._addEmissionsConversion(strategyBuilder);
+    const addEmissionsStrategies = (strategyBuilder) =>
+      self._addEmissionsStrategies(strategyBuilder);
+    const addSalesStrategies = (strategyBuilder) =>
+      self._addSalesStrategies(strategyBuilder);
+    const addConsumptionStrategies = (strategyBuilder) =>
+      self._addConsumptionStrategies(strategyBuilder);
+    const addPopulationStrategies = (strategyBuilder) =>
+      self._addPopulationStrategies(strategyBuilder);
+    const addBankStrategies = (strategyBuilder) =>
+      self._addBankStrategies(strategyBuilder);
 
     addEmissionsStrategies(strategyBuilder);
     addSalesStrategies(strategyBuilder);
@@ -1077,6 +637,609 @@ class ReportDataWrapper {
   _normalizeTimeUnits(units) {
     const self = this;
     return units.replace(" / year", "").replace(" / yr", "");
+  }
+
+  /**
+   * Validate that emissions units are in expected format.
+   *
+   * Verifies that the provided value has units in tCO2e format after time unit
+   * normalization, throwing an error if units are unexpected.
+   *
+   * @private
+   * @param {EngineNumber} val - The value to validate.
+   * @throws {string} If units are not tCO2e.
+   */
+  _validateEmissionsUnits(val) {
+    const self = this;
+    const normalizedUnits = self._normalizeTimeUnits(val.getUnits());
+    if (normalizedUnits !== "tCO2e") {
+      throw "Unexpected emissions source units: " + val.getUnits();
+    }
+  }
+
+  /**
+   * Add emissions conversion strategies to the builder.
+   *
+   * Adds unit conversion strategies for emissions data including tCO2e, ktCO2e,
+   * MtCO2e, and kgCO2e scales with appropriate validation.
+   *
+   * @private
+   * @param {MetricStrategyBuilder} strategyBuilder - The strategy builder to
+   *     configure.
+   */
+  _addEmissionsConversion(strategyBuilder) {
+    const self = this;
+
+    // tCO2e scale conversions
+    strategyBuilder.setUnits("tCO2e / yr");
+    strategyBuilder.setTransformation((val) => {
+      self._validateEmissionsUnits(val);
+      return new EngineNumber(
+        val.getValue(), "tCO2e / yr", makeNumberUnambiguousString(val.getValue()),
+      );
+    });
+    strategyBuilder.add();
+
+    strategyBuilder.setUnits("ktCO2e / yr");
+    strategyBuilder.setTransformation((val) => {
+      self._validateEmissionsUnits(val);
+      const convertedValue = val.getValue() / 1000;
+      return new EngineNumber(
+        convertedValue, "ktCO2e / yr", makeNumberUnambiguousString(convertedValue),
+      );
+    });
+    strategyBuilder.add();
+
+    strategyBuilder.setUnits("MtCO2e / yr");
+    strategyBuilder.setTransformation((val) => {
+      self._validateEmissionsUnits(val);
+      const convertedValue = val.getValue() / 1000000;
+      return new EngineNumber(
+        convertedValue, "MtCO2e / yr", makeNumberUnambiguousString(convertedValue),
+      );
+    });
+    strategyBuilder.add();
+
+    // kgCO2e scale conversions
+    strategyBuilder.setUnits("kgCO2e / yr");
+    strategyBuilder.setTransformation((val) => {
+      self._validateEmissionsUnits(val);
+      const convertedValue = val.getValue() * 1000;
+      return new EngineNumber(
+        convertedValue, "kgCO2e / yr", makeNumberUnambiguousString(convertedValue),
+      );
+    });
+    strategyBuilder.add();
+  }
+
+  /**
+   * Add emissions strategies to the builder.
+   *
+   * Adds emission metrics including recharge, eol, export, initial charge, and
+   * custom emissions with appropriate unit conversions.
+   *
+   * @private
+   * @param {MetricStrategyBuilder} strategyBuilder - The strategy builder to
+   *     configure.
+   */
+  _addEmissionsStrategies(strategyBuilder) {
+    const self = this;
+    strategyBuilder.setMetric("emissions");
+
+    strategyBuilder.setSubmetric("recharge");
+    strategyBuilder.setStrategy((x) => self.getRechargeEmissions(x));
+    self._addEmissionsConversion(strategyBuilder);
+
+    strategyBuilder.setSubmetric("eol");
+    strategyBuilder.setStrategy((x) => self.getEolEmissions(x));
+    self._addEmissionsConversion(strategyBuilder);
+
+    strategyBuilder.setSubmetric("export");
+    strategyBuilder.setStrategy((x) => self.getExportEmissions(x));
+    self._addEmissionsConversion(strategyBuilder);
+
+    strategyBuilder.setSubmetric("initial charge");
+    strategyBuilder.setStrategy((x) => self.getInitialChargeEmissions(x));
+    self._addEmissionsConversion(strategyBuilder);
+
+    strategyBuilder.setSubmetric("custom");
+    strategyBuilder.setStrategy((filterSet) => {
+      const customDef = filterSet.getCustomDefinition("emissions");
+      if (!customDef || customDef.length === 0) return null;
+
+      // Map submetrics to their raw emission methods
+      const emissionMethods = {
+        "recharge": (x) => self.getRechargeEmissions(x),
+        "eol": (x) => self.getEolEmissions(x),
+        "export": (x) => self.getExportEmissions(x),
+        "initial charge": (x) => self.getInitialChargeEmissions(x),
+      };
+
+      const results = customDef.map((submetric) => {
+        const method = emissionMethods[submetric];
+        return method ? method(filterSet) : null;
+      }).filter((result) => result !== null);
+
+      if (results.length === 0) return null;
+
+      return results.reduce((a, b) => {
+        if (!a) return b;
+        if (!b) return a;
+        if (a.getUnits() !== b.getUnits()) {
+          throw new Error(
+            `Cannot combine incompatible units: ${a.getUnits()} and ${b.getUnits()}`,
+          );
+        }
+        const result = a.getValue() + b.getValue();
+        return new EngineNumber(result, a.getUnits(), makeNumberUnambiguousString(result));
+      });
+    });
+    self._addEmissionsConversion(strategyBuilder);
+  }
+
+  /**
+   * Validate that sales units are in expected format.
+   *
+   * Verifies that the provided value has units in kg format after time unit
+   * normalization, throwing an error if units are unexpected.
+   *
+   * @private
+   * @param {EngineNumber} value - The value to validate.
+   * @throws {string} If units are not kg.
+   */
+  _validateSalesUnits(value) {
+    const self = this;
+    const normalizedUnits = self._normalizeTimeUnits(value.getUnits());
+    if (normalizedUnits !== "kg") {
+      throw "Unexpected sales units: " + value.getUnits();
+    }
+  }
+
+  /**
+   * Add kg and mt unit conversions to the builder.
+   *
+   * Creates strategies for converting sales data between kilogram and metric tonne
+   * units with validation.
+   *
+   * @private
+   * @param {MetricStrategyBuilder} strategyBuilder - The strategy builder to
+   *     configure.
+   */
+  _makeForKgAndMt(strategyBuilder) {
+    const self = this;
+
+    strategyBuilder.setUnits("mt / yr");
+    strategyBuilder.setTransformation((value) => {
+      self._validateSalesUnits(value);
+      const convertedValue = value.getValue() / 1000;
+      return new EngineNumber(
+        convertedValue, "mt / yr", makeNumberUnambiguousString(convertedValue),
+      );
+    });
+    strategyBuilder.add();
+
+    strategyBuilder.setUnits("kg / yr");
+    strategyBuilder.setTransformation((value) => {
+      self._validateSalesUnits(value);
+      return new EngineNumber(
+        value.getValue(), "kg / yr", makeNumberUnambiguousString(value.getValue()),
+      );
+    });
+    strategyBuilder.add();
+  }
+
+  /**
+   * Add sales strategies to the builder.
+   *
+   * Adds sales metrics including import, domestic, recycle, export, and custom
+   * sales with appropriate unit conversions.
+   *
+   * @private
+   * @param {MetricStrategyBuilder} strategyBuilder - The strategy builder to
+   *     configure.
+   */
+  _addSalesStrategies(strategyBuilder) {
+    const self = this;
+    strategyBuilder.setMetric("sales");
+
+    strategyBuilder.setSubmetric("import");
+    strategyBuilder.setStrategy((x) => self.getImport(x));
+    self._makeForKgAndMt(strategyBuilder);
+
+    strategyBuilder.setSubmetric("domestic");
+    strategyBuilder.setStrategy((x) => self.getDomestic(x));
+    self._makeForKgAndMt(strategyBuilder);
+
+    strategyBuilder.setSubmetric("recycle");
+    strategyBuilder.setStrategy((x) => self.getRecycle(x));
+    self._makeForKgAndMt(strategyBuilder);
+
+    strategyBuilder.setSubmetric("export");
+    strategyBuilder.setStrategy((x) => self.getExport(x));
+    self._makeForKgAndMt(strategyBuilder);
+
+    strategyBuilder.setSubmetric("custom");
+    strategyBuilder.setStrategy((filterSet) => {
+      const customDef = filterSet.getCustomDefinition("sales");
+      if (!customDef || customDef.length === 0) return null;
+
+      // Map submetrics to their raw sales methods
+      const salesMethods = {
+        "domestic": (x) => self.getDomestic(x),
+        "import": (x) => self.getImport(x),
+        "export": (x) => self.getExport(x),
+        "recycle": (x) => self.getRecycle(x),
+      };
+
+      const results = customDef.map((submetric) => {
+        const method = salesMethods[submetric];
+        return method ? method(filterSet) : null;
+      }).filter((result) => result !== null);
+
+      if (results.length === 0) return null;
+
+      return results.reduce((a, b) => {
+        if (!a) return b;
+        if (!b) return a;
+        if (a.getUnits() !== b.getUnits()) {
+          throw new Error(
+            `Cannot combine incompatible units: ${a.getUnits()} and ${b.getUnits()}`,
+          );
+        }
+        const result = a.getValue() + b.getValue();
+        return new EngineNumber(result, a.getUnits(), makeNumberUnambiguousString(result));
+      });
+    });
+    self._makeForKgAndMt(strategyBuilder);
+  }
+
+  /**
+   * Add consumption strategies to the builder.
+   *
+   * Adds consumption metrics including import, domestic, recycle, export, and
+   * custom consumption with appropriate unit conversions.
+   *
+   * @private
+   * @param {MetricStrategyBuilder} strategyBuilder - The strategy builder to
+   *     configure.
+   */
+  _addConsumptionStrategies(strategyBuilder) {
+    const self = this;
+    strategyBuilder.setMetric("sales");
+
+    strategyBuilder.setSubmetric("import");
+    strategyBuilder.setStrategy((x) => self.getImportConsumption(x));
+    self._addEmissionsConversion(strategyBuilder);
+
+    strategyBuilder.setSubmetric("domestic");
+    strategyBuilder.setStrategy((x) => self.getDomesticConsumption(x));
+    self._addEmissionsConversion(strategyBuilder);
+
+    strategyBuilder.setSubmetric("recycle");
+    strategyBuilder.setStrategy((x) => self.getRecycleConsumption(x));
+    self._addEmissionsConversion(strategyBuilder);
+
+    strategyBuilder.setSubmetric("export");
+    strategyBuilder.setStrategy((x) => self.getExportConsumption(x));
+    self._addEmissionsConversion(strategyBuilder);
+
+    strategyBuilder.setSubmetric("custom");
+    strategyBuilder.setStrategy((filterSet) => {
+      const customDef = filterSet.getCustomDefinition("sales");
+      if (!customDef || customDef.length === 0) return null;
+
+      // Map submetrics to their consumption equivalents
+      const consumptionMethods = {
+        "domestic": (x) => self.getDomesticConsumption(x),
+        "import": (x) => self.getImportConsumption(x),
+        "export": (x) => self.getExportConsumption(x),
+        "recycle": (x) => self.getRecycleConsumption(x),
+      };
+
+      const results = customDef.map((submetric) => {
+        const method = consumptionMethods[submetric];
+        return method ? method(filterSet) : null;
+      }).filter((result) => result !== null);
+
+      if (results.length === 0) return null;
+
+      return results.reduce((a, b) => {
+        if (!a) return b;
+        if (!b) return a;
+        if (a.getUnits() !== b.getUnits()) {
+          throw new Error(
+            `Cannot combine incompatible units: ${a.getUnits()} and ${b.getUnits()}`,
+          );
+        }
+        const result = a.getValue() + b.getValue();
+        return new EngineNumber(result, a.getUnits(), makeNumberUnambiguousString(result));
+      });
+    });
+    self._addEmissionsConversion(strategyBuilder);
+  }
+
+  /**
+   * Add thousand and million unit conversions to the builder.
+   *
+   * Creates strategies for converting population data to units, thousands of units,
+   * and millions of units with validation.
+   *
+   * @private
+   * @param {MetricStrategyBuilder} strategyBuilder - The strategy builder to
+   *     configure.
+   */
+  _makeForThousandAndMillion(strategyBuilder) {
+    const self = this;
+
+    strategyBuilder.setUnits("units");
+    strategyBuilder.setTransformation((value) => {
+      if (value.getUnits() !== "units") {
+        throw "Unexpected population units: " + value.getUnits();
+      }
+      return value;
+    });
+    strategyBuilder.add();
+
+    strategyBuilder.setUnits("thousand units");
+    strategyBuilder.setTransformation((value) => {
+      if (value.getUnits() !== "units") {
+        throw "Unexpected population units: " + value.getUnits();
+      }
+      const convertedValue = value.getValue() / 1000;
+      return new EngineNumber(
+        convertedValue, "thousands of units", makeNumberUnambiguousString(convertedValue),
+      );
+    });
+    strategyBuilder.add();
+
+    strategyBuilder.setUnits("million units");
+    strategyBuilder.setTransformation((value) => {
+      if (value.getUnits() !== "units") {
+        throw "Unexpected population units: " + value.getUnits();
+      }
+      const convertedValue = value.getValue() / 1000000;
+      return new EngineNumber(
+        convertedValue, "millions of units", makeNumberUnambiguousString(convertedValue),
+      );
+    });
+    strategyBuilder.add();
+  }
+
+  /**
+   * Convert energy value to kwh/yr.
+   *
+   * Validates that the provided value has kwh units after time unit normalization
+   * and returns a normalized EngineNumber in kwh/yr format.
+   *
+   * @private
+   * @param {EngineNumber} value - The energy value to convert.
+   * @returns {EngineNumber} The value in kwh/yr units.
+   * @throws {string} If units are not kwh.
+   */
+  _getKwhYr(value) {
+    const self = this;
+    const normalizedUnits = self._normalizeTimeUnits(value.getUnits());
+    if (normalizedUnits !== "kwh") {
+      throw "Unexpected energy units: " + value.getUnits();
+    }
+    return new EngineNumber(
+      value.getValue(), "kwh / yr", makeNumberUnambiguousString(value.getValue()),
+    );
+  }
+
+  /**
+   * Add energy unit conversions to the builder.
+   *
+   * Creates strategies for converting energy consumption data to kwh/yr, mwh/yr,
+   * and gwh/yr units with validation.
+   *
+   * @private
+   * @param {MetricStrategyBuilder} strategyBuilder - The strategy builder to
+   *     configure.
+   */
+  _makeForEnergyUnits(strategyBuilder) {
+    const self = this;
+    strategyBuilder.setStrategy((x) => self.getEnergyConsumption(x));
+
+    strategyBuilder.setUnits("kwh / year");
+    strategyBuilder.setTransformation((value) => self._getKwhYr(value));
+    strategyBuilder.add();
+
+    strategyBuilder.setUnits("mwh / year");
+    strategyBuilder.setTransformation((value) => {
+      const kwhValue = self._getKwhYr(value);
+      const convertedValue = kwhValue.getValue() / 1000;
+      return new EngineNumber(
+        convertedValue, "mwh / yr", makeNumberUnambiguousString(convertedValue),
+      );
+    });
+    strategyBuilder.add();
+
+    strategyBuilder.setUnits("gwh / year");
+    strategyBuilder.setTransformation((value) => {
+      const kwhValue = self._getKwhYr(value);
+      const convertedValue = kwhValue.getValue() / 1000000;
+      return new EngineNumber(
+        convertedValue, "gwh / yr", makeNumberUnambiguousString(convertedValue),
+      );
+    });
+    strategyBuilder.add();
+  }
+
+  /**
+   * Add population strategies to the builder.
+   *
+   * Adds population and energy metrics including all population, new population,
+   * and energy consumption with appropriate unit conversions.
+   *
+   * @private
+   * @param {MetricStrategyBuilder} strategyBuilder - The strategy builder to
+   *     configure.
+   */
+  _addPopulationStrategies(strategyBuilder) {
+    const self = this;
+    strategyBuilder.setMetric("population");
+
+    strategyBuilder.setSubmetric("all");
+    strategyBuilder.setStrategy((x) => self.getPopulation(x));
+    self._makeForThousandAndMillion(strategyBuilder);
+    self._makeForEnergyUnits(strategyBuilder);
+
+    strategyBuilder.setSubmetric("new");
+    strategyBuilder.setStrategy((x) => self.getPopulationNew(x));
+    self._makeForThousandAndMillion(strategyBuilder);
+    self._makeForEnergyUnits(strategyBuilder);
+  }
+
+  /**
+   * Create a bank strategy that dispatches to kg or tCO2e methods.
+   *
+   * Returns a function that determines which method to use based on the requested
+   * units in the filterSet, supporting both substance weight (kg/mt) and emissions
+   * potential (tCO2e) representations.
+   *
+   * @private
+   * @param {Function} kgMethod - Method to call for kg-based units.
+   * @param {Function} tco2eMethod - Method to call for tCO2e-based units.
+   * @returns {Function} Strategy function that dispatches based on units.
+   * @throws {string} If units are unsupported.
+   */
+  _makeBankStrategy(kgMethod, tco2eMethod) {
+    const self = this;
+    return (filterSet) => {
+      const units = filterSet.getUnits();
+      const normalizedUnits = self._normalizeTimeUnits(units);
+
+      // Determine which method to use based on requested units
+      if (normalizedUnits === "kg" || normalizedUnits === "mt") {
+        return kgMethod(filterSet);
+      } else if (normalizedUnits === "tCO2e") {
+        return tco2eMethod(filterSet);
+      } else {
+        throw "Unsupported bank units: " + units;
+      }
+    };
+  }
+
+  /**
+   * Add bank strategies to the builder.
+   *
+   * Adds bank metrics including all bank and new bank values with support for both
+   * substance weight (kg/mt) and emissions potential (tCO2e) units.
+   *
+   * @private
+   * @param {MetricStrategyBuilder} strategyBuilder - The strategy builder to
+   *     configure.
+   */
+  _addBankStrategies(strategyBuilder) {
+    const self = this;
+    strategyBuilder.setMetric("population");
+
+    // kg -> mt conversion for substance bank
+    strategyBuilder.setSubmetric("all");
+    strategyBuilder.setStrategy(self._makeBankStrategy(
+      (x) => self.getBankKg(x),
+      (x) => self.getBankTco2e(x),
+    ));
+    strategyBuilder.setUnits("mt / yr");
+    strategyBuilder.setTransformation((value) => {
+      const normalizedUnits = self._normalizeTimeUnits(value.getUnits());
+      if (normalizedUnits !== "kg") {
+        throw "Unexpected bank units: " + value.getUnits();
+      }
+      const convertedValue = value.getValue() / 1000;
+      return new EngineNumber(
+        convertedValue, "mt / yr", makeNumberUnambiguousString(convertedValue),
+      );
+    });
+    strategyBuilder.add();
+
+    strategyBuilder.setSubmetric("all");
+    strategyBuilder.setStrategy(self._makeBankStrategy(
+      (x) => self.getBankKg(x),
+      (x) => self.getBankTco2e(x),
+    ));
+    strategyBuilder.setUnits("kg / yr");
+    strategyBuilder.setTransformation((value) => {
+      const normalizedUnits = self._normalizeTimeUnits(value.getUnits());
+      if (normalizedUnits !== "kg") {
+        throw "Unexpected bank units: " + value.getUnits();
+      }
+      return new EngineNumber(
+        value.getValue(), "kg / yr", makeNumberUnambiguousString(value.getValue()),
+      );
+    });
+    strategyBuilder.add();
+
+    strategyBuilder.setSubmetric("all");
+    strategyBuilder.setStrategy(self._makeBankStrategy(
+      (x) => self.getBankKg(x),
+      (x) => self.getBankTco2e(x),
+    ));
+    strategyBuilder.setUnits("tCO2e / yr");
+    strategyBuilder.setTransformation((value) => {
+      const normalizedUnits = self._normalizeTimeUnits(value.getUnits());
+      if (normalizedUnits !== "tCO2e") {
+        throw "Unexpected bank units: " + value.getUnits();
+      }
+      return new EngineNumber(
+        value.getValue(), "tCO2e / yr", makeNumberUnambiguousString(value.getValue()),
+      );
+    });
+    strategyBuilder.add();
+
+    // Same pattern for "new" submetric
+    strategyBuilder.setSubmetric("new");
+    strategyBuilder.setStrategy(self._makeBankStrategy(
+      (x) => self.getBankChangeKg(x),
+      (x) => self.getBankChangeTco2e(x),
+    ));
+    strategyBuilder.setUnits("mt / yr");
+    strategyBuilder.setTransformation((value) => {
+      const normalizedUnits = self._normalizeTimeUnits(value.getUnits());
+      if (normalizedUnits !== "kg") {
+        throw "Unexpected bank units: " + value.getUnits();
+      }
+      const convertedValue = value.getValue() / 1000;
+      return new EngineNumber(
+        convertedValue, "mt / yr", makeNumberUnambiguousString(convertedValue),
+      );
+    });
+    strategyBuilder.add();
+
+    strategyBuilder.setSubmetric("new");
+    strategyBuilder.setStrategy(self._makeBankStrategy(
+      (x) => self.getBankChangeKg(x),
+      (x) => self.getBankChangeTco2e(x),
+    ));
+    strategyBuilder.setUnits("kg / yr");
+    strategyBuilder.setTransformation((value) => {
+      const normalizedUnits = self._normalizeTimeUnits(value.getUnits());
+      if (normalizedUnits !== "kg") {
+        throw "Unexpected bank units: " + value.getUnits();
+      }
+      return new EngineNumber(
+        value.getValue(), "kg / yr", makeNumberUnambiguousString(value.getValue()),
+      );
+    });
+    strategyBuilder.add();
+
+    strategyBuilder.setSubmetric("new");
+    strategyBuilder.setStrategy(self._makeBankStrategy(
+      (x) => self.getBankChangeKg(x),
+      (x) => self.getBankChangeTco2e(x),
+    ));
+    strategyBuilder.setUnits("tCO2e / yr");
+    strategyBuilder.setTransformation((value) => {
+      const normalizedUnits = self._normalizeTimeUnits(value.getUnits());
+      if (normalizedUnits !== "tCO2e") {
+        throw "Unexpected bank units: " + value.getUnits();
+      }
+      return new EngineNumber(
+        value.getValue(), "tCO2e / yr", makeNumberUnambiguousString(value.getValue()),
+      );
+    });
+    strategyBuilder.add();
   }
 
   /**
