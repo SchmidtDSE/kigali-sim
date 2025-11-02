@@ -27,9 +27,11 @@ const ESSENTIAL_FILES = [
     // JavaScript files (from importmap and script tags)
     "/js/ace-mode-qubectalk.js",
     "/js/code_editor.js",
+    "/js/editor_actions.js",
     "/js/engine_const.js",
     "/js/engine_number.js",
     "/js/engine_struct.js",
+    "/js/informational.js",
     "/js/main.js",
     "/js/report_data.js",
     "/js/results.js",
