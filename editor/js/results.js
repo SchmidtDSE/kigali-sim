@@ -37,6 +37,16 @@ const ALLOW_REDUNDANT_ALL = true;
 const ALLOW_SCORE_DISPLAY = false;
 
 /**
+ * Flag to enforce scenario selection when dimension is not simulations.
+ *
+ * This constraint prevents displaying all scenarios simultaneously with a
+ * non-scenario dimension, which would create difficult to interpret charts.
+ *
+ * @type {boolean}
+ */
+const ENFORCE_SCENARIO_CONSTRAINT = true;
+
+/**
  * Get a color from the predefined color palette.
  *
  * @param {number} i - Index into color array.
@@ -224,85 +234,189 @@ class ResultsPresenter {
   }
 
   /**
-   * Constrain the filter set to avoid more difficult to interpret charts.
+   * Constrain the filter set to ensure valid selections.
    *
-   * Ensure that the filter set does not have both all scenarios and a non-
-   * scenario dimension value.
+   * Validates that selected values exist in the current results and applies
+   * constraints to ensure chart interpretability. This method orchestrates
+   * multiple validation steps in sequence.
+   *
+   * @param {FilterSet} filterSet - The filter set to constrain.
+   * @returns {FilterSet} The constrained filter set with all validations applied.
+   * @private
    */
   _constrainFilterSet(filterSet) {
     const self = this;
 
     let constrainedFilterSet = filterSet;
 
-    // Validate that selected values exist in results and reset to null if not found
     if (self._results !== null) {
-      // Check if selected scenario exists
-      const selectedScenario = constrainedFilterSet.getScenario();
-      if (selectedScenario !== null) {
-        const availableScenarios = self._results.getScenarios(
-          constrainedFilterSet.getWithScenario(null));
-        if (!availableScenarios.has(selectedScenario)) {
-          constrainedFilterSet = constrainedFilterSet.getWithScenario(null);
-        }
-      }
+      constrainedFilterSet = self._checkScenarioExists(constrainedFilterSet);
+      constrainedFilterSet = self._checkApplicationExists(constrainedFilterSet);
+      constrainedFilterSet = self._checkSubstanceExists(constrainedFilterSet);
+    }
 
-      // Check if selected application exists
-      const selectedApplication = constrainedFilterSet.getApplication();
-      if (selectedApplication !== null) {
-        const availableApplicationsRaw = self._results.getApplications(
-          constrainedFilterSet.getWithApplication(null));
-        const availableApplications = getWithMetaEquipment(
-          getWithMetaApplications(availableApplicationsRaw),
-        );
-        if (!availableApplications.includes(selectedApplication)) {
-          constrainedFilterSet = constrainedFilterSet.getWithApplication(null);
-        }
-      }
+    constrainedFilterSet = self._validateCustomMetrics(constrainedFilterSet);
+    constrainedFilterSet = self._applyScenarioConstraint(constrainedFilterSet);
 
-      // Check if selected substance exists
-      const selectedSubstance = constrainedFilterSet.getSubstance();
-      if (selectedSubstance !== null) {
-        const availableSubstancesRaw = self._results.getSubstances(
-          constrainedFilterSet.getWithSubstance(null));
-        const availableSubstances = getWithMetaSubstanceEquipment(availableSubstancesRaw);
-        if (!availableSubstances.includes(selectedSubstance)) {
-          constrainedFilterSet = constrainedFilterSet.getWithSubstance(null);
-        }
+    return constrainedFilterSet;
+  }
+
+  /**
+   * Validate that the selected scenario exists in results.
+   *
+   * Checks if the currently selected scenario (if any) exists in the available
+   * scenarios. If the selected scenario is not found, returns a new FilterSet
+   * with the scenario reset to null.
+   *
+   * @param {FilterSet} filterSet - The filter set to validate.
+   * @returns {FilterSet} The validated filter set with scenario corrected if needed.
+   * @private
+   */
+  _checkScenarioExists(filterSet) {
+    const self = this;
+    const selectedScenario = filterSet.getScenario();
+
+    if (selectedScenario === null) {
+      return filterSet;
+    }
+
+    const availableScenarios = self._results.getScenarios(
+      filterSet.getWithScenario(null));
+
+    if (!availableScenarios.has(selectedScenario)) {
+      return filterSet.getWithScenario(null);
+    }
+
+    return filterSet;
+  }
+
+  /**
+   * Validate that the selected application exists in results.
+   *
+   * Checks if the currently selected application (if any) exists in the
+   * available applications (including meta-applications and equipment models).
+   * If the selected application is not found, returns a new FilterSet with the
+   * application reset to null.
+   *
+   * @param {FilterSet} filterSet - The filter set to validate.
+   * @returns {FilterSet} The validated filter set with application corrected if needed.
+   * @private
+   */
+  _checkApplicationExists(filterSet) {
+    const self = this;
+    const selectedApplication = filterSet.getApplication();
+
+    if (selectedApplication === null) {
+      return filterSet;
+    }
+
+    const availableApplicationsRaw = self._results.getApplications(
+      filterSet.getWithApplication(null));
+    const availableApplications = getWithMetaEquipment(
+      getWithMetaApplications(availableApplicationsRaw),
+    );
+
+    if (!availableApplications.includes(selectedApplication)) {
+      return filterSet.getWithApplication(null);
+    }
+
+    return filterSet;
+  }
+
+  /**
+   * Validate that the selected substance exists in results.
+   *
+   * Checks if the currently selected substance (if any) exists in the available
+   * substances (including meta-substances with equipment models). If the
+   * selected substance is not found, returns a new FilterSet with the substance
+   * reset to null.
+   *
+   * @param {FilterSet} filterSet - The filter set to validate.
+   * @returns {FilterSet} The validated filter set with substance corrected if needed.
+   * @private
+   */
+  _checkSubstanceExists(filterSet) {
+    const self = this;
+    const selectedSubstance = filterSet.getSubstance();
+
+    if (selectedSubstance === null) {
+      return filterSet;
+    }
+
+    const availableSubstancesRaw = self._results.getSubstances(
+      filterSet.getWithSubstance(null));
+    const availableSubstances = getWithMetaSubstanceEquipment(availableSubstancesRaw);
+
+    if (!availableSubstances.includes(selectedSubstance)) {
+      return filterSet.getWithSubstance(null);
+    }
+
+    return filterSet;
+  }
+
+  /**
+   * Validate custom metric definitions and provide defaults if needed.
+   *
+   * Checks if the current metric is a custom metric and validates that it has
+   * a proper definition. If the custom definition is missing or empty, switches
+   * to a default submetric for the metric family (emissions or sales).
+   *
+   * @param {FilterSet} filterSet - The filter set to validate.
+   * @returns {FilterSet} The validated filter set with custom metrics corrected if needed.
+   * @private
+   */
+  _validateCustomMetrics(filterSet) {
+    const self = this;
+
+    if (!filterSet.isCustomMetric()) {
+      return filterSet;
+    }
+
+    const metricFamily = filterSet.getMetric();
+    const customDef = filterSet.getCustomDefinition(metricFamily);
+
+    if (!customDef || customDef.length === 0) {
+      const defaultSubmetrics = {
+        "emissions": "recharge",
+        "sales": "manufacture",
+      };
+
+      const defaultSubmetric = defaultSubmetrics[metricFamily];
+      if (defaultSubmetric) {
+        const currentUnits = filterSet.getUnits();
+        const defaultMetric = `${metricFamily}:${defaultSubmetric}:${currentUnits}`;
+        return filterSet.getWithMetric(defaultMetric);
       }
     }
 
-    // Validate custom metrics have definitions
-    if (constrainedFilterSet.isCustomMetric()) {
-      const metricFamily = constrainedFilterSet.getMetric();
-      const customDef = constrainedFilterSet.getCustomDefinition(metricFamily);
+    return filterSet;
+  }
 
-      if (!customDef || customDef.length === 0) {
-        // Switch to a default submetric for the family
-        const defaultSubmetrics = {
-          "emissions": "recharge",
-          "sales": "manufacture",
-        };
+  /**
+   * Apply scenario constraint to prevent difficult to interpret charts.
+   *
+   * When all simulations are selected (scenario is null) and the dimension is
+   * not "simulations", this automatically selects the first available scenario
+   * to ensure chart clarity. This constraint is controlled by the
+   * ENFORCE_SCENARIO_CONSTRAINT constant.
+   *
+   * @param {FilterSet} filterSet - The filter set to constrain.
+   * @returns {FilterSet} The constrained filter set with scenario selected if needed.
+   * @private
+   */
+  _applyScenarioConstraint(filterSet) {
+    const self = this;
 
-        const defaultSubmetric = defaultSubmetrics[metricFamily];
-        if (defaultSubmetric) {
-          const currentUnits = constrainedFilterSet.getUnits();
-          const defaultMetric = `${metricFamily}:${defaultSubmetric}:${currentUnits}`;
-          constrainedFilterSet = constrainedFilterSet.getWithMetric(defaultMetric);
-        }
-      }
-    }
-
-    // Original constraint logic to avoid difficult to interpret charts
-    const isAllSimulations = constrainedFilterSet.getScenario() === null;
-    const isSimulationDimension = constrainedFilterSet.getDimension() === "simulations";
+    const isAllSimulations = filterSet.getScenario() === null;
+    const isSimulationDimension = filterSet.getDimension() === "simulations";
     const needsConstraints = isAllSimulations && !isSimulationDimension;
 
-    if (needsConstraints && self._results !== null) {
-      const firstScenario = self._results.getFirstScenario(constrainedFilterSet);
-      return constrainedFilterSet.getWithScenario(firstScenario);
-    } else {
-      return constrainedFilterSet;
+    if (ENFORCE_SCENARIO_CONSTRAINT && needsConstraints && self._results !== null) {
+      const firstScenario = self._results.getFirstScenario(filterSet);
+      return filterSet.getWithScenario(firstScenario);
     }
+
+    return filterSet;
   }
 
   /**
