@@ -102,7 +102,8 @@ html {
 }
 
 header {
-  margin-bottom: 40px;
+  margin-bottom: 20px;
+  padding: 20px;
 }
 
 header h1 {
@@ -110,9 +111,11 @@ header h1 {
 }
 
 header h1 svg {
-  height: 60px;
+  height: 80px;
   width: auto;
   display: block;
+  border: 1px solid #C0C0C0;
+  border-radius: 3px;
 }
 
 /* Base styling for input elements */
