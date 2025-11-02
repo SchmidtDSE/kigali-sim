@@ -448,7 +448,7 @@ select option[disabled] {
 .bold-buttons a.primary,
 .bold-buttons a.primary:link,
 .bold-buttons a.primary:visited {
-  background-color: #7070C0;
+  background-color: #6E6EBF;
   color: white;
   border-radius: 10px;
   padding: 7px;
@@ -480,8 +480,8 @@ select option[disabled] {
 .bold-buttons a.secondary,
 .bold-buttons a.secondary:link,
 .bold-buttons a.secondary:visited {
-  border: 1px solid #7070C0;
-  color: #7070C0;
+  border: 1px solid #6E6EBF;
+  color: #6E6EBF;
   border-radius: 10px;
   padding: 7px;
   text-decoration: none;
@@ -508,7 +508,7 @@ select option[disabled] {
 .buttons-panel a.primary,
 .buttons-panel a.primary:link,
 .buttons-panel a.primary:visited {
-  background-color: #7070C0;
+  background-color: #6E6EBF;
   color: white;
   border-radius: 10px;
   padding: 7px;
