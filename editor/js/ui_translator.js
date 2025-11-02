@@ -1473,6 +1473,16 @@ class UiTranslatorCompiler {
         const result = `(line ${line}, col ${column}): ${msg}`;
         errors.push(result);
       },
+      reportAmbiguity: (recognizer, dfa, startIndex, stopIndex, exact, ambigAlts, configs) => {
+        // Performance warning about ambiguous grammar, not an error
+      },
+      reportAttemptingFullContext: (recognizer, dfa, startIndex, stopIndex,
+        conflictingAlts, configs) => {
+        // Performance warning, not an error
+      },
+      reportContextSensitivity: (recognizer, dfa, startIndex, stopIndex, prediction, configs) => {
+        // Performance warning, not an error
+      },
     });
 
     const programUncompiled = parser.program();
