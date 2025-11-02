@@ -137,6 +137,8 @@ We apologize for the formality but there's just a few logistical pieces to keep 
 ## Use of Generative AI
 We welcome use of AI coding assistants under some guidelines. First, please disclose their use for any non-mechanical / non-trivial edits and, if you are uncertain, error on the side of caution by disclosing anyway. We suggest that you mention the model you used as a co-author in your commit. Prompts should be narrow and all generated work should be manually evaluated before submitting to the repository either in a main / deploy branch or in a PR branch. We view these resources as tools but you remain responsible for all actions taken. As with any edit, the maintainers reserve the right to politely decline contributions and, in particular, be sure that any AI-assisted edits follow the norms, conventions, and architecture of the existing code.
 
+For an example of a specific prompt, please see `tasks/example.md`.
+
 <br>
 <br>
 
