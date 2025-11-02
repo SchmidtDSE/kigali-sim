@@ -36,6 +36,7 @@ const ESSENTIAL_FILES = [
     "/js/report_data.js",
     "/js/results.js",
     "/js/ui_editor.js",
+    "/js/ui_editor_util.js",
     "/js/ui_translator.js",
     "/js/user_config.js",
     "/js/wasm.worker.js",

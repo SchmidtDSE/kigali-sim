@@ -4,7 +4,7 @@
  * @license BSD, see LICENSE.md.
  */
 
-import {validateNumericInputs} from "ui_editor";
+import {validateNumericInputs} from "ui_editor_util";
 import {
   Application,
   DefinitionalStanza,
