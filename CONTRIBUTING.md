@@ -129,7 +129,7 @@ If you would like to contribute code but don't have a specific issue to address,
  - Indicate that your pull request closes your issue by saying "closes #" followed by your issue number in the PR description.
  - Request a review when ready.
 
-We apologize for the formality but there's just a few logistical pieces to keep in mind. First, by contributing, you attest that you are legally permitted to provide code to the project and that you are both able and agree to release that code under the [project's BSD-3-Clause license](https://github.com/SchmidtDSE/kigali-sim/blob/main/LICENSE.md). Second, you agree to follow [CONDUCT.md](https://github.com/SchmidtDSE/kigali-sim/blob/main/CONDUCT.md).
+We apologize for the formality but there's just a few logistical pieces to keep in mind. First, by contributing, you attest that you are legally permitted to provide code to the project and that you are both able and agree to release that code under the [project's BSD-3-Clause license](https://github.com/SchmidtDSE/kigali-sim/blob/main/LICENSE.md). Second, you agree to follow [CODE_OF_CONDUCT.md](https://github.com/SchmidtDSE/kigali-sim/blob/main/CODE_OF_CONDUCT.md).
 
 <br>
 <br>
@@ -154,4 +154,4 @@ When adding new features or changing existing functionality:
 ## Parting Thoughts
 Open source is an act of love. Please be kind and respectful of all contributors. Your work on Kigali Sim helps support countries and other organizations charged with safeguarding our environment like through the Kigali Amendment. Thank you for being part of this community.
 
-For more information about community standards, please see [CONDUCT.md](https://github.com/SchmidtDSE/kigali-sim/blob/main/CONDUCT.md) for our Code of Conduct.
+For more information about community standards, please see [CODE_OF_CONDUCT.md](https://github.com/SchmidtDSE/kigali-sim/blob/main/CODE_OF_CONDUCT.md) for our Code of Conduct.

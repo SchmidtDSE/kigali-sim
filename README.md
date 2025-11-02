@@ -188,7 +188,7 @@ For those with a bug report or a suggestion to improve Kigali Sim, please [open 
 
 For those seeking help with using Kigali Sim, we recommend that you consider starting with the "Get Help" button within the application if you are comfortable sharing your work with us. This free and private support channel offered by the project maintainers (currently the University of California DSE). If you do not want to share your simluation with us or are instructed to file a public help request, please [open an issue](https://github.com/SchmidtDSE/kigali-sim/issues/new) and try your best to fill in the issue template. Please note that this issue will be public.
 
-For those interested in contributing to the Kigali Sim open source project as a developer, thank you and please review `CONTRIBUTORS.md`. Also, please see [our credits page](https://kigalisim.org/credits.html) and our [humans.txt](https://kigalisim.org/humans.txt) for more information about the community behind this open source project. If you are unsure which issue might be best for getting started, please look for the "good first issue" tag. For information about community standards and expectations, please see `CONDUCT.md`.
+For those interested in contributing to the Kigali Sim open source project as a developer, thank you and please review `CONTRIBUTING.md`. Also, please see [our credits page](https://kigalisim.org/credits.html) and our [humans.txt](https://kigalisim.org/humans.txt) for more information about the community behind this open source project. If you are unsure which issue might be best for getting started, please look for the "good first issue" tag. For information about community standards and expectations, please see `CODE_OF_CONDUCT.md`.
 
 <br>
 
