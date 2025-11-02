@@ -14,7 +14,7 @@ This reusable toolkit models substances and equipment related to Montreal Protoc
 
 **Where it does it**: This portable execution can happen through a web-based bespoke IDE or outside the browser in the command line or within larger workflows. It is available running in WebAssembly (WASM) or on the Java Virtual Machine (JVM). It can also run with parallelization and conduct probabilistic simulation via Monte Carlo.
 
-**Who it serves**: This scientific package supports researchers working on stock and flow modeling of these important substances as well as policy makers. With ongoing [Article 5](https://ozone.unep.org/treaties/montreal-protocol/articles/article-5-special-situation-developing-countries) nation usage, Kigali Sim was co-created in consultation with over a dozen countries and supporting organizations. See [our credits page](https://kigalisim.org/credits.html). We recognize that our community includes those of varied backgrounds in programming and [AI assistance is available](https://github.com/SchmidtDSE/kigali-sim?tab=readme-ov-file#llm-assistants).
+**Who it serves**: This scientific package supports researchers working on stock and flow modeling of these important substances as well as policy makers. With ongoing [Article 5](https://ozone.unep.org/treaties/montreal-protocol/articles/article-5-special-situation-developing-countries) nation usage, Kigali Sim was co-created in consultation with over a dozen countries and supporting organizations. See [our credits page](https://kigalisim.org/credits.html). We recognize that our community includes those of varied backgrounds in programming and [optional AI assistance is available](https://github.com/SchmidtDSE/kigali-sim?tab=readme-ov-file#llm-assistants).
 
 <br>
 
