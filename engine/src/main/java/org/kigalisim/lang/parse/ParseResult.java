@@ -12,7 +12,10 @@ import java.util.Optional;
 import org.kigalisim.lang.QubecTalkParser;
 
 /**
- * Structure representing the result of parsing a QubecTalk source code file.
+ * Result of parsing a QubecTalk source code file.
+ *
+ * <p>Structure representing the result of parsing a QubecTalk source code file, which may contain
+ * either a successfully parsed program or a list of errors encountered during parsing.</p>
  */
 public class ParseResult {
 

@@ -6,9 +6,15 @@ Open source engine for simulating substances, applications, and policies relevan
 <br>
 
 ## Purpose
-This open source toolkit provides a simulation engine and related software for modeling substances, applications, and policies related to the Montreal Protocol with a focus on hydrofluorocarbons and their alternatives within the Kigali Amendment. It supports a foundational business as usual simulation as well as "stacking" policy simulations on top of that baseline. It simulates emissions, energy, substance consumption, equipment populations, and trade longitudinally in service of research and policy activities like Kigali Amendment Implementation Plans (KIPs).
+This reusable toolkit models substances and equipment related to Montreal Protocol and the Kigali Amendment including those with a high global warming potential. 
 
-This platform provides practical flexibility with access to both UI and code-based editing within the QubecTalk domain specific language (DSL). It can run with parallelization and conduct probabilistic simulation via Monte Carlo. In use by multiple [Article 5](https://ozone.unep.org/treaties/montreal-protocol/articles/article-5-special-situation-developing-countries) nations, Kigali Sim was co-created in consultation with over a dozen countries and supporting organizations. See [our credits page](https://kigalisim.org/credits.html). For more information about the design of Kigali Sim including why we made QubecTalk, see [our paper draft](https://github.com/SchmidtDSE/kigali-sim/blob/main/paper/paper.md).
+**What it does**: This open source toolkit provides a simulation engine and related software for modeling substances, applications, and policies related to the Montreal Protocol. It focuses on hydrofluorocarbons and their alternatives within the Kigali Amendment. It supports a foundational business as usual simulation as well as "stacking" policy simulations on top of that baseline. It simulates emissions, energy, substance consumption, equipment populations, and trade longitudinally in service of research and policy activities like Kigali Amendment Implementation Plans (KIPs).
+
+**How it does it**: This platform provides practical flexibility in stock and flow modeling. It supports user-defined structures in terms of applications like commercial refrigeration and substances like HFC-134a. It supports both UI-based and code-based editing within the QubecTalk domain specific language (DSL) where these two options interoperate between each other. For more information about the design of Kigali Sim including why we made QubecTalk, see [our paper draft](https://github.com/SchmidtDSE/kigali-sim/blob/main/paper/paper.md).
+
+**Where it does it**: This portable execution can happen through a web-based bespoke IDE or outside the browser in the command line or within larger workflows. It is available running in WebAssembly (WASM) or on the Java Virtual Machine (JVM). It can also run with parallelization and conduct probabilistic simulation via Monte Carlo.
+
+**Who it serves**: This scientific package supports researchers working on stock and flow modeling of these important substances as well as policy makers. With ongoing [Article 5](https://ozone.unep.org/treaties/montreal-protocol/articles/article-5-special-situation-developing-countries) nation usage, Kigali Sim was co-created in consultation with over a dozen countries and supporting organizations. See [our credits page](https://kigalisim.org/credits.html). We recognize that our community includes those of varied backgrounds in programming and [AI assistance is available](https://github.com/SchmidtDSE/kigali-sim?tab=readme-ov-file#llm-assistants).
 
 <br>
 
@@ -17,7 +23,7 @@ Make a simulation in 3 minutes! View our [quickstart video](https://vimeo.com/11
 
  - Click "Add Application" to create a "Commerical Refrigeration" application
  - Click "Add Consumption" to create HFC-134a (click lookup for GHG equivalency, leave energy consumption at default, check domestic)
- - In your HFC-134a record, add a set record for 1 mt sales in year 1.
+ - In your HFC-134a record, add a set record for 1 metric tonne (mt) sales in year 1.
  - Click "Add Simulation" and make "Business as Usual" from year 1 to 10.
  - Click the "Bank" radio button for total million units of equipment and see population increase over time.
 
@@ -72,12 +78,14 @@ Here, you may replace `script.qta` with the path to your QubecTalk script and `o
 Note that this jar is also posted to GitHub Maven. 
 
 ### Docker
-For those who prefer Docker, see `Dockerfile` which installs Java ([Teumurin](https://adoptium.net/temurin/releases)) and can be used to run simulations. For example, the following builds the image and runs `script.qta` with output to `output.csv` through the mounted `working` directory:
+For those who prefer Docker, see `Dockerfile` which installs Java ([Temurin](https://adoptium.net/temurin/releases)) and can be used to run simulations. For example, the following builds the image and runs `script.qta` with output to `output.csv` through the mounted `working` directory:
 
 ```
 docker build -t kigalisim .
 docker run -v $(pwd):/working kigalisim run -o output.csv script.qta
 ```
+
+Note: Windows users should replace `$(pwd)` with `%cd%` for Command Prompt or `${PWD}` for PowerShell.
 
 We also provide a Dev Container with additional tools for those looking to modify Kigali Sim or run a local version of the web-based editor. see `DEVELOPING.md`.
 
@@ -87,7 +95,7 @@ We also provide a Dev Container with additional tools for those looking to modif
 Kigali Sim authors can choose to use a UI-based editor which does not require writing code or the QubecTalk domain-specific programming language.
 
 ### UI-based authoring
-For users preferring a no-code point-and-click approach to authoring simulations, open the [UI-based editor](https://kigalisim.org/) and then review our [no-code hello world example](https://kigalisim.org/guide/tutorial_02.html). Alternatively, review an [example simulation](https://kigalisim.org/guide/tutorial_02.qta) made using the UI-editor in order to explore the tools' capabilities.
+For users preferring a no-code point-and-click approach to authoring simulations, open the [UI-based editor](https://kigalisim.org/) and then review our [no-code hello world example](https://kigalisim.org/guide/tutorial_02.html). Alternatively, review an [example simulation](https://kigalisim.org/guide/tutorial_02.qta) made using the UI-based editor in order to explore the tools' capabilities.
 
 ### Code-based authoring
 For those preferring to write code, review the [setup instructions](https://github.com/SchmidtDSE/kigali-sim?tab=readme-ov-file#setup) and then consider this example of a permitting system to replace a high global warming potential substance with one exhibiting a lower GWP. This demonstrates all of the basic building blocks of Kigali Sim model (applications, substances, policies, and simulations):
@@ -159,7 +167,7 @@ This can be run using the editor tab at https://kigalisim.org/ or locally via `j
 Developers can continue their work by going to the [User Guide](https://kigalisim.org/guide/) which had information on other features. See also the [formal QubecTalk language specification](https://kigalisim.org/guide/qubectalk.pdf).
 
 ### LLM assistants
-If desired, AI coding assistants or chatbots can help in using Kigali Sim. We implement the [llms.txt specification](https://llmstxt.org). Direct your AI to read `https://kigalisim.org/llms-full.txt?v=20250928` and / or `https://kigalisim.org/llms.txt?v=20250928`.
+If desired, AI coding assistants or chatbots can help in using Kigali Sim. We implement the [llms.txt specification](https://llmstxt.org), a standard that allows users to bring their own LLM assistants to the tool. Direct your AI to read `https://kigalisim.org/llms-full.txt?v=20250928` and / or `https://kigalisim.org/llms.txt?v=20250928`.
 
 <br>
 
@@ -176,7 +184,7 @@ These directories and their subdirectories also often have their own `README.md`
 <br>
 
 ## Help and Contributions
-For those with a bug report or a suggestion to improve Kigali Sim, please [open an issue](https://github.com/SchmidtDSE/kigali-sim/issues/new). It's OK if you do not have all of the details sorted out and we are happy to help you refine your report. That said, some basic information is requested and please complete the issue template to the best of your ability. We will help you take it form there!
+For those with a bug report or a suggestion to improve Kigali Sim, please [open an issue](https://github.com/SchmidtDSE/kigali-sim/issues/new). It's OK if you do not have all of the details sorted out and we are happy to help you refine your report. That said, some basic information is requested and please complete the issue template to the best of your ability. We will help you take it from there!
 
 For those seeking help with using Kigali Sim, we recommend that you consider starting with the "Get Help" button within the application if you are comfortable sharing your work with us. This free and private support channel offered by the project maintainers (currently the University of California DSE). If you do not want to share your simluation with us or are instructed to file a public help request, please [open an issue](https://github.com/SchmidtDSE/kigali-sim/issues/new) and try your best to fill in the issue template. Please note that this issue will be public.
 
@@ -185,7 +193,7 @@ For those interested in contributing to the Kigali Sim open source project as a 
 <br>
 
 ## Development
-If you want to change the code of Kigali Sim itself, we have some basic getting started stesps. However, for additional information about development, see [DEVELOPING.md](https://github.com/SchmidtDSE/kigali-sim/blob/main/DEVELOPING.md).
+If you want to change the code of Kigali Sim itself, we have some basic getting started steps. However, for additional information about development, see [DEVELOPING.md](https://github.com/SchmidtDSE/kigali-sim/blob/main/DEVELOPING.md).
 
 ### Using a Dev Container
 For those interested in a dev container, please see `.devcontainer`. **IntelliJ** should automatically detect the dev container (see [JetBrains documentation](https://www.jetbrains.com/help/idea/connect-to-devcontainer.html)). **VS Code** users can use an extension:
@@ -237,7 +245,7 @@ cd engine
 
 5. Build the Jar (Gradle will be setup automatically)
 
-```base
+```bash
 ./gradlew build
 ```
 
@@ -322,6 +330,6 @@ We also use data from [UNEP Ozone Secretariat](https://ozone.unep.org/lists-subs
 <br>
 
 ## License
-This project’s code is available under the [BSD license](https://github.com/SchmidtDSE/kigali-sim/blob/main/LICENSE.md). All documentation is available under the Creative Commons [CC-BY 4.0 International License](https://creativecommons.org/licenses/by/4.0/deed.en).
+This project's code is available under the [BSD license](https://github.com/SchmidtDSE/kigali-sim/blob/main/LICENSE.md). All documentation is available under the Creative Commons [CC-BY 4.0 International License](https://creativecommons.org/licenses/by/4.0/deed.en).
 
 This privacy-respecting simulation platform offers essential tools to assist policy and research efforts. Informed by various perspectives from across the Montreal Protocol ecosystem of actors, we believe that this project is owned by its community. It is available to the public as an optional open source resource.

@@ -14,13 +14,24 @@ import org.kigalisim.lang.program.ParsedProgram;
 /**
  * Result of interpreting QubecTalk code.
  *
- * <p>Contains either a successfully parsed program or an error message. Exactly one of the two
- * will be present.</p>
+ * <p>Contains either a successfully parsed program, an error message, or neither (for validation
+ * success without returning a program). At most one of program or error message will be
+ * present.</p>
  */
 public class CommandInterpretResult {
 
   private final Optional<ParsedProgram> program;
   private final Optional<String> errorMessage;
+
+  /**
+   * Creates a successful interpretation result without a program.
+   *
+   * <p>Used when validation succeeds but the program is not needed.</p>
+   */
+  public CommandInterpretResult() {
+    this.program = Optional.empty();
+    this.errorMessage = Optional.empty();
+  }
 
   /**
    * Creates a successful interpretation result.

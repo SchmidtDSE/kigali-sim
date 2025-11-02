@@ -39,15 +39,16 @@ public class NumberParseUtil {
    *
    * <p>This method analyzes the input string to determine whether commas and periods
    * are being used as thousands separators or decimal separators. It supports both
-   * European format (123.456,789) and US format (123,456.789).</p>
+   * European format (123.456,789) and US format (123,456.789).
    *
-   * <p>Logic:</p>
+   * <div>Logic:
    * <ul>
    *   <li>Multiple occurrences of same character = thousands separator</li>
    *   <li>Single occurrence with ≠3 digits after = decimal separator</li>
    *   <li>Mixed separators: precedence rules apply (comma before period = comma thousands)</li>
    *   <li>Single occurrence with exactly 3 digits after = ambiguous (returns error)</li>
    * </ul>
+   * </div>
    *
    * @param numberString The number string to parse
    * @return FlexibleNumberParseResult containing either parsed number or error message

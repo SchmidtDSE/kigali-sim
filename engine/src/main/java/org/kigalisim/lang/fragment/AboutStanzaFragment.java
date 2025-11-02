@@ -15,7 +15,6 @@ public class AboutStanzaFragment extends Fragment {
    * Create a new fragment for an about stanza.
    */
   public AboutStanzaFragment() {
-    // No arguments needed for constructor
   }
 
   @Override

@@ -113,10 +113,10 @@ public final class SimulationStateUpdateBuilder {
     if (streamName == null) {
       return false;
     }
-    return "sales".equals(streamName)
-        || "domestic".equals(streamName)
-        || "import".equals(streamName)
-        || "export".equals(streamName);
+    return switch (streamName) {
+      case "sales", "domestic", "import", "export" -> true;
+      default -> false;
+    };
   }
 
   /**

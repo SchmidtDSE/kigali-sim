@@ -49,7 +49,9 @@ public class ParsedScenario {
   }
 
   /**
-   * An ordered list of policies which does not include the "default" policy offering the base.
+   * Get the ordered list of policies for this scenario.
+   *
+   * <p>Does not include the "default" policy which is always applied first.</p>
    *
    * @return Iterable over the names of the policies which should be applied in this scenario in
    *     order.
@@ -84,7 +86,5 @@ public class ParsedScenario {
   public int getTrials() {
     return trials;
   }
-
-  // TODO: getTrials is not used yet.
 
 }

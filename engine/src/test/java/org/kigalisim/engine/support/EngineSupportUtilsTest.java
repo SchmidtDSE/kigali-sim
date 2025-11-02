@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.kigalisim.engine.number.EngineNumber;
 import org.kigalisim.engine.state.SimulationState;
@@ -19,7 +20,7 @@ class EngineSupportUtilsTest {
   @Test
   void testIsInRangeWithNullYearMatcher() {
     // Act & Assert
-    assertTrue(EngineSupportUtils.isInRange(null, 2023));
+    assertTrue(EngineSupportUtils.getIsInRange((YearMatcher) null, 2023));
   }
 
   @Test
@@ -29,7 +30,7 @@ class EngineSupportUtilsTest {
     when(mockYearMatcher.getInRange(2023)).thenReturn(true);
 
     // Act & Assert
-    assertTrue(EngineSupportUtils.isInRange(mockYearMatcher, 2023));
+    assertTrue(EngineSupportUtils.getIsInRange(mockYearMatcher, 2023));
   }
 
   @Test
@@ -39,7 +40,33 @@ class EngineSupportUtilsTest {
     when(mockYearMatcher.getInRange(2023)).thenReturn(false);
 
     // Act & Assert
-    assertFalse(EngineSupportUtils.isInRange(mockYearMatcher, 2023));
+    assertFalse(EngineSupportUtils.getIsInRange(mockYearMatcher, 2023));
+  }
+
+  @Test
+  void testIsInRangeWithEmptyOptional() {
+    // Act & Assert
+    assertTrue(EngineSupportUtils.getIsInRange(Optional.empty(), 2023));
+  }
+
+  @Test
+  void testIsInRangeWithOptionalValidYearMatcher() {
+    // Arrange
+    YearMatcher mockYearMatcher = mock(YearMatcher.class);
+    when(mockYearMatcher.getInRange(2023)).thenReturn(true);
+
+    // Act & Assert
+    assertTrue(EngineSupportUtils.getIsInRange(Optional.of(mockYearMatcher), 2023));
+  }
+
+  @Test
+  void testIsInRangeWithOptionalInvalidYearMatcher() {
+    // Arrange
+    YearMatcher mockYearMatcher = mock(YearMatcher.class);
+    when(mockYearMatcher.getInRange(2023)).thenReturn(false);
+
+    // Act & Assert
+    assertFalse(EngineSupportUtils.getIsInRange(Optional.of(mockYearMatcher), 2023));
   }
 
   @Test

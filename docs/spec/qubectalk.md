@@ -127,6 +127,8 @@ enable export
 
 By convention, enable statements should be placed at the top of substance definitions, though this is not enforced by the language. Note that streams can also be implicitly enabled by setting non-zero values for them, but explicit `enable` statements are recommended for clarity and are required for certain operations like `recharge` that need to know the sales distribution.
 
+The `enable` command can be applied to other stream names, but it will have no effect. Only `domestic`, `import`, and `export` streams can be enabled.
+
 **Domestic**: Starting with an example of specifying substances both produced and consumed domestically. There are typically three important parameters to specify:
 
  - Manufacturing (volume)

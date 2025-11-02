@@ -47,9 +47,9 @@ public class VariableManager {
    *     exist at that substance level
    */
   public VariableManager(int contextLevel, Map<String, EngineNumber> globalContext,
-                        Map<String, EngineNumber> stanzaContext,
-                        Map<String, EngineNumber> applicationContext,
-                        Map<String, EngineNumber> substanceContext) {
+      Map<String, EngineNumber> stanzaContext,
+      Map<String, EngineNumber> applicationContext,
+      Map<String, EngineNumber> substanceContext) {
     this.globalContext = ensureContext(globalContext);
     this.stanzaContext = ensureContext(stanzaContext);
     this.applicationContext = ensureContext(applicationContext);
@@ -170,18 +170,13 @@ public class VariableManager {
    * @return Map from name of variable to value at the given context level
    */
   private Map<String, EngineNumber> getContextForLevel(int level) {
-    switch (level) {
-      case GLOBAL_CONTEXT:
-        return globalContext;
-      case STANZA_CONTEXT:
-        return stanzaContext;
-      case APPLICATION_CONTEXT:
-        return applicationContext;
-      case SUBSTANCE_CONTEXT:
-        return substanceContext;
-      default:
-        throw new IllegalArgumentException("Invalid context level: " + level);
-    }
+    return switch (level) {
+      case GLOBAL_CONTEXT -> globalContext;
+      case STANZA_CONTEXT -> stanzaContext;
+      case APPLICATION_CONTEXT -> applicationContext;
+      case SUBSTANCE_CONTEXT -> substanceContext;
+      default -> throw new IllegalArgumentException("Invalid context level: " + level);
+    };
   }
 
   /**

@@ -9,6 +9,7 @@
 
 package org.kigalisim.engine.recalc;
 
+import java.math.BigDecimal;
 import java.util.Optional;
 import org.kigalisim.engine.Engine;
 import org.kigalisim.engine.number.EngineNumber;
@@ -36,39 +37,41 @@ public class EolEmissionsRecalcStrategy implements RecalcStrategy {
     this.scope = scope;
   }
 
+  /**
+   * Recalculate end-of-life emissions based on the retirement delta.
+   *
+   * <p>This method calculates the amount of equipment retired during the current year using
+   * the delta between the cumulative retired stream and the priorRetired stream (which holds
+   * the retired count from the start of this year). The difference gives us the amount retired
+   * during this year's operations. This amount is then converted to GHG emissions and updated
+   * in the simulation state.</p>
+   *
+   * @param target The engine instance being operated on
+   * @param kit The recalculation kit providing access to simulation state and utilities
+   */
   @Override
   public void execute(Engine target, RecalcKit kit) {
-    // Setup
     OverridingConverterStateGetter stateGetter =
         new OverridingConverterStateGetter(kit.getStateGetter());
     UnitConverter unitConverter = new UnitConverter(stateGetter);
     UseKey scopeEffective = scope.orElse(target.getScope());
 
-    // Check allowed
     if (scopeEffective.getApplication() == null || scopeEffective.getSubstance() == null) {
       ExceptionsGenerator.raiseNoAppOrSubstance("recalculating EOL emissions change", "");
     }
 
-    // Calculate the amount retired this year by using the retired stream delta
-    // The retired stream is cumulative across all years
-    // The priorRetired stream holds the retired count from the start of this year
-    // So the delta gives us the amount retired during this year's operations
     SimulationState simulationState = kit.getStreamKeeper();
 
-    // Get current retired amount (after RetireRecalcStrategy added this year's retirement)
     EngineNumber currentRetiredRaw = simulationState.getStream(scopeEffective, "retired");
     EngineNumber currentRetired = unitConverter.convert(currentRetiredRaw, "units");
 
-    // Get priorRetired (the retired count at the start of this year)
     EngineNumber priorRetiredRaw = simulationState.getStream(scopeEffective, "priorRetired");
     EngineNumber priorRetired = unitConverter.convert(priorRetiredRaw, "units");
 
-    // Calculate this year's retirement amount
-    java.math.BigDecimal amountRetiredThisYear =
-        currentRetired.getValue().subtract(priorRetired.getValue());
+    BigDecimal amountRetiredThisYear = currentRetired.getValue()
+        .subtract(priorRetired.getValue());
     EngineNumber amount = new EngineNumber(amountRetiredThisYear, "units");
 
-    // Update GHG accounting
     EngineNumber eolGhg = unitConverter.convert(amount, "tCO2e");
     SimulationStateUpdate eolEmissionsStream = new SimulationStateUpdateBuilder()
         .setUseKey(scopeEffective)

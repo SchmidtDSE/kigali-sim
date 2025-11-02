@@ -18,7 +18,6 @@ import org.kigalisim.engine.number.UnitConverter;
 import org.kigalisim.engine.recalc.RecalcKit;
 import org.kigalisim.engine.recalc.RecalcOperation;
 import org.kigalisim.engine.recalc.RecalcOperationBuilder;
-import org.kigalisim.engine.recalc.SalesStreamDistribution;
 import org.kigalisim.engine.recalc.StreamUpdate;
 import org.kigalisim.engine.state.SimulationState;
 import org.kigalisim.engine.state.SimulationStateUpdate;
@@ -61,7 +60,7 @@ public class StreamUpdateExecutor {
     final boolean propagateChanges = update.getPropagateChanges();
     final boolean subtractRecycling = update.getSubtractRecycling();
 
-    boolean isInRange = EngineSupportUtils.isInRange(
+    boolean isInRange = EngineSupportUtils.getIsInRange(
         yearMatcher.orElse(null),
         engine.getStreamKeeper().getCurrentYear()
     );
@@ -217,9 +216,7 @@ public class StreamUpdateExecutor {
    * @return ImplicitRechargeUpdate containing adjusted value and state update
    */
   private ImplicitRechargeUpdate updateAndApplyImplicitRecharge(UseKey useKey,
-      String streamName,
-      EngineNumber value,
-      boolean isSalesSubstream) {
+      String streamName, EngineNumber value, boolean isSalesSubstream) {
 
     // Calculate recharge volume for existing equipment
     SimulationState simulationState = engine.getStreamKeeper();
@@ -243,7 +240,12 @@ public class StreamUpdateExecutor {
     // Calculate portion of recharge for this stream
     BigDecimal rechargeToAdd;
     if (isSalesSubstream) {
-      rechargeToAdd = getDistributedRecharge(streamName, rechargeVolume, useKey);
+      rechargeToAdd = EngineSupportUtils.getDistributedRecharge(
+          streamName,
+          rechargeVolume,
+          useKey,
+          engine.getStreamKeeper()
+      );
     } else {
       rechargeToAdd = rechargeVolume.getValue();
     }
@@ -285,55 +287,9 @@ public class StreamUpdateExecutor {
   }
 
   /**
-   * Gets the distributed recharge portion for a sales substream.
-   *
-   * <p>Distributes the total recharge volume between domestic and import based on
-   * their current distribution percentages.</p>
-   *
-   * @param streamName The stream name (domestic or import)
-   * @param totalRecharge The total recharge volume to distribute
-   * @param useKey The use key containing application and substance
-   * @return The portion of recharge volume for this substream
-   */
-  private BigDecimal getDistributedSalesRecharge(String streamName, EngineNumber totalRecharge,
-      UseKey useKey) {
-    SimulationState simulationState = engine.getStreamKeeper();
-    SalesStreamDistribution distribution = simulationState.getDistribution(useKey);
-    BigDecimal percentage = switch (streamName) {
-      case "domestic" -> distribution.getPercentDomestic();
-      case "import" -> distribution.getPercentImport();
-      default -> throw new IllegalArgumentException("Unknown sales substream: " + streamName);
-    };
-    return totalRecharge.getValue().multiply(percentage);
-  }
-
-  /**
-   * Gets the distributed portion of recharge for a specific sales stream.
-   *
-   * <p>When setting domestic or import streams, the total recharge volume needs to be
-   * distributed between the streams based on their current distribution percentages.
-   * For the sales stream itself, returns the full recharge volume.</p>
-   *
-   * @param streamName The stream name (domestic, import, or sales)
-   * @param totalRecharge The total recharge volume to distribute
-   * @param useKey The use key containing application and substance
-   * @return The portion of recharge volume for this stream
-   */
-  private BigDecimal getDistributedRecharge(String streamName, EngineNumber totalRecharge,
-      UseKey useKey) {
-    if ("sales".equals(streamName)) {
-      return totalRecharge.getValue();
-    } else if (EngineSupportUtils.isSalesSubstream(streamName)) {
-      return getDistributedSalesRecharge(streamName, totalRecharge, useKey);
-    } else {
-      throw new IllegalArgumentException("Stream is not a sales stream: " + streamName);
-    }
-  }
-
-  /**
    * Propagates stream changes to dependent calculations based on stream type.
    *
-   * <p>Different stream types require different recalculation operations:
+   * <p>Different stream types require different recalculation operations:</p>
    * <ul>
    *   <li>Sales streams (domestic, import, sales): recalc population change, propagate to consumption</li>
    *   <li>Consumption stream: recalc sales, propagate to population change</li>

@@ -1,3 +1,9 @@
+/**
+ * Calculation which retires a percentage of equipment each year.
+ *
+ * @license BSD-3-Clause
+ */
+
 package org.kigalisim.lang.operation;
 
 import java.util.Optional;
@@ -43,6 +49,18 @@ public class RetireOperation implements Operation {
     duringMaybe = Optional.of(during);
   }
 
+  /**
+   * Execute the retire operation on the given push-down machine.
+   *
+   * <div>
+   * Evaluates the amount operation to get the retirement rate, builds a year matcher from the
+   * optional during clause, and checks if this operation should execute in the current year.
+   * If the year is in range, validates that retire commands are not mixed with and without
+   * replacement in the same step, then applies the retirement to the engine.
+   * </div>
+   *
+   * @param machine The push-down machine context for evaluating operations.
+   */
   @Override
   public void execute(PushDownMachine machine) {
     amountOperation.execute(machine);
@@ -56,11 +74,30 @@ public class RetireOperation implements Operation {
     Engine engine = machine.getEngine();
 
     // Check if this operation should execute in the current year
-    if (!EngineSupportUtils.isInRange(yearMatcher, engine.getYear())) {
+    if (!EngineSupportUtils.getIsInRange(yearMatcher, engine.getYear())) {
       return;
     }
 
-    // Check for mixed with/without replacement
+    handleMixedReplacement(engine);
+
+    engine.retire(result, yearMatcher);
+  }
+
+  /**
+   * Ensure retire commands are not mixed with and without replacement in the same step.
+   *
+   * <div>
+   * Checks if a retire command has already been calculated in this step for the current scope.
+   * If so, verifies that the replacement status is consistent. If a retire command was already
+   * calculated with replacement, but this one does not have replacement (or vice versa), an
+   * exception is thrown.
+   * </div>
+   *
+   * @param engine The engine containing the current simulation state.
+   * @throws RuntimeException if retire commands with mixed replacement settings are detected
+   *     in the same step for the same application/substance.
+   */
+  private void handleMixedReplacement(Engine engine) {
     SimulationState simulationState = engine.getStreamKeeper();
     UseKey scope = engine.getScope();
     boolean retireCalculated = simulationState.getRetireCalculatedThisStep(scope);
@@ -73,7 +110,5 @@ public class RetireOperation implements Operation {
       }
     }
     simulationState.setHasReplacementThisStep(scope, false);
-
-    engine.retire(result, yearMatcher);
   }
 }

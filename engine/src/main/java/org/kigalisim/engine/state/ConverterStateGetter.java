@@ -132,8 +132,7 @@ public class ConverterStateGetter implements StateGetter {
 
     String populationUnits = population.getUnits();
     String consumptionUnits = consumption.getUnits();
-    boolean populationUnitsExpected = "unit".equals(populationUnits)
-        || "units".equals(populationUnits);
+    boolean populationUnitsExpected = getIsUnits(populationUnits);
     boolean consumptionUnitsExpected = "tCO2e".equals(consumptionUnits);
     boolean unitsExpected = populationUnitsExpected && consumptionUnitsExpected;
 
@@ -143,6 +142,16 @@ public class ConverterStateGetter implements StateGetter {
 
     String ratioUnits = consumptionUnits + " / " + populationUnits;
     return new EngineNumber(ratioValue, ratioUnits);
+  }
+
+  /**
+   * Check if the given population units string is "unit" or "units".
+   *
+   * @param populationUnits The population units string to check
+   * @return True if the units are "unit" or "units", false otherwise
+   */
+  private boolean getIsUnits(String populationUnits) {
+    return "unit".equals(populationUnits) || "units".equals(populationUnits);
   }
 
   /**

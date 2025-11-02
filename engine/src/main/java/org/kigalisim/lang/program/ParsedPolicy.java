@@ -29,7 +29,11 @@ public class ParsedPolicy {
   public ParsedPolicy(String name, Iterable<ParsedApplication> applications) {
     this.name = name;
     this.applications = DuplicateValidator.validateUniqueNames(
-        applications, ParsedApplication::getName, "application", "policy '" + name + "'");
+        applications,
+        ParsedApplication::getName,
+        "application",
+        "policy '" + name + "'"
+    );
   }
 
   /**

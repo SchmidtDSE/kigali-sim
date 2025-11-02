@@ -1,12 +1,18 @@
+/**
+ * Description of a fragment containing a parsed during expression.
+ *
+ * @license BSD-3-Clause
+ */
+
 package org.kigalisim.lang.fragment;
 
 import org.kigalisim.lang.time.ParsedDuring;
 
 
 /**
- * A fragment containing only a parsed during expression.
+ * A fragment containing a parsed during expression.
  *
- * <p>A fragment containing only a parsed during expression which can be used to manipulate when
+ * <p>A fragment containing a parsed during expression which can be used to manipulate when
  * operations are applied.</p>
  */
 public class DuringFragment extends Fragment {
