@@ -72,7 +72,7 @@ The front operates through a series of presenters (as in model-view-presenter). 
 
 ## Development Standards
 
-Please see [CONTRIBUTORS.md](https://github.com/SchmidtDSE/kigali-sim/blob/main/CONTRIBUTORS.md) for more details but, when working on the front-end, please try to:
+Please see [CONTRIBUTING.md](https://github.com/SchmidtDSE/kigali-sim/blob/main/CONTRIBUTING.md) for more details but, when working on the front-end, please try to:
 
 - Follow [Google JavaScript / TypeScript Style Guide](https://google.github.io/styleguide/tsguide.html).
 - Use [JSDoc](https://jsdoc.app/) for all public function documentation.
