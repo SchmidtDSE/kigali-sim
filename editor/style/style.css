@@ -105,6 +105,16 @@ header {
   margin-bottom: 40px;
 }
 
+header h1 {
+  margin: 0 0 20px 0;
+}
+
+header h1 svg {
+  height: 60px;
+  width: auto;
+  display: block;
+}
+
 /* Base styling for input elements */
 input[type="text"],
 input[type="number"],
@@ -428,25 +438,6 @@ select option[disabled] {
   text-align: center;
 }
 
-.beta-warning {
-  background-color: #595959;
-  color: white;
-  padding: 7px;
-  border-radius: 2px;
-  border: 1px solid black;
-}
-
-.beta-warning a,
-.beta-warning a:link,
-.beta-warning a:visited {
-  color: white;
-}
-
-.beta-warning a:hover,
-.beta-warning a:active {
-  color: white;
-}
-
 .bold-buttons {
   padding-top: 10px;
   padding-bottom: 10px;
@@ -616,13 +607,49 @@ select option[disabled] {
 
 /* Ensure buttons work well on smaller screens */
 @media (max-width: 30em) {
+  header {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  header h1 {
+    margin-bottom: 15px;
+  }
+
+  header .file-buttons {
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: flex-start;
+  }
+
+  header .file-buttons a {
+    flex: 1 1 auto;
+    min-width: 100px;
+    text-align: center;
+  }
+
   .designer-buttons-layout {
     flex-direction: column;
     gap: 0.5rem;
   }
-  
+
   .designer-buttons-layout .secondary {
     width: 100%;
+    text-align: center;
+  }
+
+  /* Footer buttons - one per line on narrow screens */
+  footer .file-buttons.buttons-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  footer .file-buttons.buttons-panel a {
+    line-height: 2;
     text-align: center;
   }
 }
@@ -840,6 +867,26 @@ select option[disabled] {
 }
 
 @media (min-width: 1000px) {
+  header {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    grid-template-areas:
+      "logo buttons";
+    align-items: center;
+    gap: 20px;
+  }
+
+  header h1 {
+    grid-area: logo;
+    margin: 0;
+  }
+
+  header .file-buttons {
+    grid-area: buttons;
+    justify-self: end;
+    margin: 0;
+  }
+
   #main {
     display: grid;
     grid-template-columns: 50% 50%;
