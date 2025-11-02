@@ -30,7 +30,6 @@ class UpdateUtil {
   async checkForUpdates() {
     const self = this;
     try {
-      // Get current version from hidden input in DOM
       const versionInput = document.getElementById("app-version");
       if (!versionInput) {
         // No version input found, assume no update needed
@@ -100,11 +99,8 @@ class UpdateUtil {
 
       // Show/hide up-to-date message based on update status
       const upToDateMessage = dialog.querySelector("#up-to-date-message");
-      if (upToDateMessage) {
-        upToDateMessage.style.display = isUpToDate ? "block" : "none";
-      }
+      upToDateMessage.style.display = isUpToDate ? "block" : "none";
 
-      // Set up event handlers
       const reloadButton = dialog.querySelector(".reload-button");
       const continueButton = dialog.querySelector(".cancel-button");
 
@@ -160,7 +156,6 @@ class UpdateUtil {
           promises.push(Promise.resolve());
         }
 
-        // Wait for both operations to complete, then reload after 1 second delay
         Promise.all(promises).then(() => {
           setTimeout(() => {
             window.location.reload();
@@ -168,7 +163,6 @@ class UpdateUtil {
           }, 1000);
         }).catch((error) => {
           console.warn("Error during cache/service worker operations:", error);
-          // Still reload even if cache operations fail
           setTimeout(() => {
             window.location.reload();
             resolve("reload");
@@ -186,16 +180,10 @@ class UpdateUtil {
         resolve("continue");
       };
 
-      // Add event listeners
-      if (reloadButton) {
-        reloadButton.addEventListener("click", handleReload);
-      }
-      if (continueButton) {
-        continueButton.addEventListener("click", handleContinue);
-      }
+      reloadButton.addEventListener("click", handleReload);
+      continueButton.addEventListener("click", handleContinue);
       dialog.addEventListener("close", handleClose);
 
-      // Show the dialog
       dialog.showModal();
     });
   }
