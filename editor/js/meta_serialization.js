@@ -42,6 +42,23 @@ const META_COLUMNS = [
 ];
 
 /**
+ * Examples of unit value formats for parsing.
+ */
+const UNIT_VALUE_EXAMPLES = "+1,500.25% kwh / unit";
+
+/**
+ * Regex for parsing unit values with numeric component and units.
+ * Matches: optional sign, digits with optional commas, optional decimal,
+ * optional %, space, non-whitespace units
+ */
+const UNIT_VALUE_REGEX = /^([+-]?[\d,]+(?:\.\d+)?%?)\s+(\S.*)$/;
+
+/**
+ * Regex for matching number with optional commas, decimals, and % followed by units.
+ */
+const UNIT_VALUE_REGEX_FULL = /^([+-]?[\d,]+(?:\.\d+)?%?)\s+(.+)$/;
+
+/**
  * Boolean value mapping for CSV parsing.
  * Maps various string representations to boolean values.
  * Throws exception if value not found in either true or false sets.
@@ -87,6 +104,69 @@ const VALID_DEFAULT_SALES_VALUES = [
   "only recharge",
   "no",
 ];
+
+/**
+ * Result container for field-level parsing operations.
+ *
+ * Encapsulates the result of parsing a single field, distinguishing between
+ * successful results with values and failed results with errors. Either getResult()
+ * or getError() will be non-null, but not both.
+ */
+class FieldParseResult {
+  /**
+   * Create a successful field parse result.
+   *
+   * @param {*} result - The successfully parsed value
+   */
+  static success(result) {
+    const instance = new FieldParseResult();
+    instance._result = result;
+    instance._error = null;
+    return instance;
+  }
+
+  /**
+   * Create a failed field parse result.
+   *
+   * @param {Error} error - The error that occurred during parsing
+   */
+  static failure(error) {
+    const instance = new FieldParseResult();
+    instance._result = null;
+    instance._error = error;
+    return instance;
+  }
+
+  /**
+   * Get the parsed result value.
+   *
+   * @returns {*|null} The parsed value or null if parsing failed
+   */
+  getResult() {
+    const self = this;
+    return self._result;
+  }
+
+  /**
+   * Get the parsing error if one occurred.
+   *
+   * @returns {Error|null} The error or null if parsing succeeded
+   */
+  getError() {
+    const self = this;
+    return self._error;
+  }
+
+  /**
+   * Check if parsing resulted in an error.
+   *
+   * @returns {boolean} True if an error occurred
+   */
+  hasError() {
+    const self = this;
+    return self._error !== null;
+  }
+}
 
 /**
  * Error information for substance metadata parsing issues.
@@ -475,7 +555,9 @@ class MetaSerializer {
     const result = new SubstanceMetadataParseResult();
 
     if (!Array.isArray(arrayOfMaps)) {
-      result.addError(new SubstanceMetadataError(0, "input", "Input must be an array", "SYSTEM"));
+      result.addError(
+        new SubstanceMetadataError(0, "input", "Input must be an array", "SYSTEM"),
+      );
       return result;
     }
 
@@ -485,8 +567,14 @@ class MetaSerializer {
 
       try {
         if (!(rowMap instanceof Map)) {
-          result.addError(new SubstanceMetadataError(rowNumber, "input",
-            "Row data must be a Map object", "SYSTEM"));
+          result.addError(
+            new SubstanceMetadataError(
+              rowNumber,
+              "input",
+              "Row data must be a Map object",
+              "SYSTEM",
+            ),
+          );
           continue;
         }
 
@@ -575,6 +663,8 @@ class MetaSerializer {
 
         const rowMap = self._createRowMapFromCsvData(rowData, rowNumber, result);
 
+        // A valid rowMap will be returned or, if not, the error will have been
+        // added to result for reporting and should be ignored.
         if (rowMap) {
           const metadataResult = self._parseRowToMetadata(rowMap, rowNumber, result);
           if (metadataResult) {
@@ -593,27 +683,31 @@ class MetaSerializer {
   /**
    * Parse a string value to boolean using BOOLEAN_VALUES map.
    *
-   * Handles various string representations and throws exception for invalid values.
+   * Handles various string representations and returns FieldParseResult
+   * with either the parsed value or an error.
    *
    * @param {string} value - String value to parse as boolean
-   * @returns {boolean} Parsed boolean value
+   * @returns {FieldParseResult} Result containing parsed boolean or error
    * @private
    */
   _parseBoolean(value) {
     const self = this;
 
     if (!value || typeof value !== "string") {
-      return false;
+      return FieldParseResult.success(false);
     }
 
     const trimmed = value.trim().toLowerCase();
 
     if (BOOLEAN_VALUES.has(trimmed)) {
-      return BOOLEAN_VALUES.get(trimmed);
+      return FieldParseResult.success(BOOLEAN_VALUES.get(trimmed));
     }
 
     const validValues = Array.from(BOOLEAN_VALUES.keys()).join(", ");
-    throw new Error(`Invalid boolean value: ${value}. Expected one of: ${validValues}`);
+    const error = new Error(
+      `Invalid boolean value: ${value}. Expected one of: ${validValues}`,
+    );
+    return FieldParseResult.failure(error);
   }
 
   /**
@@ -624,8 +718,7 @@ class MetaSerializer {
    * whitespace-only values are treated as "continued" (the default behavior).
    *
    * @param {string} value - The defaultSales value from CSV
-   * @returns {string} The normalized internal assumeMode value ("continued", "only recharge", "no")
-   * @throws {Error} If value is not empty and not in the valid set
+   * @returns {FieldParseResult} Result containing normalized value or error
    * @private
    */
   _normalizeDefaultSales(value) {
@@ -633,25 +726,26 @@ class MetaSerializer {
 
     // Handle empty/null/undefined values - treat as default (continued)
     if (!value || typeof value !== "string") {
-      return "continued";
+      return FieldParseResult.success("continued");
     }
 
     // Trim and check if empty after trimming
     const trimmed = value.trim().toLowerCase();
     if (!trimmed) {
-      return "continued";
+      return FieldParseResult.success("continued");
     }
 
     // Check if the value exists in our mapping (case-insensitive)
     for (const [key, internalValue] of DEFAULT_SALES_TO_ASSUME_MODE.entries()) {
       if (key.toLowerCase() === trimmed) {
-        return internalValue;
+        return FieldParseResult.success(internalValue);
       }
     }
 
-    // Value not found - throw error with helpful message
+    // Value not found - return error with helpful message
     const validValues = VALID_DEFAULT_SALES_VALUES.map((v) => `"${v}"`).join(", ");
-    throw new Error(`Invalid value "${value}". Expected one of: ${validValues}`);
+    const error = new Error(`Invalid value "${value}". Expected one of: ${validValues}`);
+    return FieldParseResult.failure(error);
   }
 
   /**
@@ -695,12 +789,15 @@ class MetaSerializer {
     const parsedBooleans = {};
 
     for (const field of booleanFields) {
-      try {
-        parsedBooleans[field] = self._parseBoolean(rowMap.get(field));
-      } catch (error) {
-        result.addError(new SubstanceMetadataError(rowNumber, field, error.message, "USER"));
+      const parseResult = self._parseBoolean(rowMap.get(field));
+      if (parseResult.hasError()) {
+        result.addError(
+          new SubstanceMetadataError(rowNumber, field, parseResult.getError().message, "USER"),
+        );
         parsedBooleans[field] = false; // Default value
         hasErrors = true;
+      } else {
+        parsedBooleans[field] = parseResult.getResult();
       }
     }
 
@@ -709,19 +806,20 @@ class MetaSerializer {
     let retirementWithReplacement = false; // Default to false (normal retirement)
 
     if (retirementWithReplacementRaw && retirementWithReplacementRaw.trim()) {
-      try {
-        // Use existing _parseBoolean method for consistency
-        retirementWithReplacement = self._parseBoolean(retirementWithReplacementRaw);
-      } catch (error) {
-        result.addError(new SubstanceMetadataError(
-          rowNumber,
-          "retirementWithReplacement",
-          "Invalid value \"" + retirementWithReplacementRaw + "\". " +
-            "Expected one of: \"true\", \"false\", \"yes\", \"no\", \"1\", \"0\"",
-          "USER",
-        ));
+      const parseResult = self._parseBoolean(retirementWithReplacementRaw);
+      if (parseResult.hasError()) {
+        result.addError(
+          new SubstanceMetadataError(
+            rowNumber,
+            "retirementWithReplacement",
+            "Invalid value \"" + retirementWithReplacementRaw + "\". " +
+              "Expected one of: \"true\", \"false\", \"yes\", \"no\", \"1\", \"0\"",
+            "USER",
+          ),
+        );
         hasErrors = true;
-        // Keep default value (false) on error
+      } else {
+        retirementWithReplacement = parseResult.getResult();
       }
     }
 
@@ -729,15 +827,21 @@ class MetaSerializer {
     const defaultSalesRaw = self._getOrEmpty(rowMap.get("defaultSales"));
     let defaultSalesNormalized = "continued"; // Default value
 
-    try {
-      defaultSalesNormalized = self._normalizeDefaultSales(defaultSalesRaw);
-    } catch (error) {
+    const defaultSalesResult = self._normalizeDefaultSales(defaultSalesRaw);
+    if (defaultSalesResult.hasError()) {
       result.addError(
-        new SubstanceMetadataError(rowNumber, "defaultSales", error.message, "USER"),
+        new SubstanceMetadataError(
+          rowNumber,
+          "defaultSales",
+          defaultSalesResult.getError().message,
+          "USER",
+        ),
       );
       // Use default value on error to allow partial processing
       defaultSalesNormalized = "continued";
       hasErrors = true;
+    } else {
+      defaultSalesNormalized = defaultSalesResult.getResult();
     }
 
     // Build metadata object with error handling
@@ -1355,8 +1459,8 @@ class MetaChangeApplier {
     const self = this;
     const oldName = update.getOldName();
     const newMetadata = update.getNewMetadata();
+    const oldNameNotEmpty = oldName && oldName.trim();
 
-    // Ensure application exists
     self._ensureApplicationExists(newMetadata.getApplication());
 
     const existingSubstance = self._getSubstanceByKey(oldName, newMetadata.getApplication());
@@ -1364,8 +1468,7 @@ class MetaChangeApplier {
     if (existingSubstance) {
       self._updateMetadataSingle(newMetadata, existingSubstance);
     } else {
-      // If oldName was given but no substance found, warn the user
-      if (oldName && oldName.trim()) {
+      if (oldNameNotEmpty) {
         console.warn(
           `No existing substance found for key "${oldName}". ` +
           "Creating new substance instead.",
@@ -1384,7 +1487,6 @@ class MetaChangeApplier {
    */
   _updateMetadataSingle(metadata, existingSubstance) {
     const self = this;
-    // Call existing updateMetadata method on substance
     existingSubstance.updateMetadata(metadata, metadata.getApplication());
   }
 
@@ -1396,7 +1498,6 @@ class MetaChangeApplier {
    */
   _insertMetadataSingle(metadata) {
     const self = this;
-    // Check for naming conflicts
     const newName = metadata.getName();
     const application = self._program.getApplication(metadata.getApplication());
     const conflictingSubstance = application.getSubstances()
@@ -1407,7 +1508,6 @@ class MetaChangeApplier {
       return;
     }
 
-    // Create and insert new substance
     const substance = self._createSubstanceFromMetadata(metadata);
     self._addSubstanceToApplication(substance, metadata.getApplication());
   }
@@ -1421,7 +1521,6 @@ class MetaChangeApplier {
    */
   _parseKeyField(key) {
     if (!key || typeof key !== "string") return null;
-    // Match pattern: "substance" for "application"
     const match = key.match(/^"([^"]+)"\s+for\s+"([^"]+)"$/);
     if (!match) return null;
     return {
@@ -1443,12 +1542,10 @@ class MetaChangeApplier {
     const self = this;
     if (!key || !key.trim()) return null;
 
-    // Try to parse as a CSV key field
     const parsed = self._parseKeyField(key);
     if (parsed) {
       return self._getSubstanceByName(parsed.substanceName, parsed.applicationName);
     } else {
-      // Fallback: treat as direct substance name
       return self._getSubstanceByName(key, defaultApplication);
     }
   }
@@ -1478,18 +1575,20 @@ class MetaChangeApplier {
    */
   _ensureApplicationExists(applicationName) {
     const self = this;
+    const substances = [];
+    const isModification = false;
+    const isCompatible = true;
 
     const existingApp = self._program.getApplication(applicationName);
     if (existingApp !== null) {
       return;
     }
 
-    // Create new application with empty substances array
     const newApplication = new Application(
-      applicationName, // name
-      [], // substances (empty)
-      false, // isModification
-      true, // isCompatible
+      applicationName,
+      substances,
+      isModification,
+      isCompatible,
     );
 
     self._program.addApplication(newApplication);
@@ -1600,6 +1699,276 @@ class MetaChangeApplier {
   }
 
   /**
+   * Check if value is the Infinity literal.
+   *
+   * Detects both positive and negative infinity strings before parsing.
+   *
+   * @param {string} cleanedValue - Value to check for infinity
+   * @returns {boolean} True if value represents infinity
+   * @private
+   */
+  _isInfinityLiteral(cleanedValue) {
+    const self = this;
+    return (
+      cleanedValue.toLowerCase() === "infinity" ||
+      cleanedValue.toLowerCase() === "-infinity"
+    );
+  }
+
+  /**
+   * Check for Infinity value in numeric parsing.
+   *
+   * Throws detailed error message if value is infinity.
+   *
+   * @param {string} valueStr - Original value string with formatting
+   * @param {string} valueString - Full input string
+   * @param {string} cleanedValue - Cleaned numeric value
+   * @param {boolean} throwOnError - Whether to throw error
+   * @returns {boolean} True if error detected
+   * @throws {Error} If infinity detected and throwOnError is true
+   * @private
+   */
+  _checkInfinity(valueStr, valueString, cleanedValue, throwOnError) {
+    const self = this;
+    if (self._isInfinityLiteral(cleanedValue)) {
+      if (throwOnError) {
+        throw new Error(
+          `Invalid numeric value: "${valueStr}" in "${valueString}". ` +
+          "Number must be finite (not infinite or NaN).",
+        );
+      }
+      return true;
+    }
+    return false;
+  }
+
+  /**
+   * Check for number with trailing spaces but no units.
+   *
+   * Detects when input is just a number without units portion.
+   *
+   * @param {string} trimmed - Trimmed input string
+   * @param {string} valueString - Full input string
+   * @param {boolean} throwOnError - Whether to throw error
+   * @returns {boolean} True if error detected
+   * @throws {Error} If pattern detected and throwOnError is true
+   * @private
+   */
+  _checkNumberTrailingSpaces(trimmed, valueString, throwOnError) {
+    const self = this;
+    if (/^\d+\s*$/.test(trimmed)) {
+      if (throwOnError) {
+        throw new Error(
+          `Invalid unit value format: "${valueString}". ` +
+          "Units portion cannot be empty. " +
+          "Example: \"1430 kgCO2e / kg\"",
+        );
+      }
+      return true;
+    }
+    return false;
+  }
+
+  /**
+   * Check for malformed decimal numbers.
+   *
+   * Detects multiple decimal points like "12.34.56".
+   *
+   * @param {string} trimmed - Trimmed input string
+   * @param {string} valueString - Full input string
+   * @param {boolean} throwOnError - Whether to throw error
+   * @returns {boolean} True if error detected
+   * @throws {Error} If pattern detected and throwOnError is true
+   * @private
+   */
+  _checkMalformedDecimals(trimmed, valueString, throwOnError) {
+    const self = this;
+    if (/\d+\.\d+\.\d+/.test(trimmed)) {
+      const parts = trimmed.split(/\s+/);
+      if (parts.length >= 2) {
+        if (throwOnError) {
+          throw new Error(
+            `Invalid numeric value: "${parts[0]}" in "${valueString}". ` +
+            "Must be a valid number (integer or decimal). " +
+            "Examples: \"1430\", \"10.5\", \"-42\", \"1,500.25\"",
+          );
+        }
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Check for missing space between number and units.
+   *
+   * Detects when no space exists between numeric and units portions.
+   *
+   * @param {string} trimmed - Trimmed input string
+   * @param {string} valueString - Full input string
+   * @param {boolean} throwOnError - Whether to throw error
+   * @returns {boolean} True if error detected
+   * @throws {Error} If pattern detected and throwOnError is true
+   * @private
+   */
+  _checkMissingSpace(trimmed, valueString, throwOnError) {
+    const self = this;
+    if (!trimmed.includes(" ")) {
+      if (throwOnError) {
+        throw new Error(
+          `Invalid unit value format: "${valueString}". ` +
+          "Expected format: \"number units\" with a space between number and units. " +
+          "Example: \"1430 kgCO2e / kg\"",
+        );
+      }
+      return true;
+    }
+    return false;
+  }
+
+  /**
+   * Check for non-numeric starting character.
+   *
+   * Detects when value doesn't start with a number or sign.
+   *
+   * @param {string} trimmed - Trimmed input string
+   * @param {string} valueString - Full input string
+   * @param {boolean} throwOnError - Whether to throw error
+   * @returns {boolean} True if error detected
+   * @throws {Error} If pattern detected and throwOnError is true
+   * @private
+   */
+  _checkNonNumeric(trimmed, valueString, throwOnError) {
+    const self = this;
+    if (/^\s*[^\d+-]/.test(trimmed)) {
+      if (throwOnError) {
+        throw new Error(
+          `Invalid unit value format: "${valueString}". ` +
+          "Must start with a number (optionally signed). " +
+          "Example: \"10% / year\" or \"-5.5 mt / year\"",
+        );
+      }
+      return true;
+    }
+    return false;
+  }
+
+  /**
+   * Throw generic invalid format error.
+   *
+   * Used when more specific error checks don't match.
+   *
+   * @param {string} valueString - Full input string
+   * @throws {Error} Generic invalid format error
+   * @private
+   */
+  _throwInvalidGeneric(valueString) {
+    const self = this;
+    throw new Error(
+      `Invalid unit value format: "${valueString}". ` +
+      "Expected format: \"number units\". " +
+      "Examples: \"1430 kgCO2e / kg\", \"10% / year\", \"0.15 kg / unit\"",
+    );
+  }
+
+  /**
+   * Check if numeric value is not parseable by JavaScript.
+   *
+   * Validates that parseFloat result is finite and not NaN.
+   *
+   * @param {number} numericValue - Parsed numeric value
+   * @param {string} valueStr - Original value string
+   * @param {string} valueString - Full input string
+   * @param {boolean} throwOnError - Whether to throw error
+   * @returns {boolean} True if error detected
+   * @throws {Error} If invalid numeric detected and throwOnError is true
+   * @private
+   */
+  _checkJsUnparsable(numericValue, valueStr, valueString, throwOnError) {
+    const self = this;
+    if (isNaN(numericValue)) {
+      if (throwOnError) {
+        throw new Error(
+          `Invalid numeric value: "${valueStr}" in "${valueString}". ` +
+          "Must be a valid number (integer or decimal). " +
+          "Examples: \"1430\", \"10.5\", \"-42\", \"1,500.25\"",
+        );
+      }
+      return true;
+    }
+
+    if (!isFinite(numericValue)) {
+      if (throwOnError) {
+        throw new Error(
+          `Invalid numeric value: "${valueStr}" in "${valueString}". ` +
+          "Number must be finite (not infinite or NaN).",
+        );
+      }
+      return true;
+    }
+
+    return false;
+  }
+
+  /**
+   * Handle percentage sign in unit value.
+   *
+   * If original value contained %, includes it in final units string.
+   *
+   * @param {string} valueStr - Original value string with formatting
+   * @param {string} unitsStr - Extracted units string
+   * @returns {string} Final units string with percentage if applicable
+   * @private
+   */
+  _handlePercentSignInUnitValue(valueStr, unitsStr) {
+    const self = this;
+    return valueStr.includes("%") ? `% ${unitsStr.trim()}` : unitsStr.trim();
+  }
+
+  /**
+   * Parse units string with validation.
+   *
+   * Ensures units string is not empty after processing.
+   *
+   * @param {string} valueStr - Original value string with formatting
+   * @param {string} unitsStr - Extracted units string
+   * @param {string} valueString - Full input string
+   * @param {boolean} throwOnError - Whether to throw error
+   * @returns {string|null} Final units string or null if invalid
+   * @throws {Error} If units invalid and throwOnError is true
+   * @private
+   */
+  _parseUnitString(valueStr, unitsStr, valueString, throwOnError) {
+    const self = this;
+    const isEmpty = !unitsStr || !unitsStr.trim();
+
+    if (isEmpty) {
+      if (throwOnError) {
+        throw new Error(
+          `Invalid unit value format: "${valueString}". ` +
+          "Units portion cannot be empty. " +
+          "Example: \"1430 kgCO2e / kg\"",
+        );
+      }
+      return null;
+    }
+
+    const finalUnits = self._handlePercentSignInUnitValue(valueStr, unitsStr);
+
+    if (!finalUnits) {
+      if (throwOnError) {
+        throw new Error(
+          `Invalid units: "${unitsStr}" in "${valueString}". ` +
+          "Units cannot be empty after processing.",
+        );
+      }
+      return null;
+    }
+
+    return finalUnits;
+  }
+
+  /**
    * Parse unit value strings with comprehensive validation and error handling.
    *
    * This method provides enhanced parsing capabilities for unit value strings
@@ -1631,7 +2000,6 @@ class MetaChangeApplier {
   _parseUnitValue(valueString, throwOnError = false) {
     const self = this;
 
-    // Input validation - check for null, undefined, and non-string types
     if (valueString === null || valueString === undefined) {
       if (throwOnError) {
         const actualType = valueString === null ? "null" : "undefined";
@@ -1648,64 +2016,39 @@ class MetaChangeApplier {
     }
 
     const trimmed = valueString.trim();
-    if (!trimmed) {
+    const isEmpty = !trimmed;
+
+    if (isEmpty) {
       if (throwOnError) {
         throw new Error("Value string cannot be empty or whitespace-only");
       }
       return null;
     }
 
-    // Enhanced regex-based parsing with better error detection
-    // Matches: optional sign, digits with optional commas, optional decimal,
-    // optional %, space, non-whitespace units
-    // Examples: "+1,500.25% kwh / unit", "-42.5 kgCO2e / kg", "10% / year"
-    const match = trimmed.match(/^([+-]?[\d,]+(?:\.\d+)?%?)\s+(\S.*)$/);
+    if (/^(Infinity|-?Infinity)\s+/.test(trimmed)) {
+      if (throwOnError) {
+        throw new Error(
+          `Invalid numeric value: "${trimmed.split(/\s+/)[0]}" in "${valueString}". ` +
+          "Number must be finite (not infinite or NaN).",
+        );
+      }
+      return null;
+    }
+
+    const match = trimmed.match(UNIT_VALUE_REGEX);
 
     if (!match) {
       if (throwOnError) {
-        // Provide specific guidance based on common error patterns
-        // Order matters: check more specific patterns first
-        if (/^(Infinity|-?Infinity)\s+/.test(trimmed)) {
-          // Special case for Infinity values - check this first
-          throw new Error(
-            `Invalid numeric value: "${trimmed.split(/\s+/)[0]}" in "${valueString}". ` +
-            "Number must be finite (not infinite or NaN).",
-          );
-        } else if (/^\d+\s*$/.test(trimmed)) {
-          // Special case for numbers with trailing space but no units
-          throw new Error(
-            `Invalid unit value format: "${valueString}". ` +
-            "Units portion cannot be empty. " +
-            "Example: \"1430 kgCO2e / kg\"",
-          );
-        } else if (/\d+\.\d+\.\d+/.test(trimmed)) {
-          // Special case for malformed decimals like "12.34.56"
-          const parts = trimmed.split(/\s+/);
-          if (parts.length >= 2) {
-            throw new Error(
-              `Invalid numeric value: "${parts[0]}" in "${valueString}". ` +
-              "Must be a valid number (integer or decimal). " +
-              "Examples: \"1430\", \"10.5\", \"-42\", \"1,500.25\"",
-            );
-          }
-        } else if (!trimmed.includes(" ")) {
-          throw new Error(
-            `Invalid unit value format: "${valueString}". ` +
-            "Expected format: \"number units\" with a space between number and units. " +
-            "Example: \"1430 kgCO2e / kg\"",
-          );
-        } else if (/^\s*[^\d+-]/.test(trimmed)) {
-          throw new Error(
-            `Invalid unit value format: "${valueString}". ` +
-            "Must start with a number (optionally signed). " +
-            "Example: \"10% / year\" or \"-5.5 mt / year\"",
-          );
+        if (self._checkNumberTrailingSpaces(trimmed, valueString, false)) {
+          self._checkNumberTrailingSpaces(trimmed, valueString, true);
+        } else if (self._checkMalformedDecimals(trimmed, valueString, false)) {
+          self._checkMalformedDecimals(trimmed, valueString, true);
+        } else if (self._checkMissingSpace(trimmed, valueString, false)) {
+          self._checkMissingSpace(trimmed, valueString, true);
+        } else if (self._checkNonNumeric(trimmed, valueString, false)) {
+          self._checkNonNumeric(trimmed, valueString, true);
         } else {
-          throw new Error(
-            `Invalid unit value format: "${valueString}". ` +
-            "Expected format: \"number units\". " +
-            "Examples: \"1430 kgCO2e / kg\", \"10% / year\", \"0.15 kg / unit\"",
-          );
+          self._throwInvalidGeneric(valueString);
         }
       }
       return null;
@@ -1713,67 +2056,20 @@ class MetaChangeApplier {
 
     const [, valueStr, unitsStr] = match;
 
-    // Validate units string is not empty
-    if (!unitsStr || !unitsStr.trim()) {
-      if (throwOnError) {
-        throw new Error(
-          `Invalid unit value format: "${valueString}". ` +
-          "Units portion cannot be empty. " +
-          "Example: \"1430 kgCO2e / kg\"",
-        );
-      }
+    const finalUnits = self._parseUnitString(valueStr, unitsStr, valueString, throwOnError);
+    if (finalUnits === null && throwOnError) {
       return null;
     }
 
-    // Parse numeric value with enhanced validation
     const cleanedValue = valueStr.replace(/[,%]/g, "");
 
-    // Special check for Infinity before parsing
-    if (cleanedValue.toLowerCase() === "infinity" || cleanedValue.toLowerCase() === "-infinity") {
-      if (throwOnError) {
-        throw new Error(
-          `Invalid numeric value: "${valueStr}" in "${valueString}". ` +
-          "Number must be finite (not infinite or NaN).",
-        );
-      }
+    if (self._checkInfinity(valueStr, valueString, cleanedValue, throwOnError)) {
       return null;
     }
 
     const numericValue = parseFloat(cleanedValue);
 
-    if (isNaN(numericValue)) {
-      if (throwOnError) {
-        throw new Error(
-          `Invalid numeric value: "${valueStr}" in "${valueString}". ` +
-          "Must be a valid number (integer or decimal). " +
-          "Examples: \"1430\", \"10.5\", \"-42\", \"1,500.25\"",
-        );
-      }
-      return null;
-    }
-
-    // Additional numeric validation for edge cases
-    if (!isFinite(numericValue)) {
-      if (throwOnError) {
-        throw new Error(
-          `Invalid numeric value: "${valueStr}" in "${valueString}". ` +
-          "Number must be finite (not infinite or NaN).",
-        );
-      }
-      return null;
-    }
-
-    // Handle percentage units - if original value had %, include it in units
-    const finalUnits = valueStr.includes("%") ? `% ${unitsStr.trim()}` : unitsStr.trim();
-
-    // Validate final units string format
-    if (!finalUnits) {
-      if (throwOnError) {
-        throw new Error(
-          `Invalid units: "${unitsStr}" in "${valueString}". ` +
-          "Units cannot be empty after processing.",
-        );
-      }
+    if (self._checkJsUnparsable(numericValue, valueStr, valueString, throwOnError)) {
       return null;
     }
 
@@ -1847,9 +2143,7 @@ function parseUnitValue(valueString, throwOnError = false) {
 
   const trimmed = valueString.trim();
 
-  // For backward compatibility with original ui_translator behavior
   if (throwOnError) {
-    // Find the first space to separate value from units
     const firstSpaceIndex = trimmed.indexOf(" ");
     if (firstSpaceIndex === -1) {
       throw new Error(`Invalid unit value format: ${valueString}`);
@@ -1858,7 +2152,6 @@ function parseUnitValue(valueString, throwOnError = false) {
     const valueStringLocal = trimmed.substring(0, firstSpaceIndex);
     const unitsString = trimmed.substring(firstSpaceIndex + 1);
 
-    // Parse numeric value (removing commas and handling signs)
     const cleanedValue = valueStringLocal.replace(/,/g, "");
     const numericValue = parseFloat(cleanedValue);
 
@@ -1869,18 +2162,15 @@ function parseUnitValue(valueString, throwOnError = false) {
     return new EngineNumber(numericValue, unitsString, valueStringLocal.trim());
   }
 
-  // Enhanced regex-based parsing for better handling of percentages and complex formats
-  // Match number (with optional commas, decimals, and %) followed by units
-  const match = trimmed.match(/^([+-]?[\d,]+(?:\.\d+)?%?)\s+(.+)$/);
+  const match = trimmed.match(UNIT_VALUE_REGEX_FULL);
 
   if (!match) {
-    return null; // Need both value and units in the format "number units"
+    return null;
   }
 
   const valueStringClean = match[1];
   const unitsString = match[2];
 
-  // Remove commas and percentage signs from value, then parse the numeric value
   const cleanedValue = valueStringClean.replace(/[,%]/g, "");
   const numericValue = parseFloat(cleanedValue);
 
@@ -1888,7 +2178,6 @@ function parseUnitValue(valueString, throwOnError = false) {
     return null;
   }
 
-  // If the original value had a %, include it in the units
   const finalUnits = valueStringClean.includes("%") ?
     "% " + unitsString : unitsString;
 
@@ -1901,6 +2190,7 @@ export {
   SubstanceMetadataUpdate,
   SubstanceMetadataError,
   SubstanceMetadataParseResult,
+  FieldParseResult,
   ValidationResult,
   MetadataValidator,
   ValidationError,
