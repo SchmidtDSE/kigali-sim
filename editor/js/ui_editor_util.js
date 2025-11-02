@@ -11,7 +11,7 @@ import {VALID_YEAR_KEYWORDS} from "ui_editor_const";
  * Stream target selectors used throughout the application for updating dropdown states.
  * @constant {Array<string>}
  */
-export const STREAM_TARGET_SELECTORS = [
+const STREAM_TARGET_SELECTORS = [
   ".set-target-input",
   ".change-target-input",
   ".limit-target-input",
@@ -89,7 +89,7 @@ function getNumericInputSuggestionAndDescription(
  *
  * @param {HTMLElement} dateSelector - The date selector element to update.
  */
-export function updateDurationSelector(dateSelector) {
+function updateDurationSelector(dateSelector) {
   const makeVisibilityCallback = (showStart, showEnd) => {
     return () => {
       const startElement = dateSelector.querySelector(".duration-start");
@@ -126,7 +126,7 @@ export function updateDurationSelector(dateSelector) {
  *
  * @param {HTMLElement} newDiv - The new element to set up duration selector for.
  */
-export function setupDurationSelector(newDiv) {
+function setupDurationSelector(newDiv) {
   const dateSelectors = Array.of(...newDiv.querySelectorAll(".duration-subcomponent"));
   dateSelectors.forEach((dateSelector) => {
     dateSelector.addEventListener("change", (event) => {
@@ -143,7 +143,7 @@ export function setupDurationSelector(newDiv) {
  * @param {Function} postCallback - Function to call after each list item UI is
  *     initialized or removed. If not given, will use a no-op.
  */
-export function buildSetupListButton(postCallback) {
+function buildSetupListButton(postCallback) {
   /**
    * Function which exeuctes on adding a new lits element.
    *
@@ -188,7 +188,7 @@ export function buildSetupListButton(postCallback) {
  * @param {*} defaultValue - Default value if source is null.
  * @param {Function} strategy - Function to extract value from source.
  */
-export function setFieldValue(selection, source, defaultValue, strategy) {
+function setFieldValue(selection, source, defaultValue, strategy) {
   const newValue = source === null ? null : strategy(source);
   const valueOrDefault = newValue === null ? defaultValue : newValue;
   selection.value = valueOrDefault;
@@ -200,7 +200,7 @@ export function setFieldValue(selection, source, defaultValue, strategy) {
  * @param {HTMLElement} selection - Form field to get value from.
  * @returns {string} The field's value.
  */
-export function getFieldValue(selection) {
+function getFieldValue(selection) {
   return selection.value;
 }
 
@@ -210,7 +210,7 @@ export function getFieldValue(selection) {
  * @param {HTMLElement} selection - Form field to get sanitized value from.
  * @returns {string} Sanitized field value.
  */
-export function getSanitizedFieldValue(selection) {
+function getSanitizedFieldValue(selection) {
   const valueRaw = getFieldValue(selection);
   const clean = valueRaw.replaceAll('"', "").replaceAll(",", "");
   const trimmed = clean.trim();
@@ -227,7 +227,7 @@ export function getSanitizedFieldValue(selection) {
  * @param {Function} uiInit - Callback to initialize each item's UI.
  * @param {Function} removeCallback - Callback to invoke if item removed.
  */
-export function setListInput(listSelection, itemTemplate, items, uiInit, removeCallback) {
+function setListInput(listSelection, itemTemplate, items, uiInit, removeCallback) {
   listSelection.innerHTML = "";
   const addItem = (item) => {
     const newDiv = document.createElement("div");
@@ -253,7 +253,7 @@ export function setListInput(listSelection, itemTemplate, items, uiInit, removeC
  * @param {Function} itemReadStrategy - A function to process each list item.
  * @returns {Array} An array of processed items returned by the strategy.
  */
-export function getListInput(selection, itemReadStrategy) {
+function getListInput(selection, itemReadStrategy) {
   const dialogListItems = Array.of(...selection.querySelectorAll(".dialog-list-item"));
   return dialogListItems.map(itemReadStrategy);
 }
@@ -267,7 +267,7 @@ export function getListInput(selection, itemReadStrategy) {
  * @param {EngineNumber} defaultValue - Default engine number.
  * @param {Function} strategy - Function to extract engine number from source.
  */
-export function setEngineNumberValue(valSelection, unitsSelection, source, defaultValue, strategy) {
+function setEngineNumberValue(valSelection, unitsSelection, source, defaultValue, strategy) {
   const newValue = source === null ? null : strategy(source);
   const valueOrDefault = newValue === null ? defaultValue : newValue;
 
@@ -289,7 +289,7 @@ export function setEngineNumberValue(valSelection, unitsSelection, source, defau
  * @param {HTMLElement} unitsSelection - Units select element.
  * @returns {EngineNumber} Combined engine number object.
  */
-export function getEngineNumberValue(valSelection, unitsSelection) {
+function getEngineNumberValue(valSelection, unitsSelection) {
   const valueString = valSelection.value;
   const units = unitsSelection.value;
 
@@ -309,7 +309,7 @@ export function getEngineNumberValue(valSelection, unitsSelection) {
  * @param {string} numberString - The number string to invert
  * @returns {string} The number string with inverted sign
  */
-export function invertNumberString(numberString) {
+function invertNumberString(numberString) {
   const trimmed = numberString.trim();
   if (trimmed.startsWith("-")) {
     // Remove the minus sign (or replace with plus for explicit positive)
@@ -332,7 +332,7 @@ export function invertNumberString(numberString) {
  *     ("substance", "policy", "simulation")
  * @returns {boolean} True if user confirms to proceed, false if user cancels
  */
-export function validateNumericInputs(dialog, dialogType) {
+function validateNumericInputs(dialog, dialogType) {
   const numericInputs = dialog.querySelectorAll(".numeric-input");
   const potentiallyInvalid = [];
   const numberParser = new NumberParseUtil();
@@ -415,7 +415,7 @@ export function validateNumericInputs(dialog, dialogType) {
  * @returns {boolean} True if user confirms or duration is reasonable, false if cancelled.
  * @private
  */
-export function validateSimulationDuration(dialog) {
+function validateSimulationDuration(dialog) {
   const startInput = dialog.querySelector(".edit-simulation-start-input");
   const endInput = dialog.querySelector(".edit-simulation-end-input");
 
@@ -460,7 +460,7 @@ export function validateSimulationDuration(dialog) {
  * @param {boolean} initListeners - Flag indicating if new event listeners for
  *     element visibility should be added in response to changing duration type.
  */
-export function setDuring(selection, command, defaultVal, initListeners) {
+function setDuring(selection, command, defaultVal, initListeners) {
   const effectiveVal = command === null ? defaultVal : command.getDuration();
   const durationTypeInput = selection.querySelector(".duration-type-input");
 
@@ -524,7 +524,7 @@ export function setDuring(selection, command, defaultVal, initListeners) {
  *     selector. That function will put the count of commands found in the
  *     list selector into the display selector.
  */
-export function buildUpdateCount(dialog) {
+function buildUpdateCount(dialog) {
   return (listSelector, displaySelector) => {
     const listSelection = dialog.querySelector(listSelector);
     const displaySelection = dialog.querySelector(displaySelector);
@@ -545,7 +545,7 @@ export function buildUpdateCount(dialog) {
  * @param {HTMLElement} root - The root element containing dialog.
  * @param {Object} tabs - Tabby object for managing tab toggling.
  */
-export function setupDialogInternalLinks(root, tabs) {
+function setupDialogInternalLinks(root, tabs) {
   const internalLinks = root.querySelectorAll(".dialog-internal-link");
   internalLinks.forEach((link) => {
     link.addEventListener("click", (event) => {
@@ -555,3 +555,23 @@ export function setupDialogInternalLinks(root, tabs) {
     });
   });
 }
+
+export {
+  STREAM_TARGET_SELECTORS,
+  buildSetupListButton,
+  buildUpdateCount,
+  getEngineNumberValue,
+  getFieldValue,
+  getListInput,
+  getSanitizedFieldValue,
+  invertNumberString,
+  setDuring,
+  setEngineNumberValue,
+  setFieldValue,
+  setListInput,
+  setupDialogInternalLinks,
+  setupDurationSelector,
+  updateDurationSelector,
+  validateNumericInputs,
+  validateSimulationDuration,
+};

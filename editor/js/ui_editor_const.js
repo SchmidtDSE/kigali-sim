@@ -5,22 +5,10 @@
  */
 
 /**
- * Stream types that can be enabled/disabled based on substance configuration.
- * @constant {Array<string>}
- */
-export const ENABLEABLE_STREAMS = ["domestic", "import", "export"];
-
-/**
  * Stream types that are always available regardless of substance configuration.
  * @constant {Array<string>}
  */
-export const ALWAYS_ON_STREAMS = ["sales", "equipment", "priorEquipment"];
-
-/**
- * Valid QubecTalk year keywords that should not trigger validation warnings.
- * @constant {Array<string>}
- */
-export const VALID_YEAR_KEYWORDS = ["beginning", "onwards"];
+const ALWAYS_ON_STREAMS = ["sales", "equipment", "priorEquipment"];
 
 /**
  * Command compatibility mapping to compatibility modes:
@@ -32,7 +20,7 @@ export const VALID_YEAR_KEYWORDS = ["beginning", "onwards"];
  *
  * @type {Object.<string, string>}
  */
-export const COMMAND_COMPATIBILITIES = {
+const COMMAND_COMPATIBILITIES = {
   "change": "any",
   "define var": "none",
   "retire": "any",
@@ -49,7 +37,13 @@ export const COMMAND_COMPATIBILITIES = {
   "assume": "definition",
 };
 
-export const SUPPORTED_EQUALS_UNITS = [
+/**
+ * Stream types that can be enabled/disabled based on substance configuration.
+ * @constant {Array<string>}
+ */
+const ENABLEABLE_STREAMS = ["domestic", "import", "export"];
+
+const SUPPORTED_EQUALS_UNITS = [
   "tCO2e / unit",
   "tCO2e / kg",
   "tCO2e / mt",
@@ -60,3 +54,17 @@ export const SUPPORTED_EQUALS_UNITS = [
   "kwh / mt",
   "kwh / unit",
 ];
+
+/**
+ * Valid QubecTalk year keywords that should not trigger validation warnings.
+ * @constant {Array<string>}
+ */
+const VALID_YEAR_KEYWORDS = ["beginning", "onwards"];
+
+export {
+  ALWAYS_ON_STREAMS,
+  COMMAND_COMPATIBILITIES,
+  ENABLEABLE_STREAMS,
+  SUPPORTED_EQUALS_UNITS,
+  VALID_YEAR_KEYWORDS,
+};
