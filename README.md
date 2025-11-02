@@ -193,7 +193,7 @@ For those interested in contributing to the Kigali Sim open source project as a 
 <br>
 
 ## Development
-If you want to change the code of Kigali Sim itself, we have some basic getting started steps. However, for additional information about development, see [DEVELOPING.md](https://github.com/SchmidtDSE/kigali-sim/blob/main/DEVELOPING.md).
+If you want to change the code of Kigali Sim itself, we have some basic getting started steps. However, for additional information about development, see [DEVELOPING.md](https://github.com/SchmidtDSE/kigali-sim/blob/main/DEVELOPING.md). If you are contributing, see [CONTRIBUTING.md](https://github.com/SchmidtDSE/kigali-sim/blob/main/CONTRIBUTING.md). Finally, **if you are using an AI coding assistant to write code you want to donate to the project**, please review the [AI contribution guidelines](https://github.com/SchmidtDSE/kigali-sim/blob/main/CONTRIBUTING.md#use-of-generative-ai).
 
 ### Using a Dev Container
 For those interested in a dev container, please see `.devcontainer`. **IntelliJ** should automatically detect the dev container (see [JetBrains documentation](https://www.jetbrains.com/help/idea/connect-to-devcontainer.html)). **VS Code** users can use an extension:
