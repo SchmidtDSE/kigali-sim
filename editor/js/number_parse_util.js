@@ -488,9 +488,9 @@ class NumberParseUtil {
    * Convert European format number to UK format suggestion.
    *
    * Handle different European patterns:
-   * - "1.234,56" → "1,234.56"
-   * - "123,45" → "123.45"
-   * - "1.234.567,89" → "1,234,567.89"
+   * - "1.234,56" to "1,234.56"
+   * - "123,45" to "123.45"
+   * - "1.234.567,89" to "1,234,567.89"
    *
    * @param {string} numberPart - European format number part
    * @returns {string} UK format equivalent
