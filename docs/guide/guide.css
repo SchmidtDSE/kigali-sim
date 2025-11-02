@@ -13,7 +13,7 @@ a:hover, a:active {
 }
 
 a.primary, a.primary:link, a.primary:visited {
-  background-color: #7070C0;
+  background-color: #6E6EBF;
   color: white;
   border-radius: 10px;
   padding: 7px;
@@ -71,7 +71,6 @@ header {
 html {
   height: 100%;
   width: 100%;
-  min-width: 600px;
   font-family: PublicSans;
   background-color: #FFFFFF;
   color: #333;
