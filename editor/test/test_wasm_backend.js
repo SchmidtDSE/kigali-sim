@@ -23,7 +23,8 @@ function buildWasmBackendTests() {
           "0 tCO2e,0 units,0 units,0 tCO2e," +
           "0 tCO2e,0 kwh,0 kg,0 tCO2e,0 units";
 
-        const results = ReportDataParser.parseResponse(response);
+        const parser = new ReportDataParser();
+        const results = parser.parseResponse(response);
 
         assert.equal(results.length, 1, "Should parse one result");
         assert.equal(results[0].getApplication(), "TestApp",
@@ -48,9 +49,10 @@ function buildWasmBackendTests() {
       QUnit.test("parseResponse handles error status", function (assert) {
         const response = "Compilation Error: Syntax error\n\n";
 
+        const parser = new ReportDataParser();
         assert.throws(
           function () {
-            ReportDataParser.parseResponse(response);
+            parser.parseResponse(response);
           },
           /Compilation Error: Syntax error/,
           "Should throw error with the error message",
@@ -60,7 +62,8 @@ function buildWasmBackendTests() {
       QUnit.test("parseResponse handles empty CSV data", function (assert) {
         const response = "OK\n\n";
 
-        const results = ReportDataParser.parseResponse(response);
+        const parser = new ReportDataParser();
+        const results = parser.parseResponse(response);
         assert.equal(results.length, 0, "Should return empty array for empty CSV data");
       });
 
@@ -72,16 +75,18 @@ function buildWasmBackendTests() {
           "eolEmissions,energyConsumption,initialChargeValue," +
           "initialChargeConsumption,importNewPopulation";
 
-        const results = ReportDataParser.parseResponse(response);
+        const parser = new ReportDataParser();
+        const results = parser.parseResponse(response);
         assert.equal(results.length, 0, "Should return empty array for headers-only CSV");
       });
 
       QUnit.test("parseResponse handles invalid response format", function (assert) {
         const response = "InvalidFormat";
 
+        const parser = new ReportDataParser();
         assert.throws(
           function () {
-            ReportDataParser.parseResponse(response);
+            parser.parseResponse(response);
           },
           /Invalid response format/,
           "Should throw error for invalid response format",
@@ -100,7 +105,8 @@ function buildWasmBackendTests() {
           "0 tCO2e,1000 units,0 units,0 tCO2e," +
           "0 tCO2e,500.75 kwh,0 kg,0 tCO2e,0 units";
 
-        const results = ReportDataParser.parseResponse(response);
+        const parser = new ReportDataParser();
+        const results = parser.parseResponse(response);
 
         assert.equal(results.length, 1, "Should parse one result");
 

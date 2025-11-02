@@ -32,7 +32,8 @@ class ReportDataParser {
    * @returns {Array<EngineResult>} Parsed engine results.
    * @throws {Error} If response indicates an error status.
    */
-  static parseResponse(response) {
+  parseResponse(response) {
+    const self = this;
     const lines = response.split("\n");
 
     if (lines.length < 2) {
@@ -44,7 +45,6 @@ class ReportDataParser {
       throw new Error(status);
     }
 
-    // Skip empty line after status
     const csvData = lines.slice(2).join("\n").trim();
 
     if (!csvData) {
@@ -57,7 +57,7 @@ class ReportDataParser {
       return []; // Only headers, no data
     }
 
-    return ReportDataParser._parseCsvData(csvData);
+    return self._parseCsvData(csvData);
   }
 
   /**
@@ -67,7 +67,8 @@ class ReportDataParser {
    * @param {string} csvData - The CSV data to parse.
    * @returns {Array<EngineResult>} Array of parsed engine results.
    */
-  static _parseCsvData(csvData) {
+  _parseCsvData(csvData) {
+    const self = this;
     const lines = csvData.split("\n").filter((line) => line.trim());
 
     if (lines.length === 0) {
@@ -91,7 +92,7 @@ class ReportDataParser {
       });
 
       try {
-        const engineResult = ReportDataParser._createEngineResult(row);
+        const engineResult = self._createEngineResult(row);
         results.push(engineResult);
       } catch (e) {
         console.warn("Failed to parse row:", row, e);
@@ -109,26 +110,8 @@ class ReportDataParser {
    * @param {Object} row - The parsed CSV row data.
    * @returns {EngineResult} The created engine result.
    */
-  static _createEngineResult(row) {
-    // Helper function to parse Java EngineNumber.toString() format: "value units"
-    const parseEngineNumber = (valueStr, defaultUnits = "units") => {
-      if (!valueStr || valueStr.trim() === "") {
-        return new EngineNumber(0, defaultUnits);
-      }
-      const parts = valueStr.trim().split(/\s+/);
-      if (parts.length >= 2) {
-        // Format: "value units" - preserve original value string
-        const value = parseFloat(parts[0]) || 0;
-        const units = parts.slice(1).join(" "); // Handle multi-word units
-        const originalValueString = parts[0]; // Preserve original formatting
-        return new EngineNumber(value, units, originalValueString);
-      } else {
-        // Only value, use default units - preserve original value string
-        const value = parseFloat(parts[0]) || 0;
-        const originalValueString = parts[0]; // Preserve original formatting
-        return new EngineNumber(value, defaultUnits, originalValueString);
-      }
-    };
+  _createEngineResult(row) {
+    const self = this;
 
     // Extract fields matching Java CSV format
     const application = row["application"] || "";
@@ -138,42 +121,42 @@ class ReportDataParser {
     const trialNumber = parseInt(row["trial"] || "0"); // Java uses "trial", not "trialNumber"
 
     // Parse EngineNumber fields from Java's "value units" format
-    const domesticValue = parseEngineNumber(row["domestic"], "kg");
-    const importValue = parseEngineNumber(row["import"], "kg");
-    const exportValue = parseEngineNumber(row["export"], "kg");
-    const recycleValue = parseEngineNumber(row["recycle"], "kg");
-    const domesticConsumptionValue = parseEngineNumber(row["domesticConsumption"], "tCO2e");
-    const importConsumptionValue = parseEngineNumber(row["importConsumption"], "tCO2e");
-    const exportConsumptionValue = parseEngineNumber(row["exportConsumption"], "tCO2e");
-    const recycleConsumptionValue = parseEngineNumber(row["recycleConsumption"], "tCO2e");
-    const populationValue = parseEngineNumber(row["population"], "units");
-    const populationNew = parseEngineNumber(row["populationNew"], "units");
-    const rechargeEmissions = parseEngineNumber(row["rechargeEmissions"], "tCO2e");
-    const eolEmissions = parseEngineNumber(row["eolEmissions"], "tCO2e");
-    const initialChargeEmissions = parseEngineNumber(row["initialChargeEmissions"], "tCO2e");
-    const energyConsumption = parseEngineNumber(row["energyConsumption"], "kwh");
+    const domesticValue = self._parseEngineNumber(row["domestic"], "kg");
+    const importValue = self._parseEngineNumber(row["import"], "kg");
+    const exportValue = self._parseEngineNumber(row["export"], "kg");
+    const recycleValue = self._parseEngineNumber(row["recycle"], "kg");
+    const domesticConsumptionValue = self._parseEngineNumber(row["domesticConsumption"], "tCO2e");
+    const importConsumptionValue = self._parseEngineNumber(row["importConsumption"], "tCO2e");
+    const exportConsumptionValue = self._parseEngineNumber(row["exportConsumption"], "tCO2e");
+    const recycleConsumptionValue = self._parseEngineNumber(row["recycleConsumption"], "tCO2e");
+    const populationValue = self._parseEngineNumber(row["population"], "units");
+    const populationNew = self._parseEngineNumber(row["populationNew"], "units");
+    const rechargeEmissions = self._parseEngineNumber(row["rechargeEmissions"], "tCO2e");
+    const eolEmissions = self._parseEngineNumber(row["eolEmissions"], "tCO2e");
+    const initialChargeEmissions = self._parseEngineNumber(row["initialChargeEmissions"], "tCO2e");
+    const energyConsumption = self._parseEngineNumber(row["energyConsumption"], "kwh");
 
     // Parse bank fields from Java CSV
-    const bankKg = parseEngineNumber(row["bankKg"], "kg");
-    const bankTco2e = parseEngineNumber(row["bankTCO2e"], "tCO2e");
-    const bankChangeKg = parseEngineNumber(row["bankChangeKg"], "kg");
-    const bankChangeTco2e = parseEngineNumber(row["bankChangeTCO2e"], "tCO2e");
+    const bankKg = self._parseEngineNumber(row["bankKg"], "kg");
+    const bankTco2e = self._parseEngineNumber(row["bankTCO2e"], "tCO2e");
+    const bankChangeKg = self._parseEngineNumber(row["bankChangeKg"], "kg");
+    const bankChangeTco2e = self._parseEngineNumber(row["bankChangeTCO2e"], "tCO2e");
 
     // Handle TradeSupplement fields from Java CSV
-    const importInitialChargeValue = parseEngineNumber(
+    const importInitialChargeValue = self._parseEngineNumber(
       row["importInitialChargeValue"],
       "kg",
     );
-    const importInitialChargeConsumption = parseEngineNumber(
+    const importInitialChargeConsumption = self._parseEngineNumber(
       row["importInitialChargeConsumption"],
       "tCO2e",
     );
-    const importPopulation = parseEngineNumber(row["importPopulation"], "units");
-    const exportInitialChargeValue = parseEngineNumber(
+    const importPopulation = self._parseEngineNumber(row["importPopulation"], "units");
+    const exportInitialChargeValue = self._parseEngineNumber(
       row["exportInitialChargeValue"],
       "kg",
     );
-    const exportInitialChargeConsumption = parseEngineNumber(
+    const exportInitialChargeConsumption = self._parseEngineNumber(
       row["exportInitialChargeConsumption"],
       "tCO2e",
     );
@@ -216,6 +199,33 @@ class ReportDataParser {
 
     return builder.build();
   }
+
+  /**
+   * Parse an EngineNumber from a string in Java EngineNumber.toString() format.
+   *
+   * @private
+   * @param {string} valueStr - The value string to parse (e.g., "100 kg" or "50").
+   * @param {string} defaultUnits - Default units if not specified in the string.
+   * @returns {EngineNumber} The parsed engine number.
+   */
+  _parseEngineNumber(valueStr, defaultUnits = "units") {
+    const self = this;
+    if (!valueStr || valueStr.trim() === "") {
+      return new EngineNumber(0, defaultUnits);
+    }
+    const parts = valueStr.trim().split(/\s+/);
+    const hasUnitsStr = parts.length >= 2;
+    if (hasUnitsStr) {
+      const value = parseFloat(parts[0]) || 0;
+      const units = parts.slice(1).join(" "); // Handle multi-word units
+      const originalValueString = parts[0];
+      return new EngineNumber(value, units, originalValueString);
+    } else {
+      const value = parseFloat(parts[0]) || 0;
+      const originalValueString = parts[0];
+      return new EngineNumber(value, defaultUnits, originalValueString);
+    }
+  }
 }
 
 /**
@@ -231,6 +241,13 @@ class WasmLayer {
    */
   constructor(reportProgressCallback, poolSize = null) {
     const self = this;
+
+    /**
+     * Parser instance for handling CSV report data.
+     * @private
+     * @type {ReportDataParser}
+     */
+    self._reportDataParser = new ReportDataParser();
 
     /**
      * Number of workers in the pool.
@@ -297,7 +314,6 @@ class WasmLayer {
 
         console.log(`WASM worker pool initialized with ${self._poolSize} workers`);
 
-        // Workers are ready immediately - WASM initialization happens inside each worker
         resolve();
       } catch (error) {
         reject(error);
@@ -425,7 +441,7 @@ class WasmLayer {
 
     try {
       // Parse results from this scenario
-      const parsedResults = ReportDataParser.parseResponse(result);
+      const parsedResults = self._reportDataParser.parseResponse(result);
 
       // Extract CSV string from the response
       const lines = result.split("\n");
@@ -452,40 +468,55 @@ class WasmLayer {
       const allComplete = request.remainingScenarios === 0;
 
       if (allComplete) {
-        // Combine CSV parts - use first part's header, then all data rows
-        let combinedCsv = "";
-        if (request.csvParts.length > 0) {
-          const firstPart = request.csvParts[0];
-          const firstLines = firstPart.split("\n");
-          const header = firstLines[0];
-
-          // Start with header
-          const allDataRows = [header];
-
-          // Add data rows from all parts
-          request.csvParts.forEach((part) => {
-            const partLines = part.split("\n");
-            // Skip header (first line) and add data rows
-            for (let i = 1; i < partLines.length; i++) {
-              if (partLines[i].trim()) {
-                allDataRows.push(partLines[i]);
-              }
-            }
-          });
-
-          combinedCsv = allDataRows.join("\n");
-        }
-
-        // Create BackendResult with combined data
-        const backendResult = new BackendResult(combinedCsv, request.results);
-
-        self._pendingRequests.delete(id);
-        request.resolve(backendResult);
+        self._resolveCompleteRequests(id, request);
       }
     } catch (parseError) {
       self._pendingRequests.delete(id);
       request.reject(parseError);
     }
+  }
+
+  /**
+   * Resolve a request when all scenarios are complete.
+   *
+   * Combines CSV data from all scenarios and creates a BackendResult.
+   *
+   * @private
+   * @param {number} id - The request ID.
+   * @param {Object} request - The request object containing results and CSV parts.
+   */
+  _resolveCompleteRequests(id, request) {
+    const self = this;
+
+    // Combine CSV parts - use first part's header, then all data rows
+    let combinedCsv = "";
+    if (request.csvParts.length > 0) {
+      const firstPart = request.csvParts[0];
+      const firstLines = firstPart.split("\n");
+      const header = firstLines[0];
+
+      // Start with header
+      const allDataRows = [header];
+
+      // Add data rows from all parts
+      request.csvParts.forEach((part) => {
+        const partLines = part.split("\n");
+        // Skip header (first line) and add data rows
+        for (let i = 1; i < partLines.length; i++) {
+          if (partLines[i].trim()) {
+            allDataRows.push(partLines[i]);
+          }
+        }
+      });
+
+      combinedCsv = allDataRows.join("\n");
+    }
+
+    // Create BackendResult with combined data
+    const backendResult = new BackendResult(combinedCsv, request.results);
+
+    self._pendingRequests.delete(id);
+    request.resolve(backendResult);
   }
 
   /**
@@ -568,37 +599,66 @@ class WasmBackend {
       }
 
       const scenarioNames = program.getScenarioNames();
+      const noScenarios = !scenarioNames || scenarioNames.length === 0;
 
-      // If no scenario names found (e.g., code uses "across X trials" syntax),
-      // execute using the full program (non-UI-compatible path)
-      if (!scenarioNames || scenarioNames.length === 0) {
-        // Non-UI-compatible path: execute all scenarios at once
-        const scenarioTrialCounts = {"": 1};
-        const backendResult = await self._wasmLayer.runSimulation(
-          simCode,
-          [""],
-          scenarioTrialCounts,
-        );
-        return backendResult;
+      if (noScenarios) {
+        return await self._respondToNoScenarios(simCode);
+      } else {
+        return await self._runScenarios(simCode, scenarioNames);
       }
-
-      // Extract trial counts for each scenario (default to 1 trial for UI-compatible scenarios)
-      const scenarioTrialCounts = {};
-      scenarioNames.forEach((scenarioName) => {
-        // UI-compatible scenarios (without "across X trials") always have 1 trial
-        scenarioTrialCounts[scenarioName] = 1;
-      });
-
-      // Execute all scenarios in parallel
-      const backendResult = await self._wasmLayer.runSimulation(
-        simCode,
-        scenarioNames,
-        scenarioTrialCounts,
-      );
-      return backendResult;
     } catch (error) {
       throw new Error("WASM simulation execution failed: " + error.message);
     }
+  }
+
+  /**
+   * Execute the full program when no named scenarios are found.
+   *
+   * Used when code uses "across X trials" syntax or other non-UI-compatible patterns.
+   * Executes all scenarios at once.
+   *
+   * @private
+   * @param {string} simCode - The QubecTalk code to execute.
+   * @returns {Promise<BackendResult>} Promise resolving to backend result with CSV and parsed data.
+   */
+  async _respondToNoScenarios(simCode) {
+    const self = this;
+    const scenarioTrialCounts = {"": 1};
+    const backendResult = await self._wasmLayer.runSimulation(
+      simCode,
+      [""],
+      scenarioTrialCounts,
+    );
+    return backendResult;
+  }
+
+  /**
+   * Execute named scenarios from the code.
+   *
+   * Extracts trial counts for each scenario and executes all scenarios in parallel.
+   * UI-compatible scenarios (without "across X trials") default to 1 trial each.
+   *
+   * @private
+   * @param {string} simCode - The QubecTalk code to execute.
+   * @param {string[]} scenarioNames - Array of scenario names to execute.
+   * @returns {Promise<BackendResult>} Promise resolving to backend result with CSV and parsed data.
+   */
+  async _runScenarios(simCode, scenarioNames) {
+    const self = this;
+
+    // Extract trial counts for each scenario (default to 1 trial for UI-compatible scenarios)
+    const scenarioTrialCounts = {};
+    scenarioNames.forEach((scenarioName) => {
+      scenarioTrialCounts[scenarioName] = 1;
+    });
+
+    // Execute all scenarios in parallel
+    const backendResult = await self._wasmLayer.runSimulation(
+      simCode,
+      scenarioNames,
+      scenarioTrialCounts,
+    );
+    return backendResult;
   }
 }
 
