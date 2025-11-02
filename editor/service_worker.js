@@ -46,6 +46,7 @@ const ESSENTIAL_FILES = [
   "/js/ui_editor_const.js",
   "/js/ui_editor_util.js",
   "/js/ui_translator.js",
+  "/js/ui_translator_commands.js",
   "/js/ui_translator_components.js",
   "/js/ui_translator_util.js",
   "/js/updates.js",
