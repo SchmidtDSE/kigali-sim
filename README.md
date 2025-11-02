@@ -188,12 +188,12 @@ For those with a bug report or a suggestion to improve Kigali Sim, please [open 
 
 For those seeking help with using Kigali Sim, we recommend that you consider starting with the "Get Help" button within the application if you are comfortable sharing your work with us. This free and private support channel offered by the project maintainers (currently the University of California DSE). If you do not want to share your simluation with us or are instructed to file a public help request, please [open an issue](https://github.com/SchmidtDSE/kigali-sim/issues/new) and try your best to fill in the issue template. Please note that this issue will be public.
 
-For those interested in contributing to the Kigali Sim open source project as a developer, thank you and please review `CONTRIBUTORS.md`. Also, please see [our credits page](https://kigalisim.org/credits.html) and our [humans.txt](https://kigalisim.org/humans.txt) for more information about the community behind this open source project. If you are unsure which issue might be best for getting started, please look for the "good first issue" tag. For information about community standards and expectations, please see `CONDUCT.md`.
+For those interested in contributing to the Kigali Sim open source project as a developer, thank you and please review `CONTRIBUTING.md`. Also, please see [our credits page](https://kigalisim.org/credits.html) and our [humans.txt](https://kigalisim.org/humans.txt) for more information about the community behind this open source project. If you are unsure which issue might be best for getting started, please look for the "good first issue" tag. For information about community standards and expectations, please see `CODE_OF_CONDUCT.md`.
 
 <br>
 
 ## Development
-If you want to change the code of Kigali Sim itself, we have some basic getting started steps. However, for additional information about development, see [DEVELOPING.md](https://github.com/SchmidtDSE/kigali-sim/blob/main/DEVELOPING.md).
+If you want to change the code of Kigali Sim itself, we have some basic getting started steps. However, for additional information about development, see [DEVELOPING.md](https://github.com/SchmidtDSE/kigali-sim/blob/main/DEVELOPING.md). If you are contributing, see [CONTRIBUTING.md](https://github.com/SchmidtDSE/kigali-sim/blob/main/CONTRIBUTING.md). Finally, **if you are using an AI coding assistant to write code you want to donate to the project**, please review the [AI contribution guidelines](https://github.com/SchmidtDSE/kigali-sim/blob/main/CONTRIBUTING.md#use-of-generative-ai).
 
 ### Using a Dev Container
 For those interested in a dev container, please see `.devcontainer`. **IntelliJ** should automatically detect the dev container (see [JetBrains documentation](https://www.jetbrains.com/help/idea/connect-to-devcontainer.html)). **VS Code** users can use an extension:
@@ -325,7 +325,7 @@ We thank the following Open Source libraries and resources:
 - [Global Plastics AI Policy Tool](https://global-plastics-tool.org/) under [BSD-3-Clause](https://github.com/SchmidtDSE/plastics-prototype/blob/main/LICENSE.md).
 - [Josh](https://joshsim.org/) under [BSD-3-Clause](https://github.com/SchmidtDSE/josh/blob/main/LICENSE.md).
 
-We also use data from [UNEP Ozone Secretariat](https://ozone.unep.org/lists-substances-and-blends) for Global Warming Potential (GWP) values of substances and refrigerant blends. See `editor/json/known_gwp.json`. Additionally, [Pandoc](https://pandoc.org/) under [GPL-2.0](https://github.com/jgm/pandoc/blob/master/COPYRIGHT) is invoked from CI / CD but exclusively for optional documentation generation (invoked as an executable). Not a compile-time or run-time dependency of Kigali Sim itself or any of its components and it is used in a completely isolated CI / CD pipeline from the rest of the project.
+We also use colors from [ColorBrewer 2.0](https://colorbrewer2.org/) by Cynthia Brewer, Mark Harrower, Ben Sheesley, Andy Woodruff, and David Heyman at The Pennsylvania State University. Additionally, we use data from [UNEP Ozone Secretariat](https://ozone.unep.org/lists-substances-and-blends) for Global Warming Potential (GWP) values of substances and refrigerant blends. See `editor/json/known_gwp.json`. Additionally, [Pandoc](https://pandoc.org/) under [GPL-2.0](https://github.com/jgm/pandoc/blob/master/COPYRIGHT) is invoked from CI / CD but exclusively for optional documentation generation (invoked as an executable). Not a compile-time or run-time dependency of Kigali Sim itself or any of its components and it is used in a completely isolated CI / CD pipeline from the rest of the project.
 
 <br>
 

@@ -4,7 +4,7 @@ This guide provides comprehensive information for contributors to the Kigali Sim
 
 ## Documentation
 
-Note that, in addition to this documentation and [CONTRIBUTORS.md](https://github.com/SchmidtDSE/kigali-sim/blob/main/CONTRIBUTORS.md) many directories within this project's repository also contain their own README files with additional information about that component or area of code.
+Note that, in addition to this documentation and [CONTRIBUTING.md](https://github.com/SchmidtDSE/kigali-sim/blob/main/CONTRIBUTING.md) many directories within this project's repository also contain their own README files with additional information about that component or area of code.
 
 ## Architecture Overview
 
