@@ -6,7 +6,7 @@
 
 import {WasmBackend, WasmLayer, ReportDataParser, BackendResult} from "wasm_backend";
 import {EngineNumber} from "engine_number";
-import {EngineResult, ImportSupplement} from "engine_struct";
+import {EngineResult, EngineResultBuilder, ImportSupplement, TradeSupplement} from "engine_struct";
 
 function buildWasmBackendTests() {
   QUnit.module("WasmBackend", function () {
@@ -861,9 +861,44 @@ function buildWasmBackendTests() {
         let simulationCalled = false;
         const testCode = "start default\nend default\nstart simulations\n" +
           "simulate \"scenario1\" from years 1 to 10\nend simulations";
+
+        // Create a minimal EngineResult using EngineResultBuilder
+        const builder = new EngineResultBuilder();
+        const tradeSupplement = new TradeSupplement(
+          new EngineNumber(0, "kg"),
+          new EngineNumber(0, "tCO2e"),
+          new EngineNumber(0, "units"),
+          new EngineNumber(0, "kg"),
+          new EngineNumber(0, "tCO2e"),
+        );
+        builder.setApplication("app");
+        builder.setSubstance("sub");
+        builder.setYear(2024);
+        builder.setScenarioName("scenario1");
+        builder.setTrialNumber(1);
+        builder.setDomesticValue(new EngineNumber(0, "kg"));
+        builder.setImportValue(new EngineNumber(0, "kg"));
+        builder.setExportValue(new EngineNumber(0, "kg"));
+        builder.setRecycleValue(new EngineNumber(0, "kg"));
+        builder.setDomesticConsumptionValue(new EngineNumber(0, "tCO2e"));
+        builder.setImportConsumptionValue(new EngineNumber(0, "tCO2e"));
+        builder.setExportConsumptionValue(new EngineNumber(0, "tCO2e"));
+        builder.setRecycleConsumptionValue(new EngineNumber(0, "tCO2e"));
+        builder.setPopulationValue(new EngineNumber(0, "units"));
+        builder.setPopulationNew(new EngineNumber(0, "units"));
+        builder.setRechargeEmissions(new EngineNumber(0, "tCO2e"));
+        builder.setEolEmissions(new EngineNumber(0, "tCO2e"));
+        builder.setInitialChargeEmissions(new EngineNumber(0, "tCO2e"));
+        builder.setEnergyConsumption(new EngineNumber(0, "kwh"));
+        builder.setTradeSupplement(tradeSupplement);
+        builder.setBankKg(new EngineNumber(0, "kg"));
+        builder.setBankTco2e(new EngineNumber(0, "tCO2e"));
+        builder.setBankChangeKg(new EngineNumber(0, "kg"));
+        builder.setBankChangeTco2e(new EngineNumber(0, "tCO2e"));
+
         const mockBackendResult = new BackendResult(
           "csv data",
-          [new EngineResult("app", "sub", 2024, "scenario1", 1)],
+          [builder.build()],
         );
 
         const mockWasmLayer = {

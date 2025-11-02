@@ -5,7 +5,7 @@
  */
 
 import {EngineNumber} from "engine_number";
-import {EngineResult, TradeSupplement} from "engine_struct";
+import {EngineResult, EngineResultBuilder, TradeSupplement} from "engine_struct";
 import {UiTranslatorCompiler} from "ui_translator";
 
 /**
@@ -187,32 +187,34 @@ class ReportDataParser {
       exportInitialChargeConsumption,
     );
 
-    return new EngineResult(
-      application,
-      substance,
-      year,
-      scenarioName,
-      trialNumber,
-      domesticValue,
-      importValue,
-      exportValue,
-      recycleValue,
-      domesticConsumptionValue,
-      importConsumptionValue,
-      exportConsumptionValue,
-      recycleConsumptionValue,
-      populationValue,
-      populationNew,
-      rechargeEmissions,
-      eolEmissions,
-      initialChargeEmissions,
-      energyConsumption,
-      tradeSupplement,
-      bankKg,
-      bankTco2e,
-      bankChangeKg,
-      bankChangeTco2e,
-    );
+    // Build the result using EngineResultBuilder
+    const builder = new EngineResultBuilder();
+    builder.setApplication(application);
+    builder.setSubstance(substance);
+    builder.setYear(year);
+    builder.setScenarioName(scenarioName);
+    builder.setTrialNumber(trialNumber);
+    builder.setDomesticValue(domesticValue);
+    builder.setImportValue(importValue);
+    builder.setExportValue(exportValue);
+    builder.setRecycleValue(recycleValue);
+    builder.setDomesticConsumptionValue(domesticConsumptionValue);
+    builder.setImportConsumptionValue(importConsumptionValue);
+    builder.setExportConsumptionValue(exportConsumptionValue);
+    builder.setRecycleConsumptionValue(recycleConsumptionValue);
+    builder.setPopulationValue(populationValue);
+    builder.setPopulationNew(populationNew);
+    builder.setRechargeEmissions(rechargeEmissions);
+    builder.setEolEmissions(eolEmissions);
+    builder.setInitialChargeEmissions(initialChargeEmissions);
+    builder.setEnergyConsumption(energyConsumption);
+    builder.setTradeSupplement(tradeSupplement);
+    builder.setBankKg(bankKg);
+    builder.setBankTco2e(bankTco2e);
+    builder.setBankChangeKg(bankChangeKg);
+    builder.setBankChangeTco2e(bankChangeTco2e);
+
+    return builder.build();
   }
 }
 

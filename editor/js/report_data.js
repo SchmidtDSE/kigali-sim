@@ -1104,35 +1104,19 @@ class ReportDataWrapper {
   _getAggregatedAfterFilter(filterSet) {
     const self = this;
     const afterFilter = self._applyFilterSet(filterSet);
-    const preAggregated = afterFilter.map(
-      (x) =>
-        new AggregatedResult(
-          x.getDomestic(),
-          x.getImport(),
-          x.getRecycle(),
-          x.getExport(),
-          x.getDomesticConsumption(),
-          x.getImportConsumption(),
-          x.getRecycleConsumption(),
-          x.getExportConsumption(),
-          x.getPopulation(),
-          x.getPopulationNew(),
-          x.getRechargeEmissions(),
-          x.getEolEmissions(),
-          x.getInitialChargeEmissions(),
-          x.getEnergyConsumption(),
-          x.getBankKg(),
-          x.getBankTco2e(),
-          x.getBankChangeKg(),
-          x.getBankChangeTco2e(),
-        ),
-    );
 
-    if (preAggregated.length == 0) {
+    if (afterFilter.length === 0) {
       return null;
     }
 
-    const aggregated = preAggregated.reduce((a, b) => a.combine(b));
+    // Combine all results using the AggregatedResult constructor which takes two objects
+    // and combines them. Start with the first two results and keep combining with the rest.
+    let aggregated = new AggregatedResult(afterFilter[0], afterFilter[1] || afterFilter[0]);
+
+    // Continue combining with remaining results
+    for (let i = 2; i < afterFilter.length; i++) {
+      aggregated = new AggregatedResult(aggregated, afterFilter[i]);
+    }
 
     return aggregated;
   }
