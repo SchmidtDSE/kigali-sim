@@ -22,20 +22,44 @@ class ParsedYear {
   constructor(year, originalString) {
     const self = this;
 
-    // Convert numeric strings to numbers for proper handling
-    // while preserving special strings like "beginning" and "onwards"
+    self._year = self._determineYear(year);
+    self._originalString = self._determineOriginalString(originalString, year);
+  }
+
+  /**
+   * Determine the original string representation of the year.
+   *
+   * @private
+   * @param {string|null} originalString - The original string if provided.
+   * @param {number|string|null} year - The year value to use as fallback.
+   * @returns {string|null} The original string or a string version of the year.
+   */
+  _determineOriginalString(originalString, year) {
+    const self = this;
+    return originalString || (year !== null ? String(year) : null);
+  }
+
+  /**
+   * Determine the year value from input.
+   *
+   * Convert numeric strings to numbers for proper handling while preserving
+   * special strings like "beginning" and "onwards".
+   *
+   * @private
+   * @param {number|string|null} year - The year value to process.
+   * @returns {number|string|null} The processed year value.
+   */
+  _determineYear(year) {
     if (typeof year === "string" && year !== "beginning" && year !== "onwards") {
       const numericValue = parseFloat(year);
       if (!isNaN(numericValue) && isFinite(numericValue)) {
-        self._year = numericValue;
+        return numericValue;
       } else {
-        self._year = year;
+        return year;
       }
     } else {
-      self._year = year;
+      return year;
     }
-
-    self._originalString = originalString || (year !== null ? String(year) : null);
   }
 
   /**
@@ -89,13 +113,12 @@ class ParsedYear {
       return false;
     }
 
-    // If both have finite numeric years, compare numeric values
-    if (self.hasFiniteNumericYear() && otherParsedYear.hasFiniteNumericYear()) {
+    const bothFinite = self.hasFiniteNumericYear() && otherParsedYear.hasFiniteNumericYear();
+    if (bothFinite) {
       return self.getNumericYear() === otherParsedYear.getNumericYear();
+    } else {
+      return self.getYearStr() === otherParsedYear.getYearStr();
     }
-
-    // Otherwise, compare string representations
-    return self.getYearStr() === otherParsedYear.getYearStr();
   }
 }
 
@@ -129,7 +152,6 @@ class YearMatcher {
       const startRearrange = Math.min(startValue, endValue);
       const endRearrange = Math.max(startValue, endValue);
 
-      // Create new ParsedYear instances for the rearranged values
       self._start = new ParsedYear(startRearrange);
       self._end = new ParsedYear(endRearrange);
     }
@@ -143,10 +165,10 @@ class YearMatcher {
    */
   getInRange(year) {
     const self = this;
-    const startValue = self._start && self._start.hasFiniteNumericYear() ?
-      self._start.getNumericYear() : self._start;
-    const endValue = self._end && self._end.hasFiniteNumericYear() ?
-      self._end.getNumericYear() : self._end;
+    const startIsNumeric = self._start && self._start.hasFiniteNumericYear();
+    const endIsNumeric = self._end && self._end.hasFiniteNumericYear();
+    const startValue = startIsNumeric ? self._start.getNumericYear() : self._start;
+    const endValue = endIsNumeric ? self._end.getNumericYear() : self._end;
     const meetsMin = startValue === null || startValue <= year;
     const meetsMax = endValue === null || endValue >= year;
     return meetsMin && meetsMax;
