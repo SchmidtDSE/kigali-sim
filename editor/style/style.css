@@ -871,6 +871,10 @@ select option[disabled] {
 }
 
 @media (min-width: 1000px) {
+  body {
+    padding: 10px;
+  }
+
   header {
     display: grid;
     grid-template-columns: auto 1fr;
