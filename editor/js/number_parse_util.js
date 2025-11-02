@@ -166,17 +166,15 @@ class NumberParseUtil {
    */
   _parseWithSeparators(numberPart, originalString) {
     const self = this;
-    const commaCount = self._countOccurrences(numberPart, ",");
-    const periodCount = self._countOccurrences(numberPart, ".");
+    const hasCommas = self._countOccurrences(numberPart, ",") > 0;
+    const hasPeriods = self._countOccurrences(numberPart, ".") > 0;
+    const bothSeparatorsPresent = hasCommas && hasPeriods;
 
-    // Both separators present - apply precedence rules
-    if (commaCount > 0 && periodCount > 0) {
+    if (bothSeparatorsPresent) {
       return self._parseMixedSeparators(numberPart, originalString);
-    } else if (commaCount > 0) {
-      // Only comma present
+    } else if (hasCommas) {
       return self._parseSingleSeparatorType(numberPart, ",", originalString);
-    } else if (periodCount > 0) {
-      // Only period present
+    } else if (hasPeriods) {
       return self._parseSingleSeparatorType(numberPart, ".", originalString);
     } else {
       // Shouldn't reach here based on calling conditions
@@ -205,25 +203,24 @@ class NumberParseUtil {
     const lastComma = numberPart.lastIndexOf(",");
     const lastPeriod = numberPart.lastIndexOf(".");
 
-    // Period comes after comma - US format (period as decimal)
-    if (lastPeriod > lastComma) {
-      // Validate US format: comma(s) for thousands, period for decimal
-      if (periodCount !== 1) {
+    const usesUsFormat = lastPeriod > lastComma;
+    const multiplePeriods = periodCount !== 1;
+    const periodsBeforeComma = numberPart.indexOf(".") < lastComma;
+
+    if (usesUsFormat) {
+      if (multiplePeriods) {
         return NumberParseResult.error(
           `Invalid number format: '${originalString}' - multiple decimal separators not allowed`,
         );
       }
 
-      // Check if there are any periods before the last comma (invalid in US format)
-      const firstPeriod = numberPart.indexOf(".");
-      if (firstPeriod < lastComma) {
+      if (periodsBeforeComma) {
         return NumberParseResult.error(
           `Invalid number format: '${originalString}' - periods cannot ` +
             "appear before commas in US format",
         );
       }
 
-      // Format: 123,456.78 - comma is thousands, period is decimal
       const withoutThousands = numberPart.replace(/,/g, "");
       const result = parseFloat(withoutThousands);
       if (isNaN(result)) {
@@ -231,7 +228,6 @@ class NumberParseUtil {
       }
       return NumberParseResult.success(result);
     } else {
-      // Comma comes after period - European format → ERROR
       const ukSuggestion = self._convertEuropeanToUkFormat(numberPart);
       return NumberParseResult.error(
         `Unsupported number format: '${originalString}'. ` +
@@ -254,131 +250,209 @@ class NumberParseUtil {
     const self = this;
     const separatorCount = self._countOccurrences(numberPart, separator);
 
-    // Multiple occurrences
     if (separatorCount > 1) {
-      if (separator === ".") {
-        // Multiple periods = European thousands separators → ERROR
-        const ukSuggestion = numberPart.replace(/\./g, ",");
-        return NumberParseResult.error(
-          self._generateEuropeanFormatError(originalString, ukSuggestion),
-        );
-      } else {
-        // Multiple commas = UK thousands separators → OK
-        const cleaned = numberPart.replace(new RegExp(`\\${separator}`, "g"), "");
-        const result = parseFloat(cleaned);
-        if (isNaN(result)) {
-          return NumberParseResult.error(`Invalid number format: '${originalString}'`);
-        }
-        return NumberParseResult.success(result);
-      }
+      return self._parseSingleSeparatorMultipleOccurrences(
+        numberPart,
+        separator,
+        originalString,
+      );
     }
 
-    // Single occurrence - need to determine if thousands or decimal
     const separatorIndex = numberPart.indexOf(separator);
     const digitsBefore = separatorIndex;
     const digitsAfter = numberPart.length - separatorIndex - 1;
 
-    // If not exactly 3 digits after, determine UK vs European format
     if (digitsAfter !== 3) {
-      if (separator === ",") {
-        // Check if this looks like European decimal usage (1-2 digits after comma)
-        if (digitsAfter <= 2 && digitsBefore > 0) {
-          const ukSuggestion = numberPart.replace(",", ".");
-          return NumberParseResult.error(
-            self._generateEuropeanFormatError(originalString, ukSuggestion),
-          );
-        } else {
-          // Treat comma as thousands separator (UK format)
-          const result = parseFloat(numberPart.replace(/,/g, ""));
-          if (isNaN(result)) {
-            return NumberParseResult.error(`Invalid number format: '${originalString}'`);
-          }
-          return NumberParseResult.success(result);
-        }
+      return self._parseSingleSeparatorSingleOccurrence(
+        numberPart,
+        separator,
+        digitsBefore,
+        digitsAfter,
+        originalString,
+      );
+    }
+
+    if (digitsBefore === 0) {
+      return self._parseStartsWithSeparator(numberPart, separator, originalString);
+    }
+
+    if (digitsBefore >= 4) {
+      return self._parseUnambiguousPriorDigits(numberPart, separator, originalString);
+    }
+
+    if (numberPart.startsWith("0" + separator)) {
+      return self._parseWithLeadingZero(numberPart, separator, originalString);
+    }
+
+    return self._interpretAmbiguous(numberPart, separator, originalString);
+  }
+
+  /**
+   * Parse single separator with multiple occurrences.
+   *
+   * @param {string} numberPart - Number part to parse
+   * @param {string} separator - The separator character (',' or '.')
+   * @param {string} originalString - Original string for error messages
+   * @returns {NumberParseResult} Parsed number result
+   * @private
+   */
+  _parseSingleSeparatorMultipleOccurrences(numberPart, separator, originalString) {
+    const self = this;
+    if (separator === ".") {
+      const ukSuggestion = numberPart.replace(/\./g, ",");
+      return NumberParseResult.error(
+        self._generateEuropeanFormatError(originalString, ukSuggestion),
+      );
+    } else {
+      const cleaned = numberPart.replace(new RegExp(`\\${separator}`, "g"), "");
+      const result = parseFloat(cleaned);
+      if (isNaN(result)) {
+        return NumberParseResult.error(`Invalid number format: '${originalString}'`);
+      }
+      return NumberParseResult.success(result);
+    }
+  }
+
+  /**
+   * Parse single separator with single occurrence and ambiguous digit count.
+   *
+   * @param {string} numberPart - Number part to parse
+   * @param {string} separator - The separator character (',' or '.')
+   * @param {number} digitsBefore - Number of digits before separator
+   * @param {number} digitsAfter - Number of digits after separator
+   * @param {string} originalString - Original string for error messages
+   * @returns {NumberParseResult} Parsed number result
+   * @private
+   */
+  _parseSingleSeparatorSingleOccurrence(
+    numberPart,
+    separator,
+    digitsBefore,
+    digitsAfter,
+    originalString,
+  ) {
+    const self = this;
+    if (separator === ",") {
+      if (digitsAfter <= 2 && digitsBefore > 0) {
+        const ukSuggestion = numberPart.replace(",", ".");
+        return NumberParseResult.error(
+          self._generateEuropeanFormatError(originalString, ukSuggestion),
+        );
       } else {
-        // Period separator - treat as UK decimal format
-        const result = parseFloat(numberPart);
+        const result = parseFloat(numberPart.replace(/,/g, ""));
         if (isNaN(result)) {
           return NumberParseResult.error(`Invalid number format: '${originalString}'`);
         }
         return NumberParseResult.success(result);
       }
-    }
-
-    // Exactly 3 digits after separator - check for likely thousands patterns
-    if (digitsAfter === 3) {
-      // Special case: if number starts with separator, it's always a decimal separator
-      if (digitsBefore === 0) {
-        if (separator === ",") {
-          // European decimal format - reject with UK suggestion
-          const ukSuggestion = numberPart.replace(",", ".");
-          return NumberParseResult.error(
-            self._generateEuropeanFormatError(originalString, ukSuggestion),
-          );
-        } else {
-          // UK decimal format
-          const result = parseFloat(numberPart);
-          if (isNaN(result)) {
-            return NumberParseResult.error(`Invalid number format: '${originalString}'`);
-          }
-          return NumberParseResult.success(result);
-        }
+    } else {
+      const result = parseFloat(numberPart);
+      if (isNaN(result)) {
+        return NumberParseResult.error(`Invalid number format: '${originalString}'`);
       }
-
-      // Check if digits before are 4 or more like 1234.5, treat as decimal separator
-      if (digitsBefore >= 4) {
-        if (separator === ",") {
-          // European decimal format - reject with UK suggestion
-          const ukSuggestion = numberPart.replace(",", ".");
-          return NumberParseResult.error(
-            self._generateEuropeanFormatError(originalString, ukSuggestion),
-          );
-        } else {
-          // UK decimal format
-          const result = parseFloat(numberPart);
-          if (isNaN(result)) {
-            return NumberParseResult.error(`Invalid number format: '${originalString}'`);
-          }
-          return NumberParseResult.success(result);
-        }
-      } else if (numberPart.startsWith("0" + separator)) {
-        // Numbers starting with 0, are clearly decimals (like 0,035)
-        if (separator === ",") {
-          // European decimal format - reject with UK suggestion
-          const ukSuggestion = numberPart.replace(",", ".");
-          return NumberParseResult.error(
-            self._generateEuropeanFormatError(originalString, ukSuggestion),
-          );
-        } else {
-          // UK decimal format
-          const result = parseFloat(numberPart);
-          if (isNaN(result)) {
-            return NumberParseResult.error(`Invalid number format: '${originalString}'`);
-          }
-          return NumberParseResult.success(result);
-        }
-      } else {
-        // Previously ambiguous case - now interpret as UK format (no error)
-        if (separator === ",") {
-          // Treat comma as thousands separator (UK format)
-          const result = parseFloat(numberPart.replace(/,/g, ""));
-          if (isNaN(result)) {
-            return NumberParseResult.error(`Invalid number format: '${originalString}'`);
-          }
-          return NumberParseResult.success(result);
-        } else {
-          // Period separator - treat as UK decimal format
-          const result = parseFloat(numberPart);
-          if (isNaN(result)) {
-            return NumberParseResult.error(`Invalid number format: '${originalString}'`);
-          }
-          return NumberParseResult.success(result);
-        }
-      }
+      return NumberParseResult.success(result);
     }
+  }
 
-    // Fallback - shouldn't reach here
-    return NumberParseResult.error(`Unable to parse number format: '${originalString}'`);
+  /**
+   * Parse number that starts with separator.
+   *
+   * @param {string} numberPart - Number part to parse
+   * @param {string} separator - The separator character (',' or '.')
+   * @param {string} originalString - Original string for error messages
+   * @returns {NumberParseResult} Parsed number result
+   * @private
+   */
+  _parseStartsWithSeparator(numberPart, separator, originalString) {
+    const self = this;
+    if (separator === ",") {
+      const ukSuggestion = numberPart.replace(",", ".");
+      return NumberParseResult.error(
+        self._generateEuropeanFormatError(originalString, ukSuggestion),
+      );
+    } else {
+      const result = parseFloat(numberPart);
+      if (isNaN(result)) {
+        return NumberParseResult.error(`Invalid number format: '${originalString}'`);
+      }
+      return NumberParseResult.success(result);
+    }
+  }
+
+  /**
+   * Parse number with 4 or more digits before separator (unambiguous decimal).
+   *
+   * @param {string} numberPart - Number part to parse
+   * @param {string} separator - The separator character (',' or '.')
+   * @param {string} originalString - Original string for error messages
+   * @returns {NumberParseResult} Parsed number result
+   * @private
+   */
+  _parseUnambiguousPriorDigits(numberPart, separator, originalString) {
+    const self = this;
+    if (separator === ",") {
+      const ukSuggestion = numberPart.replace(",", ".");
+      return NumberParseResult.error(
+        self._generateEuropeanFormatError(originalString, ukSuggestion),
+      );
+    } else {
+      const result = parseFloat(numberPart);
+      if (isNaN(result)) {
+        return NumberParseResult.error(`Invalid number format: '${originalString}'`);
+      }
+      return NumberParseResult.success(result);
+    }
+  }
+
+  /**
+   * Parse number starting with zero and separator (clearly a decimal).
+   *
+   * @param {string} numberPart - Number part to parse
+   * @param {string} separator - The separator character (',' or '.')
+   * @param {string} originalString - Original string for error messages
+   * @returns {NumberParseResult} Parsed number result
+   * @private
+   */
+  _parseWithLeadingZero(numberPart, separator, originalString) {
+    const self = this;
+    if (separator === ",") {
+      const ukSuggestion = numberPart.replace(",", ".");
+      return NumberParseResult.error(
+        self._generateEuropeanFormatError(originalString, ukSuggestion),
+      );
+    } else {
+      const result = parseFloat(numberPart);
+      if (isNaN(result)) {
+        return NumberParseResult.error(`Invalid number format: '${originalString}'`);
+      }
+      return NumberParseResult.success(result);
+    }
+  }
+
+  /**
+   * Interpret ambiguous format with 3 digits after separator (like 123,456).
+   *
+   * @param {string} numberPart - Number part to parse
+   * @param {string} separator - The separator character (',' or '.')
+   * @param {string} originalString - Original string for error messages
+   * @returns {NumberParseResult} Parsed number result
+   * @private
+   */
+  _interpretAmbiguous(numberPart, separator, originalString) {
+    const self = this;
+    if (separator === ",") {
+      const result = parseFloat(numberPart.replace(/,/g, ""));
+      if (isNaN(result)) {
+        return NumberParseResult.error(`Invalid number format: '${originalString}'`);
+      }
+      return NumberParseResult.success(result);
+    } else {
+      const result = parseFloat(numberPart);
+      if (isNaN(result)) {
+        return NumberParseResult.error(`Invalid number format: '${originalString}'`);
+      }
+      return NumberParseResult.success(result);
+    }
   }
 
   /**
@@ -413,28 +487,29 @@ class NumberParseUtil {
   /**
    * Convert European format number to UK format suggestion.
    *
+   * Handle different European patterns:
+   * - "1.234,56" → "1,234.56"
+   * - "123,45" → "123.45"
+   * - "1.234.567,89" → "1,234,567.89"
+   *
    * @param {string} numberPart - European format number part
    * @returns {string} UK format equivalent
    * @private
    */
   _convertEuropeanToUkFormat(numberPart) {
-    // Handle different European patterns:
-    // "1.234,56" → "1,234.56"
-    // "123,45" → "123.45"
-    // "1.234.567,89" → "1,234,567.89"
-
     const lastCommaIndex = numberPart.lastIndexOf(",");
     const lastPeriodIndex = numberPart.lastIndexOf(".");
 
-    if (lastCommaIndex > lastPeriodIndex && lastCommaIndex !== -1) {
-      // European mixed format: periods for thousands, comma for decimal
+    const europeanMixed = lastCommaIndex > lastPeriodIndex && lastCommaIndex !== -1;
+    const singleComma = lastCommaIndex !== -1 && lastPeriodIndex === -1;
+
+    if (europeanMixed) {
       return numberPart.replace(/\./g, ",").replace(/,([^,]*)$/, ".$1");
-    } else if (lastCommaIndex !== -1 && lastPeriodIndex === -1) {
-      // Single comma as European decimal
+    } else if (singleComma) {
       return numberPart.replace(",", ".");
     }
 
-    return numberPart; // Fallback
+    return numberPart;
   }
 
   /**
