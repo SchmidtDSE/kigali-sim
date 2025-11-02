@@ -548,15 +548,10 @@ class ScorecardPresenter {
       const salesValue = results.getSales(filterSet);
       const equipmentValue = results.getPopulation(filterSet);
 
-      // Helper function to safely get value from potentially null results
-      const safeGetValue = (engineNumber, defaultValue = 0) => {
-        return engineNumber !== null ? engineNumber.getValue() : defaultValue;
-      };
-
       const roundToTenths = (x) => Math.round(x * 10) / 10;
-      const emissionRounded = roundToTenths(safeGetValue(emissionsValue) / 1000000);
-      const salesMt = roundToTenths(safeGetValue(salesValue) / 1000000) + " k";
-      const millionEqipment = roundToTenths(safeGetValue(equipmentValue) / 1000000) + " M";
+      const emissionRounded = roundToTenths(self._safeGetValue(emissionsValue) / 1000000);
+      const salesMt = roundToTenths(self._safeGetValue(salesValue) / 1000000) + " k";
+      const millionEqipment = roundToTenths(self._safeGetValue(equipmentValue) / 1000000) + " M";
 
       const metricSelected = filterSet.getMetric();
       const emissionsSelected = metricSelected === "emissions";
@@ -589,39 +584,7 @@ class ScorecardPresenter {
         hideVal,
       );
 
-      // Update dropdown values to match FilterSet
-      const metricFamily = self._filterSet.getMetric();
-      const subMetric = self._filterSet.getSubMetric();
-      const units = self._filterSet.getUnits();
-
-      const metricStrategies = {
-        "emissions": () => {
-          const emissionsSubmetricDropdown = emissionsScorecard.querySelector(
-            ".emissions-submetric");
-          const emissionsUnitsDropdown = emissionsScorecard.querySelector(".emissions-units");
-          emissionsSubmetricDropdown.value = subMetric;
-          emissionsUnitsDropdown.value = units;
-        },
-        "sales": () => {
-          const salesSubmetricDropdown = salesScorecard.querySelector(".sales-submetric");
-          const salesUnitsDropdown = salesScorecard.querySelector(".sales-units");
-          salesSubmetricDropdown.value = subMetric;
-          salesUnitsDropdown.value = units;
-        },
-        "population": () => {
-          const equipmentSubmetricDropdown = equipmentScorecard.querySelector(
-            ".equipment-submetric");
-          const equipmentUnitsDropdown = equipmentScorecard.querySelector(".equipment-units");
-          equipmentSubmetricDropdown.value = subMetric;
-          equipmentUnitsDropdown.value = units;
-        },
-      };
-
-      const strategy = metricStrategies[metricFamily];
-      if (!strategy) {
-        throw new Error(`Unknown metric family: ${metricFamily}`);
-      }
-      strategy();
+      self._updateDropdownMenus(emissionsScorecard, salesScorecard, equipmentScorecard);
     };
 
     // Execute with a catch for invalid user selections.
@@ -641,6 +604,87 @@ class ScorecardPresenter {
         false,
         null,
       ));
+    }
+  }
+
+  /**
+   * Safely extract numeric value from potentially null EngineNumber.
+   *
+   * @param {EngineNumber|null} engineNumber - The engine number to extract value from.
+   * @param {number} defaultValue - Default value if engineNumber is null (defaults to 0).
+   * @returns {number} The numeric value or default.
+   * @private
+   */
+  _safeGetValue(engineNumber, defaultValue = 0) {
+    const self = this;
+    return engineNumber !== null ? engineNumber.getValue() : defaultValue;
+  }
+
+  /**
+   * Get the strategy function for updating dropdown menus based on metric family.
+   *
+   * @param {string} metricFamily - The metric family ('emissions', 'sales', or 'population').
+   * @returns {Function} Strategy function that updates the appropriate dropdown menus.
+   * @throws {Error} If metric family is unknown.
+   * @private
+   */
+  _getDropdownMetricStrategy(metricFamily) {
+    const self = this;
+
+    const metricStrategies = {
+      "emissions": (emissionsScorecard, subMetric, units) => {
+        const emissionsSubmetricDropdown = emissionsScorecard.querySelector(
+          ".emissions-submetric");
+        const emissionsUnitsDropdown = emissionsScorecard.querySelector(".emissions-units");
+        emissionsSubmetricDropdown.value = subMetric;
+        emissionsUnitsDropdown.value = units;
+      },
+      "sales": (salesScorecard, subMetric, units) => {
+        const salesSubmetricDropdown = salesScorecard.querySelector(".sales-submetric");
+        const salesUnitsDropdown = salesScorecard.querySelector(".sales-units");
+        salesSubmetricDropdown.value = subMetric;
+        salesUnitsDropdown.value = units;
+      },
+      "population": (equipmentScorecard, subMetric, units) => {
+        const equipmentSubmetricDropdown = equipmentScorecard.querySelector(
+          ".equipment-submetric");
+        const equipmentUnitsDropdown = equipmentScorecard.querySelector(".equipment-units");
+        equipmentSubmetricDropdown.value = subMetric;
+        equipmentUnitsDropdown.value = units;
+      },
+    };
+
+    const strategy = metricStrategies[metricFamily];
+    if (!strategy) {
+      throw new Error(`Unknown metric family: ${metricFamily}`);
+    }
+    return strategy;
+  }
+
+  /**
+   * Update dropdown menu values to match current FilterSet selections.
+   *
+   * @param {HTMLElement} emissionsScorecard - Emissions scorecard DOM element.
+   * @param {HTMLElement} salesScorecard - Sales scorecard DOM element.
+   * @param {HTMLElement} equipmentScorecard - Equipment scorecard DOM element.
+   * @private
+   */
+  _updateDropdownMenus(emissionsScorecard, salesScorecard, equipmentScorecard) {
+    const self = this;
+
+    const metricFamily = self._filterSet.getMetric();
+    const subMetric = self._filterSet.getSubMetric();
+    const units = self._filterSet.getUnits();
+
+    const strategy = self._getDropdownMetricStrategy(metricFamily);
+
+    // Execute strategy with appropriate scorecard based on metric family
+    if (metricFamily === "emissions") {
+      strategy(emissionsScorecard, subMetric, units);
+    } else if (metricFamily === "sales") {
+      strategy(salesScorecard, subMetric, units);
+    } else if (metricFamily === "population") {
+      strategy(equipmentScorecard, subMetric, units);
     }
   }
 
