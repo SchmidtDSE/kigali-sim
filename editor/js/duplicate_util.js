@@ -99,6 +99,7 @@ class DuplicateEntityPresenter {
     self._getCodeObj = getCodeObj;
     self._onCodeObjUpdate = onCodeObjUpdate;
     self._dialog = document.getElementById("duplicate-entity-dialog");
+    self._duplicateLink = document.querySelector(".duplicate-entity-link");
     self._setupDialog();
   }
 
@@ -108,49 +109,88 @@ class DuplicateEntityPresenter {
    */
   _setupDialog() {
     const self = this;
+    self._setupDuplicateLink();
+    self._setupEntityType();
+    self._setupSourceEntity();
+    self._setupEquipmentModel();
+    self._setupSaveButton();
+    self._setupCancelButton();
+  }
 
-    // Link to open dialog
-    const duplicateLink = document.querySelector(".duplicate-entity-link");
-    duplicateLink.addEventListener("click", (event) => {
+  /**
+   * Set up duplicate link click handler.
+   * @private
+   */
+  _setupDuplicateLink() {
+    const self = this;
+    self._duplicateLink.addEventListener("click", (event) => {
       event.preventDefault();
       self._refreshEntityDropdown();
       self._dialog.showModal();
     });
+  }
 
-    // Entity type change handler - update source entity dropdown and substance-specific fields
+  /**
+   * Set up entity type change handler.
+   * @private
+   */
+  _setupEntityType() {
+    const self = this;
     const entityTypeInput = self._dialog.querySelector(".duplicate-entity-type-input");
     entityTypeInput.addEventListener("change", () => {
       self._refreshEntityDropdown();
       self._updateNewNameSuggestion();
       self._toggleSubstanceSpecificFields();
     });
+  }
 
-    // Source entity change handler - suggest new name and refresh application dropdown
+  /**
+   * Set up source entity change handler.
+   * @private
+   */
+  _setupSourceEntity() {
+    const self = this;
     const sourceEntityInput = self._dialog.querySelector(".duplicate-source-entity-input");
     sourceEntityInput.addEventListener("change", () => {
       self._updateNewNameSuggestion();
-      // Refresh application dropdown to update default selection
       const entityType = self._dialog.querySelector(".duplicate-entity-type-input").value;
       if (entityType === "substance") {
         self._refreshApplicationDropdown();
       }
     });
+  }
 
-    // Equipment model change handler - update name suggestion
+  /**
+   * Set up equipment model change handler.
+   * @private
+   */
+  _setupEquipmentModel() {
+    const self = this;
     const equipmentModelInput = self._dialog.querySelector(".duplicate-equipment-model-input");
     equipmentModelInput.addEventListener("input", () => {
       self._updateNewNameSuggestion();
     });
+  }
 
-
-    // Save button handler
+  /**
+   * Set up save button click handler.
+   * @private
+   */
+  _setupSaveButton() {
+    const self = this;
     const saveButton = self._dialog.querySelector(".save-button");
     saveButton.addEventListener("click", (event) => {
       event.preventDefault();
       self._duplicateEntity();
     });
+  }
 
-    // Cancel button handler
+  /**
+   * Set up cancel button click handler.
+   * @private
+   */
+  _setupCancelButton() {
+    const self = this;
     const cancelButton = self._dialog.querySelector(".cancel-button");
     cancelButton.addEventListener("click", (event) => {
       event.preventDefault();
@@ -224,7 +264,6 @@ class DuplicateEntityPresenter {
 
     if (sourceEntity && sourceEntity !== "") {
       if (entityType === "substance" && equipmentModel && equipmentModel.trim() !== "") {
-        // Generate compound name suggestion
         newNameInput.value = `${sourceEntity} - ${equipmentModel.trim()}`;
       } else {
         newNameInput.value = `${sourceEntity} Copy`;
@@ -269,8 +308,6 @@ class DuplicateEntityPresenter {
       }
       duplicator();
 
-      // Run validation checks that might show confirmation dialogs
-      // If user cancels any confirmation, keep dialog open
       if (!self._validateBeforeUpdate(entityType)) {
         return; // User cancelled validation, keep dialog open
       }
@@ -361,7 +398,7 @@ class DuplicateEntityPresenter {
       });
 
       return new Application(
-        app.getName(), // Keep same application name (policy context)
+        app.getName(),
         duplicatedSubstances,
         app._isModification,
         app._isCompatible,
@@ -392,16 +429,25 @@ class DuplicateEntityPresenter {
       throw new Error(`Simulation "${sourceSimName}" not found`);
     }
 
-    // Create new simulation scenario with same parameters
     const newSimulation = new SimulationScenario(
       newName,
-      [...sourceSimulation.getPolicyNames()], // Copy policy array
+      this._copyPolicyArray(sourceSimulation),
       sourceSimulation.getYearStart(),
       sourceSimulation.getYearEnd(),
       sourceSimulation._isCompatible,
     );
 
     codeObj.insertScenario(null, newSimulation);
+  }
+
+  /**
+   * Create a copy of the policy names array from a simulation scenario.
+   * @param {SimulationScenario} sourceSimulation - The source simulation to copy from
+   * @returns {Array<string>} A new array containing copied policy names
+   * @private
+   */
+  _copyPolicyArray(sourceSimulation) {
+    return [...sourceSimulation.getPolicyNames()];
   }
 
   /**
@@ -422,7 +468,6 @@ class DuplicateEntityPresenter {
     } else {
       equipmentSection.style.display = "none";
       applicationSection.style.display = "none";
-      // Clear fields when not substance
       self._dialog.querySelector(".duplicate-equipment-model-input").value = "";
       self._dialog.querySelector(".duplicate-target-application-input").innerHTML = "";
     }
