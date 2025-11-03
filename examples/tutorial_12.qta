@@ -1,32 +1,35 @@
 start default
 
-  define application "Domestic Refrigeration"
+  define application "Commercial Refrigeration"
   
-    uses substance "HFC-134a - high energy"
-      enable domestic
-      initial charge with 0.15 kg / unit for domestic
-      initial charge with 0 kg / unit for import
+    uses substance "HFC-134a"
+      enable import
+      initial charge with 0 kg / unit for domestic
+      initial charge with 1 kg / unit for import
       initial charge with 0 kg / unit for export
       equals 1430 kgCO2e / kg
-      equals 500 kwh / unit
-      set priorEquipment to 1000000 units during year 2025
-      set domestic to 20 mt during year 2025
+      equals 1 kwh / unit
+      set sales to 4 mt during year 2024
+      set sales to 5 mt during year 2025
+      change sales by 20 % / year during year 2027
       retire 5 % / year
-      recharge 10 % with 0.15 kg / unit
+      recharge 5 % with 0.85 kg / unit
     end substance
 
 
-    uses substance "HFC-134a - low energy"
-      enable domestic
-      initial charge with 0.15 kg / unit for domestic
-      initial charge with 0 kg / unit for import
+    uses substance "R-600a"
+      enable import
+      assume only recharge sales
+      initial charge with 0 kg / unit for domestic
+      initial charge with 1 kg / unit for import
       initial charge with 0 kg / unit for export
       equals 1430 kgCO2e / kg
-      equals 350 kwh / unit
-      set priorEquipment to 1000 units during year 2025
-      set domestic to 10 mt during year 2025
+      equals 1 kwh / unit
+      set sales to 4 mt during year 2024
+      set sales to 5 mt during year 2025
+      change sales by 20 % / year during year 2027
       retire 5 % / year
-      recharge 10 % with 0.15 kg / unit
+      recharge 5 % with 0.85 kg / unit
     end substance
   
   end application
@@ -34,27 +37,9 @@ start default
 end default
 
 
-start policy "Energy Efficiency"
-
-  modify application "Domestic Refrigeration"
-  
-    modify substance "HFC-134a - high energy"
-      replace 10 % of sales with "HFC-134a - low energy" during years 2028 to onwards
-    end substance
-  
-  end application
-
-end policy
-
-
 start simulations
 
-  simulate "BAU"
-  from years 2025 to 2035
-
-
-  simulate "Efficiency Policy"
-    using "Energy Efficiency"
-  from years 2025 to 2035
+  simulate "Business as Usual"
+  from years 2024 to 2034
 
 end simulations
