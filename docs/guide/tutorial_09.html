@@ -36,6 +36,9 @@
         <p>
           Previous tutorials included investigation of modeling these values but this section takes a closer look at specifying tCO2e for substances, modeling both with and without different policies. More specifically, we'll look at a refrigerant substitution policy that gradually replaces HFC-134a with R-600a in domestic refrigeration. This simulation can track this transition as it dramatically reduces overall climate impact (measured in tCO2e) even when total refrigerant consumption remains similar.
         </p>
+        <p>
+          Note that instructions are a bit more brief under the assumption that the earlier tutorials have been completed.
+        </p>
       </section>
 
       <section id="setup-business-as-usual">
@@ -45,7 +48,7 @@
           First, let's create our baseline scenario with both HFC-134a and R-600a refrigerants in domestic refrigeration. We'll start with HFC-134a as the dominant refrigerant and minimal R-600a consumption.
         </p>
         
-        <p><strong>Note:</strong> In these feature specific tutorials, we will start from scratch each time. Click <strong>Save File</strong> to save your current work and then click <strong>New File</strong> to start a simulation.</p>
+        <p><strong>Note:</strong> In this feature specific tutorial, we will start from scratch each time. Click <strong>Save File</strong> to save your current work and then click <strong>New File</strong> to start a simulation.</p>
 
         <p><strong>Step 1: Create the Domestic Refrigeration application</strong></p>
         <ul>
@@ -132,13 +135,20 @@
      
         <p><strong>Step 5: review business as usual</strong></p>
         <ul>
-          <li>Select <strong>Population</strong>.</li>
-          <li>Ensure <strong>total</strong> and <strong>million units</strong> are selected.</li>
+          <li>Select <strong>Bank</strong>.</li>
+          <li>Ensure <strong>total</strong> and <strong>million units</strong> (as in units of equipment) are selected.</li>
           <li>Select <strong>Equipment</strong>.</li>
           <li>Ensure <strong>All</strong> is selected.</li>
         </ul>
         
         <p>This view shows HFC-134a as the dominant refrigerant.</p>
+
+        <p id="tutorial-gif-9-1" class="tutorial-gif-holder">
+          <img
+            src="/guide/img/tutorial09_01.gif"
+            alt="Animated GIF showing the setup for the business as usual scenario"
+          />
+        </p>
       </section>
 
       <section id="adding-substitution-policy">
@@ -168,6 +178,13 @@
         <p>
           This policy will progressively reduce HFC-134a consumption by 10% each year starting in 2028, with that demand being met by R-600a instead. Over time, this creates a significant shift in the refrigerant mix while maintaining overall service levels.
         </p>
+
+        <p id="tutorial-gif-9-2" class="tutorial-gif-holder">
+          <img
+            src="/guide/img/tutorial09_02.gif"
+            alt="Animated GIF showing the setup for the policy"
+          />
+        </p>
       </section>
 
       <section id="creating-the-simulation">
@@ -184,6 +201,13 @@
         </ul>
 
         <p>You should now see both your <strong>BAU</strong> and <strong>Replacement</strong> scenarios displayed side by side in the results panel.</p>
+
+        <p id="tutorial-gif-9-2" class="tutorial-gif-holder">
+          <img
+            src="/guide/img/tutorial09_03.gif"
+            alt="Animated GIF showing the setup for the scenario"
+          />
+        </p>
       </section>
 
       <section id="results">
@@ -194,7 +218,7 @@
         <p><strong>Emissions Changes</strong></p>
         <ul>
           <li>Compare simulations by selecting <strong>Simulations</strong> and then selecting <strong>All</strong> in the simulations panel.
-          <li>Select the <strong>Emissions</strong> radio button</li>.
+          <li>Select the <strong>Emissions</strong> radio button.</li>
           <li>Click <strong>configure custom</strong> and combine <strong>recharge</strong> and <strong>end of life</strong>.</li>
         </ul>
 
@@ -212,6 +236,13 @@
         </ul>
         
         <p>Indeed, despite the reduction in GWP, the overall consumption remains unchanged.</p>
+
+        <p id="tutorial-gif-9-2" class="tutorial-gif-holder">
+          <img
+            src="/guide/img/tutorial09_04.gif"
+            alt="Animated GIF showing the review of the results"
+          />
+        </p>
       </section>
 
       <section id="conclusion">

@@ -58,6 +58,36 @@
         <p>
           Let's start our exploration with the typical situation. Either through QubecTalk code or the UI-based editor, let's make a simulation with a business as usual scenario from 2024 to 2034 with HFC-134a used only in commercial refrigeration. Let's have the scenario above: set imports to 4 mt in 2024, 5 mt in 2025, and then add a change statement of +20% in 2027. Ensure there is an initial charge of 1 kg per unit and servicing of 5% with 0.85 kg / unit during all years.
         </p>
+
+        <pre><code>start default
+
+  define application "Commercial Refrigeration"
+  
+    uses substance "HFC-134a"
+      enable import
+      initial charge with 0 kg / unit for domestic
+      initial charge with 1 kg / unit for import
+      initial charge with 0 kg / unit for export
+      equals 1430 kgCO2e / kg
+      equals 1 kwh / unit
+      set sales to 4 mt during year 2024
+      set sales to 5 mt during year 2025
+      change sales by 20 % / year during year 2027
+      retire 5 % / year
+      recharge 5 % with 0.85 kg / unit
+    end substance
+
+  end application
+
+end default
+
+
+start simulations
+
+  simulate "Business as Usual"
+  from years 2024 to 2034
+
+end simulations</code></pre>
       </section>
 
       <section id="duplicate-the-substance">
