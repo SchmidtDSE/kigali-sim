@@ -1,6 +1,6 @@
 <html lang="en-GB">
   <head>
-    <title>Tutorial 11: Global Warming Potential</title>
+    <title>Tutorial 11: AI Assistants</title>
     <link href="/guide/guide.css?v=EPOCH" rel="stylesheet" type="text/css" />
   </head>
   <body>
@@ -10,17 +10,17 @@
       <a href="/">Kigali Sim</a>.
     </header>
     <main id="main">
-      <h1>Tutorial 11: Global Warming Potential Refrigerant Comparison</h1>
+      <h1>Tutorial 11: AI Assistants</h1>
 
-      Demonstrating GWP impact reduction through HFC-134a to R-600a substitution.
+      If you have access to an AI assistant, you can use them to help build or modify simulations.
 
       <details>
         <summary>Contents</summary>
         <ul>
           <li><a href="#motivation">Motivation</a></li>
-          <li><a href="#setup-business-as-usual">Setting Up the Business-as-Usual Scenario</a></li>
-          <li><a href="#adding-substitution-policy">Adding the GWP Reduction Policy</a></li>
-          <li><a href="#creating-the-simulation">Creating the Simulation</a></li>
+          <li><a href="#giving-ai-information">Giving the AI information</a></li>
+          <li><a href="#building-basic-simulation">Building the basic simulation</a></li>
+          <li><a href="#adding-recycling-program">Adding a recycling program</a></li>
           <li><a href="#results">Results</a></li>
           <li><a href="#conclusion">Conclusion</a></li>
           <li><a href="#next-steps">Next Steps</a></li>
@@ -31,207 +31,79 @@
         <h2>Motivation</h2>
 
         <p>
-          Global Warming Potential (GWP) values represent how much a substance contributes to climate change compared to CO2. For example, consider HFC-134a with a GWP of 1,430 kgCO2e / kg versus R-600a which has only 3. This means that each kilogram of HFC-134a has the same climate impact as 477 kilograms of R-600a.
+          If you recall <a href="/guide/tutorial_07.html">Tutorial 7</a>, we revealed that you are actually writing computer code when you use the UI-based editor. Kigali Sim uses a programming language built just for Montreal Protocol models called QubecTalk. In addition to allowing you to make more sophisticated simulations, this programming option also allows you to use AI (LLM) assistants. This includes many different options like <a href="https://chatgpt.com/" target="_blank">ChatGPT</a> or, for example, we use <a href="https://claude.ai/" target="_blank">Claude</a>.
         </p>
+
         <p>
-          Previous tutorials included investigation of modeling these values but this section takes a closer look at specifying tCO2e for substances, modeling both with and without different policies. More specifically, we'll look at a refrigerant substitution policy that gradually replaces HFC-134a with R-600a in domestic refrigeration. This simulation can track this transition as it dramatically reduces overall climate impact (measured in tCO2e) even when total refrigerant consumption remains similar.
+          More precisely, we use a protocol called <a href="https://llmstxt.org/" target="_blank">llms.txt</a> which allows you to use your own assistant. This frees you and your organization to choose the right option given different needs, terms of service, and privacy options. After you have selected the AI that you want to use, you can use natural language to work on simulations. This tutorial walks through how to build up a simulation using an AI assistant.
+        </p>
+
+        <p>
+          We assume that you have access to an AI assistant and we have tested this tutorial with multiple products. If you do not have access to an LLM, we observe that <a href="https://chatgpt.com/" target="_blank">ChatGPT</a> has a free offering. However, we caution that you should be sure to read the privacy policy and terms of service for any AI you choose as, unlike Kigali Sim, these options may involve sending your simulations and data to servers controlled by other organizations. All that in mind, we use <a href="https://claude.ai/" target="_blank">Claude</a> due to its terms of use and strong performance.
         </p>
       </section>
 
-      <section id="setup-business-as-usual">
-        <h2>Setting Up the Business-as-Usual Scenario</h2>
+      <section id="giving-ai-information">
+        <h2>Giving the AI information</h2>
 
         <p>
-          First, let's create our baseline scenario with both HFC-134a and R-600a refrigerants in domestic refrigeration. We'll start with HFC-134a as the dominant refrigerant and minimal R-600a consumption.
-        </p>
-        
-        <p><strong>Note:</strong> In these feature specific tutorials, we will start from scratch each time. Click <strong>Save File</strong> to save your current work and then click <strong>New File</strong> to start a simulation.</p>
-
-        <p><strong>Step 1: Create the Domestic Refrigeration application</strong></p>
-        <ul>
-          <li>Click <strong>Add Application</strong></li>
-          <li>Name it "Domestic Refrigeration"</li>
-          <li>Click <strong>Finish</strong></li>
-        </ul>
-
-        <p><strong>Step 2: Add HFC-134a substance</strong></p>
-        <ul>
-          <li>In your Domestic Refrigeration application, click <strong>Add Consumption</strong></li>
-          <li>On the <strong>General</strong> tab:
-            <ul>
-              <li>Name the substance "HFC-134a" without quotes.</li>
-              <li>Use Domestic Refrigeration as the <strong>Application</strong>.</li>
-              <li>Set <strong>GHG equivalency</strong> to 1430 kgCO2e/kg.</li>
-              <li>Leave <strong>Annual energy consumption</strong> alone for now.</li>
-              <li>Enable <strong>domestic</strong> manufacture.</li>
-            </ul>
-          </li>
-          <li>On the <strong>Equipment</strong> tab:
-            <ul>
-              <li>We will leave <strong>Equipment type</strong> alone for now.</li>
-              <li>Set <strong>initial charge</strong> to 0.15 kg/unit for domestic.</li>
-              <li>Set <strong>annual retirement</strong> rate to 5% each year.</li>
-            </ul>
-          </li>
-          <li>On the <strong>Servicing</strong> tab:
-            <ul>
-              <li>Set <strong>recharge</strong> to 10% with 0.15 kg/unit in all years</li>
-            </ul>
-          </li>
-          <li>On the <strong>Set</strong> tab:
-            <ul>
-              <li>Set <strong>prior equipment</strong> to 1,000,000.0 units in year 2025.</li>
-              <li>Set <strong>domestic</strong> manufacture to 20 mt in year 2025.</li>
-            </ul>
-          </li>
-          <li>Click <strong>Finish</strong></li>
-        </ul>
-
-        <p><strong>Step 3: Add R-600a substance</strong></p>
-        <ul>
-          <li>Again in the Domestic Refrigeration application, <strong>Add Consumption</strong> for R-600a with similar equipment properties except different GWP.</li>
-          <li>On the <strong>General</strong> tab:
-            <ul>
-              <li>Name the substance "R-600a" without quotes.</li>
-              <li>Use Domestic Refrigeration as the <strong>Application</strong>.</li>
-              <li>Set <strong>GHG equivalency</strong> to 3 kgCO2e/kg.</li>
-              <li>Leave <strong>Annual energy consumption</strong> alone for now.</li>
-              <li>Enable <strong>domestic</strong> manufacture.</li>
-            </ul>
-          </li>
-          <li>On the <strong>Equipment</strong> tab:
-            <ul>
-              <li>We will leave <strong>Equipment type</strong> alone for now.</li>
-              <li>Set <strong>initial charge</strong> to 0.15 kg/unit for domestic.</li>
-              <li>Set <strong>annual retirement</strong> rate to 5% each year.</li>
-            </ul>
-          </li>
-          <li>On the <strong>Servicing</strong> tab:
-            <ul>
-              <li>Set <strong>recharge</strong> to 10% with 0.15 kg/unit in all years.</li>
-            </ul>
-          </li>
-          <li>On the <strong>Set</strong> tab:
-            <ul>
-              <li>Set <strong>prior equipment</strong> to 50,000.0 units in year 2025.</li>
-              <li>Set <strong>domestic</strong> manufacture to 1 mt in year 2025.</li>
-            </ul>
-          </li>
-          <li>Click <strong>Finish</strong></li>
-        </ul>
-
-        <p><strong>Step 4: Create baseline simulation</strong></p>
-        <ul>
-          <li>Click <strong>Add Simulation</strong>.</li>
-          <li>Name it "BAU" without quotes.</li>
-          <li>Set duration from <strong>years 2025 to 2035</strong>.</li>
-          <li>Click <strong>Finish</strong></li>
-        </ul>
-
-        <p>You should now see your baseline simulation running.</p>
-     
-        <p><strong>Step 5: review business as usual</strong></p>
-        <ul>
-          <li>Select <strong>Population</strong>.</li>
-          <li>Ensure <strong>total</strong> and <strong>million units</strong> are selected.</li>
-          <li>Select <strong>Equipment</strong>.</li>
-          <li>Ensure <strong>All</strong> is selected.</li>
-        </ul>
-        
-        <p>This view shows HFC-134a as the dominant refrigerant.</p>
-      </section>
-
-      <section id="adding-substitution-policy">
-        <h2>Adding the GWP Reduction Policy</h2>
-
-        <p>
-          Now let's create a policy that gradually replaces HFC-134a consumption with R-600a. This will demonstrate how a substance substitution policy can reduce overall climate impact.
+          At minimum, you should tell your AI to read <a href="https://kigalisim.org/llms.txt" target="_blank">kigalisim.org/llms.txt</a> but we find that providing both <code>llms.txt</code> and <code>llms-full.txt</code> is helpful. Here is how you might want to start.
         </p>
 
-        <p><strong>Step 1: Create the substitution policy</strong></p>
-        <ul>
-          <li>Click <strong>Add Policy</strong>.</li>
-          <li>Name it "Replacement" without quotes.</li>
-          <li>Select <strong>Domestic Refrigeration</strong> as the application.</li>
-          <li>Select <strong>HFC-134a</strong> as the substance.</li>
-        </ul>
-
-        <p><strong>Step 2: Configure the replacement mechanism</strong></p>
-        <ul>
-          <li>Go to the <strong>Replace</strong> tab.</li>
-          <li><strong>Add Replacement</strong> of 10% of sales.</li>
-          <li>Indicate that it should be <strong>replaced with</strong> R-600a.</li>
-          <li>Set timing to <strong>2028 to onwards.</strong></li>
-          <li>Click <strong>Finish</strong> to finish the policy.</li>
-        </ul>
+        <pre class="prompt-code"><code>Hello! Please review https://kigalisim.org/llms.txt?v=20250928 and https://preview.kigalisim.org/llms-full.txt?v=20250928. Then, we will build a simulation together.</code></pre>
 
         <p>
-          This policy will progressively reduce HFC-134a consumption by 10% each year starting in 2028, with that demand being met by R-600a instead. Over time, this creates a significant shift in the refrigerant mix while maintaining overall service levels.
+          The use of the version is optional but we recommend it to ensure you have the latest copy.
+        </p>
+
+        <p>
+          <strong>Tip:</strong> For LLMs which cannot access the internet, you can <a href="/llms-full.txt" download>download llms-full.txt</a> and provide it as an attachment to your AI assistant.
         </p>
       </section>
 
-      <section id="creating-the-simulation">
-        <h2>Creating the Simulation</h2>
+      <section id="building-basic-simulation">
+        <h2>Building the basic simulation</h2>
 
-        <p>Now let's create a simulation to compare the policy scenario with our business-as-usual baseline.</p>
+        <p>
+          Next, let's instruct the AI to make a simulation called Business as Usual with HFC-134a with the similar information to <a href="/guide/tutorial_02.html">Tutorial 2</a>.
+        </p>
 
-        <ul>
-          <li>Click <strong>Add Simulation</strong>.</li>
-          <li>Name it "Replacement" without quotes.</li>
-          <li>Check the <strong>Replacement</strong> policy checkbox.</li>
-          <li>Set duration from <strong>years 2025 to 2035</strong>.</li>
-          <li>Click <strong>Finish</strong>.</li>
-        </ul>
+        <pre class="prompt-code"><code>Thanks! Please make a simulation without any policies called Business as Usual which runs from 2025 to 2035. Please have this include HFC-134a with a GWP of 1430 kgCO2e / kg that is both domestically produced and consumed. Please initial charge with 0.15 kg / unit and have 5% of the equipment retire each year. Furthermore, please recharge 10% of equipment during all years with 0.15 kg / unit. Finally, please have there be sales of 25 mt in 2025 but have those sales increase 5% each year.
 
-        <p>You should now see both your <strong>BAU</strong> and <strong>Replacement</strong> scenarios displayed side by side in the results panel.</p>
+Please write the QubecTalk code for this simulation and then pause.</code></pre>
+
+        <p>
+          Once your assistant has produced the code, please paste it into the <strong>Editor</strong> tab. This is also a good moment to remember to double check the work of an AI by reading through the code.
+        </p>
+      </section>
+
+      <section id="adding-recycling-program">
+        <h2>Adding a recycling program</h2>
+
+        <p>
+          Now that we have a simple simulation to start with, let's ask the AI assistant to add a recycling program and a new simulation.
+        </p>
+
+        <pre class="prompt-code"><code>Fantastic! Please next add a recycling program which happens at the time of servicing. We should capture 20% and have a yield loss of 50%. Let's have this start in 2028. Please add the recycling policy and an additional simulation alongside Business as Usual so we can compare.</code></pre>
+
+        <p>
+          You may need to ask the assistant to provide the entire updated code.
+        </p>
       </section>
 
       <section id="results">
         <h2>Results</h2>
 
-        <p>Let's examine how the substitution policy affects both substance consumption and climate emissions:</p>
-
-        <p><strong>Emissions Changes</strong></p>
-        <ul>
-          <li>Compare simulations by selecting <strong>Simulations</strong> and then selecting <strong>All</strong> in the simulations panel.
-          <li>Select the <strong>Emissions</strong> radio button</li>.
-          <li>Click <strong>configure custom</strong> and combine <strong>recharge</strong> and <strong>end of life</strong>.</li>
-        </ul>
-
         <p>
-          The dramatic emissions reduction demonstrates the power of GWP-focused policies. Each kilogram of HFC-134a replaced with R-600a eliminates approximately 1,427 kg of CO2-equivalent emissions. This shows how substance choice can be impactful for climate. However, before concluding, let's also confirm that, despite this drop in GWP, the overall amount of sbustance consumed is the same.
+          Select the <strong>Consumption</strong> radio button with <strong>domestic</strong> and <strong>mt / year</strong>. Then, click the <strong>Simulations</strong> radio button and ensure the <strong>All</strong> radio button is selected. You should see a delta between the two scenarios based on the new recycling policy and simulation added by the AI!
         </p>
-        
-        <p><strong>Consumption Changes</strong></p>
-        
-        <ul>
-          <li>Ensure you are comparing simulations by selecting <strong>Simulations</strong> and then selecting <strong>All</strong> in the simulations panel.
-          <li>Select the <strong>Consumption</strong> radio button.</li>
-          <li>Select <strong>domestic</strong> (both substances are domestic only).</li>
-          <li>Ensure <strong>mt/ year</strong> is selected.</li>
-        </ul>
-        
-        <p>Indeed, despite the reduction in GWP, the overall consumption remains unchanged.</p>
       </section>
 
       <section id="conclusion">
         <h2>Conclusion</h2>
 
-        <p>You've successfully modeled a Global Warming Potential-focused refrigerant substitution policy! This tutorial demonstrated:</p>
-
-        <ul>
-          <li><strong>GWP significance</strong>: How refrigerant choice dramatically affects climate impact independent of consumption volumes.</li>
-          <li><strong>Substitution policies</strong>: Using "replace X% of sales with substance" to model market transitions.</li>
-          <li><strong>Climate effectiveness</strong>: How targeting high-GWP substances can achieve large emissions reductions.</li>
-          <li><strong>Comparative analysis</strong>: Evaluating policy impacts against business-as-usual baselines.</li>
-        </ul>
-
         <p>
-          The GWP reduction policy shows how focusing on substance characteristics rather than just consumption volumes can maximize co-benefits.
-        </p>
-
-        <p>
-          <strong>Download the completed tutorial</strong>: <a href="tutorial_11.qta" download>tutorial_11.qta</a> - this contains the complete GWP comparison model with substitution policy
+          This tutorial demonstrated the use of AI assistants to build models in Kigali Sim. You are now ready to use LLMs to explore other functionality of Kigali Sim and move faster in prototyping new simulations. Remember, you can also use <a href="https://preview.kigalisim.org/guide/tutorial_18.html" target="_blank">Kigali Sim on the command line</a>. In addition to taking advantage of version control and automation, this can also enable use of tools like <a href="https://www.anthropic.com/claude-code" target="_blank">Claude Code</a>.
         </p>
       </section>
 
@@ -239,12 +111,12 @@
         <h2>Next Steps</h2>
 
         <p>
-          <a href="/guide/tutorial_12.html">Tutorial 12</a> will explore energy efficiency comparisons between different equipment models. You'll learn how energy consumption trade-offs interact with refrigerant choice to provide a more comprehensive environmental impact assessment.
+          This tutorial completes the specialized topic series! You've learned how to leverage AI assistants to accelerate your simulation development workflow. For next steps, consider exploring the other tutorials in the series or dive deeper into the QubecTalk programming language using the command line interface from <a href="/guide/tutorial_18.html">Tutorial 18</a>.
         </p>
 
         <p>
           <a href="/guide/tutorial_10.html">Previous: Tutorial 10</a> | 
-          <a href="/guide/tutorial_12.html">Next: Tutorial 12</a>
+          <a href="/guide/">Guide Index</a>
         </p>
       </section>
 

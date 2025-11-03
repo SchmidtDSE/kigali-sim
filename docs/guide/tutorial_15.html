@@ -1,0 +1,119 @@
+<html lang="en-GB">
+  <head>
+    <title>Tutorial 15: Variable Retirement and Servicing</title>
+    <link href="/guide/guide.css?v=EPOCH" rel="stylesheet" type="text/css" />
+  </head>
+  <body>
+    <a href="#main" class="skip-link">Skip to main content</a>
+    <header>
+      This tutorial is part of the <a href="/guide">guide</a> for the
+      <a href="/">Kigali Sim</a>.
+    </header>
+    <main id="main">
+      <h1>Tutorial 15: Variable Retirement and Servicing</h1>
+
+      How to specify variable hazard rates for complex retirement and servicing patterns.
+
+      <details>
+        <summary>Contents</summary>
+        <ul>
+          <li><a href="#motivation">Motivation</a></li>
+          <li><a href="#using-default-assumptions">Using default assumptions</a></li>
+          <li><a href="#increasing-hazard-rates-with-age">Increasing hazard rates with age</a></li>
+          <li><a href="#alternatives-to-hazard-rate">Alternatives to hazard rate</a></li>
+          <li><a href="#conclusion">Conclusion</a></li>
+          <li><a href="#next-steps">Next Steps</a></li>
+        </ul>
+      </details>
+
+      <section id="motivation">
+        <h2>Motivation</h2>
+
+        <p>
+          In prior tutorials, we mentioned that a 5% retirement rate corresponds to a 20 year average lifespan. However, in practice some equipment will retire before 20 years and some after. That in mind, how does Kigali Sim actually interpret that 5% directive? In survivor analysis, we specifically say that there is a constant "hazards rate" meaning that, each year, each unit of equipment has a 5% chance of retiring. In practice, this makes sense for many countries which may not know the specific age of equipment already in service or might not have a good estimate for how the rate of failure changes over time. With few assumptions, we still get realistic dynamics like a long tail of equipment on phase out and some retirement prior to the amortized lifespan estimate.
+        </p>
+
+        <p>
+          All that said, Kigali Sim can take in more sophisticated estimates if available. In this tutorial, we will create a hazard rate which changes according to the age of equipment in a simulation that reaches back to 1990 which we assume to be the first year in which the equipment we are studying appeared within the country.
+        </p>
+      </section>
+
+      <section id="using-default-assumptions">
+        <h2>Using default assumptions</h2>
+
+        <p>
+          Before we model the complex lifecycle, let's set up a simulation in which we model HFC-134a (1 kg / unit initial charge and no servicing). In order to observe how retirement works, let's have 1990 start with 1 mt of imports, 1991 to 2024 have an increase in imports of 10%, and set import to 0 mt in 2025. Let's assume a 5% retirement rate and simulate a business as usual scenario from 1990 to 2050.
+        </p>
+
+        <p>
+          We see that equipment does drop but, if we took the 5% as 20 year lifespan seriously, we wouldn't have any population (see bank and set to units of equipment) after 2045. Instead, we see that a small amount of equipment keeps "getting lucky" and surviving that annual retirement probability (hazard rate) of 5%.
+        </p>
+      </section>
+
+      <section id="increasing-hazard-rates-with-age">
+        <h2>Increasing hazard rates with age</h2>
+
+        <p>
+          In some ways, this lingering population of equipment actually reflects what we would expect, especially if a substance suddenly became no longer available. However, let's change this hazard rate such that the rate of failure is 1% multiplied by the age of the equipment in years. To do this, modify the simulation using QubecTalk code like follows:
+        </p>
+
+        <pre><code>uses substance "HFC-134a"
+  enable import
+  initial charge with 0 kg / unit for domestic
+  initial charge with 1 kg / unit for import
+  initial charge with 0 kg / unit for export
+  equals 1430 kgCO2e / kg
+  equals 1 kwh / unit
+  set import to 1 mt during year 1990
+  set import to 0 mt during year 2025
+  change import by 10 % / year during years 1991 to 2024
+  retire (get age as years) * 1% / year
+end substance</code></pre>
+
+        <p>
+          By the time we get to 2025, much of the equipment is already a few years old so its hazard rate is already higher than the 5% we previously assumed. However, you'll notice that we drop below 2 units of equipment around 2043.
+        </p>
+
+        <p>
+          <strong>Note:</strong> This age-dependent retirement feature is only available in the Advanced Editor using QubecTalk code. It cannot be configured through the UI-based designer.
+        </p>
+      </section>
+
+      <section id="alternatives-to-hazard-rate">
+        <h2>Alternatives to hazard rate</h2>
+
+        <p>
+          Note that, in this simulation, we still specify hazard rates (rates of retirement) as a percentage. However, you can also specify an absolute number of units of equipment or volume equivalent (kg, mt, CO2e) to retire each year.
+        </p>
+      </section>
+
+      <section id="conclusion">
+        <h2>Conclusion</h2>
+
+        <p>
+          If you have survival analysis data on equipment and detailed information on the age of equipment, specifying variable retirement may lead to higher accuracy in predictions. Additionally, though we looked at hazard rates for retirement, the same approach can apply to servicing as well if you use QubecTalk.
+        </p>
+
+        <p>
+          <strong>Download the completed tutorial</strong>: <a href="tutorial_15.qta" download>tutorial_15.qta</a> - this contains the complete variable retirement model with age-dependent hazard rates
+        </p>
+      </section>
+
+      <section id="next-steps">
+        <h2>Next Steps</h2>
+
+        <p>
+          This tutorial completes the Advanced Techniques series! You've learned how to leverage sophisticated features like variable retirement rates, bank-based modeling, and advanced sales assumptions. For next steps, consider exploring the other tutorials in the series or applying these techniques to your own Montreal Protocol policy analysis.
+        </p>
+
+        <p>
+          <a href="/guide/tutorial_14.html">Previous: Tutorial 14</a> |
+          <a href="/guide/">Guide Index</a>
+        </p>
+      </section>
+
+      <hr />
+      <p><em>This tutorial is part of the Advanced Techniques series demonstrating specialized aspects of Montreal Protocol policy modeling using Kigali Sim.</em></p>
+    </main>
+  </body>
+</html>
