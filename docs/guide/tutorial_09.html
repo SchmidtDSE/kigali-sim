@@ -1,8 +1,7 @@
 <html lang="en-GB">
   <head>
-    <title>Tutorial 9: Command Line and Monte Carlo Analysis</title>
+    <title>Tutorial 9: Global Warming Potential</title>
     <link href="/guide/guide.css?v=EPOCH" rel="stylesheet" type="text/css" />
-    <link href="/third_party/prism-tomorrow.min.css" rel="stylesheet" type="text/css" />
   </head>
   <body>
     <a href="#main" class="skip-link">Skip to main content</a>
@@ -11,21 +10,18 @@
       <a href="/">Kigali Sim</a>.
     </header>
     <main id="main">
-      <h1>Tutorial 9: Command Line and Monte Carlo Analysis</h1>
+      <h1>Tutorial 9: Global Warming Potential Refrigerant Comparison</h1>
 
-      Advanced uncertainty analysis using probabilistic QubecTalk programming.
+      Demonstrating GWP impact reduction through HFC-134a to R-600a substitution.
 
       <details>
         <summary>Contents</summary>
         <ul>
           <li><a href="#motivation">Motivation</a></li>
-          <li><a href="#setting-up-command-line-tools">Setting Up Command Line Tools</a></li>
-          <li><a href="#running-command-line-analysis">Running Command Line Analysis</a></li>
-          <li><a href="#understanding-uncertainty-in-our-model">Understanding Uncertainty in Our Model</a></li>
-          <li><a href="#adding-growth-rate-uncertainty">Adding Growth Rate Uncertainty</a></li>
-          <li><a href="#adding-equipment-population-uncertainty">Adding Equipment Population Uncertainty</a></li>
-          <li><a href="#configuring-monte-carlo-simulation">Configuring Monte Carlo Simulation</a></li>
-          <li><a href="#interpreting-uncertainty-results">Interpreting Uncertainty Results</a></li>
+          <li><a href="#setup-business-as-usual">Setting Up the Business-as-Usual Scenario</a></li>
+          <li><a href="#adding-substitution-policy">Adding the GWP Reduction Policy</a></li>
+          <li><a href="#creating-the-simulation">Creating the Simulation</a></li>
+          <li><a href="#results">Results</a></li>
           <li><a href="#conclusion">Conclusion</a></li>
           <li><a href="#next-steps">Next Steps</a></li>
         </ul>
@@ -35,171 +31,225 @@
         <h2>Motivation</h2>
 
         <p>
-          Let's say ABC Country's policymakers want to understand how uncertainty may change simulation outocmes. This requires advanced analysis capabilities beyond the web interface using Monte Carlo, a technique that can allow us to provide ranges of numbers instead of discrete estimates for our model parameters.
+          Global Warming Potential (GWP) values represent how much a substance contributes to climate change compared to CO2. For example, consider HFC-134a with a GWP of 1,430 kgCO2e / kg versus R-600a which has only 3. This means that each kilogram of HFC-134a has the same climate impact as 477 kilograms of R-600a.
         </p>
-
         <p>
-          In this tutorial, we'll transition from the web interface to command line tools and implement probabilistic modeling using QubecTalk's uncertainty features. This allows us to test thousands of scenarios automatically and understand the range of possible outcomes for our policy interventions.
+          Previous tutorials included investigation of modeling these values but this section takes a closer look at specifying tCO2e for substances, modeling both with and without different policies. More specifically, we'll look at a refrigerant substitution policy that gradually replaces HFC-134a with R-600a in domestic refrigeration. This simulation can track this transition as it dramatically reduces overall climate impact (measured in tCO2e) even when total refrigerant consumption remains similar.
         </p>
       </section>
 
-      <section id="setting-up-command-line-tools">
-        <h2>Setting Up Command Line Tools</h2>
+      <section id="setup-business-as-usual">
+        <h2>Setting Up the Business-as-Usual Scenario</h2>
 
-        <p>First, we need to download and set up the Kigali Sim command line interface:</p>
+        <p>
+          First, let's create our baseline scenario with both HFC-134a and R-600a refrigerants in domestic refrigeration. We'll start with HFC-134a as the dominant refrigerant and minimal R-600a consumption.
+        </p>
+        
+        <p><strong>Note:</strong> In these feature specific tutorials, we will start from scratch each time. Click <strong>Save File</strong> to save your current work and then click <strong>New File</strong> to start a simulation.</p>
 
+        <p><strong>Step 1: Create the Domestic Refrigeration application</strong></p>
         <ul>
-          <li>Scroll to the bottom of the Kigali Sim web page</li>
-          <li>Click the <strong>Download JAR</strong> button to get the command line version</li>
-          <li>Save your current QubecTalk model by copying it from the Editor tab to a text file (e.g., <code>abc_country.qta</code>)</li>
+          <li>Click <strong>Add Application</strong></li>
+          <li>Name it "Domestic Refrigeration"</li>
+          <li>Click <strong>Finish</strong></li>
+        </ul>
+
+        <p><strong>Step 2: Add HFC-134a substance</strong></p>
+        <ul>
+          <li>In your Domestic Refrigeration application, click <strong>Add Consumption</strong></li>
+          <li>On the <strong>General</strong> tab:
+            <ul>
+              <li>Name the substance "HFC-134a" without quotes.</li>
+              <li>Use Domestic Refrigeration as the <strong>Application</strong>.</li>
+              <li>Set <strong>GHG equivalency</strong> to 1430 kgCO2e/kg.</li>
+              <li>Leave <strong>Annual energy consumption</strong> alone for now.</li>
+              <li>Enable <strong>domestic</strong> manufacture.</li>
+            </ul>
+          </li>
+          <li>On the <strong>Equipment</strong> tab:
+            <ul>
+              <li>We will leave <strong>Equipment type</strong> alone for now.</li>
+              <li>Set <strong>initial charge</strong> to 0.15 kg/unit for domestic.</li>
+              <li>Set <strong>annual retirement</strong> rate to 5% each year.</li>
+            </ul>
+          </li>
+          <li>On the <strong>Servicing</strong> tab:
+            <ul>
+              <li>Set <strong>recharge</strong> to 10% with 0.15 kg/unit in all years</li>
+            </ul>
+          </li>
+          <li>On the <strong>Set</strong> tab:
+            <ul>
+              <li>Set <strong>prior equipment</strong> to 1,000,000.0 units in year 2025.</li>
+              <li>Set <strong>domestic</strong> manufacture to 20 mt in year 2025.</li>
+            </ul>
+          </li>
+          <li>Click <strong>Finish</strong></li>
+        </ul>
+
+        <p><strong>Step 3: Add R-600a substance</strong></p>
+        <ul>
+          <li>Again in the Domestic Refrigeration application, <strong>Add Consumption</strong> for R-600a with similar equipment properties except different GWP.</li>
+          <li>On the <strong>General</strong> tab:
+            <ul>
+              <li>Name the substance "R-600a" without quotes.</li>
+              <li>Use Domestic Refrigeration as the <strong>Application</strong>.</li>
+              <li>Set <strong>GHG equivalency</strong> to 3 kgCO2e/kg.</li>
+              <li>Leave <strong>Annual energy consumption</strong> alone for now.</li>
+              <li>Enable <strong>domestic</strong> manufacture.</li>
+            </ul>
+          </li>
+          <li>On the <strong>Equipment</strong> tab:
+            <ul>
+              <li>We will leave <strong>Equipment type</strong> alone for now.</li>
+              <li>Set <strong>initial charge</strong> to 0.15 kg/unit for domestic.</li>
+              <li>Set <strong>annual retirement</strong> rate to 5% each year.</li>
+            </ul>
+          </li>
+          <li>On the <strong>Servicing</strong> tab:
+            <ul>
+              <li>Set <strong>recharge</strong> to 10% with 0.15 kg/unit in all years.</li>
+            </ul>
+          </li>
+          <li>On the <strong>Set</strong> tab:
+            <ul>
+              <li>Set <strong>prior equipment</strong> to 50,000.0 units in year 2025.</li>
+              <li>Set <strong>domestic</strong> manufacture to 1 mt in year 2025.</li>
+            </ul>
+          </li>
+          <li>Click <strong>Finish</strong></li>
+        </ul>
+
+        <p><strong>Step 4: Create baseline simulation</strong></p>
+        <ul>
+          <li>Click <strong>Add Simulation</strong>.</li>
+          <li>Name it "BAU" without quotes.</li>
+          <li>Set duration from <strong>years 2025 to 2035</strong>.</li>
+          <li>Click <strong>Finish</strong></li>
+        </ul>
+
+        <p>You should now see your baseline simulation running.</p>
+     
+        <p><strong>Step 5: review business as usual</strong></p>
+        <ul>
+          <li>Select <strong>Population</strong>.</li>
+          <li>Ensure <strong>total</strong> and <strong>million units</strong> are selected.</li>
+          <li>Select <strong>Equipment</strong>.</li>
+          <li>Ensure <strong>All</strong> is selected.</li>
+        </ul>
+        
+        <p>This view shows HFC-134a as the dominant refrigerant.</p>
+      </section>
+
+      <section id="adding-substitution-policy">
+        <h2>Adding the GWP Reduction Policy</h2>
+
+        <p>
+          Now let's create a policy that gradually replaces HFC-134a consumption with R-600a. This will demonstrate how a substance substitution policy can reduce overall climate impact.
+        </p>
+
+        <p><strong>Step 1: Create the substitution policy</strong></p>
+        <ul>
+          <li>Click <strong>Add Policy</strong>.</li>
+          <li>Name it "Replacement" without quotes.</li>
+          <li>Select <strong>Domestic Refrigeration</strong> as the application.</li>
+          <li>Select <strong>HFC-134a</strong> as the substance.</li>
+        </ul>
+
+        <p><strong>Step 2: Configure the replacement mechanism</strong></p>
+        <ul>
+          <li>Go to the <strong>Replace</strong> tab.</li>
+          <li><strong>Add Replacement</strong> of 10% of sales.</li>
+          <li>Indicate that it should be <strong>replaced with</strong> R-600a.</li>
+          <li>Set timing to <strong>2028 to onwards.</strong></li>
+          <li>Click <strong>Finish</strong> to finish the policy.</li>
         </ul>
 
         <p>
-          The JAR file enables batch processing, automation, and Monte Carlo simulation that aren't available in the web interface. This is particularly valuable for uncertainty analysis where we need to run hundreds or thousands of model iterations.
+          This policy will progressively reduce HFC-134a consumption by 10% each year starting in 2028, with that demand being met by R-600a instead. Over time, this creates a significant shift in the refrigerant mix while maintaining overall service levels.
         </p>
       </section>
 
-      <section id="running-command-line-analysis">
-        <h2>Running Command Line Analysis</h2>
+      <section id="creating-the-simulation">
+        <h2>Creating the Simulation</h2>
 
-        <p>In this tutorial, we will assume you know how to use the command line. Save your updated QubecTalk model and validate it.</p>
-
-        <pre><code class="language-bash">java -jar kigalisim-fat.jar validate script.qta</code></pre>
-
-        <p>Then, run it using the following command:</p>
-
-        <pre><code class="language-bash">java -jar kigalisim-fat.jar run -o output.csv script.qta</code></pre>
-
-        <p>Note that you will need to use the name of the file where you saved your results. This will execute your simulation and put the results in the specified CSV file.</p>
-      </section>
-
-      <section id="understanding-uncertainty-in-our-model">
-        <h2>Understanding Uncertainty in Our Model</h2>
-
-        <p>Looking at our current ABC Country model, we have several sources of uncertainty:</p>
+        <p>Now let's create a simulation to compare the policy scenario with our business-as-usual baseline.</p>
 
         <ul>
-          <li><strong>Economic growth rates</strong>: Our projections assume specific growth percentages, but actual economic performance varies</li>
-          <li><strong>Equipment populations</strong>: Prior equipment estimates are based on surveys and may have measurement uncertainty</li>
-          <li><strong>Policy implementation</strong>: Real-world policy effectiveness can vary from planned targets</li>
+          <li>Click <strong>Add Simulation</strong>.</li>
+          <li>Name it "Replacement" without quotes.</li>
+          <li>Check the <strong>Replacement</strong> policy checkbox.</li>
+          <li>Set duration from <strong>years 2025 to 2035</strong>.</li>
+          <li>Click <strong>Finish</strong>.</li>
         </ul>
 
-        <p>Let's focus on the first source. Note that we will use normal distributions but uniform distributions can also be used.</p>
+        <p>You should now see both your <strong>BAU</strong> and <strong>Replacement</strong> scenarios displayed side by side in the results panel.</p>
       </section>
 
-      <section id="adding-growth-rate-uncertainty">
-        <h2>Adding Growth Rate Uncertainty</h2>
+      <section id="results">
+        <h2>Results</h2>
 
-        <p>Economic growth projections inherently contain uncertainty. Let's modify our model to reflect this by adding probabilistic elements to our growth rates.</p>
+        <p>Let's examine how the substitution policy affects both substance consumption and climate emissions:</p>
 
-        <p>In your QubecTalk code, we'll replace fixed growth rates with probability distributions. For example, instead of:</p>
+        <p><strong>Emissions Changes</strong></p>
+        <ul>
+          <li>Compare simulations by selecting <strong>Simulations</strong> and then selecting <strong>All</strong> in the simulations panel.
+          <li>Select the <strong>Emissions</strong> radio button</li>.
+          <li>Click <strong>configure custom</strong> and combine <strong>recharge</strong> and <strong>end of life</strong>.</li>
+        </ul>
 
-        <pre><code class="language-qubectalk">change sales by 5 % / year during years 2025 to 2030</code></pre>
-
-        <p>We'll use:</p>
-
-        <pre><code class="language-qubectalk">change sales by sample normally from mean of 5 std of 1 % / year during years 2025 to 2030</code></pre>
-
-        <p>Update all growth rates in your model with this approach:</p>
-
-        <p><strong>For R-600a in Domestic Refrigeration:</strong></p>
-
-        <pre><code class="language-qubectalk">change sales by sample normally from mean of 5 std of 1 % / year during years 2025 to 2030
-change sales by sample normally from mean of 3 std of 1 % / year during years 2031 to 2035</code></pre>
-
-        <p><strong>For HFC-134a in Domestic Refrigeration:</strong></p>
-
-        <pre><code class="language-qubectalk">change sales by sample normally from mean of 6 std of 1 % / year during years 2025 to 2030
-change sales by sample normally from mean of 4 std of 1 % / year during years 2031 to 2035</code></pre>
-
-        <p><strong>For HFC-32 in Domestic AC:</strong></p>
-
-        <pre><code class="language-qubectalk">change domestic by sample normally from mean of 10 std of 1 % / year during years 2025 to 2035</code></pre>
-
-        <p><strong>For R-410A in Domestic AC:</strong></p>
-
-        <pre><code class="language-qubectalk">change domestic by sample normally from mean of 6 std of 1 % / year during years 2025 to 2035</code></pre>
-      </section>
-
-      <section id="configuring-monte-carlo-simulation">
-        <h2>Configuring Monte Carlo Simulation</h2>
-
-        <p>Now we need to configure our simulations to run multiple trials. Update the simulations section to include Monte Carlo analysis:</p>
-
-        <pre><code class="language-qubectalk">start simulations
-
-  simulate "BAU Uncertainty"
-  from years 2025 to 2035
-  across 100 trials
-
-  simulate "Permit Uncertainty"
-    using "Sales Permit"
-  from years 2025 to 2035
-  across 100 trials
-
-  simulate "Combined Uncertainty"
-    using "Sales Permit"
-    then "Domestic Recycling"
-  from years 2025 to 2035
-  across 100 trials
-
-  simulate "Recycling Uncertainty"
-    using "Domestic Recycling"
-  from years 2025 to 2035
-  across 100 trials
-
-end simulations</code></pre>
-
-        <p>The <code>across 100 trials</code> specification tells Kigali Sim to run 100 different scenarios, each time sampling new values from the probability distributions we defined.</p>
-      </section>
-
-      <section id="interpreting-uncertainty-results">
-        <h2>Interpreting Uncertainty Results</h2>
-
-        <p>Go ahead and give this another run. When you open up the resulting CSV file, notice individual trial results as denoted by the trial column. You can use this to run sensitivity analysis or plug into other tools like spreadsheet software, R, or Python.</p>
+        <p>
+          The dramatic emissions reduction demonstrates the power of GWP-focused policies. Each kilogram of HFC-134a replaced with R-600a eliminates approximately 1,427 kg of CO2-equivalent emissions. This shows how substance choice can be impactful for climate. However, before concluding, let's also confirm that, despite this drop in GWP, the overall amount of sbustance consumed is the same.
+        </p>
+        
+        <p><strong>Consumption Changes</strong></p>
+        
+        <ul>
+          <li>Ensure you are comparing simulations by selecting <strong>Simulations</strong> and then selecting <strong>All</strong> in the simulations panel.
+          <li>Select the <strong>Consumption</strong> radio button.</li>
+          <li>Select <strong>domestic</strong> (both substances are domestic only).</li>
+          <li>Ensure <strong>mt/ year</strong> is selected.</li>
+        </ul>
+        
+        <p>Indeed, despite the reduction in GWP, the overall consumption remains unchanged.</p>
       </section>
 
       <section id="conclusion">
         <h2>Conclusion</h2>
 
-        <p>You've successfully implemented Monte Carlo uncertainty analysis for ABC Country's HFC strategy. This kind of simulation provides policymakers with confidence intervals and risk assessments that support more informed decision-making under uncertainty. Rather than single projections, they now have probability distributions that show both best-case and worst-case scenarios.
+        <p>You've successfully modeled a Global Warming Potential-focused refrigerant substitution policy! This tutorial demonstrated:</p>
+
+        <ul>
+          <li><strong>GWP significance</strong>: How refrigerant choice dramatically affects climate impact independent of consumption volumes.</li>
+          <li><strong>Substitution policies</strong>: Using "replace X% of sales with substance" to model market transitions.</li>
+          <li><strong>Climate effectiveness</strong>: How targeting high-GWP substances can achieve large emissions reductions.</li>
+          <li><strong>Comparative analysis</strong>: Evaluating policy impacts against business-as-usual baselines.</li>
+        </ul>
+
+        <p>
+          The GWP reduction policy shows how focusing on substance characteristics rather than just consumption volumes can maximize co-benefits.
         </p>
 
         <p>
-          <strong>Download the complete case study</strong>: <a href="case_study.qta">case_study.qta</a> - this contains the full ABC Country model with Monte Carlo uncertainty analysis
+          <strong>Download the completed tutorial</strong>: <a href="tutorial_09.qta" download>tutorial_09.qta</a> - this contains the complete GWP comparison model with substitution policy
         </p>
       </section>
 
       <section id="next-steps">
         <h2>Next Steps</h2>
 
-        <p>This concludes our ABC Country tutorial series! You now have comprehensive skills in:</p>
-
-        <ul>
-          <li>Equipment-based HFC modeling</li>
-          <li>Multi-sector, multi-substance analysis</li>
-          <li>Economic growth and trade flow modeling</li>
-          <li>Policy intervention design and evaluation</li>
-          <li>QubecTalk programming</li>
-          <li>Uncertainty quantification and Monte Carlo analysis</li>
-        </ul>
-
         <p>
-          These tools provide a complete foundation for supporting Kigali Amendment Implementation Plans and HFC phase-down policy analysis. The combination of deterministic modeling and probabilistic analysis enables robust policy recommendations that account for real-world uncertainty and implementation challenges.
+          <a href="/guide/tutorial_10.html">Tutorial 10</a> will explore energy efficiency comparisons between different equipment models. You'll learn how energy consumption trade-offs interact with refrigerant choice to provide a more comprehensive environmental impact assessment.
         </p>
 
         <p>
-          <a href="/guide/tutorial_08.html">Previous: Tutorial 8</a> | 
+          <a href="/guide">Return to Guide Index</a> |
           <a href="/guide/tutorial_10.html">Next: Tutorial 10</a>
         </p>
       </section>
 
       <hr />
-      <p><em>This tutorial completes the ABC Country case study series demonstrating progressive HFC policy analysis using Kigali Sim for now. Additional tutorials will be added later.</em></p>
+      <p><em>This tutorial is part of the Feature-Specific series demonstrating specialized aspects of Montreal Protocol policy modeling using Kigali Sim.</em></p>
     </main>
-
-    <script src="/third_party/prism-core.min.js"></script>
-    <script src="/third_party/prism-autoloader.min.js"></script>
-    <script src="/guide/qubectalk-prism.js"></script>
   </body>
 </html>
