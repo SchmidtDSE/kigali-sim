@@ -14,8 +14,6 @@
 
       We start with the basic building blocks of a simulation: applications and substances.
 
-      <p><strong>Note:</strong> You can follow along with this written guide or watch the <a href="https://vimeo.com/1116227339">video version</a> for a walkthrough of the same concepts.</p>
-
       <details>
         <summary>Contents</summary>
         <ul>
@@ -36,7 +34,7 @@
         <h2>Motivation</h2>
 
         <p>
-          In this tutorial, we start ABC's first HFC consumption model by using volume-based inputs. This approach helps us understand the relationship between populations and refrigerant consumption while working with initial charges, retirement rates, and servicing patterns. All of these parameters will work together to project consumption trends over time.
+          In this tutorial, we examine ABC Country, a hypothetical country that we can use to explore Kigali Sim's functionality. Specifically, we will make a first HFC consumption model by using volume-based inputs. This approach helps us understand the relationship between populations and refrigerant consumption while working with initial charges, retirement rates, and servicing patterns. All of these parameters will work together to project consumption trends over time.
         </p>
 
         <p>
@@ -99,7 +97,7 @@
           <li>Leave equipment type/model empty for now</li>
           <li>Enter <strong>0.15 kg/unit</strong> for initial charge (refrigerant per new unit)</li>
           <li>Set annual retirement rate to <strong>5% each year</strong> (corresponds to 20-year average equipment lifetime)</li>
-          <li>Leave <strong>"Retirement reduces in-service equipment"</strong> checked (recommended for most simulations)</li>
+          <li>Leave <strong>"Retirement reduces in-service equipment"</strong> checked. This is recommended for most simulations but a later tutorial will revisit this option.</li>
         </ul>
 
         <p>The retirement rate is sometimes called the <strong>hazard rate</strong> or <strong>scrap rate</strong> in equipment lifecycle analysis. Kigali Sim, by default, assumes a constant hazard rate when you specify a percentage. However, this can be modified by using a non-percentage retirement amount if you need more complex retirement patterns.</p>
