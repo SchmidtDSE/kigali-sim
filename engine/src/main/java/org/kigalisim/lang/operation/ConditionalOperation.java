@@ -14,8 +14,8 @@ import org.kigalisim.lang.machine.PushDownMachine;
  * Calculation that performs a conditional operation (if-else) on three other calculations.
  *
  * <p>Calculation that resolves a condition calculation and then executes one of two other
- * calculations based on the result of the condition by using a PushDownMachine within the
- * QubecTalk runtime.</p>
+ * calculations based on the result of the condition by using a PushDownMachine within the QubecTalk
+ * runtime.</p>
  */
 public class ConditionalOperation implements Operation {
 

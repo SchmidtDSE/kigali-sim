@@ -244,8 +244,8 @@ public class EngineResult {
    * Get the greenhouse gas emissions from initial charge activities.
    *
    * <p>This is an informational metric representing the GHG potential of substance
-   * initially charged into equipment. Actual emissions occur later during recharge
-   * (leakage between servicings) or at end-of-life disposal.</p>
+ * initially charged into equipment. Actual emissions occur later during recharge (leakage between
+ * servicings) or at end-of-life disposal.</p>
    *
    * @return The initial charge emissions value with units
    */

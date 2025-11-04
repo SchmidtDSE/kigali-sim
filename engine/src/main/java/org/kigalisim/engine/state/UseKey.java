@@ -1,8 +1,8 @@
 package org.kigalisim.engine.state;
 
 /**
- * Interface for objects that can generate a string key for finding substance streams
- * based on application and substance usage.
+ * Interface for objects that can generate a string key for finding substance streams based on
+ * application and substance usage.
  */
 public interface UseKey {
 

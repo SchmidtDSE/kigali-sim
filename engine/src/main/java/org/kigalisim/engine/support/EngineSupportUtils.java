@@ -91,8 +91,8 @@ public final class EngineSupportUtils {
    * Check if a stream is a sales-related stream.
    *
    * <p>A sales-related stream includes the core sales stream and its substreams (domestic and
-   * import). Optionally, the export stream can be included depending on the context of the
-   * operation being performed.</p>
+ * import). Optionally, the export stream can be included depending on the context of the operation
+ * being performed.</p>
    *
    * <p>This is the centralized implementation for stream classification logic and should be used
    * throughout the engine instead of local implementations to ensure consistent behavior.</p>
@@ -151,8 +151,8 @@ public final class EngineSupportUtils {
 
   /**
    * Check if sales streams were specified in equipment units for the given scope.
-   * When streams are specified in units, certain operations need different handling
-   * (e.g., retirement affects recharge calculations, carry-over logic differs).
+ * When streams are specified in units, certain operations need different handling (e.g., retirement
+ * affects recharge calculations, carry-over logic differs).
    *
    * @param simulationState the SimulationState instance to query
    * @param scope the scope to check
@@ -170,8 +170,8 @@ public final class EngineSupportUtils {
    * Ensures a value is positive, clamping to zero if negative.
    *
    * <p>This method checks if a value would be negative and returns zero if so, otherwise
-   * returns the value unchanged. It's used to enforce constraints that prevent negative
-   * stream values when the operation being performed doesn't allow them.</p>
+ * returns the value unchanged. It's used to enforce constraints that prevent negative stream values
+ * when the operation being performed doesn't allow them.</p>
    *
    * @param value The value to check
    * @return The value if positive, or zero if negative
@@ -188,9 +188,9 @@ public final class EngineSupportUtils {
    * Gets the distributed recharge amount for a specific stream.
    *
    * <p>This method distributes total recharge volume across sales streams based on
-   * their current distribution percentages. The sales stream receives 100% of the
-   * recharge (to be distributed internally), sales substreams (domestic/import) receive
-   * their proportional share, and other streams receive zero.</p>
+ * their current distribution percentages. The sales stream receives 100% of the recharge (to be
+ * distributed internally), sales substreams (domestic/import) receive their proportional share, and
+ * other streams receive zero.</p>
    *
    * @param streamName The name of the stream
    * @param totalRecharge The total recharge amount

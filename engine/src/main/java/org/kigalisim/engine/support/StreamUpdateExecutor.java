@@ -2,8 +2,8 @@
  * Utility class for executing stream update operations.
  *
  * <p>This class provides stream update logic for Engine implementations
- * to provide better separation of concerns and testability. It handles
- * stream combination tracking for unit-based carry-over operations.</p>
+ * to provide better separation of concerns and testability. It handles stream combination tracking
+ * for unit-based carry-over operations.</p>
  *
  * @license BSD-3-Clause
  */
@@ -130,12 +130,12 @@ public class StreamUpdateExecutor {
    * Updates units target when setting domestic or import streams with equipment units.
    *
    * <p>Some calculations require knowing what the last value was for a stream as specified
-   * by the user to determine intent like setting a specific number of new units of
-   * equipment sold on top of recharge or a total volume (kg) of substance sold either for
-   * servicing or new equipment initial charge. For users specifying specific number of units
-   * of equipment sold, sales is a combination of import and domestic production and this
-   * method updates that sales intent regardless of if sales itself was specified or its
-   * components (domestic or import) were specified.</p>
+ * by the user to determine intent like setting a specific number of new units of equipment sold on
+ * top of recharge or a total volume (kg) of substance sold either for servicing or new equipment
+ * initial charge. For users specifying specific number of units of equipment sold, sales is a
+ * combination of import and domestic production and this method updates that sales intent
+ * regardless of if sales itself was specified or its components (domestic or import) were
+ * specified.</p>
    *
    * @param useKey The key containing application and substance
    * @param streamName The name of the stream being set (must be "domestic" or "import")
@@ -178,10 +178,9 @@ public class StreamUpdateExecutor {
    * Handles implicit recharge logic for sales streams with equipment units.
    *
    * <p>When users have specified how much equipment is to be sold (not total volume of
-   * substance sales), this method determines the implicit recharge needed. In this case,
-   * servicing is implied to have enough substance to succeed when the recharge command
-   * runs. For non-unit-based or non-sales streams, clears or skips implicit recharge
-   * logic as needed.</p>
+ * substance sales), this method determines the implicit recharge needed. In this case, servicing is
+ * implied to have enough substance to succeed when the recharge command runs. For non-unit-based or
+ * non-sales streams, clears or skips implicit recharge logic as needed.</p>
    *
    * @param useKey The use key containing application and substance
    * @param streamName The name of the stream being set

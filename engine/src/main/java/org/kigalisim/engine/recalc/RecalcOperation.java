@@ -2,8 +2,8 @@
  * Operation that executes a sequence of recalculation strategies.
  *
  * <p>This class takes a list of RecalcStrategy instances and executes them
- * in order on a target Engine. It replaces the manual chaining of recalc
- * method calls previously done directly in SingleThreadEngine.</p>
+ * in order on a target Engine. It replaces the manual chaining of recalc method calls previously
+ * done directly in SingleThreadEngine.</p>
  *
  * @license BSD-3-Clause
  */

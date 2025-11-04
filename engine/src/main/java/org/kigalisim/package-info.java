@@ -8,8 +8,8 @@
  *   <li><strong>Standalone jar execution</strong>: Running simulations from the command line in
  *       which script files are provided and results are written to CSV files.
  *   <li><strong>UI-editor or browser-based execution</strong>: Building and executing simulations
- *       using an IDE specific to Kigali Sim. This includes a no-code UI-based editor which can
- *       generate and modify QubecTalk code.
+ * using an IDE specific to Kigali Sim. This includes a no-code UI-based editor which can generate
+ * and modify QubecTalk code.
  * </ul>
  *
  * <p>The {@code KigaliSimCommander} offers the command line interface entrypoint but logic is

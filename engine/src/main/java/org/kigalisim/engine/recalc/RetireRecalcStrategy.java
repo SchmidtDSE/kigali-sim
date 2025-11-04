@@ -41,9 +41,9 @@ public class RetireRecalcStrategy implements RecalcStrategy {
    * Retrieves current retirement-related state from the simulation.
    *
    * <p>This method retrieves and converts all current state values needed for retirement
-   * calculations, including prior equipment, total equipment, and retired amounts. It also
-   * determines the base population for retirement rate calculations, setting it on the first
-   * retirement operation for this scope.</p>
+ * calculations, including prior equipment, total equipment, and retired amounts. It also determines
+ * the base population for retirement rate calculations, setting it on the first retirement
+ * operation for this scope.</p>
    *
    * <p>Side effect: If this is the first retirement operation, sets the retirement base
    * population in the simulation state to the current prior equipment value.</p>
@@ -204,9 +204,9 @@ public class RetireRecalcStrategy implements RecalcStrategy {
    * Updates the retired stream with the new cumulative retired value.
    *
    * <p>This method applies the calculated new retired value to the retired stream, which
-   * tracks the cumulative total of all equipment retired over time (not just this year's
-   * retirement). The update uses subtractRecycling = false since the value already
-   * represents the correct cumulative retired amount.</p>
+ * tracks the cumulative total of all equipment retired over time (not just this year's retirement).
+ * The update uses subtractRecycling = false since the value already represents the correct
+ * cumulative retired amount.</p>
    *
    * @param scopeEffective The use key scope for stream update
    * @param simulationState The simulation state to update
@@ -229,9 +229,8 @@ public class RetireRecalcStrategy implements RecalcStrategy {
    * Recalculates end-of-life greenhouse gas emissions after retirement changes.
    *
    * <p>This method delegates to EolEmissionsRecalcStrategy to recalculate EOL emissions
-   * based on the updated retirement stream values. This is necessary because retirement
-   * operations change the amount of equipment being retired, which affects emissions
-   * calculations.</p>
+ * based on the updated retirement stream values. This is necessary because retirement operations
+ * change the amount of equipment being retired, which affects emissions calculations.</p>
    *
    * @param target The engine instance executing the recalculation
    * @param scopeEffective The use key scope for EOL emissions recalculation
@@ -255,9 +254,9 @@ public class RetireRecalcStrategy implements RecalcStrategy {
    * </ul></div>
    *
    * <p><strong>Important:</strong> SalesRecalcStrategy is intentionally NOT called here.
-   * Retirement should not recalculate sales because sales were already calculated correctly
-   * before retirement with the proper population context. Recalculating sales after retirement
-   * would incorrectly use post-retirement populations.</p>
+ * Retirement should not recalculate sales because sales were already calculated correctly before
+ * retirement with the proper population context. Recalculating sales after retirement would
+ * incorrectly use post-retirement populations.</p>
    *
    * @param target The engine instance executing the recalculation
    * @param kit The recalculation kit with dependencies

@@ -2,9 +2,8 @@
  * Single-threaded implementation of the Engine interface for Montreal Protocol simulations.
  *
  * <p>This class provides a concrete implementation of the Engine interface that is not
- * designed to be thread-safe. It manages substance streams, equipment populations, and
- * calculations related to the Montreal Protocol simulation using BigDecimal for numerical
- * stability.</p>
+ * designed to be thread-safe. It manages substance streams, equipment populations, and calculations
+ * related to the Montreal Protocol simulation using BigDecimal for numerical stability.</p>
  * 
  * <p>Note that, as described in the JavaDoc for the class, this does not prevent concurrency
  * within Kigali Sim which is achieved through parallelization outside of Engine, often by having
@@ -57,8 +56,8 @@ import org.kigalisim.lang.operation.RecoverOperation.RecoveryStage;
  * 
  * <p>At this time the only implementation of Engine which does not guarantee thread safety
  * within a single scenario. However, note that Engine only evaluates one scenario at a time so
- * Kigali Sim still achieves concurency by having multiple Engines and evaluating scenarios or
- * Monte Carlo trials in parallel.</p>
+ * Kigali Sim still achieves concurency by having multiple Engines and evaluating scenarios or Monte
+ * Carlo trials in parallel.</p>
  */
 public class SingleThreadEngine implements Engine {
 
@@ -413,9 +412,9 @@ public class SingleThreadEngine implements Engine {
    * Determine if recharge should be subtracted based on last specified units.
    *
    * <p>For sales streams, checks if either domestic or import were last specified in units.
-   * If specified in units, recharge is added on top. For domestic or import streams, checks
-   * if that specific channel was last specified in units. If not specified in units,
-   * recharge is subtracted.</p>
+ * If specified in units, recharge is added on top. For domestic or import streams, checks if that
+ * specific channel was last specified in units. If not specified in units, recharge is
+ * subtracted.</p>
    *
    * @param stream The stream being set
    * @return true if recharge should be subtracted, false if added on top
@@ -649,8 +648,8 @@ public class SingleThreadEngine implements Engine {
    * Handle equipment change with year range checking.
    *
    * <p>This method checks if the current year is within the specified range
-   * before delegating to the equipment change utility. This ensures consistent
-   * year checking behavior across all equipment operations.</p>
+ * before delegating to the equipment change utility. This ensures consistent year checking behavior
+ * across all equipment operations.</p>
    *
    * @param amount The amount to change equipment by
    * @param yearMatcher The year matcher to check range against
@@ -804,14 +803,14 @@ public class SingleThreadEngine implements Engine {
    * Determines if unit-based sales from a previous year carry over into the current year.
    *
    * <p>Carry over occurs when equipment sales were previously specified in units
-   * (e.g., "800 units") but the current year has no fresh specification. When detected
-   * during recharge operations, the engine re-applies the previous sales value and
-   * adds implicit recharge on top, preserving the user's intent that unit counts
-   * represent new equipment sales, not total substance volume.</p>
+ * (e.g., "800 units") but the current year has no fresh specification. When detected during
+ * recharge operations, the engine re-applies the previous sales value and adds implicit recharge on
+ * top, preserving the user's intent that unit counts represent new equipment sales, not total
+ * substance volume.</p>
    *
    * @param scope The scope (application/substance) to check for carry over state
    * @return true if this is a carry-over scenario (unit-based sales without fresh
-   *         specification), false otherwise
+   *     specification), false otherwise
    */
   private boolean getIsCarryOver(UseKey scope) {
     // Check if we have a previous unit-based sales specification and no fresh input this year
@@ -821,8 +820,8 @@ public class SingleThreadEngine implements Engine {
 
   /**
    * Check if sales streams were specified in equipment units.
-   * When streams are specified in units, retirement changes population which changes
-   * recharge requirements, so sales recalc is needed to update implicitRecharge.
+ * When streams are specified in units, retirement changes population which changes recharge
+ * requirements, so sales recalc is needed to update implicitRecharge.
    *
    * @return true if sales streams were specified in units
    */
@@ -832,8 +831,8 @@ public class SingleThreadEngine implements Engine {
 
   /**
    * Calculate the available recycling volume for the current timestep.
-   * This method replicates the recycling calculation logic to determine
-   * how much recycling material is available to avoid double counting.
+ * This method replicates the recycling calculation logic to determine how much recycling material
+ * is available to avoid double counting.
    * Now supports both EOL and recharge recycling stages.
    *
    * @param scope the scope to calculate recycling for

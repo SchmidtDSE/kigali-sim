@@ -2,9 +2,9 @@
  * Utility class for parsing numbers with flexible thousands and decimal separators.
  *
  * <p>This class provides functionality to parse number strings that may use either
- * comma (,) or period (.) as thousands separators or decimal separators, based on
- * context analysis of the input string. It handles European format (123.456,789)
- * and US format (123,456.789) intelligently using a strategy pattern.</p>
+ * comma (,) or period (.) as thousands separators or decimal separators, based on context analysis
+ * of the input string. It handles European format (123.456,789) and US format (123,456.789)
+ * intelligently using a strategy pattern.</p>
  *
  * @license BSD-3-Clause
  */
@@ -38,8 +38,8 @@ public class NumberParseUtil {
    * Parse a number string with flexible thousands and decimal separators.
    *
    * <p>This method analyzes the input string to determine whether commas and periods
-   * are being used as thousands separators or decimal separators. It supports both
-   * European format (123.456,789) and US format (123,456.789).
+ * are being used as thousands separators or decimal separators. It supports both European format
+ * (123.456,789) and US format (123,456.789).
    *
    * <div>Logic:
    * <ul>

@@ -47,8 +47,8 @@ public interface PushDownMachine {
    * Subtract the two numbers on top of the stack.
    *
    * <p>Subtract the two numbers on top of the stack, pushing the result of the calculation to the
-   * top of the stack. It assumes that the left operand was pushed prior to the right operand such
-   * that the right operand is on the top of the stack and the left operand is right below.</p>
+ * top of the stack. It assumes that the left operand was pushed prior to the right operand such
+ * that the right operand is on the top of the stack and the left operand is right below.</p>
    */
   void subtract();
 
@@ -56,8 +56,8 @@ public interface PushDownMachine {
    * Multiply the two numbers on top of the stack.
    *
    * <p>Multiply the two numbers on top of the stack, pushing the result of the calculation to the
-   * top of the stack. It assumes that the left operand was pushed prior to the right operand such
-   * that the right operand is on the top of the stack and the left operand is right below.</p>
+ * top of the stack. It assumes that the left operand was pushed prior to the right operand such
+ * that the right operand is on the top of the stack and the left operand is right below.</p>
    */
   void multiply();
 
@@ -65,8 +65,8 @@ public interface PushDownMachine {
    * Divide the two numbers on top of the stack.
    *
    * <p>Divide the two numbers on top of the stack, pushing the result of the calculation to the
-   * top of the stack. It assumes that the left operand was pushed prior to the right operand such
-   * that the right operand is on the top of the stack and the left operand is right below.</p>
+ * top of the stack. It assumes that the left operand was pushed prior to the right operand such
+ * that the right operand is on the top of the stack and the left operand is right below.</p>
    *
    * @throws ArithmeticException If the right operand (divisor) is zero.
    */
@@ -92,9 +92,9 @@ public interface PushDownMachine {
    * Perform a logical AND operation on the two numbers on top of the stack.
    *
    * <p>Perform a logical AND operation on the two numbers on top of the stack, pushing the result
-   * of the calculation to the top of the stack. It assumes that the left operand was pushed prior
-   * to the right operand such that the right operand is on the top of the stack and the left
-   * operand is right below. Non-zero values are treated as true, zero values as false.</p>
+ * of the calculation to the top of the stack. It assumes that the left operand was pushed prior to
+ * the right operand such that the right operand is on the top of the stack and the left operand is
+ * right below. Non-zero values are treated as true, zero values as false.</p>
    */
   void and();
 
@@ -102,9 +102,9 @@ public interface PushDownMachine {
    * Perform a logical OR operation on the two numbers on top of the stack.
    *
    * <p>Perform a logical OR operation on the two numbers on top of the stack, pushing the result
-   * of the calculation to the top of the stack. It assumes that the left operand was pushed prior
-   * to the right operand such that the right operand is on the top of the stack and the left
-   * operand is right below. Non-zero values are treated as true, zero values as false.</p>
+ * of the calculation to the top of the stack. It assumes that the left operand was pushed prior to
+ * the right operand such that the right operand is on the top of the stack and the left operand is
+ * right below. Non-zero values are treated as true, zero values as false.</p>
    */
   void or();
 
@@ -112,9 +112,9 @@ public interface PushDownMachine {
    * Perform a logical XOR operation on the two numbers on top of the stack.
    *
    * <p>Perform a logical XOR operation on the two numbers on top of the stack, pushing the result
-   * of the calculation to the top of the stack. It assumes that the left operand was pushed prior
-   * to the right operand such that the right operand is on the top of the stack and the left
-   * operand is right below. Non-zero values are treated as true, zero values as false.</p>
+ * of the calculation to the top of the stack. It assumes that the left operand was pushed prior to
+ * the right operand such that the right operand is on the top of the stack and the left operand is
+ * right below. Non-zero values are treated as true, zero values as false.</p>
    */
   void xor();
 
@@ -122,9 +122,9 @@ public interface PushDownMachine {
    * Perform an equality comparison on the two numbers on top of the stack.
    *
    * <p>Perform an equality comparison on the two numbers on top of the stack, pushing the result
-   * of the calculation to the top of the stack. It assumes that the left operand was pushed prior
-   * to the right operand such that the right operand is on the top of the stack and the left
-   * operand is right below.</p>
+ * of the calculation to the top of the stack. It assumes that the left operand was pushed prior to
+ * the right operand such that the right operand is on the top of the stack and the left operand is
+ * right below.</p>
    */
   void equals();
 
@@ -132,9 +132,9 @@ public interface PushDownMachine {
    * Perform a not-equals comparison on the two numbers on top of the stack.
    *
    * <p>Perform a not-equals comparison on the two numbers on top of the stack, pushing the result
-   * of the calculation to the top of the stack. It assumes that the left operand was pushed prior
-   * to the right operand such that the right operand is on the top of the stack and the left
-   * operand is right below.</p>
+ * of the calculation to the top of the stack. It assumes that the left operand was pushed prior to
+ * the right operand such that the right operand is on the top of the stack and the left operand is
+ * right below.</p>
    */
   void notEquals();
 
@@ -142,9 +142,9 @@ public interface PushDownMachine {
    * Perform a greater-than comparison on the two numbers on top of the stack.
    *
    * <p>Perform a greater-than comparison on the two numbers on top of the stack, pushing the result
-   * of the calculation to the top of the stack. It assumes that the left operand was pushed prior
-   * to the right operand such that the right operand is on the top of the stack and the left
-   * operand is right below.</p>
+ * of the calculation to the top of the stack. It assumes that the left operand was pushed prior to
+ * the right operand such that the right operand is on the top of the stack and the left operand is
+ * right below.</p>
    */
   void greaterThan();
 
@@ -152,9 +152,9 @@ public interface PushDownMachine {
    * Perform a less-than comparison on the two numbers on top of the stack.
    *
    * <p>Perform a less-than comparison on the two numbers on top of the stack, pushing the result
-   * of the calculation to the top of the stack. It assumes that the left operand was pushed prior
-   * to the right operand such that the right operand is on the top of the stack and the left
-   * operand is right below.</p>
+ * of the calculation to the top of the stack. It assumes that the left operand was pushed prior to
+ * the right operand such that the right operand is on the top of the stack and the left operand is
+ * right below.</p>
    */
   void lessThan();
 
@@ -162,9 +162,9 @@ public interface PushDownMachine {
    * Perform a greater-than-or-equal comparison on the two numbers on top of the stack.
    *
    * <p>Perform a greater-than-or-equal comparison on the two numbers on top of the stack, pushing
-   * the result of the calculation to the top of the stack. It assumes that the left operand was
-   * pushed prior to the right operand such that the right operand is on the top of the stack and
-   * the left operand is right below.</p>
+ * the result of the calculation to the top of the stack. It assumes that the left operand was
+ * pushed prior to the right operand such that the right operand is on the top of the stack and the
+ * left operand is right below.</p>
    */
   void greaterThanOrEqual();
 
@@ -172,9 +172,9 @@ public interface PushDownMachine {
    * Perform a less-than-or-equal comparison on the two numbers on top of the stack.
    *
    * <p>Perform a less-than-or-equal comparison on the two numbers on top of the stack, pushing the
-   * result of the calculation to the top of the stack. It assumes that the left operand was pushed
-   * prior to the right operand such that the right operand is on the top of the stack and the left
-   * operand is right below.</p>
+ * result of the calculation to the top of the stack. It assumes that the left operand was pushed
+ * prior to the right operand such that the right operand is on the top of the stack and the left
+ * operand is right below.</p>
    */
   void lessThanOrEqual();
 
@@ -182,9 +182,9 @@ public interface PushDownMachine {
    * Draw a random number from a normal distribution.
    *
    * <p>Draw a random number from a normal distribution using the two numbers on top of the stack
-   * as the mean and standard deviation. The right operand (top of stack) is the standard deviation
-   * and the left operand (next on stack) is the mean. Pushes the sampled value to the top of the
-   * stack.</p>
+ * as the mean and standard deviation. The right operand (top of stack) is the standard deviation
+ * and the left operand (next on stack) is the mean. Pushes the sampled value to the top of the
+ * stack.</p>
    */
   void drawNormal();
 
@@ -192,8 +192,8 @@ public interface PushDownMachine {
    * Draw a random number from a uniform distribution.
    *
    * <p>Draw a random number from a uniform distribution using the two numbers on top of the stack
-   * as the low and high bounds. The right operand (top of stack) is the high bound and the left
-   * operand (next on stack) is the low bound. Pushes the sampled value to the top of the stack.</p>
+ * as the low and high bounds. The right operand (top of stack) is the high bound and the left
+ * operand (next on stack) is the low bound. Pushes the sampled value to the top of the stack.</p>
    */
   void drawUniform();
 }

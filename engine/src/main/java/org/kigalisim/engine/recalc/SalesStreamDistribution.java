@@ -2,8 +2,8 @@
  * Represents the percentage distribution between domestic, import, and export streams for sales.
  *
  * <p>This class encapsulates the percentage split logic for distributing sales
- * between domestic, import, and export streams based on which streams have
- * been enabled and their current values.</p>
+ * between domestic, import, and export streams based on which streams have been enabled and their
+ * current values.</p>
  *
  * @license BSD-3-Clause
  */
@@ -16,8 +16,8 @@ import java.math.BigDecimal;
  * Represents the percentage distribution between domestic, import, and export streams for sales.
  *
  * <p>This class encapsulates the percentage split logic for distributing sales
- * between domestic, import, and export streams based on which streams have
- * been enabled and their current values.</p>
+ * between domestic, import, and export streams based on which streams have been enabled and their
+ * current values.</p>
  */
 public class SalesStreamDistribution {
 

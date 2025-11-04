@@ -225,8 +225,8 @@ public class SimulationState {
    *
    * <p>This method replaces setStream, setOutcomeStream, and setSalesStream
    * with a unified interface that accepts pre-computed stream values.
-   * The SimulationStateUpdate object encapsulates all necessary parameters
-   * including distribution logic and recycling behavior.</p>
+ * The SimulationStateUpdate object encapsulates all necessary parameters including distribution
+ * logic and recycling behavior.</p>
    *
    * <p>This method provides clear architectural separation between calculation
    * instructions (StreamUpdate) and pre-computed results (SimulationStateUpdate).</p>
@@ -292,8 +292,8 @@ public class SimulationState {
    * Set a sales substream (domestic or import) with recycling displacement logic.
    *
    * <p>This method handles individual sales streams while applying proportional recycling
-   * displacement based on distribution percentages. It consolidates the sales substream
-   * logic that was previously inlined in the main setStream method.</p>
+ * displacement based on distribution percentages. It consolidates the sales substream logic that
+ * was previously inlined in the main setStream method.</p>
    *
    * @param useKey The key containing application and substance
    * @param name The stream name ("domestic" or "import")
@@ -512,8 +512,8 @@ public class SimulationState {
    * Get a sales stream distribution for the given substance/application.
    *
    * <p>This method centralizes the logic for creating sales distributions by getting
-   * the current domestic and import values, determining their enabled status,
-   * and building an appropriate distribution using the builder pattern.
+ * the current domestic and import values, determining their enabled status, and building an
+ * appropriate distribution using the builder pattern.
    * Exports are excluded for backward compatibility.</p>
    *
    * @param useKey The key containing application and substance
@@ -527,8 +527,8 @@ public class SimulationState {
    * Get a sales stream distribution for the given substance/application.
    *
    * <p>This method centralizes the logic for creating sales distributions by getting
-   * the current domestic, import, and optionally export values, determining their enabled status,
-   * and building an appropriate distribution using the builder pattern.</p>
+ * the current domestic, import, and optionally export values, determining their enabled status, and
+ * building an appropriate distribution using the builder pattern.</p>
    *
    * @param useKey The key containing application and substance
    * @param includeExports Whether to include exports in the distribution calculation
@@ -805,8 +805,8 @@ public class SimulationState {
    * Accumulate recharge parameters. Sets when not previously set, accumulates otherwise.
    *
    * <p>Multiple calls accumulate rates (addition) and intensities (weighted-average).
-   * Rates add linearly and intensities use weighted-average with absolute value weights
-   * to handle negative adjustments correctly.</p>
+ * Rates add linearly and intensities use weighted-average with absolute value weights to handle
+ * negative adjustments correctly.</p>
    *
    * @param useKey The key containing application and substance
    * @param population The recharge population rate to add
@@ -1193,10 +1193,9 @@ public class SimulationState {
    * Tracks the last specified value for sales-related streams.
    *
    * <p>This method preserves user intent across carry-over years by storing the
-   * units and values that were explicitly specified by the user. This is essential
-   * for maintaining correct behavior when sales values carry over to subsequent years,
-   * particularly for unit-based specifications where recharge calculations need to be
-   * applied consistently.</p>
+ * units and values that were explicitly specified by the user. This is essential for maintaining
+ * correct behavior when sales values carry over to subsequent years, particularly for unit-based
+ * specifications where recharge calculations need to be applied consistently.</p>
    *
    * @param useKey The key containing application and substance
    * @param streamName The name of the stream (e.g., "sales", "domestic", "import")
@@ -1332,9 +1331,9 @@ public class SimulationState {
   }
 
   /**
-   * Sets a simple stream by converting the provided value to the appropriate units and storing it
-   * in the streams map with a key generated from the given parameters. If the converted value
-   * is NaN, an exception is thrown indicating the source of the issue.
+ * Sets a simple stream by converting the provided value to the appropriate units and storing it in
+ * the streams map with a key generated from the given parameters. If the converted value is NaN, an
+ * exception is thrown indicating the source of the issue.
    *
    * @param useKey An instance of UseKey that helps determine stream-specific characteristics
    *               for generating the stream key.
@@ -1363,10 +1362,9 @@ public class SimulationState {
   }
 
   /**
-   * Configures and sets the sales stream distribution for manufacturing and import
-   * based on the provided key, name, and engine number value. The provided value
-   * is converted to kilograms and further distributed according to pre-defined
-   * distribution percentages.
+ * Configures and sets the sales stream distribution for manufacturing and import based on the
+ * provided key, name, and engine number value. The provided value is converted to kilograms and
+ * further distributed according to pre-defined distribution percentages.
    *
    * @param useKey A key object representing the context or identifier for the sales stream to be
    *               set.
@@ -1409,8 +1407,8 @@ public class SimulationState {
 
   /**
    * Sets the recycle stream by distributing the value proportionally between recycleRecharge and recycleEol.
-   * Similar to sales distribution, this method uses the prior sizes of recycleRecharge and recycleEol
-   * to determine the proportional distribution.
+ * Similar to sales distribution, this method uses the prior sizes of recycleRecharge and recycleEol
+ * to determine the proportional distribution.
    *
    * @param useKey The key containing application and substance
    * @param name The stream name (should be "recycle")
@@ -1454,10 +1452,9 @@ public class SimulationState {
   }
 
   /**
-   * Sets the sales stream with units for a specific use key and name. This method
-   * converts the initial charge and input value to specified units, validates the charge,
-   * and updates the internal state to reflect the conversions. The resulting stream is then
-   * stored with the corresponding key.
+ * Sets the sales stream with units for a specific use key and name. This method converts the
+ * initial charge and input value to specified units, validates the charge, and updates the internal
+ * state to reflect the conversions. The resulting stream is then stored with the corresponding key.
    *
    * @param useKey The identifier representing the context or use case for which the stream is being set.
    * @param name The name associated with the stream to be updated.
@@ -1595,8 +1592,8 @@ public class SimulationState {
 
   /**
    * Calculate the current recycling amount using the current population context.
-   * This method replicates the recycling calculation from SalesRecalcStrategy
-   * but uses the current population state instead of relying on stale data.
+ * This method replicates the recycling calculation from SalesRecalcStrategy but uses the current
+ * population state instead of relying on stale data.
    *
    * @param useKey The key containing application and substance
    * @return The amount of recycling available in kg
@@ -1665,8 +1662,8 @@ public class SimulationState {
    * Redistribute recycling amounts back to sales streams before year transition.
    *
    * <p>This method addresses the cross-year state carryover issue where recycling
-   * correctly displaces virgin material in Year N, but the reduced virgin sales
-   * baseline incorrectly carries forward to Year N+1, creating cumulative deficit.</p>
+ * correctly displaces virgin material in Year N, but the reduced virgin sales baseline incorrectly
+ * carries forward to Year N+1, creating cumulative deficit.</p>
    *
    * <div>This fix is applied to all scenarios with configured sales streams including:
    * <ul>
@@ -1676,8 +1673,8 @@ public class SimulationState {
    * </ul></div>
    *
    * <p>The redistribution preserves user expectations that loss of recycling will be
-   * back-filled by virgin material to maintain total available material, regardless
-   * of whether the original specification was in mass units (kg, mt) or equipment units.</p>
+ * back-filled by virgin material to maintain total available material, regardless of whether the
+ * original specification was in mass units (kg, mt) or equipment units.</p>
    */
   private void redistributeRecyclingToSales() {
     for (String key : substances.keySet()) {
@@ -1741,8 +1738,8 @@ public class SimulationState {
    * Redistribute induction amounts from sales streams before year transition.
    *
    * <p>This method addresses the cross-year induction carryover issue where induction
-   * correctly adds to virgin material in Year N, but the increased virgin sales
-   * baseline incorrectly carries forward to Year N+1, creating cumulative surplus.</p>
+ * correctly adds to virgin material in Year N, but the increased virgin sales baseline incorrectly
+ * carries forward to Year N+1, creating cumulative surplus.</p>
    */
   private void redistributeInductionFromSales() {
     for (String key : substances.keySet()) {
@@ -1793,8 +1790,8 @@ public class SimulationState {
    * Update cumulative bases when priorEquipment is manually modified.
    *
    * <p>When priorEquipment changes via user commands (set/change/floor/ceiling),
-   * captured bases are proportionally scaled with applied amounts to maintain
-   * cumulative semantics. Retirement and recharge bases scale independently.</p>
+ * captured bases are proportionally scaled with applied amounts to maintain cumulative semantics.
+ * Retirement and recharge bases scale independently.</p>
    *
    * @param useKey The key containing application and substance
    * @param streamName The name of the stream being modified

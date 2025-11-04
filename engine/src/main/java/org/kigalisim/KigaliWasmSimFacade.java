@@ -55,8 +55,7 @@ public class KigaliWasmSimFacade {
    * 
    * <ul>
    *   <li>
-   *     A description of the execution result: either "OK" for success or "Error: message" for
-   *     failure.
+ * A description of the execution result: either "OK" for success or "Error: message" for failure.
    *   </li>
    *   <li>A blank line</li>
    *   <li>The CSV contents with the simulation results</li>

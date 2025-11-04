@@ -111,9 +111,9 @@ public class OnlyCommasParseStrategy extends SingleDelimiterTemplate {
    * Detect if the pattern represents European decimal format (comma as decimal separator).
    *
    * <p>For the OnlyCommas strategy, single comma patterns are ambiguous and should be interpreted
-   * as UK decimal format according to requirements. The main European format detection
-   * (like 1.234,56) happens in MixedParseStrategy. Patterns are conservatively not rejected
-   * and are converted to UK decimal format (comma to period).</p>
+ * as UK decimal format according to requirements. The main European format detection (like
+ * 1.234,56) happens in MixedParseStrategy. Patterns are conservatively not rejected and are
+ * converted to UK decimal format (comma to period).</p>
    *
    * @param numberStr The number string
    * @param separatorIndex The index of the comma separator

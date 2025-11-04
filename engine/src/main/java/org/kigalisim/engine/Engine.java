@@ -2,10 +2,10 @@
  * Interface defining the contract for the Montreal Protocol simulation engine.
  *
  * <p>This interface provides methods for managing the engine lifecycle, setting simulation
- * parameters, manipulating substance streams, and retrieving results. It supports operations
- * across different scopes (stanza/application/substance) and time periods. Implementations
- * should handle the core simulation mechanics including substance flows, equipment tracking,
- * and emissions calculations.</p>
+ * parameters, manipulating substance streams, and retrieving results. It supports operations across
+ * different scopes (stanza/application/substance) and time periods. Implementations should handle
+ * the core simulation mechanics including substance flows, equipment tracking, and emissions
+ * calculations.</p>
  *
  * @license BSD-3-Clause
  */
@@ -38,8 +38,8 @@ public interface Engine {
    * Get the starting year of the simulation.
    * 
    * <p>Get the starting year of the simulation as defined in the simulation stanza or similar.
-   * Actual execution will start at this value and increment one timestep (year) at a time until
-   * end year such that commands outside this range will not run.</p>
+ * Actual execution will start at this value and increment one timestep (year) at a time until end
+ * year such that commands outside this range will not run.</p>
    *
    * @return The start year like 2025.
    */
@@ -49,8 +49,8 @@ public interface Engine {
    * Get the ending year of the simulation.
    * 
    * <p>Get the starting year of the simulation as defined in the simulation stanza or similar.
-   * Actual execution will end at this value, incrementing one timestep (year) at a time until
-   * end year such that commands outside this range will not run.</p>
+ * Actual execution will end at this value, incrementing one timestep (year) at a time until end
+ * year such that commands outside this range will not run.</p>
    *
    * @return The end year like 2050.
    */
@@ -71,7 +71,7 @@ public interface Engine {
    *
    * <p>Specify the name of the scenario currently being run as defined in the input script or
    * similar. This is used to refer to the set of policy stanzas active within a simluation.</p>
-   * 
+   *
    * @param scenarioName The name of the scenario being run like business as usual.
    */
   void setScenarioName(String scenarioName);
@@ -100,8 +100,8 @@ public interface Engine {
    * Set the stanza for the engine current scope.
    * 
    * <p>Specify the stanza in which the engine is currently running and which can be used to
-   * describe the current variable scope. Note that this may be used in some error
-   * reporting and should match the input script or similar.</p>
+ * describe the current variable scope. Note that this may be used in some error reporting and
+ * should match the input script or similar.</p>
    *
    * @param newStanza The new stanza name such as default for the baseline scenario.
    */
@@ -111,9 +111,9 @@ public interface Engine {
    * Set the application for the engine current scope.
    *
    * <p>Specify the name of the application which is currently being evaluated as indicated in
-   * the input script or similar. Note that this may be used in some error reporting and should
-   * match the user specified name.</p>
-   * 
+ * the input script or similar. Note that this may be used in some error reporting and should match
+ * the user specified name.</p>
+   *
    * @param newApplication The new application name like commercial refrigeration.
    */
   void setApplication(String newApplication);
@@ -122,8 +122,8 @@ public interface Engine {
    * Set the substance for the engine current scope.
    * 
    * <p>Specify the substance that is currently being evaluated by the engine where a substance
-   * may appear in multiple applications. Note that this is used in some error reporting and
-   * should match the user specified name.</p>
+ * may appear in multiple applications. Note that this is used in some error reporting and should
+ * match the user specified name.</p>
    *
    * @param newSubstance The new substance name like HFC-134a.
    * @param checkValid True if an error should be thrown if the app/substance is not previously
@@ -135,8 +135,8 @@ public interface Engine {
    * Set the substance for the engine current scope with default validation behavior.
    * 
    * <p>Specify the substance that is currently being evaluated by the engine where a substance
-   * may appear in multiple applications. Note that this is used in some error reporting and
-   * should match the user specified name.</p>
+ * may appear in multiple applications. Note that this is used in some error reporting and should
+ * match the user specified name.</p>
    *
    * @param newSubstance The new substance name like HFC-134a.
    */
@@ -146,9 +146,9 @@ public interface Engine {
    * Get the engine's current scope.
    * 
    * <p>Get information about the current "location" in which the Engine is performing
-   * calculations. This specifically refers to the set of variables in scope where scope may
-   * indicate, for example, which application the Engine is evaluating in order to determine the
-   * correct initial charge to use.</p>
+ * calculations. This specifically refers to the set of variables in scope where scope may indicate,
+ * for example, which application the Engine is evaluating in order to determine the correct initial
+ * charge to use.</p>
    *
    * @return Scope object describing current location in user script or similar.
    */
@@ -158,10 +158,10 @@ public interface Engine {
    * Get the state getter for converter operations.
    * 
    * <p>QubecTalk numbers have both a numeric value and a type such as kilograms. Many values
-   * require conversion to alternative units like metric tonnes and some of those conversions such
-   * as from number of units of equipment to tCO2e require information about equipment like charge
-   * levels. This retrieves an instance which supports querying of information needed to perform
-   * conversions specific to equipment, substance, or stream.</p>
+ * require conversion to alternative units like metric tonnes and some of those conversions such as
+ * from number of units of equipment to tCO2e require information about equipment like charge
+ * levels. This retrieves an instance which supports querying of information needed to perform
+ * conversions specific to equipment, substance, or stream.</p>
    *
    * @return ConverterStateGetter The state getter which can be used for state-dependent
    *     conversions.
@@ -172,8 +172,8 @@ public interface Engine {
    * Get the unit converter for this engine.
    * 
    * <p>QubecTalk numbers have both a numeric value and a type such as kilograms. Many values
-   * require conversion to alternative units like metric tonnes. This retrieves an object which can
-   * be used with this Engine for those conversions.</p>
+ * require conversion to alternative units like metric tonnes. This retrieves an object which can be
+ * used with this Engine for those conversions.</p>
    *
    * @return UnitConverter Facade which can perform unit conversions for operations with this
    *     Engine.
@@ -204,8 +204,8 @@ public interface Engine {
    * Determine if the engine has reached its final year.
    * 
    * <p>The simulation goes through one timestep (year) at a time from start year to end year and
-   * is considered finished when reaching end year. This evaluates if that terminal state has been
-   * reached.</p>
+ * is considered finished when reaching end year. This evaluates if that terminal state has been
+ * reached.</p>
    *
    * @return True if reached the end year and false otherwise.
    */
@@ -232,8 +232,8 @@ public interface Engine {
    * Enable a stream without setting its value.
    *
    * <p>This method marks a stream as enabled, allowing it to be included in distribution
-   * calculations for operations like recharge, retire, and recover without having to
-   * set an actual value to the stream.</p>
+ * calculations for operations like recharge, retire, and recover without having to set an actual
+ * value to the stream.</p>
    *
    * @param name The name of the stream to enable
    * @param yearMatcher The year matcher object or empty
@@ -258,8 +258,8 @@ public interface Engine {
    * Get the stream value with default scope and no conversion.
    * 
    * <p>Get the current value of a stream where a stream is a type of stock in the stock and flow
-   * model such as sales or equipment. This gets the value of the stream automatically converted
-   * to kilograms in the current Engine scope.</p>
+ * model such as sales or equipment. This gets the value of the stream automatically converted to
+ * kilograms in the current Engine scope.</p>
    *
    * @param name The name of the stream to retrieve like sales.
    * @return The value of the stream in kg.
@@ -333,8 +333,8 @@ public interface Engine {
    * Set the initial charge for a stream.
    * 
    * <p>Set the initial charge to use for a stream in the current scope. This is typically a sales
-   * stream like sales, import, export, domestic. This operation will only be applied if the year
-   * matcher passes, otherwise a no-op.</p>
+ * stream like sales, import, export, domestic. This operation will only be applied if the year
+ * matcher passes, otherwise a no-op.</p>
    *
    * @param value The initial charge value to set like 5 kg / unit.
    * @param stream The stream identifier to set the initial charge for like sales.
@@ -367,16 +367,15 @@ public interface Engine {
    * Set recharge parameters for the current application and substance.
    *
    * <p>Recharge represents the substance needed to service existing equipment due to
-   * leakage, maintenance, or repair. This method configures both the percentage of
-   * equipment requiring recharge (volume) and the amount of substance needed per unit
-   * (intensity).</p>
+ * leakage, maintenance, or repair. This method configures both the percentage of equipment
+ * requiring recharge (volume) and the amount of substance needed per unit (intensity).</p>
    *
    * <p>Note that, when users specify sales in equipment units (e.g., "800 units"), they indicate how many new equipment units should be
-   * sold. This recharge method must calculate substance needed for exiting equipment
-   * and add it on top. For example, if a user specifies "set import to 800 units during
-   * year 2025" and provides no specification for 2026, the carry over mechanism will
-   * automatically continue 800 new units in 2026, while recalculating and adding the
-   * appropriate recharge volume based on the growing equipment population.</p>
+ * sold. This recharge method must calculate substance needed for exiting equipment and add it on
+ * top. For example, if a user specifies "set import to 800 units during year 2025" and provides no
+ * specification for 2026, the carry over mechanism will automatically continue 800 new units in
+ * 2026, while recalculating and adding the appropriate recharge volume based on the growing
+ * equipment population.</p>
    *
    * @param volume The recharge volume to set (percentage of equipment requiring recharge)
    * @param intensity The recharge intensity to set (substance amount per unit recharged)
@@ -388,9 +387,9 @@ public interface Engine {
    * Set retirement rate for the current application and substance.
    * 
    * <p>Set the retirement (also called) scrap rate within the current scope. This is the hazard
-   * rate rate to use for retirement and can be specified in any units but are typically given in
-   * percentages (probability). Note that these may also be the result of a stateful formula like
-   * for users which have an age-dependent hazard for their survival analysis.</p>
+ * rate rate to use for retirement and can be specified in any units but are typically given in
+ * percentages (probability). Note that these may also be the result of a stateful formula like for
+ * users which have an age-dependent hazard for their survival analysis.</p>
    *
    * @param amount The retirement rate to set in the current scope.
    * @param yearMatcher Matcher to determine if the change applies to current year and, if not
@@ -412,9 +411,9 @@ public interface Engine {
    * Set recycling parameters for the current application and substance.
    * 
    * <p>Recycling allows for recovery of some amount of substance to be reused, potentially in
-   * place of virgin material. However, this is controlled through an induction (induced demand)
-   * parameter. Note that some may use recycling with 0% yield to model destruction in which
-   * substance is prevented from emitting but is not salvaged for reuse.</p>
+ * place of virgin material. However, this is controlled through an induction (induced demand)
+ * parameter. Note that some may use recycling with 0% yield to model destruction in which substance
+ * is prevented from emitting but is not salvaged for reuse.</p>
    *
    * @param recoveryWithUnits The recovery rate, typically in percentage or probability.
    * @param yieldWithUnits The yield rate indicating how much recovered is actually reused.
@@ -430,9 +429,9 @@ public interface Engine {
    * Set the induction rate for recycling operations.
    * 
    * <p>This parameter allows for modeling induced demand, an economic effect in which increased
-   * supply (in our case through recycling / secondary production) actually causes demand to also
-   * increase such that one kg of secondary material does not fully reduce or offset one kg of
-   * virgin production.</p>
+ * supply (in our case through recycling / secondary production) actually causes demand to also
+ * increase such that one kg of secondary material does not fully reduce or offset one kg of virgin
+ * production.</p>
    * 
    * <div>Induction rate determines how recycled material affects virgin production:
    * 
@@ -455,9 +454,8 @@ public interface Engine {
    * Reset the induction rate to default behavior for recycling operations.
    *
    * <p>This method sets the induction rate to 100%, which represents default induced demand
-   * behavior where recycled material adds to total supply rather than displacing virgin
-   * material. This is the recommended setting when users are uncertain about induction
-   * effects.</p>
+ * behavior where recycled material adds to total supply rather than displacing virgin material.
+ * This is the recommended setting when users are uncertain about induction effects.</p>
    *
    * <div>Induction rate determines how recycled material affects virgin production:
    * 
@@ -478,8 +476,8 @@ public interface Engine {
    * Set GHG equivalency (GWP - Global Warming Potential) for the current application and substance.
    * 
    * <p>Set GHG equivalency (GWP - Global Warming Potential) for the current application and
-   * substance as defined by the current scope. Will only execute if the year matcher matches the
-   * current year. Otherwise, this is a no-op.</p>
+ * substance as defined by the current scope. Will only execute if the year matcher matches the
+ * current year. Otherwise, this is a no-op.</p>
    * 
    * <p>Note that this is intended only for direct emissions though useres may calculate indirect
    * or secondary emissions through energy mix outside of Kigali Sim.</p>
@@ -493,8 +491,8 @@ public interface Engine {
    * Get the GHG intensity (GWP - Global Warming Potential) associated with a substance.
    * 
    * <p>Set GHG equivalency (GWP - Global Warming Potential) for the specified application and
-   * substance (regradless of current scope). Will only execute if the year matcher matches the
-   * current year. Otherwise, this is a no-op.</p>
+ * substance (regradless of current scope). Will only execute if the year matcher matches the
+ * current year. Otherwise, this is a no-op.</p>
    * 
    * <p>Note that this is intended only for direct emissions though useres may calculate indirect
    * or secondary emissions through energy mix outside of Kigali Sim.</p>
@@ -508,8 +506,8 @@ public interface Engine {
    * Retrieve the tCO2e intensity (GWP - Global Warming Potential) for the current application and substance.
    * 
    * <p>Retrieve the primary GHG intensity (GWP) for the current application and substance where this value
-   * is not expected to cover secondary or indirect emissions. That said, users may calculate those additional
-   * emissions through energy mix data from outside Kigali Sim.</p>
+ * is not expected to cover secondary or indirect emissions. That said, users may calculate those
+ * additional emissions through energy mix data from outside Kigali Sim.</p>
    *
    * @return The GHG intensity value with volume normalized GHG in tCO2e per kg.
    */
@@ -519,8 +517,8 @@ public interface Engine {
    * Retrieve the tCO2e intensity (GWP - Global Warming Potential) for the given UseKey.
    * 
    * <p>Retrieve the primary GHG intensity (GWP) for the given application and substance where this value
-   * is not expected to cover secondary or indirect emissions. That said, users may calculate those additional
-   * emissions through energy mix data from outside Kigali Sim.</p>
+ * is not expected to cover secondary or indirect emissions. That said, users may calculate those
+ * additional emissions through energy mix data from outside Kigali Sim.</p>
    *
    * @param useKey The UseKey containing application and substance information
    * @return The GHG intensity value with volume normalized GHG in tCO2e per kg.
@@ -604,8 +602,8 @@ public interface Engine {
    * Gets whether recalc optimizations are enabled.
    *
    * <p>When true, certain redundant recalculation steps are skipped for
-   * performance. When false, all recalc operations are performed for maximum
-   * accuracy verification.</p>
+ * performance. When false, all recalc operations are performed for maximum accuracy
+ * verification.</p>
    *
    * @return true if optimizations are enabled, false otherwise
    */

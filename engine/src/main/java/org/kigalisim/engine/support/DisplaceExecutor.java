@@ -2,9 +2,9 @@
  * Executor for displacement operations in cap, floor, and recover commands.
  *
  * <p>This class handles displacing changes in one stream to another stream or substance.
- * Displacement allows policy operations to offset reductions in one area with increases
- * in another, enabling complex policy scenarios like substance replacement, import/export
- * balancing, and recycling credit systems.</p>
+ * Displacement allows policy operations to offset reductions in one area with increases in another,
+ * enabling complex policy scenarios like substance replacement, import/export balancing, and
+ * recycling credit systems.</p>
  *
  * <p>Displacement supports two modes:
  * <ul>
@@ -16,8 +16,8 @@
  * </p>
  *
  * <p>For equipment-unit-based operations, displacement applies the same number of units
- * to the destination but converts using destination-specific properties (initial charge,
- * GWP). For volume-based operations, displacement uses the same substance volume.</p>
+ * to the destination but converts using destination-specific properties (initial charge, GWP). For
+ * volume-based operations, displacement uses the same substance volume.</p>
  *
  * @license BSD-3-Clause
  */
@@ -52,8 +52,8 @@ public class DisplaceExecutor {
    * Executes a displacement operation to offset a change in one stream with a change in another.
    *
    * <p>Displacement allows changes in one stream to be balanced by inverse changes in another
-   * stream or substance. This is used by cap, floor, and recover operations to enable complex
-   * policy scenarios like:</p>
+ * stream or substance. This is used by cap, floor, and recover operations to enable complex policy
+ * scenarios like:</p>
    * <ul>
    *   <li>Capping domestic manufacturing while increasing imports (stream displacement)</li>
    *   <li>Phasing down a high-GWP substance while ramping up a low-GWP alternative
@@ -64,14 +64,13 @@ public class DisplaceExecutor {
    * <p>The method handles three distinct cases:</p>
    * <ol>
    *   <li><strong>Automatic recycling displacement</strong>: When recovering material to the
-   *       sales stream, automatically adds the recycled volume to sales before applying
-   *       targeted displacement. This maintains material balance in the system.</li>
-   *   <li><strong>Equipment-unit displacement</strong>: When the operation uses equipment units,
-   *       converts the volume change back to units in the source substance, then applies
-   *       the same number of units to the destination (with destination-specific initial
-   *       charge for substance displacement).</li>
-   *   <li><strong>Volume displacement</strong>: When the operation uses volume units (kg/mt),
-   *       applies the same substance volume to the destination.</li>
+ * sales stream, automatically adds the recycled volume to sales before applying targeted
+ * displacement. This maintains material balance in the system.</li> <li><strong>Equipment-unit
+ * displacement</strong>: When the operation uses equipment units, converts the volume change back
+ * to units in the source substance, then applies the same number of units to the destination (with
+ * destination-specific initial charge for substance displacement).</li> <li><strong>Volume
+ * displacement</strong>: When the operation uses volume units (kg/mt), applies the same substance
+ * volume to the destination.</li>
    * </ol>
    *
    * @param stream The stream identifier being modified (e.g., "domestic", "import", "sales")
@@ -110,9 +109,9 @@ public class DisplaceExecutor {
    * Applies automatic recycling addition when recovering material to the sales stream.
    *
    * <p>When a recovery operation creates recycled material from the sales stream and
-   * specifies stream-based displacement, the recycled material is automatically added
-   * back to the sales stream before applying the targeted displacement. This ensures
-   * that the total material balance is maintained in the system.</p>
+ * specifies stream-based displacement, the recycled material is automatically added back to the
+ * sales stream before applying the targeted displacement. This ensures that the total material
+ * balance is maintained in the system.</p>
    *
    * <p>This automatic recycling addition only occurs when:</p>
    * <ul>
@@ -147,8 +146,8 @@ public class DisplaceExecutor {
    * Applies equipment-unit-based displacement logic.
    *
    * <p>For equipment unit operations, displacement transfers the same number of equipment
-   * units from source to destination, but the actual substance volumes may differ due to
-   * different initial charge requirements for each substance.</p>
+ * units from source to destination, but the actual substance volumes may differ due to different
+ * initial charge requirements for each substance.</p>
    *
    * <p>The process:</p>
    * <ol>
@@ -157,8 +156,8 @@ public class DisplaceExecutor {
    *   <li>For stream-based displacement: Apply the negated volume change to the target
    *       stream (same substance, so volumes match)</li>
    *   <li>For substance-based displacement: Apply the same number of units to the
-   *       destination substance, converting using destination's initial charge to get
-   *       destination volume</li>
+ * destination substance, converting using destination's initial charge to get destination
+ * volume</li>
    * </ol>
    *
    * <p>This method delegates to specialized helpers for same-substance and different-substance
@@ -194,9 +193,8 @@ public class DisplaceExecutor {
    * Applies equipment-unit displacement within the same substance (stream-based).
    *
    * <p>When displacing to another stream within the same substance (e.g., domestic to
-   * import), the equipment units have the same initial charge, so the substance volumes
-   * are identical. This method simply applies the negated volume change to the target
-   * stream.</p>
+ * import), the equipment units have the same initial charge, so the substance volumes are
+ * identical. This method simply applies the negated volume change to the target stream.</p>
    *
    * <p>Example: Capping domestic to 80% displacing "import" means reducing domestic by
    * 20% and increasing import by the same substance volume.</p>
@@ -221,8 +219,8 @@ public class DisplaceExecutor {
    * Applies equipment-unit displacement to a different substance.
    *
    * <p>When displacing to a different substance, the same number of equipment units is
-   * transferred, but the actual substance volumes differ based on each substance's initial
-   * charge requirements. This method:</p>
+ * transferred, but the actual substance volumes differ based on each substance's initial charge
+ * requirements. This method:</p>
    * <ol>
    *   <li>Switches to the destination substance scope</li>
    *   <li>Converts the number of units to destination substance volume using the
@@ -233,8 +231,8 @@ public class DisplaceExecutor {
    * </ol>
    *
    * <p>Example: Capping HFC-134a to 80% displacing "R-600a" transfers units to R-600a,
-   * but R-600a may have a different initial charge (kg/unit), resulting in different
-   * total substance volume but same equipment count.</p>
+ * but R-600a may have a different initial charge (kg/unit), resulting in different total substance
+ * volume but same equipment count.</p>
    *
    * @param stream The source stream identifier
    * @param unitsChanged The number of equipment units to transfer
@@ -271,17 +269,15 @@ public class DisplaceExecutor {
    * Applies volume-based displacement using the same substance volume.
    *
    * <p>For volume-based operations (kg, mt), displacement uses the same substance volume
-   * for both source and destination. Unlike equipment-unit displacement, the actual
-   * substance volume is identical regardless of whether displacing to a stream or
-   * substance.</p>
+ * for both source and destination. Unlike equipment-unit displacement, the actual substance volume
+ * is identical regardless of whether displacing to a stream or substance.</p>
    *
    * <p>The process:</p>
    * <ol>
    *   <li>For stream-based displacement: Apply the negated volume change to the target
    *       stream using changeStreamWithoutReportingUnits</li>
    *   <li>For substance-based displacement: Apply the negated volume change to the
-   *       destination substance using changeStreamWithDisplacementContext for correct
-   *       GWP calculations</li>
+ * destination substance using changeStreamWithDisplacementContext for correct GWP calculations</li>
    * </ol>
    *
    * @param stream The stream identifier being modified

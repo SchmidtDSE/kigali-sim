@@ -2,18 +2,18 @@
  * Executor for cap and floor limit operations on streams.
  *
  * <p>This class handles applying maximum (cap) and minimum (floor) constraints to
- * stream values. Limit operations enable policy scenarios like manufacturing caps,
- * import quotas, and minimum production requirements. Both absolute values and
- * percentage-based limits are supported, with optional displacement to offset
- * changes in one stream with changes in another.</p>
+ * stream values. Limit operations enable policy scenarios like manufacturing caps, import quotas,
+ * and minimum production requirements. Both absolute values and percentage-based limits are
+ * supported, with optional displacement to offset changes in one stream with changes in
+ * another.</p>
  *
  * <p>Limit operations support two specification modes:</p>
  * <ul>
  *   <li><strong>Percentage-based limits</strong>: Applied relative to lastSpecifiedValue,
- *       enabling compounding effects year-over-year (e.g., "cap to 85%" means 85% of
- *       the last user-specified value, not 85% of current calculated value)</li>
- *   <li><strong>Absolute value limits</strong>: Direct numeric constraints (e.g.,
- *       "cap to 1000 mt" sets hard maximum regardless of previous values)</li>
+ * enabling compounding effects year-over-year (e.g., "cap to 85%" means 85% of the last
+ * user-specified value, not 85% of current calculated value)</li> <li><strong>Absolute value
+ * limits</strong>: Direct numeric constraints (e.g., "cap to 1000 mt" sets hard maximum regardless
+ * of previous values)</li>
  * </ul>
  *
  * <p>When limits are exceeded:</p>
@@ -61,8 +61,8 @@ public class LimitExecutor {
    * Validates that the stream is not the equipment stream.
    *
    * <p>Equipment streams should never be processed by this executor as they are handled
-   * separately by EquipmentChangeUtil. This validation should never fail if routing from
-   * SingleThreadEngine is correct.</p>
+ * separately by EquipmentChangeUtil. This validation should never fail if routing from
+ * SingleThreadEngine is correct.</p>
    *
    * @param stream The stream identifier to validate
    * @throws IllegalStateException if stream is "equipment"
@@ -78,15 +78,15 @@ public class LimitExecutor {
    * Executes a cap operation to limit a stream to a maximum value.
    *
    * <p>Cap operations enforce maximum constraints on stream values, reducing the
-   * stream if it exceeds the specified limit. This is commonly used for policy
-   * scenarios like manufacturing caps, import quotas, and consumption limits.</p>
+ * stream if it exceeds the specified limit. This is commonly used for policy scenarios like
+ * manufacturing caps, import quotas, and consumption limits.</p>
    *
    * <p>For percentage-based caps (e.g., "cap to 85%"), the limit is calculated
    * relative to the lastSpecifiedValue rather than the current calculated value.
-   * This enables year-over-year compounding effects. For example, if the user
-   * specified "set domestic to 1000 mt" in a previous year, then "cap to 85%"
-   * in the current year, the cap will be 850 mt (85% of 1000), not 85% of the
-   * current calculated domestic value which may include recharge adjustments.</p>
+ * This enables year-over-year compounding effects. For example, if the user specified "set domestic
+ * to 1000 mt" in a previous year, then "cap to 85%" in the current year, the cap will be 850 mt
+ * (85% of 1000), not 85% of the current calculated domestic value which may include recharge
+ * adjustments.</p>
    *
    * <p>If the current stream value exceeds the cap:</p>
    * <ol>
@@ -118,16 +118,15 @@ public class LimitExecutor {
    * Executes a floor operation to enforce a minimum value on a stream.
    *
    * <p>Floor operations enforce minimum constraints on stream values, increasing the
-   * stream if it falls below the specified limit. This is commonly used for policy
-   * scenarios like minimum production requirements, guaranteed import levels, and
-   * baseline consumption mandates.</p>
+ * stream if it falls below the specified limit. This is commonly used for policy scenarios like
+ * minimum production requirements, guaranteed import levels, and baseline consumption mandates.</p>
    *
    * <p>For percentage-based floors (e.g., "floor to 80%"), the limit is calculated
    * relative to the lastSpecifiedValue rather than the current calculated value.
-   * This enables year-over-year compounding effects. For example, if the user
-   * specified "set domestic to 1000 mt" in a previous year, then "floor to 80%"
-   * in the current year, the floor will be 800 mt (80% of 1000), not 80% of the
-   * current calculated domestic value which may include recharge adjustments.</p>
+ * This enables year-over-year compounding effects. For example, if the user specified "set domestic
+ * to 1000 mt" in a previous year, then "floor to 80%" in the current year, the floor will be 800 mt
+ * (80% of 1000), not 80% of the current calculated domestic value which may include recharge
+ * adjustments.</p>
    *
    * <p>If the current stream value falls below the floor:</p>
    * <ol>
@@ -159,9 +158,9 @@ public class LimitExecutor {
    * Applies percentage-based cap operation using lastSpecifiedValue for compounding effect.
    *
    * <p>This method implements the cap logic for percentage-based specifications. The
-   * percentage is applied to the lastSpecifiedValue (the last value explicitly set by
-   * the user) rather than the current calculated value. This approach enables proper
-   * year-over-year compounding where policy restrictions build on previous user intent.</p>
+ * percentage is applied to the lastSpecifiedValue (the last value explicitly set by the user)
+ * rather than the current calculated value. This approach enables proper year-over-year compounding
+ * where policy restrictions build on previous user intent.</p>
    *
    * <p>Algorithm:</p>
    * <ol>
@@ -241,8 +240,8 @@ public class LimitExecutor {
    * Applies absolute value-based cap operation.
    *
    * <p>This method implements the cap logic for absolute value specifications (e.g.,
-   * "cap to 1000 mt"). The cap is applied directly as a hard maximum constraint
-   * regardless of previous user specifications or calculated values.</p>
+ * "cap to 1000 mt"). The cap is applied directly as a hard maximum constraint regardless of
+ * previous user specifications or calculated values.</p>
    *
    * <p>Algorithm:</p>
    * <ol>
@@ -287,9 +286,9 @@ public class LimitExecutor {
    * Applies percentage-based floor operation using lastSpecifiedValue for compounding effect.
    *
    * <p>This method implements the floor logic for percentage-based specifications. The
-   * percentage is applied to the lastSpecifiedValue (the last value explicitly set by
-   * the user) rather than the current calculated value. This approach enables proper
-   * year-over-year compounding where policy requirements build on previous user intent.</p>
+ * percentage is applied to the lastSpecifiedValue (the last value explicitly set by the user)
+ * rather than the current calculated value. This approach enables proper year-over-year compounding
+ * where policy requirements build on previous user intent.</p>
    *
    * <p>Algorithm:</p>
    * <ol>
@@ -369,8 +368,8 @@ public class LimitExecutor {
    * Applies absolute value-based floor operation.
    *
    * <p>This method implements the floor logic for absolute value specifications (e.g.,
-   * "floor to 800 mt"). The floor is applied directly as a hard minimum constraint
-   * regardless of previous user specifications or calculated values.</p>
+ * "floor to 800 mt"). The floor is applied directly as a hard minimum constraint regardless of
+ * previous user specifications or calculated values.</p>
    *
    * <p>Algorithm:</p>
    * <ol>

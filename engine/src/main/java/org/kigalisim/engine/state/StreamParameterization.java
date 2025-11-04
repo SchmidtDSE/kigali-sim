@@ -466,8 +466,8 @@ public class StreamParameterization {
    * Accumulate recharge parameters. Sets when not previously set, accumulates otherwise.
    *
    * <p>Multiple calls accumulate rates (addition) and intensities (weighted-average).
-   * Population rates are added, intensities are weighted-averaged using absolute values
-   * for weights to handle negative adjustments correctly.</p>
+ * Population rates are added, intensities are weighted-averaged using absolute values for weights
+ * to handle negative adjustments correctly.</p>
    *
    * <p>Weighted average formula: (|rate1| × intensity1 + |rate2| × intensity2) / (|rate1| + |rate2|)</p>
    *
@@ -569,8 +569,8 @@ public class StreamParameterization {
    * Reset state at the beginning of a timestep.
    *
    * <p>This method resets recovery rate to 0% and induction rate to 100% between steps since
-   * recycling programs may cease and should not be expected to continue unchanged, but
-   * default induction behavior should return to induced demand (100%).</p>
+ * recycling programs may cease and should not be expected to continue unchanged, but default
+ * induction behavior should return to induced demand (100%).</p>
    */
   public void resetStateAtTimestep() {
     // Reset recovery to 0% between steps since recycling programs may cease

@@ -2,8 +2,8 @@
  * Result class for flexible number parsing operations.
  *
  * <p>This class encapsulates the result of attempting to parse a number with flexible
- * thousands and decimal separators. It contains either a successfully parsed number
- * or an error message if parsing failed.</p>
+ * thousands and decimal separators. It contains either a successfully parsed number or an error
+ * message if parsing failed.</p>
  *
  * @license BSD-3-Clause
  */
