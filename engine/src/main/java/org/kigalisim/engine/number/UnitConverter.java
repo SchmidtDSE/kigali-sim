@@ -23,8 +23,8 @@ import org.kigalisim.util.UnitStringNormalizer;
  * Object simplifying conversion between units.
  *
  * <p>This class handles unit conversions within the engine, supporting conversions
- * between volume units (kg, mt), population units (unit, units), consumption units
- * (tCO2e, kgCO2e, kwh), time units (year, years), and percentage units (%).</p>
+ * between volume units (kg, mt), population units (unit, units), consumption units (tCO2e, kgCO2e,
+ * kwh), time units (year, years), and percentage units (%).</p>
  */
 public class UnitConverter {
 
@@ -67,8 +67,8 @@ public class UnitConverter {
    * Create and initialize the scale map for unit conversions.
    *
    * <p>This method is called once at class initialization time to create an immutable
-   * map of conversion factors between compatible units. The map is cached to avoid
-   * repeated allocations during unit conversions.</p>
+   * map of conversion factors between compatible units. The map is cached to avoid repeated
+   * allocations during unit conversions.</p>
    *
    * @return An unmodifiable map of conversion scales
    */
@@ -267,8 +267,8 @@ public class UnitConverter {
    * Convert a number to new units when confirmed to be a non-noop conversion.
    *
    * <p>This method handles the conversion when the source units differ from destination units
-   * and the value is non-zero. It manages the caching, denominator/numerator splitting, and
-   * recursive conversions needed for complex unit transformations.</p>
+   * and the value is non-zero. It manages the caching, denominator/numerator splitting, and recursive
+   * conversions needed for complex unit transformations.</p>
    *
    * @param source The EngineNumber to convert
    * @param destinationUnits The units to which source should be converted
@@ -389,8 +389,7 @@ public class UnitConverter {
    * Infer a scaling factor without population information.
    *
    * <p>Infer the scale factor for converting between source and destination
-   * units without population information. Uses a cached static map to avoid
-   * repeated allocations.</p>
+   * units without population information. Uses a cached static map to avoid repeated allocations.</p>
    *
    * @param source The source unit type
    * @param destination The destination unit type
@@ -814,8 +813,7 @@ public class UnitConverter {
   }
 
   /**
-   * Convert a number where a units ratio has population in the denominator to a
-   * non-ratio units.
+   * Convert a number where a units ratio has population in the denominator to a non-ratio units.
    *
    * @param target The value to normalize by population
    * @return Target without population in its units denominator
@@ -863,8 +861,7 @@ public class UnitConverter {
   }
 
   /**
-   * Convert a number where a units ratio has consumption in the denominator to a
-   * non-ratio units.
+   * Convert a number where a units ratio has consumption in the denominator to a non-ratio units.
    *
    * @param target The value to normalize by consumption
    * @return Target without consumption in its units denominator

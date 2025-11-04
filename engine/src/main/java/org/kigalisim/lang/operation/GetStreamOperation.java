@@ -77,8 +77,8 @@ public class GetStreamOperation implements Operation {
    * Get stream value from a different substance scope.
    *
    * <div>
-   * Indirect access: get stream from specified substance. Creates a new scope pointing to
-   * the target substance within the same application.
+   * Indirect access: get stream from specified substance. Creates a new scope pointing to the target
+   * substance within the same application.
    * </div>
    *
    * @param engine The engine instance to query for stream values.

@@ -2,8 +2,8 @@
  * Utility class for handling equipment stream modifications.
  *
  * <p>This class provides logic for set, change, cap, and floor operations on
- * equipment streams. It converts equipment operations into appropriate sales
- * and retirement operations to ensure recharge needs are properly handled.</p>
+ * equipment streams. It converts equipment operations into appropriate sales and retirement
+ * operations to ensure recharge needs are properly handled.</p>
  *
  * @license BSD-3-Clause
  */
@@ -29,9 +29,9 @@ import org.kigalisim.engine.state.YearMatcher;
  * Handles equipment stream operations with proper recharge accounting.
  *
  * <p>This class converts equipment-level operations into sales and retirement
- * operations that properly account for recharge needs. When equipment levels
- * change, the corresponding sales distributions and retirement rates are
- * calculated to maintain consistency with the simulation's recharge logic.</p>
+ * operations that properly account for recharge needs. When equipment levels change, the
+ * corresponding sales distributions and retirement rates are calculated to maintain consistency
+ * with the simulation's recharge logic.</p>
  */
 public class EquipmentChangeUtil {
   private final Engine engine;
@@ -294,9 +294,9 @@ public class EquipmentChangeUtil {
    * Retire equipment from priorEquipment (used by handleChange).
    *
    * <p>Retires the specified amount from priorEquipment. If priorEquipment is insufficient
-   * to cover the full retirement, retires what's available from priorEquipment and uses
-   * changeStream to reduce sales by the remainder. This enables proper handling of
-   * percentage-based equipment changes.</p>
+   * to cover the full retirement, retires what's available from priorEquipment and uses changeStream
+   * to reduce sales by the remainder. This enables proper handling of percentage-based equipment
+   * changes.</p>
    *
    * @param unitsToRetire The number of units to retire
    * @param yearMatcher Optional year matcher
@@ -383,8 +383,8 @@ public class EquipmentChangeUtil {
    * <p>For equipment displacement, changes the equipment level in the target substance by switching
    * to the target substance scope, performing the adjustment, and restoring the original scope.
    * For cap operations (isCap=true), increases the target substance's equipment by the displaced
-   * amount. For floor operations (isCap=false), decreases it by the displaced amount. Returns
-   * early if displaceTarget is null or if amount is zero or negligible (< 1E-10).</p>
+   * amount. For floor operations (isCap=false), decreases it by the displaced amount. Returns early
+   * if displaceTarget is null or if amount is zero or negligible (< 1E-10).</p>
    *
    * @param amount The amount to displace (in units)
    * @param displaceTarget The target substance for displacement

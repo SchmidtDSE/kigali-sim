@@ -1,8 +1,6 @@
 /**
  * Command to display the version of KigaliSim.
  *
- * <p>This command displays the current version of KigaliSim when executed.</p>
- *
  * @license BSD-3-Clause
  */
 
@@ -31,6 +29,6 @@ public class VersionCommand implements Runnable {
    */
   @Override
   public void run() {
-    System.out.println("0.0.1");
+    System.out.println("0.1.1");
   }
 }

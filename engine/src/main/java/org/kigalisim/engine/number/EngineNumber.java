@@ -15,8 +15,8 @@ import java.math.BigDecimal;
  * Representation of a number with units within the engine.
  *
  * <p>This class encapsulates a numeric value (using BigDecimal for precision) and its
- * associated units string. It provides methods to access the value, units, and check
- * for specific unit types.</p>
+ * associated units string. It provides methods to access the value, units, and check for specific
+ * unit types.</p>
  */
 public class EngineNumber {
   private final BigDecimal value;

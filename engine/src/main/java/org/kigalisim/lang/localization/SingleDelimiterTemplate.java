@@ -3,8 +3,7 @@
  *
  * <p>This abstract class implements the template method pattern to consolidate
  * common parsing logic for numbers containing only commas or only periods.
- * Subclasses customize behavior through abstract methods for separator-specific
- * handling.
+ * Subclasses customize behavior through abstract methods for separator-specific handling.
  *
  * @license BSD-3-Clause
  */

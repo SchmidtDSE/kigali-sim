@@ -168,9 +168,9 @@ public class SalesRecalcStrategy implements RecalcStrategy {
    * Get the effective induction rate with appropriate defaults based on specification type.
    *
    * <p>If the induction rate was explicitly set, it is returned (converted from percentage to
-   * ratio). Otherwise, a default behavior is applied based on the specification type: for
-   * unit-based specs, the default is 0% induction (displacement behavior), while for non-unit
-   * specs, the default is 100% induction (induced demand behavior).</p>
+   * ratio). Otherwise, a default behavior is applied based on the specification type: for unit-based
+   * specs, the default is 0% induction (displacement behavior), while for non-unit specs, the default
+   * is 100% induction (induced demand behavior).</p>
    *
    * @param simulationState the simulation state to get induction rate from
    * @param scopeEffective the scope to get induction rate for
@@ -199,9 +199,9 @@ public class SalesRecalcStrategy implements RecalcStrategy {
    * Initializes the recharge base population for this scope if not already set.
    *
    * <p>On the first recharge operation for a given scope, this method captures the current
-   * prior equipment value as the base population for all future recharge calculations. This
-   * ensures that recharge percentages are consistently applied against the same baseline
-   * throughout the simulation.</p>
+   * prior equipment value as the base population for all future recharge calculations. This ensures
+   * that recharge percentages are consistently applied against the same baseline throughout the
+   * simulation.</p>
    *
    * <p>Side effect: If this is the first recharge, sets the recharge base population in
    * the simulation state to the current priorEquipment value.</p>

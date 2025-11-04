@@ -9,9 +9,9 @@ import org.kigalisim.engine.state.YearMatcher;
  * Immutable class representing stream calculation instructions.
  *
  * <p>Contains parameters needed to execute a stream calculation operation in the engine,
- * including timing constraints, scope, and behavioral flags. This class provides the
- * "instructions" for how to calculate stream values, while SimulationStateUpdate contains
- * the pre-computed "results" ready for storage.</p>
+ * including timing constraints, scope, and behavioral flags. This class provides the "instructions"
+ * for how to calculate stream values, while SimulationStateUpdate contains the pre-computed
+ * "results" ready for storage.</p>
  *
  * <p>Use StreamUpdate for operations that need calculation logic (set, change, cap, floor).
  * Use SimulationStateUpdate for setting pre-calculated values (recalc strategies, emissions).</p>

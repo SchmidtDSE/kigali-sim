@@ -304,8 +304,8 @@ public class EngineResultSerializer {
    * Parse information for the import supplement.
    *
    * <p>Parse information for the import supplement which is needed to perform
-   * user-configurable import attribution options (are substances associated
-   * with importer or exporter).</p>
+   * user-configurable import attribution options (are substances associated with importer or
+   * exporter).</p>
    *
    * @param builder The builder into which parsed values should be registered
    * @param useKey The UseKey containing application and substance information
@@ -456,8 +456,8 @@ public class EngineResultSerializer {
    * Calculate initial charge emissions for per-volume emissions factors.
    *
    * <p>For per-volume emissions factors (per kg or per mt), initial charge emissions
-   * are calculated based on the volume difference between total sales and recharge,
-   * multiplied by the per-volume emissions factor.</p>
+   * are calculated based on the volume difference between total sales and recharge, multiplied by the
+   * per-volume emissions factor.</p>
    *
    * @param useKey The UseKey containing application and substance information
    * @param ghgIntensity The GHG intensity (per-volume emissions factor)

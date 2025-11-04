@@ -2,8 +2,8 @@
  * Utility class for executing change operations on streams.
  *
  * <p>This class provides change operation logic for Engine implementations
- * to provide better separation of concerns and testability. It handles routing
- * of different change types (percentage, units, volume) to appropriate handlers.</p>
+ * to provide better separation of concerns and testability. It handles routing of different change
+ * types (percentage, units, volume) to appropriate handlers.</p>
  *
  * @license BSD-3-Clause
  */
@@ -132,8 +132,8 @@ public class ChangeExecutor {
    * Handle percentage-based change operations.
    *
    * <p>Applies percentage to the last specified value, with recharge handled by
-   * executeStreamUpdate to avoid double counting. For units-based specifications,
-   * enables recycling logic.</p>
+   * executeStreamUpdate to avoid double counting. For units-based specifications, enables recycling
+   * logic.</p>
    *
    * @param config The configuration containing all parameters for the change operation
    */
@@ -207,8 +207,8 @@ public class ChangeExecutor {
    * Handle units-based change operations.
    *
    * <p>Applies change to the last specified value, or falls back to current stream
-   * value if no specification exists. Recharge is handled by executeStreamUpdate,
-   * with recycling logic enabled for units-based specifications.</p>
+   * value if no specification exists. Recharge is handled by executeStreamUpdate, with recycling
+   * logic enabled for units-based specifications.</p>
    *
    * @param config The configuration containing all parameters for the change operation
    */

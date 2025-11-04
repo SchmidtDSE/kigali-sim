@@ -2,9 +2,9 @@
  * Utility class for stream update shortcut operations.
  *
  * <p>This class provides stream update operations that combine StreamUpdate
- * and RecalcOperation creation for common patterns like displacement and
- * replacement operations. These shortcuts handle the complexity of scope
- * management, unit conversion, and recalculation propagation.</p>
+ * and RecalcOperation creation for common patterns like displacement and replacement operations.
+ * These shortcuts handle the complexity of scope management, unit conversion, and recalculation
+ * propagation.</p>
  *
  * @license BSD-3-Clause
  */
@@ -31,8 +31,8 @@ import org.kigalisim.engine.state.YearMatcher;
  * Handles stream update shortcut operations for displacement and replacement.
  *
  * <p>This class provides methods to update streams without reporting units
- * or with displacement context for correct GWP calculations. These shortcuts
- * streamline common operations in replace and displacement handling.</p>
+ * or with displacement context for correct GWP calculations. These shortcuts streamline common
+ * operations in replace and displacement handling.</p>
  */
 public class StreamUpdateShortcuts {
 
@@ -52,8 +52,8 @@ public class StreamUpdateShortcuts {
    * Change a stream value without reporting units to the last units tracking system.
    *
    * <p>This method updates a stream value without affecting the lastSpecifiedValue
-   * tracking used for unit-based carry-over behavior. It is used when the change
-   * should not influence subsequent relative changes.</p>
+   * tracking used for unit-based carry-over behavior. It is used when the change should not influence
+   * subsequent relative changes.</p>
    *
    * @param stream The stream identifier to modify
    * @param amount The amount to change the stream by
@@ -69,8 +69,8 @@ public class StreamUpdateShortcuts {
    * Change a stream value without reporting units to the last units tracking system.
    *
    * <p>This method is similar to changeStreamWithDisplacementContext but without the
-   * displacement context. It allows for consistent handling of negative stream values
-   * across both methods.</p>
+   * displacement context. It allows for consistent handling of negative stream values across both
+   * methods.</p>
    *
    * @param stream The stream identifier to modify
    * @param amount The amount to change the stream by
@@ -114,9 +114,9 @@ public class StreamUpdateShortcuts {
    * Change a stream value with proper displacement context for correct GWP calculations.
    *
    * <p>This method creates a custom recalc kit that uses the destination substance's
-   * properties (GWP, initial charge, energy intensity) to ensure correct emissions
-   * calculations during displacement operations. The engine scope is temporarily
-   * switched to the destination scope for accurate unit conversion and recalculation.</p>
+   * properties (GWP, initial charge, energy intensity) to ensure correct emissions calculations
+   * during displacement operations. The engine scope is temporarily switched to the destination scope
+   * for accurate unit conversion and recalculation.</p>
    *
    * @param stream The stream identifier to modify
    * @param amount The amount to change the stream by
@@ -131,10 +131,10 @@ public class StreamUpdateShortcuts {
    * Change a stream value with proper displacement context for correct GWP calculations.
    *
    * <p>This method creates a custom recalc kit that uses the destination substance's
-   * properties (GWP, initial charge, energy intensity) to ensure correct emissions
-   * calculations during displacement operations. The engine scope is temporarily
-   * switched to the destination scope for accurate unit conversion and recalculation,
-   * then restored to the original scope after the operation completes.</p>
+   * properties (GWP, initial charge, energy intensity) to ensure correct emissions calculations
+   * during displacement operations. The engine scope is temporarily switched to the destination scope
+   * for accurate unit conversion and recalculation, then restored to the original scope after the
+   * operation completes.</p>
    *
    * @param stream The stream identifier to modify
    * @param amount The amount to change the stream by
@@ -203,8 +203,8 @@ public class StreamUpdateShortcuts {
    * Calculates the delta and applies it to the current stream value, clamping if necessary.
    *
    * <p>Gets the current stream value using the engine's current scope, converts the delta
-   * to the appropriate units, and calculates the new value. The result is clamped to zero
-   * if negative values are not allowed.</p>
+   * to the appropriate units, and calculates the new value. The result is clamped to zero if negative
+   * values are not allowed.</p>
    *
    * @param stream The stream identifier
    * @param amount The amount to change by
@@ -227,8 +227,8 @@ public class StreamUpdateShortcuts {
    * Updates the lastSpecifiedValue for a sales substream.
    *
    * <p>This method ensures that the lastSpecifiedValue is properly tracked for sales
-   * substreams when propagateChanges=false skips the normal tracking mechanism. This is
-   * necessary for correct unit-based carry-over behavior in subsequent operations.</p>
+   * substreams when propagateChanges=false skips the normal tracking mechanism. This is necessary for
+   * correct unit-based carry-over behavior in subsequent operations.</p>
    *
    * @param stream The stream identifier
    * @param value The EngineNumber value to set as the last specified value

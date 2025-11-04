@@ -10,7 +10,7 @@ Note that, in addition to this documentation and [CONTRIBUTING.md](https://githu
 
 KigaliSim is organized into three main components and most have additional READMEs within:
 
-**Java Engine** (`engine` directory):
+The **Java Engine** (`engine` directory) provides the primary computational mechanism for running simulations. There are different entrypoints depending on how Kiglai Sim is running like via WASM or JVM. That said, developers may wish to review the [Engine JavaDoc](https://kigalisim.org/guide/javadoc/org/kigalisim/engine/Engine.html). At a glance:
 
 - Core simulation engine built with Java 21+
 - Uses ANTLR4 for parsing the QubecTalk domain specific language (DSL)
@@ -18,7 +18,7 @@ KigaliSim is organized into three main components and most have additional READM
 - Compiled to WebAssembly using TeaVM for browser execution
 - Can also run standalone via command line
 
-**Web Editor** (`editor` directory):
+The **Web Editor** (`editor` directory) provides a bespoke IDE with built-in visualization capability running via WASM. At a glance:
 
 - ECMAScript-based web interface
 - Copies QubecTalk.g4 from engine during build process
@@ -27,10 +27,7 @@ KigaliSim is organized into three main components and most have additional READM
 - Uses webpack for bundling and Grunt for testing
 - Integrates with the WASM-compiled engine
 
-**Documentation** (`docs` directory):
-
-- Technical specifications and user guides
-- QubecTalk language documentation
+The **Documentation** (`docs` directory) component includes the User's Guide and various reference resources. This also includes the QubecTalk formal lanugage specification.
 
 ## Development Environment Setup
 
@@ -38,7 +35,7 @@ Both dev containers and local setup are supported, per developer preference.
 
 ### Using Dev Container
 
-The project includes a complete dev container which is compatible with IntelliJ, VS Code, and GitHub Codespaces. As described in `.devcontainer`, this provides a reproducible development environment with dependencies required for most development activities pre-installed. Indeed, this guide was written from a dev container! It uses:
+The project includes a dev container which is compatible with IntelliJ, VS Code, and GitHub Codespaces. As described in `.devcontainer`, this provides a reproducible development environment with dependencies required for most development activities pre-installed. Indeed, this guide was written from a dev container! It uses:
 
 - Debian 12 (bookworm-slim) with Eclipse Temurin JDK 21
 - Node.js 18.x LTS (official Debian package)
@@ -187,7 +184,7 @@ For those working in **ECMAScript**:
 - Configuration in `editor/.eslintrc.yml`
 - Prettier configuration in `editor/.prettierrc`
 
-## WASM Artifacts Management
+## WASM
 
 The Java engine is compiled to WebAssembly for browser execution. From the `editor/` directory:
 
@@ -245,7 +242,7 @@ Finally, before committing, ensure:
 
 For those working with countries, please be sure to ensure no sensitive information or secrets in code.
 
-## Deployment Process
+## Environments
 
 We have both a staging and a production environment. Start by trying your changes in **staging**:
 
@@ -290,3 +287,4 @@ Please review `build.gradle` for information about output being suppressed durin
 - [TeaVM Documentation](https://teavm.org/)
 - [QUnit Testing Framework](https://qunitjs.com/)
 - [Grunt Task Runner](https://gruntjs.com/)
+- [Project JavaDoc](https://kigalisim.org/guide/javadoc)

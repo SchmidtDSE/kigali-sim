@@ -2,8 +2,8 @@
  * Operation that recovers a percentage or amount of refrigerant.
  *
  * <p>This operation calculates a recovery amount and yield rate
- * and applies it to the engine. It can optionally be limited to a specific time period using
- * a ParsedDuring object.</p>
+ * and applies it to the engine. It can optionally be limited to a specific time period using a
+ * ParsedDuring object.</p>
  *
  * @license BSD-3-Clause
  */
@@ -21,8 +21,8 @@ import org.kigalisim.lang.time.ParsedDuring;
  * Operation that recovers a percentage or amount of refrigerant.
  *
  * <p>This operation calculates a recovery amount and yield rate
- * and applies it to the engine. It can optionally be limited to a specific time period using
- * a ParsedDuring object.</p>
+ * and applies it to the engine. It can optionally be limited to a specific time period using a
+ * ParsedDuring object.</p>
  */
 public class RecoverOperation implements Operation {
 
@@ -226,8 +226,8 @@ public class RecoverOperation implements Operation {
    * Executes the induction operation if present.
    *
    * <div>
-   * Validates that the induction value is a percentage (0-100%). Uses the EngineNumber
-   * directly with percentage units without conversion.
+   * Validates that the induction value is a percentage (0-100%). Uses the EngineNumber directly with
+   * percentage units without conversion.
    * </div>
    *
    * @param machine The push down machine to execute the operation on.

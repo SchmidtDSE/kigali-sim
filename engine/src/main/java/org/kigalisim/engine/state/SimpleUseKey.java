@@ -6,8 +6,8 @@ import java.util.Optional;
  * Simple implementation of UseKey that generates keys based on application and substance.
  *
  * <p>This class provides a lightweight way to generate keys for substance streams
- * without requiring a full Scope object. The key generation follows the same pattern
- * as Scope, using lazy initialization and caching for performance.</p>
+ * without requiring a full Scope object. The key generation follows the same pattern as Scope,
+ * using lazy initialization and caching for performance.</p>
  */
 public class SimpleUseKey implements UseKey {
 

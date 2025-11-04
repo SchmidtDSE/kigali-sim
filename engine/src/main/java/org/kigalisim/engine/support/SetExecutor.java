@@ -2,9 +2,9 @@
  * Utility class for executing set operations on sales streams.
  *
  * <p>This class provides set operation logic for Engine implementations
- * to provide better separation of concerns and testability. It handles
- * distribution of sales values to component streams (domestic/import) while
- * preserving lastSpecifiedValue for subsequent change operations.</p>
+ * to provide better separation of concerns and testability. It handles distribution of sales values
+ * to component streams (domestic/import) while preserving lastSpecifiedValue for subsequent change
+ * operations.</p>
  *
  * @license BSD-3-Clause
  */
@@ -26,8 +26,8 @@ import org.kigalisim.engine.state.YearMatcher;
  * Handles set operations for sales streams with proper component distribution.
  *
  * <p>This class provides methods to handle setting sales values that need to be
- * distributed to component streams (domestic, import) while preserving the
- * lastSpecifiedValue that enables subsequent change operations to work correctly.</p>
+ * distributed to component streams (domestic, import) while preserving the lastSpecifiedValue that
+ * enables subsequent change operations to work correctly.</p>
  */
 public class SetExecutor {
 
