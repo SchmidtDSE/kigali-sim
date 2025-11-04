@@ -220,7 +220,7 @@ All the automated checks and development operations described below work in the 
 - Java linting: `cd engine && ./gradlew checkstyleMain` and `cd engine && ./gradlew checkstyleTest`
 - ECMAScript / JavaScript linting: `cd editor && pnpm exec eslint ./js/*.js` and `cd editor && pnpm exec eslint ./test/*.js`
 - ECMAScript / JavaScript testing: `cd editor && pnpm exec grunt`
-- Build and run the UI-based editor locally: `cd editor && bash ./support/update_wasm.sh && bash ./support/make.sh && python -m http.server`
+- Build and run the UI-based editor locally: `cd editor && bash ./support/make.sh && python3 -m http.server`
 
 ### Other Local Setup
 To run this system locally outside a dev container, please:
@@ -267,39 +267,32 @@ cd editor
 pnpm install
 ```
 
-4. Install frontend dependencies:
+4. Build the project (TeaVM build step for WASM):
 
 ```bash
-bash ./support/install_deps.sh
-```
-
-5. Build the project (TeaVM build step for WASM):
-
-```bash
-bash ./support/update_wasm.sh
 bash ./support/make.sh
 ```
 
-6. Run the front-end tests (may install browser via Puppeteer):
+5. Run the front-end tests (may install browser via Puppeteer):
 
 ```bash
 pnpm exec grunt
 ```
 
-7. Run style checks:
+6. Run style checks:
 
 ```bash
 pnpm exec eslint ./js/*.js
 pnpm exec eslint ./test/*.js
 ```
 
-8. Run a local web server (such as Python http.server):
+7. Run a local web server (such as Python http.server):
 
 ```bash
 python -m http.server
 ```
 
-9. Visit the local hosted webpage using any web browser at the given address.
+8. Visit the local hosted webpage using any web browser at the given address.
 
 ### Additional resources
 We have continuous integration and deployment through GitHub actions. For additional information about development, see [DEVELOPING.md](https://github.com/SchmidtDSE/kigali-sim/blob/main/DEVELOPING.md). If you are contributing, see [CONTRIBUTING.md](https://github.com/SchmidtDSE/kigali-sim/blob/main/CONTRIBUTING.md). Finally, if you are using an AI coding assistant to write code you want to donate to the project, please review the [AI contribution guidelines](https://github.com/SchmidtDSE/kigali-sim/blob/main/CONTRIBUTING.md#use-of-generative-ai).

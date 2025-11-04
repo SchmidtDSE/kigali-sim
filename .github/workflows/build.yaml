@@ -69,9 +69,6 @@ jobs:
       - name: Build
         run: bash ./support/make.sh
         working-directory: ./editor
-      - name: Install front end deps
-        run: bash ./support/install_deps.sh
-        working-directory: ./editor
       - name: Prepare deploy
         run: bash ./support/prepare_deploy.sh
         working-directory: ./editor
@@ -269,17 +266,11 @@ jobs:
         with:
           name: war
           path: ./
-      - name: Extract WASM files to wasm directory
-        run: bash ./support/update_wasm_from_war.sh ../KigaliSim.war
-        working-directory: ./editor
       - name: Install node deps
         run: pnpm install
         working-directory: ./editor
       - name: Build
         run: bash ./support/make.sh
-        working-directory: ./editor
-      - name: Install front end deps
-        run: bash ./support/install_deps.sh
         working-directory: ./editor
       - name: Install browser
         run: sudo apt install -y chromium-browser
@@ -338,17 +329,11 @@ jobs:
         with:
           name: fatJar
           path: ./
-      - name: Extract WASM files to wasm directory
-        run: bash ./support/update_wasm_from_war.sh ../KigaliSim.war
-        working-directory: ./editor
       - name: Install node deps
         run: pnpm install
         working-directory: ./editor
       - name: Build
         run: bash ./support/make.sh
-        working-directory: ./editor
-      - name: Install front end deps
-        run: bash ./support/install_deps.sh
         working-directory: ./editor
       - name: Prepare deploy
         run: bash ./support/prepare_deploy.sh
