@@ -31,6 +31,7 @@ public class DrawNormalOperation implements Operation {
     this.std = std;
   }
 
+  /** {@inheritDoc} */
   @Override
   public void execute(PushDownMachine machine) {
     mean.execute(machine);

@@ -1,12 +1,3 @@
-/**
- * State getter that allows overriding values from an inner state getter.
- *
- * <p>This class wraps an inner StateGetter and allows individual values to be
- * overridden while delegating to the inner getter for non-overridden values.</p>
- *
- * @license BSD-3-Clause
- */
-
 package org.kigalisim.engine.state;
 
 import java.util.Optional;
@@ -18,6 +9,8 @@ import org.kigalisim.engine.number.UnitConverter;
  *
  * <p>This class wraps an inner StateGetter and allows individual values to be
  * overridden while delegating to the inner getter for non-overridden values.</p>
+ *
+ * @license BSD-3-Clause
  */
 public class OverridingConverterStateGetter implements StateGetter {
 

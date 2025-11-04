@@ -31,6 +31,7 @@ public class DrawUniformOperation implements Operation {
     this.high = high;
   }
 
+  /** {@inheritDoc} */
   @Override
   public void execute(PushDownMachine machine) {
     low.execute(machine);

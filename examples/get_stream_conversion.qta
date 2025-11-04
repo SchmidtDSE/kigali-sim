@@ -1,0 +1,24 @@
+start default
+  define application "test app"
+    uses substance "test substance"
+      enable domestic
+      enable import
+      initial charge with 10 kg / unit for domestic
+      initial charge with 15 kg / unit for import
+      equals 100 tCO2e / mt
+
+      # Set base values
+      set domestic to 500 kg during year 1
+      set import to 300 kg during year 1
+
+      # Use getStreamConversion to reference streams with multiplication
+      set priorEquipment to get equipment as units * 2 units during year 1
+
+      retire 5 % / year
+    end substance
+  end application
+end default
+
+start simulations
+  simulate "test" from years 1 to 5
+end simulations

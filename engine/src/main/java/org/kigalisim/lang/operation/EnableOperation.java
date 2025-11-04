@@ -1,3 +1,9 @@
+/**
+ * Calculation which enables a stream in the engine without setting a value.
+ *
+ * @license BSD-3-Clause
+ */
+
 package org.kigalisim.lang.operation;
 
 import java.util.Optional;
@@ -48,6 +54,7 @@ public class EnableOperation implements Operation {
     return stream;
   }
 
+  /** {@inheritDoc} */
   @Override
   public void execute(PushDownMachine machine) {
     ParsedDuring parsedDuring = duringMaybe.orElseGet(

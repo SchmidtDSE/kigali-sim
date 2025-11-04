@@ -24,14 +24,23 @@ All numbers are intentionally fake and used only for demonstrative purposes. Ple
 
 - [**Tutorial 7:** First Code](tutorial_07.md) - Discovering QubecTalk and implementing multi-substance recycling policies
 - [**Tutorial 8:** Equipment Units-Based Modeling](tutorial_08.md) - Alternative consumption specification using equipment sales data
-- [**Tutorial 9:** Command Line and Monte Carlo Analysis](tutorial_09.md) - Advanced uncertainty analysis using probabilistic programming
-- [**Tutorial 10:** Custom Policies with Code](tutorial_10.md) - Advanced policy modeling with induced demand (under construction)
 
-### Feature-Specific
+### Modeling Co-benefits
 
-- [**Tutorial 11:** Global Warming Potential](tutorial_11.md) - Demonstrating GWP impact reduction with a sample substitution policy
-- [**Tutorial 12:** Equipment Energy Efficiency](tutorial_12.md) - Exploring energy consumption with equipment model
-- [**Tutorial 13:** AI Assistants](tutorial_13.md) - Using AI assistants to help build or modify simulations
+- [**Tutorial 9:** Global Warming Potential](tutorial_09.md) - Demonstrating GWP impact reduction with a sample substitution policy
+- [**Tutorial 10:** Equipment Energy Efficiency](tutorial_10.md) - Exploring energy consumption with equipment model
+
+### Artificial Intelligence
+
+- [**Tutorial 11:** AI Assistants](tutorial_11.md) - Using AI assistants to help build or modify simulations
+
+### Advanced Modeling
+
+- [**Tutorial 12:** Advanced Sales Assumptions](tutorial_12.md) - Controlling sales carryover behavior for bank tracking scenarios
+- [**Tutorial 13:** Assumed Replacement](tutorial_13.md) - Modeling equipment replacement patterns in business-as-usual scenarios
+- [**Tutorial 14:** Bank-Based Modeling](tutorial_14.md) - Tracking substance banks and equipment populations over time
+- [**Tutorial 15:** Variable Retirement and Servicing](tutorial_15.md) - Implementing dynamic retirement rates and service patterns
+- [**Tutorial 16:** Command Line and Monte Carlo Analysis](tutorial_16.md) - Advanced uncertainty analysis using probabilistic programming
 
 ## QubecTalk Reference
 

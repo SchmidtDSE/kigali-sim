@@ -1,4 +1,4 @@
-<html>
+<html lang="en-GB">
   <head>
     <title>QubecTalk Reference: Language Features</title>
     <link href="/guide/guide.css?v=EPOCH" rel="stylesheet" type="text/css" />
@@ -23,6 +23,7 @@
           <li><a href="#comments">Comments</a></li>
           <li><a href="#comparison-operators">Comparison Operators</a></li>
           <li><a href="#conditional-statements">Conditional Statements</a></li>
+          <li><a href="#constraints">Constraints</a></li>
           <li><a href="#logical-operators">Logical Operators</a></li>
           <li><a href="#mathematical-operations">Mathematical Operations</a></li>
           <li><a href="#probabilistic-sampling">Probabilistic Sampling</a></li>
@@ -94,6 +95,30 @@ set import to 75 if economicGrowth > 5 else
 # With variable definitions
 define testVar as 5
 set domestic to 100 if testVar > 10 else 50 endif mt during year 2025</code></pre>
+      </section>
+
+      <section id="constraints">
+        <h2>Constraints</h2>
+
+        <p><strong>Purpose:</strong> Constrain values to a specified range using the <code>limit</code> function.</p>
+
+        <p><strong>Syntax:</strong></p>
+        <ul>
+          <li><code>limit expression to [min, max]</code> - Constrain to range</li>
+          <li><code>limit expression to [, max]</code> - Only maximum (min is negative infinity)</li>
+          <li><code>limit expression to [min, ]</code> - Only minimum (max is positive infinity)</li>
+        </ul>
+
+        <p><strong>Examples:</strong></p>
+        <pre><code class="language-qubectalk"># Gradual phase-in with constraint
+define level as limit (yearAbsolute - 2025) * 10 to [0, 100]
+replace level % of domestic with "R-600a" during years 2026 to onwards
+
+# Ensure non-negative values
+define safeValue as limit (salesGrowth - baseCost) to [0, ]
+
+# Cap maximum value
+define cappedGrowth as limit growthRate to [, 15]</code></pre>
       </section>
 
       <section id="logical-operators">
@@ -188,6 +213,7 @@ recover sample uniformly from 20% to 40% with 90% reuse during years 2027 to onw
           <li><code>mt</code> - Metric tons</li>
           <li><code>unit</code> / <code>units</code> - Equipment units</li>
           <li><code>tCO2e</code> - Tons of CO₂ equivalent</li>
+          <li><code>kgCO2e</code> - Kilograms of CO₂ equivalent</li>
           <li><code>kwh</code> - Kilowatt hours</li>
         </ul>
 
@@ -212,6 +238,7 @@ initial charge with 0.15 kg / unit for domestic
 
 # GWP and energy
 equals 1430 tCO2e / mt 100 kwh / unit
+equals 1430 kgCO2e / kg 100 kwh / unit
 
 # Time specifications
 change sales by 5% / year during years 2025 to 2030

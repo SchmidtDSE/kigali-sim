@@ -16,98 +16,35 @@ class EngineResult {
   /**
    * Constructor for creating an EngineResult instance.
    *
-   * @param {string} application - The application associated with this engine
-   *     result.
-   * @param {string} substance - The substance associated with this engine
-   *     result.
-   * @param {number} year - The year for which the engine result is relevant.
-   * @param {string} scenarioName - The name of the scenario being run.
-   * @param {number} trialNumber - The trial number of the current run.
-   * @param {EngineNumber} domesticValue - The value associated with
-   *     domestic production in volume like kg.
-   * @param {EngineNumber} importValue - The value related to imports like in
-   *     volume like kg.
-   * @param {EngineNumber} exportValue - The value related to exports like in
-   *     volume like kg.
-   * @param {EngineNumber} recycleValue - The value denoting recycled
-   *     materials in volume like kg.
-   * @param {EngineNumber} domesticConsumptionValue - The domestic consumption
-   *     value in tCO2e or equivalent.
-   * @param {EngineNumber} importConsumptionValue - The import consumption
-   *     value in tCO2e or equivalent.
-   * @param {EngineNumber} exportConsumptionValue - The export consumption
-   *     value in tCO2e or equivalent.
-   * @param {EngineNumber} recycleConsumptionValue - The recycle consumption
-   *     value in tCO2e or equivalent.
-   * @param {EngineNumber} populationValue - The population value in terms of
-   *     equipment.
-   * @param {EngineNumber} populationNew - The amount of new equipment added
-   *     this year.
-   * @param {EngineNumber} rechargeEmissions - The greenhouse gas emissions
-   *     from recharge activities.
-   * @param {EngineNumber} eolEmissions - The greenhouse gas emissions from
-   *     end-of-life equipment.
-   * @param {EngineNumber} initialChargeEmissions - The greenhouse gas emissions
-   *     from initial charge activities.
-   * @param {EngineNumber} energyConsumption - The energy consumption value.
-   * @param {TradeSupplement} tradeSupplement - The supplemental trade data
-   *     needed for attribution.
-   * @param {EngineNumber} bankKg - The substance bank in kg.
-   * @param {EngineNumber} bankTco2e - The substance bank in tCO2e.
-   * @param {EngineNumber} bankChangeKg - The change in substance bank in kg.
-   * @param {EngineNumber} bankChangeTco2e - The change in substance bank in tCO2e.
+   * @param {EngineResultBuilder} builder - A builder containing all values
+   *     required to construct the result.
    */
-  constructor(
-    application,
-    substance,
-    year,
-    scenarioName,
-    trialNumber,
-    domesticValue,
-    importValue,
-    exportValue,
-    recycleValue,
-    domesticConsumptionValue,
-    importConsumptionValue,
-    exportConsumptionValue,
-    recycleConsumptionValue,
-    populationValue,
-    populationNew,
-    rechargeEmissions,
-    eolEmissions,
-    initialChargeEmissions,
-    energyConsumption,
-    tradeSupplement,
-    bankKg,
-    bankTco2e,
-    bankChangeKg,
-    bankChangeTco2e,
-  ) {
+  constructor(builder) {
     const self = this;
-    self._application = application;
-    self._substance = substance;
-    self._year = year;
-    self._scenarioName = scenarioName;
-    self._trialNumber = trialNumber;
-    self._domesticValue = domesticValue;
-    self._importValue = importValue;
-    self._exportValue = exportValue;
-    self._recycleValue = recycleValue;
-    self._domesticConsumptionValue = domesticConsumptionValue;
-    self._importConsumptionValue = importConsumptionValue;
-    self._exportConsumptionValue = exportConsumptionValue;
-    self._recycleConsumptionValue = recycleConsumptionValue;
-    self._populationValue = populationValue;
-    self._populationNew = populationNew;
-    self._rechargeEmissions = rechargeEmissions;
-    self._eolEmissions = eolEmissions;
-    self._initialChargeEmissions = initialChargeEmissions;
-    self._energyConsumption = energyConsumption;
-    self._tradeSupplement = tradeSupplement;
-    self._bankKg = bankKg;
-    self._bankTco2e = bankTco2e;
-    self._bankChangeKg = bankChangeKg;
-    self._bankChangeTco2e = bankChangeTco2e;
+    self._application = builder.getApplication();
+    self._substance = builder.getSubstance();
+    self._year = builder.getYear();
+    self._scenarioName = builder.getScenarioName();
+    self._trialNumber = builder.getTrialNumber();
+    self._domesticValue = builder.getDomesticValue();
+    self._importValue = builder.getImportValue();
+    self._exportValue = builder.getExportValue();
+    self._recycleValue = builder.getRecycleValue();
+    self._domesticConsumptionValue = builder.getDomesticConsumptionValue();
+    self._importConsumptionValue = builder.getImportConsumptionValue();
+    self._exportConsumptionValue = builder.getExportConsumptionValue();
+    self._recycleConsumptionValue = builder.getRecycleConsumptionValue();
+    self._populationValue = builder.getPopulationValue();
+    self._populationNew = builder.getPopulationNew();
+    self._rechargeEmissions = builder.getRechargeEmissions();
+    self._eolEmissions = builder.getEolEmissions();
+    self._initialChargeEmissions = builder.getInitialChargeEmissions();
+    self._energyConsumption = builder.getEnergyConsumption();
+    self._tradeSupplement = builder.getTradeSupplement();
+    self._bankKg = builder.getBankKg();
+    self._bankTco2e = builder.getBankTco2e();
+    self._bankChangeKg = builder.getBankChangeKg();
+    self._bankChangeTco2e = builder.getBankChangeTco2e();
   }
 
   /**
@@ -1130,6 +1067,246 @@ class EngineResultBuilder {
   }
 
   /**
+   * Get the application for which a result is being built.
+   *
+   * @returns {string} The application, or null if not yet set.
+   */
+  getApplication() {
+    const self = this;
+    return self._application;
+  }
+
+  /**
+   * Get the substance for which a result is being built.
+   *
+   * @returns {string} The substance, or null if not yet set.
+   */
+  getSubstance() {
+    const self = this;
+    return self._substance;
+  }
+
+  /**
+   * Get the year for which a result is being built.
+   *
+   * @returns {number} The year, or null if not yet set.
+   */
+  getYear() {
+    const self = this;
+    return self._year;
+  }
+
+  /**
+   * Get the scenario name for which a result is being built.
+   *
+   * @returns {string} The scenario name, or null if not yet set.
+   */
+  getScenarioName() {
+    const self = this;
+    return self._scenarioName;
+  }
+
+  /**
+   * Get the trial number for which a result is being built.
+   *
+   * @returns {number} The trial number, or null if not yet set.
+   */
+  getTrialNumber() {
+    const self = this;
+    return self._trialNumber;
+  }
+
+  /**
+   * Get the domestic value.
+   *
+   * @returns {EngineNumber} The domestic value, or null if not yet set.
+   */
+  getDomesticValue() {
+    const self = this;
+    return self._domesticValue;
+  }
+
+  /**
+   * Get the import value.
+   *
+   * @returns {EngineNumber} The import value, or null if not yet set.
+   */
+  getImportValue() {
+    const self = this;
+    return self._importValue;
+  }
+
+  /**
+   * Get the export value.
+   *
+   * @returns {EngineNumber} The export value, or null if not yet set.
+   */
+  getExportValue() {
+    const self = this;
+    return self._exportValue;
+  }
+
+  /**
+   * Get the recycle value.
+   *
+   * @returns {EngineNumber} The recycle value, or null if not yet set.
+   */
+  getRecycleValue() {
+    const self = this;
+    return self._recycleValue;
+  }
+
+  /**
+   * Get the domestic consumption value.
+   *
+   * @returns {EngineNumber} The domestic consumption value, or null if not yet set.
+   */
+  getDomesticConsumptionValue() {
+    const self = this;
+    return self._domesticConsumptionValue;
+  }
+
+  /**
+   * Get the import consumption value.
+   *
+   * @returns {EngineNumber} The import consumption value, or null if not yet set.
+   */
+  getImportConsumptionValue() {
+    const self = this;
+    return self._importConsumptionValue;
+  }
+
+  /**
+   * Get the export consumption value.
+   *
+   * @returns {EngineNumber} The export consumption value, or null if not yet set.
+   */
+  getExportConsumptionValue() {
+    const self = this;
+    return self._exportConsumptionValue;
+  }
+
+  /**
+   * Get the recycle consumption value.
+   *
+   * @returns {EngineNumber} The recycle consumption value, or null if not yet set.
+   */
+  getRecycleConsumptionValue() {
+    const self = this;
+    return self._recycleConsumptionValue;
+  }
+
+  /**
+   * Get the population value.
+   *
+   * @returns {EngineNumber} The population value, or null if not yet set.
+   */
+  getPopulationValue() {
+    const self = this;
+    return self._populationValue;
+  }
+
+  /**
+   * Get the population new value.
+   *
+   * @returns {EngineNumber} The population new value, or null if not yet set.
+   */
+  getPopulationNew() {
+    const self = this;
+    return self._populationNew;
+  }
+
+  /**
+   * Get the recharge emissions value.
+   *
+   * @returns {EngineNumber} The recharge emissions value, or null if not yet set.
+   */
+  getRechargeEmissions() {
+    const self = this;
+    return self._rechargeEmissions;
+  }
+
+  /**
+   * Get the end-of-life emissions value.
+   *
+   * @returns {EngineNumber} The end-of-life emissions value, or null if not yet set.
+   */
+  getEolEmissions() {
+    const self = this;
+    return self._eolEmissions;
+  }
+
+  /**
+   * Get the initial charge emissions value.
+   *
+   * @returns {EngineNumber} The initial charge emissions value, or null if not yet set.
+   */
+  getInitialChargeEmissions() {
+    const self = this;
+    return self._initialChargeEmissions;
+  }
+
+  /**
+   * Get the energy consumption value.
+   *
+   * @returns {EngineNumber} The energy consumption value, or null if not yet set.
+   */
+  getEnergyConsumption() {
+    const self = this;
+    return self._energyConsumption;
+  }
+
+  /**
+   * Get the supplemental trade information.
+   *
+   * @returns {TradeSupplement} The trade supplement, or null if not yet set.
+   */
+  getTradeSupplement() {
+    const self = this;
+    return self._tradeSupplement;
+  }
+
+  /**
+   * Get the bank kg value.
+   *
+   * @returns {EngineNumber} The bank kg value, or null if not yet set.
+   */
+  getBankKg() {
+    const self = this;
+    return self._bankKg;
+  }
+
+  /**
+   * Get the bank tCO2e value.
+   *
+   * @returns {EngineNumber} The bank tCO2e value, or null if not yet set.
+   */
+  getBankTco2e() {
+    const self = this;
+    return self._bankTco2e;
+  }
+
+  /**
+   * Get the bank change kg value.
+   *
+   * @returns {EngineNumber} The bank change kg value, or null if not yet set.
+   */
+  getBankChangeKg() {
+    const self = this;
+    return self._bankChangeKg;
+  }
+
+  /**
+   * Get the bank change tCO2e value.
+   *
+   * @returns {EngineNumber} The bank change tCO2e value, or null if not yet set.
+   */
+  getBankChangeTco2e() {
+    const self = this;
+    return self._bankChangeTco2e;
+  }
+
+  /**
    * Check that the builder is complete and create a new result.
    *
    * @returns {EngineResult} The result built from the values provided to this
@@ -1138,32 +1315,7 @@ class EngineResultBuilder {
   build() {
     const self = this;
     self._checkReadyToConstruct();
-    return new EngineResult(
-      self._application,
-      self._substance,
-      self._year,
-      self._scenarioName,
-      self._trialNumber,
-      self._domesticValue,
-      self._importValue,
-      self._exportValue,
-      self._recycleValue,
-      self._domesticConsumptionValue,
-      self._importConsumptionValue,
-      self._exportConsumptionValue,
-      self._recycleConsumptionValue,
-      self._populationValue,
-      self._populationNew,
-      self._rechargeEmissions,
-      self._eolEmissions,
-      self._initialChargeEmissions,
-      self._energyConsumption,
-      self._tradeSupplement,
-      self._bankKg,
-      self._bankTco2e,
-      self._bankChangeKg,
-      self._bankChangeTco2e,
-    );
+    return new EngineResult(self);
   }
 
   _checkReadyToConstruct() {
@@ -1210,75 +1362,98 @@ class EngineResultBuilder {
  */
 class AggregatedResult {
   /**
-   * Construct an AggregatedResult instance.
+   * Construct an AggregatedResult instance from one or two objects compatible with EngineResult.
    *
-   * @param {EngineNumber} domesticValue - The value representing
-   *     domestic production in volume like kg.
-   * @param {EngineNumber} importValue - The value representing imports in
-   *     volume like kg.
-   * @param {EngineNumber} recycleValue - The value of recycled goods in volume
-   *     like kg.
-   * @param {EngineNumber} domesticConsumptionValue - The value representing
-   *     domestic consumption in tCO2e or similar.
-   * @param {EngineNumber} importConsumptionValue - The consumption value due
-   *     to imports in tCO2e or similar.
-   * @param {EngineNumber} recycleConsumptionValue - The consumption value due
-   *     to recycling in tCO2e or similar.
-   * @param {EngineNumber} populationValue - The value of the population amount.
-   * @param {EngineNumber} populationNew - The value representing new equipment
-   *     added in the current year.
-   * @param {EngineNumber} rechargeEmissions - Emissions resulting from recharge
-   *     activities.
-   * @param {EngineNumber} eolEmissions - Emissions resulting from end-of-life
-   *     equipment.
-   * @param {EngineNumber} initialChargeEmissions - Emissions resulting from
-   *     initial charge activities.
-   * @param {EngineNumber} energyConsumtion - Equivalent energy consumption for
-   *     activity specified.
-   * @param {EngineNumber} bankKg - The substance bank in kg.
-   * @param {EngineNumber} bankTco2e - The substance bank in tCO2e.
-   * @param {EngineNumber} bankChangeKg - The change in substance bank in kg.
-   * @param {EngineNumber} bankChangeTco2e - The change in substance bank in tCO2e.
+   * Combines two objects that have accessor methods matching EngineResult by using additive
+   * logic with unit standardization and conversion. If only one object is provided, or if both
+   * arguments are the same object, creates a copy of the first object's values without
+   * combining or doubling.
+   *
+   * @param {Object} first - The first result object with compatible accessor methods
+   *     (getDomestic, getImport, etc.).
+   * @param {Object} second - The second result object with compatible accessor methods,
+   *     to be combined with the first result. If null or not provided, creates a copy of
+   *     the first object's values without combining. If same reference as first, creates a
+   *     wrapper without doubling values.
    */
-  constructor(
-    domesticValue,
-    importValue,
-    recycleValue,
-    exportValue,
-    domesticConsumptionValue,
-    importConsumptionValue,
-    recycleConsumptionValue,
-    exportConsumptionValue,
-    populationValue,
-    populationNew,
-    rechargeEmissions,
-    eolEmissions,
-    initialChargeEmissions,
-    energyConsumption,
-    bankKg,
-    bankTco2e,
-    bankChangeKg,
-    bankChangeTco2e,
-  ) {
+  constructor(first, second = null) {
     const self = this;
-    self._domesticValue = domesticValue;
-    self._importValue = importValue;
-    self._recycleValue = recycleValue;
-    self._exportValue = exportValue;
-    self._domesticConsumptionValue = domesticConsumptionValue;
-    self._importConsumptionValue = importConsumptionValue;
-    self._recycleConsumptionValue = recycleConsumptionValue;
-    self._exportConsumptionValue = exportConsumptionValue;
-    self._populationValue = populationValue;
-    self._populationNew = populationNew;
-    self._rechargeEmissions = rechargeEmissions;
-    self._eolEmissions = eolEmissions;
-    self._initialChargeEmissions = initialChargeEmissions;
-    self._energyConsumption = energyConsumption;
-    self._bankKg = bankKg;
-    self._bankTco2e = bankTco2e;
-    self._bankChangeKg = bankChangeKg;
-    self._bankChangeTco2e = bankChangeTco2e;
+
+    // If second is null/not provided or same object, just copy values from first
+    if (second === null || first === second) {
+      self._domesticValue = first.getDomestic();
+      self._importValue = first.getImport();
+      self._recycleValue = first.getRecycle();
+      self._exportValue = first.getExport();
+      self._domesticConsumptionValue = first.getDomesticConsumption();
+      self._importConsumptionValue = first.getImportConsumption();
+      self._recycleConsumptionValue = first.getRecycleConsumption();
+      self._exportConsumptionValue = first.getExportConsumption();
+      self._populationValue = first.getPopulation();
+      self._populationNew = first.getPopulationNew();
+      self._rechargeEmissions = first.getRechargeEmissions();
+      self._eolEmissions = first.getEolEmissions();
+      self._initialChargeEmissions = first.getInitialChargeEmissions();
+      self._energyConsumption = first.getEnergyConsumption();
+      self._bankKg = first.getBankKg();
+      self._bankTco2e = first.getBankTco2e();
+      self._bankChangeKg = first.getBankChangeKg();
+      self._bankChangeTco2e = first.getBankChangeTco2e();
+      return;
+    }
+
+    // Combine the two objects using the same logic as the combine method
+    self._domesticValue = self._combineUnitValue(first.getDomestic(), second.getDomestic());
+    self._importValue = self._combineUnitValue(first.getImport(), second.getImport());
+    self._recycleValue = self._combineUnitValue(first.getRecycle(), second.getRecycle());
+    self._exportValue = self._combineUnitValue(first.getExport(), second.getExport());
+    self._domesticConsumptionValue = self._combineUnitValue(
+      first.getDomesticConsumption(),
+      second.getDomesticConsumption(),
+    );
+    self._importConsumptionValue = self._combineUnitValue(
+      first.getImportConsumption(),
+      second.getImportConsumption(),
+    );
+    self._recycleConsumptionValue = self._combineUnitValue(
+      first.getRecycleConsumption(),
+      second.getRecycleConsumption(),
+    );
+    self._exportConsumptionValue = self._combineUnitValue(
+      first.getExportConsumption(),
+      second.getExportConsumption(),
+    );
+    self._populationValue = self._combineUnitValue(first.getPopulation(), second.getPopulation());
+    self._populationNew = self._combineUnitValue(
+      first.getPopulationNew(),
+      second.getPopulationNew(),
+    );
+    self._rechargeEmissions = self._combineUnitValue(
+      first.getRechargeEmissions(),
+      second.getRechargeEmissions(),
+    );
+    self._eolEmissions = self._combineUnitValue(
+      first.getEolEmissions(),
+      second.getEolEmissions(),
+    );
+    self._initialChargeEmissions = self._combineUnitValue(
+      first.getInitialChargeEmissions(),
+      second.getInitialChargeEmissions(),
+    );
+    self._energyConsumption = self._combineUnitValue(
+      first.getEnergyConsumption(),
+      second.getEnergyConsumption(),
+    );
+    self._bankKg = self._combineUnitValue(first.getBankKg(), second.getBankKg());
+    self._bankTco2e = self._combineUnitValue(first.getBankTco2e(), second.getBankTco2e());
+    self._bankChangeKg = self._combineUnitValue(
+      first.getBankChangeKg(),
+      second.getBankChangeKg(),
+    );
+    self._bankChangeTco2e = self._combineUnitValue(
+      first.getBankChangeTco2e(),
+      second.getBankChangeTco2e(),
+    );
   }
 
   /**
@@ -1509,93 +1684,6 @@ class AggregatedResult {
     return self._combineUnitValue(self.getRechargeEmissions(), self.getEolEmissions());
   }
 
-  /**
-   * Combine this result with another result.
-   *
-   * Combine this result with another result in an additive way with unit
-   * standardization and conversion.
-   *
-   * @param {AggregatedResult} other - The other result to combine with.
-   * @returns {AggregatedResult} A new combined result.
-   */
-  combine(other) {
-    const self = this;
-
-    const domesticValue = self._combineUnitValue(self.getDomestic(), other.getDomestic());
-    const importValue = self._combineUnitValue(self.getImport(), other.getImport());
-    const recycleValue = self._combineUnitValue(self.getRecycle(), other.getRecycle());
-    const exportValue = self._combineUnitValue(self.getExport(), other.getExport());
-    const domesticConsumptionValue = self._combineUnitValue(
-      self.getDomesticConsumption(),
-      other.getDomesticConsumption(),
-    );
-    const importConsumptionValue = self._combineUnitValue(
-      self.getImportConsumption(),
-      other.getImportConsumption(),
-    );
-    const recycleConsumptionValue = self._combineUnitValue(
-      self.getRecycleConsumption(),
-      other.getRecycleConsumption(),
-    );
-    const exportConsumptionValue = self._combineUnitValue(
-      self.getExportConsumption(),
-      other.getExportConsumption(),
-    );
-    const populationValue = self._combineUnitValue(self.getPopulation(), other.getPopulation());
-    const populationNew = self._combineUnitValue(self.getPopulationNew(), other.getPopulationNew());
-
-    const rechargeEmissions = self._combineUnitValue(
-      self.getRechargeEmissions(),
-      other.getRechargeEmissions(),
-    );
-    const eolEmissions = self._combineUnitValue(self.getEolEmissions(), other.getEolEmissions());
-    const initialChargeEmissions = self._combineUnitValue(
-      self.getInitialChargeEmissions(),
-      other.getInitialChargeEmissions(),
-    );
-    const energyConsumption = self._combineUnitValue(
-      self.getEnergyConsumption(),
-      other.getEnergyConsumption(),
-    );
-
-    const bankKg = self._combineUnitValue(
-      self.getBankKg(),
-      other.getBankKg(),
-    );
-    const bankTco2e = self._combineUnitValue(
-      self.getBankTco2e(),
-      other.getBankTco2e(),
-    );
-    const bankChangeKg = self._combineUnitValue(
-      self.getBankChangeKg(),
-      other.getBankChangeKg(),
-    );
-    const bankChangeTco2e = self._combineUnitValue(
-      self.getBankChangeTco2e(),
-      other.getBankChangeTco2e(),
-    );
-
-    return new AggregatedResult(
-      domesticValue,
-      importValue,
-      recycleValue,
-      exportValue,
-      domesticConsumptionValue,
-      importConsumptionValue,
-      recycleConsumptionValue,
-      exportConsumptionValue,
-      populationValue,
-      populationNew,
-      rechargeEmissions,
-      eolEmissions,
-      initialChargeEmissions,
-      energyConsumption,
-      bankKg,
-      bankTco2e,
-      bankChangeKg,
-      bankChangeTco2e,
-    );
-  }
 
   /**
    * Combine two unit values with the same units.

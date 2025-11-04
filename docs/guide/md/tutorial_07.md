@@ -23,6 +23,8 @@ You'll see that all your work from Tutorials 2-6 has been translated into QubecT
 
 Within each stanza, there are **commands** like `initial charge with 0.07 kg / unit for domestic`.
 
+<video src="/webm/tutorial_07_01.webm" autoplay loop muted playsinline style="width: 500px; border: 2px solid #505050; border-radius: 3px;">Your browser does not support the video tag. Please upgrade to a modern browser.</video>
+
 ## Editing Code Directly
 
 Let's make a simple change to get comfortable with code editing:
@@ -33,15 +35,15 @@ Let's make a simple change to get comfortable with code editing:
 
 This demonstrates the two-way connection between UI and code - changes in either location update the model.
 
-(tutorial07_01.gif, alt text: animated gif showing how to edit the code directly and see the results updated in the UI)
+<video src="/webm/tutorial_07_02.webm" autoplay loop muted playsinline style="width: 500px; border: 2px solid #505050; border-radius: 3px;">Your browser does not support the video tag. Please upgrade to a modern browser.</video>
 
 ## Implementing R-600a Recycling
 
-Now let's use QubecTalk to implement a recycling program for R-600a. The UI cannot handle multi-substance policies within the same application but code makes this straightforward.
+Now let's use QubecTalk to implement a recycling program for R-600a. The UI cannot handle multi-substance policies so we would have to make one policy record per substance / application pair. However, code makes it straightforward to combine both into one.
 
 Let's update your recycling policy like so:
 
-```
+```qubectalk
 start policy "Domestic Recycling"
 
   modify application "Domestic Refrigeration"
@@ -51,11 +53,11 @@ start policy "Domestic Recycling"
       recover 20 % with 90 % reuse during years 2027 to onwards
     end substance
 
-	# Make recycling program for R-600a
-	modify substance "R-600a"
-      recover 20 % with 90 % reuse during years 2027 to onwards
+    # Make recycling program for R-600a
+    modify substance "R-600a"
+      recover 30 % with 90 % reuse during years 2027 to onwards
     end substance
-  
+
   end application
 
 end policy
@@ -69,23 +71,23 @@ Recall that, in the prior tutorial where we didn't have a recycling program for 
 
 With **Attribute initial charge to importer** checked, Let's compare these two outcomes by first commenting like the following (adding the leading `#`) while having the **Consumption** radio button selected.
 
-```
-	  modify substance "R-600a"
-      # recover 20 % with 90 % reuse during years 2027 to onwards
+```qubectalk
+    modify substance "R-600a"
+      # recover 30 % with 90 % reuse during years 2027 to onwards
     end substance
 ```
 
 In 2035, combined import and domestic for the combined policy case is higher without the R-600a recycling program. However, let's remove that `#` again:
 
-```
-	  modify substance "R-600a"
-      recover 20 % with 90 % reuse during years 2027 to onwards
+```qubectalk
+    modify substance "R-600a"
+      recover 30 % with 90 % reuse during years 2027 to onwards
     end substance
 ```
 
-Now, the combined version sees lower consumption than recycling alone because the demand "displaced" from HFC-134a to R-600a now has a pathway to reuse.
+Now, the combined version sees closer consumption to recycling alone because the demand "displaced" from HFC-134a to R-600a now has a pathway to reuse.
 
-(tutorial07_02.gif, alt text: animated gif showing how the policy change impacts overall consumption)
+<video src="/webm/tutorial_07_03.webm" autoplay loop muted playsinline style="width: 500px; border: 2px solid #505050; border-radius: 3px;">Your browser does not support the video tag. Please upgrade to a modern browser.</video>
 
 ## Conclusion
 
@@ -93,9 +95,13 @@ You've successfully transitioned from UI-based to code-based modeling while impl
 
 QubecTalk provides the foundation for advanced analysis techniques we'll explore in later tutorials, including uncertainty assessment and complex policy interactions.
 
+**Download the completed tutorial**: [tutorial_07.qta](tutorial_07.qta) - this contains the complete model with enhanced multi-substance recycling policies
+
 ## Next Steps
 
-**Tutorial 8** will demonstrate equipment unit-based modeling as an alternative to volume-based consumption specification. You'll learn when to use unit sales data versus volume data and how QubecTalk handles both approaches seamlessly.
+[Tutorial 8](/guide/tutorial_08.html) will demonstrate equipment unit-based modeling as an alternative to volume-based consumption specification. You'll learn when to use unit sales data versus volume data and how QubecTalk handles both approaches seamlessly.
+
+[Previous: Tutorial 6](/guide/tutorial_06.html) | [Return to Guide Index](/guide) | [Next: Tutorial 8](/guide/tutorial_08.html)
 
 ---
 
