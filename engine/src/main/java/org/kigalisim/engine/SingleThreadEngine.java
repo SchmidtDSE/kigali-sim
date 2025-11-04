@@ -5,6 +5,10 @@
  * designed to be thread-safe. It manages substance streams, equipment populations, and
  * calculations related to the Montreal Protocol simulation using BigDecimal for numerical
  * stability.</p>
+ * 
+ * <p>Note that, as described in the JavaDoc for the class, this does not prevent concurrency
+ * within Kigali Sim which is achieved through parallelization outside of Engine, often by having
+ * multiple Engine instances.</p>
  *
  * @license BSD-3-Clause
  */
@@ -48,7 +52,14 @@ import org.kigalisim.engine.support.StreamUpdateExecutor;
 import org.kigalisim.engine.support.StreamUpdateShortcuts;
 import org.kigalisim.lang.operation.RecoverOperation.RecoveryStage;
 
-/** Single-threaded implementation of the Engine interface. */
+/**
+ * Single-threaded implementation of the Engine interface.
+ * 
+ * <p>At this time the only implementation of Engine which does not guarantee thread safety
+ * within a single scenario. However, note that Engine only evaluates one scenario at a time so
+ * Kigali Sim still achieves concurency by having multiple Engines and evaluating scenarios or
+ * Monte Carlo trials in parallel.</p>
+ */
 public class SingleThreadEngine implements Engine {
 
   private static final boolean OPTIMIZE_RECALCS = true;
@@ -92,7 +103,8 @@ public class SingleThreadEngine implements Engine {
     unitConverter = new UnitConverter(stateGetter);
     simulationState = new SimulationState(
         new OverridingConverterStateGetter(stateGetter),
-        unitConverter);
+        unitConverter
+    );
     simulationState.setCurrentYear(startYear);
     changeExecutor = new ChangeExecutor(this);
     equipmentChangeUtil = new EquipmentChangeUtil(this);
@@ -161,12 +173,10 @@ public class SingleThreadEngine implements Engine {
   }
 
   @Override
-  public void setSubstance(String newSubstance, Boolean checkValid) {
+  public void setSubstance(String newSubstance, boolean checkValid) {
     scope = scope.getWithSubstance(newSubstance);
 
-    boolean checkValidEffective = checkValid != null && checkValid;
-
-    if (checkValidEffective) {
+    if (checkValid) {
       boolean knownSubstance = simulationState.hasSubstance(scope);
       if (!knownSubstance) {
         throw new RuntimeException("Tried accessing unknown app / substance pair: "
@@ -187,23 +197,17 @@ public class SingleThreadEngine implements Engine {
     return scope;
   }
 
-  /**
-   * {@inheritDoc}
-   */
+  @Override
   public ConverterStateGetter getStateGetter() {
     return stateGetter;
   }
 
-  /**
-   * {@inheritDoc}
-   */
+  @Override
   public UnitConverter getUnitConverter() {
     return unitConverter;
   }
 
-  /**
-   * {@inheritDoc}
-   */
+  @Override
   public SimulationState getStreamKeeper() {
     return simulationState;
   }
@@ -248,7 +252,7 @@ public class SingleThreadEngine implements Engine {
 
 
   @Override
-  public void fulfillSetCommand(String name, EngineNumber value, Optional<YearMatcher> yearMatcher) {
+  public void setStream(String name, EngineNumber value, Optional<YearMatcher> yearMatcher) {
     if (!getIsInRange(yearMatcher)) {
       return;
     }

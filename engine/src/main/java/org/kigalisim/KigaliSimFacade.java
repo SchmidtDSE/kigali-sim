@@ -32,7 +32,7 @@ import org.kigalisim.lang.program.ParsedSubstance;
  * Entry point into the Kigali platform when used as a library.
  *
  * <p>Facade which helps facilitate common operations within the Kigali simulation platform when used
- * as a library as opposed to as an interactive / command-line tool.</p>
+ * as a library. It also provides a unified interface for WASM and the command-line tool.</p>
  */
 public class KigaliSimFacade {
 

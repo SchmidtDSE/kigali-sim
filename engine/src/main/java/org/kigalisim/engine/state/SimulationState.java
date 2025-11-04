@@ -1,8 +1,5 @@
 /**
- * Manages the state for a single scenario within a single trial.
- *
- * <p>State management object for storage and retrieval of substance data, stream
- * values, and associated parameterizations.</p>
+ * State for a single scenario within a single trial.
  *
  * @license BSD-3-Clause
  */
@@ -24,7 +21,7 @@ import org.kigalisim.engine.recalc.SalesStreamDistributionBuilder;
 import org.kigalisim.lang.operation.RecoverOperation.RecoveryStage;
 
 /**
- * Manages the state for a single scenario within a single trial.
+ * Manager for the state for a single scenario within a single trial.
  *
  * <p>State management object for storage and retrieval of substance data, stream
  * values, and associated parameterizations.</p>

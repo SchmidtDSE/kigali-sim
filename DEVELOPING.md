@@ -10,7 +10,7 @@ Note that, in addition to this documentation and [CONTRIBUTING.md](https://githu
 
 KigaliSim is organized into three main components and most have additional READMEs within:
 
-**Java Engine** (`engine` directory):
+The **Java Engine** (`engine` directory) provides the primary computational mechanism for running simulations. There are different entrypoints depending on how Kiglai Sim is running like via WASM or JVM. That said, developers may wish to review the [Engine JavaDoc](https://kigalisim.org/guide/javadoc/org/kigalisim/engine/Engine.html). At a glance:
 
 - Core simulation engine built with Java 21+
 - Uses ANTLR4 for parsing the QubecTalk domain specific language (DSL)
@@ -18,7 +18,7 @@ KigaliSim is organized into three main components and most have additional READM
 - Compiled to WebAssembly using TeaVM for browser execution
 - Can also run standalone via command line
 
-**Web Editor** (`editor` directory):
+The **Web Editor** (`editor` directory) provides a bespoke IDE with built-in visualization capability running via WASM. At a glance:
 
 - ECMAScript-based web interface
 - Copies QubecTalk.g4 from engine during build process
@@ -27,10 +27,7 @@ KigaliSim is organized into three main components and most have additional READM
 - Uses webpack for bundling and Grunt for testing
 - Integrates with the WASM-compiled engine
 
-**Documentation** (`docs` directory):
-
-- Technical specifications and user guides
-- QubecTalk language documentation
+The **Documentation** (`docs` directory) component includes the User's Guide and various reference resources. This also includes the QubecTalk formal lanugage specification.
 
 ## Development Environment Setup
 

@@ -19,7 +19,7 @@ import org.teavm.jso.JSExport;
  * Facade which offers access to JS clients.
  *
  * <p>Entry point for the KigaliSim command line application which can run simulations from within
- * the browser.</p>
+ * the browser via TeaVM.</p>
  */
 public class KigaliWasmSimFacade {
 
@@ -32,11 +32,11 @@ public class KigaliWasmSimFacade {
   /**
    * Returns the version of KigaliSim.
    *
-   * @return The version string "0.0.1".
+   * @return The version string "0.1.0".
    */
   @JSExport
   public static String getVersion() {
-    return "0.0.1";
+    return "0.1.0";
   }
 
   /**
@@ -50,12 +50,19 @@ public class KigaliWasmSimFacade {
   /**
    * Executes all scenarios in the provided QubecTalk code and returns the results.
    *
-   * <p>This method parses and executes the provided QubecTalk code, running all scenarios
-   * defined in the code. It returns a formatted string containing:
-   * 1. A description of the execution result - either "OK" for success or "Error: &lt;message&gt;" for failure
-   * 2. A blank line
-   * 3. The CSV contents with the simulation results
-   * </p>
+   * <div>This method parses and executes the provided QubecTalk code, running all scenarios defined
+   * in the code. It returns a formatted string containing:
+   * 
+   * <ul>
+   *   <li>
+   *     A description of the execution result: either "OK" for success or "Error: message" for
+   *     failure.
+   *   </li>
+   *   <li>A blank line</li>
+   *   <li>The CSV contents with the simulation results</li>
+   * </ul>
+   * 
+   * </div>
    *
    * @param code The QubecTalk code to execute.
    * @return A formatted string with execution status and CSV results.

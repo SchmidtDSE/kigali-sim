@@ -1,8 +1,6 @@
 /**
  * Result of interpreting QubecTalk code.
  *
- * <p>This class holds either a successfully parsed program or an error message.</p>
- *
  * @license BSD-3-Clause
  */
 

@@ -18,9 +18,10 @@ import org.kigalisim.engine.number.UnitConverter;
 /**
  * Class providing state information needed for unit conversions.
  *
- * <p>Interfaces with the engine to retrieve information about current
- * substance consumption, volumes, populations, time elapsed, and other
- * metrics needed to convert between different unit types in the model.</p>
+ * <p>Interfaces with the engine to retrieve information about current substance consumption,
+ * volumes, populations, time elapsed, and other metrics needed to convert between different
+ * unit types in the model. This may be required to perform certain unit conversions like from
+ * number of units of equipment to tCO2e (relies on charge levels).</p>
  */
 public class ConverterStateGetter implements StateGetter {
 
