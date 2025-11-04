@@ -47,7 +47,9 @@ start simulations
 end simulations
 ```
 
-We use [WebAssembly](https://webassembly.org/) so simluations run privately on your machine. Continue your journey with a [tutorial](https://kigalisim.org/guide/tutorial_02.html).
+**Can't decide?** The UI-based authoring steps we provided generate the code seen above so you can move between UI-based and code-based authoring. Just go between the designer and editor tabs.
+
+Note: We use [WebAssembly](https://webassembly.org/) so simluations run privately on your machine. Continue your journey with a [tutorial](https://kigalisim.org/guide/tutorial_02.html).
 
 <br>
 
