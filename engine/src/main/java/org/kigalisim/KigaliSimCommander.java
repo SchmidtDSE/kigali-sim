@@ -16,7 +16,7 @@ import picocli.CommandLine;
  *
  * @command kigalisim
  * @mixinStandardHelpOptions true
- * @version 0.1.0
+ * @version 0.1.1
  * @description "KigaliSim command line interface"
  * @subcommands { VersionCommand }
  */
