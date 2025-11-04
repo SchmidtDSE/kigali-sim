@@ -2,6 +2,7 @@
   <head>
     <title>Tutorial 12: Advanced Sales Assumptions</title>
     <link href="/guide/guide.css?v=EPOCH" rel="stylesheet" type="text/css" />
+    <link href="/third_party/prism-tomorrow.min.css" rel="stylesheet" type="text/css" />
   </head>
   <body>
     <a href="#main" class="skip-link">Skip to main content</a>
@@ -59,10 +60,10 @@
           Let's start our exploration with the typical situation. Either through QubecTalk code or the UI-based editor, let's make a simulation with a business as usual scenario from 2024 to 2034 with HFC-134a used only in commercial refrigeration. Let's have the scenario above: set imports to 4 mt in 2024, 5 mt in 2025, and then add a change statement of +20% in 2027. Ensure there is an initial charge of 1 kg per unit and servicing of 5% with 0.85 kg / unit during all years.
         </p>
 
-        <pre><code>start default
+        <pre><code class="language-qubectalk">start default
 
   define application "Commercial Refrigeration"
-  
+
     uses substance "HFC-134a"
       enable import
       initial charge with 0 kg / unit for domestic
@@ -101,7 +102,7 @@ end simulations</code></pre>
           If you are using QubecTalk, place <code>assume only recharge sales</code> at the top of the definition of the substance like so:
         </p>
 
-        <pre><code>uses substance "R-600a"
+        <pre><code class="language-qubectalk">uses substance "R-600a"
   enable import
   assume only recharge sales
   initial charge with 0 kg / unit for domestic
@@ -154,6 +155,7 @@ end substance</code></pre>
 
         <p>
           <a href="/guide/tutorial_11.html">Previous: Tutorial 11</a> |
+          <a href="/guide">Return to Guide Index</a> |
           <a href="/guide/tutorial_13.html">Next: Tutorial 13</a>
         </p>
       </section>
@@ -161,5 +163,9 @@ end substance</code></pre>
       <hr />
       <p><em>This tutorial is part of the Advanced Techniques series demonstrating specialized aspects of Montreal Protocol policy modeling using Kigali Sim.</em></p>
     </main>
+
+    <script src="/third_party/prism-core.min.js"></script>
+    <script src="/third_party/prism-autoloader.min.js"></script>
+    <script src="/guide/qubectalk-prism.js"></script>
   </body>
 </html>

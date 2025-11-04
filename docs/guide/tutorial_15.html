@@ -2,6 +2,7 @@
   <head>
     <title>Tutorial 15: Variable Retirement and Servicing</title>
     <link href="/guide/guide.css?v=EPOCH" rel="stylesheet" type="text/css" />
+    <link href="/third_party/prism-tomorrow.min.css" rel="stylesheet" type="text/css" />
   </head>
   <body>
     <a href="#main" class="skip-link">Skip to main content</a>
@@ -57,7 +58,7 @@
           In some ways, this lingering population of equipment actually reflects what we would expect, especially if a substance suddenly became no longer available. However, let's change this hazard rate such that the rate of failure is 1% multiplied by the age of the equipment in years. To do this, modify the simulation using QubecTalk code like follows:
         </p>
 
-        <pre><code>uses substance "HFC-134a"
+        <pre><code class="language-qubectalk">uses substance "HFC-134a"
   enable import
   initial charge with 0 kg / unit for domestic
   initial charge with 1 kg / unit for import
@@ -112,12 +113,17 @@ end substance</code></pre>
 
         <p>
           <a href="/guide/tutorial_14.html">Previous: Tutorial 14</a> |
-          <a href="/guide/">Guide Index</a>
+          <a href="/guide">Return to Guide Index</a> |
+          <a href="/guide/tutorial_16.html">Next: Tutorial 16</a>
         </p>
       </section>
 
       <hr />
       <p><em>This tutorial is part of the Advanced Techniques series demonstrating specialized aspects of Montreal Protocol policy modeling using Kigali Sim.</em></p>
     </main>
+
+    <script src="/third_party/prism-core.min.js"></script>
+    <script src="/third_party/prism-autoloader.min.js"></script>
+    <script src="/guide/qubectalk-prism.js"></script>
   </body>
 </html>

@@ -132,6 +132,8 @@ The GWP reduction policy shows how focusing on substance characteristics rather 
 
 [Return to Guide Index](/guide) | [Next: Tutorial 10](/guide/tutorial_10.html)
 
+[Previous: Tutorial 8](/guide/tutorial_08.html) | [Return to Guide Index](/guide) | [Next: Tutorial 10](/guide/tutorial_10.html)
+
 ---
 
 _This tutorial is part of the Feature-Specific series demonstrating specialized aspects of Montreal Protocol policy modeling using Kigali Sim._

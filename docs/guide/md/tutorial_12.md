@@ -74,6 +74,8 @@ There's no single correct assumption for what sales should be assumed in years i
 
 [Previous: Tutorial 11](/guide/tutorial_11.html) | [Next: Tutorial 13](/guide/tutorial_13.html)
 
+[Previous: Tutorial 11](/guide/tutorial_11.html) | [Return to Guide Index](/guide) | [Next: Tutorial 13](/guide/tutorial_13.html)
+
 ---
 
 _This tutorial is part of the Advanced Techniques series demonstrating specialized aspects of Montreal Protocol policy modeling using Kigali Sim._
