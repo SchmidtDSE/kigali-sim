@@ -60,13 +60,15 @@ Select the **Consumption** radio button with **domestic** and **mt / year**. The
 
 ## Conclusion
 
-This tutorial demonstrated the use of AI assistants to build models in Kigali Sim. You are now ready to use LLMs to explore other functionality of Kigali Sim and move faster in prototyping new simulations. Remember, you can also use [Kigali Sim on the command line](https://preview.kigalisim.org/guide/tutorial_18.html). In addition to taking advantage of version control and automation, this can also enable use of tools like [Claude Code](https://www.anthropic.com/claude-code).
+This tutorial demonstrated the use of AI assistants to build models in Kigali Sim. You are now ready to use LLMs to explore other functionality of Kigali Sim and move faster in prototyping new simulations. Remember, you can also use [Kigali Sim on the command line](https://preview.kigalisim.org/guide/tutorial_16.html). In addition to taking advantage of version control and automation, this can also enable use of tools like [Claude Code](https://www.anthropic.com/claude-code).
 
 ## Next Steps
 
-This tutorial completes the specialized topic series! You've learned how to leverage AI assistants to accelerate your simulation development workflow. For next steps, consider exploring the other tutorials in the series or dive deeper into the QubecTalk programming language using the command line interface from [Tutorial 18](/guide/tutorial_18.html).
+This tutorial completes the specialized topic series! You've learned how to leverage AI assistants to accelerate your simulation development workflow. For next steps, consider exploring the other tutorials in the series or dive deeper into the QubecTalk programming language using the command line interface from [Tutorial 16](/guide/tutorial_16.html).
 
 [Previous: Tutorial 10](/guide/tutorial_10.html) | [Guide Index](/guide/)
+
+[Previous: Tutorial 10](/guide/tutorial_10.html) | [Return to Guide Index](/guide) | [Next: Tutorial 12](/guide/tutorial_12.html)
 
 ---
 

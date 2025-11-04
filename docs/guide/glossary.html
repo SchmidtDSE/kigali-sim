@@ -1,0 +1,213 @@
+<html lang="en-GB">
+  <head>
+    <title>Glossary</title>
+    <link href="/guide/guide.css?v=EPOCH" rel="stylesheet" type="text/css" />
+  </head>
+  <body>
+    <a href="#main" class="skip-link">Skip to main content</a>
+    <header>
+      This glossary is part of the <a href="/guide">guide</a> for the
+      <a href="/">Kigali Sim</a>.
+    </header>
+    <main id="main">
+      <h1>Glossary</h1>
+
+      <p>
+        This glossary defines key terms used throughout Kigali Sim documentation, tutorials, and the QubecTalk domain-specific language.
+      </p>
+
+      <section id="terms">
+        <h2>Terms</h2>
+
+        <dl>
+          <dt>Age</dt>
+          <dd>A computed, read-only stream that tracks the weighted average age of equipment in the population. Age starts at 0 years for initial equipment and increases by 1 year each simulation year. Usage: <code>get age as years</code> in formulas. Typically used for age-dependent policies like variable retirement rates.</dd>
+
+          <dt>Application</dt>
+          <dd>Type of equipment or application that uses substances, such as domestic refrigeration, commercial refrigeration, residential AC, or mobile AC. Defined using <code>define application "name"</code> in QubecTalk.</dd>
+
+          <dt>Article 5</dt>
+          <dd>Article 5 of the Montreal Protocol addresses the special situation of developing countries. Developing country has a specific definition in the treaty.</dd>
+
+          <dt>Bank</dt>
+          <dd>The total amount of substance (not yet released to the atmosphere) in (in-service) equipment contained within the country. Also called the reservoir. Same as the equipment stream when modeling substance banks.</dd>
+
+          <dt>Bank-Based Modeling</dt>
+          <dd>A modeling approach where you specify the substance bank (reservoir) levels over time and Kigali Sim calculates the required sales given servicing and retirement to achieve those bank levels. Also called reservoir-based modeling.</dd>
+
+          <dt>Business as Usual</dt>
+          <dd>The baseline scenario defined in the default stanza that projects future outcomes without new policy interventions. Often abbreviated as BAU.</dd>
+
+          <dt>Cap</dt>
+          <dd>A policy command that limits consumption to specified levels, optionally with displacement to alternative substances. Syntax: <code>cap streamName to amount [displacing "substanceName"] during years startYear to endYear</code>.</dd>
+
+          <dt>CFC</dt>
+          <dd>Chlorofluorocarbon. Ozone-depleting substances that were largely phased out under the Montreal Protocol.</dd>
+
+          <dt>Change</dt>
+          <dd>A command that applies growth or decline rates to consumption over time. Syntax: <code>change streamName by percentage % / year during years startYear to endYear</code>.</dd>
+
+          <dt>Code-based Editor</dt>
+          <dd>Code editor interface for writing QubecTalk directly, supporting features not available in the Basic Editor such as variables, mathematical expressions, conditional logic, probabilistic sampling, and Monte Carlo simulations.</dd>
+
+          <dt>Command</dt>
+          <dd>Executable statements within QubecTalk stanzas that take an action such as defining substance properties, setting values, and configuring policies. Examples include <code>set</code>, <code>cap</code>, <code>recover</code>, and <code>replace</code>.</dd>
+
+          <dt>Consumption</dt>
+          <dd>The actual use of substance within a country. In Montreal Protocol trade attribution, refers to the net supply of controlled substances into a country's economy such that imported pre-charged equipment does not count towards consumption but exported equipment initial charge does.</dd>
+
+          <dt>Displacement</dt>
+          <dd>The mechanism by which changes in one substance or stream are offset by changes in another. For example, <code>cap sales to 1400 mt displacing "R-404A"</code> offsets reduction with another substance. Available for cap, floor, and recover commands.</dd>
+
+          <dt>Domestic</dt>
+          <dd>A stream representing domestic manufacturing or production of substances within a country that are also used in the country. Can be used to model domestic assembly as well if the same value is subtracted from imports.</dd>
+
+          <dt>Domain Specific Language (DSL)</dt>
+          <dd>A programming language specialized for a particular application domain. QubecTalk is a DSL designed specifically for Montreal Protocol policy simulation.</dd>
+
+          <dt>Emissions</dt>
+          <dd>Direct release of substances to the atmosphere, measured in tCO2e (tons CO2 equivalent). Sources include recharge emissions (servicing/leakage), end-of-life emissions (disposal), and initial charge emissions (informational metric). Kigali Sim models direct emissions (the actual controlled substances) but not indirect emissions (energy consumption) though users may model the later by exporting data from Kigali Sim and combining it with energy mix information.</dd>
+
+          <dt>Enable</dt>
+          <dd>A command that activates specific supply streams (domestic, import, export) for a substance. Required before operations like recharge that require sales distribution calculations. Syntax: <code>enable streamName</code>.</dd>
+
+          <dt>End-of-Life (EOL)</dt>
+          <dd>The stage when equipment is retired or scrapped (becomes no longer in service). Used in recycling commands to specify when recovery occurs: <code>at eol</code> for recycling during retirement versus <code>at recharge</code> for recycling during servicing.</dd>
+
+          <dt>Energy Consumption</dt>
+          <dd>The electricity usage from equipment operation, measured in kwh (kilowatt hours). Defined using <code>equals X kwh / unit</code> to enable co-benefits analysis.</dd>
+
+          <dt>Equipment</dt>
+          <dd>A stream representing both prior and new equipment population. The total units of equipment in service.</dd>
+
+          <dt>Export</dt>
+          <dd>A stream representing substances or equipment exported from a country to other countries.</dd>
+
+          <dt>Floor</dt>
+          <dd>A policy command that sets minimums like for consumption. Syntax: <code>floor streamName to amount during years startYear to endYear</code>.</dd>
+
+          <dt>Get</dt>
+          <dd>A command that retrieves values from streams for use in expressions and calculations. Supports unit conversion and cross-substance access. Syntax: <code>get streamName [of "substanceName"] [as units]</code>.</dd>
+
+          <dt>Global Warming Potential (GWP)</dt>
+          <dd>A measure of how much heat a greenhouse gas traps in the atmosphere compared to carbon dioxide over a 100-year period. For example, HFC-134a has a GWP of 1,430, meaning it is 1,430 times more potent than CO2. Defined using <code>equals gwpValue tCO2e / mt</code> or <code>equals gwpValue kgCO2e / kg</code>.</dd>
+
+          <dt>Hazard Rate</dt>
+          <dd>The incidence or probability of a certain event. In Kigali Sim, this typically refers to retirement and servicing rates and typically is expressed as a percentage.</dd>
+
+          <dt>HCFC</dt>
+          <dd>Hydrochlorofluorocarbon. Transitional substances that replaced CFCs and are being phased out under the Montreal Protocol.</dd>
+
+          <dt>HFC</dt>
+          <dd>Hydrofluorocarbon. Potent greenhouse gases used in air conditioners, refrigerators, aerosols, foams, and other products. While they don't deplete the ozone layer, they have high global warming potential (GWP). These are being phased down under the Kigali Amendment and are the focus of Kigali Sim.</dd>
+
+          <dt>Import</dt>
+          <dd>A stream representing substances or equipment imported into a country from other countries.</dd>
+
+          <dt>Induction</dt>
+          <dd>Economic effect in which increases in supply can trigger an increase in demand ("induced demand"). In recycling policies, determines how much recycled material adds to the market versus displaces virgin production. 0% induction means full displacement (recycled material reduces virgin sales). 100% induction means full induced demand (recycled material adds to total supply). Specified with <code>with X % induction</code> in recover commands.</dd>
+
+          <dt>Initial Charge</dt>
+          <dd>The amount of substance in new equipment per unit. Specified using <code>initial charge with amount kg / unit for streamName</code>. Different streams (domestic, import, export) can have different initial charges to account for varying equipment types.</dd>
+
+          <dt>Kigali Amendment</dt>
+          <dd>The 2016 amendment to the Montreal Protocol adopted in Kigali, Rwanda, that commits countries to phase down HFC production and consumption.</dd>
+
+          <dt>Kigali HFC Implementation Plan (KIP)</dt>
+          <dd>National plans developed by countries to implement the Kigali Amendment's HFC phase-down requirements, often supported by the Multilateral Fund.</dd>
+
+          <dt>Monte Carlo Simulation</dt>
+          <dd>Probabilistic simulation technique that runs multiple trials with sampled values to incorporate uncertainty. Specified using <code>across X trials</code> in simulations stanza.</dd>
+
+          <dt>Montreal Protocol</dt>
+          <dd>International treaty designed to protect the ozone layer by phasing out the production of ozone-depleting substances, including CFCs and HCFCs. The Kigali Amendment expanded it to include HFCs.</dd>
+
+          <dt>Multilateral Fund</dt>
+          <dd>Financial mechanism established under the Montreal Protocol to help developing countries meet their treaty obligations, including funding for Kigali HFC Implementation Plans.</dd>
+
+          <dt>Policy</dt>
+          <dd>Interventions modifying the baseline scenario, such as import restrictions, manufacturing caps, substance replacements, or recycling requirements. Uses <code>modify</code> rather than <code>define</code> to change existing applications and substances.</dd>
+
+          <dt>Policy Stacking</dt>
+          <dd>The approach of testing individual policies or combinations against the same baseline by applying multiple policies using the <code>then</code> keyword in simulations: <code>using "Policy A" then "Policy B"</code>.</dd>
+
+          <dt>Population</dt>
+          <dd>The number of equipment units in service, measured in units. Tracked separately as total population and new population added in the current year. Population is part of the Bank stream.</dd>
+
+          <dt>Prior Equipment</dt>
+          <dd>Pre-existing equipment in service at the start of a simulation. Set using <code>set priorEquipment to X units during year Y</code>.</dd>
+
+          <dt>QubecTalk</dt>
+          <dd>A Smalltalk/HyperTalk-inspired domain-specific language for defining simulations in Kigali Sim. Features human-readable natural language constructs and supports both basic operations and advanced features like variables, conditionals, and probabilistic sampling.</dd>
+
+          <dt>Recharge</dt>
+          <dd>Servicing or refilling of existing equipment with substance due to leakage or maintenance needs. Specified using <code>recharge percentage % with amount kg / unit</code>. Represents the percentage of equipment serviced and the amount per unit.</dd>
+
+          <dt>Recharge Emissions</dt>
+          <dd>Emissions from equipment servicing and leakage during maintenance operations, often measured in tCO2e per year.</dd>
+
+          <dt>Recover</dt>
+          <dd>A policy command that implements recycling programs to recover and reuse substances from equipment. Supports specification of recovery percentage, reuse percentage, induction percentage, stage (recharge or eol), and displacement. Syntax: <code>recover percentage % with reuse % reuse [with induction % induction] [at stage] [displacing "substance"] during years X to Y</code>. Note: Can be used to model programs which safely destroy substance at end of life.</dd>
+
+          <dt>Refrigerant</dt>
+          <dd>Substance used in cooling equipment such as refrigerators and air conditioners. Examples include HFCs (like HFC-134a) and alternatives (like R-600a).</dd>
+
+          <dt>Replace</dt>
+          <dd>A policy command that substitutes one substance with another over specified time periods. Syntax: <code>replace percentage % of stream with "newSubstanceName" during years startYear to endYear</code>.</dd>
+
+          <dt>Reservoir</dt>
+          <dd>See Bank.</dd>
+
+          <dt>Retire</dt>
+          <dd>A command that sets equipment retirement rates determining equipment lifespan. Also called hazard rate or scrap rate. Syntax: <code>retire percentage % each year</code>. Use <code>with replacement</code> to maintain equipment population by automatically replacing retired units.</dd>
+
+          <dt>Retirement Rate</dt>
+          <dd>The annual percentage or amount of equipment that is scrapped or retired from service. A constant retirement percentage corresponds to an exponential decay model. Also called hazard rate or scrap rate.</dd>
+
+          <dt>Sales</dt>
+          <dd>A stream representing the combination of both domestic manufacturing and imports. The total new substance entering the market.</dd>
+
+          <dt>Scrap Rate</dt>
+          <dd>See Retirement Rate.</dd>
+
+          <dt>Set</dt>
+          <dd>A command that sets consumption volumes or equipment units for specific streams and time periods. Syntax: <code>set streamName to amount unit during year year</code>.</dd>
+
+          <dt>Stanza</dt>
+          <dd>Main structural blocks of QubecTalk programs that define different sections of a simulation model using <code>start</code> and <code>end</code> keywords. Types include about, default, policy, simulations, and variables.</dd>
+
+          <dt>Stock and Flow Modeling</dt>
+          <dd>A modeling approach used in system design / analysis that tracks both stocks (accumulated quantities like equipment population or substance banks) and flows (rates of change like sales, emissions, or retirement) over time.</dd>
+
+          <dt>Stream</dt>
+          <dd>A time series of values in the simulation representing different types of flows or stocks. Available streams include domestic, import, export, sales, equipment, priorEquipment, bank, and age.</dd>
+
+          <dt>Substance</dt>
+          <dd>A chemical refrigerant or other controlled substance used in applications, such as HFC-134a, R-410A, R-600a, or HFC-32. Defined using <code>uses substance "name"</code> within applications.</dd>
+
+          <dt>TeaVM</dt>
+          <dd>Java bytecode to WebAssembly compiler used to compile Kigali Sim's Java engine for browser execution.</dd>
+
+          <dt>tCO2e</dt>
+          <dd>Tonnes (metric tons) of carbon dioxide equivalent. A unit that standardizes the climate impact of different greenhouse gases relative to CO2 over a 100-year period using Global Warming Potential values.</dd>
+
+          <dt>UI-based Editor</dt>
+          <dd>UI-based point-and-click interface for building simulations without writing code. Also called the Designer or UI Editor.</dd>
+
+          <dt>WASM</dt>
+          <dd>WebAssembly. A binary instruction format that enables high-performance execution of code in web browsers. Kigali Sim's Java engine is compiled to WASM for browser-based execution.</dd>
+        </dl>
+      </section>
+
+      <section id="navigation">
+        <h2>See Also</h2>
+        <ul>
+          <li><a href="/guide/qubectalk_stanzas.html">QubecTalk Stanzas Reference</a></li>
+          <li><a href="/guide/qubectalk_commands.html">QubecTalk Commands Reference</a></li>
+          <li><a href="/guide/qubectalk_language_features.html">QubecTalk Language Features Reference</a></li>
+          <li><a href="/guide">Return to Guide Index</a></li>
+        </ul>
+      </section>
+    </main>
+  </body>
+</html>

@@ -89,6 +89,8 @@ Nevertheless, bank-based tracking provides a valuable alternative if you have ov
 
 [Previous: Tutorial 13](/guide/tutorial_13.html) | [Next: Tutorial 15](/guide/tutorial_15.html)
 
+[Previous: Tutorial 13](/guide/tutorial_13.html) | [Return to Guide Index](/guide) | [Next: Tutorial 15](/guide/tutorial_15.html)
+
 ---
 
 _This tutorial is part of the Advanced Techniques series demonstrating specialized aspects of Montreal Protocol policy modeling using Kigali Sim._

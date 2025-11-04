@@ -2,6 +2,7 @@
   <head>
     <title>Tutorial 14: Bank-Based Modeling</title>
     <link href="/guide/guide.css?v=EPOCH" rel="stylesheet" type="text/css" />
+    <link href="/third_party/prism-tomorrow.min.css" rel="stylesheet" type="text/css" />
   </head>
   <body>
     <a href="#main" class="skip-link">Skip to main content</a>
@@ -58,7 +59,7 @@
           If you are using QubecTalk, it can be specified like so:
         </p>
 
-        <pre><code>uses substance "HFC-134a"
+        <pre><code class="language-qubectalk">uses substance "HFC-134a"
   enable import
   initial charge with 0 kg / unit for domestic
   initial charge with 1 kg / unit for import
@@ -103,7 +104,7 @@ end substance</code></pre>
           This might be appropriate given how your forecasting model is designed but, for this tutorial, let's assume we are forecasting the bank size without that assumed continued sales. Therefore, let's set the default sales assumption to recharge only. For those working in the UI-based editor, change "Default sales assumption in a new year" to "Cover only servicing" in the General tab. Alternatively, for those in QubecTalk, add an <code>assume</code> command like as follows:
         </p>
 
-        <pre><code>assume only recharge sales</code></pre>
+        <pre><code class="language-qubectalk">assume only recharge sales</code></pre>
 
         <p>
           Finally, change your business as usual simulation to run from 2020 to 2030. You should see a steady increase in the bank levels into the future!
@@ -121,7 +122,7 @@ end substance</code></pre>
           One last thing to consider is that currently we assume retired equipment is not replaced so the 10% increase in bank is after retirement from the year prior. In most simulations, this doesn't have a large effect but, if you want to assume that retired equipment is replaced such that it is strictly a 10% increase over the bank level specified in the year prior, you can turn on this automatic back fill. For those using the UI-based designer, please uncheck "Retirement reduces in-service equipment" in the Equipment tab. For those working with QubecTalk, change retirement like as follows:
         </p>
 
-        <pre><code>retire 5 % / year with replacement</code></pre>
+        <pre><code class="language-qubectalk">retire 5 % / year with replacement</code></pre>
 
         <p>
           Nevertheless, bank-based tracking provides a valuable alternative if you have overall metrics for your system but need to calculate what that means in terms of different streams like imports.
@@ -141,6 +142,7 @@ end substance</code></pre>
 
         <p>
           <a href="/guide/tutorial_13.html">Previous: Tutorial 13</a> |
+          <a href="/guide">Return to Guide Index</a> |
           <a href="/guide/tutorial_15.html">Next: Tutorial 15</a>
         </p>
       </section>
@@ -148,5 +150,9 @@ end substance</code></pre>
       <hr />
       <p><em>This tutorial is part of the Advanced Techniques series demonstrating specialized aspects of Montreal Protocol policy modeling using Kigali Sim.</em></p>
     </main>
+
+    <script src="/third_party/prism-core.min.js"></script>
+    <script src="/third_party/prism-autoloader.min.js"></script>
+    <script src="/guide/qubectalk-prism.js"></script>
   </body>
 </html>
