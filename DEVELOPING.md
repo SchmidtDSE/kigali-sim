@@ -81,22 +81,13 @@ After installing those packages based on your operating sytem:
 
 If you would like to also work on the UI-based editor or web interface:
 
-1. Set up the JavaScript editor:
+1. Build the UI-based editor:
 
    ```bash
-   cd editor
-   pnpm install
-   bash ./support/install_deps.sh
-   ```
-
-2. Build the UI-based editor:
-
-   ```bash
-   bash ./support/update_wasm.sh
    bash ./support/make.sh
    ```
 
-3. Run a local development server:
+2. Run a local development server:
    ```bash
    python -m http.server 8000
    ```
@@ -123,7 +114,6 @@ For those working on the front-end and UI-based editor, go to the `editor` direc
 pnpm install
 
 # Build the QubecTalk parser and webpack bundle
-bash ./support/update_wasm.sh
 bash ./support/make.sh
 
 # Or build webpack directly
@@ -234,10 +224,9 @@ Next, for Java Engine Development:
 For front-end or UI-editor development:
 
 1. Make changes in `editor/js/`
-2. Update engine: `bash support/update_wasm.sh`
-3. Build: `pnpm run build` or `bash support/make.sh`
-4. Lint: `pnpm exec eslint ./js/*.js`
-5. Test: `pnpm exec grunt`
+2. Build: `pnpm run build` / `bash support/make.sh`
+3. Lint: `pnpm exec eslint ./js/*.js`
+4. Test: `pnpm exec grunt`
 
 To test your changes to the front-end interactively:
 
