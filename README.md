@@ -5,21 +5,10 @@ Open source engine for simulating substances, applications, and policies relevan
 
 <br>
 
-## Purpose
-This open source toolkit models substances and equipment related to the Montreal Protocol and Kigali Amendment, including high global warming potential substances.
-
-**What it does**: Provides a simulation engine for modeling substances, applications, and policies related to the Montreal Protocol, focusing on hydrofluorocarbons and their alternatives within the Kigali Amendment. Supports foundational business-as-usual simulation and "stacking" policy simulations on top. Simulates emissions, energy, substance consumption, equipment populations, and trade longitudinally.
-
-**How it does it**: Offers stock and flow modeling with user-defined structures for applications and substances. Features both UI-based authoring and code-based editing using the QubecTalk domain specific language (DSL) with modality interoperability. Design details available in [our paper draft](https://github.com/SchmidtDSE/kigali-sim/blob/main/paper/paper.md).
-
-**Where it does it**: Portable execution through web-based bespoke IDE, command line, or integration into larger workflows. Available on WebAssembly (WASM) or Java Virtual Machine (JVM). Supports parallelization and probabilistic simulation via Monte Carlo.
-
-**Who it serves**: Intended for researchers working on stock and flow modeling of these substances and policy makers like those working on Kigali Amendment Implementation Plans (KIPs). With ongoing [Article 5](https://ozone.unep.org/treaties/montreal-protocol/articles/article-5-special-situation-developing-countries) use, it was co-created with over a dozen countries and supporting organizations. Serves community members with varied programming backgrounds and offers [optional AI assistance](https://github.com/SchmidtDSE/kigali-sim?tab=readme-ov-file#llm-assistants).
-
-<br>
-
 ## Quickstart
-Make a simulation in 3 minutes! share=copy&fl=sv&fe=ci). Start with a [tutorial](https://kigalisim.org/guide/tutorial_02.html). Alternatively, go to https://kigalisim.org and then in the Designer tab:
+Try Kigali Sim from your browser: make a simulation in 3 minutes without any installation required!
+
+**No code?** Go to https://kigalisim.org and then in the Designer tab:
 
  - Click "Add Application" to create a "Commerical Refrigeration" application
  - Click "Add Consumption" to create HFC-134a (click lookup for GHG equivalency, leave energy consumption at default, check domestic)
@@ -27,7 +16,7 @@ Make a simulation in 3 minutes! share=copy&fl=sv&fe=ci). Start with a [tutorial]
  - Click "Add Simulation" and make "Business as Usual" from year 1 to 10.
  - Click the "Bank" radio button for total million units of equipment and see population increase over time.
 
-Finally, go do the Editor tab and see the QubecTalk code you wrote:
+**With code?** Go to https://kigalisim.org and, in the Editor tab, try the following:
 
 ```
 start default
@@ -57,6 +46,21 @@ start simulations
 
 end simulations
 ```
+
+We use [WebAssembly](https://webassembly.org/) so simluations run privately on your machine. Continue your journey with a [tutorial](https://kigalisim.org/guide/tutorial_02.html).
+
+<br>
+
+## Purpose
+This open source toolkit models substances and equipment related to the Montreal Protocol and Kigali Amendment, including high global warming potential substances.
+
+**What it does**: Provides a simulation engine for modeling substances, applications, and policies related to the Montreal Protocol, focusing on hydrofluorocarbons and their alternatives within the Kigali Amendment. Supports foundational business-as-usual simulation and "stacking" policy simulations on top. Simulates emissions, energy, substance consumption, equipment populations, and trade longitudinally.
+
+**How it does it**: Offers stock and flow modeling with user-defined structures for applications and substances. Features both UI-based authoring and code-based editing using the QubecTalk domain specific language (DSL) with modality interoperability. Design details available in [our paper draft](https://github.com/SchmidtDSE/kigali-sim/blob/main/paper/paper.md).
+
+**Where it does it**: Portable execution through web-based bespoke IDE, command line, or integration into larger workflows. Available on WebAssembly (WASM) or Java Virtual Machine (JVM). Supports parallelization and probabilistic simulation via Monte Carlo.
+
+**Who it serves**: Intended for researchers working on stock and flow modeling of these substances and policy makers like those working on Kigali Amendment Implementation Plans (KIPs). With ongoing [Article 5](https://ozone.unep.org/treaties/montreal-protocol/articles/article-5-special-situation-developing-countries) use, it was co-created with over a dozen countries and supporting organizations. Serves community members with varied programming backgrounds and offers [optional AI assistance](https://github.com/SchmidtDSE/kigali-sim?tab=readme-ov-file#llm-assistants).
 
 <br>
 
