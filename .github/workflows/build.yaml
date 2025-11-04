@@ -355,6 +355,8 @@ jobs:
         working-directory: ./editor
       - name: Copy guide
         run: cp -r ./docs/guide ./editor/deploy/guide
+      - name: Copy humans.txt to deploy root
+        run: cp ./humans.txt ./editor/deploy/humans.txt
       - name: Download Javadoc
         uses: actions/download-artifact@v4
         with:
