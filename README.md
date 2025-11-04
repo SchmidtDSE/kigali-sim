@@ -54,9 +54,9 @@ We use [WebAssembly](https://webassembly.org/) so simluations run privately on y
 ## Purpose
 This open source toolkit models substances and equipment related to the Montreal Protocol and Kigali Amendment, including high global warming potential substances.
 
-**What it does**: Provides a simulation engine for modeling substances, applications, and policies related to the Montreal Protocol, focusing on hydrofluorocarbons and their alternatives within the Kigali Amendment. Supports foundational business-as-usual simulation and "stacking" policy simulations on top. Simulates emissions, energy, substance consumption, equipment populations, and trade longitudinally.
+**What it does**: Models substances, applications, and policies related to the Montreal Protocol, focusing on hydrofluorocarbons and their alternatives within the Kigali Amendment. Supports business-as-usual simulation and "stacking" policy simulations on top. Simulates emissions, energy, substance consumption, equipment populations, and trade longitudinally.
 
-**How it does it**: Offers stock and flow modeling with user-defined structures for applications and substances. Features both UI-based authoring and code-based editing using the QubecTalk domain specific language (DSL) with modality interoperability. Design details available in [our paper draft](https://github.com/SchmidtDSE/kigali-sim/blob/main/paper/paper.md).
+**How it does it**: Stock and flow modeling with user-defined structures for applications and substances. Features both UI-based authoring and code-based editing using the QubecTalk domain specific language (DSL). Design details available in [our paper draft](https://github.com/SchmidtDSE/kigali-sim/blob/main/paper/paper.md).
 
 **Where it does it**: Portable execution through web-based bespoke IDE, command line, or integration into larger workflows. Available on WebAssembly (WASM) or Java Virtual Machine (JVM). Supports parallelization and probabilistic simulation via Monte Carlo.
 
