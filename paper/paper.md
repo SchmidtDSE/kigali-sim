@@ -54,7 +54,7 @@ The UI-based point-and-click editor familiarizes the user with Kigali Sim's conc
 ![Screenshot of the UI-based editor modifying an example simulation.\label{fig:ui_editor}](KigaliEditor.png)
 
 ### Code-based authoring
-We find some simulations' complexity too cumbersome to manage in the UI-based editor. Therefore, our QubecTalk domain-specific language facilitates expression of complex Montreal Protocol simulations in human-readable syntax inspired by but distinct to SmallTalk / HyperTalk [@smallhypertalk]. Mirrored by the UI-editor, QubecTalk speaks in treaty terminology: directly translating terms of art like `cap import to 85% during years 2025 to 2035` into simulations. This also supports uncertainty quantification, conditional logic, and policy stacking. With optional AI assistant compatibility via the llms.txt specification [@llmstxt], users may author scripts in a web-based programming portal [@portal] or third-party editors with direct JVM invocation.
+We find some simulations' complexity cumbersome in UI-based authoring. Therefore, our QubecTalk domain-specific language facilitates expression of complex Montreal Protocol simulations in human-readable syntax inspired by but distinct to SmallTalk / HyperTalk [@smallhypertalk]. Mirrored by the UI-editor, QubecTalk speaks in treaty terminology: directly translating terms of art like `cap import to 85% during years 2025 to 2035` into simulations. This also supports uncertainty quantification, conditional logic, and policy stacking. With optional AI assistant compatibility via the llms.txt specification [@llmstxt], users may author scripts in a web-based programming portal [@portal] or third-party editors with direct JVM invocation.
 
 ## Flexibility
 As diverse methodologies measure stocks, Kigali Sim provides automated unit conversions including those which depend on equipment properties. Additionally, most simulation code can be modified either by the UI-based editor or the code-based editor where changes in one reflect in the other, attempting to bridge preferences and skill sets. Indeed, many community collaborators who identify as non-programmers report starting in the UI-editor but transition to code.
@@ -66,10 +66,10 @@ Leaving the following for future work, Kigali Sim:
  - Applies treaty trade attribution but will only attribute charge prior to equipment sale entirely to either the importer or exporter^[Local assembly can be modeled as domestic production.].
  - Complex features like formula-based variable servicing / retirement hazard rates may require code-based authoring.
 
-Kigali Sim will receive updates as official guidance changes in the future [@mlf_guidelines].
+It will receive updates as official guidance changes in the future [@mlf_guidelines].
 
 # Implementation
-Kigali Sim runs browser-based via WASM or via JVM [@teavm]. Without transmitting simulations to external servers, both enable privacy-preserving zero installation local computation leveraging BigDecimal [@bigdecimal] and parallelization. The engine uses ANTLR [@antlr] for parsing QubecTalk code in both Java and ECMAScript / JavaScript^[A JS-based ANTLR visitor facilitating real-time translation between the UI-editor and the code-based editor.].
+Kigali Sim runs browser-based via WASM or via JVM [@teavm]. Without transmitting simulations to external servers, both enable privacy-preserving zero-installation parallel local computation with BigDecimal [@bigdecimal]. ANTLR [@antlr] parses QubecTalk code in both Java and ECMAScript / JavaScript^[A JS-based ANTLR visitor facilitating real-time translation between the UI-editor and the code-based editor.].
 
 ![Diagram describing multi-modal execution in which simulations run across different platforms.\label{fig:execution}](KigaliExecution.svg){width="100%"}
 
