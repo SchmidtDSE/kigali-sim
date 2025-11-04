@@ -1,8 +1,6 @@
 /**
  * Entrypoint for the KigaliSim command line interface application.
  *
- * <p>This class serves as the main entry point for the Kigali command line interface.</p>
- *
  * @license BSD-3-Clause
  */
 
@@ -16,12 +14,9 @@ import picocli.CommandLine;
 /**
  * Entry point for the KigaliSim command line.
  *
- * <p>Entry point for the KigaliSim command line application which can run simulations from outside
- * of the browser.</p>
- *
  * @command kigalisim
  * @mixinStandardHelpOptions true
- * @version 0.0.1
+ * @version 0.1.1
  * @description "KigaliSim command line interface"
  * @subcommands { VersionCommand }
  */

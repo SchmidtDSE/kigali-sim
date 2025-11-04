@@ -8,9 +8,8 @@ import org.kigalisim.engine.recalc.SalesStreamDistribution;
  * Immutable class representing a simulation state update value ready to be set.
  *
  * <p>This class encapsulates the result of stream calculations and contains all
- * parameters needed to update simulation state. Unlike StreamUpdate
- * which contains calculation instructions, SimulationStateUpdate contains pre-computed
- * results ready for storage.</p>
+ * parameters needed to update simulation state. Unlike StreamUpdate which contains calculation
+ * instructions, SimulationStateUpdate contains pre-computed results ready for storage.</p>
  *
  * <p>Use StreamUpdate for operations that need calculation logic (set, change, cap, floor).
  * Use SimulationStateUpdate for setting pre-computed values (recalc strategies, emissions).</p>

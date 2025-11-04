@@ -1,9 +1,6 @@
 /**
  * Command line interface handler for running QubecTalk simulations.
  *
- * <p>This class implements the 'run' command which executes a specified simulation from a QubecTalk
- * script file.</p>
- *
  * @license BSD-3-Clause
  */
 
@@ -30,8 +27,6 @@ import picocli.CommandLine.Parameters;
 
 /**
  * Command handler for executing QubecTalk simulations.
- *
- * <p>Processes command line arguments to run a specified simulation from a QubecTalk script file.</p>
  */
 @Command(
     name = "run",

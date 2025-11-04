@@ -2,8 +2,8 @@
  * Builder for creating sales stream distribution percentages.
  *
  * <p>This class implements the logic for determining the appropriate percentage
- * split between import, domestic, and export based on which streams have been
- * explicitly enabled and their current values.</p>
+ * split between import, domestic, and export based on which streams have been explicitly enabled
+ * and their current values.</p>
  *
  * @license BSD-3-Clause
  */
@@ -19,8 +19,8 @@ import org.kigalisim.engine.number.EngineNumber;
  * Builder for creating sales stream distribution percentages.
  *
  * <p>This class implements the logic for determining the appropriate percentage
- * split between import, domestic, and export based on which streams have been
- * explicitly enabled and their current values.</p>
+ * split between import, domestic, and export based on which streams have been explicitly enabled
+ * and their current values.</p>
  */
 public class SalesStreamDistributionBuilder {
 

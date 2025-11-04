@@ -2,8 +2,8 @@
  * Immutable container for retirement background state information.
  *
  * <p>This class encapsulates the current state values needed for retirement calculations,
- * including current equipment populations, retired amounts, and the base population used
- * for retirement rate calculations.</p>
+ * including current equipment populations, retired amounts, and the base population used for
+ * retirement rate calculations.</p>
  *
  * @license BSD-3-Clause
  */

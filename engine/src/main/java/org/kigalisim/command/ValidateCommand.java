@@ -1,9 +1,6 @@
 /**
  * Command line interface handler for validating QubecTalk simulation files.
  *
- * <p>This class implements the 'validate' command which checks QubecTalk script files for syntax
- * errors and other validation issues.</p>
- *
  * @license BSD-3-Clause
  */
 

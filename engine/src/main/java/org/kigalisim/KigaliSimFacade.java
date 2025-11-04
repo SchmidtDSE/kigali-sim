@@ -32,7 +32,7 @@ import org.kigalisim.lang.program.ParsedSubstance;
  * Entry point into the Kigali platform when used as a library.
  *
  * <p>Facade which helps facilitate common operations within the Kigali simulation platform when used
- * as a library as opposed to as an interactive / command-line tool.</p>
+ * as a library. It also provides a unified interface for WASM and the command-line tool.</p>
  */
 public class KigaliSimFacade {
 
@@ -99,8 +99,8 @@ public class KigaliSimFacade {
    *
    * <p>Creates and executes a simulation using the provided program and simulation name where this
    * name refers to a scenario indicating the set of policies to be stacked. The simulation will
-   * iterate through all years from the scenario's start year to end year and collect results
-   * for all applications and substances for each year.</p>
+   * iterate through all years from the scenario's start year to end year and collect results for all
+   * applications and substances for each year.</p>
    *
    * @param program The parsed program containing the simulation to run.
    * @param scenarioName The name of the simulation to execute from the program.

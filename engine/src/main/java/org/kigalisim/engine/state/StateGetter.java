@@ -7,8 +7,8 @@ import org.kigalisim.engine.number.UnitConverter;
  * Interface for accessing engine state needed for unit conversions.
  *
  * <p>This interface provides access to various engine state values that are
- * required for unit conversion operations, such as substance consumption,
- * volume, population, and time-based metrics.</p>
+ * required for unit conversion operations, such as substance consumption, volume, population, and
+ * time-based metrics.</p>
  *
  * @license BSD-3-Clause
  */

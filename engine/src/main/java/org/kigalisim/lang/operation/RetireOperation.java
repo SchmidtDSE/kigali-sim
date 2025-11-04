@@ -89,8 +89,8 @@ public class RetireOperation implements Operation {
    * <div>
    * Checks if a retire command has already been calculated in this step for the current scope.
    * If so, verifies that the replacement status is consistent. If a retire command was already
-   * calculated with replacement, but this one does not have replacement (or vice versa), an
-   * exception is thrown.
+   * calculated with replacement, but this one does not have replacement (or vice versa), an exception
+   * is thrown.
    * </div>
    *
    * @param engine The engine containing the current simulation state.

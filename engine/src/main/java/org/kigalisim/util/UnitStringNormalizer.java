@@ -2,8 +2,8 @@
  * Utility for normalizing unit strings by removing whitespace.
  *
  * <p>This class provides high-performance unit string normalization using literal
- * string replacement. It is used to ensure consistent unit string formatting throughout
- * the simulation engine.</p>
+ * string replacement. It is used to ensure consistent unit string formatting throughout the
+ * simulation engine.</p>
  *
  * @license BSD-3-Clause
  */
@@ -17,8 +17,8 @@ import java.util.concurrent.ConcurrentHashMap;
  * Utility class for normalizing unit strings.
  *
  * <p>Normalization involves removing all whitespace from unit strings to ensure
- * consistent comparison and processing. This class uses literal string replacement
- * for optimal performance.</p>
+ * consistent comparison and processing. This class uses literal string replacement for optimal
+ * performance.</p>
  */
 public final class UnitStringNormalizer {
 

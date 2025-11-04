@@ -16,8 +16,8 @@ import org.kigalisim.lang.time.ParsedDuring;
  * Operation that enables a stream in the engine without setting a value.
  *
  * <p>This operation marks a stream as enabled, allowing it to be used in distribution
- * calculations for operations like recharge, retire, and recover without having to
- * set an actual value to the stream.</p>
+ * calculations for operations like recharge, retire, and recover without having to set an actual
+ * value to the stream.</p>
  */
 public class EnableOperation implements Operation {
 

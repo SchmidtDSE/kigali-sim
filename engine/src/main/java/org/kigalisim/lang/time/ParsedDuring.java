@@ -21,12 +21,12 @@ import org.kigalisim.lang.machine.PushDownMachine;
  * <ul>
  *   <li>Single year ranges should have both start and end with the same TimePoints.</li>
  *   <li>
- *     A range which should apply starting in a year until the end may have start be non-empty and
- *     the end is empty. Alternatively, start may be given and empty be onwards (dynamic cap).
+ * A range which should apply starting in a year until the end may have start be non-empty and the
+ * end is empty. Alternatively, start may be given and empty be onwards (dynamic cap).
  *   </li>
  *   <li>
- *     A range which should apply until a given year may have start be non-empty an the start is
- *     empty. Alternatively, end may be given and start be beginning (dynamic cap).
+ * A range which should apply until a given year may have start be non-empty an the start is empty.
+ * Alternatively, end may be given and start be beginning (dynamic cap).
  *   </li>
  *   <li>Other ranges may have start and end both specified.</li>
  * </ul>

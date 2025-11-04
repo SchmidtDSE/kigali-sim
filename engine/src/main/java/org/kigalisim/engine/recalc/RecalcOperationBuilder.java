@@ -2,8 +2,8 @@
  * Builder for creating RecalcOperation instances with fluent interface.
  *
  * <p>This builder provides a fluent interface for constructing sequences of
- * recalculation operations while enforcing proper ordering (recalc methods first,
- * then propagate methods).</p>
+ * recalculation operations while enforcing proper ordering (recalc methods first, then propagate
+ * methods).</p>
  *
  * @license BSD-3-Clause
  */
