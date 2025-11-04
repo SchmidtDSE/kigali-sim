@@ -41,10 +41,10 @@ public class EolEmissionsRecalcStrategy implements RecalcStrategy {
    * Recalculate end-of-life emissions based on the retirement delta.
    *
    * <p>This method calculates the amount of equipment retired during the current year using
- * the delta between the cumulative retired stream and the priorRetired stream (which holds the
- * retired count from the start of this year). The difference gives us the amount retired during
- * this year's operations. This amount is then converted to GHG emissions and updated in the
- * simulation state.</p>
+   * the delta between the cumulative retired stream and the priorRetired stream (which holds the
+   * retired count from the start of this year). The difference gives us the amount retired during
+   * this year's operations. This amount is then converted to GHG emissions and updated in the
+   * simulation state.</p>
    *
    * @param target The engine instance being operated on
    * @param kit The recalculation kit providing access to simulation state and utilities

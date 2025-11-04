@@ -51,13 +51,13 @@ public class ReplaceExecutor {
    * Executes a substance replacement operation.
    *
    * <p>Replaces the specified amount of the current substance with the destination
- * substance in the given stream. The operation removes substance from the source and adds it to the
- * destination, using appropriate conversion rates and scope context.</p>
+   * substance in the given stream. The operation removes substance from the source and adds it to the
+   * destination, using appropriate conversion rates and scope context.</p>
    *
    * <p>For percentage-based amounts, the last specified value is used to determine
- * whether to use unit-based or volume-based replacement logic. Unit-based replacement uses initial
- * charge rates specific to each substance, while volume-based replacement uses the same volume for
- * both source and destination.</p>
+   * whether to use unit-based or volume-based replacement logic. Unit-based replacement uses initial
+   * charge rates specific to each substance, while volume-based replacement uses the same volume for
+   * both source and destination.</p>
    *
    * @param amountRaw The amount to replace (can be units, volume, or percentage)
    * @param stream The stream identifier to modify (e.g., "domestic", "import", "sales")
@@ -104,9 +104,9 @@ public class ReplaceExecutor {
    * Updates last specified values for sales streams in both source and destination substances.
    *
    * <p>For sales streams (domestic, import, sales), this method tracks the user-specified
- * amount for both the current substance and the destination substance. This enables subsequent
- * change operations to correctly interpret percentage-based specifications and maintain proper
- * carry-over behavior.</p>
+   * amount for both the current substance and the destination substance. This enables subsequent
+   * change operations to correctly interpret percentage-based specifications and maintain proper
+   * carry-over behavior.</p>
    *
    * @param currentScope The current scope containing the source substance
    * @param application The application name
@@ -135,9 +135,9 @@ public class ReplaceExecutor {
    * Resolves percentage-based amounts to concrete units or volumes.
    *
    * <p>If the amount is specified as a percentage, this method looks up the last
- * specified value to determine the base amount and unit type. The percentage is then applied to
- * that base value. If no last specified value exists, the current stream value is used as the
- * base.</p>
+   * specified value to determine the base amount and unit type. The percentage is then applied to
+   * that base value. If no last specified value exists, the current stream value is used as the
+   * base.</p>
    *
    * <p>For non-percentage amounts, returns the amount unchanged.</p>
    *
@@ -175,13 +175,13 @@ public class ReplaceExecutor {
    * Applies unit-based replacement using substance-specific initial charge rates.
    *
    * <p>For equipment units, this method converts the specified units to the source
- * substance's volume using the source's initial charge, removes that volume from the source, then
- * converts the same number of units to the destination substance's volume using the destination's
- * initial charge, and adds that volume to the destination.</p>
+   * substance's volume using the source's initial charge, removes that volume from the source, then
+   * converts the same number of units to the destination substance's volume using the destination's
+   * initial charge, and adds that volume to the destination.</p>
    *
    * <p>This approach ensures that the same number of equipment units is transferred,
- * but the actual substance volumes may differ based on each substance's initial charge
- * requirements.</p>
+   * but the actual substance volumes may differ based on each substance's initial charge
+   * requirements.</p>
    *
    * @param currentScope The current scope containing the source substance
    * @param stream The stream being modified
@@ -242,9 +242,9 @@ public class ReplaceExecutor {
    * Applies volume-based replacement using the same substance volume for both substances.
    *
    * <p>For volume units (kg, mt), this method converts the amount to kg, removes that
- * volume from the source substance, and adds the same volume to the destination substance. Unlike
- * unit-based replacement, the actual substance volume is identical for both source and
- * destination.</p>
+   * volume from the source substance, and adds the same volume to the destination substance. Unlike
+   * unit-based replacement, the actual substance volume is identical for both source and
+   * destination.</p>
    *
    * @param currentScope The current scope containing the source substance
    * @param stream The stream being modified

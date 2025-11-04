@@ -56,9 +56,9 @@ public class RetireWithReplacementOperation implements Operation {
    * Execute the retire and replacement operation.
    *
    * <div>
- * This operation executes a normal retirement and then increases sales by the actual retirement
- * amount, effectively maintaining the equipment population while simulating equipment turnover. The
- * operation:
+   * This operation executes a normal retirement and then increases sales by the actual retirement
+   * amount, effectively maintaining the equipment population while simulating equipment turnover. The
+   * operation:
    *
    * <ul>
    * <li>Executes the amount operation to calculate the retirement rate</li>
@@ -98,9 +98,9 @@ public class RetireWithReplacementOperation implements Operation {
    * Check for mixed retire commands with and without replacement.
    *
    * <div>
- * Validates that if retirement has already been calculated in this step, the current operation also
- * has replacement enabled. Throws an exception if there's a mix of retire commands with and without
- * replacement in the same step.
+   * Validates that if retirement has already been calculated in this step, the current operation also
+   * has replacement enabled. Throws an exception if there's a mix of retire commands with and without
+   * replacement in the same step.
    * </div>
    *
    * @param engine The current simulation engine.
@@ -124,8 +124,8 @@ public class RetireWithReplacementOperation implements Operation {
    * Determine the target units for replacement.
    *
    * <div>
- * Checks what units sales were last specified in and returns the appropriate target units for
- * replacement. If sales were specified in equipment units, returns "units"; otherwise returns "kg".
+   * Checks what units sales were last specified in and returns the appropriate target units for
+   * replacement. If sales were specified in equipment units, returns "units"; otherwise returns "kg".
    * </div>
    *
    * @param engine The current simulation engine.
@@ -147,11 +147,11 @@ public class RetireWithReplacementOperation implements Operation {
    * Handle the retirement and replacement of equipment.
    *
    * <div>
- * Gets equipment level before retirement to measure actual reduction, executes the retirement which
- * reduces equipment population, then gets equipment level after retirement and calculates actual
- * reduction. If there was actual retirement (non-zero amount), adds replacement by increasing sales
- * by the actual reduction amount, which increases the equipment population back to compensate for
- * retirement.
+   * Gets equipment level before retirement to measure actual reduction, executes the retirement which
+   * reduces equipment population, then gets equipment level after retirement and calculates actual
+   * reduction. If there was actual retirement (non-zero amount), adds replacement by increasing sales
+   * by the actual reduction amount, which increases the equipment population back to compensate for
+   * retirement.
    * </div>
    *
    * @param machine The current push down machine.

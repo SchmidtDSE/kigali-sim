@@ -57,8 +57,8 @@ public class RechargeInformation {
    * Add population and intensity to this recharge information with weighted-average intensity.
    *
    * <p>Multiple calls accumulate rates (addition) and intensities (weighted-average).
- * Population rates are added, intensities are weighted-averaged using absolute values for weights
- * to handle negative adjustments correctly.</p>
+   * Population rates are added, intensities are weighted-averaged using absolute values for weights
+   * to handle negative adjustments correctly.</p>
    *
    * <p>Weighted average formula: (|rate1| × intensity1 + |rate2| × intensity2) / (|rate1| + |rate2|)</p>
    *

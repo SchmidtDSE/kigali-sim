@@ -61,8 +61,8 @@ public class ConsumptionCalculator {
    * Execute the consumption calculation and save the result to the engine.
    *
    * <p>This method handles the complete calculation process including setting up
- * the state, performing unit conversion, ensuring values are in valid ranges, and saving the result
- * to the engine.</p>
+   * the state, performing unit conversion, ensuring values are in valid ranges, and saving the result
+   * to the engine.</p>
    *
    * @param engine The engine instance to use for calculation context and to save the result to
    * @throws IllegalStateException if required properties are not set

@@ -123,7 +123,7 @@ public class VariableManager {
    * Set the value of a variable already defined.
    *
    * <p>Set the value of a variable already defined where an error will be thrown if
- * a variable of this name has not been defined or is not accessible from the current scope.</p>
+   * a variable of this name has not been defined or is not accessible from the current scope.</p>
    *
    * @param name The name of the variable to be set
    * @param value The new value of the variable
@@ -144,7 +144,7 @@ public class VariableManager {
    * Get the value of a variable already defined.
    *
    * <p>Get the value of a variable already defined such that an error will be thrown
- * if a variable of this name has not been defined or is not accessible from the current scope.</p>
+   * if a variable of this name has not been defined or is not accessible from the current scope.</p>
    *
    * @param name The name of the variable to be retrieved
    * @return Current value of this variable

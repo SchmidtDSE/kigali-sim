@@ -226,8 +226,8 @@ public class RecoverOperation implements Operation {
    * Executes the induction operation if present.
    *
    * <div>
- * Validates that the induction value is a percentage (0-100%). Uses the EngineNumber directly with
- * percentage units without conversion.
+   * Validates that the induction value is a percentage (0-100%). Uses the EngineNumber directly with
+   * percentage units without conversion.
    * </div>
    *
    * @param machine The push down machine to execute the operation on.

@@ -53,10 +53,10 @@ public class RetireOperation implements Operation {
    * Execute the retire operation on the given push-down machine.
    *
    * <div>
- * Evaluates the amount operation to get the retirement rate, builds a year matcher from the
- * optional during clause, and checks if this operation should execute in the current year.
- * If the year is in range, validates that retire commands are not mixed with and without
- * replacement in the same step, then applies the retirement to the engine.
+   * Evaluates the amount operation to get the retirement rate, builds a year matcher from the
+   * optional during clause, and checks if this operation should execute in the current year.
+   * If the year is in range, validates that retire commands are not mixed with and without
+   * replacement in the same step, then applies the retirement to the engine.
    * </div>
    *
    * @param machine The push-down machine context for evaluating operations.
@@ -88,9 +88,9 @@ public class RetireOperation implements Operation {
    *
    * <div>
    * Checks if a retire command has already been calculated in this step for the current scope.
- * If so, verifies that the replacement status is consistent. If a retire command was already
- * calculated with replacement, but this one does not have replacement (or vice versa), an exception
- * is thrown.
+   * If so, verifies that the replacement status is consistent. If a retire command was already
+   * calculated with replacement, but this one does not have replacement (or vice versa), an exception
+   * is thrown.
    * </div>
    *
    * @param engine The engine containing the current simulation state.

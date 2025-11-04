@@ -516,8 +516,8 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
    * Processes a substance definition by extracting its name and operations.
    *
    * <p>Iterates through all children in order, processing both substanceStatement and
- * globalStatement types in the correct sequence. Uses getChild since multiple statement types are
- * present in a single substance definition.</p>
+   * globalStatement types in the correct sequence. Uses getChild since multiple statement types are
+   * present in a single substance definition.</p>
    */
   @Override
   public Fragment visitSubstanceDef(QubecTalkParser.SubstanceDefContext ctx) {
@@ -563,8 +563,8 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
    * Processes a substance modification by extracting its name and operations.
    *
    * <p>Iterates through all children in order, processing both substanceStatement and
- * globalStatement types in the correct sequence. Uses getChild since multiple statement types are
- * present in a single substance modification.</p>
+   * globalStatement types in the correct sequence. Uses getChild since multiple statement types are
+   * present in a single substance modification.</p>
    */
   @Override
   public Fragment visitSubstanceMod(QubecTalkParser.SubstanceModContext ctx) {
@@ -1230,8 +1230,8 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
    * Check if a parse tree context contains the "with replacement" clause.
    *
    * <p>This method checks for the presence of "withreplacement" (case-insensitive,
- * no spaces) in the parse tree text. The grammar combines WITH_ and REPLACEMENT_ tokens, so they
- * appear concatenated in the text representation.</p>
+   * no spaces) in the parse tree text. The grammar combines WITH_ and REPLACEMENT_ tokens, so they
+   * appear concatenated in the text representation.</p>
    *
    * @param ctx The parse tree context to check
    * @return true if the context contains "with replacement", false otherwise

@@ -98,9 +98,9 @@ public class KigaliSimFacade {
    * Run a scenario from the provided program and return results.
    *
    * <p>Creates and executes a simulation using the provided program and simulation name where this
- * name refers to a scenario indicating the set of policies to be stacked. The simulation will
- * iterate through all years from the scenario's start year to end year and collect results for all
- * applications and substances for each year.</p>
+   * name refers to a scenario indicating the set of policies to be stacked. The simulation will
+   * iterate through all years from the scenario's start year to end year and collect results for all
+   * applications and substances for each year.</p>
    *
    * @param program The parsed program containing the simulation to run.
    * @param scenarioName The name of the simulation to execute from the program.

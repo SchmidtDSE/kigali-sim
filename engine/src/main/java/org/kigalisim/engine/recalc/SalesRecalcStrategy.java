@@ -136,8 +136,8 @@ public class SalesRecalcStrategy implements RecalcStrategy {
    * Calculate recycling for a specific stage (EOL or RECHARGE).
    *
    * <p>This method calculates the recycled amount in kg for a given recovery stage through two
- * steps: first, it determines the recycling volume (recovery rate) for this stage, then it
- * calculates the recycling amount (yield rate) for this stage.</p>
+   * steps: first, it determines the recycling volume (recovery rate) for this stage, then it
+   * calculates the recycling amount (yield rate) for this stage.</p>
    *
    * @param simulationState the simulation state to use for getting rates
    * @param stateGetter the state getter for volume calculations
@@ -168,9 +168,9 @@ public class SalesRecalcStrategy implements RecalcStrategy {
    * Get the effective induction rate with appropriate defaults based on specification type.
    *
    * <p>If the induction rate was explicitly set, it is returned (converted from percentage to
- * ratio). Otherwise, a default behavior is applied based on the specification type: for unit-based
- * specs, the default is 0% induction (displacement behavior), while for non-unit specs, the default
- * is 100% induction (induced demand behavior).</p>
+   * ratio). Otherwise, a default behavior is applied based on the specification type: for unit-based
+   * specs, the default is 0% induction (displacement behavior), while for non-unit specs, the default
+   * is 100% induction (induced demand behavior).</p>
    *
    * @param simulationState the simulation state to get induction rate from
    * @param scopeEffective the scope to get induction rate for
@@ -199,9 +199,9 @@ public class SalesRecalcStrategy implements RecalcStrategy {
    * Initializes the recharge base population for this scope if not already set.
    *
    * <p>On the first recharge operation for a given scope, this method captures the current
- * prior equipment value as the base population for all future recharge calculations. This ensures
- * that recharge percentages are consistently applied against the same baseline throughout the
- * simulation.</p>
+   * prior equipment value as the base population for all future recharge calculations. This ensures
+   * that recharge percentages are consistently applied against the same baseline throughout the
+   * simulation.</p>
    *
    * <p>Side effect: If this is the first recharge, sets the recharge base population in
    * the simulation state to the current priorEquipment value.</p>
@@ -266,7 +266,7 @@ public class SalesRecalcStrategy implements RecalcStrategy {
    * Calculates end-of-life recycling volume from retired equipment.
    *
    * <p>This method determines the total substance volume available for recycling at
- * equipment end-of-life by multiplying retired equipment units by the initial charge
+   * equipment end-of-life by multiplying retired equipment units by the initial charge
    * per unit. The result is passed to {@link #calculateRecyclingForStage} to apply
    * recovery and yield rates.</p>
    *

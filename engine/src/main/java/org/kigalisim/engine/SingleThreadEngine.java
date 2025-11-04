@@ -412,9 +412,9 @@ public class SingleThreadEngine implements Engine {
    * Determine if recharge should be subtracted based on last specified units.
    *
    * <p>For sales streams, checks if either domestic or import were last specified in units.
- * If specified in units, recharge is added on top. For domestic or import streams, checks if that
- * specific channel was last specified in units. If not specified in units, recharge is
- * subtracted.</p>
+   * If specified in units, recharge is added on top. For domestic or import streams, checks if that
+   * specific channel was last specified in units. If not specified in units, recharge is
+   * subtracted.</p>
    *
    * @param stream The stream being set
    * @return true if recharge should be subtracted, false if added on top
@@ -648,8 +648,8 @@ public class SingleThreadEngine implements Engine {
    * Handle equipment change with year range checking.
    *
    * <p>This method checks if the current year is within the specified range
- * before delegating to the equipment change utility. This ensures consistent year checking behavior
- * across all equipment operations.</p>
+   * before delegating to the equipment change utility. This ensures consistent year checking behavior
+   * across all equipment operations.</p>
    *
    * @param amount The amount to change equipment by
    * @param yearMatcher The year matcher to check range against
@@ -803,10 +803,10 @@ public class SingleThreadEngine implements Engine {
    * Determines if unit-based sales from a previous year carry over into the current year.
    *
    * <p>Carry over occurs when equipment sales were previously specified in units
- * (e.g., "800 units") but the current year has no fresh specification. When detected during
- * recharge operations, the engine re-applies the previous sales value and adds implicit recharge on
- * top, preserving the user's intent that unit counts represent new equipment sales, not total
- * substance volume.</p>
+   * (e.g., "800 units") but the current year has no fresh specification. When detected during
+   * recharge operations, the engine re-applies the previous sales value and adds implicit recharge on
+   * top, preserving the user's intent that unit counts represent new equipment sales, not total
+   * substance volume.</p>
    *
    * @param scope The scope (application/substance) to check for carry over state
    * @return true if this is a carry-over scenario (unit-based sales without fresh
@@ -820,8 +820,8 @@ public class SingleThreadEngine implements Engine {
 
   /**
    * Check if sales streams were specified in equipment units.
- * When streams are specified in units, retirement changes population which changes recharge
- * requirements, so sales recalc is needed to update implicitRecharge.
+   * When streams are specified in units, retirement changes population which changes recharge
+   * requirements, so sales recalc is needed to update implicitRecharge.
    *
    * @return true if sales streams were specified in units
    */
@@ -831,8 +831,8 @@ public class SingleThreadEngine implements Engine {
 
   /**
    * Calculate the available recycling volume for the current timestep.
- * This method replicates the recycling calculation logic to determine how much recycling material
- * is available to avoid double counting.
+   * This method replicates the recycling calculation logic to determine how much recycling material
+   * is available to avoid double counting.
    * Now supports both EOL and recharge recycling stages.
    *
    * @param scope the scope to calculate recycling for

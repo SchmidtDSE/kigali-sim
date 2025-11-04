@@ -45,7 +45,7 @@ public final class ImplicitRechargeUpdate {
    * Gets the adjusted value to set for the stream.
    *
    * <p>For sales streams with equipment units, this is the original value plus
- * the calculated recharge volume. For other streams, this is the original value unchanged.</p>
+   * the calculated recharge volume. For other streams, this is the original value unchanged.</p>
    *
    * @return The value to set for the stream
    */
@@ -57,8 +57,8 @@ public final class ImplicitRechargeUpdate {
    * Gets the optional state update for the implicitRecharge stream.
    *
    * <p>When implicit recharge is active (sales stream with equipment units), this
- * contains a state update to record the recharge volume in the implicitRecharge stream. When
- * implicit recharge is not active, this is empty.</p>
+   * contains a state update to record the recharge volume in the implicitRecharge stream. When
+   * implicit recharge is not active, this is empty.</p>
    *
    * @return Optional state update for the implicitRecharge stream
    */

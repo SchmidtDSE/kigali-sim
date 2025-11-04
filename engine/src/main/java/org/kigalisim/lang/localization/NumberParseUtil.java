@@ -38,8 +38,8 @@ public class NumberParseUtil {
    * Parse a number string with flexible thousands and decimal separators.
    *
    * <p>This method analyzes the input string to determine whether commas and periods
- * are being used as thousands separators or decimal separators. It supports both European format
- * (123.456,789) and US format (123,456.789).
+   * are being used as thousands separators or decimal separators. It supports both European format
+   * (123.456,789) and US format (123,456.789).
    *
    * <div>Logic:
    * <ul>
