@@ -5,21 +5,10 @@ Open source engine for simulating substances, applications, and policies relevan
 
 <br>
 
-## Purpose
-This open source toolkit models substances and equipment related to the Montreal Protocol and Kigali Amendment, including high global warming potential substances.
-
-**What it does**: Provides a simulation engine for modeling substances, applications, and policies related to the Montreal Protocol, focusing on hydrofluorocarbons and their alternatives within the Kigali Amendment. Supports foundational business-as-usual simulation and "stacking" policy simulations on top. Simulates emissions, energy, substance consumption, equipment populations, and trade longitudinally.
-
-**How it does it**: Offers stock and flow modeling with user-defined structures for applications and substances. Features both UI-based authoring and code-based editing using the QubecTalk domain specific language (DSL) with modality interoperability. Design details available in [our paper draft](https://github.com/SchmidtDSE/kigali-sim/blob/main/paper/paper.md).
-
-**Where it does it**: Portable execution through web-based bespoke IDE, command line, or integration into larger workflows. Available on WebAssembly (WASM) or Java Virtual Machine (JVM). Supports parallelization and probabilistic simulation via Monte Carlo.
-
-**Who it serves**: Intended for researchers working on stock and flow modeling of these substances and policy makers like those working on Kigali Amendment Implementation Plans (KIPs). With ongoing [Article 5](https://ozone.unep.org/treaties/montreal-protocol/articles/article-5-special-situation-developing-countries) use, it was co-created with over a dozen countries and supporting organizations. Serves community members with varied programming backgrounds and offers [optional AI assistance](https://github.com/SchmidtDSE/kigali-sim?tab=readme-ov-file#llm-assistants).
-
-<br>
-
 ## Quickstart
-Make a simulation in 3 minutes! share=copy&fl=sv&fe=ci). Start with a [tutorial](https://kigalisim.org/guide/tutorial_02.html). Alternatively, go to https://kigalisim.org and then in the Designer tab:
+Try Kigali Sim from your browser: make a simulation in 3 minutes without any installation required!
+
+**No code?** Go to https://kigalisim.org and then in the Designer tab:
 
  - Click "Add Application" to create a "Commerical Refrigeration" application
  - Click "Add Consumption" to create HFC-134a (click lookup for GHG equivalency, leave energy consumption at default, check domestic)
@@ -27,7 +16,7 @@ Make a simulation in 3 minutes! share=copy&fl=sv&fe=ci). Start with a [tutorial]
  - Click "Add Simulation" and make "Business as Usual" from year 1 to 10.
  - Click the "Bank" radio button for total million units of equipment and see population increase over time.
 
-Finally, go do the Editor tab and see the QubecTalk code you wrote:
+**With code?** Go to https://kigalisim.org and, in the Editor tab, try the following:
 
 ```
 start default
@@ -58,6 +47,21 @@ start simulations
 end simulations
 ```
 
+We use [WebAssembly](https://webassembly.org/) so simluations run privately on your machine. Continue your journey with a [tutorial](https://kigalisim.org/guide/tutorial_02.html).
+
+<br>
+
+## Purpose
+This open source toolkit models substances and equipment related to the Montreal Protocol and Kigali Amendment, including high global warming potential substances.
+
+**What it does**: Provides a simulation engine for modeling substances, applications, and policies related to the Montreal Protocol, focusing on hydrofluorocarbons and their alternatives within the Kigali Amendment. Supports foundational business-as-usual simulation and "stacking" policy simulations on top. Simulates emissions, energy, substance consumption, equipment populations, and trade longitudinally.
+
+**How it does it**: Offers stock and flow modeling with user-defined structures for applications and substances. Features both UI-based authoring and code-based editing using the QubecTalk domain specific language (DSL) with modality interoperability. Design details available in [our paper draft](https://github.com/SchmidtDSE/kigali-sim/blob/main/paper/paper.md).
+
+**Where it does it**: Portable execution through web-based bespoke IDE, command line, or integration into larger workflows. Available on WebAssembly (WASM) or Java Virtual Machine (JVM). Supports parallelization and probabilistic simulation via Monte Carlo.
+
+**Who it serves**: Intended for researchers working on stock and flow modeling of these substances and policy makers like those working on Kigali Amendment Implementation Plans (KIPs). With ongoing [Article 5](https://ozone.unep.org/treaties/montreal-protocol/articles/article-5-special-situation-developing-countries) use, it was co-created with over a dozen countries and supporting organizations. Serves community members with varied programming backgrounds and offers [optional AI assistance](https://github.com/SchmidtDSE/kigali-sim?tab=readme-ov-file#llm-assistants).
+
 <br>
 
 ## Setup
@@ -77,8 +81,8 @@ Here, you may replace `script.qta` with the path to your QubecTalk script and `o
 
 Note that this jar is also posted to GitHub Maven. 
 
-### Docker
-For those who prefer Docker, see `Dockerfile` which installs Java ([Temurin](https://adoptium.net/temurin/releases)) and can be used to run simulations. For example, the following builds the image and runs `script.qta` with output to `output.csv` through the mounted `working` directory:
+### Docker (CLI)
+For those who prefer Docker, see `Dockerfile` which installs Java ([Temurin](https://adoptium.net/temurin/releases)) and can be used to run simulations from the command line. For example, the following builds the image and runs `script.qta` with output to `output.csv` through the mounted `working` directory:
 
 ```
 docker build -t kigalisim .
@@ -87,7 +91,8 @@ docker run -v $(pwd):/working kigalisim run -o output.csv script.qta
 
 Note: Windows users should replace `$(pwd)` with `%cd%` for Command Prompt or `${PWD}` for PowerShell.
 
-We also provide a Dev Container with additional tools for those looking to modify Kigali Sim or run a local version of the web-based editor. see `DEVELOPING.md`.
+### Local UI-based editor
+For information about running the Kigali Sim IDE locally on your machine, see the [development section of this README](https://github.com/SchmidtDSE/kigali-sim?tab=readme-ov-file#development) for various options including Docker, GitHub Codespaces, or a manual local setup.
 
 <br>
 
@@ -193,9 +198,9 @@ For those interested in contributing to the Kigali Sim open source project as a 
 <br>
 
 ## Development
-If you want to change the code of Kigali Sim itself, we have some basic getting started steps. However, for additional information about development, see [DEVELOPING.md](https://github.com/SchmidtDSE/kigali-sim/blob/main/DEVELOPING.md). If you are contributing, see [CONTRIBUTING.md](https://github.com/SchmidtDSE/kigali-sim/blob/main/CONTRIBUTING.md). Finally, if you are using an AI coding assistant to write code you want to donate to the project, please review the [AI contribution guidelines](https://github.com/SchmidtDSE/kigali-sim/blob/main/CONTRIBUTING.md#use-of-generative-ai).
+We have some basic getting started steps in this developer quickstart for those using Docker / Dev Container, GitHub Codespaces or compatible, or a manual local setup.
 
-### Using a Dev Container
+### Using Docker / Dev Container
 For those interested in a dev container, please see `.devcontainer`. **IntelliJ** should automatically detect the dev container (see [JetBrains documentation](https://www.jetbrains.com/help/idea/connect-to-devcontainer.html)). **VS Code** users can use an extension:
 
 1. Install the [Dev Containers extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers)
@@ -213,12 +218,13 @@ One can also use **GitHub Codespaces**:
 
 See `DEVELOPING.md` for detailed information about the dev container configuration.
 
-All the automated checks described below work in the dev container environment:
+All the automated checks and development operations described below work in the dev container environment:
 
 - Java testing: `cd engine && ./gradlew test`
 - Java linting: `cd engine && ./gradlew checkstyleMain` and `cd engine && ./gradlew checkstyleTest`
-- JavaScript linting: `cd editor && pnpm exec eslint ./js/*.js` and `cd editor && pnpm exec eslint ./test/*.js`
-- JavaScript testing: `cd editor && pnpm exec grunt`
+- ECMAScript / JavaScript linting: `cd editor && pnpm exec eslint ./js/*.js` and `cd editor && pnpm exec eslint ./test/*.js`
+- ECMAScript / JavaScript testing: `cd editor && pnpm exec grunt`
+- Build and run the UI-based editor locally: `cd editor && bash ./support/make.sh && python3 -m http.server`
 
 ### Other Local Setup
 To run this system locally outside a dev container, please:
@@ -265,42 +271,35 @@ cd editor
 pnpm install
 ```
 
-4. Install frontend dependencies:
+4. Build the project (TeaVM build step for WASM):
 
 ```bash
-bash ./support/install_deps.sh
-```
-
-5. Build the project (TeaVM build step for WASM):
-
-```bash
-bash ./support/update_wasm.sh
 bash ./support/make.sh
 ```
 
-6. Run the front-end tests (may install browser via Puppeteer):
+5. Run the front-end tests (may install browser via Puppeteer):
 
 ```bash
 pnpm exec grunt
 ```
 
-7. Run style checks:
+6. Run style checks:
 
 ```bash
 pnpm exec eslint ./js/*.js
 pnpm exec eslint ./test/*.js
 ```
 
-8. Run a local web server (such as Python http.server):
+7. Run a local web server (such as Python http.server):
 
 ```bash
 python -m http.server
 ```
 
-9. Visit the local hosted webpage using any web browser at the given address.
+8. Visit the local hosted webpage using any web browser at the given address.
 
 ### Additional resources
-We have continuous integration and deployment through GitHub actions. See [DEVELOPING.md](https://github.com/SchmidtDSE/kigali-sim/blob/main/DEVELOPING.md) for more details.
+We have continuous integration and deployment through GitHub actions. For additional information about development, see [DEVELOPING.md](https://github.com/SchmidtDSE/kigali-sim/blob/main/DEVELOPING.md). If you are contributing, see [CONTRIBUTING.md](https://github.com/SchmidtDSE/kigali-sim/blob/main/CONTRIBUTING.md). Finally, if you are using an AI coding assistant to write code you want to donate to the project, please review the [AI contribution guidelines](https://github.com/SchmidtDSE/kigali-sim/blob/main/CONTRIBUTING.md#use-of-generative-ai).
 
 <br>
 
