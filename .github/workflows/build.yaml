@@ -477,6 +477,9 @@ jobs:
     runs-on: ubuntu-latest
     name: Publish Jar
     needs: [runEngineDockerSanity]
+    permissions:
+      contents: read
+      packages: write
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -486,4 +489,7 @@ jobs:
           distribution: 'temurin'
           java-version: '21'
       - name: Publish
+        env:
+          USERNAME: ${{ github.actor }}
+          PUBLISH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: cd engine; ./gradlew publish
