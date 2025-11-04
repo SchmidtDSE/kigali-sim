@@ -3,15 +3,19 @@
 Lead Developer, Designer, Data Scientist: Sam Pottinger
 Site: https://gleap.org
 Location: Berkeley, California, USA
+Org: DSE / UC Berkeley
 
 Design, Data Science, International Policy: Balaji Natarajan
 Location: Montreal, Canada
+Org: UN MLF
 
 Fostering Community, Design, International Policy: Magali de Bruyn
 Location: Berkeley, California, USA
+Org: DSE / UC Berkeley
 
 Project Management, Community, Design, Open Source: Ciera Martinez
 Location: Berkeley, California, USA
+Org: DSE / UC Berkeley
 
 /* EXTENDED COLLABORATORS */
 
