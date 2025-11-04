@@ -35,7 +35,7 @@ Both dev containers and local setup are supported, per developer preference.
 
 ### Using Dev Container
 
-The project includes a complete dev container which is compatible with IntelliJ, VS Code, and GitHub Codespaces. As described in `.devcontainer`, this provides a reproducible development environment with dependencies required for most development activities pre-installed. Indeed, this guide was written from a dev container! It uses:
+The project includes a dev container which is compatible with IntelliJ, VS Code, and GitHub Codespaces. As described in `.devcontainer`, this provides a reproducible development environment with dependencies required for most development activities pre-installed. Indeed, this guide was written from a dev container! It uses:
 
 - Debian 12 (bookworm-slim) with Eclipse Temurin JDK 21
 - Node.js 18.x LTS (official Debian package)
@@ -184,7 +184,7 @@ For those working in **ECMAScript**:
 - Configuration in `editor/.eslintrc.yml`
 - Prettier configuration in `editor/.prettierrc`
 
-## WASM Artifacts Management
+## WASM
 
 The Java engine is compiled to WebAssembly for browser execution. From the `editor/` directory:
 
@@ -242,7 +242,7 @@ Finally, before committing, ensure:
 
 For those working with countries, please be sure to ensure no sensitive information or secrets in code.
 
-## Deployment Process
+## Environments
 
 We have both a staging and a production environment. Start by trying your changes in **staging**:
 
@@ -287,3 +287,4 @@ Please review `build.gradle` for information about output being suppressed durin
 - [TeaVM Documentation](https://teavm.org/)
 - [QUnit Testing Framework](https://qunitjs.com/)
 - [Grunt Task Runner](https://gruntjs.com/)
+- [Project JavaDoc](https://kigalisim.org/guide/javadoc)
