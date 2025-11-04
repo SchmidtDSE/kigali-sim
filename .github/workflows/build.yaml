@@ -266,9 +266,6 @@ jobs:
         with:
           name: war
           path: ./
-      - name: Extract WASM files to wasm directory
-        run: bash ./support/update_wasm_from_war.sh ../KigaliSim.war
-        working-directory: ./editor
       - name: Install node deps
         run: pnpm install
         working-directory: ./editor
@@ -332,9 +329,6 @@ jobs:
         with:
           name: fatJar
           path: ./
-      - name: Extract WASM files to wasm directory
-        run: bash ./support/update_wasm_from_war.sh ../KigaliSim.war
-        working-directory: ./editor
       - name: Install node deps
         run: pnpm install
         working-directory: ./editor
