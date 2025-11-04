@@ -1,0 +1,66 @@
+/* TEAM */
+
+Lead Developer, Designer, Data Scientist: Sam Pottinger
+Site: https://gleap.org
+Location: Berkeley, California, USA
+
+Design, Data Science, International Policy: Balaji Natarajan
+Location: Montreal, Canada
+
+Fostering Community, Design, International Policy: Magali de Bruyn
+Location: Berkeley, California, USA
+
+Project Management, Community, Design, Open Source: Ciera Martinez
+Location: Berkeley, California, USA
+
+/* EXTENDED COLLABORATORS */
+
+Amanda Anderson-You (DSE / UC Berkeley)
+Tina Birmpili (UN MLF)
+Matt Fisher (DSE / UC Berkeley)
+Ava Hu (University of California Berkeley)
+Kevin Koy (DSE / UC Berkeley)
+Douglas McCauley (UCSB / UC Berkeley)
+Alejandro Ramirez-Pabon (UN MLF)
+Frederico San Martini (UN MLF)
+Suzanne Spencer (DSE / Stone Center / UC Berkeley)
+Elina Yuen (UN MLF)
+
+/* BETA PERIOD COMMUNITY */
+
+Kevin Basoa (Ministry of Environment, Chile)
+Ilenia Donoso Guzmán (Ministry of Environment, Chile)
+Irene Papst
+Claudia Paratori (National Ozone Unit, Ministry of Environment, Chile)
+Angélica Monserrat Jara Ríos (Ministerio del Medio Ambiente)
+K V Varadharajan (SRF Limited India)
+
+And over a dozen countries and supporting organizations during beta testing.
+Some contributors chose not to be named.
+
+/* ALUMNI */
+
+Nick Gondek (DSE / UC Berkeley)
+Annie Snyder (Schmidt Sciences)
+
+/* SITE */
+
+Last update: 2025/11/04
+Language: English
+Standards: HTML5, CSS3
+Components: Java, JavaScript, WebAssembly
+IDE: Web-based bespoke IDE
+Software: ANTLR4, TeaVM, Webpack, Chart.js, D3, ACE Editor, and more
+
+/* CREDITS */
+
+For full credits including open source libraries: https://kigalisim.org/guide/credits.html
+Project repository: https://github.com/SchmidtDSE/kigali-sim
+License: BSD-3-Clause (code), CC-BY 4.0 (documentation)
+
+/* FUNDING */
+
+Eric and Wendy Schmidt Center for Data Science and Environment
+University of California, Berkeley
+Site: https://dse.berkeley.edu
+Location: Berkeley, California, USA
