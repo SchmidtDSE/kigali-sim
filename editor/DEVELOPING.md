@@ -23,21 +23,14 @@ kigali-sim/
 
 ## Quick Start
 
-1. **Install dependencies**:
+1. **Build the project**:
    ```bash
-   cd editor
-   pnpm install
-   bash ./support/install_deps.sh
+   cd editor; bash ./support/make.sh
    ```
 
-2. **Build the project**:
+2. **Start local server**:
    ```bash
-   bash ./support/make.sh
-   ```
-
-3. **Start local server**:
-   ```bash
-   python -m http.server
+   cd editor; python -m http.server
    ```
 
 ## Validation Commands

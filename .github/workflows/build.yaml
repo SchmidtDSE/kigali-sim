@@ -69,9 +69,6 @@ jobs:
       - name: Build
         run: bash ./support/make.sh
         working-directory: ./editor
-      - name: Install front end deps
-        run: bash ./support/install_deps.sh
-        working-directory: ./editor
       - name: Prepare deploy
         run: bash ./support/prepare_deploy.sh
         working-directory: ./editor
@@ -278,9 +275,6 @@ jobs:
       - name: Build
         run: bash ./support/make.sh
         working-directory: ./editor
-      - name: Install front end deps
-        run: bash ./support/install_deps.sh
-        working-directory: ./editor
       - name: Install browser
         run: sudo apt install -y chromium-browser
       - name: Run unit tests
@@ -346,9 +340,6 @@ jobs:
         working-directory: ./editor
       - name: Build
         run: bash ./support/make.sh
-        working-directory: ./editor
-      - name: Install front end deps
-        run: bash ./support/install_deps.sh
         working-directory: ./editor
       - name: Prepare deploy
         run: bash ./support/prepare_deploy.sh

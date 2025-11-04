@@ -220,7 +220,7 @@ All the automated checks and development operations described below work in the 
 - Java linting: `cd engine && ./gradlew checkstyleMain` and `cd engine && ./gradlew checkstyleTest`
 - ECMAScript / JavaScript linting: `cd editor && pnpm exec eslint ./js/*.js` and `cd editor && pnpm exec eslint ./test/*.js`
 - ECMAScript / JavaScript testing: `cd editor && pnpm exec grunt`
-- Build and run the UI-based editor locally: `cd editor && bash ./support/update_wasm.sh && bash ./support/make.sh && python -m http.server`
+- Build and run the UI-based editor locally: `cd editor && bash ./support/make.sh && python -m http.server`
 
 ### Other Local Setup
 To run this system locally outside a dev container, please:
@@ -276,7 +276,6 @@ bash ./support/install_deps.sh
 5. Build the project (TeaVM build step for WASM):
 
 ```bash
-bash ./support/update_wasm.sh
 bash ./support/make.sh
 ```
 
