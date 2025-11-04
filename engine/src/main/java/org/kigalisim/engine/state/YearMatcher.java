@@ -1,3 +1,7 @@
+package org.kigalisim.engine.state;
+
+import java.util.Optional;
+
 /**
  * Class representing a range of years where inclusion can be tested.
  *
@@ -5,14 +9,6 @@
  * within a specified range, supporting both bounded and unbounded ranges.</p>
  *
  * @license BSD-3-Clause
- */
-
-package org.kigalisim.engine.state;
-
-import java.util.Optional;
-
-/**
- * Class representing a range of years where inclusion can be tested.
  */
 public class YearMatcher {
 

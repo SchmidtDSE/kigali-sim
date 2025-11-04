@@ -9,10 +9,6 @@
 
 package org.kigalisim.engine.state;
 
-import static org.kigalisim.engine.state.EngineConstants.APPLICATION_CONTEXT;
-import static org.kigalisim.engine.state.EngineConstants.STANZA_CONTEXT;
-import static org.kigalisim.engine.state.EngineConstants.SUBSTANCE_CONTEXT;
-
 import java.util.Optional;
 import org.kigalisim.engine.number.EngineNumber;
 
@@ -30,6 +26,17 @@ public class Scope implements UseKey {
   private volatile Optional<String> key;
 
   /**
+   * Convenience constructor for creating a scope without a variable manager.
+   *
+   * @param stanza The name of stanza or null if in global scope
+   * @param application The name of the application or null if in stanza or higher scope
+   * @param substance The name of the substance or null if in application or higher scope
+   */
+  public Scope(String stanza, String application, String substance) {
+    this(stanza, application, substance, null);
+  }
+
+  /**
    * Create a new scope.
    *
    * @param stanza The name of stanza or null if in global scope
@@ -39,7 +46,7 @@ public class Scope implements UseKey {
    *     scope or null if no variables accessible
    */
   public Scope(String stanza, String application, String substance,
-               VariableManager variableManager) {
+      VariableManager variableManager) {
     this.stanza = Optional.ofNullable(stanza);
     this.application = Optional.ofNullable(application);
     this.substance = Optional.ofNullable(substance);
@@ -62,14 +69,13 @@ public class Scope implements UseKey {
   }
 
   /**
-   * Convenience constructor for creating a scope without a variable manager.
+   * Default constructor for creating a global scope with no context.
    *
-   * @param stanza The name of stanza or null if in global scope
-   * @param application The name of the application or null if in stanza or higher scope
-   * @param substance The name of the substance or null if in application or higher scope
+   * <p>Creates a scope with all empty contexts (stanza, application, substance, and key).
+   * This is useful for initializing a scope at the global level.</p>
    */
-  public Scope(String stanza, String application, String substance) {
-    this(stanza, application, substance, null);
+  public Scope() {
+    this(null, null, null, null);
   }
 
   /**
@@ -143,7 +149,7 @@ public class Scope implements UseKey {
         stanza.orElse(null),
         application.orElse(null),
         newSubstance,
-        variableManager.getWithLevel(SUBSTANCE_CONTEXT)
+        variableManager.getWithLevel(EngineConstants.SUBSTANCE_CONTEXT)
     );
   }
 
@@ -162,7 +168,7 @@ public class Scope implements UseKey {
         stanza.orElse(null),
         newApplication,
         null,
-        variableManager.getWithLevel(APPLICATION_CONTEXT)
+        variableManager.getWithLevel(EngineConstants.APPLICATION_CONTEXT)
     );
   }
 
@@ -173,7 +179,7 @@ public class Scope implements UseKey {
    * @return New scope at the given stanza
    */
   public Scope getWithStanza(String newStanza) {
-    return new Scope(newStanza, null, null, variableManager.getWithLevel(STANZA_CONTEXT));
+    return new Scope(newStanza, null, null, variableManager.getWithLevel(EngineConstants.STANZA_CONTEXT));
   }
 
   /**

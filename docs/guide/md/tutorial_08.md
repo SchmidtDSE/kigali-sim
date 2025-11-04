@@ -91,6 +91,8 @@ Before we finish up, note that QubecTalk allows flexibility to mix units. Specif
 
 **Tutorial 9** will introduce command line tools and Monte Carlo simulation for advanced uncertainty analysis. You'll learn to test model sensitivity to key assumptions and develop robust policy recommendations under uncertainty using probabilistic QubecTalk programming.
 
+[Previous: Tutorial 7](/guide/tutorial_07.html) | [Return to Guide Index](/guide) | [Next: Tutorial 9](/guide/tutorial_09.html)
+
 ---
 
 _This tutorial is part of the ABC Country case study series demonstrating progressive HFC policy analysis using Kigali Sim._

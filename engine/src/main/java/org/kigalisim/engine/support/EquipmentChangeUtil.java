@@ -48,10 +48,12 @@ public class EquipmentChangeUtil {
   /**
    * Handle setting equipment to a target value.
    *
-   * <p>Compares target equipment level with current level:
-   * - If higher: converts delta to sales operation (handles recharge automatically)
-   * - If lower: sets sales to 0 and retires excess from priorEquipment
-   * - If equal: no action needed</p>
+   * <p>Compares target equipment level with current level:</p>
+   * <ul>
+   *   <li>If higher: converts delta to sales operation (handles recharge automatically)</li>
+   *   <li>If lower: sets sales to 0 and retires excess from priorEquipment</li>
+   *   <li>If equal: no action needed</li>
+   * </ul>
    *
    * <p>Caller is responsible for checking year range before calling this method.</p>
    *
@@ -90,9 +92,11 @@ public class EquipmentChangeUtil {
   /**
    * Handle changing equipment by a delta amount.
    *
-   * <p>Supports both percentage and absolute changes:
-   * - Percentage: change equipment by +8%
-   * - Absolute: change equipment by +100 units</p>
+   * <p>Supports both percentage and absolute changes:</p>
+   * <ul>
+   *   <li>Percentage: change equipment by +8%</li>
+   *   <li>Absolute: change equipment by +100 units</li>
+   * </ul>
    *
    * <p>Caller is responsible for checking year range before calling this method.</p>
    *
@@ -376,9 +380,11 @@ public class EquipmentChangeUtil {
   /**
    * Handle displacement logic for cap/floor operations.
    *
-   * <p>For equipment displacement, this changes the equipment level in the target substance.
-   * For cap operations, we increase the target substance's equipment by the displaced amount.
-   * For floor operations, we decrease the target substance's equipment by the displaced amount.</p>
+   * <p>For equipment displacement, changes the equipment level in the target substance by switching
+   * to the target substance scope, performing the adjustment, and restoring the original scope.
+   * For cap operations (isCap=true), increases the target substance's equipment by the displaced
+   * amount. For floor operations (isCap=false), decreases it by the displaced amount. Returns
+   * early if displaceTarget is null or if amount is zero or negligible (< 1E-10).</p>
    *
    * @param amount The amount to displace (in units)
    * @param displaceTarget The target substance for displacement
@@ -389,34 +395,24 @@ public class EquipmentChangeUtil {
       return;
     }
 
-    // Don't displace if amount is zero or negligible
     if (amount.getValue().abs().compareTo(new BigDecimal("1E-10")) < 0) {
       return;
     }
 
-    // Get original scope
     Scope currentScope = engine.getScope();
-
-    // Switch to target substance scope
     engine.setSubstance(displaceTarget, true);
 
-    // For cap: we removed equipment from current substance, add it to target
-    // For floor: we added equipment to current substance, remove it from target
     EngineNumber changeAmount = isCap ? amount : new EngineNumber(amount.getValue().negate(), "units");
 
-    // Get current equipment in target substance
     EngineNumber targetCurrentRaw = engine.getStream("equipment");
     UnitConverter targetConverter = createEquipmentUnitConverter();
     EngineNumber targetCurrent = targetConverter.convert(targetCurrentRaw, "units");
 
-    // Calculate new target equipment level
     BigDecimal newTargetLevel = targetCurrent.getValue().add(changeAmount.getValue());
     EngineNumber newTarget = new EngineNumber(newTargetLevel, "units");
 
-    // Set the new equipment level in target substance (this will trigger sales/recharge)
     handleSet(newTarget);
 
-    // Restore original scope
     String originalSubstance = currentScope.getSubstance();
     if (originalSubstance != null) {
       engine.setSubstance(originalSubstance, true);

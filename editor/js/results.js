@@ -37,6 +37,16 @@ const ALLOW_REDUNDANT_ALL = true;
 const ALLOW_SCORE_DISPLAY = false;
 
 /**
+ * Flag to enforce scenario selection when dimension is not simulations.
+ *
+ * This constraint prevents displaying all scenarios simultaneously with a
+ * non-scenario dimension, which would create difficult to interpret charts.
+ *
+ * @type {boolean}
+ */
+const ENFORCE_SCENARIO_CONSTRAINT = true;
+
+/**
  * Get a color from the predefined color palette.
  *
  * @param {number} i - Index into color array.
@@ -224,85 +234,189 @@ class ResultsPresenter {
   }
 
   /**
-   * Constrain the filter set to avoid more difficult to interpret charts.
+   * Constrain the filter set to ensure valid selections.
    *
-   * Ensure that the filter set does not have both all scenarios and a non-
-   * scenario dimension value.
+   * Validates that selected values exist in the current results and applies
+   * constraints to ensure chart interpretability. This method orchestrates
+   * multiple validation steps in sequence.
+   *
+   * @param {FilterSet} filterSet - The filter set to constrain.
+   * @returns {FilterSet} The constrained filter set with all validations applied.
+   * @private
    */
   _constrainFilterSet(filterSet) {
     const self = this;
 
     let constrainedFilterSet = filterSet;
 
-    // Validate that selected values exist in results and reset to null if not found
     if (self._results !== null) {
-      // Check if selected scenario exists
-      const selectedScenario = constrainedFilterSet.getScenario();
-      if (selectedScenario !== null) {
-        const availableScenarios = self._results.getScenarios(
-          constrainedFilterSet.getWithScenario(null));
-        if (!availableScenarios.has(selectedScenario)) {
-          constrainedFilterSet = constrainedFilterSet.getWithScenario(null);
-        }
-      }
+      constrainedFilterSet = self._checkScenarioExists(constrainedFilterSet);
+      constrainedFilterSet = self._checkApplicationExists(constrainedFilterSet);
+      constrainedFilterSet = self._checkSubstanceExists(constrainedFilterSet);
+    }
 
-      // Check if selected application exists
-      const selectedApplication = constrainedFilterSet.getApplication();
-      if (selectedApplication !== null) {
-        const availableApplicationsRaw = self._results.getApplications(
-          constrainedFilterSet.getWithApplication(null));
-        const availableApplications = getWithMetaEquipment(
-          getWithMetaApplications(availableApplicationsRaw),
-        );
-        if (!availableApplications.includes(selectedApplication)) {
-          constrainedFilterSet = constrainedFilterSet.getWithApplication(null);
-        }
-      }
+    constrainedFilterSet = self._validateCustomMetrics(constrainedFilterSet);
+    constrainedFilterSet = self._applyScenarioConstraint(constrainedFilterSet);
 
-      // Check if selected substance exists
-      const selectedSubstance = constrainedFilterSet.getSubstance();
-      if (selectedSubstance !== null) {
-        const availableSubstancesRaw = self._results.getSubstances(
-          constrainedFilterSet.getWithSubstance(null));
-        const availableSubstances = getWithMetaSubstanceEquipment(availableSubstancesRaw);
-        if (!availableSubstances.includes(selectedSubstance)) {
-          constrainedFilterSet = constrainedFilterSet.getWithSubstance(null);
-        }
+    return constrainedFilterSet;
+  }
+
+  /**
+   * Validate that the selected scenario exists in results.
+   *
+   * Checks if the currently selected scenario (if any) exists in the available
+   * scenarios. If the selected scenario is not found, returns a new FilterSet
+   * with the scenario reset to null.
+   *
+   * @param {FilterSet} filterSet - The filter set to validate.
+   * @returns {FilterSet} The validated filter set with scenario corrected if needed.
+   * @private
+   */
+  _checkScenarioExists(filterSet) {
+    const self = this;
+    const selectedScenario = filterSet.getScenario();
+
+    if (selectedScenario === null) {
+      return filterSet;
+    }
+
+    const availableScenarios = self._results.getScenarios(
+      filterSet.getWithScenario(null));
+
+    if (!availableScenarios.has(selectedScenario)) {
+      return filterSet.getWithScenario(null);
+    }
+
+    return filterSet;
+  }
+
+  /**
+   * Validate that the selected application exists in results.
+   *
+   * Checks if the currently selected application (if any) exists in the
+   * available applications (including meta-applications and equipment models).
+   * If the selected application is not found, returns a new FilterSet with the
+   * application reset to null.
+   *
+   * @param {FilterSet} filterSet - The filter set to validate.
+   * @returns {FilterSet} The validated filter set with application corrected if needed.
+   * @private
+   */
+  _checkApplicationExists(filterSet) {
+    const self = this;
+    const selectedApplication = filterSet.getApplication();
+
+    if (selectedApplication === null) {
+      return filterSet;
+    }
+
+    const availableApplicationsRaw = self._results.getApplications(
+      filterSet.getWithApplication(null));
+    const availableApplications = getWithMetaEquipment(
+      getWithMetaApplications(availableApplicationsRaw),
+    );
+
+    if (!availableApplications.includes(selectedApplication)) {
+      return filterSet.getWithApplication(null);
+    }
+
+    return filterSet;
+  }
+
+  /**
+   * Validate that the selected substance exists in results.
+   *
+   * Checks if the currently selected substance (if any) exists in the available
+   * substances (including meta-substances with equipment models). If the
+   * selected substance is not found, returns a new FilterSet with the substance
+   * reset to null.
+   *
+   * @param {FilterSet} filterSet - The filter set to validate.
+   * @returns {FilterSet} The validated filter set with substance corrected if needed.
+   * @private
+   */
+  _checkSubstanceExists(filterSet) {
+    const self = this;
+    const selectedSubstance = filterSet.getSubstance();
+
+    if (selectedSubstance === null) {
+      return filterSet;
+    }
+
+    const availableSubstancesRaw = self._results.getSubstances(
+      filterSet.getWithSubstance(null));
+    const availableSubstances = getWithMetaSubstanceEquipment(availableSubstancesRaw);
+
+    if (!availableSubstances.includes(selectedSubstance)) {
+      return filterSet.getWithSubstance(null);
+    }
+
+    return filterSet;
+  }
+
+  /**
+   * Validate custom metric definitions and provide defaults if needed.
+   *
+   * Checks if the current metric is a custom metric and validates that it has
+   * a proper definition. If the custom definition is missing or empty, switches
+   * to a default submetric for the metric family (emissions or sales).
+   *
+   * @param {FilterSet} filterSet - The filter set to validate.
+   * @returns {FilterSet} The validated filter set with custom metrics corrected if needed.
+   * @private
+   */
+  _validateCustomMetrics(filterSet) {
+    const self = this;
+
+    if (!filterSet.isCustomMetric()) {
+      return filterSet;
+    }
+
+    const metricFamily = filterSet.getMetric();
+    const customDef = filterSet.getCustomDefinition(metricFamily);
+
+    if (!customDef || customDef.length === 0) {
+      const defaultSubmetrics = {
+        "emissions": "recharge",
+        "sales": "manufacture",
+      };
+
+      const defaultSubmetric = defaultSubmetrics[metricFamily];
+      if (defaultSubmetric) {
+        const currentUnits = filterSet.getUnits();
+        const defaultMetric = `${metricFamily}:${defaultSubmetric}:${currentUnits}`;
+        return filterSet.getWithMetric(defaultMetric);
       }
     }
 
-    // Validate custom metrics have definitions
-    if (constrainedFilterSet.isCustomMetric()) {
-      const metricFamily = constrainedFilterSet.getMetric();
-      const customDef = constrainedFilterSet.getCustomDefinition(metricFamily);
+    return filterSet;
+  }
 
-      if (!customDef || customDef.length === 0) {
-        // Switch to a default submetric for the family
-        const defaultSubmetrics = {
-          "emissions": "recharge",
-          "sales": "manufacture",
-        };
+  /**
+   * Apply scenario constraint to prevent difficult to interpret charts.
+   *
+   * When all simulations are selected (scenario is null) and the dimension is
+   * not "simulations", this automatically selects the first available scenario
+   * to ensure chart clarity. This constraint is controlled by the
+   * ENFORCE_SCENARIO_CONSTRAINT constant.
+   *
+   * @param {FilterSet} filterSet - The filter set to constrain.
+   * @returns {FilterSet} The constrained filter set with scenario selected if needed.
+   * @private
+   */
+  _applyScenarioConstraint(filterSet) {
+    const self = this;
 
-        const defaultSubmetric = defaultSubmetrics[metricFamily];
-        if (defaultSubmetric) {
-          const currentUnits = constrainedFilterSet.getUnits();
-          const defaultMetric = `${metricFamily}:${defaultSubmetric}:${currentUnits}`;
-          constrainedFilterSet = constrainedFilterSet.getWithMetric(defaultMetric);
-        }
-      }
-    }
-
-    // Original constraint logic to avoid difficult to interpret charts
-    const isAllSimulations = constrainedFilterSet.getScenario() === null;
-    const isSimulationDimension = constrainedFilterSet.getDimension() === "simulations";
+    const isAllSimulations = filterSet.getScenario() === null;
+    const isSimulationDimension = filterSet.getDimension() === "simulations";
     const needsConstraints = isAllSimulations && !isSimulationDimension;
 
-    if (needsConstraints && self._results !== null) {
-      const firstScenario = self._results.getFirstScenario(constrainedFilterSet);
-      return constrainedFilterSet.getWithScenario(firstScenario);
-    } else {
-      return constrainedFilterSet;
+    if (ENFORCE_SCENARIO_CONSTRAINT && needsConstraints && self._results !== null) {
+      const firstScenario = self._results.getFirstScenario(filterSet);
+      return filterSet.getWithScenario(firstScenario);
     }
+
+    return filterSet;
   }
 
   /**
@@ -434,15 +548,10 @@ class ScorecardPresenter {
       const salesValue = results.getSales(filterSet);
       const equipmentValue = results.getPopulation(filterSet);
 
-      // Helper function to safely get value from potentially null results
-      const safeGetValue = (engineNumber, defaultValue = 0) => {
-        return engineNumber !== null ? engineNumber.getValue() : defaultValue;
-      };
-
       const roundToTenths = (x) => Math.round(x * 10) / 10;
-      const emissionRounded = roundToTenths(safeGetValue(emissionsValue) / 1000000);
-      const salesMt = roundToTenths(safeGetValue(salesValue) / 1000000) + " k";
-      const millionEqipment = roundToTenths(safeGetValue(equipmentValue) / 1000000) + " M";
+      const emissionRounded = roundToTenths(self._safeGetValue(emissionsValue) / 1000000);
+      const salesMt = roundToTenths(self._safeGetValue(salesValue) / 1000000) + " k";
+      const millionEqipment = roundToTenths(self._safeGetValue(equipmentValue) / 1000000) + " M";
 
       const metricSelected = filterSet.getMetric();
       const emissionsSelected = metricSelected === "emissions";
@@ -453,45 +562,29 @@ class ScorecardPresenter {
       const showVal = ALLOW_SCORE_DISPLAY && self._filterSet.hasSingleScenario(scenarios);
       const hideVal = !showVal;
 
-      self._updateCard(emissionsScorecard, emissionRounded, currentYear,
-        emissionsSelected, hideVal);
-      self._updateCard(salesScorecard, salesMt, currentYear, salesSelected, hideVal);
-      self._updateCard(equipmentScorecard, millionEqipment, currentYear,
-        equipmentSelected, hideVal);
+      self._updateCard(
+        emissionsScorecard,
+        emissionRounded,
+        currentYear,
+        emissionsSelected,
+        hideVal,
+      );
+      self._updateCard(
+        salesScorecard,
+        salesMt,
+        currentYear,
+        salesSelected,
+        hideVal,
+      );
+      self._updateCard(
+        equipmentScorecard,
+        millionEqipment,
+        currentYear,
+        equipmentSelected,
+        hideVal,
+      );
 
-      // Update dropdown values to match FilterSet
-      const metricFamily = self._filterSet.getMetric();
-      const subMetric = self._filterSet.getSubMetric();
-      const units = self._filterSet.getUnits();
-
-      const metricStrategies = {
-        "emissions": () => {
-          const emissionsSubmetricDropdown = emissionsScorecard.querySelector(
-            ".emissions-submetric");
-          const emissionsUnitsDropdown = emissionsScorecard.querySelector(".emissions-units");
-          emissionsSubmetricDropdown.value = subMetric;
-          emissionsUnitsDropdown.value = units;
-        },
-        "sales": () => {
-          const salesSubmetricDropdown = salesScorecard.querySelector(".sales-submetric");
-          const salesUnitsDropdown = salesScorecard.querySelector(".sales-units");
-          salesSubmetricDropdown.value = subMetric;
-          salesUnitsDropdown.value = units;
-        },
-        "population": () => {
-          const equipmentSubmetricDropdown = equipmentScorecard.querySelector(
-            ".equipment-submetric");
-          const equipmentUnitsDropdown = equipmentScorecard.querySelector(".equipment-units");
-          equipmentSubmetricDropdown.value = subMetric;
-          equipmentUnitsDropdown.value = units;
-        },
-      };
-
-      const strategy = metricStrategies[metricFamily];
-      if (!strategy) {
-        throw new Error(`Unknown metric family: ${metricFamily}`);
-      }
-      strategy();
+      self._updateDropdownMenus(emissionsScorecard, salesScorecard, equipmentScorecard);
     };
 
     // Execute with a catch for invalid user selections.
@@ -511,6 +604,87 @@ class ScorecardPresenter {
         false,
         null,
       ));
+    }
+  }
+
+  /**
+   * Safely extract numeric value from potentially null EngineNumber.
+   *
+   * @param {EngineNumber|null} engineNumber - The engine number to extract value from.
+   * @param {number} defaultValue - Default value if engineNumber is null (defaults to 0).
+   * @returns {number} The numeric value or default.
+   * @private
+   */
+  _safeGetValue(engineNumber, defaultValue = 0) {
+    const self = this;
+    return engineNumber !== null ? engineNumber.getValue() : defaultValue;
+  }
+
+  /**
+   * Get the strategy function for updating dropdown menus based on metric family.
+   *
+   * @param {string} metricFamily - The metric family ('emissions', 'sales', or 'population').
+   * @returns {Function} Strategy function that updates the appropriate dropdown menus.
+   * @throws {Error} If metric family is unknown.
+   * @private
+   */
+  _getDropdownMetricStrategy(metricFamily) {
+    const self = this;
+
+    const metricStrategies = {
+      "emissions": (emissionsScorecard, subMetric, units) => {
+        const emissionsSubmetricDropdown = emissionsScorecard.querySelector(
+          ".emissions-submetric");
+        const emissionsUnitsDropdown = emissionsScorecard.querySelector(".emissions-units");
+        emissionsSubmetricDropdown.value = subMetric;
+        emissionsUnitsDropdown.value = units;
+      },
+      "sales": (salesScorecard, subMetric, units) => {
+        const salesSubmetricDropdown = salesScorecard.querySelector(".sales-submetric");
+        const salesUnitsDropdown = salesScorecard.querySelector(".sales-units");
+        salesSubmetricDropdown.value = subMetric;
+        salesUnitsDropdown.value = units;
+      },
+      "population": (equipmentScorecard, subMetric, units) => {
+        const equipmentSubmetricDropdown = equipmentScorecard.querySelector(
+          ".equipment-submetric");
+        const equipmentUnitsDropdown = equipmentScorecard.querySelector(".equipment-units");
+        equipmentSubmetricDropdown.value = subMetric;
+        equipmentUnitsDropdown.value = units;
+      },
+    };
+
+    const strategy = metricStrategies[metricFamily];
+    if (!strategy) {
+      throw new Error(`Unknown metric family: ${metricFamily}`);
+    }
+    return strategy;
+  }
+
+  /**
+   * Update dropdown menu values to match current FilterSet selections.
+   *
+   * @param {HTMLElement} emissionsScorecard - Emissions scorecard DOM element.
+   * @param {HTMLElement} salesScorecard - Sales scorecard DOM element.
+   * @param {HTMLElement} equipmentScorecard - Equipment scorecard DOM element.
+   * @private
+   */
+  _updateDropdownMenus(emissionsScorecard, salesScorecard, equipmentScorecard) {
+    const self = this;
+
+    const metricFamily = self._filterSet.getMetric();
+    const subMetric = self._filterSet.getSubMetric();
+    const units = self._filterSet.getUnits();
+
+    const strategy = self._getDropdownMetricStrategy(metricFamily);
+
+    // Execute strategy with appropriate scorecard based on metric family
+    if (metricFamily === "emissions") {
+      strategy(emissionsScorecard, subMetric, units);
+    } else if (metricFamily === "sales") {
+      strategy(salesScorecard, subMetric, units);
+    } else if (metricFamily === "population") {
+      strategy(equipmentScorecard, subMetric, units);
     }
   }
 
@@ -1217,7 +1391,12 @@ class SelectorTitlePresenter {
     const scenarioDropdown = self._selection.querySelector(".scenario-select");
     const scenarioSelected = self._filterSet.getScenario();
     const scenarios = results.getScenarios(self._filterSet);
-    self._updateDynamicDropdown(scenarioDropdown, scenarios, scenarioSelected, "All Simulations");
+    self._updateDynamicDropdown(
+      scenarioDropdown,
+      scenarios,
+      scenarioSelected,
+      "All Simulations",
+    );
 
     const baselineDropdown = self._selection.querySelector(".baseline-select");
     const baselineSelected = self._filterSet.getBaseline();
@@ -1244,7 +1423,12 @@ class SelectorTitlePresenter {
     const substances = getWithMetaSubstanceEquipment(
       results.getSubstances(self._filterSet.getWithSubstance(null)),
     );
-    self._updateDynamicDropdown(substanceDropdown, substances, substanceSelected, "All Substances");
+    self._updateDynamicDropdown(
+      substanceDropdown,
+      substances,
+      substanceSelected,
+      "All Substances",
+    );
   }
 
   /**

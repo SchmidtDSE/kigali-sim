@@ -1,7 +1,8 @@
-<html>
+<html lang="en-GB">
   <head>
-    <title>Tutorial 13: AI Assistants</title>
+    <title>Tutorial 13: Assumed Replacement</title>
     <link href="/guide/guide.css?v=EPOCH" rel="stylesheet" type="text/css" />
+    <link href="/third_party/prism-tomorrow.min.css" rel="stylesheet" type="text/css" />
   </head>
   <body>
     <a href="#main" class="skip-link">Skip to main content</a>
@@ -10,18 +11,17 @@
       <a href="/">Kigali Sim</a>.
     </header>
     <main id="main">
-      <h1>Tutorial 13: AI Assistants</h1>
+      <h1>Tutorial 13: Assumed Replacement</h1>
 
-      If you have access to an AI assistant, you can use them to help build or modify simulations.
+      We can assume that retired equipment are automatically replaced regardless of sales data.
 
       <details>
         <summary>Contents</summary>
         <ul>
           <li><a href="#motivation">Motivation</a></li>
-          <li><a href="#giving-ai-information">Giving the AI information</a></li>
-          <li><a href="#building-basic-simulation">Building the basic simulation</a></li>
-          <li><a href="#adding-recycling-program">Adding a recycling program</a></li>
-          <li><a href="#results">Results</a></li>
+          <li><a href="#retiring-normally">Retiring normally</a></li>
+          <li><a href="#evaluating-default-behavior">Evaluating default behavior</a></li>
+          <li><a href="#changing-the-assumption">Changing the assumption</a></li>
           <li><a href="#conclusion">Conclusion</a></li>
           <li><a href="#next-steps">Next Steps</a></li>
         </ul>
@@ -31,71 +31,48 @@
         <h2>Motivation</h2>
 
         <p>
-          If you recall <a href="/guide/tutorial_07.html">Tutorial 7</a>, we revealed that you are actually writing computer code when you use the UI-based editor. Kigali Sim uses a programming language built just for Montreal Protocol models called QubecTalk. In addition to allowing you to make more sophisticated simulations, this programming option also allows you to use AI (LLM) assistants. This includes many different options like <a href="https://chatgpt.com/" target="_blank">ChatGPT</a> or, for example, we use <a href="https://claude.ai/" target="_blank">Claude</a>.
-        </p>
-
-        <p>
-          More precisely, we use a protocol called <a href="https://llmstxt.org/" target="_blank">llms.txt</a> which allows you to use your own assistant. This frees you and your organization to choose the right option given different needs, terms of service, and privacy options. After you have selected the AI that you want to use, you can use natural language to work on simulations. This tutorial walks through how to build up a simulation using an AI assistant.
-        </p>
-
-        <p>
-          We assume that you have access to an AI assistant and we have tested this tutorial with multiple products. If you do not have access to an LLM, we observe that <a href="https://chatgpt.com/" target="_blank">ChatGPT</a> has a free offering. However, we caution that you should be sure to read the privacy policy and terms of service for any AI you choose as, unlike Kigali Sim, these options may involve sending your simulations and data to servers controlled by other organizations. All that in mind, we use <a href="https://claude.ai/" target="_blank">Claude</a> due to its terms of use and strong performance.
+          When we added equipment retirement in previous tutorials, that equipment was removed from the population. Then, depending on the level of sales (import, domestic, or recycling), that equipment may or may not get replaced. That said, what if your sales data already excluded replacement equipment? Perhaps you have data from a permitting system so know when equipment is sold but not when it is replaced or transferred. We can instruct Kigali Sim that retired equipment should be replaced on top of other sales values specified.
         </p>
       </section>
 
-      <section id="giving-ai-information">
-        <h2>Giving the AI information</h2>
+      <section id="retiring-normally">
+        <h2>Retiring normally</h2>
 
         <p>
-          At minimum, you should tell your AI to read <a href="https://kigalisim.org/llms.txt" target="_blank">kigalisim.org/llms.txt</a> but we find that providing both <code>llms.txt</code> and <code>llms-full.txt</code> is helpful. Here is how you might want to start.
-        </p>
-
-        <pre class="prompt-code"><code>Hello! Please review https://kigalisim.org/llms.txt?v=20250928 and https://preview.kigalisim.org/llms-full.txt?v=20250928. Then, we will build a simulation together.</code></pre>
-
-        <p>
-          The use of the version is optional but we recommend it to ensure you have the latest copy.
-        </p>
-
-        <p>
-          <strong>Tip:</strong> For LLMs which cannot access the internet, you can <a href="/llms-full.txt" download>download llms-full.txt</a> and provide it as an attachment to your AI assistant.
+          Let's set up a basic simulation with HFC-134a in commercial refrigeration. Let's have this be imported and set the prior equipment to 1,000,000 units in 2025 but let's not set a specific sales value. Instead, let's use the "default sales assumption in a new year" dropdown menu to select cover only servicing, meaning that we will only assume sales for repair or top up of existing equipment. Finally, after specifying a 5% retirement rate, let's have this take 1 kg / unit in initial charge and recharge 5% each year with 0.85 kg / unit during all years.
         </p>
       </section>
 
-      <section id="building-basic-simulation">
-        <h2>Building the basic simulation</h2>
+      <section id="evaluating-default-behavior">
+        <h2>Evaluating default behavior</h2>
 
         <p>
-          Next, let's instruct the AI to make a simulation called Business as Usual with HFC-134a with the similar information to <a href="/guide/tutorial_02.html">Tutorial 2</a>.
-        </p>
-
-        <pre class="prompt-code"><code>Thanks! Please make a simulation without any policies called Business as Usual which runs from 2025 to 2035. Please have this include HFC-134a with a GWP of 1430 kgCO2e / kg that is both domestically produced and consumed. Please initial charge with 0.15 kg / unit and have 5% of the equipment retire each year. Furthermore, please recharge 10% of equipment during all years with 0.15 kg / unit. Finally, please have there be sales of 25 mt in 2025 but have those sales increase 5% each year.
-
-Please write the QubecTalk code for this simulation and then pause.</code></pre>
-
-        <p>
-          Once your assistant has produced the code, please paste it into the <strong>Editor</strong> tab. This is also a good moment to remember to double check the work of an AI by reading through the code.
+          Let's add a business as usual scenario that runs from 2025 to 2035. Then, look at the bank of equipment under this default behavior. We see the equipment population decline over time as expected: we are servicing but we aren't replacing equipment that goes to scrap.
         </p>
       </section>
 
-      <section id="adding-recycling-program">
-        <h2>Adding a recycling program</h2>
+      <section id="changing-the-assumption">
+        <h2>Changing the assumption</h2>
 
         <p>
-          Now that we have a simple simulation to start with, let's ask the AI assistant to add a recycling program and a new simulation.
+          Let's go back to HFC-134a's definition. If you are using the UI-based designer, go to the Equipment tab and uncheck "Retirement reduces in-service equipment" or, if you are using QubecTalk, add <code>with replacement</code> to the end of the retire command like so:
         </p>
 
-        <pre class="prompt-code"><code>Fantastic! Please next add a recycling program which happens at the time of servicing. We should capture 20% and have a yield loss of 50%. Let's have this start in 2028. Please add the recycling policy and an additional simulation alongside Business as Usual so we can compare.</code></pre>
+        <pre><code class="language-qubectalk">uses substance "HFC-134a"
+  enable import
+  assume only recharge sales
+  initial charge with 0 kg / unit for domestic
+  initial charge with 1 kg / unit for import
+  initial charge with 0 kg / unit for export
+  equals 1430 kgCO2e / kg
+  equals 1 kwh / unit
+  set priorEquipment to 1,000,000 units during year 2025
+  retire 5 % / year with replacement
+  recharge 5 % with 0.85 kg / unit
+end substance</code></pre>
 
         <p>
-          You may need to ask the assistant to provide the entire updated code.
-        </p>
-      </section>
-
-      <section id="results">
-        <h2>Results</h2>
-
-        <p>
-          Select the <strong>Consumption</strong> radio button with <strong>domestic</strong> and <strong>mt / year</strong>. Then, click the <strong>Simulations</strong> radio button and ensure the <strong>All</strong> radio button is selected. You should see a delta between the two scenarios based on the new recycling policy and simulation added by the AI!
+          Now, we still see the servicing consumption but, under total units of equipment in bank, we find that the size of the population does not decrease. Note that we still also see end of life emissions but old equipment in Kigali Sim is required and automatically replaced with new equipment sales.
         </p>
       </section>
 
@@ -103,7 +80,11 @@ Please write the QubecTalk code for this simulation and then pause.</code></pre>
         <h2>Conclusion</h2>
 
         <p>
-          This tutorial demonstrated the use of AI assistants to build models in Kigali Sim. You are now ready to use LLMs to explore other functionality of Kigali Sim and move faster in prototyping new simulations. Remember, you can also use <a href="https://preview.kigalisim.org/guide/tutorial_09.html" target="_blank">Kigali Sim on the command line</a>. In addition to taking advantage of version control and automation, this can also enable use of tools like <a href="https://www.anthropic.com/claude-code" target="_blank">Claude Code</a>.
+          This option to retire with replacement can be helpful in a number of modeling circumstances. For example, let's say you have estimates of how much kg is in bank for a substance but don't know the servicing or new equipment consumption. Kigali Sim can automatically calculate what servicing demands were and what retirement happened which required replacement.
+        </p>
+
+        <p>
+          <strong>Download the completed tutorial</strong>: <a href="tutorial_13.qta" download>tutorial_13.qta</a> - this contains the complete assumed replacement model
         </p>
       </section>
 
@@ -111,17 +92,22 @@ Please write the QubecTalk code for this simulation and then pause.</code></pre>
         <h2>Next Steps</h2>
 
         <p>
-          This tutorial completes the specialized topic series! You've learned how to leverage AI assistants to accelerate your simulation development workflow. For next steps, consider exploring the other tutorials in the series or dive deeper into the QubecTalk programming language using the command line interface from <a href="/guide/tutorial_09.html">Tutorial 9</a>.
+          <a href="/guide/tutorial_14.html">Tutorial 14</a> will explore bank-based modeling. You'll learn how to use Kigali Sim when you have longitudinal bank estimates and need to work backwards to determine consumption patterns.
         </p>
 
         <p>
-          <a href="/guide/tutorial_12.html">Previous: Tutorial 12</a> | 
-          <a href="/guide/">Guide Index</a>
+          <a href="/guide/tutorial_12.html">Previous: Tutorial 12</a> |
+          <a href="/guide">Return to Guide Index</a> |
+          <a href="/guide/tutorial_14.html">Next: Tutorial 14</a>
         </p>
       </section>
 
       <hr />
-      <p><em>This tutorial is part of the Feature-Specific series demonstrating specialized aspects of Montreal Protocol policy modeling using Kigali Sim.</em></p>
+      <p><em>This tutorial is part of the Advanced Techniques series demonstrating specialized aspects of Montreal Protocol policy modeling using Kigali Sim.</em></p>
     </main>
+
+    <script src="/third_party/prism-core.min.js"></script>
+    <script src="/third_party/prism-autoloader.min.js"></script>
+    <script src="/guide/qubectalk-prism.js"></script>
   </body>
 </html>

@@ -14,10 +14,12 @@ import {
   SimulationScenario,
   SimulationStanza,
   SubstanceBuilder,
+} from "ui_translator_components";
+import {
   buildAddCode,
   finalizeCodePieces,
   indent,
-} from "ui_translator";
+} from "ui_translator_util";
 
 function createWithCommands(name, isModification, commands) {
   const substanceBuilder = new SubstanceBuilder(name, isModification);

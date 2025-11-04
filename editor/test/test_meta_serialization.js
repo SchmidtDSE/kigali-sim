@@ -1,6 +1,6 @@
 /* eslint-disable max-len */
 import {MetaSerializer, MetaChangeApplier, SubstanceMetadataUpdate, SubstanceMetadataError, SubstanceMetadataParseResult, ValidationResult, MetadataValidator, ValidationError, parseUnitValue} from "meta_serialization";
-import {SubstanceMetadata, Program, Application, Substance, SubstanceBuilder} from "ui_translator";
+import {SubstanceMetadata, Program, Application, Substance, SubstanceBuilder} from "ui_translator_components";
 
 function buildMetaSerializationTests() {
   QUnit.module("MetaSerializer", function () {

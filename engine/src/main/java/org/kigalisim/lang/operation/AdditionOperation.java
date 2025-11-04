@@ -30,6 +30,7 @@ public class AdditionOperation implements Operation {
     this.right = right;
   }
 
+  /** {@inheritDoc} */
   @Override
   public void execute(PushDownMachine machine) {
     left.execute(machine);

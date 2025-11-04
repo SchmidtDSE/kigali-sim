@@ -1,5 +1,7 @@
 /* eslint-disable max-len */
-import {UiTranslatorCompiler, SubstanceMetadata, preprocessEachYearSyntax} from "ui_translator";
+import {UiTranslatorCompiler} from "ui_translator";
+import {SubstanceMetadata} from "ui_translator_components";
+import {preprocessEachYearSyntax} from "ui_translator_util";
 
 function buildUiTranslatorTests() {
   QUnit.module("UiTranslatorCompiler", function () {

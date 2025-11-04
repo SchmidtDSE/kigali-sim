@@ -1,4 +1,4 @@
-<html>
+<html lang="en-GB">
   <head>
     <title>Tutorial 2: Single Application and Substance</title>
     <link href="/guide/guide.css?v=EPOCH" rel="stylesheet" type="text/css" />
@@ -13,8 +13,6 @@
       <h1>Tutorial 2: Single Application and Substance</h1>
 
       We start with the basic building blocks of a simulation: applications and substances.
-
-      <p><strong>Note:</strong> You can follow along with this written guide or watch the <a href="https://vimeo.com/1116227339">video version</a> for a walkthrough of the same concepts.</p>
 
       <details>
         <summary>Contents</summary>
@@ -36,7 +34,7 @@
         <h2>Motivation</h2>
 
         <p>
-          In this tutorial, we start ABC's first HFC consumption model by using volume-based inputs. This approach helps us understand the relationship between populations and refrigerant consumption while working with initial charges, retirement rates, and servicing patterns. All of these parameters will work together to project consumption trends over time.
+          In this tutorial, we examine ABC Country, a hypothetical country that we can use to explore Kigali Sim's functionality. Specifically, we will make a first HFC consumption model by using volume-based inputs. This approach helps us understand the relationship between populations and refrigerant consumption while working with initial charges, retirement rates, and servicing patterns. All of these parameters will work together to project consumption trends over time.
         </p>
 
         <p>
@@ -58,10 +56,16 @@
         <p>You won't see results yet because we haven't added any substances or equipment data.</p>
 
         <p id="tutorial-gif-2-1" class="tutorial-gif-holder">
-          <img
-            src="/guide/img/tutorial02_01.gif"
-            alt="Animated GIF showing how to add a new application"
-          />
+          <video
+            src="/webm/tutorial_02_01.webm"
+            loop
+            muted
+            playsinline
+            controls
+            style="width: 500px; border: 2px solid #505050; border-radius: 3px;"
+          >
+            Your browser does not support the video tag. Please upgrade to a modern browser.
+          </video>
         </p>
       </section>
 
@@ -82,10 +86,16 @@
         <p>Don't click save yet! We need to configure equipment properties first.</p>
 
         <p id="tutorial-gif-2-2" class="tutorial-gif-holder">
-          <img
-            src="/guide/img/tutorial02_02.gif"
-            alt="Animated GIF showing how to add a new substance"
-          />
+          <video
+            src="/webm/tutorial_02_02.webm"
+            loop
+            muted
+            playsinline
+            controls
+            style="width: 500px; border: 2px solid #505050; border-radius: 3px;"
+          >
+            Your browser does not support the video tag. Please upgrade to a modern browser.
+          </video>
         </p>
       </section>
 
@@ -99,7 +109,7 @@
           <li>Leave equipment type/model empty for now</li>
           <li>Enter <strong>0.15 kg/unit</strong> for initial charge (refrigerant per new unit)</li>
           <li>Set annual retirement rate to <strong>5% each year</strong> (corresponds to 20-year average equipment lifetime)</li>
-          <li>Leave <strong>"Retirement reduces in-service equipment"</strong> checked (recommended for most simulations)</li>
+          <li>Leave <strong>"Retirement reduces in-service equipment"</strong> checked. This is recommended for most simulations but a later tutorial will revisit this option.</li>
         </ul>
 
         <p>The retirement rate is sometimes called the <strong>hazard rate</strong> or <strong>scrap rate</strong> in equipment lifecycle analysis. Kigali Sim, by default, assumes a constant hazard rate when you specify a percentage. However, this can be modified by using a non-percentage retirement amount if you need more complex retirement patterns.</p>
@@ -107,10 +117,16 @@
         <p>These basic parameters are enough to start modeling, but we also will want to account for servicing existing equipment.</p>
 
         <p id="tutorial-gif-2-3" class="tutorial-gif-holder">
-          <img
-            src="/guide/img/tutorial02_03.gif"
-            alt="Animated GIF showing how to specify equipment properties"
-          />
+          <video
+            src="/webm/tutorial_02_03.webm"
+            loop
+            muted
+            playsinline
+            controls
+            style="width: 500px; border: 2px solid #505050; border-radius: 3px;"
+          >
+            Your browser does not support the video tag. Please upgrade to a modern browser.
+          </video>
         </p>
       </section>
 
@@ -130,10 +146,16 @@
         <p>We're almost ready to run our first simulation! We just need initial conditions.</p>
 
         <p id="tutorial-gif-2-4" class="tutorial-gif-holder">
-          <img
-            src="/guide/img/tutorial02_04.gif"
-            alt="Animated GIF showing how to specify servicing properties"
-          />
+          <video
+            src="/webm/tutorial_02_04.webm"
+            loop
+            muted
+            playsinline
+            controls
+            style="width: 500px; border: 2px solid #505050; border-radius: 3px;"
+          >
+            Your browser does not support the video tag. Please upgrade to a modern browser.
+          </video>
         </p>
       </section>
 
@@ -153,10 +175,16 @@
         </p>
 
         <p id="tutorial-gif-2-5" class="tutorial-gif-holder">
-          <img
-            src="/guide/img/tutorial02_05.gif"
-            alt="Animated GIF showing how to specify initial conditions"
-          />
+          <video
+            src="/webm/tutorial_02_05.webm"
+            loop
+            muted
+            playsinline
+            controls
+            style="width: 500px; border: 2px solid #505050; border-radius: 3px;"
+          >
+            Your browser does not support the video tag. Please upgrade to a modern browser.
+          </video>
         </p>
 
         <p>
@@ -178,10 +206,16 @@
         </ul>
 
         <p id="tutorial-gif-2-6" class="tutorial-gif-holder">
-          <img
-            src="/guide/img/tutorial02_06.gif"
-            alt="Animated GIF showing how to create a simulation"
-          />
+          <video
+            src="/webm/tutorial_02_06.webm"
+            loop
+            muted
+            playsinline
+            controls
+            style="width: 500px; border: 2px solid #505050; border-radius: 3px;"
+          >
+            Your browser does not support the video tag. Please upgrade to a modern browser.
+          </video>
         </p>
       </section>
 
@@ -199,10 +233,16 @@
         <p>We will add additional dynamics but this starts building an intuition for how Kigali Sim interpreted our very simple model.</p>
 
         <p id="tutorial-gif-2-7" class="tutorial-gif-holder">
-          <img
-            src="/guide/img/tutorial02_07.gif"
-            alt="Animated GIF showing how to use the visualization panel"
-          />
+          <video
+            src="/webm/tutorial_02_07.webm"
+            loop
+            muted
+            playsinline
+            controls
+            style="width: 500px; border: 2px solid #505050; border-radius: 3px;"
+          >
+            Your browser does not support the video tag. Please upgrade to a modern browser.
+          </video>
         </p>
       </section>
 
@@ -225,6 +265,10 @@
         </p>
 
         <p>
+          Note that we specified HFC-134a to be both domestically produced and consumed during this first tutorial. This simplifies our ability to reason about the results: we don't have to consider trade attribution rules yet. However, a later tutorial will consider trade and how to analyze results under treaty conventions.
+        </p>
+
+        <p>
           <strong>Download the completed tutorial</strong>: <a href="tutorial_02.qta" download>tutorial_02.qta</a> - this contains the complete single application and substance model
         </p>
       </section>
@@ -237,7 +281,8 @@
         </p>
 
         <p>
-          <a href="/guide/tutorial_01.html">Previous: Tutorial 1</a> | 
+          <a href="/guide/tutorial_01.html">Previous: Tutorial 1</a> |
+          <a href="/guide">Return to Guide Index</a> |
           <a href="/guide/tutorial_03.html">Next: Tutorial 3</a>
         </p>
       </section>

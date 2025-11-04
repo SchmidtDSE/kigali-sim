@@ -29,8 +29,11 @@ public class ParsedApplication {
   public ParsedApplication(String name, Iterable<ParsedSubstance> substances) {
     this.name = name;
     this.substances = DuplicateValidator.validateUniqueNames(
-        substances, ParsedSubstance::getName, "substance", "application '" + name + "'");
-    // Additional validation for substance+equipment combinations
+        substances,
+        ParsedSubstance::getName,
+        "substance",
+        "application '" + name + "'"
+    );
     DuplicateValidator.validateUniqueSubstanceEquipmentCombinations(substances, name);
   }
 
