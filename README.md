@@ -77,8 +77,8 @@ Here, you may replace `script.qta` with the path to your QubecTalk script and `o
 
 Note that this jar is also posted to GitHub Maven. 
 
-### Docker
-For those who prefer Docker, see `Dockerfile` which installs Java ([Temurin](https://adoptium.net/temurin/releases)) and can be used to run simulations. For example, the following builds the image and runs `script.qta` with output to `output.csv` through the mounted `working` directory:
+### Docker (CLI)
+For those who prefer Docker, see `Dockerfile` which installs Java ([Temurin](https://adoptium.net/temurin/releases)) and can be used to run simulations from the command line. For example, the following builds the image and runs `script.qta` with output to `output.csv` through the mounted `working` directory:
 
 ```
 docker build -t kigalisim .
@@ -87,7 +87,8 @@ docker run -v $(pwd):/working kigalisim run -o output.csv script.qta
 
 Note: Windows users should replace `$(pwd)` with `%cd%` for Command Prompt or `${PWD}` for PowerShell.
 
-We also provide a Dev Container with additional tools for those looking to modify Kigali Sim or run a local version of the web-based editor. see `DEVELOPING.md`.
+### Local UI-based editor
+For information about running the Kigali Sim IDE locally on your machine, see the [development section of this README](https://github.com/SchmidtDSE/kigali-sim?tab=readme-ov-file#development) for various options including Docker, GitHub Codespaces, or a manual local setup.
 
 <br>
 
@@ -193,9 +194,9 @@ For those interested in contributing to the Kigali Sim open source project as a 
 <br>
 
 ## Development
-If you want to change the code of Kigali Sim itself, we have some basic getting started steps. However, for additional information about development, see [DEVELOPING.md](https://github.com/SchmidtDSE/kigali-sim/blob/main/DEVELOPING.md). If you are contributing, see [CONTRIBUTING.md](https://github.com/SchmidtDSE/kigali-sim/blob/main/CONTRIBUTING.md). Finally, if you are using an AI coding assistant to write code you want to donate to the project, please review the [AI contribution guidelines](https://github.com/SchmidtDSE/kigali-sim/blob/main/CONTRIBUTING.md#use-of-generative-ai).
+We have some basic getting started steps in this developer quickstart for those using Docker / Dev Container, GitHub Codespaces or compatible, or a manual local setup.
 
-### Using a Dev Container
+### Using Docker / Dev Container
 For those interested in a dev container, please see `.devcontainer`. **IntelliJ** should automatically detect the dev container (see [JetBrains documentation](https://www.jetbrains.com/help/idea/connect-to-devcontainer.html)). **VS Code** users can use an extension:
 
 1. Install the [Dev Containers extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers)
@@ -213,12 +214,13 @@ One can also use **GitHub Codespaces**:
 
 See `DEVELOPING.md` for detailed information about the dev container configuration.
 
-All the automated checks described below work in the dev container environment:
+All the automated checks and development operations described below work in the dev container environment:
 
 - Java testing: `cd engine && ./gradlew test`
 - Java linting: `cd engine && ./gradlew checkstyleMain` and `cd engine && ./gradlew checkstyleTest`
-- JavaScript linting: `cd editor && pnpm exec eslint ./js/*.js` and `cd editor && pnpm exec eslint ./test/*.js`
-- JavaScript testing: `cd editor && pnpm exec grunt`
+- ECMAScript / JavaScript linting: `cd editor && pnpm exec eslint ./js/*.js` and `cd editor && pnpm exec eslint ./test/*.js`
+- ECMAScript / JavaScript testing: `cd editor && pnpm exec grunt`
+- Build and run the UI-based editor locally: `cd editor && bash ./support/update_wasm.sh && bash ./support/make.sh && python -m http.server`
 
 ### Other Local Setup
 To run this system locally outside a dev container, please:
@@ -300,7 +302,7 @@ python -m http.server
 9. Visit the local hosted webpage using any web browser at the given address.
 
 ### Additional resources
-We have continuous integration and deployment through GitHub actions. See [DEVELOPING.md](https://github.com/SchmidtDSE/kigali-sim/blob/main/DEVELOPING.md) for more details.
+We have continuous integration and deployment through GitHub actions. For additional information about development, see [DEVELOPING.md](https://github.com/SchmidtDSE/kigali-sim/blob/main/DEVELOPING.md). If you are contributing, see [CONTRIBUTING.md](https://github.com/SchmidtDSE/kigali-sim/blob/main/CONTRIBUTING.md). Finally, if you are using an AI coding assistant to write code you want to donate to the project, please review the [AI contribution guidelines](https://github.com/SchmidtDSE/kigali-sim/blob/main/CONTRIBUTING.md#use-of-generative-ai).
 
 <br>
 
