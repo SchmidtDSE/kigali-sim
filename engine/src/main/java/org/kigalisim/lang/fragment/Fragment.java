@@ -134,6 +134,7 @@ public abstract class Fragment {
    * Check if this fragment is a policy stanza (or default).
    *
    * @return True if policy stanza, false if another stanza.
+   * @throws RuntimeException Thrown if requested on a non-stanza.
    */
   public boolean getIsStanzaPolicyOrDefault() {
     throw new RuntimeException("This fragment is not a stanza.");

@@ -13,6 +13,20 @@ import {UiEditorPresenter} from "ui_editor";
 import {UiTranslatorCompiler} from "ui_translator";
 import {UpdateUtil} from "updates";
 import {WasmBackend, WasmLayer, BackendResult} from "wasm_backend";
+import {RunningIndicatorPresenter, ButtonPanelPresenter, TooltipPresenter} from "editor_actions";
+import {
+  IntroductionPresenter,
+  PrivacyConfirmationPresenter,
+  AIAssistantPresenter,
+  AIDesignerPresenter,
+} from "informational";
+
+const HELP_TEXT = "Would you like our help in resolving this issue?";
+const WHITESPACE_REGEX = new RegExp("^\\s*$");
+const NEW_FILE_MSG = [
+  "Starting a new file will clear your current work.",
+  "Do you want to to continue?",
+].join(" ");
 
 const INCOGNITO_MESSAGE = [
   "This will clear your preferences and prior simulations upon closing this tab. Your preferences",
@@ -23,274 +37,6 @@ const CLEAR_ALL_DATA_MESSAGE = [
   "This will clear all saved preferences and the current model you are working on in the designer",
   "and editor. Do you want to continue?",
 ].join(" ");
-
-/**
- * Manages tooltip display and user preferences for help tooltips.
- *
- * Handles initialization, user preference storage, and tooltip lifecycle
- * management using Tippy.js for accessible tooltip display.
- */
-class TooltipPresenter {
-  /**
-   * Create a new tooltip presenter.
-   *
-   * @param {LocalStorageKeeper} storageKeeper - Storage manager for user preferences
-   */
-  constructor(storageKeeper) {
-    const self = this;
-    self._storageKeeper = storageKeeper;
-    self._tooltipInstances = new Map();
-    self._enabled = self._loadPreference();
-    self._welcomeCheckbox = null;
-    self._footerButton = null;
-  }
-
-  /**
-   * Initialize the tooltip system.
-   *
-   * Sets up preference controls and creates tooltips if enabled.
-   */
-  initialize() {
-    const self = this;
-    self._setupPreferenceControls();
-    if (self._enabled) {
-      self._createTooltips();
-    }
-  }
-
-  /**
-   * Toggle tooltip visibility.
-   *
-   * @param {boolean} enabled - Whether tooltips should be shown
-   */
-  setEnabled(enabled) {
-    const self = this;
-    self._enabled = enabled;
-    self._storageKeeper.setShowTooltips(enabled);
-
-    if (enabled) {
-      self._createTooltips();
-    } else {
-      self._destroyTooltips();
-    }
-
-    self._updateControls();
-  }
-
-  /**
-   * Get current tooltip enabled state.
-   *
-   * @returns {boolean} Whether tooltips are currently enabled
-   */
-  isEnabled() {
-    const self = this;
-    return self._enabled;
-  }
-
-  /**
-   * Load tooltip preference from storage.
-   *
-   * @returns {boolean} Tooltip preference (defaults to true)
-   * @private
-   */
-  _loadPreference() {
-    const self = this;
-    const stored = self._storageKeeper.getShowTooltips();
-    return stored !== null ? stored : true; // Default to enabled
-  }
-
-  /**
-   * Setup preference control elements and event handlers.
-   *
-   * @private
-   */
-  _setupPreferenceControls() {
-    const self = this;
-
-    // Welcome screen checkbox
-    self._welcomeCheckbox = document.getElementById("tooltip-preference-check");
-    self._welcomeCheckbox.checked = self._enabled;
-    self._welcomeCheckbox.addEventListener("change", function (event) {
-      self.setEnabled(event.target.checked);
-    });
-
-    // Footer toggle button
-    self._footerButton = document.getElementById("tooltip-toggle-button");
-    self._updateControls();
-    self._footerButton.addEventListener("click", function (event) {
-      event.preventDefault();
-      self.setEnabled(!self._enabled);
-    });
-  }
-
-  /**
-   * Update control elements to reflect current state.
-   *
-   * @private
-   */
-  _updateControls() {
-    const self = this;
-
-    self._welcomeCheckbox.checked = self._enabled;
-    const footerText = self._enabled ? "Disable Tooltips" : "Enable Tooltips";
-    self._footerButton.textContent = footerText;
-  }
-
-  /**
-   * Create tooltips for all target elements.
-   *
-   * @private
-   */
-  _createTooltips() {
-    const self = this;
-
-    // Initialize tooltips on all elements with data-tippy-content
-    const elements = document.querySelectorAll("[data-tippy-content]");
-    elements.forEach(function (element) {
-      const instance = tippy(element, {
-        appendTo: "parent",
-      });
-      self._tooltipInstances.set(element, instance);
-    });
-  }
-
-  /**
-   * Destroy all tooltip instances.
-   *
-   * @private
-   */
-  _destroyTooltips() {
-    const self = this;
-
-    self._tooltipInstances.forEach(function (instance) {
-      instance.destroy();
-    });
-    self._tooltipInstances.clear();
-  }
-}
-
-/**
- * Manages the running indicator and progress bar display.
- */
-class RunningIndicatorPresenter {
-  constructor() {
-    const self = this;
-    self._runningIndicator = document.getElementById("running-indicator");
-    self._progressBar = document.getElementById("simulation-progress");
-    self._resultsSection = document.getElementById("results");
-  }
-
-  /**
-   * Show the running indicator with progress at 0%.
-   */
-  show() {
-    const self = this;
-    self.reset();
-    self._resultsSection.style.display = "block";
-    self._runningIndicator.style.display = "block";
-  }
-
-  /**
-   * Hide the running indicator.
-   */
-  hide() {
-    const self = this;
-    self._runningIndicator.style.display = "none";
-  }
-
-  /**
-   * Update the progress bar.
-   * @param {number} percentage - Progress percentage (0-100)
-   */
-  updateProgress(percentage) {
-    const self = this;
-    self._progressBar.value = percentage;
-  }
-
-  /**
-   * Reset progress to 0%.
-   */
-  reset() {
-    const self = this;
-    self.updateProgress(0);
-  }
-}
-
-const HELP_TEXT = "Would you like our help in resolving this issue?";
-
-const WHITESPACE_REGEX = new RegExp("^\\s*$");
-const NEW_FILE_MSG = [
-  "Starting a new file will clear your current work.",
-  "Do you want to to continue?",
-].join(" ");
-
-/**
- * Presenter controlling the main simluation buttons.
- *
- * Presenter which controls the functionality of the script and run button panel
- * in the UI which allow for basic tool functionality (switching authoring modes
- * and running the simulation).
- */
-class ButtonPanelPresenter {
-  /**
-   * Creates a new ButtonPanelPresenter instance.
-   *
-   * @param {HTMLElement} root - The root element containing the button panel.
-   * @param {Function} onBuild - Callback function triggered when build/run is initiated.
-   */
-  constructor(root, onBuild) {
-    const self = this;
-    self._root = root;
-
-    self._availableDisplay = self._root.querySelector("#available-panel");
-    self._autorunDisplay = self._root.querySelector("#auto-run-panel");
-    self._loadingDisplay = self._root.querySelector("#loading");
-    self._runButton = self._root.querySelector("#run-button");
-
-    self._onBuild = onBuild;
-    self._runButton.addEventListener("click", (run) => {
-      self._onBuild(run);
-    });
-
-    self.enable();
-  }
-
-  /**
-   * Enables the button panel and shows available options.
-   */
-  enable() {
-    const self = this;
-    self._availableDisplay.style.display = "block";
-    self._autorunDisplay.style.display = "block";
-    self._loadingDisplay.style.display = "none";
-  }
-
-  /**
-   * Disables the button panel and shows loading state.
-   */
-  disable() {
-    const self = this;
-    self._availableDisplay.style.display = "none";
-    self._autorunDisplay.style.display = "none";
-    self._loadingDisplay.style.display = "block";
-  }
-
-  /**
-   * Hides script-related buttons.
-   */
-  hideScriptButtons() {
-    const self = this;
-    self._runButton.style.display = "none";
-  }
-
-  /**
-   * Shows script-related buttons.
-   */
-  showScriptButtons() {
-    const self = this;
-    self._runButton.style.display = "inline-block";
-  }
-}
 
 /**
  * Main presenter class that coordinates the application's functionality.
@@ -304,22 +50,63 @@ class MainPresenter {
 
     self._hasCompilationErrors = false;
 
-    // Initialize the running indicator presenter
     self._runningIndicatorPresenter = new RunningIndicatorPresenter();
 
-    // Initialize the storage keeper based on save preferences checkbox
+    self._initStorageKeeper();
+    self._initWasmBackend();
+    self._initCodeEditor();
+
+    self._runInitialSource(self._localStorageKeeper.getSource());
+
+    self._onCodeChange();
+    self._setupFileButtons();
+    self._setupStorageControls();
+    self._setupForceUpdateButton();
+
+    self._tooltipPresenter = new TooltipPresenter(self._localStorageKeeper);
+    self._tooltipPresenter.initialize();
+
+    self._updateUtil = new UpdateUtil();
+    self._checkForUpdates();
+
+    self._setupGlobalErrorRecovery();
+  }
+
+  /**
+   * Initialize the storage keeper based on save preferences checkbox.
+   *
+   * @private
+   */
+  _initStorageKeeper() {
+    const self = this;
     const savePreferencesCheckbox = document.getElementById("save-preferences-checkbox");
     const shouldSave = savePreferencesCheckbox.checked;
     self._localStorageKeeper = shouldSave ? new LocalStorageKeeper() : new EphemeralStorageKeeper();
-    // Create progress callback
+  }
+
+  /**
+   * Initialize the WASM backend for worker-based execution.
+   *
+   * @private
+   */
+  _initWasmBackend() {
+    const self = this;
     const progressCallback = (progress) => {
       const percentage = Math.round(progress * 100);
       self._runningIndicatorPresenter.updateProgress(percentage);
     };
 
-    // Initialize the WASM backend for worker-based execution
     self._wasmLayer = new WasmLayer(progressCallback);
     self._wasmBackend = new WasmBackend(self._wasmLayer, progressCallback);
+  }
+
+  /**
+   * Initialize the code editor and related UI components.
+   *
+   * @private
+   */
+  _initCodeEditor() {
+    const self = this;
 
     self._codeEditorPresenter = new CodeEditorPresenter(
       document.getElementById("code-editor"),
@@ -340,8 +127,16 @@ class MainPresenter {
       (codeObj) => self._onCodeObjUpdate(codeObj),
       () => self._codeEditorPresenter.forceUpdate(),
     );
+  }
 
-    const source = self._localStorageKeeper.getSource();
+  /**
+   * Run the initial source code if provided.
+   *
+   * @param {string} source - The initial source code to run
+   * @private
+   */
+  _runInitialSource(source) {
+    const self = this;
     if (source) {
       self._codeEditorPresenter.setCode(source);
       const results = self._getCodeAsObj();
@@ -351,22 +146,6 @@ class MainPresenter {
         self._uiEditorPresenter.forceCodeObj(results.getProgram());
       }
     }
-
-    self._onCodeChange();
-    self._setupFileButtons();
-    self._setupStorageControls();
-    self._setupForceUpdateButton();
-
-    // Initialize tooltip presenter for help tooltips
-    self._tooltipPresenter = new TooltipPresenter(self._localStorageKeeper);
-    self._tooltipPresenter.initialize();
-
-    // Initialize update utility and check for updates (fails silently if offline)
-    self._updateUtil = new UpdateUtil();
-    self._checkForUpdates();
-
-    // Set up global error recovery mechanism
-    self._setupGlobalErrorRecovery();
   }
 
   /**
@@ -516,7 +295,6 @@ class MainPresenter {
     const execute = async () => {
       const code = self._codeEditorPresenter.getCode();
 
-      // First, validate syntax using the UI translator compiler (for UI feedback)
       const compiler = new UiTranslatorCompiler();
       const validationResult = compiler.compile(code);
 
@@ -533,14 +311,11 @@ class MainPresenter {
       }
 
       if (run) {
-        // Show the running indicator when simulation starts
         self._runningIndicatorPresenter.show();
 
         try {
-          // Execute using the WASM backend worker
           const programResult = await self._wasmBackend.execute(code);
 
-          // Hide the running indicator when execution completes
           self._runningIndicatorPresenter.hide();
 
           if (programResult.getParsedResults().length === 0) {
@@ -552,12 +327,10 @@ class MainPresenter {
             self._onResult(programResult);
           }
 
-          // Clear any previous runtime errors when execution succeeds during auto-refresh
           if (isAutoRefresh) {
             self._codeEditorPresenter.hideError();
           }
         } catch (e) {
-          // Show error indicator on simulation failure
           self._showErrorIndicator();
 
           console.log(e);
@@ -892,20 +665,17 @@ class MainPresenter {
       try {
         console.info("Resetting visualization state due to metric strategy error");
 
-        // Show user-friendly notification instead of technical error
         self._showUserNotification(
           "Visualization settings have been reset to resolve a display issue. " +
           "Your simulation data is safe.",
           "info",
         );
 
-        // Reset the results presenter filter to default state
         if (self._resultsPresenter) {
           self._resultsPresenter.resetFilter();
         }
       } catch (error) {
         console.error("Error during visualization state reset:", error);
-        // Fallback: show basic alert if custom notification fails
         alert("Visualization has been reset due to a display issue. Your data is safe.");
       }
     };
@@ -920,294 +690,16 @@ class MainPresenter {
   _showUserNotification(message, type = "info") {
     const self = this;
 
-    // Try to use existing error display mechanisms first
     if (type === "error" && self._isOnCodeEditorTab()) {
       self._codeEditorPresenter.showError(message);
       return;
     }
 
-    // Fallback to console and alert for now
-    // This could be enhanced later with a proper notification system
     console.log(`[${type.toUpperCase()}] ${message}`);
 
-    // For critical messages, show alert as last resort
     if (type === "error" || type === "warning") {
       alert(message);
     }
-  }
-}
-
-/**
- * Presenter for managing the privacy confirmation checkbox and dialog.
- */
-class PrivacyConfirmationPresenter {
-  constructor() {
-    const self = this;
-    self._checkbox = document.getElementById("privacy-confirmation-check");
-    self._dialog = document.getElementById("privacy-confirmation-dialog");
-    self._closeButton = self._dialog.querySelector(".close-button");
-    self._privacyTermsButton = document.getElementById("privacy-terms-button");
-    self._privacyDetailsButton = document.getElementById("privacy-details-button");
-
-    self._setupEventListeners();
-    self._setupPrivacyButton(self._privacyTermsButton);
-    self._setupPrivacyButton(self._privacyDetailsButton);
-  }
-
-  /**
-   * Set up event listeners for checkbox and dialog interactions.
-   */
-  _setupEventListeners() {
-    const self = this;
-
-    // Listen for checkbox changes
-    self._checkbox.addEventListener("change", (event) => {
-      if (!event.target.checked) {
-        self._showDialog();
-      }
-    });
-
-    // Listen for dialog close button
-    self._closeButton.addEventListener("click", (event) => {
-      event.preventDefault();
-      self._hideDialog();
-    });
-
-    // Listen for dialog close via ESC key or backdrop click
-    self._dialog.addEventListener("close", () => {
-      self._onDialogClose();
-    });
-  }
-
-  /**
-   * Set up event listener for a privacy button.
-   *
-   * @param {HTMLElement} button - The button element to set up event listeners for
-   * @private
-   */
-  _setupPrivacyButton(button) {
-    const self = this;
-
-    button.addEventListener("click", (event) => {
-      event.preventDefault();
-      self._showDialog();
-    });
-  }
-
-  /**
-   * Show the privacy confirmation dialog.
-   */
-  _showDialog() {
-    const self = this;
-    self._dialog.showModal();
-  }
-
-  /**
-   * Hide the privacy confirmation dialog.
-   */
-  _hideDialog() {
-    const self = this;
-    self._dialog.close();
-  }
-
-  /**
-   * Handle dialog close event - re-check the checkbox.
-   */
-  _onDialogClose() {
-    const self = this;
-    self._checkbox.checked = true;
-  }
-}
-
-/**
- * Presenter for managing the AI assistant dialog.
- */
-class AIAssistantPresenter {
-  constructor() {
-    const self = this;
-    self._dialog = document.getElementById("ai-assistant-dialog");
-    self._closeButton = self._dialog.querySelector(".close-button");
-    self._aiButton = document.getElementById("ai-assistant-button");
-    self._setupEventListeners();
-  }
-
-  /**
-   * Set up event listeners for AI button and dialog interactions.
-   */
-  _setupEventListeners() {
-    const self = this;
-
-    // AI button click handler
-    self._aiButton.addEventListener("click", (event) => {
-      event.preventDefault();
-      self._showDialog();
-    });
-
-    // Close button handler
-    self._closeButton.addEventListener("click", (event) => {
-      event.preventDefault();
-      self._hideDialog();
-    });
-
-    // ESC key and backdrop click handler
-    self._dialog.addEventListener("close", () => {
-      self._onDialogClose();
-    });
-  }
-
-  /**
-   * Show the AI assistant dialog.
-   */
-  _showDialog() {
-    const self = this;
-    self._dialog.showModal();
-  }
-
-  /**
-   * Hide the AI assistant dialog.
-   */
-  _hideDialog() {
-    const self = this;
-    self._dialog.close();
-  }
-
-  /**
-   * Handle dialog close event.
-   */
-  _onDialogClose() {
-    // Handle any cleanup needed when dialog closes
-  }
-}
-
-/**
- * Presenter for managing the AI designer dialog.
- */
-class AIDesignerPresenter {
-  constructor() {
-    const self = this;
-    self._dialog = document.getElementById("ai-designer-dialog");
-    self._closeButton = self._dialog?.querySelector(".close-button");
-    self._aiButton = document.getElementById("ai-designer-button");
-
-    // Check if elements exist before setting up listeners
-    if (self._dialog && self._closeButton && self._aiButton) {
-      self._setupEventListeners();
-    }
-  }
-
-  /**
-   * Set up event listeners for AI button and dialog interactions.
-   */
-  _setupEventListeners() {
-    const self = this;
-
-    // AI button click handler
-    self._aiButton.addEventListener("click", (event) => {
-      event.preventDefault();
-      self._showDialog();
-    });
-
-    // Close button handler
-    self._closeButton.addEventListener("click", (event) => {
-      event.preventDefault();
-      self._hideDialog();
-    });
-
-    // ESC key and backdrop click handler
-    self._dialog.addEventListener("close", () => {
-      self._onDialogClose();
-    });
-  }
-
-  /**
-   * Show the AI designer dialog.
-   */
-  _showDialog() {
-    const self = this;
-    self._dialog.showModal();
-  }
-
-  /**
-   * Hide the AI designer dialog.
-   */
-  _hideDialog() {
-    const self = this;
-    self._dialog.close();
-  }
-
-  /**
-   * Handle dialog close event.
-   */
-  _onDialogClose() {
-    // Handle any cleanup needed when dialog closes
-  }
-}
-
-/**
- * Presenter for managing the introduction sequence.
- */
-class IntroductionPresenter {
-  constructor(localStorageKeeper) {
-    const self = this;
-    self._localStorageKeeper = localStorageKeeper;
-    self._loadingPanel = document.getElementById("loading");
-    self._mainHolder = document.getElementById("main-holder");
-  }
-
-  /**
-   * Initialize the introduction sequence.
-   * @return {Promise} Promise that resolves when the user continues.
-   */
-  async initialize() {
-    const self = this;
-    const hideIntroduction = self._localStorageKeeper.getHideIntroduction();
-
-    if (hideIntroduction) {
-      return Promise.resolve();
-    }
-
-    return new Promise((resolve) => {
-      self._setupIntroductionUI(resolve);
-    });
-  }
-
-  /**
-   * Set up the introduction UI with buttons.
-   * @param {Function} resolve - Callback to resolve the promise when user continues.
-   */
-  _setupIntroductionUI(resolve) {
-    const self = this;
-    const loadingIndicator = document.getElementById("initial-loading-indicator");
-    const buttonPanel = document.getElementById("continue-buttons-panel");
-    const continueButton = document.getElementById("continue-button");
-    const dontShowAgainButton = document.getElementById("continue-no-show-button");
-
-    continueButton.onclick = (e) => {
-      e.preventDefault();
-      loadingIndicator.style.display = "block";
-      buttonPanel.style.display = "none";
-      resolve();
-    };
-
-    dontShowAgainButton.onclick = (e) => {
-      e.preventDefault();
-      self._localStorageKeeper.setHideIntroduction(true);
-      loadingIndicator.style.display = "block";
-      buttonPanel.style.display = "none";
-      resolve();
-    };
-
-    loadingIndicator.style.display = "none";
-    buttonPanel.style.display = "block";
-  }
-
-  /**
-   * Show the main application content.
-   */
-  _showMainContent() {
-    const self = this;
-    self._loadingPanel.style.display = "none";
-    self._mainHolder.style.display = "block";
   }
 }
 
@@ -1254,13 +746,4 @@ function captureSentryMessage(message, level) {
   console.log("Sentry message not sent.", message, level);
 }
 
-export {
-  main,
-  IntroductionPresenter,
-  RunningIndicatorPresenter,
-  ButtonPanelPresenter,
-  MainPresenter,
-  PrivacyConfirmationPresenter,
-  AIAssistantPresenter,
-  AIDesignerPresenter,
-};
+export {main, MainPresenter};

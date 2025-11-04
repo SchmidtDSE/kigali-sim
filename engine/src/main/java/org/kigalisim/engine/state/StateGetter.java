@@ -1,3 +1,8 @@
+package org.kigalisim.engine.state;
+
+import org.kigalisim.engine.number.EngineNumber;
+import org.kigalisim.engine.number.UnitConverter;
+
 /**
  * Interface for accessing engine state needed for unit conversions.
  *
@@ -6,19 +11,6 @@
  * volume, population, and time-based metrics.</p>
  *
  * @license BSD-3-Clause
- */
-
-package org.kigalisim.engine.state;
-
-import org.kigalisim.engine.number.EngineNumber;
-import org.kigalisim.engine.number.UnitConverter;
-
-/**
- * Interface defining methods to access engine state for unit conversions.
- *
- * <p>Implementations of this interface provide access to current engine state
- * including consumption rates, volumes, populations, and other metrics needed
- * to convert between different unit types in the simulation.</p>
  */
 public interface StateGetter {
 

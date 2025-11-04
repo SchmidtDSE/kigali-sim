@@ -1,5 +1,5 @@
 <!doctype html>
-<html>
+<html lang="en-GB">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width" />
@@ -43,17 +43,15 @@
     <input type="hidden" id="known-gwp-path" value="json/known_gwp.json?v=EPOCH" />
     <a href="#kigali-sim-app" class="skip-link">Skip to main content</a>
     <header>
-      <div class="beta-warning">
-        This tool is under development and currently in beta testing. We would love to hear from
-        you! Let us know your feedback at
-        <a href="mailto:hello@kigalisim.org">hello@kigalisim.org</a> and we are
-        here to help if you run into any issues. You are also very welcome to
-        <a href="https://calendar.app.google/xqLF4DXWwPCC2js58" target="_blank"
-          >book a time to meet with us</a
-        >. See also our
-        <a href="https://vimeo.com/1061085671?share=copy" target="_blank">getting help video</a>.
-      </div>
-      <h1>Kigali Sim</h1>
+      <h1>
+        <svg width="300" height="300" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Kigali Sim logo">
+          <title>Kigali Sim</title>
+          <rect width="300" height="300" fill="#E0E0E0"/>
+          <rect width="40.9836" height="300" fill="#7470BB"/>
+          <rect x="169.077" width="40.9836" height="267.704" transform="rotate(39.1665 169.077 0)" fill="#1595D1"/>
+          <rect x="218.418" y="268" width="40.9836" height="207.282" transform="rotate(129.495 218.418 268)" fill="#6DB05A" fill-opacity="0.75"/>
+        </svg>
+      </h1>
       <div class="file-buttons buttons-panel">
         <a href="#" id="new-file-button" class="secondary">New File</a>
         <a href="#" id="load-file-button" class="secondary">Load File</a>
@@ -278,26 +276,35 @@
 	<h2><span aria-hidden="true">👋</span> Welcome to Kigali Sim</h2>
 
         <p>
-          Kigali Sim is an interactive, open source tool that simulates the possible outcomes of
-          different policy interventions related to the Montreal Protocol and Kigali Amendment. It
-          provides an easy to use interface where you can enter your country-level modeling data and
-	  policies under consideration to quickly simulate potential impacts on emissions,
-	  consumption, and equipment across multiple scenarios. This can be used to explore many
-	  different substances like HFCs and sectors like commercial refrigeration.
+          Kigali Sim is an interactive, open source tool that simulates substances and equipment
+          related to the Montreal Protocol and Kigali Amendment. It can also explore different
+          policy interventions.
         </p>
 
         <p>
-          Kigali Sim was built to support those exploring Kigali Implementation Plans. It is offered
-          as a free, open source project that prioritizes your agency and privacy. Our tool does not
-          share your simulations and data with others including the tool's development team unless
-          you specifically request it. You don't need to install anything to use Kigali Sim - it
-          works in your web browser.
+          This software provides an easy-to-use interface where you can enter country-level
+          modeling data and policies under consideration to quickly simulate potential impacts on
+          emissions, energy, substance consumption, and equipment across multiple scenarios. This
+          can be used to explore many different substances like HFCs and sectors like commercial
+          refrigeration. You can also use QubecTalk, a simple programming language that unlocks
+          advanced modeling capabilities.
+        </p>
+
+        <p>
+          Kigali Sim was built to support researchers and policy makers like those working on
+          Kigali Implementation Plans. It is offered as a free, open source project that
+          prioritizes your agency and privacy. Our tool does not share your simulations and data
+          with others, including the tool's development team, unless you specifically request it.
+          You don't need to install anything to use Kigali Sim - it can work in your web browser.
+          However, you can also install it to your desktop or use a Java Virtual Machine to run
+          simulations.
         </p>
 
         <p>
           We want to help and hear from you! If you have any questions, suggestions, requests, or
-	  just want to talk to us about Kigali Sim, you can reach us at
-	  hello@kigalisim.org.
+          just want to talk to us about Kigali Sim, you can reach us at hello@kigalisim.org. <strong>
+          Need help getting started? Check out our <a href="/guide" target="_blank">User's Guide</a>.
+		  </strong> Currently in beta testing.
         </p>
 
         <div class="check-preferences">
@@ -320,7 +327,7 @@
         </div>
 
         <div id="continue-buttons-panel" class="buttons-panel">
-          <a href="#" id="continue-button" class="primary">Continue</a>
+          <a href="#" id="continue-button" class="primary">Open Tool</a>
           <a href="#" id="continue-no-show-button" class="secondary"
             >Disable this Message</a
           >
@@ -1484,6 +1491,7 @@
         <a href="https://github.com/SchmidtDSE/montreal-protocol" target="_blank" class="secondary"
           >Open Source</a
         >
+        <a href="/guide/credits.html" target="_blank" class="secondary">Credits</a>
         <a href="#" id="clear-data-button" class="secondary">Clear Data</a>
         <a href="#" id="tooltip-toggle-button" class="secondary">Enable Tooltips</a>
         <a href="/kigalisim-fat.jar" class="secondary" download>Download Jar</a>
@@ -1963,9 +1971,11 @@
           "code_editor": "./js/code_editor.js?v=EPOCH",
           "duplicate_util": "./js/duplicate_util.js?v=EPOCH",
           "duration": "./js/duration.js?v=EPOCH",
+          "editor_actions": "./js/editor_actions.js?v=EPOCH",
           "engine_const": "./js/engine_const.js?v=EPOCH",
           "engine_number": "./js/engine_number.js?v=EPOCH",
           "engine_struct": "./js/engine_struct.js?v=EPOCH",
+          "informational": "./js/informational.js?v=EPOCH",
           "known_substance": "./js/known_substance.js?v=EPOCH",
           "local_storage_keeper": "./js/local_storage_keeper.js?v=EPOCH",
           "main": "./js/main.js?v=EPOCH",
@@ -1975,7 +1985,12 @@
           "results": "./js/results.js?v=EPOCH",
           "storage_keeper": "./js/storage_keeper.js?v=EPOCH",
           "ui_editor": "./js/ui_editor.js?v=EPOCH",
+          "ui_editor_const": "./js/ui_editor_const.js?v=EPOCH",
+          "ui_editor_util": "./js/ui_editor_util.js?v=EPOCH",
           "ui_translator": "./js/ui_translator.js?v=EPOCH",
+          "ui_translator_commands": "./js/ui_translator_commands.js?v=EPOCH",
+          "ui_translator_components": "./js/ui_translator_components.js?v=EPOCH",
+          "ui_translator_util": "./js/ui_translator_util.js?v=EPOCH",
           "updates": "./js/updates.js?v=EPOCH",
           "user_config": "./js/user_config.js?v=EPOCH",
           "wasm_backend": "./js/wasm_backend.js?v=EPOCH",

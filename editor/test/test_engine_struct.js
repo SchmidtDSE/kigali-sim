@@ -25,32 +25,33 @@ function buildEngineStructTests() {
         new EngineNumber(6, "tCO2e"),
       );
 
-      return new EngineResult(
-        "test app",
-        "test substance",
-        2023,
-        "test scenario",
-        1,
-        new EngineNumber(100, "kg"),
-        new EngineNumber(50, "kg"),
-        new EngineNumber(30, "kg"),
-        new EngineNumber(25, "kg"),
-        new EngineNumber(200, "tCO2e"),
-        new EngineNumber(100, "tCO2e"),
-        new EngineNumber(60, "tCO2e"),
-        new EngineNumber(50, "tCO2e"),
-        new EngineNumber(1000, "units"),
-        new EngineNumber(100, "units"),
-        new EngineNumber(300, "tCO2e"),
-        new EngineNumber(150, "tCO2e"),
-        new EngineNumber(200, "tCO2e"),
-        new EngineNumber(500, "kWh"),
-        tradeSupplement,
-        new EngineNumber(400, "kg"),
-        new EngineNumber(800, "tCO2e"),
-        new EngineNumber(50, "kg"),
-        new EngineNumber(100, "tCO2e"),
-      );
+      const builder = new EngineResultBuilder();
+      builder.setApplication("test app");
+      builder.setSubstance("test substance");
+      builder.setYear(2023);
+      builder.setScenarioName("test scenario");
+      builder.setTrialNumber(1);
+      builder.setDomesticValue(new EngineNumber(100, "kg"));
+      builder.setImportValue(new EngineNumber(50, "kg"));
+      builder.setExportValue(new EngineNumber(30, "kg"));
+      builder.setRecycleValue(new EngineNumber(25, "kg"));
+      builder.setDomesticConsumptionValue(new EngineNumber(200, "tCO2e"));
+      builder.setImportConsumptionValue(new EngineNumber(100, "tCO2e"));
+      builder.setExportConsumptionValue(new EngineNumber(60, "tCO2e"));
+      builder.setRecycleConsumptionValue(new EngineNumber(50, "tCO2e"));
+      builder.setPopulationValue(new EngineNumber(1000, "units"));
+      builder.setPopulationNew(new EngineNumber(100, "units"));
+      builder.setRechargeEmissions(new EngineNumber(300, "tCO2e"));
+      builder.setEolEmissions(new EngineNumber(150, "tCO2e"));
+      builder.setInitialChargeEmissions(new EngineNumber(200, "tCO2e"));
+      builder.setEnergyConsumption(new EngineNumber(500, "kWh"));
+      builder.setTradeSupplement(tradeSupplement);
+      builder.setBankKg(new EngineNumber(400, "kg"));
+      builder.setBankTco2e(new EngineNumber(800, "tCO2e"));
+      builder.setBankChangeKg(new EngineNumber(50, "kg"));
+      builder.setBankChangeTco2e(new EngineNumber(100, "tCO2e"));
+
+      return builder.build();
     };
 
     QUnit.test("initializes", function (assert) {
@@ -199,32 +200,33 @@ function buildEngineStructTests() {
         new EngineNumber(6, "tCO2e"),
       );
 
-      return new EngineResult(
-        "test app",
-        "test substance",
-        2023,
-        "test scenario",
-        1,
-        new EngineNumber(100, "kg"),
-        new EngineNumber(50, "kg"),
-        new EngineNumber(30, "kg"),
-        new EngineNumber(25, "kg"),
-        new EngineNumber(200, "tCO2e"),
-        new EngineNumber(100, "tCO2e"),
-        new EngineNumber(60, "tCO2e"),
-        new EngineNumber(50, "tCO2e"),
-        new EngineNumber(1000, "units"),
-        new EngineNumber(100, "units"),
-        new EngineNumber(300, "tCO2e"),
-        new EngineNumber(150, "tCO2e"),
-        new EngineNumber(200, "tCO2e"),
-        new EngineNumber(500, "kWh"),
-        tradeSupplement,
-        new EngineNumber(400, "kg"),
-        new EngineNumber(800, "tCO2e"),
-        new EngineNumber(50, "kg"),
-        new EngineNumber(100, "tCO2e"),
-      );
+      const builder = new EngineResultBuilder();
+      builder.setApplication("test app");
+      builder.setSubstance("test substance");
+      builder.setYear(2023);
+      builder.setScenarioName("test scenario");
+      builder.setTrialNumber(1);
+      builder.setDomesticValue(new EngineNumber(100, "kg"));
+      builder.setImportValue(new EngineNumber(50, "kg"));
+      builder.setExportValue(new EngineNumber(30, "kg"));
+      builder.setRecycleValue(new EngineNumber(25, "kg"));
+      builder.setDomesticConsumptionValue(new EngineNumber(200, "tCO2e"));
+      builder.setImportConsumptionValue(new EngineNumber(100, "tCO2e"));
+      builder.setExportConsumptionValue(new EngineNumber(60, "tCO2e"));
+      builder.setRecycleConsumptionValue(new EngineNumber(50, "tCO2e"));
+      builder.setPopulationValue(new EngineNumber(1000, "units"));
+      builder.setPopulationNew(new EngineNumber(100, "units"));
+      builder.setRechargeEmissions(new EngineNumber(300, "tCO2e"));
+      builder.setEolEmissions(new EngineNumber(150, "tCO2e"));
+      builder.setInitialChargeEmissions(new EngineNumber(200, "tCO2e"));
+      builder.setEnergyConsumption(new EngineNumber(500, "kWh"));
+      builder.setTradeSupplement(tradeSupplement);
+      builder.setBankKg(new EngineNumber(400, "kg"));
+      builder.setBankTco2e(new EngineNumber(800, "tCO2e"));
+      builder.setBankChangeKg(new EngineNumber(50, "kg"));
+      builder.setBankChangeTco2e(new EngineNumber(100, "tCO2e"));
+
+      return builder.build();
     };
 
     const makeExample = () => {
@@ -510,26 +512,43 @@ function buildEngineStructTests() {
 
   QUnit.module("AggregatedResult", function () {
     const makeExample = () => {
-      return new AggregatedResult(
-        new EngineNumber(100, "kg"), // domestic
-        new EngineNumber(50, "kg"), // import
-        new EngineNumber(25, "kg"), // recycle
-        new EngineNumber(30, "kg"), // export
-        new EngineNumber(200, "tCO2e"), // domesticConsumption
-        new EngineNumber(100, "tCO2e"), // importConsumption
-        new EngineNumber(50, "tCO2e"), // recycleConsumption
-        new EngineNumber(60, "tCO2e"), // exportConsumption
-        new EngineNumber(1000, "units"), // population
-        new EngineNumber(100, "units"), // populationNew
-        new EngineNumber(300, "tCO2e"), // rechargeEmissions
-        new EngineNumber(150, "tCO2e"), // eolEmissions
-        new EngineNumber(200, "tCO2e"), // initialChargeEmissions
-        new EngineNumber(500, "kWh"), // energyConsumption
-        new EngineNumber(400, "kg"), // bankKg
-        new EngineNumber(800, "tCO2e"), // bankTco2e
-        new EngineNumber(50, "kg"), // bankChangeKg
-        new EngineNumber(100, "tCO2e"), // bankChangeTco2e
+      // Create an EngineResult with the target values (not doubled)
+      const builder = new EngineResultBuilder();
+      const tradeSupplement = new TradeSupplement(
+        new EngineNumber(0, "kg"),
+        new EngineNumber(0, "tCO2e"),
+        new EngineNumber(0, "units"),
+        new EngineNumber(0, "kg"),
+        new EngineNumber(0, "tCO2e"),
       );
+      builder.setApplication("test app");
+      builder.setSubstance("test substance");
+      builder.setYear(2023);
+      builder.setScenarioName("test scenario");
+      builder.setTrialNumber(1);
+      builder.setDomesticValue(new EngineNumber(100, "kg"));
+      builder.setImportValue(new EngineNumber(50, "kg"));
+      builder.setExportValue(new EngineNumber(30, "kg"));
+      builder.setRecycleValue(new EngineNumber(25, "kg"));
+      builder.setDomesticConsumptionValue(new EngineNumber(200, "tCO2e"));
+      builder.setImportConsumptionValue(new EngineNumber(100, "tCO2e"));
+      builder.setExportConsumptionValue(new EngineNumber(60, "tCO2e"));
+      builder.setRecycleConsumptionValue(new EngineNumber(50, "tCO2e"));
+      builder.setPopulationValue(new EngineNumber(1000, "units"));
+      builder.setPopulationNew(new EngineNumber(100, "units"));
+      builder.setRechargeEmissions(new EngineNumber(300, "tCO2e"));
+      builder.setEolEmissions(new EngineNumber(150, "tCO2e"));
+      builder.setInitialChargeEmissions(new EngineNumber(200, "tCO2e"));
+      builder.setEnergyConsumption(new EngineNumber(500, "kWh"));
+      builder.setTradeSupplement(tradeSupplement);
+      builder.setBankKg(new EngineNumber(400, "kg"));
+      builder.setBankTco2e(new EngineNumber(800, "tCO2e"));
+      builder.setBankChangeKg(new EngineNumber(50, "kg"));
+      builder.setBankChangeTco2e(new EngineNumber(100, "tCO2e"));
+      const result = builder.build();
+
+      // Wrap the EngineResult in AggregatedResult (identity check will just copy values)
+      return new AggregatedResult(result, result);
     };
 
     QUnit.test("initializes", function (assert) {
@@ -636,29 +655,47 @@ function buildEngineStructTests() {
     });
 
     QUnit.test("combine", function (assert) {
+      // Create result1 from makeExample
       const result1 = makeExample();
-      const result2 = new AggregatedResult(
-        new EngineNumber(50, "kg"), // domestic
-        new EngineNumber(25, "kg"), // import
-        new EngineNumber(10, "kg"), // recycle
-        new EngineNumber(15, "kg"), // export
-        new EngineNumber(100, "tCO2e"), // domesticConsumption
-        new EngineNumber(50, "tCO2e"), // importConsumption
-        new EngineNumber(25, "tCO2e"), // recycleConsumption
-        new EngineNumber(30, "tCO2e"), // exportConsumption
-        new EngineNumber(500, "units"), // population
-        new EngineNumber(50, "units"), // populationNew
-        new EngineNumber(150, "tCO2e"), // rechargeEmissions
-        new EngineNumber(75, "tCO2e"), // eolEmissions
-        new EngineNumber(100, "tCO2e"), // initialChargeEmissions
-        new EngineNumber(250, "kWh"), // energyConsumption
-        new EngineNumber(200, "kg"), // bankKg
-        new EngineNumber(400, "tCO2e"), // bankTco2e
-        new EngineNumber(25, "kg"), // bankChangeKg
-        new EngineNumber(50, "tCO2e"), // bankChangeTco2e
-      );
 
-      const combined = result1.combine(result2);
+      // Create result2 with different values
+      const builder2 = new EngineResultBuilder();
+      const ts2 = new TradeSupplement(
+        new EngineNumber(0, "kg"),
+        new EngineNumber(0, "tCO2e"),
+        new EngineNumber(0, "units"),
+        new EngineNumber(0, "kg"),
+        new EngineNumber(0, "tCO2e"),
+      );
+      builder2.setApplication("test app");
+      builder2.setSubstance("test substance");
+      builder2.setYear(2023);
+      builder2.setScenarioName("test scenario");
+      builder2.setTrialNumber(1);
+      builder2.setDomesticValue(new EngineNumber(50, "kg"));
+      builder2.setImportValue(new EngineNumber(25, "kg"));
+      builder2.setExportValue(new EngineNumber(15, "kg"));
+      builder2.setRecycleValue(new EngineNumber(10, "kg"));
+      builder2.setDomesticConsumptionValue(new EngineNumber(100, "tCO2e"));
+      builder2.setImportConsumptionValue(new EngineNumber(50, "tCO2e"));
+      builder2.setExportConsumptionValue(new EngineNumber(30, "tCO2e"));
+      builder2.setRecycleConsumptionValue(new EngineNumber(25, "tCO2e"));
+      builder2.setPopulationValue(new EngineNumber(500, "units"));
+      builder2.setPopulationNew(new EngineNumber(50, "units"));
+      builder2.setRechargeEmissions(new EngineNumber(150, "tCO2e"));
+      builder2.setEolEmissions(new EngineNumber(75, "tCO2e"));
+      builder2.setInitialChargeEmissions(new EngineNumber(100, "tCO2e"));
+      builder2.setEnergyConsumption(new EngineNumber(250, "kWh"));
+      builder2.setTradeSupplement(ts2);
+      builder2.setBankKg(new EngineNumber(200, "kg"));
+      builder2.setBankTco2e(new EngineNumber(400, "tCO2e"));
+      builder2.setBankChangeKg(new EngineNumber(25, "kg"));
+      builder2.setBankChangeTco2e(new EngineNumber(50, "tCO2e"));
+      const engineResult2 = builder2.build();
+      const result2 = new AggregatedResult(engineResult2, engineResult2);
+
+      // Combine using new AggregatedResult constructor
+      const combined = new AggregatedResult(result1, result2);
       assert.closeTo(combined.getDomestic().getValue(), 150, 0.0001); // 100 + 50
       assert.closeTo(combined.getImport().getValue(), 75, 0.0001); // 50 + 25
       assert.closeTo(combined.getRecycle().getValue(), 35, 0.0001); // 25 + 10

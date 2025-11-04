@@ -45,67 +45,38 @@ public class EngineResult {
   private final EngineNumber bankChangeTco2e;
 
   /**
-   * Constructor for creating an EngineResult instance.
+   * Constructor for creating an EngineResult instance from a builder.
    *
-   * @param application The application associated with this engine result
-   * @param substance The substance associated with this engine result
-   * @param year The year for which the engine result is relevant
-   * @param scenarioName The name of the scenario being run
-   * @param trialNumber The trial number of the current run
-   * @param domesticValue The value associated with domestic production in volume like kg
-   * @param importValue The value related to imports like in volume like kg
-   * @param recycleValue The value denoting recycled materials in volume like kg
-   * @param domesticConsumptionValue The domestic consumption value in tCO2e or equivalent
-   * @param importConsumptionValue The import consumption value in tCO2e or equivalent
-   * @param recycleConsumptionValue The recycle consumption value in tCO2e or equivalent
-   * @param populationValue The population value in terms of equipment
-   * @param populationNew The amount of new equipment added this year
-   * @param rechargeEmissions The greenhouse gas emissions from recharge activities
-   * @param eolEmissions The greenhouse gas emissions from end-of-life equipment
-   * @param initialChargeEmissions The greenhouse gas emissions from initial charge activities
-   * @param energyConsumption The energy consumption value
-   * @param exportValue The value related to exports in volume like kg
-   * @param exportConsumptionValue The export consumption value in tCO2e or equivalent
-   * @param tradeSupplement The supplemental trade data needed for attribution
-   * @param bankKg The total substance volume in equipment bank in kg
-   * @param bankTco2e The total GHG potential of substance in equipment bank in tCO2e
-   * @param bankChangeKg The change in substance bank from previous year in kg
-   * @param bankChangeTco2e The change in GHG potential of substance bank from previous year in tCO2e
+   * <p>This constructor accepts an EngineResultBuilder instance and extracts all
+   * configured field values from it to initialize this result.</p>
+   *
+   * @param builder The EngineResultBuilder instance with all required fields configured
    */
-  public EngineResult(String application, String substance, int year, String scenarioName, int trialNumber,
-                     EngineNumber domesticValue, EngineNumber importValue,
-                     EngineNumber recycleValue, EngineNumber domesticConsumptionValue,
-                     EngineNumber importConsumptionValue, EngineNumber recycleConsumptionValue,
-                     EngineNumber populationValue, EngineNumber populationNew,
-                     EngineNumber rechargeEmissions, EngineNumber eolEmissions,
-                     EngineNumber initialChargeEmissions, EngineNumber energyConsumption,
-                     EngineNumber exportValue, EngineNumber exportConsumptionValue,
-                     TradeSupplement tradeSupplement, EngineNumber bankKg, EngineNumber bankTco2e,
-                     EngineNumber bankChangeKg, EngineNumber bankChangeTco2e) {
-    this.application = application;
-    this.substance = substance;
-    this.year = year;
-    this.scenarioName = scenarioName;
-    this.trialNumber = trialNumber;
-    this.domesticValue = domesticValue;
-    this.importValue = importValue;
-    this.recycleValue = recycleValue;
-    this.domesticConsumptionValue = domesticConsumptionValue;
-    this.importConsumptionValue = importConsumptionValue;
-    this.recycleConsumptionValue = recycleConsumptionValue;
-    this.populationValue = populationValue;
-    this.populationNew = populationNew;
-    this.rechargeEmissions = rechargeEmissions;
-    this.eolEmissions = eolEmissions;
-    this.initialChargeEmissions = initialChargeEmissions;
-    this.energyConsumption = energyConsumption;
-    this.exportValue = exportValue;
-    this.exportConsumptionValue = exportConsumptionValue;
-    this.tradeSupplement = tradeSupplement;
-    this.bankKg = bankKg;
-    this.bankTco2e = bankTco2e;
-    this.bankChangeKg = bankChangeKg;
-    this.bankChangeTco2e = bankChangeTco2e;
+  public EngineResult(EngineResultBuilder builder) {
+    application = builder.getApplication();
+    substance = builder.getSubstance();
+    year = builder.getYear();
+    scenarioName = builder.getScenarioName();
+    trialNumber = builder.getTrialNumber();
+    domesticValue = builder.getDomesticValue();
+    importValue = builder.getImportValue();
+    recycleValue = builder.getRecycleValue();
+    domesticConsumptionValue = builder.getDomesticConsumptionValue();
+    importConsumptionValue = builder.getImportConsumptionValue();
+    recycleConsumptionValue = builder.getRecycleConsumptionValue();
+    populationValue = builder.getPopulationValue();
+    populationNew = builder.getPopulationNew();
+    rechargeEmissions = builder.getRechargeEmissions();
+    eolEmissions = builder.getEolEmissions();
+    initialChargeEmissions = builder.getInitialChargeEmissions();
+    energyConsumption = builder.getEnergyConsumption();
+    exportValue = builder.getExportValue();
+    exportConsumptionValue = builder.getExportConsumptionValue();
+    tradeSupplement = builder.getTradeSupplement();
+    bankKg = builder.getBankKg();
+    bankTco2e = builder.getBankTco2e();
+    bankChangeKg = builder.getBankChangeKg();
+    bankChangeTco2e = builder.getBankChangeTco2e();
   }
 
   /**
@@ -163,7 +134,9 @@ public class EngineResult {
   }
 
   /**
-   * Get the total consumption. By default, excludes recycling consumption to measure virgin material consumption.
+   * Get the total consumption.
+   *
+   * <p>By default, excludes recycling consumption to measure virgin material consumption.</p>
    *
    * @return The virgin material consumption value in tCO2e or similar
    */
@@ -183,7 +156,8 @@ public class EngineResult {
 
     if (!domesticUnits.equals(importUnits)) {
       throw new IllegalStateException(
-          "Could not add incompatible units for consumption.");
+          "Could not add incompatible units for consumption."
+      );
     }
 
     BigDecimal domesticConsumptionRaw = domesticConsumptionValue.getValue();
@@ -194,7 +168,8 @@ public class EngineResult {
       String recycleUnits = recycleConsumptionValue.getUnits();
       if (!domesticUnits.equals(recycleUnits)) {
         throw new IllegalStateException(
-            "Could not add incompatible units for total consumption with recycling.");
+            "Could not add incompatible units for total consumption with recycling."
+        );
       }
       totalValue = totalValue.add(recycleConsumptionValue.getValue());
     }

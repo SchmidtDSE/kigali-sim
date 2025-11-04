@@ -8,6 +8,9 @@ import org.kigalisim.engine.support.EngineSupportUtils;
 
 /**
  * Builder for creating StreamUpdate instances.
+ *
+ * <p>Provides a fluent interface for constructing StreamUpdate objects with optional
+ * parameters and validation.</p>
  */
 public final class StreamUpdateBuilder {
   private String name;

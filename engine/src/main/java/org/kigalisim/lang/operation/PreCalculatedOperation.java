@@ -26,6 +26,7 @@ public class PreCalculatedOperation implements Operation {
     this.result = result;
   }
 
+  /** {@inheritDoc} */
   @Override
   public void execute(PushDownMachine engine) {
     engine.push(result);

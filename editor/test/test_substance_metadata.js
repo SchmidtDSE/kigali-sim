@@ -1,4 +1,4 @@
-import {SubstanceMetadata, SubstanceMetadataBuilder} from "ui_translator";
+import {SubstanceMetadata, SubstanceMetadataBuilder} from "ui_translator_components";
 
 function buildSubstanceMetadataTests() {
   QUnit.module("SubstanceMetadata", function () {

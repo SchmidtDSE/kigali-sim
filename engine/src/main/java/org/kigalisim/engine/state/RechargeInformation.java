@@ -67,22 +67,14 @@ public class RechargeInformation {
    * @return A new RechargeInformation instance with accumulated values
    */
   public RechargeInformation add(EngineNumber newPopulation, EngineNumber newIntensity) {
-    // Calculate weighted-average intensity BEFORE updating population
-    // Use absolute values for weights to handle negative values correctly
     BigDecimal currentWeight = population.getValue().abs();
     BigDecimal addedWeight = newPopulation.getValue().abs();
 
-    BigDecimal weightedIntensity;
-    if (currentWeight.compareTo(BigDecimal.ZERO) == 0) {
-      // First recharge command this step, just use new intensity directly
-      weightedIntensity = newIntensity.getValue();
-    } else {
-      // Multiple recharge commands - compute weighted average: (w1*i1 + w2*i2) / (w1 + w2)
-      BigDecimal totalWeight = currentWeight.add(addedWeight);
-      weightedIntensity = currentWeight.multiply(intensity.getValue())
-          .add(addedWeight.multiply(newIntensity.getValue()))
-          .divide(totalWeight, 10, java.math.RoundingMode.HALF_UP);
-    }
+    BigDecimal weightedIntensity = calculateWeightedIntensity(
+        currentWeight,
+        addedWeight,
+        newIntensity
+    );
 
     // Accumulate population rates (can be negative)
     BigDecimal accumulatedPopulation = population.getValue().add(newPopulation.getValue());
@@ -91,5 +83,34 @@ public class RechargeInformation {
         new EngineNumber(accumulatedPopulation, "%"),
         new EngineNumber(weightedIntensity, "kg / unit")
     );
+  }
+
+  /**
+   * Calculate the weighted-average intensity for recharge operations.
+   *
+   * <p>Use absolute values for weights to handle negative values correctly.
+   * For the first recharge command or no population, just use new intensity directly.
+   * For multiple recharge commands, compute weighted average: (w1*i1 + w2*i2) / (w1 + w2)</p>
+   *
+   * @param currentWeight The absolute value of the current population
+   * @param addedWeight The absolute value of the new population
+   * @param newIntensity The recharge intensity for this rate
+   * @return The calculated weighted-average intensity
+   */
+  private BigDecimal calculateWeightedIntensity(
+      BigDecimal currentWeight,
+      BigDecimal addedWeight,
+      EngineNumber newIntensity
+  ) {
+    boolean noPriorPopulation = currentWeight.compareTo(BigDecimal.ZERO) == 0;
+
+    if (noPriorPopulation) {
+      return newIntensity.getValue();
+    } else {
+      BigDecimal totalWeight = currentWeight.add(addedWeight);
+      return currentWeight.multiply(intensity.getValue())
+          .add(addedWeight.multiply(newIntensity.getValue()))
+          .divide(totalWeight, 10, java.math.RoundingMode.HALF_UP);
+    }
   }
 }

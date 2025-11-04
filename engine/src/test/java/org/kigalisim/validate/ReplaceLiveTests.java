@@ -139,16 +139,16 @@ public class ReplaceLiveTests {
   }
 
   /**
-   * Test tutorial_11.qta to verify replacement policy behavior.
+   * Test tutorial_09.qta to verify replacement policy behavior.
    * This test verifies that:
    * 1. Total kg of sales remains the same between BAU and Replacement scenarios at 2030
    * 2. Total equipment populations remain the same between BAU and Replacement at 2030
    * 3. Recharge emissions in BAU should be higher than in Replacement (not lower)
    */
   @Test
-  public void testTutorial11Replacement() throws IOException {
+  public void testTutorial9Replacement() throws IOException {
     // Load and parse the QTA file
-    String qtaPath = "../examples/tutorial_11.qta";
+    String qtaPath = "../examples/tutorial_09.qta";
     ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
     assertNotNull(program, "Program should not be null");
 

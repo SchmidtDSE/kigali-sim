@@ -4,13 +4,13 @@
  * @license BSD, see LICENSE.md.
  */
 
-import {validateNumericInputs} from "ui_editor";
+import {validateNumericInputs} from "ui_editor_util";
 import {
   Application,
   DefinitionalStanza,
   SimulationScenario,
   Substance,
-} from "ui_translator";
+} from "ui_translator_components";
 
 /**
  * Result of name conflict resolution.
@@ -99,58 +99,105 @@ class DuplicateEntityPresenter {
     self._getCodeObj = getCodeObj;
     self._onCodeObjUpdate = onCodeObjUpdate;
     self._dialog = document.getElementById("duplicate-entity-dialog");
+    self._duplicateLink = document.querySelector(".duplicate-entity-link");
     self._setupDialog();
   }
 
   /**
    * Set up dialog event handlers and dynamic behavior.
+   *
    * @private
    */
   _setupDialog() {
     const self = this;
+    self._setupDuplicateLink();
+    self._setupEntityType();
+    self._setupSourceEntity();
+    self._setupEquipmentModel();
+    self._setupSaveButton();
+    self._setupCancelButton();
+  }
 
-    // Link to open dialog
-    const duplicateLink = document.querySelector(".duplicate-entity-link");
-    duplicateLink.addEventListener("click", (event) => {
+  /**
+   * Set up duplicate link click handler.
+   *
+   * @private
+   */
+  _setupDuplicateLink() {
+    const self = this;
+    self._duplicateLink.addEventListener("click", (event) => {
       event.preventDefault();
       self._refreshEntityDropdown();
       self._dialog.showModal();
     });
+  }
 
-    // Entity type change handler - update source entity dropdown and substance-specific fields
+  /**
+   * Set up entity type change handler.
+   *
+   * @private
+   */
+  _setupEntityType() {
+    const self = this;
     const entityTypeInput = self._dialog.querySelector(".duplicate-entity-type-input");
     entityTypeInput.addEventListener("change", () => {
       self._refreshEntityDropdown();
       self._updateNewNameSuggestion();
       self._toggleSubstanceSpecificFields();
     });
+  }
 
-    // Source entity change handler - suggest new name and refresh application dropdown
+  /**
+   * Set up source entity change handler.
+   *
+   * @private
+   */
+  _setupSourceEntity() {
+    const self = this;
     const sourceEntityInput = self._dialog.querySelector(".duplicate-source-entity-input");
     sourceEntityInput.addEventListener("change", () => {
       self._updateNewNameSuggestion();
-      // Refresh application dropdown to update default selection
       const entityType = self._dialog.querySelector(".duplicate-entity-type-input").value;
       if (entityType === "substance") {
         self._refreshApplicationDropdown();
       }
     });
+  }
 
-    // Equipment model change handler - update name suggestion
+  /**
+   * Set up equipment model change handler.
+   *
+   * @private
+   */
+  _setupEquipmentModel() {
+    const self = this;
     const equipmentModelInput = self._dialog.querySelector(".duplicate-equipment-model-input");
     equipmentModelInput.addEventListener("input", () => {
       self._updateNewNameSuggestion();
     });
+  }
 
-
-    // Save button handler
+  /**
+   * Set up save button click handler.
+   *
+   * @private
+   */
+  _setupSaveButton() {
+    const self = this;
     const saveButton = self._dialog.querySelector(".save-button");
     saveButton.addEventListener("click", (event) => {
       event.preventDefault();
       self._duplicateEntity();
     });
+  }
 
-    // Cancel button handler
+  /**
+   * Set up cancel button click handler.
+   *
+   * @private
+   */
+  _setupCancelButton() {
+    const self = this;
     const cancelButton = self._dialog.querySelector(".cancel-button");
     cancelButton.addEventListener("click", (event) => {
       event.preventDefault();
@@ -160,6 +207,7 @@ class DuplicateEntityPresenter {
 
   /**
    * Refresh the source entity dropdown based on selected entity type.
+   *
    * @private
    */
   _refreshEntityDropdown() {
@@ -213,6 +261,7 @@ class DuplicateEntityPresenter {
 
   /**
    * Update the new name suggestion based on selected source entity.
+   *
    * @private
    */
   _updateNewNameSuggestion() {
@@ -224,7 +273,6 @@ class DuplicateEntityPresenter {
 
     if (sourceEntity && sourceEntity !== "") {
       if (entityType === "substance" && equipmentModel && equipmentModel.trim() !== "") {
-        // Generate compound name suggestion
         newNameInput.value = `${sourceEntity} - ${equipmentModel.trim()}`;
       } else {
         newNameInput.value = `${sourceEntity} Copy`;
@@ -234,6 +282,7 @@ class DuplicateEntityPresenter {
 
   /**
    * Execute the entity duplication operation.
+   *
    * @private
    */
   _duplicateEntity() {
@@ -269,8 +318,6 @@ class DuplicateEntityPresenter {
       }
       duplicator();
 
-      // Run validation checks that might show confirmation dialogs
-      // If user cancels any confirmation, keep dialog open
       if (!self._validateBeforeUpdate(entityType)) {
         return; // User cancelled validation, keep dialog open
       }
@@ -286,6 +333,7 @@ class DuplicateEntityPresenter {
   /**
    * Validate the duplicate dialog before updating code object.
    * Runs validation checks that may show confirmation dialogs.
+   *
    * @param {string} entityType - The type of entity being duplicated
    * @returns {boolean} True if validation passes or user confirms, false if user cancels
    * @private
@@ -310,6 +358,7 @@ class DuplicateEntityPresenter {
 
   /**
    * Duplicate an application with deep copy of all substances and commands.
+   *
    * @param {Program} codeObj - The program object to modify
    * @param {string} sourceAppName - Name of source application
    * @param {string} newName - Name for the duplicated application
@@ -341,6 +390,7 @@ class DuplicateEntityPresenter {
 
   /**
    * Duplicate a policy with deep copy of all applications and commands.
+   *
    * @param {Program} codeObj - The program object to modify
    * @param {string} sourcePolicyName - Name of source policy
    * @param {string} newName - Name for the duplicated policy
@@ -361,7 +411,7 @@ class DuplicateEntityPresenter {
       });
 
       return new Application(
-        app.getName(), // Keep same application name (policy context)
+        app.getName(),
         duplicatedSubstances,
         app._isModification,
         app._isCompatible,
@@ -380,22 +430,23 @@ class DuplicateEntityPresenter {
 
   /**
    * Duplicate a simulation scenario.
+   *
    * @param {Program} codeObj - The program object to modify
    * @param {string} sourceSimName - Name of source simulation
    * @param {string} newName - Name for the duplicated simulation
    * @private
    */
   _duplicateSimulation(codeObj, sourceSimName, newName) {
+    const self = this;
     const sourceSimulation = codeObj.getScenario(sourceSimName);
 
     if (!sourceSimulation) {
       throw new Error(`Simulation "${sourceSimName}" not found`);
     }
 
-    // Create new simulation scenario with same parameters
     const newSimulation = new SimulationScenario(
       newName,
-      [...sourceSimulation.getPolicyNames()], // Copy policy array
+      self._copyPolicyArray(sourceSimulation),
       sourceSimulation.getYearStart(),
       sourceSimulation.getYearEnd(),
       sourceSimulation._isCompatible,
@@ -405,8 +456,21 @@ class DuplicateEntityPresenter {
   }
 
   /**
+   * Create a copy of the policy names array from a simulation scenario.
+   *
+   * @param {SimulationScenario} sourceSimulation - The source simulation to copy from
+   * @returns {Array<string>} A new array containing copied policy names
+   * @private
+   */
+  _copyPolicyArray(sourceSimulation) {
+    const self = this;
+    return [...sourceSimulation.getPolicyNames()];
+  }
+
+  /**
    * Show/hide substance-specific fields (equipment model and application selection)
    * based on entity type selection.
+   *
    * @private
    */
   _toggleSubstanceSpecificFields() {
@@ -422,7 +486,6 @@ class DuplicateEntityPresenter {
     } else {
       equipmentSection.style.display = "none";
       applicationSection.style.display = "none";
-      // Clear fields when not substance
       self._dialog.querySelector(".duplicate-equipment-model-input").value = "";
       self._dialog.querySelector(".duplicate-target-application-input").innerHTML = "";
     }
@@ -430,12 +493,14 @@ class DuplicateEntityPresenter {
 
   /**
    * Find which application contains a specific substance.
+   *
    * @param {Program} codeObj - The program object
    * @param {string} substanceName - Name of substance to find
    * @returns {string} Application name containing the substance
    * @private
    */
   _findSubstanceApplication(codeObj, substanceName) {
+    const self = this;
     const applications = codeObj.getApplications();
     for (const app of applications) {
       if (app.getSubstances().some((sub) => sub.getName() === substanceName)) {
@@ -447,6 +512,7 @@ class DuplicateEntityPresenter {
 
   /**
    * Refresh the application dropdown with available applications.
+   *
    * @private
    */
   _refreshApplicationDropdown() {
@@ -490,6 +556,7 @@ class DuplicateEntityPresenter {
 
   /**
    * Duplicate a substance with optional equipment model for compound naming.
+   *
    * @param {Program} codeObj - The program object to modify
    * @param {string} sourceSubstanceName - Name of source substance
    * @param {string} newName - Name for the duplicated substance (may be compound)
@@ -546,11 +613,13 @@ class DuplicateEntityPresenter {
 
   /**
    * Deep copy a substance with all its commands and properties.
+   *
    * @param {Substance} sourceSubstance - The substance to copy
    * @returns {Substance} Deep copied substance
    * @private
    */
   _deepCopySubstance(sourceSubstance) {
+    const self = this;
     // Commands are immutable, so we can share references
     const copiedCharges = sourceSubstance.getInitialCharges();
     const copiedLimits = sourceSubstance.getLimits();
@@ -563,6 +632,7 @@ class DuplicateEntityPresenter {
     const copiedRetire = sourceSubstance.getRetire();
     const copiedSetVals = sourceSubstance.getSetVals();
     const copiedEnables = sourceSubstance.getEnables();
+    const copiedAssumeMode = sourceSubstance.getAssumeMode();
 
     // Create new substance with copied commands (matching constructor parameter order)
     return new Substance(
@@ -580,6 +650,7 @@ class DuplicateEntityPresenter {
       copiedEnables,
       sourceSubstance._isModification,
       sourceSubstance._isCompatible,
+      copiedAssumeMode,
     );
   }
 }

@@ -6,6 +6,8 @@ Understanding HFCs and how Kigali Sim can help.
 
 Welcome! In this introductory tutorial, we will explore how Kigali Sim can help in an HFC phase-down context and why models made within the tool may be valuable for countries as they analyze different policy ideas. This will set the groundwork for the rest of the tutorial series which builds up a sophisticated case study as we tour multiple features of the platform.
 
+Note that videos are provided along the way but there is no audio: it is a screen recording showing the actions described in text.
+
 ## Background
 
 HFCs are potent greenhouse gases used in air conditioners, refrigerators, aerosols, foams, and other products. While they offer important improvements over the [CFCs and HCFCs](https://www.unep.org/ozonaction/who-we-are/about-montreal-protocol) which came before, these HFCs can be hundreds or thousands of times more potent than CO2 in terms of climate warming impact. For example, [HFC-134a has a global warming potential of 1,430](https://www.infraserv.com/en/services/facility-management/expertise/f-gas/gwp-calculator/), meaning that one kilogram of HFC-134a contributes 1,430 times as much to the greenhouse effect as one kilogram of CO₂ over a 100-year period.
@@ -38,7 +40,9 @@ Kigali Sim is available as a free, open-source web application at [https://kigal
 
 ## Next Steps
 
-**Tutorial 2** will begin hands-on modeling by creating ABC Country's first simulation focusing on domestic refrigeration. You'll learn how to set up equipment populations, configure consumption patterns, run simulations, and interpret results, building the foundation for comprehensive HFC phase-down analysis.
+[Tutorial 2](/guide/tutorial_02.html) will begin hands-on modeling by creating ABC Country's first simulation focusing on domestic refrigeration. You'll learn how to set up equipment populations, configure consumption patterns, run simulations, and interpret results, building the foundation for comprehensive HFC phase-down analysis.
+
+[Return to Guide Index](/guide) | [Next: Tutorial 2](/guide/tutorial_02.html)
 
 ---
 

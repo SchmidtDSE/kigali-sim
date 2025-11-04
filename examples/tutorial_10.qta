@@ -39,7 +39,7 @@ start policy "Energy Efficiency"
   modify application "Domestic Refrigeration"
   
     modify substance "HFC-134a - high energy"
-      replace 20 % of sales with "HFC-134a - low energy" during years 2028 to onwards
+      replace 10 % of sales with "HFC-134a - low energy" during years 2028 to onwards
     end substance
   
   end application

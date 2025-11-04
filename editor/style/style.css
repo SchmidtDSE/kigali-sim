@@ -102,7 +102,19 @@ html {
 }
 
 header {
-  margin-bottom: 40px;
+  margin-bottom: 20px;
+}
+
+header h1 {
+  margin: 0 0 20px 0;
+}
+
+header h1 svg {
+  height: 80px;
+  width: auto;
+  display: block;
+  border: 1px solid #C0C0C0;
+  border-radius: 3px;
 }
 
 /* Base styling for input elements */
@@ -428,25 +440,6 @@ select option[disabled] {
   text-align: center;
 }
 
-.beta-warning {
-  background-color: #595959;
-  color: white;
-  padding: 7px;
-  border-radius: 2px;
-  border: 1px solid black;
-}
-
-.beta-warning a,
-.beta-warning a:link,
-.beta-warning a:visited {
-  color: white;
-}
-
-.beta-warning a:hover,
-.beta-warning a:active {
-  color: white;
-}
-
 .bold-buttons {
   padding-top: 10px;
   padding-bottom: 10px;
@@ -455,7 +448,7 @@ select option[disabled] {
 .bold-buttons a.primary,
 .bold-buttons a.primary:link,
 .bold-buttons a.primary:visited {
-  background-color: #7070C0;
+  background-color: #6E6EBF;
   color: white;
   border-radius: 10px;
   padding: 7px;
@@ -487,8 +480,8 @@ select option[disabled] {
 .bold-buttons a.secondary,
 .bold-buttons a.secondary:link,
 .bold-buttons a.secondary:visited {
-  border: 1px solid #7070C0;
-  color: #7070C0;
+  border: 1px solid #6E6EBF;
+  color: #6E6EBF;
   border-radius: 10px;
   padding: 7px;
   text-decoration: none;
@@ -515,7 +508,7 @@ select option[disabled] {
 .buttons-panel a.primary,
 .buttons-panel a.primary:link,
 .buttons-panel a.primary:visited {
-  background-color: #7070C0;
+  background-color: #6E6EBF;
   color: white;
   border-radius: 10px;
   padding: 7px;
@@ -615,12 +608,50 @@ select option[disabled] {
 }
 
 /* Ensure buttons work well on smaller screens */
-@media (max-width: 30em) {
+@media (max-width: 670px) {
+  footer .file-buttons.buttons-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  footer .file-buttons.buttons-panel a {
+    line-height: 2;
+    text-align: center;
+  }
+
+  header {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  header h1 {
+    margin-bottom: 15px;
+    text-align: center;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  header .file-buttons {
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: flex-start;
+  }
+
+  header .file-buttons a {
+    flex: 1 1 auto;
+    min-width: 100px;
+    text-align: center;
+  }
+
   .designer-buttons-layout {
     flex-direction: column;
     gap: 0.5rem;
   }
-  
+
   .designer-buttons-layout .secondary {
     width: 100%;
     text-align: center;
@@ -840,6 +871,29 @@ select option[disabled] {
 }
 
 @media (min-width: 1000px) {
+  body {
+    padding: 10px;
+  }
+
+  header {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    grid-template-areas: "logo buttons";
+    align-items: center;
+    gap: 20px;
+  }
+
+  header h1 {
+    grid-area: logo;
+    margin: 0;
+  }
+
+  header .file-buttons {
+    grid-area: buttons;
+    justify-self: end;
+    margin: 0;
+  }
+
   #main {
     display: grid;
     grid-template-columns: 50% 50%;

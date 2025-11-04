@@ -42,6 +42,11 @@ public class ValidateCommand implements Callable<Integer> {
   @Parameters(index = "0", description = "Path to QubecTalk file to validate")
   private File file;
 
+  /**
+   * Executes the validate command.
+   *
+   * @return 0 on success, non-zero error code on failure
+   */
   @Override
   public Integer call() {
     if (!file.exists()) {
@@ -49,35 +54,55 @@ public class ValidateCommand implements Callable<Integer> {
       return FILE_NOT_FOUND_ERROR;
     }
 
+    // Interpret the code
+    CommandInterpretResult interpretResult = interpret(file);
+    if (interpretResult.getIsFailure()) {
+      System.err.println(interpretResult.getErrorMessage().orElse("Unknown error"));
+      return VALIDATION_ERROR;
+    }
+
+    System.out.println("Validated QubecTalk code at " + file);
+    return 0;
+  }
+
+  /**
+   * Validates QubecTalk code from a file without exception handling.
+   *
+   * <p>This method parses and interprets the code but does not return the program.
+   * It succeeds silently or throws an exception on error.</p>
+   *
+   * @param file The file containing QubecTalk code
+   * @throws IOException If the file cannot be read
+   * @throws RuntimeException If parsing or interpretation fails
+   */
+  private void interpretUnsafe(File file) throws IOException {
+    String code = new String(Files.readAllBytes(file.toPath()));
+
+    ParseResult parseResult = KigaliSimFacade.parse(code);
+
+    if (parseResult.hasErrors()) {
+      String detailedError = KigaliSimFacade.getDetailedErrorMessage(parseResult);
+      throw new RuntimeException("Failed to parse QubecTalk code:\n" + detailedError);
+    }
+
+    // Interpret the parsed code
+    KigaliSimFacade.interpret(parseResult);
+  }
+
+  /**
+   * Validates QubecTalk code from a file with exception handling.
+   *
+   * @param file The file containing QubecTalk code
+   * @return A CommandInterpretResult indicating success or containing an error message
+   */
+  private CommandInterpretResult interpret(File file) {
     try {
-      // Read the file content
-      String code = new String(Files.readAllBytes(file.toPath()));
-
-      // Parse the code to get detailed error information
-      ParseResult parseResult = KigaliSimFacade.parse(code);
-
-      if (parseResult.hasErrors()) {
-        String detailedError = KigaliSimFacade.getDetailedErrorMessage(parseResult);
-        System.err.println("Validation failed for QubecTalk code at " + file);
-        System.err.println(detailedError);
-        return VALIDATION_ERROR;
-      }
-
-      // If parsing succeeded, try to interpret
-      try {
-        KigaliSimFacade.interpret(parseResult);
-        System.out.println("Validated QubecTalk code at " + file);
-        return 0;
-      } catch (Exception e) {
-        System.err.println("Validation failed for QubecTalk code at " + file);
-        System.err.println("Interpretation error: " + e.getMessage());
-        return VALIDATION_ERROR;
-      }
-
+      interpretUnsafe(file);
+      return new CommandInterpretResult();
     } catch (IOException e) {
-      System.err.println("Could not read file: " + file);
-      System.err.println("Error: " + e.getMessage());
-      return FILE_NOT_FOUND_ERROR;
+      return new CommandInterpretResult("Could not read file: " + file + "\nError: " + e.getMessage());
+    } catch (RuntimeException e) {
+      return new CommandInterpretResult("Validation failed for QubecTalk code at " + file + "\nInterpretation error: " + e.getMessage());
     }
   }
 }

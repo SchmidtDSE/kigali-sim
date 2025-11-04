@@ -1,0 +1,34 @@
+start default
+
+  define application "Commercial Refrigeration"
+  
+    uses substance "HFC-134a"
+      enable import
+      assume only recharge sales
+      initial charge with 0 kg / unit for domestic
+      initial charge with 1 kg / unit for import
+      initial charge with 0 kg / unit for export
+      equals 1430 kgCO2e / kg
+      equals 1 kwh / unit
+      set bank to 0.5 mt during year 2020
+      set bank to 0.9 mt during year 2021
+      set bank to 1.2 mt during year 2022
+      set bank to 1.4 mt during year 2023
+      set bank to 1.5 mt during year 2024
+      set bank to 1.7 mt during year 2025
+      change bank by 10 % during years 2026 to 2030
+      retire 5 % / year with replacement
+      recharge 5 % with 0.85 kg / unit
+    end substance
+  
+  end application
+
+end default
+
+
+start simulations
+
+  simulate "Business as Usual"
+  from years 2020 to 2030
+
+end simulations

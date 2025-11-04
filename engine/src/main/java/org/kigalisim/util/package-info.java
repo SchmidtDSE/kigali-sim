@@ -1,0 +1,11 @@
+/**
+ * <strong>Kigali Sim Util</strong>
+ *
+ * <p>Utility classes which offer basic functionality used across the codebase. It is recommended
+ * against adding new classes in this package unless usage is very widespread. Instead, try to put
+ * utility classes closer to their actual use.
+ *
+ * @license BSD-3-Clause
+ */
+
+package org.kigalisim.util;
