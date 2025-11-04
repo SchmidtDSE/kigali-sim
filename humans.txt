@@ -17,34 +17,31 @@ Project Management, Community, Design, Open Source: Ciera Martinez
 Location: Berkeley, California, USA
 Org: DSE / UC Berkeley
 
-/* EXTENDED COLLABORATORS */
+/* OTHER CONTRIBUTORS */
 
-Amanda Anderson-You (DSE / UC Berkeley)
-Tina Birmpili (UN MLF)
-Matt Fisher (DSE / UC Berkeley)
-Ava Hu (University of California Berkeley)
-Kevin Koy (DSE / UC Berkeley)
-Douglas McCauley (UCSB / UC Berkeley)
-Alejandro Ramirez-Pabon (UN MLF)
-Frederico San Martini (UN MLF)
-Suzanne Spencer (DSE / Stone Center / UC Berkeley)
-Elina Yuen (UN MLF)
-
-/* BETA PERIOD COMMUNITY */
-
+Amanda Anderson-You
 Kevin Basoa (Ministry of Environment, Chile)
+Tina Birmpili
+Matt Fisher
+Nick Gondek (DSE / UC Berkeley)
 Ilenia Donoso Guzman (Ministry of Environment, Chile)
+Ava Hu
+Kevin Koy
+Douglas McCauley
 Irene Papst
 Claudia Paratori (National Ozone Unit, Ministry of Environment, Chile)
+Alejandro Ramirez-Pabon
 Angelica Monserrat Jara Rios (Ministerio del Medio Ambiente)
+Frederico San Martini
+Suzanne Spencer
 K V Varadharajan (SRF Limited India)
+Elina Yuen
 
 And over a dozen countries and supporting organizations during beta testing.
 Some contributors chose not to be named.
 
 /* ALUMNI */
 
-Nick Gondek (DSE / UC Berkeley)
 Annie Snyder (Schmidt Sciences)
 
 /* SITE */
