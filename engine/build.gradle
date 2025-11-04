@@ -284,7 +284,7 @@ publishing {
     publications {
       gpr(MavenPublication) {
         groupId = 'org.kigalisim'
-        artifactId = 'kigalisim'
+        artifactId = 'engine'
         version = '0.1.0'
 
         from(components.java)
