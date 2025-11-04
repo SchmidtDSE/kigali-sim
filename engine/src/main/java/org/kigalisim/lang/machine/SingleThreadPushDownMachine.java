@@ -19,7 +19,7 @@ import org.kigalisim.engine.number.EngineNumber;
  * A push down automaton which can perform mathematical and logical operations for QubecTalk.
  *
  * <p>A push down automaton which can perform mathematical and logical operations for QubecTalk but
- * which may necessarily be thread safe.</p>
+ * which may not necessarily be thread safe.</p>
  */
 public class SingleThreadPushDownMachine implements PushDownMachine {
 
@@ -40,11 +40,17 @@ public class SingleThreadPushDownMachine implements PushDownMachine {
     random = new Random();
   }
 
+  /**
+   * {@inheritDoc}
+   */
   @Override
   public void push(EngineNumber value) {
     stack.push(value);
   }
 
+  /**
+   * {@inheritDoc}
+   */
   @Override
   public EngineNumber getResult() {
     if (stack.size() != 1) {
@@ -53,6 +59,9 @@ public class SingleThreadPushDownMachine implements PushDownMachine {
     return pop();
   }
 
+  /**
+   * {@inheritDoc}
+   */
   @Override
   public void add() {
     EngineNumber right = pop();
@@ -64,6 +73,9 @@ public class SingleThreadPushDownMachine implements PushDownMachine {
     clearExpectedUnits();
   }
 
+  /**
+   * {@inheritDoc}
+   */
   @Override
   public void subtract() {
     EngineNumber right = pop();
@@ -75,6 +87,9 @@ public class SingleThreadPushDownMachine implements PushDownMachine {
     clearExpectedUnits();
   }
 
+  /**
+   * {@inheritDoc}
+   */
   @Override
   public void multiply() {
     EngineNumber right = pop();
@@ -86,6 +101,9 @@ public class SingleThreadPushDownMachine implements PushDownMachine {
     clearExpectedUnits();
   }
 
+  /**
+   * {@inheritDoc}
+   */
   @Override
   public void divide() {
     EngineNumber right = pop();
@@ -100,6 +118,9 @@ public class SingleThreadPushDownMachine implements PushDownMachine {
     clearExpectedUnits();
   }
 
+  /**
+   * {@inheritDoc}
+   */
   @Override
   public void changeUnits(String units) {
     EngineNumber top = pop();
@@ -116,11 +137,17 @@ public class SingleThreadPushDownMachine implements PushDownMachine {
     push(topWithUnits);
   }
 
+  /**
+   * {@inheritDoc}
+   */
   @Override
   public Engine getEngine() {
     return engine;
   }
 
+  /**
+   * {@inheritDoc}
+   */
   @Override
   public void and() {
     EngineNumber right = pop();
@@ -134,6 +161,9 @@ public class SingleThreadPushDownMachine implements PushDownMachine {
     clearExpectedUnits();
   }
 
+  /**
+   * {@inheritDoc}
+   */
   @Override
   public void or() {
     EngineNumber right = pop();
@@ -147,6 +177,9 @@ public class SingleThreadPushDownMachine implements PushDownMachine {
     clearExpectedUnits();
   }
 
+  /**
+   * {@inheritDoc}
+   */
   @Override
   public void xor() {
     EngineNumber right = pop();
@@ -160,6 +193,9 @@ public class SingleThreadPushDownMachine implements PushDownMachine {
     clearExpectedUnits();
   }
 
+  /**
+   * {@inheritDoc}
+   */
   @Override
   public void equals() {
     EngineNumber right = pop();
@@ -172,6 +208,9 @@ public class SingleThreadPushDownMachine implements PushDownMachine {
     clearExpectedUnits();
   }
 
+  /**
+   * {@inheritDoc}
+   */
   @Override
   public void notEquals() {
     EngineNumber right = pop();
@@ -184,6 +223,9 @@ public class SingleThreadPushDownMachine implements PushDownMachine {
     clearExpectedUnits();
   }
 
+  /**
+   * {@inheritDoc}
+   */
   @Override
   public void greaterThan() {
     EngineNumber right = pop();
@@ -196,6 +238,9 @@ public class SingleThreadPushDownMachine implements PushDownMachine {
     clearExpectedUnits();
   }
 
+  /**
+   * {@inheritDoc}
+   */
   @Override
   public void lessThan() {
     EngineNumber right = pop();
@@ -208,6 +253,9 @@ public class SingleThreadPushDownMachine implements PushDownMachine {
     clearExpectedUnits();
   }
 
+  /**
+   * {@inheritDoc}
+   */
   @Override
   public void greaterThanOrEqual() {
     EngineNumber right = pop();
@@ -220,6 +268,9 @@ public class SingleThreadPushDownMachine implements PushDownMachine {
     clearExpectedUnits();
   }
 
+  /**
+   * {@inheritDoc}
+   */
   @Override
   public void lessThanOrEqual() {
     EngineNumber right = pop();
@@ -284,6 +335,9 @@ public class SingleThreadPushDownMachine implements PushDownMachine {
     return expectedUnitsMaybe.orElseThrow();
   }
 
+  /**
+   * {@inheritDoc}
+   */
   @Override
   public void drawNormal() {
     EngineNumber std = pop();
@@ -304,6 +358,9 @@ public class SingleThreadPushDownMachine implements PushDownMachine {
     clearExpectedUnits();
   }
 
+  /**
+   * {@inheritDoc}
+   */
   @Override
   public void drawUniform() {
     EngineNumber high = pop();

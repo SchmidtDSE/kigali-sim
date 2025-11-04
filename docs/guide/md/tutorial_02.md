@@ -1,12 +1,10 @@
 # Tutorial 2: Single Application and Substance
 
-This tutorial covers the basic building blocks of a simulation: applications and substances. You can follow along with this written guide or watch the [video version](https://vimeo.com/1116227339) for a visual walkthrough of the same concepts.
-
 We start with the basic building blocks of a simulation: applications and substances.
 
 ## Motivation
 
-In this tutorial, we start ABC's first HFC consumption model by using volume-based inputs. This approach helps us understand the relationship between populations and refrigerant consumption while working with initial charges, retirement rates, and servicing patterns. All of these parameters will work together to project consumption trends over time.
+In this tutorial, we examine ABC Country, a hypothetical country that we can use to explore Kigali Sim's functionality. Specifically, we will make a first HFC consumption model by using volume-based inputs. This approach helps us understand the relationship between populations and refrigerant consumption while working with initial charges, retirement rates, and servicing patterns. All of these parameters will work together to project consumption trends over time.
 
 Let's start this analysis with domestic refrigeration using HFC-134a. We will use this to demonstrate how to model a single application with basic equipment data. This is the simplest simulation possible within the tool.
 
@@ -20,7 +18,7 @@ Let's start by creating a new simulation for ABC:
 
 You won't see results yet because we haven't added any substances or equipment data.
 
-(tutorial02_step01.gif - alt: animated gif showing how to add a new application)
+<video src="/webm/tutorial_02_01.webm" autoplay loop muted playsinline style="width: 500px; border: 2px solid #505050; border-radius: 3px;">Your browser does not support the video tag. Please upgrade to a modern browser.</video>
 
 ## Adding HFC-134a Substance
 
@@ -35,7 +33,7 @@ Next, let's add our refrigerant substance:
 
 Don't click save yet! We need to configure equipment properties first.
 
-(tutorial02_step02.gif - alt: animated gif showing how to add a new substance)
+<video src="/webm/tutorial_02_02.webm" autoplay loop muted playsinline style="width: 500px; border: 2px solid #505050; border-radius: 3px;">Your browser does not support the video tag. Please upgrade to a modern browser.</video>
 
 ## Equipment Properties
 
@@ -45,18 +43,19 @@ Now let's define the equipment characteristics that drive HFC consumption:
 - Leave equipment type/model empty for now
 - Enter **0.15 kg/unit** for initial charge (refrigerant per new unit)
 - Set annual retirement rate to **5% each year** (corresponds to 20-year average equipment lifetime)
-- Leave **"Retirement reduces in-service equipment"** checked (recommended for most simulations)
+- Leave **"Retirement reduces in-service equipment"** checked. This is recommended for most simulations but a later tutorial will revisit this option.
 
 The retirement rate is sometimes called the **hazard rate** or **scrap rate** in equipment lifecycle analysis. Kigali Sim, by default, assumes a constant hazard rate when you specify a percentage. However, this can be modified by using a non-percentage retirement amount if you need more complex retirement patterns.
 
 These basic parameters are enough to start modeling, but we also will want to account for servicing existing equipment.
 
-(tutorial02_step03.gif - alt: animated gif showing how to specify equipment properties)
+<video src="/webm/tutorial_02_03.webm" autoplay loop muted playsinline style="width: 500px; border: 2px solid #505050; border-radius: 3px;">Your browser does not support the video tag. Please upgrade to a modern browser.</video>
 
 ## Servicing Configuration
 
 Refrigerants are needed both for new equipment (initial charge) and maintenance of existing equipment:
 
+- Go to the **Servicing tab**
 - Click **Add Recharge**
 - Specify that **10% of equipment** is recharged each year on average
 - Set recharge amount to **0.15 kg/unit** as a top-up
@@ -64,7 +63,7 @@ Refrigerants are needed both for new equipment (initial charge) and maintenance 
 
 We're almost ready to run our first simulation! We just need initial conditions.
 
-(tutorial02_step04.gif - alt: animated gif showing how to specify servicing properties)
+<video src="/webm/tutorial_02_04.webm" autoplay loop muted playsinline style="width: 500px; border: 2px solid #505050; border-radius: 3px;">Your browser does not support the video tag. Please upgrade to a modern browser.</video>
 
 ## Initial Conditions
 
@@ -74,11 +73,11 @@ Head to the **Set tab** to specify ABC Country's starting conditions:
 - Set **prior equipment** to **1,000,000.0 units** in year 2025
 - Set **domestic** manufacture to **25 mt / yr** in year 2025
 
-Note that below the setpoints, you'll see a "Default sales assumption in a new year" dropdown. For this tutorial (and most simulations), **leave this set to "Continue from last year (recommended)"**, which is the default. This setting controls how sales carry over from one year to the next. The default option maintains existing sales patterns, allowing the model to automatically balance substance allocation between initial charge and recharge based on equipment population dynamics.
-
 This 25 mt/year gives us a good demonstrative curve showing how consumption patterns evolve. However, until we specify changes in later tutorials, this production rate will remain steady based on tonnage. It will be used both for initial charge and recharge.
 
-(tutorial02_step05.gif - alt: animated gif showing how to specify initial conditions)
+<video src="/webm/tutorial_02_05.webm" autoplay loop muted playsinline style="width: 500px; border: 2px solid #505050; border-radius: 3px;">Your browser does not support the video tag. Please upgrade to a modern browser.</video>
+
+Note that, below the setpoints, you'll see a "Default sales assumption in a new year" dropdown. For this tutorial (and most simulations), leave this set to "Continue from last year (recommended)", which is the default. This setting controls how sales carry over from one year to the next. The default option maintains existing sales patterns, allowing the model to automatically balance substance allocation between initial charge and recharge based on equipment population dynamics.
 
 ## Running Your First Simulation
 
@@ -90,7 +89,7 @@ Now let's see our model in action. After clicking save for our consumption recor
 - Indicate a duration from **2025 to 2035**
 - Click **Finish**
 
-(tutorial02_step06.gif - alt: animated gif showing how to create a simulation)
+<video src="/webm/tutorial_02_06.webm" autoplay loop muted playsinline style="width: 500px; border: 2px solid #505050; border-radius: 3px;">Your browser does not support the video tag. Please upgrade to a modern browser.</video>
 
 ## Interpreting Results
 
@@ -102,22 +101,28 @@ Let's examine what our model shows us.
 
 We will add additional dynamics but this starts building an intuition for how Kigali Sim interpreted our very simple model.
 
-(tutorial02_step07.gif - alt: animated gif showing how to use the visualization panel)
+<video src="/webm/tutorial_02_07.webm" autoplay loop muted playsinline style="width: 500px; border: 2px solid #505050; border-radius: 3px;">Your browser does not support the video tag. Please upgrade to a modern browser.</video>
 
 ## Conclusion
 
 You've successfully created ABC Country's first HFC consumption model! This basic simulation shows how 1 million existing refrigerators that, when combined with steady domestic production, create predictable consumption patterns. While we used simplified assumptions (uniform equipment characteristics, steady production), this foundation will flourish into much more sophisticated analysis as we add more information in. Specifically, we explored:
 
-- **Equipment-based consumption modeling**: Understanding how equipment drives substance consumption
-- **Initial charge vs. recharge**: Distinguishing between new equipment needs and servicing requirements
-- **Equipment lifecycles**: How retirement rates affect long-term consumption patterns
-- **Supply chain basics**: Domestic manufacturing without imports
+- **Equipment-based consumption modeling**: Understanding how equipment drives substance consumption.
+- **Initial charge vs. recharge**: Distinguishing between new equipment needs and servicing requirements.
+- **Equipment lifecycles**: How retirement rates affect long-term consumption patterns.
+- **Supply chain basics**: Domestic manufacturing without imports.
 
 For some readers, this may seem like a lot of data to specify. Still, don't forget that we can use some basic assumptions to begin our analysis and get a rough idea of a system. These rough estimates can give way to more detailed information as we gather it. This includes adding actual historical values. For other readers, this may seem too simplistic. However, we will grow sophistication in this case study over time as we add in new dynamics.
 
+Note that we specified HFC-134a to be both domestically produced and consumed during this first tutorial. This simplifies our ability to reason about the results: we don't have to consider trade attribution rules yet. However, a later tutorial will consider trade and how to analyze results under treaty conventions.
+
+**Download the completed tutorial**: [tutorial_02.qta](tutorial_02.qta) - this contains the complete single application and substance model
+
 ## Next Steps
 
-**Tutorial 3** will expand our model to include multiple equipment applications and refrigerant substances across ABC Country's complete national inventory. You'll learn to model commercial refrigeration, air conditioning, and other sectors while comparing different refrigerants and their climate impacts - building toward a comprehensive national HFC profile.
+[Tutorial 3](/guide/tutorial_03.html) will expand our model to include multiple equipment applications and refrigerant substances across ABC Country's complete national inventory. You'll learn to model commercial refrigeration, air conditioning, and other sectors while comparing different refrigerants and their climate impacts - building toward a comprehensive national HFC profile.
+
+[Previous: Tutorial 1](/guide/tutorial_01.html) | [Return to Guide Index](/guide) | [Next: Tutorial 3](/guide/tutorial_03.html)
 
 ---
 

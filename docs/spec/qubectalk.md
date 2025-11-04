@@ -127,6 +127,8 @@ enable export
 
 By convention, enable statements should be placed at the top of substance definitions, though this is not enforced by the language. Note that streams can also be implicitly enabled by setting non-zero values for them, but explicit `enable` statements are recommended for clarity and are required for certain operations like `recharge` that need to know the sales distribution.
 
+The `enable` command can be applied to other stream names, but it will have no effect. Only `domestic`, `import`, and `export` streams can be enabled.
+
 **Domestic**: Starting with an example of specifying substances both produced and consumed domestically. There are typically three important parameters to specify:
 
  - Manufacturing (volume)
@@ -159,6 +161,8 @@ change export by +3 % each year during years 6 to 9
 ```
 
 If no stream is specified, it will apply proportionally across sub-streams (domestic manufacturing, imports, and exports).
+
+**Equipment Units and Implicit Recharge**: When specifying sales using equipment units (e.g., `set domestic to 100 units`), the system automatically calculates and includes implicit recharge. This means the engine assumes sufficient substance is available to service (recharge) existing equipment in addition to the substance needed for initial charges on new equipment. This behavior applies because users specifying equipment units are expressing intent about how much new equipment is to be sold, and the simulation ensures servicing needs are met automatically.
 
 ### Population
 Historic equipment populations are typically inferred by sales before applying a retirement rate into the future. However, they may be specified manually as well.

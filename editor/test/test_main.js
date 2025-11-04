@@ -4,13 +4,15 @@
  * @license BSD, see LICENSE.md.
  */
 
+import {MainPresenter} from "main";
 import {
   IntroductionPresenter,
+  PrivacyConfirmationPresenter,
+} from "informational";
+import {
   RunningIndicatorPresenter,
   ButtonPanelPresenter,
-  MainPresenter,
-  PrivacyConfirmationPresenter,
-} from "main";
+} from "editor_actions";
 
 function buildMainTests() {
   QUnit.module("Main", function () {

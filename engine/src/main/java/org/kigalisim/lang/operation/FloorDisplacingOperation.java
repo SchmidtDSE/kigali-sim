@@ -57,12 +57,12 @@ public class FloorDisplacingOperation implements Operation {
     duringMaybe = Optional.of(during);
   }
 
+  /** {@inheritDoc} */
   @Override
   public void execute(PushDownMachine machine) {
     valueOperation.execute(machine);
     EngineNumber result = machine.getResult();
 
-    // Handle special "each year" units by extracting the actual unit
     String units = result.getUnits();
     if (units != null && units.endsWith("eachyear")) {
       String actualUnit = units.replace("eachyear", "");

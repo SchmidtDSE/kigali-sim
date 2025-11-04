@@ -1,10 +1,11 @@
 /**
- * Interface for simulation engine that underpins simulations regardless of interface.
+ * Interface defining the contract for the Montreal Protocol simulation engine.
  *
- * <p>This interface defines the contract for the Montreal Protocol simulation engine,
- * providing methods for managing engine lifecycle, scope operations, stream operations,
- * and various calculation functions. Implementations should handle the core simulation
- * mechanics including substance flows, equipment tracking, and emissions calculations.</p>
+ * <p>This interface provides methods for managing the engine lifecycle, setting simulation
+ * parameters, manipulating substance streams, and retrieving results. It supports operations
+ * across different scopes (stanza/application/substance) and time periods. Implementations
+ * should handle the core simulation mechanics including substance flows, equipment tracking,
+ * and emissions calculations.</p>
  *
  * @license BSD-3-Clause
  */
@@ -14,20 +15,17 @@ package org.kigalisim.engine;
 import java.util.List;
 import java.util.Optional;
 import org.kigalisim.engine.number.EngineNumber;
+import org.kigalisim.engine.number.UnitConverter;
 import org.kigalisim.engine.recalc.StreamUpdate;
 import org.kigalisim.engine.serializer.EngineResult;
+import org.kigalisim.engine.state.ConverterStateGetter;
 import org.kigalisim.engine.state.Scope;
+import org.kigalisim.engine.state.SimulationState;
 import org.kigalisim.engine.state.UseKey;
 import org.kigalisim.engine.state.YearMatcher;
 import org.kigalisim.lang.operation.RecoverOperation.RecoveryStage;
 
-/**
- * Interface defining the contract for the Montreal Protocol simulation engine.
- *
- * <p>This interface provides methods for managing the engine lifecycle, setting simulation
- * parameters, manipulating substance streams, and retrieving results. It supports operations
- * across different scopes (stanza/application/substance) and time periods.</p>
- */
+/** Interface defining the contract for the Montreal Protocol simulation engine. */
 public interface Engine {
 
   /**
@@ -114,21 +112,21 @@ public interface Engine {
    *
    * @return ConverterStateGetter instance
    */
-  org.kigalisim.engine.state.ConverterStateGetter getStateGetter();
+  ConverterStateGetter getStateGetter();
 
   /**
    * Get the unit converter for this engine.
    *
    * @return UnitConverter instance
    */
-  org.kigalisim.engine.number.UnitConverter getUnitConverter();
+  UnitConverter getUnitConverter();
 
   /**
    * Get the simulation state for this engine.
    *
    * @return SimulationState instance
    */
-  org.kigalisim.engine.state.SimulationState getStreamKeeper();
+  SimulationState getStreamKeeper();
 
   /**
    * Increment the engine to simulate the next year.
@@ -148,7 +146,6 @@ public interface Engine {
    * @return True if reached the end year and false otherwise
    */
   boolean getIsDone();
-
 
   /**
    * Execute a stream update operation using a StreamUpdate object.
@@ -185,7 +182,7 @@ public interface Engine {
    * @param name The name of the stream to retrieve
    * @param useKey The key containing application and substance information
    * @param conversion The conversion specification for units, or empty for no conversion
-   * @return The value of the stream, possibly converted
+   * @return The value of the stream, possibly converted in kg.
    */
   EngineNumber getStream(String name, Optional<UseKey> useKey, Optional<String> conversion);
 
@@ -193,7 +190,7 @@ public interface Engine {
    * Get the stream value with default scope and no conversion.
    *
    * @param name The name of the stream to retrieve
-   * @return The value of the stream
+   * @return The value of the stream in kg.
    */
   EngineNumber getStream(String name);
 
@@ -202,7 +199,7 @@ public interface Engine {
    *
    * @param useKey The application and substance name for which the stream should be returned.
    * @param stream The name of the stream to get like recycle
-   * @return The value of the given combination without conversion
+   * @return The value of the given combination without conversion in kg.
    */
   EngineNumber getStreamFor(UseKey useKey, String stream);
 
@@ -219,7 +216,7 @@ public interface Engine {
    * Get the value of a user-defined variable in the current scope.
    *
    * @param name The name of the variable to retrieve
-   * @return The value of the variable, or special values for 'yearsElapsed' and 'yearAbsolute'
+   * @return The value of the variable, or special values for 'yearsElapsed' and 'yearAbsolute' in years.
    */
   EngineNumber getVariable(String name);
 
@@ -237,7 +234,7 @@ public interface Engine {
    * Get the initial charge value for a given stream.
    *
    * @param stream The stream identifier to get the initial charge for
-   * @return The initial charge value for the stream
+   * @return The initial charge value for the stream in kg.
    */
   EngineNumber getInitialCharge(String stream);
 
@@ -246,7 +243,7 @@ public interface Engine {
    *
    * @param key Application and substance for which initial charge is requested
    * @param stream The stream in which the initial charge is requested and must be realized
-   * @return The initial charge for the stream in the given application and substance
+   * @return The initial charge for the stream in the given application and substance in kg.
    */
   EngineNumber getRawInitialChargeFor(UseKey key, String stream);
 
@@ -262,22 +259,49 @@ public interface Engine {
   /**
    * Get the recharge volume for the current application and substance.
    *
-   * @return The recharge volume value
+   * @return The recharge volume value in kg per unit.
    */
   EngineNumber getRechargeVolume();
 
   /**
    * Get the recharge intensity for the current application and substance.
    *
-   * @return The recharge intensity value
+   * @return The recharge intensity value in kg per unit.
    */
   EngineNumber getRechargeIntensity();
 
   /**
    * Set recharge parameters for the current application and substance.
    *
-   * @param volume The recharge volume to set
-   * @param intensity The recharge intensity to set
+   * <p>Recharge represents the substance needed to service existing equipment due to
+   * leakage, maintenance, or repair. This method configures both the percentage of
+   * equipment requiring recharge (volume) and the amount of substance needed per unit
+   * (intensity).</p>
+   *
+   * <p><strong>Carry Over Behavior:</strong> When users specify sales in equipment
+   * units (e.g., "800 units"), they indicate how many NEW equipment units should be
+   * sold. This recharge method must calculate substance needed for EXISTING equipment
+   * and add it on top. If the current state is a carry-over scenario (unit-based sales
+   * from a previous year continuing without fresh specification), this method will:</p>
+   * <ol>
+   *   <li>Detect that no fresh sales specification was provided this year</li>
+   *   <li>Retrieve the last specified unit-based sales value from state</li>
+   *   <li>Re-apply that value using executeStreamUpdate, which automatically adds
+   *       implicit recharge on top</li>
+   *   <li>Return early, skipping standard recalculation paths designed for fresh input</li>
+   * </ol>
+   *
+   * <p>This carry-over handling ensures consistent behavior across years, maintaining
+   * the user's intent that unit specifications represent new equipment sales with
+   * recharge calculated and added separately for existing equipment populations.</p>
+   *
+   * <p><strong>Example:</strong> If a user specifies "set import to 800 units during
+   * year 2025" and provides no specification for 2026, the carry over mechanism will
+   * automatically continue 800 new units in 2026, while recalculating and adding the
+   * appropriate recharge volume based on the growing equipment population.</p>
+   *
+   * @param volume The recharge volume to set (percentage of equipment requiring recharge)
+   * @param intensity The recharge intensity to set (substance amount per unit recharged)
    * @param yearMatcher Matcher to determine if the change applies to current year
    */
   void recharge(EngineNumber volume, EngineNumber intensity, YearMatcher yearMatcher);
@@ -293,7 +317,7 @@ public interface Engine {
   /**
    * Get the retirement rate for the current application and substance.
    *
-   * @return The retirement rate value
+   * @return The retirement rate value in kg per unit.
    */
   EngineNumber getRetirementRate();
 
@@ -317,42 +341,62 @@ public interface Engine {
    */
   void setInductionRate(EngineNumber inductionRate, RecoveryStage stage);
 
+  /**
+   * Reset the induction rate to default behavior for recycling operations.
+   *
+   * <p>This method sets the induction rate to 100%, which represents default induced demand
+   * behavior where recycled material adds to total supply rather than displacing virgin
+   * material. This is the recommended setting when users are uncertain about induction
+   * effects.
+   *
+   * <p>Induction rate determines how recycled material affects virgin production:</p>
+   * <ul>
+   *   <li>100% induction (default): Recycled material does not displace virgin material,
+   *       adding to total supply (induced demand behavior)</li>
+   *   <li>0% induction: Recycled material fully displaces virgin material, maintaining
+   *       steady population (displacement behavior)</li>
+   *   <li>Partial induction: Mixed behavior with proportional effects</li>
+   * </ul>
+   *
+   * @param stage The recovery stage (EOL or RECHARGE) to reset the induction rate for
+   */
+  void resetInductionRate(RecoveryStage stage);
 
   /**
-   * Set GHG equivalency for the current application and substance.
+   * Set GHG equivalency (GWP - Global Warming Potential) for the current application and substance.
    *
-   * @param amount The GHG intensity value to set
+   * @param amount The GHG intensity value to set (typically in kgCO2e / kg)
    * @param yearMatcher Matcher to determine if the change applies to current year
    */
   void equals(EngineNumber amount, YearMatcher yearMatcher);
 
   /**
-   * Get the GHG intensity associated with a substance.
+   * Get the GHG intensity (GWP - Global Warming Potential) associated with a substance.
    *
    * @param useKey The UseKey containing application and substance information
-   * @return The GHG intensity value associated with the given combination
+   * @return The GHG intensity value associated with the given combination in tCO2e per kg.
    */
   EngineNumber getGhgIntensity(UseKey useKey);
 
   /**
-   * Retrieve the tCO2e intensity for the current application and substance.
+   * Retrieve the tCO2e intensity (GWP - Global Warming Potential) for the current application and substance.
    *
-   * @return The GHG intensity value with volume normalized GHG
+   * @return The GHG intensity value with volume normalized GHG in tCO2e per kg.
    */
   EngineNumber getEqualsGhgIntensity();
 
   /**
-   * Retrieve the tCO2e intensity for the given UseKey.
+   * Retrieve the tCO2e intensity (GWP - Global Warming Potential) for the given UseKey.
    *
    * @param useKey The UseKey containing application and substance information
-   * @return The GHG intensity value with volume normalized GHG
+   * @return The GHG intensity value with volume normalized GHG in tCO2e per kg.
    */
   EngineNumber getEqualsGhgIntensityFor(UseKey useKey);
 
   /**
    * Retrieve the energy intensity for the current application and substance.
    *
-   * @return The energy intensity value with volume normalized energy
+   * @return The energy intensity value in kwh / unit (yearly).
    */
   EngineNumber getEqualsEnergyIntensity();
 
@@ -360,7 +404,7 @@ public interface Engine {
    * Retrieve the energy intensity for the given UseKey.
    *
    * @param useKey The UseKey containing application and substance information
-   * @return The energy intensity value with volume normalized energy
+   * @return The energy intensity value in kwh / unit (yearly).
    */
   EngineNumber getEqualsEnergyIntensityFor(UseKey useKey);
 
@@ -420,4 +464,15 @@ public interface Engine {
    * @return List of results for each registered substance
    */
   List<EngineResult> getResults();
+
+  /**
+   * Gets whether recalc optimizations are enabled.
+   *
+   * <p>When true, certain redundant recalculation steps are skipped for
+   * performance. When false, all recalc operations are performed for maximum
+   * accuracy verification.</p>
+   *
+   * @return true if optimizations are enabled, false otherwise
+   */
+  boolean getOptimizeRecalcs();
 }

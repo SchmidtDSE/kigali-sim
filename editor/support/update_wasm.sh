@@ -15,7 +15,7 @@ cd engine
 
 # Build the WAR file
 echo "Building WAR file..."
-./gradlew war
+./gradlew warUnversioned
 
 # Check if the WAR file was created
 if [ ! -f "build/libs/KigaliSim.war" ]; then

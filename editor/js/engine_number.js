@@ -75,10 +75,11 @@ class EngineNumber {
 
 /**
  * Converts a numeric value to an unambiguous US-format string.
+ *
  * Ensures numbers are formatted to avoid ambiguity (e.g., 1.234 becomes
- * "1.2340", 1234 becomes "1,234.0").
- * Used when we need to generate formatted strings but don't have access to
- * the user's original formatting.
+ * "1.2340", 1234 becomes "1,234.0"). Used when we need to generate
+ * formatted strings but don't have access to the user's original
+ * formatting.
  *
  * @param {number} numericValue - The numeric value to format
  * @returns {string} The unambiguous US-format number string
@@ -100,7 +101,7 @@ function makeNumberUnambiguousString(numericValue) {
   // Handle decimals - ensure at least one trailing zero for disambiguation
   let formatted = absValue.toLocaleString("en-US", {
     minimumFractionDigits: 1,
-    maximumFractionDigits: 20, // Allow up to 20 decimal places to preserve precision
+    maximumFractionDigits: 20,
   });
 
   // If the number doesn't end with 0, add a trailing 0 for disambiguation

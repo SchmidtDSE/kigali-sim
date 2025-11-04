@@ -1,3 +1,9 @@
+/**
+ * Calculation which sets an initial charge value for a stream in the engine.
+ *
+ * @license BSD-3-Clause
+ */
+
 package org.kigalisim.lang.operation;
 
 import java.util.Optional;
@@ -45,6 +51,7 @@ public class InitialChargeOperation implements Operation {
     duringMaybe = Optional.of(during);
   }
 
+  /** {@inheritDoc} */
   @Override
   public void execute(PushDownMachine machine) {
     valueOperation.execute(machine);
