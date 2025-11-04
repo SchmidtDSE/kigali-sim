@@ -41,7 +41,6 @@ bash ./support/install_deps.sh
 First, build the ANTLR and WASM components:
 
 ```bash
-bash ./support/update_wasm.sh
 bash ./support/make.sh
 ```
 
