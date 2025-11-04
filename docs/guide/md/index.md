@@ -40,7 +40,7 @@ All numbers are intentionally fake and used only for demonstrative purposes. Ple
 - [**Tutorial 13:** Assumed Replacement](tutorial_13.md) - Modeling equipment replacement patterns in business-as-usual scenarios
 - [**Tutorial 14:** Bank-Based Modeling](tutorial_14.md) - Tracking substance banks and equipment populations over time
 - [**Tutorial 15:** Variable Retirement and Servicing](tutorial_15.md) - Implementing dynamic retirement rates and service patterns
-- [**Tutorial 18:** Command Line and Monte Carlo Analysis](tutorial_18.md) - Advanced uncertainty analysis using probabilistic programming
+- [**Tutorial 16:** Command Line and Monte Carlo Analysis](tutorial_16.md) - Advanced uncertainty analysis using probabilistic programming
 
 ## QubecTalk Reference
 

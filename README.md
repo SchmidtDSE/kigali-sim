@@ -19,7 +19,7 @@ This open source toolkit models substances and equipment related to the Montreal
 <br>
 
 ## Quickstart
-Make a simulation in 3 minutes! View our [quickstart video](https://vimeo.com/1116227339?share=copy&fl=sv&fe=ci). Prefer a text version? See our [initial written tutorial with animated gifs](https://kigalisim.org/guide/tutorial_02.html). Alternatively, go to https://kigalisim.org and then in the Designer tab:
+Make a simulation in 3 minutes! share=copy&fl=sv&fe=ci). Start with a [tutorial](https://kigalisim.org/guide/tutorial_02.html). Alternatively, go to https://kigalisim.org and then in the Designer tab:
 
  - Click "Add Application" to create a "Commerical Refrigeration" application
  - Click "Add Consumption" to create HFC-134a (click lookup for GHG equivalency, leave energy consumption at default, check domestic)
@@ -92,7 +92,7 @@ We also provide a Dev Container with additional tools for those looking to modif
 <br>
 
 ## Usage
-Kigali Sim authors can choose to use a UI-based editor which does not require writing code or the QubecTalk domain-specific programming language.
+Kigali Sim authors can choose to use a UI-based editor which does not require writing code or the QubecTalk domain-specific programming language. The easiest way to get started is through the [User's Guide](https://kigalisim.org/guide/) which includes tutorials and reference materials such as a glossary.
 
 ### UI-based authoring
 For users preferring a no-code point-and-click approach to authoring simulations, open the [UI-based editor](https://kigalisim.org/) and then review our [no-code hello world example](https://kigalisim.org/guide/tutorial_02.html). Alternatively, review an [example simulation](https://kigalisim.org/guide/tutorial_02.qta) made using the UI-based editor in order to explore the tools' capabilities.

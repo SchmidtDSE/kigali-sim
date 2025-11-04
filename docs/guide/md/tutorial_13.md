@@ -56,6 +56,8 @@ This option to retire with replacement can be helpful in a number of modeling ci
 
 [Previous: Tutorial 12](/guide/tutorial_12.html) | [Next: Tutorial 14](/guide/tutorial_14.html)
 
+[Previous: Tutorial 12](/guide/tutorial_12.html) | [Return to Guide Index](/guide) | [Next: Tutorial 14](/guide/tutorial_14.html)
+
 ---
 
 _This tutorial is part of the Advanced Techniques series demonstrating specialized aspects of Montreal Protocol policy modeling using Kigali Sim._

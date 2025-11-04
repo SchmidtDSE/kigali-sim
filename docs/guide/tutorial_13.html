@@ -2,6 +2,7 @@
   <head>
     <title>Tutorial 13: Assumed Replacement</title>
     <link href="/guide/guide.css?v=EPOCH" rel="stylesheet" type="text/css" />
+    <link href="/third_party/prism-tomorrow.min.css" rel="stylesheet" type="text/css" />
   </head>
   <body>
     <a href="#main" class="skip-link">Skip to main content</a>
@@ -57,7 +58,7 @@
           Let's go back to HFC-134a's definition. If you are using the UI-based designer, go to the Equipment tab and uncheck "Retirement reduces in-service equipment" or, if you are using QubecTalk, add <code>with replacement</code> to the end of the retire command like so:
         </p>
 
-        <pre><code>uses substance "HFC-134a"
+        <pre><code class="language-qubectalk">uses substance "HFC-134a"
   enable import
   assume only recharge sales
   initial charge with 0 kg / unit for domestic
@@ -96,6 +97,7 @@ end substance</code></pre>
 
         <p>
           <a href="/guide/tutorial_12.html">Previous: Tutorial 12</a> |
+          <a href="/guide">Return to Guide Index</a> |
           <a href="/guide/tutorial_14.html">Next: Tutorial 14</a>
         </p>
       </section>
@@ -103,5 +105,9 @@ end substance</code></pre>
       <hr />
       <p><em>This tutorial is part of the Advanced Techniques series demonstrating specialized aspects of Montreal Protocol policy modeling using Kigali Sim.</em></p>
     </main>
+
+    <script src="/third_party/prism-core.min.js"></script>
+    <script src="/third_party/prism-autoloader.min.js"></script>
+    <script src="/guide/qubectalk-prism.js"></script>
   </body>
 </html>

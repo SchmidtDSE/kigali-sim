@@ -140,6 +140,8 @@ For more complex scenarios, consider combining both approaches: policies that si
 
 [Previous: Tutorial 9](/guide/tutorial_09.html) | [Next: Tutorial 11](/guide/tutorial_11.html) | [Guide Index](/guide/)
 
+[Previous: Tutorial 9](/guide/tutorial_09.html) | [Return to Guide Index](/guide) | [Next: Tutorial 11](/guide/tutorial_11.html)
+
 ---
 
 _This tutorial is part of the Feature-Specific series demonstrating specialized aspects of Montreal Protocol policy modeling using Kigali Sim._

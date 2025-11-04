@@ -1,4 +1,4 @@
-# Tutorial 18: Command Line and Monte Carlo Analysis
+# Tutorial 16: Command Line and Monte Carlo Analysis
 
 Advanced uncertainty analysis using probabilistic QubecTalk programming.
 
@@ -163,6 +163,8 @@ This concludes our ABC Country tutorial series! You now have comprehensive skill
 These tools provide a complete foundation for supporting Kigali Amendment Implementation Plans and HFC phase-down policy analysis. The combination of deterministic modeling and probabilistic analysis enables robust policy recommendations that account for real-world uncertainty and implementation challenges.
 
 [Previous: Tutorial 15](/guide/tutorial_15.html)
+
+[Previous: Tutorial 15](/guide/tutorial_15.html) | [Return to Guide Index](/guide)
 
 ---
 

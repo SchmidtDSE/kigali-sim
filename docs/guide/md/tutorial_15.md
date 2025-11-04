@@ -62,6 +62,8 @@ This tutorial completes the Advanced Techniques series! You've learned how to le
 
 [Previous: Tutorial 14](/guide/tutorial_14.html) | [Guide Index](/guide/)
 
+[Previous: Tutorial 14](/guide/tutorial_14.html) | [Return to Guide Index](/guide) | [Next: Tutorial 16](/guide/tutorial_16.html)
+
 ---
 
 _This tutorial is part of the Advanced Techniques series demonstrating specialized aspects of Montreal Protocol policy modeling using Kigali Sim._
