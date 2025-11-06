@@ -478,3 +478,4 @@ jobs:
           USERNAME: ${{ github.actor }}
           PUBLISH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: cd engine; ./gradlew publish
+        continue-on-error: true  # Allow jar reject on documentation-only deploys
