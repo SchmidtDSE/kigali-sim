@@ -6,7 +6,7 @@ Open source engine for simulating substances, applications, and policies relevan
 <br>
 
 ## Quickstart
-Try Kigali Sim from your browser: make a simulation in 3 minutes without any installation required!
+While it can certainly can also run locally on the JVM, the fastest way to try Kigali Sim is from your browser. Make a simulation in 3 minutes without any installation required!
 
 **No code?** Go to https://kigalisim.org and then in the Designer tab:
 
