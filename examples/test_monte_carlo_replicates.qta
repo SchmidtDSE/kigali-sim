@@ -1,7 +1,7 @@
 start about
   # Name: "Monte Carlo Replicates Test"
   # Description: "Test simulation with 100 trials using normal distributions for CI"
-  # Author: "KigaliSim Test Suite"
+  # Author: "Kigali Sim Test Suite"
 end about
 
 start default
