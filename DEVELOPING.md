@@ -119,7 +119,11 @@ pnpm run build
 
 ## Testing
 
-We have automated tests for both the engine and editor. From the `engine` directory, execute **Java** tests via:
+We have automated tests, divided into main tests (engine, interpter, etc) and supplemental tests specifically for the web-based IDE.
+
+### Main tests
+
+From the `engine` directory, execute **Java** tests via:
 
 ```bash
 # Run all unit tests
@@ -129,13 +133,17 @@ We have automated tests for both the engine and editor. From the `engine` direct
 ./gradlew test --info
 ```
 
-From the `editor` directory, execute **front-end** tests via:
+This will execute both unit and integration tests with the later taking advantage of the `examples` directory. Note that, if debugging, ensure that you review the `build.gradle` file to understand how stdout and stderr are routed.
+
+### IDE tests
+
+The IDE tests include both unit and integration tests but focus largely on editor functionality and the JS / WASM boundary. From the `editor` directory, execute **front-end** tests via:
 
 ```bash
 pnpm exec grunt
 ```
 
-Alternatively, run a local server and go to `test/test.html`.
+This will run headless with QUnit coordinating. However, you can also run a local server (like via `python -m http.server`) for interactive debugging. Be sure to point your browser to go to `test/test.html`.
 
 ## Style
 
