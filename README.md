@@ -1,12 +1,12 @@
 # Kigali Sim
-Open source engine for simulating substances, applications, and policies relevant to the Montreal Protocol.
+Open source engine for simulating substances, applications, and policies relevant to the Montreal Protocol and the Kigali Amendment.
 
 [![Project Status: Active – The project has reached a stable, usable state and is being actively developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active) [![BSD Licensed](https://img.shields.io/badge/License-BSD_3--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause) [![Build](https://github.com/SchmidtDSE/kigali-sim/actions/workflows/build.yaml/badge.svg?branch=deploy)](https://github.com/SchmidtDSE/kigali-sim/actions/workflows/build.yaml) ![Temurin 21 or higher](https://img.shields.io/badge/Java-Temurin%2021%2B-blue)
 
 <br>
 
 ## Quickstart
-Try Kigali Sim from your browser: make a simulation in 3 minutes without any installation required!
+While it can certainly can also run locally on the JVM, the fastest way to try Kigali Sim is from your browser. Make a simulation in 3 minutes without any installation required!
 
 **No code?** Go to https://kigalisim.org and then in the Designer tab:
 
@@ -47,7 +47,9 @@ start simulations
 end simulations
 ```
 
-We use [WebAssembly](https://webassembly.org/) so simluations run privately on your machine. Continue your journey with a [tutorial](https://kigalisim.org/guide/tutorial_02.html).
+**Can't decide?** The UI-based authoring steps we provided generate the code seen above so you can move between UI-based and code-based authoring. Just go between the designer and editor tabs.
+
+Note: We use [WebAssembly](https://webassembly.org/) so simluations run privately on your machine. Continue your journey with a [tutorial](https://kigalisim.org/guide/tutorial_02.html).
 
 <br>
 
