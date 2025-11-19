@@ -552,7 +552,7 @@ The following are not currently supported but reserved for future use:
 These may be expressed as a ratio like `tCO2e / mt` or `kg / unit`. In the case that the division is by a time unit like `year`, this is assumed to be a compounding value per time unit where the first day / month / year is zero.
 
 ## Number Formatting
-KigaliSim uses DecimalFormat number formatting (comma for thousands, period for decimal):
+Kigali Sim uses DecimalFormat number formatting (comma for thousands, period for decimal):
 
 ```
 set domestic to 1,000,000 kg   # Valid: 1 million kg
