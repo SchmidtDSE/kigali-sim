@@ -1,14 +1,14 @@
-# Development Guide for KigaliSim
+# Development Guide for Kigali Sim
 
 This guide provides comprehensive information for contributors to the Kigali Sim project, an open source web-based simulation engine for modeling substances, applications, and policies related to the Montreal Protocol.
 
 ## Documentation
 
-Note that, in addition to this documentation and [CONTRIBUTING.md](https://github.com/SchmidtDSE/kigali-sim/blob/main/CONTRIBUTING.md) many directories within this project's repository also contain their own README files with additional information about that component or area of code.
+Note that, in addition to this documentation and [CONTRIBUTING.md](https://github.com/SchmidtDSE/kigali-sim/blob/main/CONTRIBUTING.md), many directories within this project's repository also contain their own README files with additional information about that component or area of code.
 
 ## Architecture Overview
 
-KigaliSim is organized into three main components and most have additional READMEs within:
+Kigali Sim is organized into three main components and most have additional READMEs within:
 
 The **Java Engine** (`engine` directory) provides the primary computational mechanism for running simulations. There are different entrypoints depending on how Kiglai Sim is running like via WASM or JVM. That said, developers may wish to review the [Engine JavaDoc](https://kigalisim.org/guide/javadoc/org/kigalisim/engine/Engine.html). At a glance:
 

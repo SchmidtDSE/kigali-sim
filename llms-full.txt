@@ -1,7 +1,7 @@
-# KigaliSim - Montreal Protocol Policy Simulation Tool
+# Kigali Sim - Montreal Protocol Policy Simulation Tool
 v=20250926
 
-KigaliSim is an open source web-based simulation engine for modeling substances, applications, and policies related to the Montreal Protocol and Kigali Amendment. It can model high global warming potential greenhouse gases such as HFCs and supports business-as-usual scenarios as well as policy interventions.
+Kigali Sim is an open source web-based simulation engine for modeling substances, applications, and policies related to the Montreal Protocol and Kigali Amendment. It can model high global warming potential greenhouse gases such as HFCs and supports business-as-usual scenarios as well as policy interventions.
 
 ## Project Purpose
 This tool provides simulation capabilities for:
@@ -11,10 +11,10 @@ This tool provides simulation capabilities for:
 - **Business scenarios**: Manufacturing, imports, equipment lifecycles, service activities, energy consumption
 - **Impact assessment**: Direct emissions calculations, energy consumption analysis, equipment population tracking
 
-KigaliSim supports both business-as-usual projections and policy intervention scenarios, making it useful for Kigali Amendment Implementation Plans (KIPs) and Montreal Protocol policy analysis.
+Kigali Sim supports both business-as-usual projections and policy intervention scenarios, making it useful for Kigali Amendment Implementation Plans (KIPs) and Montreal Protocol policy analysis.
 
 ## QubecTalk Domain Specific Language
-KigaliSim uses QubecTalk, a HyperTalk-inspired domain-specific language for defining simulations. QubecTalk programs are human-readable and use natural language constructs.
+Kigali Sim uses QubecTalk, a HyperTalk-inspired domain-specific language for defining simulations. QubecTalk programs are human-readable and use natural language constructs.
 
 **Note**: In this documentation, pipe symbols (|) indicate command alternatives, not syntax. Chevrons (<) indicate optional values, curly braces ({) indicate required values. Neither are part of actual QubecTalk syntax.
 
@@ -97,7 +97,7 @@ The `assume` command is particularly useful for bank (equipment) tracking scenar
 Supports automatic unit conversion: kg, mt (metric tons), tCO2e (tons CO2 equivalent), kwh (kilowatt hours), units (equipment), years/months/days (time), % (percentages)
 
 #### Number formatting
-KigaliSim uses DecimalFormat number formatting (comma for thousands, period for decimal). Alternative formats like `123.456,7` generate suggestions for equivalent supported format `123,456.7`.
+Kigali Sim uses DecimalFormat number formatting (comma for thousands, period for decimal). Alternative formats like `123.456,7` generate suggestions for equivalent supported format `123,456.7`.
 
 #### Advanced Features
 - **Variables**: `define identifier as expression` and `get identifier` (scoped to enclosing start/end block)
@@ -275,7 +275,7 @@ end simulations
 
 ## Web Interface
 
-KigaliSim provides a web interface at https://kigalisim.org with two editing modes:
+Kigali Sim provides a web interface at https://kigalisim.org with two editing modes:
 - **Basic Editor**: UI-based point-and-click interface for building simulations
 - **Advanced Editor**: Code editor for writing QubecTalk directly
 
@@ -360,7 +360,7 @@ When requesting UI Editor compatible code, avoid variables, expressions, conditi
 
 ## Simulation Outputs
 
-KigaliSim generates:
+Kigali Sim generates:
 - **Emissions projections**: Direct HFC/HCFC emissions in tCO2e
 - **Equipment population**: Units in use over time
 - **Consumption data**: Manufacturing and import volumes
@@ -369,7 +369,7 @@ KigaliSim generates:
 
 ## Simulation Exports
 
-KigaliSim provides CSV export functionality from both the web interface and the standalone JAR engine with identical column structures and data formats.
+Kigali Sim provides CSV export functionality from both the web interface and the standalone JAR engine with identical column structures and data formats.
 
 ### Export Sources
 - **Web Interface**: Click "Export CSV" button in the results panel after running a simulation
