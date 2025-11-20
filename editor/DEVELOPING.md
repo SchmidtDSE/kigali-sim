@@ -1,4 +1,4 @@
-# KigaliSim Development Guide
+# Kigali Sim Development Guide
 
 ## Project Structure
 
