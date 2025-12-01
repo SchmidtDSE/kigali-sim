@@ -137,7 +137,7 @@ We apologize for the formality but there's just a few logistical pieces to keep 
 ## Use of Generative AI
 We welcome use of AI coding assistants. Indeed, the maintainers of this package are using them but ask them to follow the pattern of existing code within the repository. However, we have some guidelines:
 
- - Unless covered by the narrow exception below, please disclose use of AI assistants by mentioning the model you used as a co-author in your commit. If uncertain, please add as a co-author.
+ - Unless edits are trivial, please disclose use of AI assistants by mentioning the model you used as a co-author in your commit. If uncertain, please add as a co-author.
  - Prompts should be narrow and all generated work should be manually evaluated before submitting to the repository either in a main / deploy branch or in a PR branch.
  - All structural choices must be made manually. AI assistants are only expected to be used for "mechanical" edits.
  - We view these resources as tools but you remain responsible for all actions taken. Any code you contribute with assistance of an AI is held to the same standard as code contributed without an AI assistant.
