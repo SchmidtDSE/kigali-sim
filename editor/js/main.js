@@ -165,7 +165,7 @@ class MainPresenter {
     }
     self._localStorageKeeper.setSource(code);
 
-    const encodedValue = encodeURI("data:text/qubectalk;charset=utf-8," + code);
+    const encodedValue = "data:text/qubectalk;charset=utf-8," + encodeURIComponent(code);
     const saveButton = document.getElementById("save-file-button");
     saveButton.href = encodedValue;
   }
@@ -609,7 +609,7 @@ class MainPresenter {
 
     // Update file save button
     const saveButton = document.getElementById("save-file-button");
-    saveButton.href = "data:text/qubectalk;charset=utf-8,";
+    saveButton.href = "data:text/qubectalk;charset=utf-8," + encodeURIComponent("");
   }
 
   /**
