@@ -357,6 +357,7 @@ jobs:
           cp ./examples/tutorial_05.qta ./editor/deploy/guide/tutorial_05.qta
           cp ./examples/tutorial_06.qta ./editor/deploy/guide/tutorial_06.qta
           cp ./examples/tutorial_07.qta ./editor/deploy/guide/tutorial_07.qta
+          cp ./examples/tutorial_08.qta ./editor/deploy/guide/tutorial_08.qta
           cp ./examples/tutorial_09.qta ./editor/deploy/guide/tutorial_09.qta
           cp ./examples/tutorial_10.qta ./editor/deploy/guide/tutorial_10.qta
           cp ./examples/tutorial_12.qta ./editor/deploy/guide/tutorial_12.qta
