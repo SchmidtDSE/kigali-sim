@@ -95,4 +95,40 @@ start policy "Domestic Recycling"
 
   modify application "Domestic Refrigeration"
 
-    
+    # Make recycling program for HFC-134a
+    modify substance "HFC-134a"
+      recover 20 % with 90 % reuse with 100 % induction during years 2027 to onwards
+    end substance
+
+    # Make recycling program for R-600a
+    modify substance "R-600a"
+      recover 30 % with 90 % reuse with 100 % induction during years 2027 to onwards
+    end substance
+
+  end application
+
+end policy
+
+
+start simulations
+
+  simulate "BAU"
+  from years 2025 to 2035
+
+
+  simulate "Permit"
+    using "Sales Permit"
+  from years 2025 to 2035
+
+
+  simulate "Combined"
+    using "Sales Permit"
+    then "Domestic Recycling"
+  from years 2025 to 2035
+
+
+  simulate "Recycling"
+    using "Domestic Recycling"
+  from years 2025 to 2035
+
+end simulations
