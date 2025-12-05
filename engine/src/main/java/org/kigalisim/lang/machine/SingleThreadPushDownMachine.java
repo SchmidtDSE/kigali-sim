@@ -105,6 +105,23 @@ public class SingleThreadPushDownMachine implements PushDownMachine {
    * {@inheritDoc}
    */
   @Override
+  public void power() {
+    EngineNumber right = pop();
+    EngineNumber left = pop();
+    setExpectedUnits(left.getUnits());
+    BigDecimal resultValue = BigDecimal.valueOf(Math.pow(
+        left.getValue().doubleValue(),
+        right.getValue().doubleValue()
+    ));
+    EngineNumber result = new EngineNumber(resultValue, getExpectedUnits());
+    push(result);
+    clearExpectedUnits();
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
   public void divide() {
     EngineNumber right = pop();
     if (right.getValue().compareTo(BigDecimal.ZERO) == 0) {
