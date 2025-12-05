@@ -358,4 +358,27 @@ public class RetireLiveTests {
     assertEquals("units", resultYear1.getPopulation().getUnits(),
         "Equipment units should be units");
   }
+
+  /**
+   * Test that negative retirement alone is clamped to zero (no retirement).
+   * Tests that retire -5% results in 0% retirement.
+   */
+  @Test
+  public void testNegativeRetireClamped() throws IOException {
+    String qtaPath = "../examples/test_negative_retire_clamped.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, "business as usual", progress -> {});
+    List<EngineResult> resultsList = results.collect(Collectors.toList());
+
+    // Year 1: retire -5% clamped to 0% = 0 units retired
+    // Equipment: 100 base - 0 retired + 10 sales = 110 units
+    EngineResult resultYear1 = LiveTestsUtil.getResult(resultsList.stream(), 1, "test", "test");
+    assertNotNull(resultYear1, "Should have result for test/test in year 1");
+    assertEquals(110.0, resultYear1.getPopulation().getValue().doubleValue(), 0.0001,
+        "Equipment should be 110 units with negative retirement clamped to 0%");
+    assertEquals("units", resultYear1.getPopulation().getUnits(),
+        "Equipment units should be units");
+  }
 }
