@@ -196,4 +196,12 @@ public interface PushDownMachine {
    * operand (next on stack) is the low bound. Pushes the sampled value to the top of the stack.</p>
    */
   void drawUniform();
+
+  /**
+   * Raise a number to a power.
+   *
+   * <p>The right operand (top of stack) is the power and the left operand is the base (next on
+   * stack). Goes through double.</p>
+   */
+  void power();
 }
