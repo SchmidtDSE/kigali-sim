@@ -10,6 +10,7 @@
 package org.kigalisim.engine.state;
 
 import java.math.BigDecimal;
+import java.math.MathContext;
 import org.kigalisim.engine.number.EngineNumber;
 
 /**
@@ -110,7 +111,7 @@ public class RechargeInformation {
       BigDecimal totalWeight = currentWeight.add(addedWeight);
       return currentWeight.multiply(intensity.getValue())
           .add(addedWeight.multiply(newIntensity.getValue()))
-          .divide(totalWeight, 10, java.math.RoundingMode.HALF_UP);
+          .divide(totalWeight, MathContext.DECIMAL128);
     }
   }
 }

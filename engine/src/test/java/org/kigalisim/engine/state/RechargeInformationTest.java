@@ -105,9 +105,9 @@ public class RechargeInformationTest {
         "Population should be 30 (10 + 20)");
 
     // Expected intensity: (10 * 2.0 + 20 * 3.0) / (10 + 20) = 80 / 30 = 2.6666...
-    // With HALF_UP rounding at 10 decimal places
     BigDecimal expectedIntensity = new BigDecimal("2.6666666667");
-    assertEquals(expectedIntensity, result.getIntensity().getValue(),
+    BigDecimal difference = result.getIntensity().getValue().subtract(expectedIntensity).abs();
+    assertEquals(true, difference.compareTo(new BigDecimal("0.000001")) < 0,
         "Intensity should be weighted average: (10*2.0 + 20*3.0)/(10+20)");
   }
 
@@ -131,9 +131,10 @@ public class RechargeInformationTest {
         "Population should be 10");
 
     // Expected: (5 * 1.0 + 5 * 3.0) / 10 = 20 / 10 = 2.0
-    // With HALF_UP rounding at 10 decimal places: 2.0000000000
-    assertEquals(new BigDecimal("2.0000000000"), result.getIntensity().getValue(),
-        "Intensity should be 2.0 with 10 decimal places (average of 1.0 and 3.0)");
+    BigDecimal expectedIntensity = new BigDecimal("2.0");
+    BigDecimal difference = result.getIntensity().getValue().subtract(expectedIntensity).abs();
+    assertEquals(true, difference.compareTo(new BigDecimal("0.000001")) < 0,
+        "Intensity should be 2.0 (average of 1.0 and 3.0)");
   }
 
   /**
@@ -161,7 +162,8 @@ public class RechargeInformationTest {
     // Expected: (|20| * 2.0 + |-10| * 4.0) / (|20| + |-10|) = (40 + 40) / 30 = 80 / 30
     // = 2.6666...
     BigDecimal expectedIntensity = new BigDecimal("2.6666666667");
-    assertEquals(expectedIntensity, result.getIntensity().getValue(),
+    BigDecimal difference = result.getIntensity().getValue().subtract(expectedIntensity).abs();
+    assertEquals(true, difference.compareTo(new BigDecimal("0.000001")) < 0,
         "Intensity should use absolute weights: (20*2.0 + 10*4.0)/(20+10)");
   }
 
@@ -185,9 +187,10 @@ public class RechargeInformationTest {
         "Population should remain 10");
 
     // Expected: (10 * 2.5 + 0 * 3.5) / 10 = 25 / 10 = 2.5
-    // With HALF_UP rounding at 10 decimal places: 2.5000000000
-    assertEquals(new BigDecimal("2.5000000000"), result.getIntensity().getValue(),
-        "Intensity should remain 2.5 with 10 decimal places (zero addition doesn't change average)");
+    BigDecimal expectedIntensity = new BigDecimal("2.5");
+    BigDecimal difference = result.getIntensity().getValue().subtract(expectedIntensity).abs();
+    assertEquals(true, difference.compareTo(new BigDecimal("0.000001")) < 0,
+        "Intensity should remain 2.5 (zero addition doesn't change average)");
   }
 
   /**
@@ -208,9 +211,10 @@ public class RechargeInformationTest {
     // After first addition: (10*1 + 10*2)/(10+10) = 30/20 = 1.5
     assertEquals(new BigDecimal("20"), result.getPopulation().getValue(),
         "After first add: population should be 20");
-    // With HALF_UP rounding at 10 decimal places: 1.5000000000
-    assertEquals(new BigDecimal("1.5000000000"), result.getIntensity().getValue(),
-        "After first add: intensity should be 1.5 with 10 decimal places");
+    BigDecimal expectedIntensity1 = new BigDecimal("1.5");
+    BigDecimal difference1 = result.getIntensity().getValue().subtract(expectedIntensity1).abs();
+    assertEquals(true, difference1.compareTo(new BigDecimal("0.000001")) < 0,
+        "After first add: intensity should be 1.5");
 
     // Second addition: add 20% at 3.0
     EngineNumber pop3 = new EngineNumber(BigDecimal.valueOf(20), "%");
@@ -220,9 +224,10 @@ public class RechargeInformationTest {
     // After second addition: (20*1.5 + 20*3.0)/(20+20) = (30+60)/40 = 90/40 = 2.25
     assertEquals(new BigDecimal("40"), result.getPopulation().getValue(),
         "After second add: population should be 40");
-    // With HALF_UP rounding at 10 decimal places: 2.2500000000
-    assertEquals(new BigDecimal("2.2500000000"), result.getIntensity().getValue(),
-        "After second add: intensity should be 2.25 with 10 decimal places");
+    BigDecimal expectedIntensity2 = new BigDecimal("2.25");
+    BigDecimal difference2 = result.getIntensity().getValue().subtract(expectedIntensity2).abs();
+    assertEquals(true, difference2.compareTo(new BigDecimal("0.000001")) < 0,
+        "After second add: intensity should be 2.25");
   }
 
   /**
@@ -272,7 +277,8 @@ public class RechargeInformationTest {
     // Expected: (0.001 * 1.5 + 0.002 * 2.5) / 0.003 = (0.0015 + 0.005) / 0.003
     // = 0.0065 / 0.003 = 2.1666...
     BigDecimal expectedIntensity = new BigDecimal("2.1666666667");
-    assertEquals(expectedIntensity, result.getIntensity().getValue(),
+    BigDecimal difference = result.getIntensity().getValue().subtract(expectedIntensity).abs();
+    assertEquals(true, difference.compareTo(new BigDecimal("0.000001")) < 0,
         "Intensity should maintain precision with small values");
   }
 
@@ -298,7 +304,8 @@ public class RechargeInformationTest {
     // Expected: (|-5| * 2.0 + |10| * 3.0) / (|-5| + |10|) = (10 + 30) / 15 = 40 / 15
     // = 2.6666...
     BigDecimal expectedIntensity = new BigDecimal("2.6666666667");
-    assertEquals(expectedIntensity, result.getIntensity().getValue(),
+    BigDecimal difference = result.getIntensity().getValue().subtract(expectedIntensity).abs();
+    assertEquals(true, difference.compareTo(new BigDecimal("0.000001")) < 0,
         "Intensity should use absolute weights correctly");
   }
 

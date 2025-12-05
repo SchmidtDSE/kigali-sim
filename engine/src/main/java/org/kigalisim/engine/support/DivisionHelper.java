@@ -10,7 +10,7 @@
 package org.kigalisim.engine.support;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
+import java.math.MathContext;
 
 /**
  * Helper class for mathematical division operations.
@@ -35,7 +35,7 @@ public class DivisionHelper {
     if (denominatorIsZero) {
       return BigDecimal.ZERO;
     } else {
-      return numerator.divide(denominator, 10, RoundingMode.HALF_UP);
+      return numerator.divide(denominator, MathContext.DECIMAL128);
     }
   }
 }
