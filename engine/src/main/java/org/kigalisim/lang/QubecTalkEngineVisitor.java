@@ -45,6 +45,7 @@ import org.kigalisim.lang.operation.InitialChargeOperation;
 import org.kigalisim.lang.operation.LogicalOperation;
 import org.kigalisim.lang.operation.MultiplicationOperation;
 import org.kigalisim.lang.operation.Operation;
+import org.kigalisim.lang.operation.PowerOperation;
 import org.kigalisim.lang.operation.PreCalculatedOperation;
 import org.kigalisim.lang.operation.RechargeOperation;
 import org.kigalisim.lang.operation.RecoverOperation;
@@ -178,7 +179,9 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
    */
   @Override
   public Fragment visitPowExpression(QubecTalkParser.PowExpressionContext ctx) {
-    return visitChildren(ctx);
+    Operation left = visit(ctx.expression(0)).getOperation();
+    Operation right = visit(ctx.expression(1)).getOperation();
+    return new OperationFragment(new PowerOperation(left, right));
   }
 
   /**
