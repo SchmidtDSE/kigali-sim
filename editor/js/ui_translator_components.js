@@ -1908,19 +1908,11 @@ class Substance {
       return null;
     }
 
-    const value = self._retire.getValue();
-    const pieces = ["retire"];
-
-    // Handle both EngineNumber objects and string expressions
-    if (value instanceof EngineNumber) {
-      pieces.push(formatEngineNumber(value));
-    } else if (typeof value === "string") {
-      // Complex expression stored as string
-      pieces.push(value);
-    } else {
-      // Fallback for unexpected types
-      pieces.push(value.toString());
-    }
+    const engineNumber = self._retire.getValue();
+    const pieces = [
+      "retire",
+      formatEngineNumber(engineNumber),
+    ];
 
     // Add "with replacement" if the flag is set (must come before duration)
     if (self._retire.getWithReplacement()) {
