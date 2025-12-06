@@ -9,8 +9,7 @@ start default
       initial charge with 0 kg / unit for export
       equals 1430 kgCO2e / kg
       equals 1 kwh / unit
-      set sales to 1,000,000,000 units during year 1990
-      set sales to 0 units during year 1991
+      set priorEquipment to 1,000,000 units during year 1990
       retire (get age as years) * 1 % / year
     end substance
   
