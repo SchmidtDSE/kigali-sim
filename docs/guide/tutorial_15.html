@@ -80,6 +80,55 @@ end substance</code></pre>
         </p>
       </section>
 
+      <section id="practical-example">
+        <h2>Practical example</h2>
+        <p>
+          Let's finish by considering a practical example where we have some basic information about equipment but not an exact hazard rate. Specifically, let's assume:
+        </p>
+        <ul>
+          <li>We have a 10 year average lifespan.</li>
+          <li>We believe that the probability of retirement increases exponentially with age.</li>
+          <li>We observe a 6% average recharge across the lifetime of the equipment that retires at 10 years.</li>
+          <li>We believe that leakage increases linearly with age.</li>
+        </ul>
+        <p>With these constraints in mind, we can solve for the following:</p>
+        <pre><code class="language-qubectalk">start default
+
+  define application "MAC"
+  
+    uses substance "HFC-134a"
+      enable import
+      assume only recharge sales
+      initial charge with 0 kg / unit for domestic
+      initial charge with 1 kg / unit for import
+      initial charge with 0 kg / unit for export
+      equals 1430 kgCO2e / kg
+      equals 1 kwh / unit
+      set priorEquipment to 100 units during year 2022
+      retire (get age as years) ^ 2 * 0.195 % / year
+      recharge (get age as years) * 0.109 % with 1 kg / unit
+    end substance
+  
+  end application
+
+end default
+
+
+start simulations
+
+  simulate "BAU"
+  from years 2020 to 2040
+
+end simulations</code></pre>
+
+          <p>To arrive at these numbers, consider the following short code snippets runnable at Wolfram Alpha:</p>
+          <ul>
+            <li></li>
+            <li></li>
+          </ul>
+          <p>These are provided in Wolfram Alpha for brevity but can be adapted easily to Python or other languages like in numpy.</p>
+      </section>
+
       <section id="alternatives-to-hazard-rate">
         <h2>Alternatives to hazard rate</h2>
 
