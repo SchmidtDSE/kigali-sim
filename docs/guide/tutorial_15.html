@@ -92,7 +92,7 @@ end substance</code></pre>
           Let's consider a second optional example. For those with just a little calculus or maybe some background in operations research or reliability engineering, let's address a slightly more messy situation where maybe we have some basic data about equipment but not an exact hazard function. Specifically, let's assume:
         </p>
         <ul>
-          <li>We have about an average 10 year lifespan or, more precisely, we find that a unit has about a 50% chance of having retired after 10 years of service.</li>
+          <li>We have about an average 10 year lifespan or, more precisely, we find that a unit has about a 50% chance of having retired by the end of 10 years of service.</li>
           <li>We believe that the probability of retirement increases exponentially with age.</li>
           <li>Equipment leak about 6% of initial charge or, more precisely, equipment still in service at year 10 will have leaked 6% of their initial charge.</li>
           <li>We service to top up to original charge.</li>
@@ -139,7 +139,7 @@ end simulations</code></pre>
             These are provided in Wolfram Alpha for brevity but can be adapted easily to Python or other languages like in numpy. The point here b eing though that we assume retirement gets exponentially worse with age and leakge linearly worse. However, we derive a hazard function to fit observed data.  
           </p>
           <p>
-            Note that we are providing a very direct interpretation of the input assumptions. For some alternative types of input, consider using numpy / Python and an interative solver.
+            Note that we are providing a very direct interpretation of the input assumptions. For some alternative types of input, consider using numpy / Python and an interative solver. Also, Kigali Sim applies calculations once per year as we don't know the exact time during the year that equipment comes into service. So, in actuality, we pass the 50% mark sometime between 2030 and 2031. Emissions might also be slightly different.
           </p>
       </section>
 
