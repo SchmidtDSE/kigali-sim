@@ -132,7 +132,7 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
       return new EngineNumber(
         expressionContent.value,
         unitString,
-        expressionContent.originalString,
+        self._coerceToString(expressionContent),
       );
     } else {
       return new EngineNumber(expressionContent, unitString);
@@ -159,9 +159,9 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
   visitConditionExpression(ctx) {
     const self = this;
 
-    const posExpression = ctx.pos.accept(self);
+    const posExpression = self._coerceToString(ctx.pos.accept(self));
     const opFunc = ctx.op.text;
-    const negExpression = ctx.neg.accept(self);
+    const negExpression = self._coerceToString(ctx.neg.accept(self));
 
     return posExpression + " " + opFunc + " " + negExpression;
   }
@@ -175,9 +175,9 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
   visitLogicalExpression(ctx) {
     const self = this;
 
-    const leftExpression = ctx.left.accept(self);
+    const leftExpression = self._coerceToString(ctx.left.accept(self));
     const opFunc = ctx.op.text;
-    const rightExpression = ctx.right.accept(self);
+    const rightExpression = self._coerceToString(ctx.right.accept(self));
 
     return leftExpression + " " + opFunc + " " + rightExpression;
   }
@@ -191,9 +191,9 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
   visitConditionalExpression(ctx) {
     const self = this;
 
-    const condition = ctx.cond.accept(self);
-    const positive = ctx.pos.accept(self);
-    const negative = ctx.neg.accept(self);
+    const condition = self._coerceToString(ctx.cond.accept(self));
+    const positive = self._coerceToString(ctx.pos.accept(self));
+    const negative = self._coerceToString(ctx.neg.accept(self));
 
     return positive + " if " + condition + " else " + negative + " endif";
   }
@@ -208,8 +208,8 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
   buildAirthmeticExpression(ctx, op) {
     const self = this;
 
-    const priorExpression = ctx.getChild(0).accept(self);
-    const afterExpression = ctx.getChild(2).accept(self);
+    const priorExpression = self._coerceToString(ctx.getChild(0).accept(self));
+    const afterExpression = self._coerceToString(ctx.getChild(2).accept(self));
 
     return priorExpression + " " + op + " " + afterExpression;
   }
@@ -255,7 +255,7 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
    */
   visitGetStream(ctx) {
     const self = this;
-    return ctx.getText();
+    return "get " + ctx.getChild(1).getText();
   }
 
   /**
@@ -266,7 +266,7 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
    */
   visitGetStreamIndirect(ctx) {
     const self = this;
-    return ctx.getText();
+    return "get " + ctx.getChild(1).getText() + " of " + ctx.getChild(3).getText();
   }
 
   /**
@@ -277,7 +277,7 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
    */
   visitGetStreamConversion(ctx) {
     const self = this;
-    return ctx.getText();
+    return "get " + ctx.getChild(1).getText() + " as " + ctx.getChild(3).getText();
   }
 
   /**
@@ -288,7 +288,9 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
    */
   visitGetStreamIndirectSubstanceAppUnits(ctx) {
     const self = this;
-    return ctx.getText();
+    const part1 = "get " + ctx.getChild(1).getText() + " of " + ctx.getChild(3).getText();
+    const part2 = " as " + ctx.getChild(5).getText();
+    return part1 + part2;
   }
 
   /**
@@ -332,7 +334,7 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
    */
   visitParenExpression(ctx) {
     const self = this;
-    return ctx.getText();
+    return "(" + self._coerceToString(ctx.getChild(1).accept(self)) + ")";
   }
 
   /**
@@ -1374,6 +1376,24 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
     const value = valueGetter(ctx);
 
     return new LimitCommand(capType, target, value, duration, displaceTarget);
+  }
+
+  /**
+   * Check if we got a complex back and take it to a string.
+   * 
+   * Some operations return a complex object but some operations throw away that information to
+   * return to original string. This coerces to string.
+   * 
+   * @param {Object} target - The value to coerce down to string.
+   * @returns {String} Forced to string.
+   */
+  _coerceToString(target) {
+    const self = this;
+    if (target.originalString === undefined) {
+      return target;
+    } else {
+      return target.originalString;
+    }
   }
 }
 
