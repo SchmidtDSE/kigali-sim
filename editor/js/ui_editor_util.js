@@ -276,7 +276,7 @@ function setEngineNumberValue(valSelection, unitsSelection, source, defaultValue
     valSelection.value = valueOrDefault.getOriginalString();
   } else {
     const numericValue = valueOrDefault.getValue();
-    const isStr = typeof numericValue === 'string' || numericValue instanceof String;
+    const isStr = typeof numericValue === "string" || numericValue instanceof String;
     const isNan = isNaN(numericValue);
     const useBlank = !isStr && isNan;
     valSelection.value = useBlank ? "" : numericValue;

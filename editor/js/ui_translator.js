@@ -1380,10 +1380,10 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
 
   /**
    * Check if we got a complex back and take it to a string.
-   * 
+   *
    * Some operations return a complex object but some operations throw away that information to
    * return to original string. This coerces to string.
-   * 
+   *
    * @param {Object} target - The value to coerce down to string.
    * @returns {String} Forced to string.
    */
