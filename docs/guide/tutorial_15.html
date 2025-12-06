@@ -21,6 +21,7 @@
           <li><a href="#motivation">Motivation</a></li>
           <li><a href="#using-default-assumptions">Using default assumptions</a></li>
           <li><a href="#increasing-hazard-rates-with-age">Increasing hazard rates with age</a></li>
+          <li><a href="#practical-example">Practical example</a></li>
           <li><a href="#alternatives-to-hazard-rate">Alternatives to hazard rate</a></li>
           <li><a href="#conclusion">Conclusion</a></li>
           <li><a href="#next-steps">Next Steps</a></li>
@@ -88,10 +89,11 @@ end substance</code></pre>
         <ul>
           <li>We have a 10 year average lifespan.</li>
           <li>We believe that the probability of retirement increases exponentially with age.</li>
-          <li>We observe a 6% average recharge across the lifetime of the equipment that retires at 10 years.</li>
+          <li>At 10 years, equipment still in service will have leaked 6% of their initial charge.</li>
+          <li>We service to top up to original charge.</li>
           <li>We believe that leakage increases linearly with age.</li>
         </ul>
-        <p>With these constraints in mind, we can solve for the following:</p>
+        <p>With these constraints in mind, we can approximate using the following:</p>
         <pre><code class="language-qubectalk">start default
 
   define application "MAC"
@@ -104,9 +106,9 @@ end substance</code></pre>
       initial charge with 0 kg / unit for export
       equals 1430 kgCO2e / kg
       equals 1 kwh / unit
-      set priorEquipment to 100 units during year 2022
-      retire (get age as years) ^ 2 * 0.195 % / year
-      recharge (get age as years) * 0.109 % with 1 kg / unit
+      set priorEquipment to 100 units during year 2020
+      retire (get age as years) ^ 2 * 3 / 2000 * 100 % / year
+      recharge (get age as years) * 3 / 2500 * 100 % with 1 kg / unit
     end substance
   
   end application
@@ -121,12 +123,12 @@ start simulations
 
 end simulations</code></pre>
 
-          <p>To arrive at these numbers, consider the following short code snippets runnable at Wolfram Alpha:</p>
+          <p>To arrive at these numbers, we need just a tiny bit of calculus. Consider the following short code snippets runnable at Wolfram Alpha:</p>
           <ul>
-            <li></li>
-            <li></li>
+            <li>Solve for retirement rate: <a href="https://www.wolframalpha.com/input?i=integrate+x*t%5E2+from+t%3D0+to+10+equals+0.5%2C+solve+for+x">integrate x*t^2 from t=0 to 10 equals 0.5, solve for x</a>.</li>
+            <li>Solve for servicing: <a href="https://www.wolframalpha.com/input?i=integrate+x*t+from+t%3D0+to+10+equals+0.06%2C+solve+for+x">integrate x*t from t=0 to 10 equals 0.06, solve for x</a></li>
           </ul>
-          <p>These are provided in Wolfram Alpha for brevity but can be adapted easily to Python or other languages like in numpy.</p>
+          <p>These are provided in Wolfram Alpha for brevity but can be adapted easily to Python or other languages like in numpy. Note that this is a direct interpretation of the input data but might be slightly under 50% retirement at 10 years and exactly 6% recharge at that retirement because the calculation assumes all equipment is exposed to retirement/recharge at each age. After all, only surviving equipment can retire.</p>
       </section>
 
       <section id="alternatives-to-hazard-rate">
