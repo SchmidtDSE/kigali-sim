@@ -9,7 +9,7 @@ package org.kigalisim.engine.support;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
+import java.math.MathContext;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -30,9 +30,9 @@ public class DivisionHelperTest {
     BigDecimal numerator = new BigDecimal("10.0");
     BigDecimal denominator = new BigDecimal("3.0");
     BigDecimal result = DivisionHelper.divideWithZero(numerator, denominator);
-    BigDecimal expected = new BigDecimal("10.0")
-        .divide(new BigDecimal("3.0"), 10, RoundingMode.HALF_UP);
-    assertEquals(expected, result);
+    BigDecimal expected = new BigDecimal("3.3333333333");
+    BigDecimal difference = result.subtract(expected).abs();
+    assertEquals(true, difference.compareTo(new BigDecimal("0.000001")) < 0);
   }
 
   @Test

@@ -317,13 +317,20 @@ public class StreamParameterization {
    * Set the retirement rate percentage.
    *
    * <p>This method accumulates retirement rates across multiple retire commands
-   * in the same year to support cumulative retirement behavior.</p>
+   * in the same year to support cumulative retirement behavior. If the resulting
+   * retirement rate is negative, it is clamped to zero (no retirement).</p>
    *
    * @param newValue The new retirement rate value to add
    */
   public void setRetirementRate(EngineNumber newValue) {
     BigDecimal currentValue = retirementRate.getValue();
     BigDecimal newTotal = currentValue.add(newValue.getValue());
+
+    // Clamp negative retirement to zero (no retirement)
+    if (newTotal.compareTo(BigDecimal.ZERO) < 0) {
+      newTotal = BigDecimal.ZERO;
+    }
+
     retirementRate = new EngineNumber(newTotal, newValue.getUnits());
   }
 

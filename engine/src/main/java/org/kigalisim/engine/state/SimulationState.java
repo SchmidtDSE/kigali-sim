@@ -7,7 +7,7 @@
 package org.kigalisim.engine.state;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
+import java.math.MathContext;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -638,7 +638,7 @@ public class SimulationState {
       if (isZero) {
         newAge = BigDecimal.ZERO; // Avoid division by zero
       } else {
-        newAge = priorAgeWeighted.add(addedAgeWeighted).divide(totalWeight, 10, RoundingMode.HALF_UP);
+        newAge = priorAgeWeighted.add(addedAgeWeighted).divide(totalWeight, MathContext.DECIMAL128);
       }
 
       setSimpleStream(useKey, "age", new EngineNumber(newAge, "years"));
@@ -1437,8 +1437,8 @@ public class SimulationState {
       newRecycleRechargeAmount = totalRecycleKg.divide(new BigDecimal("2"));
       newRecycleEolAmount = totalRecycleKg.divide(new BigDecimal("2"));
     } else {
-      BigDecimal rechargePercent = recycleRechargeKg.divide(totalExistingRecycle, 10, BigDecimal.ROUND_HALF_UP);
-      BigDecimal eolPercent = recycleEolKg.divide(totalExistingRecycle, 10, BigDecimal.ROUND_HALF_UP);
+      BigDecimal rechargePercent = recycleRechargeKg.divide(totalExistingRecycle, MathContext.DECIMAL128);
+      BigDecimal eolPercent = recycleEolKg.divide(totalExistingRecycle, MathContext.DECIMAL128);
 
       newRecycleRechargeAmount = totalRecycleKg.multiply(rechargePercent);
       newRecycleEolAmount = totalRecycleKg.multiply(eolPercent);
@@ -1869,7 +1869,7 @@ public class SimulationState {
       param.setAppliedRetirementAmount(new EngineNumber(BigDecimal.ZERO, "units"));
     } else {
       BigDecimal retirePercent = appliedRetire.getValue().divide(
-          retireBase.getValue(), 10, java.math.RoundingMode.HALF_UP);
+          retireBase.getValue(), MathContext.DECIMAL128);
 
       BigDecimal newApplied = newPriorUnits.getValue().multiply(retirePercent);
 
@@ -1901,7 +1901,7 @@ public class SimulationState {
       param.setAppliedRechargeAmount(new EngineNumber(BigDecimal.ZERO, "kg"));
     } else {
       BigDecimal baseRatio = newPriorUnits.getValue().divide(
-          rechargeBase.getValue(), 10, java.math.RoundingMode.HALF_UP);
+          rechargeBase.getValue(), MathContext.DECIMAL128);
 
       BigDecimal newApplied = appliedRecharge.getValue().multiply(baseRatio);
 

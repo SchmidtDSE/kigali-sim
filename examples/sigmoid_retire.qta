@@ -1,0 +1,24 @@
+start default
+
+  define application "test"
+
+    uses substance "test"
+      enable import
+      assume only recharge sales
+      initial charge with 15 kg / unit for import
+      set priorEquipment to 100 units during year 2022
+      retire 1 / (1+2.71828^(-0.3*((get age as years)-20))) % / year
+      recharge 12 % with 15 kg / unit
+    end substance
+
+  end application
+
+end default
+
+
+start simulations
+
+  simulate "BAU"
+  from years 2022 to 2050
+
+end simulations
