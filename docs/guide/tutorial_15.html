@@ -48,11 +48,11 @@
         <h2>Using default assumptions</h2>
 
         <p>
-          Before we model the complex lifecycle, let's set up a simulation in which we model HFC-134a (1 kg / unit initial charge and no servicing). In order to observe how retirement works, let's have 1990 with one million (1,000,000) units of equipment sales. Let's assume a 5% retirement rate and simulate a business as usual scenario from 1990 to 2020.
+          Before we consider the complex lifecycle, let's set up a simplier simulation in which we model HFC-134a (1 kg / unit initial charge and no servicing). In order to observe how retirement works, let's have 1990 with one million (1,000,000) units of equipment sales but no sales in 1991 onwards. Let's assume a 5% retirement rate and simulate a business as usual scenario from 1990 to 2020.
         </p>
 
         <p>
-          We see that equipment does drop but, if we took the 5% as 20 year lifespan seriously, we wouldn't have any population (see bank and set to units of equipment) after 2045. Instead, we see that a small amount of equipment keeps "getting lucky" and surviving that annual retirement probability (hazard rate) of 5%.
+          We see that equipment does drop but, if we took the 5% as 20 year lifespan seriously, we wouldn't have any population (see bank and set to units of equipment) after 2010. Instead, we see that some equipment keeps "getting lucky" and surviving that annual retirement probability (hazard rate) of 5%. This is like how you aren't guaranteed to have a heads on a coin after two flips.
         </p>
       </section>
 
@@ -60,7 +60,7 @@
         <h2>Increasing hazard rates with age</h2>
 
         <p>
-          In some ways, this lingering population of equipment actually reflects what we would expect, especially if a substance suddenly became no longer available. However, let's change this hazard rate such that the rate of failure is 1% multiplied by the age of the equipment in years. To do this, modify the simulation using QubecTalk code like follows:
+          In some ways, this lingering population of equipment actually reflects what we would expect, especially if a substance suddenly became no longer available. However, let's change this hazard rate such that the probability of failure is 1% multiplied by the age of the equipment in years. So, 1% at 1 year, 2% at 2 years, and so on. To do this, modify the simulation using QubecTalk code like follows:
         </p>
 
         <pre><code class="language-qubectalk">uses substance "HFC-134a"
@@ -86,7 +86,7 @@ end substance</code></pre>
       <section id="fitting-a-function">
         <h2>Fitting a function (optional)</h2>
         <p>
-          In our first example, we assumed a hazard function, a specific estimate of how much we expect the probability of retirement (or servicing) to change with equipment age. This captures some important real-world dynamics! However, some users might not have that detailed information. 
+          In our first example, we assumed we already knew the hazard function: a specific estimate of how much we expect the probability of retirement (or servicing) to change with equipment age. This captures some important real-world dynamics! However, some users might not have that detailed information. 
         </p>
         <p>
           Let's consider a second optional example. For those with just a little calculus or maybe some background in operations research or reliability engineering, let's address a slightly more messy situation where maybe we have some basic data about equipment but not an exact hazard function. Specifically, let's assume:
@@ -94,7 +94,7 @@ end substance</code></pre>
         <ul>
           <li>We have about an average 10 year lifespan or, more precisely, we find that a unit has about a 50% chance of having retired by the end of 10 years of service.</li>
           <li>We believe that the probability of retirement increases exponentially with age.</li>
-          <li>Equipment leak about 6% of initial charge or, more precisely, equipment still in service at year 10 will have leaked 6% of their initial charge.</li>
+          <li>Equipment leak about 6% of initial charge over 10 years or, more precisely, equipment still in service at year 10 will have leaked around 6% of their initial charge.</li>
           <li>We service to top up to original charge.</li>
           <li>We believe that leakage increases linearly with age.</li>
         </ul>
@@ -129,17 +129,17 @@ start simulations
 end simulations</code></pre>
 
           <p>
-            How did we arrive at those numbers? Here, we need that tiny bit of calculus. Consider the following short code snippets runnable at Wolfram Alpha:
+            How did we arrive at those formulas? Here, we need that tiny bit of calculus. We can integrate over the first ten years of life such that we have 50% retirement and 6% recharge. With this operation, we derive a hazard function to fit observed data! Consider the following short code snippets runnable at Wolfram Alpha:
           </p>
           <ul>
             <li>Solve for retirement rate: <a href="https://www.wolframalpha.com/input?i=integrate+x*t%5E2+from+t%3D0+to+10+equals+0.5%2C+solve+for+x">integrate x*t^2 from t=0 to 10 equals 0.5, solve for x</a>.</li>
             <li>Solve for servicing: <a href="https://www.wolframalpha.com/input?i=integrate+x*t+from+t%3D0+to+10+equals+0.06%2C+solve+for+x">integrate x*t from t=0 to 10 equals 0.06, solve for x</a></li>
           </ul>
           <p>
-            These are provided in Wolfram Alpha for brevity but can be adapted easily to Python or other languages like in numpy. The point here b eing though that we assume retirement gets exponentially worse with age and leakge linearly worse. However, we derive a hazard function to fit observed data.  
+            These are provided in Wolfram Alpha for brevity but can be adapted easily to Python or other languages like in numpy. The point here being though that we assume retirement gets exponentially worse with age and leakge linearly worse. If you have some programming background, you can also use a numeric solver with a summation in addition to this approach!
           </p>
           <p>
-            Note that we are providing a very direct interpretation of the input assumptions. For some alternative types of input, consider using numpy / Python and an interative solver. Also, Kigali Sim applies calculations once per year as we don't know the exact time during the year that equipment comes into service. So, in actuality, we pass the 50% mark sometime between 2030 and 2031. Emissions might also be slightly different.
+            Note that we are providing a very direct interpretation of the input assumptions. For some alternative types of input, consider using numpy / Python and an iterative solver. Also, Kigali Sim applies calculations once per year as we don't know the exact time during the year that equipment comes into service. So, in actuality, we pass the 50% mark sometime between 2030 and 2031. Emissions might also be slightly different.
           </p>
       </section>
 
