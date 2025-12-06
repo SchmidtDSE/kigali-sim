@@ -84,7 +84,7 @@ end substance</code></pre>
       <section id="practical-example">
         <h2>Practical example</h2>
         <p>
-          Let's finish by considering a practical example where we have some basic information about equipment but not an exact hazard rate. Specifically, let's assume:
+          For those with a some background in operations research or reliability engineering, let's get a little more specific by finishing with consideration of a practical example where we have some basic information about equipment but not an exact hazard rate. Specifically, let's assume:
         </p>
         <ul>
           <li>We have a 10 year average lifespan.</li>
@@ -128,7 +128,8 @@ end simulations</code></pre>
             <li>Solve for retirement rate: <a href="https://www.wolframalpha.com/input?i=integrate+x*t%5E2+from+t%3D0+to+10+equals+0.5%2C+solve+for+x">integrate x*t^2 from t=0 to 10 equals 0.5, solve for x</a>.</li>
             <li>Solve for servicing: <a href="https://www.wolframalpha.com/input?i=integrate+x*t+from+t%3D0+to+10+equals+0.06%2C+solve+for+x">integrate x*t from t=0 to 10 equals 0.06, solve for x</a></li>
           </ul>
-          <p>These are provided in Wolfram Alpha for brevity but can be adapted easily to Python or other languages like in numpy. Note that this is a direct interpretation of the input data but might be slightly under 50% retirement at 10 years and exactly 6% recharge at that retirement because the calculation assumes all equipment is exposed to retirement/recharge at each age. After all, only surviving equipment can retire.</p>
+          <p>These are provided in Wolfram Alpha for brevity but can be adapted easily to Python or other languages like in numpy. Note that this is a direct interpretation of the input data but might be slightly under 50% retirement at 10 years and exactly 6% cumulative recharge by 10 years because the simplified calculation assumes all equipment is exposed to retirement/recharge at each age. After all, only surviving equipment can retire. If you have very high confidence in the estimates, a numpy or similar iterative solver can account for this though this may imply more certainty than is appropriate in many circumstances.</p>
+          <p>However, don't worry if this may have been a little out of reach mathematically. This is a very advanced analysis and even providing a simple age-dependent formula can get you most of the way there.</p>
       </section>
 
       <section id="alternatives-to-hazard-rate">
