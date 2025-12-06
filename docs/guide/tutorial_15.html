@@ -48,7 +48,7 @@
         <h2>Using default assumptions</h2>
 
         <p>
-          Before we model the complex lifecycle, let's set up a simulation in which we model HFC-134a (1 kg / unit initial charge and no servicing). In order to observe how retirement works, let's have 1990 start with 1 mt of imports, 1991 to 2024 have an increase in imports of 10%, and set import to 0 mt in 2025. Let's assume a 5% retirement rate and simulate a business as usual scenario from 1990 to 2050.
+          Before we model the complex lifecycle, let's set up a simulation in which we model HFC-134a (1 kg / unit initial charge and no servicing). In order to observe how retirement works, let's have 1990 with one million (1,000,000) units of equipment sales. Let's assume a 5% retirement rate and simulate a business as usual scenario from 1990 to 2020.
         </p>
 
         <p>
@@ -70,14 +70,12 @@
   initial charge with 0 kg / unit for export
   equals 1430 kgCO2e / kg
   equals 1 kwh / unit
-  set import to 1 mt during year 1990
-  set import to 0 mt during year 2025
-  change import by 10 % / year during years 1991 to 2024
+  set priorEquipment to 1,000,000,000 units during year 1990
   retire (get age as years) * 1 % / year
 end substance</code></pre>
 
         <p>
-          By the time we get to 2025, much of the equipment is already a few years old so its hazard rate is already higher than the 5% we previously assumed. However, you'll notice that we drop below 2 units of equipment around 2043.
+          By the time we get to 2000, much of the equipment is already a few years old so its hazard rate is already higher than the 5% we previously assumed. This rate keeps going up as our population of equipment ages, causing us to hit zero units much sooner.
         </p>
 
         <p>
@@ -94,9 +92,9 @@ end substance</code></pre>
           Let's consider a second optional example. For those with just a little calculus or maybe some background in operations research or reliability engineering, let's address a slightly more messy situation where maybe we have some basic data about equipment but not an exact hazard function. Specifically, let's assume:
         </p>
         <ul>
-          <li>We have about an average 10 year lifespan.</li>
+          <li>We have about an average 10 year lifespan or, more precisely, we find that a unit has about a 50% chance of having retired after 10 years of service.</li>
           <li>We believe that the probability of retirement increases exponentially with age.</li>
-          <li>At 10 years, equipment still in service will have leaked 6% of their initial charge.</li>
+          <li>Equipment leak about 6% of initial charge or, more precisely, equipment still in service at year 10 will have leaked 6% of their initial charge.</li>
           <li>We service to top up to original charge.</li>
           <li>We believe that leakage increases linearly with age.</li>
         </ul>
@@ -138,7 +136,10 @@ end simulations</code></pre>
             <li>Solve for servicing: <a href="https://www.wolframalpha.com/input?i=integrate+x*t+from+t%3D0+to+10+equals+0.06%2C+solve+for+x">integrate x*t from t=0 to 10 equals 0.06, solve for x</a></li>
           </ul>
           <p>
-            These are provided in Wolfram Alpha for brevity but can be adapted easily to Python or other languages like in numpy. Note that this is a direct interpretation of the input data but might be slightly under 50% retirement at 10 years and exactly 6% cumulative recharge by 10 years because the simplified calculation assumes all equipment is exposed to retirement/recharge at each age. After all, only surviving equipment can retire. If you have very high confidence in the estimates, a numpy or similar iterative solver can account for this though this may imply more certainty than is appropriate in many circumstances.
+            These are provided in Wolfram Alpha for brevity but can be adapted easily to Python or other languages like in numpy. The point here b eing though that we assume retirement gets exponentially worse with age and leakge linearly worse. However, we derive a hazard function to fit observed data.  
+          </p>
+          <p>
+            Note that we are providing a very direct interpretation of the input assumptions. For some alternative types of input, consider using numpy / Python and an interative solver.
           </p>
       </section>
 
