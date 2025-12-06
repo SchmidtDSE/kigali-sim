@@ -21,8 +21,8 @@
           <li><a href="#motivation">Motivation</a></li>
           <li><a href="#using-default-assumptions">Using default assumptions</a></li>
           <li><a href="#increasing-hazard-rates-with-age">Increasing hazard rates with age</a></li>
-          <li><a href="#practical-example">Practical example</a></li>
-          <li><a href="#alternatives-to-hazard-rate">Alternatives to hazard rate</a></li>
+          <li><a href="#fitting-a-function">Fitting a function</a></li>
+          <li><a href="#applying-these-ideas">Applying these ideas</a></li>
           <li><a href="#conclusion">Conclusion</a></li>
           <li><a href="#next-steps">Next Steps</a></li>
         </ul>
@@ -32,11 +32,15 @@
         <h2>Motivation</h2>
 
         <p>
-          In prior tutorials, we mentioned that a 5% retirement rate corresponds to a 20 year average lifespan. However, in practice some equipment will retire before 20 years and some after. That in mind, how does Kigali Sim actually interpret that 5% directive? In survivor analysis, we specifically say that there is a constant "hazards rate" meaning that, each year, each unit of equipment has a 5% chance of retiring. In practice, this makes sense for many countries which may not know the specific age of equipment already in service or might not have a good estimate for how the rate of failure changes over time. With few assumptions, we still get realistic dynamics like a long tail of equipment on phase out and some retirement prior to the amortized lifespan estimate.
+          In prior tutorials, we mentioned that a 5% retirement rate corresponds to a 20 year average lifespan. However, in practice some equipment will retire before 20 years and some after. That in mind, how does Kigali Sim actually interpret that 5% directive? In survivor analysis, we specifically say that this is a constant "hazards rate" meaning that, each year, each unit of equipment has a 5% chance of retiring. In practice, this makes sense for many countries which may not know the specific age of equipment already in service or might not have a good estimate for how the rate of failure changes over time. With few assumptions, we still get realistic dynamics like a long tail of equipment on phase out and some retirement prior to the amortized lifespan estimate.
         </p>
 
         <p>
-          All that said, Kigali Sim can take in more sophisticated estimates if available. In this tutorial, we will create a hazard rate which changes according to the age of equipment in a simulation that reaches back to 1990 which we assume to be the first year in which the equipment we are studying appeared within the country.
+          All that said, Kigali Sim can take in more sophisticated estimates if available. In this tutorial, we will create a hazard rate which changes according to the age of equipment in a simulation that reaches back to 1990 which we assume to be the first year in which the equipment we are studying appeared within the country. Then, for those with just a little extra modeling background, we will optionally make a more sophisticated model to fit some information one might have about equipment even if maybe you don't know the exact hazard function.
+        </p>
+
+        <p>
+          This tutorial will use the QubecTalk code-based editor. However, you can enter in formulas through the UI-based editor as well! Instead of providing a single number for retirement or recharge, enter your formula instead.
         </p>
       </section>
 
@@ -69,7 +73,7 @@
   set import to 1 mt during year 1990
   set import to 0 mt during year 2025
   change import by 10 % / year during years 1991 to 2024
-  retire (get age as years) * 1% / year
+  retire (get age as years) * 1 % / year
 end substance</code></pre>
 
         <p>
@@ -77,17 +81,20 @@ end substance</code></pre>
         </p>
 
         <p>
-          <strong>Note:</strong> This age-dependent retirement feature is only available in the Advanced Editor using QubecTalk code. It cannot be configured through the UI-based designer.
+          <strong>Download the completed tutorial</strong>: <a href="tutorial_15.qta" download>tutorial_15.qta</a> which contains the complete variable retirement model with age-dependent hazard rates. If you are using the UI-based editor, you can instead enter "(get age as years) * 1" into the text box for retirement (without quotes)!
         </p>
       </section>
 
-      <section id="practical-example">
-        <h2>Practical example</h2>
+      <section id="fitting-a-function">
+        <h2>Fitting a function (optional)</h2>
         <p>
-          For those with a some background in operations research or reliability engineering, let's get a little more specific by finishing with consideration of a practical example where we have some basic information about equipment but not an exact hazard rate. Specifically, let's assume:
+          In our first example, we assumed a hazard function, a specific estimate of how much we expect the probability of retirement (or servicing) to change with equipment age. This captures some important real-world dynamics! However, some users might not have that detailed information. 
+        </p>
+        <p>
+          Let's consider a second optional example. For those with just a little calculus or maybe some background in operations research or reliability engineering, let's address a slightly more messy situation where maybe we have some basic data about equipment but not an exact hazard function. Specifically, let's assume:
         </p>
         <ul>
-          <li>We have a 10 year average lifespan.</li>
+          <li>We have about an average 10 year lifespan.</li>
           <li>We believe that the probability of retirement increases exponentially with age.</li>
           <li>At 10 years, equipment still in service will have leaked 6% of their initial charge.</li>
           <li>We service to top up to original charge.</li>
@@ -123,20 +130,31 @@ start simulations
 
 end simulations</code></pre>
 
-          <p>To arrive at these numbers, we need just a tiny bit of calculus. Consider the following short code snippets runnable at Wolfram Alpha:</p>
+          <p>
+            How did we arrive at those numbers? Here, we need that tiny bit of calculus. Consider the following short code snippets runnable at Wolfram Alpha:
+          </p>
           <ul>
             <li>Solve for retirement rate: <a href="https://www.wolframalpha.com/input?i=integrate+x*t%5E2+from+t%3D0+to+10+equals+0.5%2C+solve+for+x">integrate x*t^2 from t=0 to 10 equals 0.5, solve for x</a>.</li>
             <li>Solve for servicing: <a href="https://www.wolframalpha.com/input?i=integrate+x*t+from+t%3D0+to+10+equals+0.06%2C+solve+for+x">integrate x*t from t=0 to 10 equals 0.06, solve for x</a></li>
           </ul>
-          <p>These are provided in Wolfram Alpha for brevity but can be adapted easily to Python or other languages like in numpy. Note that this is a direct interpretation of the input data but might be slightly under 50% retirement at 10 years and exactly 6% cumulative recharge by 10 years because the simplified calculation assumes all equipment is exposed to retirement/recharge at each age. After all, only surviving equipment can retire. If you have very high confidence in the estimates, a numpy or similar iterative solver can account for this though this may imply more certainty than is appropriate in many circumstances.</p>
-          <p>However, don't worry if this may have been a little out of reach mathematically. This is a very advanced analysis and even providing a simple age-dependent formula can get you most of the way there.</p>
+          <p>
+            These are provided in Wolfram Alpha for brevity but can be adapted easily to Python or other languages like in numpy. Note that this is a direct interpretation of the input data but might be slightly under 50% retirement at 10 years and exactly 6% cumulative recharge by 10 years because the simplified calculation assumes all equipment is exposed to retirement/recharge at each age. After all, only surviving equipment can retire. If you have very high confidence in the estimates, a numpy or similar iterative solver can account for this though this may imply more certainty than is appropriate in many circumstances.
+          </p>
       </section>
 
-      <section id="alternatives-to-hazard-rate">
-        <h2>Alternatives to hazard rate</h2>
+      <section id="applying-these-ideas">
+        <h2>Applying these ideas</h2>
 
         <p>
-          Note that, in this simulation, we still specify hazard rates (rates of retirement) as a percentage. However, you can also specify an absolute number of units of equipment or volume equivalent (kg, mt, CO2e) to retire each year.
+          Maybe the calculus option feels a little out of reach mathematically or maybe just a tad too much for a quick analysis. This is a very advanced approach! Even providing a simple age-dependent formula can get you most of the way there. Adding in some of these dynamics can help better align your predictions to reality, particularly if your equipment population is small or only very recently sold.
+        </p>
+
+        <p>
+          Even so, consider if you really know the likely age of existing equipment or a specific schedule for retirement. If not, it may still be best to stick to a flat percentage retirement per year. This simple approach is often most honest when those detailed data aren't available or perhaps the estimates might be less reliable. There is no shame in going with a flat percentage, especially early in modeling.
+        </p>
+
+        <p>
+          Finally, please note that, in this tutorial, we still specify hazard rates (rates of retirement) as a percentage. However, you can also specify an absolute number of units of equipment or volume equivalent (kg, mt, CO2e) to retire each year.
         </p>
       </section>
 
@@ -149,10 +167,6 @@ end simulations</code></pre>
 
         <p>
           Note: We have mostly modeled large top up, likely to recover from emissions resulting from active use. However, you could also add additional recharge commands to reflect passive use or emissions during charge itself. In other words, multiple recharge commands can run in a single year to respond to different sources of leakage.
-        </p>
-
-        <p>
-          <strong>Download the completed tutorial</strong>: <a href="tutorial_15.qta" download>tutorial_15.qta</a> - this contains the complete variable retirement model with age-dependent hazard rates
         </p>
       </section>
 
