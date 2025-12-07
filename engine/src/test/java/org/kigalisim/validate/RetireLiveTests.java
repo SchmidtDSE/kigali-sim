@@ -362,7 +362,6 @@ public class RetireLiveTests {
 
   /**
    * Test that negative retirement alone is clamped to zero (no retirement).
-   * Tests that retire -5% results in 0% retirement.
    */
   @Test
   public void testNegativeRetireClamped() throws IOException {
@@ -379,6 +378,48 @@ public class RetireLiveTests {
     assertNotNull(resultYear1, "Should have result for test/test in year 1");
     assertEquals(110.0, resultYear1.getPopulation().getValue().doubleValue(), 0.0001,
         "Equipment should be 110 units with negative retirement clamped to 0%");
+    assertEquals("units", resultYear1.getPopulation().getUnits(),
+        "Equipment units should be units");
+  }
+
+  /**
+   * Test that positive retirement is clamped to 100%.
+   */
+  @Test
+  public void testPositiveRetireClamped() throws IOException {
+    String qtaPath = "../examples/test_positive_retire_clamped.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, "business as usual", progress -> {});
+    List<EngineResult> resultsList = results.collect(Collectors.toList());
+
+    // Equipment: 100 base - 100 retired + 10 sales = 110 units
+    EngineResult resultYear1 = LiveTestsUtil.getResult(resultsList.stream(), 1, "test", "test");
+    assertNotNull(resultYear1, "Should have result for test/test in year 1");
+    assertEquals(10.0, resultYear1.getPopulation().getValue().doubleValue(), 0.0001,
+        "Equipment should be 10 units with retirement clamped to 100%");
+    assertEquals("units", resultYear1.getPopulation().getUnits(),
+        "Equipment units should be units");
+  }
+
+  /**
+   * Test that non-percent positive retirement is not clamped.
+   */
+  @Test
+  public void testPositiveRetireNotClamped() throws IOException {
+    String qtaPath = "../examples/test_positive_retire_not_clamped.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, "business as usual", progress -> {});
+    List<EngineResult> resultsList = results.collect(Collectors.toList());
+
+    // Equipment: 200 base - 120 retired + 10 sales = 90 units
+    EngineResult resultYear1 = LiveTestsUtil.getResult(resultsList.stream(), 1, "test", "test");
+    assertNotNull(resultYear1, "Should have result for test/test in year 1");
+    assertEquals(90.0, resultYear1.getPopulation().getValue().doubleValue(), 0.0001,
+        "Equipment should be 90 units with retirement not clamped");
     assertEquals("units", resultYear1.getPopulation().getUnits(),
         "Equipment units should be units");
   }
