@@ -10,6 +10,7 @@
 package org.kigalisim.engine.state;
 
 import java.math.BigDecimal;
+import java.math.MathContext;
 import org.kigalisim.engine.number.EngineNumber;
 
 /**
@@ -67,6 +68,21 @@ public class RechargeInformation {
    * @return A new RechargeInformation instance with accumulated values
    */
   public RechargeInformation add(EngineNumber newPopulation, EngineNumber newIntensity) {
+    boolean priorZero = population.getValue().equals(BigDecimal.ZERO);
+    if (priorZero) {
+      return new RechargeInformation(newPopulation, newIntensity);
+    }
+
+    boolean differentPopulationUnits = !population.getUnits().equals(newPopulation.getUnits());
+    if (differentPopulationUnits) {
+      throw new RuntimeException("Cannot mix units for recharge.");
+    }
+
+    boolean differentIntensityUnits = !intensity.getUnits().equals(newIntensity.getUnits());
+    if (differentIntensityUnits) {
+      throw new RuntimeException("Cannot mix units for recharge.");
+    }
+
     BigDecimal currentWeight = population.getValue().abs();
     BigDecimal addedWeight = newPopulation.getValue().abs();
 
@@ -80,8 +96,8 @@ public class RechargeInformation {
     BigDecimal accumulatedPopulation = population.getValue().add(newPopulation.getValue());
 
     return new RechargeInformation(
-        new EngineNumber(accumulatedPopulation, "%"),
-        new EngineNumber(weightedIntensity, "kg / unit")
+        new EngineNumber(accumulatedPopulation, newPopulation.getUnits()),
+        new EngineNumber(weightedIntensity, newIntensity.getUnits())
     );
   }
 
@@ -110,7 +126,7 @@ public class RechargeInformation {
       BigDecimal totalWeight = currentWeight.add(addedWeight);
       return currentWeight.multiply(intensity.getValue())
           .add(addedWeight.multiply(newIntensity.getValue()))
-          .divide(totalWeight, 10, java.math.RoundingMode.HALF_UP);
+          .divide(totalWeight, MathContext.DECIMAL128);
     }
   }
 }

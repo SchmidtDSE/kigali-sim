@@ -327,10 +327,6 @@ public class ReplaceLiveTests {
                                    + replaceR410a.getPopulation().getValue().doubleValue()
                                    + replaceHfc32.getPopulation().getValue().doubleValue();
 
-    // Log the values for debugging
-    System.out.printf("Year 5 - BAU Total population (all substances): %.6f units%n", bauTotalPopulation);
-    System.out.printf("Year 5 - Replace Total population (all substances): %.6f units%n", replaceTotalPopulation);
-
     // This assertion should pass if replacement works correctly across all substances
     // If it fails, it indicates the same priorEquipment->equipment issue as cap displacement
     assertEquals(bauTotalPopulation, replaceTotalPopulation, 0.0001,
@@ -384,12 +380,6 @@ public class ReplaceLiveTests {
     assertNotNull(s1R410a, "Should have ReplacePriorOnly S1 result for ResAC1/R-410A - E1 in year 5");
     assertNotNull(s1Hfc32, "Should have ReplacePriorOnly S1 result for ResAC1/HFC-32 - E11 in year 5");
 
-    // Log the values for debugging
-    System.out.printf("Year 5 - BAU HFC-134a population: %.6f units%n", bauHfc134a.getPopulation().getValue().doubleValue());
-    System.out.printf("Year 5 - ReplacePriorOnly HFC-134a population: %.6f units%n", s1Hfc134a.getPopulation().getValue().doubleValue());
-    System.out.printf("Year 5 - BAU R-410A population: %.6f units%n", bauR410a.getPopulation().getValue().doubleValue());
-    System.out.printf("Year 5 - ReplacePriorOnly R-410A population: %.6f units%n", s1R410a.getPopulation().getValue().doubleValue());
-
     // Test that replaced substances (HFC-134a and R-410A) have reduced but non-zero populations
     double bauHfc134aPopulation = bauHfc134a.getPopulation().getValue().doubleValue();
     double s1Hfc134aPopulation = s1Hfc134a.getPopulation().getValue().doubleValue();
@@ -413,11 +403,6 @@ public class ReplaceLiveTests {
     double s1R600aPopulation = s1R600a.getPopulation().getValue().doubleValue();
     double bauHfc32Population = bauHfc32.getPopulation().getValue().doubleValue();
     double s1Hfc32Population = s1Hfc32.getPopulation().getValue().doubleValue();
-
-    System.out.printf("Year 5 - BAU R-600a population: %.6f units%n", bauR600aPopulation);
-    System.out.printf("Year 5 - ReplacePriorOnly R-600a population: %.6f units%n", s1R600aPopulation);
-    System.out.printf("Year 5 - BAU HFC-32 population: %.6f units%n", bauHfc32Population);
-    System.out.printf("Year 5 - ReplacePriorOnly HFC-32 population: %.6f units%n", s1Hfc32Population);
 
     // Note: Target substances may remain at zero if they have no initial import/sales in the QTA setup
     // The key validation is that replaced substances are reduced but not eliminated entirely
