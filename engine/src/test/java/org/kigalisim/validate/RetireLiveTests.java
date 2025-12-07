@@ -11,6 +11,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -380,5 +381,41 @@ public class RetireLiveTests {
         "Equipment should be 110 units with negative retirement clamped to 0%");
     assertEquals("units", resultYear1.getPopulation().getUnits(),
         "Equipment units should be units");
+  }
+
+  /**
+   * Test cumulative retire behavior across multiple years.
+   */
+  @Test
+  public void testSigmoidRetire() throws IOException {
+    String qtaPath = "../examples/sigmoid_retire.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, "BAU", p -> {});
+    List<EngineResult> list = results.collect(Collectors.toList());
+
+    // 2022 less than 2022
+    BigDecimal y2022 = LiveTestsUtil.getResult(list.stream(), 2022, "test", "test")
+        .getPopulation()
+        .getValue();
+
+    BigDecimal y2023 = LiveTestsUtil.getResult(list.stream(), 2023, "test", "test")
+        .getPopulation()
+        .getValue();
+
+    assertTrue(y2022.compareTo(y2023) > 0);
+
+    // 2046 less than 2045
+    BigDecimal y2046 = LiveTestsUtil.getResult(list.stream(), 2046, "test", "test")
+        .getPopulation()
+        .getValue();
+
+    BigDecimal y2045 = LiveTestsUtil.getResult(list.stream(), 2045, "test", "test")
+        .getPopulation()
+        .getValue();
+
+    assertTrue(y2045.compareTo(y2046) > 0);
+
+    // Delta increasing
+    assertTrue(y2045.subtract(y2046).compareTo(y2022.subtract(y2023)) > 0);
   }
 }

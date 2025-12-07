@@ -1,7 +1,7 @@
 start default
 
   define application "Commercial Refrigeration"
-
+  
     uses substance "HFC-134a"
       enable import
       initial charge with 0 kg / unit for domestic
@@ -9,12 +9,10 @@ start default
       initial charge with 0 kg / unit for export
       equals 1430 kgCO2e / kg
       equals 1 kwh / unit
-      set import to 1 mt during year 1990
-      set import to 0 mt during year 2025
-      change import by 10 % / year during years 1991 to 2024
-      retire (get age as years) * 1% / year
+      set priorEquipment to 1,000,000 units during year 1990
+      retire (get age as years) * 1 % / year
     end substance
-
+  
   end application
 
 end default
@@ -23,6 +21,6 @@ end default
 start simulations
 
   simulate "Business as Usual"
-  from years 1990 to 2050
+  from years 1990 to 2020
 
 end simulations
