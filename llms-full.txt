@@ -431,6 +431,24 @@ The bank columns (bankKg, bankTCO2e, bankChangeKg, bankChangeTCO2e) represent th
 
 Bank calculations use initial charge values and GWP (Global Warming Potential) from the equals statement to convert equipment population (units) to substance volume (kg) and GHG impact (tCO2e). The change columns show the difference from the previous year, reflecting net increase or decrease in the substance bank.
 
+## Variable Hazards
+
+Constant % / year having recharge or retirement recommended for simple scripts but variable hazards can use age of equipment where `get age` yields average age of equipment:
+
+```
+uses substance "R-407C"
+  enable import
+  assume only recharge sales
+  initial charge with 10 kg / unit for import
+  equals 1774 kgCO2e / kg
+  set priorEquipment to 100 units during year 2022
+  retire (get age as years)^2 * 0.195% / year
+  recharge (get age as years) * 0.109% with 10 kg / unit
+end substance
+```
+
+Here leakage hazard rate linearly increases with age and retirement exponentially: 10 year average lifespan with 6% recharge during that lifetime.
+
 ## Limitations
 
 This tool is unofficial and voluntary, designed to optionally inform Montreal Protocol policy discussions rather than replace official assessment processes.
