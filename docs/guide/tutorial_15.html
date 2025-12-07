@@ -142,7 +142,7 @@ end simulations</code></pre>
             <li>Solve for servicing: <a href="https://www.wolframalpha.com/input?i=integrate+x*t+from+t%3D0+to+10+equals+0.06%2C+solve+for+x">integrate x*t from t=0 to 10 equals 0.06, solve for x</a></li>
           </ul>
           <p>
-            These are provided in Wolfram Alpha for brevity but can be adapted easily to Python or other languages like in numpy. The point here being though that we assume retirement gets exponentially worse with age and leakge linearly worse. If you have some programming background, you can also use a numeric solver with a summation in addition to this approach!
+            These are provided in Wolfram Alpha for brevity but can be adapted easily to Python (using numpy) or other languages. The point here being though that we assume retirement gets exponentially worse with age and leakge linearly worse. If you have some programming background, you can also use a numeric solver with a summation in addition to this approach!
           </p>
           <p>
             Note that we are providing a very direct interpretation of the input assumptions. For some alternative types of input, consider using numpy / Python and an iterative solver. Also, Kigali Sim applies calculations once per year as we don't know the exact time during the year that equipment comes into service. So, in actuality, we pass the 50% mark sometime between 2030 and 2031. Emissions might also be slightly different.
@@ -169,11 +169,7 @@ end simulations</code></pre>
         <h2>Conclusion</h2>
 
         <p>
-          If you have survival analysis data on equipment and detailed information on the age of equipment, specifying variable retirement may lead to higher accuracy in predictions. Additionally, though we looked at hazard rates for retirement, the same approach can apply to servicing as well if you use QubecTalk.
-        </p>
-
-        <p>
-          Note: We have mostly modeled large top up, likely to recover from emissions resulting from active use. However, you could also add additional recharge commands to reflect passive use or emissions during charge itself. In other words, multiple recharge commands can run in a single year to respond to different sources of leakage.
+          If you have survival analysis data on equipment and detailed information on the age of equipment, specifying variable retirement may lead to higher accuracy in predictions. Additionally, though we looked at hazard rates for retirement, the same approach can apply to servicing as well.
         </p>
       </section>
 
