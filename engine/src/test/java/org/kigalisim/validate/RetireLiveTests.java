@@ -11,6 +11,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -357,5 +358,105 @@ public class RetireLiveTests {
         "Equipment should be 105 units after net 5% retirement (10% - 5%)");
     assertEquals("units", resultYear1.getPopulation().getUnits(),
         "Equipment units should be units");
+  }
+
+  /**
+   * Test that negative retirement alone is clamped to zero (no retirement).
+   */
+  @Test
+  public void testNegativeRetireClamped() throws IOException {
+    String qtaPath = "../examples/test_negative_retire_clamped.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, "business as usual", progress -> {});
+    List<EngineResult> resultsList = results.collect(Collectors.toList());
+
+    // Year 1: retire -5% clamped to 0% = 0 units retired
+    // Equipment: 100 base - 0 retired + 10 sales = 110 units
+    EngineResult resultYear1 = LiveTestsUtil.getResult(resultsList.stream(), 1, "test", "test");
+    assertNotNull(resultYear1, "Should have result for test/test in year 1");
+    assertEquals(110.0, resultYear1.getPopulation().getValue().doubleValue(), 0.0001,
+        "Equipment should be 110 units with negative retirement clamped to 0%");
+    assertEquals("units", resultYear1.getPopulation().getUnits(),
+        "Equipment units should be units");
+  }
+
+  /**
+   * Test that positive retirement is clamped to 100%.
+   */
+  @Test
+  public void testPositiveRetireClamped() throws IOException {
+    String qtaPath = "../examples/test_positive_retire_clamped.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, "business as usual", progress -> {});
+    List<EngineResult> resultsList = results.collect(Collectors.toList());
+
+    // Equipment: 100 base - 100 retired + 10 sales = 110 units
+    EngineResult resultYear1 = LiveTestsUtil.getResult(resultsList.stream(), 1, "test", "test");
+    assertNotNull(resultYear1, "Should have result for test/test in year 1");
+    assertEquals(10.0, resultYear1.getPopulation().getValue().doubleValue(), 0.0001,
+        "Equipment should be 10 units with retirement clamped to 100%");
+    assertEquals("units", resultYear1.getPopulation().getUnits(),
+        "Equipment units should be units");
+  }
+
+  /**
+   * Test that non-percent positive retirement is not clamped.
+   */
+  @Test
+  public void testPositiveRetireNotClamped() throws IOException {
+    String qtaPath = "../examples/test_positive_retire_not_clamped.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, "business as usual", progress -> {});
+    List<EngineResult> resultsList = results.collect(Collectors.toList());
+
+    // Equipment: 200 base - 120 retired + 10 sales = 90 units
+    EngineResult resultYear1 = LiveTestsUtil.getResult(resultsList.stream(), 1, "test", "test");
+    assertNotNull(resultYear1, "Should have result for test/test in year 1");
+    assertEquals(90.0, resultYear1.getPopulation().getValue().doubleValue(), 0.0001,
+        "Equipment should be 90 units with retirement not clamped");
+    assertEquals("units", resultYear1.getPopulation().getUnits(),
+        "Equipment units should be units");
+  }
+
+  /**
+   * Test cumulative retire behavior across multiple years.
+   */
+  @Test
+  public void testSigmoidRetire() throws IOException {
+    String qtaPath = "../examples/sigmoid_retire.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, "BAU", p -> {});
+    List<EngineResult> list = results.collect(Collectors.toList());
+
+    // 2022 less than 2022
+    BigDecimal y2022 = LiveTestsUtil.getResult(list.stream(), 2022, "test", "test")
+        .getPopulation()
+        .getValue();
+
+    BigDecimal y2023 = LiveTestsUtil.getResult(list.stream(), 2023, "test", "test")
+        .getPopulation()
+        .getValue();
+
+    assertTrue(y2022.compareTo(y2023) > 0);
+
+    // 2046 less than 2045
+    BigDecimal y2046 = LiveTestsUtil.getResult(list.stream(), 2046, "test", "test")
+        .getPopulation()
+        .getValue();
+
+    BigDecimal y2045 = LiveTestsUtil.getResult(list.stream(), 2045, "test", "test")
+        .getPopulation()
+        .getValue();
+
+    assertTrue(y2045.compareTo(y2046) > 0);
+
+    // Delta increasing
+    assertTrue(y2045.subtract(y2046).compareTo(y2022.subtract(y2023)) > 0);
   }
 }

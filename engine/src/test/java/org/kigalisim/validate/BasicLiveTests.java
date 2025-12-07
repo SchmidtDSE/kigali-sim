@@ -801,11 +801,6 @@ public class BasicLiveTests {
     double setEquipment = setResult.getPopulation().getValue().doubleValue();
     double equipmentDifference = setEquipment - bauEquipment;
 
-    // Log the values for debugging
-    System.out.printf("Year 5 - BAU equipment population: %.6f units%n", bauEquipment);
-    System.out.printf("Year 5 - Set equipment population: %.6f units%n", setEquipment);
-    System.out.printf("Year 5 - Equipment difference: %.6f units%n", equipmentDifference);
-
     // In the QTA file, priorEquipment is set from 500 to 600 units in year 5 (+100 units)
     // Equipment should change because sales are added on top of the priorEquipment baseline
     // The actual difference from the test run is -2980.144547 with cumulative implementation
@@ -851,11 +846,6 @@ public class BasicLiveTests {
     double bauEquipment = bauResult.getPopulation().getValue().doubleValue();
     double setEquipment = setResult.getPopulation().getValue().doubleValue();
     double equipmentDifference = setEquipment - bauEquipment;
-
-    // Log the values for debugging
-    System.out.printf("Year 5 - BAU bank (equipment) population: %.6f units%n", bauEquipment);
-    System.out.printf("Year 5 - Set bank (equipment) population: %.6f units%n", setEquipment);
-    System.out.printf("Year 5 - Bank (equipment) difference: %.6f units%n", equipmentDifference);
 
     // In the QTA file, priorBank is set from 500 to 600 units in year 5 (+100 units)
     // Equipment should change because sales are added on top of the priorBank baseline

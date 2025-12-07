@@ -7,7 +7,7 @@
 package org.kigalisim.lang.machine;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
+import java.math.MathContext;
 import java.util.Optional;
 import java.util.Random;
 import java.util.Stack;
@@ -105,6 +105,23 @@ public class SingleThreadPushDownMachine implements PushDownMachine {
    * {@inheritDoc}
    */
   @Override
+  public void power() {
+    EngineNumber right = pop();
+    EngineNumber left = pop();
+    setExpectedUnits(left.getUnits());
+    BigDecimal resultValue = BigDecimal.valueOf(Math.pow(
+        left.getValue().doubleValue(),
+        right.getValue().doubleValue()
+    ));
+    EngineNumber result = new EngineNumber(resultValue, getExpectedUnits());
+    push(result);
+    clearExpectedUnits();
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
   public void divide() {
     EngineNumber right = pop();
     if (right.getValue().compareTo(BigDecimal.ZERO) == 0) {
@@ -112,7 +129,7 @@ public class SingleThreadPushDownMachine implements PushDownMachine {
     }
     setExpectedUnits(right.getUnits());
     EngineNumber left = pop();
-    BigDecimal resultValue = left.getValue().divide(right.getValue(), 10, RoundingMode.HALF_UP);
+    BigDecimal resultValue = left.getValue().divide(right.getValue(), MathContext.DECIMAL128);
     EngineNumber result = new EngineNumber(resultValue, getExpectedUnits());
     push(result);
     clearExpectedUnits();

@@ -26,6 +26,8 @@ import org.kigalisim.lang.operation.RecoverOperation.RecoveryStage;
  */
 public class StreamParameterization {
 
+  private static final BigDecimal ONE_HUNDRED = BigDecimal.valueOf(100);
+
   private EngineNumber ghgIntensity;
   private EngineNumber energyIntensity;
   private final Map<String, EngineNumber> initialCharge;
@@ -41,8 +43,6 @@ public class StreamParameterization {
   private final Map<String, EngineNumber> lastSpecifiedValue;
   private final Set<String> enabledStreams;
   private boolean salesIntentFreshlySet;
-
-  // Cumulative retirement and recharge tracking (independent bases)
   private PriorEquipmentBases priorEquipmentBases;
 
   /**
@@ -139,7 +139,7 @@ public class StreamParameterization {
    * @param newValue The new recharge population value
    */
   public void setRechargePopulation(EngineNumber newValue) {
-    rechargePopulation = newValue;
+    rechargePopulation = clampRate(newValue);
   }
 
   /**
@@ -317,14 +317,16 @@ public class StreamParameterization {
    * Set the retirement rate percentage.
    *
    * <p>This method accumulates retirement rates across multiple retire commands
-   * in the same year to support cumulative retirement behavior.</p>
+   * in the same year to support cumulative retirement behavior. If the resulting
+   * retirement rate is negative, it is clamped to zero (no retirement).</p>
    *
    * @param newValue The new retirement rate value to add
    */
   public void setRetirementRate(EngineNumber newValue) {
     BigDecimal currentValue = retirementRate.getValue();
     BigDecimal newTotal = currentValue.add(newValue.getValue());
-    retirementRate = new EngineNumber(newTotal, newValue.getUnits());
+    EngineNumber candidateRetirementRate = new EngineNumber(newTotal, newValue.getUnits());
+    retirementRate = clampRate(candidateRetirementRate);
   }
 
   /**
@@ -481,7 +483,7 @@ public class StreamParameterization {
     );
     RechargeInformation result = currentInfo.add(population, intensity);
 
-    rechargePopulation = result.getPopulation();
+    rechargePopulation = clampRate(result.getPopulation());
     rechargeIntensity = result.getIntensity();
   }
 
@@ -615,5 +617,24 @@ public class StreamParameterization {
     if (!getIsSalesStreamAllowed(name)) {
       throw new IllegalArgumentException("Must address a sales substream.");
     }
+  }
+
+  /**
+   * Ensure that a value is positive and, if a percent, 100 or less.
+   *
+   * @param target The value to clamp to [0,] or [0, 100] if percent.
+   * @return The value after clamping.
+   */
+  private EngineNumber clampRate(EngineNumber target) {
+    if (target.getValue().compareTo(BigDecimal.ZERO) < 0) {
+      return new EngineNumber(BigDecimal.ZERO, target.getUnits());
+    }
+
+    boolean isOver100 = target.getValue().compareTo(ONE_HUNDRED) > 0;
+    if (isOver100 && target.getUnits().equals("%")) {
+      return new EngineNumber(ONE_HUNDRED, target.getUnits());
+    }
+
+    return target;
   }
 }
