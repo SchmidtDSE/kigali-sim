@@ -1837,31 +1837,17 @@ public class RecycleRecoverLiveTests {
     double recyclingAmount2026 = recyclingResult2026.getRecycle().getValue().doubleValue();
     String recyclingUnits = recyclingResult2026.getRecycle().getUnits();
 
-    // DEBUG: Print values to investigate unit conversion issue
-    System.out.printf("=== DEBUG INFO FOR UNIT CONVERSION TEST ===%n");
-    System.out.printf("Year 2026 BAU Import: %.6f %s%n", bauImport2026, bauImportUnits);
-    System.out.printf("Year 2026 Recycling Amount: %.6f %s%n", recyclingAmount2026, recyclingUnits);
-    System.out.printf("Ratio (Recycling/BAU): %.2f%n", recyclingAmount2026 / bauImport2026);
-
     // Get import attributed to importer (excluding initial charge to exporter)
     double totalImports = bauResult2026.getImport().getValue().doubleValue();
     TradeSupplement tradeSupplement = bauResult2026.getTradeSupplement();
     if (tradeSupplement != null && tradeSupplement.getImportInitialChargeValue() != null) {
       double importInitialChargeToExporter = tradeSupplement.getImportInitialChargeValue().getValue().doubleValue();
       double importAttributedToImporter = totalImports - importInitialChargeToExporter;
-      System.out.printf("Import Initial Charge to Exporter: %.6f %s%n",
-          importInitialChargeToExporter, tradeSupplement.getImportInitialChargeValue().getUnits());
-      System.out.printf("Import Attributed to Importer: %.6f %s%n", importAttributedToImporter, bauImportUnits);
-      System.out.printf("Recycling vs Import Attributed Ratio: %.2f%n", recyclingAmount2026 / importAttributedToImporter);
     }
 
     // Also check domestic amounts for completeness
     double bauDomestic2026 = bauResult2026.getDomestic().getValue().doubleValue();
     double recyclingDomestic2026 = recyclingResult2026.getDomestic().getValue().doubleValue();
-    System.out.printf("Year 2026 BAU Domestic: %.6f %s%n", bauDomestic2026, bauResult2026.getDomestic().getUnits());
-    System.out.printf("Year 2026 Recycling Domestic: %.6f %s%n", recyclingDomestic2026, recyclingResult2026.getDomestic().getUnits());
-
-    System.out.printf("============================================%n");
 
     // The core assertion - check if units are consistent
     assertEquals(bauImportUnits, recyclingUnits, "Import and recycling should have the same units");
