@@ -32,11 +32,11 @@ public class KigaliWasmSimFacade {
   /**
    * Returns the version of KigaliSim.
    *
-   * @return The version string "0.1.1".
+   * @return The current version string.
    */
   @JSExport
   public static String getVersion() {
-    return "0.1.1";
+    return "0.1.3";
   }
 
   /**
