@@ -1,0 +1,86 @@
+start default
+
+  define application "Domestic Refrigeration"
+  
+    uses substance "HFC-134a"
+      enable import
+      initial charge with 0 kg / unit for domestic
+      initial charge with 1 kg / unit for import
+      initial charge with 0 kg / unit for export
+      equals 1430 kgCO2e / kg
+      equals 1 kwh / unit
+      set priorEquipment to 1,000,000 units during year 2025
+      set sales to 100 mt during year 2025
+      change sales by 10 % / year during years 2026 to onwards
+      retire 5 % / year
+      recharge 5 % with 0.85 kg / unit
+    end substance
+
+
+    uses substance "R-600a"
+      enable import
+      initial charge with 0 kg / unit for domestic
+      initial charge with 1 kg / unit for import
+      initial charge with 0 kg / unit for export
+      equals 3 kgCO2e / kg
+      equals 1 kwh / unit
+      change sales by 10 % / year during years 2026 to onwards
+      retire 5 % / year
+      recharge 5 % with 0.85 kg / unit
+      set sales to 0 kg during year 2025
+    end substance
+  
+  end application
+
+end default
+
+
+start policy "Recycling"
+
+  modify application "Domestic Refrigeration"
+  
+    modify substance "HFC-134a"
+      recover 80 % with 90 % reuse with 0 % induction during years 2030 to onwards
+    end substance
+  
+  end application
+
+end policy
+
+
+
+start policy "Permit"
+
+  modify application "Domestic Refrigeration"
+  
+    modify substance "HFC-134a"
+      cap sales to 85 % displacing "R-600a" during years 2030 to onwards
+    end substance
+  
+  end application
+
+end policy
+
+
+start simulations
+
+  simulate "Business as Usual"
+  from years 2025 to 2040
+
+
+  simulate "With Recycling"
+    using "Recycling"
+  from years 2025 to 2040
+
+
+  simulate "With Permit"
+    using "Permit"
+  from years 2025 to 2040
+
+
+  simulate "Combined"
+    using "Recycling"
+    then "Permit"
+  from years 2025 to 2040
+
+end simulations
