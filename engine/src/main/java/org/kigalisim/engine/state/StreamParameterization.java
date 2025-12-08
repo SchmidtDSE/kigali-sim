@@ -9,6 +9,8 @@
 
 package org.kigalisim.engine.state;
 
+import static org.kigalisim.engine.state.SimulationState.ZERO_VOLUME;
+
 import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -17,8 +19,6 @@ import java.util.Optional;
 import java.util.Set;
 import org.kigalisim.engine.number.EngineNumber;
 import org.kigalisim.lang.operation.RecoverOperation.RecoveryStage;
-
-import static org.kigalisim.engine.state.SimulationState.ZERO_VOLUME;
 
 /**
  * Class for managing stream-specific parameters and settings.
