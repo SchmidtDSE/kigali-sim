@@ -7,8 +7,10 @@
 package org.kigalisim.engine.state;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.math.BigDecimal;
 import org.junit.jupiter.api.Test;
@@ -287,25 +289,36 @@ public class StreamParameterizationTest {
   }
 
   /**
-   * Test hasLastSpecifiedValue method.
+   * Test tracking of has last specified.
    */
   @Test
   public void testHasLastSpecifiedValue() {
     StreamParameterization parameterization = new StreamParameterization();
 
-    // Initially should not have any values
-    assertEquals(false, parameterization.hasLastSpecifiedValue("sales"),
-                 "Should not have value initially");
+    // Initially should not have any values for sales
+    assertFalse(parameterization.hasLastSpecifiedValue("sales"), "Should not have value initially");
 
     // Set a value
     EngineNumber testValue = new EngineNumber(new BigDecimal("800"), "units");
     parameterization.setLastSpecifiedValue("sales", testValue);
 
     // Now should have the value
-    assertEquals(true, parameterization.hasLastSpecifiedValue("sales"),
-                 "Should have value after setting");
-    assertEquals(false, parameterization.hasLastSpecifiedValue("import"),
-                 "Should not have value for different stream");
+    assertTrue(parameterization.hasLastSpecifiedValue("sales"), "Should have value after setting");
+  }
+
+  /**
+   * Test tracking default has last specified is stale.
+   */
+  @Test
+  public void testHasLastSpecifiedValueImplicit() {
+    StreamParameterization parameterization = new StreamParameterization();
+
+    // Initially should not have any values for sales
+    assertFalse(parameterization.hasLastSpecifiedValue("sales"), "Should not have value initially");
+
+    // Now should have the value
+    assertTrue(parameterization.hasLastSpecifiedValue("import"), "Should not have value for different stream");
+    assertFalse(parameterization.isSalesIntentFreshlySet(), "Default value should still be stale intent");
   }
 
   /**
@@ -336,8 +349,7 @@ public class StreamParameterizationTest {
   @Test
   public void testSalesIntentFreshlySetDefaultValue() {
     StreamParameterization parameterization = new StreamParameterization();
-    assertEquals(false, parameterization.isSalesIntentFreshlySet(),
-                 "Sales intent flag should default to false");
+    assertFalse(parameterization.isSalesIntentFreshlySet(), "Sales intent flag should default to false");
   }
 
   /**
@@ -349,13 +361,11 @@ public class StreamParameterizationTest {
 
     // Set to true
     parameterization.setSalesIntentFreshlySet(true);
-    assertEquals(true, parameterization.isSalesIntentFreshlySet(),
-                 "Should return true after setting to true");
+    assertTrue(parameterization.isSalesIntentFreshlySet(), "Should return true after setting to true");
 
     // Set back to false
     parameterization.setSalesIntentFreshlySet(false);
-    assertEquals(false, parameterization.isSalesIntentFreshlySet(),
-                 "Should return false after setting to false");
+    assertFalse(parameterization.isSalesIntentFreshlySet(), "Should return false after setting to false");
   }
 
   /**
@@ -366,14 +376,12 @@ public class StreamParameterizationTest {
     StreamParameterization parameterization = new StreamParameterization();
 
     // Initially false
-    assertEquals(false, parameterization.isSalesIntentFreshlySet(),
-                 "Flag should start false");
+    assertFalse(parameterization.isSalesIntentFreshlySet(), "Flag should start false");
 
     // Set sales value - should set flag
     EngineNumber salesValue = new EngineNumber(new BigDecimal("100"), "units");
     parameterization.setLastSpecifiedValue("sales", salesValue);
-    assertEquals(true, parameterization.isSalesIntentFreshlySet(),
-                 "Flag should be true after setting sales value");
+    assertTrue(parameterization.isSalesIntentFreshlySet(), "Flag should be true after setting sales value");
 
     // Reset flag
     parameterization.setSalesIntentFreshlySet(false);
@@ -381,8 +389,7 @@ public class StreamParameterizationTest {
     // Set import value - should set flag
     EngineNumber importValue = new EngineNumber(new BigDecimal("50"), "units");
     parameterization.setLastSpecifiedValue("import", importValue);
-    assertEquals(true, parameterization.isSalesIntentFreshlySet(),
-                 "Flag should be true after setting import value");
+    assertTrue(parameterization.isSalesIntentFreshlySet(), "Flag should be true after setting import value");
 
     // Reset flag
     parameterization.setSalesIntentFreshlySet(false);
@@ -390,8 +397,7 @@ public class StreamParameterizationTest {
     // Set manufacture value - should set flag
     EngineNumber manufactureValue = new EngineNumber(new BigDecimal("75"), "kg");
     parameterization.setLastSpecifiedValue("domestic", manufactureValue);
-    assertEquals(true, parameterization.isSalesIntentFreshlySet(),
-                 "Flag should be true after setting manufacture value");
+    assertTrue(parameterization.isSalesIntentFreshlySet(), "Flag should be true after setting manufacture value");
   }
 
   /**
@@ -406,8 +412,7 @@ public class StreamParameterizationTest {
     parameterization.setLastSpecifiedValue("consumption", otherValue);
 
     // Flag should remain false
-    assertEquals(false, parameterization.isSalesIntentFreshlySet(),
-                 "Flag should remain false for non-sales streams");
+    assertFalse(parameterization.isSalesIntentFreshlySet(), "Flag should remain false for non-sales streams");
   }
 
   /**
@@ -422,8 +427,7 @@ public class StreamParameterizationTest {
     parameterization.setLastSpecifiedValue("sales", percentValue);
 
     // Flag should remain false since percentage values are ignored
-    assertEquals(false, parameterization.isSalesIntentFreshlySet(),
-                 "Flag should remain false when percentage values are ignored");
+    assertFalse(parameterization.isSalesIntentFreshlySet(), "Flag should remain false when percentage values are ignored");
   }
 
 }

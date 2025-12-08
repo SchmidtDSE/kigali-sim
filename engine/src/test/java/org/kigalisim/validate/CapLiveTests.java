@@ -711,8 +711,7 @@ public class CapLiveTests {
     assertNotNull(program, "Program should not be null");
 
     // Run the scenario using KigaliSimFacade
-    String scenarioName = "result";
-    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, "result", progress -> {});
 
     List<EngineResult> resultsList = results.collect(Collectors.toList());
     EngineResult result = LiveTestsUtil.getResult(resultsList.stream(), 1, "test", "test");
@@ -730,5 +729,55 @@ public class CapLiveTests {
     // The 50-unit reduction comes from priorEquipment via retirement
     assertEquals(100.0, result.getPopulationNew().getValue().doubleValue(), 0.0001,
         "New equipment should be 100 units");
+  }
+
+  @Test
+  public void testReplaceIntoOtherwiseEmpty() throws IOException {
+    // Load and parse the QTA file
+    String qtaPath = "../examples/cap_displace_empty_other.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    // Run the scenario using KigaliSimFacade
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, "With Permit", progress -> {});
+
+    List<EngineResult> resultsList = results.collect(Collectors.toList());
+    EngineResult result = LiveTestsUtil.getResult(
+        resultsList.stream(),
+        2040,
+        "Domestic Refrigeration",
+        "R-600a"
+    );
+    assertNotNull(result, "Should have result for test/test in year 2040");
+
+    // Just a sanity check
+    assertTrue(result.getPopulation().getValue().doubleValue() < 9000000);
+    assertEquals("units", result.getPopulation().getUnits(),
+        "Equipment units should be units");
+  }
+
+  @Test
+  public void testReplaceIntoOtherwiseEmptyExplicit() throws IOException {
+    // Load and parse the QTA file
+    String qtaPath = "../examples/cap_displace_empty_other_explicit.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    // Run the scenario using KigaliSimFacade
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, "With Permit", progress -> {});
+
+    List<EngineResult> resultsList = results.collect(Collectors.toList());
+    EngineResult result = LiveTestsUtil.getResult(
+        resultsList.stream(),
+        2040,
+        "Domestic Refrigeration",
+        "R-600a"
+    );
+    assertNotNull(result, "Should have result for test/test in year 2040");
+
+    // Just a sanity check
+    assertTrue(result.getPopulation().getValue().doubleValue() < 9000000);
+    assertEquals("units", result.getPopulation().getUnits(),
+        "Equipment units should be units");
   }
 }
