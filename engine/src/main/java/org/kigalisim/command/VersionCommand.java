@@ -29,6 +29,6 @@ public class VersionCommand implements Runnable {
    */
   @Override
   public void run() {
-    System.out.println("0.1.1");
+    System.out.println("0.1.3");
   }
 }
