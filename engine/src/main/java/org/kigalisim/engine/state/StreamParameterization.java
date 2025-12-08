@@ -18,6 +18,8 @@ import java.util.Set;
 import org.kigalisim.engine.number.EngineNumber;
 import org.kigalisim.lang.operation.RecoverOperation.RecoveryStage;
 
+import static org.kigalisim.engine.state.SimulationState.ZERO_VOLUME;
+
 /**
  * Class for managing stream-specific parameters and settings.
  *
@@ -54,7 +56,6 @@ public class StreamParameterization {
     this.lastSpecifiedValue = new HashMap<>();
     this.salesIntentFreshlySet = false;
 
-    // Initialize all parameters with default values
     ghgIntensity = new EngineNumber(BigDecimal.ZERO, "tCO2e / kg");
     energyIntensity = new EngineNumber(BigDecimal.ZERO, "kwh / kg");
 
@@ -72,6 +73,11 @@ public class StreamParameterization {
     inductionRateEol = getDefaultInductionRate();
 
     priorEquipmentBases = new PriorEquipmentBases();
+
+    setLastSpecifiedValue("domestic", ZERO_VOLUME);
+    setLastSpecifiedValue("import", ZERO_VOLUME);
+    setLastSpecifiedValue("export", ZERO_VOLUME);
+    setSalesIntentFreshlySet(false);
   }
 
 
