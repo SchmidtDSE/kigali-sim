@@ -11,7 +11,8 @@ start default
       initial charge with 200 kg / unit for export
       set domestic to 1600 mt
       set import to 400 mt
-      set export to 200 mt
+      set export to 200 mt during year 1
+      set export to 200 units during year 2
       equals 500 tCO2e / mt
     end substance
 
@@ -22,6 +23,6 @@ end default
 
 start simulations
 
-  simulate "exporter scenario" from years 1 to 1
+  simulate "exporter scenario" from years 1 to 10
 
 end simulations
