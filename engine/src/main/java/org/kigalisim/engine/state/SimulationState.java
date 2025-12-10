@@ -31,6 +31,7 @@ public class SimulationState {
   private static final boolean CHECK_NAN_STATE = false;
   private static final BigDecimal BASE_CHANGE_TOLERANCE = new BigDecimal("0.0001");
   private static final BigDecimal HUNDRED_PERCENT = BigDecimal.valueOf(100);
+  public static final EngineNumber ZERO_VOLUME = new EngineNumber(BigDecimal.ZERO, "kg");
 
   private final Map<String, StreamParameterization> substances;
   private final Map<String, EngineNumber> streams;
@@ -101,7 +102,8 @@ public class SimulationState {
       return;
     }
 
-    substances.put(key, new StreamParameterization());
+    StreamParameterization parameterization = new StreamParameterization();
+    substances.put(key, parameterization);
 
     ensureSubstanceSales(useKey);
     ensureSubstanceConsumption(useKey);
@@ -117,17 +119,17 @@ public class SimulationState {
    * <p>Initializes domestic, import, export, and recycle streams (split into recycleRecharge and
    * recycleEol) along with induction streams (inductionEol and inductionRecharge).</p>
    *
-   * @param useKey The key containing application and substance
+   * @param useKey The key containing application and substance.
    */
   private void ensureSubstanceSales(UseKey useKey) {
     String domesticKey = getKey(useKey, "domestic");
-    streams.put(domesticKey, new EngineNumber(BigDecimal.ZERO, "kg"));
+    streams.put(domesticKey, ZERO_VOLUME);
 
     String importKey = getKey(useKey, "import");
-    streams.put(importKey, new EngineNumber(BigDecimal.ZERO, "kg"));
+    streams.put(importKey, ZERO_VOLUME);
 
     String exportKey = getKey(useKey, "export");
-    streams.put(exportKey, new EngineNumber(BigDecimal.ZERO, "kg"));
+    streams.put(exportKey, ZERO_VOLUME);
 
     String recycleRechargeKey = getKey(useKey, "recycleRecharge");
     streams.put(recycleRechargeKey, new EngineNumber(BigDecimal.ZERO, "kg"));
