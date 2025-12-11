@@ -625,7 +625,6 @@ public class BasicLiveTests {
 
   /**
    * Test zero_pop_infer.qta to reproduce division by zero error.
-   * This test is expected to fail with a division by zero error.
    */
   @Test
   public void testZeroPopulationInfer() throws IOException {
