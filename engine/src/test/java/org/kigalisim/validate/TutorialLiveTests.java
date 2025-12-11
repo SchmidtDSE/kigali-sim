@@ -402,4 +402,39 @@ public class TutorialLiveTests {
         "Tutorial 7 total recycling (" + recycling7RecycleTotal + ") should be greater than Tutorial 6 recycling ("
         + recycling6RecycleTotal + ") in 2035 due to additional R-600a recycling program in Tutorial 7");
   }
+
+  /**
+   * Test Tutorial 17: Basic consumption and equipment growth patterns.
+   * - Consumption sees the impact of exports.
+   * - Equipment does not see impact of exports.
+   */
+  @Test
+  public void testTutorial17() throws IOException {
+    // Load and parse the QTA file
+    String qtaPath = "../examples/tutorial_17.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    // Run the scenario using KigaliSimFacade
+    String scenarioName = "BAU";
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
+
+    List<EngineResult> resultsList = results.collect(Collectors.toList());
+
+    // Get year 2
+    EngineResult resultYear2 = LiveTestsUtil.getResult(resultsList.stream(), 2,
+        "Domestic Refrigeration", "HFC-134a");
+
+    assertNotNull(resultYear2, "Should have result for year 2");
+
+    // Test 1: Consumption sees exports
+    double export = resultYear2.getExport().getValue().doubleValue();
+    double domestic = resultYear2.getDomestic().getValue().doubleValue();
+    assertEquals(500, export, 0.1);
+    assertEquals(1000, domestic, 0.1);
+
+    // Test 2: Equipment does not see exports
+    double equipment = resultYear2.getPopulation().getValue().doubleValue();
+    assertEquals(11000, equipment, 0.1);
+  }
 }
