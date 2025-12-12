@@ -1115,4 +1115,23 @@ public class BasicLiveTests {
     assertEquals(0.0, result6.getImport().getValue().doubleValue(), 0.0001,
         "Import should continue at 0 kg in year 6 (assume continued)");
   }
+
+  /**
+   * Test that "assume" keyword works as syntactic sugar for set commands with conflicting context.
+   */
+  @Test
+  public void testAssumeSyntacticSugarMixed() throws IOException {
+    // Load and parse the QTA file that uses "assume" commands
+    String qtaPath = "../examples/basic_assume_mixed.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    String scenarioName = "test assume";
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
+    List<EngineResult> resultsList = results.collect(Collectors.toList());
+
+    EngineResult result = LiveTestsUtil.getResult(resultsList.stream(), 10, "Test App", "Test Substance");
+    assertNotNull(result, "Should have result for year 10");
+    assertTrue(result.getConsumption().getValue().doubleValue() > 1);
+  }
 }
