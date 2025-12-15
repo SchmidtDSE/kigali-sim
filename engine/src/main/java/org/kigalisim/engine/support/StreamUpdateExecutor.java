@@ -162,15 +162,6 @@ public class StreamUpdateExecutor {
       BigDecimal combinedValue = value.getValue().add(otherConverted.getValue());
       EngineNumber salesIntent = new EngineNumber(combinedValue, targetUnits);
 
-      // Debug logging
-      int year = simulationState.getCurrentYear();
-      if ("Domestic Refrigeration".equals(useKey.getApplication())
-          && "HFC-134a".equals(useKey.getSubstance())
-          && year >= 2025 && year <= 2030) {
-        System.out.println(String.format("[Year %d] updateUnitsTarget: %s=%s, other=%s, salesIntent=%s",
-            year, streamName, value, otherConverted, salesIntent));
-      }
-
       // Track the combined sales intent
       simulationState.setLastSpecifiedValue(useKey, "sales", salesIntent);
     } else {

@@ -79,7 +79,7 @@ test {
   testLogging {
     exceptionFormat = "full"
     events "failed"
-    // showStandardStreams = true  // Enable printf debugging (disabled for production)
+    showStandardStreams = true  // Enable printf debugging (disabled for production)
   }
 }
 

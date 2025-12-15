@@ -242,7 +242,7 @@ public class DisplaceExecutor {
       EngineNumber unitsChanged, String displaceTarget) {
     Scope currentScope = engine.getScope();
     Scope destinationScope = currentScope.getWithSubstance(displaceTarget);
-    String originalSubstance = currentScope.getSubstance();
+    final String originalSubstance = currentScope.getSubstance();
 
     // Temporarily change scope to destination for unit conversion
     engine.setSubstance(displaceTarget);
@@ -260,6 +260,10 @@ public class DisplaceExecutor {
 
     // Use custom recalc kit with destination substance's properties for correct GWP calculation
     shortcuts.changeStreamWithDisplacementContext(stream, displaceChange, destinationScope);
+
+    // Update lastSpecified values for the destination substance so that future
+    // growth calculations build on the displaced amounts
+    updateLastSpecifiedForDisplacement(stream, displaceChange, destinationScope);
 
     // Restore original scope
     engine.setSubstance(originalSubstance);
@@ -305,6 +309,83 @@ public class DisplaceExecutor {
           displaceChange,
           destinationScope
       );
+
+      // Update lastSpecified values for the destination substance so that future
+      // growth calculations build on the displaced amounts
+      updateLastSpecifiedForDisplacement(stream, displaceChange, destinationScope);
     }
+  }
+
+  /**
+   * Updates lastSpecified values for domestic and import in the destination substance.
+   *
+   * <p>When displacement occurs to a different substance, this method updates the lastSpecified
+   * values for domestic and import streams so that future "change sales by X%" commands build
+   * on the displaced values rather than the original values. This ensures that displacement
+   * effects compound properly with growth rates.</p>
+   *
+   * <p>The displacement amount is distributed proportionally between domestic and import
+   * based on their current distribution ratio.</p>
+   *
+   * @param stream The stream identifier being modified (typically "sales")
+   * @param displaceChange The displacement amount in kg
+   * @param destinationScope The scope of the destination substance
+   */
+  private void updateLastSpecifiedForDisplacement(String stream, EngineNumber displaceChange,
+      Scope destinationScope) {
+    // Only update lastSpecified for sales stream displacement
+    if (!"sales".equals(stream)) {
+      return;
+    }
+
+    Scope currentScope = engine.getScope();
+    final String originalSubstance = currentScope.getSubstance();
+
+    // Switch to destination substance to access its state
+    engine.setSubstance(destinationScope.getSubstance());
+
+    // Get the simulation state - destinationScope can be used directly as a UseKey
+    org.kigalisim.engine.state.SimulationState simulationState = engine.getStreamKeeper();
+
+    // Get current lastSpecified values for domestic and import
+    EngineNumber domesticLast = simulationState.getLastSpecifiedValue(destinationScope, "domestic");
+    EngineNumber importLast = simulationState.getLastSpecifiedValue(destinationScope, "import");
+
+    // Get the current distribution to proportionally allocate the displacement
+    org.kigalisim.engine.recalc.SalesStreamDistribution distribution =
+        simulationState.getDistribution(destinationScope);
+    BigDecimal percentDomestic = distribution.getPercentDomestic();
+    BigDecimal percentImport = distribution.getPercentImport();
+
+    // Calculate the displacement amounts for domestic and import
+    // Note: percentDomestic and percentImport are already in 0.0-1.0 range (not 0-100)
+    BigDecimal domesticDisplacement = displaceChange.getValue().multiply(percentDomestic);
+    BigDecimal importDisplacement = displaceChange.getValue().multiply(percentImport);
+
+    // Convert displacement to the units of lastSpecified and update
+    UnitConverter converter = EngineSupportUtils.createUnitConverterWithTotal(engine, stream);
+
+    if (domesticLast != null) {
+      EngineNumber domesticDisplacementInUnits = converter.convert(
+          new EngineNumber(domesticDisplacement, "kg"),
+          domesticLast.getUnits()
+      );
+      BigDecimal newDomestic = domesticLast.getValue().add(domesticDisplacementInUnits.getValue());
+      EngineNumber updatedDomestic = new EngineNumber(newDomestic, domesticLast.getUnits());
+      simulationState.setLastSpecifiedValue(destinationScope, "domestic", updatedDomestic);
+    }
+
+    if (importLast != null) {
+      EngineNumber importDisplacementInUnits = converter.convert(
+          new EngineNumber(importDisplacement, "kg"),
+          importLast.getUnits()
+      );
+      BigDecimal newImport = importLast.getValue().add(importDisplacementInUnits.getValue());
+      EngineNumber updatedImport = new EngineNumber(newImport, importLast.getUnits());
+      simulationState.setLastSpecifiedValue(destinationScope, "import", updatedImport);
+    }
+
+    // Restore original scope
+    engine.setSubstance(originalSubstance);
   }
 }

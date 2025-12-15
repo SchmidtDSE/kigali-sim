@@ -188,16 +188,6 @@ public class LimitExecutor {
     EngineNumber lastSpecified = simulationState.getLastSpecifiedValue(scope, stream);
     boolean hasPrior = lastSpecified != null;
 
-    // Debug logging
-    int year = simulationState.getCurrentYear();
-    if ("Domestic Refrigeration".equals(scope.getApplication())
-        && "HFC-134a".equals(scope.getSubstance())
-        && "sales".equals(stream)
-        && year >= 2029 && year <= 2031) {
-      System.out.println(String.format("[Year %d] capWithPercent: stream=%s, amount=%s, currentValue=%s, lastSpecified=%s",
-          year, stream, amount, currentValue, lastSpecified));
-    }
-
     if (hasPrior) {
       BigDecimal capValue = lastSpecified.getValue()
           .multiply(amount.getValue())
@@ -248,7 +238,8 @@ public class LimitExecutor {
       if (displaceTarget != null) {
         EngineNumber finalInKg = engine.getStream(stream);
         BigDecimal changeInKg = finalInKg.getValue().subtract(currentInKg.getValue());
-        displaceExecutor.execute(stream, amount, changeInKg, displaceTarget);
+
+        displaceExecutor.execute(stream, newCappedValue, changeInKg, displaceTarget);
       }
     } else {
       EngineNumber convertedMax = unitConverter.convert(amount, "kg");
@@ -313,6 +304,7 @@ public class LimitExecutor {
     if (displaceTarget != null) {
       EngineNumber cappedInKg = engine.getStream(stream);
       BigDecimal changeInKg = cappedInKg.getValue().subtract(currentInKg.getValue());
+
       displaceExecutor.execute(stream, amount, changeInKg, displaceTarget);
     }
   }
@@ -401,7 +393,7 @@ public class LimitExecutor {
       if (displaceTarget != null) {
         EngineNumber finalInKg = engine.getStream(stream);
         BigDecimal changeInKg = finalInKg.getValue().subtract(currentInKg.getValue());
-        displaceExecutor.execute(stream, amount, changeInKg, displaceTarget);
+        displaceExecutor.execute(stream, newFloorValue, changeInKg, displaceTarget);
       }
     } else {
       EngineNumber convertedMin = unitConverter.convert(amount, "kg");
