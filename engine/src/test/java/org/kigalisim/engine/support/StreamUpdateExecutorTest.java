@@ -144,7 +144,7 @@ class StreamUpdateExecutorTest {
   }
 
   /**
-   * Tests that volume-based values (kg) now create sales intent with the updated logic.
+   * Tests that volume-based values (kg) creates sales intent with the updated logic.
    */
   @Test
   void testUpdateSalesCarryOverIgnoresVolumeBasedValues() {

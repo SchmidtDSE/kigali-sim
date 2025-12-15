@@ -42,9 +42,7 @@ The order policies are applied matters because policies can interact with each o
 - **Displacement** updates growth baselines (lastSpecified values), affecting how subsequent growth commands compound
 - **Recycling** reduces virgin sales, which can make caps less restrictive or easier to satisfy
 
-For example, if you reversed the order to apply Domestic Recycling before Sales Permit, the recycling would reduce virgin sales first, potentially making the cap trigger less often or with less displacement. This would result in different outcomes even though both policies are still applied.
-
-While policy order may not significantly affect simple scenarios, it becomes important when combining policies like displacement-based caps with recycling programs. The key principle: **policies are applied sequentially in the order specified, with each policy seeing the results of all previous policies**.
+For example, if you reversed the order to apply Domestic Recycling before Sales Permit, the recycling would reduce virgin sales first, potentially making the cap trigger less often or with less displacement. This would result in different outcomes even though both policies are still applied. Having recycling applied first can be used to indicate that the recycling expected for that year will reduce the sales offset into the alternative substance.
 
 ## Editing Code Directly
 

@@ -29,7 +29,9 @@ import java.util.Optional;
 import org.kigalisim.engine.Engine;
 import org.kigalisim.engine.number.EngineNumber;
 import org.kigalisim.engine.number.UnitConverter;
+import org.kigalisim.engine.recalc.SalesStreamDistribution;
 import org.kigalisim.engine.state.Scope;
+import org.kigalisim.engine.state.SimulationState;
 
 /**
  * Executor for displacement operations in cap, floor, and recover commands.
@@ -242,7 +244,6 @@ public class DisplaceExecutor {
       EngineNumber unitsChanged, String displaceTarget) {
     Scope currentScope = engine.getScope();
     Scope destinationScope = currentScope.getWithSubstance(displaceTarget);
-    final String originalSubstance = currentScope.getSubstance();
 
     engine.setSubstance(displaceTarget);
     UnitConverter destinationUnitConverter = EngineSupportUtils.createUnitConverterWithTotal(
@@ -255,6 +256,8 @@ public class DisplaceExecutor {
 
     shortcuts.changeStreamWithDisplacementContext(stream, displaceChange, destinationScope);
     updateLastSpecifiedForDisplacement(stream, displaceChange, destinationScope);
+
+    String originalSubstance = currentScope.getSubstance();
     engine.setSubstance(originalSubstance);
   }
 
@@ -315,34 +318,30 @@ public class DisplaceExecutor {
    */
   private void updateLastSpecifiedForDisplacement(String stream, EngineNumber displaceChange,
       Scope destinationScope) {
-    // Only update lastSpecified for sales stream displacement
-    if (!"sales".equals(stream)) {
+    boolean isSalesStream = "sales".equals(stream);
+    if (!isSalesStream) {
       return;
     }
 
-    Scope currentScope = engine.getScope();
-    final String originalSubstance = currentScope.getSubstance();
-
     engine.setSubstance(destinationScope.getSubstance());
 
-    org.kigalisim.engine.state.SimulationState simulationState = engine.getStreamKeeper();
+    SimulationState simulationState = engine.getStreamKeeper();
 
     EngineNumber domesticLast = simulationState.getLastSpecifiedValue(destinationScope, "domestic");
     EngineNumber importLast = simulationState.getLastSpecifiedValue(destinationScope, "import");
 
     // Get the current distribution to proportionally allocate the displacement
-    org.kigalisim.engine.recalc.SalesStreamDistribution distribution =
-        simulationState.getDistribution(destinationScope);
+    SalesStreamDistribution distribution = simulationState.getDistribution(destinationScope);
     BigDecimal percentDomestic = distribution.getPercentDomestic();
     BigDecimal percentImport = distribution.getPercentImport();
 
-    // Note: percentDomestic and percentImport are already in 0.0-1.0 range (not 0-100)
     BigDecimal domesticDisplacement = displaceChange.getValue().multiply(percentDomestic);
     BigDecimal importDisplacement = displaceChange.getValue().multiply(percentImport);
 
     UnitConverter converter = EngineSupportUtils.createUnitConverterWithTotal(engine, stream);
 
-    if (domesticLast != null) {
+    boolean hasDomesticLast = domesticLast != null;
+    if (hasDomesticLast) {
       EngineNumber domesticDisplacementInUnits = converter.convert(
           new EngineNumber(domesticDisplacement, "kg"),
           domesticLast.getUnits()
@@ -352,7 +351,8 @@ public class DisplaceExecutor {
       simulationState.setLastSpecifiedValue(destinationScope, "domestic", updatedDomestic);
     }
 
-    if (importLast != null) {
+    boolean hasImportLast = importLast != null;
+    if (hasImportLast) {
       EngineNumber importDisplacementInUnits = converter.convert(
           new EngineNumber(importDisplacement, "kg"),
           importLast.getUnits()
@@ -362,6 +362,8 @@ public class DisplaceExecutor {
       simulationState.setLastSpecifiedValue(destinationScope, "import", updatedImport);
     }
 
+    Scope currentScope = engine.getScope();
+    String originalSubstance = currentScope.getSubstance();
     engine.setSubstance(originalSubstance);
   }
 }
