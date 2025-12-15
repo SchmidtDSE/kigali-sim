@@ -20,6 +20,7 @@
         <ul>
           <li><a href="#motivation">Motivation</a></li>
           <li><a href="#the-programming-revelation">The Programming Revelation</a></li>
+          <li><a href="#understanding-policy-order">Understanding Policy Order</a></li>
           <li><a href="#editing-code-directly">Editing Code Directly</a></li>
           <li><a href="#implementing-r-600a-recycling">Implementing R-600a Recycling</a></li>
           <li><a href="#results">Results</a></li>
@@ -71,6 +72,33 @@
           >
             Your browser does not support the video tag. Please upgrade to a modern browser.
           </video>
+        </p>
+      </section>
+
+      <section id="understanding-policy-order">
+        <h2>Understanding Policy Order</h2>
+
+        <p>When looking at your Combined simulation in the <code>start simulations</code> stanza, you may notice it uses the <code>then</code> keyword to chain policies together:</p>
+
+        <pre><code class="language-qubectalk">simulate "Combined"
+  using "Sales Permit"
+  then "Domestic Recycling"
+from years 2025 to 2035</code></pre>
+
+        <p>The order policies are applied matters because policies can interact with each other:</p>
+
+        <ul>
+          <li><strong>Caps and floors</strong> operate on current stream values, which may already be affected by prior policies</li>
+          <li><strong>Displacement</strong> updates growth baselines (lastSpecified values), affecting how subsequent growth commands compound</li>
+          <li><strong>Recycling</strong> reduces virgin sales, which can make caps less restrictive or easier to satisfy</li>
+        </ul>
+
+        <p>
+          For example, if you reversed the order to apply Domestic Recycling before Sales Permit, the recycling would reduce virgin sales first, potentially making the cap trigger less often or with less displacement. This would result in different outcomes even though both policies are still applied.
+        </p>
+
+        <p>
+          While policy order may not significantly affect simple scenarios, it becomes important when combining policies like displacement-based caps with recycling programs. The key principle: <strong>policies are applied sequentially in the order specified, with each policy seeing the results of all previous policies</strong>.
         </p>
       </section>
 
