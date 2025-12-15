@@ -188,6 +188,16 @@ public class LimitExecutor {
     EngineNumber lastSpecified = simulationState.getLastSpecifiedValue(scope, stream);
     boolean hasPrior = lastSpecified != null;
 
+    // Debug logging
+    int year = simulationState.getCurrentYear();
+    if ("Domestic Refrigeration".equals(scope.getApplication())
+        && "HFC-134a".equals(scope.getSubstance())
+        && "sales".equals(stream)
+        && year >= 2029 && year <= 2031) {
+      System.out.println(String.format("[Year %d] capWithPercent: stream=%s, amount=%s, currentValue=%s, lastSpecified=%s",
+          year, stream, amount, currentValue, lastSpecified));
+    }
+
     if (hasPrior) {
       BigDecimal capValue = lastSpecified.getValue()
           .multiply(amount.getValue())
@@ -209,6 +219,31 @@ public class LimitExecutor {
           .inferSubtractRecycling()
           .build();
       engine.executeStreamUpdate(update);
+
+      // If capping "sales", also proportionally update domestic/import so that updateUnitsTarget
+      // will recalculate the correct capped sales value in future years
+      if ("sales".equals(stream)) {
+        BigDecimal capRatio = newCappedValue.getValue().divide(
+            lastSpecified.getValue(),
+            10,
+            java.math.RoundingMode.HALF_UP
+        );
+
+        EngineNumber domesticLast = simulationState.getLastSpecifiedValue(scope, "domestic");
+        EngineNumber importLast = simulationState.getLastSpecifiedValue(scope, "import");
+
+        if (domesticLast != null) {
+          BigDecimal newDomestic = domesticLast.getValue().multiply(capRatio);
+          EngineNumber cappedDomestic = new EngineNumber(newDomestic, domesticLast.getUnits());
+          simulationState.setLastSpecifiedValue(scope, "domestic", cappedDomestic);
+        }
+
+        if (importLast != null) {
+          BigDecimal newImport = importLast.getValue().multiply(capRatio);
+          EngineNumber cappedImport = new EngineNumber(newImport, importLast.getUnits());
+          simulationState.setLastSpecifiedValue(scope, "import", cappedImport);
+        }
+      }
 
       if (displaceTarget != null) {
         EngineNumber finalInKg = engine.getStream(stream);
@@ -337,6 +372,31 @@ public class LimitExecutor {
           .inferSubtractRecycling()
           .build();
       engine.executeStreamUpdate(update);
+
+      // If flooring "sales", also proportionally update domestic/import so that updateUnitsTarget
+      // will recalculate the correct floored sales value in future years
+      if ("sales".equals(stream)) {
+        BigDecimal floorRatio = newFloorValue.getValue().divide(
+            lastSpecified.getValue(),
+            10,
+            java.math.RoundingMode.HALF_UP
+        );
+
+        EngineNumber domesticLast = simulationState.getLastSpecifiedValue(scope, "domestic");
+        EngineNumber importLast = simulationState.getLastSpecifiedValue(scope, "import");
+
+        if (domesticLast != null) {
+          BigDecimal newDomestic = domesticLast.getValue().multiply(floorRatio);
+          EngineNumber flooredDomestic = new EngineNumber(newDomestic, domesticLast.getUnits());
+          simulationState.setLastSpecifiedValue(scope, "domestic", flooredDomestic);
+        }
+
+        if (importLast != null) {
+          BigDecimal newImport = importLast.getValue().multiply(floorRatio);
+          EngineNumber flooredImport = new EngineNumber(newImport, importLast.getUnits());
+          simulationState.setLastSpecifiedValue(scope, "import", flooredImport);
+        }
+      }
 
       if (displaceTarget != null) {
         EngineNumber finalInKg = engine.getStream(stream);
