@@ -244,28 +244,17 @@ public class DisplaceExecutor {
     Scope destinationScope = currentScope.getWithSubstance(displaceTarget);
     final String originalSubstance = currentScope.getSubstance();
 
-    // Temporarily change scope to destination for unit conversion
     engine.setSubstance(displaceTarget);
     UnitConverter destinationUnitConverter = EngineSupportUtils.createUnitConverterWithTotal(
         engine,
         stream
     );
 
-    // Convert units to destination substance volume using destination's initial charge
-    EngineNumber destinationVolumeChange = destinationUnitConverter.convert(
-        unitsChanged,
-        "kg"
-    );
+    EngineNumber destinationVolumeChange = destinationUnitConverter.convert(unitsChanged, "kg");
     EngineNumber displaceChange = new EngineNumber(destinationVolumeChange.getValue(), "kg");
 
-    // Use custom recalc kit with destination substance's properties for correct GWP calculation
     shortcuts.changeStreamWithDisplacementContext(stream, displaceChange, destinationScope);
-
-    // Update lastSpecified values for the destination substance so that future
-    // growth calculations build on the displaced amounts
     updateLastSpecifiedForDisplacement(stream, displaceChange, destinationScope);
-
-    // Restore original scope
     engine.setSubstance(originalSubstance);
   }
 
@@ -304,14 +293,7 @@ public class DisplaceExecutor {
       Scope currentScope = engine.getScope();
       Scope destinationScope = currentScope.getWithSubstance(displaceTarget);
 
-      shortcuts.changeStreamWithDisplacementContext(
-          stream,
-          displaceChange,
-          destinationScope
-      );
-
-      // Update lastSpecified values for the destination substance so that future
-      // growth calculations build on the displaced amounts
+      shortcuts.changeStreamWithDisplacementContext(stream, displaceChange, destinationScope);
       updateLastSpecifiedForDisplacement(stream, displaceChange, destinationScope);
     }
   }
@@ -341,13 +323,10 @@ public class DisplaceExecutor {
     Scope currentScope = engine.getScope();
     final String originalSubstance = currentScope.getSubstance();
 
-    // Switch to destination substance to access its state
     engine.setSubstance(destinationScope.getSubstance());
 
-    // Get the simulation state - destinationScope can be used directly as a UseKey
     org.kigalisim.engine.state.SimulationState simulationState = engine.getStreamKeeper();
 
-    // Get current lastSpecified values for domestic and import
     EngineNumber domesticLast = simulationState.getLastSpecifiedValue(destinationScope, "domestic");
     EngineNumber importLast = simulationState.getLastSpecifiedValue(destinationScope, "import");
 
@@ -357,12 +336,10 @@ public class DisplaceExecutor {
     BigDecimal percentDomestic = distribution.getPercentDomestic();
     BigDecimal percentImport = distribution.getPercentImport();
 
-    // Calculate the displacement amounts for domestic and import
     // Note: percentDomestic and percentImport are already in 0.0-1.0 range (not 0-100)
     BigDecimal domesticDisplacement = displaceChange.getValue().multiply(percentDomestic);
     BigDecimal importDisplacement = displaceChange.getValue().multiply(percentImport);
 
-    // Convert displacement to the units of lastSpecified and update
     UnitConverter converter = EngineSupportUtils.createUnitConverterWithTotal(engine, stream);
 
     if (domesticLast != null) {
@@ -385,7 +362,6 @@ public class DisplaceExecutor {
       simulationState.setLastSpecifiedValue(destinationScope, "import", updatedImport);
     }
 
-    // Restore original scope
     engine.setSubstance(originalSubstance);
   }
 }
