@@ -259,6 +259,17 @@ public class TutorialLiveTests {
                                 + permitR600a.getImport().getValue().doubleValue();
       double r600aDiff = r600aPermitTotal - r600aBauTotal;
 
+      System.out.println(String.format("\n[TEST Year %d] HFC-134a BAU: domestic=%.2f, import=%.2f, total=%.2f",
+          year, bauHfc134a.getDomestic().getValue().doubleValue(), bauHfc134a.getImport().getValue().doubleValue(), hfc134aBauTotal));
+      System.out.println(String.format("[TEST Year %d] HFC-134a Permit: domestic=%.2f, import=%.2f, total=%.2f",
+          year, permitHfc134a.getDomestic().getValue().doubleValue(), permitHfc134a.getImport().getValue().doubleValue(), hfc134aPermitTotal));
+      System.out.println(String.format("[TEST Year %d] HFC-134a Diff (Permit-BAU): %.2f", year, hfc134aDiff));
+      System.out.println(String.format("[TEST Year %d] R-600a BAU: domestic=%.2f, import=%.2f, total=%.2f",
+          year, bauR600a.getDomestic().getValue().doubleValue(), bauR600a.getImport().getValue().doubleValue(), r600aBauTotal));
+      System.out.println(String.format("[TEST Year %d] R-600a Permit: domestic=%.2f, import=%.2f, total=%.2f",
+          year, permitR600a.getDomestic().getValue().doubleValue(), permitR600a.getImport().getValue().doubleValue(), r600aPermitTotal));
+      System.out.println(String.format("[TEST Year %d] R-600a Diff (Permit-BAU): %.2f\n", year, r600aDiff));
+
       // The differences should be approximately opposite (within 10% tolerance)
       double expectedOpposite = -hfc134aDiff;
       double tolerance = Math.abs(expectedOpposite) * 0.1; // 10% tolerance

@@ -144,7 +144,7 @@ class StreamUpdateExecutorTest {
   }
 
   /**
-   * Tests that volume-based values (kg) are ignored and do not create sales intent.
+   * Tests that volume-based values (kg) creates sales intent with the updated logic.
    */
   @Test
   void testUpdateSalesCarryOverIgnoresVolumeBasedValues() {
@@ -164,8 +164,12 @@ class StreamUpdateExecutorTest {
 
     // Assert
     EngineNumber salesIntent = engine.getStreamKeeper().getLastSpecifiedValue(useKey, "sales");
-    assertNull(salesIntent,
-        "Sales intent should not be set for volume-based (kg) specifications");
+    assertNotNull(salesIntent,
+        "Sales intent should be set for volume-based (kg) specifications");
+    assertEquals(new BigDecimal("100"), salesIntent.getValue(),
+        "Sales intent should match the domestic value");
+    assertEquals("kg", salesIntent.getUnits(),
+        "Sales intent should preserve kg units");
   }
 
   /**
@@ -287,6 +291,7 @@ class StreamUpdateExecutorTest {
 
   /**
    * Tests handling of mixed specifications (one in units, one in kg).
+   * With the updated logic, both values are combined into sales intent.
    */
   @Test
   void testUpdateSalesCarryOverWithMixedSpecifications() {
@@ -294,9 +299,11 @@ class StreamUpdateExecutorTest {
     final EngineNumber domestic = new EngineNumber(new BigDecimal("100"), "units");
     final EngineNumber importValue = new EngineNumber(new BigDecimal("50"), "kg");
 
-    // Enable streams
+    // Enable streams and set initial charges for unit conversion
     engine.enable("domestic", Optional.empty());
     engine.enable("import", Optional.empty());
+    engine.setInitialCharge(new EngineNumber(new BigDecimal("1"), "kg"), "domestic", null);
+    engine.setInitialCharge(new EngineNumber(new BigDecimal("1"), "kg"), "import", null);
 
     // Act - use execute() to set streams
     StreamUpdate domesticUpdate = new StreamUpdateBuilder()
@@ -313,13 +320,15 @@ class StreamUpdateExecutorTest {
         .build();
     executor.execute(importUpdate);
 
-    // Assert
+    // Assert - with the new logic, both values are combined
+    // domestic (100 units * 1 kg/unit = 100 kg) + import (50 kg) = 150 kg
     EngineNumber salesIntent = engine.getStreamKeeper().getLastSpecifiedValue(useKey, "sales");
     assertNotNull(salesIntent,
-        "Sales intent should be set based on unit-based stream");
-    assertEquals(new BigDecimal("100"), salesIntent.getValue(),
-        "Sales intent should only reflect domestic (units), ignoring import (kg)");
-    assertEquals("units", salesIntent.getUnits());
+        "Sales intent should be set when combining mixed specifications");
+    assertEquals(0, new BigDecimal("150").compareTo(salesIntent.getValue()),
+        "Sales intent should combine both streams (100 units converted to kg + 50 kg = 150 kg)");
+    assertEquals("kg", salesIntent.getUnits(),
+        "Sales intent should use the units of the last stream set (kg)");
   }
 
   /**

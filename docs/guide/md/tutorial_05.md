@@ -29,6 +29,8 @@ Now let's create ABC's permitting system that targets HFC-134a in domestic refri
 - Go to the **Limit** tab within your HFC-134a policy configuration and click **Add Limit**. Then, **Cap** all sales to 85% during **years 2029 to 2034**.
 - **Displacing** means that the demand lost from HFC-134a is then sent to another stream or substance. In this case, let's have it go to **R-600a** instead.
 - Click **Add Limit** again. Set **Cap** on sales to 0 kg displacing R-600a during **years 2035 to onwards**. This will conclude the phase-out.
+
+> **Note on Displacement Types**: When using mass-based specifications (like mt or kg), displacement transfers the same mass volume between substances. When using units-based tracking (see [Tutorial 14](/guide/tutorial_14.html)), displacement transfers the same number of equipment units, which may represent different mass volumes depending on each substance's initial charge requirements. This tutorial uses mass-based displacement since we specified sales in mt.
 - Click **Finish** to finish the policy
 
 <video src="/webm/tutorial_05_02.webm" autoplay loop muted playsinline style="width: 500px; border: 2px solid #505050; border-radius: 3px;">Your browser does not support the video tag. Please upgrade to a modern browser.</video>

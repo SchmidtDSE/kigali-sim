@@ -210,10 +210,36 @@ public class LimitExecutor {
           .build();
       engine.executeStreamUpdate(update);
 
+      // If capping "sales", also proportionally update domestic/import so that updateUnitsTarget
+      // will recalculate the correct capped sales value in future years
+      if ("sales".equals(stream)) {
+        BigDecimal capRatio = newCappedValue.getValue().divide(
+            lastSpecified.getValue(),
+            10,
+            java.math.RoundingMode.HALF_UP
+        );
+
+        EngineNumber domesticLast = simulationState.getLastSpecifiedValue(scope, "domestic");
+        EngineNumber importLast = simulationState.getLastSpecifiedValue(scope, "import");
+
+        if (domesticLast != null) {
+          BigDecimal newDomestic = domesticLast.getValue().multiply(capRatio);
+          EngineNumber cappedDomestic = new EngineNumber(newDomestic, domesticLast.getUnits());
+          simulationState.setLastSpecifiedValue(scope, "domestic", cappedDomestic);
+        }
+
+        if (importLast != null) {
+          BigDecimal newImport = importLast.getValue().multiply(capRatio);
+          EngineNumber cappedImport = new EngineNumber(newImport, importLast.getUnits());
+          simulationState.setLastSpecifiedValue(scope, "import", cappedImport);
+        }
+      }
+
       if (displaceTarget != null) {
         EngineNumber finalInKg = engine.getStream(stream);
         BigDecimal changeInKg = finalInKg.getValue().subtract(currentInKg.getValue());
-        displaceExecutor.execute(stream, amount, changeInKg, displaceTarget);
+
+        displaceExecutor.execute(stream, newCappedValue, changeInKg, displaceTarget);
       }
     } else {
       EngineNumber convertedMax = unitConverter.convert(amount, "kg");
@@ -278,6 +304,7 @@ public class LimitExecutor {
     if (displaceTarget != null) {
       EngineNumber cappedInKg = engine.getStream(stream);
       BigDecimal changeInKg = cappedInKg.getValue().subtract(currentInKg.getValue());
+
       displaceExecutor.execute(stream, amount, changeInKg, displaceTarget);
     }
   }
@@ -338,10 +365,35 @@ public class LimitExecutor {
           .build();
       engine.executeStreamUpdate(update);
 
+      // If flooring "sales", also proportionally update domestic/import so that updateUnitsTarget
+      // will recalculate the correct floored sales value in future years
+      if ("sales".equals(stream)) {
+        BigDecimal floorRatio = newFloorValue.getValue().divide(
+            lastSpecified.getValue(),
+            10,
+            java.math.RoundingMode.HALF_UP
+        );
+
+        EngineNumber domesticLast = simulationState.getLastSpecifiedValue(scope, "domestic");
+        EngineNumber importLast = simulationState.getLastSpecifiedValue(scope, "import");
+
+        if (domesticLast != null) {
+          BigDecimal newDomestic = domesticLast.getValue().multiply(floorRatio);
+          EngineNumber flooredDomestic = new EngineNumber(newDomestic, domesticLast.getUnits());
+          simulationState.setLastSpecifiedValue(scope, "domestic", flooredDomestic);
+        }
+
+        if (importLast != null) {
+          BigDecimal newImport = importLast.getValue().multiply(floorRatio);
+          EngineNumber flooredImport = new EngineNumber(newImport, importLast.getUnits());
+          simulationState.setLastSpecifiedValue(scope, "import", flooredImport);
+        }
+      }
+
       if (displaceTarget != null) {
         EngineNumber finalInKg = engine.getStream(stream);
         BigDecimal changeInKg = finalInKg.getValue().subtract(currentInKg.getValue());
-        displaceExecutor.execute(stream, amount, changeInKg, displaceTarget);
+        displaceExecutor.execute(stream, newFloorValue, changeInKg, displaceTarget);
       }
     } else {
       EngineNumber convertedMin = unitConverter.convert(amount, "kg");

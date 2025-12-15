@@ -26,6 +26,8 @@ Please leave **induced demand at 100%** (the default). We will revisit this in j
 
 Add both a Recycling simulation with just Domestic Recycling selected. Then, add a combined simulation with both Sales Permit and Domestic Recycling included. Again, use years 2025 to 2035.
 
+> **Note**: Sometimes the order in which policies are applied can affect outcomes when policies interact with each other. The UI-based editor does not provide control over policy ordering, but, when working with QubecTalk code directly (see [Tutorial 7](/guide/tutorial_07.html)), you can specify the exact order policies should be applied.
+
 <video src="/webm/tutorial_06_02.webm" autoplay loop muted playsinline style="width: 500px; border: 2px solid #505050; border-radius: 3px;">Your browser does not support the video tag. Please upgrade to a modern browser.</video>
 
 ## Results
