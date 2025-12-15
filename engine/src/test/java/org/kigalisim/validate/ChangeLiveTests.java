@@ -282,6 +282,115 @@ public class ChangeLiveTests {
   }
 
   /**
+   * Test sales cap with change statements using domestic stream instead of sales.
+   * This tests the hypothesis that capping a substream (domestic) instead of sales
+   * may resolve the compounding issue.
+   */
+  @Test
+  public void testChangeCapDomestic() throws IOException {
+    // Load and parse the QTA file
+    String qtaPath = "../examples/change_cap_test_domestic.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    // Run both scenarios
+    Stream<EngineResult> bauResults = KigaliSimFacade.runScenario(program, "BAU", progress -> {});
+    Stream<EngineResult> permitResults = KigaliSimFacade.runScenario(program, "Permit", progress -> {});
+
+    List<EngineResult> bauList = bauResults.collect(Collectors.toList());
+    List<EngineResult> permitList = permitResults.collect(Collectors.toList());
+
+    // Get HFC-134a consumption (sales) for key years 2029, 2030, 2031
+    final EngineResult bau2029 = LiveTestsUtil.getResult(bauList.stream(), 2029, "Domestic Refrigeration", "HFC-134a");
+    final EngineResult permit2029 = LiveTestsUtil.getResult(permitList.stream(), 2029, "Domestic Refrigeration", "HFC-134a");
+    final EngineResult bau2030 = LiveTestsUtil.getResult(bauList.stream(), 2030, "Domestic Refrigeration", "HFC-134a");
+    final EngineResult permit2030 = LiveTestsUtil.getResult(permitList.stream(), 2030, "Domestic Refrigeration", "HFC-134a");
+    final EngineResult bau2031 = LiveTestsUtil.getResult(bauList.stream(), 2031, "Domestic Refrigeration", "HFC-134a");
+    final EngineResult permit2031 = LiveTestsUtil.getResult(permitList.stream(), 2031, "Domestic Refrigeration", "HFC-134a");
+
+    assertNotNull(bau2029, "Should have BAU result for 2029");
+    assertNotNull(permit2029, "Should have Permit result for 2029");
+    assertNotNull(bau2030, "Should have BAU result for 2030");
+    assertNotNull(permit2030, "Should have Permit result for 2030");
+    assertNotNull(bau2031, "Should have BAU result for 2031");
+    assertNotNull(permit2031, "Should have Permit result for 2031");
+
+    // Calculate percentage differences (BAU - Permit) / BAU for sales (domestic + import)
+    double bauSales2029 = bau2029.getDomestic().getValue().doubleValue() + bau2029.getImport().getValue().doubleValue();
+    double permitSales2029 = permit2029.getDomestic().getValue().doubleValue() + permit2029.getImport().getValue().doubleValue();
+    double bauSales2030 = bau2030.getDomestic().getValue().doubleValue() + bau2030.getImport().getValue().doubleValue();
+    double permitSales2030 = permit2030.getDomestic().getValue().doubleValue() + permit2030.getImport().getValue().doubleValue();
+    double bauSales2031 = bau2031.getDomestic().getValue().doubleValue() + bau2031.getImport().getValue().doubleValue();
+    double permitSales2031 = permit2031.getDomestic().getValue().doubleValue() + permit2031.getImport().getValue().doubleValue();
+
+    double diff2029 = (bauSales2029 - permitSales2029) / bauSales2029;
+    double diff2030 = (bauSales2030 - permitSales2030) / bauSales2030;
+    double diff2031 = (bauSales2031 - permitSales2031) / bauSales2031;
+
+    // Assert that capping domestic (instead of sales) creates a compounding effect
+    assertTrue(diff2030 > diff2029 + 0.05,
+        "2030 gap should be more than 5% larger than 2029 gap (compounding effect with domestic cap)");
+    assertTrue(diff2031 > diff2030 + 0.05,
+        "2031 gap should be more than 5% larger than 2030 gap (compounding effect with domestic cap)");
+  }
+
+  /**
+   * Test sales cap with change statements using non-percent cap value.
+   * This tests the hypothesis that using an absolute cap value (e.g., 20 mt)
+   * instead of a percentage may resolve the compounding issue.
+   */
+  @Test
+  public void testChangeCapNonPercent() throws IOException {
+    // Load and parse the QTA file
+    String qtaPath = "../examples/change_cap_test_nonpercent.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    // Run both scenarios
+    Stream<EngineResult> bauResults = KigaliSimFacade.runScenario(program, "BAU", progress -> {});
+    Stream<EngineResult> permitResults = KigaliSimFacade.runScenario(program, "Permit", progress -> {});
+
+    List<EngineResult> bauList = bauResults.collect(Collectors.toList());
+    List<EngineResult> permitList = permitResults.collect(Collectors.toList());
+
+    // Get HFC-134a consumption (sales) for key years 2029, 2030, 2031
+    final EngineResult bau2029 = LiveTestsUtil.getResult(bauList.stream(), 2029, "Domestic Refrigeration", "HFC-134a");
+    final EngineResult permit2029 = LiveTestsUtil.getResult(permitList.stream(), 2029, "Domestic Refrigeration", "HFC-134a");
+    final EngineResult bau2030 = LiveTestsUtil.getResult(bauList.stream(), 2030, "Domestic Refrigeration", "HFC-134a");
+    final EngineResult permit2030 = LiveTestsUtil.getResult(permitList.stream(), 2030, "Domestic Refrigeration", "HFC-134a");
+    final EngineResult bau2031 = LiveTestsUtil.getResult(bauList.stream(), 2031, "Domestic Refrigeration", "HFC-134a");
+    final EngineResult permit2031 = LiveTestsUtil.getResult(permitList.stream(), 2031, "Domestic Refrigeration", "HFC-134a");
+
+    assertNotNull(bau2029, "Should have BAU result for 2029");
+    assertNotNull(permit2029, "Should have Permit result for 2029");
+    assertNotNull(bau2030, "Should have BAU result for 2030");
+    assertNotNull(permit2030, "Should have Permit result for 2030");
+    assertNotNull(bau2031, "Should have BAU result for 2031");
+    assertNotNull(permit2031, "Should have Permit result for 2031");
+
+    // Calculate percentage differences (BAU - Permit) / BAU for sales (domestic + import)
+    double bauSales2029 = bau2029.getDomestic().getValue().doubleValue() + bau2029.getImport().getValue().doubleValue();
+    double permitSales2029 = permit2029.getDomestic().getValue().doubleValue() + permit2029.getImport().getValue().doubleValue();
+    double bauSales2030 = bau2030.getDomestic().getValue().doubleValue() + bau2030.getImport().getValue().doubleValue();
+    double permitSales2030 = permit2030.getDomestic().getValue().doubleValue() + permit2030.getImport().getValue().doubleValue();
+    double bauSales2031 = bau2031.getDomestic().getValue().doubleValue() + bau2031.getImport().getValue().doubleValue();
+    double permitSales2031 = permit2031.getDomestic().getValue().doubleValue() + permit2031.getImport().getValue().doubleValue();
+
+    double diff2029 = (bauSales2029 - permitSales2029) / bauSales2029;
+    double diff2030 = (bauSales2030 - permitSales2030) / bauSales2030;
+    double diff2031 = (bauSales2031 - permitSales2031) / bauSales2031;
+
+    // Assert that non-percent cap creates measurable differences
+    // Note: With absolute cap, the compounding effect may differ from percentage-based cap
+    assertTrue(diff2029 > 0.01,
+        "2029 should show measurable difference (>1%) with non-percent cap");
+    assertTrue(diff2030 > diff2029,
+        "2030 gap should be larger than 2029 gap with non-percent cap");
+    assertTrue(diff2031 > diff2030,
+        "2031 gap should be larger than 2030 gap with non-percent cap");
+  }
+
+  /**
    * Test recycling with change statements to verify proper interaction.
    * Tests the issue where recycling may not properly persist its effect with change statements.
    */
