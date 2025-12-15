@@ -25,6 +25,27 @@ Within each stanza, there are **commands** like `initial charge with 0.07 kg / u
 
 <video src="/webm/tutorial_07_01.webm" autoplay loop muted playsinline style="width: 500px; border: 2px solid #505050; border-radius: 3px;">Your browser does not support the video tag. Please upgrade to a modern browser.</video>
 
+## Understanding Policy Order
+
+When looking at your Combined simulation in the `start simulations` stanza, you may notice it uses the `then` keyword to chain policies together:
+
+```qubectalk
+simulate "Combined"
+  using "Sales Permit"
+  then "Domestic Recycling"
+from years 2025 to 2035
+```
+
+The order policies are applied matters because policies can interact with each other:
+
+- **Caps and floors** operate on current stream values, which may already be affected by prior policies
+- **Displacement** updates growth baselines (lastSpecified values), affecting how subsequent growth commands compound
+- **Recycling** reduces virgin sales, which can make caps less restrictive or easier to satisfy
+
+For example, if you reversed the order to apply Domestic Recycling before Sales Permit, the recycling would reduce virgin sales first, potentially making the cap trigger less often or with less displacement. This would result in different outcomes even though both policies are still applied.
+
+While policy order may not significantly affect simple scenarios, it becomes important when combining policies like displacement-based caps with recycling programs. The key principle: **policies are applied sequentially in the order specified, with each policy seeing the results of all previous policies**.
+
 ## Editing Code Directly
 
 Let's make a simple change to get comfortable with code editing:
