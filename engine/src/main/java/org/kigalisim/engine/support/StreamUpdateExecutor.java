@@ -142,22 +142,18 @@ public class StreamUpdateExecutor {
    * @param value The value being set with equipment units
    */
   private void updateUnitsTarget(UseKey useKey, String streamName, EngineNumber value) {
-    boolean hasEquipmentUnitsTarget = value.hasEquipmentUnits();
     boolean userSetSales = EngineSupportUtils.isSalesSubstream(streamName);
-    boolean hasUnitsTarget = hasEquipmentUnitsTarget && userSetSales;
 
-    if (!hasUnitsTarget) {
+    if (!userSetSales) {
       return;
     }
 
     SimulationState simulationState = engine.getStreamKeeper();
 
-    // When setting manufacture or import, combine with the other to create sales intent
+    // When setting domestic or import, combine with the other to create sales intent
     EngineNumber otherValue = getOtherValue(useKey, streamName);
 
-    boolean otherGiven = otherValue != null;
-    boolean otherHasUnitsTarget = otherGiven && otherValue.hasEquipmentUnits();
-    if (otherHasUnitsTarget) {
+    if (otherValue != null) {
       // Convert both to the same units (prefer the current stream's units)
       String targetUnits = value.getUnits();
       UnitConverter converter = EngineSupportUtils.createUnitConverterWithTotal(engine, streamName);
@@ -169,7 +165,7 @@ public class StreamUpdateExecutor {
       // Track the combined sales intent
       simulationState.setLastSpecifiedValue(useKey, "sales", salesIntent);
     } else {
-      // Only one stream has units - use it as the sales intent
+      // Only one stream set - use it as the sales intent
       simulationState.setLastSpecifiedValue(useKey, "sales", value);
     }
   }

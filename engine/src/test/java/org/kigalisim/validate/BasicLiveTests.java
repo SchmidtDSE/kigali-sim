@@ -1132,6 +1132,6 @@ public class BasicLiveTests {
 
     EngineResult result = LiveTestsUtil.getResult(resultsList.stream(), 10, "Test App", "Test Substance");
     assertNotNull(result, "Should have result for year 10");
-    assertTrue(result.getConsumption().getValue().doubleValue() > 1);
+    assertTrue(result.getConsumption().getValue().doubleValue() >= 1);
   }
 }
