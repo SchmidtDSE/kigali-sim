@@ -51,7 +51,7 @@ public class SetExecutor {
    * @param yearMatcher Optional year matcher for conditional setting
    */
   public void handleSalesSet(UseKey useKey, String stream, EngineNumber value,
-                             Optional<YearMatcher> yearMatcher) {
+        Optional<YearMatcher> yearMatcher) {
     boolean hasYearMatch = yearMatcher.isPresent();
     boolean inRange = hasYearMatch && !EngineSupportUtils.getIsInRange(
         yearMatcher.get(),

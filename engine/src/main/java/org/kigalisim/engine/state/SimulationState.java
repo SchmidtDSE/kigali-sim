@@ -18,6 +18,7 @@ import org.kigalisim.engine.number.EngineNumber;
 import org.kigalisim.engine.number.UnitConverter;
 import org.kigalisim.engine.recalc.SalesStreamDistribution;
 import org.kigalisim.engine.recalc.SalesStreamDistributionBuilder;
+import org.kigalisim.engine.support.EngineSupportUtils;
 import org.kigalisim.lang.operation.RecoverOperation.RecoveryStage;
 
 /**
@@ -1912,4 +1913,8 @@ public class SimulationState {
     }
   }
 
+  public void clearLastSpecifiedValue(UseKey useKey, String stream) {
+    StreamParameterization parameterization = getParameterization(useKey);
+    parameterization.clearLastSpecifiedValue(stream);
+  }
 }
