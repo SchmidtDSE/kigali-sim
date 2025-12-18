@@ -645,6 +645,21 @@ public class StreamParameterization {
     return target;
   }
 
+  /**
+   * Clear the last specified value in this parameterization.
+   *
+   * <p>The last specified value tracks the user specified target for a stream such that commands
+   * changing those values respect user directives like maintaining units-based tracking with
+   * implicit recharge. This method clears that directive so that, for example, a set command can
+   * override a prior given value. This, for example, allows the user to switch from units-based
+   * to volume-based tracking.</p>
+   *
+   * <p>This will clear the stream and those dependent upon it. Therefore, clearing sales will
+   * also clear substreams domestic and import. Similarly, clearing domestic will clear sales but
+   * not import.</p>
+   *
+   * @param stream The name of the stream like "sales" or "import" in which to clear.
+   */
   public void clearLastSpecifiedValue(String stream) {
     if (stream.equals("sales")) {
       lastSpecifiedValue.remove("sales");
