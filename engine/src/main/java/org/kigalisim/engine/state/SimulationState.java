@@ -18,6 +18,7 @@ import org.kigalisim.engine.number.EngineNumber;
 import org.kigalisim.engine.number.UnitConverter;
 import org.kigalisim.engine.recalc.SalesStreamDistribution;
 import org.kigalisim.engine.recalc.SalesStreamDistributionBuilder;
+import org.kigalisim.engine.support.EngineSupportUtils;
 import org.kigalisim.lang.operation.RecoverOperation.RecoveryStage;
 
 /**
@@ -1912,4 +1913,20 @@ public class SimulationState {
     }
   }
 
+  /**
+   * Clear the last specified value in the parameterization for the given use key.
+   *
+   * <p>The last specified value tracks the user specified target for a stream such that commands
+   * changing those values respect user directives like maintaining units-based tracking with
+   * implicit recharge. This method clears that directive so that, for example, a set command can
+   * override a prior given value. This, for example, allows the user to switch from units-based
+   * to volume-based tracking.</p>
+   *
+   * @param useKey The substance / application pair in which to clear last specified value.
+   * @param stream The name of the stream like "sales" or "import" in which to clear.
+   */
+  public void clearLastSpecifiedValue(UseKey useKey, String stream) {
+    StreamParameterization parameterization = getParameterization(useKey);
+    parameterization.clearLastSpecifiedValue(stream);
+  }
 }
