@@ -259,9 +259,13 @@ public class SingleThreadEngine implements Engine {
     if ("equipment".equals(name)) {
       equipmentChangeUtil.handleSet(value);
     } else if ("sales".equals(name)) {
+      simulationState.clearLastSpecifiedValue(scope, name);
       SetExecutor setExecutor = new SetExecutor(this);
       setExecutor.handleSalesSet(scope, name, value, yearMatcher);
     } else {
+      if (EngineSupportUtils.isSalesSubstream(name)) {
+        simulationState.clearLastSpecifiedValue(scope, name);
+      }
       StreamUpdate update = new StreamUpdateBuilder()
           .setName(name)
           .setValue(value)

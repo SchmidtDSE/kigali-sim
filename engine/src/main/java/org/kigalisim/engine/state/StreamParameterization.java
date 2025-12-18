@@ -18,6 +18,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import org.kigalisim.engine.number.EngineNumber;
+import org.kigalisim.engine.support.EngineSupportUtils;
 import org.kigalisim.lang.operation.RecoverOperation.RecoveryStage;
 
 /**
@@ -642,5 +643,20 @@ public class StreamParameterization {
     }
 
     return target;
+  }
+
+  public void clearLastSpecifiedValue(String stream) {
+    if (stream.equals("sales")) {
+      lastSpecifiedValue.remove("sales");
+      lastSpecifiedValue.remove("import");
+      lastSpecifiedValue.remove("domestic");
+      setSalesIntentFreshlySet(false);
+    } else if (EngineSupportUtils.isSalesSubstream(stream)) {
+      lastSpecifiedValue.remove(stream);
+      lastSpecifiedValue.remove("sales");
+      setSalesIntentFreshlySet(false);
+    } else {
+      lastSpecifiedValue.remove(stream);
+    }
   }
 }
