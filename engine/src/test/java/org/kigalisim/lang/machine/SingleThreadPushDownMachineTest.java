@@ -165,6 +165,18 @@ public class SingleThreadPushDownMachineTest {
   }
 
   /**
+   * Test that changeUnits can force a change.
+   */
+  @Test
+  public void testChangeUnitsUnitsForce() {
+    machine.push(new EngineNumber(BigDecimal.valueOf(42), "kg"));
+    machine.changeUnits("liters", true);
+    EngineNumber result = machine.getResult();
+    assertEquals(BigDecimal.valueOf(42), result.getValue(), "Value should be preserved after changing units");
+    assertEquals("liters", result.getUnits(), "Units should change");
+  }
+
+  /**
    * Test the multiply operation.
    */
   @Test

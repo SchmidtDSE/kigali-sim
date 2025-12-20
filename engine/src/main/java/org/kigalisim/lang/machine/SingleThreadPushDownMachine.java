@@ -140,9 +140,17 @@ public class SingleThreadPushDownMachine implements PushDownMachine {
    */
   @Override
   public void changeUnits(String units) {
+    changeUnits(units, false);
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public void changeUnits(String units, boolean force) {
     EngineNumber top = pop();
     boolean allowed = top.getUnits().isEmpty() || top.getUnits().equals(units);
-    if (!allowed) {
+    if (!allowed && !force) {
       String message = String.format(
           "Unexpected units for top value. Anticipated empty or %s but got %s.",
           units,
