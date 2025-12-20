@@ -82,6 +82,16 @@ public interface PushDownMachine {
   void changeUnits(String units);
 
   /**
+   * Change the units of the number at the top of the stack, optionally forcing the change.
+   *
+   * @param units The new units for the number at the top of the stack.
+   * @param force If true, force the unit change even if the current units do not match.
+   * @throws RuntimeException If the stack is empty, or if force is false and the top value already
+   *     has units which do not match the desired units.
+   */
+  void changeUnits(String units, boolean force);
+
+  /**
    * Get the engine in which this machine is running.
    *
    * @return The engine in which this machine is running.
