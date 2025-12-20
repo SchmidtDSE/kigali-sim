@@ -123,38 +123,23 @@ public class RetireLiveTests {
 
     List<EngineResult> resultsList = results.collect(Collectors.toList());
 
-    // Year 1: Age = 0, retirement rate = 0%
-    // Starting equipment: 100,000 units (100 mt with 1 kg/unit)
-    // Expected: No retirement, equipment remains at 100,000 units
     EngineResult resultYear1 = LiveTestsUtil.getResult(resultsList.stream(), 1, "test", "test");
     assertNotNull(resultYear1, "Should have result for test/test in year 1");
     assertEquals(100000.0, resultYear1.getPopulation().getValue().doubleValue(), 1.0,
         "Equipment should be ~100,000 units in year 1 (age=0, no retirement)");
 
-    // Year 2: Age = 1, retirement rate = 10%
-    // Starting equipment: 100,000 units
-    // Retired: 100,000 × 10% = 10,000 units
-    // Expected: 90,000 units
     EngineResult resultYear2 = LiveTestsUtil.getResult(resultsList.stream(), 2, "test", "test");
     assertNotNull(resultYear2, "Should have result for test/test in year 2");
     double populationYear2 = resultYear2.getPopulation().getValue().doubleValue();
     assertEquals(90000.0, populationYear2, 1.0,
         "Equipment should be ~90,000 units in year 2 (age=1, 10% retired)");
 
-    // Year 3: Age = 2, retirement rate = 20%
-    // Starting equipment: 90,000 units
-    // Retired: 90,000 × 20% = 18,000 units
-    // Expected: 72,000 units
     EngineResult resultYear3 = LiveTestsUtil.getResult(resultsList.stream(), 3, "test", "test");
     assertNotNull(resultYear3, "Should have result for test/test in year 3");
     double populationYear3 = resultYear3.getPopulation().getValue().doubleValue();
     assertEquals(72000.0, populationYear3, 1.0,
         "Equipment should be ~72,000 units in year 3 (age=2, 20% retired)");
 
-    // KEY ASSERTION: Validate that retirement is increasing with age
-    // Calculate retired amounts:
-    // Year 2 retired: 100,000 - 90,000 = 10,000 units
-    // Year 3 retired: 90,000 - 72,000 = 18,000 units
     double retiredYear2 = 100000.0 - populationYear2;
     double retiredYear3 = populationYear2 - populationYear3;
 
@@ -167,6 +152,53 @@ public class RetireLiveTests {
         "Year 2 should retire ~10,000 units (10% of 100,000)");
     assertEquals(18000.0, retiredYear3, 100.0,
         "Year 3 should retire ~18,000 units (20% of 90,000)");
+  }
+
+  /**
+   * Test retire_with_advance_parameter.qta validates age-based retirement.
+   * This test ensures that parameterized retirement using age works correctly.
+   * The formula "retire (get age as years) * 10 %" creates a hazard rate that
+   * increases linearly with equipment age.
+   *
+   * <p>Expected behavior:
+   * <ul>
+   * <li>Year 1: age = 0, retirement rate = 0%, no equipment retired</li>
+   * <li>Year 2: age = 1, retirement rate = 10%, 10,000 units retired</li>
+   * <li>Year 3: age = 2, retirement rate = 20%, 18,000 units retired</li>
+   * </ul>
+   *
+   * <p>The key validation is that year 2 retirement < year 3 retirement,
+   * demonstrating that the age-based hazard rate is working correctly.
+   */
+  @Test
+  public void testRetireAdvancedParameterFlip() throws IOException {
+    // Load and parse the QTA file
+    String qtaPath = "../examples/retire_with_advance_parameter_flip.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    // Run the scenario using KigaliSimFacade
+    String scenarioName = "business as usual";
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
+
+    List<EngineResult> resultsList = results.collect(Collectors.toList());
+
+    EngineResult resultYear1 = LiveTestsUtil.getResult(resultsList.stream(), 1, "test", "test");
+    assertNotNull(resultYear1, "Should have result for test/test in year 1");
+    assertEquals(100000.0, resultYear1.getPopulation().getValue().doubleValue(), 1.0,
+        "Equipment should be ~100,000 units in year 1 (age=0, no retirement)");
+
+    EngineResult resultYear2 = LiveTestsUtil.getResult(resultsList.stream(), 2, "test", "test");
+    assertNotNull(resultYear2, "Should have result for test/test in year 2");
+    double populationYear2 = resultYear2.getPopulation().getValue().doubleValue();
+    assertEquals(90000.0, populationYear2, 1.0,
+        "Equipment should be ~90,000 units in year 2 (age=1, 10% retired)");
+
+    EngineResult resultYear3 = LiveTestsUtil.getResult(resultsList.stream(), 3, "test", "test");
+    assertNotNull(resultYear3, "Should have result for test/test in year 3");
+    double populationYear3 = resultYear3.getPopulation().getValue().doubleValue();
+    assertEquals(72000.0, populationYear3, 1.0,
+        "Equipment should be ~72,000 units in year 3 (age=2, 20% retired)");
   }
 
   /**
