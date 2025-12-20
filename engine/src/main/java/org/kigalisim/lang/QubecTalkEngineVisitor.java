@@ -42,6 +42,7 @@ import org.kigalisim.lang.operation.FloorOperation;
 import org.kigalisim.lang.operation.GetStreamOperation;
 import org.kigalisim.lang.operation.GetVariableOperation;
 import org.kigalisim.lang.operation.InitialChargeOperation;
+import org.kigalisim.lang.operation.JointOperation;
 import org.kigalisim.lang.operation.LogicalOperation;
 import org.kigalisim.lang.operation.MultiplicationOperation;
 import org.kigalisim.lang.operation.Operation;
@@ -50,6 +51,7 @@ import org.kigalisim.lang.operation.PreCalculatedOperation;
 import org.kigalisim.lang.operation.RechargeOperation;
 import org.kigalisim.lang.operation.RecoverOperation;
 import org.kigalisim.lang.operation.RecoverOperation.RecoveryStage;
+import org.kigalisim.lang.operation.RemoveUnitsOperation;
 import org.kigalisim.lang.operation.ReplaceOperation;
 import org.kigalisim.lang.operation.RetireOperation;
 import org.kigalisim.lang.operation.RetireWithReplacementOperation;
@@ -207,7 +209,10 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
     UnitFragment unitFragment = (UnitFragment) visit(ctx.conversion);
     String unitConversion = unitFragment.getUnit();
 
-    Operation operation = new GetStreamOperation(streamName, unitConversion);
+    Operation operation = new JointOperation(
+        new GetStreamOperation(streamName, unitConversion),
+        new RemoveUnitsOperation()
+    );
 
     return new OperationFragment(operation);
   }
@@ -233,7 +238,10 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
     UnitFragment unitFragment = (UnitFragment) visit(ctx.conversion);
     String unitConversion = unitFragment.getUnit();
 
-    Operation operation = new GetStreamOperation(streamName, targetSubstance, unitConversion);
+    Operation operation = new JointOperation(
+        new GetStreamOperation(streamName, targetSubstance, unitConversion),
+        new RemoveUnitsOperation()
+    );
 
     return new OperationFragment(operation);
   }
@@ -303,7 +311,10 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
 
     String targetSubstance = visit(ctx.rescope).getString();
 
-    Operation operation = new GetStreamOperation(streamName, targetSubstance, null);
+    Operation operation = new JointOperation(
+        new GetStreamOperation(streamName, targetSubstance, null),
+        new RemoveUnitsOperation()
+    );
 
     return new OperationFragment(operation);
   }
@@ -340,7 +351,10 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
   public Fragment visitGetStream(QubecTalkParser.GetStreamContext ctx) {
     String streamName = visit(ctx.target).getString();
 
-    Operation operation = new GetStreamOperation(streamName);
+    Operation operation = new JointOperation(
+        new GetStreamOperation(streamName),
+        new RemoveUnitsOperation()
+    );
 
     return new OperationFragment(operation);
   }
