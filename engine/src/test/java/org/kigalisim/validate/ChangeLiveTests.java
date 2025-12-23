@@ -527,4 +527,42 @@ public class ChangeLiveTests {
     assertTrue(year5Result.getPopulation().getValue().doubleValue() > 0,
         "Year 5 equipment should be greater than 0 units");
   }
+
+  /**
+   * Test that sales cap and domestic cap produce equivalent results when only domestic is enabled.
+   * When capping "sales" vs "domestic" separately, the consumption (import + domestic) should be
+   * within 1 mt of each other at year 10.
+   */
+  @Test
+  public void testSalesVsSubstreamChange() throws IOException {
+    // Load and parse the QTA file
+    String qtaPath = "../examples/change_sales_vs_substream.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    // Run both scenarios
+    Stream<EngineResult> separateResults = KigaliSimFacade.runScenario(program, "separate", progress -> {});
+    Stream<EngineResult> togetherResults = KigaliSimFacade.runScenario(program, "together", progress -> {});
+
+    List<EngineResult> separateList = separateResults.collect(Collectors.toList());
+    List<EngineResult> togetherList = togetherResults.collect(Collectors.toList());
+
+    // Get year 10 results for both scenarios
+    final EngineResult separateYear10 = LiveTestsUtil.getResult(separateList.stream(), 10, "test", "test");
+    final EngineResult togetherYear10 = LiveTestsUtil.getResult(togetherList.stream(), 10, "test", "test");
+
+    assertNotNull(separateYear10, "Should have separate result for year 10");
+    assertNotNull(togetherYear10, "Should have together result for year 10");
+
+    // Calculate volume (consumption) as import + domestic for each scenario
+    // Values are in kg, convert to mt by dividing by 1000
+    double separateVolumeMt = (separateYear10.getImport().getValue().doubleValue()
+        + separateYear10.getDomestic().getValue().doubleValue()) / 1000.0;
+    double togetherVolumeMt = (togetherYear10.getImport().getValue().doubleValue()
+        + togetherYear10.getDomestic().getValue().doubleValue()) / 1000.0;
+
+    // Assert that together and separate are within 1 mt of each other
+    assertEquals(separateVolumeMt, togetherVolumeMt, 1.0,
+        "Together and separate consumption (import + domestic) should be within 1 mt at year 10");
+  }
 }

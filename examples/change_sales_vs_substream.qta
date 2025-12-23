@@ -1,0 +1,61 @@
+start default
+
+  define application "test"
+
+    uses substance "test"
+      enable domestic
+      initial charge with 1 kg / unit for domestic
+      equals 5 tCO2e / mt
+      set priorEquipment to 100 mt during year 1
+      set domestic to 100 mt during year 1
+      change domestic by 10 mt
+    end substance
+
+  end application
+
+end default
+
+
+start policy "separate"
+
+  modify application "test"
+
+    modify substance "test"
+      cap domestic to 90 % during years 2 to 10
+    end substance
+
+  end application
+
+end policy
+
+
+
+start policy "together"
+
+  modify application "test"
+
+    modify substance "test"
+      cap sales to 90 % during years 2 to 10
+    end substance
+
+  end application
+
+end policy
+
+
+start simulations
+
+  simulate "bau"
+  from years 1 to 10
+
+
+  simulate "separate"
+    using "separate"
+  from years 1 to 10
+
+
+  simulate "together"
+    using "together"
+  from years 1 to 10
+
+end simulations
