@@ -105,7 +105,7 @@ public class StreamUpdateExecutor {
     // Update last specified value and units target for sales streams
     if (isSales) {
       engine.getStreamKeeper().setLastSpecifiedValue(keyEffective, name, value);
-      updateUnitsTarget(keyEffective, name, value);
+      updateComposite(keyEffective, name, value);
     }
 
     propagateChanges(keyEffective, name, isSales, isUnits);
@@ -141,24 +141,28 @@ public class StreamUpdateExecutor {
    * @param streamName The name of the stream being set (must be "domestic" or "import")
    * @param value The value being set with equipment units
    */
-  private void updateUnitsTarget(UseKey useKey, String streamName, EngineNumber value) {
-    boolean hasEquipmentUnitsTarget = value.hasEquipmentUnits();
+  private void updateComposite(UseKey useKey, String streamName, EngineNumber value) {
     boolean userSetSales = EngineSupportUtils.isSalesSubstream(streamName);
-    boolean hasUnitsTarget = hasEquipmentUnitsTarget && userSetSales;
 
-    if (!hasUnitsTarget) {
+    if (!userSetSales) {
       return;
     }
 
     SimulationState simulationState = engine.getStreamKeeper();
 
-    // When setting manufacture or import, combine with the other to create sales intent
+    // If there is a single sales stream active, setting the substream is the same as setting sales
     EngineNumber otherValue = getOtherValue(useKey, streamName);
+    boolean otherGiven = otherValue != null && !otherValue.getValue().equals(BigDecimal.ZERO);
+    if (!otherGiven) {
+      simulationState.setLastSpecifiedValue(useKey, "sales", value);
+      return;
+    }
 
-    boolean otherGiven = otherValue != null;
-    boolean otherHasUnitsTarget = otherGiven && otherValue.hasEquipmentUnits();
-    if (otherHasUnitsTarget) {
-      // Convert both to the same units (prefer the current stream's units)
+    // Otherwise, sales is the composite of the two
+    boolean thisIsUnits = value.hasEquipmentUnits();
+    boolean otherIsUnits = otherValue.hasEquipmentUnits();
+
+    if (thisIsUnits && otherIsUnits) {
       String targetUnits = value.getUnits();
       UnitConverter converter = EngineSupportUtils.createUnitConverterWithTotal(engine, streamName);
       EngineNumber otherConverted = converter.convert(otherValue, targetUnits);
@@ -166,10 +170,8 @@ public class StreamUpdateExecutor {
       BigDecimal combinedValue = value.getValue().add(otherConverted.getValue());
       EngineNumber salesIntent = new EngineNumber(combinedValue, targetUnits);
 
-      // Track the combined sales intent
       simulationState.setLastSpecifiedValue(useKey, "sales", salesIntent);
-    } else {
-      // Only one stream has units - use it as the sales intent
+    } else if (thisIsUnits && !otherIsUnits) {
       simulationState.setLastSpecifiedValue(useKey, "sales", value);
     }
   }
