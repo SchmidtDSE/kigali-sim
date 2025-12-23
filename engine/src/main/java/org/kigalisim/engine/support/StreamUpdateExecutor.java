@@ -161,19 +161,17 @@ public class StreamUpdateExecutor {
     // Otherwise, sales is the composite of the two
     boolean thisIsUnits = value.hasEquipmentUnits();
     boolean otherIsUnits = otherValue.hasEquipmentUnits();
+    boolean eitherUnits = thisIsUnits || otherIsUnits;
+    String targetUnits = eitherUnits ? "units" : value.getUnits();
 
-    if (thisIsUnits && otherIsUnits) {
-      String targetUnits = value.getUnits();
-      UnitConverter converter = EngineSupportUtils.createUnitConverterWithTotal(engine, streamName);
-      EngineNumber otherConverted = converter.convert(otherValue, targetUnits);
+    UnitConverter converter = EngineSupportUtils.createUnitConverterWithTotal(engine, streamName);
+    EngineNumber valueConverted = converter.convert(value, targetUnits);
+    EngineNumber otherConverted = converter.convert(otherValue, targetUnits);
 
-      BigDecimal combinedValue = value.getValue().add(otherConverted.getValue());
-      EngineNumber salesIntent = new EngineNumber(combinedValue, targetUnits);
+    BigDecimal combinedValue = valueConverted.getValue().add(otherConverted.getValue());
+    EngineNumber salesIntent = new EngineNumber(combinedValue, targetUnits);
 
-      simulationState.setLastSpecifiedValue(useKey, "sales", salesIntent);
-    } else if (thisIsUnits && !otherIsUnits) {
-      simulationState.setLastSpecifiedValue(useKey, "sales", value);
-    }
+    simulationState.setLastSpecifiedValue(useKey, "sales", salesIntent);
   }
 
   /**

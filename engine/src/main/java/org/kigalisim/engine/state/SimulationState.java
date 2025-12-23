@@ -36,6 +36,7 @@ public class SimulationState {
 
   private final Map<String, StreamParameterization> substances;
   private final Map<String, EngineNumber> streams;
+  private final Map<String, EngineNumber> priorStreams;
   private final OverridingConverterStateGetter stateGetter;
   private final UnitConverter unitConverter;
   private int currentYear;
@@ -49,6 +50,7 @@ public class SimulationState {
   public SimulationState(OverridingConverterStateGetter stateGetter, UnitConverter unitConverter) {
     this.substances = new HashMap<>();
     this.streams = new HashMap<>();
+    this.priorStreams = new HashMap<>();
     this.stateGetter = stateGetter;
     this.unitConverter = unitConverter;
   }
@@ -351,21 +353,42 @@ public class SimulationState {
   }
 
   /**
-   * Get the value of a specific stream using key.
+   * Get the value of a specific stream using key from this year.
    *
    * @param useKey The key containing application and substance
    * @param name The stream name
    * @return The stream value
    */
   public EngineNumber getStream(UseKey useKey, String name) {
+    return getStream(useKey, name, false);
+  }
+
+  /**
+   * Get the value of a specific stream using key from this or prior year.
+   *
+   * @param useKey The key containing application and substance
+   * @param name The stream name
+   * @return The stream value
+   */
+  public EngineNumber getStream(UseKey useKey, String name, boolean priorYear) {
     ensureStreamKnown(name);
 
     return switch (name) {
-      case "sales" -> getStreamSales(useKey);
-      case "recycle" -> getStreamRecycle(useKey);
-      case "induction" -> getStreamInduction(useKey);
-      default -> getStreamDirect(useKey, name);
+      case "sales" -> getStreamSales(useKey, priorYear);
+      case "recycle" -> getStreamRecycle(useKey, priorYear);
+      case "induction" -> getStreamInduction(useKey, priorYear);
+      default -> getStreamDirect(useKey, name, priorYear);
     };
+  }
+
+  /**
+   * Get the sales stream value by summing domestic, import, and recycle streams from this year.
+   *
+   * @param useKey The key containing application and substance
+   * @return The total sales value in kg
+   */
+  private EngineNumber getStreamSales(UseKey useKey) {
+    return getStreamSales(useKey, false);
   }
 
   /**
@@ -374,10 +397,10 @@ public class SimulationState {
    * @param useKey The key containing application and substance
    * @return The total sales value in kg
    */
-  private EngineNumber getStreamSales(UseKey useKey) {
-    EngineNumber domesticAmountRaw = getStream(useKey, "domestic");
-    EngineNumber importAmountRaw = getStream(useKey, "import");
-    EngineNumber recycleAmountRaw = getStream(useKey, "recycle");
+  private EngineNumber getStreamSales(UseKey useKey, boolean priorYear) {
+    EngineNumber domesticAmountRaw = getStream(useKey, "domestic", priorYear);
+    EngineNumber importAmountRaw = getStream(useKey, "import", priorYear);
+    EngineNumber recycleAmountRaw = getStream(useKey, "recycle", priorYear);
 
     EngineNumber domesticAmount = unitConverter.convert(domesticAmountRaw, "kg");
     EngineNumber importAmount = unitConverter.convert(importAmountRaw, "kg");
@@ -393,14 +416,24 @@ public class SimulationState {
   }
 
   /**
-   * Get the recycle stream value by summing recycleRecharge and recycleEol streams.
+   * Get the recycle stream value by summing recycleRecharge and recycleEol streams in this year.
    *
    * @param useKey The key containing application and substance
    * @return The total recycle value in kg
    */
   private EngineNumber getStreamRecycle(UseKey useKey) {
-    EngineNumber recycleRechargeAmountRaw = getStream(useKey, "recycleRecharge");
-    EngineNumber recycleEolAmountRaw = getStream(useKey, "recycleEol");
+    return getStreamRecycle(useKey, false);
+  }
+
+  /**
+   * Get the recycle stream value by summing recycleRecharge and recycleEol streams.
+   *
+   * @param useKey The key containing application and substance
+   * @return The total recycle value in kg
+   */
+  private EngineNumber getStreamRecycle(UseKey useKey, boolean priorYear) {
+    EngineNumber recycleRechargeAmountRaw = getStream(useKey, "recycleRecharge", priorYear);
+    EngineNumber recycleEolAmountRaw = getStream(useKey, "recycleEol", priorYear);
 
     EngineNumber recycleRechargeAmount = unitConverter.convert(recycleRechargeAmountRaw, "kg");
     EngineNumber recycleEolAmount = unitConverter.convert(recycleEolAmountRaw, "kg");
@@ -414,13 +447,23 @@ public class SimulationState {
   }
 
   /**
-   * Get the induction stream value by summing all induction stages.
+   * Get the induction stream value by summing all induction stages this year.
    *
    * @param useKey The key containing application and substance
    * @return The total induction value in kg
    */
   private EngineNumber getStreamInduction(UseKey useKey) {
-    return getTotalInductionStream(useKey);
+    return getStreamInduction(useKey, false);
+  }
+
+  /**
+   * Get the induction stream value by summing all induction stages.
+   *
+   * @param useKey The key containing application and substance
+   * @return The total induction value in kg
+   */
+  private EngineNumber getStreamInduction(UseKey useKey, boolean priorYear) {
+    return getTotalInductionStream(useKey, priorYear);
   }
 
   /**
@@ -431,7 +474,23 @@ public class SimulationState {
    * @return The stream value
    */
   private EngineNumber getStreamDirect(UseKey useKey, String name) {
-    EngineNumber result = streams.get(getKey(useKey, name));
+    return getStreamDirect(useKey, name, false);
+  }
+
+  /**
+   * Get a stream value directly from the streams map.
+   *
+   * @param useKey The key containing application and substance
+   * @param name The stream name
+   * @return The stream value
+   */
+  private EngineNumber getStreamDirect(UseKey useKey, String name, boolean priorYear) {
+    String key = getKey(useKey, name);
+    if (priorYear && priorStreams.containsKey(key)) {
+      return priorStreams.get(key);
+    }
+
+    EngineNumber result = streams.get(key);
     if (result == null) {
       throwSubstanceMissing(
           "getStream",
@@ -461,8 +520,19 @@ public class SimulationState {
    * @return The induction stream value in kg
    */
   public EngineNumber getInductionStream(UseKey useKey, RecoveryStage stage) {
+    return getInductionStream(useKey, stage, false);
+  }
+
+  /**
+   * Get the induction stream value for a specific recovery stage.
+   *
+   * @param useKey The key containing application and substance
+   * @param stage The recovery stage (EOL or RECHARGE)
+   * @return The induction stream value in kg
+   */
+  public EngineNumber getInductionStream(UseKey useKey, RecoveryStage stage, boolean priorYear) {
     String streamName = getInductionStreamName(stage);
-    return getStream(useKey, streamName);
+    return getStream(useKey, streamName, priorYear);
   }
 
   /**
@@ -488,8 +558,18 @@ public class SimulationState {
    * @return Total induction in kg
    */
   public EngineNumber getTotalInductionStream(UseKey useKey) {
-    EngineNumber inductionEol = getInductionStream(useKey, RecoveryStage.EOL);
-    EngineNumber inductionRecharge = getInductionStream(useKey, RecoveryStage.RECHARGE);
+    return getTotalInductionStream(useKey, false);
+  }
+
+  /**
+   * Get total induction across all stages.
+   *
+   * @param useKey The key containing application and substance
+   * @return Total induction in kg
+   */
+  public EngineNumber getTotalInductionStream(UseKey useKey, boolean priorYear) {
+    EngineNumber inductionEol = getInductionStream(useKey, RecoveryStage.EOL, priorYear);
+    EngineNumber inductionRecharge = getInductionStream(useKey, RecoveryStage.RECHARGE, priorYear);
 
     EngineNumber eolConverted = unitConverter.convert(inductionEol, "kg");
     EngineNumber rechargeConverted = unitConverter.convert(inductionRecharge, "kg");
@@ -602,6 +682,13 @@ public class SimulationState {
   public void incrementYear() {
     // Increment the internal year counter
     currentYear += 1;
+
+    // Snapshot streams
+    priorStreams.clear();
+    for (String name : streams.keySet()) {
+      priorStreams.put(name, streams.get(name));
+    }
+
     // Move population and retired counts
     for (String key : substances.keySet()) {
       String[] keyPieces = key.split("\t");
