@@ -353,7 +353,7 @@ public class SimulationState {
   }
 
   /**
-   * Get the value of a specific stream using key from this year.
+   * Get the value of a specific stream using key. Uses current year.
    *
    * @param useKey The key containing application and substance
    * @param name The stream name
@@ -368,6 +368,8 @@ public class SimulationState {
    *
    * @param useKey The key containing application and substance
    * @param name The stream name
+   * @param priorYear If true, returns prior year value if available, returns current year if no
+   *     prior year exists.
    * @return The stream value
    */
   public EngineNumber getStream(UseKey useKey, String name, boolean priorYear) {
@@ -382,7 +384,7 @@ public class SimulationState {
   }
 
   /**
-   * Get the sales stream value by summing domestic, import, and recycle streams from this year.
+   * Get the sales stream value by summing domestic, import, and recycle streams. Uses current year.
    *
    * @param useKey The key containing application and substance
    * @return The total sales value in kg
@@ -395,6 +397,8 @@ public class SimulationState {
    * Get the sales stream value by summing domestic, import, and recycle streams.
    *
    * @param useKey The key containing application and substance
+   * @param priorYear If true, returns prior year value if available, returns current year if no
+   *     prior year exists.
    * @return The total sales value in kg
    */
   private EngineNumber getStreamSales(UseKey useKey, boolean priorYear) {
@@ -416,7 +420,8 @@ public class SimulationState {
   }
 
   /**
-   * Get the recycle stream value by summing recycleRecharge and recycleEol streams in this year.
+   * Get the recycle stream value by summing recycleRecharge and recycleEol streams. Uses current
+   * year.
    *
    * @param useKey The key containing application and substance
    * @return The total recycle value in kg
@@ -429,6 +434,8 @@ public class SimulationState {
    * Get the recycle stream value by summing recycleRecharge and recycleEol streams.
    *
    * @param useKey The key containing application and substance
+   * @param priorYear If true, returns prior year value if available, returns current year if no
+   *     prior year exists.
    * @return The total recycle value in kg
    */
   private EngineNumber getStreamRecycle(UseKey useKey, boolean priorYear) {
@@ -447,7 +454,7 @@ public class SimulationState {
   }
 
   /**
-   * Get the induction stream value by summing all induction stages this year.
+   * Get the induction stream value by summing all induction stages. Uses current year.
    *
    * @param useKey The key containing application and substance
    * @return The total induction value in kg
@@ -460,6 +467,8 @@ public class SimulationState {
    * Get the induction stream value by summing all induction stages.
    *
    * @param useKey The key containing application and substance
+   * @param priorYear If true, returns prior year value if available, returns current year if no
+   *     prior year exists.
    * @return The total induction value in kg
    */
   private EngineNumber getStreamInduction(UseKey useKey, boolean priorYear) {
@@ -467,7 +476,7 @@ public class SimulationState {
   }
 
   /**
-   * Get a stream value directly from the streams map.
+   * Get a stream value directly from the streams map. Uses current year.
    *
    * @param useKey The key containing application and substance
    * @param name The stream name
@@ -482,6 +491,8 @@ public class SimulationState {
    *
    * @param useKey The key containing application and substance
    * @param name The stream name
+   * @param priorYear If true, returns prior year value if available, returns current year if no
+   *     prior year exists.
    * @return The stream value
    */
   private EngineNumber getStreamDirect(UseKey useKey, String name, boolean priorYear) {
@@ -513,7 +524,7 @@ public class SimulationState {
   }
 
   /**
-   * Get the induction stream value for a specific recovery stage.
+   * Get the induction stream value for a specific recovery stage. Uses current year.
    *
    * @param useKey The key containing application and substance
    * @param stage The recovery stage (EOL or RECHARGE)
@@ -528,6 +539,8 @@ public class SimulationState {
    *
    * @param useKey The key containing application and substance
    * @param stage The recovery stage (EOL or RECHARGE)
+   * @param priorYear If true, returns prior year value if available, returns current year if no
+   *     prior year exists.
    * @return The induction stream value in kg
    */
   public EngineNumber getInductionStream(UseKey useKey, RecoveryStage stage, boolean priorYear) {
@@ -552,7 +565,7 @@ public class SimulationState {
   }
 
   /**
-   * Get total induction across all stages.
+   * Get total induction across all stages. Uses current year.
    *
    * @param useKey The key containing application and substance
    * @return Total induction in kg
@@ -565,6 +578,8 @@ public class SimulationState {
    * Get total induction across all stages.
    *
    * @param useKey The key containing application and substance
+   * @param priorYear If true, returns prior year value if available, returns current year if no
+   *     prior year exists.
    * @return Total induction in kg
    */
   public EngineNumber getTotalInductionStream(UseKey useKey, boolean priorYear) {
