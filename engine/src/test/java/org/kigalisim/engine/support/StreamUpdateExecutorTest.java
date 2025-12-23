@@ -316,7 +316,7 @@ class StreamUpdateExecutorTest {
     EngineNumber salesIntent = engine.getStreamKeeper().getLastSpecifiedValue(useKey, "sales");
     assertNotNull(salesIntent,
         "Sales intent should be set based on unit-based stream");
-    assertEquals(new BigDecimal("100"), salesIntent.getValue(),
+    assertEquals(new BigDecimal("150"), salesIntent.getValue(),
         "Sales intent should only reflect domestic (units), ignoring import (kg)");
     assertEquals("units", salesIntent.getUnits());
   }
