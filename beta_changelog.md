@@ -16,6 +16,14 @@ Finally, we want to again express our gratitude for your feedback and time.
 
 The following changes have been adopted and released.
 
+### Percent cap and floor from prior year
+
+**Status**: Released December 23, 2025
+
+**Classification**: Clarification
+
+Clarified that percentage-based caps and floors are calculated relative to the prior year's actual stream value. For example, "cap sales to 85%" will cap to 85% of the prior year's sales value. This ensures consistent year-over-year compounding behavior for policy restrictions.
+
 ### Include assume in duplication
 
 **Status**: Released October 30, 2025
