@@ -144,10 +144,10 @@ class StreamUpdateExecutorTest {
   }
 
   /**
-   * Tests that volume-based values (kg) are ignored and do not create sales intent.
+   * Tests volume-based values (kg) in single stream sales.
    */
   @Test
-  void testUpdateSalesCarryOverIgnoresVolumeBasedValues() {
+  void testUpdateSalesCarryOverPassThrough() {
     // Arrange
     EngineNumber domestic = new EngineNumber(new BigDecimal("100"), "kg");
 
@@ -164,8 +164,7 @@ class StreamUpdateExecutorTest {
 
     // Assert
     EngineNumber salesIntent = engine.getStreamKeeper().getLastSpecifiedValue(useKey, "sales");
-    assertNull(salesIntent,
-        "Sales intent should not be set for volume-based (kg) specifications");
+    assertNotNull(salesIntent, "Single stream should set");
   }
 
   /**
