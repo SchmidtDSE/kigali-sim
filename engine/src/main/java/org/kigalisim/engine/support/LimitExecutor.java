@@ -155,23 +155,23 @@ public class LimitExecutor {
   }
 
   /**
-   * Applies percentage-based cap operation using lastSpecifiedValue for compounding effect.
+   * Applies percentage-based cap operation using prior year's value for compounding effect.
    *
    * <p>This method implements the cap logic for percentage-based specifications. The
-   * percentage is applied to the lastSpecifiedValue (the last value explicitly set by the user)
-   * rather than the current calculated value. This approach enables proper year-over-year compounding
-   * where policy restrictions build on previous user intent.</p>
+   * percentage is applied to the prior year's actual stream value rather than the current
+   * calculated value. This approach enables proper year-over-year compounding where policy
+   * restrictions build on previous results.</p>
    *
    * <p>Algorithm:</p>
    * <ol>
-   *   <li>If lastSpecifiedValue exists: Calculate cap as percentage of that value,
+   *   <li>If prior year value exists: Calculate cap as percentage of that value,
    *       apply StreamUpdate if current exceeds cap, handle displacement</li>
-   *   <li>If lastSpecifiedValue is null: Treat percentage as volume (legacy behavior),
+   *   <li>If no prior year exists: Treat percentage as volume (legacy behavior),
    *       apply reduction if needed, handle displacement</li>
    * </ol>
    *
-   * <p>Example: User set "domestic to 1000 mt" in year 1. In year 5, "cap domestic to 85%"
-   * will cap to 850 mt (85% of 1000), not 85% of year 5's calculated value.</p>
+   * <p>Example: Stream was 1000 mt in year 4. In year 5, "cap domestic to 85%"
+   * will cap to 850 mt (85% of prior year's 1000 mt).</p>
    *
    * @param stream The stream name to cap
    * @param amount The percentage cap amount (e.g., 85 for 85%)
@@ -283,23 +283,23 @@ public class LimitExecutor {
   }
 
   /**
-   * Applies percentage-based floor operation using lastSpecifiedValue for compounding effect.
+   * Applies percentage-based floor operation using prior year's value for compounding effect.
    *
    * <p>This method implements the floor logic for percentage-based specifications. The
-   * percentage is applied to the lastSpecifiedValue (the last value explicitly set by the user)
-   * rather than the current calculated value. This approach enables proper year-over-year compounding
-   * where policy requirements build on previous user intent.</p>
+   * percentage is applied to the prior year's actual stream value rather than the current
+   * calculated value. This approach enables proper year-over-year compounding where policy
+   * requirements build on previous results.</p>
    *
    * <p>Algorithm:</p>
    * <ol>
-   *   <li>If lastSpecifiedValue exists: Calculate floor as percentage of that value,
+   *   <li>If prior year value exists: Calculate floor as percentage of that value,
    *       apply StreamUpdate if current is below floor, handle displacement</li>
-   *   <li>If lastSpecifiedValue is null: Treat percentage as volume (legacy behavior),
+   *   <li>If no prior year exists: Treat percentage as volume (legacy behavior),
    *       apply increase if needed, handle displacement</li>
    * </ol>
    *
-   * <p>Example: User set "domestic to 1000 mt" in year 1. In year 5, "floor domestic to 80%"
-   * will floor to 800 mt (80% of 1000), not 80% of year 5's calculated value.</p>
+   * <p>Example: Stream was 1000 mt in year 4. In year 5, "floor domestic to 80%"
+   * will floor to 800 mt (80% of prior year's 1000 mt).</p>
    *
    * @param stream The stream name to floor
    * @param amount The percentage floor amount (e.g., 80 for 80%)
