@@ -247,6 +247,93 @@ public class UnitConverter {
   }
 
   /**
+   * Check if a normalized unit string represents any percent variant.
+   *
+   * @param normalizedUnits The normalized unit string to check
+   * @return True if the unit is any percent variant, false otherwise
+   */
+  private boolean isPercentUnit(String normalizedUnits) {
+    return "%".equals(normalizedUnits) || "%prioryear".equals(normalizedUnits)
+        || "%currentyear".equals(normalizedUnits) || "%current".equals(normalizedUnits);
+  }
+
+  /**
+   * Check if a normalized unit string represents a prior year percentage.
+   *
+   * @param normalizedUnits The normalized unit string to check
+   * @return True if the unit is % prior year, false otherwise
+   */
+  private boolean getIsPriorPercent(String normalizedUnits) {
+    return "%prioryear".equals(normalizedUnits);
+  }
+
+  /**
+   * Get the target volume for percentage conversion based on percent unit type.
+   *
+   * @param normalizedUnits The normalized percent unit string
+   * @return The volume to use as base for percentage calculations
+   */
+  private EngineNumber getTargetVolume(String normalizedUnits) {
+    if (getIsPriorPercent(normalizedUnits)) {
+      return stateGetter.getPriorVolume();
+    } else {
+      return stateGetter.getVolume();
+    }
+  }
+
+  /**
+   * Get the target population for percentage conversion based on percent unit type.
+   *
+   * @param normalizedUnits The normalized percent unit string
+   * @return The population to use as base for percentage calculations
+   */
+  private EngineNumber getTargetPopulation(String normalizedUnits) {
+    if (getIsPriorPercent(normalizedUnits)) {
+      return stateGetter.getPriorPopulation();
+    } else {
+      return stateGetter.getPopulation();
+    }
+  }
+
+  /**
+   * Get the target GHG consumption for percentage conversion based on percent unit type.
+   *
+   * @param normalizedUnits The normalized percent unit string
+   * @return The GHG consumption to use as base for percentage calculations
+   */
+  private EngineNumber getTargetGhgConsumption(String normalizedUnits) {
+    if (getIsPriorPercent(normalizedUnits)) {
+      return stateGetter.getPriorGhgConsumption();
+    } else {
+      return stateGetter.getGhgConsumption();
+    }
+  }
+
+  /**
+   * Get the target energy consumption for percentage conversion based on percent unit type.
+   *
+   * @param normalizedUnits The normalized percent unit string
+   * @return The energy consumption to use as base for percentage calculations
+   */
+  private EngineNumber getTargetEnergyConsumption(String normalizedUnits) {
+    return stateGetter.getEnergyConsumption();
+  }
+
+  /**
+   * Get the target years elapsed for percentage conversion based on percent unit type.
+   *
+   * @param normalizedUnits The normalized percent unit string
+   * @return The years elapsed to use as base for percentage calculations
+   */
+  private EngineNumber getTargetYearsElapsed(String normalizedUnits) {
+    if (getIsPriorPercent(normalizedUnits)) {
+      return stateGetter.getPriorYearsElapsed();
+    } else {
+      return stateGetter.getYearsElapsed();
+    }
+  }
+
+  /**
    * Convert a number to new units.
    *
    * @param source The EngineNumber to convert
@@ -357,7 +444,7 @@ public class UnitConverter {
       case "kgCO2e" -> toKgCo2eConsumption(input);
       case "kwh" -> toEnergyConsumption(input);
       case "year", "years", "yr", "yrs" -> toYears(input);
-      case "%" -> toPercent(input);
+      case "%", "%prioryear", "%currentyear", "%current" -> toPercent(input, destinationUnits);
       default -> throw new IllegalArgumentException(
           "Unsupported destination numerator units: " + destinationUnits);
     };
@@ -487,10 +574,10 @@ public class UnitConverter {
         BigDecimal newValue = originalValue.multiply(conversionValue);
         yield new EngineNumber(newValue, newUnits);
       }
-      case "%" -> {
+      case "%", "%prioryear", "%currentyear", "%current" -> {
         BigDecimal originalValue = target.getValue();
         BigDecimal asRatio = originalValue.multiply(TO_PERCENT_FACTOR);
-        EngineNumber total = stateGetter.getVolume();
+        EngineNumber total = getTargetVolume(currentUnits);
         String newUnits = total.getUnits();
         BigDecimal newValue = total.getValue().multiply(asRatio);
         yield new EngineNumber(newValue, newUnits);
@@ -545,10 +632,10 @@ public class UnitConverter {
         EngineNumber tco2eTarget = new EngineNumber(tco2eValue, "tCO2e");
         yield toUnits(tco2eTarget);
       }
-      case "%", "%eachyear" -> {
+      case "%", "%eachyear", "%prioryear", "%currentyear", "%current" -> {
         BigDecimal originalValue = target.getValue();
         BigDecimal asRatio = originalValue.multiply(TO_PERCENT_FACTOR);
-        EngineNumber total = stateGetter.getPopulation();
+        EngineNumber total = getTargetPopulation(currentUnits);
         BigDecimal newValue = total.getValue().multiply(asRatio);
         yield new EngineNumber(newValue, "units");
       }
@@ -591,10 +678,10 @@ public class UnitConverter {
       } else {
         return convertEmissionsPerVolume(target, conversion, newUnits, expectedUnits, false);
       }
-    } else if ("%".equals(currentUnits)) {
+    } else if (isPercentUnit(currentUnits)) {
       BigDecimal originalValue = target.getValue();
       BigDecimal asRatio = originalValue.multiply(TO_PERCENT_FACTOR);
-      EngineNumber total = stateGetter.getGhgConsumption();
+      EngineNumber total = getTargetGhgConsumption(currentUnits);
       BigDecimal newValue = total.getValue().multiply(asRatio);
       return new EngineNumber(newValue, "tCO2e");
     } else {
@@ -643,10 +730,10 @@ public class UnitConverter {
         BigDecimal kgco2eValue = tco2eValue.multiply(TCO2E_TO_KGCO2E_FACTOR);
         yield new EngineNumber(kgco2eValue, "kgCO2e");
       }
-      case "%" -> {
+      case "%", "%prioryear", "%currentyear", "%current" -> {
         BigDecimal originalValue = target.getValue();
         BigDecimal asRatio = originalValue.multiply(TO_PERCENT_FACTOR);
-        EngineNumber total = stateGetter.getGhgConsumption();
+        EngineNumber total = getTargetGhgConsumption(currentUnits);
         BigDecimal kgco2eTotal = total.getValue().multiply(TCO2E_TO_KGCO2E_FACTOR);
         BigDecimal newValue = kgco2eTotal.multiply(asRatio);
         yield new EngineNumber(newValue, "kgCO2e");
@@ -687,10 +774,10 @@ public class UnitConverter {
         throw new IllegalArgumentException("Unexpected units " + newUnits);
       }
       return new EngineNumber(newValue, newUnits);
-    } else if ("%".equals(currentUnits)) {
+    } else if (isPercentUnit(currentUnits)) {
       BigDecimal originalValue = target.getValue();
       BigDecimal asRatio = originalValue.multiply(TO_PERCENT_FACTOR);
-      EngineNumber total = stateGetter.getEnergyConsumption();
+      EngineNumber total = getTargetEnergyConsumption(currentUnits);
       BigDecimal newValue = total.getValue().multiply(asRatio);
       return new EngineNumber(newValue, "kwh");
     } else {
@@ -750,10 +837,10 @@ public class UnitConverter {
         BigDecimal newYears = target.getValue().divide(perYearPopulation, MATH_CONTEXT);
         yield new EngineNumber(newYears, "years");
       }
-      case "%" -> {
+      case "%", "%prioryear", "%currentyear", "%current" -> {
         BigDecimal originalValue = target.getValue();
         BigDecimal asRatio = originalValue.multiply(TO_PERCENT_FACTOR);
-        EngineNumber total = stateGetter.getYearsElapsed();
+        EngineNumber total = getTargetYearsElapsed(currentUnits);
         BigDecimal newValue = total.getValue().multiply(asRatio);
         yield new EngineNumber(newValue, "years");
       }
@@ -765,36 +852,37 @@ public class UnitConverter {
    * Convert a number to percentage.
    *
    * @param target The EngineNumber to convert
+   * @param destinationUnits The destination percent unit type
    * @return Target converted to percentage
    */
-  private EngineNumber toPercent(EngineNumber target) {
+  private EngineNumber toPercent(EngineNumber target, String destinationUnits) {
     target = normalize(target);
     String currentUnits = target.getUnits();
 
-    if ("%".equals(currentUnits)) {
+    if (isPercentUnit(currentUnits)) {
       return target;
     }
 
     EngineNumber total = switch (currentUnits) {
-      case "year", "years", "yr", "yrs" -> stateGetter.getYearsElapsed();
-      case "tCO2e" -> stateGetter.getGhgConsumption();
+      case "year", "years", "yr", "yrs" -> getTargetYearsElapsed(destinationUnits);
+      case "tCO2e" -> getTargetGhgConsumption(destinationUnits);
       case "kgCO2e" -> {
-        EngineNumber tco2eTotal = stateGetter.getGhgConsumption();
+        EngineNumber tco2eTotal = getTargetGhgConsumption(destinationUnits);
         BigDecimal kgco2eTotal = tco2eTotal.getValue().multiply(TCO2E_TO_KGCO2E_FACTOR);
         yield new EngineNumber(kgco2eTotal, "kgCO2e");
       }
       case "kg", "mt" -> {
-        EngineNumber volume = stateGetter.getVolume();
+        EngineNumber volume = getTargetVolume(destinationUnits);
         yield convert(volume, currentUnits);
       }
-      case "unit", "units" -> stateGetter.getPopulation();
+      case "unit", "units" -> getTargetPopulation(destinationUnits);
       default -> throw new IllegalArgumentException("Unable to convert to %: " + currentUnits);
     };
 
     BigDecimal percentValue = target.getValue()
         .divide(total.getValue(), MATH_CONTEXT)
         .multiply(PERCENT_FACTOR);
-    return new EngineNumber(percentValue, "%");
+    return new EngineNumber(percentValue, destinationUnits);
   }
 
   /**
