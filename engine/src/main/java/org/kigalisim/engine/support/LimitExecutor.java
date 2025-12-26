@@ -173,6 +173,11 @@ public class LimitExecutor {
    * <p>Example: Stream was 1000 mt in year 4. In year 5, "cap domestic to 85%"
    * will cap to 850 mt (85% of prior year's 1000 mt).</p>
    *
+   * <p><strong>Note on Architecture:</strong> This method retrieves prior year values
+   * directly via SimulationState rather than using UnitConverter. This is because
+   * UnitConverter's getPriorVolume() returns prior "sales" only, while limit operations
+   * may need prior values for other streams like "domestic" or "import".</p>
+   *
    * @param stream The stream name to cap
    * @param amount The percentage cap amount (e.g., 85 for 85%)
    * @param displaceTarget The target substance/stream for displacement, or null
@@ -183,16 +188,15 @@ public class LimitExecutor {
     EngineNumber currentValueRaw = engine.getStream(stream);
     EngineNumber currentValue = unitConverter.convert(currentValueRaw, "kg");
 
+    // Retrieve prior year value for this specific stream (e.g., domestic, import).
+    // UnitConverter's getPriorVolume() returns prior "sales" only, not prior of other streams.
     SimulationState simulationState = engine.getStreamKeeper();
     Scope scope = engine.getScope();
     EngineNumber lastSpecified = simulationState.getStream(scope, stream, true);
     boolean hasPrior = lastSpecified != null;
 
     if (hasPrior) {
-      BigDecimal capValue = lastSpecified.getValue()
-          .multiply(amount.getValue())
-          .divide(new BigDecimal("100"));
-      EngineNumber newCappedValue = new EngineNumber(capValue, lastSpecified.getUnits());
+      EngineNumber newCappedValue = calculatePercentageLimit(lastSpecified, amount);
 
       EngineNumber currentInKg = unitConverter.convert(currentValueRaw, "kg");
       EngineNumber newCappedInKg = unitConverter.convert(newCappedValue, "kg");
@@ -301,6 +305,11 @@ public class LimitExecutor {
    * <p>Example: Stream was 1000 mt in year 4. In year 5, "floor domestic to 80%"
    * will floor to 800 mt (80% of prior year's 1000 mt).</p>
    *
+   * <p><strong>Note on Architecture:</strong> This method retrieves prior year values
+   * directly via SimulationState rather than using UnitConverter. This is because
+   * UnitConverter's getPriorVolume() returns prior "sales" only, while limit operations
+   * may need prior values for other streams like "domestic" or "import".</p>
+   *
    * @param stream The stream name to floor
    * @param amount The percentage floor amount (e.g., 80 for 80%)
    * @param displaceTarget The target substance/stream for displacement, or null
@@ -311,16 +320,15 @@ public class LimitExecutor {
     EngineNumber currentValueRaw = engine.getStream(stream);
     EngineNumber currentValue = unitConverter.convert(currentValueRaw, "kg");
 
+    // Retrieve prior year value for this specific stream (e.g., domestic, import).
+    // UnitConverter's getPriorVolume() returns prior "sales" only, not prior of other streams.
     SimulationState simulationState = engine.getStreamKeeper();
     Scope scope = engine.getScope();
     EngineNumber lastSpecified = simulationState.getStream(scope, stream, true);
     boolean hasPrior = lastSpecified != null;
 
     if (hasPrior) {
-      BigDecimal floorValue = lastSpecified.getValue()
-          .multiply(amount.getValue())
-          .divide(new BigDecimal("100"));
-      EngineNumber newFloorValue = new EngineNumber(floorValue, lastSpecified.getUnits());
+      EngineNumber newFloorValue = calculatePercentageLimit(lastSpecified, amount);
 
       EngineNumber currentInKg = unitConverter.convert(currentValueRaw, "kg");
       EngineNumber newFloorInKg = unitConverter.convert(newFloorValue, "kg");
@@ -408,5 +416,23 @@ public class LimitExecutor {
       BigDecimal changeInKg = newInKg.getValue().subtract(currentInKg.getValue());
       displaceExecutor.execute(stream, amount, changeInKg, displaceTarget);
     }
+  }
+
+  /**
+   * Calculate a percentage-based limit value from a prior year baseline.
+   *
+   * <p>This method computes percentage-based limits (e.g., "85%") by applying the
+   * percentage to a prior year's actual value for any stream (domestic, import, etc.).</p>
+   *
+   * @param priorValue The prior year baseline value for this specific stream
+   * @param percentAmount The percentage amount (e.g., 85 for 85%)
+   * @return The calculated limit value with same units as priorValue
+   */
+  private EngineNumber calculatePercentageLimit(EngineNumber priorValue,
+      EngineNumber percentAmount) {
+    BigDecimal limitValue = priorValue.getValue()
+        .multiply(percentAmount.getValue())
+        .divide(new BigDecimal("100"));
+    return new EngineNumber(limitValue, priorValue.getUnits());
   }
 }
