@@ -916,7 +916,7 @@ public class UnitConverter {
       return target;
     } else {
       BigDecimal originalValue = target.getValue();
-      String newUnits = normalizedCurrentUnits.substring(0, normalizedCurrentUnits.indexOf("/"));
+      String newUnits = normalizedCurrentUnits.substring(0, normalizedCurrentUnits.indexOf('/'));
       EngineNumber population = stateGetter.getPopulation();
       BigDecimal populationValue = population.getValue();
       BigDecimal newValue = originalValue.multiply(populationValue);
@@ -939,7 +939,7 @@ public class UnitConverter {
       return target;
     } else {
       BigDecimal originalValue = target.getValue();
-      String newUnits = normalizedCurrentUnits.substring(0, normalizedCurrentUnits.indexOf("/"));
+      String newUnits = normalizedCurrentUnits.substring(0, normalizedCurrentUnits.indexOf('/'));
       EngineNumber years = stateGetter.getYearsElapsed();
       BigDecimal yearsValue = years.getValue();
       BigDecimal newValue = originalValue.multiply(yearsValue);
@@ -979,7 +979,7 @@ public class UnitConverter {
     }
 
     BigDecimal originalValue = target.getValue();
-    String newUnits = normalizedCurrentUnits.substring(0, normalizedCurrentUnits.indexOf("/"));
+    String newUnits = normalizedCurrentUnits.substring(0, normalizedCurrentUnits.indexOf('/'));
     BigDecimal totalConsumptionValue = targetConsumption.getValue();
     BigDecimal newValue = originalValue.multiply(totalConsumptionValue);
 
