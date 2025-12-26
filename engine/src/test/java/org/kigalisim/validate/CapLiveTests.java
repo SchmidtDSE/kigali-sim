@@ -823,4 +823,36 @@ public class CapLiveTests {
     assertTrue(Math.abs(percentYear5Value - percentCurrentYear5Value) > 1.0,
         "Difference between % and % current should be measurable in year 5");
   }
+
+  /**
+   * Test cap with % prior year behaves identically to cap with %.
+   * This validates that % and % prior year in cap context both mean prior year values.
+   */
+  @Test
+  public void testCapPercentPriorYear() throws IOException {
+    String qtaPath = "../examples/cap_percent_prior_year.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    Stream<EngineResult> percentResults = KigaliSimFacade.runScenario(program, "cap_percent", progress -> {});
+    List<EngineResult> percentResultsList = percentResults.collect(Collectors.toList());
+
+    Stream<EngineResult> percentPriorYearResults = KigaliSimFacade.runScenario(program, "cap_percent_prior_year", progress -> {});
+    List<EngineResult> percentPriorYearResultsList = percentPriorYearResults.collect(Collectors.toList());
+
+    for (int year = 3; year <= 5; year++) {
+      EngineResult percentResult = LiveTestsUtil.getResult(percentResultsList.stream(), year, "test", "sub_a");
+      EngineResult percentPriorYearResult = LiveTestsUtil.getResult(percentPriorYearResultsList.stream(), year, "test", "sub_a");
+
+      assertNotNull(percentResult, "Should have % result for test/sub_a in year " + year);
+      assertNotNull(percentPriorYearResult, "Should have % prior year result for test/sub_a in year " + year);
+
+      double percentValue = percentResult.getDomestic().getValue().doubleValue();
+      double percentPriorYearValue = percentPriorYearResult.getDomestic().getValue().doubleValue();
+
+      assertEquals(percentValue, percentPriorYearValue, 0.0001,
+          "Cap with % should equal cap with % prior year in year " + year
+          + " (both mean prior year in cap context)");
+    }
+  }
 }

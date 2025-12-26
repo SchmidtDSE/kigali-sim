@@ -597,4 +597,37 @@ public class ChangeLiveTests {
     assertEquals("kg", year3Result.getDomestic().getUnits(),
         "Domestic units should be kg");
   }
+
+  /**
+   * Test change with % prior year produces linear growth.
+   * This validates that % prior year in change context calculates percentage relative to prior year values,
+   * showing linear growth (100→110→120) instead of compound growth (100→110→121).
+   */
+  @Test
+  public void testChangePercentPriorYear() throws IOException {
+    String qtaPath = "../examples/change_percent_prior_year.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    String scenarioName = "business as usual";
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
+    List<EngineResult> resultsList = results.collect(Collectors.toList());
+
+    EngineResult year1Result = LiveTestsUtil.getResult(resultsList.stream(), 1, "test", "test");
+    assertNotNull(year1Result, "Should have result for test/test in year 1");
+    assertEquals(100.0, year1Result.getDomestic().getValue().doubleValue(), 0.0001,
+        "Year 1 domestic should be 100 kg");
+
+    EngineResult year2Result = LiveTestsUtil.getResult(resultsList.stream(), 2, "test", "test");
+    assertNotNull(year2Result, "Should have result for test/test in year 2");
+    assertEquals(110.0, year2Result.getDomestic().getValue().doubleValue(), 0.0001,
+        "Year 2 domestic should be 110 kg (100 + 10% of prior year)");
+
+    EngineResult year3Result = LiveTestsUtil.getResult(resultsList.stream(), 3, "test", "test");
+    assertNotNull(year3Result, "Should have result for test/test in year 3");
+    assertEquals(120.0, year3Result.getDomestic().getValue().doubleValue(), 0.0001,
+        "Year 3 domestic should be 120 kg (110 + 10% of prior year, NOT compounding like % current)");
+    assertEquals("kg", year3Result.getDomestic().getUnits(),
+        "Domestic units should be kg");
+  }
 }
