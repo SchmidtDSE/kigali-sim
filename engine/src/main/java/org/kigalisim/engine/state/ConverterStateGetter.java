@@ -156,6 +156,23 @@ public class ConverterStateGetter implements StateGetter {
   }
 
   /**
+   * Get the prior year value for a stream, falling back to current if no prior exists.
+   *
+   * @param streamName The name of the stream to retrieve
+   * @param currentValue The current value to use as fallback
+   * @return The prior year value or current value if no prior exists
+   */
+  private EngineNumber getPriorStreamValue(String streamName, EngineNumber currentValue) {
+    SimulationState simulationState = engine.getStreamKeeper();
+    UseKey scope = engine.getScope();
+    EngineNumber priorValue = simulationState.getStream(scope, streamName, true);
+    if (priorValue == null) {
+      return currentValue;
+    }
+    return priorValue;
+  }
+
+  /**
    * Calculate the change in population between prior and current equipment.
    *
    * @param unitConverter Converter for ensuring consistent units
@@ -171,5 +188,48 @@ public class ConverterStateGetter implements StateGetter {
 
     BigDecimal deltaValue = newEquipment.getValue().subtract(priorEquipment.getValue());
     return new EngineNumber(deltaValue, "units");
+  }
+
+  /**
+   * Get the prior year volume from sales stream.
+   *
+   * @return The prior year volume with units like "kg" or "mt", or current year if no prior
+   */
+  @Override
+  public EngineNumber getPriorVolume() {
+    return getPriorStreamValue("sales", getVolume());
+  }
+
+  /**
+   * Get the prior year GHG consumption.
+   *
+   * @return The prior year GHG consumption with units like "tCO2e", or current year if no prior
+   */
+  @Override
+  public EngineNumber getPriorGhgConsumption() {
+    return getPriorStreamValue("consumption", getGhgConsumption());
+  }
+
+  /**
+   * Get the prior year population.
+   *
+   * @return The prior year population with units like "units", or current year if no prior
+   */
+  @Override
+  public EngineNumber getPriorPopulation() {
+    return getPriorStreamValue("equipment", getPopulation());
+  }
+
+  /**
+   * Get the prior years elapsed (max of getYearsElapsed - 1 and 0).
+   *
+   * @return The prior years elapsed with units like "year"
+   */
+  @Override
+  public EngineNumber getPriorYearsElapsed() {
+    EngineNumber currentYearsElapsed = getYearsElapsed();
+    BigDecimal priorValue = currentYearsElapsed.getValue().subtract(BigDecimal.ONE);
+    BigDecimal result = priorValue.max(BigDecimal.ZERO);
+    return new EngineNumber(result, "year");
   }
 }

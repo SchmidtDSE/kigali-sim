@@ -154,6 +154,8 @@ CHANGE_: 'change';
 
 CHARGE_: 'charge';
 
+CURRENT_: 'current';
+
 DISPLACING_ : 'displacing';
 
 DURING_: 'during';
@@ -213,6 +215,8 @@ WITH_: 'with';
  * -- Streams --
  * -------------
  **/
+
+PRIOR_: 'prior';
 
 PRIOR_EQUIPMENT_: 'priorEquipment';
 
@@ -312,7 +316,7 @@ string: STR_;
 
 volumeUnit: (KG_ | MT_ | TCO2E_ | KGCO2E_ | KWH_ | UNIT_ | UNITS_);
 
-relativeUnit: (PERCENT_);
+relativeUnit: (PERCENT_ | PERCENT_ PRIOR_ YEAR_ | PERCENT_ CURRENT_ YEAR_ | PERCENT_ CURRENT_);
 
 temporalUnit: (YEAR_ | YEARS_ | YR_ | YRS_ | MONTH_ | MONTHS_ | DAY_ | DAYS_);
 

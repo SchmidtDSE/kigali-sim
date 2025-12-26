@@ -168,8 +168,21 @@ recover sample uniformly from 20% to 40% with 90% reuse during years 2027 to onw
 - `day` / `days` - Days
 
 **Other Units:**
-- `%` - Percentage
+- `%` - Percentage (context-dependent: same as `% prior year` for caps/floors, `% current` for set/change)
+- `% prior year` - Percentage of prior year's value (explicit form)
+- `% current` or `% current year` - Percentage of current year's value (explicit form)
 - `each` - Per unit (e.g., "% each year")
+
+**Percentage Unit Variants:**
+
+The `%` unit is context-dependent and behaves differently based on the operation:
+- In `cap` and `floor` operations: `%` means percentage of prior year's value (same as `% prior year`)
+- In `set` and `change` operations: `%` means percentage of current year's value (same as `% current`)
+
+The explicit forms `% prior year` and `% current` (or `% current year`) allow you to override this default behavior when needed and make your intent clearer. For example:
+- Use `% prior year` in limits to be explicit about prior year basis
+- Use `% current` in growth rates to be explicit about current value basis
+- Use explicit forms when you want behavior different from the context default
 
 **Examples:**
 ```qubectalk
