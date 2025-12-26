@@ -2,11 +2,9 @@
 
 Hello! Thank you for your help in refining Kigali Sim. During the beta testing period, we will be making changes in response to user and partner feedback.
 
-Note that this document is now closed as the beta period concluded. Please see [GitHub commit log](https://github.com/SchmidtDSE/kigali-sim/commits) for further details.
+**About this document:** This document tracks modifications which are expected to concern a majority of users. Note that the [GitHub commit log](https://github.com/SchmidtDSE/kigali-sim/commits) provides further public detail on all changes no matter how small. This document is now only updated for major changes after the close of the beta test. Please see [GitHub commit log](https://github.com/SchmidtDSE/kigali-sim/commits) for further details.
 
-**About this document:** This document tracks modifications which are expected to concern a majority or substantial minority of beta testers. Note that the [GitHub commit log](https://github.com/SchmidtDSE/kigali-sim/commits) provides further public detail on all changes no matter how small.
-
-**Scope:** Note that this concerns both those using the UI-based designer which does not require use of any code as well those making sophisticated simulations using the editor tab where custom code written in [QubecTalk](https://kigalisim.org/guide/tutorial_07.html) is to be used.
+**Scope:** This concerns both those using the UI-based designer which does not require use of any code as well those making sophisticated simulations using the editor tab where custom code written in [QubecTalk](https://kigalisim.org/guide/tutorial_07.html) is used.
 
 **Contact us:** If you have any questions, feel free to open issues on our GitHub or, if you do not want to participate on GitHub, feel free to email us at hello@kigalisim.org for private dialogue. We are here to help you and support your usage of the tool both during this beta period and after launch.
 
@@ -15,6 +13,14 @@ Finally, we want to again express our gratitude for your feedback and time.
 ## Completed
 
 The following changes have been adopted and released.
+
+### Percent options
+
+**Status**: Released December 28, 2025
+
+**Classification**: Enhancement
+
+Added support for `% prior year` and `% current` to give more control over what percentages should mean (relative to current value after some operations may have been performed in the current year or relative to the value at the end of the year prior). See [#690](https://github.com/SchmidtDSE/kigali-sim/issues/690) and [#691](https://github.com/SchmidtDSE/kigali-sim/issues/691).
 
 ### Percent cap and floor from prior year
 
