@@ -1,5 +1,5 @@
 # Kigali Sim - Montreal Protocol Policy Simulation Tool
-v=20250926
+v=20251226
 
 Kigali Sim is an open source web-based simulation engine for modeling substances, applications, and policies related to the Montreal Protocol and Kigali Amendment. It can model high global warming potential greenhouse gases such as HFCs and supports business-as-usual scenarios as well as policy interventions.
 
@@ -94,7 +94,14 @@ The `assume` command is particularly useful for bank (equipment) tracking scenar
 **Note**: When using units (of equipment) in cap, floor, and set commands, those limits apply after recharge calculations. So a cap of 100 units means 100 units on top of recharge for prior equipment.
 
 #### Units System
-Supports automatic unit conversion: kg, mt (metric tons), tCO2e (tons CO2 equivalent), kwh (kilowatt hours), units (equipment), years/months/days (time), % (percentages)
+Supports automatic unit conversion: kg, mt (metric tons), tCO2e (tons CO2 equivalent), kwh (kilowatt hours), units (equipment), years/months/days (time), % (percentages).
+
+**Percentage Units**: Three percentage forms are available:
+- `%` - Context-dependent percentage (prior year for cap/floor, current for set/change)
+- `% prior year` - Explicit percentage of prior year's value
+- `% current` or `% current year` - Explicit percentage of current year's value
+
+The explicit forms (`% prior year` and `% current`) provide clearer intent and allow overriding default context-dependent behavior when needed.
 
 #### Number formatting
 Kigali Sim uses DecimalFormat number formatting (comma for thousands, period for decimal). Alternative formats like `123.456,7` generate suggestions for equivalent supported format `123,456.7`.

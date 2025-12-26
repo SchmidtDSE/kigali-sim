@@ -270,6 +270,64 @@ public class TutorialLiveTests {
   }
 
   /**
+   * Test Tutorial 05 with % prior year: Policy displacement effects.
+   * This validates that % prior year behaves identically to % in cap context.
+   * - The amount that HFC-134a (in kg) in Permit - BAU is the opposite of R-600a (in kg)
+   *   in Permit - BAU in 2029.
+   * - The amount that HFC-134a (in kg) in Permit - BAU is the opposite of R-600a (in kg)
+   *   in Permit - BAU in 2035.
+   */
+  @Test
+  public void testTutorial05PercentPriorYear() throws IOException {
+    String qtaPath = "../examples/tutorial_05_percent_prior_year.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    Stream<EngineResult> bauResults = KigaliSimFacade.runScenario(program, "BAU", progress -> {});
+    List<EngineResult> bauResultsList = bauResults.collect(Collectors.toList());
+
+    Stream<EngineResult> permitResults = KigaliSimFacade.runScenario(program, "Permit", progress -> {});
+    List<EngineResult> permitResultsList = permitResults.collect(Collectors.toList());
+
+    for (int year : new int[]{2029, 2035}) {
+      EngineResult bauHfc134a = LiveTestsUtil.getResult(bauResultsList.stream(), year,
+          "Domestic Refrigeration", "HFC-134a");
+      EngineResult bauR600a = LiveTestsUtil.getResult(bauResultsList.stream(), year,
+          "Domestic Refrigeration", "R-600a");
+
+      EngineResult permitHfc134a = LiveTestsUtil.getResult(permitResultsList.stream(), year,
+          "Domestic Refrigeration", "HFC-134a");
+      final EngineResult permitR600a = LiveTestsUtil.getResult(permitResultsList.stream(), year,
+          "Domestic Refrigeration", "R-600a");
+
+      assertNotNull(bauHfc134a, "Should have BAU HFC-134a result for " + year);
+      assertNotNull(bauR600a, "Should have BAU R-600a result for " + year);
+      assertNotNull(permitHfc134a, "Should have Permit HFC-134a result for " + year);
+      assertNotNull(permitR600a, "Should have Permit R-600a result for " + year);
+
+      double hfc134aBauTotal = bauHfc134a.getDomestic().getValue().doubleValue()
+                               + bauHfc134a.getImport().getValue().doubleValue();
+      double hfc134aPermitTotal = permitHfc134a.getDomestic().getValue().doubleValue()
+                                  + permitHfc134a.getImport().getValue().doubleValue();
+      double hfc134aDiff = hfc134aPermitTotal - hfc134aBauTotal;
+
+      double r600aBauTotal = bauR600a.getDomestic().getValue().doubleValue()
+                             + bauR600a.getImport().getValue().doubleValue();
+      double r600aPermitTotal = permitR600a.getDomestic().getValue().doubleValue()
+                                + permitR600a.getImport().getValue().doubleValue();
+      double r600aDiff = r600aPermitTotal - r600aBauTotal;
+
+      double expectedOpposite = -hfc134aDiff;
+      double tolerance = Math.abs(expectedOpposite) * 0.1;
+
+      assertTrue(Math.abs(r600aDiff - expectedOpposite) <= tolerance,
+          "Displacement should balance: HFC-134a reduction (~" + (-hfc134aDiff)
+          + " kg) should approximately equal R-600a increase (" + r600aDiff
+          + " kg) within 10% tolerance in year " + year);
+    }
+  }
+
+  /**
    * Test Tutorial 06: Recycling policy effectiveness.
    * - Recycling scenario is consistently lower than BAU from 2027 onwards (kg: domestic + import).
    * - The combined policy is consistently greater than or equal to recycling from 2030 onwards
@@ -436,5 +494,58 @@ public class TutorialLiveTests {
     // Test 2: Equipment does not see exports
     double equipment = resultYear2.getPopulation().getValue().doubleValue();
     assertEquals(11000, equipment, 0.1);
+  }
+
+  /**
+   * Test Tutorial 04 alternative using % current instead of %.
+   * This validates that % current produces identical results to % in change/set contexts.
+   */
+  @Test
+  public void testTutorial04PercentCurrent() throws IOException {
+    String qtaPath = "../examples/tutorial_04_percent_current.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    String scenarioName = "BAU";
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
+
+    List<EngineResult> resultsList = results.collect(Collectors.toList());
+
+    for (int year : new int[]{2025, 2035}) {
+      EngineResult hfc134aResult = LiveTestsUtil.getResult(resultsList.stream(), year,
+          "Domestic Refrigeration", "HFC-134a");
+      assertNotNull(hfc134aResult, "Should have HFC-134a result for " + year);
+
+      assertTrue(hfc134aResult.getDomestic().getValue().doubleValue() > 0,
+          "HFC-134a domestic should be non-zero in " + year);
+      assertTrue(hfc134aResult.getImport().getValue().doubleValue() > 0,
+          "HFC-134a import should be non-zero in " + year);
+    }
+
+    for (int year : new int[]{2025, 2035}) {
+      EngineResult hfc134aResult = LiveTestsUtil.getResult(resultsList.stream(), year,
+          "Domestic Refrigeration", "HFC-134a");
+      EngineResult hfc32Result = LiveTestsUtil.getResult(resultsList.stream(), year,
+          "Domestic AC", "HFC-32");
+
+      assertNotNull(hfc134aResult, "Should have HFC-134a result for " + year);
+      assertNotNull(hfc32Result, "Should have HFC-32 result for " + year);
+
+      double hfc134aTotalKg = hfc134aResult.getDomestic().getValue().doubleValue()
+                              + hfc134aResult.getImport().getValue().doubleValue();
+      double hfc32TotalKg = hfc32Result.getDomestic().getValue().doubleValue();
+
+      double hfc134aTotalTco2e = hfc134aResult.getConsumption().getValue().doubleValue();
+      double hfc32TotalTco2e = hfc32Result.getConsumption().getValue().doubleValue();
+
+      double kgPercentDiff = Math.abs(hfc32TotalKg - hfc134aTotalKg)
+                           / Math.max(hfc32TotalKg, hfc134aTotalKg) * 100;
+      double tco2ePercentDiff = Math.abs(hfc32TotalTco2e - hfc134aTotalTco2e)
+                              / Math.max(hfc32TotalTco2e, hfc134aTotalTco2e) * 100;
+
+      assertTrue(kgPercentDiff < tco2ePercentDiff,
+          "Percentage difference in kg (" + kgPercentDiff + "%) should be smaller than "
+          + "percentage difference in tCO2e (" + tco2ePercentDiff + "%) in year " + year);
+    }
   }
 }

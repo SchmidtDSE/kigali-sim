@@ -4,7 +4,7 @@
  * <p>This class provides a concrete implementation of the Engine interface that is not
  * designed to be thread-safe. It manages substance streams, equipment populations, and calculations
  * related to the Montreal Protocol simulation using BigDecimal for numerical stability.</p>
- * 
+ *
  * <p>Note that, as described in the JavaDoc for the class, this does not prevent concurrency
  * within Kigali Sim which is achieved through parallelization outside of Engine, often by having
  * multiple Engine instances.</p>
@@ -53,7 +53,7 @@ import org.kigalisim.lang.operation.RecoverOperation.RecoveryStage;
 
 /**
  * Single-threaded implementation of the Engine interface.
- * 
+ *
  * <p>At this time the only implementation of Engine which does not guarantee thread safety
  * within a single scenario. However, note that Engine only evaluates one scenario at a time so
  * Kigali Sim still achieves concurency by having multiple Engines and evaluating scenarios or Monte

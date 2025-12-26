@@ -84,4 +84,32 @@ public interface StateGetter {
    * @return The population change with units like "units"
    */
   EngineNumber getPopulationChange(UnitConverter unitConverter);
+
+  /**
+   * Get the prior year volume.
+   *
+   * @return The prior year volume with units like "kg" or "mt", or current year if no prior
+   */
+  EngineNumber getPriorVolume();
+
+  /**
+   * Get the prior year GHG consumption.
+   *
+   * @return The prior year GHG consumption with units like "tCO2e", or current year if no prior
+   */
+  EngineNumber getPriorGhgConsumption();
+
+  /**
+   * Get the prior year population.
+   *
+   * @return The prior year population with units like "units", or current year if no prior
+   */
+  EngineNumber getPriorPopulation();
+
+  /**
+   * Get the prior years elapsed (max of getYearsElapsed - 1 and 0).
+   *
+   * @return The prior years elapsed with units like "year"
+   */
+  EngineNumber getPriorYearsElapsed();
 }

@@ -149,19 +149,40 @@ public class ChangeExecutor {
       return;
     }
 
+    String units = amount.getUnits();
     BigDecimal percentageValue = amount.getValue();
-    BigDecimal changeAmount = lastSpecified.getValue().multiply(percentageValue).divide(new BigDecimal("100"));
-    BigDecimal newTotalValue = lastSpecified.getValue().add(changeAmount);
-    EngineNumber newTotal = new EngineNumber(newTotalValue, lastSpecified.getUnits());
+    BigDecimal newTotalValue;
 
-    boolean subtractRecycling = "units".equals(lastSpecified.getUnits());
-    StreamUpdate update = new StreamUpdateBuilder()
-        .setName(stream)
-        .setValue(newTotal)
-        .setYearMatcher(Optional.ofNullable(yearMatcher))
-        .setSubtractRecycling(subtractRecycling)
-        .build();
-    engine.executeStreamUpdate(update);
+    if (units != null && units.contains("prioryear")) {
+      EngineNumber currentValue = engine.getStream(stream, Optional.of(useKeyEffective), Optional.empty());
+      BigDecimal changeAmount = lastSpecified.getValue().multiply(percentageValue).divide(new BigDecimal("100"));
+      newTotalValue = currentValue.getValue().add(changeAmount);
+
+      EngineNumber newTotal = new EngineNumber(newTotalValue, lastSpecified.getUnits());
+      boolean subtractRecycling = "units".equals(lastSpecified.getUnits());
+      StreamUpdate update = new StreamUpdateBuilder()
+          .setName(stream)
+          .setValue(newTotal)
+          .setYearMatcher(Optional.ofNullable(yearMatcher))
+          .setSubtractRecycling(subtractRecycling)
+          .build();
+      engine.executeStreamUpdate(update);
+
+      simulationState.setLastSpecifiedValue(useKeyEffective, stream, lastSpecified);
+    } else {
+      BigDecimal changeAmount = lastSpecified.getValue().multiply(percentageValue).divide(new BigDecimal("100"));
+      newTotalValue = lastSpecified.getValue().add(changeAmount);
+
+      EngineNumber newTotal = new EngineNumber(newTotalValue, lastSpecified.getUnits());
+      boolean subtractRecycling = "units".equals(lastSpecified.getUnits());
+      StreamUpdate update = new StreamUpdateBuilder()
+          .setName(stream)
+          .setValue(newTotal)
+          .setYearMatcher(Optional.ofNullable(yearMatcher))
+          .setSubtractRecycling(subtractRecycling)
+          .build();
+      engine.executeStreamUpdate(update);
+    }
   }
 
   /**

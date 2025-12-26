@@ -52,7 +52,7 @@ public class KigaliWasmSimFacade {
    *
    * <div>This method parses and executes the provided QubecTalk code, running all scenarios defined
    * in the code. It returns a formatted string containing:
-   * 
+   *
    * <ul>
    *   <li>
    * A description of the execution result: either "OK" for success or "Error: message" for failure.
@@ -60,7 +60,7 @@ public class KigaliWasmSimFacade {
    *   <li>A blank line</li>
    *   <li>The CSV contents with the simulation results</li>
    * </ul>
-   * 
+   *
    * </div>
    *
    * @param code The QubecTalk code to execute.

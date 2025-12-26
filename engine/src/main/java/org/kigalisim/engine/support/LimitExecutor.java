@@ -189,10 +189,8 @@ public class LimitExecutor {
     boolean hasPrior = lastSpecified != null;
 
     if (hasPrior) {
-      BigDecimal capValue = lastSpecified.getValue()
-          .multiply(amount.getValue())
-          .divide(new BigDecimal("100"));
-      EngineNumber newCappedValue = new EngineNumber(capValue, lastSpecified.getUnits());
+      EngineNumber percentPriorYear = new EngineNumber(amount.getValue(), "% prior year");
+      EngineNumber newCappedValue = unitConverter.convert(percentPriorYear, lastSpecified.getUnits());
 
       EngineNumber currentInKg = unitConverter.convert(currentValueRaw, "kg");
       EngineNumber newCappedInKg = unitConverter.convert(newCappedValue, "kg");
@@ -317,10 +315,8 @@ public class LimitExecutor {
     boolean hasPrior = lastSpecified != null;
 
     if (hasPrior) {
-      BigDecimal floorValue = lastSpecified.getValue()
-          .multiply(amount.getValue())
-          .divide(new BigDecimal("100"));
-      EngineNumber newFloorValue = new EngineNumber(floorValue, lastSpecified.getUnits());
+      EngineNumber percentPriorYear = new EngineNumber(amount.getValue(), "% prior year");
+      EngineNumber newFloorValue = unitConverter.convert(percentPriorYear, lastSpecified.getUnits());
 
       EngineNumber currentInKg = unitConverter.convert(currentValueRaw, "kg");
       EngineNumber newFloorInKg = unitConverter.convert(newFloorValue, "kg");
@@ -409,4 +405,5 @@ public class LimitExecutor {
       displaceExecutor.execute(stream, amount, changeInKg, displaceTarget);
     }
   }
+
 }

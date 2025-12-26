@@ -1060,6 +1060,28 @@ function buildIntegrationTests() {
           assert.ok(newEquipmentR404A2035.getValue() > 0);
         },
       ]);
+
+    buildTest("tests % current units", "/examples/set_percent_current.qta", [
+      (result, assert) => {
+        const record = getResult(result, BAU_NAME, 2, 0, "test", "test");
+        const domestic = record.getDomestic();
+        // Year 2: 110 % current of 100 kg = 110 kg
+        assert.closeTo(domestic.getValue(), 110, 0.0001);
+        assert.deepEqual(domestic.getUnits(), "kg");
+      },
+    ]);
+
+    buildTest("tests % prior year units", "/examples/cap_percent_prior_year.qta", [
+      (result, assert) => {
+        const record = getResult(result, "cap_percent_prior_year", 3, 0, "test", "sub_a");
+        const domestic = record.getDomestic();
+        // Year 3: cap at 80% prior year (year 2 value)
+        // Year 2 value is 100 kg * 1.1 = 110 kg
+        // 80% of 110 kg = 88 kg
+        assert.closeTo(domestic.getValue(), 88, 0.0001);
+        assert.deepEqual(domestic.getUnits(), "kg");
+      },
+    ]);
     buildTest("runs minimal interpreter example", "/examples/minimal_interpreter.qta", [
       (result, assert) => {
         // Check year 1

@@ -40,6 +40,10 @@ public class UnitConverterTest {
     lenient().when(mock.getPopulationChange(any(UnitConverter.class)))
         .thenReturn(new EngineNumber(0, "units"));
     lenient().when(mock.getEnergyConsumption()).thenReturn(new EngineNumber(0, "kwh"));
+    lenient().when(mock.getPriorVolume()).thenReturn(new EngineNumber(0, "kg"));
+    lenient().when(mock.getPriorPopulation()).thenReturn(new EngineNumber(0, "units"));
+    lenient().when(mock.getPriorGhgConsumption()).thenReturn(new EngineNumber(0, "tCO2e"));
+    lenient().when(mock.getPriorYearsElapsed()).thenReturn(new EngineNumber(0, "years"));
     return mock;
   }
 
@@ -651,5 +655,152 @@ public class UnitConverterTest {
 
     assertCloseTo(2, result.getValue(), 0.001);
     assertEquals("yrs", result.getUnits());
+  }
+
+  @Test
+  public void testPercentPriorYearToVolume() {
+    StateGetter mockStateGetter = createMockStateGetter();
+    lenient().when(mockStateGetter.getPriorVolume()).thenReturn(new EngineNumber(30, "kg"));
+
+    EngineNumber result = convertUnits(new EngineNumber(10, "% prior year"), "kg", mockStateGetter);
+
+    assertCloseTo(3, result.getValue(), 0.001);
+    assertEquals("kg", result.getUnits());
+  }
+
+  @Test
+  public void testPercentCurrentYearToVolume() {
+    StateGetter mockStateGetter = createMockStateGetter();
+    lenient().when(mockStateGetter.getVolume()).thenReturn(new EngineNumber(40, "kg"));
+
+    EngineNumber result = convertUnits(new EngineNumber(10, "% current year"), "kg", mockStateGetter);
+
+    assertCloseTo(4, result.getValue(), 0.001);
+    assertEquals("kg", result.getUnits());
+  }
+
+  @Test
+  public void testPercentCurrentToVolume() {
+    StateGetter mockStateGetter = createMockStateGetter();
+    lenient().when(mockStateGetter.getVolume()).thenReturn(new EngineNumber(40, "kg"));
+
+    EngineNumber result = convertUnits(new EngineNumber(10, "% current"), "kg", mockStateGetter);
+
+    assertCloseTo(4, result.getValue(), 0.001);
+    assertEquals("kg", result.getUnits());
+  }
+
+  @Test
+  public void testPercentPriorYearToPop() {
+    StateGetter mockStateGetter = createMockStateGetter();
+    lenient().when(mockStateGetter.getPriorPopulation()).thenReturn(new EngineNumber(50, "units"));
+
+    EngineNumber result = convertUnits(new EngineNumber(20, "% prior year"), "units", mockStateGetter);
+
+    assertCloseTo(10, result.getValue(), 0.001);
+    assertEquals("units", result.getUnits());
+  }
+
+  @Test
+  public void testPercentCurrentYearToPop() {
+    StateGetter mockStateGetter = createMockStateGetter();
+    lenient().when(mockStateGetter.getPopulation()).thenReturn(new EngineNumber(60, "units"));
+
+    EngineNumber result = convertUnits(new EngineNumber(20, "% current year"), "units", mockStateGetter);
+
+    assertCloseTo(12, result.getValue(), 0.001);
+    assertEquals("units", result.getUnits());
+  }
+
+  @Test
+  public void testPercentPriorYearToGhgConsumption() {
+    StateGetter mockStateGetter = createMockStateGetter();
+    lenient().when(mockStateGetter.getPriorGhgConsumption())
+        .thenReturn(new EngineNumber(25, "tCO2e"));
+
+    EngineNumber result = convertUnits(new EngineNumber(40, "% prior year"), "tCO2e",
+        mockStateGetter);
+
+    assertCloseTo(10, result.getValue(), 0.001);
+    assertEquals("tCO2e", result.getUnits());
+  }
+
+  @Test
+  public void testPercentCurrentYearToGhgConsumption() {
+    StateGetter mockStateGetter = createMockStateGetter();
+    lenient().when(mockStateGetter.getGhgConsumption()).thenReturn(new EngineNumber(30, "tCO2e"));
+
+    EngineNumber result = convertUnits(new EngineNumber(50, "% current year"), "tCO2e",
+        mockStateGetter);
+
+    assertCloseTo(15, result.getValue(), 0.001);
+    assertEquals("tCO2e", result.getUnits());
+  }
+
+  @Test
+  public void testPercentPriorYearToKgCo2e() {
+    StateGetter mockStateGetter = createMockStateGetter();
+    lenient().when(mockStateGetter.getPriorGhgConsumption())
+        .thenReturn(new EngineNumber(10, "tCO2e"));
+
+    EngineNumber result = convertUnits(new EngineNumber(30, "% prior year"), "kgCO2e",
+        mockStateGetter);
+
+    assertCloseTo(3000, result.getValue(), 0.001);
+    assertEquals("kgCO2e", result.getUnits());
+  }
+
+  @Test
+  public void testPercentCurrentToEnergyConsumption() {
+    StateGetter mockStateGetter = createMockStateGetter();
+    lenient().when(mockStateGetter.getEnergyConsumption()).thenReturn(new EngineNumber(100, "kwh"));
+
+    EngineNumber result = convertUnits(new EngineNumber(15, "% current"), "kwh", mockStateGetter);
+
+    assertCloseTo(15, result.getValue(), 0.001);
+    assertEquals("kwh", result.getUnits());
+  }
+
+  @Test
+  public void testPercentPriorYearToYears() {
+    StateGetter mockStateGetter = createMockStateGetter();
+    lenient().when(mockStateGetter.getPriorYearsElapsed()).thenReturn(new EngineNumber(5, "years"));
+
+    EngineNumber result = convertUnits(new EngineNumber(60, "% prior year"), "years",
+        mockStateGetter);
+
+    assertCloseTo(3, result.getValue(), 0.001);
+    assertEquals("years", result.getUnits());
+  }
+
+  @Test
+  public void testVolumeToPercentPriorYear() {
+    StateGetter mockStateGetter = createMockStateGetter();
+    lenient().when(mockStateGetter.getPriorVolume()).thenReturn(new EngineNumber(50, "kg"));
+
+    EngineNumber result = convertUnits(new EngineNumber(10, "kg"), "% prior year", mockStateGetter);
+
+    assertCloseTo(20, result.getValue(), 0.001);
+    assertEquals("% prior year", result.getUnits());
+  }
+
+  @Test
+  public void testPercentVariantsIdentity() {
+    StateGetter mockStateGetter = createMockStateGetter();
+
+    EngineNumber result1 = convertUnits(new EngineNumber(25, "% prior year"), "% prior year",
+        mockStateGetter);
+    assertCloseTo(25, result1.getValue(), 0.001);
+    assertEquals("% prior year", result1.getUnits());
+
+    EngineNumber result2 = convertUnits(new EngineNumber(30, "% current year"), "% current year",
+        mockStateGetter);
+    assertCloseTo(30, result2.getValue(), 0.001);
+    assertEquals("% current year", result2.getUnits());
+
+    EngineNumber result3 = convertUnits(new EngineNumber(35, "% current"), "% current",
+        mockStateGetter);
+    assertCloseTo(35, result3.getValue(), 0.001);
+    assertEquals("% current", result3.getUnits());
   }
 }
