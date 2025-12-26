@@ -1133,4 +1133,31 @@ public class BasicLiveTests {
     assertNotNull(result, "Should have result for year 10");
     assertTrue(result.getDomestic().getValue().doubleValue() > 1);
   }
+
+  /**
+   * Test set with % current behaves identically to set with %.
+   * This validates that % current in set context calculates percentage relative to current year values.
+   */
+  @Test
+  public void testSetPercentCurrent() throws IOException {
+    String qtaPath = "../examples/set_percent_current.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    String scenarioName = "business as usual";
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
+    List<EngineResult> resultsList = results.collect(Collectors.toList());
+
+    EngineResult year1Result = LiveTestsUtil.getResult(resultsList.stream(), 1, "test", "test");
+    assertNotNull(year1Result, "Should have result for test/test in year 1");
+    assertEquals(100.0, year1Result.getDomestic().getValue().doubleValue(), 0.0001,
+        "Year 1 domestic should be 100 kg");
+
+    EngineResult year2Result = LiveTestsUtil.getResult(resultsList.stream(), 2, "test", "test");
+    assertNotNull(year2Result, "Should have result for test/test in year 2");
+    assertEquals(110.0, year2Result.getDomestic().getValue().doubleValue(), 0.0001,
+        "Year 2 domestic should be 110 kg (110% of year 1 value with % current)");
+    assertEquals("kg", year2Result.getDomestic().getUnits(),
+        "Domestic units should be kg");
+  }
 }

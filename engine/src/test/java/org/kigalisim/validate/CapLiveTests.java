@@ -780,4 +780,47 @@ public class CapLiveTests {
     assertEquals("units", result.getPopulation().getUnits(),
         "Equipment units should be units");
   }
+
+  /**
+   * Test cap with % current behaves differently than cap with %.
+   * This validates that % current in cap context calculates percentage relative to current year values,
+   * while % alone calculates relative to prior year values.
+   */
+  @Test
+  public void testCapPercentCurrent() throws IOException {
+    String qtaPath = "../examples/cap_percent_current.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    Stream<EngineResult> percentResults = KigaliSimFacade.runScenario(program, "cap_percent", progress -> {});
+    List<EngineResult> percentResultsList = percentResults.collect(Collectors.toList());
+
+    Stream<EngineResult> percentCurrentResults = KigaliSimFacade.runScenario(program, "cap_percent_current", progress -> {});
+    List<EngineResult> percentCurrentResultsList = percentCurrentResults.collect(Collectors.toList());
+
+    EngineResult percentYear3SubA = LiveTestsUtil.getResult(percentResultsList.stream(), 3, "test", "sub_a");
+    EngineResult percentCurrentYear3SubA = LiveTestsUtil.getResult(percentCurrentResultsList.stream(), 3, "test", "sub_a");
+
+    assertNotNull(percentYear3SubA, "Should have % result for test/sub_a in year 3");
+    assertNotNull(percentCurrentYear3SubA, "Should have % current result for test/sub_a in year 3");
+
+    double percentValue = percentYear3SubA.getDomestic().getValue().doubleValue();
+    double percentCurrentValue = percentCurrentYear3SubA.getDomestic().getValue().doubleValue();
+
+    assertTrue(Math.abs(percentValue - percentCurrentValue) > 0.1,
+        "Cap with % (" + percentValue + " kg) should differ from cap with % current ("
+        + percentCurrentValue + " kg) when combined with change statements");
+
+    EngineResult percentYear5SubA = LiveTestsUtil.getResult(percentResultsList.stream(), 5, "test", "sub_a");
+    EngineResult percentCurrentYear5SubA = LiveTestsUtil.getResult(percentCurrentResultsList.stream(), 5, "test", "sub_a");
+
+    assertNotNull(percentYear5SubA, "Should have % result for test/sub_a in year 5");
+    assertNotNull(percentCurrentYear5SubA, "Should have % current result for test/sub_a in year 5");
+
+    double percentYear5Value = percentYear5SubA.getDomestic().getValue().doubleValue();
+    double percentCurrentYear5Value = percentCurrentYear5SubA.getDomestic().getValue().doubleValue();
+
+    assertTrue(Math.abs(percentYear5Value - percentCurrentYear5Value) > 1.0,
+        "Difference between % and % current should be measurable in year 5");
+  }
 }

@@ -437,4 +437,57 @@ public class TutorialLiveTests {
     double equipment = resultYear2.getPopulation().getValue().doubleValue();
     assertEquals(11000, equipment, 0.1);
   }
+
+  /**
+   * Test Tutorial 04 alternative using % current instead of %.
+   * This validates that % current produces identical results to % in change/set contexts.
+   */
+  @Test
+  public void testTutorial04PercentCurrent() throws IOException {
+    String qtaPath = "../examples/tutorial_04_percent_current.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    String scenarioName = "BAU";
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
+
+    List<EngineResult> resultsList = results.collect(Collectors.toList());
+
+    for (int year : new int[]{2025, 2035}) {
+      EngineResult hfc134aResult = LiveTestsUtil.getResult(resultsList.stream(), year,
+          "Domestic Refrigeration", "HFC-134a");
+      assertNotNull(hfc134aResult, "Should have HFC-134a result for " + year);
+
+      assertTrue(hfc134aResult.getDomestic().getValue().doubleValue() > 0,
+          "HFC-134a domestic should be non-zero in " + year);
+      assertTrue(hfc134aResult.getImport().getValue().doubleValue() > 0,
+          "HFC-134a import should be non-zero in " + year);
+    }
+
+    for (int year : new int[]{2025, 2035}) {
+      EngineResult hfc134aResult = LiveTestsUtil.getResult(resultsList.stream(), year,
+          "Domestic Refrigeration", "HFC-134a");
+      EngineResult hfc32Result = LiveTestsUtil.getResult(resultsList.stream(), year,
+          "Domestic AC", "HFC-32");
+
+      assertNotNull(hfc134aResult, "Should have HFC-134a result for " + year);
+      assertNotNull(hfc32Result, "Should have HFC-32 result for " + year);
+
+      double hfc134aTotalKg = hfc134aResult.getDomestic().getValue().doubleValue()
+                              + hfc134aResult.getImport().getValue().doubleValue();
+      double hfc32TotalKg = hfc32Result.getDomestic().getValue().doubleValue();
+
+      double hfc134aTotalTco2e = hfc134aResult.getConsumption().getValue().doubleValue();
+      double hfc32TotalTco2e = hfc32Result.getConsumption().getValue().doubleValue();
+
+      double kgPercentDiff = Math.abs(hfc32TotalKg - hfc134aTotalKg)
+                           / Math.max(hfc32TotalKg, hfc134aTotalKg) * 100;
+      double tco2ePercentDiff = Math.abs(hfc32TotalTco2e - hfc134aTotalTco2e)
+                              / Math.max(hfc32TotalTco2e, hfc134aTotalTco2e) * 100;
+
+      assertTrue(kgPercentDiff < tco2ePercentDiff,
+          "Percentage difference in kg (" + kgPercentDiff + "%) should be smaller than "
+          + "percentage difference in tCO2e (" + tco2ePercentDiff + "%) in year " + year);
+    }
+  }
 }

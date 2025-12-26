@@ -565,4 +565,36 @@ public class ChangeLiveTests {
     assertEquals(separateVolumeMt, togetherVolumeMt, 1.0,
         "Together and separate consumption (import + domestic) should be within 1 mt at year 10");
   }
+
+  /**
+   * Test change with % current behaves identically to change with %.
+   * This validates that % current in change context calculates percentage relative to current year values.
+   */
+  @Test
+  public void testChangePercentCurrent() throws IOException {
+    String qtaPath = "../examples/change_percent_current.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    String scenarioName = "business as usual";
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
+    List<EngineResult> resultsList = results.collect(Collectors.toList());
+
+    EngineResult year1Result = LiveTestsUtil.getResult(resultsList.stream(), 1, "test", "test");
+    assertNotNull(year1Result, "Should have result for test/test in year 1");
+    assertEquals(100.0, year1Result.getDomestic().getValue().doubleValue(), 0.0001,
+        "Year 1 domestic should be 100 kg");
+
+    EngineResult year2Result = LiveTestsUtil.getResult(resultsList.stream(), 2, "test", "test");
+    assertNotNull(year2Result, "Should have result for test/test in year 2");
+    assertEquals(110.0, year2Result.getDomestic().getValue().doubleValue(), 0.0001,
+        "Year 2 domestic should be 110 kg (100 + 10% with % current)");
+
+    EngineResult year3Result = LiveTestsUtil.getResult(resultsList.stream(), 3, "test", "test");
+    assertNotNull(year3Result, "Should have result for test/test in year 3");
+    assertEquals(121.0, year3Result.getDomestic().getValue().doubleValue(), 0.0001,
+        "Year 3 domestic should be 121 kg (110 + 10% with % current, showing compounding)");
+    assertEquals("kg", year3Result.getDomestic().getUnits(),
+        "Domestic units should be kg");
+  }
 }
