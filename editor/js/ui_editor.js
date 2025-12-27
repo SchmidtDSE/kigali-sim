@@ -2869,7 +2869,10 @@ function initLimitCommandUi(itemObj, root, codeObj, context, streamUpdater) {
     new EngineNumber(1, "mt"),
     (x) => x.getValue(),
   );
-  setFieldValue(root.querySelector(".displacing-input"), itemObj, "", (x) =>
+  setFieldValue(root.querySelector(".displacing-type-input"), itemObj, "", (x) =>
+    x && x.getDisplacingType ? x.getDisplacingType() : "",
+  );
+  setFieldValue(root.querySelector(".displacing-target-input"), itemObj, "", (x) =>
     x && x.getDisplacing ? (x.getDisplacing() === null ? "" : x.getDisplacing()) : "",
   );
   setDuring(
@@ -2889,12 +2892,12 @@ function initLimitCommandUi(itemObj, root, codeObj, context, streamUpdater) {
   };
 
   const updateDisplacingOptions = () => {
-    const displacingSelect = root.querySelector(".displacing-input");
-    if (displacingSelect) {
+    const displacingTargetSelect = root.querySelector(".displacing-target-input");
+    if (displacingTargetSelect) {
       const enabledStreams = streamUpdater.getEnabledStreamsForCurrentContext(
         codeObj, null, context,
       );
-      streamUpdater.updateStreamOptionStates(displacingSelect, enabledStreams);
+      streamUpdater.updateStreamOptionStates(displacingTargetSelect, enabledStreams);
     }
   };
 
@@ -2919,10 +2922,12 @@ function readLimitCommandUi(root) {
     root.querySelector(".limit-amount-input"),
     root.querySelector(".limit-units-input"),
   );
-  const displacingRaw = getFieldValue(root.querySelector(".displacing-input"));
-  const displacing = displacingRaw === "" ? null : displacingRaw;
+  const displacingTypeRaw = getFieldValue(root.querySelector(".displacing-type-input"));
+  const displacingType = displacingTypeRaw || "";
+  const displacingTargetRaw = getFieldValue(root.querySelector(".displacing-target-input"));
+  const displacingTarget = displacingTargetRaw === "" ? null : displacingTargetRaw;
   const duration = readDurationUi(root.querySelector(".duration-subcomponent"));
-  return new LimitCommand(limitType, target, amount, duration, displacing);
+  return new LimitCommand(limitType, target, amount, duration, displacingTarget, displacingType);
 }
 
 /**

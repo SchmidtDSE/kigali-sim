@@ -651,7 +651,7 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
    */
   visitLimitCommandAllYears(ctx) {
     const self = this;
-    return self._buildLimit(ctx, null, null);
+    return self._buildLimit(ctx, null, null, null, null, "");
   }
 
   /**
@@ -663,7 +663,7 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
   visitLimitCommandDisplacingAllYears(ctx) {
     const self = this;
     const displaceTarget = self._getStringWithoutQuotes(ctx.getChild(5).getText());
-    return self._buildLimit(ctx, null, displaceTarget);
+    return self._buildLimit(ctx, null, displaceTarget, null, null, "");
   }
 
   /**
@@ -675,7 +675,7 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
   visitLimitCommandDuration(ctx) {
     const self = this;
     const duration = ctx.duration.accept(self);
-    return self._buildLimit(ctx, duration, null);
+    return self._buildLimit(ctx, duration, null, null, null, "");
   }
 
   /**
@@ -688,7 +688,57 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
     const self = this;
     const duration = ctx.duration.accept(self);
     const displaceTarget = self._getStringWithoutQuotes(ctx.getChild(5).getText());
-    return self._buildLimit(ctx, duration, displaceTarget);
+    return self._buildLimit(ctx, duration, displaceTarget, null, null, "");
+  }
+
+  /**
+   * Visit a limit command with displacement by volume and all years duration.
+   *
+   * @param {Object} ctx - The parse tree node context.
+   * @returns {LimitCommand} New limit command instance.
+   */
+  visitLimitCommandDisplacingByVolumeAllYears(ctx) {
+    const self = this;
+    const displaceTarget = self._getStringWithoutQuotes(ctx.getChild(7).getText());
+    return self._buildLimit(ctx, null, displaceTarget, null, null, "by volume");
+  }
+
+  /**
+   * Visit a limit command with displacement by units and all years duration.
+   *
+   * @param {Object} ctx - The parse tree node context.
+   * @returns {LimitCommand} New limit command instance.
+   */
+  visitLimitCommandDisplacingByUnitsAllYears(ctx) {
+    const self = this;
+    const displaceTarget = self._getStringWithoutQuotes(ctx.getChild(7).getText());
+    return self._buildLimit(ctx, null, displaceTarget, null, null, "by units");
+  }
+
+  /**
+   * Visit a limit command with displacement by volume and duration.
+   *
+   * @param {Object} ctx - The parse tree node context.
+   * @returns {LimitCommand} New limit command instance.
+   */
+  visitLimitCommandDisplacingByVolumeDuration(ctx) {
+    const self = this;
+    const duration = ctx.duration.accept(self);
+    const displaceTarget = self._getStringWithoutQuotes(ctx.getChild(7).getText());
+    return self._buildLimit(ctx, duration, displaceTarget, null, null, "by volume");
+  }
+
+  /**
+   * Visit a limit command with displacement by units and duration.
+   *
+   * @param {Object} ctx - The parse tree node context.
+   * @returns {LimitCommand} New limit command instance.
+   */
+  visitLimitCommandDisplacingByUnitsDuration(ctx) {
+    const self = this;
+    const duration = ctx.duration.accept(self);
+    const displaceTarget = self._getStringWithoutQuotes(ctx.getChild(7).getText());
+    return self._buildLimit(ctx, duration, displaceTarget, null, null, "by units");
   }
 
   /**
@@ -1421,10 +1471,11 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
    * @param {string} displaceTarget - Displacing target.
    * @param {Function} targetGetter - Function to get the target.
    * @param {Function} valueGetter - Function to get the value.
+   * @param {string} displacingType - Type of displacement ("", "by volume", "by units").
    * @returns {LimitCommand} New limit command instance.
    * @private
    */
-  _buildLimit(ctx, duration, displaceTarget, targetGetter, valueGetter) {
+  _buildLimit(ctx, duration, displaceTarget, targetGetter, valueGetter, displacingType) {
     const self = this;
     const capType = ctx.getChild(0).getText();
 
@@ -1438,7 +1489,9 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
     }
     const value = valueGetter(ctx);
 
-    return new LimitCommand(capType, target, value, duration, displaceTarget);
+    const finalDisplacingType = displacingType || "";
+
+    return new LimitCommand(capType, target, value, duration, displaceTarget, finalDisplacingType);
   }
 
   /**
