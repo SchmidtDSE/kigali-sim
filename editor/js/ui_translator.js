@@ -97,6 +97,69 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
   }
 
   /**
+   * Visit a unit node and formats it by delegating to the appropriate child visitor.
+   *
+   * @param {Object} ctx - The parse tree node context.
+   * @returns {string} The formatted unit string.
+   */
+  visitUnit(ctx) {
+    const self = this;
+    return ctx.getChild(0).accept(self);
+  }
+
+  /**
+   * Visit a volume unit node and returns its text.
+   *
+   * @param {Object} ctx - The parse tree node context.
+   * @returns {string} The volume unit string (kg, mt, etc.).
+   */
+  visitVolumeUnit(ctx) {
+    const self = this;
+    return ctx.getText();
+  }
+
+  /**
+   * Visit a temporal unit node and returns its text.
+   *
+   * @param {Object} ctx - The parse tree node context.
+   * @returns {string} The temporal unit string (year, years, etc.).
+   */
+  visitTemporalUnit(ctx) {
+    const self = this;
+    return ctx.getText();
+  }
+
+  /**
+   * Visit a relative unit node and formats it with proper spacing.
+   *
+   * Handles percent variants: %, % prior year, % current year, % current.
+   * ANTLR's getText() concatenates tokens without spaces, so we reconstruct
+   * the proper format here.
+   *
+   * @param {Object} ctx - The parse tree node context.
+   * @returns {string} The properly formatted relative unit string.
+   */
+  visitRelativeUnit(ctx) {
+    const self = this;
+    const childCount = ctx.getChildCount();
+
+    if (childCount === 1) {
+      // Just "%"
+      return "%";
+    } else if (childCount === 2) {
+      // "% current"
+      return "% current";
+    } else if (childCount === 3) {
+      // "% prior year" or "% current year"
+      const secondToken = ctx.getChild(1).getText();
+      return "% " + secondToken + " year";
+    }
+
+    // Fallback to getText() for unknown cases
+    return ctx.getText();
+  }
+
+  /**
    * Visit a unit or ratio node and formats it appropriately.
    *
    * @param {Object} ctx - The parse tree node context.
@@ -105,10 +168,10 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
   visitUnitOrRatio(ctx) {
     const self = this;
     if (ctx.getChildCount() == 1) {
-      return ctx.getChild(0).getText();
+      return ctx.getChild(0).accept(self);
     } else {
-      const numerator = ctx.getChild(0).getText();
-      const denominator = ctx.getChild(2).getText();
+      const numerator = ctx.getChild(0).accept(self);
+      const denominator = ctx.getChild(2).accept(self);
 
       // Always use "/" format for consistency
       return numerator + " / " + denominator;
