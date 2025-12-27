@@ -74,6 +74,21 @@ First, you may notice that switching to units slightly increased overall consump
 
 Second, let's look closer at HFC-134a under the Permit scenario with the **Substances** and **Consumption** radio buttons selected. The combined import and domestic consumption doesn't go to 0 mt. That's because we specified a cap of 0 new units sold but we still have servicing. Try setting the consumption cap back to 0 mt and it will drop all the way.
 
+## Displacement Type Considerations
+
+When working with unit-based modeling, you may want to explicitly control how displacement operates. By default, `displacing` uses "equivalent" behavior—it preserves units when you specify in units, or volume when you specify in kg. However, you can override this:
+
+- Use `displacing by units` to always maintain equipment population, regardless of how consumption is specified
+- Use `displacing by volume` to always maintain substance mass, regardless of specification units
+
+In the Designer UI, you can select these options in the displacement type dropdown when configuring cap or floor limits. In the Advanced Editor, simply add `by volume` or `by units` after `displacing`:
+
+```qubectalk
+cap sales to 0 units displacing by units "R-600a" during years 2035 to onwards
+```
+
+This explicit control is particularly valuable when you're mixing unit-based and volume-based specifications within the same model. For example, if you want to ensure equipment population remains constant even when some streams are specified in kg, use `displacing by units`.
+
 ## Conclusion
 
 You've successfully demonstrated equipment unit-based modeling as an alternative to volume specification. This tutorial showed how:

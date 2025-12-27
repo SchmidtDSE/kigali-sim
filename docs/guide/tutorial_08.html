@@ -23,6 +23,7 @@
           <li><a href="#converting-to-unit-based-specification">Converting to Unit-Based Specification</a></li>
           <li><a href="#updating-policy-to-use-units">Updating Policy to Use Units</a></li>
           <li><a href="#observing-the-results">Observing the Results</a></li>
+          <li><a href="#displacement-type-considerations">Displacement Type Considerations</a></li>
           <li><a href="#conclusion">Conclusion</a></li>
           <li><a href="#next-steps">Next Steps</a></li>
         </ul>
@@ -138,6 +139,29 @@ end policy</code></pre>
 
         <p>
           Before we wrap up, we are displacing from HFC-134a to R-600a and it is worth discussing how calculations work when operating across multiple substances. When using volume-based caps (0 kg), we are determining how much volume of HFC-134a is lost and then translating that to the same number of kilograms of volume in R-600a. However, when we use units-based caps (0 units), we are determining how many new units of equipment are lost in HFC-134a and then adding that number of units to R-600a. The former doesn't result in the same number of units lost in HFC-134a being added to R-600a just as the later doesn't result in the same number of kilograms lost being added to R-600a. This is because their equipment initial charges are different! In other words, when doing calculations in units, units are translated. However, when doing calculations in volumes (kg or mt), volumes are translated.
+        </p>
+      </section>
+
+      <section id="displacement-type-considerations">
+        <h2>Displacement Type Considerations</h2>
+
+        <p>
+          When working with unit-based modeling, you may want to explicitly control how displacement operates. By default, <code>displacing</code> uses "equivalent" behavior—it preserves units when you specify in units, or volume when you specify in kg. However, you can override this:
+        </p>
+
+        <ul>
+          <li>Use <code>displacing by units</code> to always maintain equipment population, regardless of how consumption is specified</li>
+          <li>Use <code>displacing by volume</code> to always maintain substance mass, regardless of specification units</li>
+        </ul>
+
+        <p>
+          In the Designer UI, you can select these options in the displacement type dropdown when configuring cap or floor limits. In the Advanced Editor, simply add <code>by volume</code> or <code>by units</code> after <code>displacing</code>:
+        </p>
+
+        <pre><code class="language-qubectalk">cap sales to 0 units displacing by units "R-600a" during years 2035 to onwards</code></pre>
+
+        <p>
+          This explicit control is particularly valuable when you're mixing unit-based and volume-based specifications within the same model. For example, if you want to ensure equipment population remains constant even when some streams are specified in kg, use <code>displacing by units</code>.
         </p>
       </section>
 
