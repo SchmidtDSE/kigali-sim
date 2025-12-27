@@ -541,7 +541,8 @@ public class SingleThreadEngineTest {
         "domestic",
         new EngineNumber(BigDecimal.valueOf(5), "units"),
         null,
-        "sub2"
+        "sub2",
+        org.kigalisim.lang.operation.CapOperation.LimitDisplacementType.EQUIVALENT
     );
 
     // Check sub1 was capped: 5 units * 10 kg/unit + recharge
@@ -626,7 +627,8 @@ public class SingleThreadEngineTest {
         "domestic",
         new EngineNumber(BigDecimal.valueOf(10), "units"),
         null,
-        "sub2"
+        "sub2",
+        org.kigalisim.lang.operation.FloorOperation.LimitDisplacementType.EQUIVALENT
     );
 
     // Check sub1 was floored: 10 units * 10 kg/unit + recharge

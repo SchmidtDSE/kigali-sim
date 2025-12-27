@@ -22,7 +22,13 @@ Commands are the executable statements within QubecTalk stanzas that define subs
 
 **Purpose:** Limits consumption to specified levels, optionally with displacement to alternative substances.
 
-**Syntax:** `cap streamName to amount [displacing "substanceName"] during years startYear to endYear`
+**Syntax:**
+```
+cap streamName to amount during years startYear to endYear
+cap streamName to amount displacing "substanceName"|stream during years startYear to endYear
+cap streamName to amount displacing by volume "substanceName"|stream during years startYear to endYear
+cap streamName to amount displacing by units "substanceName"|stream during years startYear to endYear
+```
 
 **Examples:**
 ```qubectalk
@@ -30,6 +36,30 @@ cap sales to 80% during years 2027 to 2030
 cap domestic to 0 mt displacing "R-600a" during years 2031 to onwards
 cap import to 50% during years 2028 to 2032
 ```
+
+### Displacement Types
+
+When using displacement, you can control how the displaced demand is calculated:
+
+- **displacing** - Equivalent displacement (default): maintains the same quantity in the units last specified. If last value was in kg, displaces by kg. If last value was in units, displaces by units.
+- **displacing by volume** - Volume-based displacement: always displaces by substance mass (kg), converting from units if necessary using initial charge values. May result in different equipment counts.
+- **displacing by units** - Units-based displacement: always displaces by equipment units, converting from kg if necessary using initial charge values. Maintains equipment population.
+
+**Examples:**
+```qubectalk
+# Equivalent displacement (default behavior)
+cap sales to 80% displacing "R-600a" during years 2027 to 2030
+
+# Volume-based displacement (always use kg, regardless of spec)
+cap sales to 50 units displacing by volume "R-600a" during years 2027 to 2030
+# Result: 50 units × 1 kg/unit = 50 kg displaced to R-600a
+
+# Units-based displacement (always use units, regardless of spec)
+cap sales to 100 kg displacing by units "R-600a" during years 2027 to 2030
+# Result: 100 kg ÷ 1 kg/unit = 100 units displaced to R-600a
+```
+
+**Note:** When using `displacing by volume`, total substance mass is preserved but equipment counts may change. When using `displacing by units`, equipment population is preserved but substance mass may change. Use `displacing by units` when equipment tracking is critical (e.g., equipment bank management). Use `displacing by volume` when substance consumption limits are the primary concern.
 
 ## Change
 
@@ -89,13 +119,22 @@ equals 3 tCO2e / mt
 
 **Purpose:** Sets minimum consumption levels to prevent unrealistic reductions.
 
-**Syntax:** `floor streamName to amount during years startYear to endYear`
+**Syntax:**
+```
+floor streamName to amount during years startYear to endYear
+floor streamName to amount displacing "substanceName"|stream during years startYear to endYear
+floor streamName to amount displacing by volume "substanceName"|stream during years startYear to endYear
+floor streamName to amount displacing by units "substanceName"|stream during years startYear to endYear
+```
 
 **Examples:**
 ```qubectalk
 floor sales to 10% during years 2030 to onwards
 floor domestic to 5 mt during years 2025 to 2035
+floor import to 100 units displacing by units "R-600a" during years 2028 to 2032
 ```
+
+Floor supports the same displacement types as Cap. See [Cap](#cap) for detailed explanation of displacement behavior.
 
 ## Get
 

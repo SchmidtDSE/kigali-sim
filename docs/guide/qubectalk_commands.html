@@ -65,12 +65,40 @@ assume only recharge bank during years 3 to onwards</code></pre>
 
         <p><strong>Purpose:</strong> Limits consumption to specified levels, optionally with displacement to alternative substances.</p>
 
-        <p><strong>Syntax:</strong> <code>cap streamName to amount [displacing "substanceName"] during years startYear to endYear</code></p>
+        <p><strong>Syntax:</strong></p>
+        <pre><code class="language-qubectalk">cap streamName to amount during years startYear to endYear
+cap streamName to amount displacing "substanceName"|stream during years startYear to endYear
+cap streamName to amount displacing by volume "substanceName"|stream during years startYear to endYear
+cap streamName to amount displacing by units "substanceName"|stream during years startYear to endYear</code></pre>
 
         <p><strong>Examples:</strong></p>
         <pre><code class="language-qubectalk">cap sales to 80% during years 2027 to 2030
 cap domestic to 0 mt displacing "R-600a" during years 2031 to onwards
 cap import to 50% during years 2028 to 2032</code></pre>
+
+        <h3>Displacement Types</h3>
+
+        <p>When using displacement, you can control how the displaced demand is calculated:</p>
+
+        <ul>
+          <li><strong>displacing</strong> - Equivalent displacement (default): maintains the same quantity in the units last specified. If last value was in kg, displaces by kg. If last value was in units, displaces by units.</li>
+          <li><strong>displacing by volume</strong> - Volume-based displacement: always displaces by substance mass (kg), converting from units if necessary using initial charge values. May result in different equipment counts.</li>
+          <li><strong>displacing by units</strong> - Units-based displacement: always displaces by equipment units, converting from kg if necessary using initial charge values. Maintains equipment population.</li>
+        </ul>
+
+        <p><strong>Examples:</strong></p>
+        <pre><code class="language-qubectalk"># Equivalent displacement (default behavior)
+cap sales to 80% displacing "R-600a" during years 2027 to 2030
+
+# Volume-based displacement (always use kg, regardless of spec)
+cap sales to 50 units displacing by volume "R-600a" during years 2027 to 2030
+# Result: 50 units × 1 kg/unit = 50 kg displaced to R-600a
+
+# Units-based displacement (always use units, regardless of spec)
+cap sales to 100 kg displacing by units "R-600a" during years 2027 to 2030
+# Result: 100 kg ÷ 1 kg/unit = 100 units displaced to R-600a</code></pre>
+
+        <p><strong>Note:</strong> When using <code>displacing by volume</code>, total substance mass is preserved but equipment counts may change. When using <code>displacing by units</code>, equipment population is preserved but substance mass may change. Use <code>displacing by units</code> when equipment tracking is critical (e.g., equipment bank management). Use <code>displacing by volume</code> when substance consumption limits are the primary concern.</p>
       </section>
 
       <section id="change">
@@ -135,11 +163,18 @@ equals 3 tCO2e / mt</code></pre>
 
         <p><strong>Purpose:</strong> Sets minimum consumption levels to prevent unrealistic reductions.</p>
 
-        <p><strong>Syntax:</strong> <code>floor streamName to amount during years startYear to endYear</code></p>
+        <p><strong>Syntax:</strong></p>
+        <pre><code class="language-qubectalk">floor streamName to amount during years startYear to endYear
+floor streamName to amount displacing "substanceName"|stream during years startYear to endYear
+floor streamName to amount displacing by volume "substanceName"|stream during years startYear to endYear
+floor streamName to amount displacing by units "substanceName"|stream during years startYear to endYear</code></pre>
 
         <p><strong>Examples:</strong></p>
         <pre><code class="language-qubectalk">floor sales to 10% during years 2030 to onwards
-floor domestic to 5 mt during years 2025 to 2035</code></pre>
+floor domestic to 5 mt during years 2025 to 2035
+floor import to 100 units displacing by units "R-600a" during years 2028 to 2032</code></pre>
+
+        <p>Floor supports the same displacement types as Cap. See <a href="#cap">Cap</a> for detailed explanation of displacement behavior.</p>
       </section>
 
       <section id="get">

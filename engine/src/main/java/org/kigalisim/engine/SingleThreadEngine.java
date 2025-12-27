@@ -667,7 +667,8 @@ public class SingleThreadEngine implements Engine {
 
   @Override
   public void cap(String stream, EngineNumber amount, YearMatcher yearMatcher,
-      String displaceTarget) {
+      String displaceTarget,
+      org.kigalisim.lang.operation.CapOperation.LimitDisplacementType displacementType) {
     if (!getIsInRange(yearMatcher)) {
       return;
     }
@@ -678,12 +679,13 @@ public class SingleThreadEngine implements Engine {
       return;
     }
 
-    limitExecutor.executeCap(stream, amount, yearMatcher, displaceTarget);
+    limitExecutor.executeCap(stream, amount, yearMatcher, displaceTarget, displacementType);
   }
 
   @Override
   public void floor(String stream, EngineNumber amount, YearMatcher yearMatcher,
-      String displaceTarget) {
+      String displaceTarget,
+      org.kigalisim.lang.operation.FloorOperation.LimitDisplacementType displacementType) {
     if (!getIsInRange(yearMatcher)) {
       return;
     }
@@ -694,7 +696,7 @@ public class SingleThreadEngine implements Engine {
       return;
     }
 
-    limitExecutor.executeFloor(stream, amount, yearMatcher, displaceTarget);
+    limitExecutor.executeFloor(stream, amount, yearMatcher, displaceTarget, displacementType);
   }
 
   @Override

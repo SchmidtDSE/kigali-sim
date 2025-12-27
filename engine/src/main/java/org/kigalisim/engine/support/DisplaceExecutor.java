@@ -30,6 +30,7 @@ import org.kigalisim.engine.Engine;
 import org.kigalisim.engine.number.EngineNumber;
 import org.kigalisim.engine.number.UnitConverter;
 import org.kigalisim.engine.state.Scope;
+import org.kigalisim.lang.operation.CapOperation;
 
 /**
  * Executor for displacement operations in cap, floor, and recover commands.
@@ -77,10 +78,11 @@ public class DisplaceExecutor {
    * @param amount The amount used for the original operation (determines units vs volume mode)
    * @param changeAmount The actual change amount in kg (negative for reductions)
    * @param displaceTarget The target for displacement (stream name or substance name), or null
+   * @param displacementType The type of displacement (EQUIVALENT, BY_VOLUME, or BY_UNITS)
    * @throws IllegalArgumentException if attempting to displace stream to itself
    */
   public void execute(String stream, EngineNumber amount, BigDecimal changeAmount,
-      String displaceTarget) {
+      String displaceTarget, CapOperation.LimitDisplacementType displacementType) {
     // Early return if no displacement requested
     if (displaceTarget == null) {
       return;
@@ -97,11 +99,52 @@ public class DisplaceExecutor {
     // Handle automatic recycling addition before targeted displacement
     applyRecyclingBeforeDisplacement(stream, changeAmount, isStreamDisplacement);
 
-    // Apply displacement based on unit type
-    if (amount.hasEquipmentUnits()) {
+    // Determine displacement mode based on displacement type
+    boolean shouldUseUnitsDisplacement = determineDisplacementMode(
+        amount, displacementType, stream);
+
+    // Apply displacement based on determined mode
+    if (shouldUseUnitsDisplacement) {
       applyUnitsDisplacement(stream, changeAmount, displaceTarget, isStreamDisplacement);
     } else {
       applyVolumeDisplacement(stream, changeAmount, displaceTarget, isStreamDisplacement);
+    }
+  }
+
+  /**
+   * Determines whether to use units-based or volume-based displacement.
+   *
+   * <p>This method implements the core logic for displacement type handling:</p>
+   * <ul>
+   *   <li>EQUIVALENT: Use amount's units (existing contextual behavior)</li>
+   *   <li>BY_VOLUME: Always use volume displacement (kg)</li>
+   *   <li>BY_UNITS: Always use units displacement (equipment count)</li>
+   * </ul>
+   *
+   * @param amount The original amount from the cap/floor operation
+   * @param displacementType The type of displacement to perform
+   * @param stream The stream identifier for context
+   * @return True if units displacement should be used, false for volume displacement
+   */
+  private boolean determineDisplacementMode(EngineNumber amount,
+      CapOperation.LimitDisplacementType displacementType, String stream) {
+    if (displacementType == null) {
+      displacementType = CapOperation.LimitDisplacementType.EQUIVALENT;
+    }
+
+    switch (displacementType) {
+      case EQUIVALENT:
+        // Use the amount's units to determine mode (existing behavior)
+        return amount.hasEquipmentUnits();
+      case BY_VOLUME:
+        // Always use volume displacement
+        return false;
+      case BY_UNITS:
+        // Always use units displacement
+        return true;
+      default:
+        // Fallback to equivalent behavior
+        return amount.hasEquipmentUnits();
     }
   }
 

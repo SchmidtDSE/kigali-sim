@@ -75,6 +75,8 @@ public class CapDisplacingOperation implements Operation {
     YearMatcher yearMatcher = parsedDuring.buildYearMatcher(machine);
 
     Engine engine = machine.getEngine();
-    engine.cap(stream, result, yearMatcher, displaceTarget);
+    // Use EQUIVALENT for legacy displacing operations (backward compatibility)
+    engine.cap(stream, result, yearMatcher, displaceTarget,
+        CapOperation.LimitDisplacementType.EQUIVALENT);
   }
 }

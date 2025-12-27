@@ -75,6 +75,8 @@ public class FloorDisplacingOperation implements Operation {
     YearMatcher yearMatcher = parsedDuring.buildYearMatcher(machine);
 
     Engine engine = machine.getEngine();
-    engine.floor(stream, result, yearMatcher, displaceTarget);
+    // Use EQUIVALENT for legacy displacing operations (backward compatibility)
+    engine.floor(stream, result, yearMatcher, displaceTarget,
+        FloorOperation.LimitDisplacementType.EQUIVALENT);
   }
 }
