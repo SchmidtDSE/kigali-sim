@@ -14,6 +14,14 @@ Finally, we want to again express our gratitude for your feedback and time.
 
 The following changes have been adopted and released.
 
+### Displacement options
+
+**Status**: Released December 28, 2025
+
+**Classification**: Enhancement
+
+Added support for `displacing volume of` and `displacing units of` to give more control over how displacement should translate between substances (by kg or by ynits of equipment). See [#693](https://github.com/SchmidtDSE/kigali-sim/issues/693).
+
 ### Percent options
 
 **Status**: Released December 28, 2025
