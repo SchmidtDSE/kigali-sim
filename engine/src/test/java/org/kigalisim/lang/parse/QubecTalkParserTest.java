@@ -137,4 +137,249 @@ public class QubecTalkParserTest {
     assertTrue(result.getProgram().isPresent(), "Parse result should have a program");
   }
 
+  /**
+   * Test that parsing cap with "displacing by volume" works correctly.
+   */
+  @Test
+  public void testParseCapDisplacingByVolume() {
+    String code = """
+        start default
+
+        define application "Test"
+
+          uses substance "TestSub"
+            enable domestic
+            set domestic to 100 kg
+          end substance
+
+          uses substance "OtherSub"
+            enable domestic
+            set domestic to 0 kg
+          end substance
+
+        end application
+
+        end default
+
+        start policy "TestPolicy"
+
+        modify application "Test"
+
+          modify substance "TestSub"
+            cap sales to 50 kg displacing by volume "OtherSub"
+          end substance
+
+        end application
+
+        end policy
+
+        start simulations
+
+        simulate "test" from years 1 to 10
+
+        end simulations
+        """;
+    ParseResult result = parser.parse(code);
+
+    assertNotNull(result, "Parse result should not be null");
+    assertFalse(result.hasErrors(), "Parse result should not have errors for cap displacing by volume");
+    assertTrue(result.getProgram().isPresent(), "Parse result should have a program");
+  }
+
+  /**
+   * Test that parsing cap with "displacing by units" works correctly.
+   */
+  @Test
+  public void testParseCapDisplacingByUnits() {
+    String code = """
+        start default
+
+        define application "Test"
+
+          uses substance "TestSub"
+            enable domestic
+            set domestic to 100 kg
+          end substance
+
+          uses substance "OtherSub"
+            enable domestic
+            set domestic to 0 kg
+          end substance
+
+        end application
+
+        end default
+
+        start policy "TestPolicy"
+
+        modify application "Test"
+
+          modify substance "TestSub"
+            cap sales to 50 kg displacing by units "OtherSub"
+          end substance
+
+        end application
+
+        end policy
+
+        start simulations
+
+        simulate "test" from years 1 to 10
+
+        end simulations
+        """;
+    ParseResult result = parser.parse(code);
+
+    assertNotNull(result, "Parse result should not be null");
+    assertFalse(result.hasErrors(), "Parse result should not have errors for cap displacing by units");
+    assertTrue(result.getProgram().isPresent(), "Parse result should have a program");
+  }
+
+  /**
+   * Test that parsing floor with "displacing by volume" with duration works correctly.
+   */
+  @Test
+  public void testParseFloorDisplacingByVolumeDuration() {
+    String code = """
+        start default
+
+        define application "Test"
+
+          uses substance "TestSub"
+            enable domestic
+            set domestic to 100 kg
+          end substance
+
+          uses substance "OtherSub"
+            enable domestic
+            set domestic to 0 kg
+          end substance
+
+        end application
+
+        end default
+
+        start policy "TestPolicy"
+
+        modify application "Test"
+
+          modify substance "TestSub"
+            floor import to 50 mt displacing by volume domestic during years 3 to 5
+          end substance
+
+        end application
+
+        end policy
+
+        start simulations
+
+        simulate "test" from years 1 to 10
+
+        end simulations
+        """;
+    ParseResult result = parser.parse(code);
+
+    assertNotNull(result, "Parse result should not be null");
+    assertFalse(result.hasErrors(), "Parse result should not have errors for floor displacing by volume with duration");
+    assertTrue(result.getProgram().isPresent(), "Parse result should have a program");
+  }
+
+  /**
+   * Test that parsing cap with "displacing by units" with duration works correctly.
+   */
+  @Test
+  public void testParseCapDisplacingByUnitsDuration() {
+    String code = """
+        start default
+
+        define application "Test"
+
+          uses substance "TestSub"
+            enable domestic
+            set domestic to 100 kg
+          end substance
+
+          uses substance "OtherSub"
+            enable domestic
+            set domestic to 0 kg
+          end substance
+
+        end application
+
+        end default
+
+        start policy "TestPolicy"
+
+        modify application "Test"
+
+          modify substance "TestSub"
+            cap sales to 80 % displacing by units "R-600a" during years 3 to 5
+          end substance
+
+        end application
+
+        end policy
+
+        start simulations
+
+        simulate "test" from years 1 to 10
+
+        end simulations
+        """;
+    ParseResult result = parser.parse(code);
+
+    assertNotNull(result, "Parse result should not be null");
+    assertFalse(result.hasErrors(), "Parse result should not have errors for cap displacing by units with duration");
+    assertTrue(result.getProgram().isPresent(), "Parse result should have a program");
+  }
+
+  /**
+   * Test that existing "displacing" (without by volume/units) still parses correctly.
+   */
+  @Test
+  public void testParseCapDisplacingEquivalent() {
+    String code = """
+        start default
+
+        define application "Test"
+
+          uses substance "TestSub"
+            enable domestic
+            set domestic to 100 kg
+          end substance
+
+          uses substance "OtherSub"
+            enable domestic
+            set domestic to 0 kg
+          end substance
+
+        end application
+
+        end default
+
+        start policy "TestPolicy"
+
+        modify application "Test"
+
+          modify substance "TestSub"
+            cap sales to 50 kg displacing "OtherSub"
+          end substance
+
+        end application
+
+        end policy
+
+        start simulations
+
+        simulate "test" from years 1 to 10
+
+        end simulations
+        """;
+    ParseResult result = parser.parse(code);
+
+    assertNotNull(result, "Parse result should not be null");
+    assertFalse(result.hasErrors(), "Parse result should not have errors for legacy displacing syntax");
+    assertTrue(result.getProgram().isPresent(), "Parse result should have a program");
+  }
+
 }

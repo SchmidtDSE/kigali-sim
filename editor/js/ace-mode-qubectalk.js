@@ -14,7 +14,7 @@ ace.define("ace/mode/qubectalk", [
     const commandKeywords = "across|as|assume|at|by|cap|change|charge|current|" +
       "continued|during|enable|eol|floor|for|from|get|in|induction|initial|" +
       "modify|no|of|only|prior|recharge|recover|replace|replacement|retire|reuse|" +
-      "set|simulate|then|to|trials|using|with";
+      "set|simulate|then|to|trials|using|volume|with";
 
     const conditionalKeywords = "and|else|endif|if|or|xor";
 

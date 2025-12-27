@@ -1947,7 +1947,17 @@ class Substance {
 
       const displacing = limit.getDisplacing();
       if (displacing !== null && displacing !== undefined) {
-        pieces.push("displacing");
+        const displacingType = limit.getDisplacingType();
+
+        // Build the displacement clause with proper spacing
+        if (displacingType === "by volume") {
+          pieces.push("displacing by volume");
+        } else if (displacingType === "by units") {
+          pieces.push("displacing by units");
+        } else {
+          pieces.push("displacing");
+        }
+
         pieces.push('"' + displacing + '"');
       }
 

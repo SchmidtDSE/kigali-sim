@@ -698,6 +698,104 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
    * {@inheritDoc}
    */
   @Override
+  public Fragment visitLimitCommandDisplacingByVolumeAllYears(
+      QubecTalkParser.LimitCommandDisplacingByVolumeAllYearsContext ctx) {
+    String stream = applyStreamSugar(ctx.target.getText());
+    Operation valueOperation = visit(ctx.value).getOperation();
+    String displaceTarget = ctx.getChild(7).accept(this).getString();
+
+    Operation operation;
+    if (ctx.getText().startsWith("cap")) {
+      operation = new CapOperation(stream, valueOperation, displaceTarget,
+          CapOperation.LimitDisplacementType.BY_VOLUME);
+    } else if (ctx.getText().startsWith("floor")) {
+      operation = new FloorOperation(stream, valueOperation, displaceTarget,
+          FloorOperation.LimitDisplacementType.BY_VOLUME);
+    } else {
+      throw new RuntimeException("Unknown limit operation: expected 'cap' or 'floor'");
+    }
+
+    return new OperationFragment(operation);
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public Fragment visitLimitCommandDisplacingByUnitsAllYears(
+      QubecTalkParser.LimitCommandDisplacingByUnitsAllYearsContext ctx) {
+    String stream = applyStreamSugar(ctx.target.getText());
+    Operation valueOperation = visit(ctx.value).getOperation();
+    String displaceTarget = ctx.getChild(7).accept(this).getString();
+
+    Operation operation;
+    if (ctx.getText().startsWith("cap")) {
+      operation = new CapOperation(stream, valueOperation, displaceTarget,
+          CapOperation.LimitDisplacementType.BY_UNITS);
+    } else if (ctx.getText().startsWith("floor")) {
+      operation = new FloorOperation(stream, valueOperation, displaceTarget,
+          FloorOperation.LimitDisplacementType.BY_UNITS);
+    } else {
+      throw new RuntimeException("Unknown limit operation: expected 'cap' or 'floor'");
+    }
+
+    return new OperationFragment(operation);
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public Fragment visitLimitCommandDisplacingByVolumeDuration(
+      QubecTalkParser.LimitCommandDisplacingByVolumeDurationContext ctx) {
+    String stream = applyStreamSugar(ctx.target.getText());
+    Operation valueOperation = visit(ctx.value).getOperation();
+    ParsedDuring during = visit(ctx.duration).getDuring();
+    String displaceTarget = ctx.getChild(7).accept(this).getString();
+
+    Operation operation;
+    if (ctx.getText().startsWith("cap")) {
+      operation = new CapOperation(stream, valueOperation, displaceTarget, during,
+          CapOperation.LimitDisplacementType.BY_VOLUME);
+    } else if (ctx.getText().startsWith("floor")) {
+      operation = new FloorOperation(stream, valueOperation, displaceTarget, during,
+          FloorOperation.LimitDisplacementType.BY_VOLUME);
+    } else {
+      throw new RuntimeException("Unknown limit operation: expected 'cap' or 'floor'");
+    }
+
+    return new OperationFragment(operation);
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public Fragment visitLimitCommandDisplacingByUnitsDuration(
+      QubecTalkParser.LimitCommandDisplacingByUnitsDurationContext ctx) {
+    String stream = applyStreamSugar(ctx.target.getText());
+    Operation valueOperation = visit(ctx.value).getOperation();
+    ParsedDuring during = visit(ctx.duration).getDuring();
+    String displaceTarget = ctx.getChild(7).accept(this).getString();
+
+    Operation operation;
+    if (ctx.getText().startsWith("cap")) {
+      operation = new CapOperation(stream, valueOperation, displaceTarget, during,
+          CapOperation.LimitDisplacementType.BY_UNITS);
+    } else if (ctx.getText().startsWith("floor")) {
+      operation = new FloorOperation(stream, valueOperation, displaceTarget, during,
+          FloorOperation.LimitDisplacementType.BY_UNITS);
+    } else {
+      throw new RuntimeException("Unknown limit operation: expected 'cap' or 'floor'");
+    }
+
+    return new OperationFragment(operation);
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
   public Fragment visitChangeAllYears(QubecTalkParser.ChangeAllYearsContext ctx) {
     String stream = applyStreamSugar(ctx.target.getText());
     Operation valueOperation = visit(ctx.value).getOperation();

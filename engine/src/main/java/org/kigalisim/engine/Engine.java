@@ -567,8 +567,10 @@ public interface Engine {
    * @param amount The maximum value to cap at
    * @param yearMatcher Matcher to determine if the change applies to current year
    * @param displaceTarget Optional target for displaced amount
+   * @param displacementType The type of displacement (EQUIVALENT, BY_VOLUME, or BY_UNITS)
    */
-  void cap(String stream, EngineNumber amount, YearMatcher yearMatcher, String displaceTarget);
+  void cap(String stream, EngineNumber amount, YearMatcher yearMatcher, String displaceTarget,
+      org.kigalisim.lang.operation.CapOperation.LimitDisplacementType displacementType);
 
   /**
    * Set a minimum floor value for a stream.
@@ -577,8 +579,10 @@ public interface Engine {
    * @param amount The minimum value to set as floor
    * @param yearMatcher Matcher to determine if the change applies to current year
    * @param displaceTarget Optional target for displaced amount
+   * @param displacementType The type of displacement (EQUIVALENT, BY_VOLUME, or BY_UNITS)
    */
-  void floor(String stream, EngineNumber amount, YearMatcher yearMatcher, String displaceTarget);
+  void floor(String stream, EngineNumber amount, YearMatcher yearMatcher, String displaceTarget,
+      org.kigalisim.lang.operation.FloorOperation.LimitDisplacementType displacementType);
 
   /**
    * Replace an amount from one substance with another.
