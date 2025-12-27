@@ -163,6 +163,6 @@ public class CapOperation implements Operation {
     YearMatcher yearMatcher = parsedDuring.buildYearMatcher(machine);
 
     Engine engine = machine.getEngine();
-    engine.cap(stream, result, yearMatcher, displaceTarget.orElse(null));
+    engine.cap(stream, result, yearMatcher, displaceTarget.orElse(null), displacementType);
   }
 }

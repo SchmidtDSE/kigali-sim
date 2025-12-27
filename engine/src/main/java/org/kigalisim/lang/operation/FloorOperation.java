@@ -163,6 +163,6 @@ public class FloorOperation implements Operation {
     YearMatcher yearMatcher = parsedDuring.buildYearMatcher(machine);
 
     Engine engine = machine.getEngine();
-    engine.floor(stream, result, yearMatcher, displaceTarget.orElse(null));
+    engine.floor(stream, result, yearMatcher, displaceTarget.orElse(null), displacementType);
   }
 }

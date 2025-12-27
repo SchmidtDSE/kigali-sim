@@ -1,0 +1,56 @@
+# Example demonstrating default "displacing" (equivalent) behavior
+# This uses contextual displacement based on how the value was last specified
+
+start default
+
+  define application "Commercial Refrigeration"
+
+    uses substance "HFC-134a"
+      enable domestic
+      initial charge with 1 kg / unit for domestic
+      equals 1430 kgCO2e / kg
+      equals 1 kwh / unit
+      set sales to 100 kg during year 1
+      retire 5 % / year
+    end substance
+
+    uses substance "R-600a"
+      enable domestic
+      initial charge with 1 kg / unit for domestic
+      equals 3 kgCO2e / kg
+      equals 1 kwh / unit
+      set sales to 1 kg during year 1
+      retire 5 % / year
+    end substance
+
+  end application
+
+end default
+
+
+start policy "Cap with Equivalent Displacement"
+
+  modify application "Commercial Refrigeration"
+
+    modify substance "HFC-134a"
+      # Cap sales to 50 kg
+      # Since last specified in kg, displacing uses volume (kg)
+      # This is the same as "displacing by volume"
+      cap sales to 50 kg displacing "R-600a" during years 2 to 5
+    end substance
+
+  end application
+
+end policy
+
+
+start simulations
+
+  simulate "Business as Usual"
+  from years 1 to 5
+
+  simulate "With Equivalent Displacement"
+    using "Cap with Equivalent Displacement"
+  from years 1 to 5
+
+end simulations
