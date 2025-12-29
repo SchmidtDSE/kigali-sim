@@ -75,7 +75,7 @@
         <ul>
           <li>Click <strong>Add Policy</strong>. Name it "Sales Permit". Then, select <strong>Domestic Refrigeration</strong> as the application and <strong>HFC-134a</strong> as the substance.</li>
           <li>Go to the <strong>Limit</strong> tab within your HFC-134a policy configuration and click <strong>Add Limit</strong>. Then, <strong>Cap</strong> all sales to 85% (or equivalently <strong>85% prior year</strong>) during <strong>years 2029 to 2034</strong>. Note that percentage caps and floors are relative to the prior year's value. You can make this explicit by using <code>% prior year</code> instead of <code>%</code>.</li>
-          <li><strong>Displacing</strong> means that the demand lost from HFC-134a is then sent to another stream or substance. In this case, let's have it go to <strong>R-600a</strong> instead. Leave the displacement type as "displacing" for now—we'll discuss the other displacement options in a moment.</li>
+          <li><strong>Displacing</strong> means that the demand lost from HFC-134a is then sent to another stream or substance. In this case, let's have it go to <strong>R-600a</strong> instead. Leave the displacement type as "displacing" for now. We'll discuss the other displacement options in a moment!</li>
           <li>Click <strong>Add Limit</strong> again. Set <strong>Cap</strong> on sales to 0 kg displacing R-600a during <strong>years 2035 to onwards</strong>. This will conclude the phase-out.</li>
           <li>Click <strong>Finish</strong> to finish the policy</li>
         </ul>
@@ -180,7 +180,11 @@
         </p>
 
         <p>
-          As a teaser for later, you might notice that the equipment count is higher in the permit case than BAU. This is because we are assuming displaced volumes of substance. As the initial charge for R-600a is lower than HFC-134a, that results in more equipment. Depending on what you assume economically, this might be incorrect. However, we can model with displaced units of equipment instead, a topic we will see very soon in <a href="/guide/tutorial_08.html">Tutorial 8</a>.
+          As a teaser for later, you might notice that the equipment count is higher in the permit case than BAU. This is because we are assuming displaced volumes of substance. As the initial charge for R-600a is lower than HFC-134a, that results in more equipment. Depending on what you assume economically, this might be incorrect.
+        </p>
+
+        <p>
+          We will investigate this topic in more detail in <a href="/guide/tutorial_08.html">Tutorial 8</a> but you can modify this behavior already if you would like. When we used "displacing" in our permitting policy, we relied on default "equivalent" behavior that matches whatever units were last used. As we are working in kg and mt right now, this used "displacing by volume" in the change tab. Switching to "displacing by units" in that dropdown allows you to diplace equivalent equipment population rather than substance volumes.
         </p>
       </section>
 
@@ -208,10 +212,6 @@
 
       <section id="next-steps">
         <h2>Next Steps</h2>
-
-        <p>
-          <strong>Understanding Displacement Types</strong>: When we used "displacing" in our permitting policy, we relied on default "equivalent" behavior that matches whatever units were last used. In Tutorial 8, you'll learn about explicit displacement types. Specifically, changing to "displacing by units" in the dropdown allows you to maintain equipment population rather than substance volumes—useful when equipment tracking is your primary concern.
-        </p>
 
         <p>
           <a href="/guide/tutorial_06.html">Tutorial 6</a> will add a recovery and recycling program targeting the same HFC-134a domestic refrigeration sector. You'll learn how recycling policies complement demand-side restrictions by providing alternative supply sources, and explore how multiple policies work together to achieve comprehensive overall outcomes.
