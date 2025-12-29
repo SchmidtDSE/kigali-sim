@@ -143,14 +143,15 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
     const self = this;
     const childCount = ctx.getChildCount();
 
-    if (childCount === 1) {
-      // Just "%"
+    const isDefault = childCount === 1;
+    const isExplicitCurrent = childCount === 2;
+    const isExplicitYear = childCount === 3;
+
+    if (isDefault) {
       return "%";
-    } else if (childCount === 2) {
-      // "% current"
+    } else if (isExplicitCurrent) {
       return "% current";
-    } else if (childCount === 3) {
-      // "% prior year" or "% current year"
+    } else if (isExplicitYear) {
       const secondToken = ctx.getChild(1).getText();
       return "% " + secondToken + " year";
     }

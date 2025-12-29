@@ -84,11 +84,7 @@ public class OverridingConverterStateGetter implements StateGetter {
    */
   @Override
   public EngineNumber getSubstanceConsumption() {
-    if (substanceConsumption.isPresent()) {
-      return substanceConsumption.get();
-    } else {
-      return innerGetter.getSubstanceConsumption();
-    }
+    return substanceConsumption.isPresent() ? substanceConsumption.get() : innerGetter.getSubstanceConsumption();
   }
 
   /**
@@ -107,11 +103,7 @@ public class OverridingConverterStateGetter implements StateGetter {
    */
   @Override
   public EngineNumber getEnergyIntensity() {
-    if (energyIntensity.isPresent()) {
-      return energyIntensity.get();
-    } else {
-      return innerGetter.getEnergyIntensity();
-    }
+    return energyIntensity.isPresent() ? energyIntensity.get() : innerGetter.getEnergyIntensity();
   }
 
   /**
@@ -137,11 +129,7 @@ public class OverridingConverterStateGetter implements StateGetter {
    */
   @Override
   public EngineNumber getAmortizedUnitVolume() {
-    if (amortizedUnitVolume.isPresent()) {
-      return amortizedUnitVolume.get();
-    } else {
-      return innerGetter.getAmortizedUnitVolume();
-    }
+    return amortizedUnitVolume.isPresent() ? amortizedUnitVolume.get() : innerGetter.getAmortizedUnitVolume();
   }
 
   /**
@@ -167,11 +155,7 @@ public class OverridingConverterStateGetter implements StateGetter {
    */
   @Override
   public EngineNumber getPopulation() {
-    if (population.isPresent()) {
-      return population.get();
-    } else {
-      return innerGetter.getPopulation();
-    }
+    return population.isPresent() ? population.get() : innerGetter.getPopulation();
   }
 
   /**
@@ -190,11 +174,7 @@ public class OverridingConverterStateGetter implements StateGetter {
    */
   @Override
   public EngineNumber getYearsElapsed() {
-    if (yearsElapsed.isPresent()) {
-      return yearsElapsed.get();
-    } else {
-      return innerGetter.getYearsElapsed();
-    }
+    return yearsElapsed.isPresent() ? yearsElapsed.get() : innerGetter.getYearsElapsed();
   }
 
   /**
@@ -222,11 +202,7 @@ public class OverridingConverterStateGetter implements StateGetter {
    */
   @Override
   public EngineNumber getGhgConsumption() {
-    if (totalConsumption.isPresent()) {
-      return totalConsumption.get();
-    } else {
-      return innerGetter.getGhgConsumption();
-    }
+    return totalConsumption.isPresent() ? totalConsumption.get() : innerGetter.getGhgConsumption();
   }
 
   /**
@@ -236,11 +212,7 @@ public class OverridingConverterStateGetter implements StateGetter {
    */
   @Override
   public EngineNumber getEnergyConsumption() {
-    if (energyConsumption.isPresent()) {
-      return energyConsumption.get();
-    } else {
-      return innerGetter.getEnergyConsumption();
-    }
+    return energyConsumption.isPresent() ? energyConsumption.get() : innerGetter.getEnergyConsumption();
   }
 
   /**
@@ -266,11 +238,7 @@ public class OverridingConverterStateGetter implements StateGetter {
    */
   @Override
   public EngineNumber getVolume() {
-    if (volume.isPresent()) {
-      return volume.get();
-    } else {
-      return innerGetter.getVolume();
-    }
+    return volume.isPresent() ? volume.get() : innerGetter.getVolume();
   }
 
   /**
@@ -289,11 +257,7 @@ public class OverridingConverterStateGetter implements StateGetter {
    */
   @Override
   public EngineNumber getAmortizedUnitConsumption() {
-    if (amortizedUnitConsumption.isPresent()) {
-      return amortizedUnitConsumption.get();
-    } else {
-      return innerGetter.getAmortizedUnitConsumption();
-    }
+    return amortizedUnitConsumption.isPresent() ? amortizedUnitConsumption.get() : innerGetter.getAmortizedUnitConsumption();
   }
 
   /**
@@ -313,11 +277,7 @@ public class OverridingConverterStateGetter implements StateGetter {
    */
   @Override
   public EngineNumber getPopulationChange(UnitConverter unitConverter) {
-    if (populationChange.isPresent()) {
-      return populationChange.get();
-    } else {
-      return innerGetter.getPopulationChange(unitConverter);
-    }
+    return populationChange.isPresent() ? populationChange.get() : innerGetter.getPopulationChange(unitConverter);
   }
 
   /**
@@ -336,11 +296,7 @@ public class OverridingConverterStateGetter implements StateGetter {
    */
   @Override
   public EngineNumber getPriorVolume() {
-    if (priorVolume.isPresent()) {
-      return priorVolume.get();
-    } else {
-      return innerGetter.getPriorVolume();
-    }
+    return priorVolume.isPresent() ? priorVolume.get() : innerGetter.getPriorVolume();
   }
 
   /**
@@ -359,11 +315,7 @@ public class OverridingConverterStateGetter implements StateGetter {
    */
   @Override
   public EngineNumber getPriorGhgConsumption() {
-    if (priorGhgConsumption.isPresent()) {
-      return priorGhgConsumption.get();
-    } else {
-      return innerGetter.getPriorGhgConsumption();
-    }
+    return priorGhgConsumption.isPresent() ? priorGhgConsumption.get() : innerGetter.getPriorGhgConsumption();
   }
 
   /**
@@ -382,11 +334,7 @@ public class OverridingConverterStateGetter implements StateGetter {
    */
   @Override
   public EngineNumber getPriorPopulation() {
-    if (priorPopulation.isPresent()) {
-      return priorPopulation.get();
-    } else {
-      return innerGetter.getPriorPopulation();
-    }
+    return priorPopulation.isPresent() ? priorPopulation.get() : innerGetter.getPriorPopulation();
   }
 
   /**
@@ -405,10 +353,15 @@ public class OverridingConverterStateGetter implements StateGetter {
    */
   @Override
   public EngineNumber getPriorYearsElapsed() {
-    if (priorYearsElapsed.isPresent()) {
-      return priorYearsElapsed.get();
-    } else {
-      return innerGetter.getPriorYearsElapsed();
-    }
+    return priorYearsElapsed.isPresent() ? priorYearsElapsed.get() : innerGetter.getPriorYearsElapsed();
+  }
+
+  /**
+   * Check if prior volume has been set.
+   *
+   * @return True if prior volume is present, false otherwise
+   */
+  private boolean getHasPrior() {
+    return priorVolume.isPresent();
   }
 }

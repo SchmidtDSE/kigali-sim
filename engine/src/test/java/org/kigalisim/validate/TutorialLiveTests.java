@@ -194,10 +194,11 @@ public class TutorialLiveTests {
       double hfc32TotalTco2e = hfc32Result.getConsumption().getValue().doubleValue();
 
       // Calculate percentage differences
-      double kgPercentDiff = Math.abs(hfc32TotalKg - hfc134aTotalKg)
-                           / Math.max(hfc32TotalKg, hfc134aTotalKg) * 100;
-      double tco2ePercentDiff = Math.abs(hfc32TotalTco2e - hfc134aTotalTco2e)
-                              / Math.max(hfc32TotalTco2e, hfc134aTotalTco2e) * 100;
+      double maxKg = Math.max(hfc32TotalKg, hfc134aTotalKg);
+      double kgPercentDiff = Math.abs(hfc32TotalKg - hfc134aTotalKg) / maxKg * 100;
+
+      double maxTco2e = Math.max(hfc32TotalTco2e, hfc134aTotalTco2e);
+      double tco2ePercentDiff = Math.abs(hfc32TotalTco2e - hfc134aTotalTco2e) / maxTco2e * 100;
 
       assertTrue(kgPercentDiff < tco2ePercentDiff,
           "Percentage difference in kg (" + kgPercentDiff + "%) should be smaller than "
@@ -538,10 +539,11 @@ public class TutorialLiveTests {
       double hfc134aTotalTco2e = hfc134aResult.getConsumption().getValue().doubleValue();
       double hfc32TotalTco2e = hfc32Result.getConsumption().getValue().doubleValue();
 
-      double kgPercentDiff = Math.abs(hfc32TotalKg - hfc134aTotalKg)
-                           / Math.max(hfc32TotalKg, hfc134aTotalKg) * 100;
-      double tco2ePercentDiff = Math.abs(hfc32TotalTco2e - hfc134aTotalTco2e)
-                              / Math.max(hfc32TotalTco2e, hfc134aTotalTco2e) * 100;
+      double maxKg = Math.max(hfc32TotalKg, hfc134aTotalKg);
+      double kgPercentDiff = Math.abs(hfc32TotalKg - hfc134aTotalKg) / maxKg * 100;
+
+      double maxTco2e = Math.max(hfc32TotalTco2e, hfc134aTotalTco2e);
+      double tco2ePercentDiff = Math.abs(hfc32TotalTco2e - hfc134aTotalTco2e) / maxTco2e * 100;
 
       assertTrue(kgPercentDiff < tco2ePercentDiff,
           "Percentage difference in kg (" + kgPercentDiff + "%) should be smaller than "

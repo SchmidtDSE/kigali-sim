@@ -166,10 +166,8 @@ public class ConverterStateGetter implements StateGetter {
     SimulationState simulationState = engine.getStreamKeeper();
     UseKey scope = engine.getScope();
     EngineNumber priorValue = simulationState.getStream(scope, streamName, true);
-    if (priorValue == null) {
-      return currentValue;
-    }
-    return priorValue;
+    boolean hasPrior = priorValue != null;
+    return hasPrior ? priorValue : currentValue;
   }
 
   /**
