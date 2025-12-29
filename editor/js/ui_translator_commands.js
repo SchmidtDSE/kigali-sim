@@ -255,7 +255,7 @@ class LimitCommand {
     self._value = value;
     self._duration = duration;
     self._displacing = displacing;
-    self._displacingType = displacingType || "";
+    self._displacingType = displacingType;
   }
 
   /**

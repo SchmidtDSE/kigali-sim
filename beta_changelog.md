@@ -16,7 +16,7 @@ The following changes have been adopted and released.
 
 ### Displacement options
 
-**Status**: Released December 28, 2025
+**Status**: Released December 30, 2025
 
 **Classification**: Enhancement
 
@@ -24,7 +24,7 @@ Added support for `displacing volume of` and `displacing units of` to give more 
 
 ### Percent options
 
-**Status**: Released December 28, 2025
+**Status**: Released December 30, 2025
 
 **Classification**: Enhancement
 
@@ -32,7 +32,7 @@ Added support for `% prior year` and `% current` to give more control over what 
 
 ### Percent cap and floor from prior year
 
-**Status**: Released December 23, 2025
+**Status**: Released December 30, 2025
 
 **Classification**: Clarification
 
