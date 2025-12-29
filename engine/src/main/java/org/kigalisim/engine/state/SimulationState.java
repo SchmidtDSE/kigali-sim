@@ -699,7 +699,11 @@ public class SimulationState {
     snapshotStreams();
 
     for (String key : substances.keySet()) {
-      updateStreamPopulation(key);
+      String[] keyPieces = key.split("\t");
+      String application = keyPieces[0];
+      String substance = keyPieces[1];
+      SimpleUseKey useKey = new SimpleUseKey(application, substance);
+      updateStreamPopulation(useKey);
     }
 
     for (StreamParameterization parameterization : substances.values()) {
@@ -710,7 +714,11 @@ public class SimulationState {
     redistributeInductionFromSales();
 
     for (String key : substances.keySet()) {
-      resetStreamRecycling(key);
+      String[] keyPieces = key.split("\t");
+      String application = keyPieces[0];
+      String substance = keyPieces[1];
+      SimpleUseKey useKey = new SimpleUseKey(application, substance);
+      resetStreamRecycling(useKey);
     }
   }
 
@@ -741,14 +749,9 @@ public class SimulationState {
    * and newly added equipment (starting at age 1), weighted by their respective
    * population sizes.</p>
    *
-   * @param key The compound key identifying the substance-application pair (format: "application\tsubstance")
+   * @param useKey The key identifying the substance-application pair
    */
-  private void updateStreamPopulation(String key) {
-    String[] keyPieces = key.split("\t");
-    String application = keyPieces[0];
-    String substance = keyPieces[1];
-
-    SimpleUseKey useKey = new SimpleUseKey(application, substance);
+  private void updateStreamPopulation(UseKey useKey) {
     EngineNumber equipment = getStream(useKey, "equipment");
     setSimpleStream(useKey, "priorEquipment", equipment);
 
@@ -790,14 +793,9 @@ public class SimulationState {
    * substreams (recycleRecharge and recycleEol) and induction substreams
    * (inductionEol and inductionRecharge) to zero.</p>
    *
-   * @param key The compound key identifying the substance-application pair (format: "application\tsubstance")
+   * @param useKey The key identifying the substance-application pair
    */
-  private void resetStreamRecycling(String key) {
-    String[] keyPieces = key.split("\t");
-    String application = keyPieces[0];
-    String substance = keyPieces[1];
-
-    SimpleUseKey useKey = new SimpleUseKey(application, substance);
+  private void resetStreamRecycling(UseKey useKey) {
     setSimpleStream(useKey, "recycleRecharge", new EngineNumber(BigDecimal.ZERO, "kg"));
     setSimpleStream(useKey, "recycleEol", new EngineNumber(BigDecimal.ZERO, "kg"));
 
