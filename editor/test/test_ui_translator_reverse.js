@@ -77,7 +77,9 @@ function buildUiTranslatorReverseTests() {
     });
 
     QUnit.test("caps substances", function (assert) {
-      const command = new LimitCommand("cap", "domestic", new EngineNumber(5, "mt"), null, null);
+      const command = new LimitCommand(
+        "cap", "domestic", new EngineNumber(5, "mt"), null, null, "",
+      );
       const substance = createWithCommand("test", true, command);
       const code = substance.toCode(0);
       assert.notEqual(code.indexOf("cap domestic to 5 mt"), -1);
@@ -276,6 +278,7 @@ function buildUiTranslatorReverseTests() {
         new EngineNumber(5, "mt"),
         new YearMatcher(new ParsedYear(3), new ParsedYear(4)),
         "import",
+        "",
       );
       const substance = createWithCommands("test", true, [setVal, cap]);
       const code = substance.toCode(0);

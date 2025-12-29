@@ -23,6 +23,7 @@ import org.kigalisim.engine.state.Scope;
 import org.kigalisim.engine.state.SimulationState;
 import org.kigalisim.engine.state.UseKey;
 import org.kigalisim.engine.state.YearMatcher;
+import org.kigalisim.lang.operation.DisplacementType;
 import org.kigalisim.lang.operation.RecoverOperation.RecoveryStage;
 
 /**
@@ -570,7 +571,7 @@ public interface Engine {
    * @param displacementType The type of displacement (EQUIVALENT, BY_VOLUME, or BY_UNITS)
    */
   void cap(String stream, EngineNumber amount, YearMatcher yearMatcher, String displaceTarget,
-      org.kigalisim.lang.operation.CapOperation.LimitDisplacementType displacementType);
+      DisplacementType displacementType);
 
   /**
    * Set a minimum floor value for a stream.
@@ -582,7 +583,7 @@ public interface Engine {
    * @param displacementType The type of displacement (EQUIVALENT, BY_VOLUME, or BY_UNITS)
    */
   void floor(String stream, EngineNumber amount, YearMatcher yearMatcher, String displaceTarget,
-      org.kigalisim.lang.operation.FloorOperation.LimitDisplacementType displacementType);
+      DisplacementType displacementType);
 
   /**
    * Replace an amount from one substance with another.

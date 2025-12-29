@@ -1,0 +1,14 @@
+start default
+
+define application "Test"
+
+  uses substance "TestSub"
+    enable domestic
+    set domestic to 100 kg
+    enable import
+    recharge 5 % each year with 1 kg / unit
+  end substance
+
+end application
+
+end default

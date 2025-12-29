@@ -1,0 +1,13 @@
+start default
+
+define application "Test"
+
+  uses substance "TestSub"
+    enable domestic
+    enable import during year 2020
+    enable export during years 2020 to 2025
+  end substance
+
+end application
+
+end default

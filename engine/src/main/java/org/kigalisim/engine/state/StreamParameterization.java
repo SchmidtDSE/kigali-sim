@@ -661,17 +661,19 @@ public class StreamParameterization {
    * @param stream The name of the stream like "sales" or "import" in which to clear.
    */
   public void clearLastSpecifiedValue(String stream) {
-    if (stream.equals("sales")) {
-      lastSpecifiedValue.remove("sales");
-      lastSpecifiedValue.remove("import");
-      lastSpecifiedValue.remove("domestic");
-      setSalesIntentFreshlySet(false);
-    } else if (EngineSupportUtils.isSalesSubstream(stream)) {
-      lastSpecifiedValue.remove(stream);
-      lastSpecifiedValue.remove("sales");
-      setSalesIntentFreshlySet(false);
-    } else {
-      lastSpecifiedValue.remove(stream);
+    switch (stream) {
+      case "sales" -> {
+        lastSpecifiedValue.remove("sales");
+        lastSpecifiedValue.remove("import");
+        lastSpecifiedValue.remove("domestic");
+        setSalesIntentFreshlySet(false);
+      }
+      case "domestic", "import" -> {
+        lastSpecifiedValue.remove(stream);
+        lastSpecifiedValue.remove("sales");
+        setSalesIntentFreshlySet(false);
+      }
+      default -> lastSpecifiedValue.remove(stream);
     }
   }
 }

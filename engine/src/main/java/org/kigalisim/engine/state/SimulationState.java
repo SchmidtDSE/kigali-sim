@@ -694,87 +694,113 @@ public class SimulationState {
    * Increment the year, updating populations and resetting internal params.
    */
   public void incrementYear() {
-    // Increment the internal year counter
     currentYear += 1;
 
-    // Snapshot streams
-    priorStreams.clear();
-    for (String name : streams.keySet()) {
-      priorStreams.put(name, streams.get(name));
-    }
+    snapshotStreams();
 
-    // Move population and retired counts
     for (String key : substances.keySet()) {
       String[] keyPieces = key.split("\t");
       String application = keyPieces[0];
       String substance = keyPieces[1];
-
       SimpleUseKey useKey = new SimpleUseKey(application, substance);
-      EngineNumber equipment = getStream(useKey, "equipment");
-      setSimpleStream(useKey, "priorEquipment", equipment);
-
-      EngineNumber retired = getStream(useKey, "retired");
-      setSimpleStream(useKey, "priorRetired", retired);
-
-      // Calculate weighted average age for the new year
-      EngineNumber priorEquipmentValue = getStream(useKey, "priorEquipment");
-      EngineNumber currentEquipmentValue = getStream(useKey, "equipment");
-      EngineNumber currentAge = getStream(useKey, "age");
-
-      // Convert to units for calculation
-      EngineNumber priorEquipmentUnits = unitConverter.convert(priorEquipmentValue, "units");
-      EngineNumber currentEquipmentUnits = unitConverter.convert(currentEquipmentValue, "units");
-
-      // Calculate weights
-      BigDecimal priorAgeWeight = priorEquipmentUnits.getValue();
-      BigDecimal addedEquipment = currentEquipmentUnits.getValue().subtract(priorEquipmentUnits.getValue());
-      BigDecimal addedAgeWeight = addedEquipment.max(BigDecimal.ZERO); // limit to [0,]
-
-      // Calculate weighted ages
-      BigDecimal priorAgeYears = currentAge.getValue().add(BigDecimal.ONE); // age + 1 year
-      BigDecimal priorAgeWeighted = priorAgeYears.multiply(priorAgeWeight);
-      BigDecimal addedAgeWeighted = addedAgeWeight; // 1 year * weight
-
-      // Calculate new average age
-      BigDecimal totalWeight = priorAgeWeight.add(addedAgeWeight);
-      boolean isZero = totalWeight.compareTo(BigDecimal.ZERO) == 0;
-      BigDecimal newAge;
-      if (isZero) {
-        newAge = BigDecimal.ZERO; // Avoid division by zero
-      } else {
-        newAge = priorAgeWeighted.add(addedAgeWeighted).divide(totalWeight, MathContext.DECIMAL128);
-      }
-
-      setSimpleStream(useKey, "age", new EngineNumber(newAge, "years"));
+      updateStreamPopulation(useKey);
     }
 
-    // Reset state at timestep for all parameterizations
     for (StreamParameterization parameterization : substances.values()) {
       parameterization.resetStateAtTimestep();
     }
 
-    // Redistribute recycling back to sales streams before clearing to prevent cross-year deficit
     redistributeRecyclingToSales();
-
-    // Subtract induction from virgin streams before year transition
     redistributeInductionFromSales();
 
-    // Reset recycling streams at year boundary to prevent stale values
-    // from affecting subsequent cap operations
     for (String key : substances.keySet()) {
       String[] keyPieces = key.split("\t");
       String application = keyPieces[0];
       String substance = keyPieces[1];
-
       SimpleUseKey useKey = new SimpleUseKey(application, substance);
-      setSimpleStream(useKey, "recycleRecharge", new EngineNumber(BigDecimal.ZERO, "kg"));
-      setSimpleStream(useKey, "recycleEol", new EngineNumber(BigDecimal.ZERO, "kg"));
+      resetStreamRecycling(useKey);
+    }
+  }
 
-      // Reset induction streams at year boundary to prevent cross-year accumulation
-      setSimpleStream(useKey, "inductionEol", new EngineNumber(BigDecimal.ZERO, "kg"));
-      setSimpleStream(useKey, "inductionRecharge", new EngineNumber(BigDecimal.ZERO, "kg"));
+  /**
+   * Snapshot all current stream values to prior streams for next year reference.
+   *
+   * <p>This method preserves the current state of all streams before transitioning
+   * to a new year, allowing subsequent calculations to reference prior year values.</p>
+   */
+  private void snapshotStreams() {
+    priorStreams.clear();
+    for (String name : streams.keySet()) {
+      priorStreams.put(name, streams.get(name));
+    }
+  }
+
+  /**
+   * Update population and age streams for a substance-application pair.
+   *
+   * <p>This method performs year-end population bookkeeping by:
+   * <ul>
+   *   <li>Moving current equipment count to priorEquipment</li>
+   *   <li>Moving current retired count to priorRetired</li>
+   *   <li>Calculating weighted average age for the equipment population</li>
+   * </ul></p>
+   *
+   * <p>The age calculation accounts for both existing equipment (aging one year)
+   * and newly added equipment (starting at age 1), weighted by their respective
+   * population sizes.</p>
+   *
+   * @param useKey The key identifying the substance-application pair
+   */
+  private void updateStreamPopulation(UseKey useKey) {
+    EngineNumber equipment = getStream(useKey, "equipment");
+    setSimpleStream(useKey, "priorEquipment", equipment);
+
+    EngineNumber retired = getStream(useKey, "retired");
+    setSimpleStream(useKey, "priorRetired", retired);
+
+    EngineNumber priorEquipmentValue = getStream(useKey, "priorEquipment");
+    EngineNumber currentEquipmentValue = getStream(useKey, "equipment");
+    EngineNumber currentAge = getStream(useKey, "age");
+
+    EngineNumber priorEquipmentUnits = unitConverter.convert(priorEquipmentValue, "units");
+    EngineNumber currentEquipmentUnits = unitConverter.convert(currentEquipmentValue, "units");
+
+    BigDecimal priorAgeWeight = priorEquipmentUnits.getValue();
+    BigDecimal addedEquipment = currentEquipmentUnits.getValue().subtract(priorEquipmentUnits.getValue());
+    BigDecimal addedAgeWeight = addedEquipment.max(BigDecimal.ZERO);
+
+    BigDecimal priorAgeYears = currentAge.getValue().add(BigDecimal.ONE);
+    BigDecimal priorAgeWeighted = priorAgeYears.multiply(priorAgeWeight);
+    BigDecimal addedAgeWeighted = addedAgeWeight;
+
+    BigDecimal totalWeight = priorAgeWeight.add(addedAgeWeight);
+    boolean isZero = totalWeight.compareTo(BigDecimal.ZERO) == 0;
+    BigDecimal newAge;
+    if (isZero) {
+      newAge = BigDecimal.ZERO;
+    } else {
+      newAge = priorAgeWeighted.add(addedAgeWeighted).divide(totalWeight, MathContext.DECIMAL128);
     }
 
+    setSimpleStream(useKey, "age", new EngineNumber(newAge, "years"));
+  }
+
+  /**
+   * Reset recycling and induction streams to zero for year boundary.
+   *
+   * <p>This method prevents stale recycling values from affecting subsequent
+   * cap operations and cross-year accumulation by resetting both recycling
+   * substreams (recycleRecharge and recycleEol) and induction substreams
+   * (inductionEol and inductionRecharge) to zero.</p>
+   *
+   * @param useKey The key identifying the substance-application pair
+   */
+  private void resetStreamRecycling(UseKey useKey) {
+    setSimpleStream(useKey, "recycleRecharge", new EngineNumber(BigDecimal.ZERO, "kg"));
+    setSimpleStream(useKey, "recycleEol", new EngineNumber(BigDecimal.ZERO, "kg"));
+
+    setSimpleStream(useKey, "inductionEol", new EngineNumber(BigDecimal.ZERO, "kg"));
+    setSimpleStream(useKey, "inductionRecharge", new EngineNumber(BigDecimal.ZERO, "kg"));
   }
 
   /**
