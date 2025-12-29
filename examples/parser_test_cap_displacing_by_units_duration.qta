@@ -1,0 +1,35 @@
+start default
+
+define application "Test"
+
+  uses substance "TestSub"
+    enable domestic
+    set domestic to 100 kg
+  end substance
+
+  uses substance "OtherSub"
+    enable domestic
+    set domestic to 0 kg
+  end substance
+
+end application
+
+end default
+
+start policy "TestPolicy"
+
+modify application "Test"
+
+  modify substance "TestSub"
+    cap sales to 80 % displacing by units "R-600a" during years 3 to 5
+  end substance
+
+end application
+
+end policy
+
+start simulations
+
+simulate "test" from years 1 to 10
+
+end simulations

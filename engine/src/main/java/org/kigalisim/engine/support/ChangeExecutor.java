@@ -150,39 +150,76 @@ public class ChangeExecutor {
     }
 
     String units = amount.getUnits();
-    BigDecimal percentageValue = amount.getValue();
-    BigDecimal newTotalValue;
+    boolean isPriorYearBasis = units != null && units.contains("prioryear");
 
-    if (units != null && units.contains("prioryear")) {
-      EngineNumber currentValue = engine.getStream(stream, Optional.of(useKeyEffective), Optional.empty());
-      BigDecimal changeAmount = lastSpecified.getValue().multiply(percentageValue).divide(new BigDecimal("100"));
-      newTotalValue = currentValue.getValue().add(changeAmount);
-
-      EngineNumber newTotal = new EngineNumber(newTotalValue, lastSpecified.getUnits());
-      boolean subtractRecycling = "units".equals(lastSpecified.getUnits());
-      StreamUpdate update = new StreamUpdateBuilder()
-          .setName(stream)
-          .setValue(newTotal)
-          .setYearMatcher(Optional.ofNullable(yearMatcher))
-          .setSubtractRecycling(subtractRecycling)
-          .build();
-      engine.executeStreamUpdate(update);
-
-      simulationState.setLastSpecifiedValue(useKeyEffective, stream, lastSpecified);
+    if (isPriorYearBasis) {
+      applyPriorYearPercentageChange(config, lastSpecified);
     } else {
-      BigDecimal changeAmount = lastSpecified.getValue().multiply(percentageValue).divide(new BigDecimal("100"));
-      newTotalValue = lastSpecified.getValue().add(changeAmount);
-
-      EngineNumber newTotal = new EngineNumber(newTotalValue, lastSpecified.getUnits());
-      boolean subtractRecycling = "units".equals(lastSpecified.getUnits());
-      StreamUpdate update = new StreamUpdateBuilder()
-          .setName(stream)
-          .setValue(newTotal)
-          .setYearMatcher(Optional.ofNullable(yearMatcher))
-          .setSubtractRecycling(subtractRecycling)
-          .build();
-      engine.executeStreamUpdate(update);
+      applyStandardPercentageChange(config, lastSpecified);
     }
+  }
+
+  /**
+   * Apply percentage change based on prior year value.
+   *
+   * <p>Calculates the change amount from lastSpecified value but applies it to the current
+   * stream value. This preserves the original lastSpecified value for future calculations.</p>
+   *
+   * @param config The configuration containing all parameters for the change operation
+   * @param lastSpecified The last specified value for the stream
+   */
+  private void applyPriorYearPercentageChange(ChangeExecutorConfig config, EngineNumber lastSpecified) {
+    String stream = config.getStream();
+    EngineNumber amount = config.getAmount();
+    YearMatcher yearMatcher = config.getYearMatcher().orElse(null);
+    UseKey useKeyEffective = config.getUseKeyEffective();
+
+    EngineNumber currentValue = engine.getStream(stream, Optional.of(useKeyEffective), Optional.empty());
+    BigDecimal percentageValue = amount.getValue();
+    BigDecimal changeAmount = lastSpecified.getValue().multiply(percentageValue).divide(new BigDecimal("100"));
+    BigDecimal newTotalValue = currentValue.getValue().add(changeAmount);
+
+    EngineNumber newTotal = new EngineNumber(newTotalValue, lastSpecified.getUnits());
+    boolean subtractRecycling = "units".equals(lastSpecified.getUnits());
+    StreamUpdate update = new StreamUpdateBuilder()
+        .setName(stream)
+        .setValue(newTotal)
+        .setYearMatcher(Optional.ofNullable(yearMatcher))
+        .setSubtractRecycling(subtractRecycling)
+        .build();
+    engine.executeStreamUpdate(update);
+
+    SimulationState simulationState = engine.getStreamKeeper();
+    simulationState.setLastSpecifiedValue(useKeyEffective, stream, lastSpecified);
+  }
+
+  /**
+   * Apply percentage change based on last specified value.
+   *
+   * <p>Calculates the change amount from lastSpecified value and applies it to that same value,
+   * updating the stream with the new total. The updated value becomes the new lastSpecified.</p>
+   *
+   * @param config The configuration containing all parameters for the change operation
+   * @param lastSpecified The last specified value for the stream
+   */
+  private void applyStandardPercentageChange(ChangeExecutorConfig config, EngineNumber lastSpecified) {
+    String stream = config.getStream();
+    EngineNumber amount = config.getAmount();
+    YearMatcher yearMatcher = config.getYearMatcher().orElse(null);
+
+    BigDecimal percentageValue = amount.getValue();
+    BigDecimal changeAmount = lastSpecified.getValue().multiply(percentageValue).divide(new BigDecimal("100"));
+    BigDecimal newTotalValue = lastSpecified.getValue().add(changeAmount);
+
+    EngineNumber newTotal = new EngineNumber(newTotalValue, lastSpecified.getUnits());
+    boolean subtractRecycling = "units".equals(lastSpecified.getUnits());
+    StreamUpdate update = new StreamUpdateBuilder()
+        .setName(stream)
+        .setValue(newTotal)
+        .setYearMatcher(Optional.ofNullable(yearMatcher))
+        .setSubtractRecycling(subtractRecycling)
+        .build();
+    engine.executeStreamUpdate(update);
   }
 
   /**

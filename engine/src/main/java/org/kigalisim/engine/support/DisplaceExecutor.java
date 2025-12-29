@@ -30,7 +30,7 @@ import org.kigalisim.engine.Engine;
 import org.kigalisim.engine.number.EngineNumber;
 import org.kigalisim.engine.number.UnitConverter;
 import org.kigalisim.engine.state.Scope;
-import org.kigalisim.lang.operation.CapOperation;
+import org.kigalisim.lang.operation.DisplacementType;
 
 /**
  * Executor for displacement operations in cap, floor, and recover commands.
@@ -82,7 +82,7 @@ public class DisplaceExecutor {
    * @throws IllegalArgumentException if attempting to displace stream to itself
    */
   public void execute(String stream, EngineNumber amount, BigDecimal changeAmount,
-      String displaceTarget, CapOperation.LimitDisplacementType displacementType) {
+      String displaceTarget, DisplacementType displacementType) {
     // Early return if no displacement requested
     if (displaceTarget == null) {
       return;
@@ -127,25 +127,16 @@ public class DisplaceExecutor {
    * @return True if units displacement should be used, false for volume displacement
    */
   private boolean determineDisplacementMode(EngineNumber amount,
-      CapOperation.LimitDisplacementType displacementType, String stream) {
+      DisplacementType displacementType, String stream) {
     if (displacementType == null) {
-      displacementType = CapOperation.LimitDisplacementType.EQUIVALENT;
+      displacementType = DisplacementType.EQUIVALENT;
     }
 
-    switch (displacementType) {
-      case EQUIVALENT:
-        // Use the amount's units to determine mode (existing behavior)
-        return amount.hasEquipmentUnits();
-      case BY_VOLUME:
-        // Always use volume displacement
-        return false;
-      case BY_UNITS:
-        // Always use units displacement
-        return true;
-      default:
-        // Fallback to equivalent behavior
-        return amount.hasEquipmentUnits();
-    }
+    return switch (displacementType) {
+      case EQUIVALENT -> amount.hasEquipmentUnits();
+      case BY_VOLUME -> false;
+      case BY_UNITS -> true;
+    };
   }
 
   /**

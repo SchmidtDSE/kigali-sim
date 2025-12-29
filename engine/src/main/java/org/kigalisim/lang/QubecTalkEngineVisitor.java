@@ -32,6 +32,7 @@ import org.kigalisim.lang.operation.ChangeOperation;
 import org.kigalisim.lang.operation.ChangeUnitsOperation;
 import org.kigalisim.lang.operation.ConditionalOperation;
 import org.kigalisim.lang.operation.DefineVariableOperation;
+import org.kigalisim.lang.operation.DisplacementType;
 import org.kigalisim.lang.operation.DivisionOperation;
 import org.kigalisim.lang.operation.DrawNormalOperation;
 import org.kigalisim.lang.operation.DrawUniformOperation;
@@ -615,9 +616,9 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
     Operation valueOperation = visit(ctx.value).getOperation();
     Operation operation;
 
-    if (ctx.getText().startsWith("cap")) {
+    if (getIsCap(ctx.getText())) {
       operation = new CapOperation(stream, valueOperation);
-    } else if (ctx.getText().startsWith("floor")) {
+    } else if (getIsFloor(ctx.getText())) {
       operation = new FloorOperation(stream, valueOperation);
     } else {
       throw new RuntimeException("Unknown limit operation: expected 'cap' or 'floor'");
@@ -638,9 +639,9 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
 
     Operation operation;
 
-    if (ctx.getText().startsWith("cap")) {
+    if (getIsCap(ctx.getText())) {
       operation = new CapOperation(stream, valueOperation, displaceTarget);
-    } else if (ctx.getText().startsWith("floor")) {
+    } else if (getIsFloor(ctx.getText())) {
       operation = new FloorOperation(stream, valueOperation, displaceTarget);
     } else {
       throw new RuntimeException("Unknown limit operation: expected 'cap' or 'floor'");
@@ -659,9 +660,9 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
     ParsedDuring during = visit(ctx.duration).getDuring();
     Operation operation;
 
-    if (ctx.getText().startsWith("cap")) {
+    if (getIsCap(ctx.getText())) {
       operation = new CapOperation(stream, valueOperation, during);
-    } else if (ctx.getText().startsWith("floor")) {
+    } else if (getIsFloor(ctx.getText())) {
       operation = new FloorOperation(stream, valueOperation, during);
     } else {
       throw new RuntimeException("Unknown limit operation: expected 'cap' or 'floor'");
@@ -683,9 +684,9 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
 
     Operation operation;
 
-    if (ctx.getText().startsWith("cap")) {
+    if (getIsCap(ctx.getText())) {
       operation = new CapOperation(stream, valueOperation, displaceTarget, during);
-    } else if (ctx.getText().startsWith("floor")) {
+    } else if (getIsFloor(ctx.getText())) {
       operation = new FloorOperation(stream, valueOperation, displaceTarget, during);
     } else {
       throw new RuntimeException("Unknown limit operation: expected 'cap' or 'floor'");
@@ -705,12 +706,12 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
     String displaceTarget = ctx.getChild(7).accept(this).getString();
 
     Operation operation;
-    if (ctx.getText().startsWith("cap")) {
+    if (getIsCap(ctx.getText())) {
       operation = new CapOperation(stream, valueOperation, displaceTarget,
-          CapOperation.LimitDisplacementType.BY_VOLUME);
-    } else if (ctx.getText().startsWith("floor")) {
+          DisplacementType.BY_VOLUME);
+    } else if (getIsFloor(ctx.getText())) {
       operation = new FloorOperation(stream, valueOperation, displaceTarget,
-          FloorOperation.LimitDisplacementType.BY_VOLUME);
+          DisplacementType.BY_VOLUME);
     } else {
       throw new RuntimeException("Unknown limit operation: expected 'cap' or 'floor'");
     }
@@ -729,12 +730,12 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
     String displaceTarget = ctx.getChild(7).accept(this).getString();
 
     Operation operation;
-    if (ctx.getText().startsWith("cap")) {
+    if (getIsCap(ctx.getText())) {
       operation = new CapOperation(stream, valueOperation, displaceTarget,
-          CapOperation.LimitDisplacementType.BY_UNITS);
-    } else if (ctx.getText().startsWith("floor")) {
+          DisplacementType.BY_UNITS);
+    } else if (getIsFloor(ctx.getText())) {
       operation = new FloorOperation(stream, valueOperation, displaceTarget,
-          FloorOperation.LimitDisplacementType.BY_UNITS);
+          DisplacementType.BY_UNITS);
     } else {
       throw new RuntimeException("Unknown limit operation: expected 'cap' or 'floor'");
     }
@@ -754,12 +755,12 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
     String displaceTarget = ctx.getChild(7).accept(this).getString();
 
     Operation operation;
-    if (ctx.getText().startsWith("cap")) {
+    if (getIsCap(ctx.getText())) {
       operation = new CapOperation(stream, valueOperation, displaceTarget, during,
-          CapOperation.LimitDisplacementType.BY_VOLUME);
-    } else if (ctx.getText().startsWith("floor")) {
+          DisplacementType.BY_VOLUME);
+    } else if (getIsFloor(ctx.getText())) {
       operation = new FloorOperation(stream, valueOperation, displaceTarget, during,
-          FloorOperation.LimitDisplacementType.BY_VOLUME);
+          DisplacementType.BY_VOLUME);
     } else {
       throw new RuntimeException("Unknown limit operation: expected 'cap' or 'floor'");
     }
@@ -779,12 +780,12 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
     String displaceTarget = ctx.getChild(7).accept(this).getString();
 
     Operation operation;
-    if (ctx.getText().startsWith("cap")) {
+    if (getIsCap(ctx.getText())) {
       operation = new CapOperation(stream, valueOperation, displaceTarget, during,
-          CapOperation.LimitDisplacementType.BY_UNITS);
-    } else if (ctx.getText().startsWith("floor")) {
+          DisplacementType.BY_UNITS);
+    } else if (getIsFloor(ctx.getText())) {
       operation = new FloorOperation(stream, valueOperation, displaceTarget, during,
-          FloorOperation.LimitDisplacementType.BY_UNITS);
+          DisplacementType.BY_UNITS);
     } else {
       throw new RuntimeException("Unknown limit operation: expected 'cap' or 'floor'");
     }
@@ -1443,5 +1444,25 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
       case "continued" -> new OperationFragment(null);
       default -> throw new RuntimeException("Unknown assume mode: " + modeText);
     };
+  }
+
+  /**
+   * Check if text starts with "cap".
+   *
+   * @param text The text to check
+   * @return true if text starts with "cap", false otherwise
+   */
+  private boolean getIsCap(String text) {
+    return text.startsWith("cap");
+  }
+
+  /**
+   * Check if text starts with "floor".
+   *
+   * @param text The text to check
+   * @return true if text starts with "floor", false otherwise
+   */
+  private boolean getIsFloor(String text) {
+    return text.startsWith("floor");
   }
 }

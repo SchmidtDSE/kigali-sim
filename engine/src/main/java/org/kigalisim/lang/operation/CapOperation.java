@@ -22,23 +22,11 @@ import org.kigalisim.lang.time.ParsedDuring;
  */
 public class CapOperation implements Operation {
 
-  /**
-   * Enum representing the type of displacement.
-   */
-  public enum LimitDisplacementType {
-    /** Equivalent displacement - displaces based on context (volume if last specified as volume, units if units). */
-    EQUIVALENT,
-    /** By volume displacement - always convert to kg and displace by volume. */
-    BY_VOLUME,
-    /** By units displacement - always convert to units and displace by equipment count. */
-    BY_UNITS
-  }
-
   private final String stream;
   private final Operation valueOperation;
   private final Optional<String> displaceTarget;
   private final Optional<ParsedDuring> duringMaybe;
-  private final LimitDisplacementType displacementType;
+  private final DisplacementType displacementType;
 
   /**
    * Create a new CapOperation that applies to all years.
@@ -51,7 +39,7 @@ public class CapOperation implements Operation {
     this.valueOperation = valueOperation;
     this.displaceTarget = Optional.empty();
     duringMaybe = Optional.empty();
-    this.displacementType = LimitDisplacementType.EQUIVALENT;
+    this.displacementType = DisplacementType.EQUIVALENT;
   }
 
   /**
@@ -66,7 +54,7 @@ public class CapOperation implements Operation {
     this.valueOperation = valueOperation;
     this.displaceTarget = Optional.ofNullable(displaceTarget);
     duringMaybe = Optional.empty();
-    this.displacementType = LimitDisplacementType.EQUIVALENT;
+    this.displacementType = DisplacementType.EQUIVALENT;
   }
 
   /**
@@ -78,7 +66,7 @@ public class CapOperation implements Operation {
    * @param displacementType The type of displacement to use.
    */
   public CapOperation(String stream, Operation valueOperation, String displaceTarget,
-      LimitDisplacementType displacementType) {
+      DisplacementType displacementType) {
     this.stream = stream;
     this.valueOperation = valueOperation;
     this.displaceTarget = Optional.ofNullable(displaceTarget);
@@ -98,7 +86,7 @@ public class CapOperation implements Operation {
     this.valueOperation = valueOperation;
     this.displaceTarget = Optional.empty();
     duringMaybe = Optional.of(during);
-    this.displacementType = LimitDisplacementType.EQUIVALENT;
+    this.displacementType = DisplacementType.EQUIVALENT;
   }
 
   /**
@@ -115,7 +103,7 @@ public class CapOperation implements Operation {
     this.valueOperation = valueOperation;
     this.displaceTarget = Optional.ofNullable(displaceTarget);
     duringMaybe = Optional.of(during);
-    this.displacementType = LimitDisplacementType.EQUIVALENT;
+    this.displacementType = DisplacementType.EQUIVALENT;
   }
 
   /**
@@ -128,7 +116,7 @@ public class CapOperation implements Operation {
    * @param displacementType The type of displacement to use.
    */
   public CapOperation(String stream, Operation valueOperation, String displaceTarget,
-      ParsedDuring during, LimitDisplacementType displacementType) {
+      ParsedDuring during, DisplacementType displacementType) {
     this.stream = stream;
     this.valueOperation = valueOperation;
     this.displaceTarget = Optional.ofNullable(displaceTarget);
@@ -141,7 +129,7 @@ public class CapOperation implements Operation {
    *
    * @return The displacement type.
    */
-  public LimitDisplacementType getDisplacementType() {
+  public DisplacementType getDisplacementType() {
     return displacementType;
   }
 

@@ -37,8 +37,7 @@ import org.kigalisim.engine.recalc.StreamUpdateBuilder;
 import org.kigalisim.engine.state.Scope;
 import org.kigalisim.engine.state.SimulationState;
 import org.kigalisim.engine.state.YearMatcher;
-import org.kigalisim.lang.operation.CapOperation;
-import org.kigalisim.lang.operation.FloorOperation;
+import org.kigalisim.lang.operation.DisplacementType;
 
 /**
  * Executor for cap and floor limit operations on streams.
@@ -103,7 +102,7 @@ public class LimitExecutor {
    * @param displacementType The type of displacement (EQUIVALENT, BY_VOLUME, or BY_UNITS)
    */
   public void executeCap(String stream, EngineNumber amount, YearMatcher yearMatcher,
-      String displaceTarget, CapOperation.LimitDisplacementType displacementType) {
+      String displaceTarget, DisplacementType displacementType) {
     if (!EngineSupportUtils.getIsInRange(yearMatcher, engine.getYear())) {
       return;
     }
@@ -144,7 +143,7 @@ public class LimitExecutor {
    * @param displacementType The type of displacement (EQUIVALENT, BY_VOLUME, or BY_UNITS)
    */
   public void executeFloor(String stream, EngineNumber amount, YearMatcher yearMatcher,
-      String displaceTarget, FloorOperation.LimitDisplacementType displacementType) {
+      String displaceTarget, DisplacementType displacementType) {
     if (!EngineSupportUtils.getIsInRange(yearMatcher, engine.getYear())) {
       return;
     }
@@ -183,7 +182,7 @@ public class LimitExecutor {
    * @param displacementType The type of displacement (EQUIVALENT, BY_VOLUME, or BY_UNITS)
    */
   private void capWithPercent(String stream, EngineNumber amount, String displaceTarget,
-      CapOperation.LimitDisplacementType displacementType) {
+      DisplacementType displacementType) {
     UnitConverter unitConverter = EngineSupportUtils.createUnitConverterWithTotal(
         engine, stream);
     EngineNumber currentValueRaw = engine.getStream(stream);
@@ -260,7 +259,7 @@ public class LimitExecutor {
    * @param displacementType The type of displacement (EQUIVALENT, BY_VOLUME, or BY_UNITS)
    */
   private void capWithValue(String stream, EngineNumber amount, String displaceTarget,
-      CapOperation.LimitDisplacementType displacementType) {
+      DisplacementType displacementType) {
     UnitConverter unitConverter = EngineSupportUtils.createUnitConverterWithTotal(
         engine, stream);
     EngineNumber currentValueRaw = engine.getStream(stream);
@@ -313,10 +312,7 @@ public class LimitExecutor {
    * @param displacementType The type of displacement (EQUIVALENT, BY_VOLUME, or BY_UNITS)
    */
   private void floorWithPercent(String stream, EngineNumber amount, String displaceTarget,
-      FloorOperation.LimitDisplacementType displacementTypeFloor) {
-    // Convert FloorOperation.LimitDisplacementType to CapOperation.LimitDisplacementType
-    CapOperation.LimitDisplacementType displacementType =
-        convertFloorToCapDisplacementType(displacementTypeFloor);
+      DisplacementType displacementType) {
     UnitConverter unitConverter = EngineSupportUtils.createUnitConverterWithTotal(
         engine, stream);
     EngineNumber currentValueRaw = engine.getStream(stream);
@@ -393,10 +389,7 @@ public class LimitExecutor {
    * @param displacementType The type of displacement (EQUIVALENT, BY_VOLUME, or BY_UNITS)
    */
   private void floorWithValue(String stream, EngineNumber amount, String displaceTarget,
-      FloorOperation.LimitDisplacementType displacementTypeFloor) {
-    // Convert FloorOperation.LimitDisplacementType to CapOperation.LimitDisplacementType
-    CapOperation.LimitDisplacementType displacementType =
-        convertFloorToCapDisplacementType(displacementTypeFloor);
+      DisplacementType displacementType) {
     UnitConverter unitConverter = EngineSupportUtils.createUnitConverterWithTotal(
         engine, stream);
     EngineNumber currentValueRaw = engine.getStream(stream);
@@ -421,33 +414,6 @@ public class LimitExecutor {
       EngineNumber newInKg = engine.getStream(stream);
       BigDecimal changeInKg = newInKg.getValue().subtract(currentInKg.getValue());
       displaceExecutor.execute(stream, amount, changeInKg, displaceTarget, displacementType);
-    }
-  }
-
-  /**
-   * Converts FloorOperation.LimitDisplacementType to CapOperation.LimitDisplacementType.
-   *
-   * <p>Both enums have identical values (EQUIVALENT, BY_VOLUME, BY_UNITS), but are
-   * different types. This method performs the conversion to allow DisplaceExecutor to use
-   * a single enum type.</p>
-   *
-   * @param floorType The FloorOperation displacement type
-   * @return The equivalent CapOperation displacement type
-   */
-  private CapOperation.LimitDisplacementType convertFloorToCapDisplacementType(
-      FloorOperation.LimitDisplacementType floorType) {
-    if (floorType == null) {
-      return CapOperation.LimitDisplacementType.EQUIVALENT;
-    }
-
-    switch (floorType) {
-      case BY_VOLUME:
-        return CapOperation.LimitDisplacementType.BY_VOLUME;
-      case BY_UNITS:
-        return CapOperation.LimitDisplacementType.BY_UNITS;
-      case EQUIVALENT:
-      default:
-        return CapOperation.LimitDisplacementType.EQUIVALENT;
     }
   }
 

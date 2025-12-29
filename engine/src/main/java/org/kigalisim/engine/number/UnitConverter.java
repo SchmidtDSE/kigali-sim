@@ -253,8 +253,10 @@ public class UnitConverter {
    * @return True if the unit is any percent variant, false otherwise
    */
   private boolean isPercentUnit(String normalizedUnits) {
-    return "%".equals(normalizedUnits) || "%prioryear".equals(normalizedUnits)
-        || "%currentyear".equals(normalizedUnits) || "%current".equals(normalizedUnits);
+    return switch (normalizedUnits) {
+      case "%", "%prioryear", "%currentyear", "%current" -> true;
+      default -> false;
+    };
   }
 
   /**
