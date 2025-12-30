@@ -75,6 +75,7 @@ public class FloorDisplacingOperation implements Operation {
     YearMatcher yearMatcher = parsedDuring.buildYearMatcher(machine);
 
     Engine engine = machine.getEngine();
-    engine.floor(stream, result, yearMatcher, displaceTarget);
+    engine.floor(stream, result, yearMatcher, displaceTarget,
+        DisplacementType.EQUIVALENT);
   }
 }

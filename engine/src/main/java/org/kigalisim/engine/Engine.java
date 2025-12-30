@@ -23,11 +23,12 @@ import org.kigalisim.engine.state.Scope;
 import org.kigalisim.engine.state.SimulationState;
 import org.kigalisim.engine.state.UseKey;
 import org.kigalisim.engine.state.YearMatcher;
+import org.kigalisim.lang.operation.DisplacementType;
 import org.kigalisim.lang.operation.RecoverOperation.RecoveryStage;
 
 /**
  * Engine entry-point which maintains and updates simulation state.
- * 
+ *
  * <p>Coordinator which ensures the state of the simulation as accounted for by
  * {@link org.kigalisim.engine.state.SimulationState} by performing operations on that state within
  * a current scope, delegating to "Executor" and "Recalc" strategies.</p>
@@ -36,7 +37,7 @@ public interface Engine {
 
   /**
    * Get the starting year of the simulation.
-   * 
+   *
    * <p>Get the starting year of the simulation as defined in the simulation stanza or similar.
    * Actual execution will start at this value and increment one timestep (year) at a time until end
    * year such that commands outside this range will not run.</p>
@@ -47,7 +48,7 @@ public interface Engine {
 
   /**
    * Get the ending year of the simulation.
-   * 
+   *
    * <p>Get the starting year of the simulation as defined in the simulation stanza or similar.
    * Actual execution will end at this value, incrementing one timestep (year) at a time until end
    * year such that commands outside this range will not run.</p>
@@ -58,7 +59,7 @@ public interface Engine {
 
   /**
    * Get the scenario name.
-   * 
+   *
    * <p>Get the name of the scenario currently being run as defined in the input script or similar.
    * This is used to refer to the set of policy stanzas active within a simluation.</p>
    *
@@ -78,7 +79,7 @@ public interface Engine {
 
   /**
    * Get the trial number.
-   * 
+   *
    * <p>Get the Monte Carlo trial number being run. This is typically a one-indexed positive number
    * and, if no Monte Carlo is specified, is one.</p>
    *
@@ -88,7 +89,7 @@ public interface Engine {
 
   /**
    * Set the trial number.
-   * 
+   *
    * <p>Set the Monte Carlo trial number being run. This is typically a one-indexed positive number
    * and, if no Monte Carlo is specified, is one.</p>
    *
@@ -98,7 +99,7 @@ public interface Engine {
 
   /**
    * Set the stanza for the engine current scope.
-   * 
+   *
    * <p>Specify the stanza in which the engine is currently running and which can be used to
    * describe the current variable scope. Note that this may be used in some error reporting and
    * should match the input script or similar.</p>
@@ -120,7 +121,7 @@ public interface Engine {
 
   /**
    * Set the substance for the engine current scope.
-   * 
+   *
    * <p>Specify the substance that is currently being evaluated by the engine where a substance
    * may appear in multiple applications. Note that this is used in some error reporting and should
    * match the user specified name.</p>
@@ -133,7 +134,7 @@ public interface Engine {
 
   /**
    * Set the substance for the engine current scope with default validation behavior.
-   * 
+   *
    * <p>Specify the substance that is currently being evaluated by the engine where a substance
    * may appear in multiple applications. Note that this is used in some error reporting and should
    * match the user specified name.</p>
@@ -144,7 +145,7 @@ public interface Engine {
 
   /**
    * Get the engine's current scope.
-   * 
+   *
    * <p>Get information about the current "location" in which the Engine is performing
    * calculations. This specifically refers to the set of variables in scope where scope may indicate,
    * for example, which application the Engine is evaluating in order to determine the correct initial
@@ -156,7 +157,7 @@ public interface Engine {
 
   /**
    * Get the state getter for converter operations.
-   * 
+   *
    * <p>QubecTalk numbers have both a numeric value and a type such as kilograms. Many values
    * require conversion to alternative units like metric tonnes and some of those conversions such as
    * from number of units of equipment to tCO2e require information about equipment like charge
@@ -170,7 +171,7 @@ public interface Engine {
 
   /**
    * Get the unit converter for this engine.
-   * 
+   *
    * <p>QubecTalk numbers have both a numeric value and a type such as kilograms. Many values
    * require conversion to alternative units like metric tonnes. This retrieves an object which can be
    * used with this Engine for those conversions.</p>
@@ -202,7 +203,7 @@ public interface Engine {
 
   /**
    * Determine if the engine has reached its final year.
-   * 
+   *
    * <p>The simulation goes through one timestep (year) at a time from start year to end year and
    * is considered finished when reaching end year. This evaluates if that terminal state has been
    * reached.</p>
@@ -242,7 +243,7 @@ public interface Engine {
 
   /**
    * Get the stream value for a given application and substance key.
-   * 
+   *
    * <p>Get the current value of a stream where a stream is a type of stock in the stock and flow
    * model such as sales or equipment.</p>
    *
@@ -256,7 +257,7 @@ public interface Engine {
 
   /**
    * Get the stream value with default scope and no conversion.
-   * 
+   *
    * <p>Get the current value of a stream where a stream is a type of stock in the stock and flow
    * model such as sales or equipment. This gets the value of the stream automatically converted to
    * kilograms in the current Engine scope.</p>
@@ -268,7 +269,7 @@ public interface Engine {
 
   /**
    * Get the stream value without any conversion.
-   * 
+   *
    * <p>Get the current value of a stream where a stream is a type of stock in the stock and flow
    * model such as sales or equipment.</p>
    *
@@ -307,7 +308,7 @@ public interface Engine {
 
   /**
    * Get the initial charge value for a given stream.
-   * 
+   *
    * <p>Get the current initial charge in the current state for a given stream, typically a sales
    * stream like sales, import, export, domestic. This is looked up in the current scope.</p>
    *
@@ -318,7 +319,7 @@ public interface Engine {
 
   /**
    * Get the initial charge for a specific application and substance.
-   * 
+   *
    * <p>Get the current initial charge in the current state for a given stream, typically a sales
    * stream like sales, import, export, domestic.</p>
    *
@@ -331,7 +332,7 @@ public interface Engine {
 
   /**
    * Set the initial charge for a stream.
-   * 
+   *
    * <p>Set the initial charge to use for a stream in the current scope. This is typically a sales
    * stream like sales, import, export, domestic. This operation will only be applied if the year
    * matcher passes, otherwise a no-op.</p>
@@ -345,7 +346,7 @@ public interface Engine {
 
   /**
    * Get the recharge volume for the current application and substance.
-   * 
+   *
    * <p>Get the servicing volume (across all recharge commands) within the current scope in the
    * units last saved.</p>
    *
@@ -355,7 +356,7 @@ public interface Engine {
 
   /**
    * Get the recharge intensity for the current application and substance.
-   * 
+   *
    * <p>Get the servicing intensity (across all recharge commands) within the current scope in the
    * units last saved.</p>
    *
@@ -385,7 +386,7 @@ public interface Engine {
 
   /**
    * Set retirement rate for the current application and substance.
-   * 
+   *
    * <p>Set the retirement (also called) scrap rate within the current scope. This is the hazard
    * rate rate to use for retirement and can be specified in any units but are typically given in
    * percentages (probability). Note that these may also be the result of a stateful formula like for
@@ -399,7 +400,7 @@ public interface Engine {
 
   /**
    * Get the retirement rate for the current application and substance.
-   * 
+   *
    * <p>Get the current hazard rate for equipment retirment (also called scrap in some
    * communities).
    *
@@ -409,7 +410,7 @@ public interface Engine {
 
   /**
    * Set recycling parameters for the current application and substance.
-   * 
+   *
    * <p>Recycling allows for recovery of some amount of substance to be reused, potentially in
    * place of virgin material. However, this is controlled through an induction (induced demand)
    * parameter. Note that some may use recycling with 0% yield to model destruction in which substance
@@ -427,14 +428,14 @@ public interface Engine {
 
   /**
    * Set the induction rate for recycling operations.
-   * 
+   *
    * <p>This parameter allows for modeling induced demand, an economic effect in which increased
    * supply (in our case through recycling / secondary production) actually causes demand to also
    * increase such that one kg of secondary material does not fully reduce or offset one kg of virgin
    * production.</p>
-   * 
+   *
    * <div>Induction rate determines how recycled material affects virgin production:
-   * 
+   *
    *   <ul>
    *     <li>100% induction (default): Recycled material does not displace virgin material,
    *         adding to total supply (induced demand behavior)</li>
@@ -458,7 +459,7 @@ public interface Engine {
    * This is the recommended setting when users are uncertain about induction effects.</p>
    *
    * <div>Induction rate determines how recycled material affects virgin production:
-   * 
+   *
    *   <ul>
    *     <li>100% induction (default): Recycled material does not displace virgin material,
    *         adding to total supply (induced demand behavior)</li>
@@ -474,11 +475,11 @@ public interface Engine {
 
   /**
    * Set GHG equivalency (GWP - Global Warming Potential) for the current application and substance.
-   * 
+   *
    * <p>Set GHG equivalency (GWP - Global Warming Potential) for the current application and
    * substance as defined by the current scope. Will only execute if the year matcher matches the
    * current year. Otherwise, this is a no-op.</p>
-   * 
+   *
    * <p>Note that this is intended only for direct emissions though useres may calculate indirect
    * or secondary emissions through energy mix outside of Kigali Sim.</p>
    *
@@ -489,11 +490,11 @@ public interface Engine {
 
   /**
    * Get the GHG intensity (GWP - Global Warming Potential) associated with a substance.
-   * 
+   *
    * <p>Set GHG equivalency (GWP - Global Warming Potential) for the specified application and
    * substance (regradless of current scope). Will only execute if the year matcher matches the
    * current year. Otherwise, this is a no-op.</p>
-   * 
+   *
    * <p>Note that this is intended only for direct emissions though useres may calculate indirect
    * or secondary emissions through energy mix outside of Kigali Sim.</p>
    *
@@ -504,7 +505,7 @@ public interface Engine {
 
   /**
    * Retrieve the tCO2e intensity (GWP - Global Warming Potential) for the current application and substance.
-   * 
+   *
    * <p>Retrieve the primary GHG intensity (GWP) for the current application and substance where this value
    * is not expected to cover secondary or indirect emissions. That said, users may calculate those
    * additional emissions through energy mix data from outside Kigali Sim.</p>
@@ -515,7 +516,7 @@ public interface Engine {
 
   /**
    * Retrieve the tCO2e intensity (GWP - Global Warming Potential) for the given UseKey.
-   * 
+   *
    * <p>Retrieve the primary GHG intensity (GWP) for the given application and substance where this value
    * is not expected to cover secondary or indirect emissions. That said, users may calculate those
    * additional emissions through energy mix data from outside Kigali Sim.</p>
@@ -567,8 +568,10 @@ public interface Engine {
    * @param amount The maximum value to cap at
    * @param yearMatcher Matcher to determine if the change applies to current year
    * @param displaceTarget Optional target for displaced amount
+   * @param displacementType The type of displacement (EQUIVALENT, BY_VOLUME, or BY_UNITS)
    */
-  void cap(String stream, EngineNumber amount, YearMatcher yearMatcher, String displaceTarget);
+  void cap(String stream, EngineNumber amount, YearMatcher yearMatcher, String displaceTarget,
+      DisplacementType displacementType);
 
   /**
    * Set a minimum floor value for a stream.
@@ -577,8 +580,10 @@ public interface Engine {
    * @param amount The minimum value to set as floor
    * @param yearMatcher Matcher to determine if the change applies to current year
    * @param displaceTarget Optional target for displaced amount
+   * @param displacementType The type of displacement (EQUIVALENT, BY_VOLUME, or BY_UNITS)
    */
-  void floor(String stream, EngineNumber amount, YearMatcher yearMatcher, String displaceTarget);
+  void floor(String stream, EngineNumber amount, YearMatcher yearMatcher, String displaceTarget,
+      DisplacementType displacementType);
 
   /**
    * Replace an amount from one substance with another.

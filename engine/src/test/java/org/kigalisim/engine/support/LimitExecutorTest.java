@@ -12,6 +12,7 @@ import org.kigalisim.engine.number.EngineNumber;
 import org.kigalisim.engine.recalc.StreamUpdate;
 import org.kigalisim.engine.recalc.StreamUpdateBuilder;
 import org.kigalisim.engine.state.YearMatcher;
+import org.kigalisim.lang.operation.DisplacementType;
 
 /**
  * Unit tests for LimitExecutor class.
@@ -67,7 +68,7 @@ class LimitExecutorTest {
     EngineNumber capAmount = new EngineNumber(new BigDecimal("100"), "kg");
 
     // Act
-    limitExecutor.executeCap("domestic", capAmount, matcher, null);
+    limitExecutor.executeCap("domestic", capAmount, matcher, null, DisplacementType.EQUIVALENT);
 
     // Assert - should remain unchanged
     EngineNumber result = engine.getStream("domestic");
@@ -82,7 +83,7 @@ class LimitExecutorTest {
 
     // Act & Assert - equipment stream should be handled elsewhere
     assertThrows(IllegalStateException.class, () -> {
-      limitExecutor.executeCap("equipment", amount, matcher, null);
+      limitExecutor.executeCap("equipment", amount, matcher, null, DisplacementType.EQUIVALENT);
     });
   }
 
@@ -102,7 +103,7 @@ class LimitExecutorTest {
     EngineNumber capAmount = new EngineNumber(new BigDecimal("85"), "%"); // 85% of 1000 = 850
 
     // Act
-    limitExecutor.executeCap("domestic", capAmount, matcher, null);
+    limitExecutor.executeCap("domestic", capAmount, matcher, null, DisplacementType.EQUIVALENT);
 
     // Assert - should be capped to 850kg
     EngineNumber result = engine.getStream("domestic");
@@ -118,7 +119,7 @@ class LimitExecutorTest {
     EngineNumber capAmount = new EngineNumber(new BigDecimal("100"), "kg");
 
     // Act - cap at 100kg
-    limitExecutor.executeCap("domestic", capAmount, matcher, null);
+    limitExecutor.executeCap("domestic", capAmount, matcher, null, DisplacementType.EQUIVALENT);
 
     // Assert - should be capped to 100kg
     EngineNumber result = engine.getStream("domestic");
@@ -134,7 +135,7 @@ class LimitExecutorTest {
     EngineNumber floorAmount = new EngineNumber(new BigDecimal("100"), "kg");
 
     // Act
-    limitExecutor.executeFloor("domestic", floorAmount, matcher, null);
+    limitExecutor.executeFloor("domestic", floorAmount, matcher, null, DisplacementType.EQUIVALENT);
 
     // Assert - should remain unchanged
     EngineNumber result = engine.getStream("domestic");
@@ -149,7 +150,7 @@ class LimitExecutorTest {
 
     // Act & Assert - equipment stream should be handled elsewhere
     assertThrows(IllegalStateException.class, () -> {
-      limitExecutor.executeFloor("equipment", amount, matcher, null);
+      limitExecutor.executeFloor("equipment", amount, matcher, null, DisplacementType.EQUIVALENT);
     });
   }
 
@@ -169,7 +170,7 @@ class LimitExecutorTest {
     EngineNumber floorAmount = new EngineNumber(new BigDecimal("100"), "kg");
 
     // Act - floor at 100kg
-    limitExecutor.executeFloor("domestic", floorAmount, matcher, null);
+    limitExecutor.executeFloor("domestic", floorAmount, matcher, null, DisplacementType.EQUIVALENT);
 
     // Assert - should be raised to 100kg
     EngineNumber result = engine.getStream("domestic");
@@ -185,7 +186,7 @@ class LimitExecutorTest {
     EngineNumber capAmount = new EngineNumber(new BigDecimal("100"), "kg");
 
     // Act - cap at 100kg with displacement to R-600a
-    limitExecutor.executeCap("domestic", capAmount, matcher, "R-600a");
+    limitExecutor.executeCap("domestic", capAmount, matcher, "R-600a", DisplacementType.EQUIVALENT);
 
     // Assert - HFC-134a should be capped to 100kg
     EngineNumber hfcResult = engine.getStream("domestic");

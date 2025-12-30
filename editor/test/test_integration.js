@@ -1060,6 +1060,28 @@ function buildIntegrationTests() {
           assert.ok(newEquipmentR404A2035.getValue() > 0);
         },
       ]);
+
+    buildTest("tests % current units", "/examples/set_percent_current.qta", [
+      (result, assert) => {
+        const record = getResult(result, BAU_NAME, 2, 0, "test", "test");
+        const domestic = record.getDomestic();
+        // Year 2: 110 % current of 100 kg = 110 kg
+        assert.closeTo(domestic.getValue(), 110, 0.0001);
+        assert.deepEqual(domestic.getUnits(), "kg");
+      },
+    ]);
+
+    buildTest("tests % prior year units", "/examples/cap_percent_prior_year.qta", [
+      (result, assert) => {
+        const record = getResult(result, "cap_percent_prior_year", 3, 0, "test", "sub_a");
+        const domestic = record.getDomestic();
+        // Year 3: cap at 80% prior year (year 2 value)
+        // Year 2 value is 100 kg * 1.1 = 110 kg
+        // 80% of 110 kg = 88 kg
+        assert.closeTo(domestic.getValue(), 88, 0.0001);
+        assert.deepEqual(domestic.getUnits(), "kg");
+      },
+    ]);
     buildTest("runs minimal interpreter example", "/examples/minimal_interpreter.qta", [
       (result, assert) => {
         // Check year 1
@@ -1208,6 +1230,69 @@ function buildIntegrationTests() {
     ]);
 
     // kgCO2e integration tests
+    buildTest(
+      "tests displacing by units preserves equipment count",
+      "/examples/displacing_by_units.qta",
+      [
+        (result, assert) => {
+          // Verify simulation produces results for both scenarios
+          assert.ok(result.length > 0, "Should produce simulation results");
+
+          // Find results for both scenarios
+          const bauResults = result.filter((x) => x.getScenarioName() === "Business as Usual");
+          const dispResults = result.filter((x) =>
+            x.getScenarioName() === "With Units Displacement");
+
+          assert.ok(bauResults.length > 0, "Should have BAU results");
+          assert.ok(dispResults.length > 0, "Should have displacement results");
+        },
+        (result, assert) => {
+          // Year 2: Check displacement scenario caps HFC-134a to 50 kg
+          const dispHFC = result.find((x) =>
+            x.getScenarioName() === "With Units Displacement" &&
+            x.getYear() === 2 &&
+            x.getApplication() === "Commercial Refrigeration" &&
+            x.getSubstance() === "HFC-134a");
+
+          assert.ok(dispHFC, "Should find HFC-134a in displacement scenario year 2");
+          assert.closeTo(dispHFC.getDomestic().getValue(), 50, 0.0001,
+            "HFC-134a should be capped to 50 kg");
+        },
+        (result, assert) => {
+          // Year 2: Check R-600a received displaced units (50 units * 2 kg/unit = 100 kg)
+          const dispR600a = result.find((x) =>
+            x.getScenarioName() === "With Units Displacement" &&
+            x.getYear() === 2 &&
+            x.getApplication() === "Commercial Refrigeration" &&
+            x.getSubstance() === "R-600a");
+
+          assert.ok(dispR600a, "Should find R-600a in displacement scenario year 2");
+          // Original 1 kg + displaced 100 kg = 101 kg
+          assert.closeTo(dispR600a.getDomestic().getValue(), 101, 0.0001,
+            "R-600a should receive 100 kg from unit-based displacement");
+        },
+        (result, assert) => {
+          // Verify unit-based displacement ratio: HFC-134a has 1 kg/unit, R-600a has 2 kg/unit
+          // So 50 units displaced should result in 100 kg added to R-600a (not 50 kg as volume)
+          const bauR600a = result.find((x) =>
+            x.getScenarioName() === "Business as Usual" &&
+            x.getYear() === 2 &&
+            x.getApplication() === "Commercial Refrigeration" &&
+            x.getSubstance() === "R-600a");
+          const dispR600a = result.find((x) =>
+            x.getScenarioName() === "With Units Displacement" &&
+            x.getYear() === 2 &&
+            x.getApplication() === "Commercial Refrigeration" &&
+            x.getSubstance() === "R-600a");
+
+          const r600aIncrease = dispR600a.getDomestic().getValue() -
+            bauR600a.getDomestic().getValue();
+          // 50 units * 2 kg/unit = 100 kg increase
+          assert.closeTo(r600aIncrease, 100, 0.0001,
+            "R-600a kg increase should be 100 (50 units * 2 kg/unit)");
+        },
+      ]);
+
     buildTest("validates kgCO2e grammar parsing", "/examples/kgco2e_validation.qta", [
       (result, assert) => {
         // Test that kgCO2e units parse successfully without execution errors

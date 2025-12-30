@@ -1,0 +1,58 @@
+# Example demonstrating "displacing by volume" feature
+# This shows how displacement by volume works even when last specified in units
+
+start default
+
+  define application "Commercial Refrigeration"
+
+    # Substance A with 1 kg/unit initial charge
+    uses substance "HFC-134a"
+      enable domestic
+      initial charge with 1 kg / unit for domestic
+      equals 1430 kgCO2e / kg
+      equals 1 kwh / unit
+      set sales to 100 units during year 1
+      retire 5 % / year
+    end substance
+
+    # Substance B with 2 kg/unit initial charge (different!)
+    uses substance "R-600a"
+      enable domestic
+      initial charge with 2 kg / unit for domestic
+      equals 3 kgCO2e / kg
+      equals 1 kwh / unit
+      set sales to 1 kg during year 1
+      retire 5 % / year
+    end substance
+
+  end application
+
+end default
+
+
+start policy "Cap with Volume Displacement"
+
+  modify application "Commercial Refrigeration"
+
+    modify substance "HFC-134a"
+      # Cap sales to 50 units (= 50 kg with 1 kg/unit charge)
+      # Displacing by volume means we add 50 kg to R-600a
+      # At 2 kg/unit, that's 25 units of R-600a
+      cap sales to 50 units displacing by volume "R-600a" during years 2 to 5
+    end substance
+
+  end application
+
+end policy
+
+
+start simulations
+
+  simulate "Business as Usual"
+  from years 1 to 5
+
+  simulate "With Volume Displacement"
+    using "Cap with Volume Displacement"
+  from years 1 to 5
+
+end simulations

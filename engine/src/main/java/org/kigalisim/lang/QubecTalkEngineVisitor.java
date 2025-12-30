@@ -32,6 +32,7 @@ import org.kigalisim.lang.operation.ChangeOperation;
 import org.kigalisim.lang.operation.ChangeUnitsOperation;
 import org.kigalisim.lang.operation.ConditionalOperation;
 import org.kigalisim.lang.operation.DefineVariableOperation;
+import org.kigalisim.lang.operation.DisplacementType;
 import org.kigalisim.lang.operation.DivisionOperation;
 import org.kigalisim.lang.operation.DrawNormalOperation;
 import org.kigalisim.lang.operation.DrawUniformOperation;
@@ -42,6 +43,7 @@ import org.kigalisim.lang.operation.FloorOperation;
 import org.kigalisim.lang.operation.GetStreamOperation;
 import org.kigalisim.lang.operation.GetVariableOperation;
 import org.kigalisim.lang.operation.InitialChargeOperation;
+import org.kigalisim.lang.operation.JointOperation;
 import org.kigalisim.lang.operation.LogicalOperation;
 import org.kigalisim.lang.operation.MultiplicationOperation;
 import org.kigalisim.lang.operation.Operation;
@@ -50,6 +52,7 @@ import org.kigalisim.lang.operation.PreCalculatedOperation;
 import org.kigalisim.lang.operation.RechargeOperation;
 import org.kigalisim.lang.operation.RecoverOperation;
 import org.kigalisim.lang.operation.RecoverOperation.RecoveryStage;
+import org.kigalisim.lang.operation.RemoveUnitsOperation;
 import org.kigalisim.lang.operation.ReplaceOperation;
 import org.kigalisim.lang.operation.RetireOperation;
 import org.kigalisim.lang.operation.RetireWithReplacementOperation;
@@ -207,7 +210,10 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
     UnitFragment unitFragment = (UnitFragment) visit(ctx.conversion);
     String unitConversion = unitFragment.getUnit();
 
-    Operation operation = new GetStreamOperation(streamName, unitConversion);
+    Operation operation = new JointOperation(
+        new GetStreamOperation(streamName, unitConversion),
+        new RemoveUnitsOperation()
+    );
 
     return new OperationFragment(operation);
   }
@@ -233,7 +239,10 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
     UnitFragment unitFragment = (UnitFragment) visit(ctx.conversion);
     String unitConversion = unitFragment.getUnit();
 
-    Operation operation = new GetStreamOperation(streamName, targetSubstance, unitConversion);
+    Operation operation = new JointOperation(
+        new GetStreamOperation(streamName, targetSubstance, unitConversion),
+        new RemoveUnitsOperation()
+    );
 
     return new OperationFragment(operation);
   }
@@ -303,7 +312,10 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
 
     String targetSubstance = visit(ctx.rescope).getString();
 
-    Operation operation = new GetStreamOperation(streamName, targetSubstance, null);
+    Operation operation = new JointOperation(
+        new GetStreamOperation(streamName, targetSubstance, null),
+        new RemoveUnitsOperation()
+    );
 
     return new OperationFragment(operation);
   }
@@ -340,7 +352,10 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
   public Fragment visitGetStream(QubecTalkParser.GetStreamContext ctx) {
     String streamName = visit(ctx.target).getString();
 
-    Operation operation = new GetStreamOperation(streamName);
+    Operation operation = new JointOperation(
+        new GetStreamOperation(streamName),
+        new RemoveUnitsOperation()
+    );
 
     return new OperationFragment(operation);
   }
@@ -601,9 +616,9 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
     Operation valueOperation = visit(ctx.value).getOperation();
     Operation operation;
 
-    if (ctx.getText().startsWith("cap")) {
+    if (getIsCap(ctx.getText())) {
       operation = new CapOperation(stream, valueOperation);
-    } else if (ctx.getText().startsWith("floor")) {
+    } else if (getIsFloor(ctx.getText())) {
       operation = new FloorOperation(stream, valueOperation);
     } else {
       throw new RuntimeException("Unknown limit operation: expected 'cap' or 'floor'");
@@ -624,9 +639,9 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
 
     Operation operation;
 
-    if (ctx.getText().startsWith("cap")) {
+    if (getIsCap(ctx.getText())) {
       operation = new CapOperation(stream, valueOperation, displaceTarget);
-    } else if (ctx.getText().startsWith("floor")) {
+    } else if (getIsFloor(ctx.getText())) {
       operation = new FloorOperation(stream, valueOperation, displaceTarget);
     } else {
       throw new RuntimeException("Unknown limit operation: expected 'cap' or 'floor'");
@@ -645,9 +660,9 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
     ParsedDuring during = visit(ctx.duration).getDuring();
     Operation operation;
 
-    if (ctx.getText().startsWith("cap")) {
+    if (getIsCap(ctx.getText())) {
       operation = new CapOperation(stream, valueOperation, during);
-    } else if (ctx.getText().startsWith("floor")) {
+    } else if (getIsFloor(ctx.getText())) {
       operation = new FloorOperation(stream, valueOperation, during);
     } else {
       throw new RuntimeException("Unknown limit operation: expected 'cap' or 'floor'");
@@ -669,10 +684,108 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
 
     Operation operation;
 
-    if (ctx.getText().startsWith("cap")) {
+    if (getIsCap(ctx.getText())) {
       operation = new CapOperation(stream, valueOperation, displaceTarget, during);
-    } else if (ctx.getText().startsWith("floor")) {
+    } else if (getIsFloor(ctx.getText())) {
       operation = new FloorOperation(stream, valueOperation, displaceTarget, during);
+    } else {
+      throw new RuntimeException("Unknown limit operation: expected 'cap' or 'floor'");
+    }
+
+    return new OperationFragment(operation);
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public Fragment visitLimitCommandDisplacingByVolumeAllYears(
+      QubecTalkParser.LimitCommandDisplacingByVolumeAllYearsContext ctx) {
+    String stream = applyStreamSugar(ctx.target.getText());
+    Operation valueOperation = visit(ctx.value).getOperation();
+    String displaceTarget = ctx.getChild(7).accept(this).getString();
+
+    Operation operation;
+    if (getIsCap(ctx.getText())) {
+      operation = new CapOperation(stream, valueOperation, displaceTarget,
+          DisplacementType.BY_VOLUME);
+    } else if (getIsFloor(ctx.getText())) {
+      operation = new FloorOperation(stream, valueOperation, displaceTarget,
+          DisplacementType.BY_VOLUME);
+    } else {
+      throw new RuntimeException("Unknown limit operation: expected 'cap' or 'floor'");
+    }
+
+    return new OperationFragment(operation);
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public Fragment visitLimitCommandDisplacingByUnitsAllYears(
+      QubecTalkParser.LimitCommandDisplacingByUnitsAllYearsContext ctx) {
+    String stream = applyStreamSugar(ctx.target.getText());
+    Operation valueOperation = visit(ctx.value).getOperation();
+    String displaceTarget = ctx.getChild(7).accept(this).getString();
+
+    Operation operation;
+    if (getIsCap(ctx.getText())) {
+      operation = new CapOperation(stream, valueOperation, displaceTarget,
+          DisplacementType.BY_UNITS);
+    } else if (getIsFloor(ctx.getText())) {
+      operation = new FloorOperation(stream, valueOperation, displaceTarget,
+          DisplacementType.BY_UNITS);
+    } else {
+      throw new RuntimeException("Unknown limit operation: expected 'cap' or 'floor'");
+    }
+
+    return new OperationFragment(operation);
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public Fragment visitLimitCommandDisplacingByVolumeDuration(
+      QubecTalkParser.LimitCommandDisplacingByVolumeDurationContext ctx) {
+    String stream = applyStreamSugar(ctx.target.getText());
+    Operation valueOperation = visit(ctx.value).getOperation();
+    ParsedDuring during = visit(ctx.duration).getDuring();
+    String displaceTarget = ctx.getChild(7).accept(this).getString();
+
+    Operation operation;
+    if (getIsCap(ctx.getText())) {
+      operation = new CapOperation(stream, valueOperation, displaceTarget, during,
+          DisplacementType.BY_VOLUME);
+    } else if (getIsFloor(ctx.getText())) {
+      operation = new FloorOperation(stream, valueOperation, displaceTarget, during,
+          DisplacementType.BY_VOLUME);
+    } else {
+      throw new RuntimeException("Unknown limit operation: expected 'cap' or 'floor'");
+    }
+
+    return new OperationFragment(operation);
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public Fragment visitLimitCommandDisplacingByUnitsDuration(
+      QubecTalkParser.LimitCommandDisplacingByUnitsDurationContext ctx) {
+    String stream = applyStreamSugar(ctx.target.getText());
+    Operation valueOperation = visit(ctx.value).getOperation();
+    ParsedDuring during = visit(ctx.duration).getDuring();
+    String displaceTarget = ctx.getChild(7).accept(this).getString();
+
+    Operation operation;
+    if (getIsCap(ctx.getText())) {
+      operation = new CapOperation(stream, valueOperation, displaceTarget, during,
+          DisplacementType.BY_UNITS);
+    } else if (getIsFloor(ctx.getText())) {
+      operation = new FloorOperation(stream, valueOperation, displaceTarget, during,
+          DisplacementType.BY_UNITS);
     } else {
       throw new RuntimeException("Unknown limit operation: expected 'cap' or 'floor'");
     }
@@ -1331,5 +1444,25 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
       case "continued" -> new OperationFragment(null);
       default -> throw new RuntimeException("Unknown assume mode: " + modeText);
     };
+  }
+
+  /**
+   * Check if text starts with "cap".
+   *
+   * @param text The text to check
+   * @return true if text starts with "cap", false otherwise
+   */
+  private boolean getIsCap(String text) {
+    return text.startsWith("cap");
+  }
+
+  /**
+   * Check if text starts with "floor".
+   *
+   * @param text The text to check
+   * @return true if text starts with "floor", false otherwise
+   */
+  private boolean getIsFloor(String text) {
+    return text.startsWith("floor");
   }
 }

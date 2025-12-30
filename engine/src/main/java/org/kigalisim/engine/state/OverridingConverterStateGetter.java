@@ -25,6 +25,10 @@ public class OverridingConverterStateGetter implements StateGetter {
   private Optional<EngineNumber> amortizedUnitConsumption;
   private Optional<EngineNumber> populationChange;
   private Optional<EngineNumber> substanceConsumption;
+  private Optional<EngineNumber> priorVolume;
+  private Optional<EngineNumber> priorGhgConsumption;
+  private Optional<EngineNumber> priorPopulation;
+  private Optional<EngineNumber> priorYearsElapsed;
 
   /**
    * Create a new overriding converter state getter.
@@ -43,6 +47,10 @@ public class OverridingConverterStateGetter implements StateGetter {
     amortizedUnitConsumption = Optional.empty();
     populationChange = Optional.empty();
     substanceConsumption = Optional.empty();
+    priorVolume = Optional.empty();
+    priorGhgConsumption = Optional.empty();
+    priorPopulation = Optional.empty();
+    priorYearsElapsed = Optional.empty();
   }
 
   /**
@@ -76,11 +84,7 @@ public class OverridingConverterStateGetter implements StateGetter {
    */
   @Override
   public EngineNumber getSubstanceConsumption() {
-    if (substanceConsumption.isPresent()) {
-      return substanceConsumption.get();
-    } else {
-      return innerGetter.getSubstanceConsumption();
-    }
+    return substanceConsumption.isPresent() ? substanceConsumption.get() : innerGetter.getSubstanceConsumption();
   }
 
   /**
@@ -99,11 +103,7 @@ public class OverridingConverterStateGetter implements StateGetter {
    */
   @Override
   public EngineNumber getEnergyIntensity() {
-    if (energyIntensity.isPresent()) {
-      return energyIntensity.get();
-    } else {
-      return innerGetter.getEnergyIntensity();
-    }
+    return energyIntensity.isPresent() ? energyIntensity.get() : innerGetter.getEnergyIntensity();
   }
 
   /**
@@ -129,11 +129,7 @@ public class OverridingConverterStateGetter implements StateGetter {
    */
   @Override
   public EngineNumber getAmortizedUnitVolume() {
-    if (amortizedUnitVolume.isPresent()) {
-      return amortizedUnitVolume.get();
-    } else {
-      return innerGetter.getAmortizedUnitVolume();
-    }
+    return amortizedUnitVolume.isPresent() ? amortizedUnitVolume.get() : innerGetter.getAmortizedUnitVolume();
   }
 
   /**
@@ -159,11 +155,7 @@ public class OverridingConverterStateGetter implements StateGetter {
    */
   @Override
   public EngineNumber getPopulation() {
-    if (population.isPresent()) {
-      return population.get();
-    } else {
-      return innerGetter.getPopulation();
-    }
+    return population.isPresent() ? population.get() : innerGetter.getPopulation();
   }
 
   /**
@@ -182,11 +174,7 @@ public class OverridingConverterStateGetter implements StateGetter {
    */
   @Override
   public EngineNumber getYearsElapsed() {
-    if (yearsElapsed.isPresent()) {
-      return yearsElapsed.get();
-    } else {
-      return innerGetter.getYearsElapsed();
-    }
+    return yearsElapsed.isPresent() ? yearsElapsed.get() : innerGetter.getYearsElapsed();
   }
 
   /**
@@ -214,11 +202,7 @@ public class OverridingConverterStateGetter implements StateGetter {
    */
   @Override
   public EngineNumber getGhgConsumption() {
-    if (totalConsumption.isPresent()) {
-      return totalConsumption.get();
-    } else {
-      return innerGetter.getGhgConsumption();
-    }
+    return totalConsumption.isPresent() ? totalConsumption.get() : innerGetter.getGhgConsumption();
   }
 
   /**
@@ -228,11 +212,7 @@ public class OverridingConverterStateGetter implements StateGetter {
    */
   @Override
   public EngineNumber getEnergyConsumption() {
-    if (energyConsumption.isPresent()) {
-      return energyConsumption.get();
-    } else {
-      return innerGetter.getEnergyConsumption();
-    }
+    return energyConsumption.isPresent() ? energyConsumption.get() : innerGetter.getEnergyConsumption();
   }
 
   /**
@@ -258,11 +238,7 @@ public class OverridingConverterStateGetter implements StateGetter {
    */
   @Override
   public EngineNumber getVolume() {
-    if (volume.isPresent()) {
-      return volume.get();
-    } else {
-      return innerGetter.getVolume();
-    }
+    return volume.isPresent() ? volume.get() : innerGetter.getVolume();
   }
 
   /**
@@ -281,11 +257,7 @@ public class OverridingConverterStateGetter implements StateGetter {
    */
   @Override
   public EngineNumber getAmortizedUnitConsumption() {
-    if (amortizedUnitConsumption.isPresent()) {
-      return amortizedUnitConsumption.get();
-    } else {
-      return innerGetter.getAmortizedUnitConsumption();
-    }
+    return amortizedUnitConsumption.isPresent() ? amortizedUnitConsumption.get() : innerGetter.getAmortizedUnitConsumption();
   }
 
   /**
@@ -305,10 +277,91 @@ public class OverridingConverterStateGetter implements StateGetter {
    */
   @Override
   public EngineNumber getPopulationChange(UnitConverter unitConverter) {
-    if (populationChange.isPresent()) {
-      return populationChange.get();
-    } else {
-      return innerGetter.getPopulationChange(unitConverter);
-    }
+    return populationChange.isPresent() ? populationChange.get() : innerGetter.getPopulationChange(unitConverter);
+  }
+
+  /**
+   * Set the prior volume value.
+   *
+   * @param newValue The new prior volume value
+   */
+  public void setPriorVolume(EngineNumber newValue) {
+    priorVolume = Optional.of(newValue);
+  }
+
+  /**
+   * Get the prior volume value.
+   *
+   * @return The prior volume value
+   */
+  @Override
+  public EngineNumber getPriorVolume() {
+    return priorVolume.isPresent() ? priorVolume.get() : innerGetter.getPriorVolume();
+  }
+
+  /**
+   * Set the prior GHG consumption value.
+   *
+   * @param newValue The new prior GHG consumption value
+   */
+  public void setPriorGhgConsumption(EngineNumber newValue) {
+    priorGhgConsumption = Optional.of(newValue);
+  }
+
+  /**
+   * Get the prior GHG consumption value.
+   *
+   * @return The prior GHG consumption value
+   */
+  @Override
+  public EngineNumber getPriorGhgConsumption() {
+    return priorGhgConsumption.isPresent() ? priorGhgConsumption.get() : innerGetter.getPriorGhgConsumption();
+  }
+
+  /**
+   * Set the prior population value.
+   *
+   * @param newValue The new prior population value
+   */
+  public void setPriorPopulation(EngineNumber newValue) {
+    priorPopulation = Optional.of(newValue);
+  }
+
+  /**
+   * Get the prior population value.
+   *
+   * @return The prior population value
+   */
+  @Override
+  public EngineNumber getPriorPopulation() {
+    return priorPopulation.isPresent() ? priorPopulation.get() : innerGetter.getPriorPopulation();
+  }
+
+  /**
+   * Set the prior years elapsed value.
+   *
+   * @param newValue The new prior years elapsed value
+   */
+  public void setPriorYearsElapsed(EngineNumber newValue) {
+    priorYearsElapsed = Optional.of(newValue);
+  }
+
+  /**
+   * Get the prior years elapsed value.
+   *
+   * @return The prior years elapsed value
+   */
+  @Override
+  public EngineNumber getPriorYearsElapsed() {
+    return priorYearsElapsed.isPresent() ? priorYearsElapsed.get() : innerGetter.getPriorYearsElapsed();
+  }
+
+  /**
+   * Check if prior volume has been set.
+   *
+   * @return True if prior volume is present, false otherwise
+   */
+  private boolean getHasPrior() {
+    return priorVolume.isPresent();
   }
 }

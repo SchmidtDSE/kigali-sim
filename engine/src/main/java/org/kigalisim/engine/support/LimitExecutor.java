@@ -37,6 +37,7 @@ import org.kigalisim.engine.recalc.StreamUpdateBuilder;
 import org.kigalisim.engine.state.Scope;
 import org.kigalisim.engine.state.SimulationState;
 import org.kigalisim.engine.state.YearMatcher;
+import org.kigalisim.lang.operation.DisplacementType;
 
 /**
  * Executor for cap and floor limit operations on streams.
@@ -98,9 +99,10 @@ public class LimitExecutor {
    * @param amount The maximum value (percentage or absolute)
    * @param yearMatcher Matcher to determine if the cap applies to current year
    * @param displaceTarget Optional target for displacement (stream or substance), or null
+   * @param displacementType The type of displacement (EQUIVALENT, BY_VOLUME, or BY_UNITS)
    */
   public void executeCap(String stream, EngineNumber amount, YearMatcher yearMatcher,
-      String displaceTarget) {
+      String displaceTarget, DisplacementType displacementType) {
     if (!EngineSupportUtils.getIsInRange(yearMatcher, engine.getYear())) {
       return;
     }
@@ -108,9 +110,9 @@ public class LimitExecutor {
     checkIsNotEquipment(stream);
 
     if ("%".equals(amount.getUnits())) {
-      capWithPercent(stream, amount, displaceTarget);
+      capWithPercent(stream, amount, displaceTarget, displacementType);
     } else {
-      capWithValue(stream, amount, displaceTarget);
+      capWithValue(stream, amount, displaceTarget, displacementType);
     }
   }
 
@@ -138,9 +140,10 @@ public class LimitExecutor {
    * @param amount The minimum value (percentage or absolute)
    * @param yearMatcher Matcher to determine if the floor applies to current year
    * @param displaceTarget Optional target for displacement (stream or substance), or null
+   * @param displacementType The type of displacement (EQUIVALENT, BY_VOLUME, or BY_UNITS)
    */
   public void executeFloor(String stream, EngineNumber amount, YearMatcher yearMatcher,
-      String displaceTarget) {
+      String displaceTarget, DisplacementType displacementType) {
     if (!EngineSupportUtils.getIsInRange(yearMatcher, engine.getYear())) {
       return;
     }
@@ -148,36 +151,38 @@ public class LimitExecutor {
     checkIsNotEquipment(stream);
 
     if ("%".equals(amount.getUnits())) {
-      floorWithPercent(stream, amount, displaceTarget);
+      floorWithPercent(stream, amount, displaceTarget, displacementType);
     } else {
-      floorWithValue(stream, amount, displaceTarget);
+      floorWithValue(stream, amount, displaceTarget, displacementType);
     }
   }
 
   /**
-   * Applies percentage-based cap operation using lastSpecifiedValue for compounding effect.
+   * Applies percentage-based cap operation using prior year's value for compounding effect.
    *
    * <p>This method implements the cap logic for percentage-based specifications. The
-   * percentage is applied to the lastSpecifiedValue (the last value explicitly set by the user)
-   * rather than the current calculated value. This approach enables proper year-over-year compounding
-   * where policy restrictions build on previous user intent.</p>
+   * percentage is applied to the prior year's actual stream value rather than the current
+   * calculated value. This approach enables proper year-over-year compounding where policy
+   * restrictions build on previous results.</p>
    *
    * <p>Algorithm:</p>
    * <ol>
-   *   <li>If lastSpecifiedValue exists: Calculate cap as percentage of that value,
+   *   <li>If prior year value exists: Calculate cap as percentage of that value,
    *       apply StreamUpdate if current exceeds cap, handle displacement</li>
-   *   <li>If lastSpecifiedValue is null: Treat percentage as volume (legacy behavior),
+   *   <li>If no prior year exists: Treat percentage as volume (legacy behavior),
    *       apply reduction if needed, handle displacement</li>
    * </ol>
    *
-   * <p>Example: User set "domestic to 1000 mt" in year 1. In year 5, "cap domestic to 85%"
-   * will cap to 850 mt (85% of 1000), not 85% of year 5's calculated value.</p>
+   * <p>Example: Stream was 1000 mt in year 4. In year 5, "cap domestic to 85%"
+   * will cap to 850 mt (85% of prior year's 1000 mt).</p>
    *
    * @param stream The stream name to cap
    * @param amount The percentage cap amount (e.g., 85 for 85%)
    * @param displaceTarget The target substance/stream for displacement, or null
+   * @param displacementType The type of displacement (EQUIVALENT, BY_VOLUME, or BY_UNITS)
    */
-  private void capWithPercent(String stream, EngineNumber amount, String displaceTarget) {
+  private void capWithPercent(String stream, EngineNumber amount, String displaceTarget,
+      DisplacementType displacementType) {
     UnitConverter unitConverter = EngineSupportUtils.createUnitConverterWithTotal(
         engine, stream);
     EngineNumber currentValueRaw = engine.getStream(stream);
@@ -185,14 +190,12 @@ public class LimitExecutor {
 
     SimulationState simulationState = engine.getStreamKeeper();
     Scope scope = engine.getScope();
-    EngineNumber lastSpecified = simulationState.getLastSpecifiedValue(scope, stream);
+    EngineNumber lastSpecified = simulationState.getStream(scope, stream, true);
     boolean hasPrior = lastSpecified != null;
 
     if (hasPrior) {
-      BigDecimal capValue = lastSpecified.getValue()
-          .multiply(amount.getValue())
-          .divide(new BigDecimal("100"));
-      EngineNumber newCappedValue = new EngineNumber(capValue, lastSpecified.getUnits());
+      EngineNumber percentPriorYear = new EngineNumber(amount.getValue(), "% prior year");
+      EngineNumber newCappedValue = unitConverter.convert(percentPriorYear, lastSpecified.getUnits());
 
       EngineNumber currentInKg = unitConverter.convert(currentValueRaw, "kg");
       EngineNumber newCappedInKg = unitConverter.convert(newCappedValue, "kg");
@@ -213,7 +216,7 @@ public class LimitExecutor {
       if (displaceTarget != null) {
         EngineNumber finalInKg = engine.getStream(stream);
         BigDecimal changeInKg = finalInKg.getValue().subtract(currentInKg.getValue());
-        displaceExecutor.execute(stream, amount, changeInKg, displaceTarget);
+        displaceExecutor.execute(stream, amount, changeInKg, displaceTarget, displacementType);
       }
     } else {
       EngineNumber convertedMax = unitConverter.convert(amount, "kg");
@@ -232,7 +235,7 @@ public class LimitExecutor {
           Optional.empty(),
           Optional.empty()
       );
-      displaceExecutor.execute(stream, amount, changeAmount, displaceTarget);
+      displaceExecutor.execute(stream, amount, changeAmount, displaceTarget, displacementType);
     }
   }
 
@@ -253,8 +256,10 @@ public class LimitExecutor {
    * @param stream The stream name to cap
    * @param amount The absolute cap amount (e.g., 1000 mt)
    * @param displaceTarget The target substance/stream for displacement, or null
+   * @param displacementType The type of displacement (EQUIVALENT, BY_VOLUME, or BY_UNITS)
    */
-  private void capWithValue(String stream, EngineNumber amount, String displaceTarget) {
+  private void capWithValue(String stream, EngineNumber amount, String displaceTarget,
+      DisplacementType displacementType) {
     UnitConverter unitConverter = EngineSupportUtils.createUnitConverterWithTotal(
         engine, stream);
     EngineNumber currentValueRaw = engine.getStream(stream);
@@ -278,34 +283,36 @@ public class LimitExecutor {
     if (displaceTarget != null) {
       EngineNumber cappedInKg = engine.getStream(stream);
       BigDecimal changeInKg = cappedInKg.getValue().subtract(currentInKg.getValue());
-      displaceExecutor.execute(stream, amount, changeInKg, displaceTarget);
+      displaceExecutor.execute(stream, amount, changeInKg, displaceTarget, displacementType);
     }
   }
 
   /**
-   * Applies percentage-based floor operation using lastSpecifiedValue for compounding effect.
+   * Applies percentage-based floor operation using prior year's value for compounding effect.
    *
    * <p>This method implements the floor logic for percentage-based specifications. The
-   * percentage is applied to the lastSpecifiedValue (the last value explicitly set by the user)
-   * rather than the current calculated value. This approach enables proper year-over-year compounding
-   * where policy requirements build on previous user intent.</p>
+   * percentage is applied to the prior year's actual stream value rather than the current
+   * calculated value. This approach enables proper year-over-year compounding where policy
+   * requirements build on previous results.</p>
    *
    * <p>Algorithm:</p>
    * <ol>
-   *   <li>If lastSpecifiedValue exists: Calculate floor as percentage of that value,
+   *   <li>If prior year value exists: Calculate floor as percentage of that value,
    *       apply StreamUpdate if current is below floor, handle displacement</li>
-   *   <li>If lastSpecifiedValue is null: Treat percentage as volume (legacy behavior),
+   *   <li>If no prior year exists: Treat percentage as volume (legacy behavior),
    *       apply increase if needed, handle displacement</li>
    * </ol>
    *
-   * <p>Example: User set "domestic to 1000 mt" in year 1. In year 5, "floor domestic to 80%"
-   * will floor to 800 mt (80% of 1000), not 80% of year 5's calculated value.</p>
+   * <p>Example: Stream was 1000 mt in year 4. In year 5, "floor domestic to 80%"
+   * will floor to 800 mt (80% of prior year's 1000 mt).</p>
    *
    * @param stream The stream name to floor
    * @param amount The percentage floor amount (e.g., 80 for 80%)
    * @param displaceTarget The target substance/stream for displacement, or null
+   * @param displacementType The type of displacement (EQUIVALENT, BY_VOLUME, or BY_UNITS)
    */
-  private void floorWithPercent(String stream, EngineNumber amount, String displaceTarget) {
+  private void floorWithPercent(String stream, EngineNumber amount, String displaceTarget,
+      DisplacementType displacementType) {
     UnitConverter unitConverter = EngineSupportUtils.createUnitConverterWithTotal(
         engine, stream);
     EngineNumber currentValueRaw = engine.getStream(stream);
@@ -313,14 +320,12 @@ public class LimitExecutor {
 
     SimulationState simulationState = engine.getStreamKeeper();
     Scope scope = engine.getScope();
-    EngineNumber lastSpecified = simulationState.getLastSpecifiedValue(scope, stream);
+    EngineNumber lastSpecified = simulationState.getStream(scope, stream, true);
     boolean hasPrior = lastSpecified != null;
 
     if (hasPrior) {
-      BigDecimal floorValue = lastSpecified.getValue()
-          .multiply(amount.getValue())
-          .divide(new BigDecimal("100"));
-      EngineNumber newFloorValue = new EngineNumber(floorValue, lastSpecified.getUnits());
+      EngineNumber percentPriorYear = new EngineNumber(amount.getValue(), "% prior year");
+      EngineNumber newFloorValue = unitConverter.convert(percentPriorYear, lastSpecified.getUnits());
 
       EngineNumber currentInKg = unitConverter.convert(currentValueRaw, "kg");
       EngineNumber newFloorInKg = unitConverter.convert(newFloorValue, "kg");
@@ -341,7 +346,7 @@ public class LimitExecutor {
       if (displaceTarget != null) {
         EngineNumber finalInKg = engine.getStream(stream);
         BigDecimal changeInKg = finalInKg.getValue().subtract(currentInKg.getValue());
-        displaceExecutor.execute(stream, amount, changeInKg, displaceTarget);
+        displaceExecutor.execute(stream, amount, changeInKg, displaceTarget, displacementType);
       }
     } else {
       EngineNumber convertedMin = unitConverter.convert(amount, "kg");
@@ -360,7 +365,7 @@ public class LimitExecutor {
           Optional.empty(),
           Optional.empty()
       );
-      displaceExecutor.execute(stream, amount, changeAmount, displaceTarget);
+      displaceExecutor.execute(stream, amount, changeAmount, displaceTarget, displacementType);
     }
   }
 
@@ -381,8 +386,10 @@ public class LimitExecutor {
    * @param stream The stream name to floor
    * @param amount The absolute floor amount (e.g., 800 mt)
    * @param displaceTarget The target substance/stream for displacement, or null
+   * @param displacementType The type of displacement (EQUIVALENT, BY_VOLUME, or BY_UNITS)
    */
-  private void floorWithValue(String stream, EngineNumber amount, String displaceTarget) {
+  private void floorWithValue(String stream, EngineNumber amount, String displaceTarget,
+      DisplacementType displacementType) {
     UnitConverter unitConverter = EngineSupportUtils.createUnitConverterWithTotal(
         engine, stream);
     EngineNumber currentValueRaw = engine.getStream(stream);
@@ -406,7 +413,8 @@ public class LimitExecutor {
     if (displaceTarget != null) {
       EngineNumber newInKg = engine.getStream(stream);
       BigDecimal changeInKg = newInKg.getValue().subtract(currentInKg.getValue());
-      displaceExecutor.execute(stream, amount, changeInKg, displaceTarget);
+      displaceExecutor.execute(stream, amount, changeInKg, displaceTarget, displacementType);
     }
   }
+
 }

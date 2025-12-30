@@ -25,8 +25,10 @@ Our tutorial later will expand this further but this gives us a good starting po
 In addition to trade, let's also add in economic growth. For example, these projections might come from industry surveys or from outside modeling efforts. Let's start with HFC-134a:
 
 - Click **edit** for HFC-134a if you alreday clicked finish.
-- Go to **Change** tab, add a change record of **+6%** from 2025 to 2030 for all sales as this will apply to both imports and domestic manufacturing.
+- Go to **Change** tab, add a change record of **+6%** (or equivalently **+6% current**) from 2025 to 2030 for all sales as this will apply to both imports and domestic manufacturing.
 - Add a change record of **+4%** from 2031 to 2035 for all sales.
+
+Note: You can use `% current` instead of `%` for growth rates to make it explicit that the percentage applies to the current year's value.
 
 <video src="/webm/tutorial_04_02.webm" autoplay loop muted playsinline style="width: 500px; border: 2px solid #505050; border-radius: 3px;">Your browser does not support the video tag. Please upgrade to a modern browser.</video>
 

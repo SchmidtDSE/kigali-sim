@@ -245,15 +245,17 @@ class LimitCommand {
    * @param {string} target - Target of the limit.
    * @param {EngineNumber} value - Limit value.
    * @param {YearMatcher} duration - Duration of limit.
-   * @param {string} displacing - Substance being displaced.
+   * @param {string} displacing - Substance/stream being displaced.
+   * @param {string} displacingType - Type of displacement ("", "by volume", "by units").
    */
-  constructor(typeName, target, value, duration, displacing) {
+  constructor(typeName, target, value, duration, displacing, displacingType) {
     const self = this;
     self._typeName = typeName;
     self._target = target;
     self._value = value;
     self._duration = duration;
     self._displacing = displacing;
+    self._displacingType = displacingType;
   }
 
   /**
@@ -304,6 +306,16 @@ class LimitCommand {
   getDisplacing() {
     const self = this;
     return self._displacing;
+  }
+
+  /**
+   * Get the type of displacement.
+   *
+   * @returns {string} The displacement type ("", "by volume", "by units").
+   */
+  getDisplacingType() {
+    const self = this;
+    return self._displacingType;
   }
 
   /**

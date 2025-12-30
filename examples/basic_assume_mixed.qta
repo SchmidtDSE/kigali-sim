@@ -1,0 +1,17 @@
+start default
+  define application "Test App"
+    uses substance "Test Substance"
+      enable domestic
+      equals 100 tCO2e / mt
+      initial charge with 0.1 kg / unit for domestic
+      set domestic to 0 units
+      set domestic to 10 kg
+      retire 5 % each year
+      recharge 10 % with 0.1 kg / unit
+    end substance
+  end application
+end default
+
+start simulations
+  simulate "test assume" from years 1 to 10
+end simulations

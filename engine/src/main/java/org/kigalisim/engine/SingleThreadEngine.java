@@ -4,7 +4,7 @@
  * <p>This class provides a concrete implementation of the Engine interface that is not
  * designed to be thread-safe. It manages substance streams, equipment populations, and calculations
  * related to the Montreal Protocol simulation using BigDecimal for numerical stability.</p>
- * 
+ *
  * <p>Note that, as described in the JavaDoc for the class, this does not prevent concurrency
  * within Kigali Sim which is achieved through parallelization outside of Engine, often by having
  * multiple Engine instances.</p>
@@ -49,11 +49,12 @@ import org.kigalisim.engine.support.ReplaceExecutor;
 import org.kigalisim.engine.support.SetExecutor;
 import org.kigalisim.engine.support.StreamUpdateExecutor;
 import org.kigalisim.engine.support.StreamUpdateShortcuts;
+import org.kigalisim.lang.operation.DisplacementType;
 import org.kigalisim.lang.operation.RecoverOperation.RecoveryStage;
 
 /**
  * Single-threaded implementation of the Engine interface.
- * 
+ *
  * <p>At this time the only implementation of Engine which does not guarantee thread safety
  * within a single scenario. However, note that Engine only evaluates one scenario at a time so
  * Kigali Sim still achieves concurency by having multiple Engines and evaluating scenarios or Monte
@@ -256,19 +257,25 @@ public class SingleThreadEngine implements Engine {
       return;
     }
 
-    if ("equipment".equals(name)) {
-      equipmentChangeUtil.handleSet(value);
-    } else if ("sales".equals(name)) {
-      SetExecutor setExecutor = new SetExecutor(this);
-      setExecutor.handleSalesSet(scope, name, value, yearMatcher);
-    } else {
-      StreamUpdate update = new StreamUpdateBuilder()
-          .setName(name)
-          .setValue(value)
-          .setYearMatcher(yearMatcher)
-          .inferSubtractRecycling()
-          .build();
-      executeStreamUpdate(update);
+    switch (name) {
+      case "equipment" -> equipmentChangeUtil.handleSet(value);
+      case "sales" -> {
+        simulationState.clearLastSpecifiedValue(scope, name);
+        SetExecutor setExecutor = new SetExecutor(this);
+        setExecutor.handleSalesSet(scope, name, value, yearMatcher);
+      }
+      default -> {
+        if (EngineSupportUtils.isSalesSubstream(name)) {
+          simulationState.clearLastSpecifiedValue(scope, name);
+        }
+        StreamUpdate update = new StreamUpdateBuilder()
+            .setName(name)
+            .setValue(value)
+            .setYearMatcher(yearMatcher)
+            .inferSubtractRecycling()
+            .build();
+        executeStreamUpdate(update);
+      }
     }
   }
 
@@ -287,8 +294,11 @@ public class SingleThreadEngine implements Engine {
     }
 
     // Only allow enabling of manufacture, import, and export streams
-    if ("domestic".equals(name) || "import".equals(name) || "export".equals(name)) {
-      simulationState.markStreamAsEnabled(keyEffective, name);
+    switch (name) {
+      case "domestic", "import", "export" -> simulationState.markStreamAsEnabled(keyEffective, name);
+      default -> {
+        // Do nothing for other streams
+      }
     }
   }
 
@@ -311,10 +321,10 @@ public class SingleThreadEngine implements Engine {
 
   @Override
   public void defineVariable(String name) {
-    if ("yearsElapsed".equals(name) || "yearAbsolute".equals(name)) {
-      throw new RuntimeException("Cannot override yearsElapsed or yearAbsolute.");
+    switch (name) {
+      case "yearsElapsed", "yearAbsolute" -> throw new RuntimeException("Cannot override yearsElapsed or yearAbsolute.");
+      default -> scope.defineVariable(name);
     }
-    scope.defineVariable(name);
   }
 
   @Override
@@ -328,24 +338,24 @@ public class SingleThreadEngine implements Engine {
 
   @Override
   public void setVariable(String name, EngineNumber value) {
-    if ("yearsElapsed".equals(name) || "yearAbsolute".equals(name)) {
-      throw new RuntimeException("Cannot set yearsElapsed or yearAbsolute.");
+    switch (name) {
+      case "yearsElapsed", "yearAbsolute" -> throw new RuntimeException("Cannot set yearsElapsed or yearAbsolute.");
+      default -> scope.setVariable(name, value);
     }
-    scope.setVariable(name, value);
   }
 
   @Override
   public EngineNumber getInitialCharge(String stream) {
-    if ("sales".equals(stream)) {
-      try {
-        return getSalesWeightedInitialCharge();
-      } catch (IllegalStateException e) {
-        // Fallback: if no streams are enabled, return zero
-        return new EngineNumber(BigDecimal.ZERO, "kg / unit");
+    return switch (stream) {
+      case "sales" -> {
+        try {
+          yield getSalesWeightedInitialCharge();
+        } catch (IllegalStateException e) {
+          yield new EngineNumber(BigDecimal.ZERO, "kg / unit");
+        }
       }
-    } else {
-      return getRawInitialChargeFor(scope, stream);
-    }
+      default -> getRawInitialChargeFor(scope, stream);
+    };
   }
 
   private EngineNumber getSalesWeightedInitialCharge() {
@@ -380,12 +390,12 @@ public class SingleThreadEngine implements Engine {
       return;
     }
 
-    if ("sales".equals(stream)) {
-      // For sales, set both manufacture and import but don't recalculate yet
-      simulationState.setInitialCharge(scope, "domestic", value);
-      simulationState.setInitialCharge(scope, "import", value);
-    } else {
-      simulationState.setInitialCharge(scope, stream, value);
+    switch (stream) {
+      case "sales" -> {
+        simulationState.setInitialCharge(scope, "domestic", value);
+        simulationState.setInitialCharge(scope, "import", value);
+      }
+      default -> simulationState.setInitialCharge(scope, stream, value);
     }
 
     boolean useExplicitRecharge = getShouldUseExplicitRecharge(stream);
@@ -635,13 +645,13 @@ public class SingleThreadEngine implements Engine {
   @Override
   public void changeStream(String stream, EngineNumber amount, YearMatcher yearMatcher,
       UseKey useKey) {
-    if ("equipment".equals(stream)) {
-      handleEquipmentChange(amount, yearMatcher);
-      return;
+    switch (stream) {
+      case "equipment" -> handleEquipmentChange(amount, yearMatcher);
+      default -> {
+        UseKey useKeyEffective = useKey == null ? scope : useKey;
+        changeExecutor.executeChange(stream, amount, yearMatcher, useKeyEffective);
+      }
     }
-
-    UseKey useKeyEffective = useKey == null ? scope : useKey;
-    changeExecutor.executeChange(stream, amount, yearMatcher, useKeyEffective);
   }
 
   /**
@@ -663,34 +673,32 @@ public class SingleThreadEngine implements Engine {
 
   @Override
   public void cap(String stream, EngineNumber amount, YearMatcher yearMatcher,
-      String displaceTarget) {
+      String displaceTarget,
+      DisplacementType displacementType) {
     if (!getIsInRange(yearMatcher)) {
       return;
     }
 
     // Handle equipment stream with special logic
-    if ("equipment".equals(stream)) {
-      equipmentChangeUtil.handleCap(amount, displaceTarget);
-      return;
+    switch (stream) {
+      case "equipment" -> equipmentChangeUtil.handleCap(amount, displaceTarget);
+      default -> limitExecutor.executeCap(stream, amount, yearMatcher, displaceTarget, displacementType);
     }
-
-    limitExecutor.executeCap(stream, amount, yearMatcher, displaceTarget);
   }
 
   @Override
   public void floor(String stream, EngineNumber amount, YearMatcher yearMatcher,
-      String displaceTarget) {
+      String displaceTarget,
+      DisplacementType displacementType) {
     if (!getIsInRange(yearMatcher)) {
       return;
     }
 
     // Handle equipment stream with special logic
-    if ("equipment".equals(stream)) {
-      equipmentChangeUtil.handleFloor(amount, displaceTarget);
-      return;
+    switch (stream) {
+      case "equipment" -> equipmentChangeUtil.handleFloor(amount, displaceTarget);
+      default -> limitExecutor.executeFloor(stream, amount, yearMatcher, displaceTarget, displacementType);
     }
-
-    limitExecutor.executeFloor(stream, amount, yearMatcher, displaceTarget);
   }
 
   @Override

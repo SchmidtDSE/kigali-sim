@@ -11,6 +11,7 @@ import org.kigalisim.engine.SingleThreadEngine;
 import org.kigalisim.engine.number.EngineNumber;
 import org.kigalisim.engine.recalc.StreamUpdate;
 import org.kigalisim.engine.recalc.StreamUpdateBuilder;
+import org.kigalisim.lang.operation.DisplacementType;
 
 /**
  * Unit tests for DisplaceExecutor class.
@@ -64,7 +65,7 @@ class DisplaceExecutorTest {
     BigDecimal changeAmount = new BigDecimal("-5");
 
     // Act
-    displaceExecutor.execute("domestic", amount, changeAmount, null);
+    displaceExecutor.execute("domestic", amount, changeAmount, null, DisplacementType.EQUIVALENT);
 
     // Assert - domestic should remain unchanged
     EngineNumber result = engine.getStream("domestic");
@@ -79,7 +80,7 @@ class DisplaceExecutorTest {
 
     // Act & Assert - should throw when displacing to same stream
     assertThrows(RuntimeException.class, () -> {
-      displaceExecutor.execute("domestic", amount, changeAmount, "domestic");
+      displaceExecutor.execute("domestic", amount, changeAmount, "domestic", DisplacementType.EQUIVALENT);
     });
   }
 
@@ -93,7 +94,7 @@ class DisplaceExecutorTest {
     BigDecimal changeAmount = new BigDecimal("-20"); // Reduced domestic by 20
 
     // Act - displace the reduction to import
-    displaceExecutor.execute("domestic", amount, changeAmount, "import");
+    displaceExecutor.execute("domestic", amount, changeAmount, "import", DisplacementType.EQUIVALENT);
 
     // Assert - import should increase by 20kg
     EngineNumber importResult = engine.getStream("import");
@@ -110,7 +111,7 @@ class DisplaceExecutorTest {
     BigDecimal changeAmount = new BigDecimal("-20"); // Reduced domestic by 20
 
     // Act - displace to R-600a
-    displaceExecutor.execute("domestic", amount, changeAmount, "R-600a");
+    displaceExecutor.execute("domestic", amount, changeAmount, "R-600a", DisplacementType.EQUIVALENT);
 
     // Assert - R-600a domestic should increase by 20kg
     engine.setSubstance("R-600a");
@@ -134,7 +135,7 @@ class DisplaceExecutorTest {
     BigDecimal changeAmount = new BigDecimal("-20");
 
     // Act - displace to import stream (same substance, so same initial charge)
-    displaceExecutor.execute("domestic", amount, changeAmount, "import");
+    displaceExecutor.execute("domestic", amount, changeAmount, "import", DisplacementType.EQUIVALENT);
 
     // Assert - import should increase by 20kg
     EngineNumber importResult = engine.getStream("import");
@@ -154,7 +155,7 @@ class DisplaceExecutorTest {
     final String originalSubstance = engine.getScope().getSubstance();
 
     // Act - displace to R-600a (which has 2 kg/unit initial charge)
-    displaceExecutor.execute("domestic", amount, changeAmount, "R-600a");
+    displaceExecutor.execute("domestic", amount, changeAmount, "R-600a", DisplacementType.EQUIVALENT);
 
     // Assert - R-600a should get same number of units (20) but with its own initial charge (2 kg/unit)
     // So R-600a domestic should increase by 40kg (20 units * 2 kg/unit)

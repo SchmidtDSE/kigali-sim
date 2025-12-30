@@ -7,7 +7,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 
 import java.math.BigDecimal;
-import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.kigalisim.engine.number.EngineNumber;
 import org.kigalisim.engine.state.UseKey;

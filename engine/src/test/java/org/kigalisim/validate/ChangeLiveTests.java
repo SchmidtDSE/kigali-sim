@@ -527,4 +527,276 @@ public class ChangeLiveTests {
     assertTrue(year5Result.getPopulation().getValue().doubleValue() > 0,
         "Year 5 equipment should be greater than 0 units");
   }
+
+  /**
+   * Test that sales cap and domestic cap produce equivalent results when only domestic is enabled.
+   * When capping "sales" vs "domestic" separately, the consumption (import + domestic) should be
+   * within 1 mt of each other at year 10.
+   */
+  @Test
+  public void testSalesVsSubstreamChange() throws IOException {
+    // Load and parse the QTA file
+    String qtaPath = "../examples/change_sales_vs_substream.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    // Run both scenarios
+    Stream<EngineResult> separateResults = KigaliSimFacade.runScenario(program, "separate", progress -> {});
+    Stream<EngineResult> togetherResults = KigaliSimFacade.runScenario(program, "together", progress -> {});
+
+    List<EngineResult> separateList = separateResults.collect(Collectors.toList());
+    List<EngineResult> togetherList = togetherResults.collect(Collectors.toList());
+
+    // Get year 10 results for both scenarios
+    final EngineResult separateYear10 = LiveTestsUtil.getResult(separateList.stream(), 10, "test", "test");
+    final EngineResult togetherYear10 = LiveTestsUtil.getResult(togetherList.stream(), 10, "test", "test");
+
+    assertNotNull(separateYear10, "Should have separate result for year 10");
+    assertNotNull(togetherYear10, "Should have together result for year 10");
+
+    // Calculate volume (consumption) as import + domestic for each scenario
+    // Values are in kg, convert to mt by dividing by 1000
+    double separateVolumeMt = (separateYear10.getImport().getValue().doubleValue()
+        + separateYear10.getDomestic().getValue().doubleValue()) / 1000.0;
+    double togetherVolumeMt = (togetherYear10.getImport().getValue().doubleValue()
+        + togetherYear10.getDomestic().getValue().doubleValue()) / 1000.0;
+
+    // Assert that together and separate are within 1 mt of each other
+    assertEquals(separateVolumeMt, togetherVolumeMt, 1.0,
+        "Together and separate consumption (import + domestic) should be within 1 mt at year 10");
+  }
+
+  /**
+   * Test change with % current behaves identically to change with %.
+   * This validates that % current in change context calculates percentage relative to current year values.
+   */
+  @Test
+  public void testChangePercentCurrent() throws IOException {
+    String qtaPath = "../examples/change_percent_current.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    String scenarioName = "business as usual";
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
+    List<EngineResult> resultsList = results.collect(Collectors.toList());
+
+    EngineResult year1Result = LiveTestsUtil.getResult(resultsList.stream(), 1, "test", "test");
+    assertNotNull(year1Result, "Should have result for test/test in year 1");
+    assertEquals(100.0, year1Result.getDomestic().getValue().doubleValue(), 0.0001,
+        "Year 1 domestic should be 100 kg");
+
+    EngineResult year2Result = LiveTestsUtil.getResult(resultsList.stream(), 2, "test", "test");
+    assertNotNull(year2Result, "Should have result for test/test in year 2");
+    assertEquals(110.0, year2Result.getDomestic().getValue().doubleValue(), 0.0001,
+        "Year 2 domestic should be 110 kg (100 + 10% with % current)");
+
+    EngineResult year3Result = LiveTestsUtil.getResult(resultsList.stream(), 3, "test", "test");
+    assertNotNull(year3Result, "Should have result for test/test in year 3");
+    assertEquals(121.0, year3Result.getDomestic().getValue().doubleValue(), 0.0001,
+        "Year 3 domestic should be 121 kg (110 + 10% with % current, showing compounding)");
+    assertEquals("kg", year3Result.getDomestic().getUnits(),
+        "Domestic units should be kg");
+  }
+
+  /**
+   * Test change with % prior year produces linear growth.
+   * This validates that % prior year in change context calculates percentage relative to prior year values,
+   * showing linear growth (100→110→120) instead of compound growth (100→110→121).
+   */
+  @Test
+  public void testChangePercentPriorYear() throws IOException {
+    String qtaPath = "../examples/change_percent_prior_year.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    String scenarioName = "business as usual";
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
+    List<EngineResult> resultsList = results.collect(Collectors.toList());
+
+    EngineResult year1Result = LiveTestsUtil.getResult(resultsList.stream(), 1, "test", "test");
+    assertNotNull(year1Result, "Should have result for test/test in year 1");
+    assertEquals(100.0, year1Result.getDomestic().getValue().doubleValue(), 0.0001,
+        "Year 1 domestic should be 100 kg");
+
+    EngineResult year2Result = LiveTestsUtil.getResult(resultsList.stream(), 2, "test", "test");
+    assertNotNull(year2Result, "Should have result for test/test in year 2");
+    assertEquals(110.0, year2Result.getDomestic().getValue().doubleValue(), 0.0001,
+        "Year 2 domestic should be 110 kg (100 + 10% of prior year)");
+
+    EngineResult year3Result = LiveTestsUtil.getResult(resultsList.stream(), 3, "test", "test");
+    assertNotNull(year3Result, "Should have result for test/test in year 3");
+    assertEquals(120.0, year3Result.getDomestic().getValue().doubleValue(), 0.0001,
+        "Year 3 domestic should be 120 kg (110 + 10% of prior year, NOT compounding like % current)");
+    assertEquals("kg", year3Result.getDomestic().getUnits(),
+        "Domestic units should be kg");
+  }
+
+  /**
+   * Test displacing by volume when last value was specified in units.
+   * When capping 50 units of HFC-134a (1 kg/unit = 50 kg) and displacing by volume to R-600a (2 kg/unit),
+   * we should add 50 kg to R-600a which is 25 units.
+   */
+  @Test
+  public void testDisplacingByVolumeWithUnits() throws IOException {
+    String qtaPath = "../examples/displacing_by_volume.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    // Run both scenarios
+    Stream<EngineResult> bauResults = KigaliSimFacade.runScenario(program, "Business as Usual", progress -> {});
+    Stream<EngineResult> displacingResults = KigaliSimFacade.runScenario(program, "With Volume Displacement", progress -> {});
+
+    List<EngineResult> bauList = bauResults.collect(Collectors.toList());
+    List<EngineResult> displacingList = displacingResults.collect(Collectors.toList());
+
+    // Get year 2 results (first year with cap applied)
+    final EngineResult bauHfc2 = LiveTestsUtil.getResult(
+        bauList.stream(), 2, "Commercial Refrigeration", "HFC-134a");
+    final EngineResult bauR600a2 = LiveTestsUtil.getResult(
+        bauList.stream(), 2, "Commercial Refrigeration", "R-600a");
+    final EngineResult dispHfc2 = LiveTestsUtil.getResult(
+        displacingList.stream(), 2, "Commercial Refrigeration", "HFC-134a");
+    final EngineResult dispR600a2 = LiveTestsUtil.getResult(
+        displacingList.stream(), 2, "Commercial Refrigeration", "R-600a");
+
+    assertNotNull(bauHfc2, "Should have BAU HFC-134a result for year 2");
+    assertNotNull(bauR600a2, "Should have BAU R-600a result for year 2");
+    assertNotNull(dispHfc2, "Should have displacing HFC-134a result for year 2");
+    assertNotNull(dispR600a2, "Should have displacing R-600a result for year 2");
+
+    // HFC-134a should be capped - population should be reduced
+    assertTrue(dispHfc2.getPopulation().getValue().doubleValue()
+        < bauHfc2.getPopulation().getValue().doubleValue(),
+        "HFC-134a population should be reduced by cap");
+
+    // R-600a should receive displaced volume
+    // Displacing by volume: 50 kg displaced, at 2 kg/unit = 25 additional units
+    assertTrue(dispR600a2.getPopulation().getValue().doubleValue()
+        > bauR600a2.getPopulation().getValue().doubleValue(),
+        "R-600a population should increase from displacement");
+
+    // The key test: verify volume-based displacement (not units-based)
+    // R-600a kg should increase by approximately 50 kg (the displaced volume)
+    double bauR600aKg = bauR600a2.getDomestic().getValue().doubleValue();
+    double dispR600aKg = dispR600a2.getDomestic().getValue().doubleValue();
+    double kgDifference = dispR600aKg - bauR600aKg;
+
+    // Should be approximately 50 kg displaced (some tolerance for retirement effects)
+    assertTrue(kgDifference > 40.0 && kgDifference < 60.0,
+        "R-600a should receive ~50 kg from volume displacement, got: " + kgDifference);
+  }
+
+  /**
+   * Test displacing by units when last value was specified in kg.
+   * When capping 50 kg of HFC-134a (1 kg/unit = 50 units) and displacing by units to R-600a (2 kg/unit),
+   * we should add 50 units to R-600a which is 100 kg.
+   */
+  @Test
+  public void testDisplacingByUnitsWithKg() throws IOException {
+    String qtaPath = "../examples/displacing_by_units.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    // Run both scenarios
+    Stream<EngineResult> bauResults = KigaliSimFacade.runScenario(
+        program, "Business as Usual", progress -> {});
+    Stream<EngineResult> displacingResults = KigaliSimFacade.runScenario(
+        program, "With Units Displacement", progress -> {});
+
+    List<EngineResult> bauList = bauResults.collect(Collectors.toList());
+    List<EngineResult> displacingList = displacingResults.collect(Collectors.toList());
+
+    // Get year 2 results (first year with cap applied)
+    final EngineResult bauHfc2 = LiveTestsUtil.getResult(
+        bauList.stream(), 2, "Commercial Refrigeration", "HFC-134a");
+    final EngineResult bauR600a2 = LiveTestsUtil.getResult(
+        bauList.stream(), 2, "Commercial Refrigeration", "R-600a");
+    final EngineResult dispHfc2 = LiveTestsUtil.getResult(
+        displacingList.stream(), 2, "Commercial Refrigeration", "HFC-134a");
+    final EngineResult dispR600a2 = LiveTestsUtil.getResult(
+        displacingList.stream(), 2, "Commercial Refrigeration", "R-600a");
+
+    assertNotNull(bauHfc2, "Should have BAU HFC-134a result for year 2");
+    assertNotNull(bauR600a2, "Should have BAU R-600a result for year 2");
+    assertNotNull(dispHfc2, "Should have displacing HFC-134a result for year 2");
+    assertNotNull(dispR600a2, "Should have displacing R-600a result for year 2");
+
+    // HFC-134a should be capped - population should be reduced
+    assertTrue(dispHfc2.getPopulation().getValue().doubleValue()
+        < bauHfc2.getPopulation().getValue().doubleValue(),
+        "HFC-134a population should be reduced by cap");
+
+    // R-600a should receive displaced units
+    // Displacing by units: 50 units displaced, at 2 kg/unit = 100 kg
+    assertTrue(dispR600a2.getPopulation().getValue().doubleValue()
+        > bauR600a2.getPopulation().getValue().doubleValue(),
+        "R-600a population should increase from displacement");
+
+    // The key test: verify units-based displacement (not volume-based)
+    // R-600a kg should increase by approximately 100 kg (50 units * 2 kg/unit)
+    double bauR600aKg = bauR600a2.getDomestic().getValue().doubleValue();
+    double dispR600aKg = dispR600a2.getDomestic().getValue().doubleValue();
+    double kgDifference = dispR600aKg - bauR600aKg;
+
+    // Should be approximately 100 kg displaced (50 units * 2 kg/unit, some tolerance for retirement)
+    assertTrue(kgDifference > 90.0 && kgDifference < 110.0,
+        "R-600a should receive ~100 kg from units displacement (50 units * 2 kg/unit), got: "
+        + kgDifference);
+  }
+
+  /**
+   * Test that "displacing" (equivalent) produces same results as "displacing by volume" when
+   * specified in kg. This ensures backward compatibility - the default behavior matches volume
+   * displacement when kg is used.
+   */
+  @Test
+  public void testDisplacingEquivalentMatchesVolumeWhenKg() throws IOException {
+    String qtaPath = "../examples/displacing_equivalent.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    // Run both scenarios
+    Stream<EngineResult> bauResults = KigaliSimFacade.runScenario(
+        program, "Business as Usual", progress -> {});
+    Stream<EngineResult> displacingResults = KigaliSimFacade.runScenario(
+        program, "With Equivalent Displacement", progress -> {});
+
+    List<EngineResult> bauList = bauResults.collect(Collectors.toList());
+    List<EngineResult> displacingList = displacingResults.collect(Collectors.toList());
+
+    // Get year 2 results (first year with cap applied)
+    final EngineResult bauHfc2 = LiveTestsUtil.getResult(
+        bauList.stream(), 2, "Commercial Refrigeration", "HFC-134a");
+    final EngineResult bauR600a2 = LiveTestsUtil.getResult(
+        bauList.stream(), 2, "Commercial Refrigeration", "R-600a");
+    final EngineResult dispHfc2 = LiveTestsUtil.getResult(
+        displacingList.stream(), 2, "Commercial Refrigeration", "HFC-134a");
+    final EngineResult dispR600a2 = LiveTestsUtil.getResult(
+        displacingList.stream(), 2, "Commercial Refrigeration", "R-600a");
+
+    assertNotNull(bauHfc2, "Should have BAU HFC-134a result for year 2");
+    assertNotNull(bauR600a2, "Should have BAU R-600a result for year 2");
+    assertNotNull(dispHfc2, "Should have displacing HFC-134a result for year 2");
+    assertNotNull(dispR600a2, "Should have displacing R-600a result for year 2");
+
+    // HFC-134a should be capped
+    assertTrue(dispHfc2.getPopulation().getValue().doubleValue()
+        < bauHfc2.getPopulation().getValue().doubleValue(),
+        "HFC-134a population should be reduced by cap");
+
+    // R-600a should receive displaced volume (since specified in kg, equivalent = by volume)
+    assertTrue(dispR600a2.getPopulation().getValue().doubleValue()
+        > bauR600a2.getPopulation().getValue().doubleValue(),
+        "R-600a population should increase from displacement");
+
+    // Verify it behaves like volume displacement (50 kg displaced, with 1 kg/unit = 50 units)
+    // Since both substances have 1 kg/unit in this example, volume and units are equivalent
+    double bauR600aKg = bauR600a2.getDomestic().getValue().doubleValue();
+    double dispR600aKg = dispR600a2.getDomestic().getValue().doubleValue();
+    double kgDifference = dispR600aKg - bauR600aKg;
+
+    // Should be approximately 50 kg displaced
+    assertTrue(kgDifference > 40.0 && kgDifference < 60.0,
+        "R-600a should receive ~50 kg from equivalent displacement, got: " + kgDifference);
+  }
 }
