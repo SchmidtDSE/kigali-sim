@@ -19,6 +19,7 @@ import org.kigalisim.engine.number.UnitConverter;
 import org.kigalisim.engine.recalc.SalesStreamDistribution;
 import org.kigalisim.engine.state.ConverterStateGetter;
 import org.kigalisim.engine.state.OverridingConverterStateGetter;
+import org.kigalisim.engine.state.Scope;
 import org.kigalisim.engine.state.SimulationState;
 import org.kigalisim.engine.state.UseKey;
 import org.kigalisim.engine.state.YearMatcher;
@@ -146,7 +147,24 @@ public final class EngineSupportUtils {
       initialCharge = engine.getInitialCharge(stream);
     }
 
-    return createUnitConverterWithTotal(engine.getStateGetter(), stream, currentValue, initialCharge);
+    OverridingConverterStateGetter overridingStateGetter =
+        new OverridingConverterStateGetter(engine.getStateGetter());
+    final UnitConverter unitConverter = new UnitConverter(overridingStateGetter);
+
+    overridingStateGetter.setTotal(stream, currentValue);
+
+    if (isSalesSubstream(stream) && initialCharge != null) {
+      overridingStateGetter.setAmortizedUnitVolume(initialCharge);
+    }
+
+    SimulationState simulationState = engine.getStreamKeeper();
+    Scope scope = engine.getScope();
+    EngineNumber priorValue = simulationState.getStream(scope, stream, true);
+    if (priorValue != null) {
+      overridingStateGetter.setPriorVolume(priorValue);
+    }
+
+    return unitConverter;
   }
 
   /**

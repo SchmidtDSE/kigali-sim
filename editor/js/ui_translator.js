@@ -97,6 +97,70 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
   }
 
   /**
+   * Visit a unit node and formats it by delegating to the appropriate child visitor.
+   *
+   * @param {Object} ctx - The parse tree node context.
+   * @returns {string} The formatted unit string.
+   */
+  visitUnit(ctx) {
+    const self = this;
+    return ctx.getChild(0).accept(self);
+  }
+
+  /**
+   * Visit a volume unit node and returns its text.
+   *
+   * @param {Object} ctx - The parse tree node context.
+   * @returns {string} The volume unit string (kg, mt, etc.).
+   */
+  visitVolumeUnit(ctx) {
+    const self = this;
+    return ctx.getText();
+  }
+
+  /**
+   * Visit a temporal unit node and returns its text.
+   *
+   * @param {Object} ctx - The parse tree node context.
+   * @returns {string} The temporal unit string (year, years, etc.).
+   */
+  visitTemporalUnit(ctx) {
+    const self = this;
+    return ctx.getText();
+  }
+
+  /**
+   * Visit a relative unit node and formats it with proper spacing.
+   *
+   * Handles percent variants: %, % prior year, % current year, % current.
+   * ANTLR's getText() concatenates tokens without spaces, so we reconstruct
+   * the proper format here.
+   *
+   * @param {Object} ctx - The parse tree node context.
+   * @returns {string} The properly formatted relative unit string.
+   */
+  visitRelativeUnit(ctx) {
+    const self = this;
+    const childCount = ctx.getChildCount();
+
+    const isDefault = childCount === 1;
+    const isExplicitCurrent = childCount === 2;
+    const isExplicitYear = childCount === 3;
+
+    if (isDefault) {
+      return "%";
+    } else if (isExplicitCurrent) {
+      return "% current";
+    } else if (isExplicitYear) {
+      const secondToken = ctx.getChild(1).getText();
+      return "% " + secondToken + " year";
+    }
+
+    // Fallback to getText() for unknown cases
+    return ctx.getText();
+  }
+
+  /**
    * Visit a unit or ratio node and formats it appropriately.
    *
    * @param {Object} ctx - The parse tree node context.
@@ -105,10 +169,10 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
   visitUnitOrRatio(ctx) {
     const self = this;
     if (ctx.getChildCount() == 1) {
-      return ctx.getChild(0).getText();
+      return ctx.getChild(0).accept(self);
     } else {
-      const numerator = ctx.getChild(0).getText();
-      const denominator = ctx.getChild(2).getText();
+      const numerator = ctx.getChild(0).accept(self);
+      const denominator = ctx.getChild(2).accept(self);
 
       // Always use "/" format for consistency
       return numerator + " / " + denominator;
@@ -588,7 +652,7 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
    */
   visitLimitCommandAllYears(ctx) {
     const self = this;
-    return self._buildLimit(ctx, null, null);
+    return self._buildLimit(ctx, null, null, null, null, "");
   }
 
   /**
@@ -600,7 +664,7 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
   visitLimitCommandDisplacingAllYears(ctx) {
     const self = this;
     const displaceTarget = self._getStringWithoutQuotes(ctx.getChild(5).getText());
-    return self._buildLimit(ctx, null, displaceTarget);
+    return self._buildLimit(ctx, null, displaceTarget, null, null, "");
   }
 
   /**
@@ -612,7 +676,7 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
   visitLimitCommandDuration(ctx) {
     const self = this;
     const duration = ctx.duration.accept(self);
-    return self._buildLimit(ctx, duration, null);
+    return self._buildLimit(ctx, duration, null, null, null, "");
   }
 
   /**
@@ -625,7 +689,57 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
     const self = this;
     const duration = ctx.duration.accept(self);
     const displaceTarget = self._getStringWithoutQuotes(ctx.getChild(5).getText());
-    return self._buildLimit(ctx, duration, displaceTarget);
+    return self._buildLimit(ctx, duration, displaceTarget, null, null, "");
+  }
+
+  /**
+   * Visit a limit command with displacement by volume and all years duration.
+   *
+   * @param {Object} ctx - The parse tree node context.
+   * @returns {LimitCommand} New limit command instance.
+   */
+  visitLimitCommandDisplacingByVolumeAllYears(ctx) {
+    const self = this;
+    const displaceTarget = self._getStringWithoutQuotes(ctx.getChild(7).getText());
+    return self._buildLimit(ctx, null, displaceTarget, null, null, "by volume");
+  }
+
+  /**
+   * Visit a limit command with displacement by units and all years duration.
+   *
+   * @param {Object} ctx - The parse tree node context.
+   * @returns {LimitCommand} New limit command instance.
+   */
+  visitLimitCommandDisplacingByUnitsAllYears(ctx) {
+    const self = this;
+    const displaceTarget = self._getStringWithoutQuotes(ctx.getChild(7).getText());
+    return self._buildLimit(ctx, null, displaceTarget, null, null, "by units");
+  }
+
+  /**
+   * Visit a limit command with displacement by volume and duration.
+   *
+   * @param {Object} ctx - The parse tree node context.
+   * @returns {LimitCommand} New limit command instance.
+   */
+  visitLimitCommandDisplacingByVolumeDuration(ctx) {
+    const self = this;
+    const duration = ctx.duration.accept(self);
+    const displaceTarget = self._getStringWithoutQuotes(ctx.getChild(7).getText());
+    return self._buildLimit(ctx, duration, displaceTarget, null, null, "by volume");
+  }
+
+  /**
+   * Visit a limit command with displacement by units and duration.
+   *
+   * @param {Object} ctx - The parse tree node context.
+   * @returns {LimitCommand} New limit command instance.
+   */
+  visitLimitCommandDisplacingByUnitsDuration(ctx) {
+    const self = this;
+    const duration = ctx.duration.accept(self);
+    const displaceTarget = self._getStringWithoutQuotes(ctx.getChild(7).getText());
+    return self._buildLimit(ctx, duration, displaceTarget, null, null, "by units");
   }
 
   /**
@@ -1358,10 +1472,11 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
    * @param {string} displaceTarget - Displacing target.
    * @param {Function} targetGetter - Function to get the target.
    * @param {Function} valueGetter - Function to get the value.
+   * @param {string} displacingType - Type of displacement ("", "by volume", "by units").
    * @returns {LimitCommand} New limit command instance.
    * @private
    */
-  _buildLimit(ctx, duration, displaceTarget, targetGetter, valueGetter) {
+  _buildLimit(ctx, duration, displaceTarget, targetGetter, valueGetter, displacingType) {
     const self = this;
     const capType = ctx.getChild(0).getText();
 
@@ -1375,7 +1490,9 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
     }
     const value = valueGetter(ctx);
 
-    return new LimitCommand(capType, target, value, duration, displaceTarget);
+    const finalDisplacingType = displacingType || "";
+
+    return new LimitCommand(capType, target, value, duration, displaceTarget, finalDisplacingType);
   }
 
   /**

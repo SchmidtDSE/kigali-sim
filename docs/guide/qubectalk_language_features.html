@@ -226,8 +226,25 @@ recover sample uniformly from 20% to 40% with 90% reuse during years 2027 to onw
 
         <p><strong>Other Units:</strong></p>
         <ul>
-          <li><code>%</code> - Percentage</li>
+          <li><code>%</code> - Percentage (context-dependent: same as <code>% prior year</code> for caps/floors, <code>% current</code> for set/change)</li>
+          <li><code>% prior year</code> - Percentage of prior year's value (explicit form). In other words, always a percent of the final value of the stream from the prior year no matter the operations undertaken in the current year.</li>
+          <li><code>% current</code> or <code>% current year</code> - Percentage of current year's value (explicit form). In other words, always a percent of the current value which may compound or incorporate other actions already taken on the stream in the current year.</li>
           <li><code>each</code> - Per unit (e.g., "% each year")</li>
+        </ul>
+
+        <p><strong>Percentage Unit Variants:</strong></p>
+
+        <p>The <code>%</code> unit is context-dependent and behaves differently based on the operation:</p>
+        <ul>
+          <li>In <code>cap</code> and <code>floor</code> operations: <code>%</code> means percentage of prior year's value (same as <code>% prior year</code>)</li>
+          <li>In <code>set</code> and <code>change</code> operations: <code>%</code> means percentage of current year's value (same as <code>% current</code>)</li>
+        </ul>
+
+        <p>The explicit forms <code>% prior year</code> and <code>% current</code> (or <code>% current year</code>) allow you to override this default behavior when needed and make your intent clearer. For example:</p>
+        <ul>
+          <li>Use <code>% prior year</code> in limits to be explicit about prior year basis</li>
+          <li>Use <code>% current</code> in growth rates to be explicit about current value basis</li>
+          <li>Use explicit forms when you want behavior different from the context default</li>
         </ul>
 
         <p><strong>Examples:</strong></p>

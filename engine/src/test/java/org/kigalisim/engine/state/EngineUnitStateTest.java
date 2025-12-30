@@ -131,6 +131,137 @@ public class EngineUnitStateTest {
   }
 
   @Test
+  public void testConverterStateGetterGetPriorVolume() {
+    Engine engine = mock(Engine.class);
+    SimulationState simulationState = mock(SimulationState.class);
+    Scope scope = mock(Scope.class);
+    EngineNumber expected = new EngineNumber(new BigDecimal("50"), "kg");
+
+    when(engine.getStreamKeeper()).thenReturn(simulationState);
+    when(engine.getScope()).thenReturn(scope);
+    when(simulationState.getStream(scope, "sales", true)).thenReturn(expected);
+
+    ConverterStateGetter stateGetter = new ConverterStateGetter(engine);
+    EngineNumber result = stateGetter.getPriorVolume();
+
+    assertEquals(0, expected.getValue().compareTo(result.getValue()));
+    assertEquals(expected.getUnits(), result.getUnits());
+  }
+
+  @Test
+  public void testConverterStateGetterGetPriorVolumeFallsBackToCurrent() {
+    Engine engine = mock(Engine.class);
+    SimulationState simulationState = mock(SimulationState.class);
+    Scope scope = mock(Scope.class);
+    EngineNumber current = new EngineNumber(new BigDecimal("75"), "kg");
+
+    when(engine.getStreamKeeper()).thenReturn(simulationState);
+    when(engine.getScope()).thenReturn(scope);
+    when(simulationState.getStream(scope, "sales", true)).thenReturn(null);
+    when(engine.getStream("sales")).thenReturn(current);
+
+    ConverterStateGetter stateGetter = new ConverterStateGetter(engine);
+    EngineNumber result = stateGetter.getPriorVolume();
+
+    assertEquals(0, current.getValue().compareTo(result.getValue()));
+    assertEquals(current.getUnits(), result.getUnits());
+  }
+
+  @Test
+  public void testConverterStateGetterGetPriorGhgConsumption() {
+    Engine engine = mock(Engine.class);
+    SimulationState simulationState = mock(SimulationState.class);
+    Scope scope = mock(Scope.class);
+    EngineNumber expected = new EngineNumber(new BigDecimal("40"), "tCO2e");
+
+    when(engine.getStreamKeeper()).thenReturn(simulationState);
+    when(engine.getScope()).thenReturn(scope);
+    when(simulationState.getStream(scope, "consumption", true)).thenReturn(expected);
+
+    ConverterStateGetter stateGetter = new ConverterStateGetter(engine);
+    EngineNumber result = stateGetter.getPriorGhgConsumption();
+
+    assertEquals(0, expected.getValue().compareTo(result.getValue()));
+    assertEquals(expected.getUnits(), result.getUnits());
+  }
+
+  @Test
+  public void testConverterStateGetterGetPriorGhgConsumptionFallsBackToCurrent() {
+    Engine engine = mock(Engine.class);
+    SimulationState simulationState = mock(SimulationState.class);
+    Scope scope = mock(Scope.class);
+    EngineNumber current = new EngineNumber(new BigDecimal("50"), "tCO2e");
+
+    when(engine.getStreamKeeper()).thenReturn(simulationState);
+    when(engine.getScope()).thenReturn(scope);
+    when(simulationState.getStream(scope, "consumption", true)).thenReturn(null);
+    when(engine.getStream("consumption")).thenReturn(current);
+
+    ConverterStateGetter stateGetter = new ConverterStateGetter(engine);
+    EngineNumber result = stateGetter.getPriorGhgConsumption();
+
+    assertEquals(0, current.getValue().compareTo(result.getValue()));
+    assertEquals(current.getUnits(), result.getUnits());
+  }
+
+  @Test
+  public void testConverterStateGetterGetPriorPopulation() {
+    Engine engine = mock(Engine.class);
+    SimulationState simulationState = mock(SimulationState.class);
+    Scope scope = mock(Scope.class);
+    EngineNumber expected = new EngineNumber(new BigDecimal("80"), "units");
+
+    when(engine.getStreamKeeper()).thenReturn(simulationState);
+    when(engine.getScope()).thenReturn(scope);
+    when(simulationState.getStream(scope, "equipment", true)).thenReturn(expected);
+
+    ConverterStateGetter stateGetter = new ConverterStateGetter(engine);
+    EngineNumber result = stateGetter.getPriorPopulation();
+
+    assertEquals(0, expected.getValue().compareTo(result.getValue()));
+    assertEquals(expected.getUnits(), result.getUnits());
+  }
+
+  @Test
+  public void testConverterStateGetterGetPriorPopulationFallsBackToCurrent() {
+    Engine engine = mock(Engine.class);
+    SimulationState simulationState = mock(SimulationState.class);
+    Scope scope = mock(Scope.class);
+    EngineNumber current = new EngineNumber(new BigDecimal("100"), "units");
+
+    when(engine.getStreamKeeper()).thenReturn(simulationState);
+    when(engine.getScope()).thenReturn(scope);
+    when(simulationState.getStream(scope, "equipment", true)).thenReturn(null);
+    when(engine.getStream("equipment")).thenReturn(current);
+
+    ConverterStateGetter stateGetter = new ConverterStateGetter(engine);
+    EngineNumber result = stateGetter.getPriorPopulation();
+
+    assertEquals(0, current.getValue().compareTo(result.getValue()));
+    assertEquals(current.getUnits(), result.getUnits());
+  }
+
+  @Test
+  public void testConverterStateGetterGetPriorYearsElapsed() {
+    Engine engine = mock(Engine.class);
+    ConverterStateGetter stateGetter = new ConverterStateGetter(engine);
+    EngineNumber result = stateGetter.getPriorYearsElapsed();
+
+    assertEquals(0, BigDecimal.ZERO.compareTo(result.getValue()));
+    assertEquals("year", result.getUnits());
+  }
+
+  @Test
+  public void testConverterStateGetterGetPriorYearsElapsedFirstYear() {
+    Engine engine = mock(Engine.class);
+    ConverterStateGetter stateGetter = new ConverterStateGetter(engine);
+    EngineNumber result = stateGetter.getPriorYearsElapsed();
+
+    assertEquals(0, BigDecimal.ZERO.compareTo(result.getValue()));
+    assertEquals("year", result.getUnits());
+  }
+
+  @Test
   public void testOverridingConverterStateGetterInitializesWithInnerGetter() {
     StateGetter inner = mock(StateGetter.class);
     OverridingConverterStateGetter overriding =
@@ -301,5 +432,121 @@ public class EngineUnitStateTest {
     } catch (IllegalArgumentException e) {
       assertEquals("Unrecognized stream name: unrecognized", e.getMessage());
     }
+  }
+
+  @Test
+  public void testOverridingGetPriorVolumeUsesInnerWhenNotOverridden() {
+    StateGetter inner = mock(StateGetter.class);
+    EngineNumber expected = new EngineNumber(new BigDecimal("60"), "kg");
+    when(inner.getPriorVolume()).thenReturn(expected);
+
+    OverridingConverterStateGetter overriding = new OverridingConverterStateGetter(inner);
+
+    EngineNumber result = overriding.getPriorVolume();
+
+    assertEquals(0, new BigDecimal("60").compareTo(result.getValue()));
+    assertEquals("kg", result.getUnits());
+  }
+
+  @Test
+  public void testOverridingConverterStateGetterSetPriorVolumeOverridesInnerValue() {
+    StateGetter inner = mock(StateGetter.class);
+    EngineNumber innerValue = new EngineNumber(new BigDecimal("60"), "kg");
+    when(inner.getPriorVolume()).thenReturn(innerValue);
+
+    OverridingConverterStateGetter overriding = new OverridingConverterStateGetter(inner);
+
+    overriding.setPriorVolume(new EngineNumber(new BigDecimal("80"), "kg"));
+    EngineNumber result = overriding.getPriorVolume();
+
+    assertEquals(0, new BigDecimal("80").compareTo(result.getValue()));
+    assertEquals("kg", result.getUnits());
+  }
+
+  @Test
+  public void testOverridingGetPriorGhgConsumptionUsesInnerWhenNotOverridden() {
+    StateGetter inner = mock(StateGetter.class);
+    EngineNumber expected = new EngineNumber(new BigDecimal("45"), "tCO2e");
+    when(inner.getPriorGhgConsumption()).thenReturn(expected);
+
+    OverridingConverterStateGetter overriding = new OverridingConverterStateGetter(inner);
+
+    EngineNumber result = overriding.getPriorGhgConsumption();
+
+    assertEquals(0, new BigDecimal("45").compareTo(result.getValue()));
+    assertEquals("tCO2e", result.getUnits());
+  }
+
+  @Test
+  public void testOverridingConverterStateGetterSetPriorGhgConsumptionOverridesInnerValue() {
+    StateGetter inner = mock(StateGetter.class);
+    EngineNumber innerValue = new EngineNumber(new BigDecimal("45"), "tCO2e");
+    when(inner.getPriorGhgConsumption()).thenReturn(innerValue);
+
+    OverridingConverterStateGetter overriding = new OverridingConverterStateGetter(inner);
+
+    overriding.setPriorGhgConsumption(new EngineNumber(new BigDecimal("60"), "tCO2e"));
+    EngineNumber result = overriding.getPriorGhgConsumption();
+
+    assertEquals(0, new BigDecimal("60").compareTo(result.getValue()));
+    assertEquals("tCO2e", result.getUnits());
+  }
+
+  @Test
+  public void testOverridingGetPriorPopulationUsesInnerWhenNotOverridden() {
+    StateGetter inner = mock(StateGetter.class);
+    EngineNumber expected = new EngineNumber(new BigDecimal("90"), "units");
+    when(inner.getPriorPopulation()).thenReturn(expected);
+
+    OverridingConverterStateGetter overriding = new OverridingConverterStateGetter(inner);
+
+    EngineNumber result = overriding.getPriorPopulation();
+
+    assertEquals(0, new BigDecimal("90").compareTo(result.getValue()));
+    assertEquals("units", result.getUnits());
+  }
+
+  @Test
+  public void testOverridingConverterStateGetterSetPriorPopulationOverridesInnerValue() {
+    StateGetter inner = mock(StateGetter.class);
+    EngineNumber innerValue = new EngineNumber(new BigDecimal("90"), "units");
+    when(inner.getPriorPopulation()).thenReturn(innerValue);
+
+    OverridingConverterStateGetter overriding = new OverridingConverterStateGetter(inner);
+
+    overriding.setPriorPopulation(new EngineNumber(new BigDecimal("110"), "units"));
+    EngineNumber result = overriding.getPriorPopulation();
+
+    assertEquals(0, new BigDecimal("110").compareTo(result.getValue()));
+    assertEquals("units", result.getUnits());
+  }
+
+  @Test
+  public void testOverridingGetPriorYearsElapsedUsesInnerWhenNotOverridden() {
+    StateGetter inner = mock(StateGetter.class);
+    EngineNumber expected = new EngineNumber(new BigDecimal("2"), "year");
+    when(inner.getPriorYearsElapsed()).thenReturn(expected);
+
+    OverridingConverterStateGetter overriding = new OverridingConverterStateGetter(inner);
+
+    EngineNumber result = overriding.getPriorYearsElapsed();
+
+    assertEquals(0, new BigDecimal("2").compareTo(result.getValue()));
+    assertEquals("year", result.getUnits());
+  }
+
+  @Test
+  public void testOverridingConverterStateGetterSetPriorYearsElapsedOverridesInnerValue() {
+    StateGetter inner = mock(StateGetter.class);
+    EngineNumber innerValue = new EngineNumber(new BigDecimal("2"), "year");
+    when(inner.getPriorYearsElapsed()).thenReturn(innerValue);
+
+    OverridingConverterStateGetter overriding = new OverridingConverterStateGetter(inner);
+
+    overriding.setPriorYearsElapsed(new EngineNumber(new BigDecimal("3"), "year"));
+    EngineNumber result = overriding.getPriorYearsElapsed();
+
+    assertEquals(0, new BigDecimal("3").compareTo(result.getValue()));
+    assertEquals("year", result.getUnits());
   }
 }

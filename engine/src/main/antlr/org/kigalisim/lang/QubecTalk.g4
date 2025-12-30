@@ -154,6 +154,8 @@ CHANGE_: 'change';
 
 CHARGE_: 'charge';
 
+CURRENT_: 'current';
+
 DISPLACING_ : 'displacing';
 
 DURING_: 'during';
@@ -206,6 +208,8 @@ TRIALS_: 'trials';
 
 USING_: 'using';
 
+VOLUME_: 'volume';
+
 WITH_: 'with';
 
 /**
@@ -213,6 +217,8 @@ WITH_: 'with';
  * -- Streams --
  * -------------
  **/
+
+PRIOR_: 'prior';
 
 PRIOR_EQUIPMENT_: 'priorEquipment';
 
@@ -312,7 +318,7 @@ string: STR_;
 
 volumeUnit: (KG_ | MT_ | TCO2E_ | KGCO2E_ | KWH_ | UNIT_ | UNITS_);
 
-relativeUnit: (PERCENT_);
+relativeUnit: (PERCENT_ | PERCENT_ PRIOR_ YEAR_ | PERCENT_ CURRENT_ YEAR_ | PERCENT_ CURRENT_);
 
 temporalUnit: (YEAR_ | YEARS_ | YR_ | YRS_ | MONTH_ | MONTHS_ | DAY_ | DAYS_);
 
@@ -399,8 +405,12 @@ substanceMod: MODIFY_ SUBSTANCE_ name=string (substanceStatement | globalStateme
  **/
 
 capStatement: (CAP_ | FLOOR_) target=stream TO_ value=unitValue  # limitCommandAllYears
+  | (CAP_ | FLOOR_) target=stream TO_ value=unitValue DISPLACING_ BY_ VOLUME_ (string | stream)  # limitCommandDisplacingByVolumeAllYears
+  | (CAP_ | FLOOR_) target=stream TO_ value=unitValue DISPLACING_ BY_ UNITS_ (string | stream)  # limitCommandDisplacingByUnitsAllYears
   | (CAP_ | FLOOR_) target=stream TO_ value=unitValue DISPLACING_ (string | stream)  # limitCommandDisplacingAllYears
   | (CAP_ | FLOOR_) target=stream TO_ value=unitValue duration=during  # limitCommandDuration
+  | (CAP_ | FLOOR_) target=stream TO_ value=unitValue DISPLACING_ BY_ VOLUME_ (string | stream) duration=during  # limitCommandDisplacingByVolumeDuration
+  | (CAP_ | FLOOR_) target=stream TO_ value=unitValue DISPLACING_ BY_ UNITS_ (string | stream) duration=during  # limitCommandDisplacingByUnitsDuration
   | (CAP_ | FLOOR_) target=stream TO_ value=unitValue DISPLACING_ (string | stream) duration=during  # limitCommandDisplacingDuration
   ;
 

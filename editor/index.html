@@ -167,7 +167,7 @@
           <p>AI assistants can help you build Kigali Sim simulations by reading and writing QubecTalk code. You can use any AI assistant. For example, we use <a href="https://claude.ai/" target="_blank">Claude</a>.</p>
           <p><strong>Getting Started:</strong></p>
           <ul>
-            <li>Direct your AI assistant to read our documentation at <a href="https://kigalisim.org/llms-full.txt?v=20250928" target="_blank">https://kigalisim.org/llms-full.txt?v=20250928</a> (default recommendation). For access to even more documentation, you can also include <a href="https://kigalisim.org/llms.txt?v=20250928" target="_blank">https://kigalisim.org/llms.txt?v=20250928</a>.</li>
+            <li>Direct your AI assistant to read our documentation at <a href="https://kigalisim.org/llms-full.txt?v=20251226" target="_blank">https://kigalisim.org/llms-full.txt?v=20251226</a> (default recommendation). For access to even more documentation, you can also include <a href="https://kigalisim.org/llms.txt?v=20251226" target="_blank">https://kigalisim.org/llms.txt?v=20251226</a>.</li>
             <li>Copy your QubecTalk code from the editor and provide it to the AI.</li>
             <li>Ask the AI to help modify or enhance your simulation.</li>
             <li>Copy the AI's code suggestions back into the editor. We recommend asking it to provide the complete updated code for the simulation.</li>
@@ -610,6 +610,8 @@
                                   <option value="tCO2e / mt">tCO2e / mt</option>
                                   <option value="kgCO2e / mt">kgCO2e / mt</option>
                                   <option value="%">%</option>
+                                  <option value="% prior year">% prior year</option>
+                                  <option value="% current">% current</option>
                                   <option value="% / year">% / year</option>
                                 </select>
                               </span>
@@ -658,6 +660,8 @@
                                   <option value="tCO2e / mt">tCO2e / mt</option>
                                   <option value="kgCO2e / mt">kgCO2e / mt</option>
                                   <option value="%">%</option>
+                                  <option value="% prior year">% prior year</option>
+                                  <option value="% current">% current</option>
                                   <option value="% / year">% / year</option>
                                 </select>
                               </span>
@@ -706,6 +710,8 @@
                                   <option value="tCO2e / mt">tCO2e / mt</option>
                                   <option value="kgCO2e / mt">kgCO2e / mt</option>
                                   <option value="%">%</option>
+                                  <option value="% prior year">% prior year</option>
+                                  <option value="% current">% current</option>
                                   <option value="% / year">% / year</option>
                                 </select>
                               </span>
@@ -752,6 +758,8 @@
                                   <option value="tCO2e / mt">tCO2e / mt</option>
                                   <option value="kgCO2e / mt">kgCO2e / mt</option>
                                   <option value="%">%</option>
+                                  <option value="% prior year">% prior year</option>
+                                  <option value="% current">% current</option>
                                   <option value="% / year">% / year</option>
                                 </select>
                               </span>
@@ -821,7 +829,8 @@
                             displace other substances or streams. For example, in a 100 kg cap on
                             HFC-134a offsetting R-410A in domestic refrigeration, a cap would cause
                             150 kg of HFC-134a and 0 kg of R-410A to become 100 and 50 kg
-                            respectively.
+                            respectively. Note that percentage caps and floors are relative to the
+                            prior year's value by default (same as `% prior year`).
                           </div>
                           <div class="dialog-list limit-list"></div>
                           <div class="dialog-sub-buttons bold-buttons">
@@ -1014,7 +1023,8 @@
                             Optionally, these caps can displace other substances or streams. For
                             example, a 100 kg cap on A offsetting B would cause 150 kg of A and 0 kg
                             of B to become 100 and 50 kg respectively. For example, this could be
-                            used to model a permit scheme like in domestic refrigeration.
+                            used to model a permit scheme like in domestic refrigeration. Note that
+                            percentage caps and floors are relative to the prior year's value by default (same as `% prior year`).
                           </div>
                           <div class="dialog-list limit-list"></div>
                           <div class="dialog-sub-buttons bold-buttons">
@@ -1542,6 +1552,8 @@
             <option value="tCO2e / mt">tCO2e / mt</option>
             <option value="kgCO2e / mt">kgCO2e / mt</option>
             <option value="%">%</option>
+            <option value="% prior year">% prior year</option>
+            <option value="% current">% current</option>
             <option value="% / year">% / year</option>
           </select>
         </span>
@@ -1614,6 +1626,8 @@
             <option value="tCO2e / mt">tCO2e / mt</option>
             <option value="kgCO2e / mt">kgCO2e / mt</option>
             <option value="%">%</option>
+            <option value="% prior year">% prior year</option>
+            <option value="% current">% current</option>
             <option value="% / year">% / year</option>
           </select>
         </span>
@@ -1683,12 +1697,20 @@
             <option value="tCO2e / mt">tCO2e / mt</option>
             <option value="kgCO2e / mt">kgCO2e / mt</option>
             <option value="%">%</option>
+            <option value="% prior year">% prior year</option>
+            <option value="% current">% current</option>
             <option value="% / year">% / year</option>
           </select>
         </span>
-        displacing
         <span class="sel mid">
-          <select class="displacing-input" aria-label="The source of displacement to meet limit">
+          <select class="displacing-type-input" aria-label="Type of displacement">
+            <option value="">displacing</option>
+            <option value="by volume">displacing by volume</option>
+            <option value="by units">displacing by units</option>
+          </select>
+        </span>
+        <span class="sel mid">
+          <select class="displacing-target-input" aria-label="The source of displacement to meet limit">
             <optgroup label="None">
               <option value="">nothing</option>
             </optgroup>
@@ -1749,6 +1771,8 @@
             <option value="tCO2e / mt">tCO2e / mt</option>
             <option value="kgCO2e / mt">kgCO2e / mt</option>
             <option value="%">%</option>
+            <option value="% prior year">% prior year</option>
+            <option value="% current">% current</option>
             <option value="% / year">% / year</option>
           </select>
         </span>
@@ -1780,6 +1804,8 @@
             <option value="tCO2e / mt">tCO2e / mt</option>
             <option value="kgCO2e / mt">kgCO2e / mt</option>
             <option value="%">%</option>
+            <option value="% prior year">% prior year</option>
+            <option value="% current">% current</option>
             <option value="% / year">% / year</option>
           </select>
         </span>
@@ -1788,6 +1814,8 @@
         <span class="sel mid">
           <select class="recycle-induction-units-input" aria-label="Units for induction rate">
             <option value="%" selected>%</option>
+            <option value="% prior year">% prior year</option>
+            <option value="% current">% current</option>
           </select>
         </span>
         <span class="induction-help-text" title="Percent of recycled material that induces additional demand rather than displacing virgin production. Default is 100% (full induced demand).">
@@ -1865,6 +1893,8 @@
             <option value="tCO2e / mt">tCO2e / mt</option>
             <option value="kgCO2e / mt">kgCO2e / mt</option>
             <option value="%">%</option>
+            <option value="% prior year">% prior year</option>
+            <option value="% current">% current</option>
             <option value="% / year">% / year</option>
           </select>
         </span>
@@ -1915,6 +1945,8 @@
         <span class="sel mid">
           <select class="recharge-population-units-input" aria-label="Population units">
             <option value="%">%</option>
+            <option value="% prior year">% prior year</option>
+            <option value="% current">% current</option>
             <option value="% / year">% / year</option>
             <option value="units">units</option>
             <option value="units / year">units / year</option>

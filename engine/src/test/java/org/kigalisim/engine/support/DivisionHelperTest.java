@@ -9,7 +9,6 @@ package org.kigalisim.engine.support;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.math.BigDecimal;
-import java.math.MathContext;
 import org.junit.jupiter.api.Test;
 
 /**

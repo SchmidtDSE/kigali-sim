@@ -1115,4 +1115,76 @@ public class BasicLiveTests {
     assertEquals(0.0, result6.getImport().getValue().doubleValue(), 0.0001,
         "Import should continue at 0 kg in year 6 (assume continued)");
   }
+
+  /**
+   * Test that "assume" keyword works as syntactic sugar for set commands with conflicting context.
+   */
+  @Test
+  public void testAssumeSyntacticSugarMixed() throws IOException {
+    String qtaPath = "../examples/basic_assume_mixed.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    String scenarioName = "test assume";
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
+    List<EngineResult> resultsList = results.collect(Collectors.toList());
+
+    EngineResult result = LiveTestsUtil.getResult(resultsList.stream(), 10, "Test App", "Test Substance");
+    assertNotNull(result, "Should have result for year 10");
+    assertTrue(result.getDomestic().getValue().doubleValue() > 1);
+  }
+
+  /**
+   * Test set with % current behaves identically to set with %.
+   * This validates that % current in set context calculates percentage relative to current year values.
+   */
+  @Test
+  public void testSetPercentCurrent() throws IOException {
+    String qtaPath = "../examples/set_percent_current.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    String scenarioName = "business as usual";
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
+    List<EngineResult> resultsList = results.collect(Collectors.toList());
+
+    EngineResult year1Result = LiveTestsUtil.getResult(resultsList.stream(), 1, "test", "test");
+    assertNotNull(year1Result, "Should have result for test/test in year 1");
+    assertEquals(100.0, year1Result.getDomestic().getValue().doubleValue(), 0.0001,
+        "Year 1 domestic should be 100 kg");
+
+    EngineResult year2Result = LiveTestsUtil.getResult(resultsList.stream(), 2, "test", "test");
+    assertNotNull(year2Result, "Should have result for test/test in year 2");
+    assertEquals(110.0, year2Result.getDomestic().getValue().doubleValue(), 0.0001,
+        "Year 2 domestic should be 110 kg (110% of year 1 value with % current)");
+    assertEquals("kg", year2Result.getDomestic().getUnits(),
+        "Domestic units should be kg");
+  }
+
+  /**
+   * Test set with % prior year.
+   * This validates that % prior year in set context calculates percentage relative to prior year values.
+   */
+  @Test
+  public void testSetPercentPriorYear() throws IOException {
+    String qtaPath = "../examples/set_percent_prior_year.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    String scenarioName = "business as usual";
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
+    List<EngineResult> resultsList = results.collect(Collectors.toList());
+
+    EngineResult year1Result = LiveTestsUtil.getResult(resultsList.stream(), 1, "test", "test");
+    assertNotNull(year1Result, "Should have result for test/test in year 1");
+    assertEquals(100.0, year1Result.getDomestic().getValue().doubleValue(), 0.0001,
+        "Year 1 domestic should be 100 kg");
+
+    EngineResult year2Result = LiveTestsUtil.getResult(resultsList.stream(), 2, "test", "test");
+    assertNotNull(year2Result, "Should have result for test/test in year 2");
+    assertEquals(110.0, year2Result.getDomestic().getValue().doubleValue(), 0.0001,
+        "Year 2 domestic should be 110 kg (110% of prior year with % prior year)");
+    assertEquals("kg", year2Result.getDomestic().getUnits(),
+        "Domestic units should be kg");
+  }
 }
