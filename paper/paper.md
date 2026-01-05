@@ -25,7 +25,7 @@ affiliations:
     index: 1
   - name: Secretariat of the Multilateral Fund for the Implementation of the Montreal Protocol, United Nations Environment Programme
     index: 2
-date: 24 October 2025
+date: 2026-01-05
 bibliography: paper.bib
 ---
 
@@ -38,7 +38,7 @@ Signed by all UN member states, the Montreal Protocol successfully phased out 99
 Kigali Sim provides the first open source reusable full lifecycle toolkit addressing Montreal Protocol-controlled substances. Consulting over a dozen countries and supporting organizations, a community of on-the-ground scientists, analysts, and policy-makers inform its flexible design. With either code or UI-based editing, it simulates emissions, energy, substance consumption, equipment populations, trade, and policy either in browser or JVM while following treaty conventions [@mlf_guidelines].
 
 # Design
-With ongoing active Article 5 country [@article5] use, Kigali Sim spans NOUs, Implementing Agencies, analysts, researchers, project implementers, and other organizations. Its dual-interface design supports domain experts in atmospheric science and environmental policy with varied programming expertise.
+Kigali Sim serves Article 5 nations [@article5], Implementing Agencies, analysts, researchers, project implementers, and other organizations. Its dual-interface design supports domain experts in atmospheric science and environmental policy with varied programming expertise.
 
 ## Simulation engine
 Some countries and supporting organizations work from trade records and industry surveys while others from bank estimates or observed emissions. The engine propagates user-provided values through substance flows and lifecycles to estimate the unmeasured quantities. It then layers complex policy interventions such as permitting and recycling on top of the "business as usual" scenario.
@@ -73,7 +73,10 @@ Kigali Sim runs browser-based via WASM or via JVM [@teavm]. Without transmitting
 
 ![Diagram describing multi-modal execution in which simulations run across different platforms.\label{fig:execution}](KigaliExecution.svg){width="100%"}
 
+# Use
+Public builds at https://kigalisim.org. As evidence of use, Kigali Sim participates in policy-relevant treaty meetings [@oweg; @excom; @pacificnetwork; @seasianetwork] with a growing user community [@credits]. 
+
 # Acknowledgments
-BSD-licensed. Thanks Amanda Anderson-You, Tina Birmpili, Matt Fisher, Ava Hu, Kevin Koy, Douglas McCauley, Alejandro Ramirez-Pabon, Frederico San Martini, Annie Snyder, Suzanne Spencer, Elina Yuen, runtime dependencies [@aceeditor; @antlr; @apachecsv; @chartjs; @colorbrewer; @d3; @papaparse; @prism; @qunit; @tabby; @webpack; @teavm], and valued community members listed at https://kigalisim.org/guide/credits.html. Funding from the Eric and Wendy Schmidt Center for Data Science and the Environment at UC Berkeley. No conflicts. AI assistants used with constrained tasks and strict human review [@claude_ai; @copilot; @intellij_ai; @replit_ai]. Paper uses drawio [@drawio].
+BSD-licensed. Thanks Amanda Anderson-You, Tina Birmpili, Matt Fisher, Ava Hu, Kevin Koy, Douglas McCauley, Alejandro Ramirez-Pabon, Frederico San Martini, Annie Snyder, Suzanne Spencer, Elina Yuen, runtime dependencies [@aceeditor; @antlr; @apachecsv; @chartjs; @colorbrewer; @d3; @papaparse; @prism; @qunit; @tabby; @webpack; @teavm], and valued community members [@credits]. Funding from the Eric and Wendy Schmidt Center for Data Science and the Environment at UC Berkeley. No conflicts. AI assistants used with constrained tasks and strict human review [@claude_ai; @copilot; @intellij_ai; @replit_ai]. Paper uses drawio [@drawio].
 
 # References
