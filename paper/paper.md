@@ -38,7 +38,7 @@ Signed by all UN member states, the Montreal Protocol successfully phased out 99
 Kigali Sim provides the first open source reusable full lifecycle toolkit addressing Montreal Protocol-controlled substances. Consulting over a dozen countries and supporting organizations, a community of on-the-ground scientists, analysts, and policy-makers inform its flexible design. With either code or UI-based editing, it simulates emissions, energy, substance consumption, equipment populations, trade, and policy either in browser or JVM while following treaty conventions [@mlf_guidelines].
 
 # Research Impact Statement
-In addition to official participation in international policy-relevant treaty meetings [@oweg; @excom; @pacificnetwork; @seasianetwork] and extended co-design with over a dozen nations and supporting organizations, multiple governments publicly acknowledge use of the software [@credits].
+In addition to official participation in international policy-relevant treaty meetings [@oweg; @excom; @pacificnetwork; @seasianetwork] and extended co-design with over a dozen nations and supporting organizations with news media coverage [@nbc], multiple governments publicly acknowledge use of the software [@credits].
 
 # Software Design
 Kigali Sim serves Article 5 nations [@article5], Implementing Agencies, analysts, researchers, and related organizations. Its dual-interface design supports domain experts in atmospheric science and environmental policy with varied programming expertise.
