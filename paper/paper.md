@@ -73,7 +73,7 @@ Kigali Sim runs browser-based via WASM or via JVM [@teavm]. Without transmitting
 
 ![Diagram describing multi-modal execution in which simulations run across different platforms.\label{fig:execution}](KigaliExecution.svg){width="100%"}
 
-# Deployment
+# Use
 Public builds at https://kigalisim.org. As evidence of use, Kigali Sim participates in policy-relevant treaty meetings [@oweg; @excom; @pacificnetwork; @seasianetwork] with a growing user community [@credits]. 
 
 # Acknowledgments
