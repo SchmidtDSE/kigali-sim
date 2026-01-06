@@ -49,7 +49,7 @@ Countries and supporting organizations work with varied data from trade records 
 ![Diagram showing data flow through Kigali Sim simulation engine from input data (trade records, bank estimates, or equipment surveys) through stock and flow calculations to output metrics.\label{fig:architecture}](KigaliEngine.svg){width="100%"}
 
 ## Dual-Interface Design
-We find many Kigali Sim users do not identify as programmers and, reflecting empirical findings that domain experts with "limited programming knowledge" benefit from domain-specific languages [@dsl_evaluation], our software progresses from a UI-based editor to DSL code-based authoring instead of a general purpose language.
+We find many Kigali Sim users do not identify as programmers. Reflecting empirical findings that domain experts with "limited programming knowledge" benefit from domain-specific languages [@dsl_evaluation], our software progresses from a UI-based editor to DSL code-based authoring^[Instead of a general purpose language].
 
 ### UI-based authoring
 To support those new to programming, the UI-based point-and-click editor acclimates the user to Kigali Sim's concepts through loop-based design [@loop_based_design; @core_loops] where small GUI-based changes automatically translate to code run for immediate feedback. This web interface progressively exposes functionality through sequenced disclosure [@hayashida_structure; @hayashida_video; @pyafscgap] as an on-ramp into a more open design [@open_world_zelda; @plastics] that familiarizes code.
