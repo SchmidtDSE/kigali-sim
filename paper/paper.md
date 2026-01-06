@@ -44,7 +44,7 @@ Participating in official international policy-relevant treaty meetings [@oweg; 
 Kigali Sim serves Article 5 nations [@article5], Implementing Agencies, analysts, researchers, and related organizations. Its dual-interface design supports domain experts in atmospheric science and environmental policy with varied programming expertise.
 
 ## Simulation engine
-Countries and supporting organizations work with varied data from trade records to industry censuses to observed emissions. As opposed to a unidirectional structure, this engine propagates user-provided values from any location in the system through substance flows and lifecycles to estimate the unmeasured quantities. It then layers complex policy interventions such as permitting and recycling on top of the "business as usual" scenario.
+Countries and supporting organizations work with varied data from trade records to industry censuses to observed emissions. Therefore, as opposed to a unidirectional structure, this engine propagates user-provided values from any location in the system through substance flows and lifecycles to estimate the unmeasured quantities. It then layers complex policy interventions such as permitting and recycling on top of the "business as usual" scenario.
 
 ![Diagram showing data flow through Kigali Sim simulation engine from input data (trade records, bank estimates, or equipment surveys) through stock and flow calculations to output metrics.\label{fig:architecture}](KigaliEngine.svg){width="100%"}
 
