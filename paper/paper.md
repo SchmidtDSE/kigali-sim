@@ -32,26 +32,25 @@ bibliography: paper.bib
 # Summary
 With active international use, Kigali Sim offers reusable stock and flow modeling of Montreal Protocol-controlled substances. Focusing on the Kigali Amendment which reduces hydrofluorocarbons that contribute to climate change through warming potentials up to thousands of times greater than carbon dioxide, this open source platform aids both atmospheric science and policy development. Supporting a diverse community with heterogeneous programming expertise, this parallelized toolkit interoperates visual no-code rapid model development and a domain-specific language (DSL), democratizing advanced computational tools. Through WebAssembly (WASM) or Java Virtual Machine (JVM), Kigali Sim offers portable, private, and rigorous simulation in support of history's most successful international environmental treaty.
 
-# Statement of need
-Signed by all UN member states, the Montreal Protocol successfully phased out 99% of ozone-depleting substances [@ozone]. Already the most successful international environmental treaty [@montreal_protocol_success], its ambitious 2016 Kigali Amendment extends this multilateral framework to hydrofluorocarbons which contribute significantly to climate change [@kigali_amendment; @contribute].
+# Statement of Need
+Signed by all UN member states, the Montreal Protocol successfully phased out 99% of ozone-depleting substances [@ozone]. Already the most successful international environmental treaty [@montreal_protocol_success], its ambitious 2016 Kigali Amendment extends this multilateral framework to hydrofluorocarbons which contribute significantly to climate change [@kigali_amendment; @contribute]. However, research and policy analysis for these HFCs involves modeling complex economic, technological, energy, and policy interactions [@complex].
 
-However, related research and policy analysis involves considering complex economic, technological, and policy interactions [@complex], typically through closed source ad-hoc models. National Ozone Units (NOUs) and others who possess deep domain knowledge may work with limited resources [@noo] and the current lack of open domain-oriented tools for holistic stock and flow simulation may inhibit transparent accessible modeling [@oses].
+## State of field
+National Ozone Units (NOUs) and others who possess deep domain knowledge may work with limited resources [@noo]. Requiring closed source [@hfcoutlook] or ad-hoc models [@adhoc], the current lack of open domain-oriented tools for holistic stock and flow simulation may inhibit transparent accessible modeling [@oses].
 
-Therefore, serving Article 5 nations [@article5], Implementing Agencies, analysts, researchers, and related organizations, Kigali Sim provides the first open source reusable lifecycle modeling toolkit focused on Montreal Protocol-controlled substances. With either code or UI-based editing, it simulates emissions, energy, substance consumption, equipment populations, trade, and policy while following treaty conventions [@mlf_guidelines].
-
-# Research Impact Statement
-More than a dozen nations and supporting organizations co-designed Kigali Sim over more than a year. On-the-ground scientists, analysts, and policy-makers inform its flexible structure. Participating in international treaty-related meetings [@oweg; @excom; @pacificnetwork; @seasianetwork], multiple governments publicly acknowledge working with the community project [@credits], open software which also received media coverage [@nbc].
+## Research impact statement
+Serving Article 5 nations [@article5], Implementing Agencies, analysts, researchers, and related organizations, Kigali Sim provides the first open source reusable lifecycle modeling toolkit focused on Montreal Protocol-controlled substances for emissions, energy, substance consumption, equipment populations, trade, and policy while following treaty conventions [@mlf_guidelines]. More than a dozen nations and supporting organizations co-designed Kigali Sim over more than a year, spanning scientists, analysts, and policy-makers. Participating in many international meetings [@oweg; @excom; @pacificnetwork; @seasianetwork], multiple governments publicly acknowledge using and contributing to this community project [@credits] which also received media coverage [@nbc].
 
 # Software Design
 Kigali Sim's engine supports domain experts in atmospheric science and environmental policy with varied programming expertise through a dual-interface design.
 
-## Simulation engine
-Countries and supporting organizations work with varied information from trade records to industry census data to observed emissions. Therefore, as opposed to a unidirectional structure with a single entry-point, this engine propagates limited user-provided values through substance flows and lifecycles to estimate unmeasured quantities. It then layers complex policy interventions such as permitting and recycling on top of the triangulated "business as usual" scenario.
+## Flexible engine
+Countries and supporting organizations work with varied information from trade records to industry census data to observed emissions. As diverse methodologies measure stocks, Kigali Sim pushes information from known to unknown parts of the system, providing automated unit conversions which may depend on equipment properties. As opposed to a unidirectional structure with a single entry-point, this propagates limited user-provided values through substance flows and lifecycles to estimate unmeasured quantities. It then layers complex policy interventions such as permitting and recycling on top of the triangulated "business as usual" scenario.
 
 ![Diagram showing data flow through Kigali Sim simulation engine from input data (trade records, bank estimates, or equipment surveys) through stock and flow calculations to output metrics.\label{fig:architecture}](KigaliEngine.svg){width="100%"}
 
 ## Dual-Interface Design
-Many Kigali Sim users do not identify as programmers and, reflecting empirical findings that domain experts with "limited programming knowledge" benefit from DSLs [@dsl_evaluation], it forgoes general purpose languages to instead progress from a UI-based editor to DSL code-based authoring.
+Many Kigali Sim users do not identify as programmers and, reflecting empirical findings that domain experts with "limited programming knowledge" benefit from DSLs [@dsl_evaluation], it forgoes general purpose languages to instead progress from a UI-based editor to DSL code-based authoring. Most simulations can be modified either by the UI-based editor or the code-based editor where changes in one reflect in the other, attempting to bridge preferences and skill sets. Indeed, many community collaborators who identify as non-programmers report starting in the UI-editor but transition to code.
 
 ### UI-based authoring
 To support those new to programming, the UI-based point-and-click editor acclimates the user to Kigali Sim's concepts through loop-based design [@loop_based_design; @core_loops] where small GUI-based changes automatically translate to code run for immediate feedback. This web interface progressively exposes functionality through sequenced disclosure [@hayashida_structure; @hayashida_video; @pyafscgap] as an on-ramp into a more open design [@open_world_zelda; @plastics] that familiarizes code.
@@ -61,17 +60,8 @@ To support those new to programming, the UI-based point-and-click editor acclima
 ### Code-based authoring
 We find some simulations' complexity cumbersome in UI-based authoring. Therefore, our QubecTalk domain-specific language facilitates expression of complex models in human-readable syntax inspired by but distinct to HyperTalk [@smallhypertalk]. Mirrored by the UI-editor, QubecTalk speaks in treaty terminology: directly translating terms of art like `cap import to 85% during years 2025 to 2035` into simulations. This also supports uncertainty quantification, conditional logic, and policy stacking. With optional AI assistant compatibility via the llms.txt specification [@llmstxt], users may author scripts in a web-based programming portal [@portal] or outside with direct JVM invocation.
 
-## Flexibility
-As diverse methodologies measure stocks, Kigali Sim pushes information from known to unknown parts of the system, providing automated unit conversions which may depend on equipment properties. Additionally, most simulation code can be modified either by the UI-based editor or the code-based editor where changes in one reflect in the other, attempting to bridge preferences and skill sets. Indeed, many community collaborators who identify as non-programmers report starting in the UI-editor but transition to code.
-
 ## Limitations and future work
-Leaving the following for future work, Kigali Sim:
-
- - Can model energy consumption but only estimates direct emissions^[Users may manually calculate indirect emissions using exported and energy mix data [@energy_mix].].
- - Applies treaty trade attribution but will only attribute charge prior to equipment sale entirely to either the importer or exporter^[Local assembly can be modeled as domestic production.].
- - Complex features like formula-based variable servicing / retirement hazard rates may require code-based authoring.
-
-It will receive updates as official guidance changes in the future [@mlf_guidelines].
+Leaving the following for future work, Kigali Sim can model energy consumption but only estimates direct emissions^[Users may calculate indirect emissions using exported and energy mix data [@energy_mix].]. Additionally, it applies treaty trade attribution but will only attribute charge prior to equipment sale entirely to either the importer or exporter^[Local assembly can be modeled as domestic production.]. However, it will receive updates as official guidance changes in the future [@mlf_guidelines].
 
 # Implementation
 Migrated from an original JavaScript implementation for performance and portability, Kigali Sim runs browser-based via WASM or JVM [@teavm]. Without transmitting simulations to external servers, both enable privacy-preserving zero-installation parallel local computation with BigDecimal [@bigdecimal] after ANTLR [@antlr] interprets QubecTalk code.
