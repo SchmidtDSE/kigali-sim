@@ -88,6 +88,6 @@ Amanda Anderson-You, Tina Birmpili, Matt Fisher, Ava Hu, Kevin Koy, Douglas McCa
 Eric and Wendy Schmidt Center for Data Science and the Environment at UC Berkeley. No conflicts.
 
 ## AI usage disclosure
-AI used with constrained tasks and strict human review [@claude_ai; @copilot; @intellij_ai; @replit_ai]. No substantial LLM use in original JavaScript implementation.
+As described in-repo, AI used with constrained tasks and strict human review [@claude_ai; @copilot; @intellij_ai; @replit_ai]. No substantial LLM use in original JavaScript implementation.
 
 # References
