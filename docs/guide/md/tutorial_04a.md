@@ -17,7 +17,9 @@ If you did the AI version of Tutorial 3, you probably are already familiar with 
 **If you are new to the AI** or just want to start fresh,  create a new chat session and then give it your Tutorial 3 file by going to the Save File button at the top of the screen before adding it to the chat as an attachment. Finally, tell it to look up information about Kigali Sim through a message like this:
 
 ```
-Hello! I would like help with the attached Kigali Sim simulation. Please read  https://kigalisim.org/llms-full.txt?v=20251226 to learn more. Please stick to only features compatible with the UI editor.
+Hello! I would like help with the attached Kigali Sim simulation. Please
+read https://kigalisim.org/llms-full.txt?v=20251226 to learn more. Please
+stick to only features compatible with the UI editor.
 ```
 
 Need a little cheat? [Download the Tutorial 3](tutorial_03.qta) file here.
@@ -32,7 +34,10 @@ Before we add in growth rates, let's consider trade. Specifically, for brevity, 
 Let's say that ABC imports some but not all of their HFC-134a. Therefore, for **Domestic Refrigeration**, modify your **HFC-134a** consumption record with a prompt like this:
 
 ```
-Please modify HFC-134a to enable imports in addition to the domestic manufacture already present. For charge, let's use 0.2 kg / unit for import. Then, let's reduce domestic to 13 mt / year for this substance in 2025. However, also add 11 mt / year in year 2025. Thanks!
+Please modify HFC-134a to enable imports in addition to the domestic
+manufacture already present. For charge, let's use 0.2 kg / unit for
+import. Then, let's reduce domestic to 13 mt / year for this substance
+in 2025. However, also add 11 mt / year in year 2025. Thanks!
 ```
 
 When the AI is done, check its work by downloading the file it creates and using the Load File button in Kigali Sim. You should see changes when you click "edit" next to HFC-134a (domestic refrigeration).
@@ -41,7 +46,10 @@ When the AI is done, check its work by downloading the file it creates and using
 In addition to trade, let's also add in economic growth. For example, these projections might come from industry surveys or from outside modeling efforts. Let's continue with HFC-134a:
 
 ```
-Great! Let's continue with HFC-134a. Next, please expect growth +6% of current for all sales (domestic manufacture and import) from 2025 to 2030. Then, have this decrease to +4% of current for all sales from 2031 to 2035.
+Great! Let's continue with HFC-134a. Next, please expect growth +6% of
+current for all sales (domestic manufacture and import) from 2025 to
+2030. Then, have this decrease to +4% of current for all sales from
+2031 to 2035.
 ```
 
 Note: You can use `% current` instead of `%` for growth rates to make it explicit that the percentage applies to the current year's value. This distinction doesn't matter in this simulation but we say % of current year so that the AI knows for sure we mean % of current year's value though Claude would just use the default % if we didn't specify. This could come up in simulations with multiple change directives due to complex economic modeling.
