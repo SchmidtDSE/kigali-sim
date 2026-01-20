@@ -259,7 +259,7 @@ class ApplicationsListPresenter {
     const codeObj = self._getCodeObj();
     const applications = codeObj.getApplications();
     const appNames = applications.map((x) => x.getName());
-    return appNames;
+    return appNames.sort();
   }
 }
 
@@ -958,7 +958,7 @@ class ConsumptionListPresenter {
       });
     });
     const consumptions = consumptionsNested.flat();
-    return consumptions;
+    return consumptions.sort();
   }
 
   /**
@@ -1610,7 +1610,7 @@ class PolicyListPresenter {
     const self = this;
     const codeObj = self._getCodeObj();
     const policies = codeObj.getPolicies();
-    return policies.map((x) => x.getName());
+    return policies.map((x) => x.getName()).sort();
   }
 
   /**
@@ -1891,7 +1891,8 @@ class SimulationListPresenter {
     const policyNames = self
       ._getCodeObj()
       .getPolicies()
-      .map((x) => x.getName());
+      .map((x) => x.getName())
+      .sort();
     const newLabels = d3
       .select(self._dialog.querySelector(".policy-sim-list"))
       .html("")
@@ -1924,7 +1925,7 @@ class SimulationListPresenter {
     const self = this;
     const codeObj = self._getCodeObj();
     const scenarios = codeObj.getScenarios();
-    return scenarios.map((x) => x.getName());
+    return scenarios.map((x) => x.getName()).sort();
   }
 
   /**
@@ -1985,7 +1986,7 @@ class SimulationListPresenter {
 
     const policyChecks = Array.of(...self._dialog.querySelectorAll(".policy-check"));
     const policiesChecked = policyChecks.filter((x) => x.checked);
-    const policyNamesSelected = policiesChecked.map((x) => x.value);
+    const policyNamesSelected = policiesChecked.map((x) => x.value).sort();
 
     return new SimulationScenario(scenarioName, policyNamesSelected, start, end, true);
   }
