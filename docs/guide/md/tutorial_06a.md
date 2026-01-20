@@ -57,7 +57,7 @@ Let's finish this off by asking for a combined simulation which both recycles an
 Fantastic! Please next add a Combined simulation scenario which applies domestic recycling then also sales permit.
 ```
 
-Pay close attention to how this is reflected in the UI-based editor after opening the new file.
+Pay close attention to how this is reflected in the UI-based editor after opening the new file. Note that we asked for domestic recycling to be applied prior to the sales permit. This means that induced demand is applied but then the sales permit ensures that the limits are still respected. In many cases, the ordering of policies does not matter but we will see policy stack ordering in a later tutorial.
 
 ## Results
 
