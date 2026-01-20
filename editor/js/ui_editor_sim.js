@@ -162,6 +162,27 @@ class SimulationListPresenter {
       self._isExplicitOrdering = true;
       self._showForExplicitOrdering();
     });
+
+    // Add click delegation for move up/down links
+    self._dialog.addEventListener("click", (event) => {
+      const target = event.target;
+
+      // Handle move up (move before)
+      if (target.classList.contains("move-policy-up-link")) {
+        event.preventDefault();
+        const policyName = target.getAttribute("data-policy-name");
+        self._movePolicyUp(policyName);
+        return;
+      }
+
+      // Handle move down (move after)
+      if (target.classList.contains("move-policy-down-link")) {
+        event.preventDefault();
+        const policyName = target.getAttribute("data-policy-name");
+        self._movePolicyDown(policyName);
+        return;
+      }
+    });
   }
 
   /**
@@ -212,34 +233,8 @@ class SimulationListPresenter {
       self._isExplicitOrdering,
     );
 
-    // Render policy checkboxes in determined order
-    const newLabels = d3
-      .select(self._dialog.querySelector(".policy-sim-list"))
-      .html("")
-      .selectAll(".policy-check-label")
-      .data(self._policyOrderArray)
-      .enter()
-      .append("div")
-      .classed("policy-check-label", true)
-      .append("label");
-
-    newLabels
-      .append("input")
-      .attr("type", "checkbox")
-      .classed("policy-check", true)
-      .attr("value", (x) => x)
-      .property("checked", (x) => policiesSelected.has(x));
-
-    newLabels.append("span").text((x) => x);
-
-    newLabels.append("span").html((policyName) => self._renderOrderControls(policyName));
-
-    // Apply visibility based on ordering mode
-    if (self._isExplicitOrdering) {
-      self._showForExplicitOrdering();
-    } else {
-      self._showForSimpleOrdering();
-    }
+    // Render policy checkboxes
+    self._renderPolicyCheckboxes();
 
     self._dialog.showModal();
   }
@@ -453,6 +448,111 @@ class SimulationListPresenter {
   _renderOrderControls(policyName) {
     const self = this;
     return self._orderControlsTemplate.replace(/{POLICY_NAME}/g, policyName);
+  }
+
+  /**
+   * Renders the policy checkbox list in the dialog.
+   *
+   * This method generates the checkbox list based on the current _policyOrderArray
+   * state. It preserves checkbox checked states across re-renders by querying
+   * existing checkboxes before clearing the DOM.
+   *
+   * @private
+   */
+  _renderPolicyCheckboxes() {
+    const self = this;
+
+    // Capture current checked states before re-rendering
+    const checkedStates = {};
+    const existingCheckboxes = self._dialog.querySelectorAll(".policy-check");
+    existingCheckboxes.forEach((checkbox) => {
+      checkedStates[checkbox.value] = checkbox.checked;
+    });
+
+    // Render policy checkboxes in current order
+    const newLabels = d3
+      .select(self._dialog.querySelector(".policy-sim-list"))
+      .html("")
+      .selectAll(".policy-check-label")
+      .data(self._policyOrderArray)
+      .enter()
+      .append("div")
+      .classed("policy-check-label", true)
+      .append("label");
+
+    newLabels
+      .append("input")
+      .attr("type", "checkbox")
+      .classed("policy-check", true)
+      .attr("value", (x) => x)
+      .property("checked", (x) => checkedStates[x] || false);
+
+    newLabels.append("span").text((x) => x);
+
+    newLabels.append("span").html((policyName) => self._renderOrderControls(policyName));
+
+    // Apply visibility based on ordering mode
+    if (self._isExplicitOrdering) {
+      self._showForExplicitOrdering();
+    } else {
+      self._showForSimpleOrdering();
+    }
+  }
+
+  /**
+   * Moves a policy up (before the previous policy) in the ordering.
+   *
+   * Finds the policy in _policyOrderArray, swaps it with the previous element,
+   * and re-renders the checkbox list to reflect the new order.
+   *
+   * @param {string} policyName - The name of the policy to move up.
+   * @private
+   */
+  _movePolicyUp(policyName) {
+    const self = this;
+
+    const currentIndex = self._policyOrderArray.indexOf(policyName);
+
+    // Cannot move up if not found or already at the top
+    if (currentIndex <= 0) {
+      return;
+    }
+
+    // Swap with previous element
+    const temp = self._policyOrderArray[currentIndex - 1];
+    self._policyOrderArray[currentIndex - 1] = self._policyOrderArray[currentIndex];
+    self._policyOrderArray[currentIndex] = temp;
+
+    // Re-render to reflect the new order
+    self._renderPolicyCheckboxes();
+  }
+
+  /**
+   * Moves a policy down (after the next policy) in the ordering.
+   *
+   * Finds the policy in _policyOrderArray, swaps it with the next element,
+   * and re-renders the checkbox list to reflect the new order.
+   *
+   * @param {string} policyName - The name of the policy to move down.
+   * @private
+   */
+  _movePolicyDown(policyName) {
+    const self = this;
+
+    const currentIndex = self._policyOrderArray.indexOf(policyName);
+
+    // Cannot move down if not found or already at the bottom
+    if (currentIndex === -1 || currentIndex >= self._policyOrderArray.length - 1) {
+      return;
+    }
+
+    // Swap with next element
+    const temp = self._policyOrderArray[currentIndex + 1];
+    self._policyOrderArray[currentIndex + 1] = self._policyOrderArray[currentIndex];
+    self._policyOrderArray[currentIndex] = temp;
+
+    // Re-render to reflect the new order
+    self._renderPolicyCheckboxes();
   }
 }
 
