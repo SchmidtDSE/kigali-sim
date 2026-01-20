@@ -155,6 +155,13 @@ class SimulationListPresenter {
         self._dialog.close();
       }
     });
+
+    const enableOrderingLink = self._root.querySelector(".enable-policy-order-link");
+    enableOrderingLink.addEventListener("click", (event) => {
+      event.preventDefault();
+      self._isExplicitOrdering = true;
+      self._showForExplicitOrdering();
+    });
   }
 
   /**
@@ -226,6 +233,13 @@ class SimulationListPresenter {
     newLabels.append("span").text((x) => x);
 
     newLabels.append("span").html((policyName) => self._renderOrderControls(policyName));
+
+    // Apply visibility based on ordering mode
+    if (self._isExplicitOrdering) {
+      self._showForExplicitOrdering();
+    } else {
+      self._showForSimpleOrdering();
+    }
 
     self._dialog.showModal();
   }
@@ -317,6 +331,56 @@ class SimulationListPresenter {
   }
 
   /**
+   * Updates UI visibility for simple ordering mode.
+   *
+   * In simple mode:
+   * - Show the "specify policy order" link
+   * - Hide all move before/after controls
+   *
+   * @private
+   */
+  _showForSimpleOrdering() {
+    const self = this;
+
+    // Show the enable ordering link holder
+    const enableHolder = self._dialog.querySelector(".enable-policy-order-holder");
+    if (enableHolder) {
+      enableHolder.style.display = "inline";
+    }
+
+    // Hide all move policy controls
+    const moveControls = self._dialog.querySelectorAll(".move-policy-control");
+    moveControls.forEach((control) => {
+      control.style.display = "none";
+    });
+  }
+
+  /**
+   * Updates UI visibility for explicit ordering mode.
+   *
+   * In explicit mode:
+   * - Hide the "specify policy order" link
+   * - Show all move before/after controls
+   *
+   * @private
+   */
+  _showForExplicitOrdering() {
+    const self = this;
+
+    // Hide the enable ordering link holder
+    const enableHolder = self._dialog.querySelector(".enable-policy-order-holder");
+    if (enableHolder) {
+      enableHolder.style.display = "none";
+    }
+
+    // Show all move policy controls
+    const moveControls = self._dialog.querySelectorAll(".move-policy-control");
+    moveControls.forEach((control) => {
+      control.style.display = "inline";
+    });
+  }
+
+  /**
    * Saves the current simulation data.
    *
    * @private
@@ -374,7 +438,7 @@ class SimulationListPresenter {
 
     const policyChecks = Array.of(...self._dialog.querySelectorAll(".policy-check"));
     const policiesChecked = policyChecks.filter((x) => x.checked);
-    const policyNamesSelected = policiesChecked.map((x) => x.value).sort();
+    const policyNamesSelected = policiesChecked.map((x) => x.value);
 
     return new SimulationScenario(scenarioName, policyNamesSelected, start, end, true);
   }

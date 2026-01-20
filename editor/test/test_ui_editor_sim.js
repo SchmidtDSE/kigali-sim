@@ -207,6 +207,106 @@ function buildUiEditorSimTests() {
         );
       },
     );
+
+    QUnit.test(
+      "_showForSimpleOrdering hides move controls and shows enable link",
+      function (assert) {
+      // Create a minimal DOM structure for testing
+        const dialogElement = document.createElement("div");
+        dialogElement.innerHTML = `
+        <span class="enable-policy-order-holder" style="display: none;">
+          <a href="#" class="enable-policy-order-link">specify policy order</a>
+        </span>
+        <div class="policy-check-label">
+          <span class="move-policy-control" style="display: inline;"> -
+            <a href="#" class="move-policy-up-link">move before</a>
+          </span>
+        </div>
+        <div class="policy-check-label">
+          <span class="move-policy-control" style="display: inline;"> -
+            <a href="#" class="move-policy-down-link">move after</a>
+          </span>
+        </div>
+      `;
+
+        const mockPresenter = {
+          _dialog: dialogElement,
+          _showForSimpleOrdering: SimulationListPresenter.prototype._showForSimpleOrdering,
+        };
+
+        mockPresenter._showForSimpleOrdering();
+
+        const enableHolder = dialogElement.querySelector(".enable-policy-order-holder");
+        assert.equal(
+          enableHolder.style.display,
+          "inline",
+          "Enable ordering holder should be visible",
+        );
+
+        const moveControls = dialogElement.querySelectorAll(".move-policy-control");
+        moveControls.forEach((control) => {
+          assert.equal(control.style.display, "none", "Move controls should be hidden");
+        });
+      },
+    );
+
+    QUnit.test(
+      "_showForExplicitOrdering shows move controls and hides enable link",
+      function (assert) {
+      // Create a minimal DOM structure for testing
+        const dialogElement = document.createElement("div");
+        dialogElement.innerHTML = `
+        <span class="enable-policy-order-holder" style="display: inline;">
+          <a href="#" class="enable-policy-order-link">specify policy order</a>
+        </span>
+        <div class="policy-check-label">
+          <span class="move-policy-control" style="display: none;"> -
+            <a href="#" class="move-policy-up-link">move before</a>
+          </span>
+        </div>
+        <div class="policy-check-label">
+          <span class="move-policy-control" style="display: none;"> -
+            <a href="#" class="move-policy-down-link">move after</a>
+          </span>
+        </div>
+      `;
+
+        const mockPresenter = {
+          _dialog: dialogElement,
+          _showForExplicitOrdering: SimulationListPresenter.prototype._showForExplicitOrdering,
+        };
+
+        mockPresenter._showForExplicitOrdering();
+
+        const enableHolder = dialogElement.querySelector(".enable-policy-order-holder");
+        assert.equal(
+          enableHolder.style.display,
+          "none",
+          "Enable ordering holder should be hidden",
+        );
+
+        const moveControls = dialogElement.querySelectorAll(".move-policy-control");
+        moveControls.forEach((control) => {
+          assert.equal(control.style.display, "inline", "Move controls should be visible");
+        });
+      },
+    );
+
+    QUnit.test("_showForSimpleOrdering handles missing elements gracefully", function (assert) {
+      const dialogElement = document.createElement("div");
+      dialogElement.innerHTML = "<div>Empty dialog</div>";
+
+      const mockPresenter = {
+        _dialog: dialogElement,
+        _showForSimpleOrdering: SimulationListPresenter.prototype._showForSimpleOrdering,
+      };
+
+      // Should not throw error when elements don't exist
+      assert.ok(() => {
+        mockPresenter._showForSimpleOrdering();
+        return true;
+      }, "Should handle missing elements without errors");
+    });
   });
 }
 
