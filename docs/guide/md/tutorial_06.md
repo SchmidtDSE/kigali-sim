@@ -30,6 +30,8 @@ Add both a Recycling simulation with just Domestic Recycling selected. Then, add
 
 <video src="/webm/tutorial_06_02.webm" autoplay loop muted playsinline style="width: 500px; border: 2px solid #505050; border-radius: 3px;">Your browser does not support the video tag. Please upgrade to a modern browser.</video>
 
+Here, the domestic recycling is applied prior to the sales permit. This means we tackle induced demand (more on that in a moment) followed by ensuring that the sales caps are still respected. In many cases, the ordering does not matter but you'll notice this in a future tutorial.
+
 ## Results
 
 Piecing together what is going on with multiple policies can take a little work but let's dig in. For this, go ahead and disable **Attribute initial charge to importer** just to make it easier to reason about how volumes are shifting in the **Consumption** view. To get a closer look, select **HFC-134a** under substances.
