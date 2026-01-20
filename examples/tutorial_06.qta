@@ -116,8 +116,8 @@ start simulations
 
 
   simulate "Combined"
-    using "Sales Permit"
-    then "Domestic Recycling"
+    using "Domestic Recycling"
+    then "Sales Permit"
   from years 2025 to 2035
 
 
