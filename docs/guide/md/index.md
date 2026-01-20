@@ -21,6 +21,7 @@ All numbers are intentionally fake and used only for demonstrative purposes. Ple
 - [**Tutorial 4a:** Growth and Trade with AI](tutorial_04a.md) - Adding economic growth projections and import flows using AI
 - [**Tutorial 5:** Simple Policies](tutorial_05.md) - ABC Country's first policy intervention using a sales permitting system
 - [**Tutorial 6:** Recycling](tutorial_06.md) - Exploring secondary material through recycling programs
+- [**Tutorial 6a:** Recycling with AI](tutorial_06a.md) - Exploring secondary material through recycling programs using AI
 
 ### Code-based Authoring
 
