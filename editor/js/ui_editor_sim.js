@@ -41,6 +41,8 @@ class SimulationListPresenter {
     self._onCodeObjUpdate = onCodeObjUpdate;
     self._editingName = null;
     self._orderControlsTemplate = document.getElementById("sim-order-controls-template").innerHTML;
+    self._policyOrderArray = [];
+    self._isExplicitOrdering = false;
     self._setupDialog();
     self.refresh();
   }
@@ -189,16 +191,26 @@ class SimulationListPresenter {
       x.getYearEnd(),
     );
 
-    const policyNames = self
+    // Get all available policies
+    const allPolicyNames = self
       ._getCodeObj()
       .getPolicies()
-      .map((x) => x.getName())
-      .sort();
+      .map((x) => x.getName());
+
+    // Determine ordering mode and render order
+    self._isExplicitOrdering = self._determineOrderingMode(policiesSelectedRaw, allPolicyNames);
+    self._policyOrderArray = self._determinePolicyRenderOrder(
+      policiesSelectedRaw,
+      allPolicyNames,
+      self._isExplicitOrdering,
+    );
+
+    // Render policy checkboxes in determined order
     const newLabels = d3
       .select(self._dialog.querySelector(".policy-sim-list"))
       .html("")
       .selectAll(".policy-check-label")
-      .data(policyNames)
+      .data(self._policyOrderArray)
       .enter()
       .append("div")
       .classed("policy-check-label", true)
@@ -229,6 +241,79 @@ class SimulationListPresenter {
     const codeObj = self._getCodeObj();
     const scenarios = codeObj.getScenarios();
     return scenarios.map((x) => x.getName()).sort();
+  }
+
+  /**
+   * Determines whether to use simple or explicit ordering mode.
+   *
+   * Simple ordering mode is used if any of these conditions are true:
+   * - No policies are selected
+   * - Only one policy is selected
+   * - Selected policies are in ascending alphabetical order
+   *
+   * Otherwise, explicit ordering mode is used.
+   *
+   * @param {string[]} policiesSelected - Array of selected policy names in their current order.
+   * @param {string[]} allPolicies - Array of all available policy names.
+   * @returns {boolean} True if explicit ordering mode, false for simple ordering mode.
+   * @private
+   */
+  _determineOrderingMode(policiesSelected, allPolicies) {
+    const self = this;
+
+    // Rule 1: No policies selected -> simple mode
+    if (policiesSelected.length === 0) {
+      return false;
+    }
+
+    // Rule 2: Only one policy selected -> simple mode
+    if (policiesSelected.length === 1) {
+      return false;
+    }
+
+    // Rule 3: Check if selected policies are in ascending alphabetical order
+    const sortedSelected = [...policiesSelected].sort();
+    const isAlphabetical = policiesSelected.every(
+      (policy, index) => policy === sortedSelected[index],
+    );
+
+    if (isAlphabetical) {
+      return false; // Simple mode
+    }
+
+    // None of the simple mode conditions met -> explicit mode
+    return true;
+  }
+
+  /**
+   * Determines the order in which policies should be rendered in the dialog.
+   *
+   * In simple mode: All policies sorted alphabetically.
+   * In explicit mode: Checked policies in their original order, followed by
+   * unchecked policies alphabetically.
+   *
+   * @param {string[]} policiesSelectedRaw - Array of selected policy names in
+   *     their QTA code order.
+   * @param {string[]} allPolicies - Array of all available policy names
+   *     (unsorted).
+   * @param {boolean} isExplicitMode - Whether explicit ordering mode is active.
+   * @returns {string[]} Array of policy names in the order they should be
+   *     rendered.
+   * @private
+   */
+  _determinePolicyRenderOrder(policiesSelectedRaw, allPolicies, isExplicitMode) {
+    const self = this;
+
+    if (!isExplicitMode) {
+      // Simple mode: All policies alphabetically
+      return [...allPolicies].sort();
+    }
+
+    // Explicit mode: Selected policies in QTA order, then unselected alphabetically
+    const selectedSet = new Set(policiesSelectedRaw);
+    const unselectedPolicies = allPolicies.filter((policy) => !selectedSet.has(policy)).sort();
+
+    return [...policiesSelectedRaw, ...unselectedPolicies];
   }
 
   /**
