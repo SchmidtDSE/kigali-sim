@@ -40,6 +40,7 @@ class SimulationListPresenter {
     self._getCodeObj = getCodeObj;
     self._onCodeObjUpdate = onCodeObjUpdate;
     self._editingName = null;
+    self._orderControlsTemplate = document.getElementById("sim-order-controls-template").innerHTML;
     self._setupDialog();
     self.refresh();
   }
@@ -212,6 +213,8 @@ class SimulationListPresenter {
 
     newLabels.append("span").text((x) => x);
 
+    newLabels.append("span").html((policyName) => self._renderOrderControls(policyName));
+
     self._dialog.showModal();
   }
 
@@ -289,6 +292,18 @@ class SimulationListPresenter {
     const policyNamesSelected = policiesChecked.map((x) => x.value).sort();
 
     return new SimulationScenario(scenarioName, policyNamesSelected, start, end, true);
+  }
+
+  /**
+   * Renders the ordering control HTML for a given policy.
+   *
+   * @param {string} policyName - The name of the policy.
+   * @returns {string} HTML string for the ordering controls.
+   * @private
+   */
+  _renderOrderControls(policyName) {
+    const self = this;
+    return self._orderControlsTemplate.replace(/{POLICY_NAME}/g, policyName);
   }
 }
 

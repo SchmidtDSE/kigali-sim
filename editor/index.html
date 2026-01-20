@@ -1112,7 +1112,10 @@
                           </div>
                         </div>
                         <div class="form-group">
-                          <div><label for="edit-simulation-policies">Policies:</label></div>
+                          <div>
+                            <label for="edit-simulation-policies">Policies:</label>
+                            <span class="enable-policy-order-holder">(<a href="#" class="enable-policy-order-link">specify policy order</a>)</span>
+                          </div>
                           <div class="dialog-list policy-sim-list small"></div>
                         </div>
                         <div class="dialog-buttons bold-buttons">
@@ -1994,6 +1997,10 @@
     <script type="text/javascript" src="/third_party/popper.min.js"></script>
     <script type="text/javascript" src="/third_party/tippy-bundle.umd.min.js"></script>
     <script type="text/javascript" src="/third_party/papaparse.min.js"></script>
+
+    <script type="text/template" id="sim-order-controls-template">
+      <span class="move-policy-control"> - <a href="#" class="move-policy-up-link" data-policy-name="{POLICY_NAME}">move before</a><span class="move-policy-sep"> / </span><a href="#" class="move-policy-down-link" data-policy-name="{POLICY_NAME}">move after</a></span>
+    </script>
 
     <script type="text/javascript" src="/intermediate/static/qubectalk.js?v=EPOCH"></script>
 
