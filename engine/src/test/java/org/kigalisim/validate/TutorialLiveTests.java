@@ -396,6 +396,76 @@ public class TutorialLiveTests {
           "Combined total (" + combinedTotal + ") should be less than or equal to Recycling total ("
           + recyclingTotal + ") in year " + year + " since combined policies are more effective");
     }
+
+    // Test 3: Combined policy domestic consumption should be less than or equal to Permit policy
+    // With 100% induction, recycling doesn't reduce virgin sales, so adding recycling first
+    // then applying the cap should give the same result as just the cap
+    Stream<EngineResult> permitResults = KigaliSimFacade.runScenario(program, "Permit", progress -> {});
+    List<EngineResult> permitResultsList = permitResults.collect(Collectors.toList());
+
+    EngineResult permitResult2034 = LiveTestsUtil.getResult(permitResultsList.stream(), 2034,
+        "Domestic Refrigeration", "HFC-134a");
+    EngineResult combinedResult2034 = LiveTestsUtil.getResult(combinedResultsList.stream(), 2034,
+        "Domestic Refrigeration", "HFC-134a");
+
+    assertNotNull(permitResult2034, "Should have Permit result for 2034");
+    assertNotNull(combinedResult2034, "Should have Combined result for 2034");
+
+    double permitConsumption = permitResult2034.getDomestic().getValue().doubleValue()
+                               + permitResult2034.getImport().getValue().doubleValue();
+    double combinedConsumption = combinedResult2034.getDomestic().getValue().doubleValue()
+                                 + combinedResult2034.getImport().getValue().doubleValue();
+
+    assertTrue(combinedConsumption <= permitConsumption,
+        "Combined domestic consumption (" + combinedConsumption
+        + " kg) should be <= Permit consumption (" + permitConsumption
+        + " kg) in 2034 since recycling with 100% induction doesn't increase virgin demand");
+  }
+
+  /**
+   * Test Tutorial 06 flipped: Policy order should not matter with 100% induction.
+   * With 100% induction, recycling does not displace virgin material, so:
+   * - Permit then Recycling should give the same result as Recycling then Permit
+   * - Combined domestic consumption should still be <= Permit consumption in 2034
+   *
+   * This test is expected to FAIL if there's an order dependency bug.
+   */
+  @Test
+  public void testTutorial06Flip() throws IOException {
+    // Load and parse the flipped QTA file (Permit then Recycling order)
+    String qtaPath = "../examples/tutorial_06_flip.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    // Run Permit scenario
+    Stream<EngineResult> permitResults = KigaliSimFacade.runScenario(program, "Permit", progress -> {});
+    List<EngineResult> permitResultsList = permitResults.collect(Collectors.toList());
+
+    // Run Combined scenario (Permit then Recycling - flipped order)
+    Stream<EngineResult> combinedResults = KigaliSimFacade.runScenario(program, "Combined", progress -> {});
+    List<EngineResult> combinedResultsList = combinedResults.collect(Collectors.toList());
+
+    // Test: Combined domestic consumption should be <= Permit consumption in 2034
+    // With 100% induction, recycling doesn't raise sales above original value,
+    // so applying recycling after permit should not increase consumption above permit level
+    EngineResult permitResult2034 = LiveTestsUtil.getResult(permitResultsList.stream(), 2034,
+        "Domestic Refrigeration", "HFC-134a");
+    EngineResult combinedResult2034 = LiveTestsUtil.getResult(combinedResultsList.stream(), 2034,
+        "Domestic Refrigeration", "HFC-134a");
+
+    assertNotNull(permitResult2034, "Should have Permit result for 2034");
+    assertNotNull(combinedResult2034, "Should have Combined result for 2034");
+
+    double permitConsumption = permitResult2034.getDomestic().getValue().doubleValue()
+                               + permitResult2034.getImport().getValue().doubleValue();
+    double combinedConsumption = combinedResult2034.getDomestic().getValue().doubleValue()
+                                 + combinedResult2034.getImport().getValue().doubleValue();
+
+    assertTrue(combinedConsumption <= permitConsumption,
+        "FLIPPED ORDER BUG: Combined domestic consumption (" + combinedConsumption
+        + " kg) should be <= Permit consumption (" + permitConsumption
+        + " kg) in 2034. With 100% induction, recycling cannot raise sales above the "
+        + "original (capped) value, so the cap should still apply.");
   }
 
   /**
