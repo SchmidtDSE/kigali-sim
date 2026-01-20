@@ -3,6 +3,7 @@
  *
  * @license BSD, see LICENSE.md.
  */
+import {SimulationListPresenter} from "ui_editor_sim";
 
 function buildUiEditorSimTests() {
   QUnit.module("SimulationListPresenter", function (hooks) {
@@ -63,6 +64,149 @@ function buildUiEditorSimTests() {
       );
       assert.ok(!rendered.includes("{POLICY_NAME}"), "No placeholders should remain");
     });
+
+    QUnit.test("_determineOrderingMode returns false for no policies", function (assert) {
+      const selectedPolicies = [];
+      const allPolicies = ["Policy A", "Policy B", "Policy C"];
+
+      // Create a minimal mock to access the private method
+      const mockPresenter = {
+        _determineOrderingMode: SimulationListPresenter.prototype._determineOrderingMode,
+      };
+
+      const result = mockPresenter._determineOrderingMode(selectedPolicies, allPolicies);
+      assert.strictEqual(
+        result,
+        false,
+        "Should return false (simple mode) when no policies selected",
+      );
+    });
+
+    QUnit.test("_determineOrderingMode returns false for single policy", function (assert) {
+      const selectedPolicies = ["Policy B"];
+      const allPolicies = ["Policy A", "Policy B", "Policy C"];
+
+      const mockPresenter = {
+        _determineOrderingMode: SimulationListPresenter.prototype._determineOrderingMode,
+      };
+
+      const result = mockPresenter._determineOrderingMode(selectedPolicies, allPolicies);
+      assert.strictEqual(
+        result,
+        false,
+        "Should return false (simple mode) when only one policy selected",
+      );
+    });
+
+    QUnit.test("_determineOrderingMode returns false for alphabetical policies", function (assert) {
+      const selectedPolicies = ["Policy A", "Policy B", "Policy C"];
+      const allPolicies = ["Policy A", "Policy B", "Policy C", "Policy D"];
+
+      const mockPresenter = {
+        _determineOrderingMode: SimulationListPresenter.prototype._determineOrderingMode,
+      };
+
+      const result = mockPresenter._determineOrderingMode(selectedPolicies, allPolicies);
+      assert.strictEqual(
+        result,
+        false,
+        "Should return false (simple mode) when policies are alphabetically ordered",
+      );
+    });
+
+    QUnit.test(
+      "_determineOrderingMode returns true for non-alphabetical policies",
+      function (assert) {
+        const selectedPolicies = ["Policy C", "Policy A", "Policy B"];
+        const allPolicies = ["Policy A", "Policy B", "Policy C", "Policy D"];
+
+        const mockPresenter = {
+          _determineOrderingMode: SimulationListPresenter.prototype._determineOrderingMode,
+        };
+
+        const result = mockPresenter._determineOrderingMode(selectedPolicies, allPolicies);
+        assert.strictEqual(
+          result,
+          true,
+          "Should return true (explicit mode) when policies are not alphabetically ordered",
+        );
+      },
+    );
+
+    QUnit.test(
+      "_determinePolicyRenderOrder returns alphabetical in simple mode",
+      function (assert) {
+        const selectedPolicies = ["Policy B"];
+        const allPolicies = ["Policy C", "Policy A", "Policy B"];
+        const isExplicitMode = false;
+
+        const mockPresenter = {
+          _determinePolicyRenderOrder:
+            SimulationListPresenter.prototype._determinePolicyRenderOrder,
+        };
+
+        const result = mockPresenter._determinePolicyRenderOrder(
+          selectedPolicies,
+          allPolicies,
+          isExplicitMode,
+        );
+        assert.deepEqual(
+          result,
+          ["Policy A", "Policy B", "Policy C"],
+          "Should return all policies alphabetically in simple mode",
+        );
+      },
+    );
+
+    QUnit.test(
+      "_determinePolicyRenderOrder returns selected then unselected in explicit mode",
+      function (assert) {
+        const selectedPolicies = ["Policy C", "Policy A"];
+        const allPolicies = ["Policy C", "Policy A", "Policy B", "Policy D"];
+        const isExplicitMode = true;
+
+        const mockPresenter = {
+          _determinePolicyRenderOrder:
+            SimulationListPresenter.prototype._determinePolicyRenderOrder,
+        };
+
+        const result = mockPresenter._determinePolicyRenderOrder(
+          selectedPolicies,
+          allPolicies,
+          isExplicitMode,
+        );
+        assert.deepEqual(
+          result,
+          ["Policy C", "Policy A", "Policy B", "Policy D"],
+          "Should return selected in original order, then unselected alphabetically",
+        );
+      },
+    );
+
+    QUnit.test(
+      "_determinePolicyRenderOrder handles all selected policies",
+      function (assert) {
+        const selectedPolicies = ["Policy C", "Policy A", "Policy B"];
+        const allPolicies = ["Policy C", "Policy A", "Policy B"];
+        const isExplicitMode = true;
+
+        const mockPresenter = {
+          _determinePolicyRenderOrder:
+            SimulationListPresenter.prototype._determinePolicyRenderOrder,
+        };
+
+        const result = mockPresenter._determinePolicyRenderOrder(
+          selectedPolicies,
+          allPolicies,
+          isExplicitMode,
+        );
+        assert.deepEqual(
+          result,
+          ["Policy C", "Policy A", "Policy B"],
+          "Should return all policies in selected order when all are selected",
+        );
+      },
+    );
   });
 }
 
