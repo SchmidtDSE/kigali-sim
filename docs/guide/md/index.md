@@ -16,6 +16,7 @@ All numbers are intentionally fake and used only for demonstrative purposes. Ple
 
 - [**Tutorial 2:** Single Application and Substance](tutorial_02.md) - Start with the basic building blocks of a simulation
 - [**Tutorial 3:** Multiple Applications and Substances](tutorial_03.md) - Expanding to multiple sectors and refrigerants
+- [**Tutorial 3a:** Multiple Substances with AI](tutorial_03a.md) - Expanding to multiple sectors and refrigerants using AI
 - [**Tutorial 4:** Growth and Trade](tutorial_04.md) - Adding economic growth projections and import flows
 - [**Tutorial 5:** Simple Policies](tutorial_05.md) - ABC Country's first policy intervention using a sales permitting system
 - [**Tutorial 6:** Recycling](tutorial_06.md) - Exploring secondary material through recycling programs
