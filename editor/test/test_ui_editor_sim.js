@@ -307,6 +307,193 @@ function buildUiEditorSimTests() {
         return true;
       }, "Should handle missing elements without errors");
     });
+
+    QUnit.test("_renderPolicyCheckboxes renders policies in array order", function (assert) {
+      // Create a minimal DOM structure for testing
+      const dialogElement = document.createElement("div");
+      dialogElement.innerHTML = `
+        <div class="policy-sim-list"></div>
+        <span class="enable-policy-order-holder"></span>
+      `;
+
+      // We need the template to be available
+      const templateScript = document.getElementById("sim-order-controls-template");
+      if (!templateScript) {
+        const newTemplate = document.createElement("script");
+        newTemplate.type = "text/template";
+        newTemplate.id = "sim-order-controls-template";
+        newTemplate.innerHTML =
+          '<span class="move-policy-control"> - ' +
+          '<a href="#" class="move-policy-up-link" ' +
+          'data-policy-name="{POLICY_NAME}">move before</a>' +
+          '<span class="move-policy-sep"> / </span>' +
+          '<a href="#" class="move-policy-down-link" ' +
+          'data-policy-name="{POLICY_NAME}">move after</a>' +
+          "</span>";
+        document.body.appendChild(newTemplate);
+      }
+
+      const mockPresenter = {
+        _dialog: dialogElement,
+        _policyOrderArray: ["Policy C", "Policy A", "Policy B"],
+        _isExplicitOrdering: true,
+        _renderPolicyCheckboxes: SimulationListPresenter.prototype._renderPolicyCheckboxes,
+        _renderOrderControls: SimulationListPresenter.prototype._renderOrderControls,
+        _showForExplicitOrdering: SimulationListPresenter.prototype._showForExplicitOrdering,
+        _showForSimpleOrdering: SimulationListPresenter.prototype._showForSimpleOrdering,
+        _orderControlsTemplate: document.getElementById("sim-order-controls-template").innerHTML,
+      };
+
+      mockPresenter._renderPolicyCheckboxes();
+
+      const checkboxes = dialogElement.querySelectorAll(".policy-check");
+      assert.equal(checkboxes.length, 3, "Should render 3 checkboxes");
+      assert.equal(checkboxes[0].value, "Policy C", "First checkbox should be Policy C");
+      assert.equal(checkboxes[1].value, "Policy A", "Second checkbox should be Policy A");
+      assert.equal(checkboxes[2].value, "Policy B", "Third checkbox should be Policy B");
+    });
+
+    QUnit.test(
+      "_renderPolicyCheckboxes preserves checked states across renders",
+      function (assert) {
+        const dialogElement = document.createElement("div");
+        dialogElement.innerHTML = `
+        <div class="policy-sim-list">
+          <div class="policy-check-label">
+            <label>
+              <input type="checkbox" class="policy-check" value="Policy A" checked>
+              <span>Policy A</span>
+            </label>
+          </div>
+          <div class="policy-check-label">
+            <label>
+              <input type="checkbox" class="policy-check" value="Policy B">
+              <span>Policy B</span>
+            </label>
+          </div>
+        </div>
+        <span class="enable-policy-order-holder"></span>
+      `;
+
+        const mockPresenter = {
+          _dialog: dialogElement,
+          _policyOrderArray: ["Policy A", "Policy B"],
+          _isExplicitOrdering: false,
+          _renderPolicyCheckboxes: SimulationListPresenter.prototype._renderPolicyCheckboxes,
+          _renderOrderControls: SimulationListPresenter.prototype._renderOrderControls,
+          _showForExplicitOrdering: SimulationListPresenter.prototype._showForExplicitOrdering,
+          _showForSimpleOrdering: SimulationListPresenter.prototype._showForSimpleOrdering,
+          _orderControlsTemplate: document.getElementById("sim-order-controls-template").innerHTML,
+        };
+
+        // Policy A is checked, Policy B is unchecked
+        mockPresenter._renderPolicyCheckboxes();
+
+        const checkboxes = dialogElement.querySelectorAll(".policy-check");
+        assert.equal(checkboxes[0].checked, true, "Policy A should remain checked");
+        assert.equal(checkboxes[1].checked, false, "Policy B should remain unchecked");
+      },
+    );
+
+    QUnit.test("_movePolicyUp swaps policy with previous element", function (assert) {
+      const dialogElement = document.createElement("div");
+      dialogElement.innerHTML = `
+        <div class="policy-sim-list"></div>
+        <span class="enable-policy-order-holder"></span>
+      `;
+
+      const mockPresenter = {
+        _dialog: dialogElement,
+        _policyOrderArray: ["Policy A", "Policy B", "Policy C"],
+        _isExplicitOrdering: true,
+        _movePolicyUp: SimulationListPresenter.prototype._movePolicyUp,
+        _renderPolicyCheckboxes: function () {
+          // Mock render - we're testing array manipulation, not rendering
+        },
+      };
+
+      mockPresenter._movePolicyUp("Policy B");
+
+      assert.deepEqual(
+        mockPresenter._policyOrderArray,
+        ["Policy B", "Policy A", "Policy C"],
+        "Policy B should swap with Policy A",
+      );
+    });
+
+    QUnit.test("_movePolicyUp does nothing when policy is first", function (assert) {
+      const mockPresenter = {
+        _policyOrderArray: ["Policy A", "Policy B", "Policy C"],
+        _movePolicyUp: SimulationListPresenter.prototype._movePolicyUp,
+        _renderPolicyCheckboxes: function () {},
+      };
+
+      mockPresenter._movePolicyUp("Policy A");
+
+      assert.deepEqual(
+        mockPresenter._policyOrderArray,
+        ["Policy A", "Policy B", "Policy C"],
+        "Array should remain unchanged when moving first element up",
+      );
+    });
+
+    QUnit.test("_movePolicyDown swaps policy with next element", function (assert) {
+      const dialogElement = document.createElement("div");
+      dialogElement.innerHTML = `
+        <div class="policy-sim-list"></div>
+        <span class="enable-policy-order-holder"></span>
+      `;
+
+      const mockPresenter = {
+        _dialog: dialogElement,
+        _policyOrderArray: ["Policy A", "Policy B", "Policy C"],
+        _isExplicitOrdering: true,
+        _movePolicyDown: SimulationListPresenter.prototype._movePolicyDown,
+        _renderPolicyCheckboxes: function () {
+          // Mock render - we're testing array manipulation, not rendering
+        },
+      };
+
+      mockPresenter._movePolicyDown("Policy B");
+
+      assert.deepEqual(
+        mockPresenter._policyOrderArray,
+        ["Policy A", "Policy C", "Policy B"],
+        "Policy B should swap with Policy C",
+      );
+    });
+
+    QUnit.test("_movePolicyDown does nothing when policy is last", function (assert) {
+      const mockPresenter = {
+        _policyOrderArray: ["Policy A", "Policy B", "Policy C"],
+        _movePolicyDown: SimulationListPresenter.prototype._movePolicyDown,
+        _renderPolicyCheckboxes: function () {},
+      };
+
+      mockPresenter._movePolicyDown("Policy C");
+
+      assert.deepEqual(
+        mockPresenter._policyOrderArray,
+        ["Policy A", "Policy B", "Policy C"],
+        "Array should remain unchanged when moving last element down",
+      );
+    });
+
+    QUnit.test("_movePolicyUp handles non-existent policy gracefully", function (assert) {
+      const mockPresenter = {
+        _policyOrderArray: ["Policy A", "Policy B"],
+        _movePolicyUp: SimulationListPresenter.prototype._movePolicyUp,
+        _renderPolicyCheckboxes: function () {},
+      };
+
+      mockPresenter._movePolicyUp("Policy X");
+
+      assert.deepEqual(
+        mockPresenter._policyOrderArray,
+        ["Policy A", "Policy B"],
+        "Array should remain unchanged when policy not found",
+      );
+    });
   });
 }
 
