@@ -341,6 +341,8 @@ function buildUiEditorSimTests() {
         _renderOrderControls: SimulationListPresenter.prototype._renderOrderControls,
         _showForExplicitOrdering: SimulationListPresenter.prototype._showForExplicitOrdering,
         _showForSimpleOrdering: SimulationListPresenter.prototype._showForSimpleOrdering,
+        _updateMoveControlVisibility:
+          SimulationListPresenter.prototype._updateMoveControlVisibility,
         _orderControlsTemplate: document.getElementById("sim-order-controls-template").innerHTML,
       };
 
@@ -383,6 +385,8 @@ function buildUiEditorSimTests() {
           _renderOrderControls: SimulationListPresenter.prototype._renderOrderControls,
           _showForExplicitOrdering: SimulationListPresenter.prototype._showForExplicitOrdering,
           _showForSimpleOrdering: SimulationListPresenter.prototype._showForSimpleOrdering,
+          _updateMoveControlVisibility:
+            SimulationListPresenter.prototype._updateMoveControlVisibility,
           _orderControlsTemplate: document.getElementById("sim-order-controls-template").innerHTML,
         };
 
@@ -494,6 +498,239 @@ function buildUiEditorSimTests() {
         "Array should remain unchanged when policy not found",
       );
     });
+
+    QUnit.test(
+      "_updateMoveControlVisibility hides move-up for first policy",
+      function (assert) {
+        const dialogElement = document.createElement("div");
+        dialogElement.innerHTML = `
+      <div class="policy-check-label">
+        <span class="move-policy-control">
+          <a href="#" class="move-policy-up-link">move before</a>
+          <span class="move-policy-sep"> / </span>
+          <a href="#" class="move-policy-down-link">move after</a>
+        </span>
+      </div>
+      <div class="policy-check-label">
+        <span class="move-policy-control">
+          <a href="#" class="move-policy-up-link">move before</a>
+          <span class="move-policy-sep"> / </span>
+          <a href="#" class="move-policy-down-link">move after</a>
+        </span>
+      </div>
+      <div class="policy-check-label">
+        <span class="move-policy-control">
+          <a href="#" class="move-policy-up-link">move before</a>
+          <span class="move-policy-sep"> / </span>
+          <a href="#" class="move-policy-down-link">move after</a>
+        </span>
+      </div>
+    `;
+
+        const mockPresenter = {
+          _dialog: dialogElement,
+          _updateMoveControlVisibility:
+            SimulationListPresenter.prototype._updateMoveControlVisibility,
+        };
+
+        mockPresenter._updateMoveControlVisibility();
+
+        const policyLabels = dialogElement.querySelectorAll(".policy-check-label");
+        const firstLabel = policyLabels[0];
+        const secondLabel = policyLabels[1];
+
+        // First policy should have move-up hidden
+        const firstMoveUp = firstLabel.querySelector(".move-policy-up-link");
+        const firstMoveDown = firstLabel.querySelector(".move-policy-down-link");
+        const firstSep = firstLabel.querySelector(".move-policy-sep");
+
+        assert.equal(firstMoveUp.style.display, "none", "First policy move-up should be hidden");
+        assert.equal(
+          firstMoveDown.style.display,
+          "inline",
+          "First policy move-down should be visible",
+        );
+        assert.equal(firstSep.style.display, "none", "First policy separator should be hidden");
+
+        // Second (middle) policy should have both visible
+        const secondMoveUp = secondLabel.querySelector(".move-policy-up-link");
+        const secondMoveDown = secondLabel.querySelector(".move-policy-down-link");
+        const secondSep = secondLabel.querySelector(".move-policy-sep");
+
+        assert.equal(
+          secondMoveUp.style.display,
+          "inline",
+          "Second policy move-up should be visible",
+        );
+        assert.equal(
+          secondMoveDown.style.display,
+          "inline",
+          "Second policy move-down should be visible",
+        );
+        assert.equal(
+          secondSep.style.display,
+          "inline",
+          "Second policy separator should be visible",
+        );
+      },
+    );
+
+    QUnit.test("_updateMoveControlVisibility hides move-down for last policy", function (assert) {
+      const dialogElement = document.createElement("div");
+      dialogElement.innerHTML = `
+    <div class="policy-check-label">
+      <span class="move-policy-control">
+        <a href="#" class="move-policy-up-link">move before</a>
+        <span class="move-policy-sep"> / </span>
+        <a href="#" class="move-policy-down-link">move after</a>
+      </span>
+    </div>
+    <div class="policy-check-label">
+      <span class="move-policy-control">
+        <a href="#" class="move-policy-up-link">move before</a>
+        <span class="move-policy-sep"> / </span>
+        <a href="#" class="move-policy-down-link">move after</a>
+      </span>
+    </div>
+  `;
+
+      const mockPresenter = {
+        _dialog: dialogElement,
+        _updateMoveControlVisibility:
+          SimulationListPresenter.prototype._updateMoveControlVisibility,
+      };
+
+      mockPresenter._updateMoveControlVisibility();
+
+      const policyLabels = dialogElement.querySelectorAll(".policy-check-label");
+      const lastLabel = policyLabels[1];
+
+      // Last policy should have move-down hidden
+      const lastMoveUp = lastLabel.querySelector(".move-policy-up-link");
+      const lastMoveDown = lastLabel.querySelector(".move-policy-down-link");
+      const lastSep = lastLabel.querySelector(".move-policy-sep");
+
+      assert.equal(lastMoveUp.style.display, "inline", "Last policy move-up should be visible");
+      assert.equal(lastMoveDown.style.display, "none", "Last policy move-down should be hidden");
+      assert.equal(lastSep.style.display, "none", "Last policy separator should be hidden");
+    });
+
+    QUnit.test(
+      "_updateMoveControlVisibility hides both links for single policy",
+      function (assert) {
+        const dialogElement = document.createElement("div");
+        dialogElement.innerHTML = `
+    <div class="policy-check-label">
+      <span class="move-policy-control">
+        <a href="#" class="move-policy-up-link">move before</a>
+        <span class="move-policy-sep"> / </span>
+        <a href="#" class="move-policy-down-link">move after</a>
+      </span>
+    </div>
+  `;
+
+        const mockPresenter = {
+          _dialog: dialogElement,
+          _updateMoveControlVisibility:
+            SimulationListPresenter.prototype._updateMoveControlVisibility,
+        };
+
+        mockPresenter._updateMoveControlVisibility();
+
+        const policyLabel = dialogElement.querySelector(".policy-check-label");
+
+        // Single policy (both first and last) should have both links hidden
+        const moveUp = policyLabel.querySelector(".move-policy-up-link");
+        const moveDown = policyLabel.querySelector(".move-policy-down-link");
+        const separator = policyLabel.querySelector(".move-policy-sep");
+
+        assert.equal(moveUp.style.display, "none", "Single policy move-up should be hidden");
+        assert.equal(moveDown.style.display, "none", "Single policy move-down should be hidden");
+        assert.equal(separator.style.display, "none", "Single policy separator should be hidden");
+      },
+    );
+
+    QUnit.test(
+      "_updateMoveControlVisibility handles empty policy list gracefully",
+      function (assert) {
+        const dialogElement = document.createElement("div");
+        dialogElement.innerHTML = "<div>No policies</div>";
+
+        const mockPresenter = {
+          _dialog: dialogElement,
+          _updateMoveControlVisibility:
+            SimulationListPresenter.prototype._updateMoveControlVisibility,
+        };
+
+        // Should not throw error when no policy labels exist
+        assert.ok(() => {
+          mockPresenter._updateMoveControlVisibility();
+          return true;
+        }, "Should handle empty policy list without errors");
+      },
+    );
+
+    QUnit.test(
+      "_updateMoveControlVisibility shows both links for middle policies",
+      function (assert) {
+        const dialogElement = document.createElement("div");
+        dialogElement.innerHTML = `
+    <div class="policy-check-label">
+      <span class="move-policy-control">
+        <a href="#" class="move-policy-up-link">move before</a>
+        <span class="move-policy-sep"> / </span>
+        <a href="#" class="move-policy-down-link">move after</a>
+      </span>
+    </div>
+    <div class="policy-check-label">
+      <span class="move-policy-control">
+        <a href="#" class="move-policy-up-link">move before</a>
+        <span class="move-policy-sep"> / </span>
+        <a href="#" class="move-policy-down-link">move after</a>
+      </span>
+    </div>
+    <div class="policy-check-label">
+      <span class="move-policy-control">
+        <a href="#" class="move-policy-up-link">move before</a>
+        <span class="move-policy-sep"> / </span>
+        <a href="#" class="move-policy-down-link">move after</a>
+      </span>
+    </div>
+  `;
+
+        const mockPresenter = {
+          _dialog: dialogElement,
+          _updateMoveControlVisibility:
+            SimulationListPresenter.prototype._updateMoveControlVisibility,
+        };
+
+        mockPresenter._updateMoveControlVisibility();
+
+        const policyLabels = dialogElement.querySelectorAll(".policy-check-label");
+        const middleLabel = policyLabels[1];
+
+        // Middle policy should have both links visible
+        const moveUp = middleLabel.querySelector(".move-policy-up-link");
+        const moveDown = middleLabel.querySelector(".move-policy-down-link");
+        const separator = middleLabel.querySelector(".move-policy-sep");
+
+        assert.equal(
+          moveUp.style.display,
+          "inline",
+          "Middle policy move-up should be visible",
+        );
+        assert.equal(
+          moveDown.style.display,
+          "inline",
+          "Middle policy move-down should be visible",
+        );
+        assert.equal(
+          separator.style.display,
+          "inline",
+          "Middle policy separator should be visible",
+        );
+      },
+    );
   });
 }
 

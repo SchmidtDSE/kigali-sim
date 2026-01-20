@@ -497,6 +497,9 @@ class SimulationListPresenter {
     } else {
       self._showForSimpleOrdering();
     }
+
+    // Update individual move control visibility based on position
+    self._updateMoveControlVisibility();
   }
 
   /**
@@ -553,6 +556,52 @@ class SimulationListPresenter {
 
     // Re-render to reflect the new order
     self._renderPolicyCheckboxes();
+  }
+
+  /**
+   * Updates visibility of individual move up/down links based on position.
+   *
+   * Hides "move before" link for the first policy (cannot move up).
+   * Hides "move after" link for the last policy (cannot move down).
+   * Hides separator when either adjacent link is hidden for clean presentation.
+   *
+   * This method should be called after rendering the policy checkboxes.
+   *
+   * @private
+   */
+  _updateMoveControlVisibility() {
+    const self = this;
+
+    // Get all policy checkbox labels in DOM order
+    const policyLabels = self._dialog.querySelectorAll(".policy-check-label");
+
+    if (policyLabels.length === 0) {
+      return; // No policies to update
+    }
+
+    policyLabels.forEach((label, index) => {
+      const isFirst = index === 0;
+      const isLast = index === policyLabels.length - 1;
+
+      const moveUpLink = label.querySelector(".move-policy-up-link");
+      const moveDownLink = label.querySelector(".move-policy-down-link");
+      const separator = label.querySelector(".move-policy-sep");
+
+      // Hide "move before" link for first policy
+      if (moveUpLink) {
+        moveUpLink.style.display = isFirst ? "none" : "inline";
+      }
+
+      // Hide "move after" link for last policy
+      if (moveDownLink) {
+        moveDownLink.style.display = isLast ? "none" : "inline";
+      }
+
+      // Hide separator if first or last policy (one of the links is hidden)
+      if (separator) {
+        separator.style.display = isFirst || isLast ? "none" : "inline";
+      }
+    });
   }
 }
 
